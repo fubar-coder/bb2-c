@@ -1,0 +1,12 @@
+description: dos.library - files, drawers, locks, processes, paths and patterns, and the command line.
+intro: |
+  `dos.library` is the disk operating system of AmigaOS: files and
+  drawers, locks, the current directory, processes, the parsing of
+  command lines and file name patterns. A program that uses these calls
+  opens it when it starts and closes it at its end. The calls of AmigaOS
+  2.0 and newer are declared by a second library, doslib2, and listed
+  here as well.
+
+  ```blitzbasic
+  Delay_ 50  ; wait one second (50 ticks)
+  ```

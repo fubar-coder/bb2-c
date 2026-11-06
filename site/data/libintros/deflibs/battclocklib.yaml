@@ -1,0 +1,5 @@
+description: battclock.resource - the battery backed clock of the Amiga.
+intro: |
+  `battclock.resource` reads, sets and resets the battery backed clock,
+  which keeps the time while the machine is switched off. A program that
+  uses these calls opens the resource when it starts.

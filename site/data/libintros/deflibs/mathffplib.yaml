@@ -1,0 +1,7 @@
+description: mathffp.library - the basic arithmetic of Motorola fast floating point numbers, the floats of Blitz Basic 2.
+intro: |
+  `mathffp.library` adds, subtracts, multiplies, divides, compares and
+  converts Motorola fast floating point (FFP) numbers, the format of the
+  floats of Blitz Basic 2. The code the compiler makes uses it for
+  float arithmetic. A program that uses these calls opens the library
+  when it starts.

@@ -1,0 +1,7 @@
+description: xprzmodem.library - file transfer with the ZModem protocol through the XPR interface of terminal programs.
+intro: |
+  `xprzmodem.library` is not part of AmigaOS: it is a protocol library
+  of the XPR interface that terminal programs use, here for ZModem file
+  transfers over the serial port. A program that uses these calls opens
+  the library when it starts; on a system without it, the calls must not
+  be used.

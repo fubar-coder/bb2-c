@@ -1,0 +1,6 @@
+description: icon.library - reading and writing the icons of the Workbench and their tool types.
+intro: |
+  `icon.library` reads and writes `.info` files, the icons of the
+  Workbench, and finds the tool types in them, the settings a user can
+  give a program in its icon. A program that uses these calls opens the
+  library when it starts.

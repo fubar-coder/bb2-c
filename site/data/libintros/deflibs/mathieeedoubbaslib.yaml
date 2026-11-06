@@ -1,0 +1,7 @@
+description: mathieeedoubbas.library - the basic arithmetic of IEEE double precision numbers.
+intro: |
+  `mathieeedoubbas.library` adds, subtracts, multiplies, divides,
+  compares and converts IEEE double precision floating point numbers, the
+  64 bit format, and uses a maths coprocessor if there is one. A double
+  takes two registers, as the register list of each call shows. A program
+  that uses these calls opens the library when it starts.

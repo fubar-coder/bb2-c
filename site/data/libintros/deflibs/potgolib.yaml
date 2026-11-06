@@ -1,0 +1,6 @@
+description: potgo.resource - sharing the bits of the POTGO register, the analogue and button lines of the game ports.
+intro: |
+  `potgo.resource` shares the bits of the POTGO hardware register, the
+  analogue and extra button lines of the game ports, between the
+  programs that use them. A program that uses these calls opens the
+  resource when it starts.

@@ -1,0 +1,5 @@
+description: expansion.library - the expansion boards of the Amiga and the drives they add to the system.
+intro: |
+  `expansion.library` finds the expansion boards of the Amiga, such as
+  memory and hard disk controllers, and adds their drives to the system.
+  A program that uses these calls opens the library when it starts.

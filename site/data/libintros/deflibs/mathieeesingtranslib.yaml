@@ -1,0 +1,6 @@
+description: mathieeesingtrans.library - the transcendental functions of IEEE single precision numbers.
+intro: |
+  `mathieeesingtrans.library` computes sine, cosine, tangent and their
+  inverses, logarithms, powers and square roots of IEEE single precision
+  floating point numbers. A program that uses these calls opens the
+  library when it starts.

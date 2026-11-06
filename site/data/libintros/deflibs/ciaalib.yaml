@@ -1,0 +1,5 @@
+description: ciaa.resource - the interrupts and timers of the first CIA chip.
+intro: |
+  `ciaa.resource` shares the interrupts and timers of the first of the
+  Amiga's two CIA chips between the programs that want them. A program
+  that uses these calls opens the resource when it starts.

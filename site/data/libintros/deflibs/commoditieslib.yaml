@@ -1,0 +1,7 @@
+description: commodities.library - commodities, programs that watch the input stream, such as hot keys.
+intro: |
+  `commodities.library` lets a program become a commodity: it can watch
+  and change the stream of input events, react to hot keys, and be
+  shown, hidden and switched off by the Commodities Exchange. A program
+  that uses these calls opens the library when it starts; on a system
+  without it, the calls must not be used.

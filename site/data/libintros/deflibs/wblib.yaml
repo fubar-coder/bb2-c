@@ -1,0 +1,8 @@
+description: workbench.library - app windows, app icons and app menu items on the Workbench.
+intro: |
+  `workbench.library` of AmigaOS 2.0 and newer lets a program put an
+  *app icon* on the Workbench, make its window an *app window* that
+  takes icons dropped on it, or add an item to the Workbench's Tools
+  menu; the program then gets a message for each use. A program that
+  uses these calls opens the library when it starts; on a system without
+  it, the calls must not be used.

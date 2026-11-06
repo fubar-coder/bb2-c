@@ -1,0 +1,6 @@
+description: card.resource - the PCMCIA card slot of the A600 and A1200.
+intro: |
+  `card.resource` handles the PCMCIA credit card slot of the A600 and
+  the A1200: inserting and removing cards, their memory and their
+  attributes. A program that uses these calls opens the resource when it
+  starts; on an Amiga without the slot, the calls must not be used.

@@ -1,0 +1,6 @@
+description: iffparse.library - reading and writing IFF files of any kind, chunk by chunk.
+intro: |
+  `iffparse.library` reads and writes IFF files of any kind, chunk by
+  chunk, also from the clipboard. It suits formats the Blitz commands do
+  not load themselves. A program that uses these calls opens the library
+  when it starts; on a system without it, the calls must not be used.

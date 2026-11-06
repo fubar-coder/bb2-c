@@ -1,0 +1,8 @@
+description: utility.library - tag lists, hooks, dates, 32 bit arithmetic and string comparison of AmigaOS 2.0 and newer.
+intro: |
+  `utility.library` of AmigaOS 2.0 and newer has the helpers that the
+  other system libraries share: tag lists, callback hooks, the
+  conversion of dates, 32 bit multiplication and division, and
+  comparison of strings without regard to case. A program that uses these
+  calls opens the library when it starts; on a system without it, the
+  calls must not be used.

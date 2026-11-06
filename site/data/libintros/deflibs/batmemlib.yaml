@@ -1,0 +1,6 @@
+description: battmem.resource - the battery backed memory of the Amiga, which keeps settings while it is switched off.
+intro: |
+  `battmem.resource` reads and writes the few bits of battery backed
+  memory that some Amigas have, which keep system settings while the
+  machine is switched off. A program that uses these calls opens the
+  resource when it starts.

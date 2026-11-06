@@ -1,0 +1,7 @@
+description: rexxsyslib.library - the system library of ARexx, with its messages and argument strings.
+intro: |
+  `rexxsyslib.library` is the system library of ARexx. It makes and
+  frees ARexx messages and argument strings. The arexxlib command
+  library offers a host interface built on it. A program that uses these
+  calls opens the library when it starts; on a system without ARexx, the
+  calls must not be used.

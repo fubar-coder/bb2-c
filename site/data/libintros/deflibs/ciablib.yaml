@@ -1,0 +1,5 @@
+description: ciab.resource - the interrupts and timers of the second CIA chip.
+intro: |
+  `ciab.resource` shares the interrupts and timers of the second of the
+  Amiga's two CIA chips between the programs that want them. A program
+  that uses these calls opens the resource when it starts.

@@ -1,0 +1,6 @@
+description: bullet.library - the outline font engine of AmigaOS, which scales Compugraphic fonts.
+intro: |
+  `bullet.library` is the outline font engine of AmigaOS: it makes the
+  bitmaps of the characters of scalable Compugraphic fonts in any size.
+  A program that uses these calls opens the library when it starts; on a
+  system without it, the calls must not be used.

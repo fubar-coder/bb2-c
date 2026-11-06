@@ -1,0 +1,8 @@
+description: intuition.library - screens, windows, gadgets, menus, requesters and the input of the user.
+intro: |
+  `intuition.library` is the user interface of AmigaOS: screens and
+  windows, gadgets, menus, requesters, the mouse pointer and the events
+  of the user's input. The Blitz commands for screens, windows, gadgets
+  and menus use it too; these calls reach the parts they leave out. A
+  program that uses these calls opens it when it starts and closes it at
+  its end.

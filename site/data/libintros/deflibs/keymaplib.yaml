@@ -1,0 +1,5 @@
+description: keymap.library - converting between key codes and characters with the keymap the user chose.
+intro: |
+  `keymap.library` converts raw key codes into characters and back, with
+  the keymap the user chose for the keyboard. A program that uses these
+  calls opens the library when it starts.

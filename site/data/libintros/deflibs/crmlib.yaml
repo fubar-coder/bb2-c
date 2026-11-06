@@ -1,0 +1,7 @@
+description: CrM.library - the library of the Crunch-Mania packer, for packing and unpacking data.
+intro: |
+  `CrM.library` belongs to the Crunch-Mania packer, not to AmigaOS. It
+  packs and unpacks data in its formats. A program that uses these calls
+  opens the library when it starts; on a system without it, the calls
+  must not be used. The crunchlib command library unpacks Crunch-Mania
+  data without it.

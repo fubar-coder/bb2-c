@@ -1,0 +1,6 @@
+description: disk.resource - sharing the floppy disk hardware between the programs that use it.
+intro: |
+  `disk.resource` shares the floppy disk controller of the Amiga
+  between the programs that drive it directly, such as the trackdisk
+  device. A program that uses these calls opens the resource when it
+  starts.

@@ -1,0 +1,6 @@
+description: amigaguide.library - showing AmigaGuide hypertext documents and online help.
+intro: |
+  `amigaguide.library` shows AmigaGuide documents, the hypertext format
+  of Amiga online help, and lets a program open its help at a node. A
+  program that uses these calls opens the library when it starts; on a
+  system without it, the calls must not be used.

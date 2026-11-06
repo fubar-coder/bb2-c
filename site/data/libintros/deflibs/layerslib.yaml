@@ -1,0 +1,6 @@
+description: layers.library - the overlapping layers of a screen that windows are made of.
+intro: |
+  `layers.library` manages the overlapping layers of a screen, the
+  drawing areas that windows are made of, with their clipping and
+  refreshing. A program that uses these calls opens the library when it
+  starts.

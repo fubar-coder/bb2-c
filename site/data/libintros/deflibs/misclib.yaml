@@ -1,0 +1,5 @@
+description: misc.resource - sharing the serial and parallel port hardware between the programs that use it.
+intro: |
+  `misc.resource` lets a program claim the hardware of the serial or the
+  parallel port for itself, and give it back. A program that uses these
+  calls opens the resource when it starts.

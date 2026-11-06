@@ -1,0 +1,15 @@
+description: exec.library - the kernel of AmigaOS, with memory, tasks, signals, messages and ports, lists, libraries and devices.
+intro: |
+  `exec.library` is the kernel of AmigaOS: it manages memory, tasks and
+  their signals, message ports and messages, lists, interrupts, and the
+  libraries and devices of the system. A program that uses these calls
+  opens it when it starts and closes it at its end.
+
+  ```blitzbasic
+  mem.l=AllocMem_(1024,$10001) ; public, cleared
+  FreeMem_ mem,1024
+  ```
+
+  Kept from the original: `Supervisor_` cannot be compiled; the compiler
+  finds another entry under its name
+  ([#960](https://github.com/fubar-coder/bb2-c/issues/960)).

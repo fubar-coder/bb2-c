@@ -1,0 +1,6 @@
+description: locale.library - translations, and the formats of dates, numbers and money of the user's country.
+intro: |
+  `locale.library` gives a program the language and country settings of
+  the user: translated texts from catalogs, and the formats of dates,
+  times and numbers. A program that uses these calls opens the library
+  when it starts; on a system without it, the calls must not be used.

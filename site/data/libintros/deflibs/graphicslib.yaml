@@ -1,0 +1,8 @@
+description: graphics.library - drawing in rastports, text and fonts, bitmaps, the blitter, sprites, views and colours.
+intro: |
+  `graphics.library` draws: lines, areas and text in rastports, bitmaps
+  and blits, fonts, hardware and virtual sprites, and the views and
+  colour maps of the display. A program that uses these calls opens it
+  when it starts and closes it at its end. The calls of AmigaOS 2.0 and
+  newer are declared by a second library, graphicslib2, and listed here
+  as well.

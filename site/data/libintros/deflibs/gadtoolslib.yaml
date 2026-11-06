@@ -1,0 +1,7 @@
+description: gadtools.library - gadgets and menus in the standard look of AmigaOS 2.0 and newer.
+intro: |
+  `gadtools.library` makes gadgets and menus in the standard look of
+  AmigaOS 2.0 and newer. The gtlib command library offers its gadgets as
+  Blitz commands; these calls give the full control of their tags and
+  also its menus. A program that uses these calls opens the library when
+  it starts; on a system without it, the calls must not be used.

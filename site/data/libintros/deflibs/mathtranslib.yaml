@@ -1,0 +1,7 @@
+description: mathtrans.library - the transcendental functions of fast floating point numbers, such as sine, logarithm and power.
+intro: |
+  `mathtrans.library` computes the transcendental functions of Motorola
+  fast floating point numbers: sine, cosine, tangent and their inverses,
+  logarithms, powers and square roots. The mathtranslib command library
+  offers them as Blitz functions. A program that uses these calls opens
+  the library when it starts.

@@ -1,0 +1,6 @@
+description: diskfont.library - loading fonts from the FONTS drawer and listing the fonts available.
+intro: |
+  `diskfont.library` loads fonts from the `FONTS:` drawer, also scaled
+  ones, and lists the fonts available. The Blitz commands `LoadFont` and
+  `LoadBlitzFont` use it. A program that uses these calls opens the
+  library when it starts.

@@ -1,0 +1,7 @@
+description: mathieeesingbas.library - the basic arithmetic of IEEE single precision numbers.
+intro: |
+  `mathieeesingbas.library` adds, subtracts, multiplies, divides,
+  compares and converts IEEE single precision floating point numbers, the
+  32 bit format of most other languages, and uses a maths coprocessor if
+  there is one. A program that uses these calls opens the library when it
+  starts.
