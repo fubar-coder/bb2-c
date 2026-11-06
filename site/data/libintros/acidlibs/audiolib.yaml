@@ -1,0 +1,25 @@
+description: Sounds - samples in chip memory, loaded from IFF 8SVX files or made by the program, played on the Amiga's four audio channels.
+intro: |
+  A sound is a Blitz object, numbered from 0: a sample in chip memory with
+  its period, which sets the pitch (a smaller period plays faster and
+  higher), and an optional repeat part. `LoadSound` reads an IFF 8SVX
+  file, `DecodeSound` takes one that is already in memory, for example
+  included in the program, and `InitSound` makes an empty sound that
+  `SoundData` fills byte by byte.
+
+  The commands drive the audio hardware directly. A *channel mask* chooses
+  the channels: bit 0 is channel 0, up to bit 3 for channel 3, so 15 means
+  all four. Where the help text has `Vol1[,Vol2...]`, the volumes (0 to 64)
+  are given one per channel of the mask, the lowest channel first; a
+  channel without a volume plays at 64. This plays a sound on channel 0
+  at full volume and on channel 1 at half volume:
+
+  ```blitzbasic
+  LoadSound 0,"bang.8svx"
+  Sound 0,1+2,64,32
+  ```
+
+  With runtime error checking, a channel mask above 15 is the error
+  "Illegal Chanel Mask", spelled as in the original.
+
+  *Based on the audiolib guide by Acid Software.*

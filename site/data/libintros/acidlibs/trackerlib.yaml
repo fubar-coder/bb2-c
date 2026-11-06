@@ -1,0 +1,21 @@
+description: Tracker modules - playing Sound- and NoiseTracker music in the background, from the vertical blank interrupt.
+intro: |
+  A module is a Blitz object, numbered from 0: a Sound- or NoiseTracker
+  module with 31 samples (the "M.K." format), loaded into chip memory with
+  `LoadModule`. `PlayModule` starts it, and from then on the music plays by
+  itself, a step every frame from the vertical blank interrupt, while the
+  program goes on. `StopModule` stops it; the music also stops when the
+  program ends or the module is freed.
+
+  ```blitzbasic
+  LoadModule 0,"mod.tune"
+  PlayModule 0
+  MouseWait
+  StopModule
+  ```
+
+  The player is the classic NoiseTracker replay routine, and its known
+  faults are kept, for example with some effect commands
+  ([#292](https://github.com/fubar-coder/bb2-c/issues/292),
+  [#293](https://github.com/fubar-coder/bb2-c/issues/293),
+  [#294](https://github.com/fubar-coder/bb2-c/issues/294)).

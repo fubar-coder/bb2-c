@@ -1,0 +1,49 @@
+"DiskPlay":
+  text: Plays an IFF 8SVX file straight from disk on the channels of the mask, without loading it as a whole, and returns when the file has been played; the program waits meanwhile. It needs much less memory than `LoadSound` and `Sound`, and the sample may be longer than 128 KB.
+  notes: |
+    Kept from the original: a file whose sample length is a multiple of
+    the buffer length never ends
+    ([#69](https://github.com/fubar-coder/bb2-c/issues/69)), and when
+    the file cannot be opened or read, the chip memory of the buffer stays
+    taken until the program ends
+    ([#950](https://github.com/fubar-coder/bb2-c/issues/950)).
+"DiskBuffer":
+  text: The size in bytes of each of the two halves of the chip memory buffer that `DiskPlay` streams through; the start value is 1024. A much smaller buffer can make the sound worse, and a slow device may need a larger one.
+"LoadSound":
+  text: Loads an IFF 8SVX file into the sound, with its period and repeat part. Errors are "Illegal Sound file" when the file cannot be opened, "Can't Find VHDR", "Error Reading File", and "Sound too long" for a sample of 128 KB or more.
+  notes: |
+    Kept from the original: after "Sound too long" the file stays open
+    ([#67](https://github.com/fubar-coder/bb2-c/issues/67)).
+"Sound":
+  text: Plays the sound once on the channels of the mask, with the volumes given or 64. Channels outside the mask go on with what they play.
+"Volume":
+  text: Sets the volume (0 to 64) of the channels of the mask while they play, one value per channel, for example for fading a sound in or out.
+"Filter":
+  text: Switches the Amiga's audio low-pass filter on or off; the same hardware bit dims the power light.
+"LoopSound":
+  text: Plays the sound on the channels of the mask and then repeats its repeat part until another sound is played on the channel or the program ends.
+"InitSound":
+  text: Makes an empty sound (all bytes 0) of `Length` bytes in chip memory, with the period (428, about middle C, if none is given) and the offset where the repeat part starts (0 if none is given).
+  notes: |
+    With runtime error checking, the length must be even and below 128 KB,
+    and the repeat offset even and less than the length.
+"SoundData":
+  text: Writes `Data`, from -128 to 127, as one byte of the sample at the offset (in bytes, from 0), for example to build a sine or square wave in a sound made with `InitSound`.
+"PeekSound":
+  text: One byte of the sample at the offset, from -128 to 127.
+  notes: |
+    Kept from the original: used inside a string expression, the rest of
+    the expression is written into the sound object
+    ([#46](https://github.com/fubar-coder/bb2-c/issues/46)).
+"DecodeSound":
+  text: Makes a sound from an IFF 8SVX file that is already in memory at the address. A file in chip memory is used where it is, other data is copied to chip memory.
+  notes: |
+    Kept from the original: decoding into the same sound first from chip
+    memory and then from other memory leaves the copy unfreed
+    ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
+"SetPeriod":
+  text: Sets the period of the sound, for the next time it is played. A sound that is not set up is the error "Uninitialized Sound".
+  notes: |
+    Kept from the original: with runtime error checking, a period above 15
+    is the error "Illegal Chanel Mask"
+    ([#66](https://github.com/fubar-coder/bb2-c/issues/66)).

@@ -1,0 +1,28 @@
+"Speak":
+  text: Translates the text into phonemes and speaks it, without waiting for the end.
+"SetVoice":
+  text: The voice of the following `Speak` and `PhoneticSpeak`; values outside the ranges below are clipped.
+  notes: |
+    The rate in words per minute is 40 to 400, the pitch in Hz 65 to 320,
+    the expression 0 for a natural and 1 for a monotone voice, the sex 0 for
+    male and 1 for female, the volume up to 64, and the sample frequency
+    5000 to 28000 Hz. The defaults of the narrator device are rate 150,
+    pitch 110, natural expression, male, volume 64 and 22200 Hz.
+    Kept from the original: very large values are clipped
+    wrongly ([#279](https://github.com/fubar-coder/bb2-c/issues/279)).
+"Translate$":
+  text: The phonemes of a text, as `PhoneticSpeak` takes them.
+  notes: |
+    Kept from the original: the result ends with an extra zero byte, and
+    it is written over the argument
+    ([#277](https://github.com/fubar-coder/bb2-c/issues/277)).
+"PhoneticSpeak":
+  text: Speaks a string of phonemes as it is, for example from `Translate$`; it must hold only valid phonemes.
+"VoiceLoc":
+  text: The address of the extra voice settings of the narrator device from AmigaOS 2.0 on (version 37), inside the library's narrator request, to change them with `Poke`.
+  notes: |
+    They follow the narrator request of the operating system: flags (1
+    to use the extra settings), enthusiasm, perturbation, pitch and
+    amplitude adjustments of the three formants, articulation,
+    centralisation and its vowel, the biases of voiced and unvoiced
+    sounds, and the priority.

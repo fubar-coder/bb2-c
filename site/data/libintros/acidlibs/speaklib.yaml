@@ -1,0 +1,18 @@
+description: Speech - the Amiga's synthetic voice through the narrator device, from text or from phonemes.
+intro: |
+  `Speak` turns a text into phonemes with the translator library and has
+  the narrator device speak them, in the voice set with `SetVoice`. It
+  does not wait until the speech has ended; the next `Speak` or
+  `PhoneticSpeak` waits for the one before. Both need translator.library
+  and narrator.device on the Amiga; without them, a program that uses
+  these commands stops at its start with the error "Failed To Open Speech
+  Library".
+
+  ```blitzbasic
+  While Joyb(0)=0
+    SetVoice 100+Rnd(200),65+Rnd(255),1,1,64,22200
+    Speak "BLITZ BASIC"
+  Wend
+  ```
+
+  *Based on the speaklib guide by Acid Software.*

@@ -1,0 +1,30 @@
+"LoadMedModule":
+  text: Loads a MED module from disk into chip memory; a module the object held before is freed. Amiga mode only. A file that cannot be opened is the error "Can't Open Med Module"; a file that is not a MED module leaves the object empty.
+"StartMedModule":
+  text: Prepares the module for playing and starts it from the beginning; it also restarts a module that plays. All four channels are used again. An object without a module is the error "Med Library Error".
+"PlayMed":
+  text: Plays one step of the started module; call it 50 times a second, after `VWait` or in a vertical blank interrupt handler. Without a started module it does nothing.
+"StopMed":
+  text: Stops the module and silences the channels. `PlayMed` then does nothing until the next `StartMedModule`.
+"JumpMed":
+  text: Makes the song go on at the given entry of its play sequence, counted from 1, from its first line.
+  notes: |
+    Kept from the original: without a started module it writes to a low
+    memory address ([#210](https://github.com/fubar-coder/bb2-c/issues/210)).
+"SetMedVolume":
+  text: The overall volume of the module, from 0 to 64, for all its tracks; lowering it step by step fades the music out.
+"GetMedVolume":
+  text: The volume of the last note on the channel, and 0 after it has been read once.
+  notes: |
+    Kept from the original: reading the volume silences the channel until
+    its next note ([#212](https://github.com/fubar-coder/bb2-c/issues/212)).
+"GetMedNote":
+  text: The last note played on the channel, and 0 after it has been read once, for example for graphics that follow the music.
+"GetMedInstr":
+  text: The instrument of the last note on the channel, and 0 after it has been read once.
+"SetMedMask":
+  text: Which channels the module may use, as a channel mask (bit 0 for channel 0, 15 for all four), to keep the others free for sound effects. `StartMedModule` sets it to 15.
+"DecodeMedModule":
+  text: Makes the MED module that is already in memory at the address the module of the object, for example one included in the program. A module in chip memory is used where it is, others are copied to chip memory.
+"MedModule":
+  text: The object of a MED module, as the introduction describes.

@@ -1,0 +1,12 @@
+"Module":
+  text: The object of a loaded module. `Free Module` frees it, and stops it first if it is playing.
+"LoadModule":
+  text: Loads a Sound- or NoiseTracker module from disk into chip memory, to be played with `PlayModule`; a module the object held before is freed. Amiga mode only. A file that is missing, is a drawer or cannot be read is the error "Error Accessing Module File".
+  notes: |
+    Kept from the original: after that error some memory stays taken, and
+    a drawer stays locked
+    ([#296](https://github.com/fubar-coder/bb2-c/issues/296)).
+"PlayModule":
+  text: Starts the module from its beginning and plays it from the vertical blank interrupt until `StopModule`. It switches the audio filter off.
+"StopModule":
+  text: Stops the module that is playing and silences all channels.

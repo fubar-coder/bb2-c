@@ -1,0 +1,32 @@
+description: MED modules - playing MED and OctaMED music, one step for each call of PlayMed, with the notes and volumes readable for effects.
+intro: |
+  A MED module is a Blitz object, numbered from 0: a MED or OctaMED module
+  in the MMD0 or MMD1 format, in chip memory. `LoadMedModule` loads one
+  from disk, `DecodeMedModule` takes one that is already in memory, and
+  `StartMedModule` prepares it and starts it from the beginning.
+
+  The library has no interrupt of its own: the music moves on one step
+  each time the program calls `PlayMed`, and that must happen 50 times a
+  second, after a `VWait` in the main loop or in a vertical blank
+  interrupt handler:
+
+  ```blitzbasic
+  LoadMedModule 0,"song.med"
+  StartMedModule 0
+  SetInt 5
+    PlayMed
+  End SetInt
+  MouseWait
+  StopMed
+  ```
+
+  `GetMedNote`, `GetMedInstr` and `GetMedVolume` tell what a channel
+  plays, for graphics that follow the music. `SetMedMask` keeps channels
+  free for sound effects.
+
+  The player is the MED V3 player by Teijo Kinnunen, and its known faults
+  are kept, for example with some effect commands
+  ([#203](https://github.com/fubar-coder/bb2-c/issues/203),
+  [#204](https://github.com/fubar-coder/bb2-c/issues/204)).
+
+  *Based on the medlib guide by Acid Software.*
