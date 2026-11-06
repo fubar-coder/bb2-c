@@ -4,7 +4,8 @@
 # shared/ (the code compiled into several programs). Not part of the
 # CMake build: the Pages workflow runs it in the official
 # image (ghcr.io/doxygen/doxygen:Release_1_16_1; 1.17 and 1.18 write a
-# letter index of the file members with links to pages they never write)
+# letter index of the file members with links to pages they never write,
+# docs/external-bugs/doxygen-member-index-letters.md)
 # from the repository root
 # into site/static/api/, served as api/ of the website (site/README.md).
 # Only the settings that differ from Doxygen's defaults are listed.
