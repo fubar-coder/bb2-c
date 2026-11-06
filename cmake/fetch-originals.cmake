@@ -23,7 +23,8 @@
 #   archive/amiblitz3/github-58a11658/      single files of AmiBlitz3
 #                                           v3.14.0 on GitHub (commit
 #                                           58a1165840a7), paths as there:
-#                                           BigLibs, residents, compiler,
+#                                           BigLibs, residents, compiler
+#                                           and its ab3pft.library,
 #                                           test sources of the AB3 mode,
 #                                           includes used by them
 # None of it is in git (.gitignore); archive/README.md lists the sources.
@@ -60,7 +61,9 @@ foreach(f IN LISTS ab3gh_files)
 endforeach()
 # AmiBlitz3 v3.14.0 (the state the AB3 mode of blitz2-ab3 is built against,
 # docs/ab3/variant.md): its binary BigLibs, a resident, its compiler (the
-# reference of the tests) and test programs, GitHub at the release commit:
+# reference of the tests) with the library it opens (ab3pft.library, the
+# prefix tree of its tokeniser) and test programs, GitHub at the release
+# commit:
 # download name ab3v314-NAME -> archive/amiblitz3/github-58a11658/PATH
 set(ab3v314_commit 58a1165840a7be19d408e727d2fe444c29da91b3)
 set(ab3v314_files
@@ -70,6 +73,7 @@ set(ab3v314_files
 	"BlitzLibs/csLibs|940ea4fc66656df12f73c0566d68e7f463e5521ba455eeb4ef94806eb63fd037"
 	"BlitzLibs/Residents/all.res|87ce951e1fd25984f110c9f6158084b1685d4eaf1dae6619efcc4b854655dc70"
 	"Amiblitz3|4120e8ecae94d2489899175d0758e6f1481e24196ee6c7e922d88e7b2bb51787"
+	"Libs/ab3pft.library|c766118fcedb7eed90f0c7dfe0e742ff55aa51e352318a431c8a7bf425dbf713"
 	"Sourcecodes/Amiblitz3/Tests/atoi.ab3|cb0c4f3df66d6b12ca679c0f90a72d212292f54ddc72ee7b6336c48e0e39d121"
 	"Sourcecodes/Amiblitz3/Tests/compilersignals.ab3|294459511eaeab48a9fb853ee383627323e58699b84ae528e29c492b87e74374"
 	"Sourcecodes/Amiblitz3/Tests/data_restore_in_function.ab3|a6c2575ccc664efd904b016e1deb30d0d047aacc831129eb956cf661d299a824"

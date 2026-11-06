@@ -854,8 +854,16 @@ does not check the lock of the directory: without `Blitz3:Libs` it calls
 `AssignAdd_` with lock 0, which succeeds, so `LIBS:` gets an entry
 without a directory. The removal at the end then fails ("Could not
 remove assign: Blitz3:Libs"), and every compile leaves one more such
-entry. `ab3_cli_ref` therefore has an empty `Libs/` in each Blitz3 tree
-(`tests/ab3/cli.cmake`). `blitz2-ab3` makes no assigns.
+entry. When the removal from `LIBS:` succeeds, AmiBlitz3 also removes
+the assign `Blitz3:` itself (`AmiBlitz3.ab3` 1428-1440), also one it did
+not make: a second AmiBlitz3 after it asks for the volume `Blitz3`. The
+tests (`tests/ab3/cli.cmake`, `tokenise.cmake`) therefore have a `Libs/`
+in each Blitz3 tree and assign `Blitz3:` before every compile. The
+`Libs/` holds AmiBlitz3's `ab3pft.library` (its prefix tree, opened by
+`prefixtree.include.ab3`; v3.14.0's `Libs/ab3pft.library`, fetched):
+without it AmiBlitz3 stops with "Please install ab3pft.library V1.0 or
+higher!" and writes nothing. `blitz2-ab3` makes no assigns and needs no
+library.
 
 ## Measured share of AmiBlitz3's test programs (G3, 2026-11-04)
 

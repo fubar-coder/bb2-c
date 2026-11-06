@@ -26,7 +26,7 @@ if(NOT TIMEOUT)
 	set(TIMEOUT 600)
 endif()
 set(biglibs baseLibs utilLibs OsLibs csLibs)
-set(need ${AB3}/Amiblitz3 ${AB3}/BlitzLibs/Residents/all.res
+set(need ${AB3}/Amiblitz3 ${AB3}/Libs/ab3pft.library ${AB3}/BlitzLibs/Residents/all.res
 	${AB3}/Sourcecodes/Amiblitz3/Tests/atoi.ab3)
 foreach(f IN LISTS biglibs)
 	list(APPEND need ${AB3}/BlitzLibs/${f})
@@ -42,8 +42,12 @@ endforeach()
 
 set(test ${WORK}/test)
 file(REMOVE_RECURSE ${WORK})
+# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: (without the directory the
+# lock 0 of the boot volume, docs/ab3/variant.md) and opens its
+# ab3pft.library from there - the system has none
 file(MAKE_DIRECTORY ${test}/out ${test}/src ${test}/Blitz3/BlitzLibs/Residents
-	${test}/Blitz3/BlitzLibs/UserLibs)
+	${test}/Blitz3/BlitzLibs/UserLibs ${test}/Blitz3/Libs)
+file(COPY_FILE ${AB3}/Libs/ab3pft.library ${test}/Blitz3/Libs/ab3pft.library)
 foreach(f IN LISTS biglibs)
 	file(COPY_FILE ${AB3}/BlitzLibs/${f} ${test}/Blitz3/BlitzLibs/${f})
 	list(APPEND libs ${AB3}/BlitzLibs/${f})
@@ -51,8 +55,11 @@ endforeach()
 file(COPY_FILE ${AB3}/BlitzLibs/Residents/all.res ${test}/Blitz3/BlitzLibs/Residents/all.res)
 file(COPY_FILE ${AB3}/Amiblitz3 ${test}/Blitz3/Amiblitz3)
 
-# the session: one -save per source
-set(script "FailAt 21\nAssign Blitz3: TEST:Blitz3\nCd TEST:src\n")
+# the session: one -save per source, each with its own Assign Blitz3: -
+# AmiBlitz3 removes the assign Blitz3: when it ends (after Blitz3:Libs
+# from LIBS:, AmiBlitz3.ab3 1428-1440 at @58a11658), also one it did not
+# make
+set(script "FailAt 21\nCd TEST:src\n")
 set(names)
 foreach(f IN LISTS SOURCES)
 	get_filename_component(file ${f} NAME)
@@ -62,7 +69,7 @@ foreach(f IN LISTS SOURCES)
 	endif()
 	list(APPEND names ${name})
 	file(COPY_FILE ${f} ${test}/src/${file})
-	string(APPEND script "Blitz3:Amiblitz3 >TEST:out/${name}.log -s ${file} -save TEST:out/${name}.bb2\n")
+	string(APPEND script "Assign Blitz3: TEST:Blitz3\nBlitz3:Amiblitz3 >TEST:out/${name}.log -s ${file} -save TEST:out/${name}.bb2\n")
 endforeach()
 file(WRITE ${WORK}/run.script "${script}")
 execute_process(COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} --dir ${WORK} ${WORK}/run.script
