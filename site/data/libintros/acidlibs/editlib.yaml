@@ -1,0 +1,19 @@
+description: Reading input - a line of text or a number with Edit$ and Edit, and single characters with Inkey$, from the current input channel.
+intro: |
+  These functions read from the current input channel (see
+  [inputoutputlib]({{< relref "/docs/libraries/commands/inputoutputlib" >}})),
+  and what they do depends on it. In a window after `WindowInput`, `Edit$`
+  shows the default text and a cursor and lets the user type a line until
+  Return; after `FileInput` it reads the next line of the file; from the
+  shell window it reads a line typed there.
+
+  ```blitzbasic
+  Print "Your name? "
+  name$=Edit$(40)
+  NPrint "Hello, ",name$
+  ```
+
+  `Characters` limits how many characters can be typed, which keeps the
+  input from running over other things in a window.
+
+  *Based on the editlib guide by Acid Software.*

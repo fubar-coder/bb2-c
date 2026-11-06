@@ -1,0 +1,31 @@
+description: Files - opening, reading and writing files sequentially or as records, with buffered access, positions and lengths.
+intro: |
+  A file is a Blitz object, numbered from 0. `OpenFile`, `ReadFile` and
+  `WriteFile` open one and return true (-1) or false (0), so a program can
+  test whether it worked. Every file goes through a buffer of its own,
+  which makes reading and writing fast, especially when it goes on from
+  one byte to the next; `DosBuffLen` sets its size. Open files are closed
+  when the program ends, but a program should close them with `CloseFile`
+  when it no longer needs them.
+
+  A file can be used in two ways. *Sequentially*, `FileOutput` sends the
+  output of `Print` and `NPrint` into the file, and `FileInput` makes
+  `Edit$`, `Edit` and `Inkey$` read from it, line by line. As *records*,
+  `Fields` names the variables of a record, and `Put` and `Get` write or
+  read record number n of the file:
+
+  ```blitzbasic
+  MaxLen name$=20
+  If OpenFile(0,"RAM:people")
+    Fields 0,name$,age
+    name$="Ada" : age=36
+    Put 0,0
+    CloseFile 0
+  EndIf
+  ```
+
+  `ReadMem` and `WriteMem` move whole blocks of memory, `FileSeek` and
+  `Loc` set and tell the position, and `Lof` and `Eof` tell the length and
+  whether the end is reached.
+
+  *Based on the fileiolib guide by Acid Software.*

@@ -1,0 +1,21 @@
+"DefaultInput":
+  text: Makes the following `Edit$` and `Edit` read from the shell window the program was started from, as at the start of the program.
+"DefaultOutput":
+  text: Sends the output of the following `Print` and `NPrint` commands to the shell window the program was started from, as at the start of the program.
+"PopInput":
+  text: Returns to the input channel that was current before the last switch, for example after `FileInput` or `WindowInput`.
+  notes: |
+    With runtime error checking, popping when nothing is left to pop is
+    the error "No Input channel to pop!"; a pop at the start of the
+    program, before any switch, leaves it without an input channel. Kept from the original: the channels
+    are remembered in a ring of 16 entries, and without error checking
+    popping too often returns old entries
+    ([#194](https://github.com/fubar-coder/bb2-c/issues/194)).
+"PopOutput":
+  text: Returns to the output channel that was current before the last switch, for example after `FileOutput` or `WindowOutput`.
+  notes: |
+    With runtime error checking, popping when nothing is left to pop is
+    the error "No Output channel to pop!"; a pop at the start of the
+    program, before any switch, leaves it without an output channel. Kept from the original: as with
+    `PopInput`, popping too often without error checking returns old
+    entries ([#194](https://github.com/fubar-coder/bb2-c/issues/194)).

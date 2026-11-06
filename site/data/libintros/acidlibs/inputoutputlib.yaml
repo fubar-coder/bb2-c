@@ -1,0 +1,28 @@
+description: Input and output channels - where Print writes and Edit$ reads, the shell window by default, and returning to the previous channel.
+intro: |
+  `Print` and `NPrint` write to the current *output channel*, `Edit$`,
+  `Edit` and `Inkey$` read from the current *input channel*. At the start
+  both are the shell window the program was started from. Other libraries
+  switch them: `WindowOutput` and `WindowInput` to a window, `FileOutput`
+  and `FileInput` to a file. `DefaultOutput` and `DefaultInput` switch
+  back to the shell window.
+
+  Each switch remembers the channel before it, so `PopOutput` and
+  `PopInput` return to the previous channel, for example after writing a
+  file:
+
+  ```blitzbasic
+  If WriteFile(0,"RAM:log")
+    FileOutput 0
+    NPrint "done"
+    PopOutput
+    CloseFile 0
+  EndIf
+  ```
+
+  The default input reads whole lines only: `Inkey$` from it is the
+  runtime error "Can't Input Character from Defualt Input", with the
+  spelling of the original
+  ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
+
+  *Based on the inputoutputlib guide by Acid Software.*

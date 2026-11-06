@@ -1,0 +1,60 @@
+"File":
+  text: The object of an open file, as the introduction describes.
+"OpenFile":
+  text: Opens a file for reading and writing and returns true (-1), or false (0) if it cannot be opened. A file that does not exist is created. A file the object held before is closed first.
+  notes: |
+    Meant for records with `Fields`, `Put` and `Get`, but sequential use
+    works too. Kept from the original: opening into an object whose file
+    had `Fields` can damage the file name
+    ([#138](https://github.com/fubar-coder/bb2-c/issues/138)).
+"ReadFile":
+  text: Opens an existing file for reading and returns true (-1), or false (0) if it cannot be opened; `FileInput` then reads from it. A file the object held before is closed first.
+"WriteFile":
+  text: Creates a new file, replacing one of the same name, and returns true (-1), or false (0) if it cannot be created; `FileOutput` then writes to it. A file the object held before is closed first.
+"CloseFile":
+  text: Writes what is left in the buffer, closes the file and frees its buffer and its record fields.
+  notes: |
+    Kept from the original: the record length stays set after closing
+    ([#140](https://github.com/fubar-coder/bb2-c/issues/140)).
+"KillFile":
+  text: Deletes a file. Nothing tells whether that worked.
+"Fields":
+  text: Names the variables that make up a record of the file, for `Put` and `Get`. A string variable must have a maximum length set with `MaxLen` and must never grow beyond it.
+  notes: |
+    The fields are stored in the file in the reverse order of the list,
+    the last variable first. Kept from the original: a second `Fields`
+    adds to the fields already set instead of replacing them
+    ([#141](https://github.com/fubar-coder/bb2-c/issues/141)).
+"Put":
+  text: Writes the values of the `Fields` variables as record number `Record` (counted from 0) of the file. A new record may only be added right at the end of the file; a record further on is the error "Can't Find Record".
+"Get":
+  text: Reads record number `Record` (counted from 0) of the file into the `Fields` variables. A record that does not exist is the error "Can't Find Record".
+"FileOutput":
+  text: Sends the output of the following `Print` and `NPrint` commands into the file. Before the file is closed, switch the output back, for example with `DefaultOutput` or `WindowOutput`.
+"FileInput":
+  text: Makes the following `Edit$`, `Edit` and `Inkey$` read from the file, a line at a time for `Edit$` and `Edit`. Before the file is closed, switch the input back, for example with `DefaultInput` or `WindowInput`.
+"Lof":
+  text: The length of the file in bytes, including what is still in the buffer.
+"FileSeek":
+  text: Moves to a position in the file; the first byte is position 0. The position may be at most the length of the file, so `FileSeek 0,Lof(0)` goes to the end, to add to the file. A position that cannot be reached is the error "Can't FileSeek Position".
+"Loc":
+  text: The current position in the file; it is 0 after opening.
+"Eof":
+  text: True (-1) if the position is at the end of the file, else false (0). At the end, writing makes the file longer.
+  notes: |
+    Kept from the original: once `Eof` has been true, `Loc` and `Lof` are
+    1 too high ([#144](https://github.com/fubar-coder/bb2-c/issues/144)).
+"DosBuffLen":
+  text: The size in bytes of the buffer of files opened after it; the start value is 2048. A smaller buffer saves memory.
+  notes: |
+    With runtime error checking, a size above 32767 is the error "Illegal
+    Dos Buffer Length".
+"WriteMem":
+  text: Writes `Length` bytes from memory at `Address` into the file.
+"ReadMem":
+  text: Reads `Length` bytes from the file into memory at `Address`. Make sure that memory belongs to the program.
+"Exists":
+  text: The size in bytes of the file, or 0 if it does not exist.
+  notes: |
+    Kept from the original: an empty file also gives 0, and a drawer gives
+    -1 ([#143](https://github.com/fubar-coder/bb2-c/issues/143)).

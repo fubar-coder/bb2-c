@@ -1,0 +1,22 @@
+"Edit$":
+  text: Reads a line of at most `Characters` characters from the current input channel and returns it, without the Return. `DefaultString$` is shown first to be edited, where the channel allows editing.
+  notes: |
+    With runtime error checking, 0 characters is the error "Can't Edit 0
+    Characters!". Kept from the original: at the end of a file read from
+    the shell's input, the result has the length -1
+    ([#132](https://github.com/fubar-coder/bb2-c/issues/132)).
+"Inkey$":
+  text: The characters that are waiting on the current input channel, at most `Characters` (one without it), or "" if there are none. Not for the default input channel.
+  notes: |
+    Kept from the original: `Inkey$(0)` returns a string of a random
+    length ([#128](https://github.com/fubar-coder/bb2-c/issues/128)).
+"Edit":
+  text: Reads a number of at most `Characters` characters from the current input channel, like `Edit$`, and returns its value. `DefaultValue` is shown first to be edited.
+  notes: |
+    With runtime error checking, 0 characters or more than 80 are an
+    error. Kept from the original: the last digit of `DefaultValue` is
+    overwritten by a space
+    ([#129](https://github.com/fubar-coder/bb2-c/issues/129)), and `Edit`
+    only works right if the program has just used the floating point
+    library, whose base it takes from a register
+    ([#130](https://github.com/fubar-coder/bb2-c/issues/130)).
