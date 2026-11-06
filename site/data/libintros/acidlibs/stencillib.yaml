@@ -1,0 +1,16 @@
+description: Stencils - one plane masks of the foreground graphics of a bitmap, for shapes that move behind them.
+intro: |
+  A stencil is a Blitz object, numbered from 0, that marks the pixels of
+  a bitmap's foreground: a mask of one bitplane, set wherever the bitmap
+  has a colour other than 0. `Stencil` makes one from a bitmap, and
+  `SBlit` draws a shape as `Blit` does and adds it to the stencil at the
+  same time. The buffered blitting commands of the bblitlib library use
+  the stencil: after the shapes are drawn with `BBlit`, `ShowStencil`
+  draws the foreground over them again, so that they move behind it.
+
+  ```blitzbasic
+  Stencil 0,0
+  SBlit 0,1,100,50
+  ```
+
+  *Based on the stencillib guide by Acid Software.*

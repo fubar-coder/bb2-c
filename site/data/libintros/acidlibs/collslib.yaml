@@ -1,0 +1,30 @@
+description: Collisions - overlapping shapes, sprites and rectangles, and the hardware collision detection of sprites and bitmaps.
+intro: |
+  The library finds collisions in two ways. `ShapesHit`, `ShapeSpriteHit`,
+  `SpritesHit` and `RectsHit` compare the rectangles that two objects
+  cover at the positions given, taking the handles of shapes and sprites
+  into account. They return true (-1) if the rectangles overlap, else
+  false (0), and work in both modes.
+
+  The hardware of the Amiga also notices when a sprite touches another
+  sprite or a coloured pixel of a bitmap. `SetColl`, `SetCollOdd` and
+  `SetCollHi` choose which bitmap colours count, so that a game can have
+  safe and unsafe colours. `DoColl` reads what the hardware noticed since
+  the last `DoColl`, and `SColl` and `PColl` then tell which sprites
+  collided. These commands work in Blitz mode only.
+
+  ```blitzbasic
+  SetCollOdd
+  Repeat
+    VWait
+    ShowSprite 0,x,100,0
+    DoColl
+    If PColl(0) Then NPrint "Hit!"
+    x+1
+  Until x=300
+  ```
+
+  The hardware notices collisions of sprite pairs: channels 0 and 1, 2
+  and 3, and so on, count together.
+
+  *Based on the collslib guide by Acid Software.*

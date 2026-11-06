@@ -1,0 +1,28 @@
+description: Hardware sprites - sprite objects made from shapes, shown on the channels of a slice, their priority against the playfields, and sprite files.
+intro: |
+  Sprites are small images that the Amiga's hardware shows on top of
+  the display, without changing the bitmaps under them. A sprite is a
+  Blitz object, numbered from 0. `GetaSprite` makes one from a shape of
+  4 or 16 colours, so all the shape commands can prepare its image
+  first; the shape can then be freed to save chip memory. `ShowSprite`
+  shows it on one of the eight sprite channels of the used slice, in
+  Blitz mode:
+
+  ```blitzbasic
+  GetaSprite 0,0
+  Free Shape 0
+  ShowSprite 0,160,100,0
+  ```
+
+  A sprite channel is 16 pixels wide (32 or 64 pixels with the AGA chip
+  set and `SpriteMode`). A wider sprite takes the channels after the one
+  given, and a 16 colour sprite takes two channels for each part, joined
+  as an attached pair. The colours of channels 0 and 1 are colour
+  registers 17 to 19, those of channels 2 and 3 registers 21 to 23, and
+  so on; a 16 colour sprite uses registers 17 to 31.
+
+  `InFront`, `InFrontF` and `InFrontB` decide which sprites appear in
+  front of the bitmaps and which behind them. `SaveSprites` and
+  `LoadSprites` keep sprites in a file of their own.
+
+  *Based on the spriteslib guide by Acid Software.*

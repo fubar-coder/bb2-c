@@ -1,0 +1,32 @@
+description: Palettes and colours - palette objects loaded from IFF files or made in the program, colours of screens and slices, fading, mixing and colour cycling.
+intro: |
+  A palette is a Blitz object, numbered from 0, that holds a list of
+  colours and its colour cycles. `LoadPalette` reads one from an
+  IFF ILBM file, `DecodePalette` from such a file included in the
+  program, and `InitPalette`, `PalRGB`, `AGAPalRGB` and `PaletteRange`
+  make one in the program. Changing a palette object does not change the
+  display: `Use Palette` or `ShowPalette` copy its colours to the used
+  screen (in Amiga mode) or to the used slice (in Blitz mode).
+
+  ```blitzbasic
+  InitPalette 0,32
+  PaletteRange 0,0,31,0,0,0,255,128,0
+  ShowPalette 0
+  ```
+
+  `RGB`, `Red`, `Green` and `Blue` set and read a colour of the screen or
+  slice directly, without a palette object, with components from 0 to
+  15. On a machine with the AGA chip set, the `AGA...` commands do the
+  same with components from 0 to 255; they work in Amiga mode only. A
+  palette holds 8 bits per component, so it keeps AGA colours exactly;
+  `PalRGB` stores a component of 0 to 15 as 0 to 255.
+
+  `FadePalette` and `MixPalette` compute a new palette from one or two
+  others, for fading in and out. `Cycle` lets the colour cycles of a
+  palette run on the used screen, `CyclePalette` moves them one step in
+  the palette object only, for displays of the display library.
+
+  With runtime error checking, a colour or component out of range and a
+  screen or slice that is not there are errors.
+
+  *Based on the palettelib guide by Acid Software.*

@@ -1,0 +1,17 @@
+"Stencil":
+  text: Makes a stencil from a bitmap, set at every pixel that is not colour 0 in any of its bitplanes. An old stencil of the object is freed first.
+  notes: |
+    Kept from the original: the stencil is right only for bitmaps of up
+    to 1024 lines and 1024 pixels in width
+    ([#284](https://github.com/fubar-coder/bb2-c/issues/284)).
+"SBlit":
+  text: Draws a shape into the used bitmap as `Blit` does, at `X,Y` minus the shape's handle, and adds the shape's pixels to the stencil at the same position.
+  notes: |
+    The shape needs a cookie. `Excessonoff` sets the bitplanes of the
+    bitmap beyond the shape's depth: bit 0 for the first of them, bit 1
+    for the next and so on, each set to 1 or cleared to 0 under the
+    shape. With runtime error checking, a stencil that has not been made
+    is the error "Uninitialized Stencil", a shape without a cookie "Shape
+    does not have a cookie cut".
+"SBlitMode":
+  text: The blitter mode (the value of the BLTCON0 register) with which `SBlit` draws a shape; the start value is $FCA, as for `BlitMode`. The stencil is always added to in the same way.

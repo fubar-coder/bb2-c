@@ -1,0 +1,55 @@
+description: Blitz mode displays for ECS and AGA - copper lists with bitmaps, sprites and palettes, and line by line colour, scroll and zoom effects.
+intro: |
+  The display library builds the picture of a Blitz mode program from
+  copper lists, the programs of the Amiga's copper chip. A copper list
+  is a Blitz object, numbered from 0, called a CopList. `InitCopList`
+  sets one up for a part of the screen: its position and height, the
+  number of bitplanes, the resolution and the sprites and colours it
+  can show. `CreateDisplay` shows one or more of them, from top to
+  bottom. `DisplayBitMap`, `DisplaySprite` and `DisplayPalette` then
+  put bitmaps, sprites and colours into the lists; they take effect at
+  once, also while the display is shown.
+
+  ```blitzbasic
+  BitMap 0,320,256,5
+  LoadBitMap 0,"picture.iff",0
+  InitCopList 0,44,256,5,8,32,0
+  BLITZ
+  CreateDisplay 0
+  DisplayPalette 0,0
+  DisplayBitMap 0,0
+  ```
+
+  The `type` of `InitCopList` is the number of bitplanes plus these
+  values:
+
+  | Value | Meaning |
+  |---|---|
+  | $10 | smooth scrolling: `DisplayBitMap` with a position |
+  | $20 | dual playfield, two bitmaps |
+  | $40 | extra half brite, 32 colour registers |
+  | $80 | hold and modify (HAM) |
+  | $000, $100, $200 | low, high or super high resolution |
+  | $400, $800, $C00 | low, high or super high resolution sprites |
+  | $0000, $1000, $2000, $3000 | fetch mode 0 to 3 |
+  | $10000 | 24 bit (AGA) palette |
+
+  Without the AGA chip set, only fetch mode 0 and low resolution sprites
+  are allowed.
+
+  A copper list can also have room for *custom copper instructions*,
+  given by `numcustoms` in `InitCopList`. A positive number reserves that
+  many instructions in one block, which `CustomColors`, `CustomString`,
+  `CustomSprites` and `CustomChunky` fill at a line of their choice,
+  `CCOffset` instructions into the block. A negative number reserves that
+  many instructions on every line, for the line by line effects
+  `DisplayDblScan`, `DisplayRainbow`, `DisplayRGB`, `DisplayUser` and
+  `DisplayScroll`. The comment after a command's form tells how many
+  instructions it needs, as ecs and aga counts where they differ.
+
+  With runtime error checking, a CopList that is not initialised is the
+  error "Uninitialised CopList", and a command that needs more custom
+  instructions than there are is "Not Enough Custom Cops" or "Not Enough
+  Custom Copper Space".
+
+  *Based on the displaylib guide by Acid Software.*

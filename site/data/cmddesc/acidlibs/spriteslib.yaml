@@ -1,0 +1,57 @@
+"Sprite":
+  text: The object of a sprite, its image in chip memory and its handle, as the introduction describes.
+"GetaSprite":
+  text: Makes a sprite from a shape of 4 or 16 colours, with the shape's handle. The old image of the sprite is freed.
+  notes: |
+    With runtime error checking, a shape of another number of colours is
+    the error "Shape MUST be 4 or 16 colours", one too wide for the
+    sprite channels "Sprite too Wide". Kept from the original: the image
+    is read in the full width of a channel, also beyond the right edge of
+    a narrower shape
+    ([#282](https://github.com/fubar-coder/bb2-c/issues/282)).
+"ShowSprite":
+  text: Shows a sprite on the used slice at `X,Y`, always in low resolution pixels, through sprite channel `Sprite Channel` (0 to 7) and, for a wide or 16 colour sprite, the channels after it. Blitz mode only.
+  notes: |
+    The sprite is cut at the top and the bottom of the slice, and
+    switched off when it is completely outside. With runtime error
+    checking, a channel the sprite does not fit into is the error "Sprite
+    Channel Unavailable". Kept from the original: in the 32 and 64 pixel
+    modes, a sprite cut at the top shows the wrong lines
+    ([#283](https://github.com/fubar-coder/bb2-c/issues/283)).
+"InFront":
+  text: Sprites on channels from `Sprite Channel` on appear behind the bitmaps of the used slice, those on lower channels in front of them. `Sprite Channel` is an even number from 0 to 8. Blitz mode only.
+  notes: |
+    After `InFront 4`, sprites on channels 0 to 3 appear in front of the
+    bitmaps and those on channels 4 to 7 behind them. For a dual
+    playfield slice, use `InFrontF` and `InFrontB`.
+"InFrontF":
+  text: As `InFront`, for the foreground playfield of a dual playfield slice. Blitz mode only.
+  notes: |
+    With `InFrontF` and `InFrontB` together, sprites can appear at three
+    depths: in front of both playfields, between them, and behind both.
+"InFrontB":
+  text: As `InFront`, for the background playfield of a dual playfield slice. Blitz mode only.
+"SaveSprites":
+  text: Saves the sprites from the first `Sprite#` to the second into a file. Amiga mode only.
+  notes: |
+    A file that cannot be opened is the error "Can't open Sprites file",
+    a failed write "Error reading/writing Sprites file". Kept from the
+    original: a sprite made before a change of `SpriteMode` is saved with
+    the size of the new mode
+    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+"LoadSprites":
+  text: Loads sprites saved with `SaveSprites` into the sprite objects from the first `Sprite#` on, up to the second if it is given. Amiga mode only.
+  notes: |
+    When the file has fewer sprites than the range, the other objects stay
+    as they are. The errors are those of `SaveSprites`. Kept from the
+    original: the size of a sprite's image depends on the `SpriteMode` at
+    the time of loading
+    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+"SpriteMode":
+  text: The width of the sprite channels for the sprites made and shown after it, 0 for 16, 1 for 32 and 2 for 64 pixels. The wider modes need the AGA chip set and a display of the display library set up for them.
+  notes: |
+    Kept from the original: the mode is not checked, and a mode above 2
+    gives a wrong width
+    ([#281](https://github.com/fubar-coder/bb2-c/issues/281)); a sprite
+    made in another mode is later freed with the wrong size
+    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).

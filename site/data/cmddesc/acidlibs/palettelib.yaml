@@ -1,0 +1,85 @@
+"Palette":
+  text: The object of a palette, its colours and colour cycles, as the introduction describes.
+"LoadPalette":
+  text: Loads the colours and colour cycles of an IFF ILBM file into a palette object, from colour register `Palette Offset` on if it is given. The display does not change. Amiga mode only.
+  notes: |
+    The offset helps for sprite colours, which start at colour register
+    16. A file that cannot be opened is the error "Can't Open IFF", a file
+    without colours the error "Can't find IFF 'CMAP'".
+"DecodePalette":
+  text: As `LoadPalette`, but reads the IFF ILBM data from memory, for example from a file included in the program with `IncBin`.
+  notes: |
+    Kept from the original: the chunks of the data are read without
+    their pad bytes, so a chunk of odd length before the colours breaks
+    it ([#225](https://github.com/fubar-coder/bb2-c/issues/225)); and a
+    palette too small for the colours at the offset is cleared first
+    ([#226](https://github.com/fubar-coder/bb2-c/issues/226)).
+"InitPalette":
+  text: Gives a palette room for `NumColors` colours, all black; its old colours are freed.
+  notes: |
+    Kept from the original: the colour cycles of the palette are not
+    cleared ([#229](https://github.com/fubar-coder/bb2-c/issues/229)).
+"PalRGB":
+  text: Sets a colour of a palette object, with components from 0 to 15. The palette grows if needed; the display changes with the next `Use Palette` or `ShowPalette`.
+"AGAPalRGB":
+  text: Sets a colour of a palette object, with components from 0 to 255. The palette grows if needed; the display changes with the next `Use Palette` or `ShowPalette`.
+"ShowPalette":
+  text: Copies the colours of a palette to the used screen (Amiga mode) or to the used slice (Blitz mode), as many as the slice has.
+  notes: |
+    Without the AGA chip set, a screen gets at most 32 colours, with 4
+    bits per component.
+"NewPaletteMode":
+  text: With `On`, `Use Palette` only makes the palette the used one and leaves the display alone; with `Off`, the start value, it also shows the palette as `ShowPalette` does.
+"RGB":
+  text: Sets a colour register of the used screen (Amiga mode) or slice (Blitz mode) to components from 0 to 15. No palette object changes.
+"Red":
+  text: The red component, from 0 to 15, of a colour register of the used screen (Amiga mode) or slice (Blitz mode).
+"Green":
+  text: The green component, from 0 to 15, of a colour register of the used screen (Amiga mode) or slice (Blitz mode).
+"Blue":
+  text: The blue component, from 0 to 15, of a colour register of the used screen (Amiga mode) or slice (Blitz mode).
+"AGARGB":
+  text: Sets a colour register of the used screen to components from 0 to 255. It needs the AGA chip set and works in Amiga mode only.
+"AGARed":
+  text: The red component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+  notes: |
+    Without a used screen this is the error "Uninitialized Screen".
+"AGAGreen":
+  text: The green component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+"AGABlue":
+  text: The blue component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+"SetCycle":
+  text: Sets colour cycle number `Cycle` (0 to 6) of a palette, for the colours from `Low Colour` to `High Colour`. `Speed` goes from -1 to 1; 1, the start value, moves the colours one step per frame, and a negative speed moves them the other way.
+  notes: |
+    Cycles must be set in order: a cycle more than one after the last one
+    set is the error "Cycles must be added in order, you silly sausage!".
+"Cycle":
+  text: Lets the colour cycles of a palette run on the used screen, in the background, until `StopCycle`. Amiga mode only.
+"StopCycle":
+  text: Stops the colour cycling that `Cycle` started.
+  notes: |
+    Kept from the original: after `StopCycle`, a new `Cycle` does not
+    start the cycling again
+    ([#228](https://github.com/fubar-coder/bb2-c/issues/228)).
+"CyclePalette":
+  text: Moves the colours of the cycles of a palette that are due by one step, in the palette object only; nothing is shown. Call it once per frame and show the palette, for example with a display of the display library.
+"FadePalette":
+  text: Multiplies every colour of `SrcPalette#` by `Brightness` and puts the result into `DestPalette#`; 1 keeps the colours, 0 makes them black, and values above 1 brighten them up to full brightness.
+  notes: |
+    Nothing happens when the destination has fewer colours than the
+    source. Called in a loop with a falling brightness, followed by
+    `ShowPalette`, it fades the display out.
+"PaletteRange":
+  text: Fills the colours from `StartCol` to `EndCol` of a palette with a gradient from `r0,g0,b0` to `r1,g1,b1`, components from 0 to 255, like the spread of Deluxe Paint.
+  notes: |
+    Nothing happens when `EndCol` is less than `StartCol` or the range is
+    larger than the palette. Kept from the original: `StartCol` equal to
+    `EndCol` divides by zero
+    ([#227](https://github.com/fubar-coder/bb2-c/issues/227)).
+"DuplicatePalette":
+  text: Copies the colours, not the cycles, of `SrcPalette#` into `DestPalette#`, which gets the same number of colours.
+"MixPalette":
+  text: Mixes two palettes into `DestPalette#`, `fraction` of the first and the rest of the second; 1 gives the first palette, 0 the second.
+  notes: |
+    The destination gets as many colours as the first palette has; make
+    sure it has room for them, for example with `InitPalette`.

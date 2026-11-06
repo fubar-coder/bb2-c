@@ -1,0 +1,32 @@
+"ShapesHit":
+  text: True (-1) if the rectangles of two shapes at the positions given overlap, else false (0). The handles of the shapes are taken into account.
+"ShapeSpriteHit":
+  text: True (-1) if the rectangles of a shape and a sprite at the positions given overlap, else false (0). The handles of both are taken into account.
+"SpritesHit":
+  text: True (-1) if the rectangles of two sprites at the positions given overlap, else false (0). The handles of the sprites are taken into account.
+"RectsHit":
+  text: True (-1) if the two rectangles, each given by its top left corner, width and height, overlap, else false (0).
+"SetColl":
+  text: Makes a collision of a sprite with bitmap colour `Colour` count, in a bitmap of `Bitplanes` bitplanes (1 to 6). In a dual playfield slice, `Playfield` 1 means the colour of the front bitmap, 2 that of the back bitmap.
+  notes: |
+    Kept from the original: 0 bitplanes is not caught without runtime
+    error checking and loops a long time
+    ([#111](https://github.com/fubar-coder/bb2-c/issues/111)).
+"SetCollOdd":
+  text: Makes collisions of sprites with the odd colours of a bitmap (1, 3, 5 ...) count, and those with the even colours not.
+"SetCollHi":
+  text: Makes collisions of sprites with every colour that has the highest of `Bitplanes` bitplanes set count, the upper half of the colours.
+"DoColl":
+  text: Reads the collisions the hardware noticed since the last `DoColl`. `SColl` and `PColl` then return these until the next `DoColl`. Blitz mode only.
+  notes: |
+    Before `PColl`, one of `SetColl`, `SetCollOdd` and `SetCollHi` must
+    have chosen the colours that count.
+"SColl":
+  text: True (-1) if the sprites on the two channels collided, as `DoColl` read it, else false (0). Blitz mode only.
+  notes: |
+    Kept from the original: the answer is right only with the lower
+    channel first; with channel 0 or 1 second, or two channels of the
+    same pair, another collision is tested
+    ([#110](https://github.com/fubar-coder/bb2-c/issues/110)).
+"PColl":
+  text: True (-1) if the sprite on the channel collided with a bitmap colour that counts, as `DoColl` read it, else false (0). Blitz mode only.

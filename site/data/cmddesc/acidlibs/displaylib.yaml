@@ -1,0 +1,105 @@
+"CopList":
+  text: The object of a copper list for a part of the display, as the introduction describes.
+"InitCopList":
+  text: Sets up a copper list for `height` lines from line `ypos`, with the `type` the introduction describes, room for `sprites` sprites (normally 8), `colors` colours (up to 256) and `numcustoms` custom copper instructions. The list becomes the used one.
+  notes: |
+    The short form `InitCopList CopList#,type` makes a list for 256 lines
+    from line 44, with 8 sprites, as many colours as the bitplanes give
+    and no custom instructions. An old list of the object is freed
+    first. More bitplanes than the resolution allows are the error
+    "Illegal Number of BitPlanes for Resolution".
+"CreateDisplay":
+  text: Shows one or more copper lists, linked one after the other. Give them in the order of their position on the screen; they must not overlap. Blitz mode only.
+  notes: |
+    The bitmaps, colours and sprites already in the lists stay as they
+    are.
+"DisplayBitMap":
+  text: Shows a bitmap, or two bitmaps for a dual playfield list, in a copper list, at the position `x,y` of the bitmap if it is given.
+  notes: |
+    The position needs a list with smooth scrolling in its type. With
+    the AGA chip set, the fractional part of `x` scrolls low and high
+    resolution lists in finer steps than a pixel.
+"DisplaySprite":
+  text: Shows a sprite in a copper list at `X,Y`, on the sprite channel given and, for a wide sprite, the channels after it. Super high resolution positions and wide sprites are supported.
+  notes: |
+    A sprite that has not been made is the error "Uninitialised Sprite",
+    one that needs more channels than the list has "Not Enough Sprite
+    Channels". The channels after the list's own sprites are those of
+    `CustomSprites`.
+    Kept from the original: a sprite that spans the last normal channel
+    and the first channel of `CustomSprites` overwrites other parts of
+    the list ([#414](https://github.com/fubar-coder/bb2-c/issues/414)).
+"DisplayPalette":
+  text: Copies the colours of a palette into a copper list, from colour `coloroffset` of the palette on and, with the AGA chip set, into colour bank `bankoffset`.
+  notes: |
+    More than 32 colours need the 24 bit palette in the list's type;
+    otherwise this is the error "Need AGA palette mode ($10000) for this
+    many colors".
+"DisplayControls":
+  text: Changes the control registers BPLCON2, BPLCON3 and BPLCON4 of a copper list. The values are combined by exclusive or with the values the list has.
+  notes: |
+    The lists start with BPLCON2 = $224, BPLCON3 = $C00 and BPLCON4 =
+    $11. BPLCON2 sets the priority of playfields and sprites, BPLCON3
+    the colour bank and the colour offset of the second playfield, and
+    BPLCON4 the colour offsets of the sprites and of the bitplanes. For
+    example, this fetches the sprite colours from registers 240 to 255
+    instead of 16 to 31:
+
+    ```blitzbasic
+    DisplayControls 0,0,0,$EE
+    ```
+
+    The bits are those of the AGA chip set; the Amiga hardware
+    documentation describes them.
+"DisplayAdjust":
+  text: Adds the values given to the fetch width and to the data fetch (DDFSTRT, DDFSTOP) and display window (DIWSTRT, DIWSTOP) registers of a copper list, for displays wider or narrower than the standard.
+"DisplayGenlock":
+  text: Bits that copper lists set up after it add to their BPLCON0 register; 2 uses an external sync signal, 4 makes the display interlaced.
+"CustomColors":
+  text: Changes `numcols` colours from `startcol` on to those of a palette at line `YPos`, through the custom copper instructions from `CCOffset` on. An ECS list needs 2+n instructions, an AGA list 2+n+n+n/16.
+  notes: |
+    A large AGA palette change can take several lines of the
+    display. Give
+    `thru256flag` for a change below line 256. Kept from the original:
+    its value is not read, so 0 acts as 1
+    ([#951](https://github.com/fubar-coder/bb2-c/issues/951)).
+"CustomString":
+  text: Puts the copper instructions in `Copper$`, four bytes each, at line `YPos`, through the custom copper instructions from `CCOffset` on.
+  notes: |
+    A string that is empty or whose length is not a multiple of 4 is the
+    error "Custom Copper String Must Be Multiple Of 4 Bytes Silly!".
+"CustomSprites":
+  text: Sets up `NumSprites` further sprites from line `YPos` on, through the custom copper instructions; `DisplaySprite` shows them on the channels after the list's own sprites, 8 to 15 for a list with 8. It needs 4n+2 instructions.
+  notes: |
+    Kept from the original: the offset is taken 16 times too large, and
+    the sprites are not set up right
+    ([#324](https://github.com/fubar-coder/bb2-c/issues/324),
+    [#413](https://github.com/fubar-coder/bb2-c/issues/413)).
+"CustomChunky":
+  text: Makes a chunky area of `width` by `height` blocks from line `YPos` on, each block a colour register changed by the copper, `res` lines high; with `splitpos`, the area is split into two parts. AGA only.
+  notes: |
+    `CustomChunkySize` gives the number of custom instructions it needs.
+    `YPos` must be greater than `res`. Kept from the original: the split
+    form changes the position of high and super high resolution sprites
+    shown later with `DisplaySprite`
+    ([#949](https://github.com/fubar-coder/bb2-c/issues/949)).
+"CustomChunkySize":
+  text: The number of custom copper instructions `CustomChunky` needs for an area of `width` by `height`.
+"DisplayDblScan":
+  text: Repeats the lines of the bitmap shown, to zoom the display vertically; mode 0 switches it off, mode 1 shows every line twice, and the higher modes repeat lines more often. It needs 2 line by line instructions.
+  notes: |
+    Set up the list with a negative `numcustoms` in `InitCopList`, for
+    example -2. `copoffset` is the place of the instructions in each
+    line's block.
+"DisplayRainbow":
+  text: Gives colour register `Register` a new colour on every line, colour n of a palette on line n. It needs 1 (ECS) or 4 (AGA) line by line instructions.
+"DisplayRGB":
+  text: Gives colour register `Register` the colour `r,g,b` from line `line` on. It needs 1 (ECS) or 4 (AGA) line by line instructions.
+"DisplayUser":
+  text: Puts the copper instructions in `String`, four bytes each, into the line by line instructions of line `Line`, at `Offset` in them.
+"DisplayScroll":
+  text: Scrolls every line of the display by its own amount. The two arrays hold, for each line, the difference of the horizontal position to the line above, for the two playfields. It needs 3 line by line instructions.
+  notes: |
+    Use it after `DisplayBitMap`, from whose position it starts. With
+    the AGA chip set, the fractional parts of the values position in
+    steps finer than a pixel.
