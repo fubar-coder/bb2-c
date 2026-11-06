@@ -114,7 +114,7 @@ d5-d7, a0-a3 and a6 in places.
 
 * Counts of 0 (D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord;
   D_CheckNMoveWord also $8000) run the DBRA 65536 times; GetDataItem with
-  size 0 or less reads 65536 bytes or more (#701).
+  size 0 reads 65536 bytes, a negative size fewer (-1: 65535) (#701).
 * D_HexWord at an odd source writes "XX YY" per word, without the space
   the even case writes behind each word (#715).
 * The "below $420" tests compare signed: addresses from $80000000 show
@@ -181,7 +181,7 @@ words, even and odd source, from $41C/$41B/$41F and $FFFFFFF0);
 D_CheckNMove/A/Word (both forms, 1-5, zero bytes, below $420 and from
 $FFFFFFF0); D_FindStringPtr (found, the long at areg5, not found, 0);
 PeekMax$ (max -1..100); GetHex$/GetHexAdr$ (modes 0-4, $101, $FF02);
-GetDataItem (sizes 1-5, $7FFF, 0 and -1: 65536 bytes, below $420,
+GetDataItem (sizes -1..5, $7FFF, 0: 65536 bytes, -1: 65535, below $420,
 $80000000); GetProgMode; GetCopIns$ (14 instructions: MOVE, WAIT, SKIP,
 odd digits, BFD); GetCustomReg for $000-$1FD and 6 more (above $1FC, a
 negative long); GetCustomRegAdr for every name and 16 more (prefixes,

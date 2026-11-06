@@ -48,7 +48,8 @@
  *     the register (MOVE.b): a byte + mapnull beyond 255 carries into the
  *     following values (#898).
  *   - The DBRA loops (MapDataGrab, ShapeTo1616, FillBitplane) run 65536
- *     times for a size of 0 (#895); ShapeTo1616 copies a word from every
+ *     times for a size of 0 (FillBitplane also for a width below 16)
+ *     (#895); ShapeTo1616 copies a word from every
  *     row regardless of the destination's size (#900).
  *   - M_InitParse copies without limit into its 256-byte buffer (the
  *     pointer behind it is overwritten by a longer string) (#897).
@@ -605,9 +606,9 @@ BLITZ_THUNK(_shapemaskfill, shapemaskfill_c, "d0-d1/a0-a1");
  * @brief FillBitplane bitmap#,width,height: a mesh in plane 0 of a bitmap.
  *
  * Plane 0 of the bitmap object (a struct BitMap: its ebwidth at 0,
- * planes at 8) gets width/16 words per row (at least one: DBRA) of
- * $5555/$AAAA, alternating per row.  BUG(orig) (#895): height 0 -> 65536
- * rows.  DIFF: a2 unchanged (the original uses it as its pointer).
+ * planes at 8) gets width/16 words per row (65536 for a width below 16:
+ * DBRA from -1) of $5555/$AAAA, alternating per row.  BUG(orig) (#895):
+ * height 0 -> 65536 rows.  DIFF: a2 unchanged (the original uses it as its pointer).
  * @param w   d1: the width in pixels
  * @param h   d2: the height in rows
  * @param bm  a0: the bitmap object (#ia0|#pd0)

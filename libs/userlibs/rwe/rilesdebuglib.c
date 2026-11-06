@@ -46,7 +46,8 @@
  * BUG(orig), kept:
  *   - D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord with count
  *     0 (D_CheckNMoveWord also $8000) run 65536 times (DBRA); GetDataItem
- *     with size 0 or below reads 65536 bytes or more (DBRA) (#701).
+ *     with size 0 reads 65536 bytes, with a negative size fewer (-1: 65535)
+ *     (DBRA) (#701).
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
  *     space behind it that the even case writes (#715).
  *   - The "address below $420" checks compare signed: addresses from
@@ -800,8 +801,8 @@ static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode 
  * @brief GetDataItem(address,size): the byte, word or long at an address.
  *
  * Read byte by byte (also at odd addresses); size 3 or more: a long.
- * Size 0 or below reads 65536 bytes or more (DBRA from -1, BUG(orig)
- * (#701)).
+ * Size 0 reads 65536 bytes, a negative size fewer (-1: 65535; DBRA from
+ * the word size-1, BUG(orig) (#701)).
  * @param addr  d0: the address
  * @param size  d1.w: 1 byte, 2 word, otherwise long
  * @return d0: the value, 0 for an address below $420 (a signed compare:

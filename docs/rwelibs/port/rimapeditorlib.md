@@ -38,7 +38,8 @@ name.l (18, a maxslib string), changed.w (22), the last address of
   `ScanMaxWidth`, `ScanMaxheight`, `ScanMaxdepth`); returns the last
   number.
 * `FillBitplane bitmap#,width,height` – a mesh in plane 0 (width/16
-  words of $5555/$AAAA per row, alternating).
+  words of $5555/$AAAA per row, alternating; a width below 16 gives
+  65536 words per row, #895).
 * `MapOutText`, `MapOutTextCenter`, `MapOutTextRight x,y,rastport,string`
   – `Move` to x (centred: − length/2, right: − (length − 1)), y + the
   font's baseline, then `Text`; `MapOutTextPen rastport,pen` – `SetAPen`.
@@ -99,7 +100,8 @@ loop optimisation (no `__mulsi3`).
   the register (`MOVE.b`): a byte + mapnull beyond 255 carries into the
   following values (#898).
 * The `DBRA` loops (`MapDataGrab`, `ShapeTo1616`, `FillBitplane`) run
-  65536 times for a size of 0 (#895); `ShapeTo1616` writes 16 words per
+  65536 times for a size of 0 (`FillBitplane` also for a width below 16)
+  (#895); `ShapeTo1616` writes 16 words per
   plane regardless of the destination's size (#900).
 * `M_InitParse` copies without limit into its 256-byte buffer (a longer
   string overwrites the pointer behind it) (#897).
