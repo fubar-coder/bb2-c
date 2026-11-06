@@ -15,8 +15,9 @@ intro: |
   binary number after `%`, one of the registers `d0` to `d7`, `a0` to
   `a7` and `pc` of a block set with `PFRegisters`, or a value read from
   memory: `{address}` reads the long at the address, `{address}.w` a word
-  and `{address}.b` a byte. A `-` in front of an operand makes it
-  negative. The operators, from the lowest precedence to the highest:
+  and `{address}.b` a byte. A `-` in front of a number or register makes it
+  negative; before a bracket it is taken as subtraction (see
+  `ConvToPostFix`). The operators, from the lowest precedence to the highest:
 
   - `=` (equal), `&` (bitwise and) and `|` (bitwise or),
   - `<` and `>`,
