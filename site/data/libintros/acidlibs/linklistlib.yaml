@@ -1,0 +1,29 @@
+description: List arrays - adding, removing, walking and sorting the items of arrays made with Dim List.
+intro: |
+  `Dim List` makes a *list array*: an array whose elements are linked in
+  a list, in any order, with a *current item*. Its size is the most items
+  it can hold; the items not in use are kept apart. These commands add
+  items, remove them and move the current item, and the array's name
+  with empty brackets, such as `a()`, stands for the current item.
+
+  ```blitzbasic
+  Dim List a(10)
+  While AddLast(a())
+    a()=Rnd(100)
+  Wend
+  ResetList a()
+  While NextItem(a())
+    NPrint a()
+  Wend
+  ```
+
+  The functions that add an item or move to one return true (-1) if
+  there was one, and false (0) if not, for example when the array is
+  full or the end of the list is reached. `PushItem` and `PopItem` keep
+  the current item on a stack, to walk a list in a loop inside another
+  walk of it.
+
+  With runtime error checking, an array that is not a list array is the
+  error "Array is not a List".
+
+  *Based on the linklistlib guide by Acid Software.*

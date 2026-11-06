@@ -13,7 +13,7 @@ intro: |
   `GetRexxCommand` reads and `ReplyRexxMsg` answers.
 
   ```blitzbasic
-  ; port.l is the address of a public message port named "MYHOST"
+  port.l=CreateMsgPort("MYHOST")
   msg.l=CreateRexxMsg(port,"rexx","MYHOST")
   SendRexxCommand msg,"myscript",$01020000 ; RXCOMM with RXFF_RESULT
   ```

@@ -1,0 +1,26 @@
+description: Memory banks - blocks of memory as numbered objects, loaded from and saved to files, and plain memory allocation.
+intro: |
+  A bank is a Blitz object, numbered from 0, that holds a block of
+  memory: for data such as a level map, a sample or a file to be read
+  with `Peek`. `InitBank` gives a bank memory of a size and type,
+  `LoadBank` fills it from a file and makes it as large as the file if
+  needed, and `SaveBank` writes it to a file. `Bank` and `BankSize` give
+  its address and size.
+
+  ```blitzbasic
+  LoadBank 0,"level1.dat"
+  For i=0 To BankSize(0)-1
+    v=Peek.b(Bank(0)+i)
+  Next
+  ```
+
+  The memory type is the sum of the system's memory flags: 0 any memory,
+  1 public, 2 chip memory (for graphics and sound), and 65536 to clear it.
+  `AllocMem` and `FreeMem` give plain memory blocks of a type without a
+  bank. The memory of banks and of `AllocMem` that the program does not
+  free is freed when it ends.
+
+  Nothing reports errors: a file that cannot be loaded or saved is left
+  alone.
+
+  *Based on the banklib guide by Acid Software.*

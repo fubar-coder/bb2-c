@@ -1,0 +1,23 @@
+"Bank":
+  text: The address of the memory of the bank, or 0 if the bank is not in use.
+"BankLoc":
+  text: The address of the memory of the bank, as `Bank`.
+"BankSize":
+  text: The size of the bank in bytes.
+"InitBank":
+  text: Gives the bank `size` bytes of memory of the type `memtype`; the old memory of the bank is freed first. A size of 0 only frees the bank.
+"FreeBank":
+  text: Frees the memory of the bank.
+"LoadBank":
+  text: Loads a file into the bank. The bank gets new memory of the file's size if it is smaller than the file, not in use, or of another memory type than `memtype`; without `memtype`, the bank's type is kept. Nothing happens for a file that does not exist or is empty.
+  notes: |
+    A bank larger than the file keeps its size, and its bytes after the
+    file's data stay as they were. Kept from the original: the name of a
+    drawer instead of a file can leave the bank with a wrong size
+    ([#72](https://github.com/fubar-coder/bb2-c/issues/72)).
+"SaveBank":
+  text: Writes the memory of the bank into a new file; nothing for a bank not in use.
+"AllocMem":
+  text: A block of `size` bytes of memory of the type `memtype`, as its address. It is freed when the program ends, or before with `FreeMem`.
+"FreeMem":
+  text: Frees a block of memory from `AllocMem`; give the same size.

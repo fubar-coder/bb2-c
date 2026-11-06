@@ -1,0 +1,17 @@
+description: Memory access - reading and writing bytes, words, longs, numbers and strings at an address, and calling machine code.
+intro: |
+  `Peek` reads and `Poke` writes a value at a memory address, of the type
+  given by the suffix: `.b` a byte, `.w` a word, `.l` a long, `.q` a quick,
+  `.f` a float and `.s` or `$` a string. Without a suffix, the default
+  type of the program is used. `Peeks$` reads a string of a given length,
+  and `Call` jumps to machine code.
+
+  ```blitzbasic
+  buf.l=AllocMem(100,65536)
+  Poke.w buf,1234
+  Poke$ buf+2,"Hello"
+  NPrint Peek.w(buf)," ",Peek$(buf+2)
+  ```
+
+  These commands do not check the address: writing to memory the
+  program does not own can crash the system.

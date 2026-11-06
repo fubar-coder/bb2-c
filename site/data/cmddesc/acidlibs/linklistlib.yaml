@@ -1,0 +1,42 @@
+"AddItem":
+  text: Adds an item after the current one, or at the beginning without a current item, and makes it the current one. False (0) if the array is full.
+"AddFirst":
+  text: Adds an item at the beginning of the list and makes it the current one. False (0) if the array is full.
+"AddLast":
+  text: Adds an item at the end of the list and makes it the current one. False (0) if the array is full.
+"FirstItem":
+  text: Makes the first item the current one. False (0) if the list is empty.
+"LastItem":
+  text: Makes the last item the current one. False (0) if the list is empty.
+"NextItem":
+  text: Makes the item after the current one the current one, or the first item without a current item. False (0) at the end of the list, where the current item stays.
+"PrevItem":
+  text: Makes the item before the current one the current one, or the last item without a current item. False (0) at the beginning of the list.
+"ResetList":
+  text: Leaves the list without a current item, so that the next `NextItem` gives the first item and the next `PrevItem` the last.
+"KillItem":
+  text: Removes the current item from the list; the item before it becomes the current one, or none if it was the first.
+  notes: |
+    With runtime error checking, a list without a current item is the
+    error "No Current Item".
+"ClearList":
+  text: Removes all items from the list; there is no current item afterwards.
+"PushItem":
+  text: Puts the list and its current item on the item stack, for `PopItem`.
+  notes: |
+    With runtime error checking, a full stack is the error "Current Stack
+    overflow"; without it, nothing is checked.
+"PopItem":
+  text: Makes the item last put on the item stack the current item of the list again.
+  notes: |
+    With runtime error checking, an empty stack is the error "Current
+    Stack Empty", and a stack whose top belongs to another list "Wrong
+    Array on Stack".
+"ItemStackSize":
+  text: Makes a new, empty item stack for `Max Items` items; the stack holds 8 at the start.
+"SortList":
+  text: Sorts the items of the list into ascending order of a long in each item, given by its offset, for example `SizeOf .type\field`. The current item stays the same item.
+  notes: |
+    Kept from the original: values more than 2^31 apart are compared the
+    wrong way round
+    ([#201](https://github.com/fubar-coder/bb2-c/issues/201)).

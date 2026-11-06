@@ -1,0 +1,8 @@
+"Poke":
+  text: Writes `Data` at `Address`, as the type of the suffix; a string is written with a zero byte after it.
+"Peek":
+  text: The value at `Address`, as the type of the suffix; a string is read up to its first zero byte.
+"Peeks$":
+  text: A string of the `Length` bytes from `Address` on, zero bytes included.
+"Call":
+  text: Jumps to the machine code at `Address`; the code returns to the program with `RTS`.

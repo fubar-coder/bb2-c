@@ -1,0 +1,16 @@
+description: Packed data - crunching with the Imploder and unpacking Imploder, Crunch-Mania and PowerPacker data in memory.
+intro: |
+  These commands pack and unpack data in memory with the packers that
+  were common on the Amiga. `Implode` packs a buffer with the Imploder
+  method and `Deplode` unpacks it again; `CrMDecrunch` unpacks
+  Crunch-Mania data and `PPDecrunch` PowerPacker data. A file is loaded
+  into memory first, for example with `LoadBank` or `ReadMem`.
+
+  ```blitzbasic
+  n.l=Implode(Bank(0),BankSize(0))
+  If n>0 Then NPrint "Packed to ",n," bytes"
+  If Deplode(Bank(0)) Then NPrint "Unpacked again"
+  ```
+
+  The data are not checked: damaged data can overwrite memory anywhere
+  ([#119](https://github.com/fubar-coder/bb2-c/issues/119)).

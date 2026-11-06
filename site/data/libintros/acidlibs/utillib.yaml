@@ -1,0 +1,17 @@
+description: Message ports and signals - creating and deleting message ports, waiting for signals, and the names of tasks.
+intro: |
+  A message port is where a program receives messages from other
+  programs or from the system, for example from ARexx. `CreateMsgPort`
+  makes one; with a name, other programs can find it, as the host port
+  of an ARexx program. `Wait` puts the program to sleep until a signal
+  comes, so that it uses no time while it waits for messages.
+
+  ```blitzbasic
+  port.l=CreateMsgPort("MYHOST")
+  ; ... receive messages, for example with RexxEvent(port)
+  DeleteMsgPort port
+  ```
+
+  Ports the program does not delete are deleted when it ends.
+
+  *Based on the utillib guide by Acid Software.*

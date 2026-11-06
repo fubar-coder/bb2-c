@@ -1,0 +1,21 @@
+"Implode":
+  text: Packs the `DataLen` bytes at `Bufferadr` in place with the Imploder method and returns the packed length; 0 if the data cannot be packed (less than 64 bytes, or not shorter enough), -1 if the user broke off with the left mouse button.
+  notes: |
+    While it packs, the background colour of the screen flickers. Kept
+    from the original: when the data turn out not to pack, the buffer is
+    already partly overwritten
+    ([#114](https://github.com/fubar-coder/bb2-c/issues/114)); and the
+    search reads up to 254 bytes beyond the data
+    ([#112](https://github.com/fubar-coder/bb2-c/issues/112)).
+"Deplode":
+  text: Unpacks Imploder data at `Startadr` in place and returns true (-1), or false (0) if they are not Imploder data.
+  notes: |
+    The buffer must be as large as the unpacked data.
+"CrMDecrunch":
+  text: Unpacks Crunch-Mania data at `Bufferadr` in place, or to a second address if one is given.
+  notes: |
+    Kept from the original: unpacking in place moves the data in front
+    of the buffer first and overwrites the memory there
+    ([#116](https://github.com/fubar-coder/bb2-c/issues/116)).
+"PPDecrunch":
+  text: Unpacks PowerPacker data from `Bufferadr` to `Bufferend`, the end of the packed file, to `Destinationadr`.

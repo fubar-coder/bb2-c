@@ -1,0 +1,6 @@
+"Sort":
+  text: Sorts all elements of the array, in the order `SortUp` or `SortDown` set.
+"SortUp":
+  text: Makes the following `Sort` commands sort from low to high; the start value.
+"SortDown":
+  text: Makes the following `Sort` commands sort from high to low.

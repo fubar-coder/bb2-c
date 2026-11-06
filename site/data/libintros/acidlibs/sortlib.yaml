@@ -1,0 +1,19 @@
+description: Sorting arrays - the elements of an array of numbers or strings sorted in ascending or descending order.
+intro: |
+  `Sort` sorts all elements of an array in place, from low to high or,
+  after `SortDown`, from high to low; `SortUp` sets the ascending order
+  again, which is the start value. It sorts arrays of a single type:
+  bytes, words, longs, quicks, floats and strings. Arrays of NewTypes and
+  list arrays cannot be sorted this way; `SortList` sorts a list array.
+
+  ```blitzbasic
+  Dim n$(4)
+  n$(0)="pear" : n$(1)="apple" : n$(2)="plum" : n$(3)="fig" : n$(4)="kiwi"
+  Sort n$()
+  ```
+
+  Kept from the original: a string element that was never given a
+  value reads from address 0
+  ([#276](https://github.com/fubar-coder/bb2-c/issues/276)).
+
+  *Based on the sortlib guide by Acid Software.*
