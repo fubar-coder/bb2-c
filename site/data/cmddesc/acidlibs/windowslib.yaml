@@ -1,0 +1,176 @@
+"Window":
+  text: Opens a window on the screen in use, with position, size, Intuition window flags, title and the detail and block pens, optionally with a gadget list and a bitmap for a super bitmap window. A window that is already open with this number is closed first. The new window becomes the used, input and output window.
+  notes: |
+    If Intuition cannot open the window, the error is "Couldn't Open
+    Window". Kept from the original: a super bitmap window (flag `$80`)
+    uses the bitmap of the last `Window` that named one
+    ([#319](https://github.com/fubar-coder/bb2-c/issues/319)).
+"WindowTags":
+  text: Opens a window like `Window`, but through Intuition's tag list call; extra tags come as tag and data pairs, or as the address of a tag list.
+  notes: |
+    Kept from the original: a `WindowTags` without tags uses the extra
+    tags of the previous one
+    ([#316](https://github.com/fubar-coder/bb2-c/issues/316)).
+"CloseWindow":
+  text: Closes the window. Its waiting events are dropped; those of the other windows stay. Nothing happens if the window is not open.
+"WaitEvent":
+  text: Waits for the next event of any window and returns its IDCMP class. As a statement, it only waits.
+"Event":
+  text: The IDCMP class of the next event of any window, or 0 if there is none; it does not wait.
+  notes: |
+    Kept from the original: a string gadget that is pressed gives an
+    extra "gadget up" event
+    ([#311](https://github.com/fubar-coder/bb2-c/issues/311)), and a menu
+    pick can give one more menu event
+    ([#312](https://github.com/fubar-coder/bb2-c/issues/312)).
+"EventWindow":
+  text: The number of the window of the last event.
+"GadgetHit":
+  text: The number of the gadget of the last gadget event.
+"MenuHit":
+  text: The menu number of the last menu event, or -1 if there was none.
+"ItemHit":
+  text: The item number of the last menu event, or -1.
+"SubHit":
+  text: The subitem number of the last menu event, or -1.
+"EventCode":
+  text: The IDCMP code of the last event.
+"EventQualifier":
+  text: The qualifier of the last event, such as the shift keys held down.
+"EMouseX":
+  text: The mouse x position at the last event.
+"EMouseY":
+  text: The mouse y position at the last event.
+"DefaultIDCMP":
+  text: Sets the IDCMP flags, the kinds of events, of the windows opened from now on.
+  notes: |
+    With runtime error checking, 0 is the error "IDCMP must not be 0".
+"AddIDCMP":
+  text: Adds IDCMP flags to those of the windows opened from now on.
+"SubIDCMP":
+  text: Removes IDCMP flags from those of the windows opened from now on.
+"FlushEvents":
+  text: Drops all waiting events, or only those of one IDCMP class.
+"WindowInput":
+  text: Makes `Inkey$`, `Edit$` and the other input commands read from the window.
+"WindowOutput":
+  text: Makes `Print` and `NPrint` write into the window.
+"WLocate":
+  text: Places the text cursor of the used window, relative to its inside.
+"WCursX":
+  text: The x position of the text cursor in the used window.
+"WCursY":
+  text: The y position of the text cursor in the used window.
+"WColour":
+  text: The text colours of the output into windows, the foreground and optionally the background.
+"WJam":
+  text: The drawing mode of text and graphics in windows, one of the graphics library's draw modes.
+"WCls":
+  text: Clears the used window with colour 0 or the given colour.
+  notes: |
+    Kept from the original: the top line of the window is not cleared
+    ([#314](https://github.com/fubar-coder/bb2-c/issues/314)).
+"InnerCls":
+  text: Clears the inside of the used window, within its borders, with colour 0 or the given colour.
+"WPlot":
+  text: Sets a point in the used window.
+"WLine":
+  text: Draws lines through two or more points in the used window.
+"WBox":
+  text: Draws a filled rectangle in the used window.
+"WCircle":
+  text: Draws a circle in the used window.
+"WEllipse":
+  text: Draws an ellipse in the used window.
+"WScroll":
+  text: Scrolls an area of the used window by the given distances.
+  notes: |
+    Kept from the original: it sets the drawing colour to 0
+    ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
+"WPrintScroll":
+  text: Scrolls the inside of the used window up if the text cursor is below its last line, so that the cursor line fits.
+"WBlit":
+  text: Draws a shape into the used window, with its mask if it has one.
+"BitMaptoWindow":
+  text: Copies a bitmap, or an area of it, into a window.
+"WTitle":
+  text: Sets the titles of the used window and of its screen.
+"WMove":
+  text: Moves the used window and waits until Intuition has moved it.
+  notes: |
+    With runtime error checking, a position outside the screen is the
+    error "Can't move Window".
+"WSize":
+  text: Changes the size of the used window and waits until Intuition has done it.
+  notes: |
+    With runtime error checking, a size of 0 or a window that would leave
+    the screen is the error "Can't Size Window".
+"SizeLimits":
+  text: The smallest and largest size of the windows opened from now on.
+"Activate":
+  text: Makes the window the active one, the one that gets the keyboard.
+"WindowX":
+  text: The x position of the used window on its screen.
+"WindowY":
+  text: The y position of the used window on its screen.
+"WindowWidth":
+  text: The width of the used window.
+"WindowHeight":
+  text: The height of the used window.
+"InnerWidth":
+  text: The width of the inside of the used window, within its borders.
+"InnerHeight":
+  text: The height of the inside of the used window, within its borders.
+"WTopOff":
+  text: The height of the top border of the used window.
+"WLeftOff":
+  text: The width of the left border of the used window.
+"WMouseX":
+  text: The x position of the mouse in the used window.
+"WMouseY":
+  text: The y position of the mouse in the used window.
+"MButtons":
+  text: The next mouse button event of the input window.
+"RawKey":
+  text: The raw key code of the last key read from a window.
+"Qualifier":
+  text: The qualifier of the last key read from a window, such as the shift keys held down.
+"Cursor":
+  text: The cursor of `Edit$` in a window, a block for a negative value, otherwise an underline of that thickness.
+"EditFrom":
+  text: Without an argument, the next `Edit$` in a window starts at the beginning and ends only with Return; with a position, it starts there and also ends at any other event.
+"Editat":
+  text: The cursor position at which the last `Edit$` in a window ended.
+"EditExit":
+  text: The character that ended the last `Edit$` in a window.
+"WindowFont":
+  text: Sets the font of the used window, optionally with a soft style.
+"WPointer":
+  text: Uses a shape as the mouse pointer of the used window.
+"Menus":
+  text: Switches the menus of the windows on or off, as `MenusOn` and `MenusOff`.
+  notes: |
+    Kept from the original: only half of the windows are reached
+    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
+"MenusOn":
+  text: Switches the menus of the windows on again.
+  notes: |
+    Kept from the original: only half of the windows are reached
+    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
+"MenusOff":
+  text: Switches the menus of the windows off.
+  notes: |
+    Kept from the original: only half of the windows are reached
+    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
+"RastPort":
+  text: The address of the window's RastPort, for calling the graphics library directly.
+"CatchDosErrs":
+  text: Makes the system's DOS requesters appear on the used window's screen.
+"SetEventFilter":
+  text: Two routines of the program that see every message before and after it is taken into the event list; the first can drop it.
+"PositionSuperBitMap":
+  text: Moves the view of a super bitmap window to a position in its bitmap.
+"GetSuperBitMap":
+  text: Copies the contents of the used window into its super bitmap.
+"PutSuperBitMap":
+  text: Copies the super bitmap into the used window.

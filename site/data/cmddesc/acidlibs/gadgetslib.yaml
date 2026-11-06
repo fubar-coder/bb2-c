@@ -1,0 +1,71 @@
+"TextGadget":
+  text: Adds a text gadget, a button with a text, to the gadget list. The flags select a toggle gadget, positions and sizes relative to the window, membership in the current button group and others.
+"StringGadget":
+  text: Adds a string gadget, a field for typing text, with room for `Maxlen` characters and the given width.
+  notes: |
+    Kept from the original: with `Borders Off` it writes to low memory
+    ([#164](https://github.com/fubar-coder/bb2-c/issues/164)), and a
+    `Maxlen` of 0 overwrites memory
+    ([#165](https://github.com/fubar-coder/bb2-c/issues/165)).
+"PropGadget":
+  text: Adds a proportional gadget, a slider or scroller, with the given size; flags select horizontal, vertical or both directions.
+"ShapeGadget":
+  text: Adds a gadget that shows a shape, optionally with a second shape for the selected state.
+"SetHProp":
+  text: Sets the horizontal position (`Pot`) and size of the knob (`Body`) of a proportional gadget, as quick values from 0 to 1.
+"SetVProp":
+  text: Sets the vertical position and size of the knob of a proportional gadget, as `SetHProp`.
+"HPropPot":
+  text: The horizontal position of the knob of a proportional gadget.
+"HPropBody":
+  text: The horizontal size of the knob of a proportional gadget.
+"VPropPot":
+  text: The vertical position of the knob of a proportional gadget.
+"VPropBody":
+  text: The vertical size of the knob of a proportional gadget.
+"Redraw":
+  text: Draws a gadget of the window again, after its state was changed.
+"Toggle":
+  text: Selects or deselects a gadget, or without `On` or `Off` turns its state over.
+"Enable":
+  text: Makes a gadget usable again.
+"Disable":
+  text: Makes a gadget unusable; Intuition shows it ghosted.
+"GadgetStatus":
+  text: For a cycling text gadget, the number of the part it shows, from 1; for other gadgets, -1 if it is selected, else 0.
+"SetGadgetStatus":
+  text: Makes a cycling text gadget show part `Value`, from 1.
+"SetTextGadget":
+  text: Replaces the text of a gadget; the new text is padded with spaces and cut to the length of the old one.
+"ButtonGroup":
+  text: The button group of the gadgets made from now on whose flags ask for one; it must be greater than 0.
+"ButtonId":
+  text: The `Id` of the selected gadget of a button group.
+"ActivateString":
+  text: Activates a string gadget of the window, so that typing goes into it.
+"SetString":
+  text: Sets the contents of a string gadget.
+  notes: |
+    With runtime error checking, a string as long as the gadget's room or
+    longer is the error "String to long for Gadget".
+"ClearString":
+  text: Empties a string gadget.
+"ResetString":
+  text: Moves the cursor of a string gadget to the start; the contents stay.
+"StringText$":
+  text: The contents of a string gadget.
+"GadgetPens":
+  text: The colours of the texts of the gadgets made from now on, the foreground and optionally the background.
+"GadgetJam":
+  text: The drawing mode of the texts of the gadgets made from now on.
+"BorderPens":
+  text: The colours of the borders of the gadgets made from now on, the light and the shadow side.
+"Borders":
+  text: Whether the gadgets made from now on get borders (`On` or `Off`), or the space between a gadget's text and its border.
+"GadgetBorder":
+  text: Draws a border in the style of the gadgets into the used window.
+"SelectMode":
+  text: Meant to choose how selected gadgets are highlighted.
+  notes: |
+    Kept from the original: it has no effect
+    ([#952](https://github.com/fubar-coder/bb2-c/issues/952)).

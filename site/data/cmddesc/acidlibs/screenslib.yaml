@@ -1,0 +1,49 @@
+"Screen":
+  text: Opens a screen and makes it the used screen. The short form takes a mode number - the depth in its lowest three bits (0 means 8), 8 for high resolution and 16 for interlace - and an optional title; the long form takes position, size, depth, view mode, title and pens, optionally with a bitmap to show.
+  notes: |
+    The width is rounded up to a multiple of 16. The height of the short
+    form is that of the display, 200 lines for NTSC or 256 for PAL,
+    doubled for interlace. A screen that the object already holds is
+    freed first. With a bitmap smaller than the screen, the error is
+    "Can't use specified BitMap".
+"ScreenTags":
+  text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the screen or Intuition's error code.
+  notes: |
+    Kept from the original: a tag list is copied without a limit
+    ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
+"WbToScreen":
+  text: Takes the Workbench screen as the screen object and makes it the used screen.
+  notes: |
+    Kept from the original: a screen that the object held before is
+    closed if the program opened it
+    ([#248](https://github.com/fubar-coder/bb2-c/issues/248)), and after
+    `ShowBitMap` on that object this can crash
+    ([#247](https://github.com/fubar-coder/bb2-c/issues/247)).
+"FindScreen":
+  text: Takes a screen that is already open as the screen object - the frontmost one, or the first whose title begins with `Title$` - and makes it the used screen.
+  notes: |
+    Kept from the original: as with `WbToScreen`, a screen that the object
+    held before is closed if the program opened it
+    ([#248](https://github.com/fubar-coder/bb2-c/issues/248)).
+"CloseScreen":
+  text: Closes the screen if the program opened it; a screen taken with `WbToScreen` or `FindScreen` is only forgotten.
+"LoadScreen":
+  text: Loads an IFF ILBM picture into the screen's bitmap, and with `Palette#` also its colours into that palette object.
+"ShowScreen":
+  text: Brings the screen to the front.
+"HideScreen":
+  text: Moves the screen to the back.
+"BeepScreen":
+  text: Flashes the screen, the system's visual beep.
+"MoveScreen":
+  text: Moves the screen by the given distances.
+"ShowBitMap":
+  text: Shows a bitmap in the used screen instead of its own, or without an argument its own bitmap again, for example for double buffering.
+"ScreenPens":
+  text: The pens of Intuition's look, such as the text, shine and shadow pens, for the screens opened from now on; `ScreenPens On` and `Off` switch them on or off.
+"SMouseX":
+  text: The x position of the mouse on the used screen.
+"SMouseY":
+  text: The y position of the mouse on the used screen.
+"ViewPort":
+  text: The address of the screen's ViewPort, for calling the graphics library directly.

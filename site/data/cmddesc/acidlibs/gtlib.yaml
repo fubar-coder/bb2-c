@@ -1,0 +1,83 @@
+"GTButton":
+  text: Adds a button. A flag makes it a toggle button that stays selected.
+  notes: |
+    Kept from the original: a toggle button that GadTools cannot create
+    writes to low memory
+    ([#171](https://github.com/fubar-coder/bb2-c/issues/171)).
+"GTCheckBox":
+  text: Adds a check box; flags make it checked at the start or scaled to the given size.
+"GTCycle":
+  text: Adds a cycle gadget, which steps through the choices in `Options$`, separated by `|`; `active` is the choice shown first, from 0.
+"GTMX":
+  text: Adds a mutual exclude gadget, a set of radio buttons for the choices in `Options$`, separated by `|`; `active` is the one selected first, from 0.
+"GTListView":
+  text: Adds a list view that shows the entries of a list array of strings, optionally with the entry selected and the first entry shown; a flag makes it read only.
+"GTSlider":
+  text: Adds a slider from `Min` to `Max`, at `Level`; a flag makes it vertical.
+"GTScroller":
+  text: Adds a scroller for `Total` units of which `Visible` are shown, at `Top`; flags make it vertical and give it arrows.
+"GTString":
+  text: Adds a string gadget for up to `MaxChars` characters, optionally with a text in it.
+"GTInteger":
+  text: Adds a gadget for typing a whole number, with a start value.
+"GTText":
+  text: Adds a gadget that shows a text, with a border; the user cannot change it.
+"GTNumber":
+  text: Adds a gadget that shows a number, with a border; the user cannot change it.
+"GTPalette":
+  text: Adds a palette gadget for choosing one of the colours of `depth` bitplanes, optionally with a colour selected.
+"GTShape":
+  text: Adds a button that shows a shape, optionally with a second shape for the selected state.
+  notes: |
+    Kept from the original: it takes over the label of the gadget made
+    before it ([#172](https://github.com/fubar-coder/bb2-c/issues/172)).
+"GTBevelBox":
+  text: Draws a bevelled box, in GadTools' style, into the window of the GTList.
+  notes: |
+    Kept from the original: the box is never drawn recessed
+    ([#170](https://github.com/fubar-coder/bb2-c/issues/170)).
+"AttachGTList":
+  text: Adds the gadgets of the GTList to a window and draws them.
+  notes: |
+    With runtime error checking, attaching a list to the window it is
+    already attached to is the error "GTList already attached to window!".
+"DetachGTList":
+  text: Removes the gadgets of the GTList from its window.
+"GTTags":
+  text: Further GadTools tags, as tag and value pairs, for the next gadget made.
+"GTSetAttrs":
+  text: Changes a gadget through GadTools tags, given as tag and value pairs.
+"GTGetAttrs":
+  text: The value of one GadTools tag of a gadget.
+"GTSetString":
+  text: Sets the text of a string gadget or a text gadget.
+"GTGetString":
+  text: The contents of a string gadget.
+"GTSetInteger":
+  text: Sets the value of an integer gadget or a number gadget.
+"GTGetInteger":
+  text: The value of an integer gadget.
+"GTChangeList":
+  text: Gives a list view a list array with new entries; without the list, takes its entries away, so that the list can be changed.
+"GTSetHighlight":
+  text: Selects an entry of a list view and scrolls it into view.
+"GTGadPtr":
+  text: The address of the gadget, for calling the system directly.
+"GTEnable":
+  text: Makes a gadget usable again; it is not redrawn.
+"GTDisable":
+  text: Makes a gadget unusable; it is not redrawn.
+"GTToggle":
+  text: Selects or deselects a gadget, or without `On` or `Off` turns its state over; it is not redrawn.
+"GTStatus":
+  text: 1 if the gadget is selected, else 0.
+"GTArrowSize":
+  text: The size of the arrows of scrollers made from now on with arrows.
+"GTGimmeCludge":
+  text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window's borders and the height of the screen's font.
+"GTFreeGadget":
+  text: Removes the gadget, or all gadgets in a row with that `id`, from the GTList and frees them.
+  notes: |
+    Kept from the original: freeing the last gadget of a list makes the
+    next gadget made for that list link into freed memory
+    ([#962](https://github.com/fubar-coder/bb2-c/issues/962)).

@@ -1,0 +1,19 @@
+description: Intuition windows - opening and closing them, their events, text input and output in a window, and drawing into it.
+intro: |
+  A window is a Blitz object, numbered from 0: `Window 0,...` opens window
+  0 on the screen in use, `CloseWindow 0` closes it. Opening a window makes
+  it the *used* window, and also the one that `Print`, `NPrint`, `Inkey$`
+  and `Edit$` work with; `Use Window`, `WindowOutput` and `WindowInput`
+  choose another. Most commands of this library work on the used window,
+  such as `WLocate`, `WCls`, `WPlot` or `WTitle`.
+
+  All windows share one message port. `WaitEvent` waits for the next
+  event of any window and `Event` takes one without waiting; both return
+  its IDCMP class, and `EventWindow`, `GadgetHit`, `MenuHit`, `ItemHit`,
+  `SubHit`, `EventCode` and `EMouseX`/`EMouseY` then tell what it was. The
+  events a window reports are set with `DefaultIDCMP`, `AddIDCMP` and
+  `SubIDCMP` before it is opened.
+
+  The commands that use Intuition work in Amiga mode only, not in Blitz
+  mode. With runtime error checking, using a window that is not open is
+  the error "Uninitialized Window".

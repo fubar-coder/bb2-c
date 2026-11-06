@@ -1,0 +1,23 @@
+description: GadTools gadgets - buttons, check boxes, cycle and mutual exclude gadgets, list views, sliders, scrollers, string, integer, text and number gadgets in GTList objects.
+intro: |
+  The commands of this library make gadgets with the system's
+  `gadtools.library`, which gives them the standard look of AmigaOS. A
+  `GTList` is a Blitz object, numbered from 0, that collects them: each
+  `GTButton`, `GTCycle`, `GTSlider` and so on adds one gadget with its
+  `id`, position, size, label and flags, and `AttachGTList` adds all of
+  them to a window. `GadgetHit` then gives the `id` of the gadget used.
+
+  The flags of a gadget switch on options of its kind, such as disabled,
+  checked or vertical; `GTTags` gives the next gadget further GadTools
+  tags. Positions are relative to the inside of the window, unless
+  `GTGimmeCludge On` is set. `GTSetAttrs`, `GTGetAttrs` and the
+  `GTSet...`/`GTGet...` commands read and change gadgets later.
+
+  The commands work in Amiga mode only.
+
+  Kept from the original: when several gadgets of a list have the same
+  `id`, some commands work on the first of them and others on the last
+  ([#175](https://github.com/fubar-coder/bb2-c/issues/175)); and the
+  commands that change gadgets through tags must not be used inside a
+  string expression
+  ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).

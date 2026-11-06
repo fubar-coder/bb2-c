@@ -1,0 +1,23 @@
+description: Intuition gadgets - text, string, proportional and shape gadgets in gadget lists, their state, their look, and button groups.
+intro: |
+  Gadgets are collected in a gadget list, a Blitz object numbered from 0.
+  `TextGadget`, `StringGadget`, `PropGadget` and `ShapeGadget` add a
+  gadget with a number of its own, its `Id`, to a list, and `Window ...,
+  GadgetList#` opens a window with all of them. The `Id` comes back from
+  `GadgetHit` when the gadget is used.
+
+  The look of the gadgets made from now on is set beforehand: `GadgetPens`
+  and `GadgetJam` for their texts, `Borders` and `BorderPens` for their
+  borders. A text gadget whose text has parts separated by `|` cycles
+  through them when it is clicked; `GadgetStatus` and `SetGadgetStatus`
+  read and set the part shown. Gadgets made after `ButtonGroup` form a
+  group of which one can be selected, and `ButtonId` tells which.
+
+  Commands that change a gadget, such as `SetString`, `Toggle` or
+  `SetHProp`, do not redraw it; `Redraw` does. With runtime error
+  checking, an `Id` that the list does not have is the error "Can't Find
+  Gadget". Kept from the original: without runtime error checking, the
+  search for an `Id` does not stop at the end of the list
+  ([#166](https://github.com/fubar-coder/bb2-c/issues/166)), and freeing a
+  list leaves the memory of its string and proportional gadgets in use
+  ([#163](https://github.com/fubar-coder/bb2-c/issues/163)).

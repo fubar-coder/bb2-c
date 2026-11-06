@@ -1,0 +1,42 @@
+"MenuTitle":
+  text: Adds a menu with its title to the menu list, or replaces the menu with that number.
+  notes: |
+    The width of a title is computed for a font eight pixels wide.
+"MenuItem":
+  text: Adds a text item to a menu, or replaces it, optionally with a keyboard shortcut, the first character of `Shortcut$`, used with the right Amiga key.
+"SubItem":
+  text: Adds a text subitem to an item, or replaces it, optionally with a shortcut as `MenuItem`.
+  notes: |
+    Kept from the original: replacing a subitem moves the following ones
+    by a wrong distance
+    ([#220](https://github.com/fubar-coder/bb2-c/issues/220)).
+"ShapeItem":
+  text: Adds an item that shows a shape instead of a text.
+  notes: |
+    Kept from the original: the flags are read wrongly, so small flag
+    values give an ordinary item
+    ([#218](https://github.com/fubar-coder/bb2-c/issues/218)).
+"ShapeSub":
+  text: Adds a subitem that shows a shape instead of a text.
+  notes: |
+    Kept from the original: the flags are read wrongly, as with
+    `ShapeItem` ([#218](https://github.com/fubar-coder/bb2-c/issues/218)).
+"SetMenu":
+  text: Gives the menu list to the used window, in place of the menus it had; all items of a menu, and of each subitem list, get the width of the widest of them.
+"MenuGap":
+  text: The space around the text or shape of the items and subitems made from now on.
+"SubItemOff":
+  text: The offset of the subitems made from now on from their item.
+"MenuColour":
+  text: The colour of the texts of the items and subitems made from now on.
+"MenuState":
+  text: Enables or disables the whole menu list, a menu, an item or a subitem.
+  notes: |
+    Kept from the original: for a single menu it has no effect
+    ([#216](https://github.com/fubar-coder/bb2-c/issues/216)).
+"MenuChecked":
+  text: True (-1) if the toggle item or subitem is checked, else false (0).
+  notes: |
+    Kept from the original: for a subitem, the search goes wrong unless
+    the item and subitem are both 0
+    ([#217](https://github.com/fubar-coder/bb2-c/issues/217)).

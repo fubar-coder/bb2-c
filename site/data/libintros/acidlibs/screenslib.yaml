@@ -1,0 +1,14 @@
+description: Intuition screens - opening and closing them, using the Workbench or another screen, showing bitmaps, and the mouse on a screen.
+intro: |
+  A screen is a Blitz object, numbered from 0. `Screen` and `ScreenTags`
+  open a screen; `WbToScreen` and `FindScreen` take a screen that is
+  already there, such as the Workbench. Each of them makes the screen the
+  *used* screen, the one on which `Window` opens its windows.
+
+  `CloseScreen` closes only the screens that the program opened itself; a
+  screen taken with `WbToScreen` or `FindScreen` is only forgotten, never
+  closed.
+
+  A screen that cannot be opened is the runtime error "Can't open Screen".
+  With runtime error checking, using a screen object that holds no screen
+  is the error "Uninitialized Screen".
