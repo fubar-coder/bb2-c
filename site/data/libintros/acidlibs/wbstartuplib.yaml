@@ -1,0 +1,12 @@
+description: The start of a program from the CLI or the Workbench, and the list of its parameters.
+intro: |
+  This library runs when a program starts. Started from the CLI, it
+  splits the command line into parameters: spaces separate them, and
+  quotes keep a parameter with spaces together. Started from the
+  Workbench, it takes the startup message of the Workbench, makes the
+  program's drawer the current directory and takes the icons given with
+  the program as its parameters. At the end of the program it answers
+  the Workbench's message.
+
+  The commands of the cliargslib library, `NumPars`, `Par$`, `FromCLI`
+  and `ParPath$`, read what this library collected.

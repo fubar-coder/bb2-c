@@ -1,0 +1,31 @@
+"SystemDate":
+  text: Today's date from the system clock, as the number of days since 1 January 1978.
+"Date$":
+  text: The date of day number `days` (days since 1 January 1978) as a string, `dd/mm/yyyy` or, after `DateFormat 1`, `mm/dd/yyyy`. It also keeps the day, month, year and weekday for `Days`, `Months`, `Years` and `WeekDay`.
+"NumDays":
+  text: The day number (days since 1 January 1978) of a date string in the format `DateFormat` set, `dd/mm/yyyy` at the start. Day and month have one or two digits, the year four.
+  notes: |
+    Kept from the original: some dates give a number 65536 off, such as
+    31/12/1977, which gives 65535 instead of -1
+    ([#122](https://github.com/fubar-coder/bb2-c/issues/122)); and a
+    month 0 or above 12 is not caught
+    ([#124](https://github.com/fubar-coder/bb2-c/issues/124)).
+"DateFormat":
+  text: The format of the date strings of `Date$` and `NumDays`, 0 for `dd/mm/yyyy` (the start value) or 1 for `mm/dd/yyyy`.
+"Days":
+  text: The day of the month of the last `Date$`.
+"Months":
+  text: The month, from 1 to 12, of the last `Date$`.
+"Years":
+  text: The year of the last `Date$`.
+"WeekDay":
+  text: The day of the week of the last `Date$`, 0 for Sunday to 6 for Saturday.
+  notes: |
+    Kept from the original: for two days in every 65536, such as 15 and
+    16 September 1973, the result is wrong ([#121](https://github.com/fubar-coder/bb2-c/issues/121)).
+"Hours":
+  text: Reads the time from the system clock and returns the hour, from 0 to 23. It also keeps the minutes and seconds for `Mins` and `Secs`.
+"Mins":
+  text: The minutes of the time read by the last `Hours`.
+"Secs":
+  text: The seconds of the time read by the last `Hours`.

@@ -1,0 +1,25 @@
+description: Dates and time - the system date as a day number, dates as strings and back, day, month, year and weekday, and the time of day.
+intro: |
+  The library counts dates as days since 1 January 1978, the day
+  AmigaOS counts from. `SystemDate` gives today's number, `Date$` turns a
+  number into a string such as `24/12/1993`, and `NumDays` turns such a
+  string back into a number, so that two dates can be compared or
+  subtracted. `DateFormat` chooses whether the day or the month comes
+  first. After `Date$`, `Days`, `Months`, `Years` and `WeekDay` give the
+  parts of that date; after `Hours`, `Mins` and `Secs` give the time.
+
+  ```blitzbasic
+  d$=Date$(SystemDate)
+  NPrint "Today is ",d$,", day ",WeekDay," of the week"
+  NPrint "It is ",Hours,":",Mins
+  NPrint NumDays("24/12/1993")-NumDays("1/1/1993")," days"
+  ```
+
+  Every fourth year is taken as a leap year, so dates are right from 1901
+  to 2099.
+
+  Kept from the original: a date string must have a four digit year;
+  with fewer digits the library reads past its end
+  ([#125](https://github.com/fubar-coder/bb2-c/issues/125)).
+
+  *Based on the datelib guide by Acid Software.*

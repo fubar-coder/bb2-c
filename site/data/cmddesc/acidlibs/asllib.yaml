@@ -1,0 +1,22 @@
+"ASLFileRequest$":
+  text: Opens the system's file requester with the title `Title$` and returns the full name of the file chosen, or an empty string if the user cancels. `Pattern$` shows only the files that match it, such as `#?.iff`; `x,y,w,h` give the position and size of the requester, 20,20 and 280 by 160 without them.
+"ASLPathRequest$":
+  text: Opens the system's requester for a drawer, with the title `Title$`, and returns the drawer chosen, or an empty string if the user cancels; `x,y,w,h` give its position and size.
+  notes: |
+    Kept from the original: it writes the file name of the requester to
+    a wrong address, `x` in the form with a position
+    ([#61](https://github.com/fubar-coder/bb2-c/issues/61)); and a pattern
+    of an `ASLFileRequest$` before stays switched on
+    ([#64](https://github.com/fubar-coder/bb2-c/issues/64)).
+"ASLFontRequest":
+  text: Opens the system's font requester and returns the address of a description of the font chosen, or 0 if the user cancels. The flags add the gadgets for 1 the pen, 2 the background pen, 4 the style, 8 the draw mode and 16 a choice of fixed width fonts only.
+  notes: |
+    The description is a NewType with the fields `name$` (a pointer to
+    the font's name), `ysize.w`, `style.b`, `flags.b`, `pen1.b`,
+    `pen2.b` and `drawmode.b`; it stays the same for every call.
+"ASLScreenRequest":
+  text: Opens the system's screen mode requester; the flags add the gadgets for 1 the width, 2 the height, 4 the depth, 8 the overscan and 16 the autoscroll. It returns 0 if the user cancels.
+  notes: |
+    Kept from the original: the requester it returns is already freed,
+    so its contents cannot be relied on
+    ([#60](https://github.com/fubar-coder/bb2-c/issues/60)).

@@ -1,0 +1,18 @@
+"NumPars":
+  text: The number of parameters given to the program, 0 if there are none.
+  notes: |
+    From the CLI, `myprog file1 file2` gives 2 parameters, separated by
+    spaces.
+"Par$":
+  text: The text of parameter number `Parameter#`, from 1 to `NumPars`. For a Workbench parameter, this is the name of the icon's file, and empty for a drawer, a disk or another icon that is not a file.
+"FromCLI":
+  text: True (-1) if the program was started from the CLI, false (0) if it was started from the Workbench.
+"ParPath$":
+  text: The drawer of Workbench parameter number `Par#`; with a type of 1 (any type but 0), the drawer and the name joined, the full name of the file. It needs AmigaOS 2.0 or newer and a start from the Workbench.
+  notes: |
+    For a drawer given as parameter, the drawer itself is the result with
+    type 0, while type 1 adds a `/` with the empty name. So: if `Par$` is
+    empty, use `ParPath$(x,0)`, else `ParPath$(x,1)`. With runtime error
+    checking, a program started from the CLI gets the error "Can only call
+    ParPath$() when run from WB."; without it, the result is not usable
+    ([#107](https://github.com/fubar-coder/bb2-c/issues/107)).

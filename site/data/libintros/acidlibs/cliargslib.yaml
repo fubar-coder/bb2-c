@@ -1,0 +1,20 @@
+description: Program arguments - the parameters given in the CLI or on the Workbench, and how the program was started.
+intro: |
+  A program started from the CLI gets the words typed after its name as
+  parameters; one started from the Workbench gets the icons selected
+  with it, with Shift, or the project whose default tool it is.
+  `NumPars` tells how many there are and `Par$` returns each, counted
+  from 1. `FromCLI` tells how the program was started.
+
+  ```blitzbasic
+  For i=1 To NumPars
+    NPrint "Parameter ",i,": ",Par$(i)
+  Next
+  ```
+
+  With runtime error checking, a parameter number below 1 or above
+  `NumPars` is the error "Non-Existent Parameter."; without it, such a
+  number reads beyond the list of parameters
+  ([#106](https://github.com/fubar-coder/bb2-c/issues/106)).
+
+  *Based on the cliargslib guide by Acid Software.*

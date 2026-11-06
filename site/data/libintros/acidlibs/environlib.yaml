@@ -1,0 +1,13 @@
+description: The environment of the program - the Workbench screen's size, depth and mode, the processor and the version of the system.
+intro: |
+  These functions tell a program what kind of Amiga it runs on, so that
+  it can open a screen that matches the Workbench or choose code for the
+  processor. The values are read once, when the program starts; the
+  functions only return them.
+
+  ```blitzbasic
+  NPrint "Workbench: ",WBWidth,"x",WBHeight,", ",WBDepth," planes"
+  If ExecVersion>=39 Then NPrint "AmigaOS 3.0 or newer"
+  ```
+
+  *Based on the environlib guide by Acid Software.*

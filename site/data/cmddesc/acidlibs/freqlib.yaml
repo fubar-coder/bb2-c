@@ -1,0 +1,8 @@
+"FileRequest$":
+  text: Opens the file requester with the title `Title$` and returns the full name of the file chosen, the drawer and the name joined with a `/` where needed, or an empty string if the user cancels.
+  notes: |
+    The user picks a file with OK, a double click or Return in the file
+    name. The buttons of the requester show the drives and assigns, go to
+    the parent drawer and make the drawer shown the current directory.
+    Kept from the original: names longer than 34 characters in a drawer
+    overwrite memory ([#159](https://github.com/fubar-coder/bb2-c/issues/159)).
