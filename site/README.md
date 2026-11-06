@@ -44,9 +44,14 @@ newer release, run `hugo mod get github.com/imfing/hextra@vX.Y.Z` and
 * Texts are plain English, explain instead of listing, and give examples
   instead of line numbers. No repository file names in page texts.
 * Nothing from the CD or the original manual.
-* Internal links: use `{{< relref "/docs/chapter/page" >}}` in a link target
-  (`[text]({{< relref "/docs/libraries" >}})`) whenever the target is more than
-  one level away; a link to a sibling page may be relative.
+* Internal links: always `{{< relref "/docs/chapter/page" >}}` in a link
+  target (`[text]({{< relref "/docs/libraries" >}})`), also for a sibling page
+  and with an anchor (`"/docs/chapter/page#heading"`). A relative link
+  (`[text](page)`) is left as it is and resolves against the URL of the page
+  it is on: on a page `/docs/chapter/page/` it points below that page and
+  breaks. `relref` also fails the build when the target does not exist.
+  Only the `link` of a `card` in a chapter's `_index.md` may be the plain
+  name of a page of that chapter, since the chapter's URL is its directory.
 * External links: always the full URL, including the menu entries in
   `hugo.yaml`. The site lives under the `/bb2-c/` subpath, and Hugo prefixes
   it to menu URLs that begin with `/`.
