@@ -14,8 +14,11 @@ intro: |
   events a window reports are set with `DefaultIDCMP`, `AddIDCMP` and
   `SubIDCMP` before it is opened.
 
-  The commands that use Intuition work in Amiga mode only, not in Blitz
-  mode. With runtime error checking, using a window that is not open is
+  Opening windows (`Window`, `WindowTags`), the event commands `WaitEvent`,
+  `Event`, `EventCode`, `EventQualifier` and `MButtons`, the drawing
+  commands such as `WPlot`, `WLine` or `WCls`, and `WindowFont`,
+  `WPointer`, `Activate` and the menu switches work in Amiga mode only;
+  the compiler refuses them in Blitz mode. With runtime error checking, using a window that is not open is
   the error "Uninitialized Window".
 
   *Based on the windowslib guide by Acid Software.*

@@ -1,5 +1,5 @@
-description: Runtime errors of executables - the minimal error handling of programs that use SetErr, without the debugger.
+description: Runtime errors of executables - the minimal error handling of executables created with runtime error checking on, without the debugger.
 intro: |
-  An executable that uses `SetErr` gets this library instead of the
-  debugger. A runtime error that no `SetErr` handler takes is shown with
+  An executable created with runtime error checking on gets this library
+  instead of the debugger. A runtime error that no `SetErr` handler takes is shown with
   its message in a requester, and the program ends.

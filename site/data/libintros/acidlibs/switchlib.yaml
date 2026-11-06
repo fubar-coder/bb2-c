@@ -3,8 +3,7 @@ intro: |
   A Blitz program runs in one of three modes. In *Amiga mode* the system
   runs as usual, with screens and windows. In *Blitz mode*, after
   `BLITZ`, the system's display and multitasking are switched off and
-  the program has the hardware to itself, for fast games; files and
-  windows cannot be used then. *QAmiga mode*, after `QAMIGA`, lets the
+  the program has the hardware to itself, for fast games. *QAmiga mode*, after `QAMIGA`, lets the
   system run again but keeps the program's own display. `AMIGA` returns
   to Amiga mode.
 

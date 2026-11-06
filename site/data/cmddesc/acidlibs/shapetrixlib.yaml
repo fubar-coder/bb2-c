@@ -14,7 +14,7 @@
   notes: |
     Kept from the original: the processor may start to mirror before the
     blitter has finished its part, so that a shape whose width is not a
-    multiple of 8 can come out wrong
+    multiple of 16 can come out wrong
     ([#271](https://github.com/fubar-coder/bb2-c/issues/271)).
 "YFlip":
   text: Mirrors a shape vertically, upside down.

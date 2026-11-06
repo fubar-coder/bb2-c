@@ -4,9 +4,7 @@
     Only ANIM files of the usual compression (method 5) are read; others
     give "ANIM format not supported". Kept from the original: the frames
     of an animation are not checked against the highest shape number
-    ([#265](https://github.com/fubar-coder/bb2-c/issues/265)), and the
-    file's picture data is not checked to be what it claims
-    ([#264](https://github.com/fubar-coder/bb2-c/issues/264)).
+    ([#265](https://github.com/fubar-coder/bb2-c/issues/265)).
 "InitShape":
   text: Makes an empty shape of the given width, height and depth.
 "GetaShape":

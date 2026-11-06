@@ -1,5 +1,5 @@
 "Buffer":
-  text: Sets the buffer up with `Memorylen` bytes of chip memory; an old buffer of the object is freed. 16384 bytes are enough for many programs; with runtime error checking, a buffer that is too small gives the error "Buffer Overflow".
+  text: Sets the buffer up with `Memorylen` bytes of chip memory; an old buffer of the object is freed. With runtime error checking, a buffer that is too small gives the error "Buffer Overflow".
 "BBlit":
   text: Saves the area of the used bitmap under the shape into the buffer, then draws the shape like `Blit`. With `Excessonoff`, the bitplanes beyond the shape's depth are set or cleared under the shape, as with `Blit`.
 "UnBuffer":

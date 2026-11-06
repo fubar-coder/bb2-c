@@ -26,9 +26,7 @@ intro: |
   number of bitplanes, sprite channels (up to 8) and colours (up to 32),
   and the widths of the bitmaps for the front and the back playfield,
   which may be wider than the slice for scrolling. For a slice that is
-  not a dual playfield, give the same width twice. The top slice should
-  have all 8 sprite channels, so that unused sprites do not flicker.
-  These values of its `Flags` give the usual slices:
+  not a dual playfield, give the same width twice. These values of its `Flags` give the usual slices:
 
   | Flags | Slice | Bitplanes |
   |---|---|---|

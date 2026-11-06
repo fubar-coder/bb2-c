@@ -9,7 +9,8 @@ intro: |
   screen taken with `WbToScreen` or `FindScreen` is only forgotten, never
   closed.
 
-  A screen that cannot be opened is the runtime error "Can't open Screen".
+  A screen that `Screen` cannot open is the runtime error "Can't open
+  Screen"; `ScreenTags` returns an error code instead.
   With runtime error checking, using a screen object that holds no screen
   is the error "Uninitialized Screen".
 

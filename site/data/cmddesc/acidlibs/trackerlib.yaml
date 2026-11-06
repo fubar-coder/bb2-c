@@ -1,7 +1,7 @@
 "Module":
   text: The object of a loaded module. `Free Module` frees it, and stops it first if it is playing.
 "LoadModule":
-  text: Loads a Sound- or NoiseTracker module from disk into chip memory, to be played with `PlayModule`; a module the object held before is freed. Amiga mode only. A file that is missing, is a drawer or cannot be read is the error "Error Accessing Module File".
+  text: Loads a Sound- or NoiseTracker module from disk into chip memory, to be played with `PlayModule`; a module the object held before is freed. Amiga mode only. A file that is missing, is a drawer or cannot be opened is the error "Error Accessing Module File".
   notes: |
     Kept from the original: after that error some memory stays taken, and
     a drawer stays locked

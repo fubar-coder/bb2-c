@@ -2,7 +2,8 @@ description: Input and output channels - where Print writes and Edit$ reads, the
 intro: |
   `Print` and `NPrint` write to the current *output channel*, `Edit$`,
   `Edit` and `Inkey$` read from the current *input channel*. At the start
-  both are the shell window the program was started from. Other libraries
+  they are the program's standard input and output, normally the shell
+  window the program was started from. Other libraries
   switch them: `WindowOutput` and `WindowInput` to a window, `FileOutput`
   and `FileInput` to a file. `DefaultOutput` and `DefaultInput` switch
   back to the shell window.

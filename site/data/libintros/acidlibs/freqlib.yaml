@@ -1,21 +1,20 @@
 description: The file requester of Blitz Basic 2 - a window for choosing a file, with a directory list, drives, parent and path.
 intro: |
   `FileRequest$` opens Blitz Basic 2's own file requester on the used
-  screen and waits until the user picks a file or cancels. It works on
-  every version of AmigaOS; the asllib library gives the system's
-  requester instead.
+  screen and waits until the user picks a file or cancels. The asllib
+  library gives the system's requester instead.
 
   ```blitzbasic
   MaxLen path$=160
-  MaxLen file$=64
-  f$=FileRequest$("Load picture",path$,file$)
+  MaxLen fname$=64
+  f$=FileRequest$("Load picture",path$,fname$)
   If f$<>"" Then LoadBitMap 0,f$
   ```
 
-  `path$` and `file$` must be string variables with a `MaxLen` of at
+  `path$` and `fname$` must be string variables with a `MaxLen` of at
   least 160 and 64; they give the drawer and the name to start with and
-  get the ones chosen, so that the next call starts there again. The
-  requester also remembers its position and size.
+  get the ones chosen, so that the next call starts there again. After
+  OK the requester also remembers its position and size.
 
   Kept from the original: on a screen of 645 lines or more, the requester
   overwrites memory and the program crashes afterwards

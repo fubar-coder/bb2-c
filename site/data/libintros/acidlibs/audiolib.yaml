@@ -10,13 +10,13 @@ intro: |
   The commands drive the audio hardware directly. A *channel mask* chooses
   the channels: bit 0 is channel 0, up to bit 3 for channel 3, so 15 means
   all four. Where the help text has `Vol1[,Vol2...]`, the volumes (0 to 64)
-  are given one per channel of the mask, the lowest channel first; a
-  channel without a volume plays at 64. This plays a sound on channel 0
-  at full volume and on channel 1 at half volume:
+  are given one per channel of the mask; with `Sound`, `LoopSound` and
+  `DiskPlay`, a channel without a volume plays at 64. This plays a sound
+  on channels 0 and 1 at half volume:
 
   ```blitzbasic
   LoadSound 0,"bang.8svx"
-  Sound 0,1+2,64,32
+  Sound 0,1+2,32,32
   ```
 
   With runtime error checking, a channel mask above 15 is the error

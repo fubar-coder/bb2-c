@@ -23,8 +23,8 @@ intro: |
   | 1, 2, 4, 8 | label left of, right of, above or below the gadget |
   | 16 | label inside the gadget |
   | 32 | label highlighted |
-  | 64 | disabled (all kinds but text and number gadgets) |
-  | 128 | reports when it is pressed, not only when it is released (button, integer, string, slider, scroller, shape) |
+  | 64 | disabled (all kinds but text, number and shape gadgets) |
+  | 128 | reports when it is pressed, not only when it is released (button, integer, string, slider, scroller) |
   | 256 | checked at the start (check box) |
   | 512 | scaled to the given size (check box, mutual exclude) |
   | 1024 | vertical (slider, scroller) |
@@ -33,12 +33,14 @@ intro: |
   | 8192 | a toggle button that stays selected (button) |
 
   `GTTags` gives the next gadget further GadTools tags. Positions are
-  relative to the inside of the window: the window's borders and the
-  height of the screen's font are added to them, unless
+  relative to the inside of the window: the window border sizes of the
+  used screen and the height of its font are added to them, unless
   `GTGimmeCludge On` is set. `GTSetAttrs`, `GTGetAttrs` and the
   `GTSet...`/`GTGet...` commands read and change gadgets later.
 
-  The commands work in Amiga mode only.
+  Most commands work in Amiga mode only; `GTEnable`, `GTDisable`,
+  `GTToggle`, `GTStatus`, `GTArrowSize` and `GTGimmeCludge` work in both
+  modes.
 
   Kept from the original: when several gadgets of a list have the same
   `id`, some commands work on the first of them and others on the last

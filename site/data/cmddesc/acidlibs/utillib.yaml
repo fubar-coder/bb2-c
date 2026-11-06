@@ -9,7 +9,7 @@
 "Wait":
   text: Waits until one of the signals the program has, such as those of its message ports and windows, comes. As a function, it returns the signals that came.
 "TaskName$":
-  text: The name of the task or process at the address `task`.
+  text: The name of the task or process at the address `task`; 0 is the program's own task.
   notes: |
     Kept from the original: a task without a name reads from address 0
     ([#297](https://github.com/fubar-coder/bb2-c/issues/297)).

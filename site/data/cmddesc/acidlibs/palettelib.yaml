@@ -26,8 +26,8 @@
 "ShowPalette":
   text: Copies the colours of a palette to the used screen (Amiga mode) or to the used slice (Blitz mode), as many as the slice has.
   notes: |
-    Without the AGA chip set, a screen gets at most 32 colours, with 4
-    bits per component.
+    Before Kickstart 3.0 (exec version 39), a screen gets at most 32
+    colours, with 4 bits per component.
 "NewPaletteMode":
   text: With `On`, `Use Palette` only makes the palette the used one and leaves the display alone; with `Off`, the start value, it also shows the palette as `ShowPalette` does.
 "RGB":
@@ -39,17 +39,17 @@
 "Blue":
   text: The blue component, from 0 to 15, of a colour register of the used screen (Amiga mode) or slice (Blitz mode).
 "AGARGB":
-  text: Sets a colour register of the used screen to components from 0 to 255. It needs the AGA chip set and works in Amiga mode only.
+  text: Sets a colour register of the used screen to components from 0 to 255. It needs Kickstart 3.0 or later (exec version 39) and works in Amiga mode only.
 "AGARed":
-  text: The red component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+  text: The red component, from 0 to 255, of a colour register of the used screen. It needs Kickstart 3.0 or later (exec version 39).
   notes: |
     Without a used screen this is the error "Uninitialized Screen".
 "AGAGreen":
-  text: The green component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+  text: The green component, from 0 to 255, of a colour register of the used screen. It needs Kickstart 3.0 or later (exec version 39).
 "AGABlue":
-  text: The blue component, from 0 to 255, of a colour register of the used screen. It needs the AGA chip set.
+  text: The blue component, from 0 to 255, of a colour register of the used screen. It needs Kickstart 3.0 or later (exec version 39).
 "SetCycle":
-  text: Sets colour cycle number `Cycle` (0 to 6) of a palette, for the colours from `Low Colour` to `High Colour`. `Speed` goes from -1 to 1; 1, the start value, moves the colours one step per frame, and a negative speed moves them the other way.
+  text: Sets colour cycle number `Cycle` (0 to 6) of a palette, for the colours from `Low Colour` to `High Colour`. `Speed` goes from -1 to 1; 1, the value without `Speed`, moves the colours one step per frame, and a negative speed moves them the other way.
   notes: |
     Cycles must be set in order: a cycle more than one after the last one
     set is the error "Cycles must be added in order, you silly sausage!".
@@ -70,7 +70,7 @@
     source. Called in a loop with a falling brightness, followed by
     `ShowPalette`, it fades the display out.
 "PaletteRange":
-  text: Fills the colours from `StartCol` to `EndCol` of a palette with a gradient from `r0,g0,b0` to `r1,g1,b1`, components from 0 to 255, like the spread of Deluxe Paint.
+  text: Fills the colours from `StartCol` to `EndCol` of a palette with a gradient from `r0,g0,b0` to `r1,g1,b1`, components from 0 to 255.
   notes: |
     Nothing happens when `EndCol` is less than `StartCol` or the range is
     larger than the palette. Kept from the original: `StartCol` equal to
@@ -81,5 +81,6 @@
 "MixPalette":
   text: Mixes two palettes into `DestPalette#`, `fraction` of the first and the rest of the second; 1 gives the first palette, 0 the second.
   notes: |
-    The destination gets as many colours as the first palette has; make
-    sure it has room for them, for example with `InitPalette`.
+    As many colours as the first palette has are written into the
+    destination, which is not checked; make sure it has room for them,
+    for example with `InitPalette`.

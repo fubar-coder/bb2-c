@@ -6,7 +6,7 @@ intro: |
   called ANIM 5). Such an animation is meant for double buffering, two
   bitmaps shown in turn. `LoadAnim` loads it, in Amiga mode; `ILBMInfo`
   tells the size and mode of the screen it needs. `InitAnim` draws the
-  first frames into the bitmaps, and every `NextFrame` draws the next
+  first picture into the bitmaps, and every `NextFrame` draws the next
   frame into the used bitmap:
 
   ```blitzbasic

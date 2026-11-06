@@ -6,8 +6,8 @@
     The short form `InitCopList CopList#,type` makes a list for 256 lines
     from line 44, with 8 sprites, as many colours as the bitplanes give
     and no custom instructions. An old list of the object is freed
-    first. More bitplanes than the resolution allows are the error
-    "Illegal Number of BitPlanes for Resolution".
+    first. More than 8 bitplanes are the error "Illegal Number of
+    BitPlanes for Resolution".
 "CreateDisplay":
   text: Shows one or more copper lists, linked one after the other. Give them in the order of their position on the screen; they must not overlap. Blitz mode only.
   notes: |
@@ -38,8 +38,9 @@
 "DisplayControls":
   text: Changes the control registers BPLCON2, BPLCON3 and BPLCON4 of a copper list. The values are combined by exclusive or with the values the list has.
   notes: |
-    The lists start with BPLCON2 = $224, BPLCON3 = $C00 and BPLCON4 =
-    $11. BPLCON2 sets the priority of playfields and sprites, BPLCON3
+    The lists start with BPLCON2 = $224 (without bit 9 for extra half
+    brite), BPLCON3 = $C00 (plus the sprite resolution bits of the type)
+    and BPLCON4 = $11. BPLCON2 sets the priority of playfields and sprites, BPLCON3
     the colour bank and the colour offset of the second playfield, and
     BPLCON4 the colour offsets of the sprites and of the bitplanes. For
     example, this fetches the sprite colours from registers 240 to 255
@@ -58,9 +59,10 @@
 "CustomColors":
   text: Changes `numcols` colours from `startcol` on to those of a palette at line `YPos`, through the custom copper instructions from `CCOffset` on. An ECS list needs 2+n instructions, an AGA list 2+n+n+n/16.
   notes: |
-    A large AGA palette change can take several lines of the
-    display. Give
-    `thru256flag` for a change below line 256. Kept from the original:
+    Give `thru256flag` when the copper instructions of the change run on
+    past line 255 (a large AGA palette change can take several lines of
+    the display): the custom commands after it then add no second wait
+    for line 255. Kept from the original:
     its value is not read, so 0 acts as 1
     ([#951](https://github.com/fubar-coder/bb2-c/issues/951)).
 "CustomString":
@@ -79,7 +81,8 @@
   text: Makes a chunky area of `width` by `height` blocks from line `YPos` on, each block a colour register changed by the copper, `res` lines high; with `splitpos`, the area is split into two parts. AGA only.
   notes: |
     `CustomChunkySize` gives the number of custom instructions it needs.
-    `YPos` must be greater than `res`. Kept from the original: the split
+    `YPos` must not be lower than `res`, else this is the error
+    "CustomChunky must start at ypos greater than res". Kept from the original: the split
     form changes the position of high and super high resolution sprites
     shown later with `DisplaySprite`
     ([#949](https://github.com/fubar-coder/bb2-c/issues/949)).

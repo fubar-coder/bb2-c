@@ -16,9 +16,10 @@
   notes: |
     A picture without a header is the error "Can't Find IFF 'BMHD'", one
     without picture data "Can't Find IFF 'BODY'". Kept from the original:
-    the bitmap must have at least the depth and the width of the picture,
+    the bitmap must have at least the depth, the width and the height of
+    the picture,
     else memory is overwritten
     ([#190](https://github.com/fubar-coder/bb2-c/issues/190),
-    [#191](https://github.com/fubar-coder/bb2-c/issues/191)); and the
-    chunks of the file are read without their pad bytes
+    [#191](https://github.com/fubar-coder/bb2-c/issues/191)); and a
+    chunk of odd length is skipped without its pad byte
     ([#189](https://github.com/fubar-coder/bb2-c/issues/189)).

@@ -16,9 +16,10 @@ intro: |
 
   `RGB`, `Red`, `Green` and `Blue` set and read a colour of the screen or
   slice directly, without a palette object, with components from 0 to
-  15. On a machine with the AGA chip set, the `AGA...` commands do the
-  same with components from 0 to 255; they work in Amiga mode only. A
-  palette holds 8 bits per component, so it keeps AGA colours exactly;
+  15. From Kickstart 3.0 on (exec version 39), `AGARGB`, `AGARed`,
+  `AGAGreen` and `AGABlue` do the same for the used screen with
+  components from 0 to 255, and `AGAPalRGB` sets a colour of a palette
+  object that way. A palette holds 8 bits per component, so it keeps AGA colours exactly;
   `PalRGB` stores a component of 0 to 15 as 0 to 255.
 
   `FadePalette` and `MixPalette` compute a new palette from one or two

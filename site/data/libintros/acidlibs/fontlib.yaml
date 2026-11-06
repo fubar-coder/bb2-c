@@ -10,6 +10,7 @@ intro: |
 
   ```blitzbasic
   BLITZ
+  BitMap 0,320,256,2
   BitMapOutput 0
   Colour 1,0
   Locate 2,1

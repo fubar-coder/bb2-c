@@ -1,18 +1,18 @@
 description: The system's ASL requesters - files, drawers, fonts and screen modes chosen with the standard requesters of AmigaOS.
 intro: |
-  These functions open the standard requesters of `asl.library`, which
-  AmigaOS 2.0 and newer have, on the used screen: for a file, a drawer, a
-  font or a screen mode. They work in Amiga mode only. On an older
-  system, freqlib's `FileRequest$` gives a file requester of Blitz's own.
+  These functions open the standard requesters of the system's
+  `asl.library` on the used screen: for a file, a drawer, a font or a
+  screen mode. They work in Amiga mode only. On a system without
+  `asl.library`, freqlib's `FileRequest$` gives a file requester of Blitz's own.
 
   ```blitzbasic
   MaxLen path$=160
-  MaxLen file$=64
-  f$=ASLFileRequest$("Load picture",path$,file$,"#?.iff")
+  MaxLen fname$=64
+  f$=ASLFileRequest$("Load picture",path$,fname$,"#?.iff")
   If f$<>"" Then LoadBitMap 0,f$
   ```
 
-  As with `FileRequest$`, `path$` and `file$` must be string variables
+  As with `FileRequest$`, `path$` and `fname$` must be string variables
   with a `MaxLen` of at least 160 and 64; they give the drawer and the
   name to start with and get the ones chosen.
 

@@ -31,7 +31,7 @@ intro: |
   $00040000 (RXFF_STRING) for a script given as the command string
   itself. When something fails, such as missing memory or a missing
   ARexx port, the library shows a recoverable alert, which waits for a
-  mouse button, and the command returns a small error code (4 or 8)
-  instead of its result.
+  mouse button, and the command does not do its work; `CreateRexxMsg`
+  then returns 4 instead of a message.
 
   *Based on the arexxlib guide by Acid Software.*

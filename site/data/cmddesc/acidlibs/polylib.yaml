@@ -3,7 +3,7 @@
 "ChunkyPlot":
   text: Sets the pixel at `x,y` of the chunky area of the used CopList to `color`. With `CLIP`, a pixel outside the area is left alone; without it, nothing is checked.
 "ChunkyVlin":
-  text: Draws a vertical line in `color` from `y1` to `y2` at column `x` of the chunky area of the used CopList. With `CLIP`, the line is cut at the edges of the area.
+  text: Draws a vertical line in `color` from `y1` to `y2` at column `x` of the chunky area of the used CopList. With `CLIP`, the line is cut at the top and bottom edges of the area and a negative `x` draws nothing; an `x` beyond the right edge is not checked.
   notes: |
     Kept from the original: without `CLIP`, a `y1` greater than `y2`
     writes far beyond the area
@@ -23,7 +23,7 @@
     swapped and `RenderPoly` draws on the dither bitmap
     ([#421](https://github.com/fubar-coder/bb2-c/issues/421)).
 "RenderToChunky":
-  text: Makes `RenderPoly` draw as `ChunkyPoly` on the chunky area of the CopList given, or with `split` on the second part of a split area. The colour is then a number from 0 to 14 for a fixed set of colours.
+  text: Makes `RenderPoly` draw as `ChunkyPoly` on the chunky area of the CopList given, or with a `split` of 1 on the second part of an area split by `CustomChunky`. The colour is then a number from 0 to 14 for a fixed set of colours.
   notes: |
     Kept from the original: a colour above 14 reads beyond the set of
     colours ([#422](https://github.com/fubar-coder/bb2-c/issues/422)).

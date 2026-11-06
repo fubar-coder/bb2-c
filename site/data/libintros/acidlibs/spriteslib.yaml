@@ -11,6 +11,7 @@ intro: |
   ```blitzbasic
   GetaSprite 0,0
   Free Shape 0
+  BLITZ
   ShowSprite 0,160,100,0
   ```
 

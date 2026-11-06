@@ -5,15 +5,17 @@ intro: |
   gadget with a number of its own, its `Id`, to a list, and `Window ...,
   GadgetList#` opens a window with all of them. The `Id` comes back from
   `GadgetHit` when the gadget is used, so the gadgets of a list should
-  have different `Id`s, all greater than 0. A gadget placed relative to
+  have different `Id`s. A gadget placed relative to
   the right or bottom edge of the window takes a negative x or y.
 
   The look of the gadgets made from now on is set beforehand: `GadgetPens`
   and `GadgetJam` for their texts, `Borders` and `BorderPens` for their
   borders. A text gadget whose text has parts separated by `|` cycles
-  through them when it is clicked; `GadgetStatus` and `SetGadgetStatus`
-  read and set the part shown. Gadgets made after `ButtonGroup` form a
-  group of which one can be selected, and `ButtonId` tells which.
+  through them when it is clicked (unless it is a toggle gadget or in a
+  button group); `GadgetStatus` and `SetGadgetStatus` read and set the
+  part shown. Gadgets made with the button group flag after `ButtonGroup`
+  form a group of which one is selected at a time, and `ButtonId` tells
+  which.
 
   Commands that change a gadget, such as `SetString`, `Toggle` or
   `SetHProp`, do not redraw it; `Redraw` does. With runtime error

@@ -7,7 +7,7 @@ intro: |
 
   ```blitzbasic
   NPrint "Workbench: ",WBWidth,"x",WBHeight,", ",WBDepth," planes"
-  If ExecVersion>=39 Then NPrint "AmigaOS 3.0 or newer"
+  NPrint "exec.library version ",ExecVersion
   ```
 
   *Based on the environlib guide by Acid Software.*

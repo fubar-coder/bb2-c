@@ -3,7 +3,7 @@
 "LoadBlitzFont":
   text: Loads a font of 8 by 8 pixel characters, such as `topaz.font`, from `FONTS:` into a BlitzFont object, which becomes the font of the bitmap output. Amiga mode only.
   notes: |
-    Only fonts of 8 pixels height with characters 8 pixels wide are
+    Only fonts of 8 pixels height with all characters 8 pixels wide are
     accepted; any other font, or one that cannot be found, is the error
     "Can't Open Font". Kept from the original: a font refused for its size
     stays open ([#150](https://github.com/fubar-coder/bb2-c/issues/150)).

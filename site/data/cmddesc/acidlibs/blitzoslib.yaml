@@ -29,7 +29,7 @@
 "ToggleBox":
   text: Turns the bevel of a box the other way round. The box is not drawn.
 "DisableBox":
-  text: Disables a box; it is drawn plain and cannot be selected. The box is not drawn.
+  text: Disables a box; it is drawn plain and cannot be selected with the mouse, the joystick or the cursor keys. The box is not drawn.
 "EnableBox":
   text: Enables a disabled box again. The box is not drawn.
 "BoxValue":

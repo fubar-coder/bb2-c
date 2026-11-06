@@ -80,7 +80,7 @@
     (`GTCB_Checked`, `$80080004`). Tags that only set up a gadget, such as
     the format of a slider's level, cannot be changed afterwards.
 "GTGetAttrs":
-  text: The value of one GadTools tag of a gadget, or 0 if there is no such gadget. It needs AmigaOS 3.0 or newer.
+  text: The value of one GadTools tag of a gadget, or 0 if there is no such gadget.
 "GTSetString":
   text: Sets the text of a string gadget or a text gadget.
 "GTGetString":
@@ -106,7 +106,7 @@
 "GTArrowSize":
   text: The size of the arrows of scrollers made from now on with arrows; the start value is 16.
 "GTGimmeCludge":
-  text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window's borders and the height of the screen's font. Use it for a GimmeZeroZero window, whose positions already start inside the borders.
+  text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window border sizes of the used screen and the height of its font. Use it for a GimmeZeroZero window, whose positions already start inside the borders.
 "GTFreeGadget":
   text: Removes the gadget, or all gadgets in a row with that `id`, from the GTList and frees them.
   notes: |

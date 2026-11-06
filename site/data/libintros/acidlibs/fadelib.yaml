@@ -3,10 +3,11 @@ intro: |
   `FadeIn` fades the colours of the used slice from black up to those of
   a palette, `FadeOut` from the palette down to black, in 16 steps. A
   fade works on slices in Blitz mode only. Normally the command waits
-  until the fade is done, with a `VWait Rate` between two steps; 0, the
-  start value, is the fastest fade.
+  until the fade is done, waiting `Rate`+1 frames before each step; 0,
+  the value without `Rate`, is the fastest fade.
 
   ```blitzbasic
+  BLITZ
   FadeIn 0,1
   ```
 
@@ -15,6 +16,7 @@ intro: |
   in its main loop, and `FadeStatus` tells whether steps are left:
 
   ```blitzbasic
+  BLITZ
   ASyncFade On
   FadeOut 0
   While FadeStatus

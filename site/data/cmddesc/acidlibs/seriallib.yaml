@@ -1,5 +1,5 @@
 "OpenSerial":
-  text: Opens unit `unit#` of the serial device `device$` at the baud rate `baud`, with the flags `io_serflags`, and returns the address of its system request, or 0 if it cannot be opened.
+  text: Opens unit `unit#` of the serial device `device$` at the baud rate `baud`, with the flags `io_serflags`, and returns 0 if it cannot be opened, else the address of the unit's data in the library.
   notes: |
     The flags are the sum of 1 parity on, 2 odd parity (else even), 4
     seven wire handshake, 8 a break waits until the buffer is empty, 16
@@ -37,4 +37,4 @@
 "SetSerialParams":
   text: Passes the settings of the unit's request to the device again, for example after changing the request directly.
 "SerialEvent":
-  text: Whether a signal of the unit has come, for a program that waits for several things at once; 0 if none has.
+  text: Whether a signal of the unit came at the last `Wait`, for a program that waits for several things at once; 2 for its read signal, 1 for its write signal, 0 if none has.

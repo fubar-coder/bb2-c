@@ -42,8 +42,8 @@
 "LoadSprites":
   text: Loads sprites saved with `SaveSprites` into the sprite objects from the first `Sprite#` on, up to the second if it is given. Amiga mode only.
   notes: |
-    When the file has fewer sprites than the range, the other objects stay
-    as they are. The errors are those of `SaveSprites`. Kept from the
+    When the file has fewer sprites than the range, the sprite after the
+    last one loaded is freed and the others stay as they are. The errors are those of `SaveSprites`. Kept from the
     original: the size of a sprite's image depends on the `SpriteMode` at
     the time of loading
     ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).

@@ -6,4 +6,5 @@ intro: |
   through the program line by line and keeps track of procedures and
   interrupt routines, so that the debugger can show where the program
   is. The dhandlerlib library connects it with the debugger's window.
-  Executables made without the debugger do not contain it.
+  Executables do not contain it, also with the debugger on: they get
+  the rundebuglib library instead.

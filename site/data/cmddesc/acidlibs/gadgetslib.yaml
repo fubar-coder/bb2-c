@@ -1,7 +1,7 @@
 "TextGadget":
   text: Adds a text gadget, a button with a text, to the gadget list. A plain one is on only while it is held down; a toggle gadget changes between on and off with each click. The flags select a toggle gadget, positions and sizes relative to the window, membership in the current button group and others.
 "StringGadget":
-  text: Adds a string gadget, a field for typing text, with room for `Maxlen` characters and the given width in pixels; a longer text scrolls inside the gadget. `StringText$` reads what was typed.
+  text: Adds a string gadget, a field for typing text, as high as the font, with a buffer of `Maxlen` bytes (room for `Maxlen`-1 characters) and the given width in pixels; a longer text scrolls inside the gadget. `StringText$` reads what was typed.
   notes: |
     Kept from the original: with `Borders Off` it writes to low memory
     ([#164](https://github.com/fubar-coder/bb2-c/issues/164)), and a
@@ -32,22 +32,22 @@
 "Disable":
   text: Makes a gadget unusable; Intuition shows it ghosted.
 "GadgetStatus":
-  text: For a cycling text gadget, the number of the part it shows, from 1; for other gadgets, -1 if it is selected, else 0.
+  text: For a text gadget that is not a toggle gadget, the number of the part it shows, from 1; for toggle gadgets and gadgets without a text, -1 if it is selected, else 0.
 "SetGadgetStatus":
-  text: Makes a cycling text gadget show part `Value`, from 1.
+  text: Makes a cycling text gadget show part `Value`, from 1; toggle gadgets and a `Value` of 0 are ignored.
 "SetTextGadget":
   text: Replaces the text of a gadget; the new text is padded with spaces and cut to the length of the old one.
 "ButtonGroup":
   text: The button group of the gadgets made from now on whose flags ask for one; it must be greater than 0.
 "ButtonId":
-  text: The `Id` of the selected gadget of a button group.
+  text: The `Id` of the selected gadget of a button group, or -1 if none is selected.
 "ActivateString":
   text: Activates a string gadget of the window, so that typing goes into it.
 "SetString":
   text: Sets the contents of a string gadget.
   notes: |
-    With runtime error checking, a string as long as the gadget's room or
-    longer is the error "String to long for Gadget".
+    With runtime error checking, a string of `Maxlen` characters or more
+    is the error "String to long for Gadget".
 "ClearString":
   text: Empties a string gadget.
 "ResetString":

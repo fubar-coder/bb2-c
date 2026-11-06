@@ -15,8 +15,8 @@
 "CopyBitMap":
   text: Makes the second bitmap a copy of the first, in chip memory of its own. The used bitmap does not change.
   notes: |
-    With runtime error checking, a destination that borrows its memory is
-    the error "Can't copy borrowed Bitmap". Kept from the original: a
+    With runtime error checking, a source bitmap without memory of its
+    own (borrowed or not set up) is the error "Can't copy borrowed Bitmap". Kept from the original: a
     bitmap of size 0 makes the copy run over memory
     ([#78](https://github.com/fubar-coder/bb2-c/issues/78)).
 "CludgeBitMap":

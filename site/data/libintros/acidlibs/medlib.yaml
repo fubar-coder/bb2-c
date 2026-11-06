@@ -6,9 +6,9 @@ intro: |
   `StartMedModule` prepares it and starts it from the beginning.
 
   The library has no interrupt of its own: the music moves on one step
-  each time the program calls `PlayMed`, and that must happen 50 times a
-  second, after a `VWait` in the main loop or in a vertical blank
-  interrupt handler:
+  each time the program calls `PlayMed`, which is meant to happen once
+  every vertical blank, after a `VWait` in the main loop or in a vertical
+  blank interrupt handler:
 
   ```blitzbasic
   LoadMedModule 0,"song.med"

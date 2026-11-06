@@ -4,7 +4,10 @@
     The width is rounded up to a multiple of 16. The height of the short
     form is that of the display, 200 lines for NTSC or 256 for PAL,
     doubled for interlace. A screen that the object already holds is
-    freed first. With a bitmap smaller than the screen, the error is
+    freed first; kept from the original, this can crash if `ShowBitMap`
+    was used on it
+    ([#247](https://github.com/fubar-coder/bb2-c/issues/247)). With
+    runtime error checking, a bitmap smaller than the screen is the error
     "Can't use specified BitMap".
 
     The view mode of the long form is that of the graphics library,
@@ -17,7 +20,7 @@
     Screen 0,0,0,1280,256,8,$8020,"MyScreen",1,0
     ```
 "ScreenTags":
-  text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the screen or Intuition's error code.
+  text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the address of the screen or, if it cannot be opened, Intuition's error code.
   notes: |
     Kept from the original: a tag list is copied without a limit
     ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
@@ -30,7 +33,7 @@
     `ShowBitMap` on that object this can crash
     ([#247](https://github.com/fubar-coder/bb2-c/issues/247)).
 "FindScreen":
-  text: Takes a screen that is already open as the screen object - the frontmost one, or the first whose title begins with `Title$` - and makes it the used screen.
+  text: Takes a screen that is already open as the screen object - the frontmost one, or the first whose title or default title begins with `Title$` - and makes it the used screen.
   notes: |
     Kept from the original: as with `WbToScreen`, a screen that the object
     held before is closed if the program opened it
@@ -50,7 +53,7 @@
 "ShowBitMap":
   text: Shows a bitmap in the used screen instead of its own, or without an argument its own bitmap again, for example for double buffering. Wait with `VWait` after it before drawing into the bitmap that was shown before, so that the new one is really on the display.
 "ScreenPens":
-  text: The pens of Intuition's look, such as the text, shine and shadow pens, for the screens opened from now on; `ScreenPens On` and `Off` switch them on or off.
+  text: The pens of Intuition's look, such as the text, shine and shadow pens, for the screens that `Screen` opens from now on; `ScreenPens On` and `Off` switch them on or off.
 "SMouseX":
   text: The x position of the mouse on the used screen.
 "SMouseY":

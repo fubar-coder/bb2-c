@@ -3,7 +3,7 @@
 "StartMedModule":
   text: Prepares the module for playing and starts it from the beginning; it also restarts a module that plays. All four channels are used again. An object without a module is the error "Med Library Error".
 "PlayMed":
-  text: Plays one step of the started module; call it 50 times a second, after `VWait` or in a vertical blank interrupt handler. Without a started module it does nothing.
+  text: Plays one step of the started module; call it once every vertical blank, after `VWait` or in a vertical blank interrupt handler. Without a started module it does nothing.
 "StopMed":
   text: Stops the module and silences the channels. `PlayMed` then does nothing until the next `StartMedModule`.
 "JumpMed":
@@ -12,7 +12,7 @@
     Kept from the original: without a started module it writes to a low
     memory address ([#210](https://github.com/fubar-coder/bb2-c/issues/210)).
 "SetMedVolume":
-  text: The overall volume of the module, from 0 to 64, for all its tracks; lowering it step by step fades the music out.
+  text: Sets the overall volume of the module for all its tracks, in place of the master volume stored in the song; lowering it step by step fades the music out.
 "GetMedVolume":
   text: The volume of the last note on the channel, and 0 after it has been read once.
   notes: |

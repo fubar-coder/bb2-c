@@ -14,7 +14,7 @@
     ([#99](https://github.com/fubar-coder/bb2-c/issues/99)). Waiting until
     `XStatus` is 0 does the same reliably.
 "XStatus":
-  text: What the library is doing, 0 nothing, 1 recording (with `Record` or `TapeTrap`) and 2 playing back.
+  text: What the library is doing, 0 nothing, 1 recording and 2 playing back.
   notes: |
     Kept from the original: while an event is waiting to be sent, $8000
     is added to the value
@@ -33,7 +33,7 @@
 "FreeMacroKey":
   text: Removes the tape from the key `Rawkey` with the qualifier keys `Qualifier` again.
 "AbsMouse":
-  text: Moves the mouse pointer to `X,Y` of the display, X from 0 to 639 and Y from 0 to 399 (NTSC) or 511 (PAL).
+  text: Moves the mouse pointer to `X,Y` of the display.
 "RelMouse":
   text: Moves the mouse pointer by `X Offset,Y Offset` from where it is; positive values move it right and down.
 "MouseButton":
@@ -53,4 +53,4 @@
     trapping but adds the events to a wrong place in memory
     ([#95](https://github.com/fubar-coder/bb2-c/issues/95)).
 "QuietTrap":
-  text: With `On`, the commands caught by `TapeTrap` only go onto the tape; with `Off`, the start value, they also take effect.
+  text: With `On`, the start value, the commands caught by `TapeTrap` only go onto the tape; with `Off`, they also take effect.

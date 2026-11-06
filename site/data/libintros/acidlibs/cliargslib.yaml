@@ -13,7 +13,8 @@ intro: |
   ```
 
   With runtime error checking, a parameter number below 1 or above
-  `NumPars` is the error "Non-Existent Parameter."; without it, such a
+  `NumPars` is the error "Non-Existent Parameter." ("No parameters
+  passed." if there are none); without it, such a
   number reads beyond the list of parameters
   ([#106](https://github.com/fubar-coder/bb2-c/issues/106)).
 

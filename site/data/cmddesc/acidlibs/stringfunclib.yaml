@@ -35,7 +35,10 @@
 "Replace$":
   text: "`String$` with every occurrence of `Findstring$` replaced by `Replacestring$`."
   notes: |
-    With an empty `Findstring$` the string comes back unchanged.
+    With an empty `Findstring$` the string comes back unchanged. Kept
+    from the original: inside a longer string expression, the text that
+    follows such a `Replace$` is not joined to it correctly
+    ([#424](https://github.com/fubar-coder/bb2-c/issues/424)).
 "Mki$":
   text: The low word of the value as a string of two bytes, the high byte first.
 "Mkl$":

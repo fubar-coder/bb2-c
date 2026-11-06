@@ -1,6 +1,5 @@
-description: The base address of the Amiga's custom chips, $DFF000, for the hardware access of Blitz mode.
+description: The base address of the Amiga's custom chips, $DFF000, for direct access to the hardware.
 intro: |
-  This library gives every program the address of
-  the Amiga's custom chips, $DFF000, which the compiled code and the
-  libraries use to program the display, the blitter and the other chips
-  directly in Blitz mode.
+  This library gives a program the address of the Amiga's custom chips,
+  $DFF000, which libraries such as the blitter commands use to program
+  the chips directly.

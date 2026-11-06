@@ -27,13 +27,15 @@
   notes: |
     Kept from the original: a `WindowTags` without tags uses the extra
     tags of the previous one
-    ([#316](https://github.com/fubar-coder/bb2-c/issues/316)).
+    ([#316](https://github.com/fubar-coder/bb2-c/issues/316)), and more
+    than 16 tag and data pairs given as arguments overflow its tag buffer
+    ([#961](https://github.com/fubar-coder/bb2-c/issues/961)).
 "CloseWindow":
   text: Closes the window. Its waiting events are dropped; those of the other windows stay. Nothing happens if the window is not open.
 "WaitEvent":
   text: Waits for the next event of any window and returns its IDCMP class. As a statement, it only waits. The class is a long value, so keep it in a long variable, such as `ev.l=WaitEvent`.
 "Event":
-  text: The IDCMP class of the next event of any window, or 0 if there is none; it does not wait.
+  text: The IDCMP class of the next event of any window, or 0 if there is none (also for a menu event without a choice or a key without a character); it does not wait.
   notes: |
     Kept from the original: a string gadget that is pressed gives an
     extra "gadget up" event
@@ -100,7 +102,7 @@
 "WCursY":
   text: The y position of the text cursor in the used window.
 "WColour":
-  text: The text colours of the output into windows, the foreground and optionally the background.
+  text: The text colours of the output into windows, the foreground and optionally the background; the background colour is also used by the drawing commands.
 "WJam":
   text: The drawing mode of text and graphics in windows, one of the graphics library's draw modes.
 "WCls":
@@ -127,6 +129,9 @@
     ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
 "WPrintScroll":
   text: Scrolls the inside of the used window up if the text cursor is below its last line, so that the cursor line fits.
+  notes: |
+    Kept from the original: it sets the drawing colour to 0
+    ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
 "WBlit":
   text: Draws a shape into the used window, with its mask if it has one.
 "BitMaptoWindow":
@@ -136,13 +141,13 @@
 "WMove":
   text: Moves the used window and waits until Intuition has moved it.
   notes: |
-    With runtime error checking, a position outside the screen is the
-    error "Can't move Window".
+    With runtime error checking, a negative position or one where the
+    window does not fit on its screen is the error "Can't move Window".
 "WSize":
   text: Changes the size of the used window and waits until Intuition has done it.
   notes: |
-    With runtime error checking, a size of 0 or a window that would leave
-    the screen is the error "Can't Size Window".
+    With runtime error checking, a size of 0 or less or a window that
+    would leave the screen is the error "Can't Size Window".
 "SizeLimits":
   text: The smallest and largest size of the windows opened from now on.
 "Activate":
@@ -172,15 +177,18 @@
 "RawKey":
   text: The raw key code of the last key read from a window.
 "Qualifier":
-  text: The qualifier of the last key read from a window, such as the shift keys held down.
+  text: The low 8 bits of the qualifier of the last key read from a window, such as the shift keys held down.
+  notes: |
+    Kept from the original: only the low word of the long result is set
+    ([#313](https://github.com/fubar-coder/bb2-c/issues/313)).
 "Cursor":
-  text: The cursor of `Edit$` in a window, a block for a negative value, otherwise an underline of that thickness.
+  text: The cursor of `Edit$` in a window, a block for a negative value, otherwise an underline one line thicker than the value.
 "EditFrom":
-  text: Without an argument, the next `Edit$` in a window starts at the beginning and ends only with Return; with a position, it starts there and also ends at any other event.
+  text: Without an argument, the following `Edit$` calls in a window start at the beginning and end only with Return; with a position, they start there and also end at any other event and at keys the editor does not use.
 "Editat":
   text: The cursor position at which the last `Edit$` in a window ended.
 "EditExit":
-  text: The character that ended the last `Edit$` in a window.
+  text: The character that ended the last `Edit$` in a window, or -1 if another event ended it.
 "WindowFont":
   text: Sets the font of the used window, optionally with a soft style.
 "WPointer":

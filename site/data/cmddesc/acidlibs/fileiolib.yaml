@@ -28,7 +28,7 @@
 "Put":
   text: Writes the values of the `Fields` variables as record number `Record` (counted from 0) of the file. A new record may only be added right at the end of the file; a record further on is the error "Can't Find Record".
 "Get":
-  text: Reads record number `Record` (counted from 0) of the file into the `Fields` variables. A record that does not exist is the error "Can't Find Record".
+  text: Reads record number `Record` (counted from 0) of the file into the `Fields` variables. A record beyond the end of the file is the error "Can't Find Record".
 "FileOutput":
   text: Sends the output of the following `Print` and `NPrint` commands into the file. Before the file is closed, switch the output back, for example with `DefaultOutput` or `WindowOutput`.
 "FileInput":

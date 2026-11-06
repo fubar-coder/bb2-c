@@ -7,13 +7,13 @@ intro: |
   part of a bitmap this way is how many games scroll the playfield.
 
   ```blitzbasic
-  Use BitMap 0
+  BitMap 0,320,200,2
   Cls 0
   Plot 10,10,1
-  Scroll 0,0,320,200,0,8
+  Scroll 0,0,320,192,0,8
   ```
 
-  Positions are taken from the bitmap's origin. With runtime error
+  `Plot` and `Point` count positions from the bitmap's origin. With runtime error
   checking, a bitmap that has not been made is the error "Uninitialized
   BitMap", and an area of `Scroll` or `BlockScroll` outside a bitmap is
   "Illegal Scroll Area".

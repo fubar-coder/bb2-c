@@ -17,7 +17,8 @@ intro: |
   ```
 
   Using a unit that is not open is the error "Serial Device Not Open",
-  also without runtime error checking.
+  also without runtime error checking (`CloseSerial` and `SerialEvent`
+  do not check).
 
   Kept from the original: only unit 0 works with all commands; for other
   units, `CloseSerial`, `SetSerialBuffer`, `SetSerialLens`,

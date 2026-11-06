@@ -5,7 +5,7 @@
 "BlitColl":
   text: True (-1) if the shape at the position covers a pixel of the used bitmap that is not colour 0, else false (0). It follows the outline of the shape, so the bitmap should hold only what the shape may collide with. Test before blitting the shape itself.
 "BlitMode":
-  text: The blit mode of the following `Blit` commands, a value of the blitter's control register BLTCON0, with the minterm in bits 0 to 7 and the channels used in bits 8 to 11. `CookieMode`, `EraseMode`, `InvMode` and `SolidMode` give the usual ones. The blitting commands use channel A for the shape's cookie, B for its data, and C and D for the bitmap.
+  text: The blit mode of the following `Blit` commands, a value of the blitter's control register BLTCON0, with the minterm in bits 0 to 7 and the channels used in bits 8 to 11. `CookieMode`, `EraseMode`, `InvMode` and `SolidMode` give the usual ones. `Blit` uses channel A for the shape's cookie, B for its data, and C and D for the bitmap.
 "CookieMode":
   text: The blit mode that draws the shape and leaves the background visible where the shape has colour 0; the start value.
 "EraseMode":

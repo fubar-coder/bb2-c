@@ -8,7 +8,7 @@
     taken until the program ends
     ([#950](https://github.com/fubar-coder/bb2-c/issues/950)).
 "DiskBuffer":
-  text: The size in bytes of each of the two halves of the chip memory buffer that `DiskPlay` streams through; the start value is 1024. A much smaller buffer can make the sound worse, and a slow device may need a larger one.
+  text: The size in bytes of each of the two halves of the chip memory buffer that `DiskPlay` streams through; the start value is 1024.
 "LoadSound":
   text: Loads an IFF 8SVX file into the sound, with its period and repeat part. Errors are "Illegal Sound file" when the file cannot be opened, "Can't Find VHDR", "Error Reading File", and "Sound too long" for a sample of 128 KB or more.
   notes: |
@@ -19,11 +19,11 @@
 "Volume":
   text: Sets the volume (0 to 64) of the channels of the mask while they play, one value per channel, for example for fading a sound in or out.
 "Filter":
-  text: Switches the Amiga's audio low-pass filter on or off; the same hardware bit dims the power light.
+  text: "`Filter On` (any value other than 0) sets and `Filter Off` clears bit 1 of the CIA-A port A, the bit that controls both the Amiga's audio low-pass filter and the power light."
 "LoopSound":
   text: Plays the sound on the channels of the mask and then repeats its repeat part until another sound is played on the channel or the program ends.
 "InitSound":
-  text: Makes an empty sound (all bytes 0) of `Length` bytes in chip memory, with the period (428, about middle C, if none is given) and the offset where the repeat part starts (0 if none is given).
+  text: Makes an empty sound (all bytes 0) of `Length` bytes in chip memory, with the period (428 if none is given) and the offset where the repeat part starts (0 if none is given).
   notes: |
     With runtime error checking, the length must be even and below 128 KB,
     and the repeat offset even and less than the length.

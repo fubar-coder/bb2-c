@@ -18,4 +18,4 @@
 "MouseYSpeed":
   text: How far the mouse moved vertically between the last two vertical blanks; negative upwards. Blitz mode only.
 "PositionMouse":
-  text: Sets the mouse position to `x,y`. It is not clipped to `MouseArea` until the mouse moves.
+  text: Sets the mouse position to `x,y`. It is clipped to `MouseArea` only at the next vertical blank, if the mouse is read with `Mouse On`.

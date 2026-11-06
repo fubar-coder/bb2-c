@@ -8,7 +8,7 @@
     without the BPLCON1 instruction writes to a wrong address
     ([#407](https://github.com/fubar-coder/bb2-c/issues/407)).
 "Show":
-  text: Shows a bitmap in the used slice, from its point `X,Y` if it is given, else from its top left corner. The slice must not be a dual playfield slice.
+  text: Shows a bitmap in the used slice, from its point `X,Y` if it is given, else from its top left corner. The slice must not be one made to show only a front or only a back bitmap; with runtime error checking that is the error "Can't Show in Slice".
   notes: |
     A position helps with a bitmap larger than the slice: changing it
     scrolls the bitmap.
@@ -27,7 +27,8 @@
 "CustomCop":
   text: Adds the copper instructions in `Copins$`, four bytes each, at line `Y` of the display.
   notes: |
-    Kept from the original: an empty string overwrites memory
+    Kept from the original: a string shorter than four bytes overwrites
+    memory
     ([#404](https://github.com/fubar-coder/bb2-c/issues/404)).
 "CopLoc":
   text: The address of the copper list of the slices, in chip memory.

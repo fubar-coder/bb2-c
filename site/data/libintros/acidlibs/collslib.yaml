@@ -11,15 +11,16 @@ intro: |
   `SetCollHi` choose which bitmap colours count, so that a game can have
   safe and unsafe colours. `DoColl` reads what the hardware noticed since
   the last `DoColl`, and `SColl` and `PColl` then tell which sprites
-  collided. These commands work in Blitz mode only.
+  collided. `DoColl`, `SColl` and `PColl` work in Blitz mode only.
 
   ```blitzbasic
+  BLITZ
   SetCollOdd
   Repeat
     VWait
     ShowSprite 0,x,100,0
     DoColl
-    If PColl(0) Then NPrint "Hit!"
+    If PColl(0) Then hits+1
     x+1
   Until x=300
   ```

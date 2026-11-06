@@ -20,7 +20,7 @@ intro: |
   bank. The memory of banks and of `AllocMem` that the program does not
   free is freed when it ends.
 
-  Nothing reports errors: a file that cannot be loaded or saved is left
-  alone.
+  File errors are not reported: a file that cannot be loaded or saved is
+  skipped without a message.
 
   *Based on the banklib guide by Acid Software.*

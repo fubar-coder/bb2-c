@@ -35,7 +35,7 @@ intro: |
   | $10000 | 24 bit (AGA) palette |
 
   Without the AGA chip set, only fetch mode 0 and low resolution sprites
-  are allowed.
+  work.
 
   A copper list can also have room for *custom copper instructions*,
   given by `numcustoms` in `InitCopList`. A positive number reserves that
@@ -48,8 +48,8 @@ intro: |
   instructions it needs, as ecs and aga counts where they differ.
 
   With runtime error checking, a CopList that is not initialised is the
-  error "Uninitialised CopList", and a command that needs more custom
-  instructions than there are is "Not Enough Custom Cops" or "Not Enough
-  Custom Copper Space".
+  error "Uninitialised CopList". A command that needs more custom
+  instructions than there are is the error "Not Enough Custom Cops" or
+  "Not Enough Custom Copper Space", also without runtime error checking.
 
   *Based on the displaylib guide by Acid Software.*

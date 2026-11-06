@@ -13,4 +13,4 @@
 "cr_vbr":
   text: The address of the processor's exception vectors (the vector base register) on a 68010 or higher, 0 on a 68000.
 "ExecVersion":
-  text: The version of the system's exec.library, which tells the version of AmigaOS, for example 34 for 1.3, 37 for 2.04, 39 for 3.0 and 40 for 3.1.
+  text: The version of the system's exec.library, which tells the version of AmigaOS.

@@ -5,5 +5,4 @@ intro: |
   numbers against their maximum, of the stack, of `Return` and `Next`
   without their partners, and of numbers that do not fit their type.
   The checks are the routines of this library; a failed check is a
-  runtime error, which the debugger reports with the line of the
-  program.
+  runtime error, which the debugger reports.

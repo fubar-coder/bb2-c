@@ -9,7 +9,7 @@ intro: |
 
   ```blitzbasic
   SetInt 5
-    frames+1
+    vbcount+1
   End SetInt
   ```
 

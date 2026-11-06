@@ -5,8 +5,9 @@
   notes: |
     Kept from the original: it writes the file name of the requester to
     a wrong address, `x` in the form with a position
-    ([#61](https://github.com/fubar-coder/bb2-c/issues/61)); and a pattern
-    of an `ASLFileRequest$` before stays switched on
+    ([#61](https://github.com/fubar-coder/bb2-c/issues/61)); and in the form
+    without a position, a pattern of an `ASLFileRequest$` before stays
+    switched on
     ([#64](https://github.com/fubar-coder/bb2-c/issues/64)).
 "ASLFontRequest":
   text: Opens the system's font requester and returns the address of a description of the font chosen, or 0 if the user cancels. The flags add the gadgets for 1 the pen, 2 the background pen, 4 the style, 8 the draw mode and 16 a choice of fixed width fonts only.

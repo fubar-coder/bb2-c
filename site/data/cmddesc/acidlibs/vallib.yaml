@@ -4,9 +4,10 @@
     Kept from the original: hexadecimal, binary and negative numbers read
     one character behind the string
     ([#302](https://github.com/fubar-coder/bb2-c/issues/302)); the length
-    of the string counts only up to a limit, so very long strings give 0
-    ([#303](https://github.com/fubar-coder/bb2-c/issues/303)); and a very
-    long fraction is dropped
+    of the string is taken as a 16-bit number, so strings of 32769 to
+    65536 characters give 0 and longer ones are read only in part
+    ([#303](https://github.com/fubar-coder/bb2-c/issues/303)); and a fraction
+    of 32 or more digits is dropped
     ([#304](https://github.com/fubar-coder/bb2-c/issues/304)).
 "Int":
   text: The integer part of the value, as a long; the fraction is cut off towards 0. Takes a value of any numeric type.

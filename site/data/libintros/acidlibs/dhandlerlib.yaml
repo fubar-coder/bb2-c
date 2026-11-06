@@ -2,5 +2,6 @@ description: The connection between a program run from the editor and the debugg
 intro: |
   When a program runs from the editor with the debugger, this library
   connects the run time part of the debugger, the debuglib library, with
-  the debugger's window in the editor, which shows the program's state
-  and takes the user's commands. Executables use rundebuglib instead.
+  the debugger program the editor has loaded, which shows the program's
+  state and takes the user's commands. Ctrl-Left Alt-C stops the running
+  program. Executables use rundebuglib instead.

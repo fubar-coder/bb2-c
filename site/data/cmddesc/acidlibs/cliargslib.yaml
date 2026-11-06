@@ -6,7 +6,7 @@
 "Par$":
   text: The text of parameter number `Parameter#`, from 1 to `NumPars`. For a Workbench parameter, this is the name of the icon's file, and empty for a drawer, a disk or another icon that is not a file.
 "FromCLI":
-  text: True (-1) if the program was started from the CLI, false (0) if it was started from the Workbench.
+  text: True (-1) if the program was started from the CLI (or from the editor), false (0) if it was started from the Workbench.
 "ParPath$":
   text: The drawer of Workbench parameter number `Par#`; with a type of 1 (any type but 0), the drawer and the name joined, the full name of the file. It needs AmigaOS 2.0 or newer and a start from the Workbench.
   notes: |

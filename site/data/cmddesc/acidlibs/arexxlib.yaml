@@ -1,5 +1,5 @@
 "CreateRexxMsg":
-  text: Makes an ARexx message and returns its address. `ReplyPort` is the address of the program's message port to which ARexx replies, `Exten` the file extension of the scripts (such as "rexx"), and `Host` the name of the host port, which is case sensitive.
+  text: Makes an ARexx message and returns its address. `ReplyPort` is the address of the program's message port to which ARexx replies, `Exten` the file extension of the scripts (such as "rexx"), and `Host` the name of the host port.
 "DeleteRexxMsg":
   text: Frees an ARexx message made with `CreateRexxMsg`.
 "FillRexxMsg":
@@ -20,7 +20,7 @@
 "SendRexxCommand":
   text: Sends an ARexx message to ARexx with `CommandString`, normally the name of a script, and the action codes the introduction describes. ARexx looks for the script also with the message's extension added.
 "ReplyRexxMsg":
-  text: Answers a command that came from an ARexx script, with the results `Result1` (0 for success) and `Result2`, and `ResultString` as the result string if the script asked for one.
+  text: Answers a command that came from an ARexx script, with the results `Result1` (0 for success) and `Result2`; if `Result1` is 0, `ResultString` can become the result string, as the note below says.
   notes: |
     Kept from the original: the result string is made for the wrong kind
     of message, for function calls instead of for messages that asked
@@ -37,6 +37,6 @@
 "RexxEvent":
   text: Takes the next message from the message port at `PortAddress` and returns its address, or 0 if none is waiting; a reply is cleared with `ClearRexxMsg` first.
 "IsRexxMsg":
-  text: True if the message is an ARexx message, else false (0).
+  text: 1 if the message is an ARexx message, else 0; note that this true value is 1, not -1.
 "RexxError":
   text: The text of an ARexx error code, such as the second result of a failed command.
