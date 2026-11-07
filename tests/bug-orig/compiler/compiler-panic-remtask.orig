@@ -1,0 +1,31 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+exclusive lock 0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-panic-remtask.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-panic-remtask
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+JOB	r001	CORPUS:src/compiler-panic-remtask.bb2
+XTRA	r001	defaults
+openreq "***** COMPILING *****"
+openreq "***** EXECUTING *****"
+OPENIO	r001
+PANIC	r001
+CONSOLE	r001	left open
+OUTPUT	r001	file open
+OUTPUT	r001	waiting
+REQUESTERS	r001	0
+BATCH	end

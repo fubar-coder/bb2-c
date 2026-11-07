@@ -1,0 +1,26 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+cancel 0
+inject: rc=0
+inject: current dir at end: other
+inject: current dir: the start lock was unlocked
+inject: click FQ/CD: answered
+inject: click FQ/CANCEL: answered
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/freqlib-cd-currentdir.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/freqlib-cd-currentdir
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

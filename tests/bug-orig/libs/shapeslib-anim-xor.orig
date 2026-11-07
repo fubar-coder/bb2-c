@@ -1,0 +1,23 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+frame 0 01
+frame 1 F1
+frame 2 C2
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/shapeslib-anim-xor.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/shapeslib-anim-xor
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

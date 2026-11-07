@@ -1,0 +1,25 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+key 00000020
+key 00000033
+key 00000035
+inject: rc=0
+inject: keys: sent
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/brexxlib-playback-time.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/brexxlib-playback-time
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

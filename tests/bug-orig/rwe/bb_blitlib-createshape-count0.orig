@@ -1,0 +1,21 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+timeout
+[compile]
+ok
+[run]
+before
+shape 2 width 16
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/bb_blitlib-createshape-count0.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/bb_blitlib-createshape-count0
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

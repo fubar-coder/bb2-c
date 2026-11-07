@@ -1,0 +1,22 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+default: -1 88
+limit 80: 0 0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rifnslib-fnsload-bank-55.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rifnslib-fnsload-bank-55
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

@@ -1,0 +1,23 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+first -1
+second -1
+lost -1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/ridatatypeslib-create-object-lost.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/ridatatypeslib-create-object-lost
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

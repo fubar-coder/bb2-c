@@ -1,0 +1,24 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+result -1
+address 0 written
+inject: allocfail: 1 allocations failed
+inject: rc=0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/ridoslib-addnotify-allocmem-unchecked.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/ridoslib-addnotify-allocmem-unchecked
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

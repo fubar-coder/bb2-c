@@ -1,0 +1,20 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+timeout
+[compile]
+ok
+[run]
+status 32770
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/brexxlib-allocsignal.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/brexxlib-allocsignal
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

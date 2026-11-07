@@ -1,0 +1,5 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+OK
+[problems]
+  - expect: log lacks "gadget id 9 type $00000001 flags $00000000"

@@ -1,0 +1,26 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+open 0
+inject: openlibfail: 1 opens failed
+inject: rc=0
+inject: opencount: dos.library +1
+inject: opencount: tion.library +1
+inject: opencount: hics.library +1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/ridatatypeslib-finit-closes-up-to-zero.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/ridatatypeslib-finit-closes-up-to-zero
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

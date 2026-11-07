@@ -1,0 +1,59 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+deftool 6: -1
+inject: allocfail: 1 allocations failed
+inject: rc=0
+inject: track: 35 allocations left, 45050 bytes
+inject:   10 bytes, flags $1
+inject:   12 bytes, flags $10000
+inject:   12 bytes, flags $10000
+inject:   12 bytes, flags $10001
+inject:   36 bytes, flags $10002
+inject:   38 bytes, flags $10001
+inject:   40 bytes, flags $10001
+inject:   40 bytes, flags $10001
+inject:   44 bytes, flags $10000
+inject:   44 bytes, flags $10001
+inject:   48 bytes, flags $10001
+inject:   48 bytes, flags $10001
+inject:   48 bytes, flags $10001
+inject:   54 bytes, flags $10000
+inject:   56 bytes, flags $10001
+inject:   64 bytes, flags $1
+inject:   64 bytes, flags $10001
+inject:   66 bytes, flags $10001
+inject:   68 bytes, flags $10001
+inject:   68 bytes, flags $10001
+inject:   68 bytes, flags $10002
+inject:   76 bytes, flags $10001
+inject:   76 bytes, flags $10001
+inject:   92 bytes, flags $10002
+inject:   92 bytes, flags $10002
+inject:   100 bytes, flags $1
+inject:   100 bytes, flags $1
+inject:   102 bytes, flags $1
+inject:   160 bytes, flags $10000
+inject:   160 bytes, flags $10000
+inject:   164 bytes, flags $10001
+inject:   292 bytes, flags $3
+inject:   656 bytes, flags $10001
+inject:   1080 bytes, flags $0
+inject:   40960 bytes, flags $10002
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/ritooltypeslib-addfreelist-fail-frees-0.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/ritooltypeslib-addfreelist-fail-frees-0
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
