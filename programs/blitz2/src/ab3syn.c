@@ -453,8 +453,9 @@ void ext_macrodef(BOOL on)
 
 /* AmiBlitz3's do_Macro (AmiBlitz3.ab3:20903-20939, thenmode) ends a
    macro line that has Then and no End If behind it with ": End If", so
-   a one-line If covers only the rest of its macro line (blitz2 closes it
-   at the end of the expanded line, #967).  AmiBlitz3 has a flag and
+   a one-line If covers only the rest of its macro line.  blitz2 closes it
+   at the end of the expanded line, and BB2 mode keeps that: not a bug,
+   the programmer writes the End If (#967).  AmiBlitz3 has a flag and
    clears it only on End If; here each Then counts and End If or EndIf
    closes one (intended: two Thens get two End Ifs, a line closed with
    EndIf none; docs/ab3/variant.md).  A token in a string does not

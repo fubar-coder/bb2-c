@@ -57,7 +57,7 @@
 | pre-git (AB2 2.22), changelog only | ≤2008 | "memtrash bug if object buffer increases between compiles (object+lib buffer)" | – (?) | `alloxinc`/`makeiallox` (?) |
 | pre-git (AB2 2.27), changelog only | ≤2008 | `type\a,1,2,3,4,5` wrong when the start is not word-aligned | – (?) | – |
 | pre-git (AB2 2.26/2.3), changelog only | ≤2008 | Characters ≥ 128 in `Data$`; `a && 4` gives "can't get address of constant" | – (?) | – |
-| pre-git (AB2 2.25/2.27), changelog only | ≤2008 | Macros: `End` and `If … Then` inside macros, parameter line joining | #968, #967 (?) | – |
+| pre-git (AB2 2.25/2.27), changelog only | ≤2008 | Macros: `End` and `If … Then` inside macros, parameter line joining | #968, #967 (not a bug: the programmer writes the `End If`; AB3 mode follows AmiBlitz3) | – |
 | pre-git (AB2 2.27), changelog only | ≤2008 | "object address calculations work with 32 bit instead of 16 bit, up to 32000 objects" – **not found**: HEAD `getmaxel`/`free`/`use` still emit `lsl.w` + `adda.w` | #939 (not in code) (?) | 12196–12266 |
 | pre-git (AB2 2.4), `news2.4.txt` | 2003 | "Bugfix of old BB2 Bug": `a.b=$90 : If a=$90` – a byte variable is fetched sign-extended (`ext.w`), the constant 128–255 as a positive word, so `cmp.w` never matches; AB2 fixed it only with `Optimize 3` | – (code-checked: reproduced by blitz2 2.10) | 10479–10486 (`varcont`), 10940–10944 (`consttype2`) |
 | pre-git (AB2 2.41b4), `news2.41b1.txt` | 2004 | "end / incbin let program crash on exit when size of incbin file is odd": after an `IncBin` of odd length at the end, the end code (`endop`, finits, `moveq #0,d0 / rts`) is written at an odd address | – (code-checked) | 2640 (`move.l pc,endop`, no `alignpc`) |

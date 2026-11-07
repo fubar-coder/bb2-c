@@ -465,7 +465,8 @@ ab3_cli_case(inc_longlong inc_longlong.ab3 REF)
 # with Then.  Inside a While of another macro, the line after it, a line
 # already closed, lines joined with @@, a caller's Then, Else, Then in a
 # string or comment, an End If before the Then, a block If around it; BB2
-# mode keeps blitz2's error (#967).  AmiBlitz3's bugs are implemented as
+# mode keeps blitz2's error (#967, not a bug: the programmer writes the
+# End If; AB3 mode follows AmiBlitz3).  AmiBlitz3's bugs are implemented as
 # intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
 # appends one End If for two Thens, and a second one after EndIf
 ab3_cli_case(macthen_while macthen_while.ab3 REF)

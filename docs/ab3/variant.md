@@ -653,9 +653,10 @@ decisions 2026-11-04). Each such deviation is a row tagged G3 in
 Spec `ab3-compat/macros`, design D9 of `ab3-mode-g3`. `domacro` stores a
 macro body as one line (each line end a `:`), and a one-line `If … Then`
 is closed only at the end of a physical line, so in Blitz Basic 2 the
-rest of the body and of the calling line belong to it (#967, kept in
-BB2 mode: "Illegaly nested Condition" before a `Wend`, case
-`macthen_bb2`). AmiBlitz3's `do_Macro` (`AmiBlitz3.ab3` 20833-20991 at
+rest of the body and of the calling line belong to it. BB2 mode keeps
+this ("Illegaly nested Condition" before a `Wend`, case `macthen_bb2`):
+not a bug, the programmer writes the `End If`; AB3 mode follows
+AmiBlitz3 (#967). AmiBlitz3's `do_Macro` (`AmiBlitz3.ab3` 20833-20991 at
 `@58a11658`, flag `thenmode`) ends such a macro line with `: End If`. AB3
 mode does the same (extension points `ext_macrotoken`,
 `ext_macrolineend` in `domacro`, `ab3syn.c`), with or without new
