@@ -30,6 +30,19 @@ If you suspect a bug, search these issues first. If it is there and still
 open, the port behaves as the original did, and the issue tells you how
 to work around it.
 
+## Bugs that stay
+
+A few issues are closed without a fix:
+
+* Some issues have the label
+  [wontfix](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig+label%3Awontfix).
+  These bugs are real, but fixing them would add more complexity than the fix is worth.
+  They stay as they are in the original.
+  An example is PANIC in the stop requester of a program run from the editor: the program is removed without any cleanup, so its files stay open and its memory and screens stay allocated ([#24](https://github.com/fubar-coder/bb2-c/issues/24)).
+* Some issues have the label
+  [not-a-bug](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig+label%3Anot-a-bug).
+  Their behaviour turned out to be intended, or harmless in practice.
+
 ## Tests of the correct behaviour
 
 Many of these bugs have a test. A test checks the *correct* behaviour,
