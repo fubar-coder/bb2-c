@@ -5,6 +5,7 @@
 ; the glued copy, the second copy is compiled as a statement and doend has
 ; no case for Macro: "Syntax Error" at the Include line.
 ; Correct (AmiBlitz3): the macro is defined, the program prints x.
+; @fixed #968
 ; @pass file=src/inc.bb2|@TESTDATA@/compiler-macro-end-line-include.inc
 Include "CORPUS:src/inc.bb2"
 !m

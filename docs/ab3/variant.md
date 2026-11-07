@@ -695,21 +695,21 @@ Cases: `macthen_*`, `join_incmacro`, `join_endmacro*` and `inc_longlong` in
 Spec `ab3-compat/macros`, design D9 of `ab3-mode-g3`. After the token
 `End`, `domacro` reads the next character with `getchar3` to recognise
 `End Macro` and stores anything else as a word; when the line ends
-right after the `End` (also behind spaces or a `;` comment), it stores
-the line end (`80 02 00 00`) and gathers on behind the line without
-`nextline`: the stored 0 cuts the expanded line, the rest of the body
-is lost ("If Without End If" around a block `If`), and in an include the
-next line is read twice ("Syntax Error"; #968, kept in BB2 mode, case
-`macend_bb2`). AmiBlitz3's `do_Macro` (`AmiBlitz3.ab3` 20944-20957 at
-`@58a11658`) peeks behind `End` and stores only `End` when a 0, `:` or
-`;` follows; its includes rely on it (`zlib.include.ab3:223`,
-`prefixtree.include.ab3:165`, `useful.include.ab3:132,138`,
-`autoexit.include.ab3:162`). AB3 mode does the same (extension point
-`ext_macroend` in `domacro`, `ab3syn.c`), with or without new syntax:
-after `End` and a line end, a comment or a `:`, it stores `$8002` and
-backs up, so `domacro` reads the line end or the `:` again as behind
-any other token; a line end closes the line's `Then`s with `: End If`
-as above (`If c Then End`). Cases: `macend_*` in
+right after the `End` (also behind spaces or a `;` comment), Blitz
+Basic 2 stores the line end (`80 02 00 00`) and gathers on behind the
+line without `nextline`: the stored 0 cuts the expanded line, the rest
+of the body is lost ("If Without End If" around a block `If`), and in an
+include the next line is read twice ("Syntax Error"; #968, fixed in both
+modes, case `macend_bb2`). AmiBlitz3's `do_Macro` (`AmiBlitz3.ab3`
+20944-20957 at `@58a11658`) peeks behind `End` and stores only `End`
+when a 0, `:` or `;` follows; its includes rely on it
+(`zlib.include.ab3:223`, `prefixtree.include.ab3:165`,
+`useful.include.ab3:132,138`, `autoexit.include.ab3:162`). `domacro`
+does the same in both modes, with or without new syntax: after `End`
+and a line end, a comment or a `:`, it stores `$8002` and backs up, so
+it reads the line end or the `:` again as behind any other token; in AB3
+mode a line end closes the line's `Then`s with `: End If` as above
+(`If c Then End`). Cases: `macend_*` in
 `tests/ab3/CMakeLists.txt`.
 
 ## Procedures (G4, 2026-11-05)

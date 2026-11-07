@@ -1,5 +1,5 @@
 ; a macro line ending in End inside a block If: the rest of the macro is
-; stored (blitz2 loses it, #968)
+; stored (Blitz Basic 2 loses it, #968)
 Macro m
 If `1
 End

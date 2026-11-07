@@ -935,25 +935,29 @@ void domacro(UWORD c)
                 break;                          /* .macdone */
             /* .notem.  A plain char after End is put as a word
                ($00,char; the 0 ends the statement), spaces/comments after End are lost.
-               BUG(orig) (#968): when the line ends right after End
-               (also after spaces or a comment), getcharb has stepped
-               past the line's NUL and returns 0 (blitz2.s:7147-7158),
-               and this 0 is stored unchecked ($8002,$0000;
-               .notem blitz2.s:12889-12893).  Only .gather handles a
-               line end (blitz2.s:12863-12869), the getchar3 after End
+               Fixed (#968): when the line ends right after End (also
+               after spaces or a comment), getcharb has stepped past the
+               line's NUL and returns 0 (blitz2.s:7147-7158), and
+               blitz2.s stored this 0 unchecked ($8002,$0000; .notem
+               blitz2.s:12889-12893).  Only .gather handles a line end
+               (blitz2.s:12863-12869), the getchar3 after End
                (blitz2.s:12884) does not call nextline: the stored 0
-               ends the expanded line (the rest of the macro and of the
-               calling line is never compiled; "If Without End If"), and
-               the collector goes on behind the line's terminator.  In an
-               include the next line follows directly and readinc hands
-               the same line out a second time (blitz2.s:11972-12018):
-               if it is End Macro, the macro ends on the glued copy, the
-               copy is compiled as a statement and doend has no case for
-               Macro ("Syntax Error" at the Include line).  Kept; AB3 mode
-               stores only End there (ext_macroend). */
+               ended the expanded line (the rest of the macro and of the
+               calling line was never compiled; "If Without End If"), and
+               the collector went on behind the line's terminator; in an
+               include readinc then handed the same line out a second
+               time (blitz2.s:11972-12018, "Syntax Error" at the Include
+               line when it is End Macro).  As AmiBlitz3's do_Macro
+               (AmiBlitz3.ab3:20944-20957 at 58a11658): before a line end
+               (0, also for a comment) or a ':' only End is stored, and
+               .gather reads the line end or the ':' again as after any
+               other token (in AB3 mode a Then of the line is closed
+               with ": End If").  AmiBlitz3 also stores only End before
+               its statement End noa7 (doend2, 22682), which the port
+               does not have. */
             ext_macrotoken(0x8002, c);
             macputw(&mb, 0x8002);
-            if (ext_macroend(c)) {
+            if (c == 0 || c == ':') {
                 bakup();                        /* .gather reads c again */
                 continue;
             }

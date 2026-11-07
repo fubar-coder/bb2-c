@@ -484,7 +484,8 @@ ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 # a comment or a ':', the rest of the macro is kept.  Inside a block If,
 # If ... Then End with a comment (the Then closed at the line end),
 # End : and End with trailing spaces, End right before End Macro in an
-# include; BB2 mode keeps blitz2's loss of the rest of the macro (#968)
+# include; BB2 mode keeps the rest of the macro as well (#968, fixed in
+# both modes)
 ab3_cli_case(macend_if macend_if.ab3 REF)
 ab3_cli_case(macend_then macend_then.ab3 REF)
 ab3_cli_case(macend_colon macend_colon.ab3 REF)

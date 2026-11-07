@@ -7,6 +7,7 @@
 ; If" (the include case is compiler-macro-end-line-include).
 ; Correct (AmiBlitz3): the macro body is complete, the program prints
 ; after and done.
+; @fixed #968
 Macro m
   If `1
     End

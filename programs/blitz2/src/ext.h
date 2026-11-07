@@ -348,16 +348,6 @@ void ext_macrotoken(UWORD c, UWORD next);
  *         before the ':' of the line end. */
 UWORD ext_macrolineend(void);
 
-/** @brief domacro: End ($8002) is stored in the macro text, next is the
- *         character or token read behind it with getchar3 (not End
- *         Macro).
- * @return TRUE if End ends its statement there (AB3 mode: next is 0 -
- *         the line end or a comment - or ':'): domacro backs up
- *         (bakup) and reads next again, so a line end goes through
- *         nextline and ext_macrolineend.  FALSE: blitz2 stores next
- *         as a word (BUG(orig) #968) */
-BOOL ext_macroend(UWORD next);
-
 /* ===================== AB3 mode's procedures (change ab3-mode-g4) */
 
 /* ---- the definition (tokens2.c dofunc, dofunc2) */

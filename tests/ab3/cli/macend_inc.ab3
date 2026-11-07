@@ -1,6 +1,6 @@
 ; an include with a macro line ending in End right before End Macro: the
-; definition ends at its End Macro (blitz2 reads that line twice, "Syntax
-; Error" at the INCLUDE, #968)
+; definition ends at its End Macro (Blitz Basic 2 reads that line twice,
+; "Syntax Error" at the INCLUDE, #968)
 INCLUDE "macend_inc_inc.ab3"
 !m
 End

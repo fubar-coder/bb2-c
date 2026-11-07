@@ -33,7 +33,7 @@ In AB3 mode, `If c Then !m{…}` SHALL keep the whole expanded macro and the res
 - **THEN** it prints only `after`
 
 ### Requirement: End at the end of a macro line
-In AB3 mode, a `End` token of a `Macro` definition that is followed by the line end, a comment or `:` (spaces between are allowed) SHALL be stored as the statement `End` alone, as AmiBlitz3 does. The line end and the `:` SHALL then be stored as after any other token, so the following lines of the body are kept, and a `Then` of that line is closed at its line end. `End Macro`, `End If` and the other `End` forms SHALL be unchanged.
+In both modes (AB3 and BB2), an `End` token of a `Macro` definition that is followed by the line end, a comment or `:` (spaces between are allowed) SHALL be stored as the statement `End` alone, as AmiBlitz3 does. The line end and the `:` SHALL then be stored as after any other token, so the following lines of the body are kept, and a `Then` of that line is closed at its line end. `End Macro`, `End If` and the other `End` forms SHALL be unchanged.
 
 #### Scenario: End inside a block If of a macro
 - **WHEN** an AB3 program defines macro `m` with the lines `` If `1 ``, `End`, `End If`, `NPrint "after"`, and runs `!m{0}` followed by `NPrint "done"`
@@ -52,7 +52,7 @@ In AB3 mode, a `End` token of a `Macro` definition that is followed by the line 
 - **THEN** it compiles and prints `x`
 
 ### Requirement: BB2 mode stores macro text as written
-In BB2 mode a macro line with `Then` SHALL be stored without an added `End If`, and an `End` at the end of a macro line SHALL be stored as Blitz Basic 2 stores it, as in Blitz Basic 2 (issues #967, #968).
+In BB2 mode a macro line with `Then` SHALL be stored without an added `End If`, as in Blitz Basic 2 (issue #967).
 
 #### Scenario: BB2 mode
 - **WHEN** the first scenario's program is compiled in BB2 mode
@@ -60,4 +60,4 @@ In BB2 mode a macro line with `Then` SHALL be stored without an added `End If`, 
 
 #### Scenario: BB2 mode, End at the end of a macro line
 - **WHEN** the program of the scenario "End inside a block If of a macro" is compiled in BB2 mode
-- **THEN** the compile fails with "If Without End If" at the macro call, as in Blitz Basic 2
+- **THEN** it compiles and prints `after` and `done`, as in AB3 mode (Blitz Basic 2 fails with "If Without End If" at the macro call, issue #968)

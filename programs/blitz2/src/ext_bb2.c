@@ -236,11 +236,6 @@ UWORD ext_macrolineend(void)
     return 0;
 }
 
-BOOL ext_macroend(UWORD next)
-{
-    return FALSE;
-}
-
 /* AB3 mode's procedures (change ab3-mode-g4) */
 
 BOOL ext_procrettype(UWORD *mode)
