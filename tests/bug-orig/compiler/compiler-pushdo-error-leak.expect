@@ -1,0 +1,6 @@
+[compile]
+error 12 *
+[blitz2]
+...
+inject: track: 0 allocations left, 0 bytes
+...
