@@ -5,6 +5,7 @@
 ; with the job list as project icon, and checks after the end whether
 ; blitz2.info is still in use.
 ; Correct: the file is closed.
+; @fixed #19
 ; @pass file=blitz2/blitz2.info|@TESTDATA@/compiler-wb-info-shortread.info
 ; @pass wrap=@WBRUN@|inuse=blitz2:blitz2.info
 NPrint "hello"

@@ -567,11 +567,12 @@ int main(int argc, char **argv)
         stack = 0;
         if (fh) {
             if (Read(fh, progfile, 0x4e) == 0x4e) {
-                Close(fh);
                 progfile[0] = 0;
                 stack = L_(progfile + 0x4a);        /* do_StackSize */
             }
-            /* BUG(orig) (#19): on a short read the file is not closed */
+            /* Fixed (#19): closed after a short read too (wbheader closes
+               it only after a complete one) */
+            Close(fh);
         }
         /* BUG(orig) (#20): if the .info could not be opened progfile still holds
            "<name>.info" (after a short read: the partial .info bytes) and
