@@ -21,9 +21,13 @@ read them first):
   expect file must fail). Emulator tests: label `emulator`, return 77
   when Amiberry or the data are missing; tests write only to
   `TEST:`/`RAM:`.
-* A bug-orig test reproduces the bug with the reference (REPRODUCED) and
-  shows the fix as FIXED; a test that cannot be made deterministic is
-  reported, not weakened.
+* A bug-orig test checks the expected (correct) behaviour: for an open
+  bug it comes out REPRODUCED in `ctest --preset bug-orig` (not BROKEN:
+  the original shows the bug); once the bug is fixed it carries the
+  header `; @fixed #N` and must come out FIXED in `ctest --preset all`
+  (CLAUDE.md "Original bugs are fixed deliberately", tests/README.md
+  "Fixed tests"). A test that cannot be made deterministic is reported,
+  not weakened.
 * Do not change program code; if a test shows a defect, report it.
 * Acceptance: build without warnings, `ctest --preset host`, the tests
   you touched, results of the programs unchanged.

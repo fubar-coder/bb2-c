@@ -5,18 +5,18 @@ C versions (`libs/acidlibs/*.c`, `libs/deflibs/*`, `programs/blitz2`, `programs/
 originals (CD binaries or `blitz2.s`). Basis: all `DIFF` markers
 in the sources, the DIFF sections in [cmdlibs-port.md](cmdlibs-port.md) and
 [deflibs.md](deflibs.md), the project conventions and a review of our own ports
-for unmarked deviations. `BUG(orig)` (original bugs deliberately
-carried over) is **not** listed here, but in the header comments
-and in `cmdlibs-port.md`.
+for unmarked deviations. `BUG(orig)` (original bugs not fixed yet) is
+listed in the header comments and in `cmdlibs-port.md`, here only
+where an entry describes it.
 
-Rule (user decision): bugs of the reference are reproduced and
-documented, not fixed. Deviations only where they are technically
-unavoidable, with a reason. The deviations already present
-remain (not reverted), but must be fully
-documented here.
-Since the port is complete, original bugs may be fixed deliberately
-(CLAUDE.md "Rules", decision 2026-10-30): such fixes are listed here as
-intended deviations (kind **F**), each with its issue.
+Rule (CLAUDE.md "Original bugs are fixed deliberately", user decisions
+of 2026-10-30 and 2026-11-07): the port is complete, original bugs are
+fixed deliberately, one issue per bug; every fix is listed here as an
+intended deviation (kind **F**) with its issue and its test (a bug-orig
+test with the header `; @fixed #N`, or the equivalent of its suite), in
+the commit of the fix. Other deviations only where they are technically
+unavoidable, with a reason. The deviations already present remain (not
+reverted), but must be fully documented here.
 
 ## Categories
 
@@ -25,7 +25,7 @@ intended deviations (kind **F**), each with its issue.
 | **B** | user decision | project convention, fixed for all ports |
 | **T** | technically unavoidable | the original is undefined here (register leftovers, stack contents, timing, memory layout) or cannot be expressed in C |
 | **K** | silent correction | the original could be reproduced, the C version behaves "more safely" (trap instead of jump into nowhere, return instead of crash, register preserved). No longer permitted under the new rule; existing cases remain, but are listed here |
-| **F** | fixed original bug | intended deviation after the port (CLAUDE.md "Rules": once the port is complete, original bugs may be fixed deliberately, one issue per bug, in the default variant); the issue is named, and its bug-orig test now comes out FIXED where one is possible |
+| **F** | fixed original bug | intended deviation after the port (CLAUDE.md "Original bugs are fixed deliberately": one issue per bug, in the default variant); the issue is named, and its test comes out FIXED: a bug-orig test with the header `; @fixed #N` (tests/README.md, "Fixed tests"), or the equivalent of its suite |
 
 "observable?": whether a Basic program can see the difference
 (result, output, crash) or only a register/memory comparison.

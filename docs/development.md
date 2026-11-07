@@ -64,8 +64,31 @@ libraries:
   library also has gets the library's name as prefix
   (`audiolib_codeinit`, `debuglib_docall`). Comments keep the original's
   label (`codeinit`).
-* Original bugs: `BUG(orig) (#NNN)`; Blitz notation (`#ld0`, `Window#`)
-  is no link.
+* Original bugs: `BUG(orig) (#NNN)` while not fixed, `Fixed (#NNN)`
+  once fixed; Blitz notation (`#ld0`, `Window#`) is no link.
+
+## Fixing an original bug
+
+Original bugs are fixed deliberately (CLAUDE.md "Original bugs are fixed
+deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
+
+1. one issue per bug;
+2. in the fix commit: the code change; the test of the expected
+   behaviour - the bug-orig test gets the header `; @fixed #NNN` (or the
+   equivalent of its suite) and must come out FIXED in
+   `ctest --preset all` (`tests/README.md`, "Fixed tests"); the comment
+   `BUG(orig) (#NNN)` becomes `Fixed (#NNN)`; the entry in
+   `docs/*/deviations.md` as an intended deviation of kind F; the
+   changed results (executables, TED's files, library files) named in
+   the commit message, every other result byte-identical to the
+   previous commit;
+3. the entry on the website page of fixed original bugs
+   (`site/content/docs/compared-with-original/fixed-bugs.md`);
+4. the label `fixed-in-port` on the issue (every fix);
+5. after the push: the issue closed with a comment naming the commit.
+
+A bug not fixed yet keeps its `BUG(orig)` comment and its bug-orig test,
+which comes out REPRODUCED in `ctest --preset bug-orig`.
 
 **API reference** (C developers): `Doxyfile` in the repository root,
 over `libs/include`, `deflib.h`, the sources of acidlibs and of all

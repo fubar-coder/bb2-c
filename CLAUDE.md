@@ -76,14 +76,29 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
   license (CD) is not checked in but loaded with
   `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
   `archive/bernd/`, ignored); tests that need it are skipped without it.
-* **Do not fix original bugs**, only document them (`BUG(orig)` in the
-  code, list of deviations in `docs/*/deviations.md`); `DIFF` only where
-  technically necessary. Applies only to the port: once it is complete
-  (including the comparison with blitz2 2.10), original bugs may be fixed
-  deliberately (one issue per bug, marked as an intended deviation), in
-  the default variant: byte equality with the CD's originals mattered
-  only for the port (decision 2026-10-30); the comparison with the
-  previous commit of this repository stays.
+* **Original bugs are fixed deliberately** (bug-fix phase: the port is
+  complete; user decisions of 2026-10-30 and 2026-11-07). The goal is BB2
+  compatibility with the bugs fixed, in the default variant; there is no
+  bug-preserving variant (whoever needs the original behaviour uses the
+  original compiler and libraries). Tests check the expected behaviour,
+  not equality with the original; the comparison with the previous commit
+  of this repository stays (Acceptance). A bug not fixed yet is
+  documented: `BUG(orig) (#N)` in the code, a bug-orig test that comes out
+  REPRODUCED (`tests/README.md`, "bug-orig tests"); `DIFF` only where
+  technically necessary. **A fix** (spec `testing/bug-fix-workflow`):
+  1. one issue per bug;
+  2. in the fix commit: the code change; the test of the expected
+     behaviour - the bug-orig test gets the header `; @fixed #N` (or the
+     equivalent of its suite) and must come out FIXED in
+     `ctest --preset all`; the comment `BUG(orig)` becomes `Fixed (#N)`;
+     the entry in `docs/*/deviations.md` as an intended deviation (kind
+     F); the changed results named in the commit message;
+  3. the entry on the website page of fixed original bugs
+     (`site/content/docs/compared-with-original/fixed-bugs.md`);
+  4. the label `fixed-in-port` on the issue (every fix);
+  5. after the user's push: the issue closed with a comment naming the
+     commit.
+  Steps 3-5 are the coordinator's; an agent names them in its report.
 * **Only C/C++ and CMake.** No Python, no shell scripts in the build.
   Whatever compiler and linker can do themselves, without a tool
   (`#embed` + `static_assert`, `strip`); text and control as CMake;

@@ -1,12 +1,14 @@
 # Deviations of the C version from TED 1.1
 
 Reference: vasm build of `ted.s` ([reference.md](reference.md)). Rule
-(user decision): bugs of the original are reproduced
-(`BUG(orig)`), deviations only where technically unavoidable – marked in the code with
-`DIFF:` and a justification, and listed here in full.
+(CLAUDE.md "Original bugs are fixed deliberately"): bugs of the original
+not fixed yet are marked `BUG(orig)`; a fix is an intended deviation of
+kind **F**, listed here with its issue and its test; other deviations
+only where technically unavoidable – marked in the code with `DIFF:` and
+a justification, and listed here in full.
 Categories as in [`../libs/deviations.md`](../libs/deviations.md)
 (**B** decided by the user, **T** technically unavoidable, **K** silent
-correction – not permitted). The lines concerning the file requester shared with freqlib
+correction – not permitted, **F** fixed original bug). The lines concerning the file requester shared with freqlib
 are additionally listed there in section 5a.
 
 As of: phase 2c (integration review). All "safer" spots of phase

@@ -26,11 +26,17 @@ read them first):
   for every commit.
 * AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind an
   extension point of `ext.h`; no `BLITZ2_AB3` anywhere.
-* Original bugs: fixes are intended deviations of kind F
-  (`docs/*/deviations.md`), the `BUG(orig)` comment becomes "Fixed
-  (#N)", with a bug-orig test that is REPRODUCED with the reference and
-  FIXED with our build. A newly found original bug gets a `BUG(orig)`
-  note and is reported (the coordinator files the issue).
+* Original bugs (CLAUDE.md "Original bugs are fixed deliberately"): the
+  fix commit holds the code change, the test of the expected behaviour
+  (the bug-orig test gets the header `; @fixed #N`, or the equivalent of
+  its suite, and comes out FIXED in `ctest --preset all`), the
+  `BUG(orig)` comment changed to "Fixed (#N)", the entry in
+  `docs/*/deviations.md` as an intended deviation of kind F, and the
+  changed results named in the message. The report names the
+  coordinator's steps: the website page of fixed original bugs, the label
+  `fixed-in-port`, the closing comment after the push. A newly found
+  original bug gets a `BUG(orig)` note and a bug-orig test that comes out
+  REPRODUCED, and is reported (the coordinator files the issue).
 * Git: one topic per commit, stage only its files, English texts,
   trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; no
   push, no force; do not close or edit GitHub issues.

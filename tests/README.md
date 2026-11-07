@@ -6,10 +6,10 @@ labels select within them.
 | Preset | Runs | Needs |
 |---|---|---|
 | `host` | tools with broken inputs, host tests, declaration and instruction comparisons, token lists (seconds) | native compiler; the CD for some |
-| `emulator` | libraries against the CD's, corpus, TED A/B, compilers' extensions, CD corpus, RWE reference build | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
+| `emulator` | libraries against the CD's, corpus, TED A/B, compilers' extensions, CD corpus, RWE reference build, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
 | `all` | both | both |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
-| `bug-orig` | reproduced original bugs (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose | Amiberry; the CD for most |
+| `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset | Amiberry; the CD for most |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
 `AMIGA-EMULATION-SETUP.md`. The tool the emulator tests use, its sessions,
@@ -42,7 +42,7 @@ presets say **where** the tests run:
 ctest --preset host       # on the host, without emulator (seconds)
 ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
-ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on purpose
+ctest --preset bug-orig   # original bugs not fixed yet, known port bugs: fail on purpose
 ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
 ```
 
@@ -227,11 +227,18 @@ outside the label filter).
 
 ## bug-orig tests
 
-Tests of original bugs the port reproduces (`BUG(orig)`).
-They check the *correct* behaviour and therefore **fail** as long as the
-bug is reproduced; the failure message names the bug. Label `bug-orig`:
-`host`, `emulator` and `all` exclude it, only the preset `bug-orig`
-runs these tests. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
+Tests of original bugs (`BUG(orig)`). Original bugs are fixed
+deliberately (CLAUDE.md "Original bugs are fixed deliberately"); the
+tests check the *correct* (expected) behaviour. As long as the bug is
+not fixed the test **fails** (REPRODUCED); the failure message names the
+bug. Label `bug-orig`: `host`, `emulator` and `all` exclude it, only the
+preset `bug-orig` runs these tests. **A fix turns its test into a fixed
+test in the same commit** (header `; @fixed #N`, [Fixed tests](#fixed-tests)):
+it then runs in `emulator` and `all` and must come out FIXED there.
+The TED scripts (`tests/bug-orig/ted/`) and the snitch tests of
+`libs/tests/bugorig.c` have no fixed form yet (OpenSpec change
+`expected-results-testing`); a fix of such a bug names its test in the
+report. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
 snitch test case `ID`; the issue names the test. In the snitch programs they carry the hidden tag `[.bug-orig]`,
 so a plain run of the program skips them too (`libs_tests "[bug-orig]"`
 or the name runs them). Tests in the emulator also have the label
@@ -259,7 +266,8 @@ the corpus runner, `corpusrun` with `expect=`; verdict in
 compiled and run in Amiberry by the original blitz2 1.95 with the
 libraries of the CD (ref) and by the port (port: blitz2-c with the
 libraries of the CD, clib: blitz2-c with the C libraries), one emulator
-session each (in parallel), skipped without the CD. What a
+session each (in parallel), skipped without the CD (a fixed test: only
+clib, without the CD, [Fixed tests](#fixed-tests)). What a
 configuration shows (the *observation*) are sections: `[session]`
 (`done`, `timeout` for a crash or hang, `halt` for a crash that halted
 the emulated CPU), `[compile]` (`ok`,
@@ -361,11 +369,17 @@ in; `tools/lib/mktestdata/mktestdata.h`) becomes
 with `; @pass file=DEST|@TESTDATA@/NAME` (the program reads
 `CORPUS:DEST`); NAME begins with the ID of the test. A further Blitz
 source (e.g. the source of a resident) is a text `NAME.src`, tokenised
-like `ID.bas` to `testdata/NAME`. Run
-`ctest --preset bug-orig -R bug_orig_ID`; the result must be
-REPRODUCED. Look at the observation of ref to write the expectation,
-and check the expectation if possible with a temporary fix in the port
-(then FIXED, the test passes); name the test in the issue.
+like `ID.bas` to `testdata/NAME`. The expectation is the correct
+behaviour (from the documentation of the command or the issue), not
+what the original does; the observation of the configurations
+(`.../ID/TAG/observation`) gives its format. Run
+`ctest --preset bug-orig -R bug_orig_ID`: an open bug comes out
+REPRODUCED (not BROKEN: the original shows the bug); check the
+expectation if possible with a temporary fix in the port (then FIXED);
+name the test in the issue. The commit that fixes the bug adds
+`; @fixed #N` to the header ([Fixed tests](#fixed-tests)); a header
+line moves the program down one line, so a compile error line in the
+expectation grows by one.
 
 ### Fixed tests
 
