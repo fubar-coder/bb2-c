@@ -1,0 +1,6 @@
+[run]
+flags 64 disabled -1
+flags 128 immediate -1
+control: button 64 disabled -1
+control: button 128 immediate -1
+rc=0

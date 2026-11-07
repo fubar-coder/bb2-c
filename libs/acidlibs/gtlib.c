@@ -1287,6 +1287,9 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     si->select = gad->SelectRender;
     gad->GadgetRender = &si->image[0];
     gad->SelectRender = &si->image[1];
+    /* BUG(orig) (#990): the two words replace what CreateGadget made of
+       GA_Disabled and GA_Immediate (flags 64 and 128): no GFLG_DISABLED,
+       no GACT_IMMEDIATE. */
     gad->Flags = gflags;
     gad->Activation = GACT_RELVERIFY;
     gad->GadgetType = gad->GadgetType + GTYP_BOOLGADGET - 1;
