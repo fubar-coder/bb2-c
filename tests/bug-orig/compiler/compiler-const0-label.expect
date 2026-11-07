@@ -1,2 +1,2 @@
 [compile]
-error 12 Label has been used as a Constant
+error 13 Label has been used as a Constant

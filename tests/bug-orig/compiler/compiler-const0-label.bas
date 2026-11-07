@@ -6,8 +6,9 @@
 ; address 1; here the compile ends with "Label reference out of context"
 ; at a line number that is garbage (3585), without the label ever having
 ; been defined by the program.
-; Correct: the name clash is refused at the Goto (line 12) with the error
+; Correct: the name clash is refused at the Goto (line 13) with the error
 ; for a name used as a constant.
+; @fixed #977
 #foo=0
 Goto foo
 foo:
