@@ -178,4 +178,4 @@ add_test(NAME rwe_residents_check_broken COMMAND ${CMAKE_COMMAND} -DBLITZRES=${B
 	-DRES=${RWE_RESIDENTS_DIR}/custom.res -DEXPECT=${RWE_RESIDENTS_DIR}/lvo.res
 	-P ${PROJECT_SOURCE_DIR}/tools/blitzres/check.cmake)
 set_tests_properties(rwe_residents_check_broken PROPERTIES
-	PASS_REGULAR_EXPRESSION "differ from")
+	PASS_REGULAR_EXPRESSION "differ[ \n]+from")  # CMake wraps long messages
