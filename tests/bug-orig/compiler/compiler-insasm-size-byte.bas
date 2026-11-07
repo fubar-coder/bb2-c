@@ -5,6 +5,7 @@
 ; characters) gives a wrong size: FreeMem of too few bytes, inject track
 ; reports it.
 ; Correct: the node is freed with the size it was allocated with.
+; @fixed #1
 ; @pass wrap=@INJECT@|track
 Macro m
 Dc.l `1+`1+`1+`1

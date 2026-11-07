@@ -415,7 +415,7 @@ void chkword(LONG val)
 /* blitz2.s:5435 insasm - add asmbuff, asmlen, pc, ea to list */
 void insasm(const struct asment *e, ULONG addr, UWORD mode)
 {
-    UWORD size = 16 + asmlen;
+    UWORD size = offsetof(struct asmnode, text) + asmlen;
     struct asmnode *n = doallocmem(size, MEMF_PUBLIC);
     UBYTE *s, *d;
 
@@ -425,9 +425,10 @@ void insasm(const struct asment *e, ULONG addr, UWORD mode)
     n->addr = addr;
     n->mode = mode;
     n->flag = e->flag < 0 ? 0 : e->flag;
-    /* BUG(orig) (#1): size stored as a byte - texts longer than 239 bytes give
-       a wrong size for freeasms */
-    n->size = (UBYTE)size;
+    /* Fixed (#1): the size is a word; the original stored 16 + asmlen as a
+       byte, and freeasms freed the node of a text over 239 bytes with too
+       few bytes */
+    n->size = size;
     s = asmbuff + 1;
     d = n->text;
     n->type = *s++;                     /* type - 0 = indirect, else direct */

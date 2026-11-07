@@ -284,15 +284,17 @@ struct asmnode {
     UWORD mode;             /* 8  patch mode 5-11,16,17 (see asmfixer) */
     UWORD flag;             /* 10 asm entry flag (0 if negative) */
     UWORD line;             /* 12 linenumat */
-    UBYTE size;             /* 14 allocation size (BUG(orig) (#1): byte, truncates
-                                  for long texts) */
-    UBYTE type;             /* 15 0 = indirect (text is a pointer into the
+    UWORD size;             /* 14 allocation size (Fixed (#1): a word; the
+                                  original's byte at 14 truncated the size
+                                  of a text over 239 bytes) */
+    UBYTE type;             /* 16 0 = indirect (text is a pointer into the
                                   source), else direct */
-    UBYTE text[];           /* 16 text\0 or pointer */
+    UBYTE pad;              /* 17 (the text stays even: a pointer) */
+    UBYTE text[];           /* 18 text\0 or pointer */
 };
 OFFS(asmnode, addr, 4); OFFS(asmnode, mode, 8); OFFS(asmnode, flag, 10);
-OFFS(asmnode, line, 12); OFFS(asmnode, size, 14); OFFS(asmnode, type, 15);
-OFFS(asmnode, text, 16);
+OFFS(asmnode, line, 12); OFFS(asmnode, size, 14); OFFS(asmnode, type, 16);
+OFFS(asmnode, text, 18);
 
 /* registers handed to an asm checker routine (asmmac abcdchk, movechk ...,
    called by asmit via asment.chk).  The checker may modify every field. */
