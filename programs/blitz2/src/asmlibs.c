@@ -59,7 +59,7 @@ UWORD asmconst(void)
 }
 
 /* blitz2.s:5028 copyconst
-   BUG(orig): the text is copied into asmbuff (namebuff for the source
+   BUG(orig) (#997): the text is copied into asmbuff (namebuff for the source
    operand and Dc, namebuff2 for the destination, 128 bytes each behind a
    flag word) without a length check.  A copied text (include, macro, local
    label) of more than 125 characters runs into namebuff2, and a

@@ -1,4 +1,4 @@
-; compiler-copyconst-overflow - copyconst copies the text of an assembler
+; compiler-copyconst-overflow (#997) - copyconst copies the text of an assembler
 ; operand into namebuff (source operand) or namebuff2 (destination, 128
 ; bytes behind namebuff) without a length check.  The source operand's
 ; text here has 127 characters (in a macro the text is copied): its last
