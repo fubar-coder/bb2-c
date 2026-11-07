@@ -1096,13 +1096,12 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             }
             uselib(65135);
             tokejsr(varmode ? lastring : lastring + 1);  /* +1: global allocmem */
-            if (c != ',') {
-                /* review: BUG(orig) (#39) kept - asm `move varmode,d2` (14389)
-                   leaves d2 = varmode (0/$ffff) as the returned type, so
-                   `For a$=..` passes dofor's type check for a global a$ */
-                vartype = (UWORD)varmode;
+            /* Fixed (#39): the type returned stays the string type; the
+               asm's `move varmode,d2` (14389) returned varmode (0 for a
+               global, $ffff for a local), so `For a$=..` passed dofor's
+               type check for a global a$ */
+            if (c != ',')
                 break;
-            }
             pokewd(addq4a2[0]);
         } else {
             UWORD opcode;

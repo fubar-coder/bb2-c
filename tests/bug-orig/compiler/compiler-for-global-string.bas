@@ -3,6 +3,7 @@
 ; type check lets a global string through as a For variable.
 ; Correct: a string For variable is refused ("Bad Type for For...Next"), as
 ; it is for a local one.
+; @fixed #39
 For a$="a" To 10
 Next
 NPrint "done"
