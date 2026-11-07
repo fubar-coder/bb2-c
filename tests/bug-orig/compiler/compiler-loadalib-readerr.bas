@@ -9,6 +9,7 @@
 ; The library is in blitz2:userlibs/bugorig and in blitz2:bugorig (where
 ; the original looks, compiler-userlibs-doubleslash); inject makes the
 ; third Read on it fail.
+; @fixed #3
 ; @pass file=blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@
 ; @pass file=blitz2/bugorig/bugorig.obj|@USERLIB@
 ; @pass wrap=@INJECT@|readfail=bugorig.obj/3

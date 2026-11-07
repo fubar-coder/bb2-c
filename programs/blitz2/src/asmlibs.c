@@ -1323,17 +1323,28 @@ void loadalib(STRPTR name, struct node **tail)
 
     if (!fh)
         return;                         /* .openerr */
-    Read(fh, optstuff, 32);
+    /* Fixed (#3): a header or structure that cannot be read completely
+       leaves the library out (blitz2.s reads on with what the buffers
+       held) */
+    if (Read(fh, optstuff, 32) != 32) {
+        Close(fh);
+        return;
+    }
     size = L_(optstuff + 28) << 2;      /* long words to read */
     l = doallocmem(size, MEMF_PUBLIC);
-    Read(fh, l, size);                  /* read in struct */
+    if ((ULONG)Read(fh, l, size) != size) { /* read in struct */
+        FreeMem(l, size);
+        Close(fh);
+        return;
+    }
     (*tail)->next = (struct node *)l;
     *tail = (struct node *)l;
     l->size = size;
     l->nrelocs = 0;
     got = Read(fh, optstuff, 12);
-    /* BUG(orig) (#3): unsigned compare - a read error (-1) passes */
-    if ((ULONG)got >= 12) {
+    /* Fixed (#3): signed compare - a read error (-1) ends the reading like
+       a short file (blitz2.s: cmp.l #12,d0 / bcs, unsigned) */
+    if (got >= 12) {
         ULONG cnt = L_(optstuff + 4);
         ULONG rsize = cnt << 2;         /* length of reloc info */
         l->nrelocs = cnt;
