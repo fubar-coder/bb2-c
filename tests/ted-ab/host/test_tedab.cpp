@@ -107,6 +107,126 @@ TEST_CASE("directives refused", "[test]")
     CHECK(std::string(t.err).find("@font") != std::string::npos);
 }
 
+TEST_CASE("@fixed: the directive", "[fixed]")
+{
+    CHECK(tedab_pair("R5-C5") == 0);
+    CHECK(tedab_pair("Rc-Cc") == 1);
+    CHECK(tedab_pair("R5-Rc") == 2);
+    CHECK(tedab_pair("C5-Cc") == 3);
+    CHECK(tedab_pair("C5-R5") == -1);       // the pairs as the report names them
+    CHECK(tedab_pair("R5-Cc") == -1);       // not compared
+    CHECK(tedab_pair("R5") == -1);
+
+    Test a("; @source none\n; @nofiles\n; @fixed #123 R5-C5 Rc-Cc\n; @fixed #7 R5-Rc\n");
+    REQUIRE(a.rc == 0);
+    CHECK(a.t.fixed[0] == 123u);
+    CHECK(a.t.fixed[1] == 123u);
+    CHECK(a.t.fixed[2] == 7u);
+    CHECK(a.t.fixed[3] == 0u);
+
+    Test none("; @source none\n; @nofiles\n");
+    REQUIRE(none.rc == 0);
+    for (int k = 0; k < 4; k++)
+        CHECK(none.t.fixed[k] == 0u);
+
+    // the named pair's combinations must run
+    CHECK(Test("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed #1 R5-C5\n").rc == 0);
+}
+
+TEST_CASE("@fixed: refused", "[fixed]")
+{
+    auto refused = [](const char *directive, const char *msg) {
+        std::string s = std::string("; @source none\n; @nofiles\n") + directive + "\n";
+        Test t(s.c_str());
+
+        CHECK(t.rc == -1);
+        CHECK(std::string(t.err).find(msg) != std::string::npos);
+    };
+
+    refused("; @fixed", "@fixed #NNN PAIR");
+    refused("; @fixed #123", "@fixed #NNN PAIR");             // no pair
+    refused("; @fixed 123 R5-C5", "@fixed #NNN PAIR");        // no #
+    refused("; @fixed #0 R5-C5", "@fixed #NNN PAIR");
+    refused("; @fixed #012 R5-C5", "@fixed #NNN PAIR");       // leading zero
+    refused("; @fixed #12a R5-C5", "@fixed #NNN PAIR");
+    refused("; @fixed #R5-C5", "@fixed #NNN PAIR");
+    refused("; @fixed #12 R5C5", "R5C5 is no compared pair");
+    refused("; @fixed #12 C5-R5", "C5-R5 is no compared pair");
+    refused("; @fixed #12 R5-Cc", "R5-Cc is no compared pair");
+    refused("; @fixed #12 R5-C5 R5-C5", "pair R5-C5 named twice");
+    refused("; @fixed #12 R5-C5\n; @fixed #13 R5-C5", "pair R5-C5 named twice");
+    refused("; @combos R5 C5\n; @fixed #12 Rc-Cc", "the pair is never compared");
+    refused("; @combos C5 Cc\n; @fixed #12 R5-C5", "the pair is never compared");
+}
+
+TEST_CASE("@fixed: verdict of a pair", "[fixed]")
+{
+    Test t("; @source none\n; @nofiles\n; @fixed #123 R5-C5\n");
+    REQUIRE(t.rc == 0);
+
+    // the named pair: it must differ; the same is BROKEN (stale)
+    CHECK(tedab_pair_verdict(&t.t, 0, 1) == TEDAB_PAIR_FIXED);
+    CHECK(tedab_pair_verdict(&t.t, 0, 0) == TEDAB_PAIR_BROKEN);
+    CHECK(tedab_pair_verdict(&t.t, 0, -1) == TEDAB_PAIR_FAIL);
+    CHECK(tedab_pair_passes(TEDAB_PAIR_FIXED));
+    CHECK_FALSE(tedab_pair_passes(TEDAB_PAIR_BROKEN));
+    CHECK_FALSE(tedab_pair_passes(TEDAB_PAIR_FAIL));
+    CHECK(std::string(tedab_pair_verdict_name(TEDAB_PAIR_BROKEN)) == "BROKEN");
+    CHECK(std::string(tedab_pair_verdict_name(TEDAB_PAIR_FIXED)) == "FIXED");
+    // the other pairs stay as they are: the same passes, a difference fails
+    for (int k = 1; k < 4; k++) {
+        CHECK(tedab_pair_verdict(&t.t, k, 0) == TEDAB_PAIR_SAME);
+        CHECK(tedab_pair_verdict(&t.t, k, 1) == TEDAB_PAIR_DIFF);
+        CHECK(tedab_pair_verdict(&t.t, k, -1) == TEDAB_PAIR_FAIL);
+    }
+    CHECK(tedab_pair_passes(TEDAB_PAIR_SAME));
+    CHECK_FALSE(tedab_pair_passes(TEDAB_PAIR_DIFF));
+}
+
+// two run directories compared as the runner does: a script whose named pair
+// does not differ comes out BROKEN, one that differs FIXED
+TEST_CASE("@fixed: stale pair of two runs", "[fixed]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string d(dir);
+    auto put = [&](const std::string &name, const std::string &data) {
+        FILE *f = fopen((d + "/" + name).c_str(), "wb");
+        fwrite(data.data(), 1, data.size(), f);
+        fclose(f);
+    };
+    for (const char *c : { "R5", "C5" }) {
+        mkdir((d + "/" + c).c_str(), 0755);
+        mkdir((d + "/" + c + "/out").c_str(), 0755);
+        mkdir((d + "/" + c + "/work").c_str(), 0755);
+        put(std::string(c) + "/out/result", "OK\n");
+        put(std::string(c) + "/out/stdout", "rc=0\n");
+        put(std::string(c) + "/out/log", "step 1\n");
+        put(std::string(c) + "/work/a.bb2", "same\n");
+    }
+    Test t("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed #123 R5-C5\n");
+    REQUIRE(t.rc == 0);
+    auto verdict = [&] {
+        text out = {};
+        int v = tedab_compare_runs((d + "/R5").c_str(), (d + "/C5").c_str(), "R5", "C5", nullptr,
+                                   8, &out);
+        free(out.p);
+        return tedab_pair_verdict(&t.t, tedab_pair("R5-C5"), v);
+    };
+
+    CHECK(verdict() == TEDAB_PAIR_BROKEN);
+    put("C5/work/a.bb2", "fixed\n");
+    CHECK(verdict() == TEDAB_PAIR_FIXED);
+    for (const char *c : { "R5", "C5" }) {
+        for (const char *f : { "/out/result", "/out/stdout", "/out/log", "/work/a.bb2" })
+            remove((d + "/" + c + f).c_str());
+        rmdir((d + "/" + c + "/out").c_str());
+        rmdir((d + "/" + c + "/work").c_str());
+        rmdir((d + "/" + c).c_str());
+    }
+    rmdir(dir);
+}
+
 TEST_CASE("lint", "[lint]")
 {
     int n;

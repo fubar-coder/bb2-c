@@ -310,3 +310,27 @@ code changes in this change).
   `libs_emulator`. Checked by mutation: without the stale branch
   `libs_expect_fixed_stale` fails, without the wrong branch
   `libs_expect_fixed_wrong` fails.
+- **Task 5.1 (2026-11-07):** `; @fixed #NNN PAIR...` is parsed by
+  `tedab_test_parse` into `fixed[4]`, the issue per index of
+  `tedab_pairs` (0 = the pair must be the same). A pair is named as the
+  report names it (`R5-C5`, `Rc-Cc`, `R5-Rc`, `C5-Cc`; `C5-R5` or the
+  uncompared `R5-Cc` are refused), at most once per script (one line per
+  issue), and both its combinations must be in `@combos`: a pair that is
+  never compared could never show the fix. `tedab_pair_verdict` turns
+  the comparison into SAME/DIFF/FAIL, for a named pair into FIXED (it
+  differs) or BROKEN (it is the same: stale); FAIL stays FAIL (a run that
+  is not OK shows nothing). The report line reads
+  `R5<->C5: FIXED #NNN (differs)` with the differences below it, or
+  `R5<->C5: BROKEN (@fixed #NNN: the pair does not differ, stale)`; the
+  summary counts `(N SAME, N FIXED)`. The bug-orig mode of the runner
+  (`tests/bug-orig/ted`) parses the directive as well, but its exit
+  status comes from the verdicts, not from the pairs; how a fixed TED
+  bug-orig test is marked (without `ref`) is left to group 6.2. Tests:
+  the `[fixed]` cases of `test_tedab` (parsing, refusals with their
+  messages, verdicts, and two run directories compared by
+  `tedab_compare_runs`: the same - BROKEN, one file changed - FIXED);
+  ctests `ted_ab_lint_fixed` (`tests/ted-ab/lint/fixed/`, the sample of
+  `tests/README.md`, accepted) and `ted_ab_lint_fixed_wrong`
+  (`tests/ted-ab/lint/fixed-wrong/`, four scripts broken on purpose,
+  each refused with its message). Checked by mutation: with a stale pair
+  judged SAME, two `[fixed]` cases fail.

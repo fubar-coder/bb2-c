@@ -1,0 +1,18 @@
+; Round trip of t08_tokquirk after a fix of TED bug #123 (the issue number
+; of the example): the original TED (R5, Rc) and TED-C (C5, Cc) now differ,
+; so the pairs R5-C5 and Rc-Cc must differ; R5-Rc and C5-Cc stay the same.
+; @source T t08_tokquirk
+; @roundtrip
+; @fixed #123 R5-C5 Rc-Cc
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit

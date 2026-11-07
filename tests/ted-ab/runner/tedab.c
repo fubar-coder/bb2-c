@@ -29,6 +29,42 @@ int tedab_combo(const char *name)
     return -1;
 }
 
+int tedab_pair(const char *name)
+{
+    int k;
+
+    for (k = 0; k < 4; k++) {
+        const char *a = tedab_combo_names[tedab_pairs[k][0]];
+        const char *b = tedab_combo_names[tedab_pairs[k][1]];
+        size_t la = strlen(a);
+
+        if (!strncmp(name, a, la) && name[la] == '-' && !strcmp(name + la + 1, b))
+            return k;
+    }
+    return -1;
+}
+
+int tedab_pair_verdict(const struct tedab_test *t, int k, int compare)
+{
+    if (compare < 0)
+        return TEDAB_PAIR_FAIL;
+    if (t->fixed[k])
+        return compare ? TEDAB_PAIR_FIXED : TEDAB_PAIR_BROKEN;
+    return compare ? TEDAB_PAIR_DIFF : TEDAB_PAIR_SAME;
+}
+
+int tedab_pair_passes(int verdict)
+{
+    return verdict == TEDAB_PAIR_SAME || verdict == TEDAB_PAIR_FIXED;
+}
+
+const char *tedab_pair_verdict_name(int verdict)
+{
+    static const char *const names[] = { "SAME", "DIFF", "FAIL", "FIXED", "BROKEN" };
+
+    return verdict >= 0 && verdict < 5 ? names[verdict] : "?";
+}
+
 /* ------------------------------------------------------------ directives */
 
 static const struct {
@@ -287,6 +323,38 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
                 }
                 t->combos |= 1u << c;
             }
+        } else if (!strcmp(key, "fixed")) {
+            /* #NNN PAIR...: NNN > 0 without leading zeros */
+            unsigned long issue = 0;
+            int k, bad = nw < 2 || w[0][0] != '#' || w[0][1] < '1' || w[0][1] > '9';
+
+            if (!bad) {
+                char *e;
+
+                issue = strtoul(w[0] + 1, &e, 10);
+                bad = *e || !issue || issue > 999999;
+            }
+            if (bad) {
+                snprintf(err, errlen, "%s line %u: @fixed #NNN PAIR... (PAIR e.g. R5-C5)", name,
+                         no);
+                return -1;
+            }
+            for (k = 1; k < nw; k++) {
+                int pr = tedab_pair(w[k]);
+
+                if (pr < 0) {
+                    snprintf(err, errlen,
+                             "%s line %u: @fixed: %s is no compared pair (R5-C5 Rc-Cc R5-Rc "
+                             "C5-Cc)", name, no, w[k]);
+                    return -1;
+                }
+                if (t->fixed[pr]) {
+                    snprintf(err, errlen, "%s line %u: @fixed: pair %s named twice", name, no,
+                             w[k]);
+                    return -1;
+                }
+                t->fixed[pr] = (unsigned)issue;
+            }
         } else if (!strcmp(key, "xtra")) {
             if (nw != 1 || strcmp(w[0], "norunerr")) {
                 snprintf(err, errlen, "%s line %u: @xtra norunerr", name, no);
@@ -390,6 +458,16 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
     if (!t->combos) {
         snprintf(err, errlen, "%s: no combination", name);
         return -1;
+    }
+    for (i = 0; i < 4; i++) {
+        unsigned both = (1u << tedab_pairs[i][0]) | (1u << tedab_pairs[i][1]);
+
+        if (t->fixed[i] && (t->combos & both) != both) {
+            snprintf(err, errlen, "%s: @fixed #%u %s-%s: a combination not in @combos (the "
+                                  "pair is never compared)", name, t->fixed[i],
+                     tedab_combo_names[tedab_pairs[i][0]], tedab_combo_names[tedab_pairs[i][1]]);
+            return -1;
+        }
     }
     if (t->src_kind) {
         if (t->src_kind == 'K' || t->src_kind == 'F')

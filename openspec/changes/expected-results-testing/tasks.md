@@ -30,7 +30,7 @@ documentation it changes; no program code changes in this change.
 
 ## 5. `ted_ab` directive `; @fixed #NNN PAIR...`
 
-- [ ] 5.1 `tests/ted-ab` runner: the named pairs (for example `R5-C5 Rc-Cc`) must differ, the rest of the comparison stays; BROKEN if they do not differ. Verify: `ted_ab_lint` and a host test with a script whose named pair does not differ
+- [x] 5.1 `tests/ted-ab` runner: the named pairs (for example `R5-C5 Rc-Cc`) must differ, the rest of the comparison stays; BROKEN if they do not differ. Verify: `ted_ab_lint` and a host test with a script whose named pair does not differ
 - [ ] 5.2 Document the directive in `tests/README.md` (TED A/B). Verify: a sample script of the text passes `ted_ab_lint`
 
 ## 6. Recorded original observations (`ID.orig`)

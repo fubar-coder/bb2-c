@@ -49,8 +49,12 @@
  * Tests with @known are not run (unless the filter names them exactly); the
  * report lists them as KNOWN with their reason, they do not fail the run.
  *
- * Exit status 0 = all gates and runs OK and every comparison the same,
- * 1 = not, 77 = the emulator or a file is missing (skipped), 2 = error.
+ * A pair a script names in @fixed #NNN must differ (FIXED); the same is
+ * BROKEN, a failure (the fix does not show: a stale directive).
+ *
+ * Exit status 0 = all gates and runs OK and every comparison the same (a
+ * pair of @fixed: different), 1 = not, 77 = the emulator or a file is
+ * missing (skipped), 2 = error.
  */
 #define _XOPEN_SOURCE 700       /* strdup, strndup */
 #include <dirent.h>
@@ -1009,7 +1013,7 @@ static int run(FILE *log)
         all_ok &= s->gates_ok;
     }
     {
-        size_t npairs = 0, nsame = 0, nok = 0;
+        size_t npairs = 0, nsame = 0, nfixed = 0, nok = 0;
 
         for (i = 0; i < ntests; i++) {
             struct run *tr[TEDAB_NCOMBOS] = { 0 };
@@ -1054,13 +1058,24 @@ static int run(FILE *log)
                 if (!tr[a] || !tr[b])
                     continue;
                 npairs++;
-                v = tedab_compare_runs(tr[a]->dir, tr[b]->dir, tedab_combo_names[a],
-                                       tedab_combo_names[b], &fonts, tests[i].font, &d);
-                text_add(&rep, "  %s<->%s: %s\n%s", tedab_combo_names[a], tedab_combo_names[b],
-                         v < 0 ? "FAIL" : v ? "DIFF" : "SAME", d.p ? d.p : "");
+                v = tedab_pair_verdict(&tests[i], k,
+                                       tedab_compare_runs(tr[a]->dir, tr[b]->dir,
+                                                          tedab_combo_names[a],
+                                                          tedab_combo_names[b], &fonts,
+                                                          tests[i].font, &d));
+                text_add(&rep, "  %s<->%s: %s", tedab_combo_names[a], tedab_combo_names[b],
+                         tedab_pair_verdict_name(v));
+                if (v == TEDAB_PAIR_FIXED)
+                    text_add(&rep, " #%u (differs)", tests[i].fixed[k]);
+                else if (v == TEDAB_PAIR_BROKEN)
+                    text_add(&rep, " (@fixed #%u: the pair does not differ, stale)",
+                             tests[i].fixed[k]);
+                text_add(&rep, "\n%s", d.p ? d.p : "");
                 free(d.p);
-                if (v)
+                if (!tedab_pair_passes(v))
                     all_ok = 0;
+                else if (v == TEDAB_PAIR_FIXED)
+                    nfixed++;
                 else
                     nsame++;
             }
@@ -1070,8 +1085,8 @@ static int run(FILE *log)
         for (i = 0; i < nknown; i++)
             text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);
         text_add(&rep, "== %zu tests, %zu runs (%zu OK), %u sessions, %zu comparisons "
-                       "(%zu SAME), %zu known\n", ntests, nruns, nok, nsess, npairs, nsame,
-                 nknown);
+                       "(%zu SAME, %zu FIXED), %zu known\n", ntests, nruns, nok, nsess, npairs,
+                 nsame, nfixed, nknown);
     }
     if (rep.bad || write_file(P.report, rep.p, rep.n)) {
         fprintf(log, "tedab: cannot write %s\n", P.report);

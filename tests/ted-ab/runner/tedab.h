@@ -40,6 +40,12 @@
  *   ; @known REASON      a known failure (REASON e.g. "KNOWN-BOTH ..."): not
  *                        run, listed in the report as KNOWN with REASON;
  *                        run all the same when the filter names it exactly
+ *   ; @fixed #NNN PAIR...  TED bug NNN (the issue) is fixed: the named pairs
+ *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc; both combinations in
+ *                        @combos) must differ, FIXED; a named pair that is
+ *                        the same is BROKEN (the fix does not show, the
+ *                        directive is stale).  The other pairs are compared
+ *                        as before; one line per issue, a pair once
  * Mostly for the bug-orig tests (tests/bug-orig/ted, pass key bugorig=1):
  *   ; @file NAME "DATA"  a file staged in work/ ("..." with \n \t \xHH,
  *                        also \x00); repeated lines append
@@ -94,6 +100,8 @@ extern const char *const tedab_combo_names[TEDAB_NCOMBOS];
 extern const int tedab_pairs[4][2];
 /* index of a combination name, -1 = unknown */
 int tedab_combo(const char *name);
+/* index in tedab_pairs of a pair name "R5-C5", -1 = no compared pair */
+int tedab_pair(const char *name);
 
 struct tedab_expect {
     char kind[12];
@@ -118,6 +126,8 @@ struct tedab_test {
     int norunerr, roundtrip, nofiles, font, est;
     char *opts;                 /* @opts spec, NULL = none */
     char *known;                /* @known REASON, NULL = none */
+    unsigned fixed[4];          /* @fixed: the issue per tedab_pairs index, 0 =
+                                   the pair must be the same */
     char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
     struct tedab_file *files;   /* @file */
     size_t nfiles;
@@ -190,6 +200,15 @@ int tedab_eval_gate(const char *gdir, struct text *out);
    report lines */
 int tedab_compare_runs(const char *a, const char *b, const char *na, const char *nb,
                        const struct teddump_fonts *f, int fh, struct text *out);
+
+/* the verdict of pair k (tedab_pairs index) of test t from compare (the
+   result of tedab_compare_runs): SAME or DIFF, FAIL (a result not OK); for a
+   pair of @fixed FIXED (it differs) or BROKEN (it is the same: stale) */
+enum { TEDAB_PAIR_SAME, TEDAB_PAIR_DIFF, TEDAB_PAIR_FAIL, TEDAB_PAIR_FIXED, TEDAB_PAIR_BROKEN };
+int tedab_pair_verdict(const struct tedab_test *t, int k, int compare);
+/* 1 = the verdict passes (SAME, FIXED) */
+int tedab_pair_passes(int verdict);
+const char *tedab_pair_verdict_name(int verdict);
 
 /* where the expectations get their wanted contents */
 struct tedab_sources {

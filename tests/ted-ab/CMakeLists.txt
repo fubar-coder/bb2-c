@@ -6,6 +6,8 @@
 #             gate D scripts (gate-*.drv); NAME.expect: text of @expect tok,
 #             tokenised here with tedtok
 #   src/      sources of @source E / S
+#   lint/     scripts only for the lint of a directive (fixed: correct,
+#             fixed-wrong: broken on purpose), never run
 #   runner/   tedab (host side): runs the tests, see runner/main_tedab.c
 #   host/     host tests of the tools (built by host/CMakeLists.txt)
 add_subdirectory(amiga)
@@ -70,6 +72,19 @@ file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 # ted_ab_lint: the scripts against teddrive's syntax, their directives and
 # sources (no emulator); ted_ab: the runs
 add_test(NAME ted_ab_lint COMMAND ${TEDAB} --lint ${work}.pass)
+# the lint of the directive @fixed #NNN PAIR... (runner/tedab.h): lint/fixed
+# a correct script (the sample of tests/README.md), lint/fixed-wrong scripts
+# broken on purpose, each refused with its message
+foreach(dir fixed fixed-wrong)
+	file(GENERATE OUTPUT ${work}-lint-${dir}.pass
+		CONTENT "${text}scripts=${CMAKE_CURRENT_SOURCE_DIR}/lint/${dir}\n")
+endforeach()
+add_test(NAME ted_ab_lint_fixed COMMAND ${TEDAB} --lint ${work}-lint-fixed.pass)
+set_tests_properties(ted_ab_lint_fixed PROPERTIES
+	PASS_REGULAR_EXPRESSION "^tedab: 1 tests, 0 problems\n$")
+add_test(NAME ted_ab_lint_fixed_wrong COMMAND ${TEDAB} --lint ${work}-lint-fixed-wrong.pass)
+set_tests_properties(ted_ab_lint_fixed_wrong PROPERTIES PASS_REGULAR_EXPRESSION
+	"^a-no-pair line 4: @fixed #NNN PAIR[^\n]*\nb-bad-pair line 5: @fixed: C5-R5 is no compared pair[^\n]*\nc-not-run: @fixed #123 R5-C5: a combination not in @combos[^\n]*\nd-twice line 5: @fixed: pair R5-C5 named twice\ntedab: 0 tests, 4 problems\n$")
 add_test(NAME ted_ab COMMAND ${TEDAB} ${work}.pass)
 math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(ted_ab PROPERTIES LABELS emulator SKIP_RETURN_CODE 77

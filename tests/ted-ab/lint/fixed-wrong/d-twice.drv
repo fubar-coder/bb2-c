@@ -1,0 +1,7 @@
+; broken on purpose: @fixed naming a pair twice
+; @source none
+; @nofiles
+; @fixed #123 R5-C5
+; @fixed #124 R5-C5
+timeout 10
+wait exit
