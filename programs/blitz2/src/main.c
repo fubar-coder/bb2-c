@@ -813,11 +813,11 @@ void loaddmod(const char *name)
     seg = LoadSeg((CONST_STRPTR)dname2);
     if (!seg)
         dloaderr();
-    if (dseg) {
+    if (dseg)
         UnLoadSeg(dseg);
-        pointeron();
-    }
-    /* BUG(orig) (#23): without an old dseg the busy pointer stays on */
+    /* Fixed (#23): the busy pointer goes off without an old dseg too
+       (blitz2.s calls pointeron only after UnLoadSeg) */
+    pointeron();
     dseg = seg;
     errjmp = olderr;                    /* DIFF: asm never restored errstack */
     nodload();
