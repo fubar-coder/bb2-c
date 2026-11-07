@@ -188,7 +188,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #14 | closed | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | **fixed in the port** |
 | #15 | open | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | unchanged |
 | #16 | closed | [compiler/IncDir] Path without length check (buffer `incdir` 96 bytes) | **fixed in the port** |
-| #17 | open | [compiler/IncDir] Rest of the line (also after `:`) is taken into the path | unchanged |
+| #17 | closed | [compiler/IncDir] Rest of the line (also after `:`) is taken into the path | **fixed in the port** |
 | #18 | closed | [compiler] Failure of AllocSignal for the PANIC signal is not detected | unchanged |
 | #19 | closed | [compiler/WB start] Short-read .info file is not closed | **fixed in the port** |
 | #20 | closed | [compiler/WB start] Without a readable .info the editor is supposed to load "<name>.info" as the program | **fixed in the port** |
