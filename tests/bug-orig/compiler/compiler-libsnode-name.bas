@@ -9,6 +9,7 @@
 ; inside them and is reported at FreeMem (frlibslist at the end).
 ; Correct: the long name does no harm (cut or skipped) - the program
 ; compiles and runs, nothing is written behind an allocation.
+; @fixed #28
 ; @pass timeout=45
 ; @pass wrap=@INJECT@|pad
 ; @pass dir=blitz2/userlibs/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd

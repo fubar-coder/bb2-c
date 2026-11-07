@@ -361,7 +361,7 @@ struct libsnode {
     struct libsnode *next;  /* 0 */
     WORD used;              /* 4 -1 = load it */
     char name[32];          /* 6 dir name under blitz2:userlibs/
-                                 (BUG(orig) (#28): copied without length check) */
+                                 (Fixed (#28): a longer name is skipped) */
 };
 SIZE(libsnode, 38);
 

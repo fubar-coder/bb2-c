@@ -1095,6 +1095,10 @@ BOOL makeblitzlibs(void)
             continue;
         if (endininfo(fib->fib_FileName))
             continue;
+        /* Fixed (#28): a name that does not fit the node is skipped
+           (blitz2.s copies it without a limit, behind the node) */
+        if (strlen((const char *)fib->fib_FileName) >= sizeof node->name)
+            continue;
         node = doallocmem(sizeof(struct libsnode), MEMF_PUBLIC);
         /* insert sorted (case insensitive); &libslist acts as a node */
         link = &libslist;
@@ -1135,7 +1139,7 @@ BOOL makeblitzlibs(void)
         node->next = *link;             /* next of last is next of me */
         *link = node;                   /* I am next of last */
         node->used = -1;                /* set 'Used' flag */
-        /* BUG(orig) (#28): no length check, name[32] can overflow */
+        /* the name fits (checked above, #28) */
         strcpy(node->name, (const char *)fib->fib_FileName);
     }
     /* .ok */
