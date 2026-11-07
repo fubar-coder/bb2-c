@@ -36,7 +36,8 @@
  *             the limit), exited (Amiberry ended before the script),
  *             failed
  *   verdict   optional: the result for this config - bug-orig FIXED,
- *             REPRODUCED, DIFFERS, BROKEN (tedab also NOTRUN), the
+ *             REPRODUCED, DIFFERS, BROKEN, a fixed test REGRESSED
+ *             (tedab also NOTRUN), the
  *             reference "reference"; corpus same / differs; tedab outside
  *             bug-orig ok / fail (gates and every run of the session OK);
  *             missing where the session decides nothing (cdrun, a

@@ -377,6 +377,14 @@ static void explain(const struct bugorig_obs *e, const struct bugorig_obs *o, co
 enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bugorig_obs *ref,
                                    const struct bugorig_obs *o, struct text *why)
 {
+    /* a fixed test: only the expectation counts */
+    if (!ref) {
+        if (bugorig_matches(e, o))
+            return BUGORIG_FIXED;
+        if (why)
+            explain(e, o, "observed", why);
+        return BUGORIG_REGRESSED;
+    }
     if (bugorig_matches(e, ref)) {
         if (why)
             text_add(why, "  the original shows the expected (correct) behaviour: either it does "
@@ -422,6 +430,7 @@ const char *bugorig_verdict_name(enum bugorig_verdict v)
     case BUGORIG_FIXED: return "FIXED";
     case BUGORIG_REPRODUCED: return "REPRODUCED";
     case BUGORIG_DIFFERS: return "DIFFERS";
+    case BUGORIG_REGRESSED: return "REGRESSED";
     default: return "BROKEN";
     }
 }

@@ -186,7 +186,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
             || !strcmp(key, "run") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
-            || !strcmp(key, "stack")) {
+            || !strcmp(key, "stack") || !strcmp(key, "fixed")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
@@ -206,6 +206,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 p->timeout = (unsigned)u;
             else if (!strcmp(key, "parallel"))
                 p->parallel = (unsigned)u;
+            else if (!strcmp(key, "fixed"))
+                p->fixed = (unsigned)u;
             else
                 p->stack = (unsigned)u;
             free(val);
@@ -225,7 +227,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                        : expect && !strcmp(expect, "exe") ? CORPUS_EXE : CORPUS_OUTPUT;
             if (!c.tag || !*c.tag || !expect || !c.acidlibs || !*c.acidlibs || *s
                 || (strcmp(expect, "ref") && strcmp(expect, "exe") && strcmp(expect, "output"))
-                || (c.expect == CORPUS_REF) != (p->nconfigs == 0)
+                || (c.expect == CORPUS_REF && p->nconfigs)
                 || !(v2 = realloc(p->configs, (p->nconfigs + 1) * sizeof *v2))) {
                 free(c.tag);
                 free(expect);
@@ -360,14 +362,25 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
-    if (!p->work || !p->report || !p->ted || (p->run && !p->launcher) || !p->defaultdbug)
-        return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug are needed");
+    if (!p->work || !p->report || !p->ted || (p->run && !p->launcher)
+        || (!p->defaultdbug && !p->fixed))
+        return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug (optional with "
+                    "fixed=) are needed");
     /* compile only: nothing that belongs to the runs */
     if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect
                     || p->serial_same_as))
         return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
                     "expect or serial_same_as");
-    if (p->nconfigs < 2 || !p->nsources)
+    /* a fixed bug-orig test has no reference, every other pass one first */
+    if (p->fixed) {
+        if (!p->expect || p->regression)
+            return fail(p, err, errlen, "fixed= needs expect= and no regression=on");
+        if (!p->nconfigs || p->configs[0].expect == CORPUS_REF || !p->nsources)
+            return fail(p, err, errlen, "fixed=: configurations without a reference (no "
+                        "EXPECT ref) and a source are needed");
+    } else if (p->nconfigs && p->configs[0].expect != CORPUS_REF)
+        return fail(p, err, errlen, "the first configuration is the reference (EXPECT ref)");
+    else if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
     if (p->expect && (p->nsources != 1 || p->serial_same_as))
         return fail(p, err, errlen, "expect= needs exactly one source and no serial_same_as");
@@ -806,7 +819,7 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
     struct bugorig_obs e, *o = calloc(p->nconfigs, sizeof *o);
     struct text rep = { 0 };
     char err[300], *name = corpus_name(p->sources[0]);
-    size_t len, c;
+    size_t len, c, first;
     char *etext = (char *)read_file(p->expect, &len);
     int rc = 2, worst = 0;
 
@@ -844,13 +857,20 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
         free(t.p);
         free(path);
     }
-    text_add(&rep, "== %s %s: runtime error checking %s, expectation %s\n",
-        p->regression ? "port regression" : "bug-orig", name,
-        p->runtime_errors ? "on" : "off", p->expect);
-    statline_set(stl[0].verdict, sizeof stl[0].verdict, "reference");
+    if (p->fixed)
+        text_add(&rep, "== fixed bug-orig %s (#%u): runtime error checking %s, expectation %s\n",
+            name, p->fixed, p->runtime_errors ? "on" : "off", p->expect);
+    else
+        text_add(&rep, "== %s %s: runtime error checking %s, expectation %s\n",
+            p->regression ? "port regression" : "bug-orig", name,
+            p->runtime_errors ? "on" : "off", p->expect);
+    /* a fixed test (fixed=) has no reference: every configuration judged */
+    first = p->fixed ? 0 : 1;
+    if (!p->fixed)
+        statline_set(stl[0].verdict, sizeof stl[0].verdict, "reference");
     /* a bug-orig test needs a reference that does not show the expected
        behaviour, a port regression test (regression=on) one that does */
-    if (bugorig_matches(&e, &o[0]) != p->regression) {
+    if (!p->fixed && bugorig_matches(&e, &o[0]) != p->regression) {
         statline_set(stl[0].verdict, sizeof stl[0].verdict, "BROKEN");
         text_add(&rep, p->regression
             ? "BROKEN TEST: the original does not show the expected behaviour - the "
@@ -859,17 +879,21 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
               "not have the bug, or the expectation describes the bug\n");
         worst = 3;
     }
-    for (c = 1; c < p->nconfigs && worst < 3; c++) {
+    for (c = first; c < p->nconfigs && worst < 3; c++) {
         struct text why = { 0 };
         enum bugorig_verdict v = p->regression ? bugorig_judge_regression(&e, &o[0], &o[c], &why)
-                                 : bugorig_judge(&e, &o[0], &o[c], &why);
+                                 : bugorig_judge(&e, p->fixed ? NULL : &o[0], &o[c], &why);
+        /* REGRESSED (fixed=, no reference) counts like REPRODUCED: exit 1 */
         static const int order[] = { [BUGORIG_FIXED] = 0, [BUGORIG_REPRODUCED] = 1,
-                                     [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3 };
+                                     [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3,
+                                     [BUGORIG_REGRESSED] = 1 };
 
         statline_set(stl[c].verdict, sizeof stl[c].verdict, bugorig_verdict_name(v));
         text_add(&rep, "%s: %s%s\n", p->configs[c].tag, bugorig_verdict_name(v),
             v == BUGORIG_FIXED && p->regression ? " - the configuration does what the original does"
             : v == BUGORIG_FIXED ? " - the configuration behaves correctly"
+            : v == BUGORIG_REGRESSED ? " - THE FIX IS UNDONE: the configuration does not behave "
+                                       "correctly"
             : v == BUGORIG_REPRODUCED ? " - the bug of the original, reproduced on purpose"
             : p->regression ? " - THE PORT DOES NOT DO WHAT THE ORIGINAL DOES"
             : " - THE PORT DOES NOT REPRODUCE THE ORIGINAL");

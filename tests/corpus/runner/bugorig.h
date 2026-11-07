@@ -32,6 +32,11 @@
  *   DIFFERS     neither: the port does not reproduce the original
  * A test is valid if the reference does not match the expectation; it
  * passes when every configuration is FIXED.
+ * A fixed test (corpus.h fixed=NNN, the header `; @fixed #NNN`: the bug is
+ * fixed in the port, issue NNN) has no reference: a configuration is
+ * FIXED (it matches the expectation) or
+ *   REGRESSED   it does not: the fix is undone (REPRODUCED, DIFFERS and
+ *               BROKEN need the reference and cannot occur)
  * A port regression test (corpus.h regression=on, bugorig_judge_regression)
  * judges a bug of the port, not of the original: its expectation is what
  * the reference does, so the test is BROKEN if the reference does not
@@ -43,7 +48,9 @@
 #include <stddef.h>
 #include "util.h"
 
-enum bugorig_verdict { BUGORIG_FIXED, BUGORIG_REPRODUCED, BUGORIG_DIFFERS, BUGORIG_BROKEN };
+enum bugorig_verdict {
+    BUGORIG_FIXED, BUGORIG_REPRODUCED, BUGORIG_DIFFERS, BUGORIG_BROKEN, BUGORIG_REGRESSED
+};
 
 struct bugorig_section {
     char *name;
@@ -80,7 +87,8 @@ const char *bugorig_get(const struct bugorig_obs *o, const char *name);
 int bugorig_matches(const struct bugorig_obs *e, const struct bugorig_obs *o);
 
 /* the verdict for a configuration; the differing sections go to why
-   (may be NULL) */
+   (may be NULL).  ref NULL: a fixed test (no reference), FIXED or
+   REGRESSED */
 enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bugorig_obs *ref,
                                    const struct bugorig_obs *o, struct text *why);
 

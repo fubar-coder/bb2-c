@@ -41,9 +41,19 @@
 #                                           tokenised with the tokens of
 #                                           blitz2-c, that variant and
 #                                           the libraries (blitztokens)
+#                      ; @fixed #NNN        the bug is fixed in the port
+#                                           (issue NNN): a fixed test,
+#                                           see below
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
 # bug-orig and emulator, skipped (77) without Amiberry or the CD.
+# A fixed test (; @fixed #NNN, added by the commit that fixes the bug;
+# corpus.h fixed=) has no reference session and uses nothing of the CD
+# (no BB2: volume, no blitz2:defaultdbug, unless its @pass lines name them,
+# e.g. mount=BB2|@CD@): only clib is judged and must be FIXED, label
+# emulator only (it runs in the presets emulator and all, not in
+# bug-orig), declared here directly, not in the order of
+# cmake/bug-orig-order.cmake (it passes, ctest learns its cost).
 # The area regression/ holds port regression tests instead (a bug of the
 # port, not of the original; corpus.h regression=on): the expectation is
 # what the reference does, ctest regression_ID, label emulator only (the
@@ -55,7 +65,7 @@
 #   wrap=@INJECT@|..., for the programs with runwrap=@INJECT@|...),
 #   WBRUN (amiga/wbrun.c: started like from the Workbench, wrap=@WBRUN@ or
 #   runwrap=@WBRUN@),
-#   CD_BLITZ2 (the CD's BLITZ2 directory), TESTDATA
+#   CD (the CD), CD_BLITZ2 (the CD's BLITZ2 directory), TESTDATA
 #   (the generated test data, see below; use
 #   file=DEST|@TESTDATA@/NAME, the program reads CORPUS:DEST)
 #
@@ -71,7 +81,8 @@
 add_subdirectory(amiga)
 
 set(BUG_ORIG_TIMEOUT 90 CACHE STRING "bug-orig: time limit of one emulator session (seconds)")
-set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
+set(CD ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
+set(CD_BLITZ2 ${CD}/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
 set(USERLIB ${CMAKE_CURRENT_BINARY_DIR}/amiga/bugorig_userlib.obj)
 set(INJECT $<TARGET_FILE:inject>)
@@ -105,6 +116,7 @@ function(bug_orig_test bas name)
 	set(configs port clib)
 	set(rwe "")
 	set(extra "")
+	set(fixed "")
 	set(session_limit ${BUG_ORIG_TIMEOUT})
 	# the header lines begin with ';' - the list separator: replaced first.
 	# They make the pass file: a changed header configures again.
@@ -114,7 +126,12 @@ function(bug_orig_test bas name)
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
 	foreach(h IN LISTS header)
 		string(STRIP "${h}" h)
-		if(h MATCHES "^<semicolon> @configs (.+)$")
+		if(h MATCHES "^<semicolon> @fixed #([1-9][0-9]*)$")
+			if(fixed)
+				message(FATAL_ERROR "bug-orig: ${bas}: @fixed twice")
+			endif()
+			set(fixed ${CMAKE_MATCH_1})
+		elseif(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
 		elseif(h MATCHES "^<semicolon> @machine ([a-z0-9-]+)$")
 			string(APPEND extra "machine=${CMAKE_MATCH_1}\n")
@@ -131,6 +148,14 @@ function(bug_orig_test bas name)
 			message(FATAL_ERROR "bug-orig: ${bas}: bad header line: ${h}")
 		endif()
 	endforeach()
+	# a fixed test: no reference, judged in clib only (blitz2-c with the C
+	# libraries, as the port ships; port needs the CD's libraries)
+	if(fixed)
+		if(arg_REGRESSION OR DEFINED arg_WANT)
+			message(FATAL_ERROR "bug-orig: ${bas}: @fixed in a port regression or self test")
+		endif()
+		set(configs clib)
+	endif()
 
 	# RWE userlibs: per configuration the reference or the C build, the
 	# variant's libraries for clib, a token list with the libraries
@@ -163,11 +188,14 @@ function(bug_orig_test bas name)
 			endif()
 			set(variant ${v})
 			set(clib_dir ${vout})
-			string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
+			# the reference library only for ref (a fixed test has none)
+			if(NOT fixed)
+				string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
+				list(APPEND fixtures ${fixture})
+			endif()
 			foreach(c IN LISTS configs)
 				string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${obj}|${c}\n")
 			endforeach()
-			list(APPEND fixtures ${fixture})
 			list(APPEND objs ${obj})
 			list(APPEND tokdeps ${v}-${n}_obj)
 		endforeach()
@@ -197,8 +225,15 @@ function(bug_orig_test bas name)
 	string(APPEND text "work=${work}\nreport=${work}.txt\nruntime_errors=off\n"
 		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${parallel}\n"
 		"ted=$<TARGET_FILE:tedstub>\nlauncher=$<TARGET_FILE:reqtrap>\n"
-		"rcput=$<TARGET_FILE:rcput>\ndefaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
-		"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+		"rcput=$<TARGET_FILE:rcput>\n")
+	if(fixed)
+		# no reference and nothing of the CD (a test that needs it says so:
+		# @pass defaultdbug=@CD_BLITZ2@/DEFAULTDBUG, @pass mount=BB2|@CD@)
+		string(APPEND text "fixed=${fixed}\n")
+	else()
+		string(APPEND text "defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
+			"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+	endif()
 	foreach(c IN LISTS configs)
 		if(c STREQUAL "port")
 			string(APPEND text
@@ -210,8 +245,10 @@ function(bug_orig_test bas name)
 			message(FATAL_ERROR "bug-orig: ${bas}: unknown configuration ${c} (port, clib)")
 		endif()
 	endforeach()
-	string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
-		"source=${src}\nexpect=${expect}\n${extra}")
+	if(NOT fixed)
+		string(APPEND text "mount=BB2|${CD}\n")
+	endif()
+	string(APPEND text "source=${src}\nexpect=${expect}\n${extra}")
 	if(arg_REGRESSION)
 		string(APPEND text "regression=on\n")
 	endif()
@@ -221,7 +258,9 @@ function(bug_orig_test bas name)
 	# other if there are not enough emulator slots free, each maybe
 	# waiting for one
 	list(LENGTH configs nsessions)
-	math(EXPR nsessions "${nsessions} + 1")
+	if(NOT fixed)
+		math(EXPR nsessions "${nsessions} + 1")
+	endif()
 	math(EXPR limit
 		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
 	# the order: ctest learns the cost only from passing tests, and these
@@ -230,12 +269,14 @@ function(bug_orig_test bas name)
 	math(EXPR cost "${session_limit} * ${nsessions}")
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
-	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION)
+	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION AND NOT fixed)
 		bug_orig_add_test(${name} COST ${cost} COMMAND ${CORPUSRUN} ${work}.pass
 			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
 			FIXTURES_REQUIRED ${fixtures})
 		return()
 	endif()
+	# a fixed test (it passes: ctest learns its cost), a port regression or
+	# a self test: label emulator only
 	if(DEFINED arg_WANT)
 		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
 			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)

@@ -367,6 +367,24 @@ REPRODUCED. Look at the observation of ref to write the expectation,
 and check the expectation if possible with a temporary fix in the port
 (then FIXED, the test passes); name the test in the issue.
 
+### Fixed tests
+
+**Fixed tests** (`; @fixed #NNN` in the header of `ID.bas`, NNN the
+issue of the bug; pass key `fixed=NNN`): the bug is fixed in the port.
+The commit that fixes the bug adds the line. The test then has no
+reference session and uses nothing of the CD (no `BB2:` volume, no
+`blitz2:defaultdbug`; a test that needs them names them with
+`; @pass mount=BB2|@CD@` or `; @pass defaultdbug=@CD_BLITZ2@/DEFAULTDBUG`
+and is skipped without the CD); only `clib` (blitz2-c with the C
+libraries, as the port ships) is judged, against the expectation alone:
+FIXED, or REGRESSED (the configuration does not show the expected
+behaviour: the fix is undone). The test passes only when it is FIXED
+(exit status of `corpusrun`: 0 FIXED, 1 REGRESSED). ctest `bug_orig_ID`
+as before, label `emulator` only: it runs in the presets `emulator`
+and `all`, not in `bug-orig`, and it is declared directly, not in the
+order of the bug-orig tests (it passes, ctest learns its cost).
+`ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not.
+
 ### A bug of an RWE userlib
 
 *A bug of an RWE userlib* (`libs/userlibs/rwe/NAME.c`): the same, in

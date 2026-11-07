@@ -28,9 +28,11 @@
  *   gate=PATH        optional: run through the launcher first (reqclosetest);
  *                     if it does not return 0, the programs are not run and
  *                     the pass fails (they would block on their requesters)
- *   defaultdbug=PATH  blitz2:defaultdbug
+ *   defaultdbug=PATH  blitz2:defaultdbug (optional with fixed=: without it
+ *                     there is no blitz2:defaultdbug)
  *   config=TAG|EXPECT|BLITZ2|DEFLIBS|ACIDLIBS   one per configuration; the
- *                     first is the reference (EXPECT ref), the others:
+ *                     first is the reference (EXPECT ref; none with
+ *                     fixed=), the others:
  *                     exe = executable identical and output the same,
  *                     output = output the same
  *   source=PATH       a tokenised source (NAME.bb2), any number
@@ -95,6 +97,12 @@
  *                     configuration does it (FIXED), 3 = BROKEN (the
  *                     reference does not), 4 = DIFFERS (a configuration
  *                     does not)
+ *   fixed=NNN         with expect=: a fixed bug-orig test (the bug is fixed
+ *                     in the port, issue NNN): no reference, every
+ *                     configuration (none with EXPECT ref) is judged
+ *                     against the expectation only.  Exit status 0 = every
+ *                     configuration FIXED, 1 = one REGRESSED (it does not
+ *                     show the expected behaviour)
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -119,6 +127,7 @@ struct corpus_pass {
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     unsigned timeout, parallel, stack;
+    unsigned fixed;                     /* fixed=NNN, 0 = not given */
     struct corpus_config *configs;
     size_t nconfigs;
     char **sources;
