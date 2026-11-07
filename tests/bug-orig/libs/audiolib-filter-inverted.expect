@@ -1,0 +1,4 @@
+[run]
+Filter On: bit 1 = 0
+Filter Off: bit 1 = 2
+rc=0

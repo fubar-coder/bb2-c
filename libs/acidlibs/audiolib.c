@@ -227,6 +227,10 @@ static void dealloc(void *mem, ULONG size)
  * @brief Filter On|Off: the audio low pass filter (the power LED bit,
  *        BSET/BCLR #1,$BFE001).
  *
+ * BUG(orig) (#985): bit 1 of CIAAPRA is the active-low /LED output (0 = LED
+ * bright, filter on; Amiga Hardware Reference Manual): On sets it and so
+ * switches the filter off, Off switches it on.
+ *
  * @param on  d0.w: not 0 = on
  */
 static void BLITZ_ROUTINE dofilter_c(UWORD on BL_REG(d0))
