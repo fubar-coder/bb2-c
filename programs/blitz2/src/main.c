@@ -1051,9 +1051,13 @@ ULONG checklib(const char *name)
 
     if (!lock)
         return 0;
-    /* 'deflibs' has been found! - pick up file length
-       (BUG(orig) (#27): Examine result not checked) */
-    Examine(lock, namebufffib);
+    /* 'deflibs' has been found! - pick up file length.
+       Fixed (#27): a failed Examine counts as not found (blitz2.s takes
+       fib_Size unchecked, a length left in the buffer) */
+    if (!Examine(lock, namebufffib)) {
+        UnLock(lock);
+        return 0;
+    }
     UnLock(lock);
     return (ULONG)namebufffib->fib_Size;
 }

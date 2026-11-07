@@ -7,6 +7,7 @@
 ; Correct: a failed Examine counts as "not found" (checklib returns 0):
 ; acidlibs is not loaded, the animlib token is unknown - the same as
 ; without blitz2:acidlibs.
+; @fixed #27
 ; @pass wrap=@INJECT@|examinefail=blitz2:acidlibs
 InitAnim 0
 End
