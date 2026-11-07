@@ -803,6 +803,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   read-only type) and libraries written for them. Not for BB2 or AB3
   mode (existing sources and AmiBlitz3's binary libraries rely on
   mutable strings): only as a language variant of its own.
+- [ ] **Two flaky bug-orig tests** (seen 2026-11-07, not worth more
+  effort before the fixes of their areas): `rishapeslib-savecmap-zero-colours`
+  sometimes comes out DIFFERS in the clib configuration, and
+  `ted-setdefs-flags-lsl7` sometimes halts in C5. Both pass in other
+  runs; look at them again when their bug is fixed.
 
 ## 3 Only once §1 is done
 
