@@ -4,14 +4,18 @@
 ; expands to a truncated text), and freemacs frees the block with the word
 ; length, the rest is lost. Only reachable with a Macro Buffer over 65535
 ; (#336: macrobuff follows the option). The original always has 8192
-; bytes and reports "Macro too Big" (the macro's node is left half-built,
-; freemacs may free a text of garbage, #965), then it hangs at its exit
-; (alert 8100 0005: it frees 100000 bytes of its 8192 byte macrobuff,
-; #336). It cannot show the bug, the verdict of the port stays DIFFERS
-; (not REPRODUCED). The macro big has
-; 1000 lines of 76 bytes and ends with b=7; b stays 0 if the text is cut.
-; Correct: the macro expands to its whole text, the program prints 7, and
-; the compiler frees what it allocated (inject track).
+; bytes and reports "Macro too Big" at an earlier line, then it hangs at
+; its exit (alert 8100 0005: it frees 100000 bytes of its 8192 byte
+; macrobuff, #336). The macro big has 999 lines of 76 bytes (75 and the
+; ':' of the line end) and ends with b=7: 75927 bytes of text, which fit
+; into the Macro Buffer of 100000 bytes. Correct: a macro text is at most
+; 65535 bytes (its length is a word); the longer text gives "Macro too
+; Big", as a full Macro Buffer does, at the line where it gets too long
+; (the 863rd line of the macro: 65537 bytes gathered, one more than the
+; text and the ':' of a line end that End Macro removes), and the compiler
+; frees what it allocated (inject track). A text of exactly 65535 bytes:
+; compiler-macro-textlen-max.
+; @fixed #964
 ; @pass wrap=@INJECT@|track
 ; @pass jobline=macrobuf=100000
 ; @pass timeout=30

@@ -849,12 +849,20 @@ struct macbuild {
     WORD got;               /* asm d2: 0 = nothing got yet */
 };
 
-/* blitz2.s:12936 macputb */
+/* the longest macro text: its length is a word (struct macro textlen,
+   the resident format) */
+#define MACTEXTMAX 65535
+
+/* blitz2.s:12936 macputb.  Fixed (#964): also "Macro too Big" when the
+   text gets longer than MACTEXTMAX bytes, as when macrobuff is full; one
+   byte more is gathered, the ':' of a line end that .mclean removes
+   before End Macro (the original checks only macrobufff, its macrobuff
+   always has 8192 bytes) */
 static void macputb(struct macbuild *mb, UWORD c)
 {
     mb->got = -1;
     *mb->at++ = (UBYTE)c;
-    if (mb->at >= macrobufff)
+    if (mb->at >= macrobufff || mb->at > macrobuff + MACTEXTMAX + 1)
         macbigerr();
 }
 
@@ -969,12 +977,15 @@ void domacro(UWORD c)
             break;                              /* ':' is a token's low byte */
         n--;                                    /* .cdo */
     }
-    /* BUG(orig): textlen is a word (blitz2.s:12916 move d0,8(a2)), the
+    /* Fixed (#964): textlen is a word (blitz2.s:12916 move d0,8(a2)), the
        allocation takes the long n: a macro text of 65536 bytes or more
-       is cut to n & $ffff and later freed with that size (freemacs,
+       was cut to n & $ffff and later freed with that size (freemacs,
        blitz2.s:6688), the rest of the block lost.  Reachable only with
-       a Macro Buffer over 65535 (#336 made the option effective).
-       Kept. */
+       a Macro Buffer over 65535 (#336 made the option effective).  A
+       text is at most MACTEXTMAX bytes: macputb gathers at most one byte
+       more, and a text still that long after .mclean is refused here. */
+    if (n > MACTEXTMAX)
+        macbigerr();
     m->textlen = (UWORD)n;                      /* .cdone */
     if (m->textlen) {   /* text stays NULL when empty (never read then) */
         /* cleared like the nodes (#970) */

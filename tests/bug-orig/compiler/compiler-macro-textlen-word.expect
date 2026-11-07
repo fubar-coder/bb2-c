@@ -1,9 +1,6 @@
 [compile]
-ok
+error 886 Macro too Big
 [blitz2]
 inject: rc=0
 inject: track: 0 allocations left, 0 bytes
-rc=0
-[run]
-7
 rc=0

@@ -781,7 +781,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     halts;
   - [ ] `rimisclib-ezrequest-args-unbounded` (#748, #756): original
     timeout, port halts;
-  - [ ] `compiler-macro-textlen-word` (#964): original timeout, port done.
+  - [x] `compiler-macro-textlen-word` (#964) done (2026-11-07): the bug
+    is fixed, the test is a fixed test (clib only, no reference session).
   Each can be reworked on its own; so far no test observes its bug before
   the crash. `riarexxlib-parser-no-limit` (#537) was DIFFERS for the same
   reason since the `halt` session end (d147c8a: the original hung, the
