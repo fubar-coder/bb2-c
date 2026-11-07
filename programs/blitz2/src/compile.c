@@ -283,6 +283,7 @@ void qfree(void)
     freexincs();
     freefors();
     freeasms();
+    freepush();         /* Fixed (#994): not in blitz2.s */
 }
 
 /* blitz2.s:2010 freeemup */

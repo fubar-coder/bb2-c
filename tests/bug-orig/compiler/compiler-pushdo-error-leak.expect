@@ -1,5 +1,5 @@
 [compile]
-error 12 *
+error 13 *
 [blitz2]
 ...
 inject: track: 0 allocations left, 0 bytes

@@ -6,6 +6,7 @@
 ; allocations (track).
 ; Correct: the compile stops at the line of the error and blitz2 leaves
 ; no allocation behind.
+; @fixed #994
 ; @pass wrap=@INJECT@|track
 Dim a(10)
 i=1

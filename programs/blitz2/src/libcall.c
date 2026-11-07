@@ -486,6 +486,16 @@ skip2:
     pushat = 0;
 }
 
+/* Fixed (#994): a compile error between pushdo and pushput leaves the
+   compiler past pushput (blitz2.s:11057, the only FreeMem of the save
+   buffer): qfree frees it at the end of every pass */
+void freepush(void)
+{
+    if (pushat)
+        FreeMem((APTR)pushat, pushclen);
+    pushat = 0;
+}
+
 /* ===================================================================
  * code generation
  * =================================================================== */

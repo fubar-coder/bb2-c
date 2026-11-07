@@ -79,6 +79,9 @@ void pushdo(void);
    relocate its offset nodes by the move distance; frees the buffer.
    Fixed (#14): also when the object buffer is full (nomemleft). */
 void pushput(void);
+/* Fixed (#994): not in blitz2.s - frees a save buffer of pushdo that no
+   pushput freed (a compile error between them); called by qfree */
+void freepush(void);
 
 /* ---------------------------------------------------- code generation */
 
