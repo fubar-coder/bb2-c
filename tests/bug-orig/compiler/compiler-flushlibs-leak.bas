@@ -4,6 +4,7 @@
 ; 512 MB Z3 RAM (uae=), so the request succeeds; inject track reports the
 ; allocation that is left.
 ; Correct: nothing of blitz2 is left allocated.
+; @fixed #26
 ; @pass uae=z3mem_size=512
 ; @pass wrap=@INJECT@|track
 NPrint "hello"

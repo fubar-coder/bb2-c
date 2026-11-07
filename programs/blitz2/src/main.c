@@ -1028,11 +1028,15 @@ void flash2(void)
     } while (count-- != 0);
 }
 
-/* blitz2.s:1765 flushlibs - ask for 256 MEG! (forces library expunge;
-   BUG(orig) (#26): the memory would leak if the allocation ever succeeded) */
+/* blitz2.s:1765 flushlibs - ask for 256 MEG! (forces library expunge).
+   Fixed (#26): freed again if the allocation succeeds (blitz2.s neither
+   checks nor frees it) */
 void flushlibs(void)
 {
-    AllocMem(1024 * 1024 * 256, MEMF_PUBLIC);
+    APTR m = AllocMem(1024 * 1024 * 256, MEMF_PUBLIC);
+
+    if (m)
+        FreeMem(m, 1024 * 1024 * 256);
 }
 
 char defname[] = "blitz2:deflibs";      /* 1770 */
