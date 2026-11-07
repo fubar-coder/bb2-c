@@ -486,6 +486,9 @@ static void BLITZ_ROUTINE _chunkyvlin_c(UWORD x BL_REG(d0), UWORD y1 BL_REG(d1),
 }
 BLITZ_THUNK(_chunkyvlin, _chunkyvlin_c, "d1/a0-a1");
 
+/* BUG(orig) (#987): x is only compared with 0, not with the chunky width
+   (_chunkyplotclip does): with x at or beyond the width the pixel word lies
+   in other rows or behind the chunky area. */
 static void BLITZ_ROUTINE _chunkyvlinclip_c(WORD x BL_REG(d0), WORD y1 BL_REG(d1),
                                             WORD y2 BL_REG(d2), UWORD colour BL_REG(d3))
 {
