@@ -125,8 +125,9 @@ When the editor main loop returns (`blitz2.s:1448 .skip`):
 (residents), `freelibs`, then the failure chain `fail3` … `fail0`
 (`UnLoadSeg` TED, object buffer, macro buffer, dos, constant buffer,
 mathffp), `flushlibs` (AllocMem of more than 256 MB, so that Exec removes unused
-libraries). BUG(orig): the return value set in `returncode`
-is lost in `wb_exit` (d0 is overwritten) – survey-01.
+libraries). In the original the return value set in `returncode`
+is lost in `wb_exit` (d0 is overwritten, survey-01); the port returns
+it (fixed, #22).
 
 ### 2.4 What runs in which task [S]
 

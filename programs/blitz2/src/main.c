@@ -547,6 +547,7 @@ int main(int argc, char **argv)
     ULONG stack;
     BPTR fh;
     int rc;
+    WORD result;
 
     us = FindTask(NULL);                /* asm: 276(execbase) = ThisTask */
     if (ext_cmdline(argc, argv, &rc))
@@ -608,12 +609,13 @@ int main(int argc, char **argv)
     stack = 4000;
 #endif
     stackfuck = stack;
-    begin();
+    result = begin();
     if (ext_result(&rc))
         return rc;
-    /* BUG(orig) (#22): wb_exit overwrites d0 (0 from the CLI; from the Workbench
-       whatever ReplyMsg/Permit leave), so DOS never sees returncode */
-    return 0;
+    /* Fixed (#22): DOS gets returncode, sign-extended as in blitz2.s:1479
+       (wb_exit overwrites d0: 0 from the CLI, from the Workbench whatever
+       ReplyMsg/Permit leave) */
+    return result;
 }
 
 /* ================================================== editor interface */

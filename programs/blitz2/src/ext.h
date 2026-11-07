@@ -304,7 +304,7 @@ APTR ext_editorarg(APTR arg);
 /**
  * @brief main: the compiler is done (begin returned).
  * @param rc  the return code of the program if handled
- * @return TRUE if handled, else main returns 0 (BUG(orig) #22)
+ * @return TRUE if handled, else main returns returncode (#22)
  */
 BOOL ext_result(int *rc);
 
