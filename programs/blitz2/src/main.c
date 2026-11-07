@@ -939,11 +939,13 @@ void menu10(void)
                 RemTask(panictask);     /* BUG(orig) (#24): no cleanup at all */
             break;
         }
-        /* .notpanic */
-        if (!closeed)
-            endstop();
     }
-    /* .fatal (BUG(orig) (#25): CreateProc failure leaves the stop requester open) */
+    /* .notpanic.  Fixed (#25): also when CreateProc fails (blitz2.s jumps
+       to .fatal, past endstop: the stop requester stayed open, its
+       exception code installed) */
+    if (!closeed)
+        endstop();
+    /* .fatal */
     firstlocal = NULL;
     firstglob = NULL;
     if (closeed)
