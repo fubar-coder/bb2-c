@@ -21,7 +21,11 @@
 # their build does not depend on it.
 # The C build is real C (assembler only where needed), checked like the
 # acidlibs: the declarations equal REFERENCE's (ctest
-# rwe_declarations_NAME, skipped without the originals), and the
+# rwe_declarations_NAME, skipped without the originals; the intended
+# differences of fixed original bugs in NAME.declarations-intended.txt of
+# this directory, if there - the format of libs/GROUP/declarations-
+# intended.txt, each entry must occur; configure again after adding the
+# file), and the
 # behaviour is compared with REFERENCE in Amiberry (libs_emulator:
 # libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).
 set(RWE_VARIANT rwe-1999)
@@ -198,7 +202,12 @@ foreach(l IN LISTS RWE_LIBS)
 	# for other directories (tests/bug-orig: ; @rwe NAME): the C build, the
 	# reference, its fixture (empty: none) and the variant's directory
 	set_property(GLOBAL PROPERTY RWE_LIB_${name} "${obj}|${reffile}|${fixture}|${v}|${vout}")
-	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj})
+	set(intended)
+	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
+		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
+	endif()
+	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj}
+		${intended})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
 	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${reffile}")
 	if(fixture)

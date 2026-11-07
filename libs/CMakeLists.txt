@@ -102,4 +102,13 @@ add_test(NAME blitzlibcompare_single COMMAND ${BLITZLIBCOMPARE}
 add_test(NAME blitzlibcompare_single_differs COMMAND ${BLITZLIBCOMPARE}
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/trackerlib.obj)
 set_tests_properties(blitzlibcompare_single_differs PROPERTIES WILL_FAIL TRUE)
+# the list of intended differences (declarations-intended.txt): an entry
+# that does not occur is a difference (must fail)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/blitzlibcompare_stale.txt
+	"# a stale entry\nlib 65450: entry 0 Fade +$0C: $01 != $00\n")
+add_test(NAME blitzlibcompare_single_stale COMMAND ${BLITZLIBCOMPARE}
+	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj
+	${CMAKE_CURRENT_BINARY_DIR}/blitzlibcompare_stale.txt)
+set_tests_properties(blitzlibcompare_single_stale PROPERTIES
+	PASS_REGULAR_EXPRESSION "intended difference not found: lib 65450: entry 0 Fade")
 add_subdirectory(tests)

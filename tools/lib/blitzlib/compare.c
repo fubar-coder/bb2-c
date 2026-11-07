@@ -162,3 +162,17 @@ int blitzlib_intended(const char *msgs, const char *const *intended, size_t n,
     }
     return other;
 }
+
+int blitzlib_intended_stale(const char *const *intended, size_t n, const unsigned char *seen,
+                            FILE *out)
+{
+    size_t k;
+    int stale = 0;
+
+    for (k = 0; k < n; k++)
+        if (!seen[k]) {
+            fprintf(out, "intended difference not found: %s\n", intended[k]);
+            stale++;
+        }
+    return stale;
+}

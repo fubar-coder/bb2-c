@@ -159,5 +159,54 @@ int main(void)
         CHECK(seen[0] == 0);
         fclose(out);
     }
+    /* a whole list as blitzlibcompare uses it (libs/GROUP/declarations-
+       intended.txt, libs/userlibs/rwe/NAME.declarations-intended.txt):
+       correct, with a stale entry, with an entry missing */
+    {
+        char correct[] = "# #959: d0, not d1\n"
+                         "lib: header +$05: $64 != $65\n"
+                         "lib: entry 0 Test +$1F: $65 != $61\n";
+        char stale[] = "lib: header +$05: $64 != $65\n"
+                       "lib: entry 0 Test +$1F: $65 != $61\n"
+                       "lib: entry 1 Gone +$0C: $01 != $00\n";
+        char missing[] = "lib: header +$05: $64 != $65\n";
+        const char *lines[4];
+        unsigned char seen[4];
+        long n;
+        FILE *out;
+
+        v = base;
+        v.libnum = 101;
+        v.name = "Tast";
+        CHECK(cmp(&v, 0, msg, sizeof msg) == 2);
+        n = blitzlib_intended_list(correct, lines, 4);
+        CHECK(n == 2);
+        memset(seen, 0, sizeof seen);
+        out = tmpfile();
+        CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 0);
+        CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 0);
+        fclose(out);
+        /* broken: an entry that does not occur */
+        n = blitzlib_intended_list(stale, lines, 4);
+        CHECK(n == 3);
+        memset(seen, 0, sizeof seen);
+        out = tmpfile();
+        CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 0);
+        CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 1);
+        rewind(out);
+        msg[fread(msg, 1, sizeof msg - 1, out)] = 0;
+        CHECK(strstr(msg, "intended difference not found: lib: entry 1 Gone +$0C: $01 != $00\n")
+              != NULL);
+        fclose(out);
+        /* broken: a difference the list does not name */
+        CHECK(cmp(&v, 0, msg, sizeof msg) == 2);
+        n = blitzlib_intended_list(missing, lines, 4);
+        CHECK(n == 1);
+        memset(seen, 0, sizeof seen);
+        out = tmpfile();
+        CHECK(blitzlib_intended(msg, lines, (size_t)n, seen, out) == 1);
+        CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 0);
+        fclose(out);
+    }
     return failures != 0;
 }

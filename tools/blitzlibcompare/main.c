@@ -194,11 +194,7 @@ int main(int argc, char **argv)
             diffs += blitzlib_intended(msgs, intended, (size_t)nintended, seen, stdout);
         free(msgs);
     }
-    for (i = 0; i < (size_t)nintended; i++)
-        if (!seen[i]) {
-            printf("intended difference not found: %s\n", intended[i]);
-            diffs++;
-        }
+    diffs += blitzlib_intended_stale(intended, (size_t)nintended, seen, stdout);
     printf("blitzlibcompare: %zu libraries, %ld differences in the declarations\n", n, diffs);
     free_biglib(&a);
     free_biglib(&b);

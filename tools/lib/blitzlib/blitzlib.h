@@ -149,4 +149,20 @@ long blitzlib_intended_list(char *text, const char **lines, size_t max);
 int blitzlib_intended(const char *msgs, const char *const *intended, size_t n,
                       unsigned char *seen, FILE *out);
 
+/**
+ * @brief Report the intended differences that did not occur (stale
+ * entries of the list).
+ *
+ * Prints "intended difference not found: LINE" for every entry whose seen
+ * flag is still 0.
+ *
+ * @param intended  the intended differences (blitzlib_intended_list)
+ * @param n         their number
+ * @param seen      per intended difference: 1 = found (blitzlib_intended)
+ * @param out       the messages
+ * @return the number of stale entries (each one counts as a difference)
+ */
+int blitzlib_intended_stale(const char *const *intended, size_t n, const unsigned char *seen,
+                            FILE *out);
+
 #endif

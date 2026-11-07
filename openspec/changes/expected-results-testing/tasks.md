@@ -18,7 +18,7 @@ documentation it changes; no program code changes in this change.
 
 ## 3. Intended lists (format now, entries at the first fix)
 
-- [ ] 3.1 `rwe_declarations_NAME` passes `libs/userlibs/rwe/NAME.declarations-intended.txt` to `blitzlibcompare` when present (`libs/userlibs/rwe/CMakeLists.txt:201`). Verify: a host test with a stale and a missing entry fails, a correct one passes
+- [x] 3.1 `rwe_declarations_NAME` passes `libs/userlibs/rwe/NAME.declarations-intended.txt` to `blitzlibcompare` when present (`libs/userlibs/rwe/CMakeLists.txt:201`). Verify: a host test with a stale and a missing entry fails, a correct one passes
 - [ ] 3.2 `checkdata` accepts `programs/ted/checkdata-intended.txt` (entry, issue; each must occur). Verify: `tools/tests` cases with a stale entry, an unlisted difference and a correct list
 - [ ] 3.3 `asmcmp` rule documented in `libs/acidlibs/CMakeLists.txt` comment and `docs/development.md`: a fix removes its routine from the list in the same commit. Verify: the text is present; no test change
 - [ ] 3.4 Document the three formats in `tests/README.md` and `docs/development.md` (checks section). Verify: the documented example entries are accepted by the tools
