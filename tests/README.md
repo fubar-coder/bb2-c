@@ -452,7 +452,10 @@ bitmaplib: more BitMap objects);
 `resident=ID|SOURCE|RESFILE` (up to 8) compiles SOURCE before the first
 job with the start options, saves it as the resident RESFILE (Create
 Resident) and enters RESFILE in the resident list of the default
-options, so the test program is compiled with the residents. All as
+options, so the test program is compiled with the residents
+(`resident=ID|SOURCE|RESFILE|defaults`: SOURCE is compiled with the
+default options, without the resident list, so `macrobuf=` and the other
+settings apply to it too). All as
 `; @pass jobline=...`.
 
 ### Adding a test

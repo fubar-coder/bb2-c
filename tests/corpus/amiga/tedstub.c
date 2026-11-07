@@ -22,7 +22,7 @@
  *                   number LIB is N (at most 8): a pair LIB.w, N.w
  *                   appended behind the maximums savextra wrote;
  *                   loadxtra reads the pairs in order, the last one wins
- *   resident=ID|SOURCE|RESFILE
+ *   resident=ID|SOURCE|RESFILE[|defaults]
  *                   a resident (at most 8, in this order): before the
  *                   first job SOURCE is compiled like a job, but with
  *                   the options the compiler has then (no .xtra, no
@@ -33,6 +33,10 @@
  *                   characters) is entered in the resident list (byte
  *                   54 + 68 * N of the .xtra, N = 0 for the first): every
  *                   job with the defaults compiles with the residents.
+ *                   With "defaults" SOURCE is compiled with the defaults
+ *                   but an empty resident list (the file defaults= with
+ *                   ".res" appended): the buffer sizes and max= apply to
+ *                   the resident too (needs defaults=).
  *   job=ID|SOURCE|OUTPUT[|DIR]
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
@@ -57,7 +61,7 @@
  * Log lines (each written at once, so the log survives a crash):
  *   BATCH start|end
  *   JOB ID SOURCE
- *   XTRA ID own|defaults|none
+ *   XTRA ID own|defaults|resdefaults|none
  *   XTRAERR ID MESSAGE                error outside the compile (residents)
  *   RESULT ID ok SIZE
  *   RESULT ID error LINE MESSAGE TEXT  the compiler's error, TEXT = the line
@@ -91,6 +95,7 @@ extern struct DosLibrary *DOSBase;
 
 #define PATHLEN EDSTUB_PATHLEN
 static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHLEN];
+static char resdefname[PATHLEN];        /* defname + ".res": no residents */
 static char cur_id[16];
 static int in_menu, runerr_off;
 static ULONG strbuf, macrobuf, objbuf;
@@ -100,11 +105,12 @@ static ULONG strbuf, macrobuf, objbuf;
 static UWORD maxpair[MAXMAX][2];
 static int nmax;
 
-/* resident=: the lines (ID|SOURCE|RESFILE split in place) */
+/* resident=: the lines (ID|SOURCE|RESFILE[|defaults] split in place) */
 #define MAXRES 8                        /* blitz2.s resbuff: 8 entries */
 #define RESNAME 64                      /* of 68 bytes: the name, seglist */
 #define RESBUFF 54                      /* .xtra: vers, flags, 14 words, 6 longs */
 static char *res_id[MAXRES], *res_src[MAXRES], *res_file[MAXRES];
+static int res_defaults[MAXRES];        /* compiled with resdefname */
 static int nres;
 
 static char lbuf[600];
@@ -339,15 +345,17 @@ static void call_loadxtra(void)
     }
 }
 
-static void save_defaults(void)
+/* the defaults into name (cleared if it cannot be written); with
+   residents: the resident list of resident= */
+static void write_defaults(char *name, int residents)
 {
     BPTR fh;
     int i;
 
-    if (!defname[0] || !edstub_ed->savextra)
+    if (!name[0] || !edstub_ed->savextra)
         return;
-    if (!(fh = Open(defname, MODE_NEWFILE))) {
-        defname[0] = 0;
+    if (!(fh = Open(name, MODE_NEWFILE))) {
+        name[0] = 0;
         return;
     }
     call_xtra(edstub_ed->savextra, fh);
@@ -369,7 +377,7 @@ static void save_defaults(void)
         Seek(fh, 50, OFFSET_BEGINNING); /* buffer sizes: the string buffer */
         Write(fh, &strbuf, 4);
     }
-    for (i = 0; i < nres; i++) {        /* the resident list: the names */
+    for (i = 0; residents && i < nres; i++) {   /* the resident list: the names */
         char name[RESNAME];
 
         memset(name, 0, sizeof name);
@@ -382,6 +390,21 @@ static void save_defaults(void)
         Write(fh, maxpair, 4 * nmax);
     }
     Close(fh);
+}
+
+static void save_defaults(void)
+{
+    int i;
+
+    write_defaults(defname, 1);
+    resdefname[0] = 0;
+    for (i = 0; i < nres; i++)
+        if (res_defaults[i] && defname[0]) {
+            edstub_strcpy(resdefname, defname, PATHLEN);
+            edstub_strcat(resdefname, ".res", PATHLEN);
+            write_defaults(resdefname, 0);
+            break;
+        }
 }
 
 #define MENU_CREATE_EXECUTABLE 2        /* blitz2.s menuadds: menu0,menu10,menu1 */
@@ -440,7 +463,8 @@ static void abort_hook(const char *why)
  * the jobs
  * ------------------------------------------------------------------- */
 /* the start of a job: log JOB, CurrentDir, load the source and its
-   options. noxtra: no options of the source and no defaults (resident=).
+   options. noxtra: no options of the source and no defaults (resident=);
+   2: the defaults without residents (resident=...|defaults).
    0 = source not loaded (RESULT failed logged); *dir and *old for end_job
    either way */
 static int begin_job(char *id, char *src, char *dirname, int noxtra, BPTR *dir, BPTR *old)
@@ -487,6 +511,9 @@ static int begin_job(char *id, char *src, char *dirname, int noxtra, BPTR *dir, 
         if (fh) {
             Close(fh);
             sbs(&L, "\town");
+        } else if (noxtra == 2 && resdefname[0]) {
+            edstub_strcpy(xtraname, resdefname, PATHLEN);
+            sbs(&L, "\tresdefaults");
         } else if (defname[0] && !noxtra) {
             edstub_strcpy(xtraname, defname, PATHLEN);
             sbs(&L, "\tdefaults");
@@ -890,6 +917,7 @@ void edstub_main(const char *arg)
             res_id[nres] = field(&v);
             res_src[nres] = field(&v);
             res_file[nres] = field(&v);
+            res_defaults[nres] = edstub_streq(field(&v), "defaults");
             if (edstub_strlen(res_file[nres]) >= RESNAME) {
                 edstub_log("FATAL: resident name longer than 63 characters");
                 continue;
@@ -903,7 +931,7 @@ void edstub_main(const char *arg)
     for (i = 0; i < nres; i++) {
         char item[] = "4";              /* blitz2.s menuadds: menu5 */
 
-        batch_job(res_id[i], res_src[i], res_file[i], 0, 1);
+        batch_job(res_id[i], res_src[i], res_file[i], 0, res_defaults[i] ? 2 : 1);
         DeleteFile(res_file[i]);
         menu_job(res_id[i], item, res_file[i]);
     }
