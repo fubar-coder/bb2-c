@@ -487,7 +487,13 @@ void dodcb(UWORD c)
     if (c != ',')
         syntaxerr();
     val = evalconst2(&c, NULL);                       /* to put in memory */
-    /* BUG(orig) (#37): do-while loops: a count of 0 repeats 2^32 times */
+    /* Fixed (#37): a count of 0 emits nothing (no alignment either), a
+       negative one is "Illegal Constant"; the original's do-while loops
+       made 2^32 copies for 0 and took a negative count as unsigned */
+    if ((LONG)cnt < 0)
+        ilconsterr();
+    if (!cnt)
+        return;
     if (size == 0) {
         do pokebyte((UBYTE)val); while (--cnt);         /* .byte */
         return;

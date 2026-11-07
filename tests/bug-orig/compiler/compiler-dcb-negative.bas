@@ -2,6 +2,7 @@
 ; of -1 makes 2^32-1 copies, the compiler runs for hours (here: the
 ; session's time limit).
 ; Correct: a negative count is an error.
+; @fixed #37
 ; @pass timeout=30
 Goto skip
 Dcb.w -1,0

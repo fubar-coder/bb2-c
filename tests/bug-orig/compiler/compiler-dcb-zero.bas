@@ -2,6 +2,7 @@
 ; a count of 0 makes 2^32 copies, the compiler runs for hours (here: the
 ; session's time limit).
 ; Correct: Dcb with a count of 0 emits nothing.
+; @fixed #37
 ; @pass timeout=30
 Goto skip
 .la
