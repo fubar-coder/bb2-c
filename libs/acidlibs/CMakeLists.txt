@@ -75,6 +75,10 @@ endforeach()
 # Arguments NAME:ORIGADDR:CSYMBOL:COUNT; routines without a global symbol of
 # their own are given as an offset from the nearest one (CSYMBOL SYM+HEX,
 # HEX may be negative), taken from the original's layout.
+# Only routines still equal to the original are listed: a fix of an
+# original bug that changes a listed routine removes its argument from the
+# list in the same commit (and names it in the commit message); there is
+# no list of intended differences for instructions.
 function(asm_check lib libnum)
 	add_test(NAME asmcmp_${lib}
 		COMMAND ${ASMCMP} ${CMAKE_OBJDUMP}

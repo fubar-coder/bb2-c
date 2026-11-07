@@ -90,6 +90,14 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
 A bug not fixed yet keeps its `BUG(orig)` comment and its bug-orig test,
 which comes out REPRODUCED in `ctest --preset bug-orig`.
 
+The instruction comparison of the acidlibs routines that stay assembler
+(`asmcmp_runerrlib`, `asmcmp_debuglib`, `asmcmp_dhandlerlib`,
+`asmcmp_memacclib`; `tools/asmcmp`, the routine lists of `asm_check` in
+`libs/acidlibs/CMakeLists.txt`) lists only routines still equal to the
+original: a fix that changes a listed routine removes the routine from
+its `asm_check` list in the same commit and names it in the commit
+message. There is no list of intended differences for instructions.
+
 **API reference** (C developers): `Doxyfile` in the repository root,
 over `libs/include`, `deflib.h`, the sources of acidlibs and of all
 userlibs (`libs/userlibs`, a new userlib directory is included), and
