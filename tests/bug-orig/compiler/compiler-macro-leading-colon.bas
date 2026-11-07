@@ -5,6 +5,7 @@
 ; stores ":1": NPrint !a becomes NPrint :1, an empty NPrint and the
 ; statement 1 (a syntax error).
 ; Correct: the macro text is "1", the program prints 1.
+; @fixed #942
 Macro a:1:End Macro
 NPrint !a
 End

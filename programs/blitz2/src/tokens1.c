@@ -912,6 +912,10 @@ void domacro(UWORD c)
             continue;
         }
         if (!(c & 0x8000)) {
+            /* Fixed (#942): a leading ':' (right after the name) is
+               skipped like the line end - blitz2.s stores it */
+            if (c == ':' && !mb.got)
+                continue;
             macputb(&mb, c);                    /* .notend2 */
             continue;
         }
@@ -954,10 +958,10 @@ void domacro(UWORD c)
     ext_macrodef(FALSE);
     dolineabort = 1;
     n = mb.at - macrobuff;
-    /* clean up leading and trailing ':'s (only trailing ones in fact).
-       BUG(orig) (#942): a ':' right after the name stays in the text
-       (Macro a:1:End Macro gives ":1"; mb.got suppresses only the ':' of
-       a line end) (blitz2.s:12904-12915).  Kept. */
+    /* clean up leading and trailing ':'s (only trailing ones here; the
+       leading ones are skipped in .gather, Fixed (#942): blitz2.s kept a
+       ':' right after the name, Macro a:1:End Macro gave ":1",
+       blitz2.s:12904-12915) */
     while (n) {                                 /* .mclean */
         if (*--mb.at != ':')
             break;
