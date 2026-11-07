@@ -4,6 +4,7 @@
 ; the last code-generating statement leaves that code on an odd address:
 ; End jumps there (address error).
 ; Correct: the program prints and ends.
+; @fixed #979
 ; @pass timeout=30
 ; @pass file=odd.bin|@TESTDATA@/compiler-incbin-odd-end.bin
 NPrint "before"

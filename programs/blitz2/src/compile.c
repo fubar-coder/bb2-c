@@ -829,10 +829,12 @@ void dopass(void)
     }
 
     /* end of whole program! */
-    /* BUG(orig) (#979): pc is not rounded up to even here: an IncBin (or
-       Dc.b) of odd length as the last statement leaves the end code (the
-       library finits, moveq #0,d0 / rts) on an odd address, where End
-       jumps: an address error. */
+    /* Fixed (#979): pc is rounded up to even (a pad byte 0, like #969)
+       before endop is taken.  blitz2.s does not: an IncBin (or Dc.b) of
+       odd length as the last statement left endop, where End jumps, on
+       an odd address (an address error).  With an even pc nothing
+       changes; with an odd one the following code was aligned anyway. */
+    alignpc();
     endop = pc;               /* where end goes... */
 
     if (blitzmode)
