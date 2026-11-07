@@ -1327,7 +1327,12 @@ static void handleconst(void)
     UWORD len, c;
 
     prepstack();                /* forth stax */
-    len = makename(NULL);       /* BUG(orig) (#7): empty name not checked */
+    len = makename(NULL);
+    /* Fixed (#7): "#=5", a constant without a name, is a syntax error; the
+       original did not test makename's result and created a constant with
+       an empty name */
+    if (!len)
+        syntaxerr();
     l = findadd(len, &last);
     if (!l) {
         l = (struct label *)addhere(last, NAMEOFF_LABEL, len);
