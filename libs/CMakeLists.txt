@@ -55,7 +55,7 @@ add_test(NAME cmdref_check_broken COMMAND ${CMAKE_COMMAND}
 	-DCOMMITTED=${CMDREF_SITE_DIR}/acidlibs/trackerlib.json
 	-P ${CMDREF_CHECK})
 set_tests_properties(cmdref_check_broken PROPERTIES
-	PASS_REGULAR_EXPRESSION "differs from[ \n]+[^ \n]*/acidlibs/trackerlib\\.json")
+	PASS_REGULAR_EXPRESSION "differs[ \n]+from[ \n]+[^ \n]*/acidlibs/trackerlib\\.json")  # CMake wraps long messages
 
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
