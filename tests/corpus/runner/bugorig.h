@@ -18,6 +18,11 @@
  *   [log]      the session log of tedstub (RESULT without the size, the
  *              version of the version requester as N.NN: the reference
  *              is 1.95, the port 2.10)
+ * Recorded observation of the original (NAME.orig): the sections of the
+ * reference configuration exactly as bugorig_observe made them, the same
+ * format, and an optional first line "# NOTE" (which original it was).  A
+ * recording run writes it (corpus.h orig=, BUGORIG_RECORD=1); the normal
+ * run judges against it and starts no reference session.
  * Expectation (NAME.expect): the sections that matter, same format; a
  * line ending in `*` matches every line that begins with the text before
  * it, a line `...` any number of lines (also none).  [session] not given
@@ -91,5 +96,13 @@ enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bug
                                    const struct bugorig_obs *o, struct text *why);
 
 const char *bugorig_verdict_name(enum bugorig_verdict v);
+
+/* the file text of an observation (NAME.orig): an optional note as the
+   first line (a comment), then the sections as bugorig_parse reads them.
+   0 = ok (t is malloc'd), -1 = error (err): out of memory, or the text
+   would not read back as the observation (a line of output that looks like
+   a section header) */
+int bugorig_format(const struct bugorig_obs *o, const char *note, struct text *t, char *err,
+                   size_t errlen);
 
 #endif

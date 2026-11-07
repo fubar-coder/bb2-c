@@ -8,7 +8,11 @@
 ; library 144), one CustomCop (needs no slice) in Amiga mode.  The
 ; original does not come back (memory corrupted: the session times out).
 ; Correct: with no slice objects no pointer is moved, the program goes on.
+; How it fails depends on the memory layout (a time out with the CD
+; mounted as a volume, a halt of the CPU without it); the volume is
+; mounted so that clib fails as the original does.
 ; @configs clib
+; @pass mount=BB2|@CD@
 ; @pass jobline=max=144|0
 ; @pass timeout=30
 DEFTYPE .l

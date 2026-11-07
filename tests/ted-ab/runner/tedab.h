@@ -237,6 +237,20 @@ int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
                           const char *port_state, const char *port_problems, int compare);
 const char *tedab_verdict_name(int verdict);
 
+/* the recorded observation of the original (NAME.orig of a TED bug-orig
+   test, the R5 run): an optional note "# NOTE", then
+     [state]
+     the state text (one line)
+     [problems]
+     the problem lines, as tedab_check_expects wrote them (may be empty)
+   The verdict against it is tedab_bugorig_verdict with the file's state and
+   problems; the comparison of the whole run directories (compare) is not
+   part of the observation.  format: 0 = ok (t malloc'd), -1 = error (err);
+   parse: 0 = ok (state and problems malloc'd), -1 = error */
+int tedab_orig_format(const char *state, const char *problems, const char *note, struct text *t,
+                      char *err, size_t errlen);
+int tedab_orig_parse(const char *text, char **state, char **problems, char *err, size_t errlen);
+
 /* the hash of save/CDPATH (any case) in the oracle manifest; 0 = found */
 int tedab_oracle_hash(const char *manifest, const char *cdpath, char hex[65]);
 

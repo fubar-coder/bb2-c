@@ -46,8 +46,19 @@
 #                                           (issue NNN): a fixed test,
 #                                           see below
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
+#   AREA/ID.orig     the recorded observation of the original (an open bug;
+#                    not for a fixed test or a port regression test).  The
+#                    normal run judges against it and starts no session of
+#                    the original; ctest bug_orig_record_ID (label
+#                    originals, preset originals; or BUGORIG_RECORD=1)
+#                    writes it with the original (the reference build of
+#                    blitz2.s, or the CD's 2.10 for @rwe) and needs the CD
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
-# bug-orig and emulator, skipped (77) without Amiberry or the CD.
+# bug-orig and emulator, skipped (77) without Amiberry.  Without the CD
+# the configuration port (the CD's libraries) is not judged and the run
+# goes without blitz2:defaultdbug (not with runtime_errors=on: skipped);
+# the volume BB2: is mounted (the CD) only for a test whose source names it
+# or whose layout needs it (@pass mount=BB2|@CD@), skipped without the CD.
 # A fixed test (; @fixed #NNN, added by the commit that fixes the bug;
 # corpus.h fixed=) has no reference session and uses nothing of the CD
 # (no BB2: volume, no blitz2:defaultdbug, unless its @pass lines name them,
@@ -122,10 +133,12 @@ function(bug_orig_test bas name)
 	set(fixed "")
 	set(configs_given OFF)
 	set(session_limit ${BUG_ORIG_TIMEOUT})
+	set(orig_by "the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries")
 	# the header lines begin with ';' - the list separator: replaced first.
 	# They make the pass file: a changed header configures again.
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${bas})
 	file(READ ${bas} content)
+	set(bas_text "${content}")
 	string(REPLACE ";" "<semicolon>" content "${content}")
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
 	foreach(h IN LISTS header)
@@ -182,6 +195,7 @@ function(bug_orig_test bas name)
 		# the reference compiler: 2.10 (1.95 never loads a library of
 		# blitz2:userlibs/DIR, #2)
 		set(ref_blitz2 ${CD_BLITZ2}/BLITZ2)
+		set(orig_by "the CD's blitz2 2.10 with the CD's libraries and the reference RWE library")
 		set(variant "")
 		set(objs "")
 		foreach(n IN LISTS rwe)
@@ -249,7 +263,14 @@ function(bug_orig_test bas name)
 		# the same for a port regression test
 		string(APPEND text "regression=on\n")
 	else()
-		string(APPEND text "defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
+		# an open bug: judged against the recorded original (ID.orig, next
+		# to the test).  The first configuration is the original, which only
+		# the recording run (BUGORIG_RECORD=1, ctest bug_orig_record_ID,
+		# label originals) starts; the normal run drops it and what is only
+		# for it, and judges the others without the CD files it lacks
+		# (corpus.h orig=)
+		string(APPEND text "orig=${dir}/${id}.orig\norig_by=${orig_by}\n"
+			"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 			"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
 	endif()
 	foreach(c IN LISTS configs)
@@ -263,19 +284,16 @@ function(bug_orig_test bas name)
 			message(FATAL_ERROR "bug-orig: ${bas}: unknown configuration ${c} (port, clib)")
 		endif()
 	endforeach()
-	if(NOT noref)
+	# the volume BB2: (the CD) only for a test whose source names it
+	if(NOT noref AND bas_text MATCHES "[Bb][Bb]2:")
 		string(APPEND text "mount=BB2|${CD}\n")
 	endif()
 	string(APPEND text "source=${src}\nexpect=${expect}\n${extra}")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 
-	# a session per configuration (ref and the judged ones), one after the
-	# other if there are not enough emulator slots free, each maybe
-	# waiting for one
+	# a session per judged configuration, one after the other if there are
+	# not enough emulator slots free, each maybe waiting for one
 	list(LENGTH configs nsessions)
-	if(NOT noref)
-		math(EXPR nsessions "${nsessions} + 1")
-	endif()
 	math(EXPR limit
 		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
 	# the order: ctest learns the cost only from passing tests, and these
@@ -284,10 +302,24 @@ function(bug_orig_test bas name)
 	math(EXPR cost "${session_limit} * ${nsessions}")
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
+	# the recording of the original (an open bug): one session of the
+	# reference configuration, writes ID.orig; label originals only (in no
+	# preset but originals), needs the CD and, for RWE libraries, the
+	# reference build
+	if(NOT noref)
+		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
+		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} ${work}.pass)
+		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
+		if(fixtures)
+			set_tests_properties(${rec_name} PROPERTIES FIXTURES_REQUIRED "${fixtures}")
+		endif()
+		set(fixtures "")
+	endif()
 	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION AND NOT fixed)
 		bug_orig_add_test(${name} COST ${cost} COMMAND ${CORPUSRUN} ${work}.pass
-			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
-			FIXTURES_REQUIRED ${fixtures})
+			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 		return()
 	endif()
 	# a fixed test (it passes: ctest learns its cost), a port regression or
@@ -366,6 +398,26 @@ endforeach()
 # reported as broken (exit status 3), not as a reproduced bug
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
+# the recorded original (ID.orig) with broken input, before any session (no
+# emulator, no files of the pass needed): a file that is missing or not an
+# observation is an error (2), one that meets the expectation is a broken
+# test (3)
+set(orig_selftest ${CMAKE_CURRENT_SOURCE_DIR}/selftest)
+function(bug_orig_orig_test name want orig)
+	set(pass ${CMAKE_CURRENT_BINARY_DIR}/${name}.pass)
+	file(WRITE ${pass} "# ${name}: generated by tests/bug-orig/CMakeLists.txt\n"
+		"work=${CMAKE_CURRENT_BINARY_DIR}/${name}\nreport=${CMAKE_CURRENT_BINARY_DIR}/${name}.txt\n"
+		"ted=/nonexistent/ted\nlauncher=/nonexistent/launcher\ndefaultdbug=/nonexistent/dbug\n"
+		"config=ref|ref|/nonexistent/a|/nonexistent/b|/nonexistent/c\n"
+		"config=clib|output|/nonexistent/a|/nonexistent/b|/nonexistent/c\n"
+		"source=/nonexistent/x.bb2\nexpect=${orig_selftest}/bug-orig-selftest-broken.expect\n"
+		"orig=${orig}\n")
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+		-DPASS=${pass} -DWANT=${want} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+endfunction()
+bug_orig_orig_test(bug_orig_orig_missing 2 ${orig_selftest}/nonexistent.orig)
+bug_orig_orig_test(bug_orig_orig_garbage 2 ${orig_selftest}/garbage.orig)
+bug_orig_orig_test(bug_orig_orig_broken 3 ${orig_selftest}/bug-orig-selftest-broken.orig)
 # the self test of a port regression test (the expect tests of
 # tests/blitz2 too): an expectation the port does not meet must fail
 # (exit status 1, REGRESSED)
@@ -449,14 +501,22 @@ function(bug_orig_ted_test scripts id name)
 		"inject=${INJECT}\nwbrun=${WBRUN}\n"
 		"ted_ref=${CMAKE_BINARY_DIR}/programs/ted/ref/ted\nted_c=$<TARGET_FILE:ted>\n"
 		"blitz2_ref=${CD_BLITZ2}/BLITZ2\nblitz2_c=$<TARGET_FILE:blitz2>\n"
-		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\n")
+		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\n"
+		"orig=${scripts}/${id}.orig\n"
+		"orig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
-	# two sessions (one after the other with CORPUS_PARALLEL=1 or without
-	# enough free emulator slots), each maybe repeated once (gates failed),
-	# each maybe waiting for a slot
-	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 4 + 120 + 4 * ${EMULATION_QUEUE_WAIT}")
-	# the order (see bug_orig_test): the limit of the two sessions
-	math(EXPR cost "${BUG_ORIG_TIMEOUT} * 2")
+	# the recording of the original (BUGORIG_RECORD=1): only the reference
+	# run (R5), writes ID.orig; label originals only
+	string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
+	math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	add_test(NAME ${rec_name} COMMAND ${TEDAB} ${work}.pass)
+	set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+		TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
+	# one session (C5; the reference R5 only for the recording), maybe
+	# repeated once (gates failed), maybe waiting for a slot
+	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	# the order (see bug_orig_test): the limit of the session
+	set(cost ${BUG_ORIG_TIMEOUT})
 	if(DEFINED arg_WANT)
 		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
 			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
@@ -491,6 +551,24 @@ endif()
 # original TED does must be reported as broken (exit status 3)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-bug-orig-selftest-broken
 	bug_orig_ted_selftest_broken WANT 3)
+
+# the recorded original of a TED test with broken input, before any session
+# (no emulator): missing or not an observation is an error (2)
+function(bug_orig_ted_orig_test name orig)
+	set(pass ${CMAKE_CURRENT_BINARY_DIR}/${name}.pass)
+	string(CONCAT text
+		"work=${CMAKE_CURRENT_BINARY_DIR}/${name}\nreport=${CMAKE_CURRENT_BINARY_DIR}/${name}.txt\n"
+		"scripts=${CMAKE_CURRENT_SOURCE_DIR}/selftest\nsrc=${PROJECT_SOURCE_DIR}/tests/ted-ab/src\n"
+		"combos=R5,C5\nbugorig=1\norig=${orig}\n"
+		"corpus_src=-\ncorpus_out=-\nexpect_dir=-\ncd=-\noracle=-\nfonts=-\n"
+		"teddrive=-\nteddrivetest=-\ntedprobe=-\nreqtrap=-\nted_ref=-\nted_c=-\n"
+		"blitz2_ref=-\nblitz2_c=-\n")
+	file(WRITE ${pass} "${text}")
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
+		-DPASS=${pass} -DWANT=2 -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+endfunction()
+bug_orig_ted_orig_test(bug_orig_ted_orig_missing ${CMAKE_CURRENT_SOURCE_DIR}/selftest/nonexistent.orig)
+bug_orig_ted_orig_test(bug_orig_ted_orig_garbage ${CMAKE_CURRENT_SOURCE_DIR}/selftest/garbage.orig)
 
 # all bug-orig tests (also those of libs/tests), the longest first
 # (cmake/bug-orig-order.cmake)

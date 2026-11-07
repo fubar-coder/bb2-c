@@ -181,6 +181,64 @@ int main(void)
             }
     }
     CHECK(!strcmp(bugorig_verdict_name(BUGORIG_REGRESSED), "REGRESSED"));
+
+    /* the recorded original (NAME.orig): the observation written as a
+       file and read back is the original for the verdicts, no reference
+       session needed; a = the original (prints 42), c = a port that
+       reproduces it, d = a fixed port (41) */
+    {
+        struct text f;
+        struct bugorig_obs r;
+        char msg[200];
+
+        CHECK(bugorig_format(&a, "blitz2 1.95", &f, msg, sizeof msg) == 0);
+        CHECK(!strncmp(f.p, "# blitz2 1.95\n[session]\ndone\n[compile]\nok\n[run]\n", 48));
+        CHECK(bugorig_parse(f.p, &r, msg, sizeof msg) == 0 && r.n == 5);
+        free(f.p);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_REPRODUCED);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &d) == BUGORIG_FIXED);
+        CHECK(judge("[run]\n40\nrc=0\n", &r, &d) == BUGORIG_DIFFERS);
+        CHECK(judge("[run]\n42\nrc=0\n", &r, &c) == BUGORIG_BROKEN);    /* the file equals the expectation */
+        /* the file read back gives the verdicts of the observation itself */
+        {
+            static const char *const ex[] = { "[run]\n41\nrc=0\n", "[run]\n4*\nrc=0\n",
+                                               "[run]\n40\nrc=0\n", "[compile]\nok\n",
+                                               "[log]\n...\nBATCH\tend\n" };
+            const struct bugorig_obs *obs[] = { &a, &b, &c, &d };
+            size_t i, k;
+
+            for (i = 0; i < sizeof ex / sizeof ex[0]; i++)
+                for (k = 0; k < sizeof obs / sizeof obs[0]; k++)
+                    CHECK(judge(ex[i], &r, obs[k]) == judge(ex[i], &a, obs[k]));
+        }
+        bugorig_free(&r);
+        /* a line of the file edited to a wildcard (`*` at the end, `...`)
+           matches as in an expectation: the port's 42 is the original's
+           ("4*"), a 50 is not */
+        CHECK(bugorig_parse("# edited\n[session]\ndone\n[run]\n4*\nrc=0\n", &r, msg, sizeof msg) == 0);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_REPRODUCED);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &d) == BUGORIG_FIXED);
+        bugorig_free(&r);
+        CHECK(bugorig_parse("[session]\ndone\n[run]\n...\nrc=0\n", &r, msg, sizeof msg) == 0);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_REPRODUCED);
+        bugorig_free(&r);
+        CHECK(bugorig_parse("[session]\ndone\n[run]\n5*\nrc=0\n", &r, msg, sizeof msg) == 0);
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_DIFFERS);   /* 42 is not 5* */
+        bugorig_free(&r);
+        /* the first line is a comment only before the first section */
+        CHECK(parses("# a note\n[run]\n# not a note\n", msg, sizeof msg));
+        CHECK(!parses("[run]\n1\n[log]\n2\n#\nx\n[run]\n", msg, sizeof msg) && strstr(msg, "twice"));
+        /* broken on purpose: an observation that would not read back
+           (the program wrote a line that looks like a section header) */
+        bugorig_free(&c);
+        observe(&c, "done", LOG_OK, "rc=0\n", "[log]\nrc=0\n");
+        CHECK(bugorig_format(&c, NULL, &f, msg, sizeof msg) == -1 && strstr(msg, "read back"));
+        CHECK(f.p == NULL);
+        CHECK(bugorig_format(&a, "two\nlines", &f, msg, sizeof msg) == -1 && strstr(msg, "line feed"));
+        bugorig_free(&d);
+        observe(&d, "done", LOG_OK, "rc=0\n", "[run]\n");
+        CHECK(bugorig_format(&d, NULL, &f, msg, sizeof msg) == -1);
+    }
     bugorig_free(&a);
     bugorig_free(&b);
     bugorig_free(&c);

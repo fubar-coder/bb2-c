@@ -87,11 +87,26 @@
  *                     remote end; what it sends is not judged); instead
  *                     of comparing the configurations with the reference,
  *                     each is judged against the expectation PATH (the
- *                     correct behaviour) and the reference.  Exit status
+ *                     correct behaviour) and the observation of the
+ *                     original (orig=).  Exit status
  *                     0 = every configuration FIXED, 1 = REPRODUCED (the
  *                     bug, as intended), 3 = BROKEN (the original does not
  *                     show the bug), 4 = DIFFERS (the port does not
  *                     reproduce the original)
+ *   orig=PATH         with expect= (not with fixed= and regression=on):
+ *                     the recorded observation of the original (NAME.orig,
+ *                     bugorig.h).  The normal run starts no session of the
+ *                     reference configuration (the first one, EXPECT ref,
+ *                     it is only used to record), judges the others against
+ *                     the expectation and this file, and gives BROKEN
+ *                     before any session if the file matches the
+ *                     expectation (3), or exit status 2 if it is missing.
+ *                     With BUGORIG_RECORD=1 in the environment (corpus_select)
+ *                     the run is the recording: only the reference
+ *                     configuration runs and its observation is written to
+ *                     PATH (exit status 0; 2 if the session failed)
+ *   orig_by=TEXT      the note in the first line of the recorded file
+ *                     (which original it is)
  *   regression=on     with expect=: an expect test instead (an extension of
  *                     blitz2, tests/blitz2; a port regression test,
  *                     tests/bug-orig/regression): no reference, every
@@ -127,6 +142,8 @@ struct corpus_config {
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
+    char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
+    int record;                         /* corpus_select: the recording run */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     unsigned timeout, parallel, stack;
     unsigned fixed;                     /* fixed=NNN, 0 = not given */
@@ -147,6 +164,21 @@ struct corpus_pass {
 /* 0 = ok, -1 = error (message in err) */
 int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errlen);
 void corpus_free(struct corpus_pass *p);
+
+/* the configurations a bug-orig pass (orig=) runs: the recording (record)
+   keeps only the reference, the normal run drops it and the files that are
+   for it only; a pass without orig= is left as it is.  Behind the check of
+   corpus_parse */
+void corpus_select(struct corpus_pass *p, int record);
+
+/* after corpus_select: the normal run of a bug-orig pass (orig=) judges
+   what is there.  A configuration whose compiler or libraries are missing
+   (port: the CD's libraries) is not judged while another one is, and
+   without blitz2:defaultdbug (the CD) the run goes without it unless it
+   has runtime error checking (the debugger is part of the program: the
+   run is skipped); both are noted in log (may be NULL).  The recording
+   needs them (skipped) */
+void corpus_skip_missing(struct corpus_pass *p, FILE *log);
 
 /* the name of a source without directory and .bb2 (malloc'd) */
 char *corpus_name(const char *source);

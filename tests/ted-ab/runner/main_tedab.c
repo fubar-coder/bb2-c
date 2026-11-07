@@ -32,11 +32,21 @@
  *   inject=, wbrun=PATH  optional: tools/inject, tools/wbrun for @command
  *                      (tests/bug-orig/amiga)
  *   bugorig=1          the bug-orig mode (tests/bug-orig/ted): every run in
- *                      a session of its own; the reference (the first
- *                      combination) and each other one get a verdict
- *                      (tedab_bugorig_verdict); exit status 0 = all FIXED,
- *                      1 = REPRODUCED, 3 = BROKEN, 4 = DIFFERS (the worst
- *                      of them: 3 before 4 before 1), 2 = error
+ *                      a session of its own; each combination but the
+ *                      first (the reference) gets a verdict against the
+ *                      recorded original (orig=, tedab_bugorig_verdict);
+ *                      exit status 0 = all FIXED, 1 = REPRODUCED, 3 =
+ *                      BROKEN, 4 = DIFFERS (the worst of them: 3 before 4
+ *                      before 1), 2 = error
+ *   orig=PATH          with bugorig=1: the recorded observation of the
+ *                      reference run (tedab.h, tedab_orig_format).  The
+ *                      normal run starts no session of the reference; the
+ *                      status is 3 (BROKEN) before any session if the file
+ *                      says OK without problems, 2 if the file is missing.
+ *                      With BUGORIG_RECORD=1 in the environment only the
+ *                      reference runs and its observation is written to
+ *                      PATH (exit status 0)
+ *   orig_by=TEXT       the note in the first line of the file
  *
  * The runs are packed into sessions (the combinations of a test stay
  * together); the next session starts as soon as one has ended (up to
@@ -75,6 +85,7 @@ struct pass {
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
     char *inject, *wbrun, *gates;
+    char *orig, *orig_by;
     unsigned timeout, budget, parallel, stack, bugorig;
 };
 
@@ -96,6 +107,7 @@ static size_t nknown;
 static struct run *runs;
 static size_t nruns;
 static int combo_order[TEDAB_NCOMBOS], ncombo_order;
+static int record;                      /* the recording run (BUGORIG_RECORD=1) */
 
 /* ----------------------------------------------------------- pass file */
 
@@ -113,6 +125,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
         { "ted_c", &P.ted_c }, { "blitz2_ref", &P.blitz2_ref }, { "blitz2_c", &P.blitz2_c },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
+        { "orig", &P.orig }, { "orig_by", &P.orig_by },
     };
     static const struct {
         const char *key;
@@ -213,6 +226,31 @@ static int parse(const char *text, char *err, size_t errlen)
         if (!ncombo_order) {
             snprintf(err, errlen, "combos: none");
             return -1;
+        }
+    }
+    /* the bug-orig mode is judged against the recorded original (orig=);
+       its reference, the first combination, only runs for the recording
+       (BUGORIG_RECORD=1) */
+    if (P.bugorig && !P.orig) {
+        snprintf(err, errlen, "bugorig=1 needs orig=, the recorded observation of the original");
+        return -1;
+    }
+    if (P.orig && !P.bugorig) {
+        snprintf(err, errlen, "orig= belongs to bugorig=1");
+        return -1;
+    }
+    if (P.orig && ncombo_order < 2) {
+        snprintf(err, errlen, "orig=: the reference and another combination are needed");
+        return -1;
+    }
+    if (P.orig) {
+        const char *r = getenv("BUGORIG_RECORD");
+
+        record = r && !strcmp(r, "1");
+        if (record)
+            ncombo_order = 1;
+        else {
+            memmove(combo_order, combo_order + 1, (size_t)(--ncombo_order) * sizeof *combo_order);
         }
     }
     return 0;
@@ -689,59 +727,108 @@ static void observe(const struct tedab_test *t, const struct run *r, char *state
     free(staged);
 }
 
-/* bug-orig: the verdict of every combination against the reference (the
-   first one of combos) into the report; *worst = the worst exit status */
-static void bugorig_verdicts(const struct tedab_test *t, struct run **tr,
-                             const struct teddump_fonts *f, struct text *rep, int *worst)
-{
-    int ref = combo_order[0], c;
-    char rs[300];
-    struct text rp = { 0 };
+/* bug-orig: the recorded original (orig=, loaded by load_orig) */
+static char *orig_state, *orig_problems;
 
-    if (!tr[ref]) {
-        text_add(rep, "  bug-orig: no run of the reference %s\n", tedab_combo_names[ref]);
-        *worst = 2;
-        return;
-    }
-    observe(t, tr[ref], rs, sizeof rs, &rp);
-    for (c = 1; c < ncombo_order; c++) {
-        int cc = combo_order[c], v, cmp = -1;
+/* bug-orig: the verdict of every combination against the recorded original
+   into the report; *worst = the worst exit status */
+static void bugorig_verdicts(const struct tedab_test *t, struct run **tr, struct text *rep,
+                             int *worst)
+{
+    int c;
+
+    for (c = 0; c < ncombo_order; c++) {
+        int cc = combo_order[c], v;
         char ps[300];
         struct text pp = { 0 };
 
         if (!tr[cc])
             continue;
         observe(t, tr[cc], ps, sizeof ps, &pp);
-        tr[ref]->verdict = "reference";
-        if (!strcmp(rs, "OK") && !strcmp(ps, "OK")) {
-            struct text d = { 0 };
-
-            cmp = tedab_compare_runs(tr[ref]->dir, tr[cc]->dir, tedab_combo_names[ref],
-                                     tedab_combo_names[cc], f, t->font, &d);
-            free(d.p);
-        }
-        if (!strncmp(rs, "NOTRUN", 6) || !strncmp(rs, "SKIPPED", 7)
-            || !strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7)
-            || !tr[ref]->gates_ok || !tr[cc]->gates_ok)
+        if (!strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7) || !tr[cc]->gates_ok)
             v = 2;              /* not run (or the tools failed): no verdict */
         else
-            v = tedab_bugorig_verdict(rs, rp.p ? rp.p : "", ps, pp.p ? pp.p : "", cmp);
+            /* the recorded state and problems are all of the original there
+               is: no comparison of the whole run directories */
+            v = tedab_bugorig_verdict(orig_state, orig_problems, ps, pp.p ? pp.p : "", 0);
         tr[cc]->verdict = v == 2 ? "NOTRUN" : tedab_verdict_name(v);
-        text_add(rep, "  bug-orig %s against %s: %s\n", tedab_combo_names[cc],
-                 tedab_combo_names[ref], v == 2 ? "NOT RUN" : tedab_verdict_name(v));
-        if (v == TEDAB_BROKEN)
-            text_add(rep, "    the reference shows the expected behaviour: the original does "
-                          "not have the bug, or the expectation describes it\n");
+        text_add(rep, "  bug-orig %s against the recorded original: %s\n", tedab_combo_names[cc],
+                 v == 2 ? "NOT RUN" : tedab_verdict_name(v));
         if (*worst < 0 || verdict_rank(v) > verdict_rank(*worst))
             *worst = v;
         free(pp.p);
     }
+}
+
+/* the recording run: the observation of the reference run into orig=;
+   *worst = 2 if it cannot be made */
+static void record_orig(const struct tedab_test *t, struct run **tr, struct text *rep, int *worst)
+{
+    int ref = combo_order[0];
+    char rs[300], err[200];
+    struct text rp = { 0 }, f;
+
+    if (!tr[ref] || !tr[ref]->gates_ok) {
+        text_add(rep, "  bug-orig: no run of the reference %s\n", tedab_combo_names[ref]);
+        *worst = 2;
+        return;
+    }
+    observe(t, tr[ref], rs, sizeof rs, &rp);
+    if (!strncmp(rs, "NOTRUN", 6) || !strncmp(rs, "SKIPPED", 7)) {
+        text_add(rep, "  bug-orig: the reference %s did not run\n", tedab_combo_names[ref]);
+        *worst = 2;
+    } else if (rp.bad || tedab_orig_format(rs, rp.p ? rp.p : "", P.orig_by, &f, err, sizeof err)) {
+        text_add(rep, "  bug-orig: %s\n", rp.bad ? "out of memory" : err);
+        *worst = 2;
+    } else {
+        if (write_file(P.orig, f.p, f.n)) {
+            text_add(rep, "  bug-orig: cannot write %s\n", P.orig);
+            *worst = 2;
+        } else {
+            text_add(rep, "  bug-orig %s: recorded in %s (state %s)\n", tedab_combo_names[ref],
+                     P.orig, rs);
+            if (*worst < 0)
+                *worst = 0;
+        }
+        free(f.p);
+    }
+    tr[ref]->verdict = "recorded";
     free(rp.p);
+}
+
+/* the recorded original of a bug-orig pass: 0 = loaded, 3 = BROKEN (the
+   original shows the expected behaviour: OK without a problem; the test
+   would not show a bug), 2 = error (the file is missing: it is recorded
+   by BUGORIG_RECORD=1 or ctest bug_orig_record_...) */
+static int load_orig(FILE *log)
+{
+    size_t len;
+    char err[200], *text = (char *)read_file(P.orig, &len);
+
+    if (!text) {
+        fprintf(log, "tedab: no %s, the recorded observation of the original: record it with "
+                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", P.orig);
+        return 2;
+    }
+    if (tedab_orig_parse(text, &orig_state, &orig_problems, err, sizeof err)) {
+        fprintf(log, "tedab: %s: %s\n", P.orig, err);
+        free(text);
+        return 2;
+    }
+    free(text);
+    if (!strcmp(orig_state, "OK") && !*orig_problems) {
+        fprintf(log, "BROKEN TEST: the original shows the expected (correct) behaviour (%s) - "
+                "it does not have the bug, or the expectation describes the bug\n", P.orig);
+        return 3;
+    }
+    return 0;
 }
 
 static int run(FILE *log)
 {
-    const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap, P.ted_ref, P.ted_c,
+    /* the original TED only runs for the recording */
+    const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap,
+                            P.orig && !record ? P.ted_c : P.ted_ref, P.ted_c,
                             P.blitz2_ref, P.blitz2_c, P.oracle };
     struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
     size_t *queue = NULL, nq = 0, i, k;
@@ -753,6 +840,10 @@ static int run(FILE *log)
     struct text rep = { 0 };
     int rc = 2, all_ok = 1, c, worst = -1;
 
+    /* the recorded original against the expectations, before any session:
+       the test shows no bug (BROKEN), or the recording is missing */
+    if (P.orig && !record && (rc = load_orig(log)))
+        return rc;
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (access(files[i], R_OK)) {
             fprintf(log, "tedab: no %s - skipped\n", files[i]);
@@ -1079,8 +1170,10 @@ static int run(FILE *log)
                 else
                     nsame++;
             }
-            if (P.bugorig)
-                bugorig_verdicts(&tests[i], tr, &fonts, &rep, &worst);
+            if (record)
+                record_orig(&tests[i], tr, &rep, &worst);
+            else if (P.bugorig)
+                bugorig_verdicts(&tests[i], tr, &rep, &worst);
         }
         for (i = 0; i < nknown; i++)
             text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);

@@ -43,6 +43,8 @@ void corpus_free(struct corpus_pass *p)
     free(p->runargs);
     free(p->machine);
     free(p->rcput);
+    free(p->orig);
+    free(p->orig_by);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -173,12 +175,14 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
 
         if (!strcmp(key, "work") || !strcmp(key, "report") || !strcmp(key, "ted")
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
-            || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")) {
+            || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
+            || !strcmp(key, "orig") || !strcmp(key, "orig_by")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
                          : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
                          : !strcmp(key, "defaultdbug") ? &p->defaultdbug
-                         : !strcmp(key, "rcput") ? &p->rcput : &p->serial_same_as;
+                         : !strcmp(key, "rcput") ? &p->rcput : !strcmp(key, "orig") ? &p->orig
+                         : !strcmp(key, "orig_by") ? &p->orig_by : &p->serial_same_as;
 
             free(*dst);
             *dst = val;
@@ -383,10 +387,19 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         if (!p->nconfigs || p->configs[0].expect == CORPUS_REF || !p->nsources)
             return fail(p, err, errlen, "%s: configurations without a reference (no "
                         "EXPECT ref) and a source are needed", key);
-    } else if (p->nconfigs && p->configs[0].expect != CORPUS_REF)
+    } else if (p->orig && !p->expect)
+        return fail(p, err, errlen, "orig= needs expect=");
+    else if (p->nconfigs && p->configs[0].expect != CORPUS_REF)
         return fail(p, err, errlen, "the first configuration is the reference (EXPECT ref)");
     else if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
+    /* a bug-orig test is judged against the recorded original */
+    if (p->expect && !p->fixed && !p->regression && !p->orig)
+        return fail(p, err, errlen, "a bug-orig test (expect= without fixed= and "
+                    "regression=on) needs orig=, the recorded observation of the original");
+    if (p->orig && (p->fixed || p->regression))
+        return fail(p, err, errlen,
+                    "orig= belongs to a bug-orig test, not to fixed= or regression=on");
     if (p->expect && (p->nsources != 1 || p->serial_same_as))
         return fail(p, err, errlen, "expect= needs exactly one source and no serial_same_as");
     /* Kickstart 1.x: no $RC (rcput instead), no gate (reqclosetest needs V36) */
@@ -420,6 +433,78 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 return fail(p, err, errlen, "two sources named like %s", p->sources[i]);
         }
     return 0;
+}
+
+/* the configuration k is not run: it and the files only for it go */
+static void drop_config(struct corpus_pass *p, size_t k)
+{
+    size_t i, j = 0;
+
+    for (i = 0; i < p->nfiles; i++) {
+        if (p->file_tag[i] && !strcmp(p->file_tag[i], p->configs[k].tag)) {
+            free(p->file_dest[i]);
+            free(p->file_src[i]);
+            free(p->file_tag[i]);
+            continue;
+        }
+        p->file_dest[j] = p->file_dest[i];
+        p->file_src[j] = p->file_src[i];
+        p->file_tag[j++] = p->file_tag[i];
+    }
+    p->nfiles = j;
+    free(p->configs[k].tag);
+    free(p->configs[k].blitz2);
+    free(p->configs[k].deflibs);
+    free(p->configs[k].acidlibs);
+    memmove(p->configs + k, p->configs + k + 1, (p->nconfigs - k - 1) * sizeof *p->configs);
+    p->nconfigs--;
+}
+
+void corpus_select(struct corpus_pass *p, int record)
+{
+    if (!p->orig)
+        return;
+    p->record = record;
+    if (record)
+        while (p->nconfigs > 1)
+            drop_config(p, 1);
+    else
+        drop_config(p, 0);
+}
+
+/* the files of configuration c are there */
+static int config_files(const struct corpus_pass *p, size_t c)
+{
+    return !access(p->configs[c].blitz2, R_OK) && !access(p->configs[c].deflibs, R_OK)
+           && !access(p->configs[c].acidlibs, R_OK);
+}
+
+void corpus_skip_missing(struct corpus_pass *p, FILE *log)
+{
+    size_t c;
+
+    if (!p->orig || p->record)
+        return;
+    /* the CD's libraries (port) and blitz2:defaultdbug are missing without
+       the CD: the other configurations are judged without them (one stays
+       if none is there: the run is skipped) */
+    for (c = p->nconfigs; c-- > 0;)
+        if (p->nconfigs > 1 && !config_files(p, c)) {
+            if (log)
+                fprintf(log, "corpus: %s: no %s - not judged\n", p->configs[c].tag,
+                        access(p->configs[c].blitz2, R_OK) ? p->configs[c].blitz2
+                        : access(p->configs[c].deflibs, R_OK) ? p->configs[c].deflibs
+                        : p->configs[c].acidlibs);
+            drop_config(p, c);
+        }
+    /* with runtime error checking the debugger is part of the program: the
+       run needs the file (and is skipped without it) */
+    if (p->defaultdbug && !p->runtime_errors && access(p->defaultdbug, R_OK)) {
+        if (log)
+            fprintf(log, "corpus: no %s - run without blitz2:defaultdbug\n", p->defaultdbug);
+        free(p->defaultdbug);
+        p->defaultdbug = NULL;
+    }
 }
 
 char *corpus_name(const char *source)
@@ -814,16 +899,107 @@ static int observe(const struct corpus_pass *p, size_t c, enum amiga_emulation_s
     return r;
 }
 
+/* a bug-orig test with orig=, before the sessions: loads the recorded
+   observation of the original into orig (the caller frees it) and checks
+   it against the expectation.  -1 = go on; 3 = BROKEN (the original shows
+   the expected behaviour: the test does not show a bug; the report is
+   written); 2 = error (the file is missing: it is recorded by
+   BUGORIG_RECORD=1 or ctest bug_orig_record_ID) */
+static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FILE *log)
+{
+    struct bugorig_obs e;
+    size_t len;
+    char err[300], *etext = (char *)read_file(p->expect, &len);
+    char *otext = (char *)read_file(p->orig, &len);
+    int rc = 2;
+
+    memset(orig, 0, sizeof *orig);
+    if (!etext || bugorig_parse(etext, &e, err, sizeof err)) {
+        fprintf(log, "corpus: %s: %s\n", p->expect, etext ? err : "cannot read it");
+        goto out;
+    }
+    if (!otext) {
+        fprintf(log, "corpus: no %s, the recorded observation of the original: record it with "
+                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", p->orig);
+        goto out_e;
+    }
+    if (bugorig_parse(otext, orig, err, sizeof err)) {
+        fprintf(log, "corpus: %s: %s\n", p->orig, err);
+        goto out_e;
+    }
+    rc = -1;
+    if (bugorig_matches(&e, orig)) {
+        struct text rep = { 0 };
+        char *name = corpus_name(p->sources[0]);
+
+        text_add(&rep, "== bug-orig %s: runtime error checking %s, expectation %s, original %s\n"
+                 "BROKEN TEST: the original shows the expected (correct) behaviour - it does not "
+                 "have the bug, or the expectation describes the bug\n",
+                 name ? name : "?", p->runtime_errors ? "on" : "off", p->expect, p->orig);
+        if (rep.bad || write_file(p->report, rep.p, rep.n))
+            fprintf(log, "corpus: cannot write %s\n", p->report);
+        else
+            fwrite(rep.p, 1, rep.n, log);
+        free(rep.p);
+        free(name);
+        bugorig_free(orig);
+        rc = 3;
+    }
+out_e:
+    bugorig_free(&e);
+out:
+    free(etext);
+    free(otext);
+    return rc;
+}
+
+/* the recording run: the observation of the one configuration (the
+   reference) into orig=; 0 = written, 2 = no observation */
+static int record(const struct corpus_pass *p, enum amiga_emulation_status st, const char *slog,
+                  struct statline *stl, FILE *log)
+{
+    struct bugorig_obs o;
+    struct text t;
+    char err[300];
+
+    /* a session that could not run is no observation (a timeout is one) */
+    if (st == AMIGA_EMULATION_FAILED || st == AMIGA_EMULATION_EXITED) {
+        fprintf(log, "corpus: %s: session %s (%s/%s/emu)\n", p->configs[0].tag,
+                amiga_emulation_status_name(st), p->work, p->configs[0].tag);
+        return 2;
+    }
+    if (observe(p, 0, st, slog, &o)) {
+        fprintf(log, "corpus: cannot observe %s\n", p->configs[0].tag);
+        return 2;
+    }
+    if (bugorig_format(&o, p->orig_by, &t, err, sizeof err)) {
+        fprintf(log, "corpus: %s: %s\n", p->orig, err);
+        bugorig_free(&o);
+        return 2;
+    }
+    bugorig_free(&o);
+    if (write_file(p->orig, t.p, t.n)) {
+        fprintf(log, "corpus: cannot write %s\n", p->orig);
+        free(t.p);
+        return 2;
+    }
+    statline_set(stl[0].verdict, sizeof stl[0].verdict, "recorded");
+    fprintf(log, "corpus: recorded %s (session %s)\n", p->orig, amiga_emulation_status_name(st));
+    free(t.p);
+    return 0;
+}
+
 /* bug-orig mode (expect=): every configuration judged against the
-   expectation and the reference; exit status in corpus.h */
-static int judge(const struct corpus_pass *p, const enum amiga_emulation_status *st, char **slog,
-                 struct statline *stl, FILE *log)
+   expectation and the recorded observation of the original (orig, NULL
+   for a fixed test and an expect test); exit status in corpus.h */
+static int judge(const struct corpus_pass *p, const struct bugorig_obs *orig,
+                 const enum amiga_emulation_status *st, char **slog, struct statline *stl,
+                 FILE *log)
 {
     struct bugorig_obs e, *o = calloc(p->nconfigs, sizeof *o);
     struct text rep = { 0 };
     char err[300], *name = corpus_name(p->sources[0]);
-    size_t len, c, first;
-    int noref;
+    size_t len, c;
     char *etext = (char *)read_file(p->expect, &len);
     int rc = 2, worst = 0;
 
@@ -865,26 +1041,17 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
         text_add(&rep, "== fixed bug-orig %s (#%u): runtime error checking %s, expectation %s\n",
             name, p->fixed, p->runtime_errors ? "on" : "off", p->expect);
     else
-        text_add(&rep, "== %s %s: runtime error checking %s, expectation %s\n",
+        text_add(&rep, "== %s %s: runtime error checking %s, expectation %s%s%s\n",
             p->regression ? "expect test" : "bug-orig", name,
-            p->runtime_errors ? "on" : "off", p->expect);
+            p->runtime_errors ? "on" : "off", p->expect, orig ? ", original " : "",
+            orig ? p->orig : "");
     /* a fixed test (fixed=) and an expect test (regression=on) have no
-       reference: every configuration judged against the expectation */
-    noref = p->fixed || p->regression;
-    first = noref ? 0 : 1;
-    if (!noref)
-        statline_set(stl[0].verdict, sizeof stl[0].verdict, "reference");
-    /* a bug-orig test needs a reference that does not show the expected
-       behaviour */
-    if (!noref && bugorig_matches(&e, &o[0])) {
-        statline_set(stl[0].verdict, sizeof stl[0].verdict, "BROKEN");
-        text_add(&rep, "BROKEN TEST: the original shows the expected (correct) behaviour - it does "
-                       "not have the bug, or the expectation describes the bug\n");
-        worst = 3;
-    }
-    for (c = first; c < p->nconfigs && worst < 3; c++) {
+       original: every configuration judged against the expectation.  That
+       the recorded original does not match the expectation was checked
+       before the sessions (check_orig) */
+    for (c = 0; c < p->nconfigs; c++) {
         struct text why = { 0 };
-        enum bugorig_verdict v = bugorig_judge(&e, noref ? NULL : &o[0], &o[c], &why);
+        enum bugorig_verdict v = bugorig_judge(&e, orig, &o[c], &why);
         /* REGRESSED (no reference) counts like REPRODUCED: exit 1 */
         static const int order[] = { [BUGORIG_FIXED] = 0, [BUGORIG_REPRODUCED] = 1,
                                      [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3,
@@ -940,10 +1107,16 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     size_t c, i, next = 0, done = 0, announced = 0;   /* announced: sessions logged */
     unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
+    struct bugorig_obs orig = { 0 };
     int rc = 2;
 
     if (!e || !st || !resp || !nsessions || !slog || !stl || !vbad || !text)
         goto out;
+    /* the recorded original against the expectation: no session if the test
+       shows no bug (BROKEN) or the recording is missing */
+    if (p->orig && !p->record && (rc = check_orig(p, &orig, log)) >= 0)
+        goto out;
+    rc = 2;
     /* without the files of the pass (the CD's libraries...) or the emulator:
        skipped */
     for (c = 0; c < p->nconfigs; c++) {
@@ -1049,8 +1222,12 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         slog[c] = path ? (char *)read_file(path, &len) : NULL;
         free(path);
     }
+    if (p->record) {
+        rc = record(p, st[0], slog[0], stl, log);
+        goto out;
+    }
     if (p->expect) {
-        rc = judge(p, st, slog, stl, log);
+        rc = judge(p, p->orig ? &orig : NULL, st, slog, stl, log);
         goto out;
     }
     text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",
@@ -1226,6 +1403,7 @@ out:
     for (c = 0; slog && c < p->nconfigs; c++)
         free(slog[c]);
     free(slog);
+    bugorig_free(&orig);
     free(stl);
     free(vbad);
     free(resp);

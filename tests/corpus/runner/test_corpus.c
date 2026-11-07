@@ -71,7 +71,7 @@ int main(void)
     /* files of the volume, wrapper, job lines, bug-orig expectation */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nfile=blitz2/userlibs/x/lib|/l\ndir=blitz2/userlibs/y\n"
                        "remove=blitz2/ted\nwrap=/w2|allocfail=64-64\njobline=menu=j1|9|X\n"
-                       "expect=/e\n", &p, err, sizeof err) == 0);
+                       "expect=/e\norig=/o\n", &p, err, sizeof err) == 0);
     CHECK(p.nfiles == 1 && !strcmp(p.file_dest[0], "blitz2/userlibs/x/lib")
           && !strcmp(p.file_src[0], "/l"));
     CHECK(p.ndirs == 1 && p.nremoves == 1 && !strcmp(p.removes[0], "blitz2/ted"));
@@ -130,14 +130,83 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nmachine=a3000\n", err, sizeof err) == -1 && strstr(err, "machine="));
     CHECK(parse(BASE CONFIGS "source=/s\nmachine=\n", err, sizeof err) == -1);
     /* bug-orig: exactly one source */
-    CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\n", err, sizeof err) == -1
+    CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\norig=/o\n", err, sizeof err) == -1
           && strstr(err, "one source"));
-    CHECK(parse(BASE CONFIGS "source=/s\nserial_same_as=/o\nexpect=/e\n", err, sizeof err) == -1
+    CHECK(parse(BASE CONFIGS "source=/s\nserial_same_as=/o\nexpect=/e\norig=/o\n", err, sizeof err) == -1
           && strstr(err, "serial_same_as"));
     /* bug-orig with the remote end on the serial port */
-    CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", &p, err, sizeof err) == 0);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\norig=/o\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
     corpus_free(&p);
+    /* the recorded original: the normal run drops the reference and the
+       files only for it, the recording keeps nothing else */
+    {
+#define ORIG BASE CONFIGS "config=clib|output|/a3|/b3|/c3\nsource=/s\nexpect=/e\norig=/o\n" \
+              "orig_by=blitz2 1.95\nfile=x/ref|/r|ref\nfile=x/port|/p|port\nfile=x/all|/a\n"
+        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
+        CHECK(!strcmp(p.orig, "/o") && !strcmp(p.orig_by, "blitz2 1.95") && p.nconfigs == 3);
+        corpus_select(&p, 0);
+        CHECK(!p.record && p.nconfigs == 2 && !strcmp(p.configs[0].tag, "port")
+              && !strcmp(p.configs[1].tag, "clib") && p.configs[0].expect == CORPUS_EXE);
+        CHECK(p.nfiles == 2 && !strcmp(p.file_dest[0], "x/port") && !strcmp(p.file_dest[1], "x/all"));
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
+        corpus_select(&p, 1);
+        CHECK(p.record && p.nconfigs == 1 && p.configs[0].expect == CORPUS_REF
+              && !strcmp(p.configs[0].tag, "ref"));
+        CHECK(p.nfiles == 2 && !strcmp(p.file_dest[0], "x/ref") && !strcmp(p.file_dest[1], "x/all"));
+        corpus_free(&p);
+        /* without the CD: the port (its libraries are missing) is not judged,
+           blitz2:defaultdbug is left out; clib is there */
+        CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/no/dbug\n"
+                           "config=ref|ref|/no/a|/no/b|/no/c\nconfig=port|exe|/|/no/b|/\n"
+                           "config=clib|output|/|/|/\nsource=/s\nexpect=/e\norig=/o\n",
+                           &p, err, sizeof err) == 0);
+        corpus_select(&p, 0);
+        corpus_skip_missing(&p, NULL);
+        CHECK(p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib") && !p.defaultdbug);
+        corpus_free(&p);
+        /* with runtime error checking blitz2:defaultdbug stays (the run is skipped) */
+        CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/no/dbug\n"
+                           "runtime_errors=on\nconfig=ref|ref|/no/a|/no/b|/no/c\n"
+                           "config=clib|output|/|/|/\nsource=/s\nexpect=/e\norig=/o\n",
+                           &p, err, sizeof err) == 0);
+        corpus_select(&p, 0);
+        corpus_skip_missing(&p, NULL);
+        CHECK(p.nconfigs == 1 && p.defaultdbug && !strcmp(p.defaultdbug, "/no/dbug"));
+        corpus_free(&p);
+        /* none there: the configurations stay (the run is skipped) */
+        CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/d\n"
+                           "config=ref|ref|/no/a|/no/b|/no/c\nconfig=port|exe|/no/a|/b|/c\n"
+                           "config=clib|output|/no/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n",
+                           &p, err, sizeof err) == 0);
+        corpus_select(&p, 0);
+        corpus_skip_missing(&p, NULL);
+        CHECK(p.nconfigs == 1 && !strcmp(p.configs[0].tag, "port"));
+        corpus_free(&p);
+        /* the recording is not touched */
+        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
+        corpus_select(&p, 1);
+        corpus_skip_missing(&p, NULL);
+        CHECK(p.nconfigs == 1 && p.defaultdbug);
+        corpus_free(&p);
+        /* a pass without orig= is left alone */
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0);
+        corpus_select(&p, 1);
+        CHECK(!p.record && p.nconfigs == 2);
+        corpus_free(&p);
+        /* broken on purpose: a bug-orig test without orig=, orig= without expect=
+           or with fixed= / regression=on */
+        CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\n", err, sizeof err) == -1
+              && strstr(err, "orig="));
+        CHECK(parse(BASE CONFIGS "source=/s\norig=/o\n", err, sizeof err) == -1
+              && strstr(err, "expect="));
+        CHECK(parse(BASE "fixed=7\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n",
+                    err, sizeof err) == -1 && strstr(err, "orig="));
+        CHECK(parse(BASE "regression=on\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\n"
+                    "orig=/o\n", err, sizeof err) == -1 && strstr(err, "orig="));
+#undef ORIG
+    }
     /* an expect test (an extension of blitz2, a port regression test): no
        reference, nothing of the CD, one configuration is enough */
     CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\nregression=on\n"

@@ -113,7 +113,9 @@ int bugorig_parse(const char *text, struct bugorig_obs *o, char *err, size_t err
         } else {
             no++;
             if (!name) {
-                if (n) {
+                if (n && *p == '#') {
+                    /* a comment before the first section (the note of a recording) */
+                } else if (n) {
                     free(cur.p);
                     return fail(o, err, errlen, no, "text before the first [section]");
                 }
@@ -329,7 +331,9 @@ int bugorig_matches(const struct bugorig_obs *e, const struct bugorig_obs *o)
     return 1;
 }
 
-/* o and ref the same in the sections of the expectation */
+/* o and ref the same in the sections of the expectation; ref is the
+   recorded original: a line of it that was edited to a wildcard (`*` at the
+   end, `...`) matches as in an expectation, the others must be equal */
 static int same_as(const struct bugorig_obs *e, const struct bugorig_obs *ref,
                    const struct bugorig_obs *o)
 {
@@ -338,7 +342,7 @@ static int same_as(const struct bugorig_obs *e, const struct bugorig_obs *ref,
     for (k = 0; k < NNAMES; k++) {
         const char *a = bugorig_get(ref, names[k]), *b = bugorig_get(o, names[k]);
 
-        if (expected(e, names[k]) && strcmp(a ? a : "", b ? b : ""))
+        if (expected(e, names[k]) && !text_matches(a ? a : "", b ? b : ""))
             return 0;
     }
     return 1;
@@ -414,4 +418,49 @@ const char *bugorig_verdict_name(enum bugorig_verdict v)
     case BUGORIG_REGRESSED: return "REGRESSED";
     default: return "BROKEN";
     }
+}
+
+/* ---------------------------------------------------------- recording */
+
+int bugorig_format(const struct bugorig_obs *o, const char *note, struct text *t, char *err,
+                   size_t errlen)
+{
+    struct bugorig_obs back;
+    size_t k;
+    int r = -1;
+
+    memset(t, 0, sizeof *t);
+    if (note && *note) {
+        if (strchr(note, '\n')) {
+            snprintf(err, errlen, "the note has a line feed");
+            return -1;
+        }
+        text_add(t, "# %s\n", note);
+    }
+    for (k = 0; k < o->n; k++)
+        text_add(t, "[%s]\n%s", o->sec[k].name, o->sec[k].text);
+    if (t->bad) {
+        snprintf(err, errlen, "out of memory");
+        goto fail;
+    }
+    /* it must read back as what it was: a line of the program's output
+       that looks like a section header ([run]) would not */
+    if (!bugorig_parse(t->p ? t->p : "", &back, err, errlen)) {
+        r = back.n == o->n ? 0 : -1;
+        for (k = 0; r == 0 && k < o->n; k++) {
+            const char *s = bugorig_get(&back, o->sec[k].name);
+
+            if (!s || strcmp(s, o->sec[k].text))
+                r = -1;
+        }
+        bugorig_free(&back);
+    }
+    if (!r)
+        return 0;
+    snprintf(err, errlen, "the observation does not read back as it is (a line that looks "
+             "like a [section] header)");
+fail:
+    free(t->p);
+    memset(t, 0, sizeof *t);
+    return -1;
 }

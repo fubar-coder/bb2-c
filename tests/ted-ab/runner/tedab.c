@@ -1770,6 +1770,67 @@ int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
     return TEDAB_DIFFERS;
 }
 
+/* the recorded original: "# NOTE", "[state]", the state line, "[problems]",
+   the problem lines */
+int tedab_orig_format(const char *state, const char *problems, const char *note, struct text *t,
+                      char *err, size_t errlen)
+{
+    char *s = NULL, *p = NULL;
+    int r;
+
+    memset(t, 0, sizeof *t);
+    if (!*state || strchr(state, '\n') || (note && strchr(note, '\n'))) {
+        snprintf(err, errlen, "the state is empty or has a line feed");
+        return -1;
+    }
+    if (note && *note)
+        text_add(t, "# %s\n", note);
+    text_add(t, "[state]\n%s\n[problems]\n%s", state, problems);
+    /* it must read back as it was (the last problem line ends with a LF) */
+    r = t->bad ? -1 : tedab_orig_parse(t->p, &s, &p, err, errlen);
+    if (!r && (strcmp(s, state) || strcmp(p, problems))) {
+        snprintf(err, errlen, "the observation does not read back as it is");
+        r = -1;
+    }
+    free(s);
+    free(p);
+    if (r) {
+        free(t->p);
+        memset(t, 0, sizeof *t);
+    }
+    return r;
+}
+
+int tedab_orig_parse(const char *text, char **state, char **problems, char *err, size_t errlen)
+{
+    const char *p = text, *eol, *st;
+
+    *state = *problems = NULL;
+    while (*p == '#') {                 /* the note */
+        eol = strchr(p, '\n');
+        p = eol ? eol + 1 : p + strlen(p);
+    }
+    if (strncmp(p, "[state]\n", 8)) {
+        snprintf(err, errlen, "[state] expected");
+        return -1;
+    }
+    st = p + 8;
+    if (!(eol = strchr(st, '\n')) || eol == st || strncmp(eol + 1, "[problems]\n", 11)) {
+        snprintf(err, errlen, "a state line and [problems] expected");
+        return -1;
+    }
+    *state = strndup(st, (size_t)(eol - st));
+    *problems = strdup(eol + 12);
+    if (!*state || !*problems) {
+        free(*state);
+        free(*problems);
+        *state = *problems = NULL;
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    return 0;
+}
+
 const char *tedab_verdict_name(int verdict)
 {
     switch (verdict) {

@@ -4,7 +4,9 @@
  *   corpusrun PASSFILE
  *
  * Exit status 0 = no differences, 1 = differences (report), 77 = skipped
- * (no emulator, or the CD's libraries are missing), 2 = error.
+ * (no emulator, or the CD's libraries are missing), 2 = error.  With the
+ * environment variable BUGORIG_RECORD=1 a bug-orig pass (orig=) records the
+ * original's observation instead (corpus.h).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +46,9 @@ int main(int argc, char **argv)
         return 2;
     }
     free(text);
+    /* BUGORIG_RECORD=1: the recording run of a bug-orig test (orig=) */
+    corpus_select(&p, getenv("BUGORIG_RECORD") && !strcmp(getenv("BUGORIG_RECORD"), "1"));
+    corpus_skip_missing(&p, stdout);
     rc = corpus_run(&p, stdout);
     corpus_free(&p);
     return rc;

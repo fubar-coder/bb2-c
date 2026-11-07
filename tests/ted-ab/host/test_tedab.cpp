@@ -599,3 +599,53 @@ TEST_CASE("bug-orig verdict", "[bugorig]")
     CHECK(std::string(tedab_verdict_name(TEDAB_REPRODUCED)) == "REPRODUCED");
     CHECK(std::string(tedab_verdict_name(TEDAB_BROKEN)) == "BROKEN");
 }
+
+TEST_CASE("recorded original", "[bugorig]")
+{
+    // the R5 observation as a file (NAME.orig) and back; the verdicts
+    // against the file's state and problems need no reference run
+    const char *bad = "  - expect: stdout has \"x\"\n  - expect: blk.txt missing\n";
+    struct text t;
+    char err[200], *state, *problems;
+
+    REQUIRE(tedab_orig_format("OK", bad, "TED 1.1 under blitz2 2.10 (R5)", &t, err, sizeof err) == 0);
+    CHECK(std::string(t.p) == std::string("# TED 1.1 under blitz2 2.10 (R5)\n[state]\nOK\n[problems]\n") + bad);
+    REQUIRE(tedab_orig_parse(t.p, &state, &problems, err, sizeof err) == 0);
+    CHECK(std::string(state) == "OK");
+    CHECK(std::string(problems) == bad);
+    CHECK(tedab_bugorig_verdict(state, problems, "OK", bad, 0) == TEDAB_REPRODUCED);
+    CHECK(tedab_bugorig_verdict(state, problems, "OK", "", 0) == TEDAB_FIXED);
+    CHECK(tedab_bugorig_verdict(state, problems, "TIMEOUT", "", -1) == TEDAB_DIFFERS);
+    free(state);
+    free(problems);
+    free(t.p);
+
+    // no problems, a state that is not OK, no note
+    REQUIRE(tedab_orig_format("TIMEOUT (FAIL step 3 timeout)", "", nullptr, &t, err, sizeof err) == 0);
+    CHECK(std::string(t.p) == "[state]\nTIMEOUT (FAIL step 3 timeout)\n[problems]\n");
+    REQUIRE(tedab_orig_parse(t.p, &state, &problems, err, sizeof err) == 0);
+    CHECK(std::string(state) == "TIMEOUT (FAIL step 3 timeout)");
+    CHECK(std::string(problems).empty());
+    free(state);
+    free(problems);
+    free(t.p);
+
+    // the original shows the correct behaviour: the file says OK without problems
+    REQUIRE(tedab_orig_format("OK", "", nullptr, &t, err, sizeof err) == 0);
+    REQUIRE(tedab_orig_parse(t.p, &state, &problems, err, sizeof err) == 0);
+    CHECK(tedab_bugorig_verdict(state, problems, "OK", bad, 0) == TEDAB_BROKEN);
+    free(state);
+    free(problems);
+    free(t.p);
+
+    // broken on purpose: no state, a state with a line feed, a note with
+    // one, files that are not the format
+    CHECK(tedab_orig_format("", "", nullptr, &t, err, sizeof err) == -1);
+    CHECK(tedab_orig_format("OK\nFAIL", "", nullptr, &t, err, sizeof err) == -1);
+    CHECK(tedab_orig_format("OK", "", "a\nb", &t, err, sizeof err) == -1);
+    CHECK(tedab_orig_parse("", &state, &problems, err, sizeof err) == -1);
+    CHECK(tedab_orig_parse("[problems]\n", &state, &problems, err, sizeof err) == -1);
+    CHECK(tedab_orig_parse("[state]\nOK\n", &state, &problems, err, sizeof err) == -1);
+    CHECK(tedab_orig_parse("[state]\n\n[problems]\n", &state, &problems, err, sizeof err) == -1);
+    CHECK(tedab_orig_parse("# only a note\n", &state, &problems, err, sizeof err) == -1);
+}
