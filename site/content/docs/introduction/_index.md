@@ -11,12 +11,15 @@ Its compiler, its editor and its libraries are built with a modern cross
 compiler and run on the Amiga, or in an Amiga emulator, as the originals
 did.
 
-It is not a new dialect and not an emulator. It is meant to be Blitz
-Basic 2.10, the version on the Blitz Basic 2.1 CD: the compiler produces the
-same executables as the original compiler, and the libraries do what the
-original libraries do. Where the port differs, it differs on purpose, and
-every difference is written down
+It is not a new dialect and not an emulator. It is Blitz Basic 2.10, the
+version on the Blitz Basic 2.1 CD: the compiler produces the same
+executables as the original compiler, and the libraries do what the
+original libraries do. The one thing the port does not take over is the
+original's bugs: they are fixed one at a time, and every fix and every
+other difference is written down
 ([Differences from the original]({{< relref "/docs/compared-with-original" >}})).
+If you need the original behaviour, bug for bug, use the original
+compiler and libraries.
 
 ## What you get
 

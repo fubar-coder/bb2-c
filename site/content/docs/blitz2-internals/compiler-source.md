@@ -25,8 +25,9 @@ compare any routine line by line.
 
 Two comment markers explain where the C code is not a plain translation:
 
-* **`BUG(orig)`** marks a bug of the original that the port keeps on
-  purpose, usually with the number of its issue.
+* **`BUG(orig)`** marks a bug of the original that is not fixed yet,
+  usually with the number of its issue. Once the bug is fixed, the
+  comment becomes `Fixed` with the issue's number.
 * **`DIFF`** marks a place where C cannot do what the assembler did, for
   example a jump that leaves several functions at once, and says what the
   original did instead.

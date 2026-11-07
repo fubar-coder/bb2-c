@@ -39,7 +39,7 @@ on the port itself.
   {{< card link="introduction" title="Introduction" subtitle="What the BB2 C port is, how to build it and how to try it in an emulator." >}}
   {{< card link="how-blitz2-works" title="How blitz2 works" subtitle="A program on its way from source text to an executable." >}}
   {{< card link="libraries" title="Libraries" subtitle="What the libraries provide, and how to look up a command." >}}
-  {{< card link="compared-with-original" title="Differences from the original" subtitle="Where the port deliberately differs from Blitz Basic 2, for example fixed bugs." >}}
+  {{< card link="compared-with-original" title="Differences from the original" subtitle="Where the port differs from Blitz Basic 2: the fixed bugs, the bugs not fixed yet and the extensions." >}}
   {{< card link="ab3-mode" title="AB3 mode" subtitle="Compiling AmiBlitz3 sources." >}}
   {{< card link="ab3-compared" title="AB3 compared with blitz2" subtitle="What the AB3 mode changes." >}}
   {{< card link="blitz2-internals" title="blitz2 internals" subtitle="Writing libraries in C and reading the compiler's source." >}}

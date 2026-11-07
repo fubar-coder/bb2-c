@@ -6,21 +6,28 @@ prev: /docs/libraries
 next: /docs/compared-with-original/fixed-bugs
 ---
 
-The BB2 C port is meant to be Blitz Basic 2.10, not a new version of it.
-The compiler produces the same executables as the original compiler, the
-libraries do what the original libraries do, and the editor behaves like
-the original editor. Even the original's bugs are kept, as long as nobody
-has decided to fix one.
+The BB2 C port is Blitz Basic 2.10, not a new version of it, and its goal
+is Blitz Basic 2.10 without the bugs of the original. The translation is
+complete: the compiler produces the same executables as the original
+compiler, the libraries do what the original libraries do, and the editor
+behaves like the original editor. On that base the bugs of the original
+are fixed one at a time, area by area. A program that never ran into one
+of them behaves as it did with the original.
 
-Where the port does differ, it differs on purpose, and every difference is
-written down. This chapter tells you what they are and how to check the
-port against the original yourself.
+The port has no mode that keeps the original's bugs. If you need the
+original behaviour, bug for bug, use the original compiler and libraries.
+
+Every difference is written down, and every known bug of the original
+that is not fixed yet has an issue and, in most cases, a test. This
+chapter tells you what the differences are and how to check the port
+against the original yourself.
 
 ## What differs
 
-* **Fixed bugs.** Some bugs of the original have been fixed deliberately,
-  each one on its own. A program that ran into such a bug behaves
-  differently with the port, usually in the way it was always meant to.
+* **Fixed bugs.** Bugs of the original are fixed deliberately, each one
+  on its own, with its own issue and a test of the correct behaviour. A
+  program that ran into such a bug behaves differently with the port,
+  usually in the way it was always meant to.
   Most fixes concern rare cases: an error without the debugger, a value at
   the edge of its range, a resource that is missing.
 * **Sources that compile differently.** A few of the fixes concern the
@@ -58,6 +65,6 @@ that shows the fix; the pages link them.
   {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
   {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler accepts beyond Blitz Basic 2." >}}
-  {{< card link="kept-bugs" title="Bugs the port keeps" subtitle="Why the original's bugs stay, and how they are tracked." >}}
+  {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}
   {{< card link="comparing" title="Comparing with the original yourself" subtitle="Compile your own program with both compilers and compare the results." >}}
 {{< /cards >}}

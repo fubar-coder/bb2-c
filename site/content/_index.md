@@ -61,7 +61,7 @@ layout: hextra-home
   >}}
   {{< hextra/feature-card
     title="Differences from the original"
-    subtitle="The port behaves like Blitz Basic 2. Where it deliberately differs, for example a fixed bug, it is listed here."
+    subtitle="The port behaves like Blitz Basic 2, with the original's bugs fixed one by one. Every difference is listed here."
     icon="scale"
     link="docs/compared-with-original"
   >}}

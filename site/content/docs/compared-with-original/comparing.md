@@ -88,59 +88,66 @@ program and the report.
 
 If the original itself behaves wrongly, the result is the same in all
 three runs, and the corpus cannot show it. For that there are the bug
-tests ([Bugs the port keeps]({{< relref "/docs/compared-with-original/kept-bugs" >}})):
+tests ([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})):
 a program and a description of what it *should* do.
 
 Such a test is two files in a directory under `tests/bug-orig/`, named
-after the bug, for example `compiler/compiler-const-no-value.bas` and
-`compiler-const-no-value.expect`. The program, with a comment that says what is wrong and what is right:
+after the bug, for example `compiler/compiler-byte-const-compare.bas` and
+`compiler-byte-const-compare.expect`. The program, with a comment that
+says what is wrong and what is right:
 
 ```
-; compiler-const-no-value (#972) - a constant defined without a value
-; holds what the memory held. Correct: its value is 0.
-; @pass wrap=@INJECT@|fill=a5
-#c
-#d=5
-#d
-NPrint #c
-CNIF #c
-NPrint "cnif true"
-CELSE
-NPrint "cnif false"
-CEND
-NPrint #d
+; compiler-byte-const-compare (#978) - a byte variable compared with a
+; constant from 128 to 255 never matches.
+; Correct: a.b=$90 equals $90 (as it equals -112).
+a.b=$90
+If a=$90 Then NPrint "ok" Else NPrint "fail"
+If a=-112 Then NPrint "ok" Else NPrint "fail"
 End
 ```
 
-The line `; @pass ...` is an instruction for the test run: here it fills
-every block of memory the compiler allocates with a pattern, so that the
-random value of the original is never 0 by chance. The expectation, in
-sections, says what the compile and the run must give, with the
-program's return code at the end:
+The expectation, in sections, says what the compile and the run must
+give, with the program's return code at the end. It describes the
+correct behaviour, from the documentation of the command or from the
+issue, never what the original happens to do:
 
 ```
 [compile]
 ok
 [run]
-0
-cnif false
-5
+ok
+ok
 rc=0
 ```
 
 Run it on its own with
 
 ```
-ctest --preset bug-orig -R bug_orig_compiler_const_no_value
+ctest --preset bug-orig -R bug_orig_compiler_byte_const_compare
 ```
 
 The test compiles and runs the program with the original and with the
 port. If the original does not match the expectation, the test shows the
-bug: it comes out REPRODUCED while the port keeps the bug, and FIXED once
-the port is fixed. If the original already matches, the result is BROKEN:
-the program does not show a bug, or the expectation describes the wrong
-behaviour. The full description of the format, with the extra lines a
-program can use in its header, is in the
+bug: it comes out REPRODUCED while the bug is not fixed, and FIXED once
+it is. If the original already matches, the result is BROKEN: the program
+does not show a bug, or the expectation describes the wrong behaviour.
+
+The change that fixes the bug adds one line to the program's header,
+with the number of the bug's issue:
+
+```
+; @fixed #978
+```
+
+From then on the test is a *fixed test*. It runs with the normal
+emulator tests, no longer needs the original, and checks only the port,
+with its own libraries, against the expectation: FIXED, or REGRESSED if
+the fix has been undone.
+
+A program can use further lines in its header, starting with `; @pass`,
+as instructions for the test run, for example to fill every block of
+memory the compiler allocates with a pattern, so that a random value is
+never 0 by chance. The full description of the format is in the
 [description of the tests](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md)
 in the repository.
 

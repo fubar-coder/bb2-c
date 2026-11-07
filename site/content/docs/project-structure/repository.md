@@ -103,7 +103,8 @@ you would go there:
 
 Many comments in the C code refer to the original: a comment such as
 `blitz2.s:13837` or `ted.s:1542` names the line of the original source a
-function translates, `BUG(orig)` marks a bug of the original that is kept
-on purpose, and `DIFF` marks a place where the C code has to work
-differently from the original. The reasons behind them are in the notes
+function translates, `BUG(orig)` marks a bug of the original that is not
+fixed yet, `Fixed` with an issue number marks the place of a fixed one,
+and `DIFF` marks a place where the C code has to work differently from
+the original. The reasons behind them are in the notes
 in `docs/`.

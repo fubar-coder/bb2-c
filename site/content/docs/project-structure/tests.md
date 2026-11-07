@@ -1,26 +1,28 @@
 ---
 title: Tests
 weight: 2
-description: The test runs of the BB2 C port, what they compare with what, how to set up the emulator tests, and the runner for your own scripts in the emulator.
+description: The test runs of the BB2 C port, what they compare with what, how fixed bugs are tested, how to set up the emulator tests, and the runner for your own scripts in the emulator.
 ---
 
 Before this page you should have built the port (see the
 [Introduction]({{< relref "/docs/introduction" >}})).
 
-The tests check that the port does what the original does. Some run on
-your machine in seconds; most run the Amiga programs in an emulator, side
-by side with the originals.
+The tests check that the port does what the original does, and, where a
+bug of the original has been fixed, that the port does what is correct.
+Some run on your machine in seconds; most run the Amiga programs in an
+emulator, side by side with the originals.
 
 ## The test runs
 
-All tests run with CTest, from the repository's root, in four presets:
+All tests run with CTest, from the repository's root, in five presets:
 
 | Preset | Runs | Needs |
 |---|---|---|
 | `host` | the tools with deliberately broken inputs, the tests of the editor's core, the comparison of every library's declarations with the original, the token lists | your machine; the original material for some |
-| `emulator` | the libraries against the originals, the corpus, the editor against the original editor, AB3 mode, the extensions | Amiberry and the emulator setup; the original material for most |
+| `emulator` | the libraries against the originals, the corpus, the editor against the original editor, AB3 mode, the extensions, the fixed tests of the original's bugs | Amiberry and the emulator setup; the original material for most |
 | `all` | both of the above | both |
-| `bug-orig` | the tests of the original's bugs and of known defects of the port, which fail on purpose | as `emulator` |
+| `bug-orig` | the tests of the original's bugs not fixed yet and of known defects of the port, which fail until the bug is fixed | as `emulator` |
+| `oracle` | AmiBlitz3's own compiler, run on the test programs of AB3 mode, to check that their expected results are right | Amiberry and the AmiBlitz3 files of the original material |
 
 ```
 ctest --preset host
@@ -49,8 +51,11 @@ correctly.
   the original editor and once in the port's, and their screens,
   requesters and files are compared.
 * **AB3 mode** compiles test programs from the command line and compares
-  their output with expected files, and with what AmiBlitz3's own compiler
-  gives.
+  their output with expected files; the `oracle` run checks those files
+  with AmiBlitz3's own compiler.
+* **The fixed bugs** nearly all have a test program with the correct behaviour
+  as its expectation. The port, with its own libraries, must show that
+  behaviour; the original is not needed for these tests.
 
 ## Setting up the emulator tests
 

@@ -8,12 +8,15 @@ prev: /docs/compared-with-original
 Before this page you should know what the chapter means by a difference
 ([Differences from the original]({{< relref "/docs/compared-with-original" >}})).
 
-The port keeps the bugs of the original unless a fix has been decided for
-one. The bugs on this page have been fixed. Each fix changes only the
-case that was wrong; a program that never ran into the bug behaves
-exactly as before, and in most cases is compiled to exactly the same
-executable. Every entry links its issue, which describes the bug in
-detail and names the test that shows it fixed.
+The bugs of the original are fixed one at a time, area by area; this page
+lists the ones fixed so far. Each fix changes only the case that was
+wrong; a program that never ran into the bug behaves exactly as before,
+and in most cases is compiled to exactly the same executable. Every entry
+links its issue, which describes the bug in detail and names the test
+that checks the correct behaviour. Nearly all of these tests run with the normal
+emulator tests, so a fix that is undone later is noticed. The bugs that
+are not fixed yet are on their own page
+([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})).
 
 ## The compiler
 
