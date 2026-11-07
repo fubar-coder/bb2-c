@@ -1239,7 +1239,12 @@ static UBYTE *floodfill(struct bb_bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD
 
 /* FloodFill x,y,colour,border: fill up to the border colour (the mask of
    the border colour inverted - only in the last column of 64 words).  The
-   border colour is a word in the register of x (SETW(d0, d3)). */
+   border colour is a word in the register of x (SETW(d0, d3)).
+   BUG(orig) (#986): mono works in columns of 64 words (and parts of 1024
+   lines) and returns the pointer and size of the last one, so on a bitmap
+   wider than 1024 pixels (or taller than 1024 lines) the inversion covers
+   only that column (the first height MOD 1024 lines of it): the rest of
+   the mask keeps the border pixels as the fillable ones. */
 static UBYTE *floodfill2(struct bb_bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD colour,
                          UWORD border)
 {
