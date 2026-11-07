@@ -140,9 +140,7 @@ static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
     numval = 0;
     c = fetchdec(c, &divisor);      /* get int frac */
     if (numval == 0) {
-        /* .pskip.  BUG(orig) (#11): no check for an E exponent here
-           ("1.0e5" leaves the 'e' unparsed). */
-        numval = whole;
+        numval = whole;             /* .pskip */
     } else {
         if (numval >= 0x800000)
             overerr();
@@ -150,11 +148,14 @@ static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
         t = ffpcall(SPFlt, numval, 0, NULL);     /* to ffp */
         t = ffpcall(SPDiv, t, divisor, NULL);   /* num/divisor (eg .25=25/100) */
         numval = ffpcall(SPAdd, t, whole, NULL); /* add 'em */
-        c = reget();
-        c |= 32;
-        if (c == 'e')
-            dothee();               /* E Something! */
     }
+    /* Fixed (#11): the exponent is read after a fraction of value 0 too
+       ("1.0e5"); the original's .pskip went past this check and left the
+       'e' unread */
+    c = reget();
+    c |= 32;
+    if (c == 'e')
+        dothee();                   /* E Something! */
 pskip2:
     c = reget();
     val = consttype2(type, c);

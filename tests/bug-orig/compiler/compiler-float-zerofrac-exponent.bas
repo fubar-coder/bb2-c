@@ -2,6 +2,7 @@
 ; fetchpoint2 skips the test for an exponent: "1.0e5" stays 1.0 and "e5" is
 ; left unread.
 ; Correct: the exponent counts as it does for "1e5" and "1.5e5".
+; @fixed #11
 a.f=1.0e5
 NPrint a
 b.f=2.00E3
