@@ -58,7 +58,15 @@ UWORD asmconst(void)
     return c;
 }
 
-/* blitz2.s:5028 copyconst */
+/* blitz2.s:5028 copyconst
+   BUG(orig): the text is copied into asmbuff (namebuff for the source
+   operand and Dc, namebuff2 for the destination, 128 bytes each behind a
+   flag word) without a length check.  A copied text (include, macro, local
+   label) of more than 125 characters runs into namebuff2, and a
+   destination operand's text overwrites its end (test
+   compiler-copyconst-overflow); longer texts (from 262 characters in
+   namebuff, 134 in namebuff2) overwrite the data behind the name buffers
+   (optstuff). */
 UWORD copyconst(UBYTE *dst, UWORD *lc)
 {
     UWORD len = 0;
