@@ -1090,6 +1090,9 @@ static void boxtext(struct box *b, ULONG len, const UBYTE *s)
         }
     }
     *dst = 0;
+    /* BUG(orig) (#989): only the box types 0 and 1 keep the count of
+       strings as range; a list box (type 5, AddBox type argument 10) is drawn
+       and set by range and keeps 0 (SetBox: "Value Out of Range"). */
     if (b->btype - 2 < 0) {               /* CMP #2:BPL stdun */
         b->range = strings;
         b->value = 0;

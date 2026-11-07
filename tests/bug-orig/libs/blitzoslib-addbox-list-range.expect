@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+range 3
+value 1
+rc=0
