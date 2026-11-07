@@ -1154,12 +1154,22 @@ UBYTE *fixtypes(UBYTE *p)
     count = n - 1;
     last = start = lastrestype;
     do {
-        /* skip through offsets.  BUG(orig) (#35): a type without fields is not
-           handled (its next is followed: 0 in the residents of this
-           compiler (#970), the raw pointer in those of the original) */
-        while (L_(p))
-            p = (UBYTE *)L_(p);
-        p += (WORD)(((UWORD)B_(p + 14) + 1) & ~1);     /* a3=type */
+        /* Fixed (#35): a type without fields (restypes wrote none) starts
+           on the type entry, whose relocated field pointer (+4) points to
+           the entry itself; a first field has +4 = offset 0 / flags.  Its
+           field list becomes empty (u.code 0, as donewtype leaves it).
+           blitz2.s skips the "fields" of every type: for an empty one it
+           followed the type's next (the raw pointer of the creating
+           session in the original's residents, 0 in this compiler's,
+           #970) and took the name byte +14 as a field length. */
+        if (L_(p + 4) == (ULONG)p) {
+            L_(p + 4) = 0;
+        } else {
+            /* skip through offsets */
+            while (L_(p))
+                p = (UBYTE *)L_(p);
+            p += (WORD)(((UWORD)B_(p + 14) + 1) & ~1);     /* a3=type */
+        }
         last->next = (struct type *)p;  /* link */
         last = (struct type *)p;
         p += (WORD)(((UWORD)B_(p + 10) + 1) & ~1);     /* next offset */
