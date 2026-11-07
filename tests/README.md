@@ -6,7 +6,7 @@ labels select within them.
 | Preset | Runs | Needs |
 |---|---|---|
 | `host` | tools with broken inputs, host tests, declaration and instruction comparisons, token lists (seconds) | native compiler; the CD for some |
-| `emulator` | libraries against the CD's, corpus, TED A/B, compilers' extensions, CD corpus, RWE reference build, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
+| `emulator` | libraries against the CD's, corpus, TED A/B, the expect tests (compilers' extensions, port regression tests; no CD needed), CD corpus, RWE reference build, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
 | `all` | both | both |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset | Amiberry; the CD for most |
@@ -147,11 +147,26 @@ one corpusrun pass with `run=off` and tedstub `resident=`;
 ### Extensions of blitz2
 
 `blitz2_ID` (`tests/blitz2/`): the extensions of blitz2
-(`docs/blitz2/extensions.md`), which have no reference to compare with:
-blitz2 compiles and runs `ID.bas` (header `; @runerrs on|off`) with the
-CD's and with the C libraries, and both results must equal `ID.expect`
-(one corpusrun pass with `expect=` and `regression=on`, blitz2 itself
-as the first configuration; skipped without the CD).
+(`docs/blitz2/extensions.md`), which have no reference to compare with.
+They are **expect tests**, the same suite as the
+[port regression tests](#port-regression-tests): blitz2 compiles and runs
+`ID.bas` (header `; @runerrs on|off`, default off) with the C libraries
+(`clib`), and the result must equal `ID.expect` (the sections of the
+bug-orig tests, `tests/corpus/runner/bugorig.h`; one corpusrun pass with
+`expect=` and `regression=on`). There is no reference session and nothing
+of the CD is used: the verdict is FIXED (the expected behaviour) or
+REGRESSED (exit status 1), label `emulator`, skipped (77) only without
+Amiberry. Both suites run without the CD:
+
+```
+ctest --preset all -R 'blitz2_|regression_'
+```
+
+The expectation is the correct behaviour, not the original's: a fix (of
+an original bug or of the port) that changes what an expect test shows
+changes its `ID.expect` in the same commit and names the issue
+(`#N` in the commit message), like a [fixed test](#fixed-tests); the
+program is not edited to avoid the difference.
 
 ### Corpus
 
@@ -449,14 +464,22 @@ Guru that waits for the mouse, the session runs into its timeout.
 **Port regression tests** (`tests/bug-orig/regression/ID.bas`, same
 files and header lines): a bug of the port, not of the original, that
 needs what only this runner gives (an RWE userlib, `uae=` such as a CD
-image, `@INJECT@` ...). The expectation is what the reference does
-(pass key `regression=on`): the test is BROKEN if the reference does
-not match it, a configuration FIXED if it does and DIFFERS otherwise;
-it passes when every configuration is FIXED. ctest `regression_ID`,
-label `emulator` only (not `bug-orig`: it must pass in the presets
-`emulator` and `all`); `regression_selftest_broken` (an expectation
-the original does not show) must come out BROKEN. ID is named after
-the issue of the port bug.
+image, `@INJECT@` ...). They are expect tests like those of
+[Extensions of blitz2](#extensions-of-blitz2) (pass key
+`regression=on`): no reference session and nothing of the CD (as a
+[fixed test](#fixed-tests): no `BB2:` volume, no `blitz2:defaultdbug`,
+with `; @rwe` no reference library; a test that needs the CD names it in
+its `; @pass` lines and is skipped without it); only `clib` is judged
+unless `; @configs` names others, against the expectation alone: FIXED
+or REGRESSED, and the test passes when every configuration is FIXED.
+The expectation is the correct behaviour (for a port bug usually what
+the original does, checked once when the test is written). ctest
+`regression_ID`, label `emulator` only (not `bug-orig`: it must pass in
+the presets `emulator` and `all`); `regression_selftest_wrong` (an
+expectation the port does not meet) must come out REGRESSED. ID is
+named after the issue of the port bug. A fix that changes the expected
+behaviour changes `ID.expect` in its commit and names the issue, as in
+the extensions' suite.
 
 ### bug-orig tests of TED
 

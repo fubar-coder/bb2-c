@@ -14,7 +14,7 @@ documentation it changes; no program code changes in this change.
 ## 2. One expect suite for Blitz-program tests
 
 - [x] 2.1 `tests/blitz2` drops the CD-libs configuration (keep `clib`); the port regression tests of `tests/bug-orig/regression/` use the same runner and file format without `ref`. Verify: `ctest --preset all -R 'blitz2_|regression_'` passes with `archive/cd` absent
-- [ ] 2.2 Document the suite in `tests/README.md` ("Extensions of blitz2", "Port regression tests") and the fixed-test rule for it. Verify: the documented command runs as written
+- [x] 2.2 Document the suite in `tests/README.md` ("Extensions of blitz2", "Port regression tests") and the fixed-test rule for it. Verify: the documented command runs as written
 
 ## 3. Intended lists (format now, entries at the first fix)
 
