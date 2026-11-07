@@ -203,8 +203,8 @@ extern ULONG oldlibat;
 
 /* blitz2.s:11936 doincdir - IncDir "path" statement handler: copies the
    chars (without '"') into incdir up to end of line; token -> syntaxerr.
-   BUG(orig) (#16, #17): no length check (incdir is 96 bytes) and a ':' is copied
-   (getchar3 returns it with Z=1).  Kept. */
+   Fixed (#16): a path longer than 95 characters is "Path too Long".
+   BUG(orig) (#17): a ':' is copied (getchar3 returns it with Z=1).  Kept. */
 void doincdir(UWORD c);
 
 /* blitz2.s:11947 makeiname - namebuff = incdir + file name from the

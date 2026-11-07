@@ -220,6 +220,9 @@ NORETURN void nociferr(void);      /* "CEND without CNIF/CSIF..." */
 NORETURN void cnferr(void);        /* "Constant Not Found" */
 NORETURN void badconerr(void);     /* "Illegal Constant Expression" */
 NORETURN void badpenderr(void);    /* "Illegal End Procedure" */
+/* Fixed (#16): not in blitz2.s - a path or file name longer than the
+   buffer it is copied to */
+NORETURN void pathlongerr(void);   /* "Path too Long" */
 
 /* ================================================== char classes */
 /* all: TRUE == asm Z=1 */

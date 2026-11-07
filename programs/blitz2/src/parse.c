@@ -738,6 +738,7 @@ NORETURN void nociferr(void) { err("CEND without CNIF/CSIF..."); }              
 NORETURN void cnferr(void) { err("Constant Not Found"); }                                    /* blitz2.s:7626 */
 NORETURN void badconerr(void) { err("Illegal Constant Expression"); }                        /* blitz2.s:7629 */
 NORETURN void badpenderr(void) { err("Illegal End Procedure"); }                             /* blitz2.s:7632 */
+NORETURN void pathlongerr(void) { err("Path too Long"); }                                    /* Fixed (#16) */
 
 /* =================================================================
  * char classes (TRUE = asm Z=1)

@@ -1226,7 +1226,12 @@ void doincdir(UWORD c)
 
     for (;;) {
         if (c != '"') {
-            /* BUG(orig) (#16, #17): no length check, ':' is copied too.  Kept. */
+            /* Fixed (#16): a path that does not fit into incdir (95
+               characters and the 0) is refused; blitz2.s writes on into
+               the data behind it */
+            if (c && dst == incdir + sizeof incdir - 1)
+                pathlongerr();
+            /* BUG(orig) (#17): ':' is copied too.  Kept. */
             *dst++ = (char)c;
             if (c == 0)
                 return;

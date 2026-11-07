@@ -11,19 +11,17 @@
 # parameter blocks zeroed (the address of the editor's line item depends
 # on the memory layout).  A bug-orig source that needs more than that
 # (RWE userlibs, its own jobs or residents) does not compile in either:
-# it is compared by its error; two that cannot be compared are left out
+# it is compared by its error; one that cannot be compared is left out
 # (below).  Label emulator, skipped (77) without
 # Amiberry or the CD (blitz2:defaultdbug).
 get_property(corpus_sources GLOBAL PROPERTY CORPUS_SOURCES)
 get_property(bug_orig_sources GLOBAL PROPERTY BUG_ORIG_SOURCES)
 get_property(bug_orig_userlib GLOBAL PROPERTY BUG_ORIG_USERLIB)
 # not compared - NAME|reason:
-#   compiler-incdir-overflow  the compile overwrites the data behind incdir
-#                             (#16): the compiler hangs, the session ends
 #   compiler-maxs-libjsr      the unresolved JSRs inside linked library code
 #                             (#335) put addresses of the compiler's memory
 #                             into the executable: they depend on its layout
-foreach(n compiler-incdir-overflow compiler-maxs-libjsr)
+foreach(n compiler-maxs-libjsr)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
 endforeach()
 set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
