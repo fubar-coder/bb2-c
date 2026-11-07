@@ -115,6 +115,10 @@ file(READ ${lib_tokens} t2)
 set(tokens ${CMAKE_CURRENT_BINARY_DIR}/tokens.txt)
 file(CONFIGURE OUTPUT ${tokens} CONTENT "${t1}${t2}" @ONLY)
 
+# a fixed test keeps no recorded original: checked at configure time
+include(${CMAKE_CURRENT_SOURCE_DIR}/check-fixed-orig.cmake)
+bug_orig_fixed_orig_check(${CMAKE_CURRENT_SOURCE_DIR})
+
 # bug_orig_test(BAS NAME [WANT RC]): tokenise, pass file, ctest NAME.
 # WANT: the test passes if corpusrun returns RC (the self test).
 set(bug_orig_sources)
@@ -591,3 +595,13 @@ add_test(NAME bug_orig_order_broken COMMAND ${CMAKE_COMMAND} -DJSON=${broken} -D
 	-P ${PROJECT_SOURCE_DIR}/cmake/check-test-order.cmake)
 set_tests_properties(bug_orig_order_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"x_late \\(COST 180\\) is declared after[ \n]+x_short \\(COST 60\\)")
+
+# a fixed test keeps no recorded original (check-fixed-orig.cmake): the
+# configure above stops on a stale ID.orig; the check with a fake tree (a
+# fixed .bas and a fixed TED .drv with their .orig) must name both
+add_test(NAME bug_orig_fixed_orig_broken COMMAND ${CMAKE_COMMAND}
+	-DROOT=${CMAKE_CURRENT_SOURCE_DIR}/selftest/fixed-orig
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-fixed-orig.cmake)
+set_tests_properties(bug_orig_fixed_orig_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"compiler/fixed-kept\\.orig \\([^)]*fixed-kept\\.bas is fixed\\)[ \n]+[^\n]*ted/ted-fixed-kept\\.orig"
+	FAIL_REGULAR_EXPRESSION "open-kept|fixed-clean")

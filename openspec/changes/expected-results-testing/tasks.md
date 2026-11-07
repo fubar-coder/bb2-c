@@ -39,6 +39,7 @@ documentation it changes; no program code changes in this change.
 - [x] 6.2 TED bug-orig tests (`tedab` bugorig mode): record the R5 observation the same way. Verify: `bug_orig_ted_selftest_broken` on the recorded file; the 22 TED tests give the same verdicts as with R5 live
 - [x] 6.3 One recording run with the CD for all 350 tests, run twice with identical files, reviewed (wildcards for nondeterministic bits), committed. Verify: `ctest --preset bug-orig` gives the verdicts it gave with live `ref` (compare the lists) with no `ref` session started, also with `archive/cd` absent except tests that mount BB2
 - [x] 6.4 Document recording and the `.orig` files in `tests/README.md` (bug-orig sections, "Adding a test": `ID.orig` replaces "look at the observation of ref") and `docs/development.md`. Verify: adding a test by the text yields REPRODUCED
+- [x] 6.5 A fixed bug-orig test (`; @fixed #N` in `.bas`, `@fixed` in a TED `.drv`) keeps no `ID.orig`: configure-time check `tests/bug-orig/check-fixed-orig.cmake`. Verify: ctest `bug_orig_fixed_orig_broken` names the stale files of the fake tree `tests/bug-orig/selftest/fixed-orig/`
 
 ## 7. Corpus expect files, CD table, TED oracle
 

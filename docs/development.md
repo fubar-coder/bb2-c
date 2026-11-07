@@ -149,6 +149,11 @@ again):
   them with the change. ctest `cmdref_complete`: no committed file
   without a library; `cmdref_check_broken`, `cmdref_complete_broken`:
   the checks with broken input.
+* a fixed bug-orig test keeps no recorded original (`ID.orig` next to a
+  `.bas` with `; @fixed #N` or a TED `.drv` with the `@fixed` directive):
+  configuring `tests/bug-orig` fails naming the file
+  (`tests/bug-orig/check-fixed-orig.cmake`; ctest
+  `bug_orig_fixed_orig_broken` with a fake tree).
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join, and every userlib in its build step (against the acidlibs and
   deflibs of its variant): no library number twice (`biglib check`; deflibs together with

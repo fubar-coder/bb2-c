@@ -524,7 +524,12 @@ for any number of lines); the lines are matched against the port's
 observation as the lines of an expectation are (`bugorig.h`), so that
 `ID.orig` also judges with the wildcard. When the original is wrong in a
 way that is not the bug, the test is not valid. Fixed tests and port
-regression tests have no `ID.orig`. A test without `ID.orig` fails with
+regression tests have no `ID.orig`: configuring stops with an error naming the
+stale `ID.orig` of a test with the header `; @fixed #N` (`.bas`) or the
+directive `@fixed` (`.drv`, TED), delete it with the fix
+(`tests/bug-orig/check-fixed-orig.cmake`; ctest `bug_orig_fixed_orig_broken`
+checks the check on a fake tree, `tests/bug-orig/selftest/fixed-orig/`).
+A test without `ID.orig` fails with
 exit status 2 and the hint to record it. The recorded sections are not
 compared with the original again: when the original's behaviour is
 questioned, record again and read the diff.
