@@ -20,7 +20,10 @@ are not fixed yet are on their own page
 
 ## The compiler
 
-These fixes change what the compiler does or the code it generates.
+These fixes change what the compiler does or the code it generates. They
+are grouped by what blitz2 is doing when the bug strikes.
+
+### Compiling
 
 | Effect of the bug in the original | With the port |
 |---|---|
@@ -37,8 +40,38 @@ These fixes change what the compiler does or the code it generates.
 | [Resident files contained bytes nobody had set (#970)](https://github.com/fubar-coder/bb2-c/issues/970), so CREATE RESIDENT gave a different file each time. | Those bytes are zero; the same source gives the same resident. |
 | [`IncBin` kept a file or directory in use after an error (#38)](https://github.com/fubar-coder/bb2-c/issues/38). | The file is closed; the errors are the same. |
 | [On a 68010 processor the trap vectors were taken from the wrong table (#42)](https://github.com/fubar-coder/bb2-c/issues/42) when the system had moved them, which affects runtime errors and the debugger. | The moved table is used, on the 68010 as on later processors. |
+| [After the object buffer ran full, the compiler lost a little memory (#14)](https://github.com/fubar-coder/bb2-c/issues/14): when the buffer overflowed during an assignment or a `Select`, a buffer that holds code for a moment was not freed, once per such compile. This happens when a compile ends with "Not Enough Object Memory Available!" and is repeated with a larger Object Buffer. | The buffer is freed in every case. The generated code is the same. |
+
+### Loading the libraries
+
+At its start, and with RELOAD ALL LIBS, blitz2 loads the command libraries
+from `blitz2:deflibs`, `blitz2:acidlibs` and the directories in
+`blitz2:userlibs`.
+
+| Effect of the bug in the original | With the port |
+|---|---|
+| [A read error while loading a library file went unnoticed (#3)](https://github.com/fubar-coder/bb2-c/issues/3): blitz2 went on with whatever the file read before had left in its buffer, which gave wrong library data or ended the session with an out-of-memory error. | A read error is noticed. A library whose header or structure cannot be read completely is left out; a read error in its relocation data ends the reading as at the end of a short file. |
+| [When blitz2 could not examine `blitz2:deflibs` or `blitz2:acidlibs`, it loaded the file with a wrong length (#27)](https://github.com/fubar-coder/bb2-c/issues/27): it took the length of the file examined before, and loaded and linked a cut or overlong part of the file. | The file counts as missing, as if it were not there. |
+| [A directory in `blitz2:userlibs` with a name of 32 characters or more overwrote memory (#28)](https://github.com/fubar-coder/bb2-c/issues/28): its name was copied into a 32-byte field without a limit. Such names occur on file systems with long names and on host directories mounted in an emulator. | Such a directory is skipped, and its libraries are not loaded. The name is not cut, because a cut name could name another directory. |
+
+### Starting and ending blitz2
+
+| Effect of the bug in the original | With the port |
+|---|---|
+| [Started from the Workbench, blitz2 left a short or damaged icon file open (#19)](https://github.com/fubar-coder/bb2-c/issues/19): it reads its `.info` file for the stack size and closed it only after a complete read, so the file stayed in use until the reboot. | The `.info` file is closed after any read. |
+| [Started from the Workbench without a project icon, blitz2 could ask the editor to load its icon as a program (#20)](https://github.com/fubar-coder/bb2-c/issues/20): when its `.info` file could not be read, the editor got the name of the `.info` file, or a part of the icon's bytes, as the program to load. | Without a project icon the editor starts with no program. |
+| [blitz2 always returned 0 to the shell (#22)](https://github.com/fubar-coder/bb2-c/issues/22), also when it gave up at the start, so a script could not tell a failed start from a normal session. | blitz2 returns -1 when it cannot start, for example without `mathffp.library` or without memory for its buffers, and 0 after a normal session. In AB3 mode, a compile from the command line keeps its own return codes ([Compiling from the command line]({{< relref "/docs/ab3-mode/command-line" >}})). |
+| [Without chip memory for the arrow images of the options requester, blitz2 wrote to address 0 (#8)](https://github.com/fubar-coder/bb2-c/issues/8), into the lowest bytes of memory, which hold the pointer to the system's main library and the processor's exception vectors, and it freed address 0 when it ended. | blitz2 gives up at the start, with return code -1, as when other memory it needs at the start is missing. |
+| [With 256 MB or more of free memory, blitz2 lost 256 MB when it ended (#26)](https://github.com/fubar-coder/bb2-c/issues/26): to make AmigaOS remove unused libraries from memory it asks for 256 MB, a request that is meant to fail. When the request succeeded, the memory was not freed until the reboot. | A successful request is freed again at once. |
 | [Started from the Workbench, blitz2 did not go back to its start directory when it ended (#21)](https://github.com/fubar-coder/bb2-c/issues/21): it ended in its own directory, or in that of the project icon it was started with. | The start-up code restores the start directory when blitz2 ends. |
 | [Started from the Workbench, blitz2 could crash at its very end (#337)](https://github.com/fubar-coder/bb2-c/issues/337): it let the Workbench unload it before it had returned, which goes wrong when the freed memory is reused at once or a memory checker such as MungWall overwrites it. | blitz2 has ended before the Workbench unloads it. |
+
+### The editor's compiler menu
+
+| Effect of the bug in the original | With the port |
+|---|---|
+| [LOAD DEBUG MODULE left the busy pointer on (#23)](https://github.com/fubar-coder/bb2-c/issues/23) when no debugger module had been loaded at the start, that is without `blitz2:defaultdbug`. | The mouse pointer returns to normal after the module is loaded. |
+| [When RUN or COMPILE AND RUN could not start the program, the `EXECUTING` requester stayed open (#25)](https://github.com/fubar-coder/bb2-c/issues/25) with no program running, and the next run's requester did not work as it should. This happens when there is no memory for the program's process or its stack. | The requester is closed. As in the original, no error message is shown. |
 
 ## Runtime errors without the debugger
 
