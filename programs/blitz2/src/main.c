@@ -459,9 +459,11 @@ static WORD begin(void)
        before begin; blitz2's own in BB2 mode, as initialised) */
     edstruct.toklist = &tokens;
     makeasmtab();
-    optreqprep();
-    /* @1369 */
+    /* @1369 (set before optreqprep: Fixed (#8), without chip memory for
+       the arrow images blitz2 gives up like at the other allocations) */
     returncode = -1;
+    if (!optreqprep())
+        goto fail0;
     MathBase = OldOpenLibrary((CONST_STRPTR)mathsname);
     if (!MathBase)
         goto fail0;

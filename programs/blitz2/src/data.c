@@ -1720,19 +1720,25 @@ void maxit(WORD which, UBYTE *label, UBYTE *num)
 }
 
 /* options.src optreqprep - chip mem copy of the arrow images.
-   BUG(orig) (#8): AllocMem result not checked. */
-void optreqprep(void)
+   Fixed (#8): FALSE if the AllocMem fails (options.src copies to the
+   unchecked result, address 0) */
+BOOL optreqprep(void)
 {
     UBYTE *m = AllocMem(arrowsize, MEMF_CHIP);
     uimageloc = (UWORD *)m;
+    if (!m)
+        return FALSE;
     dimageloc = (UWORD *)(m + arrowsize / 2);
     CopyMem((APTR)uparrow, m, arrowsize);
+    return TRUE;
 }
 
-/* options.src optreqdone */
+/* options.src optreqdone (Fixed (#8): nothing to free after a failed
+   optreqprep) */
 void optreqdone(void)
 {
-    FreeMem(uimageloc, arrowsize);
+    if (uimageloc)
+        FreeMem(uimageloc, arrowsize);
 }
 
 /* ===================================================================

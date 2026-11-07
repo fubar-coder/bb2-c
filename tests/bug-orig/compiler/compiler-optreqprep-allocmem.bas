@@ -5,6 +5,7 @@
 ; exception vectors) and optreqdone frees address 0 at the end.
 ; Correct: blitz2 gives up at once (like the other failed allocations at
 ; start), compiles nothing and the system goes on.
+; @fixed #8
 ; @pass wrap=@INJECT@|allocfail=64-64/chip/1
 ; @pass timeout=30
 NPrint "hello"

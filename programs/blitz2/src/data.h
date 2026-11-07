@@ -241,7 +241,7 @@ extern struct StringInfo optreqsg1, optreqsg2, optreqsg3, optreqsg4,
 
 extern struct resentry resbuff[MOSTRES];  /* options.src: 8 residents */
 
-void optreqprep(void);                  /* options.src: chip copy of arrow images */
+BOOL optreqprep(void);                  /* options.src: chip copy of arrow images (FALSE: no chip memory, #8) */
 void optreqdone(void);                  /* options.src: free it */
 
 extern UBYTE vers;                      /* 15343 .xtra version (asm word, used as byte) */
