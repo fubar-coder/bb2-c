@@ -64,11 +64,23 @@ the TED core (compiled natively, snitch), the declaration comparison (`declarati
 entries, `!libfin` of every built library against the original of the
 CD, same libraries in the same order; `tools/blitzlibcompare`; the
 intended differences of fixed original bugs are listed in
-`libs/GROUP/declarations-intended.txt`, each of them must occur) and the
+`libs/GROUP/declarations-intended.txt`, each of them must occur; the
+same for an RWE userlib, `rwe_declarations_NAME`, with
+`libs/userlibs/rwe/NAME.declarations-intended.txt`) and the
 instruction comparison (`asmcmp_*`: the routines of runerrlib, debuglib,
 dhandlerlib, memacclib that remained in assembler against the originals of the CD,
-with `objdump` of the toolchain; `tools/asmcmp`). Both comparisons are
-skipped without the CD. The token list (`tokens_*`: `tools/blitztokens`
+with `objdump` of the toolchain; `tools/asmcmp`; only routines still
+equal to the original are listed, a fix that changes one removes it
+from the list). Both comparisons are
+skipped without the CD. The check of TED's data in the build
+(`tools/checkdata`) takes the intended differences of
+`programs/ted/checkdata-intended.txt` (one check per line: C symbol,
+`#NNN`, note; each must differ); `ted_checkdata_intended`,
+`ted_checkdata_unlisted` and `ted_checkdata_stale` run it with a
+deliberately wrong table entry, `blitzlibcompare_single_stale` the
+declaration comparison with a stale entry. The formats of the lists and
+the `asmcmp` rule, with examples: `docs/development.md`, "Intended differences".
+The token list (`tokens_*`: `tools/blitztokens`
 makes it from a compiler and its libraries the way blitz2 builds it for
 the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
 compiler and libraries (skipped without the CD) and with the ones built

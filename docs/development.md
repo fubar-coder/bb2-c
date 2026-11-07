@@ -177,5 +177,55 @@ again):
   `tools/checkdata` compares the data of the C build with the reference
   build of `ted.s` (`programs/ted/checkdata.tsv`: 534 entries – fonts,
   mouse pointers, option block, texts, screen, windows, gadgets, menus,
-  requesters; relocated longwords of the reference skipped). `ted` is
-  linked only after that.
+  requesters; relocated longwords of the reference skipped); the checks
+  of `programs/ted/checkdata-intended.txt`, if there, differ on purpose
+  (below). `ted` is linked only after that.
+
+### Intended differences
+
+The comparisons with the originals accept the change of a fixed original
+bug only as a listed difference with its issue. In every list `#`
+begins a comment line and empty lines are skipped; every entry must
+occur: a stale entry (the difference is gone) fails like a difference
+the list does not name. The build finds a list at configure time:
+configure again after adding one. The fix commit adds its entry (or,
+for `asmcmp`, removes its routine).
+
+* **Declarations** (`tools/blitzlibcompare`; ctests
+  `declarations_acidlibs`, `declarations_deflibs`,
+  `rwe_declarations_NAME`): `libs/GROUP/declarations-intended.txt` for
+  acidlibs and deflibs, `libs/userlibs/rwe/NAME.declarations-intended.txt`
+  for an RWE userlib. One message line of `blitzlibcompare` per line,
+  exactly as it prints it; the comment above names the issue. From
+  `libs/deflibs/declarations-intended.txt`:
+
+  ```
+  # #959: CachePreDMA_/CachePostDMA_ take flags in d0 (exec_lib.fd), the
+  # original declares d1 (register byte $01 -> $00)
+  lib 253: entry 113 CachePreDMA_ +$C: $01 != $00
+  lib 253: entry 114 CachePostDMA_ +$C: $01 != $00
+  ```
+
+* **TED's data** (`tools/checkdata` after the link of `ted.sym`):
+  `programs/ted/checkdata-intended.txt`, one check of
+  `programs/ted/checkdata.tsv` per line - its C symbol, the issue, a
+  note (optional), separated by tabs; a symbol at most once. The whole
+  check may differ; a missing symbol or label still fails. For example
+  (with tabs):
+
+  ```
+  # the fixed original bugs among the data of ted.s
+  _mpalit	#123	the palette value the fix corrects
+  ```
+
+* **Instructions** (`tools/asmcmp`; ctests `asmcmp_runerrlib`,
+  `asmcmp_debuglib`, `asmcmp_dhandlerlib`, `asmcmp_memacclib`): no list.
+  The routines of `asm_check` in `libs/acidlibs/CMakeLists.txt` are those
+  still equal to the original; a fix that changes one removes it from
+  the list in the same commit ("Fixing an original bug").
+
+The checks of the lists themselves, with deliberately broken input:
+`blitzlib_compare` and `checkdata` (`tools/tests`, lists from memory:
+correct, stale, an unlisted difference), `blitzlibcompare_single_stale`,
+`ted_checkdata_intended`, `ted_checkdata_unlisted`,
+`ted_checkdata_stale` (the tools on built files).
