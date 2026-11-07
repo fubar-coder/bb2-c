@@ -6,6 +6,8 @@
 ; and asks for an exclusive lock on that file: it fails while the file is
 ; still open.
 ; Correct: the aborted program's file is closed - the exclusive lock works.
+; #24 is not fixed on purpose (a clean abort of a running program is not
+; worth the complexity): the test stays REPRODUCED.
 ; @pass jobline=run=r001|CORPUS:src/compiler-panic-remtask.bb2|RAM:con|100
 ; @pass runargs=check
 If NumPars>0

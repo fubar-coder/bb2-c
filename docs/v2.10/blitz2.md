@@ -195,7 +195,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #21 | closed | [compiler/WB start] Old current directory is never restored | **fixed in the port** |
 | #22 | closed | [compiler] Return value of blitz2 is lost in wb_exit | **fixed in the port** |
 | #23 | closed | [compiler/Debugger] Loading a debug module without an old module leaves the busy pointer | **fixed in the port** |
-| #24 | open | [compiler/Run] PANIC removes the program process with RemTask without cleanup | unchanged |
+| #24 | closed | [compiler/Run] PANIC removes the program process with RemTask without cleanup | **won't fix**: a clean abort of a running program is not worth the complexity (2.10 unchanged) |
 | #25 | closed | [compiler/Run] Failure of CreateProc leaves the stop requester open | **fixed in the port** |
 | #26 | closed | [compiler] flushlibs: the 256 MB request would never be freed if it succeeded | **fixed in the port** |
 | #27 | closed | [compiler] checklib: result of Examine unchecked | **fixed in the port** |

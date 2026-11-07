@@ -938,7 +938,10 @@ void menu10(void)
             if (!chkrealstop())
                 continue;
             if (panictask)
-                RemTask(panictask);     /* BUG(orig) (#24): no cleanup at all */
+                RemTask(panictask);     /* BUG(orig) (#24): no cleanup at
+                                           all; not fixed on purpose: a clean
+                                           abort of a running program is not
+                                           worth the complexity */
             break;
         }
     }
