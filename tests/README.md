@@ -9,7 +9,8 @@ labels select within them.
 | `emulator` | libraries against the CD's, corpus, TED A/B, the expect tests (compilers' extensions, port regression tests; no CD needed), CD corpus, RWE reference build, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
 | `all` | both | both |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
-| `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset | Amiberry; the CD for most |
+| `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
+| `originals` | the recording runs (`bug_orig_record_ID`, label `originals`): the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`; in no other preset | Amiberry; the CD (and the reference build for the RWE tests) |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
 `AMIGA-EMULATION-SETUP.md`. The tool the emulator tests use, its sessions,
@@ -44,6 +45,7 @@ ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
 ctest --preset bug-orig   # original bugs not fixed yet, known port bugs: fail on purpose
 ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
+ctest --preset originals  # record the original's observations (writes tests/bug-orig/*/*.orig)
 ```
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
@@ -359,11 +361,20 @@ to #118), `bug_orig_debuglib_findoff_flags` (#127).
 **bug-orig tests with a Blitz program** (`tests/bug-orig/`, runner:
 the corpus runner, `corpusrun` with `expect=`; verdict in
 `tests/corpus/runner/bugorig.h`): a program that triggers the bug is
-compiled and run in Amiberry by the original blitz2 1.95 with the
-libraries of the CD (ref) and by the port (port: blitz2-c with the
+compiled and run in Amiberry by the port (port: blitz2-c with the
 libraries of the CD, clib: blitz2-c with the C libraries), one emulator
-session each (in parallel), skipped without the CD (a fixed test: only
-clib, without the CD, [Fixed tests](#fixed-tests)). What a
+session each (in parallel). The original (blitz2 1.95 with the libraries
+of the CD, the reference `ref`) does not run in the normal test: what it
+did is committed as `ID.orig`, recorded once ([Recorded
+originals](#recorded-originals)). Without the CD the configuration `port`
+is not judged and the run goes without `blitz2:defaultdbug`; the CD is
+still needed by a test with runtime error checking (`; @pass
+runtime_errors=on`: the debugger is part of the program), by one whose
+source names `BB2:` (the volume is mounted only for those), and by one that
+mounts it with `; @pass mount=BB2|@CD@` because its crash depends on the
+memory layout, which the volume changes (`blitzcoplib-maxslice-zero`: a
+time out with it, a halt of the CPU without). A fixed test: only clib,
+nothing of the CD, [Fixed tests](#fixed-tests). What a
 configuration shows (the *observation*) are sections: `[session]`
 (`done`, `timeout` for a crash or hang, `halt` for a crash that halted
 the emulated CPU), `[compile]` (`ok`,
@@ -374,17 +385,21 @@ the **correct** behaviour, given only for the sections that matter
 (`[session]` not given: `done`); a line ending in `*` matches by
 prefix, a line `...` any number of lines. Verdict per configuration:
 FIXED (matches the expectation), REPRODUCED (shows what the original
-shows: the normal state, the test fails), DIFFERS (neither: the port
-does not reproduce the original). **A valid bug-orig test** is one
+shows, that is `ID.orig`: the normal state, the test fails), DIFFERS (neither:
+the port does not reproduce the original). **A valid bug-orig test** is one
 whose original does *not* match the expectation; if it does, the test
 is BROKEN (the original does not have the bug, or the expectation
-describes the bug) and fails with that message. The test passes only
+describes the bug) and fails with that message, checked on `ID.orig`
+before any session starts. The test passes only
 when every configuration is FIXED. Exit status of `corpusrun`: 0 FIXED,
-1 REPRODUCED, 3 BROKEN, 4 DIFFERS. `bug_orig_verdict` (host) checks the
-verdict with inputs from memory (among them an expectation equal to the
+1 REPRODUCED, 2 error (also a missing `ID.orig`), 3 BROKEN, 4 DIFFERS.
+`bug_orig_verdict` (host) checks the
+verdict with inputs from memory, REPRODUCED, DIFFERS and BROKEN against
+an observation that was written to a file and read back, without a
+reference (among them an expectation equal to the
 buggy output); `bug_orig_selftest_broken` (label `emulator`, not
-`bug-orig`) runs such a broken test in Amiberry and must come out
-BROKEN. Reports: `build/<preset>/tests/bug-orig/ID.txt`, the
+`bug-orig`) runs such a broken test on a recorded file and must come out
+BROKEN (it needs no session). Reports: `build/<preset>/tests/bug-orig/ID.txt`, the
 observation of each configuration in `.../ID/TAG/observation`.
 Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
 faults (no free signal, failing AllocMem of a size, also only after
@@ -468,14 +483,51 @@ source (e.g. the source of a resident) is a text `NAME.src`, tokenised
 like `ID.bas` to `testdata/NAME`. The expectation is the correct
 behaviour (from the documentation of the command or the issue), not
 what the original does; the observation of the configurations
-(`.../ID/TAG/observation`) gives its format. Run
+(`.../ID/TAG/observation`) gives its format. Then record the original
+(needs Amiberry and the CD):
+`ctest --preset originals -R bug_orig_record_ID` writes `ID.orig` next
+to `ID.expect`; read it (it is what the original did; a nondeterministic
+line gets a wildcard, [Recorded originals](#recorded-originals)) and
+commit it with the test. Run
 `ctest --preset bug-orig -R bug_orig_ID`: an open bug comes out
-REPRODUCED (not BROKEN: the original shows the bug); check the
+REPRODUCED (not BROKEN: `ID.orig` shows the bug); check the
 expectation if possible with a temporary fix in the port (then FIXED);
 name the test in the issue. The commit that fixes the bug adds
 `; @fixed #N` to the header ([Fixed tests](#fixed-tests)); a header
 line moves the program down one line, so a compile error line in the
 expectation grows by one.
+
+### Recorded originals
+
+**Recorded originals** (`ID.orig`, next to `ID.bas` / `ID.drv`): the
+observation of the original, committed, so that the tests need no session
+of it. Format: the sections of the observation as above (`[session]`,
+`[compile]`, `[run]`, `[blitz2]`, `[log]`), raw, with a first line `# NOTE`
+that says which original it is (blitz2 1.95 built from `blitz2.s`, or the
+CD's 2.10 for `; @rwe` tests); the TED tests: `[state]` and `[problems]`
+([bug-orig tests of TED](#bug-orig-tests-of-ted)). The normal run judges
+`port` and `clib` against `ID.expect` (FIXED) and `ID.orig` (REPRODUCED,
+else DIFFERS) and checks that `ID.orig` does not meet `ID.expect`
+(BROKEN) before any session. Only the sections of the expectation count,
+as with a live reference. **Recording** is separate and on demand:
+`ctest --preset originals` (one ctest `bug_orig_record_ID` per test, label
+`originals`, which no other preset runs) or `BUGORIG_RECORD=1 corpusrun
+build/<preset>/tests/bug-orig/ID.pass` (the same for `tedab`). It runs
+the original only, writes `ID.orig` and no other file, and judges
+nothing; a line of the program's output that looks like a `[section]`
+header is refused (the file would not read back). Recording is
+deterministic or reported: record twice and compare (`git diff`); an
+observation that varies from run to run is not committed as it is. A line
+of the file that depends on addresses, dates or timing may be edited to
+a wildcard of the expectation's kind (`*` at the end of a line, `...`
+for any number of lines); the lines are matched against the port's
+observation as the lines of an expectation are (`bugorig.h`), so that
+`ID.orig` also judges with the wildcard. When the original is wrong in a
+way that is not the bug, the test is not valid. Fixed tests and port
+regression tests have no `ID.orig`. A test without `ID.orig` fails with
+exit status 2 and the hint to record it. The recorded sections are not
+compared with the original again: when the original's behaviour is
+questioned, record again and read the diff.
 
 ### Fixed tests
 
@@ -567,14 +619,20 @@ the extensions' suite.
 **bug-orig tests of TED** (`tests/bug-orig/ted/ID.drv`): a TED A/B
 script (`tests/ted-ab`, directives in `runner/tedab.h`) whose
 expectations are the correct behaviour. `tedab` in its bug-orig mode
-(pass key `bugorig=1`) plays it against the original TED 1.1 under
-blitz2 2.10 (R5, the reference) and TED-C (C5), each run in an
-emulator session of its own (in parallel), and gives the verdict like
-corpusrun (FIXED, REPRODUCED, BROKEN, DIFFERS; same exit status). The
+(pass key `bugorig=1`) plays it with TED-C under blitz2 2.10 (C5) in an
+emulator session of its own and gives the verdict like corpusrun (FIXED,
+REPRODUCED, BROKEN, DIFFERS; same exit status) against the recorded
+observation of the original TED 1.1 under blitz2 2.10 (R5, the
+reference): `ID.orig` next to `ID.drv`, pass key `orig=`
+([Recorded originals](#recorded-originals)). The
 observation of a run is its result (OK, `FAIL step N ...`, `TIMEOUT`
-for a crash or hang, `HALT` for a crash that halted the emulated CPU) and the expectations it misses; REPRODUCED needs
-the same observation and, when both runs are OK, the A/B comparison
-SAME. Made for these tests: `; @file NAME "DATA"` (a file in `work/`,
+for a crash or hang, `HALT` for a crash that halted the emulated CPU) and the expectations it misses
+(file: `[state]` and `[problems]`, the problem lines as the report has
+them); REPRODUCED needs the same observation (the A/B comparison of the
+whole run directories, which a live R5 run allowed, is gone: the
+expectations are what counts). `ID.orig` says OK without a problem: BROKEN
+before any session. Recording: `bug_orig_record_ID` (label `originals`)
+plays R5 only. Made for these tests: `; @file NAME "DATA"` (a file in `work/`,
 `"..."` with `\n`, `\t`, `\xHH`, repeated lines append), `; @source F
 NAME` (that file is loaded), `; @command ARGS` (instead of
 `blitz2:blitz2 FILE`: e.g. `blitz2:ted @FILE@` for TED alone, or with
@@ -585,7 +643,9 @@ script made with `@file`), `; @expect data NAME "DATA"`, `; @expect
 report `build/<preset>/tests/bug-orig/ID.txt`, the runs in
 `.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
 the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
-out BROKEN. Adding a test: one file `ted/ID.drv`, found by a glob.
+out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
+glob, and `ted/ID.orig` from `ctest --preset originals -R
+bug_orig_record_ID`.
 
 ### Order of the bug-orig tests
 

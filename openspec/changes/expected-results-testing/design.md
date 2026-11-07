@@ -334,3 +334,33 @@ code changes in this change).
   (`tests/ted-ab/lint/fixed-wrong/`, four scripts broken on purpose,
   each refused with its message). Checked by mutation: with a stale pair
   judged SAME, two `[fixed]` cases fail.
+- **Task 6.1-6.4 (2026-11-07):** `ID.orig` is the observation as
+  `bugorig_observe` makes it (the five sections, raw) behind a first
+  comment line `# NOTE` that names the original (blitz2 1.95 built from
+  `blitz2.s`, or the CD's 2.10 for `@rwe` tests); the TED file has
+  `[state]` and `[problems]` (the R5 run's result and the expectations it
+  misses). Pass keys `orig=`, `orig_by=`; a bug-orig pass without `orig=`
+  is refused. `corpusrun`/`tedab` with `BUGORIG_RECORD=1` (ctest
+  `bug_orig_record_ID`, label `originals`, new preset `originals`; `host`,
+  `emulator`, `all`, `native` and `coverage` exclude the label) run the
+  reference only and write the file, after a read-back check (a line of
+  output that looks like a `[section]` header is refused); the normal run
+  drops the reference configuration and what is only for it
+  (`corpus_select`), checks `ID.orig` against `ID.expect` before any
+  session (BROKEN, exit 3; a missing or unreadable file exit 2) and judges
+  the rest with `bugorig_judge`. A line of a recorded file may be edited to
+  a wildcard of the expectation's kind (`same_as` matches the way an
+  expectation does). Without the CD the normal run does not judge `port`
+  and runs without `blitz2:defaultdbug`; it is skipped (77) with runtime
+  error checking (the debugger is part of the program), when the source
+  names `BB2:` (the volume is mounted only then; before it was mounted
+  for every test) and for the TED tests (C5 uses the CD's compiler). The
+  mount changes the memory layout: `blitzcoplib-maxslice-zero` crashes as
+  a time out with the volume and as a halt of the CPU without it, so it
+  mounts it explicitly. The TED verdict has no run-directory comparison
+  any more (the recorded state and problems are all of the original).
+  Recording twice gave identical files for 276 of 277 tests; the original
+  of `rishapeslib-read-palette-colour-count` (#820, a 768 KB wild write)
+  ends as `halt` or as `done` with the guard message from run to run (the
+  first state is committed; port and clib show `done`, `timeout`, or the
+  guard line, so the verdict stays DIFFERS as with the live reference).

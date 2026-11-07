@@ -35,10 +35,10 @@ documentation it changes; no program code changes in this change.
 
 ## 6. Recorded original observations (`ID.orig`)
 
-- [ ] 6.1 Runner: recording mode (`BUGORIG_RECORD=1`, ctest `bug_orig_record_ID` under label `originals`) writing `ID.orig`; the normal run judges `port`/`clib` against `ID.expect` and `ID.orig`, starts no `ref` session; BROKEN checked at parse time. Verify: `bugorig_verdict` host cases for REPRODUCED, DIFFERS, BROKEN without `ref`; `bug_orig_selftest_broken` works on a recorded file
-- [ ] 6.2 TED bug-orig tests (`tedab` bugorig mode): record the R5 observation the same way. Verify: `bug_orig_ted_selftest_broken` on the recorded file; the 22 TED tests give the same verdicts as with R5 live
-- [ ] 6.3 One recording run with the CD for all 350 tests, run twice with identical files, reviewed (wildcards for nondeterministic bits), committed. Verify: `ctest --preset bug-orig` gives the verdicts it gave with live `ref` (compare the lists) with no `ref` session started, also with `archive/cd` absent except tests that mount BB2
-- [ ] 6.4 Document recording and the `.orig` files in `tests/README.md` (bug-orig sections, "Adding a test": `ID.orig` replaces "look at the observation of ref") and `docs/development.md`. Verify: adding a test by the text yields REPRODUCED
+- [x] 6.1 Runner: recording mode (`BUGORIG_RECORD=1`, ctest `bug_orig_record_ID` under label `originals`) writing `ID.orig`; the normal run judges `port`/`clib` against `ID.expect` and `ID.orig`, starts no `ref` session; BROKEN checked at parse time. Verify: `bugorig_verdict` host cases for REPRODUCED, DIFFERS, BROKEN without `ref`; `bug_orig_selftest_broken` works on a recorded file
+- [x] 6.2 TED bug-orig tests (`tedab` bugorig mode): record the R5 observation the same way. Verify: `bug_orig_ted_selftest_broken` on the recorded file; the 22 TED tests give the same verdicts as with R5 live
+- [x] 6.3 One recording run with the CD for all 350 tests, run twice with identical files, reviewed (wildcards for nondeterministic bits), committed. Verify: `ctest --preset bug-orig` gives the verdicts it gave with live `ref` (compare the lists) with no `ref` session started, also with `archive/cd` absent except tests that mount BB2
+- [x] 6.4 Document recording and the `.orig` files in `tests/README.md` (bug-orig sections, "Adding a test": `ID.orig` replaces "look at the observation of ref") and `docs/development.md`. Verify: adding a test by the text yields REPRODUCED
 
 ## 7. Corpus expect files, CD table, TED oracle
 
