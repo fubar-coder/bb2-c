@@ -41,6 +41,11 @@ void ext_compilestart(void)
 {
 }
 
+BOOL ext_incdevice(void)
+{
+    return TRUE;
+}
+
 UWORD ext_incname(UWORD len)
 {
     return len;

@@ -86,6 +86,15 @@ void ext_compilestart(void);
 /* ========================================================= includes */
 
 /**
+ * @brief makeiname (libcall.c): an IncDir path is set and the name from
+ *        the source has a device or assign (':').
+ * @return TRUE: the name is used without the IncDir path (blitz2, #341);
+ *         FALSE: the path stays in front of it (AB3 mode: the INCDIR
+ *         string followed by the name, spec ab3-compat/source-mode)
+ */
+BOOL ext_incdevice(void);
+
+/**
  * @brief doinclude (tokens1.c): the name of an INCLUDE is in namebuff
  *        (makeiname, len bytes); may replace it by the file to include and
  *        stop the compile with err().

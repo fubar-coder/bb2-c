@@ -459,7 +459,7 @@ implementation:
 The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 `ext_loaduserlibs`, `ext_freelibs` (libraries), `ext_resbegin`,
 `ext_loadres` (residents), `ext_compilestart` (the start of a compile),
-`ext_incname`, `ext_xinclude`, `ext_incopen`, `ext_readinc`,
+`ext_incdevice`, `ext_incname`, `ext_xinclude`, `ext_incopen`, `ext_readinc`,
 `ext_incline`, `ext_incdone` (includes),
 `ext_errpos` (a compile error), `ext_newtoken` (a built-in token),
 `ext_passstart`, `ext_passend` (a pass), `ext_token` (a statement
@@ -547,8 +547,9 @@ v3.14.0 does it (change `ab3-mode-g2`, design D4; `ab3inc.c` behind
 `ext_incname` and `ext_xinclude`, the name rules in `shared/tokenizer`;
 `AmiBlitz3.ab3` at `@58a11658`):
 
-* the name is the `INCDIR` string followed by the name (`makeiname`, as
-  BB2), searched (`check_incdir`, 25836) in `Blitz3:Sourcecodes/Includes`
+* the name is the `INCDIR` string followed by the name (`makeiname`),
+  also for a name with a device (`ext_incdevice`; BB2 mode uses such a
+  name without the `INCDIR` string, #341), searched (`check_incdir`, 25836) in `Blitz3:Sourcecodes/Includes`
   (AmiBlitz3's default includes directory, `config\path_includes`), the
   main source's directory, the directory of the innermost open include,
   and `Blitz3:Sourcecodes/Includes` with the name's file part - joined

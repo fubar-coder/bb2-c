@@ -214,6 +214,14 @@ static void inctype(UWORD len)
         err("You can only include tokenized files (.bb2 |.bb)");
 }
 
+/* AB3 mode keeps the INCDIR string in front of a name with ':' too (the
+   spec's "INCDIR followed by the name"; whether AmiBlitz3 has blitz2's
+   #341 is not measured); BB2 mode uses such a name as it is */
+BOOL ext_incdevice(void)
+{
+    return progmode != XTRA_MODE_AB3;
+}
+
 /* INCLUDE: found and judged as AmiBlitz3 does it.  The type is judged
    before blitz2's "Already Included" (AmiBlitz3: after it) - only a
    recursive include of a refused name sees the difference. */

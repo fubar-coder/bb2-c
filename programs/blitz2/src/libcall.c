@@ -1243,6 +1243,8 @@ WORD makeiname(void)
     UBYTE *dst = namebuff;
     char *src = incdir;
     WORD len = -1;
+    WORD dirlen;
+    BOOL device = FALSE;
     UWORD c;
 
     /* BUG(orig) (#325): neither loop checks the length - incdir + name beyond
@@ -1252,6 +1254,7 @@ WORD makeiname(void)
         len++;
     } while ((*dst++ = (UBYTE)*src++) != 0);
     dst--;
+    dirlen = len;
     bakup();
     for (;;) {
         c = getchar3();
@@ -1262,7 +1265,16 @@ WORD makeiname(void)
         *dst++ = (UBYTE)c;
         if ((UBYTE)c == 0)
             break;
+        if ((UBYTE)c == ':')
+            device = TRUE;
         len++;
+    }
+    /* Fixed (#341): a name with a device or assign (':') is used as it
+       is - blitz2.s puts incdir in front of every name (AB3 mode keeps
+       that: ext_incdevice) */
+    if (device && dirlen && ext_incdevice()) {
+        memmove(namebuff, namebuff + dirlen, (size_t)(len - dirlen) + 1);
+        len -= dirlen;
     }
     if (len == 0)
         syntaxerr();
