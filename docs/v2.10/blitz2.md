@@ -167,44 +167,45 @@ copied [`docs/blitz2/survey-01.md`]).
 ## 4 Bug-orig issues of the compiler in 2.10
 
 Since all code except `$7094` is identical, every compiler bug documented
-from the 1.95 source is present in 2.10 unchanged – except #2. [B]
+from the 1.95 source is present in 2.10 unchanged – except #2. The port
+fixes some of them; those rows say "fixed in the port". [B]
 
 | Issue | State | Title | In 2.10 |
 |---|---|---|---|
 | #1 | open | [compiler/Assembler] Inline assembler expression over 239 characters: node size stored as a byte | unchanged |
 | #2 | closed | [compiler/Libs] Userlibs path becomes "blitz2:userlibs//dir" (parent directory) | **fixed in 2.10** |
-| #3 | open | [compiler/Libs] Read error (-1) while loading a library is not detected | unchanged |
+| #3 | closed | [compiler/Libs] Read error (-1) while loading a library is not detected | **fixed in the port** |
 | #4 | closed | [compiler/Macros] Macro parameters are collected without checking against the end of macrobuff | unchanged |
 | #5 | closed | [compiler/Macros] `@` (expansion counter of the macro) is written into the macro line without overflow check | unchanged |
 | #6 | open | [compiler/rundebuglib] Executables with runtime error checking show an empty requester at program end without `End` | unchanged |
 | #7 | open | [compiler] Constant without a name (`#=…`) is accepted without error | unchanged |
-| #8 | open | [compiler/Options] AllocMem for the arrow images of the options requester unchecked | unchanged |
+| #8 | closed | [compiler/Options] AllocMem for the arrow images of the options requester unchecked | **fixed in the port** |
 | #9 | open | [compiler/Expression] Operator `=<` is compiled as `<>` | unchanged |
 | #10 | open | [compiler/Constants] Number with a point but no fractional digits (`1.`) is a syntax error | unchanged |
 | #11 | open | [compiler/Constants] Exponent after fractional part 0 (`1.0e5`) is not evaluated | unchanged |
 | #12 | open | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | unchanged |
 | #13 | open | [compiler/Constants] Quick constant with fractional part 0 or negative fractional part becomes a float constant | unchanged |
-| #14 | open | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | unchanged |
+| #14 | closed | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | **fixed in the port** |
 | #15 | open | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | unchanged |
 | #16 | open | [compiler/IncDir] Path without length check (buffer `incdir` 96 bytes) | unchanged |
 | #17 | open | [compiler/IncDir] Rest of the line (also after `:`) is taken into the path | unchanged |
 | #18 | closed | [compiler] Failure of AllocSignal for the PANIC signal is not detected | unchanged |
-| #19 | open | [compiler/WB start] Short-read .info file is not closed | unchanged |
-| #20 | open | [compiler/WB start] Without a readable .info the editor is supposed to load "<name>.info" as the program | unchanged |
-| #21 | open | [compiler/WB start] Old current directory is never restored | unchanged |
-| #22 | open | [compiler] Return value of blitz2 is lost in wb_exit | unchanged |
-| #23 | open | [compiler/Debugger] Loading a debug module without an old module leaves the busy pointer | unchanged |
+| #19 | closed | [compiler/WB start] Short-read .info file is not closed | **fixed in the port** |
+| #20 | closed | [compiler/WB start] Without a readable .info the editor is supposed to load "<name>.info" as the program | **fixed in the port** |
+| #21 | closed | [compiler/WB start] Old current directory is never restored | **fixed in the port** |
+| #22 | closed | [compiler] Return value of blitz2 is lost in wb_exit | **fixed in the port** |
+| #23 | closed | [compiler/Debugger] Loading a debug module without an old module leaves the busy pointer | **fixed in the port** |
 | #24 | open | [compiler/Run] PANIC removes the program process with RemTask without cleanup | unchanged |
-| #25 | open | [compiler/Run] Failure of CreateProc leaves the stop requester open | unchanged |
-| #26 | open | [compiler] flushlibs: the 256 MB request would never be freed if it succeeded | unchanged |
-| #27 | open | [compiler] checklib: result of Examine unchecked | unchanged |
-| #28 | open | [compiler/Libs] Directory name under blitz2:userlibs copied without length check | unchanged |
+| #25 | closed | [compiler/Run] Failure of CreateProc leaves the stop requester open | **fixed in the port** |
+| #26 | closed | [compiler] flushlibs: the 256 MB request would never be freed if it succeeded | **fixed in the port** |
+| #27 | closed | [compiler] checklib: result of Examine unchecked | **fixed in the port** |
+| #28 | closed | [compiler/Libs] Directory name under blitz2:userlibs copied without length check | **fixed in the port** |
 | #29 | open | [compiler/Parser] makename4: identifier copied to namebuff without length check | unchanged |
 | #30 | open | [compiler/Parser] findlab with name length 0 compares 65536 bytes | unchanged |
 | #31 | open | [compiler] UsePath: path without length check (buffer 128 bytes) | unchanged |
 | #32 | closed | [compiler/Options] New buffer sizes: fallback to the previous sizes is reported as success | unchanged |
 | #34 | open | [compiler/Resident] Last constant of a resident points past the section | unchanged |
-| #35 | open | [compiler/Resident] Type without fields: fixtypes follows the raw next pointer | unchanged |
+| #35 | open | [compiler/Resident] Type without fields: fixtypes follows the raw next pointer | **fixed in the port** |
 | #36 | open | [compiler/Resident] Duplicate constants in several residents are never detected | unchanged |
 | #37 | open | [compiler] `Dcb` with count 0 repeats 2^32 times | unchanged |
 | #38 | open | [compiler] IncBin does not free the lock or file on errors | unchanged |
@@ -215,23 +216,28 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #325 | open | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | unchanged |
 | #335 | open | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | unchanged |
 | #336 | open | [compiler/Macros] macrobuff is freed with the current Macro Buffer size, not the allocated one | unchanged |
-| #337 | open | [compiler/WB start] wb_exit calls Permit after ReplyMsg, before blitz2 has returned | unchanged |
-| #341 | open | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | unchanged |
-| #342 | open | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | unchanged |
+| #337 | closed | [compiler/WB start] wb_exit calls Permit after ReplyMsg, before blitz2 has returned | **fixed in the port** |
+| #341 | open | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | **fixed in the port** (BB2 mode only; AB3 mode keeps its INCDIR rule) |
+| #342 | open | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | **fixed in the port** |
 | #343 | open | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
 | #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved (test `bug_orig_compiler_amigalib_param_regs`) | unchanged |
 | #937 | open | [compiler/Arrays] List array indexed by an element of a normal array (`a(b(1))`): the nested calcvar resets `.listoff`, the index is multiplied by the bare element size (`parse.c` calcvar, test `bug_orig_compiler_calcvar_listoff`) | unchanged |
 | #939 | open | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | unchanged |
 | #940 | open | [compiler/Procedures] End Statement / End Function and Statement Return / Function Return are not checked against the kind of procedure: a string Function ended with End Statement pops its return address (`tokens2.c` doend, stateret/funcret, endstate) | unchanged |
-| #942 | open | [compiler/Macros] A `:` right after the macro name stays in the macro text: `Macro a:1:End Macro` expands to `:1` (`tokens1.c` domacro) | unchanged |
+| #942 | open | [compiler/Macros] A `:` right after the macro name stays in the macro text: `Macro a:1:End Macro` expands to `:1` (`tokens1.c` domacro) | **fixed in the port** |
 | #943 | open | [compiler/Executable] All relocations go into one HUNK_RELOC32 block: an executable with more than 65535 relocations does not load on AmigaOS 3.2 (Kickstart 1.3 loads it) (`parse.c` executable writer, test `bug_orig_compiler_reloc32_one_block`) | unchanged |
 | #964 | open | [compiler/Macros] A macro text of 65536 bytes or more is cut: its length is stored in a word (`domacro` `.cdone`, `freemacs`; `tokens1.c` domacro, test `bug_orig_compiler_macro_textlen_word`) | unchanged (`blitz2.s:12916–12930` and `6680–6695` contain no byte of the encoding appendix; reachable only with a Macro Buffer over 65535, which the buffer of 2.10 cannot have either: always 8192 bytes, #336) |
 | #967 | open | [compiler/Macros] A one-line If … Then inside a macro stays open until the end of the calling line (`domacro`, `doif2`, `doline`, `doendif3`; `tokens1.c` domacro, test `bug_orig_compiler_macro_then_line`) | unchanged (`blitz2.s:12866–12872`, `13275`, `2792–2806`, `13830–13836`: the only difference is the encoding of `and #255,d0` at `doendif3+$10`, same meaning) |
 | #968 | open | [compiler/Macros] A macro body line ending in End swallows the rest of the macro (`getcharb`, `domacro`, `readinc`; `tokens1.c` domacro, tests `bug_orig_compiler_macro_end_line`, `bug_orig_compiler_macro_end_line_include`) | unchanged (`blitz2.s:7147–7158`, `12863–12893`, `11972–12018`, `13876–13969`: the only difference is the encoding of `or #$7200,d1` at `doend+$EC`, outside the `Macro` handling) |
+| #977 | open | [compiler/Labels] A constant of value 0 is taken as a label not defined yet | **fixed in the port** |
+| #979 | open | [compiler/IncBin] An IncBin of odd length at the end of the program puts the end code on an odd address | **fixed in the port** |
+| #993 | open | [compiler/Libraries] loadalib does not check the read of the reloc data: a short library file gets random relocs | unchanged |
+| #994 | open | [compiler/Code buffer] A compile error between pushdo and pushput loses the code save buffer | unchanged |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
-and all of them apply to 2.10 as well; #2, the one bug 2.10 fixed, is a
-`DIFF` in the port (`asmlibs.c:1254`, the path separator as in 2.10).
+and all of them apply to 2.10 as well, except the bugs the port has
+fixed (see the table); #2, the one bug 2.10 fixed, is a `DIFF` in the
+port (`asmlibs.c:1254`, the path separator as in 2.10).
 Issues of the libraries (`rundebuglib` #6/#43, `deflibs` #44/#45 …) are
 covered in [libs.md](libs.md); those of TED in [ted.md](ted.md) §1.2.
 
