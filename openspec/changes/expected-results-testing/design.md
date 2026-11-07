@@ -294,3 +294,19 @@ code changes in this change).
   `ted_checkdata_unlisted` and `ted_checkdata_stale` run the tool on the
   real `ted.sym` with a deliberately wrong table entry of the build
   directory.
+- **Task 4.1 (2026-11-07):** `expect_fixed(NNN, value)` is a value
+  (`struct fixed`) handed to the check, not a call before it: every
+  test program has its own `SAME` (and `fail`, `cur`), so `sysload.h`
+  adds `SAME_FIXED(what, expr, expect_fixed(NNN, value))`, which uses
+  the `cur` and `fail` of the program it is expanded in, and
+  `check_fixed(what, fx, orig, c)` for the programs that compare with
+  `check()` (systest.c, libtest.c). Verdict: C equal to the original
+  is "stale" (checked first), C different from `value` is "wrong". The
+  self test `selftest_fixed.c` compares values from memory, so its three
+  ctests (`libs_expect_fixed`, `_wrong`, `_stale`) need no CD; the two
+  failing cases are hidden (`[.selftest]`), their ctests pass on the
+  printed failure line and the check counts (`PASS_REGULAR_EXPRESSION`,
+  like the `*_broken` tests); the passing case also runs in
+  `libs_emulator`. Checked by mutation: without the stale branch
+  `libs_expect_fixed_stale` fails, without the wrong branch
+  `libs_expect_fixed_wrong` fails.
