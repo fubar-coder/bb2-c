@@ -49,8 +49,9 @@
 ULONG fetchdata(UWORD *type, ULONG *raw);
 
 /* blitz2.s:10709 fetchfrac - number starting with '.', c = '.'
-   BUG(orig) (#10, #11): "1." without fraction digits is a syntaxerr; after a zero
-   fraction ("1.0e5") the E exponent is not parsed.  Kept. */
+   (a point alone is a syntax error; "1." is the float 1, Fixed (#10)).
+   BUG(orig) (#11): after a zero fraction ("1.0e5") the E exponent is not
+   parsed.  Kept. */
 ULONG fetchfrac(UWORD c, UWORD *type, BOOL data);
 
 /* blitz2.s:10712 fetchnum - decimal number, c = first digit; handles '.'

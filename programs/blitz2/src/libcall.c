@@ -41,7 +41,7 @@ static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
 static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val);
-static ULONG fetchpoint2(UWORD *type, BOOL data);
+static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac);
 static void dothee(void);
 static UWORD fetchdec(UWORD c, ULONG *divisorp);
 
@@ -89,7 +89,7 @@ ULONG fetchfrac(UWORD c, UWORD *type, BOOL data)
 {
     (void)c;
     numval = 0;
-    return fetchpoint2(type, data);
+    return fetchpoint2(type, data, TRUE);
 }
 
 /* blitz2.s:10712 fetchnum */
@@ -103,7 +103,7 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
         /* blitz2.s:10734 fetchpoint */
         if (numval >= 0x800000)
             overerr();
-        return fetchpoint2(type, data);
+        return fetchpoint2(type, data, FALSE);
     }
     c |= 32;
     if (c != 'e')
@@ -118,8 +118,9 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
     return fetchnum3(val, type, data);
 }
 
-/* blitz2.s:10737 fetchpoint2 - now a float.  in: numval = whole part */
-static ULONG fetchpoint2(UWORD *type, BOOL data)
+/* blitz2.s:10737 fetchpoint2 - now a float.  in: numval = whole part;
+   frac: the number began with the point (fetchfrac) */
+static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
 {
     ULONG whole, divisor, val, t;
     UWORD c;
@@ -127,8 +128,15 @@ static ULONG fetchpoint2(UWORD *type, BOOL data)
     numfloat = -1;
     whole = ffpcall(SPFlt, numval, 0, NULL);     /* save whole number */
     c = getchar3();
-    if (!tstnum(c))
-        syntaxerr();                /* BUG(orig) (#10): "1." is a syntax error */
+    if (!tstnum(c)) {
+        /* Fixed (#10): "1." is the float 1, as "1.0"; the original wanted
+           a digit after the point.  A point alone and a point before a
+           letter or '_' ("4.w") stay syntax errors. */
+        if (frac || tstalpha(c) || c == '_')
+            syntaxerr();
+        numval = whole;
+        goto pskip2;
+    }
     numval = 0;
     c = fetchdec(c, &divisor);      /* get int frac */
     if (numval == 0) {
@@ -147,7 +155,7 @@ static ULONG fetchpoint2(UWORD *type, BOOL data)
         if (c == 'e')
             dothee();               /* E Something! */
     }
-    /* .pskip2 */
+pskip2:
     c = reget();
     val = consttype2(type, c);
     return fetchnum3(val, type, data);
