@@ -5,6 +5,7 @@
 ; open Include).
 ; Correct: the quoted string is the path, ':' starts the next statement;
 ; the program prints 2 and 7.
+; @fixed #17
 ; @pass file=src/inc.bb2|@TESTDATA@/compiler-incdir-rest-of-line.inc
 a=1
 IncDir "CORPUS:src/" : a=2

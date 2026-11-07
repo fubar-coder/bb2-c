@@ -207,7 +207,9 @@ extern ULONG oldlibat;
 /* blitz2.s:11936 doincdir - IncDir "path" statement handler: copies the
    chars (without '"') into incdir up to end of line; token -> syntaxerr.
    Fixed (#16): a path longer than 95 characters is "Path too Long".
-   BUG(orig) (#17): a ':' is copied (getchar3 returns it with Z=1).  Kept. */
+   Fixed (#17): a path that starts with '"' ends at the closing quote;
+   after it only ':' (next statement), a comment or the line end.  An
+   unquoted path is the rest of the line (also after ':'), as in blitz2.s. */
 void doincdir(UWORD c);
 
 /* blitz2.s:11947 makeiname - namebuff = incdir + file name from the
@@ -216,8 +218,13 @@ void doincdir(UWORD c);
    Fixed (#325): more than 127 characters -> "Path too Long".
    Fixed (#341): a name with a device or assign (':') is used without
    incdir (blitz2.s puts it in front of every name, e.g. "BlitzLibs:" +
-   "blitzlibs:libnums.bb"); AB3 mode keeps it (ext_incdevice). */
-WORD makeiname(void);
+   "blitzlibs:libnums.bb"); AB3 mode keeps it (ext_incdevice).
+   Fixed (#17): a name that starts with '"' ends at the closing quote;
+   after it a comment or the line end, with colon (IncBin) also ':' that
+   starts the next statement; anything else is a syntax error.  An
+   unquoted name is the rest of the line (also after ':'), as in
+   blitz2.s. */
+WORD makeiname(BOOL colon);
 
 /* blitz2.s:11972 readinc - next line of the current include (firstinc).
    asm: Z=0 -> a5 = line.  Returns TRUE with srcptr = the 0-terminated line,

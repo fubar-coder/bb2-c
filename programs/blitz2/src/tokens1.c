@@ -763,7 +763,7 @@ void doxinclude(UWORD c)
     UWORD len;
 
     (void)c;
-    len = makeiname();
+    len = makeiname(FALSE);                     /* as Include (#17) */
     if (ext_xinclude(len))
         return;                                 /* AB3 mode: its own rule */
     if (findxinc(len, &last))
@@ -787,7 +787,7 @@ void doincbin(UWORD c)
     LONG r, ok, isdir;
 
     (void)c;
-    makeiname();
+    makeiname(TRUE);                            /* Fixed (#17): ':' goes on */
     lk = Lock((CONST_STRPTR)namebuff, ACCESS_READ);
     if (!lk)
         noincerr();
@@ -816,13 +816,17 @@ void doincbin(UWORD c)
     Close(fh);                                  /* .close */
 }
 
-/* blitz2.s:12811 doinclude - do a standard include */
+/* blitz2.s:12811 doinclude - do a standard include.
+   Fixed (#17): after a quoted name only a comment or the line end
+   (makeiname(FALSE)); a ':' is a syntax error, because doinc2 goes on
+   with the next line (longjmp to passnxt) and would skip the rest of
+   this one silently.  Continuing the line after an include is #996. */
 void doinclude(UWORD c)
 {
     (void)c;
     if (dirmode)
         illdirerr();
-    doinc2(ext_incname(makeiname()));
+    doinc2(ext_incname(makeiname(FALSE)));
 }
 
 /* blitz2.s:12818 doinc2 */

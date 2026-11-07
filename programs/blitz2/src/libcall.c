@@ -1238,10 +1238,25 @@ ULONG oldlibat;                     /* 11934 */
  * includes
  * =================================================================== */
 
+/* Fixed (#17): what may follow the closing quote of a quoted IncDir path
+   or include name - the line end or a comment, and with colon a ':' that
+   starts the next statement (doline goes on with it, lastchar).  Anything
+   else is a syntax error.  blitz2.s copies the rest of the line, also
+   after ':', into the path or name. */
+static void quoteend(BOOL colon)
+{
+    UWORD c = getchar3();
+
+    if (c == 0 || (colon && c == ':'))
+        return;
+    syntaxerr();
+}
+
 /* blitz2.s:11936 doincdir */
 void doincdir(UWORD c)
 {
     char *dst = incdir;
+    BOOL quoted = c == '"';
 
     for (;;) {
         if (c != '"') {
@@ -1250,25 +1265,30 @@ void doincdir(UWORD c)
                the data behind it */
             if (c && dst == incdir + sizeof incdir - 1)
                 pathlongerr();
-            /* BUG(orig) (#17): ':' is copied too.  Kept. */
             *dst++ = (char)c;
             if (c == 0)
                 return;
             if (c & 0x8000)
                 syntaxerr();
+        } else if (quoted && !quoteflag) {
+            *dst = 0;               /* Fixed (#17): the closing quote */
+            quoteend(TRUE);
+            return;
         }
         c = getchar3();             /* .skip */
     }
 }
 
 /* blitz2.s:11947 makeiname - create include name */
-WORD makeiname(void)
+WORD makeiname(BOOL colon)
 {
     UBYTE *dst = namebuff;
     char *src = incdir;
     WORD len = -1;
     WORD dirlen;
     BOOL device = FALSE;
+    BOOL first = TRUE;
+    BOOL quoted = FALSE;
     UWORD c;
 
     /* Fixed (#325): blitz2.s copies incdir and the name without a limit,
@@ -1276,20 +1296,29 @@ WORD makeiname(void)
        follows).  Here the copy stops at the end of namebuff2 (incdir has
        at most 95 characters, #16), and a name that is longer than 127
        characters without the incdir a device drops (#341) is "Path too
-       Long".  BUG(orig) (#17): like doincdir the rest of the line (also
-       after ':') is copied. */
+       Long".  Fixed (#17): a quoted name ends at its closing quote
+       (quoteend); an unquoted one is the rest of the line, as in
+       blitz2.s. */
     do {
         len++;
     } while ((*dst++ = (UBYTE)*src++) != 0);
     dst--;
     dirlen = len;
     bakup();
-    for (;;) {
+    for (;; first = FALSE) {
         c = getchar3();
         if (c & 0x8000)
             syntaxerr();
-        if ((UBYTE)c == '"')
+        if ((UBYTE)c == '"') {
+            if (first)
+                quoted = TRUE;
+            else if (quoted && !quoteflag) {
+                *dst = 0;
+                quoteend(colon);
+                break;
+            }
             continue;
+        }
         if ((UBYTE)c && dst == namebuff + sizeof namebuff - 1)
             pathlongerr();
         *dst++ = (UBYTE)c;
