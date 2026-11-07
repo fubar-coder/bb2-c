@@ -708,6 +708,7 @@ void setcvars(void)
     /* (asm: dfetch = 0; C passes it as a parameter, libcall.h) */
     titleat = 0;
     usedpath[0] = 0;
+    incdir[0] = 0;              /* Fixed (#342): not in blitz2.s */
     inerr = 0;
     intlevel = 0;
     cont_pc = 0;

@@ -5,6 +5,7 @@
 ; relative Include "inc.bb2" opens "CORPUS:nowhere/inc.bb2" and fails
 ; (Can't open Include).
 ; Correct: every compile starts with an empty incdir, the program prints 7.
+; @fixed #342
 ; @pass file=r.bb2|@TESTDATA@/compiler-incdir-leak.res
 ; @pass file=src/inc.bb2|@TESTDATA@/compiler-incdir-leak.inc
 ; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res
