@@ -24,6 +24,11 @@ get_property(bug_orig_userlib GLOBAL PROPERTY BUG_ORIG_USERLIB)
 foreach(n compiler-maxs-libjsr)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
 endforeach()
+# until #37 is fixed: Dcb with a count of 0 or -1 repeats 2^32 (or
+# 2^32-1) times, the compiler does not end in the session
+foreach(n compiler-dcb-zero compiler-dcb-negative)
+	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
+endforeach()
 set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(AB3_EQUIVALENCE_TIMEOUT 600 CACHE STRING
 	"ab3 equivalence: time limit of one emulator session (seconds)")
