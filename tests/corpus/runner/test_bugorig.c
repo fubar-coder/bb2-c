@@ -3,7 +3,9 @@
  * inputs from memory: expectations valid and broken, observations from
  * the raw outputs, the four verdicts (an expectation that equals the
  * buggy output must come out BROKEN), and those of a port regression test
- * (an expectation the original does not show must come out BROKEN).
+ * (an expectation the original does not show must come out BROKEN), and
+ * those of a fixed test without a reference (FIXED or REGRESSED only; a
+ * wrong expectation and the bug again come out REGRESSED).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -184,6 +186,30 @@ int main(void)
     CHECK(judge_regression("[run]\n41\nrc=0\n", &a, &d) == BUGORIG_BROKEN);
     CHECK(judge_regression("[session]\ntimeout\n", &a, &a) == BUGORIG_BROKEN);
     CHECK(!strcmp(bugorig_verdict_name(BUGORIG_BROKEN), "BROKEN"));
+    /* a fixed test (no reference): FIXED or REGRESSED, never a verdict
+       that needs the original; c shows the bug (42), d the fix (41) */
+    CHECK(judge("[run]\n41\nrc=0\n", NULL, &d) == BUGORIG_FIXED);
+    CHECK(judge("[run]\n41\nrc=*\n", NULL, &d) == BUGORIG_FIXED);       /* wildcard */
+    CHECK(judge("[run]\n41\nrc=0\n", NULL, &c) == BUGORIG_REGRESSED);   /* the bug again */
+    CHECK(judge("[session]\ntimeout\n", NULL, &d) == BUGORIG_REGRESSED);
+    CHECK(judge("[compile]\nerror 3 Syntax Error\n", NULL, &b) == BUGORIG_REGRESSED); /* hang */
+    /* broken on purpose: a wrong expectation fails the fixed port too */
+    CHECK(judge("[run]\n40\nrc=0\n", NULL, &d) == BUGORIG_REGRESSED);
+    {
+        static const char *const ex[] = { "[run]\n41\nrc=0\n", "[run]\n42\nrc=0\n",
+                                           "[run]\n4*\nrc=0\n", "[log]\nnothing\n",
+                                           "[session]\ntimeout\n", "[blitz2]\n*\n" };
+        const struct bugorig_obs *obs[] = { &a, &b, &c, &d };
+        size_t i, k;
+
+        for (i = 0; i < sizeof ex / sizeof ex[0]; i++)
+            for (k = 0; k < sizeof obs / sizeof obs[0]; k++) {
+                enum bugorig_verdict v = judge(ex[i], NULL, obs[k]);
+
+                CHECK(v == BUGORIG_FIXED || v == BUGORIG_REGRESSED);
+            }
+    }
+    CHECK(!strcmp(bugorig_verdict_name(BUGORIG_REGRESSED), "REGRESSED"));
     bugorig_free(&a);
     bugorig_free(&b);
     bugorig_free(&c);
