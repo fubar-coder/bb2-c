@@ -87,6 +87,13 @@ odd address).
   the offset (#769). The size passed for the freed block comes from the
   object's colour count; if the new allocation fails, the object keeps
   the freed block (#768).
+* `ILBMPalette` with an offset on a palette that has no colour block yet
+  allocates the block for the CMAP's colours (12 bytes each + 16) and still
+  adds offset * 12 to the destination (only the killmem path resets the
+  offset): the last `offset` colours lie behind the block, from offset 2 on
+  outside it (an offset of 4 with a 4-colour CMAP: 36 bytes behind the 64
+  byte block). Test `ripacklib-ilbmpalette-offset-empty-palette` (inject
+  guard). (#991)
 * `LoadIFF` returns -1 even if UnpackIFF failed (its result is not
   looked at) (#771).
 * `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`

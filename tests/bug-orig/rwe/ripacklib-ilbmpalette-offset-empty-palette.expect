@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+result -1
+inject: rc=0
+rc=0

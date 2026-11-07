@@ -697,6 +697,10 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
             to = block + 4;
         }
     }
+    /* BUG(orig) (#991): for a palette without a colour block the offset is
+       not reset (only killmem does it): the block above is sized for the
+       CMAP alone and the colours land offset * 12 bytes into it, from
+       offset 2 on behind it. */
     if (offset >= 0)                            /* palbig */
         to += bl_mulu_w((UWORD)offset, 12);
     n = (UWORD)(bl_divu_w(LG(cmap), 3) - 1);
