@@ -802,7 +802,13 @@ UWORD makename4(char *at, UWORD len, UWORD *c)
     UWORD ch = getchar3();
     if (ch == '_' || tstalpha(ch)) {
         do {
-            *at++ = (char)ch;               /* BUG(orig) (#29): no length check */
+            /* Fixed (#29): a name of more than NAMEMAX characters (with
+               what is in front of it: a local label's big label) is a
+               syntax error; the original copied on past the 128 bytes of
+               the buffer */
+            if (len >= NAMEMAX)
+                syntaxerr();
+            *at++ = (char)ch;
             len++;
             ch = getchar_();
         } while (tstlab(ch));

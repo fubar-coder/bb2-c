@@ -234,8 +234,10 @@ BOOL tstlab(UWORD c);       /* 7704 alpha, digit, '_', loclabch (') */
 /* ================================================== names */
 /* Result: name length (asm d2.w; 0 == asm Z=1 "no name"), name + NUL in the
    buffer.  *c (may be NULL) = following char (asm d0; spaces after the name
-   skipped).  No length check (BUG(orig) (#29)). */
-UWORD makename(UWORD *c);                 /* 7716 into namebuff */
+   skipped).  A name longer than NAMEMAX characters is a syntax error
+   (Fixed (#29)): the buffers (namebuff, namebuff2) have 128 bytes. */
+#define NAMEMAX 127
+UWORD makename(UWORD *c);               /* 7716 into namebuff */
 UWORD makename2(UWORD *c);                    /* 7715 bakup() first */
 UWORD makename3(char *buf, UWORD *c);         /* 7722 into buf */
 /* 7723 append at `at`, counting on from `len` (asm a1/d2 preset);
