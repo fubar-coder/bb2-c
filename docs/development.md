@@ -81,11 +81,13 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    `docs/*/deviations.md` as an intended deviation of kind F; the
    changed results (executables, TED's files, library files) named in
    the commit message, every other result byte-identical to the
-   previous commit;
+   previous commit; and a line `Fixes #NNN` in the commit message
+   (GitHub closes the issue on the push);
 3. the entry on the website page of fixed original bugs
    (`site/content/docs/compared-with-original/fixed-bugs.md`);
 4. the label `fixed-in-port` on the issue (every fix);
-5. after the push: the issue closed with a comment naming the commit.
+5. after the push: the issue is closed (by `Fixes #NNN`; otherwise with
+   a comment naming the commit).
 
 A bug not fixed yet keeps its `BUG(orig)` comment and its bug-orig test,
 which comes out REPRODUCED in `ctest --preset bug-orig`.

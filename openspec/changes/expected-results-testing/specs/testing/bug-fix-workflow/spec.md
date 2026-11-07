@@ -9,11 +9,11 @@ the original and the repository's rules agree on it.
 ## ADDED Requirements
 
 ### Requirement: What a fix delivers
-A fix of an original bug SHALL come with: one issue per bug; a test of the expected behaviour (`; @fixed #NNN` or the equivalent in the suite of its area); a changed `BUG(orig)` comment ("Fixed (#N)"); an entry in `docs/*/deviations.md` as an intended deviation of kind F; the label `fixed-in-port` on the issue; and an entry on the website page of fixed original bugs. The issue SHALL be closed with a comment after the push.
+A fix of an original bug SHALL come with: one issue per bug; a test of the expected behaviour (`; @fixed #NNN` or the equivalent in the suite of its area); a changed `BUG(orig)` comment ("Fixed (#N)"); an entry in `docs/*/deviations.md` as an intended deviation of kind F; the label `fixed-in-port` on the issue; and an entry on the website page of fixed original bugs. The fix commit SHALL contain a line `Fixes #NNN`, so that the issue is closed by the push.
 
 #### Scenario: A complete fix commit
 - **WHEN** a fix is committed
-- **THEN** the commit contains the code change, the converted test and the deviations entry; other steps (label, website, closing comment) are done by the coordinator and named in the report
+- **THEN** the commit contains the code change, the converted test and the deviations entry; the commit message contains `Fixes #NNN`; other steps (label, website) are done by the coordinator and named in the report
 
 #### Scenario: No bug-preserving variant
 - **WHEN** a user needs the original's behaviour

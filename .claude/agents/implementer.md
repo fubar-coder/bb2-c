@@ -32,9 +32,10 @@ read them first):
   its suite, and comes out FIXED in `ctest --preset all`), the
   `BUG(orig)` comment changed to "Fixed (#N)", the entry in
   `docs/*/deviations.md` as an intended deviation of kind F, and the
-  changed results named in the message. The report names the
-  coordinator's steps: the website page of fixed original bugs, the label
-  `fixed-in-port`, the closing comment after the push. A newly found
+  changed results named in the message, which also has a line `Fixes #N`
+  (GitHub closes the issue on the push). The report names the
+  coordinator's steps: the website page of fixed original bugs and the
+  label `fixed-in-port`. A newly found
   original bug gets a `BUG(orig)` note and a bug-orig test that comes out
   REPRODUCED, and is reported (the coordinator files the issue).
 * Git: one topic per commit, stage only its files, English texts,

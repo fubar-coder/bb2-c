@@ -92,12 +92,13 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
      equivalent of its suite) and must come out FIXED in
      `ctest --preset all`; the comment `BUG(orig)` becomes `Fixed (#N)`;
      the entry in `docs/*/deviations.md` as an intended deviation (kind
-     F); the changed results named in the commit message;
+     F); the changed results named in the commit message, and a line
+     `Fixes #N` in it (GitHub closes the issue on the push);
   3. the entry on the website page of fixed original bugs
      (`site/content/docs/compared-with-original/fixed-bugs.md`);
   4. the label `fixed-in-port` on the issue (every fix);
-  5. after the user's push: the issue closed with a comment naming the
-     commit.
+  5. after the user's push: check that the issue was closed (close it
+     with a comment naming the commit if not).
   Steps 3-5 are the coordinator's; an agent names them in its report.
 * **Only C/C++ and CMake.** No Python, no shell scripts in the build.
   Whatever compiler and linker can do themselves, without a tool

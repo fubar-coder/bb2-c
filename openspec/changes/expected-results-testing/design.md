@@ -180,7 +180,7 @@ the fix workflow of the bug-fix phase. Each fix: issue (one per bug);
 expected-behaviour test (`@fixed`); `BUG(orig)` becomes "Fixed (#N)";
 `docs/*/deviations.md` entry as intended deviation (kind F); the website
 page `site/content/docs/compared-with-original/fixed-bugs.md`; label
-`fixed-in-port`; closing comment after the push. The rule "results
+`fixed-in-port`; `Fixes #N` in the commit message (closes the issue on the push). The rule "results
 byte-identical unless intended" stays. The same in
 `.claude/agents/implementer.md` (its "REPRODUCED with the reference and
 FIXED with our build" line, which presumes a live reference) and
