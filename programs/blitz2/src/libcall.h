@@ -77,8 +77,7 @@ void pushstart(void);
 void pushdo(void);
 /* blitz2.s:11057 pushput - re-emit the saved code at the current pc and
    relocate its offset nodes by the move distance; frees the buffer.
-   BUG(orig) (#14): if the object buffer overflows here (nomemleft), the save
-   buffer is not freed.  Kept. */
+   Fixed (#14): also when the object buffer is full (nomemleft). */
 void pushput(void);
 
 /* ---------------------------------------------------- code generation */

@@ -426,6 +426,7 @@ void pushdo(void)
 
     pc = pushpc;                    /* New PC */
     pushclen = (UWORD)len;
+    pushat = 0;                     /* no save buffer (pushput, #14) */
     if (pushclen == 0 || nomemleft)
         return;
     pushat = (ULONG)doallocmem(len, MEMF_PUBLIC);
@@ -452,15 +453,17 @@ void pushput(void)
         return;
     putpc = pc;                     /* pc before put */
     pc += len;
+    /* Fixed (#14): both exits of a full object buffer free the save
+       buffer if pushdo made one (blitz2.s returns past the FreeMem) */
     if (nomemleft)
-        return;
+        goto skip2;
     n = (UWORD)((len >> 1) - 1);
     dst = putpc;
     src = pushat;
     do {
         if (dst >= libat) {
             nomemleft = -1;
-            return;     /* BUG(orig) (#14): save buffer pushat is not freed */
+            goto skip2;
         }
         W_(dst) = W_(src);
         dst += 2;
@@ -477,7 +480,10 @@ void pushput(void)
         }
         /* Whew! */
     }
-    FreeMem((APTR)pushat, pushclen);
+skip2:
+    if (pushat)
+        FreeMem((APTR)pushat, pushclen);
+    pushat = 0;
 }
 
 /* ===================================================================
