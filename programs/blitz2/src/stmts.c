@@ -961,7 +961,10 @@ static void resmacs(struct reswriter *w)
             m->text = (UBYTE *)w->pos;
             addoff2(start + 4);
         }
-        tlen = (UWORD)(m->textlen + 1) & ~1;
+        /* Fixed (#995): the text length rounded up to even as a long;
+           blitz2.s rounds in a word (addq #1,d4), a text of 65535 bytes
+           got the length 0 and was not written */
+        tlen = ((ULONG)m->textlen + 1) & ~1UL;
         w->pos += tlen;
         if (m->next) {
             m->next = (struct macro *)w->pos;
@@ -1125,7 +1128,8 @@ UBYTE *fixmacs(UBYTE *p)
 {
     UWORD count = W_(p);
     struct node *item;
-    UWORD len, textlen;
+    UWORD len;
+    ULONG textlen;
 
     p += 2;
     if (!count)
@@ -1139,9 +1143,13 @@ UBYTE *fixmacs(UBYTE *p)
     lastresmac = (struct macro *)item;
     p = (UBYTE *)item;
     len = ((UWORD)B_(p + 12) + 1) & ~1;
-    textlen = (UWORD)(W_(p + 8) + 1) & ~1;
+    /* Fixed (#995): the text length rounded up to even as an unsigned
+       long; blitz2.s adds the word rounded in a word sign-extended (add
+       d1,a3): a last macro with a text of 32767 bytes or more moved p
+       backwards, one of 65535 bytes not at all */
+    textlen = ((ULONG)W_(p + 8) + 1) & ~1UL;
     p += (WORD)len;
-    p += (WORD)textlen;         /* add d1,a3: sign extended */
+    p += textlen;
     return p;
 }
 
