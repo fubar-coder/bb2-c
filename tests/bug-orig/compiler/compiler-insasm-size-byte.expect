@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+124
+rc=0
+[blitz2]
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0
