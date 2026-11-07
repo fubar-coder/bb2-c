@@ -1319,6 +1319,7 @@ void loadalib(STRPTR name, struct node **tail)
     BPTR fh = Open(name, MODE_OLDFILE);
     ULONG size;
     struct blitzlib *l;
+    struct node *prev, *prevnext;
     LONG got;
 
     if (!fh)
@@ -1337,7 +1338,9 @@ void loadalib(STRPTR name, struct node **tail)
         Close(fh);
         return;
     }
-    (*tail)->next = (struct node *)l;
+    prev = *tail;
+    prevnext = prev->next;
+    prev->next = (struct node *)l;
     *tail = (struct node *)l;
     l->size = size;
     l->nrelocs = 0;
@@ -1349,7 +1352,16 @@ void loadalib(STRPTR name, struct node **tail)
         ULONG rsize = cnt << 2;         /* length of reloc info */
         l->nrelocs = cnt;
         l->relocs = doallocmem(rsize, MEMF_PUBLIC); /* pointer to reloc mem */
-        Read(fh, l->relocs, rsize);
+        /* Fixed (#993): reloc data that cannot be read completely leave
+           the library out, as a short header or structure (#3); blitz2.s
+           does not check this Read and relocates with what the new
+           allocation held */
+        if ((ULONG)Read(fh, l->relocs, rsize) != rsize) {
+            FreeMem(l->relocs, rsize);
+            prev->next = prevnext;
+            *tail = prev;
+            FreeMem(l, size);
+        }
     }
     Close(fh);                          /* .closeup */
 }

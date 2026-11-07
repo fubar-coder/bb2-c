@@ -11,6 +11,7 @@
 ; Correct: a library whose reloc data cannot be read is left out, as one
 ; with a short header or structure (#3): BugOrigUserLib is unknown and the
 ; compile stops at its line.
+; @fixed #993
 ; @pass file=blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@
 ; @pass file=blitz2/bugorig/bugorig.obj|@USERLIB@
 ; @pass wrap=@INJECT@|readfail=bugorig.obj/4
