@@ -26,7 +26,7 @@ documentation it changes; no program code changes in this change.
 ## 4. `expect_fixed` in `libs_emulator`
 
 - [x] 4.1 `libs/tests/sysload.h`: `expect_fixed(NNN, value)` replaces the equality with `orig` for one check and fails when the C library gives `orig`'s value. Verify: snitch cases with a fixed value (passes), a wrong value (fails), a stale exemption (fails), run in the emulator
-- [ ] 4.2 Document the helper and the rule "no scenario dodging" in `tests/README.md` (Libraries). Verify: the example in the text compiles in a test case
+- [x] 4.2 Document the helper and the rule "no scenario dodging" in `tests/README.md` (Libraries). Verify: the example in the text compiles in a test case
 
 ## 5. `ted_ab` directive `; @fixed #NNN PAIR...`
 

@@ -149,6 +149,38 @@ compiler does and compares results, registers and memory (skipped
 without the CD; selection:
 `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`).
 
+**A fixed original bug in a pair comparison:** where the original's
+result of a check is an original bug and the C library is fixed, the
+check states the correct value with the issue, `expect_fixed(NNN,
+value)` (`libs/tests/sysload.h`): `SAME_FIXED(what, expr,
+expect_fixed(NNN, value))` in place of the test program's
+`SAME(what, expr)`, `check_fixed(what, expect_fixed(NNN, value), orig,
+c)` where a program compares with `check()`. The check passes when the
+C library gives `value`, whatever the original gives; it fails when the
+C library gives another value, and when it gives the original's value
+(a stale exemption: the fix is undone, or the original is not wrong
+there and the check needs no exemption). The other checks of the
+scenario still compare with the original. An example
+(`libs/tests/selftest_fixed.c`, issue #99999 stands for the fix's):
+
+```c
+res[0] = 3;          /* the original's result: the bug */
+res[1] = fixed_c;    /* the C library's */
+SAME_FIXED("result", res[cur], expect_fixed(99999, 2));
+check_fixed("result (check_fixed)", expect_fixed(99999, 2), res[0], res[1]);
+```
+
+**No scenario dodging:** a fix does not change the inputs or the steps
+of a scenario so that it no longer meets the bug; it keeps the scenario
+and states the expected value with `expect_fixed` in the commit of the
+fix (spec `testing/expected-results`).
+
+`libs_expect_fixed`, `libs_expect_fixed_wrong` and
+`libs_expect_fixed_stale` (label `emulator`, no CD needed) run the
+helper's snitch cases with results from memory: a fixed value passes,
+a wrong value and a stale exemption fail on purpose (hidden tag
+`[.selftest]`), and the tests pass on the report of that failure.
+
 `rwe_residents_cd`: the residents `blitzres` writes have the contents
 (`blitzres --dump`: types, macros, constants without the unused node
 bytes) of those blitz2 2.10 of the CD and blitz2-c save with Create
