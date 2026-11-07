@@ -124,11 +124,40 @@ add_subdirectory(tests/oracle)
 # label, end label or size - fonts, pointers, option block, texts, screen,
 # window, gadgets, menus, requesters (534 checks; relocated longs of the
 # reference are skipped).  ted is linked only after this check passed.
+# checkdata-intended.txt, if there: the checks that differ on purpose
+# (fixed original bugs, "CSYM<TAB>#NNN<TAB>NOTE"); each of them must
+# differ, a stale entry fails (configure again after adding the file).
 add_dependencies(ted_sym ted_ref host_tools)
+set(checkdata_intended)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata-intended.txt)
+	set(checkdata_intended ${CMAKE_CURRENT_SOURCE_DIR}/checkdata-intended.txt)
+endif()
 set_property(TARGET ted_sym APPEND PROPERTY
-	LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv;${REF_DIR}/ted.lst")
+	LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv ${REF_DIR}/ted.lst ${checkdata_intended})
 add_custom_command(TARGET ted_sym POST_BUILD
 	COMMAND ${CHECKDATA} -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
-		${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym>
+		${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym> ${checkdata_intended}
 	VERBATIM)
+# the intended list on the real build (tables and lists of the build
+# directory): a check that differs, listed (passes) and not listed (must
+# fail); a listed check that is equal (stale, must fail)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_differs.tsv
+	"_sleep_\tpointer\tpointerf\tbroken: another label\n_pointer\tpointer\tpointerf\tequal\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_intended.txt
+	"_sleep_\t#1\tthe broken entry\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_stale.txt
+	"_sleep_\t#1\tthe broken entry\n_pointer\t#2\tequal: stale\n")
+set(checkdata_args ${CMAKE_CURRENT_BINARY_DIR}/checkdata_differs.tsv
+	${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym>)
+add_test(NAME ted_checkdata_intended COMMAND ${CHECKDATA} ${checkdata_args}
+	${CMAKE_CURRENT_BINARY_DIR}/checkdata_intended.txt)
+add_test(NAME ted_checkdata_unlisted COMMAND ${CHECKDATA} ${checkdata_args})
+add_test(NAME ted_checkdata_stale COMMAND ${CHECKDATA} ${checkdata_args}
+	${CMAKE_CURRENT_BINARY_DIR}/checkdata_stale.txt)
+set_tests_properties(ted_checkdata_intended PROPERTIES
+	PASS_REGULAR_EXPRESSION "intended _sleep_ .*checkdata: 2 checks, 0 failed, 1 intended")
+set_tests_properties(ted_checkdata_unlisted PROPERTIES
+	PASS_REGULAR_EXPRESSION "FAIL    _sleep_ .*checkdata: 2 checks, 1 failed")
+set_tests_properties(ted_checkdata_stale PROPERTIES
+	PASS_REGULAR_EXPRESSION "STALE   _pointer .*checkdata: 2 checks, 1 failed, 1 intended")
 add_dependencies(ted ted_sym)

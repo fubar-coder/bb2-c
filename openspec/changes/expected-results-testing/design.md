@@ -283,3 +283,14 @@ code changes in this change).
   `blitz2_debug_on`, `blitz2_stop_off`,
   `regression_ricompactdisclib_scsi_after_plain` and
   `regression_selftest_wrong` pass (before: skipped without the CD).
+- **Task 3.2 (2026-11-07):** an entry of `programs/ted/checkdata-intended.txt`
+  is a whole check, named by its C symbol (unique in `checkdata.tsv`):
+  `CSYM<TAB>#NNN<TAB>NOTE`, the note optional, a symbol at most once.
+  Only a byte difference can be intended: a missing symbol or label
+  still fails, and its entry is stale as well. Like the
+  `declarations-intended.txt` files (and `rwe_declarations_NAME`'s of
+  task 3.1) the list is found at configure time: after adding the file,
+  configure again. The ctests `ted_checkdata_intended`,
+  `ted_checkdata_unlisted` and `ted_checkdata_stale` run the tool on the
+  real `ted.sym` with a deliberately wrong table entry of the build
+  directory.

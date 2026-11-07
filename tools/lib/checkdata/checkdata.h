@@ -6,6 +6,8 @@
  * from a start label to an end label or for a size (labels from the vasm
  * listing).  Relocated longs of the reference are skipped (pointers);
  * behind the initialised part of a C hunk (BSS, merged BSS) count zeros.
+ * A list of intended differences (fixed original bugs) names the checks
+ * that differ on purpose; each of them must differ.
  */
 #ifndef CHECKDATA_H
 #define CHECKDATA_H
@@ -46,20 +48,61 @@ int checkdata_table_parse(const char *text, size_t len, struct checkdata_table *
 /** @brief Free the checks of checkdata_table_parse. */
 void checkdata_table_free(struct checkdata_table *t);
 
+/** @brief One intended difference: a check whose bytes differ on purpose. */
+struct checkdata_intended_entry {
+    char *csym;                 /* the C symbol of the check */
+    unsigned issue;             /* the fixed original bug, #NNN */
+    char *note;
+    unsigned line;              /* in the list */
+};
+
+/** @brief The intended differences (fixed original bugs). */
+struct checkdata_intended {
+    struct checkdata_intended_entry *v;
+    size_t n;
+};
+
+/**
+ * @brief Parse the list of intended differences.
+ *
+ * Each entry names a check of the table whose bytes differ from the
+ * reference because an original bug is fixed; checkdata_run does not count
+ * its difference, and the entry must occur (a check without a byte
+ * difference, or a symbol that no check has, is a stale entry and fails).
+ *
+ * @param text    the list: "CSYM<TAB>#NNN<TAB>NOTE" per line (NOTE
+ *                optional), '#' comments and empty lines; a symbol at most
+ *                once
+ * @param len     its length
+ * @param in      out: the entries (checkdata_intended_free)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
+int checkdata_intended_parse(const char *text, size_t len, struct checkdata_intended *in,
+                             char *err, size_t errlen);
+
+/** @brief Free the entries of checkdata_intended_parse. */
+void checkdata_intended_free(struct checkdata_intended *in);
+
 /**
  * @brief Run every check of the table.
  *
- * Writes "FAIL"/"MISSING" lines (verbose: also "ok") and a summary to out.
+ * Writes "FAIL"/"MISSING" lines (verbose: also "ok"), "intended" lines for
+ * the differences of the list, "STALE" lines for its entries that did not
+ * occur, and a summary to out.
  *
  * @param t        the checks
  * @param l        the vasm listing of the reference (the labels)
  * @param ref      the code hunk of the reference
  * @param c        the C build with symbols
+ * @param in       the intended differences, or NULL: none
  * @param verbose  nonzero: also the checks that pass
  * @param out      the result
- * @return the number of failed checks
+ * @return the number of failed checks and stale entries
  */
 long checkdata_run(const struct checkdata_table *t, const struct listing *l,
-                   const struct hunk *ref, const struct loadfile *c, int verbose, FILE *out);
+                   const struct hunk *ref, const struct loadfile *c,
+                   const struct checkdata_intended *in, int verbose, FILE *out);
 
 #endif

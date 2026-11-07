@@ -2,11 +2,15 @@
  * checkdata - data of a C build against the reference build of the
  * assembler original (see checkdata.h).
  *
- *   checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD
+ *   checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]
  *   e.g. checkdata programs/ted/checkdata.tsv ref/ted.lst ref/ted ted.sym
  *
+ * INTENDED: the list of intended differences (fixed original bugs,
+ * "CSYM<TAB>#NNN<TAB>NOTE" per line): those checks may differ, and each of
+ * them must (a stale entry fails).
+ *
  * Prints the failed checks and a summary (-q: only if a check failed, -v:
- * every check); exit status 1 if a check failed.
+ * every check); exit status 1 if a check failed or an entry is stale.
  */
 #define _XOPEN_SOURCE 700       /* open_memstream */
 #include <stdio.h>
@@ -35,8 +39,10 @@ static char *read_all(const char *path, size_t *len)
 }
 
 static const char usage[] =
-    "usage: checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD\n"
-    "  data of a C build against the reference build of the assembler original\n";
+    "usage: checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]\n"
+    "  data of a C build against the reference build of the assembler original;\n"
+    "  INTENDED: the checks that differ on purpose (CSYM<TAB>#ISSUE<TAB>NOTE per\n"
+    "  line), each of them must differ\n";
 
 int main(int argc, char **argv)
 {
@@ -44,6 +50,7 @@ int main(int argc, char **argv)
     int quiet = argc > 1 && !strcmp(argv[1], "-q");
     int opt = verbose || quiet;
     struct checkdata_table table;
+    struct checkdata_intended intended = { NULL, 0 };
     struct listing listing;
     struct loadfile ref, c;
     char err[200], *text, *report = NULL;
@@ -55,7 +62,7 @@ int main(int argc, char **argv)
         fputs(usage, stdout);
         return 0;
     }
-    if (argc - opt != 5) {
+    if (argc - opt != 5 && argc - opt != 6) {
         fputs(usage, stderr);
         return 2;
     }
@@ -69,6 +76,17 @@ int main(int argc, char **argv)
         return 1;
     }
     free(text);
+    if (argc - opt == 6) {
+        if (!(text = read_all(argv[5], &len))) {
+            fprintf(stderr, "checkdata: cannot read %s\n", argv[5]);
+            return 1;
+        }
+        if (checkdata_intended_parse(text, len, &intended, err, sizeof err)) {
+            fprintf(stderr, "checkdata: %s: %s\n", argv[5], err);
+            return 1;
+        }
+        free(text);
+    }
     if (listing_read(argv[2], &listing, err, sizeof err)) {
         fprintf(stderr, "checkdata: %s: %s\n", argv[2], err);
         return 1;
@@ -84,7 +102,8 @@ int main(int argc, char **argv)
     out = quiet ? open_memstream(&report, &reportlen) : stdout;
     if (!out)
         return 1;
-    bad = checkdata_run(&table, &listing, &ref.hunks[0], &c, verbose, out);
+    bad = checkdata_run(&table, &listing, &ref.hunks[0], &c, argc - opt == 6 ? &intended : NULL,
+                        verbose, out);
     if (quiet) {
         fclose(out);
         if (bad)
@@ -95,5 +114,6 @@ int main(int argc, char **argv)
     load_free(&ref);
     listing_free(&listing);
     checkdata_table_free(&table);
+    checkdata_intended_free(&intended);
     return bad != 0;
 }
