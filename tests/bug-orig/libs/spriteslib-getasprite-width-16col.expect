@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+REQUESTER: AutoRequest body "Sprite too Wide" *
+rc=0

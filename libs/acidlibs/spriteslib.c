@@ -623,7 +623,12 @@ BLITZ_ERRCHK_MESSAGE(mess7, "Slice does not support priority");
 BLITZ_ERRCHK_MESSAGE(mess8, "Sprite Channel not in range");
 BLITZ_ERRCHK_MESSAGE(mess9, "First Sprite must be lower than second");
 
-/* GetaSprite: shape there, 4 or 16 colours, not too wide */
+/* GetaSprite: shape there, 4 or 16 colours, not too wide.
+   BUG(orig) (#988): the limit is sprite width * 32 pixels for 4 colours and
+   twice that for 16, the opposite of what ShowSprite's 8 channels allow (8
+   sprites of a 4 colour shape, 4 pairs of a 16 colour one): a 4 colour shape
+   of 65-128 pixels is refused, a 16 colour one is accepted and every
+   ShowSprite of it fails (sspchk). */
 static void BLITZ_ERRCHK gspchk_c(struct bb_shape *shape BL_REG(a2))
 {
     WORD maxw = (WORD)(sv.wid << 5);
