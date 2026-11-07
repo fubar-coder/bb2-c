@@ -135,7 +135,12 @@ void dousepath(UWORD c)
     do {
         if (c & 0x8000)
             syntaxerr();
-        *p++ = (UBYTE)c;    /* BUG(orig) (#31): no length check (128 bytes) */
+        /* Fixed (#31): a path that does not fit into usedpath (127
+           characters and the end byte 2) is refused; blitz2.s writes on
+           into the code behind it */
+        if (p == usedpath + sizeof usedpath - 1)
+            pathlongerr();
+        *p++ = (UBYTE)c;
         c = getchar3();
     } while (!eos(c));
     *p = 2;
