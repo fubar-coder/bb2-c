@@ -10,6 +10,7 @@
 ; resident and ORs these bytes per kind; it prints 1 for a kind whose
 ; bytes are not 0 (their values depend on the memory).
 ; Correct: all of them 0 - the same source always gives the same file.
+; @fixed #970
 ; @pass wrap=@INJECT@|guard fill=a5
 ; @pass file=r.bb2|@TESTDATA@/compiler-resident-stale-bytes.res
 ; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res

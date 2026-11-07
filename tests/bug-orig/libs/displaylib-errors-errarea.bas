@@ -9,6 +9,7 @@
 ; other exception goes on to the old handler.
 ; Correct: the runtime error is raised, TRAP #0 with the message.  The
 ; original runs into other code (a software failure).
+; @fixed #412
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

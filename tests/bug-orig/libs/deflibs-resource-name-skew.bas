@@ -8,6 +8,7 @@
 ; Correct: the program starts, the calls work (the bases are right), it
 ; ends.  The original hangs before the first line (the session ends by its
 ; time limit).
+; @fixed #45
 ; @configs clib
 ; @pass timeout=30
 DEFTYPE .l

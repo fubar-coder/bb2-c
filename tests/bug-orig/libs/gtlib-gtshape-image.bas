@@ -9,6 +9,7 @@
 ; and Free GTList (the gadgets with images of their own are freed).
 ; Correct: each gadget shows its own two shapes.  In the original the
 ; first gadget's SelectRender shows shape 3.
+; @fixed #173
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

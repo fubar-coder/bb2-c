@@ -8,6 +8,7 @@
 ; Correct: the program runs and ends normally (the base is 0, the call is
 ; not made).  The original hangs before the first line (the session ends
 ; by its time limit).
+; @fixed #44
 ; @configs clib
 ; @machine a500
 ; @pass timeout=30

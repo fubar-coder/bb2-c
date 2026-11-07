@@ -11,6 +11,7 @@
 ; handler.
 ; Correct: the window is at x = 100, 120 wide, and WindowFont works.  The
 ; original runs into the TAG_IGNORE data where WindowFont's code was.
+; @fixed #317
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

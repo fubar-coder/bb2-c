@@ -8,6 +8,7 @@
 ; every run (text $a5a5a5a5, length $a5a5): exec's FreeMem raises the
 ; alert AN_BadFreeAddr (0100 000F), which inject alertlog records.
 ; Correct: "Macro too Big", no alert, the compiler frees what it allocated.
+; @fixed #965
 ; @pass wrap=@INJECT@|fill=a5 alertlog track
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

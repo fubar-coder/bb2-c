@@ -9,6 +9,7 @@
 ; GTShape and compares them; then it puts the old values back.
 ; Correct: the vectors are unchanged.  The original changes them (or the
 ; copy to the address in them crashes the machine).
+; @fixed #327
 ; @configs clib
 DEFTYPE .l
 Dim v.l(3)

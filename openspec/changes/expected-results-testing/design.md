@@ -242,3 +242,27 @@ code changes in this change).
 - The test-selection delta (modifying `testing/test-selection` for
   `.orig` files and `tests/corpus/expect/` as inputs) cannot be written
   before `test-coverage` is archived; see task 9.3.
+
+## Findings
+
+- **Task 1.1 (2026-11-07):** a fixed test is judged in `clib` only and
+  uses nothing of the CD: `port` needs the CD's libraries, the `BB2:`
+  mount and `blitz2:defaultdbug` come from the CD as well, so with them
+  no fixed test could run without the CD (spec: "No reference needed").
+  A test that needs the CD names it in its `@pass` lines
+  (`mount=BB2|@CD@`, `defaultdbug=@CD_BLITZ2@/DEFAULTDBUG`) and is
+  skipped without it. The verdict without a reference is FIXED or
+  REGRESSED (exit status 1). The 54 tests of task 1.2 come out FIXED
+  without the CD and without `blitz2:defaultdbug`, also the two with
+  `runtime_errors=on` (`compiler-even-pad-byte*`).
+- **Task 1.2 (2026-11-07):** the full `ctest --preset bug-orig` run of
+  main `d9eba7f` gave 54 passing bug-orig tests (all with a Blitz
+  program; none of `libs/tests/bugorig.c` and none of TED). Evidence 1
+  was inaccurate in two points: `windowslib_taglist_ueberlauf` is #317
+  (not #329), and `cliargs_parpath_cli` is not FIXED (#107, ParPath$ of
+  a CLI argument, still reproduced). `compiler_wb_currentdir` is FIXED
+  by a DIFF (libnix's startup code restores the directory) while #21 is
+  still open. The header line shifts the source by one line: the seven
+  expectations with a compile error line (`compiler-incbin-leaks*`,
+  `compiler-macro-uninit-free*`, `compiler-macrobuff-size-small`,
+  `compiler-newtype-self-field*`) got the new line number.

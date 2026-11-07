@@ -10,6 +10,7 @@
 ; d0; any other exception goes on to the old handler.
 ; Correct: TRAP #0 with the message "Out of Memory!".  The original
 ; passes a pointer behind the library (a garbage text).
+; @fixed #956
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

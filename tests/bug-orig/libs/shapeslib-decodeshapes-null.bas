@@ -8,6 +8,7 @@
 ; message in d0; any other exception goes on to the old handler.
 ; Correct: both runtime errors with their message.  The original runs
 ; into other code.
+; @fixed #270
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

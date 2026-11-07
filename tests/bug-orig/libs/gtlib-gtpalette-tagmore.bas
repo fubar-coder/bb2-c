@@ -10,6 +10,7 @@
 ; Correct: colour 3; offset 2 and colour 0 (GTPalette without a colour
 ; gives GTPA_Color 0, as it always did).  The original gives colour 0 and
 ; loses the GTTags list (offset 0).
+; @fixed #168
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

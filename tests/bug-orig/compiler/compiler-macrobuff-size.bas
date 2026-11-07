@@ -7,6 +7,7 @@
 ; original then also hangs at its exit, compiler-macrobuff-freemem-large).
 ; Correct: the buffer has the size of the option, the program compiles
 ; and prints the length of a$.
+; @fixed #336
 ; @pass jobline=macrobuf=16384
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

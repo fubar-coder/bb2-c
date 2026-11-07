@@ -5,6 +5,7 @@
 ; window 1 to the port itself (PutMsg, as in the corpus test t71), then
 ; closes window 0.
 ; Correct: Event still gets the event of window 1.
+; @fixed #322
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

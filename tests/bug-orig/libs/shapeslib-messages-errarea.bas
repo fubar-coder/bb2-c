@@ -9,6 +9,7 @@
 ; message in d0; any other exception goes on to the old handler.
 ; Correct: the three runtime errors with their message.  The original
 ; passes an address behind the library as the message.
+; @fixed #953
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

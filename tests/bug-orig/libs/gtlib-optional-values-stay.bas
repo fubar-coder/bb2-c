@@ -13,6 +13,7 @@
 ; empty string.  The original gives the second ones the values of the
 ; first ones (cycle 2, mx 1, the string a pointer into the old string
 ; work area).
+; @fixed #169
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

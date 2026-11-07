@@ -9,6 +9,7 @@
 ; The child opens a screen, decodes a CMAP (bytes i*21+5) and shows it;
 ; Red/Green/Blue (GetRGB4) of colours 1-3 are 0 in the original.
 ; Correct: the top 4 bits of each component: 4,5,6 8,9,10 12,13,14.
+; @fixed #224
 ; @configs clib
 DEFTYPE .l
 If NumPars=0

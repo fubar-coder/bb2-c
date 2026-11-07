@@ -13,6 +13,7 @@
 ; Correct: on the 68010 cr_vbr is the moved table and the handler runs.
 ; Only clib is judged: port has the CD's libraries (the compiler's calcvbr
 ; is used only by a program run from the editor).
+; @fixed #42
 ; @machine a500-68010
 ; @configs clib
 DEFTYPE .l

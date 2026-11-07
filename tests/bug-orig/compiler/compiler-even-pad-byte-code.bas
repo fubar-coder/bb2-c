@@ -7,6 +7,7 @@
 ; withdrew for the directive. With 1 data byte the pad byte is the low
 ; byte of the record's trap #1 ($41 here, layout-independent).
 ; Correct: the pad byte is 0, the program prints zero.
+; @fixed #969
 ; @pass runtime_errors=on
 Goto skip
 a: Dc.b "J"

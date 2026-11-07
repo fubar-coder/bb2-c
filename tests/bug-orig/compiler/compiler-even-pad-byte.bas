@@ -8,6 +8,7 @@
 ; withdrew for the label and the assembler directives. With 7 data bytes
 ; the pad byte is the low byte of the record's column word ($0B here).
 ; Correct: the pad byte is 0, the program prints zero.
+; @fixed #969
 ; @pass runtime_errors=on
 Goto skip
 a: Dc.b "JKLMNO",0

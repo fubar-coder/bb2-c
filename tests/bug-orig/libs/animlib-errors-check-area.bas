@@ -12,6 +12,7 @@
 ; Correct: both runtime errors are raised, TRAP #0 with their messages.
 ; The original shows a garbage text for the first and runs into other
 ; code for the second.
+; @fixed #398
 ; @configs clib
 ; @pass timeout=60
 ; @pass file=op3.anim|@TESTDATA@/animlib-errors-check-area.anim

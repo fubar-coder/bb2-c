@@ -16,6 +16,7 @@
 ; error checking on: a Data entry begins with its type word, the pad of
 ; "JKL" is 9 bytes behind the start of data2).
 ; Correct: both pad bytes are 0.
+; @fixed #969
 ; @pass dir=out/defaults.xtra
 ; @pass file=src/filler.bb2|@TESTDATA@/compiler-data-pad-byte.filler
 ; @pass jobline=run=r001|CORPUS:src/filler.bb2|RAM:con

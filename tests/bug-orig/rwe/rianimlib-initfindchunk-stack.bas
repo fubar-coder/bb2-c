@@ -7,6 +7,7 @@
 ; Correct: InitFindChunk returns; the LIST holds no FORM ILBM where the search
 ; looks, RIAnimDepth returns 0.
 ; RIPackLib calls RIAmosFuncLib.
+; @fixed #513
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-initfindchunk-stack.anim
 ; @pass timeout=30

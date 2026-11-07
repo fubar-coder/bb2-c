@@ -5,6 +5,7 @@
 ; still in use (an exclusive Lock fails).  The read error is
 ; compiler-incbin-leaks-readerr.
 ; Correct: the error, and the directory is not in use.
+; @fixed #38
 ; @pass dir=bindir
 ; @pass wrap=@INJECT@|inuse=CORPUS:bindir
 NPrint "hello"

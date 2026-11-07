@@ -13,6 +13,7 @@
 ; memory does not shrink by more than 8000 bytes.  The original writes
 ; the pointers over the texts (zeros end the array early) and behind its
 ; block, and keeps about 1300 bytes per GTCycle.
+; @fixed #174
 ; @configs clib
 ; @pass runwrap=@INJECT@|guard
 DEFTYPE .l

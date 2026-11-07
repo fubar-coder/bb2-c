@@ -6,6 +6,7 @@
 ; "a~1+2~b" compiles with the value put in, a3b. Correct: a '~' inside
 ; a string literal is an ordinary character, nothing is computed inside
 ; strings; ~1+2~ outside a string still gives 3.
+; @fixed #966
 Restore d1
 Read s$
 NPrint Peek$(?a1)

@@ -12,6 +12,7 @@
 ; Correct: both runtime errors are raised, TRAP #0 with their messages.
 ; The original shows a garbage text for the first and runs into other
 ; code for the second.
+; @fixed #251
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

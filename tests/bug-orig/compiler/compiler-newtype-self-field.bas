@@ -7,6 +7,7 @@
 ; 262 bytes.
 ; Correct: "Illegal Type" at the field x - a type cannot contain itself
 ; (a pointer field *nxt.selft is allowed, corpus t15_newtype).
+; @fixed #973
 ; @pass wrap=@INJECT@|fill=01
 NEWTYPE .selft
   x.selft

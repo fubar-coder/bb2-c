@@ -5,6 +5,7 @@
 ; in use (an exclusive Lock fails).  The directory case is
 ; compiler-incbin-leaks.
 ; Correct: the error, and the file is not in use.
+; @fixed #38
 ; @pass file=incbin.bin|@TESTDATA@/compiler-incbin-leaks-readerr.bin
 ; @pass wrap=@INJECT@|readfail=incbin.bin/1 inuse=CORPUS:incbin.bin
 NPrint "hello"

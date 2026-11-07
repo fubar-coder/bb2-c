@@ -11,6 +11,7 @@
 ; Correct: both runtime errors with their messages.  The original runs
 ; into other code for SetPeriod and passes an address behind the library
 ; as the message of LoadSound.
+; @fixed #70
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

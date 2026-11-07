@@ -6,6 +6,7 @@
 ; Correct (decision as AmiBlitz3 in practice): a constant without an
 ; explicitly assigned value is 0, CNIF is false, and the value does not
 ; change with the memory.
+; @fixed #972
 ; @pass wrap=@INJECT@|fill=a5
 #c
 #d=5

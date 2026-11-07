@@ -8,6 +8,7 @@
 ; (exec AvailMem) measured before and after each part.
 ; Correct: the free memory does not shrink by more than 50000 bytes in
 ; any part.
+; @fixed #318
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

@@ -7,6 +7,7 @@
 ; inject pad behind every allocation (also LoadSeg's) come zeros: the
 ; FreeMem of a "label" at the hunk's end is reported, not done.
 ; Correct: no FreeMem inside the resident (next of the last constant 0).
+; @fixed #34
 ; @pass wrap=@INJECT@|pad
 ; @pass file=r.bb2|@TESTDATA@/compiler-resconsts-last-next.res
 ; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res

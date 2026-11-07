@@ -10,6 +10,7 @@
 ; handler.
 ; Correct: both runtime errors with their messages.  The original passes
 ; an address behind the library as the message.
+; @fixed #192
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

@@ -1,5 +1,5 @@
 [compile]
-error 120 Macro too Big
+error 121 Macro too Big
 [blitz2]
 inject: alertlog: 0 alerts
 inject: rc=0

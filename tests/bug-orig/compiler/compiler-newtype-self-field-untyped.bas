@@ -4,6 +4,7 @@
 ; type node's before End NEWTYPE sets it: inject fill=01 gives $0101 (257)
 ; bytes, so z lies at 8 and the type has 266 bytes.
 ; Correct: "Illegal Type" at the field z.
+; @fixed #973
 ; @pass wrap=@INJECT@|fill=01
 NEWTYPE .selft
   y.l

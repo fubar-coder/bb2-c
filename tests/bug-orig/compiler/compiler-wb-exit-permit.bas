@@ -9,6 +9,7 @@
 ; The port does not have the code (libnix answers without Permit).
 ; Correct: blitz2 has ended when the reply arrives, the session ends
 ; normally.
+; @fixed #337
 ; @pass wrap=@WBRUN@|freeseg
 NPrint "hello"
 End

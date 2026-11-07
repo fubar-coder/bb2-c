@@ -7,6 +7,7 @@
 ; The port does not reproduce it (DIFF): libnix's startup code restores
 ; the directory at exit, so port and clib come out FIXED.
 ; Correct: the process ends in the directory it was started with.
+; @fixed #21
 ; @pass wrap=@WBRUN@|cd
 NPrint "hello"
 End

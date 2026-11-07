@@ -10,6 +10,7 @@
 ; with flags 8 (DMA_ReadFromRAM), y = 7, restores the vectors and prints
 ; the d0 seen.
 ; Correct: 2 and 8.  The original passes the flags in d1, exec sees 7.
+; @fixed #959
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

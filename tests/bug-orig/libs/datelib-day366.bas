@@ -6,6 +6,7 @@
 ; with Days, Months and Years.
 ; Correct: 1096 is 01/01/1981, -365 is 01/01/1977.  The original gives
 ; 32/12/1980 and 32/12/1976.
+; @fixed #120
 ; @configs clib
 DEFTYPE .l
 Restore dl

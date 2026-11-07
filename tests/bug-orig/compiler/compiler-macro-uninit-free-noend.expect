@@ -1,5 +1,5 @@
 [compile]
-error 13 Macro without End Macro
+error 14 Macro without End Macro
 [blitz2]
 inject: alertlog: 0 alerts
 inject: rc=0

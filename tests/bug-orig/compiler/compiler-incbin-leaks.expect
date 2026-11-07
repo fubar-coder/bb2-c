@@ -1,5 +1,5 @@
 [compile]
-error 11 Can't open Include
+error 12 Can't open Include
 [blitz2]
 ...
 inject: not in use: CORPUS:bindir

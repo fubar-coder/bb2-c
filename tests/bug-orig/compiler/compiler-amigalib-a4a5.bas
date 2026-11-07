@@ -11,6 +11,7 @@
 ; global g.  (exec Supervisor_, also a5, cannot be compiled at all: its
 ; token is also the token of doslib's finit, #960.)
 ; Correct: the program prints local 7, global 42 four times and locked -1.
+; @fixed #958
 DEFTYPE .l
 Statement wb{}
   SHARED d,p,r,t$,tg

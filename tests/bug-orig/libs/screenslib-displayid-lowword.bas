@@ -5,6 +5,7 @@
 ; Here: Screen with PAL_MONITOR_ID|HIRES_KEY ($29000), then the display ID
 ; of its ViewPort (graphics GetVPModeID).
 ; Correct: the screen has the display ID $00029000.
+; @fixed #250
 ; @configs clib
 DEFTYPE .l
 Screen 0,0,0,640,256,2,$29000,"bo250",1,2

@@ -8,6 +8,7 @@
 ; (Intuition stops at the screen edge).
 ; Correct: both return, with the values Intuition set.  The original
 ; hangs in WSize.
+; @fixed #320
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

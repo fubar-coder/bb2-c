@@ -8,6 +8,7 @@
 ; end.  The block of the list is memlib's: 8 bytes of memlib + 32 = 40.
 ; Correct: nothing is written behind an allocation.  The original writes
 ; behind the block of 40 bytes.
+; @fixed #59
 ; @configs clib
 ; @pass runwrap=@INJECT@|guard
 n=-1

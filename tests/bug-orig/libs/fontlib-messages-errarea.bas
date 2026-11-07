@@ -12,6 +12,7 @@
 ; with the message in d0; any other exception goes on to the old handler.
 ; Correct: the three runtime errors with their messages.  The original
 ; passes pointers behind the library (garbage texts).
+; @fixed #955
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

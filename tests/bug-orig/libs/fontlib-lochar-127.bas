@@ -8,6 +8,7 @@
 ; number of non-zero bytes of the second character cell.
 ; Correct: both characters are drawn, the cursor moves one column each.
 ; The original leaves the cursor at 1 and draws nothing for Chr$(196).
+; @fixed #148
 ; @configs clib
 DEFTYPE .l
 BitMap 0,320,16,1
