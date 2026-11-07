@@ -256,6 +256,43 @@ Known bugs (`; @known REASON` in the script) are not run and are listed
 as KNOWN in the report; an exact name in the filter runs them anyway.
 `ted_ab_lint` checks the scripts without the emulator.
 
+**A fixed TED bug** (`; @fixed #NNN PAIR...` in the script, NNN the
+issue of the bug): once TED-C no longer shows a bug of the original TED,
+the runs of the original and of TED-C differ. The commit that fixes the
+bug adds the line to the scripts that show it, naming the pairs that now
+differ, as the report names them (`R5-C5`, `Rc-Cc`, `R5-Rc`, `C5-Cc`).
+A named pair must differ: FIXED, in the report
+`R5<->C5: FIXED #NNN (differs)` with the differences below it. A named
+pair that is the same is BROKEN (the fix does not show, or it was undone:
+the directive is stale) and fails `ted_ab`. The pairs not named are
+compared as before: they must be the same. One line per issue, a pair
+at most once, and both combinations of a named pair must run (`@combos`);
+`ted_ab_lint` refuses anything else. Example
+(`tests/ted-ab/lint/fixed/fixed-sample.drv`, checked by
+`ted_ab_lint_fixed`; `ted_ab_lint_fixed_wrong` checks scripts broken on
+purpose):
+
+```
+; Round trip of t08_tokquirk after a fix of TED bug #123 (the issue number
+; of the example): the original TED (R5, Rc) and TED-C (C5, Cc) now differ,
+; so the pairs R5-C5 and Rc-Cc must differ; R5-Rc and C5-Cc stay the same.
+; @source T t08_tokquirk
+; @roundtrip
+; @fixed #123 R5-C5 Rc-Cc
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit
+```
+
 ### Reference build of the RWE sources
 
 `rwe_refbuild` (fixture `rwe_refbuild`, about 20 s; `cdrun` with
