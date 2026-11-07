@@ -28,11 +28,12 @@
  *   gate=PATH        optional: run through the launcher first (reqclosetest);
  *                     if it does not return 0, the programs are not run and
  *                     the pass fails (they would block on their requesters)
- *   defaultdbug=PATH  blitz2:defaultdbug (optional with fixed=: without it
- *                     there is no blitz2:defaultdbug)
+ *   defaultdbug=PATH  blitz2:defaultdbug (optional with fixed= and
+ *                     regression=on: without it there is no
+ *                     blitz2:defaultdbug)
  *   config=TAG|EXPECT|BLITZ2|DEFLIBS|ACIDLIBS   one per configuration; the
  *                     first is the reference (EXPECT ref; none with
- *                     fixed=), the others:
+ *                     fixed= or regression=on), the others:
  *                     exe = executable identical and output the same,
  *                     output = output the same
  *   source=PATH       a tokenised source (NAME.bb2), any number
@@ -91,12 +92,13 @@
  *                     bug, as intended), 3 = BROKEN (the original does not
  *                     show the bug), 4 = DIFFERS (the port does not
  *                     reproduce the original)
- *   regression=on     with expect=: a port regression test instead (a bug
- *                     of the port, not of the original): the expectation
- *                     is what the reference does.  Exit status 0 = every
- *                     configuration does it (FIXED), 3 = BROKEN (the
- *                     reference does not), 4 = DIFFERS (a configuration
- *                     does not)
+ *   regression=on     with expect=: an expect test instead (an extension of
+ *                     blitz2, tests/blitz2; a port regression test,
+ *                     tests/bug-orig/regression): no reference, every
+ *                     configuration (none with EXPECT ref) is judged
+ *                     against the expectation only, as with fixed=.  Exit
+ *                     status 0 = every configuration FIXED (it shows the
+ *                     expected behaviour), 1 = one REGRESSED (it does not)
  *   fixed=NNN         with expect=: a fixed bug-orig test (the bug is fixed
  *                     in the port, issue NNN): no reference, every
  *                     configuration (none with EXPECT ref) is judged

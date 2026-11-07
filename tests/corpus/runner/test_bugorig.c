@@ -2,10 +2,9 @@
  * test_bugorig.c - the verdict of the bug-orig tests (bugorig.h) with
  * inputs from memory: expectations valid and broken, observations from
  * the raw outputs, the four verdicts (an expectation that equals the
- * buggy output must come out BROKEN), and those of a port regression test
- * (an expectation the original does not show must come out BROKEN), and
- * those of a fixed test without a reference (FIXED or REGRESSED only; a
- * wrong expectation and the bug again come out REGRESSED).
+ * buggy output must come out BROKEN), and those of a fixed test or an
+ * expect test without a reference (FIXED or REGRESSED only; a wrong
+ * expectation and the bug again come out REGRESSED).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,27 +49,6 @@ static enum bugorig_verdict judge(const char *expect, const struct bugorig_obs *
     }
     v = bugorig_judge(&e, ref, o, &why);
     CHECK(v == BUGORIG_FIXED || (why.p && *why.p));     /* every failure says why */
-    free(why.p);
-    bugorig_free(&e);
-    return v;
-}
-
-/* the same for a port regression test (bugorig_judge_regression) */
-static enum bugorig_verdict judge_regression(const char *expect, const struct bugorig_obs *ref,
-                                             const struct bugorig_obs *o)
-{
-    struct bugorig_obs e;
-    char err[200];
-    enum bugorig_verdict v;
-    struct text why = { 0 };
-
-    if (bugorig_parse(expect, &e, err, sizeof err)) {
-        fprintf(stderr, "expectation: %s\n", err);
-        failures++;
-        return BUGORIG_BROKEN;
-    }
-    v = bugorig_judge_regression(&e, ref, o, &why);
-    CHECK(v == BUGORIG_FIXED || (why.p && *why.p));
     free(why.p);
     bugorig_free(&e);
     return v;
@@ -177,17 +155,10 @@ int main(void)
     bugorig_free(&d);
     observe(&c, "done", LOG_OK, "rc=0\n", "42\nrc=0\n");
     observe(&d, "done", LOG_OK, "rc=0\n", "41\nrc=0\n");
-    /* port regression: the expectation is what the original does (a
-       prints 42); c does the same, d not */
-    CHECK(judge_regression("[run]\n42\nrc=0\n", &a, &c) == BUGORIG_FIXED);
-    CHECK(judge_regression("[run]\n4*\nrc=0\n", &a, &d) == BUGORIG_FIXED);  /* wildcard */
-    CHECK(judge_regression("[run]\n42\nrc=0\n", &a, &d) == BUGORIG_DIFFERS);
-    /* broken on purpose: the expectation is not what the original does */
-    CHECK(judge_regression("[run]\n41\nrc=0\n", &a, &d) == BUGORIG_BROKEN);
-    CHECK(judge_regression("[session]\ntimeout\n", &a, &a) == BUGORIG_BROKEN);
     CHECK(!strcmp(bugorig_verdict_name(BUGORIG_BROKEN), "BROKEN"));
-    /* a fixed test (no reference): FIXED or REGRESSED, never a verdict
-       that needs the original; c shows the bug (42), d the fix (41) */
+    /* a fixed test or an expect test (no reference): FIXED or REGRESSED,
+       never a verdict that needs the original; c shows the bug (42), d
+       the fix (41) */
     CHECK(judge("[run]\n41\nrc=0\n", NULL, &d) == BUGORIG_FIXED);
     CHECK(judge("[run]\n41\nrc=*\n", NULL, &d) == BUGORIG_FIXED);       /* wildcard */
     CHECK(judge("[run]\n41\nrc=0\n", NULL, &c) == BUGORIG_REGRESSED);   /* the bug again */

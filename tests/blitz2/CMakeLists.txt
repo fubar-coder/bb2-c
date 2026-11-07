@@ -2,17 +2,17 @@
 # original (an extension, named in its commit), so there is no reference
 # to compare with: blitz2 compiles and runs ID.bas in Amiberry, and its
 # result must equal ID.expect (format of tests/corpus/runner/bugorig.h).
-# One corpusrun pass per test with expect= and regression=on, the first
-# configuration (ref) being blitz2 itself with the CD's libraries and the
-# second (clib) blitz2 with the C libraries: both must match.
+# One corpusrun pass per test with expect= and regression=on (an expect
+# test, the same as the port regression tests of tests/bug-orig/regression):
+# no reference and nothing of the CD (no blitz2:defaultdbug), one
+# configuration (clib: blitz2 with the C libraries) judged against the
+# expectation, FIXED or REGRESSED.
 #   ID.bas      the program (text, tokenised with TED's token list); its
 #               header line "; @runerrs on|off" sets runtime error
 #               checking (default off)
 #   ID.expect   the expected result
-# ctest blitz2_ID (- as _), label emulator, skipped (77) without Amiberry
-# or the CD.
+# ctest blitz2_ID (- as _), label emulator, skipped (77) without Amiberry.
 set(BLITZ2_TEST_TIMEOUT 90 CACHE STRING "tests/blitz2: time limit of one emulator session (seconds)")
-set(cd_blitz2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(blitz2_test_sources)
 
@@ -49,11 +49,9 @@ work=${work}
 report=${work}.txt
 runtime_errors=${runtime_errors}
 timeout=${BLITZ2_TEST_TIMEOUT}
-parallel=2
+parallel=1
 ted=$<TARGET_FILE:tedstub>
 launcher=$<TARGET_FILE:reqtrap>
-defaultdbug=${cd_blitz2}/DEFAULTDBUG
-config=ref|ref|$<TARGET_FILE:blitz2>|${cd_blitz2}/DEFLIBS|${cd_blitz2}/ACIDLIBS
 config=clib|output|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs
 source=${src}
 expect=${expect}
@@ -61,9 +59,8 @@ regression=on
 ")
 	string(REPLACE "-" "_" name "blitz2_${id}")
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-	# two sessions, one after the other if there are not enough emulator
-	# slots free, each maybe waiting for one
-	math(EXPR limit "${BLITZ2_TEST_TIMEOUT} * 2 + 60 + 2 * ${EMULATION_QUEUE_WAIT}")
+	# one session, maybe waiting for a free emulator slot
+	math(EXPR limit "${BLITZ2_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endforeach()

@@ -15,7 +15,8 @@
 #                                           (tests/corpus/runner/corpus.h),
 #                                           @VAR@ replaced (see below)
 #                      ; @configs TAG...    the configurations judged
-#                                           (port clib, default both)
+#                                           (port clib, default both;
+#                                           regression/: clib)
 #                      ; @machine NAME      the emulated machine (pass
 #                                           file machine=, corpus.h:
 #                                           a1200 default, a500 = 68000
@@ -55,10 +56,12 @@
 # bug-orig), declared here directly, not in the order of
 # cmake/bug-orig-order.cmake (it passes, ctest learns its cost).
 # The area regression/ holds port regression tests instead (a bug of the
-# port, not of the original; corpus.h regression=on): the expectation is
-# what the reference does, ctest regression_ID, label emulator only (the
-# test passes once the port does what the original does).  The
-# files are found by a glob: adding a test touches no list.
+# port, not of the original; corpus.h regression=on): expect tests like
+# those of tests/blitz2, with no reference session and nothing of the CD
+# (as a fixed test, unless the @pass lines name it), judged against the
+# expectation only, in clib unless @configs names others; ctest
+# regression_ID, label emulator only (it must pass in emulator and all).
+# The files are found by a glob: adding a test touches no list.
 #   @VAR@ in @pass: USERLIB (amiga/userlib.c: a library for
 #   blitz2:userlibs), INJECT (amiga/inject.c: faults, counts and input;
 #   for the compiler with
@@ -117,6 +120,7 @@ function(bug_orig_test bas name)
 	set(rwe "")
 	set(extra "")
 	set(fixed "")
+	set(configs_given OFF)
 	set(session_limit ${BUG_ORIG_TIMEOUT})
 	# the header lines begin with ';' - the list separator: replaced first.
 	# They make the pass file: a changed header configures again.
@@ -133,6 +137,7 @@ function(bug_orig_test bas name)
 			set(fixed ${CMAKE_MATCH_1})
 		elseif(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
+			set(configs_given ON)
 		elseif(h MATCHES "^<semicolon> @machine ([a-z0-9-]+)$")
 			string(APPEND extra "machine=${CMAKE_MATCH_1}\n")
 		elseif(h MATCHES "^<semicolon> @rwe (.+)$")
@@ -155,6 +160,15 @@ function(bug_orig_test bas name)
 			message(FATAL_ERROR "bug-orig: ${bas}: @fixed in a port regression or self test")
 		endif()
 		set(configs clib)
+	endif()
+	# a port regression test: no reference either, clib unless @configs
+	# names others
+	set(noref ${fixed})
+	if(arg_REGRESSION)
+		set(noref ON)
+		if(NOT configs_given)
+			set(configs clib)
+		endif()
 	endif()
 
 	# RWE userlibs: per configuration the reference or the C build, the
@@ -188,8 +202,9 @@ function(bug_orig_test bas name)
 			endif()
 			set(variant ${v})
 			set(clib_dir ${vout})
-			# the reference library only for ref (a fixed test has none)
-			if(NOT fixed)
+			# the reference library only for ref (a fixed test and a port
+			# regression test have none)
+			if(NOT noref)
 				string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
 				list(APPEND fixtures ${fixture})
 			endif()
@@ -230,6 +245,9 @@ function(bug_orig_test bas name)
 		# no reference and nothing of the CD (a test that needs it says so:
 		# @pass defaultdbug=@CD_BLITZ2@/DEFAULTDBUG, @pass mount=BB2|@CD@)
 		string(APPEND text "fixed=${fixed}\n")
+	elseif(arg_REGRESSION)
+		# the same for a port regression test
+		string(APPEND text "regression=on\n")
 	else()
 		string(APPEND text "defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 			"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
@@ -245,20 +263,17 @@ function(bug_orig_test bas name)
 			message(FATAL_ERROR "bug-orig: ${bas}: unknown configuration ${c} (port, clib)")
 		endif()
 	endforeach()
-	if(NOT fixed)
+	if(NOT noref)
 		string(APPEND text "mount=BB2|${CD}\n")
 	endif()
 	string(APPEND text "source=${src}\nexpect=${expect}\n${extra}")
-	if(arg_REGRESSION)
-		string(APPEND text "regression=on\n")
-	endif()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 
 	# a session per configuration (ref and the judged ones), one after the
 	# other if there are not enough emulator slots free, each maybe
 	# waiting for one
 	list(LENGTH configs nsessions)
-	if(NOT fixed)
+	if(NOT noref)
 		math(EXPR nsessions "${nsessions} + 1")
 	endif()
 	math(EXPR limit
@@ -351,10 +366,11 @@ endforeach()
 # reported as broken (exit status 3), not as a reproduced bug
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
-# the same for a port regression test: an expectation that is not what
-# the original does
-bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-broken.bas
-	regression_selftest_broken REGRESSION WANT 3)
+# the self test of a port regression test (the expect tests of
+# tests/blitz2 too): an expectation the port does not meet must fail
+# (exit status 1, REGRESSED)
+bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-wrong.bas
+	regression_selftest_wrong REGRESSION WANT 1)
 
 # inject's fill= option (inject-fill.cmake), and the check itself: a wrong
 # expect file must fail

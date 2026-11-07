@@ -266,3 +266,20 @@ code changes in this change).
   expectations with a compile error line (`compiler-incbin-leaks*`,
   `compiler-macro-uninit-free*`, `compiler-macrobuff-size-small`,
   `compiler-newtype-self-field*`) got the new line number.
+- **Task 2.1 (2026-11-07):** the expect suite is a runner mode, not a
+  new directory: the pass key `regression=on` now means an expect test
+  without a reference (like `fixed=`, but without an issue: FIXED or
+  REGRESSED, exit status 1; `defaultdbug=` optional), used by
+  `tests/blitz2` and `tests/bug-orig/regression/`. Both keep their place
+  and their header lines (`; @runerrs` there, the bug-orig header lines
+  here); the `.expect` format is the same (`bugorig.h`). The old meaning
+  (the expectation is what the reference does, BROKEN otherwise) and
+  `bugorig_judge_regression` are gone. A port regression test runs
+  `clib` only unless `; @configs` names others; with `@rwe` it gets no
+  reference library and no fixture `rwe_refbuild`. The self test
+  `regression_selftest_broken` (WANT 3, needed the reference) became
+  `regression_selftest_wrong` (an expectation the port does not meet,
+  WANT 1). With `archive/cd` absent, `blitz2_debug_off`,
+  `blitz2_debug_on`, `blitz2_stop_off`,
+  `regression_ricompactdisclib_scsi_after_plain` and
+  `regression_selftest_wrong` pass (before: skipped without the CD).

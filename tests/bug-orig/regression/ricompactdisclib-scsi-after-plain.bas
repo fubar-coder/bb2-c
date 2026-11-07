@@ -14,8 +14,8 @@
 ; 8100 0005 (corrupt memory list).  So the program holds at the end, after
 ; everything the test is about, and the expectation is a timeout of the
 ; session with the output up to "played" (a hang earlier, as in the port
-; before #946, stops the output earlier).  The short limit keeps the three
-; configurations quick.
+; before #946, stops the output earlier).  The short limit keeps the
+; session quick.
 ; @rwe ricompactdisclib
 ; @pass uae=scsi=true
 ; @pass uae=cdimage0=@TESTDATA@/ricompactdisclib-playtrack-scsi-odd.cue,image

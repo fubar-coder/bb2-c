@@ -37,10 +37,8 @@
  * FIXED (it matches the expectation) or
  *   REGRESSED   it does not: the fix is undone (REPRODUCED, DIFFERS and
  *               BROKEN need the reference and cannot occur)
- * A port regression test (corpus.h regression=on, bugorig_judge_regression)
- * judges a bug of the port, not of the original: its expectation is what
- * the reference does, so the test is BROKEN if the reference does not
- * match it, and a configuration is FIXED (it matches) or DIFFERS.
+ * An expect test (corpus.h regression=on: an extension of blitz2, a port
+ * regression test) is judged the same way, without a reference.
  */
 #ifndef BUGORIG_H
 #define BUGORIG_H
@@ -87,17 +85,10 @@ const char *bugorig_get(const struct bugorig_obs *o, const char *name);
 int bugorig_matches(const struct bugorig_obs *e, const struct bugorig_obs *o);
 
 /* the verdict for a configuration; the differing sections go to why
-   (may be NULL).  ref NULL: a fixed test (no reference), FIXED or
-   REGRESSED */
+   (may be NULL).  ref NULL: a fixed test or an expect test (no
+   reference), FIXED or REGRESSED */
 enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bugorig_obs *ref,
                                    const struct bugorig_obs *o, struct text *why);
-
-/* the verdict of a port regression test (corpus.h regression=on): the
-   expectation is what the reference does - BROKEN if the reference does
-   not match it, FIXED if the configuration does, else DIFFERS */
-enum bugorig_verdict bugorig_judge_regression(const struct bugorig_obs *e,
-                                              const struct bugorig_obs *ref,
-                                              const struct bugorig_obs *o, struct text *why);
 
 const char *bugorig_verdict_name(enum bugorig_verdict v);
 

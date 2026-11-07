@@ -138,13 +138,21 @@ int main(void)
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
     corpus_free(&p);
-    /* port regression: needs expect= */
-    CHECK(corpus_parse(BASE CONFIGS "source=/s\nexpect=/e\nregression=on\n", &p, err, sizeof err) == 0);
-    CHECK(p.regression);
+    /* an expect test (an extension of blitz2, a port regression test): no
+       reference, nothing of the CD, one configuration is enough */
+    CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\nregression=on\n"
+                       "config=clib|output|/a2|/b2|/c2\nsource=/s\nexpect=/e\n",
+                       &p, err, sizeof err) == 0);
+    CHECK(p.regression && !p.fixed && p.nconfigs == 1 && p.configs[0].expect == CORPUS_OUTPUT
+          && !p.defaultdbug);
     corpus_free(&p);
-    CHECK(parse(BASE CONFIGS "source=/s\nregression=on\n", err, sizeof err) == -1
-          && strstr(err, "expect="));
-    CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\nregression=yes\n", err, sizeof err) == -1);
+    /* broken on purpose: a reference, no expectation, not on/off */
+    CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\nregression=on\n", err, sizeof err) == -1
+          && strstr(err, "without a reference"));
+    CHECK(parse(BASE "regression=on\nconfig=clib|output|/a|/b|/c\nsource=/s\n", err, sizeof err)
+          == -1 && strstr(err, "expect="));
+    CHECK(parse(BASE "regression=yes\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\n",
+                err, sizeof err) == -1);
     /* a fixed bug-orig test: no reference, one configuration is enough */
     CHECK(corpus_parse(BASE "fixed=120\nconfig=clib|output|/a2|/b2|/c2\nsource=/s\nexpect=/e\n",
                        &p, err, sizeof err) == 0);
