@@ -7,6 +7,7 @@
 ; Workbench without a project icon (noprojects).  The editor (tedstub)
 ; then loads CORPUS:jobs, the job list, and compiles.
 ; Correct: progfile is empty, the editor loads nothing, no job runs.
+; @fixed #20
 ; @pass file=blitz2/blitz2.info|@TESTDATA@/compiler-wb-info-progfile.info
 ; @pass wrap=@WBRUN@|noprojects
 NPrint "hello"

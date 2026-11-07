@@ -566,17 +566,16 @@ int main(int argc, char **argv)
         fh = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
         stack = 0;
         if (fh) {
-            if (Read(fh, progfile, 0x4e) == 0x4e) {
-                progfile[0] = 0;
+            if (Read(fh, progfile, 0x4e) == 0x4e)
                 stack = L_(progfile + 0x4a);        /* do_StackSize */
-            }
             /* Fixed (#19): closed after a short read too (wbheader closes
                it only after a complete one) */
             Close(fh);
         }
-        /* BUG(orig) (#20): if the .info could not be opened progfile still holds
-           "<name>.info" (after a short read: the partial .info bytes) and
-           the editor is asked to load it */
+        /* Fixed (#20): progfile is cleared when the .info could not be
+           read too (wbheader leaves "<name>.info" or the partial .info
+           bytes in it, and the editor is asked to load them) */
+        progfile[0] = 0;
         if (!stack)
             stack = 4000;               /* .openfailed */
         /* .openok: a project icon given? (asm: word at sm_NumArgs+2) */
