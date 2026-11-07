@@ -1252,9 +1252,13 @@ WORD makeiname(void)
     BOOL device = FALSE;
     UWORD c;
 
-    /* BUG(orig) (#325): neither loop checks the length - incdir + name beyond
-       127 characters run past namebuff (namebuff2, then what follows).
-       Like doincdir the rest of the line (also after ':') is copied. */
+    /* Fixed (#325): blitz2.s copies incdir and the name without a limit,
+       beyond 127 characters past namebuff (into namebuff2, then what
+       follows).  Here the copy stops at the end of namebuff2 (incdir has
+       at most 95 characters, #16), and a name that is longer than 127
+       characters without the incdir a device drops (#341) is "Path too
+       Long".  BUG(orig) (#17): like doincdir the rest of the line (also
+       after ':') is copied. */
     do {
         len++;
     } while ((*dst++ = (UBYTE)*src++) != 0);
@@ -1267,6 +1271,8 @@ WORD makeiname(void)
             syntaxerr();
         if ((UBYTE)c == '"')
             continue;
+        if ((UBYTE)c && dst == namebuff + sizeof namebuff - 1)
+            pathlongerr();
         *dst++ = (UBYTE)c;
         if ((UBYTE)c == 0)
             break;
@@ -1281,6 +1287,8 @@ WORD makeiname(void)
         memmove(namebuff, namebuff + dirlen, (size_t)(len - dirlen) + 1);
         len -= dirlen;
     }
+    if (len > 127)
+        pathlongerr();              /* Fixed (#325) */
     if (len == 0)
         syntaxerr();
     return len;

@@ -5,8 +5,9 @@
 ; optstuff and then into the compiler's code. Here the path has 90
 ; characters and the name 60, together 150: the original writes 23 bytes
 ; into namebuff2 and reports "Can't open Include" (no such file).
-; Correct: a name that does not fit is refused before it is copied, with
-; "Path too Long" at the Include line.
+; Correct: a name that does not fit into namebuff is refused, with "Path
+; too Long" at the Include line.
+; @fixed #325
 IncDir "CORPUS:pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/"
 Include "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.bb2"
 NPrint 1

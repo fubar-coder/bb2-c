@@ -210,6 +210,7 @@ void doincdir(UWORD c);
 /* blitz2.s:11947 makeiname - namebuff = incdir + file name from the
    source (bakup first, '"' skipped); returns the total length (asm d2,
    used by addhere for the node); 0 -> syntaxerr.
+   Fixed (#325): more than 127 characters -> "Path too Long".
    Fixed (#341): a name with a device or assign (':') is used without
    incdir (blitz2.s puts it in front of every name, e.g. "BlitzLibs:" +
    "blitzlibs:libnums.bb"); AB3 mode keeps it (ext_incdevice). */
