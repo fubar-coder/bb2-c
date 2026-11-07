@@ -884,9 +884,14 @@ struct node *findlab(struct node *link, UWORD nameoff, UWORD len,
         nlen = *((UBYTE *)n + nameoff - 1) - nameoff - 1;
         if (nlen != len)
             continue;
+        /* Fixed (#30): an empty name matches an empty name without a
+           compare; the original's dbf loop started at -1 for length 0 and
+           compared up to 65536 bytes past the names */
+        if (!nlen)
+            return n;
         name = (UBYTE *)n + nameoff;
         want = namebuff;
-        cnt = nlen - 1;                     /* dbf: BUG(orig) (#30) len==0 runs on */
+        cnt = nlen - 1;                     /* dbf */
         for (;;) {
             if (*name++ != *want++)
                 goto next;

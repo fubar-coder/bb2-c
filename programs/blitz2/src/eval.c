@@ -1770,7 +1770,9 @@ static UWORD fetchconst(UWORD *type)
     struct label *l;
     ULONG value;
 
-    len = makename(&c);             /* Z not tested (asm) */
+    len = makename(&c);
+    if (!len)                       /* Fixed (#30): Z not tested in the asm */
+        syntaxerr();
     if (!ext_constant(len, &value)) {
         l = findadd(len, NULL);
         if (!l && debugconst(len, &value))
@@ -2203,6 +2205,8 @@ struct label *makealab(UWORD *c)
 {
     UWORD ch, len = makename2(&ch);
 
+    if (!len)                       /* Fixed (#30): Z not tested in the asm */
+        syntaxerr();
     if (c)
         *c = ch;
     return makealab2(len, c);
@@ -2286,6 +2290,8 @@ static UWORD fetchasm(UWORD *type)
     struct label *l;
 
     len = makename2(&c);            /* get the things name */
+    if (!len)                       /* Fixed (#30): Z not tested in the asm */
+        syntaxerr();
     l = findadd(len, NULL);
     if (!l) {
         ULONG value;

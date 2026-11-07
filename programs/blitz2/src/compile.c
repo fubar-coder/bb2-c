@@ -1259,6 +1259,8 @@ static void handlemouse(void)
         return;
     }
     len = makename2(&c);
+    if (!len)                   /* Fixed (#30): Z not tested in the asm */
+        syntaxerr();
     ext_dotlabel(c);
     handlelabel(len);           /* falls through into handlelabel */
 }

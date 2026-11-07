@@ -5,6 +5,7 @@
 ; fails and the error is "Constant Not Found").
 ; Correct: "#" without a name is a syntax error, and findlab compares no
 ; byte past an empty name.
+; @fixed #30
 a=#+1
 NPrint a
 End
