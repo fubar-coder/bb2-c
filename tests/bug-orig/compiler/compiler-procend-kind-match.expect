@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+s 2
+one other
+10 0
+rc=0

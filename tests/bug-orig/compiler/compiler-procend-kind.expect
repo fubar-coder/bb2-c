@@ -1,2 +1,2 @@
 [compile]
-error *
+error 12 Illegal End Procedure

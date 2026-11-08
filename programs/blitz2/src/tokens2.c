@@ -213,21 +213,32 @@ void eos_(UWORD c)
     pokel(0);               /* asm: d1 left by doallocmem - patched later */
 }
 
-/* blitz2.s:13466 stateret - Statement Return.  BUG(orig) (#940): neither
-   stateret nor funcret checks the kind of the open procedure (in a string
-   Function, Statement Return skips the pushed length endstate pops; in a
-   Statement, Function Return evaluates with type $FF).  Kept. */
+/* blitz2.s:13466 stateret - Statement Return.  Fixed (#940): blitz2.s
+   checks neither here nor in funcret the kind of the open procedure (in a
+   string Function, Statement Return skipped the pushed length endstate
+   pops; in a Statement, Function Return evaluated with type $FF).  A
+   Return of the other kind is "Illegal Procedure return" (sreterr, which
+   blitz2.s defines and never raises); outside a procedure it stays
+   "Illegal End Procedure" (eos_). */
 static void stateret(UWORD c)
 {
+    if (procmode > 0)                       /* inside a Function */
+        sreterr();
     eos_(c);
     getchar3();
 }
 
-/* blitz2.s:13469 funcret - Function Return expr (BUG(orig) (#940), see
-   stateret) */
+/* blitz2.s:13469 funcret - Function Return expr (Fixed (#940), see
+   stateret; outside a procedure blitz2.s read the type of thisproc NULL) */
 static void funcret(UWORD c)
 {
-    UWORD t = (UBYTE)thisproc->rettype;     /* type returning! */
+    UWORD t;
+
+    if (procmode == 0)
+        badpenderr();
+    if (procmode < 0)                       /* inside a Statement */
+        sreterr();
+    t = (UBYTE)thisproc->rettype;           /* type returning! */
     c = eval(&t);                           /* put return val in d0. */
     eos_(c);
 }
@@ -480,8 +491,9 @@ static void endstate(void)
     save = p->pc;
     p->linksize = locvaroff & ~3;
     if (p->rettype == T_STRING)
-        pokewd(getstlen[0]);    /* BUG(orig) (#940): expects the length of
-                                   End Function / Function Return */
+        pokewd(getstlen[0]);    /* the length of End Function / Function
+                                   Return (Fixed (#940): only those end a
+                                   Function) */
     if (p->linksize) {
         uselib(64635);
         pokewd(unlinka4[0]);
@@ -818,14 +830,19 @@ static void doend3(UWORD c)
         dowend2();
         return;
     }
-    /* BUG(orig) (#940): End Statement / End Function are not checked
+    /* Fixed (#940): blitz2.s does not check End Statement / End Function
        against the open procedure (procmode): a string Function ended with
-       End Statement pops its return address as the length.  Kept. */
+       End Statement popped its return address as the length.  The End of
+       the other kind is "Illegal End Procedure", as outside a procedure. */
     if (c == 0x8008) {                  /* End Statement */
+        if (procmode > 0)               /* inside a Function */
+            badpenderr();
         endstate();
         return;
     }
     if (c == 0x8009) {                  /* End Function */
+        if (procmode <= 0)              /* a Statement or no procedure */
+            badpenderr();
         pokewd(0x7000);                 /* moveq #0,d0 */
         if (thisproc->rettype == T_STRING)
             pokewd(putstlen[0]);

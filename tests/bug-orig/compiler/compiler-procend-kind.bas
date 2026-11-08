@@ -5,6 +5,7 @@
 ; string length End Function would have pushed: it pops its return address
 ; as the length and returns to a wrong address.
 ; Correct: a compile error (End Statement inside a Function).
+; @fixed #940
 ; @pass timeout=30
 Function$ f{}
   NPrint "in f"
