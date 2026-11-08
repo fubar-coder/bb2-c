@@ -32,7 +32,7 @@ void hostenv_droplist(void);
 
 /* token list from a file "XXXX name" per line (toklist.c); NULL if missing */
 struct tokennode *host_loadtokens(const char *path);
-/* the token list of tedtok/teddetok from the arguments argv[1..]: either
+/* the token list of tedsrc tok/detok from the arguments argv[1..]: either
    TOKENS (a list file as above) or --blitz2 BLITZ2 [--lib LIB]... (the
    list made from the compiler and its libraries, tokref.c); *next = the
    index of the first argument behind it.  NULL: *next = 0 for wrong

@@ -8,7 +8,7 @@
 #   OBJ PATH      the library file (default NAME.obj in the build
 #                 directory), e.g. in the userlibs directory of a variant
 #   CHECK FILES   in the same step: its number is in none of FILES (the
-#                 acidlibs and deflibs it is loaded with; biglib check)
+#                 acidlibs and deflibs it is loaded with; blitzlib numbers)
 #   CMDREF G/N    in the same step: the command table of the library
 #                 (blitzlib cmdref, CMDREF_DIR/G/N.json) equals the committed
 #                 site/data/libraries/G/N.json, the data of the website's
@@ -124,7 +124,7 @@ endfunction()
 # into one BigLib file (blitz2:acidlibs, deflibs) with the host tool
 # blitzlib join (tools/blitzlib).  In the same build step: no library number twice in OUTPUT
 # and the files CHECK (the other library files the compiler loads with it,
-# e.g. acidlibs for deflibs; biglib check) - two libraries with one number
+# e.g. acidlibs for deflibs; blitzlib numbers) - two libraries with one number
 # would have the same tokens.
 function(biglib_join target output)
 	cmake_parse_arguments(PARSE_ARGV 2 arg "" "" "CHECK")

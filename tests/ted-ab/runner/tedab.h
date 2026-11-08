@@ -17,7 +17,7 @@
  *
  * compared with TED-C (C5-P5, Cc-Pc): a commit that changes what TED does
  * shows there.  Directives:
- *   ; @source T NAME     tests/corpus/tests/NAME.bas, tokenised (tedtok)
+ *   ; @source T NAME     tests/corpus/tests/NAME.bas, tokenised (tedsrc tok)
  *   ; @source E NAME     tests/ted-ab/src/NAME.bas as text (TED tokenises it
  *                        when it loads it)
  *   ; @source S NAME     tests/ted-ab/src/NAME.bb2
@@ -35,7 +35,7 @@
  *                          same NAME          = the staged source
  *                          bak NAME           exists and = the staged source
  *                          exists NAME / absent NAME
- *                          tok NAME EXPECT    = tedtok of scripts/EXPECT
+ *                          tok NAME EXPECT    = tedsrc tok of scripts/EXPECT
  *                          corpus NAME TEST   = the executable TEST of the
  *                                             corpus ref run
  *                          tedsave NAME PATH  = what the original TED saves
@@ -230,7 +230,7 @@ const char *tedab_pair_verdict_name(int verdict);
 struct tedab_sources {
     const char *combo;          /* for the report lines */
     const char *staged;         /* the staged source (same, bak) */
-    const char *expect_dir;     /* tok: EXPECT.bb2 = tedtok of scripts/EXPECT */
+    const char *expect_dir;     /* tok: EXPECT.bb2 = tedsrc tok of scripts/EXPECT */
     const char *corpus_out;     /* corpus: the executables of the corpus ref run */
     const char *cd;             /* cd */
     const char *oracle;         /* tedsave: the TED oracle manifest */

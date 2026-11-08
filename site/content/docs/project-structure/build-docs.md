@@ -75,7 +75,7 @@ cannot read the dates of the pages.
 The pages of the
 [command reference]({{< relref "/docs/libraries" >}}) are made by Hugo
 from one data file per library in `site/data/libraries/`, which the host
-tool `cmdref` generates from the built library files. These files are
+tool `blitzlib cmdref` generates from the built library files. These files are
 committed, and the build of the port checks, in the build step of each
 library, that the committed file equals the one it generates from the
 library just built.

@@ -159,7 +159,7 @@ int main(void)
         CHECK(seen[0] == 0);
         fclose(out);
     }
-    /* a whole list as blitzlibcompare uses it (libs/GROUP/declarations-
+    /* a whole list as blitzlib compare uses it (libs/GROUP/declarations-
        intended.txt, libs/userlibs/rwe/NAME.declarations-intended.txt):
        correct, with a stale entry, with an entry missing */
     {

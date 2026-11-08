@@ -2,7 +2,7 @@
 ; and two more lines: keywords, string, ';' comment, '$' hex, Tab.  TED's
 ; Return does not split: it opens a new line below (observed in R5 and C5,
 ; stage 1 session C), so the first text goes in front of the old line 0.
-; Saved file = tedtok of the expected text incl. the empty last line
+; Saved file = tedsrc tok of the expected text incl. the empty last line
 ; (checked on the host).  Compared: saved file A<->B, dumps.
 ; @source T t01_int
 ; @est 9

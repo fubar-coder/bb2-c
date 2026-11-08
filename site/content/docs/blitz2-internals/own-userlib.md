@@ -102,7 +102,7 @@ number is already taken, the build stops and names both libraries, for
 example with number 187:
 
 ```
-biglib: library number 187 twice: .../userlibs/mylibs/twicelib.obj (library 1) and .../blitz2/acidlibs (library 42)
+blitzlib numbers: library number 187 twice: .../userlibs/mylibs/twicelib.obj (library 1) and .../blitz2/acidlibs (library 42)
 ```
 
 ### Install it

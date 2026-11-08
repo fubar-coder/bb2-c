@@ -432,7 +432,7 @@ static int stage_test(const struct tedab_test *t, FILE *log)
         break;
     case 'E':
         /* as text: TED tokenises it when it loads it (the long line is
-           longer than tedtok takes) */
+           longer than tedsrc tok takes) */
         src = str_printf("%s/%s.bas", P.src, t->src_arg);
         break;
     case 'S':

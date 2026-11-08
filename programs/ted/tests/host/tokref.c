@@ -1,7 +1,7 @@
 /*
- * tokref.c - the token list of the host tools (tedtok, teddetok) from
+ * tokref.c - the token list of the host tool tedsrc (tok, detok) from
  * their arguments: a token list file (tests/data/ted-tokens.txt, or one
- * written by blitztokens) or the files it is made of - the compiler and
+ * written by bbsrc tokens) or the files it is made of - the compiler and
  * its libraries, as blitz2 builds the list for TED (tools/lib/blitztokens).
  */
 #include <stdio.h>

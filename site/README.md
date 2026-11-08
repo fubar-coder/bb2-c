@@ -52,8 +52,8 @@ Markdown of the partials in `layouts/_partials/cmdref/`; the shortcode
 `_index.md` files are written by hand.
 
 The JSON files are generated from the built library files by the host
-tool `tools/cmdref` and committed. The CMake build checks in the build
-step of every library that the committed file equals the generated one,
+tool `blitzlib cmdref` (`tools/blitzlib/README.md`) and committed. The
+CMake build checks in the build step of every library that the committed file equals the generated one,
 so a change of a library's declarations fails the build until the files
 are updated: build the target `cmdref_update`, which copies the generated
 files here, and commit them with the change. Do not edit them by hand.

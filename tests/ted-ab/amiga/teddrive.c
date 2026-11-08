@@ -88,7 +88,7 @@
  * height, depth, bytesperrow, rows, rowbytes, interleaved, modeid, mousex,
  * mousey, memtype, title, windows N + N lines "window ..."), a line "data",
  * then depth x rows x rowbytes bytes (plane 0 first, rows of rowbytes bytes
- * from stride bytesperrow).  Decoder: tests/ted-ab/runner (teddump).
+ * from stride bytesperrow).  Decoder: tests/ted-ab/runner (tedab text).
  */
 #include <exec/types.h>
 #include <exec/execbase.h>

@@ -9,7 +9,7 @@ build or as ctest. Only after that the switch to C23 (§3).
 
 ## 1 Checks still missing compared to bb2
 
-Already active again (here): library files (`tools/blitzlibcheck`,
+Already active again (here): library files (`blitzlib check`,
 formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
 `checkhunk.py`), `checklink`; tests of the host tools.
 
@@ -17,15 +17,15 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
 
 1. [x] **Reference build of `ted.s`** done (2026-10-27): target
    `ted_ref`, original sources in `archive/sources/ted-1.1/`,
-   `tools/vasmlisting` instead of `tedlisting.py` (`map`, `labels`,
+   `refcheck listing-*` instead of `tedlisting.py` (`map`, `labels`,
    `verify`); `ref/ted`, listing, map and labels byte-identical to bb2;
    `verify` is a check in the build step.
-2. [x] **`checkdata`** done (2026-10-28): `tools/checkdata` (instead of
+2. [x] **`checkdata`** done (2026-10-28): `refcheck data` (instead of
    bb2 `tools/checkdata.py`, output identical line by line), table
    `programs/ted/checkdata.tsv` (534 entries), POST_BUILD of `ted.sym`
    (second link with symbols as in bb2); `ted` is linked only after that.
    A missing C symbol is now an error (in bb2 "todo").
-3. [x] **`checklabels`** done (2026-10-28): `tools/checklabels`
+3. [x] **`checklabels`** done (2026-10-28): `refcheck labels`
    (instead of bb2 `tools/checklabels.py`, output byte-identical) as
    POST_BUILD of `ted`: 278 code labels, all exactly once.
 4. [x] **Host tests of the TED core** – done (2026-10-28): all 10 tests of
@@ -64,7 +64,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
       `teddrive` includes `tests/corpus/amiga/reqclose.h`); host test of
       the script parser `tdscript.h` as snitch (`ted_ab_tdscript`).
    2. [x] Dumps on the host done (2026-10-28): `tests/ted-ab/runner/`
-      `teddump` (library `lib_teddump` and tool `teddump info|text|cmp`):
+      `teddump` (library `lib_teddump` and tool `tedab info|text|cmp`):
       decoding with the fonts from `archive/sources/ted-1.1/`, masking
       "Free", comparing; SHA-256 instead of SHA-1, the deviating lines
       instead of a unified diff; no PNG for now. Test `ted_ab_teddump`
@@ -76,7 +76,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
       `tests/ted-ab/scripts/`, sources `E`/`S` to `tests/ted-ab/src/`.
       Expectations without bb2 paths: `corpus` (program of the corpus ref
       run), `tedsave` (oracle hash `save/`), `cd` (file of the CD); `tok`
-      via the `*.expect` files tokenized at build time with `tedtok`. `E`
+      via the `*.expect` files tokenized at build time with `tedsrc tok`. `E`
       is provided as text (TED tokenizes itself), `K` is searched on the
       CD case-insensitively. Sessions in parallel up to
       `CORPUS_PARALLEL`, runs not reached after a hang once more.
@@ -107,13 +107,13 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
 **Libraries (bb2: `libs-c/`)**
 
 6. [x] **Instruction comparison of the assembler routines** done
-   (2026-10-28): `tools/asmcmp` (instead of bb2 `tools/asmcmp.py`, output
+   (2026-10-28): `refcheck asm` (instead of bb2 `tools/asmcmp.py`, output
    equal, also for deviations), ctest `asmcmp_runerrlib`,
    `asmcmp_debuglib`, `asmcmp_memacclib` with the routine lists from bb2;
    originals from the CD (`BLITZ2/ACIDLIBS`, equal to bb2 `ref/*.obj`),
    symbols from `NAME.linked` (`HUNK_SYMBOL`, no `nm`).
 7. [x] **Declaration comparison with the originals** done
-   (2026-10-28): `tools/blitzlibcompare` (rules of bb2 `biglib.py
+   (2026-10-28): `blitzlib compare` (rules of bb2 `biglib.py
    compare`, previously by hand), ctest `declarations_acidlibs`,
    `declarations_deflibs` against `BLITZ2/ACIDLIBS`, `DEFLIBS` of the CD:
    83 + 39 libraries, declarations identical, same order (cross-checked
@@ -122,7 +122,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
    (`libs_tests`, m68k snitch program from bb2 `libs-c/tests`, unchanged
    except for comments), ctest `libs_emulator` (`emulator.cmake` instead
    of `tools/amiga_test.py`): every acidlib of this build against its
-   original, which `biglib extract` fetches at test time from
+   original, which `blitzlib extract` fetches at test time from
    `BLITZ2/ACIDLIBS` of the CD (equal to bb2 `ref/*.obj`). 7 test cases,
    19372 assertions as in bb2, about 18 s; output equal to bb2's
    reference log except for one stack address. A changed byte in
@@ -147,7 +147,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
       (byte-identical to bb2). Trial run with blitz2 1.95: results, error
       line and hashes as in bb2 `reference/195.tsv`.
    2. [x] Test sources done (2026-10-28): `tests/corpus/tests*/*.bas`
-      (135); tokenized with `tedtok` (C core of TED, `fileopen2` +
+      (135); tokenized with `tedsrc tok` (C core of TED, `fileopen2` +
       `realsave`, real token list), which rejects text lines over 129
       characters (TED truncates them). 15 such lines in 9 sources from
       bb2 split (`NPrint a,…,z` → `Print a,…` / `NPrint …,z`, same
@@ -164,7 +164,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
       outputs byte-identical to bb2's runs except for `t13_env` (reads
       the environment on purpose: Workbench 640×512×8 instead of
       640×256×2).
-   4. [x] CD reference run done (2026-10-28): `tests/corpus/runner/cdrun`,
+   4. [x] CD reference run done (2026-10-28): `corpusrun cd` (`tests/corpus/runner`),
       target `blitz2-cd-reference` (blitz2 1.95, about 35 s) →
       `tests/data/blitz2-cd.tsv`: 498 compiled, 217 errors, 9 text
       sources; all 724 lines equal to bb2 `reference/195.tsv`,
@@ -189,7 +189,7 @@ formerly `mkblitzlib.py`), TED's hunk layout (`tools/hunkcheck`, formerly
 – **implemented** (2026-10-27, with `tools/amiga_run` and tests: four
 runs in parallel, RTG, control socket, time limit with screenshot). First
 user: the TED oracle (`ted-oracle`, `amiga_run` with additional drives).
-Corpus (`corpusrun`, `cdrun`), TED A/B (`tedab`) and the snitch tests of
+Corpus (`corpusrun pass`, `corpusrun cd`), TED A/B (`tedab run`) and the snitch tests of
 the libraries (`libs_emulator`) now run here via `amiga_emulation`
 (2026-10-28), no longer via bb2's `tools/amiberry.cmake`.
 
@@ -281,14 +281,30 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      the code is assembler anyway and moving it to C is not worth it.
 - [x] **`-h` / `--help` for all callable programs** done (2026-10-29,
   request of 2026-10-28): usage text with a line on what the program
-  does, to stdout, return 0. Host (61736be): the tools, tedtok, teddetok,
-  corpusrun, cdrun, tedab, teddump - tests `help_*`
-  (`cmake/check-help.cmake`). Amiga (2d19438): reqtrap, reqclose,
+  does, to stdout, return 0. Host: the 14 programs `blitzlib`, `bbsrc`,
+  `tedsrc`, `refcheck`, `hunkcheck`, `results`, `testinfo`, `corpusrun`,
+  `tedab`, `amiga_run`, `mktestdata`, `blitzres`, `xtra`, `hdftool` -
+  tests `help_*` (`cmake/check-help.cmake`; with the subcommands of
+  `tools/lib/subcmd` also `SUB -h`) and `readme_*` (`cmake/check-readme.cmake`,
+  each program's `README.md`). Amiga (2d19438): reqtrap, reqclose,
   reqclosetest, inject, wbrun, teddrive, teddrivetest, tedprobe - test
   `help_amiga` in Amiberry. Not included: `tedstub` and `tedoracle`
   (only blitz2 loads them as `blitz2:ted`), and `blitz2` and `ted`
   themselves (decision of 2026-10-28: they reproduce the originals,
   argument = file; a help would be a `DIFF`).
+- [x] **Host programs consolidated** done (2026-11-08, OpenSpec change
+  `host-tools-consolidation`): 31 host programs became 14, grouped by
+  what they work on, with one syntax `PROGRAM SUB [OPTIONS] ARGS`
+  (`tools/lib/subcmd`), `-h` per subcommand and a `README.md` each
+  (usage, exit codes, callers; `docs/development.md`, "Host programs");
+  no result changed. Commits f1afc213 (subcmd, the help and README
+  checks), 0c5a1dcc `testinfo`, c172206b `refcheck`, fbcb9037 `results`,
+  19c6ebdc `hunkcheck`, 8cbb2543 `blitzres`, dac344a9 `blitzlib`,
+  eb4bb48e `tedab`, c9a9ed85 `corpusrun`, 385290bf `tedsrc`, fcdb6225
+  `bbsrc`, 74f45fc8 (READMEs of `amiga_run`, `mktestdata`, `xtra`) and
+  the final sweep of the documents. Open: `xtra` and `hdftool` dispatch
+  their subcommands themselves (no `SUB -h`), left to the move of the
+  host programs to CLI11.
 
 - [x] **Git history** decided (2026-10-28): this repository is the
   reference and stays with the fresh start; the history of the files is
@@ -359,14 +375,14 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   conventions, among them the command name at the start of a library
   routine's `@brief`, are in `docs/development.md` ("Function comments
   and the references").
-- [x] **Warnings of `blitzlibcheck`** done (2026-10-31): all 73 sites per
+- [x] **Warnings of `blitzlib check`** done (2026-10-31): all 73 sites per
   acidlibs set fixed (displaylib #412; screenslib #251, animlib #398,
   iffmakelib #185, fontlib #955, memlib #956, trackerlib #957,
   wbstartuplib #305; ilbmifflib #192, audiolib #70, shapeslib #270 and
   #953, spriteslib #954), each with a bug-orig test that comes out FIXED
   (wbstartuplib: not testable, the error is in the library's init);
   rigtmenulib's three were a port defect (check functions in front of
-  the thunks). A clean rebuild has no blitzlibcheck warning left, and
+  the thunks). A clean rebuild has no `blitzlib check` warning left, and
   such a reference is now an error of the check; the fixes are kind F in `docs/libs/deviations.md`. Was: 73 warnings per
   acidlibs set (and three of rigtmenulib): normal library code refers into the error check
   area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
@@ -698,7 +714,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      (`programs/*/src/`, `shared/`; user decision), so the branch records
      lcov 2.0 refused (tools code whose processes fork and end with
      `_exit`, e.g. `test_amiga_emulation_run.c:200`) are gone, and
-     `covmap` drops no branches. lcov 2.5's count check on merged
+     `testinfo map` drops no branches. lcov 2.5's count check on merged
      branches (`BranchElement::merge` in `lcovutil.pm`) was not rechecked
      (only lcov 2.6 is installed).
   2. [ ] Tests for the 182 measured compiler functions no test reaches
@@ -707,9 +723,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      run.
   3. [x] **Compiler files in the `genhtml` report** done (2026-11-06):
      lcov 2.6 left them out of its report and totals (function bitmaps:
-     `FN:`/`FNDA:` but no `DA:`). `covmap` now writes one `DA:` per
+     `FN:`/`FNDA:` but no `DA:`). `testinfo map` now writes one `DA:` per
      function whose first line is known, on that line with the function's
-     count (its entry, not a line count); `covsel` still selects by the
+     count (its entry, not a line count); `testinfo select` still selects by the
      functions. On the map inputs of a full run the report went from 13
      to 38 source files (functions 243 of 254 to 1081 of 1281);
      `--branch-coverage` adds 36 `inconsistent` warnings (no branch data
@@ -892,7 +908,7 @@ several versions.
    history.
 2. [x] **Tokens** (done with 5, token lists from library files): 23 of the 123 sources use tokens the list of blitz2 1.95
    (`tests/data/ted-tokens.txt`) does not know – the token list for
-   reading them (teddetok, a readable `rwelibsrc` like `bblibsrc`). The
+   reading them (`tedsrc detok`, a readable `rwelibsrc` like `bblibsrc`). The
    token tables are in the binaries (CD, for the five others AmiBlitz3);
    AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`)
    lists them as well, for comparison.
@@ -900,7 +916,7 @@ several versions.
    (`libmacs.bb`, `!libheader`), and whether a reference build is
    possible here; otherwise the CD binaries.
 4. [x] **Port** (done 2026-10-30: all libraries of `RWE_LIBS` are C, 5.5) per library to C (`cmake/BlitzLibrary.cmake`), with the
-   checks of the acidlibs (`blitzlibcheck`, declarations, `asmcmp`,
+   checks of the acidlibs (`blitzlib check`, declarations, `refcheck asm`,
    emulator tests); output `build/<preset>/blitz2/userlibs/…`.
 5. [ ] **Library variants and token lists from library files** (decision
    of 2026-10-29). Library numbers clash between libraries of different
@@ -909,7 +925,7 @@ several versions.
    variants, and the tokens of a source come from the library files it
    was written for, not from one fixed list:
    1. [x] **Token list from library files** done (2026-10-29):
-      `tools/blitztokens` (logic `tools/lib/blitztokens`) makes the list
+      `bbsrc tokens` (logic `tools/lib/blitztokens`) makes the list
       as blitz2 builds it for the editor. The BASIC keywords and
       assembler mnemonics are not in library format: blitz2 keeps them
       as a linked list of nodes (`blitz2.s` 283 `tokens`, next.l num.w
@@ -924,11 +940,11 @@ several versions.
       the port, each with the CD's acidlibs/deflibs, and for the port
       with the libraries built here (ctest `tokens_cd`, `tokens_port`,
       `tokens_broken`; unit test `blitztokens`).
-   2. [x] **`tedtok`/`teddetok` with library files** done
+   2. [x] **`tedsrc tok`/`tedsrc detok` with library files** done
       (2026-10-29): besides `TOKENS` (a list file, as before) the form
       `--blitz2 BLITZ2 [--lib LIB]...` makes the list from the files
       (`programs/ted/tests/host/tokref.c` on `tools/lib/blitztokens`);
-      `blitztokens` exports it as a list file for both. The
+      `bbsrc tokens` exports it as a list file for both. The
       readable `rwelibsrc` from the files of its variant: done
       (2026-10-30): `blitz2`, the variant's acidlibs/deflibs and all
       RWE userlibs built here (for rievallib its own variant), no CD
@@ -955,7 +971,7 @@ several versions.
       directory first in the include path (`blitz_library … VARIANT`,
       `blitzlib.h` includes `<libnums.h>`), the other variants to
       `build/<preset>/variants/NAME/acidlibs`, `deflibs`. The default
-      build is byte-identical. Check in the build: `biglib check` in the
+      build is byte-identical. Check in the build: `blitzlib numbers` in the
       join (no number twice in acidlibs, in deflibs with acidlibs),
       tests `biglib_check_clash` (must fail) and the unit test.
       Test variants (`libs/tests/variants/`): `selftest-same`
@@ -993,8 +1009,8 @@ several versions.
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_residents_cd`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
-      by `tools/bblines`, `LIBNUMS.BB` with the numbers of `libnums.h`),
-      ctest `rwe_refbuild` (cdrun `source=`, Amiberry, fixture) to
+      by `bbsrc comment`, `LIBNUMS.BB` with the numbers of `libnums.h`),
+      ctest `rwe_refbuild` (`corpusrun cd` `source=`, Amiberry, fixture) to
       `build/<preset>/libs/userlibs/rwe/ref/NAME.obj`; stage A byte for
       byte equal to its binaries (`rwe_refbuild_NAME`). For the
       libraries whose reference is the source (§3.2 "Source", §3.3):

@@ -40,7 +40,7 @@ with the library files it will be loaded with. The message names both
 libraries:
 
 ```
-biglib: library number 187 twice: .../userlibs/mylibs/twicelib.obj (library 1) and .../blitz2/acidlibs (library 42)
+blitzlib numbers: library number 187 twice: .../userlibs/mylibs/twicelib.obj (library 1) and .../blitz2/acidlibs (library 42)
 ```
 
 **When you change the compiler or the editor**, the link checks keep them

@@ -3,7 +3,7 @@
  * Screen, window, window gadgets and menus by hand (the menu structures
  * were converted once from the asm with a throw-away script and checked
  * byte by byte against the listing, tools/checkdata.py); the requesters
- * by tools/req2c.py.  Every label stays a global symbol (checkdata needs
+ * by tools/req2c.py.  Every label stays a global symbol (refcheck data needs
  * the symbols in ted.sym), named as in the asm.
  */
 #include <utility/tagitem.h>

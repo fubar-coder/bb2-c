@@ -1,6 +1,6 @@
 /*
  * covfmt.h - the format of a coverage file (TEST:cov/<program>.cov), as
- * the coverage variants of the programs write it and tools/covmap reads it.
+ * the coverage variants of the programs write it and testinfo map reads it.
  *
  * All fields are 32-bit big-endian (the m68k's own order):
  *
