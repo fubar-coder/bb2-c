@@ -25,18 +25,18 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 0. Preconditions
 
-- [ ] 0.1 Check that compiler fix round R3 is merged into `main`: every R3 issue of `~/.local/share/bb2-c-work/compiler-bugs-inventory.md` is closed or its fix commit is an ancestor of `main` (`git merge-base --is-ancestor`), and the coordinator confirms. Verify: the list of R3 commits is in the first commit message of group 1; if R3 is not merged, stop
-- [ ] 0.2 Baseline: on `main`, clean build, `ctest --preset all` and `ctest --preset host` pass; record the failing set (if any) in `~/.local/share/bb2-c-work/host-tools-baseline.txt`. Verify: the file exists; later groups compare against it
-- [ ] 0.3 Settle open questions 1-5 of design.md with the user (hunkcheck, `--purge-snapshots`, exit codes, `testinfo`, one or two runners); update design D1 and the table if an answer changes the grouping. Verify: the design has no open question left that a task depends on
-- [ ] 0.4 Agree with the coordinator that no other change touches the tool directories while a group is in progress (merge conflicts in 20 files per group). Verify: a note in the group's report
+- [x] 0.1 Check that compiler fix round R3 is merged into `main`: every R3 issue of `~/.local/share/bb2-c-work/compiler-bugs-inventory.md` is closed or its fix commit is an ancestor of `main` (`git merge-base --is-ancestor`), and the coordinator confirms. Verify: the list of R3 commits is in the first commit message of group 1; if R3 is not merged, stop
+- [x] 0.2 Baseline: on `main`, clean build, `ctest --preset all` and `ctest --preset host` pass; record the failing set (if any) in `~/.local/share/bb2-c-work/tools-baseline.md`. Verify: the file exists; later groups compare against it
+- [x] 0.3 Settle open questions 1-5 of design.md with the user (hunkcheck, `--purge-snapshots`, exit codes, `testinfo`, one or two runners); update design D1 and the table if an answer changes the grouping. Verify: the design has no open question left that a task depends on
+- [x] 0.4 Agree with the coordinator that no other change touches the tool directories while a group is in progress (merge conflicts in 20 files per group). Verify: a note in the group's report
 
 ## 1. Infrastructure
 
-- [ ] 1.1 `tools/lib/subcmd/` (`subcmd.h`, `subcmd.c`, `lib_subcmd`) as in design D3 and `tools/tests/test_subcmd.c` with inputs in memory: no argument, unknown name, `-h`, `--help`, `SUB -h`, `SUB --help`, a subcommand that returns 1, `argv[0]` of the subcommand is `PROGRAM SUB`. Verify: `ctest --preset host -R subcmd` passes; a deliberately wrong table (a subcommand without usage) fails the test
-- [ ] 1.2 `cmake/check-help.cmake`: `SUBCOMMANDS`, per-subcommand help, the synopsis lines of `-h` against the list (design D5); `host_help_test()` in `host/CMakeLists.txt` replaces the loop at lines 50-54 (all existing programs keep their `help_NAME` tests, single-mode, until their group). Verify: all existing `help_*` pass; a test with a fake program whose subcommand help writes to stderr, and one whose table has a subcommand the list lacks, fails as `WILL_FAIL`
-- [ ] 1.3 `cmake/check-readme.cmake` and `readme_PROGRAM` tests (design D6), with a fake program and a README without one synopsis line as `WILL_FAIL`. Verify: both broken cases fail, a correct pair passes
-- [ ] 1.4 README template and the convention (syntax, exit codes, message form, README sections, adding a subcommand) in `docs/development.md` under the tools / checks section. Verify: the example in the text runs as written; one existing tool's README written from the template (`tools/hdftool/README.md`, no code change) passes `readme_hdftool`
-- [ ] 1.5 Commit "tools: subcmd dispatch library, help and README checks". Verify: C5 of the checklist, all results unchanged (no program changed)
+- [x] 1.1 `tools/lib/subcmd/` (`subcmd.h`, `subcmd.c`, `lib_subcmd`) as in design D3 and `tools/tests/test_subcmd.c` with inputs in memory: no argument, unknown name, `-h`, `--help`, `SUB -h`, `SUB --help`, a subcommand that returns 1, `argv[0]` of the subcommand is `PROGRAM SUB`. Verify: `ctest --preset host -R subcmd` passes; a deliberately wrong table (a subcommand without usage) fails the test
+- [x] 1.2 `cmake/check-help.cmake`: `SUBCOMMANDS`, per-subcommand help, the synopsis lines of `-h` against the list (design D5); `host_help_test()` in `host/CMakeLists.txt` replaces the loop at lines 50-54 (all existing programs keep their `help_NAME` tests, single-mode, until their group). Verify: all existing `help_*` pass; a test with a fake program whose subcommand help writes to stderr, and one whose table has a subcommand the list lacks, fails as `WILL_FAIL`
+- [x] 1.3 `cmake/check-readme.cmake` and `readme_PROGRAM` tests (design D6), with a fake program and a README without one synopsis line as `WILL_FAIL`. Verify: both broken cases fail, a correct pair passes
+- [x] 1.4 README template and the convention (syntax, exit codes, message form, README sections, adding a subcommand) in `docs/development.md` under the tools / checks section. Verify: the example in the text runs as written; one existing tool's README written from the template (`tools/hdftool/README.md`, no code change) passes `readme_hdftool`
+- [x] 1.5 Commit "tools: subcmd dispatch library, help and README checks". Verify: C5 of the checklist, all results unchanged (no program changed)
 
 ## 2. `testinfo` (teststats, covmap, covsel; 7 call sites)
 
@@ -46,7 +46,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 - [ ] 3.1 `tools/refcheck/` with `asm`, `labels`, `data`, `listing-map`, `listing-labels`, `listing-verify`; the argument order of `vasmlisting LISTING map EXE` becomes `refcheck listing-map LISTING`, `listing-verify LISTING EXE`. Call sites: `libs/acidlibs/CMakeLists.txt`, `programs/ted/CMakeLists.txt` (9), `programs/blitz2/CMakeLists.txt` (4), `CMakeLists.txt`. Verify: C1-C5; the tests that run the four tools (`ctest -N` lists them by the callers `libs/acidlibs`, `programs/ted`, `programs/blitz2`) pass with the same reports (`cmp`); an intended list (`programs/ted/checkdata-intended.txt`, `INTENDED` of `blitzlibcompare`) is still read, checked with a stale entry
 
-## 4. `results` (outmatch, prevcmp, cdtable; 22 call sites)
+## 4. `results` (outmatch, prevcmp, cdtable; 25 call sites)
 
 - [ ] 4.1 `tools/results/` with `match`, `prev`, `cd-update`, `cd-reference`. Call sites: `tests/ab3`, `tests/bug-orig` (`outmatch`, including `inject-*.cmake`), `CMakeLists.txt` (`prev_results`, the `prevcmp_*` tests of `tools/tests`), `tests/corpus/CMakeLists.txt` (`cdtable`). `rules.txt:55-56` patterns follow (`tools/results/**` keeps `label:emulator`). Verify: C1-C5; `prev_results` passes, exit 77 without a prev build is unchanged; the targets `blitz2-cd-reference` and `blitz2-cd-update` (`tests/corpus/CMakeLists.txt:179,191`) produce the same table (`cmp`)
 
@@ -54,7 +54,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 - [ ] 5.1 `tools/hunkcheck/` with `start`, `layout`, `stored` (unless open question 1 says otherwise). Call sites: `programs/ab3cli`, `programs/ted`, `programs/ted/tests/oracle`, `tests/ab3`, `tests/corpus/amiga`, `CMakeLists.txt`. Verify: C1-C5; every POST_BUILD check still runs (break a hunk layout on purpose in a scratch copy and see the build fail)
 
-## 6. `blitzres` (10 call sites)
+## 6. `blitzres` (12 call sites)
 
 - [ ] 6.1 `blitzres create|dump|source` instead of `-o OUT ITEM...`, `--dump`, `--source`; call sites `libs/userlibs/rwe/residents.cmake` (6), `residents-cd.cmake`, `tools/blitzres/check.cmake`, `CMakeLists.txt`; README. Verify: C1-C5; the residents of the RWE reference build are byte-identical (`cmp` of the files `residents.cmake` writes), the tests calling `blitzres` (`tools/blitzres/check.cmake`) pass
 

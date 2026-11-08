@@ -1,5 +1,5 @@
 # tests of lib/, with inputs built in memory (testutil.h)
-foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
+foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats subcmd
 		outmatch covmap covsel hdf cmdref cdtable prevcmp previntended)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
@@ -179,3 +179,41 @@ set_tests_properties(prevcmp_malformed_entry PROPERTIES WILL_FAIL ON)
 add_test(NAME prevcmp_malformed_entry_names COMMAND prevcmp --intended corpuss:t01 ${prevcmp_dirs})
 set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")
+
+# the checks of the host programs' help and README (cmake/check-help.cmake,
+# cmake/check-readme.cmake) on a fake program with the subcommands alpha
+# and beta: correct, and broken on purpose - each broken case must fail
+# with its message
+add_executable(fake_subcmd fake_subcmd.c)
+target_link_libraries(fake_subcmd PRIVATE lib_subcmd)
+add_executable(fake_subcmd_broken fake_subcmd.c)   # beta -h writes to stderr
+target_link_libraries(fake_subcmd_broken PRIVATE lib_subcmd)
+target_compile_definitions(fake_subcmd_broken PRIVATE FAKE_BROKEN)
+set_target_properties(fake_subcmd_broken PROPERTIES OUTPUT_NAME fake_subcmd
+	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fake-broken)
+set(fake $<TARGET_FILE:fake_subcmd>)
+add_test(NAME help_check_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
+add_test(NAME help_check_stderr COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:fake_subcmd_broken>
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_stderr PROPERTIES
+	PASS_REGULAR_EXPRESSION "fake_subcmd beta --help: output on stderr")
+add_test(NAME help_check_unlisted COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_unlisted PROPERTIES
+	PASS_REGULAR_EXPRESSION "subcommand beta has no help test")
+add_test(NAME help_check_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta,gamma -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_missing PROPERTIES
+	PASS_REGULAR_EXPRESSION "fake_subcmd gamma --help: exit status 2, not 0")
+set(readme ${CMAKE_CURRENT_SOURCE_DIR}/fake-readme)
+add_test(NAME readme_check_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DREADME=${readme}/ok.md -P ${HOST_CHECK_README})
+add_test(NAME readme_check_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DREADME=${readme}/missing.md -P ${HOST_CHECK_README})
+set_tests_properties(readme_check_missing PROPERTIES
+	PASS_REGULAR_EXPRESSION "missing in the README:[ \n]+       fake_subcmd beta --all")
+add_test(NAME readme_check_stale COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DREADME=${readme}/stale.md -P ${HOST_CHECK_README})
+set_tests_properties(readme_check_stale PROPERTIES
+	PASS_REGULAR_EXPRESSION "no longer printed by fake_subcmd -h:[ \n]+       fake_subcmd gamma FILE")

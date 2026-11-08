@@ -46,6 +46,8 @@
 #              prev build, the build of the previous commit)
 #   previntended  the intended differences of the corpus and ted_ab against
 #              the prev build (PREV_INTENDED entries)
+#   subcmd     the subcommand dispatch of the host programs (PROGRAM SUB
+#              ARGS, -h of the program and of every subcommand)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -74,3 +76,4 @@ add_subdirectory(cmdref)
 add_subdirectory(cdtable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
+add_subdirectory(subcmd)

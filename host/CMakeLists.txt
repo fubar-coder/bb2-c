@@ -33,6 +33,24 @@ endif()
 enable_testing()
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
 
+# the tests of every host program (docs/development.md, "Host programs"):
+# help_PROGRAM - -h and --help (cmake/check-help.cmake), with the
+# subcommands also SUB -h and --help of each and the synopsis lines of the
+# program's usage against them; readme_PROGRAM - the README against -h
+# (cmake/check-readme.cmake).  The program is a target of this project.
+set(HOST_CHECK_HELP ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help.cmake)
+set(HOST_CHECK_README ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-readme.cmake)
+function(host_help_test program)
+	string(JOIN "," subcommands ${ARGN})
+	add_test(NAME help_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
+		-DSUBCOMMANDS=${subcommands} -P ${HOST_CHECK_HELP})
+endfunction()
+function(host_readme_test program readme)
+	get_filename_component(readme ${readme} ABSOLUTE)
+	add_test(NAME readme_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
+		-DREADME=${readme} -P ${HOST_CHECK_README})
+endfunction()
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-tests-host)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/blitz2/tests/host blitz2-tests-host)
@@ -46,12 +64,12 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/corpus/runner corpus-runne
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/runner ted-ab-runner)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 
-# -h / --help of every callable host program: usage on stdout, exit 0
+# -h / --help of the host programs without subcommands (the programs with
+# subcommands have their help_ and readme_ tests in their own directory)
 foreach(t amiga_run asmcmp biglib blitztokens blitzlibcheck blitzlibcompare checkdata checklabels
 		hunkcheck mktestdata bb22 blitzres bblines bbdetok xtra vasmlisting tedtok teddetok corpusrun cdrun tedab teddump
 		outmatch ab3tok covmap covsel hdftool cmdref cdtable prevcmp)
-	add_test(NAME help_${t} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${t}>
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help.cmake)
+	host_help_test(${t})
 endforeach()
 
 # the owner of the emulator snapshots (cmake/emulation-queue.cmake): the

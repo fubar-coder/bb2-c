@@ -373,8 +373,8 @@ programs; it overestimates: `xtra` is also the file extension).
 | | checkdata | 6 / 2 | 28 / 9 |
 | | vasmlisting | 10 / 3 | 10 / 6 |
 | `hunkcheck` (10) | hunkcheck | 10 / 7 | 8 / 5 |
-| `results` (22) | outmatch | 8 / 6 | 3 / 3 |
-| | prevcmp | 10 / 2 | 1 / 1 |
+| `results` (25) | outmatch | 8 / 6 | 3 / 3 |
+| | prevcmp | 13 / 2 | 1 / 1 |
 | | cdtable | 4 / 2 | 1 / 1 |
 | `testinfo` (7) | teststats | 0 / 0 | 8 / 2 |
 | | covmap | 4 / 1 | 7 / 2 |
@@ -383,13 +383,13 @@ programs; it overestimates: `xtra` is also the file extension).
 | | cdrun | 9 / 5 | 14 / 4 |
 | `tedab` (10) | tedab | 10 / 3 | 43 / 7 |
 | | teddump | 0 / 0 | 18 / 5 |
-| `blitzres` | blitzres | 10 / 4 | 21 / 7 |
+| `blitzres` | blitzres | 12 / 5 | 21 / 7 |
 | standalone | amiga_run | 25 / 15 | 20 / 8 |
 | | mktestdata | 13 / 3 | 6 / 3 |
 | | xtra | 6 / 4 | 250 / 35 (mostly the extension) |
 | | hdftool | 5 / 1 | 10 / 3 |
 
-Total 284 CMake occurrences. The largest commits are `bbsrc` (56
+Total 289 CMake occurrences (recounted on 2f44b9d4; 284 when written, see "Implementation notes"). The largest commits are `bbsrc` (56
 occurrences in 18 files, 82 doc mentions; `bbdetok`'s 24 are mostly in
 `tools/bbdetok/tooltest.cmake`) and `tedsrc` (45 in 21 files, the call
 sites are spread over `libs/userlibs/rwe`, `tests/bug-orig`, `tests/ab3`,
@@ -431,18 +431,65 @@ two scripts.
 - **Not harmonised exit codes** (D4) leave an inconsistency the READMEs
   document; the alternative changes verdicts and is a separate decision.
 
-## Open questions
+## Open questions (decided 2026-11-08)
 
-1. `hunkcheck` as a program of its own, as part of `refcheck`
-   (`refcheck hunk-start|hunk-layout|hunk-stored`), or in `blitzlib`? The
-   proposal here: its own; it checks the build result of programs without
-   an original, and its 10 call sites are in the program builds.
-2. `amiga_run`: keep `--purge-snapshots` as an option of the one mode
-   (this design), or make it `amiga_run purge-snapshots` and the run
-   `amiga_run run ...` (25 + 18 more occurrences to change)?
-3. Harmonise the exit status for an unreadable input (1 or 2) in a
-   separate change, with the tests that expect it?
-4. `testinfo` as proposed, or `teststats` in `results` and `coverage` for
-   `covmap`/`covsel`, as first suggested?
-5. `corpusrun`/`cdrun` and `tedab` as two programs (this design) or one
-   `testrun`?
+Settled by the coordinator as this design proposes (task 0.3):
+
+1. `hunkcheck` stays a program of its own (`start`, `layout`, `stored`).
+2. `amiga_run` keeps `--purge-snapshots` as an option of its one mode.
+3. The exit status for an unreadable input stays as it is (1 in some
+   tools, 2 in others) and is documented per tool in its README;
+   harmonising it would be a separate change.
+4. `testinfo` with `stats`, `map`, `select`.
+5. `corpusrun` (`pass`, `cd`) and `tedab` (`run`, `lint`, `info`, `text`,
+   `cmp`) stay two programs.
+
+## Implementation notes
+
+Findings and adaptations while implementing (2026-11-08).
+
+- **Changes on `main` since the design was written**, none of which
+  changes the plan: `cdtable` writes error notes `(2.10: error LINE)`
+  (`tools/lib/cdtable`, 8f494806; `cdtable update|reference` keep their
+  arguments, the group `results` takes it over as it is); the prev build
+  passes the snitch source to its nested configures (`cmake/prev.cmake`,
+  `cmake/prev-build.cmake`, a744716e; the prev build is still built from
+  the previous commit's own CMake files, so the rename of the tools does
+  not disturb it); `tools/lib/amiga_emulation/default.uae` uses
+  `comp_flushmode=hard` (emulator configuration only).
+- **Call sites recounted** on 2f44b9d4 with the method of D10: as D10
+  except `prevcmp` 13 / 2 (the `prevcmp_*` tests of `tools/tests` gained
+  three calls) and `blitzres` 12 / 5; total 289 instead of 284.
+- **Baseline** (task 0.2, `~/.local/share/bb2-c-work/tools-baseline.md`):
+  `ctest --preset host` passes; `ctest --preset all` fails only
+  `host_emulator`, because of `amiga_emulation_snapshot` (a restored
+  snapshot does not start; Amiberry, not a tool of this change).
+- **`subcmd` (D3)**: the usage text of an entry is the subcommand's own
+  `-h` output and starts with `usage: PROGRAM SUB`; a subcommand prints
+  the same text on a usage error (`cmd_NAME_usage`, defined in
+  `cmd_NAME.c`, referenced by the table). The program usage is not the
+  whole texts but their synopsis lines (of each entry the first line and
+  the lines after it that start with seven spaces), the `usage: ` of every
+  entry after the first replaced by seven spaces, and a last line
+  `The description and options of a subcommand: PROGRAM SUB -h`: with the
+  descriptions of all subcommands, `-h` of a program with six of them was
+  pages long and its synopsis hard to find. The synopsis lines have the
+  form D5 and D6 expect. Besides `subcmd_main()` the
+  library has `subcmd_main_to()` (the streams given, for the test),
+  `subcmd_check()` (the table rules: a name, a function, a usage that
+  starts with `usage: PROGRAM NAME`, one `usage: `, a final newline, no
+  name twice; a broken table makes every call exit 1) and
+  `subcmd_usage()`.
+- **The broken-input tests of the checks** (D5, D6) match the failure
+  message with `PASS_REGULAR_EXPRESSION` instead of `WILL_FAIL`, as the
+  other broken-input tests of the build do (`cmdref_check_broken`): a
+  failure for another reason (a missing program) does not pass them.
+  `check-help.cmake` gets the subcommand list comma-separated
+  (`-DSUBCOMMANDS=a,b`), because `add_test` would split a `;`-list into
+  arguments.
+- **Messages**: a former `main.c` keeps its messages; only the prefix
+  becomes `argv[0]` (`static const char *me`, set first in `cmd_NAME`),
+  also of the messages written to stdout (`asmcmp`'s "skipped"). A
+  message that is not of the form `tool: FILE: message` today (for
+  example `teststats: cannot read FILE`) keeps its form: the spec allows
+  no other change than the prefix.

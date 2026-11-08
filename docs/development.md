@@ -276,3 +276,115 @@ The checks of the lists themselves, with deliberately broken input:
 correct, stale, an unlisted difference), `blitzlibcompare_single_stale`,
 `ted_checkdata_intended`, `ted_checkdata_unlisted`,
 `ted_checkdata_stale` (the tools on built files).
+
+## Host programs
+
+The host programs (`tools/`, the TED tools in `programs/ted/tools/`, the
+runners in `tests/corpus/runner/` and `tests/ted-ab/runner/`) are built
+by the host side (`host/`) and called by the build and the tests; nothing
+installs them. Each one has a `README.md` in its directory; what it does
+and how it is called is written there and in its `-h`, not in other
+documents (they name the program in one line and link the README).
+
+**Syntax.** A program with several modes has subcommands:
+`PROGRAM SUB [OPTIONS] ARGS`, the subcommand first, its name lower case
+with `-` between words; options are `-x` or `--name` flags of one
+subcommand and follow it. A mode is a subcommand, never a flag or the
+position of an argument. A program with one mode is called
+`PROGRAM [OPTIONS] ARGS`. Programs that work on the same kind of input
+for the same callers are one program; a program that links the TED core
+(`tedhost`, `tedcore_host`) is not merged with one that does not.
+
+**Dispatch.** `main.c` of a program with subcommands is only its table
+and the call of `subcmd_main()` (`tools/lib/subcmd/subcmd.h`); each
+subcommand is `int cmd_NAME(int argc, char **argv)` in `cmd_NAME.c` next
+to it, with its usage text as the table's entry. The smallest example is
+the fake program of the checks' tests, `tools/tests/fake_subcmd.c`:
+
+```c
+static const struct subcmd table[] = {
+    { "alpha", run, "usage: fake_subcmd alpha [-x] FILE\n  the first subcommand\n" },
+    { "beta", run, "usage: fake_subcmd beta\n       fake_subcmd beta --all\n  the second subcommand\n" },
+};
+
+int main(int argc, char **argv)
+{
+    return subcmd_main("fake_subcmd", table, sizeof table / sizeof table[0], argc, argv);
+}
+```
+
+```
+$ fake_subcmd -h
+usage: fake_subcmd alpha [-x] FILE
+       fake_subcmd beta
+       fake_subcmd beta --all
+The description and options of a subcommand: fake_subcmd SUB -h
+$ fake_subcmd beta -h
+usage: fake_subcmd beta
+       fake_subcmd beta --all
+  the second subcommand
+$ fake_subcmd beta x
+fake_subcmd beta
+```
+
+The dispatcher prints the program's usage (the synopsis lines of the
+table in order) for `-h`/`--help` on stdout and, with exit status 2, for no or an
+unknown subcommand on stderr; `PROGRAM SUB -h` prints that subcommand's
+usage; otherwise it calls the subcommand with `argv[0]` set to
+`"PROGRAM SUB"`. A usage text is `usage: PROGRAM SUB ...`, further
+synopsis lines (or a continued one) seven spaces and more, then the
+description, a newline at the end; the dispatcher refuses a table that breaks
+this (test `subcmd`).
+
+**Exit codes and messages.** 0 success; 1 the checked thing failed or an
+input could not be processed; 2 usage error (also an unknown subcommand
+or option); 77 skipped (an optional input such as the CD or the previous
+build, or the emulator, is missing). Where a program returns 2 for an
+unreadable input, it stays so; its README says which. Messages go to
+stderr as `PROGRAM SUB: [FILE: ]message` (`argv[0]` of the subcommand),
+results to stdout or the named output file.
+
+**Tests.** `host_help_test(PROGRAM [SUB...])` (`host/CMakeLists.txt`)
+adds `help_PROGRAM`: `-h` and `--help` of the program and of every
+subcommand exit 0 with the usage on stdout and nothing on stderr, and
+every subcommand of a synopsis line of the program's usage is in the list
+(`cmake/check-help.cmake`). `host_readme_test(PROGRAM README.md)` adds
+`readme_PROGRAM`: every synopsis line of `PROGRAM -h` is a line of the
+README, and every synopsis-like line of the README is printed by `-h`
+(`cmake/check-readme.cmake`). The checks with broken input:
+`help_check_*` and `readme_check_*` (`tools/tests`, the fake program
+`fake_subcmd`). Adding a subcommand: the `cmd_NAME.c`, its table entry,
+its name in the program's `host_help_test` call, its synopsis lines and
+a paragraph in the README.
+
+**README.** The sections, in this order (`tools/hdftool/README.md` is an
+example):
+
+````
+# PROGRAM
+
+What it is for, in a paragraph; where its logic is (tools/lib/NAME).
+
+## Usage
+
+```
+(the synopsis lines of PROGRAM -h, verbatim)
+```
+
+One paragraph per subcommand: what it does, its options.
+
+## Inputs and outputs
+
+File formats (a link to docs/formats.md where it has one), what goes to
+stdout, which files are written.
+
+## Exit codes
+
+## Callers
+
+The CMake files, targets and tests that run each subcommand.
+
+## Example
+
+A call that was run, with its output.
+````
