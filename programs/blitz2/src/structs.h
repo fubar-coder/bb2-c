@@ -422,7 +422,8 @@ SIZE(resentry, 68);
 struct forthent {
     ULONG pc;               /* 0  code start of the element */
     struct offnode *firstoff; /* 4 */
-    ULONG lasta6q;          /* 8  long read of lasta6 (= lasta6.w,quoteflag.w) */
+    ULONG lasta6q;          /* 8  long read of lasta6 (= lasta6.w,quoteflag.w);
+                               not read back (#343) */
     UWORD lasta6w;          /* 12 lasta6 (renamed: lasta6 is a macro in data.h) */
     UWORD zero;             /* 14 */
     UWORD constgot;         /* 16 0 = constant, $ffff = not */

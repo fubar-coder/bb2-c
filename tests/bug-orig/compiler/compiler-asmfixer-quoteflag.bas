@@ -8,6 +8,7 @@
 ; empty and the immediate 0. Found with the RWE LES debug library
 ; (ExtractLabel: CMPI.b #" ",d2 is 0 in RILESDEBUGLIB, a later line has
 ; MOVE.w #">"*8,d0). Correct: the program prints 00000020.
+; @fixed #343
 MOVEQ #-1,d1
 MOVE.l #" ",d1
 PutReg d1,r.l

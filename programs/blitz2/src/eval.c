@@ -824,16 +824,15 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
 
             pokewd(0x2000 | regat);
             pokewd(0x4e75);                         /* rts */
-            lasta6 = fs[-2].lasta6w;
-            /* BUG(orig) (#343): the long move (blitz2.s:9025) also restores
+            /* Fixed (#343): only the word lasta6 is restored.  The
+               original's long move (blitz2.s:9025) also restored
                quoteflag as getelement2 saved it - after getchar3 had read
-               the left operand's first char.  For a character constant
-               ("x"*8, only in asmfixer: constmode) that is the opening
-               quote, so quoteflag stays set after the expression;
-               asmfixer never resets it, and the operands evaluated next
-               (earlier lines, insasm prepends) lose their spaces inside
-               quotes: #" " gives 0.  Kept. */
-            L_(lasta6qf) = fs[-2].lasta6q;          /* also quoteflag (asm) */
+               the left operand's first char: for a character constant
+               ("x"*8, only in asmfixer: constmode) the opening quote, so
+               quoteflag stayed set after the expression and the operands
+               evaluated next (earlier lines, insasm prepends) lost their
+               spaces inside quotes: #" " gave 0. */
+            lasta6 = fs[-2].lasta6w;
             pc = fs[-2].pc;
             /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
                registers; C runs the code through callregs with

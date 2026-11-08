@@ -156,8 +156,9 @@ extern ULONG zero;                      /* 14981 constant 0 */
 extern WORD  numincs;                   /* 14982 # included files */
 extern struct xinclude *firstxinc;      /* 14984 */
 extern struct include *firstinc;        /* 14985 */
-/* 14986 lasta6 (=-1), quoteflag: contiguous, read/written as one long
-   (forth stack lasta6q, blitz2.s 9025/9737) -> L_(lasta6qf) */
+/* 14986 lasta6 (=-1), quoteflag: contiguous, saved as one long
+   (forth stack lasta6q, blitz2.s:9737; eval5 restores only lasta6, #343)
+   -> L_(lasta6qf) */
 extern WORD  lasta6qf[2];
 #define lasta6    (lasta6qf[0])
 #define quoteflag (lasta6qf[1])
