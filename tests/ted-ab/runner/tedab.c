@@ -14,9 +14,10 @@
 #include "sha256.h"
 #include "util.h"
 
-const char *const tedab_combo_names[TEDAB_NCOMBOS] = { "R5", "C5", "Cc", "Rc" };
-const int tedab_pairs[4][2] = {
-    { TEDAB_R5, TEDAB_C5 }, { TEDAB_RC, TEDAB_CC }, { TEDAB_R5, TEDAB_RC }, { TEDAB_C5, TEDAB_CC }
+const char *const tedab_combo_names[TEDAB_NCOMBOS] = { "R5", "C5", "Cc", "Rc", "P5", "Pc" };
+const int tedab_pairs[TEDAB_NPAIRS][2] = {
+    { TEDAB_R5, TEDAB_C5 }, { TEDAB_RC, TEDAB_CC }, { TEDAB_R5, TEDAB_RC }, { TEDAB_C5, TEDAB_CC },
+    { TEDAB_C5, TEDAB_P5 }, { TEDAB_CC, TEDAB_PC }
 };
 
 int tedab_combo(const char *name)
@@ -33,7 +34,7 @@ int tedab_pair(const char *name)
 {
     int k;
 
-    for (k = 0; k < 4; k++) {
+    for (k = 0; k < TEDAB_NPAIRS; k++) {
         const char *a = tedab_combo_names[tedab_pairs[k][0]];
         const char *b = tedab_combo_names[tedab_pairs[k][1]];
         size_t la = strlen(a);
@@ -345,7 +346,7 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
                 if (pr < 0) {
                     snprintf(err, errlen,
                              "%s line %u: @fixed: %s is no compared pair (R5-C5 Rc-Cc R5-Rc "
-                             "C5-Cc)", name, no, w[k]);
+                             "C5-Cc C5-P5 Cc-Pc)", name, no, w[k]);
                     return -1;
                 }
                 if (t->fixed[pr]) {
@@ -459,7 +460,7 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
         snprintf(err, errlen, "%s: no combination", name);
         return -1;
     }
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < TEDAB_NPAIRS; i++) {
         unsigned both = (1u << tedab_pairs[i][0]) | (1u << tedab_pairs[i][1]);
 
         if (t->fixed[i] && (t->combos & both) != both) {

@@ -8,7 +8,15 @@
  *   Cc  TED-C                    + blitz2-c
  *   Rc  reference TED            + blitz2-c
  *
- * and compared pairwise (R5-C5, Rc-Cc, R5-Rc, C5-Cc).  Directives:
+ * and compared pairwise (R5-C5, Rc-Cc, R5-Rc, C5-Cc).  Two more
+ * combinations are for the prev build (the previous commit,
+ * cmake/prev.cmake), only run when the pass names them:
+ *
+ *   P5  TED of the previous commit + blitz2 2.10
+ *   Pc  TED of the previous commit + blitz2 of the previous commit
+ *
+ * compared with TED-C (C5-P5, Cc-Pc): a commit that changes what TED does
+ * shows there.  Directives:
  *   ; @source T NAME     tests/corpus/tests/NAME.bas, tokenised (tedtok)
  *   ; @source E NAME     tests/ted-ab/src/NAME.bas as text (TED tokenises it
  *                        when it loads it)
@@ -41,7 +49,7 @@
  *                        run, listed in the report as KNOWN with REASON;
  *                        run all the same when the filter names it exactly
  *   ; @fixed #NNN PAIR...  TED bug NNN (the issue) is fixed: the named pairs
- *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc; both combinations in
+ *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc, C5-P5, Cc-Pc; both combinations in
  *                        @combos) must differ, FIXED; a named pair that is
  *                        the same is BROKEN (the fix does not show, the
  *                        directive is stale).  The other pairs are compared
@@ -94,10 +102,11 @@
 #define TEDAB_GATE_X1 47
 #define TEDAB_GATE_Y1 39
 
-enum { TEDAB_R5, TEDAB_C5, TEDAB_CC, TEDAB_RC, TEDAB_NCOMBOS };
+enum { TEDAB_R5, TEDAB_C5, TEDAB_CC, TEDAB_RC, TEDAB_P5, TEDAB_PC, TEDAB_NCOMBOS };
 extern const char *const tedab_combo_names[TEDAB_NCOMBOS];
 /* the compared pairs, as combination indexes */
-extern const int tedab_pairs[4][2];
+#define TEDAB_NPAIRS 6
+extern const int tedab_pairs[TEDAB_NPAIRS][2];
 /* index of a combination name, -1 = unknown */
 int tedab_combo(const char *name);
 /* index in tedab_pairs of a pair name "R5-C5", -1 = no compared pair */
@@ -126,7 +135,7 @@ struct tedab_test {
     int norunerr, roundtrip, nofiles, font, est;
     char *opts;                 /* @opts spec, NULL = none */
     char *known;                /* @known REASON, NULL = none */
-    unsigned fixed[4];          /* @fixed: the issue per tedab_pairs index, 0 =
+    unsigned fixed[TEDAB_NPAIRS]; /* @fixed: the issue per tedab_pairs index, 0 =
                                    the pair must be the same */
     char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
     struct tedab_file *files;   /* @file */

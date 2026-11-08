@@ -73,7 +73,7 @@ TEST_CASE("directives", "[test]")
     Test k("; @source K internet/demos/memo.bb2\n; @expect tedsave memo.bb2 internet/demos/memo.bb2\n");
     REQUIRE(k.rc == 0);
     CHECK(std::string(k.t.file) == "memo.bb2");
-    CHECK(k.t.combos == 15u);
+    CHECK(k.t.combos == (1u << TEDAB_NCOMBOS) - 1);   // all, also P5 and Pc
 
     Test none("; @source none\n; @nofiles\n");
     REQUIRE(none.rc == 0);
@@ -113,6 +113,12 @@ TEST_CASE("@fixed: the directive", "[fixed]")
     CHECK(tedab_pair("Rc-Cc") == 1);
     CHECK(tedab_pair("R5-Rc") == 2);
     CHECK(tedab_pair("C5-Cc") == 3);
+    CHECK(tedab_pair("C5-P5") == 4);      // the prev build's combinations
+    CHECK(tedab_pair("Cc-Pc") == 5);
+    CHECK(tedab_pair("P5-C5") == -1);
+    CHECK(tedab_pair("Cc-P5") == -1);
+    CHECK(tedab_combo("P5") == TEDAB_P5);
+    CHECK(tedab_combo("Pc") == TEDAB_PC);
     CHECK(tedab_pair("C5-R5") == -1);       // the pairs as the report names them
     CHECK(tedab_pair("R5-Cc") == -1);       // not compared
     CHECK(tedab_pair("R5") == -1);
@@ -126,8 +132,14 @@ TEST_CASE("@fixed: the directive", "[fixed]")
 
     Test none("; @source none\n; @nofiles\n");
     REQUIRE(none.rc == 0);
-    for (int k = 0; k < 4; k++)
+    for (int k = 0; k < TEDAB_NPAIRS; k++)
         CHECK(none.t.fixed[k] == 0u);
+
+    // a fix of TED shows in the comparison with the previous commit
+    Test p("; @source none\n; @nofiles\n; @fixed #5 Cc-Pc C5-P5\n");
+    REQUIRE(p.rc == 0);
+    CHECK(p.t.fixed[4] == 5u);
+    CHECK(p.t.fixed[5] == 5u);
 
     // the named pair's combinations must run
     CHECK(Test("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed #1 R5-C5\n").rc == 0);
@@ -153,6 +165,8 @@ TEST_CASE("@fixed: refused", "[fixed]")
     refused("; @fixed #12 R5C5", "R5C5 is no compared pair");
     refused("; @fixed #12 C5-R5", "C5-R5 is no compared pair");
     refused("; @fixed #12 R5-Cc", "R5-Cc is no compared pair");
+    refused("; @fixed #12 Cc-P5", "Cc-P5 is no compared pair");
+    refused("; @combos Cc C5\n; @fixed #12 Cc-Pc", "the pair is never compared");
     refused("; @fixed #12 R5-C5 R5-C5", "pair R5-C5 named twice");
     refused("; @fixed #12 R5-C5\n; @fixed #13 R5-C5", "pair R5-C5 named twice");
     refused("; @combos R5 C5\n; @fixed #12 Rc-Cc", "the pair is never compared");
@@ -174,7 +188,7 @@ TEST_CASE("@fixed: verdict of a pair", "[fixed]")
     CHECK(std::string(tedab_pair_verdict_name(TEDAB_PAIR_BROKEN)) == "BROKEN");
     CHECK(std::string(tedab_pair_verdict_name(TEDAB_PAIR_FIXED)) == "FIXED");
     // the other pairs stay as they are: the same passes, a difference fails
-    for (int k = 1; k < 4; k++) {
+    for (int k = 1; k < TEDAB_NPAIRS; k++) {
         CHECK(tedab_pair_verdict(&t.t, k, 0) == TEDAB_PAIR_SAME);
         CHECK(tedab_pair_verdict(&t.t, k, 1) == TEDAB_PAIR_DIFF);
         CHECK(tedab_pair_verdict(&t.t, k, -1) == TEDAB_PAIR_FAIL);

@@ -11,7 +11,7 @@
  *   scripts=DIR        the test scripts (*.drv; gate-*.drv are gate D's)
  *   filter=GLOB,...    only these tests (names without .drv; default all)
  *   combos=XX,...      the combinations, the reference first (default
- *                      R5,C5,Cc,Rc)
+ *                      R5,C5,Cc,Rc; P5 and Pc are for the prev build)
  *   src=DIR            the sources of @source E / S
  *   corpus_src=DIR     the tokenised corpus tests (@source T: NAME.bb2)
  *   corpus_out=DIR     the corpus ref run's results: its executables
@@ -23,6 +23,9 @@
  *   fonts=DIR          chars8.b / chars.b of TED (decoding the dumps)
  *   teddrive=, teddrivetest=, tedprobe=, reqtrap=PATH   the tools
  *   ted_ref=, ted_c=, blitz2_ref=, blitz2_c=PATH        R/C and 5/c
+ *   ted_prev=, blitz2_prev=PATH   P and c of the previous commit (the
+ *                      combinations P5, Pc; needed only when combos= names
+ *                      them: P5 needs ted_prev, Pc both)
  *   timeout=SEC        per emulator session (default 120)
  *   budget=SEC         estimated run time (@est) per session (default 60:
  *                      boot ~15 s and gates ~10 s come on top)
@@ -84,6 +87,7 @@ struct pass {
     char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out;
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
+    char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *inject, *wbrun, *gates;
     char *orig, *orig_by;
     unsigned timeout, budget, parallel, stack, bugorig;
@@ -124,6 +128,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "fonts", &P.fonts }, { "teddrive", &P.teddrive }, { "teddrivetest", &P.teddrivetest },
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
         { "ted_c", &P.ted_c }, { "blitz2_ref", &P.blitz2_ref }, { "blitz2_c", &P.blitz2_c },
+        { "ted_prev", &P.ted_prev }, { "blitz2_prev", &P.blitz2_prev },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
         { "orig", &P.orig }, { "orig_by", &P.orig_by },
     };
@@ -217,6 +222,16 @@ static int parse(const char *text, char *err, size_t errlen)
 
             if (k < 0 || ncombo_order >= TEDAB_NCOMBOS) {
                 snprintf(err, errlen, "combos: unknown or too many: %s", w);
+                free(c);
+                return -1;
+            }
+            if ((k == TEDAB_P5 || k == TEDAB_PC) && !P.ted_prev) {
+                snprintf(err, errlen, "combos: %s needs ted_prev=", w);
+                free(c);
+                return -1;
+            }
+            if (k == TEDAB_PC && !P.blitz2_prev) {
+                snprintf(err, errlen, "combos: Pc needs blitz2_prev=");
                 free(c);
                 return -1;
             }
@@ -545,8 +560,10 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
         dir = str_printf("%s/combo/%s/blitz2", vol, tedab_combo_names[c]);
         r = dir && !mkdir_p(dir) ? 0 : -1;
         if (!r)
-            r = copy_to(c == TEDAB_R5 || c == TEDAB_C5 ? P.blitz2_ref : P.blitz2_c, dir, "blitz2")
-                || copy_to(c == TEDAB_R5 || c == TEDAB_RC ? P.ted_ref : P.ted_c, dir, "ted")
+            r = copy_to(c == TEDAB_R5 || c == TEDAB_C5 || c == TEDAB_P5 ? P.blitz2_ref
+                        : c == TEDAB_PC ? P.blitz2_prev : P.blitz2_c, dir, "blitz2")
+                || copy_to(c == TEDAB_R5 || c == TEDAB_RC ? P.ted_ref
+                           : c == TEDAB_P5 || c == TEDAB_PC ? P.ted_prev : P.ted_c, dir, "ted")
                 ? -1 : 0;
         for (k = 0; !r && k < sizeof libs / sizeof libs[0]; k++) {
             char *rel = str_printf("BLITZ2/%s", libs[k]), *from = rel ? tedab_resolve(P.cd, rel)
@@ -829,7 +846,7 @@ static int run(FILE *log)
     /* the original TED only runs for the recording */
     const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap,
                             P.orig && !record ? P.ted_c : P.ted_ref, P.ted_c,
-                            P.blitz2_ref, P.blitz2_c, P.oracle };
+                            P.blitz2_ref, P.blitz2_c, P.oracle, P.ted_prev, P.blitz2_prev };
     struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
     size_t *queue = NULL, nq = 0, i, k;
     struct teddump_fonts fonts;
@@ -845,7 +862,7 @@ static int run(FILE *log)
     if (P.orig && !record && (rc = load_orig(log)))
         return rc;
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
-        if (access(files[i], R_OK)) {
+        if (files[i] && access(files[i], R_OK)) {
             fprintf(log, "tedab: no %s - skipped\n", files[i]);
             return 77;
         }
@@ -1142,7 +1159,7 @@ static int run(FILE *log)
             }
             text_add(&rep, "\n%s", exp.p ? exp.p : "");
             free(exp.p);
-            for (k = 0; k < 4; k++) {
+            for (k = 0; k < TEDAB_NPAIRS; k++) {
                 int a = tedab_pairs[k][0], b = tedab_pairs[k][1], v;
                 struct text d = { 0 };
 
