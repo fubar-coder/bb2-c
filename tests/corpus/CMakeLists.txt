@@ -7,7 +7,7 @@
 #             rcput (rc=N in the session scripts on Kickstart 1.x)
 #   tests*/   the test programs (text); tokenised here with tedtok (the TED
 #             core), which also refuses lines TED would cut
-#   runner/   corpusrun (host side): one pass, see runner/corpus.h
+#   runner/   corpusrun (host side): the passes, see runner/README.md
 add_subdirectory(amiga)
 
 # --------------------------------------------------------- the sources
@@ -109,7 +109,7 @@ function(corpus_pass name)
 		string(APPEND text "source=${s}\n")
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
-	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
+	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	# one session per configuration, one after the other if there are not
 	# enough emulator slots free, each maybe waiting for one
 	math(EXPR limit "${CORPUS_TIMEOUT} * ${configs} + 120 + ${configs} * ${EMULATION_QUEUE_WAIT}")
@@ -142,7 +142,7 @@ corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 	SERIAL_SAME_AS corpus_serial
 	SOURCES ${corpus_tests-serial})
 
-# ------------------------------------------------- the CD (cdrun, runner/)
+# --------------------------------------------- the CD (corpusrun cd, runner/)
 # Every .bb2/.bb of the CD compiled (not run) as bb2's bb2corpus did: with
 # the sources' .xtra, assigns to directories of the CD, in the directory of
 # a relative INCLUDE.  The reference (target blitz2-cd-reference, not ALL:
@@ -179,7 +179,7 @@ endfunction()
 
 cd_pass(cd-reference ${REF_BLITZ2} ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv)
 add_custom_target(blitz2-cd-reference
-	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.pass
+	COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.pass
 	COMMAND ${RESULTS} cd-reference ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv ${CD_TABLE} ${CD_TABLE}
 	DEPENDS tedstub host_tools
 	USES_TERMINAL
@@ -191,7 +191,7 @@ add_custom_target(blitz2-cd-reference
 # error line) is the CD's again
 cd_pass(cd-update $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv)
 add_custom_target(blitz2-cd-update
-	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-update.pass
+	COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/cd-update.pass
 	COMMAND ${RESULTS} cd-update ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv ${CD_TABLE} ${CD_TABLE}
 	DEPENDS blitz2 tedstub host_tools
 	USES_TERMINAL
@@ -199,11 +199,11 @@ add_custom_target(blitz2-cd-update
 	VERBATIM)
 
 cd_pass(corpus_cd $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.tsv ${CD_TABLE})
-add_test(NAME corpus_cd COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.pass)
+add_test(NAME corpus_cd COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.pass)
 math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # the same with blitz2-ab3 (BB2 mode: the editor is tedstub), against the
 # same table - spec ab3-compat/bb2-equivalence for the CD's sources
 cd_pass(corpus_cd_ab3 $<TARGET_FILE:blitz2-ab3> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.tsv ${CD_TABLE})
-add_test(NAME corpus_cd_ab3 COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
+add_test(NAME corpus_cd_ab3 COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
 set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})

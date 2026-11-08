@@ -64,8 +64,8 @@ tests/corpus/                corpus: blitz2-c against blitz2 2.10 in the
                              emulator; amiga/: tedstub (blitz2:ted for
                              batch runs), reqtrap, reqclose, reqclosetest
                              tests*/: the test programs (plain text, .bas),
-                             runner/: corpusrun (one pass), cdrun (the
-                             CD through a compiler), both host
+                             runner/: corpusrun (host: one pass, the CD
+                             through a compiler; runner/README.md)
 tools/                       host tools:
   lib/                       the logic as libraries: hunk (read the hunk
                              format), blitzlib (header, token table,

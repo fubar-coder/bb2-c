@@ -1,9 +1,9 @@
-# ctest cdrun_source: the source= lines of cdrun with broken input, on the
+# ctest cdrun_source: the source= lines of corpusrun cd with broken input, on the
 # host (no emulator: the errors come before any session).  A "CD" with one
 # tokenised source and dummy compiler files:
 #   a source= that is not on the CD   -> exit 2, named, OUT removed
 #   source= without OUT               -> exit 2 (pass file error)
-#   cmake -DCDRUN=... -DWORK=... -P check-cdrun-source.cmake
+#   cmake -DCORPUSRUN=... -DWORK=... -P check-cdrun-source.cmake
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK}/cd/sub ${WORK}/out)
 foreach(f blitz2 deflibs acidlibs defaultdbug ted tokens)
@@ -20,7 +20,7 @@ function(pass name text)
 endfunction()
 
 pass(missing "source=sub/a.bb|${WORK}/out/a.obj\nsource=sub/nosuch.bb|${WORK}/out/stale.obj\n")
-execute_process(COMMAND ${CDRUN} ${WORK}/missing.pass RESULT_VARIABLE rc OUTPUT_VARIABLE out
+execute_process(COMMAND ${CORPUSRUN} cd ${WORK}/missing.pass RESULT_VARIABLE rc OUTPUT_VARIABLE out
 	ERROR_VARIABLE out)
 message("${out}")
 if(NOT rc EQUAL 2 OR NOT out MATCHES "source sub/nosuch.bb is not below")
@@ -31,7 +31,7 @@ if(EXISTS ${WORK}/out/stale.obj)
 endif()
 
 pass(noout "source=sub/a.bb\n")
-execute_process(COMMAND ${CDRUN} ${WORK}/noout.pass RESULT_VARIABLE rc OUTPUT_VARIABLE out
+execute_process(COMMAND ${CORPUSRUN} cd ${WORK}/noout.pass RESULT_VARIABLE rc OUTPUT_VARIABLE out
 	ERROR_VARIABLE out)
 message("${out}")
 if(NOT rc EQUAL 2 OR NOT out MATCHES "source=REL\\|OUT")

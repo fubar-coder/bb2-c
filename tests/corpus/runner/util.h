@@ -1,5 +1,5 @@
 /*
- * util.h - strings and files for the corpus runners (corpusrun, cdrun).
+ * util.h - strings and files for the corpus runners (corpusrun, tedab).
  */
 #ifndef CORPUS_UTIL_H
 #define CORPUS_UTIL_H

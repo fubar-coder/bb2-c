@@ -172,7 +172,7 @@ The macros come from `libmacs` (resident `libmacs.res` or `XINCLUDE
 "libmacs.bb"`); runtime errors must be off and no BASIC token (`End`)
 may be in it [Doku].
 
-**Checked with the CD** [B]: `cdrun` compiled `EXTRAS/LIBSDEV/USERLIBSRC/`
+**Checked with the CD** [B]: `corpusrun cd` compiled `EXTRAS/LIBSDEV/USERLIBSRC/`
 with blitz2 2.10 (`blitz2-cd-reference`): 9 third-party libraries are
 **byte-identical** to their binaries on the CD (AaronsIcon, ElmoreDos,
 ElmoreFuncs, ElmoreMath, ElmoreSys, FuzziesReq, RomulusConsole,
@@ -180,14 +180,14 @@ RomulusCrunch, RomulusRequest). The RI sources there are older versions
 (e.g. RIEncrypt without the optional parameters) – no binary of them is
 on the CD.
 
-**The RWE sources** (`cdrun` over a staging directory, raw material
+**The RWE sources** (`corpusrun cd` over a staging directory, raw material
 `.cache/rwelibs-analysis/refbuild/`): with the files of
 `EXTRAS/BLITZLIBS/` (libmacs, libnums, residents) and `sbra.res` =
 `BUM10A/BLITZLIBS/ASMMACS.RES` ("donated by Steve Matty – RI/RWE –
 August '96": the `!SBRA`… short branch macros), the reconstructed
 residents and library numbers (below) 84 of the 123 sources compile,
 **16 are byte-identical** to a binary [B] (compared as files; the
-`cdrun` table hashes with the trap blocks zeroed and misses
+`corpusrun cd` table hashes with the trap blocks zeroed and misses
 `Debuglib4`):
 
 | Source | Identical to |
@@ -289,7 +289,7 @@ these sources. Four things were needed:
   `LotanCP2`.
 
 `optidec.bin` (`IncBin` of `stclib`, `stcdecrunchlib`) is in the
-archive next to them; with the INCDIR lines gone, `cdrun` runs these jobs
+archive next to them; with the INCDIR lines gone, `corpusrun cd` runs these jobs
 in the staging root (where `libmacs.bb` is), so it is staged there too.
 Both compile; their binaries contain `optidec.bin` unchanged but are
 other versions (644/1296 bytes against 648/1276).

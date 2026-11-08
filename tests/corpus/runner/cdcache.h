@@ -1,8 +1,8 @@
 /*
- * cdcache.h - the cache of a cdrun pass (cache=PATH): a record of the
+ * cdcache.h - the cache of a corpusrun cd pass (cache=PATH): a record of the
  * digest of the pass's inputs and the hashes of its outputs, written after
  * a successful run.  If the next run has the same inputs and all outputs
- * are still there unchanged, cdrun does not start the emulator.  A test
+ * are still there unchanged, corpusrun cd does not start the emulator.  A test
  * cache, not a build check: anything missing or odd in the record means a
  * full run.
  *

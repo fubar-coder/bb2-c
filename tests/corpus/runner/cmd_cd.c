@@ -1,9 +1,9 @@
 /*
- * cdrun - every .bb2/.bb of the CD compiled by one compiler in Amiberry
- * (bb2 compilerlauf/tools/bb2corpus.py + refcompare.py): a table of the
- * results, optionally compared with a reference table.
+ * corpusrun cd - every .bb2/.bb of the CD compiled by one compiler in
+ * Amiberry (bb2 compilerlauf/tools/bb2corpus.py + refcompare.py): a table
+ * of the results, optionally compared with a reference table.
  *
- *   cdrun PASSFILE
+ *   corpusrun cd PASSFILE
  *
  * The pass file, lines KEY=VALUE, '#' comments:
  *   work=DIR           work directory (emptied first)
@@ -32,8 +32,9 @@
  *                      sources, libs/userlibs/rwe/refbuild.cmake)
  *   cache=PATH         optional: after a run with exit status 0, a record
  *                      of the inputs and outputs to PATH (cdcache.h); the
- *                      next run with the same inputs (the pass file, this
- *                      cdrun - with amiga_emulation and its templates -,
+ *                      next run with the same inputs (the pass file, the
+ *                      program corpusrun - with amiga_emulation and its
+ *                      templates -,
  *                      blitz2=, deflibs=, acidlibs=, defaultdbug=, ted=,
  *                      tokens=, reference=, every file below cd=) whose
  *                      outputs (output=, report=, the OUTs of source=)
@@ -70,6 +71,7 @@
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "cdcache.h"
+#include "cmds.h"
 #include "corpus.h"
 #include "sha256.h"
 #include "statline_emulation.h"
@@ -78,6 +80,8 @@
 #define VOLUME "CORPUS"         /* the worker's directory */
 #define CDVOL  "UBB21"          /* the CD, read-only */
 #define MAXSESSIONS 400
+
+static const char *me;          /* "corpusrun cd", the prefix of the messages */
 
 struct pass {
     char *work, *output, *reference, *report, *cd, *tokens;
@@ -435,7 +439,7 @@ static int stage_worker(unsigned w, FILE *log)
         free(t);
     }
     if (r)
-        fprintf(log, "cdrun: cannot set up %s/w%u\n", P.work, w);
+        fprintf(log, "%s: cannot set up %s/w%u\n", me, P.work, w);
     free(d);
     free(o);
     return r;
@@ -747,7 +751,7 @@ static int compare(const char *mine, FILE *log)
     int rc = 1;
 
     if (!ta || !tb) {
-        fprintf(log, "cdrun: cannot read %s\n", P.reference);
+        fprintf(log, "%s: cannot read %s\n", me, P.reference);
         free(ta);
         free(tb);
         return 2;
@@ -822,7 +826,7 @@ static int select_sources(FILE *log)
         for (i = 0; i < njobs && strcmp(jobs[i].rel, P.source_rel[k]); i++)
             ;
         if (i == njobs) {
-            fprintf(log, "cdrun: source %s is not below %s\n", P.source_rel[k], P.cd);
+            fprintf(log, "%s: source %s is not below %s\n", me, P.source_rel[k], P.cd);
             bad = 1;
         }
     }
@@ -852,7 +856,7 @@ static int copy_sources(FILE *log)
             if (!strcmp(jobs[i].rel, P.source_rel[k]))
                 j = &jobs[i];
         if (!j || !j->tok || !j->nresult || strcmp(j->result[0], "ok")) {
-            fprintf(log, "cdrun: %s: %s%s%s\n", P.source_rel[k],
+            fprintf(log, "%s: %s: %s%s%s\n", me, P.source_rel[k],
                     !j || !j->tok ? "not tokenised"
                     : j->nresult ? j->result[0] : "nostart",
                     j && j->nresult > 2 ? " " : "", j && j->nresult > 2 ? j->result[2] : "");
@@ -866,7 +870,7 @@ static int copy_sources(FILE *log)
             if (slash)
                 *slash = 0;
             if (!exe || !dir || (slash && mkdir_p(dir)) || copy_file(exe, P.source_out[k])) {
-                fprintf(log, "cdrun: cannot copy %s to %s\n", exe ? exe : "?",
+                fprintf(log, "%s: cannot copy %s to %s\n", me, exe ? exe : "?",
                         P.source_out[k]);
                 rc = 1;
             }
@@ -941,7 +945,7 @@ static void finish_session(unsigned w, unsigned s, struct amiga_emulation **e, s
     amiga_emulation_free(e[w]);
     e[w] = NULL;
     started = read_session(w, s, unf, &nunf, &exited);
-    fprintf(log, "cdrun: session %03u worker %u: started %zu, unfinished %zu\n", s, w, started,
+    fprintf(log, "%s: session %03u worker %u: started %zu, unfinished %zu\n", me, s, w, started,
             nunf);
     if (!started) {
         if (++empty[w] >= 2) {
@@ -976,12 +980,12 @@ static int run(FILE *log)
         remove(P.source_out[i]);
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (access(files[i], R_OK)) {
-            fprintf(log, "cdrun: no %s - skipped\n", files[i]);
+            fprintf(log, "%s: no %s - skipped\n", me, files[i]);
             rc = 77;
             goto out;
         }
     if (access(P.cd, R_OK | X_OK)) {
-        fprintf(log, "cdrun: no CD %s - skipped\n", P.cd);
+        fprintf(log, "%s: no CD %s - skipped\n", me, P.cd);
         rc = 77;
         goto out;
     }
@@ -1025,7 +1029,7 @@ static int run(FILE *log)
     for (w = 0; w < nworkers; w++)
         if (stage_worker(w, log))
             goto out;
-    fprintf(log, "cdrun: %zu sources, %zu to compile, %u workers\n", njobs, ntok, nworkers);
+    fprintf(log, "%s: %zu sources, %zu to compile, %u workers\n", me, njobs, ntok, nworkers);
 
     /* rounds: one session per worker that has jobs left.  No free emulator
        slot while sessions of this round run: the start is tried again
@@ -1043,7 +1047,7 @@ static int run(FILE *log)
             if (!n || empty[w] >= 2)
                 continue;
             if (!(script = session_script(w, s, list, n))) {
-                fprintf(log, "cdrun: cannot write the session files\n");
+                fprintf(log, "%s: cannot write the session files\n", me);
                 goto out;
             }
             for (int told = 0; !(e[w] = start_session(w, script, err, sizeof err))
@@ -1051,13 +1055,13 @@ static int run(FILE *log)
                 int ended;
 
                 if (!told++)
-                    fprintf(log, "cdrun: worker %u: %s - waiting for a slot\n", w, err);
+                    fprintf(log, "%s: worker %u: %s - waiting for a slot\n", me, w, err);
                 if ((ended = amiga_emulation_wait_any(e, w, AMIGA_EMULATION_SLOT_RETRY_MS)) >= 0)
                     finish_session((unsigned)ended, s, e, list, unf, empty, log);
             }
             free(script);
             if (!e[w]) {
-                fprintf(log, "cdrun: %s - skipped\n", err);
+                fprintf(log, "%s: %s - skipped\n", me, err);
                 rc = 77;
                 goto out;
             }
@@ -1072,7 +1076,7 @@ static int run(FILE *log)
     }
 
     if (!(t = table()) || write_file(P.output, t, strlen(t))) {
-        fprintf(log, "cdrun: cannot write %s\n", P.output);
+        fprintf(log, "%s: cannot write %s\n", me, P.output);
         free(t);
         goto out;
     }
@@ -1090,7 +1094,7 @@ static int run(FILE *log)
                     counts[i]++;
         }
         free(copy);
-        fprintf(log, "cdrun: %s: %u sessions;", P.output, session);
+        fprintf(log, "%s: %s: %u sessions;", me, P.output, session);
         for (i = 0; i < 6; i++)
             fprintf(log, " %s %zu", kinds[i], counts[i]);
         fprintf(log, "\n");
@@ -1112,31 +1116,32 @@ out:
     return rc;
 }
 
-static const char usage[] =
-    "usage: cdrun PASSFILE\n"
-    "  every .bb2/.bb of the CD compiled by one compiler in Amiberry\n";
+const char cmd_cd_usage[] =
+    "usage: corpusrun cd PASSFILE\n"
+    "Compile every .bb2/.bb of the CD with one compiler in Amiberry and\n"
+    "write the table of the results, optionally compared with a reference\n"
+    "table (the keys of the pass file: the header of\n"
+    "tests/corpus/runner/cmd_cd.c).  CDRUN_FORCE=1 in the environment runs\n"
+    "even if the cache= record says nothing changed.\n";
 
-int main(int argc, char **argv)
+int cmd_cd(int argc, char **argv)
 {
     char err[300], digest[65];
     size_t len;
     char *text;
     int rc, cached = 0;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc != 2) {
-        fputs(usage, stderr);
+        fputs(cmd_cd_usage, stderr);
         return 2;
     }
     if (!(text = (char *)read_file(argv[1], &len))) {
-        fprintf(stderr, "cdrun: cannot read %s\n", argv[1]);
+        fprintf(stderr, "%s: cannot read %s\n", me, argv[1]);
         return 2;
     }
     if (parse(text, err, sizeof err)) {
-        fprintf(stderr, "cdrun: %s: %s\n", argv[1], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[1], err);
         free(text);
         return 2;
     }
@@ -1144,15 +1149,15 @@ int main(int argc, char **argv)
         const char *force = getenv("CDRUN_FORCE");
 
         if (cache_outputs()) {
-            fprintf(stderr, "cdrun: out of memory\n");
+            fprintf(stderr, "%s: out of memory\n", me);
             free(text);
             return 2;
         }
         cached = !cache_digest(text, digest);
         if (cached && !(force && *force && strcmp(force, "0"))
             && cdcache_hit(P.cache, digest, cache_outs, ncache_outs)) {
-            printf("cdrun: inputs and outputs unchanged since the last run (%s): "
-                   "no emulator run (CDRUN_FORCE=1 runs anyway)\n", P.cache);
+            printf("%s: inputs and outputs unchanged since the last run (%s): "
+                   "no emulator run (CDRUN_FORCE=1 runs anyway)\n", me, P.cache);
             free(text);
             return 0;
         }
@@ -1160,6 +1165,6 @@ int main(int argc, char **argv)
     free(text);
     rc = run(stdout);
     if (!rc && cached && cdcache_write(P.cache, digest, cache_outs, ncache_outs))
-        printf("cdrun: cannot write %s (the next run will not be skipped)\n", P.cache);
+        printf("%s: cannot write %s (the next run will not be skipped)\n", me, P.cache);
     return rc;
 }

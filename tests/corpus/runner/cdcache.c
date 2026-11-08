@@ -1,5 +1,5 @@
 /*
- * cdcache.c - the cache of a cdrun pass, see cdcache.h.
+ * cdcache.c - the cache of a corpusrun cd pass, see cdcache.h.
  */
 #define _XOPEN_SOURCE 700       /* nftw, strdup */
 #include <ftw.h>

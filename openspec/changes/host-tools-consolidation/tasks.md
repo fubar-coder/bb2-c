@@ -68,7 +68,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 9. `corpusrun` (corpusrun, cdrun; 22 call sites)
 
-- [ ] 9.1 `tests/corpus/runner/`: `corpusrun pass|cd PASSFILE`; `cdrun.c`'s `main` becomes the subcommand function (`CDRUN_FORCE`, `BUGORIG_RECORD` stay); `check-cdrun-source.cmake`, `tests/corpus/CMakeLists.txt` (5), `tests/bug-orig/CMakeLists.txt` (5) and `want.cmake`, `tests/ab3`, `tests/blitz2`, `libs/userlibs/rwe/residents*.cmake` and `refbuild.cmake`, `CMakeLists.txt`; README in the runner directory. Verify: C1-C5; the corpus passes with the same verdicts, `cdrun_source`, `cdrun_cache`, `corpus_runner`, `bugorig_verdict` pass, the table of `blitz2-cd-reference` is identical
+- [x] 9.1 `tests/corpus/runner/`: `corpusrun pass|cd PASSFILE`; `cdrun.c`'s `main` becomes the subcommand function (`CDRUN_FORCE`, `BUGORIG_RECORD` stay); `check-cdrun-source.cmake`, `tests/corpus/CMakeLists.txt` (5), `tests/bug-orig/CMakeLists.txt` (5) and `want.cmake`, `tests/ab3`, `tests/blitz2`, `libs/userlibs/rwe/residents*.cmake` and `refbuild.cmake`, `CMakeLists.txt`; README in the runner directory. Verify: C1-C5; the corpus passes with the same verdicts, `cdrun_source`, `cdrun_cache`, `corpus_runner`, `bugorig_verdict` pass, the table of `blitz2-cd-reference` is identical
 
 ## 10. `tedsrc` (tedtok, teddetok; 45 call sites)
 

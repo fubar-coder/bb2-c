@@ -1,5 +1,5 @@
 /*
- * test_cdcache.c - the cache of a cdrun pass (cdcache.h): a run with the
+ * test_cdcache.c - the cache of a corpusrun cd pass (cdcache.h): a run with the
  * same inputs and unchanged outputs is skipped; a changed input, a changed
  * or missing output, a missing or broken record means a full run.
  */

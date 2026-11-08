@@ -82,8 +82,7 @@ set(RESULTS ${HOST_TOOLS_DIR}/results/results)                  # results agains
 set(AB3TOK ${HOST_TOOLS_DIR}/ab3tok/ab3tok)                     # tokenise as AmiBlitz3 loads a source
 set(TEDTOK ${HOST_DIR}/ted-tools/tedtok/tedtok)                 # tokenise like TED
 set(TEDDETOK ${HOST_DIR}/ted-tools/teddetok/teddetok)           # a source as TED shows it
-set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # one corpus pass in Amiberry
-set(CDRUN ${HOST_DIR}/corpus-runner/cdrun)                      # the CD through one compiler
+set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # corpus passes and the CD in Amiberry
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
@@ -101,7 +100,7 @@ ExternalProject_Add(host_tools
 		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BLITZLIB} ${BLITZTOKENS} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BLITZTOKENS} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request

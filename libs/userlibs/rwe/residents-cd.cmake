@@ -6,12 +6,12 @@
 # pass is skipped (no Amiberry, no CD).
 #   cmake -DCORPUSRUN=... -DPASS=... -DWORK=... -DBLITZRES=... -DRESIDENTS=...
 #         -DNAMES=a;b -DCHECK=... -P residents-cd.cmake
-execute_process(COMMAND ${CORPUSRUN} ${PASS} RESULT_VARIABLE rc)
+execute_process(COMMAND ${CORPUSRUN} pass ${PASS} RESULT_VARIABLE rc)
 if(rc EQUAL 77)
 	cmake_language(EXIT 77)
 endif()
 if(NOT rc EQUAL 0)
-	message(FATAL_ERROR "corpusrun ${PASS}: exit ${rc} (report ${WORK}.txt)")
+	message(FATAL_ERROR "corpusrun pass ${PASS}: exit ${rc} (report ${WORK}.txt)")
 endif()
 set(bad 0)
 foreach(tag ref port)

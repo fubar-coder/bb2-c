@@ -58,7 +58,7 @@ expect=${expect}
 regression=on
 ")
 	string(REPLACE "-" "_" name "blitz2_${id}")
-	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
+	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	# one session, maybe waiting for a free emulator slot
 	math(EXPR limit "${BLITZ2_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77

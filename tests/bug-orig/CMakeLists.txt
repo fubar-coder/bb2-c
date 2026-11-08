@@ -313,7 +313,7 @@ function(bug_orig_test bas name)
 	if(NOT noref)
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
-		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} ${work}.pass)
+		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
 		if(fixtures)
@@ -322,17 +322,17 @@ function(bug_orig_test bas name)
 		set(fixtures "")
 	endif()
 	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION AND NOT fixed)
-		bug_orig_add_test(${name} COST ${cost} COMMAND ${CORPUSRUN} ${work}.pass
+		bug_orig_add_test(${name} COST ${cost} COMMAND ${CORPUSRUN} pass ${work}.pass
 			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 		return()
 	endif()
 	# a fixed test (it passes: ctest learns its cost), a port regression or
 	# a self test: label emulator only
 	if(DEFINED arg_WANT)
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN}
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DSUB=pass
 			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 	else()
-		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
+		add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	endif()
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit} COST ${cost})
@@ -416,7 +416,7 @@ function(bug_orig_orig_test name want orig)
 		"config=clib|output|/nonexistent/a|/nonexistent/b|/nonexistent/c\n"
 		"source=/nonexistent/x.bb2\nexpect=${orig_selftest}/bug-orig-selftest-broken.expect\n"
 		"orig=${orig}\n")
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN}
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DSUB=pass
 		-DPASS=${pass} -DWANT=${want} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 endfunction()
 bug_orig_orig_test(bug_orig_orig_missing 2 ${orig_selftest}/nonexistent.orig)

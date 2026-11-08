@@ -16,14 +16,14 @@
 # and keeps it for the next compile; INCDIR generates no code).
 #
 # The compile (ctest rwe_refbuild, label emulator, fixture rwe_refbuild):
-# cdrun (tests/corpus/runner) with the staging directory as its "CD" and
+# corpusrun cd (tests/corpus/runner) with the staging directory as its "CD" and
 # a source= line per source; the result of entry NAME is
 #   build/<preset>/libs/userlibs/rwe/ref/NAME.obj
 # (removed first; skipped with 77 without Amiberry or the CD, fails if a
 # source does not compile).  The table: refbuild.tsv next to ref/.  A run
 # whose inputs are unchanged since the last successful one (and whose
 # outputs are still there unchanged) ends at once without the emulator:
-# cdrun's cache= record refwork/inputs.sha256 (tests/corpus/runner/
+# corpusrun cd's cache= record refwork/inputs.sha256 (tests/corpus/runner/
 # cdcache.h); CDRUN_FORCE=1 in the environment runs anyway.
 #
 # Its uses:
@@ -241,7 +241,7 @@ assign=blitzincs|BLITZLIBS
 assign=FNS|FNS
 assign=Blitz2|BLITZ2
 ${ref_pass}")
-add_test(NAME rwe_refbuild COMMAND ${CDRUN} ${pass})
+add_test(NAME rwe_refbuild COMMAND ${CORPUSRUN} cd ${pass})
 # three rounds of a session per worker; the sessions of a round one after
 # the other if there are not enough emulator slots free, each maybe
 # waiting for one

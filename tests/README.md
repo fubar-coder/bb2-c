@@ -322,16 +322,17 @@ wait exit
 
 ### Reference build of the RWE sources
 
-`rwe_refbuild` (fixture `rwe_refbuild`, about 20 s; `cdrun` with
+`rwe_refbuild` (fixture `rwe_refbuild`, about 20 s; `corpusrun cd`,
+[`tests/corpus/runner/README.md`](corpus/runner/README.md), with
 `source=` lines over the staging directory, `RWE_REFBUILD_PARALLEL`,
 `RWE_REFBUILD_TIMEOUT`; table
 `build/<preset>/libs/userlibs/rwe/refbuild.tsv`) compiles the source of
 every `RWE_LIBS` entry and fails if one does not compile.
 It does not start the emulator again while nothing changed: after a
-successful run, `cdrun` (`cache=` of the pass) writes a record of the
+successful run, `corpusrun cd` (`cache=` of the pass) writes a record of the
 digest of its inputs (the staging directory with the sources, the
 residents and `LIBNUMS.BB`, the CD's `blitz2` and libraries, the pass
-file, the `cdrun` executable with `amiga_emulation` and its templates)
+file, the `corpusrun` executable with `amiga_emulation` and its templates)
 and the hashes of its outputs to
 `build/<preset>/libs/userlibs/rwe/refwork/inputs.sha256`; the next
 run with the same digest and all outputs unchanged ends at once
@@ -490,7 +491,7 @@ to #118), `bug_orig_debuglib_findoff_flags` (#127).
 ### With a Blitz program
 
 **bug-orig tests with a Blitz program** (`tests/bug-orig/`, runner:
-the corpus runner, `corpusrun` with `expect=`; verdict in
+the corpus runner, `corpusrun pass` with `expect=`; verdict in
 `tests/corpus/runner/bugorig.h`): a program that triggers the bug is
 compiled and run in Amiberry by the port (port: blitz2-c with the
 libraries of the CD, clib: blitz2-c with the C libraries), one emulator
@@ -522,7 +523,7 @@ whose original does *not* match the expectation; if it does, the test
 is BROKEN (the original does not have the bug, or the expectation
 describes the bug) and fails with that message, checked on `ID.orig`
 before any session starts. The test passes only
-when every configuration is FIXED. Exit status of `corpusrun`: 0 FIXED,
+when every configuration is FIXED. Exit status of `corpusrun pass`: 0 FIXED,
 1 REPRODUCED, 2 error (also a missing `ID.orig`), 3 BROKEN, 4 DIFFERS.
 `bug_orig_verdict` (host) checks the
 verdict with inputs from memory, REPRODUCED, DIFFERS and BROKEN against
@@ -646,7 +647,7 @@ else DIFFERS) and checks that `ID.orig` does not meet `ID.expect`
 (BROKEN) before any session. Only the sections of the expectation count,
 as with a live reference. **Recording** is separate and on demand:
 `ctest --preset originals` (one ctest `bug_orig_record_ID` per test, label
-`originals`, which no other preset runs) or `BUGORIG_RECORD=1 corpusrun
+`originals`, which no other preset runs) or `BUGORIG_RECORD=1 corpusrun pass
 build/<preset>/tests/bug-orig/ID.pass` (`tedab run` for TED). It runs
 the original only, writes `ID.orig` and no other file, and judges
 nothing; a line of the program's output that looks like a `[section]`
@@ -681,7 +682,7 @@ and is skipped without the CD); only `clib` (blitz2-c with the C
 libraries, as the port ships) is judged, against the expectation alone:
 FIXED, or REGRESSED (the configuration does not show the expected
 behaviour: the fix is undone). The test passes only when it is FIXED
-(exit status of `corpusrun`: 0 FIXED, 1 REGRESSED). ctest `bug_orig_ID`
+(exit status of `corpusrun pass`: 0 FIXED, 1 REGRESSED). ctest `bug_orig_ID`
 as before, label `emulator` only: it runs in the presets `emulator`
 and `all`, not in `bug-orig`, and it is declared directly, not in the
 order of the bug-orig tests (it passes, ctest learns its cost).
@@ -861,16 +862,16 @@ The presets keep the whole output of passing tests as well (up to 1 MiB
 per test, cut at the front if longer: `maxPassedTestOutputSize`,
 `testOutputTruncation`), so it is in the file (`<system-out>`).
 
-The runners of the emulator tests (`corpusrun`, `cdrun`, `tedab`, also in
-the bug-orig mode) write one line per emulator session to their output,
-after their report:
+The runners of the emulator tests (`corpusrun pass`, `corpusrun cd`,
+`tedab run`, also in the bug-orig mode) write one line per emulator
+session to their output, after their report:
 
 ```
 @stat v=1 test=audiolib-diskplay-endless config=clib machine=a1200 snapshot=restored session=45.16 wait=0.00 timed=45.15 limit=45 end=timeout verdict=REPRODUCED
 ```
 
 test (the pass), config (corpus: ref/port/clib; TED: R5/C5/... in the
-bug-orig mode, else the session sNNN; cdrun: the worker), machine, what
+bug-orig mode, else the session sNNN; corpusrun cd: the worker), machine, what
 the snapshot mode did (cold, restored, first-save, fallback), the session
 time without the wait for an emulator slot, the wait, the part counted
 against the time limit, the limit, the end (done, timeout, halt,

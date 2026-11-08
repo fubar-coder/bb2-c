@@ -99,7 +99,7 @@ judged against `ID.orig`, the recorded observation of the original
 in the normal tests. A new test gets its `ID.orig` once from
 `ctest --preset originals -R bug_orig_record_ID` (needs Amiberry and the
 CD), and the file is committed with the test; a recording run
-(`ctest --preset originals`, or `BUGORIG_RECORD=1` for `corpusrun` and
+(`ctest --preset originals`, or `BUGORIG_RECORD=1` for `corpusrun pass` and
 `tedab run`) writes nothing but the `.orig` files and is the only run that
 needs the original compiler and TED (`tests/README.md`, "Recorded
 originals"). A fixed test (`; @fixed #NNN`) has no `ID.orig`: delete the

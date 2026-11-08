@@ -1,4 +1,5 @@
-# corpusrun: one pass of the corpus check in Amiberry (host side)
+# corpusrun: the corpus passes (pass) and the CD runs (cd) in Amiberry, host
+# side (README.md)
 # strings and files, also for the TED A/B runner (tests/ted-ab/runner)
 add_library(lib_runner_util STATIC util.c)
 target_include_directories(lib_runner_util PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -12,8 +13,9 @@ target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_
 	Threads::Threads)
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
-add_executable(corpusrun main.c)
-target_link_libraries(corpusrun PRIVATE lib_corpus)
+set(CORPUSRUN_SUBCOMMANDS pass cd)
+add_executable(corpusrun main.c cmd_pass.c cmd_cd.c)
+target_link_libraries(corpusrun PRIVATE lib_subcmd lib_corpus lib_cdcache lib_sha256)
 target_compile_options(corpusrun PRIVATE -Wall -Wextra)
 
 add_executable(test_corpus test_corpus.c)
@@ -26,7 +28,7 @@ target_link_libraries(test_bugorig PRIVATE lib_corpus)
 target_compile_options(test_bugorig PRIVATE -Wall -Wextra)
 add_test(NAME bugorig_verdict COMMAND test_bugorig)
 
-# cdrun: every source of the CD compiled by one compiler (reference table /
+# corpusrun cd: every source of the CD compiled by one compiler (reference table /
 # comparison with it)
 # the cache of a pass (cache=)
 add_library(lib_cdcache STATIC cdcache.c)
@@ -38,10 +40,10 @@ add_executable(test_cdcache test_cdcache.c)
 target_link_libraries(test_cdcache PRIVATE lib_cdcache)
 target_compile_options(test_cdcache PRIVATE -Wall -Wextra)
 add_test(NAME cdrun_cache COMMAND test_cdcache)
-add_executable(cdrun cdrun.c)
-target_link_libraries(cdrun PRIVATE lib_corpus lib_cdcache lib_sha256)
-target_compile_options(cdrun PRIVATE -Wall -Wextra)
 # its source= lines with broken input (no emulator needed)
-add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCDRUN=$<TARGET_FILE:cdrun>
+add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:corpusrun>
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-cdrun-source.cmake)
+
+host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
+host_readme_test(corpusrun README.md)

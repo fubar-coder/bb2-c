@@ -43,7 +43,7 @@ function(equivalence_pass name runtime_errors)
 		string(APPEND text "source=${s}\n")
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
-	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
+	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	# two sessions, maybe one after the other, each maybe waiting for a slot
 	math(EXPR limit "${AB3_EQUIVALENCE_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77

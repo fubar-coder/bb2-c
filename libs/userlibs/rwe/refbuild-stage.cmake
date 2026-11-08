@@ -1,11 +1,11 @@
 # The staging directory of the reference build (refbuild.cmake), made
-# anew; cdrun mounts it as the "CD" (docs/rwelibs/README.md 3.1):
+# anew; corpusrun cd mounts it as the "CD" (docs/rwelibs/README.md 3.1):
 #   BLITZLIBS/     (blitzlibs:, libincs:, blitzincs:) the files of the
 #                  CD's EXTRAS/BLITZLIBS/ (libmacs, residents), its
 #                  LIBNUMS.BB replaced by LIBNUMS (with the RWE numbers),
 #                  sbra.res = SBRA (BUM10A/BLITZLIBS/ASMMACS.RES, Steve
 #                  Matty's short branch macros), the RESIDENTS
-#   LIBMACS.BB     for XINCLUDE "libmacs.bb": cdrun runs a job in the
+#   LIBMACS.BB     for XINCLUDE "libmacs.bb": corpusrun cd runs a job in the
 #                  nearest directory that has a relative include
 #   optidec.bin    INCBIN of stclib (and stcdecrunchlib), whose jobs run
 #                  in the root for libmacs.bb
