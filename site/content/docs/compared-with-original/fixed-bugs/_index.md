@@ -25,19 +25,44 @@ it, and what the port does.
 
 ## Bugs an ordinary program can meet
 
-In the compiler:
+In the compiler ([Compiling]({{< relref "/docs/compared-with-original/fixed-bugs/compiler" >}})):
 
-* [The operator `=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
+* [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
   `If a=<b` was true whenever `a` and `b` differed.
-* [`End Statement` could close a Function]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#end-of-procedure" >}}):
-  a string Function ended that way crashed when it returned.
-* [A program with the Blitz OS commands hung at its end]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#os-commands-end" >}}):
+* [Numbers like `1.` and `1.0e5`]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#float-literals" >}})
+  were refused.
+* [Arrays with 256-byte elements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#arrays-256" >}})
+  had their elements 64 KB apart.
+* [A List array indexed by another array]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#list-array-index" >}}),
+  as in `a(b(1))`, read the wrong element.
+* [A field of a NewType defined later]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#newtype-defined-later" >}})
+  got a wrong size.
+* [`End Statement` could close a Function]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#end-of-procedure" >}}),
+  and a string Function ended that way crashed.
+* [Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#text-after-path" >}}),
+  such as `: a=2`, was never compiled.
+* [`IncDir` stayed for the next compile]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#incdir-next-compile" >}})
+  in the same editor session.
+* [An include name with a device after `IncDir`]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#include-with-device" >}})
+  could not be opened.
+* [A program with the Blitz OS commands hung at its end]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#os-commands-end" >}}),
   even if it never called one of them.
+* [Data of odd length at the end of a program]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#odd-end" >}})
+  crashed it at `End`.
 
-In the libraries:
+In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries" >}})):
 
 * [`Date$` showed 1 January after a leap year as 32 December]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#date-after-leap-year" >}}):
   1 January 2025 came out as `32/12/2024`.
+* [Umlauts were not drawn]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#umlauts" >}})
+  by the text commands.
+* [A GadTools gadget took over the values of the one before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#gadtools-values" >}}).
+* [Closing a window lost the events of the others]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#closewindow-events" >}}).
+* [`WSize` and `WMove` hung]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#wsize-wmove" >}})
+  at the size limits of a window or the edge of the screen.
+* [Window titles were never freed]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#window-titles" >}}).
+* [Decoded palettes were black on Kickstart before 3.0]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#palette-kickstart-13" >}}).
+* [A missing AmigaOS library hung the program at its start]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#missing-os-library" >}}).
 
 ## All fixed bugs, by area
 

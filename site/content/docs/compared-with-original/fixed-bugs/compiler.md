@@ -10,7 +10,11 @@ belonged. The first sections show the ones an ordinary program can run
 into, each with a short program. The other fixes follow as a list, one
 sentence each with a link to its issue.
 
-## Operators
+The outputs shown were recorded in an emulator. The original is Blitz
+Basic 2 built from its published source, with the libraries of the Blitz
+Basic 2 CD.
+
+## Operators and numbers
 
 ### `=<` meant "not equal" {#less-or-equal}
 
@@ -71,6 +75,199 @@ its source says. A program that only worked because of the bug, with
 
 Issue: [The operator =< meant "not equal" (#9)](https://github.com/fubar-coder/bb2-c/issues/9).
 
+### Numbers like `1.` and `1.0e5` {#float-literals}
+
+Two ordinary ways of writing a float were refused by the original: a
+number that ends in a decimal point, and an exponent after a fraction of
+0.
+
+**What happened**
+
+```
+a.f=1.
+NPrint a
+b.f=2.+1
+NPrint b
+End
+```
+
+The original stops at the first line with "Syntax Error".
+
+```
+a.f=1.0e5
+NPrint a
+b.f=2.00E3
+NPrint b
+End
+```
+
+The original stops at the first line with "Garbage at End of Line".
+
+**With the port**
+
+`1.` is the float 1 and `1.0e5` is 100000. The first program prints
+
+```
+1
+3
+```
+
+and the second
+
+```
+100000
+2000
+```
+
+Issues: [A number ending in a decimal point was a syntax error (#10)](https://github.com/fubar-coder/bb2-c/issues/10),
+[An exponent after a fraction of 0 was ignored (#11)](https://github.com/fubar-coder/bb2-c/issues/11).
+
+## Arrays and NewTypes
+
+### Arrays with 256-byte elements {#arrays-256}
+
+An array whose elements are exactly 256 bytes long, such as an array of a
+NewType of 256 bytes, was indexed with the wrong element size: the
+original multiplied the index by 65536 instead of 256. The same happened
+with a List array of a 248-byte NewType, since a list item adds 8 bytes,
+and with a field array `x.t[n]` of 256-byte elements.
+
+**What happened**
+
+```
+NEWTYPE .rec
+  v.l
+  p.b[252]
+End NEWTYPE
+Dim a.rec(2)
+NPrint SizeOf .rec
+NPrint &a(1)-&a(0)
+NPrint &a(2)-&a(0)
+End
+```
+
+The program prints the size of an element and the distance of elements 1
+and 2 from element 0. The original prints
+
+```
+256
+65536
+131072
+```
+
+Element 1 lies 64 KB behind element 0, far outside the array, so reading
+or writing it uses memory that belongs to something else.
+
+**With the port**
+
+```
+256
+256
+512
+```
+
+Issue: [Arrays with 256-byte elements had their elements 65536 bytes apart (#15)](https://github.com/fubar-coder/bb2-c/issues/15).
+
+### A List array indexed by another array {#list-array-index}
+
+A List array has 8 more bytes per element than a normal array of the same
+type, for the list's links. When the index of one kind of array was an
+element of the other kind, as in `a(b(1))`, the original used the element
+size of the wrong array.
+
+**What happened**
+
+```
+Dim List a.l(10)
+Dim b.l(5)
+b(1)=3
+For i.l=0 To 10
+  a(i)=i*100
+Next
+NPrint a(3)
+NPrint a(b(1))
+End
+```
+
+`b(1)` is 3, so both lines should print element 3 of `a`. The original
+prints
+
+```
+300
+100
+```
+
+**With the port**
+
+Each array uses its own element size:
+
+```
+300
+300
+```
+
+Issue: [A List array indexed by an element of another array used a wrong element size (#937)](https://github.com/fubar-coder/bb2-c/issues/937).
+
+### A field of a NewType defined later {#newtype-defined-later}
+
+A NewType may have a field of a type that is defined further down in the
+source, once a pointer field has named that type. The original gave such
+a field a wrong size, so the fields behind it and the size of the whole
+NewType were wrong, also after the type was defined.
+
+**What happened**
+
+```
+NEWTYPE .pp
+  *p.fwd
+End NEWTYPE
+NEWTYPE .dd
+  x.fwd
+  y.l
+End NEWTYPE
+NEWTYPE .fwd
+  a.l
+  b.l
+End NEWTYPE
+DEFTYPE .dd v
+v\x\b=7
+v\y=9
+o.l=SizeOf .dd\y
+NPrint "y at ",o
+NPrint "size ",SizeOf .dd
+NPrint v\x\b," ",v\y
+End
+```
+
+`.fwd` has 8 bytes, so `y` belongs at offset 8 and `.dd` has 12 bytes. The
+original prints
+
+```
+y at 10
+size 14
+7 9
+```
+
+**With the port**
+
+The NewType is laid out again when the type is defined:
+
+```
+y at 8
+size 12
+7 9
+```
+
+**What to change**
+
+A program that worked with the wrong layout, for example one that reads
+files written with it, has to account for the new offsets. Some sources
+that the original compiled are refused now: a use of the NewType's size
+before the type is defined, and two types that would contain each other
+([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#newtype-defined-later" >}})).
+
+Issue: [A NewType field of a type defined later got a wrong size (#974)](https://github.com/fubar-coder/bb2-c/issues/974).
+
 ## Procedures
 
 ### `End Statement` could close a Function {#end-of-procedure}
@@ -127,6 +324,115 @@ is described with the others in
 
 Issue: [End Statement could close a Function, and the other way round (#940)](https://github.com/fubar-coder/bb2-c/issues/940).
 
+## Include files and paths
+
+### Text after `IncDir "…"` {#text-after-path}
+
+The original took the whole rest of a line as the path of `IncDir`, and as
+the file name of `Include`, `XInclude` and `IncBin`, including the closing
+quote and anything behind it. A statement after a `:` on the same line was
+never compiled.
+
+**What happened**
+
+```
+a=1
+IncDir "RAM:" : a=2
+NPrint a
+End
+```
+
+The original prints `1`: the `: a=2` became part of the path, and the
+assignment was never compiled.
+
+**With the port**
+
+A path or name in quotes ends at its closing quote, and a `:` after
+`IncDir` and `IncBin` starts the next statement as usual. The program
+prints
+
+```
+2
+```
+
+**What to change**
+
+After `Include` and `XInclude`, only a comment may follow the closing
+quote; a statement behind a `:` there is a "Syntax Error" and needs a line
+of its own
+([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#text-after-path" >}})).
+
+Issue: [Text after an IncDir path became part of the path (#17)](https://github.com/fubar-coder/bb2-c/issues/17).
+
+### `IncDir` stayed for the next compile {#incdir-next-compile}
+
+The path set by `IncDir` was never cleared. In one session of the editor,
+every source compiled after a source with `IncDir`, also after a resident
+made from one, looked for its include files in that directory.
+
+**What happened**
+
+First a resident is made from a source with the line
+
+```
+IncDir "CORPUS:nowhere/"
+```
+
+Then this program, which has an `inc.bb2` next to it, is compiled in the
+same session:
+
+```
+Include "inc.bb2"
+NPrint #k
+End
+```
+
+The original looks for `CORPUS:nowhere/inc.bb2` and stops with "Can't open
+Include" at the first line.
+
+**With the port**
+
+Every compile starts without an `IncDir` path. The program finds its
+include file and prints the constant `#k` defined there:
+
+```
+7
+```
+
+Issue: [The path of IncDir stayed for the following compiles (#342)](https://github.com/fubar-coder/bb2-c/issues/342).
+
+### An include name with a device after `IncDir` {#include-with-device}
+
+After an `IncDir`, the original put its path in front of every file name,
+also of a name that already starts with a device or an assign. So after
+`IncDir "BlitzLibs:"` the line `Include "blitzlibs:libnums.bb"` opened
+`BlitzLibs:blitzlibs:libnums.bb`.
+
+**What happened**
+
+```
+IncDir "CORPUS:sub/"
+Include "CORPUS:src/inc.bb2"
+NPrint #k
+End
+```
+
+The original opens `CORPUS:sub/CORPUS:src/inc.bb2` and stops with "Can't
+open Include" at the second line.
+
+**With the port**
+
+A name with a device or assign is used as written, for `Include`,
+`XInclude` and `IncBin`. The program prints
+
+```
+7
+```
+
+AB3 mode still puts the `IncDir` path in front of every name.
+
+Issue: [After an IncDir, a file name with a device or assign could not be included (#341)](https://github.com/fubar-coder/bb2-c/issues/341).
+
 ## Ending a program
 
 ### A program with the Blitz OS commands hung at its end {#os-commands-end}
@@ -168,17 +474,52 @@ is no longer needed and can be removed.
 
 Issue: [A program could hang the system at its end when it used a library that needs objects only through another library (#335)](https://github.com/fubar-coder/bb2-c/issues/335).
 
+### Data of odd length at the end of a program {#odd-end}
+
+The compiler puts the code that ends a program behind the last statement
+of the source. When that statement was a `Dc.b` or an `IncBin` of odd
+length, the original placed this code at an odd address, where the 68000
+cannot run code.
+
+**What happened**
+
+```
+NPrint "before"
+End
+Dc.b "abc"
+```
+
+The original prints
+
+```
+before
+```
+
+and then crashes at `End`, with a "Software Failure" requester.
+
+**With the port**
+
+The end code starts at an even address. The program prints
+
+```
+before
+```
+
+and ends normally.
+
+Issue: [A program ending with an IncBin of odd length crashed at its end (#979)](https://github.com/fubar-coder/bb2-c/issues/979).
+
 ## Other fixes
+
+The fixes below need rarer conditions. Those that make the port refuse a
+source the original accepted are shown with examples on
+[Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors" >}}).
 
 ### Expressions and statements
 
-* A number ending in a decimal point, as in `a.f=1.`, was a syntax error;
-  `1.` is the float 1 ([#10](https://github.com/fubar-coder/bb2-c/issues/10)).
-* An exponent after a fraction of 0 was ignored, so `1.0e5` gave "Garbage
-  at End of Line"; it is 100000
-  ([#11](https://github.com/fubar-coder/bb2-c/issues/11)).
-* A string addition from the seventh argument of a library command on,
-  such as the title of a `Window`, got a wrong length; the length is right
+* A string addition nested seven levels deep, or passed as an argument
+  of a library command from the seventh on that goes in a register, such
+  as the text of `AddBox`, got a wrong length; the length is right
   ([#971](https://github.com/fubar-coder/bb2-c/issues/971)).
 * A `~` inside a string literal started a constant expression, so
   `"a~1+2~b"` became `a3b`; inside strings `~` is an ordinary character
@@ -209,39 +550,14 @@ Issue: [A program could hang the system at its end when it used a library that n
   gives "Label has been used as a Constant", as for any other value
   ([#977](https://github.com/fubar-coder/bb2-c/issues/977)).
 
-### Arrays and NewTypes
+### NewTypes
 
-* Arrays with 256-byte elements, also List arrays of a 248-byte NewType
-  and field arrays `x.t[n]`, were indexed with the wrong element size, so
-  element 1 of an array lay 64 KB behind element 0, outside the array,
-  and a field array always gave its first element; the elements are 256
-  bytes apart
-  ([#15](https://github.com/fubar-coder/bb2-c/issues/15)).
-* A List array indexed by an element of a normal array, as in `a(b(1))`,
-  or the other way round, used the other array's element size and reached
-  the wrong element; each array uses its own size
-  ([#937](https://github.com/fubar-coder/bb2-c/issues/937)).
 * A NewType that contained a field of its own type got a random size; the
   compiler reports "Illegal Type", and a pointer to the own type stays
   allowed ([#973](https://github.com/fubar-coder/bb2-c/issues/973)).
-* A NewType field of a type defined later got a wrong size, so the fields
-  behind it and the size of the NewType were wrong; the NewType is laid out
-  again when the type is defined, and using it too early gives "Type not
-  yet defined" ([#974](https://github.com/fubar-coder/bb2-c/issues/974)).
 
-### Include files and paths
+### Paths and include files
 
-* The path of `IncDir` stayed for the following compiles of the session,
-  so another source failed with "Can't open Include"; every compile
-  starts without an `IncDir` path
-  ([#342](https://github.com/fubar-coder/bb2-c/issues/342)).
-* After an `IncDir`, a file name with a device or assign, such as
-  `Include "blitzlibs:libnums.bb"`, got the `IncDir` path in front of it and
-  could not be opened; such a name is used as written, except in AB3 mode
-  ([#341](https://github.com/fubar-coder/bb2-c/issues/341)).
-* Text after a quoted path, as in `IncDir "dh0:inc/" : a=1`, became part
-  of the path and was never compiled; a quoted path or name ends at its
-  closing quote ([#17](https://github.com/fubar-coder/bb2-c/issues/17)).
 * An `IncDir` path of 96 characters or more overwrote the compiler's data,
   and the program crashed when it ran; it gives "Path too Long"
   ([#16](https://github.com/fubar-coder/bb2-c/issues/16)).
@@ -288,9 +604,6 @@ Issue: [A program could hang the system at its end when it used a library that n
 
 ### The executable
 
-* A program ending with an `IncBin` or `Dc.b` of odd length crashed at its
-  `End` with an address error; the end code starts at an even address
-  ([#979](https://github.com/fubar-coder/bb2-c/issues/979)).
 * Calls of AmigaOS functions with an argument in register a4 or a5 crashed
   or destroyed the program's variables; the compiler saves both registers
   around such a call ([#958](https://github.com/fubar-coder/bb2-c/issues/958)).
