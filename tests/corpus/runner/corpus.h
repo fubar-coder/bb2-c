@@ -42,6 +42,14 @@
  *                     build of the previous commit writes the executable
  *                     the current compiler with the C libraries writes
  *   source=PATH       a tokenised source (NAME.bb2), any number
+ *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
+ *                     entries, lib/previntended)
+ *   intended=ENTRY    a PREV_INTENDED entry (TEST:NAME, or ON; any number;
+ *                     entries of other tests are ignored): the sources
+ *                     named may differ in the configuration tagged prev,
+ *                     all of them with ON; each listed one must differ
+ *                     (else STALE, the pass fails), an unlisted difference
+ *                     fails; needs test=
  *   serial=on|off     on: the emulated serial port is a TCP server, a
  *                     remote end answers the programs (serial.h); the bytes
  *                     a program sends over the serial port (NAME.serial) are
@@ -135,6 +143,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "previntended.h"
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
 
@@ -150,6 +159,8 @@ struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
+    char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */
+    struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* corpus_select: the recording run */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     unsigned timeout, parallel, stack;
@@ -202,6 +213,6 @@ char *corpus_script(const struct corpus_pass *p);
 /* runs the pass: 0 = no differences, 1 = differences (report), 77 = the
    emulator or a file of the pass is missing (skipped), 2 = error; with
    expect= the bug-orig exit status above */
-int corpus_run(const struct corpus_pass *p, FILE *log);
+int corpus_run(struct corpus_pass *p, FILE *log);
 
 #endif

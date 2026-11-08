@@ -84,6 +84,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "previntended.h"
 #include "teddump.h"
 #include "util.h"
 
@@ -213,9 +214,15 @@ int tedab_compare_runs(const char *a, const char *b, const char *na, const char 
 /* the verdict of pair k (tedab_pairs index) of test t from compare (the
    result of tedab_compare_runs): SAME or DIFF, FAIL (a result not OK); for a
    pair of @fixed FIXED (it differs) or BROKEN (it is the same: stale) */
-enum { TEDAB_PAIR_SAME, TEDAB_PAIR_DIFF, TEDAB_PAIR_FAIL, TEDAB_PAIR_FIXED, TEDAB_PAIR_BROKEN };
+enum { TEDAB_PAIR_SAME, TEDAB_PAIR_DIFF, TEDAB_PAIR_FAIL, TEDAB_PAIR_FIXED, TEDAB_PAIR_BROKEN,
+       TEDAB_PAIR_INTENDED };
 int tedab_pair_verdict(const struct tedab_test *t, int k, int compare);
-/* 1 = the verdict passes (SAME, FIXED) */
+/* The verdict of a pair with the prev build (C5-P5, Cc-Pc) against the
+   PREV_INTENDED entries (previntended.h): a DIFF listed there (ted_ab:CASE,
+   ted_ab:CASE:PAIR) or with ON is INTENDED (passes), other verdicts and
+   pairs stay as they are.  Marks the entries judged. */
+int tedab_pair_prev(struct prevint *pi, const struct tedab_test *t, int k, int verdict);
+/* 1 = the verdict passes (SAME, FIXED, INTENDED) */
 int tedab_pair_passes(int verdict);
 const char *tedab_pair_verdict_name(int verdict);
 

@@ -77,6 +77,26 @@ int main(void)
           && strstr(err, "unknown key"));
     CHECK(parse("work=/w\n" CONFIGS "source=/s\n", err, sizeof err) == -1);
 
+    /* PREV_INTENDED: test= and intended= (entries of other tests are kept) */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=corpus:t01_int\n"
+                       "intended=ted_ab:x:Cc-Pc\n", &p, err, sizeof err) == 0);
+    CHECK(!strcmp(p.test, "corpus") && p.intended.n == 2 && !p.intended.all);
+    CHECK(prevint_judge(&p.intended, "corpus", "t01_int", NULL, 1) == PREVINT_INTENDED);
+    CHECK(prevint_judge(&p.intended, "corpus", "t02", NULL, 1) == PREVINT_DIFFERS);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=ON\n", &p, err,
+                       sizeof err) == 0 && p.intended.all);
+    corpus_free(&p);
+    /* broken: no test=, a malformed entry, a library path, an unknown test */
+    CHECK(parse(BASE CONFIGS "source=/s\nintended=corpus:a\n", err, sizeof err) == -1
+          && strstr(err, "needs test="));
+    CHECK(parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=corpus:\n", err, sizeof err) == -1
+          && strstr(err, "line") && strstr(err, "name is empty"));
+    CHECK(parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=libs/a.obj\n", err, sizeof err) == -1
+          && strstr(err, "library path"));
+    CHECK(parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=corpuz:a\n", err, sizeof err) == -1
+          && strstr(err, "unknown test"));
+
     /* read-only volumes */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nmount=BB2|/cd\nmount=X|/x\n", &p, err,
                        sizeof err) == 0);

@@ -56,6 +56,8 @@ documentation it changes; no program code changes in this change.
 - [x] 8.3 Corpus config `prev|exe|...` and `ted_ab` combos `P5`/`Pc` with `Cc-Pc` comparison. Verify: `ctest --preset all -R 'corpus|ted_ab'` passes with a prev build; a change of generated code in a test commit shows in the `prev` comparison
 - [x] 8.4 Document in `tests/README.md`, `docs/development.md` and CLAUDE.md "Acceptance" (the manual worktree comparison is replaced). Verify: the documented command runs as written
 
+- [x] 8.5 `PREV_INTENDED` also names corpus sources and `ted_ab` cases (`corpus:NAME`, `corpus_runerr:NAME`, ..., `ted_ab:CASE[:PAIR]`) with the rule of the library files (a listed entry must differ, an unlisted difference fails, `ON` allows all); parsing and matching in `tools/lib/previntended`; the reports end with the list to quote. Verify: `test_previntended`, `corpus_runner`, `ted_ab_tedab`; with a test commit that changes generated code all corpus sources differ, one listed source passes while the others fail, all listed pass, a listed source that does not differ fails as stale
+
 ## 9. Label `originals`
 
 - [ ] 9.1 Label and preset `originals` for the tests of spec `original-comparisons`; `oracle` unchanged (`CMakePresets.json`, `CMakeLists.txt`, the test definitions). Verify: `ctest --preset originals -N` lists exactly those; `ctest --preset all` without `archive/cd` skips nothing for a missing reference

@@ -54,16 +54,32 @@ int tedab_pair_verdict(const struct tedab_test *t, int k, int compare)
     return compare ? TEDAB_PAIR_DIFF : TEDAB_PAIR_SAME;
 }
 
+int tedab_pair_prev(struct prevint *pi, const struct tedab_test *t, int k, int verdict)
+{
+    char pair[16];
+
+    if (k < 0 || k >= TEDAB_NPAIRS
+        || (tedab_pairs[k][1] != TEDAB_P5 && tedab_pairs[k][1] != TEDAB_PC)
+        || (verdict != TEDAB_PAIR_SAME && verdict != TEDAB_PAIR_DIFF))
+        return verdict;
+    snprintf(pair, sizeof pair, "%s-%s", tedab_combo_names[tedab_pairs[k][0]],
+             tedab_combo_names[tedab_pairs[k][1]]);
+    return prevint_judge(pi, "ted_ab", t->name, pair,
+                         verdict == TEDAB_PAIR_DIFF) == PREVINT_INTENDED
+           ? TEDAB_PAIR_INTENDED : verdict;
+}
+
 int tedab_pair_passes(int verdict)
 {
-    return verdict == TEDAB_PAIR_SAME || verdict == TEDAB_PAIR_FIXED;
+    return verdict == TEDAB_PAIR_SAME || verdict == TEDAB_PAIR_FIXED
+           || verdict == TEDAB_PAIR_INTENDED;
 }
 
 const char *tedab_pair_verdict_name(int verdict)
 {
-    static const char *const names[] = { "SAME", "DIFF", "FAIL", "FIXED", "BROKEN" };
+    static const char *const names[] = { "SAME", "DIFF", "FAIL", "FIXED", "BROKEN", "INTENDED" };
 
-    return verdict >= 0 && verdict < 5 ? names[verdict] : "?";
+    return verdict >= 0 && verdict < 6 ? names[verdict] : "?";
 }
 
 /* ------------------------------------------------------------ directives */

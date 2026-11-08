@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h)
 foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
-		outmatch covmap covsel hdf cmdref cdtable prevcmp)
+		outmatch covmap covsel hdf cmdref cdtable prevcmp previntended)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -168,3 +168,14 @@ set_tests_properties(prevcmp_stale_names PROPERTIES
 add_test(NAME prevcmp_no_prev COMMAND prevcmp ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur
 	${CMAKE_CURRENT_BINARY_DIR}/prevcmp/no-such-build)
 set_tests_properties(prevcmp_no_prev PROPERTIES PASS_REGULAR_EXPRESSION "no-such-build: no prev build")
+# an entry of the corpus or ted_ab (PREV_INTENDED, lib/previntended) is
+# checked for its syntax and otherwise left to those tests: it does not make
+# a library file stale; a malformed one is refused
+add_test(NAME prevcmp_corpus_entry COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+	--intended corpus:t01 --intended ted_ab:open:Cc-Pc ${prevcmp_dirs})
+add_test(NAME prevcmp_malformed_entry COMMAND prevcmp --intended corpus:
+	--intended libs/acidlibs/2dlib.obj ${prevcmp_dirs})
+set_tests_properties(prevcmp_malformed_entry PROPERTIES WILL_FAIL ON)
+add_test(NAME prevcmp_malformed_entry_names COMMAND prevcmp --intended corpuss:t01 ${prevcmp_dirs})
+set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
+	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")

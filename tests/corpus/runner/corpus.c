@@ -45,6 +45,8 @@ void corpus_free(struct corpus_pass *p)
     free(p->rcput);
     free(p->orig);
     free(p->orig_by);
+    free(p->test);
+    prevint_free(&p->intended);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -177,13 +179,14 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         if (!strcmp(key, "work") || !strcmp(key, "report") || !strcmp(key, "ted")
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
             || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
-            || !strcmp(key, "orig") || !strcmp(key, "orig_by")) {
+            || !strcmp(key, "orig") || !strcmp(key, "orig_by") || !strcmp(key, "test")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
                          : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
                          : !strcmp(key, "defaultdbug") ? &p->defaultdbug
                          : !strcmp(key, "rcput") ? &p->rcput : !strcmp(key, "orig") ? &p->orig
-                         : !strcmp(key, "orig_by") ? &p->orig_by : &p->serial_same_as;
+                         : !strcmp(key, "orig_by") ? &p->orig_by
+                         : !strcmp(key, "test") ? &p->test : &p->serial_same_as;
 
             free(*dst);
             *dst = val;
@@ -260,6 +263,16 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             free(val);
             p->configs = v2;
             p->configs[p->nconfigs++] = c;
+            continue;
+        }
+        if (!strcmp(key, "intended")) {
+            char msg[300];
+            int r = prevint_add(&p->intended, val, msg, sizeof msg);
+
+            free(val);
+            if (r)
+                return fail(p, err, errlen, "line %u: intended=%s", no,
+                            r < 0 ? msg : "TEST:NAME or ON (a library path is not for the corpus)");
             continue;
         }
         if (!strcmp(key, "source")) {
@@ -419,6 +432,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if (amiga_emulation_machine_kickstart(p->machine) < 36 && (!p->rcput || p->gate))
         return fail(p, err, errlen, "machine=%s (Kickstart 1.x) needs rcput= and no gate=",
                     p->machine);
+    if ((p->intended.n || p->intended.all) && !p->test)
+        return fail(p, err, errlen, "intended= needs test= (the ctest name)");
     /* names: one directory per configuration, AmigaDOS ignores case */
     for (i = 0; i < p->nconfigs; i++)
         for (k = 0; k < i; k++)
@@ -1137,7 +1152,27 @@ out:
     return rc;
 }
 
-int corpus_run(const struct corpus_pass *p, FILE *log)
+/* The differences of the configuration tagged prev are judged against the
+   PREV_INTENDED entries (previntended.h): differs = this source differs in
+   it; returns 1 if that is an error.  The name goes to list as an entry
+   (TEST:NAME), the report line gets " (intended)". */
+static int prev_judge(struct corpus_pass *p, const struct corpus_config *cf, const char *name,
+                      int differs, struct text *rep, struct text *list)
+{
+    int v;
+
+    if (!p->test || !name || strcmp(cf->tag, "prev"))
+        return differs;
+    v = prevint_judge(&p->intended, p->test, name, NULL, differs);
+    if (v == PREVINT_SAME)
+        return 0;
+    text_add(list, "%s%s:%s", list->n ? ";" : "", p->test, name);
+    if (v == PREVINT_INTENDED)
+        text_add(rep, " (intended)");
+    return v == PREVINT_DIFFERS;
+}
+
+int corpus_run(struct corpus_pass *p, FILE *log)
 {
     struct amiga_emulation **e = calloc(p->nconfigs, sizeof *e);
     enum amiga_emulation_status *st = calloc(p->nconfigs, sizeof *st);
@@ -1147,7 +1182,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     struct statline *stl = calloc(p->nconfigs, sizeof *stl);   /* test[0]: joined */
     int *vbad = calloc(p->nconfigs, sizeof *vbad);             /* the verdict "differs" */
     char *text = corpus_script(p), err[300];
-    struct text rep = { 0 };
+    struct text rep = { 0 }, prevdiff = { 0 };   /* prevdiff: the entries of the prev differences */
     size_t c, i, next = 0, done = 0, announced = 0;   /* announced: sessions logged */
     unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
@@ -1337,6 +1372,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                                    : o.exe ? ", AN EXE" : ", NO EXE");
                     ok &= same_exe;
                 }
+                ok = !prev_judge(p, cf, name, !ok, &rep, &prevdiff);
                 diff |= !ok;
                 vbad[c] |= !ok;
                 free_outcome(&o);
@@ -1361,6 +1397,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             const struct corpus_config *cf = &p->configs[c];
             struct outcome bo;
             const struct outcome *rb = compared_with(p, c, i, slog, &ref, &bo);
+            int cdiff = 0;
 
             load_outcome(p, c, i, slog[c], &o);
             text_add(&rep, "%s %s:", c > 1 ? ";" : "", cf->tag);
@@ -1369,8 +1406,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
 
                 text_add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
                     o.result);
-                diff |= !ok;
-                vbad[c] |= !ok;
+                cdiff |= !ok;
             }
             if (!o.run)
                 text_add(&rep, " NO OUTPUT");
@@ -1378,21 +1414,21 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 text_add(&rep, " output same");
             else
                 text_add(&rep, " OUTPUT DIFFERS");
-            diff |= !same(rb->run, rb->runlen, o.run, o.runlen);
-            vbad[c] |= !same(rb->run, rb->runlen, o.run, o.runlen);
+            cdiff |= !same(rb->run, rb->runlen, o.run, o.runlen);
             if (p->serial) {
                 int ok = same(rb->serial, rb->seriallen, o.serial, o.seriallen);
 
                 text_add(&rep, !rb->serial ? ", NO REFERENCE SERIAL DATA" : ok ? ", serial data same"
                                : ", SERIAL DATA DIFFERS");
-                diff |= !ok;
-                vbad[c] |= !ok;
+                cdiff |= !ok;
                 if (o.run && strstr((const char *)o.run, "TIMEOUT")) {
                     text_add(&rep, ", TIMEOUT");
-                    diff = 1;
-                    vbad[c] = 1;
+                    cdiff = 1;
                 }
             }
+            cdiff = prev_judge(p, cf, name, cdiff, &rep, &prevdiff);
+            diff |= cdiff;
+            vbad[c] |= cdiff;
             free_outcome(&o);
             if (rb == &bo)
                 free_outcome(&bo);
@@ -1426,6 +1462,22 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         free_outcome(&ref);
         free(name);
     }
+    /* a stale entry: listed, but prev does not differ */
+    if (p->test) {
+        size_t cur = 0;
+        const char *e;
+
+        while ((e = prevint_stale(&p->intended, p->test, 0, &cur)) != NULL) {
+            text_add(&rep, "STALE %s: intended, but prev does not differ in it (or the source "
+                           "is not in this pass)\n", e);
+            bad++;
+            for (c = 0; c < p->nconfigs; c++)
+                if (!strcmp(p->configs[c].tag, "prev"))
+                    vbad[c] = 1;
+        }
+    }
+    if (prevdiff.n)
+        text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", prevdiff.p);
     text_add(&rep, "%zu checks, %ld with differences\n", p->nsources, bad);
     if (rep.bad || write_file(p->report, rep.p, rep.n)) {
         fprintf(log, "corpus: cannot write %s\n", p->report);
@@ -1464,5 +1516,6 @@ out:
     free(st);
     free(text);
     free(rep.p);
+    free(prevdiff.p);
     return rc;
 }

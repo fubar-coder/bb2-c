@@ -12,6 +12,19 @@
 # results in prev/blitz2/), by the ExternalProject blitz2_prev, which is
 # part of ALL; it follows the revision on every build (cmake/prev-build.cmake).
 #
+# -DPREV_INTENDED names the differences from the prev build that are
+# intended (a fix names them in its commit): OFF (none), ON (every one), or
+# a ;-list of entries, each of which must really differ (a stale entry
+# fails like a difference; tests/README.md "The prev build"):
+#   libs/acidlibs/2dlib.obj      a library file (prev_results), path relative
+#                                to the build directory
+#   corpus:NAME                  the source NAME in the pass corpus, likewise
+#   corpus_runerr:NAME           corpus_req, corpus_serial,
+#   ...                          corpus_serial_runerr
+#   ted_ab:CASE[:C5-P5|:Cc-Pc]   the test CASE of ted_ab (one of its two pairs
+#                                with P5/Pc, or either)
+# The entries are checked by the tools (tools/lib/previntended).
+#
 # Sets PREV_DIR: the directory of the prev build, whether it exists or not
 # (the tests that need it are skipped without it), and PREV_BLITZ2_DIR.
 
@@ -62,3 +75,23 @@ if(BLITZ2_PREV)
 	endif()
 endif()
 set(PREV_BLITZ2_DIR ${PREV_DIR}/blitz2)
+
+set(PREV_INTENDED OFF CACHE STRING
+	"differences from the prev build that are intended: ON (all) or a ;-list of library paths, corpus:NAME, corpus_runerr:NAME, ted_ab:CASE[:PAIR] ...")
+# for the runners: PREV_INTENDED_LINES = "intended=ENTRY\n" per entry of the
+# corpus and ted_ab kind (with a colon) and ON, to put in a pass file;
+# PREV_INTENDED_PREVCMP_ARGS = the arguments of prevcmp (it also takes the
+# entries with a colon, only to check their syntax)
+set(PREV_INTENDED_LINES)
+set(PREV_INTENDED_PREVCMP_ARGS)
+if(PREV_INTENDED STREQUAL "ON")
+	set(PREV_INTENDED_LINES "intended=ON\n")
+	set(PREV_INTENDED_PREVCMP_ARGS --all)
+elseif(PREV_INTENDED AND NOT PREV_INTENDED STREQUAL "OFF")
+	foreach(f IN LISTS PREV_INTENDED)
+		list(APPEND PREV_INTENDED_PREVCMP_ARGS --intended ${f})
+		if(f MATCHES ":")
+			string(APPEND PREV_INTENDED_LINES "intended=${f}\n")
+		endif()
+	endforeach()
+endif()

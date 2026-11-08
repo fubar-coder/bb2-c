@@ -139,11 +139,16 @@ ctest --preset all                      # prev_results, corpus (config prev), te
 ```
 
 `prev_results` compares `acidlibs`, `deflibs` and every library file
-byte by byte; `-DPREV_INTENDED=ON` or a list of paths
-(`-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs"`, each of
-which must differ) names the files a fix changes. The corpus compares the
-executables of the previous compiler with those of the current one, and
-`ted_ab` runs the previous TED. Options, what is compared and how the
+byte by byte. The corpus compares the executables of the previous
+compiler with those of the current one, and `ted_ab` runs the previous
+TED. `-DPREV_INTENDED=ON` or a list names the differences a fix changes,
+each of which must really differ: a library path
+(`libs/acidlibs/2dlib.obj`), `corpus:NAME` (also `corpus_runerr:NAME` and
+the other corpus passes) for a corpus source, `ted_ab:CASE[:C5-P5|:Cc-Pc]`
+for a TED A/B case, e.g.
+`-DPREV_INTENDED="libs/acidlibs/2dlib.obj;corpus:t01_int;corpus_runerr:t01_int"`.
+A run that finds differences prints the list to quote in the commit
+message (`prev differs in: PREV_INTENDED="..."`). Options, what is compared and how the
 tests are skipped without a prev build: `tests/README.md`, "The prev
 build". Without the option nothing of this is configured or built;
 `prev_results` is then skipped.

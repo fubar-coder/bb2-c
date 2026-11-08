@@ -44,6 +44,8 @@
 #              note rows (tests/data/blitz2-cd.tsv)
 #   prevcmp    the library files of two build directories byte by byte (the
 #              prev build, the build of the previous commit)
+#   previntended  the intended differences of the corpus and ted_ab against
+#              the prev build (PREV_INTENDED entries)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -71,3 +73,4 @@ add_subdirectory(hdf)
 add_subdirectory(cmdref)
 add_subdirectory(cdtable)
 add_subdirectory(prevcmp)
+add_subdirectory(previntended)

@@ -8,7 +8,7 @@ set_target_properties(lib_runner_util PROPERTIES C_STANDARD 23)
 add_library(lib_corpus STATIC corpus.c serial.c bugorig.c)
 target_include_directories(lib_corpus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Threads REQUIRED)
-target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_statline
+target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_statline lib_previntended
 	Threads::Threads)
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)

@@ -375,10 +375,10 @@ passed, and the corpus and `ted_ab` run without their prev parts):
   them in its commit): `-DPREV_INTENDED=ON` lets every file differ, or
   `-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs"` lists the
   files (paths relative to `build/<preset>`; each listed file must
-  differ: a stale entry fails like a difference). Configure again after
-  changing it, and set it back to `OFF` for the next commit. The tool and
-  its tests with broken input: `prevcmp_*` (`tools/tests`, small build
-  directories) and `test_prevcmp`.
+  differ: a stale entry fails like a difference). The other entries of
+  the list (below) are only checked for their syntax by `prevcmp`. The
+  tool and its tests with broken input: `prevcmp_*` (`tools/tests`, small
+  build directories) and `test_prevcmp`.
 * the corpus: a fourth configuration `prev` (`config=prev|exe:clib|…`:
   the previous commit's blitz2 with its libraries) must write the
   executable that `clib` writes and give the same output, so that a
@@ -394,10 +394,42 @@ passed, and the corpus and `ted_ab` run without their prev parts):
   there.
 
 A fix changes results on purpose: its commit names them (CLAUDE.md), the
-`prev` lines of the report that differ must be exactly those, and
-`-DPREV_INTENDED` covers the library files for `prev_results`. The
-corpus and `ted_ab` have no list: they report the differences, and the
-reviewer compares them with the commit message.
+differences that report must be exactly those, and `-DPREV_INTENDED`
+names them for the three comparisons with one rule: a listed difference
+must really exist (a stale entry fails), an unlisted difference fails, and
+`ON` allows every one. The entries (`;`-separated, no blanks):
+
+| Entry | Meaning |
+| --- | --- |
+| `libs/acidlibs/2dlib.obj` | a library file (`prev_results`), path relative to `build/<preset>` |
+| `corpus:NAME` | the source `NAME` (without `.bb2`) in the pass `corpus`: its `prev` configuration may differ from `clib` (executable, output or serial data) |
+| `corpus_runerr:NAME`, `corpus_req:NAME`, `corpus_serial:NAME`, `corpus_serial_runerr:NAME` | the same for the other corpus passes |
+| `ted_ab:CASE` | the `ted_ab` case `CASE`: the pairs `C5-P5` and `Cc-Pc` may differ, at least one must |
+| `ted_ab:CASE:C5-P5`, `ted_ab:CASE:Cc-Pc` | only that pair |
+
+The part before the first colon is the ctest name of the test, so an
+entry says which comparison it is for: the same source is listed once per
+pass it differs in (`corpus` and `corpus_runerr` run the same sources),
+and a source that is not in the pass (a typo) is stale. Entries without a
+colon are library files, others are checked for their syntax by every
+runner (an unknown test, an empty name, a pair that is no `C5-P5` or
+`Cc-Pc` are errors). `corpus_cd` and `corpus_cd_ab3` have no prev part.
+`PREV_INTENDED` is passed to the runners as `intended=ENTRY` lines of
+their pass files; a `ted_ab` run with `TED_AB_FILTER` does not call a
+case it did not run stale. In the reports a difference reads
+`prev: EXE DIFFERS (intended)` (corpus) or `C5<->P5: INTENDED` (`ted_ab`),
+a stale entry `STALE corpus:NAME: ...`, and every run with differences
+ends with a line to quote in the commit message:
+
+```
+prev differs in: PREV_INTENDED="corpus:t01_int;corpus:t02_float"
+```
+
+Configure again after changing the list, and set it back to `OFF` for the
+next commit. The parsing and matching is `tools/lib/previntended`, tested
+by `test_previntended` (listed and different, listed and the same, not
+listed and different, `ON`, a pair, malformed entries), the pass file keys
+by `corpus_runner` and `ted_ab_tedab`.
 
 ## bug-orig tests
 

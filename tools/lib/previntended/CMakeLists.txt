@@ -1,0 +1,3 @@
+add_library(lib_previntended STATIC previntended.c)
+set_target_properties(lib_previntended PROPERTIES OUTPUT_NAME previntended)
+target_include_directories(lib_previntended PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

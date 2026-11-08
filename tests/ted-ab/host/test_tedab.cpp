@@ -197,6 +197,65 @@ TEST_CASE("@fixed: verdict of a pair", "[fixed]")
     CHECK_FALSE(tedab_pair_passes(TEDAB_PAIR_DIFF));
 }
 
+TEST_CASE("PREV_INTENDED: verdict of a pair with the prev build", "[prev]")
+{
+    Test t("; @source none\n; @nofiles\n", "open");
+    REQUIRE(t.rc == 0);
+    const int c5p5 = tedab_pair("C5-P5"), ccpc = tedab_pair("Cc-Pc");
+    REQUIRE(c5p5 >= 0);
+    REQUIRE(ccpc >= 0);
+    char err[300];
+
+    // no entry: a difference stays DIFF (fails), the same stays SAME
+    {
+        prevint pi{};
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_DIFF) == TEDAB_PAIR_DIFF);
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_SAME) == TEDAB_PAIR_SAME);
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_FAIL) == TEDAB_PAIR_FAIL);
+        prevint_free(&pi);
+    }
+    // the case listed: either pair may differ, INTENDED passes
+    {
+        prevint pi{};
+        REQUIRE(prevint_add(&pi, "ted_ab:open", err, sizeof err) == 0);
+        CHECK(tedab_pair_prev(&pi, &t.t, ccpc, TEDAB_PAIR_DIFF) == TEDAB_PAIR_INTENDED);
+        CHECK(tedab_pair_passes(TEDAB_PAIR_INTENDED));
+        CHECK(std::string(tedab_pair_verdict_name(TEDAB_PAIR_INTENDED)) == "INTENDED");
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_SAME) == TEDAB_PAIR_SAME);
+        size_t cur = 0;
+        CHECK(prevint_stale(&pi, "ted_ab", 0, &cur) == nullptr);
+        prevint_free(&pi);
+    }
+    // the case listed, but the pairs are the same: stale
+    {
+        prevint pi{};
+        REQUIRE(prevint_add(&pi, "ted_ab:open", err, sizeof err) == 0);
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_SAME) == TEDAB_PAIR_SAME);
+        CHECK(tedab_pair_prev(&pi, &t.t, ccpc, TEDAB_PAIR_SAME) == TEDAB_PAIR_SAME);
+        size_t cur = 0;
+        CHECK(std::string(prevint_stale(&pi, "ted_ab", 0, &cur)) == "ted_ab:open");
+        prevint_free(&pi);
+    }
+    // one pair listed: the other one still fails; another case is not listed
+    {
+        prevint pi{};
+        REQUIRE(prevint_add(&pi, "ted_ab:open:Cc-Pc", err, sizeof err) == 0);
+        CHECK(tedab_pair_prev(&pi, &t.t, c5p5, TEDAB_PAIR_DIFF) == TEDAB_PAIR_DIFF);
+        CHECK(tedab_pair_prev(&pi, &t.t, ccpc, TEDAB_PAIR_DIFF) == TEDAB_PAIR_INTENDED);
+        Test other("; @source none\n; @nofiles\n", "save");
+        CHECK(tedab_pair_prev(&pi, &other.t, ccpc, TEDAB_PAIR_DIFF) == TEDAB_PAIR_DIFF);
+        prevint_free(&pi);
+    }
+    // ON allows every difference; a pair that is not a prev pair is left alone
+    {
+        prevint pi{};
+        REQUIRE(prevint_add(&pi, "ON", err, sizeof err) == 0);
+        CHECK(tedab_pair_prev(&pi, &t.t, ccpc, TEDAB_PAIR_DIFF) == TEDAB_PAIR_INTENDED);
+        CHECK(tedab_pair_prev(&pi, &t.t, tedab_pair("R5-C5"), TEDAB_PAIR_DIFF) == TEDAB_PAIR_DIFF);
+        prevint_free(&pi);
+    }
+}
+
 // two run directories compared as the runner does: a script whose named pair
 // does not differ comes out BROKEN, one that differs FIXED
 TEST_CASE("@fixed: stale pair of two runs", "[fixed]")

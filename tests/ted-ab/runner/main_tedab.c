@@ -26,6 +26,12 @@
  *   ted_prev=, blitz2_prev=PATH   P and c of the previous commit (the
  *                      combinations P5, Pc; needed only when combos= names
  *                      them: P5 needs ted_prev, Pc both)
+ *   intended=ENTRY     a PREV_INTENDED entry (ted_ab:CASE[:PAIR], or ON; any
+ *                      number; entries of other tests are ignored): the
+ *                      pairs C5-P5 and Cc-Pc of that case may differ, of all
+ *                      cases with ON; a listed case must differ in one (else
+ *                      STALE and the pass fails), an unlisted difference
+ *                      fails
  *   timeout=SEC        per emulator session (default 120)
  *   budget=SEC         estimated run time (@est) per session (default 60:
  *                      boot ~15 s and gates ~10 s come on top)
@@ -90,6 +96,7 @@ struct pass {
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *inject, *wbrun, *gates;
     char *orig, *orig_by;
+    struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
     unsigned timeout, budget, parallel, stack, bugorig;
 };
 
@@ -194,6 +201,18 @@ static int parse(const char *text, char *err, size_t errlen)
                 free(val);
                 found = 1;
             }
+        if (!found && !strcmp(key, "intended")) {
+            char msg[300];
+            int r = prevint_add(&P.intended, val, msg, sizeof msg);
+
+            free(val);
+            if (r) {
+                snprintf(err, errlen, "line %u: intended=%.200s", no,
+                         r < 0 ? msg : "ted_ab:CASE[:PAIR] or ON (a library path is not for ted_ab)");
+                return -1;
+            }
+            found = 1;
+        }
         if (!found) {
             snprintf(err, errlen, "line %u: unknown key %s", no, key);
             free(val);
@@ -854,7 +873,7 @@ static int run(FILE *log)
     struct session *pending = NULL;     /* staged, waiting for a slot */
     struct amiga_emulation **act = NULL; /* act[no - 1]: the running sessions */
     int told = 0;
-    struct text rep = { 0 };
+    struct text rep = { 0 }, pdiff = { 0 };     /* pdiff: PREV_INTENDED entries of the differences */
     int rc = 2, all_ok = 1, c, worst = -1;
 
     /* the recorded original against the expectations, before any session:
@@ -1121,7 +1140,7 @@ static int run(FILE *log)
         all_ok &= s->gates_ok;
     }
     {
-        size_t npairs = 0, nsame = 0, nfixed = 0, nok = 0;
+        size_t npairs = 0, nsame = 0, nfixed = 0, nok = 0, nintended = 0;
 
         for (i = 0; i < ntests; i++) {
             struct run *tr[TEDAB_NCOMBOS] = { 0 };
@@ -1171,6 +1190,10 @@ static int run(FILE *log)
                                                           tedab_combo_names[a],
                                                           tedab_combo_names[b], &fonts,
                                                           tests[i].font, &d));
+                v = tedab_pair_prev(&P.intended, &tests[i], k, v);
+                if (v == TEDAB_PAIR_INTENDED || (b >= TEDAB_P5 && v == TEDAB_PAIR_DIFF))
+                    text_add(&pdiff, "%sted_ab:%s:%s-%s", pdiff.n ? ";" : "", tests[i].name,
+                             tedab_combo_names[a], tedab_combo_names[b]);
                 text_add(&rep, "  %s<->%s: %s", tedab_combo_names[a], tedab_combo_names[b],
                          tedab_pair_verdict_name(v));
                 if (v == TEDAB_PAIR_FIXED)
@@ -1184,6 +1207,8 @@ static int run(FILE *log)
                     all_ok = 0;
                 else if (v == TEDAB_PAIR_FIXED)
                     nfixed++;
+                else if (v == TEDAB_PAIR_INTENDED)
+                    nintended++;
                 else
                     nsame++;
             }
@@ -1194,9 +1219,22 @@ static int run(FILE *log)
         }
         for (i = 0; i < nknown; i++)
             text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);
+        /* PREV_INTENDED: a listed case must differ (not judged: only if the
+           run was filtered) */
+        if (!P.bugorig) {
+            size_t cur = 0;
+            const char *e;
+
+            while ((e = prevint_stale(&P.intended, "ted_ab", P.filter && *P.filter, &cur)) != NULL) {
+                text_add(&rep, "STALE %s: intended, but prev does not differ in it\n", e);
+                all_ok = 0;
+            }
+        }
+        if (pdiff.n)
+            text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", pdiff.p);
         text_add(&rep, "== %zu tests, %zu runs (%zu OK), %u sessions, %zu comparisons "
-                       "(%zu SAME, %zu FIXED), %zu known\n", ntests, nruns, nok, nsess, npairs,
-                 nsame, nfixed, nknown);
+                       "(%zu SAME, %zu FIXED, %zu INTENDED), %zu known\n", ntests, nruns, nok,
+                 nsess, npairs, nsame, nfixed, nintended, nknown);
     }
     if (rep.bad || write_file(P.report, rep.p, rep.n)) {
         fprintf(log, "tedab: cannot write %s\n", P.report);
@@ -1230,6 +1268,8 @@ out:
     free(act);
     free(queue);
     free(rep.p);
+    free(pdiff.p);
+    prevint_free(&P.intended);
     return rc;
 }
 
