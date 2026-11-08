@@ -1875,7 +1875,12 @@ static UWORD revmask(UWORD mask)
     return rev;
 }
 
-/* blitz2.s:9989 doused - return 'used' object. */
+/* blitz2.s:9989 doused - return 'used' object.
+   BUG(orig) (#998): the number is (used pointer - table base) >> shift with a
+   word shift (lsr.w, also both of usedcode2): from n << shift = $10000 on
+   the high word of the difference is lost, Used BitMap after Use BitMap
+   1025 gives 1 (test compiler-object-used-word; in the original Use
+   already addressed object 1 there, #939). */
 static UWORD doused(UWORD *type)
 {
     struct blitzlib *lib = fetchit();
