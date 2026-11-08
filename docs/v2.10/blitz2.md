@@ -180,7 +180,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #6 | open | [compiler/rundebuglib] Executables with runtime error checking show an empty requester at program end without `End` | unchanged |
 | #7 | closed | [compiler] Constant without a name (`#=…`) is accepted without error | **fixed in the port** |
 | #8 | closed | [compiler/Options] AllocMem for the arrow images of the options requester unchecked | **fixed in the port** |
-| #9 | open | [compiler/Expression] Operator `=<` is compiled as `<>` | unchanged |
+| #9 | closed | [compiler/Expression] Operator `=<` is compiled as `<>` | **fixed in the port** |
 | #10 | closed | [compiler/Constants] Number with a point but no fractional digits (`1.`) is a syntax error | **fixed in the port** |
 | #11 | closed | [compiler/Constants] Exponent after fractional part 0 (`1.0e5`) is not evaluated | **fixed in the port** |
 | #12 | open | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | unchanged |
@@ -219,7 +219,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #337 | closed | [compiler/WB start] wb_exit calls Permit after ReplyMsg, before blitz2 has returned | **fixed in the port** |
 | #341 | closed | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | **fixed in the port** (BB2 mode only; AB3 mode keeps its INCDIR rule) |
 | #342 | closed | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | **fixed in the port** |
-| #343 | open | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
+| #343 | closed | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | **fixed in the port** (RILESDEBUGLIB on the CD unchanged) |
 | #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved (test `bug_orig_compiler_amigalib_param_regs`) | unchanged |
 | #937 | open | [compiler/Arrays] List array indexed by an element of a normal array (`a(b(1))`): the nested calcvar resets `.listoff`, the index is multiplied by the bare element size (`parse.c` calcvar, test `bug_orig_compiler_calcvar_listoff`) | unchanged |
 | #939 | open | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | unchanged |
