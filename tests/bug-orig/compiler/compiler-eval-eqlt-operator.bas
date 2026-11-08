@@ -2,6 +2,7 @@
 ; into .isne (blitz2.s:9133): "=<" is compiled as "<>" instead of
 ; less-or-equal. "<=", ">=", "=>", "<>" and "><" are right.
 ; Correct: "=<" is less-or-equal, as "<=".
+; @fixed #9
 a=1:b=2:NPrint a=<b
 a=2:b=2:NPrint a=<b
 a=3:b=2:NPrint a=<b

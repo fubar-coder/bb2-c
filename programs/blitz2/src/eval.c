@@ -913,7 +913,10 @@ found:
     }
     if (ch != '<')                  /* .noteqgt */
         goto found3;
-    /* BUG(orig) (#9): "=<" is compiled as "<>" (falls into .isne) */
+    /* Fixed (#9): "=<" is less-or-equal, as "<="; the original fell
+       through into .isne and compiled it as "<>" */
+    ent = ople;
+    goto found2;
 isne:
     ent = opne;
     goto found2;
