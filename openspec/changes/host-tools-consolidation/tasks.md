@@ -52,7 +52,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 5. `hunkcheck` (10 call sites)
 
-- [ ] 5.1 `tools/hunkcheck/` with `start`, `layout`, `stored` (unless open question 1 says otherwise). Call sites: `programs/ab3cli`, `programs/ted`, `programs/ted/tests/oracle`, `tests/ab3`, `tests/corpus/amiga`, `CMakeLists.txt`. Verify: C1-C5; every POST_BUILD check still runs (break a hunk layout on purpose in a scratch copy and see the build fail)
+- [x] 5.1 `tools/hunkcheck/` with `start`, `layout`, `stored` (unless open question 1 says otherwise). Call sites: `programs/ab3cli`, `programs/ted`, `programs/ted/tests/oracle`, `tests/ab3`, `tests/corpus/amiga`, `CMakeLists.txt`. Verify: C1-C5; every POST_BUILD check still runs (break a hunk layout on purpose in a scratch copy and see the build fail)
 
 ## 6. `blitzres` (12 call sites)
 

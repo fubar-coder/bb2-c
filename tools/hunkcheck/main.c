@@ -1,62 +1,19 @@
 /*
- * hunkcheck - check the start of the first hunk of a load file (see
- * hunkcheck.h).
- *
- *   hunkcheck FILE OFFSET:HEXBYTES...      e.g. hunkcheck ted 0:6100 4:48e7
- *   hunkcheck --hunks LAYOUT FILE          e.g. hunkcheck --hunks code,bss exe
- *   hunkcheck --stored FILE                every CODE/DATA hunk stored whole
- *
- * Silent if everything is right; exit status 1 otherwise.
+ * hunkcheck - checks of the hunks of a load file: the bytes at offsets of
+ * the first hunk (start), the hunk layout (layout), every CODE/DATA hunk
+ * stored whole (stored).  README.md here; the subcommands are in
+ * cmd_check.c.
  */
-#include <stdio.h>
-#include <string.h>
-#include "hunkcheck.h"
+#include "subcmd.h"
+#include "cmds.h"
 
-static const char usage[] =
-    "usage: hunkcheck FILE OFFSET:HEXBYTES...\n"
-    "       hunkcheck --hunks LAYOUT FILE\n"
-    "       hunkcheck --stored FILE\n"
-    "  check the start of the first hunk of a load file, or its hunks\n"
-    "  (LAYOUT: code|data|bss[+chip],... e.g. code,bss,data+chip), or that\n"
-    "  no CODE/DATA hunk is larger than its stored block\n";
+static const struct subcmd table[] = {
+    { "start", cmd_start, cmd_start_usage },
+    { "layout", cmd_layout, cmd_layout_usage },
+    { "stored", cmd_stored, cmd_stored_usage },
+};
 
 int main(int argc, char **argv)
 {
-    struct loadfile lf;
-    char err[200];
-    int bad;
-
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
-    if (argc == 4 && !strcmp(argv[1], "--hunks")) {
-        if (load_read(argv[3], &lf, err, sizeof err)) {
-            fprintf(stderr, "hunkcheck: %s: %s\n", argv[3], err);
-            return 1;
-        }
-        bad = hunk_layout(&lf, argv[2], argv[3], stderr);
-        load_free(&lf);
-        return bad;
-    }
-    if (argc == 3 && !strcmp(argv[1], "--stored")) {
-        if (load_read(argv[2], &lf, err, sizeof err)) {
-            fprintf(stderr, "hunkcheck: %s: %s\n", argv[2], err);
-            return 1;
-        }
-        bad = hunk_stored(&lf, argv[2], stderr);
-        load_free(&lf);
-        return bad;
-    }
-    if (argc < 3) {
-        fputs(usage, stderr);
-        return 2;
-    }
-    if (load_read(argv[1], &lf, err, sizeof err)) {
-        fprintf(stderr, "hunkcheck: %s: %s\n", argv[1], err);
-        return 1;
-    }
-    bad = hunk_check(&lf, argc - 2, argv + 2, argv[1], stderr);
-    load_free(&lf);
-    return bad;
+    return subcmd_main("hunkcheck", table, sizeof table / sizeof table[0], argc, argv);
 }

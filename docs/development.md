@@ -204,8 +204,9 @@ again):
   listing, `ted.map`, `ted.labels`); the same step checks that listing and
   binary match (`refcheck listing-verify`). The reference for the port is this
   build, not the TED binary of the CD (a different build).
-* `ted` after every link (POST_BUILD): hunk layout (`tools/hunkcheck`:
-  offset 0 `bsr.w`, offset 4 `outside`; `--stored`: every hunk stored
+* `ted` after every link (POST_BUILD): hunk layout (`hunkcheck start`,
+  [`tools/hunkcheck`](../tools/hunkcheck/README.md): offset 0 `bsr.w`,
+  offset 4 `outside`; `hunkcheck stored`: every hunk stored
   whole, as `ted` and `ab3cli` have their `.bss` in the data hunk and
   Kickstart 1.x's `LoadSeg` would not clear an unstored tail, #963 – the
   linker script `cmake/baserel-nostart.ld` stores it as zeros; the same

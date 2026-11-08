@@ -168,7 +168,7 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 #              date is fixed), RUN_DATESTAMP: the same for the program (its
 #              SystemDate), in both configurations; SAME:
 #              its executable is the one of the case CASE, HUNKS: its hunk
-#              layout (hunkcheck --hunks, e.g. code,bss,data+chip), in both
+#              layout (hunkcheck layout, e.g. code,bss,data+chip), in both
 #              configurations; REF_NORUN: AmiBlitz3's executable is kept
 #              but not run (a broken executable that damages the session,
 #              docs/ab3/variant.md), its [run] is compared with

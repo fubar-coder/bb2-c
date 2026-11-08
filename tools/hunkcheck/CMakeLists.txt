@@ -1,2 +1,6 @@
-add_executable(hunkcheck main.c)
-target_link_libraries(hunkcheck PRIVATE lib_hunkcheck)
+# hunkcheck: checks of the hunks of a load file (README.md)
+set(HUNKCHECK_SUBCOMMANDS start layout stored)
+add_executable(hunkcheck main.c cmd_check.c)
+target_link_libraries(hunkcheck PRIVATE lib_subcmd lib_hunkcheck)
+host_help_test(hunkcheck ${HUNKCHECK_SUBCOMMANDS})
+host_readme_test(hunkcheck README.md)

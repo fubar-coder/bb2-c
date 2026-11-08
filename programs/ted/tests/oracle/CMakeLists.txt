@@ -25,7 +25,7 @@ set_target_properties(tedoracle PROPERTIES SUFFIX "")
 # hunk layout: +0 moveq #20,d0 (shell start fails), +4 movem.l (outside)
 add_dependencies(tedoracle host_tools)
 add_custom_command(TARGET tedoracle POST_BUILD
-	COMMAND ${HUNKCHECK} $<TARGET_FILE:tedoracle> 0:7014 4:48e7
+	COMMAND ${HUNKCHECK} start $<TARGET_FILE:tedoracle> 0:7014 4:48e7
 	VERBATIM)
 
 # regenerating the oracle data in tests/data (not part of ALL: needs the CD

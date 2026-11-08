@@ -500,3 +500,14 @@ Findings and adaptations while implementing (2026-11-08).
   `lib_asmcmp` to the report (stdout), which must stay byte-identical, and
   the libraries keep their names (D7); tests that match them
   (`ted_checkdata_*`, `test_checkdata`) are unchanged.
+- **Program headers**: a program with subcommands declares its `cmd_NAME`
+  functions and usage texts in `PROGRAM.h` (`testinfo.h`, `refcheck.h`,
+  `results.h`), or in `cmds.h` where a library header has the program's
+  name (`hunkcheck`, `blitzres`, `blitzlib`, `tedab`).
+- **One former main, several subcommands**: where a former `main.c`
+  selected the mode itself (`vasmlisting`, `cdtable`, `hunkcheck`,
+  `blitzres`, `biglib`), its bodies become one function per subcommand
+  in one `cmd_*.c` (`cmd_listing.c`, `cmd_cd.c`, `cmd_check.c`,
+  `cmd_res.c`, `cmd_biglib.c`); the history follows the move where most
+  of the file stays (not for `cmd_listing.c`, whose 72 lines are mostly
+  new).

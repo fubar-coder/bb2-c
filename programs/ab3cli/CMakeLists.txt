@@ -39,13 +39,13 @@ set_target_properties(ab3cli PROPERTIES OUTPUT_NAME ab3cli SUFFIX ""
 # checks after every link; if one fails, ab3cli does not count as built:
 #   - hunk layout of the frame: +0 moveq #20,d0 (shell start fails), +4
 #     movem.l (outside, blitz2 calls it), as the other edstub programs
-#   - every CODE/DATA hunk stored whole (hunkcheck --stored): the .bss is
+#   - every CODE/DATA hunk stored whole (hunkcheck stored): the .bss is
 #     in the data hunk, Kickstart 1.x's LoadSeg would not clear an
 #     unstored tail (#963)
 # (no C library, -nostdlib: a libgcc or libnix helper - they need
 # UtilityBase, which nothing opens - does not even link)
 add_dependencies(ab3cli host_tools)
 add_custom_command(TARGET ab3cli POST_BUILD
-	COMMAND ${HUNKCHECK} $<TARGET_FILE:ab3cli> 0:7014 4:48e7
-	COMMAND ${HUNKCHECK} --stored $<TARGET_FILE:ab3cli>
+	COMMAND ${HUNKCHECK} start $<TARGET_FILE:ab3cli> 0:7014 4:48e7
+	COMMAND ${HUNKCHECK} stored $<TARGET_FILE:ab3cli>
 	VERBATIM)

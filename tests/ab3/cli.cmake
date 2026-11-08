@@ -38,7 +38,7 @@
 # given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
 # The executable of a case is kept as TEST:out/NAME.exe; SAME lists pairs
 # of cases whose executables must be byte-identical (A=B), HUNKS the hunk
-# layout of the executable of a case (hunkcheck --hunks LAYOUT).
+# layout of the executable of a case (hunkcheck layout LAYOUT).
 # Configuration ref runs Amiberry without the JIT (see below).  If the session
 # does not end, the message names amiga_run's status and the running case.
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
@@ -278,7 +278,7 @@ foreach(h IN LISTS hunks)
 	string(SUBSTRING "${h}" 0 ${eq} n)
 	math(EXPR eq "${eq} + 1")
 	string(SUBSTRING "${h}" ${eq} -1 layout)
-	execute_process(COMMAND ${HUNKCHECK} --hunks ${layout} ${test}/out/${n}.exe
+	execute_process(COMMAND ${HUNKCHECK} layout ${layout} ${test}/out/${n}.exe
 		RESULT_VARIABLE r ERROR_VARIABLE msg)
 	string(STRIP "${msg}" msg)
 	if(r)

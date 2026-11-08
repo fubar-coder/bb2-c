@@ -7,7 +7,7 @@ set_target_properties(tedstub PROPERTIES SUFFIX "")
 # hunk layout: +0 moveq #20,d0 (shell start fails), +4 movem.l (outside)
 add_dependencies(tedstub host_tools)
 add_custom_command(TARGET tedstub POST_BUILD
-	COMMAND ${HUNKCHECK} $<TARGET_FILE:tedstub> 0:7014 4:48e7
+	COMMAND ${HUNKCHECK} start $<TARGET_FILE:tedstub> 0:7014 4:48e7
 	VERBATIM)
 
 # reqtrap COMMAND: AutoRequest/EasyRequestArgs answered at once (texts to
