@@ -1,0 +1,12 @@
+[compile]
+ok
+[run]
+-1
+-1
+0
+-1
+0
+le 1
+le 2
+gt 3
+rc=0
