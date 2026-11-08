@@ -45,7 +45,7 @@ documentation it changes; no program code changes in this change.
 
 - [ ] 7.1 Runner mode `expect_dir=` in `tests/corpus/runner/corpus.h`; tests of the runner with inputs from memory (matching output, differing output, missing file). Verify: host tests pass, broken inputs fail
 - [ ] 7.2 Target `corpus-expect-update` and the generated `tests/corpus/expect/NAME.out` (~200 files, serial bytes for the serial tests), reviewed by `git diff` for outputs that are original bugs. Verify: `ctest --preset all -R corpus` passes in every config
-- [ ] 7.3 Target `blitz2-cd-update`: rewrites `tests/data/blitz2-cd.tsv` from the port's result, keeping note rows (`#NNN`, the CD's hash); the generator keeps them. Verify: a run on the unchanged tree changes no byte; `tools/tests` cases for a kept and a dropped note
+- [x] 7.3 Target `blitz2-cd-update`: rewrites `tests/data/blitz2-cd.tsv` from the port's result, keeping note rows (`#NNN`, the CD's hash); the generator keeps them. Verify: a run on the unchanged tree changes no byte; `tools/tests` cases for a kept and a dropped note
 - [ ] 7.4 TED oracle: note column `#NNN` in `tests/data/ted-oracle.sha256` and the generator keeping such rows (`programs/ted/tests/oracle`). Verify: `ted_core_*` pass; a regenerated file equals the committed one when no fix is present; a tool test for a kept row
 - [ ] 7.5 Document in `tests/README.md` (Corpus, Oracle data of the TED tests) and `docs/development.md`. Verify: the commands in the text run
 
