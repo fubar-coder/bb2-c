@@ -845,10 +845,6 @@ void dopass(void)
         tokejsr2(intcleanup);   /* $c105: interupts off! */
 
     numstatic = (WORD)calcstatic(&staticdata);
-    /* BUG(orig) (#335): before fixjsrs - an object library only reached
-       from the code of another library gets no array (base 0), but
-       makefinits frees its objects at End */
-    calcmaxs();
 
     if (tokeslist) {
         pokewd(gotocode[0]);    /* jmp! */
@@ -862,6 +858,14 @@ void dopass(void)
         if (!nomemleft)
             L_(endjmpat) = pc;
     }
+    /* Fixed (#335): calcmaxs comes after fixjsrs.  blitz2.s calls it
+       before fixjsrs: an object library only reached from the code of
+       another library (BLibJsr or token calls resolved by fixjsrs, e.g.
+       shapeslib through blitzoslib) got no array (base 0), but
+       makefinits still freed its objects at End, from address 0.  The
+       memlib calcmaxs links has no token calls, so nothing is left for
+       fixjsrs. */
+    calcmaxs();
     makefinits();
     pokel(0x70004e75);          /* moveq #0,d0 / rts */
     makeinits();

@@ -7,6 +7,7 @@
 ; never run, linking blitzoslib is enough).  At End 100 "shapes" from
 ; address 0 are freed: the system hangs.
 ; Correct: the program ends normally.
+; @fixed #335
 ; @pass timeout=30
 NPrint "x"
 End
