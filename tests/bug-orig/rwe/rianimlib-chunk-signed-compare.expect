@@ -1,6 +1,5 @@
 [compile]
 ok
 [run]
-before
-returned
+count 2
 rc=0

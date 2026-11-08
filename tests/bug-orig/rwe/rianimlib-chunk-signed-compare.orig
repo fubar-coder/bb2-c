@@ -1,10 +1,11 @@
 # the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
 [session]
-timeout
+done
 [compile]
 ok
 [run]
-before
+count wrong
+rc=0
 [blitz2]
 rc=0
 [log]
