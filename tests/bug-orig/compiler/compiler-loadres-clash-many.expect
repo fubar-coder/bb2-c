@@ -1,0 +1,22 @@
+[compile]
+ok
+[run]
+1 1 5
+rc=0
+[log]
+...
+JOB	j000	CORPUS:src/compiler-loadres-clash-many.bb2
+XTRA	j000	defaults
+XTRAERR	j000	Warning: Clash in Residents: #a0
+XTRAERR	j000	Warning: Clash in Residents: #a1
+XTRAERR	j000	Warning: Clash in Residents: #a2
+XTRAERR	j000	Warning: Clash in Residents: #a3
+XTRAERR	j000	Warning: Clash in Residents: #a4
+XTRAERR	j000	Warning: Clash in Residents: #a5
+XTRAERR	j000	Warning: Clash in Residents: #a6
+XTRAERR	j000	Warning: Clash in Residents: #a7
+XTRAERR	j000	Warning: Clash in Residents: 2 more
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-loadres-clash-many
+...
+RESULT	j000	ok
+BATCH	end

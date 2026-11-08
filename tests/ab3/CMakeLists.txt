@@ -143,6 +143,20 @@ add_custom_command(OUTPUT ${cli_gen}/ab3xtra_tok.bb2.xtra
 	COMMENT "AmiBlitz3 .xtra of ab3xtra_tok.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/ab3xtra_tok.bb2.xtra)
+# two residents that define the constant #c with different values (1, 2):
+# the warning resclash of wclash.ab3 (change compiler-warnings, #36)
+foreach(pair wclash1|1 wclash2|2)
+	string(REPLACE "|" ";" pair "${pair}")
+	list(GET pair 0 res)
+	list(GET pair 1 value)
+	add_custom_command(OUTPUT ${cli_gen}/${res}.res
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+		COMMAND ${BLITZRES} -o ${cli_gen}/${res}.res --const c=${value}
+		DEPENDS ${BLITZRES} host_tools
+		COMMENT "Resident ${res}.res (#c=${value})"
+		VERBATIM)
+	list(APPEND cli_made ${cli_gen}/${res}.res)
+endforeach()
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
@@ -278,6 +292,13 @@ ab3_cli_case(macrobuf_xtra macrobuf_xtra.bb2)
 # compiler's own options (docs/formats.md 7)
 ab3_cli_case(ab3xtra_tok ab3xtra_tok.bb2)
 ab3_cli_case(ab3xtra_tok_r ab3xtra_tok.bb2 ARGS -r)
+# warnings (change compiler-warnings, #36): two residents of the header
+# with #c=1 and #c=2 - the warning line and rc 0, as an error (-werr) rc
+# 10, disabled (-w) silent also when in -werr
+ab3_cli_case(wclash wclash.ab3)
+ab3_cli_case(wclash_werr wclash.ab3 ARGS -werr resclash)
+ab3_cli_case(wclash_off wclash.ab3 ARGS -w -resclash)
+ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
 ab3_cli_case(opt_expr opt_expr.ab3 REF)

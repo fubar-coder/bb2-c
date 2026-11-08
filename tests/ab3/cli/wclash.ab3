@@ -1,0 +1,11 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "TEST:src/wclash1.res,TEST:src/wclash2.res"
+; /XTRA
+; two residents define #c, 1 and 2 (#36): the warning resclash; the first
+; resident's value is used
+NPrint #c
+End

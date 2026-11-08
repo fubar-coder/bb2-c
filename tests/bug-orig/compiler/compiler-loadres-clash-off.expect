@@ -1,0 +1,13 @@
+[compile]
+ok
+[run]
+1
+rc=0
+[log]
+...
+JOB	j000	CORPUS:src/compiler-loadres-clash-off.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-loadres-clash-off
+...
+RESULT	j000	ok
+BATCH	end

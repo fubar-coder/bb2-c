@@ -1262,6 +1262,127 @@ void freeres(void)
     freeres2();         /* falls through into freeres2 */
 }
 
+/* the constants each resident appended to firstlabel (loadres): first and
+   last, NULL if none (warning resclash: the residents of a clash) */
+static struct label *resconst[MOSTRES][2];
+
+#define CLASHSHOWN 8    /* clashing names reported; then "N more" */
+
+/* the resident (index into resbuff) whose constants hold l */
+static int resof(const struct label *l)
+{
+    const struct label *p;
+    int i;
+
+    for (i = 0; i < MOSTRES; i++)
+        for (p = resconst[i][0]; p; p = p->next) {
+            if (p == l)
+                return i;
+            if (p == resconst[i][1])
+                break;
+        }
+    return 0;
+}
+
+/* n in decimal at s, with its 0 */
+static void dec(char *s, ULONG n)
+{
+    char t[12];
+    int k = 0;
+
+    do
+        t[k++] = (char)('0' + n % 10);
+    while ((n /= 10));
+    while (k)
+        *s++ = t[--k];
+    *s = 0;
+}
+
+static ULONG namehash(const char *s)
+{
+    ULONG h = 0;
+
+    while (*s)
+        h = h * 31 + (UBYTE)*s++;
+    return h;
+}
+
+/* Fixed (#36): the constants of the residents (firstlabel, name at 19,
+   value in pc) for a name defined again with another value than its first
+   definition: the warning resclash "Clash in Residents: #NAME" once per
+   name (the first CLASHSHOWN, then one "Clash in Residents: N more"), the
+   two residents as the detail for the console.  The same value again is
+   the same definition included twice: no message.  The first definition
+   stays the one the compiler finds.  A hash table (big residents hold
+   thousands of constants), only when two or more residents have
+   constants; without the memory for it, no check. */
+static void checkconstclash(void)
+{
+    static char msg[sizeof "Clash in Residents: #" + 64];
+    static char detail[2 * sizeof resbuff->name + 2];
+    struct label *shown[CLASHSHOWN][2];
+    struct label *l, *f, **ent;
+    ULONG *bucket, *nxt;
+    UBYTE *rep, *block;
+    ULONG n = 0, nb = 64, size, k = 0, j, h, clashes = 0;
+    int i, with = 0;
+
+    for (i = 0; i < MOSTRES; i++)
+        if (resconst[i][0])
+            with++;
+    if (with < 2)
+        return;
+    for (l = firstlabel; l; l = l->next)
+        n++;
+    while (nb < n)
+        nb <<= 1;
+    size = nb * 4 + n * 4 + n * 4 + n;
+    if (!(block = AllocMem(size, MEMF_CLEAR)))
+        return;
+    bucket = (ULONG *)block;            /* entry index + 1, 0: empty */
+    ent = (struct label **)(bucket + nb);
+    nxt = (ULONG *)(ent + n);           /* the next entry + 1 of a bucket */
+    rep = (UBYTE *)(nxt + n);           /* the name has been reported */
+    for (l = firstlabel; l; l = l->next) {
+        h = namehash(l->name) & (nb - 1);
+        for (j = bucket[h]; j; j = nxt[j - 1])
+            if (!strcmp(ent[j - 1]->name, l->name))
+                break;
+        if (!j) {                       /* the first definition */
+            ent[k] = l;
+            nxt[k] = bucket[h];
+            bucket[h] = ++k;
+            continue;
+        }
+        f = ent[j - 1];
+        if (f->pc == l->pc || rep[j - 1])
+            continue;
+        rep[j - 1] = 1;
+        if (clashes < CLASHSHOWN) {
+            shown[clashes][0] = f;
+            shown[clashes][1] = l;
+        }
+        clashes++;
+    }
+    FreeMem(block, size);
+    /* the messages after the table is freed: a warning that is an error
+       does not return */
+    for (j = 0; j < clashes && j < CLASHSHOWN; j++) {
+        strcpy(msg, "Clash in Residents: #");
+        strncat(msg, shown[j][0]->name, sizeof msg - sizeof "Clash in Residents: #");
+        strcpy(detail, resbuff[resof(shown[j][0])].name);
+        strcat(detail, ", ");
+        strcat(detail, resbuff[resof(shown[j][1])].name);
+        warn(W_RESCLASH, msg, detail);
+    }
+    if (clashes > CLASHSHOWN) {
+        strcpy(msg, "Clash in Residents: ");
+        dec(msg + strlen(msg), clashes - CLASHSHOWN);
+        strcat(msg, " more");
+        warn(W_RESCLASH, msg, NULL);
+    }
+}
+
 /* blitz2.s:4393 loadres - load in resident structs..... */
 void loadres(void)
 {
@@ -1270,11 +1391,13 @@ void loadres(void)
     volatile int i;
     UBYTE *p;
     BPTR seg;
+    struct label *last;
 
     ezerr = -1;         /* not reset here: compile clears it */
     freeemup();
     freeres();
     ext_resbegin();
+    memset(resconst, 0, sizeof resconst);
     for (i = 0, res = resbuff; i < MOSTRES; i++, res++) {
         /* asm: errstack = a7 at entry, errcont = .next - an error (reserr)
            continues with the next entry */
@@ -1297,7 +1420,12 @@ void loadres(void)
         p = (UBYTE *)BADDR(seg) + 4;    /* start of res */
         p = fixtypes(p);
         p = fixmacs(p);
+        last = lastrescon;
         p = fixconsts(p);
+        if (lastrescon != last) {       /* the constants it appended */
+            resconst[i][0] = (struct label *)((struct node *)last)->next;
+            resconst[i][1] = lastrescon;
+        }
     }
     /* check resident clashes! (errcont = freeres) */
     errjmp = &jb;
@@ -1308,11 +1436,11 @@ void loadres(void)
     }
     checkclash((struct node *)firsttype, NAMEOFF_TYPE);
     checkclash((struct node *)firstmacro, NAMEOFF_MACRO);
-    /* BUG(orig) (#36): firstconst is never filled (findconst has no caller,
-       constants live in firstlabel, name at 19 - fixconsts appends the
-       resident ones via lastrescon), so this walks an empty list and
-       clashing constants are never detected; offset 25 does not matter */
-    checkclash((struct node *)firstconst, 25);
+    /* Fixed (#36): the original walked firstconst here, a list nothing
+       fills (the constants are labels in firstlabel, name at 19), so a
+       clash of constants was never found; the constants are checked in
+       firstlabel, a warning when the values differ */
+    checkconstclash();
     errjmp = olderr;    /* DIFF: asm left errstack/errcont pointing here */
 }
 

@@ -374,3 +374,14 @@ now), `docs/architecture.md` 3.6 (warnings), `docs/libs/deviations.md`
   and has no description of the options requesters; the setting is
   described in `docs/architecture.md` 3.6 and `docs/formats.md` 1.1
   (D9), the command line in `docs/ab3/usage.md`.
+- **Command line tests**: the residents of the `ab3_cli` cases are made
+  in the build by `tools/blitzres` (`wclash1.res`, `wclash2.res`) and
+  named in the embedded header of `wclash.ab3` (AB3 mode); the
+  tedstub-based tests (`tests/bug-orig/compiler/compiler-loadres-clash-*`)
+  compile their residents in the session.
+- **The CD** (task 6.1): `corpus_cd` passes unchanged with the check -
+  no executable changes and no source of the CD gets the warning (its
+  logs have no "Warning: Clash in Residents"); `tests/data/blitz2-cd.tsv`
+  needs no update.
+- **Task 1.3** stays open: the queued path is decided to come with the
+  first compile-time warning (Q4), outside this change.

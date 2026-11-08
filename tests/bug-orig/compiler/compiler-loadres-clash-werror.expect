@@ -1,0 +1,12 @@
+[compile]
+error 14 Constant Not Found
+[run]
+[log]
+...
+JOB	j000	CORPUS:src/compiler-loadres-clash-werror.bb2
+XTRA	j000	defaults
+XTRAERR	j000	Clash in Residents: #c
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-loadres-clash-werror
+...
+RESULT	j000	error	14	Constant Not Found	NPrint #c
+BATCH	end

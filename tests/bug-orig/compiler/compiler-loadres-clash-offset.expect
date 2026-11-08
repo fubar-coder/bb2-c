@@ -1,4 +1,14 @@
+[compile]
+ok
+[run]
+1
+rc=0
 [log]
 ...
-XTRAERR	j000	Clash in Residents
+JOB	j000	CORPUS:src/compiler-loadres-clash-offset.bb2
+XTRA	j000	defaults
+XTRAERR	j000	Warning: Clash in Residents: #c
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-loadres-clash-offset
 ...
+RESULT	j000	ok
+BATCH	end
