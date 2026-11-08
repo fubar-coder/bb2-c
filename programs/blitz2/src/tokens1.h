@@ -73,6 +73,14 @@ void doif2(UWORD kind, WORD negate);
    variant now. */
 UBYTE *getmaxel(UWORD c);
 
+/* Fixed (#939): 1 if the object offset of the max info E is computed as a
+   long ((max - 1) << shift > $7FFF), then getmaxel emitted objlongcode
+   instead of the lsl.w and the caller adds with add.l */
+int objlong(const UBYTE *e);
+
+/* emits dn = (ULONG)(UWORD)dn << shifts (mulu #1 << shifts,dn) */
+void objlongcode(UWORD dn, UWORD shifts);
+
 /* 12611 alignpc: pc = (pc+1) & ~1, the pad byte written as 0 (#969; also
    doeven4/doeven8) */
 void alignpc(void);

@@ -31,10 +31,10 @@ UWORD maxprep1[] = {
     0x200A,                            /* +4   maxprep2 move.l a2,d0 */
 };
 
-/* blitz2.s:12247 free..freef (6 bytes); free+2 patched by dofree */
+/* blitz2.s:12247 free..freef (6 bytes); free+2 and free+4 patched by dofree */
 UWORD free_[] = {
     0x266D, 0x0000,                    /* +0   free move.l 0(a5),a3 */
-    0xD6C0,                            /* +4   add d0,a3 - word: BUG(orig) (#939) */
+    0xD6C0,                            /* +4   add d0,a3 (add.l: Fixed (#939)) */
 };
 
 /* blitz2.s:12348 rescode / rescode2 (12 bytes); rescode+6 and rescode2+2
@@ -160,12 +160,48 @@ void domaxlen(UWORD c)
 
 /* ================================================================ Free/Use */
 
+/* Fixed (#939): blitz2.s shifts the object number with lsl.w and adds it
+   as a word (free/use `add d0,a3`, addrcode `add d0,a0`, toreg `adda.w`):
+   from n << shift = $8000 on the object was addressed before the object
+   table (the debugger's maximum check lets it through).  objlong tells
+   whether the largest object of the maximum, (max - 1) << shift, is past
+   $7FFF; only then the offset is computed as a long (objlongcode) and
+   added with adda.l, so programs with smaller maxima (the defaults are far
+   below) are compiled as before. */
+int objlong(const UBYTE *e)
+{
+    UWORD max = *(const UWORD *)(e - 4);
+    UWORD shifts = *(const UWORD *)(e - 2) & 63;
+
+    if (!max)
+        return 0;
+    return shifts >= 16 || ((ULONG)(max - 1) << shifts) > 0x7fff;
+}
+
+/* the long object offset of objlong: dn = (ULONG)(UWORD)dn << shift.
+   mulu #1 << shift,dn (the unsigned word times the object size); for a
+   shift of 16 and more swap dn / clr.w dn and lsl.l for the rest. */
+void objlongcode(UWORD dn, UWORD shifts)
+{
+    UWORD k;
+
+    shifts &= 63;
+    if (shifts < 16) {
+        pokewd(0xc0fc | (dn << 9));             /* mulu #x,dn */
+        pokewd((UWORD)(1 << shifts));
+        return;
+    }
+    pokewd(0x4840 | dn);                        /* swap dn */
+    pokewd(0x4240 | dn);                        /* clr.w dn */
+    for (shifts -= 16; shifts; shifts -= k) {
+        k = shifts < 8 ? shifts : 8;
+        pokewd(0xe188 | ((k & 7) << 9) | dn);   /* lsl.l #k,dn */
+    }
+}
+
 /* blitz2.s:12196 getmaxel, *libp = the lib.  The asm kept the lib in the
-   global mymaxlib (12251) for maxjsr; Free/Use now hand it over.
-   BUG(orig) (#939): the object number is a word, shifted with lsl.w and
-   added as a word (free/use `add d0,a3`, addrcode `add d0,a0`): from
-   n << shift = $8000 on the object is addressed before the object table
-   (the debugger's maximum check lets it through).  Kept. */
+   global mymaxlib (12251) for maxjsr; Free/Use now hand it over.  The
+   offset is a long where objlong says so (Fixed (#939)). */
 static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
 {
     struct blitzlib *lib;
@@ -190,6 +226,10 @@ static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
         tokejsr(maxerr);
     }
     shifts = *(WORD *)(e - 2);                  /* .pen: # shifts */
+    if (objlong(e)) {
+        objlongcode(regat, (UWORD)shifts);
+        return e;
+    }
     for (;;) {                                  /* .loop */
         opcode = regat | lslimm[0];
         if ((UWORD)shifts < 8) {                /* .under */
@@ -220,24 +260,26 @@ static void maxjsr(struct blitzlib *lib, ULONG sub)
     makelibsub(lib, sub);
 }
 
-/* blitz2.s:12253 dofree - BUG(orig) (#939): word object offset, see getmaxlib */
+/* blitz2.s:12253 dofree - Fixed (#939): a long object offset, see objlong */
 void dofree(UWORD c)
 {
     struct blitzlib *lib;
     UBYTE *e = getmaxlib(c, &lib);
 
     free_[1] = *(UWORD *)(e - 6);               /* patched in place */
+    free_[2] = objlong(e) ? 0xD7C0 : 0xD6C0;    /* add.l / add d0,a3 */
     pokecode(free_, freef);
     maxjsr(lib, *(ULONG *)(e - 10));
 }
 
-/* blitz2.s:12266 douse - BUG(orig) (#939): word object offset, see getmaxlib */
+/* blitz2.s:12266 douse - Fixed (#939): a long object offset, see objlong */
 void douse(UWORD c)
 {
     struct blitzlib *lib;
     UBYTE *e = getmaxlib(c, &lib);
 
     use[1] = *(UWORD *)(e - 6);                 /* patched in place */
+    use[2] = objlong(e) ? 0xD7C0 : 0xD6C0;      /* add.l / add d0,a3 */
     usef[-1] = *(UWORD *)(e - 6);
     usef[-1] += 4;
     pokecode(use, usef);

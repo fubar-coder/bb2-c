@@ -71,7 +71,7 @@ static UWORD mseq[] = {
 /* blitz2.s:9947 addrcode..addrcodef (8 bytes, patched in place by doaddr) */
 static UWORD addrcode[] = {
     0x206D, 0x0000,                    /* +0 addrcode move.l 0(a5),a0 */
-    0xD0C0,                            /* +4 add d0,a0 - word: BUG(orig) (#939) */
+    0xD0C0,                            /* +4 add d0,a0 (add.l: Fixed (#939)) */
     0x2008,                            /* +6 move.l a0,d0 */
 };
 #define addrcodef (&addrcode[4])
@@ -1920,8 +1920,8 @@ static UWORD domaximum(UWORD *type)
 }
 
 /* blitz2.s:10053 doaddr - address of something, eg a.l=Addr Window(0).
-   BUG(orig) (#939): table + (WORD)(n << shift), see getmaxlib (tokens1.c);
-   Addr Shape(1025) is 32 KB before the shape table.  Kept. */
+   Fixed (#939): the offset is added as a long where objlong (tokens1.c)
+   says so; Addr Shape(1025) was 32 KB before the shape table. */
 static UWORD doaddr(UWORD *type)
 {
     UWORD tok, c;
@@ -1937,7 +1937,7 @@ static UWORD doaddr(UWORD *type)
         syntaxerr();
     /* OK, now a2=lib it's from */
     addrcode[1] = *(UWORD *)(e - 6);                    /* x(a5) */
-    addrcode[2] = (addrcode[2] & 0xfff8) | regat;       /* add Dregat,a0 */
+    addrcode[2] = (objlong(e) ? 0xD1C0 : 0xD0C0) | regat; /* add(.l) Dregat,a0 */
     addrcode[3] = (addrcode[3] & 0xf1ff) | (regat << 9);/* move.l a0,Dregat */
     pokecode(addrcode, addrcodef);
     *type = T_LONG;                 /* now a long */
