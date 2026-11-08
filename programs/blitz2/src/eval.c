@@ -1876,29 +1876,33 @@ static UWORD revmask(UWORD mask)
 }
 
 /* blitz2.s:9989 doused - return 'used' object.
-   BUG(orig) (#998): the number is (used pointer - table base) >> shift with a
-   word shift (lsr.w, also both of usedcode2): from n << shift = $10000 on
-   the high word of the difference is lost, Used BitMap after Use BitMap
-   1025 gives 1 (test compiler-object-used-word; in the original Use
-   already addressed object 1 there, #939). */
+   Fixed (#998): the number is (used pointer - table base) >> shift; the
+   asm shifts with lsr.w (also both shifts of usedcode2), so from
+   n << shift = $10000 on the high word of the difference was lost (Used
+   BitMap after Use BitMap 1025 gave 1).  Where objlong (tokens1.c) says
+   the object offset is a long, the shifts are lsr.l; with smaller maxima
+   (all defaults) the code is unchanged. */
 static UWORD doused(UWORD *type)
 {
     struct blitzlib *lib = fetchit();
     UWORD shift = LIBMAX_SHIFT(lib);
     UWORD *start, *end, maxoff;
+    UWORD lsr = objlong(LIBMAX_E(lib)) ? 0xE088 : 0xE048; /* lsr.l / lsr.w #8,d0 */
 
     if (shift < 9) {
         /* shift 1-8 */
         start = usedcode;
         end = usedcodef;
-        *ucodediv &= 0xf1ff;
-        *ucodediv |= (UWORD)((shift & 7) << 9);
+        *ucodediv = lsr | (UWORD)((shift & 7) << 9);
     } else {
-        /* .skip: shift 9+ */
+        /* .skip: shift 9+: lsr #8 and lsr #shift-8 (a count of 8 is
+           encoded as 0; objlong is true from shift 16 on, so the word
+           form has counts up to 7).  A shift above 16 would need a third
+           shift; the libraries of this repository have shifts up to 7. */
         start = usedcode2;
         end = usedcodef2;
-        *ucodediv2 &= 0xf1ff;
-        *ucodediv2 |= (UWORD)((shift - 8) << 9);
+        ucodediv2[-1] = lsr;
+        *ucodediv2 = lsr | (UWORD)(((shift - 8) & 7) << 9);
     }
     maxoff = LIBMAX_VAROFF(lib);    /* .skip2 */
     start[(ucodeskip - usedcode) + 1] = maxoff;
