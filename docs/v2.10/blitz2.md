@@ -214,7 +214,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #41 | closed | [compiler/Executable] Symbol names in HUNK_SYMBOL with up to 3 bytes past the label node | unchanged |
 | #42 | open | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
 | #325 | closed | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | **fixed in the port** |
-| #335 | open | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | unchanged |
+| #335 | closed | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | **fixed in the port** |
 | #336 | open | [compiler/Macros] macrobuff is freed with the current Macro Buffer size, not the allocated one | unchanged |
 | #337 | closed | [compiler/WB start] wb_exit calls Permit after ReplyMsg, before blitz2 has returned | **fixed in the port** |
 | #341 | closed | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | **fixed in the port** (BB2 mode only; AB3 mode keeps its INCDIR rule) |
