@@ -144,10 +144,13 @@ d5-d7, a0-a3 and a6 in places.
   the column counter (with the caller's high word of d6) became 0 (#708).
 * D_FindStringPtr never compares the long at areg5 itself (#705).
 * ExtractLabel searches the `.` from the 10th character without a limit
-  (#703), and a space does not end the label (#704): blitz2 assembles
-  the source's `CMPI.b #" ",d2` as `CMPI.b #0,d2` (in the reference
-  build, in the CD's and in AmiBlitz3's binaries). This is compiler bug
-  #343: the later line `MOVE.w #">"*8,d0` (line 1016 of the source)
+  (#703), and a space does not end the label (#704): the CD's blitz2
+  2.10 assembles the source's `CMPI.b #" ",d2` as `CMPI.b #0,d2` (in the
+  reference build, in the CD's and in AmiBlitz3's binaries). This is
+  compiler bug #343, fixed in blitz2-c: its compiler does not produce
+  that `#0`, but the reference build is made by the CD's compiler
+  (`libs/userlibs/rwe/refbuild.cmake`), so the C file keeps the bug and
+  #704 stays reproduced. The later line `MOVE.w #">"*8,d0` (line 1016 of the source)
   triggers it; the operands are evaluated last line first, so what
   matters is the line's position, not the destination register (`#" "`
   in GetCustomReg, which comes after that line, is $20).

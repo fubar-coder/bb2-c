@@ -78,12 +78,14 @@
  *     column count (d6 with the caller's high word) became 0 (#708).
  *   - D_FindStringPtr never compares the long at areg5 itself (#705);
  *     ExtractLabel searches the '.' without a limit (#703), and a space
- *     does not end the label: blitz2 assembles the source's
- *     CMPI.b #" ",d2 as CMPI.b #0 (the reference build, the CD's and
- *     AmiBlitz3's binaries alike) - compiler bug #343, triggered by the
- *     later line MOVE.w #">"*8,d0 (line 1016 of the source; the
+ *     does not end the label: the CD's blitz2 2.10 assembles the
+ *     source's CMPI.b #" ",d2 as CMPI.b #0 (the reference build, the
+ *     CD's and AmiBlitz3's binaries alike) - compiler bug #343, triggered
+ *     by the later line MOVE.w #">"*8,d0 (line 1016 of the source; the
  *     operands are evaluated last line first, so what matters is the
- *     line's position, not the destination register) (#704).
+ *     line's position, not the destination register) (#704).  blitz2-c
+ *     has fixed #343 and does not produce that #0; the reference build
+ *     is made by the CD's compiler, so the C file keeps the bug.
  *   - SearchMem's string search does not go back after a partial match
  *     ("ab" is not found in "aab") (#723); an empty string compares the
  *     bytes behind its 0 (#721).  The word/long searches compare bytes up
@@ -1399,8 +1401,9 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
  *
  * From 9 characters on, the name behind the first '.' up to a 0 or ':',
  * at a3.  The '.' is searched without a limit (BUG(orig) (#703)); the
- * source's test for a space is assembled as CMPI.b #0 - BUG(orig) (#704),
- * compiler bug #343, in every build - so a space does not end the label.
+ * source's test for a space is assembled as CMPI.b #0 by the CD's blitz2
+ * 2.10 (compiler bug #343, fixed in blitz2-c) - BUG(orig) (#704), kept as
+ * in the reference build - so a space does not end the label.
  * @param s  d0: the line
  * @return d0: the length of the name
  */
