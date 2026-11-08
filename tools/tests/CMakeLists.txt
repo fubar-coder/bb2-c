@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h)
 foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
-		outmatch covmap covsel hdf cmdref cdtable)
+		outmatch covmap covsel hdf cmdref cdtable prevcmp)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -136,3 +136,35 @@ target_compile_definitions(test_covsel PRIVATE COVSEL_RULES="${CMAKE_CURRENT_SOU
 add_test(NAME cmdref_not_a_library COMMAND cmdref -group acidlibs -name x
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 set_tests_properties(cmdref_not_a_library PROPERTIES WILL_FAIL TRUE)
+
+# prevcmp (the library files against the prev build) on two small build
+# directories made here: cur differs from prev in libs/acidlibs/2dlib.obj
+foreach(b cur prev)
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/${b}/blitz2/acidlibs "acidlibs")
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/${b}/libs/acidlibs/gfxlib.obj "gfxlib")
+endforeach()
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur/libs/acidlibs/2dlib.obj "changed")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/prev/libs/acidlibs/2dlib.obj "2dlib")
+set(prevcmp_dirs ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/prev)
+# a difference that is not intended fails and names the file
+add_test(NAME prevcmp_changed COMMAND prevcmp ${prevcmp_dirs})
+set_tests_properties(prevcmp_changed PROPERTIES WILL_FAIL ON)
+add_test(NAME prevcmp_changed_names COMMAND prevcmp ${prevcmp_dirs})
+set_tests_properties(prevcmp_changed_names PROPERTIES
+	PASS_REGULAR_EXPRESSION "DIFFERS libs/acidlibs/2dlib.obj\n")
+# ... passes when it is intended (all, or the file named)
+add_test(NAME prevcmp_intended_all COMMAND prevcmp --all ${prevcmp_dirs})
+add_test(NAME prevcmp_intended_file
+	COMMAND prevcmp --intended libs/acidlibs/2dlib.obj ${prevcmp_dirs})
+# an intended entry for a file that is the same fails
+add_test(NAME prevcmp_stale COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+	--intended libs/acidlibs/gfxlib.obj ${prevcmp_dirs})
+set_tests_properties(prevcmp_stale PROPERTIES WILL_FAIL ON)
+add_test(NAME prevcmp_stale_names COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+	--intended libs/acidlibs/gfxlib.obj ${prevcmp_dirs})
+set_tests_properties(prevcmp_stale_names PROPERTIES
+	PASS_REGULAR_EXPRESSION "STALE libs/acidlibs/gfxlib.obj")
+# no prev build: the message (the exit status 77 skips prev_results)
+add_test(NAME prevcmp_no_prev COMMAND prevcmp ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur
+	${CMAKE_CURRENT_BINARY_DIR}/prevcmp/no-such-build)
+set_tests_properties(prevcmp_no_prev PROPERTIES PASS_REGULAR_EXPRESSION "no-such-build: no prev build")

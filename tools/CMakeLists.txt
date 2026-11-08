@@ -31,5 +31,6 @@ add_subdirectory(covmap)
 add_subdirectory(covsel)
 add_subdirectory(hdftool)
 add_subdirectory(cmdref)
+add_subdirectory(prevcmp)
 
 add_subdirectory(tests)

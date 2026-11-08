@@ -92,6 +92,7 @@ set(TEDDETOK ${HOST_DIR}/ted-tools/teddetok/teddetok)           # a source as TE
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # one corpus pass in Amiberry
 set(CDRUN ${HOST_DIR}/corpus-runner/cdrun)                      # the CD through one compiler
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
+set(PREVCMP ${HOST_TOOLS_DIR}/prevcmp/prevcmp)                   # library files against the prev build
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
 ExternalProject_Add(host_tools
@@ -105,7 +106,7 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${CDTABLE} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${CDTABLE} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB} ${PREVCMP})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request
@@ -129,6 +130,24 @@ add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_CO
 	-DSRC=${PROJECT_SOURCE_DIR}/cmake/saveds/broken.c -P ${PROJECT_SOURCE_DIR}/cmake/check-saveds.cmake)
 set_tests_properties(toolchain_saveds_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "__saveds does not[ \n]+load a4")  # CMake wraps long messages
+
+# the library files byte by byte against the prev build (cmake/prev.cmake,
+# tests/README.md "The prev build"); skipped (77) without one.  PREV_INTENDED
+# names the files that may differ (a fix names them in its commit): ON = all,
+# or a list of paths relative to the build directory, each of which must
+# differ (-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs")
+set(PREV_INTENDED OFF CACHE STRING
+	"prev_results: ON = every library file may differ from the prev build, or a ;-list of paths (libs/acidlibs/2dlib.obj;blitz2/acidlibs)")
+set(prev_results_args)
+if(PREV_INTENDED STREQUAL "ON")
+	list(APPEND prev_results_args --all)
+elseif(PREV_INTENDED AND NOT PREV_INTENDED STREQUAL "OFF")
+	foreach(f IN LISTS PREV_INTENDED)
+		list(APPEND prev_results_args --intended ${f})
+	endforeach()
+endif()
+add_test(NAME prev_results COMMAND ${PREVCMP} ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_DIR})
+set_tests_properties(prev_results PROPERTIES SKIP_RETURN_CODE 77)
 
 # downloading the originals the tests need (not part of ALL: needs network)
 add_custom_target(fetch-originals

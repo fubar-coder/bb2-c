@@ -42,6 +42,8 @@
 #              command reference)
 #   cdtable    the CD result table written from a fresh run, keeping the
 #              note rows (tests/data/blitz2-cd.tsv)
+#   prevcmp    the library files of two build directories byte by byte (the
+#              prev build, the build of the previous commit)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -68,3 +70,4 @@ add_subdirectory(covsel)
 add_subdirectory(hdf)
 add_subdirectory(cmdref)
 add_subdirectory(cdtable)
+add_subdirectory(prevcmp)
