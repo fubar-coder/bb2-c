@@ -493,3 +493,10 @@ Findings and adaptations while implementing (2026-11-08).
   message that is not of the form `tool: FILE: message` today (for
   example `teststats: cannot read FILE`) keeps its form: the spec allows
   no other change than the prefix.
+- **Report lines of the libraries** keep the library's name: the
+  summary lines `checkdata: 534 checks, ...`, `checklabels: 278 code
+  labels, ...`, `prevcmp: 787 library files, ...` and `asmcmp: SPEC: ...`
+  are written by `lib_checkdata`, `lib_checklabels`, `lib_prevcmp`,
+  `lib_asmcmp` to the report (stdout), which must stay byte-identical, and
+  the libraries keep their names (D7); tests that match them
+  (`ted_checkdata_*`, `test_checkdata`) are unchanged.

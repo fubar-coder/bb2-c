@@ -102,8 +102,7 @@ tools/                       host tools:
   blitzlibcompare/,
   blitztokens/
   hunkcheck/, amiga_run/,
-  vasmlisting/, checklabels/,
-  checkdata/, asmcmp/,
+  refcheck/,
   mktestdata/, bb22/, blitzres/,
   bblines/, bbdetok/, xtra/,
   testinfo/,

@@ -26,10 +26,10 @@ in `bb2src.zip.dir/` (`archive/aminet/amibl2src/bb2src/`), the line numbers are 
 
 Result: one hunk (HUNK_CODE, section `CODE` 0–`$D4FA`, `$353F`
 longwords), 1245 relocations (vasm writes them as `HUNK_RELOC32SHORT`),
-no errors. Listing and binary match (`tedlisting.py verify`, here `tools/vasmlisting verify`:
+no errors. Listing and binary match (`tedlisting.py verify`, here `refcheck listing-verify`, `tools/refcheck`:
 7280 lines, 0 deviations; runs in the build step of `ted_ref`, bb2: `ctest` `ref_verify`).
 
-## 2 Tools (bb2 `ted-c/tools/`; here `tools/vasmlisting` with `map`, `labels`, `verify`; the rest not taken over)
+## 2 Tools (bb2 `ted-c/tools/`; here `tools/refcheck` with `listing-map`, `listing-labels`, `listing-verify`; the rest not taken over)
 
 | File | Purpose |
 |---|---|

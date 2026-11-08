@@ -107,7 +107,7 @@ file with the fix.
 
 The instruction comparison of the acidlibs routines that stay assembler
 (`asmcmp_runerrlib`, `asmcmp_debuglib`, `asmcmp_dhandlerlib`,
-`asmcmp_memacclib`; `tools/asmcmp`, the routine lists of `asm_check` in
+`asmcmp_memacclib`; `refcheck asm`, the routine lists of `asm_check` in
 `libs/acidlibs/CMakeLists.txt`) lists only routines still equal to the
 original: a fix that changes a listed routine removes the routine from
 its `asm_check` list in the same commit and names it in the commit
@@ -197,11 +197,12 @@ again):
 * reference build of blitz2: the original
   `archive/sources/blitz2-1.95/blitz2.s` with vasm to
   `build/amiga/programs/blitz2/ref/` (`blitz2`, listing, `blitz2.map`,
-  `blitz2.labels`), in the same step `vasmlisting verify`.
+  `blitz2.labels`), in the same step `refcheck listing-verify`
+  ([`tools/refcheck`](../tools/refcheck/README.md)).
 * reference build of TED: the original `archive/sources/ted-1.1/ted.s`
   with vasm (like Devpac) to `build/amiga/programs/ted/ref/` (`ted`,
   listing, `ted.map`, `ted.labels`); the same step checks that listing and
-  binary match (`vasmlisting verify`). The reference for the port is this
+  binary match (`refcheck listing-verify`). The reference for the port is this
   build, not the TED binary of the CD (a different build).
 * `ted` after every link (POST_BUILD): hunk layout (`tools/hunkcheck`:
   offset 0 `bsr.w`, offset 4 `outside`; `--stored`: every hunk stored
@@ -210,7 +211,7 @@ again):
   linker script `cmake/baserel-nostart.ld` stores it as zeros; the same
   for `ab3cli`) and `programs/ted/checklink.cmake`
   (no libgcc/libnix helper functions that would need `UtilityBase`) and
-  `tools/checklabels`: every code label of `ted.s` exactly once as
+  `refcheck labels`: every code label of `ted.s` exactly once as
   `ted.s:NNN label` in `programs/ted/src/` (completeness of the
   translation; a changed comment line rebuilds the object, so the check
   runs then as well).
@@ -221,7 +222,7 @@ again):
   `libnums.h` the CD's file has with another value (ctest
   `rwe_refbuild_libnums_broken`).
 * `ted.sym` (the same link with symbols) after every link:
-  `tools/checkdata` compares the data of the C build with the reference
+  `refcheck data` compares the data of the C build with the reference
   build of `ted.s` (`programs/ted/checkdata.tsv`: 534 entries – fonts,
   mouse pointers, option block, texts, screen, windows, gadgets, menus,
   requesters; relocated longwords of the reference skipped); the checks
@@ -236,7 +237,7 @@ begins a comment line and empty lines are skipped; every entry must
 occur: a stale entry (the difference is gone) fails like a difference
 the list does not name. The build finds a list at configure time:
 configure again after adding one. The fix commit adds its entry (or,
-for `asmcmp`, removes its routine).
+for `refcheck asm`, removes its routine).
 
 * **Declarations** (`tools/blitzlibcompare`; ctests
   `declarations_acidlibs`, `declarations_deflibs`,
@@ -253,7 +254,7 @@ for `asmcmp`, removes its routine).
   lib 253: entry 114 CachePostDMA_ +$C: $01 != $00
   ```
 
-* **TED's data** (`tools/checkdata` after the link of `ted.sym`):
+* **TED's data** (`refcheck data` after the link of `ted.sym`):
   `programs/ted/checkdata-intended.txt`, one check of
   `programs/ted/checkdata.tsv` per line - its C symbol, the issue, a
   note (optional), separated by tabs; a symbol at most once. The whole
@@ -265,7 +266,7 @@ for `asmcmp`, removes its routine).
   _mpalit	#123	the palette value the fix corrects
   ```
 
-* **Instructions** (`tools/asmcmp`; ctests `asmcmp_runerrlib`,
+* **Instructions** (`refcheck asm`; ctests `asmcmp_runerrlib`,
   `asmcmp_debuglib`, `asmcmp_dhandlerlib`, `asmcmp_memacclib`): no list.
   The routines of `asm_check` in `libs/acidlibs/CMakeLists.txt` are those
   still equal to the original; a fix that changes one removes it from

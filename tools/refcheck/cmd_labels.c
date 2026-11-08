@@ -1,9 +1,9 @@
 /*
- * checklabels - every code label of an assembler source appears exactly
+ * refcheck labels - every code label of an assembler source appears exactly
  * once as "FILE:NNN label" in the C sources of a directory (see
  * checklabels.h).
  *
- *   checklabels [-v|-q] ted.s SRCDIR    (FILE = the name of ted.s)
+ *   refcheck labels [-v|-q] ted.s SRCDIR    (FILE = the name of ted.s)
  *
  * Reads every *.c under SRCDIR.  Prints the missing / doubled labels and a
  * summary (-q: only if there are any, -v: every label); exit status 1 if
@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "checklabels.h"
+#include "refcheck.h"
 
 static char **paths;
 static size_t npaths;
@@ -61,11 +62,13 @@ static char *read_all(const char *path, size_t *len)
     return s;
 }
 
-static const char usage[] =
-    "usage: checklabels [-v|-q] FILE.s SRCDIR\n"
+const char cmd_labels_usage[] =
+    "usage: refcheck labels [-v|-q] FILE.s SRCDIR\n"
     "  every code label of FILE.s exactly once in the C sources of SRCDIR\n";
 
-int main(int argc, char **argv)
+static const char *me; /* "refcheck labels", the prefix of the messages */
+
+int cmd_labels(int argc, char **argv)
 {
     int verbose = argc > 1 && !strcmp(argv[1], "-v");
     int quiet = argc > 1 && !strcmp(argv[1], "-q");
@@ -80,27 +83,24 @@ int main(int argc, char **argv)
     size_t len, i;
     long bad;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc - opt != 3) {
-        fputs(usage, stderr);
+        fputs(cmd_labels_usage, stderr);
         return 2;
     }
     asm_path = argv[1 + opt];
     prefix = strrchr(asm_path, '/') ? strrchr(asm_path, '/') + 1 : asm_path;
     if (!(text = read_all(asm_path, &len))) {
-        fprintf(stderr, "checklabels: cannot read %s\n", asm_path);
+        fprintf(stderr, "%s: cannot read %s\n", me, asm_path);
         return 1;
     }
     if (code_labels_parse(text, len, &labels)) {
-        fprintf(stderr, "checklabels: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         return 1;
     }
     free(text);
     if (nftw(argv[2 + opt], collect, 16, FTW_PHYS)) {
-        fprintf(stderr, "checklabels: cannot read %s\n", argv[2 + opt]);
+        fprintf(stderr, "%s: cannot read %s\n", me, argv[2 + opt]);
         return 1;
     }
     qsort(paths, npaths, sizeof *paths, by_name);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     for (i = 0; i < npaths; i++) {
         src[i].name = strrchr(paths[i], '/') ? strrchr(paths[i], '/') + 1 : paths[i];
         if (!(src[i].text = read_all(paths[i], &src[i].len))) {
-            fprintf(stderr, "checklabels: cannot read %s\n", paths[i]);
+            fprintf(stderr, "%s: cannot read %s\n", me, paths[i]);
             return 1;
         }
     }

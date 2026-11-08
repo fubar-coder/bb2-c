@@ -1,9 +1,9 @@
 /*
- * checkdata - data of a C build against the reference build of the
+ * refcheck data - data of a C build against the reference build of the
  * assembler original (see checkdata.h).
  *
- *   checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]
- *   e.g. checkdata programs/ted/checkdata.tsv ref/ted.lst ref/ted ted.sym
+ *   refcheck data [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]
+ *   e.g. refcheck data programs/ted/checkdata.tsv ref/ted.lst ref/ted ted.sym
  *
  * INTENDED: the list of intended differences (fixed original bugs,
  * "CSYM<TAB>#NNN<TAB>NOTE" per line): those checks may differ, and each of
@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "checkdata.h"
+#include "refcheck.h"
 
 static char *read_all(const char *path, size_t *len)
 {
@@ -38,13 +39,15 @@ static char *read_all(const char *path, size_t *len)
     return s;
 }
 
-static const char usage[] =
-    "usage: checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]\n"
+const char cmd_data_usage[] =
+    "usage: refcheck data [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]\n"
     "  data of a C build against the reference build of the assembler original;\n"
     "  INTENDED: the checks that differ on purpose (CSYM<TAB>#ISSUE<TAB>NOTE per\n"
     "  line), each of them must differ\n";
 
-int main(int argc, char **argv)
+static const char *me; /* "refcheck data", the prefix of the messages */
+
+int cmd_data(int argc, char **argv)
 {
     int verbose = argc > 1 && !strcmp(argv[1], "-v");
     int quiet = argc > 1 && !strcmp(argv[1], "-q");
@@ -58,45 +61,42 @@ int main(int argc, char **argv)
     FILE *out;
     long bad;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc - opt != 5 && argc - opt != 6) {
-        fputs(usage, stderr);
+        fputs(cmd_data_usage, stderr);
         return 2;
     }
     argv += opt;
     if (!(text = read_all(argv[1], &len))) {
-        fprintf(stderr, "checkdata: cannot read %s\n", argv[1]);
+        fprintf(stderr, "%s: cannot read %s\n", me, argv[1]);
         return 1;
     }
     if (checkdata_table_parse(text, len, &table, err, sizeof err)) {
-        fprintf(stderr, "checkdata: %s: %s\n", argv[1], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[1], err);
         return 1;
     }
     free(text);
     if (argc - opt == 6) {
         if (!(text = read_all(argv[5], &len))) {
-            fprintf(stderr, "checkdata: cannot read %s\n", argv[5]);
+            fprintf(stderr, "%s: cannot read %s\n", me, argv[5]);
             return 1;
         }
         if (checkdata_intended_parse(text, len, &intended, err, sizeof err)) {
-            fprintf(stderr, "checkdata: %s: %s\n", argv[5], err);
+            fprintf(stderr, "%s: %s: %s\n", me, argv[5], err);
             return 1;
         }
         free(text);
     }
     if (listing_read(argv[2], &listing, err, sizeof err)) {
-        fprintf(stderr, "checkdata: %s: %s\n", argv[2], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[2], err);
         return 1;
     }
     if (load_read(argv[3], &ref, err, sizeof err) || ref.nhunks < 1) {
-        fprintf(stderr, "checkdata: %s: %s\n", argv[3], ref.nhunks ? err : "no hunk");
+        fprintf(stderr, "%s: %s: %s\n", me, argv[3], ref.nhunks ? err : "no hunk");
         return 1;
     }
     if (load_read(argv[4], &c, err, sizeof err)) {
-        fprintf(stderr, "checkdata: %s: %s\n", argv[4], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[4], err);
         return 1;
     }
     out = quiet ? open_memstream(&report, &reportlen) : stdout;

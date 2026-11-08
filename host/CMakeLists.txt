@@ -66,8 +66,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 
 # -h / --help of the host programs without subcommands (the programs with
 # subcommands have their help_ and readme_ tests in their own directory)
-foreach(t amiga_run asmcmp biglib blitztokens blitzlibcheck blitzlibcompare checkdata checklabels
-		hunkcheck mktestdata bb22 blitzres bblines bbdetok xtra vasmlisting tedtok teddetok corpusrun cdrun tedab teddump
+foreach(t amiga_run biglib blitztokens blitzlibcheck blitzlibcompare
+		hunkcheck mktestdata bb22 blitzres bblines bbdetok xtra tedtok teddetok corpusrun cdrun tedab teddump
 		outmatch ab3tok hdftool cmdref cdtable prevcmp)
 	host_help_test(${t})
 endforeach()

@@ -17,7 +17,7 @@ next up stage 2b (broader tests).
 cmake --preset amiga && cmake --build --preset amiga && ctest --preset host
 #  -> build/amiga/blitz2/ted (C build), build/amiga/programs/ted/ted.sym
 #  -> build/amiga/programs/ted/ref/ted, ted.lst, ted.map, ted.labels  (vasm build of ted.s = reference)
-#  checks in the build (bb2: ctest): vasmlisting verify, hunkcheck, checkdata, checklabels, checklink
+#  checks in the build (bb2: ctest): refcheck listing-verify, hunkcheck, refcheck data, refcheck labels, checklink
 #  the amiga preset also builds the host side (bb2: separate preset host):
 #  -> core library (src/core) + unit tests on the host (programs/ted/tests/host;
 #     instead of bb2tok.py fixtures: tests/data/ted-oracle.sha256 of the original TED)
@@ -53,4 +53,4 @@ ctest --preset emulator -R ted_ab      # phase 3: TED A/B (tests/ted-ab/), inste
 | `tests/ted-ab/scripts/` | phase 3: test scripts `*.drv` (teddrive); bb2's gate scripts not taken over |
 | `tests/ted-ab/host/` | host tests of `tedab`/`teddump` (bb2: `tedab.py`/`teddump.py`) and the script syntax |
 | `results/ted-ab/` | phase 3: results in bb2 (not taken over); here the report `build/<preset>/tests/ted-ab/ted_ab.txt` |
-| `tools/` | bb2: `tedlisting.py`, `xrefs.py`, `checkhunk.py`, `checkdata.py`, `checklabels.py`, `checklink.cmake`; here `tools/vasmlisting`, `tools/hunkcheck`, `tools/checkdata`, `tools/checklabels`, `programs/ted/checklink.cmake`; phase 3: `tests/ted-ab/runner/` `tedab` (runner), `teddump` (screen dumps) |
+| `tools/` | bb2: `tedlisting.py`, `xrefs.py`, `checkhunk.py`, `checkdata.py`, `checklabels.py`, `checklink.cmake`; here `tools/refcheck`, `tools/hunkcheck`, `programs/ted/checklink.cmake`; phase 3: `tests/ted-ab/runner/` `tedab` (runner), `teddump` (screen dumps) |

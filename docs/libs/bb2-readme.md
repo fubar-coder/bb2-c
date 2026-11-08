@@ -112,7 +112,7 @@ BYTE). What only one library needs stays in its source.
 | `tools/srcdecl.py` | evaluate the declarations (libmacs macros) of a Blitz source on the host and compare them with a lib binary (`dump`/`compare`/`report`), see [cmdlibs-decl.md](cmdlibs-decl.md) | not taken over |
 | `tools/amiga_test.py` | `tests/libs_tests` (snitch) in Amiberry, optionally with a filter; serial, timeout 30 s | `libs/tests/emulator.cmake`, ctest `libs_emulator` |
 | `tools/disasm.py` | disassemble the code of a library, entry points and relocs marked | not taken over |
-| `tools/asmcmp.py` | compare assembler routines original/C build instruction by instruction | `tools/asmcmp` |
+| `tools/asmcmp.py` | compare assembler routines original/C build instruction by instruction | `refcheck asm` (`tools/refcheck`) |
 
 `amiga_test.py` used `tools/amiberry.cmake` of bb2 (emulator without window,
 configuration `A1200-AB3.uae`, 68020, drive `AB3C:`) and put the test files under

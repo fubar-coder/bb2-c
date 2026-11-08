@@ -129,7 +129,7 @@ set_tests_properties(blitz2_checkcore_broken PROPERTIES PASS_REGULAR_EXPRESSION
 #   blitz2.lst     vasm listing (addresses + opcodes)
 #   blitz2.map     TSV address -> file:line, bytes, source
 #   blitz2.labels  TSV address, label, file:line
-# The same step checks that listing and binary agree (vasmlisting verify).
+# The same step checks that listing and binary agree (refcheck listing-verify).
 # -kick1hunks: the relocations as HUNK_RELOC32 like Devpac, not vasm's
 # short form (HUNK_DREL32), which LoadSeg only knows from Kickstart 2.0
 # on - the reference runs on the A500 with Kickstart 1.3 as well
@@ -149,10 +149,10 @@ add_custom_command(
 	COMMAND ${VASM} -quiet -devpac -nocase -m68000 -Fhunkexe -kick1hunks
 		-nowarn=62 -nowarn=40 -nowarn=41 -nowarn=51
 		-o ${ref} -L ${ref}.lst -Lall blitz2.s > /dev/null
-	COMMAND ${VASMLISTING} ${ref}.lst map > ${ref}.map
-	COMMAND ${VASMLISTING} ${ref}.lst labels > ${ref}.labels
-	COMMAND ${VASMLISTING} ${ref}.lst verify ${ref}
-	DEPENDS ${BLITZ2_REF_INPUTS} ${VASMLISTING} host_tools
+	COMMAND ${REFCHECK} listing-map ${ref}.lst > ${ref}.map
+	COMMAND ${REFCHECK} listing-labels ${ref}.lst > ${ref}.labels
+	COMMAND ${REFCHECK} listing-verify ${ref}.lst ${ref}
+	DEPENDS ${BLITZ2_REF_INPUTS} ${REFCHECK} host_tools
 	WORKING_DIRECTORY ${BLITZ2_ORIG_DIR}
 	COMMENT "Assembling the original blitz2.s (reference)"
 	VERBATIM)

@@ -56,7 +56,7 @@ signatures are agreed – changes only per §9.
   a function (goto targets, fail chain, `done2`, `getline2`, `ginp1` …)
   get a comment `/* ted.s:NNN label */` at their place. The
   skeletons collect these markers at the end of the file – move them to the
-  right place when translating. `tools/checklabels.py` (ctest `checklabels`; here `tools/checklabels`, POST_BUILD of `ted`)
+  right place when translating. `tools/checklabels.py` (ctest `checklabels`; here `refcheck labels`, `tools/refcheck`, POST_BUILD of `ted`)
   requires every code label **exactly once** in `src/**/*.c`. References that
   are not a definition site are written differently (`ted.s:570 (prtfile, …)`,
   "ted.s line 128").
@@ -129,7 +129,7 @@ signatures are agreed – changes only per §9.
   with `#embed` (sizes via `static_assert`), never copies into the
   repository.
 * Data check: `tools/checkdata.py` – new data must be entered there
-  in `CHECKS` (here `tools/checkdata` with the table `programs/ted/checkdata.tsv`).
+  in `CHECKS` (here `refcheck data`, `tools/refcheck`, with the table `programs/ted/checkdata.tsv`).
 
 ## 8 Checking
 
@@ -140,7 +140,7 @@ signatures are agreed – changes only per §9.
   sanitizers `-DHOST_SANITIZE=ON` (bb2: `TED_SANITIZE`). Single test with
   output: bb2 `build/host/tests/host/test_tokit build/host/fixtures -v`.
 * Listing of the reference: `tools/tedlisting.py build/amiga/ref/ted.lst …`
-  (`addr`, `line`, `bytes`, `carray`; bb2 only; here `tools/vasmlisting` – `map`, `labels`, `verify` – on `build/amiga/programs/ted/ref/ted.lst`).
+  (`addr`, `line`, `bytes`, `carray`; bb2 only; here `tools/refcheck` – `listing-map`, `listing-labels`, `listing-verify` – on `build/amiga/programs/ted/ref/ted.lst`).
 
 ## 9 Changing shared headers
 

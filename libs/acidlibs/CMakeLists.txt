@@ -65,7 +65,7 @@ endforeach()
 
 # asm checks: the routines that stay assembler, compared with the original
 # libraries of the CD (BLITZ2/ACIDLIBS, by library number) instruction by
-# instruction (tools/asmcmp with the toolchain's objdump; skipped without
+# instruction (refcheck asm, tools/refcheck, with the toolchain's objdump; skipped without
 # the CD).  wbstartuplib, intlib and switchlib are C (intlib's only
 # assembler is the `Dc $a001` prefixes, checked by declarations_acidlibs),
 # so only runerrlib, debuglib, dhandlerlib and memacclib have routines
@@ -81,7 +81,7 @@ endforeach()
 # no list of intended differences for instructions.
 function(asm_check lib libnum)
 	add_test(NAME asmcmp_${lib}
-		COMMAND ${ASMCMP} ${CMAKE_OBJDUMP}
+		COMMAND ${REFCHECK} asm ${CMAKE_OBJDUMP}
 			${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS ${libnum}
 			${CMAKE_CURRENT_BINARY_DIR}/${lib}.linked ${ARGN})
 	set_tests_properties(asmcmp_${lib} PROPERTIES SKIP_RETURN_CODE 77)

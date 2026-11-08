@@ -23,7 +23,7 @@ set_source_files_properties(src/core/res.c PROPERTIES
 #   ted.lst     vasm listing (addresses + opcodes)
 #   ted.map     TSV address -> file:line, bytes, source
 #   ted.labels  TSV address, label, file:line
-# The same step checks that listing and binary agree (vasmlisting verify).
+# The same step checks that listing and binary agree (refcheck listing-verify).
 if(NOT VASM)
 	find_program(VASM vasmm68k_mot REQUIRED)
 endif()
@@ -37,10 +37,10 @@ add_custom_command(
 	COMMAND ${VASM} -quiet -devpac -nocase -m68000 -Fhunkexe
 		-nowarn=62 -nowarn=40 -nowarn=41 -nowarn=51
 		-o ${REF_DIR}/ted -L ${REF_DIR}/ted.lst -Lall ted.s > /dev/null
-	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst map > ${REF_DIR}/ted.map
-	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst labels > ${REF_DIR}/ted.labels
-	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst verify ${REF_DIR}/ted
-	DEPENDS ${REF_INPUTS} ${VASMLISTING} host_tools
+	COMMAND ${REFCHECK} listing-map ${REF_DIR}/ted.lst > ${REF_DIR}/ted.map
+	COMMAND ${REFCHECK} listing-labels ${REF_DIR}/ted.lst > ${REF_DIR}/ted.labels
+	COMMAND ${REFCHECK} listing-verify ${REF_DIR}/ted.lst ${REF_DIR}/ted
+	DEPENDS ${REF_INPUTS} ${REFCHECK} host_tools
 	WORKING_DIRECTORY ${TED_ORIG_DIR}
 	COMMENT "Assembling the original ted.s (reference)"
 	VERBATIM)
@@ -78,7 +78,7 @@ if(TED_BASEREL)
 endif()
 
 # ted: the editor (no symbols in release builds); ted.sym: the same link
-# with symbols, for checkdata below and for debugging (strip cannot handle
+# with symbols, for refcheck data below and for debugging (strip cannot handle
 # the baserel data hunk, so it is linked twice)
 foreach(exe ted ted_sym)
 	add_executable(${exe} $<TARGET_OBJECTS:tedobj>)
@@ -108,14 +108,14 @@ set_target_properties(ted_sym PROPERTIES OUTPUT_NAME ted.sym SUFFIX "")
 #   - no libgcc/libnix arithmetic helpers (they need UtilityBase, which TED
 #     never opens) and nothing else from the libraries but string/setjmp code
 #   - every code label of ted.s exactly once as "ted.s:NNN label" in src/
-#     (checklabels; a changed comment rebuilds the object, so ted relinks)
+#     (refcheck labels; a changed comment rebuilds the object, so ted relinks)
 add_dependencies(ted host_tools)
 add_custom_command(TARGET ted POST_BUILD
 	COMMAND ${HUNKCHECK} $<TARGET_FILE:ted> 0:6100 4:48e7
 	COMMAND ${HUNKCHECK} --stored $<TARGET_FILE:ted>
 	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
 		${CMAKE_CURRENT_BINARY_DIR}/ted.map
-	COMMAND ${CHECKLABELS} -q ${TED_ORIG_DIR}/ted.s ${CMAKE_CURRENT_SOURCE_DIR}/src
+	COMMAND ${REFCHECK} labels -q ${TED_ORIG_DIR}/ted.s ${CMAKE_CURRENT_SOURCE_DIR}/src
 	VERBATIM)
 add_subdirectory(tests/oracle)
 
@@ -135,7 +135,7 @@ endif()
 set_property(TARGET ted_sym APPEND PROPERTY
 	LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv ${REF_DIR}/ted.lst ${checkdata_intended})
 add_custom_command(TARGET ted_sym POST_BUILD
-	COMMAND ${CHECKDATA} -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
+	COMMAND ${REFCHECK} data -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
 		${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym> ${checkdata_intended}
 	VERBATIM)
 # the intended list on the real build (tables and lists of the build
@@ -149,10 +149,10 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_stale.txt
 	"_sleep_\t#1\tthe broken entry\n_pointer\t#2\tequal: stale\n")
 set(checkdata_args ${CMAKE_CURRENT_BINARY_DIR}/checkdata_differs.tsv
 	${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym>)
-add_test(NAME ted_checkdata_intended COMMAND ${CHECKDATA} ${checkdata_args}
+add_test(NAME ted_checkdata_intended COMMAND ${REFCHECK} data ${checkdata_args}
 	${CMAKE_CURRENT_BINARY_DIR}/checkdata_intended.txt)
-add_test(NAME ted_checkdata_unlisted COMMAND ${CHECKDATA} ${checkdata_args})
-add_test(NAME ted_checkdata_stale COMMAND ${CHECKDATA} ${checkdata_args}
+add_test(NAME ted_checkdata_unlisted COMMAND ${REFCHECK} data ${checkdata_args})
+add_test(NAME ted_checkdata_stale COMMAND ${REFCHECK} data ${checkdata_args}
 	${CMAKE_CURRENT_BINARY_DIR}/checkdata_stale.txt)
 set_tests_properties(ted_checkdata_intended PROPERTIES
 	PASS_REGULAR_EXPRESSION "intended _sleep_ .*checkdata: 2 checks, 0 failed, 1 intended")

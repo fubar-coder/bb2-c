@@ -86,7 +86,7 @@ thus confirmed and made precise: different assembler, same source.
 Same size, same layout, same relocation offsets: **all 1103 labels of
 `build/amiga/programs/ted/ref/ted.labels` are at the same offset in the CD
 binary** (identity mapping). The checks of the port against the reference
-build (`tools/checkdata`, `programs/ted/checkdata.tsv`) therefore hold
+build (`refcheck data`, `programs/ted/checkdata.tsv`) therefore hold
 against the CD binary as well.
 
 ### 1.2 Bug-orig status

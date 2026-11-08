@@ -162,7 +162,7 @@ repository because of the project rule "no Python"). Its `INDEX.md`
 explains each file and how to regenerate it (prerequisites: the CD via
 `cmake -P cmake/fetch-originals.cmake` and the reference builds
 `blitz2_ref`/`ted_ref`). If the comparison should become a permanent
-check, it belongs into a C tool next to `tools/asmcmp` (which already
+check, it belongs into a C tool next to `refcheck asm` (`tools/refcheck`, which already
 compares instructions via `objdump`).
 
 ## 4 Effort for porting 2.10

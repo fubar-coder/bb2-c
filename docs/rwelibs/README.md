@@ -148,7 +148,7 @@ builds. Proposed rule (to be decided in step 3 of `TODO.md` §4):
 1. **A source version whose declarations equal a binary** (22 libraries,
    column "Reference" above): that version, the binary is the reference
    for the comparison (declarations as with `blitzlibcompare`, code as
-   with `asmcmp`). If several versions equal the same binary (Req,
+   with `refcheck asm`). If several versions equal the same binary (Req,
    TrackDisk, ZoneJoy), the code decides.
 2. **A source newer than every binary** (LES debug, Pack, Sort, maybe
    more): the newest source; the binary only as a comparison for the

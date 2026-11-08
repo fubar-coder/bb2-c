@@ -44,7 +44,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 3. `refcheck` (asmcmp, checklabels, checkdata, vasmlisting; 22 call sites)
 
-- [ ] 3.1 `tools/refcheck/` with `asm`, `labels`, `data`, `listing-map`, `listing-labels`, `listing-verify`; the argument order of `vasmlisting LISTING map EXE` becomes `refcheck listing-map LISTING`, `listing-verify LISTING EXE`. Call sites: `libs/acidlibs/CMakeLists.txt`, `programs/ted/CMakeLists.txt` (9), `programs/blitz2/CMakeLists.txt` (4), `CMakeLists.txt`. Verify: C1-C5; the tests that run the four tools (`ctest -N` lists them by the callers `libs/acidlibs`, `programs/ted`, `programs/blitz2`) pass with the same reports (`cmp`); an intended list (`programs/ted/checkdata-intended.txt`, `INTENDED` of `blitzlibcompare`) is still read, checked with a stale entry
+- [x] 3.1 `tools/refcheck/` with `asm`, `labels`, `data`, `listing-map`, `listing-labels`, `listing-verify`; the argument order of `vasmlisting LISTING map EXE` becomes `refcheck listing-map LISTING`, `listing-verify LISTING EXE`. Call sites: `libs/acidlibs/CMakeLists.txt`, `programs/ted/CMakeLists.txt` (9), `programs/blitz2/CMakeLists.txt` (4), `CMakeLists.txt`. Verify: C1-C5; the tests that run the four tools (`ctest -N` lists them by the callers `libs/acidlibs`, `programs/ted`, `programs/blitz2`) pass with the same reports (`cmp`); an intended list (`programs/ted/checkdata-intended.txt`, `INTENDED` of `blitzlibcompare`) is still read, checked with a stale entry
 
 ## 4. `results` (outmatch, prevcmp, cdtable; 25 call sites)
 

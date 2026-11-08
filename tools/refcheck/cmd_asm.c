@@ -1,8 +1,8 @@
 /*
- * asmcmp - assembler routines of a C library against the original,
+ * refcheck asm - assembler routines of a C library against the original,
  * instruction by instruction (see asmcmp.h).
  *
- *   asmcmp OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...
+ *   refcheck asm OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...
  *
  * ORIGINAL: the BigLib file with the original library (e.g. the CD's
  * BLITZ2/ACIDLIBS), LIBNUM its number; NAME.linked: the C library linked
@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include "asmcmp.h"
 #include "biglib.h"
+#include "refcheck.h"
 
 static uint8_t *read_all(const char *path, size_t *len)
 {
@@ -36,11 +37,13 @@ static uint8_t *read_all(const char *path, size_t *len)
     return s;
 }
 
-static const char usage[] =
-    "usage: asmcmp OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...\n"
+const char cmd_asm_usage[] =
+    "usage: refcheck asm OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...\n"
     "  asm routines of a C library against the original, instruction by instruction\n";
 
-int main(int argc, char **argv)
+static const char *me; /* "refcheck asm", the prefix of the messages */
+
+int cmd_asm(int argc, char **argv)
 {
     struct biglib_entry *e;
     struct loadfile orig, c;
@@ -50,26 +53,23 @@ int main(int argc, char **argv)
     size_t size, n, i;
     int bad = 0, found = 0;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc < 6) {
-        fputs(usage, stderr);
+        fputs(cmd_asm_usage, stderr);
         return 2;
     }
     if (access(argv[2], F_OK)) {
-        printf("asmcmp: no %s - skipped (fetch-originals)\n", argv[2]);
+        printf("%s: no %s - skipped (fetch-originals)\n", me, argv[2]);
         return 77;
     }
     libnum = strtoul(argv[3], NULL, 0) & 0xFFFF;
     if (!(big = read_all(argv[2], &size)) || biglib_read(big, size, &e, &n, err, sizeof err)) {
-        fprintf(stderr, "asmcmp: %s: %s\n", argv[2], big ? err : "cannot read");
+        fprintf(stderr, "%s: %s: %s\n", me, argv[2], big ? err : "cannot read");
         return 1;
     }
     for (i = 0; i < n && !found; i++) {
         if (load_parse(e[i].data, e[i].size, &orig, err, sizeof err)) {
-            fprintf(stderr, "asmcmp: %s: library %zu: %s\n", argv[2], i + 1, err);
+            fprintf(stderr, "%s: %s: library %zu: %s\n", me, argv[2], i + 1, err);
             return 1;
         }
         found = orig.nhunks && orig.hunks[0].size >= 6 && be16(orig.hunks[0].data + 4) == libnum;
@@ -77,11 +77,11 @@ int main(int argc, char **argv)
             load_free(&orig);
     }
     if (!found) {
-        fprintf(stderr, "asmcmp: %s: no library %lu\n", argv[2], libnum);
+        fprintf(stderr, "%s: %s: no library %lu\n", me, argv[2], libnum);
         return 1;
     }
     if (load_read(argv[4], &c, err, sizeof err)) {
-        fprintf(stderr, "asmcmp: %s: %s\n", argv[4], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[4], err);
         return 1;
     }
     for (i = 5; i < (size_t)argc; i++)

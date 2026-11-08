@@ -274,7 +274,7 @@ All identical (no byte differences outside the places of sections 1 and
 
 Effort: a few lines; the acceptance is the normal one (`ctest --preset all`).
 The reference build (`blitz2_ref`) could be checked against the CD binary
-with a "same modulo encodings" comparison (like `tools/asmcmp`, which already
+with a "same modulo encodings" comparison (like `refcheck asm`, which already
 compares instructions with `objdump`): differences only at `$2820`–`$2823`
 and `$7094` – a cheap guard that the archived source really is 2.10 minus
 these changes.
