@@ -17,7 +17,7 @@ source of facts, but is not included here; the pages are new texts.
 ## Local preview
 
 ```
-podman run --rm -p 1313:1313 -v $PWD/site:/src hugomods/hugo:exts \
+podman run --rm -p 1313:1313 -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
     hugo server --bind 0.0.0.0 --poll 700ms --enableGitInfo=false
 ```
 
@@ -29,7 +29,7 @@ container then sees no repository (the CI build has one). To keep the
 A one-off build, as CI does it, into `site/public/`:
 
 ```
-podman run --rm -v $PWD/site:/src hugomods/hugo:exts \
+podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
     hugo --gc --minify --enableGitInfo=false --baseURL https://fubar-coder.github.io/bb2-c/
 ```
 
