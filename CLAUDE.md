@@ -101,7 +101,10 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
      F); the changed results named in the commit message, and a line
      `Fixes #N` in it (GitHub closes the issue on the push);
   3. the entry on the website page of fixed original bugs
-     (`site/content/docs/compared-with-original/fixed-bugs.md`);
+     (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
+     a one-sentence entry, or a section with an example of the original's
+     and the port's output for a bug ordinary programs meet; a source the
+     port refuses or compiles differently also goes into `new-errors.md`);
   4. the label `fixed-in-port` on the issue (every fix);
   5. after the user's push: check that the issue was closed (close it
      with a comment naming the commit if not).
