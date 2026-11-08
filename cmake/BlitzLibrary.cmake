@@ -10,9 +10,9 @@
 #   CHECK FILES   in the same step: its number is in none of FILES (the
 #                 acidlibs and deflibs it is loaded with; biglib check)
 #   CMDREF G/N    in the same step: the command table of the library
-#                 (tools/cmdref, CMDREF_DIR/G/N.json) equals the committed
+#                 (blitzlib cmdref, CMDREF_DIR/G/N.json) equals the committed
 #                 site/data/libraries/G/N.json, the data of the website's
-#                 command reference (tools/cmdref/check.cmake: cmake -E
+#                 command reference (tools/blitzlib/cmdref-check.cmake: cmake -E
 #                 compare_files).  After an
 #                 intended change: build the target cmdref_update, which
 #                 copies the generated files into the site
@@ -24,7 +24,7 @@
 #                 libs/blitzlib.ld already makes the layout; the relocs stay
 #                 in ld's order, a library without relocs has no
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
-#                 The same build step checks it (tools/blitzlibcheck: one
+#                 The same build step checks it (blitzlib check: one
 #                 hunk, header, token table, no reference from the normal
 #                 code into the error check area): if the check fails, NAME.obj does
 #                 not count as built and nothing that uses it is built.
@@ -43,7 +43,7 @@ if(NOT EXISTS ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h)
 	message(FATAL_ERROR "BLITZ_DEFAULT_VARIANT ${BLITZ_DEFAULT_VARIANT}: no ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h")
 endif()
 
-# the command tables of the libraries with CMDREF, as tools/cmdref
+# the command tables of the libraries with CMDREF, as blitzlib cmdref
 # generates them (site/data/libraries holds the committed ones)
 set(CMDREF_DIR ${CMAKE_BINARY_DIR}/cmdref)
 set(CMDREF_SITE_DIR ${CMAKE_CURRENT_LIST_DIR}/../site/data/libraries)
@@ -51,7 +51,7 @@ cmake_path(NORMAL_PATH CMDREF_SITE_DIR)
 # the variant whose acidlibs and deflibs the committed files describe (its
 # library numbers): with another BLITZ_DEFAULT_VARIANT they are not checked
 set(CMDREF_VARIANT bb2-2.10)
-set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/cmdref/check.cmake)
+set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/blitzlib/cmdref-check.cmake)
 cmake_path(NORMAL_PATH CMDREF_CHECK)
 
 function(blitz_library name)
@@ -79,7 +79,7 @@ function(blitz_library name)
 	endif()
 	set(check)
 	if(arg_CHECK)
-		set(check COMMAND ${BIGLIB} check ${obj} ${arg_CHECK})
+		set(check COMMAND ${BLITZLIB} numbers ${obj} ${arg_CHECK})
 	endif()
 	set(cmdref)
 	set(cmdref_files)
@@ -92,14 +92,14 @@ function(blitz_library name)
 		set(generated ${CMDREF_DIR}/${arg_CMDREF}.json)
 		set(committed ${CMDREF_SITE_DIR}/${arg_CMDREF}.json)
 		file(MAKE_DIRECTORY ${CMDREF_DIR}/${CMAKE_MATCH_1})
-		set(cmdref COMMAND ${CMAKE_COMMAND} -DCMDREF=${CMDREF} -DLIB=${obj}
+		set(cmdref COMMAND ${CMAKE_COMMAND} -DBLITZLIB=${BLITZLIB} -DLIB=${obj}
 			-DGROUP=${CMAKE_MATCH_1} -DNAME=${CMAKE_MATCH_2} -DOUT=${generated}
 			-DCOMMITTED=${committed} -P ${CMDREF_CHECK})
 		set(cmdref_files ${generated})
 		set_property(GLOBAL APPEND PROPERTY CMDREF_LIBRARIES ${arg_CMDREF})
 		# a new library has no committed file yet: the check fails until
 		# cmdref_update has copied it (then configure again)
-		set(cmdref_deps ${CMDREF} ${CMDREF_CHECK})
+		set(cmdref_deps ${CMDREF_CHECK})
 		if(EXISTS ${committed})
 			list(APPEND cmdref_deps ${committed})
 		endif()
@@ -111,10 +111,10 @@ function(blitz_library name)
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
 			-o ${linked}
 		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
-		COMMAND ${BLITZLIBCHECK} ${obj}
+		COMMAND ${BLITZLIB} check ${obj}
 		${check}
 		${cmdref}
-		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} ${arg_CHECK} ${cmdref_deps} host_tools
+		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIB} ${arg_CHECK} ${cmdref_deps} host_tools
 		COMMENT "Blitz library ${name}.obj"
 		VERBATIM)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})
@@ -122,7 +122,7 @@ endfunction()
 
 # biglib_join(TARGET OUTPUT OBJS... [CHECK FILES...]) - join library files
 # into one BigLib file (blitz2:acidlibs, deflibs) with the host tool
-# tools/biglib.  In the same build step: no library number twice in OUTPUT
+# blitzlib join (tools/blitzlib).  In the same build step: no library number twice in OUTPUT
 # and the files CHECK (the other library files the compiler loads with it,
 # e.g. acidlibs for deflibs; biglib check) - two libraries with one number
 # would have the same tokens.
@@ -131,9 +131,9 @@ function(biglib_join target output)
 	get_filename_component(dir ${output} DIRECTORY)
 	file(MAKE_DIRECTORY ${dir})
 	add_custom_command(OUTPUT ${output}
-		COMMAND ${BIGLIB} join ${output} ${arg_UNPARSED_ARGUMENTS}
-		COMMAND ${BIGLIB} check ${output} ${arg_CHECK}
-		DEPENDS ${arg_UNPARSED_ARGUMENTS} ${arg_CHECK} ${BIGLIB} host_tools
+		COMMAND ${BLITZLIB} join ${output} ${arg_UNPARSED_ARGUMENTS}
+		COMMAND ${BLITZLIB} numbers ${output} ${arg_CHECK}
+		DEPENDS ${arg_UNPARSED_ARGUMENTS} ${arg_CHECK} ${BLITZLIB} host_tools
 		COMMENT "BigLib ${output}"
 		VERBATIM)
 	add_custom_target(${target} ALL DEPENDS ${output})

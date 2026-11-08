@@ -28,7 +28,7 @@ binary 121), the number of the acidlibs' polylib. Nothing on the CD
 resolves it: every acidlibs of the CD (`BLITZ2/`, `BUM9A/`, `BUM10B/`)
 has polylib at 121, no deflibs has polylib or RIEvalLib, BSS2 brings no
 acidlibs or libnums, and its REDBlitzLibs documentation says nothing
-about it (`biglib check` of each CD acidlibs with `RIEVALLIB.OBJ`:
+about it (`blitzlib numbers` of each CD acidlibs with `RIEVALLIB.OBJ`:
 "library number 121 twice"). With the CD's acidlibs, blitz2 would take
 polylib for 121 (the first match, `docs/v2.10/libs.md` §2, not checked
 in the emulator): RIEvalLib was usable only with polylib out of the

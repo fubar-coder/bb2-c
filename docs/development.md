@@ -125,7 +125,7 @@ unclosed backquote) fails the publication of the site; run it locally
 as `site/README.md` describes.
 
 **Command reference** (Blitz programmers): the command tables of the
-built library files, `tools/cmdref`, committed in `site/data/libraries/`
+built library files, `blitzlib cmdref`, committed in `site/data/libraries/`
 and rendered by Hugo (`site/README.md`); checked in the build, see
 below.
 
@@ -162,14 +162,14 @@ The build checks its results itself; if a check fails, the result counts
 as not built, and nothing that depends on it is built (the next run checks
 again):
 
-* every library file (`tools/blitzlibcheck`, in the same step as link and
+* every library file (`blitzlib check`, in the same step as link and
   strip): one code hunk, relocs only into it, library header, token table
   readable up to the end, no reference from the normal code into the error
   check area (without the debugger it would point behind the end of the
   code; the originals have such references, the port has them fixed).
   `acidlibs`/`deflibs`
   are made only from checked libraries.
-* the command reference of the website (`tools/cmdref`, in the same
+* the command reference of the website (`blitzlib cmdref`, in the same
   step as link and strip of every library file of acidlibs and deflibs of
   the default variant and of every RWE userlib): the command table the
   tool writes from the library file (`build/<preset>/cmdref/GROUP/NAME.json`)
@@ -186,7 +186,7 @@ again):
   `bug_orig_fixed_orig_broken` with a fake tree).
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join, and every userlib in its build step (against the acidlibs and
-  deflibs of its variant): no library number twice (`biglib check`; deflibs together with
+  deflibs of its variant): no library number twice (`blitzlib numbers`; deflibs together with
   the acidlibs loaded with it) – two libraries with one number would have
   the same tokens.
 * `blitz2` after every link (POST_BUILD): `programs/blitz2/checklink.cmake`
@@ -241,11 +241,11 @@ the list does not name. The build finds a list at configure time:
 configure again after adding one. The fix commit adds its entry (or,
 for `refcheck asm`, removes its routine).
 
-* **Declarations** (`tools/blitzlibcompare`; ctests
+* **Declarations** (`blitzlib compare`; ctests
   `declarations_acidlibs`, `declarations_deflibs`,
   `rwe_declarations_NAME`): `libs/GROUP/declarations-intended.txt` for
   acidlibs and deflibs, `libs/userlibs/rwe/NAME.declarations-intended.txt`
-  for an RWE userlib. One message line of `blitzlibcompare` per line,
+  for an RWE userlib. One message line of `blitzlib compare` per line,
   exactly as it prints it; the comment above names the issue. From
   `libs/deflibs/declarations-intended.txt`:
 

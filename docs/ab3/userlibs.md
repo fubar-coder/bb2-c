@@ -38,7 +38,7 @@ they are marked "already in our reference").
     `Docs/Miscellaneous/Changelog.guide` (HEAD), AB3 GitHub issues.
 * **Method:** every binary state taken with `git show`
   (`git log --all --name-only` for the paths, the BigLibs per commit),
-  libraries out of the BigLibs with `biglib extract`, compared by SHA-256
+  libraries out of the BigLibs with `blitzlib extract`, compared by SHA-256
   against the CD binaries and each other; token lists with `blitztokens`
   (library number = (token − $8000) >> 7); where the bytes differ,
   `od`/`m68k-amigaos-objdump` on the differing words; for AB3 sources

@@ -228,10 +228,10 @@ would get metadata instead of being converted.
     That is today's leaving out of the error check area, with no special
     logic;
   - **the 73 jumps per set** from normal code into the error check area
-    (the `blitzlibcheck` warnings) would simply be references and keep
+    (the `blitzlib check` warnings) would simply be references and keep
     the check sections, silently. So they must be fixed first (`TODO.md`).
     A check that a link without "Runtime Errors" leaves no
-    `.text.blitzcheck.*` section would succeed `blitzlibcheck`.
+    `.text.blitzcheck.*` section would succeed `blitzlib check`.
 - **Final link:** vlink merges the many small sections into one code hunk
   (its option to merge sections).
 - **Limits:**
@@ -239,8 +239,8 @@ would get metadata instead of being converted.
     parameters in d0-d5) stay an agreement between compiler and library;
     the linker does not check them;
   - **the original libraries:** they exist only in the Blitz format and
-    need a converter, Blitz library → hunk object. `blitzlibcheck` and
-    `blitzlibcompare` already read the format;
+    need a converter, Blitz library → hunk object. `blitzlib check` and
+    `blitzlib compare` already read the format;
   - **compatibility:** `blitz2` must read both formats, so old `userlibs`
     keep working.
 - **To check in the vlink documentation:**

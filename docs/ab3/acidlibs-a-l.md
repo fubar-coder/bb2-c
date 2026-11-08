@@ -39,10 +39,10 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
   beta 4 and Bernd's last one (2007-12), fetched to `archive/aminet/`
   and `archive/bernd/` – they date the "≤ 2009" rows (section "Dating
   the pre-git changes").
-* **Method:** every library extracted with `biglib extract` (all
+* **Method:** every library extracted with `blitzlib extract` (all
   numbers probed) from the CD, the 2009 and the HEAD BigLibs; tokens
   listed with `blitztokens` (CD `BLITZ2` + the single library),
-  declarations compared with `blitzlibcompare`, code compared as a raw
+  declarations compared with `blitzlib compare`, code compared as a raw
   `m68k-amigaos-objdump` disassembly diff. Where the code differs, the
   AB3 source/commit was read for the reason and checked against the
   issues of the library. "Not fixed" below means the original code is
@@ -81,7 +81,7 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
 The rows "≤ 2009" below (and "≤2009-02-10" in part m–z) are the state of
 `AmiBlitz/AmiBlitz3@ea8c25c7`. AmiBlitz's releases before git
 (`archive/README.md`) date them: every acidlibs library of the CD that
-`ea8c25c7` changed was extracted (`biglib extract`) from the AcidLibs of
+`ea8c25c7` changed was extracted (`blitzlib extract`) from the AcidLibs of
 AmiBlitz 2.42 (`archive/aminet/ab2.42-distri/Amiblitz2/AcidLibs`,
 2004-08-14), 2.43b2 (`archive/bernd/ab2.43b2_upd/amiblitz2.43/AcidLibs`,
 2004-10-27), 2.43 (`archive/bernd/ab2.42_upd_to_2.43/amiblitz2.43/AcidLibs`,

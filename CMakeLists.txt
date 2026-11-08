@@ -68,11 +68,8 @@ set(BASEREL_NOSTART_LD ${PROJECT_SOURCE_DIR}/cmake/baserel-nostart.ld)
 include(ExternalProject)
 set(HOST_DIR ${CMAKE_BINARY_DIR}/host)
 set(HOST_TOOLS_DIR ${HOST_DIR}/tools)
-set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library files
-set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
-set(BLITZLIBCOMPARE ${HOST_TOOLS_DIR}/blitzlibcompare/blitzlibcompare) # declarations vs original
+set(BLITZLIB ${HOST_TOOLS_DIR}/blitzlib/blitzlib)               # library files: join, check, compare, cmdref
 set(BLITZTOKENS ${HOST_TOOLS_DIR}/blitztokens/blitztokens)       # token list of compiler + libs
-set(CMDREF ${HOST_TOOLS_DIR}/cmdref/cmdref)                     # command table of a library as JSON
 set(REFCHECK ${HOST_TOOLS_DIR}/refcheck/refcheck)               # the port against the originals
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
@@ -104,7 +101,7 @@ ExternalProject_Add(host_tools
 		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BLITZTOKENS} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request

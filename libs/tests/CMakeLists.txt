@@ -69,7 +69,7 @@ get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 set(LIBS_TESTS_TIMEOUT 300 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
-	-DAMIGA_RUN=${AMIGA_RUN} -DBIGLIB=${BIGLIB}
+	-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB}
 	-DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
 	-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS

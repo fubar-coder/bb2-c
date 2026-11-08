@@ -1,6 +1,6 @@
 # The intended differences of the deflibs' declarations against the CD's
-# BLITZ2/DEFLIBS (ctest declarations_deflibs, tools/blitzlibcompare): one
-# message line of blitzlibcompare per line, each of them must occur.
+# BLITZ2/DEFLIBS (ctest declarations_deflibs, blitzlib compare): one
+# message line of blitzlib compare per line, each of them must occur.
 # Fixed original bugs, docs/libs/deviations.md (kind F).
 
 # #959: CachePreDMA_/CachePostDMA_ take flags in d0 (exec_lib.fd), the

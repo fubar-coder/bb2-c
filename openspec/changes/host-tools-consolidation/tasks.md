@@ -60,7 +60,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 7. `blitzlib` (biglib, blitzlibcheck, blitzlibcompare, cmdref; 31 call sites)
 
-- [ ] 7.1 `tools/blitzlib/` with `join`, `extract`, `numbers`, `check`, `compare`, `cmdref`. Call sites: `cmake/BlitzLibrary.cmake` (6, used by every library target), `libs/CMakeLists.txt`, `libs/tests/CMakeLists.txt`, `libs/tests/emulator.cmake`, `libs/userlibs/rwe/CMakeLists.txt` and `refbuild.cmake`, `tools/cmdref/check.cmake`, `complete.cmake`, `CMakeLists.txt`. Verify: C1-C5; **`acidlibs`, `deflibs`, every `.obj` and the site JSON `site/data/libraries/` are byte-identical** (`prev_results` and `cmp` of a regenerated `cmdref` output); `rwe_numbers*`, `biglib_check_clash` and `tokens_*` tests pass (their names stay)
+- [x] 7.1 `tools/blitzlib/` with `join`, `extract`, `numbers`, `check`, `compare`, `cmdref`. Call sites: `cmake/BlitzLibrary.cmake` (6, used by every library target), `libs/CMakeLists.txt`, `libs/tests/CMakeLists.txt`, `libs/tests/emulator.cmake`, `libs/userlibs/rwe/CMakeLists.txt` and `refbuild.cmake`, `tools/cmdref/check.cmake`, `complete.cmake`, `CMakeLists.txt`. Verify: C1-C5; **`acidlibs`, `deflibs`, every `.obj` and the site JSON `site/data/libraries/` are byte-identical** (`prev_results` and `cmp` of a regenerated `cmdref` output); `rwe_numbers*`, `biglib_check_clash` and `tokens_*` tests pass (their names stay)
 
 ## 8. `tedab` (tedab, teddump; 10 call sites)
 

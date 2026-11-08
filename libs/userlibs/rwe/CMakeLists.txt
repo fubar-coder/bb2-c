@@ -206,7 +206,7 @@ foreach(l IN LISTS RWE_LIBS)
 	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
 		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
 	endif()
-	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj}
+	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIB} compare ${reffile} ${obj}
 		${intended})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
 	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${reffile}")
@@ -274,7 +274,7 @@ if(readable)
 endif()
 # the whole set: no number twice in acidlibs, deflibs and all RWE userlibs
 if(objs)
-	add_test(NAME rwe_numbers COMMAND ${BIGLIB} check ${out}/acidlibs ${out}/deflibs ${objs})
+	add_test(NAME rwe_numbers COMMAND ${BLITZLIB} numbers ${out}/acidlibs ${out}/deflibs ${objs})
 endif()
 # a variant of its own: its acidlibs, deflibs, the RWE userlibs (but the
 # replaced ones) and its libraries (its numbers include RWE_VARIANT's);
@@ -282,9 +282,9 @@ endif()
 # acidlibs/deflibs or the libraries they replace (must fail)
 foreach(v IN LISTS own_variants)
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
-	add_test(NAME rwe_numbers_${v} COMMAND ${BIGLIB} check ${vout}/acidlibs ${vout}/deflibs
+	add_test(NAME rwe_numbers_${v} COMMAND ${BLITZLIB} numbers ${vout}/acidlibs ${vout}/deflibs
 		${objs_${v}} ${own_${v}})
-	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BIGLIB} check ${out}/acidlibs
+	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BLITZLIB} numbers ${out}/acidlibs
 		${out}/deflibs ${replaced_${v}} ${own_${v}})
 	set_tests_properties(rwe_numbers_${v}_clash PROPERTIES WILL_FAIL TRUE)
 endforeach()

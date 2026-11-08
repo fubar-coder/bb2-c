@@ -1,5 +1,5 @@
 # libs_tests in Amiberry (bb2 libs-c/tools/amiga_test.py):
-#   cmake -DAMIGA_RUN=... -DBIGLIB=... -DPROGRAM=libs_tests -DLIBS=DIR
+#   cmake -DAMIGA_RUN=... -DBLITZLIB=... -DPROGRAM=libs_tests -DLIBS=DIR
 #         -DORIGINALS=acidlibs-of-the-CD -DWORK=DIR [-DTIMEOUT=SEC]
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
 #         [-DUSERLIBS=OBJ|ORIG;...] -P emulator.cmake
@@ -8,7 +8,7 @@
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
 # NAME.orig), e.g. the RWE userlibs.  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
-# NO_ORIGINALS: only the NAME.obj (BIGLIB and ORIGINALS not needed).
+# NO_ORIGINALS: only the NAME.obj (BLITZLIB and ORIGINALS not needed).
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
 # (log_illegal_mem, --log); for every line
 #   illegal-watch START END CODESTART CODEEND        (hex, from libs_tests)
@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 4.2.3)
 
 set(required AMIGA_RUN PROGRAM LIBS WORK)
 if(NOT NO_ORIGINALS)
-	list(APPEND required BIGLIB ORIGINALS)
+	list(APPEND required BLITZLIB ORIGINALS)
 endif()
 foreach(v IN LISTS required)
 	if(NOT ${v})
@@ -43,7 +43,7 @@ foreach(obj IN LISTS objs)
 	get_filename_component(name ${obj} NAME_WE)
 	file(COPY_FILE ${obj} ${test}/${name}.obj)
 	if(NOT NO_ORIGINALS)
-		execute_process(COMMAND ${BIGLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
+		execute_process(COMMAND ${BLITZLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
 			RESULT_VARIABLE rc)
 		if(rc)
 			message(FATAL_ERROR "libs_emulator: no original of ${name}")

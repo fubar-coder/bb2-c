@@ -1,7 +1,7 @@
 /*
- * blitzlibcheck - check Blitz Basic 2 library files (see blitzlib.h).
+ * blitzlib check - check Blitz Basic 2 library files (see blitzlib.h).
  *
- *   blitzlibcheck LIB.obj...
+ *   blitzlib check LIB.obj...
  *
  * Silent if everything is right; exit status 1 if a file is not a valid
  * library file.
@@ -9,21 +9,21 @@
 #include <stdio.h>
 #include <string.h>
 #include "blitzlib.h"
+#include "cmds.h"
 
-static const char usage[] =
-    "usage: blitzlibcheck LIB.obj...\n"
+const char cmd_check_usage[] =
+    "usage: blitzlib check LIB.obj...\n"
     "  check Blitz Basic 2 library files\n";
 
-int main(int argc, char **argv)
+static const char *me; /* "blitzlib check", the prefix of the messages */
+
+int cmd_check(int argc, char **argv)
 {
     int i, bad = 0;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc < 2) {
-        fputs(usage, stderr);
+        fputs(cmd_check_usage, stderr);
         return 2;
     }
     for (i = 1; i < argc; i++) {
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
         char err[200];
 
         if (load_read(argv[i], &lf, err, sizeof err)) {
-            fprintf(stderr, "blitzlibcheck: %s: %s\n", argv[i], err);
+            fprintf(stderr, "%s: %s: %s\n", me, argv[i], err);
             bad = 1;
             continue;
         }

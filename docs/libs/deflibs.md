@@ -99,11 +99,11 @@ deflibs library are not byte-identical with the C `deflibs`).
   `deflibs` is exactly the FFS hash order of the file names
   (`(len·13…+toupper(c)) & $7FF mod 72` increases monotonically: 0, 0, 4, 12, …, 71;
   `CrM.library1` fits its place with hash 26).
-* `tools/biglib join OUT LIB…` assembles the BigLib file.
+* `blitzlib join OUT LIB…` assembles the BigLib file.
 
 ## Checks
 
-* `tools/biglib.py compare` (bb2; here `tools/blitzlibcompare`, ctest `declarations_deflibs`) original against C, all 39 libraries:
+* `tools/biglib.py compare` (bb2; here `blitzlib compare`, ctest `declarations_deflibs`) original against C, all 39 libraries:
   **39/39 declarations identical** (header, all entries, relocs of the
   declaration part); order identical.
 * Emulator (bb2 `compilerlauf/tools/corpus_check.py --deflibs

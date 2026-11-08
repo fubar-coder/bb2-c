@@ -3,7 +3,7 @@
 State of the port of the "simple" command libraries from `acidlibs`
 (overview and test state: [bb2-readme.md](bb2-readme.md)). Source in each case
 `build/<preset>/bblibsrc/NAME` (detokenised from `bblibsrc`), reference the CD binary
-(`BLITZ2/ACIDLIBS`, `tools/biglib extract`). `BUG(orig)` = peculiarity of the original, deliberately
+(`BLITZ2/ACIDLIBS`, `blitzlib extract`). `BUG(orig)` = peculiarity of the original, deliberately
 carried over (for the comparison with AmiBlitz3).
 
 ## General

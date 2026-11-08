@@ -29,7 +29,7 @@ over. Documentation only; taken over so far (as fixed original bugs,
     `Sourcecodes/Amiblitz3/Tools/AB3FDConvert.ab3` (an `fdconvert.bb2`
     descendant), and `Docs/Miscellaneous/Changelog.guide`.
 * **Method:** every state extracted with `git show`; AB3's BigLib files
-  lack the end mark (long 0) that our `biglib`/`blitzlibcompare` want,
+  lack the end mark (long 0) that our `blitzlib` want,
   so a throw-away script listed for every OS call library (header starts
   with 4 zero bytes) the entries (name, help text, base library, LVO,
   registers) and the init/finit code. Libraries are matched by their

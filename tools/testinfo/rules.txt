@@ -47,7 +47,7 @@ tests/*/amiga/**                all
 # the @stat line of the runners, the output comparison of the ab3 and
 # inject tests - selects every emulator test; the tools only the coverage
 # scripts and the host tests use select the host tests; every other tool
-# makes or checks results in the build (biglib, blitzlibcheck, hunkcheck,
+# makes or checks results in the build (blitzlib, hunkcheck,
 # xtra, ab3tok, ...) and selects all tests
 tools/lib/amiga_emulation/**    label:emulator name:host/*
 tools/amiga_run/**              label:emulator name:host/*

@@ -43,14 +43,14 @@ add_custom_target(cmdref_update
 	COMMENT "Copying the generated command tables into site/data/libraries"
 	VERBATIM)
 add_test(NAME cmdref_complete COMMAND ${CMAKE_COMMAND} -DDIR=${CMDREF_SITE_DIR}
-	"-DLIBRARIES=${cmdref_libraries}" -P ${PROJECT_SOURCE_DIR}/tools/cmdref/complete.cmake)
+	"-DLIBRARIES=${cmdref_libraries}" -P ${PROJECT_SOURCE_DIR}/tools/blitzlib/cmdref-complete.cmake)
 list(SUBLIST cmdref_libraries 1 -1 cmdref_missing)
 add_test(NAME cmdref_complete_broken COMMAND ${CMAKE_COMMAND} -DDIR=${CMDREF_SITE_DIR}
-	"-DLIBRARIES=${cmdref_missing}" -P ${PROJECT_SOURCE_DIR}/tools/cmdref/complete.cmake)
+	"-DLIBRARIES=${cmdref_missing}" -P ${PROJECT_SOURCE_DIR}/tools/blitzlib/cmdref-complete.cmake)
 set_tests_properties(cmdref_complete_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "no library of the build")
 add_test(NAME cmdref_check_broken COMMAND ${CMAKE_COMMAND}
-	-DCMDREF=${CMDREF} -DLIB=${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj
+	-DBLITZLIB=${BLITZLIB} -DLIB=${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj
 	-DGROUP=acidlibs -DNAME=fadelib -DOUT=${CMAKE_CURRENT_BINARY_DIR}/cmdref_check_broken.json
 	-DCOMMITTED=${CMDREF_SITE_DIR}/acidlibs/trackerlib.json
 	-P ${CMDREF_CHECK})
@@ -69,7 +69,7 @@ foreach(group acidlibs deflibs)
 	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${group}/declarations-intended.txt)
 		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${group}/declarations-intended.txt)
 	endif()
-	add_test(NAME declarations_${group} COMMAND ${BLITZLIBCOMPARE}
+	add_test(NAME declarations_${group} COMMAND ${BLITZLIB} compare
 		${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/${orig}
 		${BLITZ2_DIR}/${group} ${intended})
 	set_tests_properties(declarations_${group} PROPERTIES SKIP_RETURN_CODE 77)
@@ -90,23 +90,23 @@ set_tests_properties(tokens_cd tokens_port PROPERTIES SKIP_RETURN_CODE 77)
 add_test(NAME tokens_broken COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_broken.txt
 	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs" ${tokens_check})
 set_tests_properties(tokens_broken PROPERTIES WILL_FAIL TRUE)
-# the check in the build (biglib check, biglib_join CHECK): a library number
+# the check in the build (blitzlib numbers, biglib_join CHECK): a library number
 # twice must fail - fadelib once more besides acidlibs
-add_test(NAME biglib_check_clash COMMAND ${BIGLIB} check ${BLITZ2_DIR}/acidlibs
+add_test(NAME biglib_check_clash COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/acidlibs
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
 set_tests_properties(biglib_check_clash PROPERTIES WILL_FAIL TRUE)
-# blitzlibcompare on single library files (the RWE userlibs against their
+# blitzlib compare on single library files (the RWE userlibs against their
 # originals): a file against itself, and two different libraries (must fail)
-add_test(NAME blitzlibcompare_single COMMAND ${BLITZLIBCOMPARE}
+add_test(NAME blitzlibcompare_single COMMAND ${BLITZLIB} compare
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
-add_test(NAME blitzlibcompare_single_differs COMMAND ${BLITZLIBCOMPARE}
+add_test(NAME blitzlibcompare_single_differs COMMAND ${BLITZLIB} compare
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/trackerlib.obj)
 set_tests_properties(blitzlibcompare_single_differs PROPERTIES WILL_FAIL TRUE)
 # the list of intended differences (declarations-intended.txt): an entry
 # that does not occur is a difference (must fail)
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/blitzlibcompare_stale.txt
 	"# a stale entry\nlib 65450: entry 0 Fade +$0C: $01 != $00\n")
-add_test(NAME blitzlibcompare_single_stale COMMAND ${BLITZLIBCOMPARE}
+add_test(NAME blitzlibcompare_single_stale COMMAND ${BLITZLIB} compare
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj
 	${CMAKE_CURRENT_BINARY_DIR}/blitzlibcompare_stale.txt)
 set_tests_properties(blitzlibcompare_single_stale PROPERTIES

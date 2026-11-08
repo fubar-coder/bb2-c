@@ -2,7 +2,7 @@
 # (site/data/libraries/GROUP/NAME.json) are exactly those of the libraries
 # the build checks (blitz_library CMDREF GROUP/NAME): no file without a
 # library, no library without a file.
-#   cmake -DDIR=site/data/libraries "-DLIBRARIES=GROUP/NAME;..." -P complete.cmake
+#   cmake -DDIR=site/data/libraries "-DLIBRARIES=GROUP/NAME;..." -P cmdref-complete.cmake
 cmake_minimum_required(VERSION 4.2.3)
 file(GLOB_RECURSE files RELATIVE ${DIR} ${DIR}/*)
 set(bad)

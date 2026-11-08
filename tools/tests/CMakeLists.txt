@@ -132,8 +132,8 @@ set_tests_properties(amiga_run_purge_two_owners PROPERTIES WILL_FAIL ON)
 # covsel's tests embed the rules of testinfo select (tools/testinfo/rules.txt)
 target_compile_definitions(test_covsel PRIVATE COVSEL_RULES="${CMAKE_CURRENT_SOURCE_DIR}/../testinfo/rules.txt")
 
-# cmdref on a file that is no library: an error, exit status 1
-add_test(NAME cmdref_not_a_library COMMAND cmdref -group acidlibs -name x
+# blitzlib cmdref on a file that is no library: an error, exit status 1
+add_test(NAME cmdref_not_a_library COMMAND blitzlib cmdref -group acidlibs -name x
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 set_tests_properties(cmdref_not_a_library PROPERTIES WILL_FAIL TRUE)
 

@@ -20,8 +20,8 @@ Two ways (see agreement):
 cmake --preset amiga && cmake --build --preset amiga
 #  -> build/amiga/libs/acidlibs/libNAME.a   static library (basis, later usable directly with ld)
 #  -> build/amiga/libs/acidlibs/NAME.obj    library file in BB2 format
-build/amiga/host/tools/biglib/biglib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS 64735 ldivlib.orig
-build/amiga/host/tools/blitzlibcompare/blitzlibcompare ldivlib.orig build/amiga/libs/acidlibs/ldivlib.obj
+build/amiga/host/tools/blitzlib/blitzlib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS 64735 ldivlib.orig
+build/amiga/host/tools/blitzlib/blitzlib compare ldivlib.orig build/amiga/libs/acidlibs/ldivlib.obj
 ctest --preset emulator -R libs_emulator          # Amiberry, see below
 ```
 
@@ -52,7 +52,7 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
   `BLITZ_ERROR_AREA`. References from normal code to there point, without
   debugger, behind the end of the code (the originals partly do that too, e.g.
   memlib err1 → mess1); until 27.10.2026 `mkblitzlib.py` warned about it, since then
-  nobody checks this automatically any more (here `tools/blitzlibcheck` warns again).
+  nobody checks this automatically any more (here `blitzlib check` warns again).
 * **Order in the error check area:** the GNU as of this toolchain does not know
   `.pushsection`/`.popsection`. `BLITZ_ERRCHK_THUNK` (likewise
   `BLITZ_ERRCHK_MESSAGE` and `BLITZ_ERRCHK_AB`) therefore switches with
@@ -107,7 +107,7 @@ BYTE). What only one library needs stays in its source.
 |---|---|---|
 | `tools/detok.py` | make tokenised BB2 sources (`bblibsrc`) readable | `programs/ted/tools/teddetok`, target `bblibsrc` |
 | `cmake -P tools/mklibnums.cmake` | generate `include/libnums.h` from the original `libnums.bb` (`LIB_ldivlib` = `#ldivlib`) | not taken over (`libs/include/libnums.h` is in git) |
-| `tools/biglib.py` | extract libs from BigLib files (`extract`), show them (`dump`), compare declarations (`compare`), replace (`replace`), reassemble (`join`) | `tools/biglib` (`extract`, `join`), `tools/blitzlibcompare` (compare) |
+| `tools/biglib.py` | extract libs from BigLib files (`extract`), show them (`dump`), compare declarations (`compare`), replace (`replace`), reassemble (`join`) | `blitzlib` (`extract`, `join`), `blitzlib compare` (compare) |
 | `tools/mkdeflibs.py` | one-time generator: `deflibs/NAME.c` from `cd/blitz2/deflibs` (see below, [deflibs.md](deflibs.md)) | not taken over |
 | `tools/srcdecl.py` | evaluate the declarations (libmacs macros) of a Blitz source on the host and compare them with a lib binary (`dump`/`compare`/`report`), see [cmdlibs-decl.md](cmdlibs-decl.md) | not taken over |
 | `tools/amiga_test.py` | `tests/libs_tests` (snitch) in Amiberry, optionally with a filter; serial, timeout 30 s | `libs/tests/emulator.cmake`, ctest `libs_emulator` |
@@ -121,7 +121,7 @@ configuration `A1200-AB3.uae`, 68020, drive `AB3C:`) and put the test files unde
 ## State: all 25 system libs
 
 All declaration parts are identical to the originals
-(`tools/blitzlibcompare`); all tests in the emulator pass. The tests
+(`blitzlib compare`); all tests in the emulator pass. The tests
 are a snitch program (`libs/tests/libs_tests`, same setup as ab3c);
 the test logic itself is C:
 
@@ -177,8 +177,8 @@ partial products via SWAP (visible only on overflow); division by 0 returns
 ## State: command libraries (acidlibs)
 
 The "simple" command libraries, ordered by size. Declarations
-with `tools/blitzlibcompare` against the CD binary
-(`biglib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS NUM NAME.orig`), function
+with `blitzlib compare` against the CD binary
+(`blitzlib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS NUM NAME.orig`), function
 checked twice:
 
 * **BASIC level:** test programs `tests/corpus/tests/` t09–t13, t20, t21, t30, t31
@@ -274,6 +274,6 @@ cmake --build --preset amiga --target deflibs   # -> build/amiga/blitz2/deflibs
 ctest --preset emulator -R corpus               # configuration clib with C deflibs
 ```
 
-All 39 declaration parts are identical to the original (`tools/blitzlibcompare`,
+All 39 declaration parts are identical to the original (`blitzlib compare`,
 ctest `declarations_deflibs`), and so is the order. Details and test results:
 [deflibs.md](deflibs.md).

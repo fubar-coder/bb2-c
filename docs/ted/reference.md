@@ -142,7 +142,7 @@ unit):
 * `libs/acidlibs/freqlib.c` – only the BlitzLib shell (`dofreq`/`freqchk`);
   `libs/acidlibs/filereq_env.h`: `blitzlib.h`, `blitzexec.h`,
   `fq_divu_w` = `bl_divu_w`. The declarations are identical to the original
-  (`tools/blitzlibcompare`, bb2: `biglib.py compare ref/freqlib.obj …`). With `struct fq_data` instead of the
+  (`blitzlib compare`, bb2: `biglib.py compare ref/freqlib.obj …`). With `struct fq_data` instead of the
   assembler block, the data block (bytes + relocs) has stayed the same,
   but the code is shorter: for GCC the byte array `fq_data[]` had
   alignment 1, every word/longword access was assembled from single bytes

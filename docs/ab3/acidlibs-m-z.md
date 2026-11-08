@@ -9,8 +9,8 @@ over. Documentation only; nothing here is taken over yet. Part a–l:
 ## Sources and method
 
 * **Baseline:** the CD's `BLITZ2/ACIDLIBS` (BigLib, 1995). Every library
-  was extracted with `biglib extract` (by the number of our `.obj`) and
-  compared with `blitzlibcompare`; our build has the same declarations,
+  was extracted with `blitzlib extract` (by the number of our `.obj`) and
+  compared with `blitzlib compare`; our build has the same declarations,
   so "BB2" below means both. For the code: `archive/aminet/amibl2src/
   bblibsrc/<lib>` (detokenised with a throw-away script), and the
   `BUG(orig)`/`DIFF` comments of our C files. Our issues: GitHub

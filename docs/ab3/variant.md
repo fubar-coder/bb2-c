@@ -989,8 +989,8 @@ of AB3 in the repository).
 `load_biglibsfile` stops at it too; the plan's "no end mark" was wrong.
 Joined in AB3's load order as `acidlibs` = base + util and `deflibs` =
 OS + cs, the end mark of the first file of each pair dropped. blitz2
-loads them unchanged. `biglib check`: no library number twice.
-`blitzlibcheck` (each library taken out): no errors, 51 warnings in 15
+loads them unchanged. `blitzlib numbers`: no library number twice.
+`blitzlib check` (each library taken out): no errors, 51 warnings in 15
 libraries, all "code refers into the error check area, dangling without
 debugger" (the class the CD's originals had). Token list
 (`blitztokens`): 4645 = 210 compiler + 4435 library tokens; 10 names

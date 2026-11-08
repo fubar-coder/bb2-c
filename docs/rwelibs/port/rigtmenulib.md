@@ -71,7 +71,7 @@ statechk2–4 and chkchk3–5 ("Illegal Menu / Menu Item / Menu Sub Item
 number", the existschk walk of menuslib). No assembler. The thunks
 follow all check functions: before, the check functions behind the
 first thunk landed in the normal code (`docs/libs/deviations.md`,
-section 6; the three `blitzlibcheck` warnings of rigtmenulib).
+section 6; the three `blitzlib check` warnings of rigtmenulib).
 
 ## BUG(orig), kept
 

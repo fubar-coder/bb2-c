@@ -1,23 +1,27 @@
 /*
- * biglib - join Blitz Basic 2 library files into one BigLib file
- * (blitz2:acidlibs, blitz2:deflibs; format: lib/biglib/biglib.h), or take
- * one out of it.
+ * blitzlib join, extract, numbers - join Blitz Basic 2 library files into
+ * one BigLib file (blitz2:acidlibs, blitz2:deflibs; format:
+ * lib/biglib/biglib.h), take one out of it, check the library numbers.
  *
- *   biglib join OUT LIB.obj...
- *   biglib extract BIGLIB NUMBER|LIB.obj OUT
- *   biglib check FILE...
+ *   blitzlib join OUT LIB.obj...
+ *   blitzlib extract BIGLIB NUMBER|LIB.obj OUT
+ *   blitzlib numbers FILE...
  *
  * join: every input must be a well-formed AmigaDOS load file (lib/hunk).
  * extract: the library with that number (or the number of LIB.obj, e.g.
  * the original of a library built here) as a file of its own.
- * check: no two libraries of the FILEs (BigLib or library files, e.g.
+ * numbers: no two libraries of the FILEs (BigLib or library files, e.g.
  * acidlibs, deflibs and the userlibs of a variant) with the same number;
  * exit status 1 with both named if there are.
  */
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "biglib.h"
 #include "hunk.h"
+#include "cmds.h"
+
+static const char *me; /* "blitzlib SUB", the prefix of the messages */
 
 static int join(const char *out, int n, char **files)
 {
@@ -27,14 +31,14 @@ static int join(const char *out, int n, char **files)
     int i, rc = 1;
 
     if (!lf || !e) {
-        fprintf(stderr, "biglib: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         goto done;
     }
     for (i = 0; i < n; i++) {
         char err[200];
 
         if (load_read(files[i], &lf[i], err, sizeof err)) {
-            fprintf(stderr, "biglib: %s: %s\n", files[i], err);
+            fprintf(stderr, "%s: %s: %s\n", me, files[i], err);
             goto done;
         }
         e[i].data = lf[i].data;
@@ -42,17 +46,17 @@ static int join(const char *out, int n, char **files)
     }
     f = fopen(out, "wb");
     if (!f) {
-        perror(out);
+        fprintf(stderr, "%s: %s: %s\n", me, out, strerror(errno));
         goto done;
     }
     if (biglib_write(f, e, (size_t)n)) {
-        perror(out);
+        fprintf(stderr, "%s: %s: %s\n", me, out, strerror(errno));
         fclose(f);
         remove(out);
         goto done;
     }
     if (fclose(f)) {
-        perror(out);
+        fprintf(stderr, "%s: %s: %s\n", me, out, strerror(errno));
         remove(out);
         goto done;
     }
@@ -98,27 +102,27 @@ static int extract(const char *big, const char *which, const char *out)
     FILE *f;
 
     if (!buf || biglib_read(buf, size, &e, &n, err, sizeof err)) {
-        fprintf(stderr, "biglib: %s: %s\n", big, buf ? err : "cannot read");
+        fprintf(stderr, "%s: %s: %s\n", me, big, buf ? err : "cannot read");
         goto done;
     }
     if (!*which || *end) {              /* not a number: a library file */
         if (!(lib = read_all(which, &len)) || biglib_number(lib, len, &num)) {
-            fprintf(stderr, "biglib: %s: no library file\n", which);
+            fprintf(stderr, "%s: %s: no library file\n", me, which);
             goto done;
         }
     }
     if ((i = biglib_find(e, n, num)) < 0) {
-        fprintf(stderr, "biglib: %s: no library %u\n", big, num & 0xFFFF);
+        fprintf(stderr, "%s: %s: no library %u\n", me, big, num & 0xFFFF);
         goto done;
     }
     if (!(f = fopen(out, "wb")) || fwrite(e[i].data, 1, e[i].size, f) != e[i].size) {
-        perror(out);
+        fprintf(stderr, "%s: %s: %s\n", me, out, strerror(errno));
         if (f)
             fclose(f);
         goto done;
     }
     if (fclose(f)) {
-        perror(out);
+        fprintf(stderr, "%s: %s: %s\n", me, out, strerror(errno));
         goto done;
     }
     rc = 0;
@@ -162,7 +166,7 @@ static int check(int n, char **files)
         size_t size;
 
         if (!(bufs[i] = read_all(files[i], &size))) {
-            fprintf(stderr, "biglib: %s: cannot read\n", files[i]);
+            fprintf(stderr, "%s: %s: cannot read\n", me, files[i]);
             goto done;
         }
         if (size >= 4 && be32(bufs[i]) == HUNK_HEADER) {      /* one library */
@@ -172,7 +176,7 @@ static int check(int n, char **files)
             e->size = (uint32_t)size;
             ne = 1;
         } else if (biglib_read(bufs[i], size, &e, &ne, err, sizeof err)) {
-            fprintf(stderr, "biglib: %s: %s\n", files[i], err);
+            fprintf(stderr, "%s: %s: %s\n", me, files[i], err);
             goto done;
         }
         if (!grow(&all, &from, &index, nall + ne)) {
@@ -190,14 +194,14 @@ static int check(int n, char **files)
         unsigned num = 0;
 
         biglib_number(all[c].data, all[c].size, &num);
-        fprintf(stderr, "biglib: library number %u twice: %s (library %d) and %s (library %d)\n",
+        fprintf(stderr, "%s: library number %u twice: %s (library %d) and %s (library %d)\n", me,
                 num, files[from[earlier]], index[earlier], files[from[c]], index[c]);
         goto done;
     }
     rc = 0;
     goto done;
 nomem:
-    fprintf(stderr, "biglib: out of memory\n");
+    fprintf(stderr, "%s: out of memory\n", me);
 done:
     for (i = 0; bufs && i < n; i++)
         free(bufs[i]);
@@ -208,25 +212,43 @@ done:
     return rc;
 }
 
-static const char usage[] =
-    "usage: biglib join OUT LIB.obj...\n"
-    "       biglib extract BIGLIB NUMBER|LIB.obj OUT\n"
-    "       biglib check FILE...\n"
-    "  join Blitz Basic 2 library files into one BigLib file, or take one out;\n"
-    "  check: no library number twice in the FILEs (BigLib or library files)\n";
+const char cmd_join_usage[] =
+    "usage: blitzlib join OUT LIB.obj...\n"
+    "  join Blitz Basic 2 library files into one BigLib file\n";
+const char cmd_extract_usage[] =
+    "usage: blitzlib extract BIGLIB NUMBER|LIB.obj OUT\n"
+    "  take the library with that number (or the number of LIB.obj) out of a\n"
+    "  BigLib file\n";
+const char cmd_numbers_usage[] =
+    "usage: blitzlib numbers FILE...\n"
+    "  no library number twice in the FILEs (BigLib or library files)\n";
 
-int main(int argc, char **argv)
+int cmd_join(int argc, char **argv)
 {
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
+    me = argv[0];
+    if (argc < 2) {
+        fputs(cmd_join_usage, stderr);
+        return 2;
     }
-    if (argc >= 3 && !strcmp(argv[1], "join"))
-        return join(argv[2], argc - 3, argv + 3);
-    if (argc == 5 && !strcmp(argv[1], "extract"))
-        return extract(argv[2], argv[3], argv[4]);
-    if (argc >= 3 && !strcmp(argv[1], "check"))
-        return check(argc - 2, argv + 2);
-    fputs(usage, stderr);
-    return 2;
+    return join(argv[1], argc - 2, argv + 2);
+}
+
+int cmd_extract(int argc, char **argv)
+{
+    me = argv[0];
+    if (argc != 4) {
+        fputs(cmd_extract_usage, stderr);
+        return 2;
+    }
+    return extract(argv[1], argv[2], argv[3]);
+}
+
+int cmd_numbers(int argc, char **argv)
+{
+    me = argv[0];
+    if (argc < 2) {
+        fputs(cmd_numbers_usage, stderr);
+        return 2;
+    }
+    return check(argc - 1, argv + 1);
 }

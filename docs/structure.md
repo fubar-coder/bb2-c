@@ -38,7 +38,7 @@ Doxyfile                     the API reference (Doxygen, Pages workflow;
                              docs/development.md)
 site/                        the website (Hugo, site/README.md); data/
                              libraries/: the command tables of the
-                             libraries (tools/cmdref, checked by the build)
+                             libraries (blitzlib cmdref, checked by the build)
 shared/tokenizer/            source text to tokenised lines with a rule
                              set (AmiBlitz3's), the ends of AmiBlitz3's
                              embedded headers, its 250-character lines
@@ -98,15 +98,15 @@ tools/                       host tools:
                              cmdref (the command table of a library file
                              as JSON, the website's command reference);
                              blitzlib also compares declarations
-  biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
-  blitzlibcompare/,
+  blitzlib/,                 the tools: main.c around lib/ (a program
+                             with subcommands: its table, cmd_NAME.c)
   blitztokens/
   hunkcheck/, amiga_run/,
   refcheck/,
   mktestdata/, bb22/, blitzres/,
   bblines/, bbdetok/, xtra/,
   testinfo/, results/,
-  ab3tok/, hdftool/, cmdref/
+  ab3tok/, hdftool/
   bbdetok/archive_text.cmake the target archive_text: archive/sources/
                              as text (build/<preset>/archive-text/)
   tests/                     tests of lib/ with inputs from memory

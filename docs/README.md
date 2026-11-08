@@ -47,7 +47,7 @@ line.** Paths, commands and line references have since been adapted to
 this repository: paths point to the files here, line references into
 the C code (`file.c:NNN`) were determined anew by content, commands and
 tools of bb2 are replaced by their counterparts here (e.g.
-`tools/refcheck`, `tools/blitzlibcompare`, `tests/ted-ab/`, ctest names).
+`tools/refcheck`, `blitzlib compare`, `tests/ted-ab/`, ctest names).
 Line references into the originals (`blitz2.s:NNN`, `ted.s:NNN`, library
 sources) are unchanged; the originals are the same files. The line
 structure of the files is mostly that of bb2.

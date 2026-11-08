@@ -4,7 +4,7 @@ Reflective Images. A Protracker module player: the Protracker 2.3A play
 routine of Peter "Crayon" Hanning / Mushroom Studios (released as Public
 Domain; the decision to port it: `archive/README.md`) with RI's commands
 around it. Not the acidlibs `trackerlib` (96, NoiseTracker, Module
-objects): no command names in common (checked by `rwe_numbers`/biglib).
+objects): no command names in common (checked by `rwe_numbers`/`blitzlib numbers`).
 
 * `TrackInit address` – the module in memory (31 samples, `M.K.`):
   `mt_init` (pattern count, sample starts, speed 6, position 0, filter

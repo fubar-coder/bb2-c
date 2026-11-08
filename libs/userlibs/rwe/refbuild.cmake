@@ -273,7 +273,7 @@ list(GET l 0 name)
 list(GET l 2 reference)
 rwe_reference(${name} ${reference} file fixture)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
-	add_test(NAME rwe_refbuild_selftest COMMAND ${BLITZLIBCOMPARE} ${file}
+	add_test(NAME rwe_refbuild_selftest COMMAND ${BLITZLIB} compare ${file}
 		${out}/userlibs/rwe/${name}.obj)
 	set_tests_properties(rwe_refbuild_selftest PROPERTIES LABELS emulator
 		SKIP_RETURN_CODE 77 FIXTURES_REQUIRED ${fixture})

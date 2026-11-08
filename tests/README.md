@@ -65,7 +65,7 @@ selects the tests then. `host`, `emulator` and `all` leave them out.
 The tools with deliberately broken inputs, the host tests of
 the TED core (compiled natively, snitch), the declaration comparison (`declarations_*`: header,
 entries, `!libfin` of every built library against the original of the
-CD, same libraries in the same order; `tools/blitzlibcompare`; the
+CD, same libraries in the same order; `blitzlib compare`; the
 intended differences of fixed original bugs are listed in
 `libs/GROUP/declarations-intended.txt`, each of them must occur; the
 same for an RWE userlib, `rwe_declarations_NAME`, with
@@ -1007,7 +1007,7 @@ rules for what a change of a file selects are in
   (`results` also `prev_results`);
 * the tools only the host tests and the coverage scripts use
   (`testinfo`): the host tests; every other tool makes or
-  checks results of the build (`biglib`, `blitzlibcheck`, `hunkcheck`,
+  checks results of the build (`blitzlib`, `hunkcheck`,
   `xtra`, `ab3tok`, ...): all tests;
 * `libs/`: the emulator tests and the checks of the libraries;
 * documentation: no test;

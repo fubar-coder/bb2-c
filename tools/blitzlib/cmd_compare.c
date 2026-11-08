@@ -1,8 +1,8 @@
 /*
- * blitzlibcompare - the declarations of every library of a BigLib file
+ * blitzlib compare - the declarations of every library of a BigLib file
  * against the original (blitzlib_compare, see blitzlib.h).
  *
- *   blitzlibcompare ORIGINAL NEW [INTENDED]
+ *   blitzlib compare ORIGINAL NEW [INTENDED]
  *                              e.g. CD BLITZ2/DEFLIBS and deflibs
  *
  * ORIGINAL and NEW may also be single library files (a userlib against
@@ -23,6 +23,9 @@
 #include <unistd.h>
 #include "biglib.h"
 #include "blitzlib.h"
+#include "cmds.h"
+
+static const char *me; /* "blitzlib compare", the prefix of the messages */
 
 struct biglibfile {
     uint8_t *buf;
@@ -43,7 +46,7 @@ static int read_biglib(const char *path, struct biglibfile *b)
     b->lf = NULL;
     if (!f || fseek(f, 0, SEEK_END) || (size = ftell(f)) < 0 || fseek(f, 0, SEEK_SET)
         || !(b->buf = malloc((size_t)size + 1)) || fread(b->buf, 1, (size_t)size, f) != (size_t)size) {
-        fprintf(stderr, "blitzlibcompare: cannot read %s\n", path);
+        fprintf(stderr, "%s: cannot read %s\n", me, path);
         if (f)
             fclose(f);
         return -1;
@@ -56,7 +59,7 @@ static int read_biglib(const char *path, struct biglibfile *b)
         b->e->size = (uint32_t)size;
         b->n = 1;
     } else if (biglib_read(b->buf, (size_t)size, &b->e, &b->n, err, sizeof err)) {
-        fprintf(stderr, "blitzlibcompare: %s: %s\n", path, err);
+        fprintf(stderr, "%s: %s: %s\n", me, path, err);
         return -1;
     }
     if (!(b->lf = calloc(b->n ? b->n : 1, sizeof *b->lf)))
@@ -64,7 +67,7 @@ static int read_biglib(const char *path, struct biglibfile *b)
     for (i = 0; i < b->n; i++)
         if (load_parse(b->e[i].data, b->e[i].size, &b->lf[i], err, sizeof err)
             || b->lf[i].nhunks < 1 || b->lf[i].hunks[0].size < 6) {
-            fprintf(stderr, "blitzlibcompare: %s: library %zu: %s\n", path, i + 1,
+            fprintf(stderr, "%s: %s: library %zu: %s\n", me, path, i + 1,
                     b->lf[i].nhunks < 1 ? "no hunk" : err);
             return -1;
         }
@@ -87,8 +90,8 @@ static void free_biglib(struct biglibfile *b)
     free(b->buf);
 }
 
-static const char usage[] =
-    "usage: blitzlibcompare ORIGINAL NEW [INTENDED]\n"
+const char cmd_compare_usage[] =
+    "usage: blitzlib compare ORIGINAL NEW [INTENDED]\n"
     "  the declarations of every library of a BigLib file (or of a library\n"
     "  file) against the original; INTENDED: the intended differences, one\n"
     "  message line per line (# comments), each of them must occur\n";
@@ -105,7 +108,7 @@ static long read_intended(const char *path, const char **lines, char **text)
     *text = NULL;
     if (!f || fseek(f, 0, SEEK_END) || (size = ftell(f)) < 0 || fseek(f, 0, SEEK_SET)
         || !(*text = malloc((size_t)size + 1)) || fread(*text, 1, (size_t)size, f) != (size_t)size) {
-        fprintf(stderr, "blitzlibcompare: cannot read %s\n", path);
+        fprintf(stderr, "%s: cannot read %s\n", me, path);
         if (f)
             fclose(f);
         return -1;
@@ -114,7 +117,7 @@ static long read_intended(const char *path, const char **lines, char **text)
     (*text)[size] = 0;
     n = blitzlib_intended_list(*text, lines, MAXINTENDED);
     if (n < 0)
-        fprintf(stderr, "blitzlibcompare: %s: more than %d lines\n", path, MAXINTENDED);
+        fprintf(stderr, "%s: %s: more than %d lines\n", me, path, MAXINTENDED);
     return n;
 }
 
@@ -134,7 +137,7 @@ static char *read_back(FILE *f)
     return t;
 }
 
-int main(int argc, char **argv)
+int cmd_compare(int argc, char **argv)
 {
     struct biglibfile a, b;
     size_t i, n;
@@ -143,16 +146,13 @@ int main(int argc, char **argv)
     unsigned char seen[MAXINTENDED] = { 0 };
     char *intendedtext = NULL;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc != 3 && argc != 4) {
-        fputs(usage, stderr);
+        fputs(cmd_compare_usage, stderr);
         return 2;
     }
     if (access(argv[1], F_OK)) {
-        printf("blitzlibcompare: no %s - skipped (fetch-originals)\n", argv[1]);
+        printf("%s: no %s - skipped (fetch-originals)\n", me, argv[1]);
         return 77;
     }
     if (argc == 4 && (nintended = read_intended(argv[3], intended, &intendedtext)) < 0)
@@ -177,14 +177,14 @@ int main(int argc, char **argv)
         }
         snprintf(name, sizeof name, "lib %u", libnum(&a.lf[i]));
         if (!(f = tmpfile())) {
-            fprintf(stderr, "blitzlibcompare: no temporary file\n");
+            fprintf(stderr, "%s: no temporary file\n", me);
             return 1;
         }
         d = blitzlib_compare(&a.lf[i].hunks[0], &b.lf[i].hunks[0], name, f);
         msgs = read_back(f);
         fclose(f);
         if (!msgs) {
-            fprintf(stderr, "blitzlibcompare: cannot read the messages back\n");
+            fprintf(stderr, "%s: cannot read the messages back\n", me);
             return 1;
         }
         if (d < 0) {
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
         free(msgs);
     }
     diffs += blitzlib_intended_stale(intended, (size_t)nintended, seen, stdout);
-    printf("blitzlibcompare: %zu libraries, %ld differences in the declarations\n", n, diffs);
+    printf("%s: %zu libraries, %ld differences in the declarations\n", me, n, diffs);
     free_biglib(&a);
     free_biglib(&b);
     free(intendedtext);
