@@ -47,7 +47,7 @@ this layout (big endian):
 | 0 (`$000`) | 1 | `vers`: 0 = old (without CLI block), 1 = with CLI block. `savextra` always writes 1. |
 | 1 (`$001`) | 1 | Executables with icon (low byte of the gadget flags, `$80` = on) |
 | 2 (`$002`) | 14 × 2 | Switches, each the gadget flags (`$0080` = GFLG_SELECTED = on, `$0000` = off), in this order: |
-| | | +2 Runtime Errors (error debugger), +4 Debugger, +6 Long Arrays, +8 Expand Macros, +10 Quoted Macros, +12 Make Smallest Code, +14 Debug Info for executables, +16 Auto Run, +18 Interrupt Checking, +20 Assembler Checking, +22 Overflow Checking, +24 `optreq2ga5` (meaning open, always `$80`), +26 default Interrupt Checking, +28 default Overflow Checking |
+| | | +2 Runtime Errors (error debugger), +4 Debugger, +6 Long Arrays, +8 Expand Macros, +10 Quoted Macros, +12 Make Smallest Code, +14 Debug Info for executables, +16 Auto Run, +18 Interrupt Checking, +20 Assembler Checking, +22 Overflow Checking, +24 Warnings (blitz2 C port: `$0080` on, `$0000` off, `$0180` errors, read by bits - bit 7 clear is off; the original kept the hidden gadget `optreq2ga5` there, always `$80` in the CD files), +26 default Interrupt Checking, +28 default Overflow Checking |
 | 30 (`$01E`) | 6 × 4 | Buffer sizes in bytes: Object, Libs, System, Data, Macro, String (long). Defaults in `options.src`: 16384, 16384/32768, 4096, 4096, 8192, 10240 |
 | 54 (`$036`) | 8 × 68 | Residents: each 64 bytes path (0-terminated) and 4 bytes pointer (runtime value, cleared on load: `clr.l 64(a0)`) |
 | 598 (`$256`) | 192 | Path of the executable (0-terminated) |
@@ -213,7 +213,7 @@ extensions); no product links it yet. Design of 2026-10-30 (rework):
 * **Defaults** (`xtra_init`): the initial flags of the option gadgets and
   the `LongInt` of the buffer gadgets (`options.src`, C port
   `programs/blitz2/src/data.c`): icon, Runtime Errors, Debugger, Long
-  Arrays, Expand Macros, Auto Run, Interrupt Checking, `optreq2ga5` and
+  Arrays, Expand Macros, Auto Run, Interrupt Checking, Warnings (+24) and
   both defaults on; buffers 16384, 32768, 4096, 4096, 8192, 10240; vers 1;
   AmiBlitz3's own numbers as its `ParseAB3Header` sets them (stack 32768).
 * **AmiBlitz3's binary `.xtra`** (15 switch words since `bdae3f9e`,
@@ -628,7 +628,7 @@ follows directly after `; /XTRA`.
 | `Max NAME` | number | the library's | `max`: the lines (iterator, `XTRA_MAX_NAME`) | pairs, by library **number** |
 
 The switches the header does not have (Debugger, Long Arrays, Expand and
-Quoted Macros, `optreq2ga5`, the two defaults) and the buffers other than
+Quoted Macros, Warnings (+24), the two defaults) and the buffers other than
 the string buffer keep Blitz 2's defaults in `struct xtra` (AmiBlitz3
 itself clears the obsolete words and takes its own buffer defaults:
 object 16384, libs 32768, system/data 4096, macro 40000).
@@ -747,8 +747,7 @@ Stricter where AmiBlitz3 guesses, so that broken headers are reported:
    08.01.2026). Blitz 2.1, AmiBlitz 2 and older AB3 write 14. This
    shifts everything from offset 30 on by 2 bytes; resident names are also
    truncated. Check in Amiberry and record as an issue in chapter 11.
-2. Meaning of `optreq2ga5` (offset 24, always `$80`) and of the
-   buffer values 0 or unusually small buffer values.
+2. Meaning of buffer values 0 or unusually small buffer values.
 3. String umlauts: that Blitz 2.1 converts `$1A`–`$1F` in string literals via
    `getchar3`/`gs` to Latin-1 is in the source of v1.95; the
    table is also in the 2.10 binary. Whether compiling strings really

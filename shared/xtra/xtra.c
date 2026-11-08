@@ -142,7 +142,7 @@ void xtra_init(struct xtra *x)
     x->sw[XTRA_SW_EXPAND_MACROS] = XTRA_ON;
     x->sw[XTRA_SW_AUTO_RUN] = XTRA_ON;
     x->sw[XTRA_SW_INTERRUPT_CHECK] = XTRA_ON;
-    x->sw[XTRA_SW_OPTREQ2GA5] = XTRA_ON;
+    x->sw[XTRA_SW_WARNINGS] = XTRA_ON;         /* warnings on */
     x->sw[XTRA_SW_DEFAULT_INTERRUPT] = XTRA_ON;
     x->sw[XTRA_SW_DEFAULT_OVERFLOW] = XTRA_ON;
     /* the LongInt of optreqsg1..6 */

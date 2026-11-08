@@ -4,7 +4,7 @@
  * on AmiBlitz3's CLI mode, and the job blitz2-ab3 hands to its headless
  * editor ab3cli.
  *
- *   blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
+ *   blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
  *
  * blitz2-ab3 parses its arguments with ab3args_parse, decides the mode of
  * the source, loads PROGDIR:ab3cli instead of blitz2:ted and calls its main
@@ -40,10 +40,28 @@ enum ab3job_rc {
 };
 
 /**
+ * @brief The compiler's warnings (change compiler-warnings, design D1):
+ *        their numbers, bit n of a warning set.  The compiler core has the
+ *        same numbers in parse.h (W_*); ab3main.c checks that they agree.
+ */
+enum ab3job_warning {
+    AB3JOB_W_RESCLASH,          /* a constant of the residents with two
+                                   values (stmts.c checkconstclash) */
+    AB3JOB_W_COUNT
+};
+/** @brief The set of all warnings. */
+#define AB3JOB_W_ALL ((uint32_t)((1UL << AB3JOB_W_COUNT) - 1))
+
+/** @brief The names of the warnings by number (-w, -werr and the console
+ *         line), AB3JOB_W_COUNT entries and a NULL. */
+extern const char *const ab3args_warnings[];
+
+/**
  * @brief The job of a command line run.
  *
- * Filled by ab3args_parse (force, release_exe, source, exe), by blitz2-ab3
- * (mode, the error's place) and by ab3cli (started, result, tokfile).
+ * Filled by ab3args_parse (force, release_exe, source, exe, the warning
+ * lists), by blitz2-ab3 (mode, the error's place, warnerrs) and by ab3cli
+ * (started, result, tokfile).
  */
 struct ab3job {
     char magic[8];              /* AB3JOB_MAGIC with its 0 */
@@ -76,6 +94,16 @@ struct ab3job {
     uint8_t pad2[3];
     uint32_t errline;
     char errfile[AB3JOB_PATHLEN];
+    /* -w and -werr (design D4): the lists, left to right, as changes of
+       the source's setting: set = (set & keep) | add, for the enabled
+       warnings (warn_*) and the ones that are errors (werr_*); without
+       the option keep = AB3JOB_W_ALL, add = 0 */
+    uint32_t warn_keep, warn_add;
+    uint32_t werr_keep, werr_add;
+    /* the warnings that became errors (blitz2-ab3, ext_warning): ab3cli
+       ends with AB3JOB_RC_ERROR when they were all its set-up errors */
+    uint8_t warnerrs;
+    uint8_t pad3[3];
 };
 
 /** @brief What ab3args_parse found. */
@@ -98,12 +126,15 @@ extern const char ab3args_usage[];
  * argv[1..argc) as libnix (or a shell) splits them.  Without an argument
  * that starts with '-' the result is AB3ARGS_EDITOR (blitz2's start with
  * at most a project name).  Options, in any case, AmiBlitz3's spelling:
- * -s/-source FILE, -e/-exe FILE, -r/-release, -mode ab3|bb2 (this
- * repository's), -h/-help.  The other options of AmiBlitz3's CLI mode
+ * -s/-source FILE, -e/-exe FILE, -r/-release, -mode ab3|bb2 and
+ * -w/-werr LIST (this repository's), -h/-help.  A LIST is comma-separated
+ * items all, none, NAME, -NAME (ab3args_warnings), applied left to right;
+ * several -w (-werr) are applied in order.  The other options of AmiBlitz3's CLI mode
  * (-d/-debug, -run, -dump, -setcom, -setdbg, -strbufsize, -stacksize,
  * -maxerrors, -1/-1pass, -dform, -PED, -save, -v/-verbose) are refused.
  * The first problem decides; -h before it gives AB3ARGS_HELP.  Given
- * twice, the last value counts.
+ * twice, the last value counts (the lists: both are applied).  An unknown
+ * warning name or an empty item is AB3ARGS_FAIL.
  *
  * @param argc  the number of arguments with the program's name
  * @param argv  the arguments; argv[0] is the program's name

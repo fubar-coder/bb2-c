@@ -1326,13 +1326,19 @@ void runerropts(void)
     save[1] = optreq2ga2.Flags;
     save[2] = optreq2ga3.Flags;
     save[3] = optreq2ga4.Flags;
-    save[4] = optreq2ga5.Flags;
+    save[4] = warnopt;                  /* the asm: optreq2ga5.Flags */
     save[5] = optreq2ga6.Flags;
     save[6] = optreq2ga7.Flags;
+    warnopt_text();
     ed_openreq(&optreq2);
     for (;;) {
         if (!ed_getinput(&id))          /* getinput */
             continue;
+        if (id == 5) {                  /* the warnings button: step it */
+            warnopt_step();
+            ed_refgads(&optreq2ga5, 1);
+            continue;
+        }
         if ((UWORD)id < 8)
             continue;
         break;
@@ -1342,7 +1348,7 @@ void runerropts(void)
     /* cancel */
     optreq2ga7.Flags = save[6];
     optreq2ga6.Flags = save[5];
-    optreq2ga5.Flags = save[4];
+    warnopt = save[4];
     optreq2ga4.Flags = save[3];
     optreq2ga3.Flags = save[2];
     optreq2ga2.Flags = save[1];

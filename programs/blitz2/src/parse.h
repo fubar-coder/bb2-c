@@ -78,6 +78,26 @@ NORETURN void err(const char *msg);
 #define comperror err
 extern jmp_buf *errjmp;
 extern const char *errmsg;
+
+/* Warnings (change compiler-warnings, design D1/D2).  Every warning has a
+   number, bit n of a warning set; the names are those of shared/ab3job
+   (ab3job.h AB3JOB_W_*, the same numbers: ab3main.c checks them). */
+#define W_RESCLASH 0                    /* "resclash": a constant of the
+                                           residents with two values */
+#define W_COUNT    1
+#define W_ALL      ((1UL << W_COUNT) - 1)
+
+/* The enabled warnings and the warnings that are errors now: the
+   editor's setting (warnopt, data.h), changed by ext_warnsets (the
+   command line); a disabled warning is never an error. */
+void warnsets(ULONG *enabled, ULONG *errors);
+
+/* Warning w with the text msg (detail or NULL: more for the console).
+   Silent in direct mode and when w is disabled; an error if w is one
+   (err(msg): does not return); else shown - on the console of a command
+   line run (ext_warning), otherwise the editor's requester with
+   "Warning: msg" - and returns. */
+void warn(UWORD w, const char *msg, const char *detail);
 extern WORD ezerr;          /* 7636 !=0: simple error, skip compile cleanup */
 
 /* blitz2.s:7360/7361 asmerr2/asmerr - NOT errors: linenumat = asm line of

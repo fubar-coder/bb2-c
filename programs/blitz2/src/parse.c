@@ -568,6 +568,36 @@ void err(const char *msg)
     longjmp(*errjmp, 1);                    /* a7 = errstack, jmp (errcont) */
 }
 
+/* warnings (parse.h; change compiler-warnings, design D1/D2) */
+void warnsets(ULONG *enabled, ULONG *errors)
+{
+    *enabled = (warnopt & WARNOPT_ON) ? W_ALL : 0;
+    *errors = (warnopt & WARNOPT_ERRORS) == WARNOPT_ERRORS ? W_ALL : 0;
+    ext_warnsets(enabled, errors);
+    *errors &= *enabled;
+}
+
+void warn(UWORD w, const char *msg, const char *detail)
+{
+    static char text[96];               /* "Warning: " msg */
+    ULONG enabled, errors;
+
+    if (dirmode)
+        return;
+    warnsets(&enabled, &errors);
+    if (!(enabled & (1UL << w)))
+        return;
+    if (errors & (1UL << w)) {
+        ext_warning(w, msg, detail, TRUE);
+        err(msg);
+    }
+    if (ext_warning(w, msg, detail, FALSE))
+        return;
+    strcpy(text, "Warning: ");
+    strncat(text, msg, sizeof text - 10);
+    ed_error(text);
+}
+
 /* blitz2.s:7360 asmerr2 / 7361 asmerr - linenumat = 12(a2).w */
 void asmerr2(void)
 {

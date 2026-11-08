@@ -216,8 +216,9 @@ extern struct Requester typereq;        /* typereq */
  *   optreqga15 SELECTED: make smallest code
  *   optreqga16 SELECTED: create debug info for executables
  *   optreq2ga1 auto run, ga2 interrupt checking, ga3 assembler checking,
- *   ga4 overflow checking, ga5..7 hidden old layout (ga6 old interrupt,
- *   ga7 old overflow).
+ *   ga4 overflow checking, ga5 the warnings button (its setting is
+ *   warnopt, below), ga6..7 hidden old layout (ga6 old interrupt, ga7 old
+ *   overflow).
  * Test: optreqga15.Flags & GFLG_SELECTED  (asm: btst #7,optreqga15+13). */
 extern struct Requester optreq, optreq2;
 extern struct Gadget optreqga1, optreqga2, optreqga3, optreqga4, optreqga5,
@@ -228,6 +229,22 @@ extern struct Gadget optreqga1, optreqga2, optreqga3, optreqga4, optreqga5,
     optreqga27, optreqga28;
 extern struct Gadget optreq2ga1, optreq2ga2, optreq2ga3, optreq2ga4,
     optreq2ga5, optreq2ga6, optreq2ga7, optreq2ga8, optreq2ga9;
+
+/* The warnings setting of the second options requester (change
+ * compiler-warnings, design D5): the word at .xtra +24, where the hidden
+ * optreq2ga5's Flags were saved.  Read by bits: bit 7 (WARNOPT_ON) clear -
+ * off; bit 7 and bit 8 (WARNOPT_ERRORS) - errors; else on.  $0080, the
+ * word in every old .xtra, is on.  Kept as loaded until the user changes
+ * it (then one of the three values), so an untouched .xtra is saved
+ * byte-identical. */
+#define WARNOPT_OFF    0x0000
+#define WARNOPT_ON     0x0080
+#define WARNOPT_ERRORS 0x0180
+extern UWORD warnopt;
+/* runerropts: the button's text for warnopt (before the requester opens) */
+void warnopt_text(void);
+/* runerropts: the button was hit: off -> on -> errors -> off */
+void warnopt_step(void);
 
 /* Buffer sizes = LongInt of the integer gadgets optreqga1..6 (options.src
    labels maxpc..stringwork are the StringInfo LongInt fields). */

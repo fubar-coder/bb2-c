@@ -18,6 +18,9 @@
  *                   bytes (bytes 46-49 of the .xtra; default 8192)
  *   objbuf=N        in those defaults the size of the object buffer N
  *                   bytes (bytes 30-33 of the .xtra; default 16384)
+ *   warnings=off|on|errors  in those defaults the warnings setting (the
+ *                   word at byte 24 of the .xtra: $0000, $0080, $0180;
+ *                   default as the compiler has it, on)
  *   max=LIB|N       in those defaults the object maximum of the library
  *                   number LIB is N (at most 8): a pair LIB.w, N.w
  *                   appended behind the maximums savextra wrote;
@@ -98,6 +101,7 @@ static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHL
 static char resdefname[PATHLEN];        /* defname + ".res": no residents */
 static char cur_id[16];
 static int in_menu, runerr_off;
+static int warnings = -1;               /* warnings=: the word, -1 none */
 static ULONG strbuf, macrobuf, objbuf;
 
 /* max=: object maximums appended to the defaults (lib.w, max.w) */
@@ -364,6 +368,12 @@ static void write_defaults(char *name, int residents)
 
         Seek(fh, 2, OFFSET_BEGINNING);  /* options runtime errors, debugger */
         Write(fh, (APTR)off, 4);
+    }
+    if (warnings >= 0) {
+        UWORD w = (UWORD)warnings;
+
+        Seek(fh, 24, OFFSET_BEGINNING); /* the warnings setting */
+        Write(fh, &w, 2);
     }
     if (objbuf) {
         Seek(fh, 30, OFFSET_BEGINNING); /* buffer sizes: the object buffer */
@@ -884,6 +894,13 @@ void edstub_main(const char *arg)
             edstub_strcpy(defname, v, PATHLEN);
         else if ((v = value(p, "runerr=")))
             runerr_off = edstub_streq(v, "off");
+        else if ((v = value(p, "warnings="))) {
+            warnings = edstub_streq(v, "off") ? 0x0000
+                       : edstub_streq(v, "on") ? 0x0080
+                       : edstub_streq(v, "errors") ? 0x0180 : -1;
+            if (warnings < 0)
+                edstub_log("FATAL: warnings= needs off, on or errors");
+        }
         else if ((v = value(p, "strbuf=")))
             while (*v >= '0' && *v <= '9')
                 strbuf = strbuf * 10 + (ULONG)(*v++ - '0');

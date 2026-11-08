@@ -1,0 +1,18 @@
+[compile]
+blitz2-ab3: unknown warning "nosuch" in -w (known: all, none, resclash)
+usage: blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
+  -s, -source FILE   the source to compile (text or tokenised)
+  -e, -exe FILE      the executable to write
+  -r, -release       release executable: no runtime error checking,
+                     no debugger, no debug information
+  -mode ab3|bb2      compile in AmiBlitz3 or Blitz Basic 2 mode
+                     (default: detected from the source)
+  -w LIST            the warnings shown (default: the source's setting)
+  -werr LIST         the warnings that are errors
+                     LIST: all, none, NAME, -NAME, comma-separated,
+                     left to right; NAME: resclash
+  -h, -help          this text
+Without options blitz2-ab3 starts the editor like blitz2.
+rc=20
+[run]
+no executable

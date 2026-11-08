@@ -78,11 +78,14 @@ enum xtra_switch {
     XTRA_SW_INTERRUPT_CHECK,    /* +18 optreq2ga2, AB3 InterruptCheck */
     XTRA_SW_ASSEMBLER_CHECK,    /* +20 optreq2ga3, AB3 AssemblerCheck */
     XTRA_SW_OVERFLOW_CHECK,     /* +22 optreq2ga4, AB3 OverflowCheck */
-    XTRA_SW_OPTREQ2GA5,         /* +24 optreq2ga5 (meaning open) */
+    XTRA_SW_WARNINGS,           /* +24 the warnings (blitz2 warnopt, in
+                                   place of optreq2ga5): XTRA_ON on,
+                                   0 off, XTRA_WARN_ERRORS errors */
     XTRA_SW_DEFAULT_INTERRUPT,  /* +26 optreq2ga6 */
     XTRA_SW_DEFAULT_OVERFLOW    /* +28 optreq2ga7 */
 };
 #define XTRA_ON 0x0080          /* GFLG_SELECTED; also the icon byte */
+#define XTRA_WARN_ERRORS 0x0180 /* XTRA_SW_WARNINGS: warnings are errors */
 
 /** @brief The buffer sizes in file order (offset 30 + 4 * index). */
 enum xtra_buffer {

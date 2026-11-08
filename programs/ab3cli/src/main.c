@@ -25,7 +25,8 @@
  *     "FILE:LINE: MESSAGE", inside an include with the include's name and
  *     line (blitz2-ab3 places it in the job) - and leaves the return code
  *     in the job: 0
- *     compiled, 10 compile error, 20 set-up error (design D6).
+ *     compiled, 10 compile error (or a warning that is an error, change
+ *     compiler-warnings), 20 set-up error (design D6).
  * Relative names (source, executable, includes) are relative to the
  * shell's current directory.
  *
@@ -695,8 +696,16 @@ static int run(void)
 
     if (!load_source())
         goto out;
-    if (!load_options() || setuperr)
+    if (!load_options())
         goto out;
+    if (setuperr) {
+        /* all of them warnings that are errors (the residents' clash,
+           change compiler-warnings design D4): an error, not a set-up
+           error */
+        if (setuperr == job->warnerrs)
+            rc = AB3JOB_RC_ERROR;
+        goto out;
+    }
     DeleteFile((CONST_STRPTR)job->exe); /* no stale executable */
     job->errset = 0;                    /* blitz2-ab3 places the first error */
     job->errline = 0;

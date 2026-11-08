@@ -77,6 +77,15 @@ void ext_errpos(void)
 {
 }
 
+void ext_warnsets(ULONG *enabled, ULONG *errors)
+{
+}
+
+BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
+{
+    return FALSE;
+}
+
 void ext_newtoken(UWORD tok)
 {
 }

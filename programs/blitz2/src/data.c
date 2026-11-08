@@ -207,7 +207,7 @@ struct resentry resbuff[MOSTRES];       /* options.src: dcb.b 8*68,0 ;8 res max 
  * the editor's getinput closes the requester), xxxsgN StringInfos (the
  * options.src labels maxpc..stringwork are their LongInt fields, see
  * data.h).  Hidden gadgets (not in the Next chain) exist for their Flags:
- * optreqga11-14, optreq2ga5-7.
+ * optreqga11-14, optreq2ga6-7 (optreq2ga5 is the warnings button).
  * =================================================================== */
 
 /* optreqin4, optreqin36, optreqin37 are not referenced in the original either */
@@ -269,6 +269,8 @@ static struct IntuiText optreq2in4;
 static UBYTE optreq2la10[20];
 static struct IntuiText optreq2in5;
 static UBYTE optreq2la11[19];
+static struct IntuiText optreq2in6;
+static UBYTE optreq2la12[10];
 static struct IntuiText optreq2in9;
 static UBYTE optreq2la18[3];
 static struct IntuiText optreq2in10;
@@ -278,7 +280,7 @@ static UBYTE optreq2la26[3];
 static struct IntuiText optreq2in12;
 static UBYTE optreq2la30[3];
 static struct IntuiText optreq2in13;
-static UBYTE optreq2la34[3];
+static UBYTE optreq2la34[7];
 static struct IntuiText optreq2in14;
 static UBYTE optreq2la38[3];
 static struct IntuiText optreq2in15;
@@ -687,9 +689,9 @@ static WORD optreq2la27[6] = {23, 0, 0, 0, 0, 11};
 static struct Border optreq2la28 = {0, 0, 2, 1, 1, 3, (WORD *)optreq2la29, NULL};
 static WORD optreq2la29[6] = {23, 1, 23, 11, 1, 11};
 static struct Border optreq2bo7 = {0, 0, 1, 2, 1, 3, (WORD *)optreq2la31, (struct Border *)&optreq2la32};
-static WORD optreq2la31[6] = {23, 0, 0, 0, 0, 11};
+static WORD optreq2la31[6] = {55, 0, 0, 0, 0, 11};      /* the warnings button: 56 wide */
 static struct Border optreq2la32 = {0, 0, 2, 1, 1, 3, (WORD *)optreq2la33, NULL};
-static WORD optreq2la33[6] = {23, 1, 23, 11, 1, 11};
+static WORD optreq2la33[6] = {55, 1, 55, 11, 1, 11};
 static struct Border optreq2bo8 = {0, 0, 1, 2, 1, 3, (WORD *)optreq2la35, (struct Border *)&optreq2la36};
 static WORD optreq2la35[6] = {23, 0, 0, 0, 0, 11};
 static struct Border optreq2la36 = {0, 0, 2, 1, 1, 3, (WORD *)optreq2la37, NULL};
@@ -714,8 +716,10 @@ static struct IntuiText optreq2in3 = {1, 0, 1, 20, 38, NULL, (UBYTE *)optreq2la9
 static UBYTE optreq2la9[19] = "INTERUPT CHECKING:";
 static struct IntuiText optreq2in4 = {1, 0, 1, 20, 50, NULL, (UBYTE *)optreq2la10, (struct IntuiText *)&optreq2in5};
 static UBYTE optreq2la10[20] = "ASSEMBLER CHECKING:";
-static struct IntuiText optreq2in5 = {1, 0, 1, 20, 62, NULL, (UBYTE *)optreq2la11, NULL};
+static struct IntuiText optreq2in5 = {1, 0, 1, 20, 62, NULL, (UBYTE *)optreq2la11, (struct IntuiText *)&optreq2in6};
 static UBYTE optreq2la11[19] = "OVERFLOW CHECKING:";
+static struct IntuiText optreq2in6 = {1, 0, 1, 20, 74, NULL, (UBYTE *)optreq2la12, NULL};
+static UBYTE optreq2la12[10] = "WARNINGS:";
 static struct IntuiText optreq2in9 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la18, NULL};
 static UBYTE optreq2la18[3] = "  ";
 static struct IntuiText optreq2in10 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la22, NULL};
@@ -725,7 +729,7 @@ static UBYTE optreq2la26[3] = "  ";
 static struct IntuiText optreq2in12 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la30, NULL};
 static UBYTE optreq2la30[3] = "  ";
 static struct IntuiText optreq2in13 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la34, NULL};
-static UBYTE optreq2la34[3] = "  ";
+static UBYTE optreq2la34[7] = "  ON  ";    /* warnopt_text */
 static struct IntuiText optreq2in14 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la38, NULL};
 static UBYTE optreq2la38[3] = "  ";
 static struct IntuiText optreq2in15 = {1, 0, 1, 4, 2, NULL, (UBYTE *)optreq2la42, NULL};
@@ -737,8 +741,11 @@ static UBYTE optreq2la50[9] = " CANCEL ";
 struct Gadget optreq2ga1 = {(struct Gadget *)&optreq2ga2, 200, 24, 24, 12, 128, 257, 1, (APTR)&optreq2bo3, NULL, (struct IntuiText *)&optreq2in9, 0, NULL, 1, NULL};
 struct Gadget optreq2ga2 = {(struct Gadget *)&optreq2ga3, 200, 36, 24, 12, 128, 257, 1, (APTR)&optreq2bo4, NULL, (struct IntuiText *)&optreq2in10, 0, NULL, 2, NULL};
 struct Gadget optreq2ga3 = {(struct Gadget *)&optreq2ga4, 200, 48, 24, 12, 0, 257, 1, (APTR)&optreq2bo5, NULL, (struct IntuiText *)&optreq2in11, 0, NULL, 3, NULL};
-struct Gadget optreq2ga4 = {(struct Gadget *)&optreq2ga8, 200, 60, 24, 12, 0, 257, 1, (APTR)&optreq2bo6, NULL, (struct IntuiText *)&optreq2in12, 0, NULL, 4, NULL};
-struct Gadget optreq2ga5 = {(struct Gadget *)&optreq2ga6, 200, 72, 24, 12, 128, 257, 1, (APTR)&optreq2bo7, NULL, (struct IntuiText *)&optreq2in13, 0, NULL, 5, NULL};
+struct Gadget optreq2ga4 = {(struct Gadget *)&optreq2ga5, 200, 60, 24, 12, 0, 257, 1, (APTR)&optreq2bo6, NULL, (struct IntuiText *)&optreq2in12, 0, NULL, 4, NULL};
+/* the warnings button (design D5 of the change compiler-warnings): a
+   RELVERIFY button, no toggle, its setting in warnopt; the original's
+   hidden toggle had Next ga6, 200, 24 wide, Flags 128, Activation 257 */
+struct Gadget optreq2ga5 = {(struct Gadget *)&optreq2ga8, 168, 72, 56, 12, 0, 1, 1, (APTR)&optreq2bo7, NULL, (struct IntuiText *)&optreq2in13, 0, NULL, 5, NULL};
 struct Gadget optreq2ga6 = {(struct Gadget *)&optreq2ga7, 200, 84, 24, 12, 128, 257, 1, (APTR)&optreq2bo8, NULL, (struct IntuiText *)&optreq2in14, 0, NULL, 6, NULL};
 struct Gadget optreq2ga7 = {(struct Gadget *)&optreq2ga8, 200, 96, 24, 12, 128, 257, 1, (APTR)&optreq2bo9, NULL, (struct IntuiText *)&optreq2in15, 0, NULL, 7, NULL};
 struct Gadget optreq2ga8 = {(struct Gadget *)&optreq2ga9, 8, 116, 40, 12, 0, 5, 1, (APTR)&optreq2bo10, NULL, (struct IntuiText *)&optreq2in16, 0, NULL, 8, NULL};
@@ -1395,6 +1402,29 @@ void typename(const char *name)
  * =================================================================== */
 
 UBYTE vers = 0;                         /* 15343 (asm dc, accessed as byte) */
+
+/* the warnings setting (data.h): .xtra +24, on as the original's
+   optreq2ga5.Flags (128) it is stored in place of */
+UWORD warnopt = WARNOPT_ON;
+
+void warnopt_text(void)
+{
+    const char *t = !(warnopt & WARNOPT_ON) ? "  OFF "
+                    : (warnopt & WARNOPT_ERRORS) == WARNOPT_ERRORS ? "ERRORS" : "  ON  ";
+
+    memcpy(optreq2la34, t, sizeof optreq2la34);
+}
+
+void warnopt_step(void)
+{
+    if (!(warnopt & WARNOPT_ON))
+        warnopt = WARNOPT_ON;
+    else if ((warnopt & WARNOPT_ERRORS) == WARNOPT_ERRORS)
+        warnopt = WARNOPT_OFF;
+    else
+        warnopt = WARNOPT_ERRORS;
+    warnopt_text();
+}
 /* 15341 allchg: local to menu4c */
 
 /* 15290 optspnts - pointers to options involved in source dependant stuff.
@@ -1407,7 +1437,7 @@ static APTR const jimi0[] = {           /* two byte stuff... */
     &optreqga13.Flags, &optreqga14.Flags,
     &optreqga15.Flags, &optreqga16.Flags,
     &optreq2ga1.Flags, &optreq2ga2.Flags, &optreq2ga3.Flags,
-    &optreq2ga4.Flags, &optreq2ga5.Flags, &optreq2ga6.Flags, &optreq2ga7.Flags,
+    &optreq2ga4.Flags, &warnopt, &optreq2ga6.Flags, &optreq2ga7.Flags,
     NULL,                               /* jimi1 */
 };
 static APTR const jimi2[] = {           /* four byte stuff: Maximums Int String Gadgets */

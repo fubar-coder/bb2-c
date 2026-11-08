@@ -361,3 +361,16 @@ now), `docs/architecture.md` 3.6 (warnings), `docs/libs/deviations.md`
 4. Q4: the queued path only with the first compile-time warning.
 5. Q6: CD sources that newly warn keep the warning; no list of known
    clashes.
+
+## Findings of the implementation
+
+- **Layout** (task 2.1): an emulator screenshot of TED (blitz2 with the
+  real TED on the A1200 configuration, driven to the second requester by
+  synthetic IntuiMessages, a throw-away helper) shows the row
+  "WARNINGS:" with the 56-pixel button under OVERFLOW CHECKING, inside
+  the frame and above OK/CANCEL; the three texts are drawn in place when
+  the button is stepped.
+- **Documentation place**: `docs/v2.10/blitz2.md` compares the binaries
+  and has no description of the options requesters; the setting is
+  described in `docs/architecture.md` 3.6 and `docs/formats.md` 1.1
+  (D9), the command line in `docs/ab3/usage.md`.

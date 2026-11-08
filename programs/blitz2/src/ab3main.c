@@ -168,6 +168,46 @@ APTR ext_editorarg(APTR arg)
     return ab3job ? (APTR)ab3job : arg;
 }
 
+/* the warnings: the numbers of the compiler core are the job's */
+_Static_assert(W_RESCLASH == AB3JOB_W_RESCLASH, "W_RESCLASH");
+_Static_assert(W_COUNT == AB3JOB_W_COUNT && W_ALL == AB3JOB_W_ALL, "W_COUNT");
+
+/* a command line run: -w and -werr change the setting of the source
+   (design D4 of the change compiler-warnings) */
+void ext_warnsets(ULONG *enabled, ULONG *errors)
+{
+    if (!ab3job)
+        return;
+    *enabled = (*enabled & job.warn_keep) | job.warn_add;
+    *errors = (*errors & job.werr_keep) | job.werr_add;
+}
+
+/* a command line run: "SOURCE: warning: MSG (DETAIL) [NAME]" on the
+   console; a warning that is an error is counted (ab3cli's rc 10) and
+   printed by ab3cli as the error that follows */
+BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
+{
+    if (!ab3job)
+        return FALSE;
+    if (error) {
+        if (job.warnerrs < 255)
+            job.warnerrs++;
+        return FALSE;
+    }
+    say(job.source);
+    say(": warning: ");
+    say(msg);
+    if (detail) {
+        say(" (");
+        say(detail);
+        say(")");
+    }
+    say(" [");
+    say(ab3args_warnings[w]);
+    say("]\n");
+    return TRUE;
+}
+
 /* a command line run: ab3cli's return code (it left it in the job) */
 BOOL ext_result(int *rc)
 {

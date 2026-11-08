@@ -11,8 +11,8 @@ The user's decisions of 2026-11-08 (design.md, "Decisions of
 
 ## 2. Settings
 
-- [ ] 2.1 The word `warnopt` (`.xtra` +24) in `data.c` instead of `optreq2ga5.Flags` in `optspnts`; `optreq2ga5` a visible button in the chain `ga4 -> ga5 -> ga8` with the label `WARNINGS:` and the texts `  OFF `/`  ON  `/`ERRORS`; `runerropts` steps it and restores it on Cancel. Verify: an emulator screenshot of TED with the requester; a `.xtra` saved with the setting untouched is byte-identical (`prev_results`, `ted_ab` `P5`/`Pc`)
-- [ ] 2.2 `docs/formats.md` 1.1 and a name for the switch in `shared/xtra/xtra.h` (`XTRA_SW_OPTREQ2GA5` renamed `XTRA_SW_WARNINGS`, the values), `xtra_init` default stays ON. Verify: the `xtra` host tests
+- [x] 2.1 The word `warnopt` (`.xtra` +24) in `data.c` instead of `optreq2ga5.Flags` in `optspnts`; `optreq2ga5` a visible button in the chain `ga4 -> ga5 -> ga8` with the label `WARNINGS:` and the texts `  OFF `/`  ON  `/`ERRORS`; `runerropts` steps it and restores it on Cancel. Verify: an emulator screenshot of TED with the requester; a `.xtra` saved with the setting untouched is byte-identical (`prev_results`, `ted_ab` `P5`/`Pc`)
+- [x] 2.2 `docs/formats.md` 1.1 and a name for the switch in `shared/xtra/xtra.h` (`XTRA_SW_OPTREQ2GA5` renamed `XTRA_SW_WARNINGS`, the values), `xtra_init` default stays ON. Verify: the `xtra` host tests
 - [ ] 2.3 `-w LIST` and `-werr LIST` in `shared/ab3job` (`ab3args.c`, `ab3job.h`: the masks, usage text with the names); `ab3cli` ends with rc 10 when its set-up errors were warnings that are errors. Verify: `test_ab3args` with deliberately broken input; `ab3_cli` cases for rc 0, 10 and 20
 
 ## 3. The #36 check

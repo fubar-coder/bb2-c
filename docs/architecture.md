@@ -282,6 +282,26 @@ Every error location calls `jsr err` with the text as an inline string
 include file therefore lands on the `INCLUDE` line [Schluss from the
 code, not tried out].
 
+**Warnings** (C port, OpenSpec change `compiler-warnings`): `warn(w,
+msg, detail)` (`parse.c`) beside `err`. Every warning has a number
+(`W_*`, `parse.h`) and a name (`ab3args_warnings`,
+`shared/ab3job/ab3job.h`; so far `resclash`, a constant of the
+residents with two values, `stmts.c checkconstclash`). `warnsets` gives
+the enabled warnings and the ones that are errors: from the editor's
+setting `warnopt` (`.xtra` word +24: off, on, errors; the button
+"WARNINGS:" of the second options requester, `runerropts`, steps it
+off -> on -> errors), changed by `ext_warnsets` (the `-w`/`-werr` lists
+of a `blitz2-ab3` command line run); a disabled warning is never an
+error. `warn` is silent in direct mode and for a disabled warning; for
+a warning that is an error it calls `err(msg)` (all of the above);
+otherwise it shows `Warning: MSG` through the same editor service
+`comdata+12` (in a command line run `ext_warning` prints
+`SOURCE: warning: MSG (DETAIL) [NAME]` instead) and returns: the
+compile or the load goes on and its result is unchanged. Only warnings
+outside a compile exist so far (`loadres`); one during a compile would
+need a queue shown after the compile (the requester would sit under the
+progress requester).
+
 ### 3.7 Run, Create Executable and debugger
 
 **CREATE EXECUTABLE** (`menu1`) [S]: file requester, `makeexec = -1`,

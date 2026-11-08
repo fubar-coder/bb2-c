@@ -181,3 +181,129 @@ TEST_CASE("the message is cut to its buffer", "[ab3args]")
     CHECK(ab3args_parse(2, argv, &job, msg, sizeof msg) == AB3ARGS_FAIL);
     CHECK(std::string(msg) == "unknown");
 }
+
+namespace {
+
+// the set a list makes of the source's setting s: (s & keep) | add
+uint32_t applied(uint32_t s, uint32_t keep, uint32_t add)
+{
+    return (s & keep) | add;
+}
+
+parsed compile_with(std::vector<std::string> opts)
+{
+    std::vector<std::string> args = { "-s", "a", "-e", "b" };
+    args.insert(args.end(), opts.begin(), opts.end());
+    return parse(args);
+}
+
+} // namespace
+
+TEST_CASE("warnings: the names", "[ab3args]")
+{
+    CHECK(AB3JOB_W_COUNT == 1);
+    CHECK(std::string(ab3args_warnings[AB3JOB_W_RESCLASH]) == "resclash");
+    CHECK(ab3args_warnings[AB3JOB_W_COUNT] == nullptr);
+    CHECK(AB3JOB_W_ALL == 1u);
+}
+
+TEST_CASE("warnings: without -w and -werr the source's setting", "[ab3args]")
+{
+    auto p = compile_with({});
+    CHECK(p.result == AB3ARGS_COMPILE);
+    CHECK(p.job.warn_keep == AB3JOB_W_ALL);
+    CHECK(p.job.warn_add == 0u);
+    CHECK(p.job.werr_keep == AB3JOB_W_ALL);
+    CHECK(p.job.werr_add == 0u);
+    CHECK(p.job.warnerrs == 0);
+    for (uint32_t s : { 0u, AB3JOB_W_ALL }) {
+        CHECK(applied(s, p.job.warn_keep, p.job.warn_add) == s);
+        CHECK(applied(s, p.job.werr_keep, p.job.werr_add) == s);
+    }
+}
+
+TEST_CASE("warnings: the items of a list", "[ab3args]")
+{
+    const uint32_t R = 1u << AB3JOB_W_RESCLASH;
+    struct {
+        const char *list;
+        uint32_t from_none, from_all;   // the set from the setting 0 / all
+    } cases[] = {
+        { "all", AB3JOB_W_ALL, AB3JOB_W_ALL },
+        { "none", 0, 0 },
+        { "resclash", R, AB3JOB_W_ALL },
+        { "-resclash", 0, AB3JOB_W_ALL & ~R },
+        { "all,-resclash", 0, 0 },
+        { "none,resclash", R, R },
+        { "-resclash,resclash", R, AB3JOB_W_ALL },
+        { "resclash,none", 0, 0 },
+        { "ALL,-ResClash", 0, 0 },
+    };
+    for (auto &c : cases) {
+        for (const char *o : { "-w", "-W", "-werr", "-WERR" }) {
+            auto p = compile_with({ o, c.list });
+            CAPTURE(o, c.list);
+            REQUIRE(p.result == AB3ARGS_COMPILE);
+            bool w = o[2] == 0;
+            uint32_t keep = w ? p.job.warn_keep : p.job.werr_keep;
+            uint32_t add = w ? p.job.warn_add : p.job.werr_add;
+            CHECK(applied(0, keep, add) == c.from_none);
+            CHECK(applied(AB3JOB_W_ALL, keep, add) == c.from_all);
+            // the other list is untouched
+            CHECK((w ? p.job.werr_keep : p.job.warn_keep) == AB3JOB_W_ALL);
+            CHECK((w ? p.job.werr_add : p.job.warn_add) == 0u);
+        }
+    }
+}
+
+TEST_CASE("warnings: several options are applied in order", "[ab3args]")
+{
+    auto p = compile_with({ "-w", "none", "-w", "resclash", "-werr", "resclash", "-werr", "-resclash" });
+    CHECK(p.result == AB3ARGS_COMPILE);
+    CHECK(applied(0, p.job.warn_keep, p.job.warn_add) == AB3JOB_W_ALL);
+    CHECK(applied(AB3JOB_W_ALL, p.job.werr_keep, p.job.werr_add) == 0u);
+    // in any position, also before -s
+    auto q = parse({ "-werr", "resclash", "-s", "a", "-e", "b" });
+    CHECK(q.result == AB3ARGS_COMPILE);
+    CHECK(applied(0, q.job.werr_keep, q.job.werr_add) == AB3JOB_W_ALL);
+}
+
+TEST_CASE("warnings: broken lists", "[ab3args]")
+{
+    struct {
+        std::vector<std::string> opts;
+        const char *msg;
+    } cases[] = {
+        { { "-w", "nosuch" }, "unknown warning \"nosuch\" in -w (known: all, none, resclash)" },
+        { { "-werr", "all,resclashx" },
+          "unknown warning \"resclashx\" in -werr (known: all, none, resclash)" },
+        { { "-w", "-all" }, "unknown warning \"-all\" in -w (known: all, none, resclash)" },
+        { { "-w", "res" }, "unknown warning \"res\" in -w (known: all, none, resclash)" },
+        { { "-w", "all,,resclash" }, "empty item in -w \"all,,resclash\"" },
+        { { "-w", "resclash," }, "empty item in -w \"resclash,\"" },
+        { { "-werr", "," }, "empty item in -werr \",\"" },
+        { { "-w", "-" }, "empty item in -w \"-\"" },
+        { { "-w", "" }, "option -w needs an argument" },
+        { { "-werr" }, "option -werr needs an argument" },
+    };
+    for (auto &c : cases) {
+        auto p = compile_with(c.opts);
+        CAPTURE(c.msg);
+        CHECK(p.result == AB3ARGS_FAIL);
+        CHECK(ab3args_rc(p.result) == 20);
+        CHECK(p.msg == c.msg);
+    }
+    // -wx is not -w
+    auto p = compile_with({ "-wx", "all" });
+    CHECK(p.result == AB3ARGS_FAIL);
+    CHECK(p.msg == "unknown option -wx");
+}
+
+TEST_CASE("warnings: the usage lists the options and the names", "[ab3args]")
+{
+    std::string u = ab3args_usage;
+    for (const char *o : { "-w LIST", "-werr LIST", "all, none, NAME, -NAME" })
+        CHECK(u.find(o) != std::string::npos);
+    for (int k = 0; ab3args_warnings[k]; k++)
+        CHECK(u.find(ab3args_warnings[k]) != std::string::npos);
+}

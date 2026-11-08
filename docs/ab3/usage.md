@@ -9,7 +9,7 @@ from the shell it compiles one source without the editor, with the
 option names of AmiBlitz3's CLI mode:
 
 ```
-blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
+blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
 ```
 
 | Option | |
@@ -18,7 +18,25 @@ blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
 | `-e`, `-exe FILE` | the executable to write |
 | `-r`, `-release` | no runtime error checking, no debugger, no debug information |
 | `-mode ab3\|bb2` | force the mode (an extension of this repository) |
+| `-w LIST` | the warnings that are shown (an extension of this repository) |
+| `-werr LIST` | the warnings that are errors (an extension of this repository) |
 | `-h`, `-help` | the usage |
+
+**Warnings.** The compiler's warnings have names (so far one,
+`resclash`: a constant defined with different values by two residents).
+It keeps two sets: the warnings that are shown and the warnings that are
+errors; a warning that is not shown is never an error. The source's
+setting (the editor's "WARNINGS: OFF / ON / ERRORS" in the second
+options requester, `.xtra` word +24; the default ON: all shown, none an
+error) is the start; `-w` and `-werr` change it. A LIST is
+comma-separated items, applied left to right: `all`, `none`, `NAME`
+(add), `-NAME` (remove); several `-w` (`-werr`) are applied in order.
+Examples: `-w -resclash` or `-w all,-resclash` (the clash is not
+reported), `-werr resclash` (it is an error). A warning is printed as
+`SOURCE: warning: MESSAGE [NAME]` (with `:LINE` when it has a line) and
+does not change the return code; a warning that is an error is printed
+and counted as an error (return code 10). An unknown name or an empty
+item is an argument error (20).
 
 The mode is AB3 for a text whose first line is AmiBlitz3's embedded
 header (`; XTRA`), for a file named `*.ab3`, and for a tokenised source
@@ -30,8 +48,9 @@ tokenised include of the other mode is refused. Relative names
 (source, executable, includes) are relative to the shell's current
 directory. Errors go to the console – a compile error as
 `FILE:LINE: MESSAGE`, inside an include with the include's name and
-line – and the return code is 0 (compiled), 10 (compile
-error) or 20 (argument or set-up error). AmiBlitz3's other options
+line – and the return code is 0 (compiled, also with warnings), 10
+(compile error, or a warning that is an error) or 20 (argument or
+set-up error). AmiBlitz3's other options
 (`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.
 
 Structure (docs/ab3/variant.md, "Structure"): both programs link one
