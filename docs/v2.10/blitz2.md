@@ -222,7 +222,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #343 | closed | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | **fixed in the port** (RILESDEBUGLIB on the CD unchanged) |
 | #344 | closed | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved (test `bug_orig_compiler_amigalib_param_regs`) | **fixed in the port** |
 | #937 | closed | [compiler/Arrays] List array indexed by an element of a normal array (`a(b(1))`): the nested calcvar resets `.listoff`, the index is multiplied by the bare element size (`parse.c` calcvar, test `bug_orig_compiler_calcvar_listoff`) | **fixed in the port** |
-| #939 | open | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | unchanged |
+| #939 | closed | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | **fixed in the port** (compiler side; the library range forms: #999) |
 | #940 | closed | [compiler/Procedures] End Statement / End Function and Statement Return / Function Return are not checked against the kind of procedure: a string Function ended with End Statement pops its return address (`tokens2.c` doend, stateret/funcret, endstate) | **fixed in the port** |
 | #942 | closed | [compiler/Macros] A `:` right after the macro name stays in the macro text: `Macro a:1:End Macro` expands to `:1` (`tokens1.c` domacro) | **fixed in the port** |
 | #943 | open | [compiler/Executable] All relocations go into one HUNK_RELOC32 block: an executable with more than 65535 relocations does not load on AmigaOS 3.2 (Kickstart 1.3 loads it) (`parse.c` executable writer, test `bug_orig_compiler_reloc32_one_block`) | unchanged |
@@ -236,6 +236,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #994 | closed | [compiler/Code buffer] A compile error between pushdo and pushput loses the code save buffer | **fixed in the port** |
 | #995 | closed | [compiler/Residents] A macro text of 32767 bytes or more breaks the resident (length rounded in a word; `resmacs`, `fixmacs`) | **fixed in the port** |
 | #997 | open | [compiler/Assembler] copyconst copies an operand text into namebuff without a length check (`asmlibs.c` copyconst, test `bug_orig_compiler_copyconst_overflow`) | unchanged |
+| #998 | open | [compiler/Objects] Used Object returns a wrong number from n << shift = $10000 on (word shift in `doused`) | unchanged |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well, except the bugs the port has
