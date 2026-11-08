@@ -58,7 +58,12 @@ comp_trustlong=indirect
 comp_trustnaddr=indirect
 comp_nf=false
 comp_constjump=true
-comp_flushmode=soft
+; hard, not soft: after CacheClearU a soft flush keeps a translated block if
+; a checksum (sum and xor of its 32-bit words) is unchanged, which misses
+; code whose words were rearranged - a program loaded at the address of a
+; different one could run the old one's native code from the block's 6th
+; execution on (seen with two blitz2 builds alternating in ted_ab).
+comp_flushmode=hard
 compfpu=true
 comp_catchfault=true
 cachesize=16384

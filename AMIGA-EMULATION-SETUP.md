@@ -24,8 +24,19 @@ from Amiga Forever (next section) stores them in `amiga-emulation/`:
 ### Configuration
 
 `tools/lib/amiga_emulation/default.uae` is the default configuration
-(A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, `workbench-311.hdf`).
-Tests change it only by key=value differences. The RTG variant:
+(A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, `workbench-311.hdf`,
+the JIT with `comp_flushmode=hard`).
+Tests change it only by key=value differences. The JIT's flush mode is
+`hard` because Amiberry's `soft` mode keeps a translated block after
+`CacheClearU` when a checksum of its words (their sum and xor) is
+unchanged: it misses code whose words were only rearranged, so a program
+loaded at the address of a different one could run the old program's
+translated code from a block's 6th execution on. Any session that starts
+different programs in turn can meet it; the `ted_ab` combinations
+`P5`/`Pc` do (the current and the previous blitz2 at the same address:
+with `soft` the previous one ends at once with return code 260 or the
+machine reboots). `hard` drops every translated block at `CacheClearU`
+and costs `ctest --preset all` about a tenth more time. The RTG variant:
 
 ```
 gfxcard_size=16
