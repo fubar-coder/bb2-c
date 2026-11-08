@@ -13,6 +13,54 @@ accepted these sources, but compiled them to a random or wrong result.
 If one of your sources is among them, the change below makes it compile
 the same way with both compilers.
 
+## `=<` as "not equal" {#less-or-equal}
+
+**What happened.** The original compiled the comparison `=<` as "not
+equal", so `If a=<b` was true whenever `a` and `b` differed, without an
+error message.
+
+**With the port.** `=<` is less-or-equal, as `<=`. The source compiles
+without an error but to different code, and a comparison with `=<`
+gives another result wherever both values are equal or the first is
+larger.
+
+**What to change.** Where a source used `=<` and the program relied on
+it meaning "not equal", write `<>` instead. Where `=<` was meant as
+less-or-equal, nothing has to change. The fixed bug is shown with an
+example on its own page
+([`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}})).
+
+Issue: [The operator =< meant "not equal" (#9)](https://github.com/fubar-coder/bb2-c/issues/9).
+
+## The end of a procedure of the other kind {#end-of-procedure}
+
+**What happened.** The original accepted `End Statement` and
+`Statement Return` inside a Function, and `End Function` and
+`Function Return` inside a Statement. A string Function closed with
+`End Statement` crashed when it returned.
+
+**With the port.** The `End` of the other kind gives "Illegal End
+Procedure", the `Return` of the other kind "Illegal Procedure return", at
+its line:
+
+```
+Function$ f{}
+  NPrint "in f"
+End Statement       ; Illegal End Procedure
+```
+
+Two examples on the Blitz Basic 2 CD, `DARTS_POLY.BB` and
+`DARTS_WIRE.BB`, end a Function with `End Statement` and are refused for
+this reason.
+
+**What to change.** Close a Function with `End Function` and leave it
+with `Function Return`; close a Statement with `End Statement` and leave
+it with `Statement Return`. The fixed bug is shown with an example on its
+own page
+([`End Statement` could close a Function]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#end-of-procedure" >}})).
+
+Issue: [End Statement could close a Function, and the other way round (#940)](https://github.com/fubar-coder/bb2-c/issues/940).
+
 ## A NewType that contains itself
 
 A NewType cannot contain a field of its own type: it would have to be
