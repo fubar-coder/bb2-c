@@ -206,7 +206,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #32 | closed | [compiler/Options] New buffer sizes: fallback to the previous sizes is reported as success | unchanged |
 | #34 | open | [compiler/Resident] Last constant of a resident points past the section | unchanged |
 | #35 | closed | [compiler/Resident] Type without fields: fixtypes follows the raw next pointer | **fixed in the port** |
-| #36 | open | [compiler/Resident] Duplicate constants in several residents are never detected | unchanged |
+| #36 | closed | [compiler/Resident] Duplicate constants in several residents are never detected | **fixed in the port** (warning `resclash`) |
 | #37 | closed | [compiler] `Dcb` with count 0 repeats 2^32 times | **fixed in the port** |
 | #38 | open | [compiler] IncBin does not free the lock or file on errors | unchanged |
 | #39 | closed | [compiler] `For a$=…` with a global string variable passes the type check | **fixed in the port** |
