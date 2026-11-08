@@ -70,7 +70,9 @@
 Spot-checked in HEAD and **unchanged** (no AB3 fix): #9 (`=<`,
 `.noteqgt`), #15 (`muld1`, ×256), #37 (`Dcb` count 0), #16/#17/#325/#341
 (`doincdir`/`makeiname`), #29 (`makename4`, despite the 2.23 entry "long
-varnames, 128 chars"), #939.  The port fixes #15 (d978802e).
+varnames, 128 chars"), #939.  The port fixes all of them in both modes
+(`docs/libs/deviations.md`, section 5); for #341 only the BB2 side, AB3
+mode keeps AmiBlitz3's behaviour until it is measured.
 
 Areas AB3 replaced wholesale, so the BB2 bug is gone or changed with the
 code (not verified in detail): the options requester (moved to PED,
