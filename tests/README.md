@@ -364,6 +364,19 @@ build. Every `cmake --build` follows the revision: after a commit the
 previous commit is another one, and `prev/` is built afresh. Without the
 option nothing of this is configured.
 
+The prev build needs no network: it takes the snitch source of the
+current build (the one its configure fetched into `_deps/snitch-src`, or
+the `FETCHCONTENT_SOURCE_DIR_SNITCH` it was given) if the commit pins the
+same snitch (the `URL_HASH` in `cmake/Snitch.cmake`). Its configure gets it
+as `FETCHCONTENT_SOURCE_DIR_SNITCH`, which the top-level `CMakeLists.txt`
+passes on to its host ExternalProject; for commits that do not pass it on
+yet, `prev/ab3c/build/amiga-release/_deps/snitch-src` links to it, where
+`cmake/Snitch.cmake` looks for a copy ab3c downloaded. A commit that pins
+another snitch downloads its own; the build says so
+(`prev: ... pins snitch SHA256=...`). snitch is the build's only
+`FetchContent` dependency; the originals (`archive/cd`, ...) are linked
+from the checkout.
+
 What is compared (without a prev build `prev_results` is skipped, not
 passed, and the corpus and `ted_ab` run without their prev parts):
 

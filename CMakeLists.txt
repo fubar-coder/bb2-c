@@ -95,6 +95,8 @@ set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B te
 set(PREVCMP ${HOST_TOOLS_DIR}/prevcmp/prevcmp)                   # library files against the prev build
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
+# the host side takes this build's snitch source (the target snitch of
+# libs/tests, cmake/Snitch.cmake): one download per build, none in a prev build
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
 	BINARY_DIR ${HOST_DIR}
@@ -104,6 +106,7 @@ ExternalProject_Add(host_tools
 		-DHOST_SANITIZE=${HOST_SANITIZE}
 		-DHOST_COVERAGE=${HOST_COVERAGE}
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
+		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
 	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${CDTABLE} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB} ${PREVCMP})

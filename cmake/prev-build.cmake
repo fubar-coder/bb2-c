@@ -1,7 +1,8 @@
 # The step of the `prev` build (cmake/prev.cmake): builds the Amiga side of
 # another commit of this repository in PREV_DIR.
 #   cmake -DREPO=SOURCE -DREV=REV -DPREV_DIR=DIR -DGENERATOR=G
-#         [-DCONFIGURE_ARGS="-D...|-D..."] -P prev-build.cmake
+#         [-DCONFIGURE_ARGS="-D...|-D..."] [-DSNITCH_SOURCE_DIR=SNITCH -DSNITCH_PIN=SHA256]
+#         -P prev-build.cmake
 # DIR/src is `git archive REV` (the checkout is not touched); the data of
 # the checkout that git does not hold (archive/cd, ...) are linked into it.
 # DIR/commit names the commit DIR/src holds; when REV points to another
@@ -53,6 +54,38 @@ if(NOT have STREQUAL commit)
 endif()
 
 string(REPLACE "|" ";" CONFIGURE_ARGS "${CONFIGURE_ARGS}")
+
+# snitch without the network: the current build's source (SNITCH_SOURCE_DIR,
+# pinned to SNITCH_PIN) if the commit pins the same SHA256 in its
+# cmake/Snitch.cmake.  Its top-level configure gets it as
+# FETCHCONTENT_SOURCE_DIR_SNITCH (and passes it on to its host
+# ExternalProject); for the host ExternalProject of a commit that does not
+# pass it on yet, DIR/ab3c/build/amiga-release/_deps/snitch-src links to it:
+# Snitch.cmake takes a snitch that ab3c downloaded from there (relative to
+# DIR/src).  With another pin, the commit downloads its own.
+set(snitch_link ${PREV_DIR}/ab3c/build/amiga-release/_deps/snitch-src)
+set(prev_pin "")
+if(EXISTS ${PREV_DIR}/src/cmake/Snitch.cmake)
+	file(STRINGS ${PREV_DIR}/src/cmake/Snitch.cmake prev_pin REGEX "URL_HASH +SHA256=")
+	string(REGEX REPLACE ".*SHA256=([0-9a-fA-F]+).*" "\\1" prev_pin "${prev_pin}")
+endif()
+if(SNITCH_PIN AND prev_pin STREQUAL SNITCH_PIN AND EXISTS ${SNITCH_SOURCE_DIR}/CMakeLists.txt)
+	set(target "")
+	if(IS_SYMLINK ${snitch_link})
+		file(READ_SYMLINK ${snitch_link} target)
+	endif()
+	if(NOT target STREQUAL SNITCH_SOURCE_DIR)
+		file(REMOVE ${snitch_link})
+		get_filename_component(parent ${snitch_link} DIRECTORY)
+		file(MAKE_DIRECTORY ${parent})
+		file(CREATE_LINK ${SNITCH_SOURCE_DIR} ${snitch_link} SYMBOLIC)
+	endif()
+	list(APPEND CONFIGURE_ARGS -DFETCHCONTENT_SOURCE_DIR_SNITCH=${SNITCH_SOURCE_DIR})
+else()
+	message(STATUS "prev: ${commit} pins snitch SHA256=${prev_pin}, this build "
+		"SHA256=${SNITCH_PIN} (source ${SNITCH_SOURCE_DIR}): the prev build downloads its own")
+endif()
+
 if(NOT EXISTS ${PREV_DIR}/build.ninja AND NOT EXISTS ${PREV_DIR}/Makefile)
 	execute_process(COMMAND ${CMAKE_COMMAND} -S ${PREV_DIR}/src -B ${PREV_DIR} -G ${GENERATOR}
 		-DCMAKE_TOOLCHAIN_FILE=${PREV_DIR}/src/cmake/m68k-amigaos.cmake
