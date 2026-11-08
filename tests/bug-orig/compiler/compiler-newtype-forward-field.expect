@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+y at 8
+size 12
+7 9
+rc=0

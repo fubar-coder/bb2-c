@@ -676,12 +676,12 @@ void typemode(UWORD c)
        type cannot contain itself: "Illegal Type". */
     if (ftype == thistype && !(flagmask & 1))
         illtypeerr();
-    /* BUG(orig) (compiler-newtype-forward-field): a field of a type that
-       so far only a pointer field named (TYPE_FORWARD, its size holds
-       linenumat, the line of that pointer field), not a pointer itself
-       (x.c, or an untyped field behind *p.c), takes that line number as
-       its size; the type defined later with NEWTYPE .c does not change
-       it (pointchk only refuses a type never defined).  Kept. */
+    /* BUG(orig) (#974): a field of a type that so far only a pointer
+       field named (TYPE_FORWARD, its size holds linenumat, the line of
+       that pointer field), not a pointer itself (x.c, or an untyped field
+       behind *p.c), takes that line number as its size; the type defined
+       later with NEWTYPE .c does not change it (pointchk only refuses a
+       type never defined).  Test compiler-newtype-forward-field.  Kept. */
     /* .byte */
     size = (UWORD)ftype->size;
     prevtype = ftype;
