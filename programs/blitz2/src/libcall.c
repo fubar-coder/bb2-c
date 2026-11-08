@@ -1239,15 +1239,15 @@ ULONG oldlibat;                     /* 11934 */
  * =================================================================== */
 
 /* Fixed (#17): what may follow the closing quote of a quoted IncDir path
-   or include name - the line end or a comment, and with colon a ':' that
-   starts the next statement (doline goes on with it, lastchar).  Anything
-   else is a syntax error.  blitz2.s copies the rest of the line, also
+   or include name - the line end or a comment, and with colon a ':' or
+   Else that ends the statement (doline goes on with it, lastchar).
+   Anything else is a syntax error.  blitz2.s copies the rest of the line, also
    after ':', into the path or name. */
 static void quoteend(BOOL colon)
 {
     UWORD c = getchar3();
 
-    if (c == 0 || (colon && c == ':'))
+    if (c == 0 || (colon && eos(c)))   /* ':' or Else end the statement */
         return;
     syntaxerr();
 }
