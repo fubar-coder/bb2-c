@@ -29,8 +29,19 @@ struct blitzlib *ffplib = NULL;         /* blitz2.s:6616 */
 
 /* ========================================================== assembler */
 
+/* Fixed (#997): where the text the last asmconst into namebuff kept ends
+   (its 0), NULL when namebuff holds no operand of the instruction asmit
+   assembles; set by copyconst (ccend) and asmconst, reset by asmit. */
+static UBYTE *nbend, *ccend;
+
 /* blitz2.s:5000 asmconst - store the text of the eval into asmfirst...
-   text till '(','.' */
+   text till '(','.'
+   Fixed (#997): the source operand's text is kept in namebuff until the
+   instruction is assembled; a text whose 0 lies in namebuff2 (more than
+   125 characters) would be overwritten by the destination operand's flag
+   word and text (blitz2.s: the expression is cut, wrong code or "Syntax
+   Error"), so a destination operand behind it is "Operand too Long"
+   (test compiler-copyconst-overflow). */
 UWORD asmconst(void)
 {
     UBYTE *buf = asmbuff;
@@ -38,12 +49,18 @@ UWORD asmconst(void)
     UBYTE *saved;
     UWORD c, lc;
 
+    if (buf == namebuff2 && nbend && nbend >= namebuff2)
+        oplongerr();
     W_(buf) = flag;                     /* flag! */
     buf += 2;
-    if (flag)
-        return copyconst(buf, &lc);     /* bne copyconst */
+    if (flag) {                         /* bne copyconst */
+        c = copyconst(buf, &lc);
+        nbend = ccend;
+        return c;
+    }
     saved = srcptr;                     /* move.l a5,-(a7) */
     c = copyconst(buf, &lc);
+    nbend = ccend;
     buf = asmbuff;
     if ((UWORD)asmlen2 <= 4 || lc) {
         /* .leave: flag becomes $ffff = direct text.  asm `addq #4,a7`
@@ -54,24 +71,32 @@ UWORD asmconst(void)
     /* indirect: pointer into the (persistent) source text */
     L_(buf + 2) = (ULONG)saved;
     B_(buf + 6) = 0;
+    nbend = buf + 6;
     asmlen2 = 4;                        /* pointer + 0 */
     return c;
 }
 
 /* blitz2.s:5028 copyconst
-   BUG(orig) (#997): the text is copied into asmbuff (namebuff for the source
-   operand and Dc, namebuff2 for the destination, 128 bytes each behind a
-   flag word) without a length check.  A copied text (include, macro, local
-   label) of more than 125 characters runs into namebuff2, and a
-   destination operand's text overwrites its end (test
-   compiler-copyconst-overflow); longer texts (from 262 characters in
-   namebuff, 134 in namebuff2) overwrite the data behind the name buffers
-   (optstuff). */
+   Fixed (#997): the text is copied into asmbuff (namebuff for the source
+   operand and Dc, namebuff2 for the destination; namebuff2 follows
+   namebuff, and 8 bytes for a FileInfoBlock follow namebuff2, 264 bytes
+   in all) behind the flag word.  blitz2.s had no length check: a text
+   whose 0 did not fit into these 264 bytes (more than 261 characters in
+   namebuff, more than 133 in namebuff2) overwrote the data behind them
+   (optstuff).  Here the copy stops at their end, and a text that is kept
+   (direct: from an include, a macro or with a local label) and does not
+   fit is "Operand too Long" (tests compiler-copyconst-source, -dc,
+   -dest; the longest that fit: compiler-copyconst-limit).  The text of
+   an indirect operand is replaced by a pointer into the source
+   (asmconst), so only its length counts.  dst is namebuff + 2 or
+   namebuff2 + 2. */
 UWORD copyconst(UBYTE *dst, UWORD *lc)
 {
-    UWORD len = 0;
+    UWORD len = 0, n = 0;
+    UWORD max = (UWORD)(namebuff + sizeof namebuff - 1 - dst);
     UWORD c;
 
+#define PUT(b) do { if (n < max) dst[n] = (UBYTE)(b); n++; } while (0)
     *lc = 0;
     for (;;) {
         len++;
@@ -79,8 +104,8 @@ UWORD copyconst(UBYTE *dst, UWORD *lc)
         if (eos(c))
             break;
         if (c & 0x8000) {               /* token: 2 bytes */
-            *dst++ = (UBYTE)(c >> 8);
-            *dst++ = (UBYTE)c;
+            PUT(c >> 8);
+            PUT(c);
             len++;
             continue;
         }
@@ -95,16 +120,22 @@ UWORD copyconst(UBYTE *dst, UWORD *lc)
                 *lc = c;
                 if (!*lab)
                     nolocerr();
-                do
+                while (*lab) {
                     len++;
-                while ((*dst++ = *lab++) != 0);
-                len--;
-                dst--;
+                    PUT(*lab++);
+                }
             }
         }
-        *dst++ = (UBYTE)c;              /* .putbyte */
+        PUT(c);                         /* .putbyte */
     }
-    *dst = 0;
+#undef PUT
+    if (n > max) {
+        if ((numincs | macmask) || *lc)
+            oplongerr();                /* Fixed (#997) */
+        n = max;
+    }
+    dst[n] = 0;
+    ccend = dst + n;
     asmlen2 = len;
     return c;
 }
@@ -155,6 +186,7 @@ void asmit(UWORD c)
     if (!eos(c)) {
         UWORD m, r;
         asmbuff = namebuff;
+        nbend = NULL;                   /* Fixed (#997) */
         bakup();
         c = getea(&m, &r);
         srcreg = r; srcmode = m;        /* to src */

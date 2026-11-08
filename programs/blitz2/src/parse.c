@@ -771,6 +771,7 @@ NORETURN void badconerr(void) { err("Illegal Constant Expression"); }           
 NORETURN void badpenderr(void) { err("Illegal End Procedure"); }                             /* blitz2.s:7632 */
 NORETURN void pathlongerr(void) { err("Path too Long"); }                                    /* Fixed (#16) */
 NORETURN void notdeferr(void) { err("Type not yet defined"); }                               /* Fixed (#974) */
+NORETURN void oplongerr(void) { err("Operand too Long"); }                                   /* Fixed (#997) */
 
 /* =================================================================
  * char classes (TRUE = asm Z=1)

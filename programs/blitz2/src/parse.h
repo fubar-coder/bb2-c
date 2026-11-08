@@ -247,6 +247,9 @@ NORETURN void pathlongerr(void);   /* "Path too Long" */
    the offset of one of its fields, that is not known yet (a by-value
    field of a type not yet defined comes before it) */
 NORETURN void notdeferr(void);     /* "Type not yet defined" */
+/* Fixed (#997): not in blitz2.s - the text of an inline assembler operand
+   (from an include, a macro or with a local label) longer than its buffer */
+NORETURN void oplongerr(void);     /* "Operand too Long" */
 
 /* ================================================== char classes */
 /* all: TRUE == asm Z=1 */

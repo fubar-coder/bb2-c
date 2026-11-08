@@ -40,11 +40,16 @@ extern UWORD fbase[];                /* 5818 move.l 0(a5),d0   $202D,$0000 */
 
 /* 5000 store the text of the eval into asmbuff (+0 flag.w, +2 text\0 or
    +2 source pointer.l), sets asmlen2.  in: srcptr, asmbuff.
-   returns the terminating char ('(' ',' or end of statement, test eos()) */
+   returns the terminating char ('(' ',' or end of statement, test eos()).
+   Fixed (#997): a destination operand behind a source operand text of
+   more than 125 characters (which namebuff2 holds the end of) is
+   "Operand too Long" */
 UWORD asmconst(void);
 /* 5028 copy const text to dst till '(' / ',' / eos; sets asmlen2 and *lc
    (local label char seen, 0 if none; the asm's global lc, 5026, was only
-   read by asmconst right after the call).  returns the terminating char */
+   read by asmconst right after the call).  returns the terminating char.
+   Fixed (#997): a kept text whose 0 does not fit into namebuff,
+   namebuff2 and the 8 bytes behind (264 bytes) is "Operand too Long" */
 UWORD copyconst(UBYTE *dst, UWORD *lc);
 /* 5072 assemble one instruction; c = asm token ($8000+fnum..), entered
    from handletoken (asm `bra asmit`).  asm d0 on return is garbage. */

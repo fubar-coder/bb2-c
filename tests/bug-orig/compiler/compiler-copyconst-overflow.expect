@@ -1,5 +1,2 @@
 [compile]
-ok
-[run]
-64
-rc=0
+error 19 Operand too Long
