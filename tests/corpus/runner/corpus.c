@@ -67,6 +67,7 @@ void corpus_free(struct corpus_pass *p)
     free(p->uae);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
+        free(p->configs[i].base);
         free(p->configs[i].blitz2);
         free(p->configs[i].deflibs);
         free(p->configs[i].acidlibs);
@@ -220,20 +221,31 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         if (!strcmp(key, "config")) {
             struct corpus_config c, *v2;
             const char *s = val;
-            char *expect;
+            char *expect, *b;
 
             c.tag = field(&s);
             expect = field(&s);
             c.blitz2 = field(&s);
             c.deflibs = field(&s);
             c.acidlibs = field(&s);
+            /* exe:BASE, output:BASE: compared with the configuration BASE
+               instead of the reference */
+            c.base = NULL;
+            if (expect && (b = strchr(expect, ':')) != NULL) {
+                *b++ = 0;
+                c.base = *b ? strdup(b) : NULL;
+                if (!c.base)
+                    *expect = 0;
+            }
             c.expect = expect && !strcmp(expect, "ref") ? CORPUS_REF
                        : expect && !strcmp(expect, "exe") ? CORPUS_EXE : CORPUS_OUTPUT;
             if (!c.tag || !*c.tag || !expect || !c.acidlibs || !*c.acidlibs || *s
                 || (strcmp(expect, "ref") && strcmp(expect, "exe") && strcmp(expect, "output"))
+                || (c.base && c.expect == CORPUS_REF)
                 || (c.expect == CORPUS_REF && p->nconfigs)
                 || !(v2 = realloc(p->configs, (p->nconfigs + 1) * sizeof *v2))) {
                 free(c.tag);
+                free(c.base);
                 free(expect);
                 free(c.blitz2);
                 free(c.deflibs);
@@ -241,7 +253,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 free(val);
                 return fail(p, err, errlen,
                             "line %u: config=TAG|ref|exe|output|BLITZ2|DEFLIBS|ACIDLIBS "
-                            "(the first and only the first is ref)", no);
+                            "(the first and only the first is ref; exe:BASE and output:BASE "
+                            "compare with the configuration BASE)", no);
             }
             free(expect);
             free(val);
@@ -411,6 +424,17 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         for (k = 0; k < i; k++)
             if (!strcasecmp(p->configs[i].tag, p->configs[k].tag))
                 return fail(p, err, errlen, "configuration %s twice", p->configs[i].tag);
+    /* exe:BASE, output:BASE: BASE is another configuration of the pass */
+    for (i = 0; i < p->nconfigs; i++) {
+        if (!p->configs[i].base)
+            continue;
+        for (k = 0; k < p->nconfigs; k++)
+            if (k != i && !strcmp(p->configs[i].base, p->configs[k].tag))
+                break;
+        if (k == p->nconfigs)
+            return fail(p, err, errlen, "configuration %s: %s is no other configuration",
+                        p->configs[i].tag, p->configs[i].base);
+    }
     /* the configuration of a file= with TAG */
     for (i = 0; i < p->nfiles; i++) {
         if (!p->file_tag[i])
@@ -453,6 +477,7 @@ static void drop_config(struct corpus_pass *p, size_t k)
     }
     p->nfiles = j;
     free(p->configs[k].tag);
+    free(p->configs[k].base);
     free(p->configs[k].blitz2);
     free(p->configs[k].deflibs);
     free(p->configs[k].acidlibs);
@@ -877,6 +902,25 @@ static int same(const uint8_t *a, size_t al, const uint8_t *b, size_t bl)
     return a && b && al == bl && !memcmp(a, b, al);
 }
 
+/* the outcome configuration c is compared with: the reference's (ref, already
+   loaded) or, with exe:BASE / output:BASE, that of BASE (loaded into base) */
+static const struct outcome *compared_with(const struct corpus_pass *p, size_t c, size_t i,
+                                           char **slog, const struct outcome *ref,
+                                           struct outcome *base)
+{
+    size_t k;
+
+    if (!p->configs[c].base)
+        return ref;
+    for (k = 0; k < p->nconfigs; k++)
+        if (!strcmp(p->configs[c].base, p->configs[k].tag)) {
+            load_outcome(p, k, i, slog[k], base);
+            return base;
+        }
+    memset(base, 0, sizeof *base);        /* checked by corpus_parse */
+    return ref;
+}
+
 /* ------------------------------------------------------------ bug-orig */
 
 /* the observation of configuration c (bugorig_observe) */
@@ -1277,23 +1321,27 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 text_add(&rep, " %s", ref.exe ? "compiles" : "does not compile");
             for (c = 1; c < p->nconfigs; c++) {
                 const struct corpus_config *cf = &p->configs[c];
+                struct outcome bo;
+                const struct outcome *rb = compared_with(p, c, i, slog, &ref, &bo);
                 int ok;
 
                 load_outcome(p, c, i, slog[c], &o);
-                ok = !strcmp(ref.result, o.result);
+                ok = !strcmp(rb->result, o.result);
                 text_add(&rep, "; %s:%s", cf->tag, ok ? " result same" : " RESULT DIFFERS (");
                 if (!ok)
-                    text_add(&rep, "%s / %s)", ref.result, o.result);
-                if (cf->expect == CORPUS_EXE && (ref.exe || o.exe)) {
-                    int same_exe = same(ref.exe, ref.exelen, o.exe, o.exelen);
+                    text_add(&rep, "%s / %s)", rb->result, o.result);
+                if (cf->expect == CORPUS_EXE && (rb->exe || o.exe)) {
+                    int same_exe = same(rb->exe, rb->exelen, o.exe, o.exelen);
 
-                    text_add(&rep, same_exe ? ", exe identical" : o.exe && ref.exe ? ", EXE DIFFERS"
+                    text_add(&rep, same_exe ? ", exe identical" : o.exe && rb->exe ? ", EXE DIFFERS"
                                    : o.exe ? ", AN EXE" : ", NO EXE");
                     ok &= same_exe;
                 }
                 diff |= !ok;
                 vbad[c] |= !ok;
                 free_outcome(&o);
+                if (rb == &bo)
+                    free_outcome(&bo);
             }
             text_add(&rep, "\n");
             bad += diff;
@@ -1311,11 +1359,13 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         }
         for (c = 1; c < p->nconfigs; c++) {
             const struct corpus_config *cf = &p->configs[c];
+            struct outcome bo;
+            const struct outcome *rb = compared_with(p, c, i, slog, &ref, &bo);
 
             load_outcome(p, c, i, slog[c], &o);
             text_add(&rep, "%s %s:", c > 1 ? ";" : "", cf->tag);
             if (cf->expect == CORPUS_EXE) {
-                int ok = same(ref.exe, ref.exelen, o.exe, o.exelen);
+                int ok = same(rb->exe, rb->exelen, o.exe, o.exelen);
 
                 text_add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
                     o.result);
@@ -1324,16 +1374,16 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             }
             if (!o.run)
                 text_add(&rep, " NO OUTPUT");
-            else if (same(ref.run, ref.runlen, o.run, o.runlen))
+            else if (same(rb->run, rb->runlen, o.run, o.runlen))
                 text_add(&rep, " output same");
             else
                 text_add(&rep, " OUTPUT DIFFERS");
-            diff |= !same(ref.run, ref.runlen, o.run, o.runlen);
-            vbad[c] |= !same(ref.run, ref.runlen, o.run, o.runlen);
+            diff |= !same(rb->run, rb->runlen, o.run, o.runlen);
+            vbad[c] |= !same(rb->run, rb->runlen, o.run, o.runlen);
             if (p->serial) {
-                int ok = same(ref.serial, ref.seriallen, o.serial, o.seriallen);
+                int ok = same(rb->serial, rb->seriallen, o.serial, o.seriallen);
 
-                text_add(&rep, !ref.serial ? ", NO REFERENCE SERIAL DATA" : ok ? ", serial data same"
+                text_add(&rep, !rb->serial ? ", NO REFERENCE SERIAL DATA" : ok ? ", serial data same"
                                : ", SERIAL DATA DIFFERS");
                 diff |= !ok;
                 vbad[c] |= !ok;
@@ -1344,6 +1394,8 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 }
             }
             free_outcome(&o);
+            if (rb == &bo)
+                free_outcome(&bo);
         }
         if (p->serial && ref.run && strstr((const char *)ref.run, "TIMEOUT")) {
             text_add(&rep, "; reference: TIMEOUT");

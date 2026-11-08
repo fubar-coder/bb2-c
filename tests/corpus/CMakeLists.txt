@@ -38,8 +38,11 @@ set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 # Configurations (bb2 corpus_check): ref = the original compiler (2.10,
 # BLITZ2/BLITZ2 of the CD) with the CD's libraries (the reference), port = blitz2-c with the CD's libraries
 # (executable identical, output the same), clib = blitz2-c with the C
-# libraries of this build (output the same).  Without the CD the tests
-# skip.  CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
+# libraries of this build (output the same), prev (with BLITZ2_PREV,
+# cmake/prev.cmake) = the compiler and libraries of the previous commit:
+# its executable must be the one clib writes, its output the same as
+# clib's (a result the commit changed shows here).  Without the CD the
+# tests skip.  CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
 # control channel is a socket in a private XDG_RUNTIME_DIR only on Linux;
 # Windows: numbered named pipes, macOS: a fixed socket under /tmp - 1
 # there).
@@ -92,6 +95,12 @@ function(corpus_pass name)
 		"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
 		"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
 		"config=clib|output|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
+	set(configs 3)
+	if(PREV_REQUESTED)
+		string(APPEND text "config=prev|exe:clib|${PREV_BLITZ2_DIR}/blitz2|${PREV_BLITZ2_DIR}/deflibs|"
+			"${PREV_BLITZ2_DIR}/acidlibs\n")
+		set(configs 4)
+	endif()
 	# BB2: the CD - the tests load sounds and modules from it
 	string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n")
 	foreach(s IN LISTS arg_SOURCES)
@@ -99,9 +108,9 @@ function(corpus_pass name)
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-	# three sessions, one after the other if there are not enough emulator
-	# slots free, each maybe waiting for one
-	math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120 + 3 * ${EMULATION_QUEUE_WAIT}")
+	# one session per configuration, one after the other if there are not
+	# enough emulator slots free, each maybe waiting for one
+	math(EXPR limit "${CORPUS_TIMEOUT} * ${configs} + 120 + ${configs} * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 	if(arg_SERIAL_SAME_AS)

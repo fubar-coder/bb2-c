@@ -42,6 +42,24 @@ int main(void)
     CHECK((n = corpus_name("/s/T02_float.BB2")) && !strcmp(n, "T02_float"));
     free(n);
 
+    /* exe:BASE compares with another configuration instead of the reference */
+    CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
+                       "config=prev|exe:clib|/p|/q|/r\nsource=/s\n", &p, err, sizeof err) == 0);
+    CHECK(p.nconfigs == 4 && p.configs[3].expect == CORPUS_EXE && !p.configs[1].base
+          && !strcmp(p.configs[3].base, "clib") && !strcmp(p.configs[3].acidlibs, "/r"));
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "config=prev|output:port|/p|/q|/r\nsource=/s\n", &p, err,
+                       sizeof err) == 0 && p.configs[2].expect == CORPUS_OUTPUT
+          && !strcmp(p.configs[2].base, "port"));
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "config=prev|exe:nobody|/p|/q|/r\nsource=/s\n", err, sizeof err) == -1
+          && strstr(err, "prev: nobody is no other configuration"));
+    CHECK(parse(BASE CONFIGS "config=prev|exe:prev|/p|/q|/r\nsource=/s\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "config=prev|exe:|/p|/q|/r\nsource=/s\n", err, sizeof err) == -1);
+    CHECK(parse(BASE "config=ref|ref:port|/a|/b|/c\nconfig=port|exe|/a|/b|/c\nsource=/s\n", err,
+                sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "config=prev|ref:port|/p|/q|/r\nsource=/s\n", err, sizeof err) == -1);
+
     /* broken */
     CHECK(parse(BASE CONFIGS, err, sizeof err) == -1);                      /* no source */
     CHECK(parse(BASE "config=ref|ref|/a|/b|/c\nsource=/s\n", err, sizeof err) == -1);

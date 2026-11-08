@@ -35,7 +35,12 @@
  *                     first is the reference (EXPECT ref; none with
  *                     fixed= or regression=on), the others:
  *                     exe = executable identical and output the same,
- *                     output = output the same
+ *                     output = output the same;
+ *                     exe:BASE and output:BASE compare with the
+ *                     configuration BASE (another one of the pass)
+ *                     instead of the reference, e.g. prev|exe:clib: the
+ *                     build of the previous commit writes the executable
+ *                     the current compiler with the C libraries writes
  *   source=PATH       a tokenised source (NAME.bb2), any number
  *   serial=on|off     on: the emulated serial port is a TCP server, a
  *                     remote end answers the programs (serial.h); the bytes
@@ -136,6 +141,8 @@ enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
 struct corpus_config {
     char *tag;
     enum corpus_expect expect;
+    char *base;                         /* exe:BASE, output:BASE: the tag of the configuration
+                                           compared with instead of the reference, or NULL */
     char *blitz2, *deflibs, *acidlibs;
 };
 
