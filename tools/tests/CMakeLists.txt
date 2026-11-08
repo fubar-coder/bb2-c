@@ -129,8 +129,8 @@ set_tests_properties(amiga_run_purge_empty_owner PROPERTIES WILL_FAIL ON)
 add_test(NAME amiga_run_purge_two_owners COMMAND amiga_run --purge-snapshots /a /b)
 set_tests_properties(amiga_run_purge_two_owners PROPERTIES WILL_FAIL ON)
 
-# covsel's tests embed tools/covsel/rules.txt
-target_compile_definitions(test_covsel PRIVATE COVSEL_RULES="${CMAKE_CURRENT_SOURCE_DIR}/../covsel/rules.txt")
+# covsel's tests embed the rules of testinfo select (tools/testinfo/rules.txt)
+target_compile_definitions(test_covsel PRIVATE COVSEL_RULES="${CMAKE_CURRENT_SOURCE_DIR}/../testinfo/rules.txt")
 
 # cmdref on a file that is no library: an error, exit status 1
 add_test(NAME cmdref_not_a_library COMMAND cmdref -group acidlibs -name x

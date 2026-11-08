@@ -1,6 +1,6 @@
 # The tests a change can affect (tests/README.md "Coverage"), from the tracefiles of
 # a coverage run (cmake/coverage-map.cmake): runs git, ninja and ctest and
-# hands their output to tools/covsel with tools/covsel/rules.txt.  Writes
+# hands their output to testinfo select (tools/testinfo) with tools/testinfo/rules.txt.  Writes
 # <build>/coverage/selected.txt for
 #   ctest --preset all --tests-from-file <build>/coverage/selected.txt
 # (and the same with --preset bug-orig).
@@ -27,10 +27,10 @@ if(NOT COVERAGE)
 	set(COVERAGE ${BUILD}/coverage)
 endif()
 get_filename_component(COVERAGE ${COVERAGE} ABSOLUTE)
-set(COVSEL ${BUILD}/host/tools/covsel/covsel)
+set(TESTINFO ${BUILD}/host/tools/testinfo/testinfo)
 set(IN ${BUILD}/coverage/select-inputs)
 set(OUT ${BUILD}/coverage/selected.txt)
-foreach(f ${COVERAGE}/commit ${COVERAGE}/lcov ${COVSEL})
+foreach(f ${COVERAGE}/commit ${COVERAGE}/lcov ${TESTINFO})
 	if(NOT EXISTS ${f})
 		message(FATAL_ERROR "${f} is missing (tests/README.md \"Coverage\")")
 	endif()
@@ -99,12 +99,12 @@ if(EXISTS ${BUILD}/host/CTestTestfile.cmake)
 	set(host --host-tests ${IN}/host-tests.json)
 endif()
 
-execute_process(COMMAND ${COVSEL} --root ${SRC} --coverage ${COVERAGE} --rules ${SRC}/tools/covsel/rules.txt
+execute_process(COMMAND ${TESTINFO} select --root ${SRC} --coverage ${COVERAGE} --rules ${SRC}/tools/testinfo/rules.txt
 		--tests ${IN}/tests.json ${host} --diff ${IN}/diff.txt ${deps}
 		--untracked ${IN}/untracked.txt ${stale} -o ${OUT}
 	RESULT_VARIABLE r)
 if(r)
-	message(FATAL_ERROR "covsel failed")
+	message(FATAL_ERROR "testinfo select failed")
 endif()
 message(STATUS "Run them: ctest --test-dir ${BUILD} --tests-from-file ${OUT} "
 	"(or with --preset all / --preset bug-orig)")

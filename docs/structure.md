@@ -106,7 +106,7 @@ tools/                       host tools:
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
   bblines/, bbdetok/, xtra/,
-  teststats/,
+  testinfo/,
   ab3tok/, hdftool/, cmdref/
   bbdetok/archive_text.cmake the target archive_text: archive/sources/
                              as text (build/<preset>/archive-text/)

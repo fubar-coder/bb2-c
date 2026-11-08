@@ -1,0 +1,7 @@
+# testinfo: records of test runs (README.md)
+# rules.txt: what a change of a file selects (select; cmake/coverage-select.cmake)
+set(TESTINFO_SUBCOMMANDS stats map select)
+add_executable(testinfo main.c cmd_stats.c cmd_map.c cmd_select.c)
+target_link_libraries(testinfo PRIVATE lib_subcmd lib_teststats lib_covmap lib_covsel)
+host_help_test(testinfo ${TESTINFO_SUBCOMMANDS})
+host_readme_test(testinfo README.md)

@@ -1,13 +1,13 @@
 /*
- * covsel - the tests a change can affect, from the coverage of a coverage
- * run (lib/covsel/covsel.h; cmake/coverage-select.cmake runs git, ninja
- * and ctest and hands their output to it).
+ * testinfo select - the tests a change can affect, from the coverage of a
+ * coverage run (lib/covsel/covsel.h; cmake/coverage-select.cmake runs git,
+ * ninja and ctest and hands their output to it).
  *
- *   covsel --coverage DIR --rules RULES --tests JSON [--host-tests JSON]
- *          [--diff DIFF] [--deps DEPS]... [--untracked LIST] [--stale]
- *          [--root DIR] -o SELECTED
+ *   testinfo select --coverage DIR --rules RULES --tests JSON [--host-tests JSON]
+ *                   [--diff DIFF] [--deps DEPS]... [--untracked LIST] [--stale]
+ *                   [--root DIR] -o SELECTED
  *
- * DIR is the output of covmap: DIR/commit and the tracefiles
+ * DIR is the output of testinfo map: DIR/commit and the tracefiles
  * DIR/lcov/<test>.info (the test's name is the file's path below
  * DIR/lcov without ".info"; all.info is not read).  Writes the names of
  * the selected tests to SELECTED, one per line (for ctest
@@ -16,29 +16,36 @@
  * arguments or a file that cannot be read.
  */
 #define _XOPEN_SOURCE 700
+#include <errno.h>
 #include <ftw.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "covsel.h"
+#include "testinfo.h"
+
+const char cmd_select_usage[] =
+    "usage: testinfo select --coverage DIR --rules RULES --tests JSON [--host-tests JSON]\n"
+    "                       [--diff DIFF] [--deps DEPS]... [--untracked LIST] [--stale]\n"
+    "                       [--root DIR] -o SELECTED\n"
+    "Select the tests a change can affect, from the coverage of a coverage run.\n"
+    "  --coverage DIR     testinfo map's output: DIR/commit, DIR/lcov/<test>.info\n"
+    "  --rules RULES      what a change of a file selects (tools/testinfo/rules.txt)\n"
+    "  --tests JSON       ctest --show-only=json-v1 of the build\n"
+    "  --host-tests JSON  the same of its host project (tests host/NAME, run by\n"
+    "                     host or host_emulator)\n"
+    "  --diff DIFF        git diff -U0 against the map's commit\n"
+    "  --deps DEPS        ninja -t deps of a build\n"
+    "  --untracked LIST   files git does not track, one per line (new files)\n"
+    "  --stale            the map's commit is not an ancestor of the base: all tests\n"
+    "  --root DIR         the repository (default: the current directory)\n"
+    "Writes the selected tests to SELECTED, one per line, the reasons to stdout.\n";
+
+static const char *me; /* "testinfo select", the prefix of the messages */
 
 static void usage(FILE *f)
 {
-    fprintf(f, "usage: covsel --coverage DIR --rules RULES --tests JSON [--host-tests JSON]\n"
-               "              [--diff DIFF] [--deps DEPS]... [--untracked LIST] [--stale]\n"
-               "              [--root DIR] -o SELECTED\n"
-               "Select the tests a change can affect, from the coverage of a coverage run.\n"
-               "  --coverage DIR     covmap's output: DIR/commit, DIR/lcov/<test>.info\n"
-               "  --rules RULES      what a change of a file selects (tools/covsel/rules.txt)\n"
-               "  --tests JSON       ctest --show-only=json-v1 of the build\n"
-               "  --host-tests JSON  the same of its host project (tests host/NAME, run by\n"
-               "                     host or host_emulator)\n"
-               "  --diff DIFF        git diff -U0 against the map's commit\n"
-               "  --deps DEPS        ninja -t deps of a build\n"
-               "  --untracked LIST   files git does not track, one per line (new files)\n"
-               "  --stale            the map's commit is not an ancestor of the base: all tests\n"
-               "  --root DIR         the repository (default: the current directory)\n"
-               "Writes the selected tests to SELECTED, one per line, the reasons to stdout.\n");
+    fputs(cmd_select_usage, f);
 }
 
 /* a whole file, 0-terminated */
@@ -91,7 +98,7 @@ static int walk_file(const char *path, const struct stat *st, int type, struct F
         return 1;
     }
     if (covsel_read_lcov(walk_sel, test, text, err, sizeof err)) {
-        fprintf(stderr, "covsel: %s: %s\n", path, err);
+        fprintf(stderr, "%s: %s: %s\n", me, path, err);
         walk_r = 1;
     }
     free(test);
@@ -99,7 +106,7 @@ static int walk_file(const char *path, const struct stat *st, int type, struct F
     return walk_r;
 }
 
-/* covmap's output: DIR/commit, and the tracefiles DIR/lcov/<test>.info */
+/* testinfo map's output: DIR/commit, and the tracefiles DIR/lcov/<test>.info */
 static int read_coverage(struct covsel *s, const char *dir)
 {
     size_t n = strlen(dir) + 16;
@@ -160,13 +167,13 @@ static int read_input(struct covsel *s, int kind, const char *path)
     }
     free(text);
     if (r) {
-        fprintf(stderr, "covsel: %s: %s\n", path, err);
+        fprintf(stderr, "%s: %s: %s\n", me, path, err);
         return 1;
     }
     return 0;
 }
 
-int main(int argc, char **argv)
+int cmd_select(int argc, char **argv)
 {
     static const struct {
         const char *opt;
@@ -183,10 +190,7 @@ int main(int argc, char **argv)
     size_t i, k;
     int a, r = 0, stale = 0;
 
-    if (argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        usage(stdout);
-        return 0;
-    }
+    me = argv[0];
     for (a = 1; a < argc; a++) {
         for (k = 0; k < sizeof opts / sizeof *opts; k++)
             if (!strcmp(argv[a], opts[k].opt))
@@ -211,7 +215,7 @@ int main(int argc, char **argv)
         return 2;
     }
     if (!(root = realpath(root ? root : ".", NULL))) {
-        perror("covsel: --root");
+        fprintf(stderr, "%s: --root: %s\n", me, strerror(errno));
         return 2;
     }
     s = covsel_new(root);
@@ -229,7 +233,7 @@ int main(int argc, char **argv)
     if (stale)
         covsel_set_stale(s);
     if (!r && covsel_run(s, stdout)) {
-        fprintf(stderr, "covsel: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         r = 2;
     }
     if (!r) {

@@ -3,7 +3,7 @@
  * case per rule of D8 (changed functions, a line outside them, a file
  * without line ranges, a header, the build, an unknown file, labels,
  * names, documentation, new tests, a new file, a stale map), the patterns,
- * the rules of tools/covsel/rules.txt, and broken inputs of each kind.
+ * the rules of tools/testinfo/rules.txt, and broken inputs of each kind.
  */
 #include "testutil.h"
 #include "covsel.h"
@@ -292,7 +292,7 @@ static void test_match(void)
     CHECK(covsel_match("**.cmake", "a/b/c.cmake") && covsel_match("**/*.cmake", "c.cmake"));
 }
 
-/* tools/covsel/rules.txt: it parses, and chooses as intended */
+/* tools/testinfo/rules.txt: it parses, and chooses as intended */
 static const char real_rules[] = {
 #embed COVSEL_RULES
     , 0
@@ -337,7 +337,7 @@ static void test_real_rules(void)
     CHECK(!strcmp(r, EMU));
     r = select_for(real_rules, diff1("tools/lib/covmap/covmap.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "host host_emulator newtest"));
-    r = select_for(real_rules, diff1("tools/covsel/rules.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    r = select_for(real_rules, diff1("tools/testinfo/rules.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "host host_emulator newtest"));
     r = select_for(real_rules, diff1("tools/tests/test_hunk.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "host host_emulator newtest"));

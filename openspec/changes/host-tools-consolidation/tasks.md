@@ -40,7 +40,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 2. `testinfo` (teststats, covmap, covsel; 7 call sites)
 
-- [ ] 2.1 `tools/testinfo/` with `stats`, `map`, `select` (`teststats`, `covmap`, `covsel`); `cmake/coverage-map.cmake:29`, `cmake/coverage-select.cmake:30` call `testinfo map` and `testinfo select`; `rules.txt:57-61` patterns become `tools/testinfo/**`. Verify: C1-C5; `cmake -P cmake/coverage-map.cmake` and `coverage-select.cmake` on the host coverage build produce the same files as before (`cmp` of `lcov/*.info`, `selected`); `test_covmap`, `test_covsel`, `test_teststats` unchanged and passing
+- [x] 2.1 `tools/testinfo/` with `stats`, `map`, `select` (`teststats`, `covmap`, `covsel`); `cmake/coverage-map.cmake:29`, `cmake/coverage-select.cmake:30` call `testinfo map` and `testinfo select`; `rules.txt:57-61` patterns become `tools/testinfo/**`. Verify: C1-C5; `cmake -P cmake/coverage-map.cmake` and `coverage-select.cmake` on the host coverage build produce the same files as before (`cmp` of `lcov/*.info`, `selected`); `test_covmap`, `test_covsel`, `test_teststats` unchanged and passing
 
 ## 3. `refcheck` (asmcmp, checklabels, checkdata, vasmlisting; 22 call sites)
 

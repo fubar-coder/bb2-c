@@ -57,8 +57,8 @@ the host is loaded, #976) and compares the program output with the same
 expect files; `ab3_cli_ref_broken` and `ab3_cli_ref_broken_date` check it with a wrong expect file.
 The compiler never changes, so the result changes only with the cases and
 expectations: run `ctest --preset oracle` before merging a change of
-`tests/ab3` (cases, `cli/`, expect files, `cli.cmake`); `covsel` selects the
-tests then. `host`, `emulator` and `all` leave them out.
+`tests/ab3` (cases, `cli/`, expect files, `cli.cmake`); `testinfo select`
+selects the tests then. `host`, `emulator` and `all` leave them out.
 
 ## host tests
 
@@ -870,11 +870,12 @@ time without the wait for an emulator slot, the wait, the part counted
 against the time limit, the limit, the end (done, timeout, halt,
 exited, failed) and the verdict of the config (bug-orig FIXED/REPRODUCED/DIFFERS/
 BROKEN, reference; corpus same/differs; TED A/B ok/fail). The format is
-defined in `tools/lib/teststats/statline.h`. `teststats` reads one or
+defined in `tools/lib/teststats/statline.h`. `testinfo stats`
+([`tools/testinfo/README.md`](../tools/testinfo/README.md)) reads one or
 more JUnit files (each one a run):
 
 ```
-build/amiga/host/tools/teststats/teststats [--tsv] [--factor X] [--floor SEC] build/amiga/junit-*.xml
+build/amiga/host/tools/testinfo/testinfo stats build/amiga/junit-*.xml
 ```
 
 It prints per test the runs and their durations (min/median/max), per
@@ -935,7 +936,8 @@ cmake --build build/amiga-cov --target coverage-map
 
 runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
 `objdump --dwarf=decodedline` of each measured program's objects, and
-`tools/covmap` over all of it. The results, in `build/<preset>/coverage/`:
+`testinfo map` ([`tools/testinfo/README.md`](../tools/testinfo/README.md))
+over all of it. The results, in `build/<preset>/coverage/`:
 
 * `lcov/<test>.info`: the lcov tracefile (format of lcov 2.x) of each
   test (`lcov/host/X.info` for host test `X`), its name as `TN:` (in
@@ -962,7 +964,7 @@ runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
   lines are not known (`glue_direct.c`) is not in the report.
 * `commit`: the commit the run was made from.
 
-The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
+The inputs handed to `testinfo map` stay in `build/<preset>/coverage/map-inputs/`.
 
 While working on a change, the tracefiles choose the tests it can affect:
 
@@ -978,10 +980,10 @@ ctest --preset bug-orig --tests-from-file coverage/selected.txt
 `cmake/coverage-select.cmake` runs `git diff -U0` of the working tree
 against the coverage's commit (and lists the files git does not track),
 `ninja -t deps` and `ctest --show-only=json-v1` of the build and its
-host project, and hands it all to `tools/covsel`. It prints why each
+host project, and hands it all to `testinfo select`. It prints why each
 test is selected and writes `build/amiga/coverage/selected.txt`. The
 rules for what a change of a file selects are in
-`tools/covsel/rules.txt`, the first matching pattern counts:
+`tools/testinfo/rules.txt`, the first matching pattern counts:
 
 * a changed line of a measured source (`programs/blitz2/src/*.c`): the
   tests that executed the function around it; a line outside every
@@ -999,8 +1001,8 @@ rules for what a change of a file selects are in
   (`tools/lib/amiga_emulation/`), `amiga_run`, the `@stat` line
   (`tools/lib/teststats/`) and `outmatch`: every emulator test and the
   host tests;
-* the tools only the host tests and the coverage scripts use (`covmap`,
-  `covsel`, `teststats`): the host tests; every other tool makes or
+* the tools only the host tests and the coverage scripts use
+  (`testinfo`): the host tests; every other tool makes or
   checks results of the build (`biglib`, `blitzlibcheck`, `hunkcheck`,
   `xtra`, `ab3tok`, ...): all tests;
 * `libs/`: the emulator tests and the checks of the libraries;

@@ -1,9 +1,9 @@
 /*
- * covmap - the coverage of each test as lcov tracefiles
+ * testinfo map - the coverage of each test as lcov tracefiles
  * (lib/covmap/covmap.h; cmake/coverage-map.cmake runs it after a coverage
  * test run).
  *
- *   covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR
+ *   testinfo map --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR
  *
  * Writes DIR/lcov/<test>.info per test, DIR/lcov/all.info with all tests
  * and DIR/commit with SHA.  Exit status 0 if they are written, 1 if an
@@ -16,23 +16,29 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "covmap.h"
+#include "testinfo.h"
+
+const char cmd_map_usage[] =
+    "usage: testinfo map --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR\n"
+    "Write the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all\n"
+    "of them as DIR/lcov/all.info, and SHA as DIR/commit.\n"
+    "INPUT:\n"
+    "  --deps FILE              ninja -t deps of a build (the source of each object)\n"
+    "  --linkmap PROGRAM FILE   the link map of an Amiga program\n"
+    "  --objsyms PROGRAM FILE   nm -A of its objects (static functions too)\n"
+    "  --lines PROGRAM FILE     objdump --dwarf=decodedline of its objects (line ranges)\n"
+    "  --gcov TEST FILE         gcov --json-format --stdout of a host test\n"
+    "  --cov TEST PROGRAM FILE  the coverage file a test left for PROGRAM\n"
+    "  --inputs FILE            inputs, one per line: the option without \"--\" and its\n"
+    "                           arguments, separated by tabs\n"
+    "--root: the repository (default: the current directory); files outside it\n"
+    "and below a --drop prefix are left out.\n";
+
+static const char *me; /* "testinfo map", the prefix of the messages */
 
 static void usage(FILE *f)
 {
-    fprintf(f, "usage: covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR\n"
-               "Write the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all\n"
-               "of them as DIR/lcov/all.info, and SHA as DIR/commit.\n"
-               "INPUT:\n"
-               "  --deps FILE              ninja -t deps of a build (the source of each object)\n"
-               "  --linkmap PROGRAM FILE   the link map of an Amiga program\n"
-               "  --objsyms PROGRAM FILE   nm -A of its objects (static functions too)\n"
-               "  --lines PROGRAM FILE     objdump --dwarf=decodedline of its objects (line ranges)\n"
-               "  --gcov TEST FILE         gcov --json-format --stdout of a host test\n"
-               "  --cov TEST PROGRAM FILE  the coverage file a test left for PROGRAM\n"
-               "  --inputs FILE            inputs, one per line: the option without \"--\" and its\n"
-               "                           arguments, separated by tabs\n"
-               "--root: the repository (default: the current directory); files outside it\n"
-               "and below a --drop prefix are left out.\n");
+    fputs(cmd_map_usage, f);
 }
 
 enum kind { K_DEPS, K_LINKMAP, K_OBJSYMS, K_LINES, K_GCOV, K_COV, K_COUNT };
@@ -125,7 +131,7 @@ static int read_inputs(const char *path)
             *s++ = 0;
         }
         if ((k = find_kind(args[0])) < 0 || na - 1 != kinds[k].nargs) {
-            fprintf(stderr, "covmap: %s:%zu: not an input: %s\n", path, lineno, line);
+            fprintf(stderr, "%s: %s:%zu: not an input: %s\n", me, path, lineno, line);
             free(text);
             return 2;
         }
@@ -179,7 +185,7 @@ static int write_one(struct covmap *m, const char *dir, const char *name, long i
         r = (r | fclose(out)) ? 2 : 0;
     }
     if (r)
-        fprintf(stderr, "covmap: %s: cannot write\n", path);
+        fprintf(stderr, "%s: %s: cannot write\n", me, path);
     free(path);
     return r;
 }
@@ -190,7 +196,7 @@ static int write_output(struct covmap *m, const char *commit, const char *dir)
     int r = 0;
 
     if (n < 0) {
-        fprintf(stderr, "covmap: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         return 2;
     }
     for (i = 0; i < n && !r; i++)
@@ -202,7 +208,7 @@ static int write_output(struct covmap *m, const char *commit, const char *dir)
     return r;
 }
 
-int main(int argc, char **argv)
+int cmd_map(int argc, char **argv)
 {
     const char *commit = NULL, *output = NULL;
     char *root = NULL, err[512];
@@ -210,10 +216,7 @@ int main(int argc, char **argv)
     size_t i;
     int a, k, r = 0;
 
-    if (argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        usage(stdout);
-        return 0;
-    }
+    me = argv[0];
     for (a = 1; a < argc; a++) {
         if (!strcmp(argv[a], "--commit") && a + 1 < argc)
             commit = argv[++a];
@@ -241,7 +244,7 @@ int main(int argc, char **argv)
         return 2;
     }
     if (!(root = realpath(root ? root : ".", NULL))) {
-        perror("covmap: --root");
+        fprintf(stderr, "%s: --root: %s\n", me, strerror(errno));
         return 2;
     }
     covmap_init(&m, root);
@@ -278,7 +281,7 @@ int main(int argc, char **argv)
             }
             free(data);
             if (r) {
-                fprintf(stderr, "covmap: %s: %s\n", path, err);
+                fprintf(stderr, "%s: %s: %s\n", me, path, err);
                 r = 1;
             }
         }

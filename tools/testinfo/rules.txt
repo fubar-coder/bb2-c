@@ -1,4 +1,4 @@
-# What a change of a file selects (covsel, tests/README.md "Coverage"): per line a
+# What a change of a file selects (testinfo select, tests/README.md "Coverage"): per line a
 # path pattern (relative to the repository; '*' within a directory, '**'
 # across directories, "**/" also none) and selectors.  The first matching
 # rule counts; a file no rule matches selects all tests.  Selectors: all,
@@ -54,11 +54,9 @@ tools/amiga_run/**              label:emulator name:host/*
 tools/lib/teststats/**          label:emulator name:host/*
 tools/lib/outmatch/**           label:emulator name:host/*
 tools/outmatch/**               label:emulator name:host/*
-tools/teststats/**              name:host/*
 tools/lib/covmap/**             name:host/*
-tools/covmap/**                 name:host/*
 tools/lib/covsel/**             name:host/*
-tools/covsel/**                 name:host/*
+tools/testinfo/**               name:host/*
 tools/**                        all
 
 # test sources and expect files: the tests of the suites that read them

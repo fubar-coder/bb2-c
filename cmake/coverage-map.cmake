@@ -1,7 +1,7 @@
 # The coverage of each test as lcov tracefile (tests/README.md "Coverage"), after a
 # coverage test run: <build>/coverage/lcov/<test>.info, all tests in
 # <build>/coverage/lcov/all.info and the commit in <build>/coverage/commit,
-# made by tools/covmap from
+# made by testinfo map (tools/testinfo) from
 #   - the host tests' gcov data (HOST_COVERAGE: <build>/host/coverage/<test>/,
 #     read with gcov per test, recorded as test host/<test>),
 #   - the coverage files the emulator tests left (<dir>/coverage/<test>/
@@ -10,7 +10,7 @@
 #     `objdump --dwarf=decodedline` of its objects (line ranges if they
 #     are compiled with -g),
 #   - `ninja -t deps` of the build (the source of each object).
-# The inputs it hands covmap are kept in <build>/coverage/map-inputs/.
+# The inputs it hands testinfo map are kept in <build>/coverage/map-inputs/.
 #
 #   cmake -DBUILD=<build dir> [-DGCOV=gcov] -P cmake/coverage-map.cmake
 #   (or the target coverage-map)
@@ -26,9 +26,9 @@ if(NOT GCOV)
 endif()
 set(OUT ${BUILD}/coverage)
 set(IN ${OUT}/map-inputs)
-set(COVMAP ${BUILD}/host/tools/covmap/covmap)
-if(NOT EXISTS ${COVMAP})
-	message(FATAL_ERROR "${COVMAP} is missing: build the host side first")
+set(TESTINFO ${BUILD}/host/tools/testinfo/testinfo)
+if(NOT EXISTS ${TESTINFO})
+	message(FATAL_ERROR "${TESTINFO} is missing: build the host side first")
 endif()
 file(REMOVE_RECURSE ${IN})
 file(MAKE_DIRECTORY ${IN}/gcov ${IN}/amiga)
@@ -162,10 +162,10 @@ endforeach()
 file(WRITE ${IN}/inputs.txt "${inputs}")
 # the tracefiles of an earlier run go, so that none of a test of then stays
 file(REMOVE_RECURSE ${OUT}/lcov ${OUT}/commit)
-execute_process(COMMAND ${COVMAP} --commit ${commit} --root ${SRC} --drop ${BUILD}
+execute_process(COMMAND ${TESTINFO} map --commit ${commit} --root ${SRC} --drop ${BUILD}
 	--inputs ${IN}/inputs.txt -o ${OUT} RESULT_VARIABLE r)
 if(r)
-	message(FATAL_ERROR "covmap failed")
+	message(FATAL_ERROR "testinfo map failed")
 endif()
 message(STATUS "${OUT}/lcov/ (commit ${commit}): ${nhost} host tests, "
 	"${namiga} coverage files of ${programs}; all tests in ${OUT}/lcov/all.info")
