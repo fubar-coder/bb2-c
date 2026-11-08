@@ -1,5 +1,6 @@
 add_executable(xtra main.c)
 target_link_libraries(xtra PRIVATE lib_xtra)
+host_readme_test(xtra README.md)
 
 # the tool on files: an AmiBlitz3 header converted to a .xtra and back,
 # dumped and checked; broken inputs refused with their message

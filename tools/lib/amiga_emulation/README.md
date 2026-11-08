@@ -18,13 +18,11 @@ limit; machines: `a1200` = `default.uae`, `a500` = `a500.uae` with
 Kickstart 1.3, `a500-68010`),
 `amiga_emulation_command()` (control socket of Amiberry, e.g.
 `SCREENSHOT`, `READ_MEM`), `amiga_emulation_join()`. The script sees its
-directory as `TEST:`. By hand:
+directory as `TEST:`. By hand with `amiga_run`
+([`tools/amiga_run/README.md`](../../amiga_run/README.md)):
 
 ```
 echo 'Version >TEST:v.txt' | build/amiga/host/tools/amiga_run/amiga_run -
-amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]
-          [--set KEY=VALUE] [--unset KEY] [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR]
-          SCRIPT|-
 ```
 
 `--log` writes Amiberry's own log into `amiberry.log` of the working

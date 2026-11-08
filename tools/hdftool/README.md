@@ -40,7 +40,10 @@ DOS\5 (directory caches) are refused.
     file,
   * `--copy FROM TO` copies a file inside the image.
 
-`-h` or `--help` prints the usage on stdout.
+`-h` or `--help` prints the usage on stdout. The subcommands are
+dispatched by the program itself, not by `tools/lib/subcmd`;
+`hdftool SUB -h` is not a help of its own (planned with the move of the
+host programs to CLI11).
 
 ## Inputs and outputs
 

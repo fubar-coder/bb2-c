@@ -531,3 +531,11 @@ Findings and adaptations while implementing (2026-11-08).
   `perror` messages of the former tools get the prefix as well
   (`bbsrc tokens: FILE: strerror`), the refusals of `bb22` that had no
   prefix (`FILE: offset N: message`) keep their form.
+- **`xtra` and `hdftool` keep their own dispatch** (coordinator decision
+  for task 12.1): a follow-up change replaces `tools/lib/subcmd` and the
+  hand-written option parsing of the host programs with CLI11 (C++), so
+  moving them onto `subcmd` now would be redone. They get their READMEs
+  and `readme_*` tests; their `help_*` tests stay single-mode (`-h`,
+  `--help`), and `SUB -h` (which neither handles: `hdftool info -h` takes
+  `-h` as the image, `xtra dump -h` as the file) is left to the CLI11
+  change.
