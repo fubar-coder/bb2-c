@@ -511,3 +511,14 @@ Findings and adaptations while implementing (2026-11-08).
   `cmd_res.c`, `cmd_biglib.c`); the history follows the move where most
   of the file stays (not for `cmd_listing.c`, whose 72 lines are mostly
   new).
+- **The log lines of the runners** (`tedab run`, `corpusrun cd`: sessions,
+  waiting for a slot, skipped) are messages of the program, written to
+  stdout between the report parts; they get the prefix `PROGRAM SUB:`
+  like the messages on stderr (`tedab run: session 001: 28 runs`), and so
+  does the summary line of `tedab lint` (`tedab lint: 1 tests, 0
+  problems`, matched by `ted_ab_lint_fixed*`). The reports themselves
+  (`report=`) have no prefix and stay byte-identical.
+- **`tests/bug-orig/want.cmake`** runs `${RUNNER} ${SUB} ${PASS}`
+  (`-DRUNNER=... -DSUB=run` for `tedab`, `-DSUB=pass` for `corpusrun`)
+  instead of `${CORPUSRUN} ${PASS}`: one script for both runners, each
+  with its subcommand.

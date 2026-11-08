@@ -1,9 +1,9 @@
 /*
- * tedab - the TED A/B tests in Amiberry (bb2 ted-c/tools/tedab.py), see
- * tedab.h for the test scripts.
+ * tedab run, tedab lint - the TED A/B tests in Amiberry (bb2
+ * ted-c/tools/tedab.py), see tedab.h for the test scripts.
  *
- *   tedab PASSFILE          run the tests, report
- *   tedab --lint PASSFILE   only check the scripts and their sources
+ *   tedab run PASSFILE    run the tests, report
+ *   tedab lint PASSFILE   only check the scripts and their sources
  *
  * The pass file (written by CMake), lines KEY=VALUE, '#' comments:
  *   work=DIR           work directory (emptied first)
@@ -83,11 +83,14 @@
 #include <string.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "cmds.h"
 #include "statline_emulation.h"
 #include "tedab.h"
 #include "util.h"
 
 #define MAXSESSIONS 200
+
+static const char *me;          /* "tedab run" or "tedab lint", the prefix of the messages */
 
 struct pass {
     char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out;
@@ -323,7 +326,7 @@ static int load_tests(FILE *log)
     int bad = 0;
 
     if (!d) {
-        fprintf(log, "tedab: no %s\n", P.scripts);
+        fprintf(log, "%s: no %s\n", me, P.scripts);
         return 1;
     }
     while ((e = readdir(d))) {
@@ -447,13 +450,13 @@ static int stage_test(const struct tedab_test *t, FILE *log)
             free(x);
         }
         if (!src) {
-            fprintf(log, "tedab: %s: no %s on the CD %s\n", t->name, t->src_arg, P.cd);
+            fprintf(log, "%s: %s: no %s on the CD %s\n", me, t->name, t->src_arg, P.cd);
             r = 77;
         }
         break;
     }
     if (!r && src && copy_to(src, dir, t->file)) {
-        fprintf(log, "tedab: %s: cannot copy %s\n", t->name, src);
+        fprintf(log, "%s: %s: cannot copy %s\n", me, t->name, src);
         r = 77;
     }
     for (size_t k = 0; !r && k < t->nfiles; k++) {
@@ -473,7 +476,7 @@ static int stage_test(const struct tedab_test *t, FILE *log)
             from = own ? xtra : dflt;
             data = from ? read_file(from, &len) : NULL;
             if (!data || len < 6) {
-                fprintf(log, "tedab: %s: no %s (the corpus test makes it)\n", t->name,
+                fprintf(log, "%s: %s: no %s (the corpus test makes it)\n", me, t->name,
                         from ? from : "defaults.xtra");
                 r = 77;
             } else {
@@ -615,7 +618,7 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
         free(rd);
     }
     if (r)
-        fprintf(log, "tedab: cannot set up %s\n", vol ? vol : "the session");
+        fprintf(log, "%s: cannot set up %s\n", me, vol ? vol : "the session");
     free(vol);
     return r;
 }
@@ -842,12 +845,12 @@ static int load_orig(FILE *log)
     char err[200], *text = (char *)read_file(P.orig, &len);
 
     if (!text) {
-        fprintf(log, "tedab: no %s, the recorded observation of the original: record it with "
-                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", P.orig);
+        fprintf(log, "%s: no %s, the recorded observation of the original: record it with "
+                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", me, P.orig);
         return 2;
     }
     if (tedab_orig_parse(text, &orig_state, &orig_problems, err, sizeof err)) {
-        fprintf(log, "tedab: %s: %s\n", P.orig, err);
+        fprintf(log, "%s: %s: %s\n", me, P.orig, err);
         free(text);
         return 2;
     }
@@ -882,15 +885,15 @@ static int run(FILE *log)
         return rc;
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (files[i] && access(files[i], R_OK)) {
-            fprintf(log, "tedab: no %s - skipped\n", files[i]);
+            fprintf(log, "%s: no %s - skipped\n", me, files[i]);
             return 77;
         }
     if (access(P.cd, R_OK | X_OK)) {
-        fprintf(log, "tedab: no CD %s - skipped\n", P.cd);
+        fprintf(log, "%s: no CD %s - skipped\n", me, P.cd);
         return 77;
     }
     if (teddump_load_fonts(P.fonts, &fonts)) {
-        fprintf(log, "tedab: no fonts in %s\n", P.fonts);
+        fprintf(log, "%s: no fonts in %s\n", me, P.fonts);
         return 2;
     }
     if (!ss)
@@ -921,12 +924,12 @@ static int run(FILE *log)
             if (runs[k].r.test == &tests[i])
                 cost += (unsigned)tests[i].est;
         if (!P.bugorig && cost > P.budget) {
-            fprintf(log, "tedab: %s needs ~%u s > budget %u s: shorten the test\n",
+            fprintf(log, "%s: %s needs ~%u s > budget %u s: shorten the test\n", me,
                     tests[i].name, cost, P.budget);
             goto out;
         }
     }
-    fprintf(log, "tedab: %zu tests, %zu runs, at most %u sessions at the same time\n", ntests,
+    fprintf(log, "%s: %zu tests, %zu runs, at most %u sessions at the same time\n", me, ntests,
             nruns, P.parallel);
 
     /* up to `parallel` sessions at a time: the next one is made from the
@@ -999,9 +1002,9 @@ static int run(FILE *log)
             free(emu);
             if (!s->e && running && amiga_emulation_no_slot()) {
                 if (!told++)
-                    fprintf(log, "tedab: session %03u: %s - waiting for a slot\n", s->no, err);
+                    fprintf(log, "%s: session %03u: %s - waiting for a slot\n", me, s->no, err);
             } else if (!s->e) {
-                fprintf(log, "tedab: %s - skipped\n", err);
+                fprintf(log, "%s: %s - skipped\n", me, err);
                 rc = 77;
                 goto out;
             } else {
@@ -1014,7 +1017,7 @@ static int run(FILE *log)
                     r->dir = str_printf("%s/s%03u/vol/runs/%s/%s", P.work, s->no,
                                         r->r.test->name, tedab_combo_names[r->r.combo]);
                 }
-                fprintf(log, "tedab: session %03u: %zu runs\n", s->no, s->n);
+                fprintf(log, "%s: session %03u: %zu runs\n", me, s->no, s->n);
                 fflush(log);
                 free(s->script);
                 s->script = NULL;
@@ -1072,7 +1075,7 @@ static int run(FILE *log)
                     ;
                 if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[s->ids[d]])))
                     && !r->r.test->command && r->attempts < 3) {
-                    fprintf(log, "tedab: %s %s: #340 (a0toname), again\n", r->r.test->name,
+                    fprintf(log, "%s: %s %s: #340 (a0toname), again\n", me, r->r.test->name,
                             tedab_combo_names[r->r.combo]);
                     next[nn++] = s->ids[k];
                     again++;
@@ -1111,7 +1114,7 @@ static int run(FILE *log)
                     ok = !strcmp(state_text(&runs[s->ids[k]], buf, sizeof buf), "OK");
                 statline_set(s->stat.verdict, sizeof s->stat.verdict, ok ? "ok" : "fail");
             }
-            fprintf(log, "tedab: session %03u: %s, gates %s, %zu runs again\n", s->no,
+            fprintf(log, "%s: session %03u: %s, gates %s, %zu runs again\n", me, s->no,
                     amiga_emulation_status_name(st), s->gates_ok ? "OK" : "FAILED", again);
             /* the runs to repeat go first */
             memmove(queue + nn, queue, nq * sizeof *queue);
@@ -1237,7 +1240,7 @@ static int run(FILE *log)
                  nsess, npairs, nsame, nfixed, nintended, nknown);
     }
     if (rep.bad || write_file(P.report, rep.p, rep.n)) {
-        fprintf(log, "tedab: cannot write %s\n", P.report);
+        fprintf(log, "%s: cannot write %s\n", me, P.report);
         goto out;
     }
     fwrite(rep.p, 1, rep.n, log);
@@ -1273,29 +1276,38 @@ out:
     return rc;
 }
 
-int main(int argc, char **argv)
+const char cmd_run_usage[] =
+    "usage: tedab run PASSFILE\n"
+    "Run the TED A/B tests of the pass file PASSFILE in Amiberry and write\n"
+    "the report (the keys of the pass file: the header of\n"
+    "tests/ted-ab/runner/cmd_run.c).  With\n"
+    "BUGORIG_RECORD=1 in the environment a bug-orig pass (bugorig=1, orig=)\n"
+    "records the observation of the original instead.\n";
+
+const char cmd_lint_usage[] =
+    "usage: tedab lint PASSFILE\n"
+    "Only check the test scripts of the pass file PASSFILE and that their\n"
+    "sources are there; no emulator.\n";
+
+/* run and lint: the pass file, the scripts, then the run or the lint */
+static int start(int argc, char **argv, int lint)
 {
     char err[300];
     size_t len;
     char *text;
-    int lint = argc == 3 && !strcmp(argv[1], "--lint"), bad;
+    int bad;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        printf("usage: tedab [--lint] PASSFILE\n"
-               "  the TED A/B tests in Amiberry (see main_tedab.c for the pass file);\n"
-               "  --lint only checks the scripts and their sources\n");
-        return 0;
-    }
-    if (argc != 2 && !lint) {
-        fprintf(stderr, "usage: tedab [--lint] PASSFILE\n");
+    me = argv[0];
+    if (argc != 2) {
+        fputs(lint ? cmd_lint_usage : cmd_run_usage, stderr);
         return 2;
     }
-    if (!(text = (char *)read_file(argv[argc - 1], &len))) {
-        fprintf(stderr, "tedab: cannot read %s\n", argv[argc - 1]);
+    if (!(text = (char *)read_file(argv[1], &len))) {
+        fprintf(stderr, "%s: cannot read %s\n", me, argv[1]);
         return 2;
     }
     if (parse(text, err, sizeof err)) {
-        fprintf(stderr, "tedab: %s: %s\n", argv[argc - 1], err);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[1], err);
         return 2;
     }
     free(text);
@@ -1326,12 +1338,22 @@ int main(int argc, char **argv)
                     free(q);
                 }
         }
-        printf("tedab: %zu tests, %d problems\n", ntests, bad);
+        printf("%s: %zu tests, %d problems\n", me, ntests, bad);
         return bad ? 1 : 0;
     }
     if (bad) {
-        printf("tedab: %d problems in the scripts\n", bad);
+        printf("%s: %d problems in the scripts\n", me, bad);
         return 2;
     }
     return run(stdout);
+}
+
+int cmd_run(int argc, char **argv)
+{
+    return start(argc, argv, 0);
+}
+
+int cmd_lint(int argc, char **argv)
+{
+    return start(argc, argv, 1);
 }

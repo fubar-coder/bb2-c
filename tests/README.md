@@ -278,7 +278,10 @@ starts it as well). Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`,
 report in `build/<preset>/tests/ted-ab/ted_ab.txt`, about 13 minutes.
 Known bugs (`; @known REASON` in the script) are not run and are listed
 as KNOWN in the report; an exact name in the filter runs them anyway.
-`ted_ab_lint` checks the scripts without the emulator.
+`ted_ab_lint` checks the scripts without the emulator. The runner is
+`tedab run` (`tedab lint` for the lint; the screen dumps by hand with
+`tedab info|text|cmp`):
+[`tests/ted-ab/runner/README.md`](ted-ab/runner/README.md).
 
 **A fixed TED bug** (`; @fixed #NNN PAIR...` in the script, NNN the
 issue of the bug): once TED-C no longer shows a bug of the original TED,
@@ -644,7 +647,7 @@ else DIFFERS) and checks that `ID.orig` does not meet `ID.expect`
 as with a live reference. **Recording** is separate and on demand:
 `ctest --preset originals` (one ctest `bug_orig_record_ID` per test, label
 `originals`, which no other preset runs) or `BUGORIG_RECORD=1 corpusrun
-build/<preset>/tests/bug-orig/ID.pass` (the same for `tedab`). It runs
+build/<preset>/tests/bug-orig/ID.pass` (`tedab run` for TED). It runs
 the original only, writes `ID.orig` and no other file, and judges
 nothing; a line of the program's output that looks like a `[section]`
 header is refused (the file would not read back). Recording is

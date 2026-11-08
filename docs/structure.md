@@ -58,8 +58,8 @@ tests/ted-ab/                TED A/B: original TED against TED-C in the
                              emulator; amiga/: teddrive, teddrivetest,
                              tedprobe
                              scripts/: the tests (.drv), src/: sources,
-                             runner/: tedab (the runs), teddump
-                             (screen dumps), both host; host/: tests
+                             runner/: tedab (host: the runs and the
+                             screen dumps, runner/README.md); host/: tests
 tests/corpus/                corpus: blitz2-c against blitz2 2.10 in the
                              emulator; amiga/: tedstub (blitz2:ted for
                              batch runs), reqtrap, reqclose, reqclosetest

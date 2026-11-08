@@ -64,7 +64,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 8. `tedab` (tedab, teddump; 10 call sites)
 
-- [ ] 8.1 `tests/ted-ab/runner/`: `tedab run|lint|info|text|cmp`; `main_teddump.c` becomes the body of the last three, `TED_FONTS_DIR` moves to the `tedab` target; call sites `tests/ted-ab/CMakeLists.txt` (4), `tests/bug-orig/CMakeLists.txt` (5), `CMakeLists.txt`; README in the runner directory. Verify: C1-C5; the `ted_ab` pass (needs Amiberry) gives the same verdicts and `cmp` of a screen dump text of `teddump text` and `tedab text`
+- [x] 8.1 `tests/ted-ab/runner/`: `tedab run|lint|info|text|cmp`; `main_teddump.c` becomes the body of the last three, `TED_FONTS_DIR` moves to the `tedab` target; call sites `tests/ted-ab/CMakeLists.txt` (4), `tests/bug-orig/CMakeLists.txt` (5), `CMakeLists.txt`; README in the runner directory. Verify: C1-C5; the `ted_ab` pass (needs Amiberry) gives the same verdicts and `cmp` of a screen dump text of `teddump text` and `tedab text`
 
 ## 9. `corpusrun` (corpusrun, cdrun; 22 call sites)
 

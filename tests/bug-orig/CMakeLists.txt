@@ -329,7 +329,7 @@ function(bug_orig_test bas name)
 	# a fixed test (it passes: ctest learns its cost), a port regression or
 	# a self test: label emulator only
 	if(DEFINED arg_WANT)
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN}
 			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 	else()
 		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
@@ -416,7 +416,7 @@ function(bug_orig_orig_test name want orig)
 		"config=clib|output|/nonexistent/a|/nonexistent/b|/nonexistent/c\n"
 		"source=/nonexistent/x.bb2\nexpect=${orig_selftest}/bug-orig-selftest-broken.expect\n"
 		"orig=${orig}\n")
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN}
 		-DPASS=${pass} -DWANT=${want} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 endfunction()
 bug_orig_orig_test(bug_orig_orig_missing 2 ${orig_selftest}/nonexistent.orig)
@@ -513,7 +513,7 @@ function(bug_orig_ted_test scripts id name)
 	# run (R5), writes ID.orig; label originals only
 	string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 	math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
-	add_test(NAME ${rec_name} COMMAND ${TEDAB} ${work}.pass)
+	add_test(NAME ${rec_name} COMMAND ${TEDAB} run ${work}.pass)
 	set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 		TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
 	# one session (C5; the reference R5 only for the recording), maybe
@@ -522,12 +522,12 @@ function(bug_orig_ted_test scripts id name)
 	# the order (see bug_orig_test): the limit of the session
 	set(cost ${BUG_ORIG_TIMEOUT})
 	if(DEFINED arg_WANT)
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
 			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 			TIMEOUT ${limit} COST ${cost})
 	else()
-		bug_orig_add_test(${name} COST ${cost} COMMAND ${TEDAB} ${work}.pass
+		bug_orig_add_test(${name} COST ${cost} COMMAND ${TEDAB} run ${work}.pass
 			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 	endif()
 endfunction()
@@ -548,7 +548,7 @@ if(drvs)
 		"teddrive=-\nteddrivetest=-\ntedprobe=-\nreqtrap=-\nted_ref=-\nted_c=-\n"
 		"blitz2_ref=-\nblitz2_c=-\n")
 	file(GENERATE OUTPUT ${lint} CONTENT "${text}")
-	add_test(NAME bug_orig_ted_lint COMMAND ${TEDAB} --lint ${lint})
+	add_test(NAME bug_orig_ted_lint COMMAND ${TEDAB} lint ${lint})
 endif()
 
 # the self test of the TED variant: an expectation equal to what the
@@ -568,7 +568,7 @@ function(bug_orig_ted_orig_test name orig)
 		"teddrive=-\nteddrivetest=-\ntedprobe=-\nreqtrap=-\nted_ref=-\nted_c=-\n"
 		"blitz2_ref=-\nblitz2_c=-\n")
 	file(WRITE ${pass} "${text}")
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
 		-DPASS=${pass} -DWANT=2 -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 endfunction()
 bug_orig_ted_orig_test(bug_orig_ted_orig_missing ${CMAKE_CURRENT_SOURCE_DIR}/selftest/nonexistent.orig)

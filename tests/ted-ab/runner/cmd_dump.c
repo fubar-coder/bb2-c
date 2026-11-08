@@ -1,9 +1,10 @@
 /*
- * teddump - screen dumps of teddrive (teddump.h) by hand:
+ * tedab info, tedab text, tedab cmp - screen dumps of teddrive
+ * (teddump.h) by hand:
  *
- *   teddump info FILE.scr
- *   teddump text FILE.scr [--font 8|6] [--fonts DIR]
- *   teddump cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]
+ *   tedab info FILE.scr
+ *   tedab text FILE.scr [--font 8|6] [--fonts DIR]
+ *   tedab cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]
  *
  * DIR: chars8.b / chars.b of TED (default: archive/sources/ted-1.1 of this
  * repository).  cmp prints SAME or DIFF (with details); exit status 0 /
@@ -13,36 +14,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cmds.h"
 #include "teddump.h"
 
 #ifndef TED_FONTS_DIR
 #define TED_FONTS_DIR "."
 #endif
 
-/* to stdout for -h/--help (0), else to stderr (2) */
-static int usage(FILE *out)
-{
-    fprintf(out, "usage: teddump info FILE.scr\n"
-                 "       teddump text FILE.scr [--font 8|6] [--fonts DIR]\n"
-                 "       teddump cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]\n"
-                 "  screen dumps of teddrive: header, as text, compared\n");
-    return out == stdout ? 0 : 2;
-}
+const char cmd_info_usage[] =
+    "usage: tedab info FILE.scr\n"
+    "Print the header of the screen dump FILE.scr of teddrive (size, depth,\n"
+    "mode, mouse position, windows) and the SHA-256 of its bit planes.\n";
 
-int main(int argc, char **argv)
+const char cmd_text_usage[] =
+    "usage: tedab text FILE.scr [--font 8|6] [--fonts DIR]\n"
+    "Print the screen dump FILE.scr as text, decoded with TED's font of\n"
+    "height 8 (default) or 6.  DIR: chars8.b and chars.b of TED (default:\n"
+    "archive/sources/ted-1.1 of this repository).\n";
+
+const char cmd_cmp_usage[] =
+    "usage: tedab cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]\n"
+    "Compare two screen dumps as text; print SAME, or DIFF and the\n"
+    "differences.  The status field \"Free\" is masked unless --no-mask.\n"
+    "--font, --fonts as for text.\n";
+
+/* info, text, cmp: CMD is the subcommand, USAGE its text */
+static int dump(int argc, char **argv, const char *cmd, const char *usage)
 {
-    const char *files[2] = { NULL, NULL }, *fontdir = TED_FONTS_DIR, *cmd;
+    const char *files[2] = { NULL, NULL }, *fontdir = TED_FONTS_DIR, *me = argv[0];
     struct teddump d[2] = { { 0 } };
     struct teddump_fonts fonts;
     int i, nfiles = 0, fh = 8, no_mask = 0, rc = 2;
     char err[300];
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))
-        return usage(stdout);
-    if (argc < 3)
-        return usage(stderr);
-    cmd = argv[1];
-    for (i = 2; i < argc; i++) {
+    for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--font") && i + 1 < argc)
             fh = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--fonts") && i + 1 < argc)
@@ -52,18 +57,19 @@ int main(int argc, char **argv)
         else if (argv[i][0] != '-' && nfiles < 2)
             files[nfiles++] = argv[i];
         else
-            return usage(stderr);
+            break;
     }
-    if ((fh != 8 && fh != 6) || nfiles != (!strcmp(cmd, "cmp") ? 2 : 1)
-        || (strcmp(cmd, "info") && strcmp(cmd, "text") && strcmp(cmd, "cmp")))
-        return usage(stderr);
+    if (i < argc || (fh != 8 && fh != 6) || nfiles != (!strcmp(cmd, "cmp") ? 2 : 1)) {
+        fputs(usage, stderr);
+        return 2;
+    }
     for (i = 0; i < nfiles; i++)
         if (teddump_load(files[i], &d[i], err, sizeof err)) {
-            fprintf(stderr, "teddump: %s: %s\n", files[i], err);
+            fprintf(stderr, "%s: %s: %s\n", me, files[i], err);
             goto out;
         }
     if (strcmp(cmd, "info") && teddump_load_fonts(fontdir, &fonts)) {
-        fprintf(stderr, "teddump: no fonts in %s\n", fontdir);
+        fprintf(stderr, "%s: no fonts in %s\n", me, fontdir);
         goto out;
     }
     if (!strcmp(cmd, "info")) {
@@ -86,7 +92,7 @@ int main(int argc, char **argv)
         char *t = teddump_text(&d[0], &fonts, fh);
 
         if (!t) {
-            fprintf(stderr, "teddump: %s: not a TED screen (depth < 2)\n", files[0]);
+            fprintf(stderr, "%s: %s: not a TED screen (depth < 2)\n", me, files[0]);
             goto out;
         }
         fputs(t, stdout);
@@ -108,4 +114,19 @@ out:
     teddump_free(&d[0]);
     teddump_free(&d[1]);
     return rc;
+}
+
+int cmd_info(int argc, char **argv)
+{
+    return dump(argc, argv, "info", cmd_info_usage);
+}
+
+int cmd_text(int argc, char **argv)
+{
+    return dump(argc, argv, "text", cmd_text_usage);
+}
+
+int cmd_cmp(int argc, char **argv)
+{
+    return dump(argc, argv, "cmp", cmd_cmp_usage);
 }

@@ -51,6 +51,6 @@ ctest --preset emulator -R ted_ab      # phase 3: TED A/B (tests/ted-ab/), inste
 | `programs/ted/tests/host/` | host tests (snitch, `test_*.cpp`; bb2: `test_*.c`), stubs of the hooks, fixture generation |
 | `tests/ted-ab/amiga/` | phase 3: `teddrive` (driver, route D), `teddrivetest` (gate D), `tedprobe` (gate 0), `tdscript.h` (script syntax) |
 | `tests/ted-ab/scripts/` | phase 3: test scripts `*.drv` (teddrive); bb2's gate scripts not taken over |
-| `tests/ted-ab/host/` | host tests of `tedab`/`teddump` (bb2: `tedab.py`/`teddump.py`) and the script syntax |
+| `tests/ted-ab/host/` | host tests of `lib_tedab`/`lib_teddump` (bb2: `tedab.py`/`teddump.py`) and the script syntax |
 | `results/ted-ab/` | phase 3: results in bb2 (not taken over); here the report `build/<preset>/tests/ted-ab/ted_ab.txt` |
-| `tools/` | bb2: `tedlisting.py`, `xrefs.py`, `checkhunk.py`, `checkdata.py`, `checklabels.py`, `checklink.cmake`; here `tools/refcheck`, `tools/hunkcheck`, `programs/ted/checklink.cmake`; phase 3: `tests/ted-ab/runner/` `tedab` (runner), `teddump` (screen dumps) |
+| `tools/` | bb2: `tedlisting.py`, `xrefs.py`, `checkhunk.py`, `checkdata.py`, `checklabels.py`, `checklink.cmake`; here `tools/refcheck`, `tools/hunkcheck`, `programs/ted/checklink.cmake`; phase 3: `tests/ted-ab/runner/` `tedab` (runner and screen dumps, `README.md` there) |
