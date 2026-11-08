@@ -1230,14 +1230,6 @@ static void makelmul(WORD off)
    d2 & ff=type. 0=struct address; bit 14 of d2=1 if result is a pointer */
 UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
 {
-    /* .listoff dc 0 (data in code).  Kept static, not a local: it is set
-       before arreval, which recurses into calcvar for an array element in
-       the index expression and resets it there (as in the asm) - a local
-       would change the element size of a List array indexed that way.
-       BUG(orig) (#937): a(b(1)) of a List array multiplies the index by
-       the bare element size: the nested calcvar of the normal array b
-       sets listoff to 0 (blitz2.s:8214-8240).  Kept. */
-    static UWORD listoff;
     struct var *v = *pv;
     struct type *t = *pt;
     UWORD ch = *pc0;
@@ -1263,8 +1255,15 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             /* .notalist */
             struct type *ftype;
             WORD fvarmode, fndims, foff;
-            UWORD fmask, elsize;
+            UWORD fmask, elsize, listoff;
 
+            /* Fixed (#937): the asm kept this in one word in the code
+               (.listoff dc 0, blitz2.s:8214-8240), which the calcvar of an
+               array element in the index expression (arreval) set for its
+               own array: a(b(1)) of a List array a multiplied the index by
+               the bare element size, c(a(1)) of a normal array c by its
+               size + 8.  A local, kept across arreval like the asm's
+               stack frame. */
             listoff = 0;
             if (v->flags & 0x100)
                 listoff = 8;                /* adjust size of one element if list. */
