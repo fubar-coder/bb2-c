@@ -1,13 +1,13 @@
 # The contents of a resident blitzres made (RES) equal those of EXPECT
-# (types, macros, constants as blitzres --dump prints them: the unused
+# (types, macros, constants as blitzres dump prints them: the unused
 # bytes of the nodes left out); ctest rwe_residents_cd
 # (libs/userlibs/rwe/residents-cd.cmake), rwe_residents_check_broken.
 #   cmake -DBLITZRES=... -DRES=... -DEXPECT=... -P check.cmake
 foreach(f RES EXPECT)
-	execute_process(COMMAND ${BLITZRES} --dump ${${f}} OUTPUT_VARIABLE dump_${f}
+	execute_process(COMMAND ${BLITZRES} dump ${${f}} OUTPUT_VARIABLE dump_${f}
 		RESULT_VARIABLE rc)
 	if(rc)
-		message(FATAL_ERROR "blitzres --dump ${${f}}: exit ${rc}")
+		message(FATAL_ERROR "blitzres dump ${${f}}: exit ${rc}")
 	endif()
 endforeach()
 if(NOT dump_RES STREQUAL dump_EXPECT)

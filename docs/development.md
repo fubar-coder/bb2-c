@@ -216,7 +216,8 @@ again):
   `ted.s:NNN label` in `programs/ted/src/` (completeness of the
   translation; a changed comment line rebuilds the object, so the check
   runs then as well).
-* the residents of the RWE reference build (`tools/blitzres`, in the
+* the residents of the RWE reference build (`blitzres create`,
+  [`tools/blitzres`](../tools/blitzres/README.md), in the
   same step as the write): read back, the file holds exactly the
   constants written. Its staging: `tools/bblines` fails on an `INCDIR`
   line with a further statement, the `LIBNUMS.BB` step on a number of

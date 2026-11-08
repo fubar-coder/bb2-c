@@ -101,7 +101,7 @@ foreach(r IN LISTS residents)
 	# blitzres reads the file back: exactly these constants, else it fails
 	add_custom_command(OUTPUT ${res}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${RWE_RESIDENTS_DIR}
-		COMMAND ${BLITZRES} -o ${res} ${skip} ${args}
+		COMMAND ${BLITZRES} create -o ${res} ${skip} ${args}
 		DEPENDS ${deps} ${BLITZRES} host_tools
 		COMMENT "Resident ${r}.res"
 		VERBATIM)
@@ -112,7 +112,7 @@ foreach(r IN LISTS residents)
 	set(bb2 ${RWE_RESIDENTS_DIR}/cd/${r}.bb2)
 	add_custom_command(OUTPUT ${bb2}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${RWE_RESIDENTS_DIR}/cd
-		COMMAND ${BLITZRES} --source ${res} ${bas}
+		COMMAND ${BLITZRES} source ${res} ${bas}
 		COMMAND ${TEDTOK} ${tokens_ted} ${bas} ${bb2}
 		BYPRODUCTS ${bas}
 		DEPENDS ${res} ${BLITZRES} ${TEDTOK} ${tokens_ted} host_tools

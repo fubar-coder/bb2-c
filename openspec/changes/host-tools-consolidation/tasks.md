@@ -56,7 +56,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 6. `blitzres` (12 call sites)
 
-- [ ] 6.1 `blitzres create|dump|source` instead of `-o OUT ITEM...`, `--dump`, `--source`; call sites `libs/userlibs/rwe/residents.cmake` (6), `residents-cd.cmake`, `tools/blitzres/check.cmake`, `CMakeLists.txt`; README. Verify: C1-C5; the residents of the RWE reference build are byte-identical (`cmp` of the files `residents.cmake` writes), the tests calling `blitzres` (`tools/blitzres/check.cmake`) pass
+- [x] 6.1 `blitzres create|dump|source` instead of `-o OUT ITEM...`, `--dump`, `--source`; call sites `libs/userlibs/rwe/residents.cmake` (6), `residents-cd.cmake`, `tools/blitzres/check.cmake`, `CMakeLists.txt`; README. Verify: C1-C5; the residents of the RWE reference build are byte-identical (`cmp` of the files `residents.cmake` writes), the tests calling `blitzres` (`tools/blitzres/check.cmake`) pass
 
 ## 7. `blitzlib` (biglib, blitzlibcheck, blitzlibcompare, cmdref; 31 call sites)
 

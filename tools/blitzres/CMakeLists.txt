@@ -1,2 +1,6 @@
-add_executable(blitzres main.c)
-target_link_libraries(blitzres PRIVATE lib_blitzres)
+# blitzres: Blitz Basic 2 resident files (README.md)
+set(BLITZRES_SUBCOMMANDS create dump source)
+add_executable(blitzres main.c cmd_res.c)
+target_link_libraries(blitzres PRIVATE lib_subcmd lib_blitzres)
+host_help_test(blitzres ${BLITZRES_SUBCOMMANDS})
+host_readme_test(blitzres README.md)

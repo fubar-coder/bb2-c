@@ -151,7 +151,7 @@ foreach(pair wclash1|1 wclash2|2)
 	list(GET pair 1 value)
 	add_custom_command(OUTPUT ${cli_gen}/${res}.res
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
-		COMMAND ${BLITZRES} -o ${cli_gen}/${res}.res --const c=${value}
+		COMMAND ${BLITZRES} create -o ${cli_gen}/${res}.res --const c=${value}
 		DEPENDS ${BLITZRES} host_tools
 		COMMENT "Resident ${res}.res (#c=${value})"
 		VERBATIM)

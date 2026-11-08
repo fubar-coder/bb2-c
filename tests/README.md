@@ -186,9 +186,9 @@ a wrong value and a stale exemption fail on purpose (hidden tag
 `[.selftest]`), and the tests pass on the report of that failure.
 
 `rwe_residents_cd`: the residents `blitzres` writes have the contents
-(`blitzres --dump`: types, macros, constants without the unused node
+(`blitzres dump`: types, macros, constants without the unused node
 bytes) of those blitz2 2.10 of the CD and blitz2-c save with Create
-Resident of the same constants as Blitz source (`blitzres --source`,
+Resident of the same constants as Blitz source (`blitzres source`,
 one corpusrun pass with `run=off` and tedstub `resident=`;
 `libs/userlibs/rwe/residents.cmake`; skipped without the CD).
 
