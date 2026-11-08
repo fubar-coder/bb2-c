@@ -364,3 +364,31 @@ code changes in this change).
   ends as `halt` or as `done` with the guard message from run to run (the
   first state is committed; port and clib show `done`, `timeout`, or the
   guard line, so the verdict stays DIFFERS as with the live reference).
+- **Task 8.1-8.4 (2026-11-08):** `BLITZ2_PREV` is `ON` (`HEAD~1`, the first
+  parent of a merge), a revision, or the absolute path of a build
+  directory; `cmake/prev.cmake` defines the ExternalProject `blitz2_prev`
+  (part of ALL), whose build step `cmake/prev-build.cmake` takes `git
+  archive` of the revision into `prev/src` (data git does not hold is
+  linked in), configures with the commit's own toolchain file and builds
+  everything of it. The revision is resolved on every build; when it
+  moved (`HEAD~1` does with each commit) `prev/` is removed and built
+  afresh, because the files of an archive carry the commit's time and a
+  build directory of another commit would take them for unchanged.
+  `prev_results` is `tools/prevcmp CUR PREV`: `blitz2/acidlibs`,
+  `blitz2/deflibs` and every `.obj` below `libs/` and `variants/` (outside
+  `CMakeFiles/`); `PREV_INTENDED` is `OFF`, `ON` (every difference) or a
+  `;`-list of paths relative to the build directory, each of which must
+  differ (stale entries fail); a file only the current build has is
+  counted, not judged; exit status 77 (skipped) without a prev build.
+  The corpus compares `prev` with `clib` (not with the reference): the
+  config line is `config=prev|exe:clib|...`, where `exe:BASE` and
+  `output:BASE` compare with the configuration BASE; the previous
+  commit's compiler with its C libraries must write what the current one
+  writes. `ted_ab` gets `P5` (previous TED + blitz2 2.10) and `Pc`
+  (previous TED + previous blitz2, CD libraries as in the others), pairs
+  `C5-P5` and `Cc-Pc`; with six runs per test a session's budget and limit
+  are one and a half times as large. The corpus and `ted_ab` have no list
+  of intended differences: a fix reports the `prev` lines that differ and
+  the commit names them. Checked with a temporary commit that adds a nop
+  before the final `rts` of every program (dropped): `corpus` reports
+  `prev: EXE DIFFERS` for all 71 sources.

@@ -51,10 +51,10 @@ documentation it changes; no program code changes in this change.
 
 ## 8. The `prev` build
 
-- [ ] 8.1 `BLITZ2_PREV` option, `git archive` + ExternalProject of the Amiga side, results in `build/<preset>/prev/blitz2/` (`CMakeLists.txt`). Verify: configure without the option makes no second build; with it `prev/blitz2/` holds the previous commit's results and the checkout is untouched
-- [ ] 8.2 Host test `prev_results` (library files, `acidlibs`, `deflibs` byte by byte; `-DPREV_INTENDED=ON` or list; 77 without a prev build). Verify: passes on a rework commit; fails when one library file is changed; skipped without prev
-- [ ] 8.3 Corpus config `prev|exe|...` and `ted_ab` combos `P5`/`Pc` with `Cc-Pc` comparison. Verify: `ctest --preset all -R 'corpus|ted_ab'` passes with a prev build; a change of generated code in a test commit shows in the `prev` comparison
-- [ ] 8.4 Document in `tests/README.md`, `docs/development.md` and CLAUDE.md "Acceptance" (the manual worktree comparison is replaced). Verify: the documented command runs as written
+- [x] 8.1 `BLITZ2_PREV` option, `git archive` + ExternalProject of the Amiga side, results in `build/<preset>/prev/blitz2/` (`CMakeLists.txt`). Verify: configure without the option makes no second build; with it `prev/blitz2/` holds the previous commit's results and the checkout is untouched
+- [x] 8.2 Host test `prev_results` (library files, `acidlibs`, `deflibs` byte by byte; `-DPREV_INTENDED=ON` or list; 77 without a prev build). Verify: passes on a rework commit; fails when one library file is changed; skipped without prev
+- [x] 8.3 Corpus config `prev|exe|...` and `ted_ab` combos `P5`/`Pc` with `Cc-Pc` comparison. Verify: `ctest --preset all -R 'corpus|ted_ab'` passes with a prev build; a change of generated code in a test commit shows in the `prev` comparison
+- [x] 8.4 Document in `tests/README.md`, `docs/development.md` and CLAUDE.md "Acceptance" (the manual worktree comparison is replaced). Verify: the documented command runs as written
 
 ## 9. Label `originals`
 
