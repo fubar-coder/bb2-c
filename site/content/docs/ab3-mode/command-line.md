@@ -42,7 +42,7 @@ hello.ab3:1: Array not yet Dim'd
 ## The options
 
 ```
-blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
+blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
 ```
 
 | Option | Meaning |
@@ -51,6 +51,8 @@ blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
 | `-e`, `-exe` *file* | The executable to write. |
 | `-r`, `-release` | A release executable: no runtime error checking, no debugger, no debug information. |
 | `-mode` *ab3* or *bb2* | Compile in this mode, whatever the source looks like. This option is an addition of the port; AmiBlitz3 does not have it. |
+| `-w` *list* | The warnings that are shown ([Warnings](#warnings)). An addition of the port. |
+| `-werr` *list* | The warnings that are errors ([Warnings](#warnings)). An addition of the port. |
 | `-h`, `-help` | Show the options. |
 
 AmiBlitz3's other options, such as `-d`, `-run`, `-dump` or `-save`, are
@@ -108,7 +110,8 @@ The return code tells a script what happened:
 | Return code | Meaning |
 |---|---|
 | 0 | Compiled, the executable is written. |
-| 10 | The source did not compile: an error in it, or a library file or resident that cannot be loaded. |
+| 5 | Compiled with warnings, the executable is written. |
+| 10 | The source did not compile: an error in it, a warning that is an error, or a library file or resident that cannot be loaded. |
 | 20 | Wrong or unsupported options, or a source file that does not exist. |
 
 As with blitz2, only the first error is reported.
@@ -118,3 +121,69 @@ Try it: compile `hello.ab3` once as above and once with `-r`, and compare
 the sizes of the two executables. Then break a line of it and compile it
 again to see the error.
 {{< /callout >}}
+
+## Warnings
+
+Besides errors, the compiler knows warnings: something in the source
+that is probably a mistake, but does not stop the compile and does not
+change the executable. Each warning has a name. There is one so far,
+`resclash`: two residents define the same constant with different
+values, and the value of the first resident is used
+([The editor and the compiler]({{< relref "/docs/how-blitz2-works/editor-and-compiler#warnings" >}})).
+
+A warning is printed with the name of the source, the word `warning`
+and, at the end, the name of the warning. For a clash of residents, the
+two resident files are named as well. This source `wclash.ab3` loads two
+residents that both define `#c`, the first as 1, the second as 2:
+
+```
+; XTRA
+; Residents       = "TEST:src/wclash1.res,TEST:src/wclash2.res"
+; /XTRA
+NPrint #c
+End
+```
+
+Compiled, it gives the warning, and the program prints 1:
+
+```
+1> blitz2:blitz2-ab3 -s wclash.ab3 -e RAM:wclash
+wclash.ab3: warning: Clash in Residents: #c (TEST:src/wclash1.res, TEST:src/wclash2.res) [resclash]
+```
+
+The executable is written, and the return code is 5, the AmigaDOS code
+for a warning. A script continues after it with the Shell's default
+`FailAt 10`; one that sets `FailAt 5` or lower stops there.
+
+Which warnings are shown, and which of them are errors, starts from the
+source's own setting, **WARNINGS** in the editor's compiler options; a
+source without that setting shows all warnings and makes none of them an
+error. Two options change it for this compile:
+
+* `-w` *list* chooses the warnings that are shown.
+* `-werr` *list* chooses the warnings that are errors. A warning that is
+  not shown is never an error.
+
+A list is made of items separated by commas, applied from left to right:
+`all` and `none` replace the set, a name adds that warning to it, and a
+name with a minus in front, such as `-resclash`, removes it. Several
+`-w` or `-werr` options are applied one after the other. For example:
+
+| Options | Effect |
+|---|---|
+| `-w -resclash` or `-w all,-resclash` | The clash of residents is not reported. |
+| `-w none` | No warnings are reported. |
+| `-werr resclash` | The clash of residents is an error. |
+| `-werr all` | Every warning that is shown is an error. |
+
+A warning that is an error is printed like an error, and nothing is
+compiled; the return code is 10:
+
+```
+1> blitz2:blitz2-ab3 -s wclash.ab3 -e RAM:wclash -werr resclash
+wclash.ab3: Clash in Residents: #c
+```
+
+An unknown name or an empty item in a list is an option error, with
+return code 20: blitz2-ab3 names the item, lists the known names and
+shows its options.

@@ -105,6 +105,41 @@ Runtime error checking makes programs larger and slower, so a finished
 program is usually compiled without it. What exactly it adds is on the
 page [From source to executable]({{< relref "/docs/how-blitz2-works/compiling" >}}).
 
+## Warnings
+
+Besides errors, the compiler of the BB2 C port knows warnings: something
+in a source that is probably a mistake, but does not stop the compile
+and does not change the program. There is one so far, named `resclash`:
+two residents define the same constant with different values. The
+compiler then shows "Warning: Clash in Residents: #NAME" for each such
+constant, at most for eight names followed by one "Clash in Residents:
+N more", and uses the value of the first resident
+([Residents and the .xtra file]({{< relref "/docs/how-blitz2-works/residents" >}})).
+
+A warning is shown in the same requester as an error, with "Warning:" in
+front of the text. After you click OK, the compiler goes on. Since the
+residents are loaded with the options, this warning appears when you
+load the source or close the options requester, not during the compile.
+
+The setting **WARNINGS** chooses what happens with warnings. It is in the
+requester Runtime Error Options, which opens when you switch on
+**Runtime Error Debugger...** in the compiler options. A click on its
+button steps through three states:
+
+| State | What it does |
+|---|---|
+| OFF | No warnings are shown. |
+| ON | Warnings are shown, and the compile goes on. This is the default. |
+| ERRORS | Every warning is an error and is shown as one. A clash of residents then drops the residents, as a clash of NewTypes or macros does, so a source that needs them does not compile. |
+
+Like the other options, the setting is stored in the source's `.xtra`
+file, in a word that Blitz Basic 2 writes but never uses. The original
+therefore reads such a file as before, an `.xtra` file written by the
+original means ON, and the file of a source whose setting you leave
+alone stays exactly the same.
+From the Shell, the AB3-mode compiler changes the setting with options
+of its own ([Compiling from the command line]({{< relref "/docs/ab3-mode/command-line#warnings" >}})).
+
 ## Creating an executable
 
 CREATE EXECUTABLE asks for a file name and compiles the source with the

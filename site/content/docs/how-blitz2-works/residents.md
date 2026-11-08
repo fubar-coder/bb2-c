@@ -55,9 +55,14 @@ COMPILER OPTIONS of another source. A source can use up to eight
 residents; they are stored in its `.xtra` file and loaded when the source
 is loaded or the options change.
 
-Two residents must not define the same name: the compiler reports
-"Clash in Residents" when they do. A resident that cannot be read gives
-"Can't Load Resident".
+Two residents must not define the same NewType or macro: the compiler
+reports the error "Clash in Residents" when they do. A constant defined
+in two residents is allowed if both give it the same value, which happens
+when two residents are made from the same include file. With different
+values, the compiler warns "Clash in Residents" with the name of the
+constant and uses the value of the first resident
+([Warnings]({{< relref "/docs/how-blitz2-works/editor-and-compiler#warnings" >}})).
+A resident that cannot be read gives "Can't Load Resident".
 
 {{< callout type="info" >}}
 Try it: put a few constants into a new source (`#width=320`,

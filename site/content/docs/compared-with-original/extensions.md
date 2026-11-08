@@ -47,3 +47,18 @@ Some details:
 The name and the values are those of AmiBlitz3, so a source that uses
 `#__debug` means the same with both. blitz2-ab3 knows it in both of its
 modes ([AB3 mode]({{< relref "/docs/ab3-mode" >}})).
+
+## Warnings
+
+The compiler of the port can warn about a source without refusing it. A
+warning never changes the program that is compiled. There is one so far:
+two residents that define the same constant with different values give
+the warning "Clash in Residents", where the original said nothing. The
+value of the first resident is used, by the original and by the port.
+
+The setting **WARNINGS** in the compiler options turns warnings off,
+shows them (the default), or makes every warning an error. It is
+described with the other options on the page
+[The editor and the compiler]({{< relref "/docs/how-blitz2-works/editor-and-compiler#warnings" >}});
+from the Shell, blitz2-ab3 has the options `-w` and `-werr`
+([Compiling from the command line]({{< relref "/docs/ab3-mode/command-line#warnings" >}})).
