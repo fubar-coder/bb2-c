@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+a 12 x 2 m 10
+b 8 v 4
+1 5 3 3
+rc=0

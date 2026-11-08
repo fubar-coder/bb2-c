@@ -223,6 +223,10 @@ NORETURN void badpenderr(void);    /* "Illegal End Procedure" */
 /* Fixed (#16): not in blitz2.s - a path or file name longer than the
    buffer it is copied to */
 NORETURN void pathlongerr(void);   /* "Path too Long" */
+/* Fixed (#974): not in blitz2.s - a use of the size of a NewType, or of
+   the offset of one of its fields, that is not known yet (a by-value
+   field of a type not yet defined comes before it) */
+NORETURN void notdeferr(void);     /* "Type not yet defined" */
 
 /* ================================================== char classes */
 /* all: TRUE == asm Z=1 */

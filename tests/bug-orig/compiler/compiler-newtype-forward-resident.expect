@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+b 16 z 14
+a 20 q 16
+7 9
+rc=0

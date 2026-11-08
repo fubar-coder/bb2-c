@@ -612,6 +612,146 @@ void donewtype(UWORD c)
         typemode(c);
 }
 
+/* Fixed (#974): not in blitz2.s - the by-value fields of a type whose size
+   is not known yet.  A field of a type that so far only a pointer field
+   named (TYPE_FORWARD), or of a type that has such a field itself (by
+   value, also over several types), is laid out with the size 0 and
+   recorded here; its type (the owner) is incomplete from that field on.
+   When the field's type is complete (its End NEWTYPE, or its own last
+   such field resolved), the owner is laid out again with typemode's
+   rules, and so on for the types that contain the owner.  struct type is
+   not changed: residents store it.  Until then a use of the owner's size
+   or of the offset of a field behind the recorded one is "Type not yet
+   defined"; at the end of the pass a field left here is "Type Not Found"
+   (pointchk). */
+struct fwdfield {
+    struct fwdfield *next;
+    struct type *owner;     /* the type that has the field */
+    struct var *field;
+    struct type *dep;       /* the field's type: forward or incomplete */
+    WORD line;              /* linenumat of the field */
+};
+static struct fwdfield *fwdfields;
+
+/* the type has a by-value field whose size is not known yet */
+static BOOL haspending(const struct type *t)
+{
+    const struct fwdfield *e;
+
+    for (e = fwdfields; e; e = e->next)
+        if (e->owner == t)
+            return TRUE;
+    return FALSE;
+}
+
+/* the size of the type is not final yet: forward or incomplete */
+static BOOL notfinal(const struct type *t)
+{
+    return t->u.code == TYPE_FORWARD || haspending(t);
+}
+
+/* the type contains `to` by value over recorded fields */
+static BOOL reaches(const struct type *from, const struct type *to)
+{
+    const struct fwdfield *e;
+
+    if (from == to)
+        return TRUE;
+    for (e = fwdfields; e; e = e->next)
+        if (e->owner == from && reaches(e->dep, to))
+            return TRUE;
+    return FALSE;
+}
+
+/* lay the fields of t out again, as typemode does */
+static void relayout(struct type *t)
+{
+    struct var *f;
+    ULONG len = 0, size;
+
+    for (f = t->u.fields; f; f = f->next) {
+        if (f->type != &bytetype)
+            len = (len + 1) & ~1UL;
+        size = (f->flags & 1) ? 4 : (UWORD)f->type->size;
+        if (f->flags & 2)
+            size = (ULONG)(UWORD)f->ndims * (UWORD)size;
+        f->offset = len;
+        len += size;
+        if (len >= 32768)
+            toolongerr();
+    }
+    t->size = (len + 1) & ~1UL;
+}
+
+/* t is complete: lay out again every type waiting for it */
+static void fwdcomplete(struct type *t)
+{
+    struct fwdfield **pp = &fwdfields, *e;
+    struct type *owner;
+
+    while ((e = *pp)) {
+        if (e->dep != t) {
+            pp = &e->next;
+            continue;
+        }
+        owner = e->owner;
+        *pp = e->next;
+        FreeMem(e, sizeof *e);
+        if (!haspending(owner)) {
+            relayout(owner);
+            fwdcomplete(owner);
+            pp = &fwdfields;            /* the list has changed */
+        }
+    }
+}
+
+void chktypesize(const struct type *t)
+{
+    if (notfinal(t))
+        notdeferr();
+}
+
+void chkfieldoffset(const struct type *t, const struct var *f)
+{
+    const struct var *g;
+    const struct fwdfield *e;
+
+    if (!haspending(t))
+        return;
+    for (g = t->u.fields; g != f; g = g->next)
+        for (e = fwdfields; e; e = e->next)
+            if (e->field == g)
+                notdeferr();
+}
+
+void fwdfieldchk(void)
+{
+    struct fwdfield *e, *at = fwdfields;
+
+    if (!at)
+        return;
+    for (e = fwdfields; e; e = e->next) {
+        if (e->dep->u.code == TYPE_FORWARD) {
+            at = e;
+            break;
+        }
+    }
+    linenumat = at->line;
+    notypeerr();
+}
+
+void freefwdfields(void)
+{
+    struct fwdfield *e = fwdfields, *dead;
+
+    fwdfields = NULL;
+    while (e) {
+        dead = e;
+        e = e->next;
+        FreeMem(dead, sizeof *dead);
+    }
+}
+
 /* blitz2.s:13740 typemode - one field of a NewType */
 void typemode(UWORD c)
 {
@@ -620,6 +760,7 @@ void typemode(UWORD c)
     struct type *ftype;
     UWORD flags, len;
     ULONG size, offset;
+    BOOL pending;
 
     if (c == 0x8002) {
         doend2();
@@ -676,14 +817,35 @@ void typemode(UWORD c)
        type cannot contain itself: "Illegal Type". */
     if (ftype == thistype && !(flagmask & 1))
         illtypeerr();
-    /* BUG(orig) (#974): a field of a type that so far only a pointer
-       field named (TYPE_FORWARD, its size holds linenumat, the line of
-       that pointer field), not a pointer itself (x.c, or an untyped field
-       behind *p.c), takes that line number as its size; the type defined
-       later with NEWTYPE .c does not change it (pointchk only refuses a
-       type never defined).  Test compiler-newtype-forward-field.  Kept. */
+    /* Fixed (#974): a field of a type that so far only a pointer field
+       named (TYPE_FORWARD, its size holds linenumat, the line of that
+       pointer field), not a pointer itself (x.c, or an untyped field
+       behind *p.c), took that line number as its size; the type defined
+       later with NEWTYPE .c did not change it (pointchk only refused a
+       type never defined).  Now it is recorded (fwdfields) and laid out
+       when its type is complete; a type that would contain itself that
+       way is "Illegal Type". */
+    pending = FALSE;
+    if (!(flagmask & 1) && notfinal(ftype)) {
+        struct fwdfield *e, **pp;
+
+        if (reaches(ftype, thistype))
+            illtypeerr();
+        e = doallocmem(sizeof *e, MEMF_PUBLIC);
+        e->next = NULL;
+        e->owner = thistype;
+        e->field = f;
+        e->dep = ftype;
+        e->line = linenumat;
+        for (pp = &fwdfields; *pp; pp = &(*pp)->next)
+            ;
+        *pp = e;
+        pending = TRUE;
+    }
     /* .byte */
     size = (UWORD)ftype->size;
+    if (pending)
+        size = 0;
     prevtype = ftype;
     f->type = ftype;
     offset = typelen;
@@ -818,6 +980,9 @@ static void doend3(UWORD c)
             modeerr();
         typelen = (typelen + 1) & ~1;
         thistype->size = typelen;
+        /* Fixed (#974): the types waiting for this one are laid out */
+        if (!haspending(thistype))
+            fwdcomplete(thistype);
         linemode = -1;
         getchar3();
         return;
@@ -1268,8 +1433,10 @@ static void dimwit(struct var *v, struct type *vt, UWORD listadd,
     pokewd(beginarr[0]);
     pokewd(0);
     size = 4;
-    if (!(flagmask & 1))
+    if (!(flagmask & 1)) {
+        chktypesize(vt);    /* Fixed (#974) */
         size = vt->size;
+    }
     size += listadd;        /* size of one element. */
     pokewd(size);
     ndims = 0;              /* # dim's got (asm: temp2) */

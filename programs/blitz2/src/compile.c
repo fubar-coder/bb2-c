@@ -284,6 +284,7 @@ void qfree(void)
     freefors();
     freeasms();
     freepush();         /* Fixed (#994): not in blitz2.s */
+    freefwdfields();    /* Fixed (#974): not in blitz2.s */
 }
 
 /* blitz2.s:2010 freeemup */
@@ -880,6 +881,8 @@ void pointchk(void)
 {
     struct type *t;
 
+    /* Fixed (#974): a by-value field of a type that was never completed */
+    fwdfieldchk();
     for (t = firsttype; t; t = t->next) {
         if (t->u.code == TYPE_FORWARD) {
             linenumat = t->size;

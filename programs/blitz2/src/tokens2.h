@@ -89,6 +89,16 @@ void donewtype(UWORD c);    /* 13719 NewType .name */
    Returns normally; the caller (smode/handlechar) must then end the
    statement itself (asm: smode had dropped dostatement's frame). */
 void typemode(UWORD c);
+/* Fixed (#974): by-value fields of types whose size is not known yet
+   (tokens2.c fwdfields).  chktypesize: "Type not yet defined" unless the
+   size of t is final; chkfieldoffset: the same unless the offset of the
+   field f of t is final (no recorded field before it); fwdfieldchk: at
+   the end of the pass, "Type Not Found" at a field still recorded
+   (pointchk); freefwdfields: free the records (qfree). */
+void chktypesize(const struct type *t);
+void chkfieldoffset(const struct type *t, const struct var *f);
+void fwdfieldchk(void);
+void freefwdfields(void);
 
 /* --------------------------------------------------------- For / Next */
 

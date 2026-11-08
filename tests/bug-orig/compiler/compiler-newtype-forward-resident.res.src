@@ -1,0 +1,17 @@
+NEWTYPE .pp
+  *p.tc
+End NEWTYPE
+NEWTYPE .tb
+  k.w
+  x.tc
+  z.w
+End NEWTYPE
+NEWTYPE .ta
+  m.tb
+  q.l
+End NEWTYPE
+NEWTYPE .tc
+  r.l
+  s.l
+  t.l
+End NEWTYPE

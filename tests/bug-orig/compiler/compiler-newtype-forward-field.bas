@@ -3,9 +3,10 @@
 ; with the line number of that field as its size.  A later field of that
 ; type by value (x.fwd in .dd) takes the line number as its size; the
 ; NEWTYPE .fwd defined afterwards does not correct the layout of .dd: the
-; field y and SizeOf .dd depend on the line of *p.fwd (here 10).
+; field y and SizeOf .dd depend on the line of *p.fwd (here 11).
 ; Correct: the layout of .dd follows the size of .fwd (8 bytes): y at 8,
 ; SizeOf .dd 12, and the fields of v do not overlap.
+; @fixed #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE

@@ -157,6 +157,7 @@ UWORD calcstatic2(struct var *list, ULONG *tab)
         t = v->type;
         if (t->u.code < 256)                /* not a NewType */
             continue;
+        chktypesize(t);                     /* Fixed (#974) */
         pokedata1(v->offset);
         pokedata1(t->size);
         count++;
@@ -739,6 +740,7 @@ NORETURN void cnferr(void) { err("Constant Not Found"); }                       
 NORETURN void badconerr(void) { err("Illegal Constant Expression"); }                        /* blitz2.s:7629 */
 NORETURN void badpenderr(void) { err("Illegal End Procedure"); }                             /* blitz2.s:7632 */
 NORETURN void pathlongerr(void) { err("Path too Long"); }                                    /* Fixed (#16) */
+NORETURN void notdeferr(void) { err("Type not yet defined"); }                               /* Fixed (#974) */
 
 /* =================================================================
  * char classes (TRUE = asm Z=1)
@@ -1358,6 +1360,7 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             f = findvar((struct node *)&t->u.fields, len, NULL);   /* addq #4,a2 */
             if (!f)
                 noofferr();
+            chkfieldoffset(t, f);           /* Fixed (#974) */
             ch = reget();
             v = f;                          /* pointer to offset */
             t = v->type;                    /* pointer to type */
@@ -1392,8 +1395,10 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
                 pokewd(brchkcode[4]);
             }
             elsize = 4;
-            if (!(v->flags & 1))
+            if (!(v->flags & 1)) {
+                chktypesize(t);             /* Fixed (#974) */
                 elsize = t->size;
+            }
             muld1(elsize);
             pokewd(*addrega2 | regat);
             ch = getchar3();

@@ -1620,17 +1620,26 @@ static UWORD fetchsize(UWORD *type)
             notypeerr();
         value = 0;
         c = reget();                                /* d0 after findtype */
+        /* Fixed (#974): the size of a type, or the offset of a field, that
+           is not final yet is "Type not yet defined"; blitz2.s gave the
+           line number held by a forward type (and searched its fields
+           at address $ff) or the layout before the forward field */
         if (c == '\\') {
             struct var *v;
             len = makename(&c);
             if (!len)
                 syntaxerr();
+            if (t->u.code == TYPE_FORWARD)
+                notdeferr();
             v = findvar((struct node *)&t->u.fields, len, NULL);
             if (!v)
                 noofferr();
+            chkfieldoffset(t, v);
             value = (UWORD)v->offset;
-        } else
+        } else {
+            chktypesize(t);
             value = (UWORD)t->size;                 /* .jty */
+        }
         *type = saved;                              /* .jty2 */
         return (UWORD)fetchnum2(value, type, FALSE);
     }
