@@ -626,6 +626,10 @@ source the original accepted are shown with examples on
 * An inline assembler expression of 240 characters or more in a macro or
   include was freed with a wrong size; it is freed correctly
   ([#1](https://github.com/fubar-coder/bb2-c/issues/1)).
+* An inline assembler operand of more than 125 characters in a macro or
+  include was cut by the destination operand, and longer ones overwrote
+  the compiler's data; it gives "Operand too Long"
+  ([#997](https://github.com/fubar-coder/bb2-c/issues/997)).
 
 ### The compiler's memory
 

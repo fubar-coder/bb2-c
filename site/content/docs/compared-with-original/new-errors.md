@@ -562,3 +562,50 @@ the default or larger in the COMPILER OPTIONS.
 
 Issues: [The Macro Buffer option had no effect (#336)](https://github.com/fubar-coder/bb2-c/issues/336),
 [A macro text of 65536 bytes or more was cut (#964)](https://github.com/fubar-coder/bb2-c/issues/964).
+
+## Inline assembler
+
+### An operand that is too long {#operand-too-long}
+
+The compiler keeps the text of an inline assembler operand when it comes
+from a macro or an include, or when it contains a local label. It keeps
+it in a buffer of fixed size, one for the source operand and `Dc`, one for
+the destination operand right behind it.
+
+**What happened.** The original copied the text without a limit:
+
+* A source operand of more than 125 characters reached into the buffer of
+  the destination operand, and the destination overwrote its end. The
+  source expression was cut and ran on into the destination's text: wrong
+  code or "Syntax Error".
+* Longer texts overwrote the compiler's data behind the buffers: a source
+  operand or `Dc` of more than 261 characters, a destination operand of
+  more than 133.
+
+For example,
+
+```
+Macro m
+move.l #`1+`1,dat
+End Macro
+Goto skip
+.dat
+Dc.l 0
+.skip
+!m{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1}
+NPrint Peek.l(?dat)
+End
+```
+
+has a source operand of 127 characters. The original stopped with
+"Syntax Error" in line 8 instead of storing 64.
+
+**With the port.** Each of these is the error "Operand too Long" at the
+line of the instruction, here the call of the macro in line 8. Every text
+that fits compiles as before, also a source operand of up to 261
+characters when the destination is a register.
+
+**What to change.** Split the expression, for example into a constant
+defined before the instruction, or use shorter macro parameters.
+
+Issue: [copyconst copies an operand text into namebuff without a length check (#997)](https://github.com/fubar-coder/bb2-c/issues/997).
