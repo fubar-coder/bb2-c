@@ -85,6 +85,7 @@ set(BBLINES ${HOST_TOOLS_DIR}/bblines/bblines)                  # line edits of 
 set(BBDETOK ${HOST_TOOLS_DIR}/bbdetok/bbdetok)                  # tokenised sources as plain text
 set(BB22 ${HOST_TOOLS_DIR}/bb22/bb22)                           # BB22 sources in TED's format
 set(OUTMATCH ${HOST_TOOLS_DIR}/outmatch/outmatch)               # an output against an expect file
+set(CDTABLE ${HOST_TOOLS_DIR}/cdtable/cdtable)                   # the CD result table from a fresh run
 set(AB3TOK ${HOST_TOOLS_DIR}/ab3tok/ab3tok)                     # tokenise as AmiBlitz3 loads a source
 set(TEDTOK ${HOST_DIR}/ted-tools/tedtok/tedtok)                 # tokenise like TED
 set(TEDDETOK ${HOST_DIR}/ted-tools/teddetok/teddetok)           # a source as TED shows it
@@ -104,7 +105,7 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${CDTABLE} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 

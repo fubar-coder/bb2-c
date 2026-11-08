@@ -40,6 +40,8 @@
 #              and written (the setup of the emulation data)
 #   cmdref     the command table of a library file as JSON (the website's
 #              command reference)
+#   cdtable    the CD result table written from a fresh run, keeping the
+#              note rows (tests/data/blitz2-cd.tsv)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -65,3 +67,4 @@ add_subdirectory(covmap)
 add_subdirectory(covsel)
 add_subdirectory(hdf)
 add_subdirectory(cmdref)
+add_subdirectory(cdtable)
