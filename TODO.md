@@ -809,6 +809,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   sometimes comes out DIFFERS in the clib configuration, and
   `ted-setdefs-flags-lsl7` sometimes halts in C5. Both pass in other
   runs; look at them again when their bug is fixed.
+- [ ] **Compile-time warnings** (from the archived change
+  `compiler-warnings`, its task 1.3; decided 2026-11-08): the queue that
+  collects warnings raised during a compile and shows them after it (the
+  editor's requester, the console). It comes with the first compile-time
+  warning; `resclash` (#36) is raised while the residents are loaded and
+  needs no queue. The design is in the archived change's `design.md`.
 
 ## 3 Only once §1 is done
 
