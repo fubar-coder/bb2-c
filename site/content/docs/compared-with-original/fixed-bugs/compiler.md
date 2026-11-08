@@ -427,18 +427,22 @@ program prints
 With smaller maxima, among them all the defaults, the compiler generates
 the same code as the original.
 
-**What to change**
-
-Nothing. Two related bugs are not fixed yet, so avoid these commands
-with such a maximum for now. `LoadShapes`, `DecodeShapes` and
-`LoadSprites`, which load a whole range of objects up to the maximum,
-still compute the last object with a 16-bit number and load only the
-first objects ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
-`Used` gives a wrong number for an object that lies 64 KB or more behind
-the start of its table, such as BitMap 1025
+`Used`, which gives the number of the object in use, also computed it
+with a 16-bit number and gave a wrong number for an object 64 KB or more
+behind the start of its table, such as 1 for BitMap 1025; with such a
+maximum it gives the right number
 ([#998](https://github.com/fubar-coder/bb2-c/issues/998)).
 
-Issue: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939).
+**What to change**
+
+Nothing. One related bug is not fixed yet, so avoid these commands with
+such a maximum for now. `LoadShapes`, `DecodeShapes` and `LoadSprites`,
+which load a whole range of objects up to the maximum, still compute the
+last object with a 16-bit number and load only the first objects
+([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
+
+Issues: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939),
+[Used Object returned a wrong number from 64 KB of its table on (#998)](https://github.com/fubar-coder/bb2-c/issues/998).
 
 ## Include files and paths
 
