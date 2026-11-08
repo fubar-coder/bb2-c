@@ -8,6 +8,8 @@
 
 #define NFIELDS 8
 #define F_PATH  0
+#define F_RESULT 1
+#define F_LINE  2
 #define F_SHA   5
 #define F_NOTE  7
 
@@ -56,7 +58,20 @@ static int is_hex(char c)
     return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
 }
 
-int cdtable_note_hash(const char *note, char hash[65])
+/* "error LINE)" at P (LINE decimal, 1 to 9 digits, no leading 0): the
+ * length of "error LINE", else 0 */
+static size_t error_ref(const char *p)
+{
+    size_t i;
+
+    if (strncmp(p, "error ", 6) || p[6] < '1' || p[6] > '9')
+        return 0;
+    for (i = 6; i < 15 && isdigit((unsigned char)p[i]); i++)
+        ;
+    return p[i] == ')' ? i : 0;
+}
+
+int cdtable_note_ref(const char *note, char ref[CDTABLE_REF_MAX])
 {
     const char *p, *q;
     size_t i;
@@ -72,9 +87,11 @@ int cdtable_note_hash(const char *note, char hash[65])
 
         for (i = 0; i < 64 && is_hex(h[i]); i++)
             ;
-        if (i == 64 && h[64] == ')') {
-            memcpy(hash, h, 64);
-            hash[64] = 0;
+        if (i != 64 || h[64] != ')')
+            i = error_ref(h);
+        if (i) {
+            memcpy(ref, h, i);
+            ref[i] = 0;
             return 1;
         }
     }
@@ -163,6 +180,16 @@ static int same_result(const struct row *a, const struct row *b)
     return 1;
 }
 
+/* the result of R in the form a note names it: "error LINE" for an error
+ * row, else the masked hash (empty for a row without an executable) */
+static void result_of(const struct row *r, char ref[CDTABLE_REF_MAX])
+{
+    if (!strcmp(r->f[F_RESULT], "error"))
+        snprintf(ref, CDTABLE_REF_MAX, "error %s", r->f[F_LINE]);
+    else
+        snprintf(ref, CDTABLE_REF_MAX, "%s", r->f[F_SHA]);
+}
+
 static void put_row(struct text *o, const struct row *r, const char *note)
 {
     int i;
@@ -213,32 +240,35 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
 
     for (i = 0; i < nt.n && !bad; i++) {
         const struct row *n = &nt.rows[i], *r = find(&ot, n->f[F_PATH]);
-        char hash[65];
-        int kind = r ? cdtable_note_hash(r->f[F_NOTE], hash) : 0;
+        char ref[CDTABLE_REF_MAX], res[CDTABLE_REF_MAX];
+        int kind = r ? cdtable_note_ref(r->f[F_NOTE], ref) : 0;
 
+        result_of(n, res);
         if (kind < 0) {
-            text_add(&rep, "%s: note row without the CD's hash: %s\n", n->f[F_PATH],
-                     r->f[F_NOTE]);
+            text_add(&rep, "%s: note row without the CD's result (2.10: ...): %s\n",
+                     n->f[F_PATH], r->f[F_NOTE]);
             bad = 1;
         } else if (kind == 0) {
             put_row(&o, n, n->f[F_NOTE]);
-            if (!r)
+            if (!r) {
                 text_add(&rep, "%s: new row\n", n->f[F_PATH]);
-            else if (mode == CDTABLE_UPDATE && !same_result(n, r))
+            } else if (mode == CDTABLE_UPDATE && !same_result(n, r)) {
+                result_of(r, ref);
                 text_add(&rep, "%s: changed without a note (a fix needs \"#NNN: ... (2.10: %s)\")\n",
-                         n->f[F_PATH], r->f[F_SHA]);
+                         n->f[F_PATH], ref);
+            }
         } else if (mode == CDTABLE_REFERENCE) {
-            if (strcmp(n->f[F_SHA], hash)) {
-                text_add(&rep, "%s: the note names %s, the original's hash is %s (stale note)\n",
-                         n->f[F_PATH], hash, n->f[F_SHA]);
+            if (strcmp(res, ref)) {
+                text_add(&rep, "%s: the note names %s, the original's result is %s (stale note)\n",
+                         n->f[F_PATH], ref, res[0] ? res : n->f[F_RESULT]);
                 bad = 1;
             } else {
                 put_row(&o, r, r->f[F_NOTE]);
                 text_add(&rep, "%s: note kept\n", n->f[F_PATH]);
             }
-        } else if (!strcmp(n->f[F_SHA], hash)) {
+        } else if (!strcmp(res, ref)) {
             put_row(&o, n, n->f[F_NOTE]);
-            text_add(&rep, "%s: note dropped (the port's executable is the CD's again)\n",
+            text_add(&rep, "%s: note dropped (the port's result is the CD's again)\n",
                      n->f[F_PATH]);
         } else {
             put_row(&o, n, r->f[F_NOTE]);
@@ -246,10 +276,10 @@ int cdtable_merge(enum cdtable_mode mode, const char *fresh, const char *old,
         }
     }
     for (i = 0; i < ot.n && !bad; i++) {
-        char hash[65];
+        char ref[CDTABLE_REF_MAX];
 
         if (!find(&nt, ot.rows[i].f[F_PATH])) {
-            if (cdtable_note_hash(ot.rows[i].f[F_NOTE], hash)) {
+            if (cdtable_note_ref(ot.rows[i].f[F_NOTE], ref)) {
                 text_add(&rep, "%s: note row not in the new table\n", ot.rows[i].f[F_PATH]);
                 bad = 1;
             } else {

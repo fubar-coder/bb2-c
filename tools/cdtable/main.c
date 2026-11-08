@@ -18,10 +18,11 @@ static void usage(FILE *f)
 {
     fprintf(f, "usage: cdtable update|reference NEW OLD OUT\n"
                "Write the CD result table OUT from the fresh run NEW and the table OLD (OUT\n"
-               "may be OLD).  Rows whose note starts with \"#NNN:\" and names the CD's hash\n"
-               "as \"(2.10: HEX)\" are note rows: with \"update\" (NEW is the port's run) the\n"
-               "note stays unless the port's hash is the CD's again; with \"reference\" (NEW\n"
-               "is the original's run) the row stays, and its note must name NEW's hash.\n");
+               "may be OLD).  Rows whose note starts with \"#NNN:\" and names the CD's result\n"
+               "as \"(2.10: HEX)\" (the masked hash) or \"(2.10: error LINE)\" (refused at\n"
+               "that line) are note rows: with \"update\" (NEW is the port's run) the note\n"
+               "stays unless the port's result is the CD's again; with \"reference\" (NEW is\n"
+               "the original's run) the row stays, and its note must name NEW's result.\n");
 }
 
 static char *read_all(const char *path)

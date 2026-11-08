@@ -392,3 +392,15 @@ code changes in this change).
   the commit names them. Checked with a temporary commit that adds a nop
   before the final `rts` of every program (dropped): `corpus` reports
   `prev: EXE DIFFERS` for all 71 sources.
+- **Task 7.3, error notes (2026-11-08):** a note named only the CD's
+  hash, so a source the CD's compiler refuses could not get one: #940
+  made the port refuse `BALLBLITZ.BB2` at line 195 where the CD refused
+  it at line 383, and `blitz2-cd-reference` would have put the CD's row
+  back. A note now names the CD's result as `(2.10: HEX)` or
+  `(2.10: error LINE)` (the result and line fields of the CD's error
+  row; the message is not part of it): a row gives an error note's
+  result when it is an error row at that line. The rules are the same
+  for both forms: kept while the reference gives that result, dropped
+  where the port gives it again, stale (error) where the reference gives
+  another. A `(2.10: ` part of neither form does not count; a note row
+  without a well formed part is an error.

@@ -186,9 +186,9 @@ add_custom_target(blitz2-cd-reference
 	COMMENT "The CD through the original blitz2 2.10 -> tests/data/blitz2-cd.tsv (note rows kept)"
 	VERBATIM)
 
-# the table from the port's result (after a fix changed an executable): the
-# note rows keep their note, or lose it where the port's executable is the
-# CD's again
+# the table from the port's result (after a fix changed a result): the note
+# rows keep their note, or lose it where the port's result (executable or
+# error line) is the CD's again
 cd_pass(cd-update $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv)
 add_custom_target(blitz2-cd-update
 	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-update.pass

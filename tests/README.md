@@ -241,21 +241,25 @@ cmake --build --preset amiga --target blitz2-cd-reference   # about 35 s
 A row whose note begins with an issue number (`#969: … (2.10: HEX)`) is a
 note row: it holds the port's result for an intended deviation
 (`docs/libs/deviations.md`, kind F), and the note names the reference's
-masked hash. Both targets write the table through the tool `cdtable` and
-keep the note rows:
+result: its masked hash, or `(2.10: error LINE)` where the original
+compiler refused the source at line LINE (the result and line fields of
+its error row; `#940: … (2.10: error 383)`). A row gives that result when
+it is an error row at that line, whatever its message. Both targets write
+the table through the tool `cdtable` and keep the note rows:
 
 ```
 cmake --build --preset amiga --target blitz2-cd-update      # from the port's result, about 35 s
 ```
 
 `blitz2-cd-update` rewrites the table from the port's run (after a fix
-changed an executable): a note row keeps its note, and loses it where the
-port's hash is the reference's again. A row that changed without a note is
-written and reported (`changed without a note`); add `#NNN: … (2.10: HEX)`
-by hand, with the old hash the report names. `blitz2-cd-reference` writes
-the original's result and leaves the note rows as they are; a note that
-names another hash than the original's is an error (stale note) and
-nothing is written. On an unchanged tree both leave the table byte for
+changed a result): a note row keeps its note, and loses it where the
+port's result is the reference's again. A row that changed without a note
+is written and reported (`changed without a note`); add `#NNN: … (2.10:
+HEX)` or `#NNN: … (2.10: error LINE)` by hand, with the old result the
+report names. `blitz2-cd-reference` writes the original's result and
+leaves the note rows as they are; a note that names another result than
+the original's is an error (stale note) and nothing is written, and so is
+a note row without a well formed `(2.10: …)` part. On an unchanged tree both leave the table byte for
 byte as it is.
 
 ### TED A/B
