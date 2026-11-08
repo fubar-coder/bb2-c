@@ -1964,27 +1964,56 @@ static UWORD tstbras(UWORD first, UWORD c, UWORD n)
     return c;                       /* .skip */
 }
 
+/* Fixed (intended deviation, #344): an amigalib in an expression saves
+   the parameter registers that hold a value of the expression.  The
+   original saves only d0/d1 (savereg) before the parameters and adds a
+   data register below regat to the masks only while it pops the
+   parameters, after the movem was poked: a parameter in d2-d5 overwrote
+   an intermediate value (a+(b+(c+Write_(...))): c in d2 is buf), and a
+   parameter in a3 the end of the string being built (sbasegot, as
+   afunction pushes a3 for it).  amigasave adds those registers to the
+   movem masks before they are poked; a call whose parameters are all
+   above regat (and not a3 in a string expression) is compiled as
+   before.  The OS itself keeps d2-d7/a2-a6. */
+static void amigasave(const UBYTE *regs, ULONG *push, ULONG *pull)
+{
+    for (; (BYTE)*regs >= 0; regs++) {
+        UWORD reg = *regs;
+        if (reg & 0x10) {
+            if (reg == 0x13 && sbasegot) {  /* a3 */
+                *push |= 1UL << 4;
+                *pull |= 1UL << 11;
+            }
+        } else if (reg < regat) {
+            *push |= 1UL << (15 - reg);
+            *pull |= 1UL << reg;
+        }
+    }
+}
+
 /* blitz2.s:10183 amigalib - Amiga OS library function call.
    Fixed (intended deviation, #958): parameters in a4/a5 no longer
-   clobber the variable bases, as in stamigalib (see amigaa4a5) */
+   clobber the variable bases, as in stamigalib (see amigaa4a5).
+   Fixed (#344): parameter registers holding intermediates are saved,
+   see amigasave. */
 static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
 {
     struct blitzlib *ol;
-    ULONG push, pull, savedpull;
+    ULONG push, pull;
     UWORD base, lvo, first, c, n;
     UBYTE *p, *regs;
     WORD i;
     BOOL a45;
 
     ol = uselib(W_(sub + 6));       /* get lib for base address */
-    savereg(&push, &pull);
-    savedpull = pull;
-    pokemovem(push);
     base = ol->varoff;              /* libbase reg */
     p = sub + 8;
     lvo = W_(p);                    /* get offset for lib */
     p += 2;
     regs = p;
+    savereg(&push, &pull);
+    amigasave(regs, &push, &pull);  /* fixed (#344) */
+    pokemovem(push);
     a45 = amigaa4a5(regs);          /* fixed (#958): movem.l a4/a5,-(a7) */
     c = first = getchar3();         /* remember first bracket.... */
     /* collect longs for lib */
@@ -2016,17 +2045,12 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
         p--;
         do {                        /* .loop2 */
             UWORD reg = *--p, opcode;
-            if (reg & 0x10) {
+            if (reg & 0x10)
                 opcode = ((reg & 7) << 9) | 0x205f; /* .addreg: move.l (a7)+,An */
-            } else {
-                if (reg < regat) {
-                    /* BUG(orig) (#344): dead - d4 was poked already and d5 was
-                       saved on the stack before; these bits are lost */
-                    pull |= 1UL << reg;
-                    push |= 1UL << (15 - reg);
-                }
-                opcode = (reg << 9) | 0x201f;       /* .nomovem: move.l (a7)+,Dn */
-            }
+            else
+                opcode = (reg << 9) | 0x201f;       /* .nomovem: move.l (a7)+,Dn;
+                                                       fixed (#344): saved by
+                                                       amigasave */
             pokewd(opcode);                         /* .gotit */
         } while (--i >= 0);
     }
@@ -2037,7 +2061,7 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
         pokel(0x4cdf3000UL);        /* fixed (#958): movem.l (a7)+,a4/a5 */
     if (regat)
         pokewd((regat << 9) | 0x2000);
-    pokemovem(savedpull);           /* .nofin */
+    pokemovem(pull);                /* .nofin */
     *type = T_LONG;
     reget();
     (void)c;
