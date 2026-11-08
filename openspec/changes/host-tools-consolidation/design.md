@@ -539,3 +539,14 @@ Findings and adaptations while implementing (2026-11-08).
   `--help`), and `SUB -h` (which neither handles: `hdftool info -h` takes
   `-h` as the image, `xtra dump -h` as the file) is left to the CLI11
   change.
+- **Whole-state verification** (task 12.3, on 8b93ee12 against
+  2f44b9d4, the commit before group 1, `-DBLITZ2_PREV=2f44b9d4`, no
+  `PREV_INTENDED`): clean build without warnings; `prev_results`, the
+  corpus and `ted_ab` with their prev parts pass; `ctest --preset all`
+  301 of 302, `ctest --preset oracle` 3 of 3, `ctest --preset native`
+  with `-DHOST_SANITIZE=ON` 128 of 128. The one failure,
+  `bug_orig_compiler_reloc32_one_block`, is its 90 s session time limit
+  under the load of the full run (57 s in the baseline, 68-87 s in the
+  group runs, failing at 92 s in groups 8, 9 and here); it passes run
+  alone (42 s) and uses no code of this change. The baseline failure
+  (`amiga_emulation_snapshot`) did not occur.
