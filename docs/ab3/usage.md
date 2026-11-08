@@ -33,10 +33,12 @@ comma-separated items, applied left to right: `all`, `none`, `NAME`
 (add), `-NAME` (remove); several `-w` (`-werr`) are applied in order.
 Examples: `-w -resclash` or `-w all,-resclash` (the clash is not
 reported), `-werr resclash` (it is an error). A warning is printed as
-`SOURCE: warning: MESSAGE [NAME]` (with `:LINE` when it has a line) and
-does not change the return code; a warning that is an error is printed
-and counted as an error (return code 10). An unknown name or an empty
-item is an argument error (20).
+`SOURCE: warning: MESSAGE [NAME]` (with `:LINE` when it has a line); a
+compile with warnings and no error ends with return code 5 (AmigaDOS
+`RETURN_WARN`: with the Shell's default `FailAt 10` a script goes on
+and can test it with `If WARN`; `FailAt 5` makes warnings stop it). A
+warning that is an error is printed and counted as an error (return
+code 10). An unknown name or an empty item is an argument error (20).
 
 The mode is AB3 for a text whose first line is AmiBlitz3's embedded
 header (`; XTRA`), for a file named `*.ab3`, and for a tokenised source
@@ -48,9 +50,10 @@ tokenised include of the other mode is refused. Relative names
 (source, executable, includes) are relative to the shell's current
 directory. Errors go to the console – a compile error as
 `FILE:LINE: MESSAGE`, inside an include with the include's name and
-line – and the return code is 0 (compiled, also with warnings), 10
-(compile error, or a warning that is an error) or 20 (argument or
-set-up error). AmiBlitz3's other options
+line – and the return code is 0 (compiled without warnings), 5
+(compiled with warnings), 10 (compile error, or a warning that is an
+error; also when warnings came before it) or 20 (argument or set-up
+error). AmiBlitz3's other options
 (`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.
 
 Structure (docs/ab3/variant.md, "Structure"): both programs link one

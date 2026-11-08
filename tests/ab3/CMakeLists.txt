@@ -293,12 +293,14 @@ ab3_cli_case(macrobuf_xtra macrobuf_xtra.bb2)
 ab3_cli_case(ab3xtra_tok ab3xtra_tok.bb2)
 ab3_cli_case(ab3xtra_tok_r ab3xtra_tok.bb2 ARGS -r)
 # warnings (change compiler-warnings, #36): two residents of the header
-# with #c=1 and #c=2 - the warning line and rc 0, as an error (-werr) rc
-# 10, disabled (-w) silent also when in -werr
+# with #c=1 and #c=2 - the warning line and rc 5 (RETURN_WARN), as an
+# error (-werr) rc 10, disabled (-w) silent and rc 0 also when in -werr;
+# the warning and a compile error: rc 10
 ab3_cli_case(wclash wclash.ab3)
 ab3_cli_case(wclash_werr wclash.ab3 ARGS -werr resclash)
 ab3_cli_case(wclash_off wclash.ab3 ARGS -w -resclash)
 ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
+ab3_cli_case(wclash_err wclash_err.ab3)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
 ab3_cli_case(opt_expr opt_expr.ab3 REF)

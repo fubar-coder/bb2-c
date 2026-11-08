@@ -345,9 +345,10 @@ other options (`-d`/`-debug`, `-run`, `-dump`, `-setcom`, `-setdbg`,
 `-strbufsize`, `-stacksize`, `-maxerrors`, `-1`/`-1pass`, `-dform`,
 `-PED`, `-save`, `-v`/`-verbose`) are refused. Without any argument
 starting with `-`, `blitz2-ab3` starts the editor exactly as `blitz2`
-(BB2 mode). Return codes: 0 compiled (or `-h`), 10 compile error, 20
-argument or set-up error (assumption, AmiBlitz3's own are not
-documented).
+(BB2 mode). Return codes: 0 compiled (or `-h`), 5 compiled with
+warnings (AmigaDOS `RETURN_WARN`, change `compiler-warnings`), 10
+compile error, 20 argument or set-up error (assumption, AmiBlitz3's own
+are not documented).
 
 How it works (`shared/ab3job`, `programs/blitz2/src/ab3main.c` and
 `ab3inc.c`, `programs/ab3cli`): `blitz2-ab3` parses the arguments,

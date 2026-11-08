@@ -32,11 +32,16 @@ extern "C" {
 /** @brief Bytes of a file name in the job (with its 0). */
 #define AB3JOB_PATHLEN 256
 
-/** @brief The return codes of a command line run (design D6). */
+/** @brief The return codes of a command line run (design D6): those of
+ *         the NDK's dos/dos.h (ab3cli checks that they agree; the host
+ *         has no dos/dos.h). */
 enum ab3job_rc {
-    AB3JOB_RC_OK = 0,           /* compiled (or -h) */
-    AB3JOB_RC_ERROR = 10,       /* compile error */
-    AB3JOB_RC_FAIL = 20         /* argument or setup error */
+    AB3JOB_RC_OK = 0,           /* RETURN_OK: compiled without warnings
+                                   (or -h) */
+    AB3JOB_RC_WARN = 5,         /* RETURN_WARN: compiled with warnings */
+    AB3JOB_RC_ERROR = 10,       /* RETURN_ERROR: compile error, or a
+                                   warning that is an error */
+    AB3JOB_RC_FAIL = 20         /* RETURN_FAIL: argument or setup error */
 };
 
 /**
@@ -60,8 +65,8 @@ extern const char *const ab3args_warnings[];
  * @brief The job of a command line run.
  *
  * Filled by ab3args_parse (force, release_exe, source, exe, the warning
- * lists), by blitz2-ab3 (mode, the error's place, warnerrs) and by ab3cli
- * (started, result, tokfile).
+ * lists), by blitz2-ab3 (mode, the error's place, warnerrs, warnings) and
+ * by ab3cli (started, result, tokfile).
  */
 struct ab3job {
     char magic[8];              /* AB3JOB_MAGIC with its 0 */
@@ -103,8 +108,38 @@ struct ab3job {
     /* the warnings that became errors (blitz2-ab3, ext_warning): ab3cli
        ends with AB3JOB_RC_ERROR when they were all its set-up errors */
     uint8_t warnerrs;
-    uint8_t pad3[3];
+    /* the warnings printed (blitz2-ab3, ext_warning; at most 255): a
+       compile without errors ends with AB3JOB_RC_WARN */
+    uint8_t warnings;
+    uint8_t pad3[2];
 };
+
+/**
+ * @brief The return code at the end of a compile (design D6 of the change
+ *        compiler-warnings), what ab3cli leaves in the job.
+ *
+ * A set-up error (outside the compile: loading libraries or residents)
+ * gives AB3JOB_RC_FAIL, unless all of them were warnings that are errors
+ * (AB3JOB_RC_ERROR); a compile error AB3JOB_RC_ERROR; no executable
+ * written AB3JOB_RC_FAIL; otherwise AB3JOB_RC_WARN after a warning, else
+ * AB3JOB_RC_OK.
+ *
+ * @param job        the job (warnerrs, warnings)
+ * @param setuperrs  the set-up errors (0: the compile ran)
+ * @param compileerr nonzero: the compile ended with an error
+ * @param written    nonzero: the executable was written
+ * @return an enum ab3job_rc
+ */
+static inline int ab3job_rc(const struct ab3job *job, int setuperrs, int compileerr, int written)
+{
+    if (setuperrs)
+        return setuperrs == job->warnerrs ? AB3JOB_RC_ERROR : AB3JOB_RC_FAIL;
+    if (compileerr)
+        return AB3JOB_RC_ERROR;
+    if (!written)
+        return AB3JOB_RC_FAIL;
+    return job->warnings ? AB3JOB_RC_WARN : AB3JOB_RC_OK;
+}
 
 /** @brief What ab3args_parse found. */
 enum ab3args_result {

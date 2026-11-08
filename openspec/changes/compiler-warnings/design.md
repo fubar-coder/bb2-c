@@ -261,14 +261,28 @@ the three-state word covers the only warning.
 
 | Situation | Editor | `blitz2-ab3 -s/-e` |
 |---|---|---|
-| no warnings | as today | rc 0 |
-| a warning disabled | nothing | rc 0 |
-| a warning enabled | warning shown, compile/load goes on | console line, executable written, rc 0 |
-| a warning that is an error | the warning is an error (D1) | the error line, rc 10; a load-time warning (#36) drops the residents like the existing clash error for types; nothing is compiled |
+| no warnings | as today | `RETURN_OK` (0) |
+| a warning disabled | nothing | `RETURN_OK` (0) |
+| a warning enabled | warning shown, compile/load goes on | console line, executable written, `RETURN_WARN` (5) |
+| a warning and an error | the warning, then the error | the console lines, `RETURN_ERROR` (10), `RETURN_FAIL` (20) for a set-up error |
+| a warning that is an error | the warning is an error (D1) | the error line, `RETURN_ERROR` (10); a load-time warning (#36) drops the residents like the existing clash error for types; nothing is compiled |
 
-A warning never changes the executable. Decided (Q3, 2026-11-08): rc 0
-with warnings, as gcc (AmigaDOS's `RETURN_WARN` (5) would stop a script
-with `failat 5`); a warning that is an error is an error, rc 10.
+A warning never changes the executable. The return codes are those of
+the NDK's `dos/dos.h`: `RETURN_OK` 0, `RETURN_WARN` 5, `RETURN_ERROR`
+10, `RETURN_FAIL` 20. Decided (Q3, 2026-11-08, revised the same day):
+`RETURN_WARN` after at least one warning when the compile wrote the
+executable, `RETURN_OK` without warnings. With the Shell's default
+`FailAt 10` a script goes on after rc 5 and can test it with `If WARN`;
+a script that wants warnings to stop it sets `FailAt 5`. A warning that
+is an error is an error, `RETURN_ERROR`; an error after warnings keeps
+its own code (`RETURN_ERROR`, `RETURN_FAIL`). `ab3main.c`'s
+`ext_warning` counts the printed warnings in the job (`warnings`,
+beside `warnerrs`); `ab3cli` takes its return code from `ab3job_rc`
+(`ab3job.h`, inline: host-tested by `test_ab3args`). `ab3job.h` names
+the codes `AB3JOB_RC_*` (the host has no `dos/dos.h`); `ab3cli` checks
+with `_Static_assert` that they are `dos/dos.h`'s. The editor (TED,
+`blitz2`) has no return code for a warning: a session still ends with
+0 (`docs/libs/deviations.md`, #22).
 
 ### D7. The #36 warning `resclash`
 
@@ -325,8 +339,8 @@ clashes.
 | `compiler-loadres-clash-off` (new) | the setting "off": no message, `#c` is 1 |
 | `compiler-loadres-clash-same` (new) | same name and same value in two residents: no message |
 | `compiler-loadres-clash-many` (new) | 10 clashing names: 8 warnings and "Clash in Residents: 2 more" |
-| `ab3_cli` cases | `-w`/`-werr` listed by `-h`; the console line of a warning with rc 0; `-werr resclash`: the error line, rc 10; `-w -resclash`: silent, rc 0; an unknown name: rc 20 |
-| host test `test_ab3args` | the lists: `all`, `none`, `NAME`, `-NAME`, order, case, two options, the masks; broken input: unknown name, empty item, missing argument |
+| `ab3_cli` cases | `-w`/`-werr` listed by `-h`; the console line of a warning with rc 5; a warning and a compile error: rc 10 (`wclash_err`); `-werr resclash`: the error line, rc 10; `-w -resclash`: silent, rc 0; an unknown name: rc 20 |
+| host test `test_ab3args` | `ab3job_rc`: 0, 5, 10, 20 from the job's counts; the lists: `all`, `none`, `NAME`, `-NAME`, order, case, two options, the masks; broken input: unknown name, empty item, missing argument |
 | `.xtra` identity | `prev_results`, `ted_ab` `P5`/`Pc` and the `xtra` host tests: a saved `.xtra` is unchanged |
 | options requester | an emulator screenshot of TED with the second requester (layout); the state cycle by the test stub is not scripted (it answers requesters with their end gadget) |
 
@@ -357,7 +371,9 @@ now), `docs/architecture.md` 3.6 (warnings), `docs/libs/deviations.md`
    warning is never an error; default all enabled, none an error);
    command line `-w LIST`, `-werr LIST`; the editor's one three-state
    setting off / on / errors in word +24 (D4, D5).
-3. Q3: rc 0 with warnings; a warning that is an error gives rc 10.
+3. Q3: rc 5 (`RETURN_WARN`) with warnings and no error (revised the
+   same day; the first answer was rc 0 as gcc); a warning that is an
+   error gives rc 10.
 4. Q4: the queued path only with the first compile-time warning.
 5. Q6: CD sources that newly warn keep the warning; no list of known
    clashes.

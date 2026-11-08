@@ -1,6 +1,6 @@
 [compile]
 wclash.ab3: warning: Clash in Residents: #c (TEST:src/wclash1.res, TEST:src/wclash2.res) [resclash]
-rc=0
+rc=5
 [run]
 1
 rc=0

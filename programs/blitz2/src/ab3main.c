@@ -183,8 +183,9 @@ void ext_warnsets(ULONG *enabled, ULONG *errors)
 }
 
 /* a command line run: "SOURCE: warning: MSG (DETAIL) [NAME]" on the
-   console; a warning that is an error is counted (ab3cli's rc 10) and
-   printed by ab3cli as the error that follows */
+   console, counted (ab3cli's rc 5 when the compile succeeds); a warning
+   that is an error is counted (ab3cli's rc 10) and printed by ab3cli as
+   the error that follows */
 BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
 {
     if (!ab3job)
@@ -194,6 +195,8 @@ BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
             job.warnerrs++;
         return FALSE;
     }
+    if (job.warnings < 255)
+        job.warnings++;
     say(job.source);
     say(": warning: ");
     say(msg);

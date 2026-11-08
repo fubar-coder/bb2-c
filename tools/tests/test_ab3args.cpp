@@ -2,7 +2,7 @@
 // shared/ab3job): the scenarios of the spec ab3-compat/command-line -
 // valid compiles (short and long names, -r, -mode), missing arguments,
 // unknown and unsupported options, the usage, and the editor start
-// without options.
+// without options, and the return code at the end of a compile.
 #include <cstring>
 #include <string>
 #include <vector>
@@ -216,6 +216,7 @@ TEST_CASE("warnings: without -w and -werr the source's setting", "[ab3args]")
     CHECK(p.job.werr_keep == AB3JOB_W_ALL);
     CHECK(p.job.werr_add == 0u);
     CHECK(p.job.warnerrs == 0);
+    CHECK(p.job.warnings == 0);
     for (uint32_t s : { 0u, AB3JOB_W_ALL }) {
         CHECK(applied(s, p.job.warn_keep, p.job.warn_add) == s);
         CHECK(applied(s, p.job.werr_keep, p.job.werr_add) == s);
@@ -306,4 +307,30 @@ TEST_CASE("warnings: the usage lists the options and the names", "[ab3args]")
         CHECK(u.find(o) != std::string::npos);
     for (int k = 0; ab3args_warnings[k]; k++)
         CHECK(u.find(ab3args_warnings[k]) != std::string::npos);
+}
+
+TEST_CASE("return code: the end of a compile (ab3job_rc)", "[ab3args]")
+{
+    auto p = compile_with({});
+    REQUIRE(p.result == AB3ARGS_COMPILE);
+    ab3job &j = p.job;
+    CHECK(AB3JOB_RC_WARN == 5);
+    // no warnings: 0; written after warnings: 5 (RETURN_WARN)
+    CHECK(ab3job_rc(&j, 0, 0, 1) == AB3JOB_RC_OK);
+    j.warnings = 1;
+    CHECK(ab3job_rc(&j, 0, 0, 1) == AB3JOB_RC_WARN);
+    j.warnings = 255;
+    CHECK(ab3job_rc(&j, 0, 0, 1) == AB3JOB_RC_WARN);
+    // a warning and a compile error: 10; nothing written: 20
+    CHECK(ab3job_rc(&j, 0, 1, 0) == AB3JOB_RC_ERROR);
+    CHECK(ab3job_rc(&j, 0, 0, 0) == AB3JOB_RC_FAIL);
+    // set-up errors: all warnings that are errors 10, else 20 (also
+    // with a printed warning)
+    j.warnerrs = 1;
+    CHECK(ab3job_rc(&j, 1, 0, 0) == AB3JOB_RC_ERROR);
+    CHECK(ab3job_rc(&j, 2, 0, 0) == AB3JOB_RC_FAIL);
+    j.warnings = 0;
+    j.warnerrs = 0;
+    CHECK(ab3job_rc(&j, 1, 0, 0) == AB3JOB_RC_FAIL);
+    CHECK(ab3job_rc(&j, 0, 1, 1) == AB3JOB_RC_ERROR);
 }

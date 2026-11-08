@@ -24,8 +24,8 @@
  *   - prints what went wrong on the console - a compile error as
  *     "FILE:LINE: MESSAGE", inside an include with the include's name and
  *     line (blitz2-ab3 places it in the job) - and leaves the return code
- *     in the job: 0
- *     compiled, 10 compile error (or a warning that is an error, change
+ *     in the job (ab3job_rc): 0 compiled, 5 compiled with warnings, 10
+ *     compile error (or a warning that is an error, change
  *     compiler-warnings), 20 set-up error (design D6).
  * Relative names (source, executable, includes) are relative to the
  * shell's current directory.
@@ -50,6 +50,11 @@
 #include "tokenizer.h"
 
 extern struct DosLibrary *DOSBase;
+
+/* the job's return codes are AmigaDOS's (dos/dos.h) */
+_Static_assert(AB3JOB_RC_OK == RETURN_OK && AB3JOB_RC_WARN == RETURN_WARN
+               && AB3JOB_RC_ERROR == RETURN_ERROR && AB3JOB_RC_FAIL == RETURN_FAIL,
+               "AB3JOB_RC");
 
 static struct ab3job *job;
 static const char *curfile;             /* the file messages are about */
@@ -702,8 +707,7 @@ static int run(void)
         /* all of them warnings that are errors (the residents' clash,
            change compiler-warnings design D4): an error, not a set-up
            error */
-        if (setuperr == job->warnerrs)
-            rc = AB3JOB_RC_ERROR;
+        rc = ab3job_rc(job, setuperr, 0, 0);
         goto out;
     }
     DeleteFile((CONST_STRPTR)job->exe); /* no stale executable */
@@ -727,9 +731,9 @@ static int run(void)
         sbs(&L, ": ");
         sbs(&L, errmsg);
         OUT_END;
-        rc = AB3JOB_RC_ERROR;
+        rc = ab3job_rc(job, 0, 1, 0);
     } else if (exists(job->exe))
-        rc = AB3JOB_RC_OK;
+        rc = ab3job_rc(job, 0, 0, 1);   /* 5 after a warning */
     else
         report("no executable written");
 out:

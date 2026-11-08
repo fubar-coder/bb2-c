@@ -56,7 +56,7 @@ In the editor an enabled warning SHALL be shown through the editor's message req
 
 #### Scenario: Command line
 - **WHEN** a source with clashing residents is compiled with `blitz2-ab3 -s prog.ab3 -e RAM:prog`
-- **THEN** the console shows `prog.ab3: warning: Clash in Residents: #NAME (...) [resclash]`, the executable is written and the return code is 0
+- **THEN** the console shows `prog.ab3: warning: Clash in Residents: #NAME (...) [resclash]`, the executable is written and the return code is 5
 
 ### Requirement: Clashing resident constants warn
 After the residents are loaded, a constant name defined more than once in the residents with a value different from its first definition SHALL give the warning `resclash` with the text `Clash in Residents: #NAME`, once per name, at most 8 names followed by one `Clash in Residents: N more`; a name defined again with the same value SHALL NOT warn. The first definition SHALL stay the one the compiler uses. Types and macros SHALL keep the error "Clash in Residents".

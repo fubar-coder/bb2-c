@@ -1,0 +1,14 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "TEST:src/wclash1.res,TEST:src/wclash2.res"
+; /XTRA
+; the warning resclash (#36) and a compile error in line 11: the error
+; decides, return code 10, no executable
+#zq = 5
+CNIF #zq + @#zq = 6
+NPrint #c
+CEND
+End

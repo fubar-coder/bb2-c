@@ -296,8 +296,9 @@ error. `warn` is silent in direct mode and for a disabled warning; for
 a warning that is an error it calls `err(msg)` (all of the above);
 otherwise it shows `Warning: MSG` through the same editor service
 `comdata+12` (in a command line run `ext_warning` prints
-`SOURCE: warning: MSG (DETAIL) [NAME]` instead) and returns: the
-compile or the load goes on and its result is unchanged. Only warnings
+`SOURCE: warning: MSG (DETAIL) [NAME]` instead and counts it: the run
+ends with return code 5 instead of 0) and returns: the compile or the
+load goes on and the executable is unchanged. Only warnings
 outside a compile exist so far (`loadres`); one during a compile would
 need a queue shown after the compile (the requester would sit under the
 progress requester).

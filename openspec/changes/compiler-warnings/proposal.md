@@ -44,8 +44,9 @@ line and in the editor.
   visible three-state setting "WARNINGS: OFF / ON / ERRORS" in the
   second options requester for all warnings; `$0080` is "on", so old
   `.xtra` files load as "on" and are saved byte-identical (design D5).
-- Return codes: warnings leave the return code at 0; a warning that is
-  an error gives 10 (design D6).
+- Return codes: a compile with warnings and no error gives 5 (AmigaDOS
+  `RETURN_WARN`), without warnings 0; a warning that is an error, or
+  any error, gives 10 (design D6).
 - #36: constants with the same name in the residents give the warning
   "Clash in Residents: #NAME" when their values differ; same name and
   same value is silent; types and macros keep the error (design D7).
@@ -77,8 +78,8 @@ warning); changes to TED's own code or the `comdata` table.
   `data.c` (the word `warnopt`, gadget `optreq2ga5` visible, label of the
   second options requester).
 - `shared/ab3job/` (warning names, the lists in the job, `-w`/`-werr`
-  parsing), `programs/ab3cli/src/main.c` (rc 10 for a warning that is an
-  error), `tools/tests/test_ab3args.cpp`.
+  parsing), `programs/ab3cli/src/main.c` (rc 5 after a warning,
+  rc 10 for a warning that is an error; `ab3job_rc`), `tools/tests/test_ab3args.cpp`.
 - Test stub: a job-line key `warnings=` for the compiler tests
   (`tests/corpus/amiga/tedstub.c`).
 - Results: executables and `.xtra` files stay byte-identical; the first

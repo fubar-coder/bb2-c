@@ -1,0 +1,6 @@
+[compile]
+wclash_err.ab3: warning: Clash in Residents: #c (TEST:src/wclash1.res, TEST:src/wclash2.res) [resclash]
+wclash_err.ab3:11: Illegal Constant Expression
+rc=10
+[run]
+no executable
