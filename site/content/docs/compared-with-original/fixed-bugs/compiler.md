@@ -324,6 +324,122 @@ is described with the others in
 
 Issue: [End Statement could close a Function, and the other way round (#940)](https://github.com/fubar-coder/bb2-c/issues/940).
 
+## AmigaOS functions and objects
+
+### An AmigaOS function inside a calculation {#amigaos-call-in-expression}
+
+While the compiler works out a calculation, it keeps the values it has
+already loaded in the processor's registers. An AmigaOS function such as
+`Write_` takes its arguments in registers too. When the function came in
+the middle of a calculation, the original loaded the arguments into
+those registers without saving what was there, so the calculation went
+on with an argument in place of one of its own values. No message
+warned about it, and the result was simply wrong.
+
+**What happened**
+
+```
+fh.l=Open_("NIL:",1006)
+s$="abcd"
+a.l=1000:b.l=200:c.l=30
+x.l=Write_(fh,&s$,4)
+NPrint a+b+c+x
+y.l=a+(b+(c+Write_(fh,&s$,4)))
+If y=1234 Then NPrint y Else NPrint "wrong: not 1234"
+Close_ fh
+End
+```
+
+`Write_` writes the 4 bytes and returns 4, so both sums are 1234. The
+first adds the result of a separate call; the second calls `Write_` in
+the middle of the calculation. The original prints
+
+```
+1234
+wrong: not 1234
+```
+
+In the second sum, the value of `c` was overwritten by an argument of
+`Write_`. Functions with many arguments in registers, such as
+`BltBitMap_`, could overwrite several values of a calculation at once,
+and a string calculation could lose its text to a function with an
+argument in register a3, such as `RawDoFmt_`.
+
+**With the port**
+
+The compiler saves the values of the calculation before the call and
+restores them after it. The program prints
+
+```
+1234
+1234
+```
+
+**What to change**
+
+Nothing. A program that called the function on a line of its own, as
+in the first sum, to avoid the bug can stay as it is.
+
+Issue: [An AmigaOS function used inside an expression overwrote the expression's values (#344)](https://github.com/fubar-coder/bb2-c/issues/344).
+
+### Object numbers above a raised maximum {#object-numbers-above-32k}
+
+Objects such as shapes and bitmaps are numbered, and the compiler options
+set the highest number a program may use (**Object Maximums**). Each
+object has an entry in a table of its kind, and the compiler finds an
+object from its number and the size of an entry. The original computed
+this distance with a 16-bit number, which holds at most 32767. When a
+maximum is raised so far that an object lies 32 KB or more behind the
+start of its table, from Shape 1024 or from BitMap 512 on, the result
+turned negative: `Addr`, `Use`, `Free` and the object number of a command
+such as `BitMap 512,…` then addressed memory before the table instead of
+the object. Runtime error checking did not notice it, since the number
+itself was within the maximum.
+
+**What happened**
+
+This program is compiled with the maximum of Shapes raised to 1100:
+
+```
+DEFTYPE .l
+a.l=Addr Shape(1025)-Addr Shape(0)
+NPrint a
+End
+```
+
+An entry of the shape table has 32 bytes, so Shape 1025 lies 32800 bytes
+behind Shape 0. The original prints
+
+```
+-32736
+```
+
+**With the port**
+
+When the last object of a maximum lies 32 KB or more behind the start of
+its table, the compiler computes the distance with a 32-bit number. The
+program prints
+
+```
+32800
+```
+
+With smaller maxima, among them all the defaults, the compiler generates
+the same code as the original.
+
+**What to change**
+
+Nothing. Two related bugs are not fixed yet, so avoid these commands
+with such a maximum for now. `LoadShapes`, `DecodeShapes` and
+`LoadSprites`, which load a whole range of objects up to the maximum,
+still compute the last object with a 16-bit number and load only the
+first objects ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
+`Used` gives a wrong number for an object that lies 64 KB or more behind
+the start of its table, such as BitMap 1025
+([#998](https://github.com/fubar-coder/bb2-c/issues/998)).
+
+Issue: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939).
+
 ## Include files and paths
 
 ### Text after `IncDir "…"` {#text-after-path}
@@ -601,6 +717,12 @@ source the original accepted are shown with examples on
 * A resident with a macro text of 32767 bytes or more loaded the
   definitions behind it from the wrong place; it is written and loaded
   correctly ([#995](https://github.com/fubar-coder/bb2-c/issues/995)).
+* Two residents that defined the same constant with different values
+  were never noticed, and the first resident's value was used silently;
+  the compiler gives the warning "Clash in Residents" with the name of the
+  constant and still uses the first value
+  ([Warnings]({{< relref "/docs/how-blitz2-works/editor-and-compiler#warnings" >}}),
+  [#36](https://github.com/fubar-coder/bb2-c/issues/36)).
 
 ### The executable
 

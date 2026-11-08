@@ -39,6 +39,10 @@ In the compiler ([Compiling]({{< relref "/docs/compared-with-original/fixed-bugs
   got a wrong size.
 * [`End Statement` could close a Function]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#end-of-procedure" >}}),
   and a string Function ended that way crashed.
+* [An AmigaOS function inside a calculation]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#amigaos-call-in-expression" >}}),
+  as in `a+(b+(c+Write_(…)))`, overwrote values of the calculation.
+* [Object numbers above a raised maximum]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#object-numbers-above-32k" >}}),
+  such as Shape 1025, addressed memory before the object table.
 * [Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#text-after-path" >}}),
   such as `: a=2`, was never compiled.
 * [`IncDir` stayed for the next compile]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#incdir-next-compile" >}})
