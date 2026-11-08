@@ -17,7 +17,8 @@ Setting up the emulator (ROMs, hardfiles, slot limit):
 slots and snapshot mode: `tools/lib/amiga_emulation/README.md`.
 
 Contents: [Original material and presets](#original-material-and-presets) ·
-[host](#host-tests) · [emulator](#emulator-tests) · [bug-orig](#bug-orig-tests) ·
+[host](#host-tests) · [emulator](#emulator-tests) · [prev build](#the-prev-build) ·
+[bug-orig](#bug-orig-tests) ·
 [bug-port](#bug-port-tests) · [oracle data](#oracle-data-of-the-ted-tests) ·
 [Test statistics](#test-statistics) · [Coverage](#coverage)
 
@@ -337,6 +338,66 @@ entry `RWE_REFBUILD_SELFTEST` (REFERENCE `refbuild`) through the
 declaration comparison. A test that needs the reference build has the
 label `emulator` (ctest starts a fixture's setup even for a test
 outside the label filter).
+
+## The prev build
+
+The acceptance rule of CLAUDE.md (a rework changes no result; a fix
+changes only the results it names) is a test: the project can build the
+Amiga side of the previous commit next to the current build and compare
+the results of both. It builds the project a second time (about 30 s on
+16 cores), so it is only made on request:
+
+```
+cmake --preset amiga -DBLITZ2_PREV=ON   # once: the option stays in the cache
+cmake --build --preset amiga            # also builds build/amiga/prev/
+ctest --preset all                      # compares
+```
+
+`BLITZ2_PREV` is `ON` (the commit before `HEAD`, `HEAD~1`: the first
+parent of a merge), any revision (`-DBLITZ2_PREV=HEAD~3`, a hash, a
+branch), or the absolute path of a build directory of another commit
+(then nothing is built). A revision is taken from `git archive` into
+`build/<preset>/prev/src`, so the checkout and its uncommitted changes
+are untouched, and built there by the ExternalProject `blitz2_prev`; its
+results are in `build/<preset>/prev/blitz2/` like those of the current
+build. Every `cmake --build` follows the revision: after a commit the
+previous commit is another one, and `prev/` is built afresh. Without the
+option nothing of this is configured.
+
+What is compared (without a prev build `prev_results` is skipped, not
+passed, and the corpus and `ted_ab` run without their prev parts):
+
+* `prev_results` (host test, `tools/prevcmp`): `blitz2/acidlibs`,
+  `blitz2/deflibs` and every library file (`libs/**.obj`,
+  `variants/**.obj`: acidlibs, deflibs, their variants, the userlibs)
+  byte by byte. A difference fails and names the file. A file the
+  commit adds is counted, not judged. Intended differences (a fix names
+  them in its commit): `-DPREV_INTENDED=ON` lets every file differ, or
+  `-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs"` lists the
+  files (paths relative to `build/<preset>`; each listed file must
+  differ: a stale entry fails like a difference). Configure again after
+  changing it, and set it back to `OFF` for the next commit. The tool and
+  its tests with broken input: `prevcmp_*` (`tools/tests`, small build
+  directories) and `test_prevcmp`.
+* the corpus: a fourth configuration `prev` (`config=prev|exe:clib|…`:
+  the previous commit's blitz2 with its libraries) must write the
+  executable that `clib` writes and give the same output, so that a
+  changed code generation or library shows as `prev: EXE DIFFERS` in
+  the report of `corpus`, `corpus_runerr`, `corpus_req` and the serial
+  passes. `exe:BASE` / `output:BASE` in a `config=` line of the pass file
+  compares with the configuration BASE instead of the reference.
+* `ted_ab`: the combinations `P5` (TED of the previous commit with blitz2
+  2.10) and `Pc` (TED and blitz2 of the previous commit) are added to the
+  four of `TED_AB_COMBOS`, compared with `C5` and `Cc` (the pairs
+  `C5-P5` and `Cc-Pc`, reported like the others and named by `; @fixed
+  #NNN` when a fix of TED changes them). A change of what TED does shows
+  there.
+
+A fix changes results on purpose: its commit names them (CLAUDE.md), the
+`prev` lines of the report that differ must be exactly those, and
+`-DPREV_INTENDED` covers the library files for `prev_results`. The
+corpus and `ted_ab` have no list: they report the differences, and the
+reviewer compares them with the commit message.
 
 ## bug-orig tests
 

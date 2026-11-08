@@ -57,10 +57,16 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
 ## Rules
 
 * **Acceptance for every rework** (rule of 2026-11-01): the *results*
-  stay byte-identical to the state before (build of the previous commit
-  of this repository) unless a change of them is intended: the
-  executables the compilers generate, the files TED writes, and
-  `acidlibs`, `deflibs` and all library files. The programs themselves
+  stay byte-identical to the state before (the `prev` build, the build of
+  the previous commit of this repository: `cmake --preset amiga
+  -DBLITZ2_PREV=ON`, `tests/README.md` "The prev build") unless a change
+  of them is intended: the executables the compilers generate, the files
+  TED writes, and `acidlibs`, `deflibs` and all library files.
+  `ctest --preset all` compares them with the `prev` build
+  (`prev_results`, the corpus configuration `prev`, the `ted_ab`
+  combinations `P5`/`Pc`; without a prev build only `prev_results` is
+  skipped and the others run without that part), and an intended change
+  is named by `-DPREV_INTENDED`. The programs themselves
   (`blitz2`, `blitz2-ab3`, `ted`, the tools) may change with a code
   rework; then check functionally with the tests here
   (`ctest --preset all` and `ctest --preset bug-orig`, needs Amiberry

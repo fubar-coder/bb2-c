@@ -126,6 +126,28 @@ built library files, `tools/cmdref`, committed in `site/data/libraries/`
 and rendered by Hugo (`site/README.md`); checked in the build, see
 below.
 
+## Checking a rework against the previous commit
+
+A rework changes no result; a fix changes only the results its commit
+names (CLAUDE.md "Acceptance"). The build of the previous commit, the
+`prev` build, makes that a test:
+
+```
+cmake --preset amiga -DBLITZ2_PREV=ON   # once; HEAD~1, or a revision, or a build directory
+cmake --build --preset amiga            # builds build/amiga/prev/ from git archive (the checkout stays untouched)
+ctest --preset all                      # prev_results, corpus (config prev), ted_ab (P5, Pc)
+```
+
+`prev_results` compares `acidlibs`, `deflibs` and every library file
+byte by byte; `-DPREV_INTENDED=ON` or a list of paths
+(`-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs"`, each of
+which must differ) names the files a fix changes. The corpus compares the
+executables of the previous compiler with those of the current one, and
+`ted_ab` runs the previous TED. Options, what is compared and how the
+tests are skipped without a prev build: `tests/README.md`, "The prev
+build". Without the option nothing of this is configured or built;
+`prev_results` is then skipped.
+
 ## Checks in the build
 
 The build checks its results itself; if a check fails, the result counts
