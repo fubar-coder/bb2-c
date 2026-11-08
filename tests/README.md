@@ -246,7 +246,8 @@ result: its masked hash, or `(2.10: error LINE)` where the original
 compiler refused the source at line LINE (the result and line fields of
 its error row; `#940: … (2.10: error 383)`). A row gives that result when
 it is an error row at that line, whatever its message. Both targets write
-the table through the tool `cdtable` and keep the note rows:
+the table through `results cd-update` and `results cd-reference`
+([`tools/results`](../tools/results/README.md)) and keep the note rows:
 
 ```
 cmake --build --preset amiga --target blitz2-cd-update      # from the port's result, about 35 s
@@ -385,7 +386,8 @@ from the checkout.
 What is compared (without a prev build `prev_results` is skipped, not
 passed, and the corpus and `ted_ab` run without their prev parts):
 
-* `prev_results` (host test, `tools/prevcmp`): `blitz2/acidlibs`,
+* `prev_results` (host test, `results prev`,
+  [`tools/results`](../tools/results/README.md)): `blitz2/acidlibs`,
   `blitz2/deflibs` and every library file (`libs/**.obj`,
   `variants/**.obj`: acidlibs, deflibs, their variants, the userlibs)
   byte by byte. A difference fails and names the file. A file the
@@ -394,7 +396,7 @@ passed, and the corpus and `ted_ab` run without their prev parts):
   `-DPREV_INTENDED="libs/acidlibs/2dlib.obj;blitz2/acidlibs"` lists the
   files (paths relative to `build/<preset>`; each listed file must
   differ: a stale entry fails like a difference). The other entries of
-  the list (below) are only checked for their syntax by `prevcmp`. The
+  the list (below) are only checked for their syntax by `results prev`. The
   tool and its tests with broken input: `prevcmp_*` (`tools/tests`, small
   build directories) and `test_prevcmp`.
 * the corpus: a fourth configuration `prev` (`config=prev|exe:clib|…`:
@@ -1000,8 +1002,9 @@ rules for what a change of a file selects are in
 * what the emulator tests run on the host: the runners
   (`tests/*/runner/`), the emulator sessions
   (`tools/lib/amiga_emulation/`), `amiga_run`, the `@stat` line
-  (`tools/lib/teststats/`) and `outmatch`: every emulator test and the
-  host tests;
+  (`tools/lib/teststats/`) and `results` (its `match` compares the
+  output of emulator tests): every emulator test and the host tests
+  (`results` also `prev_results`);
 * the tools only the host tests and the coverage scripts use
   (`testinfo`): the host tests; every other tool makes or
   checks results of the build (`biglib`, `blitzlibcheck`, `hunkcheck`,

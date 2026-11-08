@@ -413,7 +413,7 @@ of `tests/ab3/cli/` with `blitz2-ab3 -s … -e …` in one session
 one, one without `csLibs`, one with a userlib of number 152 replacing
 `baseLibs`' freqlib), runs each program through `reqtrap` and compares
 the compiler's console output, its return code, the program's output and
-return code with `NAME.expect` (`tools/outmatch`: literal lines, `~`/`+`
+return code with `NAME.expect` (`results match`, `tools/results`: literal lines, `~`/`+`
 patterns for memory sizes, timing and the system's language). The cases:
 AmiBlitz3's ten test programs of the spike (`memoryleak_test` with its
 `OPTIMIZE 13` line since G2) and the ten G2 makes compile (below), `^`

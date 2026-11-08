@@ -1,26 +1,33 @@
 /*
- * outmatch - the output of a test run against an expect file
+ * results match - the output of a test run against an expect file
  * (lib/outmatch/outmatch.h: literal lines, '~' and '+' patterns, sections).
  *
- *   outmatch [--section NAME] EXPECT OUTPUT
+ *   results match [--section NAME] EXPECT OUTPUT
  *
  * Exit status 0 if OUTPUT matches EXPECT, 1 if not (the first difference
  * on stderr), 2 on wrong arguments, a file that cannot be read or a
  * broken expect file.  A 0 byte in OUTPUT counts as '?'.
  */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "outmatch.h"
+#include "results.h"
+
+const char cmd_match_usage[] =
+    "usage: results match [--section NAME] EXPECT OUTPUT\n"
+    "Compare the text OUTPUT with the expect file EXPECT line by line: a\n"
+    "line is literal, \"~PATTERN\" one line, \"+PATTERN\" one or more lines\n"
+    "matching PATTERN ('*' any characters, '#' a decimal number, \"\\c\" c),\n"
+    "\"\\TEXT\" the literal TEXT.  --section: only the lines after \"[NAME]\"\n"
+    "up to the next \"[...]\" line in both.\n";
+
+static const char *me; /* "results match", the prefix of the messages */
 
 static void usage(FILE *f)
 {
-    fprintf(f, "usage: outmatch [--section NAME] EXPECT OUTPUT\n"
-               "Compare the text OUTPUT with the expect file EXPECT line by line: a\n"
-               "line is literal, \"~PATTERN\" one line, \"+PATTERN\" one or more lines\n"
-               "matching PATTERN ('*' any characters, '#' a decimal number, \"\\c\" c),\n"
-               "\"\\TEXT\" the literal TEXT.  --section: only the lines after \"[NAME]\"\n"
-               "up to the next \"[...]\" line in both.\n");
+    fputs(cmd_match_usage, f);
 }
 
 /* a whole file as text, 0 bytes as '?' */
@@ -46,16 +53,13 @@ static char *read_text(const char *path)
     return s;
 }
 
-int main(int argc, char **argv)
+int cmd_match(int argc, char **argv)
 {
     const char *section = NULL;
     char msg[512], *expect, *output;
     int a = 1, r;
 
-    if (argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        usage(stdout);
-        return 0;
-    }
+    me = argv[0];
     if (argc > 2 && !strcmp(argv[1], "--section")) {
         section = argv[2];
         a = 3;
@@ -65,17 +69,17 @@ int main(int argc, char **argv)
         return 2;
     }
     if (!(expect = read_text(argv[a]))) {
-        perror(argv[a]);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[a], strerror(errno));
         return 2;
     }
     if (!(output = read_text(argv[a + 1]))) {
-        perror(argv[a + 1]);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[a + 1], strerror(errno));
         free(expect);
         return 2;
     }
     r = outmatch(expect, output, section, msg, sizeof msg);
     if (r)
-        fprintf(stderr, "outmatch: %s: %s\n", r < 0 ? argv[a] : argv[a + 1], msg);
+        fprintf(stderr, "%s: %s: %s\n", me, r < 0 ? argv[a] : argv[a + 1], msg);
     free(expect);
     free(output);
     return r < 0 ? 2 : r;

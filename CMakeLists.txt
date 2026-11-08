@@ -81,15 +81,13 @@ set(BLITZRES ${HOST_TOOLS_DIR}/blitzres/blitzres)               # resident files
 set(BBLINES ${HOST_TOOLS_DIR}/bblines/bblines)                  # line edits of tokenised sources
 set(BBDETOK ${HOST_TOOLS_DIR}/bbdetok/bbdetok)                  # tokenised sources as plain text
 set(BB22 ${HOST_TOOLS_DIR}/bb22/bb22)                           # BB22 sources in TED's format
-set(OUTMATCH ${HOST_TOOLS_DIR}/outmatch/outmatch)               # an output against an expect file
-set(CDTABLE ${HOST_TOOLS_DIR}/cdtable/cdtable)                   # the CD result table from a fresh run
+set(RESULTS ${HOST_TOOLS_DIR}/results/results)                  # results against expectations, the prev build
 set(AB3TOK ${HOST_TOOLS_DIR}/ab3tok/ab3tok)                     # tokenise as AmiBlitz3 loads a source
 set(TEDTOK ${HOST_DIR}/ted-tools/tedtok/tedtok)                 # tokenise like TED
 set(TEDDETOK ${HOST_DIR}/ted-tools/teddetok/teddetok)           # a source as TED shows it
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # one corpus pass in Amiberry
 set(CDRUN ${HOST_DIR}/corpus-runner/cdrun)                      # the CD through one compiler
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
-set(PREVCMP ${HOST_TOOLS_DIR}/prevcmp/prevcmp)                   # library files against the prev build
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
 # the host side takes this build's snitch source (the target snitch of
@@ -106,7 +104,7 @@ ExternalProject_Add(host_tools
 		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${CDTABLE} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB} ${PREVCMP})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request
@@ -134,10 +132,10 @@ set_tests_properties(toolchain_saveds_broken PROPERTIES
 # the library files byte by byte against the prev build (cmake/prev.cmake,
 # tests/README.md "The prev build"); skipped (77) without one.  PREV_INTENDED
 # (cmake/prev.cmake) names what may differ: the entries without a colon are
-# the library files; prevcmp also checks the others, which are the corpus's
+# the library files; results prev also checks the others, which are the corpus's
 # and ted_ab's
-set(prev_results_args ${PREV_INTENDED_PREVCMP_ARGS})
-add_test(NAME prev_results COMMAND ${PREVCMP} ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_DIR})
+set(prev_results_args ${PREV_INTENDED_PREV_ARGS})
+add_test(NAME prev_results COMMAND ${RESULTS} prev ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_DIR})
 set_tests_properties(prev_results PROPERTIES SKIP_RETURN_CODE 77)
 
 # downloading the originals the tests need (not part of ALL: needs network)

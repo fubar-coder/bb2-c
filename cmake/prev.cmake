@@ -87,16 +87,16 @@ set(PREV_INTENDED OFF CACHE STRING
 	"differences from the prev build that are intended: ON (all) or a ;-list of library paths, corpus:NAME, corpus_runerr:NAME, ted_ab:CASE[:PAIR] ...")
 # for the runners: PREV_INTENDED_LINES = "intended=ENTRY\n" per entry of the
 # corpus and ted_ab kind (with a colon) and ON, to put in a pass file;
-# PREV_INTENDED_PREVCMP_ARGS = the arguments of prevcmp (it also takes the
+# PREV_INTENDED_PREV_ARGS = the arguments of results prev (it also takes the
 # entries with a colon, only to check their syntax)
 set(PREV_INTENDED_LINES)
-set(PREV_INTENDED_PREVCMP_ARGS)
+set(PREV_INTENDED_PREV_ARGS)
 if(PREV_INTENDED STREQUAL "ON")
 	set(PREV_INTENDED_LINES "intended=ON\n")
-	set(PREV_INTENDED_PREVCMP_ARGS --all)
+	set(PREV_INTENDED_PREV_ARGS --all)
 elseif(PREV_INTENDED AND NOT PREV_INTENDED STREQUAL "OFF")
 	foreach(f IN LISTS PREV_INTENDED)
-		list(APPEND PREV_INTENDED_PREVCMP_ARGS --intended ${f})
+		list(APPEND PREV_INTENDED_PREV_ARGS --intended ${f})
 		if(f MATCHES ":")
 			string(APPEND PREV_INTENDED_LINES "intended=${f}\n")
 		endif()

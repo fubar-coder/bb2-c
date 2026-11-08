@@ -83,7 +83,7 @@ set_tests_properties(ab3_tokens_broken PROPERTIES PASS_REGULAR_EXPRESSION
 # compiled with blitz2-ab3 -s SOURCE -e EXE in one emulator session, run,
 # and their output (the compiler's console output and return code, the
 # program's output and return code) compared with cli/NAME.expect
-# (outmatch: literal lines, '~'/'+' patterns for memory sizes and timing).
+# (results match: literal lines, '~'/'+' patterns for memory sizes and timing).
 # Configuration ref: the cases marked REF compiled with AmiBlitz3 v3.14.0's
 # own compiler in CLI mode, the program's output compared with the same
 # expect file - or with cli/NAME.ref.expect, a difference of AmiBlitz3
@@ -579,7 +579,7 @@ function(ab3_cli name config cases)
 	set(sources ${cli_sources} ${cli_made})
 	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
-		-DOUTMATCH=${OUTMATCH} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
+		-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
 		-DCONFIG=${config} -DCASES=${work}.cases
 		-DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
 		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
@@ -599,7 +599,7 @@ ab3_cli(ab3_cli_broken exe "${broken}")
 ab3_cli(ab3_cli_ref_broken ref "${broken}")
 foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
-		"FAIL atoi: outmatch: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
+		"FAIL atoi: results match: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
 endforeach()
 # the same for DATESTAMP/RUN_DATESTAMP: date_stamp with the date of another day
 # in the expect file (date_stamp.broken.expect)
@@ -608,7 +608,7 @@ ab3_cli(ab3_cli_broken_date exe "${broken_date}")
 ab3_cli(ab3_cli_ref_broken_date ref "${broken_date}")
 foreach(t ab3_cli_broken_date ab3_cli_ref_broken_date)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
-		"FAIL date_stamp: outmatch: [^\n]*expect line [0-9]+: \"date: 26/10/2026\", output line [0-9]+: \"date: 25/10/2026\"")
+		"FAIL date_stamp: results match: [^\n]*expect line [0-9]+: \"date: 26/10/2026\", output line [0-9]+: \"date: 25/10/2026\"")
 endforeach()
 # the oracle: ab3_cli_ref* check our expect files against AmiBlitz3 v3.14.0's own
 # compiler, which never changes; they matter only when cases or expectations

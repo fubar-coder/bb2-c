@@ -137,7 +137,7 @@ add_test(NAME cmdref_not_a_library COMMAND cmdref -group acidlibs -name x
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 set_tests_properties(cmdref_not_a_library PROPERTIES WILL_FAIL TRUE)
 
-# prevcmp (the library files against the prev build) on two small build
+# results prev (the library files against the prev build) on two small build
 # directories made here: cur differs from prev in libs/acidlibs/2dlib.obj
 foreach(b cur prev)
 	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/${b}/blitz2/acidlibs "acidlibs")
@@ -147,36 +147,36 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur/libs/acidlibs/2dlib.obj "chan
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/prev/libs/acidlibs/2dlib.obj "2dlib")
 set(prevcmp_dirs ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/prev)
 # a difference that is not intended fails and names the file
-add_test(NAME prevcmp_changed COMMAND prevcmp ${prevcmp_dirs})
+add_test(NAME prevcmp_changed COMMAND results prev ${prevcmp_dirs})
 set_tests_properties(prevcmp_changed PROPERTIES WILL_FAIL ON)
-add_test(NAME prevcmp_changed_names COMMAND prevcmp ${prevcmp_dirs})
+add_test(NAME prevcmp_changed_names COMMAND results prev ${prevcmp_dirs})
 set_tests_properties(prevcmp_changed_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "DIFFERS libs/acidlibs/2dlib.obj\n")
 # ... passes when it is intended (all, or the file named)
-add_test(NAME prevcmp_intended_all COMMAND prevcmp --all ${prevcmp_dirs})
+add_test(NAME prevcmp_intended_all COMMAND results prev --all ${prevcmp_dirs})
 add_test(NAME prevcmp_intended_file
-	COMMAND prevcmp --intended libs/acidlibs/2dlib.obj ${prevcmp_dirs})
+	COMMAND results prev --intended libs/acidlibs/2dlib.obj ${prevcmp_dirs})
 # an intended entry for a file that is the same fails
-add_test(NAME prevcmp_stale COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+add_test(NAME prevcmp_stale COMMAND results prev --intended libs/acidlibs/2dlib.obj
 	--intended libs/acidlibs/gfxlib.obj ${prevcmp_dirs})
 set_tests_properties(prevcmp_stale PROPERTIES WILL_FAIL ON)
-add_test(NAME prevcmp_stale_names COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+add_test(NAME prevcmp_stale_names COMMAND results prev --intended libs/acidlibs/2dlib.obj
 	--intended libs/acidlibs/gfxlib.obj ${prevcmp_dirs})
 set_tests_properties(prevcmp_stale_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "STALE libs/acidlibs/gfxlib.obj")
 # no prev build: the message (the exit status 77 skips prev_results)
-add_test(NAME prevcmp_no_prev COMMAND prevcmp ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur
+add_test(NAME prevcmp_no_prev COMMAND results prev ${CMAKE_CURRENT_BINARY_DIR}/prevcmp/cur
 	${CMAKE_CURRENT_BINARY_DIR}/prevcmp/no-such-build)
 set_tests_properties(prevcmp_no_prev PROPERTIES PASS_REGULAR_EXPRESSION "no-such-build: no prev build")
 # an entry of the corpus or ted_ab (PREV_INTENDED, lib/previntended) is
 # checked for its syntax and otherwise left to those tests: it does not make
 # a library file stale; a malformed one is refused
-add_test(NAME prevcmp_corpus_entry COMMAND prevcmp --intended libs/acidlibs/2dlib.obj
+add_test(NAME prevcmp_corpus_entry COMMAND results prev --intended libs/acidlibs/2dlib.obj
 	--intended corpus:t01 --intended ted_ab:open:Cc-Pc ${prevcmp_dirs})
-add_test(NAME prevcmp_malformed_entry COMMAND prevcmp --intended corpus:
+add_test(NAME prevcmp_malformed_entry COMMAND results prev --intended corpus:
 	--intended libs/acidlibs/2dlib.obj ${prevcmp_dirs})
 set_tests_properties(prevcmp_malformed_entry PROPERTIES WILL_FAIL ON)
-add_test(NAME prevcmp_malformed_entry_names COMMAND prevcmp --intended corpuss:t01 ${prevcmp_dirs})
+add_test(NAME prevcmp_malformed_entry_names COMMAND results prev --intended corpuss:t01 ${prevcmp_dirs})
 set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")
 

@@ -5,14 +5,14 @@
 # century that is a leap year), under inject with dates that are refused
 # (a day that does not exist, before 1978, a wrong form), and once more
 # without inject: the patch is gone.
-#   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DINJECT=... -DDSDAYS=...
+#   cmake -DAMIGA_RUN=... -DRESULTS=... -DINJECT=... -DDSDAYS=...
 #         -DEXPECT=FILE -DWORK=DIR [-DTIMEOUT=SEC] -P inject-datestamp.cmake
-# The output (TEST:out.txt) is compared with EXPECT by outmatch, and the
+# The output (TEST:out.txt) is compared with EXPECT by results match, and the
 # date before and after the patch must be the same day (the system's).
 # Exit status 0 if it matches; 77 (skipped) without the emulator.
 cmake_minimum_required(VERSION 4.2.3)
 
-foreach(v AMIGA_RUN OUTMATCH INJECT DSDAYS EXPECT WORK)
+foreach(v AMIGA_RUN RESULTS INJECT DSDAYS EXPECT WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "inject-datestamp.cmake: -D${v}=... missing")
 	endif()
@@ -48,14 +48,14 @@ if(NOT EXISTS ${test}/out.txt)
 	message(FATAL_ERROR "inject-datestamp.cmake: no output (${WORK})")
 endif()
 
-execute_process(COMMAND ${OUTMATCH} ${EXPECT} ${test}/out.txt
+execute_process(COMMAND ${RESULTS} match ${EXPECT} ${test}/out.txt
 	RESULT_VARIABLE r ERROR_VARIABLE msg)
 string(STRIP "${msg}" msg)
 if(r)
 	message(FATAL_ERROR "inject-datestamp.cmake: FAIL: ${msg}")
 endif()
 # the patch is gone afterwards: the day without inject is the same before
-# and after (and is not one of the patched ones, which outmatch cannot say)
+# and after (and is not one of the patched ones, which results match cannot say)
 file(READ ${test}/out.txt text)
 string(REGEX MATCH "\\[plain\\]\r?\ndays=([0-9]+) " m "${text}")
 set(plain ${CMAKE_MATCH_1})

@@ -91,7 +91,7 @@ does not.
 The emulator test `ab3_cli` (`tests/ab3/cli.cmake`) compiles AmiBlitz3's
 test programs and the cases of `tests/ab3/cli/` this way, runs them and
 compares the console output, the programs' output and the return codes
-with expect files (`tools/outmatch`; docs/ab3/variant.md, "The command
+with expect files (`results match`, `tools/results`; docs/ab3/variant.md, "The command
 line"); `ab3_cli_ref` compiles the AmiBlitz3 cases with AmiBlitz3
 v3.14.0's own compiler in CLI mode and compares the programs' output
 with the same files (its differences: docs/ab3/variant.md).

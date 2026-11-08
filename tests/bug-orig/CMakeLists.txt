@@ -433,7 +433,7 @@ bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-wrong.bas
 function(inject_fill name expect)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
-		-DOUTMATCH=${OUTMATCH} -DINJECT=${INJECT} -DMEMFILL=$<TARGET_FILE:memfill>
+		-DRESULTS=${RESULTS} -DINJECT=${INJECT} -DMEMFILL=$<TARGET_FILE:memfill>
 		-DEXPECT=${expect} -DWORK=${work}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.cmake)
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
@@ -442,14 +442,14 @@ endfunction()
 inject_fill(inject_fill ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.expect)
 inject_fill(inject_fill_broken ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.broken.expect)
 set_tests_properties(inject_fill_broken PROPERTIES PASS_REGULAR_EXPRESSION
-	"FAIL:[ \n]+outmatch:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+a5[^\"]*\",[ \n]+output[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+00")
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+a5[^\"]*\",[ \n]+output[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+00")
 
 # inject's datestamp= option (inject-datestamp.cmake), and the check itself:
 # a wrong expect file must fail
 function(inject_datestamp name expect)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
-		-DOUTMATCH=${OUTMATCH} -DINJECT=${INJECT} -DDSDAYS=$<TARGET_FILE:dsdays>
+		-DRESULTS=${RESULTS} -DINJECT=${INJECT} -DDSDAYS=$<TARGET_FILE:dsdays>
 		-DEXPECT=${expect} -DWORK=${work}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/inject-datestamp.cmake)
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
@@ -459,7 +459,7 @@ inject_datestamp(inject_datestamp ${CMAKE_CURRENT_SOURCE_DIR}/inject-datestamp.e
 inject_datestamp(inject_datestamp_broken
 	${CMAKE_CURRENT_SOURCE_DIR}/inject-datestamp.broken.expect)
 set_tests_properties(inject_datestamp_broken PROPERTIES PASS_REGULAR_EXPRESSION
-	"FAIL:[ \n]+outmatch:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+24:[ \n]+\"days=17828[ \n]+minute=0[ \n]+tick=0\",[ \n]+output[ \n]+line[ \n]+24:[ \n]+\"days=17829")
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+24:[ \n]+\"days=17828[ \n]+minute=0[ \n]+tick=0\",[ \n]+output[ \n]+line[ \n]+24:[ \n]+\"days=17829")
 
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)

@@ -48,7 +48,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 4. `results` (outmatch, prevcmp, cdtable; 25 call sites)
 
-- [ ] 4.1 `tools/results/` with `match`, `prev`, `cd-update`, `cd-reference`. Call sites: `tests/ab3`, `tests/bug-orig` (`outmatch`, including `inject-*.cmake`), `CMakeLists.txt` (`prev_results`, the `prevcmp_*` tests of `tools/tests`), `tests/corpus/CMakeLists.txt` (`cdtable`). `rules.txt:55-56` patterns follow (`tools/results/**` keeps `label:emulator`). Verify: C1-C5; `prev_results` passes, exit 77 without a prev build is unchanged; the targets `blitz2-cd-reference` and `blitz2-cd-update` (`tests/corpus/CMakeLists.txt:179,191`) produce the same table (`cmp`)
+- [x] 4.1 `tools/results/` with `match`, `prev`, `cd-update`, `cd-reference`. Call sites: `tests/ab3`, `tests/bug-orig` (`outmatch`, including `inject-*.cmake`), `CMakeLists.txt` (`prev_results`, the `prevcmp_*` tests of `tools/tests`), `tests/corpus/CMakeLists.txt` (`cdtable`). `rules.txt:55-56` patterns follow (`tools/results/**` keeps `label:emulator`). Verify: C1-C5; `prev_results` passes, exit 77 without a prev build is unchanged; the targets `blitz2-cd-reference` and `blitz2-cd-update` (`tests/corpus/CMakeLists.txt:179,191`) produce the same table (`cmp`)
 
 ## 5. `hunkcheck` (10 call sites)
 

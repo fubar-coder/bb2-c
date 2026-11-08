@@ -1,5 +1,5 @@
 # The command line tests of blitz2-ab3 in Amiberry (tests/ab3/CMakeLists.txt):
-#   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCONFIG=exe|ref
+#   cmake -DAMIGA_RUN=... -DRESULTS=... -DREQTRAP=... -DCONFIG=exe|ref
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
 #         -DUSERLIB=OBJ -DINJECT=TOOL -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
 #         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] -P cli.cmake
@@ -33,7 +33,7 @@
 # The output of a case (TEST:out/NAME.txt) is
 #   [compile]   the compiler's console output, rc=RC
 #   [run]       the program's output and rc=RC, "not run" or "no executable"
-# and is compared with EXPECT by outmatch: exe the whole file, ref only
+# and is compared with EXPECT by results match: exe the whole file, ref only
 # [run] (the console output of AmiBlitz3 is its own), against REFEXPECT if
 # given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
 # The executable of a case is kept as TEST:out/NAME.exe; SAME lists pairs
@@ -45,7 +45,7 @@
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 4.2.3)
 
-foreach(v AMIGA_RUN OUTMATCH REQTRAP INJECT CONFIG CASES BLITZ2_DIR AB3 WORK)
+foreach(v AMIGA_RUN RESULTS REQTRAP INJECT CONFIG CASES BLITZ2_DIR AB3 WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "cli.cmake: -D${v}=... missing")
 	endif()
@@ -239,7 +239,7 @@ foreach(c IN LISTS cases)
 		math(EXPR failed "${failed} + 1")
 		continue()
 	endif()
-	execute_process(COMMAND ${OUTMATCH} ${section} ${expect} ${out}
+	execute_process(COMMAND ${RESULTS} match ${section} ${expect} ${out}
 		RESULT_VARIABLE r ERROR_VARIABLE msg)
 	string(STRIP "${msg}" msg)
 	if(r)

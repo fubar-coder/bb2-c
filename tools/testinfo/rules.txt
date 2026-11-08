@@ -53,7 +53,7 @@ tools/lib/amiga_emulation/**    label:emulator name:host/*
 tools/amiga_run/**              label:emulator name:host/*
 tools/lib/teststats/**          label:emulator name:host/*
 tools/lib/outmatch/**           label:emulator name:host/*
-tools/outmatch/**               label:emulator name:host/*
+tools/results/**                label:emulator name:host/* name:prev_results
 tools/lib/covmap/**             name:host/*
 tools/lib/covsel/**             name:host/*
 tools/testinfo/**               name:host/*

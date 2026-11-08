@@ -180,7 +180,7 @@ endfunction()
 cd_pass(cd-reference ${REF_BLITZ2} ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv)
 add_custom_target(blitz2-cd-reference
 	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.pass
-	COMMAND ${CDTABLE} reference ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv ${CD_TABLE} ${CD_TABLE}
+	COMMAND ${RESULTS} cd-reference ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv ${CD_TABLE} ${CD_TABLE}
 	DEPENDS tedstub host_tools
 	USES_TERMINAL
 	COMMENT "The CD through the original blitz2 2.10 -> tests/data/blitz2-cd.tsv (note rows kept)"
@@ -192,7 +192,7 @@ add_custom_target(blitz2-cd-reference
 cd_pass(cd-update $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv)
 add_custom_target(blitz2-cd-update
 	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-update.pass
-	COMMAND ${CDTABLE} update ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv ${CD_TABLE} ${CD_TABLE}
+	COMMAND ${RESULTS} cd-update ${CMAKE_CURRENT_BINARY_DIR}/cd-update.tsv ${CD_TABLE} ${CD_TABLE}
 	DEPENDS blitz2 tedstub host_tools
 	USES_TERMINAL
 	COMMENT "The CD through the port's blitz2 -> tests/data/blitz2-cd.tsv (note rows kept)"
