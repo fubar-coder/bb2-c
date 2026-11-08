@@ -1,0 +1,33 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+sizes 128 256 512 1024 248
+128: 128 256
+256: 65536 131072
+512: 512 1024
+1024: 1024 2048
+list 248: 65536 131072
+field 256: 0 0
+1 2 3 4 5 206
+101 0 103 104 0 0
+201 0 203 204 0 0
+1 2 3 4 5 206
+101 102 103 104 105 206
+201 202 203 204 205 206
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-muld1-x256.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-muld1-x256
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
