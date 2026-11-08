@@ -247,8 +247,8 @@ function(bug_orig_test bas name)
 	set(src ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.bb2)
 	add_custom_command(OUTPUT ${src}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
-		COMMAND ${TEDTOK} ${tok} ${bas} ${src}
-		DEPENDS ${bas} ${tok} ${TEDTOK} host_tools
+		COMMAND ${TEDSRC} tok ${tok} ${bas} ${src}
+		DEPENDS ${bas} ${tok} ${TEDSRC} host_tools
 		COMMENT "Tokenising bug-orig ${id}.bas"
 		VERBATIM)
 	set(bug_orig_sources ${bug_orig_sources} ${src} PARENT_SCOPE)
@@ -373,8 +373,8 @@ foreach(s IN LISTS srcs)
 	endif()
 	add_custom_command(OUTPUT ${out}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTDATA}
-		COMMAND ${TEDTOK} ${tokens} ${s} ${out}
-		DEPENDS ${s} ${tokens} ${TEDTOK} host_tools
+		COMMAND ${TEDSRC} tok ${tokens} ${s} ${out}
+		DEPENDS ${s} ${tokens} ${TEDSRC} host_tools
 		COMMENT "Tokenising bug-orig source ${name}"
 		VERBATIM)
 	list(APPEND testdata_files ${out})

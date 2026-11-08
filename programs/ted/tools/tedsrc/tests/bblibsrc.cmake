@@ -1,7 +1,7 @@
 # ctest teddetok_bblibsrc: every source of the Aminet archive's
-# bblibsrc.lha through teddetok --check (all tokens known).  Exit 77
+# bblibsrc.lha through tedsrc detok --check (all tokens known).  Exit 77
 # (skipped) without the archive (cmake -P cmake/fetch-originals.cmake).
-#   cmake -DTEDDETOK=... -DTOKENS=... -DREPO=... -P bblibsrc.cmake
+#   cmake -DTEDSRC=... -DTOKENS=... -DREPO=... -P bblibsrc.cmake
 foreach(f IN LISTS REQUIRE)
 	if(NOT EXISTS ${f})
 		message(STATUS "no ${f}: skipped")
@@ -16,8 +16,8 @@ if(NOT files)
 endif()
 list(LENGTH files n)
 list(TRANSFORM files PREPEND ${dir}/)
-execute_process(COMMAND ${TEDDETOK} ${TOKENS} --check ${files} RESULT_VARIABLE rc)
+execute_process(COMMAND ${TEDSRC} detok ${TOKENS} --check ${files} RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "teddetok: exit ${rc}")
+	message(FATAL_ERROR "tedsrc detok: exit ${rc}")
 endif()
 message(STATUS "${n} sources of ${dir}: all tokens known")

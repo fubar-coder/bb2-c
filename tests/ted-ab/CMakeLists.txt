@@ -4,7 +4,7 @@
 #             teddrivetest (its self-test, gate D), tedprobe (gate 0)
 #   scripts/  the tests (NAME.drv, directives: runner/tedab.h) and the
 #             gate D scripts (gate-*.drv); NAME.expect: text of @expect tok,
-#             tokenised here with tedtok
+#             tokenised here with tedsrc tok
 #   src/      sources of @source E / S
 #   lint/     scripts only for the lint of a directive (fixed: correct,
 #             fixed-wrong: broken on purpose), never run
@@ -21,8 +21,8 @@ foreach(e IN LISTS expects)
 	set(out ${TED_AB_EXPECT}/${name}.bb2)
 	add_custom_command(OUTPUT ${out}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${TED_AB_EXPECT}
-		COMMAND ${TEDTOK} ${TED_TOKENS} ${e} ${out}
-		DEPENDS ${e} ${TED_TOKENS} ${TEDTOK} host_tools
+		COMMAND ${TEDSRC} tok ${TED_TOKENS} ${e} ${out}
+		DEPENDS ${e} ${TED_TOKENS} ${TEDSRC} host_tools
 		COMMENT "Tokenising scripts/${name}"
 		VERBATIM)
 	list(APPEND ted_ab_tokenised ${out})

@@ -1,10 +1,10 @@
 # ctest bb22_rwelibsrc: the 9 BB22 files of rwelibsrc (docs/rwelibs/README.md
 # 4.1) through bb22 into TED's format (OUTDIR/NAME, '/' of the path as
-# '_'), and every result read by teddetok --check with the token list of
+# '_'), and every result read by tedsrc detok --check with the token list of
 # the CD's compiler, acidlibs, deflibs and the RI libraries in LIBS (all
 # tokens known, no token byte without its second byte).  Exit 77
 # (skipped) without the Aminet archive or the CD.
-#   cmake -DBB22=... -DTEDDETOK=... -DREPO=... -DOUTDIR=... -P rwelibsrc.cmake
+#   cmake -DBB22=... -DTEDSRC=... -DREPO=... -DOUTDIR=... -P rwelibsrc.cmake
 set(dir ${REPO}/archive/aminet/amibl2src/rwelibsrc)
 set(cd ${REPO}/archive/cd/ultimate-blitz-basic-2.1)
 set(files
@@ -43,9 +43,9 @@ foreach(f IN LISTS files)
 	endif()
 	list(APPEND outs ${o})
 endforeach()
-execute_process(COMMAND ${TEDDETOK} ${tokens} --check ${outs} RESULT_VARIABLE rc)
+execute_process(COMMAND ${TEDSRC} detok ${tokens} --check ${outs} RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "teddetok: exit ${rc}")
+	message(FATAL_ERROR "tedsrc detok: exit ${rc}")
 endif()
 list(LENGTH files n)
 message(STATUS "${n} BB22 files of ${dir}: converted, all tokens known")

@@ -72,7 +72,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 10. `tedsrc` (tedtok, teddetok; 45 call sites)
 
-- [ ] 10.1 `programs/ted/tools/tedsrc/` with `tok` and `detok` (`--check` stays an option), linked with `tedhost` and `tedcore_host` as before; `host/CMakeLists.txt:39-43` adds the one directory; call sites `libs/userlibs/rwe` (`refbuild*.cmake`, `residents.cmake` (4), `CMakeLists.txt`), `tests/ab3`, `tests/blitz2`, `tests/bug-orig` (4), `tests/corpus`, `tests/ted-ab`, `tools/bb22/rwelibsrc.cmake`, `programs/ted/tools/*/tests/*.cmake`, `CMakeLists.txt`; the tests `tedtok_*`, `teddetok_*` stay by name. Verify: C1-C5; `teddetok_bblibsrc` (needs `archive/aminet`) and `tedtok_libs` (needs the CD) are run, not skipped; the token files and tokenised sources of the corpus are byte-identical (`cmp`)
+- [x] 10.1 `programs/ted/tools/tedsrc/` with `tok` and `detok` (`--check` stays an option), linked with `tedhost` and `tedcore_host` as before; `host/CMakeLists.txt:39-43` adds the one directory; call sites `libs/userlibs/rwe` (`refbuild*.cmake`, `residents.cmake` (4), `CMakeLists.txt`), `tests/ab3`, `tests/blitz2`, `tests/bug-orig` (4), `tests/corpus`, `tests/ted-ab`, `tools/bb22/rwelibsrc.cmake`, `programs/ted/tools/*/tests/*.cmake`, `CMakeLists.txt`; the tests `tedtok_*`, `teddetok_*` stay by name. Verify: C1-C5; `teddetok_bblibsrc` (needs `archive/aminet`) and `tedtok_libs` (needs the CD) are run, not skipped; the token files and tokenised sources of the corpus are byte-identical (`cmp`)
 
 ## 11. `bbsrc` (blitztokens, bbdetok, bblines, bb22, ab3tok; 56 call sites)
 

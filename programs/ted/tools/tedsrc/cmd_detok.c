@@ -1,13 +1,13 @@
 /*
- * teddetok - a Blitz 2 source as TED shows it: loaded with fileopen2
+ * tedsrc detok - a Blitz 2 source as TED shows it: loaded with fileopen2
  * (ted.s:680, tokenise = 1) by the C core of TED on the host, every line
  * detokenised with detok (ted.s:3455) and written with an LF.  Line N of
  * the output is line N in TED (the same as the original TED for every
  * source of the CD: test_loadsave and test_detok against the oracle).
  *
- *   teddetok TOKENS IN OUT          TOKENS: tests/data/ted-tokens.txt
- *   teddetok TOKENS --check IN...   only the checks, no output
- *   teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT | --check IN...
+ *   tedsrc detok TOKENS IN OUT          TOKENS: tests/data/ted-tokens.txt
+ *   tedsrc detok TOKENS --check IN...   only the checks, no output
+ *   tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT | --check IN...
  *
  * The token list: a list file (tests/data/ted-tokens.txt, or one written
  * by tools/blitztokens), or made from the compiler BLITZ2 and the library
@@ -30,16 +30,19 @@
 #include "hostenv.h"
 #include "fileio.h"
 #include "loadsave.h"
+#include "tedsrc.h"
 
-static const char usage[] =
-    "usage: teddetok TOKENS IN OUT\n"
-    "       teddetok TOKENS --check IN...\n"
-    "       teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
-    "       teddetok --blitz2 BLITZ2 [--lib LIB]... --check IN...\n"
+const char cmd_detok_usage[] =
+    "usage: tedsrc detok TOKENS IN OUT\n"
+    "       tedsrc detok TOKENS --check IN...\n"
+    "       tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
+    "       tedsrc detok --blitz2 BLITZ2 [--lib LIB]... --check IN...\n"
     "A Blitz 2 source (tokenised or text) as TED shows it, one line per\n"
     "line of TED; TOKENS is the token list (tests/data/ted-tokens.txt),\n"
     "or it is made from the compiler and its libraries (acidlibs, deflibs,\n"
     "userlibs, in this order). Fails on tokens TED does not know.\n";
+
+static const char *me;          /* "tedsrc detok", the prefix of the messages */
 
 /* lines of the file as written: ended by 0 (tokenised) or LF (text), a
    byte with bit 7 takes the next one with it (readline); a last line
@@ -82,13 +85,13 @@ static BOOL check_line(const char *in, unsigned long line, const struct item *a4
             continue;
         }
         if (a0 + 2 >= end) {
-            fprintf(stderr, "teddetok: %s:%lu: token byte $%02X without its second byte\n",
-                    in, line, *a0);
+            fprintf(stderr, "%s: %s:%lu: token byte $%02X without its second byte\n",
+                    me, in, line, *a0);
             return FALSE;
         }
         w = (UWORD)((a0[0] << 8) | a0[1]);
         if (findtoke(w) == tokeerr) {
-            fprintf(stderr, "teddetok: %s:%lu: unknown token $%04X\n", in, line,
+            fprintf(stderr, "%s: %s:%lu: unknown token $%04X\n", me, in, line,
                     (unsigned)w);
             ok = FALSE;
         }
@@ -110,24 +113,24 @@ static BOOL detok_file(const char *in, const char *out)
 
     host_outmem = &jb;
     if (setjmp(jb)) {
-        fprintf(stderr, "teddetok: %s: out of memory\n", in);
+        fprintf(stderr, "%s: %s: out of memory\n", me, in);
         return FALSE;
     }
     host_resetcalls();
     host_lasterror = NULL;
     fileopen2((UBYTE *)in);
     if (host_calls[HC_ERROR] || !firstitem) {
-        fprintf(stderr, "teddetok: %s: %s\n", in, host_lasterror ? host_lasterror : "not loaded");
+        fprintf(stderr, "%s: %s: %s\n", me, in, host_lasterror ? host_lasterror : "not loaded");
         return FALSE;
     }
     lines = file_lines(in);
     if (lines > 0 && lines != (long)numlines)
-        fprintf(stderr, "teddetok: %s: note: %ld lines in the file, %u in TED (a line longer "
-                        "than TED's line buffer is split)\n", in, lines, (unsigned)numlines);
+        fprintf(stderr, "%s: %s: note: %ld lines in the file, %u in TED (a line longer "
+                        "than TED's line buffer is split)\n", me, in, lines, (unsigned)numlines);
     if (out) {
         f = fopen(out, "wb");
         if (!f) {
-            fprintf(stderr, "teddetok: %s: cannot write\n", out);
+            fprintf(stderr, "%s: %s: cannot write\n", me, out);
             return FALSE;
         }
     }
@@ -149,27 +152,24 @@ static BOOL detok_file(const char *in, const char *out)
     if (f && fclose(f) != 0)
         ok = FALSE;
     if (out && !ok) {
-        fprintf(stderr, "teddetok: %s: not written\n", out);
+        fprintf(stderr, "%s: %s: not written\n", me, out);
         remove(out);
     }
     return ok;
 }
 
-int main(int argc, char **argv)
+int cmd_detok(int argc, char **argv)
 {
     struct tokennode *list;
     BOOL ok = TRUE;
     int i, a;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
-    list = host_tokens_args("teddetok", argc, argv, &a);
+    me = argv[0];
+    list = host_tokens_args(me, argc, argv, &a);
     if (!list && a < 0)
         return 1;
     if (!list || argc - a < 2 || (strcmp(argv[a], "--check") != 0 && argc - a != 2)) {
-        fputs(usage, stderr);
+        fputs(cmd_detok_usage, stderr);
         return 2;
     }
     hostenv_init(NULL, 25);

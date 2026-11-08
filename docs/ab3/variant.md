@@ -226,7 +226,7 @@ AB3 mode.
 0. **Spike** (tests only, no compiler change): AB3 v3.14.0's BigLibs
    with an end mark appended, joined in the build directory into an
    `acidlibs`/`deflibs` pair; a few BB2-language AB3 programs tokenised
-   on the host (`xtra convert`, `tedtok --blitz2 … --lib …` with AB3's
+   on the host (`xtra convert`, `tedsrc tok --blitz2 … --lib …` with AB3's
    lists), compiled by today's blitz2 through the batch stub. It shows
    which library conventions break without AB3's compiler (table of
    section 2). A few days.
@@ -1007,7 +1007,7 @@ exitslib `$C801`, lmullib/ldivlib `$CA02`/`$CB02`, wbstartuplib
 libraries as BB2's.
 
 **Programs.** From `Sourcecodes/Amiblitz3/Tests` (embedded header cut
-off, tokenised with `tedtok --blitz2 … --lib` on the joined BigLibs):
+off, tokenised with `tedsrc tok --blitz2 … --lib` on the joined BigLibs):
 `atoi`, `compilersignals` (`WBStartup`, `FromCLI`, `NumPars`,
 `ProgDir$`, `Par$`, `Delay_`), `data_restore_in_function`, `exec_data`
 and `localization` (both with AB3's `all.res` as resident, through a

@@ -263,8 +263,8 @@ foreach(e IN LISTS readable_entries)
 	rwe_ted_source(${source} tedsrc)
 	add_custom_command(OUTPUT ${txt}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${txtdir}
-		COMMAND ${TEDDETOK} --blitz2 $<TARGET_FILE:blitz2> ${args} ${tedsrc} ${txt}
-		DEPENDS ${tedsrc} ${libs} blitz2 ${TEDDETOK} host_tools
+		COMMAND ${TEDSRC} detok --blitz2 $<TARGET_FILE:blitz2> ${args} ${tedsrc} ${txt}
+		DEPENDS ${tedsrc} ${libs} blitz2 ${TEDSRC} host_tools
 		COMMENT "Detokenising rwelibsrc/${source}"
 		VERBATIM)
 	list(APPEND readable ${txt})

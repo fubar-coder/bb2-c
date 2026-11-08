@@ -12,7 +12,7 @@ one of another (`../bb2-2.10/libnums.h`) and change single numbers
 `libnums.h` – header, `!libs` references, the calls of other libraries
 (ALibJsr) – so a changed number moves all of them, and the tokens of a
 source written for the variant come from its files (`blitztokens`,
-`teddetok --blitz2 … --lib …`). Test variants are in
+`tedsrc detok --blitz2 … --lib …`). Test variants are in
 `libs/tests/variants/` (ctest `variant_*`).
 
 **Userlibs** of a variant: `libs/userlibs/DIR/NAME.c` →

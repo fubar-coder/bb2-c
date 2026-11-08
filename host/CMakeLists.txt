@@ -54,10 +54,9 @@ endfunction()
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-tests-host)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/blitz2/tests/host blitz2-tests-host)
-# tools on the TED core: tedtok (tokenising like TED, for the corpus)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/tedtok ted-tools/tedtok)
-# teddetok (a source as TED shows it: the readable library sources)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/teddetok ted-tools/teddetok)
+# the tool on the TED core: tedsrc (tokenising like TED, for the corpus; a
+# source as TED shows it: the readable library sources)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/tedsrc ted-tools/tedsrc)
 # the corpus runner (tests/corpus)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/corpus/runner corpus-runner)
 # host tests of the TED A/B tools (tests/ted-ab)
@@ -67,7 +66,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 # -h / --help of the host programs without subcommands (the programs with
 # subcommands have their help_ and readme_ tests in their own directory)
 foreach(t amiga_run blitztokens
-		mktestdata bb22 bblines bbdetok xtra tedtok teddetok
+		mktestdata bb22 bblines bbdetok xtra
 		ab3tok hdftool)
 	host_help_test(${t})
 endforeach()

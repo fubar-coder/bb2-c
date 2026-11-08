@@ -1,12 +1,12 @@
 /*
- * tedtok - a source through TED: loaded with fileopen2 and written back
- * with realsave (ted.s:680, ted.s:769), tokenise = 1, by the C core of
- * TED on the host (the same as the original TED for every source of the
- * CD: test_loadsave against the oracle).  A text source comes out
+ * tedsrc tok - a source through TED: loaded with fileopen2 and written
+ * back with realsave (ted.s:680, ted.s:769), tokenise = 1, by the C core
+ * of TED on the host (the same as the original TED for every source of
+ * the CD: test_loadsave against the oracle).  A text source comes out
  * tokenised, exactly as TED would save it.
  *
- *   tedtok TOKENS IN OUT       TOKENS: tests/data/ted-tokens.txt
- *   tedtok --blitz2 BLITZ2 [--lib LIB]... IN OUT
+ *   tedsrc tok TOKENS IN OUT       TOKENS: tests/data/ted-tokens.txt
+ *   tedsrc tok --blitz2 BLITZ2 [--lib LIB]... IN OUT
  *
  * The token list: a list file (tests/data/ted-tokens.txt, or one written
  * by tools/blitztokens), or made from the compiler BLITZ2 and the library
@@ -22,6 +22,7 @@
 #include <string.h>
 #include "hostenv.h"
 #include "loadsave.h"
+#include "tedsrc.h"
 
 /* lines of a text file (the last one may lack its LF); 0 if the file has
    a 0 byte (tokenised) or is missing */
@@ -39,14 +40,16 @@ static long text_lines(const char *path)
     return n;
 }
 
-static const char usage[] =
-    "usage: tedtok TOKENS IN OUT\n"
-    "       tedtok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
-    "  a source through TED (load and save, tokenised) on the host; the\n"
-    "  token list from the file TOKENS or made from the compiler and its\n"
-    "  libraries (acidlibs, deflibs, userlibs, in this order)\n";
+const char cmd_tok_usage[] =
+    "usage: tedsrc tok TOKENS IN OUT\n"
+    "       tedsrc tok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
+    "A source through TED (load and save, tokenised) on the host; the\n"
+    "token list from the file TOKENS or made from the compiler and its\n"
+    "libraries (acidlibs, deflibs, userlibs, in this order).\n";
 
-int main(int argc, char **argv)
+static const char *me;          /* "tedsrc tok", the prefix of the messages */
+
+int cmd_tok(int argc, char **argv)
 {
     static jmp_buf jb;
     struct tokennode *list;
@@ -54,15 +57,12 @@ int main(int argc, char **argv)
     long lines;
     int a;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
-    list = host_tokens_args("tedtok", argc, argv, &a);
+    me = argv[0];
+    list = host_tokens_args(me, argc, argv, &a);
     if (!list && a < 0)
         return 1;
     if (!list || argc - a != 2) {
-        fputs(usage, stderr);
+        fputs(cmd_tok_usage, stderr);
         return 2;
     }
     in = argv[a];
@@ -72,13 +72,13 @@ int main(int argc, char **argv)
     tokenise = 1;
     host_outmem = &jb;
     if (setjmp(jb)) {
-        fprintf(stderr, "tedtok: %s: out of memory\n", in);
+        fprintf(stderr, "%s: %s: out of memory\n", me, in);
         return 1;
     }
     host_resetcalls();
     fileopen2((UBYTE *)in);
     if (host_calls[HC_ERROR] || !firstitem) {
-        fprintf(stderr, "tedtok: %s: %s\n", in, host_lasterror ? host_lasterror : "not loaded");
+        fprintf(stderr, "%s: %s: %s\n", me, in, host_lasterror ? host_lasterror : "not loaded");
         return 1;
     }
     /* a text line longer than TED's line buffer (chcols + 1 = 129
@@ -87,15 +87,15 @@ int main(int argc, char **argv)
        refused */
     lines = text_lines(in);
     if (lines && numlines != lines) {
-        fprintf(stderr, "tedtok: %s: %ld lines, %u after loading: a line is longer than TED "
-                        "allows (%u characters)\n", in, lines, (unsigned)numlines,
+        fprintf(stderr, "%s: %s: %ld lines, %u after loading: a line is longer than TED "
+                        "allows (%u characters)\n", me, in, lines, (unsigned)numlines,
                 (unsigned)chcols + 1);
         return 1;
     }
     remove(out);
     realsave((UBYTE *)out);
     if (host_calls[HC_ERROR]) {
-        fprintf(stderr, "tedtok: %s: %s\n", out, host_lasterror ? host_lasterror : "not written");
+        fprintf(stderr, "%s: %s: %s\n", me, out, host_lasterror ? host_lasterror : "not written");
         return 1;
     }
     return 0;

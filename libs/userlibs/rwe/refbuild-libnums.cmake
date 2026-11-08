@@ -6,12 +6,12 @@
 # must have the same number (it is not appended again), a name of two
 # headers too.
 # The CD's file has a line longer than TED takes, so it does not go
-# through TED as text: the new lines are tokenised by tedtok (OUT.add,
-# from the text OUT.add.txt) and appended to its bytes; teddetok gives
+# through TED as text: the new lines are tokenised by tedsrc tok (OUT.add,
+# from the text OUT.add.txt) and appended to its bytes; tedsrc detok gives
 # its text (OUT.txt) for the names it has.
-#   cmake -DIN=LIBNUMS.BB -DLIBNUMS_H=... -DTEDDETOK=... -DTEDTOK=...
+#   cmake -DIN=LIBNUMS.BB -DLIBNUMS_H=... -DTEDSRC=...
 #         -DTOKENS=ted-tokens.txt -DOUT=... -P refbuild-libnums.cmake
-foreach(v TEDDETOK TEDTOK TOKENS LIBNUMS_H OUT)
+foreach(v TEDSRC TOKENS LIBNUMS_H OUT)
 	if("${${v}}" STREQUAL "")
 		message(FATAL_ERROR "refbuild-libnums.cmake: -D${v}=... missing")
 	endif()
@@ -26,9 +26,9 @@ file(READ ${IN} last OFFSET ${at} HEX)
 if(NOT last STREQUAL "00")
 	message(FATAL_ERROR "${IN}: not a tokenised source ending with a line end")
 endif()
-execute_process(COMMAND ${TEDDETOK} ${TOKENS} ${IN} ${OUT}.txt RESULT_VARIABLE rc)
+execute_process(COMMAND ${TEDSRC} detok ${TOKENS} ${IN} ${OUT}.txt RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "teddetok ${IN}: exit ${rc}")
+	message(FATAL_ERROR "tedsrc detok ${IN}: exit ${rc}")
 endif()
 file(READ ${OUT}.txt cd)
 string(TOLOWER "${cd}" cd_lower)
@@ -64,9 +64,9 @@ foreach(hfile IN LISTS LIBNUMS_H)
 	endforeach()
 endforeach()
 file(WRITE ${OUT}.add.txt "${add}")
-execute_process(COMMAND ${TEDTOK} ${TOKENS} ${OUT}.add.txt ${OUT}.add RESULT_VARIABLE rc)
+execute_process(COMMAND ${TEDSRC} tok ${TOKENS} ${OUT}.add.txt ${OUT}.add RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "tedtok ${OUT}.add.txt: exit ${rc}")
+	message(FATAL_ERROR "tedsrc tok ${OUT}.add.txt: exit ${rc}")
 endif()
 execute_process(COMMAND ${CMAKE_COMMAND} -E cat ${IN} ${OUT}.add OUTPUT_FILE ${OUT}
 	RESULT_VARIABLE rc)

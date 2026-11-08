@@ -36,8 +36,8 @@ foreach(bas IN LISTS tests)
 	set(src ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.bb2)
 	add_custom_command(OUTPUT ${src}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
-		COMMAND ${TEDTOK} ${ted_tokens} ${bas} ${src}
-		DEPENDS ${bas} ${ted_tokens} ${TEDTOK} host_tools
+		COMMAND ${TEDSRC} tok ${ted_tokens} ${bas} ${src}
+		DEPENDS ${bas} ${ted_tokens} ${TEDSRC} host_tools
 		COMMENT "Tokenising tests/blitz2/${id}.bas"
 		VERBATIM)
 	list(APPEND blitz2_test_sources ${src})

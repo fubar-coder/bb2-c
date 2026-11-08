@@ -95,7 +95,7 @@ set(cli_gen ${CMAKE_CURRENT_BINARY_DIR}/cli-src)
 set(AB3_CLI_TIMEOUT 600 CACHE STRING
 	"ab3 command line tests: time limit of the emulator session (seconds)")
 # the sources of git, and those made in the build: the tokenised includes
-# and main sources (tedtok, BB2's token list) and the .xtra of some of them
+# and main sources (tedsrc tok, BB2's token list) and the .xtra of some of them
 file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
@@ -106,8 +106,8 @@ foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|inc
 	list(GET pair 1 out)
 	add_custom_command(OUTPUT ${cli_gen}/${out}.bb2
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
-		COMMAND ${TEDTOK} ${ted_tokens} ${cli_dir}/${in}.bas ${cli_gen}/${out}.bb2
-		DEPENDS ${cli_dir}/${in}.bas ${ted_tokens} ${TEDTOK} host_tools
+		COMMAND ${TEDSRC} tok ${ted_tokens} ${cli_dir}/${in}.bas ${cli_gen}/${out}.bb2
+		DEPENDS ${cli_dir}/${in}.bas ${ted_tokens} ${TEDSRC} host_tools
 		COMMENT "Tokenising tests/ab3/cli/${in}.bas as ${out}.bb2"
 		VERBATIM)
 	list(APPEND cli_made ${cli_gen}/${out}.bb2)

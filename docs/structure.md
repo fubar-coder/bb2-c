@@ -48,9 +48,9 @@ host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
 programs/ted/tests/host/     host tests of the TED core (snitch)
-programs/ted/tools/          host tools on the TED core: tedtok (tokenize
-                             like TED), teddetok (source as TED shows it;
-                             target bblibsrc)
+programs/ted/tools/          host tools on the TED core: tedsrc/ (tok:
+                             tokenize like TED, detok: source as TED
+                             shows it, target bblibsrc; README.md)
 programs/ted/tests/oracle/   TED oracle: original TED as a library (m68k)
 tests/data/                  generated test data (oracle hashes, token list,
                              CD reference of blitz2 2.10)

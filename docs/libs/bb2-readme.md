@@ -105,7 +105,7 @@ BYTE). What only one library needs stays in its source.
 
 | File (bb2 `libs-c/`) | Purpose | here |
 |---|---|---|
-| `tools/detok.py` | make tokenised BB2 sources (`bblibsrc`) readable | `programs/ted/tools/teddetok`, target `bblibsrc` |
+| `tools/detok.py` | make tokenised BB2 sources (`bblibsrc`) readable | `programs/ted/tools/tedsrc`, target `bblibsrc` |
 | `cmake -P tools/mklibnums.cmake` | generate `include/libnums.h` from the original `libnums.bb` (`LIB_ldivlib` = `#ldivlib`) | not taken over (`libs/include/libnums.h` is in git) |
 | `tools/biglib.py` | extract libs from BigLib files (`extract`), show them (`dump`), compare declarations (`compare`), replace (`replace`), reassemble (`join`) | `blitzlib` (`extract`, `join`), `blitzlib compare` (compare) |
 | `tools/mkdeflibs.py` | one-time generator: `deflibs/NAME.c` from `cd/blitz2/deflibs` (see below, [deflibs.md](deflibs.md)) | not taken over |

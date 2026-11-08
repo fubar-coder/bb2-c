@@ -4,7 +4,7 @@
 # for archive/aminet/amibl2src/bblibsrc/NAME (see bblibsrc_files.cmake).
 # Part of ALL when the archive is there (cmake -P
 # cmake/fetch-originals.cmake; the glob notices it at the next build),
-# else the target only says so.  teddetok fails on a token TED does not
+# else the target only says so.  tedsrc detok fails on a token TED does not
 # know: the file is then not written and the step fails.
 include(${CMAKE_CURRENT_LIST_DIR}/bblibsrc_files.cmake)
 set(BBLIBSRC_DIR ${CMAKE_BINARY_DIR}/bblibsrc)
@@ -15,8 +15,8 @@ if(bblibsrc_names)
 	file(MAKE_DIRECTORY ${BBLIBSRC_DIR})
 	foreach(name IN LISTS bblibsrc_names)
 		add_custom_command(OUTPUT ${BBLIBSRC_DIR}/${name}
-			COMMAND ${TEDDETOK} ${tokens} ${bblibsrc_in}/${name} ${BBLIBSRC_DIR}/${name}
-			DEPENDS ${bblibsrc_in}/${name} ${tokens} ${TEDDETOK} host_tools
+			COMMAND ${TEDSRC} detok ${tokens} ${bblibsrc_in}/${name} ${BBLIBSRC_DIR}/${name}
+			DEPENDS ${bblibsrc_in}/${name} ${tokens} ${TEDSRC} host_tools
 			COMMENT "Detokenising bblibsrc/${name}"
 			VERBATIM)
 		list(APPEND outs ${BBLIBSRC_DIR}/${name})

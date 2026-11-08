@@ -150,11 +150,11 @@ if(have_originals)
 	add_custom_command(OUTPUT ${libnums}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${gen}
 		COMMAND ${CMAKE_COMMAND} -DIN=${cdlibs}/LIBNUMS.BB "-DLIBNUMS_H=${libnums_h_arg}"
-			-DTEDDETOK=${TEDDETOK} -DTEDTOK=${TEDTOK} -DTOKENS=${tokens} -DOUT=${libnums}
+			-DTEDSRC=${TEDSRC} -DTOKENS=${tokens} -DOUT=${libnums}
 			-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake
 		BYPRODUCTS ${libnums}.txt ${libnums}.add ${libnums}.add.txt
 		DEPENDS ${cdlibs}/LIBNUMS.BB ${libnums_h} ${tokens}
-			${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake ${TEDDETOK} ${TEDTOK} host_tools
+			${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake ${TEDSRC} host_tools
 		COMMENT "Reference build: LIBNUMS.BB with the numbers of ${RWE_VARIANT}"
 		VERBATIM)
 	set(stage_in ${libnums} ${RWE_RESIDENTS})
@@ -190,8 +190,8 @@ if(have_originals)
 	set(broken ${CMAKE_CURRENT_BINARY_DIR}/refbuild-broken)
 	file(WRITE ${broken}/libnums.h "#define LIB_ripacklib 99\n")
 	add_test(NAME rwe_refbuild_libnums_broken COMMAND ${CMAKE_COMMAND}
-		-DIN=${cdlibs}/LIBNUMS.BB -DLIBNUMS_H=${broken}/libnums.h -DTEDDETOK=${TEDDETOK}
-		-DTEDTOK=${TEDTOK} -DTOKENS=${tokens} -DOUT=${broken}/LIBNUMS.BB
+		-DIN=${cdlibs}/LIBNUMS.BB -DLIBNUMS_H=${broken}/libnums.h -DTEDSRC=${TEDSRC}
+		-DTOKENS=${tokens} -DOUT=${broken}/LIBNUMS.BB
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake)
 	set_tests_properties(rwe_refbuild_libnums_broken PROPERTIES
 		PASS_REGULAR_EXPRESSION "#ripacklib: 73 in")
@@ -200,7 +200,7 @@ if(have_originals)
 	file(WRITE ${broken}/b/libnums.h "#define LIB_rwetestlib 6\n")
 	add_test(NAME rwe_refbuild_libnums_twice COMMAND ${CMAKE_COMMAND}
 		-DIN=${cdlibs}/LIBNUMS.BB "-DLIBNUMS_H=${broken}/a/libnums.h$<SEMICOLON>${broken}/b/libnums.h"
-		-DTEDDETOK=${TEDDETOK} -DTEDTOK=${TEDTOK} -DTOKENS=${tokens} -DOUT=${broken}/LIBNUMS2.BB
+		-DTEDSRC=${TEDSRC} -DTOKENS=${tokens} -DOUT=${broken}/LIBNUMS2.BB
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake)
 	set_tests_properties(rwe_refbuild_libnums_twice PROPERTIES
 		PASS_REGULAR_EXPRESSION "#rwetestlib: 5 and 6 in")

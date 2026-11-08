@@ -5,7 +5,7 @@
 #             compiles), reqtrap / reqclose (requesters of the compiled
 #             programs), reqclosetest (the gate of the requester tests),
 #             rcput (rc=N in the session scripts on Kickstart 1.x)
-#   tests*/   the test programs (text); tokenised here with tedtok (the TED
+#   tests*/   the test programs (text); tokenised here with tedsrc tok (the TED
 #             core), which also refuses lines TED would cut
 #   runner/   corpusrun (host side): the passes, see runner/README.md
 add_subdirectory(amiga)
@@ -22,8 +22,8 @@ foreach(dir tests tests-runerr tests-req tests-serial)
 		set(out ${CORPUS_SRC}/${dir}/${name}.bb2)
 		add_custom_command(OUTPUT ${out}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CORPUS_SRC}/${dir}
-			COMMAND ${TEDTOK} ${TED_TOKENS} ${b} ${out}
-			DEPENDS ${b} ${TED_TOKENS} ${TEDTOK} host_tools
+			COMMAND ${TEDSRC} tok ${TED_TOKENS} ${b} ${out}
+			DEPENDS ${b} ${TED_TOKENS} ${TEDSRC} host_tools
 			COMMENT "Tokenising ${dir}/${name}.bas"
 			VERBATIM)
 		list(APPEND corpus_${dir} ${out})

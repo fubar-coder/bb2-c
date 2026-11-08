@@ -23,24 +23,25 @@ of the 102. Several versions of the same library:
 `gtlib`/`oldgtlib`, `switchlib`/`switchlib.ok`,
 `wbstartuplib`/`wbstartuplibnew`, `2dlib`/`sis2dlib.bb`.
 
-The tool behind it is `teddetok` (`programs/ted/tools/teddetok`, on the C
-core of TED like `tedtok`): loads a source like TED (`fileopen2`) and
-writes every line detokenized. A token TED does not know (TED shows
-`?????`) is an error, the file is then not written; a line longer than
-TED's line buffer is split by TED when loading – `teddetok` reports that
-and counts like TED.
+The tool behind it is `tedsrc detok`
+([`programs/ted/tools/tedsrc`](../../programs/ted/tools/tedsrc/README.md),
+on the C core of TED like `tedsrc tok`): loads a source like TED
+(`fileopen2`) and writes every line detokenized. A token TED does not
+know (TED shows `?????`) is an error, the file is then not written; a
+line longer than TED's line buffer is split by TED when loading –
+`tedsrc detok` reports that and counts like TED.
 
 ```
-build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt IN OUT
-build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt --check IN...
-build/amiga/host/ted-tools/teddetok/teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT
+build/amiga/host/ted-tools/tedsrc/tedsrc detok tests/data/ted-tokens.txt IN OUT
+build/amiga/host/ted-tools/tedsrc/tedsrc detok tests/data/ted-tokens.txt --check IN...
+build/amiga/host/ted-tools/tedsrc/tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT
 ```
 
 The token list is either a list file (`tests/data/ted-tokens.txt`, made
 by the original TED) or it is made from the compiler and its libraries
 (`--blitz2` and `--lib` in the compiler's order: acidlibs, deflibs, then
 userlibs; library or BigLib files) as blitz2 builds it for TED – for
-sources written with other libraries. `tedtok` takes the same forms.
+sources written with other libraries. `tedsrc tok` takes the same forms.
 `tools/blitztokens` writes such a list as a list file
 (`blitztokens BLITZ2 LIB... > tokens.txt`), for both tools.
 
@@ -54,7 +55,7 @@ file).
 Some of RWE's library sources (`rwelibsrc/`, 1997) are saved in another
 format, `BB22` (`docs/rwelibs/README.md` §4.1: a header with the cursor,
 a prefix before each line). `tools/bb22` converts them into TED's format,
-for teddetok and the compiler; it refuses whatever it does not know:
+for tedsrc detok and the compiler; it refuses whatever it does not know:
 
 ```
 build/amiga/host/tools/bb22/bb22 IN OUT
@@ -63,9 +64,9 @@ build/amiga/host/tools/bb22/bb22 --info IN
 
 ctest `bb22` checks it with files built in memory (also broken ones),
 `bb22_rwelibsrc` converts the 9 `BB22` files of `rwelibsrc/` and reads
-them with teddetok (skipped without the archive or the CD). The
+them with tedsrc detok (skipped without the archive or the CD). The
 userlibs build converts a `BB22` source of `RWE_LIBS` the same way
-before teddetok (target `rwelibsrc`) and before the staging of the
+before tedsrc detok (target `rwelibsrc`) and before the staging of the
 reference build (`build/amiga/libs/userlibs/rwe/ted/SOURCE`).
 
 The companion settings of a source – the Blitz 2 `.xtra`, the cursor in
@@ -92,7 +93,7 @@ their `.xtra`, `xtra_ab3_examples` five AmiBlitz3 sources from GitHub
 
 ## Sources of other editors and libraries: `bbdetok`
 
-`teddetok` shows a source exactly as TED does and fails on a token TED
+`tedsrc detok` shows a source exactly as TED does and fails on a token TED
 does not know. For sources written with other editors and libraries –
 PED, AmiBlitz 2 and AmiBlitz3, like the snapshots in `archive/sources/` –
 `tools/bbdetok` writes the text line for line (line N of the text = line

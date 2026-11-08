@@ -1,5 +1,5 @@
-# One test of teddetok (ctest, see ../CMakeLists.txt):
-#   cmake -DTEDDETOK=... -DTOKENS=... -DIN=... -DOUT=... -DEXPECT=FILE -P run.cmake
+# One test of tedsrc detok (ctest, see ../CMakeLists.txt):
+#   cmake -DTEDSRC=... -DTOKENS=... -DIN=... -DOUT=... -DEXPECT=FILE -P run.cmake
 #       IN must give exactly EXPECT (and NOTE, if set, on stderr)
 #   cmake ... -DERROR=REGEX -P run.cmake
 #       IN must fail with exit status 1, REGEX on stderr, OUT not written
@@ -12,9 +12,9 @@ foreach(f IN LISTS REQUIRE)
 	endif()
 endforeach()
 file(REMOVE ${OUT})
-execute_process(COMMAND ${TEDDETOK} ${TOKENS} ${IN} ${OUT}
+execute_process(COMMAND ${TEDSRC} detok ${TOKENS} ${IN} ${OUT}
 	RESULT_VARIABLE rc ERROR_VARIABLE err)
-message(STATUS "teddetok: exit ${rc}\n${err}")
+message(STATUS "tedsrc detok: exit ${rc}\n${err}")
 if(DEFINED ERROR)
 	if(NOT rc EQUAL 1)
 		message(FATAL_ERROR "exit status ${rc}, 1 expected")

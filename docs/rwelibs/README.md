@@ -561,7 +561,7 @@ another version, a word at +10 other than 0 or at +14 other than 2, a
 prefix byte other than 0, a line without its 0 byte before the end of the
 file, a token byte without its second byte or followed by a 0 byte, an LF
 in a line – each is refused with a message (offset, line), nothing is
-written. The converted files are read by teddetok with the tokens of the
+written. The converted files are read by tedsrc detok with the tokens of the
 CD's compiler, acidlibs, deflibs and BSS2's `RIPACKLIB` (`Anim-Library3`
 and `RIShapesLib2` call the Pack library, 73): ctest `bb22_rwelibsrc`
 (skipped without the archive or the CD); `NEWAREXXLIB` and `RIShapesLib2`
@@ -616,7 +616,7 @@ repository).
 1. All `*.OBJ` of the CD and `BlitzLibs/UserLibs/userlibs/*.obj` of
    AmiBlitz3 read with `tools/lib/blitzlib` (number, size, entries with
    name and help text).
-2. The sources made readable with `teddetok` and the extended token list.
+2. The sources made readable with `tedsrc detok` and the extended token list.
 3. Per source: `!libheader`, `!name` entries (order, help text), the
    header comments (authors, dates).
 4. Matching: equal declarations (names in order and help texts) =

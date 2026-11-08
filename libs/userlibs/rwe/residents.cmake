@@ -113,9 +113,9 @@ foreach(r IN LISTS residents)
 	add_custom_command(OUTPUT ${bb2}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${RWE_RESIDENTS_DIR}/cd
 		COMMAND ${BLITZRES} source ${res} ${bas}
-		COMMAND ${TEDTOK} ${tokens_ted} ${bas} ${bb2}
+		COMMAND ${TEDSRC} tok ${tokens_ted} ${bas} ${bb2}
 		BYPRODUCTS ${bas}
-		DEPENDS ${res} ${BLITZRES} ${TEDTOK} ${tokens_ted} host_tools
+		DEPENDS ${res} ${BLITZRES} ${TEDSRC} ${tokens_ted} host_tools
 		COMMENT "Resident ${r}.res as Blitz source"
 		VERBATIM)
 	list(APPEND res_sources ${bb2})
@@ -143,8 +143,8 @@ set(probe ${RWE_RESIDENTS_DIR}/cd/residents.bb2)
 file(CONFIGURE OUTPUT ${probe_bas} CONTENT
 	"; rwe_residents_cd: compiled with the residents loaded\n${use}\nEnd\n" @ONLY)
 add_custom_command(OUTPUT ${probe}
-	COMMAND ${TEDTOK} ${tokens_ted} ${probe_bas} ${probe}
-	DEPENDS ${probe_bas} ${TEDTOK} ${tokens_ted} host_tools
+	COMMAND ${TEDSRC} tok ${tokens_ted} ${probe_bas} ${probe}
+	DEPENDS ${probe_bas} ${TEDSRC} ${tokens_ted} host_tools
 	COMMENT "Tokenising the source of rwe_residents_cd"
 	VERBATIM)
 add_custom_target(rwe_residents_cd_source ALL DEPENDS ${probe})
