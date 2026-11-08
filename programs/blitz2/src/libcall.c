@@ -539,9 +539,11 @@ void muld1(UWORD mul)
         muld1once(shift);
         return;
     }
-    /* BUG(orig) (#15): shift == 8 (x256) emits lsl #8 twice (count field
-       0 = 8), i.e. x65536.  Kept. */
-    muld1once(shift - 8);
+    /* Fixed (#15): the original went on into a second lsl #8 after the
+       first shift also for shift == 8 (x256 became x65536); the shift
+       by shift - 8 is made only when it is not 0 */
+    if (shift > 8)
+        muld1once(shift - 8);
     muld1once(0);
 }
 

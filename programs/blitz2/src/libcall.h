@@ -86,8 +86,8 @@ void freepush(void);
 /* ---------------------------------------------------- code generation */
 
 /* blitz2.s:11106 muld1 - emit D(regat) *= #mul: lsl.l for a power of two,
-   else mulu.w #mul.  (asm clobbered d1-d4)
-   BUG(orig) (#15): mul == 256 emits lsl #8 twice (= *65536).  Kept. */
+   else mulu.w #mul (x256 is one lsl #8, Fixed (#15)).  (asm clobbered
+   d1-d4) */
 void muld1(UWORD mul);
 
 /* blitz2.s:11140 makeinits - emit the init calls of all used libs

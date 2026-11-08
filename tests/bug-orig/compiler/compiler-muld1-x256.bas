@@ -8,6 +8,7 @@
 ; there every element is the first one.
 ; Correct: the elements are the element size apart (128, 256, 512 and
 ; 1024 bytes), the values written are read back at those offsets.
+; @fixed #15
 NEWTYPE .t128
   v.l
   p.b[124]
