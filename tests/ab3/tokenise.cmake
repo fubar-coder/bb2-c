@@ -3,11 +3,11 @@
 # task 1.3).  One emulator session lets AmiBlitz3 v3.14.0's own compiler
 # load every source and write its lines (CLI mode, Blitz3:Amiblitz3 -s
 # SOURCE -save TEST:out/NAME.bb2: the editor's lines, each with its 0);
-# on the host ab3tok (shared/tokenizer, the code ab3cli tokenises with)
+# on the host bbsrc ab3-cmp (shared/tokenizer, the code ab3cli tokenises with)
 # loads the same source with the token list of AB3 mode - blitz2-ab3's
-# AmiBlitz3 list followed by AmiBlitz3's BigLibs (blitztokens, as the
+# AmiBlitz3 list followed by AmiBlitz3's BigLibs (bbsrc tokens, as the
 # test ab3_tokens has it equal to AmiBlitz3's) - and compares.
-#   cmake -DAMIGA_RUN=... -DBLITZTOKENS=... -DAB3TOK=... -DBLITZ2=... -DAB3=DIR
+#   cmake -DAMIGA_RUN=... -DBBSRC=... -DBLITZ2=... -DAB3=DIR
 #         -DSOURCES=FILE;... -DWORK=DIR [-DBREAK=NAME] [-DTIMEOUT=SEC]
 #         -P tokenise.cmake
 # The sources: SOURCES and AmiBlitz3's test programs (AB3/Sourcecodes/
@@ -17,7 +17,7 @@
 # (skipped) without the emulator or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 4.2.3)
 
-foreach(v AMIGA_RUN BLITZTOKENS AB3TOK BLITZ2 AB3 SOURCES WORK)
+foreach(v AMIGA_RUN BBSRC BLITZ2 AB3 SOURCES WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "tokenise.cmake: -D${v}=... missing")
 	endif()
@@ -82,10 +82,10 @@ if(rc)
 endif()
 
 # our token list, and the check itself
-execute_process(COMMAND ${BLITZTOKENS} -last 80DB -o ${WORK}/tokens.txt ${BLITZ2} ${libs}
+execute_process(COMMAND ${BBSRC} tokens -last 80DB -o ${WORK}/tokens.txt ${BLITZ2} ${libs}
 	RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "blitztokens ${BLITZ2}: exit ${rc}")
+	message(FATAL_ERROR "bbsrc tokens ${BLITZ2}: exit ${rc}")
 endif()
 if(BREAK)
 	file(STRINGS ${WORK}/tokens.txt list)
@@ -107,7 +107,7 @@ foreach(f IN LISTS SOURCES)
 		math(EXPR failed "${failed} + 1")
 		continue()
 	endif()
-	execute_process(COMMAND ${AB3TOK} -cmp ${WORK}/tokens.txt ${test}/src/${file} ${theirs}
+	execute_process(COMMAND ${BBSRC} ab3-cmp ${WORK}/tokens.txt ${test}/src/${file} ${theirs}
 		RESULT_VARIABLE r ERROR_VARIABLE msg)
 	string(STRIP "${msg}" msg)
 	if(r)

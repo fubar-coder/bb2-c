@@ -11,7 +11,7 @@ one of another (`../bb2-2.10/libnums.h`) and change single numbers
 (`#undef`/`#define LIB_xxx`). Every number in the libraries comes from
 `libnums.h` – header, `!libs` references, the calls of other libraries
 (ALibJsr) – so a changed number moves all of them, and the tokens of a
-source written for the variant come from its files (`blitztokens`,
+source written for the variant come from its files (`bbsrc tokens`,
 `tedsrc detok --blitz2 … --lib …`). Test variants are in
 `libs/tests/variants/` (ctest `variant_*`).
 
@@ -46,7 +46,7 @@ those sources (`libs/userlibs/rwe/refbuild.cmake`,
 `datatypes.res`, `AHI.res` that `tools/blitzres` writes from the toolchain's NDK
 (target `rwe_residents`), a `LIBNUMS.BB` with the numbers of the
 variant's `libnums.h`, the sources with their `INCDIR` lines neutralised
-by `tools/bblines`), ctest `rwe_refbuild` compiles them with the CD's
+by `bbsrc comment`), ctest `rwe_refbuild` compiles them with the CD's
 blitz2 2.10 in Amiberry to `build/amiga/libs/userlibs/rwe/ref/NAME.obj`.
 An `RWE_LIBS` entry with REFERENCE `refbuild` is compared with that
 file.

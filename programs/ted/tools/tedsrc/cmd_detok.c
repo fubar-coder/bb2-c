@@ -10,7 +10,7 @@
  *   tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT | --check IN...
  *
  * The token list: a list file (tests/data/ted-tokens.txt, or one written
- * by tools/blitztokens), or made from the compiler BLITZ2 and the library
+ * by bbsrc tokens), or made from the compiler BLITZ2 and the library
  * or BigLib files LIB in the compiler's order (acidlibs, deflibs,
  * userlibs) as blitz2 builds it for TED (tools/lib/blitztokens).
  *

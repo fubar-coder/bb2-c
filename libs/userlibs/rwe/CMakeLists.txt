@@ -120,7 +120,7 @@ set(rwesrc ${PROJECT_SOURCE_DIR}/archive/aminet/amibl2src/rwelibsrc)
 
 # rwe_ted_source(SOURCE OUT_VAR): rwelibsrc/SOURCE in TED's format - the
 # file itself, or for a source in the BB22 format (docs/rwelibs/README.md
-# 4.1; neither blitz2 nor TED reads it) its conversion by tools/bb22,
+# 4.1; neither blitz2 nor TED reads it) its conversion by bbsrc bb22,
 # ted/SOURCE here (one command per source, for the readable source and
 # the reference build alike)
 function(rwe_ted_source source out)
@@ -137,8 +137,8 @@ function(rwe_ted_source source out)
 		get_filename_component(dir ${ted} DIRECTORY)
 		add_custom_command(OUTPUT ${ted}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${dir}
-			COMMAND ${BB22} ${f} ${ted}
-			DEPENDS ${f} ${BB22} host_tools
+			COMMAND ${BBSRC} bb22 ${f} ${ted}
+			DEPENDS ${f} ${BBSRC} host_tools
 			COMMENT "rwelibsrc/${source}: BB22 to TED's format"
 			VERBATIM)
 	endif()

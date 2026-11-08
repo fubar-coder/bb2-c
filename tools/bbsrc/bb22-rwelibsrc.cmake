@@ -1,10 +1,10 @@
 # ctest bb22_rwelibsrc: the 9 BB22 files of rwelibsrc (docs/rwelibs/README.md
-# 4.1) through bb22 into TED's format (OUTDIR/NAME, '/' of the path as
+# 4.1) through bbsrc bb22 into TED's format (OUTDIR/NAME, '/' of the path as
 # '_'), and every result read by tedsrc detok --check with the token list of
 # the CD's compiler, acidlibs, deflibs and the RI libraries in LIBS (all
 # tokens known, no token byte without its second byte).  Exit 77
 # (skipped) without the Aminet archive or the CD.
-#   cmake -DBB22=... -DTEDSRC=... -DREPO=... -DOUTDIR=... -P rwelibsrc.cmake
+#   cmake -DBBSRC=... -DTEDSRC=... -DREPO=... -DOUTDIR=... -P bb22-rwelibsrc.cmake
 set(dir ${REPO}/archive/aminet/amibl2src/rwelibsrc)
 set(cd ${REPO}/archive/cd/ultimate-blitz-basic-2.1)
 set(files
@@ -37,9 +37,9 @@ foreach(f IN LISTS files)
 	string(REPLACE "/" "_" o ${f})
 	set(o ${OUTDIR}/${o})
 	file(REMOVE ${o})
-	execute_process(COMMAND ${BB22} ${dir}/${f} ${o} RESULT_VARIABLE rc)
+	execute_process(COMMAND ${BBSRC} bb22 ${dir}/${f} ${o} RESULT_VARIABLE rc)
 	if(rc OR NOT EXISTS ${o})
-		message(FATAL_ERROR "bb22 ${f}: exit ${rc}")
+		message(FATAL_ERROR "bbsrc bb22 ${f}: exit ${rc}")
 	endif()
 	list(APPEND outs ${o})
 endforeach()

@@ -2,7 +2,7 @@
 # BLITZ_VARIANTS_DIR/NAME) against the default build.
 #   cmake -DMODE=same -DVARIANT=DIR -DDEFAULT=DIR -P check.cmake
 #       acidlibs and deflibs of VARIANT byte-identical to DEFAULT's
-#   cmake -DMODE=renumbered -DVARIANT=DIR -DBLITZTOKENS=... -DBLITZ2=...
+#   cmake -DMODE=renumbered -DVARIANT=DIR -DBBSRC=... -DBLITZ2=...
 #         -DTOKENS=ted-tokens.txt -DMAP=OLD:NEW;... -DOBJ=FILE
 #         -DCALL=HEX -DOLDCALL=HEX -DOUT=FILE -P check.cmake
 #       the token list of BLITZ2 with VARIANT's acidlibs and deflibs is
@@ -25,10 +25,10 @@ if(NOT MODE STREQUAL "renumbered")
 	message(FATAL_ERROR "MODE same or renumbered")
 endif()
 
-execute_process(COMMAND ${BLITZTOKENS} -o ${OUT} ${BLITZ2} ${VARIANT}/acidlibs ${VARIANT}/deflibs
+execute_process(COMMAND ${BBSRC} tokens -o ${OUT} ${BLITZ2} ${VARIANT}/acidlibs ${VARIANT}/deflibs
 	RESULT_VARIABLE rc)
 if(rc)
-	message(FATAL_ERROR "blitztokens: exit ${rc}")
+	message(FATAL_ERROR "bbsrc tokens: exit ${rc}")
 endif()
 file(STRINGS ${TOKENS} want)
 file(STRINGS ${OUT} have)

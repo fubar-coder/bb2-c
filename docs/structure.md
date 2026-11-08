@@ -98,17 +98,28 @@ tools/                       host tools:
                              cmdref (the command table of a library file
                              as JSON, the website's command reference);
                              blitzlib also compares declarations
-  blitzlib/,                 the tools: main.c around lib/ (a program
-                             with subcommands: its table, cmd_NAME.c)
-  blitztokens/
-  hunkcheck/, amiga_run/,
-  refcheck/,
-  mktestdata/, bb22/, blitzres/,
-  bblines/, bbdetok/, xtra/,
-  testinfo/, results/,
-  ab3tok/, hdftool/
-  bbdetok/archive_text.cmake the target archive_text: archive/sources/
-                             as text (build/<preset>/archive-text/)
+  NAME/                      the tools: main.c around lib/ (a program
+                             with subcommands: its table, cmd_NAME.c),
+                             README.md (usage, exit codes, callers):
+  blitzlib/                  library files: join, extract, numbers,
+                             check, compare, cmdref
+  bbsrc/                     sources and tokens without TED: tokens,
+                             detok, comment, bb22, ab3; also the target
+                             archive_text (archive/sources/ as text)
+  refcheck/                  the port against the originals: asm,
+                             labels, data, listing-*
+  hunkcheck/                 the hunks of a load file: start, layout,
+                             stored
+  results/                   results against expectations and the prev
+                             build: match, prev, cd-update, cd-reference
+  testinfo/                  test statistics and coverage: stats, map,
+                             select
+  blitzres/                  resident files: create, dump, source
+  amiga_run/                 runs a script in Amiberry
+  mktestdata/                binary test data from a text description
+  xtra/                      .xtra files: dump, check, convert
+  hdftool/                   AmigaDOS hardfiles: info, list, cat, check,
+                             edit
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)

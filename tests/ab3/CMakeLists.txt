@@ -58,7 +58,7 @@ equivalence_pass(ab3_bb2_equivalence_runerr on)
 # followed by the tokens of AmiBlitz3 v3.14.0's BigLibs in its load order
 # must equal the list of AmiBlitz3 v3.14.0's own compiler (the binary
 # Amiblitz3 at 58a11658: its token list, read like blitz2's) with the same
-# libraries.  The library tokens are numbered by blitztokens for both
+# libraries.  The library tokens are numbered by bbsrc tokens for both
 # (AmiBlitz3's process_libraries numbers as blitz2's fixlibs).  Skipped
 # (77) without the fetched files.
 set(AB3_V314 ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-58a11658)
@@ -66,7 +66,7 @@ set(ab3_biglibs baseLibs utilLibs OsLibs csLibs)
 list(TRANSFORM ab3_biglibs PREPEND ${AB3_V314}/BlitzLibs/)
 # ab3_tokens(NAME LAST): the test with blitz2-ab3's list ending with $LAST
 function(ab3_tokens name last)
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DBLITZTOKENS=${BLITZTOKENS}
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DBBSRC=${BBSRC}
 		-DBLITZ2=$<TARGET_FILE:blitz2-ab3> -DLAST=${last} -DAB3=${AB3_V314}/Amiblitz3
 		"-DLIBS=${ab3_biglibs}" -DOUT=${CMAKE_CURRENT_BINARY_DIR}/${name}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/tokens.cmake)
@@ -618,8 +618,8 @@ set_tests_properties(ab3_cli_ref ab3_cli_ref_broken ab3_cli_ref_broken_date PROP
 
 # AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
 # tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and
-# writes its lines (-save NAME.bb2), ab3tok (shared/tokenizer, as ab3cli)
-# loads it with AB3 mode's token list, the lines must be equal.  Sources:
+# writes its lines (-save NAME.bb2), bbsrc ab3-cmp (shared/tokenizer, as
+# ab3cli) loads it with AB3 mode's token list, the lines must be equal.  Sources:
 # AmiBlitz3's test programs, those of cli/ and tokens/ (edge cases).
 # Label emulator; skipped (77) without Amiberry or the fetched files.
 file(GLOB tokenise_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3
@@ -638,7 +638,7 @@ function(ab3_tokenise name)
 		set(brk -DBREAK=NPrint)
 	endif()
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
-		-DBLITZTOKENS=${BLITZTOKENS} -DAB3TOK=${AB3TOK} -DBLITZ2=$<TARGET_FILE:blitz2-ab3>
+		-DBBSRC=${BBSRC} -DBLITZ2=$<TARGET_FILE:blitz2-ab3>
 		-DAB3=${AB3_V314} -DSOURCES=${tokenise_sources} -DWORK=${work} ${brk}
 		-DTIMEOUT=${AB3_CLI_TIMEOUT} -P ${CMAKE_CURRENT_SOURCE_DIR}/tokenise.cmake)
 	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
@@ -648,4 +648,4 @@ endfunction()
 ab3_tokenise(ab3_tokenise)
 ab3_tokenise(ab3_tokenise_broken BREAK)
 set_tests_properties(ab3_tokenise_broken PROPERTIES PASS_REGULAR_EXPRESSION
-	"FAIL atoi: ab3tok: [^\n]*atoi.ab3: line [0-9]+ differs from AmiBlitz3's")
+	"FAIL atoi: bbsrc ab3-cmp: [^\n]*atoi.ab3: line [0-9]+ differs from AmiBlitz3's")

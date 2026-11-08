@@ -162,7 +162,7 @@ if(BLITZ_DEFAULT_VARIANT STREQUAL "bb2-2.10")
 		-P ${vcheck})
 	add_test(NAME variant_selftest_renumbered COMMAND ${CMAKE_COMMAND} -DMODE=renumbered
 		-DVARIANT=${CMAKE_CURRENT_BINARY_DIR}/variants/selftest-renumbered
-		-DBLITZTOKENS=${BLITZTOKENS} -DBLITZ2=$<TARGET_FILE:blitz2>
+		-DBBSRC=${BBSRC} -DBLITZ2=$<TARGET_FILE:blitz2>
 		-DTOKENS=${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt -DMAP=157:3$<SEMICOLON>164:4
 		-DOBJ=${CMAKE_BINARY_DIR}/libs/acidlibs/variants/selftest-renumbered-debuglib.obj
 		-DCALL=80000204 -DOLDCALL=80005204
@@ -171,7 +171,7 @@ if(BLITZ_DEFAULT_VARIANT STREQUAL "bb2-2.10")
 	# bb2-2.10 (rwe-1999 adds numbers only); no library calls polylib
 	add_test(NAME variant_rwe_1999_eval COMMAND ${CMAKE_COMMAND} -DMODE=renumbered
 		-DVARIANT=${BLITZ_VARIANTS_DIR}/rwe-1999-eval
-		-DBLITZTOKENS=${BLITZTOKENS} -DBLITZ2=$<TARGET_FILE:blitz2>
+		-DBBSRC=${BBSRC} -DBLITZ2=$<TARGET_FILE:blitz2>
 		-DTOKENS=${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt -DMAP=121:87
 		-DOUT=${CMAKE_CURRENT_BINARY_DIR}/variant_rwe_1999_eval_tokens.txt -P ${vcheck})
 	# rwe-1999-ahi: rwe-1999's numbers (only risoundlib2 instead of

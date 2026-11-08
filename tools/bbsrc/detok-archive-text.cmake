@@ -5,7 +5,7 @@
 # for archive/sources/PATH (*.bb2).  The tokens are AmiBlitz 2.42's - its
 # compiler, AcidLibs and Deflibs from the Aminet distribution
 # (archive/aminet/ab2.42-distri, cmake -P cmake/fetch-originals.cmake),
-# the release closest to these sources that the archive has; bbdetok
+# the release closest to these sources that the archive has; bbsrc detok
 # --strict fails on a token they do not have, the file is then not
 # written and the step fails.  Part of ALL when the distribution is there
 # (the glob notices new sources at the next build), else the target only
@@ -31,9 +31,9 @@ if(have_ab242 AND archive_text_in)
 		get_filename_component(outdir ${out} DIRECTORY)
 		file(MAKE_DIRECTORY ${outdir})
 		add_custom_command(OUTPUT ${out}
-			COMMAND ${BBDETOK} --strict --blitz2 ${ab242}/Amiblitz2 --lib ${ab242}/AcidLibs
+			COMMAND ${BBSRC} detok --strict --blitz2 ${ab242}/Amiblitz2 --lib ${ab242}/AcidLibs
 				--lib ${ab242}/Deflibs ${sources_dir}/${name} ${out}
-			DEPENDS ${sources_dir}/${name} ${ab242_files} ${BBDETOK} host_tools
+			DEPENDS ${sources_dir}/${name} ${ab242_files} ${BBSRC} host_tools
 			COMMENT "Detokenising archive/sources/${name}"
 			VERBATIM)
 		list(APPEND outs ${out})

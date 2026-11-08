@@ -97,5 +97,5 @@ v3.14.0's own compiler in CLI mode and compares the programs' output
 with the same files (its differences: docs/ab3/variant.md).
 `ab3_tokenise` (`tests/ab3/tokenise.cmake`) compares the tokens of AB3
 mode with AmiBlitz3's: AmiBlitz3 writes the lines it loaded (`-save
-NAME.bb2`), `tools/ab3tok` tokenises the same sources with
+NAME.bb2`), `bbsrc ab3-cmp` tokenises the same sources with
 `shared/tokenizer` (docs/ab3/variant.md, "AB3 mode's tokeniser").

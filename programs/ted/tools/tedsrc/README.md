@@ -8,8 +8,8 @@ ted.s:769), so a text source comes out tokenised as TED would save it;
 `detok` loads it and writes every line detokenised (`detok`, ted.s:3455),
 line N of the output is line N in TED. The program links the TED core
 (`tedhost`, `tedcore_host`), which is why it is a program of its own
-(`tools/bbdetok`, `tools/blitztokens`: the tokens and
-sources without TED; `bbdetok --ted` is the nearest to `detok`).
+([`tools/bbsrc`](../../../../tools/bbsrc/README.md): the tokens and
+sources without TED; `bbsrc detok --ted` is the nearest to `detok`).
 
 ## Usage
 
@@ -25,7 +25,7 @@ usage: tedsrc tok TOKENS IN OUT
 `tedsrc SUB -h` prints the description and the options of `SUB`.
 
 The token list is the list file `TOKENS` (`tests/data/ted-tokens.txt`, or
-one written by `blitztokens`), or it is made from the compiler `BLITZ2`
+one written by `bbsrc tokens`), or it is made from the compiler `BLITZ2`
 and the library or BigLib files `LIB` in the compiler's order (acidlibs,
 deflibs, userlibs) as blitz2 builds it for TED (`tools/lib/blitztokens`).
 
@@ -69,8 +69,8 @@ Messages go to stderr as `tedsrc SUB: [FILE: ]message`.
   RWE reference build (`libs/userlibs/rwe`); the tests `tedtok_line129`,
   `tedtok_line130`, `tedtok_libs` (`CMakeLists.txt` here).
 * `detok`: the build target `bblibsrc` (`bblibsrc.cmake` here), the RWE
-  sources (`libs/userlibs/rwe`), the tests of `bb22`
-  (`tools/bb22/rwelibsrc.cmake`); the tests `teddetok_*`
+  sources (`libs/userlibs/rwe`), the test `bb22_rwelibsrc`
+  (`tools/bbsrc/bb22-rwelibsrc.cmake`); the tests `teddetok_*`
   (`CMakeLists.txt` here, `tests/run.cmake`, `tests/bblibsrc.cmake`).
 * Tests: `help_tedsrc`, `readme_tedsrc`.
 

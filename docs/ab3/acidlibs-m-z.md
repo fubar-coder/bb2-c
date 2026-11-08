@@ -25,7 +25,7 @@ over. Documentation only; nothing here is taken over yet. Part a–l:
     of a library (hash and size); that gives the date of each binary
     change below. Libraries are matched by number, renumbered ones
     (`mathtranslib`, `stringfunclib`, `utillib`) by their token names
-    (`blitztokens`).
+    (`bbsrc tokens`).
   * Sources: `Sourcecodes/Amiblitz3/BlitzLibs/*.bb2` (from
     `AmiBlitz/AmiBlitz3@0e2ff1db`, SVN r2, 2009-02-11: the libraries
     AmiBlitz had changed, tokenised), later `ACIDLIBS/*.ab3` and now

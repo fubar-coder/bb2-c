@@ -84,7 +84,7 @@ skipped without the CD. The check of TED's data in the build
 deliberately wrong table entry, `blitzlibcompare_single_stale` the
 declaration comparison with a stale entry. The formats of the lists and
 the rule of the instruction comparison, with examples: `docs/development.md`, "Intended differences".
-The token list (`tokens_*`: `tools/blitztokens`
+The token list (`tokens_*`: `bbsrc tokens`
 makes it from a compiler and its libraries the way blitz2 builds it for
 the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
 compiler and libraries (skipped without the CD) and with the ones built
@@ -703,7 +703,7 @@ in `blitz2:userlibs/rwe/`; port (blitz2-c, the CD's libraries) and clib
 `variants/rwe-1999`) get the C build there (the pass file's
 `file=DEST|SRC|TAG`: a file for one configuration). The source is
 tokenised with a token list of blitz2-c, that variant and the named
-libraries (`blitztokens`, `tests/bug-orig/tokens/ID.txt` in the build
+libraries (`bbsrc tokens`, `tests/bug-orig/tokens/ID.txt` in the build
 directory). The libraries of one test must have the same variant
 (rievallib has its own, `rwe-1999-eval`, whose polylib number the CD's
 acidlibs give to polylib: its tests need a ref with other acidlibs,
@@ -1012,7 +1012,7 @@ rules for what a change of a file selects are in
 * the tools only the host tests and the coverage scripts use
   (`testinfo`): the host tests; every other tool makes or
   checks results of the build (`blitzlib`, `hunkcheck`,
-  `xtra`, `ab3tok`, ...): all tests;
+  `xtra`, `bbsrc`, ...): all tests;
 * `libs/`: the emulator tests and the checks of the libraries;
 * documentation: no test;
 * the build (CMake files, presets), TED, shared code, the test data, and

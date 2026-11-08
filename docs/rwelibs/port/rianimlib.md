@@ -13,7 +13,7 @@ to the bitmap's planes (plus the offset), a CMAP of the frame through
 `RIAnimWidth`, `RIAnimHeight(address)` read the first frame's BMHD.
 
 **Source and reference:** `rwelibsrc/ANIMLib/Anim-Library3.bb` (BB22,
-converted by `tools/bb22`; Reflective Images, Stephen McNamara,
+converted by `bbsrc bb22`; Reflective Images, Stephen McNamara,
 1994/95, file date 1997-06-09). The source does not compile: its last
 command, `RIDiskAnimInit "animfile$,datafile$,bitmap#,palette#"`, is
 unfinished (it uses `diskanimflag` and `animfile`, which are defined

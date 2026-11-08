@@ -1,9 +1,9 @@
 /*
- * bb22 - a Blitz 2 source in the "BB22" format (tools/lib/bb22/bb22.h,
- * docs/rwelibs/README.md 4.1) in TED's format.
+ * bbsrc bb22, bbsrc bb22-info - a Blitz 2 source in the "BB22" format
+ * (tools/lib/bb22/bb22.h, docs/rwelibs/README.md 4.1) in TED's format.
  *
- *   bb22 IN OUT       convert: OUT = the lines of IN, each ended by 0
- *   bb22 --info IN    version, header words, line count, longest line
+ *   bbsrc bb22 IN OUT      convert: OUT = the lines of IN, each ended by 0
+ *   bbsrc bb22-info IN     version, header words, line count, longest line
  *
  * Exit status 1 if IN cannot be read or is refused (message with the
  * offset or line; OUT is then not written) or OUT cannot be written
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bb22.h"
+#include "bbsrc.h"
 
 static uint8_t *read_file(const char *path, size_t *len)
 {
@@ -33,37 +34,36 @@ static uint8_t *read_file(const char *path, size_t *len)
     return d;
 }
 
-static const char usage[] =
-    "usage: bb22 IN OUT\n"
-    "       bb22 --info IN\n"
+const char cmd_bb22_usage[] =
+    "usage: bbsrc bb22 IN OUT\n"
     "A Blitz 2 source in the BB22 format (some of RWE's library sources,\n"
-    "1997) in TED's format (lines of tokenised text, each ended by 0);\n"
-    "--info shows the header (version, cursor), the line count and the\n"
-    "longest line. Refuses whatever it does not know.\n";
+    "1997) in TED's format (lines of tokenised text, each ended by 0).\n"
+    "Refuses whatever it does not know.\n";
 
-int main(int argc, char **argv)
+const char cmd_bb22_info_usage[] =
+    "usage: bbsrc bb22-info IN\n"
+    "The header of a Blitz 2 source in the BB22 format (version, cursor),\n"
+    "its line count and its longest line. Refuses whatever it does not\n"
+    "know.\n";
+
+/* bb22 (info false) and bb22-info: IN, and OUT for bb22 */
+static int bb22(int argc, char **argv, bool info)
 {
-    const char *in;
+    const char *in, *me = argv[0];
     struct bb22 b;
     char err[200];
     uint8_t *data;
     size_t len;
-    bool info;
     FILE *f;
     int bad;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
-    }
-    info = argc == 3 && !strcmp(argv[1], "--info");
-    if (argc != 3) {
-        fputs(usage, stderr);
+    if (argc != (info ? 2 : 3)) {
+        fputs(info ? cmd_bb22_info_usage : cmd_bb22_usage, stderr);
         return 2;
     }
-    in = info ? argv[2] : argv[1];
+    in = argv[1];
     if (!(data = read_file(in, &len))) {
-        fprintf(stderr, "bb22: cannot read %s\n", in);
+        fprintf(stderr, "%s: cannot read %s\n", me, in);
         return 1;
     }
     if (bb22_parse(data, len, &b, err, sizeof err)) {
@@ -88,9 +88,19 @@ int main(int argc, char **argv)
     bb22_free(&b);
     free(data);
     if (bad) {
-        fprintf(stderr, "bb22: cannot write %s\n", argv[2]);
+        fprintf(stderr, "%s: cannot write %s\n", me, argv[2]);
         remove(argv[2]);
         return 1;
     }
     return 0;
+}
+
+int cmd_bb22(int argc, char **argv)
+{
+    return bb22(argc, argv, false);
+}
+
+int cmd_bb22_info(int argc, char **argv)
+{
+    return bb22(argc, argv, true);
 }

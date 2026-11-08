@@ -219,7 +219,7 @@ again):
 * the residents of the RWE reference build (`blitzres create`,
   [`tools/blitzres`](../tools/blitzres/README.md), in the
   same step as the write): read back, the file holds exactly the
-  constants written. Its staging: `tools/bblines` fails on an `INCDIR`
+  constants written. Its staging: `bbsrc comment` fails on an `INCDIR`
   line with a further statement, the `LIBNUMS.BB` step on a number of
   `libnums.h` the CD's file has with another value (ctest
   `rwe_refbuild_libnums_broken`).

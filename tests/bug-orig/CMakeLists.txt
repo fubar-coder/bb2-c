@@ -41,7 +41,7 @@
 #                                           library's variant, the source
 #                                           tokenised with the tokens of
 #                                           blitz2-c, that variant and
-#                                           the libraries (blitztokens)
+#                                           the libraries (bbsrc tokens)
 #                      ; @fixed #NNN        the bug is fixed in the port
 #                                           (issue NNN): a fixed test,
 #                                           see below
@@ -236,9 +236,9 @@ function(bug_orig_test bas name)
 		set(tok ${CMAKE_CURRENT_BINARY_DIR}/tokens/${id}.txt)
 		add_custom_command(OUTPUT ${tok}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tokens
-			COMMAND ${BLITZTOKENS} -o ${tok} $<TARGET_FILE:blitz2> ${clib_dir}/acidlibs
+			COMMAND ${BBSRC} tokens -o ${tok} $<TARGET_FILE:blitz2> ${clib_dir}/acidlibs
 				${clib_dir}/deflibs ${objs}
-			DEPENDS ${objs} ${clib_dir}/acidlibs ${clib_dir}/deflibs blitz2 ${BLITZTOKENS}
+			DEPENDS ${objs} ${clib_dir}/acidlibs ${clib_dir}/deflibs blitz2 ${BBSRC}
 				host_tools
 			COMMENT "bug-orig ${id}: token list with the RWE userlibs"
 			VERBATIM)

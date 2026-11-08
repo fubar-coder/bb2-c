@@ -39,7 +39,7 @@ they are marked "already in our reference").
 * **Method:** every binary state taken with `git show`
   (`git log --all --name-only` for the paths, the BigLibs per commit),
   libraries out of the BigLibs with `blitzlib extract`, compared by SHA-256
-  against the CD binaries and each other; token lists with `blitztokens`
+  against the CD binaries and each other; token lists with `bbsrc tokens`
   (library number = (token − $8000) >> 7); where the bytes differ,
   `od`/`m68k-amigaos-objdump` on the differing words; for AB3 sources
   `git show`/`git diff` of the commit. Matched against our issues by

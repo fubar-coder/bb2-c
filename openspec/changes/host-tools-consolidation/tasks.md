@@ -76,7 +76,7 @@ over in its commit (design D9). The common checklist applies to groups
 
 ## 11. `bbsrc` (blitztokens, bbdetok, bblines, bb22, ab3tok; 56 call sites)
 
-- [ ] 11.1 `tools/bbsrc/` with `tokens`, `detok`, `comment`, `bb22`, `bb22-info`, `ab3`, `ab3-cmp`; the test scripts of the five directories move (`tools/bbdetok/tooltest.cmake` has 19 calls, `archive_text.cmake`; `tools/ab3tok/tooltest.cmake`; `tools/bb22/rwelibsrc.cmake`; `tools/blitztokens/check.cmake`), messages they match get the `bbsrc SUB:` prefix; call sites `libs/tests`, `libs/userlibs/rwe` (`bb22`, `bblines`), `tests/ab3` (`tokenise.cmake`, `tokens.cmake`, `CMakeLists.txt`), `tests/bug-orig` (`blitztokens`), `CMakeLists.txt`. Verify: C1-C5; `tokens_*` lists and `tests/data/ted-tokens.txt` regenerate byte-identical, the tests of `tests/ab3` that tokenise pass, `ctest --preset oracle` passes
+- [x] 11.1 `tools/bbsrc/` with `tokens`, `detok`, `comment`, `bb22`, `bb22-info`, `ab3`, `ab3-cmp`; the test scripts of the five directories move (`tools/bbdetok/tooltest.cmake` has 19 calls, `archive_text.cmake`; `tools/ab3tok/tooltest.cmake`; `tools/bb22/rwelibsrc.cmake`; `tools/blitztokens/check.cmake`), messages they match get the `bbsrc SUB:` prefix; call sites `libs/tests`, `libs/userlibs/rwe` (`bb22`, `bblines`), `tests/ab3` (`tokenise.cmake`, `tokens.cmake`, `CMakeLists.txt`), `tests/bug-orig` (`blitztokens`), `CMakeLists.txt`. Verify: C1-C5; `tokens_*` lists and `tests/data/ted-tokens.txt` regenerate byte-identical, the tests of `tests/ab3` that tokenise pass, `ctest --preset oracle` passes
 
 ## 12. READMEs of the programs without code change, and the end
 

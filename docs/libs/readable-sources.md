@@ -42,8 +42,8 @@ by the original TED) or it is made from the compiler and its libraries
 (`--blitz2` and `--lib` in the compiler's order: acidlibs, deflibs, then
 userlibs; library or BigLib files) as blitz2 builds it for TED – for
 sources written with other libraries. `tedsrc tok` takes the same forms.
-`tools/blitztokens` writes such a list as a list file
-(`blitztokens BLITZ2 LIB... > tokens.txt`), for both tools.
+`bbsrc tokens` writes such a list as a list file
+(`bbsrc tokens BLITZ2 LIB... > tokens.txt`), for both tools.
 
 ctest `teddetok_*` checks it with small inputs (also broken ones: unknown
 token, token byte at the end of the file, a compiler that is no load file)
@@ -54,12 +54,12 @@ file).
 
 Some of RWE's library sources (`rwelibsrc/`, 1997) are saved in another
 format, `BB22` (`docs/rwelibs/README.md` §4.1: a header with the cursor,
-a prefix before each line). `tools/bb22` converts them into TED's format,
+a prefix before each line). `bbsrc bb22` converts them into TED's format,
 for tedsrc detok and the compiler; it refuses whatever it does not know:
 
 ```
-build/amiga/host/tools/bb22/bb22 IN OUT
-build/amiga/host/tools/bb22/bb22 --info IN
+build/amiga/host/tools/bbsrc/bbsrc bb22 IN OUT
+build/amiga/host/tools/bbsrc/bbsrc bb22-info IN
 ```
 
 ctest `bb22` checks it with files built in memory (also broken ones),
@@ -91,24 +91,24 @@ in memory (also broken ones), `xtra_tool` the tool on files,
 their `.xtra`, `xtra_ab3_examples` five AmiBlitz3 sources from GitHub
 (`fetch-originals`; both skipped without the material).
 
-## Sources of other editors and libraries: `bbdetok`
+## Sources of other editors and libraries: `bbsrc detok`
 
 `tedsrc detok` shows a source exactly as TED does and fails on a token TED
 does not know. For sources written with other editors and libraries –
 PED, AmiBlitz 2 and AmiBlitz3, like the snapshots in `archive/sources/` –
-`tools/bbdetok` writes the text line for line (line N of the text = line
+`bbsrc detok` writes the text line for line (line N of the text = line
 N of the file, no line split, TAB and other bytes as they are, each line
 ended by an LF):
 
 ```
-build/amiga/host/tools/bbdetok/bbdetok [--ted] [--strict] [--unknown] TOKENS... IN [OUT]
+build/amiga/host/tools/bbsrc/bbsrc detok [--ted] [--strict] [--unknown] TOKENS... IN [OUT]
 ```
 
 The token list is made from `TOKENS`, in the compiler's order (the first
 entry of a number wins): `--tokens FILE` (a list file as
-`tools/blitztokens` writes it, e.g. `tests/data/ted-tokens.txt`),
+`bbsrc tokens` writes it, e.g. `tests/data/ted-tokens.txt`),
 `--blitz2 FILE` (a compiler's own tokens; `--last XXXX` before it picks
-one of several lists as `blitztokens -last`, blitz2-ab3: `80DB`) and
+one of several lists as `bbsrc tokens -last`, blitz2-ab3: `80DB`) and
 `--lib FILE` (a library or BigLib file). Without `OUT` the text goes to
 stdout.
 
@@ -135,9 +135,9 @@ stdout.
 
 ```
 d=archive/aminet/ab2.42-distri/Amiblitz2
-build/amiga/host/tools/bbdetok/bbdetok --blitz2 $d/Amiblitz2 --lib $d/AcidLibs \
+build/amiga/host/tools/bbsrc/bbsrc detok --blitz2 $d/Amiblitz2 --lib $d/AcidLibs \
     --lib $d/Deflibs archive/sources/amiblitz2-2.41/ped.bb2 ped-2.41.txt
-build/amiga/host/tools/bbdetok/bbdetok --unknown --blitz2 build/amiga/blitz2/blitz2 \
+build/amiga/host/tools/bbsrc/bbsrc detok --unknown --blitz2 build/amiga/blitz2/blitz2 \
     --lib build/amiga/blitz2/acidlibs --lib build/amiga/blitz2/deflibs IN > /dev/null
 ```
 
@@ -165,5 +165,5 @@ unknown token or `OUT` cannot be written (`OUT` is then removed); 2 for
 wrong arguments. A last line without its `0` (a text file) is written
 with a note. ctest `bbdetok` checks the logic with sources built in
 memory (also broken ones), `bbdetok_tool` the tool on files (a text
-tokenised by `ab3tok` and back, an unknown token, broken arguments,
+tokenised by `bbsrc ab3` and back, an unknown token, broken arguments,
 lists and sources).

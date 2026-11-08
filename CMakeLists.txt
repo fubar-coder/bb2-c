@@ -69,17 +69,13 @@ include(ExternalProject)
 set(HOST_DIR ${CMAKE_BINARY_DIR}/host)
 set(HOST_TOOLS_DIR ${HOST_DIR}/tools)
 set(BLITZLIB ${HOST_TOOLS_DIR}/blitzlib/blitzlib)               # library files: join, check, compare, cmdref
-set(BLITZTOKENS ${HOST_TOOLS_DIR}/blitztokens/blitztokens)       # token list of compiler + libs
+set(BBSRC ${HOST_TOOLS_DIR}/bbsrc/bbsrc)                        # sources and tokens without TED
 set(REFCHECK ${HOST_TOOLS_DIR}/refcheck/refcheck)               # the port against the originals
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
 set(MKTESTDATA ${HOST_TOOLS_DIR}/mktestdata/mktestdata)         # test data from a description
 set(BLITZRES ${HOST_TOOLS_DIR}/blitzres/blitzres)               # resident files with constants
-set(BBLINES ${HOST_TOOLS_DIR}/bblines/bblines)                  # line edits of tokenised sources
-set(BBDETOK ${HOST_TOOLS_DIR}/bbdetok/bbdetok)                  # tokenised sources as plain text
-set(BB22 ${HOST_TOOLS_DIR}/bb22/bb22)                           # BB22 sources in TED's format
 set(RESULTS ${HOST_TOOLS_DIR}/results/results)                  # results against expectations, the prev build
-set(AB3TOK ${HOST_TOOLS_DIR}/ab3tok/ab3tok)                     # tokenise as AmiBlitz3 loads a source
 set(TEDSRC ${HOST_DIR}/ted-tools/tedsrc/tedsrc)                 # tokenise like TED, show as TED
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # corpus passes and the CD in Amiberry
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
@@ -99,7 +95,7 @@ ExternalProject_Add(host_tools
 		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BLITZLIB} ${BLITZTOKENS} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${RESULTS} ${AB3TOK} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request
@@ -163,7 +159,7 @@ add_subdirectory(tests/ted-ab)
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
 include(programs/ted/tools/tedsrc/bblibsrc.cmake)
 # the source snapshots of archive/sources/ as text: build/<preset>/archive-text/
-include(tools/bbdetok/archive_text.cmake)
+include(tools/bbsrc/detok-archive-text.cmake)
 
 # cmake --install: a blitz2: directory (default build/<preset>/install/blitz2);
 # ab3cli next to blitz2-ab3, which loads it as PROGDIR:ab3cli

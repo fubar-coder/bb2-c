@@ -57,7 +57,7 @@
   sources are readable; with the token tables of the binaries added
   (1773 tokens, provisional) 120. Of the other three, two are no token
   problem: they are saved in another file format, **`BB22`** (section
-  4.1; 9 files in all; `tools/bb22` converts them to TED's format); the third uses `GetPubScreen` (`$CF12`) of a
+  4.1; 9 files in all; `bbsrc bb22` converts them to TED's format); the third uses `GetPubScreen` (`$CF12`) of a
   later screenslib that is not on the CD [B, AB3].
 
 ## 2 Libraries
@@ -340,7 +340,7 @@ equal those blitz2 2.10 makes of them as Blitz source (ctest
 `rwe_residents_cd` in Amiberry, compared without the unused node bytes). The staging (target `rwe_refstage`,
 `build/<preset>/libs/userlibs/rwe/refstage/`) is the one above with
 two changes: the `INCDIR` lines are neutralised on the bytes of the
-sources (`tools/bblines`) – a text round trip through TED tokenises
+sources (`bbsrc comment`) – a text round trip through TED tokenises
 other lines with a different token list (`Pack-Library8`: the label
 `allocmem` became a token) – and the RWE numbers come from the
 variant's `libnums.h` (its own `LIB_` defines), tokenised and appended
@@ -350,7 +350,7 @@ so `fns-library11` compiles too. ctest `rwe_refbuild` (Amiberry, about
 20 s) compiles the sources of all `RWE_LIBS` entries to
 `build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all compile (the
 19 of stages A/B, those of 3.2 "Source" and 3.3; a `BB22` source is
-converted by `tools/bb22` first) – and
+converted by `bbsrc bb22` first) – and
 `rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
 byte for byte. An entry whose reference is the reference build of its
 source (stage B/C "Source", 3.3) writes `refbuild` as REFERENCE: its
@@ -554,8 +554,8 @@ contains `BB22`, nor do AmiBlitz3's PED and compiler (sources and history
 searched) [B, AB3]. That it comes from RWE's own later editor (the files
 are RWE's, 1997) is a conclusion [Schluss].
 
-**The reader:** `tools/bb22` (logic `tools/lib/bb22`) converts a `BB22`
-file into TED's format, `bb22 IN OUT`; `bb22 --info IN` shows the
+**The reader:** `bbsrc bb22` (logic `tools/lib/bb22`) converts a `BB22`
+file into TED's format, `bbsrc bb22 IN OUT`; `bbsrc bb22-info IN` shows the
 version, the cursor, the line count and the longest line. It is strict:
 another version, a word at +10 other than 0 or at +14 other than 2, a
 prefix byte other than 0, a line without its 0 byte before the end of the

@@ -65,9 +65,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 
 # -h / --help of the host programs without subcommands (the programs with
 # subcommands have their help_ and readme_ tests in their own directory)
-foreach(t amiga_run blitztokens
-		mktestdata bb22 bblines bbdetok xtra
-		ab3tok hdftool)
+foreach(t amiga_run mktestdata xtra hdftool)
 	host_help_test(${t})
 endforeach()
 

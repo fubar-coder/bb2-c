@@ -1,35 +1,41 @@
 /*
- * ab3tok - a source tokenised as AmiBlitz3 v3.14.0 loads it in CLI mode
- * (shared/tokenizer, AmiBlitz3's rules), in the form of its "-save
- * NAME.bb2": every line of the editor with its 0.
+ * bbsrc ab3, bbsrc ab3-cmp - a source tokenised as AmiBlitz3 v3.14.0
+ * loads it in CLI mode (shared/tokenizer, AmiBlitz3's rules), in the form
+ * of its "-save NAME.bb2": every line of the editor with its 0.
  *
- *   ab3tok TOKENS SOURCE OUT          write the lines to OUT
- *   ab3tok -cmp TOKENS SOURCE THEIRS  compare them with THEIRS (AmiBlitz3's
- *                                     -save output): exit 1 and the first
- *                                     line that differs if not equal
+ *   bbsrc ab3 TOKENS SOURCE OUT         write the lines to OUT
+ *   bbsrc ab3-cmp TOKENS SOURCE THEIRS  compare them with THEIRS
+ *                                       (AmiBlitz3's -save output): exit 1
+ *                                       and the first line that differs if
+ *                                       not equal
  *
  * TOKENS: the token list, one "XXXX name" per line in the compiler's
- * order (tools/blitztokens: the compiler's tokens, then the libraries').
+ * order (bbsrc tokens: the compiler's tokens, then the libraries').
  * SOURCE is loaded as AmiBlitz3's LoadSource does (CLIModeSupport.ab3:437
  * at 58a11658): a .bb or .bb2 as it is, any other name tokenised as text -
  * without its embedded header (not for .ab2) - and cut into lines of at
  * most 250 characters.  Unlike ab3cli, the header is not kept as empty
  * lines: the output is AmiBlitz3's.  Exit 2 on a usage or file error.
  */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "bbsrc.h"
 #include "tokenizer.h"
 
-static void usage(FILE *f)
-{
-    fprintf(f, "usage: ab3tok TOKENS SOURCE OUT\n"
-            "       ab3tok -cmp TOKENS SOURCE THEIRS\n"
-            "SOURCE tokenised as AmiBlitz3 v3.14.0 loads it (its -save NAME.bb2 form:\n"
-            "every line with its 0), with the token list TOKENS (\"XXXX name\" per\n"
-            "line, as tools/blitztokens writes it). -cmp: compare with THEIRS, exit 1\n"
-            "and the first line that differs if not equal.\n");
-}
+const char cmd_ab3_usage[] =
+    "usage: bbsrc ab3 TOKENS SOURCE OUT\n"
+    "SOURCE tokenised as AmiBlitz3 v3.14.0 loads it (its -save NAME.bb2 form:\n"
+    "every line with its 0), with the token list TOKENS (\"XXXX name\" per\n"
+    "line, as bbsrc tokens writes it), to OUT.\n";
+
+const char cmd_ab3_cmp_usage[] =
+    "usage: bbsrc ab3-cmp TOKENS SOURCE THEIRS\n"
+    "SOURCE tokenised as bbsrc ab3 does it, compared with THEIRS (AmiBlitz3's\n"
+    "-save output): exit 1 and the first line that differs if not equal.\n";
+
+static const char *me;          /* "bbsrc ab3" or "bbsrc ab3-cmp": the message prefix */
 
 static unsigned char *read_all(const char *path, size_t *len)
 {
@@ -63,7 +69,7 @@ static int load_tokens(struct tokenizer *t, unsigned char *list, size_t len, con
     e = calloc(n + 1, sizeof *e);
     b = calloc(65536, sizeof *b);
     if (!e || !b || tokenizer_init(t, TOKENIZER_RULES_AB3, e, (uint32_t)n + 1, b, 65536)) {
-        fprintf(stderr, "ab3tok: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         return -1;
     }
     while (pos < len) {
@@ -78,13 +84,13 @@ static int load_tokens(struct tokenizer *t, unsigned char *list, size_t len, con
         list[end < len ? end : len] = 0;
         num = strtoul((char *)list + pos, &stop, 16);
         if (stop != (char *)list + pos + 4 || *stop != ' ' || num > 0xFFFF) {
-            fprintf(stderr, "ab3tok: %s:%zu: not \"XXXX name\"\n", path, line);
+            fprintf(stderr, "%s: %s:%zu: not \"XXXX name\"\n", me, path, line);
             return -1;
         }
         r = tokenizer_add(t, (unsigned char *)stop + 1, (size_t)(list + end - (unsigned char *)stop - 1),
                           (uint16_t)num);
         if (r != TOKENIZER_OK && r != TOKENIZER_DUPLICATE) {
-            fprintf(stderr, "ab3tok: %s:%zu: token not added (%d)\n", path, line, r);
+            fprintf(stderr, "%s: %s:%zu: token not added (%d)\n", me, path, line, r);
             return -1;
         }
         pos = end + 1;
@@ -106,13 +112,13 @@ static unsigned char *load_source(const struct tokenizer *t, const char *name,
         tok = malloc(TOKENIZER_BOUND(len - hdr));
         if (!tok || tokenizer_text(t, src + hdr, len - hdr, tok, TOKENIZER_BOUND(len - hdr),
                                    &tlen) != TOKENIZER_OK) {
-            fprintf(stderr, "ab3tok: out of memory\n");
+            fprintf(stderr, "%s: out of memory\n", me);
             return NULL;
         }
     }
     out = malloc(tlen + 1);
     if (!out) {
-        fprintf(stderr, "ab3tok: out of memory\n");
+        fprintf(stderr, "%s: out of memory\n", me);
         return NULL;
     }
     for (pos = 0; pos < tlen; ) {
@@ -157,8 +163,8 @@ static int compare(const char *source, const unsigned char *a, size_t alen, cons
         while (eb < blen && b[eb])
             eb++;
         if (pa >= alen || pb >= blen || ea - pa != eb - pb || memcmp(a + pa, b + pb, ea - pa)) {
-            fprintf(stderr, "ab3tok: %s: line %zu differs from AmiBlitz3's (%s):\n  ours:      ",
-                    source, line, theirs);
+            fprintf(stderr, "%s: %s: line %zu differs from AmiBlitz3's (%s):\n  ours:      ",
+                    me, source, line, theirs);
             if (pa < alen)
                 show(stderr, a + pa, ea - pa);
             else
@@ -178,49 +184,42 @@ static int compare(const char *source, const unsigned char *a, size_t alen, cons
     return 0;
 }
 
-int main(int argc, char **argv)
+/* ab3 (cmp 0) and ab3-cmp (cmp 1) */
+static int ab3(int argc, char **argv, int cmp)
 {
     struct tokenizer t;
     unsigned char *list = NULL, *src = NULL, *out = NULL, *theirs = NULL;
     size_t llen, slen, olen, tlen;
-    int cmp = 0, rc = 2;
+    int rc = 2;
     FILE *f;
 
-    if (argc > 1 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        usage(stdout);
-        return 0;
-    }
-    if (argc > 1 && !strcmp(argv[1], "-cmp")) {
-        cmp = 1;
-        argv++;
-        argc--;
-    }
+    me = argv[0];
     if (argc != 4) {
-        usage(stderr);
+        fputs(cmp ? cmd_ab3_cmp_usage : cmd_ab3_usage, stderr);
         return 2;
     }
     if (!(list = read_all(argv[1], &llen))) {
-        perror(argv[1]);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[1], strerror(errno));
         goto done;
     }
     if (load_tokens(&t, list, llen, argv[1]))
         goto done;
     if (!(src = read_all(argv[2], &slen))) {
-        perror(argv[2]);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[2], strerror(errno));
         goto done;
     }
     if (!(out = load_source(&t, argv[2], src, slen, &olen)))
         goto done;
     if (cmp) {
         if (!(theirs = read_all(argv[3], &tlen))) {
-            perror(argv[3]);
+            fprintf(stderr, "%s: %s: %s\n", me, argv[3], strerror(errno));
             goto done;
         }
         rc = compare(argv[2], out, olen, argv[3], theirs, tlen);
         goto done;
     }
     if (!(f = fopen(argv[3], "wb")) || fwrite(out, 1, olen, f) != olen || fclose(f)) {
-        perror(argv[3]);
+        fprintf(stderr, "%s: %s: %s\n", me, argv[3], strerror(errno));
         goto done;
     }
     rc = 0;
@@ -232,4 +231,14 @@ done:
     free(e);
     free(b);
     return rc;
+}
+
+int cmd_ab3(int argc, char **argv)
+{
+    return ab3(argc, argv, 0);
+}
+
+int cmd_ab3_cmp(int argc, char **argv)
+{
+    return ab3(argc, argv, 1);
 }

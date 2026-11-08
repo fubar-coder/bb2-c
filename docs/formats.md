@@ -380,7 +380,7 @@ differently from TED:
   (§5.2), but the nodes are not word-aligned (no `even` behind the help
   text).
 
-`tools/bbdetok` reads both kinds (`docs/libs/readable-sources.md`).
+`bbsrc detok` reads both kinds (`docs/libs/readable-sources.md`).
 
 ---
 
@@ -440,7 +440,7 @@ Blitz 2.1. For the converter this means: in strings and comments
   `amibl2src/…/RWELibSourc/…/Anim-Library3.bb` therefore does not come from
   Blitz 2.1 or TED, but probably from an editor by Reflective Images.
   The layout (cursor in the header, a prefix before each line) and the
-  converter `tools/bb22`: `docs/rwelibs/README.md` §4.1.
+  converter `bbsrc bb22`: `docs/rwelibs/README.md` §4.1.
 
 ---
 
@@ -755,7 +755,7 @@ Stricter where AmiBlitz3 guesses, so that broken headers are reported:
    (`NPrint` with `$1A`–`$1F`).
 4. `BB22` header: not present on the CD; origin (Reflective Images /
    RI editor?) still open. The format is described in
-   `docs/rwelibs/README.md` §4.1 (reader `tools/bb22`).
+   `docs/rwelibs/README.md` §4.1 (reader `bbsrc bb22`).
 5. Lib tokens: mapping the 100 used lib numbers to command names
    needs `acidlibs`/`deflibs` (BlitzLib format, chapter 09) or AB3's
    `replacedat`. Not part of this analysis.

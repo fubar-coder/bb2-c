@@ -41,7 +41,7 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
   the pre-git changes").
 * **Method:** every library extracted with `blitzlib extract` (all
   numbers probed) from the CD, the 2009 and the HEAD BigLibs; tokens
-  listed with `blitztokens` (CD `BLITZ2` + the single library),
+  listed with `bbsrc tokens` (CD `BLITZ2` + the single library),
   declarations compared with `blitzlib compare`, code compared as a raw
   `m68k-amigaos-objdump` disassembly diff. Where the code differs, the
   AB3 source/commit was read for the reason and checked against the

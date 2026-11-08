@@ -8,7 +8,7 @@
 > `docs/formats.md` §1.3 and §7 (`shared/xtra`), the loader of our
 > blitz2 (`programs/blitz2/src/asmlibs.c`), AmiBlitz3's compiler source
 > (`Sourcecodes/Amiblitz3/Compiler/`), `Docs/Amiblitz3.guide`, and
-> measurements with `blitztokens` and a throw-away scanner over AB3's
+> measurements with `bbsrc tokens` and a throw-away scanner over AB3's
 > sources. Guesses are marked "(guess)". `@xxxxxxxx` =
 > `AmiBlitz/AmiBlitz3@xxxxxxxx`.
 
@@ -45,7 +45,7 @@ sources compile exactly as today.
 
 ## Measured facts
 
-* **Tokens** (`blitztokens`; joined BigLibs, see 2 and the spike result):
+* **Tokens** (`bbsrc tokens`; joined BigLibs, see 2 and the spike result):
   BB2 2.10 has 1611 library tokens; v3.14.0 has 4435 (239 libraries:
   baseLibs 33, csLibs 32, utilLibs 101, OsLibs 73). 225 of BB2's library
   tokens have another number in v3.14.0 or are gone (167 in v3.11.4, 125
@@ -282,7 +282,7 @@ Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
   without end mark (with and without, truncated input).
 * **Token check:** the AB3-mode token list of `blitz2-ab3` with AB3's
   BigLibs equals that of AB3's own `Amiblitz3` with them (both through
-  `blitztokens`; a broken input must fail); AB3's `-dump token` in
+  `bbsrc tokens`; a broken input must fail); AB3's `-dump token` in
   Amiberry as a second source.
 * **Reference compiler:** AB3 v3.14.0's `Amiblitz3` in Amiberry in CLI
   mode (`-s … -e …`, OS 3.x, A1200 configuration) compiles the test set;
@@ -535,7 +535,7 @@ tokeniser stays for TED, a later change).
 
 `ab3_tokenise` (label `emulator`, `tests/ab3/tokenise.cmake`) checks the
 tokens: AmiBlitz3 v3.14.0 loads each source in CLI mode and writes its
-lines (`-save NAME.bb2`), `tools/ab3tok` loads it with `shared/tokenizer`
+lines (`-save NAME.bb2`), `bbsrc ab3-cmp` loads it with `shared/tokenizer`
 and AB3 mode's token list, and the lines must be equal - for AmiBlitz3's
 test programs, the `.ab3` sources of `tests/ab3/cli/` and the edge cases
 of `tests/ab3/tokens/`. `ab3_tokenise_broken`: with another token for
@@ -993,7 +993,7 @@ loads them unchanged. `blitzlib numbers`: no library number twice.
 `blitzlib check` (each library taken out): no errors, 51 warnings in 15
 libraries, all "code refers into the error check area, dangling without
 debugger" (the class the CD's originals had). Token list
-(`blitztokens`): 4645 = 210 compiler + 4435 library tokens; 10 names
+(`bbsrc tokens`): 4645 = 210 compiler + 4435 library tokens; 10 names
 twice (`STOP` as 68000 mnemonic and library `$ED12`; `fadd`, `fsub`,
 `fmul`, `fdiv`, `fneg`, `MakeDir`, `DBactive`, `PeekMax$` in two
 libraries each) – AB3's own state, not a break. Every internal entry

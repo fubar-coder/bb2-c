@@ -73,12 +73,12 @@ for the default libraries.
 
 ### See what changed
 
-The tool `blitztokens` lists the tokens a compiler and its libraries give,
+The tool `bbsrc tokens` lists the tokens a compiler and its libraries give,
 in the order blitz2 builds them. Compare the lists of the default
 libraries and of the variant:
 
 ```
-build/amiga/host/tools/blitztokens/blitztokens build/amiga/blitz2/blitz2 \
+build/amiga/host/tools/bbsrc/bbsrc tokens build/amiga/blitz2/blitz2 \
     build/amiga/variants/myvariant/acidlibs build/amiga/variants/myvariant/deflibs
 ```
 

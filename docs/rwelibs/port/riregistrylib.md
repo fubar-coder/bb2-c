@@ -10,7 +10,7 @@ is 0 and every command returns 0. finit unlocks every structure still
 locked and closes the library.
 
 * **Source:** `rwelibsrc/Registry/Registry3.bb` (file date 1997-07-10),
-  a BB22 source: converted by `tools/bb22` in the build (readable:
+  a BB22 source: converted by `bbsrc bb22` in the build (readable:
   `build/amiga/rwelibsrc/Registry/Registry3.bb`). Registry2 has 27 of
   the commands, Registry 13.
 * **Reference:** the reference build of the source (`REFERENCE

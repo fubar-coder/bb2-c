@@ -10,7 +10,7 @@
 # has the numbers of the variant's libnums.h (and of the own variants',
 # RWE_OWN_VARIANTS) appended
 # (refbuild-libnums.cmake), the residents of residents.cmake, sbra.res,
-# and the sources with their INCDIR lines neutralised (tools/bblines: the
+# and the sources with their INCDIR lines neutralised (bbsrc comment: the
 # line becomes ";" - original bugs #341/#342: blitz2 2.10 puts the INCDIR
 # in front of every include name, also of the absolute one in LIBMACS.BB,
 # and keeps it for the next compile; INCDIR generates no code).
@@ -108,8 +108,8 @@ foreach(l IN LISTS ref_entries)
 	get_filename_component(tokdir ${tok} DIRECTORY)
 	add_custom_command(OUTPUT ${tok}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${tokdir}
-		COMMAND ${BBLINES} --comment ${incdir} ${tedsrc} ${tok}
-		DEPENDS ${tedsrc} ${BBLINES} host_tools
+		COMMAND ${BBSRC} comment ${incdir} ${tedsrc} ${tok}
+		DEPENDS ${tedsrc} ${BBSRC} host_tools
 		COMMENT "Reference build: rwelibsrc/${source} without INCDIR"
 		VERBATIM)
 	# the .xtra next to the source (the name may differ in case:

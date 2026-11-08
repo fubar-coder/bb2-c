@@ -15,7 +15,7 @@ with the sample rate also stored at +16 of the sound object (for
 PlaySoundAHI's frequency).
 
 * **Source:** `rwelibsrc/soundlib/risoundlib2.bb` (= `.bak`), in the
-  `BB22` format (README §4.1; `tools/bb22`). Readable:
+  `BB22` format (README §4.1; `bbsrc bb22`). Readable:
   `build/amiga/rwelibsrc/soundlib/risoundlib2.bb`.
 * **Reference:** no binary exists; the reference build of the source
   (README §3.1, REFERENCE `refbuild`, 2216 bytes). Its `.xtra` loads the

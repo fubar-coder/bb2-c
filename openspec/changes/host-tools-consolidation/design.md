@@ -522,3 +522,12 @@ Findings and adaptations while implementing (2026-11-08).
   (`-DRUNNER=... -DSUB=run` for `tedab`, `-DSUB=pass` for `corpusrun`)
   instead of `${CORPUSRUN} ${PASS}`: one script for both runners, each
   with its subcommand.
+- **`bbsrc comment TOKEN IN OUT`**: `bblines --comment` was the only
+  mode of `bblines`, so the flag is the subcommand and is not kept as an
+  option. The test scripts of the five former tools are in `tools/bbsrc/`
+  under the name of their subcommand (`tokens-check.cmake`,
+  `detok-tooltest.cmake`, `detok-archive-text.cmake`, `ab3-tooltest.cmake`,
+  `bb22-rwelibsrc.cmake`), like `cmdref-check.cmake` of `blitzlib`; the
+  `perror` messages of the former tools get the prefix as well
+  (`bbsrc tokens: FILE: strerror`), the refusals of `bb22` that had no
+  prefix (`FILE: offset N: message`) keep their form.
