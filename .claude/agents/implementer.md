@@ -20,7 +20,10 @@ read them first):
 * Acceptance (CLAUDE.md, rule of 2026-11-01): the results – executables
   the compilers write, TED's output, all library files – stay
   byte-identical to the previous commit unless a change is intended and
-  named; the programs may change with a rework, checked with
+  named. Check that with the `prev` build: configure with
+  `-DBLITZ2_PREV=ON`, then `ctest --preset all` compares the results with
+  it. Name intended changes with `-DPREV_INTENDED` (see `tests/README.md`,
+  "The prev build"). The programs may change with a rework, checked with
   `ctest --preset all` and `ctest --preset bug-orig`. Clean build
   without warnings (also none of blitzlibcheck), `ctest --preset host`
   for every commit.
