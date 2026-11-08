@@ -186,7 +186,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #12 | open | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | unchanged |
 | #13 | open | [compiler/Constants] Quick constant with fractional part 0 or negative fractional part becomes a float constant | unchanged |
 | #14 | closed | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | **fixed in the port** |
-| #15 | open | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | unchanged |
+| #15 | closed | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | **fixed in the port** |
 | #16 | closed | [compiler/IncDir] Path without length check (buffer `incdir` 96 bytes) | **fixed in the port** |
 | #17 | closed | [compiler/IncDir] Rest of the line (also after `:`) is taken into the path | **fixed in the port** |
 | #18 | closed | [compiler] Failure of AllocSignal for the PANIC signal is not detected | unchanged |
@@ -221,7 +221,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #342 | closed | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | **fixed in the port** |
 | #343 | closed | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | **fixed in the port** (RILESDEBUGLIB on the CD unchanged) |
 | #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved (test `bug_orig_compiler_amigalib_param_regs`) | unchanged |
-| #937 | open | [compiler/Arrays] List array indexed by an element of a normal array (`a(b(1))`): the nested calcvar resets `.listoff`, the index is multiplied by the bare element size (`parse.c` calcvar, test `bug_orig_compiler_calcvar_listoff`) | unchanged |
+| #937 | closed | [compiler/Arrays] List array indexed by an element of a normal array (`a(b(1))`): the nested calcvar resets `.listoff`, the index is multiplied by the bare element size (`parse.c` calcvar, test `bug_orig_compiler_calcvar_listoff`) | **fixed in the port** |
 | #939 | open | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | unchanged |
 | #940 | closed | [compiler/Procedures] End Statement / End Function and Statement Return / Function Return are not checked against the kind of procedure: a string Function ended with End Statement pops its return address (`tokens2.c` doend, stateret/funcret, endstate) | **fixed in the port** |
 | #942 | closed | [compiler/Macros] A `:` right after the macro name stays in the macro text: `Macro a:1:End Macro` expands to `:1` (`tokens1.c` domacro) | **fixed in the port** |
