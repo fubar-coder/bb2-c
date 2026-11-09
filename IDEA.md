@@ -1,4 +1,4 @@
-# Ideas: language extensions after the port
+# Ideas after the port: language extensions and tooling
 
 These are ideas from a discussion on 2026-10-31. Nothing here is decided or
 planned; open items are in `TODO.md`. Everything here comes after the
@@ -9,6 +9,8 @@ to extend.
 New language features mean a "BB2 next" variant, not the faithful port.
 New keywords need token numbers, and tokenised sources should stay
 exchangeable with the original.
+
+The last section, "Tooling: blitz2 on the host", is no language change.
 
 ## Order and dependencies
 
@@ -265,3 +267,49 @@ information at run time**:
 
 This needs a real type system with type parameters. BB2 has none today:
 types are suffixes (`.b .w .l .q .f .s`) and NEWTYPEs.
+
+## Tooling: blitz2 on the host
+
+The idea: blitz2 runs as a console program on Linux, macOS or Windows and
+writes Amiga executables, as a cross-compiler. The compiler tests would
+then run without Amiberry, in seconds.
+
+**What blitz2 needs from the Amiga today:**
+
+- **68k code at compile time:** constant expressions are compiled and run
+  (`eval.c` and `libcall.c`, through `callregs`), with the float routines
+  of the libraries (ffplib); float constants use `mathffp` (`ffpcall`).
+  Byte-identical output needs a bit-exact FFP.
+- **32-bit big-endian memory:** pointers are kept in `ULONG` in many
+  places, and the code buffer, the loaded libraries and the residents
+  are read and written in place.
+- **OS calls:** dos (`Open`, `Read`, `Write`, `Seek`, `Lock`, `Examine`,
+  `ExNext`, `CurrentDir`), `AllocMem`/`FreeMem`, `LoadSeg` for residents;
+  `Supervisor`/VBR, `CacheClearU`, `CreateProc`, `Signal`/`Wait`.
+- **TED:** blitz2 loads the editor and is called back by it; Run and the
+  debugger run the program in memory. On the host only "source in,
+  executable out" is left, as `ab3cli` does for blitz2-ab3. blitz2 itself
+  would need a command line entry of the same kind.
+
+**Ways:**
+
+- **A: run the unchanged 68k blitz2 in a user-mode runtime** (a 68k CPU,
+  a flat big-endian memory, a hunk loader, the exec and dos calls mapped
+  to the host, `mathffp`). The output equals the Amiga's by
+  construction. [volamos](https://github.com/sidick/volamos) is such a
+  runtime (Rust, Apache-2.0 OR MIT, before 1.0): dos with `LoadSeg`,
+  exec, a real `mathffp`, volumes and assigns mapped to host
+  directories; intuition is a stub, so only programs without TED. As an
+  optional external program found through `PATH` (like Amiberry; tests
+  return 77 without it) it stays outside the build. Open: whether its JIT
+  handles code generated and run at compile time (`--no-jit` otherwise).
+- **B: build blitz2 natively for the host:** the Amiga-side data in a
+  virtual 32-bit memory with accessors instead of pointers, a bit-exact
+  FFP in C, an embedded 68k CPU for the constant evaluation (or that
+  evaluation rewritten in C), an OS layer next to `glue_direct.c`, and no
+  editor, Run, debugger, supervisor or cache calls. Much more work, and
+  every change must keep the Amiga build byte-identical.
+
+A first step would be a spike outside the repository: `ab3cli` with
+blitz2-ab3 under volamos on some ab3 and corpus programs, comparing the
+executables with the ones from Amiberry.
