@@ -16,7 +16,7 @@ targets. Hence two profiles from `CMakePresets.json`:
 * **`native`** (`BLITZ2_HOST=ON`, `build/native`, Debug): only the host
   side as a project of its own, native compiler – every tool and host
   test is a target of its own, to run and debug in the IDE; CTest lists
-  its 58 tests one by one (`ctest --preset native`).
+  its tests one by one (`ctest --preset native`).
 
 CLion reads the presets as CMake profiles (Settings → Build, Execution,
 Deployment → CMake: enable `amiga` and `native`; the profile CLion adds
