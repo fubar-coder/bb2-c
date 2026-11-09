@@ -12,16 +12,46 @@ the format: `docs/formats.md` §2.
 ## Usage
 
 ```
-usage: blitzres create -o OUT ITEM...
-       blitzres dump RES
-       blitzres source RES OUT
-```
+Usage: blitzres [OPTIONS] SUBCOMMAND
 
-`blitzres SUB -h` prints the description and the options of `SUB`.
+Blitz Basic 2 resident files: written with constants, shown, as Blitz source.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  create                      a Blitz Basic 2 resident with constants, as blitz2's Create
+                              Resident writes it
+  dump                        the types, macros and constants of a resident
+  source                      the constants of a resident as Blitz source, #NAME=VALUE lines
+```
 
 ### create
 
-The constants of `OUT`, in the order of the `ITEM`s:
+```
+Usage: blitzres create [OPTIONS]
+
+a Blitz Basic 2 resident with constants, as blitz2's Create Resident writes it
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o OUT REQUIRED             the resident written
+          --fd FILE           the public functions of an FD file as _NAME=-offset
+          --fd-varargs FILE   the same, and _NAME for a NAMEA without NAME
+          --equ FILE          the NAME EQU/SET EXPR lines of an assembler include
+          --lvo FILE          the _LVONAME EQU -offset lines of an LVO include as NAME
+          --const NAME=VALUE  a constant (also a symbol for --equ)
+          --sym NAME=VALUE    a symbol for the expressions of --equ only
+          --skip NAME         never NAME as constant
+
+The constants of OUT in the order of the options (the items). A name again with
+the same value is left out (blitz2 keeps the first); with another value it is an
+error. OUT is read back and must hold exactly these constants. Exit status 0 OUT
+written, 1 an input or OUT is wrong (OUT is not left), 2 usage error or a
+--const/--sym that is no NAME=VALUE.
+```
+
+The constants of `OUT`, in the order of these options (`-o` may stand anywhere):
 
 * `--fd FILE`: the public functions of an FD file as `_NAME=-offset`;
 * `--fd-varargs FILE`: the same, then `_NAME` for a `NAMEA` without `NAME`;
@@ -39,9 +69,40 @@ these constants; else it is removed.
 
 ### dump
 
+```
+Usage: blitzres dump [OPTIONS] RES
+
+the types, macros and constants of a resident
+
+POSITIONALS:
+  RES TEXT REQUIRED           the resident
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 RES cannot be read or is no resident, 2 usage error.
+```
+
 The types, macros and constants of a resident, as text.
 
 ### source
+
+```
+Usage: blitzres source [OPTIONS] RES OUT
+
+the constants of a resident as Blitz source, #NAME=VALUE lines
+
+POSITIONALS:
+  RES TEXT REQUIRED           a resident with constants only
+  OUT TEXT REQUIRED           the source written
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+blitz2's Create Resident makes the same resident of OUT. Exit status 0, 1 RES
+cannot be read or holds more than constants, or OUT cannot be written, 2 usage
+error.
+```
 
 The constants of `RES` (a resident with constants only) as a Blitz source
 text `OUT`, one `#NAME=VALUE` line each.

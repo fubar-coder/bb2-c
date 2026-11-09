@@ -57,7 +57,7 @@ groups 2-14 and is not repeated there:
 
 ## 6. `blitzres`
 
-- [ ] 6.1 `tools/blitzres/` (`create`, `dump`, `source`); callers `libs/userlibs/rwe/residents*.cmake`, `tools/blitzres/check.cmake`. Verify: C1-C5; the residents the RWE reference build writes are `cmp`-identical
+- [x] 6.1 `tools/blitzres/` (`create`, `dump`, `source`); callers `libs/userlibs/rwe/residents*.cmake`, `tools/blitzres/check.cmake`. Verify: C1-C5; the residents the RWE reference build writes are `cmp`-identical
 
 ## 7. `blitzlib`
 

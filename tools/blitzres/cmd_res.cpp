@@ -25,26 +25,15 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <array>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cli.hpp"
+extern "C" {
 #include "blitzres.h"
+}
 #include "cmds.h"
-
-const char cmd_create_usage[] =
-    "usage: blitzres create -o OUT ITEM...\n"
-    "A Blitz Basic 2 resident with constants, as blitz2's Create Resident\n"
-    "writes it; ITEMs in order:\n"
-    "  --fd FILE          public functions of an FD file as _NAME=-offset\n"
-    "  --fd-varargs FILE  the same, and _NAME for a NAMEA without NAME\n"
-    "  --equ FILE         NAME EQU/SET EXPR lines of an assembler include\n"
-    "  --lvo FILE         _LVONAME EQU -offset lines of an LVO include as NAME\n"
-    "  --const NAME=VALUE a constant (also a symbol for --equ)\n"
-    "  --sym NAME=VALUE   a symbol for the expressions of --equ only\n"
-    "  --skip NAME        never NAME as constant\n";
-const char cmd_dump_usage[] =
-    "usage: blitzres dump RES\n"
-    "The types, macros and constants of a resident.\n";
-const char cmd_source_usage[] =
-    "usage: blitzres source RES OUT\n"
-    "The constants of RES as Blitz source, #NAME=VALUE lines.\n";
 
 static const char *me; /* "blitzres SUB", the prefix of the messages */
 
@@ -57,7 +46,7 @@ static char *read_all(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n) {
+        && (s = (char *)malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n) {
         *len = (size_t)n;
         s[n] = 0;
     } else {
@@ -96,20 +85,13 @@ static int name_value(char *arg, char **name, int32_t *value)
     return 0;
 }
 
-int cmd_dump(int argc, char **argv)
+static int dump(const char *path)
 {
-    const char *path;
     char err[300];
     size_t len;
     char *d;
     int rc;
 
-    me = argv[0];
-    if (argc != 2) {
-        fputs(cmd_dump_usage, stderr);
-        return 2;
-    }
-    path = argv[1];
     if (!(d = read_all(path, &len))) {
         fprintf(stderr, "%s: %s: %s\n", me, path, strerror(errno));
         return 1;
@@ -122,23 +104,15 @@ int cmd_dump(int argc, char **argv)
 }
 
 /* source: the constants of the resident at path as Blitz source to out */
-int cmd_source(int argc, char **argv)
+static int source(const char *path, const char *out)
 {
-    const char *path, *out;
-    struct blitzres_list l = { 0 };
+    struct blitzres_list l = {};
     char err[300];
     size_t len;
     char *d;
     FILE *f = NULL;
     int rc = 1;
 
-    me = argv[0];
-    if (argc != 3) {
-        fputs(cmd_source_usage, stderr);
-        return 2;
-    }
-    path = argv[1];
-    out = argv[2];
     if (!(d = read_all(path, &len))) {
         fprintf(stderr, "%s: %s: %s\n", me, path, strerror(errno));
         return 1;
@@ -163,34 +137,24 @@ done:
     return rc;
 }
 
-int cmd_create(int argc, char **argv)
+/* create: the items in the order given (cli::occurrences of SUB) */
+static int create(CLI::App &sub, const char *out)
 {
-    struct blitzres_list l = { 0 }, syms = { 0 }, back = { 0 };
-    const char *out = NULL;
+    struct blitzres_list l = {}, syms = {}, back = {};
     char err[300];
     uint8_t *res = NULL;
     size_t reslen, i;
-    int a, rc = 1;
+    int rc = 1;
     FILE *f;
 
-    me = argv[0];
-    if (argc < 3 || strcmp(argv[1], "-o")) {
-        fputs(cmd_create_usage, stderr);
-        return 2;
-    }
-    out = argv[2];
-    for (a = 3; a < argc; a++) {
-        const char *opt = argv[a];
-        char *arg = a + 1 < argc ? argv[a + 1] : NULL;
+    for (const cli::occurrence &oc : cli::occurrences(sub)) {
+        const std::string name = oc.option->get_name();
+        const char *opt = name.c_str();
+        char *arg = const_cast<char *>(oc.values[0].c_str());
 
-        if (!arg) {
-            fprintf(stderr, "%s: %s without its argument\n", me, opt);
-            fputs(cmd_create_usage, stderr);
-            rc = 2;
-            goto done;
-        }
-        a++;
-        if (!strcmp(opt, "--fd") || !strcmp(opt, "--fd-varargs") || !strcmp(opt, "--equ")
+        if (!strcmp(opt, "-o")) {
+            continue;
+        } else if (!strcmp(opt, "--fd") || !strcmp(opt, "--fd-varargs") || !strcmp(opt, "--equ")
             || !strcmp(opt, "--lvo")) {
             size_t len;
             char *text = read_all(arg, &len);
@@ -209,16 +173,16 @@ int cmd_create(int argc, char **argv)
                 goto done;
             }
         } else if (!strcmp(opt, "--const") || !strcmp(opt, "--sym")) {
-            char *name;
+            char *cname;
             int32_t v;
 
-            if (name_value(arg, &name, &v)) {
+            if (name_value(arg, &cname, &v)) {
                 fprintf(stderr, "%s: %s %s: expected NAME=VALUE\n", me, opt, arg);
                 rc = 2;
                 goto done;
             }
-            if (blitzres_add(&syms, name, v, err, sizeof err) < 0
-                || (!strcmp(opt, "--const") && blitzres_add(&l, name, v, err, sizeof err) < 0)) {
+            if (blitzres_add(&syms, cname, v, err, sizeof err) < 0
+                || (!strcmp(opt, "--const") && blitzres_add(&l, cname, v, err, sizeof err) < 0)) {
                 fprintf(stderr, "%s: %s: %s\n", me, opt, err);
                 goto done;
             }
@@ -227,11 +191,6 @@ int cmd_create(int argc, char **argv)
                 fprintf(stderr, "%s: --skip: %s\n", me, err);
                 goto done;
             }
-        } else {
-            fprintf(stderr, "%s: unknown option %s\n", me, opt);
-            fputs(cmd_create_usage, stderr);
-            rc = 2;
-            goto done;
         }
     }
     if (blitzres_write(&l, &res, &reslen, err, sizeof err)) {
@@ -266,4 +225,68 @@ done:
     blitzres_free(&syms);
     blitzres_free(&back);
     return rc;
+}
+
+void cmd_create(CLI::App &app, int &status)
+{
+    struct options {
+        std::string out;
+        std::vector<std::string> items[7];
+    };
+    static const char *const items[7][3] = {
+        { "--fd", "FILE", "the public functions of an FD file as _NAME=-offset" },
+        { "--fd-varargs", "FILE", "the same, and _NAME for a NAMEA without NAME" },
+        { "--equ", "FILE", "the NAME EQU/SET EXPR lines of an assembler include" },
+        { "--lvo", "FILE", "the _LVONAME EQU -offset lines of an LVO include as NAME" },
+        { "--const", "NAME=VALUE", "a constant (also a symbol for --equ)" },
+        { "--sym", "NAME=VALUE", "a symbol for the expressions of --equ only" },
+        { "--skip", "NAME", "never NAME as constant" },
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("create", "a Blitz Basic 2 resident with constants, as blitz2's Create Resident writes it");
+    sub->add_option("-o", o->out, "the resident written")->type_name("OUT")->required();
+    for (int k = 0; k < 7; k++)
+        cli::add_repeated(*sub, items[k][0], o->items[k], 1, items[k][2])->type_name(items[k][1]);
+    sub->footer("The constants of OUT in the order of the options (the items). A name again with "
+                "the same value is left out (blitz2 keeps the first); with another value it is an "
+                "error. OUT is read back and must hold exactly these constants. Exit status 0 OUT "
+                "written, 1 an input or OUT is wrong (OUT is not left), 2 usage error or a "
+                "--const/--sym that is no NAME=VALUE.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        status = create(*sub, o->out.c_str());
+    });
+}
+
+void cmd_dump(CLI::App &app, int &status)
+{
+    auto path = std::make_shared<std::string>();
+    CLI::App *sub = app.add_subcommand("dump", "the types, macros and constants of a resident");
+    sub->add_option("RES", *path, "the resident")->required();
+    sub->footer("Exit status 0, 1 RES cannot be read or is no resident, 2 usage error.");
+    sub->callback([sub, path, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        status = dump(path->c_str());
+    });
+}
+
+void cmd_source(CLI::App &app, int &status)
+{
+    auto paths = std::make_shared<std::array<std::string, 2>>();
+    CLI::App *sub = app.add_subcommand("source", "the constants of a resident as Blitz source, #NAME=VALUE lines");
+    sub->add_option("RES", (*paths)[0], "a resident with constants only")->required();
+    sub->add_option("OUT", (*paths)[1], "the source written")->required();
+    sub->footer("blitz2's Create Resident makes the same resident of OUT. Exit status 0, 1 RES "
+                "cannot be read or holds more than constants, or OUT cannot be written, 2 usage "
+                "error.");
+    sub->callback([sub, paths, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        status = source((*paths)[0].c_str(), (*paths)[1].c_str());
+    });
 }
