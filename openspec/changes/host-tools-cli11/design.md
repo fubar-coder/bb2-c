@@ -412,3 +412,12 @@ Findings and adaptations while implementing (2026-11-09).
     shared helpers of the file stay private to it.
   - The subcommands get the exit codes in their footer; the program help
     has the one-line descriptions only.
+- **`testinfo`** (task 3.1): CLI11 prints an option with N values as
+  `--linkmap PROGRAM FILE x 2`; `cli::Formatter` drops the ` x N`, since
+  the type name lists the N values. `testinfo map` reads its inputs in
+  the order given, an `--inputs` file where it is named
+  (`cli::occurrences`), as before. Checked with a host coverage run
+  (`amiga-cov`, the host tests, `cmake/coverage-map.cmake` and
+  `cmake/coverage-select.cmake` with the old and the new `testinfo`):
+  `coverage/` (45 tracefiles, `all.info`, `commit`, `selected.txt` with
+  849 tests, the inputs) and both logs identical.

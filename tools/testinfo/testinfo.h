@@ -1,16 +1,14 @@
 /*
- * testinfo.h - the subcommands of testinfo (main.c): each one is
- * cmd_NAME.c with its function and its usage text.
+ * testinfo.h - the subcommands of testinfo (main.cpp): each one is
+ * cmd_NAME.cpp and adds itself to the program.
  */
 #ifndef TESTINFO_H
 #define TESTINFO_H
 
-int cmd_stats(int argc, char **argv);
-int cmd_map(int argc, char **argv);
-int cmd_select(int argc, char **argv);
+#include "cli.hpp"
 
-extern const char cmd_stats_usage[];
-extern const char cmd_map_usage[];
-extern const char cmd_select_usage[];
+void cmd_stats(CLI::App &app, int &status);
+void cmd_map(CLI::App &app, int &status);
+void cmd_select(CLI::App &app, int &status);
 
 #endif

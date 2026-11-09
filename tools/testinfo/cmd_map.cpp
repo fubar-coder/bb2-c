@@ -15,31 +15,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cli.hpp"
+extern "C" {
 #include "covmap.h"
+}
 #include "testinfo.h"
 
-const char cmd_map_usage[] =
-    "usage: testinfo map --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR\n"
-    "Write the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all\n"
-    "of them as DIR/lcov/all.info, and SHA as DIR/commit.\n"
-    "INPUT:\n"
-    "  --deps FILE              ninja -t deps of a build (the source of each object)\n"
-    "  --linkmap PROGRAM FILE   the link map of an Amiga program\n"
-    "  --objsyms PROGRAM FILE   nm -A of its objects (static functions too)\n"
-    "  --lines PROGRAM FILE     objdump --dwarf=decodedline of its objects (line ranges)\n"
-    "  --gcov TEST FILE         gcov --json-format --stdout of a host test\n"
-    "  --cov TEST PROGRAM FILE  the coverage file a test left for PROGRAM\n"
-    "  --inputs FILE            inputs, one per line: the option without \"--\" and its\n"
-    "                           arguments, separated by tabs\n"
-    "--root: the repository (default: the current directory); files outside it\n"
-    "and below a --drop prefix are left out.\n";
-
 static const char *me; /* "testinfo map", the prefix of the messages */
-
-static void usage(FILE *f)
-{
-    fputs(cmd_map_usage, f);
-}
 
 enum kind { K_DEPS, K_LINKMAP, K_OBJSYMS, K_LINES, K_GCOV, K_COV, K_COUNT };
 
@@ -60,7 +45,7 @@ static size_t ninputs;
 
 static int add_input(enum kind k, char **args)
 {
-    struct input *v = realloc(inputs, (ninputs + 1) * sizeof *v);
+    struct input *v = (struct input *)realloc(inputs, (ninputs + 1) * sizeof *v);
     int i;
 
     if (!v)
@@ -93,7 +78,7 @@ static char *read_file(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n) {
+        && (s = (char *)malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n) {
         s[n] = 0;
         *len = (size_t)n;
     } else {
@@ -167,7 +152,7 @@ static int write_one(struct covmap *m, const char *dir, const char *name, long i
                      const char *commit)
 {
     size_t n = strlen(dir) + strlen(name) + 16;
-    char *path = malloc(n);
+    char *path = (char *)malloc(n);
     FILE *out = NULL;
     int r = 2;
 
@@ -208,49 +193,23 @@ static int write_output(struct covmap *m, const char *commit, const char *dir)
     return r;
 }
 
-int cmd_map(int argc, char **argv)
+/* the run with the inputs of the command line (inputs); 0, 1 or 2 */
+static int run(const char *commit, const char *root_dir, const char *output,
+               const std::vector<std::string> &drops)
 {
-    const char *commit = NULL, *output = NULL;
-    char *root = NULL, err[512];
+    char *root, err[512];
     struct covmap m;
     size_t i;
     int a, k, r = 0;
 
-    me = argv[0];
-    for (a = 1; a < argc; a++) {
-        if (!strcmp(argv[a], "--commit") && a + 1 < argc)
-            commit = argv[++a];
-        else if (!strcmp(argv[a], "--root") && a + 1 < argc)
-            root = argv[++a];
-        else if (!strcmp(argv[a], "-o") && a + 1 < argc)
-            output = argv[++a];
-        else if (!strcmp(argv[a], "--drop") && a + 1 < argc)
-            a++;                /* below, once the root is known */
-        else if (!strcmp(argv[a], "--inputs") && a + 1 < argc) {
-            if ((r = read_inputs(argv[++a])))
-                return r;
-        } else if (!strncmp(argv[a], "--", 2) && (k = find_kind(argv[a] + 2)) >= 0
-                   && a + kinds[k].nargs < argc) {
-            if (!add_input((enum kind)k, argv + a + 1))
-                return 2;
-            a += kinds[k].nargs;
-        } else {
-            usage(stderr);
-            return 2;
-        }
-    }
-    if (!commit || !output) {
-        usage(stderr);
-        return 2;
-    }
-    if (!(root = realpath(root ? root : ".", NULL))) {
+    if (!(root = realpath(root_dir ? root_dir : ".", NULL))) {
         fprintf(stderr, "%s: --root: %s\n", me, strerror(errno));
         return 2;
     }
     covmap_init(&m, root);
     free(root);
-    for (a = 1; a < argc; a++)
-        if (!strcmp(argv[a], "--drop") && a + 1 < argc && covmap_drop(&m, argv[++a]))
+    for (const std::string &d : drops)
+        if (covmap_drop(&m, d.c_str()))
             return 2;
     /* the build's objects and the symbols before the coverage */
     for (k = 0; k < K_COUNT && !r; k++)
@@ -293,4 +252,66 @@ int cmd_map(int argc, char **argv)
             free(inputs[i].arg[a]);
     free(inputs);
     return r;
+}
+
+void cmd_map(CLI::App &app, int &status)
+{
+    struct options {
+        std::string commit, root, output;
+        std::vector<std::string> drop, inputs, values[K_COUNT];
+    };
+    static const char *const help[K_COUNT] = {
+        "ninja -t deps of a build (the source of each object)",
+        "the link map of an Amiga program",
+        "nm -A of its objects (static functions too)",
+        "objdump --dwarf=decodedline of its objects (line ranges)",
+        "gcov --json-format --stdout of a host test",
+        "the coverage file a test left for PROGRAM",
+    };
+    static const char *const types[K_COUNT] = {
+        "FILE", "PROGRAM FILE", "PROGRAM FILE", "PROGRAM FILE", "TEST FILE", "TEST PROGRAM FILE",
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("map", "the coverage of each test as lcov tracefiles");
+    sub->add_option("--commit", o->commit, "the commit of the coverage run, written to DIR/commit")
+        ->type_name("SHA")
+        ->required();
+    sub->add_option("--root", o->root, "the repository (default: the current directory)")->type_name("DIR");
+    cli::add_repeated(*sub, "--drop", o->drop, 1, "leave out the files below PREFIX")->type_name("PREFIX");
+    for (int k = 0; k < K_COUNT; k++)
+        cli::add_repeated(*sub, std::string("--") + kinds[k].name, o->values[k], kinds[k].nargs, help[k])
+            ->type_name(types[k]);
+    cli::add_repeated(*sub, "--inputs", o->inputs, 1,
+                      "inputs, one per line: the option without \"--\" and its arguments, "
+                      "separated by tabs")
+        ->type_name("FILE");
+    sub->add_option("-o", o->output, "the output directory")->type_name("DIR")->required();
+    sub->footer("Writes the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all of "
+                "them as DIR/lcov/all.info, and SHA as DIR/commit; files outside the root and below "
+                "a --drop prefix are left out. Exit status 0 if they are written, 1 if an input is "
+                "broken (the message on stderr), 2 usage error or a file that cannot be read or "
+                "written.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        /* the inputs in the order given, those of --inputs files where they are named */
+        for (const cli::occurrence &oc : cli::occurrences(*sub)) {
+            const std::string opt = oc.option->get_name();
+            std::vector<char *> args;
+
+            for (const std::string &v : oc.values)
+                args.push_back(const_cast<char *>(v.c_str()));
+            if (opt == "--inputs") {
+                if ((status = read_inputs(args[0])))
+                    return;
+            } else if (opt.size() > 2 && find_kind(opt.c_str() + 2) >= 0) {
+                if (!add_input((enum kind)find_kind(opt.c_str() + 2), args.data())) {
+                    status = 2;
+                    return;
+                }
+            }
+        }
+        status = run(o->commit.c_str(), o->root.empty() ? NULL : o->root.c_str(), o->output.c_str(), o->drop);
+    });
 }

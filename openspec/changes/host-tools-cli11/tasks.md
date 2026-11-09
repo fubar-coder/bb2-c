@@ -45,7 +45,7 @@ groups 2-14 and is not repeated there:
 
 ## 3. `testinfo`
 
-- [ ] 3.1 `tools/testinfo/` (`stats`, `map`, `select`); callers `cmake/coverage-map.cmake`, `cmake/coverage-select.cmake`. Verify: C1-C5; `lcov/*.info` and `selected` of a host coverage run are `cmp`-identical to before; `test_covmap`, `test_covsel`, `test_teststats` unchanged
+- [x] 3.1 `tools/testinfo/` (`stats`, `map`, `select`); callers `cmake/coverage-map.cmake`, `cmake/coverage-select.cmake`. Verify: C1-C5; `lcov/*.info` and `selected` of a host coverage run are `cmp`-identical to before; `test_covmap`, `test_covsel`, `test_teststats` unchanged
 
 ## 4. `refcheck`
 

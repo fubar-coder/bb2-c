@@ -44,6 +44,19 @@ public:
         footer_paragraph_width(80);
     }
 
+    /* without CLI11's " x N" after the type of an option with N values:
+     * its type names all N ("--linkmap PROGRAM FILE") */
+    std::string make_option_opts(const CLI::Option *opt) const override
+    {
+        std::string s = CLI::Formatter::make_option_opts(opt);
+        std::size_t at = s.find(" x ");
+        if (at != std::string::npos && opt->get_expected_min() > 1) {
+            std::size_t end = s.find_first_not_of("0123456789", at + 3);
+            s.erase(at, (end == std::string::npos ? s.size() : end) - at);
+        }
+        return s;
+    }
+
     std::string make_help(const CLI::App *app, std::string name, CLI::AppFormatMode mode) const override
     {
         if (mode == CLI::AppFormatMode::Sub)

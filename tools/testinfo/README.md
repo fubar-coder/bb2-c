@@ -13,16 +13,44 @@ used: `tests/README.md`, "Coverage"; the test statistics: `tests/README.md`,
 ## Usage
 
 ```
-usage: testinfo stats [--tsv] [--factor X] [--floor SEC] JUNIT.xml...
-       testinfo map --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR
-       testinfo select --coverage DIR --rules RULES --tests JSON [--host-tests JSON]
-                       [--diff DIFF] [--deps DEPS]... [--untracked LIST] [--stale]
-                       [--root DIR] -o SELECTED
+Usage: testinfo [OPTIONS] SUBCOMMAND
+
+Records of test runs: statistics, the coverage of each test, the tests a change
+can affect.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  stats                       statistics of ctest runs and their emulator sessions
+  map                         the coverage of each test as lcov tracefiles
+  select                      the tests a change can affect, from the coverage of a coverage
+                              run
 ```
 
-`testinfo SUB -h` prints the description and the options of `SUB`.
-
 ### stats
+
+```
+Usage: testinfo stats [OPTIONS] JUNIT.xml...
+
+statistics of ctest runs and their emulator sessions
+
+POSITIONALS:
+  JUNIT.xml TEXT ... REQUIRED ctest's JUnit files, one per run
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --tsv               tab-separated values instead of text tables
+          --factor X:POSITIVE the factor of the time limits (default 3)
+          --floor SEC:NONNEGATIVE
+                              the smallest suggested limit (default 30)
+
+Statistics of ctest runs (one JUnit file per run) and the @stat lines of the
+emulator sessions in them: durations, sessions, flaky results, suggested time
+limits (max timed x factor, at least the floor) and COST. Exit status 0, 1
+problems in a file (reported on stderr), 2 usage error or a file that cannot be
+read.
+```
 
 Every JUnit file is one run (`ctest --preset P` writes
 `build/amiga/junit-P.xml`; keep runs apart with `--output-junit NAME`).
@@ -36,6 +64,38 @@ value.
 * `--floor SEC`: the smallest suggested limit (default 30).
 
 ### map
+
+```
+Usage: testinfo map [OPTIONS]
+
+the coverage of each test as lcov tracefiles
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --commit SHA REQUIRED
+                              the commit of the coverage run, written to DIR/commit
+          --root DIR          the repository (default: the current directory)
+          --drop PREFIX       leave out the files below PREFIX
+          --deps FILE         ninja -t deps of a build (the source of each object)
+          --linkmap PROGRAM FILE
+                              the link map of an Amiga program
+          --objsyms PROGRAM FILE
+                              nm -A of its objects (static functions too)
+          --lines PROGRAM FILE
+                              objdump --dwarf=decodedline of its objects (line ranges)
+          --gcov TEST FILE    gcov --json-format --stdout of a host test
+          --cov TEST PROGRAM FILE
+                              the coverage file a test left for PROGRAM
+          --inputs FILE       inputs, one per line: the option without "--" and its arguments,
+                              separated by tabs
+  -o DIR REQUIRED             the output directory
+
+Writes the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all of
+them as DIR/lcov/all.info, and SHA as DIR/commit; files outside the root and
+below a --drop prefix are left out. Exit status 0 if they are written, 1 if an
+input is broken (the message on stderr), 2 usage error or a file that cannot be
+read or written.
+```
 
 Writes `DIR/lcov/<test>.info` per test, `DIR/lcov/all.info` with all tests
 and `DIR/commit` with `SHA`. The inputs (each may be given several times):
@@ -54,6 +114,34 @@ and `DIR/commit` with `SHA`. The inputs (each may be given several times):
 outside it and below a `--drop PREFIX` are left out.
 
 ### select
+
+```
+Usage: testinfo select [OPTIONS]
+
+the tests a change can affect, from the coverage of a coverage run
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --coverage DIR REQUIRED
+                              testinfo map's output: DIR/commit, DIR/lcov/<test>.info
+          --rules RULES REQUIRED
+                              what a change of a file selects (tools/testinfo/rules.txt)
+          --tests JSON REQUIRED
+                              ctest --show-only=json-v1 of the build
+          --host-tests JSON   the same of its host project (tests host/NAME, run by host or
+                              host_emulator)
+          --diff DIFF         git diff -U0 against the map's commit
+          --deps DEPS         ninja -t deps of a build
+          --untracked LIST    files git does not track, one per line (new files)
+          --stale             the map's commit is not an ancestor of the base: all tests
+          --root DIR          the repository (default: the current directory)
+  -o SELECTED REQUIRED        the file of the selected tests
+
+Writes the selected tests to SELECTED, one per line (for ctest
+--tests-from-file), and why each one is selected to stdout. Exit status 0, 1 if
+an input is broken (the message on stderr), 2 usage error or a file that cannot
+be read.
+```
 
 Selects the tests a change can affect: the tests that executed a changed
 function by the map of `map` (`--coverage DIR`), and what
