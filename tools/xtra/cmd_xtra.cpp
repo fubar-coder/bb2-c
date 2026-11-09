@@ -1,7 +1,7 @@
 /*
- * xtra - the companion settings of a Blitz source (shared/xtra, xtra.h):
- * the Blitz 2 .xtra, the editor part of a BB22 source, AmiBlitz3's
- * embedded header (docs/formats.md 1 and 7).
+ * xtra dump, check, convert - the companion settings of a Blitz source
+ * (shared/xtra, xtra.h): the Blitz 2 .xtra, the editor part of a BB22
+ * source, AmiBlitz3's embedded header (docs/formats.md 1 and 7).
  *
  *   xtra dump FILE.xtra [--bb22 SRC]   all fields; with the cursor of SRC
  *   xtra dump --ab3 SRC.ab3            the header of an AmiBlitz3 source
@@ -28,7 +28,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cli.hpp"
+extern "C" {
 #include "xtra.h"
+}
+#include "cmds.h"
 
 /* a source and/or its .xtra in memory, loaded */
 struct loaded {
@@ -49,7 +56,7 @@ static uint8_t *read_file(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (d = malloc((size_t)n + 1)) && fread(d, 1, (size_t)n, f) == (size_t)n)
+        && (d = (uint8_t *)malloc((size_t)n + 1)) && fread(d, 1, (size_t)n, f) == (size_t)n)
         *len = (size_t)n;
     else {
         free(d);
@@ -317,34 +324,6 @@ static int check(const char *path, int mode, int exact)
     return ok;
 }
 
-/* ------------------------------------------------------------ main */
-
-static const char usage[] =
-    "usage: xtra dump FILE.xtra [--bb22 SRC]\n"
-    "       xtra dump --ab3 SRC.ab3\n"
-    "       xtra dump --source SRC\n"
-    "       xtra check [--bb22|--ab3] [--exact] FILE...\n"
-    "       xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC | --ab3 SRC]\n"
-    "       xtra convert --to-xtra IN.ab3 OUT.xtra\n"
-    "The companion settings of a Blitz source: the Blitz 2 .xtra (vers 0\n"
-    "and 1), the cursor in the header of a BB22 source, AmiBlitz3's\n"
-    "embedded header (docs/formats.md 1 and 7).\n"
-    "dump      all fields (with --bb22: the cursor of the BB22 source SRC;\n"
-    "          --source: SRC's type detected, with SRC.xtra if it has one)\n"
-    "check     every FILE read and written again: a Blitz 2 .xtra gives the\n"
-    "          same bytes; --bb22: BB22 headers; --ab3: the header gives the\n"
-    "          same bytes, and as a new header the same fields (--exact:\n"
-    "          the same bytes)\n"
-    "convert   a Blitz 2 .xtra into header lines (--ab3 SRC: SRC with its\n"
-    "          header updated), a header into a .xtra; maxima the other\n"
-    "          format cannot name are left out (stderr)\n";
-
-static int bad_args(void)
-{
-    fputs(usage, stderr);
-    return 2;
-}
-
 /* the source path with its companion: 1 if ok */
 static int load_source(const char *path)
 {
@@ -375,127 +354,199 @@ static int load_source(const char *path)
     return load(&a, type, path, name);
 }
 
-int main(int argc, char **argv)
+/* a usage error of SUB: the message and the hint, status 2 */
+static int usage_error(const CLI::App &sub, const char *msg)
+{
+    fprintf(stderr, "%s: %s\nRun with --help for more information.\n", cli::name(sub).c_str(), msg);
+    return 2;
+}
+
+/* ------------------------------------------------------------ dump */
+
+struct dump_options {
+    std::string file, bb22, ab3, source;
+};
+
+static int dump_cmd(const CLI::App &sub, const dump_options &o)
+{
+    if (sub.count("--ab3")) {
+        if (!load(&a, XTRA_T_AB3, o.ab3.c_str(), NULL))
+            return 1;
+    } else if (sub.count("--source")) {
+        if (!load_source(o.source.c_str()))
+            return 1;
+    } else if (sub.count("FILE.xtra")) {
+        int bb22 = sub.count("--bb22") > 0;
+
+        if (!load(&a, bb22 ? XTRA_T_BB22 : XTRA_T_TED, bb22 ? o.bb22.c_str() : NULL, o.file.c_str()))
+            return 1;
+    } else
+        return usage_error(sub, "FILE.xtra, --ab3 or --source expected");
+    dump(&a);
+    unload(&a);
+    return 0;
+}
+
+void cmd_dump(CLI::App &app, int &status)
+{
+    auto o = std::make_shared<dump_options>();
+    CLI::App *sub = app.add_subcommand("dump", "all fields of a Blitz 2 .xtra, a BB22 source's cursor or an AmiBlitz3 header");
+    CLI::Option *file = sub->add_option("FILE.xtra", o->file, "a Blitz 2 .xtra");
+    CLI::Option *bb22 = sub->add_option("--bb22", o->bb22, "with FILE.xtra: the cursor of the BB22 source SRC")
+                            ->type_name("SRC");
+    CLI::Option *ab3 = sub->add_option("--ab3", o->ab3, "instead of FILE.xtra: the header of an AmiBlitz3 source")
+                           ->type_name("SRC");
+    CLI::Option *source = sub->add_option("--source", o->source,
+                                          "instead of FILE.xtra: the type of SRC detected, with its companion "
+                                          "SRC.xtra if it has one")
+                              ->type_name("SRC");
+    bb22->needs(file);
+    ab3->excludes(file)->excludes(bb22)->excludes(source);
+    source->excludes(file)->excludes(bb22);
+    sub->footer("Exit status 0, 1 a file cannot be read or is refused (with the offset or line), 2 "
+                "usage error.");
+    sub->callback([sub, o, &status] { status = dump_cmd(*sub, *o); });
+}
+
+/* ------------------------------------------------------------ check */
+
+struct check_options {
+    bool bb22 = false, ab3 = false, exact = false;
+    std::vector<std::string> files;
+};
+
+void cmd_check(CLI::App &app, int &status)
+{
+    auto o = std::make_shared<check_options>();
+    CLI::App *sub = app.add_subcommand("check", "every FILE read and written again");
+    CLI::Option *bb22 = sub->add_flag("--bb22", o->bb22, "the FILEs are BB22 sources: their headers");
+    sub->add_flag("--ab3", o->ab3,
+                  "the FILEs are AmiBlitz3 sources: the header written again gives the same bytes, "
+                  "and as a new header the same fields")
+        ->excludes(bb22);
+    sub->add_flag("--exact", o->exact, "with --ab3: the new header gives the same bytes too");
+    sub->add_option("FILE", o->files, "Blitz 2 .xtra files (default), or the sources")->required();
+    sub->footer("A Blitz 2 .xtra must give the same bytes. Prints \"N files ok\". Exit status 0, 1 "
+                "a file cannot be read, is refused or differs, 2 usage error.");
+    sub->callback([o, &status] {
+        int mode = o->bb22 ? XTRA_T_BB22 : o->ab3 ? XTRA_T_AB3 : XTRA_T_TED, rc = 0;
+        size_t files = o->files.size();
+
+        for (const std::string &path : o->files)
+            if (!check(path.c_str(), mode, o->exact))
+                rc = 1;
+        if (!rc)
+            printf("%zu file%s ok\n", files, files == 1 ? "" : "s");
+        status = rc;
+    });
+}
+
+/* ------------------------------------------------------------ convert */
+
+struct convert_options {
+    bool to_ab3 = false, to_xtra = false;
+    std::string in, out, bb22, ab3;
+};
+
+/* --to-ab3: the header lines of the .xtra IN (--bb22: with the cursor of
+   SRC; --ab3: the source SRC with its header updated) to OUT */
+static int to_ab3(const CLI::App &sub, const convert_options &o)
+{
+    static char hdr[65536];
+    const uint8_t *rest = NULL;
+    size_t restlen = 0, olen;
+    struct loaded *w = &a;
+    struct xtra_base b;
+    unsigned skipped;
+
+    if (!load(&a, XTRA_T_TED, NULL, o.in.c_str()))
+        return 1;
+    b = a.b;
+    if (sub.count("--bb22")) {
+        if (!load(&c, XTRA_T_BB22, o.bb22.c_str(), NULL))
+            return 1;
+        a.x.editor = c.x.editor;
+    } else if (sub.count("--ab3")) {
+        /* the source's header updated with the .xtra's values */
+        if (!load(&c, XTRA_T_AB3, o.ab3.c_str(), NULL))
+            return 1;
+        xtra_take_blitz2(&c.x, &a.x);
+        b.header = c.src;
+        w = &c;
+        rest = c.src + c.x.hdr;
+        restlen = c.slen - c.x.hdr;
+        if (a.x.max.n)
+            fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n",
+                    (unsigned)a.x.max.n);
+    }
+    if (xtra_write_ab3(&w->x, &b, hdr, sizeof hdr, &olen, &skipped)) {
+        fprintf(stderr, "xtra: header too long\n");
+        return 1;
+    }
+    if (skipped && w == &a)
+        fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n", skipped);
+    if (!write_file(o.out.c_str(), hdr, olen, rest, restlen)) {
+        fprintf(stderr, "xtra: cannot write %s\n", o.out.c_str());
+        return 1;
+    }
+    return 0;
+}
+
+/* --to-xtra: the header of the AmiBlitz3 source IN as a Blitz 2 .xtra OUT */
+static int to_xtra(const convert_options &o)
 {
     static uint8_t out[65536];
-    static char hdr[65536];
     struct xtra_error err;
     struct xtra_iter it;
     struct xtra_max m;
     size_t olen;
     unsigned skipped;
-    int i, rc;
 
-    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-        fputs(usage, stdout);
-        return 0;
+    if (!load(&a, XTRA_T_AB3, o.in.c_str(), NULL))
+        return 1;
+    if (!a.x.ab3.header)
+        fprintf(stderr, "xtra: %s has no header: AmiBlitz3's defaults\n", o.in.c_str());
+    if (xtra_write_blitz2(&a.x, &a.b, out, sizeof out, &olen, &skipped, &err)) {
+        report(o.out.c_str(), &err);
+        return 1;
     }
-    if (argc < 3)
-        return bad_args();
-
-    if (!strcmp(argv[1], "dump")) {
-        if (argc == 4 && !strcmp(argv[2], "--ab3")) {
-            if (!load(&a, XTRA_T_AB3, argv[3], NULL))
-                return 1;
-        } else if (argc == 4 && !strcmp(argv[2], "--source")) {
-            if (!load_source(argv[3]))
-                return 1;
-        } else if (argc == 3 || (argc == 5 && !strcmp(argv[3], "--bb22"))) {
-            if (!load(&a, argc == 5 ? XTRA_T_BB22 : XTRA_T_TED, argc == 5 ? argv[4] : NULL, argv[2]))
-                return 1;
-        } else {
-            return bad_args();
-        }
-        dump(&a);
-        unload(&a);
-        return 0;
+    xtra_max_begin(&it, &a.x, &a.b);
+    while (xtra_next_max(&it, &m))
+        if (!(m.flags & XTRA_MAX_LIB))
+            fprintf(stderr, "xtra: maximum \"%.*s\" = %u left out (the .xtra needs the library number)\n",
+                    (int)m.namelen, (const char *)m.name, m.max);
+    if (!write_file(o.out.c_str(), out, olen, NULL, 0)) {
+        fprintf(stderr, "xtra: cannot write %s\n", o.out.c_str());
+        return 1;
     }
-
-    if (!strcmp(argv[1], "check")) {
-        int mode = XTRA_T_TED, exact = 0, files = 0;
-
-        rc = 0;
-        for (i = 2; i < argc; i++) {
-            if (!strcmp(argv[i], "--bb22") && !files)
-                mode = XTRA_T_BB22;
-            else if (!strcmp(argv[i], "--ab3") && !files)
-                mode = XTRA_T_AB3;
-            else if (!strcmp(argv[i], "--exact") && !files)
-                exact = 1;
-            else {
-                files++;
-                if (!check(argv[i], mode, exact))
-                    rc = 1;
-            }
-        }
-        if (!files)
-            return bad_args();
-        if (!rc)
-            printf("%d file%s ok\n", files, files == 1 ? "" : "s");
-        return rc;
-    }
-
-    if (!strcmp(argv[1], "convert") && argc >= 5) {
-        if (!strcmp(argv[2], "--to-ab3")
-            && (argc == 5 || (argc == 7 && (!strcmp(argv[5], "--bb22") || !strcmp(argv[5], "--ab3"))))) {
-            const uint8_t *rest = NULL;
-            size_t restlen = 0;
-            struct loaded *w = &a;
-            struct xtra_base b;
-
-            if (!load(&a, XTRA_T_TED, NULL, argv[3]))
-                return 1;
-            b = a.b;
-            if (argc == 7 && !strcmp(argv[5], "--bb22")) {
-                if (!load(&c, XTRA_T_BB22, argv[6], NULL))
-                    return 1;
-                a.x.editor = c.x.editor;
-            } else if (argc == 7) {
-                /* the source's header updated with the .xtra's values */
-                if (!load(&c, XTRA_T_AB3, argv[6], NULL))
-                    return 1;
-                xtra_take_blitz2(&c.x, &a.x);
-                b.header = c.src;
-                w = &c;
-                rest = c.src + c.x.hdr;
-                restlen = c.slen - c.x.hdr;
-                if (a.x.max.n)
-                    fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n",
-                            (unsigned)a.x.max.n);
-            }
-            if (xtra_write_ab3(&w->x, &b, hdr, sizeof hdr, &olen, &skipped)) {
-                fprintf(stderr, "xtra: header too long\n");
-                return 1;
-            }
-            if (skipped && w == &a)
-                fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n",
-                        skipped);
-            if (!write_file(argv[4], hdr, olen, rest, restlen)) {
-                fprintf(stderr, "xtra: cannot write %s\n", argv[4]);
-                return 1;
-            }
-            return 0;
-        }
-        if (!strcmp(argv[2], "--to-xtra") && argc == 5) {
-            if (!load(&a, XTRA_T_AB3, argv[3], NULL))
-                return 1;
-            if (!a.x.ab3.header)
-                fprintf(stderr, "xtra: %s has no header: AmiBlitz3's defaults\n", argv[3]);
-            if (xtra_write_blitz2(&a.x, &a.b, out, sizeof out, &olen, &skipped, &err)) {
-                report(argv[4], &err);
-                return 1;
-            }
-            xtra_max_begin(&it, &a.x, &a.b);
-            while (xtra_next_max(&it, &m))
-                if (!(m.flags & XTRA_MAX_LIB))
-                    fprintf(stderr, "xtra: maximum \"%.*s\" = %u left out (the .xtra needs the library number)\n",
-                            (int)m.namelen, (const char *)m.name, m.max);
-            if (!write_file(argv[4], out, olen, NULL, 0)) {
-                fprintf(stderr, "xtra: cannot write %s\n", argv[4]);
-                return 1;
-            }
-            return 0;
-        }
-    }
-    return bad_args();
+    return 0;
 }
+
+void cmd_convert(CLI::App &app, int &status)
+{
+    auto o = std::make_shared<convert_options>();
+    CLI::App *sub = app.add_subcommand("convert", "a Blitz 2 .xtra into AmiBlitz3 header lines, or a header into a .xtra");
+    CLI::Option *to_ab3_opt = sub->add_flag("--to-ab3", o->to_ab3, "IN is a Blitz 2 .xtra, OUT the header lines");
+    CLI::Option *to_xtra_opt = sub->add_flag("--to-xtra", o->to_xtra, "IN is an AmiBlitz3 source, OUT a Blitz 2 .xtra");
+    sub->add_option("IN", o->in, "the .xtra or the AmiBlitz3 source")->required();
+    sub->add_option("OUT", o->out, "the file written")->required();
+    CLI::Option *bb22 = sub->add_option("--bb22", o->bb22, "with --to-ab3: with the cursor of the BB22 source SRC")
+                            ->type_name("SRC");
+    CLI::Option *ab3 = sub->add_option("--ab3", o->ab3,
+                                       "with --to-ab3: OUT is the source SRC with its header updated from IN (a "
+                                       "new header if it has none)")
+                           ->type_name("SRC");
+    to_ab3_opt->excludes(to_xtra_opt);
+    bb22->needs(to_ab3_opt)->excludes(ab3);
+    ab3->needs(to_ab3_opt);
+    sub->footer("Maxima the other format cannot name are left out (message on stderr). Exit status "
+                "0, 1 a file cannot be read or is refused (with the offset or line) or OUT cannot be "
+                "written, 2 usage error.");
+    sub->callback([sub, o, &status] {
+        if (!o->to_ab3 && !o->to_xtra)
+            status = usage_error(*sub, "--to-ab3 or --to-xtra expected");
+        else
+            status = o->to_ab3 ? to_ab3(*sub, *o) : to_xtra(*o);
+    });
+}
+

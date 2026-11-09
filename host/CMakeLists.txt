@@ -85,12 +85,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/corpus/runner corpus-runne
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/runner ted-ab-runner)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 
-# -h / --help of the host programs without subcommands (the programs with
-# subcommands have their help_ and readme_ tests in their own directory)
-foreach(t xtra)
-	host_help_test(${t})
-endforeach()
-
 # the owner of the emulator snapshots (cmake/emulation-queue.cmake): the
 # build directory - in the m68k build its top-level one (the same
 # snapshots as its other emulator tests), else this one

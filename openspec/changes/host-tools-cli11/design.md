@@ -478,3 +478,12 @@ Findings and adaptations while implementing (2026-11-09).
   only first). The caller `cmake/setup-amiga-forever.cmake` passes no
   value starting with `-` (Q5), unchanged. Checking `--write PATH` without
   `TEXT` found the `add_repeated` bug fixed in the commit before `tedab`.
+- **`xtra`** (task 14.1): the three subcommands stay in one file,
+  `cmd_xtra.cpp` (moved from `main.c`). The modes are options with
+  `->excludes()` and `->needs()`; CLI11 prints these in the help
+  ("Excludes: ...", "Needs: ..."), which the README blocks hold. A `dump`
+  without `FILE.xtra`, `--ab3` or `--source` and a `convert` without
+  `--to-ab3` or `--to-xtra` give 2 with a message. `check --exact` is
+  accepted without `--ab3` (ignored), as before. With the last program
+  on CLI11 the list of help tests without subcommands in
+  `host/CMakeLists.txt` is gone.

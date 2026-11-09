@@ -1,6 +1,10 @@
-add_executable(xtra main.c)
-target_link_libraries(xtra PRIVATE lib_xtra)
-host_readme_test(xtra README.md)
+# xtra: the companion settings of a Blitz source (README.md)
+set(XTRA_SUBCOMMANDS dump check convert)
+add_executable(xtra main.cpp cmd_xtra.cpp)
+target_link_libraries(xtra PRIVATE lib_cli lib_xtra)
+set_target_properties(xtra PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+host_help_test(xtra CLI ${XTRA_SUBCOMMANDS})
+host_readme_test(xtra README.md CLI ${XTRA_SUBCOMMANDS})
 
 # the tool on files: an AmiBlitz3 header converted to a .xtra and back,
 # dumped and checked; broken inputs refused with their message

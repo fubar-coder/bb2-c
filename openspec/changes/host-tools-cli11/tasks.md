@@ -89,7 +89,7 @@ groups 2-14 and is not repeated there:
 
 ## 14. `xtra`
 
-- [ ] 14.1 `tools/xtra/` with subcommands `dump`, `check`, `convert` on CLI11 (`--bb22`/`--ab3`/`--source` as options, the exclusive modes with `->excludes()`); `tooltest.cmake` follows the messages; `xtra_tool`, `xtra_originals`, `xtra_ab3_examples` pass. Verify: C1-C5; the `.xtra`/header files the tests write `cmp`-identical
+- [x] 14.1 `tools/xtra/` with subcommands `dump`, `check`, `convert` on CLI11 (`--bb22`/`--ab3`/`--source` as options, the exclusive modes with `->excludes()`); `tooltest.cmake` follows the messages; `xtra_tool`, `xtra_originals`, `xtra_ab3_examples` pass. Verify: C1-C5; the `.xtra`/header files the tests write `cmp`-identical
 
 ## 15. Final sweep
 
