@@ -9,7 +9,7 @@ visible with its issue number instead of hidden by editing the test.
 ## ADDED Requirements
 
 ### Requirement: Corpus expected outputs are committed
-Every corpus program SHALL have its expected output in `tests/corpus/expect/NAME.out` (and, for serial tests, the expected serial bytes), generated once from the original's run and reviewed. The runner SHALL compare the output of every configuration with the file.
+Every corpus program SHALL have its expected output in `tests/corpus/expect/PASS/NAME.out` (and, for serial tests, the expected serial bytes in `NAME.serial`; one directory per pass, because a pass with runtime error checking on gives different outputs), generated once from the original's run and reviewed. The runner SHALL compare the output of every configuration with the file.
 
 #### Scenario: Output differs
 - **WHEN** a corpus program's output differs from its expect file in any configuration
@@ -42,7 +42,7 @@ A `libs_emulator` check SHALL be able to replace "equal to the original" by a st
 - **THEN** the test fails, so the exemption is removed with the fix that undoes it
 
 ### Requirement: Intended-difference lists
-`checkdata`, `rwe_declarations_NAME` and the `asmcmp` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlibcompare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed #NNN PAIR...` naming the combo pairs that must differ.
+`refcheck data`, `rwe_declarations_NAME` and the `refcheck asm` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlib compare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed #NNN PAIR...` naming the combo pairs that must differ.
 
 #### Scenario: Stale entry
 - **WHEN** a list names a difference that no longer occurs

@@ -20,7 +20,7 @@ Every test that needs the CD or the reference build (live reference configuratio
 - **THEN** it validates the committed expected data against the originals
 
 ### Requirement: BB2 definition stays compared
-The declarations of acidlibs and deflibs (`blitzlibcompare` with the intended list), the token list (`tokens_port`) and the AB3 comparisons SHALL keep comparing with their definition: the CD, the original TED's list and AmiBlitz3. A fix SHALL NOT add or rename a command.
+The declarations of acidlibs and deflibs (`blitzlib compare` with the intended list), the token list (`tokens_port`) and the AB3 comparisons SHALL keep comparing with their definition: the CD, the original TED's list and AmiBlitz3. A fix SHALL NOT add or rename a command.
 
 #### Scenario: A fix changes a declaration
 - **WHEN** a fix changes a register byte of a declaration
