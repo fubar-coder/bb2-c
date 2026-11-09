@@ -113,3 +113,37 @@ TEST_CASE("the status of a subcommand")
     CHECK(r.out.empty());
     CHECK(r.err.empty());
 }
+
+TEST_CASE("repeated options and their order")
+{
+    CLI::App app{"a test program", "prog"};
+    int status = 0;
+    std::vector<std::string> pairs, singles, files;
+    std::string text;
+    cli::add_repeated(app, "--pair", pairs, 2, "two values");
+    cli::add_repeated(app, "--one", singles, 1, "one value");
+    app.add_option("--text", text, "a text");
+    app.add_option("FILE", files, "files");
+    std::vector<std::string> args{"prog", "--one", "a", "b", "--pair", "p", "q", "--text=-x",
+                                  "--one", "c", "--pair", "r", "s", "d"};
+    std::vector<char *> argv;
+    for (auto &a : args)
+        argv.push_back(a.data());
+    argv.push_back(nullptr);
+    CHECK(cli::run(app, int(args.size()), argv.data(), status) == 0);
+    CHECK(pairs == std::vector<std::string>{"p", "q", "r", "s"});
+    CHECK(singles == std::vector<std::string>{"a", "c"});
+    CHECK(files == std::vector<std::string>{"b", "d"});
+    CHECK(text == "-x");
+    auto occ = cli::occurrences(app);
+    REQUIRE(occ.size() == 5);
+    CHECK(occ[0].option->get_name() == "--one");
+    CHECK(occ[0].values == std::vector<std::string>{"a"});
+    CHECK(occ[1].option->get_name() == "--pair");
+    CHECK(occ[1].values == std::vector<std::string>{"p", "q"});
+    CHECK(occ[2].option->get_name() == "--text");
+    CHECK(occ[2].values == std::vector<std::string>{"-x"});
+    CHECK(occ[3].values == std::vector<std::string>{"c"});
+    CHECK(occ[4].option->get_name() == "--pair");
+    CHECK(occ[4].values == std::vector<std::string>{"r", "s"});
+}

@@ -23,10 +23,13 @@
 
 #include <CLI/CLI.hpp>
 
+#include <algorithm>
 #include <exception>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace cli {
 
@@ -77,6 +80,51 @@ inline std::string name(const CLI::App &app)
     for (const CLI::App *p = app.get_parent(); p; p = p->get_parent())
         n = p->get_name() + " " + n;
     return n;
+}
+
+/* an option that takes N values each time it is given and may be given
+ * again (--mount VOL=DIR ..., --linkmap PROGRAM FILE ...): all values in
+ * VAR in the order given, N per time; arguments after the N values are
+ * not taken by it */
+inline CLI::Option *add_repeated(CLI::App &app, const std::string &name, std::vector<std::string> &var,
+                                 int n, const std::string &description)
+{
+    return app.add_option(name, var, description)
+        ->expected(n)
+        ->allow_extra_args(false)
+        ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
+}
+
+/* one time an option was given, with its values */
+struct occurrence {
+    const CLI::Option *option;
+    std::vector<std::string> values;
+};
+
+/* the options of APP that take a fixed number of values (add_repeated, a
+ * single value) in the order they were given, each time with its values:
+ * for operations that apply in that order (hdftool edit) */
+inline std::vector<occurrence> occurrences(const CLI::App &app)
+{
+    std::vector<occurrence> out;
+    std::vector<std::pair<const CLI::Option *, std::size_t>> used;
+
+    // parse_order() names the option once per value
+    for (const CLI::Option *opt : app.parse_order()) {
+        if (opt->get_positional())
+            continue;
+        std::size_t i = 0;
+        auto it = std::find_if(used.begin(), used.end(), [opt](const auto &u) { return u.first == opt; });
+        if (it == used.end())
+            it = used.insert(used.end(), { opt, 0 });
+        i = it->second++;
+        std::size_t n = std::size_t(std::max(1, opt->get_expected_min()));
+        if (i % n == 0)
+            out.push_back({ opt, {} });
+        if (i < opt->results().size())
+            out.back().values.push_back(opt->results()[i]);
+    }
+    return out;
 }
 
 /* the formatter for APP and its subcommands */

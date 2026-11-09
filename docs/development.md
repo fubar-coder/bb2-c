@@ -396,8 +396,13 @@ description, `POSITIONALS:`, `OPTIONS:`, `SUBCOMMANDS:` and the footer
 `add_flag("-x", var, ...)`, a value `add_option("--name", var, ...)`
 (`--name VALUE` or `--name=VALUE`; a value that starts with `-` is given
 as `--name=VALUE`), a repeatable one bound to a `std::vector`, arguments
-as `add_option("NAME", var)` without dashes, flags that exclude each other
-with `->excludes()`.
+as `add_option("NAME", var)` without dashes (a name holds no `:` or `=`),
+flags that exclude each other with `->excludes()`. An option bound to a
+`std::vector` takes every following argument that is no option; a
+repeatable option with N values each time is
+`cli::add_repeated(*sub, "--name", var, N, ...)`, and
+`cli::occurrences(*sub)` gives the options in the order they were given,
+each time with its values (operations applied in that order).
 
 **Exit codes and messages.** 0 success; 1 the checked thing failed or an
 input could not be processed; 2 usage error (also an unknown subcommand

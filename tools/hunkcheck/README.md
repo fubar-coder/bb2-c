@@ -9,16 +9,72 @@ tested by `tools/tests/test_hunkcheck.c`.
 ## Usage
 
 ```
-usage: hunkcheck start FILE OFFSET:HEXBYTES...
-       hunkcheck layout LAYOUT FILE
-       hunkcheck stored FILE
+Usage: hunkcheck [OPTIONS] SUBCOMMAND
+
+Checks of the hunks of an AmigaDOS load file.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  start                       the bytes at offsets of the first hunk of a load file
+  layout                      the hunks of a load file: number, types and chip flags
+  stored                      no CODE/DATA hunk of a load file is larger than its stored block
 ```
 
-`hunkcheck SUB -h` prints the description of `SUB`.
+```
+Usage: hunkcheck start [OPTIONS] FILE SPEC...
 
-* `start`: each `OFFSET:HEXBYTES` (an offset into the first hunk,
+the bytes at offsets of the first hunk of a load file
+
+POSITIONALS:
+  FILE TEXT REQUIRED          the load file
+  SPEC TEXT ... REQUIRED      OFFSET:HEXBYTES, an offset into the first hunk (decimal, or
+                              hexadecimal with 0x) and the bytes expected there in hexadecimal,
+                              e.g. 0:6100
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status: 0 every check holds, 1 a check fails or FILE cannot be read (a
+message on stderr), 2 usage error.
+```
+
+```
+Usage: hunkcheck layout [OPTIONS] LAYOUT FILE
+
+the hunks of a load file: number, types and chip flags
+
+POSITIONALS:
+  LAYOUT TEXT REQUIRED        code|data|bss[+chip],... - the hunks in order, e.g.
+                              code,bss,data+chip
+  FILE TEXT REQUIRED          the load file
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status: 0 every check holds, 1 a check fails or FILE cannot be read (a
+message on stderr), 2 usage error.
+```
+
+```
+Usage: hunkcheck stored [OPTIONS] FILE
+
+no CODE/DATA hunk of a load file is larger than its stored block
+
+POSITIONALS:
+  FILE TEXT REQUIRED          the load file
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status: 0 every check holds, 1 a check fails or FILE cannot be read (a
+message on stderr), 2 usage error.
+```
+
+* `start`: each `SPEC`, `OFFSET:HEXBYTES` (an offset into the first hunk,
   decimal or hexadecimal with `0x`, and the bytes expected there in
-  hexadecimal) must hold; the first hunk must be code.
+  hexadecimal), must hold; the first hunk must be code.
   For example `0:6100 4:48e7`: a `bsr.w` at offset 0 and a `movem.l` at
   offset 4.
 * `layout`: the hunks of `FILE` in order, `LAYOUT` a comma-separated list
@@ -38,7 +94,7 @@ check holds; each failed check is one line on stderr.
 
 * 0 every check holds;
 * 1 a check fails, or the file cannot be read or is no load file;
-* 2 usage error.
+* 2 usage error (every command line the parser refuses).
 
 Messages go to stderr: a failed check as `FILE: message` (from the
 library), a file that cannot be read as `hunkcheck SUB: FILE: message`.

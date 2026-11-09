@@ -41,7 +41,7 @@ groups 2-14 and is not repeated there:
 
 ## 2. `hunkcheck` (pilot: three small subcommands)
 
-- [ ] 2.1 `tools/hunkcheck/` on CLI11 (`start`, `layout`, `stored`); callers `programs/ab3cli`, `programs/ted`, `programs/ted/tests/oracle`, `tests/ab3`, `tests/corpus/amiga`, `CMakeLists.txt`. Verify: C1-C5; break a hunk layout on purpose in a scratch copy and see the POST_BUILD check fail with status 1; the pilot's lessons (formatter, helper API) are put into design.md and `docs/development.md` before group 3
+- [x] 2.1 `tools/hunkcheck/` on CLI11 (`start`, `layout`, `stored`); callers `programs/ab3cli`, `programs/ted`, `programs/ted/tests/oracle`, `tests/ab3`, `tests/corpus/amiga`, `CMakeLists.txt`. Verify: C1-C5; break a hunk layout on purpose in a scratch copy and see the POST_BUILD check fail with status 1; the pilot's lessons (formatter, helper API) are put into design.md and `docs/development.md` before group 3
 
 ## 3. `testinfo`
 

@@ -388,3 +388,27 @@ Findings and adaptations while implementing (2026-11-09).
   It becomes `--last` in the `bbsrc` group by the same rule (D5), with its
   callers.
 - **Inventory** (task 1.4): `~/.local/share/bb2-c-work/cli11-callers.md`.
+- **Pilot `hunkcheck`** (task 2.1), lessons for the other groups:
+  - CLI11 refuses `:` and `=` in a name (they separate values), so an
+    argument such as `OFFSET:HEXBYTES` gets a plain name (`SPEC`) and its
+    form goes into the description.
+  - An option bound to a `std::vector` takes all following arguments that
+    are no option (it would swallow positional arguments) and refuses a
+    second `--name` by default. A repeatable option with N values per
+    time is `cli::add_repeated(app, "--name", vec, N, ...)`
+    (`expected(N)`, `allow_extra_args(false)`, `TakeAll`).
+  - `app.parse_order()` names an option once per value, not once per time
+    it was given; `cli::occurrences(app)` groups them into the times with
+    their values, for operations applied in command-line order (`hdftool
+    edit`, `testinfo map --inputs` among the other inputs). Both helpers
+    are tested by `test_cli`.
+  - A value that starts with `-` is taken by a one-value option if it is
+    no option name of the subcommand (`--text -x` gives `-x`);
+    `--name=VALUE` always works (Q5).
+  - **Several subcommands in one file**: where the predecessor change put
+    the bodies of several subcommands in one `cmd_*.c` (one former main,
+    for example `hunkcheck`'s `cmd_check.c`), they stay in one
+    `cmd_*.cpp` (a git move) instead of one file per subcommand (C1); the
+    shared helpers of the file stay private to it.
+  - The subcommands get the exit codes in their footer; the program help
+    has the one-line descriptions only.
