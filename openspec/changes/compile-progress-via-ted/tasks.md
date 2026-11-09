@@ -28,7 +28,7 @@ differences only as named in the task.
 
 ## 4. Final checks
 
-- [ ] 4.1 `ctest --preset bug-orig`: no verdict changed except the new FIXED test (known DIFFERS in TODO.md). Verify: the verdict list compared with the run before the change.
+- [x] 4.1 `ctest --preset bug-orig`: no verdict changed except the new FIXED test (known DIFFERS in TODO.md). Verify: the verdict list compared with the run before the change.
 - [ ] 4.2 Manual run in Amiberry with `tools/amiga_run` (visible): compile a long program with an include from TED-C with blitz2-c and with the original compiler; the bar moves the same way. Verify: screenshots of both, named in the report.
 
 ## Workflow follow-up

@@ -171,3 +171,18 @@ revert of the commits.
   the compiler before the fix (port and clib); its recorded original was
   deterministic (recorded twice). A fixed test has no `.orig`, so it is
   not committed.
+- Task 4.1: `ctest --preset bug-orig` after the fix: the new test is a
+  fixed test (presets `all`, `emulator`); the other verdicts as before:
+  DIFFERS only in the memory-layout tests of TODO.md
+  (`ridoslib-path-buffer-overflow`, `ripacklib-unpackiff-zero-planes`,
+  `rilesdebuglib-addprocessptr-no-limit`,
+  `rimisclib-ezrequest-args-unbounded`) and in
+  `rishapeslib-read-palette-colour-count` clib (DIFFERS in earlier runs
+  before this change as well: its 768 KB overflow lands in free memory),
+  BROKEN `rimisclib-initargparse-unbounded` (TODO.md).
+- Task 4.2 (a visible Amiberry run with screenshots) was not done by the
+  implementing agent: driving TED's menus in a visible window and taking
+  screenshots needs a person at the screen. Instead the TED A/B script
+  `30-stripe` dumps the screen while the whole bar is drawn: C5 (the
+  original compiler) and Cc (blitz2-c through TED-C) are the same byte
+  for byte; it does not show the bar moving.
