@@ -184,7 +184,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #10 | closed | [compiler/Constants] Number with a point but no fractional digits (`1.`) is a syntax error | **fixed in the port** |
 | #11 | closed | [compiler/Constants] Exponent after fractional part 0 (`1.0e5`) is not evaluated | **fixed in the port** |
 | #12 | open | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | unchanged |
-| #13 | open | [compiler/Constants] Quick constant with fractional part 0 or negative fractional part becomes a float constant | unchanged |
+| #13 | closed | [compiler/Constants] Quick constant with fractional part 0 or negative fractional part becomes a float constant | **fixed in the port** |
 | #14 | closed | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | **fixed in the port** |
 | #15 | closed | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | **fixed in the port** |
 | #16 | closed | [compiler/IncDir] Path without length check (buffer `incdir` 96 bytes) | **fixed in the port** |

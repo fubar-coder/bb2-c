@@ -669,6 +669,10 @@ source the original accepted are shown with examples on
   error at a line that does not exist, or read and wrote random memory; it
   gives "Label has been used as a Constant", as for any other value
   ([#977](https://github.com/fubar-coder/bb2-c/issues/977)).
+* A number without a fraction in a Quick calculation, such as `q=1.0`,
+  was compiled as a floating-point constant and converted while the
+  program runs; it is the Quick constant itself (the same value, shorter
+  code) ([#13](https://github.com/fubar-coder/bb2-c/issues/13)).
 
 ### NewTypes
 
