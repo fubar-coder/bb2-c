@@ -32,12 +32,12 @@ void hostenv_droplist(void);
 
 /* token list from a file "XXXX name" per line (toklist.c); NULL if missing */
 struct tokennode *host_loadtokens(const char *path);
-/* the token list of tedsrc tok/detok from the arguments argv[1..]: either
-   TOKENS (a list file as above) or --blitz2 BLITZ2 [--lib LIB]... (the
-   list made from the compiler and its libraries, tokref.c); *next = the
-   index of the first argument behind it.  NULL: *next = 0 for wrong
-   arguments (usage), -1 for an error (reported on stderr with prog). */
-struct tokennode *host_tokens_args(const char *prog, int argc, char **argv, int *next);
+/* the token list of tedsrc tok/detok: the list file LIST (as above) when
+   BLITZ2 is NULL, else made from the compiler BLITZ2 and the NLIBS library
+   or BigLib files LIBS (tokref.c).  NULL after a message on stderr with
+   prog. */
+struct tokennode *host_tokens(const char *prog, const char *list, const char *blitz2,
+                              const char *const *libs, int nlibs);
 /* read a whole file (malloc'd, *len); NULL if missing */
 UBYTE *host_readfile(const char *path, long *len);
 

@@ -1,6 +1,6 @@
 # fake_cli11
 
-The fake program of the README check (`cmake/check-readme-cli.cmake`).
+The fake program of the README check (`cmake/check-readme.cmake`).
 
 ```
 Usage: fake_cli11 [OPTIONS] SUBCOMMAND
@@ -25,7 +25,17 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
-  -x                          a flag
+  -x                          the flag
 ```
 
-The help of `beta` is missing.
+```
+Usage: fake_cli11 beta [OPTIONS]
+
+the second subcommand
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --all               all of them
+
+Exit status: 0 with --all, 1 without, 2 usage error.
+```

@@ -55,26 +55,13 @@ int tedsrc_first(const CLI::App &sub, const char *me, const tedsrc_tokens &o)
 
 struct tokennode *tedsrc_token_list(const CLI::App &sub, const char *me, const tedsrc_tokens &o)
 {
-    std::vector<char *> args{ (char *)me };
-    struct tokennode *list;
-    int next;
+    std::vector<const char *> libs;
 
-    // the arguments of host_tokens_args (hostenv.h): TOKENS, or
-    // --blitz2 BLITZ2 --lib LIB ...
-    if (sub.count("--blitz2")) {
-        args.push_back((char *)"--blitz2");
-        args.push_back((char *)o.blitz2.c_str());
-        for (const std::string &lib : o.libs) {
-            args.push_back((char *)"--lib");
-            args.push_back((char *)lib.c_str());
-        }
-    } else
-        args.push_back((char *)o.files[0].c_str());
-    args.push_back(NULL);
-    list = host_tokens_args(me, (int)args.size() - 1, args.data(), &next);
-    if (!list && next >= 0)
-        fprintf(stderr, "%s: no token list\n", me);
-    return list;
+    if (!sub.count("--blitz2"))
+        return host_tokens(me, o.files[0].c_str(), NULL, NULL, 0);
+    for (const std::string &lib : o.libs)
+        libs.push_back(lib.c_str());
+    return host_tokens(me, NULL, o.blitz2.c_str(), libs.data(), (int)libs.size());
 }
 
 /* lines of a text file (the last one may lack its LF); 0 if the file has

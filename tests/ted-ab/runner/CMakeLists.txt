@@ -26,5 +26,5 @@ target_link_libraries(tedab PRIVATE lib_cli lib_tedab lib_amiga_emulation lib_st
 target_compile_definitions(tedab PRIVATE TED_FONTS_DIR="${TED_FONTS_DIR}")
 target_compile_options(tedab PRIVATE -Wall -Wextra)
 set_target_properties(tedab PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
-host_help_test(tedab CLI ${TEDAB_SUBCOMMANDS})
-host_readme_test(tedab README.md CLI ${TEDAB_SUBCOMMANDS})
+host_help_test(tedab ${TEDAB_SUBCOMMANDS})
+host_readme_test(tedab README.md ${TEDAB_SUBCOMMANDS})

@@ -29,7 +29,7 @@ static struct tokennode *nodes(const struct blitztokens *l)
     return first;
 }
 
-static int from_files(const char *prog, const char *blitz2, char **libs, int nlibs,
+static int from_files(const char *prog, const char *blitz2, const char *const *libs, int nlibs,
                       struct tokennode **out)
 {
     struct blitztokens l = { 0 };
@@ -67,32 +67,15 @@ done:
     return ok;
 }
 
-struct tokennode *host_tokens_args(const char *prog, int argc, char **argv, int *next)
+struct tokennode *host_tokens(const char *prog, const char *list, const char *blitz2,
+                              const char *const *libs, int nlibs)
 {
     struct tokennode *t = NULL;
-    char **libs;
-    int i, n = 0;
 
-    *next = 0;
-    if (argc < 2)
-        return NULL;
-    if (strcmp(argv[1], "--blitz2") != 0) {
-        if (!(t = host_loadtokens(argv[1])))
-            fprintf(stderr, "%s: no token list %s\n", prog, argv[1]);
-        *next = t ? 2 : -1;
+    if (!blitz2) {
+        if (!(t = host_loadtokens(list)))
+            fprintf(stderr, "%s: no token list %s\n", prog, list);
         return t;
     }
-    if (argc < 3)
-        return NULL;
-    libs = calloc((size_t)argc, sizeof *libs);
-    if (!libs)
-        return NULL;
-    for (i = 3; i + 1 < argc && !strcmp(argv[i], "--lib"); i += 2)
-        libs[n++] = argv[i + 1];
-    if (from_files(prog, argv[2], libs, n, &t))
-        *next = i;
-    else
-        *next = -1;
-    free(libs);
-    return t;
+    return from_files(prog, blitz2, libs, nlibs, &t) ? t : NULL;
 }

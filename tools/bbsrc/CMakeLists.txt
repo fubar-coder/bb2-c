@@ -7,8 +7,8 @@ add_executable(bbsrc main.cpp cmd_tokens.cpp cmd_detok.cpp cmd_comment.cpp cmd_b
 target_link_libraries(bbsrc PRIVATE lib_cli lib_blitztokens lib_bbdetok lib_bblines lib_bb22
 	lib_tokenizer)
 set_target_properties(bbsrc PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
-host_help_test(bbsrc CLI ${BBSRC_SUBCOMMANDS})
-host_readme_test(bbsrc README.md CLI ${BBSRC_SUBCOMMANDS})
+host_help_test(bbsrc ${BBSRC_SUBCOMMANDS})
+host_readme_test(bbsrc README.md ${BBSRC_SUBCOMMANDS})
 
 # detok on files: a text tokenised by ab3 and back (the same text), a
 # token missing from the list ({L:N}, --unknown, --strict), broken

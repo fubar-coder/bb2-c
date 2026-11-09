@@ -327,9 +327,12 @@ description, declares its options and arguments bound to its own state,
 and sets the status in its callback. The logic stays C in `tools/lib/`
 (or the component's library); C++ includes its headers inside
 `extern "C" { ... }`. A program with one mode declares its options on the
-`CLI::App` itself. Programs not moved to CLI11 yet have a table of
-`subcmd_main()` (`tools/lib/subcmd/subcmd.h`) and parse their options by
-hand. The smallest example is the fake program of the checks' tests,
+`CLI::App` itself. Where one file held the bodies of several subcommands
+(`cmd_hdf.cpp`, `cmd_xtra.cpp`), they stay together; a body of more than
+a thousand lines stays C in its own file with an entry function
+(`tests/ted-ab/runner/run.c`, `tests/corpus/runner/cd.c`), called by the
+`cmd_NAME.cpp` that declares the subcommand. The smallest example is the
+fake program of the checks' tests,
 `tools/tests/fake_cli11.cpp`:
 
 ```cpp
@@ -407,30 +410,29 @@ each time with its values (operations applied in that order).
 **Exit codes and messages.** 0 success; 1 the checked thing failed or an
 input could not be processed; 2 usage error (also an unknown subcommand
 or option); 77 skipped (an optional input such as the CD or the previous
-build, or the emulator, is missing). Where a program returns 2 for an
-unreadable input, it stays so; its README says which. Messages go to
-stderr as `PROGRAM SUB: [FILE: ]message` (`argv[0]` of the subcommand),
-results to stdout or the named output file.
+build, or the emulator, is missing); the runners' bug-orig passes
+(`corpusrun pass`, `tedab run`) also return the verdicts 3 BROKEN and 4
+DIFFERS (in the footer of their help). Where a program returns 2 for an
+unreadable input, it stays so; its README says which. Each README lists
+its program's exit codes. Messages go to stderr as
+`PROGRAM SUB: [FILE: ]message` (`cli::name(*sub)`), results to stdout or
+the named output file.
 
-**Tests.** `host_help_test(PROGRAM CLI [SUB...])` (`host/CMakeLists.txt`)
-adds `help_PROGRAM` (`cmake/check-help-cli.cmake`): `-h` and `--help` of
+**Tests.** `host_help_test(PROGRAM [SUB...])` (`host/CMakeLists.txt`)
+adds `help_PROGRAM` (`cmake/check-help.cmake`): `-h` and `--help` of
 the program and of every subcommand exit 0, stdout starts with
 `Usage: PROGRAM` (`Usage: PROGRAM SUB`), stderr is empty; an unknown
 option gives status 2 and a message on stderr; and every subcommand of the
 `SUBCOMMANDS:` section of the program's help is in the list.
-`host_readme_test(PROGRAM README.md CLI [SUB...])` adds `readme_PROGRAM`
-(`cmake/check-readme-cli.cmake`): the output of `PROGRAM -h` and of every
+`host_readme_test(PROGRAM README.md [SUB...])` adds `readme_PROGRAM`
+(`cmake/check-readme.cmake`): the output of `PROGRAM -h` and of every
 `PROGRAM SUB -h` is in the README verbatim (trailing blanks aside), and
 every fenced block of the README that starts with `Usage: PROGRAM` is one
 of them. When a help changes, the test fails and prints the new help in
 a fenced block: that is the text for the README. The checks with broken
-input: `help_check_cli_*` and `readme_check_cli_*` (`tools/tests`, the
-fake program `fake_cli11` and the READMEs in `tools/tests/fake-readme-cli`).
-Without `CLI` the two functions run the checks of the programs on
-`subcmd` (`cmake/check-help.cmake`: synopsis lines `usage: PROGRAM SUB`;
-`cmake/check-readme.cmake`: every synopsis line of `-h` is a line of the
-README and the other way round; their tests `help_check_*`,
-`readme_check_*` with `fake_subcmd`). Adding a subcommand: the
+input: `help_check_*` and `readme_check_*` (`tools/tests`, the fake
+program `fake_cli11` and the READMEs in `tools/tests/fake-readme`).
+Adding a subcommand: the
 `cmd_NAME.cpp`, its call in `main.cpp`, its name in the program's
 `host_help_test` and `host_readme_test` calls, its help block and a
 paragraph in the README.

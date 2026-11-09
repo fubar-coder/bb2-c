@@ -1,5 +1,5 @@
 # tests of lib/, with inputs built in memory (testutil.h)
-foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats subcmd
+foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
 		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
@@ -180,44 +180,6 @@ add_test(NAME prevcmp_malformed_entry_names COMMAND results prev --intended corp
 set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")
 
-# the checks of the host programs' help and README (cmake/check-help.cmake,
-# cmake/check-readme.cmake) on a fake program with the subcommands alpha
-# and beta: correct, and broken on purpose - each broken case must fail
-# with its message
-add_executable(fake_subcmd fake_subcmd.c)
-target_link_libraries(fake_subcmd PRIVATE lib_subcmd)
-add_executable(fake_subcmd_broken fake_subcmd.c)   # beta -h writes to stderr
-target_link_libraries(fake_subcmd_broken PRIVATE lib_subcmd)
-target_compile_definitions(fake_subcmd_broken PRIVATE FAKE_BROKEN)
-set_target_properties(fake_subcmd_broken PROPERTIES OUTPUT_NAME fake_subcmd
-	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fake-broken)
-set(fake $<TARGET_FILE:fake_subcmd>)
-add_test(NAME help_check_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
-add_test(NAME help_check_stderr COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:fake_subcmd_broken>
-	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
-set_tests_properties(help_check_stderr PROPERTIES
-	PASS_REGULAR_EXPRESSION "fake_subcmd beta --help: output on stderr")
-add_test(NAME help_check_unlisted COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha -P ${HOST_CHECK_HELP})
-set_tests_properties(help_check_unlisted PROPERTIES
-	PASS_REGULAR_EXPRESSION "subcommand beta has no help test")
-add_test(NAME help_check_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha,beta,gamma -P ${HOST_CHECK_HELP})
-set_tests_properties(help_check_missing PROPERTIES
-	PASS_REGULAR_EXPRESSION "fake_subcmd gamma --help: exit status 2, not 0")
-set(readme ${CMAKE_CURRENT_SOURCE_DIR}/fake-readme)
-add_test(NAME readme_check_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DREADME=${readme}/ok.md -P ${HOST_CHECK_README})
-add_test(NAME readme_check_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DREADME=${readme}/missing.md -P ${HOST_CHECK_README})
-set_tests_properties(readme_check_missing PROPERTIES
-	PASS_REGULAR_EXPRESSION "missing in the README:[ \n]+       fake_subcmd beta --all")
-add_test(NAME readme_check_stale COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DREADME=${readme}/stale.md -P ${HOST_CHECK_README})
-set_tests_properties(readme_check_stale PROPERTIES
-	PASS_REGULAR_EXPRESSION "no longer printed by fake_subcmd -h:[ \n]+       fake_subcmd gamma FILE")
-
 # the command-line shell of the host programs (tools/lib/cli): cli::run
 add_executable(test_cli test_cli.cpp)
 target_link_libraries(test_cli PRIVATE lib_cli snitch::snitch)
@@ -225,8 +187,8 @@ target_compile_options(test_cli PRIVATE -Wall -Wextra)
 set_target_properties(test_cli PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME cli COMMAND test_cli)
 
-# the checks of the help and README of the programs on CLI11
-# (cmake/check-help-cli.cmake, cmake/check-readme-cli.cmake) on a fake
+# the checks of the help and README of the host programs
+# (cmake/check-help.cmake, cmake/check-readme.cmake) on a fake
 # program with the subcommands alpha and beta: correct, and broken on
 # purpose - each broken case must fail with its message
 add_executable(fake_cli11 fake_cli11.cpp)
@@ -241,29 +203,29 @@ set_target_properties(fake_cli11_broken PROPERTIES OUTPUT_NAME fake_cli11
 	CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fake-broken)
 set(fake $<TARGET_FILE:fake_cli11>)
-add_test(NAME help_check_cli_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP_CLI})
-add_test(NAME help_check_cli_stderr COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:fake_cli11_broken>
-	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP_CLI})
-set_tests_properties(help_check_cli_stderr PROPERTIES
+add_test(NAME help_check_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
+add_test(NAME help_check_stderr COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:fake_cli11_broken>
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_stderr PROPERTIES
 	PASS_REGULAR_EXPRESSION "fake_cli11 beta --help: output on stderr")
-add_test(NAME help_check_cli_unlisted COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha -P ${HOST_CHECK_HELP_CLI})
-set_tests_properties(help_check_cli_unlisted PROPERTIES
+add_test(NAME help_check_unlisted COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_unlisted PROPERTIES
 	PASS_REGULAR_EXPRESSION "subcommand beta has no help test")
-add_test(NAME help_check_cli_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-	-DSUBCOMMANDS=alpha,beta,gamma -P ${HOST_CHECK_HELP_CLI})
-set_tests_properties(help_check_cli_missing PROPERTIES
+add_test(NAME help_check_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta,gamma -P ${HOST_CHECK_HELP})
+set_tests_properties(help_check_missing PROPERTIES
 	PASS_REGULAR_EXPRESSION "fake_cli11 gamma --help: exit status 2, not 0")
-set(readme ${CMAKE_CURRENT_SOURCE_DIR}/fake-readme-cli)
+set(readme ${CMAKE_CURRENT_SOURCE_DIR}/fake-readme)
 foreach(c ok missing changed stale)
-	add_test(NAME readme_check_cli_${c} COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
-		-DREADME=${readme}/${c}.md -DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_README_CLI})
+	add_test(NAME readme_check_${c} COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+		-DREADME=${readme}/${c}.md -DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_README})
 endforeach()
 # (CMake wraps long messages: [ \n]+ between the words)
-set_tests_properties(readme_check_cli_missing PROPERTIES PASS_REGULAR_EXPRESSION
+set_tests_properties(readme_check_missing PROPERTIES PASS_REGULAR_EXPRESSION
 	"help[ \n]+of[ \n]+`fake_cli11[ \n]+beta`[ \n]+is[ \n]+missing[ \n]+or[ \n]+out[ \n]+of[ \n]+date")
-set_tests_properties(readme_check_cli_changed PROPERTIES PASS_REGULAR_EXPRESSION
+set_tests_properties(readme_check_changed PROPERTIES PASS_REGULAR_EXPRESSION
 	"help[ \n]+of[ \n]+`fake_cli11[ \n]+alpha`[ \n]+is[ \n]+missing.*usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+alpha[ \n]+\\[OPTIONS\\][ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer")
-set_tests_properties(readme_check_cli_stale PROPERTIES PASS_REGULAR_EXPRESSION
+set_tests_properties(readme_check_stale PROPERTIES PASS_REGULAR_EXPRESSION
 	"usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+gamma[ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer[ \n]+printed")

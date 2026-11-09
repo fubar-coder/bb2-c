@@ -302,9 +302,24 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   19c6ebdc `hunkcheck`, 8cbb2543 `blitzres`, dac344a9 `blitzlib`,
   eb4bb48e `tedab`, c9a9ed85 `corpusrun`, 385290bf `tedsrc`, fcdb6225
   `bbsrc`, 74f45fc8 (READMEs of `amiga_run`, `mktestdata`, `xtra`) and
-  the final sweep of the documents. Open: `xtra` and `hdftool` dispatch
-  their subcommands themselves (no `SUB -h`), left to the move of the
-  host programs to CLI11.
+  the final sweep of the documents. `xtra` and `hdftool`, which
+  dispatched their subcommands themselves, followed with the move to
+  CLI11 (below).
+- [x] **Host programs on CLI11** done (2026-11-09, OpenSpec change
+  `host-tools-cli11`): the 14 host programs parse their command line with
+  CLI11 (`cmake/CLI11.cmake`, BSD-3-Clause, fetched at a fixed release;
+  the prev build reuses the copy) through `tools/lib/cli/cli.hpp`; the
+  program and command layer is C++ (`main.cpp`, `cmd_NAME.cpp`), the
+  logic stays C. One help shape, the README holds every help verbatim
+  (`cmake/check-help.cmake`, `cmake/check-readme.cmake`), usage errors
+  give 2; `tools/lib/subcmd` is gone. Renamed options: `blitzlib cmdref
+  --group/--name`, `bbsrc tokens --last`. No result changed. Commits
+  6e40ca40 (CLI11, the helper and the checks), 7e4cffed `hunkcheck`,
+  b266b4c2 `testinfo`, e32e7a5c `refcheck`, 5edb65df `results`, 6fc61bcb
+  `blitzres`, b7ca9e90 `blitzlib`, c919b46b `bbsrc`, 97b93bf6 `tedsrc`,
+  4ef2faa9 (`cli::add_repeated` needs all N values), 5a37efe7 `tedab`,
+  bcce1ed5 `corpusrun`, 29fdf61a `amiga_run` and `mktestdata`, 96d37acb
+  `hdftool`, b9ad5caf `xtra` and the final sweep.
 
 - [x] **Git history** decided (2026-10-28): this repository is the
   reference and stays with the fresh start; the history of the files is

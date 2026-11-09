@@ -46,5 +46,5 @@ add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:co
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-cdrun-source.cmake)
 
-host_help_test(corpusrun CLI ${CORPUSRUN_SUBCOMMANDS})
-host_readme_test(corpusrun README.md CLI ${CORPUSRUN_SUBCOMMANDS})
+host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
+host_readme_test(corpusrun README.md ${CORPUSRUN_SUBCOMMANDS})

@@ -148,3 +148,7 @@ the contributors of this project for the rights they hold; for the
 translated original parts nobody can grant it bindingly, since the rights
 holders cannot be reached. What is known about the license of the
 originals is in `archive/README.md`.
+
+The host tools are built with CLI11 (BSD-3-Clause, a build-time
+dependency, `cmake/CLI11.cmake` downloads a fixed release when the build
+is configured); nothing of it is in the m68k programs and libraries.

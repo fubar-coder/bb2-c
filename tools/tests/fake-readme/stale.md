@@ -1,10 +1,47 @@
-# fake_subcmd
+# fake_cli11
 
-The README check with a synopsis line the program no longer prints.
+The fake program of the README check (`cmake/check-readme.cmake`).
 
 ```
-usage: fake_subcmd alpha [-x] FILE
-       fake_subcmd beta
-       fake_subcmd beta --all
-       fake_subcmd gamma FILE
+Usage: fake_cli11 [OPTIONS] SUBCOMMAND
+
+The fake program of the help and README checks.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  alpha                       the first subcommand
+  beta                        the second subcommand
+```
+
+```
+Usage: fake_cli11 alpha [OPTIONS] FILE
+
+the first subcommand
+
+POSITIONALS:
+  FILE TEXT REQUIRED          the input
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -x                          a flag
+```
+
+```
+Usage: fake_cli11 beta [OPTIONS]
+
+the second subcommand
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --all               all of them
+
+Exit status: 0 with --all, 1 without, 2 usage error.
+```
+
+A subcommand that is gone:
+
+```
+Usage: fake_cli11 gamma FILE
 ```

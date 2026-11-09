@@ -487,3 +487,15 @@ Findings and adaptations while implementing (2026-11-09).
   accepted without `--ab3` (ignored), as before. With the last program
   on CLI11 the list of help tests without subcommands in
   `host/CMakeLists.txt` is gone.
+- **Final sweep** (tasks 15.1-15.3): `tools/lib/subcmd`, `fake_subcmd.c`,
+  `test_subcmd.c`, the old checks and `tools/tests/fake-readme/` are gone;
+  `cmake/check-help.cmake`, `cmake/check-readme.cmake` and
+  `tools/tests/fake-readme/` are the former `-cli` ones, the tests
+  `help_check_*`, `readme_check_*` their tests, and `host_help_test()`,
+  `host_readme_test()` have no `CLI` keyword. `host_tokens_args()` of the
+  TED host environment (`programs/ted/tests/host/tokref.c`), the last
+  hand-written argument loop of a host program, became `host_tokens()`
+  with the parsed values (only `tedsrc` calls it). Left with
+  `strcmp(argv[...])`: the Amiga programs of the tests
+  (`tests/*/amiga/*.c`, m68k, not host programs) and
+  `tools/tests/test_amiga_emulation*.c`.

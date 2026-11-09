@@ -1,6 +1,6 @@
 // fake_cli11 - a program with two subcommands, alpha and beta, on the
 // command-line shell of the host programs (tools/lib/cli), for the tests
-// of cmake/check-help-cli.cmake and cmake/check-readme-cli.cmake
+// of cmake/check-help.cmake and cmake/check-readme.cmake
 // (tools/tests/CMakeLists.txt) and the example of docs/development.md.
 // Built twice: fake_cli11_broken (FAKE_BROKEN) also writes a message to
 // stderr with the help of beta.

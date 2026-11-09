@@ -96,10 +96,12 @@ tools/                       host tools:
                              hdf (AmigaDOS hardfiles: RDB or raw
                              partition, OFS/FFS files read and written),
                              cmdref (the command table of a library file
-                             as JSON, the website's command reference);
+                             as JSON, the website's command reference),
+                             cli (cli.hpp: the command-line shell of the
+                             tools on CLI11, cmake/CLI11.cmake);
                              blitzlib also compares declarations
-  NAME/                      the tools: main.c around lib/ (a program
-                             with subcommands: its table, cmd_NAME.c),
+  NAME/                      the tools: main.cpp around lib/ (C++ on
+                             CLI11: the subcommands in cmd_NAME.cpp),
                              README.md (usage, exit codes, callers):
   blitzlib/                  library files: join, extract, numbers,
                              check, compare, cmdref

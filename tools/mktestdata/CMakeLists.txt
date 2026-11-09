@@ -1,5 +1,5 @@
 add_executable(mktestdata main.cpp)
 target_link_libraries(mktestdata PRIVATE lib_cli lib_mktestdata)
 set_target_properties(mktestdata PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
-host_help_test(mktestdata CLI)
-host_readme_test(mktestdata README.md CLI)
+host_help_test(mktestdata)
+host_readme_test(mktestdata README.md)

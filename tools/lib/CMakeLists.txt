@@ -49,8 +49,6 @@
 #              prev build, the build of the previous commit)
 #   previntended  the intended differences of the corpus and ted_ab against
 #              the prev build (PREV_INTENDED entries)
-#   subcmd     the subcommand dispatch of the host programs (PROGRAM SUB
-#              ARGS, -h of the program and of every subcommand)
 #   cli        the command-line shell of the host programs on CLI11
 #              (cli.hpp, C++20, header only: cli::run, the help format)
 add_subdirectory(hunk)
@@ -82,5 +80,4 @@ add_subdirectory(cdtable)
 add_subdirectory(oracletable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
-add_subdirectory(subcmd)
 add_subdirectory(cli)
