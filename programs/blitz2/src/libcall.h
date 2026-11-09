@@ -38,8 +38,9 @@
    BUG(orig) (#12): consttype2 (internal) reaches `.quick2` with d0 not loaded
    (it holds the last char) for type w and type 0 with a float value; the
    result then usually falls back to float.  Kept.
-   BUG(orig) (#13): a fraction that is exactly 0 after *65536 or negative also
-   turns a quick into a float.  Kept. */
+   Fixed (#13): a quick with a fraction of 0 after *65536 is the quick
+   integer (the original made it a float), the integer part is rounded
+   down so that the fraction is never negative. */
 
 /* blitz2.s:10686 fetchdata - fetch a (optionally negative) number for Data:
    reads its first char itself (getchar3) and fetches with data = TRUE, so

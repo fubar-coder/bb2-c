@@ -311,13 +311,15 @@ ULONG constotype(UWORD *type)
 static ULONG consttype2(UWORD *type, ULONG val)
 {
     UWORD newtype = *type;
-    UWORD whole, ccr;
-    ULONG t;
+    UWORD whole;
+    ULONG t, frac;
+    BOOL d0bad = FALSE;     /* the paths of #12: d0 not loaded */
 
     if (newtype == 0) {
         /* Let's set type */
         if (numfloat) {
             newtype = T_QUICK;
+            d0bad = TRUE;
             goto quick2;
         }
         newtype = T_BYTE;
@@ -350,8 +352,10 @@ byte2:
     goto done;
 
 word:
-    if (numfloat)
-        goto quick2;    /* BUG(orig) (#12): d0 not loaded (see .quick2) */
+    if (numfloat) {
+        d0bad = TRUE;   /* BUG(orig) (#12): d0 not loaded (see .quick2) */
+        goto quick2;
+    }
     if (!makeint(&val))
         goto numdofloat;
     goto over1;
@@ -366,18 +370,37 @@ quick2:
        "type 0 + float" and "type w + float" arrive with d0 = the current
        char.  The fraction is then usually out of range and the constant
        falls back to float.  Kept.  (a6 = maths assumed, as the asm) */
+    t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
+    frac = ffpcall(SPSub, numval, t, NULL);             /* d0=fraction! */
+    /* Fixed (#13): the integer part is rounded down (floor), so that the
+       fraction is 0..65535 for a negative value too, and the range check
+       is made on it; a fraction of 0 is the Quick integer (.qint), and the
+       fraction is compared signed.  The original took a zero fraction
+       (beq) and a negative one (unsigned bcc) for one that does not fit:
+       "q=1.0" became a float constant and a conversion.  The two paths
+       of #12 (d0bad: d0 holds the character, not the integer part) keep
+       the float for both, as before: on the Word path a Quick value
+       would be a wrong one, and on both the window of values that become
+       a Quick by chance would grow. */
+    if (frac & 0x80) {                                  /* FFP sign bit */
+        if (d0bad)
+            goto numdofloat;
+        val--;
+        frac = ffpcall(SPAdd, frac, 0x80000041, NULL);  /* + 1.0 */
+    }
     if ((LONG)val > 32767 || (LONG)val < -32768)
         goto numdofloat;
     whole = (UWORD)val;                                 /* save whole part */
-    t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
-    val = ffpcall(SPSub, numval, t, NULL);               /* d0=fraction! */
-    val = ffpcall(SPMul, val, 0x80000051, NULL);        /* *65536 */
-    val = ffpcall(SPFix, val, 0, &ccr);                 /* back to int */
-    /* BUG(orig) (#13): a zero fraction (beq) and a negative one (unsigned bcc)
-       also go to numdofloat.  Kept. */
-    if ((ccr & CCR_Z) || val >= 65536)
+    frac = ffpcall(SPMul, frac, 0x80000051, NULL);      /* *65536 */
+    frac = ffpcall(SPFix, frac, 0, NULL);               /* back to int */
+    if (frac == 0) {
+        if (d0bad)
+            goto numdofloat;
+        goto qint;
+    }
+    if ((LONG)frac < 0 || (LONG)frac >= 65536)
         goto numdofloat;                                /* .knob */
-    val = ((ULONG)whole << 16) | (UWORD)val;
+    val = ((ULONG)whole << 16) | (UWORD)frac;
     goto done;
 
 qint:
