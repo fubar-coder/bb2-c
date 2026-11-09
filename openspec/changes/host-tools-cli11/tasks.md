@@ -49,7 +49,7 @@ groups 2-14 and is not repeated there:
 
 ## 4. `refcheck`
 
-- [ ] 4.1 `tools/refcheck/` (`asm`, `labels` with `-v`/`-q` as excluding flags, `data`, `listing-*`); callers `libs/acidlibs`, `programs/ted`, `programs/blitz2`, `CMakeLists.txt`. Verify: C1-C5; the reports of the four checks `cmp`-identical; a stale intended-list entry still fails
+- [x] 4.1 `tools/refcheck/` (`asm`, `labels` with `-v`/`-q` as excluding flags, `data`, `listing-*`); callers `libs/acidlibs`, `programs/ted`, `programs/blitz2`, `CMakeLists.txt`. Verify: C1-C5; the reports of the four checks `cmp`-identical; a stale intended-list entry still fails
 
 ## 5. `results`
 

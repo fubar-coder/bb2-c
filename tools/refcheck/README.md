@@ -15,17 +15,50 @@ differences of `data` and the rule of `asm` in "Intended differences".
 ## Usage
 
 ```
-usage: refcheck asm OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...
-       refcheck labels [-v|-q] FILE.s SRCDIR
-       refcheck data [-v|-q] TABLE LISTING REFERENCE CBUILD [INTENDED]
-       refcheck listing-map LISTING
-       refcheck listing-labels LISTING
-       refcheck listing-verify LISTING EXE
+Usage: refcheck [OPTIONS] SUBCOMMAND
+
+The port against the originals: assembler routines, labels, data, vasm listings.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  asm                         asm routines of a C library against the original, instruction by
+                              instruction
+  labels                      every code label of FILE.s exactly once in the C sources of
+                              SRCDIR
+  data                        data of a C build against the reference build of the assembler
+                              original
+  listing-map                 the rows of a vasm listing with bytes, as TSV: address,
+                              file:line, bytes, source
+  listing-labels              the labels of a vasm listing, as TSV: address, label, file:line
+  listing-verify              every byte of a vasm listing against the first hunk of a load
+                              file (relocated longwords skipped)
 ```
 
-`refcheck SUB -h` prints the description and the options of `SUB`.
-
 ### asm
+
+```
+Usage: refcheck asm [OPTIONS] OBJDUMP ORIGINAL LIBNUM LINKED ROUTINE...
+
+asm routines of a C library against the original, instruction by instruction
+
+POSITIONALS:
+  OBJDUMP TEXT REQUIRED       the m68k objdump
+  ORIGINAL TEXT REQUIRED      the BigLib file with the original library (e.g. the CD's
+                              BLITZ2/ACIDLIBS)
+  LIBNUM TEXT REQUIRED        the number of the library in ORIGINAL
+  LINKED TEXT REQUIRED        NAME.linked, the C library linked with symbols
+  ROUTINE TEXT ... REQUIRED   NAME:ORIGADDR:CSYMBOL:COUNT, a routine: its name, its address in
+                              the original, the C symbol and the number of instructions
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0 every routine is equal, 1 a routine differs or an input cannot be
+read, 2 usage error, 77 ORIGINAL does not exist (skipped: the CD is not in the
+repository, fetch-originals).
+```
 
 Compares routines of a C library that are written in assembler with the
 original library, instruction by instruction, disassembled with the
@@ -40,12 +73,52 @@ normalised, as the addresses differ (`tools/lib/asmcmp/asmcmp.h`). Without
 
 ### labels
 
+```
+Usage: refcheck labels [OPTIONS] FILE.s SRCDIR
+
+every code label of FILE.s exactly once in the C sources of SRCDIR
+
+POSITIONALS:
+  FILE.s TEXT REQUIRED        the assembler source (FILE in "FILE:NNN label" is its name)
+  SRCDIR TEXT REQUIRED        the directory of the C sources (every *.c below it)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -v Excludes: -q             every label
+  -q Excludes: -v             the report only if a label is missing or doubled
+
+Prints the missing and doubled labels and a summary. Exit status 0, 1 a label is
+missing or doubled or an input cannot be read, 2 usage error.
+```
+
 Every code label of `FILE.s` must occur exactly once as
 `FILE.s:NNN label` in the C sources (`*.c`) below `SRCDIR`. Prints the
 missing and doubled labels and a summary; `-q` only if there are any, `-v`
 every label.
 
 ### data
+
+```
+Usage: refcheck data [OPTIONS] TABLE LISTING REFERENCE CBUILD [INTENDED]
+
+data of a C build against the reference build of the assembler original
+
+POSITIONALS:
+  TABLE TEXT REQUIRED         the checks (e.g. programs/ted/checkdata.tsv)
+  LISTING TEXT REQUIRED       the vasm listing of the reference build
+  REFERENCE TEXT REQUIRED     the reference build (a load file)
+  CBUILD TEXT REQUIRED        the C build with symbols
+  INTENDED TEXT               the checks that differ on purpose (CSYM<TAB>#ISSUE<TAB>NOTE per
+                              line), each of them must differ
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -v Excludes: -q             every check
+  -q Excludes: -v             the report only if a check failed
+
+Prints the failed checks and a summary. Exit status 0, 1 a check failed, an
+INTENDED entry is stale or an input cannot be read, 2 usage error.
+```
 
 Compares the data of the C build `CBUILD` (linked with symbols) with the
 reference build `REFERENCE` and its listing `LISTING`, for every entry of
@@ -57,6 +130,50 @@ entry fails. Prints the failed checks and a summary; `-q` only if a check
 failed, `-v` every check.
 
 ### listing-map, listing-labels, listing-verify
+
+```
+Usage: refcheck listing-map [OPTIONS] LISTING
+
+the rows of a vasm listing with bytes, as TSV: address, file:line, bytes, source
+
+POSITIONALS:
+  LISTING TEXT REQUIRED       a vasm listing (vasm -L)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 the listing cannot be read, 2 usage error.
+```
+
+```
+Usage: refcheck listing-labels [OPTIONS] LISTING
+
+the labels of a vasm listing, as TSV: address, label, file:line
+
+POSITIONALS:
+  LISTING TEXT REQUIRED       a vasm listing (vasm -L)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 the listing cannot be read or written, 2 usage error.
+```
+
+```
+Usage: refcheck listing-verify [OPTIONS] LISTING EXE
+
+every byte of a vasm listing against the first hunk of a load file (relocated
+longwords skipped)
+
+POSITIONALS:
+  LISTING TEXT REQUIRED       a vasm listing (vasm -L)
+  EXE TEXT REQUIRED           the load file
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 a row differs or an input cannot be read, 2 usage error.
+```
 
 Views of a vasm listing (`vasm -L FILE -Lall`):
 
