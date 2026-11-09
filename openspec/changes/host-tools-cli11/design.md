@@ -447,3 +447,10 @@ Findings and adaptations while implementing (2026-11-09).
   `[TOKENS] IN OUT` / `[TOKENS] IN...` are one positional list `FILE...`,
   whose forms the README and the help name. A wrong count, or `--lib`
   without `--blitz2`, gives 2 with a message.
+- **`tedab`** (task 10.1): the body of `run` and `lint` (1300 lines) stays
+  C in `run.c` (moved from `cmd_run.c`, entry `tedab_start()`, `run.h`;
+  D4: a big body may stay in its `.c` file); `cmd_run.cpp` declares the
+  two subcommands. `info`, `text` and `cmp` (`cmd_dump.cpp`) take only
+  their own options (before, `info` accepted and ignored `--font`,
+  `--fonts`, `--no-mask`, `text` `--no-mask`). The verdict codes are in
+  the footers of the program and of `run`.

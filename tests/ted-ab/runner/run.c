@@ -5,6 +5,9 @@
  *   tedab run PASSFILE    run the tests, report
  *   tedab lint PASSFILE   only check the scripts and their sources
  *
+ * The body of both (tedab_start, run.h); the subcommands are declared in
+ * cmd_run.cpp.
+ *
  * The pass file (written by CMake), lines KEY=VALUE, '#' comments:
  *   work=DIR           work directory (emptied first)
  *   report=PATH        the report (also to stdout)
@@ -83,7 +86,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
-#include "cmds.h"
+#include "run.h"
 #include "statline_emulation.h"
 #include "tedab.h"
 #include "util.h"
@@ -1276,38 +1279,21 @@ out:
     return rc;
 }
 
-const char cmd_run_usage[] =
-    "usage: tedab run PASSFILE\n"
-    "Run the TED A/B tests of the pass file PASSFILE in Amiberry and write\n"
-    "the report (the keys of the pass file: the header of\n"
-    "tests/ted-ab/runner/cmd_run.c).  With\n"
-    "BUGORIG_RECORD=1 in the environment a bug-orig pass (bugorig=1, orig=)\n"
-    "records the observation of the original instead.\n";
-
-const char cmd_lint_usage[] =
-    "usage: tedab lint PASSFILE\n"
-    "Only check the test scripts of the pass file PASSFILE and that their\n"
-    "sources are there; no emulator.\n";
-
 /* run and lint: the pass file, the scripts, then the run or the lint */
-static int start(int argc, char **argv, int lint)
+int tedab_start(const char *prog, const char *passfile, int lint)
 {
     char err[300];
     size_t len;
     char *text;
     int bad;
 
-    me = argv[0];
-    if (argc != 2) {
-        fputs(lint ? cmd_lint_usage : cmd_run_usage, stderr);
-        return 2;
-    }
-    if (!(text = (char *)read_file(argv[1], &len))) {
-        fprintf(stderr, "%s: cannot read %s\n", me, argv[1]);
+    me = prog;
+    if (!(text = (char *)read_file(passfile, &len))) {
+        fprintf(stderr, "%s: cannot read %s\n", me, passfile);
         return 2;
     }
     if (parse(text, err, sizeof err)) {
-        fprintf(stderr, "%s: %s: %s\n", me, argv[1], err);
+        fprintf(stderr, "%s: %s: %s\n", me, passfile, err);
         return 2;
     }
     free(text);
@@ -1346,14 +1332,4 @@ static int start(int argc, char **argv, int lint)
         return 2;
     }
     return run(stdout);
-}
-
-int cmd_run(int argc, char **argv)
-{
-    return start(argc, argv, 0);
-}
-
-int cmd_lint(int argc, char **argv)
-{
-    return start(argc, argv, 1);
 }

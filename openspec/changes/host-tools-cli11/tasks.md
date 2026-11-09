@@ -73,7 +73,7 @@ groups 2-14 and is not repeated there:
 
 ## 10. `tedab`
 
-- [ ] 10.1 `tests/ted-ab/runner/` (`run`, `lint`, `info`, `text`, `cmp` or as they are named by then); the verdict codes 0, 1, 3, 4 stay and are in the README and the help footer; callers `tests/ted-ab/CMakeLists.txt`, `tests/bug-orig/CMakeLists.txt` (lines 402-555), `want.cmake`. Verify: C1-C5; `ted_ab` pass (needs Amiberry) gives the same verdicts; `text` dumps `cmp`-identical
+- [x] 10.1 `tests/ted-ab/runner/` (`run`, `lint`, `info`, `text`, `cmp` or as they are named by then); the verdict codes 0, 1, 3, 4 stay and are in the README and the help footer; callers `tests/ted-ab/CMakeLists.txt`, `tests/bug-orig/CMakeLists.txt` (lines 402-555), `want.cmake`. Verify: C1-C5; `ted_ab` pass (needs Amiberry) gives the same verdicts; `text` dumps `cmp`-identical
 
 ## 11. `corpusrun`
 

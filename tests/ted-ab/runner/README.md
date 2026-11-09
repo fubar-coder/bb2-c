@@ -14,16 +14,48 @@ tested by `tests/ted-ab/host/test_tedab.cpp` and `test_teddump.cpp`.
 ## Usage
 
 ```
-usage: tedab run PASSFILE
-       tedab lint PASSFILE
-       tedab info FILE.scr
-       tedab text FILE.scr [--font 8|6] [--fonts DIR]
-       tedab cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]
+Usage: tedab [OPTIONS] SUBCOMMAND
+
+The TED A/B tests in Amiberry and the screen dumps of teddrive.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  run                         run the TED A/B tests of a pass file in Amiberry and write the
+                              report
+  lint                        check the test scripts of a pass file and that their sources are
+                              there
+  info                        the header of a screen dump of teddrive and the SHA-256 of its
+                              bit planes
+  text                        a screen dump of teddrive as text
+  cmp                         two screen dumps of teddrive compared as text
+
+The exit status of run in a bug-orig pass is the worst verdict: 0 FIXED, 1
+REPRODUCED, 3 BROKEN, 4 DIFFERS.
 ```
 
-`tedab SUB -h` prints the description and the options of `SUB`.
-
 ### run
+
+```
+Usage: tedab run [OPTIONS] PASSFILE
+
+run the TED A/B tests of a pass file in Amiberry and write the report
+
+POSITIONALS:
+  PASSFILE TEXT REQUIRED      the pass file (written by CMake; its keys: the header of
+                              tests/ted-ab/runner/run.c)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+With BUGORIG_RECORD=1 in the environment a bug-orig pass (bugorig=1, orig=)
+records the observation of the original instead. Exit status 0 all gates and
+runs OK and every comparison as expected, 1 not, 2 error (usage, pass file,
+scripts), 77 the emulator or a file is missing (skipped). A bug-orig pass gives
+the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4 DIFFERS (with
+BUGORIG_RECORD=1 0 when recorded).
+```
 
 Runs the tests of the pass file `PASSFILE` in Amiberry and writes the
 report (to `report=` and stdout); after the report one `@stat` line per
@@ -38,12 +70,82 @@ reference runs and its observation is written to `orig=`.
 
 ### lint
 
+```
+Usage: tedab lint [OPTIONS] PASSFILE
+
+check the test scripts of a pass file and that their sources are there
+
+POSITIONALS:
+  PASSFILE TEXT REQUIRED      the pass file (written by CMake; its keys: the header of
+                              tests/ted-ab/runner/run.c)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+No emulator. Exit status 0 no problem, 1 problems, 2 usage error or a pass file
+that cannot be read.
+```
+
 Reads the pass file and the scripts like `run` and checks the scripts
 (syntax, directives) and that the sources they name are there; no
 emulator. Prints one line per problem and the summary
 `tedab lint: N tests, M problems`.
 
 ### info, text, cmp
+
+```
+Usage: tedab info [OPTIONS] FILE.scr
+
+the header of a screen dump of teddrive and the SHA-256 of its bit planes
+
+POSITIONALS:
+  FILE.scr TEXT REQUIRED      the screen dump
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Size, depth, mode, mouse position, windows. Exit status 0, 2 usage error or a
+file that cannot be read.
+```
+
+```
+Usage: tedab text [OPTIONS] FILE.scr
+
+a screen dump of teddrive as text
+
+POSITIONALS:
+  FILE.scr TEXT REQUIRED      the screen dump
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --font 8|6          the height of TED's font the dump is decoded with: 8 (default) or
+                              6
+          --fonts DIR         chars8.b and chars.b of TED (default: archive/sources/ted-1.1 of
+                              this repository)
+
+Exit status 0, 2 usage error, a file that cannot be read or no TED screen.
+```
+
+```
+Usage: tedab cmp [OPTIONS] A.scr B.scr
+
+two screen dumps of teddrive compared as text
+
+POSITIONALS:
+  A.scr TEXT REQUIRED         the one dump
+  B.scr TEXT REQUIRED         the other dump
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --font 8|6          the height of TED's font the dump is decoded with: 8 (default) or
+                              6
+          --fonts DIR         chars8.b and chars.b of TED (default: archive/sources/ted-1.1 of
+                              this repository)
+          --no-mask           compare the status field "Free" too (masked by default)
+
+Prints SAME, or DIFF and the differences. Exit status 0 the same, 1 different, 2
+usage error or a file that cannot be read.
+```
 
 `info` prints the header of the dump (size, depth, mode, mouse position,
 windows) and the SHA-256 of its bit planes. `text` prints the dump as
@@ -56,7 +158,7 @@ text and prints `SAME`, or `DIFF` and the differences; the status field
 ## Inputs and outputs
 
 The pass file (written by CMake) has lines `KEY=VALUE` and `#` comments;
-the keys are described in the header of `cmd_run.c` (directories of the
+the keys are described in the header of `run.c` (directories of the
 scripts, sources and the CD, the programs of the combinations, `filter=`,
 `combos=`, `timeout=`, `parallel=`, `intended=` of the prev build,
 `bugorig=`, `orig=` ...). The scripts are described in `tedab.h` and
