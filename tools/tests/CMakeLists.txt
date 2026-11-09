@@ -217,3 +217,53 @@ add_test(NAME readme_check_stale COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
 	-DREADME=${readme}/stale.md -P ${HOST_CHECK_README})
 set_tests_properties(readme_check_stale PROPERTIES
 	PASS_REGULAR_EXPRESSION "no longer printed by fake_subcmd -h:[ \n]+       fake_subcmd gamma FILE")
+
+# the command-line shell of the host programs (tools/lib/cli): cli::run
+add_executable(test_cli test_cli.cpp)
+target_link_libraries(test_cli PRIVATE lib_cli snitch::snitch)
+target_compile_options(test_cli PRIVATE -Wall -Wextra)
+set_target_properties(test_cli PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME cli COMMAND test_cli)
+
+# the checks of the help and README of the programs on CLI11
+# (cmake/check-help-cli.cmake, cmake/check-readme-cli.cmake) on a fake
+# program with the subcommands alpha and beta: correct, and broken on
+# purpose - each broken case must fail with its message
+add_executable(fake_cli11 fake_cli11.cpp)
+target_link_libraries(fake_cli11 PRIVATE lib_cli)
+target_compile_options(fake_cli11 PRIVATE -Wall -Wextra)
+set_target_properties(fake_cli11 PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_executable(fake_cli11_broken fake_cli11.cpp)   # beta -h writes to stderr
+target_link_libraries(fake_cli11_broken PRIVATE lib_cli)
+target_compile_options(fake_cli11_broken PRIVATE -Wall -Wextra)
+target_compile_definitions(fake_cli11_broken PRIVATE FAKE_BROKEN)
+set_target_properties(fake_cli11_broken PROPERTIES OUTPUT_NAME fake_cli11
+	CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON
+	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fake-broken)
+set(fake $<TARGET_FILE:fake_cli11>)
+add_test(NAME help_check_cli_ok COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP_CLI})
+add_test(NAME help_check_cli_stderr COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:fake_cli11_broken>
+	-DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_HELP_CLI})
+set_tests_properties(help_check_cli_stderr PROPERTIES
+	PASS_REGULAR_EXPRESSION "fake_cli11 beta --help: output on stderr")
+add_test(NAME help_check_cli_unlisted COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha -P ${HOST_CHECK_HELP_CLI})
+set_tests_properties(help_check_cli_unlisted PROPERTIES
+	PASS_REGULAR_EXPRESSION "subcommand beta has no help test")
+add_test(NAME help_check_cli_missing COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+	-DSUBCOMMANDS=alpha,beta,gamma -P ${HOST_CHECK_HELP_CLI})
+set_tests_properties(help_check_cli_missing PROPERTIES
+	PASS_REGULAR_EXPRESSION "fake_cli11 gamma --help: exit status 2, not 0")
+set(readme ${CMAKE_CURRENT_SOURCE_DIR}/fake-readme-cli)
+foreach(c ok missing changed stale)
+	add_test(NAME readme_check_cli_${c} COMMAND ${CMAKE_COMMAND} -DPROGRAM=${fake}
+		-DREADME=${readme}/${c}.md -DSUBCOMMANDS=alpha,beta -P ${HOST_CHECK_README_CLI})
+endforeach()
+# (CMake wraps long messages: [ \n]+ between the words)
+set_tests_properties(readme_check_cli_missing PROPERTIES PASS_REGULAR_EXPRESSION
+	"help[ \n]+of[ \n]+`fake_cli11[ \n]+beta`[ \n]+is[ \n]+missing[ \n]+or[ \n]+out[ \n]+of[ \n]+date")
+set_tests_properties(readme_check_cli_changed PROPERTIES PASS_REGULAR_EXPRESSION
+	"help[ \n]+of[ \n]+`fake_cli11[ \n]+alpha`[ \n]+is[ \n]+missing.*usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+alpha[ \n]+\\[OPTIONS\\][ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer")
+set_tests_properties(readme_check_cli_stale PROPERTIES PASS_REGULAR_EXPRESSION
+	"usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+gamma[ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer[ \n]+printed")

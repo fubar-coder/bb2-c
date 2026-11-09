@@ -2,6 +2,7 @@
 # another commit of this repository in PREV_DIR.
 #   cmake -DREPO=SOURCE -DREV=REV -DPREV_DIR=DIR -DGENERATOR=G
 #         [-DCONFIGURE_ARGS="-D...|-D..."] [-DSNITCH_SOURCE_DIR=SNITCH -DSNITCH_PIN=SHA256]
+#         [-DCLI11_SOURCE_DIR=CLI11 -DCLI11_PIN=SHA256]
 #         -P prev-build.cmake
 # DIR/src is `git archive REV` (the checkout is not touched); the data of
 # the checkout that git does not hold (archive/cd, ...) are linked into it.
@@ -84,6 +85,21 @@ if(SNITCH_PIN AND prev_pin STREQUAL SNITCH_PIN AND EXISTS ${SNITCH_SOURCE_DIR}/C
 else()
 	message(STATUS "prev: ${commit} pins snitch SHA256=${prev_pin}, this build "
 		"SHA256=${SNITCH_PIN} (source ${SNITCH_SOURCE_DIR}): the prev build downloads its own")
+endif()
+
+# CLI11 the same way: the current build's source (CLI11_SOURCE_DIR, pinned
+# to CLI11_PIN) if the commit pins the same SHA256 in its cmake/CLI11.cmake;
+# its top-level configure passes FETCHCONTENT_SOURCE_DIR_CLI11 on to its
+# host ExternalProject.  A commit without cmake/CLI11.cmake needs none.
+if(EXISTS ${PREV_DIR}/src/cmake/CLI11.cmake)
+	file(STRINGS ${PREV_DIR}/src/cmake/CLI11.cmake prev_pin REGEX "URL_HASH +SHA256=")
+	string(REGEX REPLACE ".*SHA256=([0-9a-fA-F]+).*" "\\1" prev_pin "${prev_pin}")
+	if(CLI11_PIN AND prev_pin STREQUAL CLI11_PIN AND IS_DIRECTORY ${CLI11_SOURCE_DIR}/include/CLI)
+		list(APPEND CONFIGURE_ARGS -DFETCHCONTENT_SOURCE_DIR_CLI11=${CLI11_SOURCE_DIR})
+	else()
+		message(STATUS "prev: ${commit} pins CLI11 SHA256=${prev_pin}, this build "
+			"SHA256=${CLI11_PIN} (source ${CLI11_SOURCE_DIR}): the prev build downloads its own")
+	endif()
 endif()
 
 if(NOT EXISTS ${PREV_DIR}/build.ninja AND NOT EXISTS ${PREV_DIR}/Makefile)

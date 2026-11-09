@@ -1,0 +1,5 @@
+# the command-line shell of the host programs (cli.hpp on CLI11, C++20)
+add_library(lib_cli INTERFACE)
+target_include_directories(lib_cli INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_cli INTERFACE CLI11::CLI11)
+target_compile_features(lib_cli INTERFACE cxx_std_20)

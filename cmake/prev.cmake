@@ -66,6 +66,10 @@ if(BLITZ2_PREV)
 		# gives it to every configure of the prev build if that pins the same
 		file(STRINGS ${PROJECT_SOURCE_DIR}/cmake/Snitch.cmake pin REGEX "URL_HASH +SHA256=")
 		string(REGEX REPLACE ".*SHA256=([0-9a-fA-F]+).*" "\\1" pin "${pin}")
+		# CLI11 the same way (cmake/CLI11.cmake, the source the top-level
+		# configure fetched)
+		file(STRINGS ${PROJECT_SOURCE_DIR}/cmake/CLI11.cmake cli11_pin REGEX "URL_HASH +SHA256=")
+		string(REGEX REPLACE ".*SHA256=([0-9a-fA-F]+).*" "\\1" cli11_pin "${cli11_pin}")
 		ExternalProject_Add(blitz2_prev
 			PREFIX ${CMAKE_BINARY_DIR}/prev-ep
 			DOWNLOAD_COMMAND "" UPDATE_COMMAND "" CONFIGURE_COMMAND "" INSTALL_COMMAND ""
@@ -73,6 +77,7 @@ if(BLITZ2_PREV)
 				-DPREV_DIR=${PREV_DIR} -DGENERATOR=${CMAKE_GENERATOR}
 				"-DCONFIGURE_ARGS=${prev_args}" -DSNITCH_PIN=${pin}
 				-DSNITCH_SOURCE_DIR=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
+				-DCLI11_PIN=${cli11_pin} -DCLI11_SOURCE_DIR=${cli11_SOURCE_DIR}
 				-P ${PROJECT_SOURCE_DIR}/cmake/prev-build.cmake
 			BUILD_ALWAYS ON
 			USES_TERMINAL_BUILD ON

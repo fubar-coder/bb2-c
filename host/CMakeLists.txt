@@ -33,22 +33,44 @@ endif()
 enable_testing()
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/CLI11.cmake)
+
 # the tests of every host program (docs/development.md, "Host programs"):
 # help_PROGRAM - -h and --help (cmake/check-help.cmake), with the
 # subcommands also SUB -h and --help of each and the synopsis lines of the
 # program's usage against them; readme_PROGRAM - the README against -h
 # (cmake/check-readme.cmake).  The program is a target of this project.
+# With CLI first (a program on CLI11, tools/lib/cli) the checks are
+# cmake/check-help-cli.cmake and cmake/check-readme-cli.cmake, and the
+# README test also gets the subcommands: host_help_test(PROGRAM CLI SUB...),
+# host_readme_test(PROGRAM README.md CLI SUB...).
 set(HOST_CHECK_HELP ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help.cmake)
 set(HOST_CHECK_README ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-readme.cmake)
+set(HOST_CHECK_HELP_CLI ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help-cli.cmake)
+set(HOST_CHECK_README_CLI ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-readme-cli.cmake)
 function(host_help_test program)
-	string(JOIN "," subcommands ${ARGN})
+	set(subs ${ARGN})
+	set(script ${HOST_CHECK_HELP})
+	if(subs AND "${ARGV1}" STREQUAL "CLI")
+		list(REMOVE_AT subs 0)
+		set(script ${HOST_CHECK_HELP_CLI})
+	endif()
+	string(JOIN "," subcommands ${subs})
 	add_test(NAME help_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
-		-DSUBCOMMANDS=${subcommands} -P ${HOST_CHECK_HELP})
+		-DSUBCOMMANDS=${subcommands} -P ${script})
 endfunction()
 function(host_readme_test program readme)
 	get_filename_component(readme ${readme} ABSOLUTE)
-	add_test(NAME readme_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
-		-DREADME=${readme} -P ${HOST_CHECK_README})
+	set(subs ${ARGN})
+	if(subs AND "${ARGV2}" STREQUAL "CLI")
+		list(REMOVE_AT subs 0)
+		string(JOIN "," subcommands ${subs})
+		add_test(NAME readme_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
+			-DREADME=${readme} -DSUBCOMMANDS=${subcommands} -P ${HOST_CHECK_README_CLI})
+	else()
+		add_test(NAME readme_${program} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${program}>
+			-DREADME=${readme} -P ${HOST_CHECK_README})
+	endif()
 endfunction()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)

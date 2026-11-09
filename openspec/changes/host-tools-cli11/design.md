@@ -292,7 +292,10 @@ group of this change, and the corpus and `ted_ab` prev parts. Rollback is
 reverting the group's commit; the programs not yet converted run with the
 old `subcmd` until the final sweep.
 
-## Open Questions
+## Open Questions (decided 2026-11-09)
+
+The user decided all eight as recommended (task 0.2); the notes in
+"Implementation notes" say how each one was carried out.
 
 1. **CLI11 version.** Recommendation: the newest 2.x release at the start
    of the work (2.5.0 or later; check the GitHub releases page), pinned by
@@ -328,3 +331,60 @@ old `subcmd` until the final sweep.
    one-line description in the `add_subcommand` call and the long
    description (what the README says first) in `sub->description` set by
    `->description()`; no separate text files.
+
+## Implementation notes
+
+Findings and adaptations while implementing (2026-11-09).
+
+- **Changes on `main` since the plan was written** (expected-results-testing
+  7.x): `corpusrun pass --update-expect TAG PASSFILE` and the pass-file key
+  `expect_dir=` (`tests/corpus/runner`), and `results ted-oracle NEW OLD
+  OUT` (`tools/results/cmd_ted_oracle.c`, `tools/lib/oracletable`). They
+  are converted in their groups (`results` in group 5, `corpusrun` in
+  group 11) like the other subcommands.
+- **CLI11 2.7.2** (the newest 2.x release on 2026-11-09), the GitHub
+  release tarball `archive/refs/tags/v2.7.2.tar.gz` with SHA256
+  `46eef310...83da` computed from the download (Q1, Q2).
+- **The top-level build fetches CLI11 too** (D2): the host side is an
+  ExternalProject configured at build time, so its cache cannot give the
+  top-level build a source directory. The top-level `CMakeLists.txt`
+  includes `cmake/CLI11.cmake` with `CLI11_SOURCE_ONLY` (FetchContent with
+  a `SOURCE_SUBDIR` that does not exist: the source is downloaded, no
+  target is made in the m68k build) and passes `cli11_SOURCE_DIR` to the
+  host side as `FETCHCONTENT_SOURCE_DIR_CLI11` and to `prev-build.cmake`
+  (`-DCLI11_PIN`, `-DCLI11_SOURCE_DIR`), as for snitch. The host side
+  downloads nothing.
+- **Help shape** (Q3): CLI11's default formatter puts the description
+  before the usage line and the usage without `Usage:`; the spec wants
+  stdout to start with `Usage: `. `cli::Formatter` derives from
+  `CLI::Formatter` and overrides only `make_help()`: `Usage: ` and the
+  usage line, the description, then CLI11's own `POSITIONALS:`,
+  `OPTIONS:`, `SUBCOMMANDS:` sections and the footer, at the widths of
+  CLI11's defaults set explicitly (column 30, paragraphs 80). The labels
+  stay CLI11's (`OPTIONS`, `POSITIONALS`, `SUBCOMMANDS`); the help check
+  reads the `SUBCOMMANDS:` section. A subcommand inherits the formatter
+  when it is added, so `cli::run()` sets it on the whole tree.
+- **Description texts** (Q8): CLI11 has one description per subcommand,
+  and it is also the subcommand's line in the program's help. The
+  one-line description is given to `add_subcommand()`; the longer text of
+  a former usage (what the README says first, the exit codes) goes into
+  the subcommand's `footer()`.
+- **Unknown subcommand**: CLI11 reports `prog gamma` as "A subcommand is
+  required"; `cli::run()` checks the first argument first and writes
+  `PROGRAM: NAME is no subcommand` and the hint (status 2), so the message
+  names the problem (spec "Unknown or missing subcommand").
+- **A thrown `std::exception`** (a validator, D7) is caught by `cli::run()`
+  and gives `PROGRAM: what` and status 2.
+- **Test names during the change** (D8): the new checks' tests are
+  `help_check_cli_*` and `readme_check_cli_*`, the fake READMEs are in
+  `tools/tests/fake-readme-cli/`, beside the old `help_check_*`,
+  `readme_check_*` and `fake-readme/`; the final sweep gives the new ones
+  the old names. `host_help_test(PROGRAM CLI SUB...)` and
+  `host_readme_test(PROGRAM README.md CLI SUB...)` select the new scripts;
+  the final sweep drops the `CLI` keyword.
+- **`-last` is `bbsrc tokens`'s** (Q4, task 1.4): `blitzlib cmdref` has
+  `-o`, `-group`, `-name`; the single-dash `-last` is an option of `bbsrc
+  tokens` (callers `tests/ab3/tokenise.cmake`, `tests/ab3/tokens.cmake`).
+  It becomes `--last` in the `bbsrc` group by the same rule (D5), with its
+  callers.
+- **Inventory** (task 1.4): `~/.local/share/bb2-c-work/cli11-callers.md`.

@@ -316,46 +316,88 @@ position of an argument. A program with one mode is called
 for the same callers are one program; a program that links the TED core
 (`tedhost`, `tedcore_host`) is not merged with one that does not.
 
-**Dispatch.** `main.c` of a program with subcommands is only its table
-and the call of `subcmd_main()` (`tools/lib/subcmd/subcmd.h`); each
-subcommand is `int cmd_NAME(int argc, char **argv)` in `cmd_NAME.c` next
-to it, with its usage text as the table's entry. The smallest example is
-the fake program of the checks' tests, `tools/tests/fake_subcmd.c`:
+**Dispatch.** The programs parse their command line with CLI11
+(`cmake/CLI11.cmake`, a fixed release, BSD-3-Clause) through the shell
+`tools/lib/cli/cli.hpp` (C++20, header only); no program compares `argv`
+entries itself. The program and command layer is C++: `main.cpp` only
+declares the subcommands on a `CLI::App` and returns `cli::run()`; each
+subcommand is `void cmd_NAME(CLI::App &app, int &status)` in
+`cmd_NAME.cpp` next to it, which adds the subcommand with a one-line
+description, declares its options and arguments bound to its own state,
+and sets the status in its callback. The logic stays C in `tools/lib/`
+(or the component's library); C++ includes its headers inside
+`extern "C" { ... }`. A program with one mode declares its options on the
+`CLI::App` itself. Programs not moved to CLI11 yet have a table of
+`subcmd_main()` (`tools/lib/subcmd/subcmd.h`) and parse their options by
+hand. The smallest example is the fake program of the checks' tests,
+`tools/tests/fake_cli11.cpp`:
 
-```c
-static const struct subcmd table[] = {
-    { "alpha", run, "usage: fake_subcmd alpha [-x] FILE\n  the first subcommand\n" },
-    { "beta", run, "usage: fake_subcmd beta\n       fake_subcmd beta --all\n  the second subcommand\n" },
-};
+```cpp
+static void cmd_alpha(CLI::App &app, int &status)
+{
+    struct options {
+        bool x = false;
+        std::string file;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("alpha", "the first subcommand");
+    sub->add_flag("-x", o->x, "a flag");
+    sub->add_option("FILE", o->file, "the input")->required();
+    sub->callback([sub, o, &status] {
+        std::printf("%s: %s%s\n", cli::name(*sub).c_str(), o->file.c_str(), o->x ? " -x" : "");
+        status = 0;
+    });
+}
+```
 
+```cpp
 int main(int argc, char **argv)
 {
-    return subcmd_main("fake_subcmd", table, sizeof table / sizeof table[0], argc, argv);
+    CLI::App app{"The fake program of the help and README checks.", "fake_cli11"};
+    int status = 0;
+    app.require_subcommand(1);
+    cmd_alpha(app, status);
+    cmd_beta(app, status);
+    return cli::run(app, argc, argv, status);
 }
 ```
 
 ```
-$ fake_subcmd -h
-usage: fake_subcmd alpha [-x] FILE
-       fake_subcmd beta
-       fake_subcmd beta --all
-The description and options of a subcommand: fake_subcmd SUB -h
-$ fake_subcmd beta -h
-usage: fake_subcmd beta
-       fake_subcmd beta --all
-  the second subcommand
-$ fake_subcmd beta x
-fake_subcmd beta
+$ fake_cli11 -h
+Usage: fake_cli11 [OPTIONS] SUBCOMMAND
+
+The fake program of the help and README checks.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  alpha                       the first subcommand
+  beta                        the second subcommand
+$ fake_cli11 alpha -x f
+fake_cli11 alpha: f -x
+$ fake_cli11 alpha
+FILE is required
+Run with --help for more information.
 ```
 
-The dispatcher prints the program's usage (the synopsis lines of the
-table in order) for `-h`/`--help` on stdout and, with exit status 2, for no or an
-unknown subcommand on stderr; `PROGRAM SUB -h` prints that subcommand's
-usage; otherwise it calls the subcommand with `argv[0]` set to
-`"PROGRAM SUB"`. A usage text is `usage: PROGRAM SUB ...`, further
-synopsis lines (or a continued one) seven spaces and more, then the
-description, a newline at the end; the dispatcher refuses a table that breaks
-this (test `subcmd`).
+CLI11 calls the callback only after the whole command line was parsed, so
+a usage error runs nothing. `cli::run()` prints the help for `-h` or
+`--help` (of the program, or after a subcommand of that subcommand) on
+stdout with status 0; every command line CLI11 rejects - no or an unknown
+subcommand, an unknown option, a missing value, a surplus or missing
+argument, a value a check refuses - gives CLI11's message and "Run with
+--help for more information." on stderr and status 2; otherwise the
+status the callback set. The help has one shape (`cli::Formatter`, CLI11's
+formatter at a fixed width, without colour): the `Usage:` line first, the
+description, `POSITIONALS:`, `OPTIONS:`, `SUBCOMMANDS:` and the footer
+(the longer text of a subcommand, its exit codes). `cli::name(*sub)` is
+`PROGRAM SUB`, the prefix of the subcommand's messages. Options: a flag
+`add_flag("-x", var, ...)`, a value `add_option("--name", var, ...)`
+(`--name VALUE` or `--name=VALUE`; a value that starts with `-` is given
+as `--name=VALUE`), a repeatable one bound to a `std::vector`, arguments
+as `add_option("NAME", var)` without dashes, flags that exclude each other
+with `->excludes()`.
 
 **Exit codes and messages.** 0 success; 1 the checked thing failed or an
 input could not be processed; 2 usage error (also an unknown subcommand
@@ -365,18 +407,28 @@ unreadable input, it stays so; its README says which. Messages go to
 stderr as `PROGRAM SUB: [FILE: ]message` (`argv[0]` of the subcommand),
 results to stdout or the named output file.
 
-**Tests.** `host_help_test(PROGRAM [SUB...])` (`host/CMakeLists.txt`)
-adds `help_PROGRAM`: `-h` and `--help` of the program and of every
-subcommand exit 0 with the usage on stdout and nothing on stderr, and
-every subcommand of a synopsis line of the program's usage is in the list
-(`cmake/check-help.cmake`). `host_readme_test(PROGRAM README.md)` adds
-`readme_PROGRAM`: every synopsis line of `PROGRAM -h` is a line of the
-README, and every synopsis-like line of the README is printed by `-h`
-(`cmake/check-readme.cmake`). The checks with broken input:
-`help_check_*` and `readme_check_*` (`tools/tests`, the fake program
-`fake_subcmd`). Adding a subcommand: the `cmd_NAME.c`, its table entry,
-its name in the program's `host_help_test` call, its synopsis lines and
-a paragraph in the README.
+**Tests.** `host_help_test(PROGRAM CLI [SUB...])` (`host/CMakeLists.txt`)
+adds `help_PROGRAM` (`cmake/check-help-cli.cmake`): `-h` and `--help` of
+the program and of every subcommand exit 0, stdout starts with
+`Usage: PROGRAM` (`Usage: PROGRAM SUB`), stderr is empty; an unknown
+option gives status 2 and a message on stderr; and every subcommand of the
+`SUBCOMMANDS:` section of the program's help is in the list.
+`host_readme_test(PROGRAM README.md CLI [SUB...])` adds `readme_PROGRAM`
+(`cmake/check-readme-cli.cmake`): the output of `PROGRAM -h` and of every
+`PROGRAM SUB -h` is in the README verbatim (trailing blanks aside), and
+every fenced block of the README that starts with `Usage: PROGRAM` is one
+of them. When a help changes, the test fails and prints the new help in
+a fenced block: that is the text for the README. The checks with broken
+input: `help_check_cli_*` and `readme_check_cli_*` (`tools/tests`, the
+fake program `fake_cli11` and the READMEs in `tools/tests/fake-readme-cli`).
+Without `CLI` the two functions run the checks of the programs on
+`subcmd` (`cmake/check-help.cmake`: synopsis lines `usage: PROGRAM SUB`;
+`cmake/check-readme.cmake`: every synopsis line of `-h` is a line of the
+README and the other way round; their tests `help_check_*`,
+`readme_check_*` with `fake_subcmd`). Adding a subcommand: the
+`cmd_NAME.cpp`, its call in `main.cpp`, its name in the program's
+`host_help_test` and `host_readme_test` calls, its help block and a
+paragraph in the README.
 
 **README.** The sections, in this order (`tools/hdftool/README.md` is an
 example):
@@ -389,10 +441,14 @@ What it is for, in a paragraph; where its logic is (tools/lib/NAME).
 ## Usage
 
 ```
-(the synopsis lines of PROGRAM -h, verbatim)
+(the output of PROGRAM -h, verbatim)
 ```
 
-One paragraph per subcommand: what it does, its options.
+```
+(the output of PROGRAM SUB -h, verbatim, for every subcommand)
+```
+
+One paragraph per subcommand: what it does, its options in words.
 
 ## Inputs and outputs
 
