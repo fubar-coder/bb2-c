@@ -180,9 +180,12 @@ revert of the commits.
   `rishapeslib-read-palette-colour-count` clib (DIFFERS in earlier runs
   before this change as well: its 768 KB overflow lands in free memory),
   BROKEN `rimisclib-initargparse-unbounded` (TODO.md).
-- Task 4.2 (a visible Amiberry run with screenshots) was not done by the
-  implementing agent: driving TED's menus in a visible window and taking
-  screenshots needs a person at the screen. Instead the TED A/B script
-  `30-stripe` dumps the screen while the whole bar is drawn: C5 (the
+- Task 4.2: a visible run by hand (`amiga_run --visible --set
+  cpu_speed=real`, the speed of an A1200), TED-C first with the original
+  compiler and then with blitz2-c, a program of 3001 lines with an
+  include of 600 lines, loaded tokenised (`tedsrc tok`): both compiles
+  succeeded and the progress bar was drawn throughout in both (seen by
+  the user; no screenshots). The TED A/B script `30-stripe` checks the
+  picture: it dumps the screen while the whole bar is drawn, and C5 (the
   original compiler) and Cc (blitz2-c through TED-C) are the same byte
-  for byte; it does not show the bar moving.
+  for byte.
