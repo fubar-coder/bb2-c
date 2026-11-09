@@ -5,7 +5,7 @@
 #   cmake -DBLITZLIB=blitzlib -DLIB=NAME.obj -DGROUP=G -DNAME=N -DOUT=generated.json
 #         -DCOMMITTED=site/data/libraries/G/N.json -P cmdref-check.cmake
 cmake_minimum_required(VERSION 4.2.3)
-execute_process(COMMAND ${BLITZLIB} cmdref -o ${OUT} -group ${GROUP} -name ${NAME} ${LIB}
+execute_process(COMMAND ${BLITZLIB} cmdref -o ${OUT} --group ${GROUP} --name ${NAME} ${LIB}
 	RESULT_VARIABLE rc)
 if(rc)
 	message(FATAL_ERROR "blitzlib cmdref: exit ${rc}")

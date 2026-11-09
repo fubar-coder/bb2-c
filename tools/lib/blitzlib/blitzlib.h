@@ -109,13 +109,13 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);
  * the declaration part.
  *
  * @param orig  the code hunk of one build
- * @param new   the code hunk of the other
+ * @param other the code hunk of the other
  * @param name  the prefix of the messages
  * @param out   the differences
  * @return the number of differences (-1 = a library does not read,
  *         message to out)
  */
-int blitzlib_compare(const struct hunk *orig, const struct hunk *new, const char *name, FILE *out);
+int blitzlib_compare(const struct hunk *orig, const struct hunk *other, const char *name, FILE *out);
 
 /**
  * @brief Split a list of intended differences into its lines (in place).

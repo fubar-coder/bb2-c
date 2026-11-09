@@ -28,7 +28,7 @@ groups 2-14 and is not repeated there:
 
 - [x] 0.1 Baseline: on `main`, clean build, `ctest --preset all` and `ctest --preset host` pass; record the failing set (if any) in `~/.local/share/bb2-c-work/cli11-baseline.md`. Verify: the file exists; later groups compare against it
 - [x] 0.2 Settle the open questions of design.md that change what is built (1 version, 4 renames, 6 verdict codes) with the coordinator; note the answers in design.md. Verify: no open question is left that a task depends on
-- [ ] 0.3 Agree with the coordinator that no other change touches the tool directories while a group is in progress. Verify: a note in the group's report
+- [x] 0.3 Agree with the coordinator that no other change touches the tool directories while a group is in progress. Verify: a note in the group's report
 
 ## 1. Infrastructure
 
@@ -61,7 +61,7 @@ groups 2-14 and is not repeated there:
 
 ## 7. `blitzlib`
 
-- [ ] 7.1 `tools/blitzlib/` (`join`, `extract`, `numbers`, `check`, `compare`, `cmdref`); `cmdref -group/-name/-last` becomes `--group/--name/--last` in `cmdref-check.cmake`, `cmdref-complete.cmake`, `tools/tests/CMakeLists.txt:136` and every other caller found in task 1.4; callers `cmake/BlitzLibrary.cmake` (used by every library target), `libs/`, `tools/blitzlib`. Verify: C1-C5; **`acidlibs`, `deflibs`, every `.obj` and the site JSON from `cmdref` are byte-identical** (`prev_results`, `cmp`); `rwe_numbers*`, `biglib_check_clash`, `cmdref_not_a_library` (status 1) pass
+- [x] 7.1 `tools/blitzlib/` (`join`, `extract`, `numbers`, `check`, `compare`, `cmdref`); `cmdref -group/-name/-last` becomes `--group/--name/--last` in `cmdref-check.cmake`, `cmdref-complete.cmake`, `tools/tests/CMakeLists.txt:136` and every other caller found in task 1.4; callers `cmake/BlitzLibrary.cmake` (used by every library target), `libs/`, `tools/blitzlib`. Verify: C1-C5; **`acidlibs`, `deflibs`, every `.obj` and the site JSON from `cmdref` are byte-identical** (`prev_results`, `cmp`); `rwe_numbers*`, `biglib_check_clash`, `cmdref_not_a_library` (status 1) pass
 
 ## 8. `bbsrc`
 

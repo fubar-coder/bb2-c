@@ -421,3 +421,10 @@ Findings and adaptations while implementing (2026-11-09).
   `cmake/coverage-select.cmake` with the old and the new `testinfo`):
   `coverage/` (45 tracefiles, `all.info`, `commit`, `selected.txt` with
   849 tests, the inputs) and both logs identical.
+- **`blitzlib`** (task 7.1): `cmdref -group/-name` became `--group`/`--name`
+  (callers `tools/blitzlib/cmdref-check.cmake`, the test
+  `cmdref_not_a_library`). `tools/lib/blitzlib/blitzlib.h` names the
+  second parameter of `blitzlib_compare()` `other` instead of `new` (a C++
+  keyword; only the prototype and its comment, the implementation is
+  unchanged): the one change of a library header (D4), needed to include
+  it from C++.

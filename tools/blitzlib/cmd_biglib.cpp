@@ -17,16 +17,22 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cli.hpp"
+extern "C" {
 #include "biglib.h"
 #include "hunk.h"
+}
 #include "cmds.h"
 
 static const char *me; /* "blitzlib SUB", the prefix of the messages */
 
-static int join(const char *out, int n, char **files)
+static int join(const char *out, int n, const char *const *files)
 {
-    struct loadfile *lf = calloc(n ? (size_t)n : 1, sizeof *lf);
-    struct biglib_entry *e = calloc(n ? (size_t)n : 1, sizeof *e);
+    struct loadfile *lf = (struct loadfile *)calloc(n ? (size_t)n : 1, sizeof *lf);
+    struct biglib_entry *e = (struct biglib_entry *)calloc(n ? (size_t)n : 1, sizeof *e);
     FILE *f;
     int i, rc = 1;
 
@@ -79,7 +85,7 @@ static uint8_t *read_all(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n)
+        && (s = (uint8_t *)malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n)
         *len = (size_t)n;
     else {
         free(s);
@@ -136,26 +142,26 @@ done:
 /* room for n entries in the three arrays of check; 0 = out of memory */
 static int grow(struct biglib_entry **all, int **from, int **index, size_t n)
 {
-    struct biglib_entry *a = realloc(*all, (n ? n : 1) * sizeof *a);
+    struct biglib_entry *a = (struct biglib_entry *)realloc(*all, (n ? n : 1) * sizeof *a);
     int *f, *x;
 
     if (a)
         *all = a;
-    f = realloc(*from, (n ? n : 1) * sizeof *f);
+    f = (int *)realloc(*from, (n ? n : 1) * sizeof *f);
     if (f)
         *from = f;
-    x = realloc(*index, (n ? n : 1) * sizeof *x);
+    x = (int *)realloc(*index, (n ? n : 1) * sizeof *x);
     if (x)
         *index = x;
     return a && f && x;
 }
 
 /* the libraries of FILES (BigLib or library files) with the same number */
-static int check(int n, char **files)
+static int check(int n, const char *const *files)
 {
     struct biglib_entry *all = NULL, *e;
     size_t nall = 0, ne, k, earlier;
-    uint8_t **bufs = calloc(n ? (size_t)n : 1, sizeof *bufs);
+    uint8_t **bufs = (uint8_t **)calloc(n ? (size_t)n : 1, sizeof *bufs);
     int *from = NULL, *index = NULL, i, rc = 1;
     long c;
 
@@ -170,7 +176,7 @@ static int check(int n, char **files)
             goto done;
         }
         if (size >= 4 && be32(bufs[i]) == HUNK_HEADER) {      /* one library */
-            if (!(e = malloc(sizeof *e)))
+            if (!(e = (struct biglib_entry *)malloc(sizeof *e)))
                 goto nomem;
             e->data = bufs[i];
             e->size = (uint32_t)size;
@@ -212,43 +218,74 @@ done:
     return rc;
 }
 
-const char cmd_join_usage[] =
-    "usage: blitzlib join OUT LIB.obj...\n"
-    "  join Blitz Basic 2 library files into one BigLib file\n";
-const char cmd_extract_usage[] =
-    "usage: blitzlib extract BIGLIB NUMBER|LIB.obj OUT\n"
-    "  take the library with that number (or the number of LIB.obj) out of a\n"
-    "  BigLib file\n";
-const char cmd_numbers_usage[] =
-    "usage: blitzlib numbers FILE...\n"
-    "  no library number twice in the FILEs (BigLib or library files)\n";
-
-int cmd_join(int argc, char **argv)
+/* the C strings of ARGS, for the functions above */
+static std::vector<const char *> c_strings(const std::vector<std::string> &args)
 {
-    me = argv[0];
-    if (argc < 2) {
-        fputs(cmd_join_usage, stderr);
-        return 2;
-    }
-    return join(argv[1], argc - 2, argv + 2);
+    std::vector<const char *> v;
+
+    for (const std::string &s : args)
+        v.push_back(s.c_str());
+    v.push_back(NULL);
+    return v;
 }
 
-int cmd_extract(int argc, char **argv)
+void cmd_join(CLI::App &app, int &status)
 {
-    me = argv[0];
-    if (argc != 4) {
-        fputs(cmd_extract_usage, stderr);
-        return 2;
-    }
-    return extract(argv[1], argv[2], argv[3]);
+    struct options {
+        std::string out;
+        std::vector<std::string> libs;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("join", "join Blitz Basic 2 library files into one BigLib file");
+    sub->add_option("OUT", o->out, "the BigLib file written")->required();
+    sub->add_option("LIB.obj", o->libs, "the library files, in this order");
+    sub->footer("Every input must be a well-formed AmigaDOS load file; prints \"OUT: N libs\". Exit "
+                "status 0, 1 an input cannot be read or is no load file, or OUT cannot be written, "
+                "2 usage error.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+        std::vector<const char *> libs = c_strings(o->libs);
+
+        me = name.c_str();
+        status = join(o->out.c_str(), (int)o->libs.size(), libs.data());
+    });
 }
 
-int cmd_numbers(int argc, char **argv)
+void cmd_extract(CLI::App &app, int &status)
 {
-    me = argv[0];
-    if (argc < 2) {
-        fputs(cmd_numbers_usage, stderr);
-        return 2;
-    }
-    return check(argc - 1, argv + 1);
+    struct options {
+        std::string big, which, out;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand(
+        "extract", "take the library with that number (or the number of LIB.obj) out of a BigLib file");
+    sub->add_option("BIGLIB", o->big, "the BigLib file")->required();
+    sub->add_option("WHICH", o->which, "the library number, or a library file whose number is taken")
+        ->type_name("NUMBER|LIB.obj")
+        ->required();
+    sub->add_option("OUT", o->out, "the library file written")->required();
+    sub->footer("Exit status 0, 1 BIGLIB cannot be read or holds no such library, WHICH is no "
+                "library file, or OUT cannot be written, 2 usage error.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        status = extract(o->big.c_str(), o->which.c_str(), o->out.c_str());
+    });
+}
+
+void cmd_numbers(CLI::App &app, int &status)
+{
+    auto files = std::make_shared<std::vector<std::string>>();
+    CLI::App *sub = app.add_subcommand("numbers", "no library number twice in the FILEs (BigLib or library files)");
+    sub->add_option("FILE", *files, "BigLib or library files")->required();
+    sub->footer("Exit status 0, 1 a library number is twice (both named) or a FILE cannot be read "
+                "or is no BigLib or library file, 2 usage error.");
+    sub->callback([sub, files, &status] {
+        const std::string name = cli::name(*sub);
+        std::vector<const char *> v = c_strings(*files);
+
+        me = name.c_str();
+        status = check((int)files->size(), v.data());
+    });
 }

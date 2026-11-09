@@ -14,39 +14,174 @@ and `test_cmdref.c`.
 ## Usage
 
 ```
-usage: blitzlib join OUT LIB.obj...
-       blitzlib extract BIGLIB NUMBER|LIB.obj OUT
-       blitzlib numbers FILE...
-       blitzlib check LIB.obj...
-       blitzlib compare ORIGINAL NEW [INTENDED]
-       blitzlib cmdref [-o OUT] -group GROUP -name NAME LIB.obj
+Usage: blitzlib [OPTIONS] SUBCOMMAND
+
+Blitz Basic 2 library files: joined, taken out, checked, compared, as JSON.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  join                        join Blitz Basic 2 library files into one BigLib file
+  extract                     take the library with that number (or the number of LIB.obj) out
+                              of a BigLib file
+  numbers                     no library number twice in the FILEs (BigLib or library files)
+  check                       check Blitz Basic 2 library files
+  compare                     the declarations of every library of a BigLib file (or of a
+                              library file) against the original
+  cmdref                      the command table of a Blitz Basic 2 library file as JSON
 ```
 
-`blitzlib SUB -h` prints the description of `SUB`.
+### join
 
-* `join`: every input must be a well-formed AmigaDOS load file; writes the
-  BigLib file `OUT` (`tools/lib/biglib/biglib.h`) and prints
-  `OUT: N libs`.
-* `extract`: the library with that number of `BIGLIB` (or the number of
-  the library file `LIB.obj`, e.g. the original of a library built here)
-  as a file of its own.
-* `numbers`: no two libraries of the `FILE`s (BigLib or library files,
-  e.g. acidlibs, deflibs and the userlibs of a variant) have the same
-  number; a clash names both.
-* `check`: each file is a valid library file: one code hunk, relocations
-  only into it, the library header, the token table readable up to its
-  end, no reference from the normal code into the error check area
-  (`docs/development.md`, "Checks in the build"). Silent if all is right.
-* `compare`: the declarations of every library of `NEW` against those of
-  `ORIGINAL` (BigLib files with the same libraries in the same order, or
-  two library files): header, entries, `!libfin`. `INTENDED` lists the
-  intended differences, one message line per line as printed, `#`
-  comments; they are not counted, and each must occur (a stale entry is a
-  difference; `docs/development.md`, "Intended differences"). Prints the
-  differences and a summary. Without `ORIGINAL` it is skipped.
-* `cmdref`: the command table of the library file as JSON
-  (`tools/lib/cmdref/cmdref.h`), to `OUT` or stdout; `OUT` is removed
-  first, so a failed run leaves none.
+```
+Usage: blitzlib join [OPTIONS] OUT [LIB.obj...]
+
+join Blitz Basic 2 library files into one BigLib file
+
+POSITIONALS:
+  OUT TEXT REQUIRED           the BigLib file written
+  LIB.obj TEXT ...            the library files, in this order
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Every input must be a well-formed AmigaDOS load file; prints "OUT: N libs". Exit
+status 0, 1 an input cannot be read or is no load file, or OUT cannot be
+written, 2 usage error.
+```
+
+Every input must be a well-formed AmigaDOS load file; writes the
+BigLib file `OUT` (`tools/lib/biglib/biglib.h`) and prints
+`OUT: N libs`.
+
+### extract
+
+```
+Usage: blitzlib extract [OPTIONS] BIGLIB WHICH OUT
+
+take the library with that number (or the number of LIB.obj) out of a BigLib
+file
+
+POSITIONALS:
+  BIGLIB TEXT REQUIRED        the BigLib file
+  WHICH NUMBER|LIB.obj REQUIRED
+                              the library number, or a library file whose number is taken
+  OUT TEXT REQUIRED           the library file written
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 BIGLIB cannot be read or holds no such library, WHICH is no
+library file, or OUT cannot be written, 2 usage error.
+```
+
+The library with that number of `BIGLIB` (or the number of
+the library file `LIB.obj`, e.g. the original of a library built here)
+as a file of its own.
+
+### numbers
+
+```
+Usage: blitzlib numbers [OPTIONS] FILE...
+
+no library number twice in the FILEs (BigLib or library files)
+
+POSITIONALS:
+  FILE TEXT ... REQUIRED      BigLib or library files
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0, 1 a library number is twice (both named) or a FILE cannot be read
+or is no BigLib or library file, 2 usage error.
+```
+
+No two libraries of the `FILE`s (BigLib or library files,
+e.g. acidlibs, deflibs and the userlibs of a variant) have the same
+number; a clash names both.
+
+### check
+
+```
+Usage: blitzlib check [OPTIONS] LIB.obj...
+
+check Blitz Basic 2 library files
+
+POSITIONALS:
+  LIB.obj TEXT ... REQUIRED   the library files
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+One code hunk, relocations only into it, the library header, the token table
+readable up to its end, no reference from the normal code into the error check
+area. Silent if all is right. Exit status 0, 1 a file is no valid library file
+(the findings on stderr), 2 usage error.
+```
+
+Each file is a valid library file: one code hunk, relocations
+only into it, the library header, the token table readable up to its
+end, no reference from the normal code into the error check area
+(`docs/development.md`, "Checks in the build"). Silent if all is right.
+
+### compare
+
+```
+Usage: blitzlib compare [OPTIONS] ORIGINAL NEW [INTENDED]
+
+the declarations of every library of a BigLib file (or of a library file)
+against the original
+
+POSITIONALS:
+  ORIGINAL TEXT REQUIRED      the original BigLib or library file
+  NEW TEXT REQUIRED           the BigLib or library file built here
+  INTENDED TEXT               the intended differences, one message line per line (# comments),
+                              each of them must occur
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Both hold the same libraries in the same order. Prints the differences and a
+summary. Exit status 0 no difference, 1 a difference or a stale INTENDED line,
+or a file cannot be read, 2 usage error, 77 (skipped) ORIGINAL does not exist
+(fetch-originals).
+```
+
+The declarations of every library of `NEW` against those of
+`ORIGINAL` (BigLib files with the same libraries in the same order, or
+two library files): header, entries, `!libfin`. `INTENDED` lists the
+intended differences, one message line per line as printed, `#`
+comments; they are not counted, and each must occur (a stale entry is a
+difference; `docs/development.md`, "Intended differences"). Prints the
+differences and a summary. Without `ORIGINAL` it is skipped.
+
+### cmdref
+
+```
+Usage: blitzlib cmdref [OPTIONS] LIB.obj
+
+the command table of a Blitz Basic 2 library file as JSON
+
+POSITIONALS:
+  LIB.obj TEXT REQUIRED       the library file
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o OUT                      the JSON written (default: stdout); removed first
+          --group GROUP REQUIRED
+                              the group of the library (acidlibs, deflibs, ...)
+          --name NAME REQUIRED
+                              the name of the library
+
+The data of the website's command reference,
+site/data/libraries/GROUP/NAME.json. Exit status 0, 1 LIB.obj is no readable
+library file or OUT cannot be written (no OUT is left), 2 usage error.
+```
+
+The command table of the library file as JSON
+(`tools/lib/cmdref/cmdref.h`), to `OUT` or stdout; `OUT` is removed
+first, so a failed run leaves none.
 
 ## Inputs and outputs
 
