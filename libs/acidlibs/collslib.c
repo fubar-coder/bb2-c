@@ -12,6 +12,14 @@
  * (shapes) resp. pixel width/height (sprites: the low byte of +8 and
  * height+1-1); hit when the rectangles overlap (signed word compares) ->
  * -1, else 0.  RectsHit takes width2/height2 from the a2 argument stack.
+ * The test is asymmetric (kept as the original, not a bug: it may be
+ * intended, it leaves a gap on one side): the first rectangle's right
+ * (bottom) edge must lie beyond the second one's left (top) edge (<=: not
+ * a hit), the second's right (bottom) edge only before the first's left
+ * (top) edge (<: not a hit).  Rectangles that only touch are a hit when
+ * the second lies left of (above) the first and no hit when it lies right
+ * of (below) it, so ShapesHit(A,B) and ShapesHit(B,A) differ for shapes
+ * that touch.
  * SetColl colour,planes[,playfield] writes CLXCON = $F000 | enable bits
  * for `planes` planes | colour (playfield given: colour bits spread to
  * the odd planes, playfield 2 shifted one up); SetCollHi planes: only the
