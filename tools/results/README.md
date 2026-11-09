@@ -15,16 +15,43 @@ and `tools/lib/oracletable`, tested by `tools/tests/test_outmatch.c`,
 ## Usage
 
 ```
-usage: results match [--section NAME] EXPECT OUTPUT
-       results prev [--all] [--intended PATH]... CUR PREV
-       results cd-update NEW OLD OUT
-       results cd-reference NEW OLD OUT
-       results ted-oracle NEW OLD OUT
+Usage: results [OPTIONS] SUBCOMMAND
+
+A result against its expectation or the previous result.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  match                       the text OUTPUT against the expect file EXPECT, line by line
+  prev                        the library files of a build directory against those of the prev
+                              build
+  cd-update                   the CD result table from the port's fresh run
+  cd-reference                the CD result table from the original's fresh run
+  ted-oracle                  the oracle data of the TED tests from the original TED's fresh
+                              run
 ```
 
-`results SUB -h` prints the description and the options of `SUB`.
-
 ### match
+
+```
+Usage: results match [OPTIONS] EXPECT OUTPUT
+
+the text OUTPUT against the expect file EXPECT, line by line
+
+POSITIONALS:
+  EXPECT TEXT REQUIRED        the expect file
+  OUTPUT TEXT REQUIRED        the output of a test run
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --section NAME      only the lines after "[NAME]" up to the next "[...]" line in both
+
+A line of EXPECT is literal, "~PATTERN" one line, "+PATTERN" one or more lines
+matching PATTERN ('*' any characters, '#' a decimal number, "\c" c), "\TEXT" the
+literal TEXT. Exit status 0 OUTPUT matches, 1 it does not (the first difference
+on stderr), 2 usage error, a file that cannot be read or a broken EXPECT.
+```
 
 Compares the text `OUTPUT` with the expect file `EXPECT` line by line
 (`tools/lib/outmatch/outmatch.h`): a line is literal, `~PATTERN` stands for
@@ -36,6 +63,30 @@ the next `[...]` line are compared, in both files. The first difference
 goes to stderr.
 
 ### prev
+
+```
+Usage: results prev [OPTIONS] CUR PREV
+
+the library files of a build directory against those of the prev build
+
+POSITIONALS:
+  CUR TEXT REQUIRED           the build directory
+  PREV TEXT REQUIRED          the build of the previous commit
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --all               every difference is intended
+          --intended PATH     a path relative to the build directory whose difference is
+                              intended (it must differ); an entry with a colon (corpus:NAME,
+                              ted_ab:CASE ...) is one of the corpus and ted_ab: checked for its
+                              syntax, otherwise ignored
+
+Compares the library files (blitz2/acidlibs, blitz2/deflibs and every .obj below
+libs/ and variants/) of CUR byte by byte with those of PREV. A difference fails
+unless --all or --intended names it. Exit status 0 no difference that is not
+intended, 1 a difference or a stale --intended, 2 usage error or a malformed
+entry, 77 PREV does not exist.
+```
 
 Compares the library files (`blitz2/acidlibs`, `blitz2/deflibs` and every
 `.obj` below `libs/` and `variants/`) of the build directory `CUR` byte by
@@ -50,6 +101,46 @@ or `STALE PATH` line per finding and the summary line of the library
 (`prevcmp: N library files, ...`).
 
 ### cd-update, cd-reference
+
+```
+Usage: results cd-update [OPTIONS] NEW OLD OUT
+
+the CD result table from the port's fresh run
+
+POSITIONALS:
+  NEW TEXT REQUIRED           the port's fresh run
+  OLD TEXT REQUIRED           the table so far (tests/data/blitz2-cd.tsv)
+  OUT TEXT REQUIRED           the table written (may be OLD)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Rows whose note starts with "#NNN:" and names the CD's result as "(2.10: HEX)"
+(the masked hash) or "(2.10: error LINE)" (refused at that line) are note rows:
+the note stays unless the port's result is the CD's again. Exit status 0 OUT
+written, 1 the tables do not fit (the report on stderr), 2 usage error or a file
+that cannot be read or written.
+```
+
+```
+Usage: results cd-reference [OPTIONS] NEW OLD OUT
+
+the CD result table from the original's fresh run
+
+POSITIONALS:
+  NEW TEXT REQUIRED           the original's fresh run
+  OLD TEXT REQUIRED           the table so far (tests/data/blitz2-cd.tsv)
+  OUT TEXT REQUIRED           the table written (may be OLD)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Rows whose note starts with "#NNN:" and names the CD's result as "(2.10: HEX)"
+(the masked hash) or "(2.10: error LINE)" (refused at that line) are note rows:
+the row stays, and its note must name NEW's result. Exit status 0 OUT written, 1
+the tables do not fit (the report on stderr), 2 usage error or a file that
+cannot be read or written.
+```
 
 Write the CD result table `OUT` (`OUT` may be `OLD`) from the fresh run
 `NEW` and the table `OLD` (format: `tools/lib/cdtable/cdtable.h`). Rows
@@ -68,6 +159,25 @@ a table is malformed; the report goes to stdout (written) or stderr (not
 written).
 
 ### ted-oracle
+
+```
+Usage: results ted-oracle [OPTIONS] NEW OLD OUT
+
+the oracle data of the TED tests from the original TED's fresh run
+
+POSITIONALS:
+  NEW TEXT REQUIRED           the original TED's fresh run
+  OLD TEXT REQUIRED           the oracle data so far (tests/data/ted-oracle.sha256)
+  OUT TEXT REQUIRED           the file written (may be OLD)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Rows with a note "#NNN: TEXT (TED 1.1: HASH)" behind a tab are note rows (the
+port's hash after a fix): the row stays, and its note must name NEW's hash. Exit
+status 0 OUT written, 1 the files do not fit (the report on stderr), 2 usage
+error or a file that cannot be read or written.
+```
 
 Writes the oracle data of the TED tests `OUT` (`OUT` may be `OLD`) from
 the original TED's fresh run `NEW` (rows `HASH  KIND/PATH`, the target

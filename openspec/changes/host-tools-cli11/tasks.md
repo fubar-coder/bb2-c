@@ -53,7 +53,7 @@ groups 2-14 and is not repeated there:
 
 ## 5. `results`
 
-- [ ] 5.1 `tools/results/` (`match`, `prev`, `cd-update`, `cd-reference`); callers `tests/ab3`, `tests/bug-orig` (`inject-*.cmake`), `CMakeLists.txt` (`prev_results`), `tools/tests` (`prevcmp_*`, with their message matches), `tests/corpus/CMakeLists.txt`. Verify: C1-C5; `prev_results` passes, 77 without a prev build unchanged; the table of `blitz2-cd-reference` identical
+- [x] 5.1 `tools/results/` (`match`, `prev`, `cd-update`, `cd-reference`); callers `tests/ab3`, `tests/bug-orig` (`inject-*.cmake`), `CMakeLists.txt` (`prev_results`), `tools/tests` (`prevcmp_*`, with their message matches), `tests/corpus/CMakeLists.txt`. Verify: C1-C5; `prev_results` passes, 77 without a prev build unchanged; the table of `blitz2-cd-reference` identical
 
 ## 6. `blitzres`
 
