@@ -17,4 +17,6 @@
 # report); a difference of a program not listed fails, and so does a
 # listed program that differs in no configuration (stale note).
 #
-# Rows (none yet):
+# Rows:
+corpus	t130_blit	#46: BlitColl in a print list no longer overwrites shape 0 (other code)
+corpus_runerr	t130_blit	#46: BlitColl in a print list no longer overwrites shape 0, so no requester "Coords outside of BitMap"

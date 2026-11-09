@@ -2099,8 +2099,51 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
     return varcont(oldtype, type);
 }
 
+/* Fixed (#46): does a form of the library function sub load a3 (a
+   register spec $13xx in its !libs list, toreg in libcall.c: an object
+   like the Shape of BlitColl or the Sound of PeekSound)?  The forms as
+   dolibtoke walks them: the parameter word and bytes, the !libs pairs
+   (0 terminated), the three routine longs. */
+static BOOL liba3(const UBYTE *sub)
+{
+    const UBYTE *form = sub + 6;
+
+    for (;;) {
+        WORD w = (WORD)W_(form);
+        const UBYTE *p;
+
+        if (w < 0)
+            return FALSE;
+        p = aligna1(form + 2 + ((UWORD)w & 255));
+        for (;;) {
+            UWORD libnum = W_(p), regspec;
+
+            p += 2;
+            if (!libnum)
+                break;
+            regspec = W_(p);
+            p += 2;
+            if (regspec < 0xff00)
+                regspec &= 0x3fff;  /* the Blitz/Amiga mode bits */
+            if ((regspec >> 8) == 0x13)
+                return TRUE;
+        }
+        form = p + 12;
+    }
+}
+
 /* blitz2.s:10112 libfunction - do a user library function, eg
-   a=pixel{x,y} */
+   a=pixel{x,y}.
+   Fixed (intended deviation, #46): a function whose !libs list loads a3
+   (an object, $13xx) inside a string expression saves a3, the end of
+   the string being built (sbasegot, the criterion afunction uses for
+   pushing a3 and amigasave for #344), with the registers below regat in
+   the movem before the parameters, and gets it back with them after the
+   call.  The original saves only the registers below regat: the rest of
+   the expression wrote its characters from the object on (BlitColl's
+   Shape, PeekSound's Sound).  A function returning a string leaves its
+   result at a3 and is compiled as before, as is every call outside a
+   string expression. */
 static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
                          UBYTE *sub, UWORD *type)
 {
@@ -2111,7 +2154,16 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
         rettype = sizespec2();
     if (rettype == T_STRING)        /* .no0 */
         makesbase();
-    mask = savem();                 /* .notst0: the movem regs */
+    if (sbasegot && rettype != T_STRING && liba3(sub)) {
+        /* fixed (#46): the movem regs and a3 */
+        mask = 0;
+        for (c = regat; c; c--)
+            mask = (mask >> 1) | 0x8000;
+        mask |= 1 << 4;             /* a3, predecrement order */
+        pokewd(0x48e7);
+        pokewd(mask);
+    } else
+        mask = savem();             /* .notst0: the movem regs */
     c = getchar3();
     np = 0;
     if (c == '(') {

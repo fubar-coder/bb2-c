@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+before 20 9
+a 0 b
+after 20 9 20
+c 0 d
+sound unchanged
+rc=0

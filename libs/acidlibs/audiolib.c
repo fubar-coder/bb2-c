@@ -41,10 +41,11 @@
  *     that catches the runtime error (SetErr) and goes on has lost
  *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
  *     them then). (#950)
- *   - PeekSound (like every $1380 object function): the object pointer
- *     comes in a3, which is also the string buffer pointer; inside a
- *     string expression the following string parts are written into the
- *     Sound object. (#46)
+ * Fixed (#46), in the compiler: PeekSound (like every $1380 object
+ * function) gets the object pointer in a3, which is also the string
+ * buffer pointer; inside a string expression the original wrote the
+ * following string parts into the Sound object.  blitz2's libfunction
+ * now saves a3 around such a call (eval.c).
  * Fixed (intended deviation, docs/libs/deviations.md): in the original
  * SetPeriod without a sound branches (`BEQ err5`) from the normal code
  * into the error area (dangling without the debugger), and err1-err4 are
@@ -562,9 +563,9 @@ BLITZ_INLINE(dosdata,
  *        a word (inline, as in the original).
  *
  * a3 = the Sound object (!libs {#audiolib,$1380}), d1 = the offset; d0.w
- * = the byte.  BUG(orig) (#46): a3 is left as it is - a PeekSound inside
- * a string expression makes the rest of the expression write into the
- * object.  Errors (debugger, sdatachk): as SoundData.
+ * = the byte.  Fixed (#46): a3 is left as it is; inside a string
+ * expression the compiler saves a3 (the end of the string) around the
+ * call (eval.c libfunction).  Errors (debugger, sdatachk): as SoundData.
  */
 BLITZ_INLINE(dopsound,
     "   move.l  (a3),a0\n"

@@ -11,5 +11,7 @@ modes 00000FCA 00000B0A 00000B5A 00000BFA
  4089400 1106848 13799728
  7790228 8624698 13799728
  5365788 13218622 13799728
-REQUESTER: AutoRequest body "Coords outside of BitMap" pos "OKAY!" neg "OKAY!" -> answered FALSE
+coll -1 -1 -1
+coll empty 0 0
+coll after -1 0
 rc=0
