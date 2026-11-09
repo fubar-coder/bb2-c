@@ -122,6 +122,31 @@ and the second
 Issues: [A number ending in a decimal point was a syntax error (#10)](https://github.com/fubar-coder/bb2-c/issues/10),
 [An exponent after a fraction of 0 was ignored (#11)](https://github.com/fubar-coder/bb2-c/issues/11).
 
+### A byte compared with 128 to 255 {#byte-compare}
+
+A byte variable holds -128 to 127. Assigning `$90` (144) stores the byte
+$90, which reads back as -112. The original then compared the variable
+with the number 144 itself, so the comparison never matched.
+
+**What happened**
+
+```
+a.b=$90
+If a=$90 Then NPrint "equal" Else NPrint "not equal"
+End
+```
+
+The original prints `not equal`. Only `If a=-112` matched.
+
+**With the port**
+
+In `=` and `<>` with a byte, a constant from 128 to 255 stands for the
+byte it gives, as in the assignment. The program prints `equal`, and
+`If a=-112` still matches. The order comparisons stay as they were: `a<200`
+is true for every byte.
+
+Issue: [A byte variable compared with a constant from 128 to 255 never matches (#978)](https://github.com/fubar-coder/bb2-c/issues/978).
+
 ## Arrays and NewTypes
 
 ### Arrays with 256-byte elements {#arrays-256}

@@ -183,7 +183,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #9 | closed | [compiler/Expression] Operator `=<` is compiled as `<>` | **fixed in the port** |
 | #10 | closed | [compiler/Constants] Number with a point but no fractional digits (`1.`) is a syntax error | **fixed in the port** |
 | #11 | closed | [compiler/Constants] Exponent after fractional part 0 (`1.0e5`) is not evaluated | **fixed in the port** |
-| #12 | open | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | unchanged |
+| #12 | closed | [compiler/Constants] consttype2 jumps to `.quick2` with unloaded d0 for type Word/unknown | not a bug of the original (1.95 always takes the float); a regression of the port, fixed |
 | #13 | closed | [compiler/Constants] Quick constant with fractional part 0 or negative fractional part becomes a float constant | **fixed in the port** |
 | #14 | closed | [compiler/Code generation] pushput does not free the save buffer when the object buffer is full | **fixed in the port** |
 | #15 | closed | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | **fixed in the port** |
@@ -231,6 +231,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #968 | closed | [compiler/Macros] A macro body line ending in End swallows the rest of the macro (`getcharb`, `domacro`, `readinc`; `tokens1.c` domacro, tests `bug_orig_compiler_macro_end_line`, `bug_orig_compiler_macro_end_line_include`) | **fixed in the port** |
 | #974 | closed | [compiler/NewType] a by-value field of a forward-declared NewType (named before only by a pointer field) takes the line number of that pointer field as its size; the later NEWTYPE does not correct the layout (`tokens2.c` typemode, doend3) | **fixed in the port** |
 | #977 | closed | [compiler/Labels] A constant of value 0 is taken as a label not defined yet | **fixed in the port** |
+| #978 | closed | [compiler/Expressions] A byte variable compared with a constant from 128 to 255 never matches | **fixed in the port** (for `=` and `<>`) |
 | #979 | closed | [compiler/IncBin] An IncBin of odd length at the end of the program puts the end code on an odd address | **fixed in the port** |
 | #980 | closed | [compiler/nextline] The racing stripe writes before TED's bitmap on wide screens | **fixed in the port** (the compiler reports its progress to TED-C, which draws the bar; with the original TED no bar) |
 | #993 | closed | [compiler/Libraries] loadalib does not check the read of the reloc data: a short library file gets random relocs | **fixed in the port** |
