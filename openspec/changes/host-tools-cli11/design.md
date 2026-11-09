@@ -396,7 +396,10 @@ Findings and adaptations while implementing (2026-11-09).
     are no option (it would swallow positional arguments) and refuses a
     second `--name` by default. A repeatable option with N values per
     time is `cli::add_repeated(app, "--name", vec, N, ...)`
-    (`expected(N)`, `allow_extra_args(false)`, `TakeAll`).
+    (`type_size(N)`, `expected(1)`, `allow_extra_args(false)`, `TakeAll`;
+    with `expected(N)` CLI11 takes as few as one value per time, found
+    with `hdftool edit --write PATH` and fixed in commit "tools/lib/cli: a
+    repeated option with N values needs all N each time").
   - `app.parse_order()` names an option once per value, not once per time
     it was given; `cli::occurrences(app)` groups them into the times with
     their values, for operations applied in command-line order (`hdftool

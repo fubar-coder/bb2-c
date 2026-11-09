@@ -50,7 +50,7 @@ public:
     {
         std::string s = CLI::Formatter::make_option_opts(opt);
         std::size_t at = s.find(" x ");
-        if (at != std::string::npos && opt->get_expected_min() > 1) {
+        if (at != std::string::npos && opt->get_items_expected_min() > 1) {
             std::size_t end = s.find_first_not_of("0123456789", at + 3);
             s.erase(at, (end == std::string::npos ? s.size() : end) - at);
         }
@@ -103,7 +103,8 @@ inline CLI::Option *add_repeated(CLI::App &app, const std::string &name, std::ve
                                  int n, const std::string &description)
 {
     return app.add_option(name, var, description)
-        ->expected(n)
+        ->type_size(n)
+        ->expected(1)
         ->allow_extra_args(false)
         ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll);
 }
@@ -131,7 +132,7 @@ inline std::vector<occurrence> occurrences(const CLI::App &app)
         if (it == used.end())
             it = used.insert(used.end(), { opt, 0 });
         i = it->second++;
-        std::size_t n = std::size_t(std::max(1, opt->get_expected_min()));
+        std::size_t n = std::size_t(std::max(1, opt->get_items_expected_min()));
         if (i % n == 0)
             out.push_back({ opt, {} });
         if (i < opt->results().size())

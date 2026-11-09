@@ -147,3 +147,24 @@ TEST_CASE("repeated options and their order")
     CHECK(occ[4].option->get_name() == "--pair");
     CHECK(occ[4].values == std::vector<std::string>{"r", "s"});
 }
+
+TEST_CASE("a repeated option with too few values is a usage error")
+{
+    for (auto args : { std::vector<std::string>{"prog", "--pair", "p"},
+                       std::vector<std::string>{"prog", "--pair", "p", "--one", "a"},
+                       std::vector<std::string>{"prog", "--pair", "p", "q", "--pair", "r"} }) {
+        CLI::App app{"a test program", "prog"};
+        int status = 0;
+        bool ran = false;
+        std::vector<std::string> pairs, singles;
+        cli::add_repeated(app, "--pair", pairs, 2, "two values");
+        cli::add_repeated(app, "--one", singles, 1, "one value");
+        app.callback([&] { ran = true; });
+        std::vector<char *> argv;
+        for (auto &a : args)
+            argv.push_back(a.data());
+        argv.push_back(nullptr);
+        CHECK(cli::run(app, int(args.size()), argv.data(), status) == 2);
+        CHECK(!ran);
+    }
+}
