@@ -34,7 +34,7 @@ add_custom_target(ted_ab_expect ALL DEPENDS ${ted_ab_tokenised})
 # TED_AB_COMBOS says otherwise, all tests unless TED_AB_FILTER (globs over
 # the names, comma separated).  The T sources, the expectations "corpus"
 # and the default .xtra come from the corpus (its tokenised tests and the
-# ref run of ctest corpus: a fixture, ctest runs it first).
+# ref run of ctest corpus_originals: a fixture, ctest runs it first).
 # TED_AB_BUDGET: estimated run time (@est) per session; boot and gates come
 # on top, TED_AB_TIMEOUT is the session's limit.
 set(TED_AB_COMBOS "R5,C5,Cc,Rc" CACHE STRING "ted_ab: the combinations, the reference first")
@@ -78,7 +78,7 @@ string(APPEND text "work=${work}\nreport=${work}.txt\n"
 	"scripts=${CMAKE_CURRENT_SOURCE_DIR}/scripts\nsrc=${CMAKE_CURRENT_SOURCE_DIR}/src\n"
 	"combos=${ted_ab_combos}\n${ted_ab_prev}filter=${TED_AB_FILTER}\n"
 	"corpus_src=${CMAKE_BINARY_DIR}/tests/corpus/src/tests\n"
-	"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus/ref/vol/out\n"
+	"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus_originals/ref/vol/out\n"
 	"expect_dir=${TED_AB_EXPECT}\n"
 	"cd=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
 	"oracle=${PROJECT_SOURCE_DIR}/tests/data/ted-oracle.sha256\n"

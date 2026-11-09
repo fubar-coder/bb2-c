@@ -10,7 +10,7 @@ labels select within them.
 | `all` | both | both |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
-| `originals` | the recording runs (`bug_orig_record_ID`, label `originals`): the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`; in no other preset | Amiberry; the CD (and the reference build for the RWE tests) |
+| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`) and the corpus runs of the original compiler and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus") | Amiberry; the CD (and the reference build for the RWE tests) |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
 `AMIGA-EMULATION-SETUP.md`. The tool the emulator tests use, its sessions,
@@ -223,12 +223,27 @@ without runtime error checking), `corpus_runerr` (135 with), `corpus_req`
 (3 with blocking requesters, behind the lock `reqclosetest`),
 `corpus_serial` / `corpus_serial_runerr` (a program that talks over the
 emulated serial port to a peer on the host; the bytes it sends over the
-serial port are compared as well). Per pass, the configurations compile
-the same sources and run the programs: ref (original blitz2 2.10
-= `BLITZ2/BLITZ2` of the CD, libraries of the CD), port (blitz2-c,
-libraries of the CD: executable equal to ref's), clib (blitz2-c
-with the C libraries) and, with a prev build, prev (executable equal to
-clib's, "The prev build"). Skipped without the CD.
+serial port are compared as well). Every pass is two ctest tests that
+compile the same sources in several configurations and run the programs:
+
+* `NAME` (`corpus`, `corpus_runerr`, ...; in `emulator` and `all`):
+  clib (blitz2-c with the C libraries of the build) and, with a prev
+  build, prev (executable equal to clib's, "The prev build"). No test
+  of the original: it runs without the CD where the programs allow it.
+  Without the CD `corpus` leaves out the three programs that load sounds
+  and modules from `BB2:` (`t110_audio`, `t111_tracker`, `t112_med`) and
+  runs without `blitz2:defaultdbug`, as does `corpus_serial`; the passes
+  with runtime error checking (`corpus_runerr`, `corpus_req`,
+  `corpus_serial_runerr`) need the CD's `DEFAULTDBUG` (the debugger is
+  part of the program) and are skipped.
+* `NAME_originals` (`corpus_originals`, `corpus_runerr_originals`, ...;
+  label `originals`, only in `ctest --preset originals`): ref (original
+  blitz2 2.10 = `BLITZ2/BLITZ2` of the CD, libraries of the CD) and port
+  (blitz2-c with the libraries of the CD: executable equal to ref's); the
+  serial passes also check that ref sends the same bytes with and without
+  runtime error checking. Skipped without the CD. This is where the
+  original stays a reference of behaviour; a fix that makes the port
+  differ names the program in `tests/corpus/notes.tsv` (below).
 
 The output of every configuration must be the committed expected output
 `tests/corpus/expect/PASS/NAME.out` (what the program writes, with the
@@ -254,6 +269,45 @@ which leaves every file as it is on an unchanged tree. A new corpus
 program gets its files the same way. With a prev build the configuration
 prev still gives the old output: the commit names the program in
 `PREV_INTENDED` (`corpus:NAME`, `corpus_runerr:NAME`, ...).
+
+**Intended deviations from the original** (`tests/corpus/notes.tsv`). The
+runs of `NAME_originals` judge ref and port against the same expected
+files, so a fix of an original bug that changes a program's output (ref
+no longer gives the expected output) or its code (port's executable is no
+longer ref's) makes them fail. The fix commit lists the program in
+`notes.tsv`, one row per pass and program, tab separated, like the note
+rows of `tests/data/blitz2-cd.tsv`:
+
+```
+PASS<TAB>NAME<TAB>#NNN: reason
+corpus_runerr	t124_bitmaperr	#6: the error text of the original is empty
+```
+
+`PASS` is `corpus`, `corpus_runerr`, `corpus_req`, `corpus_serial` or
+`corpus_serial_runerr`; `NAME` the source without `.bb2`; `NNN` the issue
+of the fix. Lines that are empty or begin with a blank or `#` are
+comments. The rule is that of the other lists of intended differences: a
+listed program may differ from the original in any configuration of the
+pass (output against the expected file, executable of port against ref's):
+the report says `OUTPUT DIFFERS (noted #6)` and ends with `noted
+corpus_runerr:t124_bitmaperr differs from the original: #6: ...`; a
+difference of a program that is not listed fails; and a listed program
+that differs in no configuration fails as stale (`STALE note
+corpus_runerr:NAME (...)`), so the list stays exact. A row of an unknown
+pass, a note without `#NNN: ` and a reason, a name with a separator and a
+program listed twice in one pass are errors (exit status 2, with the line),
+as is a missing file; they are reported before any session. The list
+starts empty; the fix commits add their rows and the clib and prev
+configurations never read it. The parsing and judging is
+`tools/lib/corpusnotes`, tested by `corpusnotes` (listed and different,
+listed and the same, not listed, comments, malformed rows) and
+`corpus_runner` (the pass file keys, the file); the tests with broken
+input, which need no emulator, are `corpus_notes_unknown_pass`,
+`corpus_notes_no_issue`, `corpus_notes_twice` and
+`corpus_notes_missing`; in the `originals` preset
+`corpus_originals_notes_stale`, `..._unlisted` and `..._noted` run the
+program `t01_int` through ref and port with a stale row, a wrong expected
+output (`tests/corpus/selftest/`) and the same output listed.
 
 `corpus_cd`: all 724 sources of the CD compiled with blitz2-c (like bb2's
 bb2corpus: `.xtra` of the sources, assigns to CD directories, directory
@@ -297,8 +351,8 @@ byte as it is.
 combinations (R5: original TED + blitz2 2.10, C5: TED-C + 2.10, Cc:
 TED-C + blitz2-c, Rc: original TED + blitz2-c), checks the expectations
 of the scripts and compares the runs pairwise (result, requesters,
-screen dumps, files). Needs the ref run of `corpus` (fixture, ctest
-starts it as well). Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`,
+screen dumps, files). Needs the ref run of `corpus_originals` (fixture, ctest
+starts it as well, also in `all`, until the ref parts of `ted_ab` move to `originals`). Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`,
 `-DTED_AB_COMBOS=R5,C5`, sessions at the same time
 `-DTED_AB_PARALLEL=N` (default 5, as far as emulator slots are free);
 report in `build/<preset>/tests/ted-ab/ted_ab.txt`, about 13 minutes.
@@ -924,7 +978,7 @@ session to their output, after their report:
 @stat v=1 test=audiolib-diskplay-endless config=clib machine=a1200 snapshot=restored session=45.16 wait=0.00 timed=45.15 limit=45 end=timeout verdict=REPRODUCED
 ```
 
-test (the pass), config (corpus: ref/port/clib; TED: R5/C5/... in the
+test (the pass), config (corpus: clib/prev, in the originals runs ref/port; TED: R5/C5/... in the
 bug-orig mode, else the session sNNN; corpusrun cd: the worker), machine, what
 the snapshot mode did (cold, restored, first-save, fallback), the session
 time without the wait for an emulator slot, the wait, the part counted

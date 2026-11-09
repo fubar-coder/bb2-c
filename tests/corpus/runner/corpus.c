@@ -48,6 +48,9 @@ void corpus_free(struct corpus_pass *p)
     free(p->test);
     free(p->expect_dir);
     prevint_free(&p->intended);
+    cnotes_free(&p->cnotes);
+    free(p->notes);
+    free(p->notes_pass);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -181,7 +184,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
             || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
             || !strcmp(key, "orig") || !strcmp(key, "orig_by") || !strcmp(key, "test")
-            || !strcmp(key, "expect_dir")) {
+            || !strcmp(key, "expect_dir") || !strcmp(key, "notes") || !strcmp(key, "notes_pass")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
                          : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
@@ -189,7 +192,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                          : !strcmp(key, "rcput") ? &p->rcput : !strcmp(key, "orig") ? &p->orig
                          : !strcmp(key, "orig_by") ? &p->orig_by
                          : !strcmp(key, "test") ? &p->test
-                         : !strcmp(key, "expect_dir") ? &p->expect_dir : &p->serial_same_as;
+                         : !strcmp(key, "expect_dir") ? &p->expect_dir
+                         : !strcmp(key, "notes") ? &p->notes
+                         : !strcmp(key, "notes_pass") ? &p->notes_pass : &p->serial_same_as;
 
             free(*dst);
             *dst = val;
@@ -420,8 +425,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "orig= needs expect=");
     else if (p->nconfigs && p->configs[0].expect != CORPUS_REF)
         return fail(p, err, errlen, "the first configuration is the reference (EXPECT ref)");
-    else if (p->nconfigs < 2 || !p->nsources)
-        return fail(p, err, errlen, "a reference, another configuration and sources are needed");
+    else if ((p->nconfigs < 2 && !p->expect_dir) || !p->nconfigs || !p->nsources)
+        return fail(p, err, errlen, "a reference, another configuration and sources are needed "
+                    "(with expect_dir= the reference alone is enough)");
     /* a bug-orig test is judged against the recorded original */
     if (p->expect && !p->fixed && !p->regression && !p->orig)
         return fail(p, err, errlen, "a bug-orig test (expect= without fixed= and "
@@ -440,6 +446,12 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                     p->machine);
     if ((p->intended.n || p->intended.all) && !p->test)
         return fail(p, err, errlen, "intended= needs test= (the ctest name)");
+    if (!p->notes != !p->notes_pass || (p->notes && (!*p->notes || !p->expect_dir)))
+        return fail(p, err, errlen, "notes=PATH and notes_pass=PASS belong together and need "
+                    "expect_dir=");
+    if (p->notes_pass && !cnotes_known_pass(p->notes_pass))
+        return fail(p, err, errlen, "notes_pass=%s: not a corpus pass (corpus, corpus_runerr, "
+                    "corpus_req, corpus_serial, corpus_serial_runerr)", p->notes_pass);
     /* names: one directory per configuration, AmigaDOS ignores case */
     for (i = 0; i < p->nconfigs; i++)
         for (k = 0; k < i; k++)
@@ -572,6 +584,29 @@ int corpus_expect_missing(const struct corpus_pass *p, char *err, size_t errlen)
     return 0;
 }
 
+int corpus_load_notes(struct corpus_pass *p, char *err, size_t errlen)
+{
+    size_t len;
+    char msg[300];
+    uint8_t *text;
+
+    if (!p->notes)
+        return 0;
+    if (!(text = read_file(p->notes, &len))) {
+        snprintf(err, errlen, "cannot read the notes %s", p->notes);
+        return -1;
+    }
+    cnotes_free(&p->cnotes);
+    if (cnotes_parse(&p->cnotes, (const char *)text, msg, sizeof msg)) {
+        snprintf(err, errlen, "%s: %s", p->notes, msg);
+        cnotes_free(&p->cnotes);
+        free(text);
+        return -1;
+    }
+    free(text);
+    return 0;
+}
+
 /* one line (without its LF) as "\"...\"", at most about 60 characters */
 static void quote_line(char *dst, size_t len, const uint8_t *s, size_t n)
 {
@@ -643,10 +678,62 @@ static int config_files(const struct corpus_pass *p, size_t c)
            && !access(p->configs[c].acidlibs, R_OK);
 }
 
+/* 1 = the file names "NAME:" (case ignored), e.g. a string "BB2:..." */
+static int names_volume(const char *path, const char *name)
+{
+    size_t len, n = strlen(name), i;
+    uint8_t *d = read_file(path, &len);
+    int found = 0;
+
+    for (i = 0; d && !found && i + n < len; i++)
+        found = !strncasecmp((const char *)d + i, name, n) && d[i + n] == ':';
+    free(d);
+    return found;
+}
+
+/* a pass that compares with expect_dir= without the CD (corpus_skip_missing) */
+static void skip_missing_expect(struct corpus_pass *p, FILE *log)
+{
+    size_t k, i, j;
+
+    if (p->defaultdbug && !p->runtime_errors && access(p->defaultdbug, R_OK)) {
+        if (log)
+            fprintf(log, "corpus: no %s - run without blitz2:defaultdbug\n", p->defaultdbug);
+        free(p->defaultdbug);
+        p->defaultdbug = NULL;
+    }
+    for (k = 0; k < p->nmounts;) {
+        if (!access(p->mount_dir[k], R_OK | X_OK)) {
+            k++;
+            continue;
+        }
+        for (i = j = 0; i < p->nsources; i++) {
+            if (names_volume(p->sources[i], p->mount_name[k])) {
+                if (log)
+                    fprintf(log, "corpus: no %s for %s: - %s left out\n", p->mount_dir[k],
+                            p->mount_name[k], p->sources[i]);
+                free(p->sources[i]);
+                continue;
+            }
+            p->sources[j++] = p->sources[i];
+        }
+        p->nsources = j;
+        free(p->mount_name[k]);
+        free(p->mount_dir[k]);
+        memmove(p->mount_name + k, p->mount_name + k + 1, (p->nmounts - k - 1) * sizeof *p->mount_name);
+        memmove(p->mount_dir + k, p->mount_dir + k + 1, (p->nmounts - k - 1) * sizeof *p->mount_dir);
+        p->nmounts--;
+    }
+}
+
 void corpus_skip_missing(struct corpus_pass *p, FILE *log)
 {
     size_t c;
 
+    if (p->expect_dir && !p->orig && !p->expect && !p->update) {
+        skip_missing_expect(p, log);
+        return;
+    }
     if (!p->orig || p->record)
         return;
     /* the CD's libraries (port) and blitz2:defaultdbug are missing without
@@ -1379,6 +1466,23 @@ static int prev_judge(struct corpus_pass *p, const struct corpus_config *cf, con
     return v == PREVINT_DIFFERS;
 }
 
+/* The differences of a pass with notes= are judged against the notes
+   (corpusnotes.h): differs = this source differs in this configuration;
+   returns 1 if that is an error.  A noted difference gets " (noted #N)"
+   in the report line. */
+static int note_judge(struct corpus_pass *p, const char *name, int differs, struct text *rep)
+{
+    const struct cnote *n;
+    int v;
+
+    if (!p->notes_pass || !name)
+        return differs;
+    v = cnotes_judge(&p->cnotes, p->notes_pass, name, differs, &n);
+    if (v == CNOTE_NOTED)
+        text_add(rep, " (noted #%u)", n->issue);
+    return v == CNOTE_DIFFERS;
+}
+
 int corpus_run(struct corpus_pass *p, FILE *log)
 {
     struct amiga_emulation **e = calloc(p->nconfigs, sizeof *e);
@@ -1407,6 +1511,16 @@ int corpus_run(struct corpus_pass *p, FILE *log)
        broken (also where it would be skipped) */
     if (p->expect_dir && !p->update && corpus_expect_missing(p, err, sizeof err)) {
         fprintf(log, "corpus: %s\n", err);
+        goto out;
+    }
+    /* the notes belong to the repository as well: malformed, the pass is broken */
+    if (corpus_load_notes(p, err, sizeof err)) {
+        fprintf(log, "corpus: %s\n", err);
+        goto out;
+    }
+    if (!p->nsources) {
+        fprintf(log, "corpus: no source left - skipped\n");
+        rc = 77;
         goto out;
     }
     /* without the files of the pass (the CD's libraries...) or the emulator:
@@ -1529,7 +1643,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",
         p->nsources);
     for (c = 0; c < p->nconfigs; c++)
-        text_add(&rep, " %s%s", p->configs[c].tag, c ? "" : " (reference)");
+        text_add(&rep, " %s%s", p->configs[c].tag, c || p->expect_dir ? "" : " (reference)");
     text_add(&rep, "\n");
     if (p->expect_dir)
         text_add(&rep, "expected outputs: %s\n", p->expect_dir);
@@ -1663,6 +1777,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 }
             }
             cdiff = prev_judge(p, cf, name, cdiff, &rep, &prevdiff);
+            cdiff = note_judge(p, name, cdiff, &rep);
             diff |= cdiff;
             vbad[c] |= cdiff;
             free_outcome(&o);
@@ -1714,6 +1829,25 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 if (!strcmp(p->configs[c].tag, "prev"))
                     vbad[c] = 1;
         }
+    }
+    /* the notes: a listed program that differs in no configuration is stale */
+    if (p->notes_pass) {
+        size_t cur = 0;
+        const struct cnote *n;
+
+        while ((n = cnotes_stale(&p->cnotes, p->notes_pass, &cur)) != NULL) {
+            text_add(&rep, "STALE note %s:%s (%s, line %u of %s): the program does not differ "
+                           "from the original in any configuration (or is not in this pass)\n",
+                p->notes_pass, n->name, n->text, n->line, p->notes);
+            bad++;
+            for (c = 0; c < p->nconfigs; c++)
+                vbad[c] = 1;
+        }
+        for (cur = 0; cur < p->cnotes.n; cur++)
+            if (!strcmp(p->cnotes.e[cur].pass, p->notes_pass) && p->cnotes.e[cur].differed) {
+                text_add(&rep, "noted %s:%s differs from the original: %s\n",
+                    p->notes_pass, p->cnotes.e[cur].name, p->cnotes.e[cur].text);
+            }
     }
     if (prevdiff.n)
         text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", prevdiff.p);

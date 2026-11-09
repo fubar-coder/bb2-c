@@ -64,7 +64,10 @@ original instead (`tests/README.md`, "Recorded originals"). A pass with
 `expect_dir=DIR` compares the output of every configuration (and with
 `serial=on` the bytes sent over the serial port) with the committed files
 `DIR/NAME.out` (`DIR/NAME.serial`); a missing file fails the pass before
-any session.
+any session. With `notes=PATH` and `notes_pass=PASS` the differences of a listed
+program (`tools/lib/corpusnotes`, `tests/corpus/notes.tsv`) are "noted #N" instead
+of failures, and a listed program that does not differ fails as stale; a pass
+with `expect_dir=` may have the reference as its only configuration.
 
 Options:
 
@@ -131,8 +134,9 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
 
 ## Callers
 
-* `pass`: the corpus tests and the target `corpus-expect-update`
-  (`tests/corpus/CMakeLists.txt`), `tests/ab3`,
+* `pass`: the corpus tests (`NAME` with clib and prev, `NAME_originals` with
+  ref and port and the notes `tests/corpus/notes.tsv`) and the target
+  `corpus-expect-update` (`tests/corpus/CMakeLists.txt`), `tests/ab3`,
   `tests/blitz2`, the bug-orig tests and their recordings
   (`tests/bug-orig/CMakeLists.txt`, also through `want.cmake`), the test
   `rwe_residents_cd` (`libs/userlibs/rwe/residents.cmake`,

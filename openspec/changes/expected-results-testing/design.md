@@ -475,3 +475,54 @@ code changes in this change).
   file byte for byte as it is (2154 rows, no note rows); the merge of the
   real run with a note row added to the first row keeps it; the
   `ted_core_*` tests pass with a note row in the file.
+- **Task 9.1, the corpus part (2026-11-09):** every corpus pass is two
+  ctest tests with a pass file each (`tests/corpus/CMakeLists.txt`,
+  `corpus_pass`): `NAME` (`corpus`, `corpus_runerr`, `corpus_req`,
+  `corpus_serial`, `corpus_serial_runerr`; label `emulator`, so in `all`)
+  with the configurations `clib` and, with a prev build, `prev`; and
+  `NAME_originals` (label `originals`, only in `ctest --preset originals`)
+  with `ref` (the CD's 2.10 compiler and libraries) and `port` (blitz2-c
+  with the CD's libraries, executable equal to ref's), and
+  `serial_same_as` between the two serial passes. All of them compare the
+  output with `tests/corpus/expect/PASS/`; a pass with `expect_dir=` may
+  have the reference as its only configuration (`config=clib|ref|...`:
+  the first configuration is the reference of the pass file but is judged
+  against the files like the others; the report no longer calls it the
+  reference). The target `corpus-expect-update` writes from `clib` of the
+  `all` passes, as before. Without the CD `corpus` and `corpus_serial` run
+  (no `blitz2:defaultdbug` without runtime error checking; the programs that
+  name `BB2:` are left out: `t110_audio`, `t111_tracker`, `t112_med`;
+  `corpus_skip_missing` for a pass with `expect_dir=`); the three passes
+  with runtime error checking need the CD's debugger (`DEFAULTDBUG` exists
+  only on the CD) and are skipped as before. **Notes**:
+  `tests/corpus/notes.tsv`, rows `PASS<TAB>NAME<TAB>#NNN: REASON`,
+  parsed and judged by `tools/lib/corpusnotes` (a program once per pass; a
+  listed program may differ in any configuration of the originals pass:
+  `noted #N`; an unlisted difference fails; a listed program that differs
+  in no configuration is stale), read at the start of the run by the pass
+  keys `notes=PATH` and `notes_pass=PASS` (a malformed or missing file is
+  exit status 2 before any session). The rows are not tied to a
+  configuration: ref's output differing from the expected file, port's
+  executable differing from ref's and port's output differing all count as
+  the program differing. The list starts empty. Tests: `corpusnotes`
+  (judging, stale, comments, 13 malformed rows), `corpus_runner` (pass file
+  keys, the file, the CD-less selection), `corpus_notes_*` (host: unknown
+  pass, no issue, twice, missing file) and `corpus_originals_notes_stale`,
+  `_unlisted`, `_noted` (originals: `t01_int` through ref and port with a
+  stale row, a wrong expected file and the same difference listed);
+  mutation checked (an unlisted difference judged noted, stale rows never
+  reported: `corpusnotes` fails). Left to the rest of 9.1: the fixture
+  `corpus` of `ted_ab` is `corpus_originals` now (its ref executables and
+  `defaults.xtra`), so `ted_ab` still pulls that one originals test into `all`
+  until its R combos move.
+  Dry check with the first two fix commits on top (not committed):
+  `all` passes with `PREV_INTENDED=ON` (the corpus configurations clib
+  and prev against the changed expected files), and the originals runs
+  need exactly four rows, without which `corpus_originals` and
+  `corpus_runerr_originals` fail (`t130_blit` port `EXE DIFFERS`, ref
+  `OUTPUT DIFFERS` with runtime error checking; `t124_bitmaperr` and
+  `t126_rgberr` ref and port `OUTPUT DIFFERS`): `corpus t130_blit #46`,
+  `corpus_runerr t130_blit #46`, `corpus_runerr t124_bitmaperr #6`,
+  `corpus_runerr t126_rgberr #6`; with them all five originals tests pass.
+  `corpus_req`, `corpus_serial` and `corpus_serial_runerr` need none (the
+  CD's libraries keep the original's rundebuglib).

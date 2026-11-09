@@ -495,7 +495,7 @@ function(bug_orig_ted_test scripts id name)
 		"gates=${PROJECT_SOURCE_DIR}/tests/ted-ab/scripts\n"
 		"src=${PROJECT_SOURCE_DIR}/tests/ted-ab/src\ncombos=R5,C5\nbugorig=1\n"
 		"corpus_src=${CMAKE_BINARY_DIR}/tests/corpus/src/tests\n"
-		"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus/ref/vol/out\n"
+		"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus_originals/ref/vol/out\n"
 		"expect_dir=${CMAKE_BINARY_DIR}/tests/ted-ab/expect\n"
 		"cd=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
 		"oracle=${PROJECT_SOURCE_DIR}/tests/data/ted-oracle.sha256\n"

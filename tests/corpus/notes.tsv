@@ -1,0 +1,20 @@
+# The intended deviations of the corpus programs from the original
+# (tests/README.md "Corpus", tools/lib/corpusnotes/corpusnotes.h).
+#
+# The runs that compare with the original (ctest --preset originals:
+# corpus_originals, corpus_runerr_originals, ...) judge ref (the original
+# 2.10 compiler with the CD's libraries) and port (blitz2-c with the CD's
+# libraries) against expect/PASS/NAME.out, and port's executable against
+# ref's.  A fix of an original bug that changes a program's output or code
+# lists the program here, in the fix commit:
+#
+#   PASS<TAB>NAME<TAB>#NNN: REASON
+#
+# PASS: corpus, corpus_runerr, corpus_req, corpus_serial or
+# corpus_serial_runerr; NAME: the source without .bb2 (the same program is
+# listed once per pass it differs in); NNN: the issue of the fix.  A
+# listed program may differ from the original ("noted #NNN" in the
+# report); a difference of a program not listed fails, and so does a
+# listed program that differs in no configuration (stale note).
+#
+# Rows (none yet):

@@ -40,7 +40,10 @@
  *                     configuration BASE (another one of the pass)
  *                     instead of the reference, e.g. prev|exe:clib: the
  *                     build of the previous commit writes the executable
- *                     the current compiler with the C libraries writes
+ *                     the current compiler with the C libraries writes.
+ *                     With expect_dir= the first configuration is judged
+ *                     against the files like the others and may be the only
+ *                     one (the pass without the original: clib, prev)
  *   expect_dir=DIR    the committed expected outputs (tests/corpus/expect/
  *                     PASS): DIR/NAME.out is what source NAME writes (its
  *                     NAME.run, rc=N behind it), with serial=on
@@ -52,6 +55,19 @@
  *                     file is an error before any session (exit status 2).
  *                     Not with run=off or expect=.  corpus_update writes
  *                     the files instead (corpusrun pass --update-expect)
+ *   notes=PATH        with expect_dir=: the notes of intended deviations from the
+ *                     original (tests/corpus/notes.tsv, tools/lib/corpusnotes),
+ *                     for a pass that compares with the original (ref, port):
+ *                     a program listed for notes_pass= may differ in any
+ *                     configuration (output from the expected file, executable
+ *                     from the base: "noted #N"); an unlisted difference
+ *                     fails, a listed program that differs in no configuration
+ *                     is STALE (fails).  The file is read when the pass runs
+ *                     (a malformed or missing file: exit status 2 before any
+ *                     session)
+ *   notes_pass=PASS   the pass of the rows of notes= (corpus, corpus_runerr,
+ *                     corpus_req, corpus_serial, corpus_serial_runerr); both or
+ *                     neither
  *   source=PATH       a tokenised source (NAME.bb2), any number
  *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
  *                     entries, lib/previntended)
@@ -154,6 +170,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "corpusnotes.h"
 #include "previntended.h"
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
@@ -172,6 +189,8 @@ struct corpus_pass {
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
     char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */
     char *expect_dir;                   /* expect_dir=: the expected outputs */
+    char *notes, *notes_pass;           /* notes=, notes_pass=: the intended deviations */
+    struct cnotes cnotes;               /* the rows of notes= (corpus_load_notes) */
     int update;                         /* corpus_update: write the expected outputs */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* corpus_select: the recording run */
@@ -208,8 +227,18 @@ void corpus_select(struct corpus_pass *p, int record);
    without blitz2:defaultdbug (the CD) the run goes without it unless it
    has runtime error checking (the debugger is part of the program: the
    run is skipped); both are noted in log (may be NULL).  The recording
-   needs them (skipped) */
+   needs them (skipped).
+
+   A pass that compares with expect_dir= (not a bug-orig pass, not the
+   update) goes on without the CD in the same way: without
+   blitz2:defaultdbug unless it has runtime error checking, and a source
+   whose text names a mount (BB2:) whose directory is missing is left out
+   (noted in log); no source left: skipped */
 void corpus_skip_missing(struct corpus_pass *p, FILE *log);
+
+/* notes=: read and parse the file into p->cnotes; 0 = ok (or no notes=), -1 =
+   unreadable or malformed (message in err).  Behind the check of corpus_parse */
+int corpus_load_notes(struct corpus_pass *p, char *err, size_t errlen);
 
 /* the update of the expected outputs (expect_dir=, corpusrun pass
    --update-expect TAG): only the configuration TAG runs, and corpus_run
