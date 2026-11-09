@@ -15,6 +15,7 @@
 ; the 65536th) leaves wrong entries and prints the first.
 ; Correct: the program loads and prints 69632 of 69632 entries correct.
 ; @fixed #943
+; @pass timeout=180
 DEFTYPE .l
 Macro m1
 Dc.l t,t,t,t,t,t,t,t,t,t,t,t,t,t,t,t

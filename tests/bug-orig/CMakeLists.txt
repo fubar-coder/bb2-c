@@ -299,7 +299,7 @@ function(bug_orig_test bas name)
 	# not enough emulator slots free, each maybe waiting for one
 	list(LENGTH configs nsessions)
 	math(EXPR limit
-		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
+		"${session_limit} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
 	# the order: ctest learns the cost only from passing tests, and these
 	# fail on purpose; the session limit times the sessions puts the tests
 	# that can take long first (cmake/bug-orig-order.cmake)
