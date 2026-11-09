@@ -49,7 +49,7 @@ unchanged; the existing users only gain fields.
 
 ### D2 `cmdref`: one JSON file per library file
 
-`cmdref [-o OUT] -group GROUP -name NAME LIBFILE` writes a JSON object:
+`cmdref [-o OUT] --group GROUP --name NAME LIBFILE` writes a JSON object:
 `name`, `group`, `number`, optionally `opens` and `object`, and
 `entries` in table order (nullsubs left out). An entry has `name`,
 `kind` (`statement`, `function`, `command`, `object`, `oscall`),
