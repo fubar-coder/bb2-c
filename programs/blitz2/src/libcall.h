@@ -35,9 +35,10 @@
              !data -> `move.w/.l #value,D(regat)` has been emitted and
              the next char/token is returned (asm reget: use eos()).
    Errors: overerr, syntaxerr, mismatcherr (never return).
-   BUG(orig) (#12): consttype2 (internal) reaches `.quick2` with d0 not loaded
-   (it holds the last char) for type w and type 0 with a float value; the
-   result then usually falls back to float.  Kept.
+   A float literal in a type w or type 0 expression is a float constant
+   (f), as in the original 1.95, whose jump to `.quick2` without makeint
+   always ended there (#12, a port regression: the port made some of them
+   a Quick by chance).
    Fixed (#13): a quick with a fraction of 0 after *65536 is the quick
    integer (the original made it a float), the integer part is rounded
    down so that the fraction is never negative. */

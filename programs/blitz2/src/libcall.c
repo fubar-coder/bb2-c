@@ -346,22 +346,25 @@ ULONG constotype(UWORD *type)
 
 /* blitz2.s:10913 consttype2 - size the constant numval (int if numfloat == 0,
    else FFP) to *type (0 = decide).  Returns the value (asm d0); *type =
-   final type.  `val` = the asm d0 on entry (normally the current char),
-   see the BUG at .quick2. */
+   final type.  `val` = the asm d0 on entry (normally the current char);
+   every path that uses it loads it with makeint first (#12). */
 static ULONG consttype2(UWORD *type, ULONG val)
 {
     UWORD newtype = *type;
     UWORD whole;
     ULONG t, frac;
-    BOOL d0bad = FALSE;     /* the paths of #12: d0 not loaded */
 
     if (newtype == 0) {
         /* Let's set type */
-        if (numfloat) {
-            newtype = T_QUICK;
-            d0bad = TRUE;
-            goto quick2;
-        }
+        /* #12: a float literal is a float constant.  The asm set type q
+           and jumped to .quick2 without makeint (blitz2.s:10920); its
+           range check then always failed (the upper word of d0 was that
+           of the last FFP result, negative), so 1.95 always ended in
+           numdofloat.  The port passed the character with an upper word
+           of 0 and made some literals a Quick by chance (a port
+           regression); it goes to numdofloat directly now. */
+        if (numfloat)
+            goto numdofloat;
         newtype = T_BYTE;
         goto byte;
     }
@@ -394,10 +397,8 @@ byte2:
     goto done;
 
 word:
-    if (numfloat) {
-        d0bad = TRUE;   /* BUG(orig) (#12): d0 not loaded (see .quick2) */
-        goto quick2;
-    }
+    if (numfloat)
+        goto numdofloat;    /* #12: as type 0 above (asm: bne .quick2) */
     if (!makeint(&val))
         goto numdofloat;
     goto over1;
@@ -407,11 +408,8 @@ quick:
         goto numdofloat;
     if (numfloat == 0)
         goto qint;
-quick2:
-    /* BUG(orig) (#12): expects d0 = int part (from makeint), but the paths
-       "type 0 + float" and "type w + float" arrive with d0 = the current
-       char.  The fraction is then usually out of range and the constant
-       falls back to float.  Kept.  (a6 = maths assumed, as the asm) */
+    /* .quick2: val = int part (from makeint).  (a6 = maths assumed, as
+       the asm) */
     t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
     frac = ffpcall(SPSub, numval, t, NULL);             /* d0=fraction! */
     /* Fixed (#13): the integer part is rounded down (floor), so that the
@@ -419,14 +417,8 @@ quick2:
        is made on it; a fraction of 0 is the Quick integer (.qint), and the
        fraction is compared signed.  The original took a zero fraction
        (beq) and a negative one (unsigned bcc) for one that does not fit:
-       "q=1.0" became a float constant and a conversion.  The two paths
-       of #12 (d0bad: d0 holds the character, not the integer part) keep
-       the float for both, as before: on the Word path a Quick value
-       would be a wrong one, and on both the window of values that become
-       a Quick by chance would grow. */
+       "q=1.0" became a float constant and a conversion. */
     if (frac & 0x80) {                                  /* FFP sign bit */
-        if (d0bad)
-            goto numdofloat;
         val--;
         frac = ffpcall(SPAdd, frac, 0x80000041, NULL);  /* + 1.0 */
     }
@@ -435,11 +427,8 @@ quick2:
     whole = (UWORD)val;                                 /* save whole part */
     frac = ffpcall(SPMul, frac, 0x80000051, NULL);      /* *65536 */
     frac = ffpcall(SPFix, frac, 0, NULL);               /* back to int */
-    if (frac == 0) {
-        if (d0bad)
-            goto numdofloat;
+    if (frac == 0)
         goto qint;
-    }
     if ((LONG)frac < 0 || (LONG)frac >= 65536)
         goto numdofloat;                                /* .knob */
     val = ((ULONG)whole << 16) | (UWORD)frac;
