@@ -85,6 +85,11 @@ void print4(UBYTE c);
 void qprint(UBYTE c, UBYTE *at);
 /* ted.s:5244 calcphys: *p0, *p1 (asm a0, a1) = bitmaps[0/1] + scloc + cursx */
 void calcphys(UBYTE **p0, UBYTE **p1);
+/* not in ted.s: the progress call (comdata+102, #980; docs/ted/comdata.md):
+   toggles the 8 x 1 pixel cell `column` (a byte column of the bitmap) of
+   plane 0 in pixel rows `bar` and 9 - bar (bar 0 main, 1-3 include level),
+   as the original compiler XORs it; nothing while the screen is closed */
+void progress(UWORD bar, UWORD column);
 
 /* ------------------------------------------------------------- data */
 

@@ -9,14 +9,14 @@ differences only as named in the task.
 
 ## 1. Interface check
 
-- [ ] 1.1 List every `comdata` access of the original compiler (`archive/sources/blitz2-1.95/blitz2.s` and the CD's compiler, `docs/v2.10/`) and of blitz2-c (`programs/blitz2/src`, `CD_*` in `main.h`): confirm no offset at or above 98 is read, so the marker and entry of D2 are invisible to the original. Verify: the list with file:line in the commit message of group 2; if an offset >= 98 is read, stop and report (D2 changes).
+- [x] 1.1 List every `comdata` access of the original compiler (`archive/sources/blitz2-1.95/blitz2.s` and the CD's compiler, `docs/v2.10/`) and of blitz2-c (`programs/blitz2/src`, `CD_*` in `main.h`): confirm no offset at or above 98 is read, so the marker and entry of D2 are invisible to the original. Verify: the list with file:line in the commit message of group 2; if an offset >= 98 is read, stop and report (D2 changes).
 - [ ] 1.2 Record what the title area looks like after a compile from TED-C with the original compiler (C5 dumps of `tests/ted-ab/scripts/06-compile.drv` and of the other scripts that compile): whether the stripe is visible in any dump. Verify: a note in the group 3 commit message naming the dumps that show the stripe (or none).
 
 ## 2. TED-C: the progress call
 
-- [ ] 2.1 Append the marker `'TEDp'` and the progress entry after `req_window` in `struct mydata` (`programs/ted/src/input.c`, `ted.h`), with a register stub in TED-C's glue (`d0` bar, `d1` column, design D3); `static_assert` the offsets 98 and 102. Verify: build; `CDOFF`-style asserts pass; TED-C's other `comdata` offsets unchanged (asserts).
-- [ ] 2.2 The routine (design D4): returns if the screen is not open; else `COMPLEMENT`, write mask 1, an 8 x 1 `RectFill` at x = 8 x column in rows `bar` and `9 - bar`, draw mode and mask restored. Verify: host test of the cell geometry if TED-C's host core can run it, otherwise covered by 3.3; `ctest --preset all` with `ted_ab`: R5, C5, Cc, Rc unchanged (the compilers do not call it yet).
-- [ ] 2.3 Document the call in the `comdata` description (`docs/ted/` interface notes, `docs/blitz2/` editor interface): offsets 98/102, registers, meaning, the marker rule. Verify: the docs name the offsets and registers as the asserts do.
+- [x] 2.1 Append the marker `'TEDp'` and the progress entry after `req_window` in `struct mydata` (`programs/ted/src/input.c`, `ted.h`), with a register stub in TED-C's glue (`d0` bar, `d1` column, design D3); `static_assert` the offsets 98 and 102. Verify: build; `CDOFF`-style asserts pass; TED-C's other `comdata` offsets unchanged (asserts).
+- [x] 2.2 The routine (design D4): returns if the screen is not open; else `COMPLEMENT`, write mask 1, an 8 x 1 `RectFill` at x = 8 x column in rows `bar` and `9 - bar`, draw mode and mask restored. Verify: host test of the cell geometry if TED-C's host core can run it, otherwise covered by 3.3; `ctest --preset all` with `ted_ab`: R5, C5, Cc, Rc unchanged (the compilers do not call it yet).
+- [x] 2.3 Document the call in the `comdata` description (`docs/ted/` interface notes, `docs/blitz2/` editor interface): offsets 98/102, registers, meaning, the marker rule. Verify: the docs name the offsets and registers as the asserts do.
 
 ## 3. blitz2-c: report instead of draw (fix of #980)
 

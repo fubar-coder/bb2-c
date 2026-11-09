@@ -170,6 +170,7 @@ void actgad_c(struct m68kregs *r);
 void pointeron_c(struct m68kregs *r);
 void sleepon_c(struct m68kregs *r);
 void extalloc_c(struct m68kregs *r);
+void progress_c(struct m68kregs *r);
 
 void screenclose_c(struct m68kregs *r) { (void)r; screenclose(); }        /* -8 */
 void screenopen2_c(struct m68kregs *r) { (void)r; screenopen2(); }        /* -4 */
@@ -231,6 +232,10 @@ void extalloc_c(struct m68kregs *r)                                       /* 88 
 {
     r->d[0] = (ULONG)extalloc(r->d[0], r->d[1]);
 }
+void progress_c(struct m68kregs *r)                                       /* 102 */
+{
+    progress((UWORD)r->d[0], (UWORD)r->d[1]);   /* d0.w bar, d1.w column */
+}
 
 REGSTUB(screenclose);
 REGSTUB(screenopen2);
@@ -252,6 +257,7 @@ REGSTUB(actgad);
 REGSTUB(pointeron);
 REGSTUB(sleepon);
 REGSTUB(extalloc);
+REGSTUB(progress);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 

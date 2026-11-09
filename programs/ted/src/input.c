@@ -26,7 +26,8 @@ struct mydata mydata = {
     actgad_stub, pointeron_stub, sleepon_stub,
     NULL, NULL,                         /* mywindow2, 84 */
     extalloc_stub,
-    0, NULL                             /* bmapmul, req_window */
+    0, NULL,                            /* bmapmul, req_window */
+    TED_PROGMARK, progress_stub         /* TED-C: the progress call (#980) */
 };
 struct Window *mywindow;                /* ted.s:6154 */
 struct RastPort *myrast;                /* ted.s:6155 */

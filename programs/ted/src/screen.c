@@ -695,3 +695,33 @@ void calcphys(UBYTE **p0, UBYTE **p1)
     *p0 = bitmaps[0] + scloc + (WORD)cursx;
     *p1 = bitmaps[1] + scloc + (WORD)cursx;
 }
+
+/* Not in ted.s: the progress call of blitz2-c (comdata+102, #980).  The
+   original compiler XORs the byte `column` of plane 0 in pixel row `bar`
+   and in row 9 - bar itself (main bar 0: rows 0 and 9; include levels 1
+   to 3: the rows inside); TED-C does the same through the screen's
+   RastPort, and nothing while its screen is closed.  A cell outside the
+   bitmap is ignored. */
+void progress(UWORD bar, UWORD column)
+{
+    struct RastPort *rp;
+    struct BitMap *bm;
+    UBYTE mode, mask;
+    WORD x;
+
+    if (!screensopen || !myscreen || bar > 3)
+        return;
+    rp = &myscreen->RastPort;
+    bm = rp->BitMap;
+    if (column >= bm->BytesPerRow || bm->Rows < 10)
+        return;
+    mode = rp->DrawMode;
+    mask = rp->Mask;
+    SetDrMd(rp, COMPLEMENT);
+    SetWrMsk(rp, 1);
+    x = (WORD)(column * 8);
+    RectFill(rp, x, bar, x + 7, bar);
+    RectFill(rp, x, 9 - bar, x + 7, 9 - bar);
+    SetDrMd(rp, mode);
+    SetWrMsk(rp, mask);
+}

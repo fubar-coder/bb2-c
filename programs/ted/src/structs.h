@@ -95,6 +95,11 @@ struct mydata {
     APTR m_extalloc;            /* 88  extalloc     d0 size d1 flags -> d0 */
     UWORD m_bmapmul;            /* 92  bytes per bitplane row (data) */
     struct Window *m_req_window;/* 94  current requester window (data) */
+    /* TED-C only, behind the original table (#980): the original TED has
+       its own variables here (topskip, botskip at 98), so a compiler uses
+       m_progress only if m_progmark holds TED_PROGMARK. */
+    ULONG m_progmark;           /* 98  TED_PROGMARK (data) */
+    APTR m_progress;            /* 102 progress     d0 bar, d1 column */
 };
 OFFS(mydata, m_openreq, 8);     /* comdata+0 */
 OFFS(mydata, m_combitmap, 8 + 36);
@@ -106,7 +111,13 @@ OFFS(mydata, m_iconflag, 8 + 84);
 OFFS(mydata, m_extalloc, 8 + 88);
 OFFS(mydata, m_bmapmul, 8 + 92);
 OFFS(mydata, m_req_window, 8 + 94);
-SIZE(mydata, 8 + 98);
+OFFS(mydata, m_progmark, 8 + 98);
+OFFS(mydata, m_progress, 8 + 102);
+SIZE(mydata, 8 + 106);
+
+/* 'TEDp': the original TED's word at comdata+98 (topskip) is below 256,
+   so its long there never has this value */
+#define TED_PROGMARK 0x54454470UL
 
 extern struct mydata mydata;            /* ted.s:6027 (input.c) */
 #define comdata     ((APTR)((UBYTE *)&mydata + 8))      /* ted.s:6030 */

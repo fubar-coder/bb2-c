@@ -90,7 +90,7 @@ extern void screenclose_stub(void), screenopen2_stub(void), openreq_stub(void),
     refgads_stub(void), getinput2_stub(void), colors_stub(void),
     halfcolors_stub(void), tokone_stub(void), openio_stub(void),
     closeio_stub(void), actgad_stub(void), pointeron_stub(void),
-    sleepon_stub(void), extalloc_stub(void);
+    sleepon_stub(void), extalloc_stub(void), progress_stub(void);
 
 /* ------------------------------------------------ callbacks into blitz2 */
 

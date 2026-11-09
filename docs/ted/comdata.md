@@ -48,6 +48,29 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 80/84 | data `mywindow2`, (gadget address) | | | | structs.h | OK |
 | 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
 | 92/94 | data `bmapmul`, `req_window` | | | 1939, 2546 | `struct mydata` | OK |
+| 98 | TED-C only: data `m_progmark` = `'TEDp'` ($54454470) | | (original TED: its own words `topskip`, `botskip`) | – (the original reads no offset ≥ 98) | `struct mydata`, `TED_PROGMARK` (structs.h) | new (#980) |
+| 102 | TED-C only: `progress` (screen.c) | d0.w bar (0 main, 1-3 include level), d1.w byte column | – | – (a compiler calls it only if 98 holds the marker) | REGSTUB, `progress(d0, d1)` | new (#980) |
+
+**The progress call (TED-C, #980).** The original compiler draws its
+progress bar (the "racing stripe") itself: it XORs bytes of plane 0
+(`combitmap`, 36) in pixel rows 0 to 9, with `bmapmul` (92) as a signed
+word offset (#980: from 3641 bytes per row it writes before the bitmap).
+TED-C appends two longwords behind the original table: at 98 the
+marker `'TEDp'` ($54454470) and at 102 the entry `progress`. In the
+original TED, 98 is the word `topskip` (below 256) followed by
+`botskip`, so the long there never equals the marker: a compiler calls
+102 only if 98 holds the marker, where the original XORs:
+`d0.w` = bar (0 the main bar, 1 to 3 the include level), `d1.w` = the
+byte column the original XORs (main bar: the new high word of `titleat`
+minus 1; include bar: `titleadd[level]` before its increment). The call
+means "toggle this 8 x 1 pixel cell": TED-C draws through
+`myscreen->RastPort` with draw mode `COMPLEMENT` and write mask 1 (plane 0
+only) a `RectFill` at x = 8 x column in pixel rows `bar` and 9 - bar,
+and restores draw mode and mask. It ignores the call while its screen is
+closed (`screensopen` = 0), for a bar above 3 and for a column outside
+the bitmap's row. Registers: all kept (REGSTUB). TED-C keeps filling
+`combitmap` and `bmapmul`, so the original compiler draws its own bar
+as before. Offsets asserted in `programs/ted/src/structs.h`.
 
 Residual risk for phase 3: the stub preserves registers that the original
 destroys. At the call sites above (every `comdata` site in `blitz2.s`,
