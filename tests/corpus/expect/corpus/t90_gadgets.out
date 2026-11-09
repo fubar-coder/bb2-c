@@ -1,0 +1,43 @@
+id 1 pos 10,20 size 48,12 fl 00000103 ty 00000001 ud 624C0002 r -1 s 0
+  text [Hello] [Hello] 2 3 2 4 2
+  border 0 0 768 5 47 0 0 0 0 11 1 10 1 1
+  shadow 0 0 1024 5 1 11 47 11 47 0 46 1 46 11
+id 2 pos 8,7 size 32,12 fl 007900F3 ty 00002001 ud 624C0000 r -1 s 0
+  text [Abc] [Abc] 2 3 2 4 2
+  border 0 0 768 5 31 0 0 0 0 11 1 10 1 1
+  shadow 0 0 1024 5 1 11 31 11 31 0 30 1 30 11
+id 5 pos 34,42 size 100,8 fl 00010003 ty 00000004 ud 624C0000 r -1 s 0
+  border -4 -2 768 5 107 0 0 0 0 11 1 10 1 1
+  shadow -4 -2 1024 5 1 11 107 11 107 0 106 1 106 11
+  string max 20 buf 0
+id 6 pos 1,2 size 50,12 fl 003C0103 ty 00000003 ud 624C0000 r -1 s 0
+  image 0 0 0 0
+  prop 0000001F 80008000 80008000
+id 9 pos 3,4 size 40,10 fl 00040003 ty 00000003 ud 624C0000 r -1 s 0
+  image 0 0 0 0
+  prop 00000013 80008000 80008000
+id 3 pos 1,2 size 40,8 fl 00000003 ty 00000001 ud 624C0002 r 0 s 0
+  text [one] [one] 2 3 2 0 0
+id 10 pos 40,50 size 36,14 fl 00000003 ty 00000001 ud 624C0000 r -1 s 0
+  text [Six] [Six] 1 3 2 6 3
+  border 0 0 768 5 35 0 0 0 0 13 1 12 1 1
+  shadow 0 0 1024 5 1 13 35 13 35 0 34 1 34 13
+id 7 pos 50,60 size 16,8 fl 00040103 ty 00000001 ud 624C0000 r -1 s 0
+  image 16 8 2 3
+id 8 pos 50,60 size 16,8 fl 00160003 ty 00000001 ud 624C0000 r -1 s -1
+  image 16 8 2 3
+prop . .5 .25 .125
+status -1 1 1 0
+cycle 3 3
+cycle 2 2
+button 1 -1
+string [some text]
+cleared []
+text 1 [Hello]
+text 2 [lon]
+text 3 [two]
+text 10 [Hi ]
+window 320 0
+window ok
+done
+rc=0

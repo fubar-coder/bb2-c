@@ -1,0 +1,15 @@
+open -1
+lof 155 loc 155
+4 400007 -5 120 1 6 [rec4]
+3 300007 -4 90 .75 4.5 [rec3]
+2 200007 -3 60 .5 3 [rec2]
+1 100007 -2 30 .25 1.5 [rec1]
+0 7 -1 0 0 0 [rec0]
+3 300007 [rec3]
+2 -1 2 3 .5 -1 [new two]
+at end -1 [new two] loc 155 eof -1
+appended lof 186 loc 186
+read -1 lof 186
+first 291429 0
+added 74605923 0 0 loc 7
+rc=0

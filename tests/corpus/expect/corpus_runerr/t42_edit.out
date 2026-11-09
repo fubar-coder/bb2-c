@@ -1,0 +1,22 @@
+edit$80 [first line] 10
+edit10 [12.75]
+edit2.5 [-.5]
+edit$dflt [abc] 3
+edit$5 [a lon] 5
+edit$long [ger] 3
+edit$empty [ lin] 4
+edit$1F [0]
+edit1 [0]
+concat [xyy]
+inkey [
+] 1
+inkey3 [$1F] 3
+inkey1 [
+] 1
+inkey10 [7
+zz
+ABCDE] 10
+inkey eof [F] 1
+inkey2 eof [GH] 2
+end
+rc=0

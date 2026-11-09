@@ -1,0 +1,4 @@
+cookie 0
+before
+REQUESTER: AutoRequest body "Shape does not have a cookie cut" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

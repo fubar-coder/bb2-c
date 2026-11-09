@@ -1,0 +1,6 @@
+wb 640x256x2
+viewmode FFFFC000 ext 00002400
+cpu 2 vbr 00000000 exec 40
+expr 1536 4 -1
+conv -16384 213.3333
+rc=0

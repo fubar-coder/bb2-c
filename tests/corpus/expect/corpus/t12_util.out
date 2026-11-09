@@ -1,0 +1,15 @@
+task [Background CLI] 14
+concat len 15
+ports -1 -1 -1
+type 4 pri 0 flags 0
+name [bb2testport] size 16
+noname 0 [x]
+sigtask Background CLI
+sigbits 1 1
+msglist -1 0 -1
+links -1 -1 0 -1
+after delete -1 -1
+relinked -1 -1
+wait 00008000
+wait statement ok
+rc=0

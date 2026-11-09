@@ -22,3 +22,6 @@ CMakePresets.json       text eol=lf
 LICENSE                     text eol=lf
 RUNTIME-LIBRARY-EXCEPTION   text eol=lf
 *.obj                   binary
+
+# the expected outputs of the corpus: never converted, always diffed as text
+/tests/corpus/expect/**/*.out   -text diff

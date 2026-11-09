@@ -1,0 +1,34 @@
+gfx -1
+open -1 num 0 idcmp 00000568
+flags 0000000E min 40 30 max 600 400
+port -1 pens 1 2
+pos 20 30 size 240 120
+inner 232 107 off 11 4
+curs 0 0
+locate 10 5
+title [Window 0]
+rastport -1
+wtitle [New title] [Screen title]
+moved 50 60
+sized 200 100 192 87
+plot 1 2 3
+box 21142
+circle 2744
+ellipse 16536
+line 7822
+scroll 21294
+innercls 13194600
+wcls 40200
+menusoff 0001000E 00002568
+menuson 0000000E 00000568
+menus off 00010000
+menus on 00000000
+w1 1 idcmp 00040478 flags 0000060E
+w1 min 160 90 max 160 90
+w1 pos 154 101 inner 152 77 curs 0 0
+w1 origin 0
+tags 100 100 120 60 [Tags] 2
+taglist 10 30 90 40
+closed 0 0
+all closed 0
+rc=0

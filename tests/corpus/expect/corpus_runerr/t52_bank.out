@@ -1,0 +1,16 @@
+unused 0 0 0
+init -1 -1 100 0
+saved 100
+load into smaller 100 3 41
+load into larger 200 38 41 7 7
+load into unused -1 100 -106
+other memtype 100 12
+missing 0 0
+freed 0 0
+init 0 0 0
+save unused 0
+reinit 16 0 0
+allocmem -1 0 0
+12345
+allocmem2 -1
+rc=0

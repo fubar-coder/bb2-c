@@ -1,0 +1,11 @@
+timer 0
+cursor 40 0 0 8 56 20 68 58
+text 68438
+edit [ah] 2 at 2 exit 13 0 68
+editarea 5198
+edit2 [nabsm] at 5 exit 13
+edit3 [c] at 1
+cursorarea 4036
+editfrom [defabcvault] at 7 exit 1
+funny [] exit 13
+rc=0

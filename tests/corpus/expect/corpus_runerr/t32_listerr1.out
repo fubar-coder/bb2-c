@@ -1,0 +1,3 @@
+before
+REQUESTER: AutoRequest body "No Current Item" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

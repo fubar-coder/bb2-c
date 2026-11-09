@@ -1,0 +1,3 @@
+before
+REQUESTER: AutoRequest body "Screen width MUST be at least 320" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

@@ -1,0 +1,19 @@
+667 1801 -699678 -2
+99993 100007 -700000 -14285 5 2
+byte wrap -106
+word wrap -32768
+long wrap -2147483648
+div0 long 2147483647
+neg div -3 -3 1
+and/or/eor 61440 65535 3855
+not -6
+lsl word 64000 lsr 250 asr -250 asl 128000
+lsl long -2147483648 1
+bits -1 0 16 254 3
+cmp -1 0 -1 0 -1 0
+hex 255 bin 10 neg -16
+abs 12 sgn -1 0 1
+quick 2.25 4.75 -4.375 -2.8
+quick mod 1
+default 2.3333 21
+rc=0

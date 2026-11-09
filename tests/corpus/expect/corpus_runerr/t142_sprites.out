@@ -1,0 +1,19 @@
+sprite 0 9 2 00000014 36 h 3 2 data 00F20CC0
+sprite 1 7 3 00000028 28 h 0 0 data 00D7A2A8
+sprite 2 6 2 00008010 24 h 0 0 data 00DCA23C
+sprite 3 8 4 00008020 32 h 0 0 data 006299A8
+RAM:t142a.spr len 396 blocks 4 cks 00B7E606
+sprite 10 9 2 00000014 36 h 3 2 data 00F20CC0
+sprite 11 7 3 00000028 28 h 0 0 data 00D7A2A8
+sprite 12 6 2 00008010 24 h 0 0 data 00DCA23C
+sprite 13 8 4 00008020 32 h 0 0 data 006299A8
+sprite 15 9 2 00000014 36 h 3 2 data 00F20CC0
+sprite 16 7 3 00000028 28 h 0 0 data 00D7A2A8
+sprite 17 6 2 00008010 24 h 0 0 data 00DCA23C
+sprite 18 8 4 00008020 32 h 0 0 data 006299A8
+sprite 5 10 2 00000040 80 h 0 0 data 005950F8
+sprite 6 8 2 00008020 64 h 0 0 data 00CBEBA8
+RAM:t142b.spr len 320 blocks 2 cks 00058B36
+sprite 7 10 1 00000040 160 h 0 0 data 009BEDF8
+sprite 8 5 2 00008040 80 h 0 0 data 0001DE40
+rc=0

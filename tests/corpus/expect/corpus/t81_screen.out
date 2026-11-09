@@ -1,0 +1,46 @@
+scr 0 open -1 user 624C745A pos 0 0 size 320 256
+  bm 40 256 depth 3 modes 00004000 flags 0000001F
+  title [] font [topaz.font] 8
+  viewport 44 rp bm 0 dbuf 0
+used mouse -1 -1
+scr 1 open -1 user 624C745A pos 0 0 size 320 256
+  bm 40 256 depth 1 modes 00004000 flags 0000001F
+  title [Mode 1 title] font [topaz.font] 8
+  viewport 44 rp bm 0 dbuf 0
+scr 2 open -1 user 624C745A pos 0 0 size 640 512
+  bm 80 512 depth 2 modes FFFFC004 flags 0000021F
+  title [] font [topaz.font] 8
+  viewport 44 rp bm 0 dbuf 0
+scr 3 open -1 user 624C745A pos 0 0 size 336 100
+  bm 48 100 depth 2 modes 00004000 flags 0000001F
+  title [Long form] font [topaz.font] 8
+  viewport 44 rp bm 0 dbuf 0
+scr 4 open -1 user 624C745A pos 4 7 size 320 64
+  bm 40 64 depth 1 modes FFFFC000 flags 0000021F
+  title [Hires 1] font [topaz.font] 8
+  viewport 44 rp bm 0 dbuf 0
+closed 4 0
+pens screen -1 type 0000001F
+no pens screen -1 type 0000001F
+front is 3 -1
+front is 0 -1
+front not 0 -1
+find title -1
+find long -1
+find empty -1
+wb -1 type 1 user blitz 0
+wb still open -1 object 0
+moved 0 30
+moved back 0 0
+tags -1 -1 320 256 [Tagged] 624C745A
+tags pairs -1 400 150 2 [Tag list]
+tags array -1 352 80
+tags deep 0 0
+pattern 0001E128 00D1DEC8
+loaded 0001E128 00D1DEC8 00A1DC68
+loaded pal 0001E128
+showbitmap dbuf -1
+showbitmap own -1
+closed 3 0 0
+end
+rc=0

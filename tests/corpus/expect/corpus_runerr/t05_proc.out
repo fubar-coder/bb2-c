@@ -1,0 +1,12 @@
+myshow 6 7 42
+fact 1 120 24319.9995
+half 2.5
+twice abab
+shared 12
+in mysub
+after gosub
+on 1
+on 2
+on 3
+end
+rc=0

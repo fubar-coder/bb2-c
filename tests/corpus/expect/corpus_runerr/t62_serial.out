@@ -1,0 +1,19 @@
+open -1 request -1 write -1
+port type 4 reply -1 len 82
+same device -1 sigs differ -1
+baud 31250 serflags 00000080 err 0
+lens 8 8 1 rbuf 512
+read -1 -1 actual 0
+readstring [] 0
+event 0
+buffer 4096 err 0
+lens 7 7 2 err 0
+params 9600 err 0
+unit 1 0 0
+no device 0
+write err 0 actual 1
+string err 0 len 5 actual 5
+mem err 0 len 6 actual 6
+closed 0 0
+done
+rc=0

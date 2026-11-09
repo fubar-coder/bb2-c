@@ -1,0 +1,19 @@
+REQCLOSE: "BB2 ASL" -> cancel
+REQCLOSE: "BB2 ASL" step gadget Cancel
+file [] 0 [RAM:] [file.txt]
+REQCLOSE: "BB2 ASL pattern" -> cancel
+REQCLOSE: "BB2 ASL pattern" step gadget Cancel
+pattern [] 0
+REQCLOSE: "BB2 ASL path" -> cancel
+REQCLOSE: "BB2 ASL path" step gadget Cancel
+path [] 0 [RAM:]
+REQCLOSE: "Select Font" -> cancel
+REQCLOSE: "Select Font" step gadget Cancel
+font 0
+REQCLOSE: "Select Screen Mode" -> cancel
+REQCLOSE: "Select Screen Mode" step gadget Cancel
+screen 0
+REQCLOSE: "BB2 ASL ok" -> ok
+REQCLOSE: "BB2 ASL ok" step gadget OK
+ok [RAM:file.txt] 12 [RAM:] 4 [file.txt] 8
+rc=0

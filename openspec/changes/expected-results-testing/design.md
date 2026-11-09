@@ -423,6 +423,38 @@ code changes in this change).
   configuration `TAG` runs and its outputs are written; a source that does
   not compile, has no output, no serial data or times out is not written
   (exit status 1).
+- **Task 7.2 (2026-11-09):** the expected outputs are one directory per
+  pass, `tests/corpus/expect/PASS/NAME.out` (not `expect/NAME.out`): the
+  programs of `tests/` run in `corpus` and in `corpus_runerr`, and two of
+  them write something else with runtime error checking (`t40_print`,
+  `t130_blit`: a runtime error requester where the unchecked program
+  goes on). 213 files: 71 + 135 + 3 + 1 + 1 outputs and the serial bytes
+  of `t64_serialrx` in both serial passes (`NAME.serial`, raw). The
+  first generation is the reference's (`corpusrun pass --update-expect
+  ref` on each pass, the original 2.10 with the CD's libraries), and it
+  equals the outputs of the reference run of 2026-11-07 byte for byte.
+  The target `corpus-expect-update` writes them from the configuration
+  `clib` (the port with its C libraries, the build under test): after a
+  fix the port's output is the new expectation and the commit shows the
+  change; on the unchanged tree it changes no byte. The corpus passes
+  compare `ref`, `port`, `clib` and `prev` with the files
+  (`ctest --preset all -R corpus` with a prev build: all pass). A
+  deliberately changed line fails the pass for every configuration with
+  the line; a missing file fails before the sessions. `prev` is judged
+  against the files as well: a fix that changes an output makes `prev`
+  differ there, which the commit names in `PREV_INTENDED`
+  (`corpus:NAME`). `serial_same_as` stays (both serial passes now compare
+  with their own file, which makes it redundant). `.gitattributes`: the
+  `.out` files are diffed as text (`t09_memacc` has binary bytes). The
+  review of the outputs found about 30 known original bugs the files lock
+  in (each changes its expected lines when it is fixed) and new
+  candidates for issues (collslib `chkifhit` asymmetric, an inactive CRNG
+  decoded as a reverse cycle, datelib without the century rule,
+  BlitColl's runtime check on coordinates inside the bitmap, QAngle at
+  -32768, Polyf with coordinates far outside, Rotate one pixel too large
+  at exact angles, the empty error text of `RGB` without a screen); the
+  port and the C libraries give the same outputs, so none of them makes a
+  configuration differ.
 - **Task 7.4 (2026-11-09):** a note row of `tests/data/ted-oracle.sha256`
   is `HASH  KIND/PATH<TAB>#NNN: TEXT (TED 1.1: HASH)`: the port's hash,
   and behind a tab the issue and the original TED's hash (the form of the

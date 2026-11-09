@@ -1,0 +1,6 @@
+REQCLOSE: "BB2 file requester" -> ok
+REQCLOSE: "BB2 file requester" step gadget OK
+ok 15
+[RAM:bb2test.txt]
+[RAM:] [bb2test.txt]
+rc=0

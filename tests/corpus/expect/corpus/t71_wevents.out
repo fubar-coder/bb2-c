@@ -1,0 +1,31 @@
+same port -1
+empty 0 -1 -1 -1 -1 -1
+event 00000004 code 7 qual FFFF8001 win 1 mouse 11 22
+none 0
+gadget up 00000040 77 0
+string down 00000020 78 3
+kludge up 00000040 78 5 0
+then 00000004 5
+then 0
+key 00000400 0 0
+inkey [a] 32 0
+key2 00000400
+inkey [B] 53 1
+nokey [] 0
+inkey [d] [] 0
+inkey1 [s] 1
+mbuttons 1 5 2 6 0
+event mb 00000008 1 0
+menu 00000100 0 0 -1 FFFFF800
+sub 00000100 0 1 1
+menu1 00000100 1 0 -1
+menunull 00000000 1 1
+multi 00000100 0 0
+multi2 00000100 1 0 -1 FFFFF801 0
+after 0
+flush8 00000004 0 0
+flush 00000400 0 []
+waitevent 00000004 1 9
+waitevent2 0
+activate ok
+rc=0

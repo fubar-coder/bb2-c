@@ -1,0 +1,7 @@
+port1 0 0 8 0
+port0 stable 1 x -1 y -1 r -1
+buttons 0 0
+gameb 0 0
+buttons after 0 0
+types 8 0
+rc=0

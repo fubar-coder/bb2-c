@@ -1,0 +1,4 @@
+open -1
+before
+REQUESTER: AutoRequest body "No Record Set" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

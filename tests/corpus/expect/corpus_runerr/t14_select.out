@@ -1,0 +1,13 @@
+byte other -2
+byte minus one
+byte zero
+byte other 1
+byte two 2
+byte other 3
+byte 200
+word other 254
+word 255
+word 256
+word other 257
+long 100000
+rc=0

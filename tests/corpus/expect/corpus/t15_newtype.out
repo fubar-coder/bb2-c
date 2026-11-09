@@ -1,0 +1,9 @@
+size 16
+nxt at 4
+p at 8
+prv at 12
+num 1 p 0 0
+num 2 p 7 -7
+num 3 p 0 0
+back 1 2
+rc=0

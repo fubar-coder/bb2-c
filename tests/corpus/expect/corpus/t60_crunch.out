@@ -1,0 +1,22 @@
+deplode not imp 0
+implode 0 kind 0 -> 0 ck before 00000000 after 00000000
+implode 1 kind 0 -> 0 ck before 00000000 after 00000000
+implode 63 kind 0 -> 0 ck before 00935817 after 00935817
+implode 64 kind 0 -> 0 ck before 00BA0886 after 008F9C91
+implode 1000 kind 0 -> 74 hdr 494D5021 1000 28 ck 00ACBA1B
+  deplode -1 same -1
+implode 2000 kind 1 -> 0 ck before 002E4F94 after 002E4F94
+implode 3000 kind 2 -> 1322 hdr 494D5021 3000 1276 ck 002C38FA
+  deplode -1 same -1
+implode 20000 kind 3 -> 15210 hdr 494D5021 20000 15164 ck 00A246C3
+  deplode -1 same -1
+implode 301 kind 2 -> 182 hdr 494D5021 301 136 ck 00898AA7
+  deplode -1 same -1
+text 320 00B596AD
+pp -1 0
+crm -1 0
+crm2 -1 0
+crm in place -1
+crm2 in place -1
+not packed 12345678 -1
+rc=0

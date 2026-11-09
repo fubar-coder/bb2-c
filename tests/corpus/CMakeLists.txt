@@ -7,6 +7,8 @@
 #             rcput (rc=N in the session scripts on Kickstart 1.x)
 #   tests*/   the test programs (text); tokenised here with tedsrc tok (the TED
 #             core), which also refuses lines TED would cut
+#   expect/   the expected outputs, one directory per pass (target
+#             corpus-expect-update)
 #   runner/   corpusrun (host side): the passes, see runner/README.md
 add_subdirectory(amiga)
 
@@ -37,12 +39,14 @@ set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 # ---------------------------------------------------------- the passes
 # Configurations (bb2 corpus_check): ref = the original compiler (2.10,
 # BLITZ2/BLITZ2 of the CD) with the CD's libraries (the reference), port = blitz2-c with the CD's libraries
-# (executable identical, output the same), clib = blitz2-c with the C
-# libraries of this build (output the same), prev (with BLITZ2_PREV,
-# cmake/prev.cmake) = the compiler and libraries of the previous commit:
-# its executable must be the one clib writes, its output the same as
-# clib's (a result the commit changed shows here).  Without the CD the
-# tests skip.  CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
+# (executable identical), clib = blitz2-c with the C libraries of this
+# build, prev (with BLITZ2_PREV, cmake/prev.cmake) = the compiler and
+# libraries of the previous commit: its executable must be the one clib
+# writes (a result the commit changed shows here).  The output of every
+# configuration must be the committed expected output
+# (expect/PASS/NAME.out, with the serial tests NAME.serial: the bytes sent
+# over the serial port).  Without the CD the tests skip.
+# CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
 # control channel is a socket in a private XDG_RUNTIME_DIR only on Linux;
 # Windows: numbered named pipes, macOS: a fixed socket under /tmp - 1
 # there).
@@ -56,6 +60,8 @@ set(CORPUS_PARALLEL ${parallel_default} CACHE STRING
 set(CORPUS_TIMEOUT 300 CACHE STRING "corpus: time limit of one emulator session (seconds)")
 set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(REF_BLITZ2 ${CD_BLITZ2}/BLITZ2)
+# the committed expected outputs, one directory per pass
+set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
 #             [SERIAL_SAME_AS PASS] SOURCES FILES...): pass file + ctest
@@ -103,12 +109,16 @@ function(corpus_pass name)
 		string(APPEND text "${PREV_INTENDED_LINES}")
 		set(configs 4)
 	endif()
+	# the expected outputs (expect/PASS/NAME.out, NAME.serial): every
+	# configuration's output must be these (target corpus-expect-update)
+	string(APPEND text "expect_dir=${CORPUS_EXPECT}/${name}\n")
 	# BB2: the CD - the tests load sounds and modules from it
 	string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n")
 	foreach(s IN LISTS arg_SOURCES)
 		string(APPEND text "source=${s}\n")
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+	set_property(GLOBAL APPEND PROPERTY CORPUS_PASSES ${work}.pass)
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	# one session per configuration, one after the other if there are not
 	# enough emulator slots free, each maybe waiting for one
@@ -141,6 +151,23 @@ corpus_pass(corpus_serial SERIAL LAUNCHER reqtrap SOURCES ${corpus_tests-serial}
 corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 	SERIAL_SAME_AS corpus_serial
 	SOURCES ${corpus_tests-serial})
+
+# the expected outputs written from the port's run (configuration clib:
+# blitz2-c with the C libraries) - after a fix changed an output, or for a
+# new source; the commit shows the change (git diff tests/corpus/expect).
+# Not ALL: needs Amiberry and the CD (the passes mount BB2:)
+get_property(passes GLOBAL PROPERTY CORPUS_PASSES)
+set(update_commands)
+foreach(pass IN LISTS passes)
+	list(APPEND update_commands COMMAND ${CORPUSRUN} pass --update-expect clib ${pass})
+endforeach()
+add_custom_target(corpus-expect-update
+	${update_commands}
+	DEPENDS blitz2 acidlibs deflibs tedstub reqtrap reqclose reqclosetest corpus_sources
+		host_tools
+	USES_TERMINAL
+	COMMENT "The corpus through the port's blitz2 and C libraries -> tests/corpus/expect"
+	VERBATIM)
 
 # --------------------------------------------- the CD (corpusrun cd, runner/)
 # Every .bb2/.bb of the CD compiled (not run) as bb2's bb2corpus did: with

@@ -1,0 +1,115 @@
+menu 0 2 0 64 10 00000001 [Project]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Open] 0
+  item 1 0 12 56 12 0000005F 00000000 -1 84 0
+    text 1 2 0 4 2 -1 [Toggle] 0
+  item 2 0 24 56 12 0000005B FFFFFFFB -1 0 0
+    text 1 2 0 4 2 -1 [Excl A] 0
+  item 3 0 36 56 12 0000005B FFFFFFF7 -1 0 0
+    text 1 2 0 4 2 -1 [Excl B] 0
+  item 4 0 48 64 12 0000015B 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Checked] 0
+  item 5 0 60 80 12 0000015B FFFFFFDF -1 0 0
+    text 1 2 0 4 2 -1 [Excl C on] 0
+  item 6 0 72 80 12 00000056 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Raw flags] 0
+  item 7 0 84 80 12 0000015B FFFFFF7F -1 0 0
+    text 1 2 0 4 2 -1 [Big flags] 0
+menu 1 66 0 40 10 00000001 [Edit]
+  item 0 0 0 36 14 00000056 00000000 -1 88 0
+    text 3 2 0 6 3 -1 [Cut] 0
+  sub 0   item 0 30 2 68 14 00000052 00000000 -1 0 0
+    text 3 2 0 6 3 -1 [Sub one] 0
+  sub 1   item 0 30 16 108 14 0000005F 00000000 -1 83 0
+    text 3 2 0 6 3 -1 [Sub two long] 0
+menu 2 106 0 48 10 00000001 [Third]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Only] 0
+-- replaced
+menu 0 2 0 64 10 00000001 [Project]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Open] 0
+  item 1 0 12 56 12 0000005F 00000000 -1 84 0
+    text 1 2 0 4 2 -1 [Toggle] 0
+  item 2 0 24 104 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Excl A again] 0
+  item 3 0 36 56 12 0000005B FFFFFFF7 -1 0 0
+    text 1 2 0 4 2 -1 [Excl B] 0
+  item 4 0 48 64 12 0000015B 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Checked] 0
+  item 5 0 60 80 12 0000015B FFFFFFDF -1 0 0
+    text 1 2 0 4 2 -1 [Excl C on] 0
+  item 6 0 72 80 12 00000056 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Raw flags] 0
+  item 7 0 84 80 12 0000015B FFFFFF7F -1 0 0
+    text 1 2 0 4 2 -1 [Big flags] 0
+menu 1 66 0 64 10 00000001 [Editing]
+  item 0 0 0 36 14 00000056 00000000 -1 88 0
+    text 3 2 0 6 3 -1 [Cut] 0
+  sub 0   item 0 48 4 80 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [First sub] 0
+  sub 1   item 0 30 2 108 14 0000005F 00000000 -1 83 0
+    text 3 2 0 6 3 -1 [Sub two long] 0
+menu 2 130 0 48 10 00000001 [Third]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Only] 0
+-- state
+menu 0 2 0 64 10 00000000 [Project]
+  item 0 0 0 40 12 00000042 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Open] 0
+  item 1 0 12 56 12 0000005F 00000000 -1 84 0
+    text 1 2 0 4 2 -1 [Toggle] 0
+  item 2 0 24 104 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Excl A again] 0
+  item 3 0 36 56 12 0000005B FFFFFFF7 -1 0 0
+    text 1 2 0 4 2 -1 [Excl B] 0
+  item 4 0 48 64 12 0000015B 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Checked] 0
+  item 5 0 60 80 12 0000015B FFFFFFDF -1 0 0
+    text 1 2 0 4 2 -1 [Excl C on] 0
+  item 6 0 72 80 12 00000056 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Raw flags] 0
+  item 7 0 84 80 12 0000015B FFFFFF7F -1 0 0
+    text 1 2 0 4 2 -1 [Big flags] 0
+menu 1 66 0 64 10 00000000 [Editing]
+  item 0 0 0 36 14 00000056 00000000 -1 88 0
+    text 3 2 0 6 3 -1 [Cut] 0
+  sub 0   item 0 48 4 80 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [First sub] 0
+  sub 1   item 0 30 2 108 14 0000004F 00000000 -1 83 0
+    text 3 2 0 6 3 -1 [Sub two long] 0
+menu 2 130 0 48 10 00000000 [Third]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Only] 0
+checked -1 0 0 0
+strip -1
+menu 0 2 0 64 10 00000001 [Project]
+  item 0 0 0 104 12 00000042 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Open] 0
+  item 1 0 12 104 12 0000005F 00000000 -1 84 0
+    text 1 2 0 4 2 -1 [Toggle] 0
+  item 2 0 24 104 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Excl A again] 0
+  item 3 0 36 104 12 0000005B FFFFFFF7 -1 0 0
+    text 1 2 0 4 2 -1 [Excl B] 0
+  item 4 0 48 104 12 0000015B 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Checked] 0
+  item 5 0 60 104 12 0000015B FFFFFFDF -1 0 0
+    text 1 2 0 4 2 -1 [Excl C on] 0
+  item 6 0 72 104 12 00000056 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Raw flags] 0
+  item 7 0 84 104 12 0000015B FFFFFF7F -1 0 0
+    text 1 2 0 4 2 -1 [Big flags] 0
+menu 1 66 0 64 10 00000001 [Editing]
+  item 0 0 0 36 14 00000056 00000000 -1 88 0
+    text 3 2 0 6 3 -1 [Cut] 0
+  sub 0   item 0 48 4 108 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [First sub] 0
+  sub 1   item 0 30 2 108 14 0000004F 00000000 -1 83 0
+    text 3 2 0 6 3 -1 [Sub two long] 0
+menu 2 130 0 48 10 00000001 [Third]
+  item 0 0 0 40 12 00000052 00000000 -1 0 0
+    text 1 2 0 4 2 -1 [Only] 0
+again -1
+list -1 0
+rc=0

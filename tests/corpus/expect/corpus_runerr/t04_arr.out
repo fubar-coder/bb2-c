@@ -1,0 +1,10 @@
+sum 385
+m 23 34 0
+point 3 4 pt
+pts 4 -4
+list 100
+list 200
+list 300
+list 400
+list 500
+rc=0

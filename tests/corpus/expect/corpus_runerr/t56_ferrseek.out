@@ -1,0 +1,6 @@
+open -1
+read -1
+loc 2
+before
+REQUESTER: AutoRequest body "Can't FileSeek Position" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

@@ -1,0 +1,4 @@
+REQCLOSE: "BB2 file requester 2" -> cancel
+REQCLOSE: "BB2 file requester 2" step gadget Cancel
+cancel [] 0 [RAM:T] [x]
+rc=0

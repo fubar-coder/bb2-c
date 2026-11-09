@@ -1,0 +1,15 @@
+start
+voiceloc odd 1
+voice 150 110 1 0 64 22200 masks 4
+voice 40 65 0 1 64 5000 masks 4
+voice 400 320 1 1 -5 28000 masks 4
+voice 40 65 0 1 63 5000 masks 4
+voice 399 319 1 1 64 27999 masks 4
+voice 400 320 1 1 64 28000 masks 4
+tr [hello] len 10 last 0 [/HEH4LOW ]
+tr [Blitz Basic two] len 23 last 0 [BLIH4TZ BEY4SIHK TUW3 ]
+tr [] len 1 last 0 []
+tr [1234] len 30 last 0 [ WAH4N  TUW4  THRIY4  FOH4R  ]
+tr [The quick brown fox jumps over the lazy dog.] len 62 last 0 [DHAX KWIH4K BROW4N FAA4KS JAH4MPS OW4VER DHAX LEY3ZIY DAA4G. ]
+end
+rc=0

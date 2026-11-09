@@ -1,0 +1,18 @@
+Hello, World! len 13
+Hello|World!|World|
+HELLO, WORLD!|hello, world!
+instr 8 0 11
+chr AB asc 97
+str -123|4.5| val 43
+hex 000000FF bin 00000000000000000000000000000101
+string ababab
+replace HeLLo, WorLd!
+cmp -1 -1 0 -1
+lset [ab   ] rset [   ab] centre [  ab  ]
+built 12345
+maxlen 0123456789 10
+0 zero
+1 one
+2 two
+3 onetwo
+rc=0

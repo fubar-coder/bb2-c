@@ -1,0 +1,21 @@
+snd 0 data -1 per 428 len 16 rep 0 replen 16 mark 00000000
+played
+-128 -96 -64 -32 0 32 64 96 
+cks 00607C80
+snd 1 data -1 per 300 len 32 rep 0 replen 32 mark 00000000
+snd 2 data -1 per 500 len 50 rep 40 replen 30 mark 00000000
+peek new 0 0
+snd 0 data -1 per 10 len 16 rep 0 replen 16 mark 00000000
+filter 2 0
+snd 3 data -1 per 447 len 8 rep 8 replen 4 mark 00000000
+decoded same 0 cks 007D7878
+snd 4 data -1 per 357 len 4 rep 2 replen 3 mark 00000000
+decoded 4 cks 0004FADC
+snd 5 data -1 per 349 len 7 rep 14 replen 0 mark 00000000
+loaded cks 008AB776
+snd 5 data -1 per 428 len 91 rep 152 replen 14 mark 00000000
+loaded cks 003B00F5
+snd 0 data -1 per 214 len 8 rep 8 replen 4 mark 00000000
+peek after reinit 0
+end
+rc=0

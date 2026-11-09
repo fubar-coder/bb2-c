@@ -1,0 +1,51 @@
+len 13 0 26
+left [Hello][][][Hello, World!][Hello, World!][]
+right [World!][][][Hello, World!][Hello, World!][]
+mid3 [World][H][Hel][Hel][!]
+mid3 [][][][][rld!][]
+mid2 [World!][Hello, World!][Hello, World!][!][][][Hello, World!]
+unleft [Hello, Wor][Hello, World!][][][Hello, World!]
+unright [lo, World!][Hello, World!][][][Hello, World!]
+hex 00000000 000000FF FFFFFFFF 80000000 12345678 00ABCDEF
+bin 00000000000000000000000000000101
+bin 11111111111111111111111111111111
+bin 10000000000000000000000000000001
+chr [AB][C][A] 1 0 200 255
+asc 97 -1 90 111
+string [ababab][][x] 2100 fgh
+string var [-=-=-=-=-=-=-=-=-=-=] 20
+instr 8 0 11 11 1 1 0
+instr 13 0 0 1 0 -5 0
+instr case 0 0 0
+instr nocase 8 2 1 4 2 4
+replace nocase [He__o, Wor_d!][xxbBxx][Hello, There!]
+instr case 0 0 0
+replace [HeLLo, WorLd!][Hello, There!][Hell, Wrld!]
+replace [bbbbbb][bb][Hello, World!][]
+replace [Hello, World?!][X][ab][xAbBxA]
+replace var [a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123a123] 80
+mki 2 1234 -2 9029 65 66
+mkl 4 305419896 -1 67 80000000
+mkq 4 1.5 -3.25 FFFCC000
+cv 16706 1094861636 41424344 16706.2628 16706
+lset [ab   ][abc][ab][][][   ]
+rset [   ab][def][ab][][][   ]
+centre [  abc  ][ abc  ][  ab   ][  ab  ][    ][abc]
+centre [cde][bcde][cde][bcde][][a ]
+concat <ab  |  cd| ef  > 17
+case [hello, world!][HELLO, WORLD!][][][AZ@[`{AZ09][az@[`{az09]
+case8 196 228 88 196 228
+striplead [abc  ][][][abc][b]
+striptrail [   abc][][][abc][a]
+nest [HELLOworld!][0, W][000000]
+nest2 [pad me] 6
+loop -1 [][][abc][ab][ab][][]
+loop 0 [][][abc][ab][abab][][]
+loop 1 [a][c][abc][ab][ababab][a][b]
+loop 2 [ab][bc][bc][bc][abababab][ab][ab]
+loop 3 [abc][abc][c][c][ababababab][abc][abc]
+loop 4 [abc][abc][][][abababababab][abc ][abc ]
+string0 [][] 0
+replace empty [Hello, World!]
+end
+rc=0

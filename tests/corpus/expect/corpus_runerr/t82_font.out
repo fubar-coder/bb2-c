@@ -1,0 +1,30 @@
+font 0 -1 y 8 x 8 lo 32 hi 255
+bitmap 40 80 2
+hello 0023BAB4 00000000 cur 40 0
+H .##..##.
+H .##..##.
+H .##..##.
+H .######.
+H .##..##.
+H .##..##.
+H .##..##.
+H ........
+curs 17 2
+locate 00734EEC 00000000 cur 136 16
+curs q 3 1.5
+colour 003F7FA8 008F9804 cur 72 40
+wrap 0033487C 008F9804 cur 24 48
+below 00C3D75E 008F9804 cur 8 80
+range 001AD75E 008F9804 cur 8 8
+font 1 -1 same as 0 -1
+font1 00780BA6 008F9804 cur 200 56
+str$ still ok [1234]
+ifont 0 [topaz.font] 8 0 0 open -1
+  font y 8
+ifont 1 [topaz.font] 9 style 0 flags 1 open -1
+  font y 9
+ifont 1 again 9 style 2 flags 1 font y 9
+screen font [topaz.font] 9
+screen font [topaz.font] 8
+end
+rc=0

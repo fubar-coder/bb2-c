@@ -1,0 +1,3 @@
+ok
+REQUESTER: AutoRequest body "Custom Copper String Must Be Multiple Of 4 Bytes Silly!" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

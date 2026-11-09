@@ -1,0 +1,3 @@
+before
+REQUESTER: AutoRequest body "Current Stack overflow" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

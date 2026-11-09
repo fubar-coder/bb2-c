@@ -35,7 +35,8 @@ any session.
 Options:
 
 * `--update-expect TAG`: run only the configuration `TAG` of the pass and
-  write its outputs to `expect_dir=` instead of comparing. A source that
+  write its outputs to `expect_dir=` instead of comparing (the target
+  `corpus-expect-update`, `tests/README.md`, "Corpus"). A source that
   does not compile, has no output or times out is not written.
 
 ### cd
@@ -77,7 +78,8 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
 
 ## Callers
 
-* `pass`: the corpus tests (`tests/corpus/CMakeLists.txt`), `tests/ab3`,
+* `pass`: the corpus tests and the target `corpus-expect-update`
+  (`tests/corpus/CMakeLists.txt`), `tests/ab3`,
   `tests/blitz2`, the bug-orig tests and their recordings
   (`tests/bug-orig/CMakeLists.txt`, also through `want.cmake`), the test
   `rwe_residents_cd` (`libs/userlibs/rwe/residents.cmake`,

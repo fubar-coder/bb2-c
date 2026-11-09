@@ -1,0 +1,22 @@
+rexxerror [Program not found] [Unmatched quote] [Invalid operand]
+rexxerror unknown [Returned Error not known to Arexx] 33
+arg [hello] size 8000000E len 5 flags 70 hash 20
+empty size 80000009 len 0 hash 0 end 0
+zero block isrexx 0 result 0 []
+msg isrexx 1 type 0 len 128 name [REXX] port -1
+ext [bb] host [BB2HOST] 80000010
+fill [one] [] [second] -1 0
+fill hash 124 index 0 00000000
+cleared 0 0 0
+event empty 0 0
+got -1 type 5 action 01000000 [do something]
+after reply 0
+reply -1 type 7 res 0 0 arg0 0
+reply to reply 0 0
+func result [the result] 10 res1 0
+func error 5 9
+comm result 0 7
+preset [preset]
+preset cleared 0
+done
+rc=0

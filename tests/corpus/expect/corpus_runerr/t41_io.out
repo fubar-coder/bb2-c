@@ -1,0 +1,25 @@
+parent
+to stdout 1
+to stdout 2
+to stdout 3
+to stdout 4
+read1 [line1 to file]
+read2 [line2 42 -1.5]
+read3 [line3 to file]
+read4 [] 0
+after ring
+child
+edit$5 [abcde] 5
+edit$dflt3 [xyz] 3
+edit4 [12.5]
+edit9.5,5 [-3.75]
+edit$10 [0123456789] 10
+edit$2 [to] 2
+edit$4 [long] 4
+default [end]
+pop [Q]
+edit$long [uvw] 3
+child end
+child rc -1
+end
+rc=0

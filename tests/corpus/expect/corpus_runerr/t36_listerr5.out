@@ -1,0 +1,3 @@
+before
+REQUESTER: AutoRequest body "Array is not a List" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0
