@@ -36,7 +36,7 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
 * The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
   or `bash <<'EOF'`.
 * A clean rebuild has **no warnings**. A reference from normal code into
-  the error check area is a `blitzlibcheck` error (the ones the
+  the error check area is a `blitzlib check` error (the ones the
   originals have are fixed, 2026-10-31, TODO.md).
 * CMake generates `.clangd` on the first configure (not in git).
 * Emulator: the Kickstart ROM and hardfiles are local in

@@ -25,7 +25,7 @@ read them first):
   it. Name intended changes with `-DPREV_INTENDED` (see `tests/README.md`,
   "The prev build"). The programs may change with a rework, checked with
   `ctest --preset all` and `ctest --preset bug-orig`. Clean build
-  without warnings (also none of blitzlibcheck), `ctest --preset host`
+  without warnings (also none of `blitzlib check`), `ctest --preset host`
   for every commit.
 * AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind an
   extension point of `ext.h`; no `BLITZ2_AB3` anywhere.
