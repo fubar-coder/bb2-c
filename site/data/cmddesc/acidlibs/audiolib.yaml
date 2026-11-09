@@ -32,9 +32,9 @@
 "PeekSound":
   text: One byte of the sample at the offset, from -128 to 127.
   notes: |
-    Kept from the original: used inside a string expression, the rest of
-    the expression is written into the sound object
-    ([#46](https://github.com/fubar-coder/bb2-c/issues/46)).
+    Fixed in the port: used inside a string expression, the original wrote
+    the rest of the expression into the sound object; the port leaves the
+    sound as it is ([#46](https://github.com/fubar-coder/bb2-c/issues/46)).
 "DecodeSound":
   text: Makes a sound from an IFF 8SVX file that is already in memory at the address. A file in chip memory is used where it is, other data is copied to chip memory.
   notes: |

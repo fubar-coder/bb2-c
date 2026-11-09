@@ -177,7 +177,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #3 | closed | [compiler/Libs] Read error (-1) while loading a library is not detected | **fixed in the port** |
 | #4 | closed | [compiler/Macros] Macro parameters are collected without checking against the end of macrobuff | unchanged |
 | #5 | closed | [compiler/Macros] `@` (expansion counter of the macro) is written into the macro line without overflow check | unchanged |
-| #6 | open | [compiler/rundebuglib] Executables with runtime error checking show an empty requester at program end without `End` | unchanged |
+| #6 | closed | [rundebuglib] Runtime errors with a numeric code (no used object, offset out of range, end of program) show an empty requester in executables | **fixed in the port** (the texts as in debuglib; the stop at the end stays) |
 | #7 | closed | [compiler] Constant without a name (`#=…`) is accepted without error | **fixed in the port** |
 | #8 | closed | [compiler/Options] AllocMem for the arrow images of the options requester unchecked | **fixed in the port** |
 | #9 | closed | [compiler/Expression] Operator `=<` is compiled as `<>` | **fixed in the port** |
@@ -213,6 +213,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #40 | closed | [compiler/Expression] Operator stack: overflow is detected only after writing | unchanged |
 | #41 | closed | [compiler/Executable] Symbol names in HUNK_SYMBOL with up to 3 bytes past the label node | unchanged |
 | #42 | open | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
+| #46 | closed | [audiolib] PeekSound in a string expression overwrites the sound object (a3) | **fixed in the port** (the compiler keeps a3 around such calls; BlitColl too) |
 | #325 | closed | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | **fixed in the port** |
 | #335 | closed | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | **fixed in the port** |
 | #336 | open | [compiler/Macros] macrobuff is freed with the current Macro Buffer size, not the allocated one | unchanged |

@@ -469,6 +469,35 @@ last object with a 16-bit number and load only the first objects
 Issues: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939),
 [Used Object returned a wrong number from 64 KB of its table on (#998)](https://github.com/fubar-coder/bb2-c/issues/998).
 
+### A function of an object inside a string {#object-function-in-string}
+
+Some library functions take their object in a special register, which is
+also where the compiler keeps the end of a string while it builds it:
+`BlitColl` (a shape), `PeekSound` (a sound) and others. Used inside a
+string expression, the original wrote the rest of the string into the
+object.
+
+**What happened**
+
+```
+BitMap 0,64,32,2 : Use BitMap 0
+GetaShape 1,8,4,20,9
+BitMap 1,96,48,3 : Use BitMap 1
+NPrint "a ",BlitColl(1,40,20)," b"
+NPrint ShapeWidth(1)
+End
+```
+
+The original prints `8290` as the width of the shape: the characters
+`" b"` were written over it. The shape was 20 pixels wide, and the
+damaged shape can crash the program when it is freed at the end.
+
+**With the port**
+
+The object stays as it is; the program prints `20`.
+
+Issue: [PeekSound in a string expression overwrites the sound object (#46)](https://github.com/fubar-coder/bb2-c/issues/46).
+
 ## Include files and paths
 
 ### Text after `IncDir "…"` {#text-after-path}

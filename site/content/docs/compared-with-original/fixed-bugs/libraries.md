@@ -370,6 +370,32 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   default monitor; the whole mode is used
   ([#250](https://github.com/fubar-coder/bb2-c/issues/250)).
 
+## Runtime errors in executables {#runtime-error-texts}
+
+An executable built with runtime error checking stops with a requester
+when it meets an error. For three errors the original showed the
+requester with no text at all: a command that needs a used object when
+none is used (for example `RGB` without a screen), an offset out of range,
+and the end of a program that has no `End`.
+
+**What happened**
+
+```
+NPrint "hello"
+```
+
+Compiled with runtime error checking and saved with *Create Executable*,
+the program prints `hello` and then stops with an empty requester.
+
+**With the port**
+
+The requester says `End of Program`. The other two errors say
+`No currently used object!` and `Offset out of range`, the texts the
+debugger shows. The program still stops at its end without `End`, as
+before.
+
+Issue: [Runtime errors with a numeric code show an empty requester in executables (#6)](https://github.com/fubar-coder/bb2-c/issues/6).
+
 ## Runtime errors without the debugger
 
 Every library has an area of error checks that is left out when a
