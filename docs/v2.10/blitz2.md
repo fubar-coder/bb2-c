@@ -232,6 +232,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #974 | closed | [compiler/NewType] a by-value field of a forward-declared NewType (named before only by a pointer field) takes the line number of that pointer field as its size; the later NEWTYPE does not correct the layout (`tokens2.c` typemode, doend3) | **fixed in the port** |
 | #977 | closed | [compiler/Labels] A constant of value 0 is taken as a label not defined yet | **fixed in the port** |
 | #979 | closed | [compiler/IncBin] An IncBin of odd length at the end of the program puts the end code on an odd address | **fixed in the port** |
+| #980 | closed | [compiler/nextline] The racing stripe writes before TED's bitmap on wide screens | **fixed in the port** (the compiler reports its progress to TED-C, which draws the bar; with the original TED no bar) |
 | #993 | closed | [compiler/Libraries] loadalib does not check the read of the reloc data: a short library file gets random relocs | **fixed in the port** |
 | #994 | closed | [compiler/Code buffer] A compile error between pushdo and pushput loses the code save buffer | **fixed in the port** |
 | #995 | closed | [compiler/Residents] A macro text of 32767 bytes or more breaks the resident (length rounded in a word; `resmacs`, `fixmacs`) | **fixed in the port** |

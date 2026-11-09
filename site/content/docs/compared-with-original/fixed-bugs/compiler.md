@@ -761,6 +761,14 @@ source the original accepted are shown with examples on
   the compiler's data; it gives "Operand too Long"
   ([#997](https://github.com/fubar-coder/bb2-c/issues/997)).
 
+### The progress bar while compiling
+
+* While compiling from TED on a screen with 3641 or more bytes per row
+  (wide RTG modes), the compiler's progress bar wrote about 28 KB before
+  TED's screen memory. The compiler now reports its progress to TED, which
+  draws the bar itself; with the original TED, the port's compiler shows
+  no bar ([#980](https://github.com/fubar-coder/bb2-c/issues/980)).
+
 ### The compiler's memory
 
 * After the object buffer ran full during an assignment or a `Select`,
