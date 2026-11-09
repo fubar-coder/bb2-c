@@ -688,6 +688,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     fails at once, without waiting, when the process already has a
     session running and every slot is taken (`AMIGA_EMULATION_MAX`,
     default 4).
+  * `host_emulator`, its `amiga_emulation_snapshot` (2026-11-09, during
+    `ctest --preset all`): the case "corrupted"
+    (`tools/tests/test_amiga_emulation_snapshot.c:365`) needed 20.02 s:
+    the restore of the snapshot found no start for 15 s ("restore failed
+    (no start): kept, boot cold" at 18.70 s), the cold boot after it did
+    not end in time. Passed alone, 3 of 3.
   * `ted_ab` (`TED_AB_TIMEOUT` 120, `tests/ted-ab/CMakeLists.txt:39`),
     `ab3_bb2_equivalence_runerr` (`AB3_EQUIVALENCE_TIMEOUT` 600,
     `tests/ab3/CMakeLists.txt:30`), `corpus` (`CORPUS_TIMEOUT` 300,
