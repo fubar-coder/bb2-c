@@ -471,3 +471,10 @@ Findings and adaptations while implementing (2026-11-09).
   the order given (`cli::occurrences`), as before; `--machine`,
   `--timeout`, `--dir` given twice take the last (as before). A `--set`
   or `--mount` value without `=` is a usage error with its message.
+- **`hdftool`** (task 13.1): the five subcommands stay in one file,
+  `cmd_hdf.cpp` (moved from `main.c`, which held all of them). `edit`'s
+  operations are `cli::add_repeated` options with 2 or 3 values applied
+  in `cli::occurrences` order; `--partition` may stand anywhere (before:
+  only first). The caller `cmake/setup-amiga-forever.cmake` passes no
+  value starting with `-` (Q5), unchanged. Checking `--write PATH` without
+  `TEXT` found the `add_repeated` bug fixed in the commit before `tedab`.

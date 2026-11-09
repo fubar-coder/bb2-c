@@ -85,7 +85,7 @@ groups 2-14 and is not repeated there:
 
 ## 13. `hdftool`
 
-- [ ] 13.1 `tools/hdftool/` with subcommands `info`, `list`, `cat`, `check`, `edit` on CLI11 (the dispatch of `main.c:21-33` goes), `edit`'s operations in `parse_order()` order (design D5); `host_help_test(hdftool info list cat check edit)` and the README blocks; caller `cmake/setup-amiga-forever.cmake` (values starting with `-`: design Q5). Verify: C1-C5; `tools/lib/hdf` tests unchanged; an image edited with the old and the new `hdftool` on the same operations is `cmp`-identical (test image built in memory by the lib's tests or a fixture)
+- [x] 13.1 `tools/hdftool/` with subcommands `info`, `list`, `cat`, `check`, `edit` on CLI11 (the dispatch of `main.c:21-33` goes), `edit`'s operations in `parse_order()` order (design D5); `host_help_test(hdftool info list cat check edit)` and the README blocks; caller `cmake/setup-amiga-forever.cmake` (values starting with `-`: design Q5). Verify: C1-C5; `tools/lib/hdf` tests unchanged; an image edited with the old and the new `hdftool` on the same operations is `cmp`-identical (test image built in memory by the lib's tests or a fixture)
 
 ## 14. `xtra`
 
