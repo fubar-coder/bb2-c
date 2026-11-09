@@ -66,7 +66,7 @@ tests/corpus/                corpus: blitz2-c against blitz2 2.10 in the
                              tests*/: the test programs (plain text, .bas),
                              runner/: corpusrun (host: one pass, the CD
                              through a compiler; runner/README.md)
-tools/                       host tools:
+tools/                       host tools (overview: tools/README.md):
   lib/                       the logic as libraries: hunk (read the hunk
                              format), blitzlib (header, token table,
                              check rules), biglib (write/read BigLib),

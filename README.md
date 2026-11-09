@@ -110,7 +110,7 @@ programs/           the compiler, the editor and ab3cli
 libs/               the libraries
 shared/             code compiled by several programs
 host/               the host side: tools and host tests
-tools/              host tools (C) and their libraries
+tools/              host tools and their libraries (tools/README.md)
 tests/              the test suites and their data
 docs/               analysis of the originals, notes on the translation
 archive/            unchanged originals
