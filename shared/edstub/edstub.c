@@ -37,6 +37,7 @@ STUB(screenclose); STUB(screenopen2); STUB(openreq); STUB(closereq);
 STUB(getinput); STUB(error); STUB(detokallz); STUB(tokall); STUB(ezfreq);
 STUB(refgads); STUB(getinput2); STUB(tokone); STUB(openio); STUB(closeio);
 STUB(actgad); STUB(pointeron); STUB(sleepon); STUB(extalloc);
+STUB(progress);
 
 /* ---------------------------------------------------------------------
  * The table.  comdata (what blitz2 gets in a1) is &cd.openreq; the two
@@ -72,7 +73,10 @@ struct comdata_s {
     APTR extalloc;      /* 88 d0 size, d1 flags, a6 exec -> d0 */
     UWORD bmapmul;      /* 92 bytes per plane row */
     APTR req_window;    /* 94 window, +86 = UserPort */
+    ULONG progmark;     /* 98 TED-C: 'TEDp' = the progress call is there */
+    APTR progress;      /* 102 TED-C: d0 bar, d1 column (#980) */
 };
+#define PROGMARK 0x54454470UL           /* 'TEDp' */
 #define CDOFF(m) (offsetof(struct comdata_s, m) - 8)
 static_assert(CDOFF(openreq) == 0, "openreq");
 static_assert(CDOFF(getinput2) == 32, "getinput2");
@@ -84,6 +88,8 @@ static_assert(CDOFF(mywindow2) == 80, "mywindow2");
 static_assert(CDOFF(extalloc) == 88, "extalloc");
 static_assert(CDOFF(bmapmul) == 92, "bmapmul");
 static_assert(CDOFF(req_window) == 94, "req_window");
+static_assert(CDOFF(progmark) == 98, "progmark");
+static_assert(CDOFF(progress) == 102, "progress");
 static_assert(offsetof(struct Window, UserPort) == 86, "UserPort");
 static_assert(offsetof(struct Window, Width) == 8, "Width");
 static_assert(offsetof(struct edstruct, colon) == 24, "edstruct");
@@ -96,7 +102,8 @@ static struct comdata_s cd = {
     0, 0, 0, 0, 0,
     tokone_stub, openio_stub, closeio_stub, actgad_stub,
     pointeron_stub, sleepon_stub,
-    0, 0, extalloc_stub, 0, 0
+    0, 0, extalloc_stub, 0, 0,
+    0, progress_stub                    /* not announced: edstub_set_progress */
 };
 
 static UWORD colors[32], halfcolors[32];
@@ -105,10 +112,13 @@ static UBYTE flag84;
 /* fake editor window / bitmap */
 #define WIN_WIDTH   640
 #define BMAPMUL     80                  /* bytes per row of a 640 pixel plane */
-#define BITMAP_SIZE (BMAPMUL * 16)      /* stripe uses rows 0..9 */
+#define BITMAP_ROWS 16                  /* stripe uses rows 0..9 */
 static struct Window fakewin;
 static struct MsgPort *winport;
-static UBYTE *bitmap;
+static UBYTE *bitmap;                   /* = cd.combitmap, in bitmap_mem */
+static UBYTE *bitmap_mem;               /* guard, bitmap, guard */
+static ULONG bitmap_size, guard_size;   /* of bitmap_mem, of each guard */
+static void stripe_check(void);         /* bitmap= checkpoint (#980) */
 static APTR old_winptr;
 static int in_main;
 
@@ -309,9 +319,9 @@ static void closeall(void)
         edstub_delete_port(winport);
         winport = 0;
     }
-    if (bitmap) {
-        FreeMem(bitmap, BITMAP_SIZE);
-        bitmap = 0;
+    if (bitmap_mem) {
+        FreeMem(bitmap_mem, bitmap_size);
+        bitmap_mem = bitmap = 0;
     }
     if (IntuitionBase) {
         CloseLibrary((struct Library *)IntuitionBase);
@@ -431,12 +441,14 @@ void openreq_c(struct regs *r)
     sbq(&L, reqtext(q));
     LOG_END;
     r->d[0] = (ULONG)cd.req_window;     /* ted: window opened */
+    stripe_check();
 }
 
 void closereq_c(struct regs *r)
 {
     (void)r;
     popreq();
+    stripe_check();
 }
 
 /* getinput2: the gadget the program's hook reports as hit (d7 = -1, d6 =
@@ -578,6 +590,207 @@ void error_c(struct regs *r)
 }
 
 /* ---------------------------------------------------------------------
+ * the racing stripe (#980, edstub.h): the bitmap with guards, the
+ * progress call of TED-C.  No multiplication (no libgcc): row offsets by
+ * addition.
+ * ------------------------------------------------------------------- */
+#define GUARD_BYTE  0xA5
+#define PROGCOLS    256                 /* columns counted and pictured */
+static int stripe_on;                   /* edstub_set_bitmap was called */
+static UBYTE progcount[4][PROGCOLS];    /* calls per bar and column */
+static ULONG progcalls, progbad;
+/* the fullest picture of the checkpoints (columns 0 to PROGCOLS - 1),
+   the most guard bytes changed at one checkpoint */
+static UBYTE snap[BITMAP_ROWS][PROGCOLS];
+static ULONG snap_set, guard_before, guard_after;
+
+/* the offset of pixel row `row` of the bitmap */
+static ULONG rowoff(UWORD row)
+{
+    ULONG off = 0;
+
+    while (row--)
+        off += cd.bmapmul;
+    return off;
+}
+
+/* bitmap cleared, guards filled, counters and checkpoints 0 */
+static void stripe_reset(void)
+{
+    ULONG i;
+
+    for (i = 0; i < bitmap_size; i++)
+        bitmap_mem[i] = i < guard_size || i >= bitmap_size - guard_size ? GUARD_BYTE : 0;
+    memset(progcount, 0, sizeof progcount);
+    memset(snap, 0, sizeof snap);
+    progcalls = progbad = snap_set = guard_before = guard_after = 0;
+}
+
+/* a checkpoint (openreq, closereq, the end of a job): a compile runs one
+   or two passes, and the XORs of the second undo those of the first, so
+   the state at the end alone would hide a stripe (and writes into the
+   guards); the requester of the second pass opens between them */
+static void stripe_check(void)
+{
+    ULONG i, set = 0, before = 0, after = 0;
+    UWORD row, n;
+
+    if (!stripe_on)
+        return;
+    for (row = 0; row < BITMAP_ROWS; row++) {
+        UBYTE *p = bitmap + rowoff(row);
+
+        for (n = 0; n < PROGCOLS && n < cd.bmapmul; n++)
+            if (p[n])
+                set++;
+    }
+    if (set > snap_set) {
+        snap_set = set;
+        for (row = 0; row < BITMAP_ROWS; row++) {
+            UBYTE *p = bitmap + rowoff(row);
+
+            for (n = 0; n < PROGCOLS && n < cd.bmapmul; n++)
+                snap[row][n] = p[n];
+        }
+    }
+    for (i = 0; i < guard_size; i++) {
+        if (bitmap_mem[i] != GUARD_BYTE)
+            before++;
+        if (bitmap_mem[bitmap_size - guard_size + i] != GUARD_BYTE)
+            after++;
+    }
+    if (before > guard_before)
+        guard_before = before;
+    if (after > guard_after)
+        guard_after = after;
+}
+
+int edstub_set_bitmap(UWORD bmapmul, ULONG guard)
+{
+    ULONG size = 2 * guard, i;
+    UBYTE *mem;
+
+    if (bmapmul < BMAPMUL)
+        return 0;
+    for (i = 0; i < BITMAP_ROWS; i++)
+        size += bmapmul;
+    if (!(mem = AllocMem(size, MEMF_PUBLIC)))
+        return 0;
+    if (bitmap_mem)
+        FreeMem(bitmap_mem, bitmap_size);
+    bitmap_mem = mem;
+    bitmap_size = size;
+    guard_size = guard;
+    bitmap = mem + guard;
+    cd.combitmap = bitmap;
+    cd.bmapmul = bmapmul;
+    stripe_on = 1;
+    stripe_reset();
+    return 1;
+}
+
+void edstub_set_progress(int on)
+{
+    cd.progmark = on ? PROGMARK : 0;
+}
+
+/* comdata+102: d0.w bar, d1.w column; toggled as the original XORs */
+void progress_c(struct regs *r)
+{
+    UWORD bar = (UWORD)r->d[0], col = (UWORD)r->d[1];
+
+    progcalls++;
+    if (bar > 3 || col >= cd.bmapmul || col >= PROGCOLS) {
+        progbad++;
+        return;
+    }
+    if (progcount[bar][col] < 255)
+        progcount[bar][col]++;
+    bitmap[rowoff(bar) + col] ^= 0xff;
+    bitmap[rowoff(9 - bar) + col] ^= 0xff;
+}
+
+void edstub_stripe_log(const char *id)
+{
+    UWORD bar, row, n, last;
+
+    if (!stripe_on)
+        return;
+    stripe_check();
+    if (!progcalls) {
+        LOG_BEGIN;
+        sbs(&L, "PROGRESS\t");
+        sbs(&L, id);
+        sbs(&L, "\tnone");
+        LOG_END;
+    }
+    for (bar = 0; bar < 4; bar++) {
+        LOG_BEGIN;
+
+        for (last = 0, n = 0; n < PROGCOLS; n++)
+            if (progcount[bar][n])
+                last = n + 1;
+        if (!last)
+            continue;
+        sbs(&L, "PROGRESS\t");
+        sbs(&L, id);
+        sbs(&L, "\tbar ");
+        sbn(&L, bar);
+        sbc(&L, '\t');
+        for (n = 0; n < last; n++)
+            sbc(&L, progcount[bar][n] > 9 ? '+' : '0' + progcount[bar][n]);
+        LOG_END;
+    }
+    if (progbad) {
+        LOG_BEGIN;
+        sbs(&L, "PROGRESS\t");
+        sbs(&L, id);
+        sbs(&L, "\tbad ");
+        sbn(&L, progbad);
+        LOG_END;
+    }
+    for (row = 0; row < BITMAP_ROWS; row++) {
+        LOG_BEGIN;
+
+        for (last = 0, n = 0; n < PROGCOLS; n++)
+            if (snap[row][n])
+                last = n + 1;
+        if (!last)
+            continue;
+        sbs(&L, "STRIPE\t");
+        sbs(&L, id);
+        sbs(&L, "\trow ");
+        sbn(&L, row);
+        sbc(&L, '\t');
+        for (n = 0; n < last; n++)
+            sbc(&L, snap[row][n] == 0xff ? '#' : snap[row][n] ? 'x' : '.');
+        LOG_END;
+    }
+    if (!snap_set) {
+        LOG_BEGIN;
+        sbs(&L, "STRIPE\t");
+        sbs(&L, id);
+        sbs(&L, "\tnone");
+        LOG_END;
+    }
+    {
+        LOG_BEGIN;
+        sbs(&L, "GUARD\t");
+        sbs(&L, id);
+        if (!guard_before && !guard_after)
+            sbs(&L, "\tok");
+        else {
+            sbs(&L, "\tbefore ");
+            sbn(&L, guard_before);
+            sbs(&L, " after ");
+            sbn(&L, guard_after);
+        }
+        LOG_END;
+    }
+    stripe_reset();
+}
+
+/* ---------------------------------------------------------------------
  * ports and IO requests with Kickstart 1.x calls (edstub.h)
  * ------------------------------------------------------------------- */
 struct MsgPort *edstub_create_port(void)
@@ -643,7 +856,8 @@ void edstub_init_c(struct regs *r)
         return;
     DOSBase = (struct DosLibrary *)OpenLibrary("dos.library", 33);
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 33);
-    bitmap = AllocMem(BITMAP_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    bitmap_size = (ULONG)BMAPMUL * BITMAP_ROWS;
+    bitmap = bitmap_mem = AllocMem(bitmap_size, MEMF_PUBLIC | MEMF_CLEAR);
     winport = edstub_create_port();     /* real port: blitz2 reads mp_SigBit */
     if (!DOSBase || !IntuitionBase || !bitmap || !winport) {
         closeall();

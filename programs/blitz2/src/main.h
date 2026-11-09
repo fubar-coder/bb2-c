@@ -171,12 +171,19 @@ extern WORD returncode;               /* 1285 */
 #define CD_W(off)  (*(UWORD *)((UBYTE *)comdata + (off)))
 #define CD_FN(off) ((APTR)CD_L(off))
 /* data fields */
-#define CD_COMBITMAP 36   /* L: plane pointer used for the racing stripe */
+#define CD_COMBITMAP 36   /* L: plane 0 of the editor screen (the original
+                             compiler's racing stripe; not used, #980) */
 #define CD_MYSCREEN  40   /* L: editor screen */
 #define CD_EXTINT    44   /* L: editor's IntuitionBase */
 #define CD_MYWINDOW2 80   /* L: editor window */
-#define CD_BMAPMUL   92   /* W: bytes per bitplane row */
+#define CD_BMAPMUL   92   /* W: bytes per bitplane row (not used, #980) */
 #define CD_REQWINDOW 94   /* L: requester window (UserPort for stop signal) */
+/* behind the original table, TED-C only (#980; docs/ted/comdata.md): the
+   original TED has its words topskip (< 256) and botskip at 98, so the
+   long there is never CD_PROGMAGIC */
+#define CD_PROGMARK  98   /* L: CD_PROGMAGIC if the editor has 102 */
+#define CD_PROGRESS  102  /* L: the progress call (ed_progress) */
+#define CD_PROGMAGIC 0x54454470UL   /* 'TEDp' */
 
 /* typed wrappers, all via callregs(); asm register usage in comments */
 void  ed_screenclose(void);                 /* -8  close editor screen */
@@ -200,6 +207,10 @@ void  ed_closeio(void);                     /* 64 */
 ULONG ed_actgad(struct Gadget *g);          /* 68  a0 gadget; returns d0 (0 = failed) */
 void  pointeron(void);                      /* 1490 comdata+72 normal pointer */
 void  sleepon(void);                        /* 1494 comdata+76 busy pointer */
+void  ed_progress(UWORD bar, UWORD column); /* 102 d0 bar (0 main, 1-3 include
+                                                   level), d1 byte column: toggle
+                                                   that cell of the progress bar;
+                                                   only if CD_PROGMARK (#980) */
 /* comdata+88 extalloc: doallocmem() in stmts.h */
 
 /* data handed to the editor (exact byte layout, see structs.h) */

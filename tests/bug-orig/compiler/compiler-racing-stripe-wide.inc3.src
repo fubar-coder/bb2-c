@@ -1,0 +1,4 @@
+; inc3: include level 3
+d=d+1
+d=d+1
+d=d+1

@@ -1,0 +1,27 @@
+[compile]
+ok
+[run]
+97
+rc=0
+[log]
+...
+RESULT	j000	ok*
+PROGRESS	j000	none
+STRIPE	j000	none
+GUARD	j000	ok
+...
+RESULT	j001	ok*
+PROGRESS	j001	bar 0	2222222222222222222222222222222222222222222222222222222222222222222222222
+PROGRESS	j001	bar 1	22222222222
+PROGRESS	j001	bar 2	2222222
+PROGRESS	j001	bar 3	2222
+STRIPE	j001	row 0	#########################################################################
+STRIPE	j001	row 1	###########
+STRIPE	j001	row 2	#######
+STRIPE	j001	row 3	####
+STRIPE	j001	row 6	####
+STRIPE	j001	row 7	#######
+STRIPE	j001	row 8	###########
+STRIPE	j001	row 9	#########################################################################
+GUARD	j001	ok
+BATCH	end

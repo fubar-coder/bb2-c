@@ -765,6 +765,16 @@ void sleepon(void)
     ed_call(76, &r);
 }
 
+/* comdata+102 progress (TED-C, not in blitz2.s, #980): d0 = bar, d1 =
+   byte column; the caller checks CD_PROGMARK */
+void ed_progress(UWORD bar, UWORD column)
+{
+    struct m68kregs r = {{0}};
+    r.d[0] = bar;
+    r.d[1] = column;
+    ed_call(CD_PROGRESS, &r);
+}
+
 /* ================================================== menu handler */
 
 /* blitz2.s:1498 menu - called by the editor (menu_stub): d6 = item,

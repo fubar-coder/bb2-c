@@ -1,0 +1,7 @@
+; inc2: include level 2
+c=c+1
+c=c+1
+c=c+1
+c=c+1
+c=c+1
+Include "inc3.bb2"

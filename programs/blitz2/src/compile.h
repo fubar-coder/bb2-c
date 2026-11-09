@@ -83,8 +83,6 @@ extern UWORD eopcode[];
  * ================================================================= */
 
 extern UWORD smallpass;     /* 1915 second ("small code") pass counter */
-extern UWORD bmapmul;       /* 2032 stripe bitplane bytes/row */
-extern UWORD botline;       /* 2033 offset to bottom of stripe */
 extern UWORD riteend;       /* 2034 right end of include stripe */
 extern WORD  macmask;       /* 2036 -1: current line was macro-expanded */
 extern WORD  stopbit;       /* 2449 sig bit of editor window port */

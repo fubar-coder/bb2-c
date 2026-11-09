@@ -1,11 +1,14 @@
 ; Test 07: compile error.  syntaxerr.bb2 (error in line 2): CREATE
 ; EXECUTABLE, error requester (OKAY), cursor to the error line.  Compared:
 ; dumps (status line Line: 2), requester sequence.
+; The dump error shows the first cell of the compiler's progress bar (#980):
+; the original TED has no progress call, so blitz2-c draws none there (Rc).
 ; @source S syntaxerr
 ; @xtra norunerr
 ; @est 6
 ; @expect absent syntaxerr
 ; @expect same syntaxerr.bb2
+; @fixed #980 R5-Rc Rc-Cc
 timeout 10
 wait req "OKEE DOKEE"
 gad 1

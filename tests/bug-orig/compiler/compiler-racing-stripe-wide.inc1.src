@@ -1,0 +1,11 @@
+; inc1: include level 1
+b=b+1
+b=b+1
+b=b+1
+b=b+1
+b=b+1
+b=b+1
+b=b+1
+b=b+1
+Include "inc2.bb2"
+b=b+1

@@ -10,7 +10,7 @@ differences only as named in the task.
 ## 1. Interface check
 
 - [x] 1.1 List every `comdata` access of the original compiler (`archive/sources/blitz2-1.95/blitz2.s` and the CD's compiler, `docs/v2.10/`) and of blitz2-c (`programs/blitz2/src`, `CD_*` in `main.h`): confirm no offset at or above 98 is read, so the marker and entry of D2 are invisible to the original. Verify: the list with file:line in the commit message of group 2; if an offset >= 98 is read, stop and report (D2 changes).
-- [ ] 1.2 Record what the title area looks like after a compile from TED-C with the original compiler (C5 dumps of `tests/ted-ab/scripts/06-compile.drv` and of the other scripts that compile): whether the stripe is visible in any dump. Verify: a note in the group 3 commit message naming the dumps that show the stripe (or none).
+- [x] 1.2 Record what the title area looks like after a compile from TED-C with the original compiler (C5 dumps of `tests/ted-ab/scripts/06-compile.drv` and of the other scripts that compile): whether the stripe is visible in any dump. Verify: a note in the group 3 commit message naming the dumps that show the stripe (or none).
 
 ## 2. TED-C: the progress call
 
@@ -20,11 +20,11 @@ differences only as named in the task.
 
 ## 3. blitz2-c: report instead of draw (fix of #980)
 
-- [ ] 3.1 `programs/blitz2/src`: `CD_PROGMARK` 98 and `CD_PROGRESS` 102 in `main.h`, `ed_progress(bar, column)` through `callregs`; `compile` checks the marker once per compile; `nextline` calls `ed_progress` where it XORed (main: `hi - 1`; include: `col`) and calls nothing without the marker; `botline` and the reads of `combitmap`/`bmapmul` for drawing removed; `BUG(orig) (#980)` becomes `Fixed (#980)`. Verify: build; corpus and CD executables byte-identical (prev).
-- [ ] 3.2 `shared/edstub` / `tedstub`: pass-file options to announce the call, to set `bmapmul`, and to put guard bytes before and after the bitmap; the stub logs the reported cells and checks the guards at the end. Verify: `tedstub` host or emulator self-test with the options; without them the stub behaves as before (every test that uses `tedstub` passes).
-- [ ] 3.3 bug-orig test `tests/bug-orig/compiler/compiler-racing-stripe-wide.bas` with `; @fixed #980` (design D6): wide `bmapmul`, guards, an include so that every bar moves; once without the call (guards untouched), once with the call (guards untouched, cells as the original would XOR). Record the original's observation (`.orig`, the guard before the bitmap overwritten). Verify: FIXED in `ctest --preset all`; REPRODUCED on the commit before.
-- [ ] 3.4 TED A/B: C5-Cc of the scripts that compile stay equal; for a dump that shows the stripe (1.2), R5-Rc gets `; @fixed #980 R5-Rc` and the differences are only the bar. Verify: `ctest --preset all`, `ted_ab` report: C5-Cc equal, R5-Rc FIXED #980 (differs) only where expected.
-- [ ] 3.5 `docs/libs/deviations.md`: the #980 row becomes an intended deviation (kind F: the progress is reported to TED-C, the original TED gets no bar); commit message names the changed results (none of the executables; `ted_ab` R5-Rc if 3.4 applies) and `Fixes #980`. Verify: the row and the message.
+- [x] 3.1 `programs/blitz2/src`: `CD_PROGMARK` 98 and `CD_PROGRESS` 102 in `main.h`, `ed_progress(bar, column)` through `callregs`; `compile` checks the marker once per compile; `nextline` calls `ed_progress` where it XORed (main: `hi - 1`; include: `col`) and calls nothing without the marker; `botline` and the reads of `combitmap`/`bmapmul` for drawing removed; `BUG(orig) (#980)` becomes `Fixed (#980)`. Verify: build; corpus and CD executables byte-identical (prev).
+- [x] 3.2 `shared/edstub` / `tedstub`: pass-file options to announce the call, to set `bmapmul`, and to put guard bytes before and after the bitmap; the stub logs the reported cells and checks the guards at the end. Verify: `tedstub` host or emulator self-test with the options; without them the stub behaves as before (every test that uses `tedstub` passes).
+- [x] 3.3 bug-orig test `tests/bug-orig/compiler/compiler-racing-stripe-wide.bas` with `; @fixed #980` (design D6): wide `bmapmul`, guards, an include so that every bar moves; once without the call (guards untouched), once with the call (guards untouched, cells as the original would XOR). Record the original's observation (`.orig`, the guard before the bitmap overwritten). Verify: FIXED in `ctest --preset all`; REPRODUCED on the commit before.
+- [x] 3.4 TED A/B: C5-Cc of the scripts that compile stay equal; for a dump that shows the stripe (1.2), R5-Rc gets `; @fixed #980 R5-Rc` and the differences are only the bar. Verify: `ctest --preset all`, `ted_ab` report: C5-Cc equal, R5-Rc FIXED #980 (differs) only where expected.
+- [x] 3.5 `docs/libs/deviations.md`: the #980 row becomes an intended deviation (kind F: the progress is reported to TED-C, the original TED gets no bar); commit message names the changed results (none of the executables; `ted_ab` R5-Rc if 3.4 applies) and `Fixes #980`. Verify: the row and the message.
 
 ## 4. Final checks
 

@@ -130,3 +130,44 @@ no bar.
 None: TED-C and blitz2-c are built and shipped together; the old
 combinations keep working as described in the spec. Rollback is the
 revert of the commits.
+
+## Findings of the implementation
+
+- Task 1.1: every `comdata` access of `blitz2.s` (1.95; the CD's 2.10 is
+  the same source with one changed line) and of blitz2-c reads an offset
+  below 98 (the highest: the long `req_window` at 94); the list with the
+  lines is in the message of the TED-C commit. D2 stands.
+- Task 1.2: Intuition redraws the title area (pixel rows 0 to 9) when a
+  requester of TED closes, so the dumps taken after a compile
+  (`06-compile` `compiled`, `07-error` `line`; the `29-cmp-*` scripts take
+  none) show no bar. Only the dump taken while the error requester is
+  open, `07-error` `error`, shows it: the first cell of the main bar in
+  rows 0 and 9 (the error is in line 2). In the run before the change,
+  rows 0 to 9 of plane 0 were the same in all six combinations of every
+  dump.
+- Pairs: the original TED with blitz2-c (Rc) has no bar, so in a dump
+  that shows the bar both R5-Rc and Rc-Cc differ (task 3.4 named only
+  R5-Rc); C5-Cc stay the same. `; @fixed #980 R5-Rc Rc-Cc`.
+- A dump with the whole bar: `tests/ted-ab/scripts/30-stripe.drv`
+  compiles `tests/ted-ab/src/stripe.bas` (80 lines, an include of 12
+  lines, an error in its last line) and dumps the error requester: main
+  bar (73 cells) and the bar of include level 1 (12 cells) in rows 0, 1,
+  8, 9. C5 (the original compiler XORs) and Cc (TED-C draws with
+  RectFill/COMPLEMENT) are the same byte for byte; R5-Rc and Rc-Cc differ
+  by 168 bytes (84 cells in two rows) and the "Largest Mem" field.
+- Two passes: the tedstub jobs compile in two passes (two "COMPILING"
+  requesters), and the XORs of the second pass undo those of the first:
+  at the end of a job the original's stripe and even its writes before
+  the bitmap are gone. The stub therefore checks at checkpoints (openreq,
+  closereq, the end of the job) and logs the fullest picture and the most
+  changed guard bytes. The original then shows rows 0 to 3 and 95 changed
+  guard bytes before the bitmap (73 + 11 + 7 + 4 cells of rows 9 to 6);
+  blitz2-c reports each cell twice (once per pass).
+- "Shown" in the spec is taken as "open": TED-C draws while
+  `screensopen` is set, also when its screen is behind another one (the
+  original XORs then as well, and skipping toggles would leave a wrong
+  picture when the screen comes to the front).
+- The bug-orig test came out REPRODUCED with the stub of this change and
+  the compiler before the fix (port and clib); its recorded original was
+  deterministic (recorded twice). A fixed test has no `.orig`, so it is
+  not committed.

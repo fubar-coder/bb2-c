@@ -40,6 +40,11 @@
  *                   but an empty resident list (the file defaults= with
  *                   ".res" appended): the buffer sizes and max= apply to
  *                   the resident too (needs defaults=).
+ *   bitmap=BMAPMUL|GUARD  the editor's bitmap for the racing stripe
+ *                   (comdata+36) has BMAPMUL bytes per row (comdata+92,
+ *                   default 80) and GUARD bytes before and after it; after
+ *                   every job the stripe is logged (PROGRESS, STRIPE,
+ *                   GUARD lines) and the bitmap cleared (#980)
  *   job=ID|SOURCE|OUTPUT[|DIR]
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
@@ -56,7 +61,9 @@
  *                   timer request comes back to the requester window's
  *                   port: the stop requester's signal, then getinput2
  *                   reports gadget 1 once).
- * Jobs, menu items and runs go in the order of the list.  Every job:
+ *   progress=on|off  from here on the editor announces TED-C's progress
+ *                   call (comdata+98 'TEDp', +102) or not (default off)
+ * Jobs, menu items, runs and progress= go in the order of the list.  Every job:
  * CurrentDir(DIR, default: the source's directory - relative
  * INCLUDE/INCBIN), load the source like TED's readline/allocline,
  * loadxtra (SOURCE.xtra or defaults), menu CREATE EXECUTABLE, result.
@@ -82,6 +89,10 @@
  *   OUTPUT ID LINE                    run: what the program wrote to the
  *                                     console, line by line
  *   REQUESTERS ID N                   run: the requesters still open
+ *   PROGRESS ID ...                   bitmap=: behind RESULT, the progress
+ *   STRIPE ID ...                     calls, the stripe in the bitmap and
+ *   GUARD ID ok|before N after M      its guards (edstub.h,
+ *                                     edstub_stripe_log)
  * plus the frame's requester lines.  Only a compiler that keeps waiting
  * for input or a failed extalloc end the session (RESULT ID failed abort:
  * ...); the runner goes on with the remaining jobs in a new session.
@@ -603,6 +614,7 @@ static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
         }
         LOG_END;
     }
+    edstub_stripe_log(id);
 out:
     end_job(dir, old);
 }
@@ -926,6 +938,18 @@ void edstub_main(const char *arg)
                 k = k * 10 + (UWORD)(*v - '0');
             maxpair[nmax][1] = k;
             nmax++;
+        } else if ((v = value(p, "bitmap="))) {
+            UWORD bmapmul;
+            ULONG guard;
+
+            for (bmapmul = 0; *v >= '0' && *v <= '9'; v++)
+                bmapmul = bmapmul * 10 + (UWORD)(*v - '0');
+            if (*v == '|')
+                v++;
+            for (guard = 0; *v >= '0' && *v <= '9'; v++)
+                guard = guard * 10 + (ULONG)(*v - '0');
+            if (!edstub_set_bitmap(bmapmul, guard))
+                edstub_log("FATAL: bitmap= needs BMAPMUL (at least 80) and memory");
         } else if ((v = value(p, "resident="))) {
             if (nres == MAXRES) {
                 edstub_log("FATAL: more than 8 residents");
@@ -966,7 +990,8 @@ void edstub_main(const char *arg)
             char *id = field(&v), *src = field(&v), *con = field(&v), *panic = field(&v);
 
             run_job(id, src, con, panic);
-        }
+        } else if ((v = value(p, "progress=")))
+            edstub_set_progress(edstub_streq(v, "on"));
     edstub_log("BATCH\tend");
     FreeMem(buf, size + 1);
 }

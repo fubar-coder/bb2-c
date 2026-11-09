@@ -24,9 +24,11 @@
 /* blitz2.s:1913 funcs - marker label, no code */
 
 UWORD smallpass = 0;            /* blitz2.s:1915 */
-UWORD bmapmul = 0;              /* blitz2.s:2032 */
-UWORD botline = 0;              /* blitz2.s:2033 offset to bottom of stripe */
 UWORD riteend = 0;              /* blitz2.s:2034 right end of include strip */
+/* Fixed (#980): instead of bmapmul (blitz2.s:2032) and botline (2033):
+   TRUE if the editor has the progress call (comdata+98 holds
+   CD_PROGMAGIC: TED-C), set by compile */
+static BOOL edprogress;
 WORD  macmask = 0;              /* blitz2.s:2036 */
 
 jmp_buf *passjmp = NULL;        /* asm passstack/passnxt, see compile.h */
@@ -206,12 +208,14 @@ void compile(void)
             q = 0xffff;
         titleadd[0] = (WORD)q;
     }
-    bmapmul = CD_W(CD_BMAPMUL);
-    /* BUG(orig) (#980): the offset is a word, and nextline adds it as a
-       signed word (add.w to an address register): from 3641 bytes per row
-       (RTG screens) 9 * bmapmul is above 32767 and the stripe's bottom line
-       is XORed about 28 KB before TED's bitmap. */
-    botline = (UWORD)(bmapmul * 9);     /* offset to bottom of racing stripe */
+    /* Fixed (#980): blitz2.s:1939-1943 takes bmapmul (comdata+92) and the
+       offset of the stripe's bottom line, 9 * bmapmul, as words, and
+       nextline XORs the stripe into TED's bitmap (comdata+36), adding the
+       offset as a signed word: from 3641 bytes per row (RTG screens) it
+       wrote about 28 KB before the bitmap.  The stripe is the editor's
+       now: nextline reports its cells through the progress call
+       (comdata+102) if the editor announces it, else draws nothing. */
+    edprogress = CD_L(CD_PROGMARK) == CD_PROGMAGIC;
 
     /* sne debugga: only the high byte is written */
     debugga = (debugga & 0x00ff) |
@@ -339,15 +343,10 @@ BOOL nextline(void)
         if (inc < 4) {
             UWORD col = (UWORD)titleadd[inc];   /* offset in line */
             if (col < riteend) {
-                UBYTE *bits;
-                WORD row;
-
                 titleadd[inc]++;
-                row = (WORD)(inc * bmapmul);
-                bits = (UBYTE *)CD_L(CD_COMBITMAP) + row;
-                bits[col] ^= 0xff;
-                bits = (UBYTE *)CD_L(CD_COMBITMAP) + (WORD)botline - row;
-                bits[col] ^= 0xff;
+                /* Fixed (#980): asm XORs byte col of rows inc and 9 - inc */
+                if (edprogress)
+                    ed_progress(inc, col);
             }
         }
         ext_nextline();
@@ -358,12 +357,9 @@ BOOL nextline(void)
         ULONG newat = titleat + (UWORD)titleadd[0];
         WORD hi = (WORD)(newat >> 16);
 
-        if ((UWORD)hi != (UWORD)(titleat >> 16)) {
-            UBYTE *bits = (UBYTE *)CD_L(CD_COMBITMAP);
-            bits[hi - 1] ^= 0xff;
-            bits += (WORD)botline;
-            bits[hi - 1] ^= 0xff;
-        }
+        /* Fixed (#980): asm XORs byte hi - 1 of rows 0 and 9 */
+        if ((UWORD)hi != (UWORD)(titleat >> 16) && edprogress)
+            ed_progress(0, (UWORD)(hi - 1));
         titleat = newat;
     }
     linenumat++;

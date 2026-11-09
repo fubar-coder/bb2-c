@@ -616,7 +616,13 @@ Resident) and enters RESFILE in the resident list of the default
 options, so the test program is compiled with the residents
 (`resident=ID|SOURCE|RESFILE|defaults`: SOURCE is compiled with the
 default options, without the resident list, so `macrobuf=` and the other
-settings apply to it too). All as
+settings apply to it too);
+`bitmap=BMAPMUL|GUARD` gives the compiler a bitmap of BMAPMUL bytes per
+row with GUARD bytes before and after it and logs after every job the
+progress calls, the stripe and the guards (`PROGRESS`, `STRIPE`,
+`GUARD` lines, `shared/edstub/edstub.h`); `progress=on|off` (in the
+order of the jobs, e.g. before a further `job=`) announces TED-C's
+progress call or not (#980, `compiler-racing-stripe-wide`). All as
 `; @pass jobline=...`.
 
 ### Adding a test

@@ -1,0 +1,28 @@
+; Test 30: the compiler's progress bar (#980).  stripe.bas: 80 lines, an
+; include (TEDRUN:work/inc1.bb2, 12 lines) and a syntax error in its last
+; line: CREATE EXECUTABLE, the error requester (OKAY) is dumped while the
+; bar is still in the title area (closing the requester redraws it).  The
+; original compiler (R5, C5) XORs the bar into TED's bitmap; blitz2-c
+; reports its cells to TED-C (Cc), which draws the same picture; the
+; original TED has no progress call, so Rc shows no bar.
+; @source E stripe
+; @file inc1.bb2 "b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00b=b+1\x00"
+; @xtra norunerr
+; @est 8
+; @expect absent stripe
+; @fixed #980 R5-Rc Rc-Cc
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "stripe" "TEDRUN:work"  ; @ignore compilewindow
+wait req "OKAY"
+timeout 10
+dump error
+gad 1
+wait screen
+menu 0 9
+wait exit

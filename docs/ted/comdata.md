@@ -49,7 +49,7 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
 | 92/94 | data `bmapmul`, `req_window` | | | 1939, 2546 | `struct mydata` | OK |
 | 98 | TED-C only: data `m_progmark` = `'TEDp'` ($54454470) | | (original TED: its own words `topskip`, `botskip`) | – (the original reads no offset ≥ 98) | `struct mydata`, `TED_PROGMARK` (structs.h) | new (#980) |
-| 102 | TED-C only: `progress` (screen.c) | d0.w bar (0 main, 1-3 include level), d1.w byte column | – | – (a compiler calls it only if 98 holds the marker) | REGSTUB, `progress(d0, d1)` | new (#980) |
+| 102 | TED-C only: `progress` (screen.c) | d0.w bar (0 main, 1-3 include level), d1.w byte column | – | blitz2-c `nextline` via `ed_progress` (compile.c), only if 98 holds the marker (checked once per compile) | REGSTUB, `progress(d0, d1)` | new (#980) |
 
 **The progress call (TED-C, #980).** The original compiler draws its
 progress bar (the "racing stripe") itself: it XORs bytes of plane 0
@@ -70,7 +70,14 @@ and restores draw mode and mask. It ignores the call while its screen is
 closed (`screensopen` = 0), for a bar above 3 and for a column outside
 the bitmap's row. Registers: all kept (REGSTUB). TED-C keeps filling
 `combitmap` and `bmapmul`, so the original compiler draws its own bar
-as before. Offsets asserted in `programs/ted/src/structs.h`.
+as before. blitz2-c (`CD_PROGMARK`, `CD_PROGRESS` in
+`programs/blitz2/src/main.h`) never writes into the editor's bitmap:
+without the marker (the original TED, the edstub without `progress=on`)
+it shows no bar. The edstub (`shared/edstub`) has the two fields too;
+`tedstub` announces the call with `progress=on` and gives a wide bitmap
+with guards with `bitmap=BMAPMUL|GUARD` (test
+`compiler-racing-stripe-wide`). Offsets asserted in
+`programs/ted/src/structs.h` and `shared/edstub/edstub.c`.
 
 Residual risk for phase 3: the stub preserves registers that the original
 destroys. At the call sites above (every `comdata` site in `blitz2.s`,

@@ -121,3 +121,4 @@ REGSTUB(actgad);
 REGSTUB(pointeron);
 REGSTUB(sleepon);
 REGSTUB(extalloc);
+REGSTUB(progress);

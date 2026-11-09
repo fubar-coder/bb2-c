@@ -178,6 +178,55 @@ extern int edstub_busy;
 /** @brief A new job: the counters of the requester answers start again. */
 void edstub_reset_requests(void);
 
+/**
+ * @name The racing stripe (#980)
+ * The compiler's progress bar.  The original compiler XORs it into the
+ * editor's bitmap (comdata+36, rows 0 to 9, comdata+92 bytes per row);
+ * blitz2-c reports its cells through TED-C's progress call (comdata+98
+ * marker 'TEDp', +102 entry: d0 bar, d1 byte column).  By default the frame
+ * has a bitmap of 80 bytes per row and does not announce the call.
+ * @{
+ */
+/**
+ * @brief Give the compiler a bitmap of bmapmul bytes per row (comdata+92)
+ *        with guard bytes before and after it, and record the stripe from
+ *        now on (edstub_stripe_log).
+ * @param bmapmul  bytes per row (at least 80)
+ * @param guard    guard bytes before and after the bitmap
+ * @return 1, or 0 if out of memory (the bitmap stays as it was)
+ */
+int edstub_set_bitmap(UWORD bmapmul, ULONG guard);
+
+/**
+ * @brief Announce the progress call (comdata+98 = 'TEDp') or not (0).
+ *
+ * A call toggles the cell as the original compiler XORs it (the byte
+ * column of rows bar and 9 - bar of the bitmap) and is counted.
+ */
+void edstub_set_progress(int on);
+
+/**
+ * @brief After a compile: log the stripe, then clear the bitmap, refill
+ *        the guards and the counters.
+ *
+ * Lines (tab separated, with the job's id): `PROGRESS ID none` (no call)
+ * or per bar with calls `PROGRESS ID bar N COUNTS` (the calls per column
+ * from column 0, a digit each, '+' above 9, up to the last column called),
+ * plus `PROGRESS ID bad N` for calls with a bar above 3 or a column
+ * outside the row; `STRIPE ID none` (bitmap empty) or per row with set
+ * bytes `STRIPE ID row R PICTURE` ('#' $FF, '.' 0, 'x' else, up to the
+ * last byte not 0, columns 0 to 255); `GUARD ID ok` or `GUARD ID before N
+ * after M` (bytes of the guards changed).  The picture and the guards are
+ * those of the checkpoints openreq, closereq and the end of the job: the
+ * fullest picture, the most changed guard bytes (with two passes the XORs
+ * of the second undo those of the first; the requester of the second pass
+ * opens between them).  Nothing without edstub_set_bitmap.
+ *
+ * @param id  the job's id
+ */
+void edstub_stripe_log(const char *id);
+/** @} */
+
 struct IORequest;
 /**
  * @brief A message port with a signal of its own, with Kickstart 1.x calls
