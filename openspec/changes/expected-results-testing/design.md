@@ -29,7 +29,7 @@ kinds K/T), `bug-port` 1 open / 5 closed. Motivation: see proposal.md.
    pairs, `ted_ab` R combos, `checkdata`) it conflicts with fixes.
 3. **The pattern exists.** Lists of intended differences with issue
    numbers: `libs/deflibs/declarations-intended.txt` (for
-   `blitzlibcompare`), the `#969:` note row in `tests/data/blitz2-cd.tsv`,
+   `blitzlib compare`), the `#969:` note row in `tests/data/blitz2-cd.tsv`,
    `cli/NAME.ref.expect` of `tests/ab3`, `; @known` of `ted_ab`.
 4. **Fixes were absorbed by editing tests**: #120 removed days 1096 and
    -365 from corpus `t30_date.bas` (commit `fd76b11`) because `clib` must
@@ -53,7 +53,7 @@ kinds K/T), `bug-port` 1 open / 5 closed. Motivation: see proposal.md.
 | B1 | `declarations_acidlibs/deflibs` (`libs/CMakeLists.txt:60-76`) | CD declarations, `declarations-intended.txt` | has the mechanism (#959) | unchanged; optional dump into `tests/data` |
 | B2 | `asmcmp_runerrlib/debuglib/dhandlerlib/memacclib` (`libs/acidlibs/CMakeLists.txt:68-83`) | CD routines, explicit routine list | fails at a fix inside a listed routine | per-routine list rule |
 | B3 | `tokens_port`, `tokens_cd`, `tokens_broken` | `tests/data/ted-tokens.txt` | a fix adds no command | unchanged; `tokens_cd` to `originals` |
-| B4 | `rwe_declarations_NAME` (28 host + 25 `emulator`; `libs/userlibs/rwe/CMakeLists.txt:201`) | CD / AmiBlitz3 SVN / refbuild binary | **no intended list passed** (`blitzlibcompare ${reffile} ${obj}`): first declaration change fails | `NAME.declarations-intended.txt` |
+| B4 | `rwe_declarations_NAME` (28 host + 25 `emulator`; `libs/userlibs/rwe/CMakeLists.txt:201`) | CD / AmiBlitz3 SVN / refbuild binary | **no intended list passed** (`blitzlib compare ${reffile} ${obj}`): first declaration change fails | `NAME.declarations-intended.txt` |
 | B5 | `rwe_lesfont_cd` | CD binary at offset 3460 | untouched | `originals` |
 | B7 | `ted_core_*` (10 snitch programs, 6 use `tests/data/ted-oracle.sha256`, SHA-256 of the original TED's detok/tokit2/load-save output for 715 CD sources, `test_tokit.cpp:2`) | original TED run under blitz2 1.95 | a fix on the detok/tokit/load-save path (`ted_detok_no_length_check`, `ted_tokit_reads_past_line`, `ted_readline_*`) changes the hash; regeneration reproduces the buggy hash | override rows with `#NNN`, generator keeps them |
 | C1 | `libs_emulator` (17 snitch cases; 9 C test files acidlibs + 53 RWE userlibs; `sysload.h` loads NAME.obj and NAME.orig and compares results, registers, memory) | CD library | fails at the first fix a scenario sees; fixes so far did not hit it | `expect_fixed(NNN, value)` per check |
@@ -171,7 +171,7 @@ instead of the current rule "put the row back by hand". Alternative
 the immediate hazards); steps 6-10 per area at the first fix round of that
 area. The intended lists of `checkdata`, `rwe_declarations_NAME` and the
 `asmcmp` rule are built when the first fix of their area needs them, but
-their format is fixed here (like `blitzlibcompare INTENDED`: each entry
+their format is fixed here (like `blitzlib compare INTENDED`: each entry
 must occur, a stale entry fails; each needs a test with a deliberately
 stale and a missing entry).
 
@@ -374,7 +374,7 @@ code changes in this change).
   moved (`HEAD~1` does with each commit) `prev/` is removed and built
   afresh, because the files of an archive carry the commit's time and a
   build directory of another commit would take them for unchanged.
-  `prev_results` is `tools/prevcmp CUR PREV`: `blitz2/acidlibs`,
+  `prev_results` is `results prev CUR PREV`: `blitz2/acidlibs`,
   `blitz2/deflibs` and every `.obj` below `libs/` and `variants/` (outside
   `CMakeFiles/`); `PREV_INTENDED` is `OFF`, `ON` (every difference) or a
   `;`-list of paths relative to the build directory, each of which must

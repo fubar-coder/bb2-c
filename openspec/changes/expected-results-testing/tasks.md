@@ -18,7 +18,7 @@ documentation it changes; no program code changes in this change.
 
 ## 3. Intended lists (format now, entries at the first fix)
 
-- [x] 3.1 `rwe_declarations_NAME` passes `libs/userlibs/rwe/NAME.declarations-intended.txt` to `blitzlibcompare` when present (`libs/userlibs/rwe/CMakeLists.txt:201`). Verify: a host test with a stale and a missing entry fails, a correct one passes
+- [x] 3.1 `rwe_declarations_NAME` passes `libs/userlibs/rwe/NAME.declarations-intended.txt` to `blitzlib compare` when present (`libs/userlibs/rwe/CMakeLists.txt:201`). Verify: a host test with a stale and a missing entry fails, a correct one passes
 - [x] 3.2 `checkdata` accepts `programs/ted/checkdata-intended.txt` (entry, issue; each must occur). Verify: `tools/tests` cases with a stale entry, an unlisted difference and a correct list
 - [x] 3.3 `asmcmp` rule documented in `libs/acidlibs/CMakeLists.txt` comment and `docs/development.md`: a fix removes its routine from the list in the same commit. Verify: the text is present; no test change
 - [x] 3.4 Document the three formats in `tests/README.md` and `docs/development.md` (checks section). Verify: the documented example entries are accepted by the tools
@@ -47,7 +47,7 @@ documentation it changes; no program code changes in this change.
 - [x] 7.2 Target `corpus-expect-update` and the generated `tests/corpus/expect/NAME.out` (~200 files, serial bytes for the serial tests), reviewed by `git diff` for outputs that are original bugs. Verify: `ctest --preset all -R corpus` passes in every config
 - [x] 7.3 Target `blitz2-cd-update`: rewrites `tests/data/blitz2-cd.tsv` from the port's result, keeping note rows (`#NNN`, the CD's hash or error line); the generator keeps them. Verify: a run on the unchanged tree changes no byte; `tools/tests` cases for a kept and a dropped note
 - [x] 7.4 TED oracle: note column `#NNN` in `tests/data/ted-oracle.sha256` and the generator keeping such rows (`programs/ted/tests/oracle`). Verify: `ted_core_*` pass; a regenerated file equals the committed one when no fix is present; a tool test for a kept row
-- [ ] 7.5 Document in `tests/README.md` (Corpus, Oracle data of the TED tests) and `docs/development.md`. Verify: the commands in the text run
+- [x] 7.5 Document in `tests/README.md` (Corpus, Oracle data of the TED tests) and `docs/development.md`. Verify: the commands in the text run
 
 ## 8. The `prev` build
 

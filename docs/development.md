@@ -113,6 +113,24 @@ original: a fix that changes a listed routine removes the routine from
 its `asm_check` list in the same commit and names it in the commit
 message. There is no list of intended differences for instructions.
 
+The expected data that came from the originals changes in the fix commit
+as well, never the test program around it (`tests/README.md`):
+
+* a corpus program's output (`tests/corpus/expect/PASS/NAME.out`,
+  `NAME.serial`): written from the port's run by
+  `cmake --build --preset amiga --target corpus-expect-update`, checked
+  with `git diff tests/corpus/expect` ("Corpus");
+* a result of a CD source (`tests/data/blitz2-cd.tsv`): the target
+  `blitz2-cd-update` rewrites the row, a note `#NNN: ... (2.10: ...)`
+  names the CD's result ("Corpus");
+* an output of TED's detok, tokit2 or load and save
+  (`tests/data/ted-oracle.sha256`): the row gets the port's hash and a
+  note `#NNN: ... (TED 1.1: HASH)` with the original's ("Oracle data of
+  the TED tests").
+
+The target that regenerates the file from the original (`ted-oracle`,
+`blitz2-cd-reference`) keeps those rows.
+
 **API reference** (C developers): `Doxyfile` in the repository root,
 over `libs/include`, `deflib.h`, the sources of acidlibs and of all
 userlibs (`libs/userlibs`, a new userlib directory is included), and

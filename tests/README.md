@@ -218,16 +218,42 @@ program is not edited to avoid the difference.
 
 ### Corpus
 
-The corpus (`tests/corpus/`): `corpus` (68 test programs
-without runtime error checking), `corpus_runerr` (131 with), `corpus_req`
+The corpus (`tests/corpus/`): `corpus` (71 test programs
+without runtime error checking), `corpus_runerr` (135 with), `corpus_req`
 (3 with blocking requesters, behind the lock `reqclosetest`),
 `corpus_serial` / `corpus_serial_runerr` (a program that talks over the
 emulated serial port to a peer on the host; the bytes it sends over the
-serial port are compared as well). Per pass, three configurations
-compile the same sources and run the programs: ref (original blitz2 2.10
+serial port are compared as well). Per pass, the configurations compile
+the same sources and run the programs: ref (original blitz2 2.10
 = `BLITZ2/BLITZ2` of the CD, libraries of the CD), port (blitz2-c,
-libraries of the CD: executable equal, output equal), clib (blitz2-c
-with the C libraries: output equal). Skipped without the CD.
+libraries of the CD: executable equal to ref's), clib (blitz2-c
+with the C libraries) and, with a prev build, prev (executable equal to
+clib's, "The prev build"). Skipped without the CD.
+
+The output of every configuration must be the committed expected output
+`tests/corpus/expect/PASS/NAME.out` (what the program writes, with the
+`rc=N` line behind it; one directory per pass, because some programs
+write something else with runtime error checking) and, for the serial
+tests, `NAME.serial` (the bytes sent over the serial port), byte by byte
+(`expect_dir=` of `corpusrun pass`,
+[`tests/corpus/runner`](corpus/runner/README.md)). A difference names
+the configuration, the file and the first differing line; a missing file
+fails the pass before any session. The files were generated from the
+original's run and reviewed; they contain the original's behaviour where
+a program shows an original bug. A fix that changes an output changes
+its expected file in the fix commit (never the program, to avoid the
+difference) and names the issue; the files are written from the port's
+run (configuration clib) by
+
+```
+cmake --build --preset amiga --target corpus-expect-update   # about 80 s, needs Amiberry and the CD
+git diff tests/corpus/expect                                 # the changed outputs
+```
+
+which leaves every file as it is on an unchanged tree. A new corpus
+program gets its files the same way. With a prev build the configuration
+prev still gives the old output: the commit names the program in
+`PREV_INTENDED` (`corpus:NAME`, `corpus_runerr:NAME`, ...).
 
 `corpus_cd`: all 724 sources of the CD compiled with blitz2-c (like bb2's
 bb2corpus: `.xtra` of the sources, assigns to CD directories, directory
@@ -405,11 +431,13 @@ passed, and the corpus and `ted_ab` run without their prev parts):
   build directories) and `test_prevcmp`.
 * the corpus: a fourth configuration `prev` (`config=prev|exe:clib|…`:
   the previous commit's blitz2 with its libraries) must write the
-  executable that `clib` writes and give the same output, so that a
-  changed code generation or library shows as `prev: EXE DIFFERS` in
-  the report of `corpus`, `corpus_runerr`, `corpus_req` and the serial
-  passes. `exe:BASE` / `output:BASE` in a `config=` line of the pass file
-  compares with the configuration BASE instead of the reference.
+  executable that `clib` writes and give the expected output (like every
+  configuration, "Corpus"), so that a changed code generation or library
+  shows as `prev: EXE DIFFERS` or `prev: ... OUTPUT DIFFERS` in the report
+  of `corpus`, `corpus_runerr`, `corpus_req` and the serial passes.
+  `exe:BASE` / `output:BASE` in a `config=` line of the pass file
+  compares with the configuration BASE instead of the reference (with
+  `expect_dir=` the output is compared with the expected file).
 * `ted_ab`: the combinations `P5` (TED of the previous commit with blitz2
   2.10) and `Pc` (TED and blitz2 of the previous commit) are added to the
   four of `TED_AB_COMBOS`, compared with `C5` and `Cc` (the pairs
@@ -426,7 +454,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | Entry | Meaning |
 | --- | --- |
 | `libs/acidlibs/2dlib.obj` | a library file (`prev_results`), path relative to `build/<preset>` |
-| `corpus:NAME` | the source `NAME` (without `.bb2`) in the pass `corpus`: its `prev` configuration may differ from `clib` (executable, output or serial data) |
+| `corpus:NAME` | the source `NAME` (without `.bb2`) in the pass `corpus`: its `prev` configuration may differ from `clib` (executable) and from the expected output or serial data |
 | `corpus_runerr:NAME`, `corpus_req:NAME`, `corpus_serial:NAME`, `corpus_serial_runerr:NAME` | the same for the other corpus passes |
 | `ted_ab:CASE` | the `ted_ab` case `CASE`: the pairs `C5-P5` and `Cc-Pc` may differ, at least one must |
 | `ted_ab:CASE:C5-P5`, `ted_ab:CASE:Cc-Pc` | only that pair |
@@ -844,6 +872,26 @@ the CD):
 cmake --build --preset amiga --target ted-oracle     # about 40 s
 cmake -DORACLE_LIMIT=5 build/amiga                   # trial run, tests/data stays
 ```
+
+A fix on the path of these outputs (detok, tokit2, load and save of TED)
+changes the port's hash of the sources it touches, and the tests
+`ted_core_*` compare with the port's hash. Such a row is a note row: the
+port's hash, a tab and a note that names the issue and the original's
+hash,
+
+```
+<port's hash>  save/PATH	#NNN: what the fix changes (TED 1.1: <original's hash>)
+```
+
+written by hand in the fix commit: with `TED_TEST_DUMP=DIR` in the
+environment the failing test writes the port's output to
+`DIR/KIND/PATH` (`/` of PATH as `_`, `programs/ted/tests/host/corpus.hpp`),
+and its `sha256sum` is the port's hash. The
+target `ted-oracle` writes the file through `results ted-oracle`
+([`tools/results`](../tools/results/README.md)): every row is the
+original's, the note rows stay as they are, and a note must name the
+original's hash of this run (else it is stale and nothing is written).
+Without note rows the target leaves the file byte for byte as it is.
 
 ## Test statistics
 
