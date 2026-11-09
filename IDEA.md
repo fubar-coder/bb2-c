@@ -10,7 +10,8 @@ New language features mean a "BB2 next" variant, not the faithful port.
 New keywords need token numbers, and tokenised sources should stay
 exchangeable with the original.
 
-The last section, "Tooling: blitz2 on the host", is no language change.
+The last two sections, "Tooling: blitz2 on the host" and "The compiler in
+a process of its own", are no language changes.
 
 ## Order and dependencies
 
@@ -313,3 +314,41 @@ then run without Amiberry, in seconds.
 A first step would be a spike outside the repository: `ab3cli` with
 blitz2-ab3 under volamos on some ab3 and corpus programs, comparing the
 executables with the ones from Amiberry.
+
+## The compiler in a process of its own
+
+The idea: TED starts the compile in a process of its own
+(`CreateNewProc`) and stays responsive meanwhile, instead of running the
+compiler in its own task through the menu routine until the compile ends.
+
+**What it would bring:**
+
+- **Cancelling by a flag instead of an exception:** TED sends the
+  compiler process `SIGBREAKF_CTRL_C` and the compiler checks it with
+  `CheckSignal` in `nextline` and stops cleanly, the AmigaOS counterpart of
+  a cancellation token. Today the STOP gadget works through an exec
+  exception (`tc_ExceptCode`, `stopcode_c` in `compile.c`) that interrupts
+  the compiler anywhere.
+- **TED stays responsive:** it refreshes its windows and handles the STOP
+  gadget in its own loop.
+- **Progress as messages:** the progress of the compile (the comdata call
+  of the change `compile-progress-via-ted`) becomes a message TED reads in
+  its loop and draws when its screen is shown.
+
+**What makes it hard:**
+
+- **The calls into TED:** the compiler calls TED's services
+  synchronously (error requester, tokenising, file requester,
+  `getinput`, more than twenty entries of `comdata`). TED is not
+  reentrant (global state, its own stack), so from another process each
+  call has to become a message to TED and a wait for its answer.
+- **Run and the debugger:** blitz2 runs the compiled program from memory
+  (`CreateProc` in `main.c`) and catches its runtime errors; that depends
+  on the task blitz2 runs in.
+- **The original compiler with TED-C:** it can only run synchronously in
+  TED's task, so TED-C would need both ways.
+- **Stack and memory:** the compiler sets its stack size itself
+  (`stackfuck`); a process of its own gets its stack from TED.
+
+No pthreads are needed: processes and message ports are native to
+AmigaOS.
