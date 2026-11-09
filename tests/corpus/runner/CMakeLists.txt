@@ -14,9 +14,10 @@ target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
 set(CORPUSRUN_SUBCOMMANDS pass cd)
-add_executable(corpusrun main.c cmd_pass.c cmd_cd.c)
-target_link_libraries(corpusrun PRIVATE lib_subcmd lib_corpus lib_cdcache lib_sha256)
+add_executable(corpusrun main.cpp cmd_pass.cpp cmd_cd.cpp cd.c)
+target_link_libraries(corpusrun PRIVATE lib_cli lib_corpus lib_cdcache lib_sha256)
 target_compile_options(corpusrun PRIVATE -Wall -Wextra)
+set_target_properties(corpusrun PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 
 add_executable(test_corpus test_corpus.c)
 target_link_libraries(test_corpus PRIVATE lib_corpus)
@@ -45,5 +46,5 @@ add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:co
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-cdrun-source.cmake)
 
-host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
-host_readme_test(corpusrun README.md)
+host_help_test(corpusrun CLI ${CORPUSRUN_SUBCOMMANDS})
+host_readme_test(corpusrun README.md CLI ${CORPUSRUN_SUBCOMMANDS})

@@ -77,7 +77,7 @@ groups 2-14 and is not repeated there:
 
 ## 11. `corpusrun`
 
-- [ ] 11.1 `tests/corpus/runner/` (`pass`, `cd`); `CDRUN_FORCE`, `BUGORIG_RECORD` stay; `check-cdrun-source.cmake` keeps its expected status 2 and follows the new message text; callers in `tests/corpus`, `tests/bug-orig`, `tests/ab3`, `tests/blitz2`, `libs/userlibs/rwe`, `CMakeLists.txt`. Verify: C1-C5; the corpus passes with the same verdicts; `cdrun_source`, `cdrun_cache`, `corpus_runner`, `bugorig_verdict` pass
+- [x] 11.1 `tests/corpus/runner/` (`pass`, `cd`); `CDRUN_FORCE`, `BUGORIG_RECORD` stay; `check-cdrun-source.cmake` keeps its expected status 2 and follows the new message text; callers in `tests/corpus`, `tests/bug-orig`, `tests/ab3`, `tests/blitz2`, `libs/userlibs/rwe`, `CMakeLists.txt`. Verify: C1-C5; the corpus passes with the same verdicts; `cdrun_source`, `cdrun_cache`, `corpus_runner`, `bugorig_verdict` pass
 
 ## 12. `amiga_run` and `mktestdata`
 

@@ -14,13 +14,47 @@ results, optionally compared with a reference table). The logic is in
 ## Usage
 
 ```
-usage: corpusrun pass [--update-expect TAG] PASSFILE
-       corpusrun cd PASSFILE
+Usage: corpusrun [OPTIONS] SUBCOMMAND
+
+The corpus passes and the CD runs in Amiberry.
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+SUBCOMMANDS:
+  pass                        one pass of the corpus check in Amiberry: compile, run and
+                              compare the sources of a pass file
+  cd                          compile every .bb2/.bb of the CD with one compiler in Amiberry, a
+                              table of the results
+
+The exit status of pass in a bug-orig pass is the worst verdict: 0 FIXED, 1
+REPRODUCED, 3 BROKEN, 4 DIFFERS.
 ```
 
-`corpusrun SUB -h` prints the description and the options of `SUB`.
-
 ### pass
+
+```
+Usage: corpusrun pass [OPTIONS] PASSFILE
+
+one pass of the corpus check in Amiberry: compile, run and compare the sources
+of a pass file
+
+POSITIONALS:
+  PASSFILE TEXT REQUIRED      the pass file (its keys: tests/corpus/runner/corpus.h)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --update-expect TAG run only the configuration TAG and write its outputs to the
+                              pass's expect_dir= (NAME.out, with serial=on NAME.serial) instead
+                              of comparing
+
+With BUGORIG_RECORD=1 in the environment a bug-orig pass (orig=) records the
+observation of the original instead. Exit status 0 no differences
+(--update-expect: all written), 1 differences (the report; --update-expect: some
+not written), 2 error (usage, pass file), 77 skipped (no emulator, or the CD's
+libraries are missing). A bug-orig pass gives the worst verdict: 0 all FIXED, 1
+REPRODUCED, 3 BROKEN, 4 DIFFERS.
+```
 
 Runs one pass of the pass file `PASSFILE` and writes the report (to
 `report=` and stdout), then one `@stat` line per emulator session
@@ -41,6 +75,25 @@ Options:
 
 ### cd
 
+```
+Usage: corpusrun cd [OPTIONS] PASSFILE
+
+compile every .bb2/.bb of the CD with one compiler in Amiberry, a table of the
+results
+
+POSITIONALS:
+  PASSFILE TEXT REQUIRED      the pass file (written by CMake; its keys: the header of
+                              tests/corpus/runner/cd.c)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+The table is optionally compared with a reference table. CDRUN_FORCE=1 in the
+environment runs even if the cache= record says nothing changed. Exit status 0
+written (and no difference), 1 differences or a source= that does not compile, 2
+error (usage, pass file), 77 the emulator or a file is missing (skipped).
+```
+
 Compiles every `.bb2`/`.bb` of the CD with one compiler and writes the
 table `output=`; with `reference=` it compares the table with it and
 writes the comparison to `report=` and stdout. With `source=REL|OUT` only
@@ -54,7 +107,7 @@ environment runs anyway).
 
 The pass files are written by CMake, lines `KEY=VALUE` and `#` comments;
 the keys of `pass` are described in `corpus.h`, those of `cd` in the
-header of `cmd_cd.c`. The table of `cd` is TSV (Latin-1): path, result,
+header of `cd.c`. The table of `cd` is TSV (Latin-1): path, result,
 line, message, size, masked SHA-256, xtra, note
 (`tools/lib/cdtable/cdtable.h`; the reference is
 `tests/data/blitz2-cd.tsv`); the cache record is described in

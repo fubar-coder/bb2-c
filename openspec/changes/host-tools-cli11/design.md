@@ -454,3 +454,8 @@ Findings and adaptations while implementing (2026-11-09).
   their own options (before, `info` accepted and ignored `--font`,
   `--fonts`, `--no-mask`, `text` `--no-mask`). The verdict codes are in
   the footers of the program and of `run`.
+- **`corpusrun`** (task 11.1): the body of `cd` (1150 lines) stays C in
+  `cd.c` (moved from `cmd_cd.c`, entry `corpusrun_cd()`, `cd.h`), as
+  `tedab run`; `cmd_cd.cpp` declares the subcommand. `pass
+  --update-expect TAG` may stand after `PASSFILE`; an empty `TAG` is
+  still a usage error (2).

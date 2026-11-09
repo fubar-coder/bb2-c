@@ -5,6 +5,8 @@
  *
  *   corpusrun cd PASSFILE
  *
+ * The body (corpusrun_cd, cd.h); the subcommand is declared in cmd_cd.cpp.
+ *
  * The pass file, lines KEY=VALUE, '#' comments:
  *   work=DIR           work directory (emptied first)
  *   output=PATH        the table to write
@@ -71,7 +73,7 @@
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "cdcache.h"
-#include "cmds.h"
+#include "cd.h"
 #include "corpus.h"
 #include "sha256.h"
 #include "statline_emulation.h"
@@ -1116,32 +1118,20 @@ out:
     return rc;
 }
 
-const char cmd_cd_usage[] =
-    "usage: corpusrun cd PASSFILE\n"
-    "Compile every .bb2/.bb of the CD with one compiler in Amiberry and\n"
-    "write the table of the results, optionally compared with a reference\n"
-    "table (the keys of the pass file: the header of\n"
-    "tests/corpus/runner/cmd_cd.c).  CDRUN_FORCE=1 in the environment runs\n"
-    "even if the cache= record says nothing changed.\n";
-
-int cmd_cd(int argc, char **argv)
+int corpusrun_cd(const char *prog, const char *passfile)
 {
     char err[300], digest[65];
     size_t len;
     char *text;
     int rc, cached = 0;
 
-    me = argv[0];
-    if (argc != 2) {
-        fputs(cmd_cd_usage, stderr);
-        return 2;
-    }
-    if (!(text = (char *)read_file(argv[1], &len))) {
-        fprintf(stderr, "%s: cannot read %s\n", me, argv[1]);
+    me = prog;
+    if (!(text = (char *)read_file(passfile, &len))) {
+        fprintf(stderr, "%s: cannot read %s\n", me, passfile);
         return 2;
     }
     if (parse(text, err, sizeof err)) {
-        fprintf(stderr, "%s: %s: %s\n", me, argv[1], err);
+        fprintf(stderr, "%s: %s: %s\n", me, passfile, err);
         free(text);
         return 2;
     }
