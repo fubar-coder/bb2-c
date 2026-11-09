@@ -38,6 +38,10 @@ static inline ULONG tl(const UWORD *p)
 static ULONG numval;    /* asm d3: value (int or FFP) */
 static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
+/* Fixed (#978): the integer constant fetchnum3 emitted last (move.w/.l
+   #x,Dn from constat to constend; 0: none), for isbyteconst */
+static ULONG constat, constend;
+
 
 static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val);
@@ -243,8 +247,14 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
    down the fetch routines. */
 static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
 {
+    ULONG at = pc;
+
     if (data)
         return val;
+    /* Fixed (#978): remember where the last integer constant is */
+    constat = constend = 0;
+    if (!numfloat && *type != T_FLOAT)
+        constat = at;
     switch (*type) {
     case T_BYTE:
     case T_WORD:
@@ -262,7 +272,37 @@ static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
     default:
         mismatcherr();
     }
+    if (constat)
+        constend = pc;
     return reget();
+}
+
+BOOL isbyteconst(ULONG from, ULONG to)
+{
+    ULONG v;
+
+    if (!constat || constat != from || constend != to || to > libat)
+        return FALSE;
+    if (to - from == 4)                         /* move.w #x,Dn: w */
+        v = W_(from + 2);
+    else {                                      /* move.l #x,Dn: l or q */
+        v = ((ULONG)W_(from + 2) << 16) | W_(from + 4);
+        if (!(v & 0xffff))
+            v >>= 16;                           /* q: x.0 */
+    }
+    return v >= 128 && v <= 255;
+}
+
+void byteconstext(ULONG at)
+{
+    if (W_(at) & 0x1000)                        /* move.w */
+        W_(at + 2) |= 0xff00;
+    else if (!W_(at + 4))                       /* q: integer part */
+        W_(at + 2) |= 0xff00;
+    else {                                      /* l */
+        W_(at + 2) = 0xffff;
+        W_(at + 4) |= 0xff00;
+    }
 }
 
 /* blitz2.s:10892 makeint - *val = numval as integer.  asm: on SPFix
@@ -341,9 +381,11 @@ byte:
     if ((LONG)val <= 127 && (LONG)val >= -128)
         goto done;                  /* .dobword */
 over1:
-    /* BUG(orig) (#978): a constant from 128 to 255 becomes a positive
-       word ($0090) and stays so against a byte variable, which varcont
-       sign-extends ($FF90): "a.b=$90 : If a=$90" compares different words. */
+    /* Fixed (#978): a constant from 128 to 255 becomes a positive word
+       ($0090), here as in the original; compared with a byte value, which
+       varcont sign-extends ($FF90), eval5 makes it the sign-extended byte
+       (isbyteconst, byteconstext).  Every other byte context (a.b=200)
+       keeps it. */
     newtype = T_WORD;
     if ((LONG)val <= 32767 && (LONG)val >= -32768)
         goto done;

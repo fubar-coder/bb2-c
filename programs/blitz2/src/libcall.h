@@ -63,6 +63,15 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data);
    fetchconst, fetchsize, fetchon/off, domaximum, fetchqasm, fetchasm. */
 ULONG fetchnum2(ULONG num, UWORD *type, BOOL data);
 
+/* Fixed (#978), no asm counterpart: TRUE if the code from `from` to `to`
+   is exactly the integer constant the fetch routines emitted last
+   (move.w/.l #x,Dn, type w, l or q) and its value is 128..255. */
+BOOL isbyteconst(ULONG from, ULONG to);
+
+/* Fixed (#978): rewrite the constant isbyteconst accepted at `at` as the
+   sign-extended byte (128..255 -> -128..-1, of the same type). */
+void byteconstext(ULONG at);
+
 /* blitz2.s:10906 constotype - evalconst, then size the constant to *type
    (consttype2).  Returns the value (asm d0); no callers in the asm. */
 ULONG constotype(UWORD *type);

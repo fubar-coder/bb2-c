@@ -126,6 +126,9 @@ struct forthent forthstack[32];         /* 9715 ds.b 18*32 */
 struct forthent *forthsp = forthstack;  /* 9716 */
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
+/* Fixed (#978), no asm counterpart: pc after the code of the last byte
+   value varcont fetched (with its conversion), for eval5 */
+static ULONG bytevalend = 0;
 
 /* forward declarations of the internal routines */
 static void fdo2(WORD lvo);
@@ -791,21 +794,40 @@ static UWORD eval4(UWORD *type)
    *c = current char (d0). */
 static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
 {
+    ULONG lstart = pc;              /* the left operand: lstart..lend */
     UWORD prec = eval2(type, c, op);
+    ULONG lend = pc;
 
     for (;;) {
         UWORD left, nprec;
         struct opentry *nop, *cur;
         struct forthent *fs;
+        BOOL cmp, lbyte, lconst;
+        ULONG rstart;
 
         if (!(prec > precsp[-1].prec))  /* cmp -(a1),d1 / bhi .higher */
             return prec;
         /* .higher */
+        /* Fixed (#978): an equality comparison (= or <>) of a byte value
+           with a constant from 128 to 255 (each operand one element)
+           takes the constant as the byte it stands for, sign-extended as
+           varcont extends the byte: "a.b=$90 : If a=$90" matches.  The
+           ordering comparisons stay mathematical (a<200 is true for every
+           byte). */
+        cmp = *op == opeq || *op == opne;
+        lbyte = lend && bytevalend == lend && bytevalend > lstart;
+        lconst = lend && isbyteconst(lstart, lend);
+        rstart = pc;
         pushprec(*op, prec);
         left = *type;
         regat++;
         nprec = eval5(type, c, &nop);
         regat--;
+        if (cmp && lbyte && isbyteconst(rstart, pc))
+            byteconstext(rstart);
+        else if (cmp && lconst && bytevalend == pc && bytevalend > rstart)
+            byteconstext(lstart);
+        lstart = lend = 0;          /* the left operand is a result now */
         if (left)
             convtypef(left, *type); /* could possibly fuck regat+1 ! */
         cur = popprec(&prec);       /* .skip */
@@ -2416,22 +2438,28 @@ static UWORD variable(UWORD c, UWORD *type)
    value: ext byte to word, bump the type up to the old one */
 static UWORD varcont(UWORD oldtype, UWORD *type)
 {
-    /* BUG(orig) (#978): a byte variable is always fetched sign-extended
-       ($90 -> $FF90), while consttype2 takes a constant from 128 to 255 as
-       a positive word ($0090): the word compare of "a.b=$90" with
-       "a=$90" never matches (only a=-112 does). */
-    if (*type == T_BYTE)
+    BOOL byte = *type == T_BYTE;
+
+    /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
+       $FF90), while consttype2 takes a constant from 128 to 255 as a
+       positive word ($0090): the original's compare of "a.b=$90" with
+       "a=$90" never matched (only a=-112 did).  bytevalend tells eval5
+       where a byte value ends, which then sign-extends the constant. */
+    if (byte)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
     /* .notabyte */
     if (!oldtype)                   /* type not set yet... it is now! */
-        return reget();
+        goto done;
     if (oldtype == T_LONG && *type == T_QUICK)
         goto conv2;
     if (oldtype <= *type)           /* .nob */
-        return reget();
+        goto done;
 conv2:
     convtype(*type, oldtype);       /* bump up new type to old.... */
     *type = oldtype;
+done:
+    if (byte)
+        bytevalend = pc;
     return reget();                 /* .done */
 }
 
