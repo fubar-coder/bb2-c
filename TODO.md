@@ -841,11 +841,14 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   read-only type) and libraries written for them. Not for BB2 or AB3
   mode (existing sources and AmiBlitz3's binary libraries rely on
   mutable strings): only as a language variant of its own.
-- [ ] **Two flaky bug-orig tests** (seen 2026-11-07, not worth more
-  effort before the fixes of their areas): `rishapeslib-savecmap-zero-colours`
-  sometimes comes out DIFFERS in the clib configuration, and
-  `ted-setdefs-flags-lsl7` sometimes halts in C5. Both pass in other
-  runs; look at them again when their bug is fixed.
+- [ ] **Three flaky bug-orig tests** (seen 2026-11-07 and 2026-11-09, not
+  worth more effort before the fixes of their areas):
+  `rishapeslib-savecmap-zero-colours` sometimes comes out DIFFERS in the
+  clib configuration, `rishapeslib-read-palette-colour-count` too (#820:
+  a 768 KB wild write, its end depends on the memory layout; the original
+  ends as `halt` or `done` from run to run), and `ted-setdefs-flags-lsl7`
+  sometimes halts in C5. They pass in other runs; look at them again when
+  their bug is fixed.
 - [ ] **Compile-time warnings** (from the archived change
   `compiler-warnings`, its task 1.3; decided 2026-11-08): the queue that
   collects warnings raised during a compile and shows them after it (the
