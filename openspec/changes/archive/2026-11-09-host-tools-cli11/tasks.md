@@ -96,7 +96,7 @@ groups 2-14 and is not repeated there:
 - [x] 15.1 Remove `tools/lib/subcmd/`, `tools/tests/fake_subcmd.c`, `test_subcmd.c`, the old `check-help.cmake`/`check-readme.cmake` (the `-cli` scripts take the old names) and the `lib_subcmd` references; `docs/development.md`, `docs/structure.md`, `tests/README.md`, `README.md`, `TODO.md` (a done entry for this change with the commits) name CLI11 and the C++ command layer. Verify: a search for `subcmd`, `subcmd_main` and for `strcmp(argv[` finds nothing outside `archive/`, `TODO.md`, `openspec/` and the test programs that stay (`tools/tests/test_amiga_emulation*.c`); every README block passes `readme_*`
 - [x] 15.2 `docs/development.md` and the READMEs list the exit codes (0, 2, 77, and per program the documented others) and `README.md` (section "License") name CLI11 (BSD-3-Clause) as a build-time dependency of the host tools. Verify: `readme_*` pass; `grep -rn CLI11 README.md` shows the licence line
 - [x] 15.3 Whole-state verification on the last commit versus the commit before group 1: `-DBLITZ2_PREV=<that commit>`, `prev_results`, corpus and `ted_ab` prev parts, `ctest --preset all`, `ctest --preset oracle`, a `-DHOST_SANITIZE=ON` host run, a clean build without warnings. Verify: no difference in any result; failures equal the baseline of 0.1 or fewer
-- [ ] 15.4 Archive the change (`openspec archive host-tools-cli11`) after the coordinator accepted the commits. Verify: `openspec/specs/tooling/host-tools/spec.md` has the modified requirements
+- [x] 15.4 Archive the change (`openspec archive host-tools-cli11`) after the coordinator accepted the commits. Verify: `openspec/specs/tooling/host-tools/spec.md` has the modified requirements
 
 ## Workflow follow-up
 
