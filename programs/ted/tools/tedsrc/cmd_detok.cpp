@@ -6,8 +6,8 @@
  * source of the CD: test_loadsave and test_detok against the oracle).
  *
  *   tedsrc detok TOKENS IN OUT          TOKENS: tests/data/ted-tokens.txt
- *   tedsrc detok TOKENS --check IN...   only the checks, no output
- *   tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT | --check IN...
+ *   tedsrc detok --check TOKENS IN...   only the checks, no output
+ *   tedsrc detok [--check] --blitz2 BLITZ2 [--lib LIB]... IN OUT | IN...
  *
  * The token list: a list file (tests/data/ted-tokens.txt, or one written
  * by bbsrc tokens), or made from the compiler BLITZ2 and the library
@@ -27,20 +27,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "cli.hpp"
+extern "C" {
 #include "hostenv.h"
 #include "fileio.h"
 #include "loadsave.h"
+}
 #include "tedsrc.h"
-
-const char cmd_detok_usage[] =
-    "usage: tedsrc detok TOKENS IN OUT\n"
-    "       tedsrc detok TOKENS --check IN...\n"
-    "       tedsrc detok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
-    "       tedsrc detok --blitz2 BLITZ2 [--lib LIB]... --check IN...\n"
-    "A Blitz 2 source (tokenised or text) as TED shows it, one line per\n"
-    "line of TED; TOKENS is the token list (tests/data/ted-tokens.txt),\n"
-    "or it is made from the compiler and its libraries (acidlibs, deflibs,\n"
-    "userlibs, in this order). Fails on tokens TED does not know.\n";
 
 static const char *me;          /* "tedsrc detok", the prefix of the messages */
 
@@ -158,26 +154,51 @@ static BOOL detok_file(const char *in, const char *out)
     return ok;
 }
 
-int cmd_detok(int argc, char **argv)
+void cmd_detok(CLI::App &app, int &status)
 {
-    struct tokennode *list;
-    BOOL ok = TRUE;
-    int i, a;
+    struct options {
+        tedsrc_tokens t;
+        bool check = false;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("detok", "a Blitz 2 source (tokenised or text) as TED shows it, one line per line of TED");
+    sub->add_flag("--check", o->check, "only the checks of the files IN..., no output");
+    tedsrc_token_options(*sub, o->t, "TOKENS IN OUT (TOKENS IN... with --check), without TOKENS with --blitz2");
+    sub->footer("TOKENS: the token list file (tests/data/ted-tokens.txt, or one bbsrc tokens "
+                "writes). TED's text: TAB expanded to tabstop 2, a line longer than TED's line "
+                "buffer split (noted on stderr). Exit status 0, 1 IN cannot be loaded, a line has a "
+                "token TED does not know or a token byte without its second byte, a token list "
+                "cannot be read or OUT cannot be written (OUT is removed), 2 usage error.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+        const std::vector<std::string> &files = o->t.files;
+        struct tokennode *list;
+        BOOL ok = TRUE;
+        int first;
 
-    me = argv[0];
-    list = host_tokens_args(me, argc, argv, &a);
-    if (!list && a < 0)
-        return 1;
-    if (!list || argc - a < 2 || (strcmp(argv[a], "--check") != 0 && argc - a != 2)) {
-        fputs(cmd_detok_usage, stderr);
-        return 2;
-    }
-    hostenv_init(NULL, 25);
-    tokens = list;
-    tokenise = 1;
-    if (strcmp(argv[a], "--check") != 0)
-        return detok_file(argv[a], argv[a + 1]) ? 0 : 1;
-    for (i = a + 1; i < argc; i++)
-        ok &= detok_file(argv[i], NULL);
-    return ok ? 0 : 1;
+        me = name.c_str();
+        if ((first = tedsrc_first(*sub, me, o->t)) < 0
+            || (o->check ? files.size() - (size_t)first < 1 : files.size() - (size_t)first != 2)) {
+            if (first >= 0)
+                fprintf(stderr, "%s: %s%s expected\n", me, first ? "TOKENS " : "",
+                        o->check ? "IN..." : "IN OUT");
+            fprintf(stderr, "Run with --help for more information.\n");
+            status = 2;
+            return;
+        }
+        if (!(list = tedsrc_token_list(*sub, me, o->t))) {
+            status = 1;
+            return;
+        }
+        hostenv_init(NULL, 25);
+        tokens = list;
+        tokenise = 1;
+        if (!o->check) {
+            status = detok_file(files[(size_t)first].c_str(), files[(size_t)first + 1].c_str()) ? 0 : 1;
+            return;
+        }
+        for (size_t i = (size_t)first; i < files.size(); i++)
+            ok &= detok_file(files[i].c_str(), NULL);
+        status = ok ? 0 : 1;
+    });
 }

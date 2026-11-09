@@ -436,3 +436,11 @@ Findings and adaptations while implementing (2026-11-09).
   `--last` that no `--blitz2` follows says so (status 2 as before, a
   message instead of the usage text). An `OUT` of an earlier run is left
   as it is when the token list fails, as before.
+- **`tedsrc`** (task 9.1): the token list is still made by
+  `host_tokens_args()` (`programs/ted/tests/host/tokref.c`, unchanged):
+  the subcommand gives it `TOKENS` or `--blitz2 BLITZ2 --lib LIB...` as
+  parsed. `--blitz2`, `--lib` and `--check` may now stand anywhere (before
+  they had to come first, `--check` after `TOKENS`); the arguments
+  `[TOKENS] IN OUT` / `[TOKENS] IN...` are one positional list `FILE...`,
+  whose forms the README and the help name. A wrong count, or `--lib`
+  without `--blitz2`, gives 2 with a message.

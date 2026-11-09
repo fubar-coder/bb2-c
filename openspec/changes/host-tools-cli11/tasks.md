@@ -69,7 +69,7 @@ groups 2-14 and is not repeated there:
 
 ## 9. `tedsrc`
 
-- [ ] 9.1 `programs/ted/tools/tedsrc/` (`tok`, `detok` with `--check`), linked with `tedhost` and `tedcore_host`; `tests/run.cmake` keeps expecting 1 for a bad source (design D7); callers in `libs/userlibs/rwe`, `tests/`, `tools/bbsrc`. Verify: C1-C5; `teddetok_bblibsrc` and `tedtok_libs` run (not skipped, data from `cmake/fetch-originals.cmake`); tokenised corpus sources `cmp`-identical
+- [x] 9.1 `programs/ted/tools/tedsrc/` (`tok`, `detok` with `--check`), linked with `tedhost` and `tedcore_host`; `tests/run.cmake` keeps expecting 1 for a bad source (design D7); callers in `libs/userlibs/rwe`, `tests/`, `tools/bbsrc`. Verify: C1-C5; `teddetok_bblibsrc` and `tedtok_libs` run (not skipped, data from `cmake/fetch-originals.cmake`); tokenised corpus sources `cmp`-identical
 
 ## 10. `tedab`
 

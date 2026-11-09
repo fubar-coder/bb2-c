@@ -2,12 +2,12 @@
 # TED saves them), detok (as TED shows them); README.md.  bblibsrc.cmake:
 # the build target bblibsrc (included by the top-level CMakeLists.txt)
 set(TEDSRC_SUBCOMMANDS tok detok)
-add_executable(tedsrc main.c cmd_tok.c cmd_detok.c)
-target_link_libraries(tedsrc PRIVATE lib_subcmd "$<LINK_GROUP:RESCAN,tedhost,tedcore_host>")
+add_executable(tedsrc main.cpp cmd_tok.cpp cmd_detok.cpp)
+target_link_libraries(tedsrc PRIVATE lib_cli "$<LINK_GROUP:RESCAN,tedhost,tedcore_host>")
 target_compile_options(tedsrc PRIVATE -Wall)
-set_target_properties(tedsrc PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
-host_help_test(tedsrc ${TEDSRC_SUBCOMMANDS})
-host_readme_test(tedsrc README.md)
+set_target_properties(tedsrc PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+host_help_test(tedsrc CLI ${TEDSRC_SUBCOMMANDS})
+host_readme_test(tedsrc README.md CLI ${TEDSRC_SUBCOMMANDS})
 
 get_filename_component(repo ${CMAKE_CURRENT_SOURCE_DIR}/../../../.. ABSOLUTE)
 set(tokens ${repo}/tests/data/ted-tokens.txt)
