@@ -14,7 +14,7 @@ results, optionally compared with a reference table). The logic is in
 ## Usage
 
 ```
-usage: corpusrun pass PASSFILE
+usage: corpusrun pass [--update-expect TAG] PASSFILE
        corpusrun cd PASSFILE
 ```
 
@@ -26,7 +26,17 @@ Runs one pass of the pass file `PASSFILE` and writes the report (to
 `report=` and stdout), then one `@stat` line per emulator session
 (`tests/README.md`, "Test statistics"). With `BUGORIG_RECORD=1` in the
 environment a bug-orig pass (`orig=`) records the observation of the
-original instead (`tests/README.md`, "Recorded originals").
+original instead (`tests/README.md`, "Recorded originals"). A pass with
+`expect_dir=DIR` compares the output of every configuration (and with
+`serial=on` the bytes sent over the serial port) with the committed files
+`DIR/NAME.out` (`DIR/NAME.serial`); a missing file fails the pass before
+any session.
+
+Options:
+
+* `--update-expect TAG`: run only the configuration `TAG` of the pass and
+  write its outputs to `expect_dir=` instead of comparing. A source that
+  does not compile, has no output or times out is not written.
 
 ### cd
 
@@ -56,7 +66,8 @@ line, message, size, masked SHA-256, xtra, note
   mode the verdict (`corpus.h` `expect=`, `bugorig.h`): 0 every
   configuration FIXED, 1 REPRODUCED (or REGRESSED for a fixed test or
   an expect test), 3 BROKEN, 4 DIFFERS, 2 error; a recording run 0, 2 if
-  the session failed.
+  the session failed; `--update-expect` 0 every output written, 1 some
+  not, 2 error (also a pass without `expect_dir=` or without `TAG`).
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that
   does not compile, 77 the emulator or a file is missing (skipped),
   2 error.

@@ -3,6 +3,7 @@
  * trap #1 / trap #4 parameter blocks (the emulator part runs in the
  * corpus_* ctests).
  */
+#define _XOPEN_SOURCE 700       /* open_memstream */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -388,6 +389,108 @@ int main(void)
         CHECK(parse("work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\n" CONFIGS "source=/s\n", err,
                     sizeof err) == -1);
 #undef NORUN
+    }
+
+    /* expect_dir=: the expected outputs */
+    {
+        static const char out[] = "a\nb\nc\nrc=0\n";
+        char what[300];
+        FILE *log;
+        char *logtext = NULL;
+        size_t loglen = 0;
+
+        CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
+                           "expect_dir=/nonexistent/expect/corpus\nsource=/s/t01_int.bb2\n",
+                           &p, err, sizeof err) == 0);
+        CHECK(!strcmp(p.expect_dir, "/nonexistent/expect/corpus") && !p.update);
+        CHECK((n = corpus_expect_path(&p, 0, ".out"))
+              && !strcmp(n, "/nonexistent/expect/corpus/t01_int.out"));
+        free(n);
+        /* a missing expected file: named, and the run fails before any
+           session (also without the emulator and the CD) */
+        CHECK(corpus_expect_missing(&p, err, sizeof err) == -1
+              && strstr(err, "no /nonexistent/expect/corpus/t01_int.out")
+              && strstr(err, "corpus-expect-update"));
+        CHECK((log = open_memstream(&logtext, &loglen)) != NULL);
+        if (log) {
+            CHECK(corpus_run(&p, log) == 2);
+            fclose(log);
+            CHECK(logtext && strstr(logtext, "no /nonexistent/expect/corpus/t01_int.out"));
+            free(logtext);
+        }
+        /* the update: only the configuration named runs, compared with nothing */
+        CHECK(corpus_update(&p, "nobody", err, sizeof err) == -1 && strstr(err, "nobody"));
+        CHECK(corpus_update(&p, "clib", err, sizeof err) == 0);
+        CHECK(p.update && p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib")
+              && p.configs[0].expect == CORPUS_OUTPUT && !p.configs[0].base);
+        corpus_free(&p);
+        CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
+                           "config=prev|exe:clib|/p|/q|/r\nexpect_dir=/e\nsource=/s\n",
+                           &p, err, sizeof err) == 0);
+        CHECK(corpus_update(&p, "port", err, sizeof err) == 0 && p.nconfigs == 1
+              && !strcmp(p.configs[0].tag, "port") && !strcmp(p.configs[0].blitz2, "/a2"));
+        corpus_free(&p);
+        /* serial=on: NAME.serial too */
+        CHECK(corpus_parse(BASE CONFIGS "serial=on\nexpect_dir=/nonexistent\nsource=/s/x.bb2\n",
+                           &p, err, sizeof err) == 0);
+        CHECK((n = corpus_expect_path(&p, 0, ".serial")) && !strcmp(n, "/nonexistent/x.serial"));
+        free(n);
+        corpus_free(&p);
+        /* without expect_dir= there is nothing to update */
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_expect_missing(&p, err, sizeof err) == 0);
+        CHECK(corpus_update(&p, "port", err, sizeof err) == -1 && strstr(err, "expect_dir"));
+        corpus_free(&p);
+        /* broken: empty, compile only, a bug-orig test */
+        CHECK(parse(BASE CONFIGS "source=/s\nexpect_dir=\n", err, sizeof err) == -1
+              && strstr(err, "expect_dir"));
+        CHECK(parse("work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\nrun=off\n" CONFIGS
+                    "source=/s\nexpect_dir=/e\n", err, sizeof err) == -1
+              && strstr(err, "expect_dir"));
+        CHECK(parse(BASE CONFIGS "source=/s\nexpect=/x\norig=/o\nexpect_dir=/e\n", err,
+                    sizeof err) == -1 && strstr(err, "expect_dir"));
+
+        /* the comparison: matching output */
+        CHECK(corpus_expect_diff((const uint8_t *)out, strlen(out), (const uint8_t *)out,
+                                 strlen(out), what, sizeof what) == 0);
+        /* differing output: the first differing line */
+        CHECK(corpus_expect_diff((const uint8_t *)out, strlen(out),
+                                 (const uint8_t *)"a\nB\nc\nrc=0\n", 11, what, sizeof what) == 1
+              && !strcmp(what, "line 2: expected \"b\", got \"B\""));
+        CHECK(corpus_expect_diff((const uint8_t *)out, strlen(out),
+                                 (const uint8_t *)"a\nb\nc\nrc=5\n", 11, what, sizeof what) == 1
+              && !strcmp(what, "line 4: expected \"rc=0\", got \"rc=5\""));
+        /* a line missing, a line too many, the LF at the end */
+        CHECK(corpus_expect_diff((const uint8_t *)out, strlen(out), (const uint8_t *)"a\nb\n", 4,
+                                 what, sizeof what) == 1
+              && !strcmp(what, "line 3: expected \"c\", got the end"));
+        CHECK(corpus_expect_diff((const uint8_t *)"a\n", 2, (const uint8_t *)"a\nb\n", 4, what,
+                                 sizeof what) == 1
+              && !strcmp(what, "line 2: expected the end, got \"b\""));
+        CHECK(corpus_expect_diff((const uint8_t *)"a\n", 2, (const uint8_t *)"a", 1, what,
+                                 sizeof what) == 1
+              && !strcmp(what, "line 1: expected \"a\", got \"a\" (no LF)"));
+        /* no output at all, an empty one, characters outside 32..126 */
+        CHECK(corpus_expect_diff((const uint8_t *)out, strlen(out), NULL, 0, what,
+                                 sizeof what) == 1 && !strcmp(what, "no output"));
+        CHECK(corpus_expect_diff((const uint8_t *)"", 0, (const uint8_t *)"", 0, what,
+                                 sizeof what) == 0);
+        CHECK(corpus_expect_diff((const uint8_t *)"x\n", 2, (const uint8_t *)"\x05\"\xE4\0\n", 5,
+                                 what, sizeof what) == 1
+              && !strcmp(what, "line 1: expected \"x\", got \"\\x05\\x22\\xE4\\x00\""));
+        /* a long line is cut */
+        {
+            char lw[200], lg[200];
+
+            memset(lw, 'x', 150);
+            lw[150] = '\n';
+            memcpy(lg, lw, 151);
+            lg[10] = 'y';
+            CHECK(corpus_expect_diff((const uint8_t *)lw, 151, (const uint8_t *)lg, 151, what,
+                                     sizeof what) == 1
+                  && strstr(what, "line 1: expected \"xxxx") && strstr(what, "...\", got \"xxxxxxxxxxy")
+                  && strlen(what) < 170);
+        }
     }
 
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind

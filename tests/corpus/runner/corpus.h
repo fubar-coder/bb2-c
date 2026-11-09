@@ -41,6 +41,17 @@
  *                     instead of the reference, e.g. prev|exe:clib: the
  *                     build of the previous commit writes the executable
  *                     the current compiler with the C libraries writes
+ *   expect_dir=DIR    the committed expected outputs (tests/corpus/expect/
+ *                     PASS): DIR/NAME.out is what source NAME writes (its
+ *                     NAME.run, rc=N behind it), with serial=on
+ *                     DIR/NAME.serial the bytes it sends over the serial
+ *                     port.  The output (and serial data) of every
+ *                     configuration, the reference's too, is compared with
+ *                     these files instead of the reference's (or BASE's);
+ *                     the executables are compared as before.  A missing
+ *                     file is an error before any session (exit status 2).
+ *                     Not with run=off or expect=.  corpus_update writes
+ *                     the files instead (corpusrun pass --update-expect)
  *   source=PATH       a tokenised source (NAME.bb2), any number
  *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
  *                     entries, lib/previntended)
@@ -160,6 +171,8 @@ struct corpus_pass {
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
     char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */
+    char *expect_dir;                   /* expect_dir=: the expected outputs */
+    int update;                         /* corpus_update: write the expected outputs */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* corpus_select: the recording run */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
@@ -197,6 +210,33 @@ void corpus_select(struct corpus_pass *p, int record);
    run is skipped); both are noted in log (may be NULL).  The recording
    needs them (skipped) */
 void corpus_skip_missing(struct corpus_pass *p, FILE *log);
+
+/* the update of the expected outputs (expect_dir=, corpusrun pass
+   --update-expect TAG): only the configuration TAG runs, and corpus_run
+   writes its output of every source to DIR/NAME.out (with serial=on its
+   serial data to DIR/NAME.serial) instead of comparing; a source that does
+   not compile, has no output or (serial=on) no serial data or times out
+   is not written and fails the run (exit status 1).  0 = ok, -1 = no
+   expect_dir= or no configuration TAG (message in err).  Behind the check
+   of corpus_parse */
+int corpus_update(struct corpus_pass *p, const char *tag, char *err, size_t errlen);
+
+/* expect_dir=: the path of the expected file of source i (".out" or
+   ".serial"; malloc'd, NULL if out of memory) */
+char *corpus_expect_path(const struct corpus_pass *p, size_t i, const char *ext);
+
+/* expect_dir=: the expected files of every source are there (NAME.out,
+   with serial=on NAME.serial); 0 = yes, -1 = no (the first missing one in
+   err) */
+int corpus_expect_missing(const struct corpus_pass *p, char *err, size_t errlen);
+
+/* the output got (glen bytes, NULL = none) against the expected want: 0 =
+   the same, 1 = it differs and what says where: "line N: expected
+   \"...\", got \"...\"" (the first differing line, without its LF;
+   characters outside 32..126 as \xNN, long lines cut with ...), "the end"
+   for a missing line */
+int corpus_expect_diff(const uint8_t *want, size_t wlen, const uint8_t *got, size_t glen,
+                       char *what, size_t len);
 
 /* the name of a source without directory and .bb2 (malloc'd) */
 char *corpus_name(const char *source);

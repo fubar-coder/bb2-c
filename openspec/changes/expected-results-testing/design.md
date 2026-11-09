@@ -404,3 +404,22 @@ code changes in this change).
   where the port gives it again, stale (error) where the reference gives
   another. A `(2.10: ` part of neither form does not count; a note row
   without a well formed part is an error.
+- **Task 7.1 (2026-11-09):** `expect_dir=DIR` makes the expected files
+  the measure of the output: the output (`NAME.run`, with the `rc=N` line
+  behind it) and with `serial=on` the serial bytes of every configuration,
+  the reference's too, are compared byte by byte with `DIR/NAME.out` and
+  `DIR/NAME.serial` instead of with the reference's (or `BASE`'s); the
+  executables are compared as before (`exe`, `exe:BASE`). The comparison
+  is exact, without the wildcards of `results match`: the outputs hold
+  binary data (`t09_memacc`, the serial bytes) and are deterministic (the
+  configurations give the same bytes today). A difference names the
+  configuration, the file and the first differing line (`line N:
+  expected "...", got "..."`, characters outside 32..126 as `\xNN`). A
+  missing expected file fails the pass with exit status 2 before any
+  session, also where it would be skipped (no CD, no emulator): a source
+  without its file is a broken test. Not with `run=off` or `expect=`. The
+  update is the option `corpusrun pass --update-expect TAG PASSFILE`
+  (not a pass key: the update uses the pass files of the tests): only the
+  configuration `TAG` runs and its outputs are written; a source that does
+  not compile, has no output, no serial data or times out is not written
+  (exit status 1).
