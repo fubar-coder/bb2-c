@@ -4,9 +4,9 @@
 ; checked (write-only hardware); Sound/LoopSound only wait for the beam.
 ; Sounds are played with zero data or volume 0 (nothing audible).
 ; DiskPlay is not used: it waits for audio interrupts.
-; Object functions (PeekSound) only in plain assignments: they load a3
-; (also the string pointer) with the object, so inside a string expression
-; the following strings would be written into the Sound object.
+; PeekSound is used in plain assignments here; an object function inside
+; a string expression is checked by the bug-orig test
+; compiler-libfunc-a3-string (#46).
 DEFTYPE .l
 Function.l cks{a.l,n.l}
   c.l=0
