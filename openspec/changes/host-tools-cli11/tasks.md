@@ -65,7 +65,7 @@ groups 2-14 and is not repeated there:
 
 ## 8. `bbsrc`
 
-- [ ] 8.1 `tools/bbsrc/` (`tokens`, `detok`, `comment`, `bb22`, `bb22-info`, `ab3`, `ab3-cmp`); `detok-tooltest.cmake` and `ab3-tooltest.cmake` follow the new messages and pass the status they expect (usage errors 2); callers `libs/tests`, `libs/userlibs/rwe`, `tests/ab3`, `tests/bug-orig`. Verify: C1-C5; token lists and `tests/data/ted-tokens.txt` regenerate byte-identical; `ctest --preset oracle` passes
+- [x] 8.1 `tools/bbsrc/` (`tokens`, `detok`, `comment`, `bb22`, `bb22-info`, `ab3`, `ab3-cmp`); `detok-tooltest.cmake` and `ab3-tooltest.cmake` follow the new messages and pass the status they expect (usage errors 2); callers `libs/tests`, `libs/userlibs/rwe`, `tests/ab3`, `tests/bug-orig`. Verify: C1-C5; token lists and `tests/data/ted-tokens.txt` regenerate byte-identical; `ctest --preset oracle` passes
 
 ## 9. `tedsrc`
 

@@ -12,7 +12,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include <string>
+#include "cli.hpp"
+extern "C" {
 #include "bb22.h"
+}
 #include "bbsrc.h"
 
 static uint8_t *read_file(const char *path, size_t *len)
@@ -24,7 +29,7 @@ static uint8_t *read_file(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (d = malloc((size_t)n + 1)) && fread(d, 1, (size_t)n, f) == (size_t)n)
+        && (d = (uint8_t *)malloc((size_t)n + 1)) && fread(d, 1, (size_t)n, f) == (size_t)n)
         *len = (size_t)n;
     else {
         free(d);
@@ -34,22 +39,9 @@ static uint8_t *read_file(const char *path, size_t *len)
     return d;
 }
 
-const char cmd_bb22_usage[] =
-    "usage: bbsrc bb22 IN OUT\n"
-    "A Blitz 2 source in the BB22 format (some of RWE's library sources,\n"
-    "1997) in TED's format (lines of tokenised text, each ended by 0).\n"
-    "Refuses whatever it does not know.\n";
-
-const char cmd_bb22_info_usage[] =
-    "usage: bbsrc bb22-info IN\n"
-    "The header of a Blitz 2 source in the BB22 format (version, cursor),\n"
-    "its line count and its longest line. Refuses whatever it does not\n"
-    "know.\n";
-
-/* bb22 (info false) and bb22-info: IN, and OUT for bb22 */
-static int bb22(int argc, char **argv, bool info)
+/* bb22 (OUT given) and bb22-info (OUT NULL) */
+static int bb22(const char *me, const char *in, const char *out)
 {
-    const char *in, *me = argv[0];
     struct bb22 b;
     char err[200];
     uint8_t *data;
@@ -57,11 +49,6 @@ static int bb22(int argc, char **argv, bool info)
     FILE *f;
     int bad;
 
-    if (argc != (info ? 2 : 3)) {
-        fputs(info ? cmd_bb22_info_usage : cmd_bb22_usage, stderr);
-        return 2;
-    }
-    in = argv[1];
     if (!(data = read_file(in, &len))) {
         fprintf(stderr, "%s: cannot read %s\n", me, in);
         return 1;
@@ -71,7 +58,7 @@ static int bb22(int argc, char **argv, bool info)
         free(data);
         return 1;
     }
-    if (info) {
+    if (!out) {
         printf("version %u (header %zu bytes, line prefix %zu)\n", b.version, b.header_size,
                b.prefix_size);
         printf("cursor: column %u, row %u, top line %u (line %u, 0-based)\n", b.column, b.row,
@@ -81,26 +68,49 @@ static int bb22(int argc, char **argv, bool info)
         free(data);
         return 0;
     }
-    f = fopen(argv[2], "wb");
+    f = fopen(out, "wb");
     bad = !f || bb22_write_ted(&b, data, f);
     if (f && fclose(f))
         bad = 1;
     bb22_free(&b);
     free(data);
     if (bad) {
-        fprintf(stderr, "%s: cannot write %s\n", me, argv[2]);
-        remove(argv[2]);
+        fprintf(stderr, "%s: cannot write %s\n", me, out);
+        remove(out);
         return 1;
     }
     return 0;
 }
 
-int cmd_bb22(int argc, char **argv)
+void cmd_bb22(CLI::App &app, int &status)
 {
-    return bb22(argc, argv, false);
+    struct options {
+        std::string in, out;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand("bb22", "a Blitz 2 source in the BB22 format in TED's format");
+    sub->add_option("IN", o->in, "the BB22 source (some of RWE's library sources, 1997)")->required();
+    sub->add_option("OUT", o->out, "the source written: lines of tokenised text, each ended by 0")->required();
+    sub->footer("Refuses whatever it does not know. Exit status 0, 1 IN cannot be read or is "
+                "refused (OUT is not written) or OUT cannot be written, 2 usage error.");
+    sub->callback([sub, o, &status] {
+        const std::string name = cli::name(*sub);
+
+        status = bb22(name.c_str(), o->in.c_str(), o->out.c_str());
+    });
 }
 
-int cmd_bb22_info(int argc, char **argv)
+void cmd_bb22_info(CLI::App &app, int &status)
 {
-    return bb22(argc, argv, true);
+    auto in = std::make_shared<std::string>();
+    CLI::App *sub = app.add_subcommand("bb22-info", "the header of a BB22 source, its line count and its longest line");
+    sub->add_option("IN", *in, "the BB22 source")->required();
+    sub->footer("The version, the cursor of the header, the line count and the longest line, "
+                "on stdout. Refuses whatever it does not know. Exit status 0, 1 IN cannot be "
+                "read or is refused, 2 usage error.");
+    sub->callback([sub, in, &status] {
+        const std::string name = cli::name(*sub);
+
+        status = bb22(name.c_str(), in->c_str(), NULL);
+    });
 }

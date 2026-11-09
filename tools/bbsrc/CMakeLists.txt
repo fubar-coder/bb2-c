@@ -3,11 +3,12 @@
 # detok-archive-text.cmake: the build target archive_text (included by the
 # top-level CMakeLists.txt)
 set(BBSRC_SUBCOMMANDS tokens detok comment bb22 bb22-info ab3 ab3-cmp)
-add_executable(bbsrc main.c cmd_tokens.c cmd_detok.c cmd_comment.c cmd_bb22.c cmd_ab3.c)
-target_link_libraries(bbsrc PRIVATE lib_subcmd lib_blitztokens lib_bbdetok lib_bblines lib_bb22
+add_executable(bbsrc main.cpp cmd_tokens.cpp cmd_detok.cpp cmd_comment.cpp cmd_bb22.cpp cmd_ab3.cpp)
+target_link_libraries(bbsrc PRIVATE lib_cli lib_blitztokens lib_bbdetok lib_bblines lib_bb22
 	lib_tokenizer)
-host_help_test(bbsrc ${BBSRC_SUBCOMMANDS})
-host_readme_test(bbsrc README.md)
+set_target_properties(bbsrc PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+host_help_test(bbsrc CLI ${BBSRC_SUBCOMMANDS})
+host_readme_test(bbsrc README.md CLI ${BBSRC_SUBCOMMANDS})
 
 # detok on files: a text tokenised by ab3 and back (the same text), a
 # token missing from the list ({L:N}, --unknown, --strict), broken

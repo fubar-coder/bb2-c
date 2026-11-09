@@ -82,7 +82,7 @@ if(rc)
 endif()
 
 # our token list, and the check itself
-execute_process(COMMAND ${BBSRC} tokens -last 80DB -o ${WORK}/tokens.txt ${BLITZ2} ${libs}
+execute_process(COMMAND ${BBSRC} tokens --last 80DB -o ${WORK}/tokens.txt ${BLITZ2} ${libs}
 	RESULT_VARIABLE rc)
 if(rc)
 	message(FATAL_ERROR "bbsrc tokens ${BLITZ2}: exit ${rc}")

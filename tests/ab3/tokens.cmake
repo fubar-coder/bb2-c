@@ -1,5 +1,5 @@
 # ctest ab3_tokens*: the token list of blitz2-ab3 in AB3 mode (its
-# AmiBlitz3 list, bbsrc tokens -last LAST) with AmiBlitz3's libraries must
+# AmiBlitz3 list, bbsrc tokens --last LAST) with AmiBlitz3's libraries must
 # equal the list of AmiBlitz3's own compiler (its only list) with the same
 # libraries - same names at the same numbers.  Exit 77 (skipped) if a file
 # is missing (AmiBlitz3's: cmake -P cmake/fetch-originals.cmake).
@@ -11,7 +11,7 @@ foreach(f IN LISTS BLITZ2 AB3 LIBS)
 		cmake_language(EXIT 77)
 	endif()
 endforeach()
-execute_process(COMMAND ${BBSRC} tokens -last ${LAST} -o ${OUT}.txt ${BLITZ2} ${LIBS}
+execute_process(COMMAND ${BBSRC} tokens --last ${LAST} -o ${OUT}.txt ${BLITZ2} ${LIBS}
 	RESULT_VARIABLE rc)
 if(rc)
 	message(FATAL_ERROR "bbsrc tokens ${BLITZ2}: exit ${rc}")

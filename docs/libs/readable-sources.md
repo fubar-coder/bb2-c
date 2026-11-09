@@ -108,7 +108,7 @@ The token list is made from `TOKENS`, in the compiler's order (the first
 entry of a number wins): `--tokens FILE` (a list file as
 `bbsrc tokens` writes it, e.g. `tests/data/ted-tokens.txt`),
 `--blitz2 FILE` (a compiler's own tokens; `--last XXXX` before it picks
-one of several lists as `bbsrc tokens -last`, blitz2-ab3: `80DB`) and
+one of several lists as `bbsrc tokens --last`, blitz2-ab3: `80DB`) and
 `--lib FILE` (a library or BigLib file). Without `OUT` the text goes to
 stdout.
 

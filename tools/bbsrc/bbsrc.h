@@ -1,24 +1,18 @@
 /*
- * bbsrc.h - the subcommands of bbsrc (main.c): each one is in a cmd_*.c
- * with its function and its usage text.
+ * bbsrc.h - the subcommands of bbsrc (main.cpp): each one is in a
+ * cmd_*.cpp and adds itself to the program.
  */
 #ifndef BBSRC_H
 #define BBSRC_H
 
-int cmd_tokens(int argc, char **argv);          /* cmd_tokens.c */
-int cmd_detok(int argc, char **argv);           /* cmd_detok.c */
-int cmd_comment(int argc, char **argv);         /* cmd_comment.c */
-int cmd_bb22(int argc, char **argv);            /* cmd_bb22.c */
-int cmd_bb22_info(int argc, char **argv);
-int cmd_ab3(int argc, char **argv);             /* cmd_ab3.c */
-int cmd_ab3_cmp(int argc, char **argv);
+#include "cli.hpp"
 
-extern const char cmd_tokens_usage[];
-extern const char cmd_detok_usage[];
-extern const char cmd_comment_usage[];
-extern const char cmd_bb22_usage[];
-extern const char cmd_bb22_info_usage[];
-extern const char cmd_ab3_usage[];
-extern const char cmd_ab3_cmp_usage[];
+void cmd_tokens(CLI::App &app, int &status);    /* cmd_tokens.cpp */
+void cmd_detok(CLI::App &app, int &status);     /* cmd_detok.cpp */
+void cmd_comment(CLI::App &app, int &status);   /* cmd_comment.cpp */
+void cmd_bb22(CLI::App &app, int &status);      /* cmd_bb22.cpp */
+void cmd_bb22_info(CLI::App &app, int &status);
+void cmd_ab3(CLI::App &app, int &status);       /* cmd_ab3.cpp */
+void cmd_ab3_cmp(CLI::App &app, int &status);
 
 #endif

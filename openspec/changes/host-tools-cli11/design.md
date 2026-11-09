@@ -428,3 +428,11 @@ Findings and adaptations while implementing (2026-11-09).
   keyword; only the prototype and its comment, the implementation is
   unchanged): the one change of a library header (D4), needed to include
   it from C++.
+- **`bbsrc`** (task 8.1): `tokens -last` became `--last` (callers
+  `tests/ab3/tokenise.cmake`, `tests/ab3/tokens.cmake`,
+  `docs/libs/readable-sources.md`). The TOKENS options of `detok`
+  (`--tokens`, `--blitz2`, `--last`, `--lib`) are read in the order given
+  (`cli::occurrences`), as before; a `detok` without one of them or with a
+  `--last` that no `--blitz2` follows says so (status 2 as before, a
+  message instead of the usage text). An `OUT` of an earlier run is left
+  as it is when the token list fails, as before.

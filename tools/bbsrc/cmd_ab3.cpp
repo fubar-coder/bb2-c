@@ -21,19 +21,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bbsrc.h"
+#include <memory>
+#include <string>
+#include "cli.hpp"
+extern "C" {
 #include "tokenizer.h"
-
-const char cmd_ab3_usage[] =
-    "usage: bbsrc ab3 TOKENS SOURCE OUT\n"
-    "SOURCE tokenised as AmiBlitz3 v3.14.0 loads it (its -save NAME.bb2 form:\n"
-    "every line with its 0), with the token list TOKENS (\"XXXX name\" per\n"
-    "line, as bbsrc tokens writes it), to OUT.\n";
-
-const char cmd_ab3_cmp_usage[] =
-    "usage: bbsrc ab3-cmp TOKENS SOURCE THEIRS\n"
-    "SOURCE tokenised as bbsrc ab3 does it, compared with THEIRS (AmiBlitz3's\n"
-    "-save output): exit 1 and the first line that differs if not equal.\n";
+}
+#include "bbsrc.h"
 
 static const char *me;          /* "bbsrc ab3" or "bbsrc ab3-cmp": the message prefix */
 
@@ -46,7 +40,7 @@ static unsigned char *read_all(const char *path, size_t *len)
     if (!f)
         return NULL;
     if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n)
+        && (s = (unsigned char *)malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n)
         *len = (size_t)n;
     else {
         free(s);
@@ -66,8 +60,8 @@ static int load_tokens(struct tokenizer *t, unsigned char *list, size_t len, con
 
     for (size_t i = 0; i < len; i++)
         n += list[i] == '\n';
-    e = calloc(n + 1, sizeof *e);
-    b = calloc(65536, sizeof *b);
+    e = (struct tokenizer_entry *)calloc(n + 1, sizeof *e);
+    b = (uint16_t *)calloc(65536, sizeof *b);
     if (!e || !b || tokenizer_init(t, TOKENIZER_RULES_AB3, e, (uint32_t)n + 1, b, 65536)) {
         fprintf(stderr, "%s: out of memory\n", me);
         return -1;
@@ -109,14 +103,14 @@ static unsigned char *load_source(const struct tokenizer *t, const char *name,
     if (how & TOKENIZER_AB3_TEXT) {
         if (how & TOKENIZER_AB3_HEADER)
             hdr = tokenizer_ab3_header(src, len);
-        tok = malloc(TOKENIZER_BOUND(len - hdr));
+        tok = (unsigned char *)malloc(TOKENIZER_BOUND(len - hdr));
         if (!tok || tokenizer_text(t, src + hdr, len - hdr, tok, TOKENIZER_BOUND(len - hdr),
                                    &tlen) != TOKENIZER_OK) {
             fprintf(stderr, "%s: out of memory\n", me);
             return NULL;
         }
     }
-    out = malloc(tlen + 1);
+    out = (unsigned char *)malloc(tlen + 1);
     if (!out) {
         fprintf(stderr, "%s: out of memory\n", me);
         return NULL;
@@ -185,7 +179,7 @@ static int compare(const char *source, const unsigned char *a, size_t alen, cons
 }
 
 /* ab3 (cmp 0) and ab3-cmp (cmp 1) */
-static int ab3(int argc, char **argv, int cmp)
+static int ab3(const char *tokens, const char *source, const char *third, int cmp)
 {
     struct tokenizer t;
     unsigned char *list = NULL, *src = NULL, *out = NULL, *theirs = NULL;
@@ -193,33 +187,28 @@ static int ab3(int argc, char **argv, int cmp)
     int rc = 2;
     FILE *f;
 
-    me = argv[0];
-    if (argc != 4) {
-        fputs(cmp ? cmd_ab3_cmp_usage : cmd_ab3_usage, stderr);
-        return 2;
-    }
-    if (!(list = read_all(argv[1], &llen))) {
-        fprintf(stderr, "%s: %s: %s\n", me, argv[1], strerror(errno));
+    if (!(list = read_all(tokens, &llen))) {
+        fprintf(stderr, "%s: %s: %s\n", me, tokens, strerror(errno));
         goto done;
     }
-    if (load_tokens(&t, list, llen, argv[1]))
+    if (load_tokens(&t, list, llen, tokens))
         goto done;
-    if (!(src = read_all(argv[2], &slen))) {
-        fprintf(stderr, "%s: %s: %s\n", me, argv[2], strerror(errno));
+    if (!(src = read_all(source, &slen))) {
+        fprintf(stderr, "%s: %s: %s\n", me, source, strerror(errno));
         goto done;
     }
-    if (!(out = load_source(&t, argv[2], src, slen, &olen)))
+    if (!(out = load_source(&t, source, src, slen, &olen)))
         goto done;
     if (cmp) {
-        if (!(theirs = read_all(argv[3], &tlen))) {
-            fprintf(stderr, "%s: %s: %s\n", me, argv[3], strerror(errno));
+        if (!(theirs = read_all(third, &tlen))) {
+            fprintf(stderr, "%s: %s: %s\n", me, third, strerror(errno));
             goto done;
         }
-        rc = compare(argv[2], out, olen, argv[3], theirs, tlen);
+        rc = compare(source, out, olen, third, theirs, tlen);
         goto done;
     }
-    if (!(f = fopen(argv[3], "wb")) || fwrite(out, 1, olen, f) != olen || fclose(f)) {
-        fprintf(stderr, "%s: %s: %s\n", me, argv[3], strerror(errno));
+    if (!(f = fopen(third, "wb")) || fwrite(out, 1, olen, f) != olen || fclose(f)) {
+        fprintf(stderr, "%s: %s: %s\n", me, third, strerror(errno));
         goto done;
     }
     rc = 0;
@@ -233,12 +222,44 @@ done:
     return rc;
 }
 
-int cmd_ab3(int argc, char **argv)
+/* ab3 (cmp 0) and ab3-cmp (cmp 1) as subcommands */
+static void add(CLI::App &app, int &status, int cmp)
 {
-    return ab3(argc, argv, 0);
+    struct options {
+        std::string tokens, source, third;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = cmp ? app.add_subcommand("ab3-cmp", "a source tokenised as bbsrc ab3 does it, compared with AmiBlitz3's -save output")
+                        : app.add_subcommand("ab3", "a source tokenised as AmiBlitz3 v3.14.0 loads it, every line with its 0");
+    sub->add_option("TOKENS", o->tokens, "the token list (\"XXXX name\" per line, as bbsrc tokens writes it)")
+        ->required();
+    sub->add_option("SOURCE", o->source, "the source: a .bb or .bb2 as it is, any other name tokenised as text")
+        ->required();
+    if (cmp) {
+        sub->add_option("THEIRS", o->third, "AmiBlitz3's -save output")->required();
+        sub->footer("Exit status 0 equal, 1 not equal (the first line that differs on stderr), 2 "
+                    "usage error, a file that cannot be read or a broken TOKENS.");
+    } else {
+        sub->add_option("OUT", o->third, "the lines written (the form of AmiBlitz3's -save NAME.bb2)")->required();
+        sub->footer("Text is loaded without its embedded header (not for .ab2) and cut into lines "
+                    "of at most 250 characters. Exit status 0, 2 usage error, a file that cannot be "
+                    "read or written or a broken TOKENS.");
+    }
+    sub->callback([sub, o, cmp, &status] {
+        const std::string name = cli::name(*sub);
+
+        me = name.c_str();
+        status = ab3(o->tokens.c_str(), o->source.c_str(), o->third.c_str(), cmp);
+    });
 }
 
-int cmd_ab3_cmp(int argc, char **argv)
+void cmd_ab3(CLI::App &app, int &status)
 {
-    return ab3(argc, argv, 1);
+    add(app, status, 0);
 }
+
+void cmd_ab3_cmp(CLI::App &app, int &status)
+{
+    add(app, status, 1);
+}
+
