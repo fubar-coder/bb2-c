@@ -1,6 +1,9 @@
-# CLI11 (command-line parser of the host programs, header only,
+# CLI11 (command-line parser of the host programs,
 # https://github.com/CLIUtils/CLI11, BSD-3-Clause), fixed version: the
-# target CLI11::CLI11.  A source given as FETCHCONTENT_SOURCE_DIR_CLI11 is
+# target CLI11::CLI11.  CLI11_PRECOMPILED: its non-template code is compiled
+# once into a static library instead of in every translation unit that
+# includes CLI/CLI.hpp (with -O3 that took about ten times as long per
+# file).  A source given as FETCHCONTENT_SOURCE_DIR_CLI11 is
 # used (the top-level build gives its own to the host side and to a prev
 # build, cmake/prev-build.cmake); otherwise FetchContent downloads it.
 # CLI11_SOURCE_ONLY (the top-level m68k build): only the source, no target
@@ -10,7 +13,7 @@ set(CLI11_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(CLI11_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(CLI11_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(CLI11_INSTALL OFF CACHE BOOL "" FORCE)
-set(CLI11_PRECOMPILED OFF CACHE BOOL "" FORCE)
+set(CLI11_PRECOMPILED ON CACHE BOOL "" FORCE)
 if(CLI11_SOURCE_ONLY)
 	set(cli11_subdir SOURCE_SUBDIR no-such-dir)   # FetchContent adds no directory
 else()
