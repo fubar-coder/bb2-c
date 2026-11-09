@@ -1756,10 +1756,11 @@ int tedab_oracle_hash(const char *manifest, const char *cdpath, char hex[65])
 
         if (!eol)
             eol = l + strlen(l);
-        /* "HASH  save/PATH" */
+        /* "HASH  save/PATH", a note row with a tab and the note behind it
+           (tools/lib/oracletable: the hash is the port's after a fix) */
         if (eol - l > 64 + 2 + 5 + (long)k - 1 && !strncmp(l + 64, "  save/", 7)
             && (size_t)(eol - (l + 71)) >= k && !strncasecmp(l + 71, cdpath, k)
-            && (l + 71 + k == eol || l[71 + k] == '\r')) {
+            && (l + 71 + k == eol || l[71 + k] == '\r' || l[71 + k] == '\t')) {
             memcpy(hex, l, 64);
             hex[64] = 0;
             r = 0;

@@ -33,7 +33,7 @@ add_custom_command(TARGET tedoracle POST_BUILD
 # N sources, tests/data stays as it is
 set(ORACLE_LIMIT "" CACHE STRING "ted-oracle: only the first N sources (trial run)")
 add_custom_target(ted-oracle
-	COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+	COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN} -DRESULTS=${RESULTS}
 		-DBLITZ2=${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2 -DTED=${REF_DIR}/ted
 		-DORACLE=$<TARGET_FILE:tedoracle>
 		-DCD=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1

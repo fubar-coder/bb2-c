@@ -42,6 +42,9 @@
 #              command reference)
 #   cdtable    the CD result table written from a fresh run, keeping the
 #              note rows (tests/data/blitz2-cd.tsv)
+#   oracletable  the oracle data of the TED tests written from a fresh run
+#              of the original TED, keeping the note rows
+#              (tests/data/ted-oracle.sha256)
 #   prevcmp    the library files of two build directories byte by byte (the
 #              prev build, the build of the previous commit)
 #   previntended  the intended differences of the corpus and ted_ab against
@@ -74,6 +77,7 @@ add_subdirectory(covsel)
 add_subdirectory(hdf)
 add_subdirectory(cmdref)
 add_subdirectory(cdtable)
+add_subdirectory(oracletable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
 add_subdirectory(subcmd)

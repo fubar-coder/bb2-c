@@ -35,7 +35,9 @@ struct source {
     bool tok;                   // tokenised (has detok/ and tokall/)
 };
 
-// "SHA  KIND/PATH" lines -> {KIND/PATH: SHA}
+// "SHA  KIND/PATH" lines -> {KIND/PATH: SHA}; a note row has a tab and
+// the note behind the path ("#NNN: ... (TED 1.1: SHA)", the original's
+// hash, tools/lib/oracletable): its SHA is the port's after the fix
 inline const std::map<std::string, std::string> &manifest()
 {
     static const std::map<std::string, std::string> m = [] {
@@ -45,7 +47,7 @@ inline const std::map<std::string, std::string> &manifest()
 
         while (std::getline(f, line))
             if (line.size() > 66 && line[64] == ' ' && line[65] == ' ')
-                r[line.substr(66)] = line.substr(0, 64);
+                r[line.substr(66, line.find('\t', 66) - 66)] = line.substr(0, 64);
         return r;
     }();
     return m;

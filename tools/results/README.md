@@ -3,11 +3,14 @@
 Judges a result against its expectation or the previous result: the
 output of a test run against an expect file (`match`), the library files
 of the build against those of the build of the previous commit (`prev`),
-and the CD result table `tests/data/blitz2-cd.tsv` written from a fresh
-run of the CD (`cd-update`, `cd-reference`). The logic is in
-`tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`)
-and `tools/lib/cdtable`, tested by `tools/tests/test_outmatch.c`,
-`test_prevcmp.c`, `test_previntended.c` and `test_cdtable.c`.
+the CD result table `tests/data/blitz2-cd.tsv` written from a fresh
+run of the CD (`cd-update`, `cd-reference`), and the oracle data of the
+TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
+original TED (`ted-oracle`). The logic is in `tools/lib/outmatch`,
+`tools/lib/prevcmp` (with `tools/lib/previntended`), `tools/lib/cdtable`
+and `tools/lib/oracletable`, tested by `tools/tests/test_outmatch.c`,
+`test_prevcmp.c`, `test_previntended.c`, `test_cdtable.c` and
+`test_oracletable.c`.
 
 ## Usage
 
@@ -16,6 +19,7 @@ usage: results match [--section NAME] EXPECT OUTPUT
        results prev [--all] [--intended PATH]... CUR PREV
        results cd-update NEW OLD OUT
        results cd-reference NEW OLD OUT
+       results ted-oracle NEW OLD OUT
 ```
 
 `results SUB -h` prints the description and the options of `SUB`.
@@ -63,21 +67,37 @@ Both write nothing if a note row is missing from `NEW`, names no result or
 a table is malformed; the report goes to stdout (written) or stderr (not
 written).
 
+### ted-oracle
+
+Writes the oracle data of the TED tests `OUT` (`OUT` may be `OLD`) from
+the original TED's fresh run `NEW` (rows `HASH  KIND/PATH`, the target
+`ted-oracle`) and the file `OLD` (format:
+`tools/lib/oracletable/oracletable.h`). A row with a tab and a note
+`#NNN: TEXT (TED 1.1: HASH)` behind the path is a note row: the port's
+hash after the fix of issue `NNN`, the note names the original's. Every
+row is `NEW`'s except the note rows of `OLD`, which stay; their note must
+name `NEW`'s hash (else the note is stale). Nothing is written if a note
+row is missing from `NEW`, a note is not of that form or names the row's
+own hash, or a file is malformed; the report goes to stdout (written) or
+stderr (not written).
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
 build directories and writes its report to stdout; `cd-update` and
-`cd-reference` read two TSV tables and write the third.
+`cd-reference` read two TSV tables and write the third, `ted-oracle` two
+lists of hashes and writes the third.
 
 ## Exit codes
 
 * 0 success (the output matches, the library files are equal or differ
   as intended, the table is written);
 * 1 the output does not match; a library file differs without being
-  intended or an intended one does not differ; the table has errors
-  (nothing written);
+  intended or an intended one does not differ; the table or the oracle
+  data have errors (nothing written);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
-  `cd-reference`), a broken expect file (`match`), a table that cannot be
+  `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
+  or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
@@ -94,6 +114,9 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   `PREV_INTENDED`); the tests `prevcmp_*` (`tools/tests/CMakeLists.txt`).
 * `cd-reference`, `cd-update`: the targets `blitz2-cd-reference` and
   `blitz2-cd-update` (`tests/corpus/CMakeLists.txt`), after the CD run.
+* `ted-oracle`: the target `ted-oracle`
+  (`programs/ted/tests/oracle/ted-oracle.cmake`), after the run of the
+  original TED.
 * Tests: `help_results`, `readme_results` (`tools/results/CMakeLists.txt`).
 
 ## Example

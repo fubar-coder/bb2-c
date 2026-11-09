@@ -1,7 +1,8 @@
 # Generating the oracle data of the TED tests: tedoracle (oracle.c) as
 # blitz2:ted under the original blitz2 1.95 in Amiberry, on every .bb2/.bb
 # of the CD (archive/cd, cmake/fetch-originals.cmake).
-#   cmake -DAMIGA_RUN=... -DBLITZ2=ref/blitz2 -DTED=ref/ted -DORACLE=tedoracle
+#   cmake -DAMIGA_RUN=... -DRESULTS=results -DBLITZ2=ref/blitz2 -DTED=ref/ted
+#         -DORACLE=tedoracle
 #         -DCD=archive/cd/ultimate-blitz-basic-2.1 -DWORK=DIR -DDATA=tests/data
 #         [-DLIMIT=N] [-DTIMEOUT=SEC] -P ted-oracle.cmake
 #
@@ -11,13 +12,15 @@
 #   DATA/ted-tokens.txt     the token list (out/tokens.txt)
 #   DATA/ted-oracle.sha256  SHA-256 of every output, by source:
 #                           "SHA  detok/PATH", "tokall/PATH", "save/PATH"
-#                           (PATH relative to the CD, sorted)
+#                           (PATH relative to the CD, sorted); the note
+#                           rows of the file stay (results ted-oracle,
+#                           tools/lib/oracletable)
 # LIMIT: only the first N sources, DATA is not written (trial run).
 # The libraries are the CD's (BLITZ2/DEFLIBS, ACIDLIBS, DEFAULTDBUG); the
 # CD has no user libraries.
 cmake_minimum_required(VERSION 4.2.3)
 
-foreach(v AMIGA_RUN BLITZ2 TED ORACLE CD WORK DATA)
+foreach(v AMIGA_RUN RESULTS BLITZ2 TED ORACLE CD WORK DATA)
 	if(NOT ${v})
 		message(FATAL_ERROR "ted-oracle.cmake: -D${v}=... missing")
 	endif()
@@ -123,6 +126,20 @@ endif()
 list(SORT manifest)
 list(TRANSFORM manifest REPLACE "^([^|]+)\\|(.*)$" "\\2  \\1")
 list(JOIN manifest "\n" manifest)
-file(WRITE ${DATA}/ted-oracle.sha256 "${manifest}\n")
+# the note rows of the committed file stay (results ted-oracle: the port's
+# hash after a fix, "#NNN: ... (TED 1.1: HASH)"; the note must name the
+# hash of this run)
+file(WRITE ${WORK}/ted-oracle.sha256 "${manifest}\n")
+if(EXISTS ${DATA}/ted-oracle.sha256)
+	execute_process(
+		COMMAND ${RESULTS} ted-oracle ${WORK}/ted-oracle.sha256 ${DATA}/ted-oracle.sha256
+			${DATA}/ted-oracle.sha256
+		RESULT_VARIABLE rc)
+	if(rc)
+		message(FATAL_ERROR "ted-oracle: ${DATA}/ted-oracle.sha256 not written (results ted-oracle)")
+	endif()
+else()
+	file(COPY_FILE ${WORK}/ted-oracle.sha256 ${DATA}/ted-oracle.sha256)
+endif()
 file(COPY_FILE ${vol}/out/tokens.txt ${DATA}/ted-tokens.txt)
 message(STATUS "ted-oracle: ${DATA}/ted-oracle.sha256, ted-tokens.txt written")

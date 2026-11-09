@@ -2,7 +2,8 @@
  * results - a result against its expectation or the previous result: the
  * output of a test run against an expect file (match), the library files
  * against the prev build (prev), the CD result table from a fresh run
- * (cd-update, cd-reference).  README.md here; the subcommands are
+ * (cd-update, cd-reference), the oracle data of the TED tests from a fresh
+ * run (ted-oracle).  README.md here; the subcommands are
  * cmd_NAME.c.
  */
 #include "subcmd.h"
@@ -13,6 +14,7 @@ static const struct subcmd table[] = {
     { "prev", cmd_prev, cmd_prev_usage },
     { "cd-update", cmd_cd_update, cmd_cd_update_usage },
     { "cd-reference", cmd_cd_reference, cmd_cd_reference_usage },
+    { "ted-oracle", cmd_ted_oracle, cmd_ted_oracle_usage },
 };
 
 int main(int argc, char **argv)

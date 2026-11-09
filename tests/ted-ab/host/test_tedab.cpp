@@ -474,11 +474,17 @@ TEST_CASE("oracle", "[files]")
     fprintf(f, "%s  detok/INTERNET/MEMO.BB2\n%s  save/INTERNET/MEMO.BB2X\n", std::string(64, 'b').c_str(),
             std::string(64, 'c').c_str());
     fprintf(f, "%s  save/INTERNET/MEMO.BB2\n", h.c_str());
+    // a note row: the port's hash, the note behind a tab
+    fprintf(f, "%s  save/X/FIXED.BB2\t#12: fixed (TED 1.1: %s)\n", std::string(64, 'd').c_str(),
+            std::string(64, 'e').c_str());
     fclose(f);
     char hex[65];
     REQUIRE(tedab_oracle_hash(p.c_str(), "internet/memo.bb2", hex) == 0);
     CHECK(std::string(hex) == h);
     CHECK(tedab_oracle_hash(p.c_str(), "internet/memo", hex) == -1);
+    REQUIRE(tedab_oracle_hash(p.c_str(), "x/fixed.bb2", hex) == 0);
+    CHECK(std::string(hex) == std::string(64, 'd'));
+    CHECK(tedab_oracle_hash(p.c_str(), "x/fixed", hex) == -1);
     // resolve without case
     std::string sub = std::string(dir) + "/SUB";
     mkdir(sub.c_str(), 0755);

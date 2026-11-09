@@ -1,6 +1,7 @@
 # results: a result against its expectation or the previous result (README.md)
-set(RESULTS_SUBCOMMANDS match prev cd-update cd-reference)
-add_executable(results main.c cmd_match.c cmd_prev.c cmd_cd.c)
-target_link_libraries(results PRIVATE lib_subcmd lib_outmatch lib_prevcmp lib_previntended lib_cdtable)
+set(RESULTS_SUBCOMMANDS match prev cd-update cd-reference ted-oracle)
+add_executable(results main.c cmd_match.c cmd_prev.c cmd_cd.c cmd_ted_oracle.c)
+target_link_libraries(results PRIVATE lib_subcmd lib_outmatch lib_prevcmp lib_previntended lib_cdtable
+	lib_oracletable)
 host_help_test(results ${RESULTS_SUBCOMMANDS})
 host_readme_test(results README.md)

@@ -1,0 +1,3 @@
+add_library(lib_oracletable STATIC oracletable.c)
+set_target_properties(lib_oracletable PROPERTIES OUTPUT_NAME oracletable)
+target_include_directories(lib_oracletable PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

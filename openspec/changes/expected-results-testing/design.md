@@ -423,3 +423,23 @@ code changes in this change).
   configuration `TAG` runs and its outputs are written; a source that does
   not compile, has no output, no serial data or times out is not written
   (exit status 1).
+- **Task 7.4 (2026-11-09):** a note row of `tests/data/ted-oracle.sha256`
+  is `HASH  KIND/PATH<TAB>#NNN: TEXT (TED 1.1: HASH)`: the port's hash,
+  and behind a tab the issue and the original TED's hash (the form of the
+  `(2.10: HEX)` notes of `blitz2-cd.tsv`; a tab because the rows have no
+  columns, and the readers take the rest of the line as the key). The
+  generator `ted-oracle` (`ted-oracle.cmake`) writes the original's run
+  to its work directory and merges it with the committed file through
+  `results ted-oracle NEW OLD OUT` (logic `tools/lib/oracletable`, test
+  `oracletable`): every row is the run's, a note row of the file stays,
+  its note must name the run's hash (stale: error, nothing written), and
+  it is an error when a note row is missing from the run, a note is not
+  of the form or names the row's own hash, or a file is malformed. There
+  is no update mode from the port: the port's hashes come from the
+  failing `ted_core_*` test (`TED_TEST_DUMP`), so a note row is written
+  by hand in the fix commit. The two readers (`oracle.hpp` of the TED
+  core tests, `tedab_oracle_hash` of `ted_ab` and the TED bug-orig tests)
+  cut the note off. Checked: `ted-oracle` on the unchanged tree leaves the
+  file byte for byte as it is (2154 rows, no note rows); the merge of the
+  real run with a note row added to the first row keeps it; the
+  `ted_core_*` tests pass with a note row in the file.
