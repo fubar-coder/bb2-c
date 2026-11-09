@@ -459,3 +459,15 @@ Findings and adaptations while implementing (2026-11-09).
   `tedab run`; `cmd_cd.cpp` declares the subcommand. `pass
   --update-expect TAG` may stand after `PASSFILE`; an empty `TAG` is
   still a usage error (2).
+- **`amiga_run`, `mktestdata`** (task 12.1): one-mode programs, the
+  options on the `CLI::App` itself; both get a `help_` test with the CLI
+  check (before: the old check from the list in `host/CMakeLists.txt`).
+  `--purge-snapshots` is a flag: its `OWNER` is the one argument
+  (`SCRIPT`'s place), so `--purge-snapshots /a /b` is a surplus argument
+  and `--purge-snapshots ""` an empty `OWNER` (2 as before); any other
+  option with it is a usage error (before, the first argument decided the
+  mode and the rest was taken as `OWNER`). The changes (`--rtg`,
+  `--set`, `--unset`) and the mounts (`--mount`, `--mount-ro`) apply in
+  the order given (`cli::occurrences`), as before; `--machine`,
+  `--timeout`, `--dir` given twice take the last (as before). A `--set`
+  or `--mount` value without `=` is a usage error with its message.

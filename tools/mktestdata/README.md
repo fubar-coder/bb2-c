@@ -10,7 +10,19 @@ by `tools/tests/test_mktestdata.c`.
 ## Usage
 
 ```
-usage: mktestdata SPEC OUT
+Usage: mktestdata [OPTIONS] SPEC OUT
+
+Binary test data (8SVX, ILBM, MED, tracker modules) from a text description.
+
+POSITIONALS:
+  SPEC TEXT REQUIRED          the description (tools/lib/mktestdata/mktestdata.h)
+  OUT TEXT REQUIRED           the data written, only when the description is valid
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+Exit status 0 written, 1 SPEC cannot be read, the description has an error (OUT
+is not written) or OUT cannot be written, 2 usage error.
 ```
 
 Builds the data the description `SPEC` gives and writes them to `OUT`;

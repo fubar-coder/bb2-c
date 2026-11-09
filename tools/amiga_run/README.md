@@ -12,10 +12,37 @@ hardfiles in `amiga-emulation/` (`AMIGA-EMULATION-SETUP.md`).
 ## Usage
 
 ```
-usage: amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]
-                 [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...
-                 [--mount-ro VOL=DIR]... [--dir WORKDIR] [--cold] SCRIPT|-
-       amiga_run --purge-snapshots [OWNER]
+Usage: amiga_run [OPTIONS] [SCRIPT]
+
+Run an AmigaDOS script (a file or - for stdin) in Amiberry.
+
+POSITIONALS:
+  SCRIPT TEXT                 the AmigaDOS script, - for stdin; with --purge-snapshots: OWNER
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --machine NAME      a1200 (default), a500 (68000, Kickstart 1.3), a500-68010, a600
+                              (68000, Kickstart 3.1)
+          --rtg               the RTG board and its options (amiga_emulation_rtg)
+          --visible           show Amiberry's window
+          --log               Amiberry's own log into WORKDIR/amiberry.log (with --dir)
+          --timeout SEC       seconds for the run, boot or restore included (default 60)
+          --set KEY=VALUE     a change of the machine's configuration
+          --unset KEY         a key removed from the configuration
+          --mount VOL=DIR     a host directory as an AmigaDOS volume
+          --mount-ro VOL=DIR  the same, read-only
+          --dir WORKDIR       the work directory, kept (TEST: = WORKDIR/test); default:
+                              temporary
+          --cold              boot, do not start from a snapshot
+          --purge-snapshots   instead of a run: remove the snapshots of OWNER (a build
+                              directory; default $AMIGA_EMULATION_OWNER, unset: those without
+                              owner) from all slots; no other option
+
+The script runs with TEST: = WORKDIR/test. Without --dir the files the script
+wrote to TEST: are printed and the work directory is removed. Exit status 0 the
+script ran to its end (--purge-snapshots: also without a slot directory), 1 it
+did not, 2 usage error, 77 the emulator cannot start (Amiberry or its data
+missing: skipped).
 ```
 
 Runs the script `SCRIPT` (a file, or `-` for stdin):
@@ -37,7 +64,11 @@ Runs the script `SCRIPT` (a file, or `-` for stdin):
   script wrote to `TEST:` are printed and the directory is removed;
 * `--cold`: boot, do not start from a snapshot.
 
-`--purge-snapshots [OWNER]` removes the snapshots of `OWNER` (a build
+The changes (`--rtg`, `--set`, `--unset`) and the mounts apply in the
+order given.
+
+`amiga_run --purge-snapshots [OWNER]` (`OWNER` the one argument, no other
+option) removes the snapshots of `OWNER` (a build
 directory; without it `$AMIGA_EMULATION_OWNER`, unset: the snapshots
 without owner, those of `amiga_run` by hand) from all slots and nothing
 else. The tests keep their snapshots across runs, and a session discards

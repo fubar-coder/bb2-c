@@ -81,7 +81,7 @@ groups 2-14 and is not repeated there:
 
 ## 12. `amiga_run` and `mktestdata`
 
-- [ ] 12.1 `tools/amiga_run/` (all options of its header comment: `--machine`, `--rtg`, `--visible`, `--log`, `--timeout`, repeatable `--set/--unset/--mount/--mount-ro`, `--dir`, `--cold`, `SCRIPT|-`, `--purge-snapshots [OWNER]` as the mode that excludes SCRIPT) and `tools/mktestdata/` (`SPEC OUT`); the `amiga_run_purge_*` tests of `tools/tests/CMakeLists.txt:114-129` keep their expectations (status, `WILL_FAIL`). Verify: C1-C5; a script run through `amiga_run` (`ctest --preset emulator -R amiga_emulation`) passes; `mktestdata` output `cmp`-identical on the specs of the tests
+- [x] 12.1 `tools/amiga_run/` (all options of its header comment: `--machine`, `--rtg`, `--visible`, `--log`, `--timeout`, repeatable `--set/--unset/--mount/--mount-ro`, `--dir`, `--cold`, `SCRIPT|-`, `--purge-snapshots [OWNER]` as the mode that excludes SCRIPT) and `tools/mktestdata/` (`SPEC OUT`); the `amiga_run_purge_*` tests of `tools/tests/CMakeLists.txt:114-129` keep their expectations (status, `WILL_FAIL`). Verify: C1-C5; a script run through `amiga_run` (`ctest --preset emulator -R amiga_emulation`) passes; `mktestdata` output `cmp`-identical on the specs of the tests
 
 ## 13. `hdftool`
 

@@ -1,3 +1,5 @@
-add_executable(amiga_run main.c)
-target_link_libraries(amiga_run PRIVATE lib_amiga_emulation)
-host_readme_test(amiga_run README.md)
+add_executable(amiga_run main.cpp)
+target_link_libraries(amiga_run PRIVATE lib_cli lib_amiga_emulation)
+set_target_properties(amiga_run PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+host_help_test(amiga_run CLI)
+host_readme_test(amiga_run README.md CLI)
