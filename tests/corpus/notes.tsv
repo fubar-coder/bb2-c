@@ -20,3 +20,5 @@
 # Rows:
 corpus	t130_blit	#46: BlitColl in a print list no longer overwrites shape 0 (other code)
 corpus_runerr	t130_blit	#46: BlitColl in a print list no longer overwrites shape 0, so no requester "Coords outside of BitMap"
+corpus_runerr	t124_bitmaperr	#6: the original's runtime error requester has an empty text
+corpus_runerr	t126_rgberr	#6: the original's runtime error requester has an empty text

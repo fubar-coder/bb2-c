@@ -818,9 +818,10 @@ void dopass(void)
         debugstuff();
         tokejsr(finalscheck);
         debugstuff();
-        /* BUG(orig) (#6): also in executables (makeexec); without the debugger
-           rundebuglib shows an empty requester when the program runs off
-           its end (code 3 is no text pointer; End jumps behind it) */
+        /* also in executables (makeexec), on purpose: a program that runs
+           off its end (End jumps behind this) stops with a requester.
+           Fixed (#6): rundebuglib's printerr shows "End of Program" for
+           code 3, as debuglib does (the original's text was empty) */
         pokel(L_(eopcode));
         if (lastcontlink)
             W_(lastcontlink + 6) = 0;

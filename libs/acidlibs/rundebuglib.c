@@ -8,9 +8,10 @@
  * the vectors of TRAP #0..#5 (VBR from runerrlib's getvbr, $C31D) by its
  * own handlers; finit (codefinit) puts the old vectors back and closes
  * intuition.  The handlers:
- *   TRAP #0  runtime error, d0 = message: in user mode continue (RTE) at
- *            printerr, which shows the message in an AutoRequest and ends
- *            the program (exitslib endjmp $C800).  In supervisor mode
+ *   TRAP #0  runtime error, d0 = message (or the codes 1-3 of blitz2's
+ *            code): in user mode continue (RTE) at printerr, which shows
+ *            the message in an AutoRequest and ends the program (exitslib
+ *            endjmp $C800).  In supervisor mode
  *            restore the vectors and give the trap to the old vector.
  *   TRAP #1  skip the 8 bytes after the TRAP (unless ctrlc is set - it
  *            never is: BUG(orig) (#43), ctrlc is only cleared)
@@ -56,6 +57,10 @@ UBYTE *olda5;
 struct IntuitionBase *myint;
 UWORD ctrlc;                            /* read by mytrap1 */
 
+/* fixed (#6): the texts of the numeric codes 1-3, as in debuglib */
+static UBYTE maxerrtext[] = "No currently used object!";
+static UBYTE braerrtext[] = "Offset out of range";
+static UBYTE eoptext[] = "End of Program";
 static UBYTE text2[] = "OKAY!";
 static UBYTE text3[] = "OKAY!";
 /* the original's t1: the message (tadd = t1's IText); t2/t3: the two
@@ -108,20 +113,28 @@ __asm__(
  * (64,64,640,64, both gadgets "OKAY!") and the program ends through
  * exitslib's endjmp ($C800).  Never returns.
  *
- * BUG(orig) (#6): d0 is taken as message pointer as it is.  The numeric
- * codes that only debuglib translates (1 "No currently used object!",
- * 2 "Offset out of range", 3 "End of Program") give a requester with an
- * empty text - e.g. when an executable compiled with runtime errors on
- * runs off its end: blitz2 appends moveq #3,d0:trap #0 (eopcode); End
- * jumps behind it.
+ * Fixed (intended deviation, #6): the numeric codes 1-3 that blitz2's
+ * code raises get the texts of debuglib (1 "No currently used object!":
+ * the used object test; 2 "Offset out of range": the bounds check of an
+ * array field of a NewType; 3 "End of Program": blitz2 appends moveq
+ * #3,d0:trap #0 (eopcode) to a program compiled with runtime errors on,
+ * End jumps behind it).  The original took d0 as the message pointer as
+ * it is: the requester of these codes had an empty text.
  *
- * @param msg d0: the message (C string) of the runtime error
+ * @param msg d0: the message (C string) of the runtime error, or one of
+ *            the codes 1-3
  */
 void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
 
     blitz_globals = olda5;
+    if (msg == 1)                       /* fixed (#6): debuglib's texts */
+        msg = (ULONG)maxerrtext;
+    else if (msg == 2)
+        msg = (ULONG)braerrtext;
+    else if (msg == 3)
+        msg = (ULONG)eoptext;
     bodytext.IText = (UBYTE *)msg;      /* MOVE.l d0,tadd */
 #define IntuitionBase myint
     AutoRequest(NULL, &bodytext, &postext, &negtext, 64, 64, 640, 64);
