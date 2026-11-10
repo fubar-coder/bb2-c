@@ -192,6 +192,44 @@ A tokenised source, whose lines already hold tokens, is loaded as it is.
 
 Issue: [The last line of a text source without a final line feed was not tokenised (#376)](https://github.com/fubar-coder/bb2-c/issues/376).
 
+### Umlauts in a text source joined lines {#umlauts-in-text-source}
+
+The editor took every byte of 128 or more in a text source for the
+start of a keyword and the byte after it for the rest of that keyword.
+An umlaut at the end of a line took the line feed with it, so two lines
+became one; in front of a TAB it took the TAB; and it was shown as a
+keyword or as `?????`.
+
+**What happened**
+
+A text source from another editor:
+
+```
+; Grüße
+NPrint "Größe"
+```
+
+In the original, the `e` at the end of the first line is followed by
+the line feed, but the `ü` and `ö` are taken as keywords: the umlaut and
+the character after it are gone, and the line shows a keyword name in
+their place. With an umlaut as the last character of a line, the next
+line is joined to it.
+
+**With the port**
+
+A byte of 128 or more in a text source is one character. The umlauts
+ä ö ü Ä Ö Ü become the same characters as when you type them, so the
+editor shows them and blitz2 puts them into the string. Without
+tokenising, as in the editor on its own, every character is kept and
+the file is saved byte for byte as it was loaded.
+
+Other accented letters, such as ß or é, cannot be stored as characters
+in a tokenised line: with tokenising on, they lose their accent as they
+do when you type them (`ß` becomes `_`, `é` becomes `i`). In a string you
+can write them with `Chr$`, for example `Chr$(223)` for ß.
+
+Issue: [Characters of 128 or more in text files were loaded as keywords, the next byte (also a line feed or TAB) was swallowed (#374)](https://github.com/fubar-coder/bb2-c/issues/374).
+
 ## Options and screen
 
 ### A tab stop of 0 crashed the editor {#tab-stop-zero}
@@ -243,6 +281,16 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Blocks
 
+* BLOCK LOAD at a cursor column joined the text in front of the cursor
+  and the file's first line into one line of up to 256 characters, which
+  the first edit cut and which could be saved empty; when the first line
+  does not fit behind the cursor, BLOCK LOAD refuses with a beep
+  ([#1010](https://github.com/fubar-coder/bb2-c/issues/1010)).
+* BLOCK LOAD cut the text behind the cursor at column 128 when it was
+  appended to the last loaded line, and appended leftover characters to
+  that line; the text behind the cursor gets a line of its own when it
+  does not fit
+  ([#1012](https://github.com/fubar-coder/bb2-c/issues/1012)).
 * Typing inside a block marked over several lines, in a source of more
   than 128 lines, stretched the block to the end of its last line, so
   that COPY, KILL or BLOCK TO DISK acted on more text than was marked, or
@@ -276,6 +324,10 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Long lines and keywords
 
+* A line wider than 128 columns was written into the next line of the
+  screen and behind the editor's character map in chip memory; the line
+  display ends at column 128
+  ([#1011](https://github.com/fubar-coder/bb2-c/issues/1011)).
 * A tokenised line whose text is longer than about 128 characters, as
   another program can write it, overwrote memory behind the editor's
   buffers in KILL, BLOCK TO DISK, JOIN and when "Tokenise" was switched
@@ -298,11 +350,11 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Loading and saving
 
-* A line longer than 129 characters in a file from another editor lost
-  three characters where the editor split it, and BLOCK LOAD stopped at
-  such a line and ignored the rest of the file; the line is split into
-  pieces of up to 129 characters without loss, and the whole file is
-  loaded
+* A line longer than the editor's 128 columns in a file from another
+  editor lost three characters where the editor split it, and BLOCK LOAD
+  stopped at such a line and ignored the rest of the file; the line is
+  split into pieces of up to 128 characters without loss, and the whole
+  file is loaded
   ([#375](https://github.com/fubar-coder/bb2-c/issues/375)).
 * In a tokenised source, a TAB behind a keyword on the same line went to
   the wrong column, because the original counted the keyword as two

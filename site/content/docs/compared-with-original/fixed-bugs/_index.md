@@ -21,7 +21,7 @@ than 127 characters, a library file that cannot be read, a system with
 programs, with a wrong result or a crash and no error message. If one of
 your programs behaved strangely with Blitz Basic 2, look at these first.
 Each of them is shown with a short program, what the original made of
-it, and what the port does. Six more are in the editor: they change the
+it, and what the port does. Seven more are in the editor: they change the
 source you are writing, or crash the editor; they are shown in the same
 way.
 
@@ -76,6 +76,8 @@ In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/edit
   lines not indented by the tab stop lost their first characters.
 * [The last line of a text source was not tokenised]({{< relref "/docs/compared-with-original/fixed-bugs/editor#last-line-not-tokenised" >}})
   when the file had no line feed at its end.
+* [Umlauts in a text source joined lines]({{< relref "/docs/compared-with-original/fixed-bugs/editor#umlauts-in-text-source" >}})
+  and were shown as keywords.
 * [JOIN of two long lines lost the end of the text]({{< relref "/docs/compared-with-original/fixed-bugs/editor#join-long-lines" >}})
   when they were longer than 128 characters together.
 * [Accented letters broke saved blocks, copied blocks and printouts]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-without-tokenise" >}})
