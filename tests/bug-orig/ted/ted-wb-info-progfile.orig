@@ -1,5 +1,0 @@
-# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
-[state]
-FAIL step 2 timeout
-[problems]
-  - expect: log has "OKAY"

@@ -5,6 +5,7 @@
 ; Workbench, without a project.  Correct: TED starts with an empty text;
 ; the original tries to load "ted.info" and shows its error requester
 ; (" OKAY ") instead of the editor waiting for input: `wait screen` fails.
+; @fixed #388
 ; @file run.script "Copy blitz2:ted TEDRUN:work/ted QUIET\nTEDAB:tools/wbrun TEDRUN:work/ted\nDelete TEDRUN:work/ted QUIET\n"
 ; @source none
 ; @command Execute TEDRUN:work/run.script

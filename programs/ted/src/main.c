@@ -288,12 +288,10 @@ void edstart_c(struct m68kregs *r)
     fh = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
     if (!fh)
         goto openfailed;
-    /* BUG(orig) (#388, #389): a short Read leaves the file open, and progfile keeps
-       the bytes read / the ".info" name (cleared only on success) */
+    /* BUG(orig) (#389): a short Read leaves the file open */
     if (Read(fh, progfile, 0x4e) != 0x4e)
         goto openfailed;
     Close(fh);
-    progfile[0] = 0;
     /* +$4A is do_ToolWindow (do_StackSize is at +$4E, behind the 78
        bytes read) - without effect: d2 is never used */
     memcpy(&stack, progfile + 0x4a, 4);
@@ -303,6 +301,11 @@ void edstart_c(struct m68kregs *r)
 openfailed:
     stack = 4000;
 openok:
+    /* Fixed (#388): progfile is cleared when the .info could not be read
+       too (wbheader cleared it only after a complete read: without a
+       project icon TED loaded "<name>.info" or the partial .info bytes as
+       the text) */
+    progfile[0] = 0;
     (void)stack;                /* the stack size is never used by TED */
     if ((UWORD)startup->sm_NumArgs < 2) /* cmp #2,$1e(a5): low word */
         goto wb_allgo;
