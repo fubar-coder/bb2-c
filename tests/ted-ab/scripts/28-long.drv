@@ -1,6 +1,9 @@
 ; Stage 2b: line over 127 characters (readline splits it), Latin-1
 ; umlauts and $FD-$FF from the file; typed umlauts (MapANSI, German keymap)
 ; in a new first line; SAVE.
+; TED-C tokenises the first part of the split line like the other lines
+; (the original TED leaves it text, #376).
+; @fixed #376 R5-C5 Rc-Cc
 ; @source E long_umlaut
 ; @expect bak long_umlaut.bb2.bak
 ; @expect exists long_umlaut.bb2

@@ -170,6 +170,7 @@ BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode)
         return FALSE;
     }
     filehand = rd->fh;                          /* .skip */
+    rd->textfile = FALSE;                       /* NEW (#376, readline) */
     return TRUE;
 }
 
@@ -210,8 +211,13 @@ WORD doread(struct rdstate *rd)
 /* ted.s:3375 readline - read in a line to charbuff2.
    asm: d0 = -1/N=1 no line to read, d0 = 0/Z=1 no eol, d0 = 1 normal;
    length (incl. the 0 byte) in d5.
-   BUG(orig) (survey-04 I.1-7, kept): the last line without LF and lines
-   cut at the buffer end are never tokenised (d4 is only set for LF; #376, #375);
+   Fixed (#376): the original never tokenises the last line without LF
+   and lines cut at the buffer end (d4 is only set for LF); here such a
+   line is tokenised as the LF lines are when the file is a text file (an
+   earlier line ended by LF: rd->textfile) or the line has no byte >= $80
+   (no token pair the tokeniser could break: a half token at EOF, #379,
+   stays as it is).
+   BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
    unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
    half token in front of the 0 (#379); TAB is expanded before the overflow test
@@ -222,6 +228,7 @@ int readline(struct rdstate *rd, UWORD *length)
     UBYTE *dst;
     WORD c;
     BOOL ascii;                                 /* flag for no toke on load! */
+    BOOL pairs = FALSE;                         /* NEW (#376): a byte >= $80 */
     ULONG len;
     int ret;
 
@@ -233,6 +240,7 @@ int readline(struct rdstate *rd, UWORD *length)
     for (;;) {
         /* .loop */
         if (c & 0x80) {                         /* token pair, copied unchecked */
+            pairs = TRUE;
             *dst++ = (UBYTE)c;
             c = doread(rd);
             if (c < 0)
@@ -277,11 +285,14 @@ oops:
     *dst++ = 0;
     len = (ULONG)(dst - charbuff2);
     ret = RL_NOEOL;
+    ascii = rd->textfile || !pairs;             /* fixed #376 */
     goto sit;
 skip3:
     /* .skip3 */
     len = (ULONG)(dst - charbuff2);
     ret = RL_OK;
+    if (ascii)
+        rd->textfile = TRUE;                    /* ended by LF (#376) */
 sit:
     /* .sit: should i toke it? */
     if (ascii && tokenise) {
