@@ -234,13 +234,14 @@ static struct DosLibrary *dosopen(void)
 /* wbheader:88 wb_exit: reply the Workbench message (if any).  Fixed
    (#357): the caller's d0 (the return code) is kept; the original loaded
    wbmess into d0 (Z=1 for 0, which blitz2 read as success, survey-01
-   I.1). */
+   I.1).  Fixed (#387): no Permit after the reply - the Forbid lasts until
+   the process has ended, so the Workbench cannot unload the segment while
+   TED still returns through it (the original called Permit here). */
 static void wb_exit(void)
 {
     if (wbmess) {
         Forbid();
         ReplyMsg((struct Message *)wbmess);
-        Permit();                   /* BUG(orig) (#387): before TED has returned */
     }
 }
 
