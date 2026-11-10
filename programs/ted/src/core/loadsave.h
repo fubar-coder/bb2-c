@@ -52,7 +52,7 @@ void closextra(void);
 /* ted.s:680 fileopen2 - load file name (d7, full path) into the line
    list: xtraat = name, doopen (failure: error() was shown, return),
    allalt = 0, doclean, fillbuff (empty file: doclose, freeall (fixed
-   #358), donew), sleepon, blokdis,
+   #358), donew; outmem if it fails, fixed #356), sleepon, blokdis,
    freeall, readline/allocline loop, doclose, loadxtra callback (.xtra),
    cursor/scroll 0, showhprop, showall, pointeron, showfname.
    Also reached from fileopen (main.c) and outside.tomain. */

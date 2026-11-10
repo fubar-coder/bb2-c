@@ -251,7 +251,8 @@ void fileopen2(UBYTE *name)
            text stay allocated, nothing frees them later. */
         doclose(&rd);
         freeall();
-        donew();
+        if (!donew())
+            outmem();           /* Fixed (#356): the original went on */
         return;
     }
     /* @689 .ok */

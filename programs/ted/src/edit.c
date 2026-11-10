@@ -147,13 +147,20 @@ void new(void)
 {
     const char *src = deftitname;
     char *dst = newsctit;
+    struct item *item;
 
     if (!erase())
         return;
     doclean();
+    /* Fixed (#356): donew's empty line is allocated before the old text is
+       freed; without memory the old text stays and outmem reports it (the
+       original freed it and went on with the freed lines) */
+    item = allocnull();
+    if (!item)
+        outmem();
     freeall();
     while ((*dst++ = *src++) != 0)              /* .loop (survey-02 I.15) */
         ;
     showme();
-    donew();                                    /* bra donew */
+    donew_with(item);                           /* bra donew */
 }

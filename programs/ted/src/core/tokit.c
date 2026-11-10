@@ -269,10 +269,22 @@ struct item *allocnull(void)
     return item;
 }
 
-/* ted.s:4560 donew - erase all.  The comment "return z=1 (beq) if a
-   problem" is wrong: d0 = -1 always, allocnull failing is ignored
-   (BUG(orig) #356, survey-05 I.6). */
-void donew(void)
+/* ted.s:4560 donew - erase all, "return z=1 (beq) if a problem".  Fixed
+   (#356): the empty first line is allocated before anything changes, and a
+   failure is returned (the original always returned d0 = -1 and went on
+   with firstitem/enditem/thisitem of the old text, survey-05 I.6). */
+BOOL donew(void)
+{
+    struct item *item = allocnull();
+
+    if (!item)
+        return FALSE;
+    donew_with(item);
+    return TRUE;
+}
+
+/* donew with the empty first line already allocated (allocnull) */
+void donew_with(struct item *item)
 {
     color = normcol;
     blokdis();
@@ -286,7 +298,11 @@ void donew(void)
     filepath[0] = 0;
     filename[0] = 0;
     numlines = 1;
-    allocfirst();
+    /* allocfirst: afirst2 with the line allocated above, cls */
+    firstitem = item;
+    enditem = item;
+    thisitem = item;
+    cls();
     showhprop();
     showvprop();
 }

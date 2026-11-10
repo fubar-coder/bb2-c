@@ -27,8 +27,9 @@ void extmenu(UWORD code);
    extmenu, else search menutable (input.h) for item<<4|menu, call, flag ->
    showvprop; the menutable handler gets the same event */
 void menu(const struct tedevent *ev);
-/* ted.s:1593 new - menu $00: erase, doclean, freeall, title = deftitname,
-   showme, donew */
+/* ted.s:1593 new - menu $00: erase, doclean, allocnull (failure: outmem,
+   the old text stays, fixed #356), freeall, title = deftitname, showme,
+   donew */
 void new(void);
 
 extern const char deftitname[]; /* ted.s:1604 'Blitz Basic 2 Editor V1.0' */

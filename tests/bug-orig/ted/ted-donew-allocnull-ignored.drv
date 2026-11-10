@@ -2,15 +2,17 @@
 ; allocation: allocnull failing is ignored, firstitem, enditem and
 ; thisitem keep pointing at the freed lines of the old text.  TED alone
 ; under inject (alerts answered): a text of one line "abc", menu NEW
-; (unchanged text: no requester); the 6th AllocMem of 10 bytes
+; (unchanged text: no requester); the 4th AllocMem of 10 bytes
 ; (MEMF_PUBLIC) of TED's process, NEW's allocnull, fails (the first
-; five are made at the start, the fifth by the allocnull of the start's
-; donew).  QUIT.
+; three are made at the start, the third by the allocnull of the start's
+; donew: failing it ends the start with return code -1).  QUIT.
 ; Correct (the fix of the issue: outmem): the alert "Not enough memory
-; for operation!"; the original goes on with the freed lines.
+; for operation!", the old text stays; the original goes on with the
+; freed lines.
+; @fixed #356
 ; @file bo.bas "abc\n"
 ; @source F bo.bas
-; @command TEDAB:tools/inject alerts allocfail=10-10/f=1/1+5 blitz2:ted @FILE@
+; @command TEDAB:tools/inject alerts allocfail=10-10/f=1/1+3 blitz2:ted @FILE@
 ; @expect stdout "inject: allocfail: 1 allocations failed"
 ; @expect stdout "inject: alert: Not enough memory for operation!"
 timeout 20

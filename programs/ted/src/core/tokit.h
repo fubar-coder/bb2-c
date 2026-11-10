@@ -48,10 +48,16 @@ void calcpos(void);             /* ted.s:5234 calcpos: scloc = cursy*fontmul, ch
    next = last = 0, numchars = 1, chars[0] = 0, memalt = -1.  NULL on
    failure (asm: Z=1). */
 struct item *allocnull(void);
-/* ted.s:4560 donew: colour, blokdis, cursor/scroll/allalt = 0, filepath =
-   filename = "", numlines = 1, allocfirst, showhprop, showvprop.  Does not
-   free the old lines (caller: freeall).  asm: always d0 = -1 / Z=0. */
-void donew(void);
+/* ted.s:4560 donew: allocnull, then colour, blokdis, cursor/scroll/allalt
+   = 0, filepath = filename = "", numlines = 1, firstitem = enditem =
+   thisitem = the new line, cls, showhprop, showvprop.  Does not free the
+   old lines (caller: freeall).  FALSE, nothing changed but memalt, when
+   allocnull fails (fixed #356: the original always returned d0 = -1 and
+   went on with the old pointers). */
+BOOL donew(void);
+/* donew's work after allocnull, with the empty first line given (new
+   allocates it before freeing the old text) */
+void donew_with(struct item *item);
 /* ted.s:4582 freethis: free THISITEM (not unlinked); label -> mforget2;
    size lenitem + numchars with add.b (byte overflow from 247, unreachable,
    survey-05 I.5); memalt = size */

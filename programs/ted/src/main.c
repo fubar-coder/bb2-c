@@ -407,8 +407,10 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     if (!screenopen())
         goto openfailed;
 
-    donew();                    /* asm: beq allocfailed - donew always
-                                   leaves Z=0, the branch is never taken */
+    /* Fixed (#356): donew reports a failed allocnull, the start fails
+       (the original's beq allocfailed was never taken) */
+    if (!donew())
+        goto allocfailed;
     printmem();
     if (!mouseinit()) {
         /* Fixed (#367): the pointer images got no chip memory - the start
