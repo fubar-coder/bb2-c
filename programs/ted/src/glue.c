@@ -80,9 +80,11 @@ __asm__(
 
 /* -------------------------------------------- outmem, memstack == 0 */
 
-/* NORETURN void memcont_nostack(void) - see glue.h.  BUG(orig) (#370) (O1,
+/* NORETURN void memcont_nostack(void) - see glue.h.  BUG(orig) (#1008) (O1,
    survey-03 I.6): before the first dispatch of mainedit memstack is 0;
-   the asm continues memcont with a7 = 0.  Reproduced instruction by
+   the asm continues memcont with a7 = 0.  Left only for blitz2's calls
+   of TED services before TED's main loop (the start file's load has a
+   frame of its own, fixed #370).  Reproduced instruction by
    instruction; only the called routines are the C versions (their own
    stack use differs from the asm, so the exact crash point may too). */
 __asm__(

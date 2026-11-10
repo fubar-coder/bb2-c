@@ -354,6 +354,9 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
 {
     struct edstruct *eds;
     UBYTE *name, *fullname;
+    jmp_buf loadjb;                     /* the start file's outmem frame */
+    jmp_buf *volatile prevstack;
+    struct item *volatile oldfirst;
 
     if (tomain) {
         name = (UBYTE *)r->a[0];
@@ -450,7 +453,29 @@ tomain:
         /* .fskip */
         for (src = (UBYTE *)filename; (*dst++ = *src++) != 0; )
             ;
+        /* Fixed (#370): outmem continues with memstack, set only by the
+           dispatch of mainedit - before it 0, and the original went on
+           with a7 = 0.  The start file is loaded with a frame of its own:
+           outmem shows its alert, closes the file and comes back here;
+           the text is freed and the start fails (return code -1, blitz2
+           takes its error exit, #357). */
+        oldfirst = firstitem;
+        prevstack = memstack;
+        memstack = &loadjb;
+        if (setjmp(loadjb) != 0) {
+            memstack = prevstack;
+            /* fileopen2 freed the old text before it allocated the first
+               line: while firstitem is still the old line, the list
+               points at freed memory and there is nothing to free (an
+               address reused by the new first line only leaks it) */
+            if (firstitem != oldfirst)
+                freeall();
+            mousefinit();
+            returncode = -1;
+            goto allocfailed;
+        }
         fileopen2(fullname);
+        memstack = prevstack;
         showvprop();
         showmice();
         printmem();

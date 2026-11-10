@@ -53,7 +53,9 @@ ULONG divu_w(ULONG dividend, UWORD divisor);
    showmice if mousealt, `move.b (a7)+,d0` = the byte at address 0,
    showvprop if != 0) and `bra mainedit`.  Crashes like the original (the
    first return pops its address from the top of the address space).
-   Called by outmem (mouse.c) only when memstack is NULL (open point O1). */
+   Called by outmem (mouse.c) only when memstack is NULL (open point O1):
+   blitz2's calls of extalloc/openreq before TED's main loop, BUG(orig)
+   (#1008). */
 NORETURN void memcont_nostack(void);
 
 /* ------------------------------------------------ hunk start (glue_start.c) */

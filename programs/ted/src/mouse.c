@@ -817,9 +817,13 @@ NORETURN void outmem(void)
     showall();
     /* move.l memstack,a7 / bra memcont: longjmp to the setjmp in
        mainedit (DIFF in docs/ted/deviations.md: outmem/memcont).
-       BUG(orig) (#370) (O1, survey-03 I.6): before the first dispatch memstack
-       is 0 - the asm continues memcont with a7 = 0 and crashes; the glue
-       does exactly that (memcont_nostack, glue.c). */
+       memstack is 0 before the first dispatch.  The start file's load has
+       its own frame (main.c, fixed #370).  BUG(orig) (#1008) (O1, survey-03
+       I.6): what blitz2 calls before TED's main loop (extalloc from its
+       start-up allocations, openreq of its version requester) still finds
+       memstack == 0 - the asm continues memcont with a7 = 0 and crashes;
+       the glue does exactly that (memcont_nostack, glue.c).  A fix needs
+       extalloc's contract change of #369. */
     if (!memstack)
         memcont_nostack();
     longjmp(*memstack, 1);

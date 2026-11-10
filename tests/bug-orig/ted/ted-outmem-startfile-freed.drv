@@ -1,0 +1,18 @@
+; ted-outmem-startfile-freed (#370, the second half of the fix): out of
+; memory while TED loads its start file, after lines of it were loaded.
+; TED alone under inject (alerts answered, track: the allocations left
+; when TED ends), the start file has two lines of 36 characters (line
+; items of 46 bytes); the AllocMem of the second fails.  Correct: the
+; alert "Not enough memory for operation!", the first line is freed and
+; TED ends with the return code of a failed start, -1 (#357); the
+; original continues with a7 = 0 and crashes.
+; @fixed #370
+; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts track allocfail=46-46/1+1 blitz2:ted @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=-1"
+; @expect nostdout "inject:   46 bytes, flags $1\n"
+timeout 20
+wait exit
