@@ -5,7 +5,8 @@
 ; a$="Größe":NPrint a$, "b"; block from the start of line 1 (F1) to the
 ; end of line 2 (BOTTOM, F2 at the start of line 3), Block Save.
 ; Correct: both lines with their LF in the file; the original ends the
-; file after a$="Gr.
+; file after a$="Gr.  Fixed in TED-C: getbchar2 zero-extends the byte.
+; @fixed #362
 ; @file bo.bas "x\na$=\"Gr\xf6\xdfe\":NPrint a$\nb"
 ; @source F bo.bas
 ; @command blitz2:ted @FILE@

@@ -248,6 +248,22 @@ TEST_CASE("bloksave and blokload through the file hooks", "[lines][blocks][files
     CHECK(std::string_view(linetext(2)) == "cdef");
     CHECK(std::string_view(linetext(3)) == "ghij");
 
+    // bytes >= $80 (Latin-1) are characters, not the block end (#362:
+    // getbchar2 returned them negative without tokenising)
+    static const char *const t2[] = { "x", "a$=\"Gr\xf6\xdf" "e\"", "b" };
+    mklist(3, t2);
+    place(0, 0, 0);
+    btopx = 0;
+    btopy = 0;
+    bbotx = static_cast<WORD>(chcols - 1);
+    bboty = 1;
+    bloksave();
+    b = host_readfile(path.c_str(), &len);
+    REQUIRE(b != nullptr);
+    CHECK(std::string_view(reinterpret_cast<const char *>(b), static_cast<size_t>(len))
+          == "x\na$=\"Gr\xf6\xdf" "e\"\n");
+    std::free(b);
+
     // cancelled requester
     host_bname = nullptr;
     host_resetcalls();

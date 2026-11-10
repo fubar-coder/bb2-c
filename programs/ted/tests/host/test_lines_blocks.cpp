@@ -273,6 +273,16 @@ TEST_CASE("blokcopy: content and block move", "[blocks]")
     CHECK(host_calls[HC_BEEPEM] == 1);
     CHECK(std::string_view(linetext(2)) == "abcdefgh");
 
+    // a byte >= $80 in the block is a character, not the block end
+    // (#362: getbchar2 returned it negative without tokenising)
+    static const char *const t4[] = { "a\xf6\xdf" "b", "x", "xyz" };
+    mklist(3, t4);
+    cursorto(2, 0);
+    setblock(0, 0, 3, 0);
+    blokcopy();
+    CHECK(numlines == 3);
+    CHECK(std::string_view(linetext(2)) == "a\xf6\xdf" "bxyz");
+
     // blokcopy2 = blokcopy + showvprop
     mklist(3, t1);
     cursorto(2, 0);

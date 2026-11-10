@@ -166,9 +166,10 @@ UWORD bloksetup2(struct bcur *bc);
 void bloksetup(struct bcur *bc);
 /* ted.s:3849 getbchar: next block character: -1 block end (asm N=1), 0 end
    of line (Z=1; bc already on the next line - caller re-runs detoka5 when
-   tokenise), else the character.  Non-token mode returns bytes >= $80 as
-   NEGATIVE (move.b sets N: umlauts end the block, BUG(orig) (#362) survey-04
-   I.9) - keep the sign extension.  `newline` (3884) is a label inside. */
+   tokenise), else the character (zero-extended in both modes; the
+   original's non-token path returned bytes >= $80 negative, so umlauts
+   ended the block: Fixed (#362) survey-04 I.9).  `newline` (3884) is a
+   label inside. */
 WORD getbchar(struct bcur *bc);
 /* ted.s:3865 getbchar2: second entry without the block end check */
 WORD getbchar2(struct bcur *bc);

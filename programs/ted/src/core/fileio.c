@@ -727,10 +727,11 @@ WORD getbchar2(struct bcur *bc)
     /* .skipz */
     if ((UBYTE)bc->col >= bc->item->numchars)   /* cmp.b numchars(a5),d5 */
         goto space;
-    /* move.b chars-1(a5,d5),d0 sets N for bytes >= $80: the callers see the
-       end of the block (bmi) - BUG(orig) (#362) survey-04 I.9, kept as a negative
-       return value */
-    return (WORD)(BYTE)bc->item->chars[bc->col - 1];
+    /* Fixed (#362) survey-04 I.9: the original's move.b chars-1(a5,d5),d0
+       sets N for bytes >= $80, so the callers (bmi) took a Latin-1
+       character for the end of the block; zero-extended as in the token
+       path */
+    return (WORD)bc->item->chars[bc->col - 1];
 
 space:
     /* .space */
