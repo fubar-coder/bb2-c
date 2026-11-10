@@ -246,9 +246,11 @@ void fileopen2(UBYTE *name)
     allalt = 0;
     doclean();
     if (fillbuff(&rd) == 0) {
-        /* BUG(orig) (#358): empty file (or read error): donew without freeall -
-           the old lines are lost (not freed) */
+        /* empty file (or read error): a new text.  Fixed (#358): the
+           original goes to donew without freeall - the lines of the old
+           text stay allocated, nothing frees them later. */
         doclose(&rd);
+        freeall();
         donew();
         return;
     }

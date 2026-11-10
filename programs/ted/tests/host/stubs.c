@@ -56,6 +56,8 @@ void ted_hazard(const char *what, const char *file, int line)
 #define HDR   16
 #define SLACK 16
 
+long host_live;
+
 APTR ted_alloc(ULONG size, ULONG flags)
 {
     UBYTE *p = calloc(1, HDR + size + SLACK);
@@ -64,6 +66,7 @@ APTR ted_alloc(ULONG size, ULONG flags)
     if (!p)
         return NULL;
     memcpy(p, &size, sizeof(size));
+    host_live++;
     return p + HDR;
 }
 
@@ -78,6 +81,7 @@ void ted_free(APTR p, ULONG size)
     memcpy(&want, (UBYTE *)p - HDR, sizeof(want));
     if (want != size)
         ORIG_HAZARD("FreeMem with a size different from AllocMem");
+    host_live--;
     free((UBYTE *)p - HDR);
 }
 
@@ -222,6 +226,7 @@ void hostenv_droplist(void)
     for (i = 0; it && i < numlines; i++) {
         n = it->nextitem;
         free((UBYTE *)it - HDR);
+        host_live--;
         it = n;
     }
     firstitem = enditem = thisitem = NULL;

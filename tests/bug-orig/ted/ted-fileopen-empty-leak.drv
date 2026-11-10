@@ -1,8 +1,9 @@
-; ted-fileopen-empty-leak (#358): Open of an empty file goes to donew
+; ted-fileopen-empty-leak (#358): Open of an empty file went to donew
 ; without freeing the lines of the current text.  TED alone under inject
 ; track (the allocations left when TED ends), a text of two lines (line
 ; items of 46 and 48 bytes), Open of an empty file, QUIT.  Correct: no
 ; line item is left; the original leaves both.
+; @fixed #358
 ; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab\n"
 ; @file empty.bas ""
 ; @source F bo.bas
