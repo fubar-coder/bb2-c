@@ -860,13 +860,57 @@ void bloksave(void)
                                                    is cripple only) */
 }
 
+/* NEW (fixed #1010): the number of columns charbuff2's line shows - a
+   token pair with the length of its name when the line is tokenised
+   (pairs: tokenise on, as detok shows it), every other byte 1 */
+static UWORD loadwidth(BOOL pairs)
+{
+    const UBYTE *p = charbuff2;
+    UWORD w = 0;
+
+    while (*p) {
+        if (pairs && (*p & 0x80) && p[1]) {
+            const char *name = findtoke((UWORD)((p[0] << 8) | p[1]));
+
+            while (*name++)
+                w++;
+            p += 2;
+        } else {
+            w++;
+            p++;
+        }
+    }
+    return w;
+}
+
+/* NEW (fixed #1010): the columns of the chmap row from `from` to its last
+   character that is not a blank (the text behind the cursor) */
+static UWORD tailwidth(const UBYTE *from, const UBYTE *end)
+{
+    const UBYTE *last = from, *p;
+
+    for (p = from; p < end; p++)
+        if ((*p & 0x7F) != ' ')
+            last = p + 1;
+    return (UWORD)(last - from);
+}
+
 /* ted.s:1738 blokload - load block from disk.  Fixed (#375): readline
    returns RL_FULL for a line cut at the end of charbuff2 (the original
    returned "no eol" and the load stopped there as at the end of the
    file); RL_FULL is not RL_NOEOL, so the load goes on with the rest.
    Fixed (#1013): the line without end is read as text (rd.rawnoeol), as
    the original's readline left it: blalldone tokenises it with the tail
-   (charstobuff), and tokit would destroy token pairs readline made. */
+   (charstobuff), and tokit would destroy token pairs readline made.
+   Fixed (#1010): the original appends the file's first line to the text
+   in front of the cursor column without a check: a line of up to 256
+   characters (wider than the row of the character map; numchars wraps
+   from 255 on).  When the cursor column is above 0 and the column and
+   the first line's shown width (with tokenise on as detok shows it) are
+   more than chcols - for a file of one line without LF (done2) also with
+   the text behind the cursor - the load is refused with the beep before
+   anything changes; at column 0 the line is the one readline gives, as
+   before. */
 void blokload(void)
 {
     struct item *cur, *newl;
@@ -889,16 +933,30 @@ void blokload(void)
         doclose(&rd);                           /* beq doclose */
         return;
     }
-    mousealt = (UWORD)-1;
-    allalt = (UWORD)-1;
     src = chmap + chloc;
     endp = src + chcols;
+    col = (UWORD)(cursoff + cursx);
+    /* Fixed (#1010): the first line is read before anything changes (the
+       original set mousealt/allalt and bloktopx/bloktopy first) */
+    r = readline(&rd, &len);
+    if (col > 0) {
+        ULONG w = (ULONG)col + loadwidth(tokenise && r != RL_NOEOL);
+
+        if (r == RL_NOEOL)
+            w += tailwidth(src + col, endp);    /* done2: the line and the tail */
+        if (w > chcols) {
+            doclose(&rd);
+            beepem();
+            return;
+        }
+    }
+    mousealt = (UWORD)-1;
+    allalt = (UWORD)-1;
     /* survey-02 G (harmless, see bsbyte): the end pointer is kept in bloktopx as a
        LONG (bloktopx/bloktopy get its halves) */
     l = (ULONG)(size_t)endp;
     bloktopx = (WORD)(l >> 16);
     bloktopy = (WORD)l;
-    col = (UWORD)(cursoff + cursx);
     dst = charbuff;
     i = 0;
     while (i < col) {                           /* .loop: bcc .skip */
@@ -907,7 +965,6 @@ void blokload(void)
     }
     /* .skip */
     keep = src;                                 /* move.l a2,-(a7) */
-    r = readline(&rd, &len);
     if (r == RL_NOEOL)                          /* beq done2 */
         goto done2;
     dst = bloadadd(dst);

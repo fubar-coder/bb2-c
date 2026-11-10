@@ -175,3 +175,75 @@ TEST_CASE("blokload of a text file with Latin-1", "[lines][blocks][files]")
 
     std::remove(path.c_str());
 }
+
+TEST_CASE("blokload at a column refuses a first line that does not fit", "[lines][blocks][files]")
+{
+    tempdir dir;
+    no_outmem om;
+
+    env();
+    REQUIRE(tokens != nullptr);
+    REQUIRE(!dir.path.empty());
+    if (setjmp(om.jb))
+        FAIL("unexpected outmem");
+    const std::string path = dir.path + "/test_blokload.blk";
+    const std::string x100(100, 'x');
+    const std::string d40 = "0123456789012345678901234567890123456789";
+
+    for (UWORD tk = 0; tk < 2; tk++) {
+        CAPTURE(tk);
+        tokenise = tk;
+
+        // column 100 and a first line of 40 characters: 140 > 128, refused
+        // with the beep, nothing changed (#1010: a line of 140 characters)
+        allalt = 0;
+        mousealt = 0;
+        loadat(path, x100.c_str(), 100, d40 + "\nYY\n");
+        CHECK(host_calls[HC_BEEPEM] == 1);
+        REQUIRE(numlines == 3);
+        CHECK(bytes(1) == x100 + std::string(1, '\0'));
+        CHECK(allalt == 0);
+        CHECK(mousealt == 0);
+        // 28 characters fit: a line of 128
+        loadat(path, x100.c_str(), 100, d40.substr(0, 28) + "\nYY\n");
+        CHECK(host_calls[HC_BEEPEM] == 0);
+        REQUIRE(numlines == 5);
+        CHECK(shown(1) == x100 + d40.substr(0, 28));
+        // the blanks between the end of the line and the cursor count
+        loadat(path, "ab", 100, d40 + "\n");
+        CHECK(host_calls[HC_BEEPEM] == 1);
+        REQUIRE(numlines == 3);
+        // column 0: the line as readline gives it, as before
+        loadat(path, x100.c_str(), 0, std::string(128, 'z') + "\nYY\n");
+        CHECK(host_calls[HC_BEEPEM] == 0);
+        REQUIRE(numlines == 5);
+        CHECK(shown(1) == std::string(128, 'z'));
+        CHECK(shown(3) == x100);
+
+        // a file of one line without LF (done2): the line and the text
+        // behind the cursor count; 10 + 114 + 4 = 128 fit
+        loadat(path, "0123456789TAIL", 10, std::string(114, 'y'));
+        CHECK(host_calls[HC_BEEPEM] == 0);
+        REQUIRE(numlines == 3);
+        CHECK(shown(1) == "0123456789" + std::string(114, 'y') + "TAIL");
+        // 115: refused (the original cut the line at 128: "AIL" lost)
+        loadat(path, "0123456789TAIL", 10, std::string(115, 'y'));
+        CHECK(host_calls[HC_BEEPEM] == 1);
+        REQUIRE(numlines == 3);
+        CHECK(shown(1) == "0123456789TAIL");
+    }
+
+    // tokenise on: the first line counts with the width of its keywords
+    // (as detok shows it), not with its bytes: 100 + 28 columns fit,
+    // 100 + 29 do not
+    tokenise = 1;
+    loadat(path, x100.c_str(), 100, "NPrint 12345678901234567890a\nYY\n");
+    CHECK(host_calls[HC_BEEPEM] == 0);
+    CHECK(shown(1) == x100 + "NPrint 12345678901234567890a");
+    loadat(path, x100.c_str(), 100, "NPrint 12345678901234567890ab\nYY\n");
+    CHECK(host_calls[HC_BEEPEM] == 1);
+    REQUIRE(numlines == 3);
+    CHECK(bytes(1) == x100 + std::string(1, '\0'));
+
+    std::remove(path.c_str());
+}
