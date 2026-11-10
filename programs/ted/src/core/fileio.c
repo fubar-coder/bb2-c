@@ -568,9 +568,11 @@ void freeupa5(struct item *line)
     UWORD size;
 
     if (numlines == 1) {
-        /* .freeonly: BUG(orig) (#361) (survey-04 I.11): if allocnull fails,
-           first/end/thisitem keep pointing at the freed line */
-        afirst2();
+        /* .freeonly.  Fixed (#361): when allocnull fails, outmem reports it
+           and the line stays (the original freed it anyway, and
+           first/end/thisitem kept pointing at it, survey-04 I.11) */
+        if (!afirst2())
+            outmem();
     } else {
         struct item *next = line->nextitem, *prev = line->lastitem;
 

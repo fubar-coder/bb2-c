@@ -136,8 +136,8 @@ WORD isithere2(struct item *line, UWORD col, UBYTE **text);
 
 /* ted.s:3684 freeupa5: unlink line (a5) (first/end), numlines--, label ->
    mforget2, FreeMem(numchars+lenitem), memalt = size.  numlines == 1:
-   afirst2 first (new empty line), numlines stays 1.  thisitem is NOT
-   adjusted (caller). */
+   afirst2 first (new empty line), numlines stays 1; if that fails, outmem
+   and the line stays (fixed #361).  thisitem is NOT adjusted (caller). */
 void freeupa5(struct item *line);
 /* ted.s:3783 calcitem: thisitem = firstitem + (curstop+cursy) steps (no
    NULL check); returns it (asm: a4) */
