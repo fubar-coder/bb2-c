@@ -1,5 +1,0 @@
-# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
-[state]
-OK
-[problems]
-  - expect: blk.txt differs from the expected contents (data)

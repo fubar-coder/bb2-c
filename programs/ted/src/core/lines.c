@@ -673,13 +673,11 @@ void blokkill(void)
         bc.line++;
     }
     /* .done0 */
-    if (bc.line != btopy) {
-        /* BUG(orig) (#354) survey-02 I.8: detoka5 also without tokenise (bytes
-           >= $80 then go to findtoke with tokens possibly 0) */
-        if (!tokenise)
-            ORIG_HAZARD("blokkill: detoka5 without tokenise");
+    /* Fixed (#354) survey-02 I.8: the original calls detoka5 also without
+       tokenise (bytes >= $80 then went to findtoke, with tokens possibly
+       0); getbchar2 reads chars(a5) then and needs no detoka5 */
+    if (bc.line != btopy && tokenise)
         detoka5(bc.item);
-    }
     /* .done */
     p = keep;
     bc.col = bbotx;
@@ -746,6 +744,7 @@ void bloksave(void)
     WORD c;
     UWORD len;
     UBYTE *buf;
+    LONG r;
     struct rdstate rd;
     struct bcur bc;
 
@@ -793,12 +792,28 @@ void bloksave(void)
                 }
                 break;                          /* bra .loop */
             }
-            /* .bok: a whole line at once */
-            detoka5(bc.item);
-            buf = charbuff3;
-            len = buf[0];
-            buf[len] = 10;
-            if (ted_write(fh, buf + 1, len) < 0) {  /* tst.l d0 / bpl .skip2 */
+            /* .bok: a whole line at once.  Fixed (#354) survey-02 I.8: the
+               original detokenises the line also without tokenise (a
+               Latin-1 character and the byte behind it became a token
+               name); without tokenise the text is written from chars(a5)
+               as it is, then the LF */
+            if (tokenise) {
+                detoka5(bc.item);
+                buf = charbuff3;
+                len = buf[0];
+                buf[len] = 10;
+                r = ted_write(fh, buf + 1, len);
+            } else {
+                static const UBYTE lf = 10;
+                const UBYTE *e = bc.item->chars;
+
+                while (*e)
+                    e++;
+                r = ted_write(fh, bc.item->chars, (LONG)(e - bc.item->chars));
+                if (r >= 0)
+                    r = ted_write(fh, &lf, 1);
+            }
+            if (r < 0) {                        /* tst.l d0 / bpl .skip2 */
                 error(error3);
                 doclose(&rd);                   /* .done */
                 return;

@@ -5,7 +5,9 @@
 ; bit 7 of the text), lines "a", "; Größe", "b", "c"; block from the start
 ; of line 1 (F1) to the end of line 3 (BOTTOM, F2 at the start of line 4),
 ; Block Save.  Correct: the three lines as they are; the original writes a
-; token name for ö and ß.
+; token name for ö and ß.  Fixed in TED-C: without tokenise the middle
+; lines are written from the line as they are.
+; @fixed #354
 ; @file bo.bas "a\n; Gr\xf6\xdfe\nb\nc"
 ; @source F bo.bas
 ; @command blitz2:ted @FILE@

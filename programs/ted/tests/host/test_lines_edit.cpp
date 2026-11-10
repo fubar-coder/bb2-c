@@ -264,6 +264,25 @@ TEST_CASE("bloksave and blokload through the file hooks", "[lines][blocks][files
           == "x\na$=\"Gr\xf6\xdf" "e\"\n");
     std::free(b);
 
+    // the middle lines of a block are written as they are (#354: the
+    // original detokenised them also without tokenise, a Latin-1
+    // character and the next byte became a token name)
+    static const char *const t3[] = { "a", "; Gr\xf6\xdf" "e", "b", "c" };
+    mklist(4, t3);
+    place(0, 0, 0);
+    btopx = 0;
+    btopy = 0;
+    bbotx = static_cast<WORD>(chcols - 1);
+    bboty = 2;
+    host_resetcalls();
+    bloksave();
+    CHECK(host_hazards == 0);
+    b = host_readfile(path.c_str(), &len);
+    REQUIRE(b != nullptr);
+    CHECK(std::string_view(reinterpret_cast<const char *>(b), static_cast<size_t>(len))
+          == "a\n; Gr\xf6\xdf" "e\nb\n");
+    std::free(b);
+
     // cancelled requester
     host_bname = nullptr;
     host_resetcalls();

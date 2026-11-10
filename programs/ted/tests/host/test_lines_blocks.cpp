@@ -308,7 +308,7 @@ TEST_CASE("blokkill and blokforget", "[blocks]")
     CHECK(std::string_view(linetext(1)) == "rest");
     CHECK(bboty == (UWORD)-1);
     CHECK(bstx == -1);
-    CHECK(host_hazards == 1);           // detoka5 without tokenise (I.8)
+    CHECK(host_hazards == 0);           // no detoka5 without tokenise (#354)
     CHECK(thisitem == firstitem);
 
     // whole lines (btopx = 0, bbotx = chcols-1)
