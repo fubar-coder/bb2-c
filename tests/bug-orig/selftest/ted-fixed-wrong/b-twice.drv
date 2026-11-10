@@ -1,0 +1,7 @@
+; broken on purpose: @fixed #N twice
+; @source none
+; @nofiles
+; @fixed #123
+; @fixed #124
+timeout 10
+wait exit

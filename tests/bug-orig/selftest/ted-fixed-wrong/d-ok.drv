@@ -1,0 +1,6 @@
+; correct: the fixed form of a bug-orig script
+; @source none
+; @nofiles
+; @fixed #123
+timeout 10
+wait exit

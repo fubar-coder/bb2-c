@@ -1,0 +1,14 @@
+; Self test of the fixed form of the TED bug-orig tests
+; (tests/bug-orig/CMakeLists.txt): the expectation does not hold of TED-C
+; (the output of the command ends with rc=0, not rc=7), as if the fixed bug
+; came back, so tedab must report REGRESSED (exit status 1) and name the
+; bug.  99999 is no issue.
+; @fixed #99999
+; @source none
+; @expect stdout "rc=7"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 9
+wait exit

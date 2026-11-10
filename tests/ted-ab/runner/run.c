@@ -50,6 +50,12 @@
  *                      exit status 0 = all FIXED, 1 = REPRODUCED, 3 =
  *                      BROKEN, 4 = DIFFERS (the worst of them: 3 before 4
  *                      before 1), 2 = error
+ *   fixed=1            with bugorig=1 instead of orig=: the scripts are fixed
+ *                      tests (; @fixed #NNN, no pair); every combination is
+ *                      judged by the script's expectations alone: FIXED
+ *                      (exit status 0) or REGRESSED (1, the report names
+ *                      the bug); no recorded original, the original TED
+ *                      does not run
  *   orig=PATH          with bugorig=1: the recorded observation of the
  *                      reference run (tedab.h, tedab_orig_format).  The
  *                      normal run starts no session of the reference; the
@@ -103,7 +109,7 @@ struct pass {
     char *inject, *wbrun, *gates;
     char *orig, *orig_by;
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
-    unsigned timeout, budget, parallel, stack, bugorig;
+    unsigned timeout, budget, parallel, stack, bugorig, fixed;
 };
 
 /* one run over all sessions */
@@ -125,6 +131,7 @@ static struct run *runs;
 static size_t nruns;
 static int combo_order[TEDAB_NCOMBOS], ncombo_order;
 static int record;                      /* the recording run (BUGORIG_RECORD=1) */
+static int lint_mode;                   /* tedab lint: the pass file needs no orig= or fixed= */
 
 /* ----------------------------------------------------------- pass file */
 
@@ -150,7 +157,7 @@ static int parse(const char *text, char *err, size_t errlen)
         unsigned *dst;
     } nums[] = {
         { "timeout", &P.timeout }, { "budget", &P.budget }, { "parallel", &P.parallel },
-        { "stack", &P.stack }, { "bugorig", &P.bugorig },
+        { "stack", &P.stack }, { "bugorig", &P.bugorig }, { "fixed", &P.fixed },
     };
     const char *line = text;
     unsigned no = 0;
@@ -271,8 +278,14 @@ static int parse(const char *text, char *err, size_t errlen)
     /* the bug-orig mode is judged against the recorded original (orig=);
        its reference, the first combination, only runs for the recording
        (BUGORIG_RECORD=1) */
-    if (P.bugorig && !P.orig) {
-        snprintf(err, errlen, "bugorig=1 needs orig=, the recorded observation of the original");
+    if (P.bugorig && !P.orig && !P.fixed && !lint_mode) {
+        snprintf(err, errlen, "bugorig=1 needs orig=, the recorded observation of the original, "
+                              "or fixed=1 (fixed tests)");
+        return -1;
+    }
+    if (P.fixed && (!P.bugorig || P.orig)) {
+        snprintf(err, errlen, "fixed=1 belongs to bugorig=1 and has no orig= (a fixed test "
+                              "keeps no recorded original)");
         return -1;
     }
     if (P.orig && !P.bugorig) {
@@ -386,7 +399,7 @@ static int load_tests(FILE *log)
         if (!gate) {
             struct tedab_test t;
 
-            if (tedab_test_parse(names[i], text, &t, err, sizeof err)) {
+            if (tedab_test_parse_mode(names[i], text, &t, err, sizeof err, (int)P.bugorig)) {
                 fprintf(log, "%s\n", err);
                 tedab_test_free(&t);
                 bad++;
@@ -772,6 +785,43 @@ static void observe(const struct tedab_test *t, const struct run *r, char *state
 /* bug-orig: the recorded original (orig=, loaded by load_orig) */
 static char *orig_state, *orig_problems;
 
+/* a fixed bug-orig test (fixed=1, @fixed #N): the verdict of every
+   combination from its expectations alone; REGRESSED names the bug;
+   *worst = the worst exit status (REGRESSED counts as 1) */
+static void fixed_verdicts(const struct tedab_test *t, struct run **tr, struct text *rep,
+                           int *worst)
+{
+    int c;
+
+    for (c = 0; c < ncombo_order; c++) {
+        int cc = combo_order[c], v, rc;
+        char ps[300];
+        struct text pp = { 0 };
+
+        if (!tr[cc])
+            continue;
+        observe(t, tr[cc], ps, sizeof ps, &pp);
+        if (!strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7) || !tr[cc]->gates_ok)
+            v = 2;
+        else
+            v = tedab_fixed_verdict(ps, pp.p ? pp.p : "");
+        tr[cc]->verdict = v == 2 ? "NOTRUN" : tedab_verdict_name(v);
+        if (v == 2)
+            text_add(rep, "  bug-orig %s (fixed #%u): NOT RUN\n", tedab_combo_names[cc],
+                     t->fixed_bug);
+        else if (v == TEDAB_REGRESSED)
+            text_add(rep, "  bug-orig %s: REGRESSED: bug #%u is fixed, but the expected behaviour "
+                          "does not show (%s)\n%s", tedab_combo_names[cc], t->fixed_bug, ps,
+                     pp.p ? pp.p : "");
+        else
+            text_add(rep, "  bug-orig %s: FIXED #%u\n", tedab_combo_names[cc], t->fixed_bug);
+        rc = v == TEDAB_REGRESSED ? 1 : v;
+        if (*worst < 0 || verdict_rank(rc) > verdict_rank(*worst))
+            *worst = rc;
+        free(pp.p);
+    }
+}
+
 /* bug-orig: the verdict of every combination against the recorded original
    into the report; *worst = the worst exit status */
 static void bugorig_verdicts(const struct tedab_test *t, struct run **tr, struct text *rep,
@@ -870,7 +920,7 @@ static int run(FILE *log)
 {
     /* the original TED only runs for the recording */
     const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap,
-                            P.orig && !record ? P.ted_c : P.ted_ref, P.ted_c,
+                            (P.orig && !record) || P.fixed ? P.ted_c : P.ted_ref, P.ted_c,
                             P.blitz2_ref, P.blitz2_c, P.oracle, P.ted_prev, P.blitz2_prev };
     struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
     size_t *queue = NULL, nq = 0, i, k;
@@ -1220,6 +1270,8 @@ static int run(FILE *log)
             }
             if (record)
                 record_orig(&tests[i], tr, &rep, &worst);
+            else if (P.fixed)
+                fixed_verdicts(&tests[i], tr, &rep, &worst);
             else if (P.bugorig)
                 bugorig_verdicts(&tests[i], tr, &rep, &worst);
         }
@@ -1288,6 +1340,7 @@ int tedab_start(const char *prog, const char *passfile, int lint)
     int bad;
 
     me = prog;
+    lint_mode = lint;
     if (!(text = (char *)read_file(passfile, &len))) {
         fprintf(stderr, "%s: cannot read %s\n", me, passfile);
         return 2;
@@ -1298,6 +1351,18 @@ int tedab_start(const char *prog, const char *passfile, int lint)
     }
     free(text);
     bad = load_tests(stdout);
+    /* the selected tests of a bug-orig pass are all fixed (fixed=1) or all
+       open (orig=); the lint of the directory takes both */
+    for (size_t i = 0; P.bugorig && !lint && i < ntests; i++) {
+        if (P.fixed && !tests[i].fixed_bug) {
+            printf("%s: fixed=1, but the script has no @fixed #NNN\n", tests[i].name);
+            bad++;
+        } else if (!P.fixed && tests[i].fixed_bug) {
+            printf("%s: @fixed #%u: a fixed test is run with fixed=1 and no orig= (an open "
+                   "bug has no @fixed)\n", tests[i].name, tests[i].fixed_bug);
+            bad++;
+        }
+    }
     if (lint) {
         /* the sources of the T and E/S tests must be there (K: the CD) */
         size_t i;

@@ -547,10 +547,11 @@ bug. Label `bug-orig`: `host`, `emulator` and `all` exclude it, only the
 preset `bug-orig` runs these tests. **A fix turns its test into a fixed
 test in the same commit** (header `; @fixed #N`, [Fixed tests](#fixed-tests)):
 it then runs in `emulator` and `all` and must come out FIXED there.
-The TED scripts (`tests/bug-orig/ted/`) and the snitch tests of
-`libs/tests/bugorig.c` have no fixed form yet (OpenSpec change
-`expected-results-testing`); a fix of such a bug names its test in the
-report. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
+The TED scripts (`tests/bug-orig/ted/`) have their fixed form too
+(`; @fixed #N` without a pair, [bug-orig tests of TED](#bug-orig-tests-of-ted)).
+The snitch tests of `libs/tests/bugorig.c` have no fixed form yet
+(OpenSpec change `expected-results-testing`); a fix of such a bug names
+its test in the report. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
 snitch test case `ID`; the issue names the test. In the snitch programs they carry the hidden tag `[.bug-orig]`,
 so a plain run of the program skips them too (`libs_tests "[bug-orig]"`
 or the name runs them). Tests in the emulator also have the label
@@ -750,7 +751,7 @@ observation as the lines of an expectation are (`bugorig.h`), so that
 way that is not the bug, the test is not valid. Fixed tests and port
 regression tests have no `ID.orig`: configuring stops with an error naming the
 stale `ID.orig` of a test with the header `; @fixed #N` (`.bas`) or the
-directive `@fixed` (`.drv`, TED), delete it with the fix
+directive `; @fixed #N` (`.drv`, TED), delete it with the fix
 (`tests/bug-orig/check-fixed-orig.cmake`; ctest `bug_orig_fixed_orig_broken`
 checks the check on a fake tree, `tests/bug-orig/selftest/fixed-orig/`).
 A test without `ID.orig` fails with
@@ -875,6 +876,36 @@ the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
 out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
 glob, and `ted/ID.orig` from `ctest --preset originals -R
 bug_orig_record_ID`.
+
+**A fixed TED bug-orig test** (`; @fixed #N` in the header of
+`ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1` instead of
+`orig=`): the commit that fixes the bug in TED-C adds the line, deletes
+`ID.orig` (configuring stops on a stale one) and keeps the script's
+expectations, which are the correct behaviour. The test then runs only
+C5 (TED-C under blitz2 2.10: the fix is TED's, the compiler stays the
+CD's) and no session of the original; it is judged by the script's
+expectations alone: FIXED (exit status 0: the run is OK and no
+expectation is missed) or REGRESSED (1: the report says `bug-orig C5:
+REGRESSED: bug #N is fixed, but the expected behaviour does not show` and
+lists what is missing). ctest `bug_orig_ID` as before, label `emulator`
+only: it runs in `emulator` and `all`, not in `bug-orig`
+(`ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not);
+there is no `bug_orig_record_ID` for it. The directive with a pair
+(`@fixed #N R5-C5`, the `tests/ted-ab` form) is refused in
+`tests/bug-orig/ted`, and the form without a pair outside it (`tedab`
+parses the scripts of a `bugorig=1` pass in the bug-orig form,
+`bug_orig_ted_lint` too); a `fixed=1` pass over a script without
+`@fixed`, and an `orig=` pass over a fixed one, end with exit status 2
+before any session. Self tests: `bug_orig_ted_fixed_selftest_fixed`
+(an expectation that holds of TED-C: FIXED) and
+`bug_orig_ted_fixed_selftest_regressed` (one that does not: REGRESSED,
+naming the bug; label `emulator`), the refusals
+`bug_orig_ted_fixed_open_script`, `bug_orig_ted_open_fixed_script`,
+`bug_orig_ted_fixed_with_orig`, `bug_orig_ted_fixed_no_bugorig`,
+`bug_orig_ted_no_orig_no_fixed` and `bug_orig_ted_fixed_wrong_lint`
+(scripts of `selftest/ted-fixed-wrong/`: a pair, twice, no `#`; host); the
+verdicts in the host test `tedab_bugorig_verdict` ("fixed bug-orig test"
+case of `tests/ted-ab/host/test_tedab.cpp`).
 
 ### Order of the bug-orig tests
 

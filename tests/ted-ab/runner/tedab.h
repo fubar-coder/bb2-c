@@ -48,6 +48,9 @@
  *   ; @known REASON      a known failure (REASON e.g. "KNOWN-BOTH ..."): not
  *                        run, listed in the report as KNOWN with REASON;
  *                        run all the same when the filter names it exactly
+ *   ; @fixed #NNN          (only in tests/bug-orig/ted, no pair) TED bug NNN is
+ *                        fixed: the script is judged by its expectations
+ *                        alone (FIXED, or REGRESSED), no recorded original
  *   ; @fixed #NNN PAIR...  TED bug NNN (the issue) is fixed: the named pairs
  *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc, C5-P5, Cc-Pc; both combinations in
  *                        @combos) must differ, FIXED; a named pair that is
@@ -138,6 +141,7 @@ struct tedab_test {
     char *known;                /* @known REASON, NULL = none */
     unsigned fixed[TEDAB_NPAIRS]; /* @fixed: the issue per tedab_pairs index, 0 =
                                    the pair must be the same */
+    unsigned fixed_bug;         /* bug-orig: @fixed #NNN without a pair, 0 = an open bug */
     char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
     struct tedab_file *files;   /* @file */
     size_t nfiles;
@@ -148,6 +152,10 @@ struct tedab_test {
 /* the directives of a script; 0 = ok, -1 = error (message in err) */
 int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, char *err,
                      size_t errlen);
+/* the same for a script of tests/bug-orig/ted (bugorig 1): @fixed #NNN has no
+   pair there (t->fixed_bug = NNN, a fixed test) and a pair is refused */
+int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test *t, char *err,
+                          size_t errlen, int bugorig);
 void tedab_test_free(struct tedab_test *t);
 
 /* the commands of a script against teddrive's syntax; prints "line N: ..."
@@ -248,9 +256,14 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
    FIXED: the port is OK without problems; BROKEN: the reference is (the
    original does not show the bug, or the expectation describes it);
    REPRODUCED: the port shows what the reference shows; DIFFERS: neither */
-enum { TEDAB_FIXED = 0, TEDAB_REPRODUCED = 1, TEDAB_BROKEN = 3, TEDAB_DIFFERS = 4 };
+enum { TEDAB_FIXED = 0, TEDAB_REPRODUCED = 1, TEDAB_BROKEN = 3, TEDAB_DIFFERS = 4,
+       TEDAB_REGRESSED = 5 };
 int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
                           const char *port_state, const char *port_problems, int compare);
+/* the verdict of a fixed bug-orig test (t->fixed_bug, no recorded original)
+   of a port run: FIXED = OK without problems, else REGRESSED (the bug shows
+   again; the runner's exit status is 1 like REPRODUCED) */
+int tedab_fixed_verdict(const char *port_state, const char *port_problems);
 const char *tedab_verdict_name(int verdict);
 
 /* the recorded observation of the original (NAME.orig of a TED bug-orig

@@ -66,7 +66,10 @@ remaining runs for a later session. With `bugorig=1` (the bug-orig mode,
 `tests/bug-orig/ted`) every run has a session of its own and each
 combination but the reference gets a verdict against the recorded
 original `orig=`; with `BUGORIG_RECORD=1` in the environment only the
-reference runs and its observation is written to `orig=`.
+reference runs and its observation is written to `orig=`. With `fixed=1`
+in place of `orig=` the scripts are fixed tests (`; @fixed #NNN`, no
+pair): every combination (the pass names C5) is judged by the script's
+expectations alone, FIXED (exit status 0) or REGRESSED (1).
 
 ### lint
 

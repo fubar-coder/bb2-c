@@ -679,6 +679,50 @@ TEST_CASE("bug-orig verdict", "[bugorig]")
     CHECK(std::string(tedab_verdict_name(TEDAB_BROKEN)) == "BROKEN");
 }
 
+TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
+{
+    // tests/bug-orig/ted: the mode flag of tedab_test_parse_mode (bugorig 1)
+    const char *head = "; @source none\n; @nofiles\n";
+    auto parse = [&](const char *directive, int bugorig, unsigned *bug = nullptr) {
+        std::string s = std::string(head) + directive + "\n";
+        tedab_test t;
+        char err[300] = "";
+        int rc = tedab_test_parse_mode("x", s.c_str(), &t, err, sizeof err, bugorig);
+
+        if (bug)
+            *bug = t.fixed_bug;
+        tedab_test_free(&t);
+        return rc ? std::string(err) : std::string();
+    };
+    unsigned bug = 0;
+
+    CHECK(parse("; @fixed #123", 1, &bug).empty());
+    CHECK(bug == 123u);
+    CHECK(parse("; @other", 1, &bug).empty());      // an open bug: no @fixed
+    CHECK(bug == 0u);
+    // the mode 0 form is the one of the A/B scripts: a pair is needed
+    CHECK(parse("; @fixed #123", 0).find("@fixed #NNN PAIR") != std::string::npos);
+    CHECK(parse("; @fixed #123 R5-C5", 0).empty());
+    // broken on purpose: a pair, twice, no #, no issue, leading zero
+    CHECK(parse("; @fixed #123 R5-C5", 1).find("no pair") != std::string::npos);
+    CHECK(parse("; @fixed #1\n; @fixed #2", 1).find("@fixed twice") != std::string::npos);
+    CHECK(parse("; @fixed 123", 1).find("@fixed #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed", 1).find("@fixed #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed #012", 1).find("@fixed #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed #0", 1).find("@fixed #NNN (no pair") != std::string::npos);
+
+    // the verdict from the expectations alone: no recorded original
+    const char *bad = "  - expect: blk.txt differs from the expected contents (data)\n";
+
+    CHECK(tedab_fixed_verdict("OK", "") == TEDAB_FIXED);
+    CHECK(tedab_fixed_verdict("OK", bad) == TEDAB_REGRESSED);    // the bug shows again
+    CHECK(tedab_fixed_verdict("TIMEOUT", "") == TEDAB_REGRESSED);
+    CHECK(tedab_fixed_verdict("FAIL step 3 timeout", bad) == TEDAB_REGRESSED);
+    CHECK(tedab_fixed_verdict("OK", "x") != TEDAB_FIXED);        // broken on purpose
+    CHECK(std::string(tedab_verdict_name(TEDAB_REGRESSED)) == "REGRESSED");
+    CHECK(std::string(tedab_verdict_name(TEDAB_FIXED)) == "FIXED");
+}
+
 TEST_CASE("recorded original", "[bugorig]")
 {
     // the R5 observation as a file (NAME.orig) and back; the verdicts

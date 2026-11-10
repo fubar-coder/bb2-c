@@ -102,7 +102,10 @@ CD), and the file is committed with the test; a recording run
 (`ctest --preset originals`, or `BUGORIG_RECORD=1` for `corpusrun pass` and
 `tedab run`) writes nothing but the `.orig` files and is the only run that
 needs the original compiler and TED (`tests/README.md`, "Recorded
-originals"). A fixed test (`; @fixed #NNN`) has no `ID.orig`: delete the
+originals"). A fixed test (`; @fixed #NNN`, also in a TED
+`tests/bug-orig/ted/ID.drv`: no pair there, TED-C under the CD's blitz2
+is judged by the script's expectations alone, FIXED or REGRESSED,
+`tests/README.md` "bug-orig tests of TED") has no `ID.orig`: delete the
 file with the fix.
 
 The instruction comparison of the acidlibs routines that stay assembler
@@ -202,7 +205,7 @@ again):
   without a library; `cmdref_check_broken`, `cmdref_complete_broken`:
   the checks with broken input.
 * a fixed bug-orig test keeps no recorded original (`ID.orig` next to a
-  `.bas` with `; @fixed #N` or a TED `.drv` with the `@fixed` directive):
+  `.bas` or a TED `.drv`, each with `; @fixed #N`):
   configuring `tests/bug-orig` fails naming the file
   (`tests/bug-orig/check-fixed-orig.cmake`; ctest
   `bug_orig_fixed_orig_broken` with a fake tree).

@@ -204,6 +204,12 @@ static const char *base_name(const char *p)
 int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, char *err,
                      size_t errlen)
 {
+    return tedab_test_parse_mode(name, text, t, err, errlen, 0);
+}
+
+int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test *t, char *err,
+                          size_t errlen, int bugorig)
+{
     const char *line = text;
     unsigned no = 0;
     int have_source = 0;
@@ -341,9 +347,11 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
                 t->combos |= 1u << c;
             }
         } else if (!strcmp(key, "fixed")) {
-            /* #NNN PAIR...: NNN > 0 without leading zeros */
+            /* #NNN PAIR...: NNN > 0 without leading zeros; in a bug-orig
+               script (bugorig) #NNN alone, no pair */
             unsigned long issue = 0;
-            int k, bad = nw < 2 || w[0][0] != '#' || w[0][1] < '1' || w[0][1] > '9';
+            int k, bad = nw < (bugorig ? 1 : 2) || w[0][0] != '#' || w[0][1] < '1'
+                         || w[0][1] > '9';
 
             if (!bad) {
                 char *e;
@@ -352,9 +360,24 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
                 bad = *e || !issue || issue > 999999;
             }
             if (bad) {
-                snprintf(err, errlen, "%s line %u: @fixed #NNN PAIR... (PAIR e.g. R5-C5)", name,
-                         no);
+                snprintf(err, errlen, bugorig ? "%s line %u: @fixed #NNN (no pair: a bug-orig "
+                                                "script is judged by its expectations alone)"
+                                              : "%s line %u: @fixed #NNN PAIR... (PAIR e.g. R5-C5)",
+                         name, no);
                 return -1;
+            }
+            if (bugorig) {
+                if (nw != 1) {
+                    snprintf(err, errlen, "%s line %u: @fixed #NNN (no pair: a bug-orig script "
+                                          "is judged by its expectations alone)", name, no);
+                    return -1;
+                }
+                if (t->fixed_bug) {
+                    snprintf(err, errlen, "%s line %u: @fixed twice", name, no);
+                    return -1;
+                }
+                t->fixed_bug = (unsigned)issue;
+                continue;
             }
             for (k = 1; k < nw; k++) {
                 int pr = tedab_pair(w[k]);
@@ -1773,6 +1796,11 @@ int tedab_oracle_hash(const char *manifest, const char *cdpath, char hex[65])
 
 /* ------------------------------------------------------------- bug-orig */
 
+int tedab_fixed_verdict(const char *port_state, const char *port_problems)
+{
+    return !strcmp(port_state, "OK") && !*port_problems ? TEDAB_FIXED : TEDAB_REGRESSED;
+}
+
 int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
                           const char *port_state, const char *port_problems, int compare)
 {
@@ -1860,6 +1888,8 @@ const char *tedab_verdict_name(int verdict)
         return "BROKEN";
     case TEDAB_DIFFERS:
         return "DIFFERS";
+    case TEDAB_REGRESSED:
+        return "REGRESSED";
     }
     return "?";
 }

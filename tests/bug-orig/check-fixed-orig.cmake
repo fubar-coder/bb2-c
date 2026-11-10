@@ -1,6 +1,6 @@
 # check-fixed-orig.cmake - a fixed bug-orig test keeps no recorded original.
 # A test is fixed by the header line "; @fixed #N" (ID.bas) or the directive
-# "; @fixed #N PAIR..." (ID.drv of the TED tests); its observation ID.orig
+# "; @fixed #N" (ID.drv of the TED tests); its observation ID.orig
 # (tests/README.md, "Recorded originals") is deleted with the fix.
 #
 # bug_orig_fixed_orig_check(ROOT) runs at configure time
