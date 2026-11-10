@@ -70,7 +70,7 @@ extern void outside_stub(void);
    runs the whole editor (.edmain -> .tomain) and returns. */
 void outside_c(struct m68kregs *r);
 /* ted.s:87 outside.tomain: blitz2's second call, a0 = file name.  C part:
-   tomain_c in main.c (a0toname gets r->d[0], survey-03 I.1). */
+   tomain_c in main.c. */
 extern void tomain_stub(void);
 void tomain_c(struct m68kregs *r);
 /* ted.s:136 edstart (wbheader): standalone start, C part in main.c:

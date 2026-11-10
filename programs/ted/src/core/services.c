@@ -293,13 +293,14 @@ void mforget2(void)
 }
 
 /* ted.s:2990 a0toname - convert a0 to a path/filename.
-   BUG(orig) (#340) survey-03 I.1: the tests compare stale_d0 (the caller's d0),
-   not the copied character - normally filepath = "" and filename = the
-   whole string. */
-void a0toname(const UBYTE *src, ULONG stale_d0)
+   Fixed (#340) survey-03 I.1: the original compares the caller's d0
+   (blitz2's LoadSeg result) instead of the copied character, so the
+   split depended on the memory layout.  Here the name is never split:
+   filepath = "" and filename = the whole string, what the original does
+   in the normal case (screen title and file requester as before). */
+void a0toname(const UBYTE *src)
 {
     UBYTE *dst = (UBYTE *)filepath, *namestart = dst, *pathend, c, last;
-    const UBYTE stalec = (UBYTE)stale_d0;
 
     if (*src == '"')
         src++;
@@ -308,10 +309,6 @@ void a0toname(const UBYTE *src, ULONG stale_d0)
         c = *dst++ = *src++;
         if (!c)
             break;                              /* .done */
-        if (stalec == ':')
-            namestart = dst;                    /* .skip2 */
-        else if (stalec == '/')
-            namestart = dst - 1;
     }
     /* .done */
     dst = (UBYTE *)filename;

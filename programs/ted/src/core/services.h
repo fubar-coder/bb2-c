@@ -62,11 +62,11 @@ void remember2(struct item *line);
 /* ted.s:2912 mforget2: only mousealt = -1 */
 void mforget2(void);
 
-/* ted.s:2990 a0toname: split src (a0, maybe in "...") into
-   filepath/filename.  BUG(orig) (#340): compares d0 (the caller's register
-   at .tomain - blitz2: the LoadSeg result) instead of the copied character
-   (survey-03 I.1), so d0 is a parameter (stale_d0). */
-void a0toname(const UBYTE *src, ULONG stale_d0);
+/* ted.s:2990 a0toname: src (a0, maybe in "...") into filepath/filename:
+   filepath = "", filename = the whole name.  Fixed (#340): the original
+   splits by d0 (the caller's register at .tomain - blitz2: the LoadSeg
+   result) instead of the copied character (survey-03 I.1). */
+void a0toname(const UBYTE *src);
 
 /* ted.s:3033 alloc2: memalt = -1, AllocMem(size, flags); failure -> outmem
    (never returns NULL) */

@@ -341,16 +341,15 @@ wb_allgo:
 
 /* outside and outside.tomain share the init/teardown chain (one asm
    routine with two entry points): `tomain` = entered at .tomain with
-   a0 = file name, d0 = the caller's d0 (a0toname reads it, BUG(orig) #340). */
+   a0 = file name (a0toname keeps it whole; the original split it by the
+   caller's d0 there, fixed #340). */
 static void outside_run(struct m68kregs *r, BOOL tomain)
 {
     struct edstruct *eds;
     UBYTE *name, *fullname;
-    ULONG callerd0;
 
     if (tomain) {
         name = (UBYTE *)r->a[0];
-        callerd0 = r->d[0];
         goto tomain;
     }
     returncode = -1;
@@ -413,10 +412,9 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     }
     /* .edmain */
     name = (UBYTE *)progfile;
-    callerd0 = 0;               /* move.l external,d0 / beq .edmain */
 tomain:
     /* .tomain */
-    a0toname(name, callerd0);
+    a0toname(name);
     if (filename[0]) {
         UBYTE *src, *dst;
 
@@ -476,7 +474,7 @@ void outside_c(struct m68kregs *r)
 }
 
 /* outside.tomain (ted.s line 87): blitz2's second call, a0 = file name,
-   d0 = whatever blitz2 had (a0toname, survey-03 I.1) */
+   d0 = whatever blitz2 had (unused since the fix of #340) */
 void tomain_c(struct m68kregs *r)
 {
     outside_run(r, TRUE);

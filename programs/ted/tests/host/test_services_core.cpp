@@ -121,20 +121,19 @@ TEST_CASE("a0toname", "[services][names]")
     env();
     host_resetcalls();
     int hazards = host_hazards;
-    a0toname(reinterpret_cast<const UBYTE *>("\"dh0:foo/bar\""), 0x12345600);
+    // the name is never split (#340): filepath "", filename the whole name
+    a0toname(reinterpret_cast<const UBYTE *>("\"dh0:foo/bar\""));
     CHECK(std::string_view(filepath) == "");
     CHECK(std::string_view(filename) == "dh0:foo/bar");
 
-    // d0 low byte '/': the last character becomes the name
-    a0toname(reinterpret_cast<const UBYTE *>("abc"), '/');
-    CHECK(std::string_view(filepath) == "ab");
-    CHECK(std::string_view(filename) == "c");
+    a0toname(reinterpret_cast<const UBYTE *>("TEDRUN:work/mikesmaplib.bb"));
+    CHECK(std::string_view(filepath) == "");
+    CHECK(std::string_view(filename) == "TEDRUN:work/mikesmaplib.bb");
 
-    // d0 low byte ':': empty name, -2(a1) read in front of filename
-    a0toname(reinterpret_cast<const UBYTE *>("dh0:x"), 0x3A);
-    CHECK(std::string_view(filepath) == "dh0:x");
-    CHECK(std::string_view(filename) == "");
-    CHECK(host_hazards == hazards + 1);
+    a0toname(reinterpret_cast<const UBYTE *>("dh0:x"));
+    CHECK(std::string_view(filepath) == "");
+    CHECK(std::string_view(filename) == "dh0:x");
+    CHECK(host_hazards == hazards);
 }
 
 TEST_CASE("tokone, help_core, tokall, detokallz", "[services][tokit]")
