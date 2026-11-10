@@ -229,6 +229,33 @@ TEST_CASE("join and split: line contents", "[lines]")
     CHECK(enditem->lastitem == thisitem);
 }
 
+TEST_CASE("join of a label line rebuilds the label column", "[lines]")
+{
+    static const char *const t[] = { "a=1", ".loop:b=2", "c=3" };
+    static const char *const u[] = { "a=1", "b=2", "c=3" };
+
+    env();
+    // fixed #365: the appended line starts with a label, the current one
+    // does not - mforget2 (mousealt), as freethis does; the original
+    // kept the label column's node of the freed line
+    mklist(3, t);
+    cursorto(0, 0);
+    bboty = (UWORD)-1;
+    mousealt = 0;
+    join();
+    CHECK(numlines == 2);
+    CHECK(std::string_view(linetext(0)) == "a=1.loop:b=2");
+    CHECK(mousealt == static_cast<UWORD>(-1));
+    // no label: the label column stays
+    mklist(3, u);
+    cursorto(0, 0);
+    bboty = (UWORD)-1;
+    mousealt = 0;
+    join();
+    CHECK(numlines == 2);
+    CHECK(mousealt == 0);
+}
+
 TEST_CASE("blokcopy: content and block move", "[blocks]")
 {
     static const char *const t1[] = { "abcdef", "x", "xyz" };

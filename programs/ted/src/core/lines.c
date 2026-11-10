@@ -401,8 +401,18 @@ sskip:
     /* .done.  Fixed (#364) survey-02 I.1: the original frees with size
        numchars, not numchars + lenitem (`moveq #0,d0 / add.b
        numchars(a1),d0`, "was move.b") - 8-16 bytes lost per join; here
-       the size freethis uses (as a word).  BUG(orig) (#365) survey-02
-       I.2: no mforget2. */
+       the size freethis uses (as a word).  Fixed (#365) survey-02 I.2:
+       the original frees a label line without mforget2 - the label column
+       keeps a node pointing to the freed line; here the label test of
+       freethis. */
+    {
+        const UBYTE *lp = old->chars;
+
+        while (*lp == ' ')
+            lp++;
+        if (*lp == label)
+            mforget2();
+    }
     size = (UWORD)(lenitem + old->numchars);
     memalt = size;
     ted_free(old, size);
