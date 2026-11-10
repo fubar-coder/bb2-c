@@ -4,8 +4,8 @@
 ; Own 320x256 screen: the requester window is screen height - 40 = 216
 ; high (16 list lines); on screens of 645 lines or more (the emulator's
 ; 1050-line Workbench) the original writes its line gadgets past its
-; data block and the program crashes after returning (BUG(orig) (#160), see
-; libs/acidlibs/freqlib.c).
+; data block and the program crashes after returning (#160, fixed in the
+; port: libs/acidlibs/freqlib.c).
 If WriteFile(0,"ENV:REQCLOSE")
   FileOutput 0
   NPrint "cancel BB2 file requester 2"

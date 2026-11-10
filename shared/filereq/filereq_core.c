@@ -55,23 +55,23 @@
  *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
- *   - There are 64 line gadgets (fq.line[], 144 bytes each, $15AA-$39A9;
- *     behind them only the 48 bytes of arrow image data up to the end of
- *     the data block, $39DA), but the window shows (height - 85) / 8 lines
- *     with no limit: from a window height of 605 (65 lines) the layout
- *     writes line gadgets beyond fq.line[63] - over fq.arrowdata (already
- *     copied to chip memory) and then past the end of fq, into whatever
- *     follows it in the program's data, exactly as the original writes past
- *     its data block (layout and fill step a struct fq_line pointer over
- *     the end of the array).  The first window is screen height - 40 high,
- *     so this happens on every screen of 645 lines or more (MaxHeight is
- *     $FFFF, so also after enlarging the window); details in freqlib.c (#160).
  *   - "CD" clears the words at $111A and $111E: the high word of the path
  *     StringInfo's UndoBuffer and its BufferPos (the start of fq_request
  *     clears BufferPos and DispPos, $111E/$1122).  UndoBuffer then points
  *     to $0000xxxx (the low word of fq.result's address), for this and all
  *     later calls: Intuition copies the path there when the gadget is
  *     activated (#345).
+ * Fixed (#160): there are 64 line gadgets (fq.line[], 144 bytes each,
+ *   $15AA-$39A9; behind them only the 48 bytes of arrow image data up to
+ *   the end of the data block, $39DA), but the original shows
+ *   (height - 85) / 8 lines with no limit: from a window height of 605
+ *   (65 lines) its layout wrote line gadgets beyond the data block into
+ *   whatever follows it in the program.  The first window is screen
+ *   height - 40 high and MaxHeight is $FFFF, so this happened on every
+ *   screen of 645 lines or more, and after enlarging the window.  Here
+ *   the list has at most FQ_LINES (64) lines (layout), and the window is
+ *   at most FQ_MAXHEIGHT (597 = 64 * 8 + 85, the height of 64 lines) high,
+ *   the first one (setheight) and an enlarged one (nw.MaxHeight).
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
@@ -81,6 +81,10 @@
 #include "filereq_core.h"
 
 #define FQ_SWAP(r)  ((ULONG)(r) << 16 | (ULONG)(r) >> 16)       /* SWAP */
+/* the list lines: line gadgets in the data block (fq.line[]), and the
+   window height that shows them all, (height - 85) / 8 = FQ_LINES (#160) */
+#define FQ_LINES     64
+#define FQ_MAXHEIGHT (FQ_LINES * 8 + 85)
 
 #include <dos/dos.h>
 #include <dos/dosextens.h>
@@ -188,7 +192,7 @@ struct fq_data {
     struct Image img_up;        /* $1556 ImageData: 48 bytes chip memory */
     struct Gadget g_down;       /* $156A NextGadget: the first visible line */
     struct Image img_down;      /* $1596 ImageData: img_up's + 24 bytes */
-    struct fq_line line[64];    /* $15AA the list lines */
+    struct fq_line line[FQ_LINES];  /* $15AA the list lines */
     UWORD arrowdata[24];        /* $39AA arrow images (2 planes each), copied
                                    to the chip memory */
 };
@@ -321,8 +325,8 @@ static void fill(void)
         d0++;
         d1++;
         a0 = P(a0, 0);
-        a1++;                           /* BUG(orig) (#160): past fq.line[63], */
-    }                                   /* as in layout */
+        a1++;                           /* d0 < fq.visible <= FQ_LINES (#160) */
+    }
     slot->NextGadget = NULL;
 }
 
@@ -474,13 +478,15 @@ static void layout(UWORD d1, UWORD d2)
     d0 -= 24;
     fq.g_prop.Height = d0;
     fq.visible = (UWORD)(d2 - 85) >> 3;
+    if (fq.visible > FQ_LINES)          /* Fixed (#160): the original has no */
+        fq.visible = FQ_LINES;          /* limit, a1 ran past fq.line[63] */
     n = fq.visible - 1;
     a1 = fq.line;
     d3 = d1 - 70;
     d4 = (UWORD)(d3 >> 3) - 1;
     do {                                /* DBF: 0 lines = 65536 */
-        UBYTE *a2 = a1->text;           /* BUG(orig) (#160): no limit of 64 lines, */
-        UWORD k = d4;                   /* a1 runs past fq.line[63] */
+        UBYTE *a2 = a1->text;
+        UWORD k = d4;
         a1->gad.Width = d3;
         do
             *a2++ = ' ';
@@ -569,10 +575,14 @@ static void currentpath(struct FileInfoBlock *fib)
         *a1 = 0;
 }
 
-/* $BF0 - first call: window height = screen height - 40 */
+/* $BF0 - first call: window height = screen height - 40, Fixed (#160): at
+   most FQ_MAXHEIGHT, the height of the 64 lines (the original has no limit:
+   on a screen of 645 lines or more the list had more lines than gadgets) */
 static void setheight(void)
 {
-    fq.nw.Height = W(fq_args[3], 14) - 40;
+    WORD h = (WORD)(W(fq_args[3], 14) - 40);
+
+    fq.nw.Height = h > FQ_MAXHEIGHT ? FQ_MAXHEIGHT : h;
 }
 
 /* $CA - the requester; returns fq.result or 0 */
@@ -949,7 +959,7 @@ static struct fq_data fq = {
         WFLG_SIZEGADGET | WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET
             | WFLG_SIMPLE_REFRESH | WFLG_GIMMEZEROZERO | WFLG_ACTIVATE,
         &fq.g_ok, NULL, NULL, NULL, NULL,
-        264, 104, 640, 0xffff, WBENCHSCREEN
+        264, 104, 640, FQ_MAXHEIGHT, WBENCHSCREEN  /* Fixed (#160): the original $FFFF */
     },
     .frame_ok = FQ_BUTTONFRAME(frame_ok, 23),
     .frame_drives = FQ_BUTTONFRAME(frame_drives, 55),
