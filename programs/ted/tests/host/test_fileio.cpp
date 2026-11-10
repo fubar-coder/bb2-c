@@ -127,6 +127,27 @@ TEST_CASE("tokit2 quirks", "[fileio][tokit]")
     CHECK(std::string_view(reinterpret_cast<char *>(txt)) == "NPrint \"a\":a=1");
 }
 
+TEST_CASE("no token list: findtoke and tokit match nothing", "[fileio][tokit]")
+{
+    UBYTE out[256];
+
+    // Fixed (#359): with tokens == 0 (standalone TED) the original walked
+    // a "node" at address 0; now every token is unknown and no word
+    // becomes a token
+    env();
+    REQUIRE(tok("print a", out) == 5);
+    UWORD num = static_cast<UWORD>((out[0] << 8) | out[1]);
+    CHECK(std::string_view(findtoke(num)) == "Print");
+    struct tokennode *keep = tokens;
+    tokens = nullptr;
+    host_resetcalls();
+    CHECK(std::string_view(findtoke(num)) == tokeerr);
+    CHECK(tok("print a", out) == 8);
+    CHECK(is(out, "print a", 8));
+    CHECK(host_hazards == 0);
+    tokens = keep;
+}
+
 TEST_CASE("alpha", "[fileio][tokit]")
 {
     CHECK(alpha('a'));

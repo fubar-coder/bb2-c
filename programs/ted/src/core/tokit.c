@@ -92,16 +92,11 @@ nothex:
 tsttoke:
     src--;
     tok = tokens;
-#ifdef TED_HOST
-    if (!tok) {
-        /* host-test-only guard.  BUG(orig) (#359) (survey-05 I.10): with tokens
-           == 0 the asm walks a "node" at address 0 (name at 6, num at 4,
-           next at 0); the Amiga build does the same through tok = 0.  The
-           host cannot read address 0: no token matches. */
-        ORIG_HAZARD("tokit: tokens == 0 (asm reads a node at address 0)");
+    /* Fixed (#359) survey-05 I.10: with tokens == 0 the original walks a
+       "node" at address 0 (name at 6, num at 4, next at 0).  No token
+       list: no token matches. */
+    if (!tok)
         goto notoke;
-    }
-#endif
 loop3:
     match = src;
     name = (const UBYTE *)tok->name;            /* addq #6,a3 */

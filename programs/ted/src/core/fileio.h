@@ -106,7 +106,8 @@ UBYTE *bloadadd(UBYTE *dst);
    byte.  (asm: a0 also behind the source - not needed by any caller) */
 UBYTE *detok(const UBYTE *src, UBYTE *dst);
 /* ted.s:3472 findtoke: name of token word tok (d0, bit 15 cleared) in the
-   list `tokens`; unknown -> tokeerr.  Needs tokens != 0 (else reads at 0). */
+   list `tokens`; unknown or no list (tokens == 0, Fixed (#359)) ->
+   tokeerr. */
 const char *findtoke(UWORD tok);
 /* ted.s:3759 detoka5: detok chars(line) to charbuff3+1 WITHOUT 0 byte,
    charbuff3[0] = length + 1; writes beyond charbuff3 for long lines

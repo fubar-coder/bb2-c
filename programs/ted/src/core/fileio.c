@@ -408,18 +408,12 @@ const char *findtoke(UWORD tok)
     const struct tokennode *node = tokens;
 
     tok &= 0x7FFF;                              /* bclr #15,d0 */
-#ifdef TED_HOST
-    if (!node) {
-        /* host-test-only guard.  BUG(orig) (#359): with tokens == 0 (standalone
-           TED loading a tokenised file) the asm walks a "node" at address
-           0: compares the word at 4, follows the long at 0 and may return
-           the "name" at address 6.  The Amiga build does exactly that (the
-           loop below reads through a3 = 0); the host cannot read address
-           0 and treats it as an unknown token. */
-        ORIG_HAZARD("findtoke: tokens == 0 (asm reads a node at address 0)");
+    /* Fixed (#359) survey-05 I.10: with tokens == 0 (standalone TED) the
+       original walks a "node" at address 0: compares the word at 4,
+       follows the long at 0 and may return the "name" at address 6.  No
+       token list: every token is unknown. */
+    if (!node)
         return tokeerr;
-    }
-#endif
     for (;;) {
         /* .loop */
         if (node->num == tok)

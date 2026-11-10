@@ -6,7 +6,10 @@
 ; Lines "a", token $9234, "b", "c"; Block Save of lines 1-3 (the middle
 ; line goes through detoka5 -> findtoke, see #354).  Correct: findtoke
 ; does not look at address 0 (no NULLNODE in the file); the original
-; follows the pointer at address 0 and writes NULLNODE.
+; follows the pointer at address 0 and writes NULLNODE.  Fixed in TED-C:
+; findtoke and tokit know no token without a token list, and Block Save
+; no longer detokenises without tokenise (#354).
+; @fixed #359
 ; @file bo.bas "a\n\x92\x34\nb\nc"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject nullnode=1234/NULLNODE blitz2:ted @FILE@
