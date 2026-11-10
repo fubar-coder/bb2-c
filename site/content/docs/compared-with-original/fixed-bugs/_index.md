@@ -21,8 +21,9 @@ than 127 characters, a library file that cannot be read, a system with
 programs, with a wrong result or a crash and no error message. If one of
 your programs behaved strangely with Blitz Basic 2, look at these first.
 Each of them is shown with a short program, what the original made of
-it, and what the port does. Two more are in the editor and change the
-source you are writing; they are shown in the same way.
+it, and what the port does. Six more are in the editor: they change the
+source you are writing, or crash the editor; they are shown in the same
+way.
 
 ## Bugs an ordinary program can meet
 
@@ -75,6 +76,13 @@ In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/edit
   lines not indented by the tab stop lost their first characters.
 * [The last line of a text source was not tokenised]({{< relref "/docs/compared-with-original/fixed-bugs/editor#last-line-not-tokenised" >}})
   when the file had no line feed at its end.
+* [JOIN of two long lines lost the end of the text]({{< relref "/docs/compared-with-original/fixed-bugs/editor#join-long-lines" >}})
+  when they were longer than 128 characters together.
+* [Accented letters broke saved blocks, copied blocks and printouts]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-without-tokenise" >}})
+  in the editor on its own.
+* [A tab stop of 0 crashed the editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor#tab-stop-zero" >}}),
+  and the options turned every value of 80 and more into 0.
+* [The editor did not start with the small font on a 512-row Workbench]({{< relref "/docs/compared-with-original/fixed-bugs/editor#small-font-screen" >}}).
 
 ## All fixed bugs, by area
 
@@ -88,7 +96,7 @@ undone later is noticed.
   {{< card link="compiler" title="Compiling" subtitle="Bugs in what the compiler makes of a source, from operators and arrays to include files and macros." >}}
   {{< card link="running-blitz2" title="Running blitz2" subtitle="Bugs of blitz2 as a program: loading the libraries, starting and ending, and the editor's compiler menu." >}}
   {{< card link="libraries" title="Libraries" subtitle="Bugs of the command libraries, of the error handling without the debugger, of AmigaOS calls and of the RWE userlibs." >}}
-  {{< card link="editor" title="Editor" subtitle="Bugs of the editor TED in the block commands, in joining and deleting lines, and in loading text sources." >}}
+  {{< card link="editor" title="Editor" subtitle="Bugs of the editor TED: blocks, JOIN, accented letters, loading, saving, options and low memory." >}}
 {{< /cards >}}
 
 Some fixes make the compiler refuse a source that the original accepted,
