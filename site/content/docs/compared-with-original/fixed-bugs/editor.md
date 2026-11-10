@@ -357,6 +357,10 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Low memory
 
+* When the file the editor was started with did not fit into memory, the
+  editor crashed while loading it; it shows the out-of-memory alert and
+  ends with an error, so blitz2 stops cleanly
+  ([#370](https://github.com/fubar-coder/bb2-c/issues/370)).
 * Without chip memory for its mouse pointer, the editor copied the
   pointer images to address 0 and crashed the system; it ends cleanly
   ([#367](https://github.com/fubar-coder/bb2-c/issues/367)).
