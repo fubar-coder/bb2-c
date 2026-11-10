@@ -134,3 +134,11 @@ Issue: [The last line of a text source without a final line feed was not tokenis
   which the keys of KILL and BLOCK TO DISK acted on; the block is removed
   and nothing else is marked
   ([#346](https://github.com/fubar-coder/bb2-c/issues/346)).
+
+### Starting from blitz2
+
+* When blitz2 started the editor with a source, the editor sometimes
+  opened a wrong file or none, showing "Couldn't open file!" or an empty
+  text, depending on where blitz2's files had landed in memory; it now
+  always opens the source it is given
+  ([#340](https://github.com/fubar-coder/bb2-c/issues/340)).
