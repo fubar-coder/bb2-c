@@ -845,12 +845,18 @@ void defaults(void)
     color = normcol;
     defalt = id;
     swapbords();
+    /* .skip5 */
+    screenclose();
     if (bak->d_fonthite != fonthite) {
         struct item *item = thisitem;
         UWORD row;
 
-        /* BUG(orig) (#352): limited with the OLD edrows, before the screen is
-           reopened with the new font (survey-01 I.13) */
+        /* Fixed (#352): the cursor row is limited with the rows of the new
+           font (calcscreen, as screenopen2 will compute them).  The
+           original limits it before screenclose with the old edrows: from
+           font 6 to font 8 the cursor could stay below the last row, and
+           chloc pointed behind the character map (survey-01 I.13). */
+        calcscreen();
         row = cursy;
         while (!(row < edrows)) {       /* .loopy, bcs */
             row--;
@@ -861,8 +867,6 @@ void defaults(void)
         cursy = row;
         calcpos();
     }
-    /* .skip5 */
-    screenclose();
     screenopen2();
     if (bak->d_tokenise == tokenise)
         return;                 /* .byebye */
