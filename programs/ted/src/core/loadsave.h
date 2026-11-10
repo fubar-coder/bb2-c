@@ -60,8 +60,9 @@ void fileopen2(UBYTE *name);
 /* ted.s:769 realsave - write the list to file name (d7) (filesave falls
    through after the .bak rename): doopen(NEWFILE) (failure: return -
    the file is then only there as .bak, survey-01 I.15), sleepon, write
-   loop (ASCII mode: LF instead of the 0), error(error3) on a write error,
-   doclose, savextra callback, .info if icongad(), pointeron, showfname. */
+   loop (ASCII mode: LF instead of the 0), doclose, savextra callback,
+   .info if icongad(), pointeron, showfname; a write error: error(error3),
+   doclose, no .xtra and no .info (fixed #380), pointeron, showfname. */
 void realsave(UBYTE *name);
 
 /* --------------------------------------------------- search / replace */

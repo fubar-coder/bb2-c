@@ -329,10 +329,13 @@ void realsave(UBYTE *name)
         written = ted_write(rd.fh, chars, len);
         chars[len - 1] = 0;
         if (written < 0) {
-            /* BUG(orig) (#380): allalt stays set, but .xtra/.info are still
-               written (survey-01 I.15) */
+            /* allalt stays set.  Fixed (#380): the original goes on to
+               .skip3 and still writes the .xtra and the .info of the
+               truncated source (survey-01 I.15); here neither is
+               written. */
             error(error3);
-            goto skip3;
+            doclose(&rd);
+            goto noicons;
         }
         /* @791 .skip2 */
         item = item->nextitem;
@@ -340,7 +343,7 @@ void realsave(UBYTE *name)
             break;
     }
     allalt = 0;
-skip3:  /* @794 .skip3 */
+    /* @794 .skip3 */
     doclose(&rd);
     if (savextra) {
         fh = openxtra(TED_MODE_NEWFILE);
@@ -363,7 +366,7 @@ skip3:  /* @794 .skip3 */
         /* @818 .noicons2 */
         closextra();
     }
-    /* @820 .noicons */
+noicons:  /* @820 .noicons */
     pointeron();
     showfname();                /* bra showfname */
 }

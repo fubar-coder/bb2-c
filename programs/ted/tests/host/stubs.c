@@ -122,8 +122,12 @@ LONG ted_read(tedfh fh, APTR buf, LONG len)
     return ferror(fhs[fh]) ? -1 : (LONG)n;
 }
 
+int host_writefail;
+
 LONG ted_write(tedfh fh, const void *buf, LONG len)
 {
+    if (host_writefail > 0 && --host_writefail == 0)
+        return -1;                      /* the write that is to fail */
     if (fh <= 0 || fh >= MAXFH || !fhs[fh])
         return -1;
     return fwrite(buf, 1, len, fhs[fh]) == (size_t)len ? len : -1;

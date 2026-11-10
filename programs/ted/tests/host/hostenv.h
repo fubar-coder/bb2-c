@@ -6,7 +6,8 @@
  *   - memory: malloc with a header (requested size + slack for the larger
  *     host struct item); ted_free with a different size counts a hazard;
  *     host_live counts the blocks not freed
- *   - files: stdio, handles are indexes into a table (0 = failure)
+ *   - files: stdio, handles are indexes into a table (0 = failure);
+ *     host_writefail makes one ted_write fail
  *   - UI hooks: counted in host_calls[] (and logged in order if
  *     host_trace is set); the ones with state effects do them (scroll
  *     hooks -> chmap_* of the core, setdefs copies the block)
@@ -56,6 +57,7 @@ extern int host_trace;                  /* print every hook call */
 extern jmp_buf *host_outmem;            /* outmem target */
 extern int host_hazards;                /* ORIG_HAZARD count */
 extern long host_live;                  /* blocks of ted_alloc not freed by ted_free */
+extern int host_writefail;              /* N > 0: the Nth ted_write from now fails */
 extern const char *host_lasterror;      /* last error() text */
 extern BOOL host_icongad, host_findcase;
 extern UBYTE *host_bname;               /* getbname result */

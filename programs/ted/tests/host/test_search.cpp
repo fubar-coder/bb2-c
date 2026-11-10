@@ -364,6 +364,59 @@ TEST_CASE(".xtra name and realsave's .info", "[search][files]")
     std::remove(info.c_str());
 }
 
+TEST_CASE("realsave after a write error writes no .xtra and no .info", "[search][files]")
+{
+    static const char *const l[] = { "line", "two" };
+    UBYTE buf[1240];
+    tempdir dir;
+    no_outmem om;
+
+    env();
+    REQUIRE(!dir.path.empty());
+    if (setjmp(om.jb))
+        FAIL("unexpected outmem");
+    list(l);
+    std::string name = dir.path + "/test_search.err", info = name + ".info",
+                xtra = name + ".xtra";
+    std::strcpy(reinterpret_cast<char *>(buf), name.c_str());
+    xtraat = buf;
+    const APTR keep = savextra;
+    savextra = buf;                     // any callback: the stub counts it
+    host_icongad = TRUE;
+    allalt = 1;
+    host_resetcalls();
+    host_writefail = 2;                 // the second line
+    realsave(buf);
+    host_writefail = 0;
+    CHECK(host_calls[HC_ERROR] == 1);
+    CHECK(allalt == 1);                 // the text counts as not saved
+    // fixed #380: the original went on with the .xtra and the .info
+    CHECK(host_calls[HC_SAVEXTRA] == 0);
+    long len;
+    UBYTE *b = host_readfile(xtra.c_str(), &len);
+    CHECK(b == nullptr);
+    std::free(b);
+    b = host_readfile(info.c_str(), &len);
+    CHECK(b == nullptr);
+    std::free(b);
+    CHECK(host_calls[HC_SHOWFNAME] == 1);
+    CHECK(std::string_view(reinterpret_cast<char *>(buf)) == name);
+    // without the error both are written
+    host_resetcalls();
+    realsave(buf);
+    CHECK(host_calls[HC_ERROR] == 0);
+    CHECK(allalt == 0);
+    CHECK(host_calls[HC_SAVEXTRA] == 1);
+    b = host_readfile(info.c_str(), &len);
+    CHECK(b != nullptr);
+    std::free(b);
+    savextra = keep;
+    host_icongad = FALSE;
+    std::remove(name.c_str());
+    std::remove(info.c_str());
+    std::remove(xtra.c_str());
+}
+
 TEST_CASE("keymap data: rawspecial, germs_map, fontcalc", "[keymap]")
 {
     env();
