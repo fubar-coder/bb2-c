@@ -42,10 +42,9 @@ static UWORD lineno(void)
 }
 
 /* moveq #0,d1 / move d0,d1 / divu tabstop,d1 / swap d1: remainder of the
-   32/16 division (the quotient always fits: d0 < 32768).  BUG(orig) (#385)
-   (open point O3): tabstop = 0 from l:blitzeditor.opts is a division by
-   zero - divu_w is the real DIVU.W on the Amiga (zero divide trap like the
-   original); the host aborts. */
+   32/16 division (the quotient always fits: d0 < 32768).  Fixed (#385):
+   tabstop is 1..79 (the original took 0 from l:blitzeditor.opts or the
+   requester: a division by zero). */
 static UWORD tabrem(UWORD col)
 {
     return (UWORD)(divu_w(col, tabstop) >> 16);

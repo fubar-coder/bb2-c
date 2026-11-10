@@ -16,8 +16,9 @@
 /* ------------------------------------------------------- option file */
 
 /* ted.s:3063 loaddefs: Open(defname, OLDFILE), Read 50 bytes into defstart
-   (result unchecked: a short read keeps the rest), Close; then
-   setdefs(&defstart) - also if Open failed. */
+   (result unchecked: a short read keeps the rest), Close, the tab size
+   clamped to 1..79 (fixed #385); then setdefs(&defstart) - also if Open
+   failed. */
 void loaddefs(void);
 /* ted.s:3078 savedefs: Open(defname, NEWFILE), Write 50 bytes, Close;
    errors ignored */
@@ -76,14 +77,14 @@ WORD doread(struct rdstate *rd);
 #define RL_NOEOL 0              /* Z=1: line without end (EOF/overflow) */
 #define RL_OK    1              /* normal line */
 /* ted.s:3375 readline: one line into charbuff2 (token pairs copied
-   unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop - 0 traps
-   in the original - up to the end of charbuff2 (fixed #378), overflow at
+   unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop (never 0:
+   fixed #385) up to the end of charbuff2 (fixed #378), overflow at
    charbuff3), tokenised via mytoke if ASCII
    and tokenise: a line ended by LF, and one without end (EOF/overflow)
    in a file an earlier line of which ended by LF or without a byte
    >= $80 (fixed #376).  *length (d5)
    = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374, #375,
-   #377, #379, #385). */
+   #377, #379). */
 int readline(struct rdstate *rd, UWORD *length);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = len (d5) =
    length without 0); returns the new length (d5, incl. 0) */

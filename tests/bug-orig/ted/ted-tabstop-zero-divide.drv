@@ -1,0 +1,32 @@
+; ted-tabstop-zero-divide (#385): TED accepted the tab size 0 - from
+; L:blitzeditor.opts unchecked, from the options requester as typed, and
+; a typed value >= 80 became 0 (with a beep) - and every TAB was then a
+; divu by 0 (68000 zero divide trap).  blitz2 with a text file "x", tab
+; size 0 in the options file; OPTIONS, 100 into the Tab gadget (6) +
+; GADGETUP, OK; Tab and "b" typed, SAVE, QUIT (savedefs).  Correct: the
+; tab size from the file is clamped to 1, the 100 keeps it, the Tab is
+; typed (the text is saved), the saved options have tab size 1; the
+; original traps on the Tab (recorded before the fix: TIMEOUT).
+; @fixed #385
+; @file bo.bas "x\n"
+; @source F bo.bas
+; @opts tabstop=0
+; @expect file bo.bas "b"
+; @expect opts blitzeditor.opts tabstop=1
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 3
+wait req "OK" "CANCEL"
+str 6 "100"
+gad 6
+gad 26
+wait screen
+type "\tb"
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit

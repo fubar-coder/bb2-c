@@ -7,13 +7,12 @@
 // feed() below repeats its dispatch (getline3 ... glinedone) with the
 // drawing left out and print2's chmap write done by hand; everything else
 // is the real core (gl_*, horizpos, cursleft, cursrite, blokfix ...).
-#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <snitch/snitch.hpp>
+#include "tempdir.hpp"
 extern "C" {
 #include "hostenv.h"
 #include "lineedit.h"
@@ -296,23 +295,49 @@ TEST_CASE("Tab and Shift-Tab", "[lineedit][tabs]")
     CHECK(anyalt == 9);
 }
 
-TEST_CASE("Tab with tabstop 0 aborts", "[lineedit][tabs]")
+TEST_CASE("the tab size of the options file is clamped to 1..79", "[lineedit][tabs]")
 {
     env();
-    std::fflush(stdout);
-    pid_t pid = fork();
-    REQUIRE(pid >= 0);
-    if (pid == 0) {
-        tabstop = 0;
-        setrow("abc", 1);
-        gl_tab();
-        _exit(0);
-    }
-    int st;
-    waitpid(pid, &st, 0);
-    // O3: the original traps (divu by 0); the host aborts
-    CHECK(WIFSIGNALED(st));
-    CHECK(WTERMSIG(st) == SIGABRT);
+    tempdir dir;
+    REQUIRE(!dir.path.empty());
+    char cwd[4096];
+    REQUIRE(getcwd(cwd, sizeof(cwd)) != nullptr);
+    REQUIRE(chdir(dir.path.c_str()) == 0);
+
+    // l:blitzeditor.opts (defname, relative on the host) with tab size VALUE
+    auto loadtab = [](UWORD value) {
+        struct defblock d = defstart;
+        UBYTE img[sizeof(struct defblock)];
+
+        d.d_tabstop = value;
+        defs_tobytes(img, &d);
+        FILE *f = std::fopen(defname, "wb");
+        REQUIRE(f != nullptr);
+        std::fwrite(img, 1, sizeof(img), f);
+        std::fclose(f);
+        loaddefs();
+        std::remove(defname);
+    };
+
+    // fixed #385: the original took 0 over (every TAB a division by zero)
+    loadtab(0);
+    CHECK(tabstop == 1);
+    setrow("abc", 1);
+    feed(9, NOSHIFT);                   // one column to the next tab position
+    CHECK(rowis("a bc"));
+    CHECK(cursx == 2);
+    loadtab(300);
+    CHECK(tabstop == 79);
+    loadtab(80);
+    CHECK(tabstop == 79);
+    loadtab(1);
+    CHECK(tabstop == 1);
+    loadtab(79);
+    CHECK(tabstop == 79);
+    loadtab(8);
+    CHECK(tabstop == 8);
+    REQUIRE(chdir(cwd) == 0);
+    tabstop = 2;
 }
 
 TEST_CASE("Shift-cursor left and right", "[lineedit]")

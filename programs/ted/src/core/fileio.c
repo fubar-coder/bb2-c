@@ -33,8 +33,9 @@ ULONG divu_w(ULONG dividend, UWORD divisor)
     int i;
 
     if (divisor == 0) {
-        /* 68000: zero divide trap (guru 5).  BUG(orig) (#385) (tabstop = 0,
-           decision O3); host-test-only guard: */
+        /* 68000: zero divide trap (guru 5).  The divisors are constants
+           and tabstop, which is never 0 (fixed #385: loaddefs clamps it,
+           defaults keeps the previous value); host-test-only guard: */
         ORIG_HAZARD("divu by 0 (68000 zero divide trap)");
         fprintf(stderr, "ted core: divu by zero (e.g. tabstop = 0) - the "
                 "68000 traps here (zero divide guru); host build aborts\n");
@@ -81,6 +82,13 @@ void loaddefs(void)
         ted_read(fh, img, (LONG)sizeof(img));   /* result unchecked */
         defs_frombytes(&defstart, img);
         ted_close(fh);
+        /* Fixed (#385): the original takes the tab size over unchecked; 0
+           made every divu tabstop trap, one above 133 overran the line
+           buffers (#378).  Clamped to the range of the requester. */
+        if (tabstop < 1)
+            tabstop = 1;
+        else if (tabstop > 79)
+            tabstop = 79;
     }
     /* .skip */
     setdefs(&defstart);                         /* bra setdefs */
@@ -220,8 +228,8 @@ WORD doread(struct rdstate *rd)
    BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
    unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
-   half token in front of the 0 (#379); tabstop = 0 is a zero divide (#385);
-   TAB counts token pairs as 2 columns (#377); CR stays.
+   half token in front of the 0 (#379); TAB counts token pairs as 2 columns
+   (#377); CR stays.
    Fixed (#378): the TAB expansion stops at the end of charbuff2. */
 int readline(struct rdstate *rd, UWORD *length)
 {

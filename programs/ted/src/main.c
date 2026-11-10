@@ -747,12 +747,13 @@ void defaults(void)
             defaultreqla48[1] = 0;
             bad = TRUE;
         }
-        /* .sskip2 - BUG(orig) (#385): no lower bound, tabstop 0 is accepted
-           (divu by 0 in readline, survey-01 I.12) */
-        if ((ULONG)int3 >= 80) {
-            int3 = 0;
-            defaultreqla49[0] = '0';
-            defaultreqla49[1] = 0;
+        /* .sskip2 - Fixed (#385): the original has no lower bound and
+           replaces a value >= 80 by 0, so that tabstop 0 is accepted (every
+           divu tabstop traps, survey-01 I.12).  A tab size outside 1..79
+           keeps the previous one (beep as for the other gadgets). */
+        if ((ULONG)int3 - 1 >= 79) {
+            int3 = tabstop;
+            numtoascii2(tabstop, defaultreqla49);
             bad = TRUE;
         }
         /* .sskip */
