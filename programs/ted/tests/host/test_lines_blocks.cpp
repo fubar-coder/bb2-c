@@ -93,6 +93,10 @@ const blkcase jn[] = {
     { 4, 0, 1, 3, 2, 5,   1, 3, 7, 4 },         // next = bboty: bbotx += 5
     { 3, 0, 1, 2, 2, 5,   1, 2, 2, 4 },         // inside
     { 5, 0, 1, 3, 2, 5,   1, 3, 2, 5 },         // cur = bboty: nothing
+    // next = btopy = bboty, the start moves to column 128: blokfix ends in
+    // blokdis, the bounds stay as blokfix left them (#346 fixed: the
+    // original then subtracts 1, bboty = $FFFE)
+    { 2, 0, 123, 3, 125, 3,   0, 4, 130, (UWORD)-1 },
 };
 // split at column col
 const blkcase sp[] = {
@@ -118,6 +122,29 @@ TEST_CASE("block coordinates: insertline, return, deleteline, join, split", "[li
     run("deleteline", deleteline, del, 10);
     run("join", join, jn, 10);
     run("split", split, sp, 10);
+}
+
+TEST_CASE("join: no ghost block after blokdis", "[lines][blocks]")
+{
+    static const char *const t[] = { "x", "a=1:b=2", "z" };
+
+    env();
+    // Fixed (#346): line 0 joined with line 1, whose block b=2 (columns
+    // 4-6) would start at column 128: the block is gone and stays gone
+    mklist(3, t);
+    cursorto(0, 0);
+    for (int i = 0; i < 124; i++)                   // line 0: 124 characters
+        chmap[chloc + i] = 'x';
+    setblock(4, 1, 6, 1);
+    bstx = 1;
+    host_resetcalls();
+    join();
+    CHECK(numlines == 2);
+    CHECK(bboty == static_cast<UWORD>(-1));
+    CHECK(bstx == -1);
+    CHECK(host_calls[HC_BLOKMENUS] == 1);
+    // the joined line ends at column 128 (charbuff2), "b=2" is cut off
+    CHECK(std::string_view(linetext(0)).substr(124) == "a=1:");
 }
 
 TEST_CASE("deleteline of a one line block ends it with blokdis", "[lines][blocks]")

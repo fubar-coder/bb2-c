@@ -30,11 +30,9 @@ static UWORD curline(void)
     return (UWORD)(curstop + cursy);
 }
 
-/* bsr blokfix, plus: did it end in blokdis?  blokdis prints the status
-   text with pstats -> qprint -> fontcalc, which leaves d1 = (char & $f0)
-   << 3 (font 8) or the font 6 variant of the last character printed
-   (a space): blokcopy uses d1 right after blokfix (ted.s:1970-1972), so
-   the clobbered d1 is observable there (BUG(orig) #346).  blokfix itself is
+/* bsr blokfix, plus: did it end in blokdis (no block any more)?  Join,
+   Split and Block Copy then leave the block bounds alone (fixed #346:
+   the original adjusts them further, a ghost block).  blokfix itself is
    chunk 06 (lineedit.c); whether it reached blokdis is seen at bstx,
    which blokdis always sets to -1 (bstx is not read by blokfix). */
 static BOOL blokfix_dis(void)
@@ -48,25 +46,6 @@ static BOOL blokfix_dis(void)
     if (!dis)
         bstx = save;
     return dis;
-}
-
-/* d1 after blokdis (fontcalc of the last ' ' of bltext): font 8:
-   ($20 & $f0) << 3 = 256; font 6 (ted.s:5228): d1 = ($20 & $f0) << 1,
-   d0 = d1, d1 <<= 1, d1 += d0 = 192 */
-static UWORD blokdis_d1(void)
-{
-    UWORD high = 0x20 & 0xf0;
-
-    if (fonthite == 6) {
-        UWORD t;
-
-        high <<= 1;
-        t = high;
-        high <<= 1;
-        high += t;
-        return high;
-    }
-    return (UWORD)(high << 3);
 }
 
 /* ted.s:1041 cursdown */
@@ -359,18 +338,23 @@ nextbot:
         if (line == btopy)                      /* dead (survey-02 I.18) */
             goto nextboth;
         bbotx = (WORD)(bbotx + len);
-        blokfix();
+        if (blokfix_dis())                      /* fixed #346 */
+            goto sskip;
         goto sskip3;
 nextboth:
         width = (WORD)(bbotx - btopx);
         btopx = (WORD)(btopx + len);
         bbotx = (WORD)(btopx + width);
 sskip4:
-        blokfix();
+        /* Fixed (#346) survey-02 I.5: the original goes on to btopy--/
+           bboty-- after blokfix ended in blokdis: bboty = -2, a ghost
+           block to the end of the text */
+        if (blokfix_dis())
+            goto sskip;
 sskip2:
         btopy--;
 sskip3:
-        bboty--;                                /* BUG(orig) (#346) survey-02 I.5: also after blokdis */
+        bboty--;
     }
 sskip:
     buf = charbuff2;
@@ -460,9 +444,13 @@ sonboth:
         width = (UWORD)(bbotx - btopx);
         btopx = (WORD)(btopx - col);
         bbotx = (WORD)(btopx + width);
-        blokfix();
+        /* Fixed (#346) survey-02 I.5: the original goes on to btopy++/
+           bboty++ after blokfix ended in blokdis (not reached here as far
+           as checked: btopx only gets smaller) */
+        if (blokfix_dis())
+            goto sskip;
 sskip2:
-        btopy++;                                /* BUG(orig) (#346) survey-02 I.5: also after blokdis */
+        btopy++;
 sinmid:
         bboty++;
     }
@@ -1077,8 +1065,11 @@ void bcopyok(void)
     bbotx = (WORD)(bbotx + shift);
     /* .shit4 */
 shit4:
+    /* Fixed (#346): the original goes on to .shit3 after blokfix ended in
+       blokdis, with d1 clobbered by blokdis (pstats -> fontcalc: 256 for
+       font 8, 192 for font 6): bboty = 255 or 191, a ghost block */
     if (blokfix_dis())
-        rows = blokdis_d1();                    /* BUG(orig) (#346): d1 clobbered by blokdis */
+        goto done2;
 shit3:
     btopy = (UWORD)(btopy + rows);
     bboty = (UWORD)(bboty + rows);
