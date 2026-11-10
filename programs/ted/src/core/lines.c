@@ -863,7 +863,10 @@ void bloksave(void)
 /* ted.s:1738 blokload - load block from disk.  Fixed (#375): readline
    returns RL_FULL for a line cut at the end of charbuff2 (the original
    returned "no eol" and the load stopped there as at the end of the
-   file); RL_FULL is not RL_NOEOL, so the load goes on with the rest. */
+   file); RL_FULL is not RL_NOEOL, so the load goes on with the rest.
+   Fixed (#1013): the line without end is read as text (rd.rawnoeol), as
+   the original's readline left it: blalldone tokenises it with the tail
+   (charstobuff), and tokit would destroy token pairs readline made. */
 void blokload(void)
 {
     struct item *cur, *newl;
@@ -881,6 +884,7 @@ void blokload(void)
     cur = thisitem;
     if (!doopen(&rd, name, TED_MODE_OLDFILE))
         return;
+    rd.rawnoeol = TRUE;                         /* fixed #1013 */
     if (fillbuff(&rd) == 0) {
         doclose(&rd);                           /* beq doclose */
         return;

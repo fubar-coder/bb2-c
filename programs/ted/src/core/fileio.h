@@ -62,6 +62,10 @@ struct rdstate {
                                    (from doopen) */
     BOOL textfile;              /* NEW (#376): a line of the file ended
                                    in LF (text format); FALSE from doopen */
+    BOOL rawnoeol;              /* NEW (#1013): a line without end (EOF) is
+                                   left untokenised (blokload tokenises it
+                                   with the cursor line's tail); FALSE from
+                                   doopen */
 };
 
 /* ted.s:3307 doopen: Open(name (d7), mode (d2)) -> rd->fh, filehand.
@@ -92,7 +96,8 @@ WORD doread(struct rdstate *rd);
    tokenised via mytoke if ASCII
    and tokenise: a line ended by LF, and one without end (EOF/full)
    in a file an earlier line of which ended by LF or without a byte
-   >= $80 (fixed #376); a token start byte right before EOF is dropped
+   >= $80 (fixed #376); the one without EOL not when rd->rawnoeol
+   (fixed #1013); a token start byte right before EOF is dropped
    (fixed #379).  *length (d5)
    = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374). */
 int readline(struct rdstate *rd, UWORD *length);

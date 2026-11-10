@@ -180,6 +180,7 @@ BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode)
     rd->carry = -1;                             /* NEW (#375, readline) */
     filehand = rd->fh;                          /* .skip */
     rd->textfile = FALSE;                       /* NEW (#376, readline) */
+    rd->rawnoeol = FALSE;                       /* NEW (#1013, readline) */
     return TRUE;
 }
 
@@ -242,7 +243,10 @@ static ULONG pairwidth(UBYTE hi, UBYTE lo)
    and lines cut at the buffer end (d4 is only set for LF); here such a
    line is tokenised as the LF lines are when the file is a text file (an
    earlier line ended by LF: rd->textfile) or the line has no byte >= $80
-   (no token pair the tokeniser could break).
+   (no token pair the tokeniser could break).  Fixed (#1013): a line
+   without end stays text when the caller asks for it (rd->rawnoeol:
+   blokload, which tokenises that line once more with the cursor line's
+   tail; tokit clears bit 7 of every byte and destroyed the token pairs).
    Fixed (#375): the original cuts a line that does not fit charbuff2
    (130 bytes) back to charbuff3 - 3 - the three bytes behind the cut are
    lost - and returns "no eol", which blokload takes for the end of the
@@ -365,7 +369,7 @@ oops:
     *dst++ = 0;
     len = (ULONG)(dst - charbuff2);
     ret = RL_NOEOL;
-    ascii = rd->textfile || !pairs;             /* fixed #376 */
+    ascii = (rd->textfile || !pairs) && !rd->rawnoeol;  /* fixed #376, #1013 */
     goto sit;
 skip3:
     /* .skip3 */
