@@ -283,7 +283,9 @@ void freelast(void)
     goup();                                     /* bra goup */
 }
 
-/* ted.s:1226 freeonly */
+/* ted.s:1226 freeonly.  BUG(orig) (#1006): the line is freed before the
+   new empty line is allocated; allocfirst's afirst2 ignores a failed
+   allocnull, and first/end/thisitem keep pointing at the freed line */
 void freeonly(void)
 {
     freethis();
