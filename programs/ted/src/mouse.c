@@ -748,7 +748,7 @@ void showmice(void)
             goto loop3;
         src = node->line->chars;
         if (tokenise) {
-            detok(src, charbuff);               /* survey-03 I.17: charbuff */
+            detok(src, charbuff, charbuff4);    /* survey-03 I.17: charbuff */
             src = charbuff;
         }
         while (*src++ == 32)                    /* .loop12: skips the label char too */

@@ -7,6 +7,8 @@
 ; line 3), Block Kill: detoka5 for the last block line.  SAVE, QUIT (TED
 ; frees its buffer block).  Correct: nothing is written behind the block;
 ; the original writes the text behind it (inject: "written behind").
+; Fixed in TED-C: detoka5 stops silently at the end of the buffer.
+; @fixed #355
 ; @file bo.bb2 "x\x00\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
 ; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
 ; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\x00y\x00"

@@ -3,6 +3,7 @@
 // (x1print, $ hex, _ . \, quote, remark, all spaces), alpha.
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <string_view>
 #include <snitch/snitch.hpp>
 extern "C" {
@@ -123,7 +124,7 @@ TEST_CASE("tokit2 quirks", "[fileio][tokit]")
     CHECK(is(out, "printx", 7));
     // round trip through detok
     tok("NPrint \"a\":a=1", out);
-    detok(out, txt);
+    detok(out, txt, txt + sizeof(txt));
     CHECK(std::string_view(reinterpret_cast<char *>(txt)) == "NPrint \"a\":a=1");
 }
 
@@ -146,6 +147,42 @@ TEST_CASE("no token list: findtoke and tokit match nothing", "[fileio][tokit]")
     CHECK(is(out, "print a", 8));
     CHECK(host_hazards == 0);
     tokens = keep;
+}
+
+TEST_CASE("detok and detoka5 stop at the end of the buffer", "[fileio][detok]")
+{
+    UBYTE out[256];
+    std::string text;
+
+    // Fixed (#355): a line of 23 "NPrint:" (69 bytes) is 161 characters
+    // as text; the original wrote it whole behind charbuff3, the end of
+    // TED's buffer block
+    env();
+    for (int i = 0; i < 23; i++)
+        text += "NPrint:";
+    REQUIRE(tok(text.c_str(), out) == 23 * 3 + 1);
+    auto *it = static_cast<struct item *>(ted_alloc(23 * 3 + 1 + lenitem, TED_MEMF_PUBLIC));
+    it->numchars = 23 * 3 + 1;
+    std::memcpy(it->chars, out, 23 * 3 + 1);
+
+    // detoka5: chcols characters, the length byte chcols + 1
+    detoka5(it);
+    CHECK(charbuff3[0] == chcols + 1);
+    CHECK(std::string_view(reinterpret_cast<char *>(charbuff3 + 1), chcols)
+          == text.substr(0, chcols));
+
+    // detok: the text stops in front of end, the 0 goes there
+    std::memset(charbuff2, 'x', chcols + 2);
+    UBYTE *e = detok(it->chars, charbuff, charbuff2);
+    CHECK(e == charbuff2 - 1);
+    CHECK(*e == 0);
+    CHECK(std::string_view(reinterpret_cast<char *>(charbuff)) == text.substr(0, chcols + 1));
+    CHECK(charbuff2[0] == 'x');
+    // a short line is whole
+    e = detok(it->chars, charbuff, charbuff4);
+    CHECK(std::string_view(reinterpret_cast<char *>(charbuff)) == text);
+    CHECK(e == charbuff + text.size());
+    ted_free(it, it->numchars + lenitem);
 }
 
 TEST_CASE("alpha", "[fileio][tokit]")

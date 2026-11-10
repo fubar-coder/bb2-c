@@ -363,9 +363,10 @@ sskip:
         buf[len] = row[len];
     /* .skip2 */
     if (tokenise) {
-        /* .skip2a.  BUG(orig) (#355) survey-02 I.3: no length check (detok can
-           run past charbuff2/charbuff3) */
-        p = detok(next->chars, p);
+        /* .skip2a.  Fixed (#355) survey-02 I.3: the original's detok has no
+           length check and can run past charbuff3, the end of TED's
+           buffer block */
+        p = detok(next->chars, p, charbuff4);
     } else {
         const UBYTE *s = next->chars;
 

@@ -377,16 +377,20 @@ UBYTE *bloadadd(UBYTE *dst)
 
 /* ---------------------------------------------- tokens / detokeniser */
 
-/* ted.s:3455 detok - detokenise a0 to a1.  No length limit (survey-04
-   I.8).  A token byte in front of the 0 (readline I.3) takes the 0 as its
-   low byte and runs on behind the line, as in the asm. */
-UBYTE *detok(const UBYTE *src, UBYTE *dst)
+/* ted.s:3455 detok - detokenise a0 to a1.  Fixed (#355) survey-04 I.8:
+   the original has no length limit; the text stops silently where only
+   the byte for the 0 is left before end.  A token byte in front of the 0
+   (readline I.3) takes the 0 as its low byte and runs on behind the line,
+   as in the asm. */
+UBYTE *detok(const UBYTE *src, UBYTE *dst, const UBYTE *end)
 {
+    const UBYTE *last = end - 1;                /* room for the 0 */
+
     for (;;) {
         UBYTE c = *src++;
         const char *name;
 
-        if (c == 0)
+        if (c == 0 || dst >= last)
             break;                              /* .done */
         if (!(c & 0x80)) {
             *dst++ = c;
@@ -394,9 +398,8 @@ UBYTE *detok(const UBYTE *src, UBYTE *dst)
         }
         /* .skip */
         name = findtoke((UWORD)((c << 8) | *src++));
-        while ((*dst++ = (UBYTE)*name++) != 0)  /* .skip3 */
-            ;
-        dst--;
+        while (*name && dst < last)             /* .skip3 */
+            *dst++ = (UBYTE)*name++;
     }
     *dst = 0;
     return dst;
@@ -424,10 +427,14 @@ const char *findtoke(UWORD tok)
     }
 }
 
-/* ted.s:3759 detoka5 */
+/* ted.s:3759 detoka5.  Fixed (#355) survey-04 I.8: the original has no
+   length limit and writes behind charbuff3, the end of TED's buffer
+   block; the text stops silently where one byte is left before
+   charbuff4 (bloksave puts the LF there) */
 void detoka5(struct item *line)
 {
     UBYTE *dst = charbuff3 + 1;
+    UBYTE *const last = charbuff4 - 1;
     const UBYTE *src = line->chars;
 
     /* bsr .loop (subroutine in the subroutine) */
@@ -435,25 +442,18 @@ void detoka5(struct item *line)
         UBYTE c = *src++;
         const char *name;
 
-        if (c == 0)
+        if (c == 0 || dst >= last)
             break;                              /* .done */
         if (!(c & 0x80)) {
-            if (dst >= charbuff4)
-                ORIG_HAZARD("detoka5 writes beyond charbuff3 (allocation end)");
             *dst++ = c;
             continue;
         }
         /* .skip */
         name = findtoke((UWORD)((c << 8) | *src++));
-        for (;;) {                              /* .found */
-            if (dst >= charbuff4)
-                ORIG_HAZARD("detoka5 writes beyond charbuff3 (allocation end)");
-            if ((*dst++ = (UBYTE)*name++) == 0)
-                break;
-        }
-        dst--;
+        while (*name && dst < last)             /* .found */
+            *dst++ = (UBYTE)*name++;
     }
-    /* length byte = n + 1, no 0 terminator; overflows beyond 255 */
+    /* length byte = n + 1 (at most chcols + 1), no 0 terminator */
     charbuff3[0] = (UBYTE)(dst - charbuff3);
 }
 
@@ -475,7 +475,7 @@ WORD isithere2(struct item *line, UWORD col, UBYTE **text)
 
     if (tokenise) {
         pos = charbuff;
-        detok(line->chars, charbuff);
+        detok(line->chars, charbuff, charbuff4);
     }
     /* .skip */
     base = pos;                                 /* asm a1 */

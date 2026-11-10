@@ -125,8 +125,9 @@ void detokallz(void)
     detokallz2();                               /* falls through into detokallz2 */
 }
 
-/* ted.s:2673 detokallz2.  survey-03 I.14: no check that the text fits
-   into charbuff / 255 bytes (numchars is a byte); thisitem stays on the
+/* ted.s:2673 detokallz2.  Fixed (#355) survey-03 I.14: the original does
+   not check that the text fits into charbuff / 255 bytes (numchars is a
+   byte); detok stops at 254 characters + the 0.  thisitem stays on the
    last line, no redraw. */
 void detokallz2(void)
 {
@@ -136,7 +137,7 @@ void detokallz2(void)
 
     do {
         /* .loop */
-        end = detok(item->chars, charbuff);
+        end = detok(item->chars, charbuff, charbuff + 255);
         thisitem = item;
         item = makeline(item, (UWORD)(end - charbuff + 1));
         item = item->nextitem;

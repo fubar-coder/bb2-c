@@ -48,7 +48,7 @@ void blocktab(void)
         }
         src = item->chars;
         if (tokenise) {
-            dst = detok(src, dst);      /* dst (a1) ON the 0 byte */
+            dst = detok(src, dst, charbuff4);   /* dst (a1) ON the 0 byte */
         } else {
             /* Fixed (#347): the original's copy leaves a1 BEHIND the 0
                byte, so the 0 stayed in the chmap style line and
@@ -95,7 +95,7 @@ void blockuntab(void)
         dst = charbuff2;
         src = item->chars;
         if (tokenise) {
-            detok(src, dst);
+            detok(src, dst, charbuff4);
         } else {
             while ((*dst++ = *src++) != 0)
                 ;

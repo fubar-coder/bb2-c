@@ -140,7 +140,7 @@ static BOOL detok_file(const char *in, const char *out)
         }
         if (!f)
             continue;
-        e = detok(a4->chars, buf);
+        e = detok(a4->chars, buf, buf + sizeof(buf) - 1);  /* - 1: the LF */
         *e++ = '\n';
         if (fwrite(buf, 1, (size_t)(e - buf), f) != (size_t)(e - buf))
             ok = FALSE;

@@ -102,16 +102,20 @@ UBYTE *bloadadd(UBYTE *dst);
 /* ---------------------------------------------- tokens / detokeniser */
 
 /* ted.s:3455 detok: tokenised line src (a0) -> text at dst (a1)
-   (0-terminated, no length limit, survey-04 I.8).  Returns dst ON the 0
-   byte.  (asm: a0 also behind the source - not needed by any caller) */
-UBYTE *detok(const UBYTE *src, UBYTE *dst);
+   (0-terminated).  end (NEW, Fixed (#355) survey-04 I.8: the original has
+   no length limit) = the end of the buffer: the text stops silently at
+   end - 1, the 0 goes there.  Returns dst ON the 0 byte.  (asm: a0 also
+   behind the source - not needed by any caller) */
+UBYTE *detok(const UBYTE *src, UBYTE *dst, const UBYTE *end);
 /* ted.s:3472 findtoke: name of token word tok (d0, bit 15 cleared) in the
    list `tokens`; unknown or no list (tokens == 0, Fixed (#359)) ->
    tokeerr. */
 const char *findtoke(UWORD tok);
 /* ted.s:3759 detoka5: detok chars(line) to charbuff3+1 WITHOUT 0 byte,
-   charbuff3[0] = length + 1; writes beyond charbuff3 for long lines
-   (allocation end, BUG(orig) #355, ORIG_HAZARD) */
+   charbuff3[0] = length + 1; the text stops silently at charbuff4 - 1
+   (at most chcols characters: the byte behind them is bloksave's LF;
+   the original wrote behind charbuff3, the allocation end: Fixed
+   (#355)) */
 void detoka5(struct item *line);
 
 /* ------------------------------------------------------------- search */

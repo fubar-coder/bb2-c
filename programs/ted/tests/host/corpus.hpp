@@ -48,7 +48,7 @@ inline bool detok_text(const oracle::source &s, std::vector<unsigned char> &text
         return false;
     for (const UBYTE *p = data.data(); p < data.data() + size;
          p += std::strlen(reinterpret_cast<const char *>(p)) + 1) {
-        UBYTE *e = detok(p, out.data());
+        UBYTE *e = detok(p, out.data(), out.data() + out.size());
 
         text.insert(text.end(), out.data(), e);
         text.push_back('\n');
