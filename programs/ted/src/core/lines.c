@@ -237,17 +237,22 @@ void deleteline(void)
 
     allalt = (UWORD)-1;
     if (bboty != (UWORD)-1) {
-        /* adjust block (survey-02 H).  BUG(orig) (#353) survey-02 I.6: a one
-           line block ends as bboty = -1 without blokdis. */
+        /* adjust block (survey-02 H).  Fixed (#353) survey-02 I.6: the
+           original ends a one line block as bboty = -1 (clr bboty, then
+           both -1) without blokdis: the block menu items, the "Block"
+           status and bstx stayed.  The deleted line was the whole block:
+           blokdis. */
         line = curline();
         if (line < btopy)                       /* bcs .skip0z */
             goto skip0z;
         if (line > bboty)                       /* bhi .skip0 */
             goto skip0;
-        bboty--;
-        if (bboty >= btopy)                     /* bcc .skip0 */
+        if (btopy == bboty) {
+            blokdis();
             goto skip0;
-        bboty = 0;
+        }
+        bboty--;                                /* now >= btopy: .skip0 */
+        goto skip0;
 skip0z:
         btopy--;
         bboty--;

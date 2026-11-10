@@ -80,8 +80,9 @@ const blkcase del[] = {
     { 1, 0, 1, 3, 2, 5,   1, 2, 2, 4 },         // before: both -1
     { 4, 0, 1, 3, 2, 5,   1, 3, 2, 4 },         // inside: bboty -1
     { 3, 0, 1, 3, 2, 5,   1, 3, 2, 4 },         // first line: bboty -1
-    { 3, 0, 1, 3, 4, 3,   1, 2, 4, (UWORD)-1 }, // one line block: bboty = -1
-                                                // without blokdis (I.6)
+    { 3, 0, 1, 3, 4, 3,   1, 3, 4, (UWORD)-1 }, // one line block: blokdis
+                                                // (#353 fixed, I.6)
+    { 0, 0, 1, 0, 4, 0,   1, 0, 4, (UWORD)-1 }, // ... also on line 0
     { 7, 0, 1, 3, 2, 5,   1, 3, 2, 5 },         // behind: nothing
 };
 // join: line `line` has the text "lineN" (length 5)
@@ -117,6 +118,35 @@ TEST_CASE("block coordinates: insertline, return, deleteline, join, split", "[li
     run("deleteline", deleteline, del, 10);
     run("join", join, jn, 10);
     run("split", split, sp, 10);
+}
+
+TEST_CASE("deleteline of a one line block ends it with blokdis", "[lines][blocks]")
+{
+    env();
+    // Fixed (#353): menu items off, status text cleared, start mark gone
+    mklist(10, nullptr);
+    cursorto(3, 0);
+    setblock(1, 3, 4, 3);
+    bstx = 1;
+    bltext[0] = 'B';
+    host_resetcalls();
+    deleteline();
+    CHECK(bboty == static_cast<UWORD>(-1));
+    CHECK(bstx == -1);
+    CHECK(bltext[0] == ' ');
+    CHECK(host_calls[HC_BLOKMENUS] == 1);
+    CHECK(numlines == 9);
+
+    // a line of a longer block: the block stays, no blokdis
+    mklist(10, nullptr);
+    cursorto(3, 0);
+    setblock(1, 3, 4, 4);
+    bstx = 1;
+    host_resetcalls();
+    deleteline();
+    CHECK(block(1, 3, 4, 3));
+    CHECK(bstx == 1);
+    CHECK(host_calls[HC_BLOKMENUS] == 0);
 }
 
 TEST_CASE("join and split: line contents", "[lines]")
