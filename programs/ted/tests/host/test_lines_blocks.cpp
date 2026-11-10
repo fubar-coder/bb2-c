@@ -126,11 +126,12 @@ TEST_CASE("block coordinates: insertline, return, deleteline, join, split", "[li
 
 TEST_CASE("join: no ghost block after blokdis", "[lines][blocks]")
 {
-    static const char *const t[] = { "x", "a=1:b=2", "z" };
+    static const char *const t[] = { "x", "a=1", "z" };
 
     env();
-    // Fixed (#346): line 0 joined with line 1, whose block b=2 (columns
-    // 4-6) would start at column 128: the block is gone and stays gone
+    // Fixed (#346): line 0 joined with line 1, whose block (columns 4-6,
+    // behind its text) would start at column 128: the block is gone and
+    // stays gone
     mklist(3, t);
     cursorto(0, 0);
     for (int i = 0; i < 124; i++)                   // line 0: 124 characters
@@ -143,8 +144,7 @@ TEST_CASE("join: no ghost block after blokdis", "[lines][blocks]")
     CHECK(bboty == static_cast<UWORD>(-1));
     CHECK(bstx == -1);
     CHECK(host_calls[HC_BLOKMENUS] == 1);
-    // the joined line ends at column 128 (charbuff2), "b=2" is cut off
-    CHECK(std::string_view(linetext(0)).substr(124) == "a=1:");
+    CHECK(std::string_view(linetext(0)).substr(124) == "a=1");
 }
 
 TEST_CASE("deleteline of a one line block ends it with blokdis", "[lines][blocks]")

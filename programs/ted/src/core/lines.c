@@ -302,7 +302,6 @@ void join(void)
         beepem();                               /* beq beepem */
         return;
     }
-    allalt = (UWORD)-1;
     next = cur->nextitem;
     row = chmap + chloc;
     len = (WORD)chcols;
@@ -315,6 +314,33 @@ void join(void)
     }
     /* .skip */
     len++;                                      /* offset for join! */
+
+    /* the joined line in charbuff2 (.loop2 - .skip3; the original builds
+       it after the block adjustment, which does not use it) */
+    buf = charbuff2;
+    for (width = 0; width < len; width++)       /* .loop2 */
+        buf[width] = row[width];
+    p = buf + len;
+    if (tokenise) {
+        /* .skip2a.  Fixed (#355) survey-02 I.3: the original's detok has no
+           length check and can run past charbuff3, the end of TED's
+           buffer block */
+        p = detok(next->chars, p, charbuff4);
+    } else {
+        const UBYTE *s = next->chars;
+
+        while (*s && p < charbuff4 - 1)         /* .loop3 */
+            *p++ = *s++;
+        *p = 0;
+    }
+    /* Fixed (#1005): the original goes on with a line longer than chcols
+       and charstobuff drops everything behind column 128 without notice.
+       Refused with the beep, before anything changes */
+    if (p - buf > (WORD)chcols) {
+        beepem();
+        return;
+    }
+    allalt = (UWORD)-1;
 
     if (bboty != (UWORD)-1) {
         /* block adjust (survey-02 H) */
@@ -357,23 +383,6 @@ sskip3:
         bboty--;
     }
 sskip:
-    buf = charbuff2;
-    p = buf + len;
-    while (--len >= 0)                          /* .loop2: subq / bmi */
-        buf[len] = row[len];
-    /* .skip2 */
-    if (tokenise) {
-        /* .skip2a.  Fixed (#355) survey-02 I.3: the original's detok has no
-           length check and can run past charbuff3, the end of TED's
-           buffer block */
-        p = detok(next->chars, p, charbuff4);
-    } else {
-        const UBYTE *s = next->chars;
-
-        while ((*p++ = *s++) != 0)              /* .loop3 */
-            ;
-        p--;
-    }
     /* .skip3 */
     while (p < charbuff3)
         *p++ = 32;
