@@ -1,0 +1,31 @@
+; ted-fileopen2-outmem-freed (#1009): fileopen2 frees the old text
+; (freeall) and then allocates the first line of the new one; when that
+; fails, outmem redraws from the freed lines and the editor goes on with
+; them.  TED alone under inject (alerts answered, track: the allocations
+; left when TED ends), a text of one line (a line item of 46 bytes); Open
+; of a file whose first line makes a line item of 50 bytes, whose
+; AllocMem fails.  Then "q" typed, SAVE under a new name, QUIT.
+; Correct (the fix of the issue): the alert "Not enough memory for
+; operation!", the old text freed, an empty text to go on with ("q" is
+; saved), nothing left allocated.
+; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\n"
+; @file other.bas "0123456789012345678901234567890123456789\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts track allocfail=50-50/f=1/1 blitz2:ted @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect nostdout "inject:   46 bytes, flags $1\n"
+; @expect data new.bas "q\n"
+timeout 20
+wait screen
+menu 0 1
+wait freq "Name of file to load"
+freq ok "TEDRUN:work/other.bas"
+wait screen
+type "q"
+menu 0 2
+wait freq "Name to save file as"
+freq ok "TEDRUN:work/new.bas"
+wait screen
+menu 0 9
+wait exit

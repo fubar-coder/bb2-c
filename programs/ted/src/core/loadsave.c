@@ -261,6 +261,10 @@ void fileopen2(UBYTE *name)
     freeall();
     numlines = 1;
     readline(&rd, &len);        /* result ignored: fillbuff had bytes */
+    /* BUG(orig) (#1009): firstitem/thisitem/enditem still point at the
+       freed text: when this allocation fails, outmem redraws from the
+       freed lines and the editor goes on with them (also after the
+       empty-file path's donew above) */
     item = allocline(len);
     firstitem = item;
     thisitem = item;
