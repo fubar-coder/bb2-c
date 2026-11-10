@@ -1051,7 +1051,12 @@ struct Gadget defaultreqga5 = {(struct Gadget *)&defaultreqga6, 20, 66, 24, 8, 0
 struct StringInfo defaultreqsg2 = {(UBYTE *)defaultreqla48, (UBYTE *)undobuffer, 0, 3, 0, 0, 0, 0, 0, 0, NULL, 6, NULL};  /* ted.s:7822 */
 UBYTE defaultreqla48[3] = "6";  /* ted.s:7826 */
 struct Gadget defaultreqga6 = {(struct Gadget *)&defaultreqga7, 20, 78, 24, 8, 0, 2049, 4, NULL, NULL, NULL, 0, (APTR)&defaultreqsg3, 6, NULL};  /* ted.s:7829 */
-struct StringInfo defaultreqsg3 = {(UBYTE *)defaultreqla49, (UBYTE *)undobuffer, 0, 3, 0, 0, 0, 0, 0, 0, NULL, 4, NULL};  /* ted.s:7834 */
+/* LongInt = int3, the tab size: 2, the default of tabstop (ted.s:6112)
+   and what the buffer shows.  The original has 4 here, which is never
+   seen: the start calls loaddefs (ted.s:65), which always ends in
+   setdefs (3076), and setdefs sets int3 from tabstop (3136) before the
+   requester can open (#363) */
+struct StringInfo defaultreqsg3 = {(UBYTE *)defaultreqla49, (UBYTE *)undobuffer, 0, 3, 0, 0, 0, 0, 0, 0, NULL, 2, NULL};  /* ted.s:7834 */
 UBYTE defaultreqla49[3] = "2";  /* ted.s:7838 */
 struct Gadget defaultreqga7 = {(struct Gadget *)&defaultreqga8, 16, 16, 32, 12, 0, 257, 1, (APTR)&defaultreqbo11, NULL, (struct IntuiText *)&defaultreqin14, 0, NULL, 7, NULL};  /* ted.s:7842 */
 struct Gadget defaultreqga8 = {(struct Gadget *)&defaultreqga9, 16, 28, 32, 12, 0, 257, 1, (APTR)&defaultreqbo12, NULL, (struct IntuiText *)&defaultreqin15, 0, NULL, 8, NULL};  /* ted.s:7847 */

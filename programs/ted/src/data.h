@@ -76,7 +76,7 @@ extern struct Gadget defaultreqga4, defaultreqga5;         /* ted.s:7805/7817 */
 extern struct StringInfo defaultreqsg1, defaultreqsg2, defaultreqsg3; /* 7810/7822/7834 */
 #define int1 (defaultreqsg1.LongInt)            /* ted.s:7813 (init 12) */
 #define int2 (defaultreqsg2.LongInt)            /* ted.s:7825 (init 6) */
-#define int3 (defaultreqsg3.LongInt)            /* ted.s:7837 (init 4, BUG(orig) #363, survey-07 I.1) */
+#define int3 (defaultreqsg3.LongInt)            /* ted.s:7837 (init 2, the original 4, #363) */
 extern UBYTE defaultreqla47[3], defaultreqla48[3], defaultreqla49[3]; /* 7814/7826/7838 */
 extern struct Gadget defaultreqga7, defaultreqga8, defaultreqga9;     /* 7842/7847/7852 */
 extern struct Gadget defaultreqga10, defaultreqga11;      /* ted.s:7857/7862 */
