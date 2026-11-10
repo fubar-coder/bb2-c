@@ -15,8 +15,9 @@
 /* ted.s:327 blocktab - menu $91: indent every line of the block by tabstop
    spaces (detok/makefirst per line), calcitem, showall.  No block: beepem. */
 void blocktab(void);
-/* ted.s:361 blockuntab - menu $a1: remove the first tabstop characters of
-   every block line, WHATEVER they are (BUG(orig) #348, survey-01 I.11). */
+/* ted.s:361 blockuntab - menu $a1: remove up to tabstop leading spaces of
+   every block line.  Fixed (#348): the original removes the first tabstop
+   characters, WHATEVER they are (survey-01 I.11). */
 void blockuntab(void);
 
 /* ted.s:570 (prtfile, core part - NEW name): format line (a4) for the printer

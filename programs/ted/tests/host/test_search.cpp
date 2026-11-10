@@ -200,20 +200,35 @@ TEST_CASE("blocktab and blockuntab", "[search][blocks]")
     CHECK(text(nth(3)) == "xy");
     CHECK(nth(3)->numchars == 3);
 
+    // Fixed (#348): only leading spaces go, at most tabstop of them;
+    // unindented and short lines stay as they are
     list(l);
     bboty = 3;
     blockuntab();
-    // line shorter than tabstop: everything becomes spaces (BUG(orig) #348)
-    CHECK(text(nth(0)) == "");
-    CHECK(nth(0)->numchars == 1);
+    CHECK(text(nth(0)) == "a");
+    CHECK(nth(0)->numchars == 2);
     CHECK(text(nth(1)) == "  b");
     CHECK(nth(1)->numchars == 4);
-    CHECK(text(nth(3)) == "");
-    // tabstop 0: the whole line is cleared (survey-01 I.11)
+    CHECK(text(nth(2)) == "c");
+    CHECK(text(nth(3)) == "xy");
+    CHECK(nth(3)->numchars == 3);
+    // fewer leading spaces than tabstop: those go
+    static const char *const l2[] = { " z", "   y", "" };
+    list(l2);
+    bboty = 2;
+    blockuntab();
+    CHECK(text(nth(0)) == "z");
+    CHECK(text(nth(1)) == " y");
+    CHECK(text(nth(2)) == "");
+    CHECK(nth(2)->numchars == 1);
+    // tabstop 0: nothing changes
     list(l);
+    bboty = 3;
     tabstop = 0;
     blockuntab();
-    CHECK(text(nth(1)) == "");
+    CHECK(text(nth(0)) == "a");
+    CHECK(text(nth(1)) == "    b");
+    CHECK(text(nth(3)) == "xy");
     tabstop = 2;
 
     // no block: beep

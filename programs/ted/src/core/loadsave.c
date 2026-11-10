@@ -104,19 +104,19 @@ void blockuntab(void)
         dst = charbuff2;
         src = dst;
         n = tabstop;
-        /* BUG(orig) (#348): removes the first tabstop characters WHATEVER they
-           are; tabstop = 0 or a line shorter than tabstop leaves a1 at
-           the start: the whole line becomes spaces (survey-01 I.11). */
-        if (n == 0)
-            goto loop3;
-        do {
-            if (*src++ == 0)    /* tst.b (a0)+ / beq .loop3 */
-                goto loop3;
-        } while (--n);          /* dbf d0 (tabstop iterations) */
+        /* Fixed (#348): the original removes the first tabstop characters
+           WHATEVER they are, and tabstop = 0 or a line shorter than
+           tabstop left a1 at the start: the whole line became spaces
+           (survey-01 I.11).  Only leading spaces are skipped, at most
+           tabstop of them; the rest of the line stays. */
+        while (n && *src == 32) {
+            src++;
+            n--;
+        }
         while ((*dst++ = *src++) != 0)  /* .loop5 */
             ;
         dst--;
-loop3:  /* @388 .loop3 */
+        /* @388 .loop3 */
         while (dst < charbuff3)
             *dst++ = 32;
         thisitem = item;
