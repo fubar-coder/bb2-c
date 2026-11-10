@@ -38,8 +38,12 @@ void setdefs(struct defblock *opts)
     defaultreqga7.Flags &= 0xFFFF - 0x80;
     if (opts->d_fonthite == 6)
         defaultreqga7.Flags |= 0x80;
-    /* .skip - BUG(orig) (#383) survey-04 I.17: lsl #7 of the raw word (values
-       other than 0/1 set foreign flag bits) */
+    /* .skip - Fixed (#383): the original shifts the raw words (lsl #7) into
+       the gadget flags and takes them over as tokenise/makeicons, so that
+       values other than 0/1 from the options file set foreign flag bits
+       (2: GFLG_DISABLED, survey-04 I.17).  Only bit 0 of each word counts. */
+    opts->d_tokenise &= 1;
+    opts->d_makeicons &= 1;
     defaultreqga8.Flags &= 0xFFFF - 0x80;
     defaultreqga8.Flags |= (UWORD)(opts->d_tokenise << 7);
     defaultreqga9.Flags &= 0xFFFF - 0x80;

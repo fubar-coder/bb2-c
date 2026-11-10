@@ -1,9 +1,10 @@
-; ted-setdefs-flags-lsl7 (#383): setdefs shifts the words of the option
+; ted-setdefs-flags-lsl7 (#383): setdefs shifted the words of the option
 ; file into the flags of the check gadgets (lsl #7) without masking them
-; to bit 0.  L:blitzeditor.opts with makeicons 2: the Icons gadget (id 9)
-; gets $0100 = GFLG_DISABLED.  OPTIONS, teddrive logs the gadgets of the
-; requester with their flags, CANCEL.  Correct: the gadget has the flags
-; of makeicons 0 (2 masked to bit 0); the original has it disabled.
+; to bit 0.  L:blitzeditor.opts with makeicons 2: the original gives the
+; Icons gadget (id 9) $0100 = GFLG_DISABLED.  OPTIONS, teddrive logs the
+; gadgets of the requester with their flags, CANCEL.  Correct: the gadget
+; has the flags of makeicons 0 (2 masked to bit 0).
+; @fixed #383
 ; @source none
 ; @opts makeicons=2
 ; @expect log "gadget id 9 type $00000001 flags $00000000"
