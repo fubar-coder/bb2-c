@@ -15,7 +15,7 @@
  * token list of tedsrc detok is made here too (tedsrc.h).
  *
  * Exit status 1 if IN cannot be loaded, if a line of a text source is
- * longer than TED allows (TED would cut it), or if OUT is not written.
+ * longer than TED allows (TED would split it), or if OUT is not written.
  */
 #include <setjmp.h>
 #include <stdio.h>
@@ -102,15 +102,15 @@ static int tok(struct tokennode *list, const char *in, const char *out)
         fprintf(stderr, "%s: %s: %s\n", me, in, host_lasterror ? host_lasterror : "not loaded");
         return 1;
     }
-    /* a text line longer than TED's line buffer (chcols + 1 = 129
-       characters) is cut by readline, the rest becomes a line of its own
-       (ted.s:3411): not what the author wrote, so such a source is
-       refused */
+    /* a text line wider than a row of TED's character map (chcols = 128
+       characters) is split by readline, the rest becomes lines of their
+       own (ted.s:3411, fixed #375): not what the author wrote, so such a
+       source is refused */
     lines = text_lines(in);
     if (lines && numlines != lines) {
         fprintf(stderr, "%s: %s: %ld lines, %u after loading: a line is longer than TED "
                         "allows (%u characters)\n", me, in, lines, (unsigned)numlines,
-                (unsigned)chcols + 1);
+                (unsigned)chcols);
         return 1;
     }
     remove(out);

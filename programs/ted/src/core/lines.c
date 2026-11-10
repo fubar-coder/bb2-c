@@ -848,7 +848,10 @@ void bloksave(void)
                                                    is cripple only) */
 }
 
-/* ted.s:1738 blokload - load block from disk */
+/* ted.s:1738 blokload - load block from disk.  Fixed (#375): readline
+   returns RL_FULL for a line cut at the end of charbuff2 (the original
+   returned "no eol" and the load stopped there as at the end of the
+   file); RL_FULL is not RL_NOEOL, so the load goes on with the rest. */
 void blokload(void)
 {
     struct item *cur, *newl;

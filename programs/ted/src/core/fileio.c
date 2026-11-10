@@ -177,6 +177,7 @@ BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode)
         error(error1);
         return FALSE;
     }
+    rd->carry = -1;                             /* NEW (#375, readline) */
     filehand = rd->fh;                          /* .skip */
     rd->textfile = FALSE;                       /* NEW (#376, readline) */
     return TRUE;
@@ -206,6 +207,12 @@ LONG fillbuff(struct rdstate *rd)
    subq.w; it never exceeds doslen, so a LONG gives the same result. */
 WORD doread(struct rdstate *rd)
 {
+    if (rd->carry >= 0) {                       /* NEW (#375) */
+        WORD c = rd->carry;
+
+        rd->carry = -1;
+        return c;
+    }
     for (;;) {
         /* .skip2 */
         if (--rd->left >= 0)
@@ -216,27 +223,16 @@ WORD doread(struct rdstate *rd)
     }
 }
 
-/* NEW (fixed #377): the display column of charbuff2 up to end - a token
-   pair counts with the length of its name (findtoke, as detok shows it),
-   every other byte 1.  The original takes end - charbuff2. */
-static ULONG dispcol(const UBYTE *end)
+/* NEW (fixed #377, #375): the number of columns a token pair shows (the
+   length of its name: findtoke, as detok shows it). */
+static ULONG pairwidth(UBYTE hi, UBYTE lo)
 {
-    const UBYTE *p = charbuff2;
-    ULONG col = 0;
+    const char *name = findtoke((UWORD)((hi << 8) | lo));
+    ULONG w = 0;
 
-    while (p < end) {
-        if ((*p & 0x80) && p + 1 < end) {
-            const char *name = findtoke((UWORD)((p[0] << 8) | p[1]));
-
-            while (*name++)
-                col++;
-            p += 2;
-        } else {
-            col++;
-            p++;
-        }
-    }
-    return col;
+    while (*name++)
+        w++;
+    return w;
 }
 
 /* ted.s:3375 readline - read in a line to charbuff2.
@@ -247,11 +243,20 @@ static ULONG dispcol(const UBYTE *end)
    line is tokenised as the LF lines are when the file is a text file (an
    earlier line ended by LF: rd->textfile) or the line has no byte >= $80
    (no token pair the tokeniser could break).
-   BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
-   bytes >= $80 are token pairs even in text files (the next byte is taken
-   unchecked, also LF/0/TAB; #374); CR stays.
+   Fixed (#375): the original cuts a line that does not fit charbuff2
+   (130 bytes) back to charbuff3 - 3 - the three bytes behind the cut are
+   lost - and returns "no eol", which blokload takes for the end of the
+   file.  The line now ends in front of the character, token pair or TAB
+   that would take it beyond 128 shown columns (chcols, a row of the
+   character map; a token pair counts with the length of its name) or
+   beyond charbuff3 - 1 (129 bytes and the 0); the next call reads that
+   byte (or pair) again and goes on with the rest of the physical line as
+   a line of its own; the result is RL_FULL.
+   BUG(orig) (survey-04 I.1-7, kept): bytes >= $80 are token pairs even
+   in text files (the next byte is taken unchecked, also LF/0/TAB; #374);
+   CR stays.
    Fixed (#378): the TAB expansion stops at the end of charbuff2.
-   Fixed (#377): a TAB is expanded from the column the line shows (a
+   Fixed (#377): a TAB is expanded from the column the line shows (col: a
    token pair counts with the length of its name), not from the number of
    bytes stored.
    Fixed (#379): a token start byte right before the end of the file is
@@ -259,6 +264,8 @@ static ULONG dispcol(const UBYTE *end)
 int readline(struct rdstate *rd, UWORD *length)
 {
     UBYTE *dst;
+    UBYTE *const lim = charbuff3 - 1;           /* NEW (#375): last place of the 0 */
+    ULONG col = 0;                              /* NEW (#377, #375): shown column */
     WORD c;
     BOOL ascii;                                 /* flag for no toke on load! */
     BOOL pairs = FALSE;                         /* NEW (#376): a byte >= $80 */
@@ -271,19 +278,32 @@ int readline(struct rdstate *rd, UWORD *length)
     dst = charbuff2;
     ascii = FALSE;
     for (;;) {
-        /* .loop */
+        /* .loop (dst <= lim here: the 0 always fits) */
         if (c & 0x80) {                         /* token pair, copied unchecked */
-            pairs = TRUE;
-            *dst++ = (UBYTE)c;
-            c = doread(rd);
-            if (c < 0) {
+            WORD lo;
+            ULONG w;
+
+            if (dst + 2 > lim)
+                goto full;                      /* fixed #375 */
+            lo = doread(rd);
+            if (lo < 0) {
                 /* Fixed (#379): the original keeps the token start byte
                    in front of the 0 - a half token whose low byte is the
                    0, detok reads on behind the line.  It is dropped. */
-                dst--;
                 goto oops;
             }
+            w = pairwidth((UBYTE)c, (UBYTE)lo);
+            if (dst > charbuff2 && col + w > chcols) {
+                /* fixed #375: the pair starts the next line; lo (doread
+                   just took it from dosbuff) goes back behind c */
+                rd->ptr--;
+                rd->left++;
+                goto full;
+            }
+            pairs = TRUE;
             *dst++ = (UBYTE)c;
+            *dst++ = (UBYTE)lo;
+            col += w;
             goto nottab;
         }
         /* .tryout */
@@ -292,40 +312,56 @@ int readline(struct rdstate *rd, UWORD *length)
             ascii = TRUE;                       /* flag it for a toke-up */
         }
         /* .skip2 */
-        *dst++ = (UBYTE)c;
-        if (c == 0)
+        if (c == 0) {
+            *dst++ = 0;
             goto skip3;
+        }
         if (c == 9) {
-            ULONG col;
+            ULONG stop = col;                   /* fixed #377 */
 
-            dst--;
-            col = dispcol(dst);                 /* fixed #377 */
+            /* Fixed (#375): a TAB whose blanks do not fit goes to the next
+               line (where it starts at column 0), unless nothing is
+               stored yet */
+            do
+                stop = (stop & 0xFFFF0000) | (UWORD)(stop + 1);
+            while ((UWORD)(divu_w(stop, tabstop) >> 16) != 0);
+            if (dst > charbuff2
+                && ((ULONG)(lim - dst) < (UWORD)(stop - col) || stop > chcols))
+                goto full;
             do {                                /* .tabloop */
                 /* Fixed (#378): the original tests the end of the line
                    buffer only after the expansion (.nottab) and writes up
                    to tabstop-1 blanks behind charbuff2 - with a tab size
                    above 133 from the options file behind TED's buffer
-                   block.  The expansion stops at the end of charbuff2;
-                   .nottab cuts the line as before. */
-                if (dst >= charbuff3)
+                   block.  The expansion stops at the end of charbuff2
+                   (and at column 128, #375). */
+                if (dst >= lim || col >= chcols)
                     break;
                 *dst++ = ' ';
                 col = (col & 0xFFFF0000) | (UWORD)(col + 1);    /* addq.w */
             } while ((UWORD)(divu_w(col, tabstop) >> 16) != 0);   /* swap / tst */
+            goto nottab;
         }
+        if (dst >= lim || col >= chcols)
+            goto full;                          /* fixed #375 */
+        *dst++ = (UBYTE)c;
+        col++;
 nottab:
-        /* .nottab */
-        if (dst >= charbuff3) {                 /* bcs .ok */
-            dst = charbuff3 - 3;
-            goto oops;
-        }
-        /* .ok */
+        /* .nottab / .ok: the test of the buffer end is above (#375) */
         c = doread(rd);
         if (c < 0)
             goto oops;
     }
+full:
+    /* NEW (#375): the line is full; c is read again by the next call */
+    rd->carry = c;
+    *dst++ = 0;
+    len = (ULONG)(dst - charbuff2);
+    ret = RL_FULL;
+    ascii = rd->textfile || !pairs;             /* fixed #376 */
+    goto sit;
 oops:
-    /* .oops: EOF in the line or buffer full - "no eol" */
+    /* .oops: EOF in the line - "no eol" */
     *dst++ = 0;
     len = (ULONG)(dst - charbuff2);
     ret = RL_NOEOL;

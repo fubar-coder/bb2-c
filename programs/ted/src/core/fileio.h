@@ -56,6 +56,10 @@ struct rdstate {
     tedfh fh;                   /* d7 (before doopen: the name) */
     UBYTE *ptr;                 /* a5: read pointer */
     LONG left;                  /* d6: bytes left in dosbuff */
+    WORD carry;                 /* NEW (#375): a byte readline read but did
+                                   not store (the line was full), returned
+                                   first by the next doread; -1 = none
+                                   (from doopen) */
     BOOL textfile;              /* NEW (#376): a line of the file ended
                                    in LF (text format); FALSE from doopen */
 };
@@ -74,18 +78,23 @@ WORD doread(struct rdstate *rd);
 
 /* readline results (asm: d0 + N/Z) */
 #define RL_EOF   (-1)           /* N=1: nothing read */
-#define RL_NOEOL 0              /* Z=1: line without end (EOF/overflow) */
+#define RL_NOEOL 0              /* Z=1: line without end (EOF) */
 #define RL_OK    1              /* normal line */
+#define RL_FULL  2              /* NEW (#375): line full (128 columns or
+                                   charbuff2), the next call goes on */
 /* ted.s:3375 readline: one line into charbuff2 (token pairs copied
    unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop (never 0:
    fixed #385) from the column the line shows (fixed #377) up to the end
-   of charbuff2 (fixed #378), overflow at
-   charbuff3), tokenised via mytoke if ASCII
-   and tokenise: a line ended by LF, and one without end (EOF/overflow)
+   of charbuff2 (fixed #378); a line wider than 128 shown columns (or
+   longer than 129 bytes) ends in front of the character, token pair or
+   TAB that does not fit, which starts the next line (RL_FULL, rd->carry;
+   fixed #375: the original lost 3 bytes and returned RL_NOEOL),
+   tokenised via mytoke if ASCII
+   and tokenise: a line ended by LF, and one without end (EOF/full)
    in a file an earlier line of which ended by LF or without a byte
    >= $80 (fixed #376); a token start byte right before EOF is dropped
    (fixed #379).  *length (d5)
-   = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374, #375). */
+   = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374). */
 int readline(struct rdstate *rd, UWORD *length);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = len (d5) =
    length without 0); returns the new length (d5, incl. 0) */

@@ -62,8 +62,8 @@ list cannot be read or OUT is not written, 2 usage error.
 ```
 
 Loads `IN` (text or tokenised) and writes it tokenised to `OUT`. A text
-line longer than TED's line buffer (129 characters) is refused: TED would
-cut it.
+line wider than a row of TED's character map (128 characters) is refused:
+TED would split it.
 
 ### detok
 
@@ -85,16 +85,16 @@ OPTIONS:
                               (acidlibs, deflibs, userlibs)
 
 TOKENS: the token list file (tests/data/ted-tokens.txt, or one bbsrc tokens
-writes). TED's text: TAB expanded to tabstop 2, a line longer than TED's line
-buffer split (noted on stderr). Exit status 0, 1 IN cannot be loaded, a line has
-a token TED does not know or a token byte without its second byte, a token list
+writes). TED's text: TAB expanded to tabstop 2, a line wider than 128 columns
+split (noted on stderr). Exit status 0, 1 IN cannot be loaded, a line has a
+token TED does not know or a token byte without its second byte, a token list
 cannot be read or OUT cannot be written (OUT is removed), 2 usage error.
 ```
 
 Writes `IN` as TED shows it to `OUT`, one line per line of TED, each with
 an LF. The text is TED's, with its quirks: TAB expanded to tabstop 2, a
-line longer than TED's line buffer (129 bytes, tokenised) split into
-several (noted on stderr), a text line tokenised and detokenised again.
+line wider than 128 columns (or longer than TED's line buffer, 129 bytes,
+tokenised) split into several (noted on stderr), a text line tokenised and detokenised again.
 A token TED does not know (TED shows `?????`) or a token byte without its
 second byte is an error. `--check IN...` only checks the files, without
 output.
@@ -120,8 +120,8 @@ Messages go to stderr as `tedsrc SUB: [FILE: ]message`.
 
 * `tok`: the tokenised sources of the corpus (`tests/corpus`), of
   `tests/ab3`, `tests/blitz2`, `tests/bug-orig`, `tests/ted-ab` and of the
-  RWE reference build (`libs/userlibs/rwe`); the tests `tedtok_line129`,
-  `tedtok_line130`, `tedtok_libs` (`CMakeLists.txt` here).
+  RWE reference build (`libs/userlibs/rwe`); the tests `tedtok_line128`,
+  `tedtok_line129`, `tedtok_libs` (`CMakeLists.txt` here).
 * `detok`: the build target `bblibsrc` (`bblibsrc.cmake` here), the RWE
   sources (`libs/userlibs/rwe`), the test `bb22_rwelibsrc`
   (`tools/bbsrc/bb22-rwelibsrc.cmake`); the tests `teddetok_*`

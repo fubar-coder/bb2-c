@@ -2,7 +2,9 @@
 ; umlauts and $FD-$FF from the file; typed umlauts (MapANSI, German keymap)
 ; in a new first line; SAVE.
 ; TED-C tokenises the first part of the split line like the other lines
-; (the original TED leaves it text, #376).
+; (the original TED leaves it text, #376), and it splits the line after
+; 128 characters without losing the 3 bytes the original drops at its cut
+; after 127 (#375; R5-C5 and Rc-Cc are named for #376 already).
 ; @fixed #376 R5-C5 Rc-Cc
 ; @source E long_umlaut
 ; @expect bak long_umlaut.bb2.bak

@@ -15,8 +15,8 @@
  * userlibs) as blitz2 builds it for TED (tools/lib/blitztokens).
  *
  * The text is TED's, with its quirks: TAB expanded to tabstop 2, a line
- * longer than TED's line buffer (chcols + 1 = 129 bytes, tokenised) split
- * into several (readline, ted.s:3375; noted on stderr, the numbering is
+ * wider than a row of TED's character map (chcols = 128 columns) or
+ * longer than its line buffer (129 bytes, tokenised) split into several (readline, ted.s:3375; noted on stderr, the numbering is
  * still TED's), a text line tokenised and detokenised again.
  *
  * Exit status 1 if IN cannot be loaded, if a line has a token TED does
@@ -128,8 +128,8 @@ static BOOL detok_file(const char *in, const char *out)
     UBYTE half;
     lines = file_lines(in, &half);
     if (lines > 0 && lines != (long)numlines)
-        fprintf(stderr, "%s: %s: note: %ld lines in the file, %u in TED (a line longer "
-                        "than TED's line buffer is split)\n", me, in, lines, (unsigned)numlines);
+        fprintf(stderr, "%s: %s: note: %ld lines in the file, %u in TED (a line wider "
+                        "than 128 columns is split)\n", me, in, lines, (unsigned)numlines);
     if (half) {
         /* a truncated source: TED drops the byte (#379), still an error */
         fprintf(stderr, "%s: %s:%ld: token byte $%02X without its second byte "
@@ -178,8 +178,8 @@ void cmd_detok(CLI::App &app, int &status)
     sub->add_flag("--check", o->check, "only the checks of the files IN..., no output");
     tedsrc_token_options(*sub, o->t, "TOKENS IN OUT (TOKENS IN... with --check), without TOKENS with --blitz2");
     sub->footer("TOKENS: the token list file (tests/data/ted-tokens.txt, or one bbsrc tokens "
-                "writes). TED's text: TAB expanded to tabstop 2, a line longer than TED's line "
-                "buffer split (noted on stderr). Exit status 0, 1 IN cannot be loaded, a line has a "
+                "writes). TED's text: TAB expanded to tabstop 2, a line wider than 128 columns "
+                "split (noted on stderr). Exit status 0, 1 IN cannot be loaded, a line has a "
                 "token TED does not know or a token byte without its second byte, a token list "
                 "cannot be read or OUT cannot be written (OUT is removed), 2 usage error.");
     sub->callback([sub, o, &status] {

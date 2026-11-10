@@ -72,22 +72,22 @@ TEST_CASE("readline: the TAB expansion stays in charbuff2", "[fileio][readline]"
     const size_t buflen = static_cast<size_t>(charbuff3 - charbuff2);
 
     // a tab size above the buffer (only an options file could set it, the
-    // original wrote behind TED's buffer block): the expansion ends at the
-    // end of charbuff2, charbuff3 and what follows stay untouched; the
-    // line is cut there as a line too long for the buffer
+    // original wrote behind TED's buffer block): the expansion ends at
+    // column 128, in front of the end of charbuff2, charbuff3 and what
+    // follows stay untouched; the TAB does not fit behind the "a" and
+    // starts the next line (#375), which it fills
     std::memset(charbuff3, 0x5A, buflen);
     tabstop = 300;
     load(path, "a\tb\n", 0);
-    REQUIRE(numlines >= 1);
+    REQUIRE(numlines == 3);
     bool untouched = true;
     for (size_t i = 0; i < buflen; i++)
         if (charbuff3[i] != 0x5A)
             untouched = false;
     CHECK(untouched);
-    const std::string first = bytes(firstitem);
-    CHECK(first.size() == buflen - 2);              // cut at charbuff3 - 3
-    CHECK(first[0] == 'a');
-    CHECK(first.find_first_not_of(' ', 1) == first.size() - 1);
+    CHECK(bytes(firstitem) == std::string("a", 2));
+    CHECK(bytes(firstitem->nextitem) == std::string(chcols, ' ') + std::string(1, '\0'));
+    CHECK(bytes(enditem) == std::string("b", 2));
 
     // an ordinary tab size: unchanged
     tabstop = 8;

@@ -15,12 +15,12 @@ set(t ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set(cd ${repo}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 
 # ---------------------------------------------------------------- tok
-# the line check: 129 characters pass, 130 are refused (TED would cut)
-foreach(n 129 130)
+# the line check: 128 characters pass, 129 are refused (TED would split)
+foreach(n 128 129)
 	add_test(NAME tedtok_line${n} COMMAND tedsrc tok ${tokens}
 		${t}/line${n}.bas ${CMAKE_CURRENT_BINARY_DIR}/line${n}.bb2)
 endforeach()
-set_tests_properties(tedtok_line130 PROPERTIES WILL_FAIL TRUE)
+set_tests_properties(tedtok_line129 PROPERTIES WILL_FAIL TRUE)
 
 # the token list made from the CD's compiler and libraries: the same file
 # as with the list file (skipped without the CD)
@@ -37,7 +37,7 @@ set(run -DTEDSRC=$<TARGET_FILE:tedsrc> -DTOKENS=${tokens})
 # loading), last line
 add_test(NAME teddetok_good COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/good.bb2
 	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/good.txt -DEXPECT=${t}/good.txt -P ${t}/run.cmake)
-# long: a line of 135 characters is two lines in TED (127, 3 lost, 5)
+# long: a line of 135 characters is two lines in TED (128, 7)
 add_test(NAME teddetok_long COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/long.bb2
 	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/long.txt -DEXPECT=${t}/long.txt
 	"-DNOTE=2 lines in the file, 3 in TED" -P ${t}/run.cmake)
