@@ -41,6 +41,12 @@ void goup(void);                /* ted.s:4538 goup: the opposite (no bounds chec
 void storepos(void);            /* ted.s:4976 storepos: cursx/cursy/scloc/chloc -> *2 */
 void restorepos(void);          /* ted.s:4981 restorepos: *2 -> cursx/cursy/scloc/chloc */
 void calcpos(void);             /* ted.s:5234 calcpos: scloc = cursy*fontmul, chloc = cursy*chcols */
+/* ted.s:4644-4659 (calcscreen, src/screen.c): edrows and pixrows for a
+   Workbench of `height` rows (topskip, botskip, fonthite set); returns the
+   window height, pixrows + fonthite + botskip + 1.  Window + topskip <=
+   height (fixed #351: the original's screen was one row taller than the
+   Workbench when height - 20 is a multiple of fonthite). */
+UWORD calcrows(UWORD height);
 
 /* ---------------------------------------------------------- line list */
 

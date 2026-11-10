@@ -1,10 +1,10 @@
 ; Stage 2b: 6 pixel font from the option file (a synthetic GADGETUP does
 ; not toggle the font gadget - Intuition sets GFLG_SELECTED, not the message):
 ; L/blitzeditor.opts with fonthite 6; start, BOTTOM.  Nothing saved.
-; Fails in every combination on a 512 row Workbench: calcscreen makes the
-; font 6 screen 513 rows, OpenWindow fails, screenopen's error path crashes
-; (BUG(orig) (#351), programs/ted/src/screen.c calcscreen).
-; @known KNOWN-BOTH (28.10.2026): 513 row screen on a 512 row Workbench
+; On the sessions' Workbench (640x256) the font 6 screen fits.  On a 512
+; row Workbench the original's calcscreen made it 513 rows and OpenWindow
+; failed (fixed in TED-C, #351: core/tokit.c calcrows, host test
+; test_calcrows.cpp); R5/Rc would fail there.
 ; @source T t01_int
 ; @opts fonthite=6,fonthite2=5,fontmul=960
 ; @font 6

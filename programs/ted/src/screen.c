@@ -174,8 +174,7 @@ void eraseline(UWORD row)
 /* ted.s:4619 calcscreen */
 void calcscreen(void)
 {
-    UWORD width, columns, height, winheight;
-    ULONG q;
+    UWORD width, columns, winheight;
 
     GetScreenData(&scdata, 84, WBENCHSCREEN, NULL);
     scdata.Width &= 0xFFF0;                     /* "multiple of 8" (really 16) */
@@ -189,20 +188,11 @@ void calcscreen(void)
     columns = (UWORD)(width >> 3);
     totsccols = columns;
     edcols = (UWORD)(columns - mousecols - 2);
-    height = (UWORD)((UWORD)scdata.Height - topskip - botskip);
-    q = (UWORD)divu_w(height, fonthite);        /* divu (quotient word) */
-    edrows = (UWORD)(q - 1);                    /* subq.w #1 */
-    pixrows = (UWORD)((ULONG)edrows * fonthite); /* mulu (low word) */
-    /* BUG(orig) (#351): subtracted were topskip + botskip (20), added back are
-       fonthite + botskip + 1 + topskip (edrows = quotient - 1): if
-       Height - 20 is a multiple of fonthite, the screen is one row taller
-       than the Workbench.  OS 3.2 opens it with the Workbench height, the
-       main window (topskip + newwindow.Height) no longer fits, OpenWindow
-       fails (screenopen's error path crashed there before the fix of #382,
-       survey-05 I.1).  Seen with fonthite 6 on a 512 row Workbench: 513
-       rows (TED A/B 23-font6, original and TED-C, confirmed in Amiberry
-       28.10.2026). */
-    winheight = (UWORD)(pixrows + fonthite + botskip + 1);
+    /* edrows, pixrows, the window height (core: calcrows).  Fixed (#351):
+       the screen is never taller than the Workbench (the original's was
+       one row taller when Height - 20 is a multiple of fonthite, e.g. font
+       6 on a 512 row Workbench: OpenWindow failed, survey-05 I.1) */
+    winheight = calcrows((UWORD)scdata.Height);
     newwindow.Height = winheight;
     newscreen.Height = (UWORD)(winheight + topskip);
 }

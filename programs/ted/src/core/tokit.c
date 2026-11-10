@@ -251,6 +251,23 @@ void calcpos(void)
     chloc = (UWORD)((ULONG)cursy * chcols);
 }
 
+/* ted.s:4644-4659 calcscreen's rows (the core part of calcscreen,
+   src/screen.c).  Fixed (#351): the rows are counted in height - topskip -
+   botskip - 1, so that the window, pixrows + fonthite + botskip + 1, and
+   the screen, that + topskip, fit the Workbench.  The original divided
+   height - 20 (topskip + botskip): when that is a multiple of fonthite
+   the screen was one row taller than the Workbench (513 rows with font 6
+   on a 512 row Workbench) and OpenWindow failed.  For every other height
+   the result is the original's. */
+UWORD calcrows(UWORD height)
+{
+    UWORD rows = (UWORD)(height - topskip - botskip - 1);
+
+    edrows = (UWORD)((UWORD)divu_w(rows, fonthite) - 1);   /* divu, subq #1 */
+    pixrows = (UWORD)((ULONG)edrows * fonthite);           /* mulu (low word) */
+    return (UWORD)(pixrows + fonthite + botskip + 1);
+}
+
 /* ---------------------------------------------------------- line list */
 
 /* ted.s:4547 allocnull */
