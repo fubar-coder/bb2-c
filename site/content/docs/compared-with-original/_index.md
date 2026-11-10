@@ -47,8 +47,10 @@ against the original yourself.
 The port's editor is TED 1.1, the editor of Blitz Basic 2, translated
 like the compiler. It is checked against a build of the original editor's
 source: both are given the same key presses and their screens, requesters
-and saved files are compared. The differences that exist are internal and
-cannot be seen from the outside.
+and saved files are compared. Apart from the fixed bugs of the original
+([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})),
+the differences that exist are internal and cannot be seen from the
+outside.
 
 ## The full lists
 
