@@ -37,7 +37,7 @@ static struct {
 } rawed_io;
 
 /* rawed+32+0 (called at ted.s line 39): L12 */
-void rawed_init(void)
+BOOL rawed_init(void)
 {
     struct IOStdReq *io = &rawed_io.io;
     struct MsgPort *port = &rawed_io.port;
@@ -55,15 +55,21 @@ void rawed_init(void)
     /* the signal is never freed (finit does not; ends with the process) */
     port->mp_SigBit = (UBYTE)AllocSignal(-1);
     io->io_Message.mn_ReplyPort = port;
-    /* BUG(orig) (#373): result not checked - a failure leaves ConsoleDevice = 0
-       and convert calls through a NULL base */
-    OpenDevice((CONST_STRPTR)rawed_devname, (ULONG)-1, (struct IORequest *)io, 0);
+    /* Fixed (#373): the result is checked (the original went on with
+       ConsoleDevice = 0 and convert called through a NULL base) */
+    if (OpenDevice((CONST_STRPTR)rawed_devname, (ULONG)-1,
+                   (struct IORequest *)io, 0) != 0) {
+        FreeSignal((BYTE)port->mp_SigBit);
+        ConsoleDevice = NULL;
+        return FALSE;
+    }
     ConsoleDevice = io->io_Device;
     /* L14: both (unused) tables through convert */
     for (key = 0; key != 0x69; key++) {
         rawed_tab1[key] = (UBYTE)rawed_convert(key, 0);
         rawed_tab2[key] = (UBYTE)rawed_convert(key, 1);
     }
+    return TRUE;
 }
 
 /* rawed+32+4 (called at ted.s line 5928): L7 */

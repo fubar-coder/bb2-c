@@ -389,7 +389,10 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
         goto fail3;
     extint = IntuitionBase;
 
-    rawed_init();               /* bsr rawed+32 */
+    /* bsr rawed+32.  Fixed (#373): a failed OpenDevice of console.device
+       ends the start (the original went on and crashed in RawKeyConvert) */
+    if (!rawed_init())
+        goto fail4;
 
     dosbuff = AllocMem(doslen + 3 * chcols + 6, MEMF_PUBLIC);
     if (!dosbuff)
@@ -465,6 +468,8 @@ openfailed:
 fail5:
     /* ted.s:128 fail5 */
     rawed_finit();              /* bsr rawed+32+8 */
+fail4:
+    /* no console.device (fixed #373): nothing of rawed to close */
     CloseLibrary((struct Library *)IntuitionBase);
 fail3:
     /* ted.s:130 fail3 */
