@@ -14,11 +14,19 @@ const char deftitname[] = "Blitz Basic 2 Editor V1.0";   /* ted.s:1604 */
 /* ted.s:1016 escape */
 void escape(void)
 {
+    if (!erase())
+        return;                                 /* asm: addq #4,a7 in erase */
+    endfree();
+    edquit = TRUE;
+}
+
+/* the part of escape after erase (ted.s:1018-1039), also for tedfail
+   (main.c, fixed #1007) */
+void endfree(void)
+{
     struct Menu *compmenu;
     struct MenuItem *next, *item;
 
-    if (!erase())
-        return;                                 /* asm: addq #4,a7 in erase */
     compmenu = menu2.NextMenu;                  /* move.l menu2(pc),d0 */
     if (compmenu) {
         /* free up external menus.  survey-02 I.7 (no effect): the strip is
@@ -38,9 +46,8 @@ void escape(void)
     freemice();
     allalt = 0;
     /* DIFF (docs/ted/deviations.md, escape): `lea 12(a7),a7` + `bra freeall`
-       returns behind `bsr mainedit`; C: edquit, mainedit returns */
+       returns behind `bsr mainedit`; C: edquit (escape), mainedit returns */
     freeall();
-    edquit = TRUE;
 }
 
 /* ted.s:1054 beepem */

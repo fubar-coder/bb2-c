@@ -5,15 +5,22 @@
 ; and blits the freed character map, and its caller goes on with the
 ; closed window.  TED alone under inject (alerts answered): menu OPTIONS
 ; closes the screen and reopens it; the bit planes of that second
-; OpenScreen (SIZE bytes of chip memory) are not allocated.
+; OpenScreen are not allocated (the chip allocations of 20000..45000
+; bytes after the start's one: its interleaved bit map, and the separate
+; planes graphics falls back to - 5 in all on the sessions' Kickstart);
+; track: the allocations left when TED ends.
 ; Correct (the fix of the issue): the alert "Not enough memory for
-; operation!" and TED ends with the return code of a failed start, -1
-; (#357); the original goes on without a screen.
+; operation!", TED frees its text and ends with the return code of a
+; failed start, -1 (#357), leaving only the 2 allocations a failed start
+; leaves too (ted-outmem-startfile-freed); the original goes on without
+; a screen.
+; @fixed #1007
 ; @source none
-; @command TEDAB:tools/inject alerts allocfail=20000-45000/chip+1 blitz2:ted
-; @expect stdout "inject: allocfail: 1 allocations failed"
+; @command TEDAB:tools/inject alerts track allocfail=20000-45000/chip+1 blitz2:ted
+; @expect stdout "inject: allocfail: 5 allocations failed"
 ; @expect stdout "inject: alert: Not enough memory for operation!"
 ; @expect stdout "inject: rc=-1"
+; @expect stdout "inject: track: 2 allocations left, 302 bytes"
 timeout 20
 wait screen
 menu 0 3

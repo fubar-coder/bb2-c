@@ -1,0 +1,19 @@
+; ted-screenopen2-label-blitz2 (#1007, the fix under blitz2): the label
+; column makes TED reopen its screen right after blitz2 hands it the
+; start file (showmice in .tomain).  blitz2 under inject (alerts
+; answered), a source with a label; the chip allocations of 20000..45000
+; bytes after the first (the start's bit map) fail, so the reopen fails.
+; Correct: the alert "Not enough memory for operation!", TED ends with
+; return code -1 and blitz2 ends normally; the original goes on without
+; a screen.
+; @fixed #1007
+; @file bo.bas ".a\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=20000-45000/chip+1 blitz2:blitz2 @FILE@
+; @expect stdout "inject: allocfail: 5 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=0"
+timeout 20
+wait req "OKEE DOKEE"
+gad 1
+wait exit

@@ -350,11 +350,21 @@ wb_allgo:
    routine with two entry points): `tomain` = entered at .tomain with
    a0 = file name (a0toname keeps it whole; the original split it by the
    caller's d0 there, fixed #340). */
+/* the frame of tedfail (fixed #1007): set from .tomain to the end */
+static jmp_buf *quitstack;
+
+/* see main.h */
+NORETURN void tedfail(void)
+{
+    longjmp(*quitstack, 1);
+}
+
 static void outside_run(struct m68kregs *r, BOOL tomain)
 {
     struct edstruct *eds;
     UBYTE *name, *fullname;
     jmp_buf loadjb;                     /* the start file's outmem frame */
+    jmp_buf quitjb;                     /* tedfail's frame */
     jmp_buf *volatile prevstack;
     struct item *volatile oldfirst;
 
@@ -435,7 +445,22 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     /* .edmain */
     name = (UBYTE *)progfile;
 tomain:
-    /* .tomain */
+    /* .tomain.  Fixed (#1007): when TED cannot go on (screenopen2 failed
+       to reopen its screen), tedfail comes back here after the alert:
+       the text and what escape frees are freed, the screen is closed if
+       it is open, and TED ends with return code -1 (#357).  The original
+       went on without a screen. */
+    quitstack = &quitjb;
+    if (setjmp(quitjb) != 0) {
+        quitstack = NULL;
+        memstack = NULL;
+        endfree();
+        mousefinit();
+        returncode = -1;
+        if (screensopen)
+            goto allocfailed;
+        goto openfailed;
+    }
     a0toname(name);
     if (filename[0]) {
         UBYTE *src, *dst;
@@ -488,6 +513,7 @@ tomain:
         savedefs();
 allocfailed:
     /* ted.s:116 allocfailed */
+    quitstack = NULL;
     screenclose();
 openfailed:
     /* ted.s:118 openfailed */

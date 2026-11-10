@@ -197,12 +197,18 @@ void calcscreen(void)
     newscreen.Height = (UWORD)(winheight + topskip);
 }
 
-/* ted.s:4661 screenopen2.  BUG(orig) (#1007) (survey-05 I.2): the result
-   of screenopen is ignored - after a failed reopen TED draws into the
-   freed bit planes and character map and goes on with the closed window */
+/* ted.s:4661 screenopen2.  Fixed (#1007): when the screen cannot be
+   reopened, the out of memory alert (DisplayAlert needs no screen; if it
+   cannot be shown either, nothing) and TED ends with return code -1
+   (tedfail).  The original ignored the result of screenopen, drew into
+   the freed bit planes and character map and went on with the closed
+   window (survey-05 I.2). */
 void screenopen2(void)
 {
-    screenopen();
+    if (!screenopen()) {
+        doalert();
+        tedfail();
+    }
     showvprop();
     showhprop();
     showall();                                  /* bra showall */
