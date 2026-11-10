@@ -1,7 +1,8 @@
 ; Test 03: Return + join.  Cursor to line 2, column 10, Return (TED opens
 ; an empty line below, no split), JOIN (menu 1 8) joins it away again - the
-; saved file equals the original (observed), SAVE.  Compared: file, dumps, memory balance (join leak
-; BUG(orig) (#364) in both).
+; saved file equals the original (observed), SAVE.  Compared: file, dumps.
+; The memory before and after is only logged (not compared), so the Join
+; leak of the original TED (#364, fixed in TED-C) does not show here.
 ; @source T t02_float
 ; @est 4
 ; @expect same t02_float.bb2

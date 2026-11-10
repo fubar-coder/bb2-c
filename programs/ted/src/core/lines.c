@@ -404,11 +404,12 @@ sskip:
         enditem = cur;
         cur->nextitem = NULL;
     }
-    /* .done.  BUG(orig) (#364, #365) survey-02 I.1: FreeMem size numchars, not
-       numchars + lenitem (`add.b numchars(a1),d0`, "was move.b") - 9
-       bytes lost per join; the host reports the size mismatch through
-       ORIG_HAZARD (stubs.c).  survey-02 I.2: no mforget2. */
-    size = old->numchars;                       /* moveq #0,d0 / add.b numchars(a1),d0 */
+    /* .done.  Fixed (#364) survey-02 I.1: the original frees with size
+       numchars, not numchars + lenitem (`moveq #0,d0 / add.b
+       numchars(a1),d0`, "was move.b") - 8-16 bytes lost per join; here
+       the size freethis uses (as a word).  BUG(orig) (#365) survey-02
+       I.2: no mforget2. */
+    size = (UWORD)(lenitem + old->numchars);
     memalt = size;
     ted_free(old, size);
     numlines--;

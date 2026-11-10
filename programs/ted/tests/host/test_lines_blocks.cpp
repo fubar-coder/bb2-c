@@ -154,19 +154,20 @@ TEST_CASE("join and split: line contents", "[lines]")
     static const char *const t[] = { "abc", "defg", "hi" };
 
     env();
-    // join: "abc" + "defg", FreeMem with the wrong size (BUG(orig) #364)
+    // join: "abc" + "defg", FreeMem with the size of the item (#364 fixed)
     mklist(3, t);
     cursorto(0, 0);
     bboty = (UWORD)-1;
     host_resetcalls();
+    int hazards = host_hazards;
     join();
     CHECK(numlines == 2);
     CHECK(std::string_view(linetext(0)) == "abcdefg");
     CHECK(std::string_view(linetext(1)) == "hi");
     CHECK(firstitem->nextitem == enditem);
     CHECK(enditem->lastitem == firstitem);
-    CHECK(host_hazards == 1);           // FreeMem(numchars) instead of +lenitem
-    CHECK(memalt == 5);                 // numchars of "defg"
+    CHECK(host_hazards == hazards);     // FreeMem(numchars + lenitem): no mismatch
+    CHECK(memalt == 14);                // numchars of "defg" (5) + lenitem (9)
     CHECK(host_calls[HC_SHOWALL] == 1);
 
     // join on the last line: beep

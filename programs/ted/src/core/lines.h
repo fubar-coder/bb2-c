@@ -39,8 +39,8 @@ void freelast(void);
 /* ted.s:1226 freeonly - delete the only line: freethis, allocfirst */
 void freeonly(void);
 /* ted.s:1229 join - menu $81: current chmap line + next line; frees the
-   next line with numchars instead of numchars+lenitem (BUG(orig) #364,
-   survey-02 I.1 - keep it, ORIG_HAZARD on the host) */
+   next line with numchars+lenitem.  Fixed (#364): the original frees
+   numchars bytes only (survey-02 I.1). */
 void join(void);
 /* ted.s:1313 split - Shift+Return: cut the chmap line at the cursor
    (writes spaces into chmap), new line after a4, showall */
