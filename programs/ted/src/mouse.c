@@ -811,6 +811,15 @@ NORETURN void outmem(void)
     if (filehand)
         Close((BPTR)filehand);                  /* not cleared (survey-03 I.5) */
     /* .skip */
+    if (!firstitem) {
+        /* Fixed (#1009): fileopen2 freed the old text and could not
+           allocate the first line of the new one (the original redrew
+           from the freed lines and went on with them).  An empty text
+           with no name, as New leaves it; when even its line cannot be
+           allocated, TED ends (return code -1, tedfail). */
+        if (!emptytext())
+            tedfail();
+    }
     curstop = 0;
     cursy = 0;
     thisitem = firstitem;

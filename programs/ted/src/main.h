@@ -40,11 +40,12 @@ extern struct GfxBase *GfxBase;             /* asm gr */
    printmem/showmice/showvprop as flagged.  Returns when escape set edquit.
    `funcs` (ted.s:182) is an empty label behind it. */
 void mainedit(void);
-/* Fixed (#1007): TED cannot go on (its screen could not be reopened):
+/* Fixed (#1007): TED cannot go on (its screen could not be reopened;
+   outmem found no text and could not make an empty one, #1009):
    longjmp to the frame of outside_c/tomain_c, which frees what escape
    frees (endfree), closes the screen if it is open and ends TED with
    return code -1, as a failed start (#357).  The caller shows the out of
-   memory alert first (doalert).  Set from .tomain to the end of the
+   memory alert first (doalert, outmem).  Set from .tomain to the end of the
    editor (also over blitz2's frames: comdata-4 after a CloseEd run). */
 NORETURN void tedfail(void);
 

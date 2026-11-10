@@ -18,6 +18,10 @@ void escape(void);
 /* escape's part after erase: free the COMPILER menu, doclean, freemice,
    allalt = 0, freeall.  Also the end of tedfail (main.c, fixed #1007). */
 void endfree(void);
+/* new, not in ted.s: the empty text New leaves (donew, title deftitname,
+   showme) when there is no text (outmem after fileopen2 freed the old
+   one, fixed #1009); FALSE if its line cannot be allocated */
+BOOL emptytext(void);
 /* beepem (ted.s:1054): hooks.h */
 /* ted.s:1460 gadget - event 255: drag the vertical prop (busy poll with
    getinput2, the ending message is swallowed, survey-02 I.11); uses

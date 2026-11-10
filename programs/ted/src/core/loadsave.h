@@ -53,7 +53,9 @@ void closextra(void);
    list: xtraat = name, doopen (failure: error() was shown, return),
    allalt = 0, doclean, fillbuff (empty file: doclose, freeall (fixed
    #358), donew; outmem if it fails, fixed #356), sleepon, blokdis,
-   freeall, readline/allocline loop, doclose, loadxtra callback (.xtra),
+   freeall, readline/allocline loop (until the first line is linked
+   firstitem = thisitem = enditem = 0: outmem then leaves an empty text,
+   fixed #1009), doclose, loadxtra callback (.xtra),
    cursor/scroll 0, showhprop, showall, pointeron, showfname.
    Also reached from fileopen (main.c) and outside.tomain. */
 void fileopen2(UBYTE *name);

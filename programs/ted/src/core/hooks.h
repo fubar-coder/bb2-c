@@ -35,6 +35,9 @@ void ted_free(APTR p, ULONG size);
 /* ted.s:3038 outmem (chunk 03, src/mouse.c): alert, close filehand,
    curstop = cursy = 0, thisitem = firstitem, showall, then longjmp to
    *memstack (asm: move.l memstack,a7 / bra memcont).  Never returns.
+   firstitem == 0 (fileopen2 freed the old text and has no line of the
+   new one): an empty text first (donew; if that fails too, TED ends,
+   tedfail - fixed #1009).
    Host: longjmp to the test's jmp_buf (tests/host/stubs.c). */
 NORETURN void outmem(void);
 

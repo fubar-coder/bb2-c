@@ -46,8 +46,24 @@ void endfree(void)
     freemice();
     allalt = 0;
     /* DIFF (docs/ted/deviations.md, escape): `lea 12(a7),a7` + `bra freeall`
-       returns behind `bsr mainedit`; C: edquit (escape), mainedit returns */
-    freeall();
+       returns behind `bsr mainedit`; C: edquit (escape), mainedit returns.
+       No text only for tedfail after fileopen2 lost it (fixed #1009). */
+    if (firstitem)
+        freeall();
+}
+
+/* see edit.h */
+BOOL emptytext(void)
+{
+    const char *src = deftitname;
+    char *dst = newsctit;
+
+    if (!donew())
+        return FALSE;
+    while ((*dst++ = *src++) != 0)
+        ;
+    showme();
+    return TRUE;
 }
 
 /* ted.s:1054 beepem */

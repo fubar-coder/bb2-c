@@ -8,6 +8,7 @@
 ; Correct (the fix of the issue): the alert "Not enough memory for
 ; operation!", the old text freed, an empty text to go on with ("q" is
 ; saved), nothing left allocated.
+; @fixed #1009
 ; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\n"
 ; @file other.bas "0123456789012345678901234567890123456789\n"
 ; @source F bo.bas

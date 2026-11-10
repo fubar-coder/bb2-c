@@ -366,7 +366,6 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     jmp_buf loadjb;                     /* the start file's outmem frame */
     jmp_buf quitjb;                     /* tedfail's frame */
     jmp_buf *volatile prevstack;
-    struct item *volatile oldfirst;
 
     if (tomain) {
         name = (UBYTE *)r->a[0];
@@ -446,7 +445,8 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     name = (UBYTE *)progfile;
 tomain:
     /* .tomain.  Fixed (#1007): when TED cannot go on (screenopen2 failed
-       to reopen its screen), tedfail comes back here after the alert:
+       to reopen its screen; outmem without a text, #1009), tedfail comes
+       back here after the alert:
        the text and what escape frees are freed, the screen is closed if
        it is open, and TED ends with return code -1 (#357).  The original
        went on without a screen. */
@@ -484,17 +484,13 @@ tomain:
            outmem shows its alert, closes the file and comes back here;
            the text is freed and the start fails (return code -1, blitz2
            takes its error exit, #357). */
-        oldfirst = firstitem;
         prevstack = memstack;
         memstack = &loadjb;
         if (setjmp(loadjb) != 0) {
             memstack = prevstack;
-            /* fileopen2 freed the old text before it allocated the first
-               line: while firstitem is still the old line, the list
-               points at freed memory and there is nothing to free (an
-               address reused by the new first line only leaks it) */
-            if (firstitem != oldfirst)
-                freeall();
+            /* the text loaded so far, or the empty text outmem left when
+               the first line failed (fixed #1009) */
+            freeall();
             mousefinit();
             returncode = -1;
             goto allocfailed;

@@ -4,13 +4,17 @@
 ; one line of 36 characters (46 bytes per line item); its AllocMem fails.
 ; Correct (the fix of the issue): the alert "Not enough memory for
 ; operation!", then TED ends with the return code of a failed start, -1
-; (#357); the original continues with a7 = 0 and crashes.
+; (#357), and frees what it allocated (track: only the 2 allocations
+; every failed start leaves; the empty text outmem leaves when the first
+; line fails, #1009, is freed too); the original continues with a7 = 0
+; and crashes.
 ; @fixed #370
 ; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\n"
 ; @source F bo.bas
-; @command TEDAB:tools/inject alerts allocfail=46-46/1 blitz2:ted @FILE@
+; @command TEDAB:tools/inject alerts track allocfail=46-46/1 blitz2:ted @FILE@
 ; @expect stdout "inject: allocfail: 1 allocations failed"
 ; @expect stdout "inject: alert: Not enough memory for operation!"
 ; @expect stdout "inject: rc=-1"
+; @expect stdout "inject: track: 2 allocations left, 302 bytes"
 timeout 20
 wait exit

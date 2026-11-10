@@ -232,6 +232,15 @@ void closextra(void)
 
 /* ------------------------------------------------------- load / save */
 
+/* no line list (fileopen2 after freeall, fixed #1009): firstitem = 0
+   tells outmem that there is no text to show */
+static void nolines(void)
+{
+    firstitem = NULL;
+    thisitem = NULL;
+    enditem = NULL;
+}
+
 /* ted.s:680 fileopen2 */
 void fileopen2(UBYTE *name)
 {
@@ -251,6 +260,7 @@ void fileopen2(UBYTE *name)
            text stay allocated, nothing frees them later. */
         doclose(&rd);
         freeall();
+        nolines();              /* fixed #1009, below */
         if (!donew())
             outmem();           /* Fixed (#356): the original went on */
         return;
@@ -259,12 +269,15 @@ void fileopen2(UBYTE *name)
     sleepon();
     blokdis();
     freeall();
+    /* Fixed (#1009): until the first line is linked the text has no
+       lines; the original left firstitem/thisitem/enditem on the freed
+       text, and when the first allocation failed (here, or donew's
+       above) outmem redrew from the freed lines and the editor went on
+       with them.  outmem now leaves an empty text then (donew), or ends
+       TED if even that fails. */
+    nolines();
     numlines = 1;
     readline(&rd, &len);        /* result ignored: fillbuff had bytes */
-    /* BUG(orig) (#1009): firstitem/thisitem/enditem still point at the
-       freed text: when this allocation fails, outmem redraws from the
-       freed lines and the editor goes on with them (also after the
-       empty-file path's donew above) */
     item = allocline(len);
     firstitem = item;
     thisitem = item;
