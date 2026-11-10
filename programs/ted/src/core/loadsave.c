@@ -131,51 +131,56 @@ void blockuntab(void)
 /* ------------------------------------------------------- printing */
 
 /* ted.s:570 (prtfile, core part - NEW name): the .ploop body of prtfile
-   (ted.s lines 595-624): copy line a4 to buf; a byte with bit 7 starts a
-   token -> ESC[1m name ESC[22m; the 0 byte -> LF.  Returns the Write
-   length.  Fixed (#371) survey-01 I.14: the original takes bytes >= $80
-   for tokens also without tokenise (and standalone, where tokens == 0
-   made findtoke read at 0; a Latin-1 byte in front of the 0 took it as
-   its second byte and ran on behind the line); without tokenise the
-   bytes are copied as they are.  BUG(orig) (#372): no limit for buf
-   (charbuff: chcols+2 bytes, survey-01 I.10). */
+   (ted.s lines 595-624): copy line a4 to buf (charbuff); a byte with bit
+   7 starts a token -> ESC[1m name ESC[22m; the 0 byte -> LF.  Returns the
+   Write length.  Fixed (#371) survey-01 I.14: the original takes bytes
+   >= $80 for tokens also without tokenise (and standalone, where tokens
+   == 0 made findtoke read at 0; a Latin-1 byte in front of the 0 took it
+   as its second byte and ran on behind the line); without tokenise the
+   bytes are copied as they are.  Fixed (#372) survey-01 I.10: the
+   original has no limit and writes behind charbuff2/charbuff3, the end
+   of TED's buffer block; the line now stops silently in front of the
+   character or token (with its ESC sequences) that would not leave room
+   for the LF before charbuff4 (charbuff2/charbuff3 are not in use while
+   printing, as in the original). */
 UWORD prtfile_line(struct item *line, UBYTE *buf)
 {
+    static const UBYTE bold[] = {27, '[', '1', 'm'};
+    static const UBYTE normal[] = {27, '[', '2', '2', 'm'};
     UBYTE *dst = buf;
+    UBYTE *const last = charbuff4 - 1;          /* room for the LF */
     const UBYTE *src = line->chars;
-    const UBYTE *name;
-    UWORD tok;
+    const UBYTE *name, *e;
+    UWORD tok, i;
     UBYTE c;
 
     for (;;) {
         /* @598 .dloop */
         c = *src++;
-        *dst++ = c;
         if (c == 0)
             break;
-        if (!(c & 0x80) || !tokenise)
+        if (!(c & 0x80) || !tokenise) {
+            if (dst >= last)
+                break;
+            *dst++ = c;
             continue;
-        tok = (UWORD)(*--dst << 8);
+        }
+        tok = (UWORD)(c << 8);
         tok |= *src++;
-        /* bold on */
-        *dst++ = 27;
-        *dst++ = '[';
-        *dst++ = '1';
-        *dst++ = 'm';
         name = (const UBYTE *)findtoke(tok);
-        while ((*dst++ = *name++) != 0)
+        for (e = name; *e; e++)
             ;
-        /* bold off (over the 0 byte of the name) */
-        dst[-1] = 27;
-        *dst++ = '[';
-        *dst++ = '2';
-        *dst++ = '2';
-        *dst++ = 'm';
+        if (dst + sizeof(bold) + (e - name) + sizeof(normal) > last)
+            break;
+        for (i = 0; i < sizeof(bold); i++)      /* bold on */
+            *dst++ = bold[i];
+        while (name < e)
+            *dst++ = *name++;
+        for (i = 0; i < sizeof(normal); i++)    /* bold off */
+            *dst++ = normal[i];
     }
     /* @622 .ddone */
-    dst[-1] = 10;
-    if (buf == charbuff && dst > charbuff2)
-        ORIG_HAZARD("prtfile: printer line longer than charbuff (survey-01 I.10)");
+    *dst++ = 10;
     return (UWORD)(dst - buf);
 }
 

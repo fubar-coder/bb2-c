@@ -266,6 +266,33 @@ TEST_CASE("printer line format", "[search][print]")
     CHECK(std::memcmp(charbuff, "\033[1mPrint\033[22m 1\n", n) == 0);
     ted_free(it, it->numchars + lenitem);
 
+    // Fixed (#372): a line of 27 "NPrint:" is 432 bytes as printer line;
+    // the original wrote it behind charbuff3, the end of TED's buffer
+    // block.  It stops in front of the first token that leaves no room
+    // for the LF before charbuff4: 24 x (ESC[1m NPrint ESC[22m :) + LF
+    std::memset(charbuff2, ' ', chcols);
+    std::memcpy(charbuff2, "NPrint", 6);
+    REQUIRE(tokit2(tok, charbuff2, 6, nullptr) == 3);
+    std::string line;
+    for (int i = 0; i < 27; i++)
+        line += std::string(reinterpret_cast<const char *>(tok), 2) + ":";
+    it = static_cast<struct item *>(ted_alloc(line.size() + 1 + lenitem, TED_MEMF_PUBLIC));
+    it->numchars = static_cast<UBYTE>(line.size() + 1);
+    std::memcpy(it->chars, line.c_str(), line.size() + 1);
+    std::string unit = "\033[1mNPrint\033[22m:", expect;
+    for (int i = 0; i < 24; i++)
+        expect += unit;
+    expect += "\n";
+    tokenise = 1;
+    host_resetcalls();
+    n = prtfile_line(it, charbuff);
+    tokenise = 0;
+    CHECK(n == expect.size());
+    CHECK(n <= charbuff4 - charbuff);
+    CHECK(std::string_view(reinterpret_cast<const char *>(charbuff), n) == expect);
+    CHECK(host_hazards == 0);
+    ted_free(it, it->numchars + lenitem);
+
     // without tokenising, bytes >= $80 are characters, also in front of
     // the 0 (#371: the original printed them with the next byte as a
     // token name, and a last one took the 0 and ran on behind the line)

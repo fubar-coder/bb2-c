@@ -21,9 +21,12 @@ void blocktab(void);
 void blockuntab(void);
 
 /* ted.s:570 (prtfile, core part - NEW name): format line (a4) for the printer
-   into buf: token -> ESC[1m name ESC[22m, end of line -> LF.  Returns the
-   number of bytes (asm: Write length).  Bytes >= $80 are always tokens
-   (survey-01 I.14).  The requester/Open/Write loop is prtfile (main.h). */
+   into buf (charbuff): with tokenise on a token -> ESC[1m name ESC[22m
+   (without it bytes >= $80 are characters, Fixed (#371)), end of line ->
+   LF.  The line stops silently where the next character or token would
+   leave no room for the LF before charbuff4 (Fixed (#372)).  Returns the
+   number of bytes (asm: Write length).  The requester/Open/Write loop is
+   prtfile (main.h). */
 UWORD prtfile_line(struct item *line, UBYTE *buf);
 
 /* ----------------------------------------------------- .xtra / .info */
