@@ -1,0 +1,23 @@
+; ted-swapd0bord-index (#384): setdefs takes the colour words of the
+; option block unchecked and marks the colour buttons with swapd0bord
+; (colour | 4 x group): a value >= 4 from L:blitzeditor.opts selects the
+; button of another group, or one behind the 16 buttons (index >= 16:
+; bytes behind their borders are swapped).  Options file with normcol 7;
+; OPTIONS, OK, QUIT (savedefs).  Correct: TED survives the requester and
+; the colour is taken as 0..3 (7 masked: 3), also in the saved options;
+; the original keeps 7.  (What the swaps damage shows only in pixels or,
+; for values >= 16, in data laid out differently in the port: not
+; checked here.)
+; @source none
+; @opts normcol=7
+; @expect opts blitzeditor.opts normcol=3
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 3
+wait req "OK" "CANCEL"
+gad 26
+wait screen
+menu 0 9
+wait exit
