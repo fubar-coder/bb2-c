@@ -66,8 +66,9 @@ NORETURN void memcont_nostack(void);
 extern void outside_stub(void);
 /* ted.s:24 outside, C part (src/main.c): r->a[1] = edstruct or 0.
    External: sets r->a[0] = tomain_stub, r->a[1] = comdata, r->d[0] = 0
-   (Z=1 - also after a failure, BUG(orig) #357, survey-01 I.1).  Standalone:
-   runs the whole editor (.edmain -> .tomain) and returns. */
+   (Z=1) after a successful start, r->d[0] = -1 (Z=0) after a failure
+   (fixed #357).  Standalone: runs the whole editor (.edmain -> .tomain)
+   and returns the return code. */
 void outside_c(struct m68kregs *r);
 /* ted.s:87 outside.tomain: blitz2's second call, a0 = file name.  C part:
    tomain_c in main.c. */

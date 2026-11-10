@@ -231,17 +231,17 @@ static struct DosLibrary *dosopen(void)
     return DOSBase;
 }
 
-/* wbheader:88 wb_exit: reply the Workbench message (if any).  Returns
-   d0 = wbmess (Z=1 if 0 - which the external caller reads as success,
-   BUG(orig) #357, survey-01 I.1). */
-static APTR wb_exit(void)
+/* wbheader:88 wb_exit: reply the Workbench message (if any).  Fixed
+   (#357): the caller's d0 (the return code) is kept; the original loaded
+   wbmess into d0 (Z=1 for 0, which blitz2 read as success, survey-01
+   I.1). */
+static void wb_exit(void)
 {
     if (wbmess) {
         Forbid();
         ReplyMsg((struct Message *)wbmess);
         Permit();                   /* BUG(orig) (#387): before TED has returned */
     }
-    return wbmess;
 }
 
 /* ted.s:136 edstart (wbheader): standalone start, C part in main.c: d0/a0 =
@@ -368,7 +368,8 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
         label = eds->label;
         remark = eds->remark;
         if (!dosopen()) {
-            r->d[0] = (ULONG)wb_exit();
+            r->d[0] = (ULONG)(LONG)returncode;  /* Fixed (#357) */
+            wb_exit();
             return;
         }
     }
@@ -457,16 +458,18 @@ fail3:
 fail2:
     /* ted.s:131 fail2 */
     CloseLibrary((struct Library *)DOSBase);
-    /* ted.s:132 fail1: d0 = ext.l returncode - overwritten by wb_exit
-       (BUG(orig) #357: the return code is never delivered, survey-01 I.1) */
+    /* ted.s:132 fail1: d0 = ext.l returncode.  Fixed (#357): wb_exit keeps
+       it (the original overwrote it with wbmess, survey-01 I.1): -1 (Z=0)
+       when the editor could not start, 0 after the editor */
     r->d[0] = (ULONG)(LONG)returncode;
-    r->d[0] = (ULONG)wb_exit();
+    wb_exit();
 }
 
 /* ted.s:24 outside, C part: r->a[1] = edstruct or 0.  External: sets
-   r->a[0] = tomain_stub, r->a[1] = comdata, r->d[0] = 0 (Z=1 - also
-   after a failure, BUG(orig) #357, survey-01 I.1).  Standalone: runs the whole
-   editor (.edmain -> .tomain) and returns. */
+   r->a[0] = tomain_stub, r->a[1] = comdata, r->d[0] = 0 (Z=1) after a
+   successful start, r->d[0] = -1 (Z=0) after a failure (fixed #357).
+   Standalone: runs the whole editor (.edmain -> .tomain) and returns the
+   return code. */
 void outside_c(struct m68kregs *r)
 {
     SysBase = *(struct ExecBase **)4;   /* external entry: no edstart */

@@ -3,6 +3,7 @@
 ; the CLI (under inject, which reports the return code) with
 ; graphics.library failing to open: the editor cannot start.  Correct: a
 ; return code other than 0; the original returns 0 (wbmess).
+; @fixed #357
 ; @source none
 ; @command TEDAB:tools/inject openlibfail=graphics.library blitz2:ted
 ; @expect stdout "inject: openlibfail: 1 opens failed"
