@@ -288,9 +288,12 @@ void edstart_c(struct m68kregs *r)
     fh = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
     if (!fh)
         goto openfailed;
-    /* BUG(orig) (#389): a short Read leaves the file open */
-    if (Read(fh, progfile, 0x4e) != 0x4e)
+    /* Fixed (#389): closed after a short read too (wbheader closed it
+       only after a complete one) */
+    if (Read(fh, progfile, 0x4e) != 0x4e) {
+        Close(fh);
         goto openfailed;
+    }
     Close(fh);
     /* +$4A is do_ToolWindow (do_StackSize is at +$4E, behind the 78
        bytes read) - without effect: d2 is never used */
