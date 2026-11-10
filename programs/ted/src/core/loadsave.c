@@ -50,12 +50,15 @@ void blocktab(void)
         if (tokenise) {
             dst = detok(src, dst);      /* dst (a1) ON the 0 byte */
         } else {
-            /* BUG(orig) (#347): the copy leaves a1 BEHIND the 0 byte, so the 0
-               stays in the chmap style line and charstobuff keeps it as
-               the last "non space": every ASCII line of the block gets an
-               extra 0 byte (numchars + 1, written as "text\0\n"). */
+            /* Fixed (#347): the original's copy leaves a1 BEHIND the 0
+               byte, so the 0 stayed in the chmap style line and
+               charstobuff kept it as the last "non space": every ASCII
+               line of the block got an extra 0 byte (numchars + 1,
+               written as "text\0\n").  dst back onto the 0, as
+               blockuntab does. */
             while ((*dst++ = *src++) != 0)
                 ;
+            dst--;
         }
         /* @348 .loop3 */
         if (dst > charbuff3)

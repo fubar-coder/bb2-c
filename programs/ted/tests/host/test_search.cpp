@@ -191,12 +191,14 @@ TEST_CASE("blocktab and blockuntab", "[search][blocks]")
     bboty = 2;
     blocktab();
     CHECK(text(nth(0)) == "  a");
-    // BUG(orig) (#347): the 0 byte of the copied ASCII line stays in the chmap
-    // style buffer - every tabbed line gets one more 0 byte
-    CHECK(nth(0)->numchars == 5);
+    // Fixed (#347): no 0 byte of the copied ASCII line stays in the line
+    CHECK(nth(0)->numchars == 4);
     CHECK(text(nth(1)) == "      b");
-    CHECK(nth(1)->numchars == 9);
+    CHECK(nth(1)->numchars == 8);
+    CHECK(text(nth(2)) == "  c");
+    CHECK(nth(2)->numchars == 4);
     CHECK(text(nth(3)) == "xy");
+    CHECK(nth(3)->numchars == 3);
 
     list(l);
     bboty = 3;
