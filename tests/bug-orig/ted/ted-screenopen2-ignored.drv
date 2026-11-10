@@ -1,0 +1,20 @@
+; ted-screenopen2-ignored (#1007): screenopen2, the reopen of the editor
+; screen (options requester, label column, after a CloseEd run), does not
+; look at the result of screenopen: after a failed OpenScreen it prints
+; into the freed bit planes, refreshes the gadgets of the closed window
+; and blits the freed character map, and its caller goes on with the
+; closed window.  TED alone under inject (alerts answered): menu OPTIONS
+; closes the screen and reopens it; the bit planes of that second
+; OpenScreen (SIZE bytes of chip memory) are not allocated.
+; Correct (the fix of the issue): the alert "Not enough memory for
+; operation!" and TED ends with the return code of a failed start, -1
+; (#357); the original goes on without a screen.
+; @source none
+; @command TEDAB:tools/inject alerts allocfail=20000-45000/chip+1 blitz2:ted
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+; @expect stdout "inject: rc=-1"
+timeout 20
+wait screen
+menu 0 3
+wait exit

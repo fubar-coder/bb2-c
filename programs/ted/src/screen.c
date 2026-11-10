@@ -197,7 +197,9 @@ void calcscreen(void)
     newscreen.Height = (UWORD)(winheight + topskip);
 }
 
-/* ted.s:4661 screenopen2 - error of screenopen ignored (survey-05 I.2) */
+/* ted.s:4661 screenopen2.  BUG(orig) (#1007) (survey-05 I.2): the result
+   of screenopen is ignored - after a failed reopen TED draws into the
+   freed bit planes and character map and goes on with the closed window */
 void screenopen2(void)
 {
     screenopen();
