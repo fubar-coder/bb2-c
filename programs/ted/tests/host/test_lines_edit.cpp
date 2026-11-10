@@ -1,6 +1,7 @@
 // test_lines_edit - line list operations of chunk 02 (ted.s 1041-1806):
 // cursor up/down, insertline/deleteline/return, gotolined0 arithmetic,
 // bloksave/blokload through the file hooks.  tokenise = 0.
+#include <csetjmp>
 #include <string>
 #include <string_view>
 #include <snitch/snitch.hpp>
@@ -195,6 +196,47 @@ TEST_CASE("insertline, deleteline, return", "[lines]")
     CHECK(edrows == 20);
     CHECK(host_calls[HC_SCRUPALL] == 1);
     CHECK(host_calls[HC_SCROLLDOWN] == 0);
+}
+
+TEST_CASE("deleteline on the only line keeps it when its replacement fails", "[lines]")
+{
+    // #1006: freeonly allocates the new empty line before it frees the
+    // only line; without memory outmem reports it and the line stays
+    static const char *const one[] = { "abc" };
+    std::jmp_buf jb;
+    struct item *old;
+    long live;
+
+    env();
+    mklist(1, one);
+    place(0, 0, 0);
+    old = firstitem;
+    live = host_live;
+    host_resetcalls();
+    host_allocfail = 1;
+    host_outmem = &jb;
+    if (!setjmp(jb))
+        deleteline();
+    host_outmem = nullptr;
+    host_allocfail = 0;
+    CHECK(host_calls[HC_OUTMEM] == 1);
+    CHECK(host_hazards == 0);
+    CHECK(firstitem == old);
+    CHECK(thisitem == old);
+    CHECK(enditem == old);
+    CHECK(numlines == 1);
+    CHECK(host_live == live);
+    CHECK(std::string_view(chars(firstitem)) == "abc");
+
+    // with memory: the line is replaced by an empty one, nothing leaks
+    host_resetcalls();
+    deleteline();
+    CHECK(host_calls[HC_OUTMEM] == 0);
+    CHECK(host_hazards == 0);
+    CHECK(numlines == 1);
+    CHECK(listok());
+    CHECK(firstitem->chars[0] == 0);
+    CHECK(host_live == live);
 }
 
 TEST_CASE("bloksave and blokload through the file hooks", "[lines][blocks][files]")

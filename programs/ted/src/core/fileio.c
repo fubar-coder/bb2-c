@@ -722,12 +722,9 @@ struct item *afirst2(void)
     return item;
 }
 
-/* ted.s:4041 allocfirst */
-void allocfirst(void)
-{
-    afirst2();
-    cls();                                      /* bra cls */
-}
+/* ted.s:4041 allocfirst (afirst2, then cls): no C function - its callers
+   allocate the line before they free the old one (donew_with, freeonly;
+   fixed #356, #1006) */
 
 /* ------------------------------------------------------- block cursor */
 

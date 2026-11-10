@@ -57,12 +57,16 @@ void ted_hazard(const char *what, const char *file, int line)
 #define SLACK 16
 
 long host_live;
+int host_allocfail;
 
 APTR ted_alloc(ULONG size, ULONG flags)
 {
-    UBYTE *p = calloc(1, HDR + size + SLACK);
+    UBYTE *p;
 
     (void)flags;
+    if (host_allocfail > 0 && --host_allocfail == 0)
+        return NULL;                    /* the allocation that is to fail */
+    p = calloc(1, HDR + size + SLACK);
     if (!p)
         return NULL;
     memcpy(p, &size, sizeof(size));

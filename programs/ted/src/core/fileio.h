@@ -162,8 +162,6 @@ struct item *makeline(struct item *line, UWORD len);
 /* ted.s:4043 afirst2: allocnull -> firstitem = enditem = thisitem; NULL
    if it failed (asm: Z=1) */
 struct item *afirst2(void);
-/* ted.s:4041 allocfirst: afirst2, then cls() */
-void allocfirst(void);
 
 /* ------------------------------------------------------- block cursor */
 

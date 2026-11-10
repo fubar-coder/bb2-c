@@ -283,13 +283,23 @@ void freelast(void)
     goup();                                     /* bra goup */
 }
 
-/* ted.s:1226 freeonly.  BUG(orig) (#1006): the line is freed before the
-   new empty line is allocated; allocfirst's afirst2 ignores a failed
-   allocnull, and first/end/thisitem keep pointing at the freed line */
+/* ted.s:1226 freeonly.  Fixed (#1006): the new empty line is allocated
+   before the only line is freed; without memory outmem reports it and the
+   line stays (the original freed it first and allocfirst's afirst2
+   ignored a failed allocnull: first/end/thisitem kept pointing at the
+   freed line). */
 void freeonly(void)
 {
+    struct item *item = allocnull();
+
+    if (!item)
+        outmem();
     freethis();
-    allocfirst();                               /* bra allocfirst */
+    memalt = (UWORD)-1;                         /* allocnull came last */
+    firstitem = item;                           /* allocfirst: afirst2, cls */
+    enditem = item;
+    thisitem = item;
+    cls();
 }
 
 /* ted.s:1229 join */

@@ -36,7 +36,9 @@ void insertline(void);
 void deleteline(void);
 /* ted.s:1208 freelast - (bra from deleteline) delete the last line */
 void freelast(void);
-/* ted.s:1226 freeonly - delete the only line: freethis, allocfirst */
+/* ted.s:1226 freeonly - delete the only line: the new empty line first
+   (allocnull; failure -> outmem, the line stays, fixed #1006), freethis,
+   first/end/thisitem = the new line, cls */
 void freeonly(void);
 /* ted.s:1229 join - menu $81: current chmap line + next line; frees the
    next line with numchars+lenitem.  Fixed (#364): the original frees
