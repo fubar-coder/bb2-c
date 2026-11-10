@@ -298,6 +298,12 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Loading and saving
 
+* A line longer than 129 characters in a file from another editor lost
+  three characters where the editor split it, and BLOCK LOAD stopped at
+  such a line and ignored the rest of the file; the line is split into
+  pieces of up to 129 characters without loss, and the whole file is
+  loaded
+  ([#375](https://github.com/fubar-coder/bb2-c/issues/375)).
 * In a tokenised source, a TAB behind a keyword on the same line went to
   the wrong column, because the original counted the keyword as two
   characters; it goes to the tab position the line shows
@@ -317,6 +323,13 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Options
 
+* A colour value of 4 or more in a damaged `L:blitzeditor.opts` marked
+  the wrong colour buttons and changed other data of the requester; the
+  colour counts as 0 to 3
+  ([#384](https://github.com/fubar-coder/bb2-c/issues/384)).
+* Switching from the 6 to the 8 pixel font in the options left the
+  cursor below the last row of the editor; it stays in the text
+  ([#352](https://github.com/fubar-coder/bb2-c/issues/352)).
 * A value other than 0 or 1 for "Tokenise" or "Create Icons" in
   `L:blitzeditor.opts`, as in a damaged or hand-edited file, disabled or
   misdrew the check box in DEFAULTS; only the lowest bit of the value
@@ -357,6 +370,19 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
 
 ### Low memory
 
+* When the editor's screen could not be opened again (after the options,
+  when the label column appears or goes, after a program with
+  `CloseEd`), the editor drew into freed memory and hung; it shows the
+  out-of-memory alert and ends with an error
+  ([#1007](https://github.com/fubar-coder/bb2-c/issues/1007)).
+* When the first line of a file being opened did not fit into memory,
+  the editor went on with the freed old text; it shows the alert and
+  leaves an empty text, or ends if even that does not fit
+  ([#1009](https://github.com/fubar-coder/bb2-c/issues/1009)).
+* DELETE LINE on the only line, when its empty replacement did not fit
+  into memory, left the editor on the freed line; it shows the alert and
+  the line stays
+  ([#1006](https://github.com/fubar-coder/bb2-c/issues/1006)).
 * When the file the editor was started with did not fit into memory, the
   editor crashed while loading it; it shows the out-of-memory alert and
   ends with an error, so blitz2 stops cleanly
