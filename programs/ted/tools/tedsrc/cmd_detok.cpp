@@ -42,17 +42,22 @@ static const char *me;          /* "tedsrc detok", the prefix of the messages */
 
 /* lines of the file as written: ended by 0 (tokenised) or LF (text), a
    byte with bit 7 takes the next one with it (readline); a last line
-   without end counts.  -1 if the file cannot be read. */
-static long file_lines(const char *path)
+   without end counts.  -1 if the file cannot be read.  *half: the token
+   byte the file ends with (the first byte of a pair without its second;
+   TED drops it, fixed #379), else 0. */
+static long file_lines(const char *path, UBYTE *half)
 {
     long len, i, n = 0;
     UBYTE *data = host_readfile(path, &len);
     BOOL open = FALSE;
 
+    *half = 0;
     if (!data)
         return -1;
     for (i = 0; i < len; i++) {
         if (data[i] & 0x80) {
+            if (i + 1 >= len)
+                *half = data[i];
             i++;
             open = TRUE;
         } else if (data[i] == 0 || data[i] == '\n') {
@@ -67,8 +72,9 @@ static long file_lines(const char *path)
 
 /* the tokens of line a4 as detok reads them: one TED does not know
    (findtoke -> tokeerr) or a token byte whose second byte is the last
-   byte of the line (readline at EOF, survey-04 I.3: detok would read on
-   behind the line).  FALSE if there is one, reported as IN:LINE. */
+   byte of the line (detok would read on behind the line; readline no
+   longer stores one, fixed #379).  FALSE if there is one, reported as
+   IN:LINE. */
 static BOOL check_line(const char *in, unsigned long line, const struct item *a4)
 {
     const UBYTE *a0 = a4->chars, *end = a4->chars + a4->numchars;
@@ -119,10 +125,17 @@ static BOOL detok_file(const char *in, const char *out)
         fprintf(stderr, "%s: %s: %s\n", me, in, host_lasterror ? host_lasterror : "not loaded");
         return FALSE;
     }
-    lines = file_lines(in);
+    UBYTE half;
+    lines = file_lines(in, &half);
     if (lines > 0 && lines != (long)numlines)
         fprintf(stderr, "%s: %s: note: %ld lines in the file, %u in TED (a line longer "
                         "than TED's line buffer is split)\n", me, in, lines, (unsigned)numlines);
+    if (half) {
+        /* a truncated source: TED drops the byte (#379), still an error */
+        fprintf(stderr, "%s: %s:%ld: token byte $%02X without its second byte "
+                        "(at the end of the file; TED drops it)\n", me, in, lines, half);
+        ok = FALSE;
+    }
     if (out) {
         f = fopen(out, "wb");
         if (!f) {

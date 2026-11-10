@@ -246,16 +246,16 @@ static ULONG dispcol(const UBYTE *end)
    and lines cut at the buffer end (d4 is only set for LF); here such a
    line is tokenised as the LF lines are when the file is a text file (an
    earlier line ended by LF: rd->textfile) or the line has no byte >= $80
-   (no token pair the tokeniser could break: a half token at EOF, #379,
-   stays as it is).
+   (no token pair the tokeniser could break).
    BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
-   unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
-   half token in front of the 0 (#379); CR stays.
+   unchecked, also LF/0/TAB; #374); CR stays.
    Fixed (#378): the TAB expansion stops at the end of charbuff2.
    Fixed (#377): a TAB is expanded from the column the line shows (a
    token pair counts with the length of its name), not from the number of
-   bytes stored. */
+   bytes stored.
+   Fixed (#379): a token start byte right before the end of the file is
+   dropped (the original left a half token in front of the 0). */
 int readline(struct rdstate *rd, UWORD *length)
 {
     UBYTE *dst;
@@ -276,8 +276,13 @@ int readline(struct rdstate *rd, UWORD *length)
             pairs = TRUE;
             *dst++ = (UBYTE)c;
             c = doread(rd);
-            if (c < 0)
+            if (c < 0) {
+                /* Fixed (#379): the original keeps the token start byte
+                   in front of the 0 - a half token whose low byte is the
+                   0, detok reads on behind the line.  It is dropped. */
+                dst--;
                 goto oops;
+            }
             *dst++ = (UBYTE)c;
             goto nottab;
         }
@@ -419,8 +424,8 @@ UBYTE *bloadadd(UBYTE *dst)
 /* ted.s:3455 detok - detokenise a0 to a1.  Fixed (#355) survey-04 I.8:
    the original has no length limit; the text stops silently where only
    the byte for the 0 is left before end.  A token byte in front of the 0
-   (readline I.3) takes the 0 as its low byte and runs on behind the line,
-   as in the asm. */
+   takes the 0 as its low byte and runs on behind the line, as in the asm
+   (readline no longer stores such a half token, fixed #379). */
 UBYTE *detok(const UBYTE *src, UBYTE *dst, const UBYTE *end)
 {
     const UBYTE *last = end - 1;                /* room for the 0 */
