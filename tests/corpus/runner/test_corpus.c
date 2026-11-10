@@ -75,6 +75,8 @@ int main(void)
     CHECK(parse(BASE CONFIGS "config=x|output|/a|/b\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "parallel=0\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "runtime_errors=yes\nsource=/s\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "rtg=yes\nsource=/s\n", err, sizeof err) == -1 && strstr(err, "rtg=on"));
+    CHECK(parse(BASE CONFIGS "rtg=\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "colour=red\nsource=/s\n", err, sizeof err) == -1
           && strstr(err, "unknown key"));
     CHECK(parse("work=/w\n" CONFIGS "source=/s\n", err, sizeof err) == -1);
@@ -177,6 +179,14 @@ int main(void)
     /* bug-orig with the remote end on the serial port */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\norig=/o\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
+    corpus_free(&p);
+    /* the RTG variant: off unless rtg=on, the last line wins */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0 && !p.rtg);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nrtg=on\n", &p, err, sizeof err) == 0 && p.rtg);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nrtg=on\nrtg=off\n", &p, err, sizeof err) == 0
+          && !p.rtg);
     corpus_free(&p);
     /* the recorded original: the normal run drops the reference and the
        files only for it, the recording keeps nothing else */

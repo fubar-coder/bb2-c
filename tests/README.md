@@ -631,7 +631,11 @@ with `pad` 64 zeroed bytes behind every allocation, also a hunk of
 LoadSeg, a FreeMem inside an allocation is reported and not done, and
 one whose 64 bytes are no longer zero is reported (written behind); with
 `guard` the 64 bytes get an address-dependent pattern instead, checked
-at FreeMem and at the end: writes behind a block are reported; for the
+at FreeMem and at the end: writes behind a block are reported; with
+`guardseg` also 32 KB behind the hunk of the command itself, which is
+otherwise loaded before the patches (a data block of a library overrun
+at the end of a Blitz program, `freqlib-64-lines`; self test
+`inject_guardseg`); for the
 compiled programs with `runwrap=@INJECT@|...`) and reports what the
 command leaves behind (library opens minus closes of the process, its
 current directory and whether it unlocked the start lock, with
@@ -692,7 +696,9 @@ the issue: `ID.bas` (the program as text; in its header comment
 `timeout=`, `runtime_errors=on`, `serial=on` (the remote end of the
 serial tests on the emulated serial port, `tests/corpus/runner/serial.h`:
 canned replies, among them `N` with a byte count and `S`, an XOFF that
-holds the program's writes), with `@USERLIB@`,
+holds the program's writes), `rtg=on` (the RTG variant of the emulator,
+`amiga_emulation_rtg`: the uaegfx board and the Workbench hardfile with
+its monitor, for a screen taller than the native modes), with `@USERLIB@`,
 `@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
 configurations judged; `; @rwe NAME...` for the RWE userlibs, below) and `ID.expect` (the correct behaviour; a line
 beginning with `[` is a section header, so the program's output must

@@ -201,20 +201,21 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
-            || !strcmp(key, "run") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
+            || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
-                || !strcmp(key, "regression") || !strcmp(key, "run")) {
+                || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
                 }
                 *(!strcmp(key, "runtime_errors") ? &p->runtime_errors
                   : !strcmp(key, "serial") ? &p->serial
-                  : !strcmp(key, "run") ? &p->run : &p->regression) = !strcmp(val, "on");
+                  : !strcmp(key, "run") ? &p->run
+                  : !strcmp(key, "rtg") ? &p->rtg : &p->regression) = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s needs a number > 0", no, key);
@@ -1009,7 +1010,8 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         { "serial_direct", "false" }, { "serial_hardware_ctsrts", "false" },
     };
     size_t nserial = port ? sizeof serial / sizeof serial[0] : 0;
-    struct amiga_emulation_option *ch = calloc(nserial + p->nuae + 1, sizeof *ch);
+    size_t nrtg = p->rtg ? amiga_emulation_rtg_count : 0;
+    struct amiga_emulation_option *ch = calloc(nserial + nrtg + p->nuae + 1, sizeof *ch);
     char **keys = calloc(p->nuae + 1, sizeof *keys);
     struct amiga_emulation_params ep = { 0 };
     struct amiga_emulation *e = NULL;
@@ -1018,16 +1020,18 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
     if (vol && emu && m && tcp && ch && keys) {
         for (i = 0; i < nserial; i++)
             ch[i] = serial[i];
+        for (i = 0; i < nrtg; i++)
+            ch[nserial + i] = amiga_emulation_rtg[i];
         for (i = 0; i < p->nuae && (keys[i] = strdup(p->uae[i])); i++) {
             char *eq = strchr(keys[i], '=');
 
             *eq = 0;
-            ch[nserial + i].key = keys[i];
-            ch[nserial + i].value = eq + 1;
+            ch[nserial + nrtg + i].key = keys[i];
+            ch[nserial + nrtg + i].value = eq + 1;
         }
         ep.machine = p->machine;
         ep.changes = ch;
-        ep.nchanges = nserial + i;
+        ep.nchanges = nserial + nrtg + i;
         /* CORPUS: the configuration's directory, the read-only volumes */
         m[0].volume = VOLUME;
         m[0].host_dir = vol;

@@ -1,0 +1,6 @@
+[run]
+tall screen
+cancel 0
+inject: rc=0
+inject: click FQ/CANCEL: answered
+rc=0

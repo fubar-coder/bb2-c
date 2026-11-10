@@ -44,6 +44,10 @@ gfxcard_type=ZorroIII
 hardfile2 / uaehf0: workbench-311-rtg.hdf instead of workbench-311.hdf
 ```
 
+A test uses it with `amiga_run --rtg` or, in a corpus pass (a bug-orig
+test), with `rtg=on` (`; @pass rtg=on`, e.g. `freqlib-64-lines`: a
+uaegfx screen taller than the native modes).
+
 TED can only be tested with the AGA variant (on RTG its bitplanes would be
 in graphics card memory, where the blitter cannot reach them).
 

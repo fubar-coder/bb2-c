@@ -113,6 +113,10 @@
  *   uae=KEY=VALUE     a change of the emulator configuration
  *                     (tools/lib/amiga_emulation/default.uae), e.g. more
  *                     memory; any number
+ *   rtg=on|off        on: the RTG variant of the emulator (the uaegfx board,
+ *                     the Workbench hardfile with its monitor,
+ *                     amiga_emulation_rtg), e.g. for a screen taller than
+ *                     the native modes; applied before the uae= changes
  *   machine=NAME      the emulated machine (amiga_emulation.h: a1200, the
  *                     default; a500 = 68000 with Kickstart 1.3; a500-68010);
  *                     uae= changes its template.  On Kickstart 1.x the
@@ -195,6 +199,7 @@ struct corpus_pass {
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* corpus_select: the recording run */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
+    int rtg;                            /* rtg=on: amiga_emulation_rtg */
     unsigned timeout, parallel, stack;
     unsigned fixed;                     /* fixed=NNN, 0 = not given */
     struct corpus_config *configs;

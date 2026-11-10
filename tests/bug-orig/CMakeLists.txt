@@ -461,6 +461,22 @@ inject_datestamp(inject_datestamp_broken
 set_tests_properties(inject_datestamp_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+24:[ \n]+\"days=17828[ \n]+minute=0[ \n]+tick=0\",[ \n]+output[ \n]+line[ \n]+24:[ \n]+\"days=17829")
 
+# inject's guardseg option (inject-guardseg.cmake), and the check itself: an
+# expect file without the write behind the program's hunk must fail
+function(inject_guardseg name expect)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DRESULTS=${RESULTS} -DINJECT=${INJECT} -DSEGWRITE=$<TARGET_FILE:segwrite>
+		-DEXPECT=${expect} -DWORK=${work}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/inject-guardseg.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+inject_guardseg(inject_guardseg ${CMAKE_CURRENT_SOURCE_DIR}/inject-guardseg.expect)
+inject_guardseg(inject_guardseg_broken ${CMAKE_CURRENT_SOURCE_DIR}/inject-guardseg.broken.expect)
+set_tests_properties(inject_guardseg_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+results[ \n]+match:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+10:[ \n]+\"rc=0\",[ \n]+output[ \n]+line[ \n]+10:[ \n]+\"inject:[ \n]+guard:[ \n]+written[ \n]+behind")
+
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})

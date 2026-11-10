@@ -82,6 +82,14 @@
  *                          the sizes of the allocations written behind are
  *                          reported (a write past the end of a block, also
  *                          a copy from one padded block to another)
+ *   guardseg               as guard, and COMMAND's own hunks get 32 KB of
+ *                          the pattern behind them (its LoadSeg and
+ *                          UnLoadSeg run with AllocMem/FreeMem patched and
+ *                          recorded, no fault injected; without guardseg
+ *                          COMMAND is loaded before the patches): a write
+ *                          past the end of the program's hunk, e.g. a data
+ *                          block of a library at the end of a Blitz program
+ *                          overrun by up to 32 KB
  *   fill=XX                every AllocMem of the process without MEMF_CLEAR
  *                          gets its bytes (the size asked, not the 64 of
  *                          pad/guard) set to the byte XX (two hex digits):
@@ -215,6 +223,7 @@ struct IntuitionBase *IntuitionBase;
 static BPTR out;
 static struct Task *me;
 static volatile int active;             /* COMMAND runs */
+static int in_seg;                      /* guardseg: its LoadSeg/UnLoadSeg runs */
 
 static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
@@ -222,6 +231,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
 static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
+static int o_guardseg;
 static UBYTE fill_byte;
 static ULONG ds_days, ds_done;
 static ULONG nn_num;
@@ -540,11 +550,12 @@ static int ours(void) { return active && SysBase->ThisTask == me; }
 /* ----------------------------------------------------- allocations */
 
 #define SLOTS 16384                     /* power of 2 */
-static struct { ULONG addr, size, flags; } slot[SLOTS];
+static struct { ULONG addr, size, flags, pad; } slot[SLOTS];   /* pad: the bytes behind */
 static ULONG nalloc, tbl_full;
 static ULONG nwrong, wrong_alloc[16], wrong_free[16];   /* FreeMem of another size */
 #define TOMB 1UL                        /* removed (odd: no allocation) */
 #define PAD 64                          /* pad: the bytes behind */
+#define SEGPAD 32768                    /* guardseg: the bytes behind a hunk of COMMAND */
 static ULONG bad_free;                  /* pad: a FreeMem not done */
 static ULONG npadw, padw_size[16];      /* pad: written behind */
 #define GUARDS 8
@@ -555,11 +566,11 @@ static UBYTE guard_byte(ULONG a) { return (UBYTE)((a * 2654435761UL) >> 24) | 1;
 
 /* guard: are the bytes behind the allocation intact; if not, record
    its size (once per size) */
-static void guard_check(ULONG mem, ULONG size)
+static void guard_check(ULONG mem, ULONG size, ULONG pad)
 {
     ULONG a, i;
 
-    for (a = mem + size; a < mem + size + PAD; a++)
+    for (a = mem + size; a < mem + size + pad; a++)
         if (*(UBYTE *)a != guard_byte(a)) {
             for (i = 0; i < nguard && guard_size[i] != size; i++)
                 ;
@@ -576,7 +587,7 @@ void cf_alloc(void);
 ULONG alloc_pre(ULONG size, ULONG flags)
 {
     cf_alloc();
-    if (!o_allocfail || !ours() || size < af_min || size > af_max
+    if (!o_allocfail || in_seg || !ours() || size < af_min || size > af_max
         || (af_chip && !(flags & MEMF_CHIP)) || (af_flags_set && flags != af_flags)
         || (af_count && af_done >= af_count))
         return 0;
@@ -588,10 +599,13 @@ ULONG alloc_pre(ULONG size, ULONG flags)
     return 1;
 }
 
-/* the size AllocMem allocates (pad: 64 bytes more) */
+/* the bytes behind an allocation: PAD, SEGPAD for a hunk of COMMAND */
+static ULONG padsize(void) { return in_seg ? SEGPAD : PAD; }
+
+/* the size AllocMem allocates (pad: PAD or SEGPAD bytes more) */
 ULONG alloc_size(ULONG size)
 {
-    return o_pad && ours() ? size + PAD : size;
+    return o_pad && ours() ? size + padsize() : size;
 }
 
 void alloc_post(ULONG mem, ULONG size, ULONG flags)
@@ -605,22 +619,23 @@ void alloc_post(ULONG mem, ULONG size, ULONG flags)
     if (o_guard) {
         ULONG a;
 
-        for (a = mem + size; a < mem + size + PAD; a++)
+        for (a = mem + size; a < mem + size + padsize(); a++)
             *(UBYTE *)a = guard_byte(a);
     } else if (o_pad)
-        memset((UBYTE *)mem + size, 0, PAD);
+        memset((UBYTE *)mem + size, 0, padsize());
     for (h = hash(mem), i = 0; i < SLOTS; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == 0 || slot[h].addr == TOMB) {
             slot[h].addr = mem;
             slot[h].size = size;
             slot[h].flags = flags;
+            slot[h].pad = padsize();
             nalloc++;
             return;
         }
     tbl_full++;
 }
 
-/* the size FreeMem frees (pad: with the 64 bytes; 0: not done) */
+/* the size FreeMem frees (pad: with the bytes behind; 0: not done) */
 ULONG free_pre(ULONG mem, ULONG size)
 {
     ULONG h, i;
@@ -636,22 +651,22 @@ ULONG free_pre(ULONG mem, ULONG size)
             if (o_pad && !o_guard) {    /* guard: its pattern, checked below */
                 const UBYTE *p = (const UBYTE *)mem + slot[h].size;
 
-                for (i = 0; i < PAD && !p[i]; i++)
+                for (i = 0; i < slot[h].pad && !p[i]; i++)
                     ;
-                if (i < PAD && npadw < 16)
+                if (i < slot[h].pad && npadw < 16)
                     padw_size[npadw++] = slot[h].size;
             }
             if (o_guard)
-                guard_check(mem, slot[h].size);
+                guard_check(mem, slot[h].size, slot[h].pad);
             slot[h].addr = TOMB;
             nalloc--;
-            return o_pad ? size + PAD : size;
+            return o_pad ? size + slot[h].pad : size;
         }
     /* not the start of an allocation of the process: inside one or in
        its pad not done, else (memory from elsewhere) as it is */
     if (o_pad)
         for (i = 0; i < SLOTS; i++)
-            if (slot[i].addr > TOMB && mem > slot[i].addr && mem < slot[i].addr + slot[i].size + PAD) {
+            if (slot[i].addr > TOMB && mem > slot[i].addr && mem < slot[i].addr + slot[i].size + slot[i].pad) {
                 bad_free = 1;
                 return 0;
             }
@@ -1285,6 +1300,8 @@ static int option(const char *a)
         return o_pad = 1;
     if (!strcmp(a, "guard"))
         return o_pad = o_guard = 1;
+    if (!strcmp(a, "guardseg"))
+        return o_pad = o_guard = o_guardseg = 1;
     if (!strcmp(a, "createprocfail"))
         return o_createprocfail = 1;
     if (!strncmp(a, "fill=", 5)) {
@@ -1541,6 +1558,25 @@ static void patch(int on)
     Permit();
 }
 
+/* guardseg: only AllocMem and FreeMem patched and recorded, around
+   COMMAND's LoadSeg and UnLoadSeg (no fault is injected there) */
+static void patchmem(int on)
+{
+    struct Library *ex = (struct Library *)SysBase;
+
+    Forbid();
+    if (on) {
+        old_allocmem = SetFunction(ex, LVO_ALLOCMEM, (APTR)allocmem_patch);
+        old_freemem = SetFunction(ex, LVO_FREEMEM, (APTR)freemem_patch);
+    } else {
+        SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
+        SetFunction(ex, LVO_FREEMEM, old_freemem);
+    }
+    in_seg = active = on;
+    CacheClearU();
+    Permit();
+}
+
 /* what is left with track, sorted by size and flags */
 static void report_track(void)
 {
@@ -1581,7 +1617,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
     "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
-    "    track pad guard fill=XX datestamp=YYYY-MM-DD\n"
+    "    track pad guard guardseg fill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
@@ -1616,7 +1652,7 @@ int main(int argc, char **argv)
             "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
             "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
-            "              [createprocfail] [track] [pad] [guard] [fill=XX]\n"
+            "              [createprocfail] [track] [pad] [guard] [guardseg] [fill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
@@ -1631,7 +1667,12 @@ int main(int argc, char **argv)
         strcat(args, argv[k]);
     }
     strcat(args, "\n");
-    if (!(seg = LoadSeg(argv[i]))) {
+    if (o_guardseg)
+        patchmem(1);
+    seg = LoadSeg(argv[i]);
+    if (o_guardseg)
+        patchmem(0);
+    if (!seg) {
         put("inject: cannot load ");
         put(argv[i]);
         put("\n");
@@ -1715,7 +1756,11 @@ int main(int argc, char **argv)
     for (k = 0; k < 32; k++)
         if (sigs & (1UL << k))
             FreeSignal(k);
+    if (o_guardseg)
+        patchmem(1);
     UnLoadSeg(seg);
+    if (o_guardseg)
+        patchmem(0);
     if (nclick || nkeys)
         while (!drv_done)
             Delay(2);
@@ -1803,7 +1848,7 @@ int main(int argc, char **argv)
 
         for (i = 0; i < SLOTS; i++)
             if (slot[i].addr > TOMB)
-                guard_check(slot[i].addr, slot[i].size);
+                guard_check(slot[i].addr, slot[i].size, slot[i].pad);
         for (i = 1; i < nguard; i++)
             for (j = i; j > 0 && guard_size[j - 1] > guard_size[j]; j--)
                 t = guard_size[j], guard_size[j] = guard_size[j - 1], guard_size[j - 1] = t;

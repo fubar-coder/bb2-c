@@ -1,0 +1,20 @@
+[plain]
+segwrite: 0 bytes at +0
+[guardseg 0 0]
+segwrite: 0 bytes at +0
+inject: rc=0
+rc=0
+[guardseg 4 0]
+segwrite: 4 bytes at +0
+inject: rc=0
+~inject: guard: written behind an allocation of # bytes
+rc=0
+[guardseg 4 32764]
+segwrite: 4 bytes at +32764
+inject: rc=0
+~inject: guard: written behind an allocation of # bytes
+rc=0
+[guard 0 0]
+segwrite: 0 bytes at +0
+inject: rc=0
+rc=0
