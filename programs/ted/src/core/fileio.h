@@ -225,8 +225,9 @@ void orderem(struct quad *r);
 /* ted.s:4104 (showa2item, core part - NEW name, decision O4): everything
    showa2item/endofline/normprint/normprint2/tokprint do except the
    drawing, for item line (a2) at screen row cursy (chloc): writes
-   chmap[chloc + column] (token characters with bit 7, long token
-   expansions run on into the next chmap row), the chmap write of print2
+   chmap[chloc + column] (token characters with bit 7; the line ends at
+   column chcols, also in a keyword name - fixed #1011: the original ran
+   on into the next chmap row and behind the map), the chmap write of print2
    for every printed character (bit 7 only if color != normcol - may clear
    the bset of tokprint when tokcol == normcol), the block padding of
    endofline (spaces through print), color = tokcol/normcol, cursx

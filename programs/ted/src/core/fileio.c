@@ -955,6 +955,7 @@ struct showa2 {
     UWORD col;                  /* d2: chmap column */
     UWORD scrcol;               /* d3: screen column */
     void (*draw)(UBYTE);
+    BOOL full;                  /* NEW (#1011): the row is full (chcols) */
 };
 
 /* the chmap part of print (ted.s line 5132 -> print2 5167): c (bit 7
@@ -983,14 +984,23 @@ static void sa_normprint2(struct showa2 *sa, UBYTE c)
     sa->scrcol++;
 }
 
-/* normprint (ted.s line 4142) */
+/* normprint (ted.s line 4142).  Fixed (#1011): the original stores at any
+   column - a line wider than the row (chcols) ran on into the next row
+   and from the last row behind the character map; a character from
+   column chcols on is neither stored nor drawn, and the row is full. */
 static void sa_normprint(struct showa2 *sa, UBYTE c)
 {
+    if (sa->col >= chcols) {                    /* fixed #1011 */
+        sa->full = TRUE;
+        return;
+    }
     sa->row[(WORD)sa->col] = c;
     sa_normprint2(sa, c);                       /* falls through */
 }
 
-/* tokprint (ted.s line 4152); the asm destroys a5 (exg trick) */
+/* tokprint (ted.s line 4152); the asm destroys a5 (exg trick).  Fixed
+   (#1011): a keyword name ends at column chcols, as normprint's
+   characters do. */
 static void sa_tokprint(struct showa2 *sa, UBYTE c)
 {
     const char *name;
@@ -1006,6 +1016,10 @@ static void sa_tokprint(struct showa2 *sa, UBYTE c)
 
         if (!ch)
             break;
+        if (sa->col >= chcols) {                /* fixed #1011 */
+            sa->full = TRUE;
+            break;
+        }
         sa->row[(WORD)sa->col] = ch;
         sa->row[(WORD)sa->col] |= 0x80;         /* bset.b #7 */
         sa_normprint2(sa, ch);
@@ -1030,6 +1044,7 @@ void chmap_showa2item(struct item *line, void (*draw)(UBYTE c))
     sa->scrcol = 0;
     sa->col = 0;
     sa->draw = draw;
+    sa->full = FALSE;
     c = *sa->src++;
     if (c) {
         if (c == label)
@@ -1043,6 +1058,8 @@ void chmap_showa2item(struct item *line, void (*draw)(UBYTE c))
                 break;
 skip:
             sa_tokprint(sa, c);                 /* .skip */
+            if (sa->full)
+                break;                          /* fixed #1011 */
         }
     }
     /* endofline: block line -> pad the screen row with spaces */
