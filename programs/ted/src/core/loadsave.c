@@ -133,9 +133,12 @@ void blockuntab(void)
 /* ted.s:570 (prtfile, core part - NEW name): the .ploop body of prtfile
    (ted.s lines 595-624): copy line a4 to buf; a byte with bit 7 starts a
    token -> ESC[1m name ESC[22m; the 0 byte -> LF.  Returns the Write
-   length.  BUG(orig) (#371, #372): bytes >= $80 are always tokens (also in ASCII mode
-   and standalone, where tokens == 0 makes findtoke read at 0; survey-01
-   I.14); no limit for buf (charbuff: chcols+2 bytes, survey-01 I.10). */
+   length.  Fixed (#371) survey-01 I.14: the original takes bytes >= $80
+   for tokens also without tokenise (and standalone, where tokens == 0
+   made findtoke read at 0; a Latin-1 byte in front of the 0 took it as
+   its second byte and ran on behind the line); without tokenise the
+   bytes are copied as they are.  BUG(orig) (#372): no limit for buf
+   (charbuff: chcols+2 bytes, survey-01 I.10). */
 UWORD prtfile_line(struct item *line, UBYTE *buf)
 {
     UBYTE *dst = buf;
@@ -150,7 +153,7 @@ UWORD prtfile_line(struct item *line, UBYTE *buf)
         *dst++ = c;
         if (c == 0)
             break;
-        if (!(c & 0x80))
+        if (!(c & 0x80) || !tokenise)
             continue;
         tok = (UWORD)(*--dst << 8);
         tok |= *src++;
@@ -159,8 +162,6 @@ UWORD prtfile_line(struct item *line, UBYTE *buf)
         *dst++ = '[';
         *dst++ = '1';
         *dst++ = 'm';
-        if (!tokens)
-            ORIG_HAZARD("prtfile: token without token list (survey-01 I.14)");
         name = (const UBYTE *)findtoke(tok);
         while ((*dst++ = *name++) != 0)
             ;

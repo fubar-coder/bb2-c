@@ -259,10 +259,26 @@ TEST_CASE("printer line format", "[search][print]")
     it->numchars = static_cast<UBYTE>(n);
     std::memcpy(it->chars, tok, n);
     CHECK((it->chars[0] & 0x80) != 0);
+    tokenise = 1;
     n = prtfile_line(it, charbuff);
+    tokenise = 0;
     CHECK(n == 4 + 5 + 5 + 2 + 1);
     CHECK(std::memcmp(charbuff, "\033[1mPrint\033[22m 1\n", n) == 0);
     ted_free(it, it->numchars + lenitem);
+
+    // without tokenising, bytes >= $80 are characters, also in front of
+    // the 0 (#371: the original printed them with the next byte as a
+    // token name, and a last one took the 0 and ran on behind the line)
+    static const char *const l2[] = { "; Gr\xf6\xdf" "e", "caf\xe9" };
+    list(l2);
+    host_resetcalls();
+    n = prtfile_line(firstitem, charbuff);
+    CHECK(n == 8);
+    CHECK(std::memcmp(charbuff, "; Gr\xf6\xdf" "e\n", n) == 0);
+    n = prtfile_line(firstitem->nextitem, charbuff);
+    CHECK(n == 5);
+    CHECK(std::memcmp(charbuff, "caf\xe9\n", n) == 0);
+    CHECK(host_hazards == 0);
 }
 
 TEST_CASE(".xtra name and realsave's .info", "[search][files]")
