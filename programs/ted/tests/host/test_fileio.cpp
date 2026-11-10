@@ -185,6 +185,35 @@ TEST_CASE("detok and detoka5 stop at the end of the buffer", "[fileio][detok]")
     ted_free(it, it->numchars + lenitem);
 }
 
+TEST_CASE("tokit stops at the end of the line", "[fileio][tokit]")
+{
+    UBYTE row[2 * 128], out[256];
+
+    // Fixed (#386): a chmap row of 128 characters is followed by the next
+    // row; the original compared names on into it
+    env();
+    REQUIRE(chcols == 128);
+    std::memset(row, ' ', sizeof(row));
+    std::memcpy(row, "ab", 2);
+    std::memcpy(row + 125, "Pri", 3);           // columns 126-128
+    std::memcpy(row + 128, "nt", 2);            // the next row
+    UWORD n = tokit(out, row, 127, nullptr);
+    CHECK(n == 129);
+    CHECK(is(out, reinterpret_cast<const char *>(row), 128));
+    CHECK(out[128] == 0);
+
+    // a keyword in the last columns is a token, also when the next row
+    // starts with a letter
+    std::memcpy(row + 123, "Print", 5);         // columns 124-128
+    std::memcpy(row + 128, "xy", 2);
+    n = tokit(out, row, 127, nullptr);
+    CHECK(n == 123 + 2 + 1);
+    CHECK((out[123] & 0x80) != 0);
+    CHECK(std::string_view(findtoke(static_cast<UWORD>((out[123] << 8) | out[124]))) == "Print");
+    CHECK(out[125] == 0);
+    CHECK(host_hazards == 0);
+}
+
 TEST_CASE("alpha", "[fileio][tokit]")
 {
     CHECK(alpha('a'));

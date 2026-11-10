@@ -19,8 +19,8 @@
    line (survey-05 I.16).
    Quote/remark characters and the token list come from the globals quote,
    remark, tokens; invflag is the quote flag (global side effect, kept).
-   Reads beyond `last` while matching names (chmap: into the next row;
-   BUG(orig) #386, survey-05 A, ORIG_HAZARD). */
+   Matching a name stops at `last` (Fixed (#386) survey-05 A: the
+   original read on into the next chmap row). */
 UWORD tokit(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend);
 /* ted.s:4204 tokit3: len (d1) = LENGTH (subq #1 first), then tokit.  Entry of
    tokit2 (fileio.h). */

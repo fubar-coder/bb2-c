@@ -4,6 +4,8 @@
 ; typed at column 2 moves "Pri" to the columns 126-128; leaving the line
 ; tokenises it from the character map; SAVE.  Correct: "Pri" stays text;
 ; the original reads "nt" of the next row and saves the token Print.
+; Fixed in TED-C: the name comparison stops at the end of the line.
+; @fixed #386
 ; @file bo.bas "ab                                                                                                                          Pri\nnt\n"
 ; @source F bo.bas
 ; @expect data bo.bas "a b                                                                                                                          Pri\x00nt\x00"

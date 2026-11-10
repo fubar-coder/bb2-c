@@ -22,12 +22,15 @@
    The asm keeps [a4][start of a1][return] on the stack; it is left only
    through putchar -> pchover (two levels at once) or .found -> pchover2,
    both `bra enddo` (ted.s line 4190: clr.b (a1)+, d5 = a1 - start).
-   Here: goto enddo.  Reads beyond `last` while matching a token name and for
-   the character behind it (no length check; in a chmap row that is the
-   next row - BUG(orig) #386, survey-05 A/I.10). */
+   Here: goto enddo.  Fixed (#386) survey-05 A/I.10: the original reads
+   beyond `last` while matching a token name and for the character behind
+   it (in a chmap row that is the next row: "Pri" at its end and "nt" at
+   the start of the next became Print); the name comparison stops at the
+   line end, which counts as a non-letter. */
 static UWORD tokskip(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend)
 {
     UBYTE *const start = out;                   /* (a7) for enddo */
+    const UBYTE *const end = src + last + 1;    /* behind the last character */
     const struct tokennode *tok;
     const UBYTE *match, *name;
     UWORD count;
@@ -104,6 +107,8 @@ loop3:
         namec = *name++;
         if (namec == 0)
             goto found;
+        if (match >= end)                       /* the line ends in the name */
+            break;
         c = *match++ & 0x7F;
         if ((UBYTE)(namec | 32) != (UBYTE)(c | 32))
             break;
@@ -125,8 +130,9 @@ unto2:
     goto ppp2;
 
 found:
-    /* .found: a letter or _ behind the name -> next token */
-    c = *match & 0x7F;
+    /* .found: a letter or _ behind the name -> next token (the line end
+       is none) */
+    c = match < end ? (UBYTE)(*match & 0x7F) : 0;
     if (alpha(c))
         goto next;
     if (c == '_')
@@ -134,8 +140,6 @@ found:
     /* .putina3 */
     *out++ = (UBYTE)((tok->num >> 8) | 0x80);
     *out++ = (UBYTE)tok->num;
-    if ((ULONG)count + (ULONG)(match - src) > (ULONG)(UWORD)last + 1)
-        ORIG_HAZARD("tokit: token name matched beyond the last character");
     count = (UWORD)(count + (UWORD)(match - src));
     if (count > (UWORD)last)
         goto enddo;                             /* bhi pchover2 */
