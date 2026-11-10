@@ -369,6 +369,12 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 * A screen mode with a monitor part, such as PAL or NTSC, opened on the
   default monitor; the whole mode is used
   ([#250](https://github.com/fubar-coder/bb2-c/issues/250)).
+* `FileRequest$` on a screen of 645 lines or more, such as a 1280×1024
+  RTG Workbench, wrote far behind its data and could crash the program
+  after the requester closed; the list shows at most 64 lines and the
+  window is at most 597 lines high. The editor's file requester is the
+  same code and is fixed with it
+  ([#160](https://github.com/fubar-coder/bb2-c/issues/160)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
