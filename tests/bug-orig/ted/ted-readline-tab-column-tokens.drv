@@ -1,8 +1,9 @@
-; ted-readline-tab-column-tokens (#377): readline expands a TAB from the
+; ted-readline-tab-column-tokens (#377): readline expanded a TAB from the
 ; number of bytes stored so far, a token counting 2 instead of the length
 ; of its name.  A tokenised file, line 2: NPrint (token $DD82), TAB, "a";
 ; tab size 8 (@opts); SAVE.  Correct: NPrint, 2 blanks, "a" (a at column 9);
 ; the original expands the TAB from column 2: NPrint, 6 blanks, "a".
+; @fixed #377
 ; @file bo.bb2 "x\x00\xdd\x82\ta\x00"
 ; @source F bo.bb2
 ; @opts tabstop=8

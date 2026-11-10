@@ -216,6 +216,29 @@ WORD doread(struct rdstate *rd)
     }
 }
 
+/* NEW (fixed #377): the display column of charbuff2 up to end - a token
+   pair counts with the length of its name (findtoke, as detok shows it),
+   every other byte 1.  The original takes end - charbuff2. */
+static ULONG dispcol(const UBYTE *end)
+{
+    const UBYTE *p = charbuff2;
+    ULONG col = 0;
+
+    while (p < end) {
+        if ((*p & 0x80) && p + 1 < end) {
+            const char *name = findtoke((UWORD)((p[0] << 8) | p[1]));
+
+            while (*name++)
+                col++;
+            p += 2;
+        } else {
+            col++;
+            p++;
+        }
+    }
+    return col;
+}
+
 /* ted.s:3375 readline - read in a line to charbuff2.
    asm: d0 = -1/N=1 no line to read, d0 = 0/Z=1 no eol, d0 = 1 normal;
    length (incl. the 0 byte) in d5.
@@ -228,9 +251,11 @@ WORD doread(struct rdstate *rd)
    BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
    unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
-   half token in front of the 0 (#379); TAB counts token pairs as 2 columns
-   (#377); CR stays.
-   Fixed (#378): the TAB expansion stops at the end of charbuff2. */
+   half token in front of the 0 (#379); CR stays.
+   Fixed (#378): the TAB expansion stops at the end of charbuff2.
+   Fixed (#377): a TAB is expanded from the column the line shows (a
+   token pair counts with the length of its name), not from the number of
+   bytes stored. */
 int readline(struct rdstate *rd, UWORD *length)
 {
     UBYTE *dst;
@@ -269,7 +294,7 @@ int readline(struct rdstate *rd, UWORD *length)
             ULONG col;
 
             dst--;
-            col = (ULONG)(dst - charbuff2);
+            col = dispcol(dst);                 /* fixed #377 */
             do {                                /* .tabloop */
                 /* Fixed (#378): the original tests the end of the line
                    buffer only after the expansion (.nottab) and writes up

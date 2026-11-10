@@ -1,6 +1,7 @@
 // test_readline_tab - the TAB expansion of readline (ted.s:3375): it stays
-// inside the line buffer charbuff2 whatever the tab size (fixed #378).
-// Files loaded with fileopen2.
+// inside the line buffer charbuff2 whatever the tab size (fixed #378), and
+// it starts from the column the line shows, a token counting with the
+// length of its name (fixed #377).  Files loaded with fileopen2.
 #include <csetjmp>
 #include <cstdio>
 #include <cstring>
@@ -93,6 +94,39 @@ TEST_CASE("readline: the TAB expansion stays in charbuff2", "[fileio][readline]"
     load(path, "a\tb\n", 0);
     REQUIRE(numlines == 1);
     CHECK(bytes(firstitem) == std::string("a       b", 10));
+    tabstop = keep;
+    tokenise = 1;
+}
+
+TEST_CASE("readline: a TAB after a token goes to the shown tab position", "[fileio][readline]")
+{
+    tempdir dir;
+    no_outmem om;
+
+    env();
+    REQUIRE(tokens != nullptr);
+    REQUIRE(!dir.path.empty());
+    if (setjmp(om.jb))
+        FAIL("unexpected outmem");
+    std::string path = dir.path + "/test_readline_tab.bb2";
+    const UWORD keep = tabstop;
+    REQUIRE(std::string(findtoke(0xDD82)) == "NPrint");
+
+    // a tokenised file, line 2 NPrint<TAB>a: NPrint shows 6 columns, the
+    // TAB goes to column 8 (2 blanks; the original counted the 2 bytes of
+    // the token and wrote 6)
+    tabstop = 8;
+    load(path, std::string("x\0\xDD\x82\ta\0", 7));
+    REQUIRE(numlines == 2);
+    CHECK(bytes(firstitem->nextitem) == std::string("\xDD\x82  a", 6));
+    // two tokens and text in front of the TAB: NPrint NPrint = 13 columns
+    load(path, std::string("\xDD\x82 \xDD\x82\ta\0", 8));
+    REQUIRE(numlines == 1);
+    CHECK(bytes(firstitem) == std::string("\xDD\x82 \xDD\x82   a", 10));
+    // text only: as before
+    load(path, std::string("NPrint\ta\n"), 0);
+    REQUIRE(numlines == 1);
+    CHECK(bytes(firstitem) == std::string("NPrint  a", 10));
     tabstop = keep;
     tokenise = 1;
 }
