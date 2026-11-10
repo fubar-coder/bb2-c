@@ -7,6 +7,7 @@
 ; Correct: TED runs without the gradient and ends normally (return code
 ; 0); the original writes through the null pointer (low memory, the
 ; ExecBase pointer at address 4) and crashes.
+; @fixed #366
 ; @source none
 ; @command TEDAB:tools/inject allocfail=12-12/f=10001/1+1 blitz2:ted
 ; @expect stdout "inject: allocfail: 1 allocations failed"

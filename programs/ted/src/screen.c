@@ -329,8 +329,10 @@ sfail:
 }
 
 /* ted.s:4823 makecop - make fancy copper list (colour gradient of pen 2
-   in the title bar).  BUG(orig) (#366) survey-05 I.3: AllocMem unchecked; the
-   end CWait has no CBump (harmless, MrgCop ends the list). */
+   in the title bar).  Fixed (#366): without memory for the UCopList the
+   screen has no gradient (the original passed the unchecked AllocMem to
+   UCopperListInit, survey-05 I.3).  The end CWait has no CBump (harmless,
+   MrgCop ends the list). */
 void makecop(void)
 {
     struct UCopList *ucl;
@@ -347,6 +349,8 @@ void makecop(void)
     col2 = rgb;
     ucl = AllocMem(12, MEMF_PUBLIC | MEMF_CLEAR);
     coplist = ucl;
+    if (!ucl)
+        return;
     UCopperListInit(ucl, 24);
     for (line = 0; line < 12; line++) {
         CWait(ucl, line, 0);
