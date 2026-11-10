@@ -77,12 +77,13 @@ WORD doread(struct rdstate *rd);
 #define RL_OK    1              /* normal line */
 /* ted.s:3375 readline: one line into charbuff2 (token pairs copied
    unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop - 0 traps
-   in the original, overflow at charbuff3), tokenised via mytoke if ASCII
+   in the original - up to the end of charbuff2 (fixed #378), overflow at
+   charbuff3), tokenised via mytoke if ASCII
    and tokenise: a line ended by LF, and one without end (EOF/overflow)
    in a file an earlier line of which ended by LF or without a byte
    >= $80 (fixed #376).  *length (d5)
    = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374, #375,
-   #377-#379, #385). */
+   #377, #379, #385). */
 int readline(struct rdstate *rd, UWORD *length);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = len (d5) =
    length without 0); returns the new length (d5, incl. 0) */

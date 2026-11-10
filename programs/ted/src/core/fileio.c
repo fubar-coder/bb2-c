@@ -220,9 +220,9 @@ WORD doread(struct rdstate *rd)
    BUG(orig) (survey-04 I.1-7, kept): the cut loses 3 characters (#375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
    unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
-   half token in front of the 0 (#379); TAB is expanded before the overflow test
-   (may write up to tabstop-1 bytes beyond charbuff3; #378); tabstop = 0 is a
-   zero divide (#385); TAB counts token pairs as 2 columns (#377); CR stays. */
+   half token in front of the 0 (#379); tabstop = 0 is a zero divide (#385);
+   TAB counts token pairs as 2 columns (#377); CR stays.
+   Fixed (#378): the TAB expansion stops at the end of charbuff2. */
 int readline(struct rdstate *rd, UWORD *length)
 {
     UBYTE *dst;
@@ -263,8 +263,14 @@ int readline(struct rdstate *rd, UWORD *length)
             dst--;
             col = (ULONG)(dst - charbuff2);
             do {                                /* .tabloop */
-                if (dst >= charbuff4)
-                    ORIG_HAZARD("readline: TAB expansion beyond charbuff4");
+                /* Fixed (#378): the original tests the end of the line
+                   buffer only after the expansion (.nottab) and writes up
+                   to tabstop-1 blanks behind charbuff2 - with a tab size
+                   above 133 from the options file behind TED's buffer
+                   block.  The expansion stops at the end of charbuff2;
+                   .nottab cuts the line as before. */
+                if (dst >= charbuff3)
+                    break;
                 *dst++ = ' ';
                 col = (col & 0xFFFF0000) | (UWORD)(col + 1);    /* addq.w */
             } while ((UWORD)(divu_w(col, tabstop) >> 16) != 0);   /* swap / tst */
