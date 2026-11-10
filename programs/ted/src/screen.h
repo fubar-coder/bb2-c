@@ -35,8 +35,9 @@ void calcscreen(void);
 void screenopen2(void);
 /* ted.s:4668 screenopen: open screen+window, chmap (CHIP), gadget/border
    patches, menus, colours, status line, pointer, makecop.  asm: d0 = 0/Z=1
-   OK -> TRUE.  Failure paths call CloseScreen with a6 = ExecBase
-   (BUG(orig) #382, survey-05 I.1 - reproduce as the same LVO call or DIFF). */
+   OK -> TRUE.  The failure paths behind OpenScreen close the screen
+   (fixed #382: the original called CloseScreen with a6 = ExecBase,
+   survey-05 I.1). */
 BOOL screenopen(void);
 /* ted.s:4823 makecop: colour gradient of pen 2 in the title bar (UCopList)
    unless copok */

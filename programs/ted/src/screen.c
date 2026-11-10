@@ -198,7 +198,7 @@ void calcscreen(void)
        Height - 20 is a multiple of fonthite, the screen is one row taller
        than the Workbench.  OS 3.2 opens it with the Workbench height, the
        main window (topskip + newwindow.Height) no longer fits, OpenWindow
-       fails and screenopen's error path crashes (cfail, BUG(orig) #351, #382,
+       fails (screenopen's error path crashed there before the fix of #382,
        survey-05 I.1).  Seen with fonthite 6 on a 512 row Workbench: 513
        rows (TED A/B 23-font6, original and TED-C, confirmed in Amiberry
        28.10.2026). */
@@ -312,18 +312,10 @@ BOOL screenopen(void)
 wfail:
     freechmap();
 cfail:
-    {
-        /* BUG(orig) (#382) (survey-05 I.1, decision O2: reproduced): a6 is
-           ExecBase here (AllocMem / freechmap), so `jsr closescreen(a6)`
-           calls exec's LVO -66 (Exception) with a0 = myscreen instead of
-           CloseScreen. */
-        struct m68kregs r;
-
-        memset(&r, 0, sizeof(r));
-        r.a[0] = (ULONG)myscreen;
-        r.a[6] = (ULONG)SysBase;
-        callregs((APTR)((UBYTE *)SysBase - 66), &r);
-    }
+    /* Fixed (#382): CloseScreen.  The original's `jsr closescreen(a6)` ran
+       with a6 = ExecBase (AllocMem / freechmap): exec's LVO -66 with a0 =
+       myscreen, and the screen stayed open (survey-05 I.1) */
+    CloseScreen(myscreen);
 sfail:
     return FALSE;                               /* d0 = -1 */
 }
