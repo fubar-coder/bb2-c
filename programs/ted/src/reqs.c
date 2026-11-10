@@ -48,6 +48,15 @@ void setdefs(struct defblock *opts)
     defaultreqga8.Flags |= (UWORD)(opts->d_tokenise << 7);
     defaultreqga9.Flags &= 0xFFFF - 0x80;
     defaultreqga9.Flags |= (UWORD)(opts->d_makeicons << 7);
+    /* Fixed (#384): the original takes the colour words over unchecked, and
+       swapd0bord marks button colour | 4 x group: a value >= 4 from the
+       options file selected a button of another group, or one behind the
+       16 buttons (bytes behind their borders swapped).  The screen has 4
+       pens: only bits 0-1 of each colour count. */
+    opts->d_normcol &= 3;
+    opts->d_labcol &= 3;
+    opts->d_tokcol &= 3;
+    opts->d_propcol &= 3;
     /* colour buttons: old one up, new one down (normcol, labcol, tokcol,
        propcol - consecutive words in both blocks) */
     old[0] = normcol; old[1] = labcol; old[2] = tokcol; old[3] = propcol;
@@ -128,31 +137,10 @@ static void swappens(struct Border *b)
     b->BackPen = t;
 }
 
-/* ted.s:3238 swapd0bord (bsr .skip + fall through: both borders) */
+/* ted.s:3238 swapd0bord (bsr .skip + fall through: both borders).  The
+   button is always < 16: setdefs masks the colours (fixed #384) */
 void swapd0bord(UWORD button)
 {
-    if (button >= 16) {
-        /* BUG(orig) (#384): a value >= 16 from a damaged options file - the asm
-           swaps the bytes 4/5 at bo14 + (d0 * 56).w and at that +
-           (la63 - bo14) = +28, i.e. behind the button borders.  Done the
-           same way here, with the original strides relative to
-           defaultreqbo14.  DIFF (T): the C data is laid out differently
-           (other variables lie behind the borders), so other bytes are
-           swapped than in the original. */
-        WORD off = (WORD)(UWORD)(button * 56);  /* mulu #56 / 4(a0,d0.w) */
-        UBYTE *bords = (UBYTE *)&defaultreqbo14;
-        UBYTE t;
-
-        ORIG_HAZARD("swapd0bord: button index >= 16");
-        t = bords[off + 4];
-        bords[off + 4] = bords[off + 5];
-        bords[off + 5] = t;
-        bords += 28;                            /* lea la63-bo14(a0),a0 */
-        t = bords[off + 4];
-        bords[off + 4] = bords[off + 5];
-        bords[off + 5] = t;
-        return;
-    }
     swappens(colbords[2 * button]);
     swappens(colbords[2 * button + 1]);
 }

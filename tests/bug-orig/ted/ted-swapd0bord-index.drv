@@ -5,9 +5,10 @@
 ; bytes behind their borders are swapped).  Options file with normcol 7;
 ; OPTIONS, OK, QUIT (savedefs).  Correct: TED survives the requester and
 ; the colour is taken as 0..3 (7 masked: 3), also in the saved options;
-; the original keeps 7.  (What the swaps damage shows only in pixels or,
-; for values >= 16, in data laid out differently in the port: not
-; checked here.)
+; the original keeps 7 (recorded before the fix).  (What the swaps
+; damage shows only in pixels or, for values >= 16, in data laid out
+; differently in the port: not checked here, review only.)
+; @fixed #384
 ; @source none
 ; @opts normcol=7
 ; @expect opts blitzeditor.opts normcol=3
