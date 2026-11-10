@@ -518,7 +518,7 @@ UWORD calciorows(void)
 }
 
 /* ted.s:2548 openio - open a default io handle */
-ULONG openio(UWORD *ccr)
+BPTR openio(void)
 {
     struct Process *pr;
     UWORD rows;
@@ -540,23 +540,17 @@ ULONG openio(UWORD *ccr)
         myhandle = Open((STRPTR)ioname, MODE_NEWFILE);  /* .usenew */
     else
         myhandle = Open((STRPTR)ioname2, MODE_NEWFILE); /* .useold */
-    if (!myhandle) {
-        *ccr = CCR_Z;                           /* .fuct: move.l d0 = 0 / beq */
-        return 0;
-    }
+    if (!myhandle)
+        return 0;                               /* .fuct */
     /* .isok */
     pr->pr_CIS = myhandle;
     pr->pr_COS = myhandle;
-    /* callint wbenchtofront: the asm returns with d0 and the CCR that
-       WBenchToFront left (mycli tests Z, survey-03 I.8) - called through
-       callregs (glue.c) to get them: LVO -342, a6 = IntuitionBase */
-    {
-        struct m68kregs r = {{0}};
-
-        r.a[6] = (ULONG)IntuitionBase;
-        *ccr = callregs((UBYTE *)IntuitionBase - 342, &r);
-        return r.d[0];
-    }
+    /* callint wbenchtofront.  Fixed (#368): the result is the handle; the
+       original returned with d0 and the flags WBenchToFront left, so with
+       the Workbench closed (FALSE) mycli neither ran the shell nor closed
+       the window, which stayed TED's input/output (survey-03 I.8) */
+    WBenchToFront();
+    return myhandle;
 }
 
 /* ted.s:2597 closeio */
@@ -577,10 +571,7 @@ void closeio(void)
 /* ted.s:2616 mycli */
 void mycli(void)
 {
-    UWORD ccr;
-
-    openio(&ccr);
-    if (ccr & CCR_Z)
+    if (!openio())
         return;                                 /* beq .skip */
     Execute((STRPTR)&nullcom, myhandle, 0);
     closeio();                                  /* bra closeio */

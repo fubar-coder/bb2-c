@@ -125,27 +125,6 @@ GLUE_LOAD_A4                                            \
 "   rts\n"                                              \
 )
 
-/* REGSTUB_CCR(name): like REGSTUB, but name_c returns the CCR the entry
-   returns with (the asm routine's flags are not those of `tst.l d0`).
-   `move to ccr` exists on the 68000; movem/lea leave the flags alone. */
-#define REGSTUB_CCR(name)                               \
-__asm__(                                                \
-"   .text\n"                                            \
-"   .even\n"                                            \
-"   .globl  _" #name "_stub\n"                          \
-"_" #name "_stub:\n"                                    \
-"   movem.l d0-d7/a0-a6,-(sp)\n"                        \
-GLUE_LOAD_A4                                            \
-"   move.l  sp,-(sp)\n"                                 \
-"   jsr     _" #name "_c\n"                             \
-"   addq.l  #4,sp\n"                                    \
-"   move.w  d0,-(sp)\n"                                 \
-"   movem.l 2(sp),d0-d7/a0-a6\n"                        \
-"   move.w  (sp),ccr\n"                                 \
-"   lea     62(sp),sp\n"                                \
-"   rts\n"                                              \
-)
-
 #define SETW(r, v) ((r) = ((r) & 0xffff0000UL) | (UWORD)(v))   /* op.w */
 
 /* The adaptors: registers in, C routine, results out (survey-06 C table).
@@ -164,7 +143,7 @@ void getinput2_c(struct m68kregs *r);
 void colors_c(struct m68kregs *r);
 void halfcolors_c(struct m68kregs *r);
 void tokone_c(struct m68kregs *r);
-UWORD openio_c(struct m68kregs *r);
+void openio_c(struct m68kregs *r);
 void closeio_c(struct m68kregs *r);
 void actgad_c(struct m68kregs *r);
 void pointeron_c(struct m68kregs *r);
@@ -214,12 +193,9 @@ void tokone_c(struct m68kregs *r)                                         /* 56 
 {
     SETW(r->d[5], tokone((UBYTE *)r->a[0]));
 }
-UWORD openio_c(struct m68kregs *r)                                        /* 60 */
+void openio_c(struct m68kregs *r)                                         /* 60 */
 {
-    UWORD ccr;
-
-    r->d[0] = openio(&ccr);     /* d0 and the flags as the asm leaves them */
-    return ccr;
+    r->d[0] = (ULONG)openio();  /* the handle, Z=1 when none (fixed #368) */
 }
 void closeio_c(struct m68kregs *r) { (void)r; closeio(); }                /* 64 */
 void actgad_c(struct m68kregs *r)                                         /* 68 */
@@ -251,7 +227,7 @@ REGSTUB(getinput2);
 REGSTUB(colors);
 REGSTUB(halfcolors);
 REGSTUB(tokone);
-REGSTUB_CCR(openio);
+REGSTUB(openio);
 REGSTUB(closeio);
 REGSTUB(actgad);
 REGSTUB(pointeron);

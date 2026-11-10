@@ -2,7 +2,7 @@
 
 As of phase 2c. Source: `ted.s` (lines below), [architecture.md](../architecture.md) §3.2/3.3,
 call sites in `blitz2.s` (CD source) and `programs/blitz2/src/main.c`
-(`ed_*`). Glue: `src/glue.c` (`REGSTUB`, `REGSTUB_CCR`, adapters `*_c`).
+(`ed_*`). Glue: `src/glue.c` (`REGSTUB`, adapters `*_c`).
 
 ## 1 Mechanics
 
@@ -12,9 +12,6 @@ call sites in `blitz2.s` (CD source) and `programs/blitz2/src/main.c`
   explicit outputs are preserved (line "comdata entry points" in
   [deviations.md](deviations.md), category **B**); the flags are those
   of `tst.l d0`.
-* **`REGSTUB_CCR(name)`** (new in 2c): as above, but the adapter returns
-  the CCR with which the entry point returns (`move.w …,ccr` after the
-  `movem`), for routines whose flags do not correspond to `tst.l d0`.
 * Callbacks to blitz2 go via `callregs` (registers out of/into a
   frame, returns CCR).
 
@@ -40,7 +37,7 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 48 | `colors` 4940 | – | destroyed | – | REGSTUB | OK |
 | 52 | `halfcolors` 4917 | – | destroyed | – | REGSTUB | OK |
 | 56 | `tokone` 2636 | a0 = line (0-terminated) | tokenised in place; d5 = length (tokit2), a1/a2 … destroyed; line ≥ 32768 bytes: `rts` without tokit2 (d5 unchanged) | nothing (3841) | REGSTUB, `SETW(d5, tokone(a0))` | OK (case ≥ 32768: d5.w = 0 instead of unchanged – not reachable, blitz2 lines < 256) |
-| 60 | `openio` 2548 | – | failure: d0 = 0, Z=1; success: d0 and CCR of `WBenchToFront`, a6 = IntuitionBase | nothing (1697) | **REGSTUB_CCR**, `openio(&ccr)` calls `WBenchToFront` via `callregs` (LVO −342) | **corrected** (previously handle + `tst.l`; DIFF dropped) |
+| 60 | `openio` 2548 | – | failure: d0 = 0, Z=1; success: d0 and CCR of `WBenchToFront`, a6 = IntuitionBase | nothing (1697) | REGSTUB, d0 = the console handle (0: Z=1) | fixed (#368): the handle instead of `WBenchToFront`'s d0 and flags (deviations.md, kind F); blitz2 reads nothing |
 | 64 | `closeio` 2597 | – | destroyed | nothing (1722) | REGSTUB | OK |
 | 68 | `actgad` 2409 | a0 gadget | d0 = `ActivateGadget` result | nothing (15176) | REGSTUB, d0 | OK (flags: original those of intuition, here `tst.l d0`; not used) |
 | 72 | `pointeron` 209 | – | saves a0-a1/d0-d3/a6 | – (blitz2 1490 `jmp`) | REGSTUB | OK |

@@ -36,11 +36,11 @@ void openwb(void);              /* ted.s:2507 menu $80: OpenWorkBench, front, ac
 BOOL findio(const char *name, UWORD len);
 /* ted.s:2541 calciorows: 200 (NTSC) or 256 */
 UWORD calciorows(void);
-/* ted.s:2548 openio (comdata+60): NEWCON:/CON: window, pr_CIS/pr_COS.
-   Returns d0 as the asm: 0 on failure (*ccr = Z), else the d0 that
-   WBenchToFront returned, *ccr = the CCR it left (mycli tests Z,
-   survey-03 I.8; glue: REGSTUB_CCR hands it to blitz2) */
-ULONG openio(UWORD *ccr);
+/* ted.s:2548 openio (comdata+60): NEWCON:/CON: window, pr_CIS/pr_COS,
+   WBenchToFront.  Returns the handle, 0 when the window could not be
+   opened (fixed #368: the original returned WBenchToFront's d0 and flags,
+   survey-03 I.8) */
+BPTR openio(void);
 /* ted.s:2597 closeio (comdata+64): restore pr_CIS/pr_COS, Close(myhandle)
    (also 0), screen to front */
 void closeio(void);
