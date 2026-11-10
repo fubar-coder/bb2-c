@@ -24,9 +24,10 @@ BOOL inblokf(void);
 /* ted.s:5384 blokfix: btopx >= chcols -> next line; may end in blokdis;
    continues in blokfixb */
 void blokfix(void);
-/* ted.s:5393 blokfixb: second entry (blokfix, char127).  BUG(orig) (#349): for a
-   multi-line block compares btopy instead of bbotx with chcols
-   (survey-06 I.1). */
+/* ted.s:5393 blokfixb: second entry (blokfix, char127): bbotx < 0 -> end
+   of the previous line, bbotx >= chcols -> chcols-1.  Fixed (#349): the
+   original compares btopy instead of bbotx with chcols for a multi-line
+   block (survey-06 I.1). */
 void blokfixb(void);
 
 /* ted.s:5742 horizpos: abs. target column col (asm d1) -> cursoff/cursx

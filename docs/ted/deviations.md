@@ -35,6 +35,7 @@ of the Amiga version and are not deviations.
 | Menu items: padding byte after `Command` (src/data.c) | `dc.b 'X '`: padding byte = space | `struct MenuItem` has padding there, C initialises it with 0 | **T** | no (never read; not in the COMPILER copies of `getstuff` either) |
 | `sleepon` path "already active" (src/main.c) | after the `movem` restore, `makemenus` destroys a0/d0 of the blitz2 caller (survey-01 I.7) | glue saves all registers (line "comdata entry points") | **B** | no |
 | `swapd0bord` (ted.s:3238; src/reqs.c) | button index ≥ 16 (#384) (colour value ≥ 4 from a damaged options file): swaps bytes 4/5 at `bo14 + (d0*56).w` and +28 | same computation relative to `defaultreqbo14` (original strides); the C data is laid out differently, other variables are there | **T** (data layout) | only with a damaged `l:blitzeditor.opts` |
+| `blokfixb` (ted.s:5393; core/lineedit.c) | for a multi-line block tests `btopy` instead of `bbotx` against 128: an end column ≥ 128 stays, a block starting at line ≥ 128 gets its end column set to the end of the line | tests `bbotx` for every block | **F** | #349: observable in sources over 128 lines, typing in a multi-line block no longer extends it to the end of its last line; host test `blokfix and blokfixb` (`test_lineedit_keys.cpp`) |
 
 ## Reverted in phase 2c (Amiga again like the original)
 

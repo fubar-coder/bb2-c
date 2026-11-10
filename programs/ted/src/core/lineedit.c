@@ -103,17 +103,14 @@ void blokfixb(void)
         return;
     }
     /* .ok2 */
-    endcol = btopy;
-    if (btopy == bboty) {
-        endcol = (UWORD)bbotx;
-        if (bbotx < btopx) {            /* blt .zap */
-            blokdis();
-            return;
-        }
+    if (btopy == bboty && bbotx < btopx) {      /* blt .zap */
+        blokdis();
+        return;
     }
-    /* .ok4  BUG(orig) (#349): for a multi-line block d2 is still btopy (not
-       bbotx): bbotx >= chcols stays uncorrected, and a block starting at
-       line >= chcols gets bbotx = chcols-1 (survey-06 I.1) */
+    /* .ok4  Fixed (#349): the original tests d2 = btopy (not bbotx) for a
+       multi-line block: bbotx >= chcols stayed uncorrected, and a block
+       starting at line >= chcols got bbotx = chcols-1 (survey-06 I.1) */
+    endcol = (UWORD)bbotx;
     if (endcol < chcols)                /* bcs .ok3 */
         return;
     bbotx = (WORD)(chcols - 1);

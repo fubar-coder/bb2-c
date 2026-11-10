@@ -551,13 +551,17 @@ TEST_CASE("blokfix and blokfixb", "[lineedit][blocks]")
     blokfixb();
     CHECK(bbotx == 127);
     CHECK(bboty == 1);
-    // BUG(orig) (#349) I.1: multi-line block, bbotx >= chcols stays
+    // Fixed (#349) I.1: multi-line block, bbotx >= chcols corrected
     block(0, 0, 1, 200);
     blokfixb();
-    CHECK(bbotx == 200);
+    CHECK(bbotx == 127);
     CHECK(bboty == 1);
-    // ... and a block from line >= chcols gets bbotx = chcols-1
+    // ... and a block from line >= chcols keeps its end column
     block(130, 0, 131, 5);
+    blokfixb();
+    CHECK(bbotx == 5);
+    CHECK(bboty == 131);
+    block(130, 0, 131, 140);
     blokfixb();
     CHECK(bbotx == 127);
     // single line: bbotx >= chcols corrected
