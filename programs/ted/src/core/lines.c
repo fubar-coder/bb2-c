@@ -883,8 +883,8 @@ static UWORD loadwidth(BOOL pairs)
     return w;
 }
 
-/* NEW (fixed #1010): the columns of the chmap row from `from` to its last
-   character that is not a blank (the text behind the cursor) */
+/* NEW (fixed #1010, #1012): the columns of the chmap row from `from` to
+   its last character that is not a blank (the text behind the cursor) */
 static UWORD tailwidth(const UBYTE *from, const UBYTE *end)
 {
     const UBYTE *last = from, *p;
@@ -893,6 +893,14 @@ static UWORD tailwidth(const UBYTE *from, const UBYTE *end)
         if ((*p & 0x7F) != ' ')
             last = p + 1;
     return (UWORD)(last - from);
+}
+
+/* NEW (fixed #1012): blanks in charbuff from dst up to chcols, so that
+   charstobuff (which takes chcols bytes) takes only what blokload wrote */
+static void blankfill(UBYTE *dst)
+{
+    while (dst < charbuff + chcols)
+        *dst++ = ' ';
 }
 
 /* ted.s:1738 blokload - load block from disk.  Fixed (#375): readline
@@ -910,13 +918,21 @@ static UWORD tailwidth(const UBYTE *from, const UBYTE *end)
    more than chcols - for a file of one line without LF (done2) also with
    the text behind the cursor - the load is refused with the beep before
    anything changes; at column 0 the line is the one readline gives, as
-   before. */
+   before.
+   Fixed (#1012): the original appends the text behind the cursor to the
+   last loaded line (done4, done2) and charstobuff cuts both at 128
+   characters without notice; when they do not fit together, the line
+   stays as it is and the text behind the cursor gets a line of its own,
+   as for a file that ends with LF.  And charstobuff took 128 bytes of
+   charbuff where blokload wrote fewer: the bytes behind them, left from
+   the first line or older, were appended to the line behind the block;
+   charbuff is filled with blanks up to 128. */
 void blokload(void)
 {
     struct item *cur, *newl;
     const UBYTE *name;
     UBYTE *src, *dst, *endp, *keep;
-    UWORD col, i, len;
+    UWORD col, i, len, t;
     ULONG l;
     int r;
     struct rdstate rd;
@@ -1002,9 +1018,22 @@ done:
     /* ted.s:1791 done */
     doclose(&rd);
     src = keep;
+    t = tailwidth(keep, endp);
+    if ((ULONG)(dst - charbuff) + t > chcols) {
+        /* Fixed (#1012): the line and the tail do not fit together: the
+           line as it is, the tail on a new line behind it */
+        blankfill(dst);
+        cur = makeline(cur, charstobuff(charbuff));
+        newl = allocnull();
+        if (!newl)
+            outmem();
+        cur = linka0(newl, cur);
+        dst = charbuff;
+    }
     while (src < endp && dst < charbuff2) {     /* cmp.l bloktopx,a2 / cmp.l charbuff2,a3 */
         *dst++ = *src++ & 0x7F;
     }
+    blankfill(dst);                             /* fixed #1012 */
     /* ted.s:1801 blalldone: charstobuff in place over charbuff
        (survey-02 I.10) */
     cur = makeline(cur, charstobuff(charbuff));

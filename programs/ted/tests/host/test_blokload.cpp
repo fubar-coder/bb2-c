@@ -247,3 +247,70 @@ TEST_CASE("blokload at a column refuses a first line that does not fit", "[lines
 
     std::remove(path.c_str());
 }
+
+TEST_CASE("blokload keeps the text behind the cursor", "[lines][blocks][files]")
+{
+    tempdir dir;
+    no_outmem om;
+
+    env();
+    REQUIRE(tokens != nullptr);
+    REQUIRE(!dir.path.empty());
+    if (setjmp(om.jb))
+        FAIL("unexpected outmem");
+    const std::string path = dir.path + "/test_blokload.blk";
+
+    for (UWORD tk = 0; tk < 2; tk++) {
+        CAPTURE(tk);
+        tokenise = tk;
+
+        // a last line without LF of 126 characters and the tail "TAIL":
+        // 130 > 128, the tail gets a line of its own (#1012: the original
+        // cut the line at 128, "IL" lost)
+        loadat(path, "0123456789TAIL", 10, "XX\n" + std::string(126, 'y'));
+        CHECK(host_calls[HC_BEEPEM] == 0);
+        REQUIRE(numlines == 5);
+        CHECK(shown(1) == "0123456789XX");
+        CHECK(shown(2) == std::string(126, 'y'));
+        CHECK(shown(3) == "TAIL");
+        CHECK(shown(4) == "klm");
+        // 124 + 4 = 128 fit: one line, as before
+        loadat(path, "0123456789TAIL", 10, "XX\n" + std::string(124, 'y'));
+        REQUIRE(numlines == 4);
+        CHECK(shown(2) == std::string(124, 'y') + "TAIL");
+
+        // a file of one line without LF at column 0: the line, then the
+        // cursor line (the original cut both at 128)
+        loadat(path, "0123456789TAIL", 0, std::string(120, 'y'));
+        CHECK(host_calls[HC_BEEPEM] == 0);
+        REQUIRE(numlines == 4);
+        CHECK(shown(1) == std::string(120, 'y'));
+        CHECK(shown(2) == "0123456789TAIL");
+        CHECK(shown(3) == "klm");
+
+        // a file that ends with LF: the tail in a line of its own, as
+        // before - and only the tail: the original appended the bytes of
+        // charbuff behind its 118 characters ("STALEBYTES", the end of
+        // the first line)
+        loadat(path, "0123456789TAIL", 10, std::string(108, 'y') + "STALEBYTES\nZZ\n");
+        REQUIRE(numlines == 5);
+        CHECK(shown(1) == "0123456789" + std::string(108, 'y') + "STALEBYTES");
+        CHECK(shown(2) == "ZZ");
+        CHECK(bytes(3) == std::string("TAIL", 5));
+        // ... also a last line without LF shorter than the column
+        loadat(path, "0123456789TAIL", 10, std::string(108, 'y') + "STALEBYTES\nZZ");
+        REQUIRE(numlines == 4);
+        CHECK(bytes(2) == (tk ? tok("ZZTAIL") : std::string("ZZTAIL", 7)));
+    }
+
+    // tokenise on: a last line with keywords and the tail that does not
+    // fit: both tokenised, the tail on a line of its own
+    tokenise = 1;
+    const std::string code = "NPrint " + std::string(119, 'y');   // 126 columns
+    loadat(path, "0123456789TAIL", 10, "XX\n" + code);
+    REQUIRE(numlines == 5);
+    CHECK(bytes(2) == tok(code));
+    CHECK(bytes(3) == tok("TAIL"));
+
+    std::remove(path.c_str());
+}
