@@ -1,0 +1,14 @@
+; ted-screenopen-cfail-a6 (#382): screenopen's failure paths behind
+; OpenScreen (.cfail, .wfail) call `jsr closescreen(a6)` with a6 =
+; ExecBase: exec's LVO -66 instead of intuition's CloseScreen.  TED alone
+; under inject: the character map's AllocMem (chcols 128 x edrows 28 =
+; 3584 bytes of chip memory on the session's Workbench) fails, the start
+; fails.  Correct: the screen is closed (teddrive logs it) and TED ends;
+; the original calls into exec with a0 = the screen and crashes (the
+; session hangs).
+; @source none
+; @command TEDAB:tools/inject allocfail=3584-3584/chip/1 blitz2:ted
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect log "screen closed"
+timeout 20
+wait exit
