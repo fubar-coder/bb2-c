@@ -4,7 +4,11 @@
 ; TED-C tokenises the first part of the split line like the other lines
 ; (the original TED leaves it text, #376), and it splits the line after
 ; 128 characters without losing the 3 bytes the original drops at its cut
-; after 127 (#375; R5-C5 and Rc-Cc are named for #376 already).
+; after 127 (#375), and it loads each Latin-1 byte of the text file as one
+; character - the umlauts as typing stores them (26-31), the others with
+; bit 7 cleared by the tokeniser - where the original took it and the
+; byte behind it as a token pair (#374; R5-C5 and Rc-Cc are named for #376
+; already).
 ; @fixed #376 R5-C5 Rc-Cc
 ; @source E long_umlaut
 ; @expect bak long_umlaut.bb2.bak

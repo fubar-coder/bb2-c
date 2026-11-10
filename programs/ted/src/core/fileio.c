@@ -180,6 +180,7 @@ BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode)
     rd->carry = -1;                             /* NEW (#375, readline) */
     filehand = rd->fh;                          /* .skip */
     rd->textfile = FALSE;                       /* NEW (#376, readline) */
+    rd->looked = FALSE;                         /* NEW (#374, fillbuff) */
     rd->rawnoeol = FALSE;                       /* NEW (#1013, readline) */
     return TRUE;
 }
@@ -191,7 +192,24 @@ void doclose(struct rdstate *rd)
     ted_close(rd->fh);
 }
 
-/* ted.s:3337 fillbuff */
+/* NEW (fixed #374): the first buffer of a file holds a LF and no 0 byte -
+   a text file (a tokenised source ends every line with a 0; a LF in it
+   is the low byte of a token pair) */
+static BOOL istext(const UBYTE *p, LONG n)
+{
+    BOOL lf = FALSE;
+
+    while (n-- > 0) {
+        if (*p == 0)
+            return FALSE;
+        if (*p++ == 10)
+            lf = TRUE;
+    }
+    return lf;
+}
+
+/* ted.s:3337 fillbuff.  NEW (#374): the first buffer decides whether the
+   file is a text file (rd->textfile, see readline). */
 LONG fillbuff(struct rdstate *rd)
 {
     rd->ptr = dosbuff;
@@ -199,6 +217,11 @@ LONG fillbuff(struct rdstate *rd)
     if (rd->left < 0) {                         /* bpl .skip */
         error(error2);
         rd->left = 0;
+    }
+    if (!rd->looked) {                          /* fixed #374 */
+        rd->looked = TRUE;
+        if (istext(dosbuff, rd->left))
+            rd->textfile = TRUE;
     }
     return rd->left;                            /* asm: Z=1 if 0 */
 }
@@ -256,8 +279,17 @@ static ULONG pairwidth(UBYTE hi, UBYTE lo)
    beyond charbuff3 - 1 (129 bytes and the 0); the next call reads that
    byte (or pair) again and goes on with the rest of the physical line as
    a line of its own; the result is RL_FULL.
-   BUG(orig) (survey-04 I.1-7, kept): bytes >= $80 are token pairs even
-   in text files (the next byte is taken unchecked, also LF/0/TAB; #374);
+   Fixed (#374): the original takes every byte >= $80 as the first byte
+   of a token pair and the next byte unchecked as its second, also in a
+   text file, where it is a Latin-1 character: a LF, TAB or 0 behind it
+   was swallowed.  In a text file (rd->textfile: its first buffer has a
+   LF and no 0 byte, or an earlier line ended by LF) such a byte is one
+   character (one column; in front of the end of the file it stays); with
+   tokenise on the umlauts of the germs table are stored as typing stores
+   them (26-31, blitz2 maps them back in strings), since the tokeniser
+   clears bit 7 of every other byte >= $80 (a limitation: ß and the other
+   Latin-1 characters lose bit 7 as in the original).  With tokenise off
+   the bytes stay as they are, so the file is saved as it was loaded.
    CR stays.
    Fixed (#378): the TAB expansion stops at the end of charbuff2.
    Fixed (#377): a TAB is expanded from the column the line shows (col: a
@@ -283,7 +315,9 @@ int readline(struct rdstate *rd, UWORD *length)
     ascii = FALSE;
     for (;;) {
         /* .loop (dst <= lim here: the 0 always fits) */
-        if (c & 0x80) {                         /* token pair, copied unchecked */
+        if ((c & 0x80) && rd->textfile && tokenise)
+            c = (WORD)(UBYTE)germs_map((UBYTE)c);   /* fixed #374 */
+        if ((c & 0x80) && !rd->textfile) {      /* token pair, copied unchecked */
             WORD lo;
             ULONG w;
 
@@ -442,7 +476,9 @@ struct item *linka0(struct item *item, struct item *prev)
     return item;
 }
 
-/* ted.s:3293 bloadadd */
+/* ted.s:3293 bloadadd.  NEW (#374): a byte >= $80 in front of the 0 is a
+   character of a text file (readline, fixed #374), not a token start: the
+   copy ends at the 0 (the original went on behind it). */
 UBYTE *bloadadd(UBYTE *dst)
 {
     const UBYTE *src = charbuff2;
@@ -453,8 +489,12 @@ UBYTE *bloadadd(UBYTE *dst)
         *dst++ = c;
         if (c == 0)
             break;                              /* .done */
-        if (c & 0x80)
-            *dst++ = *src++;                    /* second byte of a token */
+        if (c & 0x80) {
+            c = *src++;                         /* second byte of a token */
+            *dst++ = c;
+            if (c == 0)
+                break;                          /* fixed #374 */
+        }
     }
     return dst - 1;                             /* subq #1,a3: ON the 0 */
 }

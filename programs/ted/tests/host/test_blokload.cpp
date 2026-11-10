@@ -141,3 +141,37 @@ TEST_CASE("blokload tokenises the last line without LF once", "[lines][blocks][f
 
     std::remove(path.c_str());
 }
+
+TEST_CASE("blokload of a text file with Latin-1", "[lines][blocks][files]")
+{
+    tempdir dir;
+    no_outmem om;
+
+    env();
+    REQUIRE(!dir.path.empty());
+    if (setjmp(om.jb))
+        FAIL("unexpected outmem");
+    const std::string path = dir.path + "/test_blokload.blk";
+
+    // a first line ending in a byte >= $80 (#374: one character of a text
+    // file): the copy behind the cursor's prefix ends at its 0
+    tokenise = 0;
+    loadat(path, "0123456789", 2, "\xe4\nYY\n");
+    REQUIRE(numlines == 5);
+    CHECK(bytes(1) == std::string("01\xe4", 4));
+    CHECK(bytes(2) == std::string("YY", 3));
+    CHECK(bytes(3) == std::string("23456789", 9));
+    // the same with tokenise on: the umlaut as typed (26)
+    tokenise = 1;
+    loadat(path, "0123456789", 2, "\xe4\nYY\n");
+    REQUIRE(numlines == 5);
+    CHECK(bytes(1) == std::string("01\x1a", 4));
+    CHECK(bytes(2) == tok("YY"));
+    CHECK(bytes(3) == tok("23456789"));
+    // the last line without LF (left as text for the tail, #1013)
+    loadat(path, "0123456789", 2, "x\n\xf6");
+    REQUIRE(numlines == 4);
+    CHECK(bytes(2) == tok("\x1b" "23456789"));
+
+    std::remove(path.c_str());
+}

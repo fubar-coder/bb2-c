@@ -60,8 +60,12 @@ struct rdstate {
                                    not store (the line was full), returned
                                    first by the next doread; -1 = none
                                    (from doopen) */
-    BOOL textfile;              /* NEW (#376): a line of the file ended
-                                   in LF (text format); FALSE from doopen */
+    BOOL textfile;              /* NEW (#376, #374): a text file - its
+                                   first buffer has a LF and no 0 byte, or
+                                   a line of it ended in LF; FALSE from
+                                   doopen */
+    BOOL looked;                /* NEW (#374): fillbuff looked at the first
+                                   buffer; FALSE from doopen */
     BOOL rawnoeol;              /* NEW (#1013): a line without end (EOF) is
                                    left untokenised (blokload tokenises it
                                    with the cursor line's tail); FALSE from
@@ -75,7 +79,8 @@ BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode);
 /* ted.s:3302 doclose: filehand = 0, Close(rd->fh) */
 void doclose(struct rdstate *rd);
 /* ted.s:3337 fillbuff: rd->ptr = dosbuff, rd->left = Read(doslen); error ->
-   error(error2), rd->left = 0.  Returns rd->left (asm: Z=1 if 0). */
+   error(error2), rd->left = 0.  Returns rd->left (asm: Z=1 if 0).  The
+   first buffer with a LF and no 0 byte sets rd->textfile (fixed #374). */
 LONG fillbuff(struct rdstate *rd);
 /* ted.s:3325 doread: next byte (0..255) or -1 at EOF (asm: N=1) */
 WORD doread(struct rdstate *rd);
@@ -87,9 +92,11 @@ WORD doread(struct rdstate *rd);
 #define RL_FULL  2              /* NEW (#375): line full (128 columns or
                                    charbuff2), the next call goes on */
 /* ted.s:3375 readline: one line into charbuff2 (token pairs copied
-   unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop (never 0:
-   fixed #385) from the column the line shows (fixed #377) up to the end
-   of charbuff2 (fixed #378); a line wider than 128 shown columns (or
+   unchecked; in a text file a byte >= $80 is one character, with
+   tokenise on the germs umlauts as 26-31: fixed #374; LF -> 0 +
+   "ASCII", TAB expanded with divu tabstop (never 0: fixed #385) from
+   the column the line shows (fixed #377) up to the end of charbuff2
+   (fixed #378); a line wider than 128 shown columns (or
    longer than 129 bytes) ends in front of the character, token pair or
    TAB that does not fit, which starts the next line (RL_FULL, rd->carry;
    fixed #375: the original lost 3 bytes and returned RL_NOEOL),
@@ -98,8 +105,8 @@ WORD doread(struct rdstate *rd);
    in a file an earlier line of which ended by LF or without a byte
    >= $80 (fixed #376); the one without EOL not when rd->rawnoeol
    (fixed #1013); a token start byte right before EOF is dropped
-   (fixed #379).  *length (d5)
-   = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374). */
+   (fixed #379; in a text file it is a character, fixed #374).  *length (d5)
+   = length incl. 0.  survey-04 I.1-6, I.22. */
 int readline(struct rdstate *rd, UWORD *length);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = len (d5) =
    length without 0); returns the new length (d5, incl. 0) */

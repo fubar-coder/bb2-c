@@ -120,10 +120,11 @@ TEST_CASE("readline tokenises a text file's line without end", "[fileio][readlin
     load(path, a + "a\xDD");
     REQUIRE(numlines == 2);
     CHECK(bytes(firstitem->nextitem) == std::string("a", 2));
-    // ... also in a text file, and as the only byte of the line
+    // ... also as the only byte of the line; in a text file the byte is
+    // a character (#374), which the tokeniser takes without bit 7
     load(path, "NPrint \"a\"\na\xDD");
     REQUIRE(numlines == 2);
-    CHECK(bytes(firstitem->nextitem) == std::string("a", 2));
+    CHECK(bytes(firstitem->nextitem) == std::string("a]", 3));
     load(path, a + "\xDD");
     REQUIRE(numlines == 2);
     CHECK(bytes(firstitem->nextitem) == std::string("", 1));

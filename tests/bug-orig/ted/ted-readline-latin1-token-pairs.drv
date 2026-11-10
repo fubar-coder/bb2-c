@@ -1,0 +1,22 @@
+; ted-readline-latin1-token-pairs (#374): readline took every byte >= $80
+; as the first byte of a token pair and the next byte unchecked as its
+; second, also in a text file, where it is a Latin-1 character: an umlaut
+; in front of the LF swallowed it and joined the lines.  A text file with
+; the lines "; ä" and "; b", loaded under blitz2 (tokenise on), SAVE.
+; Correct (the fix): two lines, the umlaut stored as typing stores it (26,
+; the germs table); the original saves one line, "; " and the bytes $E4
+; $0A with bit 7 cleared by the tokeniser, then "; b".
+; @fixed #374
+; @file bo.bas "; \xe4\n; b\n"
+; @source F bo.bas
+; @expect data bo.bas "; \x1a\x00; b\x00"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
