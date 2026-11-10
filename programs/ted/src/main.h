@@ -43,9 +43,10 @@ void mainedit(void);
 
 /* ------------------------------------------------ pointer / busy pointer */
 
-/* ted.s:184 mouseinit: chip copy of pointer+dumsleep (152 bytes, AllocMem
-   unchecked, BUG(orig) #367, survey-01 I.5) */
-void mouseinit(void);
+/* ted.s:184 mouseinit: chip copy of pointer+dumsleep (152 bytes).  FALSE
+   when the AllocMem fails (fixed #367: the original did not check it,
+   survey-01 I.5) */
+BOOL mouseinit(void);
 /* ted.s:200 mousefinit: ClearPointer, FreeMem (VBlank server not removed,
    survey-01 I.6) */
 void mousefinit(void);

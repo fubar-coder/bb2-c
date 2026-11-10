@@ -1,11 +1,14 @@
 ; ted-mouseinit-allocmem (#367): mouseinit copies the pointer images
 ; into 152 bytes of chip memory without testing the AllocMem.  TED alone
 ; under inject: the first AllocMem of 152 bytes of chip memory fails.
-; Correct (the fix of the issue: allocfailed): TED ends; the original
-; copies the images to address 0 on (exception vectors, ExecBase) and the
-; system crashes (the session hangs).
+; Correct (the fix of the issue: allocfailed): TED ends with a return
+; code other than 0 (#357); the original copies the images to address 0
+; on (exception vectors, ExecBase) and the system crashes (the session
+; hangs).
+; @fixed #367
 ; @source none
 ; @command TEDAB:tools/inject alerts allocfail=152-152/chip/1 blitz2:ted
 ; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect nostdout "inject: rc=0"
 timeout 20
 wait exit

@@ -407,7 +407,13 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     donew();                    /* asm: beq allocfailed - donew always
                                    leaves Z=0, the branch is never taken */
     printmem();
-    mouseinit();
+    if (!mouseinit()) {
+        /* Fixed (#367): the pointer images got no chip memory - the start
+           fails like any other (the original copied them to address 0);
+           the empty text of donew is freed */
+        freeall();
+        goto allocfailed;
+    }
     pointeron();
     /* jsr flink: DIFF, the file requester is C code (docs/ted/deviations.md) */
     if (external) {
@@ -450,6 +456,7 @@ tomain:
     returncode = 0;
     if (defalt)
         savedefs();
+allocfailed:
     /* ted.s:116 allocfailed */
     screenclose();
 openfailed:
@@ -549,13 +556,16 @@ void mainedit(void)
 /* ------------------------------------------------ pointer / busy pointer */
 
 /* ted.s:184 mouseinit */
-void mouseinit(void)
+BOOL mouseinit(void)
 {
     ULONG *dst, *src;
     WORD n;
 
-    /* get chip mem!  BUG(orig) (#367): not checked (copy to 0, survey-01 I.5) */
+    /* get chip mem!  Fixed (#367): checked (the original copied the
+       images to address 0 when it failed, survey-01 I.5) */
     dst = AllocMem(FINISHLEN, MEMF_CHIP);
+    if (!dst)
+        return FALSE;
     pointerat = (UWORD *)dst;
     dumat = (UWORD *)((UBYTE *)dst + POINTERLEN);       /* dumsleep - pointer */
     /* pointer..finish: pointer.bin + dumsleep, 38 longs */
@@ -566,6 +576,7 @@ void mouseinit(void)
     for (n = sizeof(dumsleep) / 4 - 1; n >= 0; n--)
         *dst++ = *src++;
     sleepcurr = NULL;
+    return TRUE;
 }
 
 /* ted.s:200 mousefinit */
