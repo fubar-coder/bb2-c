@@ -1,0 +1,17 @@
+; ted-makecop-allocmem (#366): makecop (the colour gradient of the title
+; bar) passes its UCopList, AllocMem(12, MEMF_PUBLIC|MEMF_CLEAR), to
+; UCopperListInit and the CWait/CMove/CBump calls without testing it.
+; TED alone under inject: the 2nd AllocMem of 12 bytes with exactly
+; these flags, makecop's, fails (the 1st, made earlier in the start, can
+; fail without harm).  QUIT.
+; Correct: TED runs without the gradient and ends normally (return code
+; 0); the original writes through the null pointer (low memory, the
+; ExecBase pointer at address 4) and crashes.
+; @source none
+; @command TEDAB:tools/inject allocfail=12-12/f=10001/1+1 blitz2:ted
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: rc=0"
+timeout 20
+wait screen
+menu 0 9
+wait exit
