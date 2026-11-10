@@ -1,0 +1,21 @@
+; ted-prtfile-ascii-tokens (#371): Print takes every byte >= $80 and the
+; byte behind it for a token, also without tokenising: a Latin-1
+; character and the next one are printed as a bold token name.  TED alone
+; (no token list: tokenise off; under blitz2 TED tokenises, and tokit
+; clears bit 7 of the text), lines "; Größe", "b"; PRINT into the file
+; TEDRUN:work/prt.txt, QUIT.  Correct: the lines as they are; the original
+; prints "; Gr", ESC[1m, the "name" findtoke finds without a token list
+; ("?????" when the long word at address 0 is 0), ESC[22m, "e".
+; @file bo.bas "; Gr\xf6\xdfe\nb"
+; @source F bo.bas
+; @command blitz2:ted @FILE@
+; @expect data prt.txt "; Gr\xf6\xdfe\nb\n"
+timeout 10
+wait screen
+menu 0 5
+wait req "PRINT" "CANCEL"
+str 1 "TEDRUN:work/prt.txt"
+gad 2
+wait screen
+menu 0 9
+wait exit
