@@ -15,6 +15,7 @@
 #include <proto/dos.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "tape.h"
 
 /* registers for callregs() - layout of movem.l d0-d7/a0-a6 */
 struct regs { ULONG d[8]; ULONG a[7]; };
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
     }
     if (!load(&a, argv[1]) || !load(&b, argv[2]))
         return 20;
-    if (a.n != b.n) {
+    if (!tape_same("routine count", a.n, b.n)) {
         printf("routine count differs: %d / %d\n", a.n, b.n);
         return 10;
     }
@@ -161,6 +162,7 @@ int main(int argc, char **argv)
             }
             ra = call(a.code[i], d0, d1);
             rb = call(b.code[i], d0, d1);
+            ra = tape_val(a.what[i], ra, rb);
             tests++;
             if (ra != rb) {
                 if (diffs < 5)

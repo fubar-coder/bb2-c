@@ -39,6 +39,7 @@ static UBYTE items[2][MAXN + 1][ITEM];  /* + the end item */
 static UBYTE flat[2][MAXN * MAXSIZE];   /* the data in list order */
 static UBYTE init_data[MAXN][MAXSIZE];
 static int nitems, isize;
+static int fsoff = -1;                  /* fill: the strings at this offset */
 
 static const char *const pool[] = {
     "apple", "Apple", "APPLE", "apples", "app", "", "banana", "Banana",
@@ -86,8 +87,18 @@ static void flatten(void)
     for (s = 0; s < 2; s++) {
         UBYTE *p = *(UBYTE **)(LIST(s) - 28);
         memset(flat[s], 0, sizeof flat[s]);
-        for (i = 0; i < nitems && p; i++, p = *(UBYTE **)p)
-            memcpy(flat[s] + i * isize, p + 8, isize);
+        for (i = 0; i < nitems && p; i++, p = *(UBYTE **)p) {
+            UBYTE *f = flat[s] + i * isize;
+            const char *str;
+            memcpy(f, p + 8, isize);
+            /* the string pointer as the string's first bytes: its address
+               moves with the test program (libs/tests/tape.h) */
+            if (fsoff >= 0 && fsoff + 4 <= isize) {
+                memcpy(&str, f + fsoff, 4);
+                if (str && TypeOfMem((APTR)str))
+                    strncpy((char *)f + fsoff, str, 4);
+            }
+        }
     }
 }
 
@@ -108,7 +119,7 @@ static void sort(int e, int form, int off)
         R[cur].a[1] = (ULONG)a1str);
     SAME("d0", R[cur].d[0]);
     flatten();
-    SAMEBYTES("data", flat, sizeof flat[0]);
+    SAMEPTRBYTES("data", flat, sizeof flat[0]);
     /* the links are not changed */
     BOTH("links", *(UBYTE **)(LIST(cur) - 28) == items[cur][0]
          && *(UBYTE **)items[cur][nitems - (nitems > 0)] == (nitems ? items[cur][nitems] : NULL));
@@ -121,6 +132,7 @@ static void fill(int n, int size, int soff, const char *const *tab, int k, int p
                  int prange)
 {
     int i;
+    fsoff = soff;
     memset(init_data, 0x33, sizeof init_data);
     for (i = 0; i < n; i++) {
         *(const char **)(init_data[i] + soff) = tab[rnd() % k];

@@ -22,6 +22,7 @@
 
 extern "C" {
 #include <proto/dos.h>
+#include "tape.h"
 
 int libtest_main(int argc, char **argv);
 int systest_main(int argc, char **argv);
@@ -71,19 +72,35 @@ const char *progdir()
     return buf;
 }
 
-int run_libtest(const char *lib)
+// the recordings of the original libraries (tape.h): PROGDIR:tapes/NAME.tape
+const char *tapedir()
 {
-    static char orig[300], obj[300];
-    std::snprintf(orig, sizeof orig, "%s/%s.orig", progdir(), lib);
-    std::snprintf(obj, sizeof obj, "%s/%s.obj", progdir(), lib);
-    char *argv[] = {(char *)"libtest", orig, obj, nullptr};
-    return libtest_main(3, argv);
+    static char buf[300];
+    if (!buf[0])
+        std::snprintf(buf, sizeof buf, "%s/tapes", progdir());
+    return buf;
 }
 
-int run_systest(int (*fn)(int, char **))
+int run_libtest(const char *lib)
+{
+    static char orig[300], obj[300], name[40];
+    std::snprintf(orig, sizeof orig, "%s/%s.orig", progdir(), lib);
+    std::snprintf(obj, sizeof obj, "%s/%s.obj", progdir(), lib);
+    std::snprintf(name, sizeof name, "libtest_%s", lib);
+    char *argv[] = {(char *)"libtest", orig, obj, nullptr};
+    tape_begin(tapedir(), name);
+    int rc = libtest_main(3, argv);
+    tape_end();
+    return rc;
+}
+
+int run_systest(const char *name, int (*fn)(int, char **))
 {
     char *argv[] = {(char *)"systest", (char *)progdir(), nullptr};
-    return fn(2, argv);
+    tape_begin(tapedir(), name);
+    int rc = fn(2, argv);
+    tape_end();
+    return rc;
 }
 
 } // namespace
@@ -93,37 +110,37 @@ TEST_CASE("libtest lmullib", "[libtest]") { CHECK(run_libtest("lmullib") == 0); 
 
 TEST_CASE("systest: memlib datalib chipbaselib strings1lib staticslib varslib exitslib clrlib", "[sys]")
 {
-    CHECK(run_systest(systest_main) == 0);
+    CHECK(run_systest("systest", systest_main) == 0);
 }
 
 TEST_CASE("systest_mathstr: strings2lib ffplib strcomplib floatquicklib modlib maxlenlib", "[mathstr]")
 {
-    CHECK(run_systest(systest_mathstr_main) == 0);
+    CHECK(run_systest("systest_mathstr", systest_mathstr_main) == 0);
 }
 
 TEST_CASE("systest_runtime: arrayslib maxslib errtraplib rundebuglib", "[runtime]")
 {
-    CHECK(run_systest(systest_runtime_main) == 0);
+    CHECK(run_systest("systest_runtime", systest_runtime_main) == 0);
 }
 
 TEST_CASE("systest_system: wbstartuplib intlib switchlib runerrlib debuglib", "[system]")
 {
-    CHECK(run_systest(systest_system_main) == 0);
+    CHECK(run_systest("systest_system", systest_system_main) == 0);
 }
 
 TEST_CASE("systest_cmdlibs: memacclib sortlib mathtranslib utillib environlib", "[cmd]")
 {
-    CHECK(run_systest(systest_cmdlibs_main) == 0);
+    CHECK(run_systest("systest_cmdlibs", systest_cmdlibs_main) == 0);
 }
 
 TEST_CASE("systest_med: medlib (generated modules)", "[med]")
 {
-    CHECK(run_systest(systest_med_main) == 0);
+    CHECK(run_systest("systest_med", systest_med_main) == 0);
 }
 
 // the RWE userlibs (libs/userlibs/rwe), each against its CD binary
 #define RWE_TEST(n) \
-    TEST_CASE("rwe " #n, "[rwe]") { CHECK(run_systest(rwe_##n##_main) == 0); }
+    TEST_CASE("rwe " #n, "[rwe]") { CHECK(run_systest("rwe_" #n, rwe_##n##_main) == 0); }
 #include "rwe_tests.inc"
 #undef RWE_TEST
 

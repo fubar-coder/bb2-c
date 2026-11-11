@@ -201,6 +201,8 @@ static void copies(void)
     }
 }
 
+static ULONG freemem[2];
+
 static void hardware(void)
 {
     ULONG t[2];
@@ -229,8 +231,10 @@ static void hardware(void)
     DO2(ENT(LIB, E_BLITDONE, 0), (void)0);
     SAME("d0", R[cur].d[0]);
     ROUT = "MemFree";
-    DO2(ENT(LIB, E_MEMFREE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    /* the free memory differs from run to run (libs/tests/tape.h): the
+       difference to AvailMem(MEMF_PUBLIC) of the moment */
+    DO2(ENT(LIB, E_MEMFREE, 0), freemem[cur] = AvailMem(MEMF_PUBLIC));
+    SAME("d0 - AvailMem(MEMF_PUBLIC)", R[cur].d[0] - freemem[cur]);
 }
 
 static void caches(void)

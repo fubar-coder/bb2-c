@@ -497,7 +497,7 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { "ldivlib", LIB, NULL };
     ULONG v64, v74;
-    int s, n[2], i;
+    int s, n[2], n0, i;
 
     if (argc < 2) {
         printf("usage: riseriallib DIR\n");
@@ -525,9 +525,12 @@ int main(int argc, char **argv)
     CacheClearU();
     printf("riseriallib: patched custom/CIA addresses: orig %d/%d, C %d/%d\n",
            n[0] & 0xff, n[0] >> 8, n[1] & 0xff, n[1] >> 8);
-    check("riseriallib: custom chip addresses patched", (n[0] & 0xff) == 13 && (n[1] & 0xff) == 1);
-    check("riseriallib: CIA-B PRA patched", (n[0] >> 8) == 2 && (n[1] >> 8) == 1);
-    if (!ch || !databuf[0] || !databuf[1] || n[0] != 0x20d || n[1] != 0x101)
+    /* sets[0] is the C build as well in a replay (tape.h) */
+    n0 = tape_orig() ? 0x20d : 0x101;
+    check("riseriallib: custom chip addresses patched",
+          (n[0] & 0xff) == (n0 & 0xff) && (n[1] & 0xff) == 1);
+    check("riseriallib: CIA-B PRA patched", (n[0] >> 8) == n0 >> 8 && (n[1] >> 8) == 1);
+    if (!ch || !databuf[0] || !databuf[1] || n[0] != n0 || n[1] != 0x101)
         return rwe_done(LIB);
     v64 = *vec(0x64);
     v74 = *vec(0x74);

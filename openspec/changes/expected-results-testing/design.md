@@ -668,3 +668,73 @@ code changes in this change).
   LoadSegs the file and keeps it (`main.c` loaddmod), so any load file
   is a module there: now the build's `wbrun` (`@WBRUN@`). Neither needs
   recorded data or `originals`.
+- **Task 9.8 (2026-11-11):** the 62 test programs of `libs_tests`
+  compare at about 3.3 million points (ridisasmlib alone 3 million), so
+  a recording of every value was out (13 MB, and a copy of what the
+  original computes). Instead every comparison of `sets[0]` with
+  `sets[1]` passes its two observations through `libs/tests/tape.h`
+  (`tape_obs`, `tape_same`, `tape_bytes`, `tape_strsame`, `tape_fixed`
+  for `expect_fixed`, `tape_kept` in `cmp_preserve`); the recording
+  `libs/tests/tapes/NAME.tape` (one per program, 61 files, about 220 KB)
+  holds FNV-1a hashes of segments of 1024 observations, their number,
+  the original's value of each `expect_fixed` check (none yet), and the
+  original's kept-register masks where a prediction misses them: the
+  original keeps fewer registers than the C build in many calls, and
+  `cmp_preserve` asks for a subset, not equality, so the masks cannot
+  be hashed against the C build's; the prediction (the mask last seen
+  for the routine and the C build's mask, else the one before it) leaves
+  about 30000 entries, nearly all ridisasmlib's DisAssemble$ (d7 kept or
+  not by the instruction). Replay (`LIBSTAPE=replay`, `libs_emulator`,
+  label `emulator`, in `all`): `emulator.cmake` copies `NAME.obj` as
+  `NAME.orig`, so the scenarios run unchanged on the C build twice, every
+  check compares the C build with itself and the segment hashes are the
+  verdict; no CD, no fixture `rwe_refbuild`. Record
+  (`libs_emulator_originals`, labels `emulator originals`, fixture
+  `rwe_refbuild`): the live comparison as before, and the written
+  recordings must equal the committed ones (`tape-compare.cmake`). The
+  buffers are static, so the tests' memory balances (AvailMem) stay as
+  they were (a growing malloc buffer failed three "all memory back"
+  checks). Comparisons past the macros, changed to go through the tape:
+  the result loops of systest, systest_runtime, systest_system,
+  systest_med, libtest, ricommoditieslib; local byte comparisons
+  (riapplib, rigfxlib, ripacklib `samebytes`, ritrackerlib `samemem`,
+  ciatrklib `sameblock`, risnowlib, rifxlib, rilinkedlistlib,
+  rimapshapeslib, blitzbomberslibtwo); `BOTH`/`SAME` of a cross-set
+  `memcmp`/`strcmp` (ricopperfxlib, ritrackdisklib, ritooltypeslib,
+  rimapeditorlib, rireqlib, systest_cmdlibs' sort order); rigtmenulib's
+  menu comparisons; rithreadlib's call names (by text, not address).
+  Checks that hold for the original only ask `tape_orig()`: riseriallib's
+  patched address counts, ciatrklib's mt_end search. Control flow that
+  follows `sets[0]` follows the C build in replay; a difference changes
+  the number of observations and fails. A comparison of the two sets
+  that bypasses the tape compares the C build with itself in replay
+  (no failure, no check): the rule is in `tests/README.md` "Libraries".
+  Addresses: the replay loads other library sizes than the recording
+  (heap shifts), and every change of `libs_tests` moves its static data;
+  a replay with a padded binary and a heap shift (an experiment, not
+  committed) found the observations that held addresses. `tape_obs`
+  records a value inside the program's hunks or stack as "PROG"
+  (`tape_val` for plain numbers: libtest's products met that range);
+  `tape_ptrbytes`/`SAMEPTRBYTES` does the same in records with pointers
+  (neilsreqtoolslib's call log and results, rimisclib's arguments and
+  stack, rireqlib's FrStruct); per site: library bases and the
+  registry mock relative to the base (systest_mathstr,
+  systest_cmdlibs, riregistrylib), MemFree relative to AvailMem
+  (riamosfunclib), results in a shared area by offset (rilesdebuglib),
+  riwbspritelib's ViewPort and shape pointers by identity, risortlib's
+  string pointers by their first bytes, ridisasmlib's code buffer at a
+  fixed address (AllocAbs $47000000: the PC relative targets are text).
+  Non-deterministic between recording runs: the kept registers of
+  riencryptlib's random-wheel part (`tape_pause`: live only), and
+  ciatrklib's DMACONR in the F00 phase, where the C build's DMACON
+  writes go to the RAM copy of the custom registers and the original's
+  to the hardware, so the shared register showed the original's writes
+  for both sets (live only; the audio DMA is switched off after the
+  phase as the original's StopTracker leaves it). Four recording runs
+  gave the same files.
+  `LIBS_TAPE_DUMP=1` writes the first 20000 observations of each
+  program to `NAME.dump` in both modes, to find the check of a segment
+  that differs. Tests of the checks: `libs_emulator_tape_wrong` (replay
+  of libtest ldivlib with a flipped hash fails with the segment message),
+  `libs_tapes_compare_same`/`_wrong` (no emulator: a changed hash and a
+  missing file are reported).

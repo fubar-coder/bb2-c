@@ -111,6 +111,7 @@ static void samemapshapes(void)
                     }
             }
             sprintf(w, "map shape %d plane %d", n, p);
+            v[0] = tape_obs(w, v[0], v[1]);
             if (v[0] != v[1])
                 fail(w, v[0], v[1]);
             else

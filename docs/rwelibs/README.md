@@ -354,8 +354,9 @@ converted by `bbsrc bb22` first) – and
 `rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
 byte for byte. An entry whose reference is the reference build of its
 source (stage B/C "Source", 3.3) writes `refbuild` as REFERENCE: its
-`rwe_declarations_NAME` and its pair in `libs_emulator` use
-`ref/NAME.obj` (with the fixture of `rwe_refbuild`).
+`rwe_declarations_NAME` and its pair in `libs_emulator_originals` use
+`ref/NAME.obj` (with the fixture of `rwe_refbuild`; `libs_emulator`
+compares with the recording made from it, without it).
 
 ### 3.2 Which version is the reference (stages B and C)
 

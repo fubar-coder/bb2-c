@@ -98,11 +98,16 @@ static void filereq(int form, const char *title, ULONG flags, ULONG ret, const c
     SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
     SAMEBYTES("out", out, sizeof out[0]);
     SAME("called", fk_calls[cur]);
-    for (k = 0; k < (int)sizeof rec_fr[0]; k += 2) {
-        char what[40];
-        sprintf(what, "FrStruct+%d", k);
-        SAME(what, *(UWORD *)&rec_fr[cur][k]);
-    }
+    /* the words for the live comparison's message; the record by
+       tape_ptrbytes (its pointers into the test program, tape.h) */
+    if (tape_mode == TAPE_LIVE) {
+        for (k = 0; k < (int)sizeof rec_fr[0]; k += 2) {
+            char what[40];
+            sprintf(what, "FrStruct+%d", k);
+            SAME(what, *(UWORD *)&rec_fr[cur][k]);
+        }
+    } else
+        SAMEPTRBYTES("FrStruct", rec_fr, sizeof rec_fr[0]);
 }
 
 int main(int argc, char **argv)
@@ -167,7 +172,7 @@ int main(int argc, char **argv)
         DO2(ENT(LIB, E_COLOUR, 0), R[cur].d[0] = 3 + k; fk_calls[cur] = 0);
         SAME("d0", R[cur].d[0]);
         SAME("called", fk_calls[cur]);
-        SAME("ecr", memcmp(rec_cr[cur], rec_cr[!cur], sizeof rec_cr[0]));
+        SAMEBYTES("ecr", rec_cr, sizeof rec_cr[0]);
         SAME("DefColour", *(UWORD *)rec_cr[cur]);
         SAME("WinPtr", *(ULONG *)(rec_cr[cur] + 2));
     }

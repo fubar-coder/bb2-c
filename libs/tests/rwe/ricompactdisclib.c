@@ -605,7 +605,7 @@ int main(int argc, char **argv)
     printf("rwecd.device: %lu requests, %lu opens, %lu failed, %lu aborts\n", last[0].n,
            last[0].opens, last[0].failed, last[0].aborts);
     check("rwecd.device used", last[0].n >= 50 && last[0].opens >= 5 && last[0].failed >= 1
-          && last[1].n == last[0].n);
+          && tape_same("requests", last[0].n, last[1].n));
 
     /* the requests the library lost (OpenCD while open) */
     for (cur = 0; cur < 2; cur++)

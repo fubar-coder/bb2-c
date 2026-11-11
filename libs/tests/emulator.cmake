@@ -2,13 +2,22 @@
 #   cmake -DAMIGA_RUN=... -DBLITZLIB=... -DPROGRAM=libs_tests -DLIBS=DIR
 #         -DORIGINALS=acidlibs-of-the-CD -DWORK=DIR [-DTIMEOUT=SEC]
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
-#         [-DUSERLIBS=OBJ|ORIG;...] -P emulator.cmake
+#         [-DUSERLIBS=OBJ|ORIG;...] [-DTAPE=record|replay -DTAPES=DIR
+#         [-DTAPE_CORRUPT=NAME] [-DTAPE_DUMP=ON]] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
 # NAME.orig), e.g. the RWE userlibs.  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
 # NO_ORIGINALS: only the NAME.obj (BLITZLIB and ORIGINALS not needed).
+# TAPE (tape.c, the recordings of the original libraries, TAPES = the
+# committed ones, libs/tests/tapes): replay - no original, NAME.orig is
+# a copy of NAME.obj and the C build is compared with TAPES (copied to
+# TEST:tapes; TAPE_CORRUPT: the recording NAME with a wrong hash, the
+# test of the check; TAPE_DUMP or the environment variable LIBS_TAPE_DUMP:
+# also TEST:tapes/NAME.dump, tape.c); record
+# - the live comparison, and the recordings
+# written to TEST:tapes must be the files of TAPES (tape-compare.cmake).
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
 # (log_illegal_mem, --log); for every line
 #   illegal-watch START END CODESTART CODEEND        (hex, from libs_tests)
@@ -18,6 +27,15 @@
 cmake_minimum_required(VERSION 4.2.3)
 
 set(required AMIGA_RUN PROGRAM LIBS WORK)
+if(TAPE STREQUAL "replay")
+	set(NO_ORIGINALS ON)
+	set(replay ON)
+	list(APPEND required TAPES)
+elseif(TAPE STREQUAL "record")
+	list(APPEND required TAPES)
+elseif(TAPE)
+	message(FATAL_ERROR "emulator.cmake: TAPE=${TAPE}: record or replay")
+endif()
 if(NOT NO_ORIGINALS)
 	list(APPEND required BLITZLIB ORIGINALS)
 endif()
@@ -42,7 +60,9 @@ file(GLOB objs ${LIBS}/*.obj)
 foreach(obj IN LISTS objs)
 	get_filename_component(name ${obj} NAME_WE)
 	file(COPY_FILE ${obj} ${test}/${name}.obj)
-	if(NOT NO_ORIGINALS)
+	if(replay)
+		file(COPY_FILE ${obj} ${test}/${name}.orig)
+	elseif(NOT NO_ORIGINALS)
 		execute_process(COMMAND ${BLITZLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
 			RESULT_VARIABLE rc)
 		if(rc)
@@ -57,7 +77,9 @@ foreach(u IN LISTS USERLIBS)
 	list(GET u 1 orig)
 	get_filename_component(name ${obj} NAME_WE)
 	file(COPY_FILE ${obj} ${test}/${name}.obj)
-	if(NOT NO_ORIGINALS)
+	if(replay)
+		file(COPY_FILE ${obj} ${test}/${name}.orig)
+	elseif(NOT NO_ORIGINALS)
 		if(NOT EXISTS ${orig})
 			message(STATUS "libs_emulator: no ${orig} - skipped (fetch-originals)")
 			cmake_language(EXIT 77)
@@ -65,6 +87,45 @@ foreach(u IN LISTS USERLIBS)
 		file(COPY_FILE ${orig} ${test}/${name}.orig)
 	endif()
 endforeach()
+
+set(tape_cmd "")
+if(TAPE)
+	file(MAKE_DIRECTORY ${test}/tapes)
+	set(tape_cmd "Set LIBSTAPE ${TAPE}\n")
+	if(TAPE_DUMP OR DEFINED ENV{LIBS_TAPE_DUMP})
+		string(APPEND tape_cmd "Set LIBSTAPEDUMP 1\n")
+	endif()
+endif()
+if(replay)
+	file(GLOB tapes ${TAPES}/*.tape)
+	if(NOT tapes)
+		message(FATAL_ERROR "libs_emulator: no recordings in ${TAPES}")
+	endif()
+	foreach(t IN LISTS tapes)
+		get_filename_component(n ${t} NAME)
+		file(COPY_FILE ${t} ${test}/tapes/${n})
+	endforeach()
+	if(TAPE_CORRUPT)
+		# the first segment's hash with its lowest bit flipped
+		set(t ${test}/tapes/${TAPE_CORRUPT}.tape)
+		file(READ ${t} text)
+		if(NOT text MATCHES "\n(seg 0|end [0-9]+) ([0-9a-f]+)\n")
+			message(FATAL_ERROR "libs_emulator: ${t}: no hash to corrupt")
+		endif()
+		set(key "${CMAKE_MATCH_1}")
+		set(h "${CMAKE_MATCH_2}")
+		set(line "${key} ${h}")
+		string(REGEX REPLACE "[0-9a-f]$" "" head "${h}")
+		string(REGEX MATCH "[0-9a-f]$" low "${h}")
+		if(low STREQUAL "0")
+			set(low 1)
+		else()
+			set(low 0)
+		endif()
+		string(REPLACE "\n${line}\n" "\n${key} ${head}${low}\n" text "${text}")
+		file(WRITE ${t} "${text}")
+	endif()
+endif()
 
 set(args "")
 if(FILTER)
@@ -74,7 +135,7 @@ set(run_opts "")
 if(ILLEGAL_WATCH)
 	set(run_opts --log --set log_illegal_mem=true)
 endif()
-file(WRITE ${WORK}/run.script "TEST:libs_tests${args} >TEST:libs_tests.txt\n"
+file(WRITE ${WORK}/run.script "${tape_cmd}TEST:libs_tests${args} >TEST:libs_tests.txt\n"
 	"Echo \"rc=$RC\" >>TEST:libs_tests.txt\n")
 execute_process(COMMAND ${AMIGA_RUN} ${run_opts} --timeout ${TIMEOUT} --dir ${WORK}
 	${WORK}/run.script
@@ -158,4 +219,11 @@ if(watch_failed)
 endif()
 if(NOT result EQUAL 0)
 	message(FATAL_ERROR "libs_emulator: libs_tests returned ${result}")
+endif()
+if(TAPE STREQUAL "record")
+	execute_process(COMMAND ${CMAKE_COMMAND} -DRECORDED=${test}/tapes -DCOMMITTED=${TAPES}
+		-P ${CMAKE_CURRENT_LIST_DIR}/tape-compare.cmake RESULT_VARIABLE rc)
+	if(rc)
+		message(FATAL_ERROR "libs_emulator: the recordings differ from ${TAPES}")
+	endif()
 endif()

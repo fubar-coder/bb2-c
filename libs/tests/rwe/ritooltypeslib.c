@@ -72,6 +72,7 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
@@ -165,7 +166,7 @@ static ULONG rela3(void)
 static void same_area(void)
 {
     SAME("a3", rela3());
-    BOTH("string area", memcmp(area[0], area[1], AREA) == 0);
+    check("string area", !tape_bytes("string area", area[0], area[1], AREA));
 }
 
 /* the icon the set has open (GetIconObject's d0) */
@@ -341,22 +342,22 @@ static void same_shape(const char *what, UBYTE *s0, UBYTE *s1)
     char buf[60];
 
     sprintf(buf, "%s: fields", what);
-    BOTH(buf, memcmp(s0, s1, 14) == 0 && memcmp(s0 + 22, s1 + 22, 10) == 0);
+    check(buf, !tape_bytes(buf, s0, s1, 14) & !tape_bytes(buf, s0 + 22, s1 + 22, 10));
     sprintf(buf, "%s: width/height", what);
     SAME(buf, *(ULONG *)s[cur]);
     sprintf(buf, "%s: data", what);
     SAME(buf, *(ULONG *)(s[cur] + 14) != 0);
     if (*(ULONG *)(s0 + 14) && *(ULONG *)(s1 + 14) && *(UWORD *)s0) {
         sprintf(buf, "%s: data bytes", what);
-        BOTH(buf, memcmp((void *)*(ULONG *)(s0 + 14), (void *)*(ULONG *)(s1 + 14),
-                         *(UWORD *)(s0 + 26)) == 0);
+        check(buf, !tape_bytes(buf, (void *)*(ULONG *)(s0 + 14), (void *)*(ULONG *)(s1 + 14),
+                               *(UWORD *)(s0 + 26)));
     }
     sprintf(buf, "%s: cookie", what);
     SAME(buf, *(ULONG *)(s[cur] + 18) != 0);
     if (*(ULONG *)(s0 + 18) && *(ULONG *)(s1 + 18)) {
         sprintf(buf, "%s: cookie bytes", what);
-        BOTH(buf, memcmp((void *)*(ULONG *)(s0 + 18), (void *)*(ULONG *)(s1 + 18),
-                         *(UWORD *)(s0 + 22)) == 0);
+        check(buf, !tape_bytes(buf, (void *)*(ULONG *)(s0 + 18), (void *)*(ULONG *)(s1 + 18),
+                               *(UWORD *)(s0 + 22)));
     }
 }
 

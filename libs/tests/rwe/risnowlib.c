@@ -110,7 +110,7 @@ static void cmpfield(int f)
         sprintf(buf, "list table %d.%d", f, i);
         SAME(buf, rel(lp[cur][4 * f + i], f));
     }
-    if (memcmp(snap[0], snap[1], size)) {
+    if (tape_bytes("block", snap[0], snap[1], size)) {
         for (i = 0; i < (int)size && snap[0][i] == snap[1][i]; i++)
             ;
         sprintf(buf, "block %d +%d", f, i);

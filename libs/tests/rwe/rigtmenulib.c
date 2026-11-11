@@ -53,15 +53,21 @@ static ULONG stk[2][8];                 /* the compiler's a2 stack */
 
 /* ------------------------------------------------------------ compare */
 
+/* a string pointer as an observation: 0 none, 1 -1, 2 a string */
+#define PKIND(p) ((p) == (const UBYTE *)-1 ? 1UL : (p) ? 2UL : 0UL)
+/* both sets have the entry (an observation, the loops follow it) */
+#define BOTHTHERE(w, a) tape_same(w, (a)[0] != 0, (a)[1] != 0)
+
 static void samestr(const char *what, const UBYTE *o, const UBYTE *c)
 {
     char w[240];
     snprintf(w, sizeof w, "%s %s", what, (o == c || (o && c && !strcmp((char *)o, (char *)c)))
                                          ? "" : "differs");
     if (o == (UBYTE *)-1 || c == (UBYTE *)-1 || !o || !c)
-        check(w, o == c);
+        check(w, tape_same(w, PKIND(o), PKIND(c)) && o == c);
     else
-        check(w, !strcmp((const char *)o, (const char *)c));
+        check(w, tape_same(w, PKIND(o), PKIND(c))
+                 & tape_strsame(w, (const char *)o, (const char *)c));
 }
 
 static void sameentry(const char *what, UBYTE *o, UBYTE *c, int item)
@@ -72,7 +78,8 @@ static void sameentry(const char *what, UBYTE *o, UBYTE *c, int item)
     if (!item)
         return;
     snprintf(w, sizeof w, "%s flags/mx/ud", what);
-    check(w, SW(o, 12) == SW(c, 12) && SL(o, 22) == SL(c, 22) && SL(o, 26) == SL(c, 26));
+    check(w, tape_same(w, SW(o, 12), SW(c, 12)) & tape_same(w, SL(o, 22), SL(c, 22))
+             & tape_same(w, SL(o, 26), SL(c, 26)));
     snprintf(w, sizeof w, "%s shortcut", what);
     samestr(w, P(o, 14), P(c, 14));
 }
@@ -89,7 +96,7 @@ static void samelist(int n)
     t[1] = P(obj[1][n], 4);
     for (ti = 0; t[0] || t[1]; ti++) {
         sprintf(w, "%s title %d", VEC, ti);
-        check(w, t[0] && t[1]);
+        check(w, BOTHTHERE(w, t) && t[0]);
         if (!t[0] || !t[1])
             return;
         sameentry(w, t[0], t[1], 0);
@@ -97,7 +104,7 @@ static void samelist(int n)
         it[1] = P(t[1], 8);
         for (ii = 0; it[0] || it[1]; ii++) {
             sprintf(w, "%s title %d item %d", VEC, ti, ii);
-            check(w, it[0] && it[1]);
+            check(w, BOTHTHERE(w, it) && it[0]);
             if (!it[0] || !it[1])
                 return;
             sameentry(w, it[0], it[1], 1);
@@ -105,7 +112,7 @@ static void samelist(int n)
             sub[1] = P(it[1], 18);
             for (si = 0; sub[0] || sub[1]; si++) {
                 sprintf(w, "%s title %d item %d sub %d", VEC, ti, ii, si);
-                check(w, sub[0] && sub[1]);
+                check(w, BOTHTHERE(w, sub) && sub[0]);
                 if (!sub[0] || !sub[1])
                     return;
                 sameentry(w, sub[0], sub[1], 1);
@@ -127,14 +134,16 @@ static void sameitems(const char *what, struct MenuItem *o, struct MenuItem *c, 
 
     for (i = 0; o || c; i++) {
         snprintf(w, sizeof w, "%s %s %d", what, sub ? "sub" : "item", i);
-        check(w, o && c);
+        check(w, tape_same(w, o != 0, c != 0) && o);
         if (!o || !c)
             return;
-        check(w, o->LeftEdge == c->LeftEdge && o->TopEdge == c->TopEdge
-                 && o->Width == c->Width && o->Height == c->Height && o->Flags == c->Flags
-                 && o->MutualExclude == c->MutualExclude && o->Command == c->Command
-                 && GTMENUITEM_USERDATA(o) == GTMENUITEM_USERDATA(c)
-                 && !o->NextSelect == !c->NextSelect);
+        check(w, tape_same(w, o->LeftEdge, c->LeftEdge) & tape_same(w, o->TopEdge, c->TopEdge)
+                 & tape_same(w, o->Width, c->Width) & tape_same(w, o->Height, c->Height)
+                 & tape_same(w, o->Flags, c->Flags)
+                 & tape_same(w, o->MutualExclude, c->MutualExclude)
+                 & tape_same(w, o->Command, c->Command)
+                 & tape_same(w, (ULONG)GTMENUITEM_USERDATA(o), (ULONG)GTMENUITEM_USERDATA(c))
+                 & tape_same(w, !o->NextSelect, !c->NextSelect));
         if (!sub)
             sameitems(w, o->SubItem, c->SubItem, 1);
         o = o->NextItem;
@@ -152,12 +161,14 @@ static void samestrip(int n)
     SAME("strip made", P(obj[cur][n], 0) != 0);
     for (i = 0; m[0] || m[1]; i++) {
         sprintf(w, "%s menu %d", VEC, i);
-        check(w, m[0] && m[1]);
+        check(w, BOTHTHERE(w, m) && m[0]);
         if (!m[0] || !m[1])
             return;
-        check(w, m[0]->LeftEdge == m[1]->LeftEdge && m[0]->Width == m[1]->Width
-                 && m[0]->Height == m[1]->Height && m[0]->Flags == m[1]->Flags
-                 && !strcmp((const char *)m[0]->MenuName, (const char *)m[1]->MenuName));
+        check(w, tape_same(w, m[0]->LeftEdge, m[1]->LeftEdge)
+                 & tape_same(w, m[0]->Width, m[1]->Width)
+                 & tape_same(w, m[0]->Height, m[1]->Height)
+                 & tape_same(w, m[0]->Flags, m[1]->Flags)
+                 & tape_strsame(w, (const char *)m[0]->MenuName, (const char *)m[1]->MenuName));
         sameitems(w, m[0]->FirstItem, m[1]->FirstItem, 0);
         m[0] = m[0]->NextMenu;
         m[1] = m[1]->NextMenu;

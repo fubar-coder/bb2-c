@@ -141,6 +141,7 @@ static void fail(const char *what, ULONG o, ULONG c)
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
         checks++;                                                           \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]);                       \
     } while (0)
 
@@ -212,7 +213,7 @@ static void test_ffplib_init(void)
     DO2(E("ffplib", 1), (void)0);
     for (cur = 0; cur < 2; cur++)
         ffpbase[cur] = R[cur].d[0];
-    SAME("base", R[cur].d[0]);
+    SAME("base - mathffp", R[cur].d[0] - (ULONG)b);    /* not the address itself */
     SAME("is mathffp", R[cur].d[0] == (ULONG)b);
     check("ffplib init: open count +2", b->lib_OpenCnt == cnt + 2);
     CloseLibrary(b);

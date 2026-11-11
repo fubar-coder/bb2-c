@@ -58,6 +58,7 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
@@ -273,11 +274,11 @@ static void same_device(int data)
     SAME("unit", last[cur].unit);
     SAME("actual", last[cur].actual);
     SAME("buffer", relbuf(last[cur].data));
-    BOTH("head", memcmp(last[0].head, last[1].head, 8) == 0);
+    check("head", !tape_bytes("head", last[0].head, last[1].head, 8));
     if (data)
         SAME("data written", last[cur].sum);
-    BOTH("disk", memcmp(disk[0], disk[1], DISKSIZE) == 0);
-    BOTH("read buffer", memcmp(rbuf[0], rbuf[1], BUFSIZE) == 0);
+    check("disk", !tape_bytes("disk", disk[0], disk[1], DISKSIZE));
+    check("read buffer", !tape_bytes("read buffer", rbuf[0], rbuf[1], BUFSIZE));
 }
 
 static void fill(UBYTE **b, ULONG size, ULONG seed)
@@ -430,7 +431,7 @@ int main(int argc, char **argv)
         sprintf(VEC, "0,boot %d", i);
         DO2(BOOTPROG, 0, R[cur].d[0] = 0; R[cur].d[1] = (ULONG)boot[cur]);
         SAME("d0", R[cur].d[0]);
-        BOTH("boot block", memcmp(boot[0], boot[1], 1024) == 0);
+        check("boot block", !tape_bytes("boot block", boot[0], boot[1], 1024));
         SAME("checksum", ((ULONG *)boot[cur])[1]);
         same_device(1);
     }
@@ -459,7 +460,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "7,boot");
     DO2(BOOTPROG, 0, R[cur].d[0] = 7; R[cur].d[1] = (ULONG)boot[cur]);
     SAME("d0", R[cur].d[0]);
-    BOTH("boot block", memcmp(boot[0], boot[1], 1024) == 0);
+    check("boot block", !tape_bytes("boot block", boot[0], boot[1], 1024));
     same_device(0);
     ROUT = "DiskMotor";
     strcpy(VEC, "");
@@ -469,7 +470,7 @@ int main(int argc, char **argv)
     printf("rwetest.device: %lu requests, %lu opens, %lu failed\n", last[0].n, last[0].opens,
            last[0].failed);
     check("rwetest.device used", last[0].n >= 20 && last[0].opens >= 5 && last[0].failed >= 2
-          && last[1].n == last[0].n);
+          && tape_same("requests", last[0].n, last[1].n));
     unitcmd(CLOSEDISK, "CloseDisk", 1);
     unitcmd(CLOSEDISK, "CloseDisk", 1);
     unitcmd(CLOSEDISK, "CloseDisk", 9);

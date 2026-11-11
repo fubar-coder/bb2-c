@@ -194,6 +194,7 @@ static void same_state(void)
         UWORD a = *(UWORD *)(base[0] + w), b = *(UWORD *)(base[1] + w);
         if (a == (UWORD)((ULONG)base[0] >> 16) && b == (UWORD)((ULONG)base[1] >> 16))
             continue;
+        a = (UWORD)tape_obs("pool", a, b);
         if (a != b) {
             sprintf(buf, "pool offset $%04lX", w);
             fail(buf, a, b);

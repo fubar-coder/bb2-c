@@ -422,24 +422,26 @@ static void compare(void)
     for (cur = 0; cur < 2; cur++)
         digest();
     for (i = 0; i < nd[0] && i < nd[1]; i++)
-        if (dig[0][i] != dig[1][i]) {
+        if (!tape_same(dname[1][i], dig[0][i], dig[1][i])) {
             if (prints++ < 40)
                 printf("FAIL medlib %s tick %d: %s [%d] orig $%08lX, C $%08lX\n", what, ticks,
                        dname[0][i], i, dig[0][i], dig[1][i]);
             bad = 1;
         }
     sprintf(buf, "medlib %s tick %d: player state", what, ticks);
-    check(buf, !bad && nd[0] == nd[1]);
+    check(buf, !bad && tape_same(buf, nd[0], nd[1]));
 }
 
 static void same_d0(const char *name)
 {
     char buf[100];
+    ULONG o;
 
     sprintf(buf, "medlib %s tick %d: %s d0", what, ticks, name);
-    if (R[0].d[0] != R[1].d[0] && prints++ < 40)
-        printf("FAIL %s: orig $%08lX, C $%08lX\n", buf, R[0].d[0], R[1].d[0]);
-    check(buf, R[0].d[0] == R[1].d[0]);
+    o = tape_obs(buf, R[0].d[0], R[1].d[0]);
+    if (o != R[1].d[0] && prints++ < 40)
+        printf("FAIL %s: orig $%08lX, C $%08lX\n", buf, o, R[1].d[0]);
+    check(buf, o == R[1].d[0]);
 }
 
 /* the medlib entries */
@@ -541,7 +543,7 @@ int main(int argc, char **argv)
         for (ch = 0; ch < 4; ch++)
             *(ULONG *)(tracks[cur] + ch * T03SZ + 22) = (ULONG)audio[cur][ch];
     }
-    dbsame = per[0] == per[1] && per[0] == 906;
+    dbsame = tape_same("medlib: period tables", per[0], per[1]) && per[1] == 906;
     printf("medlib: period tables %ld / %ld bytes behind the tracks%s\n", per[0], per[1],
            dbsame ? "" : " - player variables not compared");
     CALL2(E_INIT, (void)0);
@@ -573,7 +575,8 @@ int main(int argc, char **argv)
     for (cur = 0; cur < 2; cur++)
         module[cur] = (UBYTE *)obj[cur][6];
     check("medlib DecodeMedModule: module in place or copied alike",
-          (module[0] == copy[0]) == (module[1] == copy[1]));
+          tape_same("medlib DecodeMedModule: in place", module[0] == copy[0],
+                    module[1] == copy[1]));
     what = "MMD1 StartMedModule";
     CALL2(E_START, R[cur].a[3] = (ULONG)&obj[cur][4]);
     compare();

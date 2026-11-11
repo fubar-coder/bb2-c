@@ -344,13 +344,13 @@ int main(int argc, char **argv)
     for (s = 0; s < 2; s++)
         run(&sets[s], &res[s]);
 
-    check("number of values", res[0].nv == res[1].nv);
-    check("number of calls", res[0].nc == res[1].nc);
+    check("number of values", tape_same("number of values", res[0].nv, res[1].nv));
+    check("number of calls", tape_same("number of calls", res[0].nc, res[1].nc));
     for (i = 0; i < res[0].nv && i < res[1].nv; i++) {
         char buf[120];
         sprintf(buf, "v%d %s: orig $%08lX, C $%08lX", i, res[0].vname[i],
                 res[0].v[i], res[1].v[i]);
-        check(buf, res[0].v[i] == res[1].v[i]);
+        check(buf, tape_same(buf, res[0].v[i], res[1].v[i]));
     }
     for (i = 0; i < res[0].nc && i < res[1].nc; i++) {
         char buf[80];

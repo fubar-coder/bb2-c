@@ -56,6 +56,7 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
@@ -217,8 +218,12 @@ static void test_tables(void)
     SAME("x8 - reduce", L((UBYTE *)R[cur].d[0] + 12) - L((UBYTE *)R[cur].d[0]));
     {
         UBYTE *t0 = (UBYTE *)L((UBYTE *)R[0].d[0]), *t1 = (UBYTE *)L((UBYTE *)R[1].d[0]);
-        if (t0 && t1)
-            SAME("table contents", memcmp(t0, t1, 1856) == 0);
+        if (t0 && t1) {
+            if (tape_bytes("table contents", t0, t1, 1856))
+                fail("table contents", 0, 1);
+            else
+                checks++;
+        }
     }
 }
 

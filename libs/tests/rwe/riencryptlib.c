@@ -105,7 +105,9 @@ int main(int argc, char **argv)
         }
     }
 
-    /* random wheels: each set for itself */
+    /* random wheels: each set for itself; the registers kept differ from
+       run to run, so not recorded (libs/tests/tape.h) */
+    tape_pause(1);
     ROUT = "Encrypt 2";
     for (i = 0; i < 4; i++) {
         ULONG len = i == 0 ? 1 : 100 * i + 3;
@@ -132,5 +134,6 @@ int main(int argc, char **argv)
         BOTH("restored", memcmp(buf[cur], ref, BUFSZ) == 0);
         ROUT = "Encrypt 2";
     }
+    tape_pause(0);
     return rwe_done(LIB);
 }

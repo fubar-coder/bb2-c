@@ -280,7 +280,8 @@ static void isopen(void)
     ROUT = "IsRegistryOpen";
     strcpy(VEC, "");
     DO2(ENT(LIB, E_OPEN, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    /* the mock's base as 1: its address differs from run to run */
+    SAME("d0", fake && R[cur].d[0] == (ULONG)fake ? 1 : R[cur].d[0]);
 }
 
 /* the code of a library's init (header +22) or finit (+28) nullsub */

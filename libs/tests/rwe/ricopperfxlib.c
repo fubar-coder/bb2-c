@@ -45,6 +45,7 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
@@ -120,7 +121,10 @@ static ULONG relptr(ULONG p)
 
 static void same_state(void)
 {
-    BOTH("custom space", memcmp(buf[0], buf[1], BUFSIZE) == 0);
+    if (tape_bytes("custom space", buf[0], buf[1], BUFSIZE))
+        fail("custom space", 0, 1);
+    else
+        checks++;
     SAME("coplistaddr", relptr(*(ULONG *)info[cur]));
     SAME("customaddr", relptr(*(ULONG *)(info[cur] + 4)));
     SAME("startline/ccoffset", *(ULONG *)(info[cur] + 8));

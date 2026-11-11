@@ -294,7 +294,7 @@ static void logcheck(void)
     for (k = 0; k < nlog[0] && k < nlog[1]; k++) {
         char what[40];
         sprintf(what, "call %d (LVO %ld)", k, (long)log_[0][k].lvo);
-        SAMEBYTES(what, ((struct rec *[]){ &log_[0][k], &log_[1][k] }), sizeof(struct rec));
+        SAMEPTRBYTES(what, ((struct rec *[]){ &log_[0][k], &log_[1][k] }), sizeof(struct rec));
     }
 }
 
@@ -599,7 +599,7 @@ static void others(void)
         if (!k) {
             for (cur = 0; cur < 2; cur++)
                 memcpy(res[cur], (UBYTE *)RES[cur].d[0], 8);
-            SAMEBYTES("the TextAttr", res, 8);
+            SAMEPTRBYTES("the TextAttr", res, 8);
         }
     }
     ROUT = "RTEZScreenModeRequest";
@@ -611,7 +611,7 @@ static void others(void)
         if (!(k & 2)) {
             for (cur = 0; cur < 2; cur++)
                 memcpy(res[cur], (UBYTE *)RES[cur].d[0], 16);
-            SAMEBYTES("the screen mode", res, 16);
+            SAMEPTRBYTES("the screen mode", res, 16);
         }
     }
     ROUT = "RTEZPaletteRequest";

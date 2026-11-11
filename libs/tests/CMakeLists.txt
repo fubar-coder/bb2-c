@@ -4,7 +4,8 @@
 # reports every check to snitch.  The programs load every library twice,
 # the C build (NAME.obj) and the original of the CD (NAME.orig), "like the
 # compiler" (sysload.h), and compare results, registers and memory.
-# ctest libs_emulator runs it in Amiberry (emulator.cmake).
+# ctest libs_emulator runs it in Amiberry (emulator.cmake) against the
+# recordings of the originals' results (tape.c, tapes/), without the CD.
 
 # snitch for libnix on the 68000: no exceptions, threads, all reporters,
 # small limits (the defaults need 260 KB of data and over 100 KB of
@@ -47,7 +48,7 @@ foreach(t IN LISTS rwe_all)
 endforeach()
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_inc}" @ONLY)
 
-add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_fixed.c ${c_sources}
+add_executable(libs_tests libs_tests.cpp callregs.c tape.c bugorig.c selftest_fixed.c ${c_sources}
 	${rwe_tests})
 target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set_source_files_properties(bugorig.c selftest_fixed.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
@@ -62,30 +63,65 @@ endforeach()
 target_link_options(libs_tests PRIVATE -Wl,-u,___stkinit)
 target_link_libraries(libs_tests PRIVATE snitch::snitch)
 
-# in Amiberry: libs_tests with every acidlib of this build and its original,
-# and the RWE userlibs with theirs (label emulator; skipped without Amiberry
-# or the CD)
+# in Amiberry: libs_tests with every acidlib of this build and the RWE
+# userlibs (label emulator; skipped without Amiberry).  libs_emulator
+# compares them with the recordings of the originals' results
+# (tapes/NAME.tape, tape.c), without the CD; libs_emulator_originals
+# (label originals) compares them with the originals of the CD live and
+# records again: the recordings must be the committed ones.
 get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 set(LIBS_TESTS_TIMEOUT 300 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
-add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
-	-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB}
-	-DPROGRAM=$<TARGET_FILE:libs_tests>
-	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
-	-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
-	-DUSERLIBS=${rwe_userlibs}
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/emulator -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+set(tapes ${CMAKE_CURRENT_SOURCE_DIR}/tapes)
 math(EXPR limit "600 + ${EMULATION_QUEUE_WAIT}")
-set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-	TIMEOUT ${limit})
+foreach(mode replay record)
+	set(name libs_emulator)
+	set(labels emulator)
+	if(mode STREQUAL "record")
+		set(name libs_emulator_originals)
+		set(labels emulator originals)
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB}
+		-DPROGRAM=$<TARGET_FILE:libs_tests>
+		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
+		-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
+		-DUSERLIBS=${rwe_userlibs} -DTAPE=${mode} -DTAPES=${tapes}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
+		TIMEOUT ${limit})
+endforeach()
 # a USERLIBS original made by a test (the reference build of an RWE
 # source, libs/userlibs/rwe/refbuild.cmake): its fixture
 get_property(rwe_fixtures GLOBAL PROPERTY RWE_EMULATOR_FIXTURES)
 if(rwe_fixtures)
 	list(REMOVE_DUPLICATES rwe_fixtures)
-	set_tests_properties(libs_emulator PROPERTIES FIXTURES_REQUIRED "${rwe_fixtures}")
+	set_tests_properties(libs_emulator_originals PROPERTIES FIXTURES_REQUIRED "${rwe_fixtures}")
 endif()
+# the checks of the recordings with broken input: a recording with a wrong
+# hash fails the replay (one program, in the emulator); a recording run
+# whose files are not the committed ones fails (tape-compare.cmake, no
+# emulator)
+set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
+	"libs_expect_fixed*, libs_emulator_tape_wrong: time limit of the emulator run (seconds)")
+math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
+	-DTAPE_CORRUPT=libtest_ldivlib "-DFILTER=libtest ldivlib"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_tape_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+set_tests_properties(libs_emulator_tape_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"FAIL tape libtest_ldivlib: observations 0\\.\\.[0-9]+ differ from the original's recording")
+add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
+	-DRECORDED=${tapes} -DCOMMITTED=${tapes} -P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
+add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
+	-DCOMMITTED=${tapes} -DCORRUPT=ON -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tapes_compare_wrong
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
+set_tests_properties(libs_tapes_compare_wrong PROPERTIES PASS_REGULAR_EXPRESSION
+	"libtest_ldivlib.tape: differs\n *libtest_lmullib.tape: committed, not recorded")
 
 # reproduced original bugs (bugorig.c, hidden snitch tests [.bug-orig]):
 # each checks the correct behaviour and FAILS as long as the C build
@@ -122,9 +158,6 @@ endforeach()
 # CD needed: a fixed value passes (libs_expect_fixed), a wrong value and a
 # stale exemption fail with their message (the snitch cases [.selftest]
 # fail on purpose, the tests pass on the report of the failure)
-set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
-	"libs_expect_fixed*: time limit of the emulator run (seconds)")
-math(EXPR limit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 foreach(t pass wrong stale)
 	set(name libs_expect_fixed_${t})
 	set(filter "expect_fixed ${t}")
@@ -138,7 +171,7 @@ foreach(t pass wrong stale)
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-		TIMEOUT ${limit})
+		TIMEOUT ${selflimit})
 endforeach()
 # the test case ran and passed; the failure of the check with its values,
 # the other checks unchanged

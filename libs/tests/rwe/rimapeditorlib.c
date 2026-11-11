@@ -101,7 +101,7 @@ static void samemap(int n)
     sprintf(w, "map %d name", n);
     SAME(w, SL(maps[cur][n], 18) != 0);
     if (SL(maps[0][n], 18) && SL(maps[1][n], 18))
-        BOTH(w, !strcmp((char *)SL(maps[0][n], 18), (char *)SL(maps[1][n], 18)));
+        check(w, tape_strsame(w, (char *)SL(maps[0][n], 18), (char *)SL(maps[1][n], 18)));
     sprintf(w, "map %d last address", n);
     SAME(w, SL(maps[cur][n], 24) ? SL(maps[cur][n], 24) - SL(maps[cur][n], 10) : 0x7fffffffUL);
     sprintf(w, "map %d rub-through map", n);

@@ -155,13 +155,13 @@ static void sameblock(const char *what, UBYTE *const blk[2], ULONG size, const U
         for (i = 0; i < nzero; i++)
             PL(tmp[s] + zero[i], 0);
     }
-    for (o = 0; o < size; o++)
-        if (tmp[0][o] != tmp[1][o])
-            break;
-    if (o == size) {
+    if (!tape_bytes(what, tmp[0], tmp[1], size)) {
         checks++;
         return;
     }
+    for (o = 0; o < size; o++)
+        if (tmp[0][o] != tmp[1][o])
+            break;
     o &= ~1UL;
     sprintf(w, "%s +%lu", what, o);
     fail(w, (ULONG)tmp[0][o] << 24 | (ULONG)tmp[0][o + 1] << 16 | GW(tmp[0] + o + 2),
@@ -199,6 +199,13 @@ static void sameall(void)
 }
 
 static UWORD dmaconr[2];
+/* the F00 phase (mt_end patched): the C build writes DMACON through its
+   patched custom chip pointer into the RAM copy, the original through
+   $DFF096 into the hardware, so DMACONR after a call there shows the
+   original's writes for both sets; compared live only, not recorded
+   (libs/tests/tape.h: in a replay the C build would be compared with its
+   own unpatched writes) */
+static int fphase;
 static UBYTE pra[2];
 
 /* ------------------------------------------------------ calls */
@@ -226,7 +233,10 @@ static void stmt(const char *rout, int idx, ULONG d0)
         pra[cur] = PRA & 2;
     }
     preserve();
-    SAME("DMACONR", dmaconr[cur]);
+    if (fphase)                         /* shared state there: no observation */
+        check("DMACONR (F00 phase, live only)", dmaconr[0] == dmaconr[1]);
+    else
+        SAME("DMACONR", dmaconr[cur]);
     SAME("filter", pra[cur]);
     sameall();
 }
@@ -636,10 +646,10 @@ static ULONG findend(int s)
     struct lib *l = getlib(&sets[s], LIB);
     ULONG i, at = 0;
     int n = 0;
-    if (s == 1) {
-        if (!blkC[1])
+    if (s == 1 || !tape_orig()) {           /* the C build (also sets[0] in a replay) */
+        if (!blkC[s])
             return 0;
-        at = blkC[1] + C_SIZE - l->code;
+        at = blkC[s] + C_SIZE - l->code;
         return at + 4 <= l->size && GL(l->code + at) == 0xdff000UL ? at : 0;
     }
     for (i = 2; i + 8 <= l->size; i += 2)
@@ -695,6 +705,7 @@ static void f00(void)
         goto out;
     for (s = 0; s < 2; s++)
         PL(getlib(&sets[s], LIB)->code + at[s], (ULONG)fake[s]);
+    fphase = 1;
     CacheClearU();
     region(fm[0], fm[1], FMODALLOC);
     for (k = 0; k < 3; k++) {
@@ -726,6 +737,10 @@ static void f00(void)
     }
     for (s = 0; s < 2; s++)
         PL(getlib(&sets[s], LIB)->code + at[s], 0xdff000UL);
+    fphase = 0;
+    CUSTOMR.dmacon = 0x000f;            /* the audio DMA off, as the original's
+                                           StopTracker left it (the C build's went
+                                           to the RAM copy) */
     CacheClearU();
 out:
     for (s = 0; s < 2; s++)

@@ -37,7 +37,7 @@
 #   REFERENCE refbuild an entry whose reference is the reference build of
 #                      its SOURCE (3.2 "Source", 3.3): rwe_reference()
 #                      gives ref/NAME.obj and the fixture, for
-#                      rwe_declarations_NAME and the pairs of libs_emulator
+#                      rwe_declarations_NAME and the pairs of libs_emulator_originals
 #   rwe_refbuild_selftest  a dry refbuild entry (RWE_REFBUILD_SELFTEST),
 #                      not in RWE_LIBS: its declarations test through
 #                      rwe_reference(), against the C build
@@ -248,7 +248,8 @@ add_test(NAME rwe_refbuild COMMAND ${CORPUSRUN} cd ${pass})
 math(EXPR limit "(${RWE_REFBUILD_TIMEOUT} + ${EMULATION_QUEUE_WAIT}) * 3 * ${RWE_REFBUILD_PARALLEL} + 120")
 # label originals (the CD's compiler, preset originals); as the fixture of
 # the comparisons with the BB2 definition (rwe_declarations_NAME of a
-# refbuild entry, libs_emulator, the bug-orig tests of such a library)
+# refbuild entry, libs_emulator_originals, the bug-orig tests of such a
+# library)
 # ctest also runs it in the other presets that select them
 set_tests_properties(rwe_refbuild PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_SETUP rwe_refbuild)

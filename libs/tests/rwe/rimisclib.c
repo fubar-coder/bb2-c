@@ -201,7 +201,7 @@ static void ezcheck(void)
     SAMEBYTES("title", ((UBYTE *[]){ rec[0].title, rec[1].title }), sizeof rec[0].title);
     SAMEBYTES("body", ((UBYTE *[]){ rec[0].body, rec[1].body }), sizeof rec[0].body);
     SAMEBYTES("gadget", ((UBYTE *[]){ rec[0].gad, rec[1].gad }), sizeof rec[0].gad);
-    SAMEBYTES("arguments", ((ULONG *[]){ rec[0].args, rec[1].args }), sizeof rec[0].args);
+    SAMEPTRBYTES("arguments", ((ULONG *[]){ rec[0].args, rec[1].args }), sizeof rec[0].args);
 }
 
 /* the argument stack: built downwards from the top (a2), as the compiler
@@ -258,7 +258,7 @@ static void ezreq_args(const char *vec, const char *b, const struct arg *a, int 
         R[cur].d[2] = (ULONG)t_gad; buildstk(lens, 3, a, n);
         R[cur].d[7] = 0xabcd0000UL | n; R[cur].a[6] = (ULONG)mathffp);
     ezcheck();
-    SAMEBYTES("stack", stk, sizeof stk[0]);
+    SAMEPTRBYTES("stack", stk, sizeof stk[0]);
     SAMEBYTES("body buffer", body, sizeof body[0]);
 }
 
@@ -268,7 +268,7 @@ static void ezargs(const char *vec, const struct arg *a, int n)
     DO2(ENT(LIB, E_EZARGS, 0), ezsetup(); buildstk(NULL, 0, a, n);
         R[cur].d[7] = 0x12340000UL | n; R[cur].a[6] = (ULONG)mathffp);
     ezcheck();
-    SAMEBYTES("stack", stk, sizeof stk[0]);
+    SAMEPTRBYTES("stack", stk, sizeof stk[0]);
 }
 
 static void ezsep(const char *s)

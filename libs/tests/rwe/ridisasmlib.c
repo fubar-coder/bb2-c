@@ -34,6 +34,7 @@
 enum { E_DIS, E_SIZE, E_FINIT, E_INIT };
 
 #define CODEWORDS 32
+#define CODEADDR 0x47000000UL           /* in the Zorro III RAM of default.uae */
 #define SAREA 48
 static UWORD *code;
 static UBYTE *sarea[2];
@@ -142,9 +143,17 @@ int main(int argc, char **argv)
     }
     if (!load_sets(argv[1], names))
         return 20;
+    /* the code buffer at a fixed address: the PC relative targets in the
+       text are absolute, and a recording (libs/tests/tape.h) needs the same
+       text in every run; any free block if that one is taken.  Outside
+       the memory balance (rwe_mem_start does not count AllocAbs) */
+    code = AllocAbs(CODEWORDS * 2, (APTR)CODEADDR);
+    if (!code)
+        code = AllocMem(CODEWORDS * 2, MEMF_PUBLIC);
+    if (code)
+        memset(code, 0, CODEWORDS * 2);
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
-    code = AllocMem(CODEWORDS * 2, MEMF_PUBLIC | MEMF_CLEAR);
     for (s = 0; s < 2; s++)
         sarea[s] = AllocMem(SAREA, MEMF_PUBLIC);
 
@@ -180,10 +189,10 @@ int main(int argc, char **argv)
     ROUT = "finit";
     DO2(ENT(LIB, E_FINIT, 0), (void)0);
 
-    FreeMem(code, CODEWORDS * 2);
     for (s = 0; s < 2; s++)
         FreeMem(sarea[s], SAREA);
     rwe_mem_check(LIB, avail, TRUE);
+    FreeMem(code, CODEWORDS * 2);
     printf("ridisasmlib: %lu DisAssemble$ calls\n", calls);
     return rwe_done(LIB);
 }

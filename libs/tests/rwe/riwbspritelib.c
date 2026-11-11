@@ -79,6 +79,7 @@ static int nstep;
 static UBYTE *blk[2];
 static ULONG vp;
 static UBYTE *shp[6];                   /* the shape objects */
+static struct Screen *wbscreen;         /* the Workbench screen (snapshot) */
 enum { SHA, SHB, SHC, NARROW, NODATA, SHD };
 
 static UBYTE *findblock(struct lib *l)
@@ -109,9 +110,17 @@ static void snapshot(struct snap *sn, ULONG d0, LONG opened)
     sn->d0 = d0;
     sn->opened = opened;
     memcpy(sn->block, b, BLOCK);
-    /* myviewport, shapeaddr: the same in both sets; oldpointer,
-       temppointer: into the block or a sprite (0 / not 0); mybitmap: 0 /
-       not 0; the table: 0 / not 0; the library base: 0 / not 0 */
+    /* myviewport, shapeaddr: the same in both sets, but their addresses
+       differ from run to run (libs/tests/tape.h): the ViewPort as 1, the
+       shape as its index + 1 (0 stays 0) */
+    *(ULONG *)sn->block = wbscreen && *(ULONG *)b == (ULONG)&wbscreen->ViewPort
+                          ? 1 : *(ULONG *)b;
+    for (i = 0; i < 6; i++)
+        if (*(ULONG *)(b + 12) && *(ULONG *)(b + 12) == (ULONG)shp[i])
+            *(ULONG *)(sn->block + 12) = i + 1;
+    /* oldpointer, temppointer: into the block or a sprite (0 / not 0);
+       mybitmap: 0 / not 0; the table: 0 / not 0; the library base: 0 /
+       not 0 */
     *(ULONG *)(sn->block + 4) = relb(*(ULONG *)(b + 4));
     *(ULONG *)(sn->block + 8) = *(ULONG *)(b + 8) != 0;
     if (relb(*(ULONG *)(b + 24)) == *(ULONG *)(b + 24))
@@ -262,6 +271,7 @@ int main(int argc, char **argv)
     wbsgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     wbsint = OpenLibrary((CONST_STRPTR)"intuition.library", 39);
     scr = wbsint ? LockPubScreen(NULL) : NULL;
+    wbscreen = scr;
     for (s = 0; s < 2; s++)
         blk[s] = findblock(getlib(&sets[s], LIB));
     check("riwbspritelib: data block found (orig)", blk[0] != NULL);

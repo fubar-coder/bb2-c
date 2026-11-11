@@ -162,11 +162,47 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
 
 ### Libraries
 
-`libs_emulator`: the test program `libs/tests/libs_tests` (snitch, m68k)
-loads every acidlib of this build and its original of the CD like the
-compiler does and compares results, registers and memory (skipped
-without the CD; selection:
-`cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`).
+The test program `libs/tests/libs_tests` (snitch, m68k) loads every
+acidlib and RWE userlib of this build and its original like the
+compiler does and compares results, registers and memory (selection:
+`cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`). Every
+comparison passes its two observations through `libs/tests/tape.h`, so
+it runs in two ways:
+
+* `libs_emulator_originals` (label `originals`, needs the CD and the
+  reference build of the RWE sources): against the originals, live, and
+  it records their observations into `libs/tests/tapes/NAME.tape`, one
+  file per test program, which must be the committed ones
+  (`libs/tests/tape-compare.cmake`; after an intended change, a new or
+  changed scenario, copy the recorded files from the test's
+  `test/tapes/` in the build directory into `libs/tests/tapes/`).
+* `libs_emulator` (label `emulator`, no CD needed): the C build loaded
+  in place of the original as well, its observations compared with the
+  recordings. A recording holds hashes of segments of 1024 observations
+  and their number, and of the original's values only those an
+  `expect_fixed` check compares with and the registers the original
+  keeps where they are not predicted (`libs/tests/tape.c`); a segment
+  that differs fails with its range of observations and the text of its
+  first check. The values: the live comparison, or
+  `LIBS_TAPE_DUMP=1 ctest ...` (both tests), which writes the first
+  20000 observations to `test/tapes/NAME.dump` to compare.
+
+A comparison of a new scenario goes through `SAME`/`SAMEBYTES` of the
+test program, `check_fixed`/`SAME_FIXED`, `cmp_preserve` or directly
+`tape_obs`, `tape_same`, `tape_bytes`, `tape_strsame`: a comparison of
+`sets[0]`'s and `sets[1]`'s values past them compares the C build with
+itself in `libs_emulator`. A recorded value must not depend on where
+things are in memory: a value inside the test program (its hunks and
+stack) is recorded as such by `tape_obs`, records holding such pointers
+go through `SAMEPTRBYTES`/`tape_ptrbytes`, and other addresses (a
+library base, a buffer of the test, free memory) are compared relative
+to their base; `tape_pause(1)` leaves a part whose results differ from
+run to run unrecorded (live only). A check that holds for the original
+only (a patched address count, a code pattern of the original) asks
+`tape_orig()`. After a change of a test program, check that a
+recording run gives the same files twice. `libs_emulator_tape_wrong` (a recording with a wrong
+hash fails the replay) and `libs_tapes_compare_wrong` (a recording that
+differs from the committed one, a missing one) test the two checks.
 
 **A fixed original bug in a pair comparison:** where the original's
 result of a check is an original bug and the C library is fixed, the
@@ -462,8 +498,8 @@ reference is a newer binary); `rwe_refbuild_selftest` takes the dry
 entry `RWE_REFBUILD_SELFTEST` (REFERENCE `refbuild`) through the
 declaration comparison. These tests have the label `originals`; the
 tests of other presets that need the reference build (the declarations
-of a `refbuild` entry, `libs_emulator`, the bug-orig tests of such a
-library) require the fixture, and ctest starts a fixture's setup even
+of a `refbuild` entry, `libs_emulator_originals`, the bug-orig tests of
+such a library) require the fixture, and ctest starts a fixture's setup even
 for a test outside the label filter.
 
 ## The prev build

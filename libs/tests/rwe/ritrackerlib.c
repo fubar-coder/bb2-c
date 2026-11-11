@@ -162,7 +162,7 @@ static void samemem(const char *what, const UBYTE *a, const UBYTE *b, ULONG n)
 {
     ULONG i;
     char buf[40];
-    if (!memcmp(a, b, n)) {
+    if (!tape_bytes(what, a, b, n)) {
         checks++;
         return;
     }

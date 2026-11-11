@@ -155,9 +155,9 @@ int main(int argc, char **argv)
     for (i = 0; i < 23; i++) {
         char buf[80];
         sprintf(buf, "value %d: orig $%08lX, C $%08lX", i, res[0].v[i], res[1].v[i]);
-        check(buf, res[0].v[i] == res[1].v[i]);
+        check(buf, tape_same(buf, res[0].v[i], res[1].v[i]));
     }
-    check("number of calls", res[0].v[23] == res[1].v[23]);
+    check("number of calls", tape_same("number of calls", res[0].v[23], res[1].v[23]));
     for (i = 0; i < (int)res[0].v[23]; i++) {
         char buf[40];
         sprintf(buf, "call %d", i);
@@ -169,9 +169,9 @@ int main(int argc, char **argv)
         struct lib *o = getlib(&sets[0], "exitslib"), *c = getlib(&sets[1], "exitslib");
         UBYTE *qo = entry_code(o, 0), *qc = entry_code(c, 0);
         /* opcode words; the pc-relative displacements depend on layout */
-        check("exitslib quit: same instructions",
-              W(qo) == W(qc) && W(qo + 4) == W(qc + 4) && W(qo + 6) == W(qc + 6) &&
-              W(qo + 10) == W(qc + 10));
+        const char *w = "exitslib quit: same instructions";
+        check(w, tape_same(w, W(qo), W(qc)) & tape_same(w, W(qo + 4), W(qc + 4)) &
+              tape_same(w, W(qo + 6), W(qc + 6)) & tape_same(w, W(qo + 10), W(qc + 10)));
     }
 
     printf("%d checks, %d failures\n", checks, failures);

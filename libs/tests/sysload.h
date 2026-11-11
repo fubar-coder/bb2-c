@@ -19,6 +19,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "tape.h"
+
 /* ------------------------------------------------------------- register calls */
 
 struct regs { ULONG d[8]; ULONG a[7]; };
@@ -268,8 +270,10 @@ static __attribute__((unused)) const char *fixed_verdict(struct fixed f, ULONG o
 
 static __attribute__((unused)) void check_fixed(const char *what, struct fixed f, ULONG o, ULONG c)
 {
-    const char *why = fixed_verdict(f, o, c);
+    const char *why;
     char buf[200];
+    o = tape_fixed(what, o, c);
+    why = fixed_verdict(f, o, c);
     snprintf(buf, sizeof buf, "%s: %s", what, why ? why : "expect_fixed");
     check(buf, why == NULL);
 }
@@ -279,6 +283,7 @@ static __attribute__((unused)) void check_fixed(const char *what, struct fixed f
         const char *why_;                                                   \
         char fbuf_[200];                                                    \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_fixed((what), v_[0], v_[1]);                           \
         why_ = fixed_verdict((fx), v_[0], v_[1]);                           \
         if (why_) {                                                         \
             snprintf(fbuf_, sizeof fbuf_, "%s: %s", (what), why_);          \
@@ -317,6 +322,7 @@ static void cmp_preserve(const char *what, struct call *o, struct call *c)
 {
     ULONG ko = kept(&o->in, &o->out), kc = kept(&c->in, &c->out);
     char buf[200];
+    ko = tape_kept(what, ko, kc);
     snprintf(buf, sizeof buf, "%s: C build changes registers the original keeps (mask $%04lX)",
              what, ko & ~kc);
     check(buf, (ko & ~kc) == 0);

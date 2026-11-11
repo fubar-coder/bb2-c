@@ -287,8 +287,8 @@ int main(int argc, char **argv)
             R[s] = rec[s][k].out;
             POP[s] = rec[s][k].pop;
         }
-        if (k == 0 || rec[0][k].name != rec[1][k].name)
-            check("rithreadlib: the same calls", rec[0][k].name == rec[1][k].name);
+        if (!tape_strsame("rithreadlib: the call", rec[0][k].name, rec[1][k].name))
+            check("rithreadlib: the same calls", FALSE);
         DONTCARE = 0;
         preserve();
     }

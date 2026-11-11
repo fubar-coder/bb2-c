@@ -68,6 +68,10 @@ enum { E_FINDVOL, E_GETSR, E_HEXWORD, E_CHECKNMOVE, E_FINDSTRPTR, E_COPINS, E_FL
 #define SHAREDSIZE 70000
 static UBYTE *shared;
 #define SH(off) ((ULONG)shared + (off))
+/* a result in the shared area by its offset: the area's address differs
+   from run to run (libs/tests/tape.h) */
+#define SHREL(v) ((ULONG)(v) - SH(0) < SHAREDSIZE ? 0x80000000UL | ((ULONG)(v) - SH(0)) \
+                  : (ULONG)(v))
 /* areas of it */
 #define A_DATA     0            /* 4096 bytes of a pattern */
 #define A_SEARCH   4096         /* the SearchMem area, 1024 bytes */
@@ -197,7 +201,7 @@ static void findstringptr(void)
         sprintf(VEC, "$%08lX", look[i]);
         DO2(ENT(LIB, E_FINDSTRPTR, 0), R[cur].d[0] = SH(A_FINDPTR + 33000);
             R[cur].d[1] = look[i]);
-        SAME("d0", R[cur].d[0]);
+        SAME("d0", SHREL(R[cur].d[0]));
     }
 }
 
@@ -581,12 +585,12 @@ static void search1(UBYTE type, ULONG value, ULONG start, ULONG end, const char 
     raw_key[0] = raw_key[1] = 0;
     DO2(ENT(LIB, E_SEARCHMEM, 0), R[cur].d[0] = 0xffffff00UL | type; R[cur].d[1] = value;
         R[cur].d[2] = start; R[cur].d[3] = end);
-    SAME("d0", R[cur].d[0]);
+    SAME("d0", SHREL(R[cur].d[0]));
     SAME("RawStatus calls", raw_calls[cur]);
     SAME("RawStatus key", raw_key[cur]);
     ROUT = "SearchMemFound";
     DO2(ENT(LIB, E_SEARCHFOUND, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    SAME("d0", SHREL(R[cur].d[0]));
 }
 
 static void searchmem(void)
@@ -651,7 +655,9 @@ static void findlinetoken(void)
         strcpy((char *)p, l[i]);
         sprintf(VEC, "%u", i);
         DO2(ENT(LIB, E_FINDLINETOKEN, 0), R[cur].d[0] = (ULONG)p);
-        SAME("d0", R[cur].d[0]);
+        /* a word result: the high word is p's (its address moves, tape.h) */
+        SAME("d0", (R[cur].d[0] ^ (ULONG)p) >> 16 ? R[cur].d[0]
+                   : 0x50000000UL | (R[cur].d[0] & 0xffff));
     }
 }
 

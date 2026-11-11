@@ -368,14 +368,15 @@ int main(int argc, char **argv)
         scenario(s);
     CloseLibrary(CxBase);
 
-    check("same number of results", nv[0] == nv[1] && nv[0] <= MAXV);
+    check("same number of results", tape_same("results", nv[0], nv[1]) && nv[1] <= MAXV);
     n = nv[0] < nv[1] ? nv[0] : nv[1];
     for (i = 0; i < n && i < MAXV; i++) {
         snprintf(buf, sizeof buf, "#%d %s: orig $%08lX, C $%08lX", i, vname[0][i],
                  val[0][i], val[1][i]);
-        check(buf, val[0][i] == val[1][i] && vname[0][i] == vname[1][i]);
+        check(buf, tape_same(buf, val[0][i], val[1][i])
+                   & tape_strsame(buf, vname[0][i], vname[1][i]));
     }
-    check("same number of calls", nc[0] == nc[1] && nc[0] <= MAXC);
+    check("same number of calls", tape_same("calls", nc[0], nc[1]) && nc[1] <= MAXC);
     n = nc[0] < nc[1] ? nc[0] : nc[1];
     for (i = 0; i < n && i < MAXC; i++) {
         snprintf(cbuf, sizeof cbuf, "call #%d %s", i, cname[0][i]);

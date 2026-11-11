@@ -127,13 +127,21 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
 /* the bytes of both sets the same: SAME(what, memcmp(x[0], x[1], n))
    would compare the one memcmp result with itself and never fail */
 #define SAMEBYTES(what, x, n) do {                                          \
-        if (memcmp((x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
+        if (tape_bytes((what), (x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
+    } while (0)
+
+/* SAMEBYTES of records that hold pointers into the test program (strings,
+   buffers): those are recorded as such, not by address (tape.h) */
+#define SAMEPTRBYTES(what, x, n) do {                                       \
+        if (tape_ptrbytes((what), (x)[0], (x)[1], (n))) fail(what, 0, 1);   \
+        else checks++;                                                      \
     } while (0)
 
 /* a check on each set separately (results that may differ between the

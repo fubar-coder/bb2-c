@@ -473,11 +473,11 @@ int main(int argc, char **argv)
         *ea = 0;
         *eb = 0;
         snprintf(buf, sizeof buf, "orig: %s\n     C: %s", a, b);
-        check(buf, !strcmp(a, b));
+        check(buf, tape_strsame(buf, a, b));
         a = ea + 1;
         b = eb + 1;
     }
-    check("number of calls", res[0].k == res[1].k);
+    check("number of calls", tape_same("number of calls", res[0].k, res[1].k));
     for (i = 0; i < res[0].k && i < res[1].k; i++) {
         char buf[40];
         sprintf(buf, "call %d", i);

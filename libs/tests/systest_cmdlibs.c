@@ -65,12 +65,13 @@ static void fail(const char *what, ULONG o, ULONG c)
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
+        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 /* the bytes of both sets the same (SAME(what, memcmp(x[0], x[1], n)) would
    compare the one memcmp result with itself and never fail) */
 #define SAMEBYTES(what, x, n) do {                                          \
-        if (memcmp((x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
+        if (tape_bytes((what), (x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
     } while (0)
 
 static void preserve(void)
@@ -296,7 +297,7 @@ static void sort_one(UWORD type, int n, int down, int pattern)
         for (i = 0; i < n; i++) {
             const char *a = (const char *)*(ULONG *)(arr[0] + i * 4);
             const char *b = (const char *)*(ULONG *)(arr[1] + i * 4);
-            if ((ULONG)a - (ULONG)strpool[0] != (ULONG)b - (ULONG)strpool[1])
+            if (!tape_same("order", (ULONG)a - (ULONG)strpool[0], (ULONG)b - (ULONG)strpool[1]))
                 ok = 0;
         }
         SAME("same order", ok);
@@ -331,7 +332,7 @@ static void test_sortlib(void)
 static void test_mathtranslib(void)
 {
     int i;
-    ULONG base[2];
+    ULONG base[2], mt;
     struct Library *hold;
 
     ROUT = "mathtranslib init";
@@ -339,7 +340,11 @@ static void test_mathtranslib(void)
     DO2(E("mathtranslib", 14), (void)0);
     for (cur = 0; cur < 2; cur++)
         base[cur] = R[cur].d[0];
-    SAME("base", R[cur].d[0]);
+    /* relative to mathtrans.library's base: not the address itself */
+    Forbid();
+    mt = (ULONG)FindName(&SysBase->LibList, (CONST_STRPTR)"mathtrans.library");
+    Permit();
+    SAME("base - mathtrans.library", R[cur].d[0] - mt);
     /* inline routines: `Dc $a000,len` + JSR lvo(a6); compare the bytes */
     ROUT = "mathtranslib inline";
     for (i = 0; i <= 13; i++) {
