@@ -66,6 +66,7 @@ documentation it changes; no program code changes in this change.
 - [ ] 9.2 A1/A2 (reference builds of blitz2 and TED) become opt-in targets. Verify: a default build does not run vasm of the originals; `ctest --preset originals` builds them on demand
 - [ ] 9.3 After `test-coverage` is archived: delta `testing/test-selection` (`.orig` files and `tests/corpus/expect/` are inputs of the selection rules, `tools/covsel/rules.txt`). Verify: `openspec validate` passes; a sample diff of an `.orig` file selects its bug-orig test
 - [ ] 9.4 Document the label and presets in `tests/README.md` (presets table) and CLAUDE.md "Building and checking". Verify: the table lists the same presets as `ctest --list-presets`
+- [ ] 9.5 A configuration `orig-clib` in the `*_originals` corpus tests: the original blitz2 2.10 with the build's acidlibs and deflibs; output judged against the expected files like `clib`, intended deviations in `tests/corpus/notes.tsv`. Verify: `ctest --preset originals` runs it for every corpus pass; a program that differs and is not listed fails
 
 ## 10. Close-out
 
