@@ -565,6 +565,18 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
     return 0;
 }
 
+int tedab_needs_cd(const struct tedab_test *t)
+{
+    size_t i;
+
+    if (t->src_kind == 'K')
+        return 1;
+    for (i = 0; i < t->nexpects; i++)
+        if (!strcmp(t->expects[i].kind, "cd"))
+            return 1;
+    return 0;
+}
+
 void tedab_test_free(struct tedab_test *t)
 {
     size_t i;

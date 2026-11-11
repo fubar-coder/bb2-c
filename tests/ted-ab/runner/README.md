@@ -164,7 +164,10 @@ The pass file (written by CMake) has lines `KEY=VALUE` and `#` comments;
 the keys are described in the header of `run.c` (directories of the
 scripts, sources and the CD, the programs of the combinations, `filter=`,
 `combos=`, `timeout=`, `parallel=`, `intended=` of the prev build,
-`bugorig=`, `orig=` ...). The scripts are described in `tedab.h` and
+`bugorig=`, `orig=` ...). With `libs=DIR` the libraries come from `DIR`
+instead of the CD (`libs_prev=` for Pc) and the CD is optional: without
+it the scripts that read it (`@source K`, `@expect cd`) are left out,
+`NAME: NOCD` in the report. The scripts are described in `tedab.h` and
 `tests/README.md` ("TED A/B"). `run` writes below `work=` one directory
 per session (`sNNN/vol` the volume `TEDAB:`, `sNNN/emu` Amiberry); the
 dumps get a decoded `NAME.txt`. The dump format is in `teddump.h`.
@@ -186,7 +189,7 @@ Messages go to stderr as `tedab SUB: [FILE: ]message`; the log lines of
 
 ## Callers
 
-* `run`: the tests `ted_ab` (`tests/ted-ab/CMakeLists.txt`) and
+* `run`: the tests `ted_ab`, `ted_ab_originals` (`tests/ted-ab/CMakeLists.txt`) and
   `bug_orig_ted_*`, `bug_orig_record_ted_*` (`tests/bug-orig/CMakeLists.txt`,
   also through `tests/bug-orig/want.cmake`).
 * `lint`: the tests `ted_ab_lint`, `ted_ab_lint_fixed`,

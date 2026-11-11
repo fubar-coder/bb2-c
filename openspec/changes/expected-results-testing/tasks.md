@@ -61,7 +61,7 @@ documentation it changes; no program code changes in this change.
 
 ## 9. Label `originals`
 
-- [ ] 9.1 Label and preset `originals` for the tests of spec `original-comparisons`; `oracle` unchanged (`CMakePresets.json`, `CMakeLists.txt`, the test definitions). Verify: `ctest --preset originals -N` lists exactly those; `ctest --preset all` without `archive/cd` skips nothing for a missing reference
+- [x] 9.1 Label and preset `originals` for the tests of spec `original-comparisons`; `oracle` unchanged (`CMakePresets.json`, `CMakeLists.txt`, the test definitions). Verify: `ctest --preset originals -N` lists exactly those; `ctest --preset all` without `archive/cd` skips nothing for a missing reference
   - Corpus part done (2026-11-09; design.md "Task 9.1, the corpus part"): the live `ref` and `port` configurations of `corpus`, `corpus_runerr`, `corpus_req`, `corpus_serial` and `corpus_serial_runerr` are the tests `NAME_originals` (label `originals`) and `tests/corpus/notes.tsv` lists the intended deviations. Not done: `ted_ab` (its fixture is `corpus_originals` meanwhile, so `ted_ab` still pulls that test into `all`), `rwe_refbuild*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, the CD result table and TED oracle generators, `corpus_cd`/`corpus_cd_ab3`.
 - [ ] 9.2 A1/A2 (reference builds of blitz2 and TED) become opt-in targets. Verify: a default build does not run vasm of the originals; `ctest --preset originals` builds them on demand
 - [ ] 9.3 After `test-coverage` is archived: delta `testing/test-selection` (`.orig` files and `tests/corpus/expect/` are inputs of the selection rules, `tools/covsel/rules.txt`). Verify: `openspec validate` passes; a sample diff of an `.orig` file selects its bug-orig test

@@ -6,11 +6,11 @@ labels select within them.
 | Preset | Runs | Needs |
 |---|---|---|
 | `host` | tools with broken inputs, host tests, declaration and instruction comparisons, token lists (seconds) | native compiler; the CD for some |
-| `emulator` | libraries against the CD's, corpus, TED A/B, the expect tests (compilers' extensions, port regression tests; no CD needed), CD corpus, RWE reference build, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
+| `emulator` | libraries against the CD's, corpus, TED A/B (`ted_ab`: TED-C under blitz2-c, no CD needed), the expect tests (compilers' extensions, port regression tests; no CD needed), CD corpus, the fixed bug-orig tests (`; @fixed #N`, no CD needed) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
 | `all` | both | both |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
-| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`) and the corpus runs of the original compiler and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus") | Amiberry; the CD (and the reference build for the RWE tests) |
+| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`) and the corpus runs of the original compiler and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `ted_ab_originals` ("TED A/B"), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `blitz2_cd_reference` (the CD result table) and `ted_oracle_reference` (the oracle data of the TED tests) | Amiberry; the CD (and the reference build for the RWE tests) |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
 `AMIGA-EMULATION-SETUP.md`. The tool the emulator tests use, its sessions,
@@ -46,7 +46,7 @@ ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
 ctest --preset bug-orig   # original bugs not fixed yet, known port bugs: fail on purpose
 ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
-ctest --preset originals  # record the original's observations (writes tests/bug-orig/*/*.orig)
+ctest --preset originals  # compare with the originals; records tests/bug-orig/*/*.orig
 ```
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
@@ -342,20 +342,34 @@ report names. `blitz2-cd-reference` writes the original's result and
 leaves the note rows as they are; a note that names another result than
 the original's is an error (stale note) and nothing is written, and so is
 a note row without a well formed `(2.10: …)` part. On an unchanged tree both leave the table byte for
-byte as it is.
+byte as it is. `blitz2_cd_reference` (label `originals`) checks the
+committed table that way without writing it: the run of the original,
+`results cd-reference` into the build directory, and the result must be
+the committed table byte for byte.
 
 ### TED A/B
 
-`tests/ted-ab/`: `ted_ab` plays the scripts
-`tests/ted-ab/scripts/*.drv` with `teddrive` against TED, in four
-combinations (R5: original TED + blitz2 2.10, C5: TED-C + 2.10, Cc:
-TED-C + blitz2-c, Rc: original TED + blitz2-c), checks the expectations
-of the scripts and compares the runs pairwise (result, requesters,
-screen dumps, files). Needs the ref run of `corpus_originals` (fixture, ctest
-starts it as well, also in `all`, until the ref parts of `ted_ab` move to `originals`). Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`,
-`-DTED_AB_COMBOS=R5,C5`, sessions at the same time
+`tests/ted-ab/`: the scripts `tests/ted-ab/scripts/*.drv` played with
+`teddrive` against TED in the combinations R5 (original TED + blitz2
+2.10), C5 (TED-C + 2.10), Cc (TED-C + blitz2-c) and Rc (original TED +
+blitz2-c); every run is checked against the expectations of the script,
+and the runs of a script are compared pairwise (result, requesters,
+screen dumps, files). Two tests:
+
+* `ted_ab` (label `emulator`, preset `all`): Cc with the port's
+  libraries (`libs=` of the pass file; Pc on top with the prev build),
+  the corpus programs and `defaults.xtra` from the clib run of `corpus`
+  (fixture). Needs no CD: without it the scripts that read it (`@source
+  K`, `@expect cd`) are left out and listed as `NOCD` in the report;
+* `ted_ab_originals` (label `originals`): the four combinations
+  (`-DTED_AB_COMBOS=R5,C5`, the reference first) with the CD's libraries
+  and the ref run of `corpus_originals` (fixture); needs the CD and the
+  reference build of `ted.s`.
+
+Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`, sessions at the same time
 `-DTED_AB_PARALLEL=N` (default 5, as far as emulator slots are free);
-report in `build/<preset>/tests/ted-ab/ted_ab.txt`, about 13 minutes.
+reports in `build/<preset>/tests/ted-ab/ted_ab.txt` and
+`ted_ab_originals.txt`, about 13 minutes for the four combinations.
 Known bugs (`; @known REASON` in the script) are not run and are listed
 as KNOWN in the report; an exact name in the filter runs them anyway.
 `ted_ab_lint` checks the scripts without the emulator. The runner is
@@ -367,11 +381,12 @@ as KNOWN in the report; an exact name in the filter runs them anyway.
 issue of the bug): once TED-C no longer shows a bug of the original TED,
 the runs of the original and of TED-C differ. The commit that fixes the
 bug adds the line to the scripts that show it, naming the pairs that now
-differ, as the report names them (`R5-C5`, `Rc-Cc`, `R5-Rc`, `C5-Cc`).
+differ, as the report names them (`R5-C5`, `Rc-Cc`, `R5-Rc`, `C5-Cc`;
+judged where both combinations run, `ted_ab_originals`).
 A named pair must differ: FIXED, in the report
 `R5<->C5: FIXED #NNN (differs)` with the differences below it. A named
 pair that is the same is BROKEN (the fix does not show, or it was undone:
-the directive is stale) and fails `ted_ab`. The pairs not named are
+the directive is stale) and fails the test. The pairs not named are
 compared as before: they must be the same. One line per issue, a pair
 at most once, and both combinations of a named pair must run (`@combos`);
 `ted_ab_lint` refuses anything else. Example
@@ -425,9 +440,11 @@ does not cover.
 every entry of stage A (not for those in `RWE_REFBUILD_NEWER`, whose
 reference is a newer binary); `rwe_refbuild_selftest` takes the dry
 entry `RWE_REFBUILD_SELFTEST` (REFERENCE `refbuild`) through the
-declaration comparison. A test that needs the reference build has the
-label `emulator` (ctest starts a fixture's setup even for a test
-outside the label filter).
+declaration comparison. These tests have the label `originals`; the
+tests of other presets that need the reference build (the declarations
+of a `refbuild` entry, `libs_emulator`, the bug-orig tests of such a
+library) require the fixture, and ctest starts a fixture's setup even
+for a test outside the label filter.
 
 ## The prev build
 
@@ -492,12 +509,11 @@ passed, and the corpus and `ted_ab` run without their prev parts):
   `exe:BASE` / `output:BASE` in a `config=` line of the pass file
   compares with the configuration BASE instead of the reference (with
   `expect_dir=` the output is compared with the expected file).
-* `ted_ab`: the combinations `P5` (TED of the previous commit with blitz2
-  2.10) and `Pc` (TED and blitz2 of the previous commit) are added to the
-  four of `TED_AB_COMBOS`, compared with `C5` and `Cc` (the pairs
-  `C5-P5` and `Cc-Pc`, reported like the others and named by `; @fixed
-  #NNN` when a fix of TED changes them). A change of what TED does shows
-  there.
+* `ted_ab`: the combination `Pc` (TED, blitz2 and libraries of the
+  previous commit) is added to `Cc` and compared with it (the pair
+  `Cc-Pc`, reported like the others). A change of what TED does shows
+  there. (The pair `C5-P5`, P5 the previous commit's TED with blitz2
+  2.10, runs only where a pass names P5 in its combinations.)
 
 A fix changes results on purpose: its commit names them (CLAUDE.md), the
 differences that report must be exactly those, and `-DPREV_INTENDED`
@@ -989,6 +1005,10 @@ target `ted-oracle` writes the file through `results ted-oracle`
 original's, the note rows stay as they are, and a note must name the
 original's hash of this run (else it is stale and nothing is written).
 Without note rows the target leaves the file byte for byte as it is.
+`ted_oracle_reference` (label `originals`) checks the committed files that
+way without writing them: the same run into the build directory, and
+`ted-oracle.sha256` and `ted-tokens.txt` must be the committed ones byte
+for byte.
 
 ## Test statistics
 

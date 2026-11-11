@@ -84,7 +84,7 @@
 		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
 		  "execution": { "jobs": 4 },
 		  "filter": { "include": { "label": "bug-orig|bug-port" } } },
-		{ "name": "originals", "displayName": "Record the original's observations (writes tests/bug-orig/*/*.orig; needs the CD)",
+		{ "name": "originals", "displayName": "Comparisons with the originals: the recording of the bug-orig tests (writes tests/bug-orig/*/*.orig), the live reference runs, the committed data against the originals (needs the CD)",
 		  "configurePreset": "amiga",
 		  "output": { "outputOnFailure": true, "outputJUnitFile": "junit-originals.xml",
 		              "maxPassedTestOutputSize": 1048576, "maxFailedTestOutputSize": 1048576,

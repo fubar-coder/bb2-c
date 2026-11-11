@@ -526,3 +526,39 @@ code changes in this change).
   `corpus_runerr t126_rgberr #6`; with them all five originals tests pass.
   `corpus_req`, `corpus_serial` and `corpus_serial_runerr` need none (the
   CD's libraries keep the original's rundebuglib).
+
+- **Task 9.1, the rest (2026-11-11):** `ted_ab` is two tests
+  (`tests/ted-ab/CMakeLists.txt`): `ted_ab` (label `emulator`, preset
+  `all`) runs Cc, and Pc with the prev build (the pair Cc-Pc), with the
+  port's libraries (new pass keys `libs=`, `libs_prev=` of `tedab run`:
+  deflibs and acidlibs from the build, defaultdbug/help only if the
+  directory has them, so none) and the corpus programs and
+  `defaults.xtra` of the clib run of `corpus` (fixture `corpus`, set by
+  the test `corpus` now); with `libs=` the CD is optional, and without it
+  the 15 scripts that read it (`@source K`, `@expect cd`;
+  `tedab_needs_cd`, host case "the tests that read the CD") are left out
+  and reported `NOCD`. Checked: 44 tests, 87 runs OK with the CD and the
+  prev build; with `archive/cd` moved away the test passes with the 15
+  left out. `ted_ab_originals` (label `originals`, fixture
+  `corpus_originals`) is the former test: `TED_AB_COMBOS` (R5,C5,Cc,Rc)
+  with the CD's libraries; P5 runs no more by default (it needs blitz2
+  2.10; the pair C5-P5 stays available to a pass naming P5). Label
+  `originals`: `tokens_cd`, `rwe_lesfont_cd`, `rwe_residents_cd`,
+  `rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`.
+  `rwe_refbuild` stays the fixture of `rwe_declarations_NAME` of the
+  refbuild entries, `libs_emulator` and the bug-orig tests of such a
+  library (comparisons with the BB2 definition, B4/C1, which stay in
+  `all`), so ctest still starts it there when the CD is present. The
+  generators are targets (not ALL); their check as tests of `originals`:
+  `blitz2_cd_reference` (`tests/corpus/cd-reference-check.cmake`: the
+  original's run, `results cd-reference` into the build directory, equal
+  to the committed table) and `ted_oracle_reference`
+  (`programs/ted/tests/oracle/ted-oracle-check.cmake`: the generator into
+  the build directory, equal to `tests/data`), each with broken-input
+  tests without emulator (`*_check_wrong`, `*_check_same/right`).
+  `corpus_cd`/`corpus_cd_ab3` stay in `all` (they read the CD's sources,
+  the exception of the spec). Left in `all` and skipped without the CD
+  (not references of this task's list, decisions B1/B2/B4/C1 and 1.5):
+  `declarations_*`, `asmcmp_*`, `rwe_declarations_*` with a CD reference,
+  `libs_emulator`, the fixed TED bug-orig tests (combination C5, the CD's
+  blitz2 2.10).

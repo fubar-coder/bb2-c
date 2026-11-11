@@ -43,3 +43,28 @@ add_custom_target(ted-oracle
 	USES_TERMINAL
 	COMMENT "TED oracle data (Amiberry, original blitz2 1.95 and TED 1.1)"
 	VERBATIM)
+
+# ctest ted_oracle_reference (label originals, preset originals): the same
+# run into the build directory, the committed oracle data must come out
+# (ted-oracle-check.cmake); the check with broken input: a hash that is not
+# the committed one (no emulator), and the same files pass
+set(oracle_check ${CMAKE_CURRENT_SOURCE_DIR}/ted-oracle-check.cmake)
+add_test(NAME ted_oracle_reference COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DRESULTS=${RESULTS}
+	-DBLITZ2=${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2 -DTED=${REF_DIR}/ted
+	-DORACLE=$<TARGET_FILE:tedoracle>
+	-DCD=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/check-run -DCHECKDIR=${CMAKE_CURRENT_BINARY_DIR}/check
+	-DDATA=${PROJECT_SOURCE_DIR}/tests/data -P ${oracle_check})
+math(EXPR limit "1800 + 120 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(ted_oracle_reference PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	TIMEOUT ${limit})
+foreach(name right wrong)
+	add_test(NAME ted_oracle_reference_check_${name} COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
+		-DDATA=${CMAKE_CURRENT_SOURCE_DIR}/selftest/right
+		-DCHECKDIR=${CMAKE_CURRENT_SOURCE_DIR}/selftest/${name} -P ${oracle_check})
+endforeach()
+set_tests_properties(ted_oracle_reference_check_right PROPERTIES
+	PASS_REGULAR_EXPRESSION "the oracle data of[ \n]+[^ \n]*selftest/right[ \n]+are the original's")
+set_tests_properties(ted_oracle_reference_check_wrong PROPERTIES
+	PASS_REGULAR_EXPRESSION "differs[ \n]+from[ \n]+[^ \n]*selftest/right[ \n]+in[ \n]+ted-oracle.sha256[ \n]+\\(")

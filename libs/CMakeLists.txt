@@ -86,6 +86,8 @@ add_test(NAME tokens_cd COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DI
 add_test(NAME tokens_port COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_port.txt
 	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs;${BLITZ2_DIR}/deflibs" ${tokens_check})
 set_tests_properties(tokens_cd tokens_port PROPERTIES SKIP_RETURN_CODE 77)
+# the CD's list is a comparison with the originals (preset originals)
+set_tests_properties(tokens_cd PROPERTIES LABELS originals)
 # the check itself: without deflibs the list differs, the test must fail
 add_test(NAME tokens_broken COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_broken.txt
 	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs" ${tokens_check})

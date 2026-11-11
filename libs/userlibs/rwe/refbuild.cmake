@@ -15,7 +15,7 @@
 # in front of every include name, also of the absolute one in LIBMACS.BB,
 # and keeps it for the next compile; INCDIR generates no code).
 #
-# The compile (ctest rwe_refbuild, label emulator, fixture rwe_refbuild):
+# The compile (ctest rwe_refbuild, label originals, fixture rwe_refbuild):
 # corpusrun cd (tests/corpus/runner) with the staging directory as its "CD" and
 # a source= line per source; the result of entry NAME is
 #   build/<preset>/libs/userlibs/rwe/ref/NAME.obj
@@ -246,7 +246,11 @@ add_test(NAME rwe_refbuild COMMAND ${CORPUSRUN} cd ${pass})
 # the other if there are not enough emulator slots free, each maybe
 # waiting for one
 math(EXPR limit "(${RWE_REFBUILD_TIMEOUT} + ${EMULATION_QUEUE_WAIT}) * 3 * ${RWE_REFBUILD_PARALLEL} + 120")
-set_tests_properties(rwe_refbuild PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+# label originals (the CD's compiler, preset originals); as the fixture of
+# the comparisons with the BB2 definition (rwe_declarations_NAME of a
+# refbuild entry, libs_emulator, the bug-orig tests of such a library)
+# ctest also runs it in the other presets that select them
+set_tests_properties(rwe_refbuild PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_SETUP rwe_refbuild)
 
 # stage A: the reference build is the reference binary, byte for byte
@@ -261,7 +265,7 @@ foreach(l IN LISTS RWE_LIBS)
 	add_test(NAME rwe_refbuild_${name} COMMAND ${CMAKE_COMMAND}
 		-DREF=${RWE_REF_DIR}/${name}.obj -DORIG=${archive}/${reference}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake)
-	set_tests_properties(rwe_refbuild_${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	set_tests_properties(rwe_refbuild_${name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 		FIXTURES_REQUIRED rwe_refbuild)
 endforeach()
 
@@ -275,7 +279,7 @@ rwe_reference(${name} ${reference} file fixture)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
 	add_test(NAME rwe_refbuild_selftest COMMAND ${BLITZLIB} compare ${file}
 		${out}/userlibs/rwe/${name}.obj)
-	set_tests_properties(rwe_refbuild_selftest PROPERTIES LABELS emulator
+	set_tests_properties(rwe_refbuild_selftest PROPERTIES LABELS originals
 		SKIP_RETURN_CODE 77 FIXTURES_REQUIRED ${fixture})
 endif()
 
@@ -293,7 +297,7 @@ set(lesfont_check ${CMAKE_CURRENT_SOURCE_DIR}/lesfont-check.cmake)
 add_test(NAME rwe_lesfont_cd COMMAND ${CMAKE_COMMAND}
 	-DFONT=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin
 	-DBIN=${cd}/BUM10A/BLITZLIBS/RILIBS/RILESDEBUGLIB.OBJ -DOFFSET=3460 -P ${lesfont_check})
-set_tests_properties(rwe_lesfont_cd PROPERTIES SKIP_RETURN_CODE 77)
+set_tests_properties(rwe_lesfont_cd PROPERTIES LABELS originals SKIP_RETURN_CODE 77)
 add_test(NAME rwe_lesfont_broken COMMAND ${CMAKE_COMMAND}
 	-DFONT=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin
 	-DBIN=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin -DOFFSET=1 -P ${lesfont_check})

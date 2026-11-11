@@ -70,7 +70,10 @@ execute_process(
 	COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} --dir ${WORK}/emu
 		--mount ORACLE=${vol} --mount-ro UBB21=${CD} ${WORK}/run.script
 	RESULT_VARIABLE rc)
-if(rc)
+if(rc EQUAL 77)
+	message(STATUS "ted-oracle: no Amiberry or emulation data - skipped")
+	cmake_language(EXIT 77)
+elseif(rc)
 	message(FATAL_ERROR "ted-oracle: Amiberry run failed (${WORK}/emu, ${vol}/oracle.log)")
 endif()
 

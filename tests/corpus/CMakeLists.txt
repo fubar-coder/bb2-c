@@ -168,9 +168,11 @@ endfunction()
 
 # without runtime error checking: the programs of tests/
 corpus_pass(corpus LAUNCHER reqtrap SOURCES ${corpus_tests})
-# the TED A/B tests (tests/ted-ab) use the ref run of the originals: executables,
-# defaults.xtra
-set_tests_properties(corpus_originals PROPERTIES FIXTURES_SETUP corpus)
+# the TED A/B tests (tests/ted-ab) use its executables and defaults.xtra:
+# ted_ab those of the clib run (fixture corpus), ted_ab_originals those of
+# the ref run (fixture corpus_originals)
+set_tests_properties(corpus PROPERTIES FIXTURES_SETUP corpus)
+set_tests_properties(corpus_originals PROPERTIES FIXTURES_SETUP corpus_originals)
 # with runtime error checking: tests/ and the programs that trigger runtime
 # errors on purpose (tests-runerr/, they would crash without the checks)
 corpus_pass(corpus_runerr RUNTIME_ERRORS LAUNCHER reqtrap
@@ -249,6 +251,32 @@ add_custom_target(blitz2-cd-reference
 	USES_TERMINAL
 	COMMENT "The CD through the original blitz2 2.10 -> tests/data/blitz2-cd.tsv (note rows kept)"
 	VERBATIM)
+
+# ctest blitz2_cd_reference (label originals, preset originals): the same
+# run of the original, the table made from it must be the committed one
+# (cd-reference-check.cmake); the check with broken input: a fresh run
+# with another hash than the table (no emulator), and the same one passes
+set(cd_check ${CMAKE_CURRENT_SOURCE_DIR}/cd-reference-check.cmake)
+add_test(NAME blitz2_cd_reference COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+	-DRESULTS=${RESULTS} -DPASS=${CMAKE_CURRENT_BINARY_DIR}/cd-reference.pass
+	-DFRESH=${CMAKE_CURRENT_BINARY_DIR}/cd-reference.tsv -DTABLE=${CD_TABLE}
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/cd-reference-check.tsv -P ${cd_check})
+math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(blitz2_cd_reference PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	TIMEOUT ${limit})
+foreach(t same|cd-table.tsv wrong|cd-fresh-wrong.tsv)
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 name)
+	list(GET t 1 fresh)
+	add_test(NAME blitz2_cd_reference_check_${name} COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
+		-DRESULTS=${RESULTS} -DFRESH=${CMAKE_CURRENT_SOURCE_DIR}/selftest/${fresh}
+		-DTABLE=${CMAKE_CURRENT_SOURCE_DIR}/selftest/cd-table.tsv
+		-DOUT=${CMAKE_CURRENT_BINARY_DIR}/cd-reference-check-${name}.tsv -P ${cd_check})
+endforeach()
+set_tests_properties(blitz2_cd_reference_check_same PROPERTIES
+	PASS_REGULAR_EXPRESSION "cd-table.tsv[ \n]+is the original's")
+set_tests_properties(blitz2_cd_reference_check_wrong PROPERTIES
+	PASS_REGULAR_EXPRESSION "the original's run differs[ \n]+from[ \n]+[^ \n]*cd-table.tsv")
 
 # the table from the port's result (after a fix changed a result): the note
 # rows keep their note, or lose it where the port's result (executable or

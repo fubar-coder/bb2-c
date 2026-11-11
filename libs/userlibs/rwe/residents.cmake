@@ -171,7 +171,8 @@ add_test(NAME rwe_residents_cd COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
 # two sessions, one after the other if there are not enough emulator
 # slots free, each maybe waiting for one
 math(EXPR limit "${RWE_RESIDENTS_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
-set_tests_properties(rwe_residents_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+# label originals: the CD's compiler (preset originals)
+set_tests_properties(rwe_residents_cd PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 	TIMEOUT ${limit})
 # the check of the comparison: two residents with other contents differ
 add_test(NAME rwe_residents_check_broken COMMAND ${CMAKE_COMMAND} -DBLITZRES=${BLITZRES}

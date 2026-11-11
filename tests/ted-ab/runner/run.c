@@ -22,10 +22,18 @@
  *                      without the source's own .xtra)
  *   expect_dir=DIR     the scripts' NAME.expect tokenised (NAME.expect.bb2)
  *   cd=DIR             the CD (@source K, @expect cd, the libraries)
+ *   libs=DIR           the libraries (deflibs, acidlibs and, if DIR has
+ *                      them, defaultdbug, help, help.dat) from DIR instead
+ *                      of the CD's BLITZ2; the CD is then optional: without
+ *                      it the tests that read it (@source K, @expect cd) are
+ *                      left out ("NOCD" in the report) and the rest runs
+ *   libs_prev=DIR      with libs=: the libraries of the combination Pc
+ *                      (the prev build's; default libs=)
  *   oracle=PATH        the TED oracle manifest (@expect tedsave)
  *   fonts=DIR          chars8.b / chars.b of TED (decoding the dumps)
  *   teddrive=, teddrivetest=, tedprobe=, reqtrap=PATH   the tools
- *   ted_ref=, ted_c=, blitz2_ref=, blitz2_c=PATH        R/C and 5/c
+ *   ted_ref=, ted_c=, blitz2_ref=, blitz2_c=PATH        R/C and 5/c (a
+ *                      program no combination of combos= uses may be "-")
  *   ted_prev=, blitz2_prev=PATH   P and c of the previous commit (the
  *                      combinations P5, Pc; needed only when combos= names
  *                      them: P5 needs ted_prev, Pc both)
@@ -106,6 +114,7 @@ struct pass {
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
+    char *libs, *libs_prev;             /* the libraries instead of the CD's */
     char *inject, *wbrun, *gates;
     char *orig, *orig_by;
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
@@ -127,6 +136,8 @@ static struct tedab_test *tests;
 static size_t ntests;
 static struct tedab_test *known;  /* @known, not run */
 static size_t nknown;
+static struct tedab_test *nocd;   /* they read the CD, which is missing (libs=) */
+static size_t nnocd;
 static struct run *runs;
 static size_t nruns;
 static int combo_order[TEDAB_NCOMBOS], ncombo_order;
@@ -149,6 +160,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
         { "ted_c", &P.ted_c }, { "blitz2_ref", &P.blitz2_ref }, { "blitz2_c", &P.blitz2_c },
         { "ted_prev", &P.ted_prev }, { "blitz2_prev", &P.blitz2_prev },
+        { "libs", &P.libs }, { "libs_prev", &P.libs_prev },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
         { "orig", &P.orig }, { "orig_by", &P.orig_by },
     };
@@ -360,7 +372,8 @@ static int load_tests(FILE *log)
     qsort(names, n, sizeof *names, by_name);
     tests = calloc(n + 1, sizeof *tests);
     known = calloc(n + 1, sizeof *known);
-    for (i = 0; tests && known && i < n; i++) {
+    nocd = calloc(n + 1, sizeof *nocd);
+    for (i = 0; tests && known && nocd && i < n; i++) {
         char *path = str_printf("%s/%s.drv", P.scripts, names[i]), err[300];
         size_t len;
         char *text = path ? (char *)read_file(path, &len) : NULL;
@@ -407,6 +420,8 @@ static int load_tests(FILE *log)
                 tedab_test_free(&t);
             else if (t.known && sel < 2)
                 known[nknown++] = t;       /* a known failure: only by name */
+            else if (!lint_mode && P.libs && tedab_needs_cd(&t) && access(P.cd, R_OK | X_OK))
+                nocd[nnocd++] = t;         /* no CD: only the tests that need none */
             else
                 tests[ntests++] = t;
         }
@@ -604,9 +619,16 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
                            : c == TEDAB_P5 || c == TEDAB_PC ? P.ted_prev : P.ted_c, dir, "ted")
                 ? -1 : 0;
         for (k = 0; !r && k < sizeof libs / sizeof libs[0]; k++) {
-            char *rel = str_printf("BLITZ2/%s", libs[k]), *from = rel ? tedab_resolve(P.cd, rel)
-                                                                      : NULL;
+            const char *ldir = c == TEDAB_PC && P.libs_prev ? P.libs_prev : P.libs;
+            char *rel = ldir ? NULL : str_printf("BLITZ2/%s", libs[k]);
+            char *from = ldir ? str_printf("%s/%s", ldir, libs[k])
+                         : rel ? tedab_resolve(P.cd, rel) : NULL;
 
+            /* libs=: deflibs and acidlibs must be there, the rest is optional */
+            if (from && ldir && k >= 2 && access(from, R_OK)) {
+                free(from);
+                from = NULL;
+            }
             if (from && copy_to(from, dir, libs[k]))
                 r = -1;
             free(from);
@@ -919,9 +941,18 @@ static int load_orig(FILE *log)
 static int run(FILE *log)
 {
     /* the original TED only runs for the recording */
+    unsigned used = 0;          /* the combinations of combos= */
+    int cu;
+
+    for (cu = 0; cu < ncombo_order; cu++)
+        used |= 1u << combo_order[cu];
     const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap,
-                            (P.orig && !record) || P.fixed ? P.ted_c : P.ted_ref, P.ted_c,
-                            P.blitz2_ref, P.blitz2_c, P.oracle, P.ted_prev, P.blitz2_prev };
+                            (P.orig && !record) || P.fixed ? P.ted_c
+                            : used & (1u << TEDAB_R5 | 1u << TEDAB_RC) ? P.ted_ref : NULL,
+                            P.ted_c,
+                            used & (1u << TEDAB_R5 | 1u << TEDAB_C5 | 1u << TEDAB_P5)
+                            ? P.blitz2_ref : NULL,
+                            P.blitz2_c, P.oracle, P.ted_prev, P.blitz2_prev };
     struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
     size_t *queue = NULL, nq = 0, i, k;
     struct teddump_fonts fonts;
@@ -941,10 +972,23 @@ static int run(FILE *log)
             fprintf(log, "%s: no %s - skipped\n", me, files[i]);
             return 77;
         }
-    if (access(P.cd, R_OK | X_OK)) {
+    if (!P.libs && access(P.cd, R_OK | X_OK)) {
         fprintf(log, "%s: no CD %s - skipped\n", me, P.cd);
         return 77;
     }
+    if (P.libs) {
+        char *dl = str_printf("%s/deflibs", P.libs), *al = str_printf("%s/acidlibs", P.libs);
+        int miss = !dl || !al || access(dl, R_OK) || access(al, R_OK);
+
+        free(dl);
+        free(al);
+        if (miss) {
+            fprintf(log, "%s: no deflibs/acidlibs in %s - skipped\n", me, P.libs);
+            return 77;
+        }
+    }
+    if (nnocd)
+        fprintf(log, "%s: no CD %s: %zu tests that read it left out\n", me, P.cd, nnocd);
     if (teddump_load_fonts(P.fonts, &fonts)) {
         fprintf(log, "%s: no fonts in %s\n", me, P.fonts);
         return 2;
@@ -1277,6 +1321,8 @@ static int run(FILE *log)
         }
         for (i = 0; i < nknown; i++)
             text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);
+        for (i = 0; i < nnocd; i++)
+            text_add(&rep, "%s: NOCD (reads the CD %s, which is missing)\n", nocd[i].name, P.cd);
         /* PREV_INTENDED: a listed case must differ (not judged: only if the
            run was filtered) */
         if (!P.bugorig) {

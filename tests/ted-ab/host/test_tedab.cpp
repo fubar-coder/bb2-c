@@ -107,6 +107,20 @@ TEST_CASE("directives refused", "[test]")
     CHECK(std::string(t.err).find("@font") != std::string::npos);
 }
 
+TEST_CASE("the tests that read the CD", "[test]")
+{
+    // left out of a pass without the CD: @source K and @expect cd
+    Test k("; @source K internet/demos/memo.bb2\n; @nofiles\n");
+    Test e("; @source T t01_int\n; @expect cd a.bb2 internet/a.bb2\n");
+    Test t("; @source T t01_int\n; @roundtrip\n");
+    Test n("; @source none\n; @nofiles\n");
+    REQUIRE((k.rc == 0 && e.rc == 0 && t.rc == 0 && n.rc == 0));
+    CHECK(tedab_needs_cd(&k.t) == 1);
+    CHECK(tedab_needs_cd(&e.t) == 1);
+    CHECK(tedab_needs_cd(&t.t) == 0);
+    CHECK(tedab_needs_cd(&n.t) == 0);
+}
+
 TEST_CASE("@fixed: the directive", "[fixed]")
 {
     CHECK(tedab_pair("R5-C5") == 0);

@@ -157,6 +157,9 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
 int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test *t, char *err,
                           size_t errlen, int bugorig);
 void tedab_test_free(struct tedab_test *t);
+/* 1 = the test reads the CD (@source K, @expect cd): a pass without the CD
+   (the preset all on a machine without archive/cd) leaves it out */
+int tedab_needs_cd(const struct tedab_test *t);
 
 /* the commands of a script against teddrive's syntax; prints "line N: ..."
    to out, returns the number of errors */
