@@ -187,8 +187,8 @@ with `Select` on bytes changed their hash). The corpus test `t14_select`
 covers the templates. Not done: the later acidlibs (only documented,
 question 3 of section 5), a permanent check of the archive against the
 CD binary (the archive does not change). The
-more interesting consequence is for the project rule "do not fix original
-bugs": the archived source is not exactly the released 2.10; #2 is a bug
+more interesting consequence: the archived source is not exactly the
+released 2.10; #2 is a bug
 that the vendor fixed in the release.
 
 ## 5 Open questions

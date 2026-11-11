@@ -77,7 +77,7 @@ documentation it changes; no program code changes in this change.
 
 ## 10. Close-out
 
-- [ ] 10.1 `README.md` ("State"), `docs/libs/deviations.md` (kind F points to the test kinds), TODO.md section 3 entry. Verify: no document says original bugs are not fixed
+- [x] 10.1 `README.md` ("State"), `docs/libs/deviations.md` (kind F points to the test kinds), TODO.md section 3 entry. Verify: no document says original bugs are not fixed
 - [ ] 10.2 Integration check: `ctest --preset all` without the CD, `ctest --preset originals` with it, `ctest --preset bug-orig`, `ctest --preset host` with `-DHOST_SANITIZE=ON`; results of the programs byte-identical to the `prev` build. Verify: the runs pass or fail only where documented
 
 ## Workflow follow-up

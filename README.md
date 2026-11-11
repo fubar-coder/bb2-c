@@ -18,10 +18,14 @@ sources, the tests and the notes on the translation in `docs/`.
 ## State
 
 Open items, decisions and the state of the port are in `TODO.md`. The
-port reproduces the bugs of the original and documents them (`BUG(orig)`
-in the code, `docs/*/deviations.md`); deliberate fixes are listed there as
-intended deviations and can change the executables. The tests of the
-reproduced bugs fail on purpose (`tests/README.md`).
+port is complete and original bugs are fixed deliberately, one issue per
+bug; the goal is compatibility with Blitz Basic 2 with the bugs fixed.
+A fix is listed as an intended deviation in `docs/*/deviations.md`, can
+change the executables, and has a test of the expected behaviour that runs
+in `ctest --preset all`. A bug not fixed yet is marked `BUG(orig)` in the
+code and has a bug-orig test that fails on purpose (`tests/README.md`,
+"bug-orig tests"). Whoever needs the original behaviour uses the original
+compiler and libraries.
 
 ## Requirements
 

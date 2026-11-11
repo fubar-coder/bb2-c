@@ -881,7 +881,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   regenerated), the bug-orig tests keep the 1.95 build; new corpus test
   `t14_select` (`docs/v2.10/README.md` §4). TED, acidlibs and deflibs on
   the CD are the ported state. With this the port is complete: original
-  bugs may now be fixed (`CLAUDE.md`, "Do not fix original bugs"); the
+  bugs may now be fixed (`CLAUDE.md`, "Original bugs are fixed deliberately"); the
   basis are the issues with the label `bug-orig`.
 - [ ] **blitz2 and TED on the shared `.xtra` code** (`shared/xtra/`,
   2026-10-30, reworked the same day; `docs/formats.md` §1.4, §7): an
