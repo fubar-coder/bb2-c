@@ -904,16 +904,17 @@ bug_orig_record_ID`.
 `ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1` instead of
 `orig=`): the commit that fixes the bug in TED-C adds the line, deletes
 `ID.orig` (configuring stops on a stale one) and keeps the script's
-expectations, which are the correct behaviour. The test then runs only
-C5 (TED-C under blitz2 2.10: the fix is TED's, the compiler stays the
-CD's) and no session of the original; it is judged by the script's
+expectations, which are the correct behaviour. The test then runs TED-C
+only, no session of the original, and is judged by the script's
 expectations alone: FIXED (exit status 0: the run is OK and no
-expectation is missed) or REGRESSED (1: the report says `bug-orig C5:
+expectation is missed) or REGRESSED (1: the report says `bug-orig Cc:
 REGRESSED: bug #N is fixed, but the expected behaviour does not show` and
-lists what is missing). ctest `bug_orig_ID` as before, label `emulator`
-only: it runs in `emulator` and `all`, not in `bug-orig`
-(`ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not);
-there is no `bug_orig_record_ID` for it. The directive with a pair
+lists what is missing). It is two tests: ctest `bug_orig_ID` (label
+`emulator` only: it runs in `emulator` and `all`, not in `bug-orig`)
+runs Cc, TED-C under blitz2-c with the libraries of the build (pass key
+`libs=`), and needs no CD; `bug_orig_ID_originals` (label `originals`)
+runs C5, TED-C under the CD's blitz2 2.10 with the CD's libraries.
+There is no `bug_orig_record_ID` for it. The directive with a pair
 (`@fixed #N R5-C5`, the `tests/ted-ab` form) is refused in
 `tests/bug-orig/ted`, and the form without a pair outside it (`tedab`
 parses the scripts of a `bugorig=1` pass in the bug-orig form,

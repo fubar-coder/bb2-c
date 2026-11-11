@@ -608,3 +608,11 @@ code changes in this change).
   `asmcmp_dhandlerlib`, `asmcmp_memacclib` have the label `originals`
   (`asm_check`, `libs/acidlibs/CMakeLists.txt`); `ctest --preset all -N`
   lists none, `ctest --preset originals` runs the four (pass with the CD).
+- **Task 9.9 (2026-11-11):** a fixed TED bug-orig test (`; @fixed #N`)
+  is two tests (`bug_orig_ted_test`, `tests/bug-orig/CMakeLists.txt`):
+  `bug_orig_ID` (label `emulator`, so `all`) with combination Cc and the
+  build's libraries (`libs=`, no CD; the fixed scripts read no CD source),
+  and `bug_orig_ID_originals` (label `originals`) with C5 and the CD's
+  libraries; the self tests `bug_orig_ted_fixed_selftest_fixed` /
+  `_regressed` likewise (REGRESSED is reported in both). Checked with the
+  CD: 47 `bug_orig_ted*` of `all` pass, 37 `*_originals` pass.
