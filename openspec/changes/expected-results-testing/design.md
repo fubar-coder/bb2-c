@@ -353,8 +353,9 @@ code changes in this change).
   expectation does). Without the CD the normal run does not judge `port`
   and runs without `blitz2:defaultdbug` (with runtime error checking too,
   task 9.10); it is skipped (77) when the source
-  names `BB2:` (the volume is mounted only then; before it was mounted
-  for every test) and for the TED tests (C5 uses the CD's compiler). The
+  names `BB2:` (the volume is mounted only then) and for the open TED
+  tests (C5 uses the CD's compiler; the fixed TED tests run Cc without
+  the CD and C5 only in their `_originals` tests, task 9.9). The
   mount changes the memory layout: `blitzcoplib-maxslice-zero` crashes as
   a time out with the volume and as a halt of the CPU without it, so it
   mounts it explicitly. The TED verdict has no run-directory comparison
@@ -556,11 +557,11 @@ code changes in this change).
   the build directory, equal to `tests/data`), each with broken-input
   tests without emulator (`*_check_wrong`, `*_check_same/right`).
   `corpus_cd`/`corpus_cd_ab3` stay in `all` (they read the CD's sources,
-  the exception of the spec). Left in `all` and skipped without the CD
-  (not references of this task's list, decisions B1/B2/B4/C1 and 1.5):
-  `declarations_*`, `asmcmp_*`, `rwe_declarations_*` with a CD reference,
-  `libs_emulator`, the fixed TED bug-orig tests (combination C5, the CD's
-  blitz2 2.10).
+  the exception of the spec). The declaration comparisons read committed
+  data (task 9.6), `asmcmp_*` are in `originals` (9.7) and the fixed TED
+  bug-orig tests run Cc without the CD (9.9); `libs_emulator` (C1) is
+  the one test of the data comparisons that stays in `all` and is
+  skipped without the CD.
 - **Task 9.3 (2026-11-11):** the rules are `tools/testinfo/rules.txt`
   (the file the task calls `tools/covsel/rules.txt`; `tools/covsel` is
   only the library). The directory rules already selected the readers
