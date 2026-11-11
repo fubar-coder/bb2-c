@@ -16,8 +16,12 @@ set(ACIDLIBS_ORDER
 	strcomplib strings1lib strings2lib switchlib varslib wbstartuplib)
 
 # the libraries built with the optimisation profile speed instead of size
-# (blitz_library OPTIMIZE, cmake/BlitzLibrary.cmake), in every variant
-set(ACIDLIBS_SPEED)
+# (blitz_library OPTIMIZE, cmake/BlitzLibrary.cmake), in every variant:
+# the ones that gain at least 5% in their own blocks of a benchmark on a
+# cycle-exact 68000 (String$ x2.0, CopyBitMap x1.33, Sort and Val about
+# x1.06).  Not here: strcomplib (13% slower), printlib (Str$ 3% faster
+# for 13% more code, in nearly every program)
+set(ACIDLIBS_SPEED bitmaplib sortlib stringfunclib vallib)
 foreach(name ${ACIDLIBS_SPEED})
 	if(NOT name IN_LIST ACIDLIBS_ORDER)
 		message(FATAL_ERROR "ACIDLIBS_SPEED: ${name} is not in ACIDLIBS_ORDER")
