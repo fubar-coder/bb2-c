@@ -15,6 +15,15 @@ set(ACIDLIBS_ORDER
 	maxlenlib maxslib memlib modlib rundebuglib runerrlib staticslib
 	strcomplib strings1lib strings2lib switchlib varslib wbstartuplib)
 
+# the libraries built with the optimisation profile speed instead of size
+# (blitz_library OPTIMIZE, cmake/BlitzLibrary.cmake), in every variant
+set(ACIDLIBS_SPEED)
+foreach(name ${ACIDLIBS_SPEED})
+	if(NOT name IN_LIST ACIDLIBS_ORDER)
+		message(FATAL_ERROR "ACIDLIBS_SPEED: ${name} is not in ACIDLIBS_ORDER")
+	endif()
+endforeach()
+
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 foreach(src ${sources})
 	get_filename_component(name ${src} NAME_WE)
@@ -42,7 +51,11 @@ function(acidlibs_build prefix variant output)
 		if(prefix OR NOT BLITZ_DEFAULT_VARIANT STREQUAL CMDREF_VARIANT)
 			set(cmdref)
 		endif()
-		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${cmdref} ${name}.c)
+		set(optimize)
+		if(name IN_LIST ACIDLIBS_SPEED)
+			set(optimize OPTIMIZE speed)
+		endif()
+		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${cmdref} ${optimize} ${name}.c)
 		list(APPEND objs ${obj})
 	endforeach()
 

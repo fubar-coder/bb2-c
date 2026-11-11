@@ -1,5 +1,10 @@
-# blitz_library(NAME [VARIANT DIR] [OBJ PATH] SOURCES... [CHECK FILES...])
+# blitz_library(NAME [VARIANT DIR] [OBJ PATH] [OPTIMIZE PROFILE] SOURCES...
+#               [CHECK FILES...])
 # - one Blitz Basic 2 library from C
+#   OPTIMIZE PROFILE  the optimisation flags (BLITZLIB_OPTIMIZE_PROFILE,
+#                 below): size (default) or speed.  A caller that builds
+#                 a library in several variants passes the same profile to
+#                 each of them
 #   VARIANT DIR   the variant (libs/variants/NAME, a test variant in
 #                 libs/tests/variants): its directory comes first in the
 #                 include path, so its libnums.h (the library numbers,
@@ -33,6 +38,21 @@
 set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
 set(BLITZLIB_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/../libs/include)
 
+# the optimisation profiles of blitz_library(OPTIMIZE ...); every profile
+# optimises, also in Debug builds: -O0 would call libgcc (__mulsi3 ...)
+# - size: -Os, the default; blitz2 copies a whole library into every
+#   program that uses it, so its size counts in every executable
+# - speed: -O2 for the compute libraries whose loops -Os makes slow (a
+#   byte copy loop of about 50 instead of 22 cycles on the 68000).
+#   -fno-tree-scev-cprop: the final value replacement of -O2 turns a sum
+#   over a loop into a 32-bit multiply, a libgcc call (__mulsi3) on the
+#   68000; -fno-inline-small-functions -fno-inline-functions: inlining
+#   is most of -O2's growth and little of its gain (static inline
+#   functions are still inlined)
+set(BLITZLIB_OPTIMIZE_size -Os)
+set(BLITZLIB_OPTIMIZE_speed -O2 -fno-tree-scev-cprop
+	-fno-inline-small-functions -fno-inline-functions)
+
 # the variant of the libraries built to blitz2/acidlibs and deflibs (and
 # checked against the CD): libs/variants/NAME/libnums.h
 set(BLITZ_DEFAULT_VARIANT bb2-2.10 CACHE STRING
@@ -55,7 +75,13 @@ set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/blitzlib/cmdref-check.cmake)
 cmake_path(NORMAL_PATH CMDREF_CHECK)
 
 function(blitz_library name)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ;CMDREF" "CHECK")
+	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ;CMDREF;OPTIMIZE" "CHECK")
+	if(NOT arg_OPTIMIZE)
+		set(arg_OPTIMIZE size)
+	endif()
+	if(NOT DEFINED BLITZLIB_OPTIMIZE_${arg_OPTIMIZE})
+		message(FATAL_ERROR "blitz_library(${name}): no OPTIMIZE profile ${arg_OPTIMIZE} (size, speed)")
+	endif()
 	add_library(${name} STATIC ${arg_UNPARSED_ARGUMENTS})
 	if(NOT arg_VARIANT)
 		set(arg_VARIANT ${BLITZ_DEFAULT_VARIANT_DIR})
@@ -67,7 +93,7 @@ function(blitz_library name)
 		-ffixed-a3 -ffixed-a4 -ffixed-a5   # Blitz string pointer/locals/globals (blitzlib.h)
 		-fno-toplevel-reorder          # token table in definition order
 		-ffreestanding -fno-tree-loop-distribute-patterns   # no libc: no memset/memcpy calls
-		-Os                            # also in Debug builds: -O0 would call libgcc (__mulsi3 ...)
+		${BLITZLIB_OPTIMIZE_${arg_OPTIMIZE}}   # the profile (above)
 		-fno-strict-aliasing
 		-Wall -Wno-pointer-sign)
 	set(linked ${CMAKE_CURRENT_BINARY_DIR}/${name}.linked)

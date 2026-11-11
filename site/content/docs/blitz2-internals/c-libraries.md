@@ -31,7 +31,13 @@ area. The library build therefore compiles every library with:
 * **`-fno-toplevel-reorder`**, so the declarations stay in the order they
   are written: the table of commands must be in the order of the tokens.
 * **`-Os`**, also in debug builds, because unoptimised code would call
-  helper routines of the C compiler that a library cannot have.
+  helper routines of the C compiler that a library cannot have. Small
+  code matters here: blitz2 copies a whole library into every program
+  that uses it. A library whose loops are slow at `-Os` can ask for the
+  profile `speed` instead (`OPTIMIZE speed` of `blitz_library()`):
+  `-O2` without the inlining of whole functions, and without the loop
+  optimisation that would turn a sum into a multiplication, which is a
+  helper routine on the 68000.
 
 A linker script puts the header and the table at the very start of the
 single code hunk, followed by the code and data, and the error check

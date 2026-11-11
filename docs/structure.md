@@ -134,7 +134,10 @@ openspec/                    OpenSpec: specs/ (what is specified),
 
 The libraries are compiled with the Blitz conventions
 (`-ffixed-a3/a4/a5`: strings, locals and globals of the Blitz program;
-freestanding; one hunk), blitz2 and TED as normal programs with
+freestanding; one hunk; optimised for size, `-Os`, except the
+libraries of `ACIDLIBS_SPEED` in `libs/acidlibs/CMakeLists.txt`, built
+with the profile `speed` of `blitz_library(OPTIMIZE ...)` in
+`cmake/BlitzLibrary.cmake`), blitz2 and TED as normal programs with
 `-fbaserel` (a4 = base of their global data). That is why
 `libs/acidlibs` (freqlib) and `programs/ted` each compile the shared file
 requester themselves; each side provides its own `filereq_env.h` for it.
