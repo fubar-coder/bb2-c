@@ -362,7 +362,7 @@ static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm B
 /* Registers: the original changes d0, d1, d7, a0, a1 (ChunkyBitmap,
    the free routine), d2 (RaycastSky), d0/d1/a0/a1 (ChunkyToPlanar), and
    nothing in its empty routines; the thunks keep d1/a0/a1 (and d0 for
-   the empty ones), the C code d2-d7/a2-a6. */
+   the empty ones and RaycastSky), the C code d2-d7/a2-a6. */
 BLITZ_THUNK(richunkylib_libinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(richunkylib_libfinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_p2c, nothing_c, "d0-d1/a0-a1");
@@ -370,5 +370,5 @@ BLITZ_THUNK(_chunkyloadbitmap, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_chunkybitmap, chunkybitmap_c, "d1/a0-a1");
 BLITZ_THUNK(_dofreechunkybitmap, dofreechunkybitmap_c, "d1/a0-a1");
 BLITZ_THUNK(_chunkydata, chunkydata_c, "d1/a0-a1");
-BLITZ_THUNK(_raycastsky, raycastsky_c, "d1/a0-a1");
+BLITZ_THUNK(_raycastsky, raycastsky_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_c2p, c2p_c, "d1/a0-a1");

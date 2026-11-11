@@ -19,7 +19,7 @@
 
 /* entry points (thunks / asm, defined below) */
 void dopeek(void), dopoke(void), memacclib_docall(void);
-ULONG dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1));
+void dopeeks(void);
 
 /* !libheader{#memacclib,0,0,0,0} */
 BLITZ_LIBHEADER(LIB_memacclib, 0, BL_NORET, 0, 0);
@@ -101,11 +101,13 @@ BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
  * BUG(orig) (#214): the count is unsigned 32 bit (SUBQ.l #1,d1:BNE), a
  * negative length copies ~4 GB.
  *
+ * The original changes only d0, d1, a0 (and a3); the thunk keeps a1.
+ *
  * @param loc d0: the address.
  * @param n d1: the number of characters.
  * @return d0: the length (= d1).
  */
-ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
+static ULONG BLITZ_ROUTINE dopeeks_c(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
 {
     const UBYTE *s = (const UBYTE *)loc;
     ULONG len = n;
@@ -116,6 +118,7 @@ ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
     }
     return len;
 }
+BLITZ_THUNK(dopeeks, dopeeks_c, "a1");
 
 /**
  * @brief Poke [.Type] Address,Data - write a byte, word, long, quick,
