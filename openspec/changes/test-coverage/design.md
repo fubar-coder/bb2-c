@@ -135,7 +135,7 @@ collection on the host is lcov (tracefile format of lcov 2.x).
 
 - **`covmap`:**
   - It reads the per-test inputs:
-    - host and stage 3: the gcov JSON (`gcov --json-format --stdout`,
+    - host (and `coverage-ted-libs`): the gcov JSON (`gcov --json-format --stdout`,
       called from a CMake script, which passes the text on);
     - stage 2: the `.cov` bitmaps plus the program's link map and the
       line ranges of the `-g` objects.
@@ -177,8 +177,8 @@ collection on the host is lcov (tracefile format of lcov 2.x).
   of those objects.
 - **Test sources and expect files:** the ctest tests that use them (a
   rule per suite directory).
-- **Library sources** (`libs/`): all emulator tests until stage 3 gives
-  library coverage.
+- **Library sources** (`libs/`): all emulator tests until the libraries are
+  measured (change `coverage-ted-libs`).
 - **Everything else**, including CMake files, linker scripts, presets
   and the toolchain: all tests.
 - **New tests**, i.e. names of `ctest -N` absent from the map: always
@@ -186,36 +186,11 @@ collection on the host is lcov (tracefile format of lcov 2.x).
 - **A stale map** (its commit not an ancestor of the base, `git
   merge-base --is-ancestor`): all tests, with a message.
 
-### D9 Stage 3: TED and the libraries with gcov (own task group)
-Stage 3 uses gcov (lines and branches) instead of the function bitmap.
-
-- **TED:** compiled with `--coverage` and `-fprofile-dir`/
-  `-fprofile-prefix-path`, so that the `.gcda` names are flat names in
-  `TEST:cov`. TED has no libnix startup: its quit path calls the
-  freestanding `__gcov_info_to_gcda()` with own write callbacks
-  (dos.library) for the `gcov_info` objects of its sources (found through
-  a table kept by the linker script). If the data and bss growth breaks
-  TED's base-relative 64 KB, the coverage configuration builds TED
-  without baserel; its byte checks against the reference (`checkdata`)
-  are skipped only there.
-- **Blitz libraries:** compiled with `--coverage`; each library keeps a
-  table of its `gcov_info` objects behind a magic marker in its single
-  hunk. First a spike: whether the pointers inside the gcov data
-  (counters, file names) are relocated when blitz2 copies a library into
-  a program (`asmlibs.c` `uselib3`) and when `libs_tests` loads it. If
-  not, the libraries fall back to the function bitmap of stage 2.
-  - `libs_tests` finds the markers in the loaded libraries and writes
-    their `.gcda`.
-  - In compiled programs a coverage library's finit routine finds the
-    markers and writes the `.gcda`; a compiler option of the coverage
-    configuration links it into every program.
-- **Several runs in one session:** each run writes its own `.gcda` set
-  (the freestanding writer does not merge); the host merges them with
-  `m68k-amigaos-gcov-tool merge` before `covmap`.
-- **Excluded:** `debuglib.c` has an inline asm that conflicts with the
-  instrumentation (study, `debuglib.c:502`) and stays out.
-- **Blitz source coverage** of compiled programs is a change of its own
-  (`blitz-coverage`), with lcov output as well.
+### D9 Stage 3: TED and the libraries
+TED on the Amiga and the Blitz libraries are measured by the change
+`coverage-ted-libs` (gcov, a coverage library for compiled programs).
+Blitz source coverage of compiled programs is the change
+`blitz-coverage`.
 
 ## Risks / Trade-offs
 

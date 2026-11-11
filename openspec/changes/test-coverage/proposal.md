@@ -40,13 +40,9 @@ without giving up `-fbaserel` or Kickstart 1.3. User decisions of
   services. A C tool reads the tracefiles of a coverage run and selects the
   tests for a `git diff` (changed functions, plus rules for headers, data
   and build files), writing a list for `ctest --tests-from-file`.
-- **Later stage, with gcov**: TED and the Blitz libraries instrumented
-  with gcov (lines and branches). For the libraries inside compiled
-  programs, a coverage library whose finit routine writes their data,
-  with a compiler option of the coverage configuration that always links
-  it. Coverage of the Blitz source of compiled programs is a change of
-  its own (`blitz-coverage`). This stage gets its own tasks after the
-  first two work.
+- **Not in this change:** TED on the Amiga and the Blitz libraries
+  (change `coverage-ted-libs`) and the Blitz source of compiled programs
+  (change `blitz-coverage`).
 
 ## Capabilities
 

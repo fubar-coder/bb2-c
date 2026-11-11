@@ -33,14 +33,6 @@
 - [x] 5.2 The list of blitz2 functions no test reaches (from the map), written to the scratch area and summarised in `docs/` (where the coverage is described) as the state at that commit
 - [x] 5.3 Docs: `tests/README.md` (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
-## 6. Stage 3: TED and the Blitz libraries with gcov
-
-- [ ] 6.1 Spike: a Blitz library compiled with `--coverage` (`gcov_info` table behind a marker): are the pointers inside the gcov data relocated when blitz2 copies the library into a program and when `libs_tests` loads it? Write the result into design.md; if not, the libraries use the function bitmap of stage 2 instead (D9)
-- [ ] 6.2 TED with gcov in the coverage configuration: `--coverage`, flat `.gcda` names, written from its quit path through `__gcov_info_to_gcda()` and dos.library; baserel kept if it fits, else not in the coverage configuration; `ted_ab` and the TED bug-orig tests collect the `.gcda` (D9)
-- [ ] 6.3 The Blitz libraries with gcov (or the bitmap, after 6.1); `debuglib.c` excluded; `blitzlibcheck` still passes; `libs_tests` writes the data of the loaded libraries
-- [ ] 6.4 A coverage library whose finit routine writes the libraries' data in a compiled program; a compiler option of the coverage configuration that links it into every program
-- [ ] 6.5 Collection: several `.gcda` sets of one test merged with `m68k-amigaos-gcov-tool merge`; `covmap` reads them with the coverage build's `.gcno`; `libs/` and `programs/ted/` changes then select by coverage (rules of D8 adjusted); check and docs as in 5.1 and 5.3
-
 ## 7. Coverage of the programs only
 
 - [x] 7.1 `HOST_COVERAGE` instruments only the program code the host tests compile (`programs/*/src/`, `shared/`), not `tools/`, the test sources and the TED tools (`-fprofile-filter-files`, D1). Verify: the `.gcno` files with functions are those of `programs/*/src/` and `shared/`; a full `ctest --preset coverage` and `coverage-map` give tracefiles that name no file outside them
