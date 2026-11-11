@@ -255,7 +255,9 @@ compile the same sources in several configurations and run the programs:
 * `NAME_originals` (`corpus_originals`, `corpus_runerr_originals`, ...;
   label `originals`, only in `ctest --preset originals`): ref (original
   blitz2 2.10 = `BLITZ2/BLITZ2` of the CD, libraries of the CD) and port
-  (blitz2-c with the libraries of the CD: executable equal to ref's); the
+  (blitz2-c with the libraries of the CD: executable equal to ref's) and
+  orig-clib (the original blitz2 2.10 with the acidlibs and deflibs of this
+  build: are the C libraries compatible with the original compiler?); the
   serial passes also check that ref sends the same bytes with and without
   runtime error checking. Skipped without the CD. This is where the
   original stays a reference of behaviour; a fix that makes the port
@@ -287,7 +289,7 @@ prev still gives the old output: the commit names the program in
 `PREV_INTENDED` (`corpus:NAME`, `corpus_runerr:NAME`, ...).
 
 **Intended deviations from the original** (`tests/corpus/notes.tsv`). The
-runs of `NAME_originals` judge ref and port against the same expected
+runs of `NAME_originals` judge ref, port and orig-clib against the same expected
 files, so a fix of an original bug that changes a program's output (ref
 no longer gives the expected output) or its code (port's executable is no
 longer ref's) makes them fail. The fix commit lists the program in
