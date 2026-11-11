@@ -562,3 +562,16 @@ code changes in this change).
   `declarations_*`, `asmcmp_*`, `rwe_declarations_*` with a CD reference,
   `libs_emulator`, the fixed TED bug-orig tests (combination C5, the CD's
   blitz2 2.10).
+- **Task 9.3 (2026-11-11):** the rules are `tools/testinfo/rules.txt`
+  (the file the task calls `tools/covsel/rules.txt`; `tools/covsel` is
+  only the library). The directory rules already selected the readers
+  (`tests/bug-orig/**`: the bug-orig tests and their recordings,
+  `tests/corpus/**`: the corpus passes and their originals runs); two
+  explicit rules name the inputs (`tests/bug-orig/**/*.orig`,
+  `tests/corpus/expect/**`) with the same selectors, since a rule cannot
+  name one test by its file (the selection is never narrower than the
+  directory's). `test_covsel`: a diff of `tests/bug-orig/x/x.orig`
+  selects `bug_orig_x`, one of a corpus expect file the corpus passes.
+  Delta `testing/test-selection`: MODIFIED requirement "Changes without
+  function coverage select by rule", the full text plus the sentence on
+  the committed data and two scenarios.

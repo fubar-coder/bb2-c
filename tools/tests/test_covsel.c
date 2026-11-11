@@ -312,6 +312,13 @@ static void test_real_rules(void)
     CHECK(!strcmp(r, ALL));
     r = select_for(real_rules, diff1("tests/bug-orig/x/expect.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "bug_orig_x newtest"));
+    /* the recorded observation of the original and the corpus expect files
+       (expected-results-testing): the tests that read them */
+    r = select_for(real_rules, diff1("tests/bug-orig/x/x.orig", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "bug_orig_x newtest"));
+    r = select_for(real_rules, diff1("tests/corpus/expect/corpus/t01_int.out", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(!strcmp(r, "corpus corpus_req corpus_serial newtest"));
     /* an Amiga helper program of one suite serves others too */
     r = select_for(real_rules, diff1("tests/corpus/amiga/tedstub.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, ALL));
