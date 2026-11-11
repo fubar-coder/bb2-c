@@ -818,6 +818,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     halts;
   - [ ] `rimisclib-ezrequest-args-unbounded` (#748, #756): original
     timeout, port halts;
+  - [ ] `blitzcoplib-maxslice-zero` (#406, clib),
+    `rigfxlib-cpucls-no-plane-crash` (#680) and
+    `bb_blitlib-createshape-count0` (#428) since m68k-amigaos-gcc
+    16.2-rc24 (2026-11-11): the code on their bug paths is unchanged, but
+    the crash follows the memory around the program (4 bytes more or less
+    in the launcher `reqtrap` flip the two RWE tests; the rc23 binaries
+    show the same on a cold boot; rigfxlib already came out DIFFERS in 7
+    of 32 earlier runs); a new `.orig` does not help, the original is
+    just as sensitive;
   - [x] `compiler-macro-textlen-word` (#964) done (2026-11-07): the bug
     is fixed, the test is a fixed test (clib only, no reference session).
   Each can be reworked on its own; so far no test observes its bug before
