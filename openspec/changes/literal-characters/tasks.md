@@ -2,8 +2,7 @@
 
 Decided: no file format of its own, the reservation of the first byte
 `$90`, the library `literallib` (design D2, D3, D7), the umlaut rule D4.
-Open: the one question of `design.md` (text save and tokenise off); the
-tasks 2.4 and 2.8 do not decide it (they cover the literal as `cc` only).
+Decided too: a text save writes only text (D6).
 Group 1 is analysis and changes no code. Every
 later group is one commit (or several, one topic each). Every commit:
 clean `cmake --build --preset amiga` without warnings, `ctest --preset
@@ -91,7 +90,9 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 - [ ] 2.7 Join, split (#375), the line limit: a pair is never cut in two
   at the byte limit. Verify: host test at the limit.
 - [ ] 2.8 Save: a tokenised source is written as before (no header); a
-  text save writes `cc` (D6, D7). Verify: host tests: no literal gives the
+  text save writes only text: a literal as `cc`, 26..31 as ä ö ü Ä Ö Ü,
+  tokens as their names (D6, D7). Verify: a text save of a line with
+  code 26 and a token gives `$E4` and the name; host tests: no literal gives the
   `prev` build's bytes (compare over the corpus), load and save of a file
   with literals is byte-identical, text round trip of a file with `ß`.
 

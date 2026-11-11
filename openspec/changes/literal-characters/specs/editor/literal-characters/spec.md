@@ -90,7 +90,9 @@ TED-C SHALL write a tokenised source exactly as before this change: each
 line with its 0 byte, no header, no flag; a line that holds a literal
 character holds the pair `$90 cc`. A source without a literal character
 SHALL be byte for byte what the `prev` build writes. With tokenise off (a
-text file), TED-C SHALL write a literal character as the byte `cc`. A
+text file), TED-C SHALL write only text: a literal character as the byte
+`cc`, the codes 26..31 as ä ö ü Ä Ö Ü (Latin-1), and a token as its name.
+Tokenise off SHALL never turn a character into a token. A
 tokenised file SHALL be loaded as it is stored, so that load and save
 without a change give the same bytes.
 
@@ -109,6 +111,10 @@ without a change give the same bytes.
 #### Scenario: Text file round trip
 - **WHEN** a text file with `ß` is loaded and saved with tokenise off
 - **THEN** the file holds the byte $DF again, as it did
+
+#### Scenario: Text save of umlauts and tokens
+- **WHEN** a line holds the code 26 (a typed `ä`) and the token of `Print`, and the file is saved with tokenise off
+- **THEN** the file holds the byte $E4 and the text `Print`, and no byte of a token pair
 
 ### Requirement: The name of a literal character
 The editor SHALL show a literal character as the one character of its

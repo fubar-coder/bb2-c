@@ -355,13 +355,17 @@ tokenise off writes the stored bytes. The change to it: `readline` and
 the tokeniser store a byte >= $80 of a text (not one of the six umlauts)
 as the pair `$90 cc`, with tokenise on and off, and a text save
 (tokenise off) writes a literal as the byte `cc`, so the text round trip
-of a file with `ß` gives the byte `$DF` again. The text loader turns
+of a file with `ß` gives the byte `$DF` again. A text save writes only
+text (decision of 2026-11-11): the codes 26..31 as ä ö ü Ä Ö Ü, the
+counterpart of the loader, and real tokens (from a tokenised file loaded
+or from typing with tokenise on) as their names (`detoka5`, as Block Save
+with tokenise on does); tokenise off never turns a character into a
+token. So loading and saving a text file gives the same bytes. The text loader turns
 `cc` >= $80 into a literal (a text file has no pairs) or, for the six
 umlauts, into the code 26..31 (D4); this replaces the rule at
 `fileio.c:318` ("the byte stays as it is" with tokenise off, bit 7 lost
-in the tokeniser with it on). What a text save writes for real tokens,
-and whether tokenise off may turn a character into a token at all, is the
-open question below; this change makes no rule for it.
+in the tokeniser with it on), and the save of the stored bytes with
+tokenise off.
 
 ### D7 No file format of its own
 
@@ -400,18 +404,6 @@ so gets the tokeniser rule; `bblines` needs no change (it walks pairs);
 numbers` (or `check`) refuses a library numbered 32 and any other library
 numbered 33 (task 3.4); `shared/xtra` and the `.xtra` handling are
 untouched.
-
-## Open questions (for the user)
-
-- **Text save and tokenise off.** #374 is fixed (Context): a save with
-  tokenise off writes the stored bytes today, and Block Save with
-  tokenise on writes token names. The proposal to discuss: with tokenise
-  off characters are never turned into tokens and stay as they are; a
-  text save writes a literal as `cc` and real tokens as their names, so
-  every byte >= $80 in a text file is a character. Not decided and not
-  part of this change yet: if the user decides for the names, it is a
-  change of this change (D6, spec `editor/literal-characters`, a task in
-  group 2). D6 states only the literal as `cc`.
 
 ## Risks / Trade-offs
 
