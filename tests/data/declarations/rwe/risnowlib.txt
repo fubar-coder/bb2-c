@@ -1,0 +1,12 @@
+# The declarations of risnowlib.obj (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	195	8
+header	70004e7500c300000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
+entry	0	LDoSnow	0001........000203030000--------++++++++--------ffff............4c446f536e6f77006c6973746e756d2c72616e646f6d7461626c6500
+entry	1	InitSnowDrop	0303........00040303020300a013820000--------++++++++--------ffff............496e6974536e6f7744726f70006c6973746e756d2c6e756d706f696e74732c6269746d61702c62705f73697a6500
+entry	2	KillPoint	0303........0003030202..0000--------++++++++--------ffff............4b696c6c506f696e74006c6973746e756d2c782c7900
+entry	3	LDoSnowActivate	0303........000103..0000--------++++++++--------ffff............4c446f536e6f774163746976617465006c6973746e756d00
+entry	4	-	0000........0000--------++++++++--------
+entry	5	-	0000........0000--------++++++++--------
+end	ffff00000000

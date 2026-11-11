@@ -17,6 +17,20 @@ struct variant {
 
 static const struct variant base = { 100, 0x80, 0, "Test", 1, 0x4E75 };
 
+/* nonzero: cmp compares with the original as declaration data */
+static int via_decls;
+
+/* parse declaration data; 0 = ok (message in err) */
+static int decls_parse(const char *text, char *err, size_t len)
+{
+    struct blitzlib_decls d;
+    int r = blitzlib_decls_parse(text, strlen(text), &d, err, len);
+
+    if (!r)
+        blitzlib_decls_free(&d);
+    return r;
+}
+
 static struct buf build(const struct variant *v)
 {
     struct buf b = { 0 };
@@ -53,9 +67,26 @@ static int cmp(const struct variant *v, uint32_t extra_reloc, char *msg, size_t 
     struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
     struct hunk hb = { HUNK_CODE, b.p, (uint32_t)b.n, extra_reloc ? 2 : (v->sub ? 1 : 0), rb, NULL, 0, NULL, 0, 0 };
     FILE *out = tmpfile();
+    struct blitzlib_decls d = { 0, NULL };
     int r;
 
+    if (via_decls) {
+        /* the original as declaration data, written and read back */
+        FILE *t = tmpfile();
+        char text[2000], err[200];
+        size_t n;
+
+        CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
+        rewind(t);
+        n = fread(text, 1, sizeof text - 1, t);
+        text[n] = 0;
+        fclose(t);
+        CHECK(blitzlib_decls_parse(text, n, &d, err, sizeof err) == 0 && d.n == 1);
+        if (d.n == 1)
+            ha = d.hunks[0];
+    }
     r = blitzlib_compare(&ha, &hb, "lib", out);
+    blitzlib_decls_free(&d);
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
     fclose(out);
@@ -208,5 +239,63 @@ int main(void)
         CHECK(blitzlib_intended_stale(lines, (size_t)n, seen, out) == 0);
         fclose(out);
     }
+
+    /* the declaration data (tests/data/declarations): the original
+       written as text and read back compares like the library itself,
+       with the same messages */
+    via_decls = 1;
+    CHECK(cmp(&base, 0, msg, sizeof msg) == 0 && !*msg);
+    v = base;
+    v.sub = 0x200;
+    v.next = 0x12345678;
+    v.code = 0x4E71;
+    CHECK(cmp(&v, 0, msg, sizeof msg) == 0 && !*msg);
+    v = base;
+    v.sub = 0;
+    CHECK(cmp(&v, 0, msg, sizeof msg) == 2);
+    CHECK(strstr(msg, "lib: entry 0 Test +$A: code offset set in only one of them\n") != NULL);
+    v = base;
+    v.name = "Tast";
+    CHECK(cmp(&v, 0, msg, sizeof msg) == 1);
+    CHECK(strstr(msg, "lib: entry 0 Test +$1F: $65 != $61\n") != NULL);
+    v = base;
+    v.libnum = 101;
+    CHECK(cmp(&v, 0, msg, sizeof msg) == 1);
+    CHECK(strstr(msg, "lib: header +$05: $64 != $65\n") != NULL);
+    v = base;
+    v.entries = 2;
+    CHECK(cmp(&v, 0, msg, sizeof msg) >= 2);
+    CHECK(cmp(&base, 0x30 + 0x1C, msg, sizeof msg) == 1);
+    CHECK(strstr(msg, "relocations in the declaration part 1 != 2") != NULL);
+    via_decls = 0;
+    /* the text: no code (the code behind the table, the offsets) */
+    {
+        struct buf a = build(&base);
+        uint32_t ra[1] = { 0x30 + 10 };
+        struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
+        FILE *t = tmpfile();
+        char text[2000], err[200];
+
+        CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
+        rewind(t);
+        text[fread(text, 1, sizeof text - 1, t)] = 0;
+        fclose(t);
+        CHECK(!strncmp(text, "library\t100\t1\nheader\t70004e7500640000", 36));
+        CHECK(strstr(text, "\nentry\t0\tTest\t0001........00000000++++++++"
+                           "----------------ffff............54657374") != NULL);
+        CHECK(strstr(text, "\nend\tffff00000000\n") != NULL);
+        CHECK(strstr(text, "4e75\n") == NULL);
+        free(a.p);
+    }
+    /* broken declaration data */
+    CHECK(decls_parse("header\t00\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 1: expected library NUM RELOCS") != NULL);
+    CHECK(decls_parse("library\t100\n", msg, sizeof msg) == -1);
+    CHECK(decls_parse("library\t100\t0\nheader\t0g\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 2: byte 0: expected two hex digits") != NULL);
+    CHECK(decls_parse("library\t100\t0\nheader\t000\n", msg, sizeof msg) == -1);
+    CHECK(decls_parse("library\t100\t0\nheader\t0000\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "library of line 1: no library header") != NULL);
+    CHECK(decls_parse("# nothing\n\n", msg, sizeof msg) == 0);
     return failures != 0;
 }

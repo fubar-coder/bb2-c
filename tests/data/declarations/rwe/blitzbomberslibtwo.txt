@@ -1,0 +1,10 @@
+# The declarations of blitzbomberslibtwo.obj (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	31	4
+header	70004e75001f00000000000000000000000000000000--------0000--------000000000000000000000000--------
+entry	0	KillInvader	0001........0004030202020000--------++++++++--------ffff............4b696c6c496e76616465720073707261642c782c792c6f666673657400..
+entry	1	DrawStarField	0001........000203030000--------++++++++--------ffff............44726177537461724669656c64007461626c652c626974706c616e6500..
+entry	2	DrawBullet	0001........0003030202..0000--------++++++++--------ffff............4472617742756c6c6574006269746d2c782c7900
+entry	3	EraseBullet	0001........0003030202..0000--------++++++++--------ffff............457261736542756c6c6574006269746d2c782c7900..
+end	ffff00000000

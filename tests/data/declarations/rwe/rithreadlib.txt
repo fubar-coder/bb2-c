@@ -1,0 +1,10 @@
+# The declarations of rithreadlib.obj (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	44	6
+header	70004e75002c00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
+entry	0	CreateThread	0001........000207030000--------++++++++--------ffff............437265617465546872656164006e616d652c6164647265737300
+entry	1	ActiveThreads	0202........00000000--------++++++++--------ffff............416374697665546872656164730000..
+entry	2	-	0000........0000--------++++++++--------
+entry	3	-	0000........0000--------++++++++--------
+end	ffff00000000

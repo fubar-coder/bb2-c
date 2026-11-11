@@ -29,6 +29,8 @@ SUBCOMMANDS:
   check                       check Blitz Basic 2 library files
   compare                     the declarations of every library of a BigLib file (or of a
                               library file) against the original
+  decls                       the declarations of every library of a BigLib file (or of a
+                              library file) as text
   cmdref                      the command table of a Blitz Basic 2 library file as JSON
 ```
 
@@ -134,7 +136,8 @@ the declarations of every library of a BigLib file (or of a library file)
 against the original
 
 POSITIONALS:
-  ORIGINAL TEXT REQUIRED      the original BigLib or library file
+  ORIGINAL TEXT REQUIRED      the original BigLib or library file, or its declaration data
+                              (decls)
   NEW TEXT REQUIRED           the BigLib or library file built here
   INTENDED TEXT               the intended differences, one message line per line (# comments),
                               each of them must occur
@@ -154,7 +157,41 @@ two library files): header, entries, `!libfin`. `INTENDED` lists the
 intended differences, one message line per line as printed, `#`
 comments; they are not counted, and each must occur (a stale entry is a
 difference; `docs/development.md`, "Intended differences"). Prints the
-differences and a summary. Without `ORIGINAL` it is skipped.
+differences and a summary. Without `ORIGINAL` it is skipped. `ORIGINAL`
+may be the declaration data `decls` wrote (a text file beginning with
+`#` or `library`): the comparison and its messages are the same as with
+the library files.
+
+### decls
+
+```
+Usage: blitzlib decls [OPTIONS] FILE
+
+the declarations of every library of a BigLib file (or of a library file) as
+text
+
+POSITIONALS:
+  FILE TEXT REQUIRED          the BigLib or library file
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o TEXT REQUIRED            the declaration data to write
+
+Writes what compare compares (no code): the data compare takes as ORIGINAL. Exit
+status 0, 1 a library does not read or a file cannot be read or written, 2 usage
+error.
+```
+
+The declaration data of `FILE` (`tests/data/declarations/`, so the
+comparisons with the original libraries need no CD): behind a `#` header,
+per library `library<TAB>NUM<TAB>RELOCS` (the relocations inside the
+declaration part), `header<TAB>TOKENS`, one `entry<TAB>K<TAB>NAME<TAB>TOKENS`
+per entry of the token table and `end<TAB>TOKENS` (the `$FFFF` and
+`!libfin`). `TOKENS` has two characters per byte: hex digits for a
+declaration byte (kinds, argument types, names, help texts, numbers),
+`..` for a byte filled in at run time or padding, `++++++++` or
+`--------` for a code offset that is set or zero. No code and no code
+offsets (`tools/lib/blitzlib/blitzlib.h`, `blitzlib_decls_write`).
 
 ### cmdref
 
@@ -219,8 +256,12 @@ Messages go to stderr as `blitzlib SUB: [FILE: ]message`; the findings of
   (`libs/CMakeLists.txt`, with `cmdref-complete.cmake`),
   `cmdref_not_a_library` (`tools/tests/CMakeLists.txt`); the target
   `cmdref_update`.
+* `decls`: `tools/blitzlib/decls-data.cmake` - the target
+  `declarations-data` and the tests `declarations_GROUP_data`,
+  `rwe_declarations_NAME_data`, `declarations_data_check_*`
+  (`libs/CMakeLists.txt`).
 * `compare`: `declarations_acidlibs`, `declarations_deflibs`,
-  `blitzlibcompare_single*` (`libs/CMakeLists.txt`),
+  `declarations_data_broken`, `blitzlibcompare_single*` (`libs/CMakeLists.txt`),
   `rwe_declarations_NAME` (`libs/userlibs/rwe/CMakeLists.txt`),
   `rwe_refbuild_selftest` (`libs/userlibs/rwe/refbuild.cmake`).
 * `extract`: `libs/tests/emulator.cmake` (the originals of the library

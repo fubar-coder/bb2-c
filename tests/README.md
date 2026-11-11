@@ -76,8 +76,18 @@ with `objdump` of the toolchain; `refcheck asm`,
 [`tools/refcheck`](../tools/refcheck/README.md); only routines still
 equal to the original are listed, a fix that changes one removes it
 from the list; label `originals`, preset `originals`: a committed dump of
-the routines would be a copy of the CD's code). Both comparisons are
-skipped without the CD. The check of TED's data in the build
+the routines would be a copy of the CD's code, so it is skipped without
+the CD). The declaration comparison reads the declarations of the
+originals as committed data, `tests/data/declarations/GROUP.txt` and
+`rwe/NAME.txt` (`blitzlib decls`: names, argument types, help texts,
+numbers, no code), so it needs no CD; `declarations_GROUP_data` and
+`rwe_declarations_NAME_data` (label `originals`) check that the
+originals still give them byte for byte (a changed original fails there;
+with broken input `declarations_data_check_wrong`, and
+`declarations_data_broken`: one changed byte of the data is a
+difference), and `cmake --build --preset amiga --target
+declarations-data` writes them (the RWE reference builds first:
+`ctest --preset originals -R '^rwe_refbuild$'`). The check of TED's data in the build
 (`refcheck data`) takes the intended differences of
 `programs/ted/checkdata-intended.txt` (one check per line: C symbol,
 `#NNN`, note; each must differ); `ted_checkdata_intended`,

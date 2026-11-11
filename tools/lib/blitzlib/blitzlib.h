@@ -118,6 +118,51 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);
 int blitzlib_compare(const struct hunk *orig, const struct hunk *other, const char *name, FILE *out);
 
 /**
+ * @brief Write the declaration part of a library as text (the declaration
+ *        data, e.g. tests/data/declarations/).
+ *
+ * Only what blitzlib_compare compares: "library<TAB>NUM<TAB>RELOCS" (the
+ * relocations inside the declaration part), then "header<TAB>TOKENS", one
+ * "entry<TAB>K<TAB>NAME<TAB>TOKENS" per entry of the token table and
+ * "end<TAB>TOKENS" (the $FFFF and !libfin); TOKENS two characters per
+ * byte: hex digits for a declaration byte, ".." for a byte filled in at
+ * run time or padding, "++++++++" / "--------" for a code offset that is
+ * set / zero (no code, no code offsets).
+ *
+ * @param h       the code hunk of the library
+ * @param out     the text
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = the library does not read
+ */
+int blitzlib_decls_write(const struct hunk *h, FILE *out, char *err, size_t errlen);
+
+/** @brief Libraries read back from declaration data: code hunks holding
+    only the declaration part (code offsets 1 or 0, the run time bytes 0),
+    which blitzlib_compare compares like the libraries. */
+struct blitzlib_decls {
+    size_t n;
+    struct hunk *hunks;
+};
+
+/**
+ * @brief Read declaration data of blitzlib_decls_write (any number of
+ *        libraries; '#' comments and empty lines).
+ * @param text    the data
+ * @param len     its length
+ * @param d       out: the libraries (blitzlib_decls_free)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = broken (a line, or a library that does not read
+ *         or does not end where its text ends)
+ */
+int blitzlib_decls_parse(const char *text, size_t len, struct blitzlib_decls *d, char *err,
+                         size_t errlen);
+
+/** @brief Free the libraries of blitzlib_decls_parse. */
+void blitzlib_decls_free(struct blitzlib_decls *d);
+
+/**
  * @brief Split a list of intended differences into its lines (in place).
  *
  * One message line of blitzlib_compare per line, exactly as printed

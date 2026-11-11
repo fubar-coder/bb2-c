@@ -21,7 +21,8 @@
 # their build does not depend on it.
 # The C build is real C (assembler only where needed), checked like the
 # acidlibs: the declarations equal REFERENCE's (ctest
-# rwe_declarations_NAME, skipped without the originals; the intended
+# rwe_declarations_NAME against the committed declaration data of
+# REFERENCE, tests/data/declarations/rwe/NAME.txt; the intended
 # differences of fixed original bugs in NAME.declarations-intended.txt of
 # this directory, if there - the format of libs/GROUP/declarations-
 # intended.txt, each entry must occur; configure again after adding the
@@ -206,14 +207,16 @@ foreach(l IN LISTS RWE_LIBS)
 	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
 		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${name}.declarations-intended.txt)
 	endif()
-	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIB} compare ${reffile} ${obj}
-		${intended})
-	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
+	# against the committed declaration data of REFERENCE
+	# (tests/data/declarations/rwe/NAME.txt; rwe_declarations_NAME_data,
+	# preset originals, checks them against REFERENCE)
+	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIB} compare
+		${DECLS_DATA_DIR}/rwe/${name}.txt ${obj} ${intended})
+	declarations_data(rwe_declarations_${name} ${reffile} ${DECLS_DATA_DIR}/rwe/${name}.txt
+		FIXTURE "${fixture}")
 	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${reffile}")
 	if(fixture)
 		# the reference build is a test in Amiberry (refbuild.cmake)
-		set_tests_properties(rwe_declarations_${name} PROPERTIES LABELS emulator
-			FIXTURES_REQUIRED ${fixture})
 		set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_FIXTURES ${fixture})
 	endif()
 endforeach()

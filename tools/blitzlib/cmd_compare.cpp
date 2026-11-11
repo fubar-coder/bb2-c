@@ -37,7 +37,15 @@ struct biglibfile {
     struct biglib_entry *e;
     size_t n;
     struct loadfile *lf;
+    struct blitzlib_decls decls;        /* declaration data: its libraries */
+    const struct hunk **h;              /* the code hunk of every library */
 };
+
+/* declaration data (blitzlib decls) instead of a library file */
+static int is_decls(const uint8_t *buf, long size)
+{
+    return (size >= 1 && buf[0] == '#') || (size >= 8 && !memcmp(buf, "library\t", 8));
+}
 
 static int read_biglib(const char *path, struct biglibfile *b)
 {
@@ -49,6 +57,10 @@ static int read_biglib(const char *path, struct biglibfile *b)
     b->buf = NULL;
     b->e = NULL;
     b->lf = NULL;
+    b->h = NULL;
+    b->n = 0;
+    b->decls.n = 0;
+    b->decls.hunks = NULL;
     if (!f || fseek(f, 0, SEEK_END) || (size = ftell(f)) < 0 || fseek(f, 0, SEEK_SET)
         || !(b->buf = (uint8_t *)malloc((size_t)size + 1)) || fread(b->buf, 1, (size_t)size, f) != (size_t)size) {
         fprintf(stderr, "%s: cannot read %s\n", me, path);
@@ -57,6 +69,18 @@ static int read_biglib(const char *path, struct biglibfile *b)
         return -1;
     }
     fclose(f);
+    if (is_decls(b->buf, size)) {
+        if (blitzlib_decls_parse((const char *)b->buf, (size_t)size, &b->decls, err, sizeof err)) {
+            fprintf(stderr, "%s: %s: %s\n", me, path, err);
+            return -1;
+        }
+        b->n = b->decls.n;
+        if (!(b->h = (const struct hunk **)calloc(b->n ? b->n : 1, sizeof *b->h)))
+            return -1;
+        for (i = 0; i < b->n; i++)
+            b->h[i] = &b->decls.hunks[i];
+        return 0;
+    }
     if (size >= 4 && be32(b->buf) == HUNK_HEADER) {     /* one library file */
         if (!(b->e = (struct biglib_entry *)malloc(sizeof *b->e)))
             return -1;
@@ -76,18 +100,24 @@ static int read_biglib(const char *path, struct biglibfile *b)
                     b->lf[i].nhunks < 1 ? "no hunk" : err);
             return -1;
         }
+    if (!(b->h = (const struct hunk **)calloc(b->n ? b->n : 1, sizeof *b->h)))
+        return -1;
+    for (i = 0; i < b->n; i++)
+        b->h[i] = &b->lf[i].hunks[0];
     return 0;
 }
 
-static unsigned libnum(const struct loadfile *lf)
+static unsigned libnum(const struct hunk *h)
 {
-    return be16(lf->hunks[0].data + 4);
+    return be16(h->data + 4);
 }
 
 static void free_biglib(struct biglibfile *b)
 {
     size_t i;
 
+    blitzlib_decls_free(&b->decls);
+    free(b->h);
     for (i = 0; b->lf && i < b->n; i++)
         load_free(&b->lf[i]);
     free(b->lf);
@@ -163,18 +193,18 @@ static int compare(const char *original, const char *changed, const char *intend
         FILE *f;
         int d;
 
-        if (libnum(&a.lf[i]) != libnum(&b.lf[i])) {
+        if (libnum(a.h[i]) != libnum(b.h[i])) {
             printf("library %zu: number %u != %u (order of the libraries)\n", i + 1,
-                   libnum(&a.lf[i]), libnum(&b.lf[i]));
+                   libnum(a.h[i]), libnum(b.h[i]));
             diffs++;
             continue;
         }
-        snprintf(name, sizeof name, "lib %u", libnum(&a.lf[i]));
+        snprintf(name, sizeof name, "lib %u", libnum(a.h[i]));
         if (!(f = tmpfile())) {
             fprintf(stderr, "%s: no temporary file\n", me);
             return 1;
         }
-        d = blitzlib_compare(&a.lf[i].hunks[0], &b.lf[i].hunks[0], name, f);
+        d = blitzlib_compare(a.h[i], b.h[i], name, f);
         msgs = read_back(f);
         fclose(f);
         if (!msgs) {
@@ -204,7 +234,9 @@ void cmd_compare(CLI::App &app, int &status)
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand(
         "compare", "the declarations of every library of a BigLib file (or of a library file) against the original");
-    sub->add_option("ORIGINAL", o->original, "the original BigLib or library file")->required();
+    sub->add_option("ORIGINAL", o->original,
+                    "the original BigLib or library file, or its declaration data (decls)")
+        ->required();
     sub->add_option("NEW", o->changed, "the BigLib or library file built here")->required();
     sub->add_option("INTENDED", o->intended,
                     "the intended differences, one message line per line (# comments), each of them must occur");
@@ -218,5 +250,64 @@ void cmd_compare(CLI::App &app, int &status)
         me = name.c_str();
         status = compare(o->original.c_str(), o->changed.c_str(),
                          sub->count("INTENDED") ? o->intended.c_str() : NULL);
+    });
+}
+
+/* blitzlib decls: the declaration data of every library of FILE */
+static int decls(const char *path, const char *output)
+{
+    struct biglibfile b;
+    std::string tmp = std::string(output) + ".new";
+    const char *base = strrchr(path, '/');
+    FILE *out;
+    char err[200];
+    size_t i;
+    int rc = 0;
+
+    if (read_biglib(path, &b))
+        return 1;
+    if (!(out = fopen(tmp.c_str(), "w"))) {
+        fprintf(stderr, "%s: cannot write %s\n", me, tmp.c_str());
+        free_biglib(&b);
+        return 1;
+    }
+    fprintf(out, "# The declarations of %s (blitzlib decls): what blitzlib compare compares -\n"
+                 "# header, token table, !libfin; \"..\" filled in at run time or padding,\n"
+                 "# \"++++++++\"/\"--------\" a code offset set/zero. Generated, do not edit.\n",
+            base ? base + 1 : path);
+    for (i = 0; i < b.n && !rc; i++)
+        if (blitzlib_decls_write(b.h[i], out, err, sizeof err)) {
+            fprintf(stderr, "%s: %s: library %zu: %s\n", me, path, i + 1, err);
+            rc = 1;
+        }
+    if (fclose(out) || rc || rename(tmp.c_str(), output)) {
+        if (!rc)
+            fprintf(stderr, "%s: cannot write %s\n", me, output);
+        remove(tmp.c_str());
+        rc = 1;
+    }
+    free_biglib(&b);
+    return rc;
+}
+
+void cmd_decls(CLI::App &app, int &status)
+{
+    struct options {
+        std::string file, output;
+    };
+    auto o = std::make_shared<options>();
+    CLI::App *sub = app.add_subcommand(
+        "decls", "the declarations of every library of a BigLib file (or of a library file) as text");
+    sub->add_option("FILE", o->file, "the BigLib or library file")->required();
+    sub->add_option("-o", o->output, "the declaration data to write")->required();
+    sub->footer("Writes what compare compares (no code): the data compare takes as ORIGINAL. "
+                "Exit status 0, 1 a library does not read or a file cannot be read or written, 2 "
+                "usage error.");
+    sub->callback([sub, o, &status] {
+        static std::string name;
+
+        name = cli::name(*sub);
+        me = name.c_str();
+        status = decls(o->file.c_str(), o->output.c_str());
     });
 }

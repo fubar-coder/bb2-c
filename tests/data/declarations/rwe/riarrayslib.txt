@@ -1,0 +1,9 @@
+# The declarations of riarrayslib.obj (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	7	6
+header	70004e75000700000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
+entry	0	FillArray	0001........000238080000--------++++++++--------000138..0000--------++++++++--------ffff............46696c6c417272617900617272617928292c76616c7565202d2d206f6e6c7920627974652f776f72642f6c6f6e67206172726179732100..
+entry	1	-	0000........0000--------++++++++--------
+entry	2	-	0000........0000--------++++++++--------
+end	ffff00000000

@@ -1,0 +1,9 @@
+# The declarations of RISOUNDLIB.OBJ (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	45	5
+header	70004e75002d00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
+entry	0	CludgeSound	0303........000203030074108000fd16000000--------++++++++--------ffff............436c75646765536f756e6400736f756e64232c6164647265737300..
+entry	1	-	0000........00fc16000000--------++++++++--------
+entry	2	-	0000........0000--------++++++++--------
+end	ffff00000000

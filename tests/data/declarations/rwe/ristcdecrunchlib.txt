@@ -1,0 +1,9 @@
+# The declarations of ristcdecrunchlib.obj (blitzlib decls): what blitzlib compare compares -
+# header, token table, !libfin; ".." filled in at run time or padding,
+# "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
+library	18	4
+header	70004e75001200000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
+entry	0	STCDecrunch	0303........000103..0000--------++++++++--------000203030000--------++++++++--------ffff............53544344656372756e636800736f757263655b2c646573745d00
+entry	1	-	0000........0000------------------------
+entry	2	-	0000........0000------------------------
+end	ffff00000000

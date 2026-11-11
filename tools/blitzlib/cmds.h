@@ -13,6 +13,7 @@ void cmd_extract(CLI::App &app, int &status);
 void cmd_numbers(CLI::App &app, int &status);
 void cmd_check(CLI::App &app, int &status);
 void cmd_compare(CLI::App &app, int &status);
+void cmd_decls(CLI::App &app, int &status);
 void cmd_cmdref(CLI::App &app, int &status);
 
 #endif

@@ -25,6 +25,36 @@ foreach(kind variants tests/variants)
 	endforeach()
 endforeach()
 
+# The declarations of the original libraries as committed data
+# (tests/data/declarations/NAME.txt, blitzlib decls: header, token table,
+# !libfin - names, argument types, help texts, numbers, no code), so the
+# declaration comparisons (declarations_GROUP, rwe_declarations_NAME) run
+# without the originals.  declarations_data(TEST ORIGINAL DATA [FIXTURE F]):
+# the test TEST_data (label originals) checks that blitzlib decls of
+# ORIGINAL gives DATA byte for byte (FIXTURE: the test that makes ORIGINAL,
+# the RWE reference build); the target declarations-data writes every DATA
+# from its original (after a change of an original, or a new library).
+set(DECLS_DATA_DIR ${PROJECT_SOURCE_DIR}/tests/data/declarations)
+set(DECLS_DATA_SCRIPT ${PROJECT_SOURCE_DIR}/tools/blitzlib/decls-data.cmake)
+add_custom_target(declarations-data
+	COMMENT "Declaration data of the original libraries (tests/data/declarations)")
+function(declarations_data test original data)
+	cmake_parse_arguments(PARSE_ARGV 3 arg "" "FIXTURE" "")
+	add_test(NAME ${test}_data COMMAND ${CMAKE_COMMAND} -DBLITZLIB=${BLITZLIB}
+		-DORIGINAL=${original} -DDATA=${data} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/${test}_data.txt
+		-P ${DECLS_DATA_SCRIPT})
+	set_tests_properties(${test}_data PROPERTIES LABELS originals SKIP_RETURN_CODE 77)
+	if(arg_FIXTURE)
+		set_tests_properties(${test}_data PROPERTIES FIXTURES_REQUIRED ${arg_FIXTURE})
+	endif()
+	add_custom_target(${test}_data_write
+		COMMAND ${CMAKE_COMMAND} -DBLITZLIB=${BLITZLIB} -DORIGINAL=${original} -DDATA=${data}
+			-DWRITE=ON -P ${DECLS_DATA_SCRIPT}
+		DEPENDS host_tools
+		VERBATIM)
+	add_dependencies(declarations-data ${test}_data_write)
+endfunction()
+
 add_subdirectory(acidlibs)
 add_subdirectory(deflibs)
 add_subdirectory(userlibs)
@@ -59,8 +89,9 @@ set_tests_properties(cmdref_check_broken PROPERTIES
 
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
-# in the same order (the compiler's token list order); skipped without the
-# CD (archive/cd, cmake --build --preset amiga --target fetch-originals).
+# in the same order (the compiler's token list order), as committed data
+# (tests/data/declarations/GROUP.txt; declarations_GROUP_data, preset
+# originals, checks them against the CD's BLITZ2/GROUP).
 # GROUP/declarations-intended.txt, if there: the intended differences
 # (fixed original bugs), each of them must occur
 foreach(group acidlibs deflibs)
@@ -70,10 +101,32 @@ foreach(group acidlibs deflibs)
 		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${group}/declarations-intended.txt)
 	endif()
 	add_test(NAME declarations_${group} COMMAND ${BLITZLIB} compare
+		${DECLS_DATA_DIR}/${group}.txt ${BLITZ2_DIR}/${group} ${intended})
+	declarations_data(declarations_${group}
 		${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/${orig}
-		${BLITZ2_DIR}/${group} ${intended})
-	set_tests_properties(declarations_${group} PROPERTIES SKIP_RETURN_CODE 77)
+		${DECLS_DATA_DIR}/${group}.txt)
 endforeach()
+# with broken input: the data with one declaration byte changed (the first
+# name of acidlibs) gives a difference; the check of the data fails on it
+set(decls_wrong ${CMAKE_CURRENT_BINARY_DIR}/declarations-wrong.txt)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${DECLS_DATA_DIR}/acidlibs.txt)
+file(READ ${DECLS_DATA_DIR}/acidlibs.txt decls_text)
+# (the name Anim of entry 0 of lib 94 becomes Bnim)
+string(REPLACE "\nentry\t0\tAnim\t0008....................416e696d"
+	"\nentry\t0\tAnim\t0008....................426e696d" decls_text "${decls_text}")
+file(WRITE ${decls_wrong} "${decls_text}")
+add_test(NAME declarations_data_broken COMMAND ${BLITZLIB} compare ${decls_wrong}
+	${BLITZ2_DIR}/acidlibs)
+set_tests_properties(declarations_data_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "lib 94: entry 0 Bnim \\+\\$C: \\$42 != \\$41")
+add_test(NAME declarations_data_check_wrong COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
+	-DOUT=${decls_wrong} -DDATA=${DECLS_DATA_DIR}/acidlibs.txt -P ${DECLS_DATA_SCRIPT})
+set_tests_properties(declarations_data_check_wrong PROPERTIES WILL_FAIL ON)
+add_test(NAME declarations_data_check_right COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
+	-DOUT=${DECLS_DATA_DIR}/acidlibs.txt -DDATA=${DECLS_DATA_DIR}/acidlibs.txt
+	-P ${DECLS_DATA_SCRIPT})
+set_tests_properties(declarations_data_check_right PROPERTIES
+	PASS_REGULAR_EXPRESSION "are those of the original")
 # the token list of compiler and libraries (bbsrc tokens) against the one
 # the original TED got (tests/data/ted-tokens.txt): with the CD's compiler
 # and libraries (skipped without the CD), and with the ones built here

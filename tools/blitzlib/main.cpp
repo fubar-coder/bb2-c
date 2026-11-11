@@ -20,6 +20,7 @@ int main(int argc, char **argv)
     cmd_numbers(app, status);
     cmd_check(app, status);
     cmd_compare(app, status);
+    cmd_decls(app, status);
     cmd_cmdref(app, status);
     return cli::run(app, argc, argv, status);
 }
