@@ -654,3 +654,13 @@ code changes in this change).
   3, `corpus_serial_runerr` 1 programs as the committed expect files.
   Open bug-orig tests keep `defaultdbug=` for their recording; their
   normal run drops it when missing.
+- **Task 9.11 (2026-11-11):** what the two read of the CD:
+  `ab3_bb2_equivalence(_runerr)` only `defaultdbug=` (the sources are the
+  corpus's of the build and the bug-orig tests', the compilers and
+  libraries the build's, no mount); after 9.10 the line is gone, so
+  the passes need nothing of the CD. `bug_orig_compiler_loaddmod_pointer`
+  only the module "Load Debug Module" loads (`@pass
+  file=blitz2/dbgmod|@CD_BLITZ2@/DEFAULTDBUG`); `loaddmod` only
+  LoadSegs the file and keeps it (`main.c` loaddmod), so any load file
+  is a module there: now the build's `wbrun` (`@WBRUN@`). Neither needs
+  recorded data or `originals`.

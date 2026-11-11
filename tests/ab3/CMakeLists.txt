@@ -12,8 +12,9 @@
 # on the memory layout).  A bug-orig source that needs more than that
 # (RWE userlibs, its own jobs or residents) does not compile in either:
 # it is compared by its error; one that cannot be compared is left out
-# (below).  Label emulator, skipped (77) without
-# Amiberry or the CD (blitz2:defaultdbug).
+# (below).  Nothing of the CD (the executables never contain
+# blitz2:defaultdbug, the sources come from the repository and the build):
+# label emulator, skipped (77) only without Amiberry.
 get_property(corpus_sources GLOBAL PROPERTY CORPUS_SOURCES)
 get_property(bug_orig_sources GLOBAL PROPERTY BUG_ORIG_SOURCES)
 get_property(bug_orig_userlib GLOBAL PROPERTY BUG_ORIG_USERLIB)
@@ -24,7 +25,6 @@ get_property(bug_orig_userlib GLOBAL PROPERTY BUG_ORIG_USERLIB)
 foreach(n compiler-maxs-libjsr)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
 endforeach()
-set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(AB3_EQUIVALENCE_TIMEOUT 600 CACHE STRING
 	"ab3 equivalence: time limit of one emulator session (seconds)")
 
@@ -35,7 +35,6 @@ function(equivalence_pass name runtime_errors)
 	string(APPEND text "work=${work}\nreport=${work}.txt\nrun=off\n"
 		"runtime_errors=${runtime_errors}\ntimeout=${AB3_EQUIVALENCE_TIMEOUT}\n"
 		"parallel=${CORPUS_PARALLEL}\nted=$<TARGET_FILE:tedstub>\n"
-		"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 		"config=blitz2|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
 		"config=ab3|exe|$<TARGET_FILE:blitz2-ab3>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
 		"file=blitz2/userlibs/bugorig/bugorig.obj|${bug_orig_userlib}\n")
