@@ -394,8 +394,17 @@ struct bl_regs {
 
 /* ALibJsr tok[,form] - call a routine of another (possibly original
    assembler) library.  In: r.d0/d1/a0/a1, out: the same registers.  The
-   called code may change every register except a3 (string pointer),
-   a4, a5, a7 (Blitz convention), so all others are declared clobbered. */
+   called code may change every register except a4, a5, a7 (Blitz
+   convention), so all others are declared clobbered.  a3 (blitz_string)
+   is an in/out operand of every ALibJsr/BLibJsr macro: a string function
+   (UStr$, Str$ ...) writes its result at a3 and leaves a3 behind it, and
+   any routine of another library may be one.  Without the operand GCC
+   would take a3 as unchanged by the call and could use a value it knows
+   from before (e.g. a3 == the buffer it just stored there).  a3 is a
+   fixed register (-ffixed-a3), so the operand stays in a3 and GCC never
+   saves or restores it: a routine that moves a3 for its caller still
+   does. */
+#define BL_A3_ "+a"(blitz_string)
 #define BLITZ_ALIBJSR(tok, r) BL_JSR_(BL_TOKVAL(tok, 0), r)
 #define BLITZ_ALIBJSR_FORM(tok, form, r) BL_JSR_(BL_TOKVAL(tok, form), r)
 #define BLITZ_BLIBJSR(tok, r) BL_JSR_(BL_BTOKVAL(tok, 0), r)
@@ -405,8 +414,8 @@ struct bl_regs {
     register ULONG _d1 __asm("d1") = (r).d1;                                \
     register ULONG _a0 __asm("a0") = (r).a0;                                \
     register ULONG _a1 __asm("a1") = (r).a1;                                \
-    __asm volatile("jsr _blitz_tok+%c4"                                     \
-        : "+d"(_d0), "+d"(_d1), "+a"(_a0), "+a"(_a1) : "i"(val)             \
+    __asm volatile("jsr _blitz_tok+%c5"                                     \
+        : "+d"(_d0), "+d"(_d1), "+a"(_a0), "+a"(_a1), BL_A3_ : "i"(val)     \
         : "d2", "d3", "d4", "d5", "d6", "d7", "a2", "a6", "cc", "memory");  \
     (r).d0 = _d0; (r).d1 = _d1; (r).a0 = _a0; (r).a1 = _a1; _d0; })
 #else
@@ -420,7 +429,10 @@ ULONG bl_jsr_clang(ULONG val, struct bl_regs *r);
    JSR 4(a6) = locfree, +8 for the global versions) or a system library
    (mathffp: JSR -36(a6) = SPFlt).  In/out: r.d0/d1/a0/a1 as with
    BLITZ_ALIBJSR; the callee may change every register except a3-a5/a7
-   (a6 included), so all others are declared clobbered.  (added by the
+   (a6 included), so all others are declared clobbered.  Unlike
+   BLITZ_ALIBJSR, a3 is no operand: the routines called this way (system
+   libraries, memlib's table, fontlib's previous input handler) keep a3.
+   (added by the
    mathstr group: strings2lib, maxlenlib, floatquicklib, modlib) */
 #ifndef BL_CODE_MODEL
 #define BLITZ_BASEJSR(base, off, r) ({                                      \
@@ -454,14 +466,15 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    floatquicklib $D300 qutofl the ffplib base: the original calls it from
    a routine with !libs #ffplib,#la6 and a6 still loaded.  a6 is declared
    changed; a2 (the compiler's argument stack) is kept like by every
-   library routine (see notes/cmdlibs-port.md), a3-a5/a7 anyway.  (from
+   library routine (see notes/cmdlibs-port.md), a4/a5/a7 anyway, a3 is
+   in/out (see BLITZ_ALIBJSR).  (from
    vallib Int) */
 #ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_A6(tok, base, x) ({                                   \
     register ULONG _d0 __asm("d0") = (x);                                   \
     register const void *_a6 __asm("a6") = (base);                          \
-    __asm volatile("jsr _blitz_tok+%c2"                                     \
-        : "+d"(_d0), "+a"(_a6) : "i"(BL_TOKVAL(tok, 0))                     \
+    __asm volatile("jsr _blitz_tok+%c3"                                     \
+        : "+d"(_d0), "+a"(_a6), BL_A3_ : "i"(BL_TOKVAL(tok, 0))             \
         : "d1", "d2", "d3", "d4", "d5", "d6", "d7", "a0", "a1", "cc", "memory"); \
     _d0; })
 #else
@@ -470,14 +483,15 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 
 /* ALibJsr with d0 = x, a2 = a2v (argument stack for the callee, e.g. a
    string length or type word) and a6 = a6v; result d0.  The callee may
-   change every register except a3-a5/a7. */
+   change every register except a4/a5/a7; a3 is in/out (see
+   BLITZ_ALIBJSR). */
 #ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_A2A6(tok, x, a2v, a6v) ({                             \
     register ULONG _d0 __asm("d0") = (ULONG)(x);                            \
     register const void *_a2 __asm("a2") = (a2v);                           \
     register const void *_a6 __asm("a6") = (a6v);                           \
-    __asm volatile("jsr _blitz_tok+%c3"                                     \
-        : "+d"(_d0), "+a"(_a2), "+a"(_a6) : "i"(BL_TOKVAL(tok, 0))          \
+    __asm volatile("jsr _blitz_tok+%c4"                                     \
+        : "+d"(_d0), "+a"(_a2), "+a"(_a6), BL_A3_ : "i"(BL_TOKVAL(tok, 0))  \
         : "d1", "d2", "d3", "d4", "d5", "d6", "d7", "a0", "a1", "cc", "memory"); \
     _d0; })
 #else
@@ -496,8 +510,8 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
     register ULONG _a0 __asm("a0") = (r).a0;                                \
     register ULONG _a1 __asm("a1") = (r).a1;                                \
     UBYTE _cc;                                                              \
-    __asm volatile("jsr _blitz_tok+%c5\n\ts" cc " %4"                       \
-        : "+d"(_d0), "+d"(_d1), "+a"(_a0), "+a"(_a1), "=m"(_cc)             \
+    __asm volatile("jsr _blitz_tok+%c6\n\ts" cc " %4"                       \
+        : "+d"(_d0), "+d"(_d1), "+a"(_a0), "+a"(_a1), "=m"(_cc), BL_A3_     \
         : "i"(BL_TOKVAL(tok, 0))                                            \
         : "d2", "d3", "d4", "d5", "d6", "d7", "a2", "a6", "cc", "memory");  \
     (r).d0 = _d0; (r).d1 = _d1; (r).a0 = _a0; (r).a1 = _a1; _cc; })
@@ -516,8 +530,8 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
     register const void *_a0 __asm("a0") = (a0v);                           \
     register ULONG _a1 __asm("a1");                                         \
     UBYTE _cc;                                                              \
-    __asm volatile("jsr _blitz_tok+%c5\n\ts" cc " %4"                       \
-        : "+d"(_d0), "=d"(_d1), "+a"(_a0), "=a"(_a1), "=m"(_cc)             \
+    __asm volatile("jsr _blitz_tok+%c6\n\ts" cc " %4"                       \
+        : "+d"(_d0), "=d"(_d1), "+a"(_a0), "=a"(_a1), "=m"(_cc), BL_A3_     \
         : "i"(BL_TOKVAL(tok, 0))                                            \
         : "d2", "d3", "d4", "d5", "d6", "d7", "a2", "a6", "cc", "memory");  \
     *(d0p) = _d0; _cc; })
@@ -528,15 +542,16 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 /* BLITZ_ALIBJSR_D4(tok, d0, d1, d2, d3) / BLITZ_BLIBJSR_D4 - a routine of
    another library with its arguments in d0-d3 (BLITZ_ALIBJSR only passes
    d0/d1/a0/a1), e.g. spriteslib ShowSprite (sprite, x, y, channel).
-   Result d0; the callee may change every register except a3-a5/a7. */
+   Result d0; the callee may change every register except a4/a5/a7; a3
+   is in/out (see BLITZ_ALIBJSR). */
 #ifndef BL_CODE_MODEL
 #define BL_JSR_D4_(val, x0, x1, x2, x3) ({                                  \
     register ULONG _d0 __asm("d0") = (x0);                                  \
     register ULONG _d1 __asm("d1") = (x1);                                  \
     register ULONG _d2 __asm("d2") = (x2);                                  \
     register ULONG _d3 __asm("d3") = (x3);                                  \
-    __asm volatile("jsr _blitz_tok+%c4"                                     \
-        : "+d"(_d0), "+d"(_d1), "+d"(_d2), "+d"(_d3) : "i"(val)             \
+    __asm volatile("jsr _blitz_tok+%c5"                                     \
+        : "+d"(_d0), "+d"(_d1), "+d"(_d2), "+d"(_d3), BL_A3_ : "i"(val)     \
         : "d4", "d5", "d6", "d7", "a0", "a1", "a2", "a6", "cc", "memory");  \
     _d0; })
 #else

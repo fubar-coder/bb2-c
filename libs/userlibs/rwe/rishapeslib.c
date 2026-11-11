@@ -875,9 +875,11 @@ static void acidloadshapes(UBYTE *first, UBYTE *last)
     register struct DosLibrary *a6 __asm("a6") = dosbase;
     register UBYTE *a0 __asm("a0") = last;
 
-    /* a3 as the original leaves it; a3 is fixed for GCC (blitz_string) */
-    __asm volatile("move.l a0,a3\n\tjsr _blitz_tok+%c6"
-                   : "+d"(d0), "+d"(d1), "+d"(d2), "+a"(ra2), "+a"(a6), "+a"(a0)
+    /* a3 as the original leaves it; a3 is fixed for GCC (blitz_string),
+       the operand tells it that a3 changes */
+    __asm volatile("move.l a0,a3\n\tjsr _blitz_tok+%c7"
+                   : "+d"(d0), "+d"(d1), "+d"(d2), "+a"(ra2), "+a"(a6), "+a"(a0),
+                     BL_A3_
                    : "i"(BL_TOKVAL(TOK_loadshapes, 1))
                    : "d3", "d4", "d5", "d6", "d7", "a1", "cc", "memory");
 }

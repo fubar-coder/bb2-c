@@ -70,7 +70,7 @@ Further macros in `libs/include/blitzlib.h` (details in the comments there):
 | Macro | Purpose |
 |---|---|
 | `BLITZ_THUNK`, `_Z`, `_PRE`, `_POST`, `_POP` | entry point that saves registers / sets CCR / clears stack arguments, calls a C function |
-| `BLITZ_ALIBJSR(tok, r)`, `_FORM`, `BLITZ_BLIBJSR` | call a routine of another library (d0/d1/a0/a1 via `struct bl_regs`) |
+| `BLITZ_ALIBJSR(tok, r)`, `_FORM`, `BLITZ_BLIBJSR` | call a routine of another library (d0/d1/a0/a1 via `struct bl_regs`); like every ALibJsr/BLibJsr macro it has a3 (`blitz_string`) as in/out operand, because a string function moves a3 |
 | `BLITZ_ALIBJSR_A6(tok, base, x)` | the same with a6 loaded (e.g. floatquicklib `$D300` needs the ffplib base), d0 there and back |
 | `BLITZ_BASEJSR(base, off, r)`, `BLITZ_BASEJSR1/2(base, off, x0[, x1])` | `JSR off(a6)` with a6 = base (mathffp, memlib table, system library); 1/2 = operands in d0/d1 |
 | `BLITZ_ALIBJSR_CCR(tok, r, "cc")`, `BLITZ_ALIBJSR_CCR_D0A0(tok, "cc", &d0, a0)` | call of a routine that answers in the CCR (iffiolib: Z = ok); result `Scc` directly after the call |
