@@ -575,3 +575,18 @@ code changes in this change).
   Delta `testing/test-selection`: MODIFIED requirement "Changes without
   function coverage select by rule", the full text plus the sentence on
   the committed data and two scenarios.
+- **Task 9.2 (2026-11-11), open for A2:** `blitz2_ref` and `ted_ref` are no
+  longer ALL, `tedoracle` is EXCLUDE_FROM_ALL; ctest `originals_refbuild`
+  (label `originals`, fixture `originals_refbuild`: `cmake --build` of the
+  three targets, their checks in the same steps) is required by
+  `ted_ab_originals`, `ted_oracle_reference` and every
+  `bug_orig_record_*`. Checked: a default build after removing `ref/`
+  assembles no `blitz2.s` and links no `tedoracle`; `ctest --preset
+  originals -R originals_refbuild` makes them. But `ted.s` is still
+  assembled by every build: the build check `checkdata` (A3, POST_BUILD of
+  `ted_sym`, decision "intended list") reads `ref/ted.lst` and `ref/ted`,
+  and `ted` is linked only after it. Making A2 opt-in needs a decision:
+  the check moves to a test (against CLAUDE.md "checks in the build"), or
+  its reference data are committed as generated data under `tests/data`
+  (checked by `originals`), or A2 stays in the build. The task stays open
+  until then.

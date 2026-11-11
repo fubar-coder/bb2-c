@@ -223,12 +223,17 @@ again):
   `archive/sources/blitz2-1.95/blitz2.s` with vasm to
   `build/amiga/programs/blitz2/ref/` (`blitz2`, listing, `blitz2.map`,
   `blitz2.labels`), in the same step `refcheck listing-verify`
-  ([`tools/refcheck`](../tools/refcheck/README.md)).
+  ([`tools/refcheck`](../tools/refcheck/README.md)); target `blitz2_ref`, not
+  in the default build (only the comparisons with the originals use it;
+  ctest `originals_refbuild`, the fixture of the preset `originals`'s
+  tests that need it, builds it with `ted_ref` and `tedoracle`).
 * reference build of TED: the original `archive/sources/ted-1.1/ted.s`
   with vasm (like Devpac) to `build/amiga/programs/ted/ref/` (`ted`,
   listing, `ted.map`, `ted.labels`); the same step checks that listing and
   binary match (`refcheck listing-verify`). The reference for the port is this
-  build, not the TED binary of the CD (a different build).
+  build, not the TED binary of the CD (a different build). Target
+  `ted_ref`, not in the default build by itself, but the check `checkdata`
+  of `ted.sym` needs it, so every build of `ted` makes it.
 * `ted` after every link (POST_BUILD): hunk layout (`hunkcheck start`,
   [`tools/hunkcheck`](../tools/hunkcheck/README.md): offset 0 `bsr.w`,
   offset 4 `outside`; `hunkcheck stored`: every hunk stored

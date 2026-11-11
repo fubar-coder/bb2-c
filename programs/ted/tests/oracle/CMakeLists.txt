@@ -17,7 +17,9 @@ add_custom_command(
 	COMMENT "Labels of the reference TED for the oracle"
 	VERBATIM)
 
-add_executable(tedoracle $<TARGET_OBJECTS:edstub> oracle.c ${gen}/ted_labels.h)
+# not ALL: only the target ted-oracle and ctest ted_oracle_reference use it
+# (ctest originals_refbuild builds it)
+add_executable(tedoracle EXCLUDE_FROM_ALL $<TARGET_OBJECTS:edstub> oracle.c ${gen}/ted_labels.h)
 target_include_directories(tedoracle PRIVATE ${gen} ${EDSTUB_DIR})
 target_compile_options(tedoracle PRIVATE ${EDSTUB_COMPILE_OPTIONS})
 target_link_options(tedoracle PRIVATE ${EDSTUB_LINK_OPTIONS})
@@ -58,7 +60,7 @@ add_test(NAME ted_oracle_reference COMMAND ${CMAKE_COMMAND}
 	-DDATA=${PROJECT_SOURCE_DIR}/tests/data -P ${oracle_check})
 math(EXPR limit "1800 + 120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(ted_oracle_reference PROPERTIES LABELS originals SKIP_RETURN_CODE 77
-	TIMEOUT ${limit})
+	TIMEOUT ${limit} FIXTURES_REQUIRED originals_refbuild)
 foreach(name right wrong)
 	add_test(NAME ted_oracle_reference_check_${name} COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
 		-DDATA=${CMAKE_CURRENT_SOURCE_DIR}/selftest/right

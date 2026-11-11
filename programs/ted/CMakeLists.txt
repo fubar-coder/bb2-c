@@ -44,7 +44,11 @@ add_custom_command(
 	WORKING_DIRECTORY ${TED_ORIG_DIR}
 	COMMENT "Assembling the original ted.s (reference)"
 	VERBATIM)
-add_custom_target(ted_ref ALL DEPENDS ${REF_DIR}/ted)
+# not ALL: the comparisons with the originals use it (ted_ab_originals,
+# the recording of the TED bug-orig tests, the TED oracle data; ctest
+# originals_refbuild builds it for the preset originals) - and the check
+# checkdata of ted_sym below, so a build of ted makes it as well
+add_custom_target(ted_ref DEPENDS ${REF_DIR}/ted)
 
 set(core_sources)
 foreach(m IN LISTS TED_CORE_MODULES)

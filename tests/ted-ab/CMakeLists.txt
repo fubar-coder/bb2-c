@@ -43,7 +43,8 @@ add_custom_target(ted_ab_expect ALL DEPENDS ${ted_ab_tokenised})
 #                     against TED-C under both compilers with the CD's
 #                     libraries (TED_AB_COMBOS, the reference first), from
 #                     the ref run of ctest corpus_originals; needs the CD and
-#                     the reference build of ted.s
+#                     the reference build of ted.s (fixture
+#                     originals_refbuild builds it)
 # TED_AB_BUDGET: estimated run time (@est) per session; boot and gates come
 # on top, TED_AB_TIMEOUT is the session's limit.
 set(TED_AB_COMBOS "R5,C5,Cc,Rc" CACHE STRING "ted_ab_originals: the combinations, the reference first")
@@ -121,4 +122,4 @@ set_tests_properties(ted_ab PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	FIXTURES_REQUIRED corpus TIMEOUT ${limit})
 add_test(NAME ted_ab_originals COMMAND ${TEDAB} run ${work}_originals.pass)
 set_tests_properties(ted_ab_originals PROPERTIES LABELS originals SKIP_RETURN_CODE 77
-	FIXTURES_REQUIRED corpus_originals TIMEOUT ${limit})
+	FIXTURES_REQUIRED "corpus_originals;originals_refbuild" TIMEOUT ${limit})

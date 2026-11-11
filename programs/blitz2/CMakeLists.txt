@@ -156,4 +156,7 @@ add_custom_command(
 	WORKING_DIRECTORY ${BLITZ2_ORIG_DIR}
 	COMMENT "Assembling the original blitz2.s (reference)"
 	VERBATIM)
-add_custom_target(blitz2_ref ALL DEPENDS ${ref})
+# not ALL: only the comparisons with the originals use it (the recording
+# of the bug-orig tests, the TED oracle data); ctest originals_refbuild
+# builds it for the preset originals
+add_custom_target(blitz2_ref DEPENDS ${ref})

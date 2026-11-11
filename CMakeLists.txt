@@ -133,6 +133,16 @@ set(prev_results_args ${PREV_INTENDED_PREV_ARGS})
 add_test(NAME prev_results COMMAND ${RESULTS} prev ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_DIR})
 set_tests_properties(prev_results PROPERTIES SKIP_RETURN_CODE 77)
 
+# the reference builds of blitz2.s and ted.s and the oracle program are not
+# ALL (only the comparisons with the originals use them): the tests of the
+# preset originals that need them require the fixture originals_refbuild,
+# this build of the three targets (their checks run in the same steps,
+# listing-verify and hunkcheck)
+add_test(NAME originals_refbuild COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
+	--target blitz2_ref ted_ref tedoracle)
+set_tests_properties(originals_refbuild PROPERTIES LABELS originals
+	FIXTURES_SETUP originals_refbuild)
+
 # downloading the originals the tests need (not part of ALL: needs network)
 add_custom_target(fetch-originals
 	COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/fetch-originals.cmake

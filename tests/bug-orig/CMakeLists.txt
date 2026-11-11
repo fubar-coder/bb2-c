@@ -316,6 +316,8 @@ function(bug_orig_test bas name)
 		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
+		# the reference build of blitz2.s (not ALL)
+		list(APPEND fixtures originals_refbuild)
 		if(fixtures)
 			set_tests_properties(${rec_name} PROPERTIES FIXTURES_REQUIRED "${fixtures}")
 		endif()
@@ -549,8 +551,10 @@ function(bug_orig_ted_test scripts id name)
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
 		add_test(NAME ${rec_name} COMMAND ${TEDAB} run ${work}.pass)
+		# the reference build of ted.s (not ALL)
 		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
-			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
+			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1
+			FIXTURES_REQUIRED originals_refbuild)
 	endif()
 	# one session (C5; the reference R5 only for the recording), maybe
 	# repeated once (gates failed), maybe waiting for a slot
