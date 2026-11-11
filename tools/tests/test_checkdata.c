@@ -3,10 +3,23 @@
  * relocated longs of the reference skipped, zeros behind the initialised
  * part and in BSS, missing symbols and labels; the list of intended
  * differences (programs/ted/checkdata-intended.txt): correct, stale, an
- * unlisted difference, broken lists.
+ * unlisted difference, broken lists; the reference data
+ * (tests/data/ted-checkdata.txt): written and read again, broken data.
  */
+#define _XOPEN_SOURCE 700       /* open_memstream */
 #include "testutil.h"
 #include "checkdata.h"
+
+/* parse reference data; 0 = ok, -1 = error (message in err) */
+static int ref_parse(const char *text, char *err, size_t len)
+{
+    struct checkdata_ref r;
+    int rc = checkdata_ref_parse(text, strlen(text), &r, err, len);
+
+    if (!rc)
+        checkdata_ref_free(&r);
+    return rc;
+}
 
 /* reference code hunk: "ABCD" at 0, "EF" + 2 zeros at 4, a relocated
    long at 8 */
@@ -48,7 +61,32 @@ static int run_intended(const char *table, const char *intended, const uint8_t *
         fclose(out);
         return -1;
     }
-    r = (int)checkdata_run(&t, &l, &ref, &c, intended ? &in : NULL, 0, out);
+    {
+        /* the reference data made from the listing, written and read
+           again: the check runs on what a file holds */
+        struct checkdata_ref rd, rd2;
+        char *text = NULL;
+        size_t textlen = 0;
+        FILE *w = open_memstream(&text, &textlen);
+        long missing = checkdata_ref_make(&t, &l, &ref, &rd, out);
+
+        checkdata_ref_write(&rd, "a header\nof two lines", w);
+        fclose(w);
+        if (missing < 0 || checkdata_ref_parse(text, textlen, &rd2, err, sizeof err)) {
+            snprintf(msg, len, "reference data: %s", missing < 0 ? "out of memory" : err);
+            free(text);
+            checkdata_ref_free(&rd);
+            checkdata_table_free(&t);
+            checkdata_intended_free(&in);
+            fclose(out);
+            return -1;
+        }
+        CHECK(!strncmp(text, "# a header\n# of two lines\n", 26));
+        free(text);
+        r = (int)checkdata_run(&t, &rd2, &c, intended ? &in : NULL, 0, out);
+        checkdata_ref_free(&rd);
+        checkdata_ref_free(&rd2);
+    }
     rewind(out);
     msg[fread(msg, 1, len - 1, out)] = 0;
     fclose(out);
@@ -141,6 +179,66 @@ int main(void)
         CHECK(run_intended(t2, "\t#1\n", bad, 6, msg, sizeof msg) == -1);
         CHECK(run_intended(t2, "# c\n_abcd\t#1\n_abcd\t#2\n", bad, 6, msg, sizeof msg) == -1);
         CHECK(strstr(msg, "intended: line 3: _abcd listed twice (line 2)") != NULL);
+    }
+
+    /* the reference data: the relocated long is "..", a range of several
+       checks once */
+    {
+        struct checkdata_table t;
+        struct checkdata_ref r;
+        struct hunk ref = { HUNK_CODE, refcode, sizeof refcode, 1, &refreloc, &reftarget, 0, NULL, 0, 0 };
+        struct listing l = { NULL, 0, labels, 4, NULL, 0 };
+        static const char tt[] = "_a\tabcd\t4\n_ptr\tptr\t4\n_b\tabcd\t4\n_e\tef\tefend\n";
+        char *text = NULL, err[200];
+        size_t textlen = 0;
+        FILE *w = open_memstream(&text, &textlen);
+
+        CHECK(!checkdata_table_parse(tt, strlen(tt), &t, err, sizeof err));
+        CHECK(checkdata_ref_make(&t, &l, &ref, &r, NULL) == 0);
+        CHECK(r.n == 3);
+        checkdata_ref_write(&r, NULL, w);
+        fclose(w);
+        CHECK(!strcmp(text, "abcd\t4\t41424344\nptr\t4\t........\nef\tefend\t45460000\n"));
+        free(text);
+        checkdata_ref_free(&r);
+        checkdata_table_free(&t);
+
+        CHECK(ref_parse("# c\n\nabcd\t4\t41424344\nptr\t4\t........\n", err, sizeof err) == 0);
+        /* broken data */
+        CHECK(ref_parse("abcd\t4\n", err, sizeof err) == -1);
+        CHECK(strstr(err, "line 1: expected START END|SIZE HEX") != NULL);
+        CHECK(ref_parse("abcd\t4\t414\n", err, sizeof err) == -1);
+        CHECK(ref_parse("\t4\t41\n", err, sizeof err) == -1);
+        CHECK(ref_parse("abcd\t\t41\n", err, sizeof err) == -1);
+        CHECK(ref_parse("abcd\t4\t41\t42\n", err, sizeof err) == -1);
+        CHECK(ref_parse("abcd\t4\t4G\n", err, sizeof err) == -1);
+        CHECK(strstr(err, "line 1: byte 0: expected two hex digits or ..") != NULL);
+        CHECK(ref_parse("abcd\t4\t41.2\n", err, sizeof err) == -1);
+        CHECK(ref_parse("abcd\t4\t41\nabcd\t4\t42\n", err, sizeof err) == -1);
+        CHECK(strstr(err, "line 2: abcd 4 listed twice (line 1)") != NULL);
+    }
+    /* a check whose range is not in the reference data fails */
+    {
+        struct checkdata_table t;
+        struct checkdata_ref r;
+        static const char tt[] = "_abcd\tabcd\t4\n";
+        static const uint8_t cd[4] = { 'A', 'B', 'C', 'D' };
+        struct hunk_symbol syms[] = { { "_abcd", 5, 0 } };
+        struct hunk h = { HUNK_DATA, cd, 4, 0, NULL, NULL, 1, syms, 0, 0 };
+        struct loadfile c = { NULL, 0, NULL, 1, 1, &h };
+        char err[200], msg[400];
+        FILE *out = tmpfile();
+
+        CHECK(!checkdata_table_parse(tt, strlen(tt), &t, err, sizeof err));
+        CHECK(!checkdata_ref_parse("abcd\t5\t4142434400\n", 18, &r, err, sizeof err));
+        CHECK(checkdata_run(&t, &r, &c, NULL, 0, out) == 1);
+        rewind(out);
+        msg[fread(msg, 1, sizeof msg - 1, out)] = 0;
+        CHECK(strstr(msg, "FAIL    _abcd          abcd/4: not in the reference data (table line 1)")
+              != NULL);
+        fclose(out);
+        checkdata_ref_free(&r);
+        checkdata_table_free(&t);
     }
     return failures != 0;
 }

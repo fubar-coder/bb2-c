@@ -188,36 +188,88 @@ static int label(const struct listing *l, const char *name, uint32_t *value)
     return found;
 }
 
-long checkdata_run(const struct checkdata_table *t, const struct listing *l,
-                   const struct hunk *ref, const struct loadfile *c,
-                   const struct checkdata_intended *in, int verbose, FILE *out)
+/* the third field of a check: the end label or the size */
+static const char *end_field(const struct checkdata_entry *e, char *buf, size_t len)
 {
-    size_t nin = in ? in->n : 0;
-    uint8_t *skip = calloc((size_t)ref->size + 4, 1);
-    unsigned char *seen = calloc(nin + 1, 1);
-    long bad = 0, intended = 0;
-    size_t i;
-    uint32_t r, k;
+    if (e->end)
+        return e->end;
+    snprintf(buf, len, "%lu", (unsigned long)e->size);
+    return buf;
+}
 
-    if (!skip || !seen) {
-        fprintf(out, "checkdata: out of memory\n");
-        free(skip);
-        free(seen);
-        return 1;
+/* the reference data of a range, or NULL */
+static const struct checkdata_ref_entry *ref_find(const struct checkdata_ref *r,
+                                                  const char *start, const char *end)
+{
+    size_t i;
+
+    for (i = 0; i < r->n; i++)
+        if (!strcmp(r->v[i].start, start) && !strcmp(r->v[i].end, end))
+            return &r->v[i];
+    return NULL;
+}
+
+/* a new entry of r (zeroed), or NULL: out of memory */
+static struct checkdata_ref_entry *ref_add(struct checkdata_ref *r)
+{
+    if (r->n % 64 == 0) {
+        struct checkdata_ref_entry *v = realloc(r->v, (r->n + 64) * sizeof *v);
+
+        if (!v)
+            return NULL;
+        r->v = v;
     }
-    for (r = 0; r < ref->nrelocs; r++)
-        for (k = 0; k < 4 && ref->reloc_offset[r] + k < ref->size; k++)
-            skip[ref->reloc_offset[r] + k] = 1;
+    memset(&r->v[r->n], 0, sizeof r->v[r->n]);
+    return &r->v[r->n++];
+}
+
+void checkdata_ref_free(struct checkdata_ref *r)
+{
+    size_t i;
+
+    for (i = 0; i < r->n; i++) {
+        free(r->v[i].start);
+        free(r->v[i].end);
+        free(r->v[i].data);
+        free(r->v[i].skip);
+    }
+    free(r->v);
+    r->v = NULL;
+    r->n = 0;
+}
+
+long checkdata_ref_make(const struct checkdata_table *t, const struct listing *l,
+                        const struct hunk *ref, struct checkdata_ref *r, FILE *msgs)
+{
+    uint8_t *skip = calloc((size_t)ref->size + 4, 1);
+    long missing = 0;
+    size_t i;
+    uint32_t k;
+
+    r->v = NULL;
+    r->n = 0;
+    if (!skip)
+        return -1;
+    for (k = 0; k < ref->nrelocs; k++) {
+        uint32_t b;
+
+        for (b = 0; b < 4 && ref->reloc_offset[k] + b < ref->size; b++)
+            skip[ref->reloc_offset[k] + b] = 1;
+    }
     for (i = 0; i < t->n; i++) {
         const struct checkdata_entry *e = &t->v[i];
-        uint32_t start, stop = 0, hunk, off, n, ndiff = 0, first = 0;
-        const struct hunk *h;
-        long x;
+        struct checkdata_ref_entry *x;
+        uint32_t start, stop = 0;
+        char buf[16];
+        const char *end = end_field(e, buf, sizeof buf);
 
+        if (ref_find(r, e->start, end))
+            continue;
         if (label(l, e->start, &start) || (e->end && label(l, e->end, &stop))) {
-            bad++;
-            fprintf(out, "FAIL    %-14s %s/%s: label not in the listing (table line %u)\n",
-                    e->csym, e->start, e->end ? e->end : "-", e->line);
+            missing++;
+            if (msgs)
+                fprintf(msgs, "FAIL    %-14s %s/%s: label not in the listing (table line %u)\n",
+                        e->csym, e->start, end, e->line);
             continue;
         }
         if (!e->end)
@@ -226,35 +278,184 @@ long checkdata_run(const struct checkdata_table *t, const struct listing *l,
             stop = ref->size;
         if (stop < start)
             stop = start;
+        if (!(x = ref_add(r)))
+            goto nomem;
+        x->n = stop - start;
+        x->start = strdup(e->start);
+        x->end = strdup(end);
+        x->data = malloc((size_t)x->n + 1);
+        x->skip = malloc((size_t)x->n + 1);
+        if (!x->start || !x->end || !x->data || !x->skip)
+            goto nomem;
+        memcpy(x->data, ref->data + start, x->n);
+        memcpy(x->skip, skip + start, x->n);
+    }
+    free(skip);
+    return missing;
+nomem:
+    free(skip);
+    checkdata_ref_free(r);
+    return -1;
+}
+
+void checkdata_ref_write(const struct checkdata_ref *r, const char *header, FILE *out)
+{
+    size_t i;
+    uint32_t k;
+
+    while (header && *header) {
+        const char *eol = strchr(header, '\n');
+        int n = eol ? (int)(eol - header) : (int)strlen(header);
+
+        fprintf(out, "# %.*s\n", n, header);
+        header += n + (eol != NULL);
+    }
+    for (i = 0; i < r->n; i++) {
+        fprintf(out, "%s\t%s\t", r->v[i].start, r->v[i].end);
+        for (k = 0; k < r->v[i].n; k++)
+            if (r->v[i].skip[k])
+                fputs("..", out);
+            else
+                fprintf(out, "%02x", r->v[i].data[k]);
+        fputc('\n', out);
+    }
+}
+
+static int hexdigit(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    return -1;
+}
+
+int checkdata_ref_parse(const char *text, size_t len, struct checkdata_ref *r, char *err,
+                        size_t errlen)
+{
+    const char *p = text, *end = text + len;
+    unsigned line = 0;
+
+    r->v = NULL;
+    r->n = 0;
+    while (p < end) {
+        const char *eol = memchr(p, '\n', (size_t)(end - p)), *t1, *t2, *h;
+        const struct checkdata_ref_entry *dup;
+        struct checkdata_ref_entry *x;
+        size_t hl;
+        uint32_t k;
+
+        if (!eol)
+            eol = end;
+        line++;
+        if (p == eol || *p == '#') {
+            p = eol + 1;
+            continue;
+        }
+        t1 = memchr(p, '\t', (size_t)(eol - p));
+        t2 = t1 ? memchr(t1 + 1, '\t', (size_t)(eol - t1 - 1)) : NULL;
+        h = t2 ? t2 + 1 : eol;
+        hl = (size_t)(eol - h);
+        if (!t2 || t1 == p || t2 == t1 + 1 || hl % 2 || memchr(h, '\t', hl)) {
+            snprintf(err, errlen, "line %u: expected START END|SIZE HEX", line);
+            goto fail;
+        }
+        if (!(x = ref_add(r)))
+            goto nomem;
+        x->line = line;
+        x->n = (uint32_t)(hl / 2);
+        x->start = strndup(p, (size_t)(t1 - p));
+        x->end = strndup(t1 + 1, (size_t)(t2 - t1 - 1));
+        x->data = malloc((size_t)x->n + 1);
+        x->skip = malloc((size_t)x->n + 1);
+        if (!x->start || !x->end || !x->data || !x->skip)
+            goto nomem;
+        for (k = 0; k < x->n; k++) {
+            int hi = hexdigit(h[2 * k]), lo = hexdigit(h[2 * k + 1]);
+
+            x->skip[k] = h[2 * k] == '.' && h[2 * k + 1] == '.';
+            if (!x->skip[k] && (hi < 0 || lo < 0)) {
+                snprintf(err, errlen, "line %u: byte %u: expected two hex digits or ..", line,
+                         (unsigned)k);
+                goto fail;
+            }
+            x->data[k] = x->skip[k] ? 0 : (uint8_t)(hi << 4 | lo);
+        }
+        r->n--;
+        dup = ref_find(r, x->start, x->end);
+        r->n++;
+        if (dup) {
+            snprintf(err, errlen, "line %u: %s %s listed twice (line %u)", line, x->start,
+                     x->end, dup->line);
+            goto fail;
+        }
+        p = eol + 1;
+    }
+    return 0;
+nomem:
+    snprintf(err, errlen, "out of memory");
+fail:
+    checkdata_ref_free(r);
+    return -1;
+}
+
+long checkdata_run(const struct checkdata_table *t, const struct checkdata_ref *r,
+                   const struct loadfile *c, const struct checkdata_intended *in, int verbose,
+                   FILE *out)
+{
+    size_t nin = in ? in->n : 0;
+    unsigned char *seen = calloc(nin + 1, 1);
+    long bad = 0, intended = 0;
+    size_t i;
+    uint32_t k;
+
+    if (!seen) {
+        fprintf(out, "checkdata: out of memory\n");
+        return 1;
+    }
+    for (i = 0; i < t->n; i++) {
+        const struct checkdata_entry *e = &t->v[i];
+        const struct checkdata_ref_entry *x;
+        uint32_t hunk, off, ndiff = 0, first = 0;
+        const struct hunk *h;
+        char buf[16];
+        const char *end = end_field(e, buf, sizeof buf);
+        long j;
+
+        if (!(x = ref_find(r, e->start, end))) {
+            bad++;
+            fprintf(out, "FAIL    %-14s %s/%s: not in the reference data (table line %u)\n",
+                    e->csym, e->start, end, e->line);
+            continue;
+        }
         if (load_symbol(c, e->csym, &hunk, &off)) {
             bad++;
             fprintf(out, "MISSING %-14s (%s, %s)\n", e->csym, e->start, e->note);
             continue;
         }
         h = &c->hunks[hunk];
-        n = stop - start;
-        for (k = 0; k < n; k++) {
+        for (k = 0; k < x->n; k++) {
             /* behind the initialised part (or BSS): zero */
             uint8_t got = h->data && off + k < h->size ? h->data[off + k] : 0;
 
-            if (skip[start + k] || got == ref->data[start + k])
+            if (x->skip[k] || got == x->data[k])
                 continue;
             if (!ndiff++)
                 first = k;
         }
-        if (ndiff && (x = intended_index(in, e->csym)) >= 0) {
+        if (ndiff && (j = intended_index(in, e->csym)) >= 0) {
             /* a fixed original bug: the difference is the point */
-            seen[x] = 1;
+            seen[j] = 1;
             intended++;
             fprintf(out, "intended %-13s %s: %u of %u bytes differ (first at +%u) - #%u\n",
-                    e->csym, e->start, (unsigned)ndiff, (unsigned)n, (unsigned)first,
-                    in->v[x].issue);
+                    e->csym, e->start, (unsigned)ndiff, (unsigned)x->n, (unsigned)first,
+                    in->v[j].issue);
         } else if (ndiff) {
             bad++;
             fprintf(out, "FAIL    %-14s %s: %u of %u bytes differ (first at +%u) - %s\n", e->csym,
-                    e->start, (unsigned)ndiff, (unsigned)n, (unsigned)first, e->note);
+                    e->start, (unsigned)ndiff, (unsigned)x->n, (unsigned)first, e->note);
         } else if (verbose)
-            fprintf(out, "ok      %-14s %s (%u bytes)\n", e->csym, e->start, (unsigned)n);
+            fprintf(out, "ok      %-14s %s (%u bytes)\n", e->csym, e->start, (unsigned)x->n);
     }
     /* an entry of the list that did not occur: stale */
     for (i = 0; i < nin; i++)
@@ -268,6 +469,5 @@ long checkdata_run(const struct checkdata_table *t, const struct listing *l,
     else
         fprintf(out, "checkdata: %zu checks, %ld failed\n", t->n, bad);
     free(seen);
-    free(skip);
     return bad;
 }

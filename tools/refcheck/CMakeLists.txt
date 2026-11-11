@@ -1,5 +1,5 @@
 # refcheck: the port against the originals (README.md)
-set(REFCHECK_SUBCOMMANDS asm labels data listing-map listing-labels listing-verify)
+set(REFCHECK_SUBCOMMANDS asm labels data data-ref listing-map listing-labels listing-verify)
 add_executable(refcheck main.cpp cmd_asm.cpp cmd_labels.cpp cmd_data.cpp cmd_listing.cpp)
 target_link_libraries(refcheck PRIVATE lib_cli lib_asmcmp lib_biglib lib_checklabels lib_checkdata
 	lib_vasmlisting)

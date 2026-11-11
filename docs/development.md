@@ -232,8 +232,14 @@ again):
   listing, `ted.map`, `ted.labels`); the same step checks that listing and
   binary match (`refcheck listing-verify`). The reference for the port is this
   build, not the TED binary of the CD (a different build). Target
-  `ted_ref`, not in the default build by itself, but the check `checkdata`
-  of `ted.sym` needs it, so every build of `ted` makes it.
+  `ted_ref`, not in the default build: the check `checkdata` of
+  `ted.sym` reads the committed reference data
+  `tests/data/ted-checkdata.txt` (the bytes of the ranges of
+  `checkdata.tsv`), which the target `ted-checkdata` writes from this
+  build (`refcheck data-ref`) after a change of the table; ctest
+  `ted_checkdata_reference` (preset `originals`) checks that a fresh
+  reference build gives them byte for byte (with broken input:
+  `ted_checkdata_reference_check_wrong`).
 * `ted` after every link (POST_BUILD): hunk layout (`hunkcheck start`,
   [`tools/hunkcheck`](../tools/hunkcheck/README.md): offset 0 `bsr.w`,
   offset 4 `outside`; `hunkcheck stored`: every hunk stored
@@ -255,7 +261,8 @@ again):
   `rwe_refbuild_libnums_broken`).
 * `ted.sym` (the same link with symbols) after every link:
   `refcheck data` compares the data of the C build with the reference
-  build of `ted.s` (`programs/ted/checkdata.tsv`: 534 entries – fonts,
+  data of `ted.s`, `tests/data/ted-checkdata.txt`
+  (`programs/ted/checkdata.tsv`: 534 entries – fonts,
   mouse pointers, option block, texts, screen, windows, gadgets, menus,
   requesters; relocated longwords of the reference skipped); the checks
   of `programs/ted/checkdata-intended.txt`, if there, differ on purpose

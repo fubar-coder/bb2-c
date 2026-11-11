@@ -46,8 +46,8 @@ add_custom_command(
 	VERBATIM)
 # not ALL: the comparisons with the originals use it (ted_ab_originals,
 # the recording of the TED bug-orig tests, the TED oracle data; ctest
-# originals_refbuild builds it for the preset originals) - and the check
-# checkdata of ted_sym below, so a build of ted makes it as well
+# originals_refbuild builds it for the preset originals) and the target
+# ted-checkdata that writes the reference data of checkdata below
 add_custom_target(ted_ref DEPENDS ${REF_DIR}/ted)
 
 set(core_sources)
@@ -128,20 +128,67 @@ add_subdirectory(tests/oracle)
 # label, end label or size - fonts, pointers, option block, texts, screen,
 # window, gadgets, menus, requesters (534 checks; relocated longs of the
 # reference are skipped).  ted is linked only after this check passed.
+# The reference bytes are committed generated data,
+# tests/data/ted-checkdata.txt (refcheck data-ref), so the build assembles
+# no ted.s: the target ted-checkdata writes them after a change of
+# checkdata.tsv, ctest ted_checkdata_reference (preset originals) checks
+# that they are those of a fresh reference build.
 # checkdata-intended.txt, if there: the checks that differ on purpose
 # (fixed original bugs, "CSYM<TAB>#NNN<TAB>NOTE"); each of them must
 # differ, a stale entry fails (configure again after adding the file).
-add_dependencies(ted_sym ted_ref host_tools)
+set(CHECKDATA_REF ${PROJECT_SOURCE_DIR}/tests/data/ted-checkdata.txt)
+add_dependencies(ted_sym host_tools)
 set(checkdata_intended)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata-intended.txt)
 	set(checkdata_intended ${CMAKE_CURRENT_SOURCE_DIR}/checkdata-intended.txt)
 endif()
 set_property(TARGET ted_sym APPEND PROPERTY
-	LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv ${REF_DIR}/ted.lst ${checkdata_intended})
+	LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv ${CHECKDATA_REF} ${checkdata_intended})
 add_custom_command(TARGET ted_sym POST_BUILD
 	COMMAND ${REFCHECK} data -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
-		${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym> ${checkdata_intended}
+		${CHECKDATA_REF} $<TARGET_FILE:ted_sym> ${checkdata_intended}
 	VERBATIM)
+# writing tests/data/ted-checkdata.txt (not ALL: after a change of
+# checkdata.tsv, from the reference build)
+add_custom_target(ted-checkdata
+	COMMAND ${REFCHECK} data-ref ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
+		${REF_DIR}/ted.lst ${REF_DIR}/ted -o ${CHECKDATA_REF}
+	DEPENDS ted_ref host_tools
+	COMMENT "Reference data of checkdata (tests/data/ted-checkdata.txt)"
+	VERBATIM)
+# ctest ted_checkdata_reference (label originals): the reference data from
+# a fresh reference build into the build directory, equal to the committed
+# ones (checkdata-reference.cmake); with broken input: a changed byte
+# fails, the same file passes (no reference build)
+set(checkdata_check ${CMAKE_CURRENT_SOURCE_DIR}/checkdata-reference.cmake)
+add_test(NAME ted_checkdata_reference COMMAND ${CMAKE_COMMAND} -DREFCHECK=${REFCHECK}
+	-DTABLE=${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv -DLISTING=${REF_DIR}/ted.lst
+	-DREFERENCE=${REF_DIR}/ted -DOUT=${CMAKE_CURRENT_BINARY_DIR}/ted-checkdata.txt
+	-DDATA=${CHECKDATA_REF} -P ${checkdata_check})
+set_tests_properties(ted_checkdata_reference PROPERTIES LABELS originals
+	FIXTURES_REQUIRED originals_refbuild)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CHECKDATA_REF})
+file(READ ${CHECKDATA_REF} checkdata_ref_text)
+string(REGEX MATCH "\nsleep\t[^\t]*\t(.)" m "${checkdata_ref_text}")
+if(CMAKE_MATCH_1 STREQUAL "0")
+	set(m 1)
+else()
+	set(m 0)
+endif()
+string(REGEX REPLACE "\n(sleep\t[^\t]*\t).([^\n]*)" "\n\\1${m}\\2" checkdata_ref_text
+	"${checkdata_ref_text}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/ted-checkdata-wrong.txt "${checkdata_ref_text}")
+foreach(name right wrong)
+	set(f ${CHECKDATA_REF})
+	if(name STREQUAL "wrong")
+		set(f ${CMAKE_CURRENT_BINARY_DIR}/ted-checkdata-wrong.txt)
+	endif()
+	add_test(NAME ted_checkdata_reference_check_${name} COMMAND ${CMAKE_COMMAND} -DNO_RUN=ON
+		-DOUT=${f} -DDATA=${CHECKDATA_REF} -P ${checkdata_check})
+endforeach()
+set_tests_properties(ted_checkdata_reference_check_right PROPERTIES
+	PASS_REGULAR_EXPRESSION "are those of the reference build")
+set_tests_properties(ted_checkdata_reference_check_wrong PROPERTIES WILL_FAIL ON)
 # the intended list on the real build (tables and lists of the build
 # directory): a check that differs, listed (passes) and not listed (must
 # fail); a listed check that is equal (stale, must fail)
@@ -152,7 +199,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_intended.txt
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/checkdata_stale.txt
 	"_sleep_\t#1\tthe broken entry\n_pointer\t#2\tequal: stale\n")
 set(checkdata_args ${CMAKE_CURRENT_BINARY_DIR}/checkdata_differs.tsv
-	${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym>)
+	${CHECKDATA_REF} $<TARGET_FILE:ted_sym>)
 add_test(NAME ted_checkdata_intended COMMAND ${REFCHECK} data ${checkdata_args}
 	${CMAKE_CURRENT_BINARY_DIR}/checkdata_intended.txt)
 add_test(NAME ted_checkdata_unlisted COMMAND ${REFCHECK} data ${checkdata_args})
@@ -165,3 +212,4 @@ set_tests_properties(ted_checkdata_unlisted PROPERTIES
 set_tests_properties(ted_checkdata_stale PROPERTIES
 	PASS_REGULAR_EXPRESSION "STALE   _pointer .*checkdata: 2 checks, 1 failed, 1 intended")
 add_dependencies(ted ted_sym)
+

@@ -1011,6 +1011,25 @@ way without writing them: the same run into the build directory, and
 `ted-oracle.sha256` and `ted-tokens.txt` must be the committed ones byte
 for byte.
 
+## Reference data of TED's data check
+
+`tests/data/ted-checkdata.txt` holds the bytes of the reference build of
+`ted.s` that the check `checkdata` of `ted.sym` compares with (one line
+per range of `programs/ted/checkdata.tsv`: start label, end label or
+size, the bytes in hex, `..` for a relocated longword), so a default
+build assembles no `ted.s`. After a change of `checkdata.tsv` (a new
+range) the check fails with "not in the reference data"; the target
+writes the file again from the reference build:
+
+```
+cmake --build --preset amiga --target ted-checkdata
+```
+
+`ted_checkdata_reference` (label `originals`) writes it from a fresh
+reference build into the build directory and compares it with the
+committed file byte for byte; `ted_checkdata_reference_check_wrong` (a
+changed byte must fail) and `_check_right` check that comparison.
+
 ## Test statistics
 
 Every test preset writes a JUnit file of its run into the build

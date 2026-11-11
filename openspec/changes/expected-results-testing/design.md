@@ -589,4 +589,18 @@ code changes in this change).
   the check moves to a test (against CLAUDE.md "checks in the build"), or
   its reference data are committed as generated data under `tests/data`
   (checked by `originals`), or A2 stays in the build. The task stays open
-  until then.
+  until then.- **Task 9.2, TED's reference data (2026-11-11, decision of the task):**
+  `tests/data/ted-checkdata.txt` holds the bytes of every range of
+  `programs/ted/checkdata.tsv` (one line `START<TAB>END|SIZE<TAB>HEX`,
+  `..` for a byte of a relocated long; 36 KB, 534 ranges): only what the
+  check reads, not the listing or the binary. `refcheck data` reads it
+  (`TABLE REFDATA CBUILD [INTENDED]`), still POST_BUILD of `ted_sym`; a
+  range missing from the data fails ("not in the reference data").
+  `refcheck data-ref` writes it from the reference build (target
+  `ted-checkdata`, documented in `tests/README.md` "Reference data of
+  TED's data check"); ctest `ted_checkdata_reference` (label `originals`,
+  fixture `originals_refbuild`) writes it from a fresh build into the
+  build directory and compares byte for byte, broken input
+  `ted_checkdata_reference_check_wrong` (one changed byte) and
+  `_check_right`. Checked: after removing `ref/` a default build makes
+  neither `programs/ted/ref` nor `programs/blitz2/ref` (no vasm run).

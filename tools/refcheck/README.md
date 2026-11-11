@@ -27,8 +27,9 @@ SUBCOMMANDS:
                               instruction
   labels                      every code label of FILE.s exactly once in the C sources of
                               SRCDIR
-  data                        data of a C build against the reference build of the assembler
+  data                        data of a C build against the reference data of the assembler
                               original
+  data-ref                    the reference data of data from the reference build
   listing-map                 the rows of a vasm listing with bytes, as TSV: address,
                               file:line, bytes, source
   listing-labels              the labels of a vasm listing, as TSV: address, label, file:line
@@ -99,14 +100,13 @@ every label.
 ### data
 
 ```
-Usage: refcheck data [OPTIONS] TABLE LISTING REFERENCE CBUILD [INTENDED]
+Usage: refcheck data [OPTIONS] TABLE REFDATA CBUILD [INTENDED]
 
-data of a C build against the reference build of the assembler original
+data of a C build against the reference data of the assembler original
 
 POSITIONALS:
   TABLE TEXT REQUIRED         the checks (e.g. programs/ted/checkdata.tsv)
-  LISTING TEXT REQUIRED       the vasm listing of the reference build
-  REFERENCE TEXT REQUIRED     the reference build (a load file)
+  REFDATA TEXT REQUIRED       the reference data (data-ref, e.g. tests/data/ted-checkdata.txt)
   CBUILD TEXT REQUIRED        the C build with symbols
   INTENDED TEXT               the checks that differ on purpose (CSYM<TAB>#ISSUE<TAB>NOTE per
                               line), each of them must differ
@@ -121,13 +121,42 @@ INTENDED entry is stale or an input cannot be read, 2 usage error.
 ```
 
 Compares the data of the C build `CBUILD` (linked with symbols) with the
-reference build `REFERENCE` and its listing `LISTING`, for every entry of
+reference data `REFDATA` (written by `data-ref`), for every entry of
 `TABLE` (`programs/ted/checkdata.tsv`: C symbol, start label, end label or
-size, a note; relocated longwords of the reference are skipped).
-`INTENDED` lists the checks that differ on purpose (fixed original bugs,
-`CSYM<TAB>#NNN<TAB>NOTE` per line): each of them must differ, a stale
-entry fails. Prints the failed checks and a summary; `-q` only if a check
-failed, `-v` every check.
+size, a note; relocated longwords of the reference are skipped). A check
+whose range is not in `REFDATA` fails (after a change of the table:
+`data-ref` again). `INTENDED` lists the checks that differ on purpose
+(fixed original bugs, `CSYM<TAB>#NNN<TAB>NOTE` per line): each of them
+must differ, a stale entry fails. Prints the failed checks and a summary;
+`-q` only if a check failed, `-v` every check.
+
+### data-ref
+
+```
+Usage: refcheck data-ref [OPTIONS] TABLE LISTING REFERENCE
+
+the reference data of data from the reference build
+
+POSITIONALS:
+  TABLE TEXT REQUIRED         the checks (e.g. programs/ted/checkdata.tsv)
+  LISTING TEXT REQUIRED       the vasm listing of the reference build
+  REFERENCE TEXT REQUIRED     the reference build (a load file)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o TEXT REQUIRED            the reference data to write
+
+Writes the bytes of every range of TABLE. Exit status 0, 1 a label is not in the
+listing (said on stdout) or an input cannot be read, 2 usage error.
+```
+
+Writes the reference data of `data`: for every range of `TABLE` (start
+label and end label or size) the bytes of the first hunk of `REFERENCE`
+from the labels of its vasm listing `LISTING`, one line
+`START<TAB>END|SIZE<TAB>HEX` per range (`..` for a byte of a relocated
+longword), behind a `#` header. `tests/data/ted-checkdata.txt` is written
+so (target `ted-checkdata`), the check in the build needs no reference
+build.
 
 ### listing-map, listing-labels, listing-verify
 
@@ -213,6 +242,8 @@ Messages go to stderr as `refcheck SUB: [FILE: ]message`.
 * `data`: `programs/ted/CMakeLists.txt`, POST_BUILD of `ted_sym`; the
   tests `ted_checkdata_intended`, `ted_checkdata_unlisted`,
   `ted_checkdata_stale`.
+* `data-ref`: the target `ted-checkdata` and the test
+  `ted_checkdata_reference` (`programs/ted/CMakeLists.txt`).
 * `listing-map`, `listing-labels`, `listing-verify`: the reference builds
   `ted_ref` (`programs/ted/CMakeLists.txt`) and `blitz2_ref`
   (`programs/blitz2/CMakeLists.txt`), in the step that assembles them.
