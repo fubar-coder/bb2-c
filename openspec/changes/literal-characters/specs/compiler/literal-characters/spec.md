@@ -2,7 +2,7 @@
 Says what blitz2-c and blitz2-ab3 do with a literal character
 (`$90 cc`) in a source: the compiled string holds the byte, comments and
 macros carry it unchanged, a literal outside a string is an error, and an
-`Include` file in `BB23` is read.
+`Include` file with literal characters is read like any other.
 
 ## ADDED Requirements
 
@@ -39,26 +39,35 @@ not rely on that.)
 
 ### Requirement: A literal character outside a string is an error
 A literal character outside a string and a comment SHALL end the compile
-with a syntax error at its line. The compiler SHALL NOT call a library
-function, read a token table entry or write code for it.
+with an error at its line, and the compiler SHALL NOT call a library
+function or write code for it. With the library of `libs/literal-library`
+loaded (blitz2-c's `acidlibs`, or the userlib with the original compiler)
+the error SHALL be "Syntax Error", as the entries have neither the
+statement nor the function flag. Without the library (AB3 mode) it SHALL be
+the existing "Token Not Found : $90xx.". Neither needs new compiler code.
 
-#### Scenario: Stray character
-- **WHEN** a source has `$90 E9` where a statement is expected
+#### Scenario: Stray character as a statement
+- **WHEN** a source has `$90 E9` where a statement is expected and the library is loaded
 - **THEN** the compile stops with a syntax error and the editor shows that line
+
+#### Scenario: Stray character in an expression
+- **WHEN** a source has `a=` `$90 E9` and the library is loaded
+- **THEN** the compile stops with a syntax error at that line
+
+#### Scenario: AB3 mode
+- **WHEN** blitz2-ab3 compiles a source with `$90 E9` outside a string
+- **THEN** it stops with "Token Not Found : $90E9." and writes no executable
 
 ### Requirement: Compiling from the editor and with the original compiler
 A source that holds literal characters in strings and comments only SHALL
 compile to the same string bytes with blitz2-c and with the original
-compiler when both are called from TED-C (combinations Cc and C5).
+compiler when both are called from TED-C (combinations Cc and C5), also
+when the literal characters are in an `Include`d file.
 
 #### Scenario: C5
 - **WHEN** TED-C holds a program with `ß` in a string and compiles it with the original compiler (C5)
 - **THEN** the string in the executable holds the byte $DF, as with blitz2-c (Cc)
 
-### Requirement: Include files in BB23
-`Include` of a source in `BB23` SHALL skip the header and read the lines
-after it. An include in another format SHALL be read as before.
-
 #### Scenario: Include with a literal character
-- **WHEN** the included file begins with `BB23` and holds a string with `$90 DF`
-- **THEN** the including program compiles the string with the byte $DF
+- **WHEN** an included tokenised file holds a string with `$90 DF`
+- **THEN** the including program compiles the string with the byte $DF, with blitz2-c and with the original compiler

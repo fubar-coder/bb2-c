@@ -30,9 +30,9 @@ codes 26 to 31 of the umlaut mapping (`germs`). The characters enter by
 typing, by loading a text file, by loading a block, by pasting, and by
 the tokeniser. The tokeniser SHALL NOT clear bit 7 of any character
 (today `c & 0x7F`), inside strings, inside comments and outside them. A
-literal character of one of the six umlauts that is loaded from a file
-SHALL be changed to the umlaut's code 26 to 31, so an umlaut has one
-stored form.
+text file or block that holds one of the six umlauts as a byte SHALL give
+the umlaut's code 26 to 31, so an umlaut has one stored form. A tokenised
+file is loaded as it is stored.
 
 #### Scenario: Typing ß in a string
 - **WHEN** the user types `ß` between double quotes with tokenise on
@@ -83,13 +83,14 @@ character's code, not the two bytes and not an ESC sequence of a token.
 - **WHEN** a line with a literal character is printed
 - **THEN** the printer gets the one byte `cc` at that place
 
-### Requirement: Saving a file
-With tokenise on, TED-C SHALL write each line with the 0 byte as today;
-if at least one line holds a literal character the file SHALL be in the
-`BB23` format (`formats/bb23-source`), otherwise in TED's format without
-a header, byte for byte as before this change. With tokenise off (a
-text file), TED-C SHALL write a literal character as the byte `cc` and no
-header.
+### Requirement: Saving and loading a file
+TED-C SHALL write a tokenised source exactly as before this change: each
+line with its 0 byte, no header, no flag; a line that holds a literal
+character holds the pair `$90 cc`. A source without a literal character
+SHALL be byte for byte what the `prev` build writes. With tokenise off (a
+text file), TED-C SHALL write a literal character as the byte `cc`. A
+tokenised file SHALL be loaded as it is stored, so that load and save
+without a change give the same bytes.
 
 #### Scenario: No literal character
 - **WHEN** a tokenised source without a literal character is saved
@@ -97,23 +98,28 @@ header.
 
 #### Scenario: Literal character
 - **WHEN** a tokenised source with one `ß` is saved
-- **THEN** the file begins with `BB23`
+- **THEN** the file is TED's format without a header and the line holds `$90 DF`
+
+#### Scenario: Round trip
+- **WHEN** a tokenised file with literal characters is loaded and saved without change
+- **THEN** the saved file is byte-identical to the loaded file
 
 #### Scenario: Text file round trip
 - **WHEN** a text file with `ß` is loaded and saved with tokenise off
 - **THEN** the file holds the byte $DF again, as it did
 
-### Requirement: Loading a file
-TED-C SHALL recognise a `BB23` file by its header, read the lines after
-it as TED's lines, and not show the header as text. The literal
-characters in the lines SHALL be kept as they are. A `BB23` file the
-reader refuses (formats/bb23-source) SHALL be reported to the user
-without loading part of it.
+### Requirement: The name of a literal character
+The editor SHALL show a literal character as the one character of its
+code whether or not the compiler's token list names the word: the list's
+entry (the library `libs/literal-library`) when it has one, a built-in
+table of 128 one-character names when it has not (standalone TED, AB3
+mode, a Blitz 2 without the library). A word `$90cc` with `cc` < $80 SHALL
+stay an unknown token.
 
-#### Scenario: Round trip
-- **WHEN** a `BB23` file is loaded and saved without change
-- **THEN** the lines of the saved file are those of the loaded file
+#### Scenario: No token list
+- **WHEN** the editor runs with no token list and a line holds `$90 E9`
+- **THEN** it shows `é`, not `?????`
 
-#### Scenario: Refused header
-- **WHEN** a file begins with `BB23` and a version TED-C does not know
-- **THEN** TED-C reports it and loads nothing
+#### Scenario: With the library
+- **WHEN** the token list holds the 128 entries of the library and a line holds `$90 E9`
+- **THEN** it shows `é`, as without the list

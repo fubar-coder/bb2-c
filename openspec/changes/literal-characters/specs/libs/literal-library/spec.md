@@ -1,0 +1,61 @@
+## Purpose
+Defines the library that names the literal-character words `$9080` to
+`$90FF` so every editor that reads the compiler's token list shows them,
+and the reservation of the first byte `$90` (libraries 32 and 33) for
+literal characters.
+
+## ADDED Requirements
+
+### Requirement: The first byte $90 is reserved
+The first byte `$90`, that is the libraries 32 and 33 and the words
+`$9000` to `$90FF`, SHALL be reserved for literal characters. No library
+built by this repository other than the literal library SHALL use library
+number 32 or 33 in any variant, and the documentation of library numbers
+SHALL say so. The pair `$90 cc` with `cc` >= $80 SHALL be the literal
+character `cc`; a word `$9000` to `$907F` SHALL be unused.
+
+#### Scenario: Variants
+- **WHEN** every `libs/variants/*/libnums.h` is read
+- **THEN** only `LIB_literallib` is 33 and nothing is 32
+
+#### Scenario: The documentation
+- **WHEN** the documentation of library numbers (`docs/token-table.md`, `docs/libs/variants.md`, `docs/formats.md` §3.2) is read
+- **THEN** each names `$90`, libraries 32 and 33, as reserved for literal characters
+
+### Requirement: The literal library
+The library `literallib` SHALL have the number 33 and 128 entries, the
+words `$9080` to `$90FF`; entry `n` SHALL be named by the single character
+with the code `$80 + n` (Latin-1, one byte, no help text). Its entries SHALL
+have neither the statement nor the function flag, and no code or error
+address, so that the compiler calls nothing and writes no code for them;
+the library SHALL have no init or finit code. It SHALL be part of
+`acidlibs` of every variant and also be built as the userlib file
+`literallib.obj` for the original Blitz 2. The library SHALL pass
+`blitzlib check`.
+
+#### Scenario: Names
+- **WHEN** `bbsrc tokens` runs over the compiler and the built `acidlibs`
+- **THEN** the word `$90DF` is named `ß` (the byte $DF) and `$90FF` is named with the byte $FF
+
+#### Scenario: Not callable
+- **WHEN** a source uses the word `$90DF` as a statement or in an expression with the library loaded
+- **THEN** the compile stops with "Syntax Error"
+
+#### Scenario: Userlib file
+- **WHEN** the userlib file is built
+- **THEN** its library has number 33, the same 128 names and no code
+
+### Requirement: Existing results and checks
+Library files other than the new ones SHALL stay byte-identical to the
+`prev` build. The comparison of the token list with the original's
+(`tokens_port`, `tokens_cd`) SHALL name the 128 tokens as an addition and
+otherwise stay as strict as before, and the comparison of `acidlibs` with
+the CD's SHALL name the library as an addition.
+
+#### Scenario: Token list
+- **WHEN** `tokens_port` runs
+- **THEN** it passes with the original's list plus the 128 tokens of the library, and fails if one of them is missing or renamed
+
+#### Scenario: Other libraries
+- **WHEN** the library files are compared with the `prev` build
+- **THEN** only `acidlibs`, the new userlib file and the files named in the task for `ridoslib` differ
