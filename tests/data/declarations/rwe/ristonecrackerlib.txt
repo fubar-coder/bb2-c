@@ -1,12 +1,15 @@
 # The declarations of RISTONECRACKERLIB.OBJ (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	17	7
 header	70004e75001100000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	STCLength	0302........000103..0000--------++++++++--------ffff............5354434c656e67746800616464726573732020202d2d2072657475726e7320756e7061636b65642073697a6500..
-entry	1	STCStart	0302........000103..0000--------++++++++--------ffff............535443537461727400616464726573732020202d2d2072657475726e732061646472657373206f6620756e7061636b6564206461746100..
-entry	2	STCSafeLen	0302........000103..0000--------++++++++--------ffff............535443536166654c656e00616464726573732020202d2d207361666520756e7061636b206275666665722073697a6500
-entry	3	STCLoad	0303........000207030000--------++++++++--------ffff............5354434c6f61640066696c656e616d65242c6164647265737300
+entry	0	STCLength	address   -- returns unpacked size	0302........000103..0000--------++++++++--------ffff............	..
+entry	1	STCStart	address   -- returns address of unpacked data	0302........000103..0000--------++++++++--------ffff............	..
+entry	2	STCSafeLen	address   -- safe unpack buffer size	0302........000103..0000--------++++++++--------ffff............	
+entry	3	STCLoad	filename$,address	0303........000207030000--------++++++++--------ffff............	
 entry	4	-	0000........0000--------++++++++--------
 entry	5	-	0000........0000------------------------
 end	ffff00000000

@@ -1,11 +1,14 @@
 # The declarations of rishapezlib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	21	7
 header	70004e75001500000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	CludgeAcid	0001........000102..0000--------++++++++--------ffff............436c7564676541636964006f6e7c6f666600
-entry	1	PeekByte	0202........000103..0000--------++++++++--------ffff............5065656b427974650061646472657300
-entry	2	SetWinDrawShapeZ	0001........00020202008a10020000--------++++++++--------ffff............53657457696e4472617753686170655a006d6f6465202020202d2d20303d6e6f726d616c2c20313d6d657368656400..
+entry	0	CludgeAcid	on|off	0001........000102..0000--------++++++++--------ffff............	
+entry	1	PeekByte	addres	0202........000103..0000--------++++++++--------ffff............	
+entry	2	SetWinDrawShapeZ	mode    -- 0=normal, 1=meshed	0001........00020202008a10020000--------++++++++--------ffff............	..
 entry	3	-	0000........0000--------++++++++--------
 entry	4	-	0000........0000--------++++++++--------
 end	ffff00000000

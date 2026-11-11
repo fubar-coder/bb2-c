@@ -123,11 +123,16 @@ int blitzlib_compare(const struct hunk *orig, const struct hunk *other, const ch
  *
  * Only what blitzlib_compare compares: "library<TAB>NUM<TAB>RELOCS" (the
  * relocations inside the declaration part), then "header<TAB>TOKENS", one
- * "entry<TAB>K<TAB>NAME<TAB>TOKENS" per entry of the token table and
- * "end<TAB>TOKENS" (the $FFFF and !libfin); TOKENS two characters per
- * byte: hex digits for a declaration byte, ".." for a byte filled in at
- * run time or padding, "++++++++" / "--------" for a code offset that is
- * set / zero (no code, no code offsets).
+ * line per entry of the token table and "end<TAB>TOKENS" (the $FFFF and
+ * !libfin). An entry with a name block is
+ * "entry<TAB>K<TAB>NAME<TAB>HELP<TAB>TOKENS<TAB>TOKENS" (the bytes before
+ * the name and behind the help text's 0), a nullsub (or a name block that
+ * is no plain text) "entry<TAB>K<TAB>-<TAB>TOKENS". NAME and HELP are
+ * written as they are, a backslash as "\\" and any other byte that is not
+ * printable ASCII as "\xHH" (so the text gives back the same bytes);
+ * TOKENS two characters per byte: hex digits for a declaration byte, ".."
+ * for a byte filled in at run time or padding, "++++++++" / "--------" for
+ * a code offset that is set / zero (no code, no code offsets).
  *
  * @param h       the code hunk of the library
  * @param out     the text

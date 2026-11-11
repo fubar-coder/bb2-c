@@ -272,7 +272,10 @@ static int decls(const char *path, const char *output)
         return 1;
     }
     fprintf(out, "# The declarations of %s (blitzlib decls): what blitzlib compare compares -\n"
-                 "# header, token table, !libfin; \"..\" filled in at run time or padding,\n"
+                 "# header, token table, !libfin. Per entry: number, name, help text, the\n"
+                 "# bytes before and behind the two texts (a nullsub: \"-\" and its bytes).\n"
+                 "# Texts as they are (\\\\ a backslash, \\xHH any other byte that is not\n"
+                 "# printable ASCII); bytes in hex, \"..\" filled in at run time or padding,\n"
                  "# \"++++++++\"/\"--------\" a code offset set/zero. Generated, do not edit.\n",
             base ? base + 1 : path);
     for (i = 0; i < b.n && !rc; i++)

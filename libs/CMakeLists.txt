@@ -112,8 +112,7 @@ set(decls_wrong ${CMAKE_CURRENT_BINARY_DIR}/declarations-wrong.txt)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${DECLS_DATA_DIR}/acidlibs.txt)
 file(READ ${DECLS_DATA_DIR}/acidlibs.txt decls_text)
 # (the name Anim of entry 0 of lib 94 becomes Bnim)
-string(REPLACE "\nentry\t0\tAnim\t0008....................416e696d"
-	"\nentry\t0\tAnim\t0008....................426e696d" decls_text "${decls_text}")
+string(REPLACE "\nentry\t0\tAnim\t" "\nentry\t0\tBnim\t" decls_text "${decls_text}")
 file(WRITE ${decls_wrong} "${decls_text}")
 add_test(NAME declarations_data_broken COMMAND ${BLITZLIB} compare ${decls_wrong}
 	${BLITZ2_DIR}/acidlibs)

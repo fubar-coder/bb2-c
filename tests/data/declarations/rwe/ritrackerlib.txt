@@ -1,15 +1,18 @@
 # The declarations of ritrackerlib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	58	11
 header	70004e75003a00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	TrackInit	0001........000103..0000--------++++++++--------ffff............547261636b496e6974006164647265737300
-entry	1	TrackPlay	0001........00000000--------++++++++--------ffff............547261636b506c61790000..
-entry	2	TrackStop	0001........00000000--------++++++++--------ffff............547261636b53746f700000..
-entry	3	TrackDMA	0001........000102..0000--------++++++++--------ffff............547261636b444d4100646d61776169742e7700..
-entry	4	Tracker	0001........000101..0000--------++++++++--------ffff............547261636b6572006f6e2b6f666600..
-entry	5	TrackerChannels	0001........000101..0000--------++++++++--------ffff............547261636b65724368616e6e656c73006d61736b00..
-entry	6	TrackerPause	0001........000101..0000--------++++++++--------ffff............547261636b65725061757365004f6e7c4f666600
+entry	0	TrackInit	address	0001........000103..0000--------++++++++--------ffff............	
+entry	1	TrackPlay		0001........00000000--------++++++++--------ffff............	..
+entry	2	TrackStop		0001........00000000--------++++++++--------ffff............	..
+entry	3	TrackDMA	dmawait.w	0001........000102..0000--------++++++++--------ffff............	..
+entry	4	Tracker	on+off	0001........000101..0000--------++++++++--------ffff............	..
+entry	5	TrackerChannels	mask	0001........000101..0000--------++++++++--------ffff............	..
+entry	6	TrackerPause	On|Off	0001........000101..0000--------++++++++--------ffff............	
 entry	7	-	0000........0000--------++++++++--------
 entry	8	-	0000........0000--------++++++++--------
 end	ffff00000000

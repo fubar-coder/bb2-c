@@ -81,8 +81,10 @@ from the list; label `originals`, preset `originals`: a committed dump of
 the routines would be a copy of the CD's code, so it is skipped without
 the CD). The declaration comparison reads the declarations of the
 originals as committed data, `tests/data/declarations/GROUP.txt` and
-`rwe/NAME.txt` (`blitzlib decls`: names, argument types, help texts,
-numbers, no code), so it needs no CD; `declarations_GROUP_data` and
+`rwe/NAME.txt` (`blitzlib decls`: one line per entry with its name and
+help text as readable text, then argument types and numbers in hex; no
+code; the format in `tools/blitzlib/README.md`), so it needs no CD;
+`declarations_GROUP_data` and
 `rwe_declarations_NAME_data` (label `originals`) check that the
 originals still give them byte for byte (a changed original fails there;
 with broken input `declarations_data_check_wrong`, and

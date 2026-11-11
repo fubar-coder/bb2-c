@@ -185,10 +185,23 @@ error.
 The declaration data of `FILE` (`tests/data/declarations/`, so the
 comparisons with the original libraries need no CD): behind a `#` header,
 per library `library<TAB>NUM<TAB>RELOCS` (the relocations inside the
-declaration part), `header<TAB>TOKENS`, one `entry<TAB>K<TAB>NAME<TAB>TOKENS`
-per entry of the token table and `end<TAB>TOKENS` (the `$FFFF` and
-`!libfin`). `TOKENS` has two characters per byte: hex digits for a
-declaration byte (kinds, argument types, names, help texts, numbers),
+declaration part), `header<TAB>TOKENS`, one line per entry of the token
+table and `end<TAB>TOKENS` (the `$FFFF` and `!libfin`). An entry with a
+name block is `entry<TAB>K<TAB>NAME<TAB>HELP<TAB>TOKENS<TAB>TOKENS`: its
+name and help text, then the bytes in front of the name (kind, forms,
+argument types) and those behind the help text's 0 (padding, often
+empty); a nullsub (or a name block that is not plain text) is
+`entry<TAB>K<TAB>-<TAB>TOKENS`. For example
+
+```
+entry	0	PopUpInit	-- initialise the popup window system	0001........000102..0000--------++++++++--------ffff............	
+```
+
+`NAME` and `HELP` are written as they are; a backslash is `\\` and any
+other byte that is not printable ASCII (control characters, bytes from
+`$7F`) is `\xHH`, so reading gives back the same bytes (any other
+backslash, `\x00` or an escape of a printable character is an error).
+`TOKENS` has two characters per byte: hex digits for a declaration byte,
 `..` for a byte filled in at run time or padding, `++++++++` or
 `--------` for a code offset that is set or zero. No code and no code
 offsets (`tools/lib/blitzlib/blitzlib.h`, `blitzlib_decls_write`).

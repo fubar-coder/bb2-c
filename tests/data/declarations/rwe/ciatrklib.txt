@@ -1,29 +1,32 @@
 # The declarations of ciatrklib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	56	35
 header	70004e75003800000000000000000000000000000000++++++++0000++++++++000000000000000000000000++++++++
-entry	0	LoadTrackerModule	0302........000203070000++++++++++++++++--------ffff............4c6f6164547261636b65724d6f64756c650028547261636b65724d6f64756c65232c4e616d652900
-entry	1	StartTracker	0302........000103..0000++++++++++++++++--------ffff............5374617274547261636b65720028547261636b65724d6f64756c65232900
-entry	2	StopTracker	0001........00000000--------++++++++--------ffff............53746f70547261636b65720000..
-entry	3	DecodeModule	0001........000203030000++++++++++++++++--------ffff............4465636f64654d6f64756c6500547261636b65724d6f64756c65232c4d6f64756c654164647265737300
-entry	4	GetTrackerSize	0302........000102..0000++++++++++++++++--------ffff............476574547261636b657253697a650028547261636b65724d6f64756c65232900
-entry	5	GetTrackerLocation	0302........000103..0000++++++++++++++++--------ffff............476574547261636b65724c6f636174696f6e0028547261636b65724d6f64756c65232900
-entry	6	FreeTrackerModule	0001........000103..0000++++++++++++++++--------ffff............46726565547261636b65724d6f64756c6500547261636b65724d6f64756c652300..
-entry	7	GetTrackerEvent	0102........00000000--------++++++++--------ffff............476574547261636b65724576656e740000..
-entry	8	CheckTrackerEvent	0202........00000000--------++++++++--------ffff............436865636b547261636b65724576656e740000..
-entry	9	WaitTrackerEvent	0001........00000000--------++++++++--------ffff............57616974547261636b65724576656e740000
-entry	10	CheckTrackerID	0302........000103..0000++++++++++++++++--------ffff............436865636b547261636b657249440028547261636b65724d6f64756c65232900
-entry	11	ModuleToChip	0302........000103..0000--------++++++++--------ffff............4d6f64756c65546f436869700028547261636b65724d6f64756c65232900
-entry	12	GetModuleName$	0702........000103..0000++++++++++++++++--------ffff............4765744d6f64756c654e616d65240028547261636b65724d6f64756c65232900
-entry	13	ModulePositionJump	0001........000101..0000--------++++++++--------ffff............4d6f64756c65506f736974696f6e4a756d700028506f736974696f6e232900..
-entry	14	GetModulePosition	0102........00000000--------++++++++--------ffff............4765744d6f64756c65506f736974696f6e0000..
-entry	15	PauseModule	0001........00000000--------++++++++--------ffff............50617573654d6f64756c650000..
-entry	16	ChangeTrackerVBlank	0001........00000000--------++++++++--------ffff............4368616e6765547261636b657256426c616e6b0000..
-entry	17	PlayTracker	0001........00000000--------++++++++--------ffff............506c6179547261636b65720000..
-entry	18	TrackerVolume	0001........000102..0000--------++++++++--------ffff............547261636b6572566f6c756d650028566f6c756d652052616e67653a20302d36342900..
-entry	19	ChangeTrackerMask	0001........000102..0000--------++++++++--------ffff............4368616e6765547261636b65724d61736b004368616e6e656c5f4d61736b00..
-entry	20	ModulePatterns	0102........000103..0000++++++++++++++++--------ffff............4d6f64756c655061747465726e7300284d6f64756c6520232900
+entry	0	LoadTrackerModule	(TrackerModule#,Name)	0302........000203070000++++++++++++++++--------ffff............	
+entry	1	StartTracker	(TrackerModule#)	0302........000103..0000++++++++++++++++--------ffff............	
+entry	2	StopTracker		0001........00000000--------++++++++--------ffff............	..
+entry	3	DecodeModule	TrackerModule#,ModuleAddress	0001........000203030000++++++++++++++++--------ffff............	
+entry	4	GetTrackerSize	(TrackerModule#)	0302........000102..0000++++++++++++++++--------ffff............	
+entry	5	GetTrackerLocation	(TrackerModule#)	0302........000103..0000++++++++++++++++--------ffff............	
+entry	6	FreeTrackerModule	TrackerModule#	0001........000103..0000++++++++++++++++--------ffff............	..
+entry	7	GetTrackerEvent		0102........00000000--------++++++++--------ffff............	..
+entry	8	CheckTrackerEvent		0202........00000000--------++++++++--------ffff............	..
+entry	9	WaitTrackerEvent		0001........00000000--------++++++++--------ffff............	
+entry	10	CheckTrackerID	(TrackerModule#)	0302........000103..0000++++++++++++++++--------ffff............	
+entry	11	ModuleToChip	(TrackerModule#)	0302........000103..0000--------++++++++--------ffff............	
+entry	12	GetModuleName$	(TrackerModule#)	0702........000103..0000++++++++++++++++--------ffff............	
+entry	13	ModulePositionJump	(Position#)	0001........000101..0000--------++++++++--------ffff............	..
+entry	14	GetModulePosition		0102........00000000--------++++++++--------ffff............	..
+entry	15	PauseModule		0001........00000000--------++++++++--------ffff............	..
+entry	16	ChangeTrackerVBlank		0001........00000000--------++++++++--------ffff............	..
+entry	17	PlayTracker		0001........00000000--------++++++++--------ffff............	..
+entry	18	TrackerVolume	(Volume Range: 0-64)	0001........000102..0000--------++++++++--------ffff............	..
+entry	19	ChangeTrackerMask	Channel_Mask	0001........000102..0000--------++++++++--------ffff............	..
+entry	20	ModulePatterns	(Module #)	0102........000103..0000++++++++++++++++--------ffff............	
 entry	21	-	0000........0000--------++++++++--------
 entry	22	-	0000........0000--------++++++++--------
 end	ffff00000000

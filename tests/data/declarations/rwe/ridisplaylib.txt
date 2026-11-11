@@ -1,10 +1,13 @@
 # The declarations of ridisplaylib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	29	6
 header	70004e75001d00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	InitView	0303........0004020202020000--------++++++++--------ffff............496e697456696577006865696768742c64657074682c6e756d737072697465732c6e756d636f6c6f75727300
-entry	1	ViewBitmap	0303........000103..00a010000000--------++++++++--------ffff............566965774269746d6170006269746d617000
+entry	0	InitView	height,depth,numsprites,numcolours	0303........0004020202020000--------++++++++--------ffff............	
+entry	1	ViewBitmap	bitmap	0303........000103..00a010000000--------++++++++--------ffff............	
 entry	2	-	0000........0000--------++++++++--------
 entry	3	-	0000........0000--------++++++++--------
 end	ffff00000000

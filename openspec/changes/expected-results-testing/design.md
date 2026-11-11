@@ -622,9 +622,12 @@ code changes in this change).
   `acidlibs.txt`, `deflibs.txt`, `rwe/NAME.txt` for the 53 RWE userlibs;
   490 KB): per library its number and the count of relocations in the
   declaration part, then header, one line per token table entry, end;
-  declaration bytes in hex (kinds, argument types, names, help texts,
-  numbers), run-time/padding bytes `..`, code offsets only `++++++++`
-  (set) or `--------` (zero) - no code. `blitzlib compare` takes the data
+  an entry's name and help text as readable text (a backslash `\\`, any
+  other byte that is not printable ASCII `\xHH`; user decision of
+  2026-11-11, read back byte for byte), the other declaration bytes in
+  hex (kinds, argument types, numbers), run-time/padding bytes `..`,
+  code offsets only `++++++++` (set) or `--------` (zero) - no code
+  (`tools/blitzlib/README.md`, `decls`). `blitzlib compare` takes the data
   as ORIGINAL: it rebuilds a code hunk of only the declaration part and
   runs the same comparison, so the messages and with them the intended
   lists (`declarations-intended.txt`, `NAME.declarations-intended.txt`)

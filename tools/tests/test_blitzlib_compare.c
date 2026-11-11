@@ -281,13 +281,70 @@ int main(void)
         text[fread(text, 1, sizeof text - 1, t)] = 0;
         fclose(t);
         CHECK(!strncmp(text, "library\t100\t1\nheader\t70004e7500640000", 36));
-        CHECK(strstr(text, "\nentry\t0\tTest\t0001........00000000++++++++"
-                           "----------------ffff............54657374") != NULL);
+        CHECK(strstr(text, "\nentry\t0\tTest\tX\t0001........00000000++++++++"
+                           "----------------ffff............\t..\n") != NULL);
         CHECK(strstr(text, "\nend\tffff00000000\n") != NULL);
         CHECK(strstr(text, "4e75\n") == NULL);
         free(a.p);
     }
+    /* texts with bytes that are not printable ASCII: escaped, and read
+       back to the same bytes (the text written again is the same) */
+    {
+        struct variant v = base;
+        struct buf a;
+        uint32_t ra[1] = { 0x30 + 10 };
+        struct hunk ha;
+        struct blitzlib_decls d;
+        FILE *t = tmpfile(), *out;
+        char text[2000], again[2000], err[200];
+        size_t n;
+
+        v.name = "\\\xe4\x01" "A";
+        a = build(&v);
+        ha = (struct hunk){ HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0, 0 };
+        CHECK(blitzlib_decls_write(&ha, t, err, sizeof err) == 0);
+        rewind(t);
+        n = fread(text, 1, sizeof text - 1, t);
+        text[n] = 0;
+        fclose(t);
+        CHECK(strstr(text, "\nentry\t0\t\\\\\\xe4\\x01A\tX\t0001") != NULL);
+        CHECK(blitzlib_decls_parse(text, n, &d, err, sizeof err) == 0 && d.n == 1);
+        if (d.n == 1) {
+            out = tmpfile();
+            CHECK(blitzlib_compare(&d.hunks[0], &ha, "lib", out) == 0);
+            fclose(out);
+            t = tmpfile();
+            CHECK(blitzlib_decls_write(&d.hunks[0], t, err, sizeof err) == 0);
+            rewind(t);
+            again[fread(again, 1, sizeof again - 1, t)] = 0;
+            fclose(t);
+            CHECK(!strcmp(text, again));
+        }
+        blitzlib_decls_free(&d);
+        free(a.p);
+    }
     /* broken declaration data */
+#define ENTRY0 "library\t100\t0\nheader\t70004e7500640000000000000000000000000000" \
+               "0000000000000000000000000000000000000000000000000000\nentry\t0\t"
+    CHECK(decls_parse(ENTRY0 "Te\\qt\tX\t00\t\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: text column 3: expected \\\\ or \\xHH") != NULL);
+    CHECK(decls_parse(ENTRY0 "Te\\x5ct\tX\t00\t\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: text column 3: expected") != NULL);
+    CHECK(decls_parse(ENTRY0 "Te\\x00t\tX\t00\t\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: text column 3: expected") != NULL);
+    CHECK(decls_parse(ENTRY0 "Te\\x4\tX\t00\t\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: text column 3: expected") != NULL);
+    CHECK(decls_parse(ENTRY0 "Te\xe4t\tX\t00\t\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: text column 3: a byte that is not printable") != NULL);
+    /* a field missing: NAME HELP TOKENS without the last TOKENS */
+    CHECK(decls_parse(ENTRY0 "Test\tX\t00\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: expected library NUM RELOCS") != NULL);
+    CHECK(decls_parse(ENTRY0 "Test\t00\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 3: expected library NUM RELOCS") != NULL);
+    CHECK(decls_parse(ENTRY0 "Test\tX\t00\t..\t..\n", msg, sizeof msg) == -1);
+    CHECK(decls_parse("library\t100\t0\nentry\tTest\tX\t00\t..\n", msg, sizeof msg) == -1);
+    CHECK(strstr(msg, "line 2: expected library NUM RELOCS") != NULL);
+#undef ENTRY0
     CHECK(decls_parse("header\t00\n", msg, sizeof msg) == -1);
     CHECK(strstr(msg, "line 1: expected library NUM RELOCS") != NULL);
     CHECK(decls_parse("library\t100\n", msg, sizeof msg) == -1);

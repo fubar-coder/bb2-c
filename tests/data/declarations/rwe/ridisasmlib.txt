@@ -1,10 +1,13 @@
 # The declarations of ridisasmlib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	50	6
 header	70004e75003200000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	DisAssemble$	0702........000103..0000--------++++++++--------ffff............446973417373656d626c65240028616464726573732e6c2900..
-entry	1	InstrSize	0302........00000000--------++++++++--------ffff............496e73747253697a65002d2072657475726e732073697a65206f66206c61737420696e737472756374696f6e20646973617373656d626c656400
+entry	0	DisAssemble$	(address.l)	0702........000103..0000--------++++++++--------ffff............	..
+entry	1	InstrSize	- returns size of last instruction disassembled	0302........00000000--------++++++++--------ffff............	
 entry	2	-	0000........0000--------++++++++--------
 entry	3	-	0000........0000--------++++++++--------
 end	ffff00000000

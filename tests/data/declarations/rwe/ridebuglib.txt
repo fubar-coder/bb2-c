@@ -1,15 +1,18 @@
 # The declarations of RIDEBUGLIB.OBJ (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	51	23
 header	70004e75003300000000000000000000000000000000++++++++0000++++++++000000000000000000000000++++++++
-entry	0	AddVarTrace	0001........0003880701..0000++++++++++++++++--------ffff............4164645661725472616365007661726961626c652c737472696e67242c6f7574707574202d206164642061207661726961626c6520747261636500..
-entry	1	DelVarTrace	0001........000107..0000++++++++++++++++--------ffff............44656c5661725472616365007661726961626c6524202d2072656d6f76652061207472616365206f6e2061206e616d6564207661726961626c6500..
-entry	2	VarTraceWindow	0001........00000000++++++++++++++++--------ffff............566172547261636557696e646f77002d206f70656e20746865207661726961626c652074726163652077696e646f77206f6e207468652064656275676765722073637265656e00..
-entry	3	DisAsmWindow	0001........00000000++++++++++++++++--------ffff............44697341736d57696e646f77002d206f70656e2074686520646973617373656d626c792077696e646f77206f6e207468652064656275676765722073637265656e00
-entry	4	CopperTrace	0001........000103..0000++++++++++++++++--------000203020000++++++++++++++++--------ffff............436f70706572547261636500616464726573732c5b2c6f66667365745d202d206f66667365743c3e3020666f7220436f704c697374206f626a6563747300
-entry	5	ProcControl	0001........00000000++++++++++++++++--------000101..0000++++++++++++++++--------ffff............50726f63436f6e74726f6c005b4f6e2f4f66665d00..
-entry	6	MemoryWindow	0001........000202030000++++++++++++++++--------ffff............4d656d6f727957696e646f77006e756d232c61646472657373202d206f70656e2061206d656d6f72792077696e646f77206f6e207468652064656275676765722073637265656e00
+entry	0	AddVarTrace	variable,string$,output - add a variable trace	0001........0003880701..0000++++++++++++++++--------ffff............	..
+entry	1	DelVarTrace	variable$ - remove a trace on a named variable	0001........000107..0000++++++++++++++++--------ffff............	..
+entry	2	VarTraceWindow	- open the variable trace window on the debugger screen	0001........00000000++++++++++++++++--------ffff............	..
+entry	3	DisAsmWindow	- open the disassembly window on the debugger screen	0001........00000000++++++++++++++++--------ffff............	
+entry	4	CopperTrace	address,[,offset] - offset<>0 for CopList objects	0001........000103..0000++++++++++++++++--------000203020000++++++++++++++++--------ffff............	
+entry	5	ProcControl	[On/Off]	0001........00000000++++++++++++++++--------000101..0000++++++++++++++++--------ffff............	..
+entry	6	MemoryWindow	num#,address - open a memory window on the debugger screen	0001........000202030000++++++++++++++++--------ffff............	
 entry	7	-	0000........0000--------++++++++--------
 entry	8	-	0000........0000--------++++++++--------
 end	ffff00000000

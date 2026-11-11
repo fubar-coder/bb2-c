@@ -1,10 +1,13 @@
 # The declarations of popupwinlib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	16	6
 header	70004e75001000000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	PopUpInit	0001........000102..0000--------++++++++--------ffff............506f705570496e6974002d2d20696e697469616c6973652074686520706f7075702077696e646f772073797374656d00
-entry	1	PopUpWindow	0001........00020203009e10800000--------++++++++--------ffff............506f70557057696e646f770053637265656e232c2a6974656d7300..
+entry	0	PopUpInit	-- initialise the popup window system	0001........000102..0000--------++++++++--------ffff............	
+entry	1	PopUpWindow	Screen#,*items	0001........00020203009e10800000--------++++++++--------ffff............	..
 entry	2	-	0000........0000--------++++++++--------
 entry	3	-	0000........0000--------++++++++--------
 end	ffff00000000

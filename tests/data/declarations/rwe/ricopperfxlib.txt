@@ -1,21 +1,24 @@
 # The declarations of RICOPPERFXLIB.OBJ (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	11	18
 header	70004e75000b00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	DoColSplit	0203........0003030202..0000--------++++++++--------ffff............446f436f6c53706c697400636f6c735f6164722c6e756d6c696e65732c636f6c6f75725f726567697374657200..
-entry	1	RedoColSplit	0001........0003030203..0000--------++++++++--------ffff............5265646f436f6c53706c697400636f6c735f6164722c6e756d6c696e65732c63636f666673657400
-entry	2	CopperReset	0001........00020202008f10800000--------++++++++--------0003020202..008f10800000--------++++++++--------ffff............436f70706572526573657400636f706c697374232c73746172746c696e655b2c63636f66667365745d00
-entry	3	CopperEnd	0001........00000000--------++++++++--------ffff............436f70706572456e640000..
-entry	4	CopperInfoBlock	0302........00000000--------++++++++--------ffff............436f70706572496e666f426c6f636b0000..
-entry	5	CopperCommand	0001........000202020000--------++++++++--------ffff............436f70706572436f6d6d616e6400636f70696e73312c636f70696e733200
-entry	6	CopperMove	0001........000202020000--------++++++++--------ffff............436f707065724d6f76650072656769737465722c76616c756500
-entry	7	CopperWait	0001........000202020000--------++++++++--------ffff............436f707065725761697400782c7900..
-entry	8	CopperSkip	0001........000202020000--------++++++++--------ffff............436f70706572536b697000782c7900..
-entry	9	GetCCOffset	0202........00000000--------++++++++--------ffff............47657443434f6666736574002d206765742063757272656e7420637573746f6d20636f70706572206f666673657400..
-entry	10	CopperAGACol	0303........0004020202020000--------++++++++--------ffff............436f70706572414741436f6c00636f6c232c722c672c6200
-entry	11	CopperResetAdr	0001........000203020000--------++++++++--------ffff............436f70706572526573657441647200636f706c697374232c73746172746c696e6500
-entry	12	ColSplitBplcon3	0001........000101..0000--------++++++++--------ffff............436f6c53706c697442706c636f6e330062706c636f6e33202d206c6f772062797465206f662062706c636f6e203300..
+entry	0	DoColSplit	cols_adr,numlines,colour_register	0203........0003030202..0000--------++++++++--------ffff............	..
+entry	1	RedoColSplit	cols_adr,numlines,ccoffset	0001........0003030203..0000--------++++++++--------ffff............	
+entry	2	CopperReset	coplist#,startline[,ccoffset]	0001........00020202008f10800000--------++++++++--------0003020202..008f10800000--------++++++++--------ffff............	
+entry	3	CopperEnd		0001........00000000--------++++++++--------ffff............	..
+entry	4	CopperInfoBlock		0302........00000000--------++++++++--------ffff............	..
+entry	5	CopperCommand	copins1,copins2	0001........000202020000--------++++++++--------ffff............	
+entry	6	CopperMove	register,value	0001........000202020000--------++++++++--------ffff............	
+entry	7	CopperWait	x,y	0001........000202020000--------++++++++--------ffff............	..
+entry	8	CopperSkip	x,y	0001........000202020000--------++++++++--------ffff............	..
+entry	9	GetCCOffset	- get current custom copper offset	0202........00000000--------++++++++--------ffff............	..
+entry	10	CopperAGACol	col#,r,g,b	0303........0004020202020000--------++++++++--------ffff............	
+entry	11	CopperResetAdr	coplist#,startline	0001........000203020000--------++++++++--------ffff............	
+entry	12	ColSplitBplcon3	bplcon3 - low byte of bplcon 3	0001........000101..0000--------++++++++--------ffff............	..
 entry	13	-	0000........0000--------++++++++--------
 entry	14	-	0000........0000--------++++++++--------
 end	ffff00000000

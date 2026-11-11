@@ -1,9 +1,12 @@
 # The declarations of rilvcallhooklib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	27	5
 header	70004e75001b00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	RetrieveCallHook	0302........000000fe16000000--------++++++++--------ffff............526574726965766543616c6c486f6f6b0000
+entry	0	RetrieveCallHook		0302........000000fe16000000--------++++++++--------ffff............	
 entry	1	-	0000........0000--------++++++++--------
 entry	2	-	0000........0000--------++++++++--------
 end	ffff00000000

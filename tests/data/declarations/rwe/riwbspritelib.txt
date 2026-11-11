@@ -1,14 +1,17 @@
 # The declarations of riwbspritelib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	10	10
 header	70004e75000a00000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	GetWBSprite	0302........000402020203009a10820000--------++++++++--------ffff............476574574253707269746500782c792c73686170655b2c7370726974656368616e6e656c5d00
-entry	1	FreeWBSprite	0001........000101..0000--------++++++++--------ffff............467265655742537072697465007370726974655f6368616e6e656c00
-entry	2	MoveWBSprite	0103........0004030202030000--------++++++++--------ffff............4d6f766557425370726974650076696577706f72742c782c792c7370726974655f6368616e6e656c00..
-entry	3	ChangeWBSprite	0103........0003030302..009a10820000--------++++++++--------ffff............4368616e676557425370726974650076696577706f72742c7370726974655f6368616e6e656c2c73686170652300
-entry	4	WBSpriteX	0202........000102..0000--------++++++++--------ffff............574253707269746558007370726974655f6368616e6e656c00..
-entry	5	WBSpriteY	0202........000102..0000--------++++++++--------ffff............574253707269746559007370726974655f6368616e6e656c00..
+entry	0	GetWBSprite	x,y,shape[,spritechannel]	0302........000402020203009a10820000--------++++++++--------ffff............	
+entry	1	FreeWBSprite	sprite_channel	0001........000101..0000--------++++++++--------ffff............	
+entry	2	MoveWBSprite	viewport,x,y,sprite_channel	0103........0004030202030000--------++++++++--------ffff............	..
+entry	3	ChangeWBSprite	viewport,sprite_channel,shape#	0103........0003030302..009a10820000--------++++++++--------ffff............	
+entry	4	WBSpriteX	sprite_channel	0202........000102..0000--------++++++++--------ffff............	..
+entry	5	WBSpriteY	sprite_channel	0202........000102..0000--------++++++++--------ffff............	..
 entry	6	-	0000........0000--------++++++++--------
 entry	7	-	0000........0000--------++++++++--------
 end	ffff00000000

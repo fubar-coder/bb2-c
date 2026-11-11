@@ -1,14 +1,17 @@
 # The declarations of richunkylib.obj (blitzlib decls): what blitzlib compare compares -
-# header, token table, !libfin; ".." filled in at run time or padding,
+# header, token table, !libfin. Per entry: number, name, help text, the
+# bytes before and behind the two texts (a nullsub: "-" and its bytes).
+# Texts as they are (\\ a backslash, \xHH any other byte that is not
+# printable ASCII); bytes in hex, ".." filled in at run time or padding,
 # "++++++++"/"--------" a code offset set/zero. Generated, do not edit.
 library	24	16
 header	70004e75001800000000000000000000000000000000++++++++0000++++++++000000000000000000000000--------
-entry	0	ChunkyBitmap	0001........0003020202..001810800000--------++++++++--------ffff............4368756e6b794269746d6170006269746d6170232c77696474682c68656967687400
-entry	1	ChunkyToPlanar	0001........000202020018108000a011810000--------++++++++--------ffff............4368756e6b79546f506c616e6172006368756e6b796269746d61702c6269746d6170202020202d2d333230783235367838206269746d617000..
-entry	2	PlanarToChunky	0001........000202020018118100a010800000--------++++++++--------ffff............506c616e6172546f4368756e6b79006269746d61702c6368756e6b796269746d6170202020202d2d333230783235367838206269746d617000..
-entry	3	ChunkyLoadBitMap	0001........00020702001810810000--------++++++++--------ffff............4368756e6b794c6f61644269744d61700066696c656e616d65242c6368756e6b796269746d61702300..
-entry	4	ChunkyData	0302........000102..001810800000--------++++++++--------ffff............4368756e6b7944617461006368756e6b796269746d61702300..
-entry	5	RaycastSky	0001........00050202020203..001810800000--------++++++++--------ffff............52617963617374536b79006368756e6b796269746d6170232c782c6865696768742c636f6c756d6e2c267465787475726500
+entry	0	ChunkyBitmap	bitmap#,width,height	0001........0003020202..001810800000--------++++++++--------ffff............	
+entry	1	ChunkyToPlanar	chunkybitmap,bitmap    --320x256x8 bitmap	0001........000202020018108000a011810000--------++++++++--------ffff............	..
+entry	2	PlanarToChunky	bitmap,chunkybitmap    --320x256x8 bitmap	0001........000202020018118100a010800000--------++++++++--------ffff............	..
+entry	3	ChunkyLoadBitMap	filename$,chunkybitmap#	0001........00020702001810810000--------++++++++--------ffff............	..
+entry	4	ChunkyData	chunkybitmap#	0302........000102..001810800000--------++++++++--------ffff............	..
+entry	5	RaycastSky	chunkybitmap#,x,height,column,&texture	0001........00050202020203..001810800000--------++++++++--------ffff............	
 entry	6	-	0000........0000------------------------
 entry	7	-	0000........0000------------------------
 entry	8	-	0000........0000------------------------
