@@ -8,10 +8,13 @@
  * The library writes the custom chip registers and CIA-B PRA itself and
  * its handlers into the autovectors $64/$74; SerialClose switches every
  * interrupt off (INTENA $7FFF).  None of that may reach the machine:
- *   - every absolute address $DFF000-$DFF1FF and $BFD000 in the code of
- *     both loaded libraries is patched to a RAM copy per set (the custom
- *     registers filled with a fixed state before each call: SERDATR with
- *     TBE, INTENAR $2A35, INTREQR 0), compared after each call;
+ *   - every absolute address $DFF000-$DFF1FF and $BFD000 in both loaded
+ *     libraries is patched to a RAM copy per set (the custom registers
+ *     filled with a fixed state before each call: SERDATR with TBE,
+ *     INTENAR $2A35, INTREQR 0), compared after each call.  These are
+ *     the 13 custom chip and 2 CIA-B operands in the original's code and
+ *     the one long of each base in the C build (riseriallib.c riser_custom,
+ *     riser_ciab), whatever code GCC makes of the accesses;
  *   - every call runs inside Disable() with the vectors $64/$74 set to
  *     the test's stubs (RTE, counting); what the library wrote there is
  *     recorded (a stub, or a handler in its code) and the system's
@@ -100,7 +103,8 @@ static volatile ULONG *vec(ULONG a)
 static ULONG getl(const UBYTE *p) { return (ULONG)p[0] << 24 | (ULONG)p[1] << 16 | p[2] << 8 | p[3]; }
 static void putl(UBYTE *p, ULONG v) { p[0] = v >> 24; p[1] = v >> 16; p[2] = v >> 8; p[3] = v; }
 
-/* every absolute $DFF000-$DFF1FF and $BFD000 in the code to the set's
+/* every absolute $DFF000-$DFF1FF and $BFD000 in the library (the code
+   of the original, the base longs of the C build) to the set's
    copies */
 static int patch(struct lib *l, UBYTE *f, UBYTE *cia)
 {
@@ -521,9 +525,9 @@ int main(int argc, char **argv)
     CacheClearU();
     printf("riseriallib: patched custom/CIA addresses: orig %d/%d, C %d/%d\n",
            n[0] & 0xff, n[0] >> 8, n[1] & 0xff, n[1] >> 8);
-    check("riseriallib: custom chip addresses patched", (n[0] & 0xff) == 13 && (n[1] & 0xff) == 13);
-    check("riseriallib: CIA-B PRA patched", (n[0] >> 8) == 2 && (n[1] >> 8) == 2);
-    if (!ch || !databuf[0] || !databuf[1] || n[0] != 0x20d || n[1] != 0x20d)
+    check("riseriallib: custom chip addresses patched", (n[0] & 0xff) == 13 && (n[1] & 0xff) == 1);
+    check("riseriallib: CIA-B PRA patched", (n[0] >> 8) == 2 && (n[1] >> 8) == 1);
+    if (!ch || !databuf[0] || !databuf[1] || n[0] != 0x20d || n[1] != 0x101)
         return rwe_done(LIB);
     v64 = *vec(0x64);
     v74 = *vec(0x74);

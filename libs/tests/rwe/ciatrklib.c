@@ -43,8 +43,9 @@
  *     FreeTrackerModule (loaded, copied, linked), ModuleToChip, finit.
  *     F00 on voice 1, 2 and 3 of a small module (BUG(orig) #475: mt_end loads
  *     a0 with $DFF000, the voices behind read their notes from the
- *     custom chip registers): the $DFF000 of mt_end is patched in the
- *     code of both builds to a RAM copy of the registers per set, filled
+ *     custom chip registers): the $DFF000 of mt_end (the original's
+ *     LEA operand, the C build's endcustom behind the CIA part) is
+ *     patched in both builds to a RAM copy of the registers per set, filled
  *     with a note, only for these calls (the routine polls VHPOSR,
  *     DMACONR and INTREQR: they cannot be redirected).
  * Not covered: the runtime errors (missing file, error checks that
@@ -625,17 +626,25 @@ static void ciaphase(UBYTE *const mod[2])
 #define FMODALLOC (FMODSZ + 16)         /* the empty samples start at the end,
                                            mt_init clears their first long */
 
-/* the $DFF000 that mt_end loads into a0: LEA $DFF000,A0 before
-   CLR.W $A8(A0) in the original, MOVE.L #$DFF000,patdata in the C build;
-   returns its offset in the code, 0 if not exactly one */
-static ULONG findend(struct lib *l)
+/* the $DFF000 that mt_end loads into a0, returns its offset in the
+   library, 0 if not found: in the original the operand of LEA $DFF000,A0
+   before CLR.W $A8(A0) (exactly one); in the C build the long behind the
+   CIA part (ciatrklib.c ciapart.endcustom), independent of the code GCC
+   makes */
+static ULONG findend(int s)
 {
+    struct lib *l = getlib(&sets[s], LIB);
     ULONG i, at = 0;
     int n = 0;
+    if (s == 1) {
+        if (!blkC[1])
+            return 0;
+        at = blkC[1] + C_SIZE - l->code;
+        return at + 4 <= l->size && GL(l->code + at) == 0xdff000UL ? at : 0;
+    }
     for (i = 2; i + 8 <= l->size; i += 2)
-        if (GL(l->code + i) == 0xdff000UL
-            && ((GW(l->code + i - 2) == 0x41f9 && GL(l->code + i + 4) == 0x426800a8UL)
-                || GW(l->code + i - 2) == 0x23fc)) {
+        if (GL(l->code + i) == 0xdff000UL && GW(l->code + i - 2) == 0x41f9
+            && GL(l->code + i + 4) == 0x426800a8UL) {
             at = i;
             n++;
         }
@@ -676,10 +685,9 @@ static void f00(void)
     int s, k, i;
 
     for (s = 0; s < 2; s++) {
-        struct lib *l = getlib(&sets[s], LIB);
         fm[s] = AllocMem(FMODALLOC, MEMF_CHIP | MEMF_CLEAR);
         fake[s] = AllocMem(FAKESZ, MEMF_ANY | MEMF_CLEAR);
-        at[s] = findend(l);
+        at[s] = findend(s);
     }
     check("ciatrklib: mt_end's $DFF000 found (orig)", at[0] != 0);
     check("ciatrklib: mt_end's $DFF000 found (C)", at[1] != 0);

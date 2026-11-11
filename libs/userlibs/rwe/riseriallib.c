@@ -40,10 +40,12 @@
  * counted up (ADD.b on their second byte).
  *
  * The custom chip registers and CIA-B PRA are volatile accesses of the
- * original's width, at their absolute addresses (the test redirects
- * them).  rbig, rend and the receive buffer, and wbig, wrend and the
- * transmit buffer keep the original's order (SerialBuffer gives the
- * address of the first; the test reads the indices in front of it).
+ * original's width, through two pointers that hold their base addresses
+ * ($DFF000, $BFD000): the only place of each in the library, which the
+ * test redirects (the original has the absolute addresses in its code).
+ * rbig, rend and the receive buffer, and wbig, wrend and the transmit
+ * buffer keep the original's order (SerialBuffer gives the address of
+ * the first; the test reads the indices in front of it).
  *
  * Assembler: the interrupt handlers' entries (RTE, or on to the old
  * vector), the thunks, and the ends of SerialReceiveBlock's abort and
@@ -227,17 +229,26 @@ BLITZ_NULLSUB_AT(finit, riseriallib_libfinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* custom chip registers (#serdat=$dff030 ...) and CIA-B PRA */
-#define SERDATR_HI (*(volatile UBYTE *)0xdff018)   /* TBE = bit 5 */
-#define SERDATR_LO (*(volatile UBYTE *)0xdff019)   /* the received byte */
-#define INTENAR    (*(volatile UWORD *)0xdff01c)
-#define INTREQR_HI (*(volatile UBYTE *)0xdff01e)   /* RBF = bit 3 (11) */
-#define INTREQR_LO (*(volatile UBYTE *)0xdff01f)   /* TBE = bit 0 */
-#define SERDAT     (*(volatile UWORD *)0xdff030)
-#define SERPER     (*(volatile UWORD *)0xdff032)
-#define INTENA     (*(volatile UWORD *)0xdff09a)
-#define INTREQ     (*(volatile UWORD *)0xdff09c)
-#define CIABPRA    (*(volatile UBYTE *)0xbfd000)
+/* custom chip registers (#serdat=$dff030 ...) and CIA-B PRA, through
+   their base addresses: one long each in the library.  They are not
+   static, so GCC cannot take their values as known and fold them into
+   the code; a routine reads them at least once per call.  The emulator
+   test (libs/tests/rwe/riseriallib.c) finds the two longs as the only
+   $DFF000 and $BFD000 of the library and points them to RAM, whatever
+   code GCC makes of the accesses. */
+volatile UBYTE *riser_custom = (volatile UBYTE *)0xdff000;
+volatile UBYTE *riser_ciab = (volatile UBYTE *)0xbfd000;
+#define CUSTOMREG(type, off) (*(volatile type *)(riser_custom + (off)))
+#define SERDATR_HI CUSTOMREG(UBYTE, 0x18)   /* TBE = bit 5 */
+#define SERDATR_LO CUSTOMREG(UBYTE, 0x19)   /* the received byte */
+#define INTENAR    CUSTOMREG(UWORD, 0x1c)
+#define INTREQR_HI CUSTOMREG(UBYTE, 0x1e)   /* RBF = bit 3 (11) */
+#define INTREQR_LO CUSTOMREG(UBYTE, 0x1f)   /* TBE = bit 0 */
+#define SERDAT     CUSTOMREG(UWORD, 0x30)
+#define SERPER     CUSTOMREG(UWORD, 0x32)
+#define INTENA     CUSTOMREG(UWORD, 0x9a)
+#define INTREQ     CUSTOMREG(UWORD, 0x9c)
+#define CIABPRA    (*riser_ciab)
 #define SERCLOCK   3546895UL
 
 /* the level 1 and 5 autovectors ($64, $74): the address through an asm,

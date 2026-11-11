@@ -298,7 +298,11 @@ static struct {
     struct modent modtable[10];         /* Dc.l x25: 10 slots */
 } libvars;
 
-/* the CIA part (RealTempo ... musintname) */
+/* the CIA part (RealTempo ... musintname), then mt_end's custom chip base
+   endcustom (C only: the original has LEA $DFF000,A0 in mt_end's code).
+   mt_end reads it every time (volatile), so this long behind the CIA part
+   is the one place the emulator test (libs/tests/rwe/ciatrklib.c, F00)
+   points to RAM, whatever code GCC makes of mt_end. */
 static struct {
     UWORD RealTempo;
     volatile struct CIA *CIAAaddr;
@@ -309,10 +313,11 @@ static struct {
     char GfxName[18];
     struct Interrupt MusicIntServer;
     char musintname[20];
+    volatile struct Custom *volatile endcustom;
 } ciapart = {
     125, NULL, "ciaa.resource", "ciab.resource", NULL, 0, 0, NULL, "graphics.library",
     { { NULL, NULL, NT_INTERRUPT, 5, ciapart.musintname }, NULL, (VOID (*)())ciatrklib_mt_music },
-    "Protracker MusicInt",
+    "Protracker MusicInt", CUSTOM,
 };
 
 /* a voice of the play routine (mt_chanNtemp, 44 bytes) */
@@ -436,7 +441,8 @@ static struct {
 _Static_assert(__builtin_offsetof(__typeof__(playdata), chan) == 48 + 1152, "mt_chan1temp");
 _Static_assert(sizeof(playdata) == 1584, "mt_FunkTable ... nor_LstEvt");
 _Static_assert(sizeof(libvars) == 110, "pause_status ... modtable");
-_Static_assert(sizeof(ciapart) == 110, "RealTempo ... musintname");
+_Static_assert(__builtin_offsetof(__typeof__(ciapart), endcustom) == 110,
+               "RealTempo ... musintname");
 
 /* LoadTrackerModule's variables */
 static BPTR hand, lock;
@@ -653,7 +659,7 @@ static ULONG patternsize(const UBYTE *mod)
 /* mt_end */
 static void mt_end(void)
 {
-    volatile struct Custom *cu = CUSTOM;
+    volatile struct Custom *cu = ciapart.endcustom;
 
     playdata.Enable = 0;
     patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig), #475) */
