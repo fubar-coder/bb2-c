@@ -52,7 +52,7 @@ Unpack it, for example under `/opt`, and put its `bin` directory into
 your `PATH`:
 
 ```
-sudo tar xJf m68k-amigaos-gcc-16.2-rc23-x86_64-linux.tar.xz -C /opt
+sudo tar xJf m68k-amigaos-gcc-16.2-rc24-x86_64-linux.tar.xz -C /opt
 export PATH=/opt/m68k-amigaos-gcc-16.2/bin:$PATH
 ```
 
