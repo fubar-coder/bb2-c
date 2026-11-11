@@ -95,13 +95,15 @@ endforeach()
 # Only routines still equal to the original are listed: a fix of an
 # original bug that changes a listed routine removes its argument from the
 # list in the same commit (and names it in the commit message); there is
-# no list of intended differences for instructions.
+# no list of intended differences for instructions.  Label originals
+# (preset originals, not all): a committed dump of the routines would be a
+# copy of the CD's code, so the comparison needs the CD itself.
 function(asm_check lib libnum)
 	add_test(NAME asmcmp_${lib}
 		COMMAND ${REFCHECK} asm ${CMAKE_OBJDUMP}
 			${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS ${libnum}
 			${CMAKE_CURRENT_BINARY_DIR}/${lib}.linked ${ARGN})
-	set_tests_properties(asmcmp_${lib} PROPERTIES SKIP_RETURN_CODE 77)
+	set_tests_properties(asmcmp_${lib} PROPERTIES SKIP_RETURN_CODE 77 LABELS originals)
 endfunction()
 
 # runerrlib: checks on a7 / the caller's stack / the N flag, the trap

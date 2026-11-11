@@ -604,3 +604,7 @@ code changes in this change).
   `ted_checkdata_reference_check_wrong` (one changed byte) and
   `_check_right`. Checked: after removing `ref/` a default build makes
   neither `programs/ted/ref` nor `programs/blitz2/ref` (no vasm run).
+- **Task 9.7 (2026-11-11):** `asmcmp_runerrlib`, `asmcmp_debuglib`,
+  `asmcmp_dhandlerlib`, `asmcmp_memacclib` have the label `originals`
+  (`asm_check`, `libs/acidlibs/CMakeLists.txt`); `ctest --preset all -N`
+  lists none, `ctest --preset originals` runs the four (pass with the CD).

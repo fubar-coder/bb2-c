@@ -75,7 +75,8 @@ dhandlerlib, memacclib that remained in assembler against the originals of the C
 with `objdump` of the toolchain; `refcheck asm`,
 [`tools/refcheck`](../tools/refcheck/README.md); only routines still
 equal to the original are listed, a fix that changes one removes it
-from the list). Both comparisons are
+from the list; label `originals`, preset `originals`: a committed dump of
+the routines would be a copy of the CD's code). Both comparisons are
 skipped without the CD. The check of TED's data in the build
 (`refcheck data`) takes the intended differences of
 `programs/ted/checkdata-intended.txt` (one check per line: C symbol,
