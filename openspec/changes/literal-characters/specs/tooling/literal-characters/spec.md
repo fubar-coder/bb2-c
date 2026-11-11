@@ -42,7 +42,9 @@ library is among its inputs.
 ### Requirement: The reserved library numbers
 `blitzlib` SHALL refuse, in `numbers` and in `check`, a library file whose
 number is 32 and any library other than the literal library whose number
-is 33, naming the file and the number; the build step of a library SHALL
+is 33, naming the file and the number, except RIDosLib as library 33 in
+the variants `rwe-1999`, `rwe-1999-eval` and `rwe-1999-ahi` (an exception
+the caller names); the build step of a library SHALL
 fail for it. The one library with number 33 SHALL be the literal
 library (identified by its name entry).
 
@@ -53,6 +55,10 @@ library (identified by its name entry).
 #### Scenario: Library numbered 32
 - **WHEN** a library file has the number 32
 - **THEN** `blitzlib check` exits with an error naming that file and 32
+
+#### Scenario: RIDosLib in an RWE variant
+- **WHEN** `blitzlib numbers` runs over the library set of `rwe-1999` with `ridoslib` as 33 and the exception named
+- **THEN** it passes; without the exception, or in another variant, it fails naming that file and 33
 
 #### Scenario: The literal library
 - **WHEN** `blitzlib numbers` runs over `acidlibs` that holds the literal library once

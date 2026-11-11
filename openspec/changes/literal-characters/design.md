@@ -38,9 +38,18 @@ Latin-1 today:
   in a string as the start of a pair (`ab3chr.c:52`: "a byte above $7F:
   getcharb has read the next one with it"). Task 1.4 measures what that
   does to the compiled string today.
-- #374 (open, TED fix rounds R3) makes a text file's bytes >= $80
-  characters on load (interim rule); this change is the full solution
-  (`~/.local/share/bb2-c-work/ted-bugs-decisions.md`).
+- #374 is fixed (TED fix round R3c, `15762513`, site `826d8987`):
+  `readline` (`programs/ted/src/core/fileio.c:262-345`) takes a byte
+  >= $80 of a text file for one character, no longer for the start of a
+  pair (`programs/ted/tests/host/test_readline_latin1.cpp`). With tokenise
+  on the six umlauts of `germs` are stored as codes 26..31
+  (`fileio.c:318`) and the tokeniser clears bit 7 of every other byte
+  (ß becomes `_`); with tokenise off the bytes stay as they are. A save
+  with tokenise off (`realsave`, `loadsave.c:324-345`) writes the stored
+  bytes with the 0 turned into LF, and Block Save with tokenise off
+  (`lines.c:827-840`) the same; with tokenise on `realsave` writes the
+  tokenised lines and Block Save writes token names (`detoka5`). Nothing
+  writes a literal as `cc` yet: this change does (D6).
 
 ## Goals / Non-Goals
 
@@ -87,7 +96,7 @@ rule in `sa_tokprint` and a few others (D3).
 
 **Decision (user, 2026-11-11):** the whole first byte `$90` - the
 libraries 32 and 33, the words `$9000` to `$90FF` - is reserved for
-literal characters. The pair `$90 cc` with `cc` >= $80 is the word
+literal characters, wherever possible (below). The pair `$90 cc` with `cc` >= $80 is the word
 `$9000 + cc`, which is library 33, entry `cc - $80`; the words
 `$9000`-`$907F` (library 32) stay unused and reserved with it. The
 reservation is documented where library numbers are documented (tasks
@@ -123,15 +132,37 @@ Sources in `archive/amiblitz3/`:
   (`docs/ab3/userlibs.md:115-120`); v3.14.0 (2026-10-19) is after that and
   has no library 33.
 
-**What clashes with the reservation (Q6):** the CD's
-`BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/RIDOSLIB.OBJ` has the tokens
-`$9081` to `$908B` (library 33; `bbsrc tokens` over every `*.OBJ` below the
-CD's `userlibs` directories finds only this file with a first byte
-`$90`), and this repository builds the same library as
+**What clashes with the reservation, and the decision (user,
+2026-11-11):** the CD's `BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/RIDOSLIB.OBJ`
+has the tokens `$9081` to `$908B` (library 33; `bbsrc tokens` over every
+`*.OBJ` below the CD's `userlibs` directories finds only this file with a
+first byte `$90`), and this repository builds the same library as
 `libs/userlibs/rwe/ridoslib.c` with `LIB_ridoslib 33`
-(`libs/variants/rwe-1999/libnums.h:12`). That library cannot keep 33.
+(`libs/variants/rwe-1999/libnums.h:12`). What the loaders do with two
+libraries of one number decides how far the reservation reaches:
 
-The marker is chosen by the measurement and now by decision, not by a
+- In BB2 mode blitz2 loads `acidlibs`, then `deflibs`, then the userlibs
+  and never replaces a library number; `findlib` and TED's `findtoke`
+  take the first match (`programs/blitz2/src/asmlibs.c:1271`,
+  `:1181-1200`, `programs/ted/src/core/fileio.c:533`,
+  `docs/architecture.md` 4.7). A library 33 that is loaded second is
+  never found.
+- In AB3 mode a userlib replaces an earlier library with the same number
+  (`ab3libs.c:98-117`).
+
+So: **`$90` is reserved wherever possible.** The default `acidlibs` and
+every variant without RWE get `literallib` as library 33; library 32 stays
+free and reserved. The variant `rwe-1999` and its RWE sub-variants
+(`rwe-1999-eval`, `rwe-1999-ahi`) keep RIDosLib as library 33 with its
+original number and have no literal library; literal characters are not
+supported there (a user who wants them uses another variant). The check
+of the reservation (task 3.4) allows `ridoslib` as library 33 in the
+`rwe-1999` variants only, and library 33 other than `literallib` and
+`ridoslib` nowhere. The userlib `literallib.obj` for the original Blitz 2
+works only if no other library with number 33 is loaded before it (the
+loader takes the first match); the documentation says so (task 8.1).
+
+The marker is chosen by the measurement and by decision, not by a
 rule. The marker is a constant in one header per program (`tokit.h`,
 `main.h`, `shared/xtra`).
 
@@ -183,15 +214,27 @@ clean. The compiler's code does not change for either (D5).
 **Where the library lives.** In the library set the compiler reads at
 startup: `libs/acidlibs` (`ACIDLIBS_ORDER`, one C file
 `libs/acidlibs/literallib.c`), so it is in `acidlibs` of the default
-variant and of every variant (`libs/variants/*/libnums.h` gets
-`LIB_literallib 33`; the rwe variants include the default one). `deflibs`
-stays as it is (Q7 asks whether the user meant both). The same C source
+variant and of every variant without RWE (decision of 2026-11-11:
+`acidlibs` only; `deflibs` stays as it is). The RWE variants
+(`rwe-1999`, `rwe-1999-eval`, `rwe-1999-ahi`) include the default
+`libnums.h` (`libs/variants/rwe-1999/libnums.h:10`) and build the default
+`acidlibs` list (`acidlibs_build` loops over `ACIDLIBS_ORDER`,
+`libs/acidlibs/CMakeLists.txt:43`), so they would get the library; they
+keep RIDosLib as 33 instead (D2). `literallib` is therefore left out of
+them: `LIB_literallib 33` is defined in `libs/variants/bb2-2.10/libnums.h`
+and `#undef`ed in `rwe-1999/libnums.h` (which the two sub-variants
+include), and `acidlibs_build` skips `literallib` for the variants named
+in a list `ACIDLIBS_WITHOUT_LITERAL` (the RWE ones; task 3.1). Test
+variants in `libs/tests/variants/` take the default; the check of
+task 3.4 catches one that uses 33 otherwise. The same C source
 is built a second time as a userlib file for the original Blitz 2: the
 single library file `literallib.obj` for `blitz2:userlibs/`, named in the
 documentation like the RWE userlibs. Its number is 33 as well; it is for a
 Blitz 2 that does not have the library in its `acidlibs` (the CD's), and
 must not be loaded together with `acidlibs` that have it (a number twice,
-which `blitzlib numbers` refuses).
+which `blitzlib numbers` refuses). Userlibs are loaded last and the
+first library of a number wins (D2), so it works only if no other
+library with number 33 (RIDosLib of the CD) is loaded before it.
 
 **Does TED-C still need a constant table? Yes, as a fallback only.** The
 word `$90cc` is answered by the token list when it holds the entry, and
@@ -203,15 +246,14 @@ Three cases have no entry, and one rule covers them:
 2. `blitz2-ab3` (AB3 mode): the list is AmiBlitz3's, with AmiBlitz3's
    libraries, which cannot hold our library (and `ab3_tokens` requires the
    list to equal the AmiBlitz3 compiler's, `tests/ab3/CMakeLists.txt`);
-3. TED-C with the original compiler (C5) and a Blitz 2 without the userlib:
+3. TED-C with the original compiler (C5), a Blitz 2 without the userlib
+   and the RWE variants:
    a literal would show as `?????` and could not be searched or printed,
    a loss TED-C can avoid.
 
 The fallback is 128 two-byte strings (about 256 bytes); the entry of the
-list wins when both exist (both give the same character). If the user
-wants no fallback, cases 1 to 3 have no literal display and the host
-tests of TED-C need a token list with the 128 entries; task 2.1 is
-written for the fallback.
+list wins when both exist (both give the same character). In the RWE
+variants (no literal library, D2) the fallback is what shows a literal.
 
 The consumers that the name does not settle need their own rule, for a
 word `$90cc` with `cc >= $80` (the range test, not the name):
@@ -259,12 +301,31 @@ six umlauts as 26..31 in BB2 mode, every other character >= $80 as a
 pair. The umlauts' codes 26..31 in *comments* stay as they are (the
 compiler skips comments).
 
+**Where a literal counts (decision of 2026-11-11):** everywhere, for
+simplicity: typing `é` outside a string and a comment also gives
+`$90 E9` (a syntax error at compile time instead of today's silent `i`),
+and the tokeniser clears bit 7 of no character. Only inside strings and
+comments is this behaviour guaranteed (the spec says so); outside them it
+is not a guaranteed behaviour and may change.
+
 A tokenised file is loaded as it is stored: a pair `$90 E4` that a foreign
-tool wrote stays a pair, so load and save keep the file byte for byte
-(Q2). In **AB3 mode** the six umlauts must not become 26..31 (AB3's `gs`
+tool wrote stays a pair (decision of 2026-11-11), so load and save keep
+the file byte for byte; it is a second stored form of that umlaut, and a
+search for `ä` does not find it. **AB3 mode loader (decision of
+2026-11-11):** the raw bytes are turned into literals in the loader
+(`ab3cli`, `shared/tokenizer`), not by a mode switch in `getcharb`, so
+`getcharb` stays one code path for both modes. In **AB3 mode** the six umlauts must not become 26..31 (AB3's `gs`
 maps the codes to other characters: code 26 gives ö there, ä in Blitz 2),
 so `blitz2-ab3`'s loader uses a literal for every byte >= $80 (spec
 `ab3-compat/strings`); the compiled bytes are then those AmiBlitz3 gives.
+
+### D4a The line limit counts bytes
+
+A literal is two bytes, so a line of 128 bytes holds 64 of them
+(decision of 2026-11-11). The byte limit stays as it is (#375: 129 bytes
+and the 0; the original 128): a pair is never cut at it, and a physical
+line that is longer is split as for #375. Counting characters would allow
+up to 256 bytes and not fit `charbuff2`.
 
 ### D5 The compiler
 
@@ -285,15 +346,22 @@ ordinary token to `readinc`.
 
 ### D6 TED-C: one stored form, whatever the options
 
-Typing, loading and the tokeniser all produce the same stored form
-whether tokenise is on or off, so `Tokenise` can be switched at any time
-and the file can be saved either way. In a text save (tokenise off) a
-literal is written as `cc`; the text loader turns `cc` >= $80 into a
-literal (a text file has no pairs; `readline` of the interim rule of
-#374 is the base: it must be changed from "the byte stays as is" to "the
-byte becomes a literal or, for the six umlauts, the code 26..31").
-How tokens (not literals) that are in a line are written by a text save
-is #374's open point; this change does not change it.
+Typing, loading and the tokeniser produce the same stored form whether
+tokenise is on or off, so `Tokenise` can be switched at any time and the
+file can be saved either way. What the code does today is in the Context
+(#374 is fixed): `readline` stores a byte >= $80 of a text file as one
+byte, the six umlauts as 26..31 with tokenise on, and a save with
+tokenise off writes the stored bytes. The change to it: `readline` and
+the tokeniser store a byte >= $80 of a text (not one of the six umlauts)
+as the pair `$90 cc`, with tokenise on and off, and a text save
+(tokenise off) writes a literal as the byte `cc`, so the text round trip
+of a file with `ß` gives the byte `$DF` again. The text loader turns
+`cc` >= $80 into a literal (a text file has no pairs) or, for the six
+umlauts, into the code 26..31 (D4); this replaces the rule at
+`fileio.c:318` ("the byte stays as it is" with tokenise off, bit 7 lost
+in the tokeniser with it on). What a text save writes for real tokens,
+and whether tokenise off may turn a character into a token at all, is the
+open question below; this change makes no rule for it.
 
 ### D7 No file format of its own
 
@@ -312,6 +380,8 @@ the first byte (D2) is the whole contract.
 | TED-C + original compiler (C5) | as today | compile from TED's memory works (D5), `Include` works; a literal outside a string is a Syntax Error with the userlib, "Token Not Found" without |
 | original TED + any compiler (R5, Rc) | as today | loads and saves without loss; shows the characters (in token colour) when the userlib of D3 is loaded, else `?????`; typing a literal is not supported (D1, Non-Goals) |
 | original TED loads a text file TED-C wrote with Latin-1 | as today | as today (a text file has no pairs; #374) |
+| the `rwe-1999` variants (no literal library) | as today | not supported (D2); the editor's fallback table shows the characters, a stray literal is "Token Not Found" |
+| original Blitz 2 with the userlib `literallib.obj` | as today | works only if no other library numbered 33 is loaded before it (D2) |
 
 The rule "a file without a literal is byte-identical" holds by saving
 and by the tokeniser: a source without a byte >= $80 outside the six
@@ -333,75 +403,39 @@ untouched.
 
 ## Open questions (for the user)
 
-- **Q1 Where does a literal character count?** Everywhere (typing `é`
-  outside a string gives `$90 E9` and a syntax error at compile time,
-  instead of today's silent `i`; recommended), or only inside strings and
-  comments (the tokeniser knows the context; outside them it would keep
-  `& 0x7F` or refuse the key)?
-- **Q2 A tokenised file with a pair for ä, ö, ü, Ä, Ö, Ü** (written by a
-  foreign tool): keep it as read (recommended: load and save are byte
-  exact), or change it to 26..31 on load so a search for `ä` finds it?
-  It matters only for such files.
-- **Q3 Line limit.** A literal is two bytes: a line of 128 bytes holds 64
-  of them. Count characters (columns, as `chcols` shows them) or bytes?
-  Today's limits (#375: 129 bytes; the original 128) are in bytes; with
-  characters a line could hold up to 256 bytes, which does not fit
-  `charbuff2`. Recommended: keep the byte limit; the loader splits as for
-  #375.
-- **Q4 Save with tokenise off.** A literal is written as the byte `cc`
-  (D6). What the save does with real tokens is #374's decision (names or
-  raw pairs): this change follows it. Is the order "#374 first, then this
-  change" right, so #374's interim rule is replaced by D6?
-- **Q5 AB3 mode: loader or compiler?** D4/AB3 turn raw bytes into
-  literals in the loader (`ab3cli`, `shared/tokenizer`). The alternative
-  is a mode switch in `getcharb`: inside quotes in AB3 mode a byte >= $80
-  is a character, no pair. The loader keeps `getcharb` one code path for
-  both modes; the compiler variant would handle AB3 token sources written
-  by AmiBlitz3's own PED (`.ab3` is text only since 2014, so none exist
-  today). Recommended: the loader.
-- **Q6 RWE's `RIDOSLIB` (library 33).** The reservation (D2) takes its
-  number. This repository builds it in the variant `rwe-1999` as
-  `libs/userlibs/rwe/ridoslib.c` with `LIB_ridoslib 33`, and the CD's
-  `RIDOSLIB.OBJ` is a binary with tokens `$9081`.. . Which number does the
-  port's `ridoslib` get (AmiBlitz3 took 58, which is `ritrackerlib` in
-  RWE's list and in `rwe-1999`: it would need a free number, or a
-  variant of its own as `RWE_OWN_VARIANTS` does for `rievallib`)?
-  Programs of the original `RIDOSLIB.OBJ` with library 33 cannot use the
-  literal library and our library together: the `ridoslib` of the port with
-  another number is not byte-identical to the CD's binary. Task 3.5 follows
-  the answer.
-- **Q7 Which library files get the literal library?** The brief says
-  "acidlibs/deflibs and their variants". D3 puts it into `acidlibs` only
-  (a command library, loaded by the compiler like every other, the
-  files `deflibs` holds are system and OS libraries). Right, or also into
-  `deflibs`? (Both would be a number twice, which the build refuses.)
-- **Q8 Name of the pair and of the library** in the docs
-  (`token-table`, `formats`) and the build: "literal character",
-  `LITCHAR` for the pair; `literallib` (`LIB_literallib`) for the
-  library. Other names are fine; the rest of the artifacts use these.
+- **Text save and tokenise off.** #374 is fixed (Context): a save with
+  tokenise off writes the stored bytes today, and Block Save with
+  tokenise on writes token names. The proposal to discuss: with tokenise
+  off characters are never turned into tokens and stay as they are; a
+  text save writes a literal as `cc` and real tokens as their names, so
+  every byte >= $80 in a text file is a character. Not decided and not
+  part of this change yet: if the user decides for the names, it is a
+  change of this change (D6, spec `editor/literal-characters`, a task in
+  group 2). D6 states only the literal as `cc`.
 
 ## Risks / Trade-offs
 
 - [The reservation of 32 and 33 takes a number that a third-party userlib
   may use] → decided (D2); the build checks the libraries of the
-  repository (task 3.4), Q6 for the one known case; the scan of task 1.1
+  repository (task 3.4); RIDosLib, the one known case, keeps 33 in the
+  RWE variants, which have no literal library; the scan of task 1.1
   covers the corpus and the CD's userlibs.
 - [`tokskip` counts the line limit in bytes and a literal takes two while
-  showing one column] → the byte limit stays (Q3); a host test with a
+  showing one column] → the byte limit stays (D4a); a host test with a
   line of 64 literals and 65 literals; no change of `chcols` code.
 - [Typing a Latin-1 character outside a string used to give a wrong but
-  compilable program (`é` -> `i`) and now gives a syntax error] → Q1 and
+  compilable program (`é` -> `i`) and now gives a syntax error] → D4 and
   the site entry; the old behaviour was silent corruption.
 - [A pair for one of the six umlauts from a foreign tool is a second
-  stored form of that character] → D4 and Q2.
+  stored form of that character] → D4.
 - [The original TED shows the pairs as `?????` without the userlib] → D8:
   no loss on load and save; the userlib is shipped (task 3.3).
 - [The new library makes `acidlibs`, the token list and the results of
   the library tests differ from the CD's] → intended; named with
   `-DPREV_INTENDED`; the CD comparisons get the library as a named
   addition (tasks 3.2, 3.3).
-- [#374's interim rule lands first and this change replaces part of it]
-  → Q4; task 1.5 re-reads what #374 landed before the loader is changed.
+- [this change replaces #374's rule for a byte >= $80 of a text file]
+  → #374 is fixed (Context); task 1.5 re-reads it before the loader is changed.
 - [The screen font has no glyph for $80..$9F] → task 1.3 measures; such a
   character is shown with the font's default glyph (spec) and kept.
 - [The original TED draws a name byte >= $80 differently from the

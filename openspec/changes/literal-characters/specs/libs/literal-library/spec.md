@@ -10,13 +10,15 @@ literal characters.
 The first byte `$90`, that is the libraries 32 and 33 and the words
 `$9000` to `$90FF`, SHALL be reserved for literal characters. No library
 built by this repository other than the literal library SHALL use library
-number 32 or 33 in any variant, and the documentation of library numbers
-SHALL say so. The pair `$90 cc` with `cc` >= $80 SHALL be the literal
+number 32 or 33 in any variant, with one exception: the variants
+`rwe-1999`, `rwe-1999-eval` and `rwe-1999-ahi` keep RIDosLib as library 33
+with its original number and have no literal library. The documentation of
+library numbers SHALL say so. The pair `$90 cc` with `cc` >= $80 SHALL be the literal
 character `cc`; a word `$9000` to `$907F` SHALL be unused.
 
 #### Scenario: Variants
 - **WHEN** every `libs/variants/*/libnums.h` is read
-- **THEN** only `LIB_literallib` is 33 and nothing is 32
+- **THEN** in the variants without RWE only `LIB_literallib` is 33, in the RWE variants only `LIB_ridoslib` is 33, and nothing is 32
 
 #### Scenario: The documentation
 - **WHEN** the documentation of library numbers (`docs/token-table.md`, `docs/libs/variants.md`, `docs/formats.md` §3.2) is read
@@ -29,7 +31,7 @@ with the code `$80 + n` (Latin-1, one byte, no help text). Its entries SHALL
 have neither the statement nor the function flag, and no code or error
 address, so that the compiler calls nothing and writes no code for them;
 the library SHALL have no init or finit code. It SHALL be part of
-`acidlibs` of every variant and also be built as the userlib file
+`acidlibs` of every variant without RWE and also be built as the userlib file
 `literallib.obj` for the original Blitz 2. The library SHALL pass
 `blitzlib check`.
 
@@ -43,7 +45,11 @@ the library SHALL have no init or finit code. It SHALL be part of
 
 #### Scenario: Userlib file
 - **WHEN** the userlib file is built
-- **THEN** its library has number 33, the same 128 names and no code
+- **THEN** its library has number 33, the same 128 names and no code; the documentation says it works only if no other library with number 33 is loaded before it
+
+#### Scenario: RWE variants
+- **WHEN** the `acidlibs` of `rwe-1999` is listed
+- **THEN** it has no `literallib` and RIDosLib has number 33
 
 ### Requirement: Existing results and checks
 Library files other than the new ones SHALL stay byte-identical to the
@@ -58,4 +64,4 @@ the CD's SHALL name the library as an addition.
 
 #### Scenario: Other libraries
 - **WHEN** the library files are compared with the `prev` build
-- **THEN** only `acidlibs`, the new userlib file and the files named in the task for `ridoslib` differ
+- **THEN** only `acidlibs` of the variants without RWE and the new userlib file differ

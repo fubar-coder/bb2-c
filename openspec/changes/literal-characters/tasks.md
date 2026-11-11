@@ -2,17 +2,17 @@
 
 Decided: no file format of its own, the reservation of the first byte
 `$90`, the library `literallib` (design D2, D3, D7), the umlaut rule D4.
-Open: the questions Q1 to Q8 of `design.md`; groups 2 to 8 start after the
-user has answered the ones they depend on (Q6 and Q7: group 3; Q1, Q2, Q3:
-group 2; Q5: group 5). Group 1 is analysis and changes no code. Every
+Open: the one question of `design.md` (text save and tokenise off); the
+tasks 2.4 and 2.8 do not decide it (they cover the literal as `cc` only).
+Group 1 is analysis and changes no code. Every
 later group is one commit (or several, one topic each). Every commit:
 clean `cmake --build --preset amiga` without warnings, `ctest --preset
 all` with a prev build (`cmake --preset amiga -DBLITZ2_PREV=ON`):
 executables, library files and the files TED writes stay byte-identical
 for every source without a literal character (`prev_results`, corpus
 `prev`, `ted_ab` P5/Pc); differences only as named in the task. A change
-of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
-#374 (the interim rule) to be merged.
+of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
+(design Context); group 2 starts from what it landed.
 
 ## 1. Checks before any code
 
@@ -21,7 +21,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   archive) and every library the repository builds for tokens with the
   first byte $90 (the CD's userlibs: only `RIDOSLIB.OBJ`, done).
   Verify: the list in the commit message of group 3; a hit other than
-  `ridoslib` goes to the user (Q6).
+  `ridoslib` (library 33 in the RWE variants, design D2) goes to the user.
 - [ ] 1.2 Read every place that walks a line pair by pair or clears bit 7
   in `programs/ted/src` and `programs/ted/src/core` (`c & 0x80`,
   `& 0x7F`: `fileio.c`, `lines.c:901,945`, `loadsave.c`, `services.c`,
@@ -46,8 +46,11 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   raw $DF in an AB3 text source through `blitz2-ab3` today. Verify: the
   tables and the byte results in the commit message of group 4; a reader
   that does not give the byte `cc` is a task in group 4.
-- [ ] 1.5 What #374 landed: re-read `readline`, the text save and the
-  interim rule after #374 is merged; write down the points D6 changes.
+- [ ] 1.5 What #374 landed (`15762513`, `826d8987`): re-read `readline`
+  (`fileio.c:262-345`), `realsave` and Block Save (`loadsave.c:324`,
+  `lines.c:827`) and `test_readline_latin1.cpp`; write down the points D6
+  changes (the pair for every byte >= $80 but the six umlauts, with
+  tokenise on and off; the literal as `cc` in a text save).
   Verify: the note in the commit message of group 2.
 
 ## 2. TED core: the stored form
@@ -60,11 +63,11 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   and `detoka5` give the character; `ctest --preset host`.
 - [ ] 2.2 The tokeniser (`tokskip`) emits a character >= $80 as the pair
   in strings, comments and outside them, and keeps the six umlauts as the
-  codes 26..31 (Q1, D4); keyword matching unchanged (a name byte >= $80
+  codes 26..31 (D4: a literal counts everywhere; guaranteed only in strings and comments); keyword matching unchanged (a name byte >= $80
   never matches, `tokit.c:106-114`: a host test with the 128 entries in
   the list). Verify: host tests: `a$="Gr"+$DF` and `é` inside and outside
   quotes, in a comment, at the end of a line, at the byte limit (64 and 65
-  literals, Q3); a source without a byte >= $80 tokenises as in the `prev`
+  literals, D4a); a source without a byte >= $80 tokenises as in the `prev`
   build (compare over the corpus).
 - [ ] 2.3 Typing: a key that gives a character >= $80 other than the six
   umlauts stores the pair, with tokenise on and off (D6). Verify: host
@@ -73,7 +76,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
 - [ ] 2.4 `readline` (text files): a byte >= $80 becomes a pair or, for
   the six umlauts, the code 26..31; LF and TAB after such a byte keep
   their meaning; the tab column counts a pair as 1 (the #377 rule via
-  `dispcol`). Tokenised files are loaded as stored (Q2). Verify: host
+  `dispcol`). Tokenised files are loaded as stored (D4). Verify: host
   tests with the files of #374 (`28-long.drv`'s data, `Größe`, an umlaut
   at the end of a line, a Latin-1 byte before the end of the file).
 - [ ] 2.5 Display, colour, help, print: `sa_tokprint` draws a literal with
@@ -95,13 +98,17 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
 ## 3. The library and the reservation
 
 - [ ] 3.1 `libs/acidlibs/literallib.c` and `LIB_literallib 33` in
-  `libs/variants/*/libnums.h` (the rwe variants include the default
-  one): 128 `BLITZ_NULLSUB` entries (kind 0, no code) with the names
+  `libs/variants/bb2-2.10/libnums.h`, left out of the RWE variants
+  (`#undef LIB_literallib` in `libs/variants/rwe-1999/libnums.h`, which
+  the two sub-variants include, and `acidlibs_build`
+  (`libs/acidlibs/CMakeLists.txt:43`) skipping `literallib` for the
+  variants in a list `ACIDLIBS_WITHOUT_LITERAL`; design D2, D3): 128 `BLITZ_NULLSUB` entries (kind 0, no code) with the names
   `"\x80"`..`"\xFF"` (an X-macro or generated lines; no help text), a
   `BLITZ_LIBHEADER` without init and finit; in `ACIDLIBS_ORDER`
   (`libs/acidlibs/CMakeLists.txt`). Verify: the library builds, `blitzlib
   check` passes, `bbsrc tokens` lists `$9080`..`$90FF` with the names;
-  `tokens_port` (see 3.2).
+  `tokens_port` (see 3.2); the `acidlibs` of `rwe-1999` and its two
+  sub-variants have no `literallib`, those of the other variants have it.
 - [ ] 3.2 The checks that compare with the original: `tokens_port`
   (`libs/CMakeLists.txt:76-91`) expects the original's list
   (`tests/data/ted-tokens.txt`) plus the 128 tokens (a second expected
@@ -121,19 +128,22 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   `userlibs` and stops with "Syntax Error" for a literal as a statement.
 - [ ] 3.4 The reservation in the build: `blitzlib numbers` and `check`
   refuse a library numbered 32 and any library other than `literallib`
-  numbered 33 (`tools/blitzlib`, `tools/lib/biglib`; tests in
-  `tools/tests/` with inputs from memory: a library with 32, one with 33,
-  the literal library once, twice). Verify: the tool tests and the ctest
+  numbered 33, except `ridoslib` in the `rwe-1999` variants (the check
+  takes the exception as a parameter, so it holds for no other variant;
+  `tools/blitzlib`, `tools/lib/biglib`; tests in `tools/tests/` with
+  inputs from memory: a library with 32, one with 33, the literal library
+  once, twice, `ridoslib` with and without the exception). Verify: the tool tests and the ctest
   `biglib_check_clash` pattern (`libs/CMakeLists.txt:94-110`) with a
   deliberately broken input.
-- [ ] 3.5 `ridoslib` (Q6): after the user's answer, move
-  `libs/userlibs/rwe/ridoslib.c` (`LIB_ridoslib` in
-  `libs/variants/rwe-1999/libnums.h:12`) off 33 as decided; its declaration
-  check against the CD's binary (`rwe_declarations_ridoslib`) and the
-  `rwe_numbers` test follow the answer; `docs/rwelibs/README.md` §3.1
-  (the DOS row, number 33) and `docs/rwelibs/port/ridoslib.md` name the
-  new number. Verify: `ctest --preset host`, `ctest --preset emulator -R
-  rwe`; the result is a named change (`-DPREV_INTENDED`).
+- [ ] 3.5 `ridoslib` keeps library 33 in `rwe-1999` and its sub-variants
+  (`libs/variants/rwe-1999/libnums.h:12`, no renumbering) and these
+  variants have no literal library (3.1); `rwe_numbers` and
+  `rwe_declarations_ridoslib` stay as they are. `docs/rwelibs/README.md`
+  §3.1 and `docs/rwelibs/port/ridoslib.md` say that `literallib` and
+  RIDosLib cannot be in one library set and that the RWE variants have no
+  literal characters. Verify: `ctest --preset host`, `ctest --preset
+  emulator -R rwe` unchanged; the RWE variants' library files
+  byte-identical to the `prev` build.
 
 ## 4. blitz2-c: the compiler
 
@@ -157,7 +167,8 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
 
 - [ ] 5.1 `shared/tokenizer` (rules AB3) and `ab3job`/`ab3cli`: bytes >=
   $80 inside a string and a comment of a text source become pairs
-  (including the six umlauts, design D4); outside them as before (Q5).
+  (including the six umlauts, design D4); outside them as before (the loader,
+  not `getcharb`).
   Verify: tests in `tests/ab3` that compile a string with ö and ß and
   compare the bytes with what AmiBlitz3's compiler gives (`ctest --preset
   oracle`); sources without such bytes unchanged; `ab3_tokens` still equal
@@ -193,13 +204,16 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   runs Cc and, for the program that holds only strings, C5.
 - [ ] 7.4 The prev comparison: `ctest --preset all` with a prev build:
   `prev_results`, corpus `prev`, `ted_ab` P5/Pc unchanged for all
-  scripts without a literal, and the new script, `acidlibs`, the userlib
-  file and `ridoslib` named in `PREV_INTENDED`. Verify: the report.
+  scripts without a literal, and the new script, `acidlibs` (not the RWE
+  variants') and the userlib file named in `PREV_INTENDED`. Verify: the report.
 
 ## 8. Docs
 
-- [ ] 8.1 The reservation of `$90` (libraries 32 and 33), where library
-  numbers are documented: `docs/token-table.md` (the first bytes, the
+- [ ] 8.1 The reservation of `$90` (libraries 32 and 33, "wherever
+  possible": the RWE variants keep RIDosLib as 33 and have no literal
+  library; the userlib `literallib.obj` works only if no other library
+  numbered 33 is loaded before it, the loaders take the first match),
+  where library numbers are documented: `docs/token-table.md` (the first bytes, the
   comparison tables), `docs/formats.md` §3.2 (the token word) and §1.4
   if it lists token ranges, `docs/libs/variants.md` (the library numbers
   of a variant), `libs/variants/*/libnums.h` (a comment at
@@ -208,7 +222,8 @@ of `tests/ab3` is checked with `ctest --preset oracle`. Group 2 waits for
   text names `$90`, libraries 32 and 33, and the decision of 2026-11-11.
 - [ ] 8.2 `docs/formats.md` §3.2 (the pair), §4.1 (26..31 stay, the
   literal for the rest) and §4.2 (load and save); `docs/rwelibs/README.md`
-  and `docs/ab3/userlibs.md` for the number of RIDosLib (Q6). Verify: the
+  and `docs/ab3/userlibs.md` for RIDosLib (33 in the RWE variants, no literal
+  library there). Verify: the
   texts name file and line of the code as the asserts do.
 - [ ] 8.3 `docs/ted/` (`deviations.md`, `changes.md`) and
   `docs/blitz2/`: the intended deviation (kind F) for #374 and the issue

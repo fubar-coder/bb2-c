@@ -29,7 +29,9 @@ as a literal character, except ä, ö, ü, Ä, Ö and Ü, which SHALL keep the
 codes 26 to 31 of the umlaut mapping (`germs`). The characters enter by
 typing, by loading a text file, by loading a block, by pasting, and by
 the tokeniser. The tokeniser SHALL NOT clear bit 7 of any character
-(today `c & 0x7F`), inside strings, inside comments and outside them. A
+(today `c & 0x7F`) inside strings and inside comments; outside them it
+does the same for simplicity, but that is not a guaranteed behaviour and
+may change. A
 text file or block that holds one of the six umlauts as a byte SHALL give
 the umlaut's code 26 to 31, so an umlaut has one stored form. A tokenised
 file is loaded as it is stored.
@@ -44,7 +46,7 @@ file is loaded as it is stored.
 
 #### Scenario: Outside strings
 - **WHEN** the user types `é` outside a string and a comment
-- **THEN** the line holds `$90 E9`, not `i`
+- **THEN** the line holds `$90 E9`, not `i` (this behaviour is not guaranteed outside strings and comments and may change)
 
 #### Scenario: Text file
 - **WHEN** a text file with the line `a$="Größe"` is loaded

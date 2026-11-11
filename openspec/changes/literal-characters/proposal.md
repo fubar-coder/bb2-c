@@ -11,9 +11,10 @@ which blitz2 maps back inside strings (`gs`, `blitz2.s:7181`,
 `programs/blitz2/src/parse.c:38`). Every other byte >= $80 (ß, é, à, ...)
 loses bit 7 in TED's tokeniser (`tokskip`, `c = *src++ & 0x7F`,
 `programs/ted/src/core/tokit.c`): `é` ($E9) becomes `i`, silently. A text
-file with such characters is loaded as token pairs (#374; its interim
-rule: bytes >= $80 of a text file are characters, the six umlauts mapped
-as typed). The user (2026-11-10) wants any Latin-1 character to survive in
+file with such characters was loaded as token pairs (#374, fixed in TED
+round R3c: bytes >= $80 of a text file are characters, the six umlauts
+mapped as typed with tokenise on, the others losing bit 7 in the
+tokeniser). The user (2026-11-10) wants any Latin-1 character to survive in
 strings and comments.
 
 ## What Changes
@@ -27,10 +28,10 @@ strings and comments.
 - The whole first byte `$90` (libraries 32 and 33) is **reserved** for
   literal characters (decision of 2026-11-11). Neither the libraries of
   the CD's Blitz 2 nor AmiBlitz3 v3.14.0 use it (design D2); RWE's
-  `RIDOSLIB` (library 33) does and needs another number (open question
-  Q6).
+  `RIDOSLIB` (library 33) does and keeps it in the RWE variants, which
+  therefore have no literal library.
 - A new library, **`literallib`** (library 33, 128 entries named by the
-  characters $80 to $FF), goes into `acidlibs` and its variants and is
+  characters $80 to $FF), goes into `acidlibs` and its variants without RWE and is
   also shipped as a userlib file for the original Blitz 2. TED, the
   original and TED-C, then shows a literal through the normal token name
   lookup. Its entries are not callable: a literal outside a string is a
@@ -86,7 +87,7 @@ strings and comments.
   `shared/tokenizer` (AB3 rules), `shared/ab3job`, `programs/ab3cli`.
 - `libs/acidlibs` (`literallib.c`, `ACIDLIBS_ORDER`), `libs/userlibs`,
   `libs/variants/*/libnums.h`, `libs/CMakeLists.txt` (token and number
-  checks), `libs/userlibs/rwe/ridoslib.c` (Q6), `tools/lib/bbdetok`,
+  checks), `libs/variants/rwe-1999/libnums.h` (`literallib` left out), `tools/lib/bbdetok`,
   `tools/blitzlib`, `programs/ted/tools/tedsrc`.
 - Tests: host tests of the TED core (one program per test file), TED A/B
   scripts (R5/C5/Cc/Rc, P5/Pc), the corpus, `tests/ab3` (oracle preset),
@@ -97,6 +98,6 @@ strings and comments.
   `docs/blitz2/`, the deviations lists (kind F, with #374), the website
   (coordinator).
 - Results: executables and files of programs without a literal character
-  are byte-identical to the `prev` build, except `acidlibs`, the new
-  userlib file and the RWE variants' `ridoslib` (intended, named with
+  are byte-identical to the `prev` build, except `acidlibs` of the
+  variants without RWE and the new userlib file (intended, named with
   `-DPREV_INTENDED`); a source with a literal is a new result.
