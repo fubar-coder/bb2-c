@@ -31,11 +31,19 @@ Where expected data is derived from the original (the CD result table `tests/dat
 - **THEN** the table update target rewrites that row with the new value, the issue and the original's hash, and the commit contains the change
 
 ### Requirement: Per-check fixed values in library pair tests
-A `libs_emulator` check SHALL be able to replace "equal to the original" by a stated correct value together with the issue number (`expect_fixed(NNN, value)`); the scenario SHALL keep running against both libraries and the fixed check SHALL be asserted, not skipped. Scenarios SHALL NOT be edited to avoid a difference.
+A `libs_emulator` check SHALL be able to replace "equal to the original" by a stated correct value together with the issue number (`expect_fixed(NNN, value)`); the fixed check SHALL be asserted, not skipped. Scenarios SHALL NOT be edited to avoid a difference. The original's side of every check SHALL be its recorded value (`libs/tests/tapes/NAME.tape`) in `libs_emulator` (preset `all`, no CD needed) and the live original in `libs_emulator_originals` (preset `originals`), which also records again and fails if the new recording differs from the committed one.
 
 #### Scenario: A fixed check
 - **WHEN** a library fix changes a result and the check has `expect_fixed(NNN, value)`
 - **THEN** the C library must give `value`, the original may differ, and the other checks of the scenario still compare with the original
+
+#### Scenario: Replay without the CD
+- **WHEN** `libs_emulator` runs in `all` without the CD
+- **THEN** each check compares the C library with the original's recorded value, an `expect_fixed` check with the recorded original value and `value`
+
+#### Scenario: Stale recording
+- **WHEN** a test program is changed and its recording is not renewed
+- **THEN** `libs_emulator_originals` fails because its new recording differs from the committed one
 
 #### Scenario: Stale exemption
 - **WHEN** an `expect_fixed` check finds that the C library gives the original's value
