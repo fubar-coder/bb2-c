@@ -112,8 +112,14 @@ function(corpus_pass name)
 		string(APPEND text "test=${test}\n")
 		string(APPEND text "work=${work}\nreport=${work}.txt\nruntime_errors=${runtime_errors}\n"
 			"serial=${serial}\ntimeout=${CORPUS_TIMEOUT}\nparallel=${CORPUS_PARALLEL}\n"
-			"ted=$<TARGET_FILE:tedstub>\nlauncher=$<TARGET_FILE:${arg_LAUNCHER}>\n"
-			"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n")
+			"ted=$<TARGET_FILE:tedstub>\nlauncher=$<TARGET_FILE:${arg_LAUNCHER}>\n")
+		# blitz2:defaultdbug only in the originals runs (as the original
+		# installation has it): the programs are executables (CREATE
+		# EXECUTABLE), which never contain the module, also not with runtime
+		# error checking (runerrlib + rundebuglib), so all names none
+		if(NOT kind STREQUAL "all")
+			string(APPEND text "defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n")
+		endif()
 		if(arg_GATE)
 			string(APPEND text "gate=$<TARGET_FILE:${arg_GATE}>\n")
 		endif()

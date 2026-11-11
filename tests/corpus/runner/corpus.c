@@ -401,10 +401,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
-    if (!p->work || !p->report || !p->ted || (p->run && !p->launcher)
-        || (!p->defaultdbug && !p->fixed && !p->regression))
-        return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug (optional with "
-                    "fixed= and regression=on) are needed");
+    if (!p->work || !p->report || !p->ted || (p->run && !p->launcher))
+        return fail(p, err, errlen, "work, report, ted and launcher are needed");
     /* compile only: nothing that belongs to the runs */
     if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect
                     || p->serial_same_as))
@@ -697,7 +695,7 @@ static void skip_missing_expect(struct corpus_pass *p, FILE *log)
 {
     size_t k, i, j;
 
-    if (p->defaultdbug && !p->runtime_errors && access(p->defaultdbug, R_OK)) {
+    if (p->defaultdbug && access(p->defaultdbug, R_OK)) {
         if (log)
             fprintf(log, "corpus: no %s - run without blitz2:defaultdbug\n", p->defaultdbug);
         free(p->defaultdbug);
@@ -749,9 +747,10 @@ void corpus_skip_missing(struct corpus_pass *p, FILE *log)
                         : p->configs[c].acidlibs);
             drop_config(p, c);
         }
-    /* with runtime error checking the debugger is part of the program: the
-       run needs the file (and is skipped without it) */
-    if (p->defaultdbug && !p->runtime_errors && access(p->defaultdbug, R_OK)) {
+    /* the module is never part of a program (CREATE EXECUTABLE links
+       runerrlib and rundebuglib; only COMPILE/RUN hands blitz2:defaultdbug
+       to dhandlerlib): the run goes without it */
+    if (p->defaultdbug && access(p->defaultdbug, R_OK)) {
         if (log)
             fprintf(log, "corpus: no %s - run without blitz2:defaultdbug\n", p->defaultdbug);
         free(p->defaultdbug);

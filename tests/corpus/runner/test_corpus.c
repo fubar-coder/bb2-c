@@ -216,14 +216,15 @@ int main(void)
         corpus_skip_missing(&p, NULL);
         CHECK(p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib") && !p.defaultdbug);
         corpus_free(&p);
-        /* with runtime error checking blitz2:defaultdbug stays (the run is skipped) */
+        /* with runtime error checking too (the program links rundebuglib,
+           never the module): left out, the run goes on */
         CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/no/dbug\n"
                            "runtime_errors=on\nconfig=ref|ref|/no/a|/no/b|/no/c\n"
                            "config=clib|output|/|/|/\nsource=/s\nexpect=/e\norig=/o\n",
                            &p, err, sizeof err) == 0);
         corpus_select(&p, 0);
         corpus_skip_missing(&p, NULL);
-        CHECK(p.nconfigs == 1 && p.defaultdbug && !strcmp(p.defaultdbug, "/no/dbug"));
+        CHECK(p.nconfigs == 1 && !p.defaultdbug);
         corpus_free(&p);
         /* none there: the configurations stay (the run is skipped) */
         CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/d\n"
@@ -282,8 +283,15 @@ int main(void)
     /* no blitz2:defaultdbug (nothing of the CD) */
     CHECK(parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\nfixed=7\n"
                 "config=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\n", err, sizeof err) == 0);
-    CHECK(parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\n" CONFIGS "source=/s\nexpect=/e\n",
-                err, sizeof err) == -1 && strstr(err, "defaultdbug"));
+    /* defaultdbug= is optional in every pass (the module is never part of
+       a program); a pass without work= still fails */
+    CHECK(parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\n" CONFIGS
+                "source=/s\nexpect=/e\norig=/o\n", err, sizeof err) == 0);
+    CHECK(parse("work=/w\nreport=/r\nted=/t\nlauncher=/x\nruntime_errors=on\n"
+                "config=clib|ref|/a|/b|/c\nexpect_dir=/e\nsource=/s\n", err, sizeof err) == 0);
+    CHECK(parse("report=/r\nted=/t\nlauncher=/x\n" CONFIGS "source=/s\nexpect=/e\norig=/o\n",
+                err, sizeof err) == -1
+          && strstr(err, "work, report, ted and launcher are needed"));
     /* broken on purpose: a reference, no expectation, regression, no number */
     CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\nfixed=120\n", err, sizeof err) == -1
           && strstr(err, "without a reference"));
@@ -574,8 +582,8 @@ int main(void)
         CHECK(corpus_load_notes(&p, err, sizeof err) == 0);
         corpus_free(&p);
 
-        /* without the CD: no blitz2:defaultdbug without runtime error
-           checking, and the source that names BB2: is left out */
+        /* without the CD: no blitz2:defaultdbug, and the source that names
+           BB2: is left out */
         snprintf(pass, sizeof pass, "work=/w\nreport=/r\nted=/t\nlauncher=/x\n"
                  "defaultdbug=%s\nconfig=clib|ref|/a|/b|/c\nexpect_dir=/e\n"
                  "mount=BB2|%s/no-cd\nmount=OTHER|%s\nsource=%s\nsource=%s\n", dbug, dir, dir,
@@ -585,13 +593,14 @@ int main(void)
         CHECK(!p.defaultdbug && p.nsources == 1 && !strcmp(p.sources[0], src2)
               && p.nmounts == 1 && !strcmp(p.mount_name[0], "OTHER"));
         corpus_free(&p);
-        /* with runtime error checking the debugger is needed: stays, so the run is skipped */
+        /* with runtime error checking the same: the module is left out, the
+           run goes on */
         snprintf(pass, sizeof pass, "work=/w\nreport=/r\nted=/t\nlauncher=/x\nruntime_errors=on\n"
                  "defaultdbug=%s\nconfig=clib|ref|/a|/b|/c\nexpect_dir=/e\nsource=%s\n", dbug,
                  src2);
         CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
         corpus_skip_missing(&p, NULL);
-        CHECK(p.defaultdbug && p.nsources == 1);
+        CHECK(!p.defaultdbug && p.nsources == 1);
         corpus_free(&p);
         /* the CD is there: nothing is left out */
         CHECK(write_file(dbug, "x", 1) == 0);

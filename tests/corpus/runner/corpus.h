@@ -28,9 +28,9 @@
  *   gate=PATH        optional: run through the launcher first (reqclosetest);
  *                     if it does not return 0, the programs are not run and
  *                     the pass fails (they would block on their requesters)
- *   defaultdbug=PATH  blitz2:defaultdbug (optional with fixed= and
- *                     regression=on: without it there is no
- *                     blitz2:defaultdbug)
+ *   defaultdbug=PATH  optional: blitz2:defaultdbug (the debugger module
+ *                     of COMPILE/RUN; never part of an executable, so
+ *                     the passes of the preset all name none)
  *   config=TAG|EXPECT|BLITZ2|DEFLIBS|ACIDLIBS   one per configuration; the
  *                     first is the reference (EXPECT ref; none with
  *                     fixed= or regression=on), the others:
@@ -229,14 +229,14 @@ void corpus_select(struct corpus_pass *p, int record);
 /* after corpus_select: the normal run of a bug-orig pass (orig=) judges
    what is there.  A configuration whose compiler or libraries are missing
    (port: the CD's libraries) is not judged while another one is, and
-   without blitz2:defaultdbug (the CD) the run goes without it unless it
-   has runtime error checking (the debugger is part of the program: the
-   run is skipped); both are noted in log (may be NULL).  The recording
+   without blitz2:defaultdbug (the CD) the run goes without it, also with
+   runtime error checking (an executable links runerrlib and rundebuglib,
+   never the module); both are noted in log (may be NULL).  The recording
    needs them (skipped).
 
    A pass that compares with expect_dir= (not a bug-orig pass, not the
    update) goes on without the CD in the same way: without
-   blitz2:defaultdbug unless it has runtime error checking, and a source
+   blitz2:defaultdbug, and a source
    whose text names a mount (BB2:) whose directory is missing is left out
    (noted in log); no source left: skipped */
 void corpus_skip_missing(struct corpus_pass *p, FILE *log);

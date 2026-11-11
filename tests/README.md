@@ -241,12 +241,15 @@ compile the same sources in several configurations and run the programs:
   clib (blitz2-c with the C libraries of the build) and, with a prev
   build, prev (executable equal to clib's, "The prev build"). No test
   of the original: it runs without the CD where the programs allow it.
-  Without the CD `corpus` leaves out the three programs that load sounds
-  and modules from `BB2:` (`t110_audio`, `t111_tracker`, `t112_med`) and
-  runs without `blitz2:defaultdbug`, as does `corpus_serial`; the passes
-  with runtime error checking (`corpus_runerr`, `corpus_req`,
-  `corpus_serial_runerr`) need the CD's `DEFAULTDBUG` (the debugger is
-  part of the program) and are skipped.
+  Without the CD a pass leaves out the programs that load sounds and
+  modules from `BB2:` (`t110_audio`, `t111_tracker`, `t112_med`). No
+  pass of `all` stages `blitz2:defaultdbug`: the programs are
+  executables (CREATE EXECUTABLE), and an executable never contains the
+  debugger module, also not with runtime error checking (it links
+  `runerrlib` and `rundebuglib`; only COMPILE/RUN from the editor hands
+  the module to `dhandlerlib`), so the passes with runtime error checking
+  (`corpus_runerr`, `corpus_req`, `corpus_serial_runerr`) run the same
+  with and without the CD.
 * `NAME_originals` (`corpus_originals`, `corpus_runerr_originals`, ...;
   label `originals`, only in `ctest --preset originals`): ref (original
   blitz2 2.10 = `BLITZ2/BLITZ2` of the CD, libraries of the CD) and port
@@ -609,10 +612,10 @@ session each (in parallel). The original (blitz2 1.95 with the libraries
 of the CD, the reference `ref`) does not run in the normal test: what it
 did is committed as `ID.orig`, recorded once ([Recorded
 originals](#recorded-originals)). Without the CD the configuration `port`
-is not judged and the run goes without `blitz2:defaultdbug`; the CD is
-still needed by a test with runtime error checking (`; @pass
-runtime_errors=on`: the debugger is part of the program), by one whose
-source names `BB2:` (the volume is mounted only for those), and by one that
+is not judged and the run goes without `blitz2:defaultdbug` (also with
+runtime error checking, `; @pass runtime_errors=on`: the programs are
+executables, which never contain the module); the CD is still needed by
+one whose source names `BB2:` (the volume is mounted only for those), and by one that
 mounts it with `; @pass mount=BB2|@CD@` because its crash depends on the
 memory layout, which the volume changes (`blitzcoplib-maxslice-zero`: a
 time out with it, a halt of the CPU without). A fixed test: only clib,

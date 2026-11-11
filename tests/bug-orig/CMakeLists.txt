@@ -56,7 +56,8 @@
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
 # bug-orig and emulator, skipped (77) without Amiberry.  Without the CD
 # the configuration port (the CD's libraries) is not judged and the run
-# goes without blitz2:defaultdbug (not with runtime_errors=on: skipped);
+# goes without blitz2:defaultdbug (also with runtime_errors=on: the
+# programs are executables, which never contain the module);
 # the volume BB2: is mounted (the CD) only for a test whose source names it
 # or whose layout needs it (@pass mount=BB2|@CD@), skipped without the CD.
 # A fixed test (; @fixed #NNN, added by the commit that fixes the bug;

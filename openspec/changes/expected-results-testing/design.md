@@ -351,8 +351,8 @@ code changes in this change).
   the rest with `bugorig_judge`. A line of a recorded file may be edited to
   a wildcard of the expectation's kind (`same_as` matches the way an
   expectation does). Without the CD the normal run does not judge `port`
-  and runs without `blitz2:defaultdbug`; it is skipped (77) with runtime
-  error checking (the debugger is part of the program), when the source
+  and runs without `blitz2:defaultdbug` (with runtime error checking too,
+  task 9.10); it is skipped (77) when the source
   names `BB2:` (the volume is mounted only then; before it was mounted
   for every test) and for the TED tests (C5 uses the CD's compiler). The
   mount changes the memory layout: `blitzcoplib-maxslice-zero` crashes as
@@ -489,12 +489,11 @@ code changes in this change).
   the first configuration is the reference of the pass file but is judged
   against the files like the others; the report no longer calls it the
   reference). The target `corpus-expect-update` writes from `clib` of the
-  `all` passes, as before. Without the CD `corpus` and `corpus_serial` run
-  (no `blitz2:defaultdbug` without runtime error checking; the programs that
-  name `BB2:` are left out: `t110_audio`, `t111_tracker`, `t112_med`;
-  `corpus_skip_missing` for a pass with `expect_dir=`); the three passes
-  with runtime error checking need the CD's debugger (`DEFAULTDBUG` exists
-  only on the CD) and are skipped as before. **Notes**:
+  `all` passes, as before. Without the CD every pass runs (the programs
+  that name `BB2:` are left out: `t110_audio`, `t111_tracker`, `t112_med`;
+  `corpus_skip_missing` for a pass with `expect_dir=`); no pass of `all`
+  stages `blitz2:defaultdbug`, which no executable needs (task 9.10).
+  **Notes**:
   `tests/corpus/notes.tsv`, rows `PASS<TAB>NAME<TAB>#NNN: REASON`,
   parsed and judged by `tools/lib/corpusnotes` (a program once per pass; a
   listed program may differ in any configuration of the originals pass:
@@ -589,7 +588,8 @@ code changes in this change).
   the check moves to a test (against CLAUDE.md "checks in the build"), or
   its reference data are committed as generated data under `tests/data`
   (checked by `originals`), or A2 stays in the build. The task stays open
-  until then.- **Task 9.2, TED's reference data (2026-11-11, decision of the task):**
+  until then.
+- **Task 9.2, TED's reference data (2026-11-11, decision of the task):**
   `tests/data/ted-checkdata.txt` holds the bytes of every range of
   `programs/ted/checkdata.tsv` (one line `START<TAB>END|SIZE<TAB>HEX`,
   `..` for a byte of a relocated long; 36 KB, 534 ranges): only what the
@@ -616,3 +616,41 @@ code changes in this change).
   libraries; the self tests `bug_orig_ted_fixed_selftest_fixed` /
   `_regressed` likewise (REGRESSED is reported in both). Checked with the
   CD: 47 `bug_orig_ted*` of `all` pass, 37 `*_originals` pass.
+- **Task 9.6 (2026-11-11):** `blitzlib decls` writes the declaration part
+  of every library of a file as text (`tests/data/declarations/`:
+  `acidlibs.txt`, `deflibs.txt`, `rwe/NAME.txt` for the 53 RWE userlibs;
+  490 KB): per library its number and the count of relocations in the
+  declaration part, then header, one line per token table entry, end;
+  declaration bytes in hex (kinds, argument types, names, help texts,
+  numbers), run-time/padding bytes `..`, code offsets only `++++++++`
+  (set) or `--------` (zero) - no code. `blitzlib compare` takes the data
+  as ORIGINAL: it rebuilds a code hunk of only the declaration part and
+  runs the same comparison, so the messages and with them the intended
+  lists (`declarations-intended.txt`, `NAME.declarations-intended.txt`)
+  stay as they are (checked: deflibs gives its two intended lines from
+  the data as from the CD). `declarations_GROUP` and
+  `rwe_declarations_NAME` read the data (no skip, no emulator label, no
+  `rwe_refbuild` fixture any more); `declarations_GROUP_data`,
+  `rwe_declarations_NAME_data` (label `originals`; the refbuild entries
+  need the fixture `rwe_refbuild`) compare `blitzlib decls` of the
+  original with the data byte for byte; target `declarations-data`
+  writes them. Broken input: `declarations_data_broken` (a changed name
+  byte is a difference), `declarations_data_check_wrong`/`_right`, and
+  the host cases of `test_blitzlib_compare.c` (the comparison through
+  the data, broken data). (Recorded in the commit of task 9.10.)
+- **Task 9.10 (2026-11-11, redefined by the user decision of that day;
+  the coordinator's analysis `defaultdbug-analysis.md`):** the corpus
+  compiles with CREATE EXECUTABLE, which links `runerrlib` and
+  `rundebuglib` (`programs/blitz2/src/compile.c:786-796`); only
+  COMPILE/RUN hands `blitz2:defaultdbug` to `dhandlerlib`
+  (`libcall.c:696-698`). So the earlier statement "with runtime error
+  checking the debugger is part of the program" was wrong. The corpus
+  runner: `defaultdbug=` is optional in every pass, and a missing module
+  is left out also with `runtime_errors=on` (`corpus.c`, both places of
+  `corpus_skip_missing`; host cases in `test_corpus.c` turned round);
+  the pass files of `all` (`corpus_pass`, `tests/corpus/CMakeLists.txt`)
+  name no `defaultdbug=`, the `_originals` passes keep it (the original
+  installation). Checked with the CD: `corpus_runerr` 135, `corpus_req`
+  3, `corpus_serial_runerr` 1 programs as the committed expect files.
+  Open bug-orig tests keep `defaultdbug=` for their recording; their
+  normal run drops it when missing.
