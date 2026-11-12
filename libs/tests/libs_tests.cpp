@@ -7,7 +7,9 @@
 //
 // The library files are expected next to the executable (PROGDIR:):
 // NAME.orig (original from the CD's acidlibs) and NAME.obj (C build) - see
-// emulator.cmake (ctest libs_emulator).  Select tests with snitch filters:
+// emulator.cmake (ctest libs_emulator).  A program that observes one set
+// (libtest.c so far) loads NAME.<LIBSET> and writes its cases to
+// PROGDIR:captures/NAME.txt (capture.h).  Select tests with snitch filters:
 //   libs_tests "[mathstr]"      libs_tests "libtest ldivlib"
 // The test cases tagged [.bug-orig] (bugorig.c) are hidden: they check
 // the correct behaviour where the C build reproduces an original bug, so
@@ -118,18 +120,28 @@ const char *tapedir()
     return buf;
 }
 
+// the cases of the programs that observe one set (capture.h):
+// PROGDIR:captures/NAME.txt
+const char *capdir()
+{
+    static char buf[300];
+    if (!buf[0])
+        std::snprintf(buf, sizeof buf, "%s/captures", progdir());
+    return buf;
+}
+
 int run_libtest(const char *lib)
 {
-    static char orig[300], obj[300], name[40];
-    std::snprintf(orig, sizeof orig, "%s/%s.orig", progdir(), lib);
-    std::snprintf(obj, sizeof obj, "%s/%s.obj", progdir(), lib);
-    std::snprintf(name, sizeof name, "libtest_%s", lib);
-    char *argv[] = {(char *)"libtest", orig, obj, nullptr};
+    static char file[300], name[40];
     run_env env;
-    tape_begin(tapedir(), name);
-    int rc = libtest_main(3, argv);
-    tape_end();
-    return rc;
+    if (!bl_libset) {
+        bl_test_check("libtest: LIBSET is not set (obj or orig)", 0);
+        return 20;
+    }
+    std::snprintf(file, sizeof file, "%s/%s.%s", progdir(), lib, bl_libset);
+    std::snprintf(name, sizeof name, "libtest_%s", lib);
+    char *argv[] = {(char *)"libtest", file, (char *)capdir(), name, nullptr};
+    return libtest_main(4, argv);
 }
 
 int run_systest(const char *name, int (*fn)(int, char **))

@@ -1,21 +1,27 @@
 /*
- * libtest - compare the routines of two builds of a Blitz library on the
- * Amiga: the original (e.g. extracted from blitz2:acidlibs) and the C
- * build.  Both files are loaded with LoadSeg; the code addresses come from
- * the relocated !subs fields of the token table.  Every nullsub/form
- * routine is called with the same register inputs, d0 is compared.
+ * libtest - the routines of one build of a Blitz library on the Amiga:
+ * the original (extracted from blitz2:acidlibs) or the C build, as the
+ * run's LIBSET says (libs_tests.cpp).  The file is loaded with LoadSeg;
+ * the code addresses come from the relocated !subs fields of the token
+ * table.  Every nullsub/form routine is called with the same register
+ * inputs and its d0 is written as a case (capture.h): the key is the
+ * routine, "d0" and the inputs; the expected data
+ * (libs/tests/expected/libtest_NAME.txt) holds them as block cases
+ * (design D6 of the openspec change libs-tests-capture: 41 458 random
+ * 32-bit results are as hex nobody reads, and nearly incompressible).
  *
- *   libtest ORIG.obj NEW.obj [ROUNDS]
+ *   libtest LIB DIR NAME [ROUNDS]     the cases to DIR/NAME.txt
  *
  * Inputs: all pairs of a list of edge values in d0/d1, plus ROUNDS
  * (default 20000) pseudo random pairs (fixed seed, reproducible).
- * Output: one line per routine; exit 0 if all results are equal.
+ * Output: one line per routine; exit 0 if the library loads and its
+ * cases are written.
  */
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "tape.h"
+#include "capture.h"
 
 /* registers for callregs() - layout of movem.l d0-d7/a0-a6 */
 struct regs { ULONG d[8]; ULONG a[7]; };
@@ -93,6 +99,7 @@ static int load(struct lib *l, const char *name)
     l->n = 0;
     if (scan(l) <= 0) {
         printf("%s: no routines found\n", name);
+        UnLoadSeg(l->seg);
         return 0;
     }
     return 1;
@@ -106,7 +113,7 @@ static const ULONG edges[] = {
 };
 #define NEDGES (sizeof edges / sizeof edges[0])
 
-static ULONG seed = 0x1234567;
+static ULONG seed;
 static ULONG rnd(void)
 {
     seed = seed * 1103515245UL + 12345;
@@ -132,24 +139,26 @@ static ULONG call(APTR fn, ULONG d0, ULONG d1)
 
 int main(int argc, char **argv)
 {
-    static struct lib a, b;
-    long rounds = argc > 3 ? atol(argv[3]) : 20000;
-    int i, bad = 0;
+    static struct lib a;
+    long rounds = argc > 4 ? atol(argv[4]) : 20000;
+    char vec[24];
+    int i;
 
-    if (argc < 3) {
-        printf("usage: libtest ORIG.obj NEW.obj [ROUNDS]\n");
+    if (argc < 4) {
+        printf("usage: libtest LIB DIR NAME [ROUNDS]\n");
         return 20;
     }
-    if (!load(&a, argv[1]) || !load(&b, argv[2]))
+    if (!load(&a, argv[1]))
         return 20;
-    if (!tape_same("routine count", a.n, b.n)) {
-        printf("routine count differs: %d / %d\n", a.n, b.n);
-        return 10;
-    }
+    seed = 0x1234567;           /* the same inputs in every run */
+    cap_begin(argv[2], argv[3]);
+    cap_num("routine count", NULL, a.n);
+    cap_blocks(1);
     for (i = 0; i < a.n; i++) {
-        long tests = 0, diffs = 0;
+        long tests = 0;
         unsigned x, y;
-        ULONG d0, d1, ra, rb;
+        ULONG d0, d1;
+        cap_routine(a.what[i]);
         for (x = 0; x < NEDGES * NEDGES + rounds; x++) {
             if (x < NEDGES * NEDGES) {
                 y = x / NEDGES;
@@ -160,23 +169,12 @@ int main(int argc, char **argv)
                 d0 = rnd();
                 d1 = rnd();
             }
-            ra = call(a.code[i], d0, d1);
-            rb = call(b.code[i], d0, d1);
-            ra = tape_val(a.what[i], ra, rb);
+            sprintf(vec, "$%08lX $%08lX", d0, d1);
+            cap_num("d0", vec, call(a.code[i], d0, d1));
             tests++;
-            if (ra != rb) {
-                if (diffs < 5)
-                    printf("  %s: d0=$%08lX d1=$%08lX -> orig $%08lX, C $%08lX\n",
-                           a.what[i], d0, d1, ra, rb);
-                diffs++;
-            }
         }
-        printf("%s %-12s %ld tests, %ld differences\n",
-               diffs ? "FAIL" : "ok  ", a.what[i], tests, diffs);
-        if (diffs)
-            bad = 1;
+        printf("%-12s %ld tests\n", a.what[i], tests);
     }
     UnLoadSeg(a.seg);
-    UnLoadSeg(b.seg);
-    return bad ? 5 : 0;
+    return cap_end() ? 5 : 0;
 }

@@ -6,6 +6,9 @@
 # compiler" (sysload.h), and compare results, registers and memory.
 # ctest libs_emulator runs it in Amiberry (emulator.cmake) against the
 # recordings of the originals' results (tape.c, tapes/), without the CD.
+# The programs converted to one set (libtest.c so far; openspec change
+# libs-tests-capture) load NAME.obj or NAME.orig, as LIBSET says, and
+# write their cases (capture.c), compared with expected/NAME.txt.
 
 # snitch for libnix on the 68000: no exceptions, threads, all reporters,
 # small limits (the defaults need 260 KB of data and over 100 KB of
@@ -50,9 +53,7 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_i
 
 # capture.c: the case writer of the programs that observe one set
 # (capture.h; its system calls in capture_amiga.c, its host test in
-# host/), compiled here for the m68k; linked into libs_tests with the
-# first converted program (its static buffers move the heap, and the
-# tapes hash a value inside the program's memory as PROG)
+# host/), compiled here for the m68k and linked into libs_tests
 add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
 
@@ -69,7 +70,7 @@ foreach(t IN LISTS c_tests)
 endforeach()
 # -u pulls libnix swapstack.o, which honours __stack at startup
 target_link_options(libs_tests PRIVATE -Wl,-u,___stkinit)
-target_link_libraries(libs_tests PRIVATE snitch::snitch)
+target_link_libraries(libs_tests PRIVATE libs_capture snitch::snitch)
 
 # in Amiberry: libs_tests with every acidlib of this build and the RWE
 # userlibs (label emulator; skipped without Amiberry).  libs_emulator
@@ -169,24 +170,37 @@ set_tests_properties(libs_capture_target PROPERTIES
 # whose files are not the committed ones fails (tape-compare.cmake, no
 # emulator)
 set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
-	"libs_expect_fixed*, libs_emulator_tape_wrong: time limit of the emulator run (seconds)")
+	"libs_expect_fixed*, libs_emulator_tape_wrong, libs_emulator_wrong: time limit of the emulator run (seconds)")
 math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
-	-DTAPE_CORRUPT=libtest_ldivlib "-DFILTER=libtest ldivlib"
+	-DTAPE_CORRUPT=systest -DFILTER=[sys]
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_tape_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator_tape_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL tape libtest_ldivlib: observations 0\\.\\.[0-9]+ differ from the original's recording")
+	"FAIL tape systest: observations 0\\.\\.[0-9]+ differ from the original's recording")
 add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
 	-DRECORDED=${tapes} -DCOMMITTED=${tapes} -P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
 add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
 	-DCOMMITTED=${tapes} -DCORRUPT=ON -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tapes_compare_wrong
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
 set_tests_properties(libs_tapes_compare_wrong PROPERTIES PASS_REGULAR_EXPRESSION
-	"libtest_ldivlib.tape: differs\n *libtest_lmullib.tape: committed, not recorded")
+	"rwe_bb_blitlib.tape: differs\n *rwe_blitzbomberslibtwo.tape: committed, not recorded")
+# the check of the cases with broken input: the run's first case of
+# libtest_ldivlib changed (emulator.cmake CAPTURE_CORRUPT) fails the compare
+# with the expected data, naming the key
+add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
+	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} -DCAPTURE_CORRUPT=libtest_ldivlib
+	"-DFILTER=libtest ldivlib"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"libtest_ldivlib: \\|routine count\\|\\|1: expected \\$00000002, got \\$00000000\n")
 
 # reproduced original bugs (bugorig.c, hidden snitch tests [.bug-orig]):
 # each checks the correct behaviour and FAILS as long as the C build

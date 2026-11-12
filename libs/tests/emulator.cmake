@@ -29,8 +29,8 @@
 # with it by RESULTS libs-compare --set LIBSET; with FILTER only the
 # programs that wrote cases, else all (without any cases and without
 # EXPECTED nothing is compared: no program observes one set yet).
-# CAPTURE_CORRUPT: the run's first case of NAME with its value's last
-# character changed before the compare, the test of the check.
+# CAPTURE_CORRUPT: the last digit of the 8-digit hex number in the value of
+# the run's first case of NAME changed before the compare, the test of the check.
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
 # (log_illegal_mem, --log); for every line
 #   illegal-watch START END CODESTART CODEEND        (hex, from libs_tests)
@@ -248,13 +248,13 @@ set(compare_failed "")
 if(EXPECTED)
 	file(GLOB written RELATIVE ${test}/captures ${test}/captures/*.txt)
 	if(CAPTURE_CORRUPT)
-		# the first 8-digit hex number of the first case, its last digit changed
+		# the last 8-digit hex number of the first case, its last digit changed
 		set(t ${test}/captures/${CAPTURE_CORRUPT}.txt)
 		if(NOT EXISTS ${t})
 			message(FATAL_ERROR "libs_emulator: CAPTURE_CORRUPT: no ${t}")
 		endif()
 		file(READ ${t} text)
-		if(NOT text MATCHES "^(# [^\n]*\n[^\t\n]*\t[^\n]*)([0-9A-F]{7})([0-9A-F])")
+		if(NOT text MATCHES "^(# [^\n]*\n[^\t\n]*\t[^\n]*)([0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F][0-9A-F])([0-9A-F])")
 			message(FATAL_ERROR "libs_emulator: ${t}: no value to corrupt")
 		endif()
 		set(low 0)

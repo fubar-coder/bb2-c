@@ -84,8 +84,10 @@ model; their specs keep their behaviour here.
   scenario code no longer has the `[2]` arrays, the `cur` loop and the
   second `sets[]` entry.
 - Block hashes replace values only for `systest_med` (3.57 million
-  observations) and `rwe_ridisasmlib` (3.06 million; counts from the `end`
-  lines of the tapes). Limits stated in the design: a fix inside a block
+  observations), `rwe_ridisasmlib` (3.06 million; counts from the `end`
+  lines of the tapes) and the two `libtest` programs (`ldivlib`,
+  `lmullib`: 41 459 random 32-bit results each, nearly incompressible
+  text; design D6). Limits stated in the design: a fix inside a block
   program is a pair of block cases nobody can review, a fix that changes
   the number of observations shifts the block numbers, a program's own
   `check()` that a fix touches must become an observation, and the

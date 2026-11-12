@@ -496,6 +496,36 @@ such a pair, and the unqualified case that became such a pair; a case the
 fix removes (an `[orig]` case alone) carries no issue number and is
 reported, to be named in the commit.
 
+## The first conversion (group 2)
+
+Facts of tasks 2.2-2.6 (2026-11-12):
+
+- `capture.c` is linked into `libs_tests` with its static table as it is
+  (2^17 entries, about 1.5 MB). The tapes that depended on the size of
+  the program are fixed at their sites instead: `systest_mathstr`'s `SAME`
+  and the table words of `rwe_blitzbomberslibtwo` pass their numbers
+  through `tape_val` (no range test), and both tapes were recorded again
+  from the originals; with `capture.c` linked every other tape still
+  replays.
+- `libtest` takes one library file and writes `libtest_NAME.txt`: one plain
+  case `|routine count||1`, then block cases of the routines' `d0`
+  (`ROUTINE|d0|$D0 $D1|N`), 11 blocks per program (41 458 observations,
+  the same 20 729 inputs per routine as before). The seed of its random
+  inputs is set at the start of each program; before, `lmullib` continued
+  the sequence `ldivlib` left, so its inputs depended on the programs run
+  before it (a filter for `lmullib` alone got other inputs).
+- `libs_emulator_tape_wrong` corrupts the tape of `systest` (filter
+  `[sys]`), `libs_tapes_compare_wrong` now changes `rwe_bb_blitlib.tape`
+  and leaves out `rwe_blitzbomberslibtwo.tape` (the first two files in
+  order), since the `libtest` tapes are gone.
+- `libs_emulator_wrong` (filter `libtest ldivlib`, `CAPTURE_CORRUPT`):
+  the run's `|routine count||1` changed to `$00000000` fails the compare
+  with `libtest_ldivlib: |routine count||1: expected $00000002, got
+  $00000000`.
+- `libs-capture` with the filter `[libtest]` wrote both files; a second
+  run wrote nothing ("2 unchanged"); `libs-update` with the same filter
+  changed nothing.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the
@@ -620,9 +650,9 @@ same savestate).
   image longs of `sameimg`, compared through `tape_obs`, which normalises
   every value, not yet proven; task 1.2 checks it). So `cap_num` writes numbers as they are and only `cap_ptr` and
   `cap_ptrbytes` normalise; `cap_ptrbytes` is for records that hold
-  pointers, never for random data. Until the first conversion (task 2.6)
-  `capture.c` is compiled for the m68k as an object library of its own
-  and not linked into `libs_tests`.
+  pointers, never for random data. With the first conversion (task 2.6)
+  `capture.c` is linked into `libs_tests`; the two tapes that normalised
+  numbers pass them through `tape_val` ("The first conversion (group 2)").
 - [A stated kept set too weak] See D7; the set is the intersection over
   all calls, so a register the original keeps in some calls only is not
   covered. Accepted.
