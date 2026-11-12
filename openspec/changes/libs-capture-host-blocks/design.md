@@ -115,6 +115,39 @@ runs' `.bin` after a written accept or update. A failure keeps them.
 (for `libs-compare --other` with a passing run). The next run of the same
 test removes its work directory anyway.
 
+## Findings of the implementation
+
+- `NAME.bin` is opened by `cap_blocks(1)` and must be closed by
+  `cap_blocks(0)`, not by `cap_end()`: the first `libs_emulator` run with
+  the file open until `cap_end()` failed `ridisasmlib: all memory back`
+  (56 bytes: the DOS file handle, allocated inside the program's memory
+  balance window). So a program has one block mode; a second
+  `cap_blocks(1)` is a fault ("block mode a second time"). All four block
+  programs have one.
+- A key of a block observation longer than 1023 bytes was a fault of the
+  writer; it is now found by the judge (malformed `NAME.bin`), as the
+  writer no longer builds the key.
+- CMake cannot write a 0 byte, so the CMake-level tests
+  (`libs_capture_target`) use a `NAME.bin` without records; the records
+  are tested from memory (`test_libscmp_bin.c`, `test_capture_format`).
+
+## Measurements (task 4.3)
+
+Wall clock on an idle machine (load average 1.2-1.4 before and after
+each run, no foreign compiler, ninja, ctest or Amiberry process), C build
+(`LIBSET=obj`), the `libs_emulator` command with a filter, compare with
+the expected data included; before: the throwaway measurement of
+2026-11-12 (today's capture.c, same machine):
+
+| | before | now |
+|---|---|---|
+| `systest_med` (`[med]`) | 53.5 s | 26.2 s, 26.5 s |
+| `rwe_ridisasmlib` | 67.2 s | 29.4 s, 29.4 s |
+| `libs_emulator` (all 60 programs) | about 150 s | 77.5 s, 75.8 s |
+
+The raw files of one run: `systest_med.bin` 132.5 MB, `rwe_ridisasmlib.bin`
+168.2 MB, each `libtest` 1.2 MB; deleted after the pass.
+
 ## Risks / Trade-offs
 
 - [Two writers of one format: the host formatting must stay in lock step

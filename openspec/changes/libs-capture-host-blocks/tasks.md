@@ -16,6 +16,6 @@
 
 ## 4. Acceptance
 
-- [ ] 4.1 Clean builds without warnings (m68k, host, host with `-DHOST_SANITIZE=ON`), `ctest --preset host`, `ctest --preset all` with a prev build (results byte-identical, expected data unchanged: `libs_emulator` passes)
-- [ ] 4.2 With the CD: `ctest --preset originals -R libs_emulator` passes and `libs-capture` without filter writes no file (0 written)
-- [ ] 4.3 Times of `systest_med`, `rwe_ridisasmlib` and the whole `libs_emulator` on an idle machine, recorded in design.md
+- [x] 4.1 Clean builds without warnings (m68k, host, host with `-DHOST_SANITIZE=ON`), `ctest --preset host`, `ctest --preset all` with a prev build (results byte-identical, expected data unchanged: `libs_emulator` passes)
+- [x] 4.2 With the CD: `ctest --preset originals -R libs_emulator` passes and `libs-capture` without filter writes no file (0 written)
+- [x] 4.3 Times of `systest_med`, `rwe_ridisasmlib` and the whole `libs_emulator` on an idle machine, recorded in design.md
