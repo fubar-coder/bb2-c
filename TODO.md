@@ -880,6 +880,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   editor's requester, the console). It comes with the first compile-time
   warning; `resclash` (#36) is raised while the residents are loaded and
   needs no queue. The design is in the archived change's `design.md`.
+- [ ] **Buffer access annotations** (planned 2026-11-12, implementation
+  postponed by the user's decision of the same day): implement the
+  OpenSpec change `buffer-access-annotations` - a `BL_ACCESS` macro for
+  buffer+length pairs in the public headers of `shared/` and `tools/lib/`,
+  `_FORTIFY_SOURCE=3` in `HOST_SANITIZE`, the rule in `CLAUDE.md`, tests
+  of the checks and two small hardenings.
 
 ## 3 Only once §1 is done
 
