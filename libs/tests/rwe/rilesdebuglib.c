@@ -1,16 +1,17 @@
 /*
  * rwe rilesdebuglib - the LES debug library (LESDEBUGlib.bb of
- * 1996-12-01): the C build against the reference build of the source
- * (refbuild), method of rwecmp.h.
+ * 1996-12-01): the C build or the reference build of the source
+ * (refbuild), one set as LIBSET says, observed as cases (rwecmp.h,
+ * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_rilesdebuglib.txt).
  *
  *   rilesdebuglib DIR
  *
  * The library does not use blitz2's runtime debugger; all of it is
  * called directly.  RawStatus (blitzkeyslib, polled by SearchMem) is a
  * stub (sysload_stubs) that counts its calls and answers a chosen value.
- * Memory the routines read is one block for both sets (the same
- * addresses, so results that are addresses compare too); what they write
- * goes to a buffer per set.
+ * Memory the routines read is one block (results that are addresses in
+ * it are written as offsets, and so are the addresses in the vectors);
+ * what they write goes to a buffer.
  * Covered: init; D_GetSR (all 5 flag bits); D_HexWord (even and odd
  * source, words from below $420 and from $FFFFFFF0); D_CheckNMove,
  * D_CheckNMoveA, D_CheckNMoveWord (both forms, zero bytes, below $420);
@@ -44,6 +45,7 @@
  * (they read or write beyond the library's data); the real debugger
  * program that uses the library.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/dos.h>
 #include <graphics/gfx.h>
@@ -64,12 +66,14 @@ enum { E_FINDVOL, E_GETSR, E_HEXWORD, E_CHECKNMOVE, E_FINDSTRPTR, E_COPINS, E_FL
        E_NEXTARG, E_PROCESS, E_ADDPROC, E_CLEARPROC, E_FINDLINETOKEN, E_GETDATAITEM,
        E_FINIT, E_INIT };
 
-/* the memory both sets read */
+/* the memory the routines read */
 #define SHAREDSIZE 70000
 static UBYTE *shared;
 #define SH(off) ((ULONG)shared + (off))
+/* an address in the shared area */
+#define ISSH(v) ((ULONG)(v) - SH(0) < SHAREDSIZE)
 /* a result in the shared area by its offset: the area's address differs
-   from run to run (libs/tests/tape.h) */
+   with the memory layout */
 #define SHREL(v) ((ULONG)(v) - SH(0) < SHAREDSIZE ? 0x80000000UL | ((ULONG)(v) - SH(0)) \
                   : (ULONG)(v))
 /* areas of it */
@@ -78,39 +82,39 @@ static UBYTE *shared;
 #define A_TEXT     5120         /* strings, lines, the token list */
 #define A_FINDPTR  8192         /* D_FindStringPtr: zeros and two longs */
 
-static UBYTE out[2][800];
-static ULONG frame[2][4];
+static UBYTE out[800];
+static ULONG frame[4];
 
 /* a string result at out+4 */
 #define RESSETUP() do {                                                     \
-        memset(out[cur], 0xee, sizeof out[0]);                              \
-        R[cur].a[3] = (ULONG)out[cur] + 4;                                  \
+        memset(out, 0xee, sizeof out);                              \
+        R.a[3] = (ULONG)out + 4;                                  \
     } while (0)
 
 #define STRRES() do {                                                       \
-        SAME("d0", R[cur].d[0]);                                            \
-        SAME("a3", R[cur].a[3] - (ULONG)out[cur]);                          \
-        SAMEBYTES("out", out, sizeof out[0]);                               \
+        OBS("d0", R.d[0]);                                            \
+        OBS("a3", R.a[3] - (ULONG)out);                          \
+        OBSBYTES("out", out, sizeof out);                               \
     } while (0)
 
 /* a string argument at out+600 (where the compiler built it), a3 behind
    it, its length at -4(a2) */
 #define STRARG(s) do {                                                      \
-        strcpy((char *)out[cur] + 600, s);                                  \
-        R[cur].d[0] = (ULONG)out[cur] + 600;                                \
-        frame[cur][0] = strlen(s);                                          \
-        R[cur].a[2] = (ULONG)&frame[cur][1];                                \
-        R[cur].a[3] = (ULONG)out[cur] + 600 + strlen(s) + 1;                \
+        strcpy((char *)out + 600, s);                                  \
+        R.d[0] = (ULONG)out + 600;                                \
+        frame[0] = strlen(s);                                          \
+        R.a[2] = (ULONG)&frame[1];                                \
+        R.a[3] = (ULONG)out + 600 + strlen(s) + 1;                \
     } while (0)
 
 /* --------------------------------------------------------- the RawStatus stub */
 
-static ULONG raw_ret, raw_calls[2], raw_key[2];
+static ULONG raw_ret, raw_calls, raw_key;
 
 static ULONG __attribute__((used)) raw_c(ULONG key)
 {
-    raw_calls[cur]++;
-    raw_key[cur] = key;
+    raw_calls++;
+    raw_key = key;
     return raw_ret;
 }
 
@@ -138,19 +142,21 @@ static void getsr(void)
     ROUT = "D_GetSR";
     for (i = 0; i < sizeof srs; i++) {
         sprintf(VEC, "$%02X", srs[i]);
-        DO2(ENT(LIB, E_GETSR, 0), memset(out[cur], 0xee, sizeof out[0]);
-            R[cur].d[0] = (ULONG)out[cur] + 4; R[cur].d[1] = srs[i]);
-        SAMEBYTES("buffer", out, sizeof out[0]);
+        DO1(ENT(LIB, E_GETSR, 0), memset(out, 0xee, sizeof out);
+            R.d[0] = (ULONG)out + 4; R.d[1] = srs[i]);
+        OBSBYTES("buffer", out, sizeof out);
     }
 }
 
 /* a call of a (source,dest,count) statement: entry e, form f */
 static void move3(int e, int f, ULONG src, UWORD count)
 {
-    sprintf(VEC, "$%lX%s,%u", src >= SH(0) ? src - SH(0) : src, src >= SH(0) ? "+sh" : "", count);
-    DO2(ENT(LIB, e, f), memset(out[cur], 0xee, sizeof out[0]);
-        R[cur].d[0] = src; R[cur].d[1] = (ULONG)out[cur] + 4; R[cur].d[2] = count);
-    SAMEBYTES("dest", out, sizeof out[0]);
+    /* the vector names the source as an offset in the shared area (an address
+       is no part of a key), else as its value */
+    sprintf(VEC, "$%lX%s,%u", ISSH(src) ? src - SH(0) : src, ISSH(src) ? "+sh" : "", count);
+    DO1(ENT(LIB, e, f), memset(out, 0xee, sizeof out);
+        R.d[0] = src; R.d[1] = (ULONG)out + 4; R.d[2] = count);
+    OBSBYTES("dest", out, sizeof out);
 }
 
 static void hexword(void)
@@ -199,9 +205,9 @@ static void findstringptr(void)
     ROUT = "D_FindStringPtr";
     for (i = 0; i < sizeof look / sizeof look[0]; i++) {
         sprintf(VEC, "$%08lX", look[i]);
-        DO2(ENT(LIB, E_FINDSTRPTR, 0), R[cur].d[0] = SH(A_FINDPTR + 33000);
-            R[cur].d[1] = look[i]);
-        SAME("d0", SHREL(R[cur].d[0]));
+        DO1(ENT(LIB, E_FINDSTRPTR, 0), R.d[0] = SH(A_FINDPTR + 33000);
+            R.d[1] = look[i]);
+        OBS("d0", SHREL(R.d[0]));
     }
 }
 
@@ -213,8 +219,8 @@ static void peekmax(void)
     ROUT = "PeekMax$";
     for (i = 0; i < sizeof max / sizeof max[0]; i++) {
         sprintf(VEC, "%d", max[i]);
-        DO2(ENT(LIB, E_PEEKMAX, 0), RESSETUP(); R[cur].d[0] = SH(A_TEXT);
-            R[cur].d[1] = (UWORD)max[i]);
+        DO1(ENT(LIB, E_PEEKMAX, 0), RESSETUP(); R.d[0] = SH(A_TEXT);
+            R.d[1] = (UWORD)max[i]);
         STRRES();
     }
 }
@@ -230,7 +236,7 @@ static void gethex(void)
         for (m = 0; m < sizeof modes / sizeof modes[0]; m++) {
             ROUT = "GetHex$";
             sprintf(VEC, "$%08lX,%u", v[i], modes[m]);
-            DO2(ENT(LIB, E_GETHEX, 0), RESSETUP(); R[cur].d[0] = v[i]; R[cur].d[1] = modes[m]);
+            DO1(ENT(LIB, E_GETHEX, 0), RESSETUP(); R.d[0] = v[i]; R.d[1] = modes[m]);
             STRRES();
         }
     for (i = 0; i < sizeof adr / sizeof adr[0]; i++)
@@ -239,8 +245,8 @@ static void gethex(void)
                 continue;                               /* word/long: even */
             ROUT = "GetHexAdr$";
             sprintf(VEC, "sh+%lu,%u", adr[i], modes[m]);
-            DO2(ENT(LIB, E_GETHEXADR, 0), RESSETUP(); R[cur].d[0] = SH(adr[i]);
-                R[cur].d[1] = modes[m]);
+            DO1(ENT(LIB, E_GETHEXADR, 0), RESSETUP(); R.d[0] = SH(adr[i]);
+                R.d[1] = modes[m]);
             STRRES();
         }
 }
@@ -254,13 +260,13 @@ static void getdataitem(void)
     ROUT = "GetDataItem";
     for (i = 0; i < sizeof sizes / sizeof sizes[0]; i++) {
         sprintf(VEC, "sh+101,%d", sizes[i]);
-        DO2(ENT(LIB, E_GETDATAITEM, 0), R[cur].d[0] = SH(101); R[cur].d[1] = (UWORD)sizes[i]);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_GETDATAITEM, 0), R.d[0] = SH(101); R.d[1] = (UWORD)sizes[i]);
+        OBS("d0", R.d[0]);
     }
     for (i = 0; i < sizeof adr / sizeof adr[0]; i++) {
         sprintf(VEC, "$%lX,4", adr[i]);
-        DO2(ENT(LIB, E_GETDATAITEM, 0), R[cur].d[0] = adr[i]; R[cur].d[1] = 4);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_GETDATAITEM, 0), R.d[0] = adr[i]; R.d[1] = 4);
+        OBS("d0", R.d[0]);
     }
 }
 
@@ -272,9 +278,9 @@ static void progmode(void)
     ROUT = "GetProgMode";
     for (i = 0; i < sizeof modes / sizeof modes[0]; i++) {
         sprintf(VEC, "%d", modes[i]);
-        DO2(ENT(LIB, E_PROGMODE, 0), memset(out[cur], 0xee, sizeof out[0]);
-            R[cur].d[0] = (UWORD)modes[i]; R[cur].d[1] = (ULONG)out[cur] + 4);
-        SAMEBYTES("buffer", out, sizeof out[0]);
+        DO1(ENT(LIB, E_PROGMODE, 0), memset(out, 0xee, sizeof out);
+            R.d[0] = (UWORD)modes[i]; R.d[1] = (ULONG)out + 4);
+        OBSBYTES("buffer", out, sizeof out);
     }
 }
 
@@ -293,7 +299,7 @@ static void copins(void)
     ROUT = "GetCopIns$";
     for (i = 0; i < sizeof ins / sizeof ins[0]; i++) {
         sprintf(VEC, "$%04X,$%04X", ins[i][0], ins[i][1]);
-        DO2(ENT(LIB, E_COPINS, 0), RESSETUP(); R[cur].d[0] = (ULONG)ins[i]);
+        DO1(ENT(LIB, E_COPINS, 0), RESSETUP(); R.d[0] = (ULONG)ins[i]);
         STRRES();
     }
 }
@@ -307,12 +313,12 @@ static void customreg(void)
     ROUT = "GetCustomReg";
     for (r = 0; r <= 0x1fd; r++) {
         sprintf(VEC, "$%03lX", r);
-        DO2(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R[cur].d[0] = r);
+        DO1(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R.d[0] = r);
         STRRES();
     }
     for (i = 0; i < sizeof extra / sizeof extra[0]; i++) {
         sprintf(VEC, "$%08lX", extra[i]);
-        DO2(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R[cur].d[0] = extra[i]);
+        DO1(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R.d[0] = extra[i]);
         STRRES();
     }
 }
@@ -322,8 +328,8 @@ static void customregadr1(const char *name)
 {
     ROUT = "GetCustomRegAdr";
     sprintf(VEC, "\"%.40s\"", name);
-    DO2(ENT(LIB, E_CUSTOMREGADR, 0), memset(out[cur], 0, sizeof out[0]); STRARG(name));
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_CUSTOMREGADR, 0), memset(out, 0, sizeof out); STRARG(name));
+    OBS("d0", R.d[0]);
 }
 
 static void customregadr(void)
@@ -338,8 +344,8 @@ static void customregadr(void)
 
     for (r = 0; r <= 0x1fe; r += 2) {
         /* the name GetCustomReg gives (up to the space) */
-        DO2(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R[cur].d[0] = r);
-        memcpy(name, out[1] + 4, 8);
+        DO1(ENT(LIB, E_CUSTOMREG, 0), RESSETUP(); R.d[0] = r);
+        memcpy(name, out + 4, 8);
         name[8] = 0;
         for (i = 0; i < 8 && name[i] != ' ' && name[i] != (char)0xee; i++)
             ;
@@ -353,8 +359,8 @@ static void customregadr(void)
 /* -------------------------------------------------------- the printer */
 
 #define PLANESIZE (80 * 80)
-static UBYTE planes[2][2][PLANESIZE];
-static struct BitMap bm[2];
+static UBYTE planes[2][PLANESIZE];
+static struct BitMap bm;
 
 static void clearplanes(void)
 {
@@ -363,29 +369,29 @@ static void clearplanes(void)
 
 static void sameplanes(void)
 {
-    SAMEBYTES("plane 0", ((UBYTE *[]){ planes[0][0], planes[1][0] }), PLANESIZE);
-    SAMEBYTES("plane 1", ((UBYTE *[]){ planes[0][1], planes[1][1] }), PLANESIZE);
+    OBSBYTES("plane 0", planes[0], PLANESIZE);
+    OBSBYTES("plane 1", planes[1], PLANESIZE);
 }
 
 static void flocate(UWORD x, UWORD y)
 {
     ROUT = "FLocate";
     sprintf(VEC, "%u,%u", x, y);
-    DO2(ENT(LIB, E_FLOCATE, 0), R[cur].d[0] = x; R[cur].d[1] = y);
+    DO1(ENT(LIB, E_FLOCATE, 0), R.d[0] = x; R.d[1] = y);
 }
 
 static void fword(int e, const char *name, UWORD v)
 {
     ROUT = name;
     sprintf(VEC, "$%04X", v);
-    DO2(ENT(LIB, e, 0), R[cur].d[0] = v);
+    DO1(ENT(LIB, e, 0), R.d[0] = v);
 }
 
 static void fprint(int e, const char *s)
 {
     ROUT = e == E_FPRINT ? "FPrint" : "FNPrint";
     sprintf(VEC, "\"%.40s\"", s);
-    DO2(ENT(LIB, e, 0), STRARG(s); R[cur].a[0] = (ULONG)&bm[cur]);
+    DO1(ENT(LIB, e, 0), STRARG(s); R.a[0] = (ULONG)&bm);
     sameplanes();
 }
 
@@ -455,15 +461,15 @@ static void setup(ULONG list, UBYTE tokenise)
 {
     ROUT = "SetupLESDebug";
     sprintf(VEC, "%s,%u", list ? "list" : "0", tokenise);
-    DO2(ENT(LIB, E_SETUP, 0), R[cur].d[0] = list; R[cur].d[1] = 0xff00 | tokenise);
+    DO1(ENT(LIB, E_SETUP, 0), R.d[0] = list; R.d[1] = 0xff00 | tokenise);
 }
 
 static void detoke(const UBYTE *line, UWORD cio, UWORD typ, UWORD loff)
 {
     ROUT = "FPrintDetoke";
     sprintf(VEC, "line %02X%02X..,%u,%u,%u", line[0], line[1], cio, typ, loff);
-    DO2(ENT(LIB, E_FPDETOKE, 0), R[cur].d[0] = (ULONG)line; R[cur].d[1] = cio;
-        R[cur].d[2] = typ; R[cur].d[3] = loff; R[cur].a[0] = (ULONG)&bm[cur]);
+    DO1(ENT(LIB, E_FPDETOKE, 0), R.d[0] = (ULONG)line; R.d[1] = cio;
+        R.d[2] = typ; R.d[3] = loff; R.a[0] = (ULONG)&bm);
     sameplanes();
 }
 
@@ -517,12 +523,11 @@ static void fprintdetoke(void)
     setup(0, 1);
     flocate(0, 6);
     detoke(l1, 1, 0, 0);
-    bm[0].Planes[1] = bm[1].Planes[1] = NULL;
+    bm.Planes[1] = NULL;
     setup((ULONG)toklist, 1);
     flocate(0, 7);
     detoke(l2, 2, 1, 1);
-    bm[0].Planes[1] = planes[0][1];
-    bm[1].Planes[1] = planes[1][1];
+    bm.Planes[1] = planes[1];
     sameplanes();
 }
 
@@ -533,45 +538,42 @@ static void fprintdetoke(void)
 static void outtext(void)
 {
     static const char *texts[] = { "Hello", "", "A longer line of text" };
-    UBYTE (*rpplanes)[2][RPPLANE] = AllocMem(sizeof(UBYTE[2][2][RPPLANE]), MEMF_CHIP | MEMF_CLEAR);
-    static struct BitMap rbm[2];
-    static struct RastPort rp[2];
+    UBYTE (*rpplanes)[RPPLANE] = AllocMem(sizeof(UBYTE[2][RPPLANE]), MEMF_CHIP | MEMF_CLEAR);
+    static struct BitMap rbm;
+    static struct RastPort rp;
     unsigned i;
-    int s;
 
     check("rilesdebuglib: the RastPort's planes in chip memory", rpplanes != NULL);
     if (!rpplanes)
         return;
-    for (s = 0; s < 2; s++) {
-        InitBitMap(&rbm[s], 2, 640, 40);
-        rbm[s].Planes[0] = rpplanes[s][0];
-        rbm[s].Planes[1] = rpplanes[s][1];
-        InitRastPort(&rp[s]);
-        rp[s].BitMap = &rbm[s];
-        SetDrMd(&rp[s], JAM1);
-    }
+    InitBitMap(&rbm, 2, 640, 40);
+    rbm.Planes[0] = rpplanes[0];
+    rbm.Planes[1] = rpplanes[1];
+    InitRastPort(&rp);
+    rp.BitMap = &rbm;
+    SetDrMd(&rp, JAM1);
     for (i = 0; i < 3; i++) {
         ROUT = "OutTextPen";
         sprintf(VEC, "%u", i + 1);
-        DO2(ENT(LIB, E_OUTTEXTPEN, 0), R[cur].d[0] = (ULONG)&rp[cur]; R[cur].d[1] = i + 1);
-        SAME("FgPen", rp[cur].FgPen);
+        DO1(ENT(LIB, E_OUTTEXTPEN, 0), R.d[0] = (ULONG)&rp; R.d[1] = i + 1);
+        OBS("FgPen", rp.FgPen);
         ROUT = "OutText";
         sprintf(VEC, "\"%s\"", texts[i]);
-        DO2(ENT(LIB, E_OUTTEXT, 0), strcpy((char *)out[cur] + 600, texts[i]);
-            R[cur].d[0] = 10 + 40 * i; R[cur].d[1] = 0xabcd0000UL | (3 + 9 * i);
-            R[cur].d[2] = (ULONG)&rp[cur]; R[cur].d[3] = (ULONG)out[cur] + 600);
-        SAME("cp_x", rp[cur].cp_x);
-        SAME("cp_y", rp[cur].cp_y);
-        SAMEBYTES("plane 0", ((UBYTE *[]){ rpplanes[0][0], rpplanes[1][0] }), RPPLANE);
-        SAMEBYTES("plane 1", ((UBYTE *[]){ rpplanes[0][1], rpplanes[1][1] }), RPPLANE);
+        DO1(ENT(LIB, E_OUTTEXT, 0), strcpy((char *)out + 600, texts[i]);
+            R.d[0] = 10 + 40 * i; R.d[1] = 0xabcd0000UL | (3 + 9 * i);
+            R.d[2] = (ULONG)&rp; R.d[3] = (ULONG)out + 600);
+        OBS("cp_x", rp.cp_x);
+        OBS("cp_y", rp.cp_y);
+        OBSBYTES("plane 0", rpplanes[0], RPPLANE);
+        OBSBYTES("plane 1", rpplanes[1], RPPLANE);
     }
-    for (cur = 0; cur < 2; cur++) {
+    {
         ULONG n = 0;
         for (i = 0; i < RPPLANE; i++)
-            n += rpplanes[cur][0][i] != 0;
+            n += rpplanes[0][i] != 0;
         BOTH("text drawn", n > 0);
     }
-    FreeMem(rpplanes, sizeof(UBYTE[2][2][RPPLANE]));
+    FreeMem(rpplanes, sizeof(UBYTE[2][RPPLANE]));
 }
 
 /* ------------------------------------------------------------ SearchMem */
@@ -579,18 +581,18 @@ static void outtext(void)
 static void search1(UBYTE type, ULONG value, ULONG start, ULONG end, const char *what)
 {
     ROUT = "SearchMem";
-    sprintf(VEC, "%u,$%lX,%lu,%lu %s", type, value >= SH(0) ? value - SH(0) : value,
-            start - SH(A_SEARCH), end - SH(A_SEARCH), what);
-    raw_calls[0] = raw_calls[1] = 0;
-    raw_key[0] = raw_key[1] = 0;
-    DO2(ENT(LIB, E_SEARCHMEM, 0), R[cur].d[0] = 0xffffff00UL | type; R[cur].d[1] = value;
-        R[cur].d[2] = start; R[cur].d[3] = end);
-    SAME("d0", SHREL(R[cur].d[0]));
-    SAME("RawStatus calls", raw_calls[cur]);
-    SAME("RawStatus key", raw_key[cur]);
+    sprintf(VEC, "%u,$%lX%s,%lu,%lu %s", type, ISSH(value) ? value - SH(0) : value,
+            ISSH(value) ? "+sh" : "", start - SH(A_SEARCH), end - SH(A_SEARCH), what);
+    raw_calls = 0;
+    raw_key = 0;
+    DO1(ENT(LIB, E_SEARCHMEM, 0), R.d[0] = 0xffffff00UL | type; R.d[1] = value;
+        R.d[2] = start; R.d[3] = end);
+    OBS("d0", SHREL(R.d[0]));
+    OBS("RawStatus calls", raw_calls);
+    OBS("RawStatus key", raw_key);
     ROUT = "SearchMemFound";
-    DO2(ENT(LIB, E_SEARCHFOUND, 0), (void)0);
-    SAME("d0", SHREL(R[cur].d[0]));
+    DO1(ENT(LIB, E_SEARCHFOUND, 0), (void)0);
+    OBS("d0", SHREL(R.d[0]));
 }
 
 static void searchmem(void)
@@ -654,10 +656,10 @@ static void findlinetoken(void)
     for (i = 0; i < sizeof l / sizeof l[0]; i++) {
         strcpy((char *)p, l[i]);
         sprintf(VEC, "%u", i);
-        DO2(ENT(LIB, E_FINDLINETOKEN, 0), R[cur].d[0] = (ULONG)p);
+        DO1(ENT(LIB, E_FINDLINETOKEN, 0), R.d[0] = (ULONG)p);
         /* a word result: the high word is p's (its address moves, tape.h) */
-        SAME("d0", (R[cur].d[0] ^ (ULONG)p) >> 16 ? R[cur].d[0]
-                   : 0x50000000UL | (R[cur].d[0] & 0xffff));
+        OBS("d0", (R.d[0] ^ (ULONG)p) >> 16 ? R.d[0]
+                   : 0x50000000UL | (R.d[0] & 0xffff));
     }
 }
 
@@ -675,7 +677,7 @@ static void extractlabel(void)
         memset(p, 0, 64);
         strcpy((char *)p, l[i]);
         sprintf(VEC, "\"%s\"", l[i]);
-        DO2(ENT(LIB, E_EXTRACT, 0), RESSETUP(); R[cur].d[0] = (ULONG)p);
+        DO1(ENT(LIB, E_EXTRACT, 0), RESSETUP(); R.d[0] = (ULONG)p);
         STRRES();
     }
 }
@@ -687,7 +689,7 @@ static void nextarg(int n)
     ROUT = "D_NextArg$";
     for (i = 0; i < n; i++) {
         sprintf(VEC, "%d", i);
-        DO2(ENT(LIB, E_NEXTARG, 0), RESSETUP());
+        DO1(ENT(LIB, E_NEXTARG, 0), RESSETUP());
         STRRES();
     }
 }
@@ -696,15 +698,15 @@ static void initparse(const char *s)
 {
     ROUT = "D_InitParse";
     sprintf(VEC, "\"%s\"", s);
-    DO2(ENT(LIB, E_INITPARSE, 0), strcpy((char *)out[cur] + 600, s);
-        R[cur].d[0] = (ULONG)out[cur] + 600);
+    DO1(ENT(LIB, E_INITPARSE, 0), strcpy((char *)out + 600, s);
+        R.d[0] = (ULONG)out + 600);
 }
 
 static void process(const char *s)
 {
     initparse(s);
     ROUT = "ProcessString";
-    DO2(ENT(LIB, E_PROCESS, 0), RESSETUP());
+    DO1(ENT(LIB, E_PROCESS, 0), RESSETUP());
     STRRES();
 }
 
@@ -712,7 +714,7 @@ static void addproc(const char *ch, const char *str)
 {
     ROUT = "AddProcessPtr";
     sprintf(VEC, "\"%s\",\"%s\"", ch, str);
-    DO2(ENT(LIB, E_ADDPROC, 0), STRARG(ch); R[cur].d[1] = (ULONG)str);
+    DO1(ENT(LIB, E_ADDPROC, 0), STRARG(ch); R.d[1] = (ULONG)str);
 }
 
 static void parsing(void)
@@ -735,7 +737,7 @@ static void parsing(void)
     process("%a%b%c %d %%");
     ROUT = "ClearProcessPtrs";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_CLEARPROC, 0), (void)0);
+    DO1(ENT(LIB, E_CLEARPROC, 0), (void)0);
     process("%a %b %p");
     addproc("b", "<new b>");
     process("%a %b");
@@ -743,7 +745,7 @@ static void parsing(void)
     nextarg(1);
     ROUT = "ProcessString";
     strcpy(VEC, "after D_NextArg$");
-    DO2(ENT(LIB, E_PROCESS, 0), RESSETUP());
+    DO1(ENT(LIB, E_PROCESS, 0), RESSETUP());
     STRRES();
 }
 
@@ -757,9 +759,9 @@ static void findvolume(void)
     ROUT = "D_FindVolume";
     for (i = 0; i < sizeof names / sizeof names[0]; i++) {
         sprintf(VEC, "\"%s\"", names[i]);
-        DO2(ENT(LIB, E_FINDVOL, 0), strcpy((char *)out[cur] + 600, names[i]);
-            R[cur].d[0] = (ULONG)out[cur] + 600; R[cur].a[6] = (ULONG)DOSBase);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_FINDVOL, 0), strcpy((char *)out + 600, names[i]);
+            R.d[0] = (ULONG)out + 600; R.a[6] = (ULONG)DOSBase);
+        OBS("d0", R.d[0]);
     }
 }
 
@@ -768,18 +770,53 @@ static void findvolume(void)
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
-    int i, s;
+    int i;
 
     if (argc < 2) {
         printf("usage: rilesdebuglib DIR\n");
         return 20;
     }
     sysload_stubs = stubs;
-    if (!load_sets(argv[1], names)) {
+    if (!load_set(argv[1], names)) {
         sysload_stubs = NULL;
         return 20;
     }
     sysload_stubs = NULL;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("finit", d2-d7|a2|a3);
+    KEEPS("D_GetSR", d0|d2-d7|a1-a3|a6);
+    KEEPS("D_HexWord", d1|d3-d5|a3|a6);
+    KEEPS("D_CheckNMove", d1|d3-d6|a2|a3|a6);
+    KEEPS("D_CheckNMoveA", d1|d3|d4|a2|a3|a6);
+    KEEPS("D_CheckNMoveWord", d1|d3|d4|a2|a3|a6);
+    KEEPS("D_FindStringPtr", d1-d7|a1|a3|a6);
+    KEEPS("PeekMax$", d3-d7|a1|a2|a6);
+    KEEPS("GetHex$", d3-d6|a1|a2|a6);
+    KEEPS("GetHexAdr$", d3-d6|a2|a6);
+    KEEPS("GetDataItem", d2-d7|a1-a3|a6);
+    KEEPS("GetProgMode", d0-d7|a2|a3|a6);
+    KEEPS("GetCopIns$", d4-d7|a1|a6);
+    KEEPS("GetCustomReg", d1-d7|a1|a2|a6);
+    KEEPS("GetCustomRegAdr", d2-d7|a6);
+    KEEPS("FLocate", d0-d7|a0-a3|a6);
+    KEEPS("FInverse", d0-d7|a0-a3|a6);
+    KEEPS("FYOffset", d0-d7|a0-a3|a6);
+    KEEPS("FPrint", d3|d4|a6);
+    KEEPS("FNPrint", d3|d4|a6);
+    KEEPS("SetupLESDebug", d0|d3-d7|a2|a3|a6);
+    KEEPS("FPrintDetoke", d4|a6);
+    KEEPS("OutTextPen", d2-d7|a2|a3);
+    KEEPS("OutText", d2-d7|a2|a3);
+    KEEPS("SearchMem", d1|d4|d5|a0|a6);
+    KEEPS("SearchMemFound", d1-d7|a0-a3|a6);
+    KEEPS("FindLineToken", d1-d7|a1-a3|a6);
+    KEEPS("ExtractLabel", d3-d7|a1|a2|a6);
+    KEEPS("D_NextArg$", d2-d7|a1|a2|a6);
+    KEEPS("D_InitParse", d0-d7|a2|a3|a6);
+    KEEPS("ProcessString", d2-d7|a2|a6);
+    KEEPS("AddProcessPtr", d0-d7|a2|a3|a6);
+    KEEPS("ClearProcessPtrs", d0-d7|a0-a3|a6);
+    KEEPS("D_FindVolume", d4-d6|a2|a3|a6);
     shared = AllocMem(SHAREDSIZE, MEMF_ANY | MEMF_CLEAR);
     lesgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
     if (!shared || !lesgfx) {
@@ -795,15 +832,13 @@ int main(int argc, char **argv)
     strcpy((char *)shared + A_TEXT, "PeekMax text");
     *(ULONG *)(shared + A_FINDPTR + 9000) = 0xcafebabeUL;
     *(ULONG *)(shared + A_FINDPTR + 33000) = 0x11223344UL;
-    for (s = 0; s < 2; s++) {
-        InitBitMap(&bm[s], 2, 640, 80);
-        bm[s].Planes[0] = planes[s][0];
-        bm[s].Planes[1] = planes[s][1];
-    }
+    InitBitMap(&bm, 2, 640, 80);
+    bm.Planes[0] = planes[0];
+    bm.Planes[1] = planes[1];
     strcpy(VEC, "");
 
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
 
     getsr();
     hexword();
@@ -827,7 +862,7 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     FreeMem(shared, SHAREDSIZE);
     CloseLibrary(lesgfx);
     return rwe_done(LIB);
