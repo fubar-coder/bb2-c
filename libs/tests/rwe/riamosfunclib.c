@@ -1,17 +1,18 @@
 /*
- * rwe riamosfunclib - the C build of riamosfunclib (userlib 75) against
- * the reference, AmiBlitz3's SVN RIAmosFuncLib.obj, method of rwecmp.h.
+ * rwe riamosfunclib - riamosfunclib (userlib 75): the C build or AmiBlitz3's
+ * SVN RIAmosFuncLib.obj, one set as LIBSET says, observed as cases
+ * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_riamosfunclib.txt).
  *
  *   riamosfunclib DIR   (DIR: riamosfunclib.obj / .orig, memlib.obj / .orig)
  *
- * Each set has its own memlib (the bank tables are a globalloc block),
- * its own banks and its own files and directories (RAM:rwamos0 / 1, the
- * names of the same length); the system is the same, so the results
- * must be equal.  Compared: d0, a3 and the string area of DeviceName$,
- * the contents and lengths of the banks, the memory written by the copy
- * and fill functions, the files written by BSave and SaveExec, the
- * current directory after ChangeDir, and every register the original
- * keeps.
+ * memlib is loaded with the library (the bank tables are a globalloc
+ * block); the files and directories are in RAM:rwamos0.  Observed: d0
+ * (pointers into the test program as prog), a3 and the string area of
+ * DeviceName$, the contents and lengths of the banks, the memory written
+ * by the copy and fill functions, the files written by BSave and
+ * SaveExec, the current directory after ChangeDir, and the kept
+ * registers.
  *
  * Covered: Min/Max (signed edges), both inline forms of GTTagValue
  * (copied with an RTS like the compiler does), CopyByte/Word/Long
@@ -45,6 +46,7 @@
  * its lock is current (BUG(orig) #491: unlocked while in use - the test
  * restores the directory first); CurrentDir returning 0.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include "amosfunc.h"
 #include <proto/dos.h>
@@ -58,85 +60,80 @@ enum { E_CACHESON, E_REBOOT, E_LISA, E_MAKEDIR, E_RENAME, E_MEMFREE, E_GTTAG, E_
        E_KEYCODE, E_N26, E_N27, E_BLITDONE, E_BLITWAIT, E_FINDVOL, E_N31, E_SWAPBANK,
        E_DEVNAME, E_CHANGEDIR, E_BANKLIMIT, E_SAVEEXEC, E_FINIT, E_INIT };
 
-static UBYTE str[2][300];               /* string area (a3) */
-static ULONG frame[2][2];               /* the compiler's argument stack (a2) */
-static char path[2][80];                /* a per-set file name */
-static UBYTE mem[2][1024];              /* memory for copies, fills, loads */
+static UBYTE str[300];                  /* string area (a3) */
+static ULONG frame[2];                  /* the compiler's argument stack (a2) */
+static char path[80];                   /* a file name */
+static UBYTE mem[1024];                 /* memory for copies, fills, loads */
 static UBYTE pattern[600];
 
-/* path[cur] = RAM:rwamosN/name */
+/* path = RAM:rwamos0/name */
 static const char *P(const char *name)
 {
-    sprintf(path[cur], "RAM:rwamos%d%s%s", cur, *name ? "/" : "", name);
-    return path[cur];
+    sprintf(path, "RAM:rwamos0%s%s", *name ? "/" : "", name);
+    return path;
 }
 
 /* a string argument at str+20 (where the compiler built it), a3 behind
    its 0, the length below a2 */
 #define STRARG(s) do {                                                      \
-        memset(str[cur], 0xee, sizeof str[0]);                              \
-        strcpy((char *)str[cur] + 20, s);                                   \
-        R[cur].d[0] = (ULONG)str[cur] + 20;                                 \
-        frame[cur][0] = strlen(s);                                          \
-        R[cur].a[2] = (ULONG)&frame[cur][1];                                \
-        R[cur].a[3] = (ULONG)str[cur] + 20 + strlen(s) + 1;                 \
+        memset(str, 0xee, sizeof str);                                      \
+        strcpy((char *)str + 20, s);                                        \
+        R.d[0] = (ULONG)str + 20;                                           \
+        frame[0] = strlen(s);                                               \
+        R.a[2] = (ULONG)&frame[1];                                          \
+        R.a[3] = (ULONG)str + 20 + strlen(s) + 1;                           \
     } while (0)
 
-/* a file name argument in d0 (path[cur]), a3 on a scratch area */
+/* a file name argument in d0 (path), a3 on a scratch area */
 #define NAMEARG(n) do {                                                     \
-        R[cur].d[0] = (ULONG)P(n);                                          \
-        R[cur].a[3] = (ULONG)str[cur] + 200;                                \
+        R.d[0] = (ULONG)P(n);                                               \
+        R.a[3] = (ULONG)str + 200;                                          \
     } while (0)
 
 /* call entry e form f with d0..d3 (other registers markers) */
 static void call4(int e, int f, ULONG d0, ULONG d1, ULONG d2, ULONG d3)
 {
-    DO2(ENT(LIB, e, f), R[cur].d[0] = d0; R[cur].d[1] = d1; R[cur].d[2] = d2;
-        R[cur].d[3] = d3);
+    DO1(ENT(LIB, e, f), R.d[0] = d0; R.d[1] = d1; R.d[2] = d2;
+        R.d[3] = d3);
 }
 
 static void start(int bank)
 {
     ROUT = "Start";
     sprintf(VEC, "%d", bank);
-    DO2(ENT(LIB, E_START, 0), R[cur].d[0] = (ULONG)bank);
-    SAME("0 or an address", R[cur].d[0] == 0);
+    DO1(ENT(LIB, E_START, 0), R.d[0] = (ULONG)bank);
+    OBS("0 or an address", R.d[0] == 0);
 }
 
-/* the start of bank n in set s (no check) */
-static ULONG bankstart[2];
+/* the start of bank n (no check) */
+static ULONG bankstart;
 static void getstart(int bank)
 {
-    int s;
     start(bank);
-    for (s = 0; s < 2; s++)
-        bankstart[s] = R[s].d[0];
+    bankstart = R.d[0];
 }
 
 static void length(int bank)
 {
     ROUT = "Length";
     sprintf(VEC, "%d", bank);
-    DO2(ENT(LIB, E_LENGTH, 0), R[cur].d[0] = (ULONG)bank);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_LENGTH, 0), R.d[0] = (ULONG)bank);
+    OBS("d0", R.d[0]);
 }
 
-/* bank n: the same length and contents in both sets (contents only if
-   `contents`: memory AllocMem did not clear may differ) */
+/* bank n: its length and contents (contents only if `contents`: memory
+   AllocMem did not clear may differ) */
 static void samebank2(const char *what, int bank, int contents)
 {
-    ULONG len[2];
-    int s;
+    ULONG len;
     length(bank);
-    for (s = 0; s < 2; s++)
-        len[s] = R[s].d[0];
+    len = R.d[0];
     getstart(bank);
     ROUT = what;
     sprintf(VEC, "bank %d", bank);
-    SAME("used", bankstart[cur] != 0);
-    if (contents && bankstart[0] && bankstart[1] && len[0] == len[1])
-        SAMEBYTES("contents", ((const UBYTE *[]){ (const UBYTE *)bankstart[0],
-                                                 (const UBYTE *)bankstart[1] }), len[0]);
+    OBS("used", bankstart != 0);
+    if (contents && bankstart)
+        OBSBYTES("contents", (const UBYTE *)bankstart, len);
 }
 #define samebank(what, bank) samebank2(what, bank, 1)
 
@@ -155,31 +152,31 @@ static void minmax(void)
         for (i = 0; i < sizeof v / sizeof v[0]; i++) {
             sprintf(VEC, "%ld,%ld", (long)v[i][0], (long)v[i][1]);
             call4(e ? E_MAX : E_MIN, 0, (ULONG)v[i][0], (ULONG)v[i][1], 0, 0);
-            SAME("d0", R[cur].d[0]);
+            OBS("d0", R.d[0]);
         }
     }
 }
 
 /* an inline entry ($A000,len): the code copied with an RTS, as the
    compiler copies it into the program */
-static UWORD tramp[2][16];
+static UWORD tramp[16];
 static void gttag(int form, ULONG d0)
 {
+    UBYTE *code;
+    UWORD len;
     ROUT = "GTTagValue";
     sprintf(VEC, "form %d d0 $%lX", form, d0);
-    for (cur = 0; cur < 2; cur++) {
-        UBYTE *code = ENT(LIB, E_GTTAG, form);
-        UWORD len = W(code + 2);
-        if (W(code) != 0xa000 || len == 0 || len >= 24) {
-            check("GTTagValue: inline entry", FALSE);
-            return;
-        }
-        memcpy(tramp[cur], code + 4, len);
-        tramp[cur][len / 2] = 0x4e75;
+    code = ENT(LIB, E_GTTAG, form);
+    len = W(code + 2);
+    if (W(code) != 0xa000 || len == 0 || len >= 24) {
+        check("GTTagValue: inline entry", FALSE);
+        return;
     }
+    memcpy(tramp, code + 4, len);
+    tramp[len / 2] = 0x4e75;
     CacheClearU();
-    DO2((APTR)tramp[cur], R[cur].d[0] = d0);
-    SAME("d0", R[cur].d[0]);
+    DO1((APTR)tramp, R.d[0] = d0);
+    OBS("d0", R.d[0]);
 }
 
 static void copies(void)
@@ -192,49 +189,47 @@ static void copies(void)
         ROUT = nm[e];
         for (i = 0; i < sizeof n / sizeof n[0]; i++) {
             sprintf(VEC, "%ld", (long)n[i]);
-            DO2(ENT(LIB, E_COPYB + e, 0), memset(mem[cur], 0x33, sizeof mem[0]);
-                R[cur].d[0] = (ULONG)pattern; R[cur].d[1] = (ULONG)mem[cur] + 8;
-                R[cur].d[2] = (ULONG)n[i]);
-            SAMEBYTES("dest", mem, sizeof mem[0]);
-            SAME("d0", R[cur].d[0]);
+            DO1(ENT(LIB, E_COPYB + e, 0), memset(mem, 0x33, sizeof mem);
+                R.d[0] = (ULONG)pattern; R.d[1] = (ULONG)mem + 8;
+                R.d[2] = (ULONG)n[i]);
+            OBSBYTES("dest", mem, sizeof mem);
+            OBSPTR("d0", R.d[0], NULL, 0);      /* into the test program */
         }
     }
 }
 
-static ULONG freemem[2];
+static ULONG freemem;
 
 static void hardware(void)
 {
-    ULONG t[2];
-    int s;
+    ULONG t;
 
     ROUT = "KeyCode";
     VEC[0] = 0;
-    DO2(ENT(LIB, E_KEYCODE, 0), (void)0);
-    BOTH("d0 a byte", R[cur].d[0] < 256);
+    DO1(ENT(LIB, E_KEYCODE, 0), (void)0);
+    BOTH("d0 a byte", R.d[0] < 256);
     ROUT = "Timer";
-    DO2(ENT(LIB, E_TIMER, 0), (void)0);
-    BOTH("d0 24 bit", R[cur].d[0] < 0x1000000);
-    for (s = 0; s < 2; s++)
-        t[s] = R[s].d[0];
+    DO1(ENT(LIB, E_TIMER, 0), (void)0);
+    BOTH("d0 24 bit", R.d[0] < 0x1000000);
+    t = R.d[0];
     Delay(5);
-    DO2(ENT(LIB, E_TIMER, 0), (void)0);
-    BOTH("runs", R[cur].d[0] != t[cur]);
+    DO1(ENT(LIB, E_TIMER, 0), (void)0);
+    BOTH("runs", R.d[0] != t);
     ROUT = "Lisa";
-    DO2(ENT(LIB, E_LISA, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
-    BOTH("the high word kept", (R[cur].d[0] >> 16) == (IN[cur].d[0] >> 16));
-    printf("riamosfunclib: Lisa $%04lX\n", R[0].d[0] & 0xffff);
+    DO1(ENT(LIB, E_LISA, 0), (void)0);
+    OBS("d0", R.d[0]);
+    BOTH("the high word kept", (R.d[0] >> 16) == (IN.d[0] >> 16));
+    printf("riamosfunclib: Lisa $%04lX\n", R.d[0] & 0xffff);
     ROUT = "WaitBlitter";
-    DO2(ENT(LIB, E_BLITWAIT, 0), (void)0);
+    DO1(ENT(LIB, E_BLITWAIT, 0), (void)0);
     ROUT = "BlitterDone";
-    DO2(ENT(LIB, E_BLITDONE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_BLITDONE, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "MemFree";
     /* the free memory differs from run to run (libs/tests/tape.h): the
        difference to AvailMem(MEMF_PUBLIC) of the moment */
-    DO2(ENT(LIB, E_MEMFREE, 0), freemem[cur] = AvailMem(MEMF_PUBLIC));
-    SAME("d0 - AvailMem(MEMF_PUBLIC)", R[cur].d[0] - freemem[cur]);
+    DO1(ENT(LIB, E_MEMFREE, 0), freemem = AvailMem(MEMF_PUBLIC));
+    OBS("d0 - AvailMem(MEMF_PUBLIC)", R.d[0] - freemem);
 }
 
 static void caches(void)
@@ -247,9 +242,9 @@ static void caches(void)
         ROUT = e ? "CachesOn" : "CachesOff";
         for (i = 0; i < sizeof m / sizeof m[0]; i++) {
             sprintf(VEC, "$%lX", m[i]);
-            DO2(ENT(LIB, e ? E_CACHESON : E_CACHESOFF, 0), CacheControl(orig, ~0UL);
-                R[cur].d[0] = m[i]);
-            SAME("d0", R[cur].d[0]);
+            DO1(ENT(LIB, e ? E_CACHESON : E_CACHESOFF, 0), CacheControl(orig, ~0UL);
+                R.d[0] = m[i]);
+            OBS("d0", R.d[0]);
         }
     }
     CacheControl(orig, ~0UL);
@@ -262,7 +257,7 @@ static void reserve(int form, ULONG a, ULONG b, ULONG c)
     ROUT = "Reserve";
     sprintf(VEC, "form %d %ld,%ld,$%lX", form, (long)a, (long)b, c);
     call4(E_RESERVE, form, a, b, c, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
 }
 
 /* Reserve with AllocMem failing (SetFunction under Forbid; a real
@@ -286,7 +281,7 @@ static void nextbank(int form, LONG from)
     ROUT = "NextBank";
     sprintf(VEC, "form %d %ld", form, (long)from);
     call4(E_NEXTBANK, form, (ULONG)from, 0, 0, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
 }
 
 static void fillmem(int form, int bank, ULONG len, ULONG v)
@@ -297,9 +292,9 @@ static void fillmem(int form, int bank, ULONG len, ULONG v)
         call4(E_FILLMEM, form, (ULONG)bank, len, v, 0);
         samebank("FillMem", bank);
     } else {
-        DO2(ENT(LIB, E_FILLMEM, form), memset(mem[cur], 0x44, sizeof mem[0]);
-            R[cur].d[0] = (ULONG)mem[cur] + 3; R[cur].d[1] = len; R[cur].d[2] = v);
-        SAMEBYTES("memory", mem, sizeof mem[0]);
+        DO1(ENT(LIB, E_FILLMEM, form), memset(mem, 0x44, sizeof mem);
+            R.d[0] = (ULONG)mem + 3; R.d[1] = len; R.d[2] = v);
+        OBSBYTES("memory", mem, sizeof mem);
     }
 }
 
@@ -309,16 +304,16 @@ static void banks(void)
 
     ROUT = "BankLimit";
     VEC[0] = 0;
-    DO2(ENT(LIB, E_BANKLIMIT, 1), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_BANKLIMIT, 1), (void)0);
+    OBS("d0", R.d[0]);
     for (b = 0; b < 3; b++) {
         static const int fb[] = { 0, 49, 50 };
         start(fb[b]);
-        SAME("d0 free", R[cur].d[0]);
+        OBS("d0 free", R.d[0]);
         length(fb[b]);
     }
     start(100000);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     nextbank(1, 0);
     nextbank(0, 5);                                     /* d0 as it is */
     reserve(0, 100, 0, 0);                              /* bank 0 */
@@ -328,7 +323,7 @@ static void banks(void)
     reserve(2, 7, 64, MEMF_CHIP | MEMF_CLEAR);
     samebank("Reserve", 7);
     getstart(7);
-    BOTH("chip", TypeOfMem((APTR)bankstart[cur]) & MEMF_CHIP);
+    BOTH("chip", TypeOfMem((APTR)bankstart) & MEMF_CHIP);
     reserve(1, 3, 32, 0);                               /* in use: erased first */
     length(3);
     fillmem(1, 3, 32, 0x99);
@@ -353,21 +348,21 @@ static void banks(void)
     ROUT = "SwapBank";
     strcpy(VEC, "0,3");
     call4(E_SWAPBANK, 0, 0, 3, 0, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     samebank("SwapBank", 0);
     samebank("SwapBank", 3);
     strcpy(VEC, "0,5");
     call4(E_SWAPBANK, 0, 0, 5, 0, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     strcpy(VEC, "5,0");
     call4(E_SWAPBANK, 0, 5, 0, 0, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     ROUT = "Erase";
     strcpy(VEC, "3");
     call4(E_ERASE, 0, 3, 0, 0, 0);
     length(3);
     start(3);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     ROUT = "Erase";
     strcpy(VEC, "5 (free)");
     call4(E_ERASE, 0, 5, 0, 0, 0);
@@ -376,9 +371,9 @@ static void banks(void)
     ROUT = "BankLimit";
     strcpy(VEC, "60");
     call4(E_BANKLIMIT, 0, 60, 0, 0, 0);
-    BOTH("d0 = the start table", R[cur].d[0] != 0 && R[cur].d[0] != 60);
-    DO2(ENT(LIB, E_BANKLIMIT, 1), (void)0);
-    SAME("d0", R[cur].d[0]);
+    BOTH("d0 = the start table", R.d[0] != 0 && R.d[0] != 60);
+    DO1(ENT(LIB, E_BANKLIMIT, 1), (void)0);
+    OBS("d0", R.d[0]);
     length(0);
     length(7);
     reserve(1, 55, 10, 0);
@@ -388,8 +383,8 @@ static void banks(void)
     ROUT = "BankLimit";
     strcpy(VEC, "50");
     call4(E_BANKLIMIT, 0, 50, 0, 0, 0);
-    DO2(ENT(LIB, E_BANKLIMIT, 1), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_BANKLIMIT, 1), (void)0);
+    OBS("d0", R.d[0]);
     length(55);                                         /* above the limit: 0 */
     reserve(0, 40, 0, 0);                               /* bank 0 */
     fillmem(1, 0, 40, 0x11);
@@ -401,43 +396,38 @@ static void banks(void)
 
 static void writefile(const char *name, const UBYTE *data, ULONG len)
 {
-    BPTR f;
-    for (cur = 0; cur < 2; cur++) {
-        f = Open((STRPTR)P(name), MODE_NEWFILE);
-        if (f) {
-            Write(f, (APTR)data, (LONG)len);
-            Close(f);
-        }
+    BPTR f = Open((STRPTR)P(name), MODE_NEWFILE);
+    if (f) {
+        Write(f, (APTR)data, (LONG)len);
+        Close(f);
     }
 }
 
-/* the file `name` of both sets: the same size and contents */
-static UBYTE fbuf[2][2048];
-static LONG flen[2];
+/* the file `name`: its size and contents */
+static UBYTE fbuf[2048];
+static LONG flen;
 static void samefile(const char *what, const char *name)
 {
     BPTR f;
-    for (cur = 0; cur < 2; cur++) {
-        memset(fbuf[cur], 0, sizeof fbuf[0]);
-        flen[cur] = -1;
-        f = Open((STRPTR)P(name), MODE_OLDFILE);
-        if (f) {
-            flen[cur] = Read(f, fbuf[cur], sizeof fbuf[0]);
-            Close(f);
-        }
+    memset(fbuf, 0, sizeof fbuf);
+    flen = -1;
+    f = Open((STRPTR)P(name), MODE_OLDFILE);
+    if (f) {
+        flen = Read(f, fbuf, sizeof fbuf);
+        Close(f);
     }
     ROUT = what;
     sprintf(VEC, "file %s", name);
-    SAME("length", flen[cur]);
-    SAMEBYTES("contents", fbuf, sizeof fbuf[0]);
+    OBS("length", flen);
+    OBSBYTES("contents", fbuf, sizeof fbuf);
 }
 
 static void filesize(const char *name)
 {
     ROUT = "FileSize";
     sprintf(VEC, "%s", name);
-    DO2(ENT(LIB, E_FILESIZE, 0), NAMEARG(name));
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_FILESIZE, 0), NAMEARG(name));
+    OBS("d0", R.d[0]);
 }
 
 static void makedir(const char *name)
@@ -445,28 +435,25 @@ static void makedir(const char *name)
     BPTR l;
     ROUT = "MakeDir";
     sprintf(VEC, "%s", name);
-    DO2(ENT(LIB, E_MAKEDIR, 0), NAMEARG(name));
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_MAKEDIR, 0), NAMEARG(name));
+    OBS("d0", R.d[0]);
     /* the new directory's lock given back: an exclusive lock works */
-    for (cur = 0; cur < 2; cur++) {
-        l = Lock((STRPTR)P(name), EXCLUSIVE_LOCK);
-        frame[cur][0] = l != 0;
-        if (l)
-            UnLock(l);
-    }
-    SAME("lock free", frame[cur][0]);
+    l = Lock((STRPTR)P(name), EXCLUSIVE_LOCK);
+    frame[0] = l != 0;
+    if (l)
+        UnLock(l);
+    OBS("lock free", frame[0]);
 }
 
 static void bsave(int form, const char *name, LONG bank, ULONG len)
 {
     ROUT = "BSave";
     sprintf(VEC, "form %d %s %ld %lu", form, name, (long)bank, len);
-    for (cur = 0; cur < 2; cur++)
-        DeleteFile((STRPTR)P(name));
-    DO2(ENT(LIB, E_BSAVE, form), NAMEARG(name);
-        R[cur].d[1] = bank < 0 ? (ULONG)pattern : (ULONG)bank; R[cur].d[2] = len);
-    SAME("d0", R[cur].d[0]);
-    if (R[0].d[0])
+    DeleteFile((STRPTR)P(name));
+    DO1(ENT(LIB, E_BSAVE, form), NAMEARG(name);
+        R.d[1] = bank < 0 ? (ULONG)pattern : (ULONG)bank; R.d[2] = len);
+    OBS("d0", R.d[0]);
+    if (R.d[0])
         samefile("BSave", name);
 }
 
@@ -475,15 +462,15 @@ static void bload(int form, const char *name, LONG bank, ULONG len, ULONG off, U
 {
     ROUT = "BLoad";
     sprintf(VEC, "form %d %s %ld,%lu,%lu,$%lX", form, name, (long)bank, len, off, type);
-    DO2(ENT(LIB, E_BLOAD, form), memset(mem[cur], 0x66, sizeof mem[0]); NAMEARG(name);
-        R[cur].d[1] = bank < 0 ? (ULONG)mem[cur] + 5 : (ULONG)bank;
-        R[cur].d[2] = len; R[cur].d[3] = off; R[cur].d[4] = type);
-    SAME("d0", R[cur].d[0]);
-    SAMEBYTES("memory", mem, sizeof mem[0]);
-    if (form == 0 && R[0].d[0] < 50)
-        samebank("BLoad", (int)R[0].d[0]);
+    DO1(ENT(LIB, E_BLOAD, form), memset(mem, 0x66, sizeof mem); NAMEARG(name);
+        R.d[1] = bank < 0 ? (ULONG)mem + 5 : (ULONG)bank;
+        R.d[2] = len; R.d[3] = off; R.d[4] = type);
+    OBS("d0", R.d[0]);
+    OBSBYTES("memory", mem, sizeof mem);
+    if (form == 0 && R.d[0] < 50)
+        samebank("BLoad", (int)R.d[0]);
     else if (form && bank >= 0)
-        samebank2("BLoad", (int)bank, R[0].d[0] != 0);
+        samebank2("BLoad", (int)bank, R.d[0] != 0);
 }
 
 static void files(void)
@@ -522,69 +509,65 @@ static void files(void)
     bload(3, "p.bin", -1, 0, 250, 0);                   /* the file's length from 250 */
     bload(4, "p.bin", 10, 0, 2, MEMF_CHIP | MEMF_CLEAR);
     getstart(10);
-    BOTH("chip", TypeOfMem((APTR)bankstart[cur]) & MEMF_CHIP);
+    BOTH("chip", TypeOfMem((APTR)bankstart) & MEMF_CHIP);
     bload(4, "p.bin", -1, 16, 1, MEMF_CHIP);            /* an address: no memtype */
     bload(1, "missing.bin", 11, 0, 0, 0);               /* no length: 0 */
     bload(2, "missing.bin", 11, 16, 0, 0);              /* BUG(orig) (#487): bank 11 stays */
     length(11);
     bload(1, "empty.bin", -1, 0, 0, 0);
     for (f = 0; f < 5; f++) {
-        UBYTE *chk[2];
+        UBYTE *chk;
         ROUT = "BLoad error check";
         sprintf(VEC, "form %d", f);
-        for (cur = 0; cur < 2; cur++)
-            chk[cur] = ERR(LIB, E_BLOAD, f);
-        BOTH("present", chk[cur] != NULL);
-        if (chk[0] && chk[1]) {
-            DO2(ERR(LIB, E_BLOAD, f), NAMEARG("missing.bin"));
-            SAME("d0 kept", R[cur].d[0] == IN[cur].d[0]);
+        chk = ERR(LIB, E_BLOAD, f);
+        BOTH("present", chk != NULL);
+        if (chk) {
+            DO1(ERR(LIB, E_BLOAD, f), NAMEARG("missing.bin"));
+            OBS("d0 kept", R.d[0] == IN.d[0]);
         }
     }
 
     /* Rename */
     ROUT = "Rename";
     strcpy(VEC, "c.bin d.bin");
-    DO2(ENT(LIB, E_RENAME, 0), NAMEARG("c.bin"); strcpy((char *)str[cur], path[cur]);
-        R[cur].d[0] = (ULONG)str[cur]; R[cur].d[1] = (ULONG)P("d.bin"));
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_RENAME, 0), NAMEARG("c.bin"); strcpy((char *)str, path);
+        R.d[0] = (ULONG)str; R.d[1] = (ULONG)P("d.bin"));
+    OBS("d0", R.d[0]);
     filesize("d.bin");
     filesize("c.bin");
     ROUT = "Rename";
     strcpy(VEC, "missing");
-    DO2(ENT(LIB, E_RENAME, 0), NAMEARG("missing.bin"); strcpy((char *)str[cur], path[cur]);
-        R[cur].d[0] = (ULONG)str[cur]; R[cur].d[1] = (ULONG)P("e.bin"));
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_RENAME, 0), NAMEARG("missing.bin"); strcpy((char *)str, path);
+        R.d[0] = (ULONG)str; R.d[1] = (ULONG)P("e.bin"));
+    OBS("d0", R.d[0]);
 }
 
-/* ChangeDir: one set at a time, the current directory checked right
-   after the call (the other set changes it again) */
-static BPTR mybase[2], mysub[2];
+/* ChangeDir: the current directory checked right after the call */
+static BPTR mybase, mysub;
 static void changedir(const char *name, int relative)
 {
     struct Process *me = (struct Process *)FindTask(NULL);
-    ULONG same[2];
+    ULONG same;
     APTR fn;
     ROUT = "ChangeDir";
     sprintf(VEC, "%s%s", name, relative ? " (relative)" : "");
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        if (relative) {
-            CurrentDir(mybase[cur]);
-            strcpy(path[cur], name);
-            R[cur].d[0] = (ULONG)path[cur];
-        } else
-            R[cur].d[0] = (ULONG)P(name);
-        R[cur].a[3] = (ULONG)str[cur] + 200;
-        IN[cur] = R[cur];
-        fn = ENT(LIB, E_CHANGEDIR, 0);
-        CCR[cur] = callstk(fn, &R[cur], NULL, 0, &POP[cur]);
-        same[cur] = !R[cur].d[0] ? 3
-                    : (ULONG)SameLock(me->pr_CurrentDir, mysub[cur]) == LOCK_SAME ? 1
-                    : (ULONG)SameLock(me->pr_CurrentDir, mybase[cur]) == LOCK_SAME ? 2 : 0;
-    }
+    markregs(&R);
+    if (relative) {
+        CurrentDir(mybase);
+        strcpy(path, name);
+        R.d[0] = (ULONG)path;
+    } else
+        R.d[0] = (ULONG)P(name);
+    R.a[3] = (ULONG)str + 200;
+    IN = R;
+    fn = ENT(LIB, E_CHANGEDIR, 0);
+    CCR = callstk(fn, &R, NULL, 0, &POP);
+    same = !R.d[0] ? 3
+           : (ULONG)SameLock(me->pr_CurrentDir, mysub) == LOCK_SAME ? 1
+           : (ULONG)SameLock(me->pr_CurrentDir, mybase) == LOCK_SAME ? 2 : 0;
     preserve();
-    SAME("d0", R[cur].d[0]);
-    SAME("current directory", same[cur]);
+    OBS("d0", R.d[0]);
+    OBS("current directory", same);
 }
 
 /* FindVolume / DeviceName$ */
@@ -597,24 +580,24 @@ static void volumes(void)
     ROUT = "FindVolume";
     for (i = 0; i < sizeof v / sizeof v[0]; i++) {
         sprintf(VEC, "\"%s\"", v[i]);
-        DO2(ENT(LIB, E_FINDVOL, 0), R[cur].d[0] = (ULONG)v[i]);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_FINDVOL, 0), R.d[0] = (ULONG)v[i]);
+        OBS("d0", R.d[0]);
     }
     ROUT = "DeviceName$";
     for (i = 0; i < sizeof d / sizeof d[0]; i++) {
         sprintf(VEC, "\"%s\"", d[i]);
-        DO2(ENT(LIB, E_DEVNAME, 0), STRARG(d[i]));
-        SAME("d0", R[cur].d[0]);
-        SAME("a3", R[cur].a[3] - (ULONG)str[cur]);
-        SAMEBYTES("string area", str, sizeof str[0]);
+        DO1(ENT(LIB, E_DEVNAME, 0), STRARG(d[i]));
+        OBS("d0", R.d[0]);
+        OBS("a3", R.a[3] - (ULONG)str);
+        OBSBYTES("string area", str, sizeof str);
         if (i == 0)
-            printf("riamosfunclib: DeviceName$(\"RAM\") = \"%s\"\n", (char *)str[0] + 20);
+            printf("riamosfunclib: DeviceName$(\"RAM\") = \"%s\"\n", (char *)str + 20);
     }
     strcpy(VEC, "\"RAM\", d0 elsewhere");
-    DO2(ENT(LIB, E_DEVNAME, 0), STRARG("RAM"); R[cur].d[0] = (ULONG)"nosuchvolume");
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)str[cur]);
-    SAMEBYTES("string area", str, sizeof str[0]);
+    DO1(ENT(LIB, E_DEVNAME, 0), STRARG("RAM"); R.d[0] = (ULONG)"nosuchvolume");
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)str);
+    OBSBYTES("string area", str, sizeof str);
 }
 
 /* SaveExec: a Blitz list - the array pointer with "lIsT" at -4 and the
@@ -636,8 +619,8 @@ static void saveexec(const char *what, const char *name, ULONG magic, struct nod
     listarr[7] = magic;                                 /* -4 */
     ROUT = "SaveExec";
     sprintf(VEC, "%s", what);
-    DO2(ENT(LIB, E_SAVEEXEC, 0), NAMEARG(name); R[cur].d[1] = (ULONG)(listarr + 8));
-    SAME("d0 (1: the name)", R[cur].d[0] == IN[cur].d[0] ? 1 : R[cur].d[0]);
+    DO1(ENT(LIB, E_SAVEEXEC, 0), NAMEARG(name); R.d[1] = (ULONG)(listarr + 8));
+    OBS("d0 (1: the name)", R.d[0] == IN.d[0] ? 1 : R.d[0]);
 }
 
 static void saveexecs(void)
@@ -662,9 +645,8 @@ static void cleanup(void)
     static const char *f[] = { "a.bin", "b.bin", "c.bin", "d.bin", "p.bin", "empty.bin",
                                "x.exe", "y.exe", "sub", "" };
     unsigned i;
-    for (cur = 0; cur < 2; cur++)
-        for (i = 0; i < sizeof f / sizeof f[0]; i++)
-            DeleteFile((STRPTR)P(f[i]));
+    for (i = 0; i < sizeof f / sizeof f[0]; i++)
+        DeleteFile((STRPTR)P(f[i]));
 }
 
 int main(int argc, char **argv)
@@ -680,8 +662,43 @@ int main(int argc, char **argv)
         printf("usage: riamosfunclib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("Min", d1-d7|a0-a3|a6);
+    KEEPS("Max", d1-d7|a0-a3|a6);
+    KEEPS("GTTagValue", d1-d7|a0-a3|a6);
+    KEEPS("CopyByte", d1|d3-d7|a2|a3|a6);
+    KEEPS("CopyWord", d1|d3-d7|a2|a3|a6);
+    KEEPS("CopyLong", d1|d3-d7|a2|a3|a6);
+    KEEPS("KeyCode", d1-d7|a0-a3|a6);
+    KEEPS("Timer", d1-d7|a0-a3|a6);
+    KEEPS("Lisa", d1-d7|a0-a3|a6);
+    KEEPS("WaitBlitter", d0-d7|a0-a3|a6);
+    KEEPS("BlitterDone", d1-d7|a0-a3|a6);
+    KEEPS("MemFree", d2-d7|a0|a2|a3);
+    KEEPS("CachesOff", d2-d7|a0-a3);
+    KEEPS("CachesOn", d2-d7|a0-a3);
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("BankLimit", d2|d3|d5-d7|a2|a3);
+    KEEPS("Start", d1-d7|a1-a3|a6);
+    KEEPS("Length", d1-d7|a1-a3|a6);
+    KEEPS("NextBank", d1-d7|a1-a3);
+    KEEPS("Reserve", d3-d7|a2|a3);
+    KEEPS("FillMem", d2-d7|a1-a3);
+    KEEPS("SwapBank", d2|d3|a2|a3|a6);
+    KEEPS("Erase", d2-d7|a2|a3|a6);
+    KEEPS("MakeDir", d2-d5|d7|a2|a3);
+    KEEPS("BSave", d4-d7|a2|a3);
+    KEEPS("FileSize", d3-d5|a2|a3);
+    KEEPS("BLoad", d4|a2|a3);
+    KEEPS("BLoad error check", d0-d7|a0-a3|a6);
+    KEEPS("Rename", d3-d7|a2|a3);
+    KEEPS("FindVolume", d4-d6|a2|a3);
+    KEEPS("DeviceName$", d1-d7|a0|a6);
+    KEEPS("SaveExec", d4|d5|a3);
+    KEEPS("ChangeDir", d3-d7|a2|a3);
+    KEEPS("EraseAll", d3|d5-d7|a2|a3|a6);
+    KEEPS("finit", d2|d3|d5-d7|a2|a3);
     for (i = 0; i < sizeof pattern; i++)
         pattern[i] = (UBYTE)(i * 7 + (i >> 3));
     cleanup();
@@ -698,12 +715,10 @@ int main(int argc, char **argv)
     avail = AvailMem(MEMF_ANY);
     ROUT = "memlib init";
     VEC[0] = 0;
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], 0, 0);
-    }
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, 0, 0);
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     banks();
     files();
     volumes();
@@ -712,10 +727,8 @@ int main(int argc, char **argv)
     /* ChangeDir last: its lock stays current until the test restores the
        directory (finit unlocks it, BUG(orig), #491) */
     home = me->pr_CurrentDir;
-    for (cur = 0; cur < 2; cur++) {
-        mybase[cur] = Lock((STRPTR)P(""), ACCESS_READ);
-        mysub[cur] = Lock((STRPTR)P("sub"), ACCESS_READ);
-    }
+    mybase = Lock((STRPTR)P(""), ACCESS_READ);
+    mysub = Lock((STRPTR)P("sub"), ACCESS_READ);
     changedir("", 0);
     changedir("sub", 0);
     changedir("missing", 0);
@@ -725,21 +738,17 @@ int main(int argc, char **argv)
 
     ROUT = "EraseAll";
     VEC[0] = 0;
-    DO2(ENT(LIB, E_ERASEALL, 0), (void)0);
+    DO1(ENT(LIB, E_ERASEALL, 0), (void)0);
     for (b = 0; b < 12; b++)
         length(b);
     ROUT = "finit";
     VEC[0] = 0;
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     ROUT = "memlib finit";
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], 0, 0);
-    }
-    for (cur = 0; cur < 2; cur++) {
-        UnLock(mybase[cur]);
-        UnLock(mysub[cur]);
-    }
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);
+    UnLock(mybase);
+    UnLock(mysub);
     cleanup();
     printf("riamosfunclib: %ld bytes less memory than before init\n",
            (long)(avail - AvailMem(MEMF_ANY)));

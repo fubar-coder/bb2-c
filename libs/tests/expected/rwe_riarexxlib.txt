@@ -1,0 +1,1399 @@
+# capture rwe_riarexxlib 1
+init|kept||1	kept
+init|popped||1	$00000000
+RXMessageList|kept|no port|1	kept
+RXMessageList|popped|no port|1	$00000000
+RXMessageList|d0|no port|1	$00000000
+RXNumArgs|kept|no port|1	kept
+RXNumArgs|popped|no port|1	$00000000
+RXNumArgs|d0|no port|1	$00000000
+RXGetArg|kept|no port arg 0|1	kept
+RXGetArg|popped|no port arg 0|1	$00000000
+RXGetArg|d0|no port arg 0|1	$00000000
+RXGetArg|a3|no port arg 0|1	$00000010
+RXGetArg|string area|no port arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 1|1	kept
+RXGetArg|popped|no port arg 1|1	$00000000
+RXGetArg|d0|no port arg 1|1	$00000000
+RXGetArg|a3|no port arg 1|1	$00000010
+RXGetArg|string area|no port arg 1|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 2|1	kept
+RXGetArg|popped|no port arg 2|1	$00000000
+RXGetArg|d0|no port arg 2|1	$00000000
+RXGetArg|a3|no port arg 2|1	$00000010
+RXGetArg|string area|no port arg 2|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 3|1	kept
+RXGetArg|popped|no port arg 3|1	$00000000
+RXGetArg|d0|no port arg 3|1	$00000000
+RXGetArg|a3|no port arg 3|1	$00000010
+RXGetArg|string area|no port arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 4|1	kept
+RXGetArg|popped|no port arg 4|1	$00000000
+RXGetArg|d0|no port arg 4|1	$00000000
+RXGetArg|a3|no port arg 4|1	$00000010
+RXGetArg|string area|no port arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 5|1	kept
+RXGetArg|popped|no port arg 5|1	$00000000
+RXGetArg|d0|no port arg 5|1	$00000000
+RXGetArg|a3|no port arg 5|1	$00000010
+RXGetArg|string area|no port arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 6|1	kept
+RXGetArg|popped|no port arg 6|1	$00000000
+RXGetArg|d0|no port arg 6|1	$00000000
+RXGetArg|a3|no port arg 6|1	$00000010
+RXGetArg|string area|no port arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 7|1	kept
+RXGetArg|popped|no port arg 7|1	$00000000
+RXGetArg|d0|no port arg 7|1	$00000000
+RXGetArg|a3|no port arg 7|1	$00000010
+RXGetArg|string area|no port arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 8|1	kept
+RXGetArg|popped|no port arg 8|1	$00000000
+RXGetArg|d0|no port arg 8|1	$00000000
+RXGetArg|a3|no port arg 8|1	$00000010
+RXGetArg|string area|no port arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 9|1	kept
+RXGetArg|popped|no port arg 9|1	$00000000
+RXGetArg|d0|no port arg 9|1	$00000000
+RXGetArg|a3|no port arg 9|1	$00000010
+RXGetArg|string area|no port arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 10|1	kept
+RXGetArg|popped|no port arg 10|1	$00000000
+RXGetArg|d0|no port arg 10|1	$00000000
+RXGetArg|a3|no port arg 10|1	$00000010
+RXGetArg|string area|no port arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 11|1	kept
+RXGetArg|popped|no port arg 11|1	$00000000
+RXGetArg|d0|no port arg 11|1	$00000000
+RXGetArg|a3|no port arg 11|1	$00000010
+RXGetArg|string area|no port arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 12|1	kept
+RXGetArg|popped|no port arg 12|1	$00000000
+RXGetArg|d0|no port arg 12|1	$00000000
+RXGetArg|a3|no port arg 12|1	$00000010
+RXGetArg|string area|no port arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 13|1	kept
+RXGetArg|popped|no port arg 13|1	$00000000
+RXGetArg|d0|no port arg 13|1	$00000000
+RXGetArg|a3|no port arg 13|1	$00000010
+RXGetArg|string area|no port arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 14|1	kept
+RXGetArg|popped|no port arg 14|1	$00000000
+RXGetArg|d0|no port arg 14|1	$00000000
+RXGetArg|a3|no port arg 14|1	$00000010
+RXGetArg|string area|no port arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 15|1	kept
+RXGetArg|popped|no port arg 15|1	$00000000
+RXGetArg|d0|no port arg 15|1	$00000000
+RXGetArg|a3|no port arg 15|1	$00000010
+RXGetArg|string area|no port arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 16|1	kept
+RXGetArg|popped|no port arg 16|1	$00000000
+RXGetArg|d0|no port arg 16|1	$00000000
+RXGetArg|a3|no port arg 16|1	$00000010
+RXGetArg|string area|no port arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|no port arg 17|1	kept
+RXGetArg|popped|no port arg 17|1	$00000000
+RXGetArg|d0|no port arg 17|1	$00000000
+RXGetArg|a3|no port arg 17|1	$00000010
+RXGetArg|string area|no port arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|no port next 0|1	kept
+RXNextArg|popped|no port next 0|1	$00000000
+RXNextArg|d0|no port next 0|1	$00000000
+RXNextArg|a3|no port next 0|1	$00000010
+RXNextArg|string area|no port next 0|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|no port|1	kept
+RXSendersName|popped|no port|1	$00000000
+RXSendersName|d0|no port|1	$00000000
+RXSendersName|a3|no port|1	$00000010
+RXSendersName|sender|no port|1	$00000001
+RXReturnCode|kept|no port|1	kept
+RXReturnCode|popped|no port|1	$00000000
+RXReturnCode|d0|no port|1	$00000000
+RXCreatePort|kept||1	kept
+RXCreatePort|popped||1	$00000000
+RXCreatePort|the port||1	$00000001
+RXCreatePort|kept||2	kept
+RXCreatePort|popped||2	$00000000
+RXCreatePort|second port: 0||1	$00000000
+portchk|kept|with a port|1	kept
+portchk|popped|with a port|1	$00000000
+RXMessageList|kept|with a port|1	kept
+RXMessageList|popped|with a port|1	$00000000
+RXMessageList|list|with a port|1	$00000001
+RXRunCommand|kept|own "load  "a b" c""d "e""f" "g"h  i"|1	kept
+RXRunCommand|popped|own "load  "a b" c""d "e""f" "g"h  i"|1	$00000000
+RXRunCommand|sent|own "load  "a b" c""d "e""f" "g"h  i"|1	$00000001
+RXReadPort|kept|own message|1	kept
+RXReadPort|popped|own message|1	$00000000
+RXReadPort|message|own message|1	$00000001
+RXReadPort|message as expected|own message|1	$00000001
+RXNumArgs|kept|tokenised|1	kept
+RXNumArgs|popped|tokenised|1	$00000000
+RXNumArgs|d0|tokenised|1	$00000005
+RXGetArg|kept|tokenised arg 0|1	kept
+RXGetArg|popped|tokenised arg 0|1	$00000000
+RXGetArg|d0|tokenised arg 0|1	$00000000
+RXGetArg|a3|tokenised arg 0|1	$00000010
+RXGetArg|string area|tokenised arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 1|1	kept
+RXGetArg|popped|tokenised arg 1|1	$00000000
+RXGetArg|d0|tokenised arg 1|1	$00000004
+RXGetArg|a3|tokenised arg 1|1	$00000014
+RXGetArg|string area|tokenised arg 1|1	bytes 1024 fnv 2DC45353
+RXGetArg|kept|tokenised arg 2|1	kept
+RXGetArg|popped|tokenised arg 2|1	$00000000
+RXGetArg|d0|tokenised arg 2|1	$00000003
+RXGetArg|a3|tokenised arg 2|1	$00000013
+RXGetArg|string area|tokenised arg 2|1	bytes 1024 fnv 7BA63D7E
+RXGetArg|kept|tokenised arg 3|1	kept
+RXGetArg|popped|tokenised arg 3|1	$00000000
+RXGetArg|d0|tokenised arg 3|1	$00000001
+RXGetArg|a3|tokenised arg 3|1	$00000011
+RXGetArg|string area|tokenised arg 3|1	bytes 1024 fnv D129B262
+RXGetArg|kept|tokenised arg 4|1	kept
+RXGetArg|popped|tokenised arg 4|1	$00000000
+RXGetArg|d0|tokenised arg 4|1	$00000004
+RXGetArg|a3|tokenised arg 4|1	$00000014
+RXGetArg|string area|tokenised arg 4|1	bytes 1024 fnv 7ACEFBC2
+RXGetArg|kept|tokenised arg 5|1	kept
+RXGetArg|popped|tokenised arg 5|1	$00000000
+RXGetArg|d0|tokenised arg 5|1	$00000004
+RXGetArg|a3|tokenised arg 5|1	$00000014
+RXGetArg|string area|tokenised arg 5|1	bytes 1024 fnv BC6D13D0
+RXGetArg|kept|tokenised arg 6|1	kept
+RXGetArg|popped|tokenised arg 6|1	$00000000
+RXGetArg|d0|tokenised arg 6|1	$00000000
+RXGetArg|a3|tokenised arg 6|1	$00000010
+RXGetArg|string area|tokenised arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 7|1	kept
+RXGetArg|popped|tokenised arg 7|1	$00000000
+RXGetArg|d0|tokenised arg 7|1	$00000000
+RXGetArg|a3|tokenised arg 7|1	$00000010
+RXGetArg|string area|tokenised arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 8|1	kept
+RXGetArg|popped|tokenised arg 8|1	$00000000
+RXGetArg|d0|tokenised arg 8|1	$00000000
+RXGetArg|a3|tokenised arg 8|1	$00000010
+RXGetArg|string area|tokenised arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 9|1	kept
+RXGetArg|popped|tokenised arg 9|1	$00000000
+RXGetArg|d0|tokenised arg 9|1	$00000000
+RXGetArg|a3|tokenised arg 9|1	$00000010
+RXGetArg|string area|tokenised arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 10|1	kept
+RXGetArg|popped|tokenised arg 10|1	$00000000
+RXGetArg|d0|tokenised arg 10|1	$00000000
+RXGetArg|a3|tokenised arg 10|1	$00000010
+RXGetArg|string area|tokenised arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 11|1	kept
+RXGetArg|popped|tokenised arg 11|1	$00000000
+RXGetArg|d0|tokenised arg 11|1	$00000000
+RXGetArg|a3|tokenised arg 11|1	$00000010
+RXGetArg|string area|tokenised arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 12|1	kept
+RXGetArg|popped|tokenised arg 12|1	$00000000
+RXGetArg|d0|tokenised arg 12|1	$00000000
+RXGetArg|a3|tokenised arg 12|1	$00000010
+RXGetArg|string area|tokenised arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 13|1	kept
+RXGetArg|popped|tokenised arg 13|1	$00000000
+RXGetArg|d0|tokenised arg 13|1	$00000000
+RXGetArg|a3|tokenised arg 13|1	$00000010
+RXGetArg|string area|tokenised arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 14|1	kept
+RXGetArg|popped|tokenised arg 14|1	$00000000
+RXGetArg|d0|tokenised arg 14|1	$00000000
+RXGetArg|a3|tokenised arg 14|1	$00000010
+RXGetArg|string area|tokenised arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 15|1	kept
+RXGetArg|popped|tokenised arg 15|1	$00000000
+RXGetArg|d0|tokenised arg 15|1	$00000000
+RXGetArg|a3|tokenised arg 15|1	$00000010
+RXGetArg|string area|tokenised arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 16|1	kept
+RXGetArg|popped|tokenised arg 16|1	$00000000
+RXGetArg|d0|tokenised arg 16|1	$00000000
+RXGetArg|a3|tokenised arg 16|1	$00000010
+RXGetArg|string area|tokenised arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|tokenised arg 17|1	kept
+RXGetArg|popped|tokenised arg 17|1	$00000000
+RXGetArg|d0|tokenised arg 17|1	$00000000
+RXGetArg|a3|tokenised arg 17|1	$00000010
+RXGetArg|string area|tokenised arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|tokenised next 0|1	kept
+RXNextArg|popped|tokenised next 0|1	$00000000
+RXNextArg|d0|tokenised next 0|1	$00000004
+RXNextArg|a3|tokenised next 0|1	$00000014
+RXNextArg|string area|tokenised next 0|1	bytes 1024 fnv 2DC45353
+RXNextArg|kept|tokenised next 1|1	kept
+RXNextArg|popped|tokenised next 1|1	$00000000
+RXNextArg|d0|tokenised next 1|1	$00000003
+RXNextArg|a3|tokenised next 1|1	$00000013
+RXNextArg|string area|tokenised next 1|1	bytes 1024 fnv 7BA63D7E
+RXNextArg|kept|tokenised next 2|1	kept
+RXNextArg|popped|tokenised next 2|1	$00000000
+RXNextArg|d0|tokenised next 2|1	$00000001
+RXNextArg|a3|tokenised next 2|1	$00000011
+RXNextArg|string area|tokenised next 2|1	bytes 1024 fnv D129B262
+RXNextArg|kept|tokenised next 3|1	kept
+RXNextArg|popped|tokenised next 3|1	$00000000
+RXNextArg|d0|tokenised next 3|1	$00000004
+RXNextArg|a3|tokenised next 3|1	$00000014
+RXNextArg|string area|tokenised next 3|1	bytes 1024 fnv 7ACEFBC2
+RXNextArg|kept|tokenised next 4|1	kept
+RXNextArg|popped|tokenised next 4|1	$00000000
+RXNextArg|d0|tokenised next 4|1	$00000004
+RXNextArg|a3|tokenised next 4|1	$00000014
+RXNextArg|string area|tokenised next 4|1	bytes 1024 fnv BC6D13D0
+RXNextArg|kept|tokenised next 5|1	kept
+RXNextArg|popped|tokenised next 5|1	$00000000
+RXNextArg|d0|tokenised next 5|1	$00000000
+RXNextArg|a3|tokenised next 5|1	$00000010
+RXNextArg|string area|tokenised next 5|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|tokenised|1	kept
+RXSendersName|popped|tokenised|1	$00000000
+RXSendersName|d0|tokenised|1	$00000007
+RXSendersName|a3|tokenised|1	$00000017
+RXSendersName|sender|tokenised|1	$00000001
+RXReturnCode|kept|tokenised|1	kept
+RXReturnCode|popped|tokenised|1	$00000000
+RXReturnCode|d0|tokenised|1	$00000000
+RXReplyMsg|kept|own 0 the result|1	kept
+RXReplyMsg|popped|own 0 the result|1	$00000000
+RXReadPort|kept|the reply|1	kept
+RXReadPort|popped|the reply|1	$00000000
+RXReadPort|message|the reply|1	$00000000
+RXReadPort|message as expected|the reply|1	$00000001
+RXTokenise|kept|0|1	kept
+RXTokenise|popped|0|1	$00000000
+RXRunCommand|kept|own "x y  "z""|1	kept
+RXRunCommand|popped|own "x y  "z""|1	$00000000
+RXRunCommand|sent|own "x y  "z""|1	$00000001
+RXReadPort|kept|untokenised|1	kept
+RXReadPort|popped|untokenised|1	$00000000
+RXReadPort|message|untokenised|1	$00000001
+RXReadPort|message as expected|untokenised|1	$00000001
+RXNumArgs|kept|untokenised|1	kept
+RXNumArgs|popped|untokenised|1	$00000000
+RXNumArgs|d0|untokenised|1	$00000001
+RXGetArg|kept|untokenised arg 0|1	kept
+RXGetArg|popped|untokenised arg 0|1	$00000000
+RXGetArg|d0|untokenised arg 0|1	$00000000
+RXGetArg|a3|untokenised arg 0|1	$00000010
+RXGetArg|string area|untokenised arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 1|1	kept
+RXGetArg|popped|untokenised arg 1|1	$00000000
+RXGetArg|d0|untokenised arg 1|1	$00000008
+RXGetArg|a3|untokenised arg 1|1	$00000018
+RXGetArg|string area|untokenised arg 1|1	bytes 1024 fnv F74C8274
+RXGetArg|kept|untokenised arg 2|1	kept
+RXGetArg|popped|untokenised arg 2|1	$00000000
+RXGetArg|d0|untokenised arg 2|1	$00000000
+RXGetArg|a3|untokenised arg 2|1	$00000010
+RXGetArg|string area|untokenised arg 2|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 3|1	kept
+RXGetArg|popped|untokenised arg 3|1	$00000000
+RXGetArg|d0|untokenised arg 3|1	$00000000
+RXGetArg|a3|untokenised arg 3|1	$00000010
+RXGetArg|string area|untokenised arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 4|1	kept
+RXGetArg|popped|untokenised arg 4|1	$00000000
+RXGetArg|d0|untokenised arg 4|1	$00000000
+RXGetArg|a3|untokenised arg 4|1	$00000010
+RXGetArg|string area|untokenised arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 5|1	kept
+RXGetArg|popped|untokenised arg 5|1	$00000000
+RXGetArg|d0|untokenised arg 5|1	$00000000
+RXGetArg|a3|untokenised arg 5|1	$00000010
+RXGetArg|string area|untokenised arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 6|1	kept
+RXGetArg|popped|untokenised arg 6|1	$00000000
+RXGetArg|d0|untokenised arg 6|1	$00000000
+RXGetArg|a3|untokenised arg 6|1	$00000010
+RXGetArg|string area|untokenised arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 7|1	kept
+RXGetArg|popped|untokenised arg 7|1	$00000000
+RXGetArg|d0|untokenised arg 7|1	$00000000
+RXGetArg|a3|untokenised arg 7|1	$00000010
+RXGetArg|string area|untokenised arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 8|1	kept
+RXGetArg|popped|untokenised arg 8|1	$00000000
+RXGetArg|d0|untokenised arg 8|1	$00000000
+RXGetArg|a3|untokenised arg 8|1	$00000010
+RXGetArg|string area|untokenised arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 9|1	kept
+RXGetArg|popped|untokenised arg 9|1	$00000000
+RXGetArg|d0|untokenised arg 9|1	$00000000
+RXGetArg|a3|untokenised arg 9|1	$00000010
+RXGetArg|string area|untokenised arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 10|1	kept
+RXGetArg|popped|untokenised arg 10|1	$00000000
+RXGetArg|d0|untokenised arg 10|1	$00000000
+RXGetArg|a3|untokenised arg 10|1	$00000010
+RXGetArg|string area|untokenised arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 11|1	kept
+RXGetArg|popped|untokenised arg 11|1	$00000000
+RXGetArg|d0|untokenised arg 11|1	$00000000
+RXGetArg|a3|untokenised arg 11|1	$00000010
+RXGetArg|string area|untokenised arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 12|1	kept
+RXGetArg|popped|untokenised arg 12|1	$00000000
+RXGetArg|d0|untokenised arg 12|1	$00000000
+RXGetArg|a3|untokenised arg 12|1	$00000010
+RXGetArg|string area|untokenised arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 13|1	kept
+RXGetArg|popped|untokenised arg 13|1	$00000000
+RXGetArg|d0|untokenised arg 13|1	$00000000
+RXGetArg|a3|untokenised arg 13|1	$00000010
+RXGetArg|string area|untokenised arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 14|1	kept
+RXGetArg|popped|untokenised arg 14|1	$00000000
+RXGetArg|d0|untokenised arg 14|1	$00000000
+RXGetArg|a3|untokenised arg 14|1	$00000010
+RXGetArg|string area|untokenised arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 15|1	kept
+RXGetArg|popped|untokenised arg 15|1	$00000000
+RXGetArg|d0|untokenised arg 15|1	$00000000
+RXGetArg|a3|untokenised arg 15|1	$00000010
+RXGetArg|string area|untokenised arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 16|1	kept
+RXGetArg|popped|untokenised arg 16|1	$00000000
+RXGetArg|d0|untokenised arg 16|1	$00000000
+RXGetArg|a3|untokenised arg 16|1	$00000010
+RXGetArg|string area|untokenised arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|untokenised arg 17|1	kept
+RXGetArg|popped|untokenised arg 17|1	$00000000
+RXGetArg|d0|untokenised arg 17|1	$00000000
+RXGetArg|a3|untokenised arg 17|1	$00000010
+RXGetArg|string area|untokenised arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|untokenised next 0|1	kept
+RXNextArg|popped|untokenised next 0|1	$00000000
+RXNextArg|d0|untokenised next 0|1	$00000008
+RXNextArg|a3|untokenised next 0|1	$00000018
+RXNextArg|string area|untokenised next 0|1	bytes 1024 fnv F74C8274
+RXNextArg|kept|untokenised next 1|1	kept
+RXNextArg|popped|untokenised next 1|1	$00000000
+RXNextArg|d0|untokenised next 1|1	$00000000
+RXNextArg|a3|untokenised next 1|1	$00000010
+RXNextArg|string area|untokenised next 1|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|untokenised|1	kept
+RXSendersName|popped|untokenised|1	$00000000
+RXSendersName|d0|untokenised|1	$00000007
+RXSendersName|a3|untokenised|1	$00000017
+RXSendersName|sender|untokenised|1	$00000001
+RXReturnCode|kept|untokenised|1	kept
+RXReturnCode|popped|untokenised|1	$00000000
+RXReturnCode|d0|untokenised|1	$00000000
+RXReplyMsg|kept|untokenised 3 -|1	kept
+RXReplyMsg|popped|untokenised 3 -|1	$00000000
+RXReadPort|kept|the reply|2	kept
+RXReadPort|popped|the reply|2	$00000000
+RXReadPort|message|the reply|2	$00000000
+RXReadPort|message as expected|the reply|2	$00000001
+RXTokenise|kept|0 with an upper word|1	kept
+RXTokenise|popped|0 with an upper word|1	$00000000
+RXRunCommand|kept|own "x y  "z""|2	kept
+RXRunCommand|popped|own "x y  "z""|2	$00000000
+RXRunCommand|sent|own "x y  "z""|2	$00000001
+RXReadPort|kept|still tokenised|1	kept
+RXReadPort|popped|still tokenised|1	$00000000
+RXReadPort|message|still tokenised|1	$00000001
+RXReadPort|message as expected|still tokenised|1	$00000001
+RXNumArgs|kept|still tokenised|1	kept
+RXNumArgs|popped|still tokenised|1	$00000000
+RXNumArgs|d0|still tokenised|1	$00000005
+RXGetArg|kept|still tokenised arg 0|1	kept
+RXGetArg|popped|still tokenised arg 0|1	$00000000
+RXGetArg|d0|still tokenised arg 0|1	$00000000
+RXGetArg|a3|still tokenised arg 0|1	$00000010
+RXGetArg|string area|still tokenised arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 1|1	kept
+RXGetArg|popped|still tokenised arg 1|1	$00000000
+RXGetArg|d0|still tokenised arg 1|1	$00000001
+RXGetArg|a3|still tokenised arg 1|1	$00000011
+RXGetArg|string area|still tokenised arg 1|1	bytes 1024 fnv 635C0595
+RXGetArg|kept|still tokenised arg 2|1	kept
+RXGetArg|popped|still tokenised arg 2|1	$00000000
+RXGetArg|d0|still tokenised arg 2|1	$00000001
+RXGetArg|a3|still tokenised arg 2|1	$00000011
+RXGetArg|string area|still tokenised arg 2|1	bytes 1024 fnv 6D30CFA0
+RXGetArg|kept|still tokenised arg 3|1	kept
+RXGetArg|popped|still tokenised arg 3|1	$00000000
+RXGetArg|d0|still tokenised arg 3|1	$00000001
+RXGetArg|a3|still tokenised arg 3|1	$00000011
+RXGetArg|string area|still tokenised arg 3|1	bytes 1024 fnv DF501E57
+RXGetArg|kept|still tokenised arg 4|1	kept
+RXGetArg|popped|still tokenised arg 4|1	$00000000
+RXGetArg|d0|still tokenised arg 4|1	$0000000A
+RXGetArg|a3|still tokenised arg 4|1	$0000001A
+RXGetArg|string area|still tokenised arg 4|1	bytes 1024 fnv B4091925
+RXGetArg|kept|still tokenised arg 5|1	kept
+RXGetArg|popped|still tokenised arg 5|1	$00000000
+RXGetArg|d0|still tokenised arg 5|1	$00000004
+RXGetArg|a3|still tokenised arg 5|1	$00000014
+RXGetArg|string area|still tokenised arg 5|1	bytes 1024 fnv BC6D13D0
+RXGetArg|kept|still tokenised arg 6|1	kept
+RXGetArg|popped|still tokenised arg 6|1	$00000000
+RXGetArg|d0|still tokenised arg 6|1	$00000000
+RXGetArg|a3|still tokenised arg 6|1	$00000010
+RXGetArg|string area|still tokenised arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 7|1	kept
+RXGetArg|popped|still tokenised arg 7|1	$00000000
+RXGetArg|d0|still tokenised arg 7|1	$00000000
+RXGetArg|a3|still tokenised arg 7|1	$00000010
+RXGetArg|string area|still tokenised arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 8|1	kept
+RXGetArg|popped|still tokenised arg 8|1	$00000000
+RXGetArg|d0|still tokenised arg 8|1	$00000000
+RXGetArg|a3|still tokenised arg 8|1	$00000010
+RXGetArg|string area|still tokenised arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 9|1	kept
+RXGetArg|popped|still tokenised arg 9|1	$00000000
+RXGetArg|d0|still tokenised arg 9|1	$00000000
+RXGetArg|a3|still tokenised arg 9|1	$00000010
+RXGetArg|string area|still tokenised arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 10|1	kept
+RXGetArg|popped|still tokenised arg 10|1	$00000000
+RXGetArg|d0|still tokenised arg 10|1	$00000000
+RXGetArg|a3|still tokenised arg 10|1	$00000010
+RXGetArg|string area|still tokenised arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 11|1	kept
+RXGetArg|popped|still tokenised arg 11|1	$00000000
+RXGetArg|d0|still tokenised arg 11|1	$00000000
+RXGetArg|a3|still tokenised arg 11|1	$00000010
+RXGetArg|string area|still tokenised arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 12|1	kept
+RXGetArg|popped|still tokenised arg 12|1	$00000000
+RXGetArg|d0|still tokenised arg 12|1	$00000000
+RXGetArg|a3|still tokenised arg 12|1	$00000010
+RXGetArg|string area|still tokenised arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 13|1	kept
+RXGetArg|popped|still tokenised arg 13|1	$00000000
+RXGetArg|d0|still tokenised arg 13|1	$00000000
+RXGetArg|a3|still tokenised arg 13|1	$00000010
+RXGetArg|string area|still tokenised arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 14|1	kept
+RXGetArg|popped|still tokenised arg 14|1	$00000000
+RXGetArg|d0|still tokenised arg 14|1	$00000000
+RXGetArg|a3|still tokenised arg 14|1	$00000010
+RXGetArg|string area|still tokenised arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 15|1	kept
+RXGetArg|popped|still tokenised arg 15|1	$00000000
+RXGetArg|d0|still tokenised arg 15|1	$00000000
+RXGetArg|a3|still tokenised arg 15|1	$00000010
+RXGetArg|string area|still tokenised arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 16|1	kept
+RXGetArg|popped|still tokenised arg 16|1	$00000000
+RXGetArg|d0|still tokenised arg 16|1	$00000000
+RXGetArg|a3|still tokenised arg 16|1	$00000010
+RXGetArg|string area|still tokenised arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|still tokenised arg 17|1	kept
+RXGetArg|popped|still tokenised arg 17|1	$00000000
+RXGetArg|d0|still tokenised arg 17|1	$00000000
+RXGetArg|a3|still tokenised arg 17|1	$00000010
+RXGetArg|string area|still tokenised arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|still tokenised next 0|1	kept
+RXNextArg|popped|still tokenised next 0|1	$00000000
+RXNextArg|d0|still tokenised next 0|1	$00000001
+RXNextArg|a3|still tokenised next 0|1	$00000011
+RXNextArg|string area|still tokenised next 0|1	bytes 1024 fnv 635C0595
+RXNextArg|kept|still tokenised next 1|1	kept
+RXNextArg|popped|still tokenised next 1|1	$00000000
+RXNextArg|d0|still tokenised next 1|1	$00000001
+RXNextArg|a3|still tokenised next 1|1	$00000011
+RXNextArg|string area|still tokenised next 1|1	bytes 1024 fnv 6D30CFA0
+RXNextArg|kept|still tokenised next 2|1	kept
+RXNextArg|popped|still tokenised next 2|1	$00000000
+RXNextArg|d0|still tokenised next 2|1	$00000001
+RXNextArg|a3|still tokenised next 2|1	$00000011
+RXNextArg|string area|still tokenised next 2|1	bytes 1024 fnv DF501E57
+RXNextArg|kept|still tokenised next 3|1	kept
+RXNextArg|popped|still tokenised next 3|1	$00000000
+RXNextArg|d0|still tokenised next 3|1	$0000000A
+RXNextArg|a3|still tokenised next 3|1	$0000001A
+RXNextArg|string area|still tokenised next 3|1	bytes 1024 fnv B4091925
+RXNextArg|kept|still tokenised next 4|1	kept
+RXNextArg|popped|still tokenised next 4|1	$00000000
+RXNextArg|d0|still tokenised next 4|1	$00000004
+RXNextArg|a3|still tokenised next 4|1	$00000014
+RXNextArg|string area|still tokenised next 4|1	bytes 1024 fnv BC6D13D0
+RXNextArg|kept|still tokenised next 5|1	kept
+RXNextArg|popped|still tokenised next 5|1	$00000000
+RXNextArg|d0|still tokenised next 5|1	$00000000
+RXNextArg|a3|still tokenised next 5|1	$00000010
+RXNextArg|string area|still tokenised next 5|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|still tokenised|1	kept
+RXSendersName|popped|still tokenised|1	$00000000
+RXSendersName|d0|still tokenised|1	$00000007
+RXSendersName|a3|still tokenised|1	$00000017
+RXSendersName|sender|still tokenised|1	$00000001
+RXReturnCode|kept|still tokenised|1	kept
+RXReturnCode|popped|still tokenised|1	$00000000
+RXReturnCode|d0|still tokenised|1	$00000000
+RXQuoteChar|kept|"'"|1	kept
+RXQuoteChar|popped|"'"|1	$00000000
+RXRunCommand|kept|own "a 'b c' "d e" ''"|1	kept
+RXRunCommand|popped|own "a 'b c' "d e" ''"|1	$00000000
+RXRunCommand|sent|own "a 'b c' "d e" ''"|1	$00000001
+RXReadPort|kept|quote '|1	kept
+RXReadPort|popped|quote '|1	$00000000
+RXReadPort|message|quote '|1	$00000001
+RXReadPort|message as expected|quote '|1	$00000001
+RXNumArgs|kept|quote '|1	kept
+RXNumArgs|popped|quote '|1	$00000000
+RXNumArgs|d0|quote '|1	$00000004
+RXGetArg|kept|quote ' arg 0|1	kept
+RXGetArg|popped|quote ' arg 0|1	$00000000
+RXGetArg|d0|quote ' arg 0|1	$00000000
+RXGetArg|a3|quote ' arg 0|1	$00000010
+RXGetArg|string area|quote ' arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 1|1	kept
+RXGetArg|popped|quote ' arg 1|1	$00000000
+RXGetArg|d0|quote ' arg 1|1	$00000001
+RXGetArg|a3|quote ' arg 1|1	$00000011
+RXGetArg|string area|quote ' arg 1|1	bytes 1024 fnv EDEA1348
+RXGetArg|kept|quote ' arg 2|1	kept
+RXGetArg|popped|quote ' arg 2|1	$00000000
+RXGetArg|d0|quote ' arg 2|1	$00000003
+RXGetArg|a3|quote ' arg 2|1	$00000013
+RXGetArg|string area|quote ' arg 2|1	bytes 1024 fnv EF23D284
+RXGetArg|kept|quote ' arg 3|1	kept
+RXGetArg|popped|quote ' arg 3|1	$00000000
+RXGetArg|d0|quote ' arg 3|1	$00000002
+RXGetArg|a3|quote ' arg 3|1	$00000012
+RXGetArg|string area|quote ' arg 3|1	bytes 1024 fnv E3FEF489
+RXGetArg|kept|quote ' arg 4|1	kept
+RXGetArg|popped|quote ' arg 4|1	$00000000
+RXGetArg|d0|quote ' arg 4|1	$00000002
+RXGetArg|a3|quote ' arg 4|1	$00000012
+RXGetArg|string area|quote ' arg 4|1	bytes 1024 fnv 0041CDC0
+RXGetArg|kept|quote ' arg 5|1	kept
+RXGetArg|popped|quote ' arg 5|1	$00000000
+RXGetArg|d0|quote ' arg 5|1	$00000000
+RXGetArg|a3|quote ' arg 5|1	$00000010
+RXGetArg|string area|quote ' arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 6|1	kept
+RXGetArg|popped|quote ' arg 6|1	$00000000
+RXGetArg|d0|quote ' arg 6|1	$00000000
+RXGetArg|a3|quote ' arg 6|1	$00000010
+RXGetArg|string area|quote ' arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 7|1	kept
+RXGetArg|popped|quote ' arg 7|1	$00000000
+RXGetArg|d0|quote ' arg 7|1	$00000000
+RXGetArg|a3|quote ' arg 7|1	$00000010
+RXGetArg|string area|quote ' arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 8|1	kept
+RXGetArg|popped|quote ' arg 8|1	$00000000
+RXGetArg|d0|quote ' arg 8|1	$00000000
+RXGetArg|a3|quote ' arg 8|1	$00000010
+RXGetArg|string area|quote ' arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 9|1	kept
+RXGetArg|popped|quote ' arg 9|1	$00000000
+RXGetArg|d0|quote ' arg 9|1	$00000000
+RXGetArg|a3|quote ' arg 9|1	$00000010
+RXGetArg|string area|quote ' arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 10|1	kept
+RXGetArg|popped|quote ' arg 10|1	$00000000
+RXGetArg|d0|quote ' arg 10|1	$00000000
+RXGetArg|a3|quote ' arg 10|1	$00000010
+RXGetArg|string area|quote ' arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 11|1	kept
+RXGetArg|popped|quote ' arg 11|1	$00000000
+RXGetArg|d0|quote ' arg 11|1	$00000000
+RXGetArg|a3|quote ' arg 11|1	$00000010
+RXGetArg|string area|quote ' arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 12|1	kept
+RXGetArg|popped|quote ' arg 12|1	$00000000
+RXGetArg|d0|quote ' arg 12|1	$00000000
+RXGetArg|a3|quote ' arg 12|1	$00000010
+RXGetArg|string area|quote ' arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 13|1	kept
+RXGetArg|popped|quote ' arg 13|1	$00000000
+RXGetArg|d0|quote ' arg 13|1	$00000000
+RXGetArg|a3|quote ' arg 13|1	$00000010
+RXGetArg|string area|quote ' arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 14|1	kept
+RXGetArg|popped|quote ' arg 14|1	$00000000
+RXGetArg|d0|quote ' arg 14|1	$00000000
+RXGetArg|a3|quote ' arg 14|1	$00000010
+RXGetArg|string area|quote ' arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 15|1	kept
+RXGetArg|popped|quote ' arg 15|1	$00000000
+RXGetArg|d0|quote ' arg 15|1	$00000000
+RXGetArg|a3|quote ' arg 15|1	$00000010
+RXGetArg|string area|quote ' arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 16|1	kept
+RXGetArg|popped|quote ' arg 16|1	$00000000
+RXGetArg|d0|quote ' arg 16|1	$00000000
+RXGetArg|a3|quote ' arg 16|1	$00000010
+RXGetArg|string area|quote ' arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|quote ' arg 17|1	kept
+RXGetArg|popped|quote ' arg 17|1	$00000000
+RXGetArg|d0|quote ' arg 17|1	$00000000
+RXGetArg|a3|quote ' arg 17|1	$00000010
+RXGetArg|string area|quote ' arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|quote ' next 0|1	kept
+RXNextArg|popped|quote ' next 0|1	$00000000
+RXNextArg|d0|quote ' next 0|1	$00000001
+RXNextArg|a3|quote ' next 0|1	$00000011
+RXNextArg|string area|quote ' next 0|1	bytes 1024 fnv EDEA1348
+RXNextArg|kept|quote ' next 1|1	kept
+RXNextArg|popped|quote ' next 1|1	$00000000
+RXNextArg|d0|quote ' next 1|1	$00000003
+RXNextArg|a3|quote ' next 1|1	$00000013
+RXNextArg|string area|quote ' next 1|1	bytes 1024 fnv EF23D284
+RXNextArg|kept|quote ' next 2|1	kept
+RXNextArg|popped|quote ' next 2|1	$00000000
+RXNextArg|d0|quote ' next 2|1	$00000002
+RXNextArg|a3|quote ' next 2|1	$00000012
+RXNextArg|string area|quote ' next 2|1	bytes 1024 fnv E3FEF489
+RXNextArg|kept|quote ' next 3|1	kept
+RXNextArg|popped|quote ' next 3|1	$00000000
+RXNextArg|d0|quote ' next 3|1	$00000002
+RXNextArg|a3|quote ' next 3|1	$00000012
+RXNextArg|string area|quote ' next 3|1	bytes 1024 fnv 0041CDC0
+RXNextArg|kept|quote ' next 4|1	kept
+RXNextArg|popped|quote ' next 4|1	$00000000
+RXNextArg|d0|quote ' next 4|1	$00000000
+RXNextArg|a3|quote ' next 4|1	$00000010
+RXNextArg|string area|quote ' next 4|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|quote '|1	kept
+RXSendersName|popped|quote '|1	$00000000
+RXSendersName|d0|quote '|1	$00000007
+RXSendersName|a3|quote '|1	$00000017
+RXSendersName|sender|quote '|1	$00000001
+RXReturnCode|kept|quote '|1	kept
+RXReturnCode|popped|quote '|1	$00000000
+RXReturnCode|d0|quote '|1	$00000000
+RXQuoteChar|kept|"""|1	kept
+RXQuoteChar|popped|"""|1	$00000000
+RXRunCommand|kept|own ""|1	kept
+RXRunCommand|popped|own ""|1	$00000000
+RXRunCommand|sent|own ""|1	$00000001
+RXReadPort|kept|empty|1	kept
+RXReadPort|popped|empty|1	$00000000
+RXReadPort|message|empty|1	$00000001
+RXReadPort|message as expected|empty|1	$00000001
+RXNumArgs|kept|empty|1	kept
+RXNumArgs|popped|empty|1	$00000000
+RXNumArgs|d0|empty|1	$00000000
+RXGetArg|kept|empty arg 0|1	kept
+RXGetArg|popped|empty arg 0|1	$00000000
+RXGetArg|d0|empty arg 0|1	$00000000
+RXGetArg|a3|empty arg 0|1	$00000010
+RXGetArg|string area|empty arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 1|1	kept
+RXGetArg|popped|empty arg 1|1	$00000000
+RXGetArg|d0|empty arg 1|1	$00000000
+RXGetArg|a3|empty arg 1|1	$00000010
+RXGetArg|string area|empty arg 1|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 2|1	kept
+RXGetArg|popped|empty arg 2|1	$00000000
+RXGetArg|d0|empty arg 2|1	$00000000
+RXGetArg|a3|empty arg 2|1	$00000010
+RXGetArg|string area|empty arg 2|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 3|1	kept
+RXGetArg|popped|empty arg 3|1	$00000000
+RXGetArg|d0|empty arg 3|1	$00000000
+RXGetArg|a3|empty arg 3|1	$00000010
+RXGetArg|string area|empty arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 4|1	kept
+RXGetArg|popped|empty arg 4|1	$00000000
+RXGetArg|d0|empty arg 4|1	$00000000
+RXGetArg|a3|empty arg 4|1	$00000010
+RXGetArg|string area|empty arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 5|1	kept
+RXGetArg|popped|empty arg 5|1	$00000000
+RXGetArg|d0|empty arg 5|1	$00000000
+RXGetArg|a3|empty arg 5|1	$00000010
+RXGetArg|string area|empty arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 6|1	kept
+RXGetArg|popped|empty arg 6|1	$00000000
+RXGetArg|d0|empty arg 6|1	$00000000
+RXGetArg|a3|empty arg 6|1	$00000010
+RXGetArg|string area|empty arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 7|1	kept
+RXGetArg|popped|empty arg 7|1	$00000000
+RXGetArg|d0|empty arg 7|1	$00000000
+RXGetArg|a3|empty arg 7|1	$00000010
+RXGetArg|string area|empty arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 8|1	kept
+RXGetArg|popped|empty arg 8|1	$00000000
+RXGetArg|d0|empty arg 8|1	$00000000
+RXGetArg|a3|empty arg 8|1	$00000010
+RXGetArg|string area|empty arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 9|1	kept
+RXGetArg|popped|empty arg 9|1	$00000000
+RXGetArg|d0|empty arg 9|1	$00000000
+RXGetArg|a3|empty arg 9|1	$00000010
+RXGetArg|string area|empty arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 10|1	kept
+RXGetArg|popped|empty arg 10|1	$00000000
+RXGetArg|d0|empty arg 10|1	$00000000
+RXGetArg|a3|empty arg 10|1	$00000010
+RXGetArg|string area|empty arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 11|1	kept
+RXGetArg|popped|empty arg 11|1	$00000000
+RXGetArg|d0|empty arg 11|1	$00000000
+RXGetArg|a3|empty arg 11|1	$00000010
+RXGetArg|string area|empty arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 12|1	kept
+RXGetArg|popped|empty arg 12|1	$00000000
+RXGetArg|d0|empty arg 12|1	$00000000
+RXGetArg|a3|empty arg 12|1	$00000010
+RXGetArg|string area|empty arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 13|1	kept
+RXGetArg|popped|empty arg 13|1	$00000000
+RXGetArg|d0|empty arg 13|1	$00000000
+RXGetArg|a3|empty arg 13|1	$00000010
+RXGetArg|string area|empty arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 14|1	kept
+RXGetArg|popped|empty arg 14|1	$00000000
+RXGetArg|d0|empty arg 14|1	$00000000
+RXGetArg|a3|empty arg 14|1	$00000010
+RXGetArg|string area|empty arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 15|1	kept
+RXGetArg|popped|empty arg 15|1	$00000000
+RXGetArg|d0|empty arg 15|1	$00000000
+RXGetArg|a3|empty arg 15|1	$00000010
+RXGetArg|string area|empty arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 16|1	kept
+RXGetArg|popped|empty arg 16|1	$00000000
+RXGetArg|d0|empty arg 16|1	$00000000
+RXGetArg|a3|empty arg 16|1	$00000010
+RXGetArg|string area|empty arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|empty arg 17|1	kept
+RXGetArg|popped|empty arg 17|1	$00000000
+RXGetArg|d0|empty arg 17|1	$00000000
+RXGetArg|a3|empty arg 17|1	$00000010
+RXGetArg|string area|empty arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|empty next 0|1	kept
+RXNextArg|popped|empty next 0|1	$00000000
+RXNextArg|d0|empty next 0|1	$00000000
+RXNextArg|a3|empty next 0|1	$00000010
+RXNextArg|string area|empty next 0|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|empty|1	kept
+RXSendersName|popped|empty|1	$00000000
+RXSendersName|d0|empty|1	$00000007
+RXSendersName|a3|empty|1	$00000017
+RXSendersName|sender|empty|1	$00000001
+RXReturnCode|kept|empty|1	kept
+RXReturnCode|popped|empty|1	$00000000
+RXReturnCode|d0|empty|1	$00000000
+RXDefaultPort|kept|"RWERX_X"|1	kept
+RXDefaultPort|popped|"RWERX_X"|1	$00000000
+RXRunCommand|kept|default "nowhere"|1	kept
+RXRunCommand|popped|default "nowhere"|1	$00000000
+RXRunCommand|sent|default "nowhere"|1	$00000001
+RXDefaultPort|kept|own|1	kept
+RXDefaultPort|popped|own|1	$00000000
+RXRunCommand|kept|default "hello default"|1	kept
+RXRunCommand|popped|default "hello default"|1	$00000000
+RXRunCommand|sent|default "hello default"|1	$00000001
+RXWaitPort|kept|RXWaitPort|1	kept
+RXWaitPort|popped|RXWaitPort|1	$00000000
+RXWaitPort|message|RXWaitPort|1	$00000001
+RXWaitPort|message as expected|RXWaitPort|1	$00000001
+RXNumArgs|kept|default|1	kept
+RXNumArgs|popped|default|1	$00000000
+RXNumArgs|d0|default|1	$00000002
+RXGetArg|kept|default arg 0|1	kept
+RXGetArg|popped|default arg 0|1	$00000000
+RXGetArg|d0|default arg 0|1	$00000000
+RXGetArg|a3|default arg 0|1	$00000010
+RXGetArg|string area|default arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 1|1	kept
+RXGetArg|popped|default arg 1|1	$00000000
+RXGetArg|d0|default arg 1|1	$00000005
+RXGetArg|a3|default arg 1|1	$00000015
+RXGetArg|string area|default arg 1|1	bytes 1024 fnv DBF9B231
+RXGetArg|kept|default arg 2|1	kept
+RXGetArg|popped|default arg 2|1	$00000000
+RXGetArg|d0|default arg 2|1	$00000007
+RXGetArg|a3|default arg 2|1	$00000017
+RXGetArg|string area|default arg 2|1	bytes 1024 fnv 2D9E43AA
+RXGetArg|kept|default arg 3|1	kept
+RXGetArg|popped|default arg 3|1	$00000000
+RXGetArg|d0|default arg 3|1	$00000000
+RXGetArg|a3|default arg 3|1	$00000010
+RXGetArg|string area|default arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 4|1	kept
+RXGetArg|popped|default arg 4|1	$00000000
+RXGetArg|d0|default arg 4|1	$00000000
+RXGetArg|a3|default arg 4|1	$00000010
+RXGetArg|string area|default arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 5|1	kept
+RXGetArg|popped|default arg 5|1	$00000000
+RXGetArg|d0|default arg 5|1	$00000000
+RXGetArg|a3|default arg 5|1	$00000010
+RXGetArg|string area|default arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 6|1	kept
+RXGetArg|popped|default arg 6|1	$00000000
+RXGetArg|d0|default arg 6|1	$00000000
+RXGetArg|a3|default arg 6|1	$00000010
+RXGetArg|string area|default arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 7|1	kept
+RXGetArg|popped|default arg 7|1	$00000000
+RXGetArg|d0|default arg 7|1	$00000000
+RXGetArg|a3|default arg 7|1	$00000010
+RXGetArg|string area|default arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 8|1	kept
+RXGetArg|popped|default arg 8|1	$00000000
+RXGetArg|d0|default arg 8|1	$00000000
+RXGetArg|a3|default arg 8|1	$00000010
+RXGetArg|string area|default arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 9|1	kept
+RXGetArg|popped|default arg 9|1	$00000000
+RXGetArg|d0|default arg 9|1	$00000000
+RXGetArg|a3|default arg 9|1	$00000010
+RXGetArg|string area|default arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 10|1	kept
+RXGetArg|popped|default arg 10|1	$00000000
+RXGetArg|d0|default arg 10|1	$00000000
+RXGetArg|a3|default arg 10|1	$00000010
+RXGetArg|string area|default arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 11|1	kept
+RXGetArg|popped|default arg 11|1	$00000000
+RXGetArg|d0|default arg 11|1	$00000000
+RXGetArg|a3|default arg 11|1	$00000010
+RXGetArg|string area|default arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 12|1	kept
+RXGetArg|popped|default arg 12|1	$00000000
+RXGetArg|d0|default arg 12|1	$00000000
+RXGetArg|a3|default arg 12|1	$00000010
+RXGetArg|string area|default arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 13|1	kept
+RXGetArg|popped|default arg 13|1	$00000000
+RXGetArg|d0|default arg 13|1	$00000000
+RXGetArg|a3|default arg 13|1	$00000010
+RXGetArg|string area|default arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 14|1	kept
+RXGetArg|popped|default arg 14|1	$00000000
+RXGetArg|d0|default arg 14|1	$00000000
+RXGetArg|a3|default arg 14|1	$00000010
+RXGetArg|string area|default arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 15|1	kept
+RXGetArg|popped|default arg 15|1	$00000000
+RXGetArg|d0|default arg 15|1	$00000000
+RXGetArg|a3|default arg 15|1	$00000010
+RXGetArg|string area|default arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 16|1	kept
+RXGetArg|popped|default arg 16|1	$00000000
+RXGetArg|d0|default arg 16|1	$00000000
+RXGetArg|a3|default arg 16|1	$00000010
+RXGetArg|string area|default arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|default arg 17|1	kept
+RXGetArg|popped|default arg 17|1	$00000000
+RXGetArg|d0|default arg 17|1	$00000000
+RXGetArg|a3|default arg 17|1	$00000010
+RXGetArg|string area|default arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|default next 0|1	kept
+RXNextArg|popped|default next 0|1	$00000000
+RXNextArg|d0|default next 0|1	$00000005
+RXNextArg|a3|default next 0|1	$00000015
+RXNextArg|string area|default next 0|1	bytes 1024 fnv DBF9B231
+RXNextArg|kept|default next 1|1	kept
+RXNextArg|popped|default next 1|1	$00000000
+RXNextArg|d0|default next 1|1	$00000007
+RXNextArg|a3|default next 1|1	$00000017
+RXNextArg|string area|default next 1|1	bytes 1024 fnv 2D9E43AA
+RXNextArg|kept|default next 2|1	kept
+RXNextArg|popped|default next 2|1	$00000000
+RXNextArg|d0|default next 2|1	$00000000
+RXNextArg|a3|default next 2|1	$00000010
+RXNextArg|string area|default next 2|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|default|1	kept
+RXSendersName|popped|default|1	$00000000
+RXSendersName|d0|default|1	$00000007
+RXSendersName|a3|default|1	$00000017
+RXSendersName|sender|default|1	$00000001
+RXReturnCode|kept|default|1	kept
+RXReturnCode|popped|default|1	$00000000
+RXReturnCode|d0|default|1	$00000000
+RXReplyMsg|kept|default 0 -|1	kept
+RXReplyMsg|popped|default 0 -|1	$00000000
+RXWaitPort|kept|RXWaitPort: the reply|1	kept
+RXWaitPort|popped|RXWaitPort: the reply|1	$00000000
+RXWaitPort|message|RXWaitPort: the reply|1	$00000000
+RXWaitPort|message as expected|RXWaitPort: the reply|1	$00000001
+RXRunCommand|kept|RWERESP "cmd a b"|1	kept
+RXRunCommand|popped|RWERESP "cmd a b"|1	$00000000
+RXRunCommand|sent|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|responder got it|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|RXRunCommand: message|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|type|RWERESP "cmd a b"|1	$00000005
+RXRunCommand|pri|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|length|RWERESP "cmd a b"|1	$00000080
+RXRunCommand|action|RWERESP "cmd a b"|1	$01040000
+RXRunCommand|port|RWERESP "cmd a b"|1	$00000000
+RXRunCommand|port served|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|args|RWERESP "cmd a b"|1	$00000003
+RXRunCommand|ln_Name|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|reply port|RWERESP "cmd a b"|1	$00000001
+RXRunCommand|argument|RWERESP "cmd a b"|1	bytes 48 636D64000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|2	bytes 48 610000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|3	bytes 48 620000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|4	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|5	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|6	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|7	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|8	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|9	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|10	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|11	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|12	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|13	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunCommand|argument|RWERESP "cmd a b"|16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXReadPort|kept|responder's reply|1	kept
+RXReadPort|popped|responder's reply|1	$00000000
+RXReadPort|message|responder's reply|1	$00000000
+RXReadPort|message as expected|responder's reply|1	$00000001
+RXRunCommand|kept|RWENOWHERE "cmd"|1	kept
+RXRunCommand|popped|RWENOWHERE "cmd"|1	$00000000
+RXRunCommand|sent|RWENOWHERE "cmd"|1	$00000000
+RXSendCommand|kept|form 1 RWERESP "get "the" thing" rc 0 res the result|1	kept
+RXSendCommand|popped|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000000
+RXSendCommand|d0|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$0000000A
+RXSendCommand|a3|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$0000000A
+RXSendCommand|string area|form 1 RWERESP "get "the" thing" rc 0 res the result|1	bytes 1024 fnv 6F59FBEA
+RXSendCommand|responder got it|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000001
+RXSendCommand|RXSendCommand: message|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000002
+RXSendCommand|type|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000005
+RXSendCommand|pri|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000001
+RXSendCommand|length|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000080
+RXSendCommand|action|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$01060000
+RXSendCommand|port|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000000
+RXSendCommand|port served|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000001
+RXSendCommand|args|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000003
+RXSendCommand|ln_Name|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000001
+RXSendCommand|reply port|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000001
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|1	bytes 48 676574000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|2	bytes 48 746865000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|3	bytes 48 7468696E6700000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|4	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|5	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|6	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|7	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|8	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|9	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|10	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|11	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|12	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|13	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 1 RWERESP "get "the" thing" rc 0 res the result|16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXReturnCode|kept|form 1 RWERESP "get "the" thing" rc 0 res the result|1	kept
+RXReturnCode|popped|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000000
+RXReturnCode|d0|form 1 RWERESP "get "the" thing" rc 0 res the result|1	$00000000
+RXRunCommand|kept|own "pending"|1	kept
+RXRunCommand|popped|own "pending"|1	$00000000
+RXRunCommand|sent|own "pending"|1	$00000001
+RXReadPort|kept|current|1	kept
+RXReadPort|popped|current|1	$00000000
+RXReadPort|message|current|1	$00000001
+RXReadPort|message as expected|current|1	$00000001
+RXSendCommand|kept|form 1 RWERESP "fail" rc 10 res -|1	kept
+RXSendCommand|popped|form 1 RWERESP "fail" rc 10 res -|1	$00000000
+RXSendCommand|d0|form 1 RWERESP "fail" rc 10 res -|1	$00000000
+RXSendCommand|a3|form 1 RWERESP "fail" rc 10 res -|1	$00000000
+RXSendCommand|string area|form 1 RWERESP "fail" rc 10 res -|1	bytes 1024 fnv 893EB667
+RXReturnCode|kept|form 1 RWERESP "fail" rc 10 res -|1	kept
+RXReturnCode|popped|form 1 RWERESP "fail" rc 10 res -|1	$00000000
+RXReturnCode|d0|form 1 RWERESP "fail" rc 10 res -|1	$0000000A
+RXRunCommand|kept|own "arrives while waiting"|1	kept
+RXRunCommand|popped|own "arrives while waiting"|1	$00000000
+RXRunCommand|sent|own "arrives while waiting"|1	$00000001
+RXSendCommand|kept|form 1 RWERESP "again" rc 0 res x|1	kept
+RXSendCommand|popped|form 1 RWERESP "again" rc 0 res x|1	$00000000
+RXSendCommand|d0|form 1 RWERESP "again" rc 0 res x|1	$00000001
+RXSendCommand|a3|form 1 RWERESP "again" rc 0 res x|1	$00000001
+RXSendCommand|string area|form 1 RWERESP "again" rc 0 res x|1	bytes 1024 fnv AC0DEEB6
+RXReadPort|kept|arrived while waiting|1	kept
+RXReadPort|popped|arrived while waiting|1	$00000000
+RXReadPort|message|arrived while waiting|1	$00000001
+RXReadPort|message as expected|arrived while waiting|1	$00000001
+RXNumArgs|kept|arrived while waiting|1	kept
+RXNumArgs|popped|arrived while waiting|1	$00000000
+RXNumArgs|d0|arrived while waiting|1	$00000003
+RXGetArg|kept|arrived while waiting arg 0|1	kept
+RXGetArg|popped|arrived while waiting arg 0|1	$00000000
+RXGetArg|d0|arrived while waiting arg 0|1	$00000000
+RXGetArg|a3|arrived while waiting arg 0|1	$00000010
+RXGetArg|string area|arrived while waiting arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 1|1	kept
+RXGetArg|popped|arrived while waiting arg 1|1	$00000000
+RXGetArg|d0|arrived while waiting arg 1|1	$00000007
+RXGetArg|a3|arrived while waiting arg 1|1	$00000017
+RXGetArg|string area|arrived while waiting arg 1|1	bytes 1024 fnv B7D400B5
+RXGetArg|kept|arrived while waiting arg 2|1	kept
+RXGetArg|popped|arrived while waiting arg 2|1	$00000000
+RXGetArg|d0|arrived while waiting arg 2|1	$00000005
+RXGetArg|a3|arrived while waiting arg 2|1	$00000015
+RXGetArg|string area|arrived while waiting arg 2|1	bytes 1024 fnv C3D4D88E
+RXGetArg|kept|arrived while waiting arg 3|1	kept
+RXGetArg|popped|arrived while waiting arg 3|1	$00000000
+RXGetArg|d0|arrived while waiting arg 3|1	$00000007
+RXGetArg|a3|arrived while waiting arg 3|1	$00000017
+RXGetArg|string area|arrived while waiting arg 3|1	bytes 1024 fnv 676A7E68
+RXGetArg|kept|arrived while waiting arg 4|1	kept
+RXGetArg|popped|arrived while waiting arg 4|1	$00000000
+RXGetArg|d0|arrived while waiting arg 4|1	$00000000
+RXGetArg|a3|arrived while waiting arg 4|1	$00000010
+RXGetArg|string area|arrived while waiting arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 5|1	kept
+RXGetArg|popped|arrived while waiting arg 5|1	$00000000
+RXGetArg|d0|arrived while waiting arg 5|1	$00000000
+RXGetArg|a3|arrived while waiting arg 5|1	$00000010
+RXGetArg|string area|arrived while waiting arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 6|1	kept
+RXGetArg|popped|arrived while waiting arg 6|1	$00000000
+RXGetArg|d0|arrived while waiting arg 6|1	$00000000
+RXGetArg|a3|arrived while waiting arg 6|1	$00000010
+RXGetArg|string area|arrived while waiting arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 7|1	kept
+RXGetArg|popped|arrived while waiting arg 7|1	$00000000
+RXGetArg|d0|arrived while waiting arg 7|1	$00000000
+RXGetArg|a3|arrived while waiting arg 7|1	$00000010
+RXGetArg|string area|arrived while waiting arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 8|1	kept
+RXGetArg|popped|arrived while waiting arg 8|1	$00000000
+RXGetArg|d0|arrived while waiting arg 8|1	$00000000
+RXGetArg|a3|arrived while waiting arg 8|1	$00000010
+RXGetArg|string area|arrived while waiting arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 9|1	kept
+RXGetArg|popped|arrived while waiting arg 9|1	$00000000
+RXGetArg|d0|arrived while waiting arg 9|1	$00000000
+RXGetArg|a3|arrived while waiting arg 9|1	$00000010
+RXGetArg|string area|arrived while waiting arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 10|1	kept
+RXGetArg|popped|arrived while waiting arg 10|1	$00000000
+RXGetArg|d0|arrived while waiting arg 10|1	$00000000
+RXGetArg|a3|arrived while waiting arg 10|1	$00000010
+RXGetArg|string area|arrived while waiting arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 11|1	kept
+RXGetArg|popped|arrived while waiting arg 11|1	$00000000
+RXGetArg|d0|arrived while waiting arg 11|1	$00000000
+RXGetArg|a3|arrived while waiting arg 11|1	$00000010
+RXGetArg|string area|arrived while waiting arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 12|1	kept
+RXGetArg|popped|arrived while waiting arg 12|1	$00000000
+RXGetArg|d0|arrived while waiting arg 12|1	$00000000
+RXGetArg|a3|arrived while waiting arg 12|1	$00000010
+RXGetArg|string area|arrived while waiting arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 13|1	kept
+RXGetArg|popped|arrived while waiting arg 13|1	$00000000
+RXGetArg|d0|arrived while waiting arg 13|1	$00000000
+RXGetArg|a3|arrived while waiting arg 13|1	$00000010
+RXGetArg|string area|arrived while waiting arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 14|1	kept
+RXGetArg|popped|arrived while waiting arg 14|1	$00000000
+RXGetArg|d0|arrived while waiting arg 14|1	$00000000
+RXGetArg|a3|arrived while waiting arg 14|1	$00000010
+RXGetArg|string area|arrived while waiting arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 15|1	kept
+RXGetArg|popped|arrived while waiting arg 15|1	$00000000
+RXGetArg|d0|arrived while waiting arg 15|1	$00000000
+RXGetArg|a3|arrived while waiting arg 15|1	$00000010
+RXGetArg|string area|arrived while waiting arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 16|1	kept
+RXGetArg|popped|arrived while waiting arg 16|1	$00000000
+RXGetArg|d0|arrived while waiting arg 16|1	$00000000
+RXGetArg|a3|arrived while waiting arg 16|1	$00000010
+RXGetArg|string area|arrived while waiting arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|arrived while waiting arg 17|1	kept
+RXGetArg|popped|arrived while waiting arg 17|1	$00000000
+RXGetArg|d0|arrived while waiting arg 17|1	$00000000
+RXGetArg|a3|arrived while waiting arg 17|1	$00000010
+RXGetArg|string area|arrived while waiting arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|arrived while waiting next 0|1	kept
+RXNextArg|popped|arrived while waiting next 0|1	$00000000
+RXNextArg|d0|arrived while waiting next 0|1	$00000007
+RXNextArg|a3|arrived while waiting next 0|1	$00000017
+RXNextArg|string area|arrived while waiting next 0|1	bytes 1024 fnv B7D400B5
+RXNextArg|kept|arrived while waiting next 1|1	kept
+RXNextArg|popped|arrived while waiting next 1|1	$00000000
+RXNextArg|d0|arrived while waiting next 1|1	$00000005
+RXNextArg|a3|arrived while waiting next 1|1	$00000015
+RXNextArg|string area|arrived while waiting next 1|1	bytes 1024 fnv C3D4D88E
+RXNextArg|kept|arrived while waiting next 2|1	kept
+RXNextArg|popped|arrived while waiting next 2|1	$00000000
+RXNextArg|d0|arrived while waiting next 2|1	$00000007
+RXNextArg|a3|arrived while waiting next 2|1	$00000017
+RXNextArg|string area|arrived while waiting next 2|1	bytes 1024 fnv 676A7E68
+RXNextArg|kept|arrived while waiting next 3|1	kept
+RXNextArg|popped|arrived while waiting next 3|1	$00000000
+RXNextArg|d0|arrived while waiting next 3|1	$00000000
+RXNextArg|a3|arrived while waiting next 3|1	$00000010
+RXNextArg|string area|arrived while waiting next 3|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|arrived while waiting|1	kept
+RXSendersName|popped|arrived while waiting|1	$00000000
+RXSendersName|d0|arrived while waiting|1	$00000007
+RXSendersName|a3|arrived while waiting|1	$00000017
+RXSendersName|sender|arrived while waiting|1	$00000001
+RXReturnCode|kept|arrived while waiting|1	kept
+RXReturnCode|popped|arrived while waiting|1	$00000000
+RXReturnCode|d0|arrived while waiting|1	$00000000
+RXReturnCode|kept|arrived while waiting|2	kept
+RXReturnCode|popped|arrived while waiting|2	$00000000
+RXReturnCode|d0|arrived while waiting|2	$00000000
+RXSendCommand|kept|form 1 RWENOWHERE "cmd" rc 0 res x|1	kept
+RXSendCommand|popped|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
+RXSendCommand|d0|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
+RXSendCommand|a3|form 1 RWENOWHERE "cmd" rc 0 res x|1	$00000000
+RXSendCommand|string area|form 1 RWENOWHERE "cmd" rc 0 res x|1	bytes 1024 fnv FB60F977
+RXDefaultPort|kept|"RWERESP"|1	kept
+RXDefaultPort|popped|"RWERESP"|1	$00000000
+RXSendCommand|kept|form 0  "default send" rc 0 res from the default port|1	kept
+RXSendCommand|popped|form 0  "default send" rc 0 res from the default port|1	$00000000
+RXSendCommand|d0|form 0  "default send" rc 0 res from the default port|1	$00000015
+RXSendCommand|a3|form 0  "default send" rc 0 res from the default port|1	$00000023
+RXSendCommand|string area|form 0  "default send" rc 0 res from the default port|1	bytes 1024 fnv E7DCD6F5
+RXSendCommand|responder got it|form 0  "default send" rc 0 res from the default port|1	$00000001
+RXSendCommand|RXSendCommand default: message|form 0  "default send" rc 0 res from the default port|1	$00000005
+RXSendCommand|type|form 0  "default send" rc 0 res from the default port|1	$00000005
+RXSendCommand|pri|form 0  "default send" rc 0 res from the default port|1	$00000001
+RXSendCommand|length|form 0  "default send" rc 0 res from the default port|1	$00000080
+RXSendCommand|action|form 0  "default send" rc 0 res from the default port|1	$01060000
+RXSendCommand|port|form 0  "default send" rc 0 res from the default port|1	$00000000
+RXSendCommand|port served|form 0  "default send" rc 0 res from the default port|1	$00000001
+RXSendCommand|args|form 0  "default send" rc 0 res from the default port|1	$00000002
+RXSendCommand|ln_Name|form 0  "default send" rc 0 res from the default port|1	$00000001
+RXSendCommand|reply port|form 0  "default send" rc 0 res from the default port|1	$00000001
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|1	bytes 48 64656661756C740000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|2	bytes 48 73656E640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|3	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|4	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|5	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|6	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|7	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|8	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|9	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|10	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|11	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|12	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|13	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|argument|form 0  "default send" rc 0 res from the default port|16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXSendCommand|kept|form 0  "empty result" rc 0 res |1	kept
+RXSendCommand|popped|form 0  "empty result" rc 0 res |1	$00000000
+RXSendCommand|d0|form 0  "empty result" rc 0 res |1	$00000000
+RXSendCommand|a3|form 0  "empty result" rc 0 res |1	$0000000E
+RXSendCommand|string area|form 0  "empty result" rc 0 res |1	bytes 1024 fnv F0632337
+RXExecuteScript|kept||1	kept
+RXExecuteScript|popped||1	$00000000
+RXExecuteScript|responder got it||1	$00000001
+RXExecuteScript|RXExecuteScript: message||1	$00000007
+RXExecuteScript|type||1	$00000005
+RXExecuteScript|pri||1	$00000001
+RXExecuteScript|length||1	$00000080
+RXExecuteScript|action||1	$01040000
+RXExecuteScript|port||1	$00000001
+RXExecuteScript|port served||1	$00000001
+RXExecuteScript|args||1	$00000001
+RXExecuteScript|ln_Name||1	$00000001
+RXExecuteScript|reply port||1	$00000001
+RXExecuteScript|argument||1	bytes 48 52414D3A7363726970742E72657878000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||2	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||3	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||4	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||5	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||6	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||7	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||8	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||9	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||10	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||11	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||12	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||13	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|argument||16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXExecuteScript|RXCOMM\|RXFF_STRING||1	$00000001
+RXRunScript|kept||1	kept
+RXRunScript|popped||1	$00000000
+RXRunScript|responder got it||1	$00000001
+RXRunScript|RXRunScript: message||1	$00000008
+RXRunScript|type||1	$00000005
+RXRunScript|pri||1	$00000001
+RXRunScript|length||1	$00000080
+RXRunScript|action||1	$01040000
+RXRunScript|port||1	$00000001
+RXRunScript|port served||1	$00000001
+RXRunScript|args||1	$00000001
+RXRunScript|ln_Name||1	$00000001
+RXRunScript|reply port||1	$00000001
+RXRunScript|argument||1	bytes 48 52414D3A7363726970742E72657878000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||2	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||3	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||4	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||5	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||6	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||7	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||8	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||9	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||10	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||11	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||12	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||13	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||14	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||15	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXRunScript|argument||16	bytes 48 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+RXReadPort|kept|the script replies|1	kept
+RXReadPort|popped|the script replies|1	$00000000
+RXReadPort|message|the script replies|1	$00000000
+RXReadPort|message as expected|the script replies|1	$00000001
+RXReadPort|kept|test message|1	kept
+RXReadPort|popped|test message|1	$00000000
+RXReadPort|message|test message|1	$00000001
+RXReadPort|message as expected|test message|1	$00000001
+RXNumArgs|kept|test message|1	kept
+RXNumArgs|popped|test message|1	$00000000
+RXNumArgs|d0|test message|1	$00000002
+RXGetArg|kept|test message arg 0|1	kept
+RXGetArg|popped|test message arg 0|1	$00000000
+RXGetArg|d0|test message arg 0|1	$00000000
+RXGetArg|a3|test message arg 0|1	$00000010
+RXGetArg|string area|test message arg 0|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 1|1	kept
+RXGetArg|popped|test message arg 1|1	$00000000
+RXGetArg|d0|test message arg 1|1	$00000004
+RXGetArg|a3|test message arg 1|1	$00000014
+RXGetArg|string area|test message arg 1|1	bytes 1024 fnv B62D8FAF
+RXGetArg|kept|test message arg 2|1	kept
+RXGetArg|popped|test message arg 2|1	$00000000
+RXGetArg|d0|test message arg 2|1	$00000008
+RXGetArg|a3|test message arg 2|1	$00000018
+RXGetArg|string area|test message arg 2|1	bytes 1024 fnv 43BD8CDA
+RXGetArg|kept|test message arg 3|1	kept
+RXGetArg|popped|test message arg 3|1	$00000000
+RXGetArg|d0|test message arg 3|1	$00000000
+RXGetArg|a3|test message arg 3|1	$00000010
+RXGetArg|string area|test message arg 3|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 4|1	kept
+RXGetArg|popped|test message arg 4|1	$00000000
+RXGetArg|d0|test message arg 4|1	$00000000
+RXGetArg|a3|test message arg 4|1	$00000010
+RXGetArg|string area|test message arg 4|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 5|1	kept
+RXGetArg|popped|test message arg 5|1	$00000000
+RXGetArg|d0|test message arg 5|1	$00000000
+RXGetArg|a3|test message arg 5|1	$00000010
+RXGetArg|string area|test message arg 5|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 6|1	kept
+RXGetArg|popped|test message arg 6|1	$00000000
+RXGetArg|d0|test message arg 6|1	$00000000
+RXGetArg|a3|test message arg 6|1	$00000010
+RXGetArg|string area|test message arg 6|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 7|1	kept
+RXGetArg|popped|test message arg 7|1	$00000000
+RXGetArg|d0|test message arg 7|1	$00000000
+RXGetArg|a3|test message arg 7|1	$00000010
+RXGetArg|string area|test message arg 7|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 8|1	kept
+RXGetArg|popped|test message arg 8|1	$00000000
+RXGetArg|d0|test message arg 8|1	$00000000
+RXGetArg|a3|test message arg 8|1	$00000010
+RXGetArg|string area|test message arg 8|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 9|1	kept
+RXGetArg|popped|test message arg 9|1	$00000000
+RXGetArg|d0|test message arg 9|1	$00000000
+RXGetArg|a3|test message arg 9|1	$00000010
+RXGetArg|string area|test message arg 9|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 10|1	kept
+RXGetArg|popped|test message arg 10|1	$00000000
+RXGetArg|d0|test message arg 10|1	$00000000
+RXGetArg|a3|test message arg 10|1	$00000010
+RXGetArg|string area|test message arg 10|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 11|1	kept
+RXGetArg|popped|test message arg 11|1	$00000000
+RXGetArg|d0|test message arg 11|1	$00000000
+RXGetArg|a3|test message arg 11|1	$00000010
+RXGetArg|string area|test message arg 11|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 12|1	kept
+RXGetArg|popped|test message arg 12|1	$00000000
+RXGetArg|d0|test message arg 12|1	$00000000
+RXGetArg|a3|test message arg 12|1	$00000010
+RXGetArg|string area|test message arg 12|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 13|1	kept
+RXGetArg|popped|test message arg 13|1	$00000000
+RXGetArg|d0|test message arg 13|1	$00000000
+RXGetArg|a3|test message arg 13|1	$00000010
+RXGetArg|string area|test message arg 13|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 14|1	kept
+RXGetArg|popped|test message arg 14|1	$00000000
+RXGetArg|d0|test message arg 14|1	$00000000
+RXGetArg|a3|test message arg 14|1	$00000010
+RXGetArg|string area|test message arg 14|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 15|1	kept
+RXGetArg|popped|test message arg 15|1	$00000000
+RXGetArg|d0|test message arg 15|1	$00000000
+RXGetArg|a3|test message arg 15|1	$00000010
+RXGetArg|string area|test message arg 15|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 16|1	kept
+RXGetArg|popped|test message arg 16|1	$00000000
+RXGetArg|d0|test message arg 16|1	$00000000
+RXGetArg|a3|test message arg 16|1	$00000010
+RXGetArg|string area|test message arg 16|1	bytes 1024 fnv 472C7DC5
+RXGetArg|kept|test message arg 17|1	kept
+RXGetArg|popped|test message arg 17|1	$00000000
+RXGetArg|d0|test message arg 17|1	$00000000
+RXGetArg|a3|test message arg 17|1	$00000010
+RXGetArg|string area|test message arg 17|1	bytes 1024 fnv 472C7DC5
+RXNextArg|kept|test message next 0|1	kept
+RXNextArg|popped|test message next 0|1	$00000000
+RXNextArg|d0|test message next 0|1	$00000004
+RXNextArg|a3|test message next 0|1	$00000014
+RXNextArg|string area|test message next 0|1	bytes 1024 fnv B62D8FAF
+RXNextArg|kept|test message next 1|1	kept
+RXNextArg|popped|test message next 1|1	$00000000
+RXNextArg|d0|test message next 1|1	$00000008
+RXNextArg|a3|test message next 1|1	$00000018
+RXNextArg|string area|test message next 1|1	bytes 1024 fnv 43BD8CDA
+RXNextArg|kept|test message next 2|1	kept
+RXNextArg|popped|test message next 2|1	$00000000
+RXNextArg|d0|test message next 2|1	$00000000
+RXNextArg|a3|test message next 2|1	$00000010
+RXNextArg|string area|test message next 2|1	bytes 1024 fnv 472C7DC5
+RXSendersName|kept|test message|1	kept
+RXSendersName|popped|test message|1	$00000000
+RXSendersName|d0|test message|1	$00000007
+RXSendersName|a3|test message|1	$00000017
+RXSendersName|sender|test message|1	$00000001
+RXReturnCode|kept|test message|1	kept
+RXReturnCode|popped|test message|1	$00000000
+RXReturnCode|d0|test message|1	$00000000
+RXReplyMsg|kept|to the test 0 answer|1	kept
+RXReplyMsg|popped|to the test 0 answer|1	$00000000
+RXReplyMsg|replies|to the test 0 answer|1	$00000001
+RXReadPort|kept|sender gone|1	kept
+RXReadPort|popped|sender gone|1	$00000000
+RXReadPort|message|sender gone|1	$00000001
+RXReadPort|message as expected|sender gone|1	$00000001
+RXReplyMsg|kept|sender gone 0 lost|1	kept
+RXReplyMsg|popped|sender gone 0 lost|1	$00000000
+RXReplyMsg|replies|sender gone 0 lost|1	$00000001
+RXDeletePort|kept|2 queued|1	kept
+RXDeletePort|popped|2 queued|1	$00000000
+RXDeletePort|replies|2 queued|1	$00000001
+RXDeletePort|port gone|2 queued|1	$00000001
+RXDeletePort|kept|no port|1	kept
+RXDeletePort|popped|no port|1	$00000000
+RXCreatePort|kept|for finit|1	kept
+RXCreatePort|popped|for finit|1	$00000000
+RXCreatePort|the port|for finit|1	$00000001
+finit|kept|with a port|1	kept
+finit|popped|with a port|1	$00000000
+finit|port gone|with a port|1	$00000001
+init|kept|again|1	kept
+init|popped|again|1	$00000000
+RXRunCommand|kept|default "to REXXE"|1	kept
+RXRunCommand|popped|default "to REXXE"|1	$00000000
+RXRunCommand|sent|default "to REXXE"|1	$00000001
+RXRunCommand|REXXE missing: 0|default "to REXXE"|1	$00000000
+finit|kept||1	kept
+finit|popped||1	$00000000

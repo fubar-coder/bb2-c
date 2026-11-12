@@ -1,23 +1,25 @@
 /*
- * rwe ridatatypeslib - the DataTypes library: the C build against the
+ * rwe ridatatypeslib - the DataTypes library: the C build or the
  * reference build of rwelibsrc/datatypeslib6.bb (ridatatypeslib.orig,
- * ref/ridatatypeslib.obj of ctest rwe_refbuild), method of rwecmp.h.
+ * ref/ridatatypeslib.obj of ctest rwe_refbuild), one set as LIBSET says,
+ * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ridatatypeslib.txt).
  *
  *   ridatatypeslib DIR   (DIR with ridatatypeslib.obj/.orig)
  *
  * The test writes a small ILBM picture (16x8, 2 planes, 4 colours) and a
- * text file to RAM: and lets both sets work on them through the system's
- * datatypes.library (ilbm.datatype, ascii.datatype), each set with its
- * own string area (a3), window (opened on the Workbench screen, the
- * windowslib object in a0), palette object, tag lists and argument stack.
- * memlib is replaced by stubs (sysload_stubs: AllocMem/FreeMem, sizes and
- * flags logged).  Compared: d0 (word results: the low word; addresses:
+ * text file to RAM: and lets the library work on them through the
+ * system's datatypes.library (ilbm.datatype, ascii.datatype), with a
+ * string area (a3), a window (opened on the Workbench screen, the
+ * windowslib object in a0), a palette object, tag lists and an argument
+ * stack.  memlib is replaced by stubs (sysload_stubs: AllocMem/FreeMem,
+ * sizes and flags logged).  Observed: d0 (word results: the low word; addresses:
  * not 0, or the library's buffer), a3 and the string area, the
  * BitMapHeader, the library's tag buffer after every command that fills
  * it, the values GetDataTypeAttr returns, the palette and tag list a
- * command writes, the memlib calls and every register the original keeps.
- * DataTypeReady is waited for on each set (the layout runs in its own
- * process: not compared call by call).
+ * command writes, the memlib calls and the kept registers.
+ * DataTypeReady is waited for (the layout runs in its own process: not
+ * observed call by call).
  *
  * Covered: every command and form before DataTypeOpen (nothing, 0);
  * DataTypeCreate without a file (BUG(orig) (#601): no check, name ""); a
@@ -40,6 +42,7 @@
  * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127
  * pairs, names over 383 characters.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #define __NOLIBBASE__
 #define INTUITION_BASE_NAME TIntui
@@ -65,19 +68,19 @@ enum { E_OPEN, E_CLOSE, E_NAME, E_BASENAME, E_ID, E_CREATE, E_ATTACH, E_DETACH, 
 
 /* ------------------------------------------------------------ memlib */
 
-static struct { ULONG op, size, flags; } mlog[2][8];
-static int nlog[2];
+static struct { ULONG op, size, flags; } mlog[8];
+static int nlog;
 
 static ULONG __attribute__((used)) st_globalloc_c(ULONG size, ULONG flags)
 {
     ULONG *p;
 
-    if (nlog[cur] < 8) {
-        mlog[cur][nlog[cur]].op = 1;
-        mlog[cur][nlog[cur]].size = size;
-        mlog[cur][nlog[cur]].flags = flags;
+    if (nlog < 8) {
+        mlog[nlog].op = 1;
+        mlog[nlog].size = size;
+        mlog[nlog].flags = flags;
     }
-    nlog[cur]++;
+    nlog++;
     p = AllocMem(size + 8, flags);
     if (!p)
         return 0;
@@ -87,12 +90,12 @@ static ULONG __attribute__((used)) st_globalloc_c(ULONG size, ULONG flags)
 
 static void __attribute__((used)) st_globfree_c(ULONG mem, ULONG size)
 {
-    if (nlog[cur] < 8) {
-        mlog[cur][nlog[cur]].op = 2;
-        mlog[cur][nlog[cur]].size = size;
-        mlog[cur][nlog[cur]].flags = mem != 0;
+    if (nlog < 8) {
+        mlog[nlog].op = 2;
+        mlog[nlog].size = size;
+        mlog[nlog].flags = mem != 0;
     }
-    nlog[cur]++;
+    nlog++;
     if (mem)
         FreeMem((ULONG *)mem - 2, ((ULONG *)mem)[-2]);
 }
@@ -130,12 +133,12 @@ static void same_mlog(void)
     int i;
     char buf[30];
 
-    SAME("memlib calls", nlog[cur]);
-    for (i = 0; i < nlog[0] && i < nlog[1] && i < 8; i++) {
+    OBS("memlib calls", nlog);
+    for (i = 0; i < nlog && i < 8; i++) {
         sprintf(buf, "memlib call %d", i);
-        SAME(buf, mlog[cur][i].op);
-        SAME(buf, mlog[cur][i].size);
-        SAME(buf, mlog[cur][i].flags);
+        OBS(buf, mlog[i].op);
+        OBS(buf, mlog[i].size);
+        OBS(buf, mlog[i].flags);
     }
 }
 
@@ -169,30 +172,29 @@ static BOOL writefile(const char *name, const void *data, LONG len)
 /* ------------------------------------------------------------ helpers */
 
 #define AREA 256
-static UBYTE area[2][AREA];             /* the string area (a3) */
-static char nbuf[2][64];                /* file names */
-static struct Window *win[2];
-static ULONG winobj[2][2];              /* windowslib object: the Window */
-static UBYTE paldata[2][4 + 12 * 4];
-static ULONG palobj[2][2];              /* palettelib object: the data */
-static ULONG tags[2][16];               /* tag lists of the test */
-static ULONG stk[2][8];                 /* the argument stack (a2) */
-static ULONG *store[2];                 /* the library's tag buffer */
+static UBYTE area[AREA];                /* the string area (a3) */
+static char nbuf[64];                   /* file names */
+static struct Window *win;
+static ULONG winobj[2];                 /* windowslib object: the Window */
+static UBYTE paldata[4 + 12 * 4];
+static ULONG palobj[2];                 /* palettelib object: the data */
+static ULONG tags[16];                  /* tag lists of the test */
+static ULONG stk[8];                    /* the argument stack (a2) */
+static ULONG *store;                    /* the library's tag buffer */
 
 static void fillarea(void)
 {
-    int s, i;
-    for (s = 0; s < 2; s++)
-        for (i = 0; i < AREA; i++)
-            area[s][i] = (UBYTE)(0xA0 ^ i);
+    int i;
+    for (i = 0; i < AREA; i++)
+        area[i] = (UBYTE)(0xA0 ^ i);
 }
 
 /* a call without arguments, d0 compared (mask: the bits that count) */
 static void call0(const char *rout, int idx, int form, ULONG mask)
 {
     ROUT = rout;
-    DO2(ENT(LIB, idx, form), (void)0);
-    SAME("d0", R[cur].d[0] & mask);
+    DO1(ENT(LIB, idx, form), (void)0);
+    OBS("d0", R.d[0] & mask);
     same_mlog();
 }
 
@@ -201,10 +203,10 @@ static void callstr(const char *rout, int idx)
 {
     fillarea();
     ROUT = rout;
-    DO2(ENT(LIB, idx, 0), R[cur].a[3] = (ULONG)area[cur]);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)area[cur]);
-    SAMEBYTES("string area", area, AREA);
+    DO1(ENT(LIB, idx, 0), R.a[3] = (ULONG)area);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)area);
+    OBSBYTES("string area", area, AREA);
 }
 
 static void strings(void)
@@ -215,38 +217,33 @@ static void strings(void)
     callstr("DataTypeGroup", E_GROUP);
 }
 
-/* the area begins with the string s (and its 0) in both sets */
+/* the area begins with the string s (and its 0) */
 static void areais(const char *s)
 {
-    BOTH(s, memcmp(area[cur], s, strlen(s) + 1) == 0);
+    BOTH(s, memcmp(area, s, strlen(s) + 1) == 0);
 }
 
 /* DataTypeOpen name: `ok` = a DataType expected */
 static void open(const char *name, BOOL ok)
 {
-    int s;
-
-    for (s = 0; s < 2; s++)
-        strcpy(nbuf[s], name);
+    strcpy(nbuf, name);
     ROUT = "DataTypeOpen";
     strcpy(VEC, name);
-    DO2(ENT(LIB, E_OPEN, 0), R[cur].d[0] = (ULONG)nbuf[cur]);
-    BOTH(ok ? "d0 not 0" : "d0 0", (R[cur].d[0] != 0) == ok);
+    DO1(ENT(LIB, E_OPEN, 0), R.d[0] = (ULONG)nbuf);
+    BOTH(ok ? "d0 not 0" : "d0 0", (R.d[0] != 0) == ok);
     BOTH("d0 a DataType",
-         !R[cur].d[0] || ((struct DataType *)R[cur].d[0])->dtn_Header != NULL);
+         !R.d[0] || ((struct DataType *)R.d[0])->dtn_Header != NULL);
     strcpy(VEC, "");
 }
 
-/* the library's tag buffer: n longs the same */
+/* the library's tag buffer: n longs */
 static void same_store(const char *what, int n)
 {
-    ULONG *x[2] = { store[0], store[1] };
-
-    if (!store[0] || !store[1]) {
-        fail("no tag buffer", 0, 0);
+    if (!store) {
+        check("no tag buffer", FALSE);
         return;
     }
-    SAMEBYTES(what, x, (ULONG)n * 4);
+    OBSBYTES(what, store, (ULONG)n * 4);
 }
 
 /* GetDataTypeAttr(attr): the address of the buffer and the value */
@@ -254,51 +251,43 @@ static void getattr(ULONG attr)
 {
     ROUT = "GetDataTypeAttr";
     sprintf(VEC, "attr $%08lX", attr);
-    DO2(ENT(LIB, E_GETATTR, 0), R[cur].d[0] = attr);
-    BOTH("d0 not 0", R[cur].d[0] != 0);
-    for (cur = 0; cur < 2; cur++)
-        store[cur] = (ULONG *)R[cur].d[0];
-    SAME("value", store[cur] ? store[cur][0] : 0xdeadbeef);
+    DO1(ENT(LIB, E_GETATTR, 0), R.d[0] = attr);
+    BOTH("d0 not 0", R.d[0] != 0);
+    store = (ULONG *)R.d[0];
+    OBS("value", store ? store[0] : 0xdeadbeef);
     strcpy(VEC, "");
 }
 
-/* the bitmap header the library has, the same in both sets */
+/* the bitmap header the library has */
 static void same_bmh(void)
 {
-    UBYTE *x[2];
-
     ROUT = "DataTypeBitmap";
-    DO2(ENT(LIB, E_BITMAP, 0), (void)0);
-    BOTH("d0 not 0", R[cur].d[0] != 0);
-    if (!R[0].d[0] || !R[1].d[0])
+    DO1(ENT(LIB, E_BITMAP, 0), (void)0);
+    BOTH("d0 not 0", R.d[0] != 0);
+    if (!R.d[0])
         return;
-    x[0] = (UBYTE *)R[0].d[0];
-    x[1] = (UBYTE *)R[1].d[0];
-    SAMEBYTES("BitMapHeader", x, sizeof(struct BitMapHeader));
+    OBSBYTES("BitMapHeader", (UBYTE *)R.d[0], sizeof(struct BitMapHeader));
 }
 
-/* wait for the layout of each set (DataTypeReady) */
+/* wait for the layout (DataTypeReady) */
 static void ready(void)
 {
     int i;
-    ULONG ok[2];
+    ULONG ok = 0;
 
     ROUT = "DataTypeReady";
-    for (cur = 0; cur < 2; cur++) {
-        ok[cur] = 0;
-        for (i = 0; i < 100 && !ok[cur]; i++) {
-            struct regs r;
-            ULONG popped;
+    for (i = 0; i < 100 && !ok; i++) {
+        struct regs r;
+        ULONG popped;
 
-            markregs(&r);
-            callstk(ENT(LIB, E_READY, 0), &r, NULL, 0, &popped);
-            ok[cur] = (r.d[0] & 0xffff) == 0xffff;
-            if (!ok[cur])
-                Delay(2);
-        }
+        markregs(&r);
+        callstk(ENT(LIB, E_READY, 0), &r, NULL, 0, &popped);
+        ok = (r.d[0] & 0xffff) == 0xffff;
+        if (!ok)
+            Delay(2);
     }
-    BOTH("layout done", ok[cur]);
-    /* once more, compared */
+    BOTH("layout done", ok);
+    /* once more, observed */
     call0("DataTypeReady", E_READY, 0, 0xffff);
 }
 
@@ -321,54 +310,49 @@ static void nothing(void)
     call0("DataTypeReady", E_READY, 0, 0xffff);
     call0("DataTypeModeID", E_MODEID, 0, ~0UL);
     ROUT = "DataTypeModeID tags";
-    DO2(ENT(LIB, E_MODEID, 1), R[cur].d[0] = (ULONG)tags[cur]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_MODEID, 1), R.d[0] = (ULONG)tags);
+    OBS("d0", R.d[0]);
     call0("GetDataTypeAttr", E_GETATTR, 0, ~0UL);
     ROUT = "DataTypeCreate tags";
-    DO2(ENT(LIB, E_CREATE, 1), R[cur].d[0] = (ULONG)tags[cur]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_CREATE, 1), R.d[0] = (ULONG)tags);
+    OBS("d0", R.d[0]);
     ROUT = "DataTypesPalette";
-    DO2(ENT(LIB, E_PALETTE, 0), R[cur].d[0] = WA(1); R[cur].a[0] = (ULONG)palobj[cur]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_PALETTE, 0), R.d[0] = WA(1); R.a[0] = (ULONG)palobj);
+    OBS("d0", R.d[0]);
     ROUT = "SetDataTypeAttr";
-    DO2(ENT(LIB, E_SETATTR, 0), R[cur].d[0] = (ULONG)tags[cur]);
+    DO1(ENT(LIB, E_SETATTR, 0), R.d[0] = (ULONG)tags);
     for (f = 0; f < 3; f++) {
         ROUT = "AttachDataType";
         sprintf(VEC, "form %d", f);
-        DO2(ENT(LIB, E_ATTACH, f), R[cur].d[0] = WA(0); R[cur].d[1] = 7;
-            R[cur].a[0] = (ULONG)winobj[cur]);
-        SAME("d0", R[cur].d[0] & 0xffff);
+        DO1(ENT(LIB, E_ATTACH, f), R.d[0] = WA(0); R.d[1] = 7;
+            R.a[0] = (ULONG)winobj);
+        OBS("d0", R.d[0] & 0xffff);
     }
     strcpy(VEC, "");
     detach();
     call0("DataTypeClose", E_CLOSE, 0, 0);
 }
 
-/* the tag list of the test in both sets */
+/* the tag list of the test */
 static void settags(const ULONG *t, int n)
 {
-    int s;
-    for (s = 0; s < 2; s++)
-        memcpy(tags[s], t, (ULONG)n * 4);
+    memcpy(tags, t, (ULONG)n * 4);
 }
 
 static void palette(UWORD n)
 {
-    int s, i;
-    UBYTE *x[2] = { paldata[0], paldata[1] };
+    int i;
 
-    for (s = 0; s < 2; s++) {
-        for (i = 0; i < (int)sizeof paldata[0]; i++)
-            paldata[s][i] = (UBYTE)(0x11 * i + 3);
-        *(UWORD *)paldata[s] = n;
-        *(UWORD *)(paldata[s] + 2) = 0;
-    }
+    for (i = 0; i < (int)sizeof paldata; i++)
+        paldata[i] = (UBYTE)(0x11 * i + 3);
+    *(UWORD *)paldata = n;
+    *(UWORD *)(paldata + 2) = 0;
     ROUT = "DataTypesPalette";
     sprintf(VEC, "%u colours", n);
-    DO2(ENT(LIB, E_PALETTE, 0), R[cur].d[0] = WA(1); R[cur].a[0] = (ULONG)palobj[cur]);
-    BOTH("d0 = the buffer", R[cur].d[0] == (ULONG)store[cur]);
-    SAMEBYTES("palette", x, sizeof paldata[0]);
-    BOTH("colour 1 red", paldata[cur][4 + 12] == 0xff && paldata[cur][4 + 12 + 4] == 0);
+    DO1(ENT(LIB, E_PALETTE, 0), R.d[0] = WA(1); R.a[0] = (ULONG)palobj);
+    BOTH("d0 = the buffer", R.d[0] == (ULONG)store);
+    OBSBYTES("palette", paldata, sizeof paldata);
+    BOTH("colour 1 red", paldata[4 + 12] == 0xff && paldata[4 + 12 + 4] == 0);
     strcpy(VEC, "");
 }
 
@@ -376,8 +360,6 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
     ULONG t[16];
-    int s;
-    ULONG *x[2];
 
     if (argc < 2) {
         printf("usage: ridatatypeslib DIR\n");
@@ -392,30 +374,54 @@ int main(int argc, char **argv)
         return 20;
     }
     sysload_stubs = stubs;
-    if (!load_sets(argv[1], names)) {
+    if (!load_set(argv[1], names)) {
         sysload_stubs = NULL;
         return 20;
     }
     sysload_stubs = NULL;
-    for (s = 0; s < 2; s++) {
+    KEEPS("init", d2-d7|a3);
+    KEEPS("DataTypeName", d1-d7|a1|a2|a6);
+    KEEPS("DataTypeBaseName", d1-d7|a1|a2|a6);
+    KEEPS("DataTypeID", d2-d7|a1|a2|a6);
+    KEEPS("DataTypeGroup", d2-d7|a1|a2|a6);
+    KEEPS("DataTypeSuper", d1-d7|a1|a2|a6);
+    KEEPS("DataTypeBitmap", d2-d7|a2|a3);
+    KEEPS("DataTypeWidth", d1-d7|a1-a3|a6);
+    KEEPS("DataTypeHeight", d1-d7|a1-a3|a6);
+    KEEPS("DataTypeDepth", d1-d7|a1-a3|a6);
+    KEEPS("DataTypeReady", d2-d7|a2|a3);
+    KEEPS("DataTypeModeID", d2-d7|a2|a3);
+    KEEPS("DataTypeModeID tags", d2-d7|a2|a3);
+    KEEPS("GetDataTypeAttr", d2-d7|a2|a3);
+    KEEPS("DataTypeCreate tags", d2-d7|a2|a3);
+    KEEPS("DataTypesPalette", d2|d4-d7|a2|a3);
+    KEEPS("SetDataTypeAttr", d2-d7|a2|a3);
+    KEEPS("AttachDataType", d2-d7|a3);
+    KEEPS("DetachDataType", d2-d7|a2|a3);
+    KEEPS("DataTypeClose", d2-d7|a2|a3);
+    KEEPS("DataTypeCreate", d2-d7|a2|a3);
+    KEEPS("DataTypeOpen", d3-d7|a2|a3);
+    KEEPS("SetDataTypeAttr pairs", d2-d6|a3);
+    KEEPS("finit", d2-d7|a3);
+    {
         struct TagItem wt[] = {
-            { WA_Left, 20 + 220 * s }, { WA_Top, 20 }, { WA_Width, 200 }, { WA_Height, 80 },
-            { WA_Title, (ULONG)(s ? "rwedt C" : "rwedt orig") }, { WA_IDCMP, 0 },
+            { WA_Left, 20 }, { WA_Top, 20 }, { WA_Width, 200 }, { WA_Height, 80 },
+            { WA_Title, (ULONG)"rwedt" }, { WA_IDCMP, 0 },
             { TAG_DONE, 0 }
         };
-        win[s] = OpenWindowTagList(NULL, wt);
-        if (!win[s]) {
-            check("ridatatypeslib: open the windows", FALSE);
+        win = OpenWindowTagList(NULL, wt);
+        if (!win) {
+            check("ridatatypeslib: open the window", FALSE);
             return 20;
         }
-        winobj[s][0] = (ULONG)win[s];
-        palobj[s][0] = (ULONG)paldata[s];
+        winobj[0] = (ULONG)win;
+        palobj[0] = (ULONG)paldata;
     }
     DONTCARE = 1;                       /* d0: the result, compared by the test */
     strcpy(VEC, "");
 
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     same_mlog();
 
     /* nothing open */
@@ -423,7 +429,7 @@ int main(int argc, char **argv)
     nothing();
     /* DataTypeCreate without a file: NewDTObject("") */
     call0("DataTypeCreate", E_CREATE, 0, 0);
-    SAME("d0 not 0", R[cur].d[0] != 0);
+    OBS("d0 not 0", R.d[0] != 0);
     call0("DataTypeClose", E_CLOSE, 0, 0);
 
     /* a missing file, the text file */
@@ -443,11 +449,11 @@ int main(int argc, char **argv)
     callstr("DataTypeBaseName", E_BASENAME);
     areais("ilbm");
     callstr("DataTypeID", E_ID);
-    BOTH("ID", R[cur].d[0] == 4 && memcmp(area[cur], "ilbm", 4) == 0);
+    BOTH("ID", R.d[0] == 4 && memcmp(area, "ilbm", 4) == 0);
     callstr("DataTypeGroup", E_GROUP);
-    BOTH("group", R[cur].d[0] == 4 && memcmp(area[cur], "pict", 4) == 0);
+    BOTH("group", R.d[0] == 4 && memcmp(area, "pict", 4) == 0);
     call0("DataTypeCreate", E_CREATE, 0, 0);
-    BOTH("d0 not 0", R[cur].d[0] != 0);
+    BOTH("d0 not 0", R.d[0] != 0);
     callstr("DataTypeSuper", E_SUPER);
     areais("ilbm.datatype");
     getattr(DTA_NominalHoriz);
@@ -456,20 +462,18 @@ int main(int argc, char **argv)
     getattr(TAG_USER + 0x7777);         /* unknown: the buffer as it was */
     same_bmh();
     call0("DataTypeWidth", E_WIDTH, 0, 0xffff);
-    BOTH("width 16", (R[cur].d[0] & 0xffff) == 16);
+    BOTH("width 16", (R.d[0] & 0xffff) == 16);
     call0("DataTypeHeight", E_HEIGHT, 0, 0xffff);
-    BOTH("height 8", (R[cur].d[0] & 0xffff) == 8);
+    BOTH("height 8", (R.d[0] & 0xffff) == 8);
     call0("DataTypeDepth", E_DEPTH, 0, 0xffff);
-    BOTH("depth 2", (R[cur].d[0] & 0xffff) == 2);
+    BOTH("depth 2", (R.d[0] & 0xffff) == 2);
     call0("DataTypeModeID", E_MODEID, 0, ~0UL);
     same_store("tags of DataTypeModeID", 7);
     settags((const ULONG[]){ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 9);
     ROUT = "DataTypeModeID tags";
-    DO2(ENT(LIB, E_MODEID, 1), R[cur].d[0] = (ULONG)tags[cur]);
-    SAME("d0", R[cur].d[0]);
-    x[0] = tags[0];
-    x[1] = tags[1];
-    SAMEBYTES("tag list", x, 9 * 4);
+    DO1(ENT(LIB, E_MODEID, 1), R.d[0] = (ULONG)tags);
+    OBS("d0", R.d[0]);
+    OBSBYTES("tag list", tags, 9 * 4);
     palette(4);
     palette(2);
     getattr(DTA_NominalHoriz);
@@ -477,37 +481,35 @@ int main(int argc, char **argv)
     /* SetDataTypeAttr: a tag list, pairs */
     settags((const ULONG[]){ DTA_TopVert, 1, DTA_TopHoriz, 1, TAG_DONE }, 5);
     ROUT = "SetDataTypeAttr";
-    DO2(ENT(LIB, E_SETATTR, 0), R[cur].d[0] = (ULONG)tags[cur]);
+    DO1(ENT(LIB, E_SETATTR, 0), R.d[0] = (ULONG)tags);
     getattr(DTA_TopVert);
     getattr(DTA_TopHoriz);
-    for (s = 0; s < 2; s++) {
-        stk[s][3] = DTA_TopVert;        /* the first pair: the last pushed */
-        stk[s][2] = 2;
-        stk[s][1] = DTA_TopHoriz;
-        stk[s][0] = 3;
-    }
+    stk[3] = DTA_TopVert;               /* the first pair: the last pushed */
+    stk[2] = 2;
+    stk[1] = DTA_TopHoriz;
+    stk[0] = 3;
     ROUT = "SetDataTypeAttr pairs";
-    DO2(ENT(LIB, E_SETATTR, 1), R[cur].d[7] = WA(1); R[cur].a[2] = (ULONG)&stk[cur][4]);
+    DO1(ENT(LIB, E_SETATTR, 1), R.d[7] = WA(1); R.a[2] = (ULONG)&stk[4]);
     same_store("tags of SetDataTypeAttr 1 pair", 3);
-    DO2(ENT(LIB, E_SETATTR, 1), R[cur].d[7] = WA(2); R[cur].a[2] = (ULONG)&stk[cur][4]);
+    DO1(ENT(LIB, E_SETATTR, 1), R.d[7] = WA(2); R.a[2] = (ULONG)&stk[4]);
     same_store("tags of SetDataTypeAttr 2 pairs", 5);
     getattr(DTA_TopVert);
     getattr(DTA_TopHoriz);
     settags((const ULONG[]){ DTA_TopVert, 0, DTA_TopHoriz, 0, TAG_DONE }, 5);
     ROUT = "SetDataTypeAttr";
-    DO2(ENT(LIB, E_SETATTR, 0), R[cur].d[0] = (ULONG)tags[cur]);
+    DO1(ENT(LIB, E_SETATTR, 0), R.d[0] = (ULONG)tags);
     getattr(DTA_TopVert);
 
     /* AttachDataType window,id */
     ROUT = "AttachDataType";
     strcpy(VEC, "window,id");
-    DO2(ENT(LIB, E_ATTACH, 0), R[cur].d[0] = WA(0); R[cur].d[1] = 7;
-        R[cur].a[0] = (ULONG)winobj[cur]);
-    SAME("d0", R[cur].d[0] & 0xffff);
+    DO1(ENT(LIB, E_ATTACH, 0), R.d[0] = WA(0); R.d[1] = 7;
+        R.a[0] = (ULONG)winobj);
+    OBS("d0", R.d[0] & 0xffff);
     same_store("tags of AttachDataType", 15);
-    DO2(ENT(LIB, E_ATTACH, 0), R[cur].d[0] = WA(0); R[cur].d[1] = 8;
-        R[cur].a[0] = (ULONG)winobj[cur]);
-    SAME("d0 attached", R[cur].d[0] & 0xffff);
+    DO1(ENT(LIB, E_ATTACH, 0), R.d[0] = WA(0); R.d[1] = 8;
+        R.a[0] = (ULONG)winobj);
+    OBS("d0 attached", R.d[0] & 0xffff);
     strcpy(VEC, "");
     ready();
     detach();
@@ -516,10 +518,10 @@ int main(int argc, char **argv)
     /* AttachDataType window,id,x,y,width,height: the upper words */
     ROUT = "AttachDataType";
     strcpy(VEC, "window,id,x,y,w,h");
-    DO2(ENT(LIB, E_ATTACH, 1), R[cur].d[0] = WA(0); R[cur].d[1] = 9;
-        R[cur].d[2] = 0x10004; R[cur].d[3] = 0x20006; R[cur].d[4] = 12; R[cur].d[5] = 5;
-        R[cur].a[0] = (ULONG)winobj[cur]);
-    SAME("d0", R[cur].d[0] & 0xffff);
+    DO1(ENT(LIB, E_ATTACH, 1), R.d[0] = WA(0); R.d[1] = 9;
+        R.d[2] = 0x10004; R.d[3] = 0x20006; R.d[4] = 12; R.d[5] = 5;
+        R.a[0] = (ULONG)winobj);
+    OBS("d0", R.d[0] & 0xffff);
     same_store("tags of AttachDataType", 15);
     strcpy(VEC, "");
     /* (the position outside the window, through the upper words) */
@@ -529,9 +531,9 @@ int main(int argc, char **argv)
     settags((const ULONG[]){ GA_Left, 2, TAG_DONE }, 3);
     ROUT = "AttachDataType";
     strcpy(VEC, "window,id,&taglist");
-    DO2(ENT(LIB, E_ATTACH, 2), R[cur].d[0] = WA(0); R[cur].d[1] = 0;
-        R[cur].d[2] = (ULONG)tags[cur]; R[cur].a[0] = (ULONG)winobj[cur]);
-    SAME("d0", R[cur].d[0] & 0xffff);
+    DO1(ENT(LIB, E_ATTACH, 2), R.d[0] = WA(0); R.d[1] = 0;
+        R.d[2] = (ULONG)tags; R.a[0] = (ULONG)winobj);
+    OBS("d0", R.d[0] & 0xffff);
     same_store("tags of AttachDataType", 7);
     strcpy(VEC, "");
     ready();
@@ -549,16 +551,16 @@ int main(int argc, char **argv)
     t[2] = TAG_DONE;
     settags(t, 3);
     ROUT = "DataTypeCreate tags";
-    DO2(ENT(LIB, E_CREATE, 1), R[cur].d[0] = (ULONG)tags[cur]);
-    SAME("d0 not 0", R[cur].d[0] != 0);
+    DO1(ENT(LIB, E_CREATE, 1), R.d[0] = (ULONG)tags);
+    OBS("d0 not 0", R.d[0] != 0);
     same_bmh();
     ROUT = "AttachDataType";
-    DO2(ENT(LIB, E_ATTACH, 0), R[cur].d[0] = WA(0); R[cur].d[1] = 7;
-        R[cur].a[0] = (ULONG)winobj[cur]);
-    SAME("d0", R[cur].d[0] & 0xffff);
+    DO1(ENT(LIB, E_ATTACH, 0), R.d[0] = WA(0); R.d[1] = 7;
+        R.a[0] = (ULONG)winobj);
+    OBS("d0", R.d[0] & 0xffff);
     ready();
     ROUT = "finit";
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     same_mlog();
     {
         BPTR l = Lock((STRPTR)"RAM:rwedt.iff", EXCLUSIVE_LOCK);
@@ -567,15 +569,14 @@ int main(int argc, char **argv)
             UnLock(l);
     }
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     same_mlog();
     callstr("DataTypeName", E_NAME);
     ROUT = "finit";
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     same_mlog();
 
-    for (s = 0; s < 2; s++)
-        CloseWindow(win[s]);
+    CloseWindow(win);
     DeleteFile((STRPTR)"RAM:rwedt.iff");
     DeleteFile((STRPTR)"RAM:rwedt.txt");
     CloseLibrary(TIntui);

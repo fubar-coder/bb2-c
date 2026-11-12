@@ -1,8 +1,9 @@
 /*
- * rwe ricompactdisclib - the C build of the RWE userlib ricompactdisclib
- * (libs/userlibs/rwe/ricompactdisclib.c) against the reference build of
- * its source rwelibsrc/CDlib/cdSCSI.bb (ricompactdisclib.orig), method of
- * rwecmp.h.
+ * rwe ricompactdisclib - the RWE userlib ricompactdisclib: the C build
+ * (libs/userlibs/rwe/ricompactdisclib.c) or the reference build of its
+ * source rwelibsrc/CDlib/cdSCSI.bb (ricompactdisclib.orig), one set as
+ * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/rwe_ricompactdisclib.txt).
  *
  *   ricompactdisclib DIR     (DIR: ricompactdisclib and memlib .obj/.orig)
  *
@@ -15,11 +16,11 @@
  * logs every request (command, flags, length, offset, data pointer, the
  * SCSICmd and its command bytes), the opens, closes and AbortIOs, fails
  * OpenDevice for unit 3 and returns an io_Error when the test asks for
- * one.  Each set has its own memlib (globalloc of init and CDReadTOC).
- * Every command and form is called on both sets with the same inputs
- * (other registers = markers); compared are d0, the requests the device
- * saw, the data the commands return (the Q-code bytes behind
- * CDUpdateInfo's address) and every register the original keeps.
+ * one.  memlib is loaded with the library (globalloc of init and
+ * CDReadTOC).  Every command and form is called (other registers =
+ * markers); observed are d0, the requests the device saw, the data the
+ * commands return (the Q-code bytes behind CDUpdateInfo's address) and
+ * the kept registers.
  * Covered: every command without an open device (0; BUG(orig) (#587, #586):
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
@@ -40,13 +41,14 @@
  * Not covered: a real CD drive (none in the emulator); a device name of
  * more than 40 bytes (overwrites toc ..., BUG(orig) (#576)); CDTrackLength 0
  * (reads 64 KB behind toc) and of tracks behind the last (memory
- * globalloc did not clear: differs between the sets); the TOC functions
+ * globalloc did not clear: differs between runs); the TOC functions
  * before any CDReadTOC (they read address 0); CDPlayTrack with scsiflag
  * on a 68000 (address error; the emulator has a 68020); a globalloc
  * failing.  The test device leaves the entries behind the last track
  * $EE (a real one would not write them: the last track's length is then
  * garbage, BUG(orig) (#583)).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/devices.h>
 #include <exec/io.h>
@@ -68,7 +70,7 @@ static int ntracks = 9;                 /* the CD in the drive */
 static UWORD cdstatus = CDSTSF_CLOSED | CDSTSF_DISK | CDSTSF_TOC;
 static UWORD errcmd;                    /* io_Error errval for command errcmd */
 static BYTE errval;
-static ULONG qtick[2];                  /* CD_QCODEMSF: the position moves */
+static ULONG qtick;                     /* CD_QCODEMSF: the position moves */
 
 static struct log {
     ULONG n, opens, closes, failed, aborts;
@@ -80,9 +82,9 @@ static struct log {
     ULONG slen, sactual;
     UWORD scmdlen, scmdactual, ssenselen, ssenseactual;
     UBYTE sflags, scmd[12], sdata, ssense;
-} last[2];
+} last;
 #define MAXOPEN 8
-static struct IORequest *opened[2][MAXOPEN];
+static struct IORequest *opened[MAXOPEN];
 
 /* the start of track t (1..ntracks+1 = lead-out) in seconds */
 static ULONG trackstart(int t)
@@ -109,18 +111,18 @@ static void dev_open(struct IORequest *ior __asm("a1"), LONG unit __asm("d0"),
     (void)flags;
     if (unit == 3) {
         ior->io_Error = IOERR_OPENFAIL;
-        last[cur].failed++;
+        last.failed++;
         return;
     }
     ior->io_Error = 0;
     ior->io_Device = d;
     ior->io_Unit = (struct Unit *)unit;
     d->dd_Library.lib_OpenCnt++;
-    last[cur].opens++;
-    last[cur].unit = unit;
+    last.opens++;
+    last.unit = unit;
     for (i = 0; i < MAXOPEN; i++)
-        if (!opened[cur][i]) {
-            opened[cur][i] = ior;
+        if (!opened[i]) {
+            opened[i] = ior;
             break;
         }
 }
@@ -129,11 +131,11 @@ static ULONG dev_close(struct IORequest *ior __asm("a1"), struct Device *d __asm
 {
     int i;
     d->dd_Library.lib_OpenCnt--;
-    last[cur].closes++;
-    last[cur].unit = (ULONG)ior->io_Unit;
+    last.closes++;
+    last.unit = (ULONG)ior->io_Unit;
     for (i = 0; i < MAXOPEN; i++)
-        if (opened[cur][i] == ior)
-            opened[cur][i] = NULL;
+        if (opened[i] == ior)
+            opened[i] = NULL;
     return 0;
 }
 
@@ -144,14 +146,14 @@ static ULONG dev_null(void)
 
 static ULONG dev_abortio(struct IORequest *ior __asm("a1"))
 {
-    last[cur].aborts++;
-    last[cur].abortcmd = ior->io_Command;
+    last.aborts++;
+    last.abortcmd = ior->io_Command;
     return 0;
 }
 
 static void scsicmd(struct IOStdReq *ior)
 {
-    struct log *l = &last[cur];
+    struct log *l = &last;
     struct SCSICmd *c = ior->io_Data;
     UBYTE *data = (UBYTE *)c->scsi_Data;
     int i;
@@ -182,7 +184,7 @@ static void scsicmd(struct IOStdReq *ior)
 
 static void dev_beginio(struct IOStdReq *ior __asm("a1"))
 {
-    struct log *l = &last[cur];
+    struct log *l = &last;
     UBYTE *p = ior->io_Data;
     ULONG i;
 
@@ -224,13 +226,13 @@ static void dev_beginio(struct IOStdReq *ior __asm("a1"))
         ior->io_Actual = ior->io_Length;
         break;
     case CD_QCODEMSF:
-        qtick[cur] += 7;
+        qtick += 7;
         p[0] = 0x11;
-        p[1] = (UBYTE)(1 + qtick[cur] % ntracks);
+        p[1] = (UBYTE)(1 + qtick % ntracks);
         p[2] = 1;
         p[3] = 0;
-        msf(p + 4, qtick[cur] % 250, (UBYTE)(qtick[cur] % 75));
-        msf(p + 8, 2 + qtick[cur] * 3, (UBYTE)(qtick[cur] % 70));
+        msf(p + 4, qtick % 250, (UBYTE)(qtick % 75));
+        msf(p + 8, 2 + qtick * 3, (UBYTE)(qtick % 70));
         break;
     case HD_SCSICMD:
         scsicmd(ior);
@@ -277,7 +279,7 @@ static void rem_device(void)
 /* where a data pointer points: 0, into the library, elsewhere */
 static ULONG where(APTR p)
 {
-    struct lib *l = getlib(&sets[cur], LIB);
+    struct lib *l = getlib(&loaded, LIB);
     ULONG a = (ULONG)p;
     if (!a)
         return 0;
@@ -288,39 +290,36 @@ static ULONG where(APTR p)
 
 static void same_device(void)
 {
-    SAME("requests", last[cur].n);
-    SAME("opens", last[cur].opens);
-    SAME("closes", last[cur].closes);
-    SAME("failed opens", last[cur].failed);
-    SAME("aborts", last[cur].aborts);
-    SAME("abort command", last[cur].abortcmd);
-    SAME("command", last[cur].cmd);
-    SAME("flags", last[cur].flags);
-    SAME("length", last[cur].len);
-    SAME("offset", last[cur].off);
-    SAME("unit", last[cur].unit);
-    SAME("data", where(last[cur].data));
-    SAME("scsi_Length", last[cur].slen);
-    SAME("scsi_Actual", last[cur].sactual);
-    SAME("scsi_CmdLength", last[cur].scmdlen);
-    SAME("scsi_CmdActual", last[cur].scmdactual);
-    SAME("scsi_SenseLength", last[cur].ssenselen);
-    SAME("scsi_SenseActual", last[cur].ssenseactual);
-    SAME("scsi_Flags", last[cur].sflags);
-    SAME("scsi_Data", last[cur].sdata);
-    SAME("scsi_SenseData", last[cur].ssense);
-    {
-        const UBYTE *c[2] = { last[0].scmd, last[1].scmd };
-        SAMEBYTES("scsi_Command", c, 12);
-    }
+    OBS("requests", last.n);
+    OBS("opens", last.opens);
+    OBS("closes", last.closes);
+    OBS("failed opens", last.failed);
+    OBS("aborts", last.aborts);
+    OBS("abort command", last.abortcmd);
+    OBS("command", last.cmd);
+    OBS("flags", last.flags);
+    OBS("length", last.len);
+    OBS("offset", last.off);
+    OBS("unit", last.unit);
+    OBS("data", where(last.data));
+    OBS("scsi_Length", last.slen);
+    OBS("scsi_Actual", last.sactual);
+    OBS("scsi_CmdLength", last.scmdlen);
+    OBS("scsi_CmdActual", last.scmdactual);
+    OBS("scsi_SenseLength", last.ssenselen);
+    OBS("scsi_SenseActual", last.ssenseactual);
+    OBS("scsi_Flags", last.sflags);
+    OBS("scsi_Data", last.sdata);
+    OBS("scsi_SenseData", last.ssense);
+    OBSBYTES("scsi_Command", last.scmd, 12);
 }
 
 /* a call of entry idx, form `form`, d0/d1/d2 = arguments; d0 compared */
 static void call(int idx, int form, const char *name, ULONG d0, ULONG d1, ULONG d2)
 {
     ROUT = name;
-    DO2(ENT(LIB, idx, form), R[cur].d[0] = d0; R[cur].d[1] = d1; R[cur].d[2] = d2);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, idx, form), R.d[0] = d0; R.d[1] = d1; R.d[2] = d2);
+    OBS("d0", R.d[0]);
     same_device();
 }
 
@@ -337,16 +336,13 @@ static void opencd(const char *name, ULONG unit, int form, ULONG flag)
 /* CDUpdateInfo: d0 = the Q-code + 5 in the library (else a0 + 5) */
 static void updateinfo(void)
 {
-    const UBYTE *q[2];
     ROUT = "CDUpdateInfo";
-    DO2(ENT(LIB, UPDATE, 0), (void)0);
-    SAME("d0 in the library", where((APTR)R[cur].d[0]));
-    if (where((APTR)R[0].d[0]) == 1 && where((APTR)R[1].d[0]) == 1) {
-        for (cur = 0; cur < 2; cur++)
-            q[cur] = (const UBYTE *)R[cur].d[0] - 5;
-        SAMEBYTES("qcodeinfo", q, 12);
+    DO1(ENT(LIB, UPDATE, 0), (void)0);
+    OBS("d0 in the library", where((APTR)R.d[0]));
+    if (where((APTR)R.d[0]) == 1) {
+        OBSBYTES("qcodeinfo", (const UBYTE *)R.d[0] - 5, 12);
     } else {
-        SAME("d0", R[cur].d[0]);
+        OBS("d0", R.d[0]);
     }
     same_device();
 }
@@ -387,15 +383,14 @@ static void tocfuncs(int from, int to)
    io_Length = fade in frames); both builds send the swapped fields */
 static void volume(ULONG vol, ULONG fade)
 {
-    ULONG n0[2] = { last[0].n, last[1].n };
+    ULONG n0 = last.n;
 
     CALL2(VOLUME, "CDVolume", vol, fade);
-    for (cur = 0; cur < 2; cur++)
-        if (last[cur].n > n0[cur]) {
-            check("CDVolume: CD_ATTENUATE", last[cur].cmd == 44);
-            check("CDVolume: io_Length is the volume (BUG(orig), #982)", last[cur].len == vol);
-            check("CDVolume: io_Offset is the fade (BUG(orig), #982)", last[cur].off == fade);
-        }
+    if (last.n > n0) {
+        check("CDVolume: CD_ATTENUATE", last.cmd == 44);
+        check("CDVolume: io_Length is the volume (BUG(orig), #982)", last.len == vol);
+        check("CDVolume: io_Offset is the fade (BUG(orig), #982)", last.off == fade);
+    }
 }
 
 /* every command; with a device open the CD commands, else 0 */
@@ -441,8 +436,35 @@ int main(int argc, char **argv)
         printf("usage: ricompactdisclib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("CloseCD", d2-d7|a2|a3);
+    KEEPS("CDReadTOC", d5|d6|a2|a3);
+    KEEPS("CDStatus", d2-d7|a2|a3);
+    KEEPS("CDFlush", d1-d7|a0|a2|a3);
+    KEEPS("CDStop", d1-d7|a0|a2|a3);
+    KEEPS("CDRewind", d1-d7|a0|a2|a3);
+    KEEPS("CDFastForward", d1-d7|a0|a2|a3);
+    KEEPS("CDNormalSpeed", d1-d7|a0|a2|a3);
+    KEEPS("CDDoor", d1-d7|a0|a2|a3);
+    KEEPS("CDPause", d1-d7|a0|a2|a3);
+    KEEPS("CDMotor", d1-d7|a0|a2|a3);
+    KEEPS("CDSpeed", d1-d7|a0|a2|a3);
+    KEEPS("CDPlayTrack", d5-d7|a2|a3);
+    KEEPS("CDVolume", d1-d7|a0|a2|a3);
+    KEEPS("CDUpdateInfo", d2-d7|a2|a3);
+    KEEPS("CDTrackMins", d1-d7|a1-a3|a6);
+    KEEPS("CDTrackSecs", d1-d7|a1-a3|a6);
+    KEEPS("CDTrackPlaying", d1-d7|a1-a3|a6);
+    KEEPS("OpenCD", d2-d7|a2|a3);
+    KEEPS("CloseCD (failed)", d1-d7|a0-a3|a6);
+    KEEPS("CDNumTracks", d2-d7|a1-a3|a6);
+    KEEPS("CDFirstTrack", d1-d7|a1-a3|a6);
+    KEEPS("CDLastTrack", d1-d7|a1-a3|a6);
+    KEEPS("CDTrackLength", d3-d7|a1-a3|a6);
+    KEEPS("CloseCD (again)", d1-d7|a0-a3|a6);
+    KEEPS("finit", d2-d7|a2|a3);
     if (!add_device()) {
         check("MakeLibrary rwecd.device", FALSE);
         return 20;
@@ -460,13 +482,11 @@ int main(int argc, char **argv)
     rwe_mem_start();
     ROUT = "memlib init";
     strcpy(VEC, "");
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, NULL, 0, &POP);
 
     ROUT = "init";
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
 
     /* nothing open */
     CALL0(CLOSECD, "CloseCD");
@@ -475,8 +495,8 @@ int main(int argc, char **argv)
 
     /* cd.device: not in the emulator (or no drive) */
     opencd(NULL, 0, 0, 0);
-    printf("ricompactdisclib: OpenCD (cd.device) = %ld\n", (LONG)R[0].d[0]);
-    if (R[0].d[0] == (ULONG)-1)
+    printf("ricompactdisclib: OpenCD (cd.device) = %ld\n", (LONG)R.d[0]);
+    if (R.d[0] == (ULONG)-1)
         CALL0(CLOSECD, "CloseCD (cd.device)");
 
     /* unit 3 fails */
@@ -554,14 +574,14 @@ int main(int argc, char **argv)
     /* finit with the device open, again without port, init again */
     strcpy(VEC, "open");
     ROUT = "finit";
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
     same_device();
     strcpy(VEC, "again");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
     same_device();
     ROUT = "init";
     strcpy(VEC, "again");
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
     ntracks = 9;
     opencd(NULL, 0, 0, 0);              /* the name is cd.device again */
     opencd(rwecd, 0, 1, 0);
@@ -569,12 +589,12 @@ int main(int argc, char **argv)
     tocfuncs(1, 2);
     CALL2(PLAY, "CDPlayTrack", 2, 1);   /* scsiflag 0 again */
     ROUT = "finit";
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
     same_device();
 
     /* no request: CreateIORequest fails */
     ROUT = "init";
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
     Forbid();
     old = SetFunction((struct Library *)SysBase, -654, (APTR)rwe_fail0);
     CacheClearU();
@@ -584,7 +604,7 @@ int main(int argc, char **argv)
     Permit();
     commands("no request");
     ROUT = "finit";
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
 
     /* no message port: CreateMsgPort fails in init */
     Forbid();
@@ -592,7 +612,7 @@ int main(int argc, char **argv)
     CacheClearU();
     ROUT = "init";
     strcpy(VEC, "no port");
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
     SetFunction((struct Library *)SysBase, -666, old);
     CacheClearU();
     Permit();
@@ -600,26 +620,22 @@ int main(int argc, char **argv)
     commands("no port");
     ROUT = "finit";
     strcpy(VEC, "no port");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
 
-    printf("rwecd.device: %lu requests, %lu opens, %lu failed, %lu aborts\n", last[0].n,
-           last[0].opens, last[0].failed, last[0].aborts);
-    check("rwecd.device used", last[0].n >= 50 && last[0].opens >= 5 && last[0].failed >= 1
-          && tape_same("requests", last[0].n, last[1].n));
+    printf("rwecd.device: %lu requests, %lu opens, %lu failed, %lu aborts\n", last.n,
+           last.opens, last.failed, last.aborts);
+    check("rwecd.device used", last.n >= 50 && last.opens >= 5 && last.failed >= 1);
 
     /* the requests the library lost (OpenCD while open) */
-    for (cur = 0; cur < 2; cur++)
-        for (i = 0; i < MAXOPEN; i++)
-            if (opened[cur][i]) {
-                struct IORequest *ior = opened[cur][i];
-                CloseDevice(ior);
-                DeleteIORequest(ior);
-            }
+    for (i = 0; i < MAXOPEN; i++)
+        if (opened[i]) {
+            struct IORequest *ior = opened[i];
+            CloseDevice(ior);
+            DeleteIORequest(ior);
+        }
     ROUT = "memlib finit";
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, NULL, 0, &POP);
     rwe_mem_check(LIB, avail, TRUE);
     rem_device();
     return rwe_done(LIB);

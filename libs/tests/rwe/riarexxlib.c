@@ -1,7 +1,9 @@
 /*
- * rwe riarexxlib - the C build of riarexxlib (userlib 133) against the
+ * rwe riarexxlib - riarexxlib (userlib 133): the C build or the
  * reference build of its source (ref/riarexxlib.obj, see
- * libs/userlibs/rwe/refbuild.cmake), method of rwecmp.h.
+ * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
+ * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_riarexxlib.txt).
  *
  *   riarexxlib DIR     (DIR with riarexxlib, maxslib, memlib .obj/.orig)
  *
@@ -11,11 +13,10 @@
  * such port exists): it logs every message (type, priority, length,
  * action, ln_Name, reply port, the argument strings) and replies with a
  * result code and string the test sets, so that RXSendCommand, which
- * waits, gets its reply.  The two sets have their own ports
- * (RWERX_O/RWERX_C), their own memlib/maxslib and string areas.
- * Compared: d0, a3 and the strings of the string functions, the messages
- * the responder got (by set, from ln_Name), the replies the test gets
- * (Result1, the Result2 string), the kept registers.
+ * waits, gets its reply.  The library's own port is RWERX_P.  Observed:
+ * d0, a3 and the strings of the string functions, the messages the
+ * responder got, the replies the test gets (Result1, the Result2
+ * string), the kept registers.
  * Covered: every entry; functions without a port and without a current
  * message (0); the error check portchk with a port; RXCreatePort twice;
  * the tokenizer (spaces, quotes, doubled quotes, the character after a
@@ -38,6 +39,7 @@
  * tests), more than 16 or 32 messages/arguments (overflows), messages of
  * other types (replied at once).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <dos/dostags.h>
@@ -56,9 +58,9 @@ enum { CREATEPORT, DELETEPORT, READPORT, WAITPORT, REPLYMSG, RUNCOMMAND, SENDERS
        DEFAULTPORT = 22, NEXTARG = 24, RETURNCODE, TOKENISE, MESSAGELIST, QUOTECHAR,
        INIT, FINIT };
 
-static const char *own[2] = { "RWERX_O", "RWERX_C" };
-static UBYTE sbuf[2][1024];             /* string area (a3) */
-static ULONG stk[2][4];                 /* the compiler's a2 stack */
+static const char *own = "RWERX_P";     /* the library's port */
+static UBYTE sbuf[1024];                /* string area (a3) */
+static ULONG stk[4];                    /* the compiler's a2 stack */
 static struct MsgPort *testport;
 static int have_rexx;                   /* the responder serves REXX */
 
@@ -72,8 +74,8 @@ struct logent {
     int nargs, port;
     char args[16][48];
 };
-static struct logent rlog[2][24];
-static volatile int nrlog[2], resp_done;
+static struct logent rlog[24];
+static volatile int nrlog, resp_done;
 static volatile LONG resp_rc;
 static const char *volatile resp_res;
 static struct Task *maintask;
@@ -82,11 +84,11 @@ static volatile int resp_ready;
 static void handle(struct RexxMsg *m, int port)
 {
     const char *n = m->rm_Node.mn_Node.ln_Name;
-    int s = n && n[6] == 'C', i;
+    int i;
     struct logent *e;
 
-    if (nrlog[s] < 24) {
-        e = &rlog[s][nrlog[s]];
+    if (nrlog < 24) {
+        e = &rlog[nrlog];
         memset(e, 0, sizeof *e);
         if (n)
             strncpy(e->name, n, 39);
@@ -99,7 +101,7 @@ static void handle(struct RexxMsg *m, int port)
         for (i = 0; i < 16 && m->rm_Args[i]; i++)
             strncpy(e->args[i], (char *)m->rm_Args[i], 47);
         e->nargs = i;
-        nrlog[s]++;
+        nrlog++;
     }
     m->rm_Result1 = resp_rc;
     m->rm_Result2 = 0;
@@ -154,32 +156,30 @@ static void waitresp(int n)
         Wait(SIGBREAKF_CTRL_F);
 }
 
-/* the last message the responder got, the same in both sets */
+/* the last message the responder got */
 static void samelog(const char *what, int port)
 {
     char w[80];
     int k;
 
-    BOTH("responder got it", nrlog[cur] > 0);
-    if (!nrlog[0] || !nrlog[1])
+    BOTH("responder got it", nrlog > 0);
+    if (!nrlog)
         return;
     {
-        const struct logent *e[2] = { &rlog[0][nrlog[0] - 1], &rlog[1][nrlog[1] - 1] };
+        const struct logent *e = &rlog[nrlog - 1];
         sprintf(w, "%s: message", what);
-        SAME(w, nrlog[cur]);
-        SAME("type", e[cur]->type);
-        SAME("pri", e[cur]->pri);
-        SAME("length", e[cur]->len);
-        SAME("action", e[cur]->action);
-        SAME("port", e[cur]->port);
-        BOTH("port served", e[cur]->port == port);
-        SAME("args", e[cur]->nargs);
-        BOTH("ln_Name", !strcmp(e[cur]->name, own[cur]));
-        BOTH("reply port", e[cur]->replyport == (ULONG)FindPort((STRPTR)own[cur]));
-        for (k = 0; k < 16; k++) {
-            const UBYTE *a[2] = { (UBYTE *)e[0]->args[k], (UBYTE *)e[1]->args[k] };
-            SAMEBYTES("argument", a, 48);
-        }
+        OBS(w, nrlog);
+        OBS("type", e->type);
+        OBS("pri", e->pri);
+        OBS("length", e->len);
+        OBS("action", e->action);
+        OBS("port", e->port);
+        BOTH("port served", e->port == port);
+        OBS("args", e->nargs);
+        BOTH("ln_Name", !strcmp(e->name, own));
+        BOTH("reply port", e->replyport == (ULONG)FindPort((STRPTR)own));
+        for (k = 0; k < 16; k++)
+            OBSBYTES("argument", e->args[k], 48);
     }
 }
 
@@ -189,18 +189,17 @@ static void samelog(const char *what, int port)
    on the a2 stack */
 static void call(int idx, int form, ULONG d0, ULONG d1, ULONG l1, ULONG l2, ULONG off)
 {
-    DO2(ENT(LIB, idx, form), R[cur].d[0] = d0; R[cur].d[1] = d1;
-        stk[cur][0] = l2; stk[cur][1] = l1; R[cur].a[2] = (ULONG)&stk[cur][2];
-        R[cur].a[3] = (ULONG)sbuf[cur] + off);
+    DO1(ENT(LIB, idx, form), R.d[0] = d0; R.d[1] = d1;
+        stk[0] = l2; stk[1] = l1; R.a[2] = (ULONG)&stk[2];
+        R.a[3] = (ULONG)sbuf + off);
 }
 
 /* the string result: d0, a3, the bytes */
 static void samestr(void)
 {
-    const UBYTE *s[2] = { sbuf[0], sbuf[1] };
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)sbuf[cur]);
-    SAMEBYTES("string area", s, sizeof sbuf[0]);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)sbuf);
+    OBSBYTES("string area", sbuf, sizeof sbuf);
 }
 
 static void clearstr(void)
@@ -212,7 +211,7 @@ static void longfn(int idx, const char *name)
 {
     ROUT = name;
     call(idx, 0, MARK(0), MARK(1), 0, 0, 0);
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
 }
 
 /* RXReadPort / RXWaitPort: a message current (`expect`) or 0 */
@@ -221,8 +220,8 @@ static void readport(int idx, int expect, const char *what)
     ROUT = idx == READPORT ? "RXReadPort" : "RXWaitPort";
     strcpy(VEC, what);
     call(idx, 0, MARK(0), MARK(1), 0, 0, 0);
-    SAME("message", R[cur].d[0] != 0);
-    BOTH("message as expected", (R[cur].d[0] != 0) == expect);
+    OBS("message", R.d[0] != 0);
+    BOTH("message as expected", (R.d[0] != 0) == expect);
 }
 
 static void strfn(int idx, ULONG d0, const char *name)
@@ -247,17 +246,17 @@ static void current(const char *what)
     for (i = 0; i < 18; i++) {
         sprintf(VEC, "%s next %lu", what, i);
         strfn(NEXTARG, MARK(0), "RXNextArg");
-        if (!R[0].d[0])
+        if (!R.d[0])
             break;
     }
     strcpy(VEC, what);
     clearstr();
     ROUT = "RXSendersName";
     call(SENDERSNAME, 0, 0, 0, 0, 0, 16);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)sbuf[cur]);
-    BOTH("sender", R[cur].d[0] == 0 || !strcmp((char *)sbuf[cur] + 16, own[cur])
-                   || !strncmp((char *)sbuf[cur] + 16, "RWE", 3));
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)sbuf);
+    BOTH("sender", R.d[0] == 0 || !strcmp((char *)sbuf + 16, own)
+                   || !strncmp((char *)sbuf + 16, "RWE", 3));
     longfn(RETURNCODE, "RXReturnCode");
 }
 
@@ -268,12 +267,12 @@ static void run(int form, const char *port, const char *cmd)
     ROUT = "RXRunCommand";
     sprintf(VEC, "%s \"%s\"", port ? port : (form ? "own" : "default"), cmd);
     if (form)
-        DO2(ENT(LIB, RUNCOMMAND, 1), R[cur].d[0] = (ULONG)(port ? port : own[cur]);
-            R[cur].d[1] = (ULONG)cmd; R[cur].a[3] = (ULONG)sbuf[cur]);
+        DO1(ENT(LIB, RUNCOMMAND, 1), R.d[0] = (ULONG)(port ? port : own);
+            R.d[1] = (ULONG)cmd; R.a[3] = (ULONG)sbuf);
     else
-        DO2(ENT(LIB, RUNCOMMAND, 0), R[cur].d[0] = (ULONG)cmd; R[cur].a[3] = (ULONG)sbuf[cur]);
+        DO1(ENT(LIB, RUNCOMMAND, 0), R.d[0] = (ULONG)cmd; R.a[3] = (ULONG)sbuf);
     /* d0 is PutMsg's (BUG(orig), #543); 0 if the port is missing */
-    SAME("sent", R[cur].d[0] != 0 || port == NULL || FindPort((STRPTR)port) != NULL);
+    OBS("sent", R.d[0] != 0 || port == NULL || FindPort((STRPTR)port) != NULL);
 }
 
 /* RXSendCommand form 1: port$ and command$ in the string area, a3 behind
@@ -287,17 +286,15 @@ static void send(int form, const char *port, const char *cmd, LONG rc, const cha
     clearstr();
     ROUT = "RXSendCommand";
     sprintf(VEC, "form %d %s \"%s\" rc %ld res %s", form, port, cmd, rc, res ? res : "-");
-    for (cur = 0; cur < 2; cur++) {
-        strcpy((char *)sbuf[cur], port);
-        strcpy((char *)sbuf[cur] + l1 + 1, cmd);
-    }
+    strcpy((char *)sbuf, port);
+    strcpy((char *)sbuf + l1 + 1, cmd);
     if (form)
-        DO2(ENT(LIB, SENDCOMMAND, 1), R[cur].d[0] = (ULONG)sbuf[cur];
-            R[cur].d[1] = (ULONG)sbuf[cur] + l1 + 1; stk[cur][0] = l1; stk[cur][1] = l2;
-            R[cur].a[2] = (ULONG)&stk[cur][2]; R[cur].a[3] = (ULONG)sbuf[cur] + l1 + l2 + 2);
+        DO1(ENT(LIB, SENDCOMMAND, 1), R.d[0] = (ULONG)sbuf;
+            R.d[1] = (ULONG)sbuf + l1 + 1; stk[0] = l1; stk[1] = l2;
+            R.a[2] = (ULONG)&stk[2]; R.a[3] = (ULONG)sbuf + l1 + l2 + 2);
     else
-        DO2(ENT(LIB, SENDCOMMAND, 0), R[cur].d[0] = (ULONG)sbuf[cur] + l1 + 1;
-            R[cur].a[3] = (ULONG)sbuf[cur] + l1 + l2 + 2);
+        DO1(ENT(LIB, SENDCOMMAND, 0), R.d[0] = (ULONG)sbuf + l1 + 1;
+            R.a[3] = (ULONG)sbuf + l1 + l2 + 2);
     samestr();
 }
 
@@ -316,42 +313,38 @@ static void strarg(int idx, const char *name, const char *s)
 }
 
 /* a message of the test to the library's port, ln_Name = `from` */
-static struct RexxMsg *tmsg[2][4];
+static struct RexxMsg *tmsg[4];
 static void testmsg(int n, const char *from, const char *a1, const char *a2)
 {
-    for (cur = 0; cur < 2; cur++) {
-        struct RexxMsg *m = AllocVec(128, MEMF_PUBLIC | MEMF_CLEAR);
-        m->rm_Node.mn_Node.ln_Name = (char *)from;
-        m->rm_Node.mn_Length = 128;
-        m->rm_Node.mn_ReplyPort = testport;
-        m->rm_Action = RXCOMM;
-        m->rm_Args[0] = CreateArgstring((CONST_STRPTR)a1, strlen(a1));
-        if (a2)
-            m->rm_Args[1] = CreateArgstring((CONST_STRPTR)a2, strlen(a2));
-        tmsg[cur][n] = m;
-        PutMsg(FindPort((STRPTR)own[cur]), &m->rm_Node);
-    }
+    struct RexxMsg *m = AllocVec(128, MEMF_PUBLIC | MEMF_CLEAR);
+    m->rm_Node.mn_Node.ln_Name = (char *)from;
+    m->rm_Node.mn_Length = 128;
+    m->rm_Node.mn_ReplyPort = testport;
+    m->rm_Action = RXCOMM;
+    m->rm_Args[0] = CreateArgstring((CONST_STRPTR)a1, strlen(a1));
+    if (a2)
+        m->rm_Args[1] = CreateArgstring((CONST_STRPTR)a2, strlen(a2));
+    tmsg[n] = m;
+    PutMsg(FindPort((STRPTR)own), &m->rm_Node);
 }
 
-/* the replies at the test's port, per set; free the messages */
+/* the replies at the test's port; free the messages */
 static void testreplies(int n, LONG rc, const char *res)
 {
     struct RexxMsg *m;
-    int got[2] = { 0, 0 }, i;
+    int got = 0, i;
+    char w[60];
 
     while ((m = (struct RexxMsg *)GetMsg(testport)) != NULL) {
-        int s = -1;
-        for (i = 0; i < 4; i++) {
-            if (m == tmsg[0][i])
-                s = 0;
-            if (m == tmsg[1][i])
-                s = 1;
-        }
-        if (s < 0)
+        int ours = 0;
+        for (i = 0; i < 4; i++)
+            if (m == tmsg[i])
+                ours = 1;
+        if (!ours)
             continue;
-        got[s]++;
-        snprintf(VEC, sizeof VEC, "%s: reply Result1 %ld", sets[s].what, m->rm_Result1);
-        check(VEC, m->rm_Result1 == rc);
+        got++;
+        snprintf(w, sizeof w, "reply Result1 %ld", m->rm_Result1);
+        check(w, m->rm_Result1 == rc);
         if (res) {
             check("reply Result2", m->rm_Result2 && !strcmp((char *)m->rm_Result2, res));
             if (m->rm_Result2)
@@ -363,15 +356,13 @@ static void testreplies(int n, LONG rc, const char *res)
                 DeleteArgstring(m->rm_Args[i]);
         FreeVec(m);
     }
-    BOTH("replies", got[cur] == n);
+    BOTH("replies", got == n);
 }
 
 static void memlib(int idx)
 {
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), idx, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), idx, 0), &R, NULL, 0, &POP);
 }
 
 int main(int argc, char **argv)
@@ -389,8 +380,29 @@ int main(int argc, char **argv)
         check("riarexxlib: rexxsyslib.library", FALSE);
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("RXMessageList", d1-d7|a0-a3|a6);
+    KEEPS("RXNumArgs", d1-d7|a1-a3|a6);
+    KEEPS("RXGetArg", d2-d7|a1|a2|a6);
+    KEEPS("RXNextArg", d2-d7|a1|a2|a6);
+    KEEPS("RXSendersName", d1-d7|a1|a2|a6);
+    KEEPS("RXReturnCode", d1-d7|a0-a3|a6);
+    KEEPS("RXCreatePort", d2-d7|a3);
+    KEEPS("portchk", d0-d7|a0-a3|a6);
+    KEEPS("RXRunCommand", d4|a2|a3);
+    KEEPS("RXReadPort", d2-d7|a2|a3);
+    KEEPS("RXReplyMsg", d3-d7|a3);
+    KEEPS("RXTokenise", d0-d7|a0-a3|a6);
+    KEEPS("RXQuoteChar", d0-d7|a1-a3|a6);
+    KEEPS("RXDefaultPort", d0-d7|a2|a3|a6);
+    KEEPS("RXWaitPort", d2-d7|a2|a3);
+    KEEPS("RXSendCommand", d4);
+    KEEPS("RXExecuteScript", d1|d4|a2|a3);
+    KEEPS("RXRunScript", d1|d4|a2|a3);
+    KEEPS("RXDeletePort", d3-d7|a3);
+    KEEPS("finit", d2-d7|a3);
     maintask = FindTask(NULL);
     testport = CreateMsgPort();
     testport->mp_Node.ln_Name = (char *)"RWETEST";
@@ -412,7 +424,7 @@ int main(int argc, char **argv)
     memlib(7);
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
 
     /* no port, no message */
     strcpy(VEC, "no port");
@@ -423,19 +435,19 @@ int main(int argc, char **argv)
     for (i = 0; i < 2; i++) {
         ROUT = "RXCreatePort";
         strcpy(VEC, "");
-        DO2(ENT(LIB, CREATEPORT, 0), R[cur].d[0] = (ULONG)own[cur];
-            stk[cur][1] = strlen(own[cur]); R[cur].a[2] = (ULONG)&stk[cur][2]);
+        DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+            stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
         if (i == 0)
-            BOTH("the port", R[cur].d[0] && R[cur].d[0] == (ULONG)FindPort((STRPTR)own[cur]));
+            BOTH("the port", R.d[0] && R.d[0] == (ULONG)FindPort((STRPTR)own));
         else
-            SAME("second port: 0", R[cur].d[0]);
+            OBS("second port: 0", R.d[0]);
     }
     ROUT = "portchk";
     strcpy(VEC, "with a port");
-    DO2(ERR(LIB, READPORT, 0), (void)0);
+    DO1(ERR(LIB, READPORT, 0), (void)0);
     ROUT = "RXMessageList";
     call(MESSAGELIST, 0, 0, 0, 0, 0, 0);
-    BOTH("list", R[cur].d[0] != 0);
+    BOTH("list", R.d[0] != 0);
 
     /* the tokenizer, own port */
     run(1, NULL, "load  \"a b\" c\"\"d \"e\"\"f\" \"g\"h  i");
@@ -468,10 +480,10 @@ int main(int argc, char **argv)
     strarg(DEFAULTPORT, "RXDefaultPort", "RWERX_X");
     run(0, NULL, "nowhere");            /* the default port is missing */
     {
-        /* the default port = the own port of each set */
+        /* the default port = the own port */
         ROUT = "RXDefaultPort";
         strcpy(VEC, "own");
-        DO2(ENT(LIB, DEFAULTPORT, 0), R[cur].d[0] = (ULONG)own[cur]);
+        DO1(ENT(LIB, DEFAULTPORT, 0), R.d[0] = (ULONG)own);
     }
     run(0, NULL, "hello default");
     readport(WAITPORT, 1, "RXWaitPort");
@@ -482,42 +494,42 @@ int main(int argc, char **argv)
     /* the responder */
     n = 0;
     run(1, "RWERESP", "cmd a b");
-    waitresp(n += 2);
+    waitresp(n += 1);
     samelog("RXRunCommand", 0);
     readport(READPORT, 0, "responder's reply");
     run(1, "RWENOWHERE", "cmd");
     send(1, "RWERESP", "get \"the\" thing", 0, "the result");
-    n += 2;
+    n += 1;
     samelog("RXSendCommand", 0);
     longfn(RETURNCODE, "RXReturnCode");         /* no current message: 0 */
     run(1, NULL, "pending");
     readport(READPORT, 1, "current");
     send(1, "RWERESP", "fail", 10, NULL);
-    n += 2;
+    n += 1;
     longfn(RETURNCODE, "RXReturnCode");
     run(1, NULL, "arrives while waiting");
     send(1, "RWERESP", "again", 0, "x");
-    n += 2;
+    n += 1;
     readport(READPORT, 1, "arrived while waiting");
     current("arrived while waiting");
     longfn(RETURNCODE, "RXReturnCode");
     send(1, "RWENOWHERE", "cmd", 0, "x");
     strarg(DEFAULTPORT, "RXDefaultPort", "RWERESP");
     send(0, "", "default send", 0, "from the default port");
-    n += 2;
+    n += 1;
     samelog("RXSendCommand default", 0);
     send(0, "", "empty result", 0, "");
-    n += 2;
+    n += 1;
     if (have_rexx) {
         ROUT = "RXExecuteScript";
         strcpy(VEC, "");
         call(EXECUTESCRIPT, 0, (ULONG)"RAM:script.rexx", 0, 0, 0, 0);
-        waitresp(n += 2);
+        waitresp(n += 1);
         samelog("RXExecuteScript", 1);
-        BOTH("RXCOMM|RXFF_STRING", rlog[cur][nrlog[cur] - 1].action == (RXCOMM | RXFF_STRING));
+        BOTH("RXCOMM|RXFF_STRING", rlog[nrlog - 1].action == (RXCOMM | RXFF_STRING));
         ROUT = "RXRunScript";
         call(RUNSCRIPT, 0, (ULONG)"RAM:script.rexx", 0, 0, 0, 0);
-        waitresp(n += 2);
+        waitresp(n += 1);
         samelog("RXRunScript", 1);
         readport(READPORT, 0, "the script replies");
     } else {
@@ -542,16 +554,15 @@ int main(int argc, char **argv)
     readport(READPORT, 1, "sender gone");
     reply(1, 0, "lost", "sender gone");
     testreplies(0, 0, NULL);
-    for (cur = 0; cur < 2; cur++)       /* not replied: ours again */
-        FreeVec(tmsg[cur][1]);
-    tmsg[0][1] = tmsg[1][1] = NULL;
+    FreeVec(tmsg[1]);                   /* not replied: ours again */
+    tmsg[1] = NULL;
     testmsg(2, "RWETEST", "one", NULL);
     testmsg(3, "RWETEST", "two", NULL);
     ROUT = "RXDeletePort";
     strcpy(VEC, "2 queued");
     call(DELETEPORT, 0, 0, 0, 0, 0, 0);
     testreplies(2, 5, NULL);
-    BOTH("port gone", FindPort((STRPTR)own[cur]) == NULL);
+    BOTH("port gone", FindPort((STRPTR)own) == NULL);
     ROUT = "RXDeletePort";
     strcpy(VEC, "no port");
     call(DELETEPORT, 0, 0, 0, 0, 0, 0);
@@ -559,23 +570,23 @@ int main(int argc, char **argv)
     /* finit with a port */
     ROUT = "RXCreatePort";
     strcpy(VEC, "for finit");
-    DO2(ENT(LIB, CREATEPORT, 0), R[cur].d[0] = (ULONG)own[cur];
-        stk[cur][1] = strlen(own[cur]); R[cur].a[2] = (ULONG)&stk[cur][2]);
-    BOTH("the port", R[cur].d[0] != 0);
+    DO1(ENT(LIB, CREATEPORT, 0), R.d[0] = (ULONG)own;
+        stk[1] = strlen(own); R.a[2] = (ULONG)&stk[2]);
+    BOTH("the port", R.d[0] != 0);
     ROUT = "finit";
     strcpy(VEC, "with a port");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
-    BOTH("port gone", FindPort((STRPTR)own[cur]) == NULL);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    BOTH("port gone", FindPort((STRPTR)own) == NULL);
 
     /* init after RXDefaultPort "RWERESP": "REXXE" */
     ROUT = "init";
     strcpy(VEC, "again");
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
     run(0, NULL, "to REXXE");
-    SAME("REXXE missing: 0", R[cur].d[0]);
+    OBS("REXXE missing: 0", R.d[0]);
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
 
     ROUT = "memlib finit";
     memlib(8);

@@ -1,0 +1,807 @@
+# capture rwe_riamosfunclib 1
+Min|kept|0,0|1	kept
+Min|popped|0,0|1	$00000000
+Min|d0|0,0|1	$00000000
+Min|kept|1,2|1	kept
+Min|popped|1,2|1	$00000000
+Min|d0|1,2|1	$00000001
+Min|kept|2,1|1	kept
+Min|popped|2,1|1	$00000000
+Min|d0|2,1|1	$00000001
+Min|kept|-1,1|1	kept
+Min|popped|-1,1|1	$00000000
+Min|d0|-1,1|1	$FFFFFFFF
+Min|kept|1,-1|1	kept
+Min|popped|1,-1|1	$00000000
+Min|d0|1,-1|1	$FFFFFFFF
+Min|kept|-5,-7|1	kept
+Min|popped|-5,-7|1	$00000000
+Min|d0|-5,-7|1	$FFFFFFF9
+Min|kept|2147483647,-2147483648|1	kept
+Min|popped|2147483647,-2147483648|1	$00000000
+Min|d0|2147483647,-2147483648|1	$80000000
+Min|kept|-2147483648,2147483647|1	kept
+Min|popped|-2147483648,2147483647|1	$00000000
+Min|d0|-2147483648,2147483647|1	$80000000
+Min|kept|100,100|1	kept
+Min|popped|100,100|1	$00000000
+Min|d0|100,100|1	$00000064
+Max|kept|0,0|1	kept
+Max|popped|0,0|1	$00000000
+Max|d0|0,0|1	$00000000
+Max|kept|1,2|1	kept
+Max|popped|1,2|1	$00000000
+Max|d0|1,2|1	$00000002
+Max|kept|2,1|1	kept
+Max|popped|2,1|1	$00000000
+Max|d0|2,1|1	$00000002
+Max|kept|-1,1|1	kept
+Max|popped|-1,1|1	$00000000
+Max|d0|-1,1|1	$00000001
+Max|kept|1,-1|1	kept
+Max|popped|1,-1|1	$00000000
+Max|d0|1,-1|1	$00000001
+Max|kept|-5,-7|1	kept
+Max|popped|-5,-7|1	$00000000
+Max|d0|-5,-7|1	$FFFFFFFB
+Max|kept|2147483647,-2147483648|1	kept
+Max|popped|2147483647,-2147483648|1	$00000000
+Max|d0|2147483647,-2147483648|1	$7FFFFFFF
+Max|kept|-2147483648,2147483647|1	kept
+Max|popped|-2147483648,2147483647|1	$00000000
+Max|d0|-2147483648,2147483647|1	$7FFFFFFF
+Max|kept|100,100|1	kept
+Max|popped|100,100|1	$00000000
+Max|d0|100,100|1	$00000064
+GTTagValue|kept|form 0 d0 $12345678|1	kept
+GTTagValue|popped|form 0 d0 $12345678|1	$00000000
+GTTagValue|d0|form 0 d0 $12345678|1	$80080000
+GTTagValue|kept|form 1 d0 $0|1	kept
+GTTagValue|popped|form 1 d0 $0|1	$00000000
+GTTagValue|d0|form 1 d0 $0|1	$80080000
+GTTagValue|kept|form 1 d0 $21|1	kept
+GTTagValue|popped|form 1 d0 $21|1	$00000000
+GTTagValue|d0|form 1 d0 $21|1	$80080021
+GTTagValue|kept|form 1 d0 $FFFFFFFF|1	kept
+GTTagValue|popped|form 1 d0 $FFFFFFFF|1	$00000000
+GTTagValue|d0|form 1 d0 $FFFFFFFF|1	$8007FFFF
+CopyByte|kept|1|1	kept
+CopyByte|popped|1|1	$00000000
+CopyByte|dest|1|1	bytes 1024 fnv CFD87506
+CopyByte|d0|1|1	prog
+CopyByte|kept|2|1	kept
+CopyByte|popped|2|1	$00000000
+CopyByte|dest|2|1	bytes 1024 fnv FC65674A
+CopyByte|d0|2|1	prog
+CopyByte|kept|7|1	kept
+CopyByte|popped|7|1	$00000000
+CopyByte|dest|7|1	bytes 1024 fnv F283DE97
+CopyByte|d0|7|1	prog
+CopyByte|kept|100|1	kept
+CopyByte|popped|100|1	$00000000
+CopyByte|dest|100|1	bytes 1024 fnv D37F9279
+CopyByte|d0|100|1	prog
+CopyByte|kept|-1|1	kept
+CopyByte|popped|-1|1	$00000000
+CopyByte|dest|-1|1	bytes 1024 fnv D5B591C5
+CopyByte|d0|-1|1	$00000000
+CopyByte|kept|-2147483648|1	kept
+CopyByte|popped|-2147483648|1	$00000000
+CopyByte|dest|-2147483648|1	bytes 1024 fnv D5B591C5
+CopyByte|d0|-2147483648|1	$00000000
+CopyWord|kept|1|1	kept
+CopyWord|popped|1|1	$00000000
+CopyWord|dest|1|1	bytes 1024 fnv FC65674A
+CopyWord|d0|1|1	prog
+CopyWord|kept|2|1	kept
+CopyWord|popped|2|1	$00000000
+CopyWord|dest|2|1	bytes 1024 fnv 6807DB61
+CopyWord|d0|2|1	prog
+CopyWord|kept|7|1	kept
+CopyWord|popped|7|1	$00000000
+CopyWord|dest|7|1	bytes 1024 fnv FF73232A
+CopyWord|d0|7|1	prog
+CopyWord|kept|100|1	kept
+CopyWord|popped|100|1	$00000000
+CopyWord|dest|100|1	bytes 1024 fnv 56A7E0ED
+CopyWord|d0|100|1	prog
+CopyWord|kept|-1|1	kept
+CopyWord|popped|-1|1	$00000000
+CopyWord|dest|-1|1	bytes 1024 fnv D5B591C5
+CopyWord|d0|-1|1	$00000000
+CopyWord|kept|-2147483648|1	kept
+CopyWord|popped|-2147483648|1	$00000000
+CopyWord|dest|-2147483648|1	bytes 1024 fnv D5B591C5
+CopyWord|d0|-2147483648|1	$00000000
+CopyLong|kept|1|1	kept
+CopyLong|popped|1|1	$00000000
+CopyLong|dest|1|1	bytes 1024 fnv 6807DB61
+CopyLong|d0|1|1	prog
+CopyLong|kept|2|1	kept
+CopyLong|popped|2|1	$00000000
+CopyLong|dest|2|1	bytes 1024 fnv CC7E99BD
+CopyLong|d0|2|1	prog
+CopyLong|kept|7|1	kept
+CopyLong|popped|7|1	$00000000
+CopyLong|dest|7|1	bytes 1024 fnv 52514035
+CopyLong|d0|7|1	prog
+CopyLong|kept|100|1	kept
+CopyLong|popped|100|1	$00000000
+CopyLong|dest|100|1	bytes 1024 fnv BBAEA6C5
+CopyLong|d0|100|1	prog
+CopyLong|kept|-1|1	kept
+CopyLong|popped|-1|1	$00000000
+CopyLong|dest|-1|1	bytes 1024 fnv D5B591C5
+CopyLong|d0|-1|1	$00000000
+CopyLong|kept|-2147483648|1	kept
+CopyLong|popped|-2147483648|1	$00000000
+CopyLong|dest|-2147483648|1	bytes 1024 fnv D5B591C5
+CopyLong|d0|-2147483648|1	$00000000
+KeyCode|kept||1	kept
+KeyCode|popped||1	$00000000
+KeyCode|d0 a byte||1	$00000001
+Timer|kept||1	kept
+Timer|popped||1	$00000000
+Timer|d0 24 bit||1	$00000001
+Timer|kept||2	kept
+Timer|popped||2	$00000000
+Timer|runs||1	$00000001
+Lisa|kept||1	kept
+Lisa|popped||1	$00000000
+Lisa|d0||1	$5A0000F8
+Lisa|the high word kept||1	$00000001
+WaitBlitter|kept||1	kept
+WaitBlitter|popped||1	$00000000
+BlitterDone|kept||1	kept
+BlitterDone|popped||1	$00000000
+BlitterDone|d0||1	$FFFFFFFF
+MemFree|kept||1	kept
+MemFree|popped||1	$00000000
+MemFree|d0 - AvailMem(MEMF_PUBLIC)||1	$00000000
+CachesOff|kept|$0|1	kept
+CachesOff|popped|$0|1	$00000000
+CachesOff|d0|$0|1	$00000001
+CachesOff|kept|$1|1	kept
+CachesOff|popped|$1|1	$00000000
+CachesOff|d0|$1|1	$00000001
+CachesOff|kept|$8|1	kept
+CachesOff|popped|$8|1	$00000000
+CachesOff|d0|$8|1	$00000001
+CachesOff|kept|$9|1	kept
+CachesOff|popped|$9|1	$00000000
+CachesOff|d0|$9|1	$00000001
+CachesOn|kept|$0|1	kept
+CachesOn|popped|$0|1	$00000000
+CachesOn|d0|$0|1	$00000001
+CachesOn|kept|$1|1	kept
+CachesOn|popped|$1|1	$00000000
+CachesOn|d0|$1|1	$00000001
+CachesOn|kept|$8|1	kept
+CachesOn|popped|$8|1	$00000000
+CachesOn|d0|$8|1	$00000001
+CachesOn|kept|$9|1	kept
+CachesOn|popped|$9|1	$00000000
+CachesOn|d0|$9|1	$00000001
+init|kept||1	kept
+init|popped||1	$00000000
+BankLimit|kept||1	kept
+BankLimit|popped||1	$00000000
+BankLimit|d0||1	$00000032
+Start|kept|0|1	kept
+Start|popped|0|1	$00000000
+Start|0 or an address|0|1	$00000001
+Start|d0 free|0|1	$00000000
+Length|kept|0|1	kept
+Length|popped|0|1	$00000000
+Length|d0|0|1	$00000000
+Start|kept|49|1	kept
+Start|popped|49|1	$00000000
+Start|0 or an address|49|1	$00000001
+Start|d0 free|49|1	$00000000
+Length|kept|49|1	kept
+Length|popped|49|1	$00000000
+Length|d0|49|1	$00000000
+Start|kept|50|1	kept
+Start|popped|50|1	$00000000
+Start|0 or an address|50|1	$00000001
+Start|d0 free|50|1	$00000000
+Length|kept|50|1	kept
+Length|popped|50|1	$00000000
+Length|d0|50|1	$00000000
+Start|kept|100000|1	kept
+Start|popped|100000|1	$00000000
+Start|0 or an address|100000|1	$00000001
+Start|d0|100000|1	$00000000
+NextBank|kept|form 1 0|1	kept
+NextBank|popped|form 1 0|1	$00000000
+NextBank|d0|form 1 0|1	$00000000
+NextBank|kept|form 0 5|1	kept
+NextBank|popped|form 0 5|1	$00000000
+NextBank|d0|form 0 5|1	$00000005
+Reserve|kept|form 0 100,0,$0|1	kept
+Reserve|popped|form 0 100,0,$0|1	$00000000
+Reserve|d0|form 0 100,0,$0|1	$00000000
+Length|kept|0|2	kept
+Length|popped|0|2	$00000000
+Length|d0|0|2	$00000064
+Start|kept|0|2	kept
+Start|popped|0|2	$00000000
+Start|0 or an address|0|2	$00000000
+Reserve|used|bank 0|1	$00000001
+Reserve|kept|form 1 3,256,$0|1	kept
+Reserve|popped|form 1 3,256,$0|1	$00000000
+Reserve|d0|form 1 3,256,$0|1	$FFFFFFFF
+Length|kept|3|1	kept
+Length|popped|3|1	$00000000
+Length|d0|3|1	$00000100
+Start|kept|3|1	kept
+Start|popped|3|1	$00000000
+Start|0 or an address|3|1	$00000000
+Reserve|used|bank 3|1	$00000001
+Reserve|kept|form 2 7,64,$10002|1	kept
+Reserve|popped|form 2 7,64,$10002|1	$00000000
+Reserve|d0|form 2 7,64,$10002|1	$FFFFFFFF
+Length|kept|7|1	kept
+Length|popped|7|1	$00000000
+Length|d0|7|1	$00000040
+Start|kept|7|1	kept
+Start|popped|7|1	$00000000
+Start|0 or an address|7|1	$00000000
+Reserve|used|bank 7|1	$00000001
+Reserve|contents|bank 7|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Start|kept|7|2	kept
+Start|popped|7|2	$00000000
+Start|0 or an address|7|2	$00000000
+Start|chip|7|1	$00000001
+Reserve|kept|form 1 3,32,$0|1	kept
+Reserve|popped|form 1 3,32,$0|1	$00000000
+Reserve|d0|form 1 3,32,$0|1	$FFFFFFFF
+Length|kept|3|2	kept
+Length|popped|3|2	$00000000
+Length|d0|3|2	$00000020
+FillMem|kept|form 1 3,32,153|1	kept
+FillMem|popped|form 1 3,32,153|1	$00000000
+Length|kept|3|3	kept
+Length|popped|3|3	$00000000
+Length|d0|3|3	$00000020
+Start|kept|3|2	kept
+Start|popped|3|2	$00000000
+Start|0 or an address|3|2	$00000000
+FillMem|used|bank 3|1	$00000001
+FillMem|contents|bank 3|1	bytes 32 9999999999999999999999999999999999999999999999999999999999999999
+Reserve|kept|form 0 -5,0,$0|1	kept
+Reserve|popped|form 0 -5,0,$0|1	$00000000
+Reserve|d0|form 0 -5,0,$0|1	$00000000
+Reserve|kept|form 0 64,0,$0|1	kept
+Reserve|popped|form 0 64,0,$0|1	$00000000
+Reserve|d0|form 0 64,0,$0|1	$FFFFFFFF
+Reserve|kept|form 1 4,64,$0|1	kept
+Reserve|popped|form 1 4,64,$0|1	$00000000
+Reserve|d0|form 1 4,64,$0|1	$00000000
+Reserve|kept|form 2 7,16,$2|1	kept
+Reserve|popped|form 2 7,16,$2|1	$00000000
+Reserve|d0|form 2 7,16,$2|1	$00000000
+Length|kept|7|2	kept
+Length|popped|7|2	$00000000
+Length|d0|7|2	$00000000
+Length|kept|4|1	kept
+Length|popped|4|1	$00000000
+Length|d0|4|1	$00000000
+NextBank|kept|form 1 0|2	kept
+NextBank|popped|form 1 0|2	$00000000
+NextBank|d0|form 1 0|2	$00000001
+NextBank|kept|form 1 3|1	kept
+NextBank|popped|form 1 3|1	$00000000
+NextBank|d0|form 1 3|1	$00000004
+NextBank|kept|form 1 7|1	kept
+NextBank|popped|form 1 7|1	$00000000
+NextBank|d0|form 1 7|1	$00000007
+NextBank|kept|form 1 49|1	kept
+NextBank|popped|form 1 49|1	$00000000
+NextBank|d0|form 1 49|1	$00000031
+NextBank|kept|form 1 50|1	kept
+NextBank|popped|form 1 50|1	$00000000
+NextBank|d0|form 1 50|1	$FFFFFFFF
+NextBank|kept|form 1 -1|1	kept
+NextBank|popped|form 1 -1|1	$00000000
+NextBank|d0|form 1 -1|1	$FFFFFFFF
+FillMem|kept|form 1 0,100,90|1	kept
+FillMem|popped|form 1 0,100,90|1	$00000000
+Length|kept|0|3	kept
+Length|popped|0|3	$00000000
+Length|d0|0|3	$00000064
+Start|kept|0|3	kept
+Start|popped|0|3	$00000000
+Start|0 or an address|0|3	$00000000
+FillMem|used|bank 0|1	$00000001
+FillMem|contents|bank 0|1	bytes 100 fnv FB5ED1A5
+FillMem|kept|form 0 3,32,0|1	kept
+FillMem|popped|form 0 3,32,0|1	$00000000
+Length|kept|3|4	kept
+Length|popped|3|4	$00000000
+Length|d0|3|4	$00000020
+Start|kept|3|3	kept
+Start|popped|3|3	$00000000
+Start|0 or an address|3|3	$00000000
+FillMem|used|bank 3|2	$00000001
+FillMem|contents|bank 3|2	bytes 32 0000000000000000000000000000000000000000000000000000000000000000
+FillMem|kept|form 1 3,7,511|1	kept
+FillMem|popped|form 1 3,7,511|1	$00000000
+Length|kept|3|5	kept
+Length|popped|3|5	$00000000
+Length|d0|3|5	$00000020
+Start|kept|3|4	kept
+Start|popped|3|4	$00000000
+Start|0 or an address|3|4	$00000000
+FillMem|used|bank 3|3	$00000001
+FillMem|contents|bank 3|3	bytes 32 FFFFFFFFFFFFFF00000000000000000000000000000000000000000000000000
+FillMem|kept|form 1 5,10,119|1	kept
+FillMem|popped|form 1 5,10,119|1	$00000000
+Length|kept|5|1	kept
+Length|popped|5|1	$00000000
+Length|d0|5|1	$00000000
+Start|kept|5|1	kept
+Start|popped|5|1	$00000000
+Start|0 or an address|5|1	$00000001
+FillMem|used|bank 5|1	$00000000
+FillMem|kept|form 1 -1,10,7|1	kept
+FillMem|popped|form 1 -1,10,7|1	$00000000
+FillMem|memory|form 1 -1,10,7|1	bytes 1024 fnv 71681A67
+FillMem|kept|form 0 -1,300,0|1	kept
+FillMem|popped|form 0 -1,300,0|1	$00000000
+FillMem|memory|form 0 -1,300,0|1	bytes 1024 fnv 8E4FCA55
+SwapBank|kept|0,3|1	kept
+SwapBank|popped|0,3|1	$00000000
+SwapBank|d0|0,3|1	$FFFFFFFF
+Length|kept|0|4	kept
+Length|popped|0|4	$00000000
+Length|d0|0|4	$00000020
+Start|kept|0|4	kept
+Start|popped|0|4	$00000000
+Start|0 or an address|0|4	$00000000
+SwapBank|used|bank 0|1	$00000001
+SwapBank|contents|bank 0|1	bytes 32 FFFFFFFFFFFFFF00000000000000000000000000000000000000000000000000
+Length|kept|3|6	kept
+Length|popped|3|6	$00000000
+Length|d0|3|6	$00000064
+Start|kept|3|5	kept
+Start|popped|3|5	$00000000
+Start|0 or an address|3|5	$00000000
+SwapBank|used|bank 3|1	$00000001
+SwapBank|contents|bank 3|1	bytes 100 fnv FB5ED1A5
+SwapBank|kept|0,5|1	kept
+SwapBank|popped|0,5|1	$00000000
+SwapBank|d0|0,5|1	$00000000
+SwapBank|kept|5,0|1	kept
+SwapBank|popped|5,0|1	$00000000
+SwapBank|d0|5,0|1	$00000000
+Erase|kept|3|1	kept
+Erase|popped|3|1	$00000000
+Length|kept|3|7	kept
+Length|popped|3|7	$00000000
+Length|d0|3|7	$00000000
+Start|kept|3|6	kept
+Start|popped|3|6	$00000000
+Start|0 or an address|3|6	$00000001
+Start|d0|3|1	$00000000
+Erase|kept|5 (free)|1	kept
+Erase|popped|5 (free)|1	$00000000
+BankLimit|kept|60|1	kept
+BankLimit|popped|60|1	$00000000
+BankLimit|d0 = the start table|60|1	$00000001
+BankLimit|kept|60|2	kept
+BankLimit|popped|60|2	$00000000
+BankLimit|d0|60|1	$0000003C
+Length|kept|0|5	kept
+Length|popped|0|5	$00000000
+Length|d0|0|5	$00000000
+Length|kept|7|3	kept
+Length|popped|7|3	$00000000
+Length|d0|7|3	$00000000
+Reserve|kept|form 1 55,10,$0|1	kept
+Reserve|popped|form 1 55,10,$0|1	$00000000
+Reserve|d0|form 1 55,10,$0|1	$FFFFFFFF
+Length|kept|55|1	kept
+Length|popped|55|1	$00000000
+Length|d0|55|1	$0000000A
+Start|kept|55|1	kept
+Start|popped|55|1	$00000000
+Start|0 or an address|55|1	$00000000
+Reserve|used|bank 55|1	$00000001
+NextBank|kept|form 1 0|3	kept
+NextBank|popped|form 1 0|3	$00000000
+NextBank|d0|form 1 0|3	$00000000
+NextBank|kept|form 1 55|1	kept
+NextBank|popped|form 1 55|1	$00000000
+NextBank|d0|form 1 55|1	$00000038
+BankLimit|kept|50|1	kept
+BankLimit|popped|50|1	$00000000
+BankLimit|kept|50|2	kept
+BankLimit|popped|50|2	$00000000
+BankLimit|d0|50|1	$00000032
+Length|kept|55|2	kept
+Length|popped|55|2	$00000000
+Length|d0|55|2	$00000000
+Reserve|kept|form 0 40,0,$0|1	kept
+Reserve|popped|form 0 40,0,$0|1	$00000000
+Reserve|d0|form 0 40,0,$0|1	$00000000
+FillMem|kept|form 1 0,40,17|1	kept
+FillMem|popped|form 1 0,40,17|1	$00000000
+Length|kept|0|6	kept
+Length|popped|0|6	$00000000
+Length|d0|0|6	$00000028
+Start|kept|0|5	kept
+Start|popped|0|5	$00000000
+Start|0 or an address|0|5	$00000000
+FillMem|used|bank 0|2	$00000001
+FillMem|contents|bank 0|2	bytes 40 11111111111111111111111111111111111111111111111111111111111111111111111111111111
+Reserve|kept|form 0 24,0,$0|1	kept
+Reserve|popped|form 0 24,0,$0|1	$00000000
+Reserve|d0|form 0 24,0,$0|1	$00000001
+FillMem|kept|form 1 1,24,34|1	kept
+FillMem|popped|form 1 1,24,34|1	$00000000
+Length|kept|1|1	kept
+Length|popped|1|1	$00000000
+Length|d0|1|1	$00000018
+Start|kept|1|1	kept
+Start|popped|1|1	$00000000
+Start|0 or an address|1|1	$00000000
+FillMem|used|bank 1|1	$00000001
+FillMem|contents|bank 1|1	bytes 24 222222222222222222222222222222222222222222222222
+MakeDir|kept||1	kept
+MakeDir|popped||1	$00000000
+MakeDir|d0||1	$FFFFFFFF
+MakeDir|lock free||1	$00000001
+MakeDir|kept||2	kept
+MakeDir|popped||2	$00000000
+MakeDir|d0||2	$00000000
+MakeDir|lock free||2	$00000001
+MakeDir|kept|nodir/sub|1	kept
+MakeDir|popped|nodir/sub|1	$00000000
+MakeDir|d0|nodir/sub|1	$00000000
+MakeDir|lock free|nodir/sub|1	$00000000
+MakeDir|kept|sub|1	kept
+MakeDir|popped|sub|1	$00000000
+MakeDir|d0|sub|1	$FFFFFFFF
+MakeDir|lock free|sub|1	$00000001
+Start|kept|0|6	kept
+Start|popped|0|6	$00000000
+Start|0 or an address|0|6	$00000000
+BSave|kept|form 0 a.bin 0 0|1	kept
+BSave|popped|form 0 a.bin 0 0|1	$00000000
+BSave|d0|form 0 a.bin 0 0|1	$FFFFFFFF
+BSave|length|file a.bin|1	$00000028
+BSave|contents|file a.bin|1	bytes 2048 fnv 4260788D
+FileSize|kept|a.bin|1	kept
+FileSize|popped|a.bin|1	$00000000
+FileSize|d0|a.bin|1	$00000028
+BSave|kept|form 1 b.bin -1 37|1	kept
+BSave|popped|form 1 b.bin -1 37|1	$00000000
+BSave|d0|form 1 b.bin -1 37|1	$FFFFFFFF
+BSave|length|file b.bin|1	$00000025
+BSave|contents|file b.bin|1	bytes 2048 fnv 5598B7BD
+FileSize|kept|b.bin|1	kept
+FileSize|popped|b.bin|1	$00000000
+FileSize|d0|b.bin|1	$00000025
+BSave|kept|form 0 c.bin -1 0|1	kept
+BSave|popped|form 0 c.bin -1 0|1	$00000000
+BSave|d0|form 0 c.bin -1 0|1	$00000000
+BSave|kept|form 0 c.bin 5 0|1	kept
+BSave|popped|form 0 c.bin 5 0|1	$00000000
+BSave|d0|form 0 c.bin 5 0|1	$00000000
+BSave|kept|form 1 c.bin 0 10|1	kept
+BSave|popped|form 1 c.bin 0 10|1	$00000000
+BSave|d0|form 1 c.bin 0 10|1	$FFFFFFFF
+BSave|length|file c.bin|1	$0000000A
+BSave|contents|file c.bin|1	bytes 2048 fnv FCEED827
+BSave|kept|form 1 nodir/x.bin 0 10|1	kept
+BSave|popped|form 1 nodir/x.bin 0 10|1	$00000000
+BSave|d0|form 1 nodir/x.bin 0 10|1	$00000000
+FileSize|kept||1	kept
+FileSize|popped||1	$00000000
+FileSize|d0||1	$00000000
+FileSize|kept|missing.bin|1	kept
+FileSize|popped|missing.bin|1	$00000000
+FileSize|d0|missing.bin|1	$00000000
+BLoad|kept|form 0 p.bin 0,0,0,$0|1	kept
+BLoad|popped|form 0 p.bin 0,0,0,$0|1	$00000000
+BLoad|d0|form 0 p.bin 0,0,0,$0|1	$00000002
+BLoad|memory|form 0 p.bin 0,0,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|2|1	kept
+Length|popped|2|1	$00000000
+Length|d0|2|1	$0000012C
+Start|kept|2|1	kept
+Start|popped|2|1	$00000000
+Start|0 or an address|2|1	$00000000
+BLoad|used|bank 2|1	$00000001
+BLoad|contents|bank 2|1	bytes 300 fnv 688FF9F5
+BLoad|kept|form 0 missing.bin 0,0,0,$0|1	kept
+BLoad|popped|form 0 missing.bin 0,0,0,$0|1	$00000000
+BLoad|d0|form 0 missing.bin 0,0,0,$0|1	$FFFFFFFF
+BLoad|memory|form 0 missing.bin 0,0,0,$0|1	bytes 1024 fnv C675ADC5
+BLoad|kept|form 0 empty.bin 0,0,0,$0|1	kept
+BLoad|popped|form 0 empty.bin 0,0,0,$0|1	$00000000
+BLoad|d0|form 0 empty.bin 0,0,0,$0|1	$FFFFFFFF
+BLoad|memory|form 0 empty.bin 0,0,0,$0|1	bytes 1024 fnv C675ADC5
+BLoad|kept|form 1 b.bin -1,0,0,$0|1	kept
+BLoad|popped|form 1 b.bin -1,0,0,$0|1	$00000000
+BLoad|d0|form 1 b.bin -1,0,0,$0|1	$FFFFFFFF
+BLoad|memory|form 1 b.bin -1,0,0,$0|1	bytes 1024 fnv CE0DAD53
+BLoad|kept|form 1 b.bin 8,0,0,$0|1	kept
+BLoad|popped|form 1 b.bin 8,0,0,$0|1	$00000000
+BLoad|d0|form 1 b.bin 8,0,0,$0|1	$FFFFFFFF
+BLoad|memory|form 1 b.bin 8,0,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|8|1	kept
+Length|popped|8|1	$00000000
+Length|d0|8|1	$00000025
+Start|kept|8|1	kept
+Start|popped|8|1	$00000000
+Start|0 or an address|8|1	$00000000
+BLoad|used|bank 8|1	$00000001
+BLoad|contents|bank 8|1	bytes 37 00070E151C232A313940474E555C636A727980878E959CA3ABB2B9C0C7CED5DCE4EBF2F900
+BLoad|kept|form 1 p.bin 8,0,0,$0|1	kept
+BLoad|popped|form 1 p.bin 8,0,0,$0|1	$00000000
+BLoad|d0|form 1 p.bin 8,0,0,$0|1	$FFFFFFFF
+BLoad|memory|form 1 p.bin 8,0,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|8|2	kept
+Length|popped|8|2	$00000000
+Length|d0|8|2	$0000012C
+Start|kept|8|2	kept
+Start|popped|8|2	$00000000
+Start|0 or an address|8|2	$00000000
+BLoad|used|bank 8|2	$00000001
+BLoad|contents|bank 8|2	bytes 300 fnv 688FF9F5
+BLoad|kept|form 2 p.bin -1,5,0,$0|1	kept
+BLoad|popped|form 2 p.bin -1,5,0,$0|1	$00000000
+BLoad|d0|form 2 p.bin -1,5,0,$0|1	$FFFFFFFF
+BLoad|memory|form 2 p.bin -1,5,0,$0|1	bytes 1024 fnv 8D9B166F
+BLoad|kept|form 2 p.bin 9,20,0,$0|1	kept
+BLoad|popped|form 2 p.bin 9,20,0,$0|1	$00000000
+BLoad|d0|form 2 p.bin 9,20,0,$0|1	$FFFFFFFF
+BLoad|memory|form 2 p.bin 9,20,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|9|1	kept
+Length|popped|9|1	$00000000
+Length|d0|9|1	$00000014
+Start|kept|9|1	kept
+Start|popped|9|1	$00000000
+Start|0 or an address|9|1	$00000000
+BLoad|used|bank 9|1	$00000001
+BLoad|contents|bank 9|1	bytes 20 00070E151C232A313940474E555C636A72798087
+BLoad|kept|form 3 p.bin -1,5,3,$0|1	kept
+BLoad|popped|form 3 p.bin -1,5,3,$0|1	$00000000
+BLoad|d0|form 3 p.bin -1,5,3,$0|1	$FFFFFFFF
+BLoad|memory|form 3 p.bin -1,5,3,$0|1	bytes 1024 fnv 1073E114
+BLoad|kept|form 3 p.bin -1,0,250,$0|1	kept
+BLoad|popped|form 3 p.bin -1,0,250,$0|1	$00000000
+BLoad|d0|form 3 p.bin -1,0,250,$0|1	$FFFFFFFF
+BLoad|memory|form 3 p.bin -1,0,250,$0|1	bytes 1024 fnv 5F027136
+BLoad|kept|form 4 p.bin 10,0,2,$10002|1	kept
+BLoad|popped|form 4 p.bin 10,0,2,$10002|1	$00000000
+BLoad|d0|form 4 p.bin 10,0,2,$10002|1	$FFFFFFFF
+BLoad|memory|form 4 p.bin 10,0,2,$10002|1	bytes 1024 fnv C675ADC5
+Length|kept|10|1	kept
+Length|popped|10|1	$00000000
+Length|d0|10|1	$0000012C
+Start|kept|10|1	kept
+Start|popped|10|1	$00000000
+Start|0 or an address|10|1	$00000000
+BLoad|used|bank 10|1	$00000001
+BLoad|contents|bank 10|1	bytes 300 fnv EA91B2AC
+Start|kept|10|2	kept
+Start|popped|10|2	$00000000
+Start|0 or an address|10|2	$00000000
+Start|chip|10|1	$00000001
+BLoad|kept|form 4 p.bin -1,16,1,$2|1	kept
+BLoad|popped|form 4 p.bin -1,16,1,$2|1	$00000000
+BLoad|d0|form 4 p.bin -1,16,1,$2|1	$FFFFFFFF
+BLoad|memory|form 4 p.bin -1,16,1,$2|1	bytes 1024 fnv F7E59D17
+BLoad|kept|form 1 missing.bin 11,0,0,$0|1	kept
+BLoad|popped|form 1 missing.bin 11,0,0,$0|1	$00000000
+BLoad|d0|form 1 missing.bin 11,0,0,$0|1	$00000000
+BLoad|memory|form 1 missing.bin 11,0,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|11|1	kept
+Length|popped|11|1	$00000000
+Length|d0|11|1	$00000000
+Start|kept|11|1	kept
+Start|popped|11|1	$00000000
+Start|0 or an address|11|1	$00000001
+BLoad|used|bank 11|1	$00000000
+BLoad|kept|form 2 missing.bin 11,16,0,$0|1	kept
+BLoad|popped|form 2 missing.bin 11,16,0,$0|1	$00000000
+BLoad|d0|form 2 missing.bin 11,16,0,$0|1	$00000000
+BLoad|memory|form 2 missing.bin 11,16,0,$0|1	bytes 1024 fnv C675ADC5
+Length|kept|11|2	kept
+Length|popped|11|2	$00000000
+Length|d0|11|2	$00000010
+Start|kept|11|2	kept
+Start|popped|11|2	$00000000
+Start|0 or an address|11|2	$00000000
+BLoad|used|bank 11|2	$00000001
+Length|kept|11|3	kept
+Length|popped|11|3	$00000000
+Length|d0|11|3	$00000010
+BLoad|kept|form 1 empty.bin -1,0,0,$0|1	kept
+BLoad|popped|form 1 empty.bin -1,0,0,$0|1	$00000000
+BLoad|d0|form 1 empty.bin -1,0,0,$0|1	$00000000
+BLoad|memory|form 1 empty.bin -1,0,0,$0|1	bytes 1024 fnv C675ADC5
+BLoad error check|present|form 0|1	$00000001
+BLoad error check|kept|form 0|1	kept
+BLoad error check|popped|form 0|1	$00000000
+BLoad error check|d0 kept|form 0|1	$00000001
+BLoad error check|present|form 1|1	$00000001
+BLoad error check|kept|form 1|1	kept
+BLoad error check|popped|form 1|1	$00000000
+BLoad error check|d0 kept|form 1|1	$00000001
+BLoad error check|present|form 2|1	$00000001
+BLoad error check|kept|form 2|1	kept
+BLoad error check|popped|form 2|1	$00000000
+BLoad error check|d0 kept|form 2|1	$00000001
+BLoad error check|present|form 3|1	$00000001
+BLoad error check|kept|form 3|1	kept
+BLoad error check|popped|form 3|1	$00000000
+BLoad error check|d0 kept|form 3|1	$00000001
+BLoad error check|present|form 4|1	$00000001
+BLoad error check|kept|form 4|1	kept
+BLoad error check|popped|form 4|1	$00000000
+BLoad error check|d0 kept|form 4|1	$00000001
+Rename|kept|c.bin d.bin|1	kept
+Rename|popped|c.bin d.bin|1	$00000000
+Rename|d0|c.bin d.bin|1	$FFFFFFFF
+FileSize|kept|d.bin|1	kept
+FileSize|popped|d.bin|1	$00000000
+FileSize|d0|d.bin|1	$0000000A
+FileSize|kept|c.bin|1	kept
+FileSize|popped|c.bin|1	$00000000
+FileSize|d0|c.bin|1	$00000000
+Rename|kept|missing|1	kept
+Rename|popped|missing|1	$00000000
+Rename|d0|missing|1	$00000000
+FindVolume|kept|"RAM"|1	kept
+FindVolume|popped|"RAM"|1	$00000000
+FindVolume|d0|"RAM"|1	$40002C7C
+FindVolume|kept|"Ram Disk"|1	kept
+FindVolume|popped|"Ram Disk"|1	$00000000
+FindVolume|d0|"Ram Disk"|1	$40025894
+FindVolume|kept|"TEST"|1	kept
+FindVolume|popped|"TEST"|1	$00000000
+FindVolume|d0|"TEST"|1	$4001D3D8
+FindVolume|kept|"nosuchvolume"|1	kept
+FindVolume|popped|"nosuchvolume"|1	$00000000
+FindVolume|d0|"nosuchvolume"|1	$00000000
+FindVolume|kept|""|1	kept
+FindVolume|popped|""|1	$00000000
+FindVolume|d0|""|1	$00000000
+DeviceName$|kept|"RAM"|1	kept
+DeviceName$|popped|"RAM"|1	$00000000
+DeviceName$|d0|"RAM"|1	$00000004
+DeviceName$|a3|"RAM"|1	$00000018
+DeviceName$|string area|"RAM"|1	bytes 300 fnv 220D8235
+DeviceName$|kept|"RAM:"|1	kept
+DeviceName$|popped|"RAM:"|1	$00000000
+DeviceName$|d0|"RAM:"|1	$00000004
+DeviceName$|a3|"RAM:"|1	$00000018
+DeviceName$|string area|"RAM:"|1	bytes 300 fnv 220D8235
+DeviceName$|kept|"Ram Disk"|1	kept
+DeviceName$|popped|"Ram Disk"|1	$00000000
+DeviceName$|d0|"Ram Disk"|1	$00000004
+DeviceName$|a3|"Ram Disk"|1	$00000018
+DeviceName$|string area|"Ram Disk"|1	bytes 300 fnv D6973790
+DeviceName$|kept|"Ram Disk:"|1	kept
+DeviceName$|popped|"Ram Disk:"|1	$00000000
+DeviceName$|d0|"Ram Disk:"|1	$00000004
+DeviceName$|a3|"Ram Disk:"|1	$00000018
+DeviceName$|string area|"Ram Disk:"|1	bytes 300 fnv 5A568752
+DeviceName$|kept|"TEST"|1	kept
+DeviceName$|popped|"TEST"|1	$00000000
+DeviceName$|d0|"TEST"|1	$00000004
+DeviceName$|a3|"TEST"|1	$00000018
+DeviceName$|string area|"TEST"|1	bytes 300 fnv BE4795D8
+DeviceName$|kept|"TEST:"|1	kept
+DeviceName$|popped|"TEST:"|1	$00000000
+DeviceName$|d0|"TEST:"|1	$00000004
+DeviceName$|a3|"TEST:"|1	$00000018
+DeviceName$|string area|"TEST:"|1	bytes 300 fnv A106BB7A
+DeviceName$|kept|"nosuchvolume"|1	kept
+DeviceName$|popped|"nosuchvolume"|1	$00000000
+DeviceName$|d0|"nosuchvolume"|1	$00000000
+DeviceName$|a3|"nosuchvolume"|1	$00000014
+DeviceName$|string area|"nosuchvolume"|1	bytes 300 fnv BFBB10AD
+DeviceName$|kept|"nosuch:"|1	kept
+DeviceName$|popped|"nosuch:"|1	$00000000
+DeviceName$|d0|"nosuch:"|1	$00000000
+DeviceName$|a3|"nosuch:"|1	$00000014
+DeviceName$|string area|"nosuch:"|1	bytes 300 fnv B1592B81
+DeviceName$|kept|""|1	kept
+DeviceName$|popped|""|1	$00000000
+DeviceName$|d0|""|1	$00000000
+DeviceName$|a3|""|1	$00000014
+DeviceName$|string area|""|1	bytes 300 fnv E53D8C5B
+DeviceName$|kept|":"|1	kept
+DeviceName$|popped|":"|1	$00000000
+DeviceName$|d0|":"|1	$00000000
+DeviceName$|a3|":"|1	$00000014
+DeviceName$|string area|":"|1	bytes 300 fnv F838F675
+DeviceName$|kept|"RAM", d0 elsewhere|1	kept
+DeviceName$|popped|"RAM", d0 elsewhere|1	$00000000
+DeviceName$|d0|"RAM", d0 elsewhere|1	$00000004
+DeviceName$|a3|"RAM", d0 elsewhere|1	$00000018
+DeviceName$|string area|"RAM", d0 elsewhere|1	bytes 300 fnv 220D8235
+SaveExec|kept|list|1	kept
+SaveExec|popped|list|1	$00000000
+SaveExec|d0 (1: the name)|list|1	$FFFFFFFF
+SaveExec|length|file x.exe|1	$00000078
+SaveExec|contents|file x.exe|1	bytes 2048 fnv 6BEAC355
+SaveExec|kept|list 2|1	kept
+SaveExec|popped|list 2|1	$00000000
+SaveExec|d0 (1: the name)|list 2|1	$FFFFFFFF
+SaveExec|length|file y.exe|1	$0000003C
+SaveExec|contents|file y.exe|1	bytes 2048 fnv 86E7752C
+SaveExec|kept|no list|1	kept
+SaveExec|popped|no list|1	$00000000
+SaveExec|d0 (1: the name)|no list|1	$00000000
+SaveExec|kept|no file|1	kept
+SaveExec|popped|no file|1	$00000000
+SaveExec|d0 (1: the name)|no file|1	$00000001
+SaveExec|kept|empty (the file stays open)|1	kept
+SaveExec|popped|empty (the file stays open)|1	$00000000
+SaveExec|d0 (1: the name)|empty (the file stays open)|1	$00000001
+ChangeDir|kept||1	kept
+ChangeDir|popped||1	$00000000
+ChangeDir|d0||1	$FFFFFFFF
+ChangeDir|current directory||1	$00000002
+ChangeDir|kept|sub|1	kept
+ChangeDir|popped|sub|1	$00000000
+ChangeDir|d0|sub|1	$FFFFFFFF
+ChangeDir|current directory|sub|1	$00000001
+ChangeDir|kept|missing|1	kept
+ChangeDir|popped|missing|1	$00000000
+ChangeDir|d0|missing|1	$00000000
+ChangeDir|current directory|missing|1	$00000003
+ChangeDir|kept|sub (relative)|1	kept
+ChangeDir|popped|sub (relative)|1	$00000000
+ChangeDir|d0|sub (relative)|1	$FFFFFFFF
+ChangeDir|current directory|sub (relative)|1	$00000001
+ChangeDir|kept||2	kept
+ChangeDir|popped||2	$00000000
+ChangeDir|d0||2	$FFFFFFFF
+ChangeDir|current directory||2	$00000002
+EraseAll|kept||1	kept
+EraseAll|popped||1	$00000000
+Length|kept|0|7	kept
+Length|popped|0|7	$00000000
+Length|d0|0|7	$00000000
+Length|kept|1|2	kept
+Length|popped|1|2	$00000000
+Length|d0|1|2	$00000000
+Length|kept|2|2	kept
+Length|popped|2|2	$00000000
+Length|d0|2|2	$00000000
+Length|kept|3|8	kept
+Length|popped|3|8	$00000000
+Length|d0|3|8	$00000000
+Length|kept|4|2	kept
+Length|popped|4|2	$00000000
+Length|d0|4|2	$00000000
+Length|kept|5|2	kept
+Length|popped|5|2	$00000000
+Length|d0|5|2	$00000000
+Length|kept|6|1	kept
+Length|popped|6|1	$00000000
+Length|d0|6|1	$00000000
+Length|kept|7|4	kept
+Length|popped|7|4	$00000000
+Length|d0|7|4	$00000000
+Length|kept|8|3	kept
+Length|popped|8|3	$00000000
+Length|d0|8|3	$00000000
+Length|kept|9|2	kept
+Length|popped|9|2	$00000000
+Length|d0|9|2	$00000000
+Length|kept|10|2	kept
+Length|popped|10|2	$00000000
+Length|d0|10|2	$00000000
+Length|kept|11|4	kept
+Length|popped|11|4	$00000000
+Length|d0|11|4	$00000000
+finit|kept||1	kept
+finit|popped||1	$00000000

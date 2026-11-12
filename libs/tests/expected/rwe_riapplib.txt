@@ -1,0 +1,601 @@
+# capture rwe_riapplib 1
+AppEventIDCMP|$a000,len|inline|1	$A0000006
+AppEventIDCMP|code|inline|1	$203C0080
+AppEventIDCMP|code+4|inline|1	$00000000
+no init|kept|before init|1	kept
+no init|popped|before init|1	$00000000
+no init|d0|before init|1	$00000000
+no init|kept|before init|2	kept
+no init|popped|before init|2	$00000000
+no init|d0|before init|2	$00000000
+no init|kept|before init|3	kept
+no init|popped|before init|3	$00000000
+no init|d0|before init|3	$00000000
+no init|kept|before init|4	kept
+no init|popped|before init|4	$00000000
+no init|d0|before init|4	$00000000
+no init|kept|before init|5	kept
+no init|popped|before init|5	$00000000
+no init|d0|before init|5	$00000000
+no init|kept|before init|6	kept
+no init|popped|before init|6	$00000000
+no init|d0|before init|6	$00000000
+no init|kept|before init|7	kept
+no init|popped|before init|7	$00000000
+no init|d0|before init|7	$00000000
+no init|kept|before init|8	kept
+no init|popped|before init|8	$00000000
+no init|d0|before init|8	$00000000
+DelAppWindow|kept|id 1|1	kept
+DelAppWindow|popped|id 1|1	$00000000
+DelAppWindow|d0|id 1|1	$00000000
+DelAppWindow|wb calls|id 1|1	$00000000
+DelAppMenu|kept|id 1|1	kept
+DelAppMenu|popped|id 1|1	$00000000
+DelAppMenu|d0|id 1|1	$00000000
+DelAppMenu|wb calls|id 1|1	$00000000
+DelAppIcon|kept|id 1|1	kept
+DelAppIcon|popped|id 1|1	$00000000
+DelAppIcon|d0|id 1|1	$00000000
+DelAppIcon|wb calls|id 1|1	$00000000
+AppFile|kept|id 1|1	kept
+AppFile|popped|id 1|1	$00000000
+AppFile|d0|id 1|1	$00000000
+AppFile|wb calls|id 1|1	$00000000
+AddAppMenu|kept|id 1|1	kept
+AddAppMenu|popped|id 1|1	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 1|1	$00000001
+AddAppMenu|wb calls|id 1|1	$00000000
+AddAppWindow|kept|window 1|1	kept
+AddAppWindow|popped|window 1|1	$00000000
+AddAppWindow|d0|window 1|1	$00000000
+AddAppWindow|wb calls|window 1|1	$00000000
+AddAppIcon|kept|form 0 id 1 RAM:rweapp|1	kept
+AddAppIcon|popped|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|d0|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb calls|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|a4|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|kept|form 1 id 1 RAM:rweapp|1	kept
+AddAppIcon|popped|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|d0|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb calls|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|a4|form 1 id 1 RAM:rweapp|1	$00000001
+init|kept||1	kept
+init|popped||1	$00000000
+AppMsgPort|kept||1	kept
+AppMsgPort|popped||1	$00000000
+AppMsgPort|port||1	$00000001
+AddAppMenu|kept|id 3|1	kept
+AddAppMenu|popped|id 3|1	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|1	$00000000
+AddAppMenu|wb calls|id 3|1	$00000001
+AddAppMenu|wb fn|id 3|1	$00000005
+AddAppMenu|wb d0|id 3|1	$00000003
+AddAppMenu|wb d1|id 3|1	$00000000
+AddAppMenu|wb a0|id 3|1	prog
+AddAppMenu|wb a1 = AppMsgPort|id 3|1	$00000001
+AddAppMenu|wb a2|id 3|1	$00000000
+AddAppMenu|wb a3 = DiskObject|id 3|1	$00000000
+AddAppMenu|wb a4|id 3|1	$00000000
+AddAppMenu|wb CurrentX|id 3|1	$00000000
+AddAppMenu|wb CurrentY|id 3|1	$00000000
+AddAppMenu|kept|id 3|2	kept
+AddAppMenu|popped|id 3|2	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 3|2	$00000000
+AddAppMenu|wb calls|id 3|2	$00000002
+AddAppMenu|wb fn|id 3|2	$00000006
+AddAppMenu|wb d0|id 3|2	$00000000
+AddAppMenu|wb d1|id 3|2	$00000000
+AddAppMenu|wb a0|id 3|2	$00000010
+AddAppMenu|wb a1 = AppMsgPort|id 3|2	$00000001
+AddAppMenu|wb a2|id 3|2	$00000000
+AddAppMenu|wb a3 = DiskObject|id 3|2	$00000000
+AddAppMenu|wb a4|id 3|2	$00000000
+AddAppMenu|wb CurrentX|id 3|2	$00000000
+AddAppMenu|wb CurrentY|id 3|2	$00000000
+AddAppMenu|wb fn|id 3|3	$00000005
+AddAppMenu|wb d0|id 3|3	$00000003
+AddAppMenu|wb d1|id 3|3	$00000000
+AddAppMenu|wb a0|id 3|3	prog
+AddAppMenu|wb a1 = AppMsgPort|id 3|3	$00000001
+AddAppMenu|wb a2|id 3|3	$00000000
+AddAppMenu|wb a3 = DiskObject|id 3|3	$00000000
+AddAppMenu|wb a4|id 3|3	$00000000
+AddAppMenu|wb CurrentX|id 3|3	$00000000
+AddAppMenu|wb CurrentY|id 3|3	$00000000
+AddAppMenu|kept|id 5 (fails)|1	kept
+AddAppMenu|popped|id 5 (fails)|1	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 5 (fails)|1	$00000001
+AddAppMenu|wb calls|id 5 (fails)|1	$00000001
+AddAppMenu|wb fn|id 5 (fails)|1	$00000005
+AddAppMenu|wb d0|id 5 (fails)|1	$00000005
+AddAppMenu|wb d1|id 5 (fails)|1	$00000000
+AddAppMenu|wb a0|id 5 (fails)|1	prog
+AddAppMenu|wb a1 = AppMsgPort|id 5 (fails)|1	$00000001
+AddAppMenu|wb a2|id 5 (fails)|1	$00000000
+AddAppMenu|wb a3 = DiskObject|id 5 (fails)|1	$00000000
+AddAppMenu|wb a4|id 5 (fails)|1	$00000000
+AddAppMenu|wb CurrentX|id 5 (fails)|1	$00000000
+AddAppMenu|wb CurrentY|id 5 (fails)|1	$00000000
+DelAppMenu|kept|id 3|1	kept
+DelAppMenu|popped|id 3|1	$00000000
+DelAppMenu|d0|id 3|1	$FFFFFFFF
+DelAppMenu|wb calls|id 3|1	$00000001
+DelAppMenu|wb fn|id 3|1	$00000006
+DelAppMenu|wb d0|id 3|1	$00000000
+DelAppMenu|wb d1|id 3|1	$00000000
+DelAppMenu|wb a0|id 3|1	$00000020
+DelAppMenu|wb a1 = AppMsgPort|id 3|1	$00000001
+DelAppMenu|wb a2|id 3|1	$00000000
+DelAppMenu|wb a3 = DiskObject|id 3|1	$00000000
+DelAppMenu|wb a4|id 3|1	$00000000
+DelAppMenu|wb CurrentX|id 3|1	$00000000
+DelAppMenu|wb CurrentY|id 3|1	$00000000
+DelAppMenu|kept|id 3|2	kept
+DelAppMenu|popped|id 3|2	$00000000
+DelAppMenu|d0|id 3|2	$00000000
+DelAppMenu|wb calls|id 3|2	$00000000
+DelAppMenu|kept|id 5|1	kept
+DelAppMenu|popped|id 5|1	$00000000
+DelAppMenu|d0|id 5|1	$00000000
+DelAppMenu|wb calls|id 5|1	$00000000
+AddAppWindow|kept|window 2|1	kept
+AddAppWindow|popped|window 2|1	$00000000
+AddAppWindow|d0|window 2|1	$FFFFFFFF
+AddAppWindow|wb calls|window 2|1	$00000001
+AddAppWindow|wb fn|window 2|1	$00000001
+AddAppWindow|wb d0|window 2|1	$00000002
+AddAppWindow|wb d1|window 2|1	$00000000
+AddAppWindow|wb a0|window 2|1	$00A0B0C0
+AddAppWindow|wb a1 = AppMsgPort|window 2|1	$00000001
+AddAppWindow|wb a2|window 2|1	$00000000
+AddAppWindow|wb a3 = DiskObject|window 2|1	$00000000
+AddAppWindow|wb a4|window 2|1	$00000000
+AddAppWindow|wb CurrentX|window 2|1	$00000000
+AddAppWindow|wb CurrentY|window 2|1	$00000000
+AddAppWindow|kept|window 2|2	kept
+AddAppWindow|popped|window 2|2	$00000000
+AddAppWindow|d0|window 2|2	$FFFFFFFF
+AddAppWindow|wb calls|window 2|2	$00000002
+AddAppWindow|wb fn|window 2|2	$00000002
+AddAppWindow|wb d0|window 2|2	$00000000
+AddAppWindow|wb d1|window 2|2	$00000000
+AddAppWindow|wb a0|window 2|2	$00000030
+AddAppWindow|wb a1 = AppMsgPort|window 2|2	$00000001
+AddAppWindow|wb a2|window 2|2	$00000000
+AddAppWindow|wb a3 = DiskObject|window 2|2	$00000000
+AddAppWindow|wb a4|window 2|2	$00000000
+AddAppWindow|wb CurrentX|window 2|2	$00000000
+AddAppWindow|wb CurrentY|window 2|2	$00000000
+AddAppWindow|wb fn|window 2|3	$00000001
+AddAppWindow|wb d0|window 2|3	$00000002
+AddAppWindow|wb d1|window 2|3	$00000000
+AddAppWindow|wb a0|window 2|3	$00A0B0C0
+AddAppWindow|wb a1 = AppMsgPort|window 2|3	$00000001
+AddAppWindow|wb a2|window 2|3	$00000000
+AddAppWindow|wb a3 = DiskObject|window 2|3	$00000000
+AddAppWindow|wb a4|window 2|3	$00000000
+AddAppWindow|wb CurrentX|window 2|3	$00000000
+AddAppWindow|wb CurrentY|window 2|3	$00000000
+AddAppWindow|kept|window 4 (fails)|1	kept
+AddAppWindow|popped|window 4 (fails)|1	$00000000
+AddAppWindow|d0|window 4 (fails)|1	$00000000
+AddAppWindow|wb calls|window 4 (fails)|1	$00000001
+AddAppWindow|wb fn|window 4 (fails)|1	$00000001
+AddAppWindow|wb d0|window 4 (fails)|1	$00000004
+AddAppWindow|wb d1|window 4 (fails)|1	$00000000
+AddAppWindow|wb a0|window 4 (fails)|1	$00A0B0C0
+AddAppWindow|wb a1 = AppMsgPort|window 4 (fails)|1	$00000001
+AddAppWindow|wb a2|window 4 (fails)|1	$00000000
+AddAppWindow|wb a3 = DiskObject|window 4 (fails)|1	$00000000
+AddAppWindow|wb a4|window 4 (fails)|1	$00000000
+AddAppWindow|wb CurrentX|window 4 (fails)|1	$00000000
+AddAppWindow|wb CurrentY|window 4 (fails)|1	$00000000
+DelAppWindow|kept|id 2|1	kept
+DelAppWindow|popped|id 2|1	$00000000
+DelAppWindow|d0|id 2|1	$FFFFFFFF
+DelAppWindow|wb calls|id 2|1	$00000001
+DelAppWindow|wb fn|id 2|1	$00000002
+DelAppWindow|wb d0|id 2|1	$00000000
+DelAppWindow|wb d1|id 2|1	$00000000
+DelAppWindow|wb a0|id 2|1	$00000040
+DelAppWindow|wb a1 = AppMsgPort|id 2|1	$00000001
+DelAppWindow|wb a2|id 2|1	$00000000
+DelAppWindow|wb a3 = DiskObject|id 2|1	$00000000
+DelAppWindow|wb a4|id 2|1	$00000000
+DelAppWindow|wb CurrentX|id 2|1	$00000000
+DelAppWindow|wb CurrentY|id 2|1	$00000000
+DelAppWindow (empty: NULL)|kept|id 7|1	kept
+DelAppWindow (empty: NULL)|popped|id 7|1	$00000000
+DelAppWindow (empty: NULL)|d0|id 7|1	$FFFFFFFF
+DelAppWindow (empty: NULL)|wb calls|id 7|1	$00000001
+DelAppWindow (empty: NULL)|wb fn|id 7|1	$00000002
+DelAppWindow (empty: NULL)|wb d0|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb d1|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb a0|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb a1 = AppMsgPort|id 7|1	$00000001
+DelAppWindow (empty: NULL)|wb a2|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb a3 = DiskObject|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb a4|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb CurrentX|id 7|1	$00000000
+DelAppWindow (empty: NULL)|wb CurrentY|id 7|1	$00000000
+AddAppIcon|kept|form 0 id 1 RAM:rweapp|2	kept
+AddAppIcon|popped|form 0 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|d0|form 0 id 1 RAM:rweapp|2	$FFFFFFFF
+AddAppIcon|wb calls|form 0 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|wb fn|form 0 id 1 RAM:rweapp|1	$00000003
+AddAppIcon|wb d0|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|wb d1|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb a0|form 0 id 1 RAM:rweapp|1	prog
+AddAppIcon|wb a1 = AppMsgPort|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|wb a2|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb a3 = DiskObject|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|wb a4|form 0 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb CurrentX|form 0 id 1 RAM:rweapp|1	$80000000
+AddAppIcon|wb CurrentY|form 0 id 1 RAM:rweapp|1	$80000000
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|a4|form 0 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|kept|form 1 id 1 RAM:rweapp|2	kept
+AddAppIcon|popped|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|d0|form 1 id 1 RAM:rweapp|2	$FFFFFFFF
+AddAppIcon|wb calls|form 1 id 1 RAM:rweapp|2	$00000002
+AddAppIcon|wb fn|form 1 id 1 RAM:rweapp|1	$00000004
+AddAppIcon|wb d0|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb d1|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb a0|form 1 id 1 RAM:rweapp|1	$00000050
+AddAppIcon|wb a1 = AppMsgPort|form 1 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|wb a2|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb a3 = DiskObject|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb a4|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb CurrentX|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb CurrentY|form 1 id 1 RAM:rweapp|1	$00000000
+AddAppIcon|wb fn|form 1 id 1 RAM:rweapp|2	$00000003
+AddAppIcon|wb d0|form 1 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|wb d1|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|wb a0|form 1 id 1 RAM:rweapp|2	prog
+AddAppIcon|wb a1 = AppMsgPort|form 1 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|wb a2|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|wb a3 = DiskObject|form 1 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|wb a4|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|wb CurrentX|form 1 id 1 RAM:rweapp|2	$0000000A
+AddAppIcon|wb CurrentY|form 1 id 1 RAM:rweapp|2	$00000014
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|2	$00000001
+AddAppIcon|a4|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|kept|form 1 id 2 RAM:rweapp|1	kept
+AddAppIcon|popped|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|d0|form 1 id 2 RAM:rweapp|1	$FFFFFFFF
+AddAppIcon|wb calls|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb fn|form 1 id 2 RAM:rweapp|1	$00000003
+AddAppIcon|wb d0|form 1 id 2 RAM:rweapp|1	$00000002
+AddAppIcon|wb d1|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb a0|form 1 id 2 RAM:rweapp|1	prog
+AddAppIcon|wb a1 = AppMsgPort|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb a2|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb a3 = DiskObject|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|wb a4|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|wb CurrentX|form 1 id 2 RAM:rweapp|1	$FFFFFFFD
+AddAppIcon|wb CurrentY|form 1 id 2 RAM:rweapp|1	$00007FFF
+AddAppIcon|a3 = DiskObject|form 1 id 2 RAM:rweapp|1	$00000001
+AddAppIcon|a4|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|kept|form 0 id 3 RAM:rwe-no-such-icon|1	kept
+AddAppIcon|popped|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
+AddAppIcon|d0|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
+AddAppIcon|wb calls|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
+AddAppIcon|a3 = DiskObject|form 0 id 3 RAM:rwe-no-such-icon|1	$00000001
+AddAppIcon|a4|form 0 id 3 RAM:rwe-no-such-icon|1	$00000001
+AddAppIcon|kept|form 0 id 4 RAM:rweapp (fails)|1	kept
+AddAppIcon|popped|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|d0|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|wb calls|form 0 id 4 RAM:rweapp (fails)|1	$00000001
+AddAppIcon|wb fn|form 0 id 4 RAM:rweapp (fails)|1	$00000003
+AddAppIcon|wb d0|form 0 id 4 RAM:rweapp (fails)|1	$00000004
+AddAppIcon|wb d1|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|wb a0|form 0 id 4 RAM:rweapp (fails)|1	prog
+AddAppIcon|wb a1 = AppMsgPort|form 0 id 4 RAM:rweapp (fails)|1	$00000001
+AddAppIcon|wb a2|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|wb a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1	$00000001
+AddAppIcon|wb a4|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|wb CurrentX|form 0 id 4 RAM:rweapp (fails)|1	$80000000
+AddAppIcon|wb CurrentY|form 0 id 4 RAM:rweapp (fails)|1	$80000000
+AddAppIcon|a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1	$00000001
+AddAppIcon|a4|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+DelAppIcon|kept|id 1|2	kept
+DelAppIcon|popped|id 1|2	$00000000
+DelAppIcon|d0|id 1|2	$FFFFFFFF
+DelAppIcon|wb calls|id 1|2	$00000001
+DelAppIcon|wb fn|id 1|1	$00000004
+DelAppIcon|wb d0|id 1|1	$00000000
+DelAppIcon|wb d1|id 1|1	$00000000
+DelAppIcon|wb a0|id 1|1	$00000060
+DelAppIcon|wb a1 = AppMsgPort|id 1|1	$00000001
+DelAppIcon|wb a2|id 1|1	$00000000
+DelAppIcon|wb a3 = DiskObject|id 1|1	$00000000
+DelAppIcon|wb a4|id 1|1	$00000000
+DelAppIcon|wb CurrentX|id 1|1	$00000000
+DelAppIcon|wb CurrentY|id 1|1	$00000000
+DelAppIcon|kept|id 1|3	kept
+DelAppIcon|popped|id 1|3	$00000000
+DelAppIcon|d0|id 1|3	$00000000
+DelAppIcon|wb calls|id 1|3	$00000000
+DelAppIcon (failed add)|kept|id 4|1	kept
+DelAppIcon (failed add)|popped|id 4|1	$00000000
+DelAppIcon (failed add)|d0|id 4|1	$00000000
+DelAppIcon (failed add)|wb calls|id 4|1	$00000000
+AppEvent|kept|no message|1	kept
+AppEvent|popped|no message|1	$00000000
+AppEvent|d0|no message|1	$00000000
+AppMessage|kept|no message|1	kept
+AppMessage|popped|no message|1	$00000000
+AppMessage|d0|no message|1	$00000000
+AppEventType|kept|no message|1	kept
+AppEventType|popped|no message|1	$00000000
+AppEventType|d0|no message|1	$00000000
+AppEvent|kept|message 0|1	kept
+AppEvent|popped|message 0|1	$00000000
+AppEvent|d0|message 0|1	$00800000
+AppEvent|replies|message 0|1	$00000000
+AppEventType|kept|message 0|1	kept
+AppEventType|popped|message 0|1	$00000000
+AppEventType|d0|message 0|1	$00000001
+AppEventID|kept|message 0|1	kept
+AppEventID|popped|message 0|1	$00000000
+AppEventID|d0|message 0|1	$00000100
+AppNumFiles|kept|message 0|1	kept
+AppNumFiles|popped|message 0|1	$00000000
+AppNumFiles|d0|message 0|1	$00000002
+AppMessage|kept|message 0|1	kept
+AppMessage|popped|message 0|1	$00000000
+AppMessage|d0 = message|message 0|1	$00000001
+AppLock|kept|message 0|1	kept
+AppLock|popped|message 0|1	$00000000
+AppLock|d0 = lock|message 0|1	$00000001
+NextAppFile|kept|0|1	kept
+NextAppFile|popped|0|1	$00000000
+NextAppFile|d0|0|1	$0000000E
+NextAppFile|a3|0|1	$00000013
+NextAppFile|out|0|1	bytes 300 fnv 959C587D
+NextAppFile|wa_Lock[0]|0|1	$00000001
+NextAppFile|wa_Lock[1]|0|1	$00000001
+NextAppFile|kept|0|2	kept
+NextAppFile|popped|0|2	$00000000
+NextAppFile|d0|0|2	$00000018
+NextAppFile|a3|0|2	$0000001D
+NextAppFile|out|0|2	bytes 300 fnv CC6A2BA1
+NextAppFile|wa_Lock[0]|0|2	$00000001
+NextAppFile|wa_Lock[1]|0|2	$00000000
+NextAppFile (none left)|kept|0|1	kept
+NextAppFile (none left)|popped|0|1	$00000000
+NextAppFile (none left)|d0|0|1	$00000000
+NextAppFile (none left)|a3|0|1	$00000004
+NextAppFile (none left)|out|0|1	bytes 300 fnv 1BC9DCB5
+NextAppFile (none left)|wa_Lock[0]|0|1	$00000001
+NextAppFile (none left)|wa_Lock[1]|0|1	$00000000
+AppFile|kept|1|1	kept
+AppFile|popped|1|1	$00000000
+AppFile|d0|1|1	$0000000E
+AppFile|a3|1|1	$00000013
+AppFile|out|1|1	bytes 300 fnv 959C587D
+AppFile|wa_Lock[0]|1|1	$00000001
+AppFile|wa_Lock[1]|1|1	$00000000
+AppFile (lock 0 now)|kept|2|1	kept
+AppFile (lock 0 now)|popped|2|1	$00000000
+AppFile (lock 0 now)|d0|2|1	$00000009
+AppFile (lock 0 now)|a3|2|1	$0000000E
+AppFile (lock 0 now)|out|2|1	bytes 300 fnv 0DA06B9A
+AppFile (lock 0 now)|wa_Lock[0]|2|1	$00000001
+AppFile (lock 0 now)|wa_Lock[1]|2|1	$00000000
+AppFile|kept|3|1	kept
+AppFile|popped|3|1	$00000000
+AppFile|d0|3|1	$00000000
+AppFile|a3|3|1	$00000004
+AppFile|out|3|1	bytes 300 fnv 1BC9DCB5
+AppFile|wa_Lock[0]|3|1	$00000001
+AppFile|wa_Lock[1]|3|1	$00000000
+AppFile|kept|100|1	kept
+AppFile|popped|100|1	$00000000
+AppFile|d0|100|1	$00000000
+AppFile|a3|100|1	$00000004
+AppFile|out|100|1	bytes 300 fnv 1BC9DCB5
+AppFile|wa_Lock[0]|100|1	$00000001
+AppFile|wa_Lock[1]|100|1	$00000000
+NextAppFile (argnum kept)|kept|0|1	kept
+NextAppFile (argnum kept)|popped|0|1	$00000000
+NextAppFile (argnum kept)|d0|0|1	$00000000
+NextAppFile (argnum kept)|a3|0|1	$00000004
+NextAppFile (argnum kept)|out|0|1	bytes 300 fnv 1BC9DCB5
+NextAppFile (argnum kept)|wa_Lock[0]|0|1	$00000001
+NextAppFile (argnum kept)|wa_Lock[1]|0|1	$00000000
+AppEvent|kept|message 1|1	kept
+AppEvent|popped|message 1|1	$00000000
+AppEvent|d0|message 1|1	$00800000
+AppEvent|replies|message 1|1	$00000001
+AppEventType|kept|message 1|1	kept
+AppEventType|popped|message 1|1	$00000000
+AppEventType|d0|message 1|1	$00000002
+AppEventID|kept|message 1|1	kept
+AppEventID|popped|message 1|1	$00000000
+AppEventID|d0|message 1|1	$00000101
+AppNumFiles|kept|message 1|1	kept
+AppNumFiles|popped|message 1|1	$00000000
+AppNumFiles|d0|message 1|1	$00000001
+AppMessage|kept|message 1|1	kept
+AppMessage|popped|message 1|1	$00000000
+AppMessage|d0 = message|message 1|1	$00000001
+AppLock|kept|message 1|1	kept
+AppLock|popped|message 1|1	$00000000
+AppLock|d0 = lock|message 1|1	$00000001
+AppEvent|kept|message 2|1	kept
+AppEvent|popped|message 2|1	$00000000
+AppEvent|d0|message 2|1	$00800000
+AppEvent|replies|message 2|1	$00000001
+AppEventType|kept|message 2|1	kept
+AppEventType|popped|message 2|1	$00000000
+AppEventType|d0|message 2|1	$00000003
+AppEventID|kept|message 2|1	kept
+AppEventID|popped|message 2|1	$00000000
+AppEventID|d0|message 2|1	$00000102
+AppNumFiles|kept|message 2|1	kept
+AppNumFiles|popped|message 2|1	$00000000
+AppNumFiles|d0|message 2|1	$00000002
+AppMessage|kept|message 2|1	kept
+AppMessage|popped|message 2|1	$00000000
+AppMessage|d0 = message|message 2|1	$00000001
+AppLock|kept|message 2|1	kept
+AppLock|popped|message 2|1	$00000000
+AppLock|d0 = lock|message 2|1	$00000001
+AppEvent|kept|message 3|1	kept
+AppEvent|popped|message 3|1	$00000000
+AppEvent|d0|message 3|1	$00800000
+AppEvent|replies|message 3|1	$00000001
+AppEventType|kept|message 3|1	kept
+AppEventType|popped|message 3|1	$00000000
+AppEventType|d0|message 3|1	$00000000
+AppEventID|kept|message 3|1	kept
+AppEventID|popped|message 3|1	$00000000
+AppEventID|d0|message 3|1	$00000103
+AppNumFiles|kept|message 3|1	kept
+AppNumFiles|popped|message 3|1	$00000000
+AppNumFiles|d0|message 3|1	$00000003
+AppMessage|kept|message 3|1	kept
+AppMessage|popped|message 3|1	$00000000
+AppMessage|d0 = message|message 3|1	$00000001
+AppLock|kept|message 3|1	kept
+AppLock|popped|message 3|1	$00000000
+AppLock|d0 = lock|message 3|1	$00000001
+AppEvent|kept|last|1	kept
+AppEvent|popped|last|1	$00000000
+AppEvent|d0|last|1	$00000000
+AppEvent|replies|last|1	$00000001
+AppMessage|kept|last|1	kept
+AppMessage|popped|last|1	$00000000
+AppMessage|d0|last|1	$00000000
+AppEventType|kept|last|1	kept
+AppEventType|popped|last|1	$00000000
+AppEventType|d0|last|1	$00000000
+AddAppMenu|kept|id 0|1	kept
+AddAppMenu|popped|id 0|1	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 0|1	$00000000
+AddAppMenu|wb calls|id 0|1	$00000001
+AddAppMenu|wb fn|id 0|1	$00000005
+AddAppMenu|wb d0|id 0|1	$00000000
+AddAppMenu|wb d1|id 0|1	$00000000
+AddAppMenu|wb a0|id 0|1	prog
+AddAppMenu|wb a1 = AppMsgPort|id 0|1	$00000001
+AddAppMenu|wb a2|id 0|1	$00000000
+AddAppMenu|wb a3 = DiskObject|id 0|1	$00000000
+AddAppMenu|wb a4|id 0|1	$00000000
+AddAppMenu|wb CurrentX|id 0|1	$00000000
+AddAppMenu|wb CurrentY|id 0|1	$00000000
+AddAppMenu|kept|id 1|2	kept
+AddAppMenu|popped|id 1|2	$00000000
+AddAppMenu|d0 = item (BUG(orig) #518)|id 1|2	$00000000
+AddAppMenu|wb calls|id 1|2	$00000001
+AddAppMenu|wb fn|id 1|1	$00000005
+AddAppMenu|wb d0|id 1|1	$00000001
+AddAppMenu|wb d1|id 1|1	$00000000
+AddAppMenu|wb a0|id 1|1	prog
+AddAppMenu|wb a1 = AppMsgPort|id 1|1	$00000001
+AddAppMenu|wb a2|id 1|1	$00000000
+AddAppMenu|wb a3 = DiskObject|id 1|1	$00000000
+AddAppMenu|wb a4|id 1|1	$00000000
+AddAppMenu|wb CurrentX|id 1|1	$00000000
+AddAppMenu|wb CurrentY|id 1|1	$00000000
+AddAppWindow|kept|window 3|1	kept
+AddAppWindow|popped|window 3|1	$00000000
+AddAppWindow|d0|window 3|1	$FFFFFFFF
+AddAppWindow|wb calls|window 3|1	$00000001
+AddAppWindow|wb fn|window 3|1	$00000001
+AddAppWindow|wb d0|window 3|1	$00000003
+AddAppWindow|wb d1|window 3|1	$00000000
+AddAppWindow|wb a0|window 3|1	$00A0B0C0
+AddAppWindow|wb a1 = AppMsgPort|window 3|1	$00000001
+AddAppWindow|wb a2|window 3|1	$00000000
+AddAppWindow|wb a3 = DiskObject|window 3|1	$00000000
+AddAppWindow|wb a4|window 3|1	$00000000
+AddAppWindow|wb CurrentX|window 3|1	$00000000
+AddAppWindow|wb CurrentY|window 3|1	$00000000
+AddAppIcon|kept|form 0 id 0 RAM:rweapp|1	kept
+AddAppIcon|popped|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|d0|form 0 id 0 RAM:rweapp|1	$FFFFFFFF
+AddAppIcon|wb calls|form 0 id 0 RAM:rweapp|1	$00000001
+AddAppIcon|wb fn|form 0 id 0 RAM:rweapp|1	$00000003
+AddAppIcon|wb d0|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|wb d1|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|wb a0|form 0 id 0 RAM:rweapp|1	prog
+AddAppIcon|wb a1 = AppMsgPort|form 0 id 0 RAM:rweapp|1	$00000001
+AddAppIcon|wb a2|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|wb a3 = DiskObject|form 0 id 0 RAM:rweapp|1	$00000001
+AddAppIcon|wb a4|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|wb CurrentX|form 0 id 0 RAM:rweapp|1	$80000000
+AddAppIcon|wb CurrentY|form 0 id 0 RAM:rweapp|1	$80000000
+AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1	$00000001
+AddAppIcon|a4|form 0 id 0 RAM:rweapp|1	$00000000
+finit|kept|no current message|1	kept
+finit|popped|no current message|1	$00000000
+finit|wb calls|no current message|1	$00000005
+finit|wb fn|no current message|1	$00000006
+finit|wb d0|no current message|1	$00000000
+finit|wb d1|no current message|1	$00000000
+finit|wb a0|no current message|1	$00000080
+finit|wb a1 = AppMsgPort|no current message|1	$00000001
+finit|wb a2|no current message|1	$00000000
+finit|wb a3 = DiskObject|no current message|1	$00000000
+finit|wb a4|no current message|1	$00000000
+finit|wb CurrentX|no current message|1	$00000000
+finit|wb CurrentY|no current message|1	$00000000
+finit|wb fn|no current message|2	$00000006
+finit|wb d0|no current message|2	$00000000
+finit|wb d1|no current message|2	$00000000
+finit|wb a0|no current message|2	$00000090
+finit|wb a1 = AppMsgPort|no current message|2	$00000001
+finit|wb a2|no current message|2	$00000000
+finit|wb a3 = DiskObject|no current message|2	$00000000
+finit|wb a4|no current message|2	$00000000
+finit|wb CurrentX|no current message|2	$00000000
+finit|wb CurrentY|no current message|2	$00000000
+finit|wb fn|no current message|3	$00000002
+finit|wb d0|no current message|3	$00000000
+finit|wb d1|no current message|3	$00000000
+finit|wb a0|no current message|3	$000000A0
+finit|wb a1 = AppMsgPort|no current message|3	$00000001
+finit|wb a2|no current message|3	$00000000
+finit|wb a3 = DiskObject|no current message|3	$00000000
+finit|wb a4|no current message|3	$00000000
+finit|wb CurrentX|no current message|3	$00000000
+finit|wb CurrentY|no current message|3	$00000000
+finit|wb fn|no current message|4	$00000004
+finit|wb d0|no current message|4	$00000000
+finit|wb d1|no current message|4	$00000000
+finit|wb a0|no current message|4	$000000B0
+finit|wb a1 = AppMsgPort|no current message|4	$00000001
+finit|wb a2|no current message|4	$00000000
+finit|wb a3 = DiskObject|no current message|4	$00000000
+finit|wb a4|no current message|4	$00000000
+finit|wb CurrentX|no current message|4	$00000000
+finit|wb CurrentY|no current message|4	$00000000
+finit|wb fn|no current message|5	$00000004
+finit|wb d0|no current message|5	$00000000
+finit|wb d1|no current message|5	$00000000
+finit|wb a0|no current message|5	$00000070
+finit|wb a1 = AppMsgPort|no current message|5	$00000001
+finit|wb a2|no current message|5	$00000000
+finit|wb a3 = DiskObject|no current message|5	$00000000
+finit|wb a4|no current message|5	$00000000
+finit|wb CurrentX|no current message|5	$00000000
+finit|wb CurrentY|no current message|5	$00000000
+finit|replies (none)|no current message|1	$00000000
+init|kept|again|1	kept
+init|popped|again|1	$00000000
+AppMsgPort|kept|again|1	kept
+AppMsgPort|popped|again|1	$00000000
+AppMsgPort|port|again|1	$00000001
+AppEvent|kept|current message|1	kept
+AppEvent|popped|current message|1	$00000000
+AppEvent|d0|current message|1	$00800000
+AppEvent|replies|current message|1	$00000000
+finit|kept|current message|1	kept
+finit|popped|current message|1	$00000000
+finit|wb calls|current message|1	$00000000
+finit|replies (both)|current message|1	$00000002

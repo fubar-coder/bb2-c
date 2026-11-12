@@ -1,14 +1,16 @@
 /*
- * rwe riapplib - the C build of riapplib (userlib 61) against the CD
- * binary (BSS2 RIAPPLIB.OBJ), in the emulator (snitch test case
- * "rwe riapplib", argv[1] = the directory with riapplib.obj/.orig).
+ * rwe riapplib - riapplib (userlib 61): the C build or the CD binary
+ * (BSS2 RIAPPLIB.OBJ), one set as LIBSET says, observed as cases
+ * (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_riapplib.txt), in the emulator (snitch test
+ * case "rwe riapplib", argv[1] = the directory with riapplib.obj/.orig).
  *
- * Both libraries are loaded like the compiler does (sysload.h) and every
- * routine is called on both with the same inputs (other registers =
- * markers); compared are d0, a3/a4 where the routine sets them, the
- * string results, the calls into workbench.library and their arguments,
- * the replies to the messages; every register the original keeps must be
- * kept by the C build.
+ * The library is loaded like the compiler does (sysload.h) and every
+ * routine is called (other registers = markers); observed are d0, a3/a4
+ * where the routine sets them, the string results, the calls into
+ * workbench.library and their arguments (pointers into the test program,
+ * the window and the texts, as prog), the replies to the messages and
+ * the kept registers (KEEPS).
  *
  * workbench.library: AddAppWindowA ... RemoveAppMenuItem are replaced
  * with SetFunction by stubs that log the call and return a fake object
@@ -18,6 +20,7 @@
  * App messages are locks on RAM:.  The App messages are put to
  * AppMsgPort by the test.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/ports.h>
 #include <workbench/workbench.h>
@@ -30,77 +33,28 @@ extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, UL
 
 /* ------------------------------------------------------------ framework */
 
-static int cur;
-static struct regs R[2], IN[2];
-static ULONG POP[2];
-static const char *ROUT;
-static char VEC[100];
-static int prints;
+static struct regs R, IN;
+static ULONG POP;
 
-static void fail(const char *what, ULONG o, ULONG c)
-{
-    char buf[200];
-    if (prints++ < 60)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
-}
-
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* the same bytes in both sets (a SAME of a memcmp would compare the
-   result with itself) */
-static void samebytes(const char *what, const void *o, const void *c, ULONG n)
-{
-    const UBYTE *a = o, *b = c;
-    ULONG i;
-    if (!tape_bytes(what, o, c, n)) {
-        checks++;
-        return;
-    }
-    for (i = 0; i < n && a[i] == b[i]; i++)
-        ;
-    if (i < n) {
-        char buf[60];
-        snprintf(buf, sizeof buf, "%s (offset %lu)", what, i);
-        fail(buf, a[i], b[i]);
-    } else
-        checks++;
-}
-
+/* after a call: its kept case (KEEPS of ROUT) and the bytes it popped */
 static void preserve(void)
 {
-    struct call c[2];
-    char buf[140];
-    int s;
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-    }
-    sprintf(buf, "%s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-    SAME("popped", POP[cur]);
+    obs_kept(&IN, &R);
+    OBS("popped", POP);
 }
 
-#define DO2(fn, setup) do {                                                 \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callstk(fn, &R[cur], NULL, 0, &POP[cur]);                       \
-        }                                                                   \
+#define DO1(fn, setup) do {                                                 \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callstk(fn, &R, NULL, 0, &POP);                                     \
         preserve();                                                         \
     } while (0)
 
 /* code of form `form` of entry idx; Amiga-only code addresses are odd */
 static UBYTE *ent(int idx, int form)
 {
-    UBYTE *p = entry_form(getlib(&sets[cur], "riapplib"), idx, form);
+    UBYTE *p = entry_form(getlib(&loaded, "riapplib"), idx, form);
     return (UBYTE *)((ULONG)p & ~1UL);
 }
 
@@ -115,18 +69,18 @@ enum { F_ADDWIN = 1, F_REMWIN, F_ADDICON, F_REMICON, F_ADDMENU, F_REMMENU };
 struct wbcall { int fn; ULONG d0, d1, a0, a1, a2, a3, a4; LONG cx, cy; };
 
 #define MAXLOG 64
-static struct wbcall wblog[2][MAXLOG];
-static int nlog[2];
+static struct wbcall wblog[MAXLOG];
+static int nlog;
 static ULONG wbfail;                    /* the next Add... returns 0 */
-static ULONG nextobj[2];
+static ULONG nextobj;
 
 static ULONG logcall(int fn, ULONG d0, ULONG d1, ULONG a0, ULONG a1, ULONG a2,
                      ULONG a3, ULONG a4)
 {
     struct wbcall *c;
-    if (nlog[cur] == MAXLOG)
+    if (nlog == MAXLOG)
         return 0;
-    c = &wblog[cur][nlog[cur]++];
+    c = &wblog[nlog++];
     c->fn = fn;
     c->d0 = d0; c->d1 = d1; c->a0 = a0; c->a1 = a1; c->a2 = a2; c->a3 = a3; c->a4 = a4;
     c->cx = c->cy = 0;
@@ -139,7 +93,7 @@ static ULONG logcall(int fn, ULONG d0, ULONG d1, ULONG a0, ULONG a1, ULONG a2,
             wbfail = 0;
             return 0;
         }
-        return nextobj[cur] += 0x10;
+        return nextobj += 0x10;
     }
     return 0;
 }
@@ -185,85 +139,81 @@ static const struct { WORD lvo; APTR fn; } patches[] = {
 #define NPATCH (sizeof patches / sizeof patches[0])
 static APTR oldvec[NPATCH];
 
-/* compare the calls logged since `from` (per set) */
-static ULONG port[2];
-static int mark[2];
+/* observe the calls logged since wbmark() */
+static ULONG port;
+static int mark;
 
 static void wbmark(void)
 {
-    mark[0] = nlog[0];
-    mark[1] = nlog[1];
+    mark = nlog;
 }
 
 static void wbcompare(void)
 {
     int i;
-    SAME("wb calls", nlog[cur] - mark[cur]);
-    if (nlog[0] - mark[0] != nlog[1] - mark[1])
-        return;
-    for (i = 0; i < nlog[0] - mark[0]; i++) {
-#define C (&wblog[cur][mark[cur] + i])
-        SAME("wb fn", C->fn);
-        SAME("wb d0", C->d0);
-        SAME("wb d1", C->d1);
-        SAME("wb a0", C->a0);
-        SAME("wb a1 = AppMsgPort", C->fn & 1 ? C->a1 == port[cur] : 1);
-        SAME("wb a2", C->a2);
-        SAME("wb a3 = DiskObject", C->a3 != 0);
-        SAME("wb a4", C->a4);
-        SAME("wb CurrentX", C->cx);
-        SAME("wb CurrentY", C->cy);
+    OBS("wb calls", nlog - mark);
+    for (i = 0; i < nlog - mark; i++) {
+#define C (&wblog[mark + i])
+        OBS("wb fn", C->fn);
+        OBSPTR("wb d0", C->d0, NULL, 0);
+        OBSPTR("wb d1", C->d1, NULL, 0);
+        OBSPTR("wb a0", C->a0, NULL, 0);
+        OBS("wb a1 = AppMsgPort", C->fn & 1 ? C->a1 == port : 1);
+        OBSPTR("wb a2", C->a2, NULL, 0);
+        OBS("wb a3 = DiskObject", C->a3 != 0);
+        OBSPTR("wb a4", C->a4, NULL, 0);
+        OBS("wb CurrentX", C->cx);
+        OBS("wb CurrentY", C->cy);
 #undef C
     }
 }
 
 /* ------------------------------------------------------------- the test */
 
-static UBYTE out[2][300];
-static ULONG frame[2][4];
-static struct Window *fakewin[2] = { (struct Window *)0x00a0b0c0, (struct Window *)0x00a0b0c0 };
-static struct MsgPort *reply[2];      /* one per set */
-static struct AppMessage am[2][6];
-static struct WBArg args[2][3];
-static BPTR rootlock[2], dirlock[2];
+static UBYTE out[300];
+static ULONG frame[4];
+static struct Window *fakewin = (struct Window *)0x00a0b0c0;
+static struct MsgPort *reply;
+static struct AppMessage am[6];
+static struct WBArg args[3];
+static BPTR rootlock, dirlock;
 
 static int replies(void)
 {
     int n = 0;
-    while (GetMsg(reply[cur]))
+    while (GetMsg(reply))
         n++;
     return n;
 }
 
 static void putmsg(int i, UWORD type, ULONG id, LONG nargs)
 {
-    struct AppMessage *m = &am[cur][i];
+    struct AppMessage *m = &am[i];
     memset(m, 0, sizeof *m);
     m->am_Message.mn_Node.ln_Type = NT_MESSAGE;
-    m->am_Message.mn_ReplyPort = reply[cur];
+    m->am_Message.mn_ReplyPort = reply;
     m->am_Message.mn_Length = sizeof *m;
     m->am_Type = type;
     m->am_ID = id;
     m->am_NumArgs = nargs;
-    m->am_ArgList = args[cur];
-    PutMsg((struct MsgPort *)port[cur], &m->am_Message);
+    m->am_ArgList = args;
+    PutMsg((struct MsgPort *)port, &m->am_Message);
 }
 
 static void call_noargs(const char *name, int idx)
 {
     ROUT = name;
-    DO2(ent(idx, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(idx, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
-/* AppMsgPort after init: a port of each set */
+/* AppMsgPort after init: the library's port */
 static void getport(void)
 {
     ROUT = "AppMsgPort";
-    DO2(ent(APPMSGPORT, 0), (void)0);
-    for (cur = 0; cur < 2; cur++)
-        port[cur] = R[cur].d[0];
-    SAME("port", port[cur] != 0);
+    DO1(ent(APPMSGPORT, 0), (void)0);
+    port = R.d[0];
+    OBS("port", port != 0);
 }
 
 static void call_id(const char *name, int idx, LONG id)
@@ -271,8 +221,8 @@ static void call_id(const char *name, int idx, LONG id)
     ROUT = name;
     sprintf(VEC, "id %ld", id);
     wbmark();
-    DO2(ent(idx, 0), R[cur].d[0] = id);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(idx, 0), R.d[0] = id);
+    OBS("d0", R.d[0]);
     wbcompare();
 }
 
@@ -281,8 +231,8 @@ static void addmenu(LONG id, const char *text, int failit)
     ROUT = "AddAppMenu";
     sprintf(VEC, "id %ld%s", id, failit ? " (fails)" : "");
     wbmark();
-    DO2(ent(ADDMENU, 0), wbfail = failit; R[cur].d[0] = id; R[cur].d[1] = (ULONG)text);
-    SAME("d0 = item (BUG(orig) #518)", R[cur].d[0] ? R[cur].d[0] - nextobj[cur] : 1);
+    DO1(ent(ADDMENU, 0), wbfail = failit; R.d[0] = id; R.d[1] = (ULONG)text);
+    OBS("d0 = item (BUG(orig) #518)", R.d[0] ? R.d[0] - nextobj : 1);
     wbcompare();
 }
 
@@ -291,9 +241,9 @@ static void addwindow(LONG n, int failit)
     ROUT = "AddAppWindow";
     sprintf(VEC, "window %ld%s", n, failit ? " (fails)" : "");
     wbmark();
-    DO2(ent(ADDWINDOW, 0), wbfail = failit; R[cur].d[0] = n; R[cur].a[0] = (ULONG)&fakewin[cur];
-        frame[cur][0] = n; R[cur].a[2] = (ULONG)&frame[cur][1]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(ADDWINDOW, 0), wbfail = failit; R.d[0] = n; R.a[0] = (ULONG)&fakewin;
+        frame[0] = n; R.a[2] = (ULONG)&frame[1]);
+    OBS("d0", R.d[0]);
     wbcompare();
 }
 
@@ -302,14 +252,16 @@ static void addicon(int form, LONG id, const char *name, LONG x, LONG y, int fai
     ROUT = "AddAppIcon";
     sprintf(VEC, "form %d id %ld %s%s", form, id, name, failit ? " (fails)" : "");
     wbmark();
-    DO2(ent(ADDICON, form), wbfail = failit; R[cur].d[0] = id; R[cur].d[1] = (ULONG)"App icon";
-        R[cur].d[2] = (ULONG)name; R[cur].d[3] = x; R[cur].d[4] = y);
-    SAME("d0", R[cur].d[0]);
+    DONTCARE = 1UL << 12;               /* a4: a result (BUG(orig) #516), observed */
+    DO1(ent(ADDICON, form), wbfail = failit; R.d[0] = id; R.d[1] = (ULONG)"App icon";
+        R.d[2] = (ULONG)name; R.d[3] = x; R.d[4] = y);
+    OBS("d0", R.d[0]);
     wbcompare();
     /* BUG(orig) (#516): a3 = the DiskObject, a4 = 0 once AddAppIconA was called */
-    SAME("a3 = DiskObject", nlog[cur] > mark[cur] ? R[cur].a[3] == wblog[cur][nlog[cur] - 1].a3
-         : R[cur].a[3] == IN[cur].a[3]);
-    SAME("a4", R[cur].a[4] == IN[cur].a[4] ? 1 : R[cur].a[4]);
+    OBS("a3 = DiskObject", nlog > mark ? R.a[3] == wblog[nlog - 1].a3
+        : R.a[3] == IN.a[3]);
+    OBS("a4", R.a[4] == IN.a[4] ? 1 : R.a[4]);
+    DONTCARE = 0;
     wbfail = 0;
 }
 
@@ -317,14 +269,13 @@ static void stringfn(const char *name, int idx, LONG num)
 {
     ROUT = name;
     sprintf(VEC, "%ld", num);
-    for (cur = 0; cur < 2; cur++)
-        memset(out[cur], 0xEE, sizeof out[cur]);
-    DO2(ent(idx, 0), R[cur].d[0] = num; R[cur].a[3] = (ULONG)out[cur] + 4);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-    samebytes("out", out[0], out[1], sizeof out[0]);
-    SAME("wa_Lock[0]", args[cur][0].wa_Lock == rootlock[cur]);
-    SAME("wa_Lock[1]", args[cur][1].wa_Lock == dirlock[cur]);
+    memset(out, 0xEE, sizeof out);
+    DO1(ent(idx, 0), R.d[0] = num; R.a[3] = (ULONG)out + 4);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)out);
+    OBSBYTES("out", out, sizeof out);
+    OBS("wa_Lock[0]", args[0].wa_Lock == rootlock);
+    OBS("wa_Lock[1]", args[1].wa_Lock == dirlock);
 }
 
 static void before_init(void)
@@ -350,15 +301,13 @@ static void test_messages(void)
 {
     int i;
 
-    for (cur = 0; cur < 2; cur++) {
-        rootlock[cur] = Lock((STRPTR)"RAM:", SHARED_LOCK);
-        dirlock[cur] = Lock((STRPTR)"RAM:rweappdir", SHARED_LOCK);
-        args[cur][0].wa_Lock = rootlock[cur];
-        args[cur][0].wa_Name = (STRPTR)"file1";
-        args[cur][1].wa_Lock = dirlock[cur];
-        args[cur][1].wa_Name = (STRPTR)"x.txt";
-    }
-    check("locks", rootlock[0] && rootlock[1] && dirlock[0] && dirlock[1]);
+    rootlock = Lock((STRPTR)"RAM:", SHARED_LOCK);
+    dirlock = Lock((STRPTR)"RAM:rweappdir", SHARED_LOCK);
+    args[0].wa_Lock = rootlock;
+    args[0].wa_Name = (STRPTR)"file1";
+    args[1].wa_Lock = dirlock;
+    args[1].wa_Name = (STRPTR)"x.txt";
+    check("locks", rootlock && dirlock);
 
     strcpy(VEC, "no message");
     call_noargs("AppEvent", APPEVENT);
@@ -368,24 +317,23 @@ static void test_messages(void)
     /* window, icon, menu, other type */
     for (i = 0; i < 4; i++) {
         static const UWORD types[] = { AMTYPE_APPWINDOW, AMTYPE_APPICON, AMTYPE_APPMENUITEM, 3 };
-        for (cur = 0; cur < 2; cur++)
-            putmsg(i, types[i], 0x100 + i, i == 0 ? 2 : i);
+        putmsg(i, types[i], 0x100 + i, i == 0 ? 2 : i);
     }
     for (i = 0; i < 4; i++) {
         sprintf(VEC, "message %d", i);
         ROUT = "AppEvent";
-        DO2(ent(APPEVENT, 0), (void)0);
-        SAME("d0", R[cur].d[0]);
-        SAME("replies", replies());
+        DO1(ent(APPEVENT, 0), (void)0);
+        OBS("d0", R.d[0]);
+        OBS("replies", replies());
         call_noargs("AppEventType", APPEVENTTYPE);
         call_noargs("AppEventID", APPEVENTID);
         call_noargs("AppNumFiles", APPNUMFILES);
         ROUT = "AppMessage";
-        DO2(ent(APPMESSAGE, 0), (void)0);
-        SAME("d0 = message", R[cur].d[0] == (ULONG)&am[cur][i]);
+        DO1(ent(APPMESSAGE, 0), (void)0);
+        OBS("d0 = message", R.d[0] == (ULONG)&am[i]);
         ROUT = "AppLock";
-        DO2(ent(APPLOCK, 0), (void)0);
-        SAME("d0 = lock", R[cur].d[0] == (ULONG)args[cur][0].wa_Lock);
+        DO1(ent(APPLOCK, 0), (void)0);
+        OBS("d0 = lock", R.d[0] == (ULONG)args[0].wa_Lock);
         if (i == 0) {
             /* the first argument: "Ram Disk:" ends with ':' - the lock
                stays; the second is unlocked (BUG(orig), #521) */
@@ -401,13 +349,12 @@ static void test_messages(void)
     }
     strcpy(VEC, "last");
     ROUT = "AppEvent";
-    DO2(ent(APPEVENT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
-    SAME("replies", replies());
+    DO1(ent(APPEVENT, 0), (void)0);
+    OBS("d0", R.d[0]);
+    OBS("replies", replies());
     call_noargs("AppMessage", APPMESSAGE);
     call_noargs("AppEventType", APPEVENTTYPE);
-    for (cur = 0; cur < 2; cur++)
-        UnLock(rootlock[cur]);
+    UnLock(rootlock);
 }
 
 static void test_objects(void)
@@ -448,13 +395,35 @@ int main(int argc, char **argv)
         printf("usage: rwe_riapplib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("no init", d1-d7|a0-a3|a6);
+    KEEPS("DelAppWindow", d2-d6|a2|a3);
+    KEEPS("DelAppMenu", d2-d6|a2|a3);
+    KEEPS("DelAppIcon", d2-d5|a2|a3);
+    KEEPS("AppFile", d4|a2);
+    KEEPS("AddAppMenu", d2-d6|a3);
+    KEEPS("AddAppWindow", d2-d5|a3);
+    KEEPS("AddAppIcon", d4|d5);
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("AppMsgPort", d1-d7|a0-a3|a6);
+    KEEPS("DelAppWindow (empty: NULL)", d2-d6|a2|a3);
+    KEEPS("DelAppIcon (failed add)", d1-d5|d7|a0|a2|a3);
+    KEEPS("AppEvent", d2-d7|a2|a3);
+    KEEPS("AppMessage", d1-d7|a0-a3|a6);
+    KEEPS("AppEventType", d1-d7|a0-a3|a6);
+    KEEPS("AppEventID", d1-d7|a0-a3|a6);
+    KEEPS("AppNumFiles", d1-d7|a0-a3|a6);
+    KEEPS("AppLock", d1-d7|a1-a3|a6);
+    KEEPS("NextAppFile", d4|a2);
+    KEEPS("NextAppFile (none left)", d0-d7|a1-a3);
+    KEEPS("AppFile (lock 0 now)", d4|a2);
+    KEEPS("NextAppFile (argnum kept)", d0-d7|a1-a3);
+    KEEPS("finit", d0-d7|a0-a3|a6);
     wb = OpenLibrary((STRPTR)"workbench.library", 37);
     icon = OpenLibrary((STRPTR)"icon.library", 37);
-    reply[0] = CreateMsgPort();
-    reply[1] = CreateMsgPort();
-    if (!wb || !icon || !reply[0] || !reply[1]) {
+    reply = CreateMsgPort();
+    if (!wb || !icon || !reply) {
         check("workbench/icon.library, port", FALSE);
         return 20;
     }
@@ -475,24 +444,22 @@ int main(int argc, char **argv)
     /* inline AppEventIDCMP: prefix, length and code */
     ROUT = "AppEventIDCMP";
     strcpy(VEC, "inline");
-    SAME("$a000,len", L(ent(APPEVENTIDCMP, 0)));
-    SAME("code", L(ent(APPEVENTIDCMP, 0) + 4));
-    SAME("code+4", W(ent(APPEVENTIDCMP, 0) + 8));
+    OBS("$a000,len", L(ent(APPEVENTIDCMP, 0)));
+    OBS("code", L(ent(APPEVENTIDCMP, 0) + 4));
+    OBS("code+4", W(ent(APPEVENTIDCMP, 0) + 8));
 
     before_init();
 
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ent(INIT, 0), (void)0);
+    DO1(ent(INIT, 0), (void)0);
     getport();
 
     test_objects();
     test_messages();
 
     /* finit with no current message: BUG(orig) (#525) - the queue stays */
-    for (cur = 0; cur < 2; cur++) {
-        putmsg(4, AMTYPE_APPICON, 1, 0);
-    }
+    putmsg(4, AMTYPE_APPICON, 1, 0);
     addmenu(0, "m0", 0);
     addmenu(1, "m1", 0);
     addwindow(3, 0);
@@ -500,27 +467,25 @@ int main(int argc, char **argv)
     ROUT = "finit";
     strcpy(VEC, "no current message");
     wbmark();
-    DO2(ent(FINIT, 0), (void)0);
+    DO1(ent(FINIT, 0), (void)0);
     wbcompare();
-    SAME("replies (none)", replies());
+    OBS("replies (none)", replies());
 
     /* second run: finit with a current message replies to all */
     ROUT = "init";
     strcpy(VEC, "again");
-    DO2(ent(INIT, 0), (void)0);
+    DO1(ent(INIT, 0), (void)0);
     getport();
-    for (cur = 0; cur < 2; cur++) {
-        putmsg(4, AMTYPE_APPWINDOW, 7, 0);
-        putmsg(5, AMTYPE_APPMENUITEM, 8, 0);
-    }
+    putmsg(4, AMTYPE_APPWINDOW, 7, 0);
+    putmsg(5, AMTYPE_APPMENUITEM, 8, 0);
     strcpy(VEC, "current message");
     call_noargs("AppEvent", APPEVENT);
-    SAME("replies", replies());
+    OBS("replies", replies());
     ROUT = "finit";
     wbmark();
-    DO2(ent(FINIT, 0), (void)0);
+    DO1(ent(FINIT, 0), (void)0);
     wbcompare();
-    SAME("replies (both)", replies());
+    OBS("replies (both)", replies());
 
     Forbid();
     for (i = 0; i < NPATCH; i++)
@@ -528,10 +493,10 @@ int main(int argc, char **argv)
     Permit();
     DeleteFile((STRPTR)"RAM:rweapp.info");
     DeleteFile((STRPTR)"RAM:rweappdir");
-    DeleteMsgPort(reply[0]);
-    DeleteMsgPort(reply[1]);
+    DeleteMsgPort(reply);
     CloseLibrary(icon);
     CloseLibrary(wb);
     printf("%d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }

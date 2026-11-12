@@ -1,0 +1,644 @@
+# capture rwe_ridatatypeslib 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|memlib calls||1	$00000001
+init|memlib call 0||1	$00000001
+init|memlib call 0||2	$00000400
+init|memlib call 0||3	$00010000
+DataTypeName|kept||1	kept
+DataTypeName|popped||1	$00000000
+DataTypeName|d0||1	$00000000
+DataTypeName|a3||1	$00000000
+DataTypeName|string area||1	bytes 256 fnv 049208C5
+DataTypeBaseName|kept||1	kept
+DataTypeBaseName|popped||1	$00000000
+DataTypeBaseName|d0||1	$00000000
+DataTypeBaseName|a3||1	$00000000
+DataTypeBaseName|string area||1	bytes 256 fnv 049208C5
+DataTypeID|kept||1	kept
+DataTypeID|popped||1	$00000000
+DataTypeID|d0||1	$00000000
+DataTypeID|a3||1	$00000000
+DataTypeID|string area||1	bytes 256 fnv 049208C5
+DataTypeGroup|kept||1	kept
+DataTypeGroup|popped||1	$00000000
+DataTypeGroup|d0||1	$00000000
+DataTypeGroup|a3||1	$00000000
+DataTypeGroup|string area||1	bytes 256 fnv 049208C5
+DataTypeSuper|kept||1	kept
+DataTypeSuper|popped||1	$00000000
+DataTypeSuper|d0||1	$00000000
+DataTypeSuper|a3||1	$00000000
+DataTypeSuper|string area||1	bytes 256 fnv 049208C5
+DataTypeBitmap|kept||1	kept
+DataTypeBitmap|popped||1	$00000000
+DataTypeBitmap|d0||1	$00000000
+DataTypeBitmap|memlib calls||1	$00000001
+DataTypeBitmap|memlib call 0||1	$00000001
+DataTypeBitmap|memlib call 0||2	$00000400
+DataTypeBitmap|memlib call 0||3	$00010000
+DataTypeWidth|kept||1	kept
+DataTypeWidth|popped||1	$00000000
+DataTypeWidth|d0||1	$00000000
+DataTypeWidth|memlib calls||1	$00000001
+DataTypeWidth|memlib call 0||1	$00000001
+DataTypeWidth|memlib call 0||2	$00000400
+DataTypeWidth|memlib call 0||3	$00010000
+DataTypeHeight|kept||1	kept
+DataTypeHeight|popped||1	$00000000
+DataTypeHeight|d0||1	$00000000
+DataTypeHeight|memlib calls||1	$00000001
+DataTypeHeight|memlib call 0||1	$00000001
+DataTypeHeight|memlib call 0||2	$00000400
+DataTypeHeight|memlib call 0||3	$00010000
+DataTypeDepth|kept||1	kept
+DataTypeDepth|popped||1	$00000000
+DataTypeDepth|d0||1	$00000000
+DataTypeDepth|memlib calls||1	$00000001
+DataTypeDepth|memlib call 0||1	$00000001
+DataTypeDepth|memlib call 0||2	$00000400
+DataTypeDepth|memlib call 0||3	$00010000
+DataTypeReady|kept||1	kept
+DataTypeReady|popped||1	$00000000
+DataTypeReady|d0||1	$00000000
+DataTypeReady|memlib calls||1	$00000001
+DataTypeReady|memlib call 0||1	$00000001
+DataTypeReady|memlib call 0||2	$00000400
+DataTypeReady|memlib call 0||3	$00010000
+DataTypeModeID|kept||1	kept
+DataTypeModeID|popped||1	$00000000
+DataTypeModeID|d0||1	$00000000
+DataTypeModeID|memlib calls||1	$00000001
+DataTypeModeID|memlib call 0||1	$00000001
+DataTypeModeID|memlib call 0||2	$00000400
+DataTypeModeID|memlib call 0||3	$00010000
+DataTypeModeID tags|kept||1	kept
+DataTypeModeID tags|popped||1	$00000000
+DataTypeModeID tags|d0||1	$00000000
+GetDataTypeAttr|kept||1	kept
+GetDataTypeAttr|popped||1	$00000000
+GetDataTypeAttr|d0||1	$00000000
+GetDataTypeAttr|memlib calls||1	$00000001
+GetDataTypeAttr|memlib call 0||1	$00000001
+GetDataTypeAttr|memlib call 0||2	$00000400
+GetDataTypeAttr|memlib call 0||3	$00010000
+DataTypeCreate tags|kept||1	kept
+DataTypeCreate tags|popped||1	$00000000
+DataTypeCreate tags|d0||1	$00000000
+DataTypesPalette|kept||1	kept
+DataTypesPalette|popped||1	$00000000
+DataTypesPalette|d0||1	$00000000
+SetDataTypeAttr|kept||1	kept
+SetDataTypeAttr|popped||1	$00000000
+AttachDataType|kept|form 0|1	kept
+AttachDataType|popped|form 0|1	$00000000
+AttachDataType|d0|form 0|1	$00000000
+AttachDataType|kept|form 1|1	kept
+AttachDataType|popped|form 1|1	$00000000
+AttachDataType|d0|form 1|1	$00000000
+AttachDataType|kept|form 2|1	kept
+AttachDataType|popped|form 2|1	$00000000
+AttachDataType|d0|form 2|1	$00000000
+DetachDataType|kept||1	kept
+DetachDataType|popped||1	$00000000
+DetachDataType|d0||1	$00000000
+DetachDataType|memlib calls||1	$00000001
+DetachDataType|memlib call 0||1	$00000001
+DetachDataType|memlib call 0||2	$00000400
+DetachDataType|memlib call 0||3	$00010000
+DataTypeClose|kept||1	kept
+DataTypeClose|popped||1	$00000000
+DataTypeClose|d0||1	$00000000
+DataTypeClose|memlib calls||1	$00000001
+DataTypeClose|memlib call 0||1	$00000001
+DataTypeClose|memlib call 0||2	$00000400
+DataTypeClose|memlib call 0||3	$00010000
+DataTypeCreate|kept||1	kept
+DataTypeCreate|popped||1	$00000000
+DataTypeCreate|d0||1	$00000000
+DataTypeCreate|memlib calls||1	$00000001
+DataTypeCreate|memlib call 0||1	$00000001
+DataTypeCreate|memlib call 0||2	$00000400
+DataTypeCreate|memlib call 0||3	$00010000
+DataTypeCreate|d0 not 0||1	$00000000
+DataTypeClose|kept||2	kept
+DataTypeClose|popped||2	$00000000
+DataTypeClose|d0||2	$00000000
+DataTypeClose|memlib calls||2	$00000001
+DataTypeClose|memlib call 0||4	$00000001
+DataTypeClose|memlib call 0||5	$00000400
+DataTypeClose|memlib call 0||6	$00010000
+DataTypeOpen|kept|RAM:rwedt.missing|1	kept
+DataTypeOpen|popped|RAM:rwedt.missing|1	$00000000
+DataTypeOpen|d0 0|RAM:rwedt.missing|1	$00000001
+DataTypeOpen|d0 a DataType|RAM:rwedt.missing|1	$00000001
+DataTypeName|kept||2	kept
+DataTypeName|popped||2	$00000000
+DataTypeName|d0||2	$00000000
+DataTypeName|a3||2	$00000000
+DataTypeName|string area||2	bytes 256 fnv 049208C5
+DataTypeBaseName|kept||2	kept
+DataTypeBaseName|popped||2	$00000000
+DataTypeBaseName|d0||2	$00000000
+DataTypeBaseName|a3||2	$00000000
+DataTypeBaseName|string area||2	bytes 256 fnv 049208C5
+DataTypeID|kept||2	kept
+DataTypeID|popped||2	$00000000
+DataTypeID|d0||2	$00000000
+DataTypeID|a3||2	$00000000
+DataTypeID|string area||2	bytes 256 fnv 049208C5
+DataTypeGroup|kept||2	kept
+DataTypeGroup|popped||2	$00000000
+DataTypeGroup|d0||2	$00000000
+DataTypeGroup|a3||2	$00000000
+DataTypeGroup|string area||2	bytes 256 fnv 049208C5
+DataTypeOpen|kept|RAM:rwedt.txt|1	kept
+DataTypeOpen|popped|RAM:rwedt.txt|1	$00000000
+DataTypeOpen|d0 not 0|RAM:rwedt.txt|1	$00000001
+DataTypeOpen|d0 a DataType|RAM:rwedt.txt|1	$00000001
+DataTypeName|kept||3	kept
+DataTypeName|popped||3	$00000000
+DataTypeName|d0||3	$00000005
+DataTypeName|a3||3	$00000006
+DataTypeName|string area||3	bytes 256 fnv 5C43DD6F
+DataTypeBaseName|kept||3	kept
+DataTypeBaseName|popped||3	$00000000
+DataTypeBaseName|d0||3	$00000005
+DataTypeBaseName|a3||3	$00000006
+DataTypeBaseName|string area||3	bytes 256 fnv 5C43DD6F
+DataTypeID|kept||3	kept
+DataTypeID|popped||3	$00000000
+DataTypeID|d0||3	$00000004
+DataTypeID|a3||3	$00000004
+DataTypeID|string area||3	bytes 256 fnv CF5B6C4D
+DataTypeGroup|kept||3	kept
+DataTypeGroup|popped||3	$00000000
+DataTypeGroup|d0||3	$00000004
+DataTypeGroup|a3||3	$00000004
+DataTypeGroup|string area||3	bytes 256 fnv 59BC27EE
+DataTypeOpen|kept|RAM:rwedt.iff|1	kept
+DataTypeOpen|popped|RAM:rwedt.iff|1	$00000000
+DataTypeOpen|d0 0|RAM:rwedt.iff|1	$00000001
+DataTypeOpen|d0 a DataType|RAM:rwedt.iff|1	$00000001
+DataTypeName|kept||4	kept
+DataTypeName|popped||4	$00000000
+DataTypeName|d0||4	$00000005
+DataTypeName|a3||4	$00000006
+DataTypeName|string area||4	bytes 256 fnv 5C43DD6F
+DataTypeBaseName|kept||4	kept
+DataTypeBaseName|popped||4	$00000000
+DataTypeBaseName|d0||4	$00000005
+DataTypeBaseName|a3||4	$00000006
+DataTypeBaseName|string area||4	bytes 256 fnv 5C43DD6F
+DataTypeID|kept||4	kept
+DataTypeID|popped||4	$00000000
+DataTypeID|d0||4	$00000004
+DataTypeID|a3||4	$00000004
+DataTypeID|string area||4	bytes 256 fnv CF5B6C4D
+DataTypeGroup|kept||4	kept
+DataTypeGroup|popped||4	$00000000
+DataTypeGroup|d0||4	$00000004
+DataTypeGroup|a3||4	$00000004
+DataTypeGroup|string area||4	bytes 256 fnv 59BC27EE
+DataTypeClose|kept||3	kept
+DataTypeClose|popped||3	$00000000
+DataTypeClose|d0||3	$00000000
+DataTypeClose|memlib calls||3	$00000001
+DataTypeClose|memlib call 0||7	$00000001
+DataTypeClose|memlib call 0||8	$00000400
+DataTypeClose|memlib call 0||9	$00010000
+DataTypeName|kept||5	kept
+DataTypeName|popped||5	$00000000
+DataTypeName|d0||5	$00000000
+DataTypeName|a3||5	$00000000
+DataTypeName|string area||5	bytes 256 fnv 049208C5
+DataTypeBaseName|kept||5	kept
+DataTypeBaseName|popped||5	$00000000
+DataTypeBaseName|d0||5	$00000000
+DataTypeBaseName|a3||5	$00000000
+DataTypeBaseName|string area||5	bytes 256 fnv 049208C5
+DataTypeID|kept||5	kept
+DataTypeID|popped||5	$00000000
+DataTypeID|d0||5	$00000000
+DataTypeID|a3||5	$00000000
+DataTypeID|string area||5	bytes 256 fnv 049208C5
+DataTypeGroup|kept||5	kept
+DataTypeGroup|popped||5	$00000000
+DataTypeGroup|d0||5	$00000000
+DataTypeGroup|a3||5	$00000000
+DataTypeGroup|string area||5	bytes 256 fnv 049208C5
+DataTypeSuper|kept||2	kept
+DataTypeSuper|popped||2	$00000000
+DataTypeSuper|d0||2	$00000000
+DataTypeSuper|a3||2	$00000000
+DataTypeSuper|string area||2	bytes 256 fnv 049208C5
+DataTypeBitmap|kept||2	kept
+DataTypeBitmap|popped||2	$00000000
+DataTypeBitmap|d0||2	$00000000
+DataTypeBitmap|memlib calls||2	$00000001
+DataTypeBitmap|memlib call 0||4	$00000001
+DataTypeBitmap|memlib call 0||5	$00000400
+DataTypeBitmap|memlib call 0||6	$00010000
+DataTypeWidth|kept||2	kept
+DataTypeWidth|popped||2	$00000000
+DataTypeWidth|d0||2	$00000000
+DataTypeWidth|memlib calls||2	$00000001
+DataTypeWidth|memlib call 0||4	$00000001
+DataTypeWidth|memlib call 0||5	$00000400
+DataTypeWidth|memlib call 0||6	$00010000
+DataTypeHeight|kept||2	kept
+DataTypeHeight|popped||2	$00000000
+DataTypeHeight|d0||2	$00000000
+DataTypeHeight|memlib calls||2	$00000001
+DataTypeHeight|memlib call 0||4	$00000001
+DataTypeHeight|memlib call 0||5	$00000400
+DataTypeHeight|memlib call 0||6	$00010000
+DataTypeDepth|kept||2	kept
+DataTypeDepth|popped||2	$00000000
+DataTypeDepth|d0||2	$00000000
+DataTypeDepth|memlib calls||2	$00000001
+DataTypeDepth|memlib call 0||4	$00000001
+DataTypeDepth|memlib call 0||5	$00000400
+DataTypeDepth|memlib call 0||6	$00010000
+DataTypeReady|kept||2	kept
+DataTypeReady|popped||2	$00000000
+DataTypeReady|d0||2	$00000000
+DataTypeReady|memlib calls||2	$00000001
+DataTypeReady|memlib call 0||4	$00000001
+DataTypeReady|memlib call 0||5	$00000400
+DataTypeReady|memlib call 0||6	$00010000
+DataTypeModeID|kept||2	kept
+DataTypeModeID|popped||2	$00000000
+DataTypeModeID|d0||2	$00000000
+DataTypeModeID|memlib calls||2	$00000001
+DataTypeModeID|memlib call 0||4	$00000001
+DataTypeModeID|memlib call 0||5	$00000400
+DataTypeModeID|memlib call 0||6	$00010000
+DataTypeModeID tags|kept||2	kept
+DataTypeModeID tags|popped||2	$00000000
+DataTypeModeID tags|d0||2	$00000000
+GetDataTypeAttr|kept||2	kept
+GetDataTypeAttr|popped||2	$00000000
+GetDataTypeAttr|d0||2	$00000000
+GetDataTypeAttr|memlib calls||2	$00000001
+GetDataTypeAttr|memlib call 0||4	$00000001
+GetDataTypeAttr|memlib call 0||5	$00000400
+GetDataTypeAttr|memlib call 0||6	$00010000
+DataTypeCreate tags|kept||2	kept
+DataTypeCreate tags|popped||2	$00000000
+DataTypeCreate tags|d0||2	$00000000
+DataTypesPalette|kept||2	kept
+DataTypesPalette|popped||2	$00000000
+DataTypesPalette|d0||2	$00000000
+SetDataTypeAttr|kept||2	kept
+SetDataTypeAttr|popped||2	$00000000
+AttachDataType|kept|form 0|2	kept
+AttachDataType|popped|form 0|2	$00000000
+AttachDataType|d0|form 0|2	$00000000
+AttachDataType|kept|form 1|2	kept
+AttachDataType|popped|form 1|2	$00000000
+AttachDataType|d0|form 1|2	$00000000
+AttachDataType|kept|form 2|2	kept
+AttachDataType|popped|form 2|2	$00000000
+AttachDataType|d0|form 2|2	$00000000
+DetachDataType|kept||2	kept
+DetachDataType|popped||2	$00000000
+DetachDataType|d0||2	$00000000
+DetachDataType|memlib calls||2	$00000001
+DetachDataType|memlib call 0||4	$00000001
+DetachDataType|memlib call 0||5	$00000400
+DetachDataType|memlib call 0||6	$00010000
+DataTypeClose|kept||4	kept
+DataTypeClose|popped||4	$00000000
+DataTypeClose|d0||4	$00000000
+DataTypeClose|memlib calls||4	$00000001
+DataTypeClose|memlib call 0||10	$00000001
+DataTypeClose|memlib call 0||11	$00000400
+DataTypeClose|memlib call 0||12	$00010000
+DataTypeOpen|kept|RAM:rwedt.iff|2	kept
+DataTypeOpen|popped|RAM:rwedt.iff|2	$00000000
+DataTypeOpen|d0 not 0|RAM:rwedt.iff|1	$00000001
+DataTypeOpen|d0 a DataType|RAM:rwedt.iff|2	$00000001
+DataTypeName|kept||6	kept
+DataTypeName|popped||6	$00000000
+DataTypeName|d0||6	$00000004
+DataTypeName|a3||6	$00000005
+DataTypeName|string area||6	bytes 256 fnv B4F5B5F1
+DataTypeName|ILBM||1	$00000001
+DataTypeBaseName|kept||6	kept
+DataTypeBaseName|popped||6	$00000000
+DataTypeBaseName|d0||6	$00000004
+DataTypeBaseName|a3||6	$00000005
+DataTypeBaseName|string area||6	bytes 256 fnv CA1FC1F1
+DataTypeBaseName|ilbm||1	$00000001
+DataTypeID|kept||6	kept
+DataTypeID|popped||6	$00000000
+DataTypeID|d0||6	$00000004
+DataTypeID|a3||6	$00000004
+DataTypeID|string area||6	bytes 256 fnv F2B7C88D
+DataTypeID|ID||1	$00000001
+DataTypeGroup|kept||6	kept
+DataTypeGroup|popped||6	$00000000
+DataTypeGroup|d0||6	$00000004
+DataTypeGroup|a3||6	$00000004
+DataTypeGroup|string area||6	bytes 256 fnv E8749EA9
+DataTypeGroup|group||1	$00000001
+DataTypeCreate|kept||2	kept
+DataTypeCreate|popped||2	$00000000
+DataTypeCreate|d0||2	$00000000
+DataTypeCreate|memlib calls||2	$00000001
+DataTypeCreate|memlib call 0||4	$00000001
+DataTypeCreate|memlib call 0||5	$00000400
+DataTypeCreate|memlib call 0||6	$00010000
+DataTypeCreate|d0 not 0||2	$00000001
+DataTypeSuper|kept||3	kept
+DataTypeSuper|popped||3	$00000000
+DataTypeSuper|d0||3	$0000000D
+DataTypeSuper|a3||3	$0000000E
+DataTypeSuper|string area||3	bytes 256 fnv B07CB7AC
+DataTypeSuper|ilbm.datatype||1	$00000001
+GetDataTypeAttr|kept|attr $8000107D|1	kept
+GetDataTypeAttr|popped|attr $8000107D|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000107D|1	$00000001
+GetDataTypeAttr|value|attr $8000107D|1	$00000010
+GetDataTypeAttr|kept|attr $8000107C|1	kept
+GetDataTypeAttr|popped|attr $8000107C|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000107C|1	$00000001
+GetDataTypeAttr|value|attr $8000107C|1	$00000008
+GetDataTypeAttr|kept|attr $800010D1|1	kept
+GetDataTypeAttr|popped|attr $800010D1|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $800010D1|1	$00000001
+GetDataTypeAttr|value|attr $800010D1|1	$00000004
+GetDataTypeAttr|kept|attr $80007777|1	kept
+GetDataTypeAttr|popped|attr $80007777|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $80007777|1	$00000001
+GetDataTypeAttr|value|attr $80007777|1	$00000004
+DataTypeBitmap|kept||3	kept
+DataTypeBitmap|popped||3	$00000000
+DataTypeBitmap|d0 not 0||1	$00000001
+DataTypeBitmap|BitMapHeader||1	bytes 20 00100008000000000200000000000A0B014000C8
+DataTypeWidth|kept||3	kept
+DataTypeWidth|popped||3	$00000000
+DataTypeWidth|d0||3	$00000010
+DataTypeWidth|memlib calls||3	$00000001
+DataTypeWidth|memlib call 0||7	$00000001
+DataTypeWidth|memlib call 0||8	$00000400
+DataTypeWidth|memlib call 0||9	$00010000
+DataTypeWidth|width 16||1	$00000001
+DataTypeHeight|kept||3	kept
+DataTypeHeight|popped||3	$00000000
+DataTypeHeight|d0||3	$00000008
+DataTypeHeight|memlib calls||3	$00000001
+DataTypeHeight|memlib call 0||7	$00000001
+DataTypeHeight|memlib call 0||8	$00000400
+DataTypeHeight|memlib call 0||9	$00010000
+DataTypeHeight|height 8||1	$00000001
+DataTypeDepth|kept||3	kept
+DataTypeDepth|popped||3	$00000000
+DataTypeDepth|d0||3	$00000002
+DataTypeDepth|memlib calls||3	$00000001
+DataTypeDepth|memlib call 0||7	$00000001
+DataTypeDepth|memlib call 0||8	$00000400
+DataTypeDepth|memlib call 0||9	$00010000
+DataTypeDepth|depth 2||1	$00000001
+DataTypeModeID|kept||3	kept
+DataTypeModeID|popped||3	$00000000
+DataTypeModeID|d0||3	$00021000
+DataTypeModeID|memlib calls||3	$00000001
+DataTypeModeID|memlib call 0||7	$00000001
+DataTypeModeID|memlib call 0||8	$00000400
+DataTypeModeID|memlib call 0||9	$00010000
+DataTypeModeID|tags of DataTypeModeID||1	bytes 28 80000004000000108000000500000008800000080000000200000000
+DataTypeModeID tags|kept||3	kept
+DataTypeModeID tags|popped||3	$00000000
+DataTypeModeID tags|d0||3	$00021000
+DataTypeModeID tags|tag list||1	bytes 36 800000040000001080000005000000088000000800000002000000000000000800000009
+DataTypesPalette|kept|4 colours|1	kept
+DataTypesPalette|popped|4 colours|1	$00000000
+DataTypesPalette|d0 = the buffer|4 colours|1	$00000001
+DataTypesPalette|palette|4 colours|1	bytes 52 000400000058697A009CADBE00E0F102FF2435460068798A00ACBDCE00F00112FF3445560078899A00BCCDDE00001122FF445566
+DataTypesPalette|colour 1 red|4 colours|1	$00000001
+DataTypesPalette|kept|2 colours|1	kept
+DataTypesPalette|popped|2 colours|1	$00000000
+DataTypesPalette|d0 = the buffer|2 colours|1	$00000001
+DataTypesPalette|palette|2 colours|1	bytes 52 000200000058697A009CADBE00E0F102FF2435460068798A00ACBDCEDFF00112233445566778899AABBCCDDEEF00112233445566
+DataTypesPalette|colour 1 red|2 colours|1	$00000001
+GetDataTypeAttr|kept|attr $8000107D|2	kept
+GetDataTypeAttr|popped|attr $8000107D|2	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000107D|2	$00000001
+GetDataTypeAttr|value|attr $8000107D|2	$00000010
+SetDataTypeAttr|kept||3	kept
+SetDataTypeAttr|popped||3	$00000000
+GetDataTypeAttr|kept|attr $8000100B|1	kept
+GetDataTypeAttr|popped|attr $8000100B|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000100B|1	$00000001
+GetDataTypeAttr|value|attr $8000100B|1	$00000000
+GetDataTypeAttr|kept|attr $8000100F|1	kept
+GetDataTypeAttr|popped|attr $8000100F|1	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000100F|1	$00000001
+GetDataTypeAttr|value|attr $8000100F|1	$00000000
+SetDataTypeAttr pairs|kept||1	kept
+SetDataTypeAttr pairs|popped||1	$00000000
+SetDataTypeAttr pairs|tags of SetDataTypeAttr 1 pair||1	bytes 12 8000100B0000000200000000
+SetDataTypeAttr pairs|kept||2	kept
+SetDataTypeAttr pairs|popped||2	$00000000
+SetDataTypeAttr pairs|tags of SetDataTypeAttr 2 pairs||1	bytes 20 8000100B000000028000100F0000000300000000
+GetDataTypeAttr|kept|attr $8000100B|2	kept
+GetDataTypeAttr|popped|attr $8000100B|2	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000100B|2	$00000001
+GetDataTypeAttr|value|attr $8000100B|2	$00000000
+GetDataTypeAttr|kept|attr $8000100F|2	kept
+GetDataTypeAttr|popped|attr $8000100F|2	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000100F|2	$00000001
+GetDataTypeAttr|value|attr $8000100F|2	$00000000
+SetDataTypeAttr|kept||4	kept
+SetDataTypeAttr|popped||4	$00000000
+GetDataTypeAttr|kept|attr $8000100B|3	kept
+GetDataTypeAttr|popped|attr $8000100B|3	$00000000
+GetDataTypeAttr|d0 not 0|attr $8000100B|3	$00000001
+GetDataTypeAttr|value|attr $8000100B|3	$00000000
+AttachDataType|kept|window,id|1	kept
+AttachDataType|popped|window,id|1	$00000000
+AttachDataType|d0|window,id|1	$0000FFFF
+AttachDataType|tags of AttachDataType|window,id|1	bytes 60 8003000100000000800300030000000080030005000000108003000700000008800300100000000780040001FFFFFFFF800010D30000000000000000
+AttachDataType|kept|window,id|2	kept
+AttachDataType|popped|window,id|2	$00000000
+AttachDataType|d0 attached|window,id|1	$00000000
+DataTypeReady|layout done||1	$00000001
+DataTypeReady|kept||3	kept
+DataTypeReady|popped||3	$00000000
+DataTypeReady|d0||3	$0000FFFF
+DataTypeReady|memlib calls||3	$00000001
+DataTypeReady|memlib call 0||7	$00000001
+DataTypeReady|memlib call 0||8	$00000400
+DataTypeReady|memlib call 0||9	$00010000
+DetachDataType|kept||3	kept
+DetachDataType|popped||3	$00000000
+DetachDataType|d0||3	$00000000
+DetachDataType|memlib calls||3	$00000001
+DetachDataType|memlib call 0||7	$00000001
+DetachDataType|memlib call 0||8	$00000400
+DetachDataType|memlib call 0||9	$00010000
+DetachDataType|kept||4	kept
+DetachDataType|popped||4	$00000000
+DetachDataType|d0||4	$00000000
+DetachDataType|memlib calls||4	$00000001
+DetachDataType|memlib call 0||10	$00000001
+DetachDataType|memlib call 0||11	$00000400
+DetachDataType|memlib call 0||12	$00010000
+DataTypeReady|kept||4	kept
+DataTypeReady|popped||4	$00000000
+DataTypeReady|d0||4	$00000000
+DataTypeReady|memlib calls||4	$00000001
+DataTypeReady|memlib call 0||10	$00000001
+DataTypeReady|memlib call 0||11	$00000400
+DataTypeReady|memlib call 0||12	$00010000
+AttachDataType|kept|window,id,x,y,w,h|1	kept
+AttachDataType|popped|window,id,x,y,w,h|1	$00000000
+AttachDataType|d0|window,id,x,y,w,h|1	$0000FFFF
+AttachDataType|tags of AttachDataType|window,id,x,y,w,h|1	bytes 60 800300100000000980030001000100048003000300020006800300050000000C800300070000000580040001FFFFFFFF800010D30000000000000000
+DataTypeReady|layout done||2	$00000001
+DataTypeReady|kept||5	kept
+DataTypeReady|popped||5	$00000000
+DataTypeReady|d0||5	$0000FFFF
+DataTypeReady|memlib calls||5	$00000001
+DataTypeReady|memlib call 0||13	$00000001
+DataTypeReady|memlib call 0||14	$00000400
+DataTypeReady|memlib call 0||15	$00010000
+DetachDataType|kept||5	kept
+DetachDataType|popped||5	$00000000
+DetachDataType|d0||5	$00000000
+DetachDataType|memlib calls||5	$00000001
+DetachDataType|memlib call 0||13	$00000001
+DetachDataType|memlib call 0||14	$00000400
+DetachDataType|memlib call 0||15	$00010000
+AttachDataType|kept|window,id,&taglist|1	kept
+AttachDataType|popped|window,id,&taglist|1	$00000000
+AttachDataType|d0|window,id,&taglist|1	$0000FFFF
+AttachDataType|tags of AttachDataType|window,id,&taglist|1	bytes 28 800300100000000080040001FFFFFFFF800010D30000000000000000
+DataTypeReady|layout done||3	$00000001
+DataTypeReady|kept||6	kept
+DataTypeReady|popped||6	$00000000
+DataTypeReady|d0||6	$0000FFFF
+DataTypeReady|memlib calls||6	$00000001
+DataTypeReady|memlib call 0||16	$00000001
+DataTypeReady|memlib call 0||17	$00000400
+DataTypeReady|memlib call 0||18	$00010000
+DetachDataType|kept||6	kept
+DetachDataType|popped||6	$00000000
+DetachDataType|d0||6	$00000000
+DetachDataType|memlib calls||6	$00000001
+DetachDataType|memlib call 0||16	$00000001
+DetachDataType|memlib call 0||17	$00000400
+DetachDataType|memlib call 0||18	$00010000
+DataTypeClose|kept||5	kept
+DataTypeClose|popped||5	$00000000
+DataTypeClose|d0||5	$00000000
+DataTypeClose|memlib calls||5	$00000001
+DataTypeClose|memlib call 0||13	$00000001
+DataTypeClose|memlib call 0||14	$00000400
+DataTypeClose|memlib call 0||15	$00010000
+DataTypeName|kept||7	kept
+DataTypeName|popped||7	$00000000
+DataTypeName|d0||7	$00000000
+DataTypeName|a3||7	$00000000
+DataTypeName|string area||7	bytes 256 fnv 049208C5
+DataTypeBaseName|kept||7	kept
+DataTypeBaseName|popped||7	$00000000
+DataTypeBaseName|d0||7	$00000000
+DataTypeBaseName|a3||7	$00000000
+DataTypeBaseName|string area||7	bytes 256 fnv 049208C5
+DataTypeID|kept||7	kept
+DataTypeID|popped||7	$00000000
+DataTypeID|d0||7	$00000000
+DataTypeID|a3||7	$00000000
+DataTypeID|string area||7	bytes 256 fnv 049208C5
+DataTypeGroup|kept||7	kept
+DataTypeGroup|popped||7	$00000000
+DataTypeGroup|d0||7	$00000000
+DataTypeGroup|a3||7	$00000000
+DataTypeGroup|string area||7	bytes 256 fnv 049208C5
+DataTypeWidth|kept||4	kept
+DataTypeWidth|popped||4	$00000000
+DataTypeWidth|d0||4	$00000000
+DataTypeWidth|memlib calls||4	$00000001
+DataTypeWidth|memlib call 0||10	$00000001
+DataTypeWidth|memlib call 0||11	$00000400
+DataTypeWidth|memlib call 0||12	$00010000
+DataTypeHeight|kept||4	kept
+DataTypeHeight|popped||4	$00000000
+DataTypeHeight|d0||4	$00000000
+DataTypeHeight|memlib calls||4	$00000001
+DataTypeHeight|memlib call 0||10	$00000001
+DataTypeHeight|memlib call 0||11	$00000400
+DataTypeHeight|memlib call 0||12	$00010000
+GetDataTypeAttr|kept||3	kept
+GetDataTypeAttr|popped||3	$00000000
+GetDataTypeAttr|d0||3	$00000000
+GetDataTypeAttr|memlib calls||3	$00000001
+GetDataTypeAttr|memlib call 0||7	$00000001
+GetDataTypeAttr|memlib call 0||8	$00000400
+GetDataTypeAttr|memlib call 0||9	$00010000
+DataTypeOpen|kept|RAM:rwedt.iff|3	kept
+DataTypeOpen|popped|RAM:rwedt.iff|3	$00000000
+DataTypeOpen|d0 not 0|RAM:rwedt.iff|2	$00000001
+DataTypeOpen|d0 a DataType|RAM:rwedt.iff|3	$00000001
+DataTypeCreate tags|kept||3	kept
+DataTypeCreate tags|popped||3	$00000000
+DataTypeCreate tags|d0 not 0||1	$00000001
+DataTypeBitmap|kept||4	kept
+DataTypeBitmap|popped||4	$00000000
+DataTypeBitmap|d0 not 0||2	$00000001
+DataTypeBitmap|BitMapHeader||2	bytes 20 00100008000000000200000000000A0B014000C8
+AttachDataType|kept||1	kept
+AttachDataType|popped||1	$00000000
+AttachDataType|d0||1	$0000FFFF
+DataTypeReady|layout done||4	$00000001
+DataTypeReady|kept||7	kept
+DataTypeReady|popped||7	$00000000
+DataTypeReady|d0||7	$0000FFFF
+DataTypeReady|memlib calls||7	$00000001
+DataTypeReady|memlib call 0||19	$00000001
+DataTypeReady|memlib call 0||20	$00000400
+DataTypeReady|memlib call 0||21	$00010000
+finit|kept||1	kept
+finit|popped||1	$00000000
+finit|memlib calls||1	$00000002
+finit|memlib call 0||1	$00000001
+finit|memlib call 0||2	$00000400
+finit|memlib call 0||3	$00010000
+finit|memlib call 1||1	$00000002
+finit|memlib call 1||2	$00000400
+finit|memlib call 1||3	$00000001
+init|kept||2	kept
+init|popped||2	$00000000
+init|memlib calls||2	$00000003
+init|memlib call 0||4	$00000001
+init|memlib call 0||5	$00000400
+init|memlib call 0||6	$00010000
+init|memlib call 1||1	$00000002
+init|memlib call 1||2	$00000400
+init|memlib call 1||3	$00000001
+init|memlib call 2||1	$00000001
+init|memlib call 2||2	$00000400
+init|memlib call 2||3	$00010000
+DataTypeName|kept||8	kept
+DataTypeName|popped||8	$00000000
+DataTypeName|d0||8	$00000000
+DataTypeName|a3||8	$00000000
+DataTypeName|string area||8	bytes 256 fnv 049208C5
+finit|kept||2	kept
+finit|popped||2	$00000000
+finit|memlib calls||2	$00000004
+finit|memlib call 0||4	$00000001
+finit|memlib call 0||5	$00000400
+finit|memlib call 0||6	$00010000
+finit|memlib call 1||4	$00000002
+finit|memlib call 1||5	$00000400
+finit|memlib call 1||6	$00000001
+finit|memlib call 2||1	$00000001
+finit|memlib call 2||2	$00000400
+finit|memlib call 2||3	$00010000
+finit|memlib call 3||1	$00000002
+finit|memlib call 3||2	$00000400
+finit|memlib call 3||3	$00000001
