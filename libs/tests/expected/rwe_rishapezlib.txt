@@ -1,0 +1,99 @@
+# capture rwe_rishapezlib 1
+init|kept||1	kept
+init|popped||1	$00000000
+CludgeAcid|kept|d0 $5A000001 a4 $11111111|1	kept
+CludgeAcid|popped|d0 $5A000001 a4 $11111111|1	$00000000
+CludgeAcid|a4|d0 $5A000001 a4 $11111111|1	$00000000
+CludgeAcid|d0|d0 $5A000001 a4 $11111111|1	$5A000001
+CludgeAcid|kept|d0 $5A000100 a4 $22222222|1	kept
+CludgeAcid|popped|d0 $5A000100 a4 $22222222|1	$00000000
+CludgeAcid|a4|d0 $5A000100 a4 $22222222|1	$22222222
+CludgeAcid|d0|d0 $5A000100 a4 $22222222|1	$5A000100
+CludgeAcid|kept|d0 $5A000101 a4 $33333333|1	kept
+CludgeAcid|popped|d0 $5A000101 a4 $33333333|1	$00000000
+CludgeAcid|a4|d0 $5A000101 a4 $33333333|1	$22222222
+CludgeAcid|d0|d0 $5A000101 a4 $33333333|1	$5A000101
+CludgeAcid|kept|d0 $5A000002 a4 $44444444|1	kept
+CludgeAcid|popped|d0 $5A000002 a4 $44444444|1	$00000000
+CludgeAcid|a4|d0 $5A000002 a4 $44444444|1	$44444444
+CludgeAcid|d0|d0 $5A000002 a4 $44444444|1	$5A000002
+CludgeAcid|kept|d0 $00000001 a4 $55555555|1	kept
+CludgeAcid|popped|d0 $00000001 a4 $55555555|1	$00000000
+CludgeAcid|a4|d0 $00000001 a4 $55555555|1	$44444444
+CludgeAcid|d0|d0 $00000001 a4 $55555555|1	$00000001
+PeekByte|inline|inline|1	$00000001
+PeekByte|inline length|inline|1	$00000008
+PeekByte (JSR)|kept|byte $00 a4 $66666666|1	kept
+PeekByte (JSR)|popped|byte $00 a4 $66666666|1	$00000000
+PeekByte (JSR)|d0.w|byte $00 a4 $66666666|1	$00000000
+PeekByte (JSR)|d0 upper|byte $00 a4 $66666666|1	$00000001
+PeekByte (JSR)|a0|byte $00 a4 $66666666|1	$00000000
+PeekByte (JSR)|a4|byte $00 a4 $66666666|1	$66666666
+PeekByte (JSR)|kept|byte $01 a4 $77777777|1	kept
+PeekByte (JSR)|popped|byte $01 a4 $77777777|1	$00000000
+PeekByte (JSR)|d0.w|byte $01 a4 $77777777|1	$00000001
+PeekByte (JSR)|d0 upper|byte $01 a4 $77777777|1	$00000001
+PeekByte (JSR)|a0|byte $01 a4 $77777777|1	$00000001
+PeekByte (JSR)|a4|byte $01 a4 $77777777|1	$66666666
+PeekByte (JSR)|kept|byte $80 a4 $88888888|1	kept
+PeekByte (JSR)|popped|byte $80 a4 $88888888|1	$00000000
+PeekByte (JSR)|d0.w|byte $80 a4 $88888888|1	$00000080
+PeekByte (JSR)|d0 upper|byte $80 a4 $88888888|1	$00000001
+PeekByte (JSR)|a0|byte $80 a4 $88888888|1	$00000002
+PeekByte (JSR)|a4|byte $80 a4 $88888888|1	$88888888
+PeekByte (JSR)|kept|byte $01 a4 $99999999|1	kept
+PeekByte (JSR)|popped|byte $01 a4 $99999999|1	$00000000
+PeekByte (JSR)|d0.w|byte $01 a4 $99999999|1	$00000001
+PeekByte (JSR)|d0 upper|byte $01 a4 $99999999|1	$00000001
+PeekByte (JSR)|a0|byte $01 a4 $99999999|1	$00000004
+PeekByte (JSR)|a4|byte $01 a4 $99999999|1	$88888888
+PeekByte (JSR)|kept|byte $FF a4 $AAAAAAAA|1	kept
+PeekByte (JSR)|popped|byte $FF a4 $AAAAAAAA|1	$00000000
+PeekByte (JSR)|d0.w|byte $FF a4 $AAAAAAAA|1	$000000FF
+PeekByte (JSR)|d0 upper|byte $FF a4 $AAAAAAAA|1	$00000001
+PeekByte (JSR)|a0|byte $FF a4 $AAAAAAAA|1	$00000003
+PeekByte (JSR)|a4|byte $FF a4 $AAAAAAAA|1	$AAAAAAAA
+PeekByte (JSR)|kept|byte $01 a4 $BBBBBBBB|1	kept
+PeekByte (JSR)|popped|byte $01 a4 $BBBBBBBB|1	$00000000
+PeekByte (JSR)|d0.w|byte $01 a4 $BBBBBBBB|1	$00000001
+PeekByte (JSR)|d0 upper|byte $01 a4 $BBBBBBBB|1	$00000001
+PeekByte (JSR)|a0|byte $01 a4 $BBBBBBBB|1	$00000004
+PeekByte (JSR)|a4|byte $01 a4 $BBBBBBBB|1	$AAAAAAAA
+CludgeAcid|kept|d0 $5A000001 a4 $CCCCCCCC|1	kept
+CludgeAcid|popped|d0 $5A000001 a4 $CCCCCCCC|1	$00000000
+CludgeAcid|a4|d0 $5A000001 a4 $CCCCCCCC|1	$AAAAAAAA
+CludgeAcid|d0|d0 $5A000001 a4 $CCCCCCCC|1	$5A000001
+SetWinDrawShapeZ|kept|mode $5A000001|1	kept
+SetWinDrawShapeZ|popped|mode $5A000001|1	$00000000
+SetWinDrawShapeZ|AreaPtrn set|mode $5A000001|1	$00000001
+SetWinDrawShapeZ|AreaPtrn[0]|mode $5A000001|1	$0000AAAA
+SetWinDrawShapeZ|AreaPtrn[1]|mode $5A000001|1	$00005555
+SetWinDrawShapeZ|AreaPtSz|mode $5A000001|1	$00000001
+SetWinDrawShapeZ|DrawMode|mode $5A000001|1	$00000077
+SetWinDrawShapeZ|AOlPen|mode $5A000001|1	$00000077
+SetWinDrawShapeZ|TmpRas|mode $5A000001|1	$77777777
+SetWinDrawShapeZ|kept|mode $00000000|1	kept
+SetWinDrawShapeZ|popped|mode $00000000|1	$00000000
+SetWinDrawShapeZ|AreaPtrn set|mode $00000000|1	$00000000
+SetWinDrawShapeZ|AreaPtSz|mode $00000000|1	$00000000
+SetWinDrawShapeZ|DrawMode|mode $00000000|1	$00000077
+SetWinDrawShapeZ|AOlPen|mode $00000000|1	$00000077
+SetWinDrawShapeZ|TmpRas|mode $00000000|1	$77777777
+SetWinDrawShapeZ|kept|mode $5A008000|1	kept
+SetWinDrawShapeZ|popped|mode $5A008000|1	$00000000
+SetWinDrawShapeZ|AreaPtrn set|mode $5A008000|1	$00000001
+SetWinDrawShapeZ|AreaPtrn[0]|mode $5A008000|1	$0000AAAA
+SetWinDrawShapeZ|AreaPtrn[1]|mode $5A008000|1	$00005555
+SetWinDrawShapeZ|AreaPtSz|mode $5A008000|1	$00000001
+SetWinDrawShapeZ|DrawMode|mode $5A008000|1	$00000077
+SetWinDrawShapeZ|AOlPen|mode $5A008000|1	$00000077
+SetWinDrawShapeZ|TmpRas|mode $5A008000|1	$77777777
+SetWinDrawShapeZ|kept|mode $5A010000|1	kept
+SetWinDrawShapeZ|popped|mode $5A010000|1	$00000000
+SetWinDrawShapeZ|AreaPtrn set|mode $5A010000|1	$00000000
+SetWinDrawShapeZ|AreaPtSz|mode $5A010000|1	$00000000
+SetWinDrawShapeZ|DrawMode|mode $5A010000|1	$00000077
+SetWinDrawShapeZ|AOlPen|mode $5A010000|1	$00000077
+SetWinDrawShapeZ|TmpRas|mode $5A010000|1	$77777777
+finit|kept||1	kept
+finit|popped||1	$00000000

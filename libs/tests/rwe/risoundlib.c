@@ -1,12 +1,12 @@
 /*
- * rwe risoundlib - CludgeSound: the C build against the CD original (BSS2
- * RISOUNDLIB.OBJ), method of rwecmp.h.
+ * rwe risoundlib - CludgeSound: the C build or the CD original (BSS2
+ * RISOUNDLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h,
+ * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_risoundlib.txt).
  *
  *   risoundlib DIR     (DIR with memlib, risoundlib .obj/.orig)
  *
- * IFF 8SVX files are built in memory (one copy per set, the same bytes)
- * and given to CludgeSound with a sound object (16 bytes + guards) per
- * set; no audio is played.  Compared: d0, the object's period, length and
+ * IFF 8SVX files are built in memory and given to CludgeSound with a
+ * sound object (16 bytes + guards); no audio is played.  Observed: d0, the object's period, length and
  * loop fields and its guards, the sample (copied into chip memory: the
  * copy has the BODY's bytes, the pointer is checked on each set: chip
  * memory, or the old pointer when CludgeSound fails), the file unchanged
@@ -21,6 +21,7 @@
  * failure (BUG(orig), #831), an odd BODY length.  Not covered: rate 0 (never
  * returns), an empty BODY (copies 65536 bytes into an 8 byte block).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -29,8 +30,8 @@
 #define OBJSZ 32
 #define OFF 8                           /* the object at obj[OFF] */
 
-static UBYTE *file[2], ref[FILESZ];
-static UBYTE obj[2][OBJSZ];
+static UBYTE *file, ref[FILESZ];
+static UBYTE obj[OBJSZ];
 static ULONG flen;                      /* bytes of the file built */
 
 static void putl(UBYTE *p, ULONG v)
@@ -78,10 +79,8 @@ static void begin(const char *form, const char *vhdr, ULONG vlen, UWORD rate)
 
 static void finish(void)
 {
-    int s;
     putl(ref + 4, flen - 8);
-    for (s = 0; s < 2; s++)
-        memcpy(file[s], ref, FILESZ);
+    memcpy(file, ref, FILESZ);
 }
 
 /* where BODY's data is in ref (0: none) */
@@ -93,31 +92,25 @@ static void body(ULONG len, int pad)
     chunk("BODY", len, pad, 0x33);
 }
 
-static ULONG old[2];                    /* the object's sample before the call */
+static ULONG old;                       /* the object's sample before the call */
 
 static void cludge(ULONG snd)
 {
-    int s;
-    for (s = 0; s < 2; s++)
-        old[s] = *(ULONG *)(obj[s] + OFF);
+    old = *(ULONG *)(obj + OFF);
     ROUT = "CludgeSound";
-    DO2(ENT(LIB, 0, 0), R[cur].d[0] = snd; R[cur].d[1] = (ULONG)file[cur];
-        R[cur].a[0] = (ULONG)(obj[cur] + OFF));
-    SAME("d0", R[cur].d[0]);
-    {
-        const UBYTE *fl[2] = { obj[0] + OFF + 4, obj[1] + OFF + 4 };
-        const UBYTE *gt[2] = { obj[0] + OFF + 16, obj[1] + OFF + 16 };
-        SAMEBYTES("object fields", fl, 12);
-        SAMEBYTES("guards before", obj, OFF);
-        SAMEBYTES("guards behind", gt, OBJSZ - OFF - 16);
-    }
-    SAME("period", *(UWORD *)(obj[cur] + OFF + 4));
-    SAME("words", *(UWORD *)(obj[cur] + OFF + 6));
-    BOTH("file unchanged", memcmp(file[cur], ref, FILESZ) == 0);
-    if (R[0].d[0] == 0) {
-        BOTH("failed: the old pointer", *(ULONG *)(obj[cur] + OFF) == old[cur]);
+    DO1(ENT(LIB, 0, 0), R.d[0] = snd; R.d[1] = (ULONG)file;
+        R.a[0] = (ULONG)(obj + OFF));
+    OBS("d0", R.d[0]);
+    OBSBYTES("object fields", obj + OFF + 4, 12);
+    OBSBYTES("guards before", obj, OFF);
+    OBSBYTES("guards behind", obj + OFF + 16, OBJSZ - OFF - 16);
+    OBS("period", *(UWORD *)(obj + OFF + 4));
+    OBS("words", *(UWORD *)(obj + OFF + 6));
+    BOTH("file unchanged", memcmp(file, ref, FILESZ) == 0);
+    if (R.d[0] == 0) {
+        BOTH("failed: the old pointer", *(ULONG *)(obj + OFF) == old);
     } else {
-#define SMP (*(UBYTE **)(obj[cur] + OFF))
+#define SMP (*(UBYTE **)(obj + OFF))
         ULONG len = ((ref[bodyat - 4] << 24 | ref[bodyat - 3] << 16 | ref[bodyat - 2] << 8
                       | ref[bodyat - 1]) - 1) & 0xffff;
         BOTH("sample in chip memory", SMP && (TypeOfMem(SMP) & MEMF_CHIP));
@@ -129,17 +122,13 @@ static void cludge(ULONG snd)
 /* the stale pointer of a failed call (BUG(orig), #831) must not be freed again */
 static void forget(void)
 {
-    int s;
-    for (s = 0; s < 2; s++)
-        *(ULONG *)(obj[s] + OFF) = 0;
+    *(ULONG *)(obj + OFF) = 0;
 }
 
 static void memlib(int idx)
 {
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), idx, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), idx, 0), &R, NULL, 0, &POP);
 }
 
 int main(int argc, char **argv)
@@ -148,20 +137,18 @@ int main(int argc, char **argv)
     static const UWORD rates[] = { 8363, 16000, 1, 2, 3579, 22050, 0x7fff, 0x8000, 0xffff };
     ULONG avail;
     unsigned i;
-    int s;
 
     if (argc < 2) {
         printf("usage: risoundlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++)
-        file[s] = AllocMem(FILESZ, MEMF_PUBLIC);
+    KEEPS("CludgeSound", d3-d7|a2|a3|a6);
+    file = AllocMem(FILESZ, MEMF_PUBLIC);
     memset(obj, 0xa5, sizeof obj);
     forget();
-    for (s = 0; s < 2; s++)
-        memset(obj[s] + OFF + 4, 0x77, 12);
+    memset(obj + OFF + 4, 0x77, 12);
 
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
@@ -277,7 +264,6 @@ int main(int argc, char **argv)
     ROUT = "memlib finit";
     memlib(8);
     rwe_mem_check(LIB, avail, TRUE);
-    for (s = 0; s < 2; s++)
-        FreeMem(file[s], FILESZ);
+    FreeMem(file, FILESZ);
     return rwe_done(LIB);
 }

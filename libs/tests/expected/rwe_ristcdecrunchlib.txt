@@ -1,0 +1,695 @@
+# capture rwe_ristcdecrunchlib 1
+STCDecrunch source|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCDecrunch source|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCDecrunch source|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000044
+STCDecrunch source|buffer|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 1C083637
+STCDecrunch source|d0 = start|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source|data|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source|header kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCDecrunch source,dest|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCDecrunch source,dest|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|destination|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 71439BBB
+STCDecrunch source,dest|source|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 20D7C181
+STCDecrunch source,dest|source unchanged|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|d0 = 1|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|data|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCDecrunch source|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCDecrunch source|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCDecrunch source|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000182
+STCDecrunch source|buffer|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	bytes 56384 fnv C2D3CE8C
+STCDecrunch source|d0 = start|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source|data|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source|header kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCDecrunch source,dest|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCDecrunch source,dest|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|destination|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	bytes 56384 fnv A8ACC514
+STCDecrunch source,dest|source|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	bytes 56384 fnv D0ABA59E
+STCDecrunch source,dest|source unchanged|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|d0 = 1|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|data|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCDecrunch source|kept|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	kept
+STCDecrunch source|popped|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000000
+STCDecrunch source|d0|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000138
+STCDecrunch source|buffer|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	bytes 56384 fnv D9D23619
+STCDecrunch source|d0 = start|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source|data|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source|header kept|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|kept|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	kept
+STCDecrunch source,dest|popped|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000000
+STCDecrunch source,dest|d0|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|destination|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	bytes 56384 fnv BD418596
+STCDecrunch source,dest|source|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	bytes 56384 fnv 28FB0C78
+STCDecrunch source,dest|source unchanged|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|d0 = 1|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|data|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#2: 274 bytes, 146 words, d7 2, d2 14, kinds $3, offset 312|1	$00000001
+STCDecrunch source|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCDecrunch source|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCDecrunch source|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$0000011A
+STCDecrunch source|buffer|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	bytes 56384 fnv 45B8536F
+STCDecrunch source|d0 = start|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source|data|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source|header kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCDecrunch source,dest|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCDecrunch source,dest|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|destination|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	bytes 56384 fnv 726AA02C
+STCDecrunch source,dest|source|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	bytes 56384 fnv 803E0A8B
+STCDecrunch source,dest|source unchanged|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|d0 = 1|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|data|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCDecrunch source|kept|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	kept
+STCDecrunch source|popped|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000000
+STCDecrunch source|d0|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$000000BC
+STCDecrunch source|buffer|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	bytes 56384 fnv 7636FBB1
+STCDecrunch source|d0 = start|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source|data|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source|header kept|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|kept|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	kept
+STCDecrunch source,dest|popped|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000000
+STCDecrunch source,dest|d0|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|destination|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	bytes 56384 fnv AF89953B
+STCDecrunch source,dest|source|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	bytes 56384 fnv 0838E90F
+STCDecrunch source,dest|source unchanged|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|d0 = 1|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|data|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#4: 348 bytes, 84 words, d7 4, d2 9, kinds $9, offset 188|1	$00000001
+STCDecrunch source|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCDecrunch source|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCDecrunch source|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$000000B4
+STCDecrunch source|buffer|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	bytes 56384 fnv 0763CAE8
+STCDecrunch source|d0 = start|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source|data|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source|header kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCDecrunch source,dest|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCDecrunch source,dest|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|destination|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	bytes 56384 fnv 46A73F63
+STCDecrunch source,dest|source|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	bytes 56384 fnv 8CDC4A85
+STCDecrunch source,dest|source unchanged|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|d0 = 1|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|data|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCDecrunch source|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCDecrunch source|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCDecrunch source|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$0000002C
+STCDecrunch source|buffer|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	bytes 56384 fnv A1F57D35
+STCDecrunch source|d0 = start|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source|data|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source|header kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCDecrunch source,dest|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCDecrunch source,dest|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|destination|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	bytes 56384 fnv C0DA5132
+STCDecrunch source,dest|source|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	bytes 56384 fnv A563B4B0
+STCDecrunch source,dest|source unchanged|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|d0 = 1|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|data|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCDecrunch source|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCDecrunch source|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCDecrunch source|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000021
+STCDecrunch source|buffer|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	bytes 56384 fnv B71B1C5C
+STCDecrunch source|d0 = start|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source|data|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source|header kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCDecrunch source,dest|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCDecrunch source,dest|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|destination|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	bytes 56384 fnv CC6D8B9C
+STCDecrunch source,dest|source|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	bytes 56384 fnv 30F0AEE2
+STCDecrunch source,dest|source unchanged|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|d0 = 1|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|data|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCDecrunch source|kept|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	kept
+STCDecrunch source|popped|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000000
+STCDecrunch source|d0|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000084
+STCDecrunch source|buffer|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	bytes 56384 fnv 637A4EF3
+STCDecrunch source|d0 = start|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source|data|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source|header kept|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|kept|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	kept
+STCDecrunch source,dest|popped|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000000
+STCDecrunch source,dest|d0|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|destination|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	bytes 56384 fnv 5B27CC20
+STCDecrunch source,dest|source|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	bytes 56384 fnv 16808372
+STCDecrunch source,dest|source unchanged|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|d0 = 1|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|data|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#8: 496 bytes, 56 words, d7 8, d2 12, kinds $81, offset 132|1	$00000001
+STCDecrunch source|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCDecrunch source|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCDecrunch source|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000170
+STCDecrunch source|buffer|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	bytes 56384 fnv 5B38C533
+STCDecrunch source|d0 = start|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source|data|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source|header kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCDecrunch source,dest|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCDecrunch source,dest|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|destination|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	bytes 56384 fnv B31C0770
+STCDecrunch source,dest|source|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	bytes 56384 fnv C15B7E6D
+STCDecrunch source,dest|source unchanged|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|d0 = 1|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|data|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCDecrunch source|kept|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	kept
+STCDecrunch source|popped|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000000
+STCDecrunch source|d0|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00001874
+STCDecrunch source|buffer|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	bytes 56384 fnv 79BF3B93
+STCDecrunch source|d0 = start|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source|data|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source|header kept|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|kept|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	kept
+STCDecrunch source,dest|popped|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000000
+STCDecrunch source,dest|d0|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|destination|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	bytes 56384 fnv E171B231
+STCDecrunch source,dest|source|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	bytes 56384 fnv D697A311
+STCDecrunch source,dest|source unchanged|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|d0 = 1|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|data|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#10: 5546 bytes, 3120 words, d7 10, d2 15, kinds $1, offset 6260|1	$00000001
+STCDecrunch source|kept|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	kept
+STCDecrunch source|popped|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000000
+STCDecrunch source|d0|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00003127
+STCDecrunch source|buffer|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	bytes 56384 fnv 2E0973E8
+STCDecrunch source|d0 = start|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source|data|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source|header kept|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|kept|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	kept
+STCDecrunch source,dest|popped|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000000
+STCDecrunch source,dest|d0|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|destination|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	bytes 56384 fnv A5A03B6E
+STCDecrunch source,dest|source|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	bytes 56384 fnv 5CD85584
+STCDecrunch source,dest|source unchanged|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|d0 = 1|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|data|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#11: 11851 bytes, 6269 words, d7 11, d2 7, kinds $3, offset 12583|1	$00000001
+STCDecrunch source|kept|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	kept
+STCDecrunch source|popped|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000000
+STCDecrunch source|d0|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$0000351C
+STCDecrunch source|buffer|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	bytes 56384 fnv 48C50022
+STCDecrunch source|d0 = start|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source|data|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source|header kept|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|kept|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	kept
+STCDecrunch source,dest|popped|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000000
+STCDecrunch source,dest|d0|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|destination|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	bytes 56384 fnv 21AD4631
+STCDecrunch source,dest|source|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	bytes 56384 fnv 07205FE3
+STCDecrunch source,dest|source unchanged|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|d0 = 1|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|data|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#12: 16065 bytes, 6788 words, d7 12, d2 16, kinds $5, offset 13596|1	$00000001
+STCDecrunch source|kept|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	kept
+STCDecrunch source|popped|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000000
+STCDecrunch source|d0|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000244
+STCDecrunch source|buffer|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	bytes 56384 fnv A56247BE
+STCDecrunch source|d0 = start|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source|data|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source|header kept|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|kept|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	kept
+STCDecrunch source,dest|popped|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000000
+STCDecrunch source,dest|d0|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|destination|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	bytes 56384 fnv 4D479845
+STCDecrunch source,dest|source|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	bytes 56384 fnv 60BE84BB
+STCDecrunch source,dest|source unchanged|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|d0 = 1|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|data|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#13: 1065 bytes, 278 words, d7 13, d2 13, kinds $9, offset 580|1	$00000001
+STCDecrunch source|kept|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	kept
+STCDecrunch source|popped|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000000
+STCDecrunch source|d0|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000AB0
+STCDecrunch source|buffer|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	bytes 56384 fnv D293A586
+STCDecrunch source|d0 = start|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source|data|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source|header kept|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|kept|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	kept
+STCDecrunch source,dest|popped|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000000
+STCDecrunch source,dest|d0|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|destination|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	bytes 56384 fnv 8A169270
+STCDecrunch source,dest|source|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	bytes 56384 fnv FEE2095F
+STCDecrunch source,dest|source unchanged|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|d0 = 1|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|data|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#14: 13260 bytes, 1357 words, d7 14, d2 11, kinds $11, offset 2736|1	$00000001
+STCDecrunch source|kept|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	kept
+STCDecrunch source|popped|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000000
+STCDecrunch source|d0|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$0000020F
+STCDecrunch source|buffer|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	bytes 56384 fnv C57FB259
+STCDecrunch source|d0 = start|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source|data|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source|header kept|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|kept|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	kept
+STCDecrunch source,dest|popped|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000000
+STCDecrunch source,dest|d0|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|destination|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	bytes 56384 fnv 0CE44586
+STCDecrunch source,dest|source|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	bytes 56384 fnv F257311C
+STCDecrunch source,dest|source unchanged|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|d0 = 1|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|data|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#15: 17612 bytes, 223 words, d7 15, d2 16, kinds $21, offset 527|1	$00000001
+STCDecrunch source|kept|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	kept
+STCDecrunch source|popped|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000000
+STCDecrunch source|d0|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000060
+STCDecrunch source|buffer|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	bytes 56384 fnv 7262EF5F
+STCDecrunch source|d0 = start|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source|data|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source|header kept|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|kept|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	kept
+STCDecrunch source,dest|popped|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000000
+STCDecrunch source,dest|d0|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|destination|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	bytes 56384 fnv 54631EA1
+STCDecrunch source,dest|source|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	bytes 56384 fnv D1FC4838
+STCDecrunch source,dest|source unchanged|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|d0 = 1|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|data|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#16: 7731 bytes, 37 words, d7 16, d2 0, kinds $41, offset 96|1	$00000001
+STCDecrunch source|kept|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	kept
+STCDecrunch source|popped|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000000
+STCDecrunch source|d0|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000F72
+STCDecrunch source|buffer|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	bytes 56384 fnv 3A808F64
+STCDecrunch source|d0 = start|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source|data|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source|header kept|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|kept|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	kept
+STCDecrunch source,dest|popped|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000000
+STCDecrunch source,dest|d0|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|destination|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	bytes 56384 fnv BA8A7BB9
+STCDecrunch source,dest|source|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	bytes 56384 fnv B9D28EAF
+STCDecrunch source,dest|source unchanged|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|d0 = 1|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|data|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#17: 19859 bytes, 1958 words, d7 0, d2 5, kinds $81, offset 3954|1	$00000001
+STCDecrunch source|kept|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	kept
+STCDecrunch source|popped|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000000
+STCDecrunch source|d0|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000314
+STCDecrunch source|buffer|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	bytes 56384 fnv 2579FD74
+STCDecrunch source|d0 = start|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source|data|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source|header kept|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|kept|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	kept
+STCDecrunch source,dest|popped|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000000
+STCDecrunch source,dest|d0|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|destination|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	bytes 56384 fnv B73A0092
+STCDecrunch source,dest|source|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	bytes 56384 fnv E42E378C
+STCDecrunch source,dest|source unchanged|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|d0 = 1|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|data|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#18: 13679 bytes, 383 words, d7 1, d2 16, kinds $FF, offset 788|1	$00000001
+STCDecrunch source|kept|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	kept
+STCDecrunch source|popped|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000000
+STCDecrunch source|d0|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$000026F3
+STCDecrunch source|buffer|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	bytes 56384 fnv C878AC17
+STCDecrunch source|d0 = start|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source|data|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source|header kept|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|kept|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	kept
+STCDecrunch source,dest|popped|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000000
+STCDecrunch source,dest|d0|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|destination|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	bytes 56384 fnv DB661500
+STCDecrunch source,dest|source|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	bytes 56384 fnv 11A8D138
+STCDecrunch source,dest|source unchanged|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|d0 = 1|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|data|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#19: 8816 bytes, 4960 words, d7 2, d2 4, kinds $1, offset 9971|1	$00000001
+STCDecrunch source|kept|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	kept
+STCDecrunch source|popped|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000000
+STCDecrunch source|d0|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$0000049C
+STCDecrunch source|buffer|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	bytes 56384 fnv 82E346F9
+STCDecrunch source|d0 = start|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source|data|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source|header kept|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|kept|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	kept
+STCDecrunch source,dest|popped|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000000
+STCDecrunch source,dest|d0|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|destination|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	bytes 56384 fnv BDB89FE6
+STCDecrunch source,dest|source|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	bytes 56384 fnv 4FB065E6
+STCDecrunch source,dest|source unchanged|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|d0 = 1|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|data|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#20: 1088 bytes, 579 words, d7 3, d2 14, kinds $3, offset 1180|1	$00000001
+STCDecrunch source|kept|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	kept
+STCDecrunch source|popped|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000000
+STCDecrunch source|d0|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00003414
+STCDecrunch source|buffer|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	bytes 56384 fnv 073B14E4
+STCDecrunch source|d0 = start|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source|data|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source|header kept|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|kept|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	kept
+STCDecrunch source,dest|popped|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000000
+STCDecrunch source,dest|d0|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|destination|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	bytes 56384 fnv 872AB33A
+STCDecrunch source,dest|source|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	bytes 56384 fnv FA2E4113
+STCDecrunch source,dest|source unchanged|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|d0 = 1|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|data|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#21: 15694 bytes, 6607 words, d7 4, d2 16, kinds $5, offset 13332|1	$00000001
+STCDecrunch source|kept|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	kept
+STCDecrunch source|popped|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000000
+STCDecrunch source|d0|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000BB4
+STCDecrunch source|buffer|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	bytes 56384 fnv DCD96804
+STCDecrunch source|d0 = start|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source|data|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source|header kept|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|kept|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	kept
+STCDecrunch source,dest|popped|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000000
+STCDecrunch source,dest|d0|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|destination|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	bytes 56384 fnv 7E45FDF2
+STCDecrunch source,dest|source|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	bytes 56384 fnv 13E60A0B
+STCDecrunch source,dest|source unchanged|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|d0 = 1|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|data|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#22: 7124 bytes, 1487 words, d7 5, d2 4, kinds $9, offset 2996|1	$00000001
+STCDecrunch source|kept|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	kept
+STCDecrunch source|popped|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000000
+STCDecrunch source|d0|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$000004B8
+STCDecrunch source|buffer|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	bytes 56384 fnv 124F0EE9
+STCDecrunch source|d0 = start|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source|data|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source|header kept|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|kept|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	kept
+STCDecrunch source,dest|popped|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000000
+STCDecrunch source,dest|d0|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|destination|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	bytes 56384 fnv 83947FB6
+STCDecrunch source,dest|source|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	bytes 56384 fnv 77BB727B
+STCDecrunch source,dest|source unchanged|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|d0 = 1|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|data|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#23: 5121 bytes, 559 words, d7 6, d2 15, kinds $11, offset 1208|1	$00000001
+STCDecrunch source|kept|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	kept
+STCDecrunch source|popped|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000000
+STCDecrunch source|d0|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000128
+STCDecrunch source|buffer|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	bytes 56384 fnv 86B75EF3
+STCDecrunch source|d0 = start|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source|data|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source|header kept|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|kept|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	kept
+STCDecrunch source,dest|popped|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000000
+STCDecrunch source,dest|d0|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|destination|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	bytes 56384 fnv 0A698EFB
+STCDecrunch source,dest|source|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	bytes 56384 fnv 62F29190
+STCDecrunch source,dest|source unchanged|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|d0 = 1|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|data|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#24: 10057 bytes, 137 words, d7 7, d2 16, kinds $21, offset 296|1	$00000001
+STCDecrunch source|kept|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	kept
+STCDecrunch source|popped|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000000
+STCDecrunch source|d0|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$000000A4
+STCDecrunch source|buffer|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	bytes 56384 fnv 86812498
+STCDecrunch source|d0 = start|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source|data|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source|header kept|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|kept|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	kept
+STCDecrunch source,dest|popped|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000000
+STCDecrunch source,dest|d0|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|destination|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	bytes 56384 fnv A23DD85B
+STCDecrunch source,dest|source|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	bytes 56384 fnv 5A499639
+STCDecrunch source,dest|source unchanged|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|d0 = 1|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|data|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#25: 13329 bytes, 53 words, d7 8, d2 10, kinds $41, offset 164|1	$00000001
+STCDecrunch source|kept|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	kept
+STCDecrunch source|popped|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000000
+STCDecrunch source|d0|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$000003F0
+STCDecrunch source|buffer|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	bytes 56384 fnv 09B0A63A
+STCDecrunch source|d0 = start|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source|data|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source|header kept|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|kept|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	kept
+STCDecrunch source,dest|popped|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000000
+STCDecrunch source,dest|d0|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|destination|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	bytes 56384 fnv F00F6921
+STCDecrunch source,dest|source|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	bytes 56384 fnv 41E5A1F4
+STCDecrunch source,dest|source unchanged|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|d0 = 1|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|data|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#26: 5330 bytes, 493 words, d7 9, d2 2, kinds $81, offset 1008|1	$00000001
+STCDecrunch source|kept|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	kept
+STCDecrunch source|popped|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000000
+STCDecrunch source|d0|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$000001E7
+STCDecrunch source|buffer|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	bytes 56384 fnv D220EEB5
+STCDecrunch source|d0 = start|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source|data|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source|header kept|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|kept|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	kept
+STCDecrunch source,dest|popped|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000000
+STCDecrunch source,dest|d0|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|destination|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	bytes 56384 fnv AA7783DD
+STCDecrunch source,dest|source|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	bytes 56384 fnv 24283C11
+STCDecrunch source,dest|source unchanged|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|d0 = 1|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|data|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#27: 6268 bytes, 198 words, d7 10, d2 16, kinds $FF, offset 487|1	$00000001
+STCDecrunch source|kept|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	kept
+STCDecrunch source|popped|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000000
+STCDecrunch source|d0|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$0000351C
+STCDecrunch source|buffer|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	bytes 56384 fnv A2399B6B
+STCDecrunch source|d0 = start|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source|data|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source|header kept|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|kept|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	kept
+STCDecrunch source,dest|popped|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000000
+STCDecrunch source,dest|d0|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|destination|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	bytes 56384 fnv 190A7AE8
+STCDecrunch source,dest|source|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	bytes 56384 fnv 667D8CAA
+STCDecrunch source,dest|source unchanged|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|d0 = 1|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|data|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#28: 12064 bytes, 6787 words, d7 11, d2 15, kinds $1, offset 13596|1	$00000001
+STCDecrunch source|kept|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	kept
+STCDecrunch source|popped|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000000
+STCDecrunch source|d0|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00003416
+STCDecrunch source|buffer|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	bytes 56384 fnv B3D9A3FC
+STCDecrunch source|d0 = start|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source|data|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source|header kept|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|kept|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	kept
+STCDecrunch source,dest|popped|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000000
+STCDecrunch source,dest|d0|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|destination|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	bytes 56384 fnv F5D12FAD
+STCDecrunch source,dest|source|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	bytes 56384 fnv 6D043553
+STCDecrunch source,dest|source unchanged|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|d0 = 1|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|data|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#29: 12541 bytes, 6629 words, d7 12, d2 4, kinds $3, offset 13334|1	$00000001
+STCDecrunch source|kept|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	kept
+STCDecrunch source|popped|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000000
+STCDecrunch source|d0|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000580
+STCDecrunch source|buffer|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	bytes 56384 fnv 385A9D46
+STCDecrunch source|d0 = start|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source|data|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source|header kept|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|kept|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	kept
+STCDecrunch source,dest|popped|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000000
+STCDecrunch source,dest|d0|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|destination|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	bytes 56384 fnv C0786C62
+STCDecrunch source,dest|source|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	bytes 56384 fnv 1B71736E
+STCDecrunch source,dest|source unchanged|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|d0 = 1|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|data|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#30: 1675 bytes, 694 words, d7 13, d2 16, kinds $5, offset 1408|1	$00000001
+STCDecrunch source|kept|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	kept
+STCDecrunch source|popped|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000000
+STCDecrunch source|d0|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$0000187A
+STCDecrunch source|buffer|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	bytes 56384 fnv 7E550E9B
+STCDecrunch source|d0 = start|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source|data|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source|header kept|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|kept|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	kept
+STCDecrunch source,dest|popped|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000000
+STCDecrunch source,dest|d0|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|destination|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	bytes 56384 fnv 19384209
+STCDecrunch source,dest|source|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	bytes 56384 fnv 8CEEC21B
+STCDecrunch source,dest|source unchanged|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|d0 = 1|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|data|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#31: 15744 bytes, 3120 words, d7 14, d2 0, kinds $9, offset 6266|1	$00000001
+STCDecrunch source|kept|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	kept
+STCDecrunch source|popped|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000000
+STCDecrunch source|d0|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$000004BC
+STCDecrunch source|buffer|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	bytes 56384 fnv DB4B8935
+STCDecrunch source|d0 = start|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source|data|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source|header kept|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|kept|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	kept
+STCDecrunch source,dest|popped|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000000
+STCDecrunch source,dest|d0|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|destination|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	bytes 56384 fnv BD8D2E75
+STCDecrunch source,dest|source|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	bytes 56384 fnv AE286CB3
+STCDecrunch source,dest|source unchanged|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|d0 = 1|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|data|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#32: 5698 bytes, 595 words, d7 15, d2 10, kinds $11, offset 1212|1	$00000001
+STCDecrunch source|kept|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	kept
+STCDecrunch source|popped|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000000
+STCDecrunch source|d0|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$0000017A
+STCDecrunch source|buffer|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	bytes 56384 fnv B638E332
+STCDecrunch source|d0 = start|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source|data|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source|header kept|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|kept|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	kept
+STCDecrunch source,dest|popped|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000000
+STCDecrunch source,dest|d0|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|destination|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	bytes 56384 fnv 89ECCAF2
+STCDecrunch source,dest|source|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	bytes 56384 fnv AABC60BB
+STCDecrunch source,dest|source unchanged|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|d0 = 1|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|data|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#33: 12204 bytes, 150 words, d7 16, d2 16, kinds $21, offset 378|1	$00000001
+STCDecrunch source|kept|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	kept
+STCDecrunch source|popped|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000000
+STCDecrunch source|d0|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$000000AC
+STCDecrunch source|buffer|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	bytes 56384 fnv 607C4790
+STCDecrunch source|d0 = start|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source|data|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source|header kept|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|kept|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	kept
+STCDecrunch source,dest|popped|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000000
+STCDecrunch source,dest|d0|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|destination|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	bytes 56384 fnv 683D2ADB
+STCDecrunch source,dest|source|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	bytes 56384 fnv 1CEB18C8
+STCDecrunch source,dest|source unchanged|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|d0 = 1|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|data|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#34: 15106 bytes, 75 words, d7 0, d2 15, kinds $41, offset 172|1	$00000001
+STCDecrunch source|kept|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	kept
+STCDecrunch source|popped|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000000
+STCDecrunch source|d0|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$000001A9
+STCDecrunch source|buffer|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	bytes 56384 fnv 38200EE3
+STCDecrunch source|d0 = start|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source|data|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source|header kept|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|kept|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	kept
+STCDecrunch source,dest|popped|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000000
+STCDecrunch source,dest|d0|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|destination|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	bytes 56384 fnv B0A6D6FD
+STCDecrunch source,dest|source|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	bytes 56384 fnv DD337F95
+STCDecrunch source,dest|source unchanged|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|d0 = 1|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|data|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#35: 1694 bytes, 188 words, d7 1, d2 11, kinds $81, offset 425|1	$00000001
+STCDecrunch source|kept|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	kept
+STCDecrunch source|popped|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000000
+STCDecrunch source|d0|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$000000B0
+STCDecrunch source|buffer|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	bytes 56384 fnv EDDA4DFF
+STCDecrunch source|d0 = start|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source|data|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source|header kept|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|kept|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	kept
+STCDecrunch source,dest|popped|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000000
+STCDecrunch source,dest|d0|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|destination|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	bytes 56384 fnv 4E854A18
+STCDecrunch source,dest|source|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	bytes 56384 fnv 5BC2ED74
+STCDecrunch source,dest|source unchanged|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|d0 = 1|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|data|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#36: 4618 bytes, 77 words, d7 2, d2 16, kinds $FF, offset 176|1	$00000001
+STCDecrunch source|kept|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	kept
+STCDecrunch source|popped|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000000
+STCDecrunch source|d0|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$000020B8
+STCDecrunch source|buffer|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	bytes 56384 fnv B795D566
+STCDecrunch source|d0 = start|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source|data|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source|header kept|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|kept|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	kept
+STCDecrunch source,dest|popped|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000000
+STCDecrunch source,dest|d0|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|destination|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	bytes 56384 fnv D10AF427
+STCDecrunch source,dest|source|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	bytes 56384 fnv E6C143C2
+STCDecrunch source,dest|source unchanged|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|d0 = 1|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|data|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#37: 7414 bytes, 4172 words, d7 3, d2 2, kinds $1, offset 8376|1	$00000001
+STCDecrunch source|kept|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	kept
+STCDecrunch source|popped|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000000
+STCDecrunch source|d0|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000A98
+STCDecrunch source|buffer|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	bytes 56384 fnv 622937CC
+STCDecrunch source|d0 = start|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source|data|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source|header kept|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|kept|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	kept
+STCDecrunch source,dest|popped|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000000
+STCDecrunch source,dest|d0|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|destination|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	bytes 56384 fnv 81081A69
+STCDecrunch source,dest|source|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	bytes 56384 fnv DCD65843
+STCDecrunch source,dest|source unchanged|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|d0 = 1|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|data|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#38: 2539 bytes, 1346 words, d7 4, d2 2, kinds $3, offset 2712|1	$00000001
+STCDecrunch source|kept|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	kept
+STCDecrunch source|popped|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000000
+STCDecrunch source|d0|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$000039D5
+STCDecrunch source|buffer|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	bytes 56384 fnv 483AAFAA
+STCDecrunch source|d0 = start|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source|data|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source|header kept|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|kept|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	kept
+STCDecrunch source,dest|popped|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000000
+STCDecrunch source,dest|d0|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|destination|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	bytes 56384 fnv 5CD327B6
+STCDecrunch source,dest|source|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	bytes 56384 fnv 5BB6331B
+STCDecrunch source,dest|source unchanged|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|d0 = 1|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|data|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|below the data unchanged|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source,dest|above the data unchanged|#39: 17362 bytes, 7373 words, d7 5, d2 16, kinds $5, offset 14805|1	$00000001
+STCDecrunch source|kept|S403|1	kept
+STCDecrunch source|popped|S403|1	$00000000
+STCDecrunch source|d0|S403|1	$00000000
+STCDecrunch source|buffer|S403|1	bytes 56384 fnv CB4EE12B
+STCDecrunch source|d0 = 0|S403|1	$00000001
+STCDecrunch source|buffer unchanged|S403|1	$00000001
+STCDecrunch source,dest|kept|S403|1	kept
+STCDecrunch source,dest|popped|S403|1	$00000000
+STCDecrunch source,dest|d0|S403|1	$00000000
+STCDecrunch source,dest|destination|S403|1	bytes 56384 fnv B77DD5C5
+STCDecrunch source,dest|source|S403|1	bytes 56384 fnv EC47C081
+STCDecrunch source,dest|source unchanged|S403|1	$00000001
+STCDecrunch source,dest|d0 = 0|S403|1	$00000001
+STCDecrunch source,dest|destination unchanged|S403|1	$00000001

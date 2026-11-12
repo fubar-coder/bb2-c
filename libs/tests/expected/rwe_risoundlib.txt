@@ -1,0 +1,239 @@
+# capture rwe_risoundlib 1
+CludgeSound|kept|rate 8363|1	kept
+CludgeSound|popped|rate 8363|1	$00000000
+CludgeSound|d0|rate 8363|1	$FFFFFFFF
+CludgeSound|object fields|rate 8363|1	bytes 12 01AC01F40000000000000000
+CludgeSound|guards before|rate 8363|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 8363|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 8363|1	$000001AC
+CludgeSound|words|rate 8363|1	$000001F4
+CludgeSound|file unchanged|rate 8363|1	$00000001
+CludgeSound|sample in chip memory|rate 8363|1	$00000001
+CludgeSound|sample data|rate 8363|1	$00000001
+CludgeSound|kept|rate 16000|1	kept
+CludgeSound|popped|rate 16000|1	$00000000
+CludgeSound|d0|rate 16000|1	$FFFFFFFF
+CludgeSound|object fields|rate 16000|1	bytes 12 00DF01F40000000000000000
+CludgeSound|guards before|rate 16000|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 16000|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 16000|1	$000000DF
+CludgeSound|words|rate 16000|1	$000001F4
+CludgeSound|file unchanged|rate 16000|1	$00000001
+CludgeSound|sample in chip memory|rate 16000|1	$00000001
+CludgeSound|sample data|rate 16000|1	$00000001
+CludgeSound|kept|rate 1|1	kept
+CludgeSound|popped|rate 1|1	$00000000
+CludgeSound|d0|rate 1|1	$FFFFFFFF
+CludgeSound|object fields|rate 1|1	bytes 12 9E9901F50000000000000000
+CludgeSound|guards before|rate 1|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 1|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 1|1	$00009E99
+CludgeSound|words|rate 1|1	$000001F5
+CludgeSound|file unchanged|rate 1|1	$00000001
+CludgeSound|sample in chip memory|rate 1|1	$00000001
+CludgeSound|sample data|rate 1|1	$00000001
+CludgeSound|kept|rate 2|1	kept
+CludgeSound|popped|rate 2|1	$00000000
+CludgeSound|d0|rate 2|1	$FFFFFFFF
+CludgeSound|object fields|rate 2|1	bytes 12 4F4C01F50000000000000000
+CludgeSound|guards before|rate 2|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 2|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 2|1	$00004F4C
+CludgeSound|words|rate 2|1	$000001F5
+CludgeSound|file unchanged|rate 2|1	$00000001
+CludgeSound|sample in chip memory|rate 2|1	$00000001
+CludgeSound|sample data|rate 2|1	$00000001
+CludgeSound|kept|rate 3579|1	kept
+CludgeSound|popped|rate 3579|1	$00000000
+CludgeSound|d0|rate 3579|1	$FFFFFFFF
+CludgeSound|object fields|rate 3579|1	bytes 12 03E801F60000000000000000
+CludgeSound|guards before|rate 3579|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 3579|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 3579|1	$000003E8
+CludgeSound|words|rate 3579|1	$000001F6
+CludgeSound|file unchanged|rate 3579|1	$00000001
+CludgeSound|sample in chip memory|rate 3579|1	$00000001
+CludgeSound|sample data|rate 3579|1	$00000001
+CludgeSound|kept|rate 22050|1	kept
+CludgeSound|popped|rate 22050|1	$00000000
+CludgeSound|d0|rate 22050|1	$FFFFFFFF
+CludgeSound|object fields|rate 22050|1	bytes 12 00A201F60000000000000000
+CludgeSound|guards before|rate 22050|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 22050|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 22050|1	$000000A2
+CludgeSound|words|rate 22050|1	$000001F6
+CludgeSound|file unchanged|rate 22050|1	$00000001
+CludgeSound|sample in chip memory|rate 22050|1	$00000001
+CludgeSound|sample data|rate 22050|1	$00000001
+CludgeSound|kept|rate 32767|1	kept
+CludgeSound|popped|rate 32767|1	$00000000
+CludgeSound|d0|rate 32767|1	$FFFFFFFF
+CludgeSound|object fields|rate 32767|1	bytes 12 006D01F70000000000000000
+CludgeSound|guards before|rate 32767|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 32767|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 32767|1	$0000006D
+CludgeSound|words|rate 32767|1	$000001F7
+CludgeSound|file unchanged|rate 32767|1	$00000001
+CludgeSound|sample in chip memory|rate 32767|1	$00000001
+CludgeSound|sample data|rate 32767|1	$00000001
+CludgeSound|kept|rate 32768|1	kept
+CludgeSound|popped|rate 32768|1	$00000000
+CludgeSound|d0|rate 32768|1	$FFFFFFFF
+CludgeSound|object fields|rate 32768|1	bytes 12 006D01F70000000000000000
+CludgeSound|guards before|rate 32768|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 32768|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 32768|1	$0000006D
+CludgeSound|words|rate 32768|1	$000001F7
+CludgeSound|file unchanged|rate 32768|1	$00000001
+CludgeSound|sample in chip memory|rate 32768|1	$00000001
+CludgeSound|sample data|rate 32768|1	$00000001
+CludgeSound|kept|rate 65535|1	kept
+CludgeSound|popped|rate 65535|1	$00000000
+CludgeSound|d0|rate 65535|1	$FFFFFFFF
+CludgeSound|object fields|rate 65535|1	bytes 12 003601F80000000000000000
+CludgeSound|guards before|rate 65535|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|rate 65535|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|rate 65535|1	$00000036
+CludgeSound|words|rate 65535|1	$000001F8
+CludgeSound|file unchanged|rate 65535|1	$00000001
+CludgeSound|sample in chip memory|rate 65535|1	$00000001
+CludgeSound|sample data|rate 65535|1	$00000001
+CludgeSound|kept|chunks before BODY|1	kept
+CludgeSound|popped|chunks before BODY|1	$00000000
+CludgeSound|d0|chunks before BODY|1	$FFFFFFFF
+CludgeSound|object fields|chunks before BODY|1	bytes 12 01AC00A60000000000000000
+CludgeSound|guards before|chunks before BODY|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|chunks before BODY|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|chunks before BODY|1	$000001AC
+CludgeSound|words|chunks before BODY|1	$000000A6
+CludgeSound|file unchanged|chunks before BODY|1	$00000001
+CludgeSound|sample in chip memory|chunks before BODY|1	$00000001
+CludgeSound|sample data|chunks before BODY|1	$00000001
+CludgeSound|kept|BODY the 7th chunk|1	kept
+CludgeSound|popped|BODY the 7th chunk|1	$00000000
+CludgeSound|d0|BODY the 7th chunk|1	$FFFFFFFF
+CludgeSound|object fields|BODY the 7th chunk|1	bytes 12 014400200000000000000000
+CludgeSound|guards before|BODY the 7th chunk|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY the 7th chunk|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY the 7th chunk|1	$00000144
+CludgeSound|words|BODY the 7th chunk|1	$00000020
+CludgeSound|file unchanged|BODY the 7th chunk|1	$00000001
+CludgeSound|sample in chip memory|BODY the 7th chunk|1	$00000001
+CludgeSound|sample data|BODY the 7th chunk|1	$00000001
+CludgeSound|kept|BODY the 8th chunk|1	kept
+CludgeSound|popped|BODY the 8th chunk|1	$00000000
+CludgeSound|d0|BODY the 8th chunk|1	$00000000
+CludgeSound|object fields|BODY the 8th chunk|1	bytes 12 014400200000000000000000
+CludgeSound|guards before|BODY the 8th chunk|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY the 8th chunk|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY the 8th chunk|1	$00000144
+CludgeSound|words|BODY the 8th chunk|1	$00000020
+CludgeSound|file unchanged|BODY the 8th chunk|1	$00000001
+CludgeSound|failed: the old pointer|BODY the 8th chunk|1	$00000001
+CludgeSound|kept|not 8SVX|1	kept
+CludgeSound|popped|not 8SVX|1	$00000000
+CludgeSound|d0|not 8SVX|1	$00000000
+CludgeSound|object fields|not 8SVX|1	bytes 12 014400200000000000000000
+CludgeSound|guards before|not 8SVX|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|not 8SVX|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|not 8SVX|1	$00000144
+CludgeSound|words|not 8SVX|1	$00000020
+CludgeSound|file unchanged|not 8SVX|1	$00000001
+CludgeSound|failed: the old pointer|not 8SVX|1	$00000001
+CludgeSound|kept|no VHDR|1	kept
+CludgeSound|popped|no VHDR|1	$00000000
+CludgeSound|d0|no VHDR|1	$00000000
+CludgeSound|object fields|no VHDR|1	bytes 12 014400200000000000000000
+CludgeSound|guards before|no VHDR|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|no VHDR|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|no VHDR|1	$00000144
+CludgeSound|words|no VHDR|1	$00000020
+CludgeSound|file unchanged|no VHDR|1	$00000001
+CludgeSound|failed: the old pointer|no VHDR|1	$00000001
+CludgeSound|kept|after failures|1	kept
+CludgeSound|popped|after failures|1	$00000000
+CludgeSound|d0|after failures|1	$FFFFFFFF
+CludgeSound|object fields|after failures|1	bytes 12 01AC00320000000000000000
+CludgeSound|guards before|after failures|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|after failures|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|after failures|1	$000001AC
+CludgeSound|words|after failures|1	$00000032
+CludgeSound|file unchanged|after failures|1	$00000001
+CludgeSound|sample in chip memory|after failures|1	$00000001
+CludgeSound|sample data|after failures|1	$00000001
+CludgeSound|kept|VHDR 24 bytes|1	kept
+CludgeSound|popped|VHDR 24 bytes|1	$00000000
+CludgeSound|d0|VHDR 24 bytes|1	$FFFFFFFF
+CludgeSound|object fields|VHDR 24 bytes|1	bytes 12 030000190000000000000000
+CludgeSound|guards before|VHDR 24 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|VHDR 24 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|VHDR 24 bytes|1	$00000300
+CludgeSound|words|VHDR 24 bytes|1	$00000019
+CludgeSound|file unchanged|VHDR 24 bytes|1	$00000001
+CludgeSound|sample in chip memory|VHDR 24 bytes|1	$00000001
+CludgeSound|sample data|VHDR 24 bytes|1	$00000001
+CludgeSound|kept|odd chunk with pad byte|1	kept
+CludgeSound|popped|odd chunk with pad byte|1	$00000000
+CludgeSound|d0|odd chunk with pad byte|1	$00000000
+CludgeSound|object fields|odd chunk with pad byte|1	bytes 12 030000190000000000000000
+CludgeSound|guards before|odd chunk with pad byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|odd chunk with pad byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|odd chunk with pad byte|1	$00000300
+CludgeSound|words|odd chunk with pad byte|1	$00000019
+CludgeSound|file unchanged|odd chunk with pad byte|1	$00000001
+CludgeSound|failed: the old pointer|odd chunk with pad byte|1	$00000001
+CludgeSound|kept|odd chunk without pad byte|1	kept
+CludgeSound|popped|odd chunk without pad byte|1	$00000000
+CludgeSound|d0|odd chunk without pad byte|1	$FFFFFFFF
+CludgeSound|object fields|odd chunk without pad byte|1	bytes 12 01AC00260000000000000000
+CludgeSound|guards before|odd chunk without pad byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|odd chunk without pad byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|odd chunk without pad byte|1	$000001AC
+CludgeSound|words|odd chunk without pad byte|1	$00000026
+CludgeSound|file unchanged|odd chunk without pad byte|1	$00000001
+CludgeSound|sample in chip memory|odd chunk without pad byte|1	$00000001
+CludgeSound|sample data|odd chunk without pad byte|1	$00000001
+CludgeSound|kept|odd BODY length|1	kept
+CludgeSound|popped|odd BODY length|1	$00000000
+CludgeSound|d0|odd BODY length|1	$FFFFFFFF
+CludgeSound|object fields|odd BODY length|1	bytes 12 037E00310000000000000000
+CludgeSound|guards before|odd BODY length|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|odd BODY length|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|odd BODY length|1	$0000037E
+CludgeSound|words|odd BODY length|1	$00000031
+CludgeSound|file unchanged|odd BODY length|1	$00000001
+CludgeSound|sample in chip memory|odd BODY length|1	$00000001
+CludgeSound|sample data|odd BODY length|1	$00000001
+CludgeSound|kept|BODY 70000 bytes|1	kept
+CludgeSound|popped|BODY 70000 bytes|1	$00000000
+CludgeSound|d0|BODY 70000 bytes|1	$FFFFFFFF
+CludgeSound|object fields|BODY 70000 bytes|1	bytes 12 01AC08B80000000000000000
+CludgeSound|guards before|BODY 70000 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY 70000 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY 70000 bytes|1	$000001AC
+CludgeSound|words|BODY 70000 bytes|1	$000008B8
+CludgeSound|file unchanged|BODY 70000 bytes|1	$00000001
+CludgeSound|sample in chip memory|BODY 70000 bytes|1	$00000001
+CludgeSound|sample data|BODY 70000 bytes|1	$00000001
+CludgeSound|kept|BODY 65536 bytes|1	kept
+CludgeSound|popped|BODY 65536 bytes|1	$00000000
+CludgeSound|d0|BODY 65536 bytes|1	$FFFFFFFF
+CludgeSound|object fields|BODY 65536 bytes|1	bytes 12 01AC00000000000000000000
+CludgeSound|guards before|BODY 65536 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY 65536 bytes|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY 65536 bytes|1	$000001AC
+CludgeSound|words|BODY 65536 bytes|1	$00000000
+CludgeSound|file unchanged|BODY 65536 bytes|1	$00000001
+CludgeSound|sample in chip memory|BODY 65536 bytes|1	$00000001
+CludgeSound|sample data|BODY 65536 bytes|1	$00000001
+CludgeSound|kept|BODY 1 byte|1	kept
+CludgeSound|popped|BODY 1 byte|1	$00000000
+CludgeSound|d0|BODY 1 byte|1	$FFFFFFFF
+CludgeSound|object fields|BODY 1 byte|1	bytes 12 01AC00000000000000000000
+CludgeSound|guards before|BODY 1 byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|guards behind|BODY 1 byte|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|period|BODY 1 byte|1	$000001AC
+CludgeSound|words|BODY 1 byte|1	$00000000
+CludgeSound|file unchanged|BODY 1 byte|1	$00000001
+CludgeSound|sample in chip memory|BODY 1 byte|1	$00000001
+CludgeSound|sample data|BODY 1 byte|1	$00000001

@@ -1,7 +1,8 @@
 /*
  * rwe ristonecrackerlib - STCLength, STCStart, STCSafeLen, STCLoad: the C
- * build against the CD original (BSS2 RISTONECRACKERLIB.OBJ), method of
- * rwecmp.h.
+ * build or the CD original (BSS2 RISTONECRACKERLIB.OBJ), one set as LIBSET
+ * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ristonecrackerlib.txt).
  *
  *   ristonecrackerlib DIR     (DIR with ristonecrackerlib .obj/.orig)
  *
@@ -12,9 +13,9 @@
  * distances (0..16 bits, the header's word)) is written as the bit
  * stream the decruncher reads (MSB first, words backwards from the
  * trailer), and the data it must give are worked out at the same time.
- * STCLoad loads the file from RAM: and unpacks it in place; compared
- * are the result, the whole buffer (with the expected data and between
- * the sets), the header functions and the registers the original keeps.
+ * STCLoad loads the file from RAM: and unpacks it in place; observed
+ * are the result, the whole buffer (also checked against the expected
+ * data), the header functions and the kept registers.
  * Covered: every code of the decruncher, bit buffers of 0..16 bits at
  * the start, literal bytes and runs on every bit position (aligned and
  * across words), the three header functions on S404 data and on other
@@ -25,6 +26,7 @@
  * far offset bits (the DIFF of the run table), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -35,7 +37,7 @@
 
 #include "s404.h"
 
-static UBYTE *buf[2];                   /* STCLoad's buffer per set */
+static UBYTE *buf;                      /* STCLoad's buffer */
 
 /* ------------------------------------------------------------ the tests */
 
@@ -49,17 +51,17 @@ static void savefile(const UBYTE *d, ULONG len)
     check("STC file written", fh != 0);
 }
 
-static void headers(const UBYTE *a[2])
+static void headers(const UBYTE *a)
 {
     static const char *rn[] = { "STCLength", "STCStart", "STCSafeLen" };
     int e;
     for (e = 0; e < 3; e++) {
         ROUT = rn[e];
-        DO2(ENT(LIB, e, 0), R[cur].d[0] = (ULONG)a[cur]);
-        SAME("d0", e == 1 && R[cur].d[0] ? R[cur].d[0] - (ULONG)a[cur] : R[cur].d[0]);
+        DO1(ENT(LIB, e, 0), R.d[0] = (ULONG)a);
+        OBS("d0", e == 1 && R.d[0] ? R.d[0] - (ULONG)a : R.d[0]);
         if (e == 1)
-            BOTH("STCStart = 0 or address + offset", R[cur].d[0] == 0
-                 || R[cur].d[0] == (ULONG)a[cur] + *(const ULONG *)(a[cur] + 4));
+            BOTH("STCStart = 0 or address + offset", R.d[0] == 0
+                 || R.d[0] == (ULONG)a + *(const ULONG *)(a + 4));
     }
 }
 
@@ -69,17 +71,15 @@ static void load(int expect, UBYTE fill)
 {
     static const char name[] = FNAME;
     ULONG off = *(ULONG *)(file + 4);
-    int s;
-    for (s = 0; s < 2; s++)
-        memset(buf[s], fill, BUFSZ);
+    memset(buf, fill, BUFSZ);
     ROUT = "STCLoad";
-    DO2(ENT(LIB, 3, 0), R[cur].d[0] = (ULONG)name; R[cur].d[1] = (ULONG)buf[cur]);
-    SAME("d0", R[cur].d[0] ? R[cur].d[0] - (ULONG)buf[cur] : 0);
-    SAMEBYTES("buffer", buf, BUFSZ);
+    DO1(ENT(LIB, 3, 0), R.d[0] = (ULONG)name; R.d[1] = (ULONG)buf);
+    OBS("d0", R.d[0] ? R.d[0] - (ULONG)buf : 0);
+    OBSBYTES("buffer", buf, BUFSZ);
     if (expect) {
-        BOTH("d0 = start", R[cur].d[0] == (ULONG)buf[cur] + off);
-        BOTH("data", memcmp(buf[cur] + off, out, N) == 0);
-        BOTH("header kept", memcmp(buf[cur], file, 16) == 0);
+        BOTH("d0 = start", R.d[0] == (ULONG)buf + off);
+        BOTH("data", memcmp(buf + off, out, N) == 0);
+        BOTH("header kept", memcmp(buf, file, 16) == 0);
     }
 }
 
@@ -87,28 +87,26 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
     static const UBYTE notstc[16] = "S403\0\0\0\x10\0\0\0\x20\0\0\0\x04";
-    const UBYTE *a[2];
-    int s, i;
+    int i;
 
     if (argc < 2) {
         printf("usage: ristonecrackerlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++) {
-        buf[s] = AllocMem(BUFSZ, MEMF_PUBLIC);
-        /* init: dos.library */
-        markregs(&R[s]);
-        cur = s;
-        callstk(entry_form(getlib(&sets[s], LIB), 4, 0), &R[s], NULL, 0, &POP[s]);
-    }
+    KEEPS("STCLength", d1-d7|a1-a3|a6);
+    KEEPS("STCStart", d1-d7|a1-a3|a6);
+    KEEPS("STCSafeLen", d1-d7|a1-a3|a6);
+    KEEPS("STCLoad", a2|a3);
+    buf = AllocMem(BUFSZ, MEMF_PUBLIC);
+    /* init: dos.library */
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, LIB), 4, 0), &R, NULL, 0, &POP);
 
     /* the header functions on other data: 0 (the binary's checks) */
     strcpy(VEC, "S403");
-    for (s = 0; s < 2; s++)
-        a[s] = notstc;
-    headers(a);
+    headers(notstc);
 
     /* unpacking: random code sequences */
     for (i = 0; i < 40; i++) {
@@ -129,9 +127,7 @@ int main(int argc, char **argv)
         }
         sprintf(VEC, "#%d: %lu bytes, %lu words, d7 %d, d2 %d, kinds $%X, offset %lu", i, N,
                 nwords, firstb, d2, kinds, off);
-        for (s = 0; s < 2; s++)
-            a[s] = file;
-        headers(a);
+        headers(file);
         savefile(file, filelen);
         load(1, (UBYTE)(i * 13));
     }
@@ -153,11 +149,10 @@ int main(int argc, char **argv)
     {
         static const char dir[] = "RAM:";
         ROUT = "STCLoad";
-        DO2(ENT(LIB, 3, 0), R[cur].d[0] = (ULONG)dir; R[cur].d[1] = (ULONG)buf[cur]);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, 3, 0), R.d[0] = (ULONG)dir; R.d[1] = (ULONG)buf);
+        OBS("d0", R.d[0]);
     }
 
-    for (s = 0; s < 2; s++)
-        FreeMem(buf[s], BUFSZ);
+    FreeMem(buf, BUFSZ);
     return rwe_done(LIB);
 }

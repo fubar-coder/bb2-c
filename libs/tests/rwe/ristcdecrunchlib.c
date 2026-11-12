@@ -1,21 +1,23 @@
 /*
- * rwe ristcdecrunchlib - STCDecrunch source[,dest]: the C build against
- * the reference build of rwelibsrc/stcdecrunchlib.bb (blitz2 2.10),
- * method of rwecmp.h.
+ * rwe ristcdecrunchlib - STCDecrunch source[,dest]: the C build or
+ * the reference build of rwelibsrc/stcdecrunchlib.bb (blitz2 2.10), one
+ * set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * expected data libs/tests/expected/rwe_ristcdecrunchlib.txt).
  *
  *   ristcdecrunchlib DIR     (DIR with ristcdecrunchlib .obj/.orig)
  *
  * The S404 files are made by s404.h (random sequences of every code of
  * the decruncher, 0..16 far offset bits, first bit buffers of 0..16
  * bits).  Form 1 unpacks a copy of the file in a buffer in place (to
- * buffer + offset), form 2 from the file to another buffer; compared are
+ * buffer + offset), form 2 from the file to another buffer; observed are
  * d0 (form 1: the address of the data, relative to the buffer; form 2:
- * 1), the whole buffers (with the expected data and between the sets)
- * and the registers the original keeps.  Both forms with other data
+ * 1), the whole buffers (also checked against the expected data) and the
+ * kept registers.  Both forms with other data
  * (0, nothing written).  Not covered: corrupt data (writes anywhere),
  * more than 16 far offset bits (the DIFF of the run table), a far offset
  * that is negative as a word.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -25,31 +27,28 @@
 
 #include "s404.h"
 
-static UBYTE *buf[2];                   /* the file (form 1: in place) */
-static UBYTE *dst[2];                   /* form 2's destination */
+static UBYTE *buf;                      /* the file (form 1: in place) */
+static UBYTE *dst;                      /* form 2's destination */
 
 /* form 1: the file in buf (the rest filled with `fill`), unpacked in
    place; `expect`: an S404 file that must give out[] */
 static void inplace(int expect, UBYTE fill)
 {
     ULONG off = *(ULONG *)(file + 4);
-    int s;
-    for (s = 0; s < 2; s++) {
-        memset(buf[s], fill, BUFSZ);
-        memcpy(buf[s], file, filelen);
-    }
+    memset(buf, fill, BUFSZ);
+    memcpy(buf, file, filelen);
     ROUT = "STCDecrunch source";
-    DO2(ENT(LIB, 0, 0), R[cur].d[0] = (ULONG)buf[cur]);
-    SAME("d0", R[cur].d[0] ? R[cur].d[0] - (ULONG)buf[cur] : 0);
-    SAMEBYTES("buffer", buf, BUFSZ);
+    DO1(ENT(LIB, 0, 0), R.d[0] = (ULONG)buf);
+    OBS("d0", R.d[0] ? R.d[0] - (ULONG)buf : 0);
+    OBSBYTES("buffer", buf, BUFSZ);
     if (expect) {
-        BOTH("d0 = start", R[cur].d[0] == (ULONG)buf[cur] + off);
-        BOTH("data", memcmp(buf[cur] + off, out, N) == 0);
-        BOTH("header kept", memcmp(buf[cur], file, 16) == 0);
+        BOTH("d0 = start", R.d[0] == (ULONG)buf + off);
+        BOTH("data", memcmp(buf + off, out, N) == 0);
+        BOTH("header kept", memcmp(buf, file, 16) == 0);
     } else {
-        BOTH("d0 = 0", R[cur].d[0] == 0);
-        BOTH("buffer unchanged", memcmp(buf[cur], file, filelen) == 0
-             && buf[cur][filelen] == fill && buf[cur][BUFSZ - 1] == fill);
+        BOTH("d0 = 0", R.d[0] == 0);
+        BOTH("buffer unchanged", memcmp(buf, file, filelen) == 0
+             && buf[filelen] == fill && buf[BUFSZ - 1] == fill);
     }
 }
 
@@ -57,44 +56,41 @@ static void inplace(int expect, UBYTE fill)
    `fill`) */
 static void todest(int expect, UBYTE fill, ULONG at)
 {
-    int s;
-    for (s = 0; s < 2; s++) {
-        memset(buf[s], 0x5a, BUFSZ);
-        memcpy(buf[s], file, filelen);
-        memset(dst[s], fill, BUFSZ);
-    }
+    memset(buf, 0x5a, BUFSZ);
+    memcpy(buf, file, filelen);
+    memset(dst, fill, BUFSZ);
     ROUT = "STCDecrunch source,dest";
-    DO2(ENT(LIB, 0, 1), R[cur].d[0] = (ULONG)buf[cur]; R[cur].d[1] = (ULONG)dst[cur] + at);
-    SAME("d0", R[cur].d[0]);
-    SAMEBYTES("destination", dst, BUFSZ);
-    SAMEBYTES("source", buf, BUFSZ);
-    BOTH("source unchanged", memcmp(buf[cur], file, filelen) == 0);
+    DO1(ENT(LIB, 0, 1), R.d[0] = (ULONG)buf; R.d[1] = (ULONG)dst + at);
+    OBS("d0", R.d[0]);
+    OBSBYTES("destination", dst, BUFSZ);
+    OBSBYTES("source", buf, BUFSZ);
+    BOTH("source unchanged", memcmp(buf, file, filelen) == 0);
     if (expect) {
-        BOTH("d0 = 1", R[cur].d[0] == 1);
-        BOTH("data", memcmp(dst[cur] + at, out, N) == 0);
-        BOTH("below the data unchanged", at == 0 || dst[cur][at - 1] == fill);
-        BOTH("above the data unchanged", dst[cur][at + N] == fill);
+        BOTH("d0 = 1", R.d[0] == 1);
+        BOTH("data", memcmp(dst + at, out, N) == 0);
+        BOTH("below the data unchanged", at == 0 || dst[at - 1] == fill);
+        BOTH("above the data unchanged", dst[at + N] == fill);
     } else {
-        BOTH("d0 = 0", R[cur].d[0] == 0);
-        BOTH("destination unchanged", dst[cur][at] == fill && dst[cur][BUFSZ - 1] == fill);
+        BOTH("d0 = 0", R.d[0] == 0);
+        BOTH("destination unchanged", dst[at] == fill && dst[BUFSZ - 1] == fill);
     }
 }
 
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
-    int s, i;
+    int i;
 
     if (argc < 2) {
         printf("usage: ristcdecrunchlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++) {
-        buf[s] = AllocMem(BUFSZ, MEMF_PUBLIC);
-        dst[s] = AllocMem(BUFSZ, MEMF_PUBLIC);
-    }
+    KEEPS("STCDecrunch source", a2|a3|a6);
+    KEEPS("STCDecrunch source,dest", a2|a3|a6);
+    buf = AllocMem(BUFSZ, MEMF_PUBLIC);
+    dst = AllocMem(BUFSZ, MEMF_PUBLIC);
 
     /* random code sequences, both forms */
     for (i = 0; i < 40; i++) {
@@ -127,9 +123,7 @@ int main(int argc, char **argv)
     inplace(0, 0x11);
     todest(0, 0x22, 10);
 
-    for (s = 0; s < 2; s++) {
-        FreeMem(buf[s], BUFSZ);
-        FreeMem(dst[s], BUFSZ);
-    }
+    FreeMem(buf, BUFSZ);
+    FreeMem(dst, BUFSZ);
     return rwe_done(LIB);
 }

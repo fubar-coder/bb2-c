@@ -1,0 +1,705 @@
+# capture rwe_ristonecrackerlib 1
+STCLength|kept|S403|1	kept
+STCLength|popped|S403|1	$00000000
+STCLength|d0|S403|1	$00000000
+STCStart|kept|S403|1	kept
+STCStart|popped|S403|1	$00000000
+STCStart|d0|S403|1	$00000000
+STCStart|STCStart = 0 or address + offset|S403|1	$00000001
+STCSafeLen|kept|S403|1	kept
+STCSafeLen|popped|S403|1	$00000000
+STCSafeLen|d0|S403|1	$00000000
+STCLength|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCLength|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCLength|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$000000C8
+STCStart|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCStart|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCStart|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000044
+STCStart|STCStart = 0 or address + offset|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCSafeLen|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCSafeLen|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCSafeLen|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$0000010C
+STCLoad|kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	kept
+STCLoad|popped|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000000
+STCLoad|d0|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000044
+STCLoad|buffer|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	bytes 56384 fnv 1C083637
+STCLoad|d0 = start|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCLoad|data|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCLoad|header kept|#0: 200 bytes, 23 words, d7 0, d2 16, kinds $FF, offset 68|1	$00000001
+STCLength|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCLength|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCLength|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$000000ED
+STCStart|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCStart|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCStart|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000182
+STCStart|STCStart = 0 or address + offset|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCSafeLen|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCSafeLen|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCSafeLen|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$0000026F
+STCLoad|kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	kept
+STCLoad|popped|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000000
+STCLoad|d0|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000182
+STCLoad|buffer|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	bytes 56384 fnv C2D3CE8C
+STCLoad|d0 = start|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCLoad|data|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCLoad|header kept|#1: 237 bytes, 135 words, d7 1, d2 10, kinds $1, offset 386|1	$00000001
+STCLength|kept|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	kept
+STCLength|popped|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000000
+STCLength|d0|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000112
+STCStart|kept|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	kept
+STCStart|popped|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000000
+STCStart|d0|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000138
+STCStart|STCStart = 0 or address + offset|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000001
+STCSafeLen|kept|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	kept
+STCSafeLen|popped|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000000
+STCSafeLen|d0|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$0000024A
+STCLoad|kept|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	kept
+STCLoad|popped|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000000
+STCLoad|d0|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000138
+STCLoad|buffer|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	bytes 56384 fnv FF85A7FB
+STCLoad|d0 = start|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000001
+STCLoad|data|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000001
+STCLoad|header kept|#2: 274 bytes, 146 words, d7 2, d2 8, kinds $3, offset 312|1	$00000001
+STCLength|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCLength|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCLength|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000137
+STCStart|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCStart|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCStart|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$0000011A
+STCStart|STCStart = 0 or address + offset|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCSafeLen|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCSafeLen|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCSafeLen|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000251
+STCLoad|kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	kept
+STCLoad|popped|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000000
+STCLoad|d0|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$0000011A
+STCLoad|buffer|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	bytes 56384 fnv 45B8536F
+STCLoad|d0 = start|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCLoad|data|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCLoad|header kept|#3: 311 bytes, 126 words, d7 3, d2 16, kinds $5, offset 282|1	$00000001
+STCLength|kept|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	kept
+STCLength|popped|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000000
+STCLength|d0|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$0000015C
+STCStart|kept|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	kept
+STCStart|popped|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000000
+STCStart|d0|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$000000BC
+STCStart|STCStart = 0 or address + offset|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000001
+STCSafeLen|kept|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	kept
+STCSafeLen|popped|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000000
+STCSafeLen|d0|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000218
+STCLoad|kept|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	kept
+STCLoad|popped|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000000
+STCLoad|d0|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$000000BC
+STCLoad|buffer|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	bytes 56384 fnv 098DE91B
+STCLoad|d0 = start|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000001
+STCLoad|data|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000001
+STCLoad|header kept|#4: 348 bytes, 84 words, d7 4, d2 7, kinds $9, offset 188|1	$00000001
+STCLength|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCLength|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCLength|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000181
+STCStart|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCStart|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCStart|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$000000B4
+STCStart|STCStart = 0 or address + offset|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCSafeLen|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCSafeLen|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCSafeLen|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000235
+STCLoad|kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	kept
+STCLoad|popped|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000000
+STCLoad|d0|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$000000B4
+STCLoad|buffer|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	bytes 56384 fnv 0763CAE8
+STCLoad|d0 = start|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCLoad|data|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCLoad|header kept|#5: 385 bytes, 43 words, d7 5, d2 2, kinds $11, offset 180|1	$00000001
+STCLength|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCLength|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCLength|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$000001A6
+STCStart|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCStart|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCStart|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$0000002C
+STCStart|STCStart = 0 or address + offset|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCSafeLen|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCSafeLen|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCSafeLen|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$000001D2
+STCLoad|kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	kept
+STCLoad|popped|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000000
+STCLoad|d0|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$0000002C
+STCLoad|buffer|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	bytes 56384 fnv A1F57D35
+STCLoad|d0 = start|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCLoad|data|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCLoad|header kept|#6: 422 bytes, 11 words, d7 6, d2 16, kinds $21, offset 44|1	$00000001
+STCLength|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCLength|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCLength|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$000001CB
+STCStart|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCStart|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCStart|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000021
+STCStart|STCStart = 0 or address + offset|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCSafeLen|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCSafeLen|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCSafeLen|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$000001EC
+STCLoad|kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	kept
+STCLoad|popped|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000000
+STCLoad|d0|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000021
+STCLoad|buffer|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	bytes 56384 fnv B71B1C5C
+STCLoad|d0 = start|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCLoad|data|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCLoad|header kept|#7: 459 bytes, 6 words, d7 7, d2 3, kinds $41, offset 33|1	$00000001
+STCLength|kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	kept
+STCLength|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
+STCLength|d0|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$000001F0
+STCStart|kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	kept
+STCStart|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
+STCStart|d0|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000084
+STCStart|STCStart = 0 or address + offset|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
+STCSafeLen|kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	kept
+STCSafeLen|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
+STCSafeLen|d0|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000274
+STCLoad|kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	kept
+STCLoad|popped|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000000
+STCLoad|d0|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000084
+STCLoad|buffer|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	bytes 56384 fnv B1CC77DD
+STCLoad|d0 = start|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
+STCLoad|data|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
+STCLoad|header kept|#8: 496 bytes, 56 words, d7 8, d2 2, kinds $81, offset 132|1	$00000001
+STCLength|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCLength|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCLength|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00001CCB
+STCStart|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCStart|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCStart|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000170
+STCStart|STCStart = 0 or address + offset|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCSafeLen|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCSafeLen|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCSafeLen|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00001E3B
+STCLoad|kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	kept
+STCLoad|popped|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000000
+STCLoad|d0|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000170
+STCLoad|buffer|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	bytes 56384 fnv 5B38C533
+STCLoad|d0 = start|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCLoad|data|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCLoad|header kept|#9: 7371 bytes, 157 words, d7 9, d2 16, kinds $FF, offset 368|1	$00000001
+STCLength|kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	kept
+STCLength|popped|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000000
+STCLength|d0|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00002955
+STCStart|kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	kept
+STCStart|popped|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000000
+STCStart|d0|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00002E98
+STCStart|STCStart = 0 or address + offset|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
+STCSafeLen|kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	kept
+STCSafeLen|popped|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000000
+STCSafeLen|d0|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$000057ED
+STCLoad|kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	kept
+STCLoad|popped|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000000
+STCLoad|d0|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00002E98
+STCLoad|buffer|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	bytes 56384 fnv 7A41F4F6
+STCLoad|d0 = start|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
+STCLoad|data|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
+STCLoad|header kept|#10: 10581 bytes, 5953 words, d7 10, d2 9, kinds $1, offset 11928|1	$00000001
+STCLength|kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	kept
+STCLength|popped|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000000
+STCLength|d0|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$0000184E
+STCStart|kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	kept
+STCStart|popped|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000000
+STCStart|d0|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00001A09
+STCStart|STCStart = 0 or address + offset|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
+STCSafeLen|kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	kept
+STCSafeLen|popped|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000000
+STCSafeLen|d0|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00003257
+STCLoad|kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	kept
+STCLoad|popped|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000000
+STCLoad|d0|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00001A09
+STCLoad|buffer|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	bytes 56384 fnv F1E0A746
+STCLoad|d0 = start|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
+STCLoad|data|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
+STCLoad|header kept|#11: 6222 bytes, 3294 words, d7 11, d2 8, kinds $3, offset 6665|1	$00000001
+STCLength|kept|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	kept
+STCLength|popped|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000000
+STCLength|d0|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00001022
+STCStart|kept|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	kept
+STCStart|popped|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000000
+STCStart|d0|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000DB8
+STCStart|STCStart = 0 or address + offset|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000001
+STCSafeLen|kept|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	kept
+STCSafeLen|popped|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000000
+STCSafeLen|d0|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00001DDA
+STCLoad|kept|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	kept
+STCLoad|popped|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000000
+STCLoad|d0|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000DB8
+STCLoad|buffer|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	bytes 56384 fnv C0E456C3
+STCLoad|d0 = start|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000001
+STCLoad|data|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000001
+STCLoad|header kept|#12: 4130 bytes, 1746 words, d7 12, d2 16, kinds $5, offset 3512|1	$00000001
+STCLength|kept|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	kept
+STCLength|popped|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000000
+STCLength|d0|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00003273
+STCStart|kept|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	kept
+STCStart|popped|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000000
+STCStart|d0|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00001594
+STCStart|STCStart = 0 or address + offset|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000001
+STCSafeLen|kept|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	kept
+STCSafeLen|popped|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000000
+STCSafeLen|d0|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00004807
+STCLoad|kept|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	kept
+STCLoad|popped|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000000
+STCLoad|d0|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00001594
+STCLoad|buffer|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	bytes 56384 fnv A3824BD0
+STCLoad|d0 = start|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000001
+STCLoad|data|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000001
+STCLoad|header kept|#13: 12915 bytes, 2743 words, d7 13, d2 4, kinds $9, offset 5524|1	$00000001
+STCLength|kept|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	kept
+STCLength|popped|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000000
+STCLength|d0|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000884
+STCStart|kept|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	kept
+STCStart|popped|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000000
+STCStart|d0|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$000001C8
+STCStart|STCStart = 0 or address + offset|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000001
+STCSafeLen|kept|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	kept
+STCSafeLen|popped|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000000
+STCSafeLen|d0|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000A4C
+STCLoad|kept|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	kept
+STCLoad|popped|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000000
+STCLoad|d0|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$000001C8
+STCLoad|buffer|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	bytes 56384 fnv 3726BA76
+STCLoad|d0 = start|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000001
+STCLoad|data|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000001
+STCLoad|header kept|#14: 2180 bytes, 218 words, d7 14, d2 7, kinds $11, offset 456|1	$00000001
+STCLength|kept|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	kept
+STCLength|popped|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000000
+STCLength|d0|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00002729
+STCStart|kept|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	kept
+STCStart|popped|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000000
+STCStart|d0|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$0000016C
+STCStart|STCStart = 0 or address + offset|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000001
+STCSafeLen|kept|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	kept
+STCSafeLen|popped|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000000
+STCSafeLen|d0|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00002895
+STCLoad|kept|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	kept
+STCLoad|popped|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000000
+STCLoad|d0|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$0000016C
+STCLoad|buffer|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	bytes 56384 fnv F046CE5A
+STCLoad|d0 = start|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000001
+STCLoad|data|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000001
+STCLoad|header kept|#15: 10025 bytes, 131 words, d7 15, d2 16, kinds $21, offset 364|1	$00000001
+STCLength|kept|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	kept
+STCLength|popped|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000000
+STCLength|d0|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00003B21
+STCStart|kept|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	kept
+STCStart|popped|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000000
+STCStart|d0|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$000000A0
+STCStart|STCStart = 0 or address + offset|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000001
+STCSafeLen|kept|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	kept
+STCSafeLen|popped|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000000
+STCSafeLen|d0|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00003BC1
+STCLoad|kept|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	kept
+STCLoad|popped|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000000
+STCLoad|d0|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$000000A0
+STCLoad|buffer|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	bytes 56384 fnv C0089A85
+STCLoad|d0 = start|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000001
+STCLoad|data|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000001
+STCLoad|header kept|#16: 15137 bytes, 69 words, d7 16, d2 10, kinds $41, offset 160|1	$00000001
+STCLength|kept|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	kept
+STCLength|popped|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000000
+STCLength|d0|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$000030FE
+STCStart|kept|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	kept
+STCStart|popped|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000000
+STCStart|d0|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$000009D6
+STCStart|STCStart = 0 or address + offset|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000001
+STCSafeLen|kept|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	kept
+STCSafeLen|popped|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000000
+STCSafeLen|d0|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00003AD4
+STCLoad|kept|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	kept
+STCLoad|popped|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000000
+STCLoad|d0|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$000009D6
+STCLoad|buffer|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	bytes 56384 fnv CF001AEA
+STCLoad|d0 = start|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000001
+STCLoad|data|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000001
+STCLoad|header kept|#17: 12542 bytes, 1240 words, d7 0, d2 6, kinds $81, offset 2518|1	$00000001
+STCLength|kept|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	kept
+STCLength|popped|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000000
+STCLength|d0|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00002558
+STCStart|kept|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	kept
+STCStart|popped|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000000
+STCStart|d0|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$000001A8
+STCStart|STCStart = 0 or address + offset|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000001
+STCSafeLen|kept|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	kept
+STCSafeLen|popped|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000000
+STCSafeLen|d0|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00002700
+STCLoad|kept|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	kept
+STCLoad|popped|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000000
+STCLoad|d0|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$000001A8
+STCLoad|buffer|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	bytes 56384 fnv C6DBE57C
+STCLoad|d0 = start|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000001
+STCLoad|data|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000001
+STCLoad|header kept|#18: 9560 bytes, 202 words, d7 1, d2 16, kinds $FF, offset 424|1	$00000001
+STCLength|kept|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	kept
+STCLength|popped|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000000
+STCLength|d0|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00003612
+STCStart|kept|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	kept
+STCStart|popped|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000000
+STCStart|d0|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00003D34
+STCStart|STCStart = 0 or address + offset|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000001
+STCSafeLen|kept|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	kept
+STCSafeLen|popped|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000000
+STCSafeLen|d0|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00007346
+STCLoad|kept|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	kept
+STCLoad|popped|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000000
+STCLoad|d0|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00003D34
+STCLoad|buffer|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	bytes 56384 fnv 5DD44D38
+STCLoad|d0 = start|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000001
+STCLoad|data|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000001
+STCLoad|header kept|#19: 13842 bytes, 7787 words, d7 2, d2 6, kinds $1, offset 15668|1	$00000001
+STCLength|kept|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	kept
+STCLength|popped|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000000
+STCLength|d0|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$000019B5
+STCStart|kept|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	kept
+STCStart|popped|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000000
+STCStart|d0|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00001B4C
+STCStart|STCStart = 0 or address + offset|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000001
+STCSafeLen|kept|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	kept
+STCSafeLen|popped|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000000
+STCSafeLen|d0|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00003501
+STCLoad|kept|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	kept
+STCLoad|popped|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000000
+STCLoad|d0|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00001B4C
+STCLoad|buffer|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	bytes 56384 fnv AB66A374
+STCLoad|d0 = start|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000001
+STCLoad|data|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000001
+STCLoad|header kept|#20: 6581 bytes, 3484 words, d7 3, d2 1, kinds $3, offset 6988|1	$00000001
+STCLength|kept|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	kept
+STCLength|popped|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000000
+STCLength|d0|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000665
+STCStart|kept|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	kept
+STCStart|popped|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000000
+STCStart|d0|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$000005CB
+STCStart|STCStart = 0 or address + offset|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000001
+STCSafeLen|kept|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	kept
+STCSafeLen|popped|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000000
+STCSafeLen|d0|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000C30
+STCLoad|kept|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	kept
+STCLoad|popped|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000000
+STCLoad|d0|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$000005CB
+STCLoad|buffer|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	bytes 56384 fnv 8AD13CE3
+STCLoad|d0 = start|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000001
+STCLoad|data|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000001
+STCLoad|header kept|#21: 1637 bytes, 686 words, d7 4, d2 16, kinds $5, offset 1483|1	$00000001
+STCLength|kept|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	kept
+STCLength|popped|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000000
+STCLength|d0|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00004A03
+STCStart|kept|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	kept
+STCStart|popped|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000000
+STCStart|d0|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00002478
+STCStart|STCStart = 0 or address + offset|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000001
+STCSafeLen|kept|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	kept
+STCSafeLen|popped|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000000
+STCSafeLen|d0|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00006E7B
+STCLoad|kept|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	kept
+STCLoad|popped|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000000
+STCLoad|d0|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00002478
+STCLoad|buffer|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	bytes 56384 fnv ED018413
+STCLoad|d0 = start|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000001
+STCLoad|data|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000001
+STCLoad|header kept|#22: 18947 bytes, 4658 words, d7 5, d2 15, kinds $9, offset 9336|1	$00000001
+STCLength|kept|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	kept
+STCLength|popped|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000000
+STCLength|d0|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00003FBD
+STCStart|kept|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	kept
+STCStart|popped|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000000
+STCStart|d0|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000C25
+STCStart|STCStart = 0 or address + offset|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000001
+STCSafeLen|kept|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	kept
+STCSafeLen|popped|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000000
+STCSafeLen|d0|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00004BE2
+STCLoad|kept|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	kept
+STCLoad|popped|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000000
+STCLoad|d0|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000C25
+STCLoad|buffer|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	bytes 56384 fnv 85A2ACD3
+STCLoad|d0 = start|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000001
+STCLoad|data|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000001
+STCLoad|header kept|#23: 16317 bytes, 1535 words, d7 6, d2 0, kinds $11, offset 3109|1	$00000001
+STCLength|kept|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	kept
+STCLength|popped|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000000
+STCLength|d0|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00003C52
+STCStart|kept|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	kept
+STCStart|popped|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000000
+STCStart|d0|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$000001B0
+STCStart|STCStart = 0 or address + offset|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000001
+STCSafeLen|kept|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	kept
+STCSafeLen|popped|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000000
+STCSafeLen|d0|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00003E02
+STCLoad|kept|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	kept
+STCLoad|popped|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000000
+STCLoad|d0|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$000001B0
+STCLoad|buffer|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	bytes 56384 fnv 6998C42F
+STCLoad|d0 = start|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000001
+STCLoad|data|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000001
+STCLoad|header kept|#24: 15442 bytes, 206 words, d7 7, d2 16, kinds $21, offset 432|1	$00000001
+STCLength|kept|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	kept
+STCLength|popped|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000000
+STCLength|d0|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000B1A
+STCStart|kept|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	kept
+STCStart|popped|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000000
+STCStart|d0|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$0000008A
+STCStart|STCStart = 0 or address + offset|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000001
+STCSafeLen|kept|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	kept
+STCSafeLen|popped|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000000
+STCSafeLen|d0|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000BA4
+STCLoad|kept|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	kept
+STCLoad|popped|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000000
+STCLoad|d0|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$0000008A
+STCLoad|buffer|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	bytes 56384 fnv 6F8A40D4
+STCLoad|d0 = start|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000001
+STCLoad|data|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000001
+STCLoad|header kept|#25: 2842 bytes, 16 words, d7 8, d2 2, kinds $41, offset 138|1	$00000001
+STCLength|kept|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	kept
+STCLength|popped|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000000
+STCLength|d0|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00001D4C
+STCStart|kept|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	kept
+STCStart|popped|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000000
+STCStart|d0|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$0000064C
+STCStart|STCStart = 0 or address + offset|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000001
+STCSafeLen|kept|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	kept
+STCSafeLen|popped|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000000
+STCSafeLen|d0|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00002398
+STCLoad|kept|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	kept
+STCLoad|popped|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000000
+STCLoad|d0|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$0000064C
+STCLoad|buffer|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	bytes 56384 fnv CC11718B
+STCLoad|d0 = start|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000001
+STCLoad|data|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000001
+STCLoad|header kept|#26: 7500 bytes, 795 words, d7 9, d2 15, kinds $81, offset 1612|1	$00000001
+STCLength|kept|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	kept
+STCLength|popped|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000000
+STCLength|d0|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$000024AA
+STCStart|kept|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	kept
+STCStart|popped|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000000
+STCStart|d0|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000286
+STCStart|STCStart = 0 or address + offset|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000001
+STCSafeLen|kept|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	kept
+STCSafeLen|popped|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000000
+STCSafeLen|d0|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00002730
+STCLoad|kept|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	kept
+STCLoad|popped|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000000
+STCLoad|d0|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000286
+STCLoad|buffer|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	bytes 56384 fnv A05F7E44
+STCLoad|d0 = start|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000001
+STCLoad|data|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000001
+STCLoad|header kept|#27: 9386 bytes, 289 words, d7 10, d2 16, kinds $FF, offset 646|1	$00000001
+STCLength|kept|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	kept
+STCLength|popped|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000000
+STCLength|d0|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00004D74
+STCStart|kept|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	kept
+STCStart|popped|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000000
+STCStart|d0|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00005738
+STCStart|STCStart = 0 or address + offset|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000001
+STCSafeLen|kept|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	kept
+STCSafeLen|popped|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000000
+STCSafeLen|d0|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$0000A4AC
+STCLoad|kept|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	kept
+STCLoad|popped|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000000
+STCLoad|d0|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00005738
+STCLoad|buffer|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	bytes 56384 fnv 2737FA72
+STCLoad|d0 = start|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000001
+STCLoad|data|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000001
+STCLoad|header kept|#28: 19828 bytes, 11154 words, d7 11, d2 14, kinds $1, offset 22328|1	$00000001
+STCLength|kept|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	kept
+STCLength|popped|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000000
+STCLength|d0|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00003E0E
+STCStart|kept|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	kept
+STCStart|popped|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000000
+STCStart|d0|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$0000420B
+STCStart|STCStart = 0 or address + offset|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000001
+STCSafeLen|kept|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	kept
+STCSafeLen|popped|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000000
+STCSafeLen|d0|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00008019
+STCLoad|kept|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	kept
+STCLoad|popped|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000000
+STCLoad|d0|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$0000420B
+STCLoad|buffer|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	bytes 56384 fnv C5978328
+STCLoad|d0 = start|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000001
+STCLoad|data|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000001
+STCLoad|header kept|#29: 15886 bytes, 8401 words, d7 12, d2 12, kinds $3, offset 16907|1	$00000001
+STCLength|kept|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	kept
+STCLength|popped|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000000
+STCLength|d0|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00003DEE
+STCStart|kept|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	kept
+STCStart|popped|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000000
+STCStart|d0|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$000034A8
+STCStart|STCStart = 0 or address + offset|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000001
+STCSafeLen|kept|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	kept
+STCSafeLen|popped|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000000
+STCSafeLen|d0|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00007296
+STCLoad|kept|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	kept
+STCLoad|popped|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000000
+STCLoad|d0|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$000034A8
+STCLoad|buffer|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	bytes 56384 fnv 5332A67E
+STCLoad|d0 = start|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000001
+STCLoad|data|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000001
+STCLoad|header kept|#30: 15854 bytes, 6730 words, d7 13, d2 16, kinds $5, offset 13480|1	$00000001
+STCLength|kept|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	kept
+STCLength|popped|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000000
+STCLength|d0|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00001DCE
+STCStart|kept|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	kept
+STCStart|popped|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000000
+STCStart|d0|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000CD9
+STCStart|STCStart = 0 or address + offset|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000001
+STCSafeLen|kept|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	kept
+STCSafeLen|popped|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000000
+STCSafeLen|d0|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00002AA7
+STCLoad|kept|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	kept
+STCLoad|popped|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000000
+STCLoad|d0|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000CD9
+STCLoad|buffer|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	bytes 56384 fnv 97E9064C
+STCLoad|d0 = start|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000001
+STCLoad|data|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000001
+STCLoad|header kept|#31: 7630 bytes, 1632 words, d7 14, d2 5, kinds $9, offset 3289|1	$00000001
+STCLength|kept|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	kept
+STCLength|popped|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000000
+STCLength|d0|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000881
+STCStart|kept|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	kept
+STCStart|popped|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000000
+STCStart|d0|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$000001BC
+STCStart|STCStart = 0 or address + offset|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000001
+STCSafeLen|kept|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	kept
+STCSafeLen|popped|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000000
+STCSafeLen|d0|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000A3D
+STCLoad|kept|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	kept
+STCLoad|popped|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000000
+STCLoad|d0|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$000001BC
+STCLoad|buffer|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	bytes 56384 fnv A0958FE1
+STCLoad|d0 = start|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000001
+STCLoad|data|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000001
+STCLoad|header kept|#32: 2177 bytes, 211 words, d7 15, d2 5, kinds $11, offset 444|1	$00000001
+STCLength|kept|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	kept
+STCLength|popped|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000000
+STCLength|d0|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00001BDF
+STCStart|kept|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	kept
+STCStart|popped|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000000
+STCStart|d0|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$000000DA
+STCStart|STCStart = 0 or address + offset|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000001
+STCSafeLen|kept|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	kept
+STCSafeLen|popped|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000000
+STCSafeLen|d0|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00001CB9
+STCLoad|kept|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	kept
+STCLoad|popped|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000000
+STCLoad|d0|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$000000DA
+STCLoad|buffer|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	bytes 56384 fnv FD639651
+STCLoad|d0 = start|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000001
+STCLoad|data|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000001
+STCLoad|header kept|#33: 7135 bytes, 90 words, d7 16, d2 16, kinds $21, offset 218|1	$00000001
+STCLength|kept|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	kept
+STCLength|popped|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000000
+STCLength|d0|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$000025CB
+STCStart|kept|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	kept
+STCStart|popped|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000000
+STCStart|d0|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000070
+STCStart|STCStart = 0 or address + offset|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000001
+STCSafeLen|kept|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	kept
+STCSafeLen|popped|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000000
+STCSafeLen|d0|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$0000263B
+STCLoad|kept|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	kept
+STCLoad|popped|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000000
+STCLoad|d0|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000070
+STCLoad|buffer|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	bytes 56384 fnv CAAC6AF8
+STCLoad|d0 = start|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000001
+STCLoad|data|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000001
+STCLoad|header kept|#34: 9675 bytes, 45 words, d7 0, d2 8, kinds $41, offset 112|1	$00000001
+STCLength|kept|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	kept
+STCLength|popped|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000000
+STCLength|d0|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00002A36
+STCStart|kept|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	kept
+STCStart|popped|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000000
+STCStart|d0|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$000007EC
+STCStart|STCStart = 0 or address + offset|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000001
+STCSafeLen|kept|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	kept
+STCSafeLen|popped|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000000
+STCSafeLen|d0|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00003222
+STCLoad|kept|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	kept
+STCLoad|popped|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000000
+STCLoad|d0|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$000007EC
+STCLoad|buffer|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	bytes 56384 fnv C034C785
+STCLoad|d0 = start|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000001
+STCLoad|data|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000001
+STCLoad|header kept|#35: 10806 bytes, 960 words, d7 1, d2 1, kinds $81, offset 2028|1	$00000001
+STCLength|kept|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	kept
+STCLength|popped|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000000
+STCLength|d0|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$000004B3
+STCStart|kept|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	kept
+STCStart|popped|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000000
+STCStart|d0|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$000000C4
+STCStart|STCStart = 0 or address + offset|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000001
+STCSafeLen|kept|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	kept
+STCSafeLen|popped|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000000
+STCSafeLen|d0|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000577
+STCLoad|kept|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	kept
+STCLoad|popped|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000000
+STCLoad|d0|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$000000C4
+STCLoad|buffer|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	bytes 56384 fnv 75075213
+STCLoad|d0 = start|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000001
+STCLoad|data|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000001
+STCLoad|header kept|#36: 1203 bytes, 88 words, d7 2, d2 16, kinds $FF, offset 196|1	$00000001
+STCLength|kept|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	kept
+STCLength|popped|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000000
+STCLength|d0|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000799
+STCStart|kept|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	kept
+STCStart|popped|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000000
+STCStart|d0|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$000008D9
+STCStart|STCStart = 0 or address + offset|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000001
+STCSafeLen|kept|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	kept
+STCSafeLen|popped|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000000
+STCSafeLen|d0|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00001072
+STCLoad|kept|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	kept
+STCLoad|popped|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000000
+STCLoad|d0|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$000008D9
+STCLoad|buffer|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	bytes 56384 fnv 2D1B98FD
+STCLoad|d0 = start|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000001
+STCLoad|data|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000001
+STCLoad|header kept|#37: 1945 bytes, 1095 words, d7 3, d2 7, kinds $1, offset 2265|1	$00000001
+STCLength|kept|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	kept
+STCLength|popped|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000000
+STCLength|d0|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$000003F4
+STCStart|kept|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	kept
+STCStart|popped|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000000
+STCStart|d0|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000444
+STCStart|STCStart = 0 or address + offset|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000001
+STCSafeLen|kept|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	kept
+STCSafeLen|popped|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000000
+STCSafeLen|d0|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000838
+STCLoad|kept|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	kept
+STCLoad|popped|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000000
+STCLoad|d0|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000444
+STCLoad|buffer|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	bytes 56384 fnv 4CEA0F6E
+STCLoad|d0 = start|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000001
+STCLoad|data|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000001
+STCLoad|header kept|#38: 1012 bytes, 535 words, d7 4, d2 11, kinds $3, offset 1092|1	$00000001
+STCLength|kept|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	kept
+STCLength|popped|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000000
+STCLength|d0|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$000005EB
+STCStart|kept|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	kept
+STCStart|popped|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000000
+STCStart|d0|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$000004FF
+STCStart|STCStart = 0 or address + offset|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000001
+STCSafeLen|kept|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	kept
+STCSafeLen|popped|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000000
+STCSafeLen|d0|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000AEA
+STCLoad|kept|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	kept
+STCLoad|popped|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000000
+STCLoad|d0|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$000004FF
+STCLoad|buffer|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	bytes 56384 fnv 290273CA
+STCLoad|d0 = start|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000001
+STCLoad|data|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000001
+STCLoad|header kept|#39: 1515 bytes, 624 words, d7 5, d2 16, kinds $5, offset 1279|1	$00000001
+STCLoad|kept|S403 file|1	kept
+STCLoad|popped|S403 file|1	$00000000
+STCLoad|d0|S403 file|1	$00000088
+STCLoad|buffer|S403 file|1	bytes 56384 fnv 65BFE506
+STCLoad|d0 = start|S403 file|1	$00000001
+STCLoad|data|S403 file|1	$00000001
+STCLoad|header kept|S403 file|1	$00000001
+STCLoad|kept|missing file|1	kept
+STCLoad|popped|missing file|1	$00000000
+STCLoad|d0|missing file|1	$00000000
+STCLoad|buffer|missing file|1	bytes 56384 fnv B77DD5C5
+STCLoad|kept|a directory|1	kept
+STCLoad|popped|a directory|1	$00000000
+STCLoad|d0|a directory|1	$00000000
