@@ -301,8 +301,9 @@ static int case_line(struct libscmp_file *f, const char *p, const char *end, uin
     c.key = (uint32_t)(p - f->text);
     if (end - q > 6 && !memcmp(q, "BLOCK:", 6) && q[6] >= '0' && q[6] <= '9') {
         q += 6;
-        if (decimal(&q, end, 1) < 0)
-            return fail(err, errlen, path, line, "BLOCK:N needs a decimal N without leading zero");
+        if (decimal(&q, end, 0) < 0)
+            return fail(err, errlen, path, line,
+                        "BLOCK:N needs a decimal N from 1 without leading zero");
     } else {
         for (i = 0; i < 3; i++) {
             if ((m = key_part(&q, end, msg, sizeof msg)))
@@ -447,7 +448,7 @@ void libscmp_key_text(const struct libscmp_file *f, const struct libscmp_case *c
         return;
     if (c->keylen > 6 && !memcmp(k, "BLOCK:", 6)) {
         const char *p = k + 6;
-        long b = decimal(&p, k + c->keylen, 1), cnt;
+        long b = decimal(&p, k + c->keylen, 0), cnt;
 
         p = v;
         cnt = decimal(&p, ve, 0);
@@ -457,9 +458,9 @@ void libscmp_key_text(const struct libscmp_file *f, const struct libscmp_case *c
             p = v;
             cnt = decimal(&p, ve, 0);
         }
-        if (b >= 0 && cnt > 0 && cnt <= LIBSCMP_BLOCK && (p == ve || *p == ' '))
-            snprintf(buf + n, len - (size_t)n, " (observations %ld..%ld)", b * LIBSCMP_BLOCK,
-                     b * LIBSCMP_BLOCK + cnt - 1);
+        if (b > 0 && cnt > 0 && cnt <= LIBSCMP_BLOCK && (p == ve || *p == ' '))
+            snprintf(buf + n, len - (size_t)n, " (observations %ld..%ld)",
+                     (b - 1) * LIBSCMP_BLOCK + 1, (b - 1) * LIBSCMP_BLOCK + cnt);
     }
 }
 

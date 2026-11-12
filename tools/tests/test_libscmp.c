@@ -108,18 +108,18 @@ static void test_missing_added(void)
 
 static void test_block(void)
 {
-    /* the block and its observations 17*4096 .. */
+    /* the block and its observations 16*4096+1 .. */
     CHECK(cmp(HDR "BLOCK:17\t4096 0BADF00E first=ldiv d0|$00000001\n",
               HDR "BLOCK:17\t4096 0BADF00D first=ldiv d0|$00000001\n", LIBSCMP_OBJ, NULL) == 1);
-    CHECK(strstr(report, "prog: BLOCK:17 (observations 69632..73727): expected 4096 0BADF00D "
+    CHECK(strstr(report, "prog: BLOCK:17 (observations 65537..69632): expected 4096 0BADF00D "
                          "first=ldiv d0|$00000001, got 4096 0BADF00E first=ldiv d0|$00000001\n"));
     /* the last block, shorter */
-    CHECK(cmp(HDR "BLOCK:0\t3 00000001 first=x\n", HDR "BLOCK:0\t3 00000002 first=x\n",
-              LIBSCMP_OBJ, NULL) == 1 && strstr(report, "BLOCK:0 (observations 0..2): expected"));
+    CHECK(cmp(HDR "BLOCK:1\t3 00000001 first=x\n", HDR "BLOCK:1\t3 00000002 first=x\n",
+              LIBSCMP_OBJ, NULL) == 1 && strstr(report, "BLOCK:1 (observations 1..3): expected"));
     /* a block missing (the run has fewer observations) */
-    CHECK(cmp(HDR "BLOCK:0\t4096 1 first=x\n", HDR "BLOCK:0\t4096 1 first=x\nBLOCK:1\t5 2 first=y\n",
+    CHECK(cmp(HDR "BLOCK:1\t4096 1 first=x\n", HDR "BLOCK:1\t4096 1 first=x\nBLOCK:2\t5 2 first=y\n",
               LIBSCMP_OBJ, NULL) == 1);
-    CHECK(strstr(report, "prog: BLOCK:1 (observations 4096..4100): missing (expected 5 2 first=y)\n"));
+    CHECK(strstr(report, "prog: BLOCK:2 (observations 4097..4101): missing (expected 5 2 first=y)\n"));
     /* a value without the count: no range */
     CHECK(cmp(HDR "BLOCK:2\tx\n", HDR "BLOCK:2\ty\n", LIBSCMP_OBJ, NULL) == 1
           && strstr(report, "prog: BLOCK:2: expected y, got x\n"));
@@ -174,7 +174,7 @@ static void test_qualifiers(void)
     CHECK(cmp(HDR "BLOCK:3\t4096 2 first=x\n",
               HDR "BLOCK:3 [orig]\t4096 1 first=x\nBLOCK:3 [fixed #9]\t4096 2 first=x\n",
               LIBSCMP_ORIG, NULL) == 1);
-    CHECK(strstr(report, "prog: BLOCK:3 [orig] (observations 12288..16383): expected 4096 1 first=x, "
+    CHECK(strstr(report, "prog: BLOCK:3 [orig] (observations 8193..12288): expected 4096 1 first=x, "
                          "got 4096 2 first=x\n"));
 }
 
@@ -204,6 +204,19 @@ static void test_escaping(void)
 {
     struct libscmp_file f;
 
+    /* the lines the writer's host test expects (libs/tests/host/
+       test_capture_format.cpp), with the hashes made up */
+    CHECK(parse(&f, "# capture unit 1\n|no routine||1\t$00000007\nrtn|finit d0|x=1|1\t$12345678\n"
+                    "rtn|finit d0|x=1|2\t$00000000\nrtn|a\\|b\\tc\\\\d\\x01|v\\|\\t\\xFF|1\t$FFFFFFFF\n"
+                    "rtn|buf|65|1\tbytes 65 fnv 0123ABCD\nrtn|buf|0|1\tbytes 0\n"
+                    "rtn|rec||1\tbytes 8 AABB50524F47CCDD\nrtn|s||1\t\"a\\\"b\\\\c\\x09d\\x80\"\n"
+                    "rtn|s|null|1\tnull\nrtn|p|prog|1\tprog\nrtn|p|below|1\tbase-$10\n"
+                    "rtn|regs||2\tlost d3 a1 a6\nrtn|wheel|Encrypt|1\tnot captured: Rnd\\\\hw\\x09timing\n"
+                    "x\\|y|finit d0|x=1|1\t$00000005\nmed|before||1\t$00000001\n"
+                    "BLOCK:1\t4096 89ABCDEF first=med|obs|v|1\nmed|skip||1\tnot captured: why\n"
+                    "BLOCK:2\t3 01234567 first=med|obs|v|4097\n", LIBSCMP_RUN) == 0
+          && f.ncases == 18 && !strcmp(f.name, "unit"));
+    libscmp_free(&f);
     /* TAB, '|', '\' and non-printable bytes in the parts */
     CHECK(!*bad(HDR "r\\|x|c\\tTAB|v\\\\\\x00\\x1F\\x7F\\xFF|1\t$0\n", LIBSCMP_EXPECTED));
     /* an escaped '|' is not a separator: 4 parts, 2 cases */
@@ -264,6 +277,7 @@ static void test_malformed(void)
     CHECK(strstr(bad(HDR "a|b|c|1\n", LIBSCMP_RUN), "f.txt:2: no TAB after the key"));
     CHECK(strstr(bad(HDR "a|b|c|1\t\n", LIBSCMP_RUN), "f.txt:2: no value"));
     CHECK(strstr(bad(HDR "BLOCK:01\t1 x\n", LIBSCMP_RUN), "f.txt:2: BLOCK:N needs a decimal N"));
+    CHECK(strstr(bad(HDR "BLOCK:0\t1 x\n", LIBSCMP_RUN), "f.txt:2: BLOCK:N needs a decimal N from 1"));
     CHECK(libscmp_parse(&f, HDR "a|b|c|1\t$0\na\0|b|c|1\t$0\n", sizeof HDR + 22, "f.txt",
                         LIBSCMP_RUN, err, sizeof err) == -2 && strstr(err, "f.txt:3: a 0 byte"));
     libscmp_free(&f);

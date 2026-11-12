@@ -232,7 +232,7 @@ libs_compare_wrong(missing run-missing exp obj
 	"prog: r\\|ldiv d0\\|\\$7 \\$2\\|1: missing \\(expected \\$00000003\\)")
 libs_compare_wrong(added run-added exp obj "prog: r\\|new\\|\\|1: added \\(got \\$5\\)")
 libs_compare_wrong(block run-block exp obj
-	"prog: BLOCK:2 \\(observations 8192..12287\\): expected 4096 0BADF00D first=x, got 4096 0BADF00E")
+	"prog: BLOCK:2 \\(observations 4097..8192\\): expected 4096 0BADF00D first=x, got 4096 0BADF00E")
 # the port regressed: the [fixed #7] case fails
 libs_compare_wrong(fixed run-fixed exp obj
 	"prog: r\\|find\\|\\|1 \\[fixed #7\\]: expected \\$00000000, got \\$00000001")

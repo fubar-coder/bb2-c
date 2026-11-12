@@ -15,8 +15,8 @@
  * NAME is the program ([A-Za-z0-9_.-], the file is NAME.txt), 1 the
  * version of the format.  A KEY is ROUTINE|CHECK|VECTOR|OCC (OCC decimal
  * from 1, no leading zero) or BLOCK:N (a block of LIBSCMP_BLOCK
- * observations, N decimal from 0: observations N*4096 to N*4096+COUNT-1,
- * counted from 0).  The parts ROUTINE, CHECK and VECTOR hold printable
+ * observations, N decimal from 1: the block observations (N-1)*4096+1 to
+ * (N-1)*4096+COUNT, counted from 1 as the writer numbers them).  The parts ROUTINE, CHECK and VECTOR hold printable
  * ASCII (0x20-0x7E) with the escapes \t (TAB), \| (|), \\ (\) and \xHH
  * (two upper-case hex digits) for every other byte; an escape is only
  * these and only where needed, so a key has one spelling and keys compare
