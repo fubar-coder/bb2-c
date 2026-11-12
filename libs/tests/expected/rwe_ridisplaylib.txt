@@ -1,0 +1,144 @@
+# capture rwe_ridisplaylib 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|graphics.library open count||1	$00000000
+init|memory balance||1	$00000000
+InitView|kept|256,8,8,256|1	kept
+InitView|popped|256,8,8,256|1	$00000000
+InitView|graphics.library open count|256,8,8,256|1	$00000000
+InitView|memory balance|256,8,8,256|1	$00000928
+InitView|variables found|256,8,8,256|1	$00000001
+InitView|d0 = cop|256,8,8,256|1	$00000001
+InitView|word 0 = ($8E)|256,8,8,256|1	$00000001
+InitView|word 0|256,8,8,256|1	$00000B6E
+InitView|word 1 = ($2C81)|256,8,8,256|1	$00000001
+InitView|word 2 = ($90)|256,8,8,256|1	$00000001
+InitView|word 2|256,8,8,256|1	$000000F8
+InitView|word 3 = ($2CC1)|256,8,8,256|1	$00000001
+InitView|word 4 = ($92)|256,8,8,256|1	$00000001
+InitView|word 4|256,8,8,256|1	$00000B70
+InitView|word 5 = ($38)|256,8,8,256|1	$00000001
+InitView|word 5|256,8,8,256|1	$000000F8
+InitView|word 6 = ($94)|256,8,8,256|1	$00000001
+InitView|word 6|256,8,8,256|1	$000000F8
+InitView|word 7 = ($D0)|256,8,8,256|1	$00000001
+InitView|word 7|256,8,8,256|1	$000000F8
+InitView|kept|200,5,0,32|1	kept
+InitView|popped|200,5,0,32|1	$00000000
+InitView|graphics.library open count|200,5,0,32|1	$00000000
+InitView|memory balance|200,5,0,32|1	$000006B8
+InitView|viewsize|200,5,0,32|1	$000006B6
+InitView|cop|200,5,0,32|1	$00000001
+InitView|variables found|200,5,0,32|1	$00000001
+InitView|d0 = cop|200,5,0,32|1	$00000001
+InitView|word 0 = ($8E)|200,5,0,32|1	$00000001
+InitView|word 0|200,5,0,32|1	$00000B6E
+InitView|word 1 = ($2C81)|200,5,0,32|1	$00000001
+InitView|word 2 = ($90)|200,5,0,32|1	$00000001
+InitView|word 2|200,5,0,32|1	$000000F8
+InitView|word 3 = ($2CC1)|200,5,0,32|1	$00000001
+InitView|word 4 = ($92)|200,5,0,32|1	$00000001
+InitView|word 4|200,5,0,32|1	$00000B70
+InitView|word 5 = ($38)|200,5,0,32|1	$00000001
+InitView|word 5|200,5,0,32|1	$000000F8
+InitView|word 6 = ($94)|200,5,0,32|1	$00000001
+InitView|word 6|200,5,0,32|1	$000000F8
+InitView|word 7 = ($D0)|200,5,0,32|1	$00000001
+InitView|word 7|200,5,0,32|1	$000000F8
+InitView|kept|0,0,0,0|1	kept
+InitView|popped|0,0,0,0|1	$00000000
+InitView|graphics.library open count|0,0,0,0|1	$00000000
+InitView|memory balance|0,0,0,0|1	$00000028
+InitView|viewsize|0,0,0,0|1	$00000026
+InitView|cop|0,0,0,0|1	$00000001
+InitView|variables found|0,0,0,0|1	$00000001
+InitView|d0 = cop|0,0,0,0|1	$00000001
+InitView|word 0 = ($8E)|0,0,0,0|1	$00000001
+InitView|word 0|0,0,0,0|1	$00000B6E
+InitView|word 1 = ($2C81)|0,0,0,0|1	$00000001
+InitView|word 2 = ($90)|0,0,0,0|1	$00000001
+InitView|word 2|0,0,0,0|1	$000000F8
+InitView|word 3 = ($2CC1)|0,0,0,0|1	$00000001
+InitView|word 4 = ($92)|0,0,0,0|1	$00000001
+InitView|word 4|0,0,0,0|1	$00000B70
+InitView|word 5 = ($38)|0,0,0,0|1	$00000001
+InitView|word 5|0,0,0,0|1	$000000F8
+InitView|word 6 = ($94)|0,0,0,0|1	$00000001
+InitView|word 6|0,0,0,0|1	$000000F8
+InitView|word 7 = ($D0)|0,0,0,0|1	$00000001
+InitView|word 7|0,0,0,0|1	$000000F8
+InitView|kept|1000,8,8,2|1	kept
+InitView|popped|1000,8,8,2|1	$00000000
+InitView|graphics.library open count|1000,8,8,2|1	$00000000
+InitView|memory balance|1000,8,8,2|1	$00002068
+InitView|viewsize|1000,8,8,2|1	$00002066
+InitView|cop|1000,8,8,2|1	$00000001
+InitView|variables found|1000,8,8,2|1	$00000001
+InitView|d0 = cop|1000,8,8,2|1	$00000001
+InitView|word 0 = ($8E)|1000,8,8,2|1	$00000001
+InitView|word 0|1000,8,8,2|1	$00000B6E
+InitView|word 1 = ($2C81)|1000,8,8,2|1	$00000001
+InitView|word 2 = ($90)|1000,8,8,2|1	$00000001
+InitView|word 2|1000,8,8,2|1	$000000F8
+InitView|word 3 = ($2CC1)|1000,8,8,2|1	$00000001
+InitView|word 4 = ($92)|1000,8,8,2|1	$00000001
+InitView|word 4|1000,8,8,2|1	$00000B70
+InitView|word 5 = ($38)|1000,8,8,2|1	$00000001
+InitView|word 5|1000,8,8,2|1	$000000F8
+InitView|word 6 = ($94)|1000,8,8,2|1	$00000001
+InitView|word 6|1000,8,8,2|1	$000000F8
+InitView|word 7 = ($D0)|1000,8,8,2|1	$00000001
+InitView|word 7|1000,8,8,2|1	$000000F8
+InitView|kept|3000,1,100,65535|1	kept
+InitView|popped|3000,1,100,65535|1	$00000000
+InitView|graphics.library open count|3000,1,100,65535|1	$00000000
+InitView|memory balance|3000,1,100,65535|1	$00006438
+InitView|viewsize|3000,1,100,65535|1	$00006436
+InitView|cop|3000,1,100,65535|1	$00000001
+InitView|variables found|3000,1,100,65535|1	$00000001
+InitView|d0 = cop|3000,1,100,65535|1	$00000001
+InitView|word 0 = ($8E)|3000,1,100,65535|1	$00000001
+InitView|word 0|3000,1,100,65535|1	$00000B6E
+InitView|word 1 = ($2C81)|3000,1,100,65535|1	$00000001
+InitView|word 2 = ($90)|3000,1,100,65535|1	$00000001
+InitView|word 2|3000,1,100,65535|1	$000000F8
+InitView|word 3 = ($2CC1)|3000,1,100,65535|1	$00000001
+InitView|word 4 = ($92)|3000,1,100,65535|1	$00000001
+InitView|word 4|3000,1,100,65535|1	$00000B70
+InitView|word 5 = ($38)|3000,1,100,65535|1	$00000001
+InitView|word 5|3000,1,100,65535|1	$000000F8
+InitView|word 6 = ($94)|3000,1,100,65535|1	$00000001
+InitView|word 6|3000,1,100,65535|1	$000000F8
+InitView|word 7 = ($D0)|3000,1,100,65535|1	$00000001
+InitView|word 7|3000,1,100,65535|1	$000000F8
+ViewBitmap|kept||1	kept
+ViewBitmap|popped||1	$00000000
+ViewBitmap|graphics.library open count||1	$00000000
+ViewBitmap|memory balance||1	$00000000
+ViewBitmap|viewsize||1	$00006436
+ViewBitmap|cop||1	$00000001
+finit|kept||1	kept
+finit|popped||1	$00000000
+finit|graphics.library open count||1	$00000000
+finit|memory balance||1	$FFFF9BC8
+finit|viewsize||1	$00000000
+finit|cop||1	$00000000
+finit|freed||1	$00000001
+finit (again)|kept||1	kept
+finit (again)|popped||1	$00000000
+finit (again)|graphics.library open count||1	$00000000
+finit (again)|memory balance||1	$00000000
+finit (again)|viewsize||1	$00000000
+finit (again)|cop||1	$00000000
+init (again)|kept||1	kept
+init (again)|popped||1	$00000000
+init (again)|graphics.library open count||1	$00000000
+init (again)|memory balance||1	$00000000
+init (again)|viewsize||1	$00000000
+init (again)|cop||1	$00000000
+finit (no list)|kept||1	kept
+finit (no list)|popped||1	$00000000
+finit (no list)|graphics.library open count||1	$00000000
+finit (no list)|memory balance||1	$00000000
+finit (no list)|viewsize||1	$00000000
+finit (no list)|cop||1	$00000000

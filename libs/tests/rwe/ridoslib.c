@@ -1,8 +1,9 @@
 /*
  * rwe ridoslib - AddNotify, RemNotify, CheckNotify, WaitNotify,
  * GetDeviceList, NextDevice, FreeDeviceList, NotifyPort, GetFileName,
- * GetPathName, DeviceEntryType: the C build against the CD original
- * (BSS2 RIDOSLIB.OBJ), method of rwecmp.h.
+ * GetPathName, DeviceEntryType: the C build or the CD original (BSS2
+ * RIDOSLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h,
+ * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_ridoslib.txt).
  *
  *   ridoslib DIR
  *
@@ -10,17 +11,17 @@
  * unchanged), init, NotifyPort; GetFileName/GetPathName with many paths
  * (separators first/last/doubled, none, empty, a length whose high word
  * is set) - d0, a3 and the result; notifications on a file in RAM: (ids
- * 5, 9 and 40, each set with its own port: CheckNotify until empty after
+ * 5, 9 and 40: CheckNotify until empty after
  * every write, WaitNotify, RemNotify twice and with id -1, a failing
  * StartNotify on a missing device, one request left for finit);
  * GetDeviceList (devices, volumes, assigns) and NextDevice to the end
  * with DeviceEntryType after each, NextDevice/DeviceEntryType after
  * FreeDeviceList (stale entry, BUG(orig) (#622)); finit (ends the requests left;
- * the failed request stays allocated, BUG(orig) (#621)).  Each set its own state,
- * the system the same: the results must be equal.
+ * the failed request stays allocated, BUG(orig) (#621)).
  * Not covered: ids outside 0..63 (they write outside the tables), names
  * longer than tbuf.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/dos.h>
 #include <dos/dosextens.h>
@@ -31,24 +32,24 @@ enum { E_ADD, E_REM, E_CHECK, E_WAIT, E_LOCK, E_NEXT, E_FREE, E_PORT, E_FILE, E_
 
 #define TESTFILE "RAM:ridoslib-notify"
 
-static UBYTE out[2][300];
-static ULONG frame[2][2];
+static UBYTE out[300];
+static ULONG frame[2];
 static struct DosLibrary *dos;
 
 /* string argument at out+20 (where the compiler built it), a3 behind it */
 #define STRARG(s, len) do {                                                 \
-        memset(out[cur], 0xee, sizeof out[0]);                              \
-        strcpy((char *)out[cur] + 20, s);                                   \
-        R[cur].d[0] = (ULONG)out[cur] + 20;                                 \
-        frame[cur][0] = (len);                                              \
-        R[cur].a[2] = (ULONG)&frame[cur][1];                                \
-        R[cur].a[3] = (ULONG)out[cur] + 20 + strlen(s) + 1;                 \
+        memset(out, 0xee, sizeof out);                                      \
+        strcpy((char *)out + 20, s);                                        \
+        R.d[0] = (ULONG)out + 20;                                           \
+        frame[0] = (len);                                                   \
+        R.a[2] = (ULONG)&frame[1];                                          \
+        R.a[3] = (ULONG)out + 20 + strlen(s) + 1;                           \
     } while (0)
 
 #define STRRES() do {                                                       \
-        SAME("d0", R[cur].d[0]);                                            \
-        SAME("a3", R[cur].a[3] - (ULONG)out[cur]);                          \
-        SAMEBYTES("out", out, sizeof out[0]);                 \
+        OBS("d0", R.d[0]);                                                  \
+        OBS("a3", R.a[3] - (ULONG)out);                                     \
+        OBSBYTES("out", out, sizeof out);                                   \
     } while (0)
 
 static void paths(void)
@@ -64,11 +65,11 @@ static void paths(void)
         ROUT = f ? "GetPathName" : "GetFileName";
         for (i = 0; i < sizeof p / sizeof p[0]; i++) {
             sprintf(VEC, "\"%s\"", p[i]);
-            DO2(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG(p[i], strlen(p[i])));
+            DO1(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG(p[i], strlen(p[i])));
             STRRES();
         }
         strcpy(VEC, "\"abc/de\" length $10006");
-        DO2(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG("abc/de", 0x10006));
+        DO1(ENT(LIB, f ? E_PATH : E_FILE, 0), STRARG("abc/de", 0x10006));
         STRRES();
     }
 }
@@ -86,24 +87,21 @@ static void touch(void)
 /* CheckNotify until 0: the ids in order */
 static int drain(const char *what)
 {
-    ULONG ids[2][8];
-    int n[2], k;
-    for (cur = 0; cur < 2; cur++)
-        n[cur] = 0;
+    ULONG ids[8];
+    int n = 0, k;
     ROUT = "CheckNotify";
     strcpy(VEC, what);
     for (k = 0; k < 8; k++) {
-        DO2(ENT(LIB, E_CHECK, 0), (void)0);
-        for (cur = 0; cur < 2; cur++)
-            if (R[cur].d[0])
-                ids[cur][n[cur]++] = R[cur].d[0];
-        if (!R[0].d[0] && !R[1].d[0])
+        DO1(ENT(LIB, E_CHECK, 0), (void)0);
+        if (R.d[0])
+            ids[n++] = R.d[0];
+        if (!R.d[0])
             break;
     }
-    SAME("messages", n[cur]);
-    for (k = 0; k < n[0] && k < n[1]; k++)
-        SAME("id", ids[cur][k]);
-    return n[0];
+    OBS("messages", n);
+    for (k = 0; k < n; k++)
+        OBS("id", ids[k]);
+    return n;
 }
 
 static void devlist(ULONG flags, int stop)
@@ -112,82 +110,82 @@ static void devlist(ULONG flags, int stop)
     ULONG len, names = 0;
     ROUT = "GetDeviceList";
     sprintf(VEC, "flags $%lX", flags);
-    DO2(ENT(LIB, E_LOCK, 0), R[cur].d[0] = flags; R[cur].a[6] = (ULONG)dos);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_LOCK, 0), R.d[0] = flags; R.a[6] = (ULONG)dos);
+    OBS("d0", R.d[0]);
     for (k = 0; k < 200; k++) {
         ROUT = "NextDevice";
         sprintf(VEC, "flags $%lX entry %d", flags, k);
-        DO2(ENT(LIB, E_NEXT, 0), memset(out[cur], 0xee, sizeof out[0]);
-            R[cur].a[3] = (ULONG)out[cur] + 4; R[cur].a[6] = (ULONG)dos);
+        DO1(ENT(LIB, E_NEXT, 0), memset(out, 0xee, sizeof out);
+            R.a[3] = (ULONG)out + 4; R.a[6] = (ULONG)dos);
         STRRES();
-        len = R[0].d[0];
+        len = R.d[0];
         if (len)
             names++;
         ROUT = "DeviceEntryType";
-        DO2(ENT(LIB, E_TYPE, 0), (void)0);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_TYPE, 0), (void)0);
+        OBS("d0", R.d[0]);
         if (!len || k == stop)
             break;
     }
     check("ridoslib: NextDevice found entries", names > 0);
     printf("ridoslib: flags $%lX: %lu entries\n", flags, names);
     ROUT = "FreeDeviceList";
-    DO2(ENT(LIB, E_FREE, 0), R[cur].a[6] = (ULONG)dos);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_FREE, 0), R.a[6] = (ULONG)dos);
+    OBS("d0", R.d[0]);
     ROUT = "DeviceEntryType (unlocked)";
-    DO2(ENT(LIB, E_TYPE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_TYPE, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "NextDevice (unlocked)";
-    DO2(ENT(LIB, E_NEXT, 0), R[cur].a[3] = (ULONG)out[cur] + 4; R[cur].a[6] = (ULONG)dos);
-    SAME("d0 unchanged", R[cur].d[0] == IN[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
+    DO1(ENT(LIB, E_NEXT, 0), R.a[3] = (ULONG)out + 4; R.a[6] = (ULONG)dos);
+    OBS("d0 unchanged", R.d[0] == IN.d[0]);
+    OBS("a3", R.a[3] - (ULONG)out);
 }
 
 static void before_init(void)
 {
     strcpy(VEC, "before init");
     ROUT = "CheckNotify";
-    DO2(ENT(LIB, E_CHECK, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_CHECK, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "WaitNotify";
-    DO2(ENT(LIB, E_WAIT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_WAIT, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "NotifyPort";
-    DO2(ENT(LIB, E_PORT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_PORT, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "AddNotify";
-    DO2(ENT(LIB, E_ADD, 0), R[cur].d[0] = 3; R[cur].d[1] = (ULONG)TESTFILE;
-        frame[cur][0] = strlen(TESTFILE); R[cur].a[2] = (ULONG)&frame[cur][1]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ADD, 0), R.d[0] = 3; R.d[1] = (ULONG)TESTFILE;
+        frame[0] = strlen(TESTFILE); R.a[2] = (ULONG)&frame[1]);
+    OBS("d0", R.d[0]);
     ROUT = "RemNotify";
-    DO2(ENT(LIB, E_REM, 0), R[cur].d[0] = 3);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_REM, 0), R.d[0] = 3);
+    OBS("d0", R.d[0]);
     ROUT = "FreeDeviceList";
-    DO2(ENT(LIB, E_FREE, 0), R[cur].a[6] = (ULONG)dos);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_FREE, 0), R.a[6] = (ULONG)dos);
+    OBS("d0", R.d[0]);
     ROUT = "NextDevice";
-    DO2(ENT(LIB, E_NEXT, 0), R[cur].a[3] = (ULONG)out[cur]; R[cur].a[6] = (ULONG)dos);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
+    DO1(ENT(LIB, E_NEXT, 0), R.a[3] = (ULONG)out; R.a[6] = (ULONG)dos);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)out);
     ROUT = "DeviceEntryType";
-    DO2(ENT(LIB, E_TYPE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_TYPE, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void addnotify(ULONG id, const char *file)
 {
     ROUT = "AddNotify";
     sprintf(VEC, "id %ld %s", (long)id, file);
-    DO2(ENT(LIB, E_ADD, 0), R[cur].d[0] = id; R[cur].d[1] = (ULONG)file;
-        frame[cur][0] = strlen(file); R[cur].a[2] = (ULONG)&frame[cur][1]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ADD, 0), R.d[0] = id; R.d[1] = (ULONG)file;
+        frame[0] = strlen(file); R.a[2] = (ULONG)&frame[1]);
+    OBS("d0", R.d[0]);
 }
 
 static void remnotify(ULONG id)
 {
     ROUT = "RemNotify";
     sprintf(VEC, "id %ld", (long)id);
-    DO2(ENT(LIB, E_REM, 0), R[cur].d[0] = id);
+    DO1(ENT(LIB, E_REM, 0), R.d[0] = id);
 }
 
 int main(int argc, char **argv)
@@ -195,14 +193,29 @@ int main(int argc, char **argv)
     static const char *names[] = { LIB, NULL };
     struct Process *me = (struct Process *)FindTask(NULL);
     APTR win;
-    ULONG avail, port[2];
+    ULONG avail, port;
 
     if (argc < 2) {
         printf("usage: ridoslib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("CheckNotify", d2-d7|a2|a3);
+    KEEPS("WaitNotify", d2-d7|a2|a3);
+    KEEPS("NotifyPort", d1-d7|a0-a3|a6);
+    KEEPS("AddNotify", d2-d7|a3);
+    KEEPS("RemNotify", d2|d3|d5-d7|a2|a3);
+    KEEPS("FreeDeviceList", d2-d7|a1-a3);
+    KEEPS("NextDevice", d3-d7|a1|a2);
+    KEEPS("DeviceEntryType", d1-d7|a1-a3|a6);
+    KEEPS("GetFileName", d1-d3|d6|d7|a6);
+    KEEPS("GetPathName", d2|d3|d6|d7);
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("GetDeviceList", d2-d7|a2|a3|a6);
+    KEEPS("DeviceEntryType (unlocked)", d1-d7|a1-a3|a6);
+    KEEPS("NextDevice (unlocked)", d0-d7|a0-a3|a6);
+    KEEPS("finit", d2|d3|d5-d7|a2|a3);
     dos = (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 36);
     DeleteFile((STRPTR)TESTFILE);
 
@@ -212,13 +225,12 @@ int main(int argc, char **argv)
     avail = AvailMem(MEMF_ANY);
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
-    SAME("d0 != 0", R[cur].d[0] != 0);
-    for (cur = 0; cur < 2; cur++)
-        port[cur] = R[cur].d[0];
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    OBS("d0 != 0", R.d[0] != 0);
+    port = R.d[0];
     ROUT = "NotifyPort";
-    DO2(ENT(LIB, E_PORT, 0), (void)0);
-    SAME("d0 = init's port", R[cur].d[0] == port[cur]);
+    DO1(ENT(LIB, E_PORT, 0), (void)0);
+    OBS("d0 = init's port", R.d[0] == port);
 
     /* notifications */
     drain("nothing yet");
@@ -230,14 +242,14 @@ int main(int argc, char **argv)
     touch();
     ROUT = "WaitNotify";
     strcpy(VEC, "after a write");
-    DO2(ENT(LIB, E_WAIT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_WAIT, 0), (void)0);
+    OBS("d0", R.d[0]);
     drain("the rest");
     remnotify(5);
     remnotify(5);
-    SAME("d0 = id*4", R[cur].d[0]);
+    OBS("d0 = id*4", R.d[0]);
     remnotify((ULONG)-1);
-    SAME("d0 = id*4", R[cur].d[0]);
+    OBS("d0 = id*4", R.d[0]);
     touch();
     check("ridoslib: messages for 9", drain("only 9 left") > 0);
     /* a request StartNotify refuses (no requester for the missing volume) */
@@ -259,7 +271,7 @@ int main(int argc, char **argv)
        (BUG(orig) (#621)) */
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     touch();
     DeleteFile((STRPTR)TESTFILE);
     printf("ridoslib: %ld bytes less memory than before init\n",

@@ -1,0 +1,400 @@
+# capture rwe_ricommoditieslib 1
+init|kept||1	kept
+HotKeyHit|kept||1	kept
+|HotKeyHit||1	$FFFFFFFF
+WaitCommodity|kept||1	kept
+|WaitCommodity||1	$00000000
+CommodityEvent|kept||1	kept
+|CommodityEvent||1	$00000000
+ExchangeMessage|kept||1	kept
+|ExchangeMessage||1	$00000000
+ExchangeDisable|kept||1	kept
+|ExchangeDisable||1	$00000000
+ExchangeEnable|kept||1	kept
+|ExchangeEnable||1	$00000000
+ExchangeAppear|kept||1	kept
+|ExchangeAppear||1	$00000000
+ExchangeDisAppear|kept||1	kept
+|ExchangeDisAppear||1	$00000000
+ExchangeKill|kept||1	kept
+|ExchangeKill||1	$00000000
+ExchangeListChange|kept||1	kept
+|ExchangeListChange||1	$00000000
+ExchangeUnique|kept||1	kept
+|ExchangeUnique||1	$00000000
+SetHotKey|kept||1	kept
+|SetHotKey (no broker)||1	$00000000
+SetCxStatus|kept||1	kept
+|SetCxStatus -1 (no port)||1	$00000000
+SetCxStatus|kept||2	kept
+|SetCxStatus 0 (no port)||1	$00000000
+CommodityMsgPort|kept||1	kept
+|CommodityMsgPort||1	$00000000
+|inline $A000||1	$00000001
+CxDisable|kept||1	kept
+|CxDisable||1	$0000000F
+|inline $A000||2	$00000001
+CxEnable|kept||1	kept
+|CxEnable||1	$00000011
+|inline $A000||3	$00000001
+CxAppear|kept||1	kept
+|CxAppear||1	$00000013
+|inline $A000||4	$00000001
+CxDisAppear|kept||1	kept
+|CxDisAppear||1	$00000015
+|inline $A000||5	$00000001
+CxKill|kept||1	kept
+|CxKill||1	$00000017
+|inline $A000||6	$00000001
+CxListChange|kept||1	kept
+|CxListChange||1	$0000001B
+|inline $A000||7	$00000001
+CxUnique|kept||1	kept
+|CxUnique||1	$00000019
+MakeCommodity|kept||1	kept
+|MakeCommodity||1	$FFFFFFFF
+CommodityMsgPort|kept||2	kept
+|CommodityMsgPort != 0||1	$00000001
+|broker there||1	$00000001
+|queued||1	$00000001
+CommodityEvent|kept||2	kept
+|CommodityEvent||2	$FFFFFFFF
+|event took the head||1	$00000001
+HotKeyHit|kept||2	kept
+|HotKeyHit||2	$FFFFFFFF
+ExchangeMessage|kept||2	kept
+|ExchangeMessage||2	$00000011
+ExchangeDisable|kept||2	kept
+|ExchangeDisable||2	$00000000
+ExchangeEnable|kept||2	kept
+|ExchangeEnable||2	$FFFFFFFF
+ExchangeAppear|kept||2	kept
+|ExchangeAppear||2	$00000000
+ExchangeDisAppear|kept||2	kept
+|ExchangeDisAppear||2	$00000000
+ExchangeKill|kept||2	kept
+|ExchangeKill||2	$00000000
+ExchangeListChange|kept||2	kept
+|ExchangeListChange||2	$00000000
+ExchangeUnique|kept||2	kept
+|ExchangeUnique||2	$00000000
+MakeCommodity|kept||2	kept
+|MakeCommodity again||1	$00000000
+|unique message||1	$00000001
+|queued||2	$00000001
+CommodityEvent|kept||3	kept
+|CommodityEvent||3	$FFFFFFFF
+|event took the head||2	$00000001
+HotKeyHit|kept||3	kept
+|HotKeyHit||3	$FFFFFFFF
+ExchangeMessage|kept||3	kept
+|ExchangeMessage||3	$00000019
+ExchangeDisable|kept||3	kept
+|ExchangeDisable||3	$00000000
+ExchangeEnable|kept||3	kept
+|ExchangeEnable||3	$00000000
+ExchangeAppear|kept||3	kept
+|ExchangeAppear||3	$00000000
+ExchangeDisAppear|kept||3	kept
+|ExchangeDisAppear||3	$00000000
+ExchangeKill|kept||3	kept
+|ExchangeKill||3	$00000000
+ExchangeListChange|kept||3	kept
+|ExchangeListChange||3	$00000000
+ExchangeUnique|kept||3	kept
+|ExchangeUnique||3	$FFFFFFFF
+|BrokerCommand||1	$00000000
+|command message||1	$00000001
+|queued||3	$00000001
+CommodityEvent|kept||4	kept
+|CommodityEvent||4	$FFFFFFFF
+|event took the head||3	$00000001
+HotKeyHit|kept||4	kept
+|HotKeyHit||4	$FFFFFFFF
+ExchangeMessage|kept||4	kept
+|ExchangeMessage||4	$0000000F
+ExchangeDisable|kept||4	kept
+|ExchangeDisable||4	$FFFFFFFF
+ExchangeEnable|kept||4	kept
+|ExchangeEnable||4	$00000000
+ExchangeAppear|kept||4	kept
+|ExchangeAppear||4	$00000000
+ExchangeDisAppear|kept||4	kept
+|ExchangeDisAppear||4	$00000000
+ExchangeKill|kept||4	kept
+|ExchangeKill||4	$00000000
+ExchangeListChange|kept||4	kept
+|ExchangeListChange||4	$00000000
+ExchangeUnique|kept||4	kept
+|ExchangeUnique||4	$00000000
+|BrokerCommand||2	$00000000
+|command message||2	$00000001
+|queued||4	$00000001
+CommodityEvent|kept||5	kept
+|CommodityEvent||5	$FFFFFFFF
+|event took the head||4	$00000001
+HotKeyHit|kept||5	kept
+|HotKeyHit||5	$FFFFFFFF
+ExchangeMessage|kept||5	kept
+|ExchangeMessage||5	$00000011
+ExchangeDisable|kept||5	kept
+|ExchangeDisable||5	$00000000
+ExchangeEnable|kept||5	kept
+|ExchangeEnable||5	$FFFFFFFF
+ExchangeAppear|kept||5	kept
+|ExchangeAppear||5	$00000000
+ExchangeDisAppear|kept||5	kept
+|ExchangeDisAppear||5	$00000000
+ExchangeKill|kept||5	kept
+|ExchangeKill||5	$00000000
+ExchangeListChange|kept||5	kept
+|ExchangeListChange||5	$00000000
+ExchangeUnique|kept||5	kept
+|ExchangeUnique||5	$00000000
+|BrokerCommand||3	$00000000
+|command message||3	$00000001
+|queued||5	$00000001
+CommodityEvent|kept||6	kept
+|CommodityEvent||6	$FFFFFFFF
+|event took the head||5	$00000001
+HotKeyHit|kept||6	kept
+|HotKeyHit||6	$FFFFFFFF
+ExchangeMessage|kept||6	kept
+|ExchangeMessage||6	$00000013
+ExchangeDisable|kept||6	kept
+|ExchangeDisable||6	$00000000
+ExchangeEnable|kept||6	kept
+|ExchangeEnable||6	$00000000
+ExchangeAppear|kept||6	kept
+|ExchangeAppear||6	$FFFFFFFF
+ExchangeDisAppear|kept||6	kept
+|ExchangeDisAppear||6	$00000000
+ExchangeKill|kept||6	kept
+|ExchangeKill||6	$00000000
+ExchangeListChange|kept||6	kept
+|ExchangeListChange||6	$00000000
+ExchangeUnique|kept||6	kept
+|ExchangeUnique||6	$00000000
+|BrokerCommand||4	$00000000
+|command message||4	$00000001
+|queued||6	$00000001
+CommodityEvent|kept||7	kept
+|CommodityEvent||7	$FFFFFFFF
+|event took the head||6	$00000001
+HotKeyHit|kept||7	kept
+|HotKeyHit||7	$FFFFFFFF
+ExchangeMessage|kept||7	kept
+|ExchangeMessage||7	$00000015
+ExchangeDisable|kept||7	kept
+|ExchangeDisable||7	$00000000
+ExchangeEnable|kept||7	kept
+|ExchangeEnable||7	$00000000
+ExchangeAppear|kept||7	kept
+|ExchangeAppear||7	$00000000
+ExchangeDisAppear|kept||7	kept
+|ExchangeDisAppear||7	$FFFFFFFF
+ExchangeKill|kept||7	kept
+|ExchangeKill||7	$00000000
+ExchangeListChange|kept||7	kept
+|ExchangeListChange||7	$00000000
+ExchangeUnique|kept||7	kept
+|ExchangeUnique||7	$00000000
+|BrokerCommand||5	$00000000
+|command message||5	$00000001
+|queued||7	$00000001
+CommodityEvent|kept||8	kept
+|CommodityEvent||8	$FFFFFFFF
+|event took the head||7	$00000001
+HotKeyHit|kept||8	kept
+|HotKeyHit||8	$FFFFFFFF
+ExchangeMessage|kept||8	kept
+|ExchangeMessage||8	$00000017
+ExchangeDisable|kept||8	kept
+|ExchangeDisable||8	$00000000
+ExchangeEnable|kept||8	kept
+|ExchangeEnable||8	$00000000
+ExchangeAppear|kept||8	kept
+|ExchangeAppear||8	$00000000
+ExchangeDisAppear|kept||8	kept
+|ExchangeDisAppear||8	$00000000
+ExchangeKill|kept||8	kept
+|ExchangeKill||8	$FFFFFFFF
+ExchangeListChange|kept||8	kept
+|ExchangeListChange||8	$00000000
+ExchangeUnique|kept||8	kept
+|ExchangeUnique||8	$00000000
+|BrokerCommand||6	$00000000
+|command message||6	$00000001
+|queued||8	$00000001
+CommodityEvent|kept||9	kept
+|CommodityEvent||9	$FFFFFFFF
+|event took the head||8	$00000001
+HotKeyHit|kept||9	kept
+|HotKeyHit||9	$FFFFFFFF
+ExchangeMessage|kept||9	kept
+|ExchangeMessage||9	$0000001B
+ExchangeDisable|kept||9	kept
+|ExchangeDisable||9	$00000000
+ExchangeEnable|kept||9	kept
+|ExchangeEnable||9	$00000000
+ExchangeAppear|kept||9	kept
+|ExchangeAppear||9	$00000000
+ExchangeDisAppear|kept||9	kept
+|ExchangeDisAppear||9	$00000000
+ExchangeKill|kept||9	kept
+|ExchangeKill||9	$00000000
+ExchangeListChange|kept||9	kept
+|ExchangeListChange||9	$FFFFFFFF
+ExchangeUnique|kept||9	kept
+|ExchangeUnique||9	$00000000
+CommodityEvent|kept||10	kept
+|CommodityEvent||10	$00000000
+HotKeyHit|kept||10	kept
+|HotKeyHit||10	$FFFFFFFF
+ExchangeMessage|kept||10	kept
+|ExchangeMessage||10	$00000000
+ExchangeDisable|kept||10	kept
+|ExchangeDisable||10	$00000000
+ExchangeEnable|kept||10	kept
+|ExchangeEnable||10	$00000000
+ExchangeAppear|kept||10	kept
+|ExchangeAppear||10	$00000000
+ExchangeDisAppear|kept||10	kept
+|ExchangeDisAppear||10	$00000000
+ExchangeKill|kept||10	kept
+|ExchangeKill||10	$00000000
+ExchangeListChange|kept||10	kept
+|ExchangeListChange||10	$FFFFFFFF
+ExchangeUnique|kept||10	kept
+|ExchangeUnique||10	$00000000
+SetHotKey|kept||2	kept
+|SetHotKey 0||1	$FFFFFFFF
+|timer message||1	$00000001
+SetHotKey|kept||3	kept
+|SetHotKey 3||1	$FFFFFFFF
+|two timer messages||1	$00000001
+CommodityEvent|kept||11	kept
+|CommodityEvent||11	$FFFFFFFF
+|event took the head||9	$00000001
+HotKeyHit|kept||11	kept
+|HotKeyHit||11	$00000000
+ExchangeMessage|kept||11	kept
+|ExchangeMessage||11	$00000000
+ExchangeDisable|kept||11	kept
+|ExchangeDisable||11	$00000000
+ExchangeEnable|kept||11	kept
+|ExchangeEnable||11	$00000000
+ExchangeAppear|kept||11	kept
+|ExchangeAppear||11	$00000000
+ExchangeDisAppear|kept||11	kept
+|ExchangeDisAppear||11	$00000000
+ExchangeKill|kept||11	kept
+|ExchangeKill||11	$00000000
+ExchangeListChange|kept||11	kept
+|ExchangeListChange||11	$00000000
+ExchangeUnique|kept||11	kept
+|ExchangeUnique||11	$00000000
+CommodityEvent|kept||12	kept
+|CommodityEvent||12	$FFFFFFFF
+|event took the head||10	$00000001
+HotKeyHit|kept||12	kept
+|HotKeyHit||12	$00000003
+ExchangeMessage|kept||12	kept
+|ExchangeMessage||12	$00000000
+ExchangeDisable|kept||12	kept
+|ExchangeDisable||12	$00000000
+ExchangeEnable|kept||12	kept
+|ExchangeEnable||12	$00000000
+ExchangeAppear|kept||12	kept
+|ExchangeAppear||12	$00000000
+ExchangeDisAppear|kept||12	kept
+|ExchangeDisAppear||12	$00000000
+ExchangeKill|kept||12	kept
+|ExchangeKill||12	$00000000
+ExchangeListChange|kept||12	kept
+|ExchangeListChange||12	$00000000
+ExchangeUnique|kept||12	kept
+|ExchangeUnique||12	$00000000
+SetHotKey|kept||4	kept
+|SetHotKey 0 again||1	$FFFFFFFF
+SetHotKey|kept||5	kept
+|SetHotKey 5 nonsense||1	$FFFFFFFF
+|two timer messages again||1	$00000001
+CommodityEvent|kept||13	kept
+|CommodityEvent||13	$FFFFFFFF
+|event took the head||11	$00000001
+HotKeyHit|kept||13	kept
+|HotKeyHit||13	$00000003
+ExchangeMessage|kept||13	kept
+|ExchangeMessage||13	$00000000
+ExchangeDisable|kept||13	kept
+|ExchangeDisable||13	$00000000
+ExchangeEnable|kept||13	kept
+|ExchangeEnable||13	$00000000
+ExchangeAppear|kept||13	kept
+|ExchangeAppear||13	$00000000
+ExchangeDisAppear|kept||13	kept
+|ExchangeDisAppear||13	$00000000
+ExchangeKill|kept||13	kept
+|ExchangeKill||13	$00000000
+ExchangeListChange|kept||13	kept
+|ExchangeListChange||13	$00000000
+ExchangeUnique|kept||13	kept
+|ExchangeUnique||13	$00000000
+CommodityEvent|kept||14	kept
+|CommodityEvent||14	$FFFFFFFF
+|event took the head||12	$00000001
+HotKeyHit|kept||14	kept
+|HotKeyHit||14	$00000000
+ExchangeMessage|kept||14	kept
+|ExchangeMessage||14	$00000000
+ExchangeDisable|kept||14	kept
+|ExchangeDisable||14	$00000000
+ExchangeEnable|kept||14	kept
+|ExchangeEnable||14	$00000000
+ExchangeAppear|kept||14	kept
+|ExchangeAppear||14	$00000000
+ExchangeDisAppear|kept||14	kept
+|ExchangeDisAppear||14	$00000000
+ExchangeKill|kept||14	kept
+|ExchangeKill||14	$00000000
+ExchangeListChange|kept||14	kept
+|ExchangeListChange||14	$00000000
+ExchangeUnique|kept||14	kept
+|ExchangeUnique||14	$00000000
+WaitCommodity|kept||2	kept
+|WaitCommodity||2	$FFFFFFFF
+|WaitCommodity took the head||1	$00000001
+HotKeyHit|kept||15	kept
+|HotKeyHit||15	$00000000
+ExchangeMessage|kept||15	kept
+|ExchangeMessage||15	$00000000
+ExchangeDisable|kept||15	kept
+|ExchangeDisable||15	$00000000
+ExchangeEnable|kept||15	kept
+|ExchangeEnable||15	$00000000
+ExchangeAppear|kept||15	kept
+|ExchangeAppear||15	$00000000
+ExchangeDisAppear|kept||15	kept
+|ExchangeDisAppear||15	$00000000
+ExchangeKill|kept||15	kept
+|ExchangeKill||15	$00000000
+ExchangeListChange|kept||15	kept
+|ExchangeListChange||15	$00000000
+ExchangeUnique|kept||15	kept
+|ExchangeUnique||15	$00000000
+SetCxStatus|kept||3	kept
+|SetCxStatus 0||1	$FFFFFFFF
+|off: no messages||1	$00000000
+SetCxStatus|kept||4	kept
+|SetCxStatus 5||1	$00000000
+|still off||1	$00000000
+SetCxStatus|kept||5	kept
+|SetCxStatus -1||1	$FFFFFFFF
+|on: messages||1	$00000001
+SetCxStatus|kept||6	kept
+|SetCxStatus 0 again||1	$FFFFFFFF
+finit|kept||1	kept
+|broker gone||1	$00000001
+|results||1	$000000DE
+|calls||1	$000000AF

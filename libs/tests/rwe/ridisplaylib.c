@@ -1,19 +1,20 @@
 /*
- * rwe ridisplaylib - InitView, ViewBitmap: the C build against the
- * reference build of rwelibsrc/mydisplaylib.bb (ridisplaylib.orig),
- * method of rwecmp.h.
+ * rwe ridisplaylib - InitView, ViewBitmap: the C build or the reference
+ * build of rwelibsrc/mydisplaylib.bb (ridisplaylib.orig), one set as LIBSET
+ * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ridisplaylib.txt).
  *
  *   ridisplaylib DIR     (DIR with ridisplaylib .obj/.orig)
  *
  * The library allocates a copper list per InitView but installs nothing:
- * the display is not touched.  Compared after every call: d0 (InitView:
+ * the display is not touched.  Observed after every call: d0 (InitView:
  * the list, as "is the list the library keeps"), the variables viewsize
  * and cop (found in both libraries by the list InitView returns), the
  * list's 8 words (the words at the absolute addresses $8E, $2C81, $90,
- * $2CC1, $92, $38, $94, $D0, BUG(orig) #889: equal to those words, and equal
- * between the sets for the ones in the vector table), the change of
+ * $2CC1, $92, $38, $94, $D0, BUG(orig) #889: equal to those words, and the
+ * value of the ones in the vector table), the change of
  * graphics.library's open count and the test task's memory balance
- * (rwemem.h), and the registers the original keeps.  The lists InitView
+ * (rwemem.h), and the kept registers.  The lists InitView
  * leaks (only the last one is kept, BUG(orig), #891) are freed by the test.
  *
  * Covered: init, InitView (sizes with marker upper words, the colour
@@ -22,6 +23,7 @@
  * without a list.  Not covered: InitView without chip memory or with a
  * size that is negative as a word (both write to address 0).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -29,10 +31,10 @@
 enum { INITVIEW, VIEWBITMAP, INIT, FINIT };
 
 static struct Library *gfx;
-static LONG opened[2], membal[2];
-static ULONG *vars[2];                  /* viewsize, cop */
-static ULONG oldcop[2], oldsize[2];     /* the list before (leaked) */
-static ULONG cop[2];
+static LONG opened, membal;
+static ULONG *vars;                     /* viewsize, cop */
+static ULONG oldcop, oldsize;           /* the list before (leaked) */
+static ULONG cop;
 
 static ULONG findvars(struct lib *l, ULONG list)
 {
@@ -43,32 +45,32 @@ static ULONG findvars(struct lib *l, ULONG list)
     return 0;
 }
 
-/* one call on both sets: the open count and this task's memory balance
+/* one call: the open count and this task's memory balance
    around it (rwemem.h; AvailMem() would also count other tasks) */
 static void call2(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG d3)
 {
+    APTR fn;
+    LONG cnt;
     ROUT = name;
-    for (cur = 0; cur < 2; cur++) {
-        APTR fn = ENT(LIB, idx, 0);
-        LONG cnt = gfx->lib_OpenCnt;
-        markregs(&R[cur]);
-        R[cur].d[0] = d0;
-        R[cur].d[1] = d1;
-        R[cur].d[2] = d2;
-        R[cur].d[3] = d3;
-        IN[cur] = R[cur];
-        NARGS = 0;
-        rwe_mem_start();
-        CCR[cur] = callstk(fn, &R[cur], ARGS[cur], NARGS, &POP[cur]);
-        membal[cur] = rwe_mem_stop();
-        opened[cur] = gfx->lib_OpenCnt - cnt;
-    }
+    fn = ENT(LIB, idx, 0);
+    cnt = gfx->lib_OpenCnt;
+    markregs(&R);
+    R.d[0] = d0;
+    R.d[1] = d1;
+    R.d[2] = d2;
+    R.d[3] = d3;
+    IN = R;
+    NARGS = 0;
+    rwe_mem_start();
+    CCR = callstk(fn, &R, ARGS, NARGS, &POP);
+    membal = rwe_mem_stop();
+    opened = gfx->lib_OpenCnt - cnt;
     preserve();
-    SAME("graphics.library open count", opened[cur]);
-    SAME("memory balance", membal[cur]);
-    if (vars[0] && vars[1]) {
-        SAME("viewsize", vars[cur][0]);
-        SAME("cop", vars[cur][1] != 0);
+    OBS("graphics.library open count", opened);
+    OBS("memory balance", membal);
+    if (vars) {
+        OBS("viewsize", vars[0]);
+        OBS("cop", vars[1] != 0);
     }
 }
 
@@ -79,32 +81,27 @@ static void initview(UWORD h, UWORD d, UWORD s, UWORD c)
     char buf[40];
 
     sprintf(VEC, "%u,%u,%u,%u", h, d, s, c);
-    for (cur = 0; cur < 2; cur++) {
-        oldcop[cur] = vars[cur] ? vars[cur][1] : 0;
-        oldsize[cur] = vars[cur] ? vars[cur][0] : 0;
-    }
+    oldcop = vars ? vars[1] : 0;
+    oldsize = vars ? vars[0] : 0;
     call2(INITVIEW, "InitView", 0xa5a50000UL | h, 0x5a5a0000UL | d, 0x12340000UL | s,
           0xfedc0000UL | c);
-    for (cur = 0; cur < 2; cur++) {
-        cop[cur] = R[cur].d[0];
-        if (!vars[cur])
-            vars[cur] = (ULONG *)findvars(getlib(&sets[cur], LIB), cop[cur]);
-    }
-    BOTH("variables found", vars[cur] != NULL);
-    if (!vars[0] || !vars[1])
+    cop = R.d[0];
+    if (!vars)
+        vars = (ULONG *)findvars(getlib(&loaded, LIB), cop);
+    BOTH("variables found", vars != NULL);
+    if (!vars)
         return;
-    BOTH("d0 = cop", cop[cur] && vars[cur][1] == cop[cur]);
+    BOTH("d0 = cop", cop && vars[1] == cop);
     for (i = 0; i < 8; i++) {
         sprintf(buf, "word %d = ($%lX)", i, addr[i]);
-        BOTH(buf, ((UWORD *)cop[cur])[i] == *(volatile UWORD *)addr[i]);
+        BOTH(buf, ((UWORD *)cop)[i] == *(volatile UWORD *)addr[i]);
         if (addr[i] & 1)
             continue;
         sprintf(buf, "word %d", i);
-        SAME(buf, ((UWORD *)cop[cur])[i]);
+        OBS(buf, ((UWORD *)cop)[i]);
     }
-    for (cur = 0; cur < 2; cur++)
-        if (oldcop[cur])
-            FreeMem((APTR)oldcop[cur], oldsize[cur]);
+    if (oldcop)
+        FreeMem((APTR)oldcop, oldsize);
 }
 
 int main(int argc, char **argv)
@@ -115,8 +112,15 @@ int main(int argc, char **argv)
         printf("usage: ridisplaylib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("InitView", d7|a2|a3);
+    KEEPS("ViewBitmap", d0-d7|a0-a3|a6);
+    KEEPS("finit", d2-d7|a2|a3);
+    KEEPS("finit (again)", d0-d7|a0-a3|a6);
+    KEEPS("init (again)", d2-d7|a2|a3);
+    KEEPS("finit (no list)", d0-d7|a2|a3);
     gfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     if (!gfx) {
         check("ridisplaylib: graphics.library 39", FALSE);
@@ -132,7 +136,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "");
     call2(VIEWBITMAP, "ViewBitmap", 0x12345678, 0, 0, 0);
     call2(FINIT, "finit", 0, 0, 0, 0);
-    BOTH("freed", vars[cur] && !vars[cur][0] && !vars[cur][1]);
+    BOTH("freed", vars && !vars[0] && !vars[1]);
     call2(FINIT, "finit (again)", 0, 0, 0, 0);
     call2(INIT, "init (again)", 0, 0, 0, 0);
     call2(FINIT, "finit (no list)", 0, 0, 0, 0);

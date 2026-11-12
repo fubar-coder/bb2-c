@@ -1,0 +1,216 @@
+# capture rwe_ridebuglib 1
+init|kept||1	kept
+init|popped||1	$00000000
+routine (RTS)|kept|entry 0|1	kept
+routine (RTS)|popped|entry 0|1	$00000000
+routine (RTS)|same address|entry 0|1	$00000001
+routine (RTS)|kept|entry 1|1	kept
+routine (RTS)|popped|entry 1|1	$00000000
+routine (RTS)|same address|entry 1|1	$00000001
+routine (RTS)|kept|entry 2|1	kept
+routine (RTS)|popped|entry 2|1	$00000000
+routine (RTS)|same address|entry 2|1	$00000001
+routine (RTS)|kept|entry 3|1	kept
+routine (RTS)|popped|entry 3|1	$00000000
+routine (RTS)|same address|entry 3|1	$00000001
+routine (RTS)|kept|entry 4|1	kept
+routine (RTS)|popped|entry 4|1	$00000000
+routine (RTS)|same address|entry 4|1	$00000001
+routine (RTS)|kept|entry 5|1	kept
+routine (RTS)|popped|entry 5|1	$00000000
+routine (RTS)|same address|entry 5|1	$00000001
+routine (RTS)|kept|entry 6|1	kept
+routine (RTS)|popped|entry 6|1	$00000000
+routine (RTS)|same address|entry 6|1	$00000001
+AddVarTrace|kept|type 0 name a output 0|1	kept
+AddVarTrace|popped|type 0 name a output 0|1	$00000000
+AddVarTrace|messages|type 0 name a output 0|1	$00000001
+AddVarTrace|message|type 0 name a output 0|1	bytes 260 fnv 603D9090
+AddVarTrace|kept|type 0 name counter.l output 1|1	kept
+AddVarTrace|popped|type 0 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 0 name counter.l output 1|1	$00000002
+AddVarTrace|message|type 0 name counter.l output 1|1	bytes 260 fnv 1CCA179F
+AddVarTrace|kept|type 0 name x$ output 2|1	kept
+AddVarTrace|popped|type 0 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 0 name x$ output 2|1	$00000003
+AddVarTrace|message|type 0 name x$ output 2|1	bytes 260 fnv 449F9503
+AddVarTrace|kept|type 1 name a output 0|1	kept
+AddVarTrace|popped|type 1 name a output 0|1	$00000000
+AddVarTrace|messages|type 1 name a output 0|1	$00000004
+AddVarTrace|message|type 1 name a output 0|1	bytes 260 fnv 8F29FE75
+AddVarTrace|kept|type 1 name counter.l output 1|1	kept
+AddVarTrace|popped|type 1 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 1 name counter.l output 1|1	$00000005
+AddVarTrace|message|type 1 name counter.l output 1|1	bytes 260 fnv 1CCA179F
+AddVarTrace|kept|type 1 name x$ output 2|1	kept
+AddVarTrace|popped|type 1 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 1 name x$ output 2|1	$00000006
+AddVarTrace|message|type 1 name x$ output 2|1	bytes 260 fnv 449F9503
+AddVarTrace|kept|type 2 name a output 0|1	kept
+AddVarTrace|popped|type 2 name a output 0|1	$00000000
+AddVarTrace|messages|type 2 name a output 0|1	$00000007
+AddVarTrace|message|type 2 name a output 0|1	bytes 260 fnv 11A349C8
+AddVarTrace|kept|type 2 name counter.l output 1|1	kept
+AddVarTrace|popped|type 2 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 2 name counter.l output 1|1	$00000008
+AddVarTrace|message|type 2 name counter.l output 1|1	bytes 260 fnv 6B7BFDEA
+AddVarTrace|kept|type 2 name x$ output 2|1	kept
+AddVarTrace|popped|type 2 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 2 name x$ output 2|1	$00000009
+AddVarTrace|message|type 2 name x$ output 2|1	bytes 260 fnv 81C8B02E
+AddVarTrace|kept|type 3 name a output 0|1	kept
+AddVarTrace|popped|type 3 name a output 0|1	$00000000
+AddVarTrace|messages|type 3 name a output 0|1	$0000000A
+AddVarTrace|message|type 3 name a output 0|1	bytes 260 fnv F7A8BFA7
+AddVarTrace|kept|type 3 name counter.l output 1|1	kept
+AddVarTrace|popped|type 3 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 3 name counter.l output 1|1	$0000000B
+AddVarTrace|message|type 3 name counter.l output 1|1	bytes 260 fnv D41A4149
+AddVarTrace|kept|type 3 name x$ output 2|1	kept
+AddVarTrace|popped|type 3 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 3 name x$ output 2|1	$0000000C
+AddVarTrace|message|type 3 name x$ output 2|1	bytes 260 fnv 7B12E5A9
+AddVarTrace|kept|type 4 name a output 0|1	kept
+AddVarTrace|popped|type 4 name a output 0|1	$00000000
+AddVarTrace|messages|type 4 name a output 0|1	$0000000D
+AddVarTrace|message|type 4 name a output 0|1	bytes 260 fnv 23A9ED19
+AddVarTrace|kept|type 4 name counter.l output 1|1	kept
+AddVarTrace|popped|type 4 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 4 name counter.l output 1|1	$0000000E
+AddVarTrace|message|type 4 name counter.l output 1|1	bytes 260 fnv E3514473
+AddVarTrace|kept|type 4 name x$ output 2|1	kept
+AddVarTrace|popped|type 4 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 4 name x$ output 2|1	$0000000F
+AddVarTrace|message|type 4 name x$ output 2|1	bytes 260 fnv 10AE6F6F
+AddVarTrace|kept|type 5 name a output 0|1	kept
+AddVarTrace|popped|type 5 name a output 0|1	$00000000
+AddVarTrace|messages|type 5 name a output 0|1	$00000010
+AddVarTrace|message|type 5 name a output 0|1	bytes 260 fnv EF1637CC
+AddVarTrace|kept|type 5 name counter.l output 1|1	kept
+AddVarTrace|popped|type 5 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 5 name counter.l output 1|1	$00000011
+AddVarTrace|message|type 5 name counter.l output 1|1	bytes 260 fnv E035324E
+AddVarTrace|kept|type 5 name x$ output 2|1	kept
+AddVarTrace|popped|type 5 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 5 name x$ output 2|1	$00000012
+AddVarTrace|message|type 5 name x$ output 2|1	bytes 260 fnv CAF788FA
+AddVarTrace|kept|type 6 name a output 0|1	kept
+AddVarTrace|popped|type 6 name a output 0|1	$00000000
+AddVarTrace|messages|type 6 name a output 0|1	$00000013
+AddVarTrace|message|type 6 name a output 0|1	bytes 260 fnv 8F29FE75
+AddVarTrace|kept|type 6 name counter.l output 1|1	kept
+AddVarTrace|popped|type 6 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 6 name counter.l output 1|1	$00000014
+AddVarTrace|message|type 6 name counter.l output 1|1	bytes 260 fnv 1CCA179F
+AddVarTrace|kept|type 6 name x$ output 2|1	kept
+AddVarTrace|popped|type 6 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 6 name x$ output 2|1	$00000015
+AddVarTrace|message|type 6 name x$ output 2|1	bytes 260 fnv 449F9503
+AddVarTrace|kept|type 7 name a output 0|1	kept
+AddVarTrace|popped|type 7 name a output 0|1	$00000000
+AddVarTrace|messages|type 7 name a output 0|1	$00000016
+AddVarTrace|message|type 7 name a output 0|1	bytes 260 fnv 82FAC66A
+AddVarTrace|kept|type 7 name counter.l output 1|1	kept
+AddVarTrace|popped|type 7 name counter.l output 1|1	$00000000
+AddVarTrace|messages|type 7 name counter.l output 1|1	$00000017
+AddVarTrace|message|type 7 name counter.l output 1|1	bytes 260 fnv 7282A4B4
+AddVarTrace|kept|type 7 name x$ output 2|1	kept
+AddVarTrace|popped|type 7 name x$ output 2|1	$00000000
+AddVarTrace|messages|type 7 name x$ output 2|1	$00000018
+AddVarTrace|message|type 7 name x$ output 2|1	bytes 260 fnv 84DB23FC
+AddVarTrace|kept|empty name|1	kept
+AddVarTrace|popped|empty name|1	$00000000
+AddVarTrace|messages|empty name|1	$00000019
+AddVarTrace|message|empty name|1	bytes 260 fnv AA7B9C8C
+DelVarTrace|kept|name a|1	kept
+DelVarTrace|popped|name a|1	$00000000
+DelVarTrace|messages|name a|1	$0000001A
+DelVarTrace|message|name a|1	bytes 260 fnv 76A2D153
+DelVarTrace|kept|name counter.l|1	kept
+DelVarTrace|popped|name counter.l|1	$00000000
+DelVarTrace|messages|name counter.l|1	$0000001B
+DelVarTrace|message|name counter.l|1	bytes 260 fnv 2F61B59D
+DelVarTrace|kept|name x$|1	kept
+DelVarTrace|popped|name x$|1	$00000000
+DelVarTrace|messages|name x$|1	$0000001C
+DelVarTrace|message|name x$|1	bytes 260 fnv 5D33E95A
+DelVarTrace|kept|empty name|1	kept
+DelVarTrace|popped|empty name|1	$00000000
+DelVarTrace|messages|empty name|1	$0000001D
+DelVarTrace|message|empty name|1	bytes 260 fnv C5E59684
+VarTraceWindow|kept||1	kept
+VarTraceWindow|popped||1	$00000000
+VarTraceWindow|messages||1	$0000001E
+VarTraceWindow|message||1	bytes 260 fnv D370205B
+DisAsmWindow|kept||1	kept
+DisAsmWindow|popped||1	$00000000
+DisAsmWindow|messages||1	$0000001F
+DisAsmWindow|address = the TRAP||1	$00000000
+DisAsmWindow|message||1	bytes 260 fnv 074123EA
+CopperTrace|kept|address 0|1	kept
+CopperTrace|popped|address 0|1	$00000000
+CopperTrace|messages|address 0|1	$0000001F
+CopperTrace|message|address 0|1	bytes 260 fnv 074123EA
+CopperTrace|kept|address $76543210|1	kept
+CopperTrace|popped|address $76543210|1	$00000000
+CopperTrace|messages|address $76543210|1	$00000020
+CopperTrace|message|address $76543210|1	bytes 260 fnv 8500F486
+CopperTrace|kept|object, offset 0|1	kept
+CopperTrace|popped|object, offset 0|1	$00000000
+CopperTrace|messages|object, offset 0|1	$00000021
+CopperTrace|message|object, offset 0|1	bytes 260 fnv 2F69939E
+CopperTrace|kept|object, offset 4|1	kept
+CopperTrace|popped|object, offset 4|1	$00000000
+CopperTrace|messages|object, offset 4|1	$00000021
+CopperTrace|message|object, offset 4|1	bytes 260 fnv 2F69939E
+CopperTrace|kept|object, offset 8|1	kept
+CopperTrace|popped|object, offset 8|1	$00000000
+CopperTrace|messages|object, offset 8|1	$00000022
+CopperTrace|message|object, offset 8|1	bytes 260 fnv 11B21EA7
+CopperTrace|kept|object, offset -4|1	kept
+CopperTrace|popped|object, offset -4|1	$00000000
+CopperTrace|messages|object, offset -4|1	$00000023
+CopperTrace|message|object, offset -4|1	bytes 260 fnv 11B21EA7
+CopperTrace|kept|object 0|1	kept
+CopperTrace|popped|object 0|1	$00000000
+CopperTrace|messages|object 0|1	$00000023
+CopperTrace|message|object 0|1	bytes 260 fnv 11B21EA7
+ProcControl|kept|toggle|1	kept
+ProcControl|popped|toggle|1	$00000000
+ProcControl|messages|toggle|1	$00000024
+ProcControl|message|toggle|1	bytes 260 fnv AA8C6886
+ProcControl|kept|$FFFFFFFF|1	kept
+ProcControl|popped|$FFFFFFFF|1	$00000000
+ProcControl|messages|$FFFFFFFF|1	$00000025
+ProcControl|message|$FFFFFFFF|1	bytes 260 fnv BE759DB8
+ProcControl|kept|$0|1	kept
+ProcControl|popped|$0|1	$00000000
+ProcControl|messages|$0|1	$00000026
+ProcControl|message|$0|1	bytes 260 fnv 6C78FE91
+ProcControl|kept|$101|1	kept
+ProcControl|popped|$101|1	$00000000
+ProcControl|messages|$101|1	$00000027
+ProcControl|message|$101|1	bytes 260 fnv 9FCCDD72
+ProcControl|kept|toggle again|1	kept
+ProcControl|popped|toggle again|1	$00000000
+ProcControl|messages|toggle again|1	$00000028
+ProcControl|message|toggle again|1	bytes 260 fnv AA8C6886
+MemoryWindow|kept|window 0|1	kept
+MemoryWindow|popped|window 0|1	$00000000
+MemoryWindow|messages|window 0|1	$00000029
+MemoryWindow|message|window 0|1	bytes 260 fnv 492C10E1
+MemoryWindow|kept|window 1|1	kept
+MemoryWindow|popped|window 1|1	$00000000
+MemoryWindow|messages|window 1|1	$0000002A
+MemoryWindow|message|window 1|1	bytes 260 fnv 4A6E0E70
+MemoryWindow|kept|window 2|1	kept
+MemoryWindow|popped|window 2|1	$00000000
+MemoryWindow|messages|window 2|1	$0000002B
+MemoryWindow|message|window 2|1	bytes 260 fnv 4A44B287
+AddVarTrace|kept|after the others|1	kept
+AddVarTrace|popped|after the others|1	$00000000
+AddVarTrace|messages|after the others|1	$0000002C
+AddVarTrace|message|after the others|1	bytes 260 fnv 314EDDE3
+AddVarTrace|44 messages sent|after the others|1	$00000001
+finit|kept||1	kept
+finit|popped||1	$00000000

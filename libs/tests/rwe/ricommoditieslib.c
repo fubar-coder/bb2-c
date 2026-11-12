@@ -1,14 +1,15 @@
 /*
- * rwe ricommoditieslib - the C build of RWE userlib 89 against the CD
- * binary (BSS2 RICOMMODITIESLIB.OBJ).
+ * rwe ricommoditieslib - RWE userlib 89: the C build or the CD binary
+ * (BSS2 RICOMMODITIESLIB.OBJ), one set as LIBSET says, observed as cases
+ * (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ricommoditieslib.txt).
  *
  *   ricommoditieslib DIR      (DIR: ricommoditieslib.orig / .obj)
  *
- * The same scenario runs on the original, then on the C build (each with
- * init ... finit, one after the other: the broker name is unique); every
- * result is recorded and the two records are compared, and every call
- * must keep the registers the original keeps.  Recorded are only values
- * that do not depend on addresses (results, "port != 0", message counts).
+ * The scenario runs once with init ... finit; every result is observed
+ * (the check text names it, the value is the case), and every call writes
+ * the kept case of its routine (KEEPS).  Observed are only values that do
+ * not depend on addresses (results, "port != 0", message counts).
  *
  * The scenario: every command before MakeCommodity (no broker); the
  * inline constants Cx... (copied like the compiler does); MakeCommodity
@@ -29,6 +30,7 @@
  * successful MakeCommodity (the first broker keeps the port finit
  * deletes), a missing commodities.library.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #include <libraries/commodities.h>
 #include <proto/commodities.h>
@@ -54,29 +56,33 @@ static const char *ename[] = {
 
 /* ------------------------------------------------------------ records */
 
-#define MAXV 400
-static ULONG val[2][MAXV];
-static const char *vname[2][MAXV];
-static int nv[2];
+/* the results and the calls, counted (observed at the end) */
+static int nv, nc;
 
-#define MAXC 300
-static struct call calls[2][MAXC];
-static const char *cname[2][MAXC];
-static int nc[2];
-
-static void rec(int s, const char *what, ULONG v)
+/* a result: the check text names it, the value is the case (routine
+   part empty) */
+static void rec(const char *what, ULONG v)
 {
-    if (nv[s] < MAXV) {
-        val[s][nv[s]] = v;
-        vname[s][nv[s]] = what;
-    }
-    nv[s]++;
+    OBS(what, v);
+    nv++;
 }
 
-/* call entry `e` of set s; d0-d2 = in (n of them), the rest markers */
-static ULONG cx(int s, int e, int n, ULONG d0, ULONG d1, ULONG d2)
+/* the call of fn as routine `name` with the registers r: its kept case */
+static void call_kept(const char *name, APTR fn, struct regs *r)
 {
-    struct lib *l = getlib(&sets[s], LIBNAME);
+    struct regs in = *r;
+
+    callregs(fn, r, 0, 0);
+    ROUT = name;
+    obs_kept(&in, r);
+    ROUT = "";
+    nc++;
+}
+
+/* call entry `e`; d0-d2 = in (n of them), the rest markers */
+static ULONG cx(int e, int n, ULONG d0, ULONG d1, ULONG d2)
+{
+    struct lib *l = getlib(&loaded, LIBNAME);
     UBYTE *fn = (UBYTE *)((ULONG)entry_form(l, e, 0) & ~1UL);
     struct regs r;
 
@@ -84,45 +90,31 @@ static ULONG cx(int s, int e, int n, ULONG d0, ULONG d1, ULONG d2)
     if (n > 0) r.d[0] = d0;
     if (n > 1) r.d[1] = d1;
     if (n > 2) r.d[2] = d2;
-    if (nc[s] < MAXC) {
-        calls[s][nc[s]].in = r;
-        cname[s][nc[s]] = ename[e];
-    }
-    callregs(fn, &r, 0, 0);
-    if (nc[s] < MAXC)
-        calls[s][nc[s]].out = r;
-    nc[s]++;
+    call_kept(ename[e], fn, &r);
     return r.d[0];
 }
-#define CX0(s, e) cx(s, e, 0, 0, 0, 0)
-#define REC0(s, e) rec(s, ename[e], CX0(s, e))
+#define CX0(e) cx(e, 0, 0, 0, 0)
+#define REC0(e) rec(ename[e], CX0(e))
 
 /* an inline entry ($A000,len): the code copied with an RTS, as the
    compiler copies it into the program */
-static UWORD tramp[2][16];
-static void inline_call(int s, int e)
+static UWORD tramp[16];
+static void inline_call(int e)
 {
-    struct lib *l = getlib(&sets[s], LIBNAME);
+    struct lib *l = getlib(&loaded, LIBNAME);
     UBYTE *code = (UBYTE *)((ULONG)entry_form(l, e, 0) & ~1UL);
     UWORD len = W(code + 2);
     struct regs r;
 
-    rec(s, "inline $A000", W(code) == 0xa000 && len > 0 && len < 24);
+    rec("inline $A000", W(code) == 0xa000 && len > 0 && len < 24);
     if (W(code) != 0xa000 || len == 0 || len >= 24)
         return;
-    memcpy(tramp[s], code + 4, len);
-    tramp[s][len / 2] = 0x4e75;
+    memcpy(tramp, code + 4, len);
+    tramp[len / 2] = 0x4e75;
     CacheClearU();
     markregs(&r);
-    if (nc[s] < MAXC) {
-        calls[s][nc[s]].in = r;
-        cname[s][nc[s]] = ename[e];
-    }
-    callregs(tramp[s], &r, 0, 0);
-    if (nc[s] < MAXC)
-        calls[s][nc[s]].out = r;
-    nc[s]++;
-    rec(s, ename[e], r.d[0]);
+    call_kept(ename[e], tramp, &r);
+    rec(ename[e], r.d[0]);
 }
 
 /* ------------------------------------------------------------ messages */
@@ -206,37 +198,37 @@ static void settle(void)
 }
 
 /* all evaluating functions on the current message */
-static void look(int s)
+static void look(void)
 {
     int e;
 
-    REC0(s, E_HIT);
-    REC0(s, E_XMSG);
+    REC0(E_HIT);
+    REC0(E_XMSG);
     for (e = E_XDISABLE; e <= E_XUNIQUE; e++)
-        REC0(s, e);
+        REC0(e);
 }
 
 /* CommodityEvent and a look at the message */
-static void event_round(int s)
+static void event_round(void)
 {
     struct Message *before = head();
 
-    REC0(s, E_EVENT);
+    REC0(E_EVENT);
     if (before && !queued(port, before))
         removed = before;
-    rec(s, "event took the head", removed == before);
-    look(s);
+    rec("event took the head", removed == before);
+    look();
     settle();
 }
 
 /* every message that is queued, one by one */
-static void all_events(int s)
+static void all_events(void)
 {
     int i;
 
-    rec(s, "queued", msgcount(port));
+    rec("queued", msgcount(port));
     for (i = 0; i < 4 && msgcount(port); i++)
-        event_round(s);
+        event_round();
 }
 
 /* ------------------------------------------------------------ scenario */
@@ -249,7 +241,7 @@ static const char bdescr[] = "libs_tests: C build against the original";
 static const char timer[] = "timer";
 static const char nonsense[] = "rawkey nonsense_qualifier q";
 
-static void scenario(int s)
+static void scenario(void)
 {
     static const LONG cmds[] = { CXCMD_DISABLE, CXCMD_ENABLE, CXCMD_APPEAR,
                                  CXCMD_DISAPPEAR, CXCMD_KILL, CXCMD_LIST_CHG };
@@ -257,91 +249,91 @@ static void scenario(int s)
     unsigned i;
     int e;
 
-    CX0(s, E_INIT);
+    CX0(E_INIT);
 
     /* no broker yet */
     port = NULL;
-    REC0(s, E_HIT);
-    REC0(s, E_WAIT);
-    REC0(s, E_EVENT);
-    REC0(s, E_XMSG);
+    REC0(E_HIT);
+    REC0(E_WAIT);
+    REC0(E_EVENT);
+    REC0(E_XMSG);
     for (e = E_XDISABLE; e <= E_XUNIQUE; e++)
-        REC0(s, e);
-    rec(s, "SetHotKey (no broker)", cx(s, E_HOTKEY, 2, 0, (ULONG)timer, 0));
-    rec(s, "SetCxStatus -1 (no port)", cx(s, E_STATUS, 1, (ULONG)-1, 0, 0));
-    rec(s, "SetCxStatus 0 (no port)", cx(s, E_STATUS, 1, 0, 0, 0));
-    REC0(s, E_PORT);
+        REC0(e);
+    rec("SetHotKey (no broker)", cx(E_HOTKEY, 2, 0, (ULONG)timer, 0));
+    rec("SetCxStatus -1 (no port)", cx(E_STATUS, 1, (ULONG)-1, 0, 0));
+    rec("SetCxStatus 0 (no port)", cx(E_STATUS, 1, 0, 0, 0));
+    REC0(E_PORT);
     for (e = E_CXDISABLE; e <= E_CXUNIQUE; e++)
-        inline_call(s, e);
+        inline_call(e);
 
     /* the broker */
-    rec(s, "MakeCommodity", cx(s, E_MAKE, 3, (ULONG)bname, (ULONG)btitle, (ULONG)bdescr));
-    port = (struct MsgPort *)CX0(s, E_PORT);
-    rec(s, "CommodityMsgPort != 0", port != NULL);
+    rec("MakeCommodity", cx(E_MAKE, 3, (ULONG)bname, (ULONG)btitle, (ULONG)bdescr));
+    port = (struct MsgPort *)CX0(E_PORT);
+    rec("CommodityMsgPort != 0", port != NULL);
     if (!port)
         goto out;
-    rec(s, "broker there", brokercommand(bname, CXCMD_ENABLE) == 0);
+    rec("broker there", brokercommand(bname, CXCMD_ENABLE) == 0);
     waitmsgs(port, 1);
-    all_events(s);
+    all_events();
     /* the same name again: fails, the first broker gets CXCMD_UNIQUE */
-    rec(s, "MakeCommodity again", cx(s, E_MAKE, 3, (ULONG)bname, (ULONG)"t2", (ULONG)"d2"));
-    rec(s, "unique message", waitmsgs(port, 1));
-    all_events(s);
+    rec("MakeCommodity again", cx(E_MAKE, 3, (ULONG)bname, (ULONG)"t2", (ULONG)"d2"));
+    rec("unique message", waitmsgs(port, 1));
+    all_events();
     for (i = 0; i < sizeof cmds / sizeof cmds[0]; i++) {
-        rec(s, "BrokerCommand", brokercommand(bname, cmds[i]));
-        rec(s, "command message", waitmsgs(port, 1));
-        all_events(s);
+        rec("BrokerCommand", brokercommand(bname, cmds[i]));
+        rec("command message", waitmsgs(port, 1));
+        all_events();
     }
     /* nothing queued: msg = 0, the ids stay */
-    REC0(s, E_EVENT);
-    look(s);
+    REC0(E_EVENT);
+    look();
 
     /* hotkeys */
-    rec(s, "SetHotKey 0", cx(s, E_HOTKEY, 2, 0, (ULONG)timer, 0));
-    rec(s, "timer message", waitmsgs(port, 1));
-    rec(s, "SetHotKey 3", cx(s, E_HOTKEY, 2, 3, (ULONG)timer, 0));
+    rec("SetHotKey 0", cx(E_HOTKEY, 2, 0, (ULONG)timer, 0));
+    rec("timer message", waitmsgs(port, 1));
+    rec("SetHotKey 3", cx(E_HOTKEY, 2, 3, (ULONG)timer, 0));
     drain(port);
-    rec(s, "two timer messages", waitmsgs(port, 2));
-    event_round(s);                     /* id 0 */
-    event_round(s);                     /* id 3 */
-    rec(s, "SetHotKey 0 again", cx(s, E_HOTKEY, 2, 0, (ULONG)timer, 0));
-    rec(s, "SetHotKey 5 nonsense", cx(s, E_HOTKEY, 2, 5, (ULONG)nonsense, 0));
+    rec("two timer messages", waitmsgs(port, 2));
+    event_round();                     /* id 0 */
+    event_round();                     /* id 3 */
+    rec("SetHotKey 0 again", cx(E_HOTKEY, 2, 0, (ULONG)timer, 0));
+    rec("SetHotKey 5 nonsense", cx(E_HOTKEY, 2, 5, (ULONG)nonsense, 0));
     drain(port);
-    rec(s, "two timer messages again", waitmsgs(port, 2));
-    event_round(s);                     /* id 3: slot 0 is behind it now */
-    event_round(s);                     /* id 0 */
+    rec("two timer messages again", waitmsgs(port, 2));
+    event_round();                     /* id 3: slot 0 is behind it now */
+    event_round();                     /* id 0 */
 
     /* WaitCommodity with messages queued */
     drain(port);
     if (waitmsgs(port, 2)) {
         before = head();
-        REC0(s, E_WAIT);
-        rec(s, "WaitCommodity took the head", !queued(port, before));
+        REC0(E_WAIT);
+        rec("WaitCommodity took the head", !queued(port, before));
         if (!queued(port, before))
             removed = before;
-        look(s);
+        look();
         settle();
     } else {
-        rec(s, "WaitCommodity: no messages", 0);
+        rec("WaitCommodity: no messages", 0);
     }
 
     /* SetCxStatus */
-    rec(s, "SetCxStatus 0", cx(s, E_STATUS, 1, 0, 0, 0));
+    rec("SetCxStatus 0", cx(E_STATUS, 1, 0, 0, 0));
     Delay(5);
     drain(port);
     Delay(25);
-    rec(s, "off: no messages", msgcount(port));
-    rec(s, "SetCxStatus 5", cx(s, E_STATUS, 1, 5, 0, 0));
+    rec("off: no messages", msgcount(port));
+    rec("SetCxStatus 5", cx(E_STATUS, 1, 5, 0, 0));
     Delay(10);
-    rec(s, "still off", msgcount(port));
-    rec(s, "SetCxStatus -1", cx(s, E_STATUS, 1, (ULONG)-1, 0, 0));
-    rec(s, "on: messages", waitmsgs(port, 1));
-    rec(s, "SetCxStatus 0 again", cx(s, E_STATUS, 1, 0, 0, 0));
+    rec("still off", msgcount(port));
+    rec("SetCxStatus -1", cx(E_STATUS, 1, (ULONG)-1, 0, 0));
+    rec("on: messages", waitmsgs(port, 1));
+    rec("SetCxStatus 0 again", cx(E_STATUS, 1, 0, 0, 0));
     Delay(5);
     drain(port);
 out:
-    CX0(s, E_FINIT);
-    rec(s, "broker gone", brokercommand(bname, CXCMD_ENABLE) != 0);
+    CX0(E_FINIT);
+    rec("broker gone", brokercommand(bname, CXCMD_ENABLE) != 0);
 }
 
 /* ------------------------------------------------------------ main */
@@ -350,38 +342,47 @@ static const char *names[] = { LIBNAME, NULL };
 
 int main(int argc, char **argv)
 {
-    char buf[200], cbuf[80];
-    int s, i, n;
-
     if (argc < 2) {
         printf("usage: ricommoditieslib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("MakeCommodity", d4-d7|a2|a3);
+    KEEPS("SetHotKey", d2-d7|a2|a3);
+    KEEPS("HotKeyHit", d1-d7|a1-a3);
+    KEEPS("WaitCommodity", d1-d7|a2|a3);
+    KEEPS("CommodityEvent", d1-d7|a2|a3);
+    KEEPS("ExchangeMessage", d1-d7|a1-a3);
+    KEEPS("ExchangeDisable", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeEnable", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeAppear", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeDisAppear", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeKill", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeListChange", d1-d7|a0-a3|a6);
+    KEEPS("ExchangeUnique", d1-d7|a0-a3|a6);
+    KEEPS("CxDisable", d1-d7|a0-a3|a6);
+    KEEPS("CxEnable", d1-d7|a0-a3|a6);
+    KEEPS("CxAppear", d1-d7|a0-a3|a6);
+    KEEPS("CxDisAppear", d1-d7|a0-a3|a6);
+    KEEPS("CxKill", d1-d7|a0-a3|a6);
+    KEEPS("CxListChange", d1-d7|a0-a3|a6);
+    KEEPS("CxUnique", d1-d7|a0-a3|a6);
+    KEEPS("SetCxStatus", d2-d7|a2|a3);
+    KEEPS("CommodityMsgPort", d1-d7|a0-a3|a6);
+    KEEPS("finit", d2-d7|a2|a3);
+    KEEPS("init", d2-d7|a2|a3);
     CxBase = OpenLibrary((STRPTR)"commodities.library", 37);
     if (!CxBase) {
         check("commodities.library V37", FALSE);
         return 20;
     }
-    for (s = 0; s < 2; s++)
-        scenario(s);
+    scenario();
     CloseLibrary(CxBase);
 
-    check("same number of results", tape_same("results", nv[0], nv[1]) && nv[1] <= MAXV);
-    n = nv[0] < nv[1] ? nv[0] : nv[1];
-    for (i = 0; i < n && i < MAXV; i++) {
-        snprintf(buf, sizeof buf, "#%d %s: orig $%08lX, C $%08lX", i, vname[0][i],
-                 val[0][i], val[1][i]);
-        check(buf, tape_same(buf, val[0][i], val[1][i])
-                   & tape_strsame(buf, vname[0][i], vname[1][i]));
-    }
-    check("same number of calls", tape_same("calls", nc[0], nc[1]) && nc[1] <= MAXC);
-    n = nc[0] < nc[1] ? nc[0] : nc[1];
-    for (i = 0; i < n && i < MAXC; i++) {
-        snprintf(cbuf, sizeof cbuf, "call #%d %s", i, cname[0][i]);
-        cmp_preserve(cbuf, &calls[0][i], &calls[1][i]);
-    }
+    OBS("results", nv);
+    OBS("calls", nc);
     printf("ricommoditieslib: %d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }
