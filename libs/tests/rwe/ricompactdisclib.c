@@ -9,7 +9,7 @@
  *
  * There is no CD drive in the emulator: the commands talk to a device of
  * this test, "rwecd.device" (OpenCD "rwecd.device",unit[,scsiflag]), that
- * plays a CD with 9 or 50 tracks: it answers CD_INFO (the Status word),
+ * plays a CD with 9, 50 or 20 tracks: it answers CD_INFO (the Status word),
  * CD_TOCMSF (summary and track entries, entries behind the last track
  * filled with $EE), CD_QCODEMSF (a changing position), HD_SCSICMD (READ
  * TOC: the header of the TOC data) and accepts every other command; it
