@@ -136,12 +136,15 @@ static void fail(const char *what, ULONG o, ULONG c)
         printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
 }
 
-/* same value on both sets */
+/* same value on both sets; every value of this program is a number (a
+   result, a flag, an offset), so the tape takes it as it is (tape_val):
+   the range test of tape_obs would write a result that falls into the
+   test program's memory as PROG, depending on the layout */
 #define SAME(what, expr) do {                                               \
         ULONG v_[2];                                                        \
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
         checks++;                                                           \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
+        v_[0] = tape_val((what), v_[0], v_[1]);                         \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]);                       \
     } while (0)
 

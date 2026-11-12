@@ -12,7 +12,7 @@ seg 8 92f92133
 seg 9 958014ef
 seg 10 33f2e9c0
 seg 11 e5f8deff
-seg 12 34854d17
+seg 12 c1b620ba
 k 13540/7ffc
 seg 13 3662d0da
 seg 14 802f48cb
@@ -42,11 +42,11 @@ seg 35 7a8e0f63
 seg 36 e711c7b9
 k 6075/7ffd 3/7ffc
 seg 37 82e4eaf6
-seg 38 42de408b
+seg 38 2c5ae249
 seg 39 8ddf5a32
 seg 40 ae5a47c5
 seg 41 0f41bd83
-seg 42 1e8883de
+seg 42 658ea1a0
 seg 43 e7a2bf09
 seg 44 e5edc915
 seg 45 dd91e074

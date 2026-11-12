@@ -47,7 +47,10 @@ static void sameimg(void)
         ULONG v[2] = { *(ULONG *)(img[0] + o), *(ULONG *)(img[1] + o) };
         if (o % 16 == 0 && o < 16 * 19)
             v[0] -= (ULONG)img[0], v[1] -= (ULONG)img[1];
-        v[0] = tape_obs("table", v[0], v[1]);
+        /* the pointers are offsets now and the rest data words: numbers,
+           which the range test of tape_obs would write as PROG where
+           they fall into the test program's memory */
+        v[0] = tape_val("table", v[0], v[1]);
         if (v[0] != v[1])
             fail("table", v[0], v[1]);
         else
