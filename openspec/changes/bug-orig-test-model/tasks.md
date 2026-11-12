@@ -16,8 +16,8 @@ deliberately broken input.
 
 ## 3. Compare-only record test and recording target
 
-- [ ] 3.1 Replace the environment variable `BUGORIG_RECORD=1` by the pass key `record=check` (compare, no file written) in `tests/corpus/runner/cmd_pass.cpp`/`corpus.h`; `tests/bug-orig/CMakeLists.txt` passes it for `bug_orig_record_ID` (Blitz, `:315-319`). Verify: `ctest --preset originals -R bug_orig_record_` leaves `git status` clean; a ctest on a fake test with a changed `.orig` fails naming the line (`bug_orig_record_changed`, label `originals`) and a host test proves that the mode opens no file for writing.
-- [ ] 3.2 The same for the TED tests (`tests/ted-ab/runner/run.c`, `tests/bug-orig/CMakeLists.txt:558-564`). Verify: as 3.1.
+- [x] 3.1 Replace the environment variable `BUGORIG_RECORD=1` by the pass key `record=check` (compare, no file written) in `tests/corpus/runner/cmd_pass.cpp`/`corpus.h`; `tests/bug-orig/CMakeLists.txt` passes it for `bug_orig_record_ID` (Blitz, `:315-319`). Verify: `ctest --preset originals -R bug_orig_record_` leaves `git status` clean; a ctest on a fake test with a changed `.orig` fails naming the line (`bug_orig_record_changed`, label `originals`) and a host test proves that the mode opens no file for writing.
+- [x] 3.2 The same for the TED tests (`tests/ted-ab/runner/run.c`, `tests/bug-orig/CMakeLists.txt:558-564`). Verify: as 3.1.
 - [ ] 3.3 Add the target `bug-orig-record` for Blitz tests: key `record=write`, two runs of `ref` (the second with `inject.c` `pad`), the acceptance of 1.3, `FILTER=ID`. Verify: `cmake --build --preset amiga --target bug-orig-record` with `FILTER` on two tests leaves their files byte-identical to main and the other files untouched; a fake run with a differing second run prints "test not deterministic" and writes nothing (ctest on the accept step with fake files).
 - [ ] 3.4 Check whether `tedab` can vary the layout of the `ref` run (for example `BB2:` mounted or not, the `pad` of the stub); extend `bug-orig-record` to TED tests, with the layout variation where possible, otherwise two identical runs and the limit stated in the docs. Verify: `FILTER` on one TED test reproduces its file.
 
