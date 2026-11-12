@@ -4,7 +4,7 @@
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
 #         [-DUSERLIBS=OBJ|ORIG;...] [-DLIBSET=obj|orig]
 #         [-DLIBS_PAD=N] [-DEXPECTED=DIR -DRESULTS=results [-DCAPTURE_CORRUPT=NAME]]
-#         [-DOBJ_VARIANTS=FILE;...] -P emulator.cmake
+#         [-DOBJ_VARIANTS=FILE;...] [-DCAP_DUMP=KEY|BLOCK:N] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
@@ -21,6 +21,12 @@
 # (libs/tests/expected): the cases are compared with it by RESULTS
 # libs-compare --set LIBSET; with FILTER only the programs that wrote
 # cases, else all.
+# CAP_DUMP, or the environment variable LIBS_CAP_DUMP (e.g.
+# LIBS_CAP_DUMP=BLOCK:294 ctest -R libs_emulator): the shell variable
+# LIBS_CAP_DUMP of the run (capture.h); the program that writes the bytes
+# case of that key or that block writes its bytes or the block's
+# observation lines to TEST:captures/NAME.dump (WORK/test/captures), whose
+# path and first lines are shown; the run fails if no program wrote one.
 # CAPTURE_CORRUPT: the last digit of the 8-digit hex number in the value of
 # the run's first case of NAME changed before the compare, the test of the check.
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
@@ -103,6 +109,14 @@ if(LIBSET)
 endif()
 if(LIBS_PAD)
 	string(APPEND vars_cmd "Set LIBS_PAD ${LIBS_PAD}\n")
+endif()
+if(NOT DEFINED CAP_DUMP AND DEFINED ENV{LIBS_CAP_DUMP})
+	set(CAP_DUMP "$ENV{LIBS_CAP_DUMP}")
+endif()
+if(CAP_DUMP)
+	# a key holds | $ spaces: quoted, with AmigaDOS's escape * before * " $
+	string(REGEX REPLACE "([*\"$])" "*\\1" v "${CAP_DUMP}")
+	string(APPEND vars_cmd "Set LIBS_CAP_DUMP \"${v}\"\n")
 endif()
 
 set(args "")
@@ -232,8 +246,27 @@ if(EXPECTED)
 	endif()
 endif()
 
+# the dump of CAP_DUMP
+set(dump_failed "")
+if(CAP_DUMP)
+	file(GLOB dumps ${test}/captures/*.dump)
+	if(NOT dumps)
+		set(dump_failed "LIBS_CAP_DUMP ${CAP_DUMP}: no program wrote a dump (no bytes case or block of that key)")
+	endif()
+	foreach(d IN LISTS dumps)
+		file(STRINGS ${d} lines LIMIT_COUNT 40)
+		list(LENGTH lines n)
+		list(JOIN lines "\n" lines)
+		message("libs_emulator: the dump of ${CAP_DUMP}: ${d} (the first ${n} lines)\n${lines}")
+	endforeach()
+endif()
+
 if(watch_failed)
 	message(FATAL_ERROR "libs_emulator: ${watch_failed}")
+endif()
+if(dump_failed)
+	message("libs_emulator: FAIL ${dump_failed}")
+	message(FATAL_ERROR "libs_emulator: no dump of LIBS_CAP_DUMP (above)")
 endif()
 if(compare_failed)
 	message(FATAL_ERROR "libs_emulator: ${compare_failed}")

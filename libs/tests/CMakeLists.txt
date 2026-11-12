@@ -180,6 +180,28 @@ add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"libtest_ldivlib: \\|routine count\\|\\|1: expected \\$00000002, got \\$00000000\n")
+# the dump of one case (emulator.cmake CAP_DUMP, the shell variable
+# LIBS_CAP_DUMP of capture.h): a bytes case of rwe riarrayslib whose key
+# holds |, $ and spaces writes its bytes to the dump, shown by the run; a
+# key no program writes fails the run
+set(dump_key "FillArray|array|form 0 type $0001 size 1 off 5 n 1 value $DE551B45|1")
+string(REGEX REPLACE "([][|$().*+?^\\])" "\\\\\\1" dump_re "${dump_key}")
+foreach(t right wrong)
+	set(key "${dump_key}")
+	set(re "the dump of [^\n]*rwe_riarrayslib\\.dump \\(the first 7 lines\\)\n${dump_re}\tat \\$0000 [0-9A-F]+\n(.*\n)*${dump_re}\tat \\$00C0 [0-9A-F]+\n")
+	if(t STREQUAL "wrong")
+		set(key "FillArray|array|no such vector|1")
+		set(re "FAIL LIBS_CAP_DUMP FillArray\\|array\\|no such vector\\|1: no program wrote a dump")
+	endif()
+	add_test(NAME libs_emulator_dump_${t} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON -DUSERLIBS=${rwe_userlibs}
+		-DLIBSET=obj "-DFILTER=rwe riarrayslib" "-DCAP_DUMP=${key}"
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_dump_${t} -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	set_tests_properties(libs_emulator_dump_${t} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
 # the check of the kept registers with broken input: datalib with thunks
 # that change d2 (lost/datalib.c, a library file of this directory only)
 # in place of the C build's; systest states d2 for both datalib routines
