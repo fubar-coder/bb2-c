@@ -1,0 +1,114 @@
+# capture systest_runtime 1
+memlib init|kept||1	kept
+arrmult|kept|$4 $9|1	kept
+|arrmult d0|$4 $9|1	$00000028
+arrmult|kept|$1 $0|1	kept
+|arrmult d0|$1 $0|1	$00000001
+arrmult|kept|$64 $63|1	kept
+|arrmult d0|$64 $63|1	$00002710
+arrmult|kept|$2 $FFFF|1	kept
+|arrmult d0|$2 $FFFF|1	$00000000
+arrmult|kept|$12345 $3|1	kept
+|arrmult d0|$12345 $3|1	$00048D14
+arrmult|kept|$10000 $7FFF|1	kept
+|arrmult d0|$10000 $7FFF|1	$80000000
+arrmult|kept|$7FFFF $FFFE|1	kept
+|arrmult d0|$7FFFF $FFFE|1	$FFF70007
+arrmult|kept|$FFFFFFFF $1|1	kept
+|arrmult d0|$FFFFFFFF $1|1	$FFFFFFFF
+arrmult|kept|$20000 $40000|1	kept
+|arrmult d0|$20000 $40000|1	$00020000
+arrmult|kept|$ABCD1234 $1FF|1	kept
+|arrmult d0|$ABCD1234 $1FF|1	$9A246957
+arrmult|kept|$0 $5|1	kept
+|arrmult d0|$0 $5|1	$00000000
+arrmult|kept|$12345678 $FFFF0003|1	kept
+|arrmult d0|$12345678 $FFFF0003|1	$48D159E0
+newarr|kept||1	kept
+|newarr d0 = ptr||1	$00000001
+|newarr cleared||1	$00000001
+newarr again|kept||1	kept
+|newarr again cleared||1	$00000001
+|newarr again: old one freed||1	$00000001
+newlocarr|kept||1	kept
+|newlocarr d0 = ptr||1	$00000001
+|newlocarr cleared||1	$00000001
+newlocarr again|kept||1	kept
+|newlocarr again: old one freed||1	$00000001
+|newlocarr: a5 untouched||1	$00000001
+newlist|kept||1	kept
+|newlist hdr 0||1	$00000000
+|newlist hdr 4||1	$00000008
+|newlist hdr 8||1	$00000000
+|newlist hdr 12||1	$00000004
+|newlist hdr 16||1	$00000020
+|newlist hdr 20||1	$00000000
+|newlist hdr 24||1	$0000008C
+|newlist id||1	$6C497354
+|newlist free list||1	$531FF43C
+newlist again|kept||1	kept
+|newlist again: old one freed||1	$00000001
+|newlist again||1	$531FF43C
+newloclist|kept||1	kept
+|newloclist id||1	$6C497354
+|newloclist free list||1	$040F3014
+|newloclist tailpred||1	$0000003E
+setmaxs|kept||1	kept
+|setmaxs slots||1	$00000001
+|setmaxs cleared||1	$00000001
+allocst|kept||1	kept
+|allocst length||1	$0000000B
+|allocst text||1	$00000001
+freest|kept||1	kept
+|freest: freed||1	$00000001
+allocst 0|kept||1	kept
+|allocst 0 d0||1	$00000000
+|allocst 0: nothing allocated||1	$00000001
+freest 0|kept||1	kept
+|freest 0 d0||1	$00000000
+errtrap init|kept||1	kept
+|errtrap init: TRAP #0 in lib||1	$00000001
+|errtrap newtrap first word||1	$00000817
+dofail (no error)|kept||1	kept
+|dofail d0||1	$00000000
+doreadern|kept||1	kept
+|ern before||1	$00000000
+|SetErr + TRAP #0 caught||1	$00000001
+doreadern|kept||2	kept
+|ern after||1	$00008123
+|SetErr + TRAP #0 caught again||1	$00000001
+doreadern|kept||3	kept
+|ern after 2||1	$00000007
+doclrerr|kept||1	kept
+dosettrap|kept||1	kept
+doclrerr|kept||2	kept
+dogetsp|kept||1	kept
+|dogetsp (same stack depth)||1	prog
+|dogetsp a0||1	$00000001
+doputsp|kept||1	kept
+|doputsp returned||1	$00000001
+errtrap finit|kept||1	kept
+|errtrap finit: TRAP #0 restored||1	$00000001
+rundebug init|kept||1	kept
+|rundebug init: intuition open count +||1	$00000000
+|rundebug init: TRAP #0-#5 in lib||1	$00000001
+|rundebug init: others kept||1	$00000001
+|rundebug handler first word||1	$00000817
+|rundebug handler first word||2	$00004A79
+|rundebug handler first word||3	$00005CAF
+|rundebug handler first word||4	$00004E73
+|rundebug handler first word||5	$000050AF
+|rundebug handler first word||6	$00004E73
+|TRAP #0 handler 2nd word||1	$00000005
+|TRAP #1 (ctrlc 0: skip 8)||1	$00000004
+|TRAP #2 (skip 6)||1	$00000005
+|TRAP #3||1	$00000008
+|TRAP #4 (skip 8)||1	$00000004
+|TRAP #5||1	$00000008
+rundebug finit|kept||1	kept
+|rundebug finit: vectors restored||1	$00000001
+|rundebug finit: intuition open count +||1	$00000000
+memlib finit|kept||1	kept
+|all memory back||1	$00000001
+|number of values||1	$00000048
+|number of calls||1	$00000027

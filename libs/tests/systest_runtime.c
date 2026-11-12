@@ -1,6 +1,8 @@
 /*
- * systest_runtime - functional comparison of the "runtime" group:
- * arrayslib, maxslib, errtraplib, rundebuglib (original vs C build).
+ * systest_runtime - the "runtime" group arrayslib, maxslib, errtraplib,
+ * rundebuglib on the Amiga: one set (the original or the C build, as
+ * LIBSET says), observed as cases (sysload.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/systest_runtime.txt).
  *
  *   systest_runtime DIR
  *
@@ -9,14 +11,16 @@
  * group's libraries.  runerrlib's getvbr ($C31D, used by rundebuglib) is
  * a stub that returns the real VBR.
  *
- * Every scenario runs on both sets; compared are results that do not
- * depend on addresses and the register preservation of every call.
+ * Written are the results that do not depend on addresses and the kept
+ * registers of every call (KEEPS: the set the original keeps in all calls
+ * of the routine).
  *
  * Not run: errtraplib dofail with a pending error and the trap without a
  * SetErr handler (both give the trap to the system's TRAP #0 vector),
  * rundebuglib TRAP #0 (requester + End) - for these only the first
- * instruction words of the handlers are compared.
+ * instruction words of the handlers are written.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/execbase.h>
 #include <intuition/intuitionbase.h>
@@ -91,16 +95,7 @@ static ULONG readvbr(void)
 static int verbose;
 static ULONG gvars[4096], lvars[4096];  /* fake globals (a5) / locals (a4) */
 
-#define MAXC 96
-#define MAXV 192
-
-struct result {                         /* per set */
-    struct call c[MAXC];
-    const char *cname[MAXC];
-    ULONG v[MAXV];
-    const char *vname[MAXV];
-    int nc, nv;
-};
+static int nc, nv;                      /* calls, values */
 
 static BOOL inlib(struct lib *l, ULONG p)
 {
@@ -134,21 +129,24 @@ static ULONG listsig(UBYTE *h)
     return links ? (n << 24) ^ sum : 0xdead0000 | n;
 }
 
-static void run(struct set *s, struct result *res)
+static void run(struct set *s)
 {
     struct lib *l, *mem = getlib(s, "memlib");
-    struct regs r;
+    struct regs r, rin;
     UBYTE *g = (UBYTE *)gvars + 0x2000, *lo = (UBYTE *)lvars + 0x2000;
     ULONG avail0 = AvailMem(MEMF_ANY), a1;
     int i;
 
+    /* one call of the routine `name`: its kept case (key name|kept|VEC) */
 #define CALL(name, fn, setup) do {                                          \
+        ROUT = (name);                                                      \
         markregs(&r); r.a[5] = (ULONG)g; r.a[4] = (ULONG)lo; setup;         \
-        res->c[res->nc].in = r; if (verbose) printf("%s call %s\n", s->what, name); \
-        res->cname[res->nc] = name;                                         \
-        res->c[res->nc].ccr = callregs(fn, &r, 0, 0);                       \
-        res->c[res->nc].out = r; res->nc++; } while (0)
-#define V(name, val) do { if (verbose) printf("%s %s\n", s->what, name); res->vname[res->nv] = name; res->v[res->nv++] = (val); } while (0)
+        rin = r; if (verbose) printf("%s call %s\n", s->what, name);         \
+        callregs(fn, &r, 0, 0);                                             \
+        obs_kept(&rin, &r); nc++; ROUT = ""; } while (0)
+    /* one value: the case |name|VEC */
+#define V(name, val) do { if (verbose) printf("%s %s\n", s->what, name);    \
+        OBS(name, val); nv++; } while (0)
 
     memset(gvars, 0, sizeof gvars);
     memset(lvars, 0, sizeof lvars);
@@ -164,9 +162,11 @@ static void run(struct set *s, struct result *res)
             { 0x12345678, 0xffff0003 },
         };
         for (i = 0; i < (int)(sizeof mul / sizeof mul[0]); i++) {
+            sprintf(VEC, "$%lX $%lX", mul[i][0], mul[i][1]);
             CALL("arrmult", entry_code(l, 2), r.d[0] = mul[i][0]; r.d[1] = mul[i][1]);
             V("arrmult d0", r.d[0]);
         }
+        VEC[0] = 0;
 
         /* newarr: ptr at +4, size at +8; then again (frees the old one) */
         *(ULONG *)(g + 8) = 100;
@@ -273,7 +273,9 @@ static void run(struct set *s, struct result *res)
         CALL("doclrerr", entry_code(l, 2), (void)0);
         CALL("dogetsp", entry_code(l, 3), (void)0);
         sp = r.d[0];
-        V("dogetsp (same stack depth)", sp);
+        /* a stack pointer: prog (the test program's stack) */
+        OBSPTR("dogetsp (same stack depth)", sp, NULL, 0);
+        nv++;
         V("dogetsp a0", r.a[0] == sp);
         CALL("doputsp", entry_code(l, 4), r.d[0] = sp);
         V("doputsp returned", 1);
@@ -327,9 +329,6 @@ static const char *names[] = {
 
 int main(int argc, char **argv)
 {
-    static struct result res[2];
-    int s, i;
-
     if (argc < 2) {
         printf("usage: systest_runtime DIR [trace]\n");
         return 20;
@@ -339,28 +338,38 @@ int main(int argc, char **argv)
     realvbr = readvbr();
     printf("vbr $%08lX\n", realvbr);
     sysload_stubs = stubs;
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++)
-        run(&sets[s], &res[s]);
+    KEEPS("memlib init", d1-d7|a0-a3|a6);
+    KEEPS("arrmult", d3-d7|a0-a3|a6);
+    KEEPS("newarr", d2-d7|a0-a3|a6);
+    KEEPS("newarr again", d2-d7|a0|a2|a3|a6);
+    KEEPS("newlocarr", d2-d7|a0-a3|a6);
+    KEEPS("newlocarr again", d2-d7|a0|a2|a3|a6);
+    KEEPS("newlist", d2-d7|a6);
+    KEEPS("newlist again", d2-d7|a6);
+    KEEPS("newloclist", d2-d7|a6);
+    KEEPS("setmaxs", d2|d5-d7|a0|a1|a3|a6);
+    KEEPS("allocst", d2-d7|a0-a3|a6);
+    KEEPS("freest", d1-d7|a0-a3|a6);
+    KEEPS("allocst 0", d1-d7|a0-a3|a6);
+    KEEPS("freest 0", d0-d7|a0-a3|a6);
+    KEEPS("errtrap init", d3-d7|a1-a3);
+    KEEPS("dofail (no error)", d1-d7|a0-a3|a6);
+    KEEPS("doreadern", d1-d7|a0-a3|a6);
+    KEEPS("doclrerr", d0-d7|a0-a3|a6);
+    KEEPS("dosettrap", d0-d7|a1-a3|a6);
+    KEEPS("dogetsp", d1-d7|a1-a3|a6);
+    KEEPS("doputsp", d0-d7|a1-a3|a6);
+    KEEPS("errtrap finit", d0-d7|a1-a3|a6);
+    KEEPS("rundebug init", d2-d7|a2|a3);
+    KEEPS("rundebug finit", d2-d7|a2|a3);
+    KEEPS("memlib finit", d0-d7|a0-a3|a6);
+    run(&loaded);
 
-    check("number of values", tape_same("number of values", res[0].nv, res[1].nv));
-    check("number of calls", tape_same("number of calls", res[0].nc, res[1].nc));
-    for (i = 0; i < res[0].nv && i < res[1].nv; i++) {
-        char buf[120];
-        sprintf(buf, "v%d %s: orig $%08lX, C $%08lX", i, res[0].vname[i],
-                res[0].v[i], res[1].v[i]);
-        check(buf, tape_same(buf, res[0].v[i], res[1].v[i]));
-    }
-    for (i = 0; i < res[0].nc && i < res[1].nc; i++) {
-        char buf[80];
-        sprintf(buf, "call %d %s", i, res[0].cname[i]);
-        cmp_preserve(buf, &res[0].c[i], &res[1].c[i]);
-    }
-
-    printf("%d checks, %d failures (%d values, %d calls)\n", checks, failures,
-           res[0].nv, res[0].nc);
-    for (i = 0; i < res[0].nv; i++)
-        printf("  v%-3d $%08lX %s\n", i, res[0].v[i], res[0].vname[i]);
+    OBS("number of values", nv);
+    OBS("number of calls", nc);
+    printf("%d checks, %d failures (%d values, %d calls)\n", checks, failures, nv, nc);
+    kept_summary();
     return failures ? 5 : 0;
 }

@@ -655,7 +655,8 @@ conversion touches only the program, its expected file and its tape (and
    libs/tests/tapes/NAME.tape`; nothing in `libs_tests.cpp` or
    `CMakeLists.txt` (the program's first `load_set` opens its cases).
    Tests that need a particular tape move when it goes:
-   `libs_emulator_tape_wrong` corrupts `systest_runtime.tape`,
+   `libs_emulator_tape_wrong` corrupts `rwe_rizonejoylib.tape` (filter
+   `rwe rizonejoylib`, with `USERLIBS`),
    `libs_tapes_compare_wrong` the first two tapes in name order
    (`rwe_bb_blitlib`, `rwe_blitzbomberslibtwo`).
 

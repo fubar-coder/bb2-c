@@ -175,13 +175,13 @@ set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
 math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
-	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
-	-DTAPE_CORRUPT=systest_runtime -DFILTER=[runtime]
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DUSERLIBS=${rwe_userlibs} -DTAPE=replay -DTAPES=${tapes}
+	-DTAPE_CORRUPT=rwe_rizonejoylib "-DFILTER=rwe rizonejoylib"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_tape_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator_tape_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL tape systest_runtime: observations 0\\.\\.[0-9]+ differ from the original's recording")
+	"FAIL tape rwe_rizonejoylib: observations 0\\.\\.[0-9]+ differ from the original's recording")
 add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
 	-DRECORDED=${tapes} -DCOMMITTED=${tapes} -P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
 add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
