@@ -1,0 +1,211 @@
+# capture rwe_popupwinlib 1
+init|kept||1	kept
+init|popped||1	$00000000
+PopUpWindow|kept|three levels|1	kept
+PopUpWindow|popped|three levels|1	$00000000
+PopUpWindow|d0 0 (BUG(orig) #471)|three levels|1	$00000001
+PopUpWindow|the whole script|three levels|1	$00000001
+PopUpWindow|waits|three levels|1	$00000012
+PopUpWindow|wait 0 windows|three levels|1	$00000001
+PopUpWindow|wait 0 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 0 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 0 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 0 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 0 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 1 windows|three levels|1	$00000001
+PopUpWindow|wait 1 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 1 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 1 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 1 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 1 window 0 contents|three levels|1	$096E15AC
+PopUpWindow|wait 2 windows|three levels|1	$00000001
+PopUpWindow|wait 2 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 2 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 2 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 2 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 2 window 0 contents|three levels|1	$C1DC2C1E
+PopUpWindow|wait 3 windows|three levels|1	$00000001
+PopUpWindow|wait 3 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 3 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 3 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 3 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 3 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 4 windows|three levels|1	$00000001
+PopUpWindow|wait 4 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 4 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 4 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 4 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 4 window 0 contents|three levels|1	$C1DC2C1E
+PopUpWindow|wait 5 windows|three levels|1	$00000001
+PopUpWindow|wait 5 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 5 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 5 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 5 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 5 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 6 windows|three levels|1	$00000001
+PopUpWindow|wait 6 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 6 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 6 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 6 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 6 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 7 windows|three levels|1	$00000001
+PopUpWindow|wait 7 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 7 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 7 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 7 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 7 window 0 contents|three levels|1	$096E15AC
+PopUpWindow|wait 8 windows|three levels|1	$00000002
+PopUpWindow|wait 8 CIA-A PRA bit 1|three levels|1	$00000000
+PopUpWindow|wait 8 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 8 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 8 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 8 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 8 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 8 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 8 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 8 window 1 contents|three levels|1	$AB9B8074
+PopUpWindow|wait 9 windows|three levels|1	$00000002
+PopUpWindow|wait 9 CIA-A PRA bit 1|three levels|1	$00000000
+PopUpWindow|wait 9 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 9 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 9 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 9 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 9 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 9 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 9 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 9 window 1 contents|three levels|1	$4D02F8E4
+PopUpWindow|wait 10 windows|three levels|1	$00000001
+PopUpWindow|wait 10 CIA-A PRA bit 1|three levels|1	$00000000
+PopUpWindow|wait 10 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 10 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 10 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 10 window 0 contents|three levels|1	$C1BBBDD0
+PopUpWindow|wait 11 windows|three levels|1	$00000002
+PopUpWindow|wait 11 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 11 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 11 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 11 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 11 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 11 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 11 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 11 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 11 window 1 contents|three levels|1	$AB9B8074
+PopUpWindow|wait 12 windows|three levels|1	$00000002
+PopUpWindow|wait 12 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 12 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 12 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 12 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 12 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 12 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 12 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 12 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 12 window 1 contents|three levels|1	$AB9B8074
+PopUpWindow|wait 13 windows|three levels|1	$00000003
+PopUpWindow|wait 13 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 13 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 13 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 13 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 13 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 13 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 13 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 13 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 13 window 1 contents|three levels|1	$67E3763E
+PopUpWindow|wait 13 window 2 position|three levels|1	$0060002E
+PopUpWindow|wait 13 window 2 size|three levels|1	$00340020
+PopUpWindow|wait 13 window 2 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 13 window 2 contents|three levels|1	$1929D499
+PopUpWindow|wait 14 windows|three levels|1	$00000003
+PopUpWindow|wait 14 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 14 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 14 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 14 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 14 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 14 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 14 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 14 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 14 window 1 contents|three levels|1	$67E3763E
+PopUpWindow|wait 14 window 2 position|three levels|1	$0060002E
+PopUpWindow|wait 14 window 2 size|three levels|1	$00340020
+PopUpWindow|wait 14 window 2 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 14 window 2 contents|three levels|1	$8B6EE6E3
+PopUpWindow|wait 15 windows|three levels|1	$00000002
+PopUpWindow|wait 15 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 15 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 15 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 15 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 15 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 15 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 15 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 15 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 15 window 1 contents|three levels|1	$AB9B8074
+PopUpWindow|wait 16 windows|three levels|1	$00000002
+PopUpWindow|wait 16 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 16 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 16 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 16 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 16 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 16 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 16 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 16 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 16 window 1 contents|three levels|1	$AB9B8074
+PopUpWindow|wait 17 windows|three levels|1	$00000002
+PopUpWindow|wait 17 CIA-A PRA bit 1|three levels|1	$00000002
+PopUpWindow|wait 17 window 0 position|three levels|1	$00000000
+PopUpWindow|wait 17 window 0 size|three levels|1	$002C0040
+PopUpWindow|wait 17 window 0 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 17 window 0 contents|three levels|1	$153270F0
+PopUpWindow|wait 17 window 1 position|three levels|1	$002C0020
+PopUpWindow|wait 17 window 1 size|three levels|1	$00340020
+PopUpWindow|wait 17 window 1 IDCMP|three levels|1	$00080218
+PopUpWindow|wait 17 window 1 contents|three levels|1	$4D02F8E4
+PopUpWindow|the menu levels opened|three levels|1	$00000001
+PopUpWindow|no popup window left|three levels|1	$00000001
+PopUpWindow|kept|a button without an item|1	kept
+PopUpWindow|popped|a button without an item|1	$00000000
+PopUpWindow|d0 0 (BUG(orig) #471)|a button without an item|1	$00000001
+PopUpWindow|the whole script|a button without an item|1	$00000001
+PopUpWindow|waits|a button without an item|1	$00000003
+PopUpWindow|wait 0 windows|a button without an item|1	$00000001
+PopUpWindow|wait 0 CIA-A PRA bit 1|a button without an item|1	$00000002
+PopUpWindow|wait 0 window 0 position|a button without an item|1	$00000000
+PopUpWindow|wait 0 window 0 size|a button without an item|1	$002C0040
+PopUpWindow|wait 0 window 0 IDCMP|a button without an item|1	$00080218
+PopUpWindow|wait 0 window 0 contents|a button without an item|1	$C1BBBDD0
+PopUpWindow|wait 1 windows|a button without an item|1	$00000001
+PopUpWindow|wait 1 CIA-A PRA bit 1|a button without an item|1	$00000002
+PopUpWindow|wait 1 window 0 position|a button without an item|1	$00000000
+PopUpWindow|wait 1 window 0 size|a button without an item|1	$002C0040
+PopUpWindow|wait 1 window 0 IDCMP|a button without an item|1	$00080218
+PopUpWindow|wait 1 window 0 contents|a button without an item|1	$096E15AC
+PopUpWindow|wait 2 windows|a button without an item|1	$00000001
+PopUpWindow|wait 2 CIA-A PRA bit 1|a button without an item|1	$00000002
+PopUpWindow|wait 2 window 0 position|a button without an item|1	$00000000
+PopUpWindow|wait 2 window 0 size|a button without an item|1	$002C0040
+PopUpWindow|wait 2 window 0 IDCMP|a button without an item|1	$00080218
+PopUpWindow|wait 2 window 0 contents|a button without an item|1	$C1BBBDD0
+PopUpWindow|the menu levels opened|a button without an item|1	$00000001
+PopUpWindow|no popup window left|a button without an item|1	$00000001
+PopUpInit|kept|a button without an item|1	kept
+PopUpInit|popped|a button without an item|1	$00000000
+PopUpWindow|kept|starting with a separator, a new port|1	kept
+PopUpWindow|popped|starting with a separator, a new port|1	$00000000
+PopUpWindow|d0 0 (BUG(orig) #471)|starting with a separator, a new port|1	$00000001
+PopUpWindow|the whole script|starting with a separator, a new port|1	$00000001
+PopUpWindow|waits|starting with a separator, a new port|1	$00000002
+PopUpWindow|wait 0 windows|starting with a separator, a new port|1	$00000001
+PopUpWindow|wait 0 CIA-A PRA bit 1|starting with a separator, a new port|1	$00000000
+PopUpWindow|wait 0 window 0 position|starting with a separator, a new port|1	$00000000
+PopUpWindow|wait 0 window 0 size|starting with a separator, a new port|1	$001C0024
+PopUpWindow|wait 0 window 0 IDCMP|starting with a separator, a new port|1	$00080218
+PopUpWindow|wait 0 window 0 contents|starting with a separator, a new port|1	$4C127B42
+PopUpWindow|wait 1 windows|starting with a separator, a new port|1	$00000001
+PopUpWindow|wait 1 CIA-A PRA bit 1|starting with a separator, a new port|1	$00000000
+PopUpWindow|wait 1 window 0 position|starting with a separator, a new port|1	$00000000
+PopUpWindow|wait 1 window 0 size|starting with a separator, a new port|1	$001C0024
+PopUpWindow|wait 1 window 0 IDCMP|starting with a separator, a new port|1	$00080218
+PopUpWindow|wait 1 window 0 contents|starting with a separator, a new port|1	$773F8816
+PopUpWindow|the menu levels opened|starting with a separator, a new port|1	$00000001
+PopUpWindow|no popup window left|starting with a separator, a new port|1	$00000001
+PopUpWindow|a new port|starting with a separator, a new port|1	$00000001
+finit|kept||1	kept
+finit|popped||1	$00000000

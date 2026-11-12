@@ -1,8 +1,9 @@
 /*
- * rwe popupwinlib - the C build of popupwinlib (userlib 16) against the
+ * rwe popupwinlib - the C build of popupwinlib (userlib 16) or the
  * reference build of rwelibsrc/popuplib/popupwinlib.bb
- * (ref/popupwinlib.obj, see libs/userlibs/rwe/refbuild.cmake), method of
- * rwecmp.h.
+ * (ref/popupwinlib.obj, see libs/userlibs/rwe/refbuild.cmake), one set as
+ * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/rwe_popupwinlib.txt).
  *
  *   popupwinlib DIR     (DIR with popupwinlib .obj/.orig)
  *
@@ -13,14 +14,14 @@
  * (the library takes the position from there, not from the messages)
  * and puts the script's IntuiMessage (MOUSEMOVE, MOUSEBUTTONS,
  * INACTIVEWINDOW) into the port.  The windows open on the Workbench
- * screen at 0,0 (the screen object of each set is the Workbench screen)
+ * screen at 0,0 (the screen object is the Workbench screen)
  * and are all closed by the library before PopUpWindow returns.
- * Compared per snapshot: the popup windows (position, size, IDCMP) and
+ * Observed per snapshot: the popup windows (position, size, IDCMP) and
  * their contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA
  * relative to the start (BUG(orig) #468: toggled by a menu with sub menus);
  * the number of waits and menu levels, d0 (BUG(orig) #471: always 0), the
- * kept registers, no memory lost after the first popup (the first
- * windows leave memory in the system's caches, differently per set).
+ * kept registers; checked: no memory lost after the first popup (the
+ * first windows leave memory in the system's caches).
  * Covered: init; PopUpWindow with three levels: highlighting items, a
  * separator, the mouse outside all windows, an INACTIVEWINDOW message,
  * a sub menu opened by moving onto its item, back to the parent (closes
@@ -32,6 +33,7 @@
  * Not covered: a failed AllocVec or OpenWindow (BUG(orig) #467: not
  * checked), real mouse input.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/execbase.h>
@@ -51,7 +53,7 @@ enum { E_INIT, E_POPUP };
 #define LVO_WaitPort (-384)
 
 static struct Screen *scr;
-static ULONG scrobj[2][2];              /* screenslib objects: +0 the screen */
+static ULONG scrobj[2];                 /* screenslib objects: +0 the screen */
 static struct Task *me;
 static struct MsgPort *replyport;
 static APTR old_waitport;
@@ -65,16 +67,16 @@ static UBYTE items[16][24];
 struct ev { ULONG cls; int level; WORD x, y; };
 #define MAXEV 24
 static struct ev script[MAXEV];
-static int nscript, nev[2];
+static int nscript, nev;
 static struct IntuiMessage msgs[MAXEV];
-static struct MsgPort *port[2];         /* the library's port */
+static struct MsgPort *port;            /* the library's port */
 
 /* the snapshots */
 #define MAXWIN 3
 struct snap { WORD l, t, w, h; ULONG idcmp, hash; };
-static struct snap snaps[2][MAXEV][MAXWIN];
-static int nwins[2][MAXEV];
-static UBYTE cia0[2], cia[2][MAXEV];
+static struct snap snaps[MAXEV][MAXWIN];
+static int nwins[MAXEV];
+static UBYTE cia0, cia[MAXEV];
 static struct RastPort trp;
 static struct BitMap *tbm;
 
@@ -139,17 +141,17 @@ static struct Message *hook_waitport(struct MsgPort *p __asm("a0"))
         struct Window *w[MAXWIN];
         struct IntuiMessage *m;
         struct ev e = { IDCMP_MOUSEBUTTONS, -1, 600, 250 };     /* the end */
-        int n, k = nev[cur]++, i, sx, sy;
+        int n, k = nev++, i, sx, sy;
 
         while (GetMsg(replyport))
             ;
-        port[cur] = p;
+        port = p;
         n = popups(p, w);
         if (k < MAXEV) {
-            nwins[cur][k] = n;
-            cia[cur][k] = (CIAAPRA & 2) ^ cia0[cur];
+            nwins[k] = n;
+            cia[k] = (CIAAPRA & 2) ^ cia0;
             for (i = 0; i < n; i++) {
-                struct snap *s = &snaps[cur][k][i];
+                struct snap *s = &snaps[k][i];
                 s->l = w[i]->LeftEdge;
                 s->t = w[i]->TopEdge;
                 s->w = w[i]->Width;
@@ -201,50 +203,49 @@ static void ev(ULONG cls, int level, int x, int y)
 
 static void popup(const char *what, int first, int levels)
 {
-    int k, i, most[2] = { 0, 0 };
+    int k, i, most = 0;
 
     ROUT = "PopUpWindow";
     strcpy(VEC, what);
     script_on = 1;
-    DO2(ENT(LIB, E_POPUP, 0),
-        nev[cur] = 0; cia0[cur] = CIAAPRA & 2;
-        R[cur].d[0] = MARK(0); R[cur].d[1] = (ULONG)items[first];
-        R[cur].a[0] = (ULONG)scrobj[cur]);
+    DO1(ENT(LIB, E_POPUP, 0),
+        nev = 0; cia0 = CIAAPRA & 2;
+        R.d[0] = MARK(0); R.d[1] = (ULONG)items[first];
+        R.a[0] = (ULONG)scrobj);
     script_on = 0;
     while (GetMsg(replyport))
         ;
-    BOTH("d0 0 (BUG(orig) #471)", R[cur].d[0] == 0);
-    BOTH("the whole script", nev[cur] == nscript);
-    SAME("waits", nev[cur]);
-    for (k = 0; k < nev[0] && k < nev[1] && k < MAXEV; k++) {
+    BOTH("d0 0 (BUG(orig) #471)", R.d[0] == 0);
+    BOTH("the whole script", nev == nscript);
+    OBS("waits", nev);
+    for (k = 0; k < nev && k < MAXEV; k++) {
         char w[160];
-        for (cur = 0; cur < 2; cur++)
-            if (nwins[cur][k] > most[cur])
-                most[cur] = nwins[cur][k];
+        if (nwins[k] > most)
+            most = nwins[k];
         snprintf(w, sizeof w, "wait %d windows", k);
-        SAME(w, nwins[cur][k]);
+        OBS(w, nwins[k]);
         snprintf(w, sizeof w, "wait %d CIA-A PRA bit 1", k);
-        SAME(w, cia[cur][k]);
-        for (i = 0; i < nwins[0][k] && i < nwins[1][k]; i++) {
-            struct snap *s[2] = { &snaps[0][k][i], &snaps[1][k][i] };
+        OBS(w, cia[k]);
+        for (i = 0; i < nwins[k]; i++) {
+            struct snap *s = &snaps[k][i];
             snprintf(w, sizeof w, "wait %d window %d position", k, i);
-            SAME(w, (ULONG)(UWORD)s[cur]->l << 16 | (UWORD)s[cur]->t);
+            OBS(w, (ULONG)(UWORD)s->l << 16 | (UWORD)s->t);
             snprintf(w, sizeof w, "wait %d window %d size", k, i);
-            SAME(w, (ULONG)(UWORD)s[cur]->w << 16 | (UWORD)s[cur]->h);
+            OBS(w, (ULONG)(UWORD)s->w << 16 | (UWORD)s->h);
             snprintf(w, sizeof w, "wait %d window %d IDCMP", k, i);
-            SAME(w, s[cur]->idcmp);
+            OBS(w, s->idcmp);
             snprintf(w, sizeof w, "wait %d window %d contents", k, i);
-            SAME(w, s[cur]->hash);
+            OBS(w, s->hash);
         }
     }
-    BOTH("the menu levels opened", most[cur] == levels);
-    BOTH("no popup window left", popups(port[cur], (struct Window *[MAXWIN]){ 0 }) == 0);
+    BOTH("the menu levels opened", most == levels);
+    BOTH("no popup window left", popups(port, (struct Window *[MAXWIN]){ 0 }) == 0);
 }
 
 /* the code of a library's init (header +22) or finit (+28) nullsub */
 static APTR nullsub(int off)
 {
-    struct lib *l = getlib(&sets[cur], LIB);
+    struct lib *l = getlib(&loaded, LIB);
     UBYTE *p = (UBYTE *)L(l->code + off);
     p += 6;
     while (W(p))
@@ -255,7 +256,7 @@ static APTR nullsub(int off)
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
-    struct MsgPort *oldport[2];
+    struct MsgPort *oldport;
     ULONG avail;
     LONG ports;
     int s, ih, y0, yA, yB, ySep, yC;
@@ -264,8 +265,12 @@ int main(int argc, char **argv)
         printf("usage: popupwinlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("PopUpWindow", a3|a6);
+    KEEPS("PopUpInit", d2-d7|a2|a3);
+    KEEPS("finit", d2-d7|a2|a3);
     pugfx = OpenLibrary((STRPTR)"graphics.library", 39);
     scr = LockPubScreen(NULL);
     replyport = CreateMsgPort();
@@ -281,8 +286,7 @@ int main(int argc, char **argv)
     }
     InitRastPort(&trp);
     trp.BitMap = tbm;
-    for (s = 0; s < 2; s++)
-        scrobj[s][0] = (ULONG)scr;
+    scrobj[0] = (ULONG)scr;
     me = FindTask(NULL);
     Forbid();
     old_waitport = SetFunction((struct Library *)SysBase, LVO_WaitPort, (APTR)hook_waitport);
@@ -290,7 +294,7 @@ int main(int argc, char **argv)
 
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(nullsub(22), (void)0);
+    DO1(nullsub(22), (void)0);
 
     /* the menus: 0 Open, 1 Save, 2 ---, 3 More >, 4 Quit;
        5 Sub 1, 6 Sub 2 >; 7 Deep, 8 Deeper */
@@ -330,7 +334,7 @@ int main(int argc, char **argv)
     ev(IDCMP_MOUSEBUTTONS, 1, 10, y0);  /* chosen: all closed */
     popup("three levels", 0, 3);
     /* the memory from here on: the first windows leave memory in the
-       system's caches (layers' ClipRects ...), differently for each set */
+       system's caches (layers' ClipRects ...) */
     avail = AvailMem(MEMF_ANY);
     rwe_memothers = TRUE;
     rwe_mem_start();
@@ -342,10 +346,9 @@ int main(int argc, char **argv)
     popup("a button without an item", 0, 1);
 
     /* PopUpInit: a new port; the old one stays */
-    for (s = 0; s < 2; s++)
-        oldport[s] = port[s];
+    oldport = port;
     ROUT = "PopUpInit";
-    DO2(ENT(LIB, E_INIT, 0), R[cur].d[0] = MARK(0));
+    DO1(ENT(LIB, E_INIT, 0), R.d[0] = MARK(0));
     item(9, 10, NULL, -1);
     item(10, 11, "One", -1);
     item(11, -1, "Two", -1);
@@ -353,22 +356,21 @@ int main(int argc, char **argv)
     ev(IDCMP_MOUSEMOVE, 0, 10, 2 + 4 + ih / 2);         /* One */
     ev(IDCMP_MOUSEBUTTONS, 0, 10, 2 + 4 + ih / 2);
     popup("starting with a separator, a new port", 9, 1);
-    BOTH("a new port", port[cur] != oldport[cur]);
+    BOTH("a new port", port != oldport);
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(nullsub(28), (void)0);
-    for (s = 0; s < 2; s++)
-        DeleteMsgPort(oldport[s]);      /* BUG(orig) (#470): left by PopUpInit */
+    DO1(nullsub(28), (void)0);
+    DeleteMsgPort(oldport);             /* BUG(orig) (#470): left by PopUpInit */
 
     Forbid();
     SetFunction((struct Library *)SysBase, LVO_WaitPort, old_waitport);
     Permit();
     /* init's ports are freed now: this task's balance (rwemem.h) is
-       just the two ports of the first init, once input.device has freed
-       what intuition allocated in this task (a few blocks of 36 bytes;
-       wait up to a second) */
-    ports = 2 * (LONG)RWE_MEMSIZE(sizeof(struct MsgPort));
+       just the port of the first init, once input.device has freed what
+       intuition allocated in this task (a few blocks of 36 bytes; wait up
+       to a second) */
+    ports = (LONG)RWE_MEMSIZE(sizeof(struct MsgPort));
     for (s = 0; s < 50 && rwe_membal - rwe_memotherfree != -ports; s++)
         Delay(1);
     {
