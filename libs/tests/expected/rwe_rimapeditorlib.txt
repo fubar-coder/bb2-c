@@ -1,0 +1,2927 @@
+# capture rwe_rimapeditorlib 1
+init|kept||1	kept
+init|popped||1	$00000000
+CreateMap|kept|map 0 10x8 16,16 "level1"|1	kept
+CreateMap|popped|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|a3|map 0 10x8 16,16 "level1"|1	$00000018
+CreateMap|used map|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 0 fields|map 0 10x8 16,16 "level1"|1	bytes 10 000A0008001000100100
+CreateMap|map 0 fields|map 0 10x8 16,16 "level1"|2	bytes 4 00000000
+CreateMap|map 0 fields|map 0 10x8 16,16 "level1"|3	$00000000
+CreateMap|map 0 data set|map 0 10x8 16,16 "level1"|1	$00000001
+CreateMap|map 0 data|map 0 10x8 16,16 "level1"|1	bytes 160 fnv 02187E45
+CreateMap|map 0 name|map 0 10x8 16,16 "level1"|1	$00000001
+CreateMap|map 0 name|map 0 10x8 16,16 "level1"|2	"level1"
+CreateMap|map 0 last address|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 0 rub-through map|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 1 fields|map 0 10x8 16,16 "level1"|1	bytes 10 00000000000000000000
+CreateMap|map 1 fields|map 0 10x8 16,16 "level1"|2	bytes 4 00000000
+CreateMap|map 1 fields|map 0 10x8 16,16 "level1"|3	$00000000
+CreateMap|map 1 data set|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 1 name|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 1 last address|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 1 rub-through map|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 2 fields|map 0 10x8 16,16 "level1"|1	bytes 10 00000000000000000000
+CreateMap|map 2 fields|map 0 10x8 16,16 "level1"|2	bytes 4 00000000
+CreateMap|map 2 fields|map 0 10x8 16,16 "level1"|3	$00000000
+CreateMap|map 2 data set|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 2 name|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 2 last address|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 2 rub-through map|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 3 fields|map 0 10x8 16,16 "level1"|1	bytes 10 00000000000000000000
+CreateMap|map 3 fields|map 0 10x8 16,16 "level1"|2	bytes 4 00000000
+CreateMap|map 3 fields|map 0 10x8 16,16 "level1"|3	$00000000
+CreateMap|map 3 data set|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 3 name|map 0 10x8 16,16 "level1"|1	$00000000
+CreateMap|map 3 last address|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|map 3 rub-through map|map 0 10x8 16,16 "level1"|1	$7FFFFFFF
+CreateMap|kept|map 1 6x5 32,8 ""|1	kept
+CreateMap|popped|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|a3|map 1 6x5 32,8 ""|1	$00000018
+CreateMap|used map|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 0 fields|map 1 6x5 32,8 ""|1	bytes 10 000A0008001000100100
+CreateMap|map 0 fields|map 1 6x5 32,8 ""|2	bytes 4 00000000
+CreateMap|map 0 fields|map 1 6x5 32,8 ""|3	$00000000
+CreateMap|map 0 data set|map 1 6x5 32,8 ""|1	$00000001
+CreateMap|map 0 data|map 1 6x5 32,8 ""|1	bytes 160 fnv 02187E45
+CreateMap|map 0 name|map 1 6x5 32,8 ""|1	$00000001
+CreateMap|map 0 name|map 1 6x5 32,8 ""|2	"level1"
+CreateMap|map 0 last address|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 0 rub-through map|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 1 fields|map 1 6x5 32,8 ""|1	bytes 10 00060005002000080100
+CreateMap|map 1 fields|map 1 6x5 32,8 ""|2	bytes 4 00000000
+CreateMap|map 1 fields|map 1 6x5 32,8 ""|3	$00000000
+CreateMap|map 1 data set|map 1 6x5 32,8 ""|1	$00000001
+CreateMap|map 1 data|map 1 6x5 32,8 ""|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+CreateMap|map 1 name|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 1 last address|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 1 rub-through map|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 2 fields|map 1 6x5 32,8 ""|1	bytes 10 00000000000000000000
+CreateMap|map 2 fields|map 1 6x5 32,8 ""|2	bytes 4 00000000
+CreateMap|map 2 fields|map 1 6x5 32,8 ""|3	$00000000
+CreateMap|map 2 data set|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 2 name|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 2 last address|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 2 rub-through map|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 3 fields|map 1 6x5 32,8 ""|1	bytes 10 00000000000000000000
+CreateMap|map 3 fields|map 1 6x5 32,8 ""|2	bytes 4 00000000
+CreateMap|map 3 fields|map 1 6x5 32,8 ""|3	$00000000
+CreateMap|map 3 data set|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 3 name|map 1 6x5 32,8 ""|1	$00000000
+CreateMap|map 3 last address|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|map 3 rub-through map|map 1 6x5 32,8 ""|1	$7FFFFFFF
+CreateMap|kept|map 2 4x5 1,2 "nothing" AllocMem fails|1	kept
+CreateMap|popped|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|a3|map 2 4x5 1,2 "nothing" AllocMem fails|1	$0000000A
+CreateMap|used map|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 0 fields|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 10 000A0008001000100100
+CreateMap|map 0 fields|map 2 4x5 1,2 "nothing" AllocMem fails|2	bytes 4 00000000
+CreateMap|map 0 fields|map 2 4x5 1,2 "nothing" AllocMem fails|3	$00000000
+CreateMap|map 0 data set|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000001
+CreateMap|map 0 data|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 160 fnv 02187E45
+CreateMap|map 0 name|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000001
+CreateMap|map 0 name|map 2 4x5 1,2 "nothing" AllocMem fails|2	"level1"
+CreateMap|map 0 last address|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 0 rub-through map|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 1 fields|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 10 00060005002000080100
+CreateMap|map 1 fields|map 2 4x5 1,2 "nothing" AllocMem fails|2	bytes 4 00000000
+CreateMap|map 1 fields|map 2 4x5 1,2 "nothing" AllocMem fails|3	$00000000
+CreateMap|map 1 data set|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000001
+CreateMap|map 1 data|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+CreateMap|map 1 name|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 1 last address|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 1 rub-through map|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 2 fields|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 10 00000000000000000100
+CreateMap|map 2 fields|map 2 4x5 1,2 "nothing" AllocMem fails|2	bytes 4 00000000
+CreateMap|map 2 fields|map 2 4x5 1,2 "nothing" AllocMem fails|3	$00000000
+CreateMap|map 2 data set|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 2 name|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 2 last address|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 2 rub-through map|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 3 fields|map 2 4x5 1,2 "nothing" AllocMem fails|1	bytes 10 00000000000000000000
+CreateMap|map 3 fields|map 2 4x5 1,2 "nothing" AllocMem fails|2	bytes 4 00000000
+CreateMap|map 3 fields|map 2 4x5 1,2 "nothing" AllocMem fails|3	$00000000
+CreateMap|map 3 data set|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 3 name|map 2 4x5 1,2 "nothing" AllocMem fails|1	$00000000
+CreateMap|map 3 last address|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|map 3 rub-through map|map 2 4x5 1,2 "nothing" AllocMem fails|1	$7FFFFFFF
+CreateMap|kept|map 3 7x3 8,8 "first"|1	kept
+CreateMap|popped|map 3 7x3 8,8 "first"|1	$00000000
+CreateMap|a3|map 3 7x3 8,8 "first"|1	$00000018
+CreateMap|used map|map 3 7x3 8,8 "first"|1	$00000000
+CreateMap|map 0 fields|map 3 7x3 8,8 "first"|1	bytes 10 000A0008001000100100
+CreateMap|map 0 fields|map 3 7x3 8,8 "first"|2	bytes 4 00000000
+CreateMap|map 0 fields|map 3 7x3 8,8 "first"|3	$00000000
+CreateMap|map 0 data set|map 3 7x3 8,8 "first"|1	$00000001
+CreateMap|map 0 data|map 3 7x3 8,8 "first"|1	bytes 160 fnv 02187E45
+CreateMap|map 0 name|map 3 7x3 8,8 "first"|1	$00000001
+CreateMap|map 0 name|map 3 7x3 8,8 "first"|2	"level1"
+CreateMap|map 0 last address|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 0 rub-through map|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 1 fields|map 3 7x3 8,8 "first"|1	bytes 10 00060005002000080100
+CreateMap|map 1 fields|map 3 7x3 8,8 "first"|2	bytes 4 00000000
+CreateMap|map 1 fields|map 3 7x3 8,8 "first"|3	$00000000
+CreateMap|map 1 data set|map 3 7x3 8,8 "first"|1	$00000001
+CreateMap|map 1 data|map 3 7x3 8,8 "first"|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+CreateMap|map 1 name|map 3 7x3 8,8 "first"|1	$00000000
+CreateMap|map 1 last address|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 1 rub-through map|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 2 fields|map 3 7x3 8,8 "first"|1	bytes 10 00000000000000000100
+CreateMap|map 2 fields|map 3 7x3 8,8 "first"|2	bytes 4 00000000
+CreateMap|map 2 fields|map 3 7x3 8,8 "first"|3	$00000000
+CreateMap|map 2 data set|map 3 7x3 8,8 "first"|1	$00000000
+CreateMap|map 2 name|map 3 7x3 8,8 "first"|1	$00000000
+CreateMap|map 2 last address|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 2 rub-through map|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 3 fields|map 3 7x3 8,8 "first"|1	bytes 10 00070003000800080100
+CreateMap|map 3 fields|map 3 7x3 8,8 "first"|2	bytes 4 00000000
+CreateMap|map 3 fields|map 3 7x3 8,8 "first"|3	$00000000
+CreateMap|map 3 data set|map 3 7x3 8,8 "first"|1	$00000001
+CreateMap|map 3 data|map 3 7x3 8,8 "first"|1	bytes 42 000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+CreateMap|map 3 name|map 3 7x3 8,8 "first"|1	$00000001
+CreateMap|map 3 name|map 3 7x3 8,8 "first"|2	"first"
+CreateMap|map 3 last address|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|map 3 rub-through map|map 3 7x3 8,8 "first"|1	$7FFFFFFF
+CreateMap|kept|map 3 9x4 8,16 "second"|1	kept
+CreateMap|popped|map 3 9x4 8,16 "second"|1	$00000000
+CreateMap|a3|map 3 9x4 8,16 "second"|1	$00000018
+CreateMap|used map|map 3 9x4 8,16 "second"|1	$00000000
+CreateMap|map 0 fields|map 3 9x4 8,16 "second"|1	bytes 10 000A0008001000100100
+CreateMap|map 0 fields|map 3 9x4 8,16 "second"|2	bytes 4 00000000
+CreateMap|map 0 fields|map 3 9x4 8,16 "second"|3	$00000000
+CreateMap|map 0 data set|map 3 9x4 8,16 "second"|1	$00000001
+CreateMap|map 0 data|map 3 9x4 8,16 "second"|1	bytes 160 fnv 02187E45
+CreateMap|map 0 name|map 3 9x4 8,16 "second"|1	$00000001
+CreateMap|map 0 name|map 3 9x4 8,16 "second"|2	"level1"
+CreateMap|map 0 last address|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 0 rub-through map|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 1 fields|map 3 9x4 8,16 "second"|1	bytes 10 00060005002000080100
+CreateMap|map 1 fields|map 3 9x4 8,16 "second"|2	bytes 4 00000000
+CreateMap|map 1 fields|map 3 9x4 8,16 "second"|3	$00000000
+CreateMap|map 1 data set|map 3 9x4 8,16 "second"|1	$00000001
+CreateMap|map 1 data|map 3 9x4 8,16 "second"|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+CreateMap|map 1 name|map 3 9x4 8,16 "second"|1	$00000000
+CreateMap|map 1 last address|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 1 rub-through map|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 2 fields|map 3 9x4 8,16 "second"|1	bytes 10 00000000000000000100
+CreateMap|map 2 fields|map 3 9x4 8,16 "second"|2	bytes 4 00000000
+CreateMap|map 2 fields|map 3 9x4 8,16 "second"|3	$00000000
+CreateMap|map 2 data set|map 3 9x4 8,16 "second"|1	$00000000
+CreateMap|map 2 name|map 3 9x4 8,16 "second"|1	$00000000
+CreateMap|map 2 last address|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 2 rub-through map|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 3 fields|map 3 9x4 8,16 "second"|1	bytes 10 00090004000800100100
+CreateMap|map 3 fields|map 3 9x4 8,16 "second"|2	bytes 4 00000000
+CreateMap|map 3 fields|map 3 9x4 8,16 "second"|3	$00000000
+CreateMap|map 3 data set|map 3 9x4 8,16 "second"|1	$00000001
+CreateMap|map 3 data|map 3 9x4 8,16 "second"|1	bytes 72 fnv 6AEFDE65
+CreateMap|map 3 name|map 3 9x4 8,16 "second"|1	$00000001
+CreateMap|map 3 name|map 3 9x4 8,16 "second"|2	"second"
+CreateMap|map 3 last address|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+CreateMap|map 3 rub-through map|map 3 9x4 8,16 "second"|1	$7FFFFFFF
+MapDataGrab|kept|map 0 bytes mapnull 1|1	kept
+MapDataGrab|popped|map 0 bytes mapnull 1|1	$00000000
+MapDataGrab|map 0 fields|map 0 bytes mapnull 1|1	bytes 10 000A0008001000100100
+MapDataGrab|map 0 fields|map 0 bytes mapnull 1|2	bytes 4 00000000
+MapDataGrab|map 0 fields|map 0 bytes mapnull 1|3	$00000000
+MapDataGrab|map 0 data set|map 0 bytes mapnull 1|1	$00000001
+MapDataGrab|map 0 data|map 0 bytes mapnull 1|1	bytes 160 fnv 0813BB2C
+MapDataGrab|map 0 name|map 0 bytes mapnull 1|1	$00000001
+MapDataGrab|map 0 name|map 0 bytes mapnull 1|2	"level1"
+MapDataGrab|map 0 last address|map 0 bytes mapnull 1|1	$7FFFFFFF
+MapDataGrab|map 0 rub-through map|map 0 bytes mapnull 1|1	$7FFFFFFF
+MapDataGrab|kept|map 1 words mapnull 0|1	kept
+MapDataGrab|popped|map 1 words mapnull 0|1	$00000000
+MapDataGrab|map 1 fields|map 1 words mapnull 0|1	bytes 10 00060005002000080100
+MapDataGrab|map 1 fields|map 1 words mapnull 0|2	bytes 4 00000000
+MapDataGrab|map 1 fields|map 1 words mapnull 0|3	$00000000
+MapDataGrab|map 1 data set|map 1 words mapnull 0|1	$00000001
+MapDataGrab|map 1 data|map 1 words mapnull 0|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapDataGrab|map 1 name|map 1 words mapnull 0|1	$00000000
+MapDataGrab|map 1 last address|map 1 words mapnull 0|1	$7FFFFFFF
+MapDataGrab|map 1 rub-through map|map 1 words mapnull 0|1	$7FFFFFFF
+MapDataGrab|kept|map 3 bytes mapnull 0|1	kept
+MapDataGrab|popped|map 3 bytes mapnull 0|1	$00000000
+MapDataGrab|map 3 fields|map 3 bytes mapnull 0|1	bytes 10 00090004000800100100
+MapDataGrab|map 3 fields|map 3 bytes mapnull 0|2	bytes 4 00000000
+MapDataGrab|map 3 fields|map 3 bytes mapnull 0|3	$00000000
+MapDataGrab|map 3 data set|map 3 bytes mapnull 0|1	$00000001
+MapDataGrab|map 3 data|map 3 bytes mapnull 0|1	bytes 72 fnv ABE70438
+MapDataGrab|map 3 name|map 3 bytes mapnull 0|1	$00000001
+MapDataGrab|map 3 name|map 3 bytes mapnull 0|2	"second"
+MapDataGrab|map 3 last address|map 3 bytes mapnull 0|1	$7FFFFFFF
+MapDataGrab|map 3 rub-through map|map 3 bytes mapnull 0|1	$7FFFFFFF
+MapDataGrab|kept|map 3 bytes mapnull 10|1	kept
+MapDataGrab|popped|map 3 bytes mapnull 10|1	$00000000
+MapDataGrab|map 3 fields|map 3 bytes mapnull 10|1	bytes 10 00090004000800100100
+MapDataGrab|map 3 fields|map 3 bytes mapnull 10|2	bytes 4 00000000
+MapDataGrab|map 3 fields|map 3 bytes mapnull 10|3	$00000000
+MapDataGrab|map 3 data set|map 3 bytes mapnull 10|1	$00000001
+MapDataGrab|map 3 data|map 3 bytes mapnull 10|1	bytes 72 fnv 7F5B14A1
+MapDataGrab|map 3 name|map 3 bytes mapnull 10|1	$00000001
+MapDataGrab|map 3 name|map 3 bytes mapnull 10|2	"second"
+MapDataGrab|map 3 last address|map 3 bytes mapnull 10|1	$7FFFFFFF
+MapDataGrab|map 3 rub-through map|map 3 bytes mapnull 10|1	$7FFFFFFF
+MapDataGrab|kept|map 3 words mapnull 65520|1	kept
+MapDataGrab|popped|map 3 words mapnull 65520|1	$00000000
+MapDataGrab|map 3 fields|map 3 words mapnull 65520|1	bytes 10 00090004000800100100
+MapDataGrab|map 3 fields|map 3 words mapnull 65520|2	bytes 4 00000000
+MapDataGrab|map 3 fields|map 3 words mapnull 65520|3	$00000000
+MapDataGrab|map 3 data set|map 3 words mapnull 65520|1	$00000001
+MapDataGrab|map 3 data|map 3 words mapnull 65520|1	bytes 72 fnv 04A6BD72
+MapDataGrab|map 3 name|map 3 words mapnull 65520|1	$00000001
+MapDataGrab|map 3 name|map 3 words mapnull 65520|2	"second"
+MapDataGrab|map 3 last address|map 3 words mapnull 65520|1	$7FFFFFFF
+MapDataGrab|map 3 rub-through map|map 3 words mapnull 65520|1	$7FFFFFFF
+MapObjWidth|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000002
+MapObjWidth|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjWidth|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A000A
+MapObjWidth|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapObjWidth|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjWidth|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjWidth|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapObjWidth|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapObjWidth|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjheight|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjheight|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A0008
+MapObjheight|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapObjheight|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjheight|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjheight|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapObjheight|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapObjheight|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000008
+MapDataSize|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataSize|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$000000A0
+MapDataSize|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapDataSize|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataSize|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataSize|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapDataSize|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapDataSize|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewX|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewX|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewX|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapObjViewX|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewX|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewX|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapObjViewX|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapObjViewX|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewY|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewY|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewY|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapObjViewY|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewY|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewY|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapObjViewY|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapObjViewY|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapDataChanged|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataChanged|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapDataChanged|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapDataChanged|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataChanged|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataChanged|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapDataChanged|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapDataChanged|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+RubThroughMap|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+RubThroughMap|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+RubThroughMap|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+RubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+RubThroughMap|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapCanDrawAddr|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapCanDrawAddr|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapCanDrawAddr|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapCanDrawAddr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapCanDrawAddr|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000002
+MapObjWidth|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjWidth|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$5A5A0006
+MapObjWidth|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapObjWidth|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjWidth|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjWidth|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapObjWidth|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjheight|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjheight|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$5A5A0005
+MapObjheight|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapObjheight|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjheight|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjheight|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapObjheight|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000008
+MapDataSize|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataSize|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$0000003C
+MapDataSize|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapDataSize|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataSize|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataSize|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapDataSize|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewX|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewX|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewX|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapObjViewX|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewX|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewX|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapObjViewX|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewY|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewY|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewY|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapObjViewY|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewY|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewY|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapObjViewY|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapDataChanged|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataChanged|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapDataChanged|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapDataChanged|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataChanged|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataChanged|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapDataChanged|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+RubThroughMap|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+RubThroughMap|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+RubThroughMap|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+RubThroughMap|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+RubThroughMap|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+RubThroughMap|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|inline|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|inline length|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapCanDrawAddr|kept|map 1 d0 $5A5A5A5A d1 $00000000|1	kept
+MapCanDrawAddr|popped|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d0|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d1|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00060005002000080100
+MapCanDrawAddr|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapCanDrawAddr|map 1 fields|map 1 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapCanDrawAddr|map 1 data set|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|map 1 data|map 1 d0 $5A5A5A5A d1 $00000000|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapCanDrawAddr|map 1 name|map 1 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 1 last address|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|map 1 rub-through map|map 1 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000002
+MapObjWidth|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjWidth|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjWidth|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapObjWidth|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjWidth|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjWidth|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjheight|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjheight|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjheight|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapObjheight|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjheight|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjheight|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000008
+MapDataSize|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataSize|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapDataSize|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataSize|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataSize|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewX|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewX|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewX|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapObjViewX|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewX|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewX|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewY|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewY|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewY|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapObjViewY|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewY|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewY|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapDataChanged|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataChanged|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapDataChanged|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapDataChanged|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataChanged|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataChanged|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+RubThroughMap|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+RubThroughMap|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+RubThroughMap|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+RubThroughMap|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+RubThroughMap|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|inline|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|inline length|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapCanDrawAddr|kept|map 2 d0 $5A5A5A5A d1 $00000000|1	kept
+MapCanDrawAddr|popped|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d0|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d1|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00000000000000000100
+MapCanDrawAddr|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapCanDrawAddr|map 2 fields|map 2 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapCanDrawAddr|map 2 data set|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 2 name|map 2 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 2 last address|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|map 2 rub-through map|map 2 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000002
+MapObjWidth|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjWidth|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$5A5A0009
+MapObjWidth|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjWidth|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapObjWidth|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjWidth|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjWidth|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapObjWidth|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjWidth|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapObjWidth|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjWidth|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjheight|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjheight|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$5A5A0004
+MapObjheight|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjheight|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapObjheight|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjheight|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjheight|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapObjheight|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjheight|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapObjheight|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjheight|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000008
+MapDataSize|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataSize|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000048
+MapDataSize|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataSize|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapDataSize|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataSize|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataSize|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapDataSize|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataSize|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapDataSize|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataSize|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewX|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewX|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewX|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewX|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapObjViewX|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewX|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewX|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapObjViewX|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewX|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapObjViewX|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewX|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapObjViewY|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapObjViewY|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapObjViewY|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapObjViewY|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapObjViewY|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapObjViewY|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapObjViewY|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapObjViewY|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapObjViewY|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapObjViewY|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapObjViewY|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapDataChanged|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataChanged|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$5A5A0000
+MapDataChanged|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataChanged|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapDataChanged|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataChanged|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataChanged|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapDataChanged|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataChanged|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapDataChanged|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataChanged|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+RubThroughMap|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+RubThroughMap|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+RubThroughMap|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+RubThroughMap|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+RubThroughMap|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+RubThroughMap|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+RubThroughMap|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+RubThroughMap|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|inline|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|inline length|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapCanDrawAddr|kept|map 3 d0 $5A5A5A5A d1 $00000000|1	kept
+MapCanDrawAddr|popped|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d0|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|d1|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapCanDrawAddr|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 10 00090004000800100100
+MapCanDrawAddr|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapCanDrawAddr|map 3 fields|map 3 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapCanDrawAddr|map 3 data set|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|map 3 data|map 3 d0 $5A5A5A5A d1 $00000000|1	bytes 72 fnv 04A6BD72
+MapCanDrawAddr|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapCanDrawAddr|map 3 name|map 3 d0 $5A5A5A5A d1 $00000000|2	"second"
+MapCanDrawAddr|map 3 last address|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDrawAddr|map 3 rub-through map|map 3 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataAdr|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataAdr|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+MapDataAdr|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+MapDataAdr|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataAdr|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataAdr|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+MapDataAdr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+MapDataAdr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+MapDataAdr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000000
+MapDataAdr|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataAdr|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+MapDataAdr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+MapDataAdr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+MapDataAdr|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataAdr|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapDataAdr(x,y)|inline|map 0 d0 $5A000003 d1 $5A000002|1	$00000001
+MapDataAdr(x,y)|inline length|map 0 d0 $5A000003 d1 $5A000002|1	$00000014
+MapDataAdr(x,y)|kept|map 0 d0 $5A000003 d1 $5A000002|1	kept
+MapDataAdr(x,y)|popped|map 0 d0 $5A000003 d1 $5A000002|1	$00000000
+MapDataAdr(x,y)|d0|map 0 d0 $5A000003 d1 $5A000002|1	$0000002E
+MapDataAdr(x,y)|d1|map 0 d0 $5A000003 d1 $5A000002|1	$0000002E
+MapDataAdr(x,y)|map 0 fields|map 0 d0 $5A000003 d1 $5A000002|1	bytes 10 000A0008001000100100
+MapDataAdr(x,y)|map 0 fields|map 0 d0 $5A000003 d1 $5A000002|2	bytes 4 00000000
+MapDataAdr(x,y)|map 0 fields|map 0 d0 $5A000003 d1 $5A000002|3	$00000000
+MapDataAdr(x,y)|map 0 data set|map 0 d0 $5A000003 d1 $5A000002|1	$00000001
+MapDataAdr(x,y)|map 0 data|map 0 d0 $5A000003 d1 $5A000002|1	bytes 160 fnv 0813BB2C
+MapDataAdr(x,y)|map 0 name|map 0 d0 $5A000003 d1 $5A000002|1	$00000001
+MapDataAdr(x,y)|map 0 name|map 0 d0 $5A000003 d1 $5A000002|2	"level1"
+MapDataAdr(x,y)|map 0 last address|map 0 d0 $5A000003 d1 $5A000002|1	$7FFFFFFF
+MapDataAdr(x,y)|map 0 rub-through map|map 0 d0 $5A000003 d1 $5A000002|1	$7FFFFFFF
+MapDataAdr(x,y)|inline|map 3 d0 $FFFE8001 d1 $00030001|1	$00000001
+MapDataAdr(x,y)|inline length|map 3 d0 $FFFE8001 d1 $00030001|1	$00000014
+MapDataAdr(x,y)|kept|map 3 d0 $FFFE8001 d1 $00030001|1	kept
+MapDataAdr(x,y)|popped|map 3 d0 $FFFE8001 d1 $00030001|1	$00000000
+MapDataAdr(x,y)|d0|map 3 d0 $FFFE8001 d1 $00030001|1	$00000014
+MapDataAdr(x,y)|d1|map 3 d0 $FFFE8001 d1 $00030001|1	$00000014
+MapDataAdr(x,y)|map 3 fields|map 3 d0 $FFFE8001 d1 $00030001|1	bytes 10 00090004000800100100
+MapDataAdr(x,y)|map 3 fields|map 3 d0 $FFFE8001 d1 $00030001|2	bytes 4 00000000
+MapDataAdr(x,y)|map 3 fields|map 3 d0 $FFFE8001 d1 $00030001|3	$00000000
+MapDataAdr(x,y)|map 3 data set|map 3 d0 $FFFE8001 d1 $00030001|1	$00000001
+MapDataAdr(x,y)|map 3 data|map 3 d0 $FFFE8001 d1 $00030001|1	bytes 72 fnv 04A6BD72
+MapDataAdr(x,y)|map 3 name|map 3 d0 $FFFE8001 d1 $00030001|1	$00000001
+MapDataAdr(x,y)|map 3 name|map 3 d0 $FFFE8001 d1 $00030001|2	"second"
+MapDataAdr(x,y)|map 3 last address|map 3 d0 $FFFE8001 d1 $00030001|1	$7FFFFFFF
+MapDataAdr(x,y)|map 3 rub-through map|map 3 d0 $FFFE8001 d1 $00030001|1	$7FFFFFFF
+MapDataChanged(newstate)|kept|map 0|1	kept
+MapDataChanged(newstate)|popped|map 0|1	$00000000
+MapDataChanged(newstate)|d0|map 0|1	$5A000000
+MapDataChanged(newstate)|map 0 fields|map 0|1	bytes 10 000A0008001000100100
+MapDataChanged(newstate)|map 0 fields|map 0|2	bytes 4 00000000
+MapDataChanged(newstate)|map 0 fields|map 0|3	$0000FFFF
+MapDataChanged(newstate)|map 0 data set|map 0|1	$00000001
+MapDataChanged(newstate)|map 0 data|map 0|1	bytes 160 fnv 0813BB2C
+MapDataChanged(newstate)|map 0 name|map 0|1	$00000001
+MapDataChanged(newstate)|map 0 name|map 0|2	"level1"
+MapDataChanged(newstate)|map 0 last address|map 0|1	$7FFFFFFF
+MapDataChanged(newstate)|map 0 rub-through map|map 0|1	$7FFFFFFF
+MapDataChanged(newstate)|kept|map 1|1	kept
+MapDataChanged(newstate)|popped|map 1|1	$00000000
+MapDataChanged(newstate)|d0|map 1|1	$5A000000
+MapDataChanged(newstate)|map 1 fields|map 1|1	bytes 10 00060005002000080100
+MapDataChanged(newstate)|map 1 fields|map 1|2	bytes 4 00000000
+MapDataChanged(newstate)|map 1 fields|map 1|3	$00007FFE
+MapDataChanged(newstate)|map 1 data set|map 1|1	$00000001
+MapDataChanged(newstate)|map 1 data|map 1|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+MapDataChanged(newstate)|map 1 name|map 1|1	$00000000
+MapDataChanged(newstate)|map 1 last address|map 1|1	$7FFFFFFF
+MapDataChanged(newstate)|map 1 rub-through map|map 1|1	$7FFFFFFF
+MapDataChanged(newstate)|kept|map 2|1	kept
+MapDataChanged(newstate)|popped|map 2|1	$00000000
+MapDataChanged(newstate)|d0|map 2|1	$5A000000
+MapDataChanged(newstate)|map 2 fields|map 2|1	bytes 10 00000000000000000100
+MapDataChanged(newstate)|map 2 fields|map 2|2	bytes 4 00000000
+MapDataChanged(newstate)|map 2 fields|map 2|3	$0000FFFD
+MapDataChanged(newstate)|map 2 data set|map 2|1	$00000000
+MapDataChanged(newstate)|map 2 name|map 2|1	$00000000
+MapDataChanged(newstate)|map 2 last address|map 2|1	$7FFFFFFF
+MapDataChanged(newstate)|map 2 rub-through map|map 2|1	$7FFFFFFF
+MapDataChanged(newstate)|kept|map 3|1	kept
+MapDataChanged(newstate)|popped|map 3|1	$00000000
+MapDataChanged(newstate)|d0|map 3|1	$5A000000
+MapDataChanged(newstate)|map 3 fields|map 3|1	bytes 10 00090004000800100100
+MapDataChanged(newstate)|map 3 fields|map 3|2	bytes 4 00000000
+MapDataChanged(newstate)|map 3 fields|map 3|3	$00007FFC
+MapDataChanged(newstate)|map 3 data set|map 3|1	$00000001
+MapDataChanged(newstate)|map 3 data|map 3|1	bytes 72 fnv 04A6BD72
+MapDataChanged(newstate)|map 3 name|map 3|1	$00000001
+MapDataChanged(newstate)|map 3 name|map 3|2	"second"
+MapDataChanged(newstate)|map 3 last address|map 3|1	$7FFFFFFF
+MapDataChanged(newstate)|map 3 rub-through map|map 3|1	$7FFFFFFF
+MapDataChanged|inline|map 2 d0 $12345678 d1 $00000000|1	$00000001
+MapDataChanged|inline length|map 2 d0 $12345678 d1 $00000000|1	$00000004
+MapDataChanged|kept|map 2 d0 $12345678 d1 $00000000|1	kept
+MapDataChanged|popped|map 2 d0 $12345678 d1 $00000000|1	$00000000
+MapDataChanged|d0|map 2 d0 $12345678 d1 $00000000|1	$1234FFFD
+MapDataChanged|d1|map 2 d0 $12345678 d1 $00000000|1	$00000000
+MapDataChanged|map 2 fields|map 2 d0 $12345678 d1 $00000000|1	bytes 10 00000000000000000100
+MapDataChanged|map 2 fields|map 2 d0 $12345678 d1 $00000000|2	bytes 4 00000000
+MapDataChanged|map 2 fields|map 2 d0 $12345678 d1 $00000000|3	$0000FFFD
+MapDataChanged|map 2 data set|map 2 d0 $12345678 d1 $00000000|1	$00000000
+MapDataChanged|map 2 name|map 2 d0 $12345678 d1 $00000000|1	$00000000
+MapDataChanged|map 2 last address|map 2 d0 $12345678 d1 $00000000|1	$7FFFFFFF
+MapDataChanged|map 2 rub-through map|map 2 d0 $12345678 d1 $00000000|1	$7FFFFFFF
+SetStencil|kept||1	kept
+SetStencil|popped||1	$00000000
+MapCanDraw|kept|map 0 shape 17 at 1,7|1	kept
+MapCanDraw|popped|map 0 shape 17 at 1,7|1	$00000000
+MapCanDraw|d0|map 0 shape 17 at 1,7|1	$5A000012
+MapCanDraw|map 0 fields|map 0 shape 17 at 1,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 17 at 1,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 17 at 1,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 17 at 1,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 17 at 1,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 17 at 1,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 17 at 1,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 17 at 1,7|1	$0000008E
+MapCanDraw|map 0 rub-through map|map 0 shape 17 at 1,7|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 27 at 3,3|1	kept
+MapCanDraw|popped|map 0 shape 27 at 3,3|1	$00000000
+MapCanDraw|d0|map 0 shape 27 at 3,3|1	$5A00001C
+MapCanDraw|map 0 fields|map 0 shape 27 at 3,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 27 at 3,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 27 at 3,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 27 at 3,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 27 at 3,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 27 at 3,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 27 at 3,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 27 at 3,3|1	$00000042
+MapCanDraw|map 0 rub-through map|map 0 shape 27 at 3,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 31 at 2,3|1	kept
+MapCanDraw|popped|map 0 shape 31 at 2,3|1	$00000000
+MapCanDraw|d0|map 0 shape 31 at 2,3|1	$5A000020
+MapCanDraw|map 0 fields|map 0 shape 31 at 2,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 31 at 2,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 31 at 2,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 31 at 2,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 31 at 2,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 31 at 2,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 31 at 2,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 31 at 2,3|1	$00000040
+MapCanDraw|map 0 rub-through map|map 0 shape 31 at 2,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 16 at 5,0|1	kept
+MapCanDraw|popped|map 0 shape 16 at 5,0|1	$00000000
+MapCanDraw|d0|map 0 shape 16 at 5,0|1	$5A000011
+MapCanDraw|map 0 fields|map 0 shape 16 at 5,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 16 at 5,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 16 at 5,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 16 at 5,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 16 at 5,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 16 at 5,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 16 at 5,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 16 at 5,0|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 16 at 5,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 29 at 4,4|1	kept
+MapCanDraw|popped|map 0 shape 29 at 4,4|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 4,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 4,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 4,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 4,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 4,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 4,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 4,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 4,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 4,4|1	$00000058
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 4,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 15 at 3,9|1	kept
+MapCanDraw|popped|map 0 shape 15 at 3,9|1	$00000000
+MapCanDraw|d0|map 0 shape 15 at 3,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 15 at 3,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 15 at 3,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 15 at 3,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 15 at 3,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 15 at 3,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 15 at 3,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 15 at 3,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 15 at 3,9|1	$00000058
+MapCanDraw|map 0 rub-through map|map 0 shape 15 at 3,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 16 at 10,5|1	kept
+MapCanDraw|popped|map 0 shape 16 at 10,5|1	$00000000
+MapCanDraw|d0|map 0 shape 16 at 10,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 16 at 10,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 16 at 10,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 16 at 10,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 16 at 10,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 16 at 10,5|1	$00000058
+MapCanDraw|map 0 rub-through map|map 0 shape 16 at 10,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 4 at 2,3|1	kept
+MapCanDraw|popped|map 0 shape 4 at 2,3|1	$00000000
+MapCanDraw|d0|map 0 shape 4 at 2,3|1	$5A000005
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 4 at 2,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 4 at 2,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 4 at 2,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 4 at 2,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 4 at 2,3|1	$00000040
+MapCanDraw|map 0 rub-through map|map 0 shape 4 at 2,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 5 at 4,1|1	kept
+MapCanDraw|popped|map 0 shape 5 at 4,1|1	$00000000
+MapCanDraw|d0|map 0 shape 5 at 4,1|1	$5A000006
+MapCanDraw|map 0 fields|map 0 shape 5 at 4,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 5 at 4,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 5 at 4,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 5 at 4,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 5 at 4,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 5 at 4,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 5 at 4,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 5 at 4,1|1	$0000001C
+MapCanDraw|map 0 rub-through map|map 0 shape 5 at 4,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 4 at 5,8|1	kept
+MapCanDraw|popped|map 0 shape 4 at 5,8|1	$00000000
+MapCanDraw|d0|map 0 shape 4 at 5,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 4 at 5,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 4 at 5,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 4 at 5,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 4 at 5,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 4 at 5,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 4 at 5,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 4 at 5,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 4 at 5,8|1	$0000001C
+MapCanDraw|map 0 rub-through map|map 0 shape 4 at 5,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 7 at 5,4|1	kept
+MapCanDraw|popped|map 0 shape 7 at 5,4|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 5,4|1	$5A000008
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 5,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 5,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 5,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 5,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 5,4|1	$0000005A
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 5,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 16 at 8,5|1	kept
+MapCanDraw|popped|map 0 shape 16 at 8,5|1	$00000000
+MapCanDraw|d0|map 0 shape 16 at 8,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 16 at 8,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 16 at 8,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 16 at 8,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 16 at 8,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 16 at 8,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 16 at 8,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 16 at 8,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 16 at 8,5|1	$00000074
+MapCanDraw|map 0 rub-through map|map 0 shape 16 at 8,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 1 at 0,6|1	kept
+MapCanDraw|popped|map 0 shape 1 at 0,6|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 0,6|1	$5A000002
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 0,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 0,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 0,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 0,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 0,6|1	$00000078
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 0,6|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 2 at 1,3|1	kept
+MapCanDraw|popped|map 0 shape 2 at 1,3|1	$00000000
+MapCanDraw|d0|map 0 shape 2 at 1,3|1	$5A000003
+MapCanDraw|map 0 fields|map 0 shape 2 at 1,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 2 at 1,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 2 at 1,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 2 at 1,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 2 at 1,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 2 at 1,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 2 at 1,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 2 at 1,3|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 2 at 1,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 6 at 3,7|1	kept
+MapCanDraw|popped|map 0 shape 6 at 3,7|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 3,7|1	$5A000007
+MapCanDraw|map 0 fields|map 0 shape 6 at 3,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 3,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 3,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 3,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 3,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 3,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 3,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 3,7|1	$00000092
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 3,7|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 23 at 9,3|1	kept
+MapCanDraw|popped|map 0 shape 23 at 9,3|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 9,3|1	$5A000018
+MapCanDraw|map 0 fields|map 0 shape 23 at 9,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 9,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 9,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 9,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 9,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 9,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 9,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 9,3|1	$0000004E
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 9,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 13 at 8,7|1	kept
+MapCanDraw|popped|map 0 shape 13 at 8,7|1	$00000000
+MapCanDraw|d0|map 0 shape 13 at 8,7|1	$5A00000E
+MapCanDraw|map 0 fields|map 0 shape 13 at 8,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 13 at 8,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 13 at 8,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 13 at 8,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 13 at 8,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 13 at 8,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 13 at 8,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 13 at 8,7|1	$0000009C
+MapCanDraw|map 0 rub-through map|map 0 shape 13 at 8,7|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 13 at 2,9|1	kept
+MapCanDraw|popped|map 0 shape 13 at 2,9|1	$00000000
+MapCanDraw|d0|map 0 shape 13 at 2,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 13 at 2,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 13 at 2,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 13 at 2,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 13 at 2,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 13 at 2,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 13 at 2,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 13 at 2,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 13 at 2,9|1	$0000009C
+MapCanDraw|map 0 rub-through map|map 0 shape 13 at 2,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 11 at 3,4|1	kept
+MapCanDraw|popped|map 0 shape 11 at 3,4|1	$00000000
+MapCanDraw|d0|map 0 shape 11 at 3,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 11 at 3,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 11 at 3,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 11 at 3,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 11 at 3,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 11 at 3,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 11 at 3,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 11 at 3,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 11 at 3,4|1	$00000056
+MapCanDraw|map 0 rub-through map|map 0 shape 11 at 3,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 26 at 10,0|1	kept
+MapCanDraw|popped|map 0 shape 26 at 10,0|1	$00000000
+MapCanDraw|d0|map 0 shape 26 at 10,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 26 at 10,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 26 at 10,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 26 at 10,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 26 at 10,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 26 at 10,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 26 at 10,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 26 at 10,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 26 at 10,0|1	$00000056
+MapCanDraw|map 0 rub-through map|map 0 shape 26 at 10,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 12 at 7,0|1	kept
+MapCanDraw|popped|map 0 shape 12 at 7,0|1	$00000000
+MapCanDraw|d0|map 0 shape 12 at 7,0|1	$5A00000D
+MapCanDraw|map 0 fields|map 0 shape 12 at 7,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 12 at 7,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 12 at 7,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 12 at 7,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 12 at 7,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 12 at 7,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 12 at 7,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 12 at 7,0|1	$0000000E
+MapCanDraw|map 0 rub-through map|map 0 shape 12 at 7,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 26 at 5,5|1	kept
+MapCanDraw|popped|map 0 shape 26 at 5,5|1	$00000000
+MapCanDraw|d0|map 0 shape 26 at 5,5|1	$5A00001B
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 26 at 5,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 26 at 5,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 26 at 5,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 26 at 5,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 26 at 5,5|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 26 at 5,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 25 at 9,8|1	kept
+MapCanDraw|popped|map 0 shape 25 at 9,8|1	$00000000
+MapCanDraw|d0|map 0 shape 25 at 9,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 25 at 9,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 25 at 9,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 25 at 9,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 25 at 9,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 25 at 9,8|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 25 at 9,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 13 at 10,9|1	kept
+MapCanDraw|popped|map 0 shape 13 at 10,9|1	$00000000
+MapCanDraw|d0|map 0 shape 13 at 10,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 13 at 10,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 13 at 10,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 13 at 10,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 13 at 10,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 13 at 10,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 13 at 10,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 13 at 10,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 13 at 10,9|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 13 at 10,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 16 at 10,1|1	kept
+MapCanDraw|popped|map 0 shape 16 at 10,1|1	$00000000
+MapCanDraw|d0|map 0 shape 16 at 10,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 16 at 10,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 16 at 10,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 16 at 10,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 16 at 10,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 16 at 10,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 16 at 10,1|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 16 at 10,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 0 at 5,4|1	kept
+MapCanDraw|popped|map 0 shape 0 at 5,4|1	$00000000
+MapCanDraw|d0|map 0 shape 0 at 5,4|1	$5A000001
+MapCanDraw|map 0 fields|map 0 shape 0 at 5,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 0 at 5,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 0 at 5,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 0 at 5,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 0 at 5,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 0 at 5,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 0 at 5,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 0 at 5,4|1	$0000005A
+MapCanDraw|map 0 rub-through map|map 0 shape 0 at 5,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 25 at 10,4|1	kept
+MapCanDraw|popped|map 0 shape 25 at 10,4|1	$00000000
+MapCanDraw|d0|map 0 shape 25 at 10,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 25 at 10,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 25 at 10,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 25 at 10,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 25 at 10,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 25 at 10,4|1	$0000005A
+MapCanDraw|map 0 rub-through map|map 0 shape 25 at 10,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 10 at 5,8|1	kept
+MapCanDraw|popped|map 0 shape 10 at 5,8|1	$00000000
+MapCanDraw|d0|map 0 shape 10 at 5,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 10 at 5,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 10 at 5,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 10 at 5,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 10 at 5,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 10 at 5,8|1	$0000005A
+MapCanDraw|map 0 rub-through map|map 0 shape 10 at 5,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 26 at 4,8|1	kept
+MapCanDraw|popped|map 0 shape 26 at 4,8|1	$00000000
+MapCanDraw|d0|map 0 shape 26 at 4,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 26 at 4,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 26 at 4,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 26 at 4,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 26 at 4,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 26 at 4,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 26 at 4,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 26 at 4,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 26 at 4,8|1	$0000005A
+MapCanDraw|map 0 rub-through map|map 0 shape 26 at 4,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 14 at 3,0|1	kept
+MapCanDraw|popped|map 0 shape 14 at 3,0|1	$00000000
+MapCanDraw|d0|map 0 shape 14 at 3,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 14 at 3,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 14 at 3,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 14 at 3,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 14 at 3,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 14 at 3,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 14 at 3,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 14 at 3,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 14 at 3,0|1	$00000006
+MapCanDraw|map 0 rub-through map|map 0 shape 14 at 3,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 29 at 3,9|1	kept
+MapCanDraw|popped|map 0 shape 29 at 3,9|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 3,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 3,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 3,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 3,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 3,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 3,9|1	$00000006
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 3,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 2 at 7,5|1	kept
+MapCanDraw|popped|map 0 shape 2 at 7,5|1	$00000000
+MapCanDraw|d0|map 0 shape 2 at 7,5|1	$5A000003
+MapCanDraw|map 0 fields|map 0 shape 2 at 7,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 2 at 7,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 2 at 7,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 2 at 7,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 2 at 7,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 2 at 7,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 2 at 7,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 2 at 7,5|1	$00000072
+MapCanDraw|map 0 rub-through map|map 0 shape 2 at 7,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 1 at 8,9|1	kept
+MapCanDraw|popped|map 0 shape 1 at 8,9|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 8,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 8,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 8,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 8,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 8,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 8,9|1	$00000072
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 8,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 1 at 3,9|1	kept
+MapCanDraw|popped|map 0 shape 1 at 3,9|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 3,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 3,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 3,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 3,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 3,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 3,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 3,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 3,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 3,9|1	$00000072
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 3,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 10 at 5,9|1	kept
+MapCanDraw|popped|map 0 shape 10 at 5,9|1	$00000000
+MapCanDraw|d0|map 0 shape 10 at 5,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 10 at 5,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 10 at 5,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 10 at 5,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 10 at 5,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 10 at 5,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 10 at 5,9|1	$00000072
+MapCanDraw|map 0 rub-through map|map 0 shape 10 at 5,9|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 24 at 8,6|1	kept
+MapCanDraw|popped|map 0 shape 24 at 8,6|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 8,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 24 at 8,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 8,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 8,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 8,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 8,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 8,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 8,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 8,6|1	$00000088
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 8,6|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 21 at 3,1|1	kept
+MapCanDraw|popped|map 0 shape 21 at 3,1|1	$00000000
+MapCanDraw|d0|map 0 shape 21 at 3,1|1	$5A000016
+MapCanDraw|map 0 fields|map 0 shape 21 at 3,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 21 at 3,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 21 at 3,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 21 at 3,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 21 at 3,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 21 at 3,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 21 at 3,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 21 at 3,1|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 21 at 3,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 19 at 4,2|1	kept
+MapCanDraw|popped|map 0 shape 19 at 4,2|1	$00000000
+MapCanDraw|d0|map 0 shape 19 at 4,2|1	$5A000014
+MapCanDraw|map 0 fields|map 0 shape 19 at 4,2|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 19 at 4,2|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 19 at 4,2|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 19 at 4,2|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 19 at 4,2|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 19 at 4,2|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 19 at 4,2|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 19 at 4,2|1	$00000030
+MapCanDraw|map 0 rub-through map|map 0 shape 19 at 4,2|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 19 at 3,3|1	kept
+MapCanDraw|popped|map 0 shape 19 at 3,3|1	$00000000
+MapCanDraw|d0|map 0 shape 19 at 3,3|1	$5A000014
+MapCanDraw|map 0 fields|map 0 shape 19 at 3,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 19 at 3,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 19 at 3,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 19 at 3,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 19 at 3,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 19 at 3,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 19 at 3,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 19 at 3,3|1	$00000042
+MapCanDraw|map 0 rub-through map|map 0 shape 19 at 3,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 14 at 0,5|1	kept
+MapCanDraw|popped|map 0 shape 14 at 0,5|1	$00000000
+MapCanDraw|d0|map 0 shape 14 at 0,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 14 at 0,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 14 at 0,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 14 at 0,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 14 at 0,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 14 at 0,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 14 at 0,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 14 at 0,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 14 at 0,5|1	$00000064
+MapCanDraw|map 0 rub-through map|map 0 shape 14 at 0,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 0 at 6,0|1	kept
+MapCanDraw|popped|map 0 shape 0 at 6,0|1	$00000000
+MapCanDraw|d0|map 0 shape 0 at 6,0|1	$5A000001
+MapCanDraw|map 0 fields|map 0 shape 0 at 6,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 0 at 6,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 0 at 6,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 0 at 6,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 0 at 6,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 0 at 6,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 0 at 6,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 0 at 6,0|1	$0000000C
+MapCanDraw|map 0 rub-through map|map 0 shape 0 at 6,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 19 at 8,4|1	kept
+MapCanDraw|popped|map 0 shape 19 at 8,4|1	$00000000
+MapCanDraw|d0|map 0 shape 19 at 8,4|1	$5A000014
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 19 at 8,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 19 at 8,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 19 at 8,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 19 at 8,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 19 at 8,4|1	$00000060
+MapCanDraw|map 0 rub-through map|map 0 shape 19 at 8,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 6 at 11,4|1	kept
+MapCanDraw|popped|map 0 shape 6 at 11,4|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 11,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 6 at 11,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 11,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 11,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 11,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 11,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 11,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 11,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 11,4|1	$00000060
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 11,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 26 at 0,0|1	kept
+MapCanDraw|popped|map 0 shape 26 at 0,0|1	$00000000
+MapCanDraw|d0|map 0 shape 26 at 0,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 26 at 0,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 26 at 0,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 26 at 0,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 26 at 0,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 26 at 0,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 26 at 0,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 26 at 0,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 26 at 0,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 26 at 0,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 16 at 4,7|1	kept
+MapCanDraw|popped|map 0 shape 16 at 4,7|1	$00000000
+MapCanDraw|d0|map 0 shape 16 at 4,7|1	$5A000011
+MapCanDraw|map 0 fields|map 0 shape 16 at 4,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 16 at 4,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 16 at 4,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 16 at 4,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 16 at 4,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 16 at 4,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 16 at 4,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 16 at 4,7|1	$00000094
+MapCanDraw|map 0 rub-through map|map 0 shape 16 at 4,7|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 24 at 6,8|1	kept
+MapCanDraw|popped|map 0 shape 24 at 6,8|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 6,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 6,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 6,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 6,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 6,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 6,8|1	$00000094
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 6,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 7 at 2,2|1	kept
+MapCanDraw|popped|map 0 shape 7 at 2,2|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 2,2|1	$5A000008
+MapCanDraw|map 0 fields|map 0 shape 7 at 2,2|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 2,2|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 2,2|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 2,2|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 2,2|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 2,2|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 2,2|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 2,2|1	$0000002C
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 2,2|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 1 at 8,5|1	kept
+MapCanDraw|popped|map 0 shape 1 at 8,5|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 8,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 8,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 8,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 8,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 8,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 8,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 8,5|1	$00000074
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 8,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 23 at 5,5|1	kept
+MapCanDraw|popped|map 0 shape 23 at 5,5|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 5,5|1	$5A000018
+MapCanDraw|map 0 fields|map 0 shape 23 at 5,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 5,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 5,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 5,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 5,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 5,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 5,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 5,5|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 5,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 20 at 11,1|1	kept
+MapCanDraw|popped|map 0 shape 20 at 11,1|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 11,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 11,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 11,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 11,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 11,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 11,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 11,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 11,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 11,1|1	$0000006E
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 11,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 29 at 9,3|1	kept
+MapCanDraw|popped|map 0 shape 29 at 9,3|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 9,3|1	$5A00001E
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 9,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 9,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 9,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 9,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 9,3|1	$0000004E
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 9,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 1 at 2,0|1	kept
+MapCanDraw|popped|map 0 shape 1 at 2,0|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 2,0|1	$5A000002
+MapCanDraw|map 0 fields|map 0 shape 1 at 2,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 2,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 2,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 2,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 2,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 2,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 2,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 2,0|1	$00000004
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 2,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 15 at 5,2|1	kept
+MapCanDraw|popped|map 0 shape 15 at 5,2|1	$00000000
+MapCanDraw|d0|map 0 shape 15 at 5,2|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 15 at 5,2|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 15 at 5,2|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 15 at 5,2|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 15 at 5,2|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 15 at 5,2|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 15 at 5,2|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 15 at 5,2|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 15 at 5,2|1	$00000032
+MapCanDraw|map 0 rub-through map|map 0 shape 15 at 5,2|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 9 at 0,6|1	kept
+MapCanDraw|popped|map 0 shape 9 at 0,6|1	$00000000
+MapCanDraw|d0|map 0 shape 9 at 0,6|1	$5A00000A
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 9 at 0,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 9 at 0,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 9 at 0,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 9 at 0,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 9 at 0,6|1	$00000078
+MapCanDraw|map 0 rub-through map|map 0 shape 9 at 0,6|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 17 at 11,5|1	kept
+MapCanDraw|popped|map 0 shape 17 at 11,5|1	$00000000
+MapCanDraw|d0|map 0 shape 17 at 11,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 17 at 11,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 17 at 11,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 17 at 11,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 17 at 11,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 17 at 11,5|1	$00000078
+MapCanDraw|map 0 rub-through map|map 0 shape 17 at 11,5|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 11 at 2,4|1	kept
+MapCanDraw|popped|map 0 shape 11 at 2,4|1	$00000000
+MapCanDraw|d0|map 0 shape 11 at 2,4|1	$5A00000C
+MapCanDraw|map 0 fields|map 0 shape 11 at 2,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 11 at 2,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 11 at 2,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 11 at 2,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 11 at 2,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 11 at 2,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 11 at 2,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 11 at 2,4|1	$00000054
+MapCanDraw|map 0 rub-through map|map 0 shape 11 at 2,4|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 30 at 2,0|1	kept
+MapCanDraw|popped|map 0 shape 30 at 2,0|1	$00000000
+MapCanDraw|d0|map 0 shape 30 at 2,0|1	$5A00001F
+MapCanDraw|map 0 fields|map 0 shape 30 at 2,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 30 at 2,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 30 at 2,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 30 at 2,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 30 at 2,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 30 at 2,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 30 at 2,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 30 at 2,0|1	$00000004
+MapCanDraw|map 0 rub-through map|map 0 shape 30 at 2,0|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 28 at 6,3|1	kept
+MapCanDraw|popped|map 0 shape 28 at 6,3|1	$00000000
+MapCanDraw|d0|map 0 shape 28 at 6,3|1	$5A00001D
+MapCanDraw|map 0 fields|map 0 shape 28 at 6,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 28 at 6,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 28 at 6,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 28 at 6,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 28 at 6,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 28 at 6,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 28 at 6,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 28 at 6,3|1	$00000048
+MapCanDraw|map 0 rub-through map|map 0 shape 28 at 6,3|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 15 at 8,1|1	kept
+MapCanDraw|popped|map 0 shape 15 at 8,1|1	$00000000
+MapCanDraw|d0|map 0 shape 15 at 8,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 15 at 8,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 15 at 8,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 15 at 8,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 15 at 8,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 15 at 8,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 15 at 8,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 15 at 8,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 15 at 8,1|1	$00000024
+MapCanDraw|map 0 rub-through map|map 0 shape 15 at 8,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 23 at 10,8|1	kept
+MapCanDraw|popped|map 0 shape 23 at 10,8|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 10,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 10,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 10,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 10,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 10,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 10,8|1	$00000024
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 10,8|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 28 at 0,1|1	kept
+MapCanDraw|popped|map 0 shape 28 at 0,1|1	$00000000
+MapCanDraw|d0|map 0 shape 28 at 0,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 28 at 0,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 28 at 0,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 28 at 0,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 28 at 0,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 28 at 0,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 28 at 0,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 28 at 0,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 28 at 0,1|1	$00000014
+MapCanDraw|map 0 rub-through map|map 0 shape 28 at 0,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 27 at 1,1|1	kept
+MapCanDraw|popped|map 0 shape 27 at 1,1|1	$00000000
+MapCanDraw|d0|map 0 shape 27 at 1,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 27 at 1,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 27 at 1,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 27 at 1,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 27 at 1,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 27 at 1,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 27 at 1,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 27 at 1,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 27 at 1,1|1	$00000016
+MapCanDraw|map 0 rub-through map|map 0 shape 27 at 1,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 12 at 2,1|1	kept
+MapCanDraw|popped|map 0 shape 12 at 2,1|1	$00000000
+MapCanDraw|d0|map 0 shape 12 at 2,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 12 at 2,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 12 at 2,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 12 at 2,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 12 at 2,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 12 at 2,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 12 at 2,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 12 at 2,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 12 at 2,1|1	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 12 at 2,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 20 at 3,1|1	kept
+MapCanDraw|popped|map 0 shape 20 at 3,1|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 3,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 3,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 3,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 3,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 3,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 3,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 3,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 3,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 3,1|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 3,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 0 at 4,1|1	kept
+MapCanDraw|popped|map 0 shape 0 at 4,1|1	$00000000
+MapCanDraw|d0|map 0 shape 0 at 4,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 0 at 4,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 0 at 4,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 0 at 4,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 0 at 4,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 0 at 4,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 0 at 4,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 0 at 4,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 0 at 4,1|1	$0000001C
+MapCanDraw|map 0 rub-through map|map 0 shape 0 at 4,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 7 at 5,1|1	kept
+MapCanDraw|popped|map 0 shape 7 at 5,1|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 5,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 5,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 5,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 5,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 5,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 5,1|1	$0000001E
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 5,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 24 at 6,1|1	kept
+MapCanDraw|popped|map 0 shape 24 at 6,1|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 6,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 6,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 6,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 6,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 6,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 6,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 6,1|1	$00000020
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 6,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 29 at 7,1|1	kept
+MapCanDraw|popped|map 0 shape 29 at 7,1|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 7,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 7,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 7,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 7,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 7,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 7,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 7,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 7,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 7,1|1	$00000022
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 7,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 19 at 8,1|1	kept
+MapCanDraw|popped|map 0 shape 19 at 8,1|1	$00000000
+MapCanDraw|d0|map 0 shape 19 at 8,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 19 at 8,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 19 at 8,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 19 at 8,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 19 at 8,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 19 at 8,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 19 at 8,1|1	$00000024
+MapCanDraw|map 0 rub-through map|map 0 shape 19 at 8,1|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 6 at 9,1|1	kept
+MapCanDraw|popped|map 0 shape 6 at 9,1|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 9,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 9,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 9,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 9,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 9,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 9,1|1	$00000026
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 9,1|1	$7FFFFFFF
+MapCanDrawAddr|inline|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000001
+MapCanDrawAddr|inline length|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000004
+MapCanDrawAddr|kept|map 0 d0 $5A5A5A5A d1 $00000000|2	kept
+MapCanDrawAddr|popped|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000000
+MapCanDrawAddr|d0|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000026
+MapCanDrawAddr|d1|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000000
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|4	bytes 10 000A0008001000100100
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|5	bytes 4 00000000
+MapCanDrawAddr|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|6	$0000FFFF
+MapCanDrawAddr|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000001
+MapCanDrawAddr|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 160 fnv 0813BB2C
+MapCanDrawAddr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000001
+MapCanDrawAddr|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|4	"level1"
+MapCanDrawAddr|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000026
+MapCanDrawAddr|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|2	$7FFFFFFF
+RubThroughMap(map#)|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap(map#)|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+RubThroughMap(map#)|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+RubThroughMap(map#)|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap(map#)|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A5A5A
+RubThroughMap(map#)|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+RubThroughMap(map#)|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+RubThroughMap(map#)|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+RubThroughMap(map#)|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$0000FFFF
+RubThroughMap(map#)|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap(map#)|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+RubThroughMap(map#)|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+RubThroughMap(map#)|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+RubThroughMap(map#)|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000026
+RubThroughMap(map#)|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000020
+MapCanDraw|kept|map 0 shape 29 at 0,6|1	kept
+MapCanDraw|popped|map 0 shape 29 at 0,6|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 0,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 0,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 0,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 0,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 0,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 0,6|1	$00000026
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 0,6|1	$00000020
+MapCanDraw|kept|map 0 shape 12 at 4,0|1	kept
+MapCanDraw|popped|map 0 shape 12 at 4,0|1	$00000000
+MapCanDraw|d0|map 0 shape 12 at 4,0|1	$5A001B14
+MapCanDraw|map 0 fields|map 0 shape 12 at 4,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 12 at 4,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 12 at 4,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 12 at 4,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 12 at 4,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 12 at 4,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 12 at 4,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 12 at 4,0|1	$00000008
+MapCanDraw|map 0 rub-through map|map 0 shape 12 at 4,0|1	$00000020
+MapCanDraw|kept|map 0 shape 20 at 8,7|1	kept
+MapCanDraw|popped|map 0 shape 20 at 8,7|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 8,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 8,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 8,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 8,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 8,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 8,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 8,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 8,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 8,7|1	$00000008
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 8,7|1	$00000020
+MapCanDraw|kept|map 0 shape 23 at 4,6|1	kept
+MapCanDraw|popped|map 0 shape 23 at 4,6|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 4,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 4,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 4,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 4,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 4,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 4,6|1	$00000008
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 4,6|1	$00000020
+MapCanDraw|kept|map 0 shape 24 at 11,3|1	kept
+MapCanDraw|popped|map 0 shape 24 at 11,3|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 11,3|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 24 at 11,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 11,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 11,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 11,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 11,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 11,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 11,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 11,3|1	$00000008
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 11,3|1	$00000020
+MapCanDraw|kept|map 0 shape 2 at 0,0|1	kept
+MapCanDraw|popped|map 0 shape 2 at 0,0|1	$00000000
+MapCanDraw|d0|map 0 shape 2 at 0,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 2 at 0,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 2 at 0,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 2 at 0,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 2 at 0,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 2 at 0,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 2 at 0,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 2 at 0,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 2 at 0,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 2 at 0,0|1	$00000020
+MapCanDraw|kept|map 0 shape 6 at 9,9|1	kept
+MapCanDraw|popped|map 0 shape 6 at 9,9|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 9,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 9,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 9,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 9,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 9,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 9,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 9,9|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 9,9|1	$00000020
+MapCanDraw|kept|map 0 shape 8 at 0,6|1	kept
+MapCanDraw|popped|map 0 shape 8 at 0,6|1	$00000000
+MapCanDraw|d0|map 0 shape 8 at 0,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 8 at 0,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 8 at 0,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 8 at 0,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 8 at 0,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 8 at 0,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 8 at 0,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 8 at 0,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 8 at 0,6|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 8 at 0,6|1	$00000020
+MapCanDraw|kept|map 0 shape 20 at 10,2|1	kept
+MapCanDraw|popped|map 0 shape 20 at 10,2|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 10,2|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,2|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,2|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,2|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 10,2|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 10,2|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 10,2|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 10,2|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 10,2|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 10,2|1	$00000020
+MapCanDraw|kept|map 0 shape 7 at 8,5|1	kept
+MapCanDraw|popped|map 0 shape 7 at 8,5|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 8,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 7 at 8,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 8,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 8,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 8,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 8,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 8,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 8,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 8,5|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 8,5|1	$00000020
+MapCanDraw|kept|map 0 shape 1 at 6,9|1	kept
+MapCanDraw|popped|map 0 shape 1 at 6,9|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 6,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 6,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 6,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 6,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 6,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 6,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 6,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 6,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 6,9|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 6,9|1	$00000020
+MapCanDraw|kept|map 0 shape 11 at 0,7|1	kept
+MapCanDraw|popped|map 0 shape 11 at 0,7|1	$00000000
+MapCanDraw|d0|map 0 shape 11 at 0,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 11 at 0,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 11 at 0,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 11 at 0,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 11 at 0,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 11 at 0,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 11 at 0,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 11 at 0,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 11 at 0,7|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 11 at 0,7|1	$00000020
+MapCanDraw|kept|map 0 shape 20 at 10,5|1	kept
+MapCanDraw|popped|map 0 shape 20 at 10,5|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 10,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 10,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 10,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 10,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 10,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 10,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 10,5|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 10,5|1	$00000020
+MapCanDraw|kept|map 0 shape 23 at 10,0|1	kept
+MapCanDraw|popped|map 0 shape 23 at 10,0|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 10,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 10,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 10,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 10,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 10,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 10,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 10,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 10,0|1	$00000020
+MapCanDraw|kept|map 0 shape 23 at 6,0|1	kept
+MapCanDraw|popped|map 0 shape 23 at 6,0|1	$00000000
+MapCanDraw|d0|map 0 shape 23 at 6,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 23 at 6,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 6,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 6,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 6,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 6,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 6,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 6,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 6,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 6,0|1	$00000020
+MapCanDraw|kept|map 0 shape 22 at 10,1|1	kept
+MapCanDraw|popped|map 0 shape 22 at 10,1|1	$00000000
+MapCanDraw|d0|map 0 shape 22 at 10,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 22 at 10,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 22 at 10,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 22 at 10,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 22 at 10,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 22 at 10,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 22 at 10,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 22 at 10,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 22 at 10,1|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 22 at 10,1|1	$00000020
+MapCanDraw|kept|map 0 shape 25 at 10,1|1	kept
+MapCanDraw|popped|map 0 shape 25 at 10,1|1	$00000000
+MapCanDraw|d0|map 0 shape 25 at 10,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 25 at 10,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 25 at 10,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 25 at 10,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 25 at 10,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 25 at 10,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 25 at 10,1|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 25 at 10,1|1	$00000020
+MapCanDraw|kept|map 0 shape 24 at 1,1|1	kept
+MapCanDraw|popped|map 0 shape 24 at 1,1|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 1,1|1	$5A000007
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 1,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 1,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 1,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 1,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 1,1|1	$00000016
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 1,1|1	$00000020
+MapCanDraw|kept|map 0 shape 21 at 8,9|1	kept
+MapCanDraw|popped|map 0 shape 21 at 8,9|1	$00000000
+MapCanDraw|d0|map 0 shape 21 at 8,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 21 at 8,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 21 at 8,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 21 at 8,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 21 at 8,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 21 at 8,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 21 at 8,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 21 at 8,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 21 at 8,9|1	$00000016
+MapCanDraw|map 0 rub-through map|map 0 shape 21 at 8,9|1	$00000020
+MapCanDraw|kept|map 0 shape 9 at 10,8|1	kept
+MapCanDraw|popped|map 0 shape 9 at 10,8|1	$00000000
+MapCanDraw|d0|map 0 shape 9 at 10,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 9 at 10,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 9 at 10,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 9 at 10,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 9 at 10,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 9 at 10,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 9 at 10,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 9 at 10,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 9 at 10,8|1	$00000016
+MapCanDraw|map 0 rub-through map|map 0 shape 9 at 10,8|1	$00000020
+MapCanDraw|kept|map 0 shape 12 at 0,0|1	kept
+MapCanDraw|popped|map 0 shape 12 at 0,0|1	$00000000
+MapCanDraw|d0|map 0 shape 12 at 0,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 12 at 0,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 12 at 0,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 12 at 0,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 12 at 0,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 12 at 0,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 12 at 0,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 12 at 0,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 12 at 0,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 12 at 0,0|1	$00000020
+MapCanDraw|kept|map 0 shape 9 at 3,9|1	kept
+MapCanDraw|popped|map 0 shape 9 at 3,9|1	$00000000
+MapCanDraw|d0|map 0 shape 9 at 3,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 9 at 3,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 9 at 3,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 9 at 3,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 9 at 3,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 9 at 3,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 9 at 3,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 9 at 3,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 9 at 3,9|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 9 at 3,9|1	$00000020
+MapCanDraw|kept|map 0 shape 5 at 8,3|1	kept
+MapCanDraw|popped|map 0 shape 5 at 8,3|1	$00000000
+MapCanDraw|d0|map 0 shape 5 at 8,3|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 5 at 8,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 5 at 8,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 5 at 8,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 5 at 8,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 5 at 8,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 5 at 8,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 5 at 8,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 5 at 8,3|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 5 at 8,3|1	$00000020
+MapCanDraw|kept|map 0 shape 2 at 11,0|1	kept
+MapCanDraw|popped|map 0 shape 2 at 11,0|1	$00000000
+MapCanDraw|d0|map 0 shape 2 at 11,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 2 at 11,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 2 at 11,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 2 at 11,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 2 at 11,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 2 at 11,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 2 at 11,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 2 at 11,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 2 at 11,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 2 at 11,0|1	$00000020
+MapCanDraw|kept|map 0 shape 29 at 0,3|1	kept
+MapCanDraw|popped|map 0 shape 29 at 0,3|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 0,3|1	$5A001904
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 0,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 0,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 0,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 0,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 0,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 0,3|1	$0000003C
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 0,3|1	$00000020
+MapCanDraw|kept|map 0 shape 27 at 7,4|1	kept
+MapCanDraw|popped|map 0 shape 27 at 7,4|1	$00000000
+MapCanDraw|d0|map 0 shape 27 at 7,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 27 at 7,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 27 at 7,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 27 at 7,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 27 at 7,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 27 at 7,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 27 at 7,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 27 at 7,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 27 at 7,4|1	$0000003C
+MapCanDraw|map 0 rub-through map|map 0 shape 27 at 7,4|1	$00000020
+MapCanDraw|kept|map 0 shape 22 at 11,9|1	kept
+MapCanDraw|popped|map 0 shape 22 at 11,9|1	$00000000
+MapCanDraw|d0|map 0 shape 22 at 11,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 22 at 11,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 22 at 11,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 22 at 11,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 22 at 11,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 22 at 11,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 22 at 11,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 22 at 11,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 22 at 11,9|1	$0000003C
+MapCanDraw|map 0 rub-through map|map 0 shape 22 at 11,9|1	$00000020
+MapCanDraw|kept|map 0 shape 17 at 11,4|1	kept
+MapCanDraw|popped|map 0 shape 17 at 11,4|1	$00000000
+MapCanDraw|d0|map 0 shape 17 at 11,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 17 at 11,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 17 at 11,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 17 at 11,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 17 at 11,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 17 at 11,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 17 at 11,4|1	$0000003C
+MapCanDraw|map 0 rub-through map|map 0 shape 17 at 11,4|1	$00000020
+MapCanDraw|kept|map 0 shape 9 at 0,0|1	kept
+MapCanDraw|popped|map 0 shape 9 at 0,0|1	$00000000
+MapCanDraw|d0|map 0 shape 9 at 0,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 9 at 0,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 9 at 0,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 9 at 0,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 9 at 0,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 9 at 0,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 9 at 0,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 9 at 0,0|1	$00000020
+MapCanDraw|kept|map 0 shape 1 at 0,9|1	kept
+MapCanDraw|popped|map 0 shape 1 at 0,9|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 0,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 0,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 0,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 0,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 0,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 0,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 0,9|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 0,9|1	$00000020
+MapCanDraw|kept|map 0 shape 29 at 3,8|1	kept
+MapCanDraw|popped|map 0 shape 29 at 3,8|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 3,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 3,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 3,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 3,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 3,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 3,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 3,8|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 3,8|1	$00000020
+MapCanDraw|kept|map 0 shape 10 at 3,1|1	kept
+MapCanDraw|popped|map 0 shape 10 at 3,1|1	$00000000
+MapCanDraw|d0|map 0 shape 10 at 3,1|1	$5A001306
+MapCanDraw|map 0 fields|map 0 shape 10 at 3,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 10 at 3,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 10 at 3,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 10 at 3,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 10 at 3,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 10 at 3,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 10 at 3,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 10 at 3,1|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 10 at 3,1|1	$00000020
+MapCanDraw|kept|map 0 shape 30 at 10,4|1	kept
+MapCanDraw|popped|map 0 shape 30 at 10,4|1	$00000000
+MapCanDraw|d0|map 0 shape 30 at 10,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 30 at 10,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 30 at 10,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 30 at 10,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 30 at 10,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 30 at 10,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 30 at 10,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 30 at 10,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 30 at 10,4|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 30 at 10,4|1	$00000020
+MapCanDraw|kept|map 0 shape 8 at 7,7|1	kept
+MapCanDraw|popped|map 0 shape 8 at 7,7|1	$00000000
+MapCanDraw|d0|map 0 shape 8 at 7,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 8 at 7,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 8 at 7,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 8 at 7,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 8 at 7,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 8 at 7,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 8 at 7,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 8 at 7,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 8 at 7,7|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 8 at 7,7|1	$00000020
+MapCanDraw|kept|map 0 shape 26 at 5,8|1	kept
+MapCanDraw|popped|map 0 shape 26 at 5,8|1	$00000000
+MapCanDraw|d0|map 0 shape 26 at 5,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 26 at 5,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 26 at 5,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 26 at 5,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 26 at 5,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 26 at 5,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 26 at 5,8|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 26 at 5,8|1	$00000020
+MapCanDraw|kept|map 0 shape 29 at 9,1|1	kept
+MapCanDraw|popped|map 0 shape 29 at 9,1|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 9,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 9,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 9,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 9,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 9,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 9,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 9,1|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 9,1|1	$00000020
+MapCanDraw|kept|map 0 shape 29 at 5,6|1	kept
+MapCanDraw|popped|map 0 shape 29 at 5,6|1	$00000000
+MapCanDraw|d0|map 0 shape 29 at 5,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 29 at 5,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 29 at 5,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 29 at 5,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 29 at 5,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 29 at 5,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 29 at 5,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 29 at 5,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 29 at 5,6|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 29 at 5,6|1	$00000020
+MapCanDraw|kept|map 0 shape 6 at 8,8|1	kept
+MapCanDraw|popped|map 0 shape 6 at 8,8|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 8,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 6 at 8,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 8,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 8,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 8,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 8,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 8,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 8,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 8,8|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 8,8|1	$00000020
+MapCanDraw|kept|map 0 shape 27 at 0,7|1	kept
+MapCanDraw|popped|map 0 shape 27 at 0,7|1	$00000000
+MapCanDraw|d0|map 0 shape 27 at 0,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 27 at 0,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 27 at 0,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 27 at 0,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 27 at 0,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 27 at 0,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 27 at 0,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 27 at 0,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 27 at 0,7|1	$0000001A
+MapCanDraw|map 0 rub-through map|map 0 shape 27 at 0,7|1	$00000020
+MapCanDraw|kept|map 0 shape 6 at 1,0|1	kept
+MapCanDraw|popped|map 0 shape 6 at 1,0|1	$00000000
+MapCanDraw|d0|map 0 shape 6 at 1,0|1	$5A00100C
+MapCanDraw|map 0 fields|map 0 shape 6 at 1,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 6 at 1,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 6 at 1,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 6 at 1,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 6 at 1,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 6 at 1,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 6 at 1,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 6 at 1,0|1	$00000002
+MapCanDraw|map 0 rub-through map|map 0 shape 6 at 1,0|1	$00000020
+MapCanDraw|kept|map 0 shape 4 at 6,4|1	kept
+MapCanDraw|popped|map 0 shape 4 at 6,4|1	$00000000
+MapCanDraw|d0|map 0 shape 4 at 6,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 4 at 6,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 4 at 6,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 4 at 6,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 4 at 6,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 4 at 6,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 4 at 6,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 4 at 6,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 4 at 6,4|1	$00000002
+MapCanDraw|map 0 rub-through map|map 0 shape 4 at 6,4|1	$00000020
+MapCanDraw|kept|map 0 shape 18 at 7,6|1	kept
+MapCanDraw|popped|map 0 shape 18 at 7,6|1	$00000000
+MapCanDraw|d0|map 0 shape 18 at 7,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 18 at 7,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 18 at 7,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 18 at 7,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 18 at 7,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 18 at 7,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 18 at 7,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 18 at 7,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 18 at 7,6|1	$00000002
+MapCanDraw|map 0 rub-through map|map 0 shape 18 at 7,6|1	$00000020
+MapCanDraw|kept|map 0 shape 1 at 9,9|1	kept
+MapCanDraw|popped|map 0 shape 1 at 9,9|1	$00000000
+MapCanDraw|d0|map 0 shape 1 at 9,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 1 at 9,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 1 at 9,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 1 at 9,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 1 at 9,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 1 at 9,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 1 at 9,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 1 at 9,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 1 at 9,9|1	$00000002
+MapCanDraw|map 0 rub-through map|map 0 shape 1 at 9,9|1	$00000020
+MapCanDraw|kept|map 0 shape 3 at 5,0|1	kept
+MapCanDraw|popped|map 0 shape 3 at 5,0|1	$00000000
+MapCanDraw|d0|map 0 shape 3 at 5,0|1	$5A001C1B
+MapCanDraw|map 0 fields|map 0 shape 3 at 5,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 3 at 5,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 3 at 5,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 3 at 5,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 3 at 5,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 3 at 5,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 3 at 5,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 3 at 5,0|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 3 at 5,0|1	$00000020
+MapCanDraw|kept|map 0 shape 8 at 4,6|1	kept
+MapCanDraw|popped|map 0 shape 8 at 4,6|1	$00000000
+MapCanDraw|d0|map 0 shape 8 at 4,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 8 at 4,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 8 at 4,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 8 at 4,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 8 at 4,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 8 at 4,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 8 at 4,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 8 at 4,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 8 at 4,6|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 8 at 4,6|1	$00000020
+MapCanDraw|kept|map 0 shape 24 at 1,6|1	kept
+MapCanDraw|popped|map 0 shape 24 at 1,6|1	$00000000
+MapCanDraw|d0|map 0 shape 24 at 1,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 24 at 1,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 24 at 1,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 24 at 1,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 24 at 1,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 24 at 1,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 24 at 1,6|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 24 at 1,6|1	$00000020
+MapCanDraw|kept|map 0 shape 4 at 8,7|1	kept
+MapCanDraw|popped|map 0 shape 4 at 8,7|1	$00000000
+MapCanDraw|d0|map 0 shape 4 at 8,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 4 at 8,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 4 at 8,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 4 at 8,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 4 at 8,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 4 at 8,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 4 at 8,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 4 at 8,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 4 at 8,7|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 4 at 8,7|1	$00000020
+MapCanDraw|kept|map 0 shape 10 at 7,9|1	kept
+MapCanDraw|popped|map 0 shape 10 at 7,9|1	$00000000
+MapCanDraw|d0|map 0 shape 10 at 7,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 10 at 7,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 10 at 7,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 10 at 7,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 10 at 7,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 10 at 7,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 10 at 7,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 10 at 7,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 10 at 7,9|1	$0000000A
+MapCanDraw|map 0 rub-through map|map 0 shape 10 at 7,9|1	$00000020
+MapCanDraw|kept|map 0 shape 4 at 2,1|1	kept
+MapCanDraw|popped|map 0 shape 4 at 2,1|1	$00000000
+MapCanDraw|d0|map 0 shape 4 at 2,1|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,1|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,1|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 4 at 2,1|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 4 at 2,1|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 4 at 2,1|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 4 at 2,1|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 4 at 2,1|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 4 at 2,1|1	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 4 at 2,1|1	$00000020
+MapCanDraw|kept|map 0 shape 9 at 1,7|1	kept
+MapCanDraw|popped|map 0 shape 9 at 1,7|1	$00000000
+MapCanDraw|d0|map 0 shape 9 at 1,7|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 9 at 1,7|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 9 at 1,7|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 9 at 1,7|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 9 at 1,7|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 9 at 1,7|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 9 at 1,7|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 9 at 1,7|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 9 at 1,7|1	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 9 at 1,7|1	$00000020
+MapCanDraw|kept|map 0 shape 22 at 8,9|1	kept
+MapCanDraw|popped|map 0 shape 22 at 8,9|1	$00000000
+MapCanDraw|d0|map 0 shape 22 at 8,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 22 at 8,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 22 at 8,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 22 at 8,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 22 at 8,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 22 at 8,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 22 at 8,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 22 at 8,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 22 at 8,9|1	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 22 at 8,9|1	$00000020
+MapCanDraw|kept|map 0 shape 23 at 4,6|2	kept
+MapCanDraw|popped|map 0 shape 23 at 4,6|2	$00000000
+MapCanDraw|d0|map 0 shape 23 at 4,6|2	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|4	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|5	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 23 at 4,6|6	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 23 at 4,6|2	$00000001
+MapCanDraw|map 0 data|map 0 shape 23 at 4,6|2	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 23 at 4,6|3	$00000001
+MapCanDraw|map 0 name|map 0 shape 23 at 4,6|4	"level1"
+MapCanDraw|map 0 last address|map 0 shape 23 at 4,6|2	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 23 at 4,6|2	$00000020
+MapCanDraw|kept|map 0 shape 20 at 7,8|1	kept
+MapCanDraw|popped|map 0 shape 20 at 7,8|1	$00000000
+MapCanDraw|d0|map 0 shape 20 at 7,8|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 20 at 7,8|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 20 at 7,8|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 20 at 7,8|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 20 at 7,8|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 20 at 7,8|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 20 at 7,8|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 20 at 7,8|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 20 at 7,8|1	$00000018
+MapCanDraw|map 0 rub-through map|map 0 shape 20 at 7,8|1	$00000020
+MapCanDraw|kept|map 0 shape 21 at 1,3|1	kept
+MapCanDraw|popped|map 0 shape 21 at 1,3|1	$00000000
+MapCanDraw|d0|map 0 shape 21 at 1,3|1	$5A000505
+MapCanDraw|map 0 fields|map 0 shape 21 at 1,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 21 at 1,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 21 at 1,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 21 at 1,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 21 at 1,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 21 at 1,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 21 at 1,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 21 at 1,3|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 21 at 1,3|1	$00000020
+MapCanDraw|kept|map 0 shape 10 at 2,6|1	kept
+MapCanDraw|popped|map 0 shape 10 at 2,6|1	$00000000
+MapCanDraw|d0|map 0 shape 10 at 2,6|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 10 at 2,6|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 10 at 2,6|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 10 at 2,6|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 10 at 2,6|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 10 at 2,6|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 10 at 2,6|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 10 at 2,6|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 10 at 2,6|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 10 at 2,6|1	$00000020
+MapCanDraw|kept|map 0 shape 7 at 5,9|1	kept
+MapCanDraw|popped|map 0 shape 7 at 5,9|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 5,9|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,9|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,9|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 5,9|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 5,9|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 5,9|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 5,9|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 5,9|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 5,9|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 5,9|1	$00000020
+MapCanDraw|kept|map 0 shape 0 at 11,3|1	kept
+MapCanDraw|popped|map 0 shape 0 at 11,3|1	$00000000
+MapCanDraw|d0|map 0 shape 0 at 11,3|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 0 at 11,3|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 0 at 11,3|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 0 at 11,3|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 0 at 11,3|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 0 at 11,3|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 0 at 11,3|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 0 at 11,3|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 0 at 11,3|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 0 at 11,3|1	$00000020
+MapCanDraw|kept|map 0 shape 25 at 9,5|1	kept
+MapCanDraw|popped|map 0 shape 25 at 9,5|1	$00000000
+MapCanDraw|d0|map 0 shape 25 at 9,5|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,5|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,5|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 25 at 9,5|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 25 at 9,5|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 25 at 9,5|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 25 at 9,5|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 25 at 9,5|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 25 at 9,5|1	$0000003E
+MapCanDraw|map 0 rub-through map|map 0 shape 25 at 9,5|1	$00000020
+MapCanDraw|kept|map 0 shape 18 at 0,0|1	kept
+MapCanDraw|popped|map 0 shape 18 at 0,0|1	$00000000
+MapCanDraw|d0|map 0 shape 18 at 0,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 18 at 0,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 18 at 0,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 18 at 0,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 18 at 0,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 18 at 0,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 18 at 0,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 18 at 0,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 18 at 0,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 18 at 0,0|1	$00000020
+MapCanDraw|kept|map 0 shape 7 at 6,0|1	kept
+MapCanDraw|popped|map 0 shape 7 at 6,0|1	$00000000
+MapCanDraw|d0|map 0 shape 7 at 6,0|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 7 at 6,0|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 7 at 6,0|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 7 at 6,0|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 7 at 6,0|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 7 at 6,0|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 7 at 6,0|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 7 at 6,0|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 7 at 6,0|1	$00000000
+MapCanDraw|map 0 rub-through map|map 0 shape 7 at 6,0|1	$00000020
+RubThroughMap|inline|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000001
+RubThroughMap|inline length|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000004
+RubThroughMap|kept|map 0 d0 $5A5A5A5A d1 $00000000|2	kept
+RubThroughMap|popped|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000000
+RubThroughMap|d0|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000020
+RubThroughMap|d1|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000000
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|4	bytes 10 000A0008001000100100
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|5	bytes 4 00000000
+RubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|6	$0000FFFF
+RubThroughMap|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000001
+RubThroughMap|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 160 fnv 0813BB2C
+RubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|3	$00000001
+RubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|4	"level1"
+RubThroughMap|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000000
+RubThroughMap|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|2	$00000020
+ClearRubThroughMap|inline|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+ClearRubThroughMap|inline length|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000004
+ClearRubThroughMap|kept|map 0 d0 $5A5A5A5A d1 $00000000|1	kept
+ClearRubThroughMap|popped|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+ClearRubThroughMap|d0|map 0 d0 $5A5A5A5A d1 $00000000|1	$5A5A5A5A
+ClearRubThroughMap|d1|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+ClearRubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 10 000A0008001000100100
+ClearRubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|2	bytes 4 00000000
+ClearRubThroughMap|map 0 fields|map 0 d0 $5A5A5A5A d1 $00000000|3	$0000FFFF
+ClearRubThroughMap|map 0 data set|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+ClearRubThroughMap|map 0 data|map 0 d0 $5A5A5A5A d1 $00000000|1	bytes 160 fnv 0813BB2C
+ClearRubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000001
+ClearRubThroughMap|map 0 name|map 0 d0 $5A5A5A5A d1 $00000000|2	"level1"
+ClearRubThroughMap|map 0 last address|map 0 d0 $5A5A5A5A d1 $00000000|1	$00000000
+ClearRubThroughMap|map 0 rub-through map|map 0 d0 $5A5A5A5A d1 $00000000|1	$7FFFFFFF
+MapCanDraw|kept|map 0 shape 3 at 4,4|1	kept
+MapCanDraw|popped|map 0 shape 3 at 4,4|1	$00000000
+MapCanDraw|d0|map 0 shape 3 at 4,4|1	$FFFFFFFF
+MapCanDraw|map 0 fields|map 0 shape 3 at 4,4|1	bytes 10 000A0008001000100100
+MapCanDraw|map 0 fields|map 0 shape 3 at 4,4|2	bytes 4 00000000
+MapCanDraw|map 0 fields|map 0 shape 3 at 4,4|3	$0000FFFF
+MapCanDraw|map 0 data set|map 0 shape 3 at 4,4|1	$00000001
+MapCanDraw|map 0 data|map 0 shape 3 at 4,4|1	bytes 160 fnv 0813BB2C
+MapCanDraw|map 0 name|map 0 shape 3 at 4,4|1	$00000001
+MapCanDraw|map 0 name|map 0 shape 3 at 4,4|2	"level1"
+MapCanDraw|map 0 last address|map 0 shape 3 at 4,4|1	$00000058
+MapCanDraw|map 0 rub-through map|map 0 shape 3 at 4,4|1	$7FFFFFFF
+ScanShapes|kept|0,3|1	kept
+ScanShapes|popped|0,3|1	$00000000
+ScanShapes|d0|0,3|1	$5A000003
+ScanMaxWidth|kept|0,3|1	kept
+ScanMaxWidth|popped|0,3|1	$00000000
+ScanMaxWidth|d0|0,3|1	$5A5A0030
+ScanMaxheight|kept|0,3|1	kept
+ScanMaxheight|popped|0,3|1	$00000000
+ScanMaxheight|d0|0,3|1	$5A5A0017
+ScanMaxdepth|kept|0,3|1	kept
+ScanMaxdepth|popped|0,3|1	$00000000
+ScanMaxdepth|d0|0,3|1	$5A5A0003
+ScanShapes|kept|0,15|1	kept
+ScanShapes|popped|0,15|1	$00000000
+ScanShapes|d0|0,15|1	$5A000007
+ScanMaxWidth|kept|0,15|1	kept
+ScanMaxWidth|popped|0,15|1	$00000000
+ScanMaxWidth|d0|0,15|1	$5A5A0040
+ScanMaxheight|kept|0,15|1	kept
+ScanMaxheight|popped|0,15|1	$00000000
+ScanMaxheight|d0|0,15|1	$5A5A001F
+ScanMaxdepth|kept|0,15|1	kept
+ScanMaxdepth|popped|0,15|1	$00000000
+ScanMaxdepth|d0|0,15|1	$5A5A0003
+ScanShapes|kept|8,8|1	kept
+ScanShapes|popped|8,8|1	$00000000
+ScanShapes|d0|8,8|1	$5A000008
+ScanMaxWidth|kept|8,8|1	kept
+ScanMaxWidth|popped|8,8|1	$00000000
+ScanMaxWidth|d0|8,8|1	$5A5A0018
+ScanMaxheight|kept|8,8|1	kept
+ScanMaxheight|popped|8,8|1	$00000000
+ScanMaxheight|d0|8,8|1	$5A5A0005
+ScanMaxdepth|kept|8,8|1	kept
+ScanMaxdepth|popped|8,8|1	$00000000
+ScanMaxdepth|d0|8,8|1	$5A5A0004
+ScanShapes|kept|4,6|1	kept
+ScanShapes|popped|4,6|1	$00000000
+ScanShapes|d0|4,6|1	$5A000006
+ScanMaxWidth|kept|4,6|1	kept
+ScanMaxWidth|popped|4,6|1	$00000000
+ScanMaxWidth|d0|4,6|1	$5A5A0040
+ScanMaxheight|kept|4,6|1	kept
+ScanMaxheight|popped|4,6|1	$00000000
+ScanMaxheight|d0|4,6|1	$5A5A001F
+ScanMaxdepth|kept|4,6|1	kept
+ScanMaxdepth|popped|4,6|1	$00000000
+ScanMaxdepth|d0|4,6|1	$5A5A0002
+ScanShapes|kept|11,12|1	kept
+ScanShapes|popped|11,12|1	$00000000
+ScanShapes|d0|11,12|1	$5A00000C
+ScanMaxWidth|kept|11,12|1	kept
+ScanMaxWidth|popped|11,12|1	$00000000
+ScanMaxWidth|d0|11,12|1	$5A5A0060
+ScanMaxheight|kept|11,12|1	kept
+ScanMaxheight|popped|11,12|1	$00000000
+ScanMaxheight|d0|11,12|1	$5A5A000C
+ScanMaxdepth|kept|11,12|1	kept
+ScanMaxdepth|popped|11,12|1	$00000000
+ScanMaxdepth|d0|11,12|1	$5A5A0002
+ScanShapes|kept|13,2|1	kept
+ScanShapes|popped|13,2|1	$00000000
+ScanShapes|d0|13,2|1	$5A00000F
+ScanMaxWidth|kept|13,2|1	kept
+ScanMaxWidth|popped|13,2|1	$00000000
+ScanMaxWidth|d0|13,2|1	$5A5A0070
+ScanMaxheight|kept|13,2|1	kept
+ScanMaxheight|popped|13,2|1	$00000000
+ScanMaxheight|d0|13,2|1	$5A5A000E
+ScanMaxdepth|kept|13,2|1	kept
+ScanMaxdepth|popped|13,2|1	$00000000
+ScanMaxdepth|d0|13,2|1	$5A5A0004
+ShapeTo1616|kept|shape 0 (9 high, depth 2)|1	kept
+ShapeTo1616|popped|shape 0 (9 high, depth 2)|1	$00000000
+ShapeTo1616|dest|shape 0 (9 high, depth 2)|1	bytes 200 fnv F274998A
+ShapeTo1616|kept|shape 1 (16 high, depth 3)|1	kept
+ShapeTo1616|popped|shape 1 (16 high, depth 3)|1	$00000000
+ShapeTo1616|dest|shape 1 (16 high, depth 3)|1	bytes 200 fnv EB523979
+ShapeTo1616|kept|shape 2 (23 high, depth 1)|1	kept
+ShapeTo1616|popped|shape 2 (23 high, depth 1)|1	$00000000
+ShapeTo1616|dest|shape 2 (23 high, depth 1)|1	bytes 200 fnv D302DB6D
+ShapeTo1616|kept|shape 3 (1 high, depth 3)|1	kept
+ShapeTo1616|popped|shape 3 (1 high, depth 3)|1	$00000000
+ShapeTo1616|dest|shape 3 (1 high, depth 3)|1	bytes 200 fnv A5F66286
+ShapeTo1616|kept|shape 8 (5 high, depth 4)|1	kept
+ShapeTo1616|popped|shape 8 (5 high, depth 4)|1	$00000000
+ShapeTo1616|dest|shape 8 (5 high, depth 4)|1	bytes 200 fnv 593A7E7B
+ShapeTo1616|kept|shape 9 (33 high, depth 2)|1	kept
+ShapeTo1616|popped|shape 9 (33 high, depth 2)|1	$00000000
+ShapeTo1616|dest|shape 9 (33 high, depth 2)|1	bytes 200 fnv 51D5A578
+ShapeTo1616|kept|shape 11 (11 high, depth 1)|1	kept
+ShapeTo1616|popped|shape 11 (11 high, depth 1)|1	$00000000
+ShapeTo1616|dest|shape 11 (11 high, depth 1)|1	bytes 200 fnv 3AA04DC1
+ShapeMaskFill|kept||1	kept
+ShapeMaskFill|popped||1	$00000000
+ShapeMaskFill|cookie||1	bytes 48 FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF11111111111111111111111111111111
+FillBitplane|kept|16,1|1	kept
+FillBitplane|popped|16,1|1	$00000000
+FillBitplane|plane|16,1|1	bytes 544 fnv D4801901
+FillBitplane|kept|64,7|1	kept
+FillBitplane|popped|64,7|1	$00000000
+FillBitplane|plane|64,7|1	bytes 544 fnv 76CA8B6D
+FillBitplane|kept|160,24|1	kept
+FillBitplane|popped|160,24|1	$00000000
+FillBitplane|plane|160,24|1	bytes 544 fnv 968F9C55
+FillBitplane|kept|100,3|1	kept
+FillBitplane|popped|100,3|1	$00000000
+FillBitplane|plane|100,3|1	bytes 544 fnv 7364B3C9
+FillBitplane|kept|31,2|1	kept
+FillBitplane|popped|31,2|1	$00000000
+FillBitplane|plane|31,2|1	bytes 544 fnv 9432A27B
+MapObjName$|kept|map 0|1	kept
+MapObjName$|popped|map 0|1	$00000000
+MapObjName$|d0|map 0|1	$00000006
+MapObjName$|a3|map 0|1	$00000006
+MapObjName$|string|map 0|1	bytes 400 fnv F79B88C0
+MapObjName$|kept|map 1|1	kept
+MapObjName$|popped|map 1|1	$00000000
+MapObjName$|d0|map 1|1	$00000000
+MapObjName$|a3|map 1|1	$00000000
+MapObjName$|string|map 1|1	bytes 400 fnv FC2BB505
+SetMapObjName$|kept|map 1 "renamed map"|1	kept
+SetMapObjName$|popped|map 1 "renamed map"|1	$00000000
+SetMapObjName$|map 1 fields|map 1 "renamed map"|1	bytes 10 00060005002000080100
+SetMapObjName$|map 1 fields|map 1 "renamed map"|2	bytes 4 00000000
+SetMapObjName$|map 1 fields|map 1 "renamed map"|3	$00007FFE
+SetMapObjName$|map 1 data set|map 1 "renamed map"|1	$00000001
+SetMapObjName$|map 1 data|map 1 "renamed map"|1	bytes 60 130B100C020115001B141C1B0C140007181D130600151B190E06150B181C0719050B1D1A1904050516130711040815150810111101091B1B0F15131A
+SetMapObjName$|map 1 name|map 1 "renamed map"|1	$00000001
+SetMapObjName$|map 1 name|map 1 "renamed map"|2	"renamed map"
+SetMapObjName$|map 1 last address|map 1 "renamed map"|1	$7FFFFFFF
+SetMapObjName$|map 1 rub-through map|map 1 "renamed map"|1	$7FFFFFFF
+MapObjName$|kept|map 1|2	kept
+MapObjName$|popped|map 1|2	$00000000
+MapObjName$|d0|map 1|2	$0000000B
+MapObjName$|a3|map 1|2	$0000000B
+MapObjName$|string|map 1|2	bytes 400 fnv CC9739C3
+SetMapObjName$|kept|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	kept
+SetMapObjName$|popped|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	$00000000
+SetMapObjName$|map 0 fields|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	bytes 10 000A0008001000100100
+SetMapObjName$|map 0 fields|map 0 "nnnnnnnnnnnnnnnnnnnn"|2	bytes 4 00000000
+SetMapObjName$|map 0 fields|map 0 "nnnnnnnnnnnnnnnnnnnn"|3	$0000FFFF
+SetMapObjName$|map 0 data set|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	$00000001
+SetMapObjName$|map 0 data|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	bytes 160 fnv 0813BB2C
+SetMapObjName$|map 0 name|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	$00000001
+SetMapObjName$|map 0 name|map 0 "nnnnnnnnnnnnnnnnnnnn"|2	"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+SetMapObjName$|map 0 last address|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	$00000058
+SetMapObjName$|map 0 rub-through map|map 0 "nnnnnnnnnnnnnnnnnnnn"|1	$7FFFFFFF
+MapObjName$|kept|map 0|2	kept
+MapObjName$|popped|map 0|2	$00000000
+MapObjName$|d0|map 0|2	$0000002C
+MapObjName$|a3|map 0|2	$0000012C
+MapObjName$|string|map 0|2	bytes 400 fnv 9B119A05
+SetMapObjName$|kept|map 0 ""|1	kept
+SetMapObjName$|popped|map 0 ""|1	$00000000
+SetMapObjName$|map 0 fields|map 0 ""|1	bytes 10 000A0008001000100100
+SetMapObjName$|map 0 fields|map 0 ""|2	bytes 4 00000000
+SetMapObjName$|map 0 fields|map 0 ""|3	$0000FFFF
+SetMapObjName$|map 0 data set|map 0 ""|1	$00000001
+SetMapObjName$|map 0 data|map 0 ""|1	bytes 160 fnv 0813BB2C
+SetMapObjName$|map 0 name|map 0 ""|1	$00000000
+SetMapObjName$|map 0 last address|map 0 ""|1	$00000058
+SetMapObjName$|map 0 rub-through map|map 0 ""|1	$7FFFFFFF
+MapObjName$|kept|map 0|3	kept
+MapObjName$|popped|map 0|3	$00000000
+MapObjName$|d0|map 0|3	$00000000
+MapObjName$|a3|map 0|3	$00000000
+MapObjName$|string|map 0|3	bytes 400 fnv FC2BB505
+SetMapObjName$|kept|map 3 "third"|1	kept
+SetMapObjName$|popped|map 3 "third"|1	$00000000
+SetMapObjName$|map 3 fields|map 3 "third"|1	bytes 10 00090004000800100100
+SetMapObjName$|map 3 fields|map 3 "third"|2	bytes 4 00000000
+SetMapObjName$|map 3 fields|map 3 "third"|3	$00007FFC
+SetMapObjName$|map 3 data set|map 3 "third"|1	$00000001
+SetMapObjName$|map 3 data|map 3 "third"|1	bytes 72 fnv 04A6BD72
+SetMapObjName$|map 3 name|map 3 "third"|1	$00000001
+SetMapObjName$|map 3 name|map 3 "third"|2	"third"
+SetMapObjName$|map 3 last address|map 3 "third"|1	$7FFFFFFF
+SetMapObjName$|map 3 rub-through map|map 3 "third"|1	$7FFFFFFF
+MapObjName$|kept|map 3|1	kept
+MapObjName$|popped|map 3|1	$00000000
+MapObjName$|d0|map 3|1	$00000005
+MapObjName$|a3|map 3|1	$00000005
+MapObjName$|string|map 3|1	bytes 400 fnv C3CB03AC
+MapOutTextPen|kept|1|1	kept
+MapOutTextPen|popped|1|1	$00000000
+MapOutTextPen|bitmap plane 0|1|1	bytes 2560 fnv B360A5C5
+MapOutTextPen|bitmap plane 1|1|1	bytes 2560 fnv B360A5C5
+MapOutTextPen|cp_x|1|1	$00000000
+MapOutTextPen|cp_y|1|1	$00000000
+MapOutTextPen|FgPen|1|1	$00000001
+MapOutText|kept|4,2 "Hello"|1	kept
+MapOutText|popped|4,2 "Hello"|1	$00000000
+MapOutText|bitmap plane 0|4,2 "Hello"|1	bytes 2560 fnv 0287A94D
+MapOutText|bitmap plane 1|4,2 "Hello"|1	bytes 2560 fnv B360A5C5
+MapOutText|cp_x|4,2 "Hello"|1	$0000002C
+MapOutText|cp_y|4,2 "Hello"|1	$00000008
+MapOutText|FgPen|4,2 "Hello"|1	$00000001
+MapOutTextPen|kept|2|1	kept
+MapOutTextPen|popped|2|1	$00000000
+MapOutTextPen|bitmap plane 0|2|1	bytes 2560 fnv 0287A94D
+MapOutTextPen|bitmap plane 1|2|1	bytes 2560 fnv B360A5C5
+MapOutTextPen|cp_x|2|1	$0000002C
+MapOutTextPen|cp_y|2|1	$00000008
+MapOutTextPen|FgPen|2|1	$00000002
+MapOutTextCenter|kept|160,12 "Centered"|1	kept
+MapOutTextCenter|popped|160,12 "Centered"|1	$00000000
+MapOutTextCenter|bitmap plane 0|160,12 "Centered"|1	bytes 2560 fnv 0287A94D
+MapOutTextCenter|bitmap plane 1|160,12 "Centered"|1	bytes 2560 fnv 133ED7B5
+MapOutTextCenter|cp_x|160,12 "Centered"|1	$000000C0
+MapOutTextCenter|cp_y|160,12 "Centered"|1	$00000012
+MapOutTextCenter|FgPen|160,12 "Centered"|1	$00000002
+MapOutTextPen|kept|3|1	kept
+MapOutTextPen|popped|3|1	$00000000
+MapOutTextPen|bitmap plane 0|3|1	bytes 2560 fnv 0287A94D
+MapOutTextPen|bitmap plane 1|3|1	bytes 2560 fnv 133ED7B5
+MapOutTextPen|cp_x|3|1	$000000C0
+MapOutTextPen|cp_y|3|1	$00000012
+MapOutTextPen|FgPen|3|1	$00000003
+MapOutTextRight|kept|300,24 "Right"|1	kept
+MapOutTextRight|popped|300,24 "Right"|1	$00000000
+MapOutTextRight|bitmap plane 0|300,24 "Right"|1	bytes 2560 fnv 1BBC0378
+MapOutTextRight|bitmap plane 1|300,24 "Right"|1	bytes 2560 fnv 5F3D6EA0
+MapOutTextRight|cp_x|300,24 "Right"|1	$0000012D
+MapOutTextRight|cp_y|300,24 "Right"|1	$0000001E
+MapOutTextRight|FgPen|300,24 "Right"|1	$00000003
+MapOutTextCenter|kept|100,30 "x"|1	kept
+MapOutTextCenter|popped|100,30 "x"|1	$00000000
+MapOutTextCenter|bitmap plane 0|100,30 "x"|1	bytes 2560 fnv D296F5C0
+MapOutTextCenter|bitmap plane 1|100,30 "x"|1	bytes 2560 fnv DAF70C18
+MapOutTextCenter|cp_x|100,30 "x"|1	$00000068
+MapOutTextCenter|cp_y|100,30 "x"|1	$00000024
+MapOutTextCenter|FgPen|100,30 "x"|1	$00000003
+MapOutTextRight|kept|200,30 ""|1	kept
+MapOutTextRight|popped|200,30 ""|1	$00000000
+MapOutTextRight|bitmap plane 0|200,30 ""|1	bytes 2560 fnv D296F5C0
+MapOutTextRight|bitmap plane 1|200,30 ""|1	bytes 2560 fnv DAF70C18
+MapOutTextRight|cp_x|200,30 ""|1	$000000C9
+MapOutTextRight|cp_y|200,30 ""|1	$00000024
+MapOutTextRight|FgPen|200,30 ""|1	$00000003
+MapOutText|kept|250,2 ""|1	kept
+MapOutText|popped|250,2 ""|1	$00000000
+MapOutText|bitmap plane 0|250,2 ""|1	bytes 2560 fnv D296F5C0
+MapOutText|bitmap plane 1|250,2 ""|1	bytes 2560 fnv DAF70C18
+MapOutText|cp_x|250,2 ""|1	$000000FA
+MapOutText|cp_y|250,2 ""|1	$00000008
+MapOutText|FgPen|250,2 ""|1	$00000003
+SetWindowDraw|kept|mode $00000001|1	kept
+SetWindowDraw|popped|mode $00000001|1	$00000000
+SetWindowDraw|AreaPtrn set|mode $00000001|1	$00000001
+SetWindowDraw|AreaPtrn[0]|mode $00000001|1	$0000AAAA
+SetWindowDraw|AreaPtrn[1]|mode $00000001|1	$00005555
+SetWindowDraw|AreaPtSz|mode $00000001|1	$00000001
+SetWindowDraw|DrawMode|mode $00000001|1	$00000077
+SetWindowDraw|kept|mode $00000000|1	kept
+SetWindowDraw|popped|mode $00000000|1	$00000000
+SetWindowDraw|AreaPtrn set|mode $00000000|1	$00000000
+SetWindowDraw|AreaPtSz|mode $00000000|1	$00000000
+SetWindowDraw|DrawMode|mode $00000000|1	$00000077
+SetWindowDraw|kept|mode $5A010000|1	kept
+SetWindowDraw|popped|mode $5A010000|1	$00000000
+SetWindowDraw|AreaPtrn set|mode $5A010000|1	$00000000
+SetWindowDraw|AreaPtSz|mode $5A010000|1	$00000000
+SetWindowDraw|DrawMode|mode $5A010000|1	$00000077
+M_NextArg$|kept|mode $5A010000|1	kept
+M_NextArg$|popped|mode $5A010000|1	$00000000
+M_NextArg$|d0|mode $5A010000|1	$00000000
+M_NextArg$|a3|mode $5A010000|1	$00000000
+M_NextArg$|string|mode $5A010000|1	bytes 400 fnv FC2BB505
+M_InitParse|kept|""|1	kept
+M_InitParse|popped|""|1	$00000000
+M_NextArg$|kept|""|1	kept
+M_NextArg$|popped|""|1	$00000000
+M_NextArg$|d0|""|1	$00000000
+M_NextArg$|a3|""|1	$00000000
+M_NextArg$|string|""|1	bytes 400 fnv FC2BB505
+M_NextArg$|kept|""|2	kept
+M_NextArg$|popped|""|2	$00000000
+M_NextArg$|d0|""|2	$00000000
+M_NextArg$|a3|""|2	$00000000
+M_NextArg$|string|""|2	bytes 400 fnv FC2BB505
+M_NextArg$|kept|""|3	kept
+M_NextArg$|popped|""|3	$00000000
+M_NextArg$|d0|""|3	$00000000
+M_NextArg$|a3|""|3	$00000000
+M_NextArg$|string|""|3	bytes 400 fnv FC2BB505
+M_NextArg$|kept|""|4	kept
+M_NextArg$|popped|""|4	$00000000
+M_NextArg$|d0|""|4	$00000000
+M_NextArg$|a3|""|4	$00000000
+M_NextArg$|string|""|4	bytes 400 fnv FC2BB505
+M_NextArg$|kept|""|5	kept
+M_NextArg$|popped|""|5	$00000000
+M_NextArg$|d0|""|5	$00000000
+M_NextArg$|a3|""|5	$00000000
+M_NextArg$|string|""|5	bytes 400 fnv FC2BB505
+M_NextArg$|kept|""|6	kept
+M_NextArg$|popped|""|6	$00000000
+M_NextArg$|d0|""|6	$00000000
+M_NextArg$|a3|""|6	$00000000
+M_NextArg$|string|""|6	bytes 400 fnv FC2BB505
+M_InitParse|kept|","|1	kept
+M_InitParse|popped|","|1	$00000000
+M_NextArg$|kept|","|1	kept
+M_NextArg$|popped|","|1	$00000000
+M_NextArg$|d0|","|1	$00000000
+M_NextArg$|a3|","|1	$00000000
+M_NextArg$|string|","|1	bytes 400 fnv FC2BB505
+M_NextArg$|kept|","|2	kept
+M_NextArg$|popped|","|2	$00000000
+M_NextArg$|d0|","|2	$00000000
+M_NextArg$|a3|","|2	$00000000
+M_NextArg$|string|","|2	bytes 400 fnv FC2BB505
+M_NextArg$|kept|","|3	kept
+M_NextArg$|popped|","|3	$00000000
+M_NextArg$|d0|","|3	$00000000
+M_NextArg$|a3|","|3	$00000000
+M_NextArg$|string|","|3	bytes 400 fnv FC2BB505
+M_NextArg$|kept|","|4	kept
+M_NextArg$|popped|","|4	$00000000
+M_NextArg$|d0|","|4	$00000000
+M_NextArg$|a3|","|4	$00000000
+M_NextArg$|string|","|4	bytes 400 fnv FC2BB505
+M_NextArg$|kept|","|5	kept
+M_NextArg$|popped|","|5	$00000000
+M_NextArg$|d0|","|5	$00000000
+M_NextArg$|a3|","|5	$00000000
+M_NextArg$|string|","|5	bytes 400 fnv FC2BB505
+M_NextArg$|kept|","|6	kept
+M_NextArg$|popped|","|6	$00000000
+M_NextArg$|d0|","|6	$00000000
+M_NextArg$|a3|","|6	$00000000
+M_NextArg$|string|","|6	bytes 400 fnv FC2BB505
+M_InitParse|kept|"alpha,beta,,gamma delta, x"|1	kept
+M_InitParse|popped|"alpha,beta,,gamma delta, x"|1	$00000000
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|1	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|1	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|1	$00000005
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|1	$00000005
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|1	bytes 400 fnv 768BBC57
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|2	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|2	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|2	$00000004
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|2	$00000004
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|2	bytes 400 fnv D9EE78B7
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|3	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|3	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|3	$00000000
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|3	$00000000
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|3	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|4	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|4	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|4	$0000000B
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|4	$0000000B
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|4	bytes 400 fnv B0D195DA
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|5	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|5	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|5	$00000002
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|5	$00000002
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|5	bytes 400 fnv 709F6A3D
+M_NextArg$|kept|"alpha,beta,,gamma delta, x"|6	kept
+M_NextArg$|popped|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|d0|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|a3|"alpha,beta,,gamma delta, x"|6	$00000000
+M_NextArg$|string|"alpha,beta,,gamma delta, x"|6	bytes 400 fnv FC2BB505
+M_InitParse|kept|"one"|1	kept
+M_InitParse|popped|"one"|1	$00000000
+M_NextArg$|kept|"one"|1	kept
+M_NextArg$|popped|"one"|1	$00000000
+M_NextArg$|d0|"one"|1	$00000003
+M_NextArg$|a3|"one"|1	$00000003
+M_NextArg$|string|"one"|1	bytes 400 fnv 675CEE23
+M_NextArg$|kept|"one"|2	kept
+M_NextArg$|popped|"one"|2	$00000000
+M_NextArg$|d0|"one"|2	$00000000
+M_NextArg$|a3|"one"|2	$00000000
+M_NextArg$|string|"one"|2	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"one"|3	kept
+M_NextArg$|popped|"one"|3	$00000000
+M_NextArg$|d0|"one"|3	$00000000
+M_NextArg$|a3|"one"|3	$00000000
+M_NextArg$|string|"one"|3	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"one"|4	kept
+M_NextArg$|popped|"one"|4	$00000000
+M_NextArg$|d0|"one"|4	$00000000
+M_NextArg$|a3|"one"|4	$00000000
+M_NextArg$|string|"one"|4	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"one"|5	kept
+M_NextArg$|popped|"one"|5	$00000000
+M_NextArg$|d0|"one"|5	$00000000
+M_NextArg$|a3|"one"|5	$00000000
+M_NextArg$|string|"one"|5	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"one"|6	kept
+M_NextArg$|popped|"one"|6	$00000000
+M_NextArg$|d0|"one"|6	$00000000
+M_NextArg$|a3|"one"|6	$00000000
+M_NextArg$|string|"one"|6	bytes 400 fnv FC2BB505
+M_InitParse|kept|"a,b,"|1	kept
+M_InitParse|popped|"a,b,"|1	$00000000
+M_NextArg$|kept|"a,b,"|1	kept
+M_NextArg$|popped|"a,b,"|1	$00000000
+M_NextArg$|d0|"a,b,"|1	$00000001
+M_NextArg$|a3|"a,b,"|1	$00000001
+M_NextArg$|string|"a,b,"|1	bytes 400 fnv 3D6BDAAA
+M_NextArg$|kept|"a,b,"|2	kept
+M_NextArg$|popped|"a,b,"|2	$00000000
+M_NextArg$|d0|"a,b,"|2	$00000001
+M_NextArg$|a3|"a,b,"|2	$00000001
+M_NextArg$|string|"a,b,"|2	bytes 400 fnv 158E0F89
+M_NextArg$|kept|"a,b,"|3	kept
+M_NextArg$|popped|"a,b,"|3	$00000000
+M_NextArg$|d0|"a,b,"|3	$00000000
+M_NextArg$|a3|"a,b,"|3	$00000000
+M_NextArg$|string|"a,b,"|3	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"a,b,"|4	kept
+M_NextArg$|popped|"a,b,"|4	$00000000
+M_NextArg$|d0|"a,b,"|4	$00000000
+M_NextArg$|a3|"a,b,"|4	$00000000
+M_NextArg$|string|"a,b,"|4	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"a,b,"|5	kept
+M_NextArg$|popped|"a,b,"|5	$00000000
+M_NextArg$|d0|"a,b,"|5	$00000000
+M_NextArg$|a3|"a,b,"|5	$00000000
+M_NextArg$|string|"a,b,"|5	bytes 400 fnv FC2BB505
+M_NextArg$|kept|"a,b,"|6	kept
+M_NextArg$|popped|"a,b,"|6	$00000000
+M_NextArg$|d0|"a,b,"|6	$00000000
+M_NextArg$|a3|"a,b,"|6	$00000000
+M_NextArg$|string|"a,b,"|6	bytes 400 fnv FC2BB505
+M_InitParse|kept|",,lead"|1	kept
+M_InitParse|popped|",,lead"|1	$00000000
+M_NextArg$|kept|",,lead"|1	kept
+M_NextArg$|popped|",,lead"|1	$00000000
+M_NextArg$|d0|",,lead"|1	$00000000
+M_NextArg$|a3|",,lead"|1	$00000000
+M_NextArg$|string|",,lead"|1	bytes 400 fnv FC2BB505
+M_NextArg$|kept|",,lead"|2	kept
+M_NextArg$|popped|",,lead"|2	$00000000
+M_NextArg$|d0|",,lead"|2	$00000000
+M_NextArg$|a3|",,lead"|2	$00000000
+M_NextArg$|string|",,lead"|2	bytes 400 fnv FC2BB505
+M_NextArg$|kept|",,lead"|3	kept
+M_NextArg$|popped|",,lead"|3	$00000000
+M_NextArg$|d0|",,lead"|3	$00000004
+M_NextArg$|a3|",,lead"|3	$00000004
+M_NextArg$|string|",,lead"|3	bytes 400 fnv E9C8701F
+M_NextArg$|kept|",,lead"|4	kept
+M_NextArg$|popped|",,lead"|4	$00000000
+M_NextArg$|d0|",,lead"|4	$00000000
+M_NextArg$|a3|",,lead"|4	$00000000
+M_NextArg$|string|",,lead"|4	bytes 400 fnv FC2BB505
+M_NextArg$|kept|",,lead"|5	kept
+M_NextArg$|popped|",,lead"|5	$00000000
+M_NextArg$|d0|",,lead"|5	$00000000
+M_NextArg$|a3|",,lead"|5	$00000000
+M_NextArg$|string|",,lead"|5	bytes 400 fnv FC2BB505
+M_NextArg$|kept|",,lead"|6	kept
+M_NextArg$|popped|",,lead"|6	$00000000
+M_NextArg$|d0|",,lead"|6	$00000000
+M_NextArg$|a3|",,lead"|6	$00000000
+M_NextArg$|string|",,lead"|6	bytes 400 fnv FC2BB505
+free|kept|map 0|1	kept
+free|popped|map 0|1	$00000000
+free|map 0 fields|map 0|1	bytes 10 00000000000000000000
+free|map 0 fields|map 0|2	bytes 4 00000000
+free|map 0 fields|map 0|3	$00000000
+free|map 0 data set|map 0|1	$00000000
+free|map 0 name|map 0|1	$00000000
+free|map 0 last address|map 0|1	$7FFFFFFF
+free|map 0 rub-through map|map 0|1	$7FFFFFFF
+free|kept|map 1|1	kept
+free|popped|map 1|1	$00000000
+free|map 1 fields|map 1|1	bytes 10 00000000000000000000
+free|map 1 fields|map 1|2	bytes 4 00000000
+free|map 1 fields|map 1|3	$00000000
+free|map 1 data set|map 1|1	$00000000
+free|map 1 name|map 1|1	$00000000
+free|map 1 last address|map 1|1	$7FFFFFFF
+free|map 1 rub-through map|map 1|1	$7FFFFFFF
+free|kept|map 2|1	kept
+free|popped|map 2|1	$00000000
+free|map 2 fields|map 2|1	bytes 10 00000000000000000000
+free|map 2 fields|map 2|2	bytes 4 00000000
+free|map 2 fields|map 2|3	$00000000
+free|map 2 data set|map 2|1	$00000000
+free|map 2 name|map 2|1	$00000000
+free|map 2 last address|map 2|1	$7FFFFFFF
+free|map 2 rub-through map|map 2|1	$7FFFFFFF
+free|kept|map 3|1	kept
+free|popped|map 3|1	$00000000
+free|map 3 fields|map 3|1	bytes 10 00000000000000000000
+free|map 3 fields|map 3|2	bytes 4 00000000
+free|map 3 fields|map 3|3	$00000000
+free|map 3 data set|map 3|1	$00000000
+free|map 3 name|map 3|1	$00000000
+free|map 3 last address|map 3|1	$7FFFFFFF
+free|map 3 rub-through map|map 3|1	$7FFFFFFF
+finit|kept||1	kept
+finit|popped||1	$00000000
