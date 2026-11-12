@@ -174,6 +174,32 @@ int bugorigcmp_project_tree(const char *root, char **text, size_t *len, char *er
 int bugorigcmp_fix_scope_trees(const char *base_root, const char *branch_root,
                                const struct libscmp_issues *is, FILE *out, FILE *err);
 
+/* --- recording (the target bug-orig-record) --------------------------- */
+
+/**
+ * @brief The recorded original of a test from two recording runs of the
+ * original (the second with another memory layout where the runner can
+ * vary it).  The runs are compared as cases (one ID|SECTION|orig|1 per
+ * section) by libscmp_accept: if they differ, "test not deterministic:
+ * ID", the differing cases and the first differing line of each section
+ * ("ID: [SECTION] line N: run 1 \"...\", run 2 \"...\"").  A section of
+ * the committed file with wildcard lines is kept as it is (with its
+ * "# varies:" lines) if both runs match it, and is no part of the
+ * comparison; if a run does not match it, that is reported.  A line of a
+ * run that would read as a wildcard is refused.  The new file is the note
+ * of run 1 and its sections in its order; it must read back as them.
+ * @param id      the test (the messages, the name of the cases)
+ * @param run1, run2  the runs' observations, path1, path2 their names
+ * @param old     the committed ID.orig, or NULL; old_path its name
+ * @param out     the new ID.orig (malloc'd), NULL unless 0
+ * @param report  the messages of a refusal
+ * @return 0 = *out, 1 = refused, -1 = out of memory, -2 = a malformed
+ *         file (err)
+ */
+int bugorigcmp_accept(const char *id, const char *run1, const char *path1, const char *run2,
+                      const char *path2, const char *old, const char *old_path, char **out,
+                      FILE *report, char *err, size_t errlen);
+
 #ifdef __cplusplus
 }
 #endif

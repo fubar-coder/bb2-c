@@ -12,12 +12,14 @@ expected data written from two recording runs of the original
 (`libs-accept`) or from a run of the port (`libs-update`), the dump of a
 block of a library test run (`libs-dump`), and the cases
 of the expected data a branch changes beyond the issues it fixes
-(`fix-scope`). The logic is in
+(`fix-scope`), and the recorded original of a bug-orig test written from
+two recording runs of the original (`bug-orig-accept`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
-`tools/lib/cdtable`, `tools/lib/oracletable` and `tools/lib/libscmp`,
-tested by `tools/tests/test_outmatch.c`, `test_prevcmp.c`,
-`test_previntended.c`, `test_cdtable.c`, `test_oracletable.c`,
-`test_libscmp.c` and `test_libscmp_bin.c`.
+`tools/lib/cdtable`, `tools/lib/oracletable`, `tools/lib/libscmp` and
+`tools/lib/bugorigcmp`, tested by `tools/tests/test_outmatch.c`,
+`test_prevcmp.c`, `test_previntended.c`, `test_cdtable.c`,
+`test_oracletable.c`, `test_libscmp.c`, `test_libscmp_bin.c` and
+`test_bugorigcmp.c`.
 
 ## Usage
 
@@ -44,6 +46,8 @@ SUBCOMMANDS:
   libs-dump                   a block or a bytes case of the library tests' block observations,
                               from the run's NAME.bin
   fix-scope                   the cases of the expected data a branch changes beyond its issues
+  bug-orig-accept             the recorded original of a bug-orig test from two recording runs
+                              of the original
 ```
 
 ### match
@@ -422,6 +426,47 @@ line counts the changed and the reported cases. The target `fix-scope`
 base files of the merge base with `git archive` into the build directory
 and runs this against the checkout with the log of the branch's commits.
 
+### bug-orig-accept
+
+```
+Usage: results bug-orig-accept [OPTIONS] RUN1 RUN2 OUT
+
+the recorded original of a bug-orig test from two recording runs of the original
+
+POSITIONALS:
+  RUN1 TEXT REQUIRED          the observation of the first run
+  RUN2 TEXT REQUIRED          the observation of the second run, another memory layout
+  OUT TEXT REQUIRED           the recorded original written (ID.orig)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --id ID             the test's ID in the messages (default: the name of OUT)
+
+The runs must agree, compared as cases ("test not deterministic: ID" and the
+differing sections otherwise); a section of OUT with wildcard lines (behind "#
+varies: REASON") is kept if both runs match it. Exit status 0 OUT written or
+unchanged, 1 refused (nothing written), 2 usage error or a malformed, unreadable
+or unwritable file.
+```
+
+The recorded original of a bug-orig test, `ID.orig` (`tests/README.md`,
+"bug-orig tests"), from two recording runs of the original (OpenSpec
+change `bug-orig-test-model`, design D4; `tools/lib/bugorigcmp`). `RUN1`
+and `RUN2` are the observations the runners wrote (`corpusrun pass` and
+`tedab run` with the pass key `record=write`), the second with another
+memory layout where the runner can vary it. They are compared as the
+cases of the shared test model, one `ID|SECTION|orig|1` per section, by
+the judge of the library tests (`libs-accept`): if they differ, the
+report says `test not deterministic: ID`, names the differing cases and
+the first differing line of each section, and nothing is written. A
+section of `OUT` with wildcard lines (`*` at the end, `...`, each behind
+a line `# varies: REASON`) is kept as it is where both runs match it,
+and is reported where one does not (refused). A line of a run that would
+read as a wildcard is refused too. Otherwise `OUT` is written: the note
+of `RUN1` (its first line `# NOTE`), then its sections; an unchanged file
+is not rewritten. The target `bug-orig-record` (`tests/bug-orig`) calls
+it for every test it records.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
@@ -432,7 +477,8 @@ directories and writes its report to stdout, `libs-accept` and
 `libs-update` read the run directories and rewrite files of the expected
 data, `libs-compare` also writes `NAME.block-N.obs` into the run
 directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
-two directories (and a log) and writes its report to stdout.
+two directories (and a log) and writes its report to stdout,
+`bug-orig-accept` reads two runs and rewrites `OUT`.
 
 ## Exit codes
 
@@ -444,15 +490,17 @@ two directories (and a log) and writes its report to stdout.
   differs, is missing or added, or a program lacks a file
   (`libs-compare`); the runs are refused, nothing written (`libs-accept`,
   `libs-update`); no dump written (`libs-dump`); a case changed beyond
-  the named issues (`fix-scope`);
+  the named issues (`fix-scope`); the runs are refused, nothing written
+  (`bug-orig-accept`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
   files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `fix-scope`), a file that cannot be written (`libs-compare`,
-  `libs-accept`, `libs-update`, `libs-dump`);
+  `fix-scope`, `bug-orig-accept`), a file that cannot be written
+  (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
+  `bug-orig-accept`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 

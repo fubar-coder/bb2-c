@@ -5,7 +5,8 @@
  * (cd-update, cd-reference), the oracle data of the TED tests from a fresh
  * run (ted-oracle), the cases of the library tests against their expected
  * data and that data written (libs-compare, libs-accept, libs-update,
- * libs-dump), the cases a branch changes beyond its issues (fix-scope).
+ * libs-dump), the cases a branch changes beyond its issues (fix-scope), the
+ * recorded original of a bug-orig test from two runs (bug-orig-accept).
  * README.md here; the subcommands are cmd_NAME.cpp (the libs-* ones in
  * cmd_libs.cpp).
  */
@@ -28,5 +29,6 @@ int main(int argc, char **argv)
     cmd_libs_update(app, status);
     cmd_libs_dump(app, status);
     cmd_fix_scope(app, status);
+    cmd_bug_orig_accept(app, status);
     return cli::run(app, argc, argv, status);
 }

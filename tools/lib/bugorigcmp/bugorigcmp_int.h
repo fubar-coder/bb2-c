@@ -6,6 +6,7 @@
 #define BUGORIGCMP_INT_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 /* a growing string, always 0-terminated once something was added */
 struct bstr {
@@ -22,5 +23,8 @@ char *bstr_take(struct bstr *s);
 /* the line p (n bytes) for messages into buf: bytes outside 32..126 and
    '"' as \xNN, cut with ...; end: "(the end)" */
 void bugorigcmp_show(const char *p, size_t n, char *buf, size_t len, int end);
+
+/* the case value of a section's text (bugorigcmp.h, "the cases") */
+void bugorigcmp_put_value(FILE *out, const char *s);
 
 #endif

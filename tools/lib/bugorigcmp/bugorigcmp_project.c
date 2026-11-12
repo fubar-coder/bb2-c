@@ -21,8 +21,8 @@ static uint32_t fnv1a(const char *s, size_t n)
     return h;
 }
 
-/* the value of a section's text */
-static void put_value(FILE *out, const char *s)
+/* the value of a section's text (bugorigcmp_int.h) */
+void bugorigcmp_put_value(FILE *out, const char *s)
 {
     size_t n = strlen(s), len = 2, i;
 
@@ -183,12 +183,12 @@ int bugorigcmp_project_test(FILE *out, const char *id, const char *source, int t
         if (issue)
             fprintf(out, " [fixed #%ld]", issue);
         fputc('\t', out);
-        put_value(out, e.sec[i].text);
+        bugorigcmp_put_value(out, e.sec[i].text);
         fputc('\n', out);
     }
     for (i = 0; i < o.n; i++) {
         fprintf(out, "%s|%s|orig|1%s\t", id, o.sec[i].name, issue ? " [orig]" : "");
-        put_value(out, o.sec[i].text);
+        bugorigcmp_put_value(out, o.sec[i].text);
         fputc('\n', out);
         if (issue)
             fprintf(out, "%s|%s|orig|1 [fixed #%ld]\tjudged by ID.expect\n", id, o.sec[i].name,

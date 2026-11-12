@@ -321,6 +321,14 @@ add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:
 	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/fix-scope.cmake
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/fix-scope-target -P ${CMAKE_CURRENT_SOURCE_DIR}/fix_scope_target.cmake)
 
+# results bug-orig-accept (the recorded original of a bug-orig test from
+# two recording runs, lib/bugorigcmp; its logic: test_bugorigcmp.c) on
+# files: written, unchanged, refused (not deterministic, a wildcard that a
+# run does not match) and malformed, the committed file unchanged then
+add_test(NAME bug_orig_accept COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/bug-orig-accept -P ${CMAKE_CURRENT_SOURCE_DIR}/bug_orig_accept.cmake)
+set_tests_properties(bug_orig_accept PROPERTIES PASS_REGULAR_EXPRESSION "bug_orig_accept: all runs as expected")
+
 # the command-line shell of the host programs (tools/lib/cli): cli::run
 add_executable(test_cli test_cli.cpp)
 target_link_libraries(test_cli PRIVATE lib_cli snitch::snitch)

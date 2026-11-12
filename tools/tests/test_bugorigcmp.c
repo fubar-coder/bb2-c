@@ -4,7 +4,9 @@
  * files and their wildcard lines with a reason (broken ones too), the
  * matcher, the comparison with the recorded original, the projection of a
  * test onto cases (open, fixed, a long section, TED, no ID.orig, broken
- * headers) and fix-scope on the projections.
+ * headers), fix-scope on the projections and the acceptance of two
+ * recording runs (equal, a section differing, a wildcard kept, a wildcard
+ * that a run does not match, a line that reads as a wildcard).
  */
 #define _DEFAULT_SOURCE
 #include "testutil.h"
@@ -251,6 +253,67 @@ static void test_scope(void)
     free(rep);
 }
 
+/* bugorigcmp_accept: the result, *out the new file, *rep the report */
+static int accept(const char *a, const char *b, const char *old, char **out, char **rep)
+{
+    size_t len;
+    FILE *f = open_memstream(rep, &len);
+    int r = bugorigcmp_accept("t-id", a, "run1", b, "run2", old, "t-id.orig", out, f, err,
+                              sizeof err);
+
+    fclose(f);
+    return r;
+}
+
+static void test_accept(void)
+{
+    static const char r1[] = "# the original\n[session]\ndone\n[run]\nptr=$1000\nrc=0\n";
+    static const char r2[] = "# the original\n[session]\ndone\n[run]\nptr=$2000\nrc=0\n";
+    static const char old_wild[] = "# the original\n[session]\ndone\n[run]\n"
+                                   "# varies: the address of an allocation\nptr=$*\nrc=0\n";
+    char *out, *rep;
+
+    /* two equal runs: the file is run 1 */
+    CHECK(accept(r1, r1, NULL, &out, &rep) == 0);
+    CHECK(out && !strcmp(out, r1));
+    free(out);
+    free(rep);
+    /* a differing section: not deterministic, the section and its line */
+    CHECK(accept(r1, r2, NULL, &out, &rep) == 1 && !out);
+    CHECK(strstr(rep, "test not deterministic: t-id\n") != NULL);
+    CHECK(strstr(rep, "t-id: t-id|run|orig|1: run 1 ") != NULL);
+    CHECK(strstr(rep, "t-id: [run] line 1: run 1 \"ptr=$1000\", run 2 \"ptr=$2000\"\n") != NULL);
+    free(rep);
+    /* the committed file's wildcard matches both: kept, with its reason */
+    CHECK(accept(r1, r2, old_wild, &out, &rep) == 0);
+    CHECK(out && !strcmp(out, old_wild));
+    free(out);
+    free(rep);
+    /* ... the other sections are rewritten from the runs */
+    CHECK(accept(r1, r2, "[session]\ntimeout\n[run]\n# varies: x\nptr=$*\nrc=0\n", &out, &rep) == 0);
+    CHECK(out && !strcmp(out, "# the original\n[session]\ndone\n[run]\n# varies: x\nptr=$*\nrc=0\n"));
+    free(out);
+    free(rep);
+    /* a wildcard a run does not match: reported, nothing written */
+    CHECK(accept(r1, "[session]\ndone\n[run]\nnone\nrc=0\n", old_wild, &out, &rep) == 1 && !out);
+    CHECK(strstr(rep, "t-id: [run]: the wildcard lines of the recorded original do not match run 2: "
+                      "line 1: recorded \"ptr=$*\", run 2 \"none\"\n") != NULL);
+    free(rep);
+    /* a line of the original that reads as a wildcard */
+    CHECK(accept("[run]\n****\n", "[run]\n****\n", NULL, &out, &rep) == 1 && !out);
+    CHECK(strstr(rep, "t-id: [run] line 1: the original's line \"****\" reads as a wildcard") != NULL);
+    free(rep);
+    /* ... and one that would not read back (a \"# varies:\" line) */
+    CHECK(accept("[run]\n# varies: x\nrc=0\n", "[run]\n# varies: x\nrc=0\n", NULL, &out, &rep) == 1);
+    CHECK(strstr(rep, "does not read back") != NULL);
+    free(rep);
+    /* malformed: a run, the committed file */
+    CHECK(accept("junk\n", r1, NULL, &out, &rep) == -2 && strstr(err, "run1:1: text before"));
+    free(rep);
+    CHECK(accept(r1, r1, "[run]\nx*\n", &out, &rep) == -2 && strstr(err, "t-id.orig:2: a wildcard"));
+    free(rep);
+}
+
 int main(void)
 {
     test_parse();
@@ -259,6 +322,7 @@ int main(void)
     test_compare();
     test_project();
     test_scope();
+    test_accept();
     if (failures)
         fprintf(stderr, "%d failures\n", failures);
     return failures != 0;
