@@ -1,6 +1,6 @@
 ---
 title: What the build checks
-weight: 3
+weight: 4
 description: The checks every result of the build must pass before it counts as built, and what each one refuses.
 ---
 

@@ -8,10 +8,10 @@ next: /docs/ab3-mode
 Before this page you should have built the port and run its tests
 ([Tests]({{< relref "/docs/project-structure/tests" >}})).
 
-The claims of this chapter are checked by tests that run the original
-Blitz Basic 2 and the port side by side in an emulator. You can use the
-same machinery for your own programs: to see whether a program behaves
-the same with both, or to show a bug you suspect in the original.
+The claims of this chapter are checked by tests that compare the port
+with what the original Blitz Basic 2 does. You can use the same
+machinery for your own programs: to see whether a program behaves the
+same with both, or to show a bug you suspect in the original.
 
 ## What you need
 
@@ -26,22 +26,27 @@ the same with both, or to show a bug you suspect in the original.
   cmake -P cmake/fetch-originals.cmake
   ```
 
-  Without them, every test that compares with the original is skipped.
+  The normal test runs need no original material: they compare the port
+  with expected data that was recorded from the original. But running the
+  original on your own program, or recording what it does, needs it.
 
 ## Your program in the corpus
 
-The *corpus* is a set of small Blitz Basic programs, kept as plain text.
-The test runs compile every one of them three times in the emulator and
-run the results:
+The *corpus* is a set of small Blitz Basic programs, kept as plain text,
+each with the output it is expected to give. The normal test run compiles
+every program with the port and its libraries and compares the output
+with the expected one. The comparison with the original is a run of its
+own, in the preset `originals`, which compiles every program three
+times:
 
-| Run | Compiler | Libraries | Must be |
+| Run | Compiler | Libraries | Must give |
 |---|---|---|---|
-| ref | the original blitz2 2.10 | the original libraries | the reference |
-| port | the port's blitz2 | the original libraries | the same executable and the same output as ref |
-| clib | the port's blitz2 | the port's libraries | the same output as ref |
+| ref | the original blitz2 2.10 | the original libraries | the expected output |
+| port | the port's blitz2 | the original libraries | the same executable as ref, and the expected output |
+| orig-clib | the original blitz2 2.10 | the port's libraries | the expected output |
 
-So the corpus checks the compiler (the executable must be identical) and
-the libraries (the program must do the same) separately.
+So it checks the compiler (the executable must be identical) and the
+libraries (the program must do the same) separately.
 
 {{% steps %}}
 
@@ -61,50 +66,76 @@ build picks up every `.bas` file there by itself:
 cmake --build --preset amiga
 ```
 
-### Run the comparison
+### Write its expected output
+
+The expected output is written from the port's run, by a build target:
 
 ```
-ctest --preset emulator -R '^corpus$'
+cmake --build --preset amiga --target corpus-expect-update
 ```
 
-(`corpus_runerr` for the directory with runtime error checking.)
+It needs the CD and takes about a minute and a half. It leaves the files
+of the other programs as they are and writes
+`tests/corpus/expect/corpus/t900_mine.out` (`corpus_runerr` in place of
+`corpus` for the other directory). Read it: it is what the port's
+program printed, followed by its return code.
+
+### Run the comparison with the original
+
+```
+ctest --preset originals -R '^corpus_originals$'
+```
+
+(`corpus_runerr_originals` for the directory with runtime error
+checking.)
 
 ### Read the report
 
-The report is written to `build/amiga/tests/corpus/corpus.txt`, one line
-per program. A program that behaves the same with both looks like this:
+The report is written to `build/amiga/tests/corpus/corpus_originals.txt`,
+one line per program. A program that behaves the same with both looks
+like this:
 
 ```
-t03_str          port: exe identical, output same; clib: output same
+t03_str          ref: output as expected; port: exe identical, output as expected; orig-clib: output as expected
 ```
 
 {{% /steps %}}
 
-If the port's run differs from the reference, you have found a difference
-that is not on the list of fixed bugs: please open an issue with the
-program and the report.
+If a run differs from the expected output, the report says `OUTPUT
+DIFFERS` for it (or `EXE DIFFERS` for the port's executable). Since the
+expected output came from the port, a difference of `ref` means that the
+original behaves differently. If it is not on the list of fixed bugs,
+you have found a difference: please open an issue with the program and
+the report.
 
 ## A test for a bug of the original
 
-If the original itself behaves wrongly, the result is the same in all
-three runs, and the corpus cannot show it. For that there are the bug
-tests ([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})):
+If the original itself behaves wrongly, the port behaves the same way,
+and the corpus cannot show it. For that there are the bug tests
+([Bugs not fixed yet]({{< relref "/docs/compared-with-original/bugs-not-fixed-yet" >}})):
 a program and a description of what it *should* do.
 
-Such a test is two files in a directory under `tests/bug-orig/`, named
-after the bug, for example `compiler/compiler-byte-const-compare.bas` and
-`compiler-byte-const-compare.expect`. The program, with a comment that
+Such a test is a few files in a directory under `tests/bug-orig/`, named
+after the bug, for example `libs/stringfunclib-mid-ueberlauf.bas` and
+`stringfunclib-mid-ueberlauf.expect`. The program, with a comment that
 says what is wrong and what is right:
 
 ```
-; compiler-byte-const-compare (#978) - a byte variable compared with a
-; constant from 128 to 255 never matches.
-; Correct: a.b=$90 equals $90 (as it equals -112).
-a.b=$90
-If a=$90 Then NPrint "ok" Else NPrint "fail"
-If a=-112 Then NPrint "ok" Else NPrint "fail"
+; stringfunclib-mid-ueberlauf (#286) - Mid$(s$,start,len) compares
+; start-1+len with the length of the string signed after the addition:
+; with len = $7FFFFFFF the sum overflows, counts as "fits", and the result
+; gets len bytes - far beyond the string and the string buffer (printed,
+; the program writes 2 GB of memory; here only its length is shown).
+; Correct: the length is cut to the rest of the string ("ello", 4).
+; @configs clib
+; @pass timeout=45
+a$="Hello"
+NPrint Len(Mid$(a$,2,$7FFFFFFF))
 End
 ```
+
+The lines that start with `; @` are instructions for the test run: here,
+which build of the port is judged and how long the run may take.
 
 The expectation, in sections, says what the compile and the run must
 give, with the program's return code at the end. It describes the
@@ -115,39 +146,51 @@ issue, never what the original happens to do:
 [compile]
 ok
 [run]
-ok
-ok
+4
 rc=0
 ```
 
-Run it on its own with
+What the original does is recorded once, into a third file,
+`stringfunclib-mid-ueberlauf.orig`, by a run of the original compiler and
+libraries:
 
 ```
-ctest --preset bug-orig -R bug_orig_compiler_byte_const_compare
+ctest --preset originals -R bug_orig_record_stringfunclib_mid_ueberlauf
 ```
 
-The test compiles and runs the program with the original and with the
-port. If the original does not match the expectation, the test shows the
-bug: it comes out REPRODUCED while the bug is not fixed, and FIXED once
-it is. If the original already matches, the result is BROKEN: the program
-does not show a bug, or the expectation describes the wrong behaviour.
+It needs the CD. Read the file before you commit it: its `[run]` section
+shows what the original printed, here `2147483647` in place of `4`.
+Record it twice and compare the two: an observation that changes from
+run to run is not committed as it is.
+
+With the three files, the test itself runs without the original:
+
+```
+ctest --preset bug-orig -R bug_orig_stringfunclib_mid_ueberlauf
+```
+
+It compiles and runs the program with the port and compares the result
+with the expectation and with the recorded original. While the port shows
+the bug, the test comes out REPRODUCED and fails; once the bug is fixed
+it comes out FIXED. If the recorded original already matches the
+expectation, the result is BROKEN: the program does not show a bug, or
+the expectation describes the wrong behaviour.
 
 The change that fixes the bug adds one line to the program's header,
-with the number of the bug's issue:
+with the number of the bug's issue, and deletes the recorded original:
 
 ```
-; @fixed #978
+; @fixed #286
 ```
 
 From then on the test is a *fixed test*. It runs with the normal
-emulator tests, no longer needs the original, and checks only the port,
-with its own libraries, against the expectation: FIXED, or REGRESSED if
-the fix has been undone.
+emulator tests and checks only the port, with its own libraries, against
+the expectation: FIXED, or REGRESSED if the fix has been undone.
 
-A program can use further lines in its header, starting with `; @pass`,
-as instructions for the test run, for example to fill every block of
-memory the compiler allocates with a pattern, so that a random value is
-never 0 by chance. The full description of the format is in the
+Further instructions starting with `; @pass` exist, for example one that
+fills every block of memory the compiler allocates with a pattern, so
+that a random value is never 0 by chance. The full description of the
+format is in the
 [description of the tests](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md)
 in the repository.
 
@@ -155,9 +198,13 @@ in the repository.
 
 The libraries are compared with the originals in two ways. On the host,
 without an emulator, the declarations of every library (its commands,
-their arguments and help texts) are compared with the original library
-file. In the emulator, a test program loads each library of the port and
-the original, calls their routines with the same arguments and compares
-results, registers and memory. Both run with the normal test presets.
-Where a fixed bug changes a declaration on purpose, the difference is
-listed in the repository and the comparison expects it.
+their arguments and help texts) are compared with data taken from the
+original library file. In the emulator, a test program per library loads
+either the port's libraries or the original ones, calls their routines
+and writes what it observes, results, registers and memory, as cases.
+The normal run checks the port's cases against expected data recorded
+from the original libraries; the `originals` run checks the original
+libraries against the same data. Where a fixed bug changes a result on
+purpose, the expected data holds both values, marked as the original's
+and the port's
+([Reading library test results]({{< relref "/docs/project-structure/library-test-cases" >}})).

@@ -36,8 +36,8 @@ Together these files are the `blitz2` directory that you copy to an
 Amiga or an emulator.
 
 The repository also holds everything that checks the port: tools that
-check each built file, and tests that run the port and the original side
-by side in an emulator ([Project structure]({{< relref "/docs/project-structure" >}})).
+check each built file, and tests that run the port in an emulator and
+compare what it does with what the original did ([Project structure]({{< relref "/docs/project-structure" >}})).
 
 {{< callout type="info" >}}
 There are no ready-made downloads of the port: you build it yourself

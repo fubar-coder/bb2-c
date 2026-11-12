@@ -62,8 +62,8 @@ you would go there:
 * **[libs/include](https://github.com/fubar-coder/bb2-c/tree/main/libs/include)**:
   the header for writing libraries in C.
 * **[libs/tests](https://github.com/fubar-coder/bb2-c/tree/main/libs/tests)**:
-  the program that compares each library with its original in the
-  emulator.
+  the test programs of the libraries, which run in the emulator, and
+  their expected data, recorded from the original libraries.
 
 ## Shared code, tools and tests
 

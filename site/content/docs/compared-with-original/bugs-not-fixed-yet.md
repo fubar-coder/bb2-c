@@ -47,9 +47,12 @@ A few issues are closed without a fix:
 
 Many of these bugs have a test. A test checks the *correct* behaviour,
 taken from the documentation of the command or from the issue, not what
-the original does. Most of them run in an emulator, with the original
-compiler and libraries and with the port's, and compare what each does
-with the expectation. Each comes out as one of:
+the original does. Most of them run a program in an emulator with the
+port and compare what it does with the expectation and with a recorded
+observation of the original: what the original compiler and libraries
+did with the same program, recorded once and kept in the repository. So
+the tests themselves do not need the original; only a new recording
+does. Each test comes out as one of:
 
 | Result | Meaning |
 |---|---|

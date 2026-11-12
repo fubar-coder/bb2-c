@@ -117,8 +117,10 @@ that the tools and the libraries were built correctly:
 ctest --preset host
 ```
 
-Tests that need the emulator or the original material are reported as
-skipped.
+This run needs neither the emulator nor the original material. The full
+run, `ctest --preset all`, also needs the emulator set up, but no
+original material apart from a few tests, which are skipped without it
+([Tests]({{< relref "/docs/project-structure/tests" >}})).
 {{< /callout >}}
 
 ## Other build variants

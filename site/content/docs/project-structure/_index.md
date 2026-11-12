@@ -21,7 +21,7 @@ flowchart TB
   S["Sources of compiler,<br/>editor and libraries"] -->|cross compiler| B["blitz2 directory"]
   H["Sources of the tools"] -->|native compiler| T["Host tools"]
   T -->|check each result| B
-  O["Original material"] --> R["Reference builds"]
+  O["Original material"] -->|recorded once| R["Expected data"]
   R -->|tests compare| B
 ```
 
@@ -52,8 +52,10 @@ The project relies on original material in three ways:
   cmake -P cmake/fetch-originals.cmake
   ```
 
-  Only the tests and a few optional build targets need them; the build of
-  the port does not.
+  The tests compare the port with expected data recorded from these
+  originals, so only the runs that compare with the originals
+  themselves, the recording of expected data, a few tests and some
+  optional build targets need them; the build of the port does not.
 * **Some files of AmiBlitz3** (Apache licence) are downloaded the same way,
   for the tests of AB3 mode.
 
@@ -64,6 +66,7 @@ its licence is listed in the repository's
 {{< cards >}}
   {{< card link="repository" title="Finding your way in the repository" subtitle="The directories and what you find in them." >}}
   {{< card link="tests" title="Tests" subtitle="The test runs, what they compare, and how to set up the emulator tests." >}}
+  {{< card link="library-test-cases" title="Reading library test results" subtitle="What a line of the library tests' expected data or a failure message says." >}}
   {{< card link="build-checks" title="What the build checks" subtitle="The checks a result must pass before it counts as built." >}}
   {{< card link="build-docs" title="Building the documentation" subtitle="The website, its API reference and the command reference, locally and in the Pages workflow." >}}
 {{< /cards >}}
