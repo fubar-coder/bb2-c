@@ -1,6 +1,8 @@
 /*
- * systest_med - functional comparison of medlib (the MED player),
- * original (acidlibs) against the C build, with generated modules.
+ * systest_med - medlib (the MED player) on the Amiga with generated
+ * modules: one set (the original from acidlibs or the C build, as LIBSET
+ * says), observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/systest_med.txt).
  *
  *   systest_med DIR
  *
@@ -8,26 +10,30 @@
  * tracks, normal samples (with and without repeat), IFF octave samples
  * (types 1, 2 and 7 = clamped to 6), a synth and a hybrid instrument whose
  * tables use every table command, an InstrExt (hold, decay, finetune) and
- * pseudo random notes with all commands of the format.  Each set gets its
- * own copy; StartMedModule (the second by DecodeMedModule, copied into
- * chip memory), then PlayMed for every timing pulse, with JumpMed,
- * SetMedVolume, SetMedMask, GetMedNote/Instr/Volume and StopMed between.
- * The player writes Paula's registers through the audio address in its
- * track structures (trk_audioaddr): the test finds the 4 structures in
- * each library (the addresses $DFF0A0..$DFF0D0, 98 bytes apart) and points
- * them at a RAM copy of the registers of each set.  After every call the
- * registers, the 4 track structures (pointers as offsets into the module,
- * or by the bytes they point at), the play state of the module and the
- * player's variables behind the tracks (if both libraries have them at
- * the same place) are compared.
+ * pseudo random notes with all commands of the format.  StartMedModule
+ * (the second module by DecodeMedModule, copied into chip memory), then
+ * PlayMed for every timing pulse, with JumpMed, SetMedVolume, SetMedMask,
+ * GetMedNote/Instr/Volume and StopMed between.  The player writes Paula's
+ * registers through the audio address in its track structures
+ * (trk_audioaddr): the test finds the 4 structures in the library (the
+ * addresses $DFF0A0..$DFF0D0, 98 bytes apart) and points them at a RAM
+ * copy of the registers.  After every call the registers, the 4 track
+ * structures (pointers as offsets into the module, or by the bytes they
+ * point at), the play state of the module and the player's variables
+ * behind the tracks (if the library has them at the original's place) are
+ * written, and the kept registers of the first 20 calls of every routine.
+ * The cases after the setup (3.5 million) are block cases (design D6 of
+ * the openspec change libs-tests-capture: LIBS_CAP_DUMP=BLOCK:N writes the
+ * observations of block N).
  *
  * The inputs avoid what reads or writes outside the module or the
- * library's tables (the result would depend on memory the two sets do not
- * share): at most 4 tracks (#209), finetunes -8..7 (#211), small notes and
+ * library's tables (the result would depend on memory outside the test):
+ * at most 4 tracks (#209), finetunes -8..7 (#211), small notes and
  * transposes (period table rows), synth table jumps only to command
  * positions, small sample offsets (the Bxx word, #203), no MIDI dump
  * (#207).
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 
 /* ------------------------------------------------------------ modules */
@@ -246,16 +252,16 @@ static void build(int mmd1)
     p32(4, modlen);
 }
 
-/* ------------------------------------------------------------ the sets */
+/* ------------------------------------------------------------ the set */
 
 #define T03SZ 98
-static UBYTE *tracks[2];                /* the 4 track structures */
-static UBYTE audio[2][4][16];           /* the audio registers */
-static UBYTE *module[2];                /* the module the set plays */
-static ULONG obj[2][8];                 /* MedModule object (32 bytes) */
-static int dbsame;                      /* player variables at the same place */
-static struct regs R[2], IN[2];
-static int cur, prints, ticks;
+static UBYTE *tracks;                   /* the 4 track structures */
+static UBYTE audio[4][16];              /* the audio registers */
+static UBYTE *module;                   /* the module the set plays */
+static ULONG obj[8];                    /* MedModule object (32 bytes) */
+static int dbsame;                      /* player variables at the original's place */
+static struct regs R, IN;
+static int ticks;
 static const char *what;
 
 static UBYTE *find_tracks(struct lib *l)
@@ -289,53 +295,58 @@ static LONG periods_at(struct lib *l, UBYTE *t)
 
 static UBYTE *entry(int i)
 {
-    return entry_form(getlib(&sets[cur], "medlib"), i, 0);
+    return entry_form(getlib(&loaded, "medlib"), i, 0);
 }
 
-/* call medlib entry i on both sets (registers: markers + setup) */
-#define CALL2(i, setup) do {                                                \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callregs(entry(i), &R[cur], 0, 0);                              \
-        }                                                                   \
-        preserve(i);                                                        \
-    } while (0)
+/* the medlib entries and their names (ROUT) */
+enum { E_START = 1, E_PLAY, E_STOP, E_JUMP, E_SETVOL, E_GETVOL, E_GETNOTE, E_GETINSTR,
+       E_SETMASK, E_DECODE, E_FREE = 15, E_INIT, E_FINIT };
+static const char *const ename[] = {
+    [E_START] = "StartMedModule", [E_PLAY] = "PlayMed", [E_STOP] = "StopMed",
+    [E_JUMP] = "JumpMed", [E_SETVOL] = "SetMedVolume", [E_GETVOL] = "GetMedVolume",
+    [E_GETNOTE] = "GetMedNote", [E_GETINSTR] = "GetMedInstr", [E_SETMASK] = "SetMedMask",
+    [E_DECODE] = "DecodeMedModule", [E_INIT] = "medlib init", [E_FINIT] = "medlib finit",
+};
 
+/* the vector of the cases: the phase and the tick */
+static void setvec(void)
+{
+    sprintf(VEC, "%s tick %d", what, ticks);
+}
+
+/* the kept case of the first 20 calls of entry i */
 static void preserve(int i)
 {
     static int done[32];
-    struct call c[2];
-    char buf[100];
 
     if (done[i & 31]++ >= 20)
         return;
-    c[0].in = IN[0];
-    c[0].out = R[0];
-    c[1].in = IN[1];
-    c[1].out = R[1];
-    sprintf(buf, "medlib %s (tick %d)", what, ticks);
-    cmp_preserve(buf, &c[0], &c[1]);
+    obs_kept(&IN, &R);
 }
+
+/* call medlib entry i (registers: markers + setup) */
+#define CALL1(i, setup) do {                                                \
+        ROUT = ename[i];                                                    \
+        setvec();                                                           \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callregs(entry(i), &R, 0, 0);                                       \
+        preserve(i);                                                        \
+    } while (0)
 
 /* ---------------------------------------------------------- the state */
 
-#define MAXD 700
-static ULONG dig[2][MAXD];
-static int nd[2];
-static const char *dname[2][MAXD];
-
+/* one value of the player state: a case of the check "player state"
+   (not a check of its own, as before) */
 static void put(const char *name, ULONG v)
 {
-    if (nd[cur] < MAXD) {
-        dname[cur][nd[cur]] = name;
-        dig[cur][nd[cur]++] = v;
-    }
+    cap_routine("medlib");
+    cap_num(name, VEC, v);
 }
 
 /* a pointer: 0, an offset into the module, or the 8 bytes it points at
-   (period tables, sine table, the zero sample of each library) */
+   (period tables, sine table, the zero sample of the library) */
 static void putptr(const char *name, ULONG v)
 {
     const UBYTE *p = (const UBYTE *)v;
@@ -343,9 +354,9 @@ static void putptr(const char *name, ULONG v)
     if (!v) {
         put(name, 0);
         put(name, 0);
-    } else if (v >= (ULONG)module[cur] && v < (ULONG)module[cur] + modlen + 256) {
+    } else if (v >= (ULONG)module && v < (ULONG)module + modlen + 256) {
         put(name, 1);
-        put(name, v - (ULONG)module[cur]);
+        put(name, v - (ULONG)module);
     } else {
         put(name, (ULONG)p[0] << 24 | (ULONG)p[1] << 16 | p[2] << 8 | p[3]);
         put(name, (ULONG)p[4] << 24 | (ULONG)p[5] << 16 | p[6] << 8 | p[7]);
@@ -358,36 +369,42 @@ static int isptr(int off)
         || off == 78 || off == 86;
 }
 
-static void digest(void)
+/* the player state as cases; returns the number of values */
+static int digest(void)
 {
     static const char *trk[4] = { "track 0", "track 1", "track 2", "track 3" };
     static const char *reg[4] = { "audio 0", "audio 1", "audio 2", "audio 3" };
-    int ch, i;
+    int ch, i, n = 0;
 
-    nd[cur] = 0;
     for (ch = 0; ch < 4; ch++) {
-        UBYTE *t = tracks[cur] + ch * T03SZ, *a = audio[cur][ch];
+        UBYTE *t = tracks + ch * T03SZ, *a = audio[ch];
 
         putptr(reg[ch], L(a));
-        for (i = 4; i < 16; i++)
+        n += 2;
+        for (i = 4; i < 16; i++, n++)
             put(reg[ch], a[i]);
         for (i = 0; i < T03SZ; i++) {
             if (isptr(i)) {
-                if (i != 22)                    /* trk_audioaddr: ours */
+                if (i != 22) {                  /* trk_audioaddr: ours */
                     putptr(trk[ch], L(t + i));
+                    n += 2;
+                }
                 i += 3;
-            } else
+            } else {
                 put(trk[ch], t[i] | (ULONG)i << 16);
+                n++;
+            }
         }
     }
-    for (i = 40; i < 52; i++)
-        put("module state", module[cur][i] | (ULONG)i << 16);
+    for (i = 40; i < 52; i++, n++)
+        put("module state", module[i] | (ULONG)i << 16);
     if (dbsame)
-        for (i = 696; i < 716; i++)
-            put("player variables", tracks[cur][i] | (ULONG)i << 16);
+        for (i = 696; i < 716; i++, n++)
+            put("player variables", tracks[i] | (ULONG)i << 16);
+    return n;
 }
 
-/* what the run went through (set 0): ticks with the module playing, audio
+/* what the run went through: ticks with the module playing, audio
    register changes, ticks with a synth or hybrid note, commands seen */
 static ULONG playing, changes, synths, cmdseen, visited[NBLOCKS];
 static UBYTE lastaudio[4][16];
@@ -396,16 +413,16 @@ static void stats(void)
 {
     int ch;
 
-    if (W(module[0] + 40))
+    if (W(module + 40))
         playing++;
-    if (W(module[0] + 42) < NBLOCKS && W(module[0] + 44) < NLINES)
-        visited[W(module[0] + 42)] |= 1UL << W(module[0] + 44);
+    if (W(module + 42) < NBLOCKS && W(module + 44) < NLINES)
+        visited[W(module + 42)] |= 1UL << W(module + 44);
     for (ch = 0; ch < 4; ch++) {
-        UBYTE *t = tracks[0] + ch * T03SZ;
+        UBYTE *t = tracks + ch * T03SZ;
 
-        if (memcmp(lastaudio[ch], audio[0][ch], 16)) {
+        if (memcmp(lastaudio[ch], audio[ch], 16)) {
             changes++;
-            memcpy(lastaudio[ch], audio[0][ch], 16);
+            memcpy(lastaudio[ch], audio[ch], 16);
         }
         if (L(t + 38))
             synths++;
@@ -413,40 +430,23 @@ static void stats(void)
     }
 }
 
-static void compare(void)
+/* the check "player state": its values and their number */
+static void state(void)
 {
-    char buf[120];
-    int i, bad = 0;
+    int n;
 
     stats();
-    for (cur = 0; cur < 2; cur++)
-        digest();
-    for (i = 0; i < nd[0] && i < nd[1]; i++)
-        if (!tape_same(dname[1][i], dig[0][i], dig[1][i])) {
-            if (prints++ < 40)
-                printf("FAIL medlib %s tick %d: %s [%d] orig $%08lX, C $%08lX\n", what, ticks,
-                       dname[0][i], i, dig[0][i], dig[1][i]);
-            bad = 1;
-        }
-    sprintf(buf, "medlib %s tick %d: player state", what, ticks);
-    check(buf, !bad && tape_same(buf, nd[0], nd[1]));
+    setvec();
+    n = digest();
+    ROUT = "medlib";
+    OBS("player state", n);
 }
 
-static void same_d0(const char *name)
+/* the medlib routines' results */
+static void obs_d0(void)
 {
-    char buf[100];
-    ULONG o;
-
-    sprintf(buf, "medlib %s tick %d: %s d0", what, ticks, name);
-    o = tape_obs(buf, R[0].d[0], R[1].d[0]);
-    if (o != R[1].d[0] && prints++ < 40)
-        printf("FAIL %s: orig $%08lX, C $%08lX\n", buf, o, R[1].d[0]);
-    check(buf, o == R[1].d[0]);
+    OBS("d0", R.d[0]);
 }
-
-/* the medlib entries */
-enum { E_START = 1, E_PLAY, E_STOP, E_JUMP, E_SETVOL, E_GETVOL, E_GETNOTE, E_GETINSTR,
-       E_SETMASK, E_DECODE, E_FREE = 15, E_INIT, E_FINIT };
 
 static void play(int n)
 {
@@ -454,19 +454,19 @@ static void play(int n)
 
     for (k = 0; k < n; k++) {
         ticks++;
-        CALL2(E_PLAY, (void)0);
-        compare();
+        CALL1(E_PLAY, (void)0);
+        state();
         if (ticks % 5 == 0) {
-            CALL2(E_GETNOTE, R[cur].d[0] = ticks % 4);
-            same_d0("GetMedNote");
+            CALL1(E_GETNOTE, R.d[0] = ticks % 4);
+            obs_d0();
         }
         if (ticks % 7 == 0) {
-            CALL2(E_GETINSTR, R[cur].d[0] = ticks % 4);
-            same_d0("GetMedInstr");
+            CALL1(E_GETINSTR, R.d[0] = ticks % 4);
+            obs_d0();
         }
         if (ticks % 97 == 0) {                  /* clears trk_prevvol (#212) */
-            CALL2(E_GETVOL, R[cur].d[0] = ticks % 4);
-            same_d0("GetMedVolume");
+            CALL1(E_GETVOL, R.d[0] = ticks % 4);
+            obs_d0();
         }
     }
 }
@@ -481,21 +481,21 @@ static void song(const char *name, int pulses, int mincmds)
     memset(visited, 0, sizeof visited);
     play(pulses);
     what = "JumpMed";
-    CALL2(E_JUMP, R[cur].d[0] = 4);
-    compare();
+    CALL1(E_JUMP, R.d[0] = 4);
+    state();
     play(150);
     what = "SetMedVolume";
-    CALL2(E_SETVOL, R[cur].d[0] = 33);
-    compare();
+    CALL1(E_SETVOL, R.d[0] = 33);
+    state();
     play(150);
     what = "SetMedMask";
-    CALL2(E_SETMASK, R[cur].d[0] = 5);
+    CALL1(E_SETMASK, R.d[0] = 5);
     play(200);
-    CALL2(E_SETMASK, R[cur].d[0] = 15);
+    CALL1(E_SETMASK, R.d[0] = 15);
     play(100);
     what = "StopMed";
-    CALL2(E_STOP, (void)0);
-    compare();
+    CALL1(E_STOP, (void)0);
+    state();
     play(3);
     for (n = 0; n < 32; n++)
         cmds += (cmdseen >> n) & 1;
@@ -513,84 +513,91 @@ static const char *names[] = { "memlib", "medlib", NULL };
 
 int main(int argc, char **argv)
 {
-    UBYTE *copy[2], *mmd0[2];
+    UBYTE *copy, *mmd0;
     ULONG len0;
-    LONG per[2];
+    LONG per;
     int ch, e;
 
     if (argc < 2) {
         printf("usage: systest_med DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("medlib init", d2-d7|a0-a3|a6);
+    KEEPS("StartMedModule", d2-d7|a3|a6);
+    KEEPS("PlayMed", d2-d7|a2|a3|a6);
+    KEEPS("StopMed", d2-d7|a2|a3|a6);
+    KEEPS("JumpMed", d1-d7|a1-a3|a6);
+    KEEPS("SetMedVolume", d0|d3-d7|a6);
+    KEEPS("GetMedVolume", d1-d7|a0|a1|a6);
+    KEEPS("GetMedNote", d1-d7|a0|a1|a6);
+    KEEPS("GetMedInstr", d1-d7|a0|a1|a6);
+    KEEPS("SetMedMask", d0-d7|a0-a3|a6);
+    KEEPS("DecodeMedModule", d2-d7|a2|a3|a6);
+    KEEPS("medlib finit", d2-d7|a2|a3|a6);
     what = "init";
-    for (cur = 0; cur < 2; cur++)
-        for (e = E_START; e <= E_FINIT; e++)
-            if ((e <= E_DECODE || e >= E_INIT) && !entry(e)) {
-                printf("medlib %s: no routine for entry %d\n", sets[cur].what, e);
-                return 20;
-            }
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_code(getlib(&sets[cur], "memlib"), 7), &R[cur], 0, 0);
-        tracks[cur] = find_tracks(getlib(&sets[cur], "medlib"));
-        if (!tracks[cur]) {
-            printf("medlib %s: no track structures found\n", sets[cur].what);
+    for (e = E_START; e <= E_FINIT; e++)
+        if ((e <= E_DECODE || e >= E_INIT) && !entry(e)) {
+            printf("medlib %s: no routine for entry %d\n", loaded.what, e);
             return 20;
         }
-        per[cur] = periods_at(getlib(&sets[cur], "medlib"), tracks[cur]);
-        for (ch = 0; ch < 4; ch++)
-            *(ULONG *)(tracks[cur] + ch * T03SZ + 22) = (ULONG)audio[cur][ch];
+    markregs(&R);
+    callregs(entry_code(getlib(&loaded, "memlib"), 7), &R, 0, 0);
+    tracks = find_tracks(getlib(&loaded, "medlib"));
+    if (!tracks) {
+        printf("medlib %s: no track structures found\n", loaded.what);
+        return 20;
     }
-    dbsame = tape_same("medlib: period tables", per[0], per[1]) && per[1] == 906;
-    printf("medlib: period tables %ld / %ld bytes behind the tracks%s\n", per[0], per[1],
+    per = periods_at(getlib(&loaded, "medlib"), tracks);
+    for (ch = 0; ch < 4; ch++)
+        *(ULONG *)(tracks + ch * T03SZ + 22) = (ULONG)audio[ch];
+    /* the player variables are compared where the original has them:
+       906 bytes behind the tracks (a part of the setup, not a check) */
+    VEC[0] = 0;
+    put("period tables", (ULONG)per);
+    dbsame = per == 906;
+    printf("medlib: period tables %ld bytes behind the tracks%s\n", per,
            dbsame ? "" : " - player variables not compared");
-    CALL2(E_INIT, (void)0);
+    OBS_BLOCKS(1);
+    CALL1(E_INIT, (void)0);
 
     /* MMD0: the object as LoadMedModule leaves it (id, length, module) */
     build(0);
     what = "MMD0 StartMedModule";
     len0 = modlen;
-    for (cur = 0; cur < 2; cur++) {
-        mmd0[cur] = module[cur] = AllocMem(modlen + 256, MEMF_CHIP | MEMF_CLEAR);
-        memcpy(module[cur], mod, modlen);
-        obj[cur][0] = L(mod);
-        obj[cur][1] = modlen;
-        obj[cur][2] = (ULONG)module[cur];
-    }
-    CALL2(E_START, R[cur].a[3] = (ULONG)obj[cur]);
-    compare();
+    mmd0 = module = AllocMem(modlen + 256, MEMF_CHIP | MEMF_CLEAR);
+    memcpy(module, mod, modlen);
+    obj[0] = L(mod);
+    obj[1] = modlen;
+    obj[2] = (ULONG)module;
+    CALL1(E_START, R.a[3] = (ULONG)obj);
+    state();
     what = "MMD0";
     song(what, what[3] == '1' ? 6000 : 1500, what[3] == '1' ? 22 : 14);
 
     /* MMD1 by DecodeMedModule from public memory (copied into chip) */
     build(1);
     what = "MMD1 DecodeMedModule";
-    for (cur = 0; cur < 2; cur++) {
-        copy[cur] = AllocMem(modlen + 256, MEMF_PUBLIC | MEMF_CLEAR);
-        memcpy(copy[cur], mod, modlen);
-    }
-    CALL2(E_DECODE, R[cur].d[1] = (ULONG)copy[cur]; R[cur].a[3] = (ULONG)&obj[cur][4]);
-    for (cur = 0; cur < 2; cur++)
-        module[cur] = (UBYTE *)obj[cur][6];
-    check("medlib DecodeMedModule: module in place or copied alike",
-          tape_same("medlib DecodeMedModule: in place", module[0] == copy[0],
-                    module[1] == copy[1]));
+    copy = AllocMem(modlen + 256, MEMF_PUBLIC | MEMF_CLEAR);
+    memcpy(copy, mod, modlen);
+    CALL1(E_DECODE, R.d[1] = (ULONG)copy; R.a[3] = (ULONG)&obj[4]);
+    module = (UBYTE *)obj[6];
+    OBS("module in place", module == copy);
     what = "MMD1 StartMedModule";
-    CALL2(E_START, R[cur].a[3] = (ULONG)&obj[cur][4]);
-    compare();
+    CALL1(E_START, R.a[3] = (ULONG)&obj[4]);
+    state();
     what = "MMD1";
     song(what, what[3] == '1' ? 6000 : 1500, what[3] == '1' ? 22 : 14);
 
     what = "finit";
-    CALL2(E_FINIT, (void)0);
-    for (cur = 0; cur < 2; cur++) {             /* memlib frees the chip copy */
-        markregs(&R[cur]);
-        callregs(entry_code(getlib(&sets[cur], "memlib"), 8), &R[cur], 0, 0);
-        FreeMem(mmd0[cur], len0 + 256);
-        FreeMem(copy[cur], modlen + 256);
-    }
+    CALL1(E_FINIT, (void)0);
+    OBS_BLOCKS(0);
+    markregs(&R);                               /* memlib frees the chip copy */
+    callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
+    FreeMem(mmd0, len0 + 256);
+    FreeMem(copy, modlen + 256);
     printf("%d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }
