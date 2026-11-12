@@ -56,6 +56,10 @@
 #              from two recording runs or with the port's [fixed #N] values,
 #              the cases a branch changes beyond its issues (fix-scope),
 #              the raw block observations of a run (NAME.bin)
+#   bugorigcmp  the bug-orig tests in the terms of the shared test model:
+#              their observation files with the wildcard lines of a reason,
+#              the recorded original against an observation, the cases of
+#              a test (fix-scope), the acceptance of two recording runs
 #   cli        the command-line shell of the host programs on CLI11
 #              (cli.hpp, C++20, header only: cli::run, the help format)
 add_subdirectory(hunk)
@@ -89,4 +93,5 @@ add_subdirectory(prevcmp)
 add_subdirectory(previntended)
 add_subdirectory(corpusnotes)
 add_subdirectory(libscmp)
+add_subdirectory(bugorigcmp)
 add_subdirectory(cli)
