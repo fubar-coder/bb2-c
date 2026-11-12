@@ -228,6 +228,21 @@ static void close_block(void)
     blkhash = FNV_BASIS;
 }
 
+/* "|N" (N decimal) into n (16 bytes): what snprintf "|%lu" writes, without
+   its cost for every observation of the block programs */
+static const char *occ_text(char *n, uint32_t v)
+{
+    char *p = n + 15;
+
+    *p = 0;
+    do {
+        *--p = (char)('0' + v % 10);
+        v /= 10;
+    } while (v);
+    *--p = '|';
+    return p;
+}
+
 /* start a case: the key and the TAB.  plain: a case of its own in block
    mode too (not captured) */
 static void line_begin(const char *check, const char *vec, int plain)
@@ -241,14 +256,12 @@ static void line_begin(const char *check, const char *vec, int plain)
     key_add("|");
     esc_part(kbuf, &klen, vec);
     if (blocks && !plain) {
-        snprintf(n, sizeof n, "|%lu", (unsigned long)++obsno);
-        key_add(n);
+        key_add(occ_text(n, ++obsno));
         if (!blkcount)
             memcpy(blkfirst, kbuf, klen + 1);
         to_block = 1;
     } else {
-        snprintf(n, sizeof n, "|%lu", (unsigned long)occurrence());
-        key_add(n);
+        key_add(occ_text(n, occurrence()));
         to_block = 0;
     }
     emit(kbuf, klen);
