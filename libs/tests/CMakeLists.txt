@@ -76,18 +76,25 @@ target_link_libraries(libs_tests PRIVATE snitch::snitch)
 # compares them with the recordings of the originals' results
 # (tapes/NAME.tape, tape.c), without the CD; libs_emulator_originals
 # (label originals) compares them with the originals of the CD live and
-# records again: the recordings must be the committed ones.
+# records again: the recordings must be the committed ones.  A program
+# that observes one set (capture.h) runs with LIBSET=obj in libs_emulator
+# and LIBSET=orig in libs_emulator_originals, and its cases (the test's
+# test/captures/NAME.txt, kept for diffing) are compared with the expected
+# data (expected/NAME.txt) by results libs-compare.
 get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 set(LIBS_TESTS_TIMEOUT 300 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 set(tapes ${CMAKE_CURRENT_SOURCE_DIR}/tapes)
+set(expected ${CMAKE_CURRENT_SOURCE_DIR}/expected)
 math(EXPR limit "600 + ${EMULATION_QUEUE_WAIT}")
 foreach(mode replay record)
 	set(name libs_emulator)
 	set(labels emulator)
+	set(libset obj)
 	if(mode STREQUAL "record")
 		set(name libs_emulator_originals)
 		set(labels emulator originals)
+		set(libset orig)
 	endif()
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
 		-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB}
@@ -95,6 +102,7 @@ foreach(mode replay record)
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
 		-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
 		-DUSERLIBS=${rwe_userlibs} -DTAPE=${mode} -DTAPES=${tapes}
+		-DLIBSET=${libset} -DEXPECTED=${expected} -DRESULTS=${RESULTS}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77

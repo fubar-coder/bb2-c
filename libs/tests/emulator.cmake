@@ -3,7 +3,9 @@
 #         -DORIGINALS=acidlibs-of-the-CD -DWORK=DIR [-DTIMEOUT=SEC]
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
 #         [-DUSERLIBS=OBJ|ORIG;...] [-DTAPE=record|replay -DTAPES=DIR
-#         [-DTAPE_CORRUPT=NAME] [-DTAPE_DUMP=ON]] -P emulator.cmake
+#         [-DTAPE_CORRUPT=NAME] [-DTAPE_DUMP=ON]] [-DLIBSET=obj|orig]
+#         [-DLIBS_PAD=N] [-DEXPECTED=DIR -DRESULTS=results [-DCAPTURE_CORRUPT=NAME]]
+#         -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
@@ -18,6 +20,17 @@
 # also TEST:tapes/NAME.dump, tape.c); record
 # - the live comparison, and the recordings
 # written to TEST:tapes must be the files of TAPES (tape-compare.cmake).
+# LIBSET (the shell variable of the run): the library set a program that
+# observes one set loads (sysload.h load_set), obj (NAME.obj) or orig
+# (NAME.orig); such a program writes its cases to TEST:captures/NAME.txt
+# (capture.h), which stays in WORK/test/captures. LIBS_PAD: the run
+# allocates N bytes before each program (another memory layout,
+# libs-capture). EXPECTED (libs/tests/expected): the cases are compared
+# with it by RESULTS libs-compare --set LIBSET; with FILTER only the
+# programs that wrote cases, else all (without any cases and without
+# EXPECTED nothing is compared: no program observes one set yet).
+# CAPTURE_CORRUPT: the run's first case of NAME with its value's last
+# character changed before the compare, the test of the check.
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
 # (log_illegal_mem, --log); for every line
 #   illegal-watch START END CODESTART CODEEND        (hex, from libs_tests)
@@ -38,6 +51,15 @@ elseif(TAPE)
 endif()
 if(NOT NO_ORIGINALS)
 	list(APPEND required BLITZLIB ORIGINALS)
+endif()
+if(EXPECTED)
+	list(APPEND required RESULTS LIBSET)
+endif()
+if(LIBSET AND NOT LIBSET MATCHES "^(obj|orig)$")
+	message(FATAL_ERROR "emulator.cmake: LIBSET=${LIBSET}: obj or orig")
+endif()
+if(DEFINED LIBS_PAD AND NOT LIBS_PAD MATCHES "^[0-9]+$")
+	message(FATAL_ERROR "emulator.cmake: LIBS_PAD=${LIBS_PAD}: a number of bytes")
 endif()
 foreach(v IN LISTS required)
 	if(NOT ${v})
@@ -88,12 +110,19 @@ foreach(u IN LISTS USERLIBS)
 	endif()
 endforeach()
 
-set(tape_cmd "")
+file(MAKE_DIRECTORY ${test}/captures)
+set(vars_cmd "")
+if(LIBSET)
+	string(APPEND vars_cmd "Set LIBSET ${LIBSET}\n")
+endif()
+if(LIBS_PAD)
+	string(APPEND vars_cmd "Set LIBS_PAD ${LIBS_PAD}\n")
+endif()
 if(TAPE)
 	file(MAKE_DIRECTORY ${test}/tapes)
-	set(tape_cmd "Set LIBSTAPE ${TAPE}\n")
+	string(APPEND vars_cmd "Set LIBSTAPE ${TAPE}\n")
 	if(TAPE_DUMP OR DEFINED ENV{LIBS_TAPE_DUMP})
-		string(APPEND tape_cmd "Set LIBSTAPEDUMP 1\n")
+		string(APPEND vars_cmd "Set LIBSTAPEDUMP 1\n")
 	endif()
 endif()
 if(replay)
@@ -135,7 +164,7 @@ set(run_opts "")
 if(ILLEGAL_WATCH)
 	set(run_opts --log --set log_illegal_mem=true)
 endif()
-file(WRITE ${WORK}/run.script "${tape_cmd}TEST:libs_tests${args} >TEST:libs_tests.txt\n"
+file(WRITE ${WORK}/run.script "${vars_cmd}TEST:libs_tests${args} >TEST:libs_tests.txt\n"
 	"Echo \"rc=$RC\" >>TEST:libs_tests.txt\n")
 execute_process(COMMAND ${AMIGA_RUN} ${run_opts} --timeout ${TIMEOUT} --dir ${WORK}
 	${WORK}/run.script
@@ -214,8 +243,51 @@ if(ILLEGAL_WATCH)
 	endforeach()
 endif()
 
+# the cases against the expected data (results libs-compare)
+set(compare_failed "")
+if(EXPECTED)
+	file(GLOB written RELATIVE ${test}/captures ${test}/captures/*.txt)
+	if(CAPTURE_CORRUPT)
+		# the first 8-digit hex number of the first case, its last digit changed
+		set(t ${test}/captures/${CAPTURE_CORRUPT}.txt)
+		if(NOT EXISTS ${t})
+			message(FATAL_ERROR "libs_emulator: CAPTURE_CORRUPT: no ${t}")
+		endif()
+		file(READ ${t} text)
+		if(NOT text MATCHES "^(# [^\n]*\n[^\t\n]*\t[^\n]*)([0-9A-F]{7})([0-9A-F])")
+			message(FATAL_ERROR "libs_emulator: ${t}: no value to corrupt")
+		endif()
+		set(low 0)
+		if(CMAKE_MATCH_3 STREQUAL "0")
+			set(low 1)
+		endif()
+		string(LENGTH "${CMAKE_MATCH_0}" n)
+		string(SUBSTRING "${text}" ${n} -1 rest)
+		file(WRITE ${t} "${CMAKE_MATCH_1}${CMAKE_MATCH_2}${low}${rest}")
+	endif()
+	set(only "")
+	if(FILTER)
+		foreach(w IN LISTS written)
+			string(REGEX REPLACE "\\.txt$" "" w "${w}")
+			list(APPEND only --only ${w})
+		endforeach()
+	endif()
+	if((FILTER AND NOT written) OR (NOT written AND NOT EXISTS ${EXPECTED}))
+		message(STATUS "libs_emulator: no program wrote cases, nothing to compare")
+	else()
+		execute_process(COMMAND ${RESULTS} libs-compare ${test}/captures ${EXPECTED} --set ${LIBSET}
+			${only} RESULT_VARIABLE rc)
+		if(rc)
+			set(compare_failed "the cases of ${test}/captures differ from ${EXPECTED} (set ${LIBSET})")
+		endif()
+	endif()
+endif()
+
 if(watch_failed)
 	message(FATAL_ERROR "libs_emulator: ${watch_failed}")
+endif()
+if(compare_failed)
+	message(FATAL_ERROR "libs_emulator: ${compare_failed}")
 endif()
 if(NOT result EQUAL 0)
 	message(FATAL_ERROR "libs_emulator: libs_tests returned ${result}")

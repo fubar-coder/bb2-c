@@ -25,3 +25,7 @@ RUNTIME-LIBRARY-EXCEPTION   text eol=lf
 
 # the expected outputs of the corpus: never converted, always diffed as text
 /tests/corpus/expect/**/*.out   -text diff
+
+# the expected data of the library tests (libs/tests/expected): never
+# converted, always diffed as text
+/libs/tests/expected/**     -text diff

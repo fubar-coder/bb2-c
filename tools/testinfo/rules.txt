@@ -77,6 +77,12 @@ tests/bug-port/**               label:bug-port name:bug_port_* name:lsclear_*
 tests/corpus/**                 name:corpus* name:ab3_bb2_equivalence*
 tests/ted-ab/**                 name:ted_ab* name:bug_orig_ted_*
 
+# the expected data of the library tests (openspec change
+# libs-tests-capture): read by libs_emulator (the port),
+# libs_emulator_originals (the original, label originals, which
+# label:emulator alone does not select) and libs_emulator_wrong
+libs/tests/expected/**          name:libs_emulator*
+
 # the Blitz libraries, not measured yet: every emulator test and the
 # tests of the libraries' declarations, token lists and comparisons
 libs/**                         label:emulator name:declarations_* name:tokens_* name:biglib_* name:blitzlibcompare_* name:asmcmp_* name:rwe_* name:variant_* name:ab3_tokens*
