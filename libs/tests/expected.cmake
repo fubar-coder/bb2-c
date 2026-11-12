@@ -3,7 +3,7 @@
 #   cmake -DMODE=capture|update -DEMULATOR=emulator.cmake -DRESULTS=results
 #         -DEXPECTED=DIR -DWORK=DIR [-DFILTER=snitch-filter] [-DFIX=KEY#N;...]
 #         -DAMIGA_RUN=... -DPROGRAM=libs_tests -DLIBS=DIR [-DBLITZLIB=...
-#         -DORIGINALS=... -DUSERLIBS=...] [-DTIMEOUT=SEC]
+#         -DORIGINALS=... -DUSERLIBS=...] [-DTIMEOUT=SEC] [-DKEEP_BIN=ON]
 #         -P expected.cmake
 # capture (target libs-capture, the record from the original; needs the CD,
 # the reference build of the RWE sources and Amiberry): libs_tests runs
@@ -16,8 +16,11 @@
 # KEY [orig] / KEY [fixed #N]. With FILTER only the programs that the
 # filter runs and that write cases (--only), the other files stay as they
 # are. The runs stay in WORK (run1, run2 or run, as emulator.cmake leaves
-# them: the cases in test/captures). EMULATOR is the script of the runs;
-# the test of this script gives a fake one.
+# them: the cases in test/captures); their raw block files (NAME.bin) are
+# deleted once the expected data is written, unless KEEP_BIN or the
+# environment variable LIBS_KEEP_BIN is set, and kept when it is not
+# written. EMULATOR is the script of the runs; the test of this script
+# gives a fake one.
 cmake_minimum_required(VERSION 4.2.3)
 
 foreach(v MODE EMULATOR RESULTS EXPECTED WORK AMIGA_RUN PROGRAM LIBS)
@@ -104,5 +107,12 @@ else()
 endif()
 if(rc)
 	message(FATAL_ERROR "${target}: ${EXPECTED} not written (the report above; the runs in ${WORK})")
+endif()
+# written: the raw block files of the runs (NAME.bin) are not needed any more
+if(NOT KEEP_BIN AND NOT DEFINED ENV{LIBS_KEEP_BIN})
+	file(GLOB bins ${WORK}/*/test/captures/*.bin)
+	if(bins)
+		file(REMOVE ${bins})
+	endif()
 endif()
 message(STATUS "${target}: ${EXPECTED} up to date (the report above); review it with git diff")

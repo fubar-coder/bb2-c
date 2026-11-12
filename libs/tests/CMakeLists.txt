@@ -183,20 +183,27 @@ set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_
 # the dump of one case (emulator.cmake CAP_DUMP, the shell variable
 # LIBS_CAP_DUMP of capture.h): a bytes case of rwe riarrayslib whose key
 # holds |, $ and spaces writes its bytes to the dump, shown by the run; a
-# key no program writes fails the run
+# key no program writes fails the run; block 2 of libtest ldivlib is
+# dumped on the host from its NAME.bin (results libs-dump), its first
+# observation the one its block case names (first=)
 set(dump_key "FillArray|array|form 0 type $0001 size 1 off 5 n 1 value $DE551B45|1")
 string(REGEX REPLACE "([][|$().*+?^\\])" "\\\\\\1" dump_re "${dump_key}")
-foreach(t right wrong)
+foreach(t right wrong block)
 	set(key "${dump_key}")
+	set(filter "rwe riarrayslib")
 	set(re "the dump of [^\n]*rwe_riarrayslib\\.dump \\(the first 7 lines\\)\n${dump_re}\tat \\$0000 [0-9A-F]+\n(.*\n)*${dump_re}\tat \\$00C0 [0-9A-F]+\n")
 	if(t STREQUAL "wrong")
 		set(key "FillArray|array|no such vector|1")
 		set(re "FAIL LIBS_CAP_DUMP FillArray\\|array\\|no such vector\\|1: no program wrote a dump")
+	elseif(t STREQUAL "block")
+		set(key "BLOCK:2")
+		set(filter "libtest ldivlib")
+		set(re "the dump of BLOCK:2: [^\n]*libtest_ldivlib\\.dump \\(the first 40 lines\\)\n\\$CB00\\|d0\\|\\$FFFFF8C3 \\$D89B8344\\|4097\t\\$[0-9A-F]+\n")
 	endif()
 	add_test(NAME libs_emulator_dump_${t} COMMAND ${CMAKE_COMMAND}
 		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON -DUSERLIBS=${rwe_userlibs}
-		-DLIBSET=obj "-DFILTER=rwe riarrayslib" "-DCAP_DUMP=${key}"
+		-DLIBSET=obj "-DFILTER=${filter}" "-DCAP_DUMP=${key}" -DRESULTS=${RESULTS}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_dump_${t} -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 	set_tests_properties(libs_emulator_dump_${t} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77

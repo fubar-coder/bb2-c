@@ -4,7 +4,8 @@
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
 #         [-DUSERLIBS=OBJ|ORIG;...] [-DLIBSET=obj|orig]
 #         [-DLIBS_PAD=N] [-DEXPECTED=DIR -DRESULTS=results [-DCAPTURE_CORRUPT=NAME]]
-#         [-DOBJ_VARIANTS=FILE;...] [-DCAP_DUMP=KEY|BLOCK:N] -P emulator.cmake
+#         [-DOBJ_VARIANTS=FILE;...] [-DCAP_DUMP=KEY|BLOCK:N -DRESULTS=results]
+#         [-DKEEP_BIN=ON] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
@@ -20,13 +21,20 @@
 # each program (another memory layout, libs-capture). EXPECTED
 # (libs/tests/expected): the cases are compared with it by RESULTS
 # libs-compare --set LIBSET; with FILTER only the programs that wrote
-# cases, else all.
+# cases, else all. A block program also writes its block observations raw
+# to TEST:captures/NAME.bin, from which RESULTS makes its block cases
+# (capture.h); these files (about 300 MB a run) are deleted when the run
+# with EXPECTED passed and kept when it failed, or with KEEP_BIN or the
+# environment variable LIBS_KEEP_BIN (e.g. for results libs-compare
+# --other), and the next run removes WORK anyway.
 # CAP_DUMP, or the environment variable LIBS_CAP_DUMP (e.g.
-# LIBS_CAP_DUMP=BLOCK:294 ctest -R libs_emulator): the shell variable
-# LIBS_CAP_DUMP of the run (capture.h); the program that writes the bytes
-# case of that key or that block writes its bytes or the block's
-# observation lines to TEST:captures/NAME.dump (WORK/test/captures), whose
-# path and first lines are shown; the run fails if no program wrote one.
+# LIBS_CAP_DUMP=BLOCK:294 ctest -R libs_emulator): a key is the shell
+# variable LIBS_CAP_DUMP of the run (capture.h): the program that writes
+# the plain bytes case of that key writes its bytes to
+# TEST:captures/NAME.dump (WORK/test/captures); a key of an observation in
+# a block and BLOCK:N are dumped there from NAME.bin after the run (RESULTS
+# libs-dump: its bytes or the block's observation lines). The path and
+# the first lines of each dump are shown; the run fails if there is none.
 # CAPTURE_CORRUPT: the last digit of the 8-digit hex number in the value of
 # the run's first case of NAME changed before the compare, the test of the check.
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
@@ -43,6 +51,15 @@ if(NOT NO_ORIGINALS)
 endif()
 if(EXPECTED)
 	list(APPEND required RESULTS LIBSET)
+endif()
+if(NOT DEFINED CAP_DUMP AND DEFINED ENV{LIBS_CAP_DUMP})
+	set(CAP_DUMP "$ENV{LIBS_CAP_DUMP}")
+endif()
+if(CAP_DUMP)
+	list(APPEND required RESULTS)
+endif()
+if(DEFINED ENV{LIBS_KEEP_BIN})
+	set(KEEP_BIN ON)
 endif()
 if(LIBSET AND NOT LIBSET MATCHES "^(obj|orig)$")
 	message(FATAL_ERROR "emulator.cmake: LIBSET=${LIBSET}: obj or orig")
@@ -110,10 +127,7 @@ endif()
 if(LIBS_PAD)
 	string(APPEND vars_cmd "Set LIBS_PAD ${LIBS_PAD}\n")
 endif()
-if(NOT DEFINED CAP_DUMP AND DEFINED ENV{LIBS_CAP_DUMP})
-	set(CAP_DUMP "$ENV{LIBS_CAP_DUMP}")
-endif()
-if(CAP_DUMP)
+if(CAP_DUMP AND NOT CAP_DUMP MATCHES "^BLOCK:")
 	# a key holds | $ spaces: quoted, with AmigaDOS's escape * before * " $
 	string(REGEX REPLACE "([*\"$])" "*\\1" v "${CAP_DUMP}")
 	string(APPEND vars_cmd "Set LIBS_CAP_DUMP \"${v}\"\n")
@@ -249,8 +263,18 @@ endif()
 # the dump of CAP_DUMP
 set(dump_failed "")
 if(CAP_DUMP)
+	# the observations in blocks: from NAME.bin
+	file(GLOB bins ${test}/captures/*.bin)
+	if(bins)
+		execute_process(COMMAND ${RESULTS} libs-dump ${test}/captures "${CAP_DUMP}"
+			RESULT_VARIABLE rc)
+		if(rc GREATER 1)
+			set(dump_failed "LIBS_CAP_DUMP ${CAP_DUMP}: the dump from the block files failed (above)")
+		endif()
+	endif()
 	file(GLOB dumps ${test}/captures/*.dump)
-	if(NOT dumps)
+	if(dump_failed)
+	elseif(NOT dumps)
 		set(dump_failed "LIBS_CAP_DUMP ${CAP_DUMP}: no program wrote a dump (no bytes case or block of that key)")
 	endif()
 	foreach(d IN LISTS dumps)
@@ -273,4 +297,11 @@ if(compare_failed)
 endif()
 if(NOT result EQUAL 0)
 	message(FATAL_ERROR "libs_emulator: libs_tests returned ${result}")
+endif()
+# passed: the raw block files are not needed any more
+if(EXPECTED AND NOT KEEP_BIN)
+	file(GLOB bins ${test}/captures/*.bin)
+	if(bins)
+		file(REMOVE ${bins})
+	endif()
 endif()

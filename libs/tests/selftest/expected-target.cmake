@@ -5,7 +5,8 @@
 # refused as "test not deterministic" and leaves the expected data as it
 # was; an update with FIX makes the pair [orig]/[fixed #N] from the port's
 # run (LIBSET=obj); a skipped run (77) fails naming what it needs; every
-# entry of USERLIBS reaches the runs.
+# entry of USERLIBS reaches the runs; the runs' raw block files are
+# deleted after a written record and kept after a refused one.
 #   cmake -DRESULTS=results -DSCRIPT=expected.cmake -DFAKE=fake-emulator.cmake
 #         -DWORK=DIR -P expected-target.cmake
 foreach(v RESULTS SCRIPT FAKE WORK)
@@ -43,12 +44,25 @@ function(want_file text)
 	endif()
 endfunction()
 
+# the raw block files of the runs: deleted after a written record, kept
+# when nothing is written
+function(want_bins want)
+	file(GLOB bins ${WORK}/work/*/test/captures/*.bin)
+	if(want AND NOT bins)
+		message(FATAL_ERROR "expected-target: the runs' NAME.bin were not kept")
+	elseif(NOT want AND bins)
+		message(FATAL_ERROR "expected-target: the runs' NAME.bin were not deleted: ${bins}")
+	endif()
+endfunction()
+
 run(capture det pass "libs-capture: [^\n]*expected up to date")
 set(recorded "${head}r|a||1\t$00000001\nr|set||1\t\"orig\"\n")
 want_file("${recorded}")
+want_bins(OFF)
 run(capture nondet fail
 	"test not deterministic: prog\nprog: r\\|pad\\|\\|1: run 1 \"0\", run 2 \"4104\"")
 want_file("${recorded}")
+want_bins(ON)
 # the port's run has LIBSET=obj: its other value of r|set||1 is reported, not taken
 run(update port pass "prog: r\\|set\\|\\|1: the port gives \"obj\", expected \"orig\""
 	"-DFIX=r|a||1#7")
