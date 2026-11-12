@@ -1,17 +1,19 @@
 /*
- * rwe rigtmenulib - the C build of rigtmenulib (userlib 37) against the
+ * rwe rigtmenulib - rigtmenulib (userlib 37): the C build or the
  * reference build of its source (ref/rigtmenulib.obj, see
- * libs/userlibs/rwe/refbuild.cmake), method of rwecmp.h.
+ * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
+ * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rigtmenulib.txt).
  *
- *   rigtmenulib DIR     (DIR with rigtmenulib, memlib, maxslib .obj/.orig)
+ *   rigtmenulib DIR     (DIR with rigtmenulib, memlib, maxslib .obj or .orig)
  *
- * Each set has its own memlib/maxslib, GTMenuList object and window (on
- * the Workbench screen, which both use as the "used screen").  The menus
- * are built with the same calls; compared: the lists of the object
+ * The set has its memlib/maxslib, the GTMenuList objects and a window (on
+ * the Workbench screen, also the "used screen").  The menus
+ * are built with fixed calls; observed: the lists of the object
  * (titles, items, sub items: texts, flags, shortcuts, mutual exclude,
  * UserData, the count at +8), the menu strips gadtools makes from them
  * (every Menu and MenuItem field but the pointers, the texts, the
- * commands, GadTools' UserData), the windows' MenuStrip, d0 of the
+ * commands, GadTools' UserData), the window's MenuStrip, d0 of the
  * functions, the kept registers; memlib's memory back at the end.
  * Covered: every entry and form: GTMenuTitle (at the head, in the
  * middle, at the end, behind a missing one), GTMenuItem forms 0-4
@@ -28,6 +30,7 @@
  * without titles (reads address 0), the walks beyond the lists (write
  * near address 0).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <intuition/intuition.h>
@@ -39,139 +42,107 @@
 enum { TOKE, CREATE, SETMENU, UNSETMENU, TITLE, ITEM, STATE, SUBITEM, E_CHECKED, E_SETCHECKED,
        FREEMENU, USERDATA, INIT, FINIT, LOAD, SAVE, USE, FREE };
 
-static UBYTE obj[2][2][16];             /* two GTMenuList objects per set */
+static UBYTE obj[2][16];                /* two GTMenuList objects */
 static struct Screen *scr;
-static ULONG scrobj[2][2];              /* screenslib objects: the screen */
-static struct Window *win[2];
-static ULONG winobj[2][2];              /* windowslib objects */
-static ULONG stk[2][8];                 /* the compiler's a2 stack */
+static ULONG scrobj[2];                 /* screenslib objects: the screen */
+static struct Window *win;
+static ULONG winobj[2];                 /* windowslib objects */
+static ULONG stk[8];                    /* the compiler's a2 stack */
 
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 #define P(p, o) (*(UBYTE **)((UBYTE *)(p) + (o)))
 #define WA(v) (0x5A000000UL | ((ULONG)(v) & 0xffff))
 
-/* ------------------------------------------------------------ compare */
+/* ------------------------------------------------------------ observe */
 
-/* a string pointer as an observation: 0 none, 1 -1, 2 a string */
-#define PKIND(p) ((p) == (const UBYTE *)-1 ? 1UL : (p) ? 2UL : 0UL)
-/* both sets have the entry (an observation, the loops follow it) */
-#define BOTHTHERE(w, a) tape_same(w, (a)[0] != 0, (a)[1] != 0)
-
-static void samestr(const char *what, const UBYTE *o, const UBYTE *c)
+/* a string pointer: the text, null, or -1 ($FFFFFFFF) */
+static void obsstr(const char *what, const UBYTE *p)
 {
-    char w[240];
-    snprintf(w, sizeof w, "%s %s", what, (o == c || (o && c && !strcmp((char *)o, (char *)c)))
-                                         ? "" : "differs");
-    if (o == (UBYTE *)-1 || c == (UBYTE *)-1 || !o || !c)
-        check(w, tape_same(w, PKIND(o), PKIND(c)) && o == c);
+    if (p == (const UBYTE *)-1)
+        OBS(what, 0xffffffffUL);
     else
-        check(w, tape_same(w, PKIND(o), PKIND(c))
-                 & tape_strsame(w, (const char *)o, (const char *)c));
+        OBSSTR(what, (const char *)p);
 }
 
-static void sameentry(const char *what, UBYTE *o, UBYTE *c, int item)
+static void obsentry(const char *what, UBYTE *e, int item)
 {
-    char w[240];
+    char w[100], v[80];
     snprintf(w, sizeof w, "%s text", what);
-    samestr(w, P(o, 4), P(c, 4));
+    obsstr(w, P(e, 4));
     if (!item)
         return;
     snprintf(w, sizeof w, "%s flags/mx/ud", what);
-    check(w, tape_same(w, SW(o, 12), SW(c, 12)) & tape_same(w, SL(o, 22), SL(c, 22))
-             & tape_same(w, SL(o, 26), SL(c, 26)));
+    snprintf(v, sizeof v, "flags $%04X mx $%08lX ud $%08lX", SW(e, 12), SL(e, 22), SL(e, 26));
+    OBSSTR(w, v);
     snprintf(w, sizeof w, "%s shortcut", what);
-    samestr(w, P(o, 14), P(c, 14));
+    obsstr(w, P(e, 14));
 }
 
-/* the lists of object n of both sets */
-static void samelist(int n)
+/* the lists of object n: every entry ("title N ...": there, then its
+   fields), so that a missing or an added entry shows as a missing or an
+   added case */
+static void obslist(int n)
 {
-    UBYTE *t[2], *it[2], *sub[2];
-    char w[200];                        /* VEC (100) and the indexes */
+    UBYTE *t, *it, *sub;
+    char w[100];
     int ti, ii, si;
 
-    SAME("count", SW(obj[cur][n], 8));
-    t[0] = P(obj[0][n], 4);
-    t[1] = P(obj[1][n], 4);
-    for (ti = 0; t[0] || t[1]; ti++) {
-        sprintf(w, "%s title %d", VEC, ti);
-        check(w, BOTHTHERE(w, t) && t[0]);
-        if (!t[0] || !t[1])
-            return;
-        sameentry(w, t[0], t[1], 0);
-        it[0] = P(t[0], 8);
-        it[1] = P(t[1], 8);
-        for (ii = 0; it[0] || it[1]; ii++) {
-            sprintf(w, "%s title %d item %d", VEC, ti, ii);
-            check(w, BOTHTHERE(w, it) && it[0]);
-            if (!it[0] || !it[1])
-                return;
-            sameentry(w, it[0], it[1], 1);
-            sub[0] = P(it[0], 18);
-            sub[1] = P(it[1], 18);
-            for (si = 0; sub[0] || sub[1]; si++) {
-                sprintf(w, "%s title %d item %d sub %d", VEC, ti, ii, si);
-                check(w, BOTHTHERE(w, sub) && sub[0]);
-                if (!sub[0] || !sub[1])
-                    return;
-                sameentry(w, sub[0], sub[1], 1);
-                sub[0] = P(sub[0], 0);
-                sub[1] = P(sub[1], 0);
+    OBS("count", SW(obj[n], 8));
+    for (ti = 0, t = P(obj[n], 4); t; ti++, t = P(t, 0)) {
+        sprintf(w, "title %d", ti);
+        OBS(w, 1);
+        obsentry(w, t, 0);
+        for (ii = 0, it = P(t, 8); it; ii++, it = P(it, 0)) {
+            sprintf(w, "title %d item %d", ti, ii);
+            OBS(w, 1);
+            obsentry(w, it, 1);
+            for (si = 0, sub = P(it, 18); sub; si++, sub = P(sub, 0)) {
+                sprintf(w, "title %d item %d sub %d", ti, ii, si);
+                OBS(w, 1);
+                obsentry(w, sub, 1);
             }
-            it[0] = P(it[0], 0);
-            it[1] = P(it[1], 0);
         }
-        t[0] = P(t[0], 0);
-        t[1] = P(t[1], 0);
     }
 }
 
-static void sameitems(const char *what, struct MenuItem *o, struct MenuItem *c, int sub)
+static void obsitems(const char *what, struct MenuItem *o, int sub)
 {
-    char w[240];
+    char w[100], v[120];
     int i;
 
-    for (i = 0; o || c; i++) {
+    for (i = 0; o; i++, o = o->NextItem) {
         snprintf(w, sizeof w, "%s %s %d", what, sub ? "sub" : "item", i);
-        check(w, tape_same(w, o != 0, c != 0) && o);
-        if (!o || !c)
-            return;
-        check(w, tape_same(w, o->LeftEdge, c->LeftEdge) & tape_same(w, o->TopEdge, c->TopEdge)
-                 & tape_same(w, o->Width, c->Width) & tape_same(w, o->Height, c->Height)
-                 & tape_same(w, o->Flags, c->Flags)
-                 & tape_same(w, o->MutualExclude, c->MutualExclude)
-                 & tape_same(w, o->Command, c->Command)
-                 & tape_same(w, (ULONG)GTMENUITEM_USERDATA(o), (ULONG)GTMENUITEM_USERDATA(c))
-                 & tape_same(w, !o->NextSelect, !c->NextSelect));
+        OBS(w, 1);
+        snprintf(v, sizeof v, "L %d T %d W %d H %d flags $%04X mx $%08lX cmd $%02X ud $%08lX%s",
+                 o->LeftEdge, o->TopEdge, o->Width, o->Height, o->Flags,
+                 (ULONG)o->MutualExclude, (UBYTE)o->Command, (ULONG)GTMENUITEM_USERDATA(o),
+                 o->NextSelect ? "" : " no NextSelect");
+        snprintf(w + strlen(w), sizeof w - strlen(w), " fields");
+        OBSSTR(w, v);
+        w[strlen(w) - 7] = 0;
         if (!sub)
-            sameitems(w, o->SubItem, c->SubItem, 1);
-        o = o->NextItem;
-        c = c->NextItem;
+            obsitems(w, o->SubItem, 1);
     }
 }
 
-/* the menu strips of object n of both sets */
-static void samestrip(int n)
+/* the menu strip of object n */
+static void obsstrip(int n)
 {
-    struct Menu *m[2] = { (struct Menu *)P(obj[0][n], 0), (struct Menu *)P(obj[1][n], 0) };
-    char w[200];                        /* VEC (100) and the indexes */
+    struct Menu *m = (struct Menu *)P(obj[n], 0);
+    char w[100], v[160];
     int i;
 
-    SAME("strip made", P(obj[cur][n], 0) != 0);
-    for (i = 0; m[0] || m[1]; i++) {
-        sprintf(w, "%s menu %d", VEC, i);
-        check(w, BOTHTHERE(w, m) && m[0]);
-        if (!m[0] || !m[1])
-            return;
-        check(w, tape_same(w, m[0]->LeftEdge, m[1]->LeftEdge)
-                 & tape_same(w, m[0]->Width, m[1]->Width)
-                 & tape_same(w, m[0]->Height, m[1]->Height)
-                 & tape_same(w, m[0]->Flags, m[1]->Flags)
-                 & tape_strsame(w, (const char *)m[0]->MenuName, (const char *)m[1]->MenuName));
-        sameitems(w, m[0]->FirstItem, m[1]->FirstItem, 0);
-        m[0] = m[0]->NextMenu;
-        m[1] = m[1]->NextMenu;
+    OBS("strip made", m != 0);
+    for (i = 0; m; i++, m = m->NextMenu) {
+        sprintf(w, "menu %d", i);
+        OBS(w, 1);
+        snprintf(v, sizeof v, "L %d W %d H %d flags $%04X \"%.60s\"", m->LeftEdge, m->Width,
+                 m->Height, m->Flags, m->MenuName ? (const char *)m->MenuName : "(null)");
+        sprintf(w, "menu %d fields", i);
+        OBSSTR(w, v);
+        sprintf(w, "menu %d", i);
+        obsitems(w, m->FirstItem, 0);
     }
 }
 
@@ -181,10 +152,10 @@ static void title(int n, ULONG menu, const char *text)
 {
     ROUT = "GTMenuTitle";
     sprintf(VEC, "%d \"%s\" at %ld", n, text, (LONG)(WORD)menu);
-    DO2(ENT(LIB, TITLE, 0), R[cur].d[0] = WA(n); R[cur].d[1] = WA(menu);
-        R[cur].d[2] = (ULONG)text; stk[cur][5] = strlen(text);
-        R[cur].a[2] = (ULONG)&stk[cur][6]; R[cur].a[3] = (ULONG)obj[cur][n]);
-    samelist(n);
+    DO1(ENT(LIB, TITLE, 0), R.d[0] = WA(n); R.d[1] = WA(menu);
+        R.d[2] = (ULONG)text; stk[5] = strlen(text);
+        R.a[2] = (ULONG)&stk[6]; R.a[3] = (ULONG)obj[n]);
+    obslist(n);
 }
 
 /* GTMenuItem (sub < 0) or GTSubItem, form 0-4; the stack: -4 text's
@@ -198,52 +169,52 @@ static void item(int n, int form, ULONG fl, ULONG menu, ULONG it, LONG sub, cons
     ROUT = s ? "GTSubItem" : "GTMenuItem";
     sprintf(VEC, "%d form %d %ld/%ld/%ld \"%s\" \"%s\" mx %lu ud %lu", n, form, menu, it, sub,
             text ? text : "", sc ? sc : "", mx, ud);
-    DO2(ENT(LIB, s ? SUBITEM : ITEM, form),
-        R[cur].d[0] = WA(n); R[cur].d[1] = WA(fl); R[cur].d[2] = WA(menu);
-        R[cur].d[3] = WA(it);
-        memset(stk[cur], 0x77, sizeof stk[cur]);
-        stk[cur][7] = text ? strlen(text) : 0x11111111;
-        stk[cur][6] = sc ? strlen(sc) : 0x22222222;
+    DO1(ENT(LIB, s ? SUBITEM : ITEM, form),
+        R.d[0] = WA(n); R.d[1] = WA(fl); R.d[2] = WA(menu);
+        R.d[3] = WA(it);
+        memset(stk, 0x77, sizeof stk);
+        stk[7] = text ? strlen(text) : 0x11111111;
+        stk[6] = sc ? strlen(sc) : 0x22222222;
         if (s) {
-            R[cur].d[4] = WA(sub); R[cur].d[5] = (ULONG)text; R[cur].d[6] = (ULONG)sc;
-            stk[cur][5] = (ULONG)sc; stk[cur][4] = mx; stk[cur][3] = ud;
+            R.d[4] = WA(sub); R.d[5] = (ULONG)text; R.d[6] = (ULONG)sc;
+            stk[5] = (ULONG)sc; stk[4] = mx; stk[3] = ud;
         } else {
-            R[cur].d[4] = (ULONG)text; R[cur].d[5] = (ULONG)sc; R[cur].d[6] = mx;
-            stk[cur][4] = ud;
+            R.d[4] = (ULONG)text; R.d[5] = (ULONG)sc; R.d[6] = mx;
+            stk[4] = ud;
         }
-        R[cur].a[2] = (ULONG)&stk[cur][8]; R[cur].a[3] = (ULONG)obj[cur][n]);
-    samelist(n);
+        R.a[2] = (ULONG)&stk[8]; R.a[3] = (ULONG)obj[n]);
+    obslist(n);
 }
 
 static void create(int n)
 {
     ROUT = "CreateMenuStrip";
     sprintf(VEC, "%d", n);
-    DO2(ENT(LIB, CREATE, 0), R[cur].d[0] = WA(n); R[cur].a[0] = (ULONG)scrobj[cur];
-        R[cur].a[3] = (ULONG)obj[cur][n]);
-    SAME("d0", R[cur].d[0]);
-    BOTH("strip made", R[cur].d[0] == (ULONG)-1 && P(obj[cur][n], 0));
-    samestrip(n);
+    DO1(ENT(LIB, CREATE, 0), R.d[0] = WA(n); R.a[0] = (ULONG)scrobj;
+        R.a[3] = (ULONG)obj[n]);
+    OBS("d0", R.d[0]);
+    BOTH("strip made", R.d[0] == (ULONG)-1 && P(obj[n], 0));
+    obsstrip(n);
 }
 
 static void setmenu(int n)
 {
     ROUT = "GTSetMenu";
     sprintf(VEC, "%d", n);
-    DO2(ENT(LIB, SETMENU, 0), R[cur].d[0] = WA(n); R[cur].a[0] = (ULONG)scrobj[cur];
-        R[cur].a[1] = (ULONG)winobj[cur]; R[cur].a[3] = (ULONG)obj[cur][n];
-        R[cur].a[6] = (ULONG)IntuitionBase);
-    BOTH("the window's strip", win[cur]->MenuStrip == (struct Menu *)P(obj[cur][n], 0));
-    samestrip(n);
+    DO1(ENT(LIB, SETMENU, 0), R.d[0] = WA(n); R.a[0] = (ULONG)scrobj;
+        R.a[1] = (ULONG)winobj; R.a[3] = (ULONG)obj[n];
+        R.a[6] = (ULONG)IntuitionBase);
+    BOTH("the window's strip", win->MenuStrip == (struct Menu *)P(obj[n], 0));
+    obsstrip(n);
 }
 
 static void unsetmenu(void)
 {
     ROUT = "GTUnSetMenu";
     strcpy(VEC, "");
-    DO2(ENT(LIB, UNSETMENU, 0), R[cur].a[2] = (ULONG)winobj[cur];
-        R[cur].a[6] = (ULONG)IntuitionBase);
-    BOTH("no strip", win[cur]->MenuStrip == NULL);
+    DO1(ENT(LIB, UNSETMENU, 0), R.a[2] = (ULONG)winobj;
+        R.a[6] = (ULONG)IntuitionBase);
+    BOTH("no strip", win->MenuStrip == NULL);
 }
 
 /* GTMenuState n[,m[,i[,s]]],on: form = the number of indexes */
@@ -254,55 +225,52 @@ static void state(int n, int form, ULONG m, ULONG i, ULONG s, ULONG on)
     a[form] = on;
     ROUT = "GTMenuState";
     sprintf(VEC, "%d form %d %lu/%lu/%lu on %lu", n, form, m, i, s, on);
-    DO2(ENT(LIB, STATE, form), R[cur].d[0] = WA(n); R[cur].d[1] = WA(a[0]);
-        R[cur].d[2] = WA(a[1]); R[cur].d[3] = WA(a[2]); R[cur].d[4] = WA(a[3]);
-        R[cur].a[3] = (ULONG)obj[cur][n]);
+    DO1(ENT(LIB, STATE, form), R.d[0] = WA(n); R.d[1] = WA(a[0]);
+        R.d[2] = WA(a[1]); R.d[3] = WA(a[2]); R.d[4] = WA(a[3]);
+        R.a[3] = (ULONG)obj[n]);
     if (form) {
         ROUT = "statechk";
-        DO2(ERR(LIB, STATE, form), R[cur].d[0] = WA(n); R[cur].d[1] = WA(a[0]);
-            R[cur].d[2] = WA(a[1]); R[cur].d[3] = WA(a[2]); R[cur].d[4] = WA(a[3]);
-            R[cur].a[3] = (ULONG)obj[cur][n]);
+        DO1(ERR(LIB, STATE, form), R.d[0] = WA(n); R.d[1] = WA(a[0]);
+            R.d[2] = WA(a[1]); R.d[3] = WA(a[2]); R.d[4] = WA(a[3]);
+            R.a[3] = (ULONG)obj[n]);
     }
-    samestrip(n);
+    obsstrip(n);
 }
 
 /* GTMenuChecked / GTSetMenuChecked / GTGetUserData (object in a2); d0
-   of the call in last[] */
-static ULONG last[2];
+   of the call in last */
+static ULONG last;
 static void check3(int idx, const char *name, int n, int form, ULONG m, ULONG i, ULONG s,
                    ULONG on)
 {
     ROUT = name;
     sprintf(VEC, "%d form %d %lu/%lu/%ld on %lu", n, form, m, i, (LONG)(WORD)s, on);
-    DO2(ENT(LIB, idx, form), R[cur].d[0] = MARK(0); R[cur].d[1] = WA(m); R[cur].d[2] = WA(i);
-        R[cur].d[3] = form ? WA(s) : WA(on); R[cur].d[4] = WA(on);
-        R[cur].a[2] = (ULONG)obj[cur][n]);
+    DO1(ENT(LIB, idx, form), R.d[0] = MARK(0); R.d[1] = WA(m); R.d[2] = WA(i);
+        R.d[3] = form ? WA(s) : WA(on); R.d[4] = WA(on);
+        R.a[2] = (ULONG)obj[n]);
     if (idx != E_SETCHECKED)
-        SAME("d0", R[cur].d[0]);
-    for (cur = 0; cur < 2; cur++)
-        last[cur] = R[cur].d[0];
+        OBS("d0", R.d[0]);
+    last = R.d[0];
     ROUT = "chkchk";
-    DO2(ERR(LIB, idx, form), R[cur].d[0] = MARK(0); R[cur].d[1] = WA(m);
-        R[cur].d[2] = WA(i); R[cur].d[3] = form ? WA(s) : WA(on); R[cur].d[4] = WA(on);
-        R[cur].a[2] = (ULONG)obj[cur][n]);
-    samestrip(n);
+    DO1(ERR(LIB, idx, form), R.d[0] = MARK(0); R.d[1] = WA(m);
+        R.d[2] = WA(i); R.d[3] = form ? WA(s) : WA(on); R.d[4] = WA(on);
+        R.a[2] = (ULONG)obj[n]);
+    obsstrip(n);
 }
 
 static void freemenu(int n, int form, ULONG m, ULONG i, ULONG s)
 {
     ROUT = "GTFreeMenu";
     sprintf(VEC, "%d form %d %lu/%lu/%lu", n, form, m, i, s);
-    DO2(ENT(LIB, FREEMENU, form), R[cur].d[0] = WA(n); R[cur].d[1] = WA(m);
-        R[cur].d[2] = WA(i); R[cur].d[3] = WA(s); R[cur].a[3] = (ULONG)obj[cur][n]);
-    samelist(n);
+    DO1(ENT(LIB, FREEMENU, form), R.d[0] = WA(n); R.d[1] = WA(m);
+        R.d[2] = WA(i); R.d[3] = WA(s); R.a[3] = (ULONG)obj[n]);
+    obslist(n);
 }
 
 static void memlib(int idx)
 {
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), idx, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), idx, 0), &R, NULL, 0, &POP);
 }
 
 int main(int argc, char **argv)
@@ -316,33 +284,48 @@ int main(int argc, char **argv)
         printf("usage: rigtmenulib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("finit", d0-d7|a0-a3|a6);
+    KEEPS("GTMenuTitle", d2-d7|a3|a6);
+    KEEPS("GTMenuItem", d5-d7|a3|a6);
+    KEEPS("GTSubItem", d6|d7|a3|a6);
+    KEEPS("CreateMenuStrip", d2-d7|a3);
+    KEEPS("createchk", d0-d7|a0-a3|a6);
+    KEEPS("GTSetMenu", d2-d7|a3|a6);
+    KEEPS("setchk", d0-d7|a0-a3|a6);
+    KEEPS("GTUnSetMenu", d2-d7|a2|a3|a6);
+    KEEPS("GTMenuState", d4-d6|a0-a2|a6);
+    KEEPS("statechk", d1-d6|a1-a3|a6);
+    KEEPS("GTMenuChecked", d4-d7|a0|a1|a3|a6);
+    KEEPS("GTSetMenuChecked", d4-d7|a0|a1|a3|a6);
+    KEEPS("GTGetUserData", d4-d7|a0|a1|a3|a6);
+    KEEPS("chkchk", d1-d6|a1-a3|a6);
+    KEEPS("GTFreeMenu", d4-d7|a3|a6);
+    KEEPS("free", d2-d7|a3);
     gt = OpenLibrary((STRPTR)"gadtools.library", 37);
     scr = LockPubScreen(NULL);
     if (!gt || !scr) {
         check("rigtmenulib: gadtools.library and the Workbench screen", FALSE);
         return 20;
     }
-    for (s = 0; s < 2; s++) {
-        win[s] = OpenWindowTags(NULL, WA_PubScreen, (ULONG)scr, WA_Left, 10 + 120 * s,
-                                WA_Top, 20, WA_Width, 110, WA_Height, 40,
-                                WA_Title, (ULONG)(s ? "rwe gtmenu C" : "rwe gtmenu orig"),
-                                WA_Flags, WFLG_DRAGBAR | WFLG_NEWLOOKMENUS, TAG_END);
-        if (!win[s]) {
-            check("rigtmenulib: a window", FALSE);
-            return 20;
-        }
-        scrobj[s][0] = (ULONG)scr;
-        winobj[s][0] = (ULONG)win[s];
+    win = OpenWindowTags(NULL, WA_PubScreen, (ULONG)scr, WA_Left, 10, WA_Top, 20,
+                         WA_Width, 110, WA_Height, 40, WA_Title, (ULONG)"rwe gtmenu",
+                         WA_Flags, WFLG_DRAGBAR | WFLG_NEWLOOKMENUS, TAG_END);
+    if (!win) {
+        check("rigtmenulib: a window", FALSE);
+        return 20;
     }
+    scrobj[0] = (ULONG)scr;
+    winobj[0] = (ULONG)win;
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
     ROUT = "memlib init";
     memlib(7);
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
 
     /* the lists */
     title(0, 0, "Project");
@@ -373,12 +356,12 @@ int main(int argc, char **argv)
     /* the strips */
     create(0);
     ROUT = "createchk";
-    DO2(ERR(LIB, CREATE, 0), R[cur].d[0] = WA(0); R[cur].a[3] = (ULONG)obj[cur][0]);
+    DO1(ERR(LIB, CREATE, 0), R.d[0] = WA(0); R.a[3] = (ULONG)obj[0]);
     create(0);                          /* again: the old one freed */
     setmenu(0);
     setmenu(0);                         /* the window has one: cleared first */
     ROUT = "setchk";
-    DO2(ERR(LIB, SETMENU, 0), R[cur].d[0] = WA(0); R[cur].a[3] = (ULONG)obj[cur][0]);
+    DO1(ERR(LIB, SETMENU, 0), R.d[0] = WA(0); R.a[3] = (ULONG)obj[0]);
     unsetmenu();
     unsetmenu();                        /* no strip */
     setmenu(1);                         /* no strip yet: made */
@@ -402,7 +385,7 @@ int main(int argc, char **argv)
     check3(E_SETCHECKED, "GTSetMenuChecked", 0, 1, 1, 1, 3, 1);
     check3(E_CHECKED, "GTMenuChecked", 0, 1, 1, 1, 3, 0);
     check3(USERDATA, "GTGetUserData", 0, 0, 2, 0, 0, 0);
-    BOTH("UserData of \"Data\"", last[cur] == 0x1234);
+    BOTH("UserData of \"Data\"", last == 0x1234);
     check3(USERDATA, "GTGetUserData", 0, 1, 1, 1, 4, 0);
     check3(USERDATA, "GTGetUserData", 0, 1, 2, 0, 0xffff, 0);   /* no sub item */
 
@@ -421,19 +404,18 @@ int main(int argc, char **argv)
     for (s = 0; s < 2; s++) {
         ROUT = "free";
         sprintf(VEC, "object %d", s);
-        DO2(ENT(LIB, FREE, 0), R[cur].a[3] = (ULONG)obj[cur][s]);
-        BOTH("object cleared", !SL(obj[cur][s], 0) && !SL(obj[cur][s], 4)
-                               && !SW(obj[cur][s], 8));
+        DO1(ENT(LIB, FREE, 0), R.a[3] = (ULONG)obj[s]);
+        BOTH("object cleared", !SL(obj[s], 0) && !SL(obj[s], 4)
+                               && !SW(obj[s], 8));
     }
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
 
     ROUT = "memlib finit";
     memlib(8);
     rwe_mem_check(LIB, avail, TRUE);
-    for (s = 0; s < 2; s++)
-        CloseWindow(win[s]);
+    CloseWindow(win);
     UnlockPubScreen(NULL, scr);
     CloseLibrary(gt);
     return rwe_done(LIB);

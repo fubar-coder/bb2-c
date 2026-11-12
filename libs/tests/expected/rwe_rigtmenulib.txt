@@ -1,0 +1,2142 @@
+# capture rwe_rigtmenulib 1
+init|kept||1	kept
+init|popped||1	$00000000
+GTMenuTitle|kept|0 "Project" at 0|1	kept
+GTMenuTitle|popped|0 "Project" at 0|1	$00000000
+GTMenuTitle|count|0 "Project" at 0|1	$00000001
+GTMenuTitle|title 0|0 "Project" at 0|1	$00000001
+GTMenuTitle|title 0 text|0 "Project" at 0|1	"Project"
+GTMenuTitle|kept|0 "Edit" at 1|1	kept
+GTMenuTitle|popped|0 "Edit" at 1|1	$00000000
+GTMenuTitle|count|0 "Edit" at 1|1	$00000002
+GTMenuTitle|title 0|0 "Edit" at 1|1	$00000001
+GTMenuTitle|title 0 text|0 "Edit" at 1|1	"Project"
+GTMenuTitle|title 1|0 "Edit" at 1|1	$00000001
+GTMenuTitle|title 1 text|0 "Edit" at 1|1	"Edit"
+GTMenuTitle|kept|0 "Middle" at 1|1	kept
+GTMenuTitle|popped|0 "Middle" at 1|1	$00000000
+GTMenuTitle|count|0 "Middle" at 1|1	$00000003
+GTMenuTitle|title 0|0 "Middle" at 1|1	$00000001
+GTMenuTitle|title 0 text|0 "Middle" at 1|1	"Project"
+GTMenuTitle|title 1|0 "Middle" at 1|1	$00000001
+GTMenuTitle|title 1 text|0 "Middle" at 1|1	"Middle"
+GTMenuTitle|title 2|0 "Middle" at 1|1	$00000001
+GTMenuTitle|title 2 text|0 "Middle" at 1|1	"Edit"
+GTMenuTitle|kept|0 "Last" at 3|1	kept
+GTMenuTitle|popped|0 "Last" at 3|1	$00000000
+GTMenuTitle|count|0 "Last" at 3|1	$00000004
+GTMenuTitle|title 0|0 "Last" at 3|1	$00000001
+GTMenuTitle|title 0 text|0 "Last" at 3|1	"Project"
+GTMenuTitle|title 1|0 "Last" at 3|1	$00000001
+GTMenuTitle|title 1 text|0 "Last" at 3|1	"Middle"
+GTMenuTitle|title 2|0 "Last" at 3|1	$00000001
+GTMenuTitle|title 2 text|0 "Last" at 3|1	"Edit"
+GTMenuTitle|title 3|0 "Last" at 3|1	$00000001
+GTMenuTitle|title 3 text|0 "Last" at 3|1	"Last"
+GTMenuTitle|kept|0 "Nowhere" at 9|1	kept
+GTMenuTitle|popped|0 "Nowhere" at 9|1	$00000000
+GTMenuTitle|count|0 "Nowhere" at 9|1	$00000004
+GTMenuTitle|title 0|0 "Nowhere" at 9|1	$00000001
+GTMenuTitle|title 0 text|0 "Nowhere" at 9|1	"Project"
+GTMenuTitle|title 1|0 "Nowhere" at 9|1	$00000001
+GTMenuTitle|title 1 text|0 "Nowhere" at 9|1	"Middle"
+GTMenuTitle|title 2|0 "Nowhere" at 9|1	$00000001
+GTMenuTitle|title 2 text|0 "Nowhere" at 9|1	"Edit"
+GTMenuTitle|title 3|0 "Nowhere" at 9|1	$00000001
+GTMenuTitle|title 3 text|0 "Nowhere" at 9|1	"Last"
+GTMenuTitle|kept|0 "First" at 0|1	kept
+GTMenuTitle|popped|0 "First" at 0|1	$00000000
+GTMenuTitle|count|0 "First" at 0|1	$00000005
+GTMenuTitle|title 0|0 "First" at 0|1	$00000001
+GTMenuTitle|title 0 text|0 "First" at 0|1	"First"
+GTMenuTitle|title 1|0 "First" at 0|1	$00000001
+GTMenuTitle|title 1 text|0 "First" at 0|1	"Project"
+GTMenuTitle|title 2|0 "First" at 0|1	$00000001
+GTMenuTitle|title 2 text|0 "First" at 0|1	"Middle"
+GTMenuTitle|title 3|0 "First" at 0|1	$00000001
+GTMenuTitle|title 3 text|0 "First" at 0|1	"Edit"
+GTMenuTitle|title 4|0 "First" at 0|1	$00000001
+GTMenuTitle|title 4 text|0 "First" at 0|1	"Last"
+GTMenuItem|kept|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000006
+GTMenuItem|title 0|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"O"
+GTMenuItem|title 2|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 3|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 4|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 2 1/0/-1 "Open" "O" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000007
+GTMenuItem|title 0|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 1|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 3|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 4|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 0 1/1/-1 "" "" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000008
+GTMenuItem|title 0|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 1|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	null
+GTMenuItem|title 1 item 2|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 3|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 4|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 1 1/2/-1 "Toggle" "" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	kept
+GTMenuItem|popped|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000000
+GTMenuItem|count|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000009
+GTMenuItem|title 0|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"First"
+GTMenuItem|title 1|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"M"
+GTMenuItem|title 1 item 1|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"O"
+GTMenuItem|title 1 item 2|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	null
+GTMenuItem|title 1 item 3|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	null
+GTMenuItem|title 2|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Middle"
+GTMenuItem|title 3|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Edit"
+GTMenuItem|title 4|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 3 1/0/-1 "Mx" "M" mx 6 ud 0|1	"Last"
+GTMenuItem|kept|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	kept
+GTMenuItem|popped|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000000
+GTMenuItem|count|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$0000000A
+GTMenuItem|title 0|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 0 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"First"
+GTMenuItem|title 1|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 1 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Project"
+GTMenuItem|title 1 item 0|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"M"
+GTMenuItem|title 1 item 1|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"O"
+GTMenuItem|title 1 item 2|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	null
+GTMenuItem|title 1 item 3|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	null
+GTMenuItem|title 2|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 2 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Middle"
+GTMenuItem|title 2 item 0|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 2 item 0 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Data"
+GTMenuItem|title 2 item 0 flags/mx/ud|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"flags $0101 mx $00000006 ud $00001234"
+GTMenuItem|title 2 item 0 shortcut|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"D"
+GTMenuItem|title 3|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 3 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Edit"
+GTMenuItem|title 4|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	$00000001
+GTMenuItem|title 4 text|0 form 4 2/0/-1 "Data" "D" mx 3 ud 4660|1	"Last"
+GTMenuItem|kept|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$0000000B
+GTMenuItem|title 0|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"M"
+GTMenuItem|title 1 item 1|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 2|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	null
+GTMenuItem|title 1 item 3|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 2 item 0|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 item 0 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Data"
+GTMenuItem|title 2 item 0 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTMenuItem|title 2 item 0 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"D"
+GTMenuItem|title 3|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 3 item 0|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 0 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Cut"
+GTMenuItem|title 3 item 0 flags/mx/ud|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 0 shortcut|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"X"
+GTMenuItem|title 4|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 2 3/0/-1 "Cut" "X" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$0000000C
+GTMenuItem|title 0|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"M"
+GTMenuItem|title 1 item 1|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 2|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	null
+GTMenuItem|title 1 item 3|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 2 item 0|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 item 0 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Data"
+GTMenuItem|title 2 item 0 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTMenuItem|title 2 item 0 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"D"
+GTMenuItem|title 3|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 3 item 0|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 0 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Cut"
+GTMenuItem|title 3 item 0 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 0 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"X"
+GTMenuItem|title 3 item 1|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 1 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Copy"
+GTMenuItem|title 3 item 1 flags/mx/ud|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 1 shortcut|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"C"
+GTMenuItem|title 4|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 2 3/1/-1 "Copy" "C" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$0000000C
+GTMenuItem|title 0|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"M"
+GTMenuItem|title 1 item 1|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 2|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	null
+GTMenuItem|title 1 item 3|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 2 item 0|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 item 0 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Data"
+GTMenuItem|title 2 item 0 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTMenuItem|title 2 item 0 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"D"
+GTMenuItem|title 3|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 3 item 0|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 0 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Cut"
+GTMenuItem|title 3 item 0 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 0 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"X"
+GTMenuItem|title 3 item 1|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 1 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Copy"
+GTMenuItem|title 3 item 1 flags/mx/ud|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 1 shortcut|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"C"
+GTMenuItem|title 4|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 2 9/0/-1 "None" "N" mx 0 ud 0|1	"Last"
+GTMenuItem|kept|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	kept
+GTMenuItem|popped|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000000
+GTMenuItem|count|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$0000000C
+GTMenuItem|title 0|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"First"
+GTMenuItem|title 1|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Project"
+GTMenuItem|title 1 item 0|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 0 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Mx"
+GTMenuItem|title 1 item 0 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTMenuItem|title 1 item 0 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"M"
+GTMenuItem|title 1 item 1|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 1 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Open"
+GTMenuItem|title 1 item 1 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 1 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"O"
+GTMenuItem|title 1 item 2|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 2 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTMenuItem|title 1 item 2 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 2 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	null
+GTMenuItem|title 1 item 3|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 1 item 3 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Toggle"
+GTMenuItem|title 1 item 3 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTMenuItem|title 1 item 3 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	null
+GTMenuItem|title 2|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Middle"
+GTMenuItem|title 2 item 0|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 2 item 0 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Data"
+GTMenuItem|title 2 item 0 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTMenuItem|title 2 item 0 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"D"
+GTMenuItem|title 3|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Edit"
+GTMenuItem|title 3 item 0|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 0 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Cut"
+GTMenuItem|title 3 item 0 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 0 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"X"
+GTMenuItem|title 3 item 1|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 3 item 1 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Copy"
+GTMenuItem|title 3 item 1 flags/mx/ud|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 3 item 1 shortcut|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"C"
+GTMenuItem|title 4|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	$00000001
+GTMenuItem|title 4 text|0 form 2 3/7/-1 "None" "N" mx 0 ud 0|1	"Last"
+GTSubItem|kept|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	kept
+GTSubItem|popped|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000000
+GTSubItem|count|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$0000000D
+GTSubItem|title 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"First"
+GTSubItem|title 1|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"A"
+GTSubItem|title 1 item 2|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	null
+GTSubItem|title 2|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"D"
+GTSubItem|title 3|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"C"
+GTSubItem|title 4|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 2 1/1/0 "Sub A" "A" mx 0 ud 0|1	"Last"
+GTSubItem|kept|0 form 0 1/1/1 "" "" mx 0 ud 0|1	kept
+GTSubItem|popped|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000000
+GTSubItem|count|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$0000000E
+GTSubItem|title 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"First"
+GTSubItem|title 1|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"A"
+GTSubItem|title 1 item 1 sub 1|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	null
+GTSubItem|title 1 item 2|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	null
+GTSubItem|title 2|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"D"
+GTSubItem|title 3|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"C"
+GTSubItem|title 4|0 form 0 1/1/1 "" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 0 1/1/1 "" "" mx 0 ud 0|1	"Last"
+GTSubItem|kept|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	kept
+GTSubItem|popped|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000000
+GTSubItem|count|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$0000000F
+GTSubItem|title 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"First"
+GTSubItem|title 1|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"A"
+GTSubItem|title 1 item 1 sub 1|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	null
+GTSubItem|title 1 item 1 sub 2|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 2 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Sub C"
+GTSubItem|title 1 item 1 sub 2 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0001 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 2 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	null
+GTSubItem|title 1 item 2|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	null
+GTSubItem|title 2|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"D"
+GTSubItem|title 3|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"C"
+GTSubItem|title 4|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 1 1/1/2 "Sub C" "" mx 0 ud 0|1	"Last"
+GTSubItem|kept|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	kept
+GTSubItem|popped|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000000
+GTSubItem|count|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000010
+GTSubItem|title 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"First"
+GTSubItem|title 1|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Sub D"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0001 mx $00000002 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Q"
+GTSubItem|title 1 item 1 sub 1|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"A"
+GTSubItem|title 1 item 1 sub 2|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 2 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 2 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 2 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	null
+GTSubItem|title 1 item 1 sub 3|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 3 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Sub C"
+GTSubItem|title 1 item 1 sub 3 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0001 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 3 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	null
+GTSubItem|title 1 item 2|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	null
+GTSubItem|title 2|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"D"
+GTSubItem|title 3|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"C"
+GTSubItem|title 4|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 3 1/1/0 "Sub D" "Q" mx 2 ud 0|1	"Last"
+GTSubItem|kept|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	kept
+GTSubItem|popped|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000000
+GTSubItem|count|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000011
+GTSubItem|title 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"First"
+GTSubItem|title 1|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Project"
+GTSubItem|title 1 item 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"M"
+GTSubItem|title 1 item 1|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Sub D"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0001 mx $00000002 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Q"
+GTSubItem|title 1 item 1 sub 1|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Sub A"
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"A"
+GTSubItem|title 1 item 1 sub 2|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 sub 2 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 2 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 2 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	null
+GTSubItem|title 1 item 1 sub 3|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 sub 3 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Sub C"
+GTSubItem|title 1 item 1 sub 3 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0001 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 3 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	null
+GTSubItem|title 1 item 1 sub 4|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 1 sub 4 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Sub E"
+GTSubItem|title 1 item 1 sub 4 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0101 mx $00000001 ud $00005678"
+GTSubItem|title 1 item 1 sub 4 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"E"
+GTSubItem|title 1 item 2|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	null
+GTSubItem|title 1 item 3|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	null
+GTSubItem|title 2|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 2 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Middle"
+GTSubItem|title 2 item 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"D"
+GTSubItem|title 3|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 3 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Edit"
+GTSubItem|title 3 item 0|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"X"
+GTSubItem|title 3 item 1|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"C"
+GTSubItem|title 4|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	$00000001
+GTSubItem|title 4 text|0 form 4 1/1/4 "Sub E" "E" mx 1 ud 22136|1	"Last"
+GTSubItem|kept|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	kept
+GTSubItem|popped|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000000
+GTSubItem|count|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000011
+GTSubItem|title 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"First"
+GTSubItem|title 1|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Sub D"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000002 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Q"
+GTSubItem|title 1 item 1 sub 1|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"A"
+GTSubItem|title 1 item 1 sub 2|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 2 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 2 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 2 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 1 sub 3|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 3 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Sub C"
+GTSubItem|title 1 item 1 sub 3 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 3 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 1 sub 4|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 4 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Sub E"
+GTSubItem|title 1 item 1 sub 4 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000001 ud $00005678"
+GTSubItem|title 1 item 1 sub 4 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"E"
+GTSubItem|title 1 item 2|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 2|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"D"
+GTSubItem|title 3|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"C"
+GTSubItem|title 4|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 2 1/9/0 "None" "N" mx 0 ud 0|1	"Last"
+GTSubItem|kept|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	kept
+GTSubItem|popped|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000000
+GTSubItem|count|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000011
+GTSubItem|title 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"First"
+GTSubItem|title 1|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Project"
+GTSubItem|title 1 item 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Mx"
+GTSubItem|title 1 item 0 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000006 ud $00000000"
+GTSubItem|title 1 item 0 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"M"
+GTSubItem|title 1 item 1|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Open"
+GTSubItem|title 1 item 1 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"O"
+GTSubItem|title 1 item 1 sub 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Sub D"
+GTSubItem|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000002 ud $00000000"
+GTSubItem|title 1 item 1 sub 0 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Q"
+GTSubItem|title 1 item 1 sub 1|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 1 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Sub A"
+GTSubItem|title 1 item 1 sub 1 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 1 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"A"
+GTSubItem|title 1 item 1 sub 2|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 2 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 1 sub 2 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 2 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 1 sub 3|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 3 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Sub C"
+GTSubItem|title 1 item 1 sub 3 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0001 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 1 sub 3 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 1 sub 4|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 1 sub 4 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Sub E"
+GTSubItem|title 1 item 1 sub 4 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000001 ud $00005678"
+GTSubItem|title 1 item 1 sub 4 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"E"
+GTSubItem|title 1 item 2|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 2 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$FFFFFFFF
+GTSubItem|title 1 item 2 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 2 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 1 item 3|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 1 item 3 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Toggle"
+GTSubItem|title 1 item 3 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0009 mx $00000000 ud $00000000"
+GTSubItem|title 1 item 3 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	null
+GTSubItem|title 2|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Middle"
+GTSubItem|title 2 item 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 2 item 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Data"
+GTSubItem|title 2 item 0 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0101 mx $00000006 ud $00001234"
+GTSubItem|title 2 item 0 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"D"
+GTSubItem|title 3|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Edit"
+GTSubItem|title 3 item 0|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 0 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Cut"
+GTSubItem|title 3 item 0 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 0 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"X"
+GTSubItem|title 3 item 1|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 3 item 1 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Copy"
+GTSubItem|title 3 item 1 flags/mx/ud|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTSubItem|title 3 item 1 shortcut|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"C"
+GTSubItem|title 4|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	$00000001
+GTSubItem|title 4 text|0 form 2 1/1/9 "None" "N" mx 0 ud 0|1	"Last"
+GTMenuTitle|kept|1 "Other" at 0|1	kept
+GTMenuTitle|popped|1 "Other" at 0|1	$00000000
+GTMenuTitle|count|1 "Other" at 0|1	$00000001
+GTMenuTitle|title 0|1 "Other" at 0|1	$00000001
+GTMenuTitle|title 0 text|1 "Other" at 0|1	"Other"
+GTMenuItem|kept|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	kept
+GTMenuItem|popped|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000000
+GTMenuItem|count|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000002
+GTMenuItem|title 0|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 text|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"Other"
+GTMenuItem|title 0 item 0|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	$00000001
+GTMenuItem|title 0 item 0 text|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"One"
+GTMenuItem|title 0 item 0 flags/mx/ud|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"flags $0000 mx $00000000 ud $00000000"
+GTMenuItem|title 0 item 0 shortcut|1 form 2 0/0/-1 "One" "1" mx 0 ud 0|1	"1"
+CreateMenuStrip|kept|0|1	kept
+CreateMenuStrip|popped|0|1	$00000000
+CreateMenuStrip|d0|0|1	$FFFFFFFF
+CreateMenuStrip|strip made|0|1	$00000001
+CreateMenuStrip|strip made|0|2	$00000001
+CreateMenuStrip|menu 0|0|1	$00000001
+CreateMenuStrip|menu 0 fields|0|1	"L 2 W 48 H 0 flags $0001 \"First\""
+CreateMenuStrip|menu 1|0|1	$00000001
+CreateMenuStrip|menu 1 fields|0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+CreateMenuStrip|menu 1 item 0|0|1	$00000001
+CreateMenuStrip|menu 1 item 0 fields|0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 fields|0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 0|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 sub 0 fields|0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 1|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 sub 1 fields|0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 2|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 sub 2 fields|0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 3|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 sub 3 fields|0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 4|0|1	$00000001
+CreateMenuStrip|menu 1 item 1 sub 4 fields|0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+CreateMenuStrip|menu 1 item 2|0|1	$00000001
+CreateMenuStrip|menu 1 item 2 fields|0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 3|0|1	$00000001
+CreateMenuStrip|menu 1 item 3 fields|0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 2|0|1	$00000001
+CreateMenuStrip|menu 2 fields|0|1	"L 130 W 56 H 0 flags $0001 \"Middle\""
+CreateMenuStrip|menu 2 item 0|0|1	$00000001
+CreateMenuStrip|menu 2 item 0 fields|0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+CreateMenuStrip|menu 3|0|1	$00000001
+CreateMenuStrip|menu 3 fields|0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+CreateMenuStrip|menu 3 item 0|0|1	$00000001
+CreateMenuStrip|menu 3 item 0 fields|0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 3 item 1|0|1	$00000001
+CreateMenuStrip|menu 3 item 1 fields|0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 4|0|1	$00000001
+CreateMenuStrip|menu 4 fields|0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+createchk|kept|0|1	kept
+createchk|popped|0|1	$00000000
+CreateMenuStrip|kept|0|2	kept
+CreateMenuStrip|popped|0|2	$00000000
+CreateMenuStrip|d0|0|2	$FFFFFFFF
+CreateMenuStrip|strip made|0|3	$00000001
+CreateMenuStrip|strip made|0|4	$00000001
+CreateMenuStrip|menu 0|0|2	$00000001
+CreateMenuStrip|menu 0 fields|0|2	"L 2 W 48 H 0 flags $0001 \"First\""
+CreateMenuStrip|menu 1|0|2	$00000001
+CreateMenuStrip|menu 1 fields|0|2	"L 58 W 64 H 0 flags $0001 \"Project\""
+CreateMenuStrip|menu 1 item 0|0|2	$00000001
+CreateMenuStrip|menu 1 item 0 fields|0|2	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 fields|0|2	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 0|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 sub 0 fields|0|2	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 1|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 sub 1 fields|0|2	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 2|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 sub 2 fields|0|2	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 3|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 sub 3 fields|0|2	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 1 sub 4|0|2	$00000001
+CreateMenuStrip|menu 1 item 1 sub 4 fields|0|2	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+CreateMenuStrip|menu 1 item 2|0|2	$00000001
+CreateMenuStrip|menu 1 item 2 fields|0|2	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 3|0|2	$00000001
+CreateMenuStrip|menu 1 item 3 fields|0|2	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 2|0|2	$00000001
+CreateMenuStrip|menu 2 fields|0|2	"L 130 W 56 H 0 flags $0001 \"Middle\""
+CreateMenuStrip|menu 2 item 0|0|2	$00000001
+CreateMenuStrip|menu 2 item 0 fields|0|2	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+CreateMenuStrip|menu 3|0|2	$00000001
+CreateMenuStrip|menu 3 fields|0|2	"L 194 W 40 H 0 flags $0001 \"Edit\""
+CreateMenuStrip|menu 3 item 0|0|2	$00000001
+CreateMenuStrip|menu 3 item 0 fields|0|2	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 3 item 1|0|2	$00000001
+CreateMenuStrip|menu 3 item 1 fields|0|2	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 4|0|2	$00000001
+CreateMenuStrip|menu 4 fields|0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenu|kept|0|1	kept
+GTSetMenu|popped|0|1	$00000000
+GTSetMenu|the window's strip|0|1	$00000001
+GTSetMenu|strip made|0|1	$00000001
+GTSetMenu|menu 0|0|1	$00000001
+GTSetMenu|menu 0 fields|0|1	"L 2 W 48 H 0 flags $0001 \"First\""
+GTSetMenu|menu 1|0|1	$00000001
+GTSetMenu|menu 1 fields|0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+GTSetMenu|menu 1 item 0|0|1	$00000001
+GTSetMenu|menu 1 item 0 fields|0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1|0|1	$00000001
+GTSetMenu|menu 1 item 1 fields|0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 0|0|1	$00000001
+GTSetMenu|menu 1 item 1 sub 0 fields|0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 1|0|1	$00000001
+GTSetMenu|menu 1 item 1 sub 1 fields|0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 2|0|1	$00000001
+GTSetMenu|menu 1 item 1 sub 2 fields|0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 3|0|1	$00000001
+GTSetMenu|menu 1 item 1 sub 3 fields|0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 4|0|1	$00000001
+GTSetMenu|menu 1 item 1 sub 4 fields|0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+GTSetMenu|menu 1 item 2|0|1	$00000001
+GTSetMenu|menu 1 item 2 fields|0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 3|0|1	$00000001
+GTSetMenu|menu 1 item 3 fields|0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 2|0|1	$00000001
+GTSetMenu|menu 2 fields|0|1	"L 130 W 56 H 0 flags $0001 \"Middle\""
+GTSetMenu|menu 2 item 0|0|1	$00000001
+GTSetMenu|menu 2 item 0 fields|0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+GTSetMenu|menu 3|0|1	$00000001
+GTSetMenu|menu 3 fields|0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+GTSetMenu|menu 3 item 0|0|1	$00000001
+GTSetMenu|menu 3 item 0 fields|0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+GTSetMenu|menu 3 item 1|0|1	$00000001
+GTSetMenu|menu 3 item 1 fields|0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+GTSetMenu|menu 4|0|1	$00000001
+GTSetMenu|menu 4 fields|0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenu|kept|0|2	kept
+GTSetMenu|popped|0|2	$00000000
+GTSetMenu|the window's strip|0|2	$00000001
+GTSetMenu|strip made|0|2	$00000001
+GTSetMenu|menu 0|0|2	$00000001
+GTSetMenu|menu 0 fields|0|2	"L 2 W 48 H 0 flags $0001 \"First\""
+GTSetMenu|menu 1|0|2	$00000001
+GTSetMenu|menu 1 fields|0|2	"L 58 W 64 H 0 flags $0001 \"Project\""
+GTSetMenu|menu 1 item 0|0|2	$00000001
+GTSetMenu|menu 1 item 0 fields|0|2	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1|0|2	$00000001
+GTSetMenu|menu 1 item 1 fields|0|2	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 0|0|2	$00000001
+GTSetMenu|menu 1 item 1 sub 0 fields|0|2	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 1|0|2	$00000001
+GTSetMenu|menu 1 item 1 sub 1 fields|0|2	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 2|0|2	$00000001
+GTSetMenu|menu 1 item 1 sub 2 fields|0|2	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 3|0|2	$00000001
+GTSetMenu|menu 1 item 1 sub 3 fields|0|2	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 1 sub 4|0|2	$00000001
+GTSetMenu|menu 1 item 1 sub 4 fields|0|2	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+GTSetMenu|menu 1 item 2|0|2	$00000001
+GTSetMenu|menu 1 item 2 fields|0|2	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 1 item 3|0|2	$00000001
+GTSetMenu|menu 1 item 3 fields|0|2	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTSetMenu|menu 2|0|2	$00000001
+GTSetMenu|menu 2 fields|0|2	"L 130 W 56 H 0 flags $0001 \"Middle\""
+GTSetMenu|menu 2 item 0|0|2	$00000001
+GTSetMenu|menu 2 item 0 fields|0|2	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+GTSetMenu|menu 3|0|2	$00000001
+GTSetMenu|menu 3 fields|0|2	"L 194 W 40 H 0 flags $0001 \"Edit\""
+GTSetMenu|menu 3 item 0|0|2	$00000001
+GTSetMenu|menu 3 item 0 fields|0|2	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+GTSetMenu|menu 3 item 1|0|2	$00000001
+GTSetMenu|menu 3 item 1 fields|0|2	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+GTSetMenu|menu 4|0|2	$00000001
+GTSetMenu|menu 4 fields|0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
+setchk|kept|0|1	kept
+setchk|popped|0|1	$00000000
+GTUnSetMenu|kept||1	kept
+GTUnSetMenu|popped||1	$00000000
+GTUnSetMenu|no strip||1	$00000001
+GTUnSetMenu|kept||2	kept
+GTUnSetMenu|popped||2	$00000000
+GTUnSetMenu|no strip||2	$00000001
+GTSetMenu|kept|1|1	kept
+GTSetMenu|popped|1|1	$00000000
+GTSetMenu|the window's strip|1|1	$00000001
+GTSetMenu|strip made|1|1	$00000001
+GTSetMenu|menu 0|1|1	$00000001
+GTSetMenu|menu 0 fields|1|1	"L 2 W 48 H 0 flags $0001 \"Other\""
+GTSetMenu|menu 0 item 0|1|1	$00000001
+GTSetMenu|menu 0 item 0 fields|1|1	"L 0 T 0 W 66 H 9 flags $0056 mx $00000000 cmd $31 ud $00000000 no NextSelect"
+GTUnSetMenu|kept||3	kept
+GTUnSetMenu|popped||3	$00000000
+GTUnSetMenu|no strip||3	$00000001
+GTMenuState|kept|0 form 0 0/0/0 on 0|1	kept
+GTMenuState|popped|0 form 0 0/0/0 on 0|1	$00000000
+GTMenuState|strip made|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 0|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 0 fields|0 form 0 0/0/0 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+GTMenuState|menu 1|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 fields|0 form 0 0/0/0 on 0|1	"L 58 W 64 H 0 flags $0000 \"Project\""
+GTMenuState|menu 1 item 0|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 0 fields|0 form 0 0/0/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 fields|0 form 0 0/0/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 0|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 sub 0 fields|0 form 0 0/0/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 1|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 sub 1 fields|0 form 0 0/0/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 2|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 sub 2 fields|0 form 0 0/0/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 3|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 sub 3 fields|0 form 0 0/0/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 4|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 1 sub 4 fields|0 form 0 0/0/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+GTMenuState|menu 1 item 2|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 2 fields|0 form 0 0/0/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 3|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 1 item 3 fields|0 form 0 0/0/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 2|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 2 fields|0 form 0 0/0/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+GTMenuState|menu 2 item 0|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 2 item 0 fields|0 form 0 0/0/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+GTMenuState|menu 3|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 3 fields|0 form 0 0/0/0 on 0|1	"L 194 W 40 H 0 flags $0000 \"Edit\""
+GTMenuState|menu 3 item 0|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 3 item 0 fields|0 form 0 0/0/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+GTMenuState|menu 3 item 1|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 3 item 1 fields|0 form 0 0/0/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+GTMenuState|menu 4|0 form 0 0/0/0 on 0|1	$00000001
+GTMenuState|menu 4 fields|0 form 0 0/0/0 on 0|1	"L 242 W 40 H 0 flags $0000 \"Last\""
+GTMenuState|kept|0 form 0 0/0/0 on 1|1	kept
+GTMenuState|popped|0 form 0 0/0/0 on 1|1	$00000000
+GTMenuState|strip made|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 0|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 0 fields|0 form 0 0/0/0 on 1|1	"L 2 W 48 H 0 flags $0001 \"First\""
+GTMenuState|menu 1|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 fields|0 form 0 0/0/0 on 1|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+GTMenuState|menu 1 item 0|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 0 fields|0 form 0 0/0/0 on 1|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 fields|0 form 0 0/0/0 on 1|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 0|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 sub 0 fields|0 form 0 0/0/0 on 1|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 1|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 sub 1 fields|0 form 0 0/0/0 on 1|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 2|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 sub 2 fields|0 form 0 0/0/0 on 1|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 3|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 sub 3 fields|0 form 0 0/0/0 on 1|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 1 sub 4|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 1 sub 4 fields|0 form 0 0/0/0 on 1|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+GTMenuState|menu 1 item 2|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 2 fields|0 form 0 0/0/0 on 1|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 1 item 3|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 1 item 3 fields|0 form 0 0/0/0 on 1|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+GTMenuState|menu 2|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 2 fields|0 form 0 0/0/0 on 1|1	"L 130 W 56 H 0 flags $0001 \"Middle\""
+GTMenuState|menu 2 item 0|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 2 item 0 fields|0 form 0 0/0/0 on 1|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+GTMenuState|menu 3|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 3 fields|0 form 0 0/0/0 on 1|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+GTMenuState|menu 3 item 0|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 3 item 0 fields|0 form 0 0/0/0 on 1|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+GTMenuState|menu 3 item 1|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 3 item 1 fields|0 form 0 0/0/0 on 1|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+GTMenuState|menu 4|0 form 0 0/0/0 on 1|1	$00000001
+GTMenuState|menu 4 fields|0 form 0 0/0/0 on 1|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 1 2/0/0 on 0|1	kept
+GTMenuState|popped|0 form 1 2/0/0 on 0|1	$00000000
+statechk|kept|0 form 1 2/0/0 on 0|1	kept
+statechk|popped|0 form 1 2/0/0 on 0|1	$00000000
+statechk|strip made|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 0|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 0 fields|0 form 1 2/0/0 on 0|1	"L 2 W 48 H 0 flags $0001 \"First\""
+statechk|menu 1|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 fields|0 form 1 2/0/0 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 0 fields|0 form 1 2/0/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 fields|0 form 1 2/0/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 1 2/0/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 1 2/0/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 1 2/0/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 1 2/0/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 1 2/0/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 2 fields|0 form 1 2/0/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 1 item 3 fields|0 form 1 2/0/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 2 fields|0 form 1 2/0/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 2 item 0 fields|0 form 1 2/0/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 3 fields|0 form 1 2/0/0 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 3 item 0 fields|0 form 1 2/0/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 3 item 1 fields|0 form 1 2/0/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 1 2/0/0 on 0|1	$00000001
+statechk|menu 4 fields|0 form 1 2/0/0 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 1 0/0/0 on 0|1	kept
+GTMenuState|popped|0 form 1 0/0/0 on 0|1	$00000000
+statechk|kept|0 form 1 0/0/0 on 0|1	kept
+statechk|popped|0 form 1 0/0/0 on 0|1	$00000000
+statechk|strip made|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 0|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 0 fields|0 form 1 0/0/0 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+statechk|menu 1|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 fields|0 form 1 0/0/0 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 0 fields|0 form 1 0/0/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 fields|0 form 1 0/0/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 1 0/0/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 1 0/0/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 1 0/0/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 1 0/0/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 1 0/0/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 2 fields|0 form 1 0/0/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 1 item 3 fields|0 form 1 0/0/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 2 fields|0 form 1 0/0/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 2 item 0 fields|0 form 1 0/0/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 3 fields|0 form 1 0/0/0 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 3 item 0 fields|0 form 1 0/0/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 3 item 1 fields|0 form 1 0/0/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 1 0/0/0 on 0|1	$00000001
+statechk|menu 4 fields|0 form 1 0/0/0 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 2 1/2/0 on 0|1	kept
+GTMenuState|popped|0 form 2 1/2/0 on 0|1	$00000000
+statechk|kept|0 form 2 1/2/0 on 0|1	kept
+statechk|popped|0 form 2 1/2/0 on 0|1	$00000000
+statechk|strip made|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 0|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 0 fields|0 form 2 1/2/0 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+statechk|menu 1|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 fields|0 form 2 1/2/0 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 0 fields|0 form 2 1/2/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 fields|0 form 2 1/2/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 2 1/2/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 2 1/2/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 2 1/2/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 2 1/2/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 2 1/2/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 2 fields|0 form 2 1/2/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 1 item 3 fields|0 form 2 1/2/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 2 fields|0 form 2 1/2/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 2 item 0 fields|0 form 2 1/2/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 3 fields|0 form 2 1/2/0 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 3 item 0 fields|0 form 2 1/2/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 3 item 1 fields|0 form 2 1/2/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 2 1/2/0 on 0|1	$00000001
+statechk|menu 4 fields|0 form 2 1/2/0 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 2 1/2/0 on 1|1	kept
+GTMenuState|popped|0 form 2 1/2/0 on 1|1	$00000000
+statechk|kept|0 form 2 1/2/0 on 1|1	kept
+statechk|popped|0 form 2 1/2/0 on 1|1	$00000000
+statechk|strip made|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 0|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 0 fields|0 form 2 1/2/0 on 1|1	"L 2 W 48 H 0 flags $0000 \"First\""
+statechk|menu 1|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 fields|0 form 2 1/2/0 on 1|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 0 fields|0 form 2 1/2/0 on 1|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 fields|0 form 2 1/2/0 on 1|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 2 1/2/0 on 1|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 2 1/2/0 on 1|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 2 1/2/0 on 1|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 2 1/2/0 on 1|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 2 1/2/0 on 1|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 2 fields|0 form 2 1/2/0 on 1|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 1 item 3 fields|0 form 2 1/2/0 on 1|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 2 fields|0 form 2 1/2/0 on 1|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 2 item 0 fields|0 form 2 1/2/0 on 1|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 3 fields|0 form 2 1/2/0 on 1|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 3 item 0 fields|0 form 2 1/2/0 on 1|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 3 item 1 fields|0 form 2 1/2/0 on 1|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 2 1/2/0 on 1|1	$00000001
+statechk|menu 4 fields|0 form 2 1/2/0 on 1|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 3 1/1/1 on 0|1	kept
+GTMenuState|popped|0 form 3 1/1/1 on 0|1	$00000000
+statechk|kept|0 form 3 1/1/1 on 0|1	kept
+statechk|popped|0 form 3 1/1/1 on 0|1	$00000000
+statechk|strip made|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 0|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 0 fields|0 form 3 1/1/1 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+statechk|menu 1|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 fields|0 form 3 1/1/1 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 0 fields|0 form 3 1/1/1 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 fields|0 form 3 1/1/1 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 3 1/1/1 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 3 1/1/1 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 3 1/1/1 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 3 1/1/1 on 0|1	"L 79 T 23 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 3 1/1/1 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 2 fields|0 form 3 1/1/1 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 1 item 3 fields|0 form 3 1/1/1 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 2 fields|0 form 3 1/1/1 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 2 item 0 fields|0 form 3 1/1/1 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 3 fields|0 form 3 1/1/1 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 3 item 0 fields|0 form 3 1/1/1 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 3 item 1 fields|0 form 3 1/1/1 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 3 1/1/1 on 0|1	$00000001
+statechk|menu 4 fields|0 form 3 1/1/1 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuState|kept|0 form 3 1/1/3 on 0|1	kept
+GTMenuState|popped|0 form 3 1/1/3 on 0|1	$00000000
+statechk|kept|0 form 3 1/1/3 on 0|1	kept
+statechk|popped|0 form 3 1/1/3 on 0|1	$00000000
+statechk|strip made|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 0|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 0 fields|0 form 3 1/1/3 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+statechk|menu 1|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 fields|0 form 3 1/1/3 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+statechk|menu 1 item 0|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 0 fields|0 form 3 1/1/3 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+statechk|menu 1 item 1|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 fields|0 form 3 1/1/3 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 0|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 sub 0 fields|0 form 3 1/1/3 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 1|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 sub 1 fields|0 form 3 1/1/3 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 2|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 sub 2 fields|0 form 3 1/1/3 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 3|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 sub 3 fields|0 form 3 1/1/3 on 0|1	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 1 sub 4|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 1 sub 4 fields|0 form 3 1/1/3 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+statechk|menu 1 item 2|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 2 fields|0 form 3 1/1/3 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 1 item 3|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 1 item 3 fields|0 form 3 1/1/3 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+statechk|menu 2|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 2 fields|0 form 3 1/1/3 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+statechk|menu 2 item 0|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 2 item 0 fields|0 form 3 1/1/3 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+statechk|menu 3|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 3 fields|0 form 3 1/1/3 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+statechk|menu 3 item 0|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 3 item 0 fields|0 form 3 1/1/3 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+statechk|menu 3 item 1|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 3 item 1 fields|0 form 3 1/1/3 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+statechk|menu 4|0 form 3 1/1/3 on 0|1	$00000001
+statechk|menu 4 fields|0 form 3 1/1/3 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuChecked|kept|0 form 0 2/0/0 on 0|1	kept
+GTMenuChecked|popped|0 form 0 2/0/0 on 0|1	$00000000
+GTMenuChecked|d0|0 form 0 2/0/0 on 0|1	$5A00FFFF
+chkchk|kept|0 form 0 2/0/0 on 0|1	kept
+chkchk|popped|0 form 0 2/0/0 on 0|1	$00000000
+chkchk|strip made|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 0|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 0 fields|0 form 0 2/0/0 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 fields|0 form 0 2/0/0 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 2/0/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 2/0/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 2/0/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 2/0/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 2/0/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 2/0/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 2/0/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 2/0/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 2/0/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 2 fields|0 form 0 2/0/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 2/0/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 3 fields|0 form 0 2/0/0 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 2/0/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 2/0/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 2/0/0 on 0|1	$00000001
+chkchk|menu 4 fields|0 form 0 2/0/0 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuChecked|kept|0 form 0 1/0/0 on 0|1	kept
+GTMenuChecked|popped|0 form 0 1/0/0 on 0|1	$00000000
+GTMenuChecked|d0|0 form 0 1/0/0 on 0|1	$5A000000
+chkchk|kept|0 form 0 1/0/0 on 0|1	kept
+chkchk|popped|0 form 0 1/0/0 on 0|1	$00000000
+chkchk|strip made|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 0|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 0 fields|0 form 0 1/0/0 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 fields|0 form 0 1/0/0 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 1/0/0 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 1/0/0 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 1/0/0 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 1/0/0 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 1/0/0 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 1/0/0 on 0|1	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 1/0/0 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 1/0/0 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 1/0/0 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 2 fields|0 form 0 1/0/0 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 1/0/0 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 3 fields|0 form 0 1/0/0 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 1/0/0 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 1/0/0 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 1/0/0 on 0|1	$00000001
+chkchk|menu 4 fields|0 form 0 1/0/0 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuChecked|kept|0 form 1 1/1/4 on 0|1	kept
+GTMenuChecked|popped|0 form 1 1/1/4 on 0|1	$00000000
+GTMenuChecked|d0|0 form 1 1/1/4 on 0|1	$5A00FFFF
+chkchk|kept|0 form 1 1/1/4 on 0|1	kept
+chkchk|popped|0 form 1 1/1/4 on 0|1	$00000000
+chkchk|strip made|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 0|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 0 fields|0 form 1 1/1/4 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 fields|0 form 1 1/1/4 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 1/1/4 on 0|1	"L 0 T 0 W 105 H 9 flags $0057 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 1/1/4 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 1/1/4 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 1/1/4 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 1/1/4 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 1/1/4 on 0|1	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 1/1/4 on 0|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 1/1/4 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 1/1/4 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 2 fields|0 form 1 1/1/4 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 1/1/4 on 0|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 3 fields|0 form 1 1/1/4 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 1/1/4 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 1/1/4 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 1/1/4 on 0|1	$00000001
+chkchk|menu 4 fields|0 form 1 1/1/4 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenuChecked|kept|0 form 0 1/0/0 on 1|1	kept
+GTSetMenuChecked|popped|0 form 0 1/0/0 on 1|1	$00000000
+chkchk|kept|0 form 0 1/0/0 on 1|1	kept
+chkchk|popped|0 form 0 1/0/0 on 1|1	$00000000
+chkchk|strip made|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 0|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 0 fields|0 form 0 1/0/0 on 1|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 fields|0 form 0 1/0/0 on 1|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 1/0/0 on 1|1	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 1/0/0 on 1|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 1/0/0 on 1|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 1/0/0 on 1|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 1/0/0 on 1|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 1/0/0 on 1|1	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 1/0/0 on 1|1	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 1/0/0 on 1|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 1/0/0 on 1|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 2 fields|0 form 0 1/0/0 on 1|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 1/0/0 on 1|1	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 3 fields|0 form 0 1/0/0 on 1|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 1/0/0 on 1|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 1/0/0 on 1|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 1/0/0 on 1|1	$00000001
+chkchk|menu 4 fields|0 form 0 1/0/0 on 1|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuChecked|kept|0 form 0 1/0/0 on 0|2	kept
+GTMenuChecked|popped|0 form 0 1/0/0 on 0|2	$00000000
+GTMenuChecked|d0|0 form 0 1/0/0 on 0|2	$5A00FFFF
+chkchk|kept|0 form 0 1/0/0 on 0|2	kept
+chkchk|popped|0 form 0 1/0/0 on 0|2	$00000000
+chkchk|strip made|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 0|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 0 fields|0 form 0 1/0/0 on 0|2	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 fields|0 form 0 1/0/0 on 0|2	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 1/0/0 on 0|2	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 1/0/0 on 0|2	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 1/0/0 on 0|2	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 1/0/0 on 0|2	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 1/0/0 on 0|2	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 1/0/0 on 0|2	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 1/0/0 on 0|2	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 1/0/0 on 0|2	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 1/0/0 on 0|2	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 2 fields|0 form 0 1/0/0 on 0|2	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 1/0/0 on 0|2	"L 0 T 0 W 89 H 9 flags $0157 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 3 fields|0 form 0 1/0/0 on 0|2	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 1/0/0 on 0|2	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 1/0/0 on 0|2	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 1/0/0 on 0|2	$00000001
+chkchk|menu 4 fields|0 form 0 1/0/0 on 0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenuChecked|kept|0 form 0 2/0/0 on 0|1	kept
+GTSetMenuChecked|popped|0 form 0 2/0/0 on 0|1	$00000000
+chkchk|kept|0 form 0 2/0/0 on 0|2	kept
+chkchk|popped|0 form 0 2/0/0 on 0|2	$00000000
+chkchk|strip made|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 0|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 0 fields|0 form 0 2/0/0 on 0|2	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 fields|0 form 0 2/0/0 on 0|2	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 2/0/0 on 0|2	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 2/0/0 on 0|2	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 2/0/0 on 0|2	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 2/0/0 on 0|2	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 2/0/0 on 0|2	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 2/0/0 on 0|2	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 2/0/0 on 0|2	"L 79 T 32 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 2/0/0 on 0|2	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 2/0/0 on 0|2	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 2 fields|0 form 0 2/0/0 on 0|2	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 2/0/0 on 0|2	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 3 fields|0 form 0 2/0/0 on 0|2	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 2/0/0 on 0|2	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 2/0/0 on 0|2	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 2/0/0 on 0|2	$00000001
+chkchk|menu 4 fields|0 form 0 2/0/0 on 0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenuChecked|kept|0 form 1 1/1/4 on 0|1	kept
+GTSetMenuChecked|popped|0 form 1 1/1/4 on 0|1	$00000000
+chkchk|kept|0 form 1 1/1/4 on 0|2	kept
+chkchk|popped|0 form 1 1/1/4 on 0|2	$00000000
+chkchk|strip made|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 0|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 0 fields|0 form 1 1/1/4 on 0|2	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 fields|0 form 1 1/1/4 on 0|2	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 1/1/4 on 0|2	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 1/1/4 on 0|2	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 1/1/4 on 0|2	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 1/1/4 on 0|2	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 1/1/4 on 0|2	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 1/1/4 on 0|2	"L 79 T 23 W 97 H 9 flags $0043 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 1/1/4 on 0|2	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 1/1/4 on 0|2	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 1/1/4 on 0|2	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 2 fields|0 form 1 1/1/4 on 0|2	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 1/1/4 on 0|2	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 3 fields|0 form 1 1/1/4 on 0|2	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 1/1/4 on 0|2	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 1/1/4 on 0|2	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 1/1/4 on 0|2	$00000001
+chkchk|menu 4 fields|0 form 1 1/1/4 on 0|2	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTSetMenuChecked|kept|0 form 1 1/1/3 on 1|1	kept
+GTSetMenuChecked|popped|0 form 1 1/1/3 on 1|1	$00000000
+chkchk|kept|0 form 1 1/1/3 on 1|1	kept
+chkchk|popped|0 form 1 1/1/3 on 1|1	$00000000
+chkchk|strip made|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 0|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 0 fields|0 form 1 1/1/3 on 1|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 fields|0 form 1 1/1/3 on 1|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 1/1/3 on 1|1	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 1/1/3 on 1|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 1/1/3 on 1|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 1/1/3 on 1|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 1/1/3 on 1|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 1/1/3 on 1|1	"L 79 T 23 W 97 H 9 flags $0143 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 1/1/3 on 1|1	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 1/1/3 on 1|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 1/1/3 on 1|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 2 fields|0 form 1 1/1/3 on 1|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 1/1/3 on 1|1	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 3 fields|0 form 1 1/1/3 on 1|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 1/1/3 on 1|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 1/1/3 on 1|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 1/1/3 on 1|1	$00000001
+chkchk|menu 4 fields|0 form 1 1/1/3 on 1|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTMenuChecked|kept|0 form 1 1/1/3 on 0|1	kept
+GTMenuChecked|popped|0 form 1 1/1/3 on 0|1	$00000000
+GTMenuChecked|d0|0 form 1 1/1/3 on 0|1	$5A00FFFF
+chkchk|kept|0 form 1 1/1/3 on 0|1	kept
+chkchk|popped|0 form 1 1/1/3 on 0|1	$00000000
+chkchk|strip made|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 0|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 0 fields|0 form 1 1/1/3 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 fields|0 form 1 1/1/3 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 1/1/3 on 0|1	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 1/1/3 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 1/1/3 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 1/1/3 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 1/1/3 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 1/1/3 on 0|1	"L 79 T 23 W 97 H 9 flags $0143 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 1/1/3 on 0|1	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 1/1/3 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 1/1/3 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 2 fields|0 form 1 1/1/3 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 1/1/3 on 0|1	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 3 fields|0 form 1 1/1/3 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 1/1/3 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 1/1/3 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 1/1/3 on 0|1	$00000001
+chkchk|menu 4 fields|0 form 1 1/1/3 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTGetUserData|kept|0 form 0 2/0/0 on 0|1	kept
+GTGetUserData|popped|0 form 0 2/0/0 on 0|1	$00000000
+GTGetUserData|d0|0 form 0 2/0/0 on 0|1	$00001234
+chkchk|kept|0 form 0 2/0/0 on 0|3	kept
+chkchk|popped|0 form 0 2/0/0 on 0|3	$00000000
+chkchk|strip made|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 0|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 0 fields|0 form 0 2/0/0 on 0|3	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 fields|0 form 0 2/0/0 on 0|3	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 0 fields|0 form 0 2/0/0 on 0|3	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 fields|0 form 0 2/0/0 on 0|3	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 0 2/0/0 on 0|3	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 0 2/0/0 on 0|3	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 0 2/0/0 on 0|3	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 0 2/0/0 on 0|3	"L 79 T 23 W 97 H 9 flags $0143 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 0 2/0/0 on 0|3	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 2 fields|0 form 0 2/0/0 on 0|3	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 1 item 3 fields|0 form 0 2/0/0 on 0|3	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 2 fields|0 form 0 2/0/0 on 0|3	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 2 item 0 fields|0 form 0 2/0/0 on 0|3	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 3 fields|0 form 0 2/0/0 on 0|3	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 3 item 0 fields|0 form 0 2/0/0 on 0|3	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 3 item 1 fields|0 form 0 2/0/0 on 0|3	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 0 2/0/0 on 0|3	$00000001
+chkchk|menu 4 fields|0 form 0 2/0/0 on 0|3	"L 242 W 40 H 0 flags $0001 \"Last\""
+chkchk|UserData of "Data"|0 form 0 2/0/0 on 0|1	$00000001
+GTGetUserData|kept|0 form 1 1/1/4 on 0|1	kept
+GTGetUserData|popped|0 form 1 1/1/4 on 0|1	$00000000
+GTGetUserData|d0|0 form 1 1/1/4 on 0|1	$00005678
+chkchk|kept|0 form 1 1/1/4 on 0|3	kept
+chkchk|popped|0 form 1 1/1/4 on 0|3	$00000000
+chkchk|strip made|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 0|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 0 fields|0 form 1 1/1/4 on 0|3	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 fields|0 form 1 1/1/4 on 0|3	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 1/1/4 on 0|3	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 1/1/4 on 0|3	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 1/1/4 on 0|3	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 1/1/4 on 0|3	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 1/1/4 on 0|3	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 1/1/4 on 0|3	"L 79 T 23 W 97 H 9 flags $0143 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 1/1/4 on 0|3	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 1/1/4 on 0|3	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 1/1/4 on 0|3	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 2 fields|0 form 1 1/1/4 on 0|3	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 1/1/4 on 0|3	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 3 fields|0 form 1 1/1/4 on 0|3	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 1/1/4 on 0|3	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 1/1/4 on 0|3	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 1/1/4 on 0|3	$00000001
+chkchk|menu 4 fields|0 form 1 1/1/4 on 0|3	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTGetUserData|kept|0 form 1 2/0/-1 on 0|1	kept
+GTGetUserData|popped|0 form 1 2/0/-1 on 0|1	$00000000
+GTGetUserData|d0|0 form 1 2/0/-1 on 0|1	$00001234
+chkchk|kept|0 form 1 2/0/-1 on 0|1	kept
+chkchk|popped|0 form 1 2/0/-1 on 0|1	$00000000
+chkchk|strip made|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 0|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 0 fields|0 form 1 2/0/-1 on 0|1	"L 2 W 48 H 0 flags $0000 \"First\""
+chkchk|menu 1|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 fields|0 form 1 2/0/-1 on 0|1	"L 58 W 64 H 0 flags $0001 \"Project\""
+chkchk|menu 1 item 0|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 0 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 0 W 105 H 9 flags $0157 mx $00000006 cmd $4D ud $00000000 no NextSelect"
+chkchk|menu 1 item 1|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 9 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 0|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 0 fields|0 form 1 2/0/-1 on 0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 1|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 1 fields|0 form 1 2/0/-1 on 0|1	"L 79 T 8 W 97 H 9 flags $0046 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 2|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 2 fields|0 form 1 2/0/-1 on 0|1	"L 79 T 17 W 97 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 3|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 3 fields|0 form 1 2/0/-1 on 0|1	"L 79 T 23 W 97 H 9 flags $0143 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 1 sub 4|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 1 sub 4 fields|0 form 1 2/0/-1 on 0|1	"L 79 T 32 W 97 H 9 flags $0057 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+chkchk|menu 1 item 2|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 2 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 18 W 105 H 6 flags $00D0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 1 item 3|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 1 item 3 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 24 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+chkchk|menu 2|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 2 fields|0 form 1 2/0/-1 on 0|1	"L 130 W 56 H 0 flags $0000 \"Middle\""
+chkchk|menu 2 item 0|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 2 item 0 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 0 W 89 H 9 flags $0057 mx $00000006 cmd $44 ud $00001234 no NextSelect"
+chkchk|menu 3|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 3 fields|0 form 1 2/0/-1 on 0|1	"L 194 W 40 H 0 flags $0001 \"Edit\""
+chkchk|menu 3 item 0|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 3 item 0 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 0 W 74 H 9 flags $0056 mx $00000000 cmd $58 ud $00000000 no NextSelect"
+chkchk|menu 3 item 1|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 3 item 1 fields|0 form 1 2/0/-1 on 0|1	"L 0 T 9 W 74 H 9 flags $0056 mx $00000000 cmd $43 ud $00000000 no NextSelect"
+chkchk|menu 4|0 form 1 2/0/-1 on 0|1	$00000001
+chkchk|menu 4 fields|0 form 1 2/0/-1 on 0|1	"L 242 W 40 H 0 flags $0001 \"Last\""
+GTFreeMenu|kept|0 form 2 1/1/2|1	kept
+GTFreeMenu|popped|0 form 2 1/1/2|1	$00000000
+GTFreeMenu|count|0 form 2 1/1/2|1	$00000011
+GTFreeMenu|title 0|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 0 text|0 form 2 1/1/2|1	"First"
+GTFreeMenu|title 1|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 text|0 form 2 1/1/2|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 2 1/1/2|1	"Mx"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 2 1/1/2|1	"flags $0001 mx $00000006 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 2 1/1/2|1	"M"
+GTFreeMenu|title 1 item 1|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 2 1/1/2|1	"Open"
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 2 1/1/2|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 2 1/1/2|1	"O"
+GTFreeMenu|title 1 item 1 sub 0|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 1 sub 0 text|0 form 2 1/1/2|1	"Sub D"
+GTFreeMenu|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/1/2|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 0 shortcut|0 form 2 1/1/2|1	"Q"
+GTFreeMenu|title 1 item 1 sub 1|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 1 sub 1 text|0 form 2 1/1/2|1	"Sub A"
+GTFreeMenu|title 1 item 1 sub 1 flags/mx/ud|0 form 2 1/1/2|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 1 shortcut|0 form 2 1/1/2|1	"A"
+GTFreeMenu|title 1 item 1 sub 2|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 1 sub 2 text|0 form 2 1/1/2|1	"Sub C"
+GTFreeMenu|title 1 item 1 sub 2 flags/mx/ud|0 form 2 1/1/2|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 2 shortcut|0 form 2 1/1/2|1	null
+GTFreeMenu|title 1 item 1 sub 3|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 1 sub 3 text|0 form 2 1/1/2|1	"Sub E"
+GTFreeMenu|title 1 item 1 sub 3 flags/mx/ud|0 form 2 1/1/2|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 1 sub 3 shortcut|0 form 2 1/1/2|1	"E"
+GTFreeMenu|title 1 item 2|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 2 1/1/2|1	$FFFFFFFF
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 2 1/1/2|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 2 1/1/2|1	null
+GTFreeMenu|title 1 item 3|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 1 item 3 text|0 form 2 1/1/2|1	"Toggle"
+GTFreeMenu|title 1 item 3 flags/mx/ud|0 form 2 1/1/2|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 3 shortcut|0 form 2 1/1/2|1	null
+GTFreeMenu|title 2|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 2 text|0 form 2 1/1/2|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 2 1/1/2|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 2 1/1/2|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 2 1/1/2|1	"D"
+GTFreeMenu|title 3|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 3 text|0 form 2 1/1/2|1	"Edit"
+GTFreeMenu|title 3 item 0|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 3 item 0 text|0 form 2 1/1/2|1	"Cut"
+GTFreeMenu|title 3 item 0 flags/mx/ud|0 form 2 1/1/2|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 0 shortcut|0 form 2 1/1/2|1	"X"
+GTFreeMenu|title 3 item 1|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 3 item 1 text|0 form 2 1/1/2|1	"Copy"
+GTFreeMenu|title 3 item 1 flags/mx/ud|0 form 2 1/1/2|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 1 shortcut|0 form 2 1/1/2|1	"C"
+GTFreeMenu|title 4|0 form 2 1/1/2|1	$00000001
+GTFreeMenu|title 4 text|0 form 2 1/1/2|1	"Last"
+GTFreeMenu|kept|0 form 2 1/1/7|1	kept
+GTFreeMenu|popped|0 form 2 1/1/7|1	$00000000
+GTFreeMenu|count|0 form 2 1/1/7|1	$00000011
+GTFreeMenu|title 0|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 0 text|0 form 2 1/1/7|1	"First"
+GTFreeMenu|title 1|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 text|0 form 2 1/1/7|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 2 1/1/7|1	"Mx"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 2 1/1/7|1	"flags $0001 mx $00000006 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 2 1/1/7|1	"M"
+GTFreeMenu|title 1 item 1|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 2 1/1/7|1	"Open"
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 2 1/1/7|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 2 1/1/7|1	"O"
+GTFreeMenu|title 1 item 1 sub 0|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 1 sub 0 text|0 form 2 1/1/7|1	"Sub D"
+GTFreeMenu|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/1/7|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 0 shortcut|0 form 2 1/1/7|1	"Q"
+GTFreeMenu|title 1 item 1 sub 1|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 1 sub 1 text|0 form 2 1/1/7|1	"Sub A"
+GTFreeMenu|title 1 item 1 sub 1 flags/mx/ud|0 form 2 1/1/7|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 1 shortcut|0 form 2 1/1/7|1	"A"
+GTFreeMenu|title 1 item 1 sub 2|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 1 sub 2 text|0 form 2 1/1/7|1	"Sub C"
+GTFreeMenu|title 1 item 1 sub 2 flags/mx/ud|0 form 2 1/1/7|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 2 shortcut|0 form 2 1/1/7|1	null
+GTFreeMenu|title 1 item 1 sub 3|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 1 sub 3 text|0 form 2 1/1/7|1	"Sub E"
+GTFreeMenu|title 1 item 1 sub 3 flags/mx/ud|0 form 2 1/1/7|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 1 sub 3 shortcut|0 form 2 1/1/7|1	"E"
+GTFreeMenu|title 1 item 2|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 2 1/1/7|1	$FFFFFFFF
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 2 1/1/7|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 2 1/1/7|1	null
+GTFreeMenu|title 1 item 3|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 1 item 3 text|0 form 2 1/1/7|1	"Toggle"
+GTFreeMenu|title 1 item 3 flags/mx/ud|0 form 2 1/1/7|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 3 shortcut|0 form 2 1/1/7|1	null
+GTFreeMenu|title 2|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 2 text|0 form 2 1/1/7|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 2 1/1/7|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 2 1/1/7|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 2 1/1/7|1	"D"
+GTFreeMenu|title 3|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 3 text|0 form 2 1/1/7|1	"Edit"
+GTFreeMenu|title 3 item 0|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 3 item 0 text|0 form 2 1/1/7|1	"Cut"
+GTFreeMenu|title 3 item 0 flags/mx/ud|0 form 2 1/1/7|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 0 shortcut|0 form 2 1/1/7|1	"X"
+GTFreeMenu|title 3 item 1|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 3 item 1 text|0 form 2 1/1/7|1	"Copy"
+GTFreeMenu|title 3 item 1 flags/mx/ud|0 form 2 1/1/7|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 1 shortcut|0 form 2 1/1/7|1	"C"
+GTFreeMenu|title 4|0 form 2 1/1/7|1	$00000001
+GTFreeMenu|title 4 text|0 form 2 1/1/7|1	"Last"
+GTFreeMenu|kept|0 form 2 1/2/0|1	kept
+GTFreeMenu|popped|0 form 2 1/2/0|1	$00000000
+GTFreeMenu|count|0 form 2 1/2/0|1	$00000011
+GTFreeMenu|title 0|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 2 1/2/0|1	"First"
+GTFreeMenu|title 1|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 2 1/2/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 2 1/2/0|1	"Mx"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 2 1/2/0|1	"flags $0001 mx $00000006 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 2 1/2/0|1	"M"
+GTFreeMenu|title 1 item 1|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 2 1/2/0|1	"Open"
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 2 1/2/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 2 1/2/0|1	"O"
+GTFreeMenu|title 1 item 1 sub 0|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 1 sub 0 text|0 form 2 1/2/0|1	"Sub D"
+GTFreeMenu|title 1 item 1 sub 0 flags/mx/ud|0 form 2 1/2/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 0 shortcut|0 form 2 1/2/0|1	"Q"
+GTFreeMenu|title 1 item 1 sub 1|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 1 sub 1 text|0 form 2 1/2/0|1	"Sub A"
+GTFreeMenu|title 1 item 1 sub 1 flags/mx/ud|0 form 2 1/2/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 1 shortcut|0 form 2 1/2/0|1	"A"
+GTFreeMenu|title 1 item 1 sub 2|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 1 sub 2 text|0 form 2 1/2/0|1	"Sub C"
+GTFreeMenu|title 1 item 1 sub 2 flags/mx/ud|0 form 2 1/2/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 sub 2 shortcut|0 form 2 1/2/0|1	null
+GTFreeMenu|title 1 item 1 sub 3|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 1 sub 3 text|0 form 2 1/2/0|1	"Sub E"
+GTFreeMenu|title 1 item 1 sub 3 flags/mx/ud|0 form 2 1/2/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 1 sub 3 shortcut|0 form 2 1/2/0|1	"E"
+GTFreeMenu|title 1 item 2|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 2 1/2/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 2 1/2/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 2 1/2/0|1	null
+GTFreeMenu|title 1 item 3|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 1 item 3 text|0 form 2 1/2/0|1	"Toggle"
+GTFreeMenu|title 1 item 3 flags/mx/ud|0 form 2 1/2/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 3 shortcut|0 form 2 1/2/0|1	null
+GTFreeMenu|title 2|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 2 1/2/0|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 2 1/2/0|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 2 1/2/0|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 2 1/2/0|1	"D"
+GTFreeMenu|title 3|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 2 1/2/0|1	"Edit"
+GTFreeMenu|title 3 item 0|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 3 item 0 text|0 form 2 1/2/0|1	"Cut"
+GTFreeMenu|title 3 item 0 flags/mx/ud|0 form 2 1/2/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 0 shortcut|0 form 2 1/2/0|1	"X"
+GTFreeMenu|title 3 item 1|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 3 item 1 text|0 form 2 1/2/0|1	"Copy"
+GTFreeMenu|title 3 item 1 flags/mx/ud|0 form 2 1/2/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 1 shortcut|0 form 2 1/2/0|1	"C"
+GTFreeMenu|title 4|0 form 2 1/2/0|1	$00000001
+GTFreeMenu|title 4 text|0 form 2 1/2/0|1	"Last"
+GTFreeMenu|kept|0 form 1 1/0/0|1	kept
+GTFreeMenu|popped|0 form 1 1/0/0|1	$00000000
+GTFreeMenu|count|0 form 1 1/0/0|1	$00000011
+GTFreeMenu|title 0|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 1 1/0/0|1	"First"
+GTFreeMenu|title 1|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 1 1/0/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 1 1/0/0|1	"Open"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 1 1/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 1 1/0/0|1	"O"
+GTFreeMenu|title 1 item 0 sub 0|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 0 text|0 form 1 1/0/0|1	"Sub D"
+GTFreeMenu|title 1 item 0 sub 0 flags/mx/ud|0 form 1 1/0/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 0 shortcut|0 form 1 1/0/0|1	"Q"
+GTFreeMenu|title 1 item 0 sub 1|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 1 text|0 form 1 1/0/0|1	"Sub A"
+GTFreeMenu|title 1 item 0 sub 1 flags/mx/ud|0 form 1 1/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 1 shortcut|0 form 1 1/0/0|1	"A"
+GTFreeMenu|title 1 item 0 sub 2|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 2 text|0 form 1 1/0/0|1	"Sub C"
+GTFreeMenu|title 1 item 0 sub 2 flags/mx/ud|0 form 1 1/0/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 2 shortcut|0 form 1 1/0/0|1	null
+GTFreeMenu|title 1 item 0 sub 3|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 3 text|0 form 1 1/0/0|1	"Sub E"
+GTFreeMenu|title 1 item 0 sub 3 flags/mx/ud|0 form 1 1/0/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 0 sub 3 shortcut|0 form 1 1/0/0|1	"E"
+GTFreeMenu|title 1 item 1|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 1 1/0/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 1 1/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 1 1/0/0|1	null
+GTFreeMenu|title 1 item 2|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 1 1/0/0|1	"Toggle"
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 1 1/0/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 1 1/0/0|1	null
+GTFreeMenu|title 2|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 1 1/0/0|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 1 1/0/0|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 1 1/0/0|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 1 1/0/0|1	"D"
+GTFreeMenu|title 3|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 1 1/0/0|1	"Edit"
+GTFreeMenu|title 3 item 0|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 3 item 0 text|0 form 1 1/0/0|1	"Cut"
+GTFreeMenu|title 3 item 0 flags/mx/ud|0 form 1 1/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 0 shortcut|0 form 1 1/0/0|1	"X"
+GTFreeMenu|title 3 item 1|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 3 item 1 text|0 form 1 1/0/0|1	"Copy"
+GTFreeMenu|title 3 item 1 flags/mx/ud|0 form 1 1/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 1 shortcut|0 form 1 1/0/0|1	"C"
+GTFreeMenu|title 4|0 form 1 1/0/0|1	$00000001
+GTFreeMenu|title 4 text|0 form 1 1/0/0|1	"Last"
+GTFreeMenu|kept|0 form 1 9/0/0|1	kept
+GTFreeMenu|popped|0 form 1 9/0/0|1	$00000000
+GTFreeMenu|count|0 form 1 9/0/0|1	$00000011
+GTFreeMenu|title 0|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 1 9/0/0|1	"First"
+GTFreeMenu|title 1|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 1 9/0/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 1 9/0/0|1	"Open"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 1 9/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 1 9/0/0|1	"O"
+GTFreeMenu|title 1 item 0 sub 0|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 0 text|0 form 1 9/0/0|1	"Sub D"
+GTFreeMenu|title 1 item 0 sub 0 flags/mx/ud|0 form 1 9/0/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 0 shortcut|0 form 1 9/0/0|1	"Q"
+GTFreeMenu|title 1 item 0 sub 1|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 1 text|0 form 1 9/0/0|1	"Sub A"
+GTFreeMenu|title 1 item 0 sub 1 flags/mx/ud|0 form 1 9/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 1 shortcut|0 form 1 9/0/0|1	"A"
+GTFreeMenu|title 1 item 0 sub 2|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 2 text|0 form 1 9/0/0|1	"Sub C"
+GTFreeMenu|title 1 item 0 sub 2 flags/mx/ud|0 form 1 9/0/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 2 shortcut|0 form 1 9/0/0|1	null
+GTFreeMenu|title 1 item 0 sub 3|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 3 text|0 form 1 9/0/0|1	"Sub E"
+GTFreeMenu|title 1 item 0 sub 3 flags/mx/ud|0 form 1 9/0/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 0 sub 3 shortcut|0 form 1 9/0/0|1	"E"
+GTFreeMenu|title 1 item 1|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 1 9/0/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 1 9/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 1 9/0/0|1	null
+GTFreeMenu|title 1 item 2|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 1 9/0/0|1	"Toggle"
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 1 9/0/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 1 9/0/0|1	null
+GTFreeMenu|title 2|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 1 9/0/0|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 1 9/0/0|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 1 9/0/0|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 1 9/0/0|1	"D"
+GTFreeMenu|title 3|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 1 9/0/0|1	"Edit"
+GTFreeMenu|title 3 item 0|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 3 item 0 text|0 form 1 9/0/0|1	"Cut"
+GTFreeMenu|title 3 item 0 flags/mx/ud|0 form 1 9/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 0 shortcut|0 form 1 9/0/0|1	"X"
+GTFreeMenu|title 3 item 1|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 3 item 1 text|0 form 1 9/0/0|1	"Copy"
+GTFreeMenu|title 3 item 1 flags/mx/ud|0 form 1 9/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 3 item 1 shortcut|0 form 1 9/0/0|1	"C"
+GTFreeMenu|title 4|0 form 1 9/0/0|1	$00000001
+GTFreeMenu|title 4 text|0 form 1 9/0/0|1	"Last"
+GTFreeMenu|kept|0 form 0 3/0/0|1	kept
+GTFreeMenu|popped|0 form 0 3/0/0|1	$00000000
+GTFreeMenu|count|0 form 0 3/0/0|1	$00000011
+GTFreeMenu|title 0|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 0 3/0/0|1	"First"
+GTFreeMenu|title 1|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 0 3/0/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 0 3/0/0|1	"Open"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 0 3/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 0 3/0/0|1	"O"
+GTFreeMenu|title 1 item 0 sub 0|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 0 text|0 form 0 3/0/0|1	"Sub D"
+GTFreeMenu|title 1 item 0 sub 0 flags/mx/ud|0 form 0 3/0/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 0 shortcut|0 form 0 3/0/0|1	"Q"
+GTFreeMenu|title 1 item 0 sub 1|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 1 text|0 form 0 3/0/0|1	"Sub A"
+GTFreeMenu|title 1 item 0 sub 1 flags/mx/ud|0 form 0 3/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 1 shortcut|0 form 0 3/0/0|1	"A"
+GTFreeMenu|title 1 item 0 sub 2|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 2 text|0 form 0 3/0/0|1	"Sub C"
+GTFreeMenu|title 1 item 0 sub 2 flags/mx/ud|0 form 0 3/0/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 2 shortcut|0 form 0 3/0/0|1	null
+GTFreeMenu|title 1 item 0 sub 3|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 3 text|0 form 0 3/0/0|1	"Sub E"
+GTFreeMenu|title 1 item 0 sub 3 flags/mx/ud|0 form 0 3/0/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 0 sub 3 shortcut|0 form 0 3/0/0|1	"E"
+GTFreeMenu|title 1 item 1|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 0 3/0/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 0 3/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 0 3/0/0|1	null
+GTFreeMenu|title 1 item 2|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 0 3/0/0|1	"Toggle"
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 0 3/0/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 0 3/0/0|1	null
+GTFreeMenu|title 2|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 0 3/0/0|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 0 3/0/0|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 0 3/0/0|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 0 3/0/0|1	"D"
+GTFreeMenu|title 3|0 form 0 3/0/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 0 3/0/0|1	"Last"
+GTFreeMenu|kept|0 form 0 8/0/0|1	kept
+GTFreeMenu|popped|0 form 0 8/0/0|1	$00000000
+GTFreeMenu|count|0 form 0 8/0/0|1	$00000011
+GTFreeMenu|title 0|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 0 8/0/0|1	"First"
+GTFreeMenu|title 1|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 0 8/0/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 0 8/0/0|1	"Open"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 0 8/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 0 8/0/0|1	"O"
+GTFreeMenu|title 1 item 0 sub 0|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 0 text|0 form 0 8/0/0|1	"Sub D"
+GTFreeMenu|title 1 item 0 sub 0 flags/mx/ud|0 form 0 8/0/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 0 shortcut|0 form 0 8/0/0|1	"Q"
+GTFreeMenu|title 1 item 0 sub 1|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 1 text|0 form 0 8/0/0|1	"Sub A"
+GTFreeMenu|title 1 item 0 sub 1 flags/mx/ud|0 form 0 8/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 1 shortcut|0 form 0 8/0/0|1	"A"
+GTFreeMenu|title 1 item 0 sub 2|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 2 text|0 form 0 8/0/0|1	"Sub C"
+GTFreeMenu|title 1 item 0 sub 2 flags/mx/ud|0 form 0 8/0/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 2 shortcut|0 form 0 8/0/0|1	null
+GTFreeMenu|title 1 item 0 sub 3|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 3 text|0 form 0 8/0/0|1	"Sub E"
+GTFreeMenu|title 1 item 0 sub 3 flags/mx/ud|0 form 0 8/0/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 0 sub 3 shortcut|0 form 0 8/0/0|1	"E"
+GTFreeMenu|title 1 item 1|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 0 8/0/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 0 8/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 0 8/0/0|1	null
+GTFreeMenu|title 1 item 2|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 0 8/0/0|1	"Toggle"
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 0 8/0/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 0 8/0/0|1	null
+GTFreeMenu|title 2|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 0 8/0/0|1	"Middle"
+GTFreeMenu|title 2 item 0|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 2 item 0 text|0 form 0 8/0/0|1	"Data"
+GTFreeMenu|title 2 item 0 flags/mx/ud|0 form 0 8/0/0|1	"flags $0101 mx $00000006 ud $00001234"
+GTFreeMenu|title 2 item 0 shortcut|0 form 0 8/0/0|1	"D"
+GTFreeMenu|title 3|0 form 0 8/0/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 0 8/0/0|1	"Last"
+GTFreeMenu|kept|0 form 1 2/0/0|1	kept
+GTFreeMenu|popped|0 form 1 2/0/0|1	$00000000
+GTFreeMenu|count|0 form 1 2/0/0|1	$00000011
+GTFreeMenu|title 0|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 0 text|0 form 1 2/0/0|1	"First"
+GTFreeMenu|title 1|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 text|0 form 1 2/0/0|1	"Project"
+GTFreeMenu|title 1 item 0|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 text|0 form 1 2/0/0|1	"Open"
+GTFreeMenu|title 1 item 0 flags/mx/ud|0 form 1 2/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 shortcut|0 form 1 2/0/0|1	"O"
+GTFreeMenu|title 1 item 0 sub 0|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 0 text|0 form 1 2/0/0|1	"Sub D"
+GTFreeMenu|title 1 item 0 sub 0 flags/mx/ud|0 form 1 2/0/0|1	"flags $0001 mx $00000002 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 0 shortcut|0 form 1 2/0/0|1	"Q"
+GTFreeMenu|title 1 item 0 sub 1|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 1 text|0 form 1 2/0/0|1	"Sub A"
+GTFreeMenu|title 1 item 0 sub 1 flags/mx/ud|0 form 1 2/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 1 shortcut|0 form 1 2/0/0|1	"A"
+GTFreeMenu|title 1 item 0 sub 2|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 2 text|0 form 1 2/0/0|1	"Sub C"
+GTFreeMenu|title 1 item 0 sub 2 flags/mx/ud|0 form 1 2/0/0|1	"flags $0001 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 0 sub 2 shortcut|0 form 1 2/0/0|1	null
+GTFreeMenu|title 1 item 0 sub 3|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 0 sub 3 text|0 form 1 2/0/0|1	"Sub E"
+GTFreeMenu|title 1 item 0 sub 3 flags/mx/ud|0 form 1 2/0/0|1	"flags $0101 mx $00000001 ud $00005678"
+GTFreeMenu|title 1 item 0 sub 3 shortcut|0 form 1 2/0/0|1	"E"
+GTFreeMenu|title 1 item 1|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 1 text|0 form 1 2/0/0|1	$FFFFFFFF
+GTFreeMenu|title 1 item 1 flags/mx/ud|0 form 1 2/0/0|1	"flags $0000 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 1 shortcut|0 form 1 2/0/0|1	null
+GTFreeMenu|title 1 item 2|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 1 item 2 text|0 form 1 2/0/0|1	"Toggle"
+GTFreeMenu|title 1 item 2 flags/mx/ud|0 form 1 2/0/0|1	"flags $0009 mx $00000000 ud $00000000"
+GTFreeMenu|title 1 item 2 shortcut|0 form 1 2/0/0|1	null
+GTFreeMenu|title 2|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 2 text|0 form 1 2/0/0|1	"Middle"
+GTFreeMenu|title 3|0 form 1 2/0/0|1	$00000001
+GTFreeMenu|title 3 text|0 form 1 2/0/0|1	"Last"
+CreateMenuStrip|kept|0|3	kept
+CreateMenuStrip|popped|0|3	$00000000
+CreateMenuStrip|d0|0|3	$FFFFFFFF
+CreateMenuStrip|strip made|0|5	$00000001
+CreateMenuStrip|strip made|0|6	$00000001
+CreateMenuStrip|menu 0|0|3	$00000001
+CreateMenuStrip|menu 0 fields|0|3	"L 2 W 48 H 0 flags $0001 \"First\""
+CreateMenuStrip|menu 1|0|3	$00000001
+CreateMenuStrip|menu 1 fields|0|3	"L 58 W 64 H 0 flags $0001 \"Project\""
+CreateMenuStrip|menu 1 item 0|0|3	$00000001
+CreateMenuStrip|menu 1 item 0 fields|0|3	"L 0 T 0 W 105 H 9 flags $0056 mx $00000000 cmd $4F ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 0 sub 0|0|1	$00000001
+CreateMenuStrip|menu 1 item 0 sub 0 fields|0|1	"L 79 T -1 W 97 H 9 flags $0057 mx $00000002 cmd $51 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 0 sub 1|0|1	$00000001
+CreateMenuStrip|menu 1 item 0 sub 1 fields|0|1	"L 79 T 8 W 97 H 9 flags $0056 mx $00000000 cmd $41 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 0 sub 2|0|1	$00000001
+CreateMenuStrip|menu 1 item 0 sub 2 fields|0|1	"L 79 T 17 W 97 H 9 flags $0053 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 0 sub 3|0|1	$00000001
+CreateMenuStrip|menu 1 item 0 sub 3 fields|0|1	"L 79 T 26 W 97 H 9 flags $0157 mx $00000001 cmd $45 ud $00005678 no NextSelect"
+CreateMenuStrip|menu 1 item 1|0|3	$00000001
+CreateMenuStrip|menu 1 item 1 fields|0|3	"L 0 T 9 W 105 H 6 flags $00C0 mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 1 item 2|0|3	$00000001
+CreateMenuStrip|menu 1 item 2 fields|0|3	"L 0 T 15 W 105 H 9 flags $005B mx $00000000 cmd $00 ud $00000000 no NextSelect"
+CreateMenuStrip|menu 2|0|3	$00000001
+CreateMenuStrip|menu 2 fields|0|3	"L 130 W 56 H 0 flags $0001 \"Middle\""
+CreateMenuStrip|menu 3|0|3	$00000001
+CreateMenuStrip|menu 3 fields|0|3	"L 194 W 40 H 0 flags $0001 \"Last\""
+free|kept|object 0|1	kept
+free|popped|object 0|1	$00000000
+free|object cleared|object 0|1	$00000001
+free|kept|object 1|1	kept
+free|popped|object 1|1	$00000000
+free|object cleared|object 1|1	$00000001
+finit|kept||1	kept
+finit|popped||1	$00000000

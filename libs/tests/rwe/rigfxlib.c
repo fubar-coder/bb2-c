@@ -1,25 +1,27 @@
 /*
- * rwe rigfxlib - the C build of rigfxlib (userlib 65) against the CD
- * binary (BSS2 RIGFXLIB.OBJ), in the emulator (snitch test case
- * "rwe rigfxlib", argv[1] = the directory with the library files).
+ * rwe rigfxlib - rigfxlib (userlib 65): the C build or the CD binary
+ * (BSS2 RIGFXLIB.OBJ), one set as LIBSET says, observed as cases
+ * (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rigfxlib.txt), in the emulator (snitch test
+ * case "rwe rigfxlib", argv[1] = the directory with the library files).
  *
- * Both libraries are loaded like the compiler does (sysload.h) with
- * memlib (SaveCMAP's globalloc/globfree), and every routine is called on
- * both with the same inputs (other registers = markers, word arguments
- * with markers in the upper word).  Compared are d0, the whole memory
- * the routines work on (palettes and bitmaps lie in one buffer per set,
- * filled the same, so that out-of-range colour numbers read and write the
- * same bytes), and every register the original keeps must be kept by the
- * C build.
+ * The library is loaded like the compiler does (sysload.h) with memlib
+ * (SaveCMAP's globalloc/globfree), and every routine is called with the
+ * inputs (other registers = markers, word arguments with markers in the
+ * upper word).  Observed are d0, the whole memory the routines work on
+ * (palettes and bitmaps lie in one buffer, filled the same before each
+ * test, so that out-of-range colour numbers read and write the same
+ * bytes), and the kept registers.
  *
  * SaveCMAP calls RIAmosFuncLib's BSave (form 1): the library is loaded
  * too - the C build with the C set, the AmiBlitz3 binary (the reference
  * of the port; its token list is the one of the BSS2 binary the original
  * rigfxlib was built against) with the original - and initialised after
- * memlib; each set writes its own file in RAM: (read back and compared,
- * with the FORM header and length checked), one into a missing
- * directory (BSave fails: 0).
+ * memlib; the file it writes in RAM: is read back and observed, with the
+ * FORM header and length checked, and one into a missing directory
+ * (BSave fails: 0).
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #include "amosfunc.h"
 #include "rwemem.h"
@@ -28,77 +30,22 @@ extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, UL
 
 /* ------------------------------------------------------------ framework */
 
-static int cur;
-static struct regs R[2], IN[2];
-static ULONG POP[2];
-static const char *ROUT;
-static char VEC[100];
-static int prints;
+static struct regs R, IN;
+static ULONG POP;
 
-static void fail(const char *what, ULONG o, ULONG c)
-{
-    char buf[200];
-    if (prints++ < 60)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
-}
-
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* the same bytes in both sets (a SAME of a memcmp would compare the
-   result with itself) */
-static void samebytes(const char *what, const void *o, const void *c, ULONG n)
-{
-    const UBYTE *a = o, *b = c;
-    ULONG i;
-    if (!tape_bytes(what, o, c, n)) {
-        checks++;
-        return;
-    }
-    for (i = 0; i < n && a[i] == b[i]; i++)
-        ;
-    if (i < n) {
-        char buf[60];
-        snprintf(buf, sizeof buf, "%s (offset %lu)", what, i);
-        fail(buf, a[i], b[i]);
-    } else
-        checks++;
-}
-
-static void preserve(void)
-{
-    struct call c[2];
-    char buf[140];
-    int s;
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-    }
-    sprintf(buf, "%s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-    SAME("popped", POP[cur]);
-}
-
-#define DO2(fn, setup) do {                                                 \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callstk(fn, &R[cur], NULL, 0, &POP[cur]);                       \
-        }                                                                   \
-        preserve();                                                         \
+#define DO1(fn, setup) do {                                                 \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callstk(fn, &R, NULL, 0, &POP);                                     \
+        obs_kept(&IN, &R);                                                  \
+        OBS("popped", POP);                                                 \
     } while (0)
 
 /* code of form `form` of entry idx; Amiga-only code addresses are odd */
 static UBYTE *ent(int idx, int form)
 {
-    UBYTE *p = entry_form(getlib(&sets[cur], "rigfxlib"), idx, form);
+    UBYTE *p = entry_form(getlib(&loaded, "rigfxlib"), idx, form);
     return (UBYTE *)((ULONG)p & ~1UL);
 }
 
@@ -121,48 +68,39 @@ static ULONG rnd(void)
 #define MEMSZ 72000
 #define PALA 36000                      /* data of palette A (PaletteInfo) */
 #define PALB 40000                      /* data of palette B (the target) */
-static UBYTE mem[2][MEMSZ];
-static ULONG objA[2][4], objB[2][4];    /* palette objects: data, numcols.w */
+static UBYTE mem[MEMSZ];
+static ULONG objA[4], objB[4];          /* palette objects: data, numcols.w */
 
 static void fillmem(void)
 {
     ULONG i, v;
     for (i = 0; i < MEMSZ; i += 4) {
         v = rnd();
-        memcpy(&mem[0][i], &v, 4);
-        memcpy(&mem[1][i], &v, 4);
+        memcpy(&mem[i], &v, 4);
     }
 }
 
-static void setpal(ULONG (*obj)[4], ULONG at, UWORD n, UWORD objn)
+static void setpal(ULONG *obj, ULONG at, UWORD n, UWORD objn)
 {
-    int s;
-    for (s = 0; s < 2; s++) {
-        obj[s][0] = (ULONG)&mem[s][at];
-        obj[s][1] = (ULONG)objn << 16;
-        *(UWORD *)&mem[s][at] = n;
-    }
-}
-
-static void samemem(void)
-{
-    samebytes("memory", mem[0], mem[1], MEMSZ);
+    obj[0] = (ULONG)&mem[at];
+    obj[1] = (ULONG)objn << 16;
+    *(UWORD *)&mem[at] = n;
 }
 
 /* ------------------------------------------------------- the CMAP files */
 
-/* the file SaveCMAP wrote through RIAmosFuncLib's BSave, per set (-1: none) */
-static LONG bs_len[2];
-static UBYTE bs_data[2][1024];
+/* the file SaveCMAP wrote through RIAmosFuncLib's BSave (-1: none) */
+static LONG bs_len;
+static UBYTE bs_data[1024];
 
 static void readfile(const char *name)
 {
     BPTR f = Open((STRPTR)name, MODE_OLDFILE);
 
-    memset(bs_data[cur], 0, sizeof bs_data[cur]);
-    bs_len[cur] = -1;
+    memset(bs_data, 0, sizeof bs_data);
+    bs_len = -1;
     if (f) {
-        bs_len[cur] = Read(f, bs_data[cur], sizeof bs_data[cur]);
+        bs_len = Read(f, bs_data, sizeof bs_data);
         Close(f);
     }
 }
@@ -182,8 +120,8 @@ static void colours(const char *when)
         for (i = 0; i < sizeof cols / sizeof cols[0]; i++) {
             ROUT = fname[f];
             sprintf(VEC, "%s colour $%lX", when, cols[i]);
-            DO2(ent(fns[f], 0), R[cur].d[0] = cols[i]);
-            SAME("d0", R[cur].d[0]);
+            DO1(ent(fns[f], 0), R.d[0] = cols[i]);
+            OBS("d0", R.d[0]);
         }
 }
 
@@ -192,25 +130,25 @@ static void test_colours(void)
     /* before PaletteInfo: address 0 (same for both) */
     ROUT = "PalRed";
     strcpy(VEC, "no PaletteInfo");
-    DO2(ent(PALRED, 0), R[cur].d[0] = 1);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(PALRED, 0), R.d[0] = 1);
+    OBS("d0", R.d[0]);
 
     fillmem();
     setpal(objA, PALA, 16, 16);
     ROUT = "PaletteInfo";
     strcpy(VEC, "A");
-    DO2(ent(PALETTEINFO, 0), R[cur].d[0] = 1; R[cur].a[0] = (ULONG)objA[cur]);
+    DO1(ent(PALETTEINFO, 0), R.d[0] = 1; R.a[0] = (ULONG)objA);
     colours("A");
-    samemem();
+    OBSBYTES("memory", mem, MEMSZ);
 }
 
 static void paladjust(int form, ULONG ratio, ULONG start, ULONG end)
 {
     ROUT = "PalAdjust";
     sprintf(VEC, "form %d ratio $%lX %lu..%lu", form, ratio, start & 0xffff, end & 0xffff);
-    DO2(ent(PALADJUST, form), R[cur].d[0] = WA(2); R[cur].d[1] = ratio;
-        R[cur].a[0] = (ULONG)objB[cur]; if (form) { R[cur].d[2] = start; R[cur].d[3] = end; });
-    samemem();
+    DO1(ent(PALADJUST, form), R.d[0] = WA(2); R.d[1] = ratio;
+        R.a[0] = (ULONG)objB; if (form) { R.d[2] = start; R.d[3] = end; });
+    OBSBYTES("memory", mem, MEMSZ);
 }
 
 static void test_paladjust(void)
@@ -224,7 +162,7 @@ static void test_paladjust(void)
     setpal(objB, PALB, 20, 20);
     ROUT = "PaletteInfo";
     strcpy(VEC, "A");
-    DO2(ent(PALETTEINFO, 0), R[cur].a[0] = (ULONG)objA[cur]);
+    DO1(ent(PALETTEINFO, 0), R.a[0] = (ULONG)objA);
     for (i = 0; i < sizeof ratios / sizeof ratios[0]; i++)
         paladjust(0, ratios[i], 0, 0);
     paladjust(1, 0x18000, WA(0), WA(11));
@@ -239,9 +177,9 @@ static void fillp(int fn, int form, ULONG r, ULONG g, ULONG b, ULONG start, ULON
 {
     ROUT = fn == FILLPALETTE ? "FillPalette" : "AGAFillPalette";
     sprintf(VEC, "form %d $%lX,$%lX,$%lX %lX..%lX", form, r, g, b, start, end);
-    DO2(ent(fn, form), R[cur].d[0] = WA(2); R[cur].d[1] = r; R[cur].d[2] = g; R[cur].d[3] = b;
-        R[cur].a[0] = (ULONG)objB[cur]; if (form) { R[cur].d[4] = start; R[cur].d[5] = end; });
-    samemem();
+    DO1(ent(fn, form), R.d[0] = WA(2); R.d[1] = r; R.d[2] = g; R.d[3] = b;
+        R.a[0] = (ULONG)objB; if (form) { R.d[4] = start; R.d[5] = end; });
+    OBSBYTES("memory", mem, MEMSZ);
 }
 
 static void test_fillpalette(void)
@@ -263,14 +201,14 @@ static void test_fillpalette(void)
     }
 }
 
-static void copycol(ULONG (*src)[4], ULONG (*dst)[4], ULONG cs, ULONG cd)
+static void copycol(ULONG *src, ULONG *dst, ULONG cs, ULONG cd)
 {
     ROUT = "CopyColour";
     sprintf(VEC, "%lX -> %lX", cs, cd);
-    DO2(ent(COPYCOLOUR, 0), R[cur].d[0] = WA(1); R[cur].d[1] = WA(2); R[cur].d[2] = cs;
-        R[cur].d[3] = cd; R[cur].a[0] = (ULONG)src[cur]; R[cur].a[1] = (ULONG)dst[cur]);
-    SAME("d0", R[cur].d[0]);
-    samemem();
+    DO1(ent(COPYCOLOUR, 0), R.d[0] = WA(1); R.d[1] = WA(2); R.d[2] = cs;
+        R.d[3] = cd; R.a[0] = (ULONG)src; R.a[1] = (ULONG)dst);
+    OBS("d0", R.d[0]);
+    OBSBYTES("memory", mem, MEMSZ);
 }
 
 static void test_copycolour(void)
@@ -288,24 +226,22 @@ static void test_copycolour(void)
 }
 
 /* bitmap objects: bpr, rows, depth word, planes at offsets of mem */
-static ULONG bm[2][16];
+static ULONG bm[16];
 
 static void cpucls(UWORD bpr, UWORD rows, UWORD depth, const ULONG *offs)
 {
-    int s, i;
+    int i;
 
     fillmem();
-    for (s = 0; s < 2; s++) {
-        memset(bm[s], 0, sizeof bm[s]);
-        bm[s][0] = (ULONG)bpr << 16 | rows;
-        bm[s][1] = (ULONG)depth << 16;
-        for (i = 0; i < depth && i < 8; i++)
-            bm[s][2 + i] = (ULONG)&mem[s][offs[i]];
-    }
+    memset(bm, 0, sizeof bm);
+    bm[0] = (ULONG)bpr << 16 | rows;
+    bm[1] = (ULONG)depth << 16;
+    for (i = 0; i < depth && i < 8; i++)
+        bm[2 + i] = (ULONG)&mem[offs[i]];
     ROUT = "CPUCls";
     sprintf(VEC, "%ux%u depth %u at %lu", bpr, rows, depth, offs[0]);
-    DO2(ent(CPUCLS, 0), R[cur].d[0] = 1; R[cur].a[0] = (ULONG)bm[cur]);
-    samemem();
+    DO1(ent(CPUCLS, 0), R.d[0] = 1; R.a[0] = (ULONG)bm);
+    OBSBYTES("memory", mem, MEMSZ);
 }
 
 static void test_cpucls(void)
@@ -322,45 +258,41 @@ static void test_cpucls(void)
     cpucls(320 / 8, 256, 1, offs1);
 }
 
-/* one file per set (BSave opens with MODE_NEWFILE), names of the same
-   length; "RAM:rwe-nodir/..." cannot be opened: BSave returns 0 */
-static char cmapname[2][40];
+/* the file (BSave opens with MODE_NEWFILE); "RAM:rwe-nodir/..." cannot be
+   opened: BSave returns 0 */
+static char cmapname[40];
 
 static void setname(const char *dir)
 {
-    for (cur = 0; cur < 2; cur++) {
-        sprintf(cmapname[cur], "RAM:%s%scmap%d", dir, *dir ? "/" : "", cur);
-        DeleteFile((STRPTR)cmapname[cur]);
-    }
+    sprintf(cmapname, "RAM:%s%scmap", dir, *dir ? "/" : "");
+    DeleteFile((STRPTR)cmapname);
 }
 
-static void savecmap(ULONG (*obj)[4], const char *dir)
+static void savecmap(ULONG *obj, const char *dir)
 {
-    ULONG n = *(UWORD *)obj[0][0];
+    ULONG n = *(UWORD *)obj[0];
 
     ROUT = "SaveCMAP";
     sprintf(VEC, "%lu colours, %s", n, dir);
     setname(dir);
-    DO2(ent(SAVECMAP, 0), R[cur].d[0] = 3; R[cur].d[1] = (ULONG)cmapname[cur];
-        R[cur].a[0] = (ULONG)obj[cur]);
-    SAME("d0", R[cur].d[0]);
-    for (cur = 0; cur < 2; cur++)
-        readfile(cmapname[cur]);
-    SAME("file length", bs_len[cur]);
-    if (R[0].d[0])                              /* written: FORM, the length */
-        check("SaveCMAP: the file", bs_len[0] == (LONG)(n * 3 + 48)
-              && !memcmp(bs_data[0], "FORM", 4));
+    DO1(ent(SAVECMAP, 0), R.d[0] = 3; R.d[1] = (ULONG)cmapname;
+        R.a[0] = (ULONG)obj);
+    OBS("d0", R.d[0]);
+    readfile(cmapname);
+    OBS("file length", bs_len);
+    if (R.d[0])                                 /* written: FORM, the length */
+        check("SaveCMAP: the file", bs_len == (LONG)(n * 3 + 48)
+              && !memcmp(bs_data, "FORM", 4));
     else
-        check("SaveCMAP: no file", bs_len[0] == -1);
-    samebytes("file", bs_data[0], bs_data[1], sizeof bs_data[0]);
-    samemem();
-    for (cur = 0; cur < 2; cur++)
-        DeleteFile((STRPTR)cmapname[cur]);
+        check("SaveCMAP: no file", bs_len == -1);
+    OBSBYTES("file", bs_data, sizeof bs_data);
+    OBSBYTES("memory", mem, MEMSZ);
+    DeleteFile((STRPTR)cmapname);
 }
 
 static void test_savecmap(void)
 {
-    ULONG zero[2][4] = { { 0 }, { 0 } };
+    ULONG zero[4] = { 0 };
 
     fillmem();
     setpal(objA, PALA, 5, 5);
@@ -373,34 +305,32 @@ static void test_savecmap(void)
     ROUT = "SaveCMAP";
     strcpy(VEC, "no data");
     setname("");
-    DO2(ent(SAVECMAP, 0), R[cur].d[1] = (ULONG)cmapname[cur]; R[cur].a[0] = (ULONG)zero[cur]);
-    SAME("d0", R[cur].d[0]);
-    for (cur = 0; cur < 2; cur++)
-        readfile(cmapname[cur]);
-    SAME("no file", bs_len[cur]);
+    DO1(ent(SAVECMAP, 0), R.d[1] = (ULONG)cmapname; R.a[0] = (ULONG)zero);
+    OBS("d0", R.d[0]);
+    readfile(cmapname);
+    OBS("no file", bs_len);
 }
 
-/* MergeBitplanes: objects of 64 bytes, the same constant contents */
-static UBYTE mb[2][3][64];
+/* MergeBitplanes: objects of 64 bytes, constant contents */
+static UBYTE mb[3][64];
 
 static void merge(UWORD d1, UWORD d2, ULONG planes, UWORD f1, UWORD f2, UWORD fd)
 {
-    int s, k, i;
+    int k, i;
 
-    for (s = 0; s < 2; s++)
-        for (k = 0; k < 3; k++) {
-            for (i = 0; i < 64; i++)
-                mb[s][k][i] = (UBYTE)(k * 64 + i * 7 + 1);
-            *(UWORD *)&mb[s][k][62] = k == 0 ? f1 : k == 1 ? f2 : fd;
-            if (k < 2)
-                *(UWORD *)&mb[s][k][4] = k ? d2 : d1;
-        }
+    for (k = 0; k < 3; k++) {
+        for (i = 0; i < 64; i++)
+            mb[k][i] = (UBYTE)(k * 64 + i * 7 + 1);
+        *(UWORD *)&mb[k][62] = k == 0 ? f1 : k == 1 ? f2 : fd;
+        if (k < 2)
+            *(UWORD *)&mb[k][4] = k ? d2 : d1;
+    }
     ROUT = "MergeBitplanes";
     sprintf(VEC, "%u+%u planes %lX flags %u,%u,%u", d1, d2, planes, f1, f2, fd);
-    DO2(ent(MERGEBITPLANES, 0), R[cur].d[0] = WA(0); R[cur].d[1] = WA(1); R[cur].d[2] = WA(2);
-        R[cur].d[3] = planes; R[cur].a[0] = (ULONG)mb[cur][0]; R[cur].a[1] = (ULONG)mb[cur][1];
-        R[cur].a[2] = (ULONG)mb[cur][2]);
-    samebytes("objects", mb[0], mb[1], sizeof mb[0]);
+    DO1(ent(MERGEBITPLANES, 0), R.d[0] = WA(0); R.d[1] = WA(1); R.d[2] = WA(2);
+        R.d[3] = planes; R.a[0] = (ULONG)mb[0]; R.a[1] = (ULONG)mb[1];
+        R.a[2] = (ULONG)mb[2]);
+    OBSBYTES("objects", mb, sizeof mb);
 }
 
 static void test_merge(void)
@@ -431,8 +361,22 @@ int main(int argc, char **argv)
         printf("usage: rwe_rigfxlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("PalRed", d1-d7|a1-a3|a6);
+    KEEPS("PalGreen", d1-d7|a1-a3|a6);
+    KEEPS("PalBlue", d1-d7|a1-a3|a6);
+    KEEPS("AGAPalRed", d1-d7|a1-a3|a6);
+    KEEPS("AGAPalGreen", d1-d7|a1-a3|a6);
+    KEEPS("AGAPalBlue", d1-d7|a1-a3|a6);
+    KEEPS("PaletteInfo", d0-d7|a1-a3|a6);
+    KEEPS("PalAdjust", d4|a2|a3|a6);
+    KEEPS("FillPalette", d0|d6|a1-a3|a6);
+    KEEPS("AGAFillPalette", d0|d6|a1-a3|a6);
+    KEEPS("CopyColour", d1|d4-d7|a2|a3|a6);
+    KEEPS("CPUCls", a6);
+    KEEPS("SaveCMAP", d4-d6|a2|a3);
+    KEEPS("MergeBitplanes", d2|d4-d7|a3|a6);
 
     test_colours();
     test_paladjust();
@@ -445,23 +389,18 @@ int main(int argc, char **argv)
     rwe_mem_start();
     ROUT = "memlib init";
     strcpy(VEC, "");
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
-        markregs(&R[cur]);                      /* RIAmosFuncLib: dos.library */
-        callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), AMOS_E_INIT, 0), &R[cur],
-                NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, NULL, 0, &POP);
+    markregs(&R);                       /* RIAmosFuncLib: dos.library */
+    callstk(entry_form(getlib(&loaded, "riamosfunclib"), AMOS_E_INIT, 0), &R, NULL, 0, &POP);
     test_savecmap();
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), AMOS_E_FINIT, 0), &R[cur],
-                NULL, 0, &POP[cur]);
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "riamosfunclib"), AMOS_E_FINIT, 0), &R, NULL, 0, &POP);
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, NULL, 0, &POP);
     rwe_mem_check("rigfxlib", avail, TRUE);
 
     printf("%d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }

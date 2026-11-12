@@ -1,0 +1,443 @@
+# capture rwe_rigfxlib 1
+PalRed|kept|no PaletteInfo|1	kept
+PalRed|popped|no PaletteInfo|1	$00000000
+PalRed|d0|no PaletteInfo|1	$00000000
+PaletteInfo|kept|A|1	kept
+PaletteInfo|popped|A|1	$00000000
+PalRed|kept|A colour $0|1	kept
+PalRed|popped|A colour $0|1	$00000000
+PalRed|d0|A colour $0|1	$00000005
+PalRed|kept|A colour $1|1	kept
+PalRed|popped|A colour $1|1	$00000000
+PalRed|d0|A colour $1|1	$00000007
+PalRed|kept|A colour $2|1	kept
+PalRed|popped|A colour $2|1	$00000000
+PalRed|d0|A colour $2|1	$00000008
+PalRed|kept|A colour $7|1	kept
+PalRed|popped|A colour $7|1	$00000000
+PalRed|d0|A colour $7|1	$0000000D
+PalRed|kept|A colour $F|1	kept
+PalRed|popped|A colour $F|1	$00000000
+PalRed|d0|A colour $F|1	$0000000D
+PalRed|kept|A colour $10|1	kept
+PalRed|popped|A colour $10|1	$00000000
+PalRed|d0|A colour $10|1	$00000009
+PalRed|kept|A colour $64|1	kept
+PalRed|popped|A colour $64|1	$00000000
+PalRed|d0|A colour $64|1	$00000002
+PalRed|kept|A colour $AAA|1	kept
+PalRed|popped|A colour $AAA|1	$00000000
+PalRed|d0|A colour $AAA|1	$00000002
+PalRed|kept|A colour $AAB|1	kept
+PalRed|popped|A colour $AAB|1	$00000000
+PalRed|d0|A colour $AAB|1	$00000007
+PalRed|kept|A colour $1388|1	kept
+PalRed|popped|A colour $1388|1	$00000000
+PalRed|d0|A colour $1388|1	$00000001
+PalRed|kept|A colour $FFFF|1	kept
+PalRed|popped|A colour $FFFF|1	$00000000
+PalRed|d0|A colour $FFFF|1	$00000000
+PalRed|kept|A colour $5A010003|1	kept
+PalRed|popped|A colour $5A010003|1	$00000000
+PalRed|d0|A colour $5A010003|1	$00000000
+PalGreen|kept|A colour $0|1	kept
+PalGreen|popped|A colour $0|1	$00000000
+PalGreen|d0|A colour $0|1	$0000000A
+PalGreen|kept|A colour $1|1	kept
+PalGreen|popped|A colour $1|1	$00000000
+PalGreen|d0|A colour $1|1	$0000000B
+PalGreen|kept|A colour $2|1	kept
+PalGreen|popped|A colour $2|1	$00000000
+PalGreen|d0|A colour $2|1	$0000000A
+PalGreen|kept|A colour $7|1	kept
+PalGreen|popped|A colour $7|1	$00000000
+PalGreen|d0|A colour $7|1	$00000007
+PalGreen|kept|A colour $F|1	kept
+PalGreen|popped|A colour $F|1	$00000000
+PalGreen|d0|A colour $F|1	$0000000A
+PalGreen|kept|A colour $10|1	kept
+PalGreen|popped|A colour $10|1	$00000000
+PalGreen|d0|A colour $10|1	$0000000A
+PalGreen|kept|A colour $64|1	kept
+PalGreen|popped|A colour $64|1	$00000000
+PalGreen|d0|A colour $64|1	$00000002
+PalGreen|kept|A colour $AAA|1	kept
+PalGreen|popped|A colour $AAA|1	$00000000
+PalGreen|d0|A colour $AAA|1	$00000006
+PalGreen|kept|A colour $AAB|1	kept
+PalGreen|popped|A colour $AAB|1	$00000000
+PalGreen|d0|A colour $AAB|1	$00000007
+PalGreen|kept|A colour $1388|1	kept
+PalGreen|popped|A colour $1388|1	$00000000
+PalGreen|d0|A colour $1388|1	$00000009
+PalGreen|kept|A colour $FFFF|1	kept
+PalGreen|popped|A colour $FFFF|1	$00000000
+PalGreen|d0|A colour $FFFF|1	$00000001
+PalGreen|kept|A colour $5A010003|1	kept
+PalGreen|popped|A colour $5A010003|1	$00000000
+PalGreen|d0|A colour $5A010003|1	$00000003
+PalBlue|kept|A colour $0|1	kept
+PalBlue|popped|A colour $0|1	$00000000
+PalBlue|d0|A colour $0|1	$0000000D
+PalBlue|kept|A colour $1|1	kept
+PalBlue|popped|A colour $1|1	$00000000
+PalBlue|d0|A colour $1|1	$00000006
+PalBlue|kept|A colour $2|1	kept
+PalBlue|popped|A colour $2|1	$00000000
+PalBlue|d0|A colour $2|1	$00000000
+PalBlue|kept|A colour $7|1	kept
+PalBlue|popped|A colour $7|1	$00000000
+PalBlue|d0|A colour $7|1	$0000000F
+PalBlue|kept|A colour $F|1	kept
+PalBlue|popped|A colour $F|1	$00000000
+PalBlue|d0|A colour $F|1	$00000006
+PalBlue|kept|A colour $10|1	kept
+PalBlue|popped|A colour $10|1	$00000000
+PalBlue|d0|A colour $10|1	$0000000B
+PalBlue|kept|A colour $64|1	kept
+PalBlue|popped|A colour $64|1	$00000000
+PalBlue|d0|A colour $64|1	$00000001
+PalBlue|kept|A colour $AAA|1	kept
+PalBlue|popped|A colour $AAA|1	$00000000
+PalBlue|d0|A colour $AAA|1	$00000007
+PalBlue|kept|A colour $AAB|1	kept
+PalBlue|popped|A colour $AAB|1	$00000000
+PalBlue|d0|A colour $AAB|1	$00000006
+PalBlue|kept|A colour $1388|1	kept
+PalBlue|popped|A colour $1388|1	$00000000
+PalBlue|d0|A colour $1388|1	$00000007
+PalBlue|kept|A colour $FFFF|1	kept
+PalBlue|popped|A colour $FFFF|1	$00000000
+PalBlue|d0|A colour $FFFF|1	$00000000
+PalBlue|kept|A colour $5A010003|1	kept
+PalBlue|popped|A colour $5A010003|1	$00000000
+PalBlue|d0|A colour $5A010003|1	$00000005
+AGAPalRed|kept|A colour $0|1	kept
+AGAPalRed|popped|A colour $0|1	$00000000
+AGAPalRed|d0|A colour $0|1	$00000059
+AGAPalRed|kept|A colour $1|1	kept
+AGAPalRed|popped|A colour $1|1	$00000000
+AGAPalRed|d0|A colour $1|1	$00000074
+AGAPalRed|kept|A colour $2|1	kept
+AGAPalRed|popped|A colour $2|1	$00000000
+AGAPalRed|d0|A colour $2|1	$00000086
+AGAPalRed|kept|A colour $7|1	kept
+AGAPalRed|popped|A colour $7|1	$00000000
+AGAPalRed|d0|A colour $7|1	$000000DB
+AGAPalRed|kept|A colour $F|1	kept
+AGAPalRed|popped|A colour $F|1	$00000000
+AGAPalRed|d0|A colour $F|1	$000000D7
+AGAPalRed|kept|A colour $10|1	kept
+AGAPalRed|popped|A colour $10|1	$00000000
+AGAPalRed|d0|A colour $10|1	$0000009F
+AGAPalRed|kept|A colour $64|1	kept
+AGAPalRed|popped|A colour $64|1	$00000000
+AGAPalRed|d0|A colour $64|1	$00000020
+AGAPalRed|kept|A colour $AAA|1	kept
+AGAPalRed|popped|A colour $AAA|1	$00000000
+AGAPalRed|d0|A colour $AAA|1	$00000026
+AGAPalRed|kept|A colour $AAB|1	kept
+AGAPalRed|popped|A colour $AAB|1	$00000000
+AGAPalRed|d0|A colour $AAB|1	$0000007F
+AGAPalRed|kept|A colour $1388|1	kept
+AGAPalRed|popped|A colour $1388|1	$00000000
+AGAPalRed|d0|A colour $1388|1	$0000001D
+AGAPalRed|kept|A colour $FFFF|1	kept
+AGAPalRed|popped|A colour $FFFF|1	$00000000
+AGAPalRed|d0|A colour $FFFF|1	$00000008
+AGAPalRed|kept|A colour $5A010003|1	kept
+AGAPalRed|popped|A colour $5A010003|1	$00000000
+AGAPalRed|d0|A colour $5A010003|1	$00000008
+AGAPalGreen|kept|A colour $0|1	kept
+AGAPalGreen|popped|A colour $0|1	$00000000
+AGAPalGreen|d0|A colour $0|1	$000000A0
+AGAPalGreen|kept|A colour $1|1	kept
+AGAPalGreen|popped|A colour $1|1	$00000000
+AGAPalGreen|d0|A colour $1|1	$000000B2
+AGAPalGreen|kept|A colour $2|1	kept
+AGAPalGreen|popped|A colour $2|1	$00000000
+AGAPalGreen|d0|A colour $2|1	$000000AE
+AGAPalGreen|kept|A colour $7|1	kept
+AGAPalGreen|popped|A colour $7|1	$00000000
+AGAPalGreen|d0|A colour $7|1	$00000073
+AGAPalGreen|kept|A colour $F|1	kept
+AGAPalGreen|popped|A colour $F|1	$00000000
+AGAPalGreen|d0|A colour $F|1	$000000AE
+AGAPalGreen|kept|A colour $10|1	kept
+AGAPalGreen|popped|A colour $10|1	$00000000
+AGAPalGreen|d0|A colour $10|1	$000000A8
+AGAPalGreen|kept|A colour $64|1	kept
+AGAPalGreen|popped|A colour $64|1	$00000000
+AGAPalGreen|d0|A colour $64|1	$0000002A
+AGAPalGreen|kept|A colour $AAA|1	kept
+AGAPalGreen|popped|A colour $AAA|1	$00000000
+AGAPalGreen|d0|A colour $AAA|1	$0000006A
+AGAPalGreen|kept|A colour $AAB|1	kept
+AGAPalGreen|popped|A colour $AAB|1	$00000000
+AGAPalGreen|d0|A colour $AAB|1	$0000007D
+AGAPalGreen|kept|A colour $1388|1	kept
+AGAPalGreen|popped|A colour $1388|1	$00000000
+AGAPalGreen|d0|A colour $1388|1	$00000099
+AGAPalGreen|kept|A colour $FFFF|1	kept
+AGAPalGreen|popped|A colour $FFFF|1	$00000000
+AGAPalGreen|d0|A colour $FFFF|1	$0000001F
+AGAPalGreen|kept|A colour $5A010003|1	kept
+AGAPalGreen|popped|A colour $5A010003|1	$00000000
+AGAPalGreen|d0|A colour $5A010003|1	$00000035
+AGAPalBlue|kept|A colour $0|1	kept
+AGAPalBlue|popped|A colour $0|1	$00000000
+AGAPalBlue|d0|A colour $0|1	$000000D5
+AGAPalBlue|kept|A colour $1|1	kept
+AGAPalBlue|popped|A colour $1|1	$00000000
+AGAPalBlue|d0|A colour $1|1	$00000064
+AGAPalBlue|kept|A colour $2|1	kept
+AGAPalBlue|popped|A colour $2|1	$00000000
+AGAPalBlue|d0|A colour $2|1	$0000000E
+AGAPalBlue|kept|A colour $7|1	kept
+AGAPalBlue|popped|A colour $7|1	$00000000
+AGAPalBlue|d0|A colour $7|1	$000000F6
+AGAPalBlue|kept|A colour $F|1	kept
+AGAPalBlue|popped|A colour $F|1	$00000000
+AGAPalBlue|d0|A colour $F|1	$0000006A
+AGAPalBlue|kept|A colour $10|1	kept
+AGAPalBlue|popped|A colour $10|1	$00000000
+AGAPalBlue|d0|A colour $10|1	$000000BE
+AGAPalBlue|kept|A colour $64|1	kept
+AGAPalBlue|popped|A colour $64|1	$00000000
+AGAPalBlue|d0|A colour $64|1	$0000001E
+AGAPalBlue|kept|A colour $AAA|1	kept
+AGAPalBlue|popped|A colour $AAA|1	$00000000
+AGAPalBlue|d0|A colour $AAA|1	$0000007B
+AGAPalBlue|kept|A colour $AAB|1	kept
+AGAPalBlue|popped|A colour $AAB|1	$00000000
+AGAPalBlue|d0|A colour $AAB|1	$00000066
+AGAPalBlue|kept|A colour $1388|1	kept
+AGAPalBlue|popped|A colour $1388|1	$00000000
+AGAPalBlue|d0|A colour $1388|1	$00000075
+AGAPalBlue|kept|A colour $FFFF|1	kept
+AGAPalBlue|popped|A colour $FFFF|1	$00000000
+AGAPalBlue|d0|A colour $FFFF|1	$00000000
+AGAPalBlue|kept|A colour $5A010003|1	kept
+AGAPalBlue|popped|A colour $5A010003|1	$00000000
+AGAPalBlue|d0|A colour $5A010003|1	$00000052
+AGAPalBlue|memory|A colour $5A010003|1	bytes 72000 fnv 1D06881A
+PaletteInfo|kept|A|2	kept
+PaletteInfo|popped|A|2	$00000000
+PalAdjust|kept|form 0 ratio $0 0..0|1	kept
+PalAdjust|popped|form 0 ratio $0 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $0 0..0|1	bytes 72000 fnv 94231F3B
+PalAdjust|kept|form 0 ratio $8000 0..0|1	kept
+PalAdjust|popped|form 0 ratio $8000 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $8000 0..0|1	bytes 72000 fnv D460F5D0
+PalAdjust|kept|form 0 ratio $10000 0..0|1	kept
+PalAdjust|popped|form 0 ratio $10000 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $10000 0..0|1	bytes 72000 fnv A77637D8
+PalAdjust|kept|form 0 ratio $18000 0..0|1	kept
+PalAdjust|popped|form 0 ratio $18000 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $18000 0..0|1	bytes 72000 fnv D2193B89
+PalAdjust|kept|form 0 ratio $20000 0..0|1	kept
+PalAdjust|popped|form 0 ratio $20000 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $20000 0..0|1	bytes 72000 fnv 55C5B53D
+PalAdjust|kept|form 0 ratio $FF00 0..0|1	kept
+PalAdjust|popped|form 0 ratio $FF00 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $FF00 0..0|1	bytes 72000 fnv CA14F11E
+PalAdjust|kept|form 0 ratio $FFFF8000 0..0|1	kept
+PalAdjust|popped|form 0 ratio $FFFF8000 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $FFFF8000 0..0|1	bytes 72000 fnv CF9EB1E7
+PalAdjust|kept|form 0 ratio $1234567 0..0|1	kept
+PalAdjust|popped|form 0 ratio $1234567 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $1234567 0..0|1	bytes 72000 fnv CF9EB1E7
+PalAdjust|kept|form 0 ratio $7FFF 0..0|1	kept
+PalAdjust|popped|form 0 ratio $7FFF 0..0|1	$00000000
+PalAdjust|memory|form 0 ratio $7FFF 0..0|1	bytes 72000 fnv ECAC5FC9
+PalAdjust|kept|form 1 ratio $18000 0..11|1	kept
+PalAdjust|popped|form 1 ratio $18000 0..11|1	$00000000
+PalAdjust|memory|form 1 ratio $18000 0..11|1	bytes 72000 fnv D2193B89
+PalAdjust|kept|form 1 ratio $8000 2..5|1	kept
+PalAdjust|popped|form 1 ratio $8000 2..5|1	$00000000
+PalAdjust|memory|form 1 ratio $8000 2..5|1	bytes 72000 fnv 5CC5FB54
+PalAdjust|kept|form 1 ratio $30000 5..5|1	kept
+PalAdjust|popped|form 1 ratio $30000 5..5|1	$00000000
+PalAdjust|memory|form 1 ratio $30000 5..5|1	bytes 72000 fnv 02176DD9
+PalAdjust|kept|form 1 ratio $10000 0..15|1	kept
+PalAdjust|popped|form 1 ratio $10000 0..15|1	$00000000
+PalAdjust|memory|form 1 ratio $10000 0..15|1	bytes 72000 fnv 201DDE9D
+PalAdjust|kept|form 1 ratio $12000 2731..2731|1	kept
+PalAdjust|popped|form 1 ratio $12000 2731..2731|1	$00000000
+PalAdjust|memory|form 1 ratio $12000 2731..2731|1	bytes 72000 fnv 9C528233
+PalAdjust|kept|form 1 ratio $9000 7..9|1	kept
+PalAdjust|popped|form 1 ratio $9000 7..9|1	$00000000
+PalAdjust|memory|form 1 ratio $9000 7..9|1	bytes 72000 fnv E203E509
+FillPalette|kept|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	kept
+FillPalette|popped|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	$00000000
+FillPalette|memory|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	bytes 72000 fnv D0B0BE89
+FillPalette|kept|form 0 $5A01FFFF,$1234,$A5 0..0|1	kept
+FillPalette|popped|form 0 $5A01FFFF,$1234,$A5 0..0|1	$00000000
+FillPalette|memory|form 0 $5A01FFFF,$1234,$A5 0..0|1	bytes 72000 fnv A80E5909
+FillPalette|kept|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	kept
+FillPalette|popped|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	$00000000
+FillPalette|memory|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	bytes 72000 fnv B3D87669
+FillPalette|kept|form 1 $1,$2,$3 5A000004..5A000004|1	kept
+FillPalette|popped|form 1 $1,$2,$3 5A000004..5A000004|1	$00000000
+FillPalette|memory|form 1 $1,$2,$3 5A000004..5A000004|1	bytes 72000 fnv 747D7249
+FillPalette|kept|form 1 $4,$5,$6 5A000003..5A000001|1	kept
+FillPalette|popped|form 1 $4,$5,$6 5A000003..5A000001|1	$00000000
+FillPalette|memory|form 1 $4,$5,$6 5A000003..5A000001|1	bytes 72000 fnv 747D7249
+FillPalette|kept|form 1 $7,$8,$9 0..0|1	kept
+FillPalette|popped|form 1 $7,$8,$9 0..0|1	$00000000
+FillPalette|memory|form 1 $7,$8,$9 0..0|1	bytes 72000 fnv E7F38709
+FillPalette|kept|form 1 $A,$B,$C 5A000002..10000|1	kept
+FillPalette|popped|form 1 $A,$B,$C 5A000002..10000|1	$00000000
+FillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1	bytes 72000 fnv E7F38709
+FillPalette|kept|form 1 $D,$E,$F 5A000000..10000|1	kept
+FillPalette|popped|form 1 $D,$E,$F 5A000000..10000|1	$00000000
+FillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1	bytes 72000 fnv 9CADAC69
+FillPalette|kept|form 1 $21,$43,$65 5A000005..5A000014|1	kept
+FillPalette|popped|form 1 $21,$43,$65 5A000005..5A000014|1	$00000000
+FillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1	bytes 72000 fnv 5CF0D1A0
+AGAFillPalette|kept|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	kept
+AGAFillPalette|popped|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	$00000000
+AGAFillPalette|memory|form 0 $5A00000F,$5A000007,$5A000000 0..0|1	bytes 72000 fnv 7EEC5538
+AGAFillPalette|kept|form 0 $5A01FFFF,$1234,$A5 0..0|1	kept
+AGAFillPalette|popped|form 0 $5A01FFFF,$1234,$A5 0..0|1	$00000000
+AGAFillPalette|memory|form 0 $5A01FFFF,$1234,$A5 0..0|1	bytes 72000 fnv 8CD35056
+AGAFillPalette|kept|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	kept
+AGAFillPalette|popped|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	$00000000
+AGAFillPalette|memory|form 1 $5A000003,$5A000088,$5A0000FF 5A000001..5A000003|1	bytes 72000 fnv F683049C
+AGAFillPalette|kept|form 1 $1,$2,$3 5A000004..5A000004|1	kept
+AGAFillPalette|popped|form 1 $1,$2,$3 5A000004..5A000004|1	$00000000
+AGAFillPalette|memory|form 1 $1,$2,$3 5A000004..5A000004|1	bytes 72000 fnv 0334333A
+AGAFillPalette|kept|form 1 $4,$5,$6 5A000003..5A000001|1	kept
+AGAFillPalette|popped|form 1 $4,$5,$6 5A000003..5A000001|1	$00000000
+AGAFillPalette|memory|form 1 $4,$5,$6 5A000003..5A000001|1	bytes 72000 fnv 0334333A
+AGAFillPalette|kept|form 1 $7,$8,$9 0..0|1	kept
+AGAFillPalette|popped|form 1 $7,$8,$9 0..0|1	$00000000
+AGAFillPalette|memory|form 1 $7,$8,$9 0..0|1	bytes 72000 fnv 5D85684E
+AGAFillPalette|kept|form 1 $A,$B,$C 5A000002..10000|1	kept
+AGAFillPalette|popped|form 1 $A,$B,$C 5A000002..10000|1	$00000000
+AGAFillPalette|memory|form 1 $A,$B,$C 5A000002..10000|1	bytes 72000 fnv 5D85684E
+AGAFillPalette|kept|form 1 $D,$E,$F 5A000000..10000|1	kept
+AGAFillPalette|popped|form 1 $D,$E,$F 5A000000..10000|1	$00000000
+AGAFillPalette|memory|form 1 $D,$E,$F 5A000000..10000|1	bytes 72000 fnv 3ADF21F4
+AGAFillPalette|kept|form 1 $21,$43,$65 5A000005..5A000014|1	kept
+AGAFillPalette|popped|form 1 $21,$43,$65 5A000005..5A000014|1	$00000000
+AGAFillPalette|memory|form 1 $21,$43,$65 5A000005..5A000014|1	bytes 72000 fnv C620BFF4
+CopyColour|kept|5A000002 -> 5A000003|1	kept
+CopyColour|popped|5A000002 -> 5A000003|1	$00000000
+CopyColour|d0|5A000002 -> 5A000003|1	$FFFFFFFF
+CopyColour|memory|5A000002 -> 5A000003|1	bytes 72000 fnv 28461B7F
+CopyColour|kept|5A000007 -> 5A000000|1	kept
+CopyColour|popped|5A000007 -> 5A000000|1	$00000000
+CopyColour|d0|5A000007 -> 5A000000|1	$FFFFFFFF
+CopyColour|memory|5A000007 -> 5A000000|1	bytes 72000 fnv F81E1F45
+CopyColour|kept|5A000008 -> 5A000000|1	kept
+CopyColour|popped|5A000008 -> 5A000000|1	$00000000
+CopyColour|d0|5A000008 -> 5A000000|1	$00000000
+CopyColour|memory|5A000008 -> 5A000000|1	bytes 72000 fnv F81E1F45
+CopyColour|kept|5A000000 -> 5A000005|1	kept
+CopyColour|popped|5A000000 -> 5A000005|1	$00000000
+CopyColour|d0|5A000000 -> 5A000005|1	$00000000
+CopyColour|memory|5A000000 -> 5A000005|1	bytes 72000 fnv F81E1F45
+CopyColour|kept|5A000000 -> 5A000004|1	kept
+CopyColour|popped|5A000000 -> 5A000004|1	$00000000
+CopyColour|d0|5A000000 -> 5A000004|1	$FFFFFFFF
+CopyColour|memory|5A000000 -> 5A000004|1	bytes 72000 fnv 0BA030E7
+CopyColour|kept|3 -> 7|1	kept
+CopyColour|popped|3 -> 7|1	$00000000
+CopyColour|d0|3 -> 7|1	$FFFFFFFF
+CopyColour|memory|3 -> 7|1	bytes 72000 fnv AF8854CD
+CopyColour|kept|1 -> 6|1	kept
+CopyColour|popped|1 -> 6|1	$00000000
+CopyColour|d0|1 -> 6|1	$FFFFFFFF
+CopyColour|memory|1 -> 6|1	bytes 72000 fnv 186E1FC7
+CPUCls|kept|40x10 depth 1 at 1000|1	kept
+CPUCls|popped|40x10 depth 1 at 1000|1	$00000000
+CPUCls|memory|40x10 depth 1 at 1000|1	bytes 72000 fnv 8E691B67
+CPUCls|kept|41x3 depth 2 at 1000|1	kept
+CPUCls|popped|41x3 depth 2 at 1000|1	$00000000
+CPUCls|memory|41x3 depth 2 at 1000|1	bytes 72000 fnv BDB197D5
+CPUCls|kept|80x2 depth 3 at 1000|1	kept
+CPUCls|popped|80x2 depth 3 at 1000|1	$00000000
+CPUCls|memory|80x2 depth 3 at 1000|1	bytes 72000 fnv A3590CF6
+CPUCls|kept|6x7 depth 1 at 1000|1	kept
+CPUCls|popped|6x7 depth 1 at 1000|1	$00000000
+CPUCls|memory|6x7 depth 1 at 1000|1	bytes 72000 fnv B74BC3CA
+CPUCls|kept|21x3 depth 3 at 2001|1	kept
+CPUCls|popped|21x3 depth 3 at 2001|1	$00000000
+CPUCls|memory|21x3 depth 3 at 2001|1	bytes 72000 fnv CA0299BD
+CPUCls|kept|40x1 depth 2 at 2001|1	kept
+CPUCls|popped|40x1 depth 2 at 2001|1	$00000000
+CPUCls|memory|40x1 depth 2 at 2001|1	bytes 72000 fnv 152BE0D8
+CPUCls|kept|40x256 depth 1 at 1000|1	kept
+CPUCls|popped|40x256 depth 1 at 1000|1	$00000000
+CPUCls|memory|40x256 depth 1 at 1000|1	bytes 72000 fnv FA3A0499
+MergeBitplanes|kept|2+3 planes 5A000004 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000004 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000004 flags 1,1,0|1	bytes 192 fnv 6B0F1E51
+MergeBitplanes|kept|2+3 planes 5A000005 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000005 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000005 flags 1,1,0|1	bytes 192 fnv 5EEC76C2
+MergeBitplanes|kept|2+3 planes 5A000006 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000006 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000006 flags 1,1,0|1	bytes 192 fnv C648CDEB
+MergeBitplanes|kept|2+3 planes 5A000001 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000001 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000001 flags 1,1,0|1	bytes 192 fnv 32DD80BE
+MergeBitplanes|kept|2+3 planes 5A000002 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000002 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000002 flags 1,1,0|1	bytes 192 fnv E20689F7
+MergeBitplanes|kept|2+3 planes 5A000003 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000003 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000003 flags 1,1,0|1	bytes 192 fnv 08587FC8
+MergeBitplanes|kept|2+3 planes 5A000000 flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000000 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000000 flags 1,1,0|1	bytes 192 fnv D9EF676D
+MergeBitplanes|kept|3+0 planes 5A000003 flags 1,1,0|1	kept
+MergeBitplanes|popped|3+0 planes 5A000003 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|3+0 planes 5A000003 flags 1,1,0|1	bytes 192 fnv 6349B922
+MergeBitplanes|kept|0+4 planes 5A000002 flags 1,1,0|1	kept
+MergeBitplanes|popped|0+4 planes 5A000002 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|0+4 planes 5A000002 flags 1,1,0|1	bytes 192 fnv 06797668
+MergeBitplanes|kept|2+3 planes 5A000004 flags 0,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000004 flags 0,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000004 flags 0,1,0|1	bytes 192 fnv 99B5CB34
+MergeBitplanes|kept|2+3 planes 5A000004 flags 1,0,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A000004 flags 1,0,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000004 flags 1,0,0|1	bytes 192 fnv 7A088A28
+MergeBitplanes|kept|2+3 planes 5A000004 flags 1,1,1|1	kept
+MergeBitplanes|popped|2+3 planes 5A000004 flags 1,1,1|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A000004 flags 1,1,1|1	bytes 192 fnv C548CC58
+MergeBitplanes|kept|2+3 planes 5A00FFFE flags 1,1,0|1	kept
+MergeBitplanes|popped|2+3 planes 5A00FFFE flags 1,1,0|1	$00000000
+MergeBitplanes|objects|2+3 planes 5A00FFFE flags 1,1,0|1	bytes 192 fnv 12DAC744
+MergeBitplanes|kept|32767+32767 planes 5A000003 flags 1,1,0|1	kept
+MergeBitplanes|popped|32767+32767 planes 5A000003 flags 1,1,0|1	$00000000
+MergeBitplanes|objects|32767+32767 planes 5A000003 flags 1,1,0|1	bytes 192 fnv 7E3AC3E4
+SaveCMAP|kept|5 colours, |1	kept
+SaveCMAP|popped|5 colours, |1	$00000000
+SaveCMAP|d0|5 colours, |1	$FFFFFFFF
+SaveCMAP|file length|5 colours, |1	$0000003F
+SaveCMAP|file|5 colours, |1	bytes 1024 fnv 1D87FF36
+SaveCMAP|memory|5 colours, |1	bytes 72000 fnv A4FC8C4D
+SaveCMAP|kept|32 colours, |1	kept
+SaveCMAP|popped|32 colours, |1	$00000000
+SaveCMAP|d0|32 colours, |1	$FFFFFFFF
+SaveCMAP|file length|32 colours, |1	$00000090
+SaveCMAP|file|32 colours, |1	bytes 1024 fnv 2D6C322C
+SaveCMAP|memory|32 colours, |1	bytes 72000 fnv A4FC8C4D
+SaveCMAP|kept|32 colours, rwe-nodir|1	kept
+SaveCMAP|popped|32 colours, rwe-nodir|1	$00000000
+SaveCMAP|d0|32 colours, rwe-nodir|1	$00000000
+SaveCMAP|file length|32 colours, rwe-nodir|1	$FFFFFFFF
+SaveCMAP|file|32 colours, rwe-nodir|1	bytes 1024 fnv 1F116DC5
+SaveCMAP|memory|32 colours, rwe-nodir|1	bytes 72000 fnv A4FC8C4D
+SaveCMAP|kept|1 colours, |1	kept
+SaveCMAP|popped|1 colours, |1	$00000000
+SaveCMAP|d0|1 colours, |1	$FFFFFFFF
+SaveCMAP|file length|1 colours, |1	$00000033
+SaveCMAP|file|1 colours, |1	bytes 1024 fnv 26FF75D6
+SaveCMAP|memory|1 colours, |1	bytes 72000 fnv BB835C72
+SaveCMAP|kept|no data|1	kept
+SaveCMAP|popped|no data|1	$00000000
+SaveCMAP|d0|no data|1	$00000000
+SaveCMAP|no file|no data|1	$FFFFFFFF
