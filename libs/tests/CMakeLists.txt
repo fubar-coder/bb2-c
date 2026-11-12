@@ -85,10 +85,13 @@ target_link_libraries(libs_tests PRIVATE libs_capture snitch::snitch)
 # data (expected/NAME.txt) by results libs-compare.
 get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
-set(LIBS_TESTS_TIMEOUT 300 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
+# (the two block programs, systest_med and rwe_ridisasmlib, take about
+# 2.5 and 3 minutes of it: every one of their 6.6 million observations is
+# written and hashed)
+set(LIBS_TESTS_TIMEOUT 900 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 set(tapes ${CMAKE_CURRENT_SOURCE_DIR}/tapes)
 set(expected ${CMAKE_CURRENT_SOURCE_DIR}/expected)
-math(EXPR limit "600 + ${EMULATION_QUEUE_WAIT}")
+math(EXPR limit "${LIBS_TESTS_TIMEOUT} + 300 + ${EMULATION_QUEUE_WAIT}")
 foreach(mode replay record)
 	set(name libs_emulator)
 	set(labels emulator)
