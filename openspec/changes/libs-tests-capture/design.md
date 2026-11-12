@@ -323,6 +323,25 @@ a stated register, from a variant file with a broken thunk, gives `lost`
 and fails). No `..._originals_wrong` test: it would need the CD for logic
 the host test already covers.
 
+### D12. A fix changes only its own cases
+
+A fix that updates expected data can change more than the cases of its
+issue: a library routine shared by several commands, a changed register
+use, a shifted occurrence number. Such a side effect is a change of
+behaviour of its own and needs a review. Before the merge into `main` the
+changed cases are therefore checked against the issues the branch names
+(`Fixes #N`): only `[fixed #N]` cases of these issues and their paired
+`[orig]` cases may change. `tools/results fix-scope` (the judge library of
+D3) compares the expected data of `main` with the branch and lists every
+other added, changed or removed case by key; the CMake target `fix-scope`
+only exports the base files with git and calls it. The agent of a fix
+runs it and names the result in its report; the coordinator runs it again
+before the fast-forward. A reported case is not an error by itself: it is
+reviewed and named in the commit with its reason, or it gets its own issue
+and `[fixed #M]` case. The check works on the expected data of the shared
+model, so the follow-ups for bug-orig and the corpus get it without a
+second tool.
+
 ### D10. Placement
 
 `libs_emulator` (label `emulator`; `all`): `LIBSET=obj`, then
