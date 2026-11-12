@@ -19,7 +19,7 @@
  * found); GetCopIns$ (MOVE to several registers, WAIT/SKIP with odd
  * position digits, with and without BFD); the font printer FLocate,
  * FPrint, FNPrint, FInverse (word 1 and $100), FYOffset, the empty
- * string, the right edge and columns from 208 on (BUG(orig) (#707)), compared on
+ * string, the right edge and columns from 208 on (BUG(orig) (#707)), observed on
  * both planes; FPrintDetoke with marker types 0/1, several cio and
  * lineoffset values, tokens drawn into one or two planes, an unknown
  * token, no token list, no plane 1, the inverse word's high byte set
@@ -657,7 +657,7 @@ static void findlinetoken(void)
         strcpy((char *)p, l[i]);
         sprintf(VEC, "%u", i);
         DO1(ENT(LIB, E_FINDLINETOKEN, 0), R.d[0] = (ULONG)p);
-        /* a word result: the high word is p's (its address moves, tape.h) */
+        /* a word result: the high word is p's (its address moves with the layout) */
         OBS("d0", (R.d[0] ^ (ULONG)p) >> 16 ? R.d[0]
                    : 0x50000000UL | (R.d[0] & 0xffff));
     }

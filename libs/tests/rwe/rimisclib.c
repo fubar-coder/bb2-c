@@ -238,7 +238,7 @@ static void buildstk(const ULONG *lens, int nlens, const struct arg *a, int n)
 
 static UBYTE body[120];
 
-/* body text in a buffer of each set: the library changes '|' in it */
+/* body text in a buffer: the library changes '|' in it */
 #define BODY(s) (strcpy((char *)body, s), (ULONG)body)
 
 static void ezsetup(void)

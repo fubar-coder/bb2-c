@@ -108,7 +108,7 @@ static ULONG __attribute__((used)) st_globalloc_c(ULONG size, ULONG flags)
         return 0;
     p = base + top;
     *(ULONG *)p = size;
-    for (i = 4; i < size + 8; i++)      /* garbage, the same in both sets */
+    for (i = 4; i < size + 8; i++)      /* garbage, a fixed pattern */
         p[i] = (UBYTE)(0x80 | ((top + i) * 13));
     n = (size + 8 + 7) & ~7UL;
     top += n;
@@ -201,7 +201,7 @@ static void same_state(void)
     OBSBYTES("variables", base + VAROFF, VARSZ);
 }
 
-/* a call with d0 = list# (and d1 = a variable), compared */
+/* a call with d0 = list# (and d1 = a variable), observed */
 static void call(const char *rout, int idx, ULONG list, int v, int failn)
 {
     ROUT = rout;

@@ -50,7 +50,7 @@ static void setin(const char *s, ULONG n)
     memcpy(in, s, n);
 }
 
-/* an address in the set's target as an offset, else the value */
+/* an address in the target as an offset, else the value */
 static ULONG addr(ULONG a)
 {
     ULONG t = (ULONG)target;

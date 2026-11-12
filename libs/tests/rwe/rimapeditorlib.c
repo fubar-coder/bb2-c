@@ -167,7 +167,7 @@ static void create(int n, UWORD w, UWORD h, UWORD bw, UWORD bh, const char *name
     samemaps();
 }
 
-/* an inline routine of map n: its code as a subroutine, d0 compared
+/* an inline routine of map n: its code as a subroutine, d0 observed
    (`rel` 1: relative to the map's data, 2: to the maps) */
 static void inl(int e, int form, const char *name, int n, ULONG d0, ULONG d1, int rel)
 {
