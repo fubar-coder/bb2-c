@@ -1,0 +1,416 @@
+# capture rwe_ripacklib 1
+init|kept||1	kept
+init|popped||1	$00000000
+ChunkHeader|kept|0|1	kept
+ChunkHeader|popped|0|1	$00000000
+ChunkHeader|d0|0|1	$464F524D
+ChunkHeader|kept|1|1	kept
+ChunkHeader|popped|1|1	$00000000
+ChunkHeader|d0|1|1	$494C424D
+ChunkHeader|kept|2|1	kept
+ChunkHeader|popped|2|1	$00000000
+ChunkHeader|d0|2|1	$61620000
+ChunkHeader|kept|3|1	kept
+ChunkHeader|popped|3|1	$00000000
+ChunkHeader|d0|3|1	$FF800102
+PackPBM|kept|mixed 0 bytes|1	kept
+PackPBM|popped|mixed 0 bytes|1	$00000000
+PackPBM|d0|mixed 0 bytes|1	$00000000
+PackPBM|dest|mixed 0 bytes|1	bytes 8256 fnv BB8BDEC5
+UnPackPBM|kept|mixed 0 -> 4|1	kept
+UnPackPBM|popped|mixed 0 -> 4|1	$00000000
+UnPackPBM|dest|mixed 0 -> 4|1	bytes 8256 fnv C18F6885
+UnPackPBM|round trip|mixed 0 -> 4|1	$00000001
+PackPBM|kept|mixed 1 bytes|1	kept
+PackPBM|popped|mixed 1 bytes|1	$00000000
+PackPBM|d0|mixed 1 bytes|1	$FFFFFFFF
+PackPBM|dest|mixed 1 bytes|1	bytes 8256 fnv A7B3D82B
+PackPBM|round trip|mixed 1 bytes|1	$00000001
+PackPBM|kept|mixed 2 bytes|1	kept
+PackPBM|popped|mixed 2 bytes|1	$00000000
+PackPBM|d0|mixed 2 bytes|1	$FFFFFFFF
+PackPBM|dest|mixed 2 bytes|1	bytes 8256 fnv D44F6CE8
+PackPBM|round trip|mixed 2 bytes|1	$00000001
+PackPBM|kept|mixed 3 bytes|1	kept
+PackPBM|popped|mixed 3 bytes|1	$00000000
+PackPBM|d0|mixed 3 bytes|1	$00000002
+PackPBM|dest|mixed 3 bytes|1	bytes 8256 fnv 5C8DCA5F
+UnPackPBM|kept|mixed 2 -> 7|1	kept
+UnPackPBM|popped|mixed 2 -> 7|1	$00000000
+UnPackPBM|dest|mixed 2 -> 7|1	bytes 8256 fnv 1422EF2E
+UnPackPBM|round trip|mixed 2 -> 7|1	$00000001
+PackPBM|kept|mixed 5 bytes|1	kept
+PackPBM|popped|mixed 5 bytes|1	$00000000
+PackPBM|d0|mixed 5 bytes|1	$FFFFFFFF
+PackPBM|dest|mixed 5 bytes|1	bytes 8256 fnv 3D088ECD
+PackPBM|round trip|mixed 5 bytes|1	$00000001
+PackPBM|kept|mixed 127 bytes|1	kept
+PackPBM|popped|mixed 127 bytes|1	$00000000
+PackPBM|d0|mixed 127 bytes|1	$0000003C
+PackPBM|dest|mixed 127 bytes|1	bytes 8256 fnv B7184F82
+UnPackPBM|kept|mixed 60 -> 131|1	kept
+UnPackPBM|popped|mixed 60 -> 131|1	$00000000
+UnPackPBM|dest|mixed 60 -> 131|1	bytes 8256 fnv CE2B2EF5
+UnPackPBM|round trip|mixed 60 -> 131|1	$00000001
+PackPBM|kept|mixed 128 bytes|1	kept
+PackPBM|popped|mixed 128 bytes|1	$00000000
+PackPBM|d0|mixed 128 bytes|1	$0000006D
+PackPBM|dest|mixed 128 bytes|1	bytes 8256 fnv 1B7AB01C
+UnPackPBM|kept|mixed 109 -> 132|1	kept
+UnPackPBM|popped|mixed 109 -> 132|1	$00000000
+UnPackPBM|dest|mixed 109 -> 132|1	bytes 8256 fnv 923EBC03
+UnPackPBM|round trip|mixed 109 -> 132|1	$00000001
+PackPBM|kept|mixed 129 bytes|1	kept
+PackPBM|popped|mixed 129 bytes|1	$00000000
+PackPBM|d0|mixed 129 bytes|1	$FFFFFFFF
+PackPBM|dest|mixed 129 bytes|1	bytes 8256 fnv 3035373B
+PackPBM|round trip|mixed 129 bytes|1	$00000001
+PackPBM|kept|mixed 200 bytes|1	kept
+PackPBM|popped|mixed 200 bytes|1	$00000000
+PackPBM|d0|mixed 200 bytes|1	$000000B6
+PackPBM|dest|mixed 200 bytes|1	bytes 8256 fnv 297BC3EB
+UnPackPBM|kept|mixed 182 -> 204|1	kept
+UnPackPBM|popped|mixed 182 -> 204|1	$00000000
+UnPackPBM|dest|mixed 182 -> 204|1	bytes 8256 fnv 7DCBDA9E
+UnPackPBM|round trip|mixed 182 -> 204|1	$00000001
+PackPBM|kept|mixed 1000 bytes|1	kept
+PackPBM|popped|mixed 1000 bytes|1	$00000000
+PackPBM|d0|mixed 1000 bytes|1	$000002A4
+PackPBM|dest|mixed 1000 bytes|1	bytes 8256 fnv 4A07DBE4
+UnPackPBM|kept|mixed 676 -> 1004|1	kept
+UnPackPBM|popped|mixed 676 -> 1004|1	$00000000
+UnPackPBM|dest|mixed 676 -> 1004|1	bytes 8256 fnv 7569FDE4
+UnPackPBM|round trip|mixed 676 -> 1004|1	$00000001
+PackPBM|kept|mixed 4000 bytes|1	kept
+PackPBM|popped|mixed 4000 bytes|1	$00000000
+PackPBM|d0|mixed 4000 bytes|1	$00000B1C
+PackPBM|dest|mixed 4000 bytes|1	bytes 8256 fnv B523E864
+UnPackPBM|kept|mixed 2844 -> 4004|1	kept
+UnPackPBM|popped|mixed 2844 -> 4004|1	$00000000
+UnPackPBM|dest|mixed 2844 -> 4004|1	bytes 8256 fnv 7AB77F17
+UnPackPBM|round trip|mixed 2844 -> 4004|1	$00000001
+PackPBM|kept|one run 120 bytes|1	kept
+PackPBM|popped|one run 120 bytes|1	$00000000
+PackPBM|d0|one run 120 bytes|1	$00000002
+PackPBM|dest|one run 120 bytes|1	bytes 8256 fnv 6BD73F08
+UnPackPBM|kept|one run 2 -> 120|1	kept
+UnPackPBM|popped|one run 2 -> 120|1	$00000000
+UnPackPBM|dest|one run 2 -> 120|1	bytes 8256 fnv D117AC6D
+PackPBM|kept|one run 124 bytes|1	kept
+PackPBM|popped|one run 124 bytes|1	$00000000
+PackPBM|d0|one run 124 bytes|1	$00000002
+PackPBM|dest|one run 124 bytes|1	bytes 8256 fnv B83DAE5C
+UnPackPBM|kept|one run 2 -> 124|1	kept
+UnPackPBM|popped|one run 2 -> 124|1	$00000000
+UnPackPBM|dest|one run 2 -> 124|1	bytes 8256 fnv 1C4B74C1
+PackPBM|kept|one run 128 bytes|1	kept
+PackPBM|popped|one run 128 bytes|1	$00000000
+PackPBM|d0|one run 128 bytes|1	$00000002
+PackPBM|dest|one run 128 bytes|1	bytes 8256 fnv BA736030
+UnPackPBM|kept|one run 2 -> 128|1	kept
+UnPackPBM|popped|one run 2 -> 128|1	$00000000
+UnPackPBM|dest|one run 2 -> 128|1	bytes 8256 fnv 2BEE3805
+PackPBM|kept|one run 132 bytes|1	kept
+PackPBM|popped|one run 132 bytes|1	$00000000
+PackPBM|d0|one run 132 bytes|1	$00000004
+PackPBM|dest|one run 132 bytes|1	bytes 8256 fnv 5C6F9BE1
+UnPackPBM|kept|one run 4 -> 132|1	kept
+UnPackPBM|popped|one run 4 -> 132|1	$00000000
+UnPackPBM|dest|one run 4 -> 132|1	bytes 8256 fnv 1090E479
+PackPBM|kept|one run 136 bytes|1	kept
+PackPBM|popped|one run 136 bytes|1	$00000000
+PackPBM|d0|one run 136 bytes|1	$00000004
+PackPBM|dest|one run 136 bytes|1	bytes 8256 fnv 3F3D5635
+UnPackPBM|kept|one run 4 -> 136|1	kept
+UnPackPBM|popped|one run 4 -> 136|1	$00000000
+UnPackPBM|dest|one run 4 -> 136|1	bytes 8256 fnv 2B7E417D
+PackPBM|kept|one run 140 bytes|1	kept
+PackPBM|popped|one run 140 bytes|1	$00000000
+PackPBM|d0|one run 140 bytes|1	$00000004
+PackPBM|dest|one run 140 bytes|1	bytes 8256 fnv 984382D9
+UnPackPBM|kept|one run 4 -> 140|1	kept
+UnPackPBM|popped|one run 4 -> 140|1	$00000000
+UnPackPBM|dest|one run 4 -> 140|1	bytes 8256 fnv 21B83A11
+PackPBM|kept|short runs 15 bytes|1	kept
+PackPBM|popped|short runs 15 bytes|1	$00000000
+PackPBM|d0|short runs 15 bytes|1	$FFFFFFFF
+PackPBM|dest|short runs 15 bytes|1	bytes 8256 fnv 0F2594DB
+PackPBM|kept|129 literals, 131 equal 300 bytes|1	kept
+PackPBM|popped|129 literals, 131 equal 300 bytes|1	$00000000
+PackPBM|d0|129 literals, 131 equal 300 bytes|1	$000000B1
+PackPBM|dest|129 literals, 131 equal 300 bytes|1	bytes 8256 fnv CBA28D14
+UnPackPBM|kept|129 literals, 131 equal 177 -> 300|1	kept
+UnPackPBM|popped|129 literals, 131 equal 177 -> 300|1	$00000000
+UnPackPBM|dest|129 literals, 131 equal 177 -> 300|1	bytes 8256 fnv 877FBF23
+PackPBM|kept|noise (fails), d3 0 600 bytes|1	kept
+PackPBM|popped|noise (fails), d3 0 600 bytes|1	$00000000
+PackPBM|d0|noise (fails), d3 0 600 bytes|1	$FFFFFFFF
+PackPBM|dest|noise (fails), d3 0 600 bytes|1	bytes 8256 fnv 45FF741E
+PackPBM|d0 = -1|noise (fails), d3 0 600 bytes|1	$00000001
+PackPBM|kept|noise (fails), d3 4 600 bytes|1	kept
+PackPBM|popped|noise (fails), d3 4 600 bytes|1	$00000000
+PackPBM|d0|noise (fails), d3 4 600 bytes|1	$FFFFFFFF
+PackPBM|dest|noise (fails), d3 4 600 bytes|1	bytes 8256 fnv 9B2D2925
+PackPBM|kept|noise (fails), d3 -8 600 bytes|1	kept
+PackPBM|popped|noise (fails), d3 -8 600 bytes|1	$00000000
+PackPBM|d0|noise (fails), d3 -8 600 bytes|1	$FFFFFFFF
+PackPBM|dest|noise (fails), d3 -8 600 bytes|1	bytes 8256 fnv 45FF741E
+PackPBM|kept|2 different (fails) 2 bytes|1	kept
+PackPBM|popped|2 different (fails) 2 bytes|1	$00000000
+PackPBM|d0|2 different (fails) 2 bytes|1	$FFFFFFFF
+PackPBM|dest|2 different (fails) 2 bytes|1	bytes 8256 fnv DBC3AC1E
+UnPackPBM|kept|crafted 20 -> 200|1	kept
+UnPackPBM|popped|crafted 20 -> 200|1	$00000000
+UnPackPBM|dest|crafted 20 -> 200|1	bytes 8256 fnv 268CF255
+UnPackPBM|kept|crafted, dest 3 20 -> 3|1	kept
+UnPackPBM|popped|crafted, dest 3 20 -> 3|1	$00000000
+UnPackPBM|dest|crafted, dest 3 20 -> 3|1	bytes 8256 fnv C948F83F
+UnPackPBM|kept|crafted, dest 0 20 -> 0|1	kept
+UnPackPBM|popped|crafted, dest 0 20 -> 0|1	$00000000
+UnPackPBM|dest|crafted, dest 0 20 -> 0|1	bytes 8256 fnv 909A7E31
+UnPackPBM|kept|crafted, source 5 5 -> 200|1	kept
+UnPackPBM|popped|crafted, source 5 5 -> 200|1	$00000000
+UnPackPBM|dest|crafted, source 5 5 -> 200|1	bytes 8256 fnv 8EE69D1E
+UnPackPBM|kept|crafted, source 0 0 -> 200|1	kept
+UnPackPBM|popped|crafted, source 0 0 -> 200|1	$00000000
+UnPackPBM|dest|crafted, source 0 0 -> 200|1	bytes 8256 fnv C18F6885
+DeIce|kept|noise 1000 -> 1023 bytes|1	kept
+DeIce|popped|noise 1000 -> 1023 bytes|1	$00000000
+DeIce|d0|noise 1000 -> 1023 bytes|1	$FFFFFFFF
+DeIce|dest|noise 1000 -> 1023 bytes|1	bytes 8256 fnv 20556D3A
+DeIce|kept|mixed 1000 -> 515 bytes|1	kept
+DeIce|popped|mixed 1000 -> 515 bytes|1	$00000000
+DeIce|d0|mixed 1000 -> 515 bytes|1	$FFFFFFFF
+DeIce|dest|mixed 1000 -> 515 bytes|1	bytes 8256 fnv 18504548
+DeIce|kept|long repeats 1000 -> 898 bytes|1	kept
+DeIce|popped|long repeats 1000 -> 898 bytes|1	$00000000
+DeIce|d0|long repeats 1000 -> 898 bytes|1	$FFFFFFFF
+DeIce|dest|long repeats 1000 -> 898 bytes|1	bytes 8256 fnv B7BCEF5A
+DeIce|kept|noise 1000 -> 1024 bytes|1	kept
+DeIce|popped|noise 1000 -> 1024 bytes|1	$00000000
+DeIce|d0|noise 1000 -> 1024 bytes|1	$FFFFFFFF
+DeIce|dest|noise 1000 -> 1024 bytes|1	bytes 8256 fnv F2194BB9
+DeIce|kept|mixed 1000 -> 441 bytes|1	kept
+DeIce|popped|mixed 1000 -> 441 bytes|1	$00000000
+DeIce|d0|mixed 1000 -> 441 bytes|1	$FFFFFFFF
+DeIce|dest|mixed 1000 -> 441 bytes|1	bytes 8256 fnv 94FC3588
+DeIce|kept|long repeats 1000 -> 477 bytes|1	kept
+DeIce|popped|long repeats 1000 -> 477 bytes|1	$00000000
+DeIce|d0|long repeats 1000 -> 477 bytes|1	$FFFFFFFF
+DeIce|dest|long repeats 1000 -> 477 bytes|1	bytes 8256 fnv EEAA62F0
+DeIce|kept|far repeats 2600 -> 2140 bytes|1	kept
+DeIce|popped|far repeats 2600 -> 2140 bytes|1	$00000000
+DeIce|d0|far repeats 2600 -> 2140 bytes|1	$FFFFFFFF
+DeIce|dest|far repeats 2600 -> 2140 bytes|1	bytes 8256 fnv 91218A9A
+DeIce|kept|literals 700 -> 717 bytes|1	kept
+DeIce|popped|literals 700 -> 717 bytes|1	$00000000
+DeIce|d0|literals 700 -> 717 bytes|1	$FFFFFFFF
+DeIce|dest|literals 700 -> 717 bytes|1	bytes 8256 fnv C5C840E0
+DeIce|kept|one long run 1200 -> 21 bytes|1	kept
+DeIce|popped|one long run 1200 -> 21 bytes|1	$00000000
+DeIce|d0|one long run 1200 -> 21 bytes|1	$FFFFFFFF
+DeIce|dest|one long run 1200 -> 21 bytes|1	bytes 8256 fnv 2ED6C6B6
+DeIce|kept|one byte 1 -> 14 bytes|1	kept
+DeIce|popped|one byte 1 -> 14 bytes|1	$00000000
+DeIce|d0|one byte 1 -> 14 bytes|1	$FFFFFFFF
+DeIce|dest|one byte 1 -> 14 bytes|1	bytes 8256 fnv 6AB4CB69
+DeIce|kept|two bytes 2 -> 15 bytes|1	kept
+DeIce|popped|two bytes 2 -> 15 bytes|1	$00000000
+DeIce|d0|two bytes 2 -> 15 bytes|1	$FFFFFFFF
+DeIce|dest|two bytes 2 -> 15 bytes|1	bytes 8256 fnv 81EDACFF
+DeIce|kept|no ICE|1	kept
+DeIce|popped|no ICE|1	$00000000
+DeIce|d0|no ICE|1	$00000000
+DeIce|kept|picture 511 bytes|1	kept
+DeIce|popped|picture 511 bytes|1	$00000000
+DeIce|d0|picture 511 bytes|1	$FFFFFFFF
+DeIce|dest|picture 511 bytes|1	bytes 136268 fnv 1386ECE0
+UnpackIFF|kept|64x10x3 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 form 0 lines $0 xy 0|1	bytes 24064 fnv 43718581
+UnpackIFF|kept|64x10x3 form 1 lines $5A000004 xy 2|1	kept
+UnpackIFF|popped|64x10x3 form 1 lines $5A000004 xy 2|1	$00000000
+UnpackIFF|d0|64x10x3 form 1 lines $5A000004 xy 2|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 form 1 lines $5A000004 xy 2|1	bytes 24064 fnv BCBD1B4B
+UnpackIFF|kept|64x10x3 form 1 lines $5A00FFFF xy 0|1	kept
+UnpackIFF|popped|64x10x3 form 1 lines $5A00FFFF xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 form 1 lines $5A00FFFF xy 0|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 form 1 lines $5A00FFFF xy 0|1	bytes 24064 fnv 43718581
+UnpackIFF|kept|64x10x3 more lines form 1 lines $64 xy 1|1	kept
+UnpackIFF|popped|64x10x3 more lines form 1 lines $64 xy 1|1	$00000000
+UnpackIFF|d0|64x10x3 more lines form 1 lines $64 xy 1|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 more lines form 1 lines $64 xy 1|1	bytes 24064 fnv C1AEFC61
+UnpackIFF|kept|64x10x3 6 rows form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 6 rows form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 6 rows form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 6 rows form 0 lines $0 xy 0|1	bytes 24064 fnv A799794B
+UnpackIFF|kept|64x10x3 form 1 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 form 1 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 form 1 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|64x10x3 form 1 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|64x10x3 depth 2 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 depth 2 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 depth 2 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|64x10x3 depth 2 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|64x10x3 bpr 7 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 bpr 7 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 bpr 7 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|64x10x3 bpr 7 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|64x10x3 no plane 0 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 no plane 0 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 no plane 0 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|64x10x3 no plane 0 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|64x10x3 bpr 8 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|64x10x3 bpr 8 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|64x10x3 bpr 8 form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|64x10x3 bpr 8 form 0 lines $0 xy 0|1	bytes 24064 fnv 400BA479
+UnpackIFF|kept|40x5x2 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|40x5x2 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|40x5x2 form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|40x5x2 form 0 lines $0 xy 0|1	bytes 24064 fnv 7D1606BA
+UnpackIFF|kept|1040x2x1 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|1040x2x1 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|1040x2x1 form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|1040x2x1 form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|1016x2x1 form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|1016x2x1 form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|1016x2x1 form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|1016x2x1 form 0 lines $0 xy 0|1	bytes 24064 fnv 1AEEF8FA
+UnpackIFF|kept|16x2 run past the row form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|16x2 run past the row form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|16x2 run past the row form 0 lines $0 xy 0|1	$FFFFFFFF
+UnpackIFF|planes|16x2 run past the row form 0 lines $0 xy 0|1	bytes 24064 fnv A4BE46F8
+UnpackIFF|kept|no BMHD form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|no BMHD form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|no BMHD form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|no BMHD form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+UnpackIFF|kept|no BODY form 0 lines $0 xy 0|1	kept
+UnpackIFF|popped|no BODY form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|d0|no BODY form 0 lines $0 xy 0|1	$00000000
+UnpackIFF|planes|no BODY form 0 lines $0 xy 0|1	bytes 24064 fnv 17CC15C5
+ILBMPalette|kept|8 colours, empty palette form 0 offset 0|1	kept
+ILBMPalette|popped|8 colours, empty palette form 0 offset 0|1	$00000000
+ILBMPalette|d0|8 colours, empty palette form 0 offset 0|1	$FFFFFFFF
+ILBMPalette|numcols|8 colours, empty palette form 0 offset 0|1	$00000008
+ILBMPalette|+6|8 colours, empty palette form 0 offset 0|1	$00000000
+ILBMPalette|block|8 colours, empty palette form 0 offset 0|1	$00000001
+ILBMPalette|colours|8 colours, empty palette form 0 offset 0|1	bytes 100 fnv 66410A15
+ILBMPalette|kept|4 colours form 1 offset 2|1	kept
+ILBMPalette|popped|4 colours form 1 offset 2|1	$00000000
+ILBMPalette|d0|4 colours form 1 offset 2|1	$FFFFFFFF
+ILBMPalette|numcols|4 colours form 1 offset 2|1	$00000008
+ILBMPalette|+6|4 colours form 1 offset 2|1	$00000000
+ILBMPalette|block|4 colours form 1 offset 2|1	$00000001
+ILBMPalette|colours|4 colours form 1 offset 2|1	bytes 100 fnv A058BD55
+ILBMPalette|kept|4 colours form 1 offset 0|1	kept
+ILBMPalette|popped|4 colours form 1 offset 0|1	$00000000
+ILBMPalette|d0|4 colours form 1 offset 0|1	$FFFFFFFF
+ILBMPalette|numcols|4 colours form 1 offset 0|1	$00000008
+ILBMPalette|+6|4 colours form 1 offset 0|1	$00000000
+ILBMPalette|block|4 colours form 1 offset 0|1	$00000001
+ILBMPalette|colours|4 colours form 1 offset 0|1	bytes 100 fnv 3F2939B9
+ILBMPalette|kept|4 colours form 1 offset 4|1	kept
+ILBMPalette|popped|4 colours form 1 offset 4|1	$00000000
+ILBMPalette|d0|4 colours form 1 offset 4|1	$FFFFFFFF
+ILBMPalette|numcols|4 colours form 1 offset 4|1	$00000008
+ILBMPalette|+6|4 colours form 1 offset 4|1	$00000000
+ILBMPalette|block|4 colours form 1 offset 4|1	$00000001
+ILBMPalette|colours|4 colours form 1 offset 4|1	bytes 100 fnv C8F1103D
+ILBMPalette|kept|4 colours form 1 offset 6|1	kept
+ILBMPalette|popped|4 colours form 1 offset 6|1	$00000000
+ILBMPalette|d0|4 colours form 1 offset 6|1	$FFFFFFFF
+ILBMPalette|numcols|4 colours form 1 offset 6|1	$00000004
+ILBMPalette|+6|4 colours form 1 offset 6|1	$00000000
+ILBMPalette|block|4 colours form 1 offset 6|1	$00000001
+ILBMPalette|colours|4 colours form 1 offset 6|1	bytes 52 00040000050000002A0000004F0000007400000099000000BE000000E3000000080000002D00000052000000770000009C000000
+ILBMPalette|kept|4 colours form 0 offset 0|1	kept
+ILBMPalette|popped|4 colours form 0 offset 0|1	$00000000
+ILBMPalette|d0|4 colours form 0 offset 0|1	$FFFFFFFF
+ILBMPalette|numcols|4 colours form 0 offset 0|1	$00000004
+ILBMPalette|+6|4 colours form 0 offset 0|1	$00000000
+ILBMPalette|block|4 colours form 0 offset 0|1	$00000001
+ILBMPalette|colours|4 colours form 0 offset 0|1	bytes 52 00040000050000002A0000004F0000007400000099000000BE000000E3000000080000002D00000052000000770000009C000000
+ILBMPalette|kept|2 colours form 1 offset 1|1	kept
+ILBMPalette|popped|2 colours form 1 offset 1|1	$00000000
+ILBMPalette|d0|2 colours form 1 offset 1|1	$FFFFFFFF
+ILBMPalette|numcols|2 colours form 1 offset 1|1	$00000004
+ILBMPalette|+6|2 colours form 1 offset 1|1	$00000000
+ILBMPalette|block|2 colours form 1 offset 1|1	$00000001
+ILBMPalette|colours|2 colours form 1 offset 1|1	bytes 52 00040000050000002A0000004F000000050000002A0000004F0000007400000099000000BE00000052000000770000009C000000
+ILBMPalette|kept|CMAP 10 bytes form 0 offset 0|1	kept
+ILBMPalette|popped|CMAP 10 bytes form 0 offset 0|1	$00000000
+ILBMPalette|d0|CMAP 10 bytes form 0 offset 0|1	$FFFFFFFF
+ILBMPalette|numcols|CMAP 10 bytes form 0 offset 0|1	$00000003
+ILBMPalette|+6|CMAP 10 bytes form 0 offset 0|1	$00000000
+ILBMPalette|block|CMAP 10 bytes form 0 offset 0|1	$00000001
+ILBMPalette|colours|CMAP 10 bytes form 0 offset 0|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|kept|no CMAP form 0 offset 0|1	kept
+ILBMPalette|popped|no CMAP form 0 offset 0|1	$00000000
+ILBMPalette|d0|no CMAP form 0 offset 0|1	$00000000
+ILBMPalette|numcols|no CMAP form 0 offset 0|1	$00000003
+ILBMPalette|+6|no CMAP form 0 offset 0|1	$00000000
+ILBMPalette|block|no CMAP form 0 offset 0|1	$00000001
+ILBMPalette|colours|no CMAP form 0 offset 0|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMPalette|kept|no CMAP form 1 offset 3|1	kept
+ILBMPalette|popped|no CMAP form 1 offset 3|1	$00000000
+ILBMPalette|d0|no CMAP form 1 offset 3|1	$00000000
+ILBMPalette|numcols|no CMAP form 1 offset 3|1	$00000003
+ILBMPalette|+6|no CMAP form 1 offset 3|1	$00000000
+ILBMPalette|block|no CMAP form 1 offset 3|1	$00000001
+ILBMPalette|colours|no CMAP form 1 offset 3|1	bytes 40 00030000050000002A0000004F0000007400000099000000BE000000420000004F00000044000000
+ILBMGrab|kept|48x6x2|1	kept
+ILBMGrab|popped|48x6x2|1	$00000000
+ILBMGrab|planes|48x6x2|1	bytes 24064 fnv A32EF52E
+ILBMGrab|numcols|48x6x2|1	$00000004
+ILBMGrab|+6|48x6x2|1	$00000000
+ILBMGrab|block|48x6x2|1	$00000001
+ILBMGrab|colours|48x6x2|1	bytes 52 00040000050000002A0000004F0000007400000099000000BE000000E3000000080000002D00000052000000770000009C000000
+LoadIFF|kept|RAM:rwe-pack.iff form 1, 50 banks|1	kept
+LoadIFF|popped|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|planes|RAM:rwe-pack.iff form 1, 50 banks|1	bytes 24064 fnv 17CC15C5
+LoadIFF|numcols|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|+6|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|bank 51 length|RAM:rwe-pack.iff form 1, 50 banks|1	$00000000
+LoadIFF|NextBank(51)|RAM:rwe-pack.iff form 1, 50 banks|1	$FFFFFFFF
+LoadIFF|kept|RAM:rwe-pack.iff form 0|1	kept
+LoadIFF|popped|RAM:rwe-pack.iff form 0|1	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 0|1	$FFFFFFFF
+LoadIFF|planes|RAM:rwe-pack.iff form 0|1	bytes 24064 fnv 7E27789A
+LoadIFF|numcols|RAM:rwe-pack.iff form 0|1	$00000000
+LoadIFF|+6|RAM:rwe-pack.iff form 0|1	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 0|1	$00000000
+LoadIFF|bank 51 length|RAM:rwe-pack.iff form 0|1	$00000000
+LoadIFF|NextBank(51)|RAM:rwe-pack.iff form 0|1	$00000033
+LoadIFF|kept|RAM:rwe-pack.iff form 1|1	kept
+LoadIFF|popped|RAM:rwe-pack.iff form 1|1	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 1|1	$FFFFFFFF
+LoadIFF|planes|RAM:rwe-pack.iff form 1|1	bytes 24064 fnv 7E27789A
+LoadIFF|numcols|RAM:rwe-pack.iff form 1|1	$00000008
+LoadIFF|+6|RAM:rwe-pack.iff form 1|1	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 1|1	$00000001
+LoadIFF|colours|RAM:rwe-pack.iff form 1|1	bytes 100 fnv 66410A15
+LoadIFF|bank 51 length|RAM:rwe-pack.iff form 1|1	$00000000
+LoadIFF|NextBank(51)|RAM:rwe-pack.iff form 1|1	$00000033
+LoadIFF|kept|RAM:rwe-pack.bad form 1|1	kept
+LoadIFF|popped|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|d0|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|planes|RAM:rwe-pack.bad form 1|1	bytes 24064 fnv 17CC15C5
+LoadIFF|numcols|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|+6|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|block|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|bank 51 length|RAM:rwe-pack.bad form 1|1	$00000000
+LoadIFF|NextBank(51)|RAM:rwe-pack.bad form 1|1	$00000033
+LoadIFF|kept|RAM:rwe-pack.iff form 0|2	kept
+LoadIFF|popped|RAM:rwe-pack.iff form 0|2	$00000000
+LoadIFF|d0|RAM:rwe-pack.iff form 0|2	$FFFFFFFF
+LoadIFF|planes|RAM:rwe-pack.iff form 0|2	bytes 24064 fnv 17CC15C5
+LoadIFF|numcols|RAM:rwe-pack.iff form 0|2	$00000000
+LoadIFF|+6|RAM:rwe-pack.iff form 0|2	$00000000
+LoadIFF|block|RAM:rwe-pack.iff form 0|2	$00000000
+LoadIFF|bank 51 length|RAM:rwe-pack.iff form 0|2	$00000000
+LoadIFF|NextBank(51)|RAM:rwe-pack.iff form 0|2	$00000033
+finit|kept|RAM:rwe-pack.iff form 0|1	kept
+finit|popped|RAM:rwe-pack.iff form 0|1	$00000000

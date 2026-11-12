@@ -1,19 +1,21 @@
 /*
  * rwe ritooltypeslib - the C build of the RWE userlib ritooltypeslib
- * (libs/userlibs/rwe/ritooltypeslib.c) against the CD binary BSS2
- * RITOOLTYPESLIB.OBJ (ritooltypeslib.orig).
+ * (libs/userlibs/rwe/ritooltypeslib.c) or the CD binary BSS2
+ * RITOOLTYPESLIB.OBJ (ritooltypeslib.orig), one set as LIBSET says,
+ * observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ritooltypeslib.txt).
  *
  *   ritooltypeslib DIR     (DIR: ritooltypeslib.obj, .orig and the
  *                           acidlibs below as .obj/.orig)
  *
  * The test writes an icon RAM:rwett.info (icon.library's default tool
- * icon with its own tool types) and lets both sets work on it with the
- * same inputs (other registers = markers).  Each set has its own memlib
- * and shapeslib (MakeCookie, ALibJsr from IconToShape; with the
- * libraries these need), its own string area (a3) and argument stack
- * (a2), its own shapes and output files (RAM:rwett_o / _c).  Compared:
- * d0, a3 and the string area of the string functions, every register the
- * original keeps, the open icon (tool type array, default tool, type,
+ * icon with its own tool types) and lets the set work on it (other
+ * registers = markers).  The set has its own memlib and shapeslib
+ * (MakeCookie, ALibJsr from IconToShape; with the libraries these need);
+ * the test has the string area (a3), the argument stack (a2), the shapes
+ * and the output files (RAM:rwett1, RAM:rwett2).  Observed: d0, a3 and
+ * the string area of the string functions, the kept registers, the open
+ * icon (tool type array, default tool, type,
  * gadget size and flags, images), the shapes made by IconToShape (fields,
  * data, cookie) and the icons written by PutIconObject (read back with
  * GetDiskObject).
@@ -36,6 +38,7 @@
  * width that is a multiple of 16 (writes behind the shape's data,
  * BUG(orig), #847) or into a shape when the icon has no image.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #define __NOLIBBASE__
 #define ICON_BASE_NAME TTIconBase
@@ -54,49 +57,14 @@ enum { GETICON, FINDTOOLVALUE, SETTOOLVALUE, PUTICON, FREEICON, MATCHTOOLVALUE, 
        FINDTOOLNUMBER, CLEARTOOLTYPES, SETICONHIT, SHAPETOICON, SETICONTYPE, ICONRENDER,
        ICONDEFTOOL, FINDTOOLTYPE, ICONTOSHAPE, FINIT, INIT };
 
-static int cur;
-static struct regs R[2], IN[2];
-static const char *ROUT;
-static char VEC[100];
-static int prints;
+/* the registers of the call (R after it, IN before it); ROUT and VEC
+   (the key of the cases) are sysload.h's */
+static struct regs R, IN;
 
-static void fail(const char *what, ULONG o, ULONG c)
-{
-    char buf[200];
-    if (prints++ < 80)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
-}
-
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* a comparison of the data of both sets (once, not per set) */
-#define BOTH(what, cond) do {                                               \
-        if (!(cond)) fail(what, 0, 1); else checks++;                       \
-    } while (0)
-
-static void preserve(void)
-{
-    struct call c[2];
-    char buf[140];
-    int s;
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-    }
-    sprintf(buf, "%s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-}
 
 static struct lib *thelib(void)
 {
-    return getlib(&sets[cur], names[0]);
+    return getlib(&loaded, names[0]);
 }
 
 static APTR ent(int idx, int form)
@@ -107,7 +75,7 @@ static APTR ent(int idx, int form)
 /* the code of a library's init (header +22) or finit (+28) nullsub */
 static APTR nullsub(const char *name, int off)
 {
-    struct lib *l = getlib(&sets[cur], name);
+    struct lib *l = getlib(&loaded, name);
     UBYTE *p = (UBYTE *)L(l->code + off);
     p += 6;
     while (W(p))
@@ -115,62 +83,61 @@ static APTR nullsub(const char *name, int off)
     return (APTR)L(p + 2 + 4);
 }
 
-#define DO2(idx, form, setup) do {                                          \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callregs(ent(idx, form), &R[cur], 0, 0);                        \
-        }                                                                   \
-        preserve();                                                         \
+/* call entry idx, form `form`: markers in all registers, `setup` sets R;
+   then the kept case */
+#define DO1(idx, form, setup) do {                                          \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callregs(ent(idx, form), &R, 0, 0);                                 \
+        obs_kept(&IN, &R);                                                  \
     } while (0)
 
 /* --------------------------------------------- strings, a2 and a3 */
 
 #define AREA 512
 #define ARGAT 64
-static UBYTE area[2][AREA];             /* the string area (a3) */
-static char sbuf[2][2][300];            /* string arguments */
-static ULONG lens[2][4];                /* the argument stack: a2 = &lens[2] */
+static UBYTE area[AREA];                /* the string area (a3) */
+static char sbuf[2][300];               /* string arguments */
+static ULONG lens[4];                   /* the argument stack: a2 = &lens[2] */
 
 static void fillarea(void)
 {
-    int s, i;
-    for (s = 0; s < 2; s++)
-        for (i = 0; i < AREA; i++)
-            area[s][i] = (UBYTE)(0xA0 ^ i);
+    int i;
+    for (i = 0; i < AREA; i++)
+        area[i] = (UBYTE)(0xA0 ^ i);
 }
 
-/* string arguments s1 (d0) and s2 (d1): in the set's buffers, their
+/* string arguments s1 (d0) and s2 (d1): in the test's buffers, their
    lengths below a2; a3 = behind a copy of s1 in the string area (as the
    compiler leaves it after building the argument there) */
 static void strargs(const char *s1, const char *s2)
 {
-    strcpy(sbuf[cur][0], s1);
-    strcpy(sbuf[cur][1], s2 ? s2 : "");
-    lens[cur][0] = strlen(s1);
-    lens[cur][1] = s2 ? strlen(s2) : strlen(s1);
-    memcpy(&area[cur][ARGAT], s1, strlen(s1) + 1);
-    R[cur].d[0] = (ULONG)sbuf[cur][0];
+    strcpy(sbuf[0], s1);
+    strcpy(sbuf[1], s2 ? s2 : "");
+    lens[0] = strlen(s1);
+    lens[1] = s2 ? strlen(s2) : strlen(s1);
+    memcpy(&area[ARGAT], s1, strlen(s1) + 1);
+    R.d[0] = (ULONG)sbuf[0];
     if (s2)
-        R[cur].d[1] = (ULONG)sbuf[cur][1];
-    R[cur].a[2] = (ULONG)&lens[cur][2];
-    R[cur].a[3] = (ULONG)&area[cur][ARGAT + strlen(s1) + 1];
+        R.d[1] = (ULONG)sbuf[1];
+    R.a[2] = (ULONG)&lens[2];
+    R.a[3] = (ULONG)&area[ARGAT + strlen(s1) + 1];
 }
 
 static ULONG rela3(void)
 {
-    return R[cur].a[3] - (ULONG)area[cur];
+    return R.a[3] - (ULONG)area;
 }
 
 static void same_area(void)
 {
-    SAME("a3", rela3());
-    check("string area", !tape_bytes("string area", area[0], area[1], AREA));
+    OBS("a3", rela3());
+    OBSBYTES("string area", area, AREA);
 }
 
 /* the icon the set has open (GetIconObject's d0) */
-static struct DiskObject *dobj[2];
+static struct DiskObject *dobj;
 
 static ULONG strsum(const char *s)
 {
@@ -194,36 +161,36 @@ static ULONG imagesum(const struct Image *im)
     return v;
 }
 
-/* the contents of a DiskObject, the same in both sets */
-static void same_dobj(const char *what, struct DiskObject **d)
+/* the contents of a DiskObject */
+static void same_dobj(const char *what, struct DiskObject *d)
 {
     char buf[60];
     int i;
 
     sprintf(buf, "%s: open", what);
-    SAME(buf, d[cur] != NULL);
-    if (!d[0] || !d[1])
+    OBS(buf, d != NULL);
+    if (!d)
         return;
     sprintf(buf, "%s: type", what);
-    SAME(buf, d[cur]->do_Type);
+    OBS(buf, d->do_Type);
     sprintf(buf, "%s: gadget size", what);
-    SAME(buf, (ULONG)d[cur]->do_Gadget.Width << 16 | d[cur]->do_Gadget.Height);
+    OBS(buf, (ULONG)d->do_Gadget.Width << 16 | d->do_Gadget.Height);
     sprintf(buf, "%s: gadget flags", what);
-    SAME(buf, d[cur]->do_Gadget.Flags);
+    OBS(buf, d->do_Gadget.Flags);
     sprintf(buf, "%s: default tool", what);
-    SAME(buf, strsum((const char *)d[cur]->do_DefaultTool));
+    OBS(buf, strsum((const char *)d->do_DefaultTool));
     sprintf(buf, "%s: image", what);
-    SAME(buf, imagesum((struct Image *)d[cur]->do_Gadget.GadgetRender));
+    OBS(buf, imagesum((struct Image *)d->do_Gadget.GadgetRender));
     sprintf(buf, "%s: select image", what);
-    SAME(buf, imagesum((struct Image *)d[cur]->do_Gadget.SelectRender));
+    OBS(buf, imagesum((struct Image *)d->do_Gadget.SelectRender));
     sprintf(buf, "%s: tool types", what);
-    SAME(buf, d[cur]->do_ToolTypes != NULL);
-    if (!d[0]->do_ToolTypes || !d[1]->do_ToolTypes)
+    OBS(buf, d->do_ToolTypes != NULL);
+    if (!d->do_ToolTypes)
         return;
     for (i = 0; i < 100; i++) {
         sprintf(buf, "%s: tool type %d", what, i);
-        SAME(buf, strsum((const char *)d[cur]->do_ToolTypes[i]));
-        if (!d[0]->do_ToolTypes[i])
+        OBS(buf, strsum((const char *)d->do_ToolTypes[i]));
+        if (!d->do_ToolTypes[i])
             break;
     }
 }
@@ -245,9 +212,9 @@ static void scall(int idx, int form, const char *name, const char *s1, const cha
     if (extra)
         sprintf(VEC + strlen(VEC), ",%ld", (LONG)d2);
     fillarea();
-    DO2(idx, form, strargs(s1, s2); if (extra) { if (s2) R[cur].d[2] = d2; else R[cur].d[1] = d2; });
+    DO1(idx, form, strargs(s1, s2); if (extra) { if (s2) R.d[2] = d2; else R.d[1] = d2; });
     /* GetIconObject: the DiskObject as 1 */
-    SAME("d0", idx == GETICON && R[cur].d[0] ? 1 : R[cur].d[0]);
+    OBS("d0", idx == GETICON && R.d[0] ? 1 : R.d[0]);
     same_area();
     if (idx != GETICON)
         same_icon();
@@ -266,10 +233,10 @@ static void ncall(int idx, int form, const char *name, ULONG d0, ULONG d1)
     ROUT = name;
     sprintf(VEC, "$%lX,$%lX", d0, d1);
     fillarea();
-    DO2(idx, form, R[cur].d[0] = d0; R[cur].d[1] = d1;
-        R[cur].a[3] = (ULONG)&area[cur][ARGAT]);
+    DO1(idx, form, R.d[0] = d0; R.d[1] = d1;
+        R.a[3] = (ULONG)&area[ARGAT]);
     if (!statement(idx))
-        SAME("d0", R[cur].d[0]);
+        OBS("d0", R.d[0]);
     same_area();
     if (idx != FREEICON)
         same_icon();
@@ -278,42 +245,37 @@ static void ncall(int idx, int form, const char *name, ULONG d0, ULONG d1)
 static void geticon(const char *file)
 {
     scall(GETICON, 0, "GetIconObject", file, NULL, 0, 0);
-    for (cur = 0; cur < 2; cur++)
-        if (R[cur].d[0])
-            dobj[cur] = (struct DiskObject *)R[cur].d[0];
+    if (R.d[0])
+        dobj = (struct DiskObject *)R.d[0];
     same_icon();
 }
 
 static void freeicon(void)
 {
     ncall(FREEICON, 0, "FreeIconObject", 0, 0);
-    for (cur = 0; cur < 2; cur++)
-        if (R[cur].d[0])
-            dobj[cur] = NULL;
+    if (R.d[0])
+        dobj = NULL;
 }
 
 /* ------------------------------------------------------------ shapes */
 
 #define NSHAPES 8
-static UBYTE shape[2][NSHAPES][32];
-static UBYTE decoy[2][32];
+static UBYTE shape[NSHAPES][32];
+static UBYTE decoy[32];
 
-static ULONG memcall(int s, UWORD tok, ULONG d0, ULONG d1, ULONG a1)
+static ULONG memcall(UWORD tok, ULONG d0, ULONG d1, ULONG a1)
 {
     struct regs r;
-    int keep = cur;
-    cur = s;
     markregs(&r);
     r.d[0] = d0;
     r.d[1] = d1;
     r.a[1] = a1;
-    callregs(find_token(&sets[s], tok, 0), &r, 0, 0);
-    cur = keep;
+    callregs(find_token(&loaded, tok, 0), &r, 0, 0);
     return r.d[0];
 }
 
 /* a shape in use, its data from the set's memlib (freeashape frees it) */
-static void makeshape(UBYTE *s, int set, UWORD w, UWORD h, UWORD depth, UBYTE seed)
+static void makeshape(UBYTE *s, UWORD w, UWORD h, UWORD depth, UBYTE seed)
 {
     UWORD words = (w + 15) >> 4, ebw = words * 2;
     UWORD one = ebw * h;
@@ -330,34 +292,35 @@ static void makeshape(UBYTE *s, int set, UWORD w, UWORD h, UWORD depth, UBYTE se
     *(UWORD *)(s + 24) = one + h * 2;
     *(UWORD *)(s + 26) = one * depth;
     *(UWORD *)(s + 28) = (one + h * 2) * depth;
-    data = (UBYTE *)memcall(set, 0xc002, one * depth, MEMF_CHIP | MEMF_CLEAR, 0);
+    data = (UBYTE *)memcall(0xc002, one * depth, MEMF_CHIP | MEMF_CLEAR, 0);
     for (i = 0; i < (ULONG)one * depth; i++)
         data[i] = (UBYTE)(i * 7 + seed);
     *(ULONG *)(s + 14) = (ULONG)data;
 }
 
-static void same_shape(const char *what, UBYTE *s0, UBYTE *s1)
+static void same_shape(const char *what, UBYTE *s)
 {
-    UBYTE *s[2] = { s0, s1 };
+    UBYTE fields[24];
     char buf[60];
 
+    /* the fields but the data and cookie pointers: 0-13, 22-31 */
+    memcpy(fields, s, 14);
+    memcpy(fields + 14, s + 22, 10);
     sprintf(buf, "%s: fields", what);
-    check(buf, !tape_bytes(buf, s0, s1, 14) & !tape_bytes(buf, s0 + 22, s1 + 22, 10));
+    OBSBYTES(buf, fields, sizeof fields);
     sprintf(buf, "%s: width/height", what);
-    SAME(buf, *(ULONG *)s[cur]);
+    OBS(buf, *(ULONG *)s);
     sprintf(buf, "%s: data", what);
-    SAME(buf, *(ULONG *)(s[cur] + 14) != 0);
-    if (*(ULONG *)(s0 + 14) && *(ULONG *)(s1 + 14) && *(UWORD *)s0) {
+    OBS(buf, *(ULONG *)(s + 14) != 0);
+    if (*(ULONG *)(s + 14) && *(UWORD *)s) {
         sprintf(buf, "%s: data bytes", what);
-        check(buf, !tape_bytes(buf, (void *)*(ULONG *)(s0 + 14), (void *)*(ULONG *)(s1 + 14),
-                               *(UWORD *)(s0 + 26)));
+        OBSBYTES(buf, (void *)*(ULONG *)(s + 14), *(UWORD *)(s + 26));
     }
     sprintf(buf, "%s: cookie", what);
-    SAME(buf, *(ULONG *)(s[cur] + 18) != 0);
-    if (*(ULONG *)(s0 + 18) && *(ULONG *)(s1 + 18)) {
+    OBS(buf, *(ULONG *)(s + 18) != 0);
+    if (*(ULONG *)(s + 18)) {
         sprintf(buf, "%s: cookie bytes", what);
-        check(buf, !tape_bytes(buf, (void *)*(ULONG *)(s0 + 18), (void *)*(ULONG *)(s1 + 18),
-                               *(UWORD *)(s0 + 22)));
+        OBSBYTES(buf, (void *)*(ULONG *)(s + 18), *(UWORD *)(s + 22));
     }
 }
 
@@ -367,18 +330,18 @@ static void same_shapes(void)
     int i;
     for (i = 0; i < NSHAPES; i++) {
         sprintf(buf, "shape %d", i);
-        same_shape(buf, shape[0][i], shape[1][i]);
+        same_shape(buf, shape[i]);
     }
-    same_shape("decoy", decoy[0], decoy[1]);
+    same_shape("decoy", decoy);
 }
 
 static void shapecall(int idx, int form, const char *name, int a, int b, UBYTE *a3)
 {
     ROUT = name;
     sprintf(VEC, "%d%s%d", a, form ? "," : "", form ? b : 0);
-    DO2(idx, form, R[cur].d[0] = (ULONG)a << 5; R[cur].a[0] = (ULONG)shape[cur][a];
-        R[cur].d[1] = (ULONG)b << 5; R[cur].a[1] = (ULONG)shape[cur][b];
-        R[cur].a[3] = a3 ? (ULONG)decoy[cur] : (ULONG)&area[cur][ARGAT]);
+    DO1(idx, form, R.d[0] = (ULONG)a << 5; R.a[0] = (ULONG)shape[a];
+        R.d[1] = (ULONG)b << 5; R.a[1] = (ULONG)shape[b];
+        R.a[3] = a3 ? (ULONG)decoy : (ULONG)&area[ARGAT]);
     same_icon();
     same_shapes();
 }
@@ -404,43 +367,31 @@ static BOOL writeicon(void)
     return ok;
 }
 
-static void readback(const char *what, const char *o, const char *c)
+static void readback(const char *what, const char *file)
 {
-    struct DiskObject *d[2];
-    d[0] = GetDiskObject((CONST_STRPTR)o);
-    d[1] = GetDiskObject((CONST_STRPTR)c);
+    struct DiskObject *d = GetDiskObject((CONST_STRPTR)file);
     ROUT = what;
     strcpy(VEC, "");
     same_dobj("written icon", d);
-    for (cur = 0; cur < 2; cur++)
-        if (d[cur])
-            FreeDiskObject(d[cur]);
+    if (d)
+        FreeDiskObject(d);
 }
 
-static const char *outname(const char *base)
-{
-    static char n[2][40];
-    sprintf(n[cur], "%s_%c", base, cur ? 'c' : 'o');
-    return n[cur];
-}
-
-/* PutIconObject to RAM:<base>_o / _c */
+/* PutIconObject to <base> */
 static void puticon(const char *base, int form, ULONG type)
 {
     ROUT = "PutIconObject";
     sprintf(VEC, "%s,%lu (form %d)", base, type, form);
-    DO2(PUTICON, form, strargs(outname(base), NULL); R[cur].d[1] = type);
-    SAME("d0", R[cur].d[0]);
-    for (cur = 0; cur < 2; cur++)
-        if (R[cur].d[0])
-            dobj[cur] = NULL;
+    DO1(PUTICON, form, strargs(base, NULL); R.d[1] = type);
+    OBS("d0", R.d[0]);
+    if (R.d[0])
+        dobj = NULL;
 }
 
 int main(int argc, char **argv)
 {
     static const char *names16[] = { "FOO", "OFF", "FLAG", "MIXED", "BRACK", "PAREN", "LOWER",
                                      "nothere", "", NULL };
-    char o[40], c[40];
     int i;
 
     if (argc < 2) {
@@ -448,15 +399,54 @@ int main(int argc, char **argv)
         return 20;
     }
     TTIconBase = OpenLibrary((CONST_STRPTR)"icon.library", 36);
-    if (!TTIconBase || !load_sets(argv[1], names))
+    if (!TTIconBase || !load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("FindToolValue (no icon)", d2-d7|a0-a3|a6);
+    KEEPS("FindToolNumber (no icon)", d0-d7|a0-a3|a6);
+    KEEPS("FreeIconObject (no icon)", d0-d7|a0-a3);
+    KEEPS("PutIconObject (no icon)", d2-d6|a0-a3);
+    KEEPS("SetIconType (no icon)", d0-d7|a0-a3|a6);
+    KEEPS("IconDefTool (no icon)", d1-d7|a0-a3|a6);
+    KEEPS("FindToolType (no icon)", d2-d7|a0-a3|a6);
+    KEEPS("MatchToolValue (no icon)", d2-d7|a0-a3|a6);
+    KEEPS("SetToolValue (no icon)", d1|d3-d6|a1|a3|a6);
+    KEEPS("NewToolType (no icon)", d1-d6|a1|a3|a6);
+    KEEPS("ClearToolTypes (no icon)", d0-d7|a0-a3|a6);
+    KEEPS("SetIconHit (no icon)", d1|d3-d7|a0-a3|a6);
+    KEEPS("IconRender (no icon)", d0-d7|a0-a3|a6);
+    KEEPS("ShapeToIcon (no icon)", d0|d1|d3-d7|a0-a3|a6);
+    KEEPS("IconToShape (no icon)", d1-d7|a0-a3|a6);
+    KEEPS("GetIconObject", d2-d6|a3);
+    KEEPS("FindToolValue", d2-d6);
+    KEEPS("FindToolNumber", d2-d7|a1|a2|a6);
+    KEEPS("MatchToolValue", d2-d7|a2|a3);
+    KEEPS("FindToolType", d2-d6|a2|a3);
+    KEEPS("SetToolValue", d3-d6|a3);
+    KEEPS("NewToolType", d3-d6|a3);
+    KEEPS("SetIconHit", d0|d1|d3-d7|a1-a3|a6);
+    KEEPS("IconRender", d0-d7|a1-a3|a6);
+    KEEPS("SetIconType", d1-d7|a1-a3|a6);
+    KEEPS("IconDefTool", d3-d7);
+    KEEPS("ShapeToIcon", d0|d1|d3-d7|a6);
+    KEEPS("IconToShape (fresh, a3 = decoy)", d6|a3|a6);
+    KEEPS("IconToShape (in use)", d6|a0|a6);
+    KEEPS("IconToShape (both in use)", d6|a6);
+    KEEPS("IconToShape (in use, fresh)", d6|a6);
+    KEEPS("PutIconObject", d2-d6|a2|a3);
+    KEEPS("FreeIconObject", d2-d7|a2|a3);
+    KEEPS("FindToolNumber (written icon)", d2-d7|a1|a2|a6);
+    KEEPS("ClearToolTypes", d0|d2-d7|a1-a3|a6);
+    KEEPS("FindToolNumber (cleared)", d0-d7|a1-a3|a6);
+    KEEPS("NewToolType (cleared)", d3-d6|a3);
+    KEEPS("finit", d2-d7|a2|a3);
     if (!writeicon()) {
         check("ritooltypeslib: write RAM:rwett.info", FALSE);
         return 20;
     }
     ROUT = "memlib/shapeslib init";
     strcpy(VEC, "");
-    for (cur = 0; cur < 2; cur++) {
+    {
         struct regs r;
         markregs(&r);
         callregs(nullsub("memlib", 22), &r, 0, 0);
@@ -464,7 +454,7 @@ int main(int argc, char **argv)
         callregs(nullsub("shapeslib", 22), &r, 0, 0);
     }
     ROUT = "init";
-    DO2(INIT, 0, (void)0);
+    DO1(INIT, 0, (void)0);
 
     /* no icon open */
     scall(FINDTOOLVALUE, 0, "FindToolValue (no icon)", "FOO", NULL, 0, 0);
@@ -481,11 +471,9 @@ int main(int argc, char **argv)
     ncall(CLEARTOOLTYPES, 0, "ClearToolTypes (no icon)", 0, 0);
     ncall(SETICONHIT, 0, "SetIconHit (no icon)", 10, 10);
     ncall(ICONRENDER, 0, "IconRender (no icon)", 5, 0);
-    for (cur = 0; cur < 2; cur++) {
-        makeshape(shape[cur][0], cur, 20, 10, 2, 1);
-        makeshape(shape[cur][1], cur, 25, 7, 1, 50);
-        makeshape(decoy[cur], cur, 25, 7, 1, 99);
-    }
+    makeshape(shape[0], 20, 10, 2, 1);
+    makeshape(shape[1], 25, 7, 1, 50);
+    makeshape(decoy, 25, 7, 1, 99);
     shapecall(SHAPETOICON, 0, "ShapeToIcon (no icon)", 0, 0, NULL);
     shapecall(SHAPETOICON, 1, "ShapeToIcon (no icon)", 0, 1, NULL);
     shapecall(ICONTOSHAPE, 0, "IconToShape (no icon)", 2, 0, NULL);
@@ -493,8 +481,8 @@ int main(int argc, char **argv)
 
     /* the icon */
     geticon("RAM:rwett");
-    check("ritooltypeslib: GetIconObject RAM:rwett", dobj[0] && dobj[1]);
-    if (!dobj[0] || !dobj[1])
+    check("ritooltypeslib: GetIconObject RAM:rwett", dobj != NULL);
+    if (!dobj)
         return 5;
     geticon("RAM:rwett");                       /* open already: 0 */
     for (i = 0; names16[i]; i++)
@@ -542,40 +530,33 @@ int main(int argc, char **argv)
        use (a3 of a fresh IconToShape) */
     shapecall(SHAPETOICON, 0, "ShapeToIcon", 1, 0, NULL);
     shapecall(SHAPETOICON, 1, "ShapeToIcon", 0, 1, NULL);
-    shapecall(ICONTOSHAPE, 1, "IconToShape (fresh, a3 = decoy)", 2, 3, decoy[0]);
+    shapecall(ICONTOSHAPE, 1, "IconToShape (fresh, a3 = decoy)", 2, 3, decoy);
     shapecall(ICONTOSHAPE, 0, "IconToShape (in use)", 2, 0, NULL);
     shapecall(ICONTOSHAPE, 1, "IconToShape (both in use)", 2, 3, NULL);
-    shapecall(ICONTOSHAPE, 0, "IconToShape (fresh, a3 = decoy)", 4, 0, decoy[0]);
+    shapecall(ICONTOSHAPE, 0, "IconToShape (fresh, a3 = decoy)", 4, 0, decoy);
     shapecall(ICONTOSHAPE, 1, "IconToShape (in use, fresh)", 4, 5, NULL);
 
     puticon("RAM:rwett1", 0, 0);
     same_icon();
-    for (cur = 0; cur < 2; cur++) {
-        sprintf(cur ? c : o, "RAM:rwett1_%c", cur ? 'c' : 'o');
-    }
-    readback("PutIconObject RAM:rwett1", o, c);
+    readback("PutIconObject RAM:rwett1", "RAM:rwett1");
     puticon("RAM:rwett1", 0, 0);                /* no icon: 0 */
     freeicon();                                 /* no icon: 0 */
 
     /* the written icons again: PutIconObject with a type, ClearToolTypes */
     ROUT = "GetIconObject";
-    strcpy(VEC, "RAM:rwett1_o / _c");
+    strcpy(VEC, "RAM:rwett1");
     fillarea();
-    DO2(GETICON, 0, strargs(outname("RAM:rwett1"), NULL));
-    for (cur = 0; cur < 2; cur++)
-        dobj[cur] = (struct DiskObject *)R[cur].d[0];
+    DO1(GETICON, 0, strargs("RAM:rwett1", NULL));
+    dobj = (struct DiskObject *)R.d[0];
     same_icon();
     for (i = 0; i < 12; i++)
         ncall(FINDTOOLNUMBER, 0, "FindToolNumber (written icon)", i, 0);
     puticon("RAM:rwett2", 1, 4);
-    for (cur = 0; cur < 2; cur++)
-        sprintf(cur ? c : o, "RAM:rwett2_%c", cur ? 'c' : 'o');
-    readback("PutIconObject RAM:rwett2,4", o, c);
+    readback("PutIconObject RAM:rwett2,4", "RAM:rwett2");
     ROUT = "GetIconObject";
-    strcpy(VEC, "RAM:rwett2_o / _c");
-    DO2(GETICON, 0, strargs(outname("RAM:rwett2"), NULL));
-    for (cur = 0; cur < 2; cur++)
-        dobj[cur] = (struct DiskObject *)R[cur].d[0];
+    strcpy(VEC, "RAM:rwett2");
+    DO1(GETICON, 0, strargs("RAM:rwett2", NULL));
+    dobj = (struct DiskObject *)R.d[0];
     same_icon();
     ncall(CLEARTOOLTYPES, 0, "ClearToolTypes", 0, 0);
     ncall(FINDTOOLNUMBER, 0, "FindToolNumber (cleared)", 0, 0);
@@ -585,35 +566,34 @@ int main(int argc, char **argv)
     freeicon();
 
     geticon("RAM:rwett_nothere");               /* icon.library's default or 0 */
-    if (dobj[0] || dobj[1])
+    if (dobj)
         freeicon();
 
     /* finit with an icon open, init again */
     geticon("RAM:rwett");
     ROUT = "finit";
     strcpy(VEC, "icon open");
-    DO2(FINIT, 0, (void)0);
-    dobj[0] = dobj[1] = NULL;
+    DO1(FINIT, 0, (void)0);
+    dobj = NULL;
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(INIT, 0, (void)0);
+    DO1(INIT, 0, (void)0);
     geticon("RAM:rwett");
     freeicon();
     ROUT = "finit";
-    DO2(FINIT, 0, (void)0);
+    DO1(FINIT, 0, (void)0);
 
     ROUT = "memlib finit";
-    for (cur = 0; cur < 2; cur++) {
+    {
         struct regs r;
         markregs(&r);
         callregs(nullsub("memlib", 28), &r, 0, 0);
     }
     DeleteDiskObject((STRPTR)"RAM:rwett");
-    for (cur = 0; cur < 2; cur++) {
-        DeleteDiskObject((STRPTR)outname("RAM:rwett1"));
-        DeleteDiskObject((STRPTR)outname("RAM:rwett2"));
-    }
+    DeleteDiskObject((STRPTR)"RAM:rwett1");
+    DeleteDiskObject((STRPTR)"RAM:rwett2");
     CloseLibrary(TTIconBase);
     printf("%d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }

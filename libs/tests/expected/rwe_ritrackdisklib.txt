@@ -1,0 +1,951 @@
+# capture rwe_ritrackdisklib 1
+init|kept||1	kept
+CloseDisk|kept|0|1	kept
+CloseDisk|d0|0|1	$00000000
+CloseDisk|requests|0|1	$00000000
+CloseDisk|opens|0|1	$00000000
+CloseDisk|closes|0|1	$00000000
+CloseDisk|failed opens|0|1	$00000000
+CloseDisk|command|0|1	$00000000
+CloseDisk|flags|0|1	$00000000
+CloseDisk|length|0|1	$00000000
+CloseDisk|offset|0|1	$00000000
+CloseDisk|unit|0|1	$00000000
+CloseDisk|actual|0|1	$00000000
+CloseDisk|buffer|0|1	$00000000
+CloseDisk|head|0|1	bytes 8 0000000000000000
+CloseDisk|disk|0|1	bytes 16384 fnv E35F79C5
+CloseDisk|read buffer|0|1	bytes 4096 fnv 76EFDDC5
+MotorOn|kept|0|1	kept
+MotorOn|d0|0|1	$00000000
+MotorOn|requests|0|1	$00000000
+MotorOn|opens|0|1	$00000000
+MotorOn|closes|0|1	$00000000
+MotorOn|failed opens|0|1	$00000000
+MotorOn|command|0|1	$00000000
+MotorOn|flags|0|1	$00000000
+MotorOn|length|0|1	$00000000
+MotorOn|offset|0|1	$00000000
+MotorOn|unit|0|1	$00000000
+MotorOn|actual|0|1	$00000000
+MotorOn|buffer|0|1	$00000000
+MotorOn|head|0|1	bytes 8 0000000000000000
+MotorOn|disk|0|1	bytes 16384 fnv E35F79C5
+MotorOn|read buffer|0|1	bytes 4096 fnv 76EFDDC5
+MotorOff|kept|0|1	kept
+MotorOff|d0|0|1	$00000000
+MotorOff|requests|0|1	$00000000
+MotorOff|opens|0|1	$00000000
+MotorOff|closes|0|1	$00000000
+MotorOff|failed opens|0|1	$00000000
+MotorOff|command|0|1	$00000000
+MotorOff|flags|0|1	$00000000
+MotorOff|length|0|1	$00000000
+MotorOff|offset|0|1	$00000000
+MotorOff|unit|0|1	$00000000
+MotorOff|actual|0|1	$00000000
+MotorOff|buffer|0|1	$00000000
+MotorOff|head|0|1	bytes 8 0000000000000000
+MotorOff|disk|0|1	bytes 16384 fnv E35F79C5
+MotorOff|read buffer|0|1	bytes 4096 fnv 76EFDDC5
+DiskStatus|kept|0|1	kept
+DiskStatus|d0|0|1	$00000000
+DiskStatus|requests|0|1	$00000000
+DiskStatus|opens|0|1	$00000000
+DiskStatus|closes|0|1	$00000000
+DiskStatus|failed opens|0|1	$00000000
+DiskStatus|command|0|1	$00000000
+DiskStatus|flags|0|1	$00000000
+DiskStatus|length|0|1	$00000000
+DiskStatus|offset|0|1	$00000000
+DiskStatus|unit|0|1	$00000000
+DiskStatus|actual|0|1	$00000000
+DiskStatus|buffer|0|1	$00000000
+DiskStatus|head|0|1	bytes 8 0000000000000000
+DiskStatus|disk|0|1	bytes 16384 fnv E35F79C5
+DiskStatus|read buffer|0|1	bytes 4096 fnv 76EFDDC5
+DiskIO|kept|0|1	kept
+DiskIO|d0 != 0|0|1	$00000000
+ReadSector|kept|0,1,+0,0 (form 0)|1	kept
+ReadSector|d0|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|requests|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|opens|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|closes|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|failed opens|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|command|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|flags|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|length|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|offset|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|unit|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|actual|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|buffer|0,1,+0,0 (form 0)|1	$00000000
+ReadSector|head|0,1,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector|disk|0,1,+0,0 (form 0)|1	bytes 16384 fnv E35F79C5
+ReadSector|read buffer|0,1,+0,0 (form 0)|1	bytes 4096 fnv 76EFDDC5
+WriteSector|kept|0,1,+0,1 (form 1)|1	kept
+WriteSector|d0|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|requests|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|opens|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|closes|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|failed opens|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|command|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|flags|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|length|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|offset|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|unit|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|actual|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|buffer|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|head|0,1,+0,1 (form 1)|1	bytes 8 0000000000000000
+WriteSector|data written|0,1,+0,1 (form 1)|1	$00000000
+WriteSector|disk|0,1,+0,1 (form 1)|1	bytes 16384 fnv E35F79C5
+WriteSector|read buffer|0,1,+0,1 (form 1)|1	bytes 4096 fnv 76EFDDC5
+OpenDisk|kept|5,-|1	kept
+OpenDisk|d0|5,-|1	$00000000
+OpenDisk|requests|5,-|1	$00000000
+OpenDisk|opens|5,-|1	$00000000
+OpenDisk|closes|5,-|1	$00000000
+OpenDisk|failed opens|5,-|1	$00000000
+OpenDisk|command|5,-|1	$00000000
+OpenDisk|flags|5,-|1	$00000000
+OpenDisk|length|5,-|1	$00000000
+OpenDisk|offset|5,-|1	$00000000
+OpenDisk|unit|5,-|1	$00000000
+OpenDisk|actual|5,-|1	$00000000
+OpenDisk|buffer|5,-|1	$00000000
+OpenDisk|head|5,-|1	bytes 8 0000000000000000
+OpenDisk|disk|5,-|1	bytes 16384 fnv E35F79C5
+OpenDisk|read buffer|5,-|1	bytes 4096 fnv 76EFDDC5
+OpenDisk|kept|4,rwetest.device|1	kept
+OpenDisk|d0|4,rwetest.device|1	$00000000
+OpenDisk|requests|4,rwetest.device|1	$00000000
+OpenDisk|opens|4,rwetest.device|1	$00000000
+OpenDisk|closes|4,rwetest.device|1	$00000000
+OpenDisk|failed opens|4,rwetest.device|1	$00000000
+OpenDisk|command|4,rwetest.device|1	$00000000
+OpenDisk|flags|4,rwetest.device|1	$00000000
+OpenDisk|length|4,rwetest.device|1	$00000000
+OpenDisk|offset|4,rwetest.device|1	$00000000
+OpenDisk|unit|4,rwetest.device|1	$00000000
+OpenDisk|actual|4,rwetest.device|1	$00000000
+OpenDisk|buffer|4,rwetest.device|1	$00000000
+OpenDisk|head|4,rwetest.device|1	bytes 8 0000000000000000
+OpenDisk|disk|4,rwetest.device|1	bytes 16384 fnv E35F79C5
+OpenDisk|read buffer|4,rwetest.device|1	bytes 4096 fnv 76EFDDC5
+OpenDisk|kept|0,rwetest.device|1	kept
+OpenDisk|d0|0,rwetest.device|1	$FFFFFFFF
+OpenDisk|requests|0,rwetest.device|1	$00000000
+OpenDisk|opens|0,rwetest.device|1	$00000001
+OpenDisk|closes|0,rwetest.device|1	$00000000
+OpenDisk|failed opens|0,rwetest.device|1	$00000000
+OpenDisk|command|0,rwetest.device|1	$00000000
+OpenDisk|flags|0,rwetest.device|1	$00000000
+OpenDisk|length|0,rwetest.device|1	$00000000
+OpenDisk|offset|0,rwetest.device|1	$00000000
+OpenDisk|unit|0,rwetest.device|1	$00000000
+OpenDisk|actual|0,rwetest.device|1	$00000000
+OpenDisk|buffer|0,rwetest.device|1	$00000000
+OpenDisk|head|0,rwetest.device|1	bytes 8 0000000000000000
+OpenDisk|disk|0,rwetest.device|1	bytes 16384 fnv E35F79C5
+OpenDisk|read buffer|0,rwetest.device|1	bytes 4096 fnv 76EFDDC5
+DiskIO|kept|0|2	kept
+DiskIO|d0 != 0|0|2	$00000001
+DiskIO|io_Device|0|1	$00000001
+DiskIO|io_Unit|0|1	$00000000
+DiskIO|io_Error|0|1	$00000000
+DiskIO|reply port = port of init|0|1	$00000001
+DiskStatus|kept|0|2	kept
+DiskStatus|d0|0|2	$00000100
+DiskStatus|requests|0|2	$00000000
+DiskStatus|opens|0|2	$00000001
+DiskStatus|closes|0|2	$00000000
+DiskStatus|failed opens|0|2	$00000000
+DiskStatus|command|0|2	$00000000
+DiskStatus|flags|0|2	$00000000
+DiskStatus|length|0|2	$00000000
+DiskStatus|offset|0|2	$00000000
+DiskStatus|unit|0|2	$00000000
+DiskStatus|actual|0|2	$00000000
+DiskStatus|buffer|0|2	$00000000
+DiskStatus|head|0|2	bytes 8 0000000000000000
+DiskStatus|disk|0|2	bytes 16384 fnv E35F79C5
+DiskStatus|read buffer|0|2	bytes 4096 fnv 76EFDDC5
+WriteSector|kept|0,3,+0,0 (form 0)|1	kept
+WriteSector|d0|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|requests|0,3,+0,0 (form 0)|1	$00000001
+WriteSector|opens|0,3,+0,0 (form 0)|1	$00000001
+WriteSector|closes|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|failed opens|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|command|0,3,+0,0 (form 0)|1	$00000003
+WriteSector|flags|0,3,+0,0 (form 0)|1	$00000001
+WriteSector|length|0,3,+0,0 (form 0)|1	$00000200
+WriteSector|offset|0,3,+0,0 (form 0)|1	$00000600
+WriteSector|unit|0,3,+0,0 (form 0)|1	$00000000
+WriteSector|actual|0,3,+0,0 (form 0)|1	$00000200
+WriteSector|buffer|0,3,+0,0 (form 0)|1	$00010000
+WriteSector|head|0,3,+0,0 (form 0)|1	bytes 8 4D5A6774818E9BA8
+WriteSector|data written|0,3,+0,0 (form 0)|1	$F53B3000
+WriteSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv 96FEDAC5
+WriteSector|read buffer|0,3,+0,0 (form 0)|1	bytes 4096 fnv 76EFDDC5
+WriteSector|kept|0,4,+512,3 (form 1)|1	kept
+WriteSector|d0|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|requests|0,4,+512,3 (form 1)|1	$00000002
+WriteSector|opens|0,4,+512,3 (form 1)|1	$00000001
+WriteSector|closes|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|failed opens|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|command|0,4,+512,3 (form 1)|1	$00000003
+WriteSector|flags|0,4,+512,3 (form 1)|1	$00000001
+WriteSector|length|0,4,+512,3 (form 1)|1	$00000600
+WriteSector|offset|0,4,+512,3 (form 1)|1	$00000800
+WriteSector|unit|0,4,+512,3 (form 1)|1	$00000000
+WriteSector|actual|0,4,+512,3 (form 1)|1	$00000600
+WriteSector|buffer|0,4,+512,3 (form 1)|1	$00010200
+WriteSector|head|0,4,+512,3 (form 1)|1	bytes 8 4F586576838C99AA
+WriteSector|data written|0,4,+512,3 (form 1)|1	$4CF09000
+WriteSector|disk|0,4,+512,3 (form 1)|1	bytes 16384 fnv EF3E5BC5
+WriteSector|read buffer|0,4,+512,3 (form 1)|1	bytes 4096 fnv 76EFDDC5
+ReadSector|kept|0,3,+0,0 (form 0)|1	kept
+ReadSector|d0|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|requests|0,3,+0,0 (form 0)|1	$00000003
+ReadSector|opens|0,3,+0,0 (form 0)|1	$00000001
+ReadSector|closes|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|failed opens|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|command|0,3,+0,0 (form 0)|1	$00000002
+ReadSector|flags|0,3,+0,0 (form 0)|1	$00000001
+ReadSector|length|0,3,+0,0 (form 0)|1	$00000200
+ReadSector|offset|0,3,+0,0 (form 0)|1	$00000600
+ReadSector|unit|0,3,+0,0 (form 0)|1	$00000000
+ReadSector|actual|0,3,+0,0 (form 0)|1	$00000200
+ReadSector|buffer|0,3,+0,0 (form 0)|1	$00020000
+ReadSector|head|0,3,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector|disk|0,3,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
+ReadSector|read buffer|0,3,+0,0 (form 0)|1	bytes 4096 fnv F6DB00C5
+ReadSector|kept|0,2,+100,5 (form 1)|1	kept
+ReadSector|d0|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|requests|0,2,+100,5 (form 1)|1	$00000004
+ReadSector|opens|0,2,+100,5 (form 1)|1	$00000001
+ReadSector|closes|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|failed opens|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|command|0,2,+100,5 (form 1)|1	$00000002
+ReadSector|flags|0,2,+100,5 (form 1)|1	$00000001
+ReadSector|length|0,2,+100,5 (form 1)|1	$00000A00
+ReadSector|offset|0,2,+100,5 (form 1)|1	$00000400
+ReadSector|unit|0,2,+100,5 (form 1)|1	$00000000
+ReadSector|actual|0,2,+100,5 (form 1)|1	$00000A00
+ReadSector|buffer|0,2,+100,5 (form 1)|1	$00020064
+ReadSector|head|0,2,+100,5 (form 1)|1	bytes 8 0000000000000000
+ReadSector|disk|0,2,+100,5 (form 1)|1	bytes 16384 fnv EF3E5BC5
+ReadSector|read buffer|0,2,+100,5 (form 1)|1	bytes 4096 fnv 6F7521F5
+ReadSector|kept|0,100,+0,0 (form 0)|1	kept
+ReadSector|d0|0,100,+0,0 (form 0)|1	$0000001E
+ReadSector|requests|0,100,+0,0 (form 0)|1	$00000005
+ReadSector|opens|0,100,+0,0 (form 0)|1	$00000001
+ReadSector|closes|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|failed opens|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|command|0,100,+0,0 (form 0)|1	$00000002
+ReadSector|flags|0,100,+0,0 (form 0)|1	$00000001
+ReadSector|length|0,100,+0,0 (form 0)|1	$00000200
+ReadSector|offset|0,100,+0,0 (form 0)|1	$0000C800
+ReadSector|unit|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|actual|0,100,+0,0 (form 0)|1	$00000000
+ReadSector|buffer|0,100,+0,0 (form 0)|1	$00020000
+ReadSector|head|0,100,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector|disk|0,100,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
+ReadSector|read buffer|0,100,+0,0 (form 0)|1	bytes 4096 fnv 6F7521F5
+ReadSector|kept|0,1,+0,0 (form 1)|1	kept
+ReadSector|d0|0,1,+0,0 (form 1)|1	$FFFFFFFC
+ReadSector|requests|0,1,+0,0 (form 1)|1	$00000006
+ReadSector|opens|0,1,+0,0 (form 1)|1	$00000001
+ReadSector|closes|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|failed opens|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|command|0,1,+0,0 (form 1)|1	$00000002
+ReadSector|flags|0,1,+0,0 (form 1)|1	$00000001
+ReadSector|length|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|offset|0,1,+0,0 (form 1)|1	$00000200
+ReadSector|unit|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|actual|0,1,+0,0 (form 1)|1	$00000000
+ReadSector|buffer|0,1,+0,0 (form 1)|1	$00020000
+ReadSector|head|0,1,+0,0 (form 1)|1	bytes 8 0000000000000000
+ReadSector|disk|0,1,+0,0 (form 1)|1	bytes 16384 fnv EF3E5BC5
+ReadSector|read buffer|0,1,+0,0 (form 1)|1	bytes 4096 fnv 6F7521F5
+ReadSector|kept|0,8388611,+0,0 (form 0)|1	kept
+ReadSector|d0|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|requests|0,8388611,+0,0 (form 0)|1	$00000007
+ReadSector|opens|0,8388611,+0,0 (form 0)|1	$00000001
+ReadSector|closes|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|failed opens|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|command|0,8388611,+0,0 (form 0)|1	$00000002
+ReadSector|flags|0,8388611,+0,0 (form 0)|1	$00000001
+ReadSector|length|0,8388611,+0,0 (form 0)|1	$00000200
+ReadSector|offset|0,8388611,+0,0 (form 0)|1	$00000600
+ReadSector|unit|0,8388611,+0,0 (form 0)|1	$00000000
+ReadSector|actual|0,8388611,+0,0 (form 0)|1	$00000200
+ReadSector|buffer|0,8388611,+0,0 (form 0)|1	$00020000
+ReadSector|head|0,8388611,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector|disk|0,8388611,+0,0 (form 0)|1	bytes 16384 fnv EF3E5BC5
+ReadSector|read buffer|0,8388611,+0,0 (form 0)|1	bytes 4096 fnv 5FF9152D
+DiskStatus|kept|0|3	kept
+DiskStatus|d0|0|3	$00000100
+DiskStatus|requests|0|3	$00000007
+DiskStatus|opens|0|3	$00000001
+DiskStatus|closes|0|3	$00000000
+DiskStatus|failed opens|0|3	$00000000
+DiskStatus|command|0|3	$00000002
+DiskStatus|flags|0|3	$00000001
+DiskStatus|length|0|3	$00000200
+DiskStatus|offset|0|3	$00000600
+DiskStatus|unit|0|3	$00000000
+DiskStatus|actual|0|3	$00000200
+DiskStatus|buffer|0|3	$00020000
+DiskStatus|head|0|3	bytes 8 0000000000000000
+DiskStatus|disk|0|3	bytes 16384 fnv EF3E5BC5
+DiskStatus|read buffer|0|3	bytes 4096 fnv 5FF9152D
+FormatTrack|kept|0,1,+1024,0 (form 0)|1	kept
+FormatTrack|d0|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|requests|0,1,+1024,0 (form 0)|1	$00000008
+FormatTrack|opens|0,1,+1024,0 (form 0)|1	$00000001
+FormatTrack|closes|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|failed opens|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|command|0,1,+1024,0 (form 0)|1	$0000000B
+FormatTrack|flags|0,1,+1024,0 (form 0)|1	$00000001
+FormatTrack|length|0,1,+1024,0 (form 0)|1	$00000200
+FormatTrack|offset|0,1,+1024,0 (form 0)|1	$00001600
+FormatTrack|unit|0,1,+1024,0 (form 0)|1	$00000000
+FormatTrack|actual|0,1,+1024,0 (form 0)|1	$00000200
+FormatTrack|buffer|0,1,+1024,0 (form 0)|1	$00010400
+FormatTrack|head|0,1,+1024,0 (form 0)|1	bytes 8 495E6370858A9FAC
+FormatTrack|data written|0,1,+1024,0 (form 0)|1	$574A3000
+FormatTrack|disk|0,1,+1024,0 (form 0)|1	bytes 16384 fnv FF8082C5
+FormatTrack|read buffer|0,1,+1024,0 (form 0)|1	bytes 4096 fnv 5FF9152D
+FormatTrack|kept|0,65537,+0,2 (form 1)|1	kept
+FormatTrack|d0|0,65537,+0,2 (form 1)|1	$00000000
+FormatTrack|requests|0,65537,+0,2 (form 1)|1	$00000009
+FormatTrack|opens|0,65537,+0,2 (form 1)|1	$00000001
+FormatTrack|closes|0,65537,+0,2 (form 1)|1	$00000000
+FormatTrack|failed opens|0,65537,+0,2 (form 1)|1	$00000000
+FormatTrack|command|0,65537,+0,2 (form 1)|1	$0000000B
+FormatTrack|flags|0,65537,+0,2 (form 1)|1	$00000001
+FormatTrack|length|0,65537,+0,2 (form 1)|1	$00000400
+FormatTrack|offset|0,65537,+0,2 (form 1)|1	$00001600
+FormatTrack|unit|0,65537,+0,2 (form 1)|1	$00000000
+FormatTrack|actual|0,65537,+0,2 (form 1)|1	$00000400
+FormatTrack|buffer|0,65537,+0,2 (form 1)|1	$00010000
+FormatTrack|head|0,65537,+0,2 (form 1)|1	bytes 8 4D5A6774818E9BA8
+FormatTrack|data written|0,65537,+0,2 (form 1)|1	$0506E000
+FormatTrack|disk|0,65537,+0,2 (form 1)|1	bytes 16384 fnv F86B17C5
+FormatTrack|read buffer|0,65537,+0,2 (form 1)|1	bytes 4096 fnv 5FF9152D
+FormatTrack|kept|0,2,+0,1 (form 1)|1	kept
+FormatTrack|d0|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|requests|0,2,+0,1 (form 1)|1	$0000000A
+FormatTrack|opens|0,2,+0,1 (form 1)|1	$00000001
+FormatTrack|closes|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|failed opens|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|command|0,2,+0,1 (form 1)|1	$0000000B
+FormatTrack|flags|0,2,+0,1 (form 1)|1	$00000001
+FormatTrack|length|0,2,+0,1 (form 1)|1	$00000200
+FormatTrack|offset|0,2,+0,1 (form 1)|1	$00002C00
+FormatTrack|unit|0,2,+0,1 (form 1)|1	$00000000
+FormatTrack|actual|0,2,+0,1 (form 1)|1	$00000200
+FormatTrack|buffer|0,2,+0,1 (form 1)|1	$00010000
+FormatTrack|head|0,2,+0,1 (form 1)|1	bytes 8 4D5A6774818E9BA8
+FormatTrack|data written|0,2,+0,1 (form 1)|1	$F53B3000
+FormatTrack|disk|0,2,+0,1 (form 1)|1	bytes 16384 fnv BFA67BC5
+FormatTrack|read buffer|0,2,+0,1 (form 1)|1	bytes 4096 fnv 5FF9152D
+ReadSector|kept|0,0,+0,8 (form 1)|1	kept
+ReadSector|d0|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|requests|0,0,+0,8 (form 1)|1	$0000000B
+ReadSector|opens|0,0,+0,8 (form 1)|1	$00000001
+ReadSector|closes|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|failed opens|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|command|0,0,+0,8 (form 1)|1	$00000002
+ReadSector|flags|0,0,+0,8 (form 1)|1	$00000001
+ReadSector|length|0,0,+0,8 (form 1)|1	$00001000
+ReadSector|offset|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|unit|0,0,+0,8 (form 1)|1	$00000000
+ReadSector|actual|0,0,+0,8 (form 1)|1	$00001000
+ReadSector|buffer|0,0,+0,8 (form 1)|1	$00020000
+ReadSector|head|0,0,+0,8 (form 1)|1	bytes 8 0000000000000000
+ReadSector|disk|0,0,+0,8 (form 1)|1	bytes 16384 fnv BFA67BC5
+ReadSector|read buffer|0,0,+0,8 (form 1)|1	bytes 4096 fnv 50F533C5
+MotorOn|kept|0|2	kept
+MotorOn|d0|0|2	$00000000
+MotorOn|requests|0|2	$0000000C
+MotorOn|opens|0|2	$00000001
+MotorOn|closes|0|2	$00000000
+MotorOn|failed opens|0|2	$00000000
+MotorOn|command|0|2	$00000009
+MotorOn|flags|0|2	$00000001
+MotorOn|length|0|2	$00000001
+MotorOn|offset|0|2	$00000000
+MotorOn|unit|0|2	$00000000
+MotorOn|actual|0|2	$00000000
+MotorOn|buffer|0|2	$00020000
+MotorOn|head|0|2	bytes 8 0000000000000000
+MotorOn|disk|0|2	bytes 16384 fnv BFA67BC5
+MotorOn|read buffer|0|2	bytes 4096 fnv 50F533C5
+MotorOn|kept|0|3	kept
+MotorOn|d0|0|3	$00000000
+MotorOn|requests|0|3	$0000000D
+MotorOn|opens|0|3	$00000001
+MotorOn|closes|0|3	$00000000
+MotorOn|failed opens|0|3	$00000000
+MotorOn|command|0|3	$00000009
+MotorOn|flags|0|3	$00000001
+MotorOn|length|0|3	$00000001
+MotorOn|offset|0|3	$00000000
+MotorOn|unit|0|3	$00000000
+MotorOn|actual|0|3	$00000001
+MotorOn|buffer|0|3	$00020000
+MotorOn|head|0|3	bytes 8 0000000000000000
+MotorOn|disk|0|3	bytes 16384 fnv BFA67BC5
+MotorOn|read buffer|0|3	bytes 4096 fnv 50F533C5
+MotorOff|kept|0|2	kept
+MotorOff|d0|0|2	$00000000
+MotorOff|requests|0|2	$0000000E
+MotorOff|opens|0|2	$00000001
+MotorOff|closes|0|2	$00000000
+MotorOff|failed opens|0|2	$00000000
+MotorOff|command|0|2	$00000009
+MotorOff|flags|0|2	$00000001
+MotorOff|length|0|2	$00000000
+MotorOff|offset|0|2	$00000000
+MotorOff|unit|0|2	$00000000
+MotorOff|actual|0|2	$00000001
+MotorOff|buffer|0|2	$00020000
+MotorOff|head|0|2	bytes 8 0000000000000000
+MotorOff|disk|0|2	bytes 16384 fnv BFA67BC5
+MotorOff|read buffer|0|2	bytes 4096 fnv 50F533C5
+WriteBoot|kept|0|1	kept
+WriteBoot|d0|0|1	$00000000
+WriteBoot|requests|0|1	$0000000F
+WriteBoot|opens|0|1	$00000001
+WriteBoot|closes|0|1	$00000000
+WriteBoot|failed opens|0|1	$00000000
+WriteBoot|command|0|1	$0000000B
+WriteBoot|flags|0|1	$00000001
+WriteBoot|length|0|1	$00000400
+WriteBoot|offset|0|1	$00000000
+WriteBoot|unit|0|1	$00000000
+WriteBoot|actual|0|1	$00000400
+WriteBoot|buffer|0|1	$00040000
+WriteBoot|head|0|1	bytes 8 444F5300FFFFFFFF
+WriteBoot|disk|0|1	bytes 16384 fnv 6F292DCB
+WriteBoot|read buffer|0|1	bytes 4096 fnv 50F533C5
+WriteBoot|default boot block|0|1	$00000001
+WriteBoot|kept|0,bootdata (d2 = buf+512)|1	kept
+WriteBoot|d0|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|requests|0,bootdata (d2 = buf+512)|1	$00000010
+WriteBoot|opens|0,bootdata (d2 = buf+512)|1	$00000001
+WriteBoot|closes|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|failed opens|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|command|0,bootdata (d2 = buf+512)|1	$0000000B
+WriteBoot|flags|0,bootdata (d2 = buf+512)|1	$00000001
+WriteBoot|length|0,bootdata (d2 = buf+512)|1	$00000400
+WriteBoot|offset|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|unit|0,bootdata (d2 = buf+512)|1	$00000000
+WriteBoot|actual|0,bootdata (d2 = buf+512)|1	$00000400
+WriteBoot|buffer|0,bootdata (d2 = buf+512)|1	$00010200
+WriteBoot|head|0,bootdata (d2 = buf+512)|1	bytes 8 4F586576838C99AA
+WriteBoot|data written|0,bootdata (d2 = buf+512)|1	$4715E000
+WriteBoot|disk|0,bootdata (d2 = buf+512)|1	bytes 16384 fnv D4DC77C5
+WriteBoot|read buffer|0,bootdata (d2 = buf+512)|1	bytes 4096 fnv 50F533C5
+BootProg|kept|0,boot 0|1	kept
+BootProg|d0|0,boot 0|1	$00000000
+BootProg|boot block|0,boot 0|1	bytes 1024 fnv 9C843250
+BootProg|checksum|0,boot 0|1	$413F35D6
+BootProg|requests|0,boot 0|1	$00000011
+BootProg|opens|0,boot 0|1	$00000001
+BootProg|closes|0,boot 0|1	$00000000
+BootProg|failed opens|0,boot 0|1	$00000000
+BootProg|command|0,boot 0|1	$00000003
+BootProg|flags|0,boot 0|1	$00000001
+BootProg|length|0,boot 0|1	$00000400
+BootProg|offset|0,boot 0|1	$00000000
+BootProg|unit|0,boot 0|1	$00000000
+BootProg|actual|0,boot 0|1	$00000400
+BootProg|buffer|0,boot 0|1	$00030000
+BootProg|head|0,boot 0|1	bytes 8 444F5300413F35D6
+BootProg|data written|0,boot 0|1	$CC0AEB29
+BootProg|disk|0,boot 0|1	bytes 16384 fnv A2402A50
+BootProg|read buffer|0,boot 0|1	bytes 4096 fnv 50F533C5
+BootProg|kept|0,boot 1|1	kept
+BootProg|d0|0,boot 1|1	$00000000
+BootProg|boot block|0,boot 1|1	bytes 1024 fnv E643B68F
+BootProg|checksum|0,boot 1|1	$DCDAD171
+BootProg|requests|0,boot 1|1	$00000012
+BootProg|opens|0,boot 1|1	$00000001
+BootProg|closes|0,boot 1|1	$00000000
+BootProg|failed opens|0,boot 1|1	$00000000
+BootProg|command|0,boot 1|1	$00000003
+BootProg|flags|0,boot 1|1	$00000001
+BootProg|length|0,boot 1|1	$00000400
+BootProg|offset|0,boot 1|1	$00000000
+BootProg|unit|0,boot 1|1	$00000000
+BootProg|actual|0,boot 1|1	$00000400
+BootProg|buffer|0,boot 1|1	$00030000
+BootProg|head|0,boot 1|1	bytes 8 444F5300DCDAD171
+BootProg|data written|0,boot 1|1	$0D799D08
+BootProg|disk|0,boot 1|1	bytes 16384 fnv EEF2638F
+BootProg|read buffer|0,boot 1|1	bytes 4096 fnv 50F533C5
+ReadSector|kept|0,0,+0,2 (form 1)|1	kept
+ReadSector|d0|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|requests|0,0,+0,2 (form 1)|1	$00000013
+ReadSector|opens|0,0,+0,2 (form 1)|1	$00000001
+ReadSector|closes|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|failed opens|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|command|0,0,+0,2 (form 1)|1	$00000002
+ReadSector|flags|0,0,+0,2 (form 1)|1	$00000001
+ReadSector|length|0,0,+0,2 (form 1)|1	$00000400
+ReadSector|offset|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|unit|0,0,+0,2 (form 1)|1	$00000000
+ReadSector|actual|0,0,+0,2 (form 1)|1	$00000400
+ReadSector|buffer|0,0,+0,2 (form 1)|1	$00020000
+ReadSector|head|0,0,+0,2 (form 1)|1	bytes 8 0000000000000000
+ReadSector|disk|0,0,+0,2 (form 1)|1	bytes 16384 fnv EEF2638F
+ReadSector|read buffer|0,0,+0,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
+OpenDisk|kept|1,-|1	kept
+OpenDisk|d0|1,-|1	$FFFFFFFF
+OpenDisk|requests|1,-|1	$00000013
+OpenDisk|opens|1,-|1	$00000002
+OpenDisk|closes|1,-|1	$00000000
+OpenDisk|failed opens|1,-|1	$00000000
+OpenDisk|command|1,-|1	$00000002
+OpenDisk|flags|1,-|1	$00000001
+OpenDisk|length|1,-|1	$00000400
+OpenDisk|offset|1,-|1	$00000000
+OpenDisk|unit|1,-|1	$00000001
+OpenDisk|actual|1,-|1	$00000400
+OpenDisk|buffer|1,-|1	$00020000
+OpenDisk|head|1,-|1	bytes 8 0000000000000000
+OpenDisk|disk|1,-|1	bytes 16384 fnv EEF2638F
+OpenDisk|read buffer|1,-|1	bytes 4096 fnv 4CA4ED8F
+DiskIO|kept|1|1	kept
+DiskIO|d0 != 0|1|1	$00000001
+DiskIO|io_Device|1|1	$00000001
+DiskIO|io_Unit|1|1	$00000001
+DiskIO|io_Error|1|1	$00000000
+DiskIO|reply port = port of init|1|1	$00000001
+OpenDisk|kept|2,-|1	kept
+OpenDisk|d0|2,-|1	$00000000
+OpenDisk|requests|2,-|1	$00000013
+OpenDisk|opens|2,-|1	$00000002
+OpenDisk|closes|2,-|1	$00000000
+OpenDisk|failed opens|2,-|1	$00000002
+OpenDisk|command|2,-|1	$00000002
+OpenDisk|flags|2,-|1	$00000001
+OpenDisk|length|2,-|1	$00000400
+OpenDisk|offset|2,-|1	$00000000
+OpenDisk|unit|2,-|1	$00000001
+OpenDisk|actual|2,-|1	$00000400
+OpenDisk|buffer|2,-|1	$00020000
+OpenDisk|head|2,-|1	bytes 8 0000000000000000
+OpenDisk|disk|2,-|1	bytes 16384 fnv EEF2638F
+OpenDisk|read buffer|2,-|1	bytes 4096 fnv 4CA4ED8F
+DiskIO|kept|2|1	kept
+DiskIO|d0 != 0|2|1	$00000000
+OpenDisk|kept|3,-|1	kept
+OpenDisk|d0|3,-|1	$FFFFFFFF
+OpenDisk|requests|3,-|1	$00000013
+OpenDisk|opens|3,-|1	$00000003
+OpenDisk|closes|3,-|1	$00000000
+OpenDisk|failed opens|3,-|1	$00000002
+OpenDisk|command|3,-|1	$00000002
+OpenDisk|flags|3,-|1	$00000001
+OpenDisk|length|3,-|1	$00000400
+OpenDisk|offset|3,-|1	$00000000
+OpenDisk|unit|3,-|1	$00000003
+OpenDisk|actual|3,-|1	$00000400
+OpenDisk|buffer|3,-|1	$00020000
+OpenDisk|head|3,-|1	bytes 8 0000000000000000
+OpenDisk|disk|3,-|1	bytes 16384 fnv EEF2638F
+OpenDisk|read buffer|3,-|1	bytes 4096 fnv 4CA4ED8F
+DiskIO|kept|3|1	kept
+DiskIO|d0 != 0|3|1	$00000001
+DiskIO|io_Device|3|1	$00000001
+DiskIO|io_Unit|3|1	$00000003
+DiskIO|io_Error|3|1	$00000000
+DiskIO|reply port = port of init|3|1	$00000001
+WriteSector|kept|3,7,+2048,2 (form 1)|1	kept
+WriteSector|d0|3,7,+2048,2 (form 1)|1	$00000000
+WriteSector|requests|3,7,+2048,2 (form 1)|1	$00000014
+WriteSector|opens|3,7,+2048,2 (form 1)|1	$00000003
+WriteSector|closes|3,7,+2048,2 (form 1)|1	$00000000
+WriteSector|failed opens|3,7,+2048,2 (form 1)|1	$00000002
+WriteSector|command|3,7,+2048,2 (form 1)|1	$00000003
+WriteSector|flags|3,7,+2048,2 (form 1)|1	$00000001
+WriteSector|length|3,7,+2048,2 (form 1)|1	$00000400
+WriteSector|offset|3,7,+2048,2 (form 1)|1	$00000E00
+WriteSector|unit|3,7,+2048,2 (form 1)|1	$00000003
+WriteSector|actual|3,7,+2048,2 (form 1)|1	$00000400
+WriteSector|buffer|3,7,+2048,2 (form 1)|1	$00010800
+WriteSector|head|3,7,+2048,2 (form 1)|1	bytes 8 45526F7C898693A0
+WriteSector|data written|3,7,+2048,2 (form 1)|1	$F64AE000
+WriteSector|disk|3,7,+2048,2 (form 1)|1	bytes 16384 fnv 1DF5C38F
+WriteSector|read buffer|3,7,+2048,2 (form 1)|1	bytes 4096 fnv 4CA4ED8F
+ReadSector|kept|1,7,+0,2 (form 1)|1	kept
+ReadSector|d0|1,7,+0,2 (form 1)|1	$00000000
+ReadSector|requests|1,7,+0,2 (form 1)|1	$00000015
+ReadSector|opens|1,7,+0,2 (form 1)|1	$00000003
+ReadSector|closes|1,7,+0,2 (form 1)|1	$00000000
+ReadSector|failed opens|1,7,+0,2 (form 1)|1	$00000002
+ReadSector|command|1,7,+0,2 (form 1)|1	$00000002
+ReadSector|flags|1,7,+0,2 (form 1)|1	$00000001
+ReadSector|length|1,7,+0,2 (form 1)|1	$00000400
+ReadSector|offset|1,7,+0,2 (form 1)|1	$00000E00
+ReadSector|unit|1,7,+0,2 (form 1)|1	$00000001
+ReadSector|actual|1,7,+0,2 (form 1)|1	$00000400
+ReadSector|buffer|1,7,+0,2 (form 1)|1	$00020000
+ReadSector|head|1,7,+0,2 (form 1)|1	bytes 8 0000000000000000
+ReadSector|disk|1,7,+0,2 (form 1)|1	bytes 16384 fnv 1DF5C38F
+ReadSector|read buffer|1,7,+0,2 (form 1)|1	bytes 4096 fnv 671EA9C5
+MotorOn|kept|3|1	kept
+MotorOn|d0|3|1	$00000000
+MotorOn|requests|3|1	$00000016
+MotorOn|opens|3|1	$00000003
+MotorOn|closes|3|1	$00000000
+MotorOn|failed opens|3|1	$00000002
+MotorOn|command|3|1	$00000009
+MotorOn|flags|3|1	$00000001
+MotorOn|length|3|1	$00000001
+MotorOn|offset|3|1	$00000E00
+MotorOn|unit|3|1	$00000003
+MotorOn|actual|3|1	$00000000
+MotorOn|buffer|3|1	$00010800
+MotorOn|head|3|1	bytes 8 0000000000000000
+MotorOn|disk|3|1	bytes 16384 fnv 1DF5C38F
+MotorOn|read buffer|3|1	bytes 4096 fnv 671EA9C5
+OpenDisk|kept|1,rwetest.device|1	kept
+OpenDisk|d0|1,rwetest.device|1	$FFFFFFFF
+OpenDisk|requests|1,rwetest.device|1	$00000016
+OpenDisk|opens|1,rwetest.device|1	$00000004
+OpenDisk|closes|1,rwetest.device|1	$00000000
+OpenDisk|failed opens|1,rwetest.device|1	$00000002
+OpenDisk|command|1,rwetest.device|1	$00000009
+OpenDisk|flags|1,rwetest.device|1	$00000001
+OpenDisk|length|1,rwetest.device|1	$00000001
+OpenDisk|offset|1,rwetest.device|1	$00000E00
+OpenDisk|unit|1,rwetest.device|1	$00000001
+OpenDisk|actual|1,rwetest.device|1	$00000000
+OpenDisk|buffer|1,rwetest.device|1	$00010800
+OpenDisk|head|1,rwetest.device|1	bytes 8 0000000000000000
+OpenDisk|disk|1,rwetest.device|1	bytes 16384 fnv 1DF5C38F
+OpenDisk|read buffer|1,rwetest.device|1	bytes 4096 fnv 671EA9C5
+DiskIO|kept|1|2	kept
+DiskIO|d0 != 0|1|2	$00000001
+DiskIO|io_Device|1|2	$00000001
+DiskIO|io_Unit|1|2	$00000001
+DiskIO|io_Error|1|2	$00000000
+DiskIO|reply port = port of init|1|2	$00000001
+OpenDisk|kept|-1,-|1	kept
+OpenDisk|d0|-1,-|1	$FFFFFFFF
+OpenDisk|requests|-1,-|1	$00000016
+OpenDisk|opens|-1,-|1	$00000005
+OpenDisk|closes|-1,-|1	$00000000
+OpenDisk|failed opens|-1,-|1	$00000002
+OpenDisk|command|-1,-|1	$00000009
+OpenDisk|flags|-1,-|1	$00000001
+OpenDisk|length|-1,-|1	$00000001
+OpenDisk|offset|-1,-|1	$00000E00
+OpenDisk|unit|-1,-|1	$FFFFFFFF
+OpenDisk|actual|-1,-|1	$00000000
+OpenDisk|buffer|-1,-|1	$00010800
+OpenDisk|head|-1,-|1	bytes 8 0000000000000000
+OpenDisk|disk|-1,-|1	bytes 16384 fnv 1DF5C38F
+OpenDisk|read buffer|-1,-|1	bytes 4096 fnv 671EA9C5
+OpenDisk|kept|-2,-|1	kept
+OpenDisk|d0|-2,-|1	$00000000
+OpenDisk|requests|-2,-|1	$00000016
+OpenDisk|opens|-2,-|1	$00000005
+OpenDisk|closes|-2,-|1	$00000000
+OpenDisk|failed opens|-2,-|1	$00000004
+OpenDisk|command|-2,-|1	$00000009
+OpenDisk|flags|-2,-|1	$00000001
+OpenDisk|length|-2,-|1	$00000001
+OpenDisk|offset|-2,-|1	$00000E00
+OpenDisk|unit|-2,-|1	$FFFFFFFF
+OpenDisk|actual|-2,-|1	$00000000
+OpenDisk|buffer|-2,-|1	$00010800
+OpenDisk|head|-2,-|1	bytes 8 0000000000000000
+OpenDisk|disk|-2,-|1	bytes 16384 fnv 1DF5C38F
+OpenDisk|read buffer|-2,-|1	bytes 4096 fnv 671EA9C5
+DiskIO|kept|-1|1	kept
+DiskIO|d0 != 0|-1|1	$00000000
+MotorOn|kept|-1|1	kept
+MotorOn|d0|-1|1	$00000000
+MotorOn|requests|-1|1	$00000016
+MotorOn|opens|-1|1	$00000005
+MotorOn|closes|-1|1	$00000000
+MotorOn|failed opens|-1|1	$00000004
+MotorOn|command|-1|1	$00000009
+MotorOn|flags|-1|1	$00000001
+MotorOn|length|-1|1	$00000001
+MotorOn|offset|-1|1	$00000E00
+MotorOn|unit|-1|1	$FFFFFFFF
+MotorOn|actual|-1|1	$00000000
+MotorOn|buffer|-1|1	$00010800
+MotorOn|head|-1|1	bytes 8 0000000000000000
+MotorOn|disk|-1|1	bytes 16384 fnv 1DF5C38F
+MotorOn|read buffer|-1|1	bytes 4096 fnv 671EA9C5
+ReadSector|kept|-1,0,+0,0 (form 0)|1	kept
+ReadSector|d0|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|requests|-1,0,+0,0 (form 0)|1	$00000016
+ReadSector|opens|-1,0,+0,0 (form 0)|1	$00000005
+ReadSector|closes|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|failed opens|-1,0,+0,0 (form 0)|1	$00000004
+ReadSector|command|-1,0,+0,0 (form 0)|1	$00000009
+ReadSector|flags|-1,0,+0,0 (form 0)|1	$00000001
+ReadSector|length|-1,0,+0,0 (form 0)|1	$00000001
+ReadSector|offset|-1,0,+0,0 (form 0)|1	$00000E00
+ReadSector|unit|-1,0,+0,0 (form 0)|1	$FFFFFFFF
+ReadSector|actual|-1,0,+0,0 (form 0)|1	$00000000
+ReadSector|buffer|-1,0,+0,0 (form 0)|1	$00010800
+ReadSector|head|-1,0,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector|disk|-1,0,+0,0 (form 0)|1	bytes 16384 fnv 1DF5C38F
+ReadSector|read buffer|-1,0,+0,0 (form 0)|1	bytes 4096 fnv 671EA9C5
+BootProg (no request)|kept|7,boot|1	kept
+BootProg (no request)|d0|7,boot|1	$00000000
+BootProg (no request)|boot block|7,boot|1	bytes 1024 fnv 17BE158C
+BootProg (no request)|requests|7,boot|1	$00000016
+BootProg (no request)|opens|7,boot|1	$00000005
+BootProg (no request)|closes|7,boot|1	$00000000
+BootProg (no request)|failed opens|7,boot|1	$00000004
+BootProg (no request)|command|7,boot|1	$00000009
+BootProg (no request)|flags|7,boot|1	$00000001
+BootProg (no request)|length|7,boot|1	$00000001
+BootProg (no request)|offset|7,boot|1	$00000E00
+BootProg (no request)|unit|7,boot|1	$FFFFFFFF
+BootProg (no request)|actual|7,boot|1	$00000000
+BootProg (no request)|buffer|7,boot|1	$00010800
+BootProg (no request)|head|7,boot|1	bytes 8 0000000000000000
+BootProg (no request)|disk|7,boot|1	bytes 16384 fnv 1DF5C38F
+BootProg (no request)|read buffer|7,boot|1	bytes 4096 fnv 671EA9C5
+DiskMotor|kept||1	kept
+DiskMotor|d0||1	$000000FF
+CloseDisk|kept|1|1	kept
+CloseDisk|d0|1|1	$FFFFFFFF
+CloseDisk|requests|1|1	$00000017
+CloseDisk|opens|1|1	$00000005
+CloseDisk|closes|1|1	$00000001
+CloseDisk|failed opens|1|1	$00000004
+CloseDisk|command|1|1	$00000009
+CloseDisk|flags|1|1	$00000001
+CloseDisk|length|1|1	$00000000
+CloseDisk|offset|1|1	$00000000
+CloseDisk|unit|1|1	$00000001
+CloseDisk|actual|1|1	$00000000
+CloseDisk|buffer|1|1	$00000000
+CloseDisk|head|1|1	bytes 8 0000000000000000
+CloseDisk|disk|1|1	bytes 16384 fnv 1DF5C38F
+CloseDisk|read buffer|1|1	bytes 4096 fnv 671EA9C5
+CloseDisk|kept|1|2	kept
+CloseDisk|d0|1|2	$00000000
+CloseDisk|requests|1|2	$00000017
+CloseDisk|opens|1|2	$00000005
+CloseDisk|closes|1|2	$00000001
+CloseDisk|failed opens|1|2	$00000004
+CloseDisk|command|1|2	$00000009
+CloseDisk|flags|1|2	$00000001
+CloseDisk|length|1|2	$00000000
+CloseDisk|offset|1|2	$00000000
+CloseDisk|unit|1|2	$00000001
+CloseDisk|actual|1|2	$00000000
+CloseDisk|buffer|1|2	$00000000
+CloseDisk|head|1|2	bytes 8 0000000000000000
+CloseDisk|disk|1|2	bytes 16384 fnv 1DF5C38F
+CloseDisk|read buffer|1|2	bytes 4096 fnv 671EA9C5
+CloseDisk|kept|9|1	kept
+CloseDisk|d0|9|1	$00000000
+CloseDisk|requests|9|1	$00000017
+CloseDisk|opens|9|1	$00000005
+CloseDisk|closes|9|1	$00000001
+CloseDisk|failed opens|9|1	$00000004
+CloseDisk|command|9|1	$00000009
+CloseDisk|flags|9|1	$00000001
+CloseDisk|length|9|1	$00000000
+CloseDisk|offset|9|1	$00000000
+CloseDisk|unit|9|1	$00000001
+CloseDisk|actual|9|1	$00000000
+CloseDisk|buffer|9|1	$00000000
+CloseDisk|head|9|1	bytes 8 0000000000000000
+CloseDisk|disk|9|1	bytes 16384 fnv 1DF5C38F
+CloseDisk|read buffer|9|1	bytes 4096 fnv 671EA9C5
+CloseDisk|kept|-1|1	kept
+CloseDisk|d0|-1|1	$00000000
+CloseDisk|requests|-1|1	$00000017
+CloseDisk|opens|-1|1	$00000005
+CloseDisk|closes|-1|1	$00000001
+CloseDisk|failed opens|-1|1	$00000004
+CloseDisk|command|-1|1	$00000009
+CloseDisk|flags|-1|1	$00000001
+CloseDisk|length|-1|1	$00000000
+CloseDisk|offset|-1|1	$00000000
+CloseDisk|unit|-1|1	$00000001
+CloseDisk|actual|-1|1	$00000000
+CloseDisk|buffer|-1|1	$00000000
+CloseDisk|head|-1|1	bytes 8 0000000000000000
+CloseDisk|disk|-1|1	bytes 16384 fnv 1DF5C38F
+CloseDisk|read buffer|-1|1	bytes 4096 fnv 671EA9C5
+DiskIO|kept|3|2	kept
+DiskIO|d0 != 0|3|2	$00000001
+DiskIO|io_Device|3|2	$00000001
+DiskIO|io_Unit|3|2	$00000003
+DiskIO|io_Error|3|2	$00000000
+DiskIO|reply port = port of init|3|2	$00000001
+finit|kept||1	kept
+finit|requests||1	$00000018
+finit|opens||1	$00000005
+finit|closes||1	$00000002
+finit|failed opens||1	$00000004
+finit|command||1	$00000009
+finit|flags||1	$00000001
+finit|length||1	$00000000
+finit|offset||1	$00000000
+finit|unit||1	$00000000
+finit|actual||1	$00000000
+finit|buffer||1	$00020000
+finit|head||1	bytes 8 0000000000000000
+finit|disk||1	bytes 16384 fnv 1DF5C38F
+finit|read buffer||1	bytes 4096 fnv 671EA9C5
+DiskIO (after finit)|kept|3|1	kept
+DiskIO (after finit)|d0|3|1	$00000000
+DiskIO (after finit)|requests|3|1	$00000018
+DiskIO (after finit)|opens|3|1	$00000005
+DiskIO (after finit)|closes|3|1	$00000002
+DiskIO (after finit)|failed opens|3|1	$00000004
+DiskIO (after finit)|command|3|1	$00000009
+DiskIO (after finit)|flags|3|1	$00000001
+DiskIO (after finit)|length|3|1	$00000000
+DiskIO (after finit)|offset|3|1	$00000000
+DiskIO (after finit)|unit|3|1	$00000000
+DiskIO (after finit)|actual|3|1	$00000000
+DiskIO (after finit)|buffer|3|1	$00020000
+DiskIO (after finit)|head|3|1	bytes 8 0000000000000000
+DiskIO (after finit)|disk|3|1	bytes 16384 fnv 1DF5C38F
+DiskIO (after finit)|read buffer|3|1	bytes 4096 fnv 671EA9C5
+ReadSector (after finit)|kept|0,0,+0,0 (form 0)|1	kept
+ReadSector (after finit)|d0|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|requests|0,0,+0,0 (form 0)|1	$00000018
+ReadSector (after finit)|opens|0,0,+0,0 (form 0)|1	$00000005
+ReadSector (after finit)|closes|0,0,+0,0 (form 0)|1	$00000002
+ReadSector (after finit)|failed opens|0,0,+0,0 (form 0)|1	$00000004
+ReadSector (after finit)|command|0,0,+0,0 (form 0)|1	$00000009
+ReadSector (after finit)|flags|0,0,+0,0 (form 0)|1	$00000001
+ReadSector (after finit)|length|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|offset|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|unit|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|actual|0,0,+0,0 (form 0)|1	$00000000
+ReadSector (after finit)|buffer|0,0,+0,0 (form 0)|1	$00020000
+ReadSector (after finit)|head|0,0,+0,0 (form 0)|1	bytes 8 0000000000000000
+ReadSector (after finit)|disk|0,0,+0,0 (form 0)|1	bytes 16384 fnv 1DF5C38F
+ReadSector (after finit)|read buffer|0,0,+0,0 (form 0)|1	bytes 4096 fnv 671EA9C5
+init|kept|0,0,+0,0 (form 0)|1	kept
+DiskIO (init again: unit 3 stale)|kept|3|1	kept
+DiskIO (init again: unit 3 stale)|d0|3|1	$00000103
+DiskIO (init again: unit 3 stale)|requests|3|1	$00000018
+DiskIO (init again: unit 3 stale)|opens|3|1	$00000005
+DiskIO (init again: unit 3 stale)|closes|3|1	$00000002
+DiskIO (init again: unit 3 stale)|failed opens|3|1	$00000004
+DiskIO (init again: unit 3 stale)|command|3|1	$00000009
+DiskIO (init again: unit 3 stale)|flags|3|1	$00000001
+DiskIO (init again: unit 3 stale)|length|3|1	$00000000
+DiskIO (init again: unit 3 stale)|offset|3|1	$00000000
+DiskIO (init again: unit 3 stale)|unit|3|1	$00000000
+DiskIO (init again: unit 3 stale)|actual|3|1	$00000000
+DiskIO (init again: unit 3 stale)|buffer|3|1	$00020000
+DiskIO (init again: unit 3 stale)|head|3|1	bytes 8 0000000000000000
+DiskIO (init again: unit 3 stale)|disk|3|1	bytes 16384 fnv 1DF5C38F
+DiskIO (init again: unit 3 stale)|read buffer|3|1	bytes 4096 fnv 671EA9C5
+finit|kept|3|1	kept
+init|kept|3|1	kept
+OpenDisk|kept|0,trackdisk.device|1	kept
+OpenDisk|d0|0,trackdisk.device|1	$FFFFFFFF
+OpenDisk|requests|0,trackdisk.device|1	$00000018
+OpenDisk|opens|0,trackdisk.device|1	$00000005
+OpenDisk|closes|0,trackdisk.device|1	$00000003
+OpenDisk|failed opens|0,trackdisk.device|1	$00000004
+OpenDisk|command|0,trackdisk.device|1	$00000009
+OpenDisk|flags|0,trackdisk.device|1	$00000001
+OpenDisk|length|0,trackdisk.device|1	$00000000
+OpenDisk|offset|0,trackdisk.device|1	$00000000
+OpenDisk|unit|0,trackdisk.device|1	$00000003
+OpenDisk|actual|0,trackdisk.device|1	$00000000
+OpenDisk|buffer|0,trackdisk.device|1	$00020000
+OpenDisk|head|0,trackdisk.device|1	bytes 8 0000000000000000
+OpenDisk|disk|0,trackdisk.device|1	bytes 16384 fnv 1DF5C38F
+OpenDisk|read buffer|0,trackdisk.device|1	bytes 4096 fnv 671EA9C5
+DiskIO|kept|0|3	kept
+DiskIO|d0 != 0|0|3	$00000001
+DiskIO|io_Device|0|2	$00000000
+DiskIO|io_Unit|0|2	$4000FB38
+DiskIO|io_Error|0|2	$00000000
+DiskIO|reply port = port of init|0|2	$00000001
+MotorOn (trackdisk)|kept|0|1	kept
+MotorOn (trackdisk)|d0|0|1	$00000000
+MotorOn (trackdisk)|requests|0|1	$00000018
+MotorOn (trackdisk)|opens|0|1	$00000005
+MotorOn (trackdisk)|closes|0|1	$00000003
+MotorOn (trackdisk)|failed opens|0|1	$00000004
+MotorOn (trackdisk)|command|0|1	$00000009
+MotorOn (trackdisk)|flags|0|1	$00000001
+MotorOn (trackdisk)|length|0|1	$00000000
+MotorOn (trackdisk)|offset|0|1	$00000000
+MotorOn (trackdisk)|unit|0|1	$00000003
+MotorOn (trackdisk)|actual|0|1	$00000000
+MotorOn (trackdisk)|buffer|0|1	$00020000
+MotorOn (trackdisk)|head|0|1	bytes 8 0000000000000000
+MotorOn (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
+MotorOn (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
+DiskMotor (motor on)|kept|0|1	kept
+DiskMotor (motor on)|d0|0|1	$000000FF
+MotorOff (trackdisk)|kept|0|1	kept
+MotorOff (trackdisk)|d0|0|1	$00000000
+MotorOff (trackdisk)|requests|0|1	$00000018
+MotorOff (trackdisk)|opens|0|1	$00000005
+MotorOff (trackdisk)|closes|0|1	$00000003
+MotorOff (trackdisk)|failed opens|0|1	$00000004
+MotorOff (trackdisk)|command|0|1	$00000009
+MotorOff (trackdisk)|flags|0|1	$00000001
+MotorOff (trackdisk)|length|0|1	$00000000
+MotorOff (trackdisk)|offset|0|1	$00000000
+MotorOff (trackdisk)|unit|0|1	$00000003
+MotorOff (trackdisk)|actual|0|1	$00000000
+MotorOff (trackdisk)|buffer|0|1	$00020000
+MotorOff (trackdisk)|head|0|1	bytes 8 0000000000000000
+MotorOff (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
+MotorOff (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
+DiskMotor (motor off)|kept|0|1	kept
+DiskMotor (motor off)|d0|0|1	$000000FF
+ReadSector (trackdisk, no disk)|kept|0,0|1	kept
+ReadSector (trackdisk, no disk)|d0|0,0|1	$0000001D
+DiskStatus (trackdisk)|kept|0|1	kept
+DiskStatus (trackdisk)|d0|0|1	$00000100
+DiskStatus (trackdisk)|requests|0|1	$00000018
+DiskStatus (trackdisk)|opens|0|1	$00000005
+DiskStatus (trackdisk)|closes|0|1	$00000003
+DiskStatus (trackdisk)|failed opens|0|1	$00000004
+DiskStatus (trackdisk)|command|0|1	$00000009
+DiskStatus (trackdisk)|flags|0|1	$00000001
+DiskStatus (trackdisk)|length|0|1	$00000000
+DiskStatus (trackdisk)|offset|0|1	$00000000
+DiskStatus (trackdisk)|unit|0|1	$00000003
+DiskStatus (trackdisk)|actual|0|1	$00000000
+DiskStatus (trackdisk)|buffer|0|1	$00020000
+DiskStatus (trackdisk)|head|0|1	bytes 8 0000000000000000
+DiskStatus (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
+DiskStatus (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
+CloseDisk (trackdisk)|kept|0|1	kept
+CloseDisk (trackdisk)|d0|0|1	$FFFFFFFF
+CloseDisk (trackdisk)|requests|0|1	$00000018
+CloseDisk (trackdisk)|opens|0|1	$00000005
+CloseDisk (trackdisk)|closes|0|1	$00000003
+CloseDisk (trackdisk)|failed opens|0|1	$00000004
+CloseDisk (trackdisk)|command|0|1	$00000009
+CloseDisk (trackdisk)|flags|0|1	$00000001
+CloseDisk (trackdisk)|length|0|1	$00000000
+CloseDisk (trackdisk)|offset|0|1	$00000000
+CloseDisk (trackdisk)|unit|0|1	$00000003
+CloseDisk (trackdisk)|actual|0|1	$00000000
+CloseDisk (trackdisk)|buffer|0|1	$00020000
+CloseDisk (trackdisk)|head|0|1	bytes 8 0000000000000000
+CloseDisk (trackdisk)|disk|0|1	bytes 16384 fnv 1DF5C38F
+CloseDisk (trackdisk)|read buffer|0|1	bytes 4096 fnv 671EA9C5
+finit|kept|0|1	kept

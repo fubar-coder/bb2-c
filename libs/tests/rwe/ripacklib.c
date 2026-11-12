@@ -1,14 +1,15 @@
 /*
- * rwe ripacklib - the C build of ripacklib (userlib 73) against the CD
- * binary (BUM10A RIPACKLIB.OBJ), in the emulator (snitch test case
- * "rwe ripacklib", argv[1] = the directory with the library files).
+ * rwe ripacklib - the C build of ripacklib (userlib 73) or the CD binary
+ * (BUM10A RIPACKLIB.OBJ), one set as LIBSET says, observed as cases
+ * (sysload.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ripacklib.txt), in the emulator (snitch test
+ * case "rwe ripacklib", argv[1] = the directory with the library files).
  *
- * Both libraries are loaded like the compiler does (sysload.h) with
- * memlib (ILBMPalette's globalloc/globfree), and every routine is called
- * on both with the same inputs (other registers = markers).  Compared are
- * d0, the output buffers (filled the same before every call), the palette
- * and bitmap objects, and every register the original keeps must be kept
- * by the C build.
+ * The library is loaded like the compiler does (sysload.h) with memlib
+ * (ILBMPalette's globalloc/globfree), and every routine is called with
+ * its inputs (other registers = markers).  Observed are d0, the output
+ * buffers (filled the same before every call), the palette and bitmap
+ * objects, and the kept registers.
  *
  * The data is built here: ByteRun1 by PackPBM itself and by a small
  * packer (UnPackPBM, BODY chunks), ILBM files with BMHD/CMAP/BODY, and
@@ -22,11 +23,12 @@
  * binary (the reference of the port; its token list is the one of the
  * BSS2 binary the original ripacklib was built against) with the
  * original - and initialised after memlib.  LoadIFF reads an ILBM of
- * this test from RAM: into bank 51; compared are the bitmap, the palette
+ * this test from RAM: into bank 51; observed are the bitmap, the palette
  * and the bank afterwards (free again, NextBank(51)); with RIAmosFuncLib's
  * default of 50 banks there is no bank 51 (0, BUG(orig), #770), so the test
  * raises it with BankLimit 60.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 #include "amosfunc.h"
 #include "rwemem.h"
@@ -35,77 +37,31 @@ extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, UL
 
 /* ------------------------------------------------------------ framework */
 
-static int cur;
-static struct regs R[2], IN[2];
-static ULONG POP[2];
-static const char *ROUT;
-static char VEC[100];
-static int prints;
+/* the registers of the call (R after it, IN before it) and the bytes it
+   popped; ROUT and VEC (the key of the cases) are sysload.h's */
+static struct regs R, IN;
+static ULONG POP;
 
-static void fail(const char *what, ULONG o, ULONG c)
-{
-    char buf[200];
-    if (prints++ < 60)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
-}
-
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* the same bytes in both sets (a SAME of a memcmp would compare the
-   result with itself) */
-static void samebytes(const char *what, const void *o, const void *c, ULONG n)
-{
-    const UBYTE *a = o, *b = c;
-    ULONG i;
-    if (!tape_bytes(what, o, c, n)) {
-        checks++;
-        return;
-    }
-    for (i = 0; i < n && a[i] == b[i]; i++)
-        ;
-    if (i < n) {
-        char buf[60];
-        snprintf(buf, sizeof buf, "%s (offset %lu)", what, i);
-        fail(buf, a[i], b[i]);
-    } else
-        checks++;
-}
-
+/* after a call: its kept case and the bytes it popped */
 static void preserve(void)
 {
-    struct call c[2];
-    char buf[140];
-    int s;
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-    }
-    sprintf(buf, "%s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-    SAME("popped", POP[cur]);
+    obs_kept(&IN, &R);
+    OBS("popped", POP);
 }
 
-#define DO2(fn, setup) do {                                                 \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callstk(fn, &R[cur], NULL, 0, &POP[cur]);                       \
-        }                                                                   \
+#define DO1(fn, setup) do {                                                 \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callstk(fn, &R, NULL, 0, &POP);                                     \
         preserve();                                                         \
     } while (0)
 
 static UBYTE *ent(int idx, int form)
 {
-    return entry_form(getlib(&sets[cur], "ripacklib"), idx, form);
+    return entry_form(getlib(&loaded, "ripacklib"), idx, form);
 }
+
 
 enum { PACKPBM, DEICE, UNPACKIFF, ILBMPALETTE, ILBMGRAB, LOADIFF, CHUNKHEADER, UNPACKPBM,
        FINIT, INIT };
@@ -138,13 +94,12 @@ static void mkdata(UBYTE *p, ULONG n, int kind)
 /* ------------------------------------------------------------- buffers */
 
 #define BUFSZ 8192
-static UBYTE src[BUFSZ + 64];           /* input data, the same for both sets */
-static UBYTE out[2][BUFSZ + 64];        /* output, per set */
+static UBYTE src[BUFSZ + 64];           /* input data */
+static UBYTE out[BUFSZ + 64];           /* output */
 
 static void clearout(void)
 {
-    memset(out[0], 0xEE, sizeof out[0]);
-    memset(out[1], 0xEE, sizeof out[1]);
+    memset(out, 0xEE, sizeof out);
 }
 
 /* ------------------------------------------------------- ChunkHeader */
@@ -157,41 +112,38 @@ static void test_chunkheader(void)
     ROUT = "ChunkHeader";
     for (i = 0; i < sizeof strs / sizeof strs[0]; i++) {
         sprintf(VEC, "%u", i);
-        DO2(ent(CHUNKHEADER, 0), R[cur].d[0] = (ULONG)strs[i]);
-        SAME("d0", R[cur].d[0]);
+        DO1(ent(CHUNKHEADER, 0), R.d[0] = (ULONG)strs[i]);
+        OBS("d0", R.d[0]);
     }
 }
 
 /* ------------------------------------------------- PackPBM, UnPackPBM */
 
-static ULONG packed[2];
+static ULONG packed;
 
 static void packpbm(const char *what, ULONG n, ULONG d3)
 {
     ROUT = "PackPBM";
     sprintf(VEC, "%s %lu bytes", what, n);
     clearout();
-    DO2(ent(PACKPBM, 0), R[cur].d[0] = (ULONG)src; R[cur].d[1] = (ULONG)out[cur] + 16;
-        R[cur].d[2] = n; R[cur].d[3] = d3);
-    SAME("d0", R[cur].d[0]);
-    samebytes("dest", out[0], out[1], sizeof out[0]);
-    for (cur = 0; cur < 2; cur++)
-        packed[cur] = R[cur].d[0];
+    DO1(ent(PACKPBM, 0), R.d[0] = (ULONG)src; R.d[1] = (ULONG)out + 16;
+        R.d[2] = n; R.d[3] = d3);
+    OBS("d0", R.d[0]);
+    OBSBYTES("dest", out, sizeof out);
+    packed = R.d[0];
 }
 
-static UBYTE back[2][BUFSZ + 64];
+static UBYTE back[BUFSZ + 64];
 
 /* UnPackPBM of out[] (or of src) into back[] */
-static void unpackpbm(const char *what, const UBYTE *from0, const UBYTE *from1, ULONG len,
-                      ULONG dlen)
+static void unpackpbm(const char *what, const UBYTE *from, ULONG len, ULONG dlen)
 {
     ROUT = "UnPackPBM";
     sprintf(VEC, "%s %lu -> %lu", what, len, dlen);
-    memset(back[0], 0x55, sizeof back[0]);
-    memset(back[1], 0x55, sizeof back[1]);
-    DO2(ent(UNPACKPBM, 0), R[cur].d[0] = (ULONG)(cur ? from1 : from0);
-        R[cur].d[1] = (ULONG)back[cur] + 8; R[cur].d[2] = len; R[cur].d[3] = dlen);
-    samebytes("dest", back[0], back[1], sizeof back[0]);
+    memset(back, 0x55, sizeof back);
+    DO1(ent(UNPACKPBM, 0), R.d[0] = (ULONG)from;
+        R.d[1] = (ULONG)back + 8; R.d[2] = len; R.d[3] = dlen);
+    OBSBYTES("dest", back, sizeof back);
 }
 
 static void test_pbm(void)
@@ -208,28 +160,28 @@ static void test_pbm(void)
         seed = 0x1000 + i;
         mkdata(src, sizes[i], 1);
         packpbm("mixed", sizes[i], 0);
-        if (packed[0] != (ULONG)-1)
-            unpackpbm("mixed", out[0] + 16, out[1] + 16, packed[0], sizes[i] + 4);
-        SAME("round trip", packed[cur] == (ULONG)-1 || memcmp(back[cur] + 8, src, sizes[i]) == 0);
+        if (packed != (ULONG)-1)
+            unpackpbm("mixed", out + 16, packed, sizes[i] + 4);
+        OBS("round trip", packed == (ULONG)-1 || memcmp(back + 8, src, sizes[i]) == 0);
     }
     for (n = 120; n <= 140; n += 4) {
         memset(src, 'x', n);
         packpbm("one run", n, 0);
-        unpackpbm("one run", out[0] + 16, out[1] + 16, packed[0], n);
+        unpackpbm("one run", out + 16, packed, n);
     }
     memcpy(src, runs, sizeof runs);
     packpbm("short runs", sizeof runs, 0);
     for (i = 0; i < 300; i++)
         src[i] = (UBYTE)(i < 129 ? i : i < 260 ? 0xAA : i * 7);
     packpbm("129 literals, 131 equal", 300, 0);
-    unpackpbm("129 literals, 131 equal", out[0] + 16, out[1] + 16, packed[0], 300);
+    unpackpbm("129 literals, 131 equal", out + 16, packed, 300);
 
     /* not smaller: -1, BUG(orig) (#772) - then UnPackPBM from address -1 into
        dest, as far as the caller's d3 allows */
     seed = 77;
     mkdata(src, 600, 0);
     packpbm("noise (fails), d3 0", 600, 0);
-    SAME("d0 = -1", R[cur].d[0] == (ULONG)-1);
+    OBS("d0 = -1", R.d[0] == (ULONG)-1);
     packpbm("noise (fails), d3 4", 600, 4);
     packpbm("noise (fails), d3 -8", 600, (ULONG)-8);
     src[0] = 1; src[1] = 2;
@@ -240,11 +192,11 @@ static void test_pbm(void)
         static const UBYTE pk[] = { 0x80, 2, 'a', 'b', 'c', 0xfe, 'R', 0x80, 0x81, '*', 0, 'z',
                                     0x80, 5, '1', '2', '3', '4', '5', '6' };
         memcpy(src, pk, sizeof pk);
-        unpackpbm("crafted", src, src, sizeof pk, 200);
-        unpackpbm("crafted, dest 3", src, src, sizeof pk, 3);
-        unpackpbm("crafted, dest 0", src, src, sizeof pk, 0);
-        unpackpbm("crafted, source 5", src, src, 5, 200);
-        unpackpbm("crafted, source 0", src, src, 0, 200);
+        unpackpbm("crafted", src, sizeof pk, 200);
+        unpackpbm("crafted, dest 3", src, sizeof pk, 3);
+        unpackpbm("crafted, dest 0", src, sizeof pk, 0);
+        unpackpbm("crafted, source 5", src, 5, 200);
+        unpackpbm("crafted, source 0", src, 0, 200);
     }
 }
 
@@ -449,10 +401,10 @@ static void deice(const char *what, ULONG n, LONG maxoff, ULONG at)
     ROUT = "DeIce";
     sprintf(VEC, "%s %lu -> %lu bytes", what, n, size);
     clearout();
-    DO2(ent(DEICE, 0), R[cur].d[0] = (ULONG)icebuf + at; R[cur].d[1] = (ULONG)out[cur] + 32);
-    SAME("d0", R[cur].d[0]);
-    samebytes("dest", out[0], out[1], sizeof out[0]);
-    check("DeIce: the plain data (encoder)", memcmp(out[0] + 32, plain, n) == 0);
+    DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf + at; R.d[1] = (ULONG)out + 32);
+    OBS("d0", R.d[0]);
+    OBSBYTES("dest", out, sizeof out);
+    check("DeIce: the plain data (encoder)", memcmp(out + 32, plain, n) == 0);
 }
 
 static void test_deice(void)
@@ -482,35 +434,31 @@ static void test_deice(void)
     ROUT = "DeIce";
     strcpy(VEC, "no ICE");
     memcpy(icebuf, "ICE?", 4);
-    DO2(ent(DEICE, 0), R[cur].d[0] = (ULONG)icebuf; R[cur].d[1] = (ULONG)out[cur]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf; R.d[1] = (ULONG)out);
+    OBS("d0", R.d[0]);
 
     /* picture mode: 15361+ groups of 8 bytes below the end */
     {
         const ULONG below = 132 * 1024;
-        UBYTE *pic[2];
+        UBYTE *pic;
         ULONG size;
-        int s;
 
         seed = 5;
         mkdata(plain, 1000, 1);
         size = ice_pack(plain, 1000, icebuf, 600, 1, 37);
-        for (s = 0; s < 2; s++) {
-            pic[s] = AllocMem(below + 1100, MEMF_ANY);
-            if (pic[s])
-                for (i = 0; i < below + 1100; i++)
-                    pic[s][i] = (UBYTE)(i * 13 + (i >> 9));
-        }
-        if (pic[0] && pic[1]) {
+        pic = AllocMem(below + 1100, MEMF_ANY);
+        if (pic)
+            for (i = 0; i < below + 1100; i++)
+                pic[i] = (UBYTE)(i * 13 + (i >> 9));
+        if (pic) {
             sprintf(VEC, "picture %lu bytes", size);
-            DO2(ent(DEICE, 0), R[cur].d[0] = (ULONG)icebuf; R[cur].d[1] = (ULONG)pic[cur] + below);
-            SAME("d0", R[cur].d[0]);
-            samebytes("dest", pic[0], pic[1], below + 1100);
+            DO1(ent(DEICE, 0), R.d[0] = (ULONG)icebuf; R.d[1] = (ULONG)pic + below);
+            OBS("d0", R.d[0]);
+            OBSBYTES("dest", pic, below + 1100);
         } else
             check("picture buffers", FALSE);
-        for (s = 0; s < 2; s++)
-            if (pic[s])
-                FreeMem(pic[s], below + 1100);
+        if (pic)
+            FreeMem(pic, below + 1100);
     }
 }
 
@@ -608,22 +556,20 @@ static ULONG mkilbm(UBYTE *f, UWORD w, UWORD h, UBYTE nplanes, ULONG ncols, ULON
 
 /* bitmap objects: bpr, rows, depth, planes into pb[] */
 #define PLANESZ 3000
-static UBYTE pb[2][8 * PLANESZ + 64];
-static ULONG bmo[2][16];
+static UBYTE pb[8 * PLANESZ + 64];
+static ULONG bmo[16];
 
 static void mkbitmap(UWORD bpr, UWORD rows, UBYTE depth, int plane0)
 {
-    int s, i;
-    for (s = 0; s < 2; s++) {
-        memset(bmo[s], 0, sizeof bmo[s]);
-        bmo[s][0] = (ULONG)bpr << 16 | rows;
-        bmo[s][1] = (ULONG)depth << 16;
-        for (i = 0; i < 8; i++)
-            bmo[s][2 + i] = (ULONG)&pb[s][16 + i * PLANESZ];
-        if (!plane0)
-            bmo[s][2] = 0;
-        memset(pb[s], 0xEE, sizeof pb[s]);
-    }
+    int i;
+    memset(bmo, 0, sizeof bmo);
+    bmo[0] = (ULONG)bpr << 16 | rows;
+    bmo[1] = (ULONG)depth << 16;
+    for (i = 0; i < 8; i++)
+        bmo[2 + i] = (ULONG)&pb[16 + i * PLANESZ];
+    if (!plane0)
+        bmo[2] = 0;
+    memset(pb, 0xEE, sizeof pb);
 }
 
 static UBYTE ilbm[BUFSZ];
@@ -632,10 +578,10 @@ static void unpackiff(const char *what, int form, ULONG lines, ULONG xy)
 {
     ROUT = "UnpackIFF";
     sprintf(VEC, "%s form %d lines $%lX xy %lu", what, form, lines, xy);
-    DO2(ent(UNPACKIFF, form), R[cur].d[0] = (ULONG)ilbm; R[cur].d[1] = 0x5A001234;
-        R[cur].a[1] = (ULONG)bmo[cur]; if (form) { R[cur].d[2] = lines; R[cur].d[3] = xy; });
-    SAME("d0", R[cur].d[0]);
-    samebytes("planes", pb[0], pb[1], sizeof pb[0]);
+    DO1(ent(UNPACKIFF, form), R.d[0] = (ULONG)ilbm; R.d[1] = 0x5A001234;
+        R.a[1] = (ULONG)bmo; if (form) { R.d[2] = lines; R.d[3] = xy; });
+    OBS("d0", R.d[0]);
+    OBSBYTES("planes", pb, sizeof pb);
 }
 
 static void test_unpackiff(void)
@@ -661,7 +607,7 @@ static void test_unpackiff(void)
     mkbitmap(10, 12, 3, 0);
     unpackiff("64x10x3 no plane 0", 0, 0, 0);
     mkbitmap(10, 12, 3, 1);
-    bmo[0][0] = bmo[1][0] = 8UL << 16 | 12;
+    bmo[0] = 8UL << 16 | 12;
     unpackiff("64x10x3 bpr 8", 0, 0, 0);
 
     seed = 12;
@@ -706,16 +652,16 @@ static void test_unpackiff(void)
 
 /* ------------------------------------------------------------ palettes */
 
-static ULONG palo[2][4];                /* palette objects */
+static ULONG palo[4];                    /* the palette object */
 
 static void samepal(void)
 {
-    SAME("numcols", *(UWORD *)((UBYTE *)palo[cur] + 4));
-    SAME("+6", *(ULONG *)((UBYTE *)palo[cur] + 6));
-    SAME("block", palo[cur][0] != 0);
-    if (palo[0][0] && palo[1][0]) {
-        UWORD n = *(UWORD *)((UBYTE *)palo[0] + 4);
-        samebytes("colours", (void *)palo[0][0], (void *)palo[1][0], 4 + 12 * (ULONG)n);
+    OBS("numcols", *(UWORD *)((UBYTE *)palo + 4));
+    OBS("+6", *(ULONG *)((UBYTE *)palo + 6));
+    OBS("block", palo[0] != 0);
+    if (palo[0]) {
+        UWORD n = *(UWORD *)((UBYTE *)palo + 4);
+        OBSBYTES("colours", (void *)palo[0], 4 + 12 * (ULONG)n);
     }
 }
 
@@ -723,9 +669,9 @@ static void ilbmpalette(const char *what, int form, ULONG offset)
 {
     ROUT = "ILBMPalette";
     sprintf(VEC, "%s form %d offset %ld", what, form, (LONG)offset);
-    DO2(ent(ILBMPALETTE, form), R[cur].d[0] = (ULONG)ilbm; R[cur].d[1] = 0x5A001234;
-        R[cur].a[1] = (ULONG)palo[cur]; if (form) R[cur].d[2] = offset);
-    SAME("d0", R[cur].d[0]);
+    DO1(ent(ILBMPALETTE, form), R.d[0] = (ULONG)ilbm; R.d[1] = 0x5A001234;
+        R.a[1] = (ULONG)palo; if (form) R.d[2] = offset);
+    OBS("d0", R.d[0]);
     samepal();
 }
 
@@ -765,25 +711,25 @@ static void test_ilbmgrab(void)
     mkbitmap(6, 8, 2, 1);
     ROUT = "ILBMGrab";
     strcpy(VEC, "48x6x2");
-    DO2(ent(ILBMGRAB, 0), R[cur].d[0] = (ULONG)ilbm; R[cur].d[1] = 0x5A000001;
-        R[cur].d[2] = 0x5A000002; R[cur].a[0] = (ULONG)bmo[cur]; R[cur].a[1] = (ULONG)palo[cur]);
-    samebytes("planes", pb[0], pb[1], sizeof pb[0]);
+    DO1(ent(ILBMGRAB, 0), R.d[0] = (ULONG)ilbm; R.d[1] = 0x5A000001;
+        R.d[2] = 0x5A000002; R.a[0] = (ULONG)bmo; R.a[1] = (ULONG)palo);
+    OBSBYTES("planes", pb, sizeof pb);
     samepal();
 }
 
 /* ------------------------------------------------- LoadIFF (the banks) */
 
 #define ILBMFILE "RAM:rwe-pack.iff"
-static ULONG ilbmlen, liff;              /* LoadIFF's d0 (orig) */
+static ULONG ilbmlen, liff;              /* LoadIFF's d0 */
 
 /* a routine of RIAmosFuncLib with d0 = x (other registers markers) */
 static ULONG amos(int idx, int form, ULONG x)
 {
-    markregs(&R[cur]);
-    R[cur].d[0] = x;
-    callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), idx, form), &R[cur], NULL, 0,
-            &POP[cur]);
-    return R[cur].d[0];
+    markregs(&R);
+    R.d[0] = x;
+    callstk(entry_form(getlib(&loaded, "riamosfunclib"), idx, form), &R, NULL, 0,
+            &POP);
+    return R.d[0];
 }
 
 static void writeilbm(ULONG len)
@@ -797,26 +743,24 @@ static void writeilbm(ULONG len)
 
 static void loadiff(const char *name, int form, const char *what)
 {
-    ULONG len[2], next[2];
+    ULONG len, next;
 
     ROUT = "LoadIFF";
     sprintf(VEC, "%s form %d%s", name, form, what);
     mkbitmap(10, 12, 3, 1);
     memset(palo, 0, sizeof palo);
-    DO2(ent(LOADIFF, form), R[cur].d[0] = (ULONG)name; R[cur].d[1] = 0x5A000001;
-        R[cur].d[2] = 0x5A000002; R[cur].a[0] = (ULONG)bmo[cur]; R[cur].a[1] = (ULONG)palo[cur]);
-    SAME("d0", R[cur].d[0]);
-    liff = R[0].d[0];
-    samebytes("planes", pb[0], pb[1], sizeof pb[0]);
+    DO1(ent(LOADIFF, form), R.d[0] = (ULONG)name; R.d[1] = 0x5A000001;
+        R.d[2] = 0x5A000002; R.a[0] = (ULONG)bmo; R.a[1] = (ULONG)palo);
+    OBS("d0", R.d[0]);
+    liff = R.d[0];
+    OBSBYTES("planes", pb, sizeof pb);
     samepal();
-    /* the bank (51) erased again: free, the next free bank from 51 the same */
-    for (cur = 0; cur < 2; cur++) {
-        len[cur] = amos(AMOS_E_LENGTH, 0, 51);
-        next[cur] = amos(AMOS_E_NEXTBANK, 1, 51);
-    }
-    SAME("bank 51 length", len[cur]);
-    check("LoadIFF: bank 51 free afterwards", len[0] == 0);
-    SAME("NextBank(51)", next[cur]);
+    /* the bank (51) erased again: free; the next free bank from 51 */
+    len = amos(AMOS_E_LENGTH, 0, 51);
+    next = amos(AMOS_E_NEXTBANK, 1, 51);
+    OBS("bank 51 length", len);
+    check("LoadIFF: bank 51 free afterwards", len == 0);
+    OBS("NextBank(51)", next);
 }
 
 static void test_loadiff(void)
@@ -828,8 +772,7 @@ static void test_loadiff(void)
        unless BankLimit raised the number: no bank, 0 */
     loadiff(ILBMFILE, 1, ", 50 banks");
     check("LoadIFF: 0 with 50 banks", liff == 0);
-    for (cur = 0; cur < 2; cur++)
-        amos(AMOS_E_BANKLIMIT, 0, 60);
+    amos(AMOS_E_BANKLIMIT, 0, 60);
     loadiff(ILBMFILE, 0, "");
     check("LoadIFF: -1 with 60 banks", liff == (ULONG)-1);
     loadiff(ILBMFILE, 1, "");
@@ -853,12 +796,22 @@ int main(int argc, char **argv)
         printf("usage: rwe_ripacklib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("ChunkHeader", d1-d7|a1-a3|a6);
+    KEEPS("PackPBM", d1-d7|a0-a3|a6);
+    KEEPS("UnPackPBM", d0-d7|a0-a3|a6);
+    KEEPS("DeIce", d1-d7|a2|a3|a6);
+    KEEPS("UnpackIFF", d1|d4-d7|a0-a3|a6);
+    KEEPS("ILBMPalette", d1|d3-d7|a0-a3|a6);
+    KEEPS("ILBMGrab", d1|d4-d7|a0-a3|a6);
+    KEEPS("LoadIFF", a2|a3);
+    KEEPS("finit", d0-d7|a0-a3|a6);
 
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ent(INIT, 0), (void)0);
+    DO1(ent(INIT, 0), (void)0);
     test_chunkheader();
     test_pbm();
     test_deice();
@@ -866,23 +819,20 @@ int main(int argc, char **argv)
 
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
-        amos(AMOS_E_INIT, 0, 0);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, NULL, 0, &POP);
+    amos(AMOS_E_INIT, 0, 0);
     test_ilbmpalette();
     test_ilbmgrab();
     test_loadiff();
-    for (cur = 0; cur < 2; cur++) {
-        amos(AMOS_E_FINIT, 0, 0);
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    amos(AMOS_E_FINIT, 0, 0);
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, NULL, 0, &POP);
     rwe_mem_check("ripacklib", avail, TRUE);
 
     ROUT = "finit";
-    DO2(ent(FINIT, 0), (void)0);
+    DO1(ent(FINIT, 0), (void)0);
     printf("%d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }

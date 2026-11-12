@@ -1,0 +1,2594 @@
+# capture rwe_ritooltypeslib 1
+init|kept||1	kept
+FindToolValue (no icon)|kept|"FOO"|1	kept
+FindToolValue (no icon)|d0|"FOO"|1	$00000000
+FindToolValue (no icon)|a3|"FOO"|1	$00000044
+FindToolValue (no icon)|string area|"FOO"|1	bytes 512 fnv C8D7CD69
+FindToolValue (no icon)|icon: open|"FOO"|1	$00000000
+FindToolNumber (no icon)|kept|$0,$0|1	kept
+FindToolNumber (no icon)|d0|$0,$0|1	$00000000
+FindToolNumber (no icon)|a3|$0,$0|1	$00000040
+FindToolNumber (no icon)|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber (no icon)|icon: open|$0,$0|1	$00000000
+FreeIconObject (no icon)|kept|$0,$0|1	kept
+FreeIconObject (no icon)|d0|$0,$0|1	$00000000
+FreeIconObject (no icon)|a3|$0,$0|1	$00000040
+FreeIconObject (no icon)|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+PutIconObject (no icon)|kept|"RAM:rwett_x"|1	kept
+PutIconObject (no icon)|d0|"RAM:rwett_x"|1	$00000000
+PutIconObject (no icon)|a3|"RAM:rwett_x"|1	$0000004C
+PutIconObject (no icon)|string area|"RAM:rwett_x"|1	bytes 512 fnv DCA008AC
+PutIconObject (no icon)|icon: open|"RAM:rwett_x"|1	$00000000
+SetIconType (no icon)|kept|$3,$0|1	kept
+SetIconType (no icon)|d0|$3,$0|1	$00000003
+SetIconType (no icon)|a3|$3,$0|1	$00000040
+SetIconType (no icon)|string area|$3,$0|1	bytes 512 fnv 9D9373C5
+SetIconType (no icon)|icon: open|$3,$0|1	$00000000
+IconDefTool (no icon)|kept|"C:Dir"|1	kept
+IconDefTool (no icon)|d0|"C:Dir"|1	$00000000
+IconDefTool (no icon)|a3|"C:Dir"|1	$00000046
+IconDefTool (no icon)|string area|"C:Dir"|1	bytes 512 fnv 62A5C09A
+IconDefTool (no icon)|icon: open|"C:Dir"|1	$00000000
+FindToolType (no icon)|kept|"FOO"|1	kept
+FindToolType (no icon)|d0|"FOO"|1	$00000000
+FindToolType (no icon)|a3|"FOO"|1	$00000044
+FindToolType (no icon)|string area|"FOO"|1	bytes 512 fnv C8D7CD69
+FindToolType (no icon)|icon: open|"FOO"|1	$00000000
+FindToolType (no icon)|kept|"FOO",1|1	kept
+FindToolType (no icon)|d0|"FOO",1|1	$00000000
+FindToolType (no icon)|a3|"FOO",1|1	$00000044
+FindToolType (no icon)|string area|"FOO",1|1	bytes 512 fnv C8D7CD69
+FindToolType (no icon)|icon: open|"FOO",1|1	$00000000
+MatchToolValue (no icon)|kept|"FOO","bar"|1	kept
+MatchToolValue (no icon)|d0|"FOO","bar"|1	$00000000
+MatchToolValue (no icon)|a3|"FOO","bar"|1	$00000044
+MatchToolValue (no icon)|string area|"FOO","bar"|1	bytes 512 fnv C8D7CD69
+MatchToolValue (no icon)|icon: open|"FOO","bar"|1	$00000000
+SetToolValue (no icon)|kept|"FOO","baz"|1	kept
+SetToolValue (no icon)|d0|"FOO","baz"|1	$00000000
+SetToolValue (no icon)|a3|"FOO","baz"|1	$00000044
+SetToolValue (no icon)|string area|"FOO","baz"|1	bytes 512 fnv C8D7CD69
+SetToolValue (no icon)|icon: open|"FOO","baz"|1	$00000000
+NewToolType (no icon)|kept|"NEW","1",0|1	kept
+NewToolType (no icon)|d0|"NEW","1",0|1	$00000000
+NewToolType (no icon)|a3|"NEW","1",0|1	$00000044
+NewToolType (no icon)|string area|"NEW","1",0|1	bytes 512 fnv 97A3893F
+NewToolType (no icon)|icon: open|"NEW","1",0|1	$00000000
+ClearToolTypes (no icon)|kept|$0,$0|1	kept
+ClearToolTypes (no icon)|a3|$0,$0|1	$00000040
+ClearToolTypes (no icon)|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+ClearToolTypes (no icon)|icon: open|$0,$0|1	$00000000
+SetIconHit (no icon)|kept|$A,$A|1	kept
+SetIconHit (no icon)|a3|$A,$A|1	$00000040
+SetIconHit (no icon)|string area|$A,$A|1	bytes 512 fnv 9D9373C5
+SetIconHit (no icon)|icon: open|$A,$A|1	$00000000
+IconRender (no icon)|kept|$5,$0|1	kept
+IconRender (no icon)|a3|$5,$0|1	$00000040
+IconRender (no icon)|string area|$5,$0|1	bytes 512 fnv 9D9373C5
+IconRender (no icon)|icon: open|$5,$0|1	$00000000
+ShapeToIcon (no icon)|kept|00|1	kept
+ShapeToIcon (no icon)|icon: open|00|1	$00000000
+ShapeToIcon (no icon)|shape 0: fields|00|1	bytes 24 0014000A000200040283000000000028003C005000780000
+ShapeToIcon (no icon)|shape 0: width/height|00|1	$0014000A
+ShapeToIcon (no icon)|shape 0: data|00|1	$00000001
+ShapeToIcon (no icon)|shape 0: data bytes|00|1	bytes 80 fnv AC2D2F85
+ShapeToIcon (no icon)|shape 0: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 1: fields|00|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon (no icon)|shape 1: width/height|00|1	$00190007
+ShapeToIcon (no icon)|shape 1: data|00|1	$00000001
+ShapeToIcon (no icon)|shape 1: data bytes|00|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+ShapeToIcon (no icon)|shape 1: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 2: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 2: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 2: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 2: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 3: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 3: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 3: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 3: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 4: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 4: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 4: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 4: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 5: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 5: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 5: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 5: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 6: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 6: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 6: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 6: cookie|00|1	$00000000
+ShapeToIcon (no icon)|shape 7: fields|00|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 7: width/height|00|1	$00000000
+ShapeToIcon (no icon)|shape 7: data|00|1	$00000000
+ShapeToIcon (no icon)|shape 7: cookie|00|1	$00000000
+ShapeToIcon (no icon)|decoy: fields|00|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon (no icon)|decoy: width/height|00|1	$00190007
+ShapeToIcon (no icon)|decoy: data|00|1	$00000001
+ShapeToIcon (no icon)|decoy: data bytes|00|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+ShapeToIcon (no icon)|decoy: cookie|00|1	$00000000
+ShapeToIcon (no icon)|kept|0,1|1	kept
+ShapeToIcon (no icon)|icon: open|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 0: fields|0,1|1	bytes 24 0014000A000200040283000000000028003C005000780000
+ShapeToIcon (no icon)|shape 0: width/height|0,1|1	$0014000A
+ShapeToIcon (no icon)|shape 0: data|0,1|1	$00000001
+ShapeToIcon (no icon)|shape 0: data bytes|0,1|1	bytes 80 fnv AC2D2F85
+ShapeToIcon (no icon)|shape 0: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 1: fields|0,1|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon (no icon)|shape 1: width/height|0,1|1	$00190007
+ShapeToIcon (no icon)|shape 1: data|0,1|1	$00000001
+ShapeToIcon (no icon)|shape 1: data bytes|0,1|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+ShapeToIcon (no icon)|shape 1: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 2: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 2: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 2: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 2: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 3: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 3: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 3: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 3: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 4: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 4: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 4: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 4: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 5: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 5: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 5: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 5: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 6: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 6: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 6: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 6: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 7: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon (no icon)|shape 7: width/height|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 7: data|0,1|1	$00000000
+ShapeToIcon (no icon)|shape 7: cookie|0,1|1	$00000000
+ShapeToIcon (no icon)|decoy: fields|0,1|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon (no icon)|decoy: width/height|0,1|1	$00190007
+ShapeToIcon (no icon)|decoy: data|0,1|1	$00000001
+ShapeToIcon (no icon)|decoy: data bytes|0,1|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+ShapeToIcon (no icon)|decoy: cookie|0,1|1	$00000000
+IconToShape (no icon)|kept|20|1	kept
+IconToShape (no icon)|icon: open|20|1	$00000000
+IconToShape (no icon)|shape 0: fields|20|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (no icon)|shape 0: width/height|20|1	$0014000A
+IconToShape (no icon)|shape 0: data|20|1	$00000001
+IconToShape (no icon)|shape 0: data bytes|20|1	bytes 80 fnv AC2D2F85
+IconToShape (no icon)|shape 0: cookie|20|1	$00000000
+IconToShape (no icon)|shape 1: fields|20|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (no icon)|shape 1: width/height|20|1	$00190007
+IconToShape (no icon)|shape 1: data|20|1	$00000001
+IconToShape (no icon)|shape 1: data bytes|20|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (no icon)|shape 1: cookie|20|1	$00000000
+IconToShape (no icon)|shape 2: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 2: width/height|20|1	$00000000
+IconToShape (no icon)|shape 2: data|20|1	$00000000
+IconToShape (no icon)|shape 2: cookie|20|1	$00000000
+IconToShape (no icon)|shape 3: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 3: width/height|20|1	$00000000
+IconToShape (no icon)|shape 3: data|20|1	$00000000
+IconToShape (no icon)|shape 3: cookie|20|1	$00000000
+IconToShape (no icon)|shape 4: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 4: width/height|20|1	$00000000
+IconToShape (no icon)|shape 4: data|20|1	$00000000
+IconToShape (no icon)|shape 4: cookie|20|1	$00000000
+IconToShape (no icon)|shape 5: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 5: width/height|20|1	$00000000
+IconToShape (no icon)|shape 5: data|20|1	$00000000
+IconToShape (no icon)|shape 5: cookie|20|1	$00000000
+IconToShape (no icon)|shape 6: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 6: width/height|20|1	$00000000
+IconToShape (no icon)|shape 6: data|20|1	$00000000
+IconToShape (no icon)|shape 6: cookie|20|1	$00000000
+IconToShape (no icon)|shape 7: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 7: width/height|20|1	$00000000
+IconToShape (no icon)|shape 7: data|20|1	$00000000
+IconToShape (no icon)|shape 7: cookie|20|1	$00000000
+IconToShape (no icon)|decoy: fields|20|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (no icon)|decoy: width/height|20|1	$00190007
+IconToShape (no icon)|decoy: data|20|1	$00000001
+IconToShape (no icon)|decoy: data bytes|20|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (no icon)|decoy: cookie|20|1	$00000000
+IconToShape (no icon)|kept|2,3|1	kept
+IconToShape (no icon)|icon: open|2,3|1	$00000000
+IconToShape (no icon)|shape 0: fields|2,3|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (no icon)|shape 0: width/height|2,3|1	$0014000A
+IconToShape (no icon)|shape 0: data|2,3|1	$00000001
+IconToShape (no icon)|shape 0: data bytes|2,3|1	bytes 80 fnv AC2D2F85
+IconToShape (no icon)|shape 0: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 1: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (no icon)|shape 1: width/height|2,3|1	$00190007
+IconToShape (no icon)|shape 1: data|2,3|1	$00000001
+IconToShape (no icon)|shape 1: data bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (no icon)|shape 1: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 2: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 2: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 2: data|2,3|1	$00000000
+IconToShape (no icon)|shape 2: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 3: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 3: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 3: data|2,3|1	$00000000
+IconToShape (no icon)|shape 3: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 4: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 4: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 4: data|2,3|1	$00000000
+IconToShape (no icon)|shape 4: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 5: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 5: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 5: data|2,3|1	$00000000
+IconToShape (no icon)|shape 5: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 6: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 6: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 6: data|2,3|1	$00000000
+IconToShape (no icon)|shape 6: cookie|2,3|1	$00000000
+IconToShape (no icon)|shape 7: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (no icon)|shape 7: width/height|2,3|1	$00000000
+IconToShape (no icon)|shape 7: data|2,3|1	$00000000
+IconToShape (no icon)|shape 7: cookie|2,3|1	$00000000
+IconToShape (no icon)|decoy: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (no icon)|decoy: width/height|2,3|1	$00190007
+IconToShape (no icon)|decoy: data|2,3|1	$00000001
+IconToShape (no icon)|decoy: data bytes|2,3|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (no icon)|decoy: cookie|2,3|1	$00000000
+GetIconObject|kept|"RAM:rwett"|1	kept
+GetIconObject|d0|"RAM:rwett"|1	$00000001
+GetIconObject|a3|"RAM:rwett"|1	$0000004A
+GetIconObject|string area|"RAM:rwett"|1	bytes 512 fnv DC49B06E
+GetIconObject|icon: open|"RAM:rwett"|1	$00000001
+GetIconObject|icon: type|"RAM:rwett"|1	$00000003
+GetIconObject|icon: gadget size|"RAM:rwett"|1	$00360017
+GetIconObject|icon: gadget flags|"RAM:rwett"|1	$00000004
+GetIconObject|icon: default tool|"RAM:rwett"|1	$00000000
+GetIconObject|icon: image|"RAM:rwett"|1	$2E3FC293
+GetIconObject|icon: select image|"RAM:rwett"|1	$00000000
+GetIconObject|icon: tool types|"RAM:rwett"|1	$00000001
+GetIconObject|icon: tool type 0|"RAM:rwett"|1	$0239845D
+GetIconObject|icon: tool type 1|"RAM:rwett"|1	$CEC2FBF7
+GetIconObject|icon: tool type 2|"RAM:rwett"|1	$0020F76D
+GetIconObject|icon: tool type 3|"RAM:rwett"|1	$E3236D43
+GetIconObject|icon: tool type 4|"RAM:rwett"|1	$B93B3359
+GetIconObject|icon: tool type 5|"RAM:rwett"|1	$2174C808
+GetIconObject|icon: tool type 6|"RAM:rwett"|1	$1547769D
+GetIconObject|icon: tool type 7|"RAM:rwett"|1	$00000000
+GetIconObject|kept|"RAM:rwett"|2	kept
+GetIconObject|d0|"RAM:rwett"|2	$00000000
+GetIconObject|a3|"RAM:rwett"|2	$0000004A
+GetIconObject|string area|"RAM:rwett"|2	bytes 512 fnv DC49B06E
+GetIconObject|icon: open|"RAM:rwett"|2	$00000001
+GetIconObject|icon: type|"RAM:rwett"|2	$00000003
+GetIconObject|icon: gadget size|"RAM:rwett"|2	$00360017
+GetIconObject|icon: gadget flags|"RAM:rwett"|2	$00000004
+GetIconObject|icon: default tool|"RAM:rwett"|2	$00000000
+GetIconObject|icon: image|"RAM:rwett"|2	$2E3FC293
+GetIconObject|icon: select image|"RAM:rwett"|2	$00000000
+GetIconObject|icon: tool types|"RAM:rwett"|2	$00000001
+GetIconObject|icon: tool type 0|"RAM:rwett"|2	$0239845D
+GetIconObject|icon: tool type 1|"RAM:rwett"|2	$CEC2FBF7
+GetIconObject|icon: tool type 2|"RAM:rwett"|2	$0020F76D
+GetIconObject|icon: tool type 3|"RAM:rwett"|2	$E3236D43
+GetIconObject|icon: tool type 4|"RAM:rwett"|2	$B93B3359
+GetIconObject|icon: tool type 5|"RAM:rwett"|2	$2174C808
+GetIconObject|icon: tool type 6|"RAM:rwett"|2	$1547769D
+GetIconObject|icon: tool type 7|"RAM:rwett"|2	$00000000
+FindToolValue|kept|"FOO"|1	kept
+FindToolValue|d0|"FOO"|1	$00000003
+FindToolValue|a3|"FOO"|1	$00000043
+FindToolValue|string area|"FOO"|1	bytes 512 fnv 7007611E
+FindToolValue|icon: open|"FOO"|1	$00000001
+FindToolValue|icon: type|"FOO"|1	$00000003
+FindToolValue|icon: gadget size|"FOO"|1	$00360017
+FindToolValue|icon: gadget flags|"FOO"|1	$00000004
+FindToolValue|icon: default tool|"FOO"|1	$00000000
+FindToolValue|icon: image|"FOO"|1	$2E3FC293
+FindToolValue|icon: select image|"FOO"|1	$00000000
+FindToolValue|icon: tool types|"FOO"|1	$00000001
+FindToolValue|icon: tool type 0|"FOO"|1	$0239845D
+FindToolValue|icon: tool type 1|"FOO"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"FOO"|1	$0020F76D
+FindToolValue|icon: tool type 3|"FOO"|1	$E3236D43
+FindToolValue|icon: tool type 4|"FOO"|1	$B93B3359
+FindToolValue|icon: tool type 5|"FOO"|1	$2174C808
+FindToolValue|icon: tool type 6|"FOO"|1	$1547769D
+FindToolValue|icon: tool type 7|"FOO"|1	$00000000
+FindToolValue|kept|"OFF"|1	kept
+FindToolValue|d0|"OFF"|1	$00000000
+FindToolValue|a3|"OFF"|1	$00000044
+FindToolValue|string area|"OFF"|1	bytes 512 fnv A6E8B7CE
+FindToolValue|icon: open|"OFF"|1	$00000001
+FindToolValue|icon: type|"OFF"|1	$00000003
+FindToolValue|icon: gadget size|"OFF"|1	$00360017
+FindToolValue|icon: gadget flags|"OFF"|1	$00000004
+FindToolValue|icon: default tool|"OFF"|1	$00000000
+FindToolValue|icon: image|"OFF"|1	$2E3FC293
+FindToolValue|icon: select image|"OFF"|1	$00000000
+FindToolValue|icon: tool types|"OFF"|1	$00000001
+FindToolValue|icon: tool type 0|"OFF"|1	$0239845D
+FindToolValue|icon: tool type 1|"OFF"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"OFF"|1	$0020F76D
+FindToolValue|icon: tool type 3|"OFF"|1	$E3236D43
+FindToolValue|icon: tool type 4|"OFF"|1	$B93B3359
+FindToolValue|icon: tool type 5|"OFF"|1	$2174C808
+FindToolValue|icon: tool type 6|"OFF"|1	$1547769D
+FindToolValue|icon: tool type 7|"OFF"|1	$00000000
+FindToolValue|kept|"FLAG"|1	kept
+FindToolValue|d0|"FLAG"|1	$00000000
+FindToolValue|a3|"FLAG"|1	$00000040
+FindToolValue|string area|"FLAG"|1	bytes 512 fnv 1A0B318F
+FindToolValue|icon: open|"FLAG"|1	$00000001
+FindToolValue|icon: type|"FLAG"|1	$00000003
+FindToolValue|icon: gadget size|"FLAG"|1	$00360017
+FindToolValue|icon: gadget flags|"FLAG"|1	$00000004
+FindToolValue|icon: default tool|"FLAG"|1	$00000000
+FindToolValue|icon: image|"FLAG"|1	$2E3FC293
+FindToolValue|icon: select image|"FLAG"|1	$00000000
+FindToolValue|icon: tool types|"FLAG"|1	$00000001
+FindToolValue|icon: tool type 0|"FLAG"|1	$0239845D
+FindToolValue|icon: tool type 1|"FLAG"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"FLAG"|1	$0020F76D
+FindToolValue|icon: tool type 3|"FLAG"|1	$E3236D43
+FindToolValue|icon: tool type 4|"FLAG"|1	$B93B3359
+FindToolValue|icon: tool type 5|"FLAG"|1	$2174C808
+FindToolValue|icon: tool type 6|"FLAG"|1	$1547769D
+FindToolValue|icon: tool type 7|"FLAG"|1	$00000000
+FindToolValue|kept|"MIXED"|1	kept
+FindToolValue|d0|"MIXED"|1	$00000008
+FindToolValue|a3|"MIXED"|1	$00000048
+FindToolValue|string area|"MIXED"|1	bytes 512 fnv BBEC42AF
+FindToolValue|icon: open|"MIXED"|1	$00000001
+FindToolValue|icon: type|"MIXED"|1	$00000003
+FindToolValue|icon: gadget size|"MIXED"|1	$00360017
+FindToolValue|icon: gadget flags|"MIXED"|1	$00000004
+FindToolValue|icon: default tool|"MIXED"|1	$00000000
+FindToolValue|icon: image|"MIXED"|1	$2E3FC293
+FindToolValue|icon: select image|"MIXED"|1	$00000000
+FindToolValue|icon: tool types|"MIXED"|1	$00000001
+FindToolValue|icon: tool type 0|"MIXED"|1	$0239845D
+FindToolValue|icon: tool type 1|"MIXED"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"MIXED"|1	$0020F76D
+FindToolValue|icon: tool type 3|"MIXED"|1	$E3236D43
+FindToolValue|icon: tool type 4|"MIXED"|1	$B93B3359
+FindToolValue|icon: tool type 5|"MIXED"|1	$2174C808
+FindToolValue|icon: tool type 6|"MIXED"|1	$1547769D
+FindToolValue|icon: tool type 7|"MIXED"|1	$00000000
+FindToolValue|kept|"BRACK"|1	kept
+FindToolValue|d0|"BRACK"|1	$00000000
+FindToolValue|a3|"BRACK"|1	$00000046
+FindToolValue|string area|"BRACK"|1	bytes 512 fnv E2F4969D
+FindToolValue|icon: open|"BRACK"|1	$00000001
+FindToolValue|icon: type|"BRACK"|1	$00000003
+FindToolValue|icon: gadget size|"BRACK"|1	$00360017
+FindToolValue|icon: gadget flags|"BRACK"|1	$00000004
+FindToolValue|icon: default tool|"BRACK"|1	$00000000
+FindToolValue|icon: image|"BRACK"|1	$2E3FC293
+FindToolValue|icon: select image|"BRACK"|1	$00000000
+FindToolValue|icon: tool types|"BRACK"|1	$00000001
+FindToolValue|icon: tool type 0|"BRACK"|1	$0239845D
+FindToolValue|icon: tool type 1|"BRACK"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"BRACK"|1	$0020F76D
+FindToolValue|icon: tool type 3|"BRACK"|1	$E3236D43
+FindToolValue|icon: tool type 4|"BRACK"|1	$B93B3359
+FindToolValue|icon: tool type 5|"BRACK"|1	$2174C808
+FindToolValue|icon: tool type 6|"BRACK"|1	$1547769D
+FindToolValue|icon: tool type 7|"BRACK"|1	$00000000
+FindToolValue|kept|"PAREN"|1	kept
+FindToolValue|d0|"PAREN"|1	$00000001
+FindToolValue|a3|"PAREN"|1	$00000041
+FindToolValue|string area|"PAREN"|1	bytes 512 fnv 6EEBCA3F
+FindToolValue|icon: open|"PAREN"|1	$00000001
+FindToolValue|icon: type|"PAREN"|1	$00000003
+FindToolValue|icon: gadget size|"PAREN"|1	$00360017
+FindToolValue|icon: gadget flags|"PAREN"|1	$00000004
+FindToolValue|icon: default tool|"PAREN"|1	$00000000
+FindToolValue|icon: image|"PAREN"|1	$2E3FC293
+FindToolValue|icon: select image|"PAREN"|1	$00000000
+FindToolValue|icon: tool types|"PAREN"|1	$00000001
+FindToolValue|icon: tool type 0|"PAREN"|1	$0239845D
+FindToolValue|icon: tool type 1|"PAREN"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"PAREN"|1	$0020F76D
+FindToolValue|icon: tool type 3|"PAREN"|1	$E3236D43
+FindToolValue|icon: tool type 4|"PAREN"|1	$B93B3359
+FindToolValue|icon: tool type 5|"PAREN"|1	$2174C808
+FindToolValue|icon: tool type 6|"PAREN"|1	$1547769D
+FindToolValue|icon: tool type 7|"PAREN"|1	$00000000
+FindToolValue|kept|"LOWER"|1	kept
+FindToolValue|d0|"LOWER"|1	$00000001
+FindToolValue|a3|"LOWER"|1	$00000041
+FindToolValue|string area|"LOWER"|1	bytes 512 fnv 27EC52A1
+FindToolValue|icon: open|"LOWER"|1	$00000001
+FindToolValue|icon: type|"LOWER"|1	$00000003
+FindToolValue|icon: gadget size|"LOWER"|1	$00360017
+FindToolValue|icon: gadget flags|"LOWER"|1	$00000004
+FindToolValue|icon: default tool|"LOWER"|1	$00000000
+FindToolValue|icon: image|"LOWER"|1	$2E3FC293
+FindToolValue|icon: select image|"LOWER"|1	$00000000
+FindToolValue|icon: tool types|"LOWER"|1	$00000001
+FindToolValue|icon: tool type 0|"LOWER"|1	$0239845D
+FindToolValue|icon: tool type 1|"LOWER"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"LOWER"|1	$0020F76D
+FindToolValue|icon: tool type 3|"LOWER"|1	$E3236D43
+FindToolValue|icon: tool type 4|"LOWER"|1	$B93B3359
+FindToolValue|icon: tool type 5|"LOWER"|1	$2174C808
+FindToolValue|icon: tool type 6|"LOWER"|1	$1547769D
+FindToolValue|icon: tool type 7|"LOWER"|1	$00000000
+FindToolValue|kept|"nothere"|1	kept
+FindToolValue|d0|"nothere"|1	$00000000
+FindToolValue|a3|"nothere"|1	$00000048
+FindToolValue|string area|"nothere"|1	bytes 512 fnv B8B709E4
+FindToolValue|icon: open|"nothere"|1	$00000001
+FindToolValue|icon: type|"nothere"|1	$00000003
+FindToolValue|icon: gadget size|"nothere"|1	$00360017
+FindToolValue|icon: gadget flags|"nothere"|1	$00000004
+FindToolValue|icon: default tool|"nothere"|1	$00000000
+FindToolValue|icon: image|"nothere"|1	$2E3FC293
+FindToolValue|icon: select image|"nothere"|1	$00000000
+FindToolValue|icon: tool types|"nothere"|1	$00000001
+FindToolValue|icon: tool type 0|"nothere"|1	$0239845D
+FindToolValue|icon: tool type 1|"nothere"|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|"nothere"|1	$0020F76D
+FindToolValue|icon: tool type 3|"nothere"|1	$E3236D43
+FindToolValue|icon: tool type 4|"nothere"|1	$B93B3359
+FindToolValue|icon: tool type 5|"nothere"|1	$2174C808
+FindToolValue|icon: tool type 6|"nothere"|1	$1547769D
+FindToolValue|icon: tool type 7|"nothere"|1	$00000000
+FindToolValue|kept|""|1	kept
+FindToolValue|d0|""|1	$00000000
+FindToolValue|a3|""|1	$00000041
+FindToolValue|string area|""|1	bytes 512 fnv 9B580AA5
+FindToolValue|icon: open|""|1	$00000001
+FindToolValue|icon: type|""|1	$00000003
+FindToolValue|icon: gadget size|""|1	$00360017
+FindToolValue|icon: gadget flags|""|1	$00000004
+FindToolValue|icon: default tool|""|1	$00000000
+FindToolValue|icon: image|""|1	$2E3FC293
+FindToolValue|icon: select image|""|1	$00000000
+FindToolValue|icon: tool types|""|1	$00000001
+FindToolValue|icon: tool type 0|""|1	$0239845D
+FindToolValue|icon: tool type 1|""|1	$CEC2FBF7
+FindToolValue|icon: tool type 2|""|1	$0020F76D
+FindToolValue|icon: tool type 3|""|1	$E3236D43
+FindToolValue|icon: tool type 4|""|1	$B93B3359
+FindToolValue|icon: tool type 5|""|1	$2174C808
+FindToolValue|icon: tool type 6|""|1	$1547769D
+FindToolValue|icon: tool type 7|""|1	$00000000
+FindToolNumber|kept|$0,$0|1	kept
+FindToolNumber|d0|$0,$0|1	$00000007
+FindToolNumber|a3|$0,$0|1	$00000047
+FindToolNumber|string area|$0,$0|1	bytes 512 fnv 62DF1A10
+FindToolNumber|icon: open|$0,$0|1	$00000001
+FindToolNumber|icon: type|$0,$0|1	$00000003
+FindToolNumber|icon: gadget size|$0,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$0,$0|1	$00000004
+FindToolNumber|icon: default tool|$0,$0|1	$00000000
+FindToolNumber|icon: image|$0,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$0,$0|1	$00000000
+FindToolNumber|icon: tool types|$0,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$0,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$0,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$0,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$0,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$0,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$0,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$0,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$0,$0|1	$00000000
+FindToolNumber|kept|$1,$0|1	kept
+FindToolNumber|d0|$1,$0|1	$00000007
+FindToolNumber|a3|$1,$0|1	$00000047
+FindToolNumber|string area|$1,$0|1	bytes 512 fnv B3620B86
+FindToolNumber|icon: open|$1,$0|1	$00000001
+FindToolNumber|icon: type|$1,$0|1	$00000003
+FindToolNumber|icon: gadget size|$1,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$1,$0|1	$00000004
+FindToolNumber|icon: default tool|$1,$0|1	$00000000
+FindToolNumber|icon: image|$1,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$1,$0|1	$00000000
+FindToolNumber|icon: tool types|$1,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$1,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$1,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$1,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$1,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$1,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$1,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$1,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$1,$0|1	$00000000
+FindToolNumber|kept|$2,$0|1	kept
+FindToolNumber|d0|$2,$0|1	$00000004
+FindToolNumber|a3|$2,$0|1	$00000044
+FindToolNumber|string area|$2,$0|1	bytes 512 fnv 9BF3DC33
+FindToolNumber|icon: open|$2,$0|1	$00000001
+FindToolNumber|icon: type|$2,$0|1	$00000003
+FindToolNumber|icon: gadget size|$2,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$2,$0|1	$00000004
+FindToolNumber|icon: default tool|$2,$0|1	$00000000
+FindToolNumber|icon: image|$2,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$2,$0|1	$00000000
+FindToolNumber|icon: tool types|$2,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$2,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$2,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$2,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$2,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$2,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$2,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$2,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$2,$0|1	$00000000
+FindToolNumber|kept|$3,$0|1	kept
+FindToolNumber|d0|$3,$0|1	$0000000E
+FindToolNumber|a3|$3,$0|1	$0000004E
+FindToolNumber|string area|$3,$0|1	bytes 512 fnv 8F9D64A6
+FindToolNumber|icon: open|$3,$0|1	$00000001
+FindToolNumber|icon: type|$3,$0|1	$00000003
+FindToolNumber|icon: gadget size|$3,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$3,$0|1	$00000004
+FindToolNumber|icon: default tool|$3,$0|1	$00000000
+FindToolNumber|icon: image|$3,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$3,$0|1	$00000000
+FindToolNumber|icon: tool types|$3,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$3,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$3,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$3,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$3,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$3,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$3,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$3,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$3,$0|1	$00000000
+FindToolNumber|kept|$4,$0|1	kept
+FindToolNumber|d0|$4,$0|1	$00000007
+FindToolNumber|a3|$4,$0|1	$00000047
+FindToolNumber|string area|$4,$0|1	bytes 512 fnv 87DFECBC
+FindToolNumber|icon: open|$4,$0|1	$00000001
+FindToolNumber|icon: type|$4,$0|1	$00000003
+FindToolNumber|icon: gadget size|$4,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$4,$0|1	$00000004
+FindToolNumber|icon: default tool|$4,$0|1	$00000000
+FindToolNumber|icon: image|$4,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$4,$0|1	$00000000
+FindToolNumber|icon: tool types|$4,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$4,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$4,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$4,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$4,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$4,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$4,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$4,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$4,$0|1	$00000000
+FindToolNumber|kept|$5,$0|1	kept
+FindToolNumber|d0|$5,$0|1	$00000009
+FindToolNumber|a3|$5,$0|1	$00000049
+FindToolNumber|string area|$5,$0|1	bytes 512 fnv 5D31DE92
+FindToolNumber|icon: open|$5,$0|1	$00000001
+FindToolNumber|icon: type|$5,$0|1	$00000003
+FindToolNumber|icon: gadget size|$5,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$5,$0|1	$00000004
+FindToolNumber|icon: default tool|$5,$0|1	$00000000
+FindToolNumber|icon: image|$5,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$5,$0|1	$00000000
+FindToolNumber|icon: tool types|$5,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$5,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$5,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$5,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$5,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$5,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$5,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$5,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$5,$0|1	$00000000
+FindToolNumber|kept|$6,$0|1	kept
+FindToolNumber|d0|$6,$0|1	$00000007
+FindToolNumber|a3|$6,$0|1	$00000047
+FindToolNumber|string area|$6,$0|1	bytes 512 fnv 637136F0
+FindToolNumber|icon: open|$6,$0|1	$00000001
+FindToolNumber|icon: type|$6,$0|1	$00000003
+FindToolNumber|icon: gadget size|$6,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$6,$0|1	$00000004
+FindToolNumber|icon: default tool|$6,$0|1	$00000000
+FindToolNumber|icon: image|$6,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$6,$0|1	$00000000
+FindToolNumber|icon: tool types|$6,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$6,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$6,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$6,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$6,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$6,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$6,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$6,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$6,$0|1	$00000000
+FindToolNumber|kept|$7,$0|1	kept
+FindToolNumber|d0|$7,$0|1	$00000000
+FindToolNumber|a3|$7,$0|1	$00000040
+FindToolNumber|string area|$7,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber|icon: open|$7,$0|1	$00000001
+FindToolNumber|icon: type|$7,$0|1	$00000003
+FindToolNumber|icon: gadget size|$7,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$7,$0|1	$00000004
+FindToolNumber|icon: default tool|$7,$0|1	$00000000
+FindToolNumber|icon: image|$7,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$7,$0|1	$00000000
+FindToolNumber|icon: tool types|$7,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$7,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$7,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$7,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$7,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$7,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$7,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$7,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$7,$0|1	$00000000
+FindToolNumber|kept|$8,$0|1	kept
+FindToolNumber|d0|$8,$0|1	$00000000
+FindToolNumber|a3|$8,$0|1	$00000040
+FindToolNumber|string area|$8,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber|icon: open|$8,$0|1	$00000001
+FindToolNumber|icon: type|$8,$0|1	$00000003
+FindToolNumber|icon: gadget size|$8,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$8,$0|1	$00000004
+FindToolNumber|icon: default tool|$8,$0|1	$00000000
+FindToolNumber|icon: image|$8,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$8,$0|1	$00000000
+FindToolNumber|icon: tool types|$8,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$8,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$8,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$8,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$8,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$8,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$8,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$8,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$8,$0|1	$00000000
+FindToolNumber|kept|$FFFFFFFF,$0|1	kept
+FindToolNumber|d0|$FFFFFFFF,$0|1	$00000000
+FindToolNumber|a3|$FFFFFFFF,$0|1	$00000040
+FindToolNumber|string area|$FFFFFFFF,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber|icon: open|$FFFFFFFF,$0|1	$00000001
+FindToolNumber|icon: type|$FFFFFFFF,$0|1	$00000003
+FindToolNumber|icon: gadget size|$FFFFFFFF,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$FFFFFFFF,$0|1	$00000004
+FindToolNumber|icon: default tool|$FFFFFFFF,$0|1	$00000000
+FindToolNumber|icon: image|$FFFFFFFF,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$FFFFFFFF,$0|1	$00000000
+FindToolNumber|icon: tool types|$FFFFFFFF,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$FFFFFFFF,$0|1	$0239845D
+FindToolNumber|icon: tool type 1|$FFFFFFFF,$0|1	$CEC2FBF7
+FindToolNumber|icon: tool type 2|$FFFFFFFF,$0|1	$0020F76D
+FindToolNumber|icon: tool type 3|$FFFFFFFF,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$FFFFFFFF,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$FFFFFFFF,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$FFFFFFFF,$0|1	$1547769D
+FindToolNumber|icon: tool type 7|$FFFFFFFF,$0|1	$00000000
+MatchToolValue|kept|"MIXED","two"|1	kept
+MatchToolValue|d0|"MIXED","two"|1	$FFFFFFFF
+MatchToolValue|a3|"MIXED","two"|1	$00000046
+MatchToolValue|string area|"MIXED","two"|1	bytes 512 fnv EE431E27
+MatchToolValue|icon: open|"MIXED","two"|1	$00000001
+MatchToolValue|icon: type|"MIXED","two"|1	$00000003
+MatchToolValue|icon: gadget size|"MIXED","two"|1	$00360017
+MatchToolValue|icon: gadget flags|"MIXED","two"|1	$00000004
+MatchToolValue|icon: default tool|"MIXED","two"|1	$00000000
+MatchToolValue|icon: image|"MIXED","two"|1	$2E3FC293
+MatchToolValue|icon: select image|"MIXED","two"|1	$00000000
+MatchToolValue|icon: tool types|"MIXED","two"|1	$00000001
+MatchToolValue|icon: tool type 0|"MIXED","two"|1	$0239845D
+MatchToolValue|icon: tool type 1|"MIXED","two"|1	$CEC2FBF7
+MatchToolValue|icon: tool type 2|"MIXED","two"|1	$0020F76D
+MatchToolValue|icon: tool type 3|"MIXED","two"|1	$E3236D43
+MatchToolValue|icon: tool type 4|"MIXED","two"|1	$B93B3359
+MatchToolValue|icon: tool type 5|"MIXED","two"|1	$2174C808
+MatchToolValue|icon: tool type 6|"MIXED","two"|1	$1547769D
+MatchToolValue|icon: tool type 7|"MIXED","two"|1	$00000000
+MatchToolValue|kept|"mixed","CASE"|1	kept
+MatchToolValue|d0|"mixed","CASE"|1	$FFFFFFFF
+MatchToolValue|a3|"mixed","CASE"|1	$00000046
+MatchToolValue|string area|"mixed","CASE"|1	bytes 512 fnv DE8405C7
+MatchToolValue|icon: open|"mixed","CASE"|1	$00000001
+MatchToolValue|icon: type|"mixed","CASE"|1	$00000003
+MatchToolValue|icon: gadget size|"mixed","CASE"|1	$00360017
+MatchToolValue|icon: gadget flags|"mixed","CASE"|1	$00000004
+MatchToolValue|icon: default tool|"mixed","CASE"|1	$00000000
+MatchToolValue|icon: image|"mixed","CASE"|1	$2E3FC293
+MatchToolValue|icon: select image|"mixed","CASE"|1	$00000000
+MatchToolValue|icon: tool types|"mixed","CASE"|1	$00000001
+MatchToolValue|icon: tool type 0|"mixed","CASE"|1	$0239845D
+MatchToolValue|icon: tool type 1|"mixed","CASE"|1	$CEC2FBF7
+MatchToolValue|icon: tool type 2|"mixed","CASE"|1	$0020F76D
+MatchToolValue|icon: tool type 3|"mixed","CASE"|1	$E3236D43
+MatchToolValue|icon: tool type 4|"mixed","CASE"|1	$B93B3359
+MatchToolValue|icon: tool type 5|"mixed","CASE"|1	$2174C808
+MatchToolValue|icon: tool type 6|"mixed","CASE"|1	$1547769D
+MatchToolValue|icon: tool type 7|"mixed","CASE"|1	$00000000
+MatchToolValue|kept|"MIXED","three"|1	kept
+MatchToolValue|d0|"MIXED","three"|1	$00000000
+MatchToolValue|a3|"MIXED","three"|1	$00000046
+MatchToolValue|string area|"MIXED","three"|1	bytes 512 fnv EE431E27
+MatchToolValue|icon: open|"MIXED","three"|1	$00000001
+MatchToolValue|icon: type|"MIXED","three"|1	$00000003
+MatchToolValue|icon: gadget size|"MIXED","three"|1	$00360017
+MatchToolValue|icon: gadget flags|"MIXED","three"|1	$00000004
+MatchToolValue|icon: default tool|"MIXED","three"|1	$00000000
+MatchToolValue|icon: image|"MIXED","three"|1	$2E3FC293
+MatchToolValue|icon: select image|"MIXED","three"|1	$00000000
+MatchToolValue|icon: tool types|"MIXED","three"|1	$00000001
+MatchToolValue|icon: tool type 0|"MIXED","three"|1	$0239845D
+MatchToolValue|icon: tool type 1|"MIXED","three"|1	$CEC2FBF7
+MatchToolValue|icon: tool type 2|"MIXED","three"|1	$0020F76D
+MatchToolValue|icon: tool type 3|"MIXED","three"|1	$E3236D43
+MatchToolValue|icon: tool type 4|"MIXED","three"|1	$B93B3359
+MatchToolValue|icon: tool type 5|"MIXED","three"|1	$2174C808
+MatchToolValue|icon: tool type 6|"MIXED","three"|1	$1547769D
+MatchToolValue|icon: tool type 7|"MIXED","three"|1	$00000000
+MatchToolValue|kept|"nothere","x"|1	kept
+MatchToolValue|d0|"nothere","x"|1	$00000000
+MatchToolValue|a3|"nothere","x"|1	$00000048
+MatchToolValue|string area|"nothere","x"|1	bytes 512 fnv B8B709E4
+MatchToolValue|icon: open|"nothere","x"|1	$00000001
+MatchToolValue|icon: type|"nothere","x"|1	$00000003
+MatchToolValue|icon: gadget size|"nothere","x"|1	$00360017
+MatchToolValue|icon: gadget flags|"nothere","x"|1	$00000004
+MatchToolValue|icon: default tool|"nothere","x"|1	$00000000
+MatchToolValue|icon: image|"nothere","x"|1	$2E3FC293
+MatchToolValue|icon: select image|"nothere","x"|1	$00000000
+MatchToolValue|icon: tool types|"nothere","x"|1	$00000001
+MatchToolValue|icon: tool type 0|"nothere","x"|1	$0239845D
+MatchToolValue|icon: tool type 1|"nothere","x"|1	$CEC2FBF7
+MatchToolValue|icon: tool type 2|"nothere","x"|1	$0020F76D
+MatchToolValue|icon: tool type 3|"nothere","x"|1	$E3236D43
+MatchToolValue|icon: tool type 4|"nothere","x"|1	$B93B3359
+MatchToolValue|icon: tool type 5|"nothere","x"|1	$2174C808
+MatchToolValue|icon: tool type 6|"nothere","x"|1	$1547769D
+MatchToolValue|icon: tool type 7|"nothere","x"|1	$00000000
+FindToolType|kept|"FLAG"|1	kept
+FindToolType|d0|"FLAG"|1	$FFFFFFFF
+FindToolType|a3|"FLAG"|1	$00000045
+FindToolType|string area|"FLAG"|1	bytes 512 fnv 1A0B318F
+FindToolType|icon: open|"FLAG"|1	$00000001
+FindToolType|icon: type|"FLAG"|1	$00000003
+FindToolType|icon: gadget size|"FLAG"|1	$00360017
+FindToolType|icon: gadget flags|"FLAG"|1	$00000004
+FindToolType|icon: default tool|"FLAG"|1	$00000000
+FindToolType|icon: image|"FLAG"|1	$2E3FC293
+FindToolType|icon: select image|"FLAG"|1	$00000000
+FindToolType|icon: tool types|"FLAG"|1	$00000001
+FindToolType|icon: tool type 0|"FLAG"|1	$0239845D
+FindToolType|icon: tool type 1|"FLAG"|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"FLAG"|1	$0020F76D
+FindToolType|icon: tool type 3|"FLAG"|1	$E3236D43
+FindToolType|icon: tool type 4|"FLAG"|1	$B93B3359
+FindToolType|icon: tool type 5|"FLAG"|1	$2174C808
+FindToolType|icon: tool type 6|"FLAG"|1	$1547769D
+FindToolType|icon: tool type 7|"FLAG"|1	$00000000
+FindToolType|kept|"BRACK"|1	kept
+FindToolType|d0|"BRACK"|1	$00000001
+FindToolType|a3|"BRACK"|1	$00000046
+FindToolType|string area|"BRACK"|1	bytes 512 fnv E2F4969D
+FindToolType|icon: open|"BRACK"|1	$00000001
+FindToolType|icon: type|"BRACK"|1	$00000003
+FindToolType|icon: gadget size|"BRACK"|1	$00360017
+FindToolType|icon: gadget flags|"BRACK"|1	$00000004
+FindToolType|icon: default tool|"BRACK"|1	$00000000
+FindToolType|icon: image|"BRACK"|1	$2E3FC293
+FindToolType|icon: select image|"BRACK"|1	$00000000
+FindToolType|icon: tool types|"BRACK"|1	$00000001
+FindToolType|icon: tool type 0|"BRACK"|1	$0239845D
+FindToolType|icon: tool type 1|"BRACK"|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"BRACK"|1	$0020F76D
+FindToolType|icon: tool type 3|"BRACK"|1	$E3236D43
+FindToolType|icon: tool type 4|"BRACK"|1	$B93B3359
+FindToolType|icon: tool type 5|"BRACK"|1	$2174C808
+FindToolType|icon: tool type 6|"BRACK"|1	$1547769D
+FindToolType|icon: tool type 7|"BRACK"|1	$00000000
+FindToolType|kept|"BRACK"|2	kept
+FindToolType|d0|"BRACK"|2	$00000000
+FindToolType|a3|"BRACK"|2	$00000046
+FindToolType|string area|"BRACK"|2	bytes 512 fnv E2F4969D
+FindToolType|icon: open|"BRACK"|2	$00000001
+FindToolType|icon: type|"BRACK"|2	$00000003
+FindToolType|icon: gadget size|"BRACK"|2	$00360017
+FindToolType|icon: gadget flags|"BRACK"|2	$00000004
+FindToolType|icon: default tool|"BRACK"|2	$00000000
+FindToolType|icon: image|"BRACK"|2	$2E3FC293
+FindToolType|icon: select image|"BRACK"|2	$00000000
+FindToolType|icon: tool types|"BRACK"|2	$00000001
+FindToolType|icon: tool type 0|"BRACK"|2	$0239845D
+FindToolType|icon: tool type 1|"BRACK"|2	$CEC2FBF7
+FindToolType|icon: tool type 2|"BRACK"|2	$0020F76D
+FindToolType|icon: tool type 3|"BRACK"|2	$E3236D43
+FindToolType|icon: tool type 4|"BRACK"|2	$B93B3359
+FindToolType|icon: tool type 5|"BRACK"|2	$2174C808
+FindToolType|icon: tool type 6|"BRACK"|2	$1547769D
+FindToolType|icon: tool type 7|"BRACK"|2	$00000000
+FindToolType|kept|"brack",1|1	kept
+FindToolType|d0|"brack",1|1	$00000001
+FindToolType|a3|"brack",1|1	$00000046
+FindToolType|string area|"brack",1|1	bytes 512 fnv FB5E2CFD
+FindToolType|icon: open|"brack",1|1	$00000001
+FindToolType|icon: type|"brack",1|1	$00000003
+FindToolType|icon: gadget size|"brack",1|1	$00360017
+FindToolType|icon: gadget flags|"brack",1|1	$00000004
+FindToolType|icon: default tool|"brack",1|1	$00000000
+FindToolType|icon: image|"brack",1|1	$2E3FC293
+FindToolType|icon: select image|"brack",1|1	$00000000
+FindToolType|icon: tool types|"brack",1|1	$00000001
+FindToolType|icon: tool type 0|"brack",1|1	$0239845D
+FindToolType|icon: tool type 1|"brack",1|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"brack",1|1	$0020F76D
+FindToolType|icon: tool type 3|"brack",1|1	$E3236D43
+FindToolType|icon: tool type 4|"brack",1|1	$B93B3359
+FindToolType|icon: tool type 5|"brack",1|1	$2174C808
+FindToolType|icon: tool type 6|"brack",1|1	$1547769D
+FindToolType|icon: tool type 7|"brack",1|1	$00000000
+FindToolType|kept|"(BRACK",1|1	kept
+FindToolType|d0|"(BRACK",1|1	$00000000
+FindToolType|a3|"(BRACK",1|1	$00000047
+FindToolType|string area|"(BRACK",1|1	bytes 512 fnv 0EC17AE5
+FindToolType|icon: open|"(BRACK",1|1	$00000001
+FindToolType|icon: type|"(BRACK",1|1	$00000003
+FindToolType|icon: gadget size|"(BRACK",1|1	$00360017
+FindToolType|icon: gadget flags|"(BRACK",1|1	$00000004
+FindToolType|icon: default tool|"(BRACK",1|1	$00000000
+FindToolType|icon: image|"(BRACK",1|1	$2E3FC293
+FindToolType|icon: select image|"(BRACK",1|1	$00000000
+FindToolType|icon: tool types|"(BRACK",1|1	$00000001
+FindToolType|icon: tool type 0|"(BRACK",1|1	$0239845D
+FindToolType|icon: tool type 1|"(BRACK",1|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"(BRACK",1|1	$0020F76D
+FindToolType|icon: tool type 3|"(BRACK",1|1	$E3236D43
+FindToolType|icon: tool type 4|"(BRACK",1|1	$B93B3359
+FindToolType|icon: tool type 5|"(BRACK",1|1	$2174C808
+FindToolType|icon: tool type 6|"(BRACK",1|1	$1547769D
+FindToolType|icon: tool type 7|"(BRACK",1|1	$00000000
+FindToolType|kept|"OFF"|1	kept
+FindToolType|d0|"OFF"|1	$00000001
+FindToolType|a3|"OFF"|1	$00000044
+FindToolType|string area|"OFF"|1	bytes 512 fnv A6E8B7CE
+FindToolType|icon: open|"OFF"|1	$00000001
+FindToolType|icon: type|"OFF"|1	$00000003
+FindToolType|icon: gadget size|"OFF"|1	$00360017
+FindToolType|icon: gadget flags|"OFF"|1	$00000004
+FindToolType|icon: default tool|"OFF"|1	$00000000
+FindToolType|icon: image|"OFF"|1	$2E3FC293
+FindToolType|icon: select image|"OFF"|1	$00000000
+FindToolType|icon: tool types|"OFF"|1	$00000001
+FindToolType|icon: tool type 0|"OFF"|1	$0239845D
+FindToolType|icon: tool type 1|"OFF"|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"OFF"|1	$0020F76D
+FindToolType|icon: tool type 3|"OFF"|1	$E3236D43
+FindToolType|icon: tool type 4|"OFF"|1	$B93B3359
+FindToolType|icon: tool type 5|"OFF"|1	$2174C808
+FindToolType|icon: tool type 6|"OFF"|1	$1547769D
+FindToolType|icon: tool type 7|"OFF"|1	$00000000
+FindToolType|kept|"nothere"|1	kept
+FindToolType|d0|"nothere"|1	$00000000
+FindToolType|a3|"nothere"|1	$00000048
+FindToolType|string area|"nothere"|1	bytes 512 fnv B8B709E4
+FindToolType|icon: open|"nothere"|1	$00000001
+FindToolType|icon: type|"nothere"|1	$00000003
+FindToolType|icon: gadget size|"nothere"|1	$00360017
+FindToolType|icon: gadget flags|"nothere"|1	$00000004
+FindToolType|icon: default tool|"nothere"|1	$00000000
+FindToolType|icon: image|"nothere"|1	$2E3FC293
+FindToolType|icon: select image|"nothere"|1	$00000000
+FindToolType|icon: tool types|"nothere"|1	$00000001
+FindToolType|icon: tool type 0|"nothere"|1	$0239845D
+FindToolType|icon: tool type 1|"nothere"|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"nothere"|1	$0020F76D
+FindToolType|icon: tool type 3|"nothere"|1	$E3236D43
+FindToolType|icon: tool type 4|"nothere"|1	$B93B3359
+FindToolType|icon: tool type 5|"nothere"|1	$2174C808
+FindToolType|icon: tool type 6|"nothere"|1	$1547769D
+FindToolType|icon: tool type 7|"nothere"|1	$00000000
+FindToolType|kept|"FOO",0|1	kept
+FindToolType|d0|"FOO",0|1	$FFFFFFFF
+FindToolType|a3|"FOO",0|1	$00000044
+FindToolType|string area|"FOO",0|1	bytes 512 fnv C8D7CD69
+FindToolType|icon: open|"FOO",0|1	$00000001
+FindToolType|icon: type|"FOO",0|1	$00000003
+FindToolType|icon: gadget size|"FOO",0|1	$00360017
+FindToolType|icon: gadget flags|"FOO",0|1	$00000004
+FindToolType|icon: default tool|"FOO",0|1	$00000000
+FindToolType|icon: image|"FOO",0|1	$2E3FC293
+FindToolType|icon: select image|"FOO",0|1	$00000000
+FindToolType|icon: tool types|"FOO",0|1	$00000001
+FindToolType|icon: tool type 0|"FOO",0|1	$0239845D
+FindToolType|icon: tool type 1|"FOO",0|1	$CEC2FBF7
+FindToolType|icon: tool type 2|"FOO",0|1	$0020F76D
+FindToolType|icon: tool type 3|"FOO",0|1	$E3236D43
+FindToolType|icon: tool type 4|"FOO",0|1	$B93B3359
+FindToolType|icon: tool type 5|"FOO",0|1	$2174C808
+FindToolType|icon: tool type 6|"FOO",0|1	$1547769D
+FindToolType|icon: tool type 7|"FOO",0|1	$00000000
+SetToolValue|kept|"foo","baz"|1	kept
+SetToolValue|d0|"foo","baz"|1	$FFFFFFFF
+SetToolValue|a3|"foo","baz"|1	$00000044
+SetToolValue|string area|"foo","baz"|1	bytes 512 fnv 2A04E809
+SetToolValue|icon: open|"foo","baz"|1	$00000001
+SetToolValue|icon: type|"foo","baz"|1	$00000003
+SetToolValue|icon: gadget size|"foo","baz"|1	$00360017
+SetToolValue|icon: gadget flags|"foo","baz"|1	$00000004
+SetToolValue|icon: default tool|"foo","baz"|1	$00000000
+SetToolValue|icon: image|"foo","baz"|1	$2E3FC293
+SetToolValue|icon: select image|"foo","baz"|1	$00000000
+SetToolValue|icon: tool types|"foo","baz"|1	$00000001
+SetToolValue|icon: tool type 0|"foo","baz"|1	$D75EF085
+SetToolValue|icon: tool type 1|"foo","baz"|1	$CEC2FBF7
+SetToolValue|icon: tool type 2|"foo","baz"|1	$0020F76D
+SetToolValue|icon: tool type 3|"foo","baz"|1	$E3236D43
+SetToolValue|icon: tool type 4|"foo","baz"|1	$B93B3359
+SetToolValue|icon: tool type 5|"foo","baz"|1	$2174C808
+SetToolValue|icon: tool type 6|"foo","baz"|1	$1547769D
+SetToolValue|icon: tool type 7|"foo","baz"|1	$00000000
+SetToolValue|kept|"FL","x",0|1	kept
+SetToolValue|d0|"FL","x",0|1	$FFFFFFFF
+SetToolValue|a3|"FL","x",0|1	$00000043
+SetToolValue|string area|"FL","x",0|1	bytes 512 fnv D4B31B6A
+SetToolValue|icon: open|"FL","x",0|1	$00000001
+SetToolValue|icon: type|"FL","x",0|1	$00000003
+SetToolValue|icon: gadget size|"FL","x",0|1	$00360017
+SetToolValue|icon: gadget flags|"FL","x",0|1	$00000004
+SetToolValue|icon: default tool|"FL","x",0|1	$00000000
+SetToolValue|icon: image|"FL","x",0|1	$2E3FC293
+SetToolValue|icon: select image|"FL","x",0|1	$00000000
+SetToolValue|icon: tool types|"FL","x",0|1	$00000001
+SetToolValue|icon: tool type 0|"FL","x",0|1	$D75EF085
+SetToolValue|icon: tool type 1|"FL","x",0|1	$CEC2FBF7
+SetToolValue|icon: tool type 2|"FL","x",0|1	$483FC601
+SetToolValue|icon: tool type 3|"FL","x",0|1	$E3236D43
+SetToolValue|icon: tool type 4|"FL","x",0|1	$B93B3359
+SetToolValue|icon: tool type 5|"FL","x",0|1	$2174C808
+SetToolValue|icon: tool type 6|"FL","x",0|1	$1547769D
+SetToolValue|icon: tool type 7|"FL","x",0|1	$00000000
+SetToolValue|kept|"OFF","2",-1|1	kept
+SetToolValue|d0|"OFF","2",-1|1	$FFFFFFFF
+SetToolValue|a3|"OFF","2",-1|1	$00000044
+SetToolValue|string area|"OFF","2",-1|1	bytes 512 fnv A6E8B7CE
+SetToolValue|icon: open|"OFF","2",-1|1	$00000001
+SetToolValue|icon: type|"OFF","2",-1|1	$00000003
+SetToolValue|icon: gadget size|"OFF","2",-1|1	$00360017
+SetToolValue|icon: gadget flags|"OFF","2",-1|1	$00000004
+SetToolValue|icon: default tool|"OFF","2",-1|1	$00000000
+SetToolValue|icon: image|"OFF","2",-1|1	$2E3FC293
+SetToolValue|icon: select image|"OFF","2",-1|1	$00000000
+SetToolValue|icon: tool types|"OFF","2",-1|1	$00000001
+SetToolValue|icon: tool type 0|"OFF","2",-1|1	$D75EF085
+SetToolValue|icon: tool type 1|"OFF","2",-1|1	$047A2125
+SetToolValue|icon: tool type 2|"OFF","2",-1|1	$483FC601
+SetToolValue|icon: tool type 3|"OFF","2",-1|1	$E3236D43
+SetToolValue|icon: tool type 4|"OFF","2",-1|1	$B93B3359
+SetToolValue|icon: tool type 5|"OFF","2",-1|1	$2174C808
+SetToolValue|icon: tool type 6|"OFF","2",-1|1	$1547769D
+SetToolValue|icon: tool type 7|"OFF","2",-1|1	$00000000
+SetToolValue|kept|"lower","",7|1	kept
+SetToolValue|d0|"lower","",7|1	$FFFFFFFF
+SetToolValue|a3|"lower","",7|1	$00000046
+SetToolValue|string area|"lower","",7|1	bytes 512 fnv 79D06075
+SetToolValue|icon: open|"lower","",7|1	$00000001
+SetToolValue|icon: type|"lower","",7|1	$00000003
+SetToolValue|icon: gadget size|"lower","",7|1	$00360017
+SetToolValue|icon: gadget flags|"lower","",7|1	$00000004
+SetToolValue|icon: default tool|"lower","",7|1	$00000000
+SetToolValue|icon: image|"lower","",7|1	$2E3FC293
+SetToolValue|icon: select image|"lower","",7|1	$00000000
+SetToolValue|icon: tool types|"lower","",7|1	$00000001
+SetToolValue|icon: tool type 0|"lower","",7|1	$D75EF085
+SetToolValue|icon: tool type 1|"lower","",7|1	$047A2125
+SetToolValue|icon: tool type 2|"lower","",7|1	$483FC601
+SetToolValue|icon: tool type 3|"lower","",7|1	$E3236D43
+SetToolValue|icon: tool type 4|"lower","",7|1	$B93B3359
+SetToolValue|icon: tool type 5|"lower","",7|1	$2174C808
+SetToolValue|icon: tool type 6|"lower","",7|1	$06262B02
+SetToolValue|icon: tool type 7|"lower","",7|1	$00000000
+SetToolValue|kept|"nothere","1"|1	kept
+SetToolValue|d0|"nothere","1"|1	$00000000
+SetToolValue|a3|"nothere","1"|1	$00000048
+SetToolValue|string area|"nothere","1"|1	bytes 512 fnv B8B709E4
+SetToolValue|icon: open|"nothere","1"|1	$00000001
+SetToolValue|icon: type|"nothere","1"|1	$00000003
+SetToolValue|icon: gadget size|"nothere","1"|1	$00360017
+SetToolValue|icon: gadget flags|"nothere","1"|1	$00000004
+SetToolValue|icon: default tool|"nothere","1"|1	$00000000
+SetToolValue|icon: image|"nothere","1"|1	$2E3FC293
+SetToolValue|icon: select image|"nothere","1"|1	$00000000
+SetToolValue|icon: tool types|"nothere","1"|1	$00000001
+SetToolValue|icon: tool type 0|"nothere","1"|1	$D75EF085
+SetToolValue|icon: tool type 1|"nothere","1"|1	$047A2125
+SetToolValue|icon: tool type 2|"nothere","1"|1	$483FC601
+SetToolValue|icon: tool type 3|"nothere","1"|1	$E3236D43
+SetToolValue|icon: tool type 4|"nothere","1"|1	$B93B3359
+SetToolValue|icon: tool type 5|"nothere","1"|1	$2174C808
+SetToolValue|icon: tool type 6|"nothere","1"|1	$06262B02
+SetToolValue|icon: tool type 7|"nothere","1"|1	$00000000
+NewToolType|kept|"NEW","val"|1	kept
+NewToolType|d0|"NEW","val"|1	$FFFFFFFF
+NewToolType|a3|"NEW","val"|1	$00000044
+NewToolType|string area|"NEW","val"|1	bytes 512 fnv 97A3893F
+NewToolType|icon: open|"NEW","val"|1	$00000001
+NewToolType|icon: type|"NEW","val"|1	$00000003
+NewToolType|icon: gadget size|"NEW","val"|1	$00360017
+NewToolType|icon: gadget flags|"NEW","val"|1	$00000004
+NewToolType|icon: default tool|"NEW","val"|1	$00000000
+NewToolType|icon: image|"NEW","val"|1	$2E3FC293
+NewToolType|icon: select image|"NEW","val"|1	$00000000
+NewToolType|icon: tool types|"NEW","val"|1	$00000001
+NewToolType|icon: tool type 0|"NEW","val"|1	$D75EF085
+NewToolType|icon: tool type 1|"NEW","val"|1	$047A2125
+NewToolType|icon: tool type 2|"NEW","val"|1	$483FC601
+NewToolType|icon: tool type 3|"NEW","val"|1	$E3236D43
+NewToolType|icon: tool type 4|"NEW","val"|1	$B93B3359
+NewToolType|icon: tool type 5|"NEW","val"|1	$2174C808
+NewToolType|icon: tool type 6|"NEW","val"|1	$06262B02
+NewToolType|icon: tool type 7|"NEW","val"|1	$98CBEF45
+NewToolType|icon: tool type 8|"NEW","val"|1	$00000000
+NewToolType|kept|"ALONE",""|1	kept
+NewToolType|d0|"ALONE",""|1	$FFFFFFFF
+NewToolType|a3|"ALONE",""|1	$00000046
+NewToolType|string area|"ALONE",""|1	bytes 512 fnv 965367FB
+NewToolType|icon: open|"ALONE",""|1	$00000001
+NewToolType|icon: type|"ALONE",""|1	$00000003
+NewToolType|icon: gadget size|"ALONE",""|1	$00360017
+NewToolType|icon: gadget flags|"ALONE",""|1	$00000004
+NewToolType|icon: default tool|"ALONE",""|1	$00000000
+NewToolType|icon: image|"ALONE",""|1	$2E3FC293
+NewToolType|icon: select image|"ALONE",""|1	$00000000
+NewToolType|icon: tool types|"ALONE",""|1	$00000001
+NewToolType|icon: tool type 0|"ALONE",""|1	$D75EF085
+NewToolType|icon: tool type 1|"ALONE",""|1	$047A2125
+NewToolType|icon: tool type 2|"ALONE",""|1	$483FC601
+NewToolType|icon: tool type 3|"ALONE",""|1	$E3236D43
+NewToolType|icon: tool type 4|"ALONE",""|1	$B93B3359
+NewToolType|icon: tool type 5|"ALONE",""|1	$2174C808
+NewToolType|icon: tool type 6|"ALONE",""|1	$06262B02
+NewToolType|icon: tool type 7|"ALONE",""|1	$98CBEF45
+NewToolType|icon: tool type 8|"ALONE",""|1	$03B7B63C
+NewToolType|icon: tool type 9|"ALONE",""|1	$00000000
+NewToolType|kept|"OFFT","v",0|1	kept
+NewToolType|d0|"OFFT","v",0|1	$FFFFFFFF
+NewToolType|a3|"OFFT","v",0|1	$00000045
+NewToolType|string area|"OFFT","v",0|1	bytes 512 fnv CEFE926E
+NewToolType|icon: open|"OFFT","v",0|1	$00000001
+NewToolType|icon: type|"OFFT","v",0|1	$00000003
+NewToolType|icon: gadget size|"OFFT","v",0|1	$00360017
+NewToolType|icon: gadget flags|"OFFT","v",0|1	$00000004
+NewToolType|icon: default tool|"OFFT","v",0|1	$00000000
+NewToolType|icon: image|"OFFT","v",0|1	$2E3FC293
+NewToolType|icon: select image|"OFFT","v",0|1	$00000000
+NewToolType|icon: tool types|"OFFT","v",0|1	$00000001
+NewToolType|icon: tool type 0|"OFFT","v",0|1	$D75EF085
+NewToolType|icon: tool type 1|"OFFT","v",0|1	$047A2125
+NewToolType|icon: tool type 2|"OFFT","v",0|1	$483FC601
+NewToolType|icon: tool type 3|"OFFT","v",0|1	$E3236D43
+NewToolType|icon: tool type 4|"OFFT","v",0|1	$B93B3359
+NewToolType|icon: tool type 5|"OFFT","v",0|1	$2174C808
+NewToolType|icon: tool type 6|"OFFT","v",0|1	$06262B02
+NewToolType|icon: tool type 7|"OFFT","v",0|1	$98CBEF45
+NewToolType|icon: tool type 8|"OFFT","v",0|1	$03B7B63C
+NewToolType|icon: tool type 9|"OFFT","v",0|1	$09B01744
+NewToolType|icon: tool type 10|"OFFT","v",0|1	$00000000
+FindToolNumber|kept|$0,$0|2	kept
+FindToolNumber|d0|$0,$0|2	$00000007
+FindToolNumber|a3|$0,$0|2	$00000047
+FindToolNumber|string area|$0,$0|2	bytes 512 fnv E85E3268
+FindToolNumber|icon: open|$0,$0|2	$00000001
+FindToolNumber|icon: type|$0,$0|2	$00000003
+FindToolNumber|icon: gadget size|$0,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$0,$0|2	$00000004
+FindToolNumber|icon: default tool|$0,$0|2	$00000000
+FindToolNumber|icon: image|$0,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$0,$0|2	$00000000
+FindToolNumber|icon: tool types|$0,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$0,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$0,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$0,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$0,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$0,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$0,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$0,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$0,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$0,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$0,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$0,$0|1	$00000000
+FindToolNumber|kept|$1,$0|2	kept
+FindToolNumber|d0|$1,$0|2	$00000005
+FindToolNumber|a3|$1,$0|2	$00000045
+FindToolNumber|string area|$1,$0|2	bytes 512 fnv 4A7F393F
+FindToolNumber|icon: open|$1,$0|2	$00000001
+FindToolNumber|icon: type|$1,$0|2	$00000003
+FindToolNumber|icon: gadget size|$1,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$1,$0|2	$00000004
+FindToolNumber|icon: default tool|$1,$0|2	$00000000
+FindToolNumber|icon: image|$1,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$1,$0|2	$00000000
+FindToolNumber|icon: tool types|$1,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$1,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$1,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$1,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$1,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$1,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$1,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$1,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$1,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$1,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$1,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$1,$0|1	$00000000
+FindToolNumber|kept|$2,$0|2	kept
+FindToolNumber|d0|$2,$0|2	$00000006
+FindToolNumber|a3|$2,$0|2	$00000046
+FindToolNumber|string area|$2,$0|2	bytes 512 fnv 3F1D54C8
+FindToolNumber|icon: open|$2,$0|2	$00000001
+FindToolNumber|icon: type|$2,$0|2	$00000003
+FindToolNumber|icon: gadget size|$2,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$2,$0|2	$00000004
+FindToolNumber|icon: default tool|$2,$0|2	$00000000
+FindToolNumber|icon: image|$2,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$2,$0|2	$00000000
+FindToolNumber|icon: tool types|$2,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$2,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$2,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$2,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$2,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$2,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$2,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$2,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$2,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$2,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$2,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$2,$0|1	$00000000
+FindToolNumber|kept|$3,$0|2	kept
+FindToolNumber|d0|$3,$0|2	$0000000E
+FindToolNumber|a3|$3,$0|2	$0000004E
+FindToolNumber|string area|$3,$0|2	bytes 512 fnv 8F9D64A6
+FindToolNumber|icon: open|$3,$0|2	$00000001
+FindToolNumber|icon: type|$3,$0|2	$00000003
+FindToolNumber|icon: gadget size|$3,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$3,$0|2	$00000004
+FindToolNumber|icon: default tool|$3,$0|2	$00000000
+FindToolNumber|icon: image|$3,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$3,$0|2	$00000000
+FindToolNumber|icon: tool types|$3,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$3,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$3,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$3,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$3,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$3,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$3,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$3,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$3,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$3,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$3,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$3,$0|1	$00000000
+FindToolNumber|kept|$4,$0|2	kept
+FindToolNumber|d0|$4,$0|2	$00000007
+FindToolNumber|a3|$4,$0|2	$00000047
+FindToolNumber|string area|$4,$0|2	bytes 512 fnv 87DFECBC
+FindToolNumber|icon: open|$4,$0|2	$00000001
+FindToolNumber|icon: type|$4,$0|2	$00000003
+FindToolNumber|icon: gadget size|$4,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$4,$0|2	$00000004
+FindToolNumber|icon: default tool|$4,$0|2	$00000000
+FindToolNumber|icon: image|$4,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$4,$0|2	$00000000
+FindToolNumber|icon: tool types|$4,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$4,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$4,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$4,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$4,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$4,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$4,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$4,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$4,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$4,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$4,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$4,$0|1	$00000000
+FindToolNumber|kept|$5,$0|2	kept
+FindToolNumber|d0|$5,$0|2	$00000009
+FindToolNumber|a3|$5,$0|2	$00000049
+FindToolNumber|string area|$5,$0|2	bytes 512 fnv 5D31DE92
+FindToolNumber|icon: open|$5,$0|2	$00000001
+FindToolNumber|icon: type|$5,$0|2	$00000003
+FindToolNumber|icon: gadget size|$5,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$5,$0|2	$00000004
+FindToolNumber|icon: default tool|$5,$0|2	$00000000
+FindToolNumber|icon: image|$5,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$5,$0|2	$00000000
+FindToolNumber|icon: tool types|$5,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$5,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$5,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$5,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$5,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$5,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$5,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$5,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$5,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$5,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$5,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$5,$0|1	$00000000
+FindToolNumber|kept|$6,$0|2	kept
+FindToolNumber|d0|$6,$0|2	$00000005
+FindToolNumber|a3|$6,$0|2	$00000045
+FindToolNumber|string area|$6,$0|2	bytes 512 fnv D583072A
+FindToolNumber|icon: open|$6,$0|2	$00000001
+FindToolNumber|icon: type|$6,$0|2	$00000003
+FindToolNumber|icon: gadget size|$6,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$6,$0|2	$00000004
+FindToolNumber|icon: default tool|$6,$0|2	$00000000
+FindToolNumber|icon: image|$6,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$6,$0|2	$00000000
+FindToolNumber|icon: tool types|$6,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$6,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$6,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$6,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$6,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$6,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$6,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$6,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$6,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$6,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$6,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$6,$0|1	$00000000
+FindToolNumber|kept|$7,$0|2	kept
+FindToolNumber|d0|$7,$0|2	$00000007
+FindToolNumber|a3|$7,$0|2	$00000047
+FindToolNumber|string area|$7,$0|2	bytes 512 fnv CF20A5C4
+FindToolNumber|icon: open|$7,$0|2	$00000001
+FindToolNumber|icon: type|$7,$0|2	$00000003
+FindToolNumber|icon: gadget size|$7,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$7,$0|2	$00000004
+FindToolNumber|icon: default tool|$7,$0|2	$00000000
+FindToolNumber|icon: image|$7,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$7,$0|2	$00000000
+FindToolNumber|icon: tool types|$7,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$7,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$7,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$7,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$7,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$7,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$7,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$7,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$7,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$7,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$7,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$7,$0|1	$00000000
+FindToolNumber|kept|$8,$0|2	kept
+FindToolNumber|d0|$8,$0|2	$00000005
+FindToolNumber|a3|$8,$0|2	$00000045
+FindToolNumber|string area|$8,$0|2	bytes 512 fnv F30B9CC8
+FindToolNumber|icon: open|$8,$0|2	$00000001
+FindToolNumber|icon: type|$8,$0|2	$00000003
+FindToolNumber|icon: gadget size|$8,$0|2	$00360017
+FindToolNumber|icon: gadget flags|$8,$0|2	$00000004
+FindToolNumber|icon: default tool|$8,$0|2	$00000000
+FindToolNumber|icon: image|$8,$0|2	$2E3FC293
+FindToolNumber|icon: select image|$8,$0|2	$00000000
+FindToolNumber|icon: tool types|$8,$0|2	$00000001
+FindToolNumber|icon: tool type 0|$8,$0|2	$D75EF085
+FindToolNumber|icon: tool type 1|$8,$0|2	$047A2125
+FindToolNumber|icon: tool type 2|$8,$0|2	$483FC601
+FindToolNumber|icon: tool type 3|$8,$0|2	$E3236D43
+FindToolNumber|icon: tool type 4|$8,$0|2	$B93B3359
+FindToolNumber|icon: tool type 5|$8,$0|2	$2174C808
+FindToolNumber|icon: tool type 6|$8,$0|2	$06262B02
+FindToolNumber|icon: tool type 7|$8,$0|2	$98CBEF45
+FindToolNumber|icon: tool type 8|$8,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$8,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$8,$0|1	$00000000
+FindToolNumber|kept|$9,$0|1	kept
+FindToolNumber|d0|$9,$0|1	$00000008
+FindToolNumber|a3|$9,$0|1	$00000048
+FindToolNumber|string area|$9,$0|1	bytes 512 fnv E1F8A9A6
+FindToolNumber|icon: open|$9,$0|1	$00000001
+FindToolNumber|icon: type|$9,$0|1	$00000003
+FindToolNumber|icon: gadget size|$9,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$9,$0|1	$00000004
+FindToolNumber|icon: default tool|$9,$0|1	$00000000
+FindToolNumber|icon: image|$9,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$9,$0|1	$00000000
+FindToolNumber|icon: tool types|$9,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$9,$0|1	$D75EF085
+FindToolNumber|icon: tool type 1|$9,$0|1	$047A2125
+FindToolNumber|icon: tool type 2|$9,$0|1	$483FC601
+FindToolNumber|icon: tool type 3|$9,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$9,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$9,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$9,$0|1	$06262B02
+FindToolNumber|icon: tool type 7|$9,$0|1	$98CBEF45
+FindToolNumber|icon: tool type 8|$9,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$9,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$9,$0|1	$00000000
+FindToolNumber|kept|$A,$0|1	kept
+FindToolNumber|d0|$A,$0|1	$00000000
+FindToolNumber|a3|$A,$0|1	$00000040
+FindToolNumber|string area|$A,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber|icon: open|$A,$0|1	$00000001
+FindToolNumber|icon: type|$A,$0|1	$00000003
+FindToolNumber|icon: gadget size|$A,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$A,$0|1	$00000004
+FindToolNumber|icon: default tool|$A,$0|1	$00000000
+FindToolNumber|icon: image|$A,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$A,$0|1	$00000000
+FindToolNumber|icon: tool types|$A,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$A,$0|1	$D75EF085
+FindToolNumber|icon: tool type 1|$A,$0|1	$047A2125
+FindToolNumber|icon: tool type 2|$A,$0|1	$483FC601
+FindToolNumber|icon: tool type 3|$A,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$A,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$A,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$A,$0|1	$06262B02
+FindToolNumber|icon: tool type 7|$A,$0|1	$98CBEF45
+FindToolNumber|icon: tool type 8|$A,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$A,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$A,$0|1	$00000000
+FindToolNumber|kept|$B,$0|1	kept
+FindToolNumber|d0|$B,$0|1	$00000000
+FindToolNumber|a3|$B,$0|1	$00000040
+FindToolNumber|string area|$B,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber|icon: open|$B,$0|1	$00000001
+FindToolNumber|icon: type|$B,$0|1	$00000003
+FindToolNumber|icon: gadget size|$B,$0|1	$00360017
+FindToolNumber|icon: gadget flags|$B,$0|1	$00000004
+FindToolNumber|icon: default tool|$B,$0|1	$00000000
+FindToolNumber|icon: image|$B,$0|1	$2E3FC293
+FindToolNumber|icon: select image|$B,$0|1	$00000000
+FindToolNumber|icon: tool types|$B,$0|1	$00000001
+FindToolNumber|icon: tool type 0|$B,$0|1	$D75EF085
+FindToolNumber|icon: tool type 1|$B,$0|1	$047A2125
+FindToolNumber|icon: tool type 2|$B,$0|1	$483FC601
+FindToolNumber|icon: tool type 3|$B,$0|1	$E3236D43
+FindToolNumber|icon: tool type 4|$B,$0|1	$B93B3359
+FindToolNumber|icon: tool type 5|$B,$0|1	$2174C808
+FindToolNumber|icon: tool type 6|$B,$0|1	$06262B02
+FindToolNumber|icon: tool type 7|$B,$0|1	$98CBEF45
+FindToolNumber|icon: tool type 8|$B,$0|1	$03B7B63C
+FindToolNumber|icon: tool type 9|$B,$0|1	$09B01744
+FindToolNumber|icon: tool type 10|$B,$0|1	$00000000
+FindToolValue|kept|"FOO"|2	kept
+FindToolValue|d0|"FOO"|2	$00000003
+FindToolValue|a3|"FOO"|2	$00000043
+FindToolValue|string area|"FOO"|2	bytes 512 fnv AD011B96
+FindToolValue|icon: open|"FOO"|2	$00000001
+FindToolValue|icon: type|"FOO"|2	$00000003
+FindToolValue|icon: gadget size|"FOO"|2	$00360017
+FindToolValue|icon: gadget flags|"FOO"|2	$00000004
+FindToolValue|icon: default tool|"FOO"|2	$00000000
+FindToolValue|icon: image|"FOO"|2	$2E3FC293
+FindToolValue|icon: select image|"FOO"|2	$00000000
+FindToolValue|icon: tool types|"FOO"|2	$00000001
+FindToolValue|icon: tool type 0|"FOO"|2	$D75EF085
+FindToolValue|icon: tool type 1|"FOO"|2	$047A2125
+FindToolValue|icon: tool type 2|"FOO"|2	$483FC601
+FindToolValue|icon: tool type 3|"FOO"|2	$E3236D43
+FindToolValue|icon: tool type 4|"FOO"|2	$B93B3359
+FindToolValue|icon: tool type 5|"FOO"|2	$2174C808
+FindToolValue|icon: tool type 6|"FOO"|2	$06262B02
+FindToolValue|icon: tool type 7|"FOO"|2	$98CBEF45
+FindToolValue|icon: tool type 8|"FOO"|1	$03B7B63C
+FindToolValue|icon: tool type 9|"FOO"|1	$09B01744
+FindToolValue|icon: tool type 10|"FOO"|1	$00000000
+FindToolValue|kept|"OFFT"|1	kept
+FindToolValue|d0|"OFFT"|1	$00000000
+FindToolValue|a3|"OFFT"|1	$00000045
+FindToolValue|string area|"OFFT"|1	bytes 512 fnv CEFE926E
+FindToolValue|icon: open|"OFFT"|1	$00000001
+FindToolValue|icon: type|"OFFT"|1	$00000003
+FindToolValue|icon: gadget size|"OFFT"|1	$00360017
+FindToolValue|icon: gadget flags|"OFFT"|1	$00000004
+FindToolValue|icon: default tool|"OFFT"|1	$00000000
+FindToolValue|icon: image|"OFFT"|1	$2E3FC293
+FindToolValue|icon: select image|"OFFT"|1	$00000000
+FindToolValue|icon: tool types|"OFFT"|1	$00000001
+FindToolValue|icon: tool type 0|"OFFT"|1	$D75EF085
+FindToolValue|icon: tool type 1|"OFFT"|1	$047A2125
+FindToolValue|icon: tool type 2|"OFFT"|1	$483FC601
+FindToolValue|icon: tool type 3|"OFFT"|1	$E3236D43
+FindToolValue|icon: tool type 4|"OFFT"|1	$B93B3359
+FindToolValue|icon: tool type 5|"OFFT"|1	$2174C808
+FindToolValue|icon: tool type 6|"OFFT"|1	$06262B02
+FindToolValue|icon: tool type 7|"OFFT"|1	$98CBEF45
+FindToolValue|icon: tool type 8|"OFFT"|1	$03B7B63C
+FindToolValue|icon: tool type 9|"OFFT"|1	$09B01744
+FindToolValue|icon: tool type 10|"OFFT"|1	$00000000
+SetIconHit|kept|$A5A50040,$A5A50020|1	kept
+SetIconHit|a3|$A5A50040,$A5A50020|1	$00000040
+SetIconHit|string area|$A5A50040,$A5A50020|1	bytes 512 fnv 9D9373C5
+SetIconHit|icon: open|$A5A50040,$A5A50020|1	$00000001
+SetIconHit|icon: type|$A5A50040,$A5A50020|1	$00000003
+SetIconHit|icon: gadget size|$A5A50040,$A5A50020|1	$00400020
+SetIconHit|icon: gadget flags|$A5A50040,$A5A50020|1	$00000004
+SetIconHit|icon: default tool|$A5A50040,$A5A50020|1	$00000000
+SetIconHit|icon: image|$A5A50040,$A5A50020|1	$2E3FC293
+SetIconHit|icon: select image|$A5A50040,$A5A50020|1	$00000000
+SetIconHit|icon: tool types|$A5A50040,$A5A50020|1	$00000001
+SetIconHit|icon: tool type 0|$A5A50040,$A5A50020|1	$D75EF085
+SetIconHit|icon: tool type 1|$A5A50040,$A5A50020|1	$047A2125
+SetIconHit|icon: tool type 2|$A5A50040,$A5A50020|1	$483FC601
+SetIconHit|icon: tool type 3|$A5A50040,$A5A50020|1	$E3236D43
+SetIconHit|icon: tool type 4|$A5A50040,$A5A50020|1	$B93B3359
+SetIconHit|icon: tool type 5|$A5A50040,$A5A50020|1	$2174C808
+SetIconHit|icon: tool type 6|$A5A50040,$A5A50020|1	$06262B02
+SetIconHit|icon: tool type 7|$A5A50040,$A5A50020|1	$98CBEF45
+SetIconHit|icon: tool type 8|$A5A50040,$A5A50020|1	$03B7B63C
+SetIconHit|icon: tool type 9|$A5A50040,$A5A50020|1	$09B01744
+SetIconHit|icon: tool type 10|$A5A50040,$A5A50020|1	$00000000
+IconRender|kept|$5,$0|1	kept
+IconRender|a3|$5,$0|1	$00000040
+IconRender|string area|$5,$0|1	bytes 512 fnv 9D9373C5
+IconRender|icon: open|$5,$0|1	$00000001
+IconRender|icon: type|$5,$0|1	$00000003
+IconRender|icon: gadget size|$5,$0|1	$00400020
+IconRender|icon: gadget flags|$5,$0|1	$00000005
+IconRender|icon: default tool|$5,$0|1	$00000000
+IconRender|icon: image|$5,$0|1	$2E3FC293
+IconRender|icon: select image|$5,$0|1	$00000000
+IconRender|icon: tool types|$5,$0|1	$00000001
+IconRender|icon: tool type 0|$5,$0|1	$D75EF085
+IconRender|icon: tool type 1|$5,$0|1	$047A2125
+IconRender|icon: tool type 2|$5,$0|1	$483FC601
+IconRender|icon: tool type 3|$5,$0|1	$E3236D43
+IconRender|icon: tool type 4|$5,$0|1	$B93B3359
+IconRender|icon: tool type 5|$5,$0|1	$2174C808
+IconRender|icon: tool type 6|$5,$0|1	$06262B02
+IconRender|icon: tool type 7|$5,$0|1	$98CBEF45
+IconRender|icon: tool type 8|$5,$0|1	$03B7B63C
+IconRender|icon: tool type 9|$5,$0|1	$09B01744
+IconRender|icon: tool type 10|$5,$0|1	$00000000
+SetIconType|kept|$0,$0|1	kept
+SetIconType|d0|$0,$0|1	$00000000
+SetIconType|a3|$0,$0|1	$00000040
+SetIconType|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$0,$0|1	$00000001
+SetIconType|icon: type|$0,$0|1	$00000003
+SetIconType|icon: gadget size|$0,$0|1	$00400020
+SetIconType|icon: gadget flags|$0,$0|1	$00000005
+SetIconType|icon: default tool|$0,$0|1	$00000000
+SetIconType|icon: image|$0,$0|1	$2E3FC293
+SetIconType|icon: select image|$0,$0|1	$00000000
+SetIconType|icon: tool types|$0,$0|1	$00000001
+SetIconType|icon: tool type 0|$0,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$0,$0|1	$047A2125
+SetIconType|icon: tool type 2|$0,$0|1	$483FC601
+SetIconType|icon: tool type 3|$0,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$0,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$0,$0|1	$2174C808
+SetIconType|icon: tool type 6|$0,$0|1	$06262B02
+SetIconType|icon: tool type 7|$0,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$0,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$0,$0|1	$09B01744
+SetIconType|icon: tool type 10|$0,$0|1	$00000000
+SetIconType|kept|$1,$0|1	kept
+SetIconType|d0|$1,$0|1	$FFFFFFFF
+SetIconType|a3|$1,$0|1	$00000040
+SetIconType|string area|$1,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$1,$0|1	$00000001
+SetIconType|icon: type|$1,$0|1	$00000001
+SetIconType|icon: gadget size|$1,$0|1	$00400020
+SetIconType|icon: gadget flags|$1,$0|1	$00000005
+SetIconType|icon: default tool|$1,$0|1	$00000000
+SetIconType|icon: image|$1,$0|1	$2E3FC293
+SetIconType|icon: select image|$1,$0|1	$00000000
+SetIconType|icon: tool types|$1,$0|1	$00000001
+SetIconType|icon: tool type 0|$1,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$1,$0|1	$047A2125
+SetIconType|icon: tool type 2|$1,$0|1	$483FC601
+SetIconType|icon: tool type 3|$1,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$1,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$1,$0|1	$2174C808
+SetIconType|icon: tool type 6|$1,$0|1	$06262B02
+SetIconType|icon: tool type 7|$1,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$1,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$1,$0|1	$09B01744
+SetIconType|icon: tool type 10|$1,$0|1	$00000000
+SetIconType|kept|$2,$0|1	kept
+SetIconType|d0|$2,$0|1	$FFFFFFFF
+SetIconType|a3|$2,$0|1	$00000040
+SetIconType|string area|$2,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$2,$0|1	$00000001
+SetIconType|icon: type|$2,$0|1	$00000002
+SetIconType|icon: gadget size|$2,$0|1	$00400020
+SetIconType|icon: gadget flags|$2,$0|1	$00000005
+SetIconType|icon: default tool|$2,$0|1	$00000000
+SetIconType|icon: image|$2,$0|1	$2E3FC293
+SetIconType|icon: select image|$2,$0|1	$00000000
+SetIconType|icon: tool types|$2,$0|1	$00000001
+SetIconType|icon: tool type 0|$2,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$2,$0|1	$047A2125
+SetIconType|icon: tool type 2|$2,$0|1	$483FC601
+SetIconType|icon: tool type 3|$2,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$2,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$2,$0|1	$2174C808
+SetIconType|icon: tool type 6|$2,$0|1	$06262B02
+SetIconType|icon: tool type 7|$2,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$2,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$2,$0|1	$09B01744
+SetIconType|icon: tool type 10|$2,$0|1	$00000000
+SetIconType|kept|$3,$0|1	kept
+SetIconType|d0|$3,$0|1	$FFFFFFFF
+SetIconType|a3|$3,$0|1	$00000040
+SetIconType|string area|$3,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$3,$0|1	$00000001
+SetIconType|icon: type|$3,$0|1	$00000003
+SetIconType|icon: gadget size|$3,$0|1	$00400020
+SetIconType|icon: gadget flags|$3,$0|1	$00000005
+SetIconType|icon: default tool|$3,$0|1	$00000000
+SetIconType|icon: image|$3,$0|1	$2E3FC293
+SetIconType|icon: select image|$3,$0|1	$00000000
+SetIconType|icon: tool types|$3,$0|1	$00000001
+SetIconType|icon: tool type 0|$3,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$3,$0|1	$047A2125
+SetIconType|icon: tool type 2|$3,$0|1	$483FC601
+SetIconType|icon: tool type 3|$3,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$3,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$3,$0|1	$2174C808
+SetIconType|icon: tool type 6|$3,$0|1	$06262B02
+SetIconType|icon: tool type 7|$3,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$3,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$3,$0|1	$09B01744
+SetIconType|icon: tool type 10|$3,$0|1	$00000000
+SetIconType|kept|$4,$0|1	kept
+SetIconType|d0|$4,$0|1	$FFFFFFFF
+SetIconType|a3|$4,$0|1	$00000040
+SetIconType|string area|$4,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$4,$0|1	$00000001
+SetIconType|icon: type|$4,$0|1	$00000004
+SetIconType|icon: gadget size|$4,$0|1	$00400020
+SetIconType|icon: gadget flags|$4,$0|1	$00000005
+SetIconType|icon: default tool|$4,$0|1	$00000000
+SetIconType|icon: image|$4,$0|1	$2E3FC293
+SetIconType|icon: select image|$4,$0|1	$00000000
+SetIconType|icon: tool types|$4,$0|1	$00000001
+SetIconType|icon: tool type 0|$4,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$4,$0|1	$047A2125
+SetIconType|icon: tool type 2|$4,$0|1	$483FC601
+SetIconType|icon: tool type 3|$4,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$4,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$4,$0|1	$2174C808
+SetIconType|icon: tool type 6|$4,$0|1	$06262B02
+SetIconType|icon: tool type 7|$4,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$4,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$4,$0|1	$09B01744
+SetIconType|icon: tool type 10|$4,$0|1	$00000000
+SetIconType|kept|$5,$0|1	kept
+SetIconType|d0|$5,$0|1	$FFFFFFFF
+SetIconType|a3|$5,$0|1	$00000040
+SetIconType|string area|$5,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$5,$0|1	$00000001
+SetIconType|icon: type|$5,$0|1	$00000005
+SetIconType|icon: gadget size|$5,$0|1	$00400020
+SetIconType|icon: gadget flags|$5,$0|1	$00000005
+SetIconType|icon: default tool|$5,$0|1	$00000000
+SetIconType|icon: image|$5,$0|1	$2E3FC293
+SetIconType|icon: select image|$5,$0|1	$00000000
+SetIconType|icon: tool types|$5,$0|1	$00000001
+SetIconType|icon: tool type 0|$5,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$5,$0|1	$047A2125
+SetIconType|icon: tool type 2|$5,$0|1	$483FC601
+SetIconType|icon: tool type 3|$5,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$5,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$5,$0|1	$2174C808
+SetIconType|icon: tool type 6|$5,$0|1	$06262B02
+SetIconType|icon: tool type 7|$5,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$5,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$5,$0|1	$09B01744
+SetIconType|icon: tool type 10|$5,$0|1	$00000000
+SetIconType|kept|$6,$0|1	kept
+SetIconType|d0|$6,$0|1	$00000000
+SetIconType|a3|$6,$0|1	$00000040
+SetIconType|string area|$6,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$6,$0|1	$00000001
+SetIconType|icon: type|$6,$0|1	$00000005
+SetIconType|icon: gadget size|$6,$0|1	$00400020
+SetIconType|icon: gadget flags|$6,$0|1	$00000005
+SetIconType|icon: default tool|$6,$0|1	$00000000
+SetIconType|icon: image|$6,$0|1	$2E3FC293
+SetIconType|icon: select image|$6,$0|1	$00000000
+SetIconType|icon: tool types|$6,$0|1	$00000001
+SetIconType|icon: tool type 0|$6,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$6,$0|1	$047A2125
+SetIconType|icon: tool type 2|$6,$0|1	$483FC601
+SetIconType|icon: tool type 3|$6,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$6,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$6,$0|1	$2174C808
+SetIconType|icon: tool type 6|$6,$0|1	$06262B02
+SetIconType|icon: tool type 7|$6,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$6,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$6,$0|1	$09B01744
+SetIconType|icon: tool type 10|$6,$0|1	$00000000
+SetIconType|kept|$103,$0|1	kept
+SetIconType|d0|$103,$0|1	$00000000
+SetIconType|a3|$103,$0|1	$00000040
+SetIconType|string area|$103,$0|1	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$103,$0|1	$00000001
+SetIconType|icon: type|$103,$0|1	$00000005
+SetIconType|icon: gadget size|$103,$0|1	$00400020
+SetIconType|icon: gadget flags|$103,$0|1	$00000005
+SetIconType|icon: default tool|$103,$0|1	$00000000
+SetIconType|icon: image|$103,$0|1	$2E3FC293
+SetIconType|icon: select image|$103,$0|1	$00000000
+SetIconType|icon: tool types|$103,$0|1	$00000001
+SetIconType|icon: tool type 0|$103,$0|1	$D75EF085
+SetIconType|icon: tool type 1|$103,$0|1	$047A2125
+SetIconType|icon: tool type 2|$103,$0|1	$483FC601
+SetIconType|icon: tool type 3|$103,$0|1	$E3236D43
+SetIconType|icon: tool type 4|$103,$0|1	$B93B3359
+SetIconType|icon: tool type 5|$103,$0|1	$2174C808
+SetIconType|icon: tool type 6|$103,$0|1	$06262B02
+SetIconType|icon: tool type 7|$103,$0|1	$98CBEF45
+SetIconType|icon: tool type 8|$103,$0|1	$03B7B63C
+SetIconType|icon: tool type 9|$103,$0|1	$09B01744
+SetIconType|icon: tool type 10|$103,$0|1	$00000000
+SetIconType|kept|$3,$0|2	kept
+SetIconType|d0|$3,$0|2	$FFFFFFFF
+SetIconType|a3|$3,$0|2	$00000040
+SetIconType|string area|$3,$0|2	bytes 512 fnv 9D9373C5
+SetIconType|icon: open|$3,$0|2	$00000001
+SetIconType|icon: type|$3,$0|2	$00000003
+SetIconType|icon: gadget size|$3,$0|2	$00400020
+SetIconType|icon: gadget flags|$3,$0|2	$00000005
+SetIconType|icon: default tool|$3,$0|2	$00000000
+SetIconType|icon: image|$3,$0|2	$2E3FC293
+SetIconType|icon: select image|$3,$0|2	$00000000
+SetIconType|icon: tool types|$3,$0|2	$00000001
+SetIconType|icon: tool type 0|$3,$0|2	$D75EF085
+SetIconType|icon: tool type 1|$3,$0|2	$047A2125
+SetIconType|icon: tool type 2|$3,$0|2	$483FC601
+SetIconType|icon: tool type 3|$3,$0|2	$E3236D43
+SetIconType|icon: tool type 4|$3,$0|2	$B93B3359
+SetIconType|icon: tool type 5|$3,$0|2	$2174C808
+SetIconType|icon: tool type 6|$3,$0|2	$06262B02
+SetIconType|icon: tool type 7|$3,$0|2	$98CBEF45
+SetIconType|icon: tool type 8|$3,$0|2	$03B7B63C
+SetIconType|icon: tool type 9|$3,$0|2	$09B01744
+SetIconType|icon: tool type 10|$3,$0|2	$00000000
+IconDefTool|kept|"SYS:Utilities/MultiView"|1	kept
+IconDefTool|d0|"SYS:Utilities/MultiView"|1	$FFFFFFFF
+IconDefTool|a3|"SYS:Utilities/MultiView"|1	$00000040
+IconDefTool|string area|"SYS:Utilities/MultiView"|1	bytes 512 fnv 23D444D1
+IconDefTool|icon: open|"SYS:Utilities/MultiView"|1	$00000001
+IconDefTool|icon: type|"SYS:Utilities/MultiView"|1	$00000003
+IconDefTool|icon: gadget size|"SYS:Utilities/MultiView"|1	$00400020
+IconDefTool|icon: gadget flags|"SYS:Utilities/MultiView"|1	$00000005
+IconDefTool|icon: default tool|"SYS:Utilities/MultiView"|1	$F9C39A2D
+IconDefTool|icon: image|"SYS:Utilities/MultiView"|1	$2E3FC293
+IconDefTool|icon: select image|"SYS:Utilities/MultiView"|1	$00000000
+IconDefTool|icon: tool types|"SYS:Utilities/MultiView"|1	$00000001
+IconDefTool|icon: tool type 0|"SYS:Utilities/MultiView"|1	$D75EF085
+IconDefTool|icon: tool type 1|"SYS:Utilities/MultiView"|1	$047A2125
+IconDefTool|icon: tool type 2|"SYS:Utilities/MultiView"|1	$483FC601
+IconDefTool|icon: tool type 3|"SYS:Utilities/MultiView"|1	$E3236D43
+IconDefTool|icon: tool type 4|"SYS:Utilities/MultiView"|1	$B93B3359
+IconDefTool|icon: tool type 5|"SYS:Utilities/MultiView"|1	$2174C808
+IconDefTool|icon: tool type 6|"SYS:Utilities/MultiView"|1	$06262B02
+IconDefTool|icon: tool type 7|"SYS:Utilities/MultiView"|1	$98CBEF45
+IconDefTool|icon: tool type 8|"SYS:Utilities/MultiView"|1	$03B7B63C
+IconDefTool|icon: tool type 9|"SYS:Utilities/MultiView"|1	$09B01744
+IconDefTool|icon: tool type 10|"SYS:Utilities/MultiView"|1	$00000000
+IconDefTool|kept|""|1	kept
+IconDefTool|d0|""|1	$00000000
+IconDefTool|a3|""|1	$00000041
+IconDefTool|string area|""|1	bytes 512 fnv 9B580AA5
+IconDefTool|icon: open|""|1	$00000001
+IconDefTool|icon: type|""|1	$00000003
+IconDefTool|icon: gadget size|""|1	$00400020
+IconDefTool|icon: gadget flags|""|1	$00000005
+IconDefTool|icon: default tool|""|1	$F9C39A2D
+IconDefTool|icon: image|""|1	$2E3FC293
+IconDefTool|icon: select image|""|1	$00000000
+IconDefTool|icon: tool types|""|1	$00000001
+IconDefTool|icon: tool type 0|""|1	$D75EF085
+IconDefTool|icon: tool type 1|""|1	$047A2125
+IconDefTool|icon: tool type 2|""|1	$483FC601
+IconDefTool|icon: tool type 3|""|1	$E3236D43
+IconDefTool|icon: tool type 4|""|1	$B93B3359
+IconDefTool|icon: tool type 5|""|1	$2174C808
+IconDefTool|icon: tool type 6|""|1	$06262B02
+IconDefTool|icon: tool type 7|""|1	$98CBEF45
+IconDefTool|icon: tool type 8|""|1	$03B7B63C
+IconDefTool|icon: tool type 9|""|1	$09B01744
+IconDefTool|icon: tool type 10|""|1	$00000000
+ShapeToIcon|kept|10|1	kept
+ShapeToIcon|icon: open|10|1	$00000001
+ShapeToIcon|icon: type|10|1	$00000003
+ShapeToIcon|icon: gadget size|10|1	$00190008
+ShapeToIcon|icon: gadget flags|10|1	$00000005
+ShapeToIcon|icon: default tool|10|1	$F9C39A2D
+ShapeToIcon|icon: image|10|1	$B79FD49B
+ShapeToIcon|icon: select image|10|1	$00000000
+ShapeToIcon|icon: tool types|10|1	$00000001
+ShapeToIcon|icon: tool type 0|10|1	$D75EF085
+ShapeToIcon|icon: tool type 1|10|1	$047A2125
+ShapeToIcon|icon: tool type 2|10|1	$483FC601
+ShapeToIcon|icon: tool type 3|10|1	$E3236D43
+ShapeToIcon|icon: tool type 4|10|1	$B93B3359
+ShapeToIcon|icon: tool type 5|10|1	$2174C808
+ShapeToIcon|icon: tool type 6|10|1	$06262B02
+ShapeToIcon|icon: tool type 7|10|1	$98CBEF45
+ShapeToIcon|icon: tool type 8|10|1	$03B7B63C
+ShapeToIcon|icon: tool type 9|10|1	$09B01744
+ShapeToIcon|icon: tool type 10|10|1	$00000000
+ShapeToIcon|shape 0: fields|10|1	bytes 24 0014000A000200040283000000000028003C005000780000
+ShapeToIcon|shape 0: width/height|10|1	$0014000A
+ShapeToIcon|shape 0: data|10|1	$00000001
+ShapeToIcon|shape 0: data bytes|10|1	bytes 80 fnv AC2D2F85
+ShapeToIcon|shape 0: cookie|10|1	$00000000
+ShapeToIcon|shape 1: fields|10|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon|shape 1: width/height|10|1	$00190007
+ShapeToIcon|shape 1: data|10|1	$00000001
+ShapeToIcon|shape 1: data bytes|10|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+ShapeToIcon|shape 1: cookie|10|1	$00000000
+ShapeToIcon|shape 2: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 2: width/height|10|1	$00000000
+ShapeToIcon|shape 2: data|10|1	$00000000
+ShapeToIcon|shape 2: cookie|10|1	$00000000
+ShapeToIcon|shape 3: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 3: width/height|10|1	$00000000
+ShapeToIcon|shape 3: data|10|1	$00000000
+ShapeToIcon|shape 3: cookie|10|1	$00000000
+ShapeToIcon|shape 4: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 4: width/height|10|1	$00000000
+ShapeToIcon|shape 4: data|10|1	$00000000
+ShapeToIcon|shape 4: cookie|10|1	$00000000
+ShapeToIcon|shape 5: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 5: width/height|10|1	$00000000
+ShapeToIcon|shape 5: data|10|1	$00000000
+ShapeToIcon|shape 5: cookie|10|1	$00000000
+ShapeToIcon|shape 6: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 6: width/height|10|1	$00000000
+ShapeToIcon|shape 6: data|10|1	$00000000
+ShapeToIcon|shape 6: cookie|10|1	$00000000
+ShapeToIcon|shape 7: fields|10|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 7: width/height|10|1	$00000000
+ShapeToIcon|shape 7: data|10|1	$00000000
+ShapeToIcon|shape 7: cookie|10|1	$00000000
+ShapeToIcon|decoy: fields|10|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon|decoy: width/height|10|1	$00190007
+ShapeToIcon|decoy: data|10|1	$00000001
+ShapeToIcon|decoy: data bytes|10|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+ShapeToIcon|decoy: cookie|10|1	$00000000
+ShapeToIcon|kept|0,1|1	kept
+ShapeToIcon|icon: open|0,1|1	$00000001
+ShapeToIcon|icon: type|0,1|1	$00000003
+ShapeToIcon|icon: gadget size|0,1|1	$0014000B
+ShapeToIcon|icon: gadget flags|0,1|1	$00000006
+ShapeToIcon|icon: default tool|0,1|1	$F9C39A2D
+ShapeToIcon|icon: image|0,1|1	$D7FE192C
+ShapeToIcon|icon: select image|0,1|1	$B79FD49B
+ShapeToIcon|icon: tool types|0,1|1	$00000001
+ShapeToIcon|icon: tool type 0|0,1|1	$D75EF085
+ShapeToIcon|icon: tool type 1|0,1|1	$047A2125
+ShapeToIcon|icon: tool type 2|0,1|1	$483FC601
+ShapeToIcon|icon: tool type 3|0,1|1	$E3236D43
+ShapeToIcon|icon: tool type 4|0,1|1	$B93B3359
+ShapeToIcon|icon: tool type 5|0,1|1	$2174C808
+ShapeToIcon|icon: tool type 6|0,1|1	$06262B02
+ShapeToIcon|icon: tool type 7|0,1|1	$98CBEF45
+ShapeToIcon|icon: tool type 8|0,1|1	$03B7B63C
+ShapeToIcon|icon: tool type 9|0,1|1	$09B01744
+ShapeToIcon|icon: tool type 10|0,1|1	$00000000
+ShapeToIcon|shape 0: fields|0,1|1	bytes 24 0014000A000200040283000000000028003C005000780000
+ShapeToIcon|shape 0: width/height|0,1|1	$0014000A
+ShapeToIcon|shape 0: data|0,1|1	$00000001
+ShapeToIcon|shape 0: data bytes|0,1|1	bytes 80 fnv AC2D2F85
+ShapeToIcon|shape 0: cookie|0,1|1	$00000000
+ShapeToIcon|shape 1: fields|0,1|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon|shape 1: width/height|0,1|1	$00190007
+ShapeToIcon|shape 1: data|0,1|1	$00000001
+ShapeToIcon|shape 1: data bytes|0,1|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+ShapeToIcon|shape 1: cookie|0,1|1	$00000000
+ShapeToIcon|shape 2: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 2: width/height|0,1|1	$00000000
+ShapeToIcon|shape 2: data|0,1|1	$00000000
+ShapeToIcon|shape 2: cookie|0,1|1	$00000000
+ShapeToIcon|shape 3: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 3: width/height|0,1|1	$00000000
+ShapeToIcon|shape 3: data|0,1|1	$00000000
+ShapeToIcon|shape 3: cookie|0,1|1	$00000000
+ShapeToIcon|shape 4: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 4: width/height|0,1|1	$00000000
+ShapeToIcon|shape 4: data|0,1|1	$00000000
+ShapeToIcon|shape 4: cookie|0,1|1	$00000000
+ShapeToIcon|shape 5: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 5: width/height|0,1|1	$00000000
+ShapeToIcon|shape 5: data|0,1|1	$00000000
+ShapeToIcon|shape 5: cookie|0,1|1	$00000000
+ShapeToIcon|shape 6: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 6: width/height|0,1|1	$00000000
+ShapeToIcon|shape 6: data|0,1|1	$00000000
+ShapeToIcon|shape 6: cookie|0,1|1	$00000000
+ShapeToIcon|shape 7: fields|0,1|1	bytes 24 000000000000000000000000000000000000000000000000
+ShapeToIcon|shape 7: width/height|0,1|1	$00000000
+ShapeToIcon|shape 7: data|0,1|1	$00000000
+ShapeToIcon|shape 7: cookie|0,1|1	$00000000
+ShapeToIcon|decoy: fields|0,1|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+ShapeToIcon|decoy: width/height|0,1|1	$00190007
+ShapeToIcon|decoy: data|0,1|1	$00000001
+ShapeToIcon|decoy: data bytes|0,1|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+ShapeToIcon|decoy: cookie|0,1|1	$00000000
+IconToShape (fresh, a3 = decoy)|kept|2,3|1	kept
+IconToShape (fresh, a3 = decoy)|icon: open|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|icon: type|2,3|1	$00000003
+IconToShape (fresh, a3 = decoy)|icon: gadget size|2,3|1	$0014000B
+IconToShape (fresh, a3 = decoy)|icon: gadget flags|2,3|1	$00000006
+IconToShape (fresh, a3 = decoy)|icon: default tool|2,3|1	$F9C39A2D
+IconToShape (fresh, a3 = decoy)|icon: image|2,3|1	$D7FE192C
+IconToShape (fresh, a3 = decoy)|icon: select image|2,3|1	$B79FD49B
+IconToShape (fresh, a3 = decoy)|icon: tool types|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|icon: tool type 0|2,3|1	$D75EF085
+IconToShape (fresh, a3 = decoy)|icon: tool type 1|2,3|1	$047A2125
+IconToShape (fresh, a3 = decoy)|icon: tool type 2|2,3|1	$483FC601
+IconToShape (fresh, a3 = decoy)|icon: tool type 3|2,3|1	$E3236D43
+IconToShape (fresh, a3 = decoy)|icon: tool type 4|2,3|1	$B93B3359
+IconToShape (fresh, a3 = decoy)|icon: tool type 5|2,3|1	$2174C808
+IconToShape (fresh, a3 = decoy)|icon: tool type 6|2,3|1	$06262B02
+IconToShape (fresh, a3 = decoy)|icon: tool type 7|2,3|1	$98CBEF45
+IconToShape (fresh, a3 = decoy)|icon: tool type 8|2,3|1	$03B7B63C
+IconToShape (fresh, a3 = decoy)|icon: tool type 9|2,3|1	$09B01744
+IconToShape (fresh, a3 = decoy)|icon: tool type 10|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 0: fields|2,3|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (fresh, a3 = decoy)|shape 0: width/height|2,3|1	$0014000A
+IconToShape (fresh, a3 = decoy)|shape 0: data|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 0: data bytes|2,3|1	bytes 80 fnv AC2D2F85
+IconToShape (fresh, a3 = decoy)|shape 0: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 1: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|shape 1: width/height|2,3|1	$00190007
+IconToShape (fresh, a3 = decoy)|shape 1: data|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 1: data bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (fresh, a3 = decoy)|shape 1: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 2: fields|2,3|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (fresh, a3 = decoy)|shape 2: width/height|2,3|1	$0014000A
+IconToShape (fresh, a3 = decoy)|shape 2: data|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 2: data bytes|2,3|1	bytes 80 fnv AC2D2F85
+IconToShape (fresh, a3 = decoy)|shape 2: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 3: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|shape 3: width/height|2,3|1	$00190007
+IconToShape (fresh, a3 = decoy)|shape 3: data|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 3: data bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (fresh, a3 = decoy)|shape 3: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 4: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 4: width/height|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 4: data|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 4: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 5: width/height|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: data|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 6: width/height|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: data|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 7: width/height|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: data|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: cookie|2,3|1	$00000000
+IconToShape (fresh, a3 = decoy)|decoy: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|decoy: width/height|2,3|1	$00190007
+IconToShape (fresh, a3 = decoy)|decoy: data|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|decoy: data bytes|2,3|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (fresh, a3 = decoy)|decoy: cookie|2,3|1	$00000001
+IconToShape (fresh, a3 = decoy)|decoy: cookie bytes|2,3|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (in use)|kept|20|1	kept
+IconToShape (in use)|icon: open|20|1	$00000001
+IconToShape (in use)|icon: type|20|1	$00000003
+IconToShape (in use)|icon: gadget size|20|1	$0014000B
+IconToShape (in use)|icon: gadget flags|20|1	$00000006
+IconToShape (in use)|icon: default tool|20|1	$F9C39A2D
+IconToShape (in use)|icon: image|20|1	$D7FE192C
+IconToShape (in use)|icon: select image|20|1	$B79FD49B
+IconToShape (in use)|icon: tool types|20|1	$00000001
+IconToShape (in use)|icon: tool type 0|20|1	$D75EF085
+IconToShape (in use)|icon: tool type 1|20|1	$047A2125
+IconToShape (in use)|icon: tool type 2|20|1	$483FC601
+IconToShape (in use)|icon: tool type 3|20|1	$E3236D43
+IconToShape (in use)|icon: tool type 4|20|1	$B93B3359
+IconToShape (in use)|icon: tool type 5|20|1	$2174C808
+IconToShape (in use)|icon: tool type 6|20|1	$06262B02
+IconToShape (in use)|icon: tool type 7|20|1	$98CBEF45
+IconToShape (in use)|icon: tool type 8|20|1	$03B7B63C
+IconToShape (in use)|icon: tool type 9|20|1	$09B01744
+IconToShape (in use)|icon: tool type 10|20|1	$00000000
+IconToShape (in use)|shape 0: fields|20|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (in use)|shape 0: width/height|20|1	$0014000A
+IconToShape (in use)|shape 0: data|20|1	$00000001
+IconToShape (in use)|shape 0: data bytes|20|1	bytes 80 fnv AC2D2F85
+IconToShape (in use)|shape 0: cookie|20|1	$00000000
+IconToShape (in use)|shape 1: fields|20|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use)|shape 1: width/height|20|1	$00190007
+IconToShape (in use)|shape 1: data|20|1	$00000001
+IconToShape (in use)|shape 1: data bytes|20|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use)|shape 1: cookie|20|1	$00000000
+IconToShape (in use)|shape 2: fields|20|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (in use)|shape 2: width/height|20|1	$0014000A
+IconToShape (in use)|shape 2: data|20|1	$00000001
+IconToShape (in use)|shape 2: data bytes|20|1	bytes 80 fnv AC2D2F85
+IconToShape (in use)|shape 2: cookie|20|1	$00000001
+IconToShape (in use)|shape 2: cookie bytes|20|1	bytes 40 19282F3E3D3C6B7A79585F6E7D7C7BEAF9F8FF9EADBCBBBAE9F8FFFEDDECFBFAF9E8EFFEFD1C2B3A
+IconToShape (in use)|shape 3: fields|20|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use)|shape 3: width/height|20|1	$00190007
+IconToShape (in use)|shape 3: data|20|1	$00000001
+IconToShape (in use)|shape 3: data bytes|20|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use)|shape 3: cookie|20|1	$00000000
+IconToShape (in use)|shape 4: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use)|shape 4: width/height|20|1	$00000000
+IconToShape (in use)|shape 4: data|20|1	$00000000
+IconToShape (in use)|shape 4: cookie|20|1	$00000000
+IconToShape (in use)|shape 5: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use)|shape 5: width/height|20|1	$00000000
+IconToShape (in use)|shape 5: data|20|1	$00000000
+IconToShape (in use)|shape 5: cookie|20|1	$00000000
+IconToShape (in use)|shape 6: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use)|shape 6: width/height|20|1	$00000000
+IconToShape (in use)|shape 6: data|20|1	$00000000
+IconToShape (in use)|shape 6: cookie|20|1	$00000000
+IconToShape (in use)|shape 7: fields|20|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use)|shape 7: width/height|20|1	$00000000
+IconToShape (in use)|shape 7: data|20|1	$00000000
+IconToShape (in use)|shape 7: cookie|20|1	$00000000
+IconToShape (in use)|decoy: fields|20|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use)|decoy: width/height|20|1	$00190007
+IconToShape (in use)|decoy: data|20|1	$00000001
+IconToShape (in use)|decoy: data bytes|20|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (in use)|decoy: cookie|20|1	$00000001
+IconToShape (in use)|decoy: cookie bytes|20|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (both in use)|kept|2,3|1	kept
+IconToShape (both in use)|icon: open|2,3|1	$00000001
+IconToShape (both in use)|icon: type|2,3|1	$00000003
+IconToShape (both in use)|icon: gadget size|2,3|1	$0014000B
+IconToShape (both in use)|icon: gadget flags|2,3|1	$00000006
+IconToShape (both in use)|icon: default tool|2,3|1	$F9C39A2D
+IconToShape (both in use)|icon: image|2,3|1	$D7FE192C
+IconToShape (both in use)|icon: select image|2,3|1	$B79FD49B
+IconToShape (both in use)|icon: tool types|2,3|1	$00000001
+IconToShape (both in use)|icon: tool type 0|2,3|1	$D75EF085
+IconToShape (both in use)|icon: tool type 1|2,3|1	$047A2125
+IconToShape (both in use)|icon: tool type 2|2,3|1	$483FC601
+IconToShape (both in use)|icon: tool type 3|2,3|1	$E3236D43
+IconToShape (both in use)|icon: tool type 4|2,3|1	$B93B3359
+IconToShape (both in use)|icon: tool type 5|2,3|1	$2174C808
+IconToShape (both in use)|icon: tool type 6|2,3|1	$06262B02
+IconToShape (both in use)|icon: tool type 7|2,3|1	$98CBEF45
+IconToShape (both in use)|icon: tool type 8|2,3|1	$03B7B63C
+IconToShape (both in use)|icon: tool type 9|2,3|1	$09B01744
+IconToShape (both in use)|icon: tool type 10|2,3|1	$00000000
+IconToShape (both in use)|shape 0: fields|2,3|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (both in use)|shape 0: width/height|2,3|1	$0014000A
+IconToShape (both in use)|shape 0: data|2,3|1	$00000001
+IconToShape (both in use)|shape 0: data bytes|2,3|1	bytes 80 fnv AC2D2F85
+IconToShape (both in use)|shape 0: cookie|2,3|1	$00000000
+IconToShape (both in use)|shape 1: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (both in use)|shape 1: width/height|2,3|1	$00190007
+IconToShape (both in use)|shape 1: data|2,3|1	$00000001
+IconToShape (both in use)|shape 1: data bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (both in use)|shape 1: cookie|2,3|1	$00000000
+IconToShape (both in use)|shape 2: fields|2,3|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (both in use)|shape 2: width/height|2,3|1	$0014000A
+IconToShape (both in use)|shape 2: data|2,3|1	$00000001
+IconToShape (both in use)|shape 2: data bytes|2,3|1	bytes 80 fnv AC2D2F85
+IconToShape (both in use)|shape 2: cookie|2,3|1	$00000001
+IconToShape (both in use)|shape 2: cookie bytes|2,3|1	bytes 40 19282F3E3D3C6B7A79585F6E7D7C7BEAF9F8FF9EADBCBBBAE9F8FFFEDDECFBFAF9E8EFFEFD1C2B3A
+IconToShape (both in use)|shape 3: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (both in use)|shape 3: width/height|2,3|1	$00190007
+IconToShape (both in use)|shape 3: data|2,3|1	$00000001
+IconToShape (both in use)|shape 3: data bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (both in use)|shape 3: cookie|2,3|1	$00000001
+IconToShape (both in use)|shape 3: cookie bytes|2,3|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (both in use)|shape 4: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (both in use)|shape 4: width/height|2,3|1	$00000000
+IconToShape (both in use)|shape 4: data|2,3|1	$00000000
+IconToShape (both in use)|shape 4: cookie|2,3|1	$00000000
+IconToShape (both in use)|shape 5: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (both in use)|shape 5: width/height|2,3|1	$00000000
+IconToShape (both in use)|shape 5: data|2,3|1	$00000000
+IconToShape (both in use)|shape 5: cookie|2,3|1	$00000000
+IconToShape (both in use)|shape 6: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (both in use)|shape 6: width/height|2,3|1	$00000000
+IconToShape (both in use)|shape 6: data|2,3|1	$00000000
+IconToShape (both in use)|shape 6: cookie|2,3|1	$00000000
+IconToShape (both in use)|shape 7: fields|2,3|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (both in use)|shape 7: width/height|2,3|1	$00000000
+IconToShape (both in use)|shape 7: data|2,3|1	$00000000
+IconToShape (both in use)|shape 7: cookie|2,3|1	$00000000
+IconToShape (both in use)|decoy: fields|2,3|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (both in use)|decoy: width/height|2,3|1	$00190007
+IconToShape (both in use)|decoy: data|2,3|1	$00000001
+IconToShape (both in use)|decoy: data bytes|2,3|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (both in use)|decoy: cookie|2,3|1	$00000001
+IconToShape (both in use)|decoy: cookie bytes|2,3|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (fresh, a3 = decoy)|kept|40|1	kept
+IconToShape (fresh, a3 = decoy)|icon: open|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|icon: type|40|1	$00000003
+IconToShape (fresh, a3 = decoy)|icon: gadget size|40|1	$0014000B
+IconToShape (fresh, a3 = decoy)|icon: gadget flags|40|1	$00000006
+IconToShape (fresh, a3 = decoy)|icon: default tool|40|1	$F9C39A2D
+IconToShape (fresh, a3 = decoy)|icon: image|40|1	$D7FE192C
+IconToShape (fresh, a3 = decoy)|icon: select image|40|1	$B79FD49B
+IconToShape (fresh, a3 = decoy)|icon: tool types|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|icon: tool type 0|40|1	$D75EF085
+IconToShape (fresh, a3 = decoy)|icon: tool type 1|40|1	$047A2125
+IconToShape (fresh, a3 = decoy)|icon: tool type 2|40|1	$483FC601
+IconToShape (fresh, a3 = decoy)|icon: tool type 3|40|1	$E3236D43
+IconToShape (fresh, a3 = decoy)|icon: tool type 4|40|1	$B93B3359
+IconToShape (fresh, a3 = decoy)|icon: tool type 5|40|1	$2174C808
+IconToShape (fresh, a3 = decoy)|icon: tool type 6|40|1	$06262B02
+IconToShape (fresh, a3 = decoy)|icon: tool type 7|40|1	$98CBEF45
+IconToShape (fresh, a3 = decoy)|icon: tool type 8|40|1	$03B7B63C
+IconToShape (fresh, a3 = decoy)|icon: tool type 9|40|1	$09B01744
+IconToShape (fresh, a3 = decoy)|icon: tool type 10|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 0: fields|40|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (fresh, a3 = decoy)|shape 0: width/height|40|1	$0014000A
+IconToShape (fresh, a3 = decoy)|shape 0: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 0: data bytes|40|1	bytes 80 fnv AC2D2F85
+IconToShape (fresh, a3 = decoy)|shape 0: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 1: fields|40|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|shape 1: width/height|40|1	$00190007
+IconToShape (fresh, a3 = decoy)|shape 1: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 1: data bytes|40|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (fresh, a3 = decoy)|shape 1: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 2: fields|40|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (fresh, a3 = decoy)|shape 2: width/height|40|1	$0014000A
+IconToShape (fresh, a3 = decoy)|shape 2: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 2: data bytes|40|1	bytes 80 fnv AC2D2F85
+IconToShape (fresh, a3 = decoy)|shape 2: cookie|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 2: cookie bytes|40|1	bytes 40 19282F3E3D3C6B7A79585F6E7D7C7BEAF9F8FF9EADBCBBBAE9F8FFFEDDECFBFAF9E8EFFEFD1C2B3A
+IconToShape (fresh, a3 = decoy)|shape 3: fields|40|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|shape 3: width/height|40|1	$00190007
+IconToShape (fresh, a3 = decoy)|shape 3: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 3: data bytes|40|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (fresh, a3 = decoy)|shape 3: cookie|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 3: cookie bytes|40|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (fresh, a3 = decoy)|shape 4: fields|40|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (fresh, a3 = decoy)|shape 4: width/height|40|1	$0014000A
+IconToShape (fresh, a3 = decoy)|shape 4: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|shape 4: data bytes|40|1	bytes 80 fnv AC2D2F85
+IconToShape (fresh, a3 = decoy)|shape 4: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: fields|40|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 5: width/height|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: data|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 5: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: fields|40|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 6: width/height|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: data|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 6: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: fields|40|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (fresh, a3 = decoy)|shape 7: width/height|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: data|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|shape 7: cookie|40|1	$00000000
+IconToShape (fresh, a3 = decoy)|decoy: fields|40|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (fresh, a3 = decoy)|decoy: width/height|40|1	$00190007
+IconToShape (fresh, a3 = decoy)|decoy: data|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|decoy: data bytes|40|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (fresh, a3 = decoy)|decoy: cookie|40|1	$00000001
+IconToShape (fresh, a3 = decoy)|decoy: cookie bytes|40|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (in use, fresh)|kept|4,5|1	kept
+IconToShape (in use, fresh)|icon: open|4,5|1	$00000001
+IconToShape (in use, fresh)|icon: type|4,5|1	$00000003
+IconToShape (in use, fresh)|icon: gadget size|4,5|1	$0014000B
+IconToShape (in use, fresh)|icon: gadget flags|4,5|1	$00000006
+IconToShape (in use, fresh)|icon: default tool|4,5|1	$F9C39A2D
+IconToShape (in use, fresh)|icon: image|4,5|1	$D7FE192C
+IconToShape (in use, fresh)|icon: select image|4,5|1	$B79FD49B
+IconToShape (in use, fresh)|icon: tool types|4,5|1	$00000001
+IconToShape (in use, fresh)|icon: tool type 0|4,5|1	$D75EF085
+IconToShape (in use, fresh)|icon: tool type 1|4,5|1	$047A2125
+IconToShape (in use, fresh)|icon: tool type 2|4,5|1	$483FC601
+IconToShape (in use, fresh)|icon: tool type 3|4,5|1	$E3236D43
+IconToShape (in use, fresh)|icon: tool type 4|4,5|1	$B93B3359
+IconToShape (in use, fresh)|icon: tool type 5|4,5|1	$2174C808
+IconToShape (in use, fresh)|icon: tool type 6|4,5|1	$06262B02
+IconToShape (in use, fresh)|icon: tool type 7|4,5|1	$98CBEF45
+IconToShape (in use, fresh)|icon: tool type 8|4,5|1	$03B7B63C
+IconToShape (in use, fresh)|icon: tool type 9|4,5|1	$09B01744
+IconToShape (in use, fresh)|icon: tool type 10|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 0: fields|4,5|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (in use, fresh)|shape 0: width/height|4,5|1	$0014000A
+IconToShape (in use, fresh)|shape 0: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 0: data bytes|4,5|1	bytes 80 fnv AC2D2F85
+IconToShape (in use, fresh)|shape 0: cookie|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 1: fields|4,5|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use, fresh)|shape 1: width/height|4,5|1	$00190007
+IconToShape (in use, fresh)|shape 1: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 1: data bytes|4,5|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use, fresh)|shape 1: cookie|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 2: fields|4,5|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (in use, fresh)|shape 2: width/height|4,5|1	$0014000A
+IconToShape (in use, fresh)|shape 2: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 2: data bytes|4,5|1	bytes 80 fnv AC2D2F85
+IconToShape (in use, fresh)|shape 2: cookie|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 2: cookie bytes|4,5|1	bytes 40 19282F3E3D3C6B7A79585F6E7D7C7BEAF9F8FF9EADBCBBBAE9F8FFFEDDECFBFAF9E8EFFEFD1C2B3A
+IconToShape (in use, fresh)|shape 3: fields|4,5|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use, fresh)|shape 3: width/height|4,5|1	$00190007
+IconToShape (in use, fresh)|shape 3: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 3: data bytes|4,5|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use, fresh)|shape 3: cookie|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 3: cookie bytes|4,5|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use, fresh)|shape 4: fields|4,5|1	bytes 24 0014000A000200040283000000000028003C005000780000
+IconToShape (in use, fresh)|shape 4: width/height|4,5|1	$0014000A
+IconToShape (in use, fresh)|shape 4: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 4: data bytes|4,5|1	bytes 80 fnv AC2D2F85
+IconToShape (in use, fresh)|shape 4: cookie|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 4: cookie bytes|4,5|1	bytes 40 19282F3E3D3C6B7A79585F6E7D7C7BEAF9F8FF9EADBCBBBAE9F8FFFEDDECFBFAF9E8EFFEFD1C2B3A
+IconToShape (in use, fresh)|shape 5: fields|4,5|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use, fresh)|shape 5: width/height|4,5|1	$00190007
+IconToShape (in use, fresh)|shape 5: data|4,5|1	$00000001
+IconToShape (in use, fresh)|shape 5: data bytes|4,5|1	bytes 28 323940474E555C636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EF
+IconToShape (in use, fresh)|shape 5: cookie|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 6: fields|4,5|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use, fresh)|shape 6: width/height|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 6: data|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 6: cookie|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 7: fields|4,5|1	bytes 24 000000000000000000000000000000000000000000000000
+IconToShape (in use, fresh)|shape 7: width/height|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 7: data|4,5|1	$00000000
+IconToShape (in use, fresh)|shape 7: cookie|4,5|1	$00000000
+IconToShape (in use, fresh)|decoy: fields|4,5|1	bytes 24 001900070001000401C300000000001C002A001C002A0000
+IconToShape (in use, fresh)|decoy: width/height|4,5|1	$00190007
+IconToShape (in use, fresh)|decoy: data|4,5|1	$00000001
+IconToShape (in use, fresh)|decoy: data bytes|4,5|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+IconToShape (in use, fresh)|decoy: cookie|4,5|1	$00000001
+IconToShape (in use, fresh)|decoy: cookie bytes|4,5|1	bytes 28 636A71787F868D949BA2A9B0B7BEC5CCD3DAE1E8EFF6FD040B121920
+PutIconObject|kept|RAM:rwett1,0 (form 0)|1	kept
+PutIconObject|d0|RAM:rwett1,0 (form 0)|1	$FFFFFFFF
+PutIconObject|icon: open|RAM:rwett1,0 (form 0)|1	$00000000
+PutIconObject RAM:rwett1|written icon: open||1	$00000001
+PutIconObject RAM:rwett1|written icon: type||1	$00000003
+PutIconObject RAM:rwett1|written icon: gadget size||1	$0014000B
+PutIconObject RAM:rwett1|written icon: gadget flags||1	$00000006
+PutIconObject RAM:rwett1|written icon: default tool||1	$F9C39A2D
+PutIconObject RAM:rwett1|written icon: image||1	$D7FE192C
+PutIconObject RAM:rwett1|written icon: select image||1	$B79FD49B
+PutIconObject RAM:rwett1|written icon: tool types||1	$00000001
+PutIconObject RAM:rwett1|written icon: tool type 0||1	$D75EF085
+PutIconObject RAM:rwett1|written icon: tool type 1||1	$047A2125
+PutIconObject RAM:rwett1|written icon: tool type 2||1	$483FC601
+PutIconObject RAM:rwett1|written icon: tool type 3||1	$E3236D43
+PutIconObject RAM:rwett1|written icon: tool type 4||1	$B93B3359
+PutIconObject RAM:rwett1|written icon: tool type 5||1	$2174C808
+PutIconObject RAM:rwett1|written icon: tool type 6||1	$06262B02
+PutIconObject RAM:rwett1|written icon: tool type 7||1	$98CBEF45
+PutIconObject RAM:rwett1|written icon: tool type 8||1	$03B7B63C
+PutIconObject RAM:rwett1|written icon: tool type 9||1	$09B01744
+PutIconObject RAM:rwett1|written icon: tool type 10||1	$00000000
+PutIconObject|kept|RAM:rwett1,0 (form 0)|2	kept
+PutIconObject|d0|RAM:rwett1,0 (form 0)|2	$00000000
+FreeIconObject|kept|$0,$0|1	kept
+FreeIconObject|d0|$0,$0|1	$00000000
+FreeIconObject|a3|$0,$0|1	$00000040
+FreeIconObject|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+GetIconObject|kept|RAM:rwett1|1	kept
+GetIconObject|icon: open|RAM:rwett1|1	$00000001
+GetIconObject|icon: type|RAM:rwett1|1	$00000003
+GetIconObject|icon: gadget size|RAM:rwett1|1	$0014000B
+GetIconObject|icon: gadget flags|RAM:rwett1|1	$00000006
+GetIconObject|icon: default tool|RAM:rwett1|1	$F9C39A2D
+GetIconObject|icon: image|RAM:rwett1|1	$D7FE192C
+GetIconObject|icon: select image|RAM:rwett1|1	$B79FD49B
+GetIconObject|icon: tool types|RAM:rwett1|1	$00000001
+GetIconObject|icon: tool type 0|RAM:rwett1|1	$D75EF085
+GetIconObject|icon: tool type 1|RAM:rwett1|1	$047A2125
+GetIconObject|icon: tool type 2|RAM:rwett1|1	$483FC601
+GetIconObject|icon: tool type 3|RAM:rwett1|1	$E3236D43
+GetIconObject|icon: tool type 4|RAM:rwett1|1	$B93B3359
+GetIconObject|icon: tool type 5|RAM:rwett1|1	$2174C808
+GetIconObject|icon: tool type 6|RAM:rwett1|1	$06262B02
+GetIconObject|icon: tool type 7|RAM:rwett1|1	$98CBEF45
+GetIconObject|icon: tool type 8|RAM:rwett1|1	$03B7B63C
+GetIconObject|icon: tool type 9|RAM:rwett1|1	$09B01744
+GetIconObject|icon: tool type 10|RAM:rwett1|1	$00000000
+FindToolNumber (written icon)|kept|$0,$0|1	kept
+FindToolNumber (written icon)|d0|$0,$0|1	$00000007
+FindToolNumber (written icon)|a3|$0,$0|1	$00000047
+FindToolNumber (written icon)|string area|$0,$0|1	bytes 512 fnv E85E3268
+FindToolNumber (written icon)|icon: open|$0,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$0,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$0,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$0,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$0,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$0,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$0,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$0,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$0,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$0,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$0,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$0,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$0,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$0,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$0,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$0,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$0,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$0,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$0,$0|1	$00000000
+FindToolNumber (written icon)|kept|$1,$0|1	kept
+FindToolNumber (written icon)|d0|$1,$0|1	$00000005
+FindToolNumber (written icon)|a3|$1,$0|1	$00000045
+FindToolNumber (written icon)|string area|$1,$0|1	bytes 512 fnv 4A7F393F
+FindToolNumber (written icon)|icon: open|$1,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$1,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$1,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$1,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$1,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$1,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$1,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$1,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$1,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$1,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$1,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$1,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$1,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$1,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$1,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$1,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$1,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$1,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$1,$0|1	$00000000
+FindToolNumber (written icon)|kept|$2,$0|1	kept
+FindToolNumber (written icon)|d0|$2,$0|1	$00000006
+FindToolNumber (written icon)|a3|$2,$0|1	$00000046
+FindToolNumber (written icon)|string area|$2,$0|1	bytes 512 fnv 3F1D54C8
+FindToolNumber (written icon)|icon: open|$2,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$2,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$2,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$2,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$2,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$2,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$2,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$2,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$2,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$2,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$2,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$2,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$2,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$2,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$2,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$2,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$2,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$2,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$2,$0|1	$00000000
+FindToolNumber (written icon)|kept|$3,$0|1	kept
+FindToolNumber (written icon)|d0|$3,$0|1	$0000000E
+FindToolNumber (written icon)|a3|$3,$0|1	$0000004E
+FindToolNumber (written icon)|string area|$3,$0|1	bytes 512 fnv 8F9D64A6
+FindToolNumber (written icon)|icon: open|$3,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$3,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$3,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$3,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$3,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$3,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$3,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$3,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$3,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$3,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$3,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$3,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$3,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$3,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$3,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$3,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$3,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$3,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$3,$0|1	$00000000
+FindToolNumber (written icon)|kept|$4,$0|1	kept
+FindToolNumber (written icon)|d0|$4,$0|1	$00000007
+FindToolNumber (written icon)|a3|$4,$0|1	$00000047
+FindToolNumber (written icon)|string area|$4,$0|1	bytes 512 fnv 87DFECBC
+FindToolNumber (written icon)|icon: open|$4,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$4,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$4,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$4,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$4,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$4,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$4,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$4,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$4,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$4,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$4,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$4,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$4,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$4,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$4,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$4,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$4,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$4,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$4,$0|1	$00000000
+FindToolNumber (written icon)|kept|$5,$0|1	kept
+FindToolNumber (written icon)|d0|$5,$0|1	$00000009
+FindToolNumber (written icon)|a3|$5,$0|1	$00000049
+FindToolNumber (written icon)|string area|$5,$0|1	bytes 512 fnv 5D31DE92
+FindToolNumber (written icon)|icon: open|$5,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$5,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$5,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$5,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$5,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$5,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$5,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$5,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$5,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$5,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$5,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$5,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$5,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$5,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$5,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$5,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$5,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$5,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$5,$0|1	$00000000
+FindToolNumber (written icon)|kept|$6,$0|1	kept
+FindToolNumber (written icon)|d0|$6,$0|1	$00000005
+FindToolNumber (written icon)|a3|$6,$0|1	$00000045
+FindToolNumber (written icon)|string area|$6,$0|1	bytes 512 fnv D583072A
+FindToolNumber (written icon)|icon: open|$6,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$6,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$6,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$6,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$6,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$6,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$6,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$6,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$6,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$6,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$6,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$6,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$6,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$6,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$6,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$6,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$6,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$6,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$6,$0|1	$00000000
+FindToolNumber (written icon)|kept|$7,$0|1	kept
+FindToolNumber (written icon)|d0|$7,$0|1	$00000007
+FindToolNumber (written icon)|a3|$7,$0|1	$00000047
+FindToolNumber (written icon)|string area|$7,$0|1	bytes 512 fnv CF20A5C4
+FindToolNumber (written icon)|icon: open|$7,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$7,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$7,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$7,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$7,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$7,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$7,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$7,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$7,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$7,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$7,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$7,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$7,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$7,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$7,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$7,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$7,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$7,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$7,$0|1	$00000000
+FindToolNumber (written icon)|kept|$8,$0|1	kept
+FindToolNumber (written icon)|d0|$8,$0|1	$00000005
+FindToolNumber (written icon)|a3|$8,$0|1	$00000045
+FindToolNumber (written icon)|string area|$8,$0|1	bytes 512 fnv F30B9CC8
+FindToolNumber (written icon)|icon: open|$8,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$8,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$8,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$8,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$8,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$8,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$8,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$8,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$8,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$8,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$8,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$8,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$8,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$8,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$8,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$8,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$8,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$8,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$8,$0|1	$00000000
+FindToolNumber (written icon)|kept|$9,$0|1	kept
+FindToolNumber (written icon)|d0|$9,$0|1	$00000008
+FindToolNumber (written icon)|a3|$9,$0|1	$00000048
+FindToolNumber (written icon)|string area|$9,$0|1	bytes 512 fnv E1F8A9A6
+FindToolNumber (written icon)|icon: open|$9,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$9,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$9,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$9,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$9,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$9,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$9,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$9,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$9,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$9,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$9,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$9,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$9,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$9,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$9,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$9,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$9,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$9,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$9,$0|1	$00000000
+FindToolNumber (written icon)|kept|$A,$0|1	kept
+FindToolNumber (written icon)|d0|$A,$0|1	$00000000
+FindToolNumber (written icon)|a3|$A,$0|1	$00000040
+FindToolNumber (written icon)|string area|$A,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber (written icon)|icon: open|$A,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$A,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$A,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$A,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$A,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$A,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$A,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$A,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$A,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$A,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$A,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$A,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$A,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$A,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$A,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$A,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$A,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$A,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$A,$0|1	$00000000
+FindToolNumber (written icon)|kept|$B,$0|1	kept
+FindToolNumber (written icon)|d0|$B,$0|1	$00000000
+FindToolNumber (written icon)|a3|$B,$0|1	$00000040
+FindToolNumber (written icon)|string area|$B,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber (written icon)|icon: open|$B,$0|1	$00000001
+FindToolNumber (written icon)|icon: type|$B,$0|1	$00000003
+FindToolNumber (written icon)|icon: gadget size|$B,$0|1	$0014000B
+FindToolNumber (written icon)|icon: gadget flags|$B,$0|1	$00000006
+FindToolNumber (written icon)|icon: default tool|$B,$0|1	$F9C39A2D
+FindToolNumber (written icon)|icon: image|$B,$0|1	$D7FE192C
+FindToolNumber (written icon)|icon: select image|$B,$0|1	$B79FD49B
+FindToolNumber (written icon)|icon: tool types|$B,$0|1	$00000001
+FindToolNumber (written icon)|icon: tool type 0|$B,$0|1	$D75EF085
+FindToolNumber (written icon)|icon: tool type 1|$B,$0|1	$047A2125
+FindToolNumber (written icon)|icon: tool type 2|$B,$0|1	$483FC601
+FindToolNumber (written icon)|icon: tool type 3|$B,$0|1	$E3236D43
+FindToolNumber (written icon)|icon: tool type 4|$B,$0|1	$B93B3359
+FindToolNumber (written icon)|icon: tool type 5|$B,$0|1	$2174C808
+FindToolNumber (written icon)|icon: tool type 6|$B,$0|1	$06262B02
+FindToolNumber (written icon)|icon: tool type 7|$B,$0|1	$98CBEF45
+FindToolNumber (written icon)|icon: tool type 8|$B,$0|1	$03B7B63C
+FindToolNumber (written icon)|icon: tool type 9|$B,$0|1	$09B01744
+FindToolNumber (written icon)|icon: tool type 10|$B,$0|1	$00000000
+PutIconObject|kept|RAM:rwett2,4 (form 1)|1	kept
+PutIconObject|d0|RAM:rwett2,4 (form 1)|1	$FFFFFFFF
+PutIconObject RAM:rwett2,4|written icon: open||1	$00000001
+PutIconObject RAM:rwett2,4|written icon: type||1	$00000004
+PutIconObject RAM:rwett2,4|written icon: gadget size||1	$0014000B
+PutIconObject RAM:rwett2,4|written icon: gadget flags||1	$00000006
+PutIconObject RAM:rwett2,4|written icon: default tool||1	$F9C39A2D
+PutIconObject RAM:rwett2,4|written icon: image||1	$D7FE192C
+PutIconObject RAM:rwett2,4|written icon: select image||1	$B79FD49B
+PutIconObject RAM:rwett2,4|written icon: tool types||1	$00000001
+PutIconObject RAM:rwett2,4|written icon: tool type 0||1	$D75EF085
+PutIconObject RAM:rwett2,4|written icon: tool type 1||1	$047A2125
+PutIconObject RAM:rwett2,4|written icon: tool type 2||1	$483FC601
+PutIconObject RAM:rwett2,4|written icon: tool type 3||1	$E3236D43
+PutIconObject RAM:rwett2,4|written icon: tool type 4||1	$B93B3359
+PutIconObject RAM:rwett2,4|written icon: tool type 5||1	$2174C808
+PutIconObject RAM:rwett2,4|written icon: tool type 6||1	$06262B02
+PutIconObject RAM:rwett2,4|written icon: tool type 7||1	$98CBEF45
+PutIconObject RAM:rwett2,4|written icon: tool type 8||1	$03B7B63C
+PutIconObject RAM:rwett2,4|written icon: tool type 9||1	$09B01744
+PutIconObject RAM:rwett2,4|written icon: tool type 10||1	$00000000
+GetIconObject|kept|RAM:rwett2|1	kept
+GetIconObject|icon: open|RAM:rwett2|1	$00000001
+GetIconObject|icon: type|RAM:rwett2|1	$00000004
+GetIconObject|icon: gadget size|RAM:rwett2|1	$0014000B
+GetIconObject|icon: gadget flags|RAM:rwett2|1	$00000006
+GetIconObject|icon: default tool|RAM:rwett2|1	$F9C39A2D
+GetIconObject|icon: image|RAM:rwett2|1	$D7FE192C
+GetIconObject|icon: select image|RAM:rwett2|1	$B79FD49B
+GetIconObject|icon: tool types|RAM:rwett2|1	$00000001
+GetIconObject|icon: tool type 0|RAM:rwett2|1	$D75EF085
+GetIconObject|icon: tool type 1|RAM:rwett2|1	$047A2125
+GetIconObject|icon: tool type 2|RAM:rwett2|1	$483FC601
+GetIconObject|icon: tool type 3|RAM:rwett2|1	$E3236D43
+GetIconObject|icon: tool type 4|RAM:rwett2|1	$B93B3359
+GetIconObject|icon: tool type 5|RAM:rwett2|1	$2174C808
+GetIconObject|icon: tool type 6|RAM:rwett2|1	$06262B02
+GetIconObject|icon: tool type 7|RAM:rwett2|1	$98CBEF45
+GetIconObject|icon: tool type 8|RAM:rwett2|1	$03B7B63C
+GetIconObject|icon: tool type 9|RAM:rwett2|1	$09B01744
+GetIconObject|icon: tool type 10|RAM:rwett2|1	$00000000
+ClearToolTypes|kept|$0,$0|1	kept
+ClearToolTypes|a3|$0,$0|1	$00000040
+ClearToolTypes|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+ClearToolTypes|icon: open|$0,$0|1	$00000001
+ClearToolTypes|icon: type|$0,$0|1	$00000004
+ClearToolTypes|icon: gadget size|$0,$0|1	$0014000B
+ClearToolTypes|icon: gadget flags|$0,$0|1	$00000006
+ClearToolTypes|icon: default tool|$0,$0|1	$F9C39A2D
+ClearToolTypes|icon: image|$0,$0|1	$D7FE192C
+ClearToolTypes|icon: select image|$0,$0|1	$B79FD49B
+ClearToolTypes|icon: tool types|$0,$0|1	$00000001
+ClearToolTypes|icon: tool type 0|$0,$0|1	$00000000
+FindToolNumber (cleared)|kept|$0,$0|1	kept
+FindToolNumber (cleared)|d0|$0,$0|1	$00000000
+FindToolNumber (cleared)|a3|$0,$0|1	$00000040
+FindToolNumber (cleared)|string area|$0,$0|1	bytes 512 fnv 9D9373C5
+FindToolNumber (cleared)|icon: open|$0,$0|1	$00000001
+FindToolNumber (cleared)|icon: type|$0,$0|1	$00000004
+FindToolNumber (cleared)|icon: gadget size|$0,$0|1	$0014000B
+FindToolNumber (cleared)|icon: gadget flags|$0,$0|1	$00000006
+FindToolNumber (cleared)|icon: default tool|$0,$0|1	$F9C39A2D
+FindToolNumber (cleared)|icon: image|$0,$0|1	$D7FE192C
+FindToolNumber (cleared)|icon: select image|$0,$0|1	$B79FD49B
+FindToolNumber (cleared)|icon: tool types|$0,$0|1	$00000001
+FindToolNumber (cleared)|icon: tool type 0|$0,$0|1	$00000000
+NewToolType (cleared)|kept|"ONLY","one"|1	kept
+NewToolType (cleared)|d0|"ONLY","one"|1	$FFFFFFFF
+NewToolType (cleared)|a3|"ONLY","one"|1	$00000045
+NewToolType (cleared)|string area|"ONLY","one"|1	bytes 512 fnv B2E77CEF
+NewToolType (cleared)|icon: open|"ONLY","one"|1	$00000001
+NewToolType (cleared)|icon: type|"ONLY","one"|1	$00000004
+NewToolType (cleared)|icon: gadget size|"ONLY","one"|1	$0014000B
+NewToolType (cleared)|icon: gadget flags|"ONLY","one"|1	$00000006
+NewToolType (cleared)|icon: default tool|"ONLY","one"|1	$F9C39A2D
+NewToolType (cleared)|icon: image|"ONLY","one"|1	$D7FE192C
+NewToolType (cleared)|icon: select image|"ONLY","one"|1	$B79FD49B
+NewToolType (cleared)|icon: tool types|"ONLY","one"|1	$00000001
+NewToolType (cleared)|icon: tool type 0|"ONLY","one"|1	$B356CAB6
+NewToolType (cleared)|icon: tool type 1|"ONLY","one"|1	$00000000
+FindToolNumber|kept|$0,$0|3	kept
+FindToolNumber|d0|$0,$0|3	$00000008
+FindToolNumber|a3|$0,$0|3	$00000048
+FindToolNumber|string area|$0,$0|3	bytes 512 fnv D6F4976E
+FindToolNumber|icon: open|$0,$0|3	$00000001
+FindToolNumber|icon: type|$0,$0|3	$00000004
+FindToolNumber|icon: gadget size|$0,$0|3	$0014000B
+FindToolNumber|icon: gadget flags|$0,$0|3	$00000006
+FindToolNumber|icon: default tool|$0,$0|3	$F9C39A2D
+FindToolNumber|icon: image|$0,$0|3	$D7FE192C
+FindToolNumber|icon: select image|$0,$0|3	$B79FD49B
+FindToolNumber|icon: tool types|$0,$0|3	$00000001
+FindToolNumber|icon: tool type 0|$0,$0|3	$B356CAB6
+FindToolNumber|icon: tool type 1|$0,$0|3	$00000000
+FreeIconObject|kept|$0,$0|2	kept
+FreeIconObject|d0|$0,$0|2	$FFFFFFFF
+FreeIconObject|a3|$0,$0|2	$00000040
+FreeIconObject|string area|$0,$0|2	bytes 512 fnv 9D9373C5
+FreeIconObject|kept|$0,$0|3	kept
+FreeIconObject|d0|$0,$0|3	$00000000
+FreeIconObject|a3|$0,$0|3	$00000040
+FreeIconObject|string area|$0,$0|3	bytes 512 fnv 9D9373C5
+GetIconObject|kept|"RAM:rwett_nothere"|1	kept
+GetIconObject|d0|"RAM:rwett_nothere"|1	$00000000
+GetIconObject|a3|"RAM:rwett_nothere"|1	$00000052
+GetIconObject|string area|"RAM:rwett_nothere"|1	bytes 512 fnv 625DA1DE
+GetIconObject|icon: open|"RAM:rwett_nothere"|1	$00000000
+GetIconObject|kept|"RAM:rwett"|3	kept
+GetIconObject|d0|"RAM:rwett"|3	$00000001
+GetIconObject|a3|"RAM:rwett"|3	$0000004A
+GetIconObject|string area|"RAM:rwett"|3	bytes 512 fnv DC49B06E
+GetIconObject|icon: open|"RAM:rwett"|3	$00000001
+GetIconObject|icon: type|"RAM:rwett"|3	$00000003
+GetIconObject|icon: gadget size|"RAM:rwett"|3	$00360017
+GetIconObject|icon: gadget flags|"RAM:rwett"|3	$00000004
+GetIconObject|icon: default tool|"RAM:rwett"|3	$00000000
+GetIconObject|icon: image|"RAM:rwett"|3	$2E3FC293
+GetIconObject|icon: select image|"RAM:rwett"|3	$00000000
+GetIconObject|icon: tool types|"RAM:rwett"|3	$00000001
+GetIconObject|icon: tool type 0|"RAM:rwett"|3	$0239845D
+GetIconObject|icon: tool type 1|"RAM:rwett"|3	$CEC2FBF7
+GetIconObject|icon: tool type 2|"RAM:rwett"|3	$0020F76D
+GetIconObject|icon: tool type 3|"RAM:rwett"|3	$E3236D43
+GetIconObject|icon: tool type 4|"RAM:rwett"|3	$B93B3359
+GetIconObject|icon: tool type 5|"RAM:rwett"|3	$2174C808
+GetIconObject|icon: tool type 6|"RAM:rwett"|3	$1547769D
+GetIconObject|icon: tool type 7|"RAM:rwett"|3	$00000000
+finit|kept|icon open|1	kept
+init|kept||2	kept
+GetIconObject|kept|"RAM:rwett"|4	kept
+GetIconObject|d0|"RAM:rwett"|4	$00000001
+GetIconObject|a3|"RAM:rwett"|4	$0000004A
+GetIconObject|string area|"RAM:rwett"|4	bytes 512 fnv DC49B06E
+GetIconObject|icon: open|"RAM:rwett"|4	$00000001
+GetIconObject|icon: type|"RAM:rwett"|4	$00000003
+GetIconObject|icon: gadget size|"RAM:rwett"|4	$00360017
+GetIconObject|icon: gadget flags|"RAM:rwett"|4	$00000004
+GetIconObject|icon: default tool|"RAM:rwett"|4	$00000000
+GetIconObject|icon: image|"RAM:rwett"|4	$2E3FC293
+GetIconObject|icon: select image|"RAM:rwett"|4	$00000000
+GetIconObject|icon: tool types|"RAM:rwett"|4	$00000001
+GetIconObject|icon: tool type 0|"RAM:rwett"|4	$0239845D
+GetIconObject|icon: tool type 1|"RAM:rwett"|4	$CEC2FBF7
+GetIconObject|icon: tool type 2|"RAM:rwett"|4	$0020F76D
+GetIconObject|icon: tool type 3|"RAM:rwett"|4	$E3236D43
+GetIconObject|icon: tool type 4|"RAM:rwett"|4	$B93B3359
+GetIconObject|icon: tool type 5|"RAM:rwett"|4	$2174C808
+GetIconObject|icon: tool type 6|"RAM:rwett"|4	$1547769D
+GetIconObject|icon: tool type 7|"RAM:rwett"|4	$00000000
+FreeIconObject|kept|$0,$0|4	kept
+FreeIconObject|d0|$0,$0|4	$FFFFFFFF
+FreeIconObject|a3|$0,$0|4	$00000040
+FreeIconObject|string area|$0,$0|4	bytes 512 fnv 9D9373C5
+finit|kept|$0,$0|1	kept

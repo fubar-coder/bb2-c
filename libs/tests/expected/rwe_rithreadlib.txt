@@ -1,0 +1,136 @@
+# capture rwe_rithreadlib 1
+|calls||1	$00000013
+init|kept|#0|1	kept
+init|popped|#0|1	$00000000
+CreateThread (no dos.library)|kept|#1|1	kept
+CreateThread (no dos.library)|popped|#1|1	$00000000
+ActiveThreads|kept|#2|1	kept
+ActiveThreads|popped|#2|1	$00000000
+finit (no dos.library)|kept|#3|1	kept
+finit (no dos.library)|popped|#3|1	$00000000
+init|kept|#4|1	kept
+init|popped|#4|1	$00000000
+CreateThread|kept|#5|1	kept
+CreateThread|popped|#5|1	$00000000
+ActiveThreads|kept|#6|1	kept
+ActiveThreads|popped|#6|1	$00000000
+CreateThread|kept|#7|1	kept
+CreateThread|popped|#7|1	$00000000
+ActiveThreads|kept|#8|1	kept
+ActiveThreads|popped|#8|1	$00000000
+ActiveThreads|kept|#9|1	kept
+ActiveThreads|popped|#9|1	$00000000
+finit (waits for B)|kept|#10|1	kept
+finit (waits for B)|popped|#10|1	$00000000
+ActiveThreads|kept|#11|1	kept
+ActiveThreads|popped|#11|1	$00000000
+init|kept|#12|1	kept
+init|popped|#12|1	$00000000
+CreateThread|kept|#13|1	kept
+CreateThread|popped|#13|1	$00000000
+ActiveThreads|kept|#14|1	kept
+ActiveThreads|popped|#14|1	$00000000
+CreateThread|kept|#15|1	kept
+CreateThread|popped|#15|1	$00000000
+finit (signal pending, D runs)|kept|#16|1	kept
+finit (signal pending, D runs)|popped|#16|1	$00000000
+ActiveThreads|kept|#17|1	kept
+ActiveThreads|popped|#17|1	$00000000
+ActiveThreads|kept|#18|1	kept
+ActiveThreads|popped|#18|1	$00000000
+ActiveThreads|calls|#18|1	$00000008
+ActiveThreads|count|#0|1	$00000000
+ActiveThreads|count|#1|1	$00000001
+ActiveThreads|count|#2|1	$00000002
+ActiveThreads|count|#3|1	$00000001
+ActiveThreads|count|#4|1	$00000000
+ActiveThreads|count|#5|1	$00000000
+ActiveThreads|count|#6|1	$00000001
+ActiveThreads|count|#7|1	$00000000
+ActiveThreads|expected count|#0|1	$00000001
+ActiveThreads|expected count|#1|1	$00000001
+ActiveThreads|expected count|#2|1	$00000001
+ActiveThreads|expected count|#3|1	$00000001
+ActiveThreads|expected count|#4|1	$00000001
+ActiveThreads|expected count|#5|1	$00000001
+ActiveThreads|expected count|#6|1	$00000001
+ActiveThreads|expected count|#7|1	$00000001
+signals|phase 0: none||1	$00000001
+signals|phase 1: one||1	$00000001
+signals|phase 2: one||1	$00000001
+signals|library signal|pending 0|1	$00000000
+signals|library signal|pending 1|1	$00000000
+signals|library signal|pending 2|1	$00000001
+signals|library signal|pending 3|1	$00000001
+signals|A ended: no signal|pending 3|1	$00000001
+signals|finit took B's signal|pending 3|1	$00000001
+signals|C ended: signal pending|pending 3|1	$00000001
+signals|D ended: signal|pending 3|1	$00000001
+thread|started|A|1	$00000001
+thread|name|A|1	$00000001
+thread|memory cleared|A|1	$00000001
+thread|a0 = the code|A|1	$00000001
+thread|a2 = memory + 1024|A|1	$00000001
+thread|a3 = memory + 3072|A|1	$00000001
+thread|a4 = memory + 7168|A|1	$00000001
+thread|d1|A|1	$00000000
+thread|d2|A|1	$5A021234
+thread|d3|A|1	$5A031234
+thread|d4|A|1	$5A041234
+thread|d5|A|1	$5A051234
+thread|d6|A|1	$5A061234
+thread|d7|A|1	$5A071234
+thread|a1|A|1	$5A091234
+thread|a5|A|1	$5A0D1234
+thread|a6|A|1	$5A0E1234
+thread|started|B|1	$00000001
+thread|name|B|1	$00000001
+thread|memory cleared|B|1	$00000001
+thread|a0 = the code|B|1	$00000001
+thread|a2 = memory + 1024|B|1	$00000001
+thread|a3 = memory + 3072|B|1	$00000001
+thread|a4 = memory + 7168|B|1	$00000001
+thread|d1|B|1	$00000000
+thread|d2|B|1	$5A021234
+thread|d3|B|1	$5A031234
+thread|d4|B|1	$5A041234
+thread|d5|B|1	$5A051234
+thread|d6|B|1	$5A061234
+thread|d7|B|1	$5A071234
+thread|a1|B|1	$5A091234
+thread|a5|B|1	$5A0D1234
+thread|a6|B|1	$5A0E1234
+thread|started|C|1	$00000001
+thread|name|C|1	$00000001
+thread|memory cleared|C|1	$00000001
+thread|a0 = the code|C|1	$00000001
+thread|a2 = memory + 1024|C|1	$00000001
+thread|a3 = memory + 3072|C|1	$00000001
+thread|a4 = memory + 7168|C|1	$00000001
+thread|d1|C|1	$00000000
+thread|d2|C|1	$5A021234
+thread|d3|C|1	$5A031234
+thread|d4|C|1	$5A041234
+thread|d5|C|1	$5A051234
+thread|d6|C|1	$5A061234
+thread|d7|C|1	$5A071234
+thread|a1|C|1	$5A091234
+thread|a5|C|1	$5A0D1234
+thread|a6|C|1	$5A0E1234
+thread|started|D|1	$00000001
+thread|name|D|1	$00000001
+thread|memory cleared|D|1	$00000001
+thread|a0 = the code|D|1	$00000001
+thread|a2 = memory + 1024|D|1	$00000001
+thread|a3 = memory + 3072|D|1	$00000001
+thread|a4 = memory + 7168|D|1	$00000001
+thread|d1|D|1	$00000000
+thread|d2|D|1	$5A021234
+thread|d3|D|1	$5A031234
+thread|d4|D|1	$5A041234
+thread|d5|D|1	$5A051234
+thread|d6|D|1	$5A061234
+thread|d7|D|1	$5A071234
+thread|a1|D|1	$5A091234
+thread|a5|D|1	$5A0D1234
+thread|a6|D|1	$5A0E1234
