@@ -1,0 +1,2050 @@
+# capture rwe_rievallib 1
+init|kept|start|1	kept
+init|popped|start|1	$00000000
+PFErrorType|kept|start|1	kept
+PFErrorType|popped|start|1	$00000000
+PFErrorType|d0|start|1	$5A000000
+PFErrorText|kept|start|1	kept
+PFErrorText|popped|start|1	$00000000
+PFErrorText|d0|start|1	$5A000000
+PFErrorText|a3|start|1	$00000004
+PFErrorText|text|start|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|start|1	kept
+PFIndirectAddr|popped|start|1	$00000000
+PFIndirectAddr|d0|start|1	$00000000
+finit|kept|start|1	kept
+finit|popped|start|1	$00000000
+ConvToPostFix|kept|"2+6"|1	kept
+ConvToPostFix|popped|"2+6"|1	$00000000
+ConvToPostFix|string|"2+6"|1	bytes 1400 fnv F5C5E68C
+ConvToPostFix|buffer|"2+6"|1	bytes 2816 fnv 850A7430
+ConvToPostFix|a3|"2+6"|1	$00000000
+ConvToPostFix|kept|"1+2*3"|1	kept
+ConvToPostFix|popped|"1+2*3"|1	$00000000
+ConvToPostFix|string|"1+2*3"|1	bytes 1400 fnv C5FF504E
+ConvToPostFix|buffer|"1+2*3"|1	bytes 2816 fnv E345A2CE
+ConvToPostFix|a3|"1+2*3"|1	$00000000
+ConvToPostFix|kept|"(1+2)*3"|1	kept
+ConvToPostFix|popped|"(1+2)*3"|1	$00000000
+ConvToPostFix|string|"(1+2)*3"|1	bytes 1400 fnv DB4E4DAF
+ConvToPostFix|buffer|"(1+2)*3"|1	bytes 2816 fnv 1487B236
+ConvToPostFix|a3|"(1+2)*3"|1	$00000000
+ConvToPostFix|kept|"1*2+3"|1	kept
+ConvToPostFix|popped|"1*2+3"|1	$00000000
+ConvToPostFix|string|"1*2+3"|1	bytes 1400 fnv 5FA90FF2
+ConvToPostFix|buffer|"1*2+3"|1	bytes 2816 fnv B93B0096
+ConvToPostFix|a3|"1*2+3"|1	$00000000
+ConvToPostFix|kept|"2^3^2"|1	kept
+ConvToPostFix|popped|"2^3^2"|1	$00000000
+ConvToPostFix|string|"2^3^2"|1	bytes 1400 fnv AF77CA9A
+ConvToPostFix|buffer|"2^3^2"|1	bytes 2816 fnv E7DBEC24
+ConvToPostFix|a3|"2^3^2"|1	$00000000
+ConvToPostFix|kept|"10/3-1"|1	kept
+ConvToPostFix|popped|"10/3-1"|1	$00000000
+ConvToPostFix|string|"10/3-1"|1	bytes 1400 fnv D3CA74E0
+ConvToPostFix|buffer|"10/3-1"|1	bytes 2816 fnv E31199CC
+ConvToPostFix|a3|"10/3-1"|1	$00000000
+ConvToPostFix|kept|"1-2-3"|1	kept
+ConvToPostFix|popped|"1-2-3"|1	$00000000
+ConvToPostFix|string|"1-2-3"|1	bytes 1400 fnv 835160E9
+ConvToPostFix|buffer|"1-2-3"|1	bytes 2816 fnv F898C023
+ConvToPostFix|a3|"1-2-3"|1	$00000000
+ConvToPostFix|kept|"1=1&2\|3"|1	kept
+ConvToPostFix|popped|"1=1&2\|3"|1	$00000000
+ConvToPostFix|string|"1=1&2\|3"|1	bytes 1400 fnv 4106AA15
+ConvToPostFix|buffer|"1=1&2\|3"|1	bytes 2816 fnv F7A3429D
+ConvToPostFix|a3|"1=1&2\|3"|1	$00000000
+ConvToPostFix|kept|"1<2>3"|1	kept
+ConvToPostFix|popped|"1<2>3"|1	$00000000
+ConvToPostFix|string|"1<2>3"|1	bytes 1400 fnv 9200BFBB
+ConvToPostFix|buffer|"1<2>3"|1	bytes 2816 fnv 5C2F4161
+ConvToPostFix|a3|"1<2>3"|1	$00000000
+ConvToPostFix|kept|"1<2+3*4^5"|1	kept
+ConvToPostFix|popped|"1<2+3*4^5"|1	$00000000
+ConvToPostFix|string|"1<2+3*4^5"|1	bytes 1400 fnv C4781461
+ConvToPostFix|buffer|"1<2+3*4^5"|1	bytes 2816 fnv D2DB3EA1
+ConvToPostFix|a3|"1<2+3*4^5"|1	$00000000
+ConvToPostFix|kept|"8/(4/2)"|1	kept
+ConvToPostFix|popped|"8/(4/2)"|1	$00000000
+ConvToPostFix|string|"8/(4/2)"|1	bytes 1400 fnv CF5FD418
+ConvToPostFix|buffer|"8/(4/2)"|1	bytes 2816 fnv 5D4125CD
+ConvToPostFix|a3|"8/(4/2)"|1	$00000000
+ConvToPostFix|kept|"-3+4"|1	kept
+ConvToPostFix|popped|"-3+4"|1	$00000000
+ConvToPostFix|string|"-3+4"|1	bytes 1400 fnv DF3AF3AE
+ConvToPostFix|buffer|"-3+4"|1	bytes 2816 fnv E7958C3C
+ConvToPostFix|a3|"-3+4"|1	$00000000
+ConvToPostFix|kept|"3 -4"|1	kept
+ConvToPostFix|popped|"3 -4"|1	$00000000
+ConvToPostFix|string|"3 -4"|1	bytes 1400 fnv A6220FCF
+ConvToPostFix|buffer|"3 -4"|1	bytes 2816 fnv 97629D11
+ConvToPostFix|a3|"3 -4"|1	$00000000
+ConvToPostFix|kept|"3- -4"|1	kept
+ConvToPostFix|popped|"3- -4"|1	$00000000
+ConvToPostFix|string|"3- -4"|1	bytes 1400 fnv E2828CAA
+ConvToPostFix|buffer|"3- -4"|1	bytes 2816 fnv 038911EC
+ConvToPostFix|a3|"3- -4"|1	$00000000
+ConvToPostFix|kept|"3-(-4)"|1	kept
+ConvToPostFix|popped|"3-(-4)"|1	$00000000
+ConvToPostFix|string|"3-(-4)"|1	bytes 1400 fnv 6E924D55
+ConvToPostFix|buffer|"3-(-4)"|1	bytes 2816 fnv 4779B670
+ConvToPostFix|a3|"3-(-4)"|1	$00000000
+ConvToPostFix|kept|"-(-1)"|1	kept
+ConvToPostFix|popped|"-(-1)"|1	$00000000
+ConvToPostFix|string|"-(-1)"|1	bytes 1400 fnv 3D7142FB
+ConvToPostFix|buffer|"-(-1)"|1	bytes 2816 fnv D80D9EC6
+ConvToPostFix|a3|"-(-1)"|1	$00000000
+ConvToPostFix|kept|"(-1)"|1	kept
+ConvToPostFix|popped|"(-1)"|1	$00000000
+ConvToPostFix|string|"(-1)"|1	bytes 1400 fnv 24389A4C
+ConvToPostFix|buffer|"(-1)"|1	bytes 2816 fnv D23CA853
+ConvToPostFix|a3|"(-1)"|1	$00000000
+ConvToPostFix|kept|"4*-2"|1	kept
+ConvToPostFix|popped|"4*-2"|1	$00000000
+ConvToPostFix|string|"4*-2"|1	bytes 1400 fnv 2A5BDE80
+ConvToPostFix|buffer|"4*-2"|1	bytes 2816 fnv 073752EC
+ConvToPostFix|a3|"4*-2"|1	$00000000
+ConvToPostFix|kept|"3 - 4"|1	kept
+ConvToPostFix|popped|"3 - 4"|1	$00000000
+ConvToPostFix|string|"3 - 4"|1	bytes 1400 fnv 8066F667
+ConvToPostFix|buffer|"3 - 4"|1	bytes 2816 fnv 97629D11
+ConvToPostFix|a3|"3 - 4"|1	$00000000
+ConvToPostFix|kept|"2-(3)"|1	kept
+ConvToPostFix|popped|"2-(3)"|1	$00000000
+ConvToPostFix|string|"2-(3)"|1	bytes 1400 fnv 317B8BA0
+ConvToPostFix|buffer|"2-(3)"|1	bytes 2816 fnv 5B56AC2F
+ConvToPostFix|a3|"2-(3)"|1	$00000000
+ConvToPostFix|kept|"$FF&%1010\|7"|1	kept
+ConvToPostFix|popped|"$FF&%1010\|7"|1	$00000000
+ConvToPostFix|string|"$FF&%1010\|7"|1	bytes 1400 fnv 7438F169
+ConvToPostFix|buffer|"$FF&%1010\|7"|1	bytes 2816 fnv 6903477F
+ConvToPostFix|a3|"$FF&%1010\|7"|1	$00000000
+ConvToPostFix|kept|"A0+D1*PC"|1	kept
+ConvToPostFix|popped|"A0+D1*PC"|1	$00000000
+ConvToPostFix|string|"A0+D1*PC"|1	bytes 1400 fnv 570661F5
+ConvToPostFix|buffer|"A0+D1*PC"|1	bytes 2816 fnv A67F1DB3
+ConvToPostFix|a3|"A0+D1*PC"|1	$00000000
+ConvToPostFix|kept|"a7-d0"|1	kept
+ConvToPostFix|popped|"a7-d0"|1	$00000000
+ConvToPostFix|string|"a7-d0"|1	bytes 1400 fnv E763EBD0
+ConvToPostFix|buffer|"a7-d0"|1	bytes 2816 fnv 293AC37E
+ConvToPostFix|a3|"a7-d0"|1	$00000000
+ConvToPostFix|kept|"{1000}.w+2"|1	kept
+ConvToPostFix|popped|"{1000}.w+2"|1	$00000000
+ConvToPostFix|string|"{1000}.w+2"|1	bytes 1400 fnv 3643EBFC
+ConvToPostFix|buffer|"{1000}.w+2"|1	bytes 2816 fnv 38B68A4A
+ConvToPostFix|a3|"{1000}.w+2"|1	$00000000
+ConvToPostFix|kept|"{a0}.b*{$10}.l"|1	kept
+ConvToPostFix|popped|"{a0}.b*{$10}.l"|1	$00000000
+ConvToPostFix|string|"{a0}.b*{$10}.l"|1	bytes 1400 fnv FBB807D3
+ConvToPostFix|buffer|"{a0}.b*{$10}.l"|1	bytes 2816 fnv 4CA37DFF
+ConvToPostFix|a3|"{a0}.b*{$10}.l"|1	$00000000
+ConvToPostFix|kept|"abcdef+1"|1	kept
+ConvToPostFix|popped|"abcdef+1"|1	$00000000
+ConvToPostFix|string|"abcdef+1"|1	bytes 1400 fnv 7DC3A286
+ConvToPostFix|buffer|"abcdef+1"|1	bytes 2816 fnv 1FE7F6FC
+ConvToPostFix|a3|"abcdef+1"|1	$00000000
+ConvToPostFix|kept|"  12x+3"|1	kept
+ConvToPostFix|popped|"  12x+3"|1	$00000000
+ConvToPostFix|string|"  12x+3"|1	bytes 1400 fnv 8BE387DC
+ConvToPostFix|buffer|"  12x+3"|1	bytes 2816 fnv 8042EF9A
+ConvToPostFix|a3|"  12x+3"|1	$00000000
+ConvToPostFix|kept|"1+2)"|1	kept
+ConvToPostFix|popped|"1+2)"|1	$00000000
+ConvToPostFix|string|"1+2)"|1	bytes 1400 fnv 26C6DB64
+ConvToPostFix|buffer|"1+2)"|1	bytes 2816 fnv B0551923
+ConvToPostFix|a3|"1+2)"|1	$00000000
+ConvToPostFix|kept|"((1+2)"|1	kept
+ConvToPostFix|popped|"((1+2)"|1	$00000000
+ConvToPostFix|string|"((1+2)"|1	bytes 1400 fnv CFFBD1CC
+ConvToPostFix|buffer|"((1+2)"|1	bytes 2816 fnv B0551923
+ConvToPostFix|a3|"((1+2)"|1	$00000000
+ConvToPostFix|kept|")("|1	kept
+ConvToPostFix|popped|")("|1	$00000000
+ConvToPostFix|string|")("|1	bytes 1400 fnv 19749DA4
+ConvToPostFix|buffer|")("|1	bytes 2816 fnv 32C3B12B
+ConvToPostFix|a3|")("|1	$00000000
+ConvToPostFix|kept|"1+2)*3"|1	kept
+ConvToPostFix|popped|"1+2)*3"|1	$00000000
+ConvToPostFix|string|"1+2)*3"|1	bytes 1400 fnv B5C6B2F3
+ConvToPostFix|buffer|"1+2)*3"|1	bytes 2816 fnv 1487B236
+ConvToPostFix|a3|"1+2)*3"|1	$00000000
+ConvToPostFix|kept|""|1	kept
+ConvToPostFix|popped|""|1	$00000000
+ConvToPostFix|string|""|1	bytes 1400 fnv 3300FC25
+ConvToPostFix|buffer|""|1	bytes 2816 fnv 32C3B12B
+ConvToPostFix|a3|""|1	$00000000
+ConvToPostFix|kept|"   "|1	kept
+ConvToPostFix|popped|"   "|1	$00000000
+ConvToPostFix|string|"   "|1	bytes 1400 fnv 7CBCC805
+ConvToPostFix|buffer|"   "|1	bytes 2816 fnv 32C3B12B
+ConvToPostFix|a3|"   "|1	$00000000
+ConvToPostFix|kept|"-"|1	kept
+ConvToPostFix|popped|"-"|1	$00000000
+ConvToPostFix|string|"-"|1	bytes 1400 fnv 3DCED8E8
+ConvToPostFix|buffer|"-"|1	bytes 2816 fnv BE41CA0A
+ConvToPostFix|a3|"-"|1	$00000000
+ConvToPostFix|kept|"*"|1	kept
+ConvToPostFix|popped|"*"|1	$00000000
+ConvToPostFix|string|"*"|1	bytes 1400 fnv 3FF8050F
+ConvToPostFix|buffer|"*"|1	bytes 2816 fnv D23F5721
+ConvToPostFix|a3|"*"|1	$00000000
+ConvToPostFix|kept|"3-"|1	kept
+ConvToPostFix|popped|"3-"|1	$00000000
+ConvToPostFix|string|"3-"|1	bytes 1400 fnv 458EED95
+ConvToPostFix|buffer|"3-"|1	bytes 2816 fnv 77435E9D
+ConvToPostFix|a3|"3-"|1	$00000000
+ConvToPostFix|kept|"1++2"|1	kept
+ConvToPostFix|popped|"1++2"|1	$00000000
+ConvToPostFix|string|"1++2"|1	bytes 1400 fnv CB681C78
+ConvToPostFix|buffer|"1++2"|1	bytes 2816 fnv 7D707768
+ConvToPostFix|a3|"1++2"|1	$00000000
+ConvToPostFix|kept|"1 2 3"|1	kept
+ConvToPostFix|popped|"1 2 3"|1	$00000000
+ConvToPostFix|string|"1 2 3"|1	bytes 1400 fnv 25D32975
+ConvToPostFix|buffer|"1 2 3"|1	bytes 2816 fnv 67C2A67B
+ConvToPostFix|a3|"1 2 3"|1	$00000000
+ConvToPostFix|kept|"1,2;3"|1	kept
+ConvToPostFix|popped|"1,2;3"|1	$00000000
+ConvToPostFix|string|"1,2;3"|1	bytes 1400 fnv B7E20F74
+ConvToPostFix|buffer|"1,2;3"|1	bytes 2816 fnv 67C2A67B
+ConvToPostFix|a3|"1,2;3"|1	$00000000
+ConvToPostFix|kept|"Zz+yY"|1	kept
+ConvToPostFix|popped|"Zz+yY"|1	$00000000
+ConvToPostFix|string|"Zz+yY"|1	bytes 1400 fnv BD4DFE40
+ConvToPostFix|buffer|"Zz+yY"|1	bytes 2816 fnv DA82697C
+ConvToPostFix|a3|"Zz+yY"|1	$00000000
+ConvToPostFix|kept|"c+p+$"|1	kept
+ConvToPostFix|popped|"c+p+$"|1	$00000000
+ConvToPostFix|string|"c+p+$"|1	bytes 1400 fnv F7F1534A
+ConvToPostFix|buffer|"c+p+$"|1	bytes 2816 fnv 33A83440
+ConvToPostFix|a3|"c+p+$"|1	$00000000
+ConvToPostFix|kept|"9.9+1"|1	kept
+ConvToPostFix|popped|"9.9+1"|1	$00000000
+ConvToPostFix|string|"9.9+1"|1	bytes 1400 fnv DE003F3B
+ConvToPostFix|buffer|"9.9+1"|1	bytes 2816 fnv 303E46C3
+ConvToPostFix|a3|"9.9+1"|1	$00000000
+ConvToPostFix|kept|"%101."|1	kept
+ConvToPostFix|popped|"%101."|1	$00000000
+ConvToPostFix|string|"%101."|1	bytes 1400 fnv AFB5B0E6
+ConvToPostFix|buffer|"%101."|1	bytes 2816 fnv E77A4FF6
+ConvToPostFix|a3|"%101."|1	$00000000
+ConvToPostFix|kept|"("|1	kept
+ConvToPostFix|popped|"("|1	$00000000
+ConvToPostFix|string|"("|1	bytes 1400 fnv 1AC7AF4D
+ConvToPostFix|buffer|"("|1	bytes 2816 fnv 32C3B12B
+ConvToPostFix|a3|"("|1	$00000000
+ConvToPostFix|kept|")"|1	kept
+ConvToPostFix|popped|")"|1	$00000000
+ConvToPostFix|string|")"|1	bytes 1400 fnv 882F846C
+ConvToPostFix|buffer|")"|1	bytes 2816 fnv 32C3B12B
+ConvToPostFix|a3|")"|1	$00000000
+ConvToPostFix|kept|"1."|1	kept
+ConvToPostFix|popped|"1."|1	$00000000
+ConvToPostFix|string|"1."|1	bytes 1400 fnv 66C7C88C
+ConvToPostFix|buffer|"1."|1	bytes 2816 fnv 11784026
+ConvToPostFix|a3|"1."|1	$00000000
+ConvToPostFix|kept|"x+a."|1	kept
+ConvToPostFix|popped|"x+a."|1	$00000000
+ConvToPostFix|string|"x+a."|1	bytes 1400 fnv C4093726
+ConvToPostFix|buffer|"x+a."|1	bytes 2816 fnv 6730D55A
+ConvToPostFix|a3|"x+a."|1	$00000000
+ConvToPostFix|kept|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	kept
+ConvToPostFix|popped|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	$00000000
+ConvToPostFix|string|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	bytes 1400 fnv 42DF12DC
+ConvToPostFix|buffer|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	bytes 2816 fnv 55B17D1E
+ConvToPostFix|a3|"(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("|1	$00000000
+ConvToPostFix|kept|"1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^"|1	kept
+ConvToPostFix|popped|"1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^"|1	$00000000
+ConvToPostFix|string|"1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^"|1	bytes 1400 fnv 8F4CC96B
+ConvToPostFix|buffer|"1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^"|1	bytes 2816 fnv B1A02E23
+ConvToPostFix|a3|"1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^(1^"|1	$00000000
+ConvToPostFix|kept|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*("|1	kept
+ConvToPostFix|popped|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*("|1	$00000000
+ConvToPostFix|string|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*("|1	bytes 1400 fnv 926ADAD7
+ConvToPostFix|buffer|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*("|1	bytes 2816 fnv 1E639ABB
+ConvToPostFix|a3|"2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*(2-3*("|1	$00000000
+ConvToPostFix|kept|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+"|1	kept
+ConvToPostFix|popped|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+"|1	$00000000
+ConvToPostFix|string|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+"|1	bytes 1400 fnv 0A34FD74
+ConvToPostFix|buffer|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+"|1	bytes 2816 fnv B791DC7E
+ConvToPostFix|a3|"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+"|1	$00000000
+ConvToPostFix|kept|"(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1"|1	kept
+ConvToPostFix|popped|"(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1"|1	$00000000
+ConvToPostFix|string|"(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1"|1	bytes 1400 fnv 20656555
+ConvToPostFix|buffer|"(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1"|1	bytes 2816 fnv 7073C46B
+ConvToPostFix|a3|"(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1+(1"|1	$00000000
+PFEvaluate|kept|"2 6 +"|1	kept
+PFEvaluate|popped|"2 6 +"|1	$00000000
+PFEvaluate|d0|"2 6 +"|1	$00000008
+PFEvaluate|string|"2 6 +"|1	bytes 1400 fnv 9FBE012A
+PFErrorType|kept|"2 6 +"|1	kept
+PFErrorType|popped|"2 6 +"|1	$00000000
+PFErrorType|d0|"2 6 +"|1	$5A000000
+PFErrorText|kept|"2 6 +"|1	kept
+PFErrorText|popped|"2 6 +"|1	$00000000
+PFErrorText|d0|"2 6 +"|1	$5A000000
+PFErrorText|a3|"2 6 +"|1	$00000004
+PFErrorText|text|"2 6 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 6 +"|1	kept
+PFIndirectAddr|popped|"2 6 +"|1	$00000000
+PFIndirectAddr|d0|"2 6 +"|1	$00000000
+PFEvaluate|kept|"1 2 3 * +"|1	kept
+PFEvaluate|popped|"1 2 3 * +"|1	$00000000
+PFEvaluate|d0|"1 2 3 * +"|1	$00000007
+PFEvaluate|string|"1 2 3 * +"|1	bytes 1400 fnv 812428B4
+PFErrorType|kept|"1 2 3 * +"|1	kept
+PFErrorType|popped|"1 2 3 * +"|1	$00000000
+PFErrorType|d0|"1 2 3 * +"|1	$5A000000
+PFErrorText|kept|"1 2 3 * +"|1	kept
+PFErrorText|popped|"1 2 3 * +"|1	$00000000
+PFErrorText|d0|"1 2 3 * +"|1	$5A000000
+PFErrorText|a3|"1 2 3 * +"|1	$00000004
+PFErrorText|text|"1 2 3 * +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 3 * +"|1	kept
+PFIndirectAddr|popped|"1 2 3 * +"|1	$00000000
+PFIndirectAddr|d0|"1 2 3 * +"|1	$00000000
+PFEvaluate|kept|"10 3 -"|1	kept
+PFEvaluate|popped|"10 3 -"|1	$00000000
+PFEvaluate|d0|"10 3 -"|1	$00000007
+PFEvaluate|string|"10 3 -"|1	bytes 1400 fnv 6BE7603E
+PFErrorType|kept|"10 3 -"|1	kept
+PFErrorType|popped|"10 3 -"|1	$00000000
+PFErrorType|d0|"10 3 -"|1	$5A000000
+PFErrorText|kept|"10 3 -"|1	kept
+PFErrorText|popped|"10 3 -"|1	$00000000
+PFErrorText|d0|"10 3 -"|1	$5A000000
+PFErrorText|a3|"10 3 -"|1	$00000004
+PFErrorText|text|"10 3 -"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"10 3 -"|1	kept
+PFIndirectAddr|popped|"10 3 -"|1	$00000000
+PFIndirectAddr|d0|"10 3 -"|1	$00000000
+PFEvaluate|kept|"3 10 -"|1	kept
+PFEvaluate|popped|"3 10 -"|1	$00000000
+PFEvaluate|d0|"3 10 -"|1	$FFFFFFF9
+PFEvaluate|string|"3 10 -"|1	bytes 1400 fnv 6F72CD60
+PFErrorType|kept|"3 10 -"|1	kept
+PFErrorType|popped|"3 10 -"|1	$00000000
+PFErrorType|d0|"3 10 -"|1	$5A000000
+PFErrorText|kept|"3 10 -"|1	kept
+PFErrorText|popped|"3 10 -"|1	$00000000
+PFErrorText|d0|"3 10 -"|1	$5A000000
+PFErrorText|a3|"3 10 -"|1	$00000004
+PFErrorText|text|"3 10 -"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"3 10 -"|1	kept
+PFIndirectAddr|popped|"3 10 -"|1	$00000000
+PFIndirectAddr|d0|"3 10 -"|1	$00000000
+PFEvaluate|kept|"5 5 ="|1	kept
+PFEvaluate|popped|"5 5 ="|1	$00000000
+PFEvaluate|d0|"5 5 ="|1	$FFFFFFFF
+PFEvaluate|string|"5 5 ="|1	bytes 1400 fnv EE985DB0
+PFErrorType|kept|"5 5 ="|1	kept
+PFErrorType|popped|"5 5 ="|1	$00000000
+PFErrorType|d0|"5 5 ="|1	$5A000000
+PFErrorText|kept|"5 5 ="|1	kept
+PFErrorText|popped|"5 5 ="|1	$00000000
+PFErrorText|d0|"5 5 ="|1	$5A000000
+PFErrorText|a3|"5 5 ="|1	$00000004
+PFErrorText|text|"5 5 ="|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"5 5 ="|1	kept
+PFIndirectAddr|popped|"5 5 ="|1	$00000000
+PFIndirectAddr|d0|"5 5 ="|1	$00000000
+PFEvaluate|kept|"5 6 ="|1	kept
+PFEvaluate|popped|"5 6 ="|1	$00000000
+PFEvaluate|d0|"5 6 ="|1	$00000000
+PFEvaluate|string|"5 6 ="|1	bytes 1400 fnv 0557887B
+PFErrorType|kept|"5 6 ="|1	kept
+PFErrorType|popped|"5 6 ="|1	$00000000
+PFErrorType|d0|"5 6 ="|1	$5A000000
+PFErrorText|kept|"5 6 ="|1	kept
+PFErrorText|popped|"5 6 ="|1	$00000000
+PFErrorText|d0|"5 6 ="|1	$5A000000
+PFErrorText|a3|"5 6 ="|1	$00000004
+PFErrorText|text|"5 6 ="|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"5 6 ="|1	kept
+PFIndirectAddr|popped|"5 6 ="|1	$00000000
+PFIndirectAddr|d0|"5 6 ="|1	$00000000
+PFEvaluate|kept|"12 10 &"|1	kept
+PFEvaluate|popped|"12 10 &"|1	$00000000
+PFEvaluate|d0|"12 10 &"|1	$00000008
+PFEvaluate|string|"12 10 &"|1	bytes 1400 fnv 11861A2B
+PFErrorType|kept|"12 10 &"|1	kept
+PFErrorType|popped|"12 10 &"|1	$00000000
+PFErrorType|d0|"12 10 &"|1	$5A000000
+PFErrorText|kept|"12 10 &"|1	kept
+PFErrorText|popped|"12 10 &"|1	$00000000
+PFErrorText|d0|"12 10 &"|1	$5A000000
+PFErrorText|a3|"12 10 &"|1	$00000004
+PFErrorText|text|"12 10 &"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"12 10 &"|1	kept
+PFIndirectAddr|popped|"12 10 &"|1	$00000000
+PFIndirectAddr|d0|"12 10 &"|1	$00000000
+PFEvaluate|kept|"12 3 \|"|1	kept
+PFEvaluate|popped|"12 3 \|"|1	$00000000
+PFEvaluate|d0|"12 3 \|"|1	$0000000F
+PFEvaluate|string|"12 3 \|"|1	bytes 1400 fnv 5A66F9A3
+PFErrorType|kept|"12 3 \|"|1	kept
+PFErrorType|popped|"12 3 \|"|1	$00000000
+PFErrorType|d0|"12 3 \|"|1	$5A000000
+PFErrorText|kept|"12 3 \|"|1	kept
+PFErrorText|popped|"12 3 \|"|1	$00000000
+PFErrorText|d0|"12 3 \|"|1	$5A000000
+PFErrorText|a3|"12 3 \|"|1	$00000004
+PFErrorText|text|"12 3 \|"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"12 3 \|"|1	kept
+PFIndirectAddr|popped|"12 3 \|"|1	$00000000
+PFIndirectAddr|d0|"12 3 \|"|1	$00000000
+PFEvaluate|kept|"1 2 <"|1	kept
+PFEvaluate|popped|"1 2 <"|1	$00000000
+PFEvaluate|d0|"1 2 <"|1	$FFFFFFFF
+PFEvaluate|string|"1 2 <"|1	bytes 1400 fnv 18A4338A
+PFErrorType|kept|"1 2 <"|1	kept
+PFErrorType|popped|"1 2 <"|1	$00000000
+PFErrorType|d0|"1 2 <"|1	$5A000000
+PFErrorText|kept|"1 2 <"|1	kept
+PFErrorText|popped|"1 2 <"|1	$00000000
+PFErrorText|d0|"1 2 <"|1	$5A000000
+PFErrorText|a3|"1 2 <"|1	$00000004
+PFErrorText|text|"1 2 <"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 <"|1	kept
+PFIndirectAddr|popped|"1 2 <"|1	$00000000
+PFIndirectAddr|d0|"1 2 <"|1	$00000000
+PFEvaluate|kept|"2 1 <"|1	kept
+PFEvaluate|popped|"2 1 <"|1	$00000000
+PFEvaluate|d0|"2 1 <"|1	$00000000
+PFEvaluate|string|"2 1 <"|1	bytes 1400 fnv E17D5AF2
+PFErrorType|kept|"2 1 <"|1	kept
+PFErrorType|popped|"2 1 <"|1	$00000000
+PFErrorType|d0|"2 1 <"|1	$5A000000
+PFErrorText|kept|"2 1 <"|1	kept
+PFErrorText|popped|"2 1 <"|1	$00000000
+PFErrorText|d0|"2 1 <"|1	$5A000000
+PFErrorText|a3|"2 1 <"|1	$00000004
+PFErrorText|text|"2 1 <"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 1 <"|1	kept
+PFIndirectAddr|popped|"2 1 <"|1	$00000000
+PFIndirectAddr|d0|"2 1 <"|1	$00000000
+PFEvaluate|kept|"2 2 <"|1	kept
+PFEvaluate|popped|"2 2 <"|1	$00000000
+PFEvaluate|d0|"2 2 <"|1	$FFFFFFFF
+PFEvaluate|string|"2 2 <"|1	bytes 1400 fnv 93368E89
+PFErrorType|kept|"2 2 <"|1	kept
+PFErrorType|popped|"2 2 <"|1	$00000000
+PFErrorType|d0|"2 2 <"|1	$5A000000
+PFErrorText|kept|"2 2 <"|1	kept
+PFErrorText|popped|"2 2 <"|1	$00000000
+PFErrorText|d0|"2 2 <"|1	$5A000000
+PFErrorText|a3|"2 2 <"|1	$00000004
+PFErrorText|text|"2 2 <"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 2 <"|1	kept
+PFIndirectAddr|popped|"2 2 <"|1	$00000000
+PFIndirectAddr|d0|"2 2 <"|1	$00000000
+PFEvaluate|kept|"-1 1 <"|1	kept
+PFEvaluate|popped|"-1 1 <"|1	$00000000
+PFEvaluate|d0|"-1 1 <"|1	$00000000
+PFEvaluate|string|"-1 1 <"|1	bytes 1400 fnv 2BAEE494
+PFErrorType|kept|"-1 1 <"|1	kept
+PFErrorType|popped|"-1 1 <"|1	$00000000
+PFErrorType|d0|"-1 1 <"|1	$5A000000
+PFErrorText|kept|"-1 1 <"|1	kept
+PFErrorText|popped|"-1 1 <"|1	$00000000
+PFErrorText|d0|"-1 1 <"|1	$5A000000
+PFErrorText|a3|"-1 1 <"|1	$00000004
+PFErrorText|text|"-1 1 <"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-1 1 <"|1	kept
+PFIndirectAddr|popped|"-1 1 <"|1	$00000000
+PFIndirectAddr|d0|"-1 1 <"|1	$00000000
+PFEvaluate|kept|"1 -1 <"|1	kept
+PFEvaluate|popped|"1 -1 <"|1	$00000000
+PFEvaluate|d0|"1 -1 <"|1	$FFFFFFFF
+PFEvaluate|string|"1 -1 <"|1	bytes 1400 fnv 7FAEDE22
+PFErrorType|kept|"1 -1 <"|1	kept
+PFErrorType|popped|"1 -1 <"|1	$00000000
+PFErrorType|d0|"1 -1 <"|1	$5A000000
+PFErrorText|kept|"1 -1 <"|1	kept
+PFErrorText|popped|"1 -1 <"|1	$00000000
+PFErrorText|d0|"1 -1 <"|1	$5A000000
+PFErrorText|a3|"1 -1 <"|1	$00000004
+PFErrorText|text|"1 -1 <"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 -1 <"|1	kept
+PFIndirectAddr|popped|"1 -1 <"|1	$00000000
+PFIndirectAddr|d0|"1 -1 <"|1	$00000000
+PFEvaluate|kept|"1 2 >"|1	kept
+PFEvaluate|popped|"1 2 >"|1	$00000000
+PFEvaluate|d0|"1 2 >"|1	$00000000
+PFEvaluate|string|"1 2 >"|1	bytes 1400 fnv 845095E8
+PFErrorType|kept|"1 2 >"|1	kept
+PFErrorType|popped|"1 2 >"|1	$00000000
+PFErrorType|d0|"1 2 >"|1	$5A000000
+PFErrorText|kept|"1 2 >"|1	kept
+PFErrorText|popped|"1 2 >"|1	$00000000
+PFErrorText|d0|"1 2 >"|1	$5A000000
+PFErrorText|a3|"1 2 >"|1	$00000004
+PFErrorText|text|"1 2 >"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 >"|1	kept
+PFIndirectAddr|popped|"1 2 >"|1	$00000000
+PFIndirectAddr|d0|"1 2 >"|1	$00000000
+PFEvaluate|kept|"2 1 >"|1	kept
+PFEvaluate|popped|"2 1 >"|1	$00000000
+PFEvaluate|d0|"2 1 >"|1	$FFFFFFFF
+PFEvaluate|string|"2 1 >"|1	bytes 1400 fnv 4D29BD50
+PFErrorType|kept|"2 1 >"|1	kept
+PFErrorType|popped|"2 1 >"|1	$00000000
+PFErrorType|d0|"2 1 >"|1	$5A000000
+PFErrorText|kept|"2 1 >"|1	kept
+PFErrorText|popped|"2 1 >"|1	$00000000
+PFErrorText|d0|"2 1 >"|1	$5A000000
+PFErrorText|a3|"2 1 >"|1	$00000004
+PFErrorText|text|"2 1 >"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 1 >"|1	kept
+PFIndirectAddr|popped|"2 1 >"|1	$00000000
+PFIndirectAddr|d0|"2 1 >"|1	$00000000
+PFEvaluate|kept|"-1 1 >"|1	kept
+PFEvaluate|popped|"-1 1 >"|1	$00000000
+PFEvaluate|d0|"-1 1 >"|1	$00000000
+PFEvaluate|string|"-1 1 >"|1	bytes 1400 fnv C8E65DAA
+PFErrorType|kept|"-1 1 >"|1	kept
+PFErrorType|popped|"-1 1 >"|1	$00000000
+PFErrorType|d0|"-1 1 >"|1	$5A000000
+PFErrorText|kept|"-1 1 >"|1	kept
+PFErrorText|popped|"-1 1 >"|1	$00000000
+PFErrorText|d0|"-1 1 >"|1	$5A000000
+PFErrorText|a3|"-1 1 >"|1	$00000004
+PFErrorText|text|"-1 1 >"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-1 1 >"|1	kept
+PFIndirectAddr|popped|"-1 1 >"|1	$00000000
+PFIndirectAddr|d0|"-1 1 >"|1	$00000000
+PFEvaluate|kept|"1 -1 >"|1	kept
+PFEvaluate|popped|"1 -1 >"|1	$00000000
+PFEvaluate|d0|"1 -1 >"|1	$FFFFFFFF
+PFEvaluate|string|"1 -1 >"|1	bytes 1400 fnv E277650C
+PFErrorType|kept|"1 -1 >"|1	kept
+PFErrorType|popped|"1 -1 >"|1	$00000000
+PFErrorType|d0|"1 -1 >"|1	$5A000000
+PFErrorText|kept|"1 -1 >"|1	kept
+PFErrorText|popped|"1 -1 >"|1	$00000000
+PFErrorText|d0|"1 -1 >"|1	$5A000000
+PFErrorText|a3|"1 -1 >"|1	$00000004
+PFErrorText|text|"1 -1 >"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 -1 >"|1	kept
+PFIndirectAddr|popped|"1 -1 >"|1	$00000000
+PFIndirectAddr|d0|"1 -1 >"|1	$00000000
+PFEvaluate|kept|"7 2 /"|1	kept
+PFEvaluate|popped|"7 2 /"|1	$00000000
+PFEvaluate|d0|"7 2 /"|1	$00000003
+PFEvaluate|string|"7 2 /"|1	bytes 1400 fnv 508A6B0F
+PFErrorType|kept|"7 2 /"|1	kept
+PFErrorType|popped|"7 2 /"|1	$00000000
+PFErrorType|d0|"7 2 /"|1	$5A000000
+PFErrorText|kept|"7 2 /"|1	kept
+PFErrorText|popped|"7 2 /"|1	$00000000
+PFErrorText|d0|"7 2 /"|1	$5A000000
+PFErrorText|a3|"7 2 /"|1	$00000004
+PFErrorText|text|"7 2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"7 2 /"|1	kept
+PFIndirectAddr|popped|"7 2 /"|1	$00000000
+PFIndirectAddr|d0|"7 2 /"|1	$00000000
+PFEvaluate|kept|"-7 2 /"|1	kept
+PFEvaluate|popped|"-7 2 /"|1	$00000000
+PFEvaluate|d0|"-7 2 /"|1	$FFFFFFFD
+PFEvaluate|string|"-7 2 /"|1	bytes 1400 fnv E6DCC466
+PFErrorType|kept|"-7 2 /"|1	kept
+PFErrorType|popped|"-7 2 /"|1	$00000000
+PFErrorType|d0|"-7 2 /"|1	$5A000000
+PFErrorText|kept|"-7 2 /"|1	kept
+PFErrorText|popped|"-7 2 /"|1	$00000000
+PFErrorText|d0|"-7 2 /"|1	$5A000000
+PFErrorText|a3|"-7 2 /"|1	$00000004
+PFErrorText|text|"-7 2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-7 2 /"|1	kept
+PFIndirectAddr|popped|"-7 2 /"|1	$00000000
+PFIndirectAddr|d0|"-7 2 /"|1	$00000000
+PFEvaluate|kept|"7 -2 /"|1	kept
+PFEvaluate|popped|"7 -2 /"|1	$00000000
+PFEvaluate|d0|"7 -2 /"|1	$FFFFFFFD
+PFEvaluate|string|"7 -2 /"|1	bytes 1400 fnv 40A0C0D8
+PFErrorType|kept|"7 -2 /"|1	kept
+PFErrorType|popped|"7 -2 /"|1	$00000000
+PFErrorType|d0|"7 -2 /"|1	$5A000000
+PFErrorText|kept|"7 -2 /"|1	kept
+PFErrorText|popped|"7 -2 /"|1	$00000000
+PFErrorText|d0|"7 -2 /"|1	$5A000000
+PFErrorText|a3|"7 -2 /"|1	$00000004
+PFErrorText|text|"7 -2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"7 -2 /"|1	kept
+PFIndirectAddr|popped|"7 -2 /"|1	$00000000
+PFIndirectAddr|d0|"7 -2 /"|1	$00000000
+PFEvaluate|kept|"-7 -2 /"|1	kept
+PFEvaluate|popped|"-7 -2 /"|1	$00000000
+PFEvaluate|d0|"-7 -2 /"|1	$00000003
+PFEvaluate|string|"-7 -2 /"|1	bytes 1400 fnv ECE37C3B
+PFErrorType|kept|"-7 -2 /"|1	kept
+PFErrorType|popped|"-7 -2 /"|1	$00000000
+PFErrorType|d0|"-7 -2 /"|1	$5A000000
+PFErrorText|kept|"-7 -2 /"|1	kept
+PFErrorText|popped|"-7 -2 /"|1	$00000000
+PFErrorText|d0|"-7 -2 /"|1	$5A000000
+PFErrorText|a3|"-7 -2 /"|1	$00000004
+PFErrorText|text|"-7 -2 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-7 -2 /"|1	kept
+PFIndirectAddr|popped|"-7 -2 /"|1	$00000000
+PFIndirectAddr|d0|"-7 -2 /"|1	$00000000
+PFEvaluate|kept|"100 7 /"|1	kept
+PFEvaluate|popped|"100 7 /"|1	$00000000
+PFEvaluate|d0|"100 7 /"|1	$0000000E
+PFEvaluate|string|"100 7 /"|1	bytes 1400 fnv 600142D4
+PFErrorType|kept|"100 7 /"|1	kept
+PFErrorType|popped|"100 7 /"|1	$00000000
+PFErrorType|d0|"100 7 /"|1	$5A000000
+PFErrorText|kept|"100 7 /"|1	kept
+PFErrorText|popped|"100 7 /"|1	$00000000
+PFErrorText|d0|"100 7 /"|1	$5A000000
+PFErrorText|a3|"100 7 /"|1	$00000004
+PFErrorText|text|"100 7 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"100 7 /"|1	kept
+PFIndirectAddr|popped|"100 7 /"|1	$00000000
+PFIndirectAddr|d0|"100 7 /"|1	$00000000
+PFEvaluate|kept|"0 5 /"|1	kept
+PFEvaluate|popped|"0 5 /"|1	$00000000
+PFEvaluate|d0|"0 5 /"|1	$00000000
+PFEvaluate|string|"0 5 /"|1	bytes 1400 fnv E91120D7
+PFErrorType|kept|"0 5 /"|1	kept
+PFErrorType|popped|"0 5 /"|1	$00000000
+PFErrorType|d0|"0 5 /"|1	$5A000000
+PFErrorText|kept|"0 5 /"|1	kept
+PFErrorText|popped|"0 5 /"|1	$00000000
+PFErrorText|d0|"0 5 /"|1	$5A000000
+PFErrorText|a3|"0 5 /"|1	$00000004
+PFErrorText|text|"0 5 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"0 5 /"|1	kept
+PFIndirectAddr|popped|"0 5 /"|1	$00000000
+PFIndirectAddr|d0|"0 5 /"|1	$00000000
+PFEvaluate|kept|"5 0 /"|1	kept
+PFEvaluate|popped|"5 0 /"|1	$00000000
+PFEvaluate|d0|"5 0 /"|1	$00000000
+PFEvaluate|string|"5 0 /"|1	bytes 1400 fnv FFD8EADF
+PFErrorType|kept|"5 0 /"|1	kept
+PFErrorType|popped|"5 0 /"|1	$00000000
+PFErrorType|d0|"5 0 /"|1	$5A000003
+PFErrorText|kept|"5 0 /"|1	kept
+PFErrorText|popped|"5 0 /"|1	$00000000
+PFErrorText|d0|"5 0 /"|1	$00000012
+PFErrorText|a3|"5 0 /"|1	$00000016
+PFErrorText|text|"5 0 /"|1	bytes 64 EEEEEEEE4469766964652062792030206572726F722100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"5 0 /"|1	kept
+PFIndirectAddr|popped|"5 0 /"|1	$00000000
+PFIndirectAddr|d0|"5 0 /"|1	$00000000
+PFEvaluate|kept|"0 0 /"|1	kept
+PFEvaluate|popped|"0 0 /"|1	$00000000
+PFEvaluate|d0|"0 0 /"|1	$00000000
+PFEvaluate|string|"0 0 /"|1	bytes 1400 fnv 42E5DF1A
+PFErrorType|kept|"0 0 /"|1	kept
+PFErrorType|popped|"0 0 /"|1	$00000000
+PFErrorType|d0|"0 0 /"|1	$5A000003
+PFErrorText|kept|"0 0 /"|1	kept
+PFErrorText|popped|"0 0 /"|1	$00000000
+PFErrorText|d0|"0 0 /"|1	$00000012
+PFErrorText|a3|"0 0 /"|1	$00000016
+PFErrorText|text|"0 0 /"|1	bytes 64 EEEEEEEE4469766964652062792030206572726F722100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"0 0 /"|1	kept
+PFIndirectAddr|popped|"0 0 /"|1	$00000000
+PFIndirectAddr|d0|"0 0 /"|1	$00000000
+PFEvaluate|kept|"1000000 3 /"|1	kept
+PFEvaluate|popped|"1000000 3 /"|1	$00000000
+PFEvaluate|d0|"1000000 3 /"|1	$00051615
+PFEvaluate|string|"1000000 3 /"|1	bytes 1400 fnv 337FFD50
+PFErrorType|kept|"1000000 3 /"|1	kept
+PFErrorType|popped|"1000000 3 /"|1	$00000000
+PFErrorType|d0|"1000000 3 /"|1	$5A000000
+PFErrorText|kept|"1000000 3 /"|1	kept
+PFErrorText|popped|"1000000 3 /"|1	$00000000
+PFErrorText|d0|"1000000 3 /"|1	$5A000000
+PFErrorText|a3|"1000000 3 /"|1	$00000004
+PFErrorText|text|"1000000 3 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1000000 3 /"|1	kept
+PFIndirectAddr|popped|"1000000 3 /"|1	$00000000
+PFIndirectAddr|d0|"1000000 3 /"|1	$00000000
+PFEvaluate|kept|"2147483647 1 /"|1	kept
+PFEvaluate|popped|"2147483647 1 /"|1	$00000000
+PFEvaluate|d0|"2147483647 1 /"|1	$7FFFFFFF
+PFEvaluate|string|"2147483647 1 /"|1	bytes 1400 fnv AF122C77
+PFErrorType|kept|"2147483647 1 /"|1	kept
+PFErrorType|popped|"2147483647 1 /"|1	$00000000
+PFErrorType|d0|"2147483647 1 /"|1	$5A000000
+PFErrorText|kept|"2147483647 1 /"|1	kept
+PFErrorText|popped|"2147483647 1 /"|1	$00000000
+PFErrorText|d0|"2147483647 1 /"|1	$5A000000
+PFErrorText|a3|"2147483647 1 /"|1	$00000004
+PFErrorText|text|"2147483647 1 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2147483647 1 /"|1	kept
+PFIndirectAddr|popped|"2147483647 1 /"|1	$00000000
+PFIndirectAddr|d0|"2147483647 1 /"|1	$00000000
+PFEvaluate|kept|"-2147483648 1 /"|1	kept
+PFEvaluate|popped|"-2147483648 1 /"|1	$00000000
+PFEvaluate|d0|"-2147483648 1 /"|1	$80000000
+PFEvaluate|string|"-2147483648 1 /"|1	bytes 1400 fnv E5E36D15
+PFErrorType|kept|"-2147483648 1 /"|1	kept
+PFErrorType|popped|"-2147483648 1 /"|1	$00000000
+PFErrorType|d0|"-2147483648 1 /"|1	$5A000000
+PFErrorText|kept|"-2147483648 1 /"|1	kept
+PFErrorText|popped|"-2147483648 1 /"|1	$00000000
+PFErrorText|d0|"-2147483648 1 /"|1	$5A000000
+PFErrorText|a3|"-2147483648 1 /"|1	$00000004
+PFErrorText|text|"-2147483648 1 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-2147483648 1 /"|1	kept
+PFIndirectAddr|popped|"-2147483648 1 /"|1	$00000000
+PFIndirectAddr|d0|"-2147483648 1 /"|1	$00000000
+PFEvaluate|kept|"-2147483648 -1 /"|1	kept
+PFEvaluate|popped|"-2147483648 -1 /"|1	$00000000
+PFEvaluate|d0|"-2147483648 -1 /"|1	$80000000
+PFEvaluate|string|"-2147483648 -1 /"|1	bytes 1400 fnv 30012BF4
+PFErrorType|kept|"-2147483648 -1 /"|1	kept
+PFErrorType|popped|"-2147483648 -1 /"|1	$00000000
+PFErrorType|d0|"-2147483648 -1 /"|1	$5A000000
+PFErrorText|kept|"-2147483648 -1 /"|1	kept
+PFErrorText|popped|"-2147483648 -1 /"|1	$00000000
+PFErrorText|d0|"-2147483648 -1 /"|1	$5A000000
+PFErrorText|a3|"-2147483648 -1 /"|1	$00000004
+PFErrorText|text|"-2147483648 -1 /"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-2147483648 -1 /"|1	kept
+PFIndirectAddr|popped|"-2147483648 -1 /"|1	$00000000
+PFIndirectAddr|d0|"-2147483648 -1 /"|1	$00000000
+PFEvaluate|kept|"6 7 *"|1	kept
+PFEvaluate|popped|"6 7 *"|1	$00000000
+PFEvaluate|d0|"6 7 *"|1	$0000002A
+PFEvaluate|string|"6 7 *"|1	bytes 1400 fnv 7E04E4F6
+PFErrorType|kept|"6 7 *"|1	kept
+PFErrorType|popped|"6 7 *"|1	$00000000
+PFErrorType|d0|"6 7 *"|1	$5A000000
+PFErrorText|kept|"6 7 *"|1	kept
+PFErrorText|popped|"6 7 *"|1	$00000000
+PFErrorText|d0|"6 7 *"|1	$5A000000
+PFErrorText|a3|"6 7 *"|1	$00000004
+PFErrorText|text|"6 7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"6 7 *"|1	kept
+PFIndirectAddr|popped|"6 7 *"|1	$00000000
+PFIndirectAddr|d0|"6 7 *"|1	$00000000
+PFEvaluate|kept|"-6 7 *"|1	kept
+PFEvaluate|popped|"-6 7 *"|1	$00000000
+PFEvaluate|d0|"-6 7 *"|1	$FFFFFFD6
+PFEvaluate|string|"-6 7 *"|1	bytes 1400 fnv 8D01F9A9
+PFErrorType|kept|"-6 7 *"|1	kept
+PFErrorType|popped|"-6 7 *"|1	$00000000
+PFErrorType|d0|"-6 7 *"|1	$5A000000
+PFErrorText|kept|"-6 7 *"|1	kept
+PFErrorText|popped|"-6 7 *"|1	$00000000
+PFErrorText|d0|"-6 7 *"|1	$5A000000
+PFErrorText|a3|"-6 7 *"|1	$00000004
+PFErrorText|text|"-6 7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-6 7 *"|1	kept
+PFIndirectAddr|popped|"-6 7 *"|1	$00000000
+PFIndirectAddr|d0|"-6 7 *"|1	$00000000
+PFEvaluate|kept|"6 -7 *"|1	kept
+PFEvaluate|popped|"6 -7 *"|1	$00000000
+PFEvaluate|d0|"6 -7 *"|1	$FFFFFFD6
+PFEvaluate|string|"6 -7 *"|1	bytes 1400 fnv F6DABFAD
+PFErrorType|kept|"6 -7 *"|1	kept
+PFErrorType|popped|"6 -7 *"|1	$00000000
+PFErrorType|d0|"6 -7 *"|1	$5A000000
+PFErrorText|kept|"6 -7 *"|1	kept
+PFErrorText|popped|"6 -7 *"|1	$00000000
+PFErrorText|d0|"6 -7 *"|1	$5A000000
+PFErrorText|a3|"6 -7 *"|1	$00000004
+PFErrorText|text|"6 -7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"6 -7 *"|1	kept
+PFIndirectAddr|popped|"6 -7 *"|1	$00000000
+PFIndirectAddr|d0|"6 -7 *"|1	$00000000
+PFEvaluate|kept|"-6 -7 *"|1	kept
+PFEvaluate|popped|"-6 -7 *"|1	$00000000
+PFEvaluate|d0|"-6 -7 *"|1	$0000002A
+PFEvaluate|string|"-6 -7 *"|1	bytes 1400 fnv 4D292FC4
+PFErrorType|kept|"-6 -7 *"|1	kept
+PFErrorType|popped|"-6 -7 *"|1	$00000000
+PFErrorType|d0|"-6 -7 *"|1	$5A000000
+PFErrorText|kept|"-6 -7 *"|1	kept
+PFErrorText|popped|"-6 -7 *"|1	$00000000
+PFErrorText|d0|"-6 -7 *"|1	$5A000000
+PFErrorText|a3|"-6 -7 *"|1	$00000004
+PFErrorText|text|"-6 -7 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-6 -7 *"|1	kept
+PFIndirectAddr|popped|"-6 -7 *"|1	$00000000
+PFIndirectAddr|d0|"-6 -7 *"|1	$00000000
+PFEvaluate|kept|"65536 3 *"|1	kept
+PFEvaluate|popped|"65536 3 *"|1	$00000000
+PFEvaluate|d0|"65536 3 *"|1	$00030000
+PFEvaluate|string|"65536 3 *"|1	bytes 1400 fnv 466E9517
+PFErrorType|kept|"65536 3 *"|1	kept
+PFErrorType|popped|"65536 3 *"|1	$00000000
+PFErrorType|d0|"65536 3 *"|1	$5A000000
+PFErrorText|kept|"65536 3 *"|1	kept
+PFErrorText|popped|"65536 3 *"|1	$00000000
+PFErrorText|d0|"65536 3 *"|1	$5A000000
+PFErrorText|a3|"65536 3 *"|1	$00000004
+PFErrorText|text|"65536 3 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"65536 3 *"|1	kept
+PFIndirectAddr|popped|"65536 3 *"|1	$00000000
+PFIndirectAddr|d0|"65536 3 *"|1	$00000000
+PFEvaluate|kept|"70000 70000 *"|1	kept
+PFEvaluate|popped|"70000 70000 *"|1	$00000000
+PFEvaluate|d0|"70000 70000 *"|1	$24101100
+PFEvaluate|string|"70000 70000 *"|1	bytes 1400 fnv E6FA4177
+PFErrorType|kept|"70000 70000 *"|1	kept
+PFErrorType|popped|"70000 70000 *"|1	$00000000
+PFErrorType|d0|"70000 70000 *"|1	$5A000000
+PFErrorText|kept|"70000 70000 *"|1	kept
+PFErrorText|popped|"70000 70000 *"|1	$00000000
+PFErrorText|d0|"70000 70000 *"|1	$5A000000
+PFErrorText|a3|"70000 70000 *"|1	$00000004
+PFErrorText|text|"70000 70000 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"70000 70000 *"|1	kept
+PFIndirectAddr|popped|"70000 70000 *"|1	$00000000
+PFIndirectAddr|d0|"70000 70000 *"|1	$00000000
+PFEvaluate|kept|"100000 100000 *"|1	kept
+PFEvaluate|popped|"100000 100000 *"|1	$00000000
+PFEvaluate|d0|"100000 100000 *"|1	$540BE400
+PFEvaluate|string|"100000 100000 *"|1	bytes 1400 fnv FD6C533D
+PFErrorType|kept|"100000 100000 *"|1	kept
+PFErrorType|popped|"100000 100000 *"|1	$00000000
+PFErrorType|d0|"100000 100000 *"|1	$5A000000
+PFErrorText|kept|"100000 100000 *"|1	kept
+PFErrorText|popped|"100000 100000 *"|1	$00000000
+PFErrorText|d0|"100000 100000 *"|1	$5A000000
+PFErrorText|a3|"100000 100000 *"|1	$00000004
+PFErrorText|text|"100000 100000 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"100000 100000 *"|1	kept
+PFIndirectAddr|popped|"100000 100000 *"|1	$00000000
+PFIndirectAddr|d0|"100000 100000 *"|1	$00000000
+PFEvaluate|kept|"-65536 65536 *"|1	kept
+PFEvaluate|popped|"-65536 65536 *"|1	$00000000
+PFEvaluate|d0|"-65536 65536 *"|1	$00000000
+PFEvaluate|string|"-65536 65536 *"|1	bytes 1400 fnv F19A4962
+PFErrorType|kept|"-65536 65536 *"|1	kept
+PFErrorType|popped|"-65536 65536 *"|1	$00000000
+PFErrorType|d0|"-65536 65536 *"|1	$5A000000
+PFErrorText|kept|"-65536 65536 *"|1	kept
+PFErrorText|popped|"-65536 65536 *"|1	$00000000
+PFErrorText|d0|"-65536 65536 *"|1	$5A000000
+PFErrorText|a3|"-65536 65536 *"|1	$00000004
+PFErrorText|text|"-65536 65536 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-65536 65536 *"|1	kept
+PFIndirectAddr|popped|"-65536 65536 *"|1	$00000000
+PFIndirectAddr|d0|"-65536 65536 *"|1	$00000000
+PFEvaluate|kept|"123456 789 *"|1	kept
+PFEvaluate|popped|"123456 789 *"|1	$00000000
+PFEvaluate|d0|"123456 789 *"|1	$05CE4F40
+PFEvaluate|string|"123456 789 *"|1	bytes 1400 fnv D29688CE
+PFErrorType|kept|"123456 789 *"|1	kept
+PFErrorType|popped|"123456 789 *"|1	$00000000
+PFErrorType|d0|"123456 789 *"|1	$5A000000
+PFErrorText|kept|"123456 789 *"|1	kept
+PFErrorText|popped|"123456 789 *"|1	$00000000
+PFErrorText|d0|"123456 789 *"|1	$5A000000
+PFErrorText|a3|"123456 789 *"|1	$00000004
+PFErrorText|text|"123456 789 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"123456 789 *"|1	kept
+PFIndirectAddr|popped|"123456 789 *"|1	$00000000
+PFIndirectAddr|d0|"123456 789 *"|1	$00000000
+PFEvaluate|kept|"2 10 ^"|1	kept
+PFEvaluate|popped|"2 10 ^"|1	$00000000
+PFEvaluate|d0|"2 10 ^"|1	$00000400
+PFEvaluate|string|"2 10 ^"|1	bytes 1400 fnv 9159DE4C
+PFErrorType|kept|"2 10 ^"|1	kept
+PFErrorType|popped|"2 10 ^"|1	$00000000
+PFErrorType|d0|"2 10 ^"|1	$5A000000
+PFErrorText|kept|"2 10 ^"|1	kept
+PFErrorText|popped|"2 10 ^"|1	$00000000
+PFErrorText|d0|"2 10 ^"|1	$5A000000
+PFErrorText|a3|"2 10 ^"|1	$00000004
+PFErrorText|text|"2 10 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 10 ^"|1	kept
+PFIndirectAddr|popped|"2 10 ^"|1	$00000000
+PFIndirectAddr|d0|"2 10 ^"|1	$00000000
+PFEvaluate|kept|"3 0 ^"|1	kept
+PFEvaluate|popped|"3 0 ^"|1	$00000000
+PFEvaluate|d0|"3 0 ^"|1	$00000003
+PFEvaluate|string|"3 0 ^"|1	bytes 1400 fnv 9D4C4218
+PFErrorType|kept|"3 0 ^"|1	kept
+PFErrorType|popped|"3 0 ^"|1	$00000000
+PFErrorType|d0|"3 0 ^"|1	$5A000000
+PFErrorText|kept|"3 0 ^"|1	kept
+PFErrorText|popped|"3 0 ^"|1	$00000000
+PFErrorText|d0|"3 0 ^"|1	$5A000000
+PFErrorText|a3|"3 0 ^"|1	$00000004
+PFErrorText|text|"3 0 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"3 0 ^"|1	kept
+PFIndirectAddr|popped|"3 0 ^"|1	$00000000
+PFIndirectAddr|d0|"3 0 ^"|1	$00000000
+PFEvaluate|kept|"3 1 ^"|1	kept
+PFEvaluate|popped|"3 1 ^"|1	$00000000
+PFEvaluate|d0|"3 1 ^"|1	$00000003
+PFEvaluate|string|"3 1 ^"|1	bytes 1400 fnv 8AEE2B41
+PFErrorType|kept|"3 1 ^"|1	kept
+PFErrorType|popped|"3 1 ^"|1	$00000000
+PFErrorType|d0|"3 1 ^"|1	$5A000000
+PFErrorText|kept|"3 1 ^"|1	kept
+PFErrorText|popped|"3 1 ^"|1	$00000000
+PFErrorText|d0|"3 1 ^"|1	$5A000000
+PFErrorText|a3|"3 1 ^"|1	$00000004
+PFErrorText|text|"3 1 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"3 1 ^"|1	kept
+PFIndirectAddr|popped|"3 1 ^"|1	$00000000
+PFIndirectAddr|d0|"3 1 ^"|1	$00000000
+PFEvaluate|kept|"0 5 ^"|1	kept
+PFEvaluate|popped|"0 5 ^"|1	$00000000
+PFEvaluate|d0|"0 5 ^"|1	$00000001
+PFEvaluate|string|"0 5 ^"|1	bytes 1400 fnv 06BE1936
+PFErrorType|kept|"0 5 ^"|1	kept
+PFErrorType|popped|"0 5 ^"|1	$00000000
+PFErrorType|d0|"0 5 ^"|1	$5A000000
+PFErrorText|kept|"0 5 ^"|1	kept
+PFErrorText|popped|"0 5 ^"|1	$00000000
+PFErrorText|d0|"0 5 ^"|1	$5A000000
+PFErrorText|a3|"0 5 ^"|1	$00000004
+PFErrorText|text|"0 5 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"0 5 ^"|1	kept
+PFIndirectAddr|popped|"0 5 ^"|1	$00000000
+PFIndirectAddr|d0|"0 5 ^"|1	$00000000
+PFEvaluate|kept|"-3 3 ^"|1	kept
+PFEvaluate|popped|"-3 3 ^"|1	$00000000
+PFEvaluate|d0|"-3 3 ^"|1	$FFFFFFE5
+PFEvaluate|string|"-3 3 ^"|1	bytes 1400 fnv DC73747A
+PFErrorType|kept|"-3 3 ^"|1	kept
+PFErrorType|popped|"-3 3 ^"|1	$00000000
+PFErrorType|d0|"-3 3 ^"|1	$5A000000
+PFErrorText|kept|"-3 3 ^"|1	kept
+PFErrorText|popped|"-3 3 ^"|1	$00000000
+PFErrorText|d0|"-3 3 ^"|1	$5A000000
+PFErrorText|a3|"-3 3 ^"|1	$00000004
+PFErrorText|text|"-3 3 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-3 3 ^"|1	kept
+PFIndirectAddr|popped|"-3 3 ^"|1	$00000000
+PFIndirectAddr|d0|"-3 3 ^"|1	$00000000
+PFEvaluate|kept|"2 31 ^"|1	kept
+PFEvaluate|popped|"2 31 ^"|1	$00000000
+PFEvaluate|d0|"2 31 ^"|1	$80000000
+PFEvaluate|string|"2 31 ^"|1	bytes 1400 fnv 2ACAB051
+PFErrorType|kept|"2 31 ^"|1	kept
+PFErrorType|popped|"2 31 ^"|1	$00000000
+PFErrorType|d0|"2 31 ^"|1	$5A000000
+PFErrorText|kept|"2 31 ^"|1	kept
+PFErrorText|popped|"2 31 ^"|1	$00000000
+PFErrorText|d0|"2 31 ^"|1	$5A000000
+PFErrorText|a3|"2 31 ^"|1	$00000004
+PFErrorText|text|"2 31 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 31 ^"|1	kept
+PFIndirectAddr|popped|"2 31 ^"|1	$00000000
+PFIndirectAddr|d0|"2 31 ^"|1	$00000000
+PFEvaluate|kept|"2 -1 ^"|1	kept
+PFEvaluate|popped|"2 -1 ^"|1	$00000000
+PFEvaluate|d0|"2 -1 ^"|1	$00000002
+PFEvaluate|string|"2 -1 ^"|1	bytes 1400 fnv 9D467E7B
+PFErrorType|kept|"2 -1 ^"|1	kept
+PFErrorType|popped|"2 -1 ^"|1	$00000000
+PFErrorType|d0|"2 -1 ^"|1	$5A000000
+PFErrorText|kept|"2 -1 ^"|1	kept
+PFErrorText|popped|"2 -1 ^"|1	$00000000
+PFErrorText|d0|"2 -1 ^"|1	$5A000000
+PFErrorText|a3|"2 -1 ^"|1	$00000004
+PFErrorText|text|"2 -1 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 -1 ^"|1	kept
+PFIndirectAddr|popped|"2 -1 ^"|1	$00000000
+PFIndirectAddr|d0|"2 -1 ^"|1	$00000000
+PFEvaluate|kept|"3 65538 ^"|1	kept
+PFEvaluate|popped|"3 65538 ^"|1	$00000000
+PFEvaluate|d0|"3 65538 ^"|1	$00000009
+PFEvaluate|string|"3 65538 ^"|1	bytes 1400 fnv 505BE819
+PFErrorType|kept|"3 65538 ^"|1	kept
+PFErrorType|popped|"3 65538 ^"|1	$00000000
+PFErrorType|d0|"3 65538 ^"|1	$5A000000
+PFErrorText|kept|"3 65538 ^"|1	kept
+PFErrorText|popped|"3 65538 ^"|1	$00000000
+PFErrorText|d0|"3 65538 ^"|1	$5A000000
+PFErrorText|a3|"3 65538 ^"|1	$00000004
+PFErrorText|text|"3 65538 ^"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"3 65538 ^"|1	kept
+PFIndirectAddr|popped|"3 65538 ^"|1	$00000000
+PFIndirectAddr|d0|"3 65538 ^"|1	$00000000
+PFEvaluate|kept|"7 1 2 + *"|1	kept
+PFEvaluate|popped|"7 1 2 + *"|1	$00000000
+PFEvaluate|d0|"7 1 2 + *"|1	$00000015
+PFEvaluate|string|"7 1 2 + *"|1	bytes 1400 fnv 3AEA4F10
+PFErrorType|kept|"7 1 2 + *"|1	kept
+PFErrorType|popped|"7 1 2 + *"|1	$00000000
+PFErrorType|d0|"7 1 2 + *"|1	$5A000000
+PFErrorText|kept|"7 1 2 + *"|1	kept
+PFErrorText|popped|"7 1 2 + *"|1	$00000000
+PFErrorText|d0|"7 1 2 + *"|1	$5A000000
+PFErrorText|a3|"7 1 2 + *"|1	$00000004
+PFErrorText|text|"7 1 2 + *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"7 1 2 + *"|1	kept
+PFIndirectAddr|popped|"7 1 2 + *"|1	$00000000
+PFIndirectAddr|d0|"7 1 2 + *"|1	$00000000
+PFEvaluate|kept|"$ff $10 +"|1	kept
+PFEvaluate|popped|"$ff $10 +"|1	$00000000
+PFEvaluate|d0|"$ff $10 +"|1	$0000010F
+PFEvaluate|string|"$ff $10 +"|1	bytes 1400 fnv EA43A171
+PFErrorType|kept|"$ff $10 +"|1	kept
+PFErrorType|popped|"$ff $10 +"|1	$00000000
+PFErrorType|d0|"$ff $10 +"|1	$5A000000
+PFErrorText|kept|"$ff $10 +"|1	kept
+PFErrorText|popped|"$ff $10 +"|1	$00000000
+PFErrorText|d0|"$ff $10 +"|1	$5A000000
+PFErrorText|a3|"$ff $10 +"|1	$00000004
+PFErrorText|text|"$ff $10 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"$ff $10 +"|1	kept
+PFIndirectAddr|popped|"$ff $10 +"|1	$00000000
+PFIndirectAddr|d0|"$ff $10 +"|1	$00000000
+PFEvaluate|kept|"$FF"|1	kept
+PFEvaluate|popped|"$FF"|1	$00000000
+PFEvaluate|d0|"$FF"|1	$00000176
+PFEvaluate|string|"$FF"|1	bytes 1400 fnv DD268BE1
+PFErrorType|kept|"$FF"|1	kept
+PFErrorType|popped|"$FF"|1	$00000000
+PFErrorType|d0|"$FF"|1	$5A000000
+PFErrorText|kept|"$FF"|1	kept
+PFErrorText|popped|"$FF"|1	$00000000
+PFErrorText|d0|"$FF"|1	$5A000000
+PFErrorText|a3|"$FF"|1	$00000004
+PFErrorText|text|"$FF"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"$FF"|1	kept
+PFIndirectAddr|popped|"$FF"|1	$00000000
+PFIndirectAddr|d0|"$FF"|1	$00000000
+PFEvaluate|kept|"$7fffffff"|1	kept
+PFEvaluate|popped|"$7fffffff"|1	$00000000
+PFEvaluate|d0|"$7fffffff"|1	$7FFFFFFF
+PFEvaluate|string|"$7fffffff"|1	bytes 1400 fnv E8D1D606
+PFErrorType|kept|"$7fffffff"|1	kept
+PFErrorType|popped|"$7fffffff"|1	$00000000
+PFErrorType|d0|"$7fffffff"|1	$5A000000
+PFErrorText|kept|"$7fffffff"|1	kept
+PFErrorText|popped|"$7fffffff"|1	$00000000
+PFErrorText|d0|"$7fffffff"|1	$5A000000
+PFErrorText|a3|"$7fffffff"|1	$00000004
+PFErrorText|text|"$7fffffff"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"$7fffffff"|1	kept
+PFIndirectAddr|popped|"$7fffffff"|1	$00000000
+PFIndirectAddr|d0|"$7fffffff"|1	$00000000
+PFEvaluate|kept|"$123456789"|1	kept
+PFEvaluate|popped|"$123456789"|1	$00000000
+PFEvaluate|d0|"$123456789"|1	$23456789
+PFEvaluate|string|"$123456789"|1	bytes 1400 fnv B51EC17E
+PFErrorType|kept|"$123456789"|1	kept
+PFErrorType|popped|"$123456789"|1	$00000000
+PFErrorType|d0|"$123456789"|1	$5A000000
+PFErrorText|kept|"$123456789"|1	kept
+PFErrorText|popped|"$123456789"|1	$00000000
+PFErrorText|d0|"$123456789"|1	$5A000000
+PFErrorText|a3|"$123456789"|1	$00000004
+PFErrorText|text|"$123456789"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"$123456789"|1	kept
+PFIndirectAddr|popped|"$123456789"|1	$00000000
+PFIndirectAddr|d0|"$123456789"|1	$00000000
+PFEvaluate|kept|"%1010 1 +"|1	kept
+PFEvaluate|popped|"%1010 1 +"|1	$00000000
+PFEvaluate|d0|"%1010 1 +"|1	$0000000B
+PFErrorType|kept|"%1010 1 +"|1	kept
+PFErrorType|popped|"%1010 1 +"|1	$00000000
+PFErrorType|d0|"%1010 1 +"|1	$5A000000
+PFErrorText|kept|"%1010 1 +"|1	kept
+PFErrorText|popped|"%1010 1 +"|1	$00000000
+PFErrorText|d0|"%1010 1 +"|1	$5A000000
+PFErrorText|a3|"%1010 1 +"|1	$00000004
+PFErrorText|text|"%1010 1 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"%1010 1 +"|1	kept
+PFIndirectAddr|popped|"%1010 1 +"|1	$00000000
+PFIndirectAddr|d0|"%1010 1 +"|1	$00000000
+PFEvaluate|kept|"%2"|1	kept
+PFEvaluate|popped|"%2"|1	$00000000
+PFEvaluate|d0|"%2"|1	$00000002
+PFErrorType|kept|"%2"|1	kept
+PFErrorType|popped|"%2"|1	$00000000
+PFErrorType|d0|"%2"|1	$5A000000
+PFErrorText|kept|"%2"|1	kept
+PFErrorText|popped|"%2"|1	$00000000
+PFErrorText|d0|"%2"|1	$5A000000
+PFErrorText|a3|"%2"|1	$00000004
+PFErrorText|text|"%2"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"%2"|1	kept
+PFIndirectAddr|popped|"%2"|1	$00000000
+PFIndirectAddr|d0|"%2"|1	$00000000
+PFEvaluate|kept|"$g"|1	kept
+PFEvaluate|popped|"$g"|1	$00000000
+PFEvaluate|d0|"$g"|1	$00000010
+PFEvaluate|string|"$g"|1	bytes 1400 fnv 937EAE5C
+PFErrorType|kept|"$g"|1	kept
+PFErrorType|popped|"$g"|1	$00000000
+PFErrorType|d0|"$g"|1	$5A000000
+PFErrorText|kept|"$g"|1	kept
+PFErrorText|popped|"$g"|1	$00000000
+PFErrorText|d0|"$g"|1	$5A000000
+PFErrorText|a3|"$g"|1	$00000004
+PFErrorText|text|"$g"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"$g"|1	kept
+PFIndirectAddr|popped|"$g"|1	$00000000
+PFIndirectAddr|d0|"$g"|1	$00000000
+PFEvaluate|kept|"-5"|1	kept
+PFEvaluate|popped|"-5"|1	$00000000
+PFEvaluate|d0|"-5"|1	$FFFFFFFB
+PFEvaluate|string|"-5"|1	bytes 1400 fnv 01A490FF
+PFErrorType|kept|"-5"|1	kept
+PFErrorType|popped|"-5"|1	$00000000
+PFErrorType|d0|"-5"|1	$5A000000
+PFErrorText|kept|"-5"|1	kept
+PFErrorText|popped|"-5"|1	$00000000
+PFErrorText|d0|"-5"|1	$5A000000
+PFErrorText|a3|"-5"|1	$00000004
+PFErrorText|text|"-5"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-5"|1	kept
+PFIndirectAddr|popped|"-5"|1	$00000000
+PFIndirectAddr|d0|"-5"|1	$00000000
+PFEvaluate|kept|"-$10"|1	kept
+PFEvaluate|popped|"-$10"|1	$00000000
+PFEvaluate|d0|"-$10"|1	$FFFFA0A6
+PFEvaluate|string|"-$10"|1	bytes 1400 fnv 61D1332D
+PFErrorType|kept|"-$10"|1	kept
+PFErrorType|popped|"-$10"|1	$00000000
+PFErrorType|d0|"-$10"|1	$5A000000
+PFErrorText|kept|"-$10"|1	kept
+PFErrorText|popped|"-$10"|1	$00000000
+PFErrorText|d0|"-$10"|1	$5A000000
+PFErrorText|a3|"-$10"|1	$00000004
+PFErrorText|text|"-$10"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-$10"|1	kept
+PFIndirectAddr|popped|"-$10"|1	$00000000
+PFIndirectAddr|d0|"-$10"|1	$00000000
+PFEvaluate|kept|"-%1"|1	kept
+PFEvaluate|popped|"-%1"|1	$00000000
+PFEvaluate|d0|"-%1"|1	$FFFFF66D
+PFErrorType|kept|"-%1"|1	kept
+PFErrorType|popped|"-%1"|1	$00000000
+PFErrorType|d0|"-%1"|1	$5A000000
+PFErrorText|kept|"-%1"|1	kept
+PFErrorText|popped|"-%1"|1	$00000000
+PFErrorText|d0|"-%1"|1	$5A000000
+PFErrorText|a3|"-%1"|1	$00000004
+PFErrorText|text|"-%1"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-%1"|1	kept
+PFIndirectAddr|popped|"-%1"|1	$00000000
+PFIndirectAddr|d0|"-%1"|1	$00000000
+PFEvaluate|kept|"12x"|1	kept
+PFEvaluate|popped|"12x"|1	$00000000
+PFEvaluate|d0|"12x"|1	$000000C0
+PFEvaluate|string|"12x"|1	bytes 1400 fnv B8423C02
+PFErrorType|kept|"12x"|1	kept
+PFErrorType|popped|"12x"|1	$00000000
+PFErrorType|d0|"12x"|1	$5A000000
+PFErrorText|kept|"12x"|1	kept
+PFErrorText|popped|"12x"|1	$00000000
+PFErrorText|d0|"12x"|1	$5A000000
+PFErrorText|a3|"12x"|1	$00000004
+PFErrorText|text|"12x"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"12x"|1	kept
+PFIndirectAddr|popped|"12x"|1	$00000000
+PFIndirectAddr|d0|"12x"|1	$00000000
+PFEvaluate|kept|"4294967295"|1	kept
+PFEvaluate|popped|"4294967295"|1	$00000000
+PFEvaluate|d0|"4294967295"|1	$FFFFFFFF
+PFEvaluate|string|"4294967295"|1	bytes 1400 fnv CFDCAB52
+PFErrorType|kept|"4294967295"|1	kept
+PFErrorType|popped|"4294967295"|1	$00000000
+PFErrorType|d0|"4294967295"|1	$5A000000
+PFErrorText|kept|"4294967295"|1	kept
+PFErrorText|popped|"4294967295"|1	$00000000
+PFErrorText|d0|"4294967295"|1	$5A000000
+PFErrorText|a3|"4294967295"|1	$00000004
+PFErrorText|text|"4294967295"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"4294967295"|1	kept
+PFIndirectAddr|popped|"4294967295"|1	$00000000
+PFIndirectAddr|d0|"4294967295"|1	$00000000
+PFEvaluate|kept|"99999999999"|1	kept
+PFEvaluate|popped|"99999999999"|1	$00000000
+PFEvaluate|d0|"99999999999"|1	$4876E7FF
+PFEvaluate|string|"99999999999"|1	bytes 1400 fnv 6A1C35C6
+PFErrorType|kept|"99999999999"|1	kept
+PFErrorType|popped|"99999999999"|1	$00000000
+PFErrorType|d0|"99999999999"|1	$5A000000
+PFErrorText|kept|"99999999999"|1	kept
+PFErrorText|popped|"99999999999"|1	$00000000
+PFErrorText|d0|"99999999999"|1	$5A000000
+PFErrorText|a3|"99999999999"|1	$00000004
+PFErrorText|text|"99999999999"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"99999999999"|1	kept
+PFIndirectAddr|popped|"99999999999"|1	$00000000
+PFIndirectAddr|d0|"99999999999"|1	$00000000
+PFEvaluate|kept|"- 3"|1	kept
+PFEvaluate|popped|"- 3"|1	$00000000
+PFEvaluate|d0|"- 3"|1	$00000000
+PFEvaluate|string|"- 3"|1	bytes 1400 fnv 5C026D63
+PFErrorType|kept|"- 3"|1	kept
+PFErrorType|popped|"- 3"|1	$00000000
+PFErrorType|d0|"- 3"|1	$5A000001
+PFErrorText|kept|"- 3"|1	kept
+PFErrorText|popped|"- 3"|1	$00000000
+PFErrorText|d0|"- 3"|1	$00000020
+PFErrorText|a3|"- 3"|1	$00000024
+PFErrorText|text|"- 3"|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"- 3"|1	kept
+PFIndirectAddr|popped|"- 3"|1	$00000000
+PFIndirectAddr|d0|"- 3"|1	$00000000
+PFEvaluate|kept|"3 -"|1	kept
+PFEvaluate|popped|"3 -"|1	$00000000
+PFEvaluate|d0|"3 -"|1	$00000000
+PFEvaluate|string|"3 -"|1	bytes 1400 fnv 89FB5453
+PFErrorType|kept|"3 -"|1	kept
+PFErrorType|popped|"3 -"|1	$00000000
+PFErrorType|d0|"3 -"|1	$5A000001
+PFErrorText|kept|"3 -"|1	kept
+PFErrorText|popped|"3 -"|1	$00000000
+PFErrorText|d0|"3 -"|1	$00000020
+PFErrorText|a3|"3 -"|1	$00000024
+PFErrorText|text|"3 -"|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"3 -"|1	kept
+PFIndirectAddr|popped|"3 -"|1	$00000000
+PFIndirectAddr|d0|"3 -"|1	$00000000
+PFEvaluate|kept|"-"|1	kept
+PFEvaluate|popped|"-"|1	$00000000
+PFEvaluate|d0|"-"|1	$00000000
+PFEvaluate|string|"-"|1	bytes 1400 fnv 3DCED8E8
+PFErrorType|kept|"-"|1	kept
+PFErrorType|popped|"-"|1	$00000000
+PFErrorType|d0|"-"|1	$5A000001
+PFErrorText|kept|"-"|1	kept
+PFErrorText|popped|"-"|1	$00000000
+PFErrorText|d0|"-"|1	$00000020
+PFErrorText|a3|"-"|1	$00000024
+PFErrorText|text|"-"|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-"|1	kept
+PFIndirectAddr|popped|"-"|1	$00000000
+PFIndirectAddr|d0|"-"|1	$00000000
+PFEvaluate|kept|"+"|1	kept
+PFEvaluate|popped|"+"|1	$00000000
+PFEvaluate|d0|"+"|1	$00000000
+PFEvaluate|string|"+"|1	bytes 1400 fnv AD5FDA2E
+PFErrorType|kept|"+"|1	kept
+PFErrorType|popped|"+"|1	$00000000
+PFErrorType|d0|"+"|1	$5A000001
+PFErrorText|kept|"+"|1	kept
+PFErrorText|popped|"+"|1	$00000000
+PFErrorText|d0|"+"|1	$00000020
+PFErrorText|a3|"+"|1	$00000024
+PFErrorText|text|"+"|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"+"|1	kept
+PFIndirectAddr|popped|"+"|1	$00000000
+PFIndirectAddr|d0|"+"|1	$00000000
+PFEvaluate|kept|"1 +"|1	kept
+PFEvaluate|popped|"1 +"|1	$00000000
+PFEvaluate|d0|"1 +"|1	$00000000
+PFEvaluate|string|"1 +"|1	bytes 1400 fnv 72FC22A7
+PFErrorType|kept|"1 +"|1	kept
+PFErrorType|popped|"1 +"|1	$00000000
+PFErrorType|d0|"1 +"|1	$5A000001
+PFErrorText|kept|"1 +"|1	kept
+PFErrorText|popped|"1 +"|1	$00000000
+PFErrorText|d0|"1 +"|1	$00000020
+PFErrorText|a3|"1 +"|1	$00000024
+PFErrorText|text|"1 +"|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 +"|1	kept
+PFIndirectAddr|popped|"1 +"|1	$00000000
+PFIndirectAddr|d0|"1 +"|1	$00000000
+PFEvaluate|kept|"1 2"|1	kept
+PFEvaluate|popped|"1 2"|1	$00000000
+PFEvaluate|d0|"1 2"|1	$00000002
+PFEvaluate|string|"1 2"|1	bytes 1400 fnv 67726B96
+PFErrorType|kept|"1 2"|1	kept
+PFErrorType|popped|"1 2"|1	$00000000
+PFErrorType|d0|"1 2"|1	$5A000000
+PFErrorText|kept|"1 2"|1	kept
+PFErrorText|popped|"1 2"|1	$00000000
+PFErrorText|d0|"1 2"|1	$5A000000
+PFErrorText|a3|"1 2"|1	$00000004
+PFErrorText|text|"1 2"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2"|1	kept
+PFIndirectAddr|popped|"1 2"|1	$00000000
+PFIndirectAddr|d0|"1 2"|1	$00000000
+PFEvaluate|kept|"1 2 3 + "|1	kept
+PFEvaluate|popped|"1 2 3 + "|1	$00000000
+PFEvaluate|d0|"1 2 3 + "|1	$00000005
+PFEvaluate|string|"1 2 3 + "|1	bytes 1400 fnv 5634AA76
+PFErrorType|kept|"1 2 3 + "|1	kept
+PFErrorType|popped|"1 2 3 + "|1	$00000000
+PFErrorType|d0|"1 2 3 + "|1	$5A000000
+PFErrorText|kept|"1 2 3 + "|1	kept
+PFErrorText|popped|"1 2 3 + "|1	$00000000
+PFErrorText|d0|"1 2 3 + "|1	$5A000000
+PFErrorText|a3|"1 2 3 + "|1	$00000004
+PFErrorText|text|"1 2 3 + "|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 3 + "|1	kept
+PFIndirectAddr|popped|"1 2 3 + "|1	$00000000
+PFIndirectAddr|d0|"1 2 3 + "|1	$00000000
+PFEvaluate|kept|"  42  "|1	kept
+PFEvaluate|popped|"  42  "|1	$00000000
+PFEvaluate|d0|"  42  "|1	$0000002A
+PFEvaluate|string|"  42  "|1	bytes 1400 fnv 8A56ED5B
+PFErrorType|kept|"  42  "|1	kept
+PFErrorType|popped|"  42  "|1	$00000000
+PFErrorType|d0|"  42  "|1	$5A000000
+PFErrorText|kept|"  42  "|1	kept
+PFErrorText|popped|"  42  "|1	$00000000
+PFErrorText|d0|"  42  "|1	$5A000000
+PFErrorText|a3|"  42  "|1	$00000004
+PFErrorText|text|"  42  "|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"  42  "|1	kept
+PFIndirectAddr|popped|"  42  "|1	$00000000
+PFIndirectAddr|d0|"  42  "|1	$00000000
+PFEvaluate|kept|""|1	kept
+PFEvaluate|popped|""|1	$00000000
+PFEvaluate|d0|""|1	$00000000
+PFEvaluate|string|""|1	bytes 1400 fnv 3300FC25
+PFErrorType|kept|""|1	kept
+PFErrorType|popped|""|1	$00000000
+PFErrorType|d0|""|1	$5A000000
+PFErrorText|kept|""|1	kept
+PFErrorText|popped|""|1	$00000000
+PFErrorText|d0|""|1	$5A000000
+PFErrorText|a3|""|1	$00000004
+PFErrorText|text|""|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|""|1	kept
+PFIndirectAddr|popped|""|1	$00000000
+PFIndirectAddr|d0|""|1	$00000000
+PFEvaluate|kept|"   "|1	kept
+PFEvaluate|popped|"   "|1	$00000000
+PFEvaluate|d0|"   "|1	prog
+PFEvaluate|string|"   "|1	bytes 1400 fnv 7CBCC805
+PFErrorType|kept|"   "|1	kept
+PFErrorType|popped|"   "|1	$00000000
+PFErrorType|d0|"   "|1	$5A000004
+PFErrorText|kept|"   "|1	kept
+PFErrorText|popped|"   "|1	$00000000
+PFErrorText|d0|"   "|1	$00000010
+PFErrorText|a3|"   "|1	$00000014
+PFErrorText|text|"   "|1	bytes 64 EEEEEEEE4E6F20726573756C742076616C75652100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"   "|1	kept
+PFIndirectAddr|popped|"   "|1	$00000000
+PFIndirectAddr|d0|"   "|1	$00000000
+PFEvaluate|kept|"x"|1	kept
+PFEvaluate|popped|"x"|1	$00000000
+PFEvaluate|d0|"x"|1	$00000048
+PFEvaluate|string|"x"|1	bytes 1400 fnv 9E3FA51D
+PFErrorType|kept|"x"|1	kept
+PFErrorType|popped|"x"|1	$00000000
+PFErrorType|d0|"x"|1	$5A000000
+PFErrorText|kept|"x"|1	kept
+PFErrorText|popped|"x"|1	$00000000
+PFErrorText|d0|"x"|1	$5A000000
+PFErrorText|a3|"x"|1	$00000004
+PFErrorText|text|"x"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"x"|1	kept
+PFIndirectAddr|popped|"x"|1	$00000000
+PFIndirectAddr|d0|"x"|1	$00000000
+PFEvaluate|kept|"(1 2 +)"|1	kept
+PFEvaluate|popped|"(1 2 +)"|1	$00000000
+PFEvaluate|d0|"(1 2 +)"|1	$000000F9
+PFEvaluate|string|"(1 2 +)"|1	bytes 1400 fnv 179DE434
+PFErrorType|kept|"(1 2 +)"|1	kept
+PFErrorType|popped|"(1 2 +)"|1	$00000000
+PFErrorType|d0|"(1 2 +)"|1	$5A000000
+PFErrorText|kept|"(1 2 +)"|1	kept
+PFErrorText|popped|"(1 2 +)"|1	$00000000
+PFErrorText|d0|"(1 2 +)"|1	$5A000000
+PFErrorText|a3|"(1 2 +)"|1	$00000004
+PFErrorText|text|"(1 2 +)"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"(1 2 +)"|1	kept
+PFIndirectAddr|popped|"(1 2 +)"|1	$00000000
+PFIndirectAddr|d0|"(1 2 +)"|1	$00000000
+PFEvaluate|kept|"1 2 + 3"|1	kept
+PFEvaluate|popped|"1 2 + 3"|1	$00000000
+PFEvaluate|d0|"1 2 + 3"|1	$00000003
+PFEvaluate|string|"1 2 + 3"|1	bytes 1400 fnv EE08F006
+PFErrorType|kept|"1 2 + 3"|1	kept
+PFErrorType|popped|"1 2 + 3"|1	$00000000
+PFErrorType|d0|"1 2 + 3"|1	$5A000000
+PFErrorText|kept|"1 2 + 3"|1	kept
+PFErrorText|popped|"1 2 + 3"|1	$00000000
+PFErrorText|d0|"1 2 + 3"|1	$5A000000
+PFErrorText|a3|"1 2 + 3"|1	$00000004
+PFErrorText|text|"1 2 + 3"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 + 3"|1	kept
+PFIndirectAddr|popped|"1 2 + 3"|1	$00000000
+PFIndirectAddr|d0|"1 2 + 3"|1	$00000000
+PFEvaluate|kept|"d0"|1	kept
+PFEvaluate|popped|"d0"|1	$00000000
+PFEvaluate|d0|"d0"|1	$00000000
+PFEvaluate|string|"d0"|1	bytes 1400 fnv E7480971
+PFErrorType|kept|"d0"|1	kept
+PFErrorType|popped|"d0"|1	$00000000
+PFErrorType|d0|"d0"|1	$5A000002
+PFErrorText|kept|"d0"|1	kept
+PFErrorText|popped|"d0"|1	$00000000
+PFErrorText|d0|"d0"|1	$0000001D
+PFErrorText|a3|"d0"|1	$00000021
+PFErrorText|text|"d0"|1	bytes 64 EEEEEEEE526567697374657220737472756374757265206E6F7420666F756E642100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d0"|1	kept
+PFIndirectAddr|popped|"d0"|1	$00000000
+PFIndirectAddr|d0|"d0"|1	$00000000
+PFEvaluate|kept|"1 pc +"|1	kept
+PFEvaluate|popped|"1 pc +"|1	$00000000
+PFEvaluate|d0|"1 pc +"|1	$00000000
+PFEvaluate|string|"1 pc +"|1	bytes 1400 fnv A3A0BDC4
+PFErrorType|kept|"1 pc +"|1	kept
+PFErrorType|popped|"1 pc +"|1	$00000000
+PFErrorType|d0|"1 pc +"|1	$5A000002
+PFErrorText|kept|"1 pc +"|1	kept
+PFErrorText|popped|"1 pc +"|1	$00000000
+PFErrorText|d0|"1 pc +"|1	$0000001D
+PFErrorText|a3|"1 pc +"|1	$00000021
+PFErrorText|text|"1 pc +"|1	bytes 64 EEEEEEEE526567697374657220737472756374757265206E6F7420666F756E642100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 pc +"|1	kept
+PFIndirectAddr|popped|"1 pc +"|1	$00000000
+PFIndirectAddr|d0|"1 pc +"|1	$00000000
+PFRegisters|kept|block|1	kept
+PFRegisters|popped|block|1	$00000000
+PFEvaluate|kept|"d0"|2	kept
+PFEvaluate|popped|"d0"|2	$00000000
+PFEvaluate|d0|"d0"|2	$40000000
+PFEvaluate|string|"d0"|2	bytes 1400 fnv E7480971
+PFErrorType|kept|"d0"|2	kept
+PFErrorType|popped|"d0"|2	$00000000
+PFErrorType|d0|"d0"|2	$5A000000
+PFErrorText|kept|"d0"|2	kept
+PFErrorText|popped|"d0"|2	$00000000
+PFErrorText|d0|"d0"|2	$5A000000
+PFErrorText|a3|"d0"|2	$00000004
+PFErrorText|text|"d0"|2	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d0"|2	kept
+PFIndirectAddr|popped|"d0"|2	$00000000
+PFIndirectAddr|d0|"d0"|2	$00000000
+PFEvaluate|kept|"d1 d2 +"|1	kept
+PFEvaluate|popped|"d1 d2 +"|1	$00000000
+PFEvaluate|d0|"d1 d2 +"|1	$0300001B
+PFEvaluate|string|"d1 d2 +"|1	bytes 1400 fnv 1FFF8113
+PFErrorType|kept|"d1 d2 +"|1	kept
+PFErrorType|popped|"d1 d2 +"|1	$00000000
+PFErrorType|d0|"d1 d2 +"|1	$5A000000
+PFErrorText|kept|"d1 d2 +"|1	kept
+PFErrorText|popped|"d1 d2 +"|1	$00000000
+PFErrorText|d0|"d1 d2 +"|1	$5A000000
+PFErrorText|a3|"d1 d2 +"|1	$00000004
+PFErrorText|text|"d1 d2 +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d1 d2 +"|1	kept
+PFIndirectAddr|popped|"d1 d2 +"|1	$00000000
+PFIndirectAddr|d0|"d1 d2 +"|1	$00000000
+PFEvaluate|kept|"d7"|1	kept
+PFEvaluate|popped|"d7"|1	$00000000
+PFEvaluate|d0|"d7"|1	$07000034
+PFEvaluate|string|"d7"|1	bytes 1400 fnv CAE9C3AC
+PFErrorType|kept|"d7"|1	kept
+PFErrorType|popped|"d7"|1	$00000000
+PFErrorType|d0|"d7"|1	$5A000000
+PFErrorText|kept|"d7"|1	kept
+PFErrorText|popped|"d7"|1	$00000000
+PFErrorText|d0|"d7"|1	$5A000000
+PFErrorText|a3|"d7"|1	$00000004
+PFErrorText|text|"d7"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d7"|1	kept
+PFIndirectAddr|popped|"d7"|1	$00000000
+PFIndirectAddr|d0|"d7"|1	$00000000
+PFEvaluate|kept|"a0"|1	kept
+PFEvaluate|popped|"a0"|1	$00000000
+PFEvaluate|d0|"a0"|1	$40000004
+PFEvaluate|string|"a0"|1	bytes 1400 fnv 1347D174
+PFErrorType|kept|"a0"|1	kept
+PFErrorType|popped|"a0"|1	$00000000
+PFErrorType|d0|"a0"|1	$5A000000
+PFErrorText|kept|"a0"|1	kept
+PFErrorText|popped|"a0"|1	$00000000
+PFErrorText|d0|"a0"|1	$5A000000
+PFErrorText|a3|"a0"|1	$00000004
+PFErrorText|text|"a0"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"a0"|1	kept
+PFIndirectAddr|popped|"a0"|1	$00000000
+PFIndirectAddr|d0|"a0"|1	$00000000
+PFEvaluate|kept|"a7"|1	kept
+PFEvaluate|popped|"a7"|1	$00000000
+PFEvaluate|d0|"a7"|1	$0F00006C
+PFEvaluate|string|"a7"|1	bytes 1400 fnv 2FA61739
+PFErrorType|kept|"a7"|1	kept
+PFErrorType|popped|"a7"|1	$00000000
+PFErrorType|d0|"a7"|1	$5A000000
+PFErrorText|kept|"a7"|1	kept
+PFErrorText|popped|"a7"|1	$00000000
+PFErrorText|d0|"a7"|1	$5A000000
+PFErrorText|a3|"a7"|1	$00000004
+PFErrorText|text|"a7"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"a7"|1	kept
+PFIndirectAddr|popped|"a7"|1	$00000000
+PFIndirectAddr|d0|"a7"|1	$00000000
+PFEvaluate|kept|"pc"|1	kept
+PFEvaluate|popped|"pc"|1	$00000000
+PFEvaluate|d0|"pc"|1	$10000073
+PFEvaluate|string|"pc"|1	bytes 1400 fnv 01F34944
+PFErrorType|kept|"pc"|1	kept
+PFErrorType|popped|"pc"|1	$00000000
+PFErrorType|d0|"pc"|1	$5A000000
+PFErrorText|kept|"pc"|1	kept
+PFErrorText|popped|"pc"|1	$00000000
+PFErrorText|d0|"pc"|1	$5A000000
+PFErrorText|a3|"pc"|1	$00000004
+PFErrorText|text|"pc"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"pc"|1	kept
+PFIndirectAddr|popped|"pc"|1	$00000000
+PFIndirectAddr|d0|"pc"|1	$00000000
+PFEvaluate|kept|"d9"|1	kept
+PFEvaluate|popped|"d9"|1	$00000000
+PFEvaluate|d0|"d9"|1	$40000002
+PFEvaluate|string|"d9"|1	bytes 1400 fnv 20B4210E
+PFErrorType|kept|"d9"|1	kept
+PFErrorType|popped|"d9"|1	$00000000
+PFErrorType|d0|"d9"|1	$5A000000
+PFErrorText|kept|"d9"|1	kept
+PFErrorText|popped|"d9"|1	$00000000
+PFErrorText|d0|"d9"|1	$5A000000
+PFErrorText|a3|"d9"|1	$00000004
+PFErrorText|text|"d9"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d9"|1	kept
+PFIndirectAddr|popped|"d9"|1	$00000000
+PFIndirectAddr|d0|"d9"|1	$00000000
+PFEvaluate|kept|"az"|1	kept
+PFEvaluate|popped|"az"|1	$00000000
+PFEvaluate|d0|"az"|1	$52000241
+PFEvaluate|string|"az"|1	bytes 1400 fnv A5EC02D2
+PFErrorType|kept|"az"|1	kept
+PFErrorType|popped|"az"|1	$00000000
+PFErrorType|d0|"az"|1	$5A000000
+PFErrorText|kept|"az"|1	kept
+PFErrorText|popped|"az"|1	$00000000
+PFErrorText|d0|"az"|1	$5A000000
+PFErrorText|a3|"az"|1	$00000004
+PFErrorText|text|"az"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"az"|1	kept
+PFIndirectAddr|popped|"az"|1	$00000000
+PFIndirectAddr|d0|"az"|1	$00000000
+PFEvaluate|kept|"a"|1	kept
+PFEvaluate|popped|"a"|1	$00000000
+PFEvaluate|d0|"a"|1	$580005EB
+PFEvaluate|string|"a"|1	bytes 1400 fnv 4D637524
+PFErrorType|kept|"a"|1	kept
+PFErrorType|popped|"a"|1	$00000000
+PFErrorType|d0|"a"|1	$5A000000
+PFErrorText|kept|"a"|1	kept
+PFErrorText|popped|"a"|1	$00000000
+PFErrorText|d0|"a"|1	$5A000000
+PFErrorText|a3|"a"|1	$00000004
+PFErrorText|text|"a"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"a"|1	kept
+PFIndirectAddr|popped|"a"|1	$00000000
+PFIndirectAddr|d0|"a"|1	$00000000
+PFEvaluate|kept|"d"|1	kept
+PFEvaluate|popped|"d"|1	$00000000
+PFEvaluate|d0|"d"|1	$500005B3
+PFEvaluate|string|"d"|1	bytes 1400 fnv 959AF481
+PFErrorType|kept|"d"|1	kept
+PFErrorType|popped|"d"|1	$00000000
+PFErrorType|d0|"d"|1	$5A000000
+PFErrorText|kept|"d"|1	kept
+PFErrorText|popped|"d"|1	$00000000
+PFErrorText|d0|"d"|1	$5A000000
+PFErrorText|a3|"d"|1	$00000004
+PFErrorText|text|"d"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d"|1	kept
+PFIndirectAddr|popped|"d"|1	$00000000
+PFIndirectAddr|d0|"d"|1	$00000000
+PFEvaluate|kept|"p"|1	kept
+PFEvaluate|popped|"p"|1	$00000000
+PFEvaluate|d0|"p"|1	$00000040
+PFEvaluate|string|"p"|1	bytes 1400 fnv 097E4E15
+PFErrorType|kept|"p"|1	kept
+PFErrorType|popped|"p"|1	$00000000
+PFErrorType|d0|"p"|1	$5A000000
+PFErrorText|kept|"p"|1	kept
+PFErrorText|popped|"p"|1	$00000000
+PFErrorText|d0|"p"|1	$5A000000
+PFErrorText|a3|"p"|1	$00000004
+PFErrorText|text|"p"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"p"|1	kept
+PFIndirectAddr|popped|"p"|1	$00000000
+PFIndirectAddr|d0|"p"|1	$00000000
+PFEvaluate|kept|"pz"|1	kept
+PFEvaluate|popped|"pz"|1	$00000000
+PFEvaluate|d0|"pz"|1	$000002CA
+PFEvaluate|string|"pz"|1	bytes 1400 fnv 02A2D557
+PFErrorType|kept|"pz"|1	kept
+PFErrorType|popped|"pz"|1	$00000000
+PFErrorType|d0|"pz"|1	$5A000000
+PFErrorText|kept|"pz"|1	kept
+PFErrorText|popped|"pz"|1	$00000000
+PFErrorText|d0|"pz"|1	$5A000000
+PFErrorText|a3|"pz"|1	$00000004
+PFErrorText|text|"pz"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"pz"|1	kept
+PFIndirectAddr|popped|"pz"|1	$00000000
+PFIndirectAddr|d0|"pz"|1	$00000000
+PFEvaluate|kept|"-d3"|1	kept
+PFEvaluate|popped|"-d3"|1	$00000000
+PFEvaluate|d0|"-d3"|1	$FCFFFFE8
+PFEvaluate|string|"-d3"|1	bytes 1400 fnv 680A2DEF
+PFErrorType|kept|"-d3"|1	kept
+PFErrorType|popped|"-d3"|1	$00000000
+PFErrorType|d0|"-d3"|1	$5A000000
+PFErrorText|kept|"-d3"|1	kept
+PFErrorText|popped|"-d3"|1	$00000000
+PFErrorText|d0|"-d3"|1	$5A000000
+PFErrorText|a3|"-d3"|1	$00000004
+PFErrorText|text|"-d3"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-d3"|1	kept
+PFIndirectAddr|popped|"-d3"|1	$00000000
+PFIndirectAddr|d0|"-d3"|1	$00000000
+PFEvaluate|kept|"d1 -a2 *"|1	kept
+PFEvaluate|popped|"d1 -a2 *"|1	$00000000
+PFEvaluate|d0|"d1 -a2 *"|1	$52FFFD26
+PFEvaluate|string|"d1 -a2 *"|1	bytes 1400 fnv 07A50D84
+PFErrorType|kept|"d1 -a2 *"|1	kept
+PFErrorType|popped|"d1 -a2 *"|1	$00000000
+PFErrorType|d0|"d1 -a2 *"|1	$5A000000
+PFErrorText|kept|"d1 -a2 *"|1	kept
+PFErrorText|popped|"d1 -a2 *"|1	$00000000
+PFErrorText|d0|"d1 -a2 *"|1	$5A000000
+PFErrorText|a3|"d1 -a2 *"|1	$00000004
+PFErrorText|text|"d1 -a2 *"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d1 -a2 *"|1	kept
+PFIndirectAddr|popped|"d1 -a2 *"|1	$00000000
+PFIndirectAddr|d0|"d1 -a2 *"|1	$00000000
+PFEvaluate|kept|"{1000}"|1	kept
+PFEvaluate|popped|"{1000}"|1	$00000000
+PFEvaluate|d0|"{1000}"|1	$00F81908
+PFEvaluate|string|"{1000}"|1	bytes 1400 fnv 38EE8692
+PFErrorType|kept|"{1000}"|1	kept
+PFErrorType|popped|"{1000}"|1	$00000000
+PFErrorType|d0|"{1000}"|1	$5A000000
+PFErrorText|kept|"{1000}"|1	kept
+PFErrorText|popped|"{1000}"|1	$00000000
+PFErrorText|d0|"{1000}"|1	$5A000000
+PFErrorText|a3|"{1000}"|1	$00000004
+PFErrorText|text|"{1000}"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{1000}"|1	kept
+PFIndirectAddr|popped|"{1000}"|1	$00000000
+PFIndirectAddr|d0|"{1000}"|1	$000003E8
+PFEvaluate|kept|"{%T}"|1	kept
+PFEvaluate|popped|"{%T}"|1	$00000000
+PFEvaluate|d0|"{%T}"|1	$89ABCDEF
+PFErrorType|kept|"{%T}"|1	kept
+PFErrorType|popped|"{%T}"|1	$00000000
+PFErrorType|d0|"{%T}"|1	$5A000000
+PFErrorText|kept|"{%T}"|1	kept
+PFErrorText|popped|"{%T}"|1	$00000000
+PFErrorText|d0|"{%T}"|1	$5A000000
+PFErrorText|a3|"{%T}"|1	$00000004
+PFErrorText|text|"{%T}"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}"|1	kept
+PFIndirectAddr|popped|"{%T}"|1	$00000000
+PFIndirectAddr|d0|"{%T}"|1	$40000000
+PFEvaluate|kept|"{%T}.b"|1	kept
+PFEvaluate|popped|"{%T}.b"|1	$00000000
+PFEvaluate|d0|"{%T}.b"|1	$00000089
+PFErrorType|kept|"{%T}.b"|1	kept
+PFErrorType|popped|"{%T}.b"|1	$00000000
+PFErrorType|d0|"{%T}.b"|1	$5A000000
+PFErrorText|kept|"{%T}.b"|1	kept
+PFErrorText|popped|"{%T}.b"|1	$00000000
+PFErrorText|d0|"{%T}.b"|1	$5A000000
+PFErrorText|a3|"{%T}.b"|1	$00000004
+PFErrorText|text|"{%T}.b"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}.b"|1	kept
+PFIndirectAddr|popped|"{%T}.b"|1	$00000000
+PFIndirectAddr|d0|"{%T}.b"|1	$40000000
+PFEvaluate|kept|"{%T}.w"|1	kept
+PFEvaluate|popped|"{%T}.w"|1	$00000000
+PFEvaluate|d0|"{%T}.w"|1	$000089AB
+PFErrorType|kept|"{%T}.w"|1	kept
+PFErrorType|popped|"{%T}.w"|1	$00000000
+PFErrorType|d0|"{%T}.w"|1	$5A000000
+PFErrorText|kept|"{%T}.w"|1	kept
+PFErrorText|popped|"{%T}.w"|1	$00000000
+PFErrorText|d0|"{%T}.w"|1	$5A000000
+PFErrorText|a3|"{%T}.w"|1	$00000004
+PFErrorText|text|"{%T}.w"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}.w"|1	kept
+PFIndirectAddr|popped|"{%T}.w"|1	$00000000
+PFIndirectAddr|d0|"{%T}.w"|1	$40000000
+PFEvaluate|kept|"{%T}.l"|1	kept
+PFEvaluate|popped|"{%T}.l"|1	$00000000
+PFEvaluate|d0|"{%T}.l"|1	$89ABCDEF
+PFErrorType|kept|"{%T}.l"|1	kept
+PFErrorType|popped|"{%T}.l"|1	$00000000
+PFErrorType|d0|"{%T}.l"|1	$5A000000
+PFErrorText|kept|"{%T}.l"|1	kept
+PFErrorText|popped|"{%T}.l"|1	$00000000
+PFErrorText|d0|"{%T}.l"|1	$5A000000
+PFErrorText|a3|"{%T}.l"|1	$00000004
+PFErrorText|text|"{%T}.l"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}.l"|1	kept
+PFIndirectAddr|popped|"{%T}.l"|1	$00000000
+PFIndirectAddr|d0|"{%T}.l"|1	$40000000
+PFEvaluate|kept|"{%T}.x"|1	kept
+PFEvaluate|popped|"{%T}.x"|1	$00000000
+PFEvaluate|d0|"{%T}.x"|1	$00000000
+PFErrorType|kept|"{%T}.x"|1	kept
+PFErrorType|popped|"{%T}.x"|1	$00000000
+PFErrorType|d0|"{%T}.x"|1	$5A000006
+PFErrorText|kept|"{%T}.x"|1	kept
+PFErrorText|popped|"{%T}.x"|1	$00000000
+PFErrorText|d0|"{%T}.x"|1	$0000001D
+PFErrorText|a3|"{%T}.x"|1	$00000021
+PFErrorText|text|"{%T}.x"|1	bytes 64 EEEEEEEE496E76616C69642073697A6520666F7220696E646972656374696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}.x"|1	kept
+PFIndirectAddr|popped|"{%T}.x"|1	$00000000
+PFIndirectAddr|d0|"{%T}.x"|1	$40000000
+PFEvaluate|kept|"{%T}."|1	kept
+PFEvaluate|popped|"{%T}."|1	$00000000
+PFEvaluate|d0|"{%T}."|1	$00000000
+PFErrorType|kept|"{%T}."|1	kept
+PFErrorType|popped|"{%T}."|1	$00000000
+PFErrorType|d0|"{%T}."|1	$5A000006
+PFErrorText|kept|"{%T}."|1	kept
+PFErrorText|popped|"{%T}."|1	$00000000
+PFErrorText|d0|"{%T}."|1	$0000001D
+PFErrorText|a3|"{%T}."|1	$00000021
+PFErrorText|text|"{%T}."|1	bytes 64 EEEEEEEE496E76616C69642073697A6520666F7220696E646972656374696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T}."|1	kept
+PFIndirectAddr|popped|"{%T}."|1	$00000000
+PFIndirectAddr|d0|"{%T}."|1	$40000000
+PFEvaluate|kept|"{%T"|1	kept
+PFEvaluate|popped|"{%T"|1	$00000000
+PFEvaluate|d0|"{%T"|1	$00000000
+PFErrorType|kept|"{%T"|1	kept
+PFErrorType|popped|"{%T"|1	$00000000
+PFErrorType|d0|"{%T"|1	$5A000005
+PFErrorText|kept|"{%T"|1	kept
+PFErrorText|popped|"{%T"|1	$00000000
+PFErrorText|d0|"{%T"|1	$0000001D
+PFErrorText|a3|"{%T"|1	$00000021
+PFErrorText|text|"{%T"|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T"|1	kept
+PFIndirectAddr|popped|"{%T"|1	$00000000
+PFIndirectAddr|d0|"{%T"|1	$40000000
+PFEvaluate|kept|"{$%H}"|1	kept
+PFEvaluate|popped|"{$%H}"|1	$00000000
+PFEvaluate|d0|"{$%H}"|1	$89ABCDEF
+PFErrorType|kept|"{$%H}"|1	kept
+PFErrorType|popped|"{$%H}"|1	$00000000
+PFErrorType|d0|"{$%H}"|1	$5A000000
+PFErrorText|kept|"{$%H}"|1	kept
+PFErrorText|popped|"{$%H}"|1	$00000000
+PFErrorText|d0|"{$%H}"|1	$5A000000
+PFErrorText|a3|"{$%H}"|1	$00000004
+PFErrorText|text|"{$%H}"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{$%H}"|1	kept
+PFIndirectAddr|popped|"{$%H}"|1	$00000000
+PFIndirectAddr|d0|"{$%H}"|1	$40000000
+PFEvaluate|kept|"{$%H}.w"|1	kept
+PFEvaluate|popped|"{$%H}.w"|1	$00000000
+PFEvaluate|d0|"{$%H}.w"|1	$000089AB
+PFErrorType|kept|"{$%H}.w"|1	kept
+PFErrorType|popped|"{$%H}.w"|1	$00000000
+PFErrorType|d0|"{$%H}.w"|1	$5A000000
+PFErrorText|kept|"{$%H}.w"|1	kept
+PFErrorText|popped|"{$%H}.w"|1	$00000000
+PFErrorText|d0|"{$%H}.w"|1	$5A000000
+PFErrorText|a3|"{$%H}.w"|1	$00000004
+PFErrorText|text|"{$%H}.w"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{$%H}.w"|1	kept
+PFIndirectAddr|popped|"{$%H}.w"|1	$00000000
+PFIndirectAddr|d0|"{$%H}.w"|1	$40000000
+PFEvaluate|kept|"{%T} {d0}"|1	kept
+PFEvaluate|popped|"{%T} {d0}"|1	$00000000
+PFEvaluate|d0|"{%T} {d0}"|1	$00000000
+PFErrorType|kept|"{%T} {d0}"|1	kept
+PFErrorType|popped|"{%T} {d0}"|1	$00000000
+PFErrorType|d0|"{%T} {d0}"|1	$5A000005
+PFErrorText|kept|"{%T} {d0}"|1	kept
+PFErrorText|popped|"{%T} {d0}"|1	$00000000
+PFErrorText|d0|"{%T} {d0}"|1	$0000001D
+PFErrorText|a3|"{%T} {d0}"|1	$00000021
+PFErrorText|text|"{%T} {d0}"|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{%T} {d0}"|1	kept
+PFIndirectAddr|popped|"{%T} {d0}"|1	$00000000
+PFIndirectAddr|d0|"{%T} {d0}"|1	$40000000
+PFEvaluate|kept|"{d0}"|1	kept
+PFEvaluate|popped|"{d0}"|1	$00000000
+PFEvaluate|d0|"{d0}"|1	$00000000
+PFEvaluate|string|"{d0}"|1	bytes 1400 fnv F16988E9
+PFErrorType|kept|"{d0}"|1	kept
+PFErrorType|popped|"{d0}"|1	$00000000
+PFErrorType|d0|"{d0}"|1	$5A000005
+PFErrorText|kept|"{d0}"|1	kept
+PFErrorText|popped|"{d0}"|1	$00000000
+PFErrorText|d0|"{d0}"|1	$0000001D
+PFErrorText|a3|"{d0}"|1	$00000021
+PFErrorText|text|"{d0}"|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{d0}"|1	kept
+PFIndirectAddr|popped|"{d0}"|1	$00000000
+PFIndirectAddr|d0|"{d0}"|1	$40000000
+PFEvaluate|kept|"{d0}.w"|1	kept
+PFEvaluate|popped|"{d0}.w"|1	$00000000
+PFEvaluate|d0|"{d0}.w"|1	$00000000
+PFEvaluate|string|"{d0}.w"|1	bytes 1400 fnv C7277B36
+PFErrorType|kept|"{d0}.w"|1	kept
+PFErrorType|popped|"{d0}.w"|1	$00000000
+PFErrorType|d0|"{d0}.w"|1	$5A000005
+PFErrorText|kept|"{d0}.w"|1	kept
+PFErrorText|popped|"{d0}.w"|1	$00000000
+PFErrorText|d0|"{d0}.w"|1	$0000001D
+PFErrorText|a3|"{d0}.w"|1	$00000021
+PFErrorText|text|"{d0}.w"|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{d0}.w"|1	kept
+PFIndirectAddr|popped|"{d0}.w"|1	$00000000
+PFIndirectAddr|d0|"{d0}.w"|1	$40000000
+PFEvaluate|kept|"{a0}"|1	kept
+PFEvaluate|popped|"{a0}"|1	$00000000
+PFEvaluate|d0|"{a0}"|1	$00000000
+PFEvaluate|string|"{a0}"|1	bytes 1400 fnv 6795A5BA
+PFErrorType|kept|"{a0}"|1	kept
+PFErrorType|popped|"{a0}"|1	$00000000
+PFErrorType|d0|"{a0}"|1	$5A000005
+PFErrorText|kept|"{a0}"|1	kept
+PFErrorText|popped|"{a0}"|1	$00000000
+PFErrorText|d0|"{a0}"|1	$0000001D
+PFErrorText|a3|"{a0}"|1	$00000021
+PFErrorText|text|"{a0}"|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{a0}"|1	kept
+PFIndirectAddr|popped|"{a0}"|1	$00000000
+PFIndirectAddr|d0|"{a0}"|1	$40000000
+PFEvaluate|kept|"-{1000}"|1	kept
+PFEvaluate|popped|"-{1000}"|1	$00000000
+PFEvaluate|d0|"-{1000}"|1	$FFF48A68
+PFEvaluate|string|"-{1000}"|1	bytes 1400 fnv 29EEFC4D
+PFErrorType|kept|"-{1000}"|1	kept
+PFErrorType|popped|"-{1000}"|1	$00000000
+PFErrorType|d0|"-{1000}"|1	$5A000000
+PFErrorText|kept|"-{1000}"|1	kept
+PFErrorText|popped|"-{1000}"|1	$00000000
+PFErrorText|d0|"-{1000}"|1	$5A000000
+PFErrorText|a3|"-{1000}"|1	$00000004
+PFErrorText|text|"-{1000}"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"-{1000}"|1	kept
+PFIndirectAddr|popped|"-{1000}"|1	$00000000
+PFIndirectAddr|d0|"-{1000}"|1	$40000000
+PFEvaluate|kept|"1 {%T}.b +"|1	kept
+PFEvaluate|popped|"1 {%T}.b +"|1	$00000000
+PFEvaluate|d0|"1 {%T}.b +"|1	$0000008A
+PFErrorType|kept|"1 {%T}.b +"|1	kept
+PFErrorType|popped|"1 {%T}.b +"|1	$00000000
+PFErrorType|d0|"1 {%T}.b +"|1	$5A000000
+PFErrorText|kept|"1 {%T}.b +"|1	kept
+PFErrorText|popped|"1 {%T}.b +"|1	$00000000
+PFErrorText|d0|"1 {%T}.b +"|1	$5A000000
+PFErrorText|a3|"1 {%T}.b +"|1	$00000004
+PFErrorText|text|"1 {%T}.b +"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 {%T}.b +"|1	kept
+PFIndirectAddr|popped|"1 {%T}.b +"|1	$00000000
+PFIndirectAddr|d0|"1 {%T}.b +"|1	$40000000
+PFEvaluate|kept|"1 {%T}.b"|1	kept
+PFEvaluate|popped|"1 {%T}.b"|1	$00000000
+PFEvaluate|d0|"1 {%T}.b"|1	$00000089
+PFErrorType|kept|"1 {%T}.b"|1	kept
+PFErrorType|popped|"1 {%T}.b"|1	$00000000
+PFErrorType|d0|"1 {%T}.b"|1	$5A000000
+PFErrorText|kept|"1 {%T}.b"|1	kept
+PFErrorText|popped|"1 {%T}.b"|1	$00000000
+PFErrorText|d0|"1 {%T}.b"|1	$5A000000
+PFErrorText|a3|"1 {%T}.b"|1	$00000004
+PFErrorText|text|"1 {%T}.b"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 {%T}.b"|1	kept
+PFIndirectAddr|popped|"1 {%T}.b"|1	$00000000
+PFIndirectAddr|d0|"1 {%T}.b"|1	$40000000
+PFEvaluate|kept|"{d0}" d1 '}'|1	kept
+PFEvaluate|popped|"{d0}" d1 '}'|1	$00000000
+PFEvaluate|d0|"{d0}" d1 '}'|1	$00000000
+PFEvaluate|string|"{d0}" d1 '}'|1	bytes 1400 fnv F16988E9
+PFErrorType|kept|"{d0}" d1 '}'|1	kept
+PFErrorType|popped|"{d0}" d1 '}'|1	$00000000
+PFErrorType|d0|"{d0}" d1 '}'|1	$5A000000
+PFErrorText|kept|"{d0}" d1 '}'|1	kept
+PFErrorText|popped|"{d0}" d1 '}'|1	$00000000
+PFErrorText|d0|"{d0}" d1 '}'|1	$5A000000
+PFErrorText|a3|"{d0}" d1 '}'|1	$00000004
+PFErrorText|text|"{d0}" d1 '}'|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{d0}" d1 '}'|1	kept
+PFIndirectAddr|popped|"{d0}" d1 '}'|1	$00000000
+PFIndirectAddr|d0|"{d0}" d1 '}'|1	$40000000
+PFEvaluate|kept|"{d0}.w" d1 '}'|1	kept
+PFEvaluate|popped|"{d0}.w" d1 '}'|1	$00000000
+PFEvaluate|d0|"{d0}.w" d1 '}'|1	$00000A33
+PFEvaluate|string|"{d0}.w" d1 '}'|1	bytes 1400 fnv C7277B36
+PFErrorType|kept|"{d0}.w" d1 '}'|1	kept
+PFErrorType|popped|"{d0}.w" d1 '}'|1	$00000000
+PFErrorType|d0|"{d0}.w" d1 '}'|1	$5A000000
+PFErrorText|kept|"{d0}.w" d1 '}'|1	kept
+PFErrorText|popped|"{d0}.w" d1 '}'|1	$00000000
+PFErrorText|d0|"{d0}.w" d1 '}'|1	$5A000000
+PFErrorText|a3|"{d0}.w" d1 '}'|1	$00000004
+PFErrorText|text|"{d0}.w" d1 '}'|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{d0}.w" d1 '}'|1	kept
+PFIndirectAddr|popped|"{d0}.w" d1 '}'|1	$00000000
+PFIndirectAddr|d0|"{d0}.w" d1 '}'|1	$40000000
+PFEvaluate|kept|"{a1}" d1 '}'|1	kept
+PFEvaluate|popped|"{a1}" d1 '}'|1	$00000000
+PFEvaluate|d0|"{a1}" d1 '}'|1	$00000000
+PFEvaluate|string|"{a1}" d1 '}'|1	bytes 1400 fnv 27F1BE67
+PFErrorType|kept|"{a1}" d1 '}'|1	kept
+PFErrorType|popped|"{a1}" d1 '}'|1	$00000000
+PFErrorType|d0|"{a1}" d1 '}'|1	$5A000000
+PFErrorText|kept|"{a1}" d1 '}'|1	kept
+PFErrorText|popped|"{a1}" d1 '}'|1	$00000000
+PFErrorText|d0|"{a1}" d1 '}'|1	$5A000000
+PFErrorText|a3|"{a1}" d1 '}'|1	$00000004
+PFErrorText|text|"{a1}" d1 '}'|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"{a1}" d1 '}'|1	kept
+PFIndirectAddr|popped|"{a1}" d1 '}'|1	$00000000
+PFIndirectAddr|d0|"{a1}" d1 '}'|1	$40000002
+PFEvaluate|kept|"5 {d0} +" d1 '}'|1	kept
+PFEvaluate|popped|"5 {d0} +" d1 '}'|1	$00000000
+PFEvaluate|d0|"5 {d0} +" d1 '}'|1	$00000000
+PFEvaluate|string|"5 {d0} +" d1 '}'|1	bytes 1400 fnv DBCD0241
+PFErrorType|kept|"5 {d0} +" d1 '}'|1	kept
+PFErrorType|popped|"5 {d0} +" d1 '}'|1	$00000000
+PFErrorType|d0|"5 {d0} +" d1 '}'|1	$5A000005
+PFErrorText|kept|"5 {d0} +" d1 '}'|1	kept
+PFErrorText|popped|"5 {d0} +" d1 '}'|1	$00000000
+PFErrorText|d0|"5 {d0} +" d1 '}'|1	$0000001D
+PFErrorText|a3|"5 {d0} +" d1 '}'|1	$00000021
+PFErrorText|text|"5 {d0} +" d1 '}'|1	bytes 64 EEEEEEEE4E6F20636C6F736520627261636B6574206F6E20696E6469726563742100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"5 {d0} +" d1 '}'|1	kept
+PFIndirectAddr|popped|"5 {d0} +" d1 '}'|1	$00000000
+PFIndirectAddr|d0|"5 {d0} +" d1 '}'|1	$40000002
+PFEvaluate|kept|"1 a"|1	kept
+PFEvaluate|popped|"1 a"|1	$00000000
+PFEvaluate|d0|"1 a"|1	$580005F4
+PFEvaluate|string|"1 a"|1	bytes 1400 fnv B3BDDA27
+PFErrorType|kept|"1 a"|1	kept
+PFErrorType|popped|"1 a"|1	$00000000
+PFErrorType|d0|"1 a"|1	$5A000000
+PFErrorText|kept|"1 a"|1	kept
+PFErrorText|popped|"1 a"|1	$00000000
+PFErrorText|d0|"1 a"|1	$5A000000
+PFErrorText|a3|"1 a"|1	$00000004
+PFErrorText|text|"1 a"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 a"|1	kept
+PFIndirectAddr|popped|"1 a"|1	$00000000
+PFIndirectAddr|d0|"1 a"|1	$40000002
+PFEvaluate|kept|"d"|2	kept
+PFEvaluate|popped|"d"|2	$00000000
+PFEvaluate|d0|"d"|2	$500005B3
+PFEvaluate|string|"d"|2	bytes 1400 fnv 959AF481
+PFErrorType|kept|"d"|2	kept
+PFErrorType|popped|"d"|2	$00000000
+PFErrorType|d0|"d"|2	$5A000000
+PFErrorText|kept|"d"|2	kept
+PFErrorText|popped|"d"|2	$00000000
+PFErrorText|d0|"d"|2	$5A000000
+PFErrorText|a3|"d"|2	$00000004
+PFErrorText|text|"d"|2	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d"|2	kept
+PFIndirectAddr|popped|"d"|2	$00000000
+PFIndirectAddr|d0|"d"|2	$40000002
+PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
+PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
+PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
+PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	bytes 1400 fnv BF799E66
+PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
+PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
+PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$5A000001
+PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
+PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
+PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000020
+PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000024
+PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	kept
+PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$00000000
+PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|1	$40000002
+PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
+PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
+PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
+PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	bytes 1400 fnv BAC2FFDC
+PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
+PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
+PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$5A000001
+PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
+PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
+PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000020
+PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000024
+PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	kept
+PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$00000000
+PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|2	$40000002
+PFEvaluate|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	kept
+PFEvaluate|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000000
+PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000052
+PFEvaluate|string|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	bytes 1400 fnv 24C92EA5
+PFErrorType|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	kept
+PFErrorType|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000000
+PFErrorType|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$5A000000
+PFErrorText|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	kept
+PFErrorText|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000000
+PFErrorText|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$5A000000
+PFErrorText|a3|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000004
+PFErrorText|text|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	kept
+PFIndirectAddr|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$00000000
+PFIndirectAddr|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|1	$40000002
+PFEvaluate|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFEvaluate|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFEvaluate|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFEvaluate|string|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	bytes 1400 fnv 76DE0A1D
+PFErrorType|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFErrorType|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFErrorType|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$5A000001
+PFErrorText|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFErrorText|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFErrorText|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000020
+PFErrorText|a3|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000024
+PFErrorText|text|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	bytes 64 EEEEEEEE4E656564203220617267756D656E747320666F722065787072657373696F6E2100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	kept
+PFIndirectAddr|popped|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$00000000
+PFIndirectAddr|d0|"1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 "|3	$40000002
+PFEvaluate|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	kept
+PFEvaluate|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$00000000
+PFEvaluate|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$B0D9CC26
+PFEvaluate|string|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	bytes 1400 fnv 466FF545
+PFErrorType|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	kept
+PFErrorType|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$00000000
+PFErrorType|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$5A000000
+PFErrorText|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	kept
+PFErrorText|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$00000000
+PFErrorText|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$5A000000
+PFErrorText|a3|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$00000004
+PFErrorText|text|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	kept
+PFIndirectAddr|popped|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$00000000
+PFIndirectAddr|d0|"2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 "|2	$40000002
+PFEvaluate|kept|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	kept
+PFEvaluate|popped|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00000000
+PFEvaluate|d0|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00001C5C
+PFEvaluate|string|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	bytes 1400 fnv 918F55BB
+PFErrorType|kept|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	kept
+PFErrorType|popped|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00000000
+PFErrorType|d0|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$5A000000
+PFErrorText|kept|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	kept
+PFErrorText|popped|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00000000
+PFErrorText|d0|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$5A000000
+PFErrorText|a3|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00000004
+PFErrorText|text|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	bytes 64 EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	kept
+PFIndirectAddr|popped|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$00000000
+PFIndirectAddr|d0|"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30"|1	$40000002
+PFRegisters|kept|0|1	kept
+PFRegisters|popped|0|1	$00000000
+PFEvaluate|kept|"d0"|3	kept
+PFEvaluate|popped|"d0"|3	$00000000
+PFEvaluate|d0|"d0"|3	$00000000
+PFEvaluate|string|"d0"|3	bytes 1400 fnv E7480971
+PFErrorType|kept|"d0"|3	kept
+PFErrorType|popped|"d0"|3	$00000000
+PFErrorType|d0|"d0"|3	$5A000002
+PFErrorText|kept|"d0"|3	kept
+PFErrorText|popped|"d0"|3	$00000000
+PFErrorText|d0|"d0"|3	$0000001D
+PFErrorText|a3|"d0"|3	$00000021
+PFErrorText|text|"d0"|3	bytes 64 EEEEEEEE526567697374657220737472756374757265206E6F7420666F756E642100EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+PFIndirectAddr|kept|"d0"|3	kept
+PFIndirectAddr|popped|"d0"|3	$00000000
+PFIndirectAddr|d0|"d0"|3	$40000002

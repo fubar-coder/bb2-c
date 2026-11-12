@@ -1,14 +1,16 @@
 /*
- * rwe rievallib - RI Eval Lib: the C build against the CD original (BSS2
- * RIEVALLIB.OBJ, variant rwe-1999-eval), method of rwecmp.h.
+ * rwe rievallib - RI Eval Lib: the C build or the CD original (BSS2
+ * RIEVALLIB.OBJ, variant rwe-1999-eval), one set as LIBSET says, observed
+ * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rievallib.txt).
  *
  *   rievallib DIR     (DIR with rievallib .obj/.orig)
  *
- * The string argument is in a buffer per set (ConvToPostFix lower-cases
+ * The string argument is in a buffer (ConvToPostFix lower-cases
  * it), the rest of the buffer 0 or a given tail (the reads behind the
- * end); compared are the string, the output buffer, d0, a3 and the kept
+ * end); observed are the string, the output buffer, d0, a3 and the kept
  * registers, and after every PFEvaluate PFErrorType, PFErrorText (at a3)
- * and PFIndirectAddr (an address in the set's target as its offset).
+ * and PFIndirectAddr (an address in the target as its offset).
  *
  * Covered: the start state (no error, no text, indirect address 0);
  * init/finit; ConvToPostFix with every operator and precedence, brackets
@@ -27,42 +29,43 @@
  * (the return address as result, BUG(orig) (#644)), two results.
  * Not covered: an indirection at an odd address (address error).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rievallib"
 enum { E_CTP, E_EVAL, E_REGS, E_ETYPE, E_ETEXT, E_IADDR, E_FINIT, E_INIT };
 
 #define BIG 1400
-static UBYTE in[2][BIG];                /* the string argument */
-static UBYTE out[2][2 * BIG + 16];      /* ConvToPostFix buffer, PFErrorText */
-static ULONG block[2][260];             /* the register block */
-static ULONG target[2][2];              /* what {address} reads */
+static UBYTE in[BIG];                /* the string argument */
+static UBYTE out[2 * BIG + 16];      /* ConvToPostFix buffer, PFErrorText */
+static ULONG block[260];             /* the register block */
+static ULONG target[2];              /* what {address} reads */
 static char gen[BIG];                   /* generated strings */
 static ULONG D1;                        /* d1 for PFEvaluate (0: the marker) */
 
-/* the string (n bytes, 0s included) into in[cur], the rest 0 */
+/* the string (n bytes, 0s included) into in, the rest 0 */
 static void setin(const char *s, ULONG n)
 {
-    memset(in[cur], 0, BIG);
-    memcpy(in[cur], s, n);
+    memset(in, 0, BIG);
+    memcpy(in, s, n);
 }
 
 /* an address in the set's target as an offset, else the value */
 static ULONG addr(ULONG a)
 {
-    ULONG t = (ULONG)target[cur];
-    return a >= t && a < t + sizeof target[0] ? a - t + 0x40000000UL : a;
+    ULONG t = (ULONG)target;
+    return a >= t && a < t + sizeof target ? a - t + 0x40000000UL : a;
 }
 
 static void ctp_n(const char *s, ULONG n)
 {
     ROUT = "ConvToPostFix";
     snprintf(VEC, sizeof VEC, "\"%.80s\"", s);
-    DO2(ENT(LIB, E_CTP, 0), setin(s, n); memset(out[cur], 0xee, sizeof out[0]);
-        R[cur].d[0] = (ULONG)in[cur]; R[cur].d[1] = (ULONG)out[cur]);
-    SAMEBYTES("string", in, BIG);
-    SAMEBYTES("buffer", out, sizeof out[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)in[cur]);
+    DO1(ENT(LIB, E_CTP, 0), setin(s, n); memset(out, 0xee, sizeof out);
+        R.d[0] = (ULONG)in; R.d[1] = (ULONG)out);
+    OBSBYTES("string", in, BIG);
+    OBSBYTES("buffer", out, sizeof out);
+    OBS("a3", R.a[3] - (ULONG)in);
 }
 
 static void ctp(const char *s)
@@ -76,66 +79,60 @@ static void state(void)
     const char *rout = ROUT;
 
     ROUT = "PFErrorType";
-    DO2(ENT(LIB, E_ETYPE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ETYPE, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "PFErrorText";
-    DO2(ENT(LIB, E_ETEXT, 0), memset(out[cur], 0xee, 64); R[cur].a[3] = (ULONG)out[cur] + 4);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-    SAMEBYTES("text", out, 64);
+    DO1(ENT(LIB, E_ETEXT, 0), memset(out, 0xee, 64); R.a[3] = (ULONG)out + 4);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)out);
+    OBSBYTES("text", out, 64);
     ROUT = "PFIndirectAddr";
-    DO2(ENT(LIB, E_IADDR, 0), (void)0);
-    SAME("d0", addr(R[cur].d[0]));
+    DO1(ENT(LIB, E_IADDR, 0), (void)0);
+    OBS("d0", addr(R.d[0]));
     ROUT = rout;
 }
 
-/* PFEvaluate on src[cur] (n[cur] bytes) */
-static void ev_sets(const char *name, const char *const src[2], const ULONG n[2])
+/* PFEvaluate on src (n bytes); `plain`: src is the vector's string itself
+   (else it holds the target's address, and the string is not observed) */
+static void ev_one(const char *name, const char *src, ULONG n, int plain)
 {
     ROUT = "PFEvaluate";
     snprintf(VEC, sizeof VEC, "\"%.80s\"%s", name, D1 ? " d1 '}'" : "");
-    DO2(ENT(LIB, E_EVAL, 0), setin(src[cur], n[cur]);
-        R[cur].d[0] = (ULONG)in[cur]; if (D1) R[cur].d[1] = D1);
-    SAME("d0", addr(R[cur].d[0]));
-    if (src[0] == src[1])                       /* else the addresses differ */
-        SAMEBYTES("string", in, BIG);
+    DO1(ENT(LIB, E_EVAL, 0), setin(src, n);
+        R.d[0] = (ULONG)in; if (D1) R.d[1] = D1);
+    /* the result; spaces only give the return address (BUG(orig) #644) */
+    OBSPTR("d0", addr(R.d[0]), NULL, 0);
+    if (plain)
+        OBSBYTES("string", in, BIG);
     state();
 }
 
-/* PFEvaluate on n bytes of s, the same in both sets */
+/* PFEvaluate on n bytes of s */
 static void ev_n(const char *s, ULONG n)
 {
-    const char *src[2] = { s, s };
-    const ULONG nn[2] = { n, n };
-    ev_sets(s, src, nn);
+    ev_one(s, s, n, 1);
 }
 
-/* PFEvaluate on s with %T = the address of the set's target (decimal),
-   %H the same in hex (8 digits) */
+/* PFEvaluate on s with %T = the address of the target (decimal), %H the
+   same in hex (8 digits) */
 static void ev(const char *s)
 {
-    static char buf[2][120];
-    const char *src[2] = { buf[0], buf[1] };
-    ULONG n[2];
-    int k;
+    static char buf[120];
+    const char *p;
+    char *q = buf;
 
     if (!strchr(s, '%') || strlen(s) > 60) {
         ev_n(s, strlen(s) + 1);
         return;
     }
-    for (k = 0; k < 2; k++) {
-        const char *p;
-        char *q = buf[k];
-        for (p = s; *p; p++)
-            if (p[0] == '%' && (p[1] == 'T' || p[1] == 'H')) {
-                q += sprintf(q, p[1] == 'T' ? "%lu" : "%08lx", (ULONG)target[k]);
-                p++;
-            } else
-                *q++ = *p;
-        *q = 0;
-        n[k] = strlen(buf[k]) + 1;
-    }
-    ev_sets(s, src, n);
+    for (p = s; *p; p++)
+        if (p[0] == '%' && (p[1] == 'T' || p[1] == 'H')) {
+            q += sprintf(q, p[1] == 'T' ? "%lu" : "%08lx", (ULONG)target);
+            p++;
+        } else
+            *q++ = *p;
+    *q = 0;
+    ev_one(s, buf, strlen(buf) + 1, 0);
 }
 
 /* gen = n times `item` then m times `op` */
@@ -211,7 +208,7 @@ static void evaluate(void)
 
     ROUT = "PFRegisters";
     strcpy(VEC, "block");
-    DO2(ENT(LIB, E_REGS, 0), R[cur].d[0] = (ULONG)block[cur]);
+    DO1(ENT(LIB, E_REGS, 0), R.d[0] = (ULONG)block);
     for (i = 0; i < sizeof r / sizeof r[0]; i++)
         ev(r[i]);
     /* {register} with d1 = '}' (the stale d1 the check sees) */
@@ -257,40 +254,46 @@ static void evaluate(void)
 
     ROUT = "PFRegisters";
     strcpy(VEC, "0");
-    DO2(ENT(LIB, E_REGS, 0), R[cur].d[0] = 0);
+    DO1(ENT(LIB, E_REGS, 0), R.d[0] = 0);
     ev("d0");
 }
 
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
-    int i, s;
+    int i;
 
     if (argc < 2) {
         printf("usage: rievallib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++) {
-        for (i = 0; i < 260; i++)
-            block[s][i] = 0x01000000UL * (i & 0x7f) + i * 7 + 3;
-        block[s][0] = (ULONG)target[s];             /* d0 */
-        block[s][8] = (ULONG)&target[s][1];         /* a0 */
-        block[s][9] = (ULONG)target[s] + 2;         /* a1 */
-        target[s][0] = 0x89abcdefUL;
-        target[s][1] = 0x12345678UL;
-    }
-    /* the results (d0) are compared by the tests; PFEvaluate's d0 is the
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
+    KEEPS("ConvToPostFix", d3|d5|d6|a6);
+    KEEPS("PFEvaluate", d4-d7|a3|a6);
+    KEEPS("PFRegisters", d0-d7|a0-a3|a6);
+    KEEPS("PFErrorType", d1-d7|a0-a3|a6);
+    KEEPS("PFErrorText", d1-d7|a1|a2|a6);
+    KEEPS("PFIndirectAddr", d1-d7|a0-a3|a6);
+    for (i = 0; i < 260; i++)
+        block[i] = 0x01000000UL * (i & 0x7f) + i * 7 + 3;
+    block[0] = (ULONG)target;                   /* d0 */
+    block[8] = (ULONG)&target[1];               /* a0 */
+    block[9] = (ULONG)target + 2;               /* a1 */
+    target[0] = 0x89abcdefUL;
+    target[1] = 0x12345678UL;
+    /* the results (d0) are observed by the tests; PFEvaluate's d0 is the
        input string by chance only */
     DONTCARE = 1;
 
     strcpy(VEC, "start");
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     state();
     ROUT = "finit";
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
 
     convtopostfix();
     evaluate();
