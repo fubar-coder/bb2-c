@@ -1,20 +1,21 @@
 /*
- * rwe riregistrylib - the C build of riregistrylib (userlib 3) against
- * the reference build of rwelibsrc/Registry/Registry3.bb
- * (ref/riregistrylib.obj, see libs/userlibs/rwe/refbuild.cmake), method
- * of rwecmp.h.
+ * rwe riregistrylib - the C build of riregistrylib (userlib 3) or the
+ * reference build of rwelibsrc/Registry/Registry3.bb
+ * (ref/riregistrylib.obj, see libs/userlibs/rwe/refbuild.cmake), one set
+ * as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/rwe_riregistrylib.txt).
  *
  *   riregistrylib DIR     (DIR with riregistrylib .obj/.orig)
  *
- * registry.library exists nowhere, so the test runs both sets first
- * without it and then with a mock made here (MakeLibrary, in the system
- * list as "registry.library"): each of its 33 functions logs its LVO and
+ * registry.library exists nowhere, so the test runs first without it and
+ * then with a mock made here (MakeLibrary, in the system list as
+ * "registry.library"): each of its 33 functions logs its LVO and
  * registers and returns a value the test chooses (LockRegistry: one of
- * three registry structures shared by both sets, with name, type and
- * value).  Both sets call the same mock; compared: d0, the log (the
- * LVOs, the registers the source loads for each - a0 the structure, the
- * string arguments, a3/a4 for the two calls that take them; pointers
- * into a set's string area relative to it), for the string functions a3
+ * three registry structures, with name, type and value).  Observed: d0,
+ * the log (the LVOs, the registers the source loads for each - a0 the
+ * structure, the string arguments, a3/a4 for the two calls that take
+ * them; pointers into the string area relative to it, into the test
+ * program as such), for the string functions a3
  * and the string area, the kept registers; the mock closed again by
  * finit.
  * Covered: without the library: init, IsRegistryOpen, LockRegistry and
@@ -35,6 +36,7 @@
  * there, DIFF); a structure while registry.library is missing (the call
  * goes to address LVO).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -60,10 +62,10 @@ struct rec {
     ULONG r[8];
 };
 #define NLOG 8
-static struct rec log_[2][NLOG];
-static int nlog[2];
-static UBYTE strbuf[2][256];            /* the string area of each set */
-static ULONG stk[2][8];                 /* the compiler's a2 stack */
+static struct rec log_[NLOG];
+static int nlog;
+static UBYTE strbuf[256];               /* the string area */
+static ULONG stk[8];                    /* the compiler's a2 stack */
 
 /* the registers each call gets from the source (CallLibrary: a0) */
 static ULONG lvomask(LONG lvo)
@@ -81,18 +83,18 @@ static ULONG lvomask(LONG lvo)
     }
 }
 
-/* a pointer into the set's string area made comparable */
+/* a pointer into the string area as an offset (| $53000000) */
 static ULONG norm(ULONG p)
 {
-    if (p >= (ULONG)strbuf[cur] && p < (ULONG)strbuf[cur] + sizeof strbuf[0])
-        return 0x53000000 | (p - (ULONG)strbuf[cur]);
+    if (p >= (ULONG)strbuf && p < (ULONG)strbuf + sizeof strbuf)
+        return 0x53000000 | (p - (ULONG)strbuf);
     return p;
 }
 
 static ULONG fkcall(LONG lvo, ULONG d0, ULONG d1, ULONG d2, ULONG a0, ULONG a1, ULONG a2,
                     ULONG a3, ULONG a4)
 {
-    struct rec *r = &log_[cur][nlog[cur] < NLOG ? nlog[cur]++ : NLOG - 1];
+    struct rec *r = &log_[nlog < NLOG ? nlog++ : NLOG - 1];
     ULONG v[8] = { d0, d1, d2, a0, a1, a2, a3, a4 };
     int i;
 
@@ -128,25 +130,25 @@ static void fake_add(void)
     fake = fake_library("registry.library", 0, vec, NVEC);
 }
 
-/* the logs of both sets the same */
+/* the log of the calls: the LVOs, the registers each gets (pointers into
+   the test program as such) */
 static void samelog(void)
 {
     char w[160];
     int i, k;
 
-    SAME("calls", nlog[cur]);
-    for (i = 0; i < nlog[0] && i < nlog[1]; i++) {
-        ULONG m = lvomask(log_[0][i].lvo);
+    OBS("calls", nlog);
+    for (i = 0; i < nlog; i++) {
+        ULONG m = lvomask(log_[i].lvo);
         snprintf(w, sizeof w, "call %d LVO", i);
-        SAME(w, log_[cur][i].lvo);
+        OBS(w, log_[i].lvo);
         for (k = 0; k < 8; k++)
             if (m & M(k)) {
-                snprintf(w, sizeof w, "call %d LVO %ld %c%d", i, log_[0][i].lvo,
-                         k < 3 ? 'd' : 'a', k < 3 ? k : k - 3);
-                SAME(w, log_[cur][i].r[k]);
+                snprintf(w, sizeof w, "call %d %c%d", i, k < 3 ? 'd' : 'a', k < 3 ? k : k - 3);
+                OBSPTR(w, log_[i].r[k], NULL, 0);
             }
     }
-    nlog[0] = nlog[1] = 0;
+    nlog = 0;
 }
 
 static void setrs(int i, const char *name, UWORD type, ULONG data)
@@ -166,11 +168,15 @@ static void cmd(int idx, int form, const char *name, ULONG d0, ULONG d1, ULONG d
     ROUT = name;
     fk_ret += 0x10001;
     sprintf(VEC, "form %d ret $%08lX", form, fk_ret);
-    DO2(ENT(LIB, idx, form), R[cur].d[0] = d0; R[cur].d[1] = d1; R[cur].d[2] = d2;
-        R[cur].d[3] = d3; R[cur].d[4] = d4);
+    /* the original leaves the "insert before" name in a4 (the DIFF of
+       libs/userlibs/rwe/riregistrylib.c): exempt */
+    DONTCARE = idx == E_INSERT ? 1UL << 12 : 0;
+    DO1(ENT(LIB, idx, form), R.d[0] = d0; R.d[1] = d1; R.d[2] = d2;
+        R.d[3] = d3; R.d[4] = d4);
+    DONTCARE = 0;
     /* the statements leave the library's d0 (the C build keeps d0) */
     if (idx != E_ACCESS && idx != E_DELLIBVARS && idx != E_FREESTRUCT)
-        SAME("d0", R[cur].d[0]);
+        OBS("d0", R.d[0]);
     samelog();
 }
 
@@ -221,16 +227,16 @@ static void strfn(int idx, const char *name, const char *arg, ULONG ret)
     ROUT = name;
     sprintf(VEC, "\"%s\" ret %lu", arg ? arg : "", ret);
     fk_ret = ret;
-    DO2(ENT(LIB, idx, 0),
-        memset(strbuf[cur], 0x77, sizeof strbuf[cur]);
-        if (arg) strcpy((char *)strbuf[cur], arg);
-        stk[cur][7] = arg ? strlen(arg) : 0x11111111;
-        R[cur].d[0] = (ULONG)strbuf[cur];
-        R[cur].a[2] = (ULONG)&stk[cur][8];
-        R[cur].a[3] = (ULONG)strbuf[cur] + (arg ? strlen(arg) + 1 : 4));
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)strbuf[cur]);
-    SAMEBYTES("string area", strbuf, sizeof strbuf[0]);
+    DO1(ENT(LIB, idx, 0),
+        memset(strbuf, 0x77, sizeof strbuf);
+        if (arg) strcpy((char *)strbuf, arg);
+        stk[7] = arg ? strlen(arg) : 0x11111111;
+        R.d[0] = (ULONG)strbuf;
+        R.a[2] = (ULONG)&stk[8];
+        R.a[3] = (ULONG)strbuf + (arg ? strlen(arg) + 1 : 4));
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)strbuf);
+    OBSBYTES("string area", strbuf, sizeof strbuf);
     samelog();
 }
 
@@ -252,8 +258,8 @@ static void lock(ULONG mode, ULONG to)
     fk_lock = to;
     ROUT = "LockRegistry";
     sprintf(VEC, "mode %lu", mode);
-    DO2(ENT(LIB, E_LOCK, 0), R[cur].d[0] = mode);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_LOCK, 0), R.d[0] = mode);
+    OBSPTR("d0", R.d[0], NULL, 0);    /* the structure */
     samelog();
 }
 
@@ -261,7 +267,7 @@ static void unlock(const char *what)
 {
     ROUT = "UnlockRegistry";
     strcpy(VEC, what);
-    DO2(ENT(LIB, E_UNLOCK, 0), (void)0);
+    DO1(ENT(LIB, E_UNLOCK, 0), (void)0);
     samelog();
 }
 
@@ -270,8 +276,8 @@ static void current(const char *what)
 {
     ROUT = "NextParseItem";
     snprintf(VEC, sizeof VEC, "current: %s", what);
-    DO2(ENT(LIB, E_NEXT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_NEXT, 0), (void)0);
+    OBSPTR("d0", R.d[0], NULL, 0);    /* the structure */
     samelog();
 }
 
@@ -279,15 +285,15 @@ static void isopen(void)
 {
     ROUT = "IsRegistryOpen";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_OPEN, 0), (void)0);
+    DO1(ENT(LIB, E_OPEN, 0), (void)0);
     /* the mock's base as 1: its address differs from run to run */
-    SAME("d0", fake && R[cur].d[0] == (ULONG)fake ? 1 : R[cur].d[0]);
+    OBS("d0", fake && R.d[0] == (ULONG)fake ? 1 : R.d[0]);
 }
 
 /* the code of a library's init (header +22) or finit (+28) nullsub */
 static APTR nullsub(int off)
 {
-    struct lib *l = getlib(&sets[cur], LIB);
+    struct lib *l = getlib(&loaded, LIB);
     UBYTE *p = (UBYTE *)L(l->code + off);
     p += 6;
     while (W(p))
@@ -299,7 +305,7 @@ static void initfinit(int off)
 {
     ROUT = off == 22 ? "init" : "finit";
     strcpy(VEC, "");
-    DO2(nullsub(off), (void)0);
+    DO1(nullsub(off), (void)0);
     samelog();
 }
 
@@ -312,15 +318,52 @@ int main(int argc, char **argv)
         printf("usage: riregistrylib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("IsRegistryOpen", d1-d7|a0-a3|a6);
+    KEEPS("LockRegistry", d2-d7|a2|a3);
+    KEEPS("SetRegistryBaseLibrary", d2-d6|a2|a3);
+    KEEPS("ExistsRegistryLibrary", d2-d6|a2|a3);
+    KEEPS("GetRegistryVariable", d2-d6|a2|a3);
+    KEEPS("SetRegistryVariable", d2-d6|a3);
+    KEEPS("ChangeRegistryVariable", d2-d6|a3);
+    KEEPS("NewRegistryLibrary", d3-d6);
+    KEEPS("ParseRegistryLibrary", d2-d6|a2|a3);
+    KEEPS("NextParseItem", d2-d6|a2|a3);
+    KEEPS("ChangeRegistryAccess", d2-d6|a2|a3);
+    KEEPS("DeleteRegistryLibrary", d2-d6|a2|a3);
+    KEEPS("DeleteRegistryVariable", d2-d6|a2|a3);
+    KEEPS("NumRegistryLibraryVariables", d2-d6|a2|a3);
+    KEEPS("SaveRegistryLibrary", d2-d6|a3);
+    KEEPS("LoadRegistryLibrary", d2-d6|a3);
+    KEEPS("SetRegistryBoolVariable", d2-d6|a3);
+    KEEPS("SetRegistryIntVariable", d2-d6|a3);
+    KEEPS("DeleteRegistryLibraryVariables", d2-d6|a2|a3);
+    KEEPS("SetLibraryValue", d2-d6|a3);
+    KEEPS("SetRegistryVariableIndex", d3-d6|a3);
+    KEEPS("RenameRegistryVariable", d2-d6|a3);
+    KEEPS("SaveLibraryVariables", d2-d6|a3);
+    KEEPS("RenameRegistryLibrary", d2-d6|a3);
+    KEEPS("InsertNewRegistryLibrary", d2|d4-d6);
+    KEEPS("GetStructureVariables", d2-d6|a3);
+    KEEPS("FreeStructureVariables", d2-d6|a3);
+    KEEPS("LoadLibraryVariables", d2-d6|a3);
+    KEEPS("GetLibraryValue$", d2-d6);
+    KEEPS("GetRegistryStringVariable", d2-d6);
+    KEEPS("ParseItemName$", d1-d7|a1|a2|a6);
+    KEEPS("ParseItemValue$", d1-d7|a1|a2|a6);
+    KEEPS("GetRegistryIntVariable", d2-d6|a2|a3);
+    KEEPS("GetRegistryBoolVariable", d2-d6|a2|a3);
+    KEEPS("finit", d2-d7|a2|a3);
+    KEEPS("UnlockRegistry", d2-d6|a2|a3);
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
 
     /* no registry.library */
     initfinit(22);
     isopen();
-    BOTH("not open", R[cur].d[0] == 0);
+    BOTH("not open", R.d[0] == 0);
     lock(1, (ULONG)rs[0]);
     all();
     strings();
@@ -330,7 +373,7 @@ int main(int argc, char **argv)
     fake_add();
     initfinit(22);
     isopen();
-    BOTH("open", R[cur].d[0] == (ULONG)fake);
+    BOTH("open", R.d[0] == (ULONG)fake);
     all();                              /* no structure yet: nothing called */
     setrs(0, "Item", 1, (ULONG)"String value");
     lock(2, (ULONG)rs[0]);

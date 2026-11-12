@@ -1,31 +1,31 @@
 /*
  * rwe ritrackerlib - the Protracker player (TrackInit, TrackPlay, ...):
- * the C build against the reference build of rwelibsrc/ptlib/ptlib6.bb
- * (ritrackerlib.orig), method of rwecmp.h.
+ * the C build or the reference build of rwelibsrc/ptlib/ptlib6.bb
+ * (ritrackerlib.orig), one set as LIBSET says, observed as cases
+ * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_ritrackerlib.txt).
  *
  *   ritrackerlib DIR     (DIR with memlib, intlib, ritrackerlib .obj/.orig)
  *
  * Paula's registers are write-only: the test redirects them.  Every
- * absolute address $DFF000-$DFF1FF in the code of both loaded libraries
+ * absolute address $DFF000-$DFF1FF in the code of the loaded library
  * (LEA $DFF0A0, MOVE.W ...,$DFF096, MOVE.L #$DFF000 ...) is patched to a
- * RAM copy of the custom chip registers per set, filled with a pattern
- * before each call; afterwards the registers written (AUDxLC as module
- * offsets, AUDxLEN/PER/VOL, DMACON's last value) are compared, and no
- * audio is played.  Also compared after every call: the data block
- * mt_FunkTable ... mt_olddata (1538 bytes: the voices' n_note ...
- * n_reallength, the sample starts, speed, counter, song position,
- * pattern position, flags, DMA_Wait, playing, status, mask) and the glue
- * variables (ciatime ... mt_data) - the C build has both in the
- * original's layout, the test finds them in both libraries (by the
- * tables, by RealTempo and the module address); pointers into the module
- * as offsets (each set plays its own copy); the module bytes and 16
- * bytes behind it (mt_init clears the first longword of every sample,
- * also behind the module, EFx inverts sample bytes); the filter bit of
- * CIA-A PRA; the counter of CIA-B timer A (a tempo command writes the
- * timer's latch; the test allocates the timer through ciab.resource and
- * keeps it stopped, so writing the high byte loads the counter); and the
- * registers the original keeps.  The CIA state is put back between the
- * two sets' calls.
+ * RAM copy of the custom chip registers (at least one; their number
+ * differs between the builds), filled with a pattern before each call; afterwards the registers
+ * written (AUDxLC as module offsets, AUDxLEN/PER/VOL, DMACON's last
+ * value) are observed, and no audio is played.  Also observed after
+ * every call: the data block mt_FunkTable ... mt_olddata (1538 bytes: the
+ * voices' n_note ... n_reallength, the sample starts, speed, counter,
+ * song position, pattern position, flags, DMA_Wait, playing, status,
+ * mask) and the glue variables (ciatime ... mt_data) - the C build has
+ * both in the original's layout, the test finds them in the library (by
+ * the tables, by RealTempo and the module address); pointers into the
+ * module as offsets; the module bytes and 16 bytes behind it (mt_init
+ * clears the first longword of every sample, also behind the module, EFx
+ * inverts sample bytes); the filter bit of CIA-A PRA; the counter of
+ * CIA-B timer A (a tempo command writes the timer's latch; the test
+ * allocates the timer through ciab.resource and keeps it stopped, so
+ * writing the high byte loads the counter); and the kept registers.
  *
  * The module is built in memory: 31 samples (random lengths,
  * loops, finetunes, volumes; empty ones at the end), four patterns with
@@ -44,6 +44,7 @@
  * 15 (both read outside the library's tables, different memory in the
  * two builds), and the dead CIA/SetInt code.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/interrupts.h>
@@ -66,13 +67,13 @@ enum { TRACKINIT, TRACKPLAY, TRACKSTOP, TRACKDMA, TRACKER, TRACKERCHANNELS, TRAC
 #define GUARD 16
 
 static UBYTE ref[MODMAX];
-static UBYTE *mod[2];
+static UBYTE *mod;
 static ULONG modsz;
-static UBYTE *block[2], *glue[2];
+static UBYTE *block, *glue;
 #define FAKESZ 0x200                    /* $DFF000 ... $DFF1FF */
-static UBYTE *fake[2];                  /* the custom chip registers of each set */
-static UWORD hwtim[2];
-static UBYTE hwpra[2];
+static UBYTE *fake;                     /* the custom chip registers (RAM) */
+static UWORD hwtim;
+static UBYTE hwpra;
 static int havetimer;
 
 static UWORD getw(const UBYTE *p) { return (UWORD)(p[0] << 8 | p[1]); }
@@ -104,41 +105,41 @@ static UBYTE *findglue(struct lib *l, UBYTE *m, UBYTE *blk)
 }
 
 /* a copy with every pointer into the module as offset | $40000000 */
-static void rel(UBYTE *p, int s)
+static void rel(UBYTE *p)
 {
     ULONG v = getl(p);
-    if (v >= (ULONG)mod[s] && v < (ULONG)mod[s] + modsz + GUARD + 0x10000)
-        putl(p, v - (ULONG)mod[s] + 0x40000000UL);
+    if (v >= (ULONG)mod && v < (ULONG)mod + modsz + GUARD + 0x10000)
+        putl(p, v - (ULONG)mod + 0x40000000UL);
 }
 
-static void snapshot(int s, UBYTE *b, UBYTE *g)
+static void snapshot(UBYTE *b, UBYTE *g)
 {
     int i;
-    memcpy(b, block[s], BLOCKSZ);
+    memcpy(b, block, BLOCKSZ);
     for (i = 0; i < 4; i++) {
-        rel(b + 1200 + 44 * i + 4, s);          /* n_start */
-        rel(b + 1200 + 44 * i + 10, s);         /* n_loopstart */
-        rel(b + 1200 + 44 * i + 36, s);         /* n_wavestart */
+        rel(b + 1200 + 44 * i + 4);          /* n_start */
+        rel(b + 1200 + 44 * i + 10);         /* n_loopstart */
+        rel(b + 1200 + 44 * i + 36);         /* n_wavestart */
     }
     for (i = 0; i < 32; i++)
-        rel(b + 1376 + 4 * i, s);               /* mt_SampleStarts */
-    rel(b + 1504, s);                           /* mt_SongDataPtr */
-    rel(b + 1534, s);                           /* mt_olddata */
-    if (g && glue[s]) {
-        memcpy(g, glue[s], GLUESZ);
-        rel(g + 24, s);                         /* mt_data */
+        rel(b + 1376 + 4 * i);               /* mt_SampleStarts */
+    rel(b + 1504);                           /* mt_SongDataPtr */
+    rel(b + 1534);                           /* mt_olddata */
+    if (g && glue) {
+        memcpy(g, glue, GLUESZ);
+        rel(g + 24);                         /* mt_data */
     }
 }
 
 /* the custom chip registers before each call: notes for an F00 on voices
    1-3 (the voices behind read their notes here, BUG(orig), #475): period 428,
    sample 1, C20 */
-static void fillfake(int s)
+static void fillfake(void)
 {
     static const UBYTE n[4] = { 0x01, 0xac, 0x1c, 0x20 };
     int i;
     for (i = 0; i < FAKESZ; i++)
-        fake[s][i] = n[i & 3];
+        fake[i] = n[i & 3];
 }
 
 /* every absolute address $DFF000-$DFF1FF in the library code (the LEA,
@@ -158,75 +159,46 @@ static int patchcustom(struct lib *l, UBYTE *f)
     return n;
 }
 
-static void samemem(const char *what, const UBYTE *a, const UBYTE *b, ULONG n)
-{
-    ULONG i;
-    char buf[40];
-    if (!tape_bytes(what, a, b, n)) {
-        checks++;
-        return;
-    }
-    for (i = 0; i < n; i++)
-        if (a[i] != b[i]) {
-            sprintf(buf, "%s +%lu", what, i);
-            fail(buf, a[i], b[i]);
-            return;
-        }
-    checks++;
-}
-
 static void compare(void)
 {
-    static UBYTE b[2][BLOCKSZ], g[2][GLUESZ];
-    int s;
-    for (s = 0; s < 2; s++)
-        snapshot(s, b[s], g[s]);
-    samemem("state", b[0], b[1], BLOCKSZ);
-    if (glue[0] && glue[1])
-        samemem("glue", g[0], g[1], GLUESZ);
-    samemem("module", mod[0], mod[1], modsz + GUARD);
-    {
-        static UBYTE f[2][FAKESZ];
-        int i;
-        for (s = 0; s < 2; s++) {
-            memcpy(f[s], fake[s], FAKESZ);
-            for (i = 0; i < 4; i++)
-                rel(f[s] + 0xa0 + 16 * i, s);   /* AUDxLC */
-        }
-        samemem("custom", f[0], f[1], FAKESZ);
-    }
-    SAME("CIA-A PRA filter", hwpra[cur]);
-    SAME("CIA-B timer A", hwtim[cur]);
+    static UBYTE b[BLOCKSZ], g[GLUESZ], f[FAKESZ];
+    int i;
+    snapshot(b, g);
+    OBSBYTES("state", b, BLOCKSZ);
+    if (glue)
+        OBSBYTES("glue", g, GLUESZ);
+    OBSBYTES("module", mod, modsz + GUARD);
+    memcpy(f, fake, FAKESZ);
+    for (i = 0; i < 4; i++)
+        rel(f + 0xa0 + 16 * i);                 /* AUDxLC */
+    OBSBYTES("custom", f, FAKESZ);
+    OBS("CIA-A PRA filter", hwpra);
+    OBS("CIA-B timer A", hwtim);
 }
 
-/* one call on both sets, the hardware state the same before each */
-static void call2(int idx, ULONG d0)
+/* one call, the hardware state defined before it */
+static void call1(int idx, ULONG d0)
 {
-    UBYTE pra = CIAAPRA & 2;
-
-    for (cur = 0; cur < 2; cur++) {
-        APTR fn = ENT(LIB, idx, 0);
-        fillfake(cur);
-        CIAAPRA = (UBYTE)((CIAAPRA & ~2) | pra);
-        if (havetimer) {
-            CIABTALO = 0xa5;
-            CIABTAHI = 0x5a;
-        }
-        markregs(&R[cur]);
-        if (idx == TRACKINIT)
-            R[cur].d[0] = d0 ? (ULONG)mod[cur] : 0;
-        else
-            R[cur].d[0] = d0;
-        IN[cur] = R[cur];
-        if (!fn) {
-            check("entry missing", FALSE);
-            continue;
-        }
-        NARGS = 0;
-        CCR[cur] = callstk(fn, &R[cur], ARGS[cur], NARGS, &POP[cur]);
-        hwpra[cur] = CIAAPRA & 2;
-        hwtim[cur] = havetimer ? (UWORD)(CIABTAHI << 8 | CIABTALO) : 0;
+    APTR fn = ENT(LIB, idx, 0);
+    fillfake();
+    if (havetimer) {
+        CIABTALO = 0xa5;
+        CIABTAHI = 0x5a;
     }
+    markregs(&R);
+    if (idx == TRACKINIT)
+        R.d[0] = d0 ? (ULONG)mod : 0;
+    else
+        R.d[0] = d0;
+    IN = R;
+    if (!fn) {
+        check("entry missing", FALSE);
+        return;
+    }
+    NARGS = 0;
+    CCR = callstk(fn, &R, ARGS, NARGS, &POP);
+    hwpra = CIAAPRA & 2;
+    hwtim = havetimer ? (UWORD)(CIABTAHI << 8 | CIABTALO) : 0;
     preserve();
     compare();
 }
@@ -235,7 +207,7 @@ static void cmd(int idx, const char *name, ULONG d0)
 {
     ROUT = name;
     sprintf(VEC, "$%lX", d0);
-    call2(idx, d0);
+    call1(idx, d0);
 }
 
 static void ticks(const char *what, int n)
@@ -244,7 +216,7 @@ static void ticks(const char *what, int n)
     ROUT = "TrackPlay";
     for (i = 0; i < n; i++) {
         sprintf(VEC, "%s tick %d", what, i);
-        call2(TRACKPLAY, 0);
+        call1(TRACKPLAY, 0);
     }
 }
 
@@ -399,11 +371,8 @@ static void build_speed(void)
 
 static void install(void)
 {
-    int s;
-    for (s = 0; s < 2; s++) {
-        memcpy(mod[s], ref, MODMAX);
-        memset(mod[s] + modsz, 0x77, GUARD);
-    }
+    memcpy(mod, ref, MODMAX);
+    memset(mod + modsz, 0x77, GUARD);
 }
 
 static void dummy_int(void)
@@ -416,28 +385,37 @@ int main(int argc, char **argv)
     static struct Interrupt timint;
     struct Library *ciab;
     UBYTE cra = 0;
-    int s, npatch[2] = { 0, 0 };
+    int npatch = 0;
 
     if (argc < 2) {
         printf("usage: ritrackerlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++) {
-        mod[s] = AllocMem(MODMAX + GUARD, MEMF_CHIP | MEMF_CLEAR);
-        block[s] = findblock(getlib(&sets[s], LIB));
-        fake[s] = AllocMem(FAKESZ, MEMF_PUBLIC | MEMF_CLEAR);
-        if (fake[s])
-            npatch[s] = patchcustom(getlib(&sets[s], LIB), fake[s]);
-    }
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("finit (no TrackInit)", d0-d7|a0-a3|a6);
+    KEEPS("TrackInit", d3-d7|a3|a6);
+    KEEPS("TrackPlay", d0-d7|a0-a3|a6);
+    KEEPS("TrackDMA", d0-d7|a0-a3|a6);
+    KEEPS("TrackerChannels", d0-d7|a1-a3|a6);
+    KEEPS("Tracker", d0-d7|a0-a3|a6);
+    KEEPS("TrackerPause", d0-d7|a0-a3|a6);
+    KEEPS("TrackInit (Tracker Off)", d0-d7|a0-a3|a6);
+    KEEPS("TrackStop", d0-d7|a1-a3|a6);
+    KEEPS("TrackInit (speed module)", d3-d7|a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
+    KEEPS("finit (again)", d0-d7|a0-a3|a6);
+    mod = AllocMem(MODMAX + GUARD, MEMF_CHIP | MEMF_CLEAR);
+    block = findblock(getlib(&loaded, LIB));
+    fake = AllocMem(FAKESZ, MEMF_PUBLIC | MEMF_CLEAR);
+    if (fake)
+        npatch = patchcustom(getlib(&loaded, LIB), fake);
     CacheClearU();
-    printf("custom chip addresses patched: orig %d, C %d\n", npatch[0], npatch[1]);
-    check("ritrackerlib: custom chip addresses (orig)", npatch[0] > 0);
-    check("ritrackerlib: custom chip addresses (C)", npatch[1] > 0);
-    check("ritrackerlib: data block found (orig)", block[0] != NULL);
-    check("ritrackerlib: data block found (C)", block[1] != NULL);
-    if (!block[0] || !block[1] || !mod[0] || !mod[1] || !fake[0] || !fake[1])
+    printf("custom chip addresses patched: %d\n", npatch);
+    check("ritrackerlib: custom chip addresses patched", npatch > 0);
+    check("ritrackerlib: data block found", block != NULL);
+    if (!block || !mod || !fake)
         return rwe_done(LIB);
 
     /* CIA-B timer A for the test, stopped, continuous mode */
@@ -454,16 +432,14 @@ int main(int argc, char **argv)
 
     ROUT = "init";
     strcpy(VEC, "");
-    call2(INIT, 0);
+    call1(INIT, 0);
     cmd(FINIT, "finit (no TrackInit)", 0);
 
     build_main();
     install();
     cmd(TRACKINIT, "TrackInit", 1);
-    for (s = 0; s < 2; s++)
-        glue[s] = findglue(getlib(&sets[s], LIB), mod[s], block[s]);
-    check("ritrackerlib: glue found (orig)", glue[0] != NULL);
-    check("ritrackerlib: glue found (C)", glue[1] != NULL);
+    glue = findglue(getlib(&loaded, LIB), mod, block);
+    check("ritrackerlib: glue found", glue != NULL);
     compare();
 
     ticks("DMA_Wait 4000", 12);
@@ -507,9 +483,7 @@ int main(int argc, char **argv)
         CIABCRA = cra;
         RemICRVector(ciab, CIAICRB_TA, &timint);
     }
-    for (s = 0; s < 2; s++) {
-        FreeMem(mod[s], MODMAX + GUARD);
-        FreeMem(fake[s], FAKESZ);
-    }
+    FreeMem(mod, MODMAX + GUARD);
+    FreeMem(fake, FAKESZ);
     return rwe_done(LIB);
 }

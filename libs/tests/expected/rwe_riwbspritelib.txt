@@ -1,0 +1,3717 @@
+# capture rwe_riwbspritelib 1
+WBSpriteX (no sprite)|kept|10005,0,0,0|1	kept
+WBSpriteX (no sprite)|popped|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|d0|10005,0,0,0|1	$00010830
+WBSpriteX (no sprite)|graphics.library open count|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +6|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +8|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +10|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +12|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +14|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +16|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +18|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +20|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +22|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +24|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +26|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +28|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +30|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +32|10005,0,0,0|1	$00008100
+WBSpriteX (no sprite)|block +34|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +36|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +38|10005,0,0,0|1	$00000010
+WBSpriteX (no sprite)|block +40|10005,0,0,0|1	$00008100
+WBSpriteX (no sprite)|block +42|10005,0,0,0|1	$00000006
+WBSpriteX (no sprite)|block +44|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +46|10005,0,0,0|1	$00000010
+WBSpriteX (no sprite)|block +48|10005,0,0,0|1	$00008100
+WBSpriteX (no sprite)|block +50|10005,0,0,0|1	$00000002
+WBSpriteX (no sprite)|block +52|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +54|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +56|10005,0,0,0|1	$00008100
+WBSpriteX (no sprite)|block +58|10005,0,0,0|1	$00000004
+WBSpriteX (no sprite)|block +60|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +62|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +64|10005,0,0,0|1	$00008100
+WBSpriteX (no sprite)|block +66|10005,0,0,0|1	$00000008
+WBSpriteX (no sprite)|block +68|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +70|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +72|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +74|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +76|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +78|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +80|10005,0,0,0|1	$00008200
+WBSpriteX (no sprite)|block +82|10005,0,0,0|1	$00000020
+WBSpriteX (no sprite)|block +84|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +86|10005,0,0,0|1	$00000001
+WBSpriteX (no sprite)|block +88|10005,0,0,0|1	$00008200
+WBSpriteX (no sprite)|block +90|10005,0,0,0|1	$00000022
+WBSpriteX (no sprite)|block +92|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +94|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +96|10005,0,0,0|1	$00008200
+WBSpriteX (no sprite)|block +98|10005,0,0,0|1	$00000024
+WBSpriteX (no sprite)|block +100|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +102|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +104|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +106|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +108|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +110|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +112|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +114|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +116|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +118|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +120|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +122|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +124|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +126|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +128|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +130|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +132|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +134|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +136|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +138|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +140|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +142|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +144|10005,0,0,0|1	$00006772
+WBSpriteX (no sprite)|block +146|10005,0,0,0|1	$00006170
+WBSpriteX (no sprite)|block +148|10005,0,0,0|1	$00006869
+WBSpriteX (no sprite)|block +150|10005,0,0,0|1	$00006373
+WBSpriteX (no sprite)|block +152|10005,0,0,0|1	$00002E6C
+WBSpriteX (no sprite)|block +154|10005,0,0,0|1	$00006962
+WBSpriteX (no sprite)|block +156|10005,0,0,0|1	$00007261
+WBSpriteX (no sprite)|block +158|10005,0,0,0|1	$00007279
+WBSpriteX (no sprite)|block +160|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +162|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|block +164|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 0 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 1 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 1 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 2 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 2 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 3 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 3 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 4 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 4 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 5 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 5 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 6 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 6 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX (no sprite)|sprite 7 field 0|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 field 1|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 field 2|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 field 3|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 field 4|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 field 5|10005,0,0,0|1	$00000000
+WBSpriteX (no sprite)|sprite 7 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|kept|0,0,0,0|1	kept
+init|popped|0,0,0,0|1	$00000000
+init|d0|0,0,0,0|1	$40004EE4
+init|graphics.library open count|0,0,0,0|1	$00000000
+init|block +0|0,0,0,0|1	$00000000
+init|block +2|0,0,0,0|1	$00000000
+init|block +4|0,0,0,0|1	$00000000
+init|block +6|0,0,0,0|1	$00000000
+init|block +8|0,0,0,0|1	$00000000
+init|block +10|0,0,0,0|1	$00000000
+init|block +12|0,0,0,0|1	$00000000
+init|block +14|0,0,0,0|1	$00000000
+init|block +16|0,0,0,0|1	$00000000
+init|block +18|0,0,0,0|1	$00000000
+init|block +20|0,0,0,0|1	$00000000
+init|block +22|0,0,0,0|1	$00000000
+init|block +24|0,0,0,0|1	$00000000
+init|block +26|0,0,0,0|1	$00000000
+init|block +28|0,0,0,0|1	$00000000
+init|block +30|0,0,0,0|1	$00000000
+init|block +32|0,0,0,0|1	$00008100
+init|block +34|0,0,0,0|1	$00000000
+init|block +36|0,0,0,0|1	$00000000
+init|block +38|0,0,0,0|1	$00000010
+init|block +40|0,0,0,0|1	$00008100
+init|block +42|0,0,0,0|1	$00000006
+init|block +44|0,0,0,0|1	$00000000
+init|block +46|0,0,0,0|1	$00000010
+init|block +48|0,0,0,0|1	$00008100
+init|block +50|0,0,0,0|1	$00000002
+init|block +52|0,0,0,0|1	$00000000
+init|block +54|0,0,0,0|1	$00000000
+init|block +56|0,0,0,0|1	$00008100
+init|block +58|0,0,0,0|1	$00000004
+init|block +60|0,0,0,0|1	$00000000
+init|block +62|0,0,0,0|1	$00000000
+init|block +64|0,0,0,0|1	$00008100
+init|block +66|0,0,0,0|1	$00000008
+init|block +68|0,0,0,0|1	$00000000
+init|block +70|0,0,0,0|1	$00000000
+init|block +72|0,0,0,0|1	$00000000
+init|block +74|0,0,0,0|1	$00000000
+init|block +76|0,0,0,0|1	$00000000
+init|block +78|0,0,0,0|1	$00000000
+init|block +80|0,0,0,0|1	$00008200
+init|block +82|0,0,0,0|1	$00000020
+init|block +84|0,0,0,0|1	$00000000
+init|block +86|0,0,0,0|1	$00000001
+init|block +88|0,0,0,0|1	$00008200
+init|block +90|0,0,0,0|1	$00000022
+init|block +92|0,0,0,0|1	$00000000
+init|block +94|0,0,0,0|1	$00000000
+init|block +96|0,0,0,0|1	$00008200
+init|block +98|0,0,0,0|1	$00000024
+init|block +100|0,0,0,0|1	$00000000
+init|block +102|0,0,0,0|1	$00000000
+init|block +104|0,0,0,0|1	$00000000
+init|block +106|0,0,0,0|1	$00000000
+init|block +108|0,0,0,0|1	$00000000
+init|block +110|0,0,0,0|1	$00000000
+init|block +112|0,0,0,0|1	$00000000
+init|block +114|0,0,0,0|1	$00000000
+init|block +116|0,0,0,0|1	$00000000
+init|block +118|0,0,0,0|1	$00000000
+init|block +120|0,0,0,0|1	$00000000
+init|block +122|0,0,0,0|1	$00000000
+init|block +124|0,0,0,0|1	$00000000
+init|block +126|0,0,0,0|1	$00000000
+init|block +128|0,0,0,0|1	$00000000
+init|block +130|0,0,0,0|1	$00000000
+init|block +132|0,0,0,0|1	$00000000
+init|block +134|0,0,0,0|1	$00000000
+init|block +136|0,0,0,0|1	$00000000
+init|block +138|0,0,0,0|1	$00000000
+init|block +140|0,0,0,0|1	$00000000
+init|block +142|0,0,0,0|1	$00000000
+init|block +144|0,0,0,0|1	$00006772
+init|block +146|0,0,0,0|1	$00006170
+init|block +148|0,0,0,0|1	$00006869
+init|block +150|0,0,0,0|1	$00006373
+init|block +152|0,0,0,0|1	$00002E6C
+init|block +154|0,0,0,0|1	$00006962
+init|block +156|0,0,0,0|1	$00007261
+init|block +158|0,0,0,0|1	$00007279
+init|block +160|0,0,0,0|1	$00000000
+init|block +162|0,0,0,0|1	$00000000
+init|block +164|0,0,0,0|1	$00000001
+init|sprite 0 field 0|0,0,0,0|1	$00000000
+init|sprite 0 field 1|0,0,0,0|1	$00000000
+init|sprite 0 field 2|0,0,0,0|1	$00000000
+init|sprite 0 field 3|0,0,0,0|1	$00000000
+init|sprite 0 field 4|0,0,0,0|1	$00000000
+init|sprite 0 field 5|0,0,0,0|1	$00000000
+init|sprite 0 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 1 field 0|0,0,0,0|1	$00000000
+init|sprite 1 field 1|0,0,0,0|1	$00000000
+init|sprite 1 field 2|0,0,0,0|1	$00000000
+init|sprite 1 field 3|0,0,0,0|1	$00000000
+init|sprite 1 field 4|0,0,0,0|1	$00000000
+init|sprite 1 field 5|0,0,0,0|1	$00000000
+init|sprite 1 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 2 field 0|0,0,0,0|1	$00000000
+init|sprite 2 field 1|0,0,0,0|1	$00000000
+init|sprite 2 field 2|0,0,0,0|1	$00000000
+init|sprite 2 field 3|0,0,0,0|1	$00000000
+init|sprite 2 field 4|0,0,0,0|1	$00000000
+init|sprite 2 field 5|0,0,0,0|1	$00000000
+init|sprite 2 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 3 field 0|0,0,0,0|1	$00000000
+init|sprite 3 field 1|0,0,0,0|1	$00000000
+init|sprite 3 field 2|0,0,0,0|1	$00000000
+init|sprite 3 field 3|0,0,0,0|1	$00000000
+init|sprite 3 field 4|0,0,0,0|1	$00000000
+init|sprite 3 field 5|0,0,0,0|1	$00000000
+init|sprite 3 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 4 field 0|0,0,0,0|1	$00000000
+init|sprite 4 field 1|0,0,0,0|1	$00000000
+init|sprite 4 field 2|0,0,0,0|1	$00000000
+init|sprite 4 field 3|0,0,0,0|1	$00000000
+init|sprite 4 field 4|0,0,0,0|1	$00000000
+init|sprite 4 field 5|0,0,0,0|1	$00000000
+init|sprite 4 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 5 field 0|0,0,0,0|1	$00000000
+init|sprite 5 field 1|0,0,0,0|1	$00000000
+init|sprite 5 field 2|0,0,0,0|1	$00000000
+init|sprite 5 field 3|0,0,0,0|1	$00000000
+init|sprite 5 field 4|0,0,0,0|1	$00000000
+init|sprite 5 field 5|0,0,0,0|1	$00000000
+init|sprite 5 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 6 field 0|0,0,0,0|1	$00000000
+init|sprite 6 field 1|0,0,0,0|1	$00000000
+init|sprite 6 field 2|0,0,0,0|1	$00000000
+init|sprite 6 field 3|0,0,0,0|1	$00000000
+init|sprite 6 field 4|0,0,0,0|1	$00000000
+init|sprite 6 field 5|0,0,0,0|1	$00000000
+init|sprite 6 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+init|sprite 7 field 0|0,0,0,0|1	$00000000
+init|sprite 7 field 1|0,0,0,0|1	$00000000
+init|sprite 7 field 2|0,0,0,0|1	$00000000
+init|sprite 7 field 3|0,0,0,0|1	$00000000
+init|sprite 7 field 4|0,0,0,0|1	$00000000
+init|sprite 7 field 5|0,0,0,0|1	$00000000
+init|sprite 7 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|kept|A,14,1,2|1	kept
+GetWBSprite|popped|A,14,1,2|1	$00000000
+GetWBSprite|d0|A,14,1,2|1	$00000002
+GetWBSprite|graphics.library open count|A,14,1,2|1	$00000000
+GetWBSprite|block +0|A,14,1,2|1	$00000000
+GetWBSprite|block +2|A,14,1,2|1	$00000000
+GetWBSprite|block +4|A,14,1,2|1	$00000000
+GetWBSprite|block +6|A,14,1,2|1	$00000000
+GetWBSprite|block +8|A,14,1,2|1	$00000000
+GetWBSprite|block +10|A,14,1,2|1	$00000001
+GetWBSprite|block +12|A,14,1,2|1	$00000000
+GetWBSprite|block +14|A,14,1,2|1	$00000001
+GetWBSprite|block +16|A,14,1,2|1	$00000000
+GetWBSprite|block +18|A,14,1,2|1	$00000002
+GetWBSprite|block +20|A,14,1,2|1	$0000000A
+GetWBSprite|block +22|A,14,1,2|1	$00000014
+GetWBSprite|block +24|A,14,1,2|1	$00000000
+GetWBSprite|block +26|A,14,1,2|1	$00000001
+GetWBSprite|block +28|A,14,1,2|1	$00000010
+GetWBSprite|block +30|A,14,1,2|1	$0000000C
+GetWBSprite|block +32|A,14,1,2|1	$00008100
+GetWBSprite|block +34|A,14,1,2|1	$00000000
+GetWBSprite|block +36|A,14,1,2|1	$00000000
+GetWBSprite|block +38|A,14,1,2|1	$00000010
+GetWBSprite|block +40|A,14,1,2|1	$00008100
+GetWBSprite|block +42|A,14,1,2|1	$00000006
+GetWBSprite|block +44|A,14,1,2|1	$00000000
+GetWBSprite|block +46|A,14,1,2|1	$0000000C
+GetWBSprite|block +48|A,14,1,2|1	$00008100
+GetWBSprite|block +50|A,14,1,2|1	$00000002
+GetWBSprite|block +52|A,14,1,2|1	$00000000
+GetWBSprite|block +54|A,14,1,2|1	$00000000
+GetWBSprite|block +56|A,14,1,2|1	$00008100
+GetWBSprite|block +58|A,14,1,2|1	$00000004
+GetWBSprite|block +60|A,14,1,2|1	$00000000
+GetWBSprite|block +62|A,14,1,2|1	$00000000
+GetWBSprite|block +64|A,14,1,2|1	$00008100
+GetWBSprite|block +66|A,14,1,2|1	$00000008
+GetWBSprite|block +68|A,14,1,2|1	$00000000
+GetWBSprite|block +70|A,14,1,2|1	$00000000
+GetWBSprite|block +72|A,14,1,2|1	$00000000
+GetWBSprite|block +74|A,14,1,2|1	$00000000
+GetWBSprite|block +76|A,14,1,2|1	$00000000
+GetWBSprite|block +78|A,14,1,2|1	$00000000
+GetWBSprite|block +80|A,14,1,2|1	$00008200
+GetWBSprite|block +82|A,14,1,2|1	$00000020
+GetWBSprite|block +84|A,14,1,2|1	$00000000
+GetWBSprite|block +86|A,14,1,2|1	$00000002
+GetWBSprite|block +88|A,14,1,2|1	$00008200
+GetWBSprite|block +90|A,14,1,2|1	$00000022
+GetWBSprite|block +92|A,14,1,2|1	$00000000
+GetWBSprite|block +94|A,14,1,2|1	$00000000
+GetWBSprite|block +96|A,14,1,2|1	$00008200
+GetWBSprite|block +98|A,14,1,2|1	$00000024
+GetWBSprite|block +100|A,14,1,2|1	$00000000
+GetWBSprite|block +102|A,14,1,2|1	$00000000
+GetWBSprite|block +104|A,14,1,2|1	$00000000
+GetWBSprite|block +106|A,14,1,2|1	$00000000
+GetWBSprite|block +108|A,14,1,2|1	$00000000
+GetWBSprite|block +110|A,14,1,2|1	$00000000
+GetWBSprite|block +112|A,14,1,2|1	$00000000
+GetWBSprite|block +114|A,14,1,2|1	$00000000
+GetWBSprite|block +116|A,14,1,2|1	$00000000
+GetWBSprite|block +118|A,14,1,2|1	$00000000
+GetWBSprite|block +120|A,14,1,2|1	$00000000
+GetWBSprite|block +122|A,14,1,2|1	$00000001
+GetWBSprite|block +124|A,14,1,2|1	$00000000
+GetWBSprite|block +126|A,14,1,2|1	$00000000
+GetWBSprite|block +128|A,14,1,2|1	$00000000
+GetWBSprite|block +130|A,14,1,2|1	$00000000
+GetWBSprite|block +132|A,14,1,2|1	$00000000
+GetWBSprite|block +134|A,14,1,2|1	$00000000
+GetWBSprite|block +136|A,14,1,2|1	$00000000
+GetWBSprite|block +138|A,14,1,2|1	$00000000
+GetWBSprite|block +140|A,14,1,2|1	$00000000
+GetWBSprite|block +142|A,14,1,2|1	$00000000
+GetWBSprite|block +144|A,14,1,2|1	$00006772
+GetWBSprite|block +146|A,14,1,2|1	$00006170
+GetWBSprite|block +148|A,14,1,2|1	$00006869
+GetWBSprite|block +150|A,14,1,2|1	$00006373
+GetWBSprite|block +152|A,14,1,2|1	$00002E6C
+GetWBSprite|block +154|A,14,1,2|1	$00006962
+GetWBSprite|block +156|A,14,1,2|1	$00007261
+GetWBSprite|block +158|A,14,1,2|1	$00007279
+GetWBSprite|block +160|A,14,1,2|1	$00000000
+GetWBSprite|block +162|A,14,1,2|1	$00000000
+GetWBSprite|block +164|A,14,1,2|1	$00000001
+GetWBSprite|sprite 0 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 0 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 1 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 1 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 2 field 0|A,14,1,2|1	$0000000C
+GetWBSprite|sprite 2 field 1|A,14,1,2|1	$0000000A
+GetWBSprite|sprite 2 field 2|A,14,1,2|1	$00000014
+GetWBSprite|sprite 2 field 3|A,14,1,2|1	$00000002
+GetWBSprite|sprite 2 field 4|A,14,1,2|1	$00000001
+GetWBSprite|sprite 2 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 2 image|A,14,1,2|1	bytes 256 fnv BCAF6441
+GetWBSprite|sprite 3 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 3 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 4 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 4 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 5 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 5 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 6 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 6 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite|sprite 7 field 0|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 field 1|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 field 2|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 field 3|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 field 4|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 field 5|A,14,1,2|1	$00000000
+GetWBSprite|sprite 7 image|A,14,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|kept|1E,28,2,FFFFFFFF|1	kept
+GetWBSprite (any)|popped|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|d0|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|graphics.library open count|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +6|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +8|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +10|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +12|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +14|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +16|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +18|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +20|1E,28,2,FFFFFFFF|1	$0000001E
+GetWBSprite (any)|block +22|1E,28,2,FFFFFFFF|1	$00000028
+GetWBSprite (any)|block +24|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +26|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +28|1E,28,2,FFFFFFFF|1	$00000010
+GetWBSprite (any)|block +30|1E,28,2,FFFFFFFF|1	$0000000C
+GetWBSprite (any)|block +32|1E,28,2,FFFFFFFF|1	$00008100
+GetWBSprite (any)|block +34|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +36|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +38|1E,28,2,FFFFFFFF|1	$00000010
+GetWBSprite (any)|block +40|1E,28,2,FFFFFFFF|1	$00008100
+GetWBSprite (any)|block +42|1E,28,2,FFFFFFFF|1	$00000006
+GetWBSprite (any)|block +44|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +46|1E,28,2,FFFFFFFF|1	$0000000C
+GetWBSprite (any)|block +48|1E,28,2,FFFFFFFF|1	$00008100
+GetWBSprite (any)|block +50|1E,28,2,FFFFFFFF|1	$00000002
+GetWBSprite (any)|block +52|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +54|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +56|1E,28,2,FFFFFFFF|1	$00008100
+GetWBSprite (any)|block +58|1E,28,2,FFFFFFFF|1	$00000004
+GetWBSprite (any)|block +60|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +62|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +64|1E,28,2,FFFFFFFF|1	$00008100
+GetWBSprite (any)|block +66|1E,28,2,FFFFFFFF|1	$00000008
+GetWBSprite (any)|block +68|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +70|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +72|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +74|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +76|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +78|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +80|1E,28,2,FFFFFFFF|1	$00008200
+GetWBSprite (any)|block +82|1E,28,2,FFFFFFFF|1	$00000020
+GetWBSprite (any)|block +84|1E,28,2,FFFFFFFF|1	$0000FFFF
+GetWBSprite (any)|block +86|1E,28,2,FFFFFFFF|1	$0000FFFF
+GetWBSprite (any)|block +88|1E,28,2,FFFFFFFF|1	$00008200
+GetWBSprite (any)|block +90|1E,28,2,FFFFFFFF|1	$00000022
+GetWBSprite (any)|block +92|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +94|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +96|1E,28,2,FFFFFFFF|1	$00008200
+GetWBSprite (any)|block +98|1E,28,2,FFFFFFFF|1	$00000024
+GetWBSprite (any)|block +100|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +102|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +104|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +106|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +108|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +110|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +112|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +114|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +116|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +118|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +120|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +122|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|block +124|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +126|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +128|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +130|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +132|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +134|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +136|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +138|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +140|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +142|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +144|1E,28,2,FFFFFFFF|1	$00006772
+GetWBSprite (any)|block +146|1E,28,2,FFFFFFFF|1	$00006170
+GetWBSprite (any)|block +148|1E,28,2,FFFFFFFF|1	$00006869
+GetWBSprite (any)|block +150|1E,28,2,FFFFFFFF|1	$00006373
+GetWBSprite (any)|block +152|1E,28,2,FFFFFFFF|1	$00002E6C
+GetWBSprite (any)|block +154|1E,28,2,FFFFFFFF|1	$00006962
+GetWBSprite (any)|block +156|1E,28,2,FFFFFFFF|1	$00007261
+GetWBSprite (any)|block +158|1E,28,2,FFFFFFFF|1	$00007279
+GetWBSprite (any)|block +160|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +162|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|block +164|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|sprite 0 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 0 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|sprite 1 field 0|1E,28,2,FFFFFFFF|1	$0000000C
+GetWBSprite (any)|sprite 1 field 1|1E,28,2,FFFFFFFF|1	$0000001E
+GetWBSprite (any)|sprite 1 field 2|1E,28,2,FFFFFFFF|1	$00000028
+GetWBSprite (any)|sprite 1 field 3|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|sprite 1 field 4|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|sprite 1 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 1 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv BCAF6441
+GetWBSprite (any)|sprite 2 field 0|1E,28,2,FFFFFFFF|1	$0000000C
+GetWBSprite (any)|sprite 2 field 1|1E,28,2,FFFFFFFF|1	$0000000A
+GetWBSprite (any)|sprite 2 field 2|1E,28,2,FFFFFFFF|1	$00000014
+GetWBSprite (any)|sprite 2 field 3|1E,28,2,FFFFFFFF|1	$00000002
+GetWBSprite (any)|sprite 2 field 4|1E,28,2,FFFFFFFF|1	$00000001
+GetWBSprite (any)|sprite 2 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 2 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv BCAF6441
+GetWBSprite (any)|sprite 3 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 3 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|sprite 4 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 4 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|sprite 5 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 5 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|sprite 6 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 6 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (any)|sprite 7 field 0|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 field 1|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 field 2|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 field 3|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 field 4|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 field 5|1E,28,2,FFFFFFFF|1	$00000000
+GetWBSprite (any)|sprite 7 image|1E,28,2,FFFFFFFF|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|kept|1E,28,2,6|1	kept
+GetWBSprite (32 wide)|popped|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|d0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|graphics.library open count|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +6|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +8|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +10|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|block +12|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +14|1E,28,2,6|1	$00000002
+GetWBSprite (32 wide)|block +16|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +18|1E,28,2,6|1	$00000006
+GetWBSprite (32 wide)|block +20|1E,28,2,6|1	$0000001E
+GetWBSprite (32 wide)|block +22|1E,28,2,6|1	$00000028
+GetWBSprite (32 wide)|block +24|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +26|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|block +28|1E,28,2,6|1	$00000020
+GetWBSprite (32 wide)|block +30|1E,28,2,6|1	$00000009
+GetWBSprite (32 wide)|block +32|1E,28,2,6|1	$00008100
+GetWBSprite (32 wide)|block +34|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +36|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +38|1E,28,2,6|1	$00000020
+GetWBSprite (32 wide)|block +40|1E,28,2,6|1	$00008100
+GetWBSprite (32 wide)|block +42|1E,28,2,6|1	$00000006
+GetWBSprite (32 wide)|block +44|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +46|1E,28,2,6|1	$00000009
+GetWBSprite (32 wide)|block +48|1E,28,2,6|1	$00008100
+GetWBSprite (32 wide)|block +50|1E,28,2,6|1	$00000002
+GetWBSprite (32 wide)|block +52|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +54|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +56|1E,28,2,6|1	$00008100
+GetWBSprite (32 wide)|block +58|1E,28,2,6|1	$00000004
+GetWBSprite (32 wide)|block +60|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +62|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +64|1E,28,2,6|1	$00008100
+GetWBSprite (32 wide)|block +66|1E,28,2,6|1	$00000008
+GetWBSprite (32 wide)|block +68|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +70|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +72|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +74|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +76|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +78|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +80|1E,28,2,6|1	$00008200
+GetWBSprite (32 wide)|block +82|1E,28,2,6|1	$00000020
+GetWBSprite (32 wide)|block +84|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +86|1E,28,2,6|1	$00000006
+GetWBSprite (32 wide)|block +88|1E,28,2,6|1	$00008200
+GetWBSprite (32 wide)|block +90|1E,28,2,6|1	$00000022
+GetWBSprite (32 wide)|block +92|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +94|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +96|1E,28,2,6|1	$00008200
+GetWBSprite (32 wide)|block +98|1E,28,2,6|1	$00000024
+GetWBSprite (32 wide)|block +100|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +102|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +104|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +106|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +108|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +110|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +112|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +114|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +116|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +118|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|block +120|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +122|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|block +124|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +126|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +128|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +130|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +132|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +134|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +136|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +138|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +140|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +142|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +144|1E,28,2,6|1	$00006772
+GetWBSprite (32 wide)|block +146|1E,28,2,6|1	$00006170
+GetWBSprite (32 wide)|block +148|1E,28,2,6|1	$00006869
+GetWBSprite (32 wide)|block +150|1E,28,2,6|1	$00006373
+GetWBSprite (32 wide)|block +152|1E,28,2,6|1	$00002E6C
+GetWBSprite (32 wide)|block +154|1E,28,2,6|1	$00006962
+GetWBSprite (32 wide)|block +156|1E,28,2,6|1	$00007261
+GetWBSprite (32 wide)|block +158|1E,28,2,6|1	$00007279
+GetWBSprite (32 wide)|block +160|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +162|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|block +164|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|sprite 0 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 0 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|sprite 1 field 0|1E,28,2,6|1	$0000000C
+GetWBSprite (32 wide)|sprite 1 field 1|1E,28,2,6|1	$0000001E
+GetWBSprite (32 wide)|sprite 1 field 2|1E,28,2,6|1	$00000028
+GetWBSprite (32 wide)|sprite 1 field 3|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|sprite 1 field 4|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|sprite 1 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 1 image|1E,28,2,6|1	bytes 256 fnv BCAF6441
+GetWBSprite (32 wide)|sprite 2 field 0|1E,28,2,6|1	$0000000C
+GetWBSprite (32 wide)|sprite 2 field 1|1E,28,2,6|1	$0000000A
+GetWBSprite (32 wide)|sprite 2 field 2|1E,28,2,6|1	$00000014
+GetWBSprite (32 wide)|sprite 2 field 3|1E,28,2,6|1	$00000002
+GetWBSprite (32 wide)|sprite 2 field 4|1E,28,2,6|1	$00000001
+GetWBSprite (32 wide)|sprite 2 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 2 image|1E,28,2,6|1	bytes 256 fnv BCAF6441
+GetWBSprite (32 wide)|sprite 3 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 3 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|sprite 4 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 4 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|sprite 5 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 5 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|sprite 6 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 6 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (32 wide)|sprite 7 field 0|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 field 1|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 field 2|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 field 3|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 field 4|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 field 5|1E,28,2,6|1	$00000000
+GetWBSprite (32 wide)|sprite 7 image|1E,28,2,6|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|kept|32,3C,1,2|1	kept
+GetWBSprite (taken)|popped|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|d0|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|graphics.library open count|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +6|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +8|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +10|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|block +12|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +14|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|block +16|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +18|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|block +20|32,3C,1,2|1	$00000032
+GetWBSprite (taken)|block +22|32,3C,1,2|1	$0000003C
+GetWBSprite (taken)|block +24|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +26|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|block +28|32,3C,1,2|1	$00000010
+GetWBSprite (taken)|block +30|32,3C,1,2|1	$0000000C
+GetWBSprite (taken)|block +32|32,3C,1,2|1	$00008100
+GetWBSprite (taken)|block +34|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +36|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +38|32,3C,1,2|1	$00000010
+GetWBSprite (taken)|block +40|32,3C,1,2|1	$00008100
+GetWBSprite (taken)|block +42|32,3C,1,2|1	$00000006
+GetWBSprite (taken)|block +44|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +46|32,3C,1,2|1	$0000000C
+GetWBSprite (taken)|block +48|32,3C,1,2|1	$00008100
+GetWBSprite (taken)|block +50|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|block +52|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +54|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +56|32,3C,1,2|1	$00008100
+GetWBSprite (taken)|block +58|32,3C,1,2|1	$00000004
+GetWBSprite (taken)|block +60|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +62|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +64|32,3C,1,2|1	$00008100
+GetWBSprite (taken)|block +66|32,3C,1,2|1	$00000008
+GetWBSprite (taken)|block +68|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +70|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +72|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +74|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +76|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +78|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +80|32,3C,1,2|1	$00008200
+GetWBSprite (taken)|block +82|32,3C,1,2|1	$00000020
+GetWBSprite (taken)|block +84|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +86|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|block +88|32,3C,1,2|1	$00008200
+GetWBSprite (taken)|block +90|32,3C,1,2|1	$00000022
+GetWBSprite (taken)|block +92|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +94|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +96|32,3C,1,2|1	$00008200
+GetWBSprite (taken)|block +98|32,3C,1,2|1	$00000024
+GetWBSprite (taken)|block +100|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +102|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +104|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +106|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +108|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +110|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +112|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +114|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +116|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +118|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|block +120|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +122|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|block +124|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +126|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +128|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +130|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +132|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +134|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +136|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +138|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +140|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +142|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +144|32,3C,1,2|1	$00006772
+GetWBSprite (taken)|block +146|32,3C,1,2|1	$00006170
+GetWBSprite (taken)|block +148|32,3C,1,2|1	$00006869
+GetWBSprite (taken)|block +150|32,3C,1,2|1	$00006373
+GetWBSprite (taken)|block +152|32,3C,1,2|1	$00002E6C
+GetWBSprite (taken)|block +154|32,3C,1,2|1	$00006962
+GetWBSprite (taken)|block +156|32,3C,1,2|1	$00007261
+GetWBSprite (taken)|block +158|32,3C,1,2|1	$00007279
+GetWBSprite (taken)|block +160|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +162|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|block +164|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|sprite 0 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 0 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|sprite 1 field 0|32,3C,1,2|1	$0000000C
+GetWBSprite (taken)|sprite 1 field 1|32,3C,1,2|1	$0000001E
+GetWBSprite (taken)|sprite 1 field 2|32,3C,1,2|1	$00000028
+GetWBSprite (taken)|sprite 1 field 3|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|sprite 1 field 4|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|sprite 1 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 1 image|32,3C,1,2|1	bytes 256 fnv BCAF6441
+GetWBSprite (taken)|sprite 2 field 0|32,3C,1,2|1	$0000000C
+GetWBSprite (taken)|sprite 2 field 1|32,3C,1,2|1	$0000000A
+GetWBSprite (taken)|sprite 2 field 2|32,3C,1,2|1	$00000014
+GetWBSprite (taken)|sprite 2 field 3|32,3C,1,2|1	$00000002
+GetWBSprite (taken)|sprite 2 field 4|32,3C,1,2|1	$00000001
+GetWBSprite (taken)|sprite 2 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 2 image|32,3C,1,2|1	bytes 256 fnv BCAF6441
+GetWBSprite (taken)|sprite 3 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 3 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|sprite 4 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 4 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|sprite 5 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 5 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|sprite 6 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 6 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (taken)|sprite 7 field 0|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 field 1|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 field 2|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 field 3|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 field 4|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 field 5|32,3C,1,2|1	$00000000
+GetWBSprite (taken)|sprite 7 image|32,3C,1,2|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|kept|0,0,3,0|1	kept
+GetWBSprite (pointer)|popped|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|d0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|graphics.library open count|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +6|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +8|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +10|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|block +12|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +14|0,0,3,0|1	$00000003
+GetWBSprite (pointer)|block +16|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +18|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +20|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +22|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +24|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +26|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|block +28|0,0,3,0|1	$00000010
+GetWBSprite (pointer)|block +30|0,0,3,0|1	$00000010
+GetWBSprite (pointer)|block +32|0,0,3,0|1	$00008100
+GetWBSprite (pointer)|block +34|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +36|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +38|0,0,3,0|1	$00000010
+GetWBSprite (pointer)|block +40|0,0,3,0|1	$00008100
+GetWBSprite (pointer)|block +42|0,0,3,0|1	$00000006
+GetWBSprite (pointer)|block +44|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +46|0,0,3,0|1	$00000010
+GetWBSprite (pointer)|block +48|0,0,3,0|1	$00008100
+GetWBSprite (pointer)|block +50|0,0,3,0|1	$00000002
+GetWBSprite (pointer)|block +52|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +54|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +56|0,0,3,0|1	$00008100
+GetWBSprite (pointer)|block +58|0,0,3,0|1	$00000004
+GetWBSprite (pointer)|block +60|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +62|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +64|0,0,3,0|1	$00008100
+GetWBSprite (pointer)|block +66|0,0,3,0|1	$00000008
+GetWBSprite (pointer)|block +68|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +70|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +72|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +74|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +76|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +78|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +80|0,0,3,0|1	$00008200
+GetWBSprite (pointer)|block +82|0,0,3,0|1	$00000020
+GetWBSprite (pointer)|block +84|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +86|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +88|0,0,3,0|1	$00008200
+GetWBSprite (pointer)|block +90|0,0,3,0|1	$00000022
+GetWBSprite (pointer)|block +92|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +94|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +96|0,0,3,0|1	$00008200
+GetWBSprite (pointer)|block +98|0,0,3,0|1	$00000024
+GetWBSprite (pointer)|block +100|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +102|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +104|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +106|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +108|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +110|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +112|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +114|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +116|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +118|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|block +120|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +122|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|block +124|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +126|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +128|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +130|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +132|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +134|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +136|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +138|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +140|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +142|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +144|0,0,3,0|1	$00006772
+GetWBSprite (pointer)|block +146|0,0,3,0|1	$00006170
+GetWBSprite (pointer)|block +148|0,0,3,0|1	$00006869
+GetWBSprite (pointer)|block +150|0,0,3,0|1	$00006373
+GetWBSprite (pointer)|block +152|0,0,3,0|1	$00002E6C
+GetWBSprite (pointer)|block +154|0,0,3,0|1	$00006962
+GetWBSprite (pointer)|block +156|0,0,3,0|1	$00007261
+GetWBSprite (pointer)|block +158|0,0,3,0|1	$00007279
+GetWBSprite (pointer)|block +160|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +162|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|block +164|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|sprite 0 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 0 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|sprite 1 field 0|0,0,3,0|1	$0000000C
+GetWBSprite (pointer)|sprite 1 field 1|0,0,3,0|1	$0000001E
+GetWBSprite (pointer)|sprite 1 field 2|0,0,3,0|1	$00000028
+GetWBSprite (pointer)|sprite 1 field 3|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|sprite 1 field 4|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|sprite 1 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 1 image|0,0,3,0|1	bytes 256 fnv BCAF6441
+GetWBSprite (pointer)|sprite 2 field 0|0,0,3,0|1	$0000000C
+GetWBSprite (pointer)|sprite 2 field 1|0,0,3,0|1	$0000000A
+GetWBSprite (pointer)|sprite 2 field 2|0,0,3,0|1	$00000014
+GetWBSprite (pointer)|sprite 2 field 3|0,0,3,0|1	$00000002
+GetWBSprite (pointer)|sprite 2 field 4|0,0,3,0|1	$00000001
+GetWBSprite (pointer)|sprite 2 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 2 image|0,0,3,0|1	bytes 256 fnv BCAF6441
+GetWBSprite (pointer)|sprite 3 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 3 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|sprite 4 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 4 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|sprite 5 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 5 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|sprite 6 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 6 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (pointer)|sprite 7 field 0|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 field 1|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 field 2|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 field 3|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 field 4|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 field 5|0,0,3,0|1	$00000000
+GetWBSprite (pointer)|sprite 7 image|0,0,3,0|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|kept|0,0,4,5|1	kept
+GetWBSprite (narrow)|popped|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|d0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|graphics.library open count|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +6|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +8|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +10|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|block +12|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +14|0,0,4,5|1	$00000004
+GetWBSprite (narrow)|block +16|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +18|0,0,4,5|1	$00000005
+GetWBSprite (narrow)|block +20|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +22|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +24|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +26|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|block +28|0,0,4,5|1	$00000010
+GetWBSprite (narrow)|block +30|0,0,4,5|1	$00000010
+GetWBSprite (narrow)|block +32|0,0,4,5|1	$00008100
+GetWBSprite (narrow)|block +34|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +36|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +38|0,0,4,5|1	$00000010
+GetWBSprite (narrow)|block +40|0,0,4,5|1	$00008100
+GetWBSprite (narrow)|block +42|0,0,4,5|1	$00000006
+GetWBSprite (narrow)|block +44|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +46|0,0,4,5|1	$00000010
+GetWBSprite (narrow)|block +48|0,0,4,5|1	$00008100
+GetWBSprite (narrow)|block +50|0,0,4,5|1	$00000002
+GetWBSprite (narrow)|block +52|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +54|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +56|0,0,4,5|1	$00008100
+GetWBSprite (narrow)|block +58|0,0,4,5|1	$00000004
+GetWBSprite (narrow)|block +60|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +62|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +64|0,0,4,5|1	$00008100
+GetWBSprite (narrow)|block +66|0,0,4,5|1	$00000008
+GetWBSprite (narrow)|block +68|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +70|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +72|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +74|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +76|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +78|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +80|0,0,4,5|1	$00008200
+GetWBSprite (narrow)|block +82|0,0,4,5|1	$00000020
+GetWBSprite (narrow)|block +84|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +86|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +88|0,0,4,5|1	$00008200
+GetWBSprite (narrow)|block +90|0,0,4,5|1	$00000022
+GetWBSprite (narrow)|block +92|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +94|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +96|0,0,4,5|1	$00008200
+GetWBSprite (narrow)|block +98|0,0,4,5|1	$00000024
+GetWBSprite (narrow)|block +100|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +102|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +104|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +106|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +108|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +110|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +112|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +114|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +116|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +118|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|block +120|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +122|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|block +124|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +126|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +128|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +130|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +132|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +134|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +136|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +138|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +140|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +142|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +144|0,0,4,5|1	$00006772
+GetWBSprite (narrow)|block +146|0,0,4,5|1	$00006170
+GetWBSprite (narrow)|block +148|0,0,4,5|1	$00006869
+GetWBSprite (narrow)|block +150|0,0,4,5|1	$00006373
+GetWBSprite (narrow)|block +152|0,0,4,5|1	$00002E6C
+GetWBSprite (narrow)|block +154|0,0,4,5|1	$00006962
+GetWBSprite (narrow)|block +156|0,0,4,5|1	$00007261
+GetWBSprite (narrow)|block +158|0,0,4,5|1	$00007279
+GetWBSprite (narrow)|block +160|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +162|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|block +164|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|sprite 0 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 0 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|sprite 1 field 0|0,0,4,5|1	$0000000C
+GetWBSprite (narrow)|sprite 1 field 1|0,0,4,5|1	$0000001E
+GetWBSprite (narrow)|sprite 1 field 2|0,0,4,5|1	$00000028
+GetWBSprite (narrow)|sprite 1 field 3|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|sprite 1 field 4|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|sprite 1 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 1 image|0,0,4,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (narrow)|sprite 2 field 0|0,0,4,5|1	$0000000C
+GetWBSprite (narrow)|sprite 2 field 1|0,0,4,5|1	$0000000A
+GetWBSprite (narrow)|sprite 2 field 2|0,0,4,5|1	$00000014
+GetWBSprite (narrow)|sprite 2 field 3|0,0,4,5|1	$00000002
+GetWBSprite (narrow)|sprite 2 field 4|0,0,4,5|1	$00000001
+GetWBSprite (narrow)|sprite 2 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 2 image|0,0,4,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (narrow)|sprite 3 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 3 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|sprite 4 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 4 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|sprite 5 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 5 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|sprite 6 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 6 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (narrow)|sprite 7 field 0|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 field 1|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 field 2|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 field 3|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 field 4|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 field 5|0,0,4,5|1	$00000000
+GetWBSprite (narrow)|sprite 7 image|0,0,4,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|kept|0,0,5,5|1	kept
+GetWBSprite (no data)|popped|0,0,5,5|1	$00000000
+GetWBSprite (no data)|d0|0,0,5,5|1	$FFFFFFFF
+GetWBSprite (no data)|graphics.library open count|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +6|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +8|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +10|0,0,5,5|1	$00000001
+GetWBSprite (no data)|block +12|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +14|0,0,5,5|1	$00000004
+GetWBSprite (no data)|block +16|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +18|0,0,5,5|1	$00000005
+GetWBSprite (no data)|block +20|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +22|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +24|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +26|0,0,5,5|1	$00000001
+GetWBSprite (no data)|block +28|0,0,5,5|1	$00000010
+GetWBSprite (no data)|block +30|0,0,5,5|1	$00000010
+GetWBSprite (no data)|block +32|0,0,5,5|1	$00008100
+GetWBSprite (no data)|block +34|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +36|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +38|0,0,5,5|1	$00000010
+GetWBSprite (no data)|block +40|0,0,5,5|1	$00008100
+GetWBSprite (no data)|block +42|0,0,5,5|1	$00000006
+GetWBSprite (no data)|block +44|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +46|0,0,5,5|1	$00000010
+GetWBSprite (no data)|block +48|0,0,5,5|1	$00008100
+GetWBSprite (no data)|block +50|0,0,5,5|1	$00000002
+GetWBSprite (no data)|block +52|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +54|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +56|0,0,5,5|1	$00008100
+GetWBSprite (no data)|block +58|0,0,5,5|1	$00000004
+GetWBSprite (no data)|block +60|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +62|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +64|0,0,5,5|1	$00008100
+GetWBSprite (no data)|block +66|0,0,5,5|1	$00000008
+GetWBSprite (no data)|block +68|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +70|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +72|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +74|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +76|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +78|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +80|0,0,5,5|1	$00008200
+GetWBSprite (no data)|block +82|0,0,5,5|1	$00000020
+GetWBSprite (no data)|block +84|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +86|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +88|0,0,5,5|1	$00008200
+GetWBSprite (no data)|block +90|0,0,5,5|1	$00000022
+GetWBSprite (no data)|block +92|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +94|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +96|0,0,5,5|1	$00008200
+GetWBSprite (no data)|block +98|0,0,5,5|1	$00000024
+GetWBSprite (no data)|block +100|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +102|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +104|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +106|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +108|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +110|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +112|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +114|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +116|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +118|0,0,5,5|1	$00000001
+GetWBSprite (no data)|block +120|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +122|0,0,5,5|1	$00000001
+GetWBSprite (no data)|block +124|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +126|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +128|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +130|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +132|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +134|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +136|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +138|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +140|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +142|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +144|0,0,5,5|1	$00006772
+GetWBSprite (no data)|block +146|0,0,5,5|1	$00006170
+GetWBSprite (no data)|block +148|0,0,5,5|1	$00006869
+GetWBSprite (no data)|block +150|0,0,5,5|1	$00006373
+GetWBSprite (no data)|block +152|0,0,5,5|1	$00002E6C
+GetWBSprite (no data)|block +154|0,0,5,5|1	$00006962
+GetWBSprite (no data)|block +156|0,0,5,5|1	$00007261
+GetWBSprite (no data)|block +158|0,0,5,5|1	$00007279
+GetWBSprite (no data)|block +160|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +162|0,0,5,5|1	$00000000
+GetWBSprite (no data)|block +164|0,0,5,5|1	$00000001
+GetWBSprite (no data)|sprite 0 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 0 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|sprite 1 field 0|0,0,5,5|1	$0000000C
+GetWBSprite (no data)|sprite 1 field 1|0,0,5,5|1	$0000001E
+GetWBSprite (no data)|sprite 1 field 2|0,0,5,5|1	$00000028
+GetWBSprite (no data)|sprite 1 field 3|0,0,5,5|1	$00000001
+GetWBSprite (no data)|sprite 1 field 4|0,0,5,5|1	$00000001
+GetWBSprite (no data)|sprite 1 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 1 image|0,0,5,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (no data)|sprite 2 field 0|0,0,5,5|1	$0000000C
+GetWBSprite (no data)|sprite 2 field 1|0,0,5,5|1	$0000000A
+GetWBSprite (no data)|sprite 2 field 2|0,0,5,5|1	$00000014
+GetWBSprite (no data)|sprite 2 field 3|0,0,5,5|1	$00000002
+GetWBSprite (no data)|sprite 2 field 4|0,0,5,5|1	$00000001
+GetWBSprite (no data)|sprite 2 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 2 image|0,0,5,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (no data)|sprite 3 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 3 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|sprite 4 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 4 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|sprite 5 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 5 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|sprite 6 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 6 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (no data)|sprite 7 field 0|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 field 1|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 field 2|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 field 3|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 field 4|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 field 5|0,0,5,5|1	$00000000
+GetWBSprite (no data)|sprite 7 image|0,0,5,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (20 wide)|kept|46,50,3,5|1	kept
+GetWBSprite (20 wide)|popped|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|d0|46,50,3,5|1	$00000005
+GetWBSprite (20 wide)|graphics.library open count|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +6|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +8|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +10|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|block +12|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +14|46,50,3,5|1	$00000003
+GetWBSprite (20 wide)|block +16|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +18|46,50,3,5|1	$00000005
+GetWBSprite (20 wide)|block +20|46,50,3,5|1	$00000046
+GetWBSprite (20 wide)|block +22|46,50,3,5|1	$00000050
+GetWBSprite (20 wide)|block +24|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +26|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|block +28|46,50,3,5|1	$00000010
+GetWBSprite (20 wide)|block +30|46,50,3,5|1	$00000010
+GetWBSprite (20 wide)|block +32|46,50,3,5|1	$00008100
+GetWBSprite (20 wide)|block +34|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +36|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +38|46,50,3,5|1	$00000010
+GetWBSprite (20 wide)|block +40|46,50,3,5|1	$00008100
+GetWBSprite (20 wide)|block +42|46,50,3,5|1	$00000006
+GetWBSprite (20 wide)|block +44|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +46|46,50,3,5|1	$00000010
+GetWBSprite (20 wide)|block +48|46,50,3,5|1	$00008100
+GetWBSprite (20 wide)|block +50|46,50,3,5|1	$00000002
+GetWBSprite (20 wide)|block +52|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +54|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +56|46,50,3,5|1	$00008100
+GetWBSprite (20 wide)|block +58|46,50,3,5|1	$00000004
+GetWBSprite (20 wide)|block +60|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +62|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +64|46,50,3,5|1	$00008100
+GetWBSprite (20 wide)|block +66|46,50,3,5|1	$00000008
+GetWBSprite (20 wide)|block +68|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +70|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +72|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +74|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +76|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +78|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +80|46,50,3,5|1	$00008200
+GetWBSprite (20 wide)|block +82|46,50,3,5|1	$00000020
+GetWBSprite (20 wide)|block +84|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +86|46,50,3,5|1	$00000005
+GetWBSprite (20 wide)|block +88|46,50,3,5|1	$00008200
+GetWBSprite (20 wide)|block +90|46,50,3,5|1	$00000022
+GetWBSprite (20 wide)|block +92|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +94|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +96|46,50,3,5|1	$00008200
+GetWBSprite (20 wide)|block +98|46,50,3,5|1	$00000024
+GetWBSprite (20 wide)|block +100|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +102|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +104|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +106|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +108|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +110|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +112|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +114|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +116|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +118|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|block +120|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +122|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|block +124|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +126|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +128|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +130|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +132|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +134|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|block +136|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +138|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +140|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +142|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +144|46,50,3,5|1	$00006772
+GetWBSprite (20 wide)|block +146|46,50,3,5|1	$00006170
+GetWBSprite (20 wide)|block +148|46,50,3,5|1	$00006869
+GetWBSprite (20 wide)|block +150|46,50,3,5|1	$00006373
+GetWBSprite (20 wide)|block +152|46,50,3,5|1	$00002E6C
+GetWBSprite (20 wide)|block +154|46,50,3,5|1	$00006962
+GetWBSprite (20 wide)|block +156|46,50,3,5|1	$00007261
+GetWBSprite (20 wide)|block +158|46,50,3,5|1	$00007279
+GetWBSprite (20 wide)|block +160|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +162|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|block +164|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|sprite 0 field 0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 field 1|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 field 2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 field 3|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 field 4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 0 image|46,50,3,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (20 wide)|sprite 1 field 0|46,50,3,5|1	$0000000C
+GetWBSprite (20 wide)|sprite 1 field 1|46,50,3,5|1	$0000001E
+GetWBSprite (20 wide)|sprite 1 field 2|46,50,3,5|1	$00000028
+GetWBSprite (20 wide)|sprite 1 field 3|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|sprite 1 field 4|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|sprite 1 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 1 image|46,50,3,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (20 wide)|sprite 2 field 0|46,50,3,5|1	$0000000C
+GetWBSprite (20 wide)|sprite 2 field 1|46,50,3,5|1	$0000000A
+GetWBSprite (20 wide)|sprite 2 field 2|46,50,3,5|1	$00000014
+GetWBSprite (20 wide)|sprite 2 field 3|46,50,3,5|1	$00000002
+GetWBSprite (20 wide)|sprite 2 field 4|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|sprite 2 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 2 image|46,50,3,5|1	bytes 256 fnv BCAF6441
+GetWBSprite (20 wide)|sprite 3 field 0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 field 1|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 field 2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 field 3|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 field 4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 3 image|46,50,3,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (20 wide)|sprite 4 field 0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 field 1|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 field 2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 field 3|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 field 4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 4 image|46,50,3,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (20 wide)|sprite 5 field 0|46,50,3,5|1	$00000010
+GetWBSprite (20 wide)|sprite 5 field 1|46,50,3,5|1	$00000046
+GetWBSprite (20 wide)|sprite 5 field 2|46,50,3,5|1	$00000050
+GetWBSprite (20 wide)|sprite 5 field 3|46,50,3,5|1	$00000005
+GetWBSprite (20 wide)|sprite 5 field 4|46,50,3,5|1	$00000001
+GetWBSprite (20 wide)|sprite 5 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 5 image|46,50,3,5|1	bytes 256 fnv 66D436EC
+GetWBSprite (20 wide)|sprite 6 field 0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 field 1|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 field 2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 field 3|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 field 4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 6 image|46,50,3,5|1	bytes 256 fnv E6A1D1C5
+GetWBSprite (20 wide)|sprite 7 field 0|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 field 1|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 field 2|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 field 3|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 field 4|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 field 5|46,50,3,5|1	$00000000
+GetWBSprite (20 wide)|sprite 7 image|46,50,3,5|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|kept|12340002,0,0,0|1	kept
+WBSpriteX|popped|12340002,0,0,0|1	$00000000
+WBSpriteX|d0|12340002,0,0,0|1	$1234000A
+WBSpriteX|graphics.library open count|12340002,0,0,0|1	$00000000
+WBSpriteX|block +0|12340002,0,0,0|1	$00000000
+WBSpriteX|block +2|12340002,0,0,0|1	$00000000
+WBSpriteX|block +4|12340002,0,0,0|1	$00000000
+WBSpriteX|block +6|12340002,0,0,0|1	$00000000
+WBSpriteX|block +8|12340002,0,0,0|1	$00000000
+WBSpriteX|block +10|12340002,0,0,0|1	$00000001
+WBSpriteX|block +12|12340002,0,0,0|1	$00000000
+WBSpriteX|block +14|12340002,0,0,0|1	$00000003
+WBSpriteX|block +16|12340002,0,0,0|1	$00000000
+WBSpriteX|block +18|12340002,0,0,0|1	$00000005
+WBSpriteX|block +20|12340002,0,0,0|1	$00000046
+WBSpriteX|block +22|12340002,0,0,0|1	$00000050
+WBSpriteX|block +24|12340002,0,0,0|1	$00000000
+WBSpriteX|block +26|12340002,0,0,0|1	$00000001
+WBSpriteX|block +28|12340002,0,0,0|1	$00000010
+WBSpriteX|block +30|12340002,0,0,0|1	$00000010
+WBSpriteX|block +32|12340002,0,0,0|1	$00008100
+WBSpriteX|block +34|12340002,0,0,0|1	$00000000
+WBSpriteX|block +36|12340002,0,0,0|1	$00000000
+WBSpriteX|block +38|12340002,0,0,0|1	$00000010
+WBSpriteX|block +40|12340002,0,0,0|1	$00008100
+WBSpriteX|block +42|12340002,0,0,0|1	$00000006
+WBSpriteX|block +44|12340002,0,0,0|1	$00000000
+WBSpriteX|block +46|12340002,0,0,0|1	$00000010
+WBSpriteX|block +48|12340002,0,0,0|1	$00008100
+WBSpriteX|block +50|12340002,0,0,0|1	$00000002
+WBSpriteX|block +52|12340002,0,0,0|1	$00000000
+WBSpriteX|block +54|12340002,0,0,0|1	$00000000
+WBSpriteX|block +56|12340002,0,0,0|1	$00008100
+WBSpriteX|block +58|12340002,0,0,0|1	$00000004
+WBSpriteX|block +60|12340002,0,0,0|1	$00000000
+WBSpriteX|block +62|12340002,0,0,0|1	$00000000
+WBSpriteX|block +64|12340002,0,0,0|1	$00008100
+WBSpriteX|block +66|12340002,0,0,0|1	$00000008
+WBSpriteX|block +68|12340002,0,0,0|1	$00000000
+WBSpriteX|block +70|12340002,0,0,0|1	$00000000
+WBSpriteX|block +72|12340002,0,0,0|1	$00000000
+WBSpriteX|block +74|12340002,0,0,0|1	$00000000
+WBSpriteX|block +76|12340002,0,0,0|1	$00000000
+WBSpriteX|block +78|12340002,0,0,0|1	$00000000
+WBSpriteX|block +80|12340002,0,0,0|1	$00008200
+WBSpriteX|block +82|12340002,0,0,0|1	$00000020
+WBSpriteX|block +84|12340002,0,0,0|1	$00000000
+WBSpriteX|block +86|12340002,0,0,0|1	$00000005
+WBSpriteX|block +88|12340002,0,0,0|1	$00008200
+WBSpriteX|block +90|12340002,0,0,0|1	$00000022
+WBSpriteX|block +92|12340002,0,0,0|1	$00000000
+WBSpriteX|block +94|12340002,0,0,0|1	$00000000
+WBSpriteX|block +96|12340002,0,0,0|1	$00008200
+WBSpriteX|block +98|12340002,0,0,0|1	$00000024
+WBSpriteX|block +100|12340002,0,0,0|1	$00000000
+WBSpriteX|block +102|12340002,0,0,0|1	$00000000
+WBSpriteX|block +104|12340002,0,0,0|1	$00000000
+WBSpriteX|block +106|12340002,0,0,0|1	$00000000
+WBSpriteX|block +108|12340002,0,0,0|1	$00000000
+WBSpriteX|block +110|12340002,0,0,0|1	$00000000
+WBSpriteX|block +112|12340002,0,0,0|1	$00000000
+WBSpriteX|block +114|12340002,0,0,0|1	$00000000
+WBSpriteX|block +116|12340002,0,0,0|1	$00000000
+WBSpriteX|block +118|12340002,0,0,0|1	$00000001
+WBSpriteX|block +120|12340002,0,0,0|1	$00000000
+WBSpriteX|block +122|12340002,0,0,0|1	$00000001
+WBSpriteX|block +124|12340002,0,0,0|1	$00000000
+WBSpriteX|block +126|12340002,0,0,0|1	$00000000
+WBSpriteX|block +128|12340002,0,0,0|1	$00000000
+WBSpriteX|block +130|12340002,0,0,0|1	$00000000
+WBSpriteX|block +132|12340002,0,0,0|1	$00000000
+WBSpriteX|block +134|12340002,0,0,0|1	$00000001
+WBSpriteX|block +136|12340002,0,0,0|1	$00000000
+WBSpriteX|block +138|12340002,0,0,0|1	$00000000
+WBSpriteX|block +140|12340002,0,0,0|1	$00000000
+WBSpriteX|block +142|12340002,0,0,0|1	$00000000
+WBSpriteX|block +144|12340002,0,0,0|1	$00006772
+WBSpriteX|block +146|12340002,0,0,0|1	$00006170
+WBSpriteX|block +148|12340002,0,0,0|1	$00006869
+WBSpriteX|block +150|12340002,0,0,0|1	$00006373
+WBSpriteX|block +152|12340002,0,0,0|1	$00002E6C
+WBSpriteX|block +154|12340002,0,0,0|1	$00006962
+WBSpriteX|block +156|12340002,0,0,0|1	$00007261
+WBSpriteX|block +158|12340002,0,0,0|1	$00007279
+WBSpriteX|block +160|12340002,0,0,0|1	$00000000
+WBSpriteX|block +162|12340002,0,0,0|1	$00000000
+WBSpriteX|block +164|12340002,0,0,0|1	$00000001
+WBSpriteX|sprite 0 field 0|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 1|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 2|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 3|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 4|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 0 image|12340002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 1 field 0|12340002,0,0,0|1	$0000000C
+WBSpriteX|sprite 1 field 1|12340002,0,0,0|1	$0000001E
+WBSpriteX|sprite 1 field 2|12340002,0,0,0|1	$00000028
+WBSpriteX|sprite 1 field 3|12340002,0,0,0|1	$00000001
+WBSpriteX|sprite 1 field 4|12340002,0,0,0|1	$00000001
+WBSpriteX|sprite 1 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 1 image|12340002,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteX|sprite 2 field 0|12340002,0,0,0|1	$0000000C
+WBSpriteX|sprite 2 field 1|12340002,0,0,0|1	$0000000A
+WBSpriteX|sprite 2 field 2|12340002,0,0,0|1	$00000014
+WBSpriteX|sprite 2 field 3|12340002,0,0,0|1	$00000002
+WBSpriteX|sprite 2 field 4|12340002,0,0,0|1	$00000001
+WBSpriteX|sprite 2 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 2 image|12340002,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteX|sprite 3 field 0|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 1|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 2|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 3|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 4|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 3 image|12340002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 4 field 0|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 1|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 2|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 3|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 4|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 4 image|12340002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 5 field 0|12340002,0,0,0|1	$00000010
+WBSpriteX|sprite 5 field 1|12340002,0,0,0|1	$00000046
+WBSpriteX|sprite 5 field 2|12340002,0,0,0|1	$00000050
+WBSpriteX|sprite 5 field 3|12340002,0,0,0|1	$00000005
+WBSpriteX|sprite 5 field 4|12340002,0,0,0|1	$00000001
+WBSpriteX|sprite 5 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 5 image|12340002,0,0,0|1	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 6 field 0|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 1|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 2|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 3|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 4|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 6 image|12340002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 7 field 0|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 1|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 2|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 3|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 4|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 5|12340002,0,0,0|1	$00000000
+WBSpriteX|sprite 7 image|12340002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|kept|FEDC0002,0,0,0|1	kept
+WBSpriteY|popped|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|d0|FEDC0002,0,0,0|1	$FEDC0014
+WBSpriteY|graphics.library open count|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +6|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +8|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +10|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|block +12|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +14|FEDC0002,0,0,0|1	$00000003
+WBSpriteY|block +16|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +18|FEDC0002,0,0,0|1	$00000005
+WBSpriteY|block +20|FEDC0002,0,0,0|1	$00000046
+WBSpriteY|block +22|FEDC0002,0,0,0|1	$00000050
+WBSpriteY|block +24|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +26|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|block +28|FEDC0002,0,0,0|1	$00000010
+WBSpriteY|block +30|FEDC0002,0,0,0|1	$00000010
+WBSpriteY|block +32|FEDC0002,0,0,0|1	$00008100
+WBSpriteY|block +34|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +36|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +38|FEDC0002,0,0,0|1	$00000010
+WBSpriteY|block +40|FEDC0002,0,0,0|1	$00008100
+WBSpriteY|block +42|FEDC0002,0,0,0|1	$00000006
+WBSpriteY|block +44|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +46|FEDC0002,0,0,0|1	$00000010
+WBSpriteY|block +48|FEDC0002,0,0,0|1	$00008100
+WBSpriteY|block +50|FEDC0002,0,0,0|1	$00000002
+WBSpriteY|block +52|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +54|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +56|FEDC0002,0,0,0|1	$00008100
+WBSpriteY|block +58|FEDC0002,0,0,0|1	$00000004
+WBSpriteY|block +60|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +62|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +64|FEDC0002,0,0,0|1	$00008100
+WBSpriteY|block +66|FEDC0002,0,0,0|1	$00000008
+WBSpriteY|block +68|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +70|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +72|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +74|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +76|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +78|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +80|FEDC0002,0,0,0|1	$00008200
+WBSpriteY|block +82|FEDC0002,0,0,0|1	$00000020
+WBSpriteY|block +84|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +86|FEDC0002,0,0,0|1	$00000005
+WBSpriteY|block +88|FEDC0002,0,0,0|1	$00008200
+WBSpriteY|block +90|FEDC0002,0,0,0|1	$00000022
+WBSpriteY|block +92|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +94|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +96|FEDC0002,0,0,0|1	$00008200
+WBSpriteY|block +98|FEDC0002,0,0,0|1	$00000024
+WBSpriteY|block +100|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +102|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +104|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +106|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +108|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +110|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +112|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +114|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +116|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +118|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|block +120|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +122|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|block +124|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +126|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +128|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +130|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +132|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +134|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|block +136|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +138|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +140|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +142|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +144|FEDC0002,0,0,0|1	$00006772
+WBSpriteY|block +146|FEDC0002,0,0,0|1	$00006170
+WBSpriteY|block +148|FEDC0002,0,0,0|1	$00006869
+WBSpriteY|block +150|FEDC0002,0,0,0|1	$00006373
+WBSpriteY|block +152|FEDC0002,0,0,0|1	$00002E6C
+WBSpriteY|block +154|FEDC0002,0,0,0|1	$00006962
+WBSpriteY|block +156|FEDC0002,0,0,0|1	$00007261
+WBSpriteY|block +158|FEDC0002,0,0,0|1	$00007279
+WBSpriteY|block +160|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +162|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|block +164|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|sprite 0 field 0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 1|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 3|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 0 image|FEDC0002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 1 field 0|FEDC0002,0,0,0|1	$0000000C
+WBSpriteY|sprite 1 field 1|FEDC0002,0,0,0|1	$0000001E
+WBSpriteY|sprite 1 field 2|FEDC0002,0,0,0|1	$00000028
+WBSpriteY|sprite 1 field 3|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|sprite 1 field 4|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|sprite 1 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 1 image|FEDC0002,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteY|sprite 2 field 0|FEDC0002,0,0,0|1	$0000000C
+WBSpriteY|sprite 2 field 1|FEDC0002,0,0,0|1	$0000000A
+WBSpriteY|sprite 2 field 2|FEDC0002,0,0,0|1	$00000014
+WBSpriteY|sprite 2 field 3|FEDC0002,0,0,0|1	$00000002
+WBSpriteY|sprite 2 field 4|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|sprite 2 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 2 image|FEDC0002,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteY|sprite 3 field 0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 1|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 3|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 3 image|FEDC0002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 4 field 0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 1|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 3|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 4 image|FEDC0002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 5 field 0|FEDC0002,0,0,0|1	$00000010
+WBSpriteY|sprite 5 field 1|FEDC0002,0,0,0|1	$00000046
+WBSpriteY|sprite 5 field 2|FEDC0002,0,0,0|1	$00000050
+WBSpriteY|sprite 5 field 3|FEDC0002,0,0,0|1	$00000005
+WBSpriteY|sprite 5 field 4|FEDC0002,0,0,0|1	$00000001
+WBSpriteY|sprite 5 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 5 image|FEDC0002,0,0,0|1	bytes 256 fnv 66D436EC
+WBSpriteY|sprite 6 field 0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 1|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 3|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 6 image|FEDC0002,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 7 field 0|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 1|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 2|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 3|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 4|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 5|FEDC0002,0,0,0|1	$00000000
+WBSpriteY|sprite 7 image|FEDC0002,0,0,0|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|kept|vp,64,32,2|1	kept
+MoveWBSprite|popped|vp,64,32,2|1	$00000000
+MoveWBSprite|graphics.library open count|vp,64,32,2|1	$00000000
+MoveWBSprite|block +0|vp,64,32,2|1	$00000000
+MoveWBSprite|block +2|vp,64,32,2|1	$00000000
+MoveWBSprite|block +4|vp,64,32,2|1	$00000000
+MoveWBSprite|block +6|vp,64,32,2|1	$00000000
+MoveWBSprite|block +8|vp,64,32,2|1	$00000000
+MoveWBSprite|block +10|vp,64,32,2|1	$00000001
+MoveWBSprite|block +12|vp,64,32,2|1	$00000000
+MoveWBSprite|block +14|vp,64,32,2|1	$00000003
+MoveWBSprite|block +16|vp,64,32,2|1	$00000000
+MoveWBSprite|block +18|vp,64,32,2|1	$00000005
+MoveWBSprite|block +20|vp,64,32,2|1	$00000046
+MoveWBSprite|block +22|vp,64,32,2|1	$00000050
+MoveWBSprite|block +24|vp,64,32,2|1	$00000000
+MoveWBSprite|block +26|vp,64,32,2|1	$00000001
+MoveWBSprite|block +28|vp,64,32,2|1	$00000010
+MoveWBSprite|block +30|vp,64,32,2|1	$00000010
+MoveWBSprite|block +32|vp,64,32,2|1	$00008100
+MoveWBSprite|block +34|vp,64,32,2|1	$00000000
+MoveWBSprite|block +36|vp,64,32,2|1	$00000000
+MoveWBSprite|block +38|vp,64,32,2|1	$00000010
+MoveWBSprite|block +40|vp,64,32,2|1	$00008100
+MoveWBSprite|block +42|vp,64,32,2|1	$00000006
+MoveWBSprite|block +44|vp,64,32,2|1	$00000000
+MoveWBSprite|block +46|vp,64,32,2|1	$00000010
+MoveWBSprite|block +48|vp,64,32,2|1	$00008100
+MoveWBSprite|block +50|vp,64,32,2|1	$00000002
+MoveWBSprite|block +52|vp,64,32,2|1	$00000000
+MoveWBSprite|block +54|vp,64,32,2|1	$00000000
+MoveWBSprite|block +56|vp,64,32,2|1	$00008100
+MoveWBSprite|block +58|vp,64,32,2|1	$00000004
+MoveWBSprite|block +60|vp,64,32,2|1	$00000000
+MoveWBSprite|block +62|vp,64,32,2|1	$00000000
+MoveWBSprite|block +64|vp,64,32,2|1	$00008100
+MoveWBSprite|block +66|vp,64,32,2|1	$00000008
+MoveWBSprite|block +68|vp,64,32,2|1	$00000000
+MoveWBSprite|block +70|vp,64,32,2|1	$00000000
+MoveWBSprite|block +72|vp,64,32,2|1	$00000000
+MoveWBSprite|block +74|vp,64,32,2|1	$00000000
+MoveWBSprite|block +76|vp,64,32,2|1	$00000000
+MoveWBSprite|block +78|vp,64,32,2|1	$00000000
+MoveWBSprite|block +80|vp,64,32,2|1	$00008200
+MoveWBSprite|block +82|vp,64,32,2|1	$00000020
+MoveWBSprite|block +84|vp,64,32,2|1	$00000000
+MoveWBSprite|block +86|vp,64,32,2|1	$00000005
+MoveWBSprite|block +88|vp,64,32,2|1	$00008200
+MoveWBSprite|block +90|vp,64,32,2|1	$00000022
+MoveWBSprite|block +92|vp,64,32,2|1	$00000000
+MoveWBSprite|block +94|vp,64,32,2|1	$00000000
+MoveWBSprite|block +96|vp,64,32,2|1	$00008200
+MoveWBSprite|block +98|vp,64,32,2|1	$00000024
+MoveWBSprite|block +100|vp,64,32,2|1	$00000000
+MoveWBSprite|block +102|vp,64,32,2|1	$00000000
+MoveWBSprite|block +104|vp,64,32,2|1	$00000000
+MoveWBSprite|block +106|vp,64,32,2|1	$00000000
+MoveWBSprite|block +108|vp,64,32,2|1	$00000000
+MoveWBSprite|block +110|vp,64,32,2|1	$00000000
+MoveWBSprite|block +112|vp,64,32,2|1	$00000000
+MoveWBSprite|block +114|vp,64,32,2|1	$00000000
+MoveWBSprite|block +116|vp,64,32,2|1	$00000000
+MoveWBSprite|block +118|vp,64,32,2|1	$00000001
+MoveWBSprite|block +120|vp,64,32,2|1	$00000000
+MoveWBSprite|block +122|vp,64,32,2|1	$00000001
+MoveWBSprite|block +124|vp,64,32,2|1	$00000000
+MoveWBSprite|block +126|vp,64,32,2|1	$00000000
+MoveWBSprite|block +128|vp,64,32,2|1	$00000000
+MoveWBSprite|block +130|vp,64,32,2|1	$00000000
+MoveWBSprite|block +132|vp,64,32,2|1	$00000000
+MoveWBSprite|block +134|vp,64,32,2|1	$00000001
+MoveWBSprite|block +136|vp,64,32,2|1	$00000000
+MoveWBSprite|block +138|vp,64,32,2|1	$00000000
+MoveWBSprite|block +140|vp,64,32,2|1	$00000000
+MoveWBSprite|block +142|vp,64,32,2|1	$00000000
+MoveWBSprite|block +144|vp,64,32,2|1	$00006772
+MoveWBSprite|block +146|vp,64,32,2|1	$00006170
+MoveWBSprite|block +148|vp,64,32,2|1	$00006869
+MoveWBSprite|block +150|vp,64,32,2|1	$00006373
+MoveWBSprite|block +152|vp,64,32,2|1	$00002E6C
+MoveWBSprite|block +154|vp,64,32,2|1	$00006962
+MoveWBSprite|block +156|vp,64,32,2|1	$00007261
+MoveWBSprite|block +158|vp,64,32,2|1	$00007279
+MoveWBSprite|block +160|vp,64,32,2|1	$00000000
+MoveWBSprite|block +162|vp,64,32,2|1	$00000000
+MoveWBSprite|block +164|vp,64,32,2|1	$00000001
+MoveWBSprite|sprite 0 field 0|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 field 1|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 field 2|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 field 3|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 field 4|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 0 image|vp,64,32,2|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 1 field 0|vp,64,32,2|1	$0000000C
+MoveWBSprite|sprite 1 field 1|vp,64,32,2|1	$0000001E
+MoveWBSprite|sprite 1 field 2|vp,64,32,2|1	$00000028
+MoveWBSprite|sprite 1 field 3|vp,64,32,2|1	$00000001
+MoveWBSprite|sprite 1 field 4|vp,64,32,2|1	$00000001
+MoveWBSprite|sprite 1 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 1 image|vp,64,32,2|1	bytes 256 fnv BCAF6441
+MoveWBSprite|sprite 2 field 0|vp,64,32,2|1	$0000000C
+MoveWBSprite|sprite 2 field 1|vp,64,32,2|1	$00000064
+MoveWBSprite|sprite 2 field 2|vp,64,32,2|1	$00000032
+MoveWBSprite|sprite 2 field 3|vp,64,32,2|1	$00000002
+MoveWBSprite|sprite 2 field 4|vp,64,32,2|1	$00000001
+MoveWBSprite|sprite 2 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 2 image|vp,64,32,2|1	bytes 256 fnv 13AC0E52
+MoveWBSprite|sprite 3 field 0|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 field 1|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 field 2|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 field 3|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 field 4|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 3 image|vp,64,32,2|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 4 field 0|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 field 1|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 field 2|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 field 3|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 field 4|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 4 image|vp,64,32,2|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 5 field 0|vp,64,32,2|1	$00000010
+MoveWBSprite|sprite 5 field 1|vp,64,32,2|1	$00000046
+MoveWBSprite|sprite 5 field 2|vp,64,32,2|1	$00000050
+MoveWBSprite|sprite 5 field 3|vp,64,32,2|1	$00000005
+MoveWBSprite|sprite 5 field 4|vp,64,32,2|1	$00000001
+MoveWBSprite|sprite 5 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 5 image|vp,64,32,2|1	bytes 256 fnv 66D436EC
+MoveWBSprite|sprite 6 field 0|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 field 1|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 field 2|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 field 3|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 field 4|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 6 image|vp,64,32,2|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 7 field 0|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 field 1|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 field 2|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 field 3|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 field 4|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 field 5|vp,64,32,2|1	$00000000
+MoveWBSprite|sprite 7 image|vp,64,32,2|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|kept|2,0,0,0|1	kept
+WBSpriteX|popped|2,0,0,0|1	$00000000
+WBSpriteX|d0|2,0,0,0|1	$00000064
+WBSpriteX|graphics.library open count|2,0,0,0|1	$00000000
+WBSpriteX|block +0|2,0,0,0|1	$00000000
+WBSpriteX|block +2|2,0,0,0|1	$00000000
+WBSpriteX|block +4|2,0,0,0|1	$00000000
+WBSpriteX|block +6|2,0,0,0|1	$00000000
+WBSpriteX|block +8|2,0,0,0|1	$00000000
+WBSpriteX|block +10|2,0,0,0|1	$00000001
+WBSpriteX|block +12|2,0,0,0|1	$00000000
+WBSpriteX|block +14|2,0,0,0|1	$00000003
+WBSpriteX|block +16|2,0,0,0|1	$00000000
+WBSpriteX|block +18|2,0,0,0|1	$00000005
+WBSpriteX|block +20|2,0,0,0|1	$00000046
+WBSpriteX|block +22|2,0,0,0|1	$00000050
+WBSpriteX|block +24|2,0,0,0|1	$00000000
+WBSpriteX|block +26|2,0,0,0|1	$00000001
+WBSpriteX|block +28|2,0,0,0|1	$00000010
+WBSpriteX|block +30|2,0,0,0|1	$00000010
+WBSpriteX|block +32|2,0,0,0|1	$00008100
+WBSpriteX|block +34|2,0,0,0|1	$00000000
+WBSpriteX|block +36|2,0,0,0|1	$00000000
+WBSpriteX|block +38|2,0,0,0|1	$00000010
+WBSpriteX|block +40|2,0,0,0|1	$00008100
+WBSpriteX|block +42|2,0,0,0|1	$00000006
+WBSpriteX|block +44|2,0,0,0|1	$00000000
+WBSpriteX|block +46|2,0,0,0|1	$00000010
+WBSpriteX|block +48|2,0,0,0|1	$00008100
+WBSpriteX|block +50|2,0,0,0|1	$00000002
+WBSpriteX|block +52|2,0,0,0|1	$00000000
+WBSpriteX|block +54|2,0,0,0|1	$00000000
+WBSpriteX|block +56|2,0,0,0|1	$00008100
+WBSpriteX|block +58|2,0,0,0|1	$00000004
+WBSpriteX|block +60|2,0,0,0|1	$00000000
+WBSpriteX|block +62|2,0,0,0|1	$00000000
+WBSpriteX|block +64|2,0,0,0|1	$00008100
+WBSpriteX|block +66|2,0,0,0|1	$00000008
+WBSpriteX|block +68|2,0,0,0|1	$00000000
+WBSpriteX|block +70|2,0,0,0|1	$00000000
+WBSpriteX|block +72|2,0,0,0|1	$00000000
+WBSpriteX|block +74|2,0,0,0|1	$00000000
+WBSpriteX|block +76|2,0,0,0|1	$00000000
+WBSpriteX|block +78|2,0,0,0|1	$00000000
+WBSpriteX|block +80|2,0,0,0|1	$00008200
+WBSpriteX|block +82|2,0,0,0|1	$00000020
+WBSpriteX|block +84|2,0,0,0|1	$00000000
+WBSpriteX|block +86|2,0,0,0|1	$00000005
+WBSpriteX|block +88|2,0,0,0|1	$00008200
+WBSpriteX|block +90|2,0,0,0|1	$00000022
+WBSpriteX|block +92|2,0,0,0|1	$00000000
+WBSpriteX|block +94|2,0,0,0|1	$00000000
+WBSpriteX|block +96|2,0,0,0|1	$00008200
+WBSpriteX|block +98|2,0,0,0|1	$00000024
+WBSpriteX|block +100|2,0,0,0|1	$00000000
+WBSpriteX|block +102|2,0,0,0|1	$00000000
+WBSpriteX|block +104|2,0,0,0|1	$00000000
+WBSpriteX|block +106|2,0,0,0|1	$00000000
+WBSpriteX|block +108|2,0,0,0|1	$00000000
+WBSpriteX|block +110|2,0,0,0|1	$00000000
+WBSpriteX|block +112|2,0,0,0|1	$00000000
+WBSpriteX|block +114|2,0,0,0|1	$00000000
+WBSpriteX|block +116|2,0,0,0|1	$00000000
+WBSpriteX|block +118|2,0,0,0|1	$00000001
+WBSpriteX|block +120|2,0,0,0|1	$00000000
+WBSpriteX|block +122|2,0,0,0|1	$00000001
+WBSpriteX|block +124|2,0,0,0|1	$00000000
+WBSpriteX|block +126|2,0,0,0|1	$00000000
+WBSpriteX|block +128|2,0,0,0|1	$00000000
+WBSpriteX|block +130|2,0,0,0|1	$00000000
+WBSpriteX|block +132|2,0,0,0|1	$00000000
+WBSpriteX|block +134|2,0,0,0|1	$00000001
+WBSpriteX|block +136|2,0,0,0|1	$00000000
+WBSpriteX|block +138|2,0,0,0|1	$00000000
+WBSpriteX|block +140|2,0,0,0|1	$00000000
+WBSpriteX|block +142|2,0,0,0|1	$00000000
+WBSpriteX|block +144|2,0,0,0|1	$00006772
+WBSpriteX|block +146|2,0,0,0|1	$00006170
+WBSpriteX|block +148|2,0,0,0|1	$00006869
+WBSpriteX|block +150|2,0,0,0|1	$00006373
+WBSpriteX|block +152|2,0,0,0|1	$00002E6C
+WBSpriteX|block +154|2,0,0,0|1	$00006962
+WBSpriteX|block +156|2,0,0,0|1	$00007261
+WBSpriteX|block +158|2,0,0,0|1	$00007279
+WBSpriteX|block +160|2,0,0,0|1	$00000000
+WBSpriteX|block +162|2,0,0,0|1	$00000000
+WBSpriteX|block +164|2,0,0,0|1	$00000001
+WBSpriteX|sprite 0 field 0|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 1|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 2|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 3|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 4|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 0 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 1 field 0|2,0,0,0|1	$0000000C
+WBSpriteX|sprite 1 field 1|2,0,0,0|1	$0000001E
+WBSpriteX|sprite 1 field 2|2,0,0,0|1	$00000028
+WBSpriteX|sprite 1 field 3|2,0,0,0|1	$00000001
+WBSpriteX|sprite 1 field 4|2,0,0,0|1	$00000001
+WBSpriteX|sprite 1 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 1 image|2,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteX|sprite 2 field 0|2,0,0,0|1	$0000000C
+WBSpriteX|sprite 2 field 1|2,0,0,0|1	$00000064
+WBSpriteX|sprite 2 field 2|2,0,0,0|1	$00000032
+WBSpriteX|sprite 2 field 3|2,0,0,0|1	$00000002
+WBSpriteX|sprite 2 field 4|2,0,0,0|1	$00000001
+WBSpriteX|sprite 2 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 2 image|2,0,0,0|1	bytes 256 fnv 13AC0E52
+WBSpriteX|sprite 3 field 0|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 1|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 2|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 3|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 4|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 3 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 4 field 0|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 1|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 2|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 3|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 4|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 4 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 5 field 0|2,0,0,0|1	$00000010
+WBSpriteX|sprite 5 field 1|2,0,0,0|1	$00000046
+WBSpriteX|sprite 5 field 2|2,0,0,0|1	$00000050
+WBSpriteX|sprite 5 field 3|2,0,0,0|1	$00000005
+WBSpriteX|sprite 5 field 4|2,0,0,0|1	$00000001
+WBSpriteX|sprite 5 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 5 image|2,0,0,0|1	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 6 field 0|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 1|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 2|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 3|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 4|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 6 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 7 field 0|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 1|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 2|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 3|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 4|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 field 5|2,0,0,0|1	$00000000
+WBSpriteX|sprite 7 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|kept|2,0,0,0|1	kept
+WBSpriteY|popped|2,0,0,0|1	$00000000
+WBSpriteY|d0|2,0,0,0|1	$00000032
+WBSpriteY|graphics.library open count|2,0,0,0|1	$00000000
+WBSpriteY|block +0|2,0,0,0|1	$00000000
+WBSpriteY|block +2|2,0,0,0|1	$00000000
+WBSpriteY|block +4|2,0,0,0|1	$00000000
+WBSpriteY|block +6|2,0,0,0|1	$00000000
+WBSpriteY|block +8|2,0,0,0|1	$00000000
+WBSpriteY|block +10|2,0,0,0|1	$00000001
+WBSpriteY|block +12|2,0,0,0|1	$00000000
+WBSpriteY|block +14|2,0,0,0|1	$00000003
+WBSpriteY|block +16|2,0,0,0|1	$00000000
+WBSpriteY|block +18|2,0,0,0|1	$00000005
+WBSpriteY|block +20|2,0,0,0|1	$00000046
+WBSpriteY|block +22|2,0,0,0|1	$00000050
+WBSpriteY|block +24|2,0,0,0|1	$00000000
+WBSpriteY|block +26|2,0,0,0|1	$00000001
+WBSpriteY|block +28|2,0,0,0|1	$00000010
+WBSpriteY|block +30|2,0,0,0|1	$00000010
+WBSpriteY|block +32|2,0,0,0|1	$00008100
+WBSpriteY|block +34|2,0,0,0|1	$00000000
+WBSpriteY|block +36|2,0,0,0|1	$00000000
+WBSpriteY|block +38|2,0,0,0|1	$00000010
+WBSpriteY|block +40|2,0,0,0|1	$00008100
+WBSpriteY|block +42|2,0,0,0|1	$00000006
+WBSpriteY|block +44|2,0,0,0|1	$00000000
+WBSpriteY|block +46|2,0,0,0|1	$00000010
+WBSpriteY|block +48|2,0,0,0|1	$00008100
+WBSpriteY|block +50|2,0,0,0|1	$00000002
+WBSpriteY|block +52|2,0,0,0|1	$00000000
+WBSpriteY|block +54|2,0,0,0|1	$00000000
+WBSpriteY|block +56|2,0,0,0|1	$00008100
+WBSpriteY|block +58|2,0,0,0|1	$00000004
+WBSpriteY|block +60|2,0,0,0|1	$00000000
+WBSpriteY|block +62|2,0,0,0|1	$00000000
+WBSpriteY|block +64|2,0,0,0|1	$00008100
+WBSpriteY|block +66|2,0,0,0|1	$00000008
+WBSpriteY|block +68|2,0,0,0|1	$00000000
+WBSpriteY|block +70|2,0,0,0|1	$00000000
+WBSpriteY|block +72|2,0,0,0|1	$00000000
+WBSpriteY|block +74|2,0,0,0|1	$00000000
+WBSpriteY|block +76|2,0,0,0|1	$00000000
+WBSpriteY|block +78|2,0,0,0|1	$00000000
+WBSpriteY|block +80|2,0,0,0|1	$00008200
+WBSpriteY|block +82|2,0,0,0|1	$00000020
+WBSpriteY|block +84|2,0,0,0|1	$00000000
+WBSpriteY|block +86|2,0,0,0|1	$00000005
+WBSpriteY|block +88|2,0,0,0|1	$00008200
+WBSpriteY|block +90|2,0,0,0|1	$00000022
+WBSpriteY|block +92|2,0,0,0|1	$00000000
+WBSpriteY|block +94|2,0,0,0|1	$00000000
+WBSpriteY|block +96|2,0,0,0|1	$00008200
+WBSpriteY|block +98|2,0,0,0|1	$00000024
+WBSpriteY|block +100|2,0,0,0|1	$00000000
+WBSpriteY|block +102|2,0,0,0|1	$00000000
+WBSpriteY|block +104|2,0,0,0|1	$00000000
+WBSpriteY|block +106|2,0,0,0|1	$00000000
+WBSpriteY|block +108|2,0,0,0|1	$00000000
+WBSpriteY|block +110|2,0,0,0|1	$00000000
+WBSpriteY|block +112|2,0,0,0|1	$00000000
+WBSpriteY|block +114|2,0,0,0|1	$00000000
+WBSpriteY|block +116|2,0,0,0|1	$00000000
+WBSpriteY|block +118|2,0,0,0|1	$00000001
+WBSpriteY|block +120|2,0,0,0|1	$00000000
+WBSpriteY|block +122|2,0,0,0|1	$00000001
+WBSpriteY|block +124|2,0,0,0|1	$00000000
+WBSpriteY|block +126|2,0,0,0|1	$00000000
+WBSpriteY|block +128|2,0,0,0|1	$00000000
+WBSpriteY|block +130|2,0,0,0|1	$00000000
+WBSpriteY|block +132|2,0,0,0|1	$00000000
+WBSpriteY|block +134|2,0,0,0|1	$00000001
+WBSpriteY|block +136|2,0,0,0|1	$00000000
+WBSpriteY|block +138|2,0,0,0|1	$00000000
+WBSpriteY|block +140|2,0,0,0|1	$00000000
+WBSpriteY|block +142|2,0,0,0|1	$00000000
+WBSpriteY|block +144|2,0,0,0|1	$00006772
+WBSpriteY|block +146|2,0,0,0|1	$00006170
+WBSpriteY|block +148|2,0,0,0|1	$00006869
+WBSpriteY|block +150|2,0,0,0|1	$00006373
+WBSpriteY|block +152|2,0,0,0|1	$00002E6C
+WBSpriteY|block +154|2,0,0,0|1	$00006962
+WBSpriteY|block +156|2,0,0,0|1	$00007261
+WBSpriteY|block +158|2,0,0,0|1	$00007279
+WBSpriteY|block +160|2,0,0,0|1	$00000000
+WBSpriteY|block +162|2,0,0,0|1	$00000000
+WBSpriteY|block +164|2,0,0,0|1	$00000001
+WBSpriteY|sprite 0 field 0|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 1|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 2|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 3|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 4|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 0 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 1 field 0|2,0,0,0|1	$0000000C
+WBSpriteY|sprite 1 field 1|2,0,0,0|1	$0000001E
+WBSpriteY|sprite 1 field 2|2,0,0,0|1	$00000028
+WBSpriteY|sprite 1 field 3|2,0,0,0|1	$00000001
+WBSpriteY|sprite 1 field 4|2,0,0,0|1	$00000001
+WBSpriteY|sprite 1 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 1 image|2,0,0,0|1	bytes 256 fnv BCAF6441
+WBSpriteY|sprite 2 field 0|2,0,0,0|1	$0000000C
+WBSpriteY|sprite 2 field 1|2,0,0,0|1	$00000064
+WBSpriteY|sprite 2 field 2|2,0,0,0|1	$00000032
+WBSpriteY|sprite 2 field 3|2,0,0,0|1	$00000002
+WBSpriteY|sprite 2 field 4|2,0,0,0|1	$00000001
+WBSpriteY|sprite 2 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 2 image|2,0,0,0|1	bytes 256 fnv 13AC0E52
+WBSpriteY|sprite 3 field 0|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 1|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 2|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 3|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 4|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 3 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 4 field 0|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 1|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 2|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 3|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 4|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 4 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 5 field 0|2,0,0,0|1	$00000010
+WBSpriteY|sprite 5 field 1|2,0,0,0|1	$00000046
+WBSpriteY|sprite 5 field 2|2,0,0,0|1	$00000050
+WBSpriteY|sprite 5 field 3|2,0,0,0|1	$00000005
+WBSpriteY|sprite 5 field 4|2,0,0,0|1	$00000001
+WBSpriteY|sprite 5 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 5 image|2,0,0,0|1	bytes 256 fnv 66D436EC
+WBSpriteY|sprite 6 field 0|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 1|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 2|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 3|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 4|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 6 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteY|sprite 7 field 0|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 1|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 2|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 3|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 4|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 field 5|2,0,0,0|1	$00000000
+WBSpriteY|sprite 7 image|2,0,0,0|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|kept|vp,78,5A,1|1	kept
+MoveWBSprite|popped|vp,78,5A,1|1	$00000000
+MoveWBSprite|graphics.library open count|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +0|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +2|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +4|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +6|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +8|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +10|vp,78,5A,1|1	$00000001
+MoveWBSprite|block +12|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +14|vp,78,5A,1|1	$00000003
+MoveWBSprite|block +16|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +18|vp,78,5A,1|1	$00000005
+MoveWBSprite|block +20|vp,78,5A,1|1	$00000046
+MoveWBSprite|block +22|vp,78,5A,1|1	$00000050
+MoveWBSprite|block +24|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +26|vp,78,5A,1|1	$00000001
+MoveWBSprite|block +28|vp,78,5A,1|1	$00000010
+MoveWBSprite|block +30|vp,78,5A,1|1	$00000010
+MoveWBSprite|block +32|vp,78,5A,1|1	$00008100
+MoveWBSprite|block +34|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +36|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +38|vp,78,5A,1|1	$00000010
+MoveWBSprite|block +40|vp,78,5A,1|1	$00008100
+MoveWBSprite|block +42|vp,78,5A,1|1	$00000006
+MoveWBSprite|block +44|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +46|vp,78,5A,1|1	$00000010
+MoveWBSprite|block +48|vp,78,5A,1|1	$00008100
+MoveWBSprite|block +50|vp,78,5A,1|1	$00000002
+MoveWBSprite|block +52|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +54|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +56|vp,78,5A,1|1	$00008100
+MoveWBSprite|block +58|vp,78,5A,1|1	$00000004
+MoveWBSprite|block +60|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +62|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +64|vp,78,5A,1|1	$00008100
+MoveWBSprite|block +66|vp,78,5A,1|1	$00000008
+MoveWBSprite|block +68|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +70|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +72|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +74|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +76|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +78|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +80|vp,78,5A,1|1	$00008200
+MoveWBSprite|block +82|vp,78,5A,1|1	$00000020
+MoveWBSprite|block +84|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +86|vp,78,5A,1|1	$00000005
+MoveWBSprite|block +88|vp,78,5A,1|1	$00008200
+MoveWBSprite|block +90|vp,78,5A,1|1	$00000022
+MoveWBSprite|block +92|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +94|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +96|vp,78,5A,1|1	$00008200
+MoveWBSprite|block +98|vp,78,5A,1|1	$00000024
+MoveWBSprite|block +100|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +102|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +104|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +106|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +108|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +110|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +112|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +114|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +116|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +118|vp,78,5A,1|1	$00000001
+MoveWBSprite|block +120|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +122|vp,78,5A,1|1	$00000001
+MoveWBSprite|block +124|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +126|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +128|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +130|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +132|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +134|vp,78,5A,1|1	$00000001
+MoveWBSprite|block +136|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +138|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +140|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +142|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +144|vp,78,5A,1|1	$00006772
+MoveWBSprite|block +146|vp,78,5A,1|1	$00006170
+MoveWBSprite|block +148|vp,78,5A,1|1	$00006869
+MoveWBSprite|block +150|vp,78,5A,1|1	$00006373
+MoveWBSprite|block +152|vp,78,5A,1|1	$00002E6C
+MoveWBSprite|block +154|vp,78,5A,1|1	$00006962
+MoveWBSprite|block +156|vp,78,5A,1|1	$00007261
+MoveWBSprite|block +158|vp,78,5A,1|1	$00007279
+MoveWBSprite|block +160|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +162|vp,78,5A,1|1	$00000000
+MoveWBSprite|block +164|vp,78,5A,1|1	$00000001
+MoveWBSprite|sprite 0 field 0|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 field 1|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 field 2|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 field 3|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 field 4|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 0 image|vp,78,5A,1|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 1 field 0|vp,78,5A,1|1	$0000000C
+MoveWBSprite|sprite 1 field 1|vp,78,5A,1|1	$00000078
+MoveWBSprite|sprite 1 field 2|vp,78,5A,1|1	$0000005A
+MoveWBSprite|sprite 1 field 3|vp,78,5A,1|1	$00000001
+MoveWBSprite|sprite 1 field 4|vp,78,5A,1|1	$00000001
+MoveWBSprite|sprite 1 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 1 image|vp,78,5A,1|1	bytes 256 fnv B8E5B583
+MoveWBSprite|sprite 2 field 0|vp,78,5A,1|1	$0000000C
+MoveWBSprite|sprite 2 field 1|vp,78,5A,1|1	$00000064
+MoveWBSprite|sprite 2 field 2|vp,78,5A,1|1	$00000032
+MoveWBSprite|sprite 2 field 3|vp,78,5A,1|1	$00000002
+MoveWBSprite|sprite 2 field 4|vp,78,5A,1|1	$00000001
+MoveWBSprite|sprite 2 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 2 image|vp,78,5A,1|1	bytes 256 fnv 13AC0E52
+MoveWBSprite|sprite 3 field 0|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 field 1|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 field 2|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 field 3|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 field 4|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 3 image|vp,78,5A,1|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 4 field 0|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 field 1|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 field 2|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 field 3|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 field 4|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 4 image|vp,78,5A,1|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 5 field 0|vp,78,5A,1|1	$00000010
+MoveWBSprite|sprite 5 field 1|vp,78,5A,1|1	$00000046
+MoveWBSprite|sprite 5 field 2|vp,78,5A,1|1	$00000050
+MoveWBSprite|sprite 5 field 3|vp,78,5A,1|1	$00000005
+MoveWBSprite|sprite 5 field 4|vp,78,5A,1|1	$00000001
+MoveWBSprite|sprite 5 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 5 image|vp,78,5A,1|1	bytes 256 fnv 66D436EC
+MoveWBSprite|sprite 6 field 0|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 field 1|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 field 2|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 field 3|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 field 4|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 6 image|vp,78,5A,1|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite|sprite 7 field 0|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 field 1|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 field 2|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 field 3|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 field 4|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 field 5|vp,78,5A,1|1	$00000000
+MoveWBSprite|sprite 7 image|vp,78,5A,1|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite (no sprite)|kept|vp,1,1,6|1	kept
+MoveWBSprite (no sprite)|popped|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|d0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|graphics.library open count|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +6|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +8|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +10|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|block +12|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +14|vp,1,1,6|1	$00000003
+MoveWBSprite (no sprite)|block +16|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +18|vp,1,1,6|1	$00000005
+MoveWBSprite (no sprite)|block +20|vp,1,1,6|1	$00000046
+MoveWBSprite (no sprite)|block +22|vp,1,1,6|1	$00000050
+MoveWBSprite (no sprite)|block +24|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +26|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|block +28|vp,1,1,6|1	$00000010
+MoveWBSprite (no sprite)|block +30|vp,1,1,6|1	$00000010
+MoveWBSprite (no sprite)|block +32|vp,1,1,6|1	$00008100
+MoveWBSprite (no sprite)|block +34|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +36|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +38|vp,1,1,6|1	$00000010
+MoveWBSprite (no sprite)|block +40|vp,1,1,6|1	$00008100
+MoveWBSprite (no sprite)|block +42|vp,1,1,6|1	$00000006
+MoveWBSprite (no sprite)|block +44|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +46|vp,1,1,6|1	$00000010
+MoveWBSprite (no sprite)|block +48|vp,1,1,6|1	$00008100
+MoveWBSprite (no sprite)|block +50|vp,1,1,6|1	$00000002
+MoveWBSprite (no sprite)|block +52|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +54|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +56|vp,1,1,6|1	$00008100
+MoveWBSprite (no sprite)|block +58|vp,1,1,6|1	$00000004
+MoveWBSprite (no sprite)|block +60|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +62|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +64|vp,1,1,6|1	$00008100
+MoveWBSprite (no sprite)|block +66|vp,1,1,6|1	$00000008
+MoveWBSprite (no sprite)|block +68|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +70|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +72|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +74|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +76|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +78|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +80|vp,1,1,6|1	$00008200
+MoveWBSprite (no sprite)|block +82|vp,1,1,6|1	$00000020
+MoveWBSprite (no sprite)|block +84|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +86|vp,1,1,6|1	$00000005
+MoveWBSprite (no sprite)|block +88|vp,1,1,6|1	$00008200
+MoveWBSprite (no sprite)|block +90|vp,1,1,6|1	$00000022
+MoveWBSprite (no sprite)|block +92|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +94|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +96|vp,1,1,6|1	$00008200
+MoveWBSprite (no sprite)|block +98|vp,1,1,6|1	$00000024
+MoveWBSprite (no sprite)|block +100|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +102|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +104|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +106|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +108|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +110|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +112|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +114|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +116|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +118|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|block +120|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +122|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|block +124|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +126|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +128|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +130|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +132|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +134|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|block +136|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +138|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +140|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +142|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +144|vp,1,1,6|1	$00006772
+MoveWBSprite (no sprite)|block +146|vp,1,1,6|1	$00006170
+MoveWBSprite (no sprite)|block +148|vp,1,1,6|1	$00006869
+MoveWBSprite (no sprite)|block +150|vp,1,1,6|1	$00006373
+MoveWBSprite (no sprite)|block +152|vp,1,1,6|1	$00002E6C
+MoveWBSprite (no sprite)|block +154|vp,1,1,6|1	$00006962
+MoveWBSprite (no sprite)|block +156|vp,1,1,6|1	$00007261
+MoveWBSprite (no sprite)|block +158|vp,1,1,6|1	$00007279
+MoveWBSprite (no sprite)|block +160|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +162|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|block +164|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|sprite 0 field 0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 field 1|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 field 2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 field 3|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 field 4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 0 image|vp,1,1,6|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite (no sprite)|sprite 1 field 0|vp,1,1,6|1	$0000000C
+MoveWBSprite (no sprite)|sprite 1 field 1|vp,1,1,6|1	$00000078
+MoveWBSprite (no sprite)|sprite 1 field 2|vp,1,1,6|1	$0000005A
+MoveWBSprite (no sprite)|sprite 1 field 3|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|sprite 1 field 4|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|sprite 1 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 1 image|vp,1,1,6|1	bytes 256 fnv B8E5B583
+MoveWBSprite (no sprite)|sprite 2 field 0|vp,1,1,6|1	$0000000C
+MoveWBSprite (no sprite)|sprite 2 field 1|vp,1,1,6|1	$00000064
+MoveWBSprite (no sprite)|sprite 2 field 2|vp,1,1,6|1	$00000032
+MoveWBSprite (no sprite)|sprite 2 field 3|vp,1,1,6|1	$00000002
+MoveWBSprite (no sprite)|sprite 2 field 4|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|sprite 2 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 2 image|vp,1,1,6|1	bytes 256 fnv 13AC0E52
+MoveWBSprite (no sprite)|sprite 3 field 0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 field 1|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 field 2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 field 3|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 field 4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 3 image|vp,1,1,6|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite (no sprite)|sprite 4 field 0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 field 1|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 field 2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 field 3|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 field 4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 4 image|vp,1,1,6|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite (no sprite)|sprite 5 field 0|vp,1,1,6|1	$00000010
+MoveWBSprite (no sprite)|sprite 5 field 1|vp,1,1,6|1	$00000046
+MoveWBSprite (no sprite)|sprite 5 field 2|vp,1,1,6|1	$00000050
+MoveWBSprite (no sprite)|sprite 5 field 3|vp,1,1,6|1	$00000005
+MoveWBSprite (no sprite)|sprite 5 field 4|vp,1,1,6|1	$00000001
+MoveWBSprite (no sprite)|sprite 5 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 5 image|vp,1,1,6|1	bytes 256 fnv 66D436EC
+MoveWBSprite (no sprite)|sprite 6 field 0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 field 1|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 field 2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 field 3|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 field 4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 6 image|vp,1,1,6|1	bytes 256 fnv E6A1D1C5
+MoveWBSprite (no sprite)|sprite 7 field 0|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 field 1|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 field 2|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 field 3|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 field 4|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 field 5|vp,1,1,6|1	$00000000
+MoveWBSprite (no sprite)|sprite 7 image|vp,1,1,6|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite|kept|vp,2,3,0|1	kept
+ChangeWBSprite|popped|vp,2,3,0|1	$00000000
+ChangeWBSprite|d0|vp,2,3,0|1	$FFFFFFFF
+ChangeWBSprite|graphics.library open count|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +0|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +2|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +4|vp,2,3,0|1	$00004000
+ChangeWBSprite|block +6|vp,2,3,0|1	$00000078
+ChangeWBSprite|block +8|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +10|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +12|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +14|vp,2,3,0|1	$00000006
+ChangeWBSprite|block +16|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +18|vp,2,3,0|1	$00000002
+ChangeWBSprite|block +20|vp,2,3,0|1	$00000064
+ChangeWBSprite|block +22|vp,2,3,0|1	$00000032
+ChangeWBSprite|block +24|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +26|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +28|vp,2,3,0|1	$00000010
+ChangeWBSprite|block +30|vp,2,3,0|1	$00000005
+ChangeWBSprite|block +32|vp,2,3,0|1	$00008100
+ChangeWBSprite|block +34|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +36|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +38|vp,2,3,0|1	$00000010
+ChangeWBSprite|block +40|vp,2,3,0|1	$00008100
+ChangeWBSprite|block +42|vp,2,3,0|1	$00000006
+ChangeWBSprite|block +44|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +46|vp,2,3,0|1	$00000005
+ChangeWBSprite|block +48|vp,2,3,0|1	$00008100
+ChangeWBSprite|block +50|vp,2,3,0|1	$00000002
+ChangeWBSprite|block +52|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +54|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +56|vp,2,3,0|1	$00008100
+ChangeWBSprite|block +58|vp,2,3,0|1	$00000004
+ChangeWBSprite|block +60|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +62|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +64|vp,2,3,0|1	$00008100
+ChangeWBSprite|block +66|vp,2,3,0|1	$00000008
+ChangeWBSprite|block +68|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +70|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +72|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +74|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +76|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +78|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +80|vp,2,3,0|1	$00008200
+ChangeWBSprite|block +82|vp,2,3,0|1	$00000020
+ChangeWBSprite|block +84|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +86|vp,2,3,0|1	$00000005
+ChangeWBSprite|block +88|vp,2,3,0|1	$00008200
+ChangeWBSprite|block +90|vp,2,3,0|1	$00000022
+ChangeWBSprite|block +92|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +94|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +96|vp,2,3,0|1	$00008200
+ChangeWBSprite|block +98|vp,2,3,0|1	$00000024
+ChangeWBSprite|block +100|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +102|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +104|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +106|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +108|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +110|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +112|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +114|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +116|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +118|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +120|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +122|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +124|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +126|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +128|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +130|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +132|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +134|vp,2,3,0|1	$00000001
+ChangeWBSprite|block +136|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +138|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +140|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +142|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +144|vp,2,3,0|1	$00006772
+ChangeWBSprite|block +146|vp,2,3,0|1	$00006170
+ChangeWBSprite|block +148|vp,2,3,0|1	$00006869
+ChangeWBSprite|block +150|vp,2,3,0|1	$00006373
+ChangeWBSprite|block +152|vp,2,3,0|1	$00002E6C
+ChangeWBSprite|block +154|vp,2,3,0|1	$00006962
+ChangeWBSprite|block +156|vp,2,3,0|1	$00007261
+ChangeWBSprite|block +158|vp,2,3,0|1	$00007279
+ChangeWBSprite|block +160|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +162|vp,2,3,0|1	$00000000
+ChangeWBSprite|block +164|vp,2,3,0|1	$00000001
+ChangeWBSprite|sprite 0 field 0|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 field 1|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 field 2|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 field 3|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 field 4|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 0 image|vp,2,3,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite|sprite 1 field 0|vp,2,3,0|1	$0000000C
+ChangeWBSprite|sprite 1 field 1|vp,2,3,0|1	$00000078
+ChangeWBSprite|sprite 1 field 2|vp,2,3,0|1	$0000005A
+ChangeWBSprite|sprite 1 field 3|vp,2,3,0|1	$00000001
+ChangeWBSprite|sprite 1 field 4|vp,2,3,0|1	$00000001
+ChangeWBSprite|sprite 1 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 1 image|vp,2,3,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite|sprite 2 field 0|vp,2,3,0|1	$00000005
+ChangeWBSprite|sprite 2 field 1|vp,2,3,0|1	$00000064
+ChangeWBSprite|sprite 2 field 2|vp,2,3,0|1	$00000032
+ChangeWBSprite|sprite 2 field 3|vp,2,3,0|1	$00000002
+ChangeWBSprite|sprite 2 field 4|vp,2,3,0|1	$00000001
+ChangeWBSprite|sprite 2 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 2 image|vp,2,3,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite|sprite 3 field 0|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 field 1|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 field 2|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 field 3|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 field 4|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 3 image|vp,2,3,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite|sprite 4 field 0|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 field 1|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 field 2|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 field 3|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 field 4|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 4 image|vp,2,3,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite|sprite 5 field 0|vp,2,3,0|1	$00000010
+ChangeWBSprite|sprite 5 field 1|vp,2,3,0|1	$00000046
+ChangeWBSprite|sprite 5 field 2|vp,2,3,0|1	$00000050
+ChangeWBSprite|sprite 5 field 3|vp,2,3,0|1	$00000005
+ChangeWBSprite|sprite 5 field 4|vp,2,3,0|1	$00000001
+ChangeWBSprite|sprite 5 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 5 image|vp,2,3,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite|sprite 6 field 0|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 field 1|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 field 2|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 field 3|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 field 4|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 6 image|vp,2,3,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite|sprite 7 field 0|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 field 1|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 field 2|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 field 3|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 field 4|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 field 5|vp,2,3,0|1	$00000000
+ChangeWBSprite|sprite 7 image|vp,2,3,0|1	bytes 256 fnv E6A1D1C5
+WBSpriteX|kept|2,0,0,0|2	kept
+WBSpriteX|popped|2,0,0,0|2	$00000000
+WBSpriteX|d0|2,0,0,0|2	$00000064
+WBSpriteX|graphics.library open count|2,0,0,0|2	$00000000
+WBSpriteX|block +0|2,0,0,0|2	$00000000
+WBSpriteX|block +2|2,0,0,0|2	$00000001
+WBSpriteX|block +4|2,0,0,0|2	$00004000
+WBSpriteX|block +6|2,0,0,0|2	$00000078
+WBSpriteX|block +8|2,0,0,0|2	$00000000
+WBSpriteX|block +10|2,0,0,0|2	$00000001
+WBSpriteX|block +12|2,0,0,0|2	$00000000
+WBSpriteX|block +14|2,0,0,0|2	$00000006
+WBSpriteX|block +16|2,0,0,0|2	$00000000
+WBSpriteX|block +18|2,0,0,0|2	$00000002
+WBSpriteX|block +20|2,0,0,0|2	$00000064
+WBSpriteX|block +22|2,0,0,0|2	$00000032
+WBSpriteX|block +24|2,0,0,0|2	$00000000
+WBSpriteX|block +26|2,0,0,0|2	$00000001
+WBSpriteX|block +28|2,0,0,0|2	$00000010
+WBSpriteX|block +30|2,0,0,0|2	$00000005
+WBSpriteX|block +32|2,0,0,0|2	$00008100
+WBSpriteX|block +34|2,0,0,0|2	$00000000
+WBSpriteX|block +36|2,0,0,0|2	$00000000
+WBSpriteX|block +38|2,0,0,0|2	$00000010
+WBSpriteX|block +40|2,0,0,0|2	$00008100
+WBSpriteX|block +42|2,0,0,0|2	$00000006
+WBSpriteX|block +44|2,0,0,0|2	$00000000
+WBSpriteX|block +46|2,0,0,0|2	$00000005
+WBSpriteX|block +48|2,0,0,0|2	$00008100
+WBSpriteX|block +50|2,0,0,0|2	$00000002
+WBSpriteX|block +52|2,0,0,0|2	$00000000
+WBSpriteX|block +54|2,0,0,0|2	$00000000
+WBSpriteX|block +56|2,0,0,0|2	$00008100
+WBSpriteX|block +58|2,0,0,0|2	$00000004
+WBSpriteX|block +60|2,0,0,0|2	$00000000
+WBSpriteX|block +62|2,0,0,0|2	$00000000
+WBSpriteX|block +64|2,0,0,0|2	$00008100
+WBSpriteX|block +66|2,0,0,0|2	$00000008
+WBSpriteX|block +68|2,0,0,0|2	$00000000
+WBSpriteX|block +70|2,0,0,0|2	$00000000
+WBSpriteX|block +72|2,0,0,0|2	$00000000
+WBSpriteX|block +74|2,0,0,0|2	$00000000
+WBSpriteX|block +76|2,0,0,0|2	$00000000
+WBSpriteX|block +78|2,0,0,0|2	$00000000
+WBSpriteX|block +80|2,0,0,0|2	$00008200
+WBSpriteX|block +82|2,0,0,0|2	$00000020
+WBSpriteX|block +84|2,0,0,0|2	$00000000
+WBSpriteX|block +86|2,0,0,0|2	$00000005
+WBSpriteX|block +88|2,0,0,0|2	$00008200
+WBSpriteX|block +90|2,0,0,0|2	$00000022
+WBSpriteX|block +92|2,0,0,0|2	$00000000
+WBSpriteX|block +94|2,0,0,0|2	$00000000
+WBSpriteX|block +96|2,0,0,0|2	$00008200
+WBSpriteX|block +98|2,0,0,0|2	$00000024
+WBSpriteX|block +100|2,0,0,0|2	$00000000
+WBSpriteX|block +102|2,0,0,0|2	$00000000
+WBSpriteX|block +104|2,0,0,0|2	$00000000
+WBSpriteX|block +106|2,0,0,0|2	$00000000
+WBSpriteX|block +108|2,0,0,0|2	$00000000
+WBSpriteX|block +110|2,0,0,0|2	$00000000
+WBSpriteX|block +112|2,0,0,0|2	$00000000
+WBSpriteX|block +114|2,0,0,0|2	$00000000
+WBSpriteX|block +116|2,0,0,0|2	$00000000
+WBSpriteX|block +118|2,0,0,0|2	$00000001
+WBSpriteX|block +120|2,0,0,0|2	$00000000
+WBSpriteX|block +122|2,0,0,0|2	$00000001
+WBSpriteX|block +124|2,0,0,0|2	$00000000
+WBSpriteX|block +126|2,0,0,0|2	$00000000
+WBSpriteX|block +128|2,0,0,0|2	$00000000
+WBSpriteX|block +130|2,0,0,0|2	$00000000
+WBSpriteX|block +132|2,0,0,0|2	$00000000
+WBSpriteX|block +134|2,0,0,0|2	$00000001
+WBSpriteX|block +136|2,0,0,0|2	$00000000
+WBSpriteX|block +138|2,0,0,0|2	$00000000
+WBSpriteX|block +140|2,0,0,0|2	$00000000
+WBSpriteX|block +142|2,0,0,0|2	$00000000
+WBSpriteX|block +144|2,0,0,0|2	$00006772
+WBSpriteX|block +146|2,0,0,0|2	$00006170
+WBSpriteX|block +148|2,0,0,0|2	$00006869
+WBSpriteX|block +150|2,0,0,0|2	$00006373
+WBSpriteX|block +152|2,0,0,0|2	$00002E6C
+WBSpriteX|block +154|2,0,0,0|2	$00006962
+WBSpriteX|block +156|2,0,0,0|2	$00007261
+WBSpriteX|block +158|2,0,0,0|2	$00007279
+WBSpriteX|block +160|2,0,0,0|2	$00000000
+WBSpriteX|block +162|2,0,0,0|2	$00000000
+WBSpriteX|block +164|2,0,0,0|2	$00000001
+WBSpriteX|sprite 0 field 0|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 field 1|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 field 2|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 field 3|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 field 4|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 0 image|2,0,0,0|2	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 1 field 0|2,0,0,0|2	$0000000C
+WBSpriteX|sprite 1 field 1|2,0,0,0|2	$00000078
+WBSpriteX|sprite 1 field 2|2,0,0,0|2	$0000005A
+WBSpriteX|sprite 1 field 3|2,0,0,0|2	$00000001
+WBSpriteX|sprite 1 field 4|2,0,0,0|2	$00000001
+WBSpriteX|sprite 1 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 1 image|2,0,0,0|2	bytes 256 fnv B8E5B583
+WBSpriteX|sprite 2 field 0|2,0,0,0|2	$00000005
+WBSpriteX|sprite 2 field 1|2,0,0,0|2	$00000064
+WBSpriteX|sprite 2 field 2|2,0,0,0|2	$00000032
+WBSpriteX|sprite 2 field 3|2,0,0,0|2	$00000002
+WBSpriteX|sprite 2 field 4|2,0,0,0|2	$00000001
+WBSpriteX|sprite 2 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 2 image|2,0,0,0|2	bytes 256 fnv 73CEA35C
+WBSpriteX|sprite 3 field 0|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 field 1|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 field 2|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 field 3|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 field 4|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 3 image|2,0,0,0|2	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 4 field 0|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 field 1|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 field 2|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 field 3|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 field 4|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 4 image|2,0,0,0|2	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 5 field 0|2,0,0,0|2	$00000010
+WBSpriteX|sprite 5 field 1|2,0,0,0|2	$00000046
+WBSpriteX|sprite 5 field 2|2,0,0,0|2	$00000050
+WBSpriteX|sprite 5 field 3|2,0,0,0|2	$00000005
+WBSpriteX|sprite 5 field 4|2,0,0,0|2	$00000001
+WBSpriteX|sprite 5 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 5 image|2,0,0,0|2	bytes 256 fnv 66D436EC
+WBSpriteX|sprite 6 field 0|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 field 1|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 field 2|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 field 3|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 field 4|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 6 image|2,0,0,0|2	bytes 256 fnv E6A1D1C5
+WBSpriteX|sprite 7 field 0|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 field 1|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 field 2|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 field 3|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 field 4|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 field 5|2,0,0,0|2	$00000000
+WBSpriteX|sprite 7 image|2,0,0,0|2	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no sprite)|kept|vp,6,1,0|1	kept
+ChangeWBSprite (no sprite)|popped|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|d0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|graphics.library open count|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +2|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +4|vp,6,1,0|1	$00004000
+ChangeWBSprite (no sprite)|block +6|vp,6,1,0|1	$00000078
+ChangeWBSprite (no sprite)|block +8|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +10|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +12|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +14|vp,6,1,0|1	$00000006
+ChangeWBSprite (no sprite)|block +16|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +18|vp,6,1,0|1	$00000006
+ChangeWBSprite (no sprite)|block +20|vp,6,1,0|1	$00000064
+ChangeWBSprite (no sprite)|block +22|vp,6,1,0|1	$00000032
+ChangeWBSprite (no sprite)|block +24|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +26|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +28|vp,6,1,0|1	$00000010
+ChangeWBSprite (no sprite)|block +30|vp,6,1,0|1	$00000005
+ChangeWBSprite (no sprite)|block +32|vp,6,1,0|1	$00008100
+ChangeWBSprite (no sprite)|block +34|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +36|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +38|vp,6,1,0|1	$00000010
+ChangeWBSprite (no sprite)|block +40|vp,6,1,0|1	$00008100
+ChangeWBSprite (no sprite)|block +42|vp,6,1,0|1	$00000006
+ChangeWBSprite (no sprite)|block +44|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +46|vp,6,1,0|1	$00000005
+ChangeWBSprite (no sprite)|block +48|vp,6,1,0|1	$00008100
+ChangeWBSprite (no sprite)|block +50|vp,6,1,0|1	$00000002
+ChangeWBSprite (no sprite)|block +52|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +54|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +56|vp,6,1,0|1	$00008100
+ChangeWBSprite (no sprite)|block +58|vp,6,1,0|1	$00000004
+ChangeWBSprite (no sprite)|block +60|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +62|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +64|vp,6,1,0|1	$00008100
+ChangeWBSprite (no sprite)|block +66|vp,6,1,0|1	$00000008
+ChangeWBSprite (no sprite)|block +68|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +70|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +72|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +74|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +76|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +78|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +80|vp,6,1,0|1	$00008200
+ChangeWBSprite (no sprite)|block +82|vp,6,1,0|1	$00000020
+ChangeWBSprite (no sprite)|block +84|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +86|vp,6,1,0|1	$00000005
+ChangeWBSprite (no sprite)|block +88|vp,6,1,0|1	$00008200
+ChangeWBSprite (no sprite)|block +90|vp,6,1,0|1	$00000022
+ChangeWBSprite (no sprite)|block +92|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +94|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +96|vp,6,1,0|1	$00008200
+ChangeWBSprite (no sprite)|block +98|vp,6,1,0|1	$00000024
+ChangeWBSprite (no sprite)|block +100|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +102|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +104|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +106|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +108|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +110|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +112|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +114|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +116|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +118|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +120|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +122|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +124|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +126|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +128|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +130|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +132|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +134|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|block +136|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +138|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +140|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +142|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +144|vp,6,1,0|1	$00006772
+ChangeWBSprite (no sprite)|block +146|vp,6,1,0|1	$00006170
+ChangeWBSprite (no sprite)|block +148|vp,6,1,0|1	$00006869
+ChangeWBSprite (no sprite)|block +150|vp,6,1,0|1	$00006373
+ChangeWBSprite (no sprite)|block +152|vp,6,1,0|1	$00002E6C
+ChangeWBSprite (no sprite)|block +154|vp,6,1,0|1	$00006962
+ChangeWBSprite (no sprite)|block +156|vp,6,1,0|1	$00007261
+ChangeWBSprite (no sprite)|block +158|vp,6,1,0|1	$00007279
+ChangeWBSprite (no sprite)|block +160|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +162|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|block +164|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|sprite 0 field 0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 field 1|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 field 2|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 field 3|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 field 4|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 0 image|vp,6,1,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no sprite)|sprite 1 field 0|vp,6,1,0|1	$0000000C
+ChangeWBSprite (no sprite)|sprite 1 field 1|vp,6,1,0|1	$00000078
+ChangeWBSprite (no sprite)|sprite 1 field 2|vp,6,1,0|1	$0000005A
+ChangeWBSprite (no sprite)|sprite 1 field 3|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|sprite 1 field 4|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|sprite 1 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 1 image|vp,6,1,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite (no sprite)|sprite 2 field 0|vp,6,1,0|1	$00000005
+ChangeWBSprite (no sprite)|sprite 2 field 1|vp,6,1,0|1	$00000064
+ChangeWBSprite (no sprite)|sprite 2 field 2|vp,6,1,0|1	$00000032
+ChangeWBSprite (no sprite)|sprite 2 field 3|vp,6,1,0|1	$00000002
+ChangeWBSprite (no sprite)|sprite 2 field 4|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|sprite 2 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 2 image|vp,6,1,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite (no sprite)|sprite 3 field 0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 field 1|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 field 2|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 field 3|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 field 4|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 3 image|vp,6,1,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no sprite)|sprite 4 field 0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 field 1|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 field 2|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 field 3|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 field 4|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 4 image|vp,6,1,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no sprite)|sprite 5 field 0|vp,6,1,0|1	$00000010
+ChangeWBSprite (no sprite)|sprite 5 field 1|vp,6,1,0|1	$00000046
+ChangeWBSprite (no sprite)|sprite 5 field 2|vp,6,1,0|1	$00000050
+ChangeWBSprite (no sprite)|sprite 5 field 3|vp,6,1,0|1	$00000005
+ChangeWBSprite (no sprite)|sprite 5 field 4|vp,6,1,0|1	$00000001
+ChangeWBSprite (no sprite)|sprite 5 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 5 image|vp,6,1,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (no sprite)|sprite 6 field 0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 field 1|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 field 2|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 field 3|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 field 4|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 6 image|vp,6,1,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no sprite)|sprite 7 field 0|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 field 1|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 field 2|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 field 3|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 field 4|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 field 5|vp,6,1,0|1	$00000000
+ChangeWBSprite (no sprite)|sprite 7 image|vp,6,1,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (narrow)|kept|vp,2,4,0|1	kept
+ChangeWBSprite (narrow)|popped|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|d0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|graphics.library open count|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +2|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +4|vp,2,4,0|1	$00004000
+ChangeWBSprite (narrow)|block +6|vp,2,4,0|1	$00000078
+ChangeWBSprite (narrow)|block +8|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +10|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +12|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +14|vp,2,4,0|1	$00000004
+ChangeWBSprite (narrow)|block +16|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +18|vp,2,4,0|1	$00000002
+ChangeWBSprite (narrow)|block +20|vp,2,4,0|1	$00000064
+ChangeWBSprite (narrow)|block +22|vp,2,4,0|1	$00000032
+ChangeWBSprite (narrow)|block +24|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +26|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +28|vp,2,4,0|1	$00000010
+ChangeWBSprite (narrow)|block +30|vp,2,4,0|1	$00000005
+ChangeWBSprite (narrow)|block +32|vp,2,4,0|1	$00008100
+ChangeWBSprite (narrow)|block +34|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +36|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +38|vp,2,4,0|1	$00000010
+ChangeWBSprite (narrow)|block +40|vp,2,4,0|1	$00008100
+ChangeWBSprite (narrow)|block +42|vp,2,4,0|1	$00000006
+ChangeWBSprite (narrow)|block +44|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +46|vp,2,4,0|1	$00000005
+ChangeWBSprite (narrow)|block +48|vp,2,4,0|1	$00008100
+ChangeWBSprite (narrow)|block +50|vp,2,4,0|1	$00000002
+ChangeWBSprite (narrow)|block +52|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +54|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +56|vp,2,4,0|1	$00008100
+ChangeWBSprite (narrow)|block +58|vp,2,4,0|1	$00000004
+ChangeWBSprite (narrow)|block +60|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +62|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +64|vp,2,4,0|1	$00008100
+ChangeWBSprite (narrow)|block +66|vp,2,4,0|1	$00000008
+ChangeWBSprite (narrow)|block +68|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +70|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +72|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +74|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +76|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +78|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +80|vp,2,4,0|1	$00008200
+ChangeWBSprite (narrow)|block +82|vp,2,4,0|1	$00000020
+ChangeWBSprite (narrow)|block +84|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +86|vp,2,4,0|1	$00000005
+ChangeWBSprite (narrow)|block +88|vp,2,4,0|1	$00008200
+ChangeWBSprite (narrow)|block +90|vp,2,4,0|1	$00000022
+ChangeWBSprite (narrow)|block +92|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +94|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +96|vp,2,4,0|1	$00008200
+ChangeWBSprite (narrow)|block +98|vp,2,4,0|1	$00000024
+ChangeWBSprite (narrow)|block +100|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +102|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +104|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +106|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +108|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +110|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +112|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +114|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +116|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +118|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +120|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +122|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +124|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +126|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +128|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +130|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +132|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +134|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|block +136|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +138|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +140|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +142|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +144|vp,2,4,0|1	$00006772
+ChangeWBSprite (narrow)|block +146|vp,2,4,0|1	$00006170
+ChangeWBSprite (narrow)|block +148|vp,2,4,0|1	$00006869
+ChangeWBSprite (narrow)|block +150|vp,2,4,0|1	$00006373
+ChangeWBSprite (narrow)|block +152|vp,2,4,0|1	$00002E6C
+ChangeWBSprite (narrow)|block +154|vp,2,4,0|1	$00006962
+ChangeWBSprite (narrow)|block +156|vp,2,4,0|1	$00007261
+ChangeWBSprite (narrow)|block +158|vp,2,4,0|1	$00007279
+ChangeWBSprite (narrow)|block +160|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +162|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|block +164|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|sprite 0 field 0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 field 1|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 field 2|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 field 3|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 field 4|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 0 image|vp,2,4,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (narrow)|sprite 1 field 0|vp,2,4,0|1	$0000000C
+ChangeWBSprite (narrow)|sprite 1 field 1|vp,2,4,0|1	$00000078
+ChangeWBSprite (narrow)|sprite 1 field 2|vp,2,4,0|1	$0000005A
+ChangeWBSprite (narrow)|sprite 1 field 3|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|sprite 1 field 4|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|sprite 1 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 1 image|vp,2,4,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite (narrow)|sprite 2 field 0|vp,2,4,0|1	$00000005
+ChangeWBSprite (narrow)|sprite 2 field 1|vp,2,4,0|1	$00000064
+ChangeWBSprite (narrow)|sprite 2 field 2|vp,2,4,0|1	$00000032
+ChangeWBSprite (narrow)|sprite 2 field 3|vp,2,4,0|1	$00000002
+ChangeWBSprite (narrow)|sprite 2 field 4|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|sprite 2 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 2 image|vp,2,4,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite (narrow)|sprite 3 field 0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 field 1|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 field 2|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 field 3|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 field 4|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 3 image|vp,2,4,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (narrow)|sprite 4 field 0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 field 1|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 field 2|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 field 3|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 field 4|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 4 image|vp,2,4,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (narrow)|sprite 5 field 0|vp,2,4,0|1	$00000010
+ChangeWBSprite (narrow)|sprite 5 field 1|vp,2,4,0|1	$00000046
+ChangeWBSprite (narrow)|sprite 5 field 2|vp,2,4,0|1	$00000050
+ChangeWBSprite (narrow)|sprite 5 field 3|vp,2,4,0|1	$00000005
+ChangeWBSprite (narrow)|sprite 5 field 4|vp,2,4,0|1	$00000001
+ChangeWBSprite (narrow)|sprite 5 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 5 image|vp,2,4,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (narrow)|sprite 6 field 0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 field 1|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 field 2|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 field 3|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 field 4|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 6 image|vp,2,4,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (narrow)|sprite 7 field 0|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 field 1|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 field 2|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 field 3|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 field 4|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 field 5|vp,2,4,0|1	$00000000
+ChangeWBSprite (narrow)|sprite 7 image|vp,2,4,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no data)|kept|vp,2,5,0|1	kept
+ChangeWBSprite (no data)|popped|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|d0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|graphics.library open count|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +2|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +4|vp,2,5,0|1	$00004000
+ChangeWBSprite (no data)|block +6|vp,2,5,0|1	$00000078
+ChangeWBSprite (no data)|block +8|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +10|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +12|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +14|vp,2,5,0|1	$00000004
+ChangeWBSprite (no data)|block +16|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +18|vp,2,5,0|1	$00000002
+ChangeWBSprite (no data)|block +20|vp,2,5,0|1	$00000064
+ChangeWBSprite (no data)|block +22|vp,2,5,0|1	$00000032
+ChangeWBSprite (no data)|block +24|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +26|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +28|vp,2,5,0|1	$00000010
+ChangeWBSprite (no data)|block +30|vp,2,5,0|1	$00000005
+ChangeWBSprite (no data)|block +32|vp,2,5,0|1	$00008100
+ChangeWBSprite (no data)|block +34|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +36|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +38|vp,2,5,0|1	$00000010
+ChangeWBSprite (no data)|block +40|vp,2,5,0|1	$00008100
+ChangeWBSprite (no data)|block +42|vp,2,5,0|1	$00000006
+ChangeWBSprite (no data)|block +44|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +46|vp,2,5,0|1	$00000005
+ChangeWBSprite (no data)|block +48|vp,2,5,0|1	$00008100
+ChangeWBSprite (no data)|block +50|vp,2,5,0|1	$00000002
+ChangeWBSprite (no data)|block +52|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +54|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +56|vp,2,5,0|1	$00008100
+ChangeWBSprite (no data)|block +58|vp,2,5,0|1	$00000004
+ChangeWBSprite (no data)|block +60|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +62|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +64|vp,2,5,0|1	$00008100
+ChangeWBSprite (no data)|block +66|vp,2,5,0|1	$00000008
+ChangeWBSprite (no data)|block +68|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +70|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +72|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +74|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +76|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +78|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +80|vp,2,5,0|1	$00008200
+ChangeWBSprite (no data)|block +82|vp,2,5,0|1	$00000020
+ChangeWBSprite (no data)|block +84|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +86|vp,2,5,0|1	$00000005
+ChangeWBSprite (no data)|block +88|vp,2,5,0|1	$00008200
+ChangeWBSprite (no data)|block +90|vp,2,5,0|1	$00000022
+ChangeWBSprite (no data)|block +92|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +94|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +96|vp,2,5,0|1	$00008200
+ChangeWBSprite (no data)|block +98|vp,2,5,0|1	$00000024
+ChangeWBSprite (no data)|block +100|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +102|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +104|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +106|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +108|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +110|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +112|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +114|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +116|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +118|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +120|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +122|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +124|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +126|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +128|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +130|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +132|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +134|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|block +136|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +138|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +140|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +142|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +144|vp,2,5,0|1	$00006772
+ChangeWBSprite (no data)|block +146|vp,2,5,0|1	$00006170
+ChangeWBSprite (no data)|block +148|vp,2,5,0|1	$00006869
+ChangeWBSprite (no data)|block +150|vp,2,5,0|1	$00006373
+ChangeWBSprite (no data)|block +152|vp,2,5,0|1	$00002E6C
+ChangeWBSprite (no data)|block +154|vp,2,5,0|1	$00006962
+ChangeWBSprite (no data)|block +156|vp,2,5,0|1	$00007261
+ChangeWBSprite (no data)|block +158|vp,2,5,0|1	$00007279
+ChangeWBSprite (no data)|block +160|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +162|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|block +164|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|sprite 0 field 0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 field 1|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 field 2|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 field 3|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 field 4|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 0 image|vp,2,5,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no data)|sprite 1 field 0|vp,2,5,0|1	$0000000C
+ChangeWBSprite (no data)|sprite 1 field 1|vp,2,5,0|1	$00000078
+ChangeWBSprite (no data)|sprite 1 field 2|vp,2,5,0|1	$0000005A
+ChangeWBSprite (no data)|sprite 1 field 3|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|sprite 1 field 4|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|sprite 1 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 1 image|vp,2,5,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite (no data)|sprite 2 field 0|vp,2,5,0|1	$00000005
+ChangeWBSprite (no data)|sprite 2 field 1|vp,2,5,0|1	$00000064
+ChangeWBSprite (no data)|sprite 2 field 2|vp,2,5,0|1	$00000032
+ChangeWBSprite (no data)|sprite 2 field 3|vp,2,5,0|1	$00000002
+ChangeWBSprite (no data)|sprite 2 field 4|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|sprite 2 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 2 image|vp,2,5,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite (no data)|sprite 3 field 0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 field 1|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 field 2|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 field 3|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 field 4|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 3 image|vp,2,5,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no data)|sprite 4 field 0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 field 1|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 field 2|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 field 3|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 field 4|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 4 image|vp,2,5,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no data)|sprite 5 field 0|vp,2,5,0|1	$00000010
+ChangeWBSprite (no data)|sprite 5 field 1|vp,2,5,0|1	$00000046
+ChangeWBSprite (no data)|sprite 5 field 2|vp,2,5,0|1	$00000050
+ChangeWBSprite (no data)|sprite 5 field 3|vp,2,5,0|1	$00000005
+ChangeWBSprite (no data)|sprite 5 field 4|vp,2,5,0|1	$00000001
+ChangeWBSprite (no data)|sprite 5 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 5 image|vp,2,5,0|1	bytes 256 fnv 66D436EC
+ChangeWBSprite (no data)|sprite 6 field 0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 field 1|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 field 2|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 field 3|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 field 4|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 6 image|vp,2,5,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (no data)|sprite 7 field 0|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 field 1|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 field 2|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 field 3|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 field 4|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 field 5|vp,2,5,0|1	$00000000
+ChangeWBSprite (no data)|sprite 7 image|vp,2,5,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (1 plane)|kept|vp,5,2,0|1	kept
+ChangeWBSprite (1 plane)|popped|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|d0|vp,5,2,0|1	$FFFFFFFF
+ChangeWBSprite (1 plane)|graphics.library open count|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +2|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +4|vp,5,2,0|1	$00004000
+ChangeWBSprite (1 plane)|block +6|vp,5,2,0|1	$00000084
+ChangeWBSprite (1 plane)|block +8|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +10|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +12|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +14|vp,5,2,0|1	$00000006
+ChangeWBSprite (1 plane)|block +16|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +18|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|block +20|vp,5,2,0|1	$00000046
+ChangeWBSprite (1 plane)|block +22|vp,5,2,0|1	$00000050
+ChangeWBSprite (1 plane)|block +24|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +26|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +28|vp,5,2,0|1	$00000010
+ChangeWBSprite (1 plane)|block +30|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|block +32|vp,5,2,0|1	$00008100
+ChangeWBSprite (1 plane)|block +34|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +36|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +38|vp,5,2,0|1	$00000010
+ChangeWBSprite (1 plane)|block +40|vp,5,2,0|1	$00008100
+ChangeWBSprite (1 plane)|block +42|vp,5,2,0|1	$00000006
+ChangeWBSprite (1 plane)|block +44|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +46|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|block +48|vp,5,2,0|1	$00008100
+ChangeWBSprite (1 plane)|block +50|vp,5,2,0|1	$00000002
+ChangeWBSprite (1 plane)|block +52|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +54|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +56|vp,5,2,0|1	$00008100
+ChangeWBSprite (1 plane)|block +58|vp,5,2,0|1	$00000004
+ChangeWBSprite (1 plane)|block +60|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +62|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +64|vp,5,2,0|1	$00008100
+ChangeWBSprite (1 plane)|block +66|vp,5,2,0|1	$00000008
+ChangeWBSprite (1 plane)|block +68|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +70|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +72|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +74|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +76|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +78|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +80|vp,5,2,0|1	$00008200
+ChangeWBSprite (1 plane)|block +82|vp,5,2,0|1	$00000020
+ChangeWBSprite (1 plane)|block +84|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +86|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|block +88|vp,5,2,0|1	$00008200
+ChangeWBSprite (1 plane)|block +90|vp,5,2,0|1	$00000022
+ChangeWBSprite (1 plane)|block +92|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +94|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +96|vp,5,2,0|1	$00008200
+ChangeWBSprite (1 plane)|block +98|vp,5,2,0|1	$00000024
+ChangeWBSprite (1 plane)|block +100|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +102|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +104|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +106|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +108|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +110|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +112|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +114|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +116|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +118|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +120|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +122|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +124|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +126|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +128|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +130|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +132|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +134|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|block +136|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +138|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +140|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +142|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +144|vp,5,2,0|1	$00006772
+ChangeWBSprite (1 plane)|block +146|vp,5,2,0|1	$00006170
+ChangeWBSprite (1 plane)|block +148|vp,5,2,0|1	$00006869
+ChangeWBSprite (1 plane)|block +150|vp,5,2,0|1	$00006373
+ChangeWBSprite (1 plane)|block +152|vp,5,2,0|1	$00002E6C
+ChangeWBSprite (1 plane)|block +154|vp,5,2,0|1	$00006962
+ChangeWBSprite (1 plane)|block +156|vp,5,2,0|1	$00007261
+ChangeWBSprite (1 plane)|block +158|vp,5,2,0|1	$00007279
+ChangeWBSprite (1 plane)|block +160|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +162|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|block +164|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|sprite 0 field 0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 field 1|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 field 2|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 field 3|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 field 4|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 0 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (1 plane)|sprite 1 field 0|vp,5,2,0|1	$0000000C
+ChangeWBSprite (1 plane)|sprite 1 field 1|vp,5,2,0|1	$00000078
+ChangeWBSprite (1 plane)|sprite 1 field 2|vp,5,2,0|1	$0000005A
+ChangeWBSprite (1 plane)|sprite 1 field 3|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|sprite 1 field 4|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|sprite 1 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 1 image|vp,5,2,0|1	bytes 256 fnv B8E5B583
+ChangeWBSprite (1 plane)|sprite 2 field 0|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|sprite 2 field 1|vp,5,2,0|1	$00000064
+ChangeWBSprite (1 plane)|sprite 2 field 2|vp,5,2,0|1	$00000032
+ChangeWBSprite (1 plane)|sprite 2 field 3|vp,5,2,0|1	$00000002
+ChangeWBSprite (1 plane)|sprite 2 field 4|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|sprite 2 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 2 image|vp,5,2,0|1	bytes 256 fnv 73CEA35C
+ChangeWBSprite (1 plane)|sprite 3 field 0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 field 1|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 field 2|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 field 3|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 field 4|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 3 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (1 plane)|sprite 4 field 0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 field 1|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 field 2|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 field 3|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 field 4|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 4 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (1 plane)|sprite 5 field 0|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|sprite 5 field 1|vp,5,2,0|1	$00000046
+ChangeWBSprite (1 plane)|sprite 5 field 2|vp,5,2,0|1	$00000050
+ChangeWBSprite (1 plane)|sprite 5 field 3|vp,5,2,0|1	$00000005
+ChangeWBSprite (1 plane)|sprite 5 field 4|vp,5,2,0|1	$00000001
+ChangeWBSprite (1 plane)|sprite 5 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 5 image|vp,5,2,0|1	bytes 256 fnv 98745A6F
+ChangeWBSprite (1 plane)|sprite 6 field 0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 field 1|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 field 2|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 field 3|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 field 4|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 6 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+ChangeWBSprite (1 plane)|sprite 7 field 0|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 field 1|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 field 2|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 field 3|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 field 4|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 field 5|vp,5,2,0|1	$00000000
+ChangeWBSprite (1 plane)|sprite 7 image|vp,5,2,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|kept|1,0,0,0|1	kept
+FreeWBSprite|popped|1,0,0,0|1	$00000000
+FreeWBSprite|d0|1,0,0,0|1	$00000010
+FreeWBSprite|graphics.library open count|1,0,0,0|1	$00000000
+FreeWBSprite|block +0|1,0,0,0|1	$00000000
+FreeWBSprite|block +2|1,0,0,0|1	$00000001
+FreeWBSprite|block +4|1,0,0,0|1	$00004000
+FreeWBSprite|block +6|1,0,0,0|1	$00000084
+FreeWBSprite|block +8|1,0,0,0|1	$00000000
+FreeWBSprite|block +10|1,0,0,0|1	$00000001
+FreeWBSprite|block +12|1,0,0,0|1	$00000000
+FreeWBSprite|block +14|1,0,0,0|1	$00000006
+FreeWBSprite|block +16|1,0,0,0|1	$00000000
+FreeWBSprite|block +18|1,0,0,0|1	$00000005
+FreeWBSprite|block +20|1,0,0,0|1	$00000046
+FreeWBSprite|block +22|1,0,0,0|1	$00000050
+FreeWBSprite|block +24|1,0,0,0|1	$00004000
+FreeWBSprite|block +26|1,0,0,0|1	$00000074
+FreeWBSprite|block +28|1,0,0,0|1	$00000010
+FreeWBSprite|block +30|1,0,0,0|1	$00000005
+FreeWBSprite|block +32|1,0,0,0|1	$00008100
+FreeWBSprite|block +34|1,0,0,0|1	$00000000
+FreeWBSprite|block +36|1,0,0,0|1	$00000000
+FreeWBSprite|block +38|1,0,0,0|1	$00000010
+FreeWBSprite|block +40|1,0,0,0|1	$00008100
+FreeWBSprite|block +42|1,0,0,0|1	$00000006
+FreeWBSprite|block +44|1,0,0,0|1	$00000000
+FreeWBSprite|block +46|1,0,0,0|1	$00000005
+FreeWBSprite|block +48|1,0,0,0|1	$00008100
+FreeWBSprite|block +50|1,0,0,0|1	$00000002
+FreeWBSprite|block +52|1,0,0,0|1	$00000000
+FreeWBSprite|block +54|1,0,0,0|1	$00000000
+FreeWBSprite|block +56|1,0,0,0|1	$00008100
+FreeWBSprite|block +58|1,0,0,0|1	$00000004
+FreeWBSprite|block +60|1,0,0,0|1	$00000000
+FreeWBSprite|block +62|1,0,0,0|1	$00000000
+FreeWBSprite|block +64|1,0,0,0|1	$00008100
+FreeWBSprite|block +66|1,0,0,0|1	$00000008
+FreeWBSprite|block +68|1,0,0,0|1	$00000000
+FreeWBSprite|block +70|1,0,0,0|1	$00000000
+FreeWBSprite|block +72|1,0,0,0|1	$00000000
+FreeWBSprite|block +74|1,0,0,0|1	$00000000
+FreeWBSprite|block +76|1,0,0,0|1	$00000000
+FreeWBSprite|block +78|1,0,0,0|1	$00000000
+FreeWBSprite|block +80|1,0,0,0|1	$00008200
+FreeWBSprite|block +82|1,0,0,0|1	$00000020
+FreeWBSprite|block +84|1,0,0,0|1	$00000000
+FreeWBSprite|block +86|1,0,0,0|1	$00000005
+FreeWBSprite|block +88|1,0,0,0|1	$00008200
+FreeWBSprite|block +90|1,0,0,0|1	$00000022
+FreeWBSprite|block +92|1,0,0,0|1	$00000000
+FreeWBSprite|block +94|1,0,0,0|1	$00000000
+FreeWBSprite|block +96|1,0,0,0|1	$00008200
+FreeWBSprite|block +98|1,0,0,0|1	$00000024
+FreeWBSprite|block +100|1,0,0,0|1	$00000000
+FreeWBSprite|block +102|1,0,0,0|1	$00000000
+FreeWBSprite|block +104|1,0,0,0|1	$00000000
+FreeWBSprite|block +106|1,0,0,0|1	$00000000
+FreeWBSprite|block +108|1,0,0,0|1	$00000000
+FreeWBSprite|block +110|1,0,0,0|1	$00000000
+FreeWBSprite|block +112|1,0,0,0|1	$00000000
+FreeWBSprite|block +114|1,0,0,0|1	$00000000
+FreeWBSprite|block +116|1,0,0,0|1	$00000000
+FreeWBSprite|block +118|1,0,0,0|1	$00000000
+FreeWBSprite|block +120|1,0,0,0|1	$00000000
+FreeWBSprite|block +122|1,0,0,0|1	$00000001
+FreeWBSprite|block +124|1,0,0,0|1	$00000000
+FreeWBSprite|block +126|1,0,0,0|1	$00000000
+FreeWBSprite|block +128|1,0,0,0|1	$00000000
+FreeWBSprite|block +130|1,0,0,0|1	$00000000
+FreeWBSprite|block +132|1,0,0,0|1	$00000000
+FreeWBSprite|block +134|1,0,0,0|1	$00000001
+FreeWBSprite|block +136|1,0,0,0|1	$00000000
+FreeWBSprite|block +138|1,0,0,0|1	$00000000
+FreeWBSprite|block +140|1,0,0,0|1	$00000000
+FreeWBSprite|block +142|1,0,0,0|1	$00000000
+FreeWBSprite|block +144|1,0,0,0|1	$00006772
+FreeWBSprite|block +146|1,0,0,0|1	$00006170
+FreeWBSprite|block +148|1,0,0,0|1	$00006869
+FreeWBSprite|block +150|1,0,0,0|1	$00006373
+FreeWBSprite|block +152|1,0,0,0|1	$00002E6C
+FreeWBSprite|block +154|1,0,0,0|1	$00006962
+FreeWBSprite|block +156|1,0,0,0|1	$00007261
+FreeWBSprite|block +158|1,0,0,0|1	$00007279
+FreeWBSprite|block +160|1,0,0,0|1	$00000000
+FreeWBSprite|block +162|1,0,0,0|1	$00000000
+FreeWBSprite|block +164|1,0,0,0|1	$00000001
+FreeWBSprite|sprite 0 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 0 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|sprite 1 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 1 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|sprite 2 field 0|1,0,0,0|1	$00000005
+FreeWBSprite|sprite 2 field 1|1,0,0,0|1	$00000064
+FreeWBSprite|sprite 2 field 2|1,0,0,0|1	$00000032
+FreeWBSprite|sprite 2 field 3|1,0,0,0|1	$00000002
+FreeWBSprite|sprite 2 field 4|1,0,0,0|1	$00000001
+FreeWBSprite|sprite 2 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 2 image|1,0,0,0|1	bytes 256 fnv 73CEA35C
+FreeWBSprite|sprite 3 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 3 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|sprite 4 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 4 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|sprite 5 field 0|1,0,0,0|1	$00000005
+FreeWBSprite|sprite 5 field 1|1,0,0,0|1	$00000046
+FreeWBSprite|sprite 5 field 2|1,0,0,0|1	$00000050
+FreeWBSprite|sprite 5 field 3|1,0,0,0|1	$00000005
+FreeWBSprite|sprite 5 field 4|1,0,0,0|1	$00000001
+FreeWBSprite|sprite 5 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 5 image|1,0,0,0|1	bytes 256 fnv 98745A6F
+FreeWBSprite|sprite 6 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 6 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite|sprite 7 field 0|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 field 1|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 field 2|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 field 3|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 field 4|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 field 5|1,0,0,0|1	$00000000
+FreeWBSprite|sprite 7 image|1,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|kept|6,0,0,0|1	kept
+FreeWBSprite (none)|popped|6,0,0,0|1	$00000000
+FreeWBSprite (none)|d0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|graphics.library open count|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +2|6,0,0,0|1	$00000001
+FreeWBSprite (none)|block +4|6,0,0,0|1	$00004000
+FreeWBSprite (none)|block +6|6,0,0,0|1	$00000084
+FreeWBSprite (none)|block +8|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +10|6,0,0,0|1	$00000001
+FreeWBSprite (none)|block +12|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +14|6,0,0,0|1	$00000006
+FreeWBSprite (none)|block +16|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +18|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +20|6,0,0,0|1	$00000046
+FreeWBSprite (none)|block +22|6,0,0,0|1	$00000050
+FreeWBSprite (none)|block +24|6,0,0,0|1	$00004000
+FreeWBSprite (none)|block +26|6,0,0,0|1	$00000074
+FreeWBSprite (none)|block +28|6,0,0,0|1	$00000010
+FreeWBSprite (none)|block +30|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +32|6,0,0,0|1	$00008100
+FreeWBSprite (none)|block +34|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +36|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +38|6,0,0,0|1	$00000010
+FreeWBSprite (none)|block +40|6,0,0,0|1	$00008100
+FreeWBSprite (none)|block +42|6,0,0,0|1	$00000006
+FreeWBSprite (none)|block +44|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +46|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +48|6,0,0,0|1	$00008100
+FreeWBSprite (none)|block +50|6,0,0,0|1	$00000002
+FreeWBSprite (none)|block +52|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +54|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +56|6,0,0,0|1	$00008100
+FreeWBSprite (none)|block +58|6,0,0,0|1	$00000004
+FreeWBSprite (none)|block +60|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +62|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +64|6,0,0,0|1	$00008100
+FreeWBSprite (none)|block +66|6,0,0,0|1	$00000008
+FreeWBSprite (none)|block +68|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +70|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +72|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +74|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +76|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +78|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +80|6,0,0,0|1	$00008200
+FreeWBSprite (none)|block +82|6,0,0,0|1	$00000020
+FreeWBSprite (none)|block +84|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +86|6,0,0,0|1	$00000005
+FreeWBSprite (none)|block +88|6,0,0,0|1	$00008200
+FreeWBSprite (none)|block +90|6,0,0,0|1	$00000022
+FreeWBSprite (none)|block +92|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +94|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +96|6,0,0,0|1	$00008200
+FreeWBSprite (none)|block +98|6,0,0,0|1	$00000024
+FreeWBSprite (none)|block +100|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +102|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +104|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +106|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +108|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +110|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +112|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +114|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +116|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +118|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +120|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +122|6,0,0,0|1	$00000001
+FreeWBSprite (none)|block +124|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +126|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +128|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +130|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +132|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +134|6,0,0,0|1	$00000001
+FreeWBSprite (none)|block +136|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +138|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +140|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +142|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +144|6,0,0,0|1	$00006772
+FreeWBSprite (none)|block +146|6,0,0,0|1	$00006170
+FreeWBSprite (none)|block +148|6,0,0,0|1	$00006869
+FreeWBSprite (none)|block +150|6,0,0,0|1	$00006373
+FreeWBSprite (none)|block +152|6,0,0,0|1	$00002E6C
+FreeWBSprite (none)|block +154|6,0,0,0|1	$00006962
+FreeWBSprite (none)|block +156|6,0,0,0|1	$00007261
+FreeWBSprite (none)|block +158|6,0,0,0|1	$00007279
+FreeWBSprite (none)|block +160|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +162|6,0,0,0|1	$00000000
+FreeWBSprite (none)|block +164|6,0,0,0|1	$00000001
+FreeWBSprite (none)|sprite 0 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 0 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|sprite 1 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 1 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|sprite 2 field 0|6,0,0,0|1	$00000005
+FreeWBSprite (none)|sprite 2 field 1|6,0,0,0|1	$00000064
+FreeWBSprite (none)|sprite 2 field 2|6,0,0,0|1	$00000032
+FreeWBSprite (none)|sprite 2 field 3|6,0,0,0|1	$00000002
+FreeWBSprite (none)|sprite 2 field 4|6,0,0,0|1	$00000001
+FreeWBSprite (none)|sprite 2 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 2 image|6,0,0,0|1	bytes 256 fnv 73CEA35C
+FreeWBSprite (none)|sprite 3 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 3 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|sprite 4 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 4 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|sprite 5 field 0|6,0,0,0|1	$00000005
+FreeWBSprite (none)|sprite 5 field 1|6,0,0,0|1	$00000046
+FreeWBSprite (none)|sprite 5 field 2|6,0,0,0|1	$00000050
+FreeWBSprite (none)|sprite 5 field 3|6,0,0,0|1	$00000005
+FreeWBSprite (none)|sprite 5 field 4|6,0,0,0|1	$00000001
+FreeWBSprite (none)|sprite 5 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 5 image|6,0,0,0|1	bytes 256 fnv 98745A6F
+FreeWBSprite (none)|sprite 6 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 6 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+FreeWBSprite (none)|sprite 7 field 0|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 field 1|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 field 2|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 field 3|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 field 4|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 field 5|6,0,0,0|1	$00000000
+FreeWBSprite (none)|sprite 7 image|6,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|kept|0,0,0,0|1	kept
+finit|popped|0,0,0,0|1	$00000000
+finit|d0|0,0,0,0|1	$00000000
+finit|graphics.library open count|0,0,0,0|1	$00000000
+finit|block +0|0,0,0,0|1	$00000000
+finit|block +2|0,0,0,0|1	$00000001
+finit|block +4|0,0,0,0|1	$00004000
+finit|block +6|0,0,0,0|1	$00000084
+finit|block +8|0,0,0,0|1	$00000000
+finit|block +10|0,0,0,0|1	$00000001
+finit|block +12|0,0,0,0|1	$00000000
+finit|block +14|0,0,0,0|1	$00000006
+finit|block +16|0,0,0,0|1	$00000000
+finit|block +18|0,0,0,0|1	$00000005
+finit|block +20|0,0,0,0|1	$00000046
+finit|block +22|0,0,0,0|1	$00000050
+finit|block +24|0,0,0,0|1	$00004000
+finit|block +26|0,0,0,0|1	$00000074
+finit|block +28|0,0,0,0|1	$00000010
+finit|block +30|0,0,0,0|1	$00000005
+finit|block +32|0,0,0,0|1	$00008100
+finit|block +34|0,0,0,0|1	$00000000
+finit|block +36|0,0,0,0|1	$00000000
+finit|block +38|0,0,0,0|1	$00000010
+finit|block +40|0,0,0,0|1	$00008100
+finit|block +42|0,0,0,0|1	$00000006
+finit|block +44|0,0,0,0|1	$00000000
+finit|block +46|0,0,0,0|1	$00000005
+finit|block +48|0,0,0,0|1	$00008100
+finit|block +50|0,0,0,0|1	$00000002
+finit|block +52|0,0,0,0|1	$00000000
+finit|block +54|0,0,0,0|1	$00000000
+finit|block +56|0,0,0,0|1	$00008100
+finit|block +58|0,0,0,0|1	$00000004
+finit|block +60|0,0,0,0|1	$00000000
+finit|block +62|0,0,0,0|1	$00000000
+finit|block +64|0,0,0,0|1	$00008100
+finit|block +66|0,0,0,0|1	$00000008
+finit|block +68|0,0,0,0|1	$00000000
+finit|block +70|0,0,0,0|1	$00000000
+finit|block +72|0,0,0,0|1	$00000000
+finit|block +74|0,0,0,0|1	$00000000
+finit|block +76|0,0,0,0|1	$00000000
+finit|block +78|0,0,0,0|1	$00000000
+finit|block +80|0,0,0,0|1	$00008200
+finit|block +82|0,0,0,0|1	$00000020
+finit|block +84|0,0,0,0|1	$00000000
+finit|block +86|0,0,0,0|1	$00000005
+finit|block +88|0,0,0,0|1	$00008200
+finit|block +90|0,0,0,0|1	$00000022
+finit|block +92|0,0,0,0|1	$00000000
+finit|block +94|0,0,0,0|1	$00000000
+finit|block +96|0,0,0,0|1	$00008200
+finit|block +98|0,0,0,0|1	$00000024
+finit|block +100|0,0,0,0|1	$00000000
+finit|block +102|0,0,0,0|1	$00000000
+finit|block +104|0,0,0,0|1	$00000000
+finit|block +106|0,0,0,0|1	$00000000
+finit|block +108|0,0,0,0|1	$00000000
+finit|block +110|0,0,0,0|1	$00000000
+finit|block +112|0,0,0,0|1	$00000000
+finit|block +114|0,0,0,0|1	$00000000
+finit|block +116|0,0,0,0|1	$00000000
+finit|block +118|0,0,0,0|1	$00000000
+finit|block +120|0,0,0,0|1	$00000000
+finit|block +122|0,0,0,0|1	$00000000
+finit|block +124|0,0,0,0|1	$00000000
+finit|block +126|0,0,0,0|1	$00000000
+finit|block +128|0,0,0,0|1	$00000000
+finit|block +130|0,0,0,0|1	$00000000
+finit|block +132|0,0,0,0|1	$00000000
+finit|block +134|0,0,0,0|1	$00000000
+finit|block +136|0,0,0,0|1	$00000000
+finit|block +138|0,0,0,0|1	$00000000
+finit|block +140|0,0,0,0|1	$00000000
+finit|block +142|0,0,0,0|1	$00000000
+finit|block +144|0,0,0,0|1	$00006772
+finit|block +146|0,0,0,0|1	$00006170
+finit|block +148|0,0,0,0|1	$00006869
+finit|block +150|0,0,0,0|1	$00006373
+finit|block +152|0,0,0,0|1	$00002E6C
+finit|block +154|0,0,0,0|1	$00006962
+finit|block +156|0,0,0,0|1	$00007261
+finit|block +158|0,0,0,0|1	$00007279
+finit|block +160|0,0,0,0|1	$00000000
+finit|block +162|0,0,0,0|1	$00000000
+finit|block +164|0,0,0,0|1	$00000001
+finit|sprite 0 field 0|0,0,0,0|1	$00000000
+finit|sprite 0 field 1|0,0,0,0|1	$00000000
+finit|sprite 0 field 2|0,0,0,0|1	$00000000
+finit|sprite 0 field 3|0,0,0,0|1	$00000000
+finit|sprite 0 field 4|0,0,0,0|1	$00000000
+finit|sprite 0 field 5|0,0,0,0|1	$00000000
+finit|sprite 0 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 1 field 0|0,0,0,0|1	$00000000
+finit|sprite 1 field 1|0,0,0,0|1	$00000000
+finit|sprite 1 field 2|0,0,0,0|1	$00000000
+finit|sprite 1 field 3|0,0,0,0|1	$00000000
+finit|sprite 1 field 4|0,0,0,0|1	$00000000
+finit|sprite 1 field 5|0,0,0,0|1	$00000000
+finit|sprite 1 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 2 field 0|0,0,0,0|1	$00000000
+finit|sprite 2 field 1|0,0,0,0|1	$00000000
+finit|sprite 2 field 2|0,0,0,0|1	$00000000
+finit|sprite 2 field 3|0,0,0,0|1	$00000000
+finit|sprite 2 field 4|0,0,0,0|1	$00000000
+finit|sprite 2 field 5|0,0,0,0|1	$00000000
+finit|sprite 2 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 3 field 0|0,0,0,0|1	$00000000
+finit|sprite 3 field 1|0,0,0,0|1	$00000000
+finit|sprite 3 field 2|0,0,0,0|1	$00000000
+finit|sprite 3 field 3|0,0,0,0|1	$00000000
+finit|sprite 3 field 4|0,0,0,0|1	$00000000
+finit|sprite 3 field 5|0,0,0,0|1	$00000000
+finit|sprite 3 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 4 field 0|0,0,0,0|1	$00000000
+finit|sprite 4 field 1|0,0,0,0|1	$00000000
+finit|sprite 4 field 2|0,0,0,0|1	$00000000
+finit|sprite 4 field 3|0,0,0,0|1	$00000000
+finit|sprite 4 field 4|0,0,0,0|1	$00000000
+finit|sprite 4 field 5|0,0,0,0|1	$00000000
+finit|sprite 4 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 5 field 0|0,0,0,0|1	$00000000
+finit|sprite 5 field 1|0,0,0,0|1	$00000000
+finit|sprite 5 field 2|0,0,0,0|1	$00000000
+finit|sprite 5 field 3|0,0,0,0|1	$00000000
+finit|sprite 5 field 4|0,0,0,0|1	$00000000
+finit|sprite 5 field 5|0,0,0,0|1	$00000000
+finit|sprite 5 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 6 field 0|0,0,0,0|1	$00000000
+finit|sprite 6 field 1|0,0,0,0|1	$00000000
+finit|sprite 6 field 2|0,0,0,0|1	$00000000
+finit|sprite 6 field 3|0,0,0,0|1	$00000000
+finit|sprite 6 field 4|0,0,0,0|1	$00000000
+finit|sprite 6 field 5|0,0,0,0|1	$00000000
+finit|sprite 6 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5
+finit|sprite 7 field 0|0,0,0,0|1	$00000000
+finit|sprite 7 field 1|0,0,0,0|1	$00000000
+finit|sprite 7 field 2|0,0,0,0|1	$00000000
+finit|sprite 7 field 3|0,0,0,0|1	$00000000
+finit|sprite 7 field 4|0,0,0,0|1	$00000000
+finit|sprite 7 field 5|0,0,0,0|1	$00000000
+finit|sprite 7 image|0,0,0,0|1	bytes 256 fnv E6A1D1C5

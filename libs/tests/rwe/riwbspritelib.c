@@ -1,19 +1,20 @@
 /*
  * rwe riwbspritelib - sprites on the Workbench screen (GetWBSprite,
  * FreeWBSprite, MoveWBSprite, ChangeWBSprite, WBSpriteX/Y): the C build
- * against the reference build of rwelibsrc/wbspritelib/WBSprite-library2.bb
- * (riwbspritelib.orig), method of rwecmp.h.
+ * or the reference build of rwelibsrc/wbspritelib/WBSprite-library2.bb
+ * (riwbspritelib.orig), one set as LIBSET says, observed as cases
+ * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_riwbspritelib.txt).
  *
  *   riwbspritelib DIR     (DIR with riwbspritelib .obj/.orig)
  *
  * The library takes real hardware sprites (GetExtSpriteA) and moves them
- * on the Workbench screen's ViewPort, so the two sets cannot run side by
- * side (the second would find the channels taken): the whole scenario
- * runs on the original, which finit ends by freeing every sprite, then
- * on the C build; each step's registers and a snapshot are recorded and
- * compared afterwards step by step.  The snapshot: d0 where there is a
- * result (MoveWBSprite returns what MoveSprite leaves in d0: not
- * compared), the library's data block (found by its "graphics.library"
+ * on the Workbench screen's ViewPort: the whole scenario runs, finit
+ * ends it by freeing every sprite; each step's registers and a snapshot
+ * are recorded and observed afterwards step by step (the ViewPort
+ * address in a step's vector as "vp").  The snapshot: d0 where there is
+ * a result (MoveWBSprite returns what MoveSprite leaves in d0: not
+ * observed), the library's data block (found by its "graphics.library"
  * string: the variables, the tag lists, the sprite table as 0 / not 0;
  * pointers into the block as offsets), for every sprite in the table its
  * ExtSprite (height, x, y, num, wordwidth, flags) and image data, and
@@ -22,7 +23,7 @@
  * allocated or shown).
  *
  * The shapes (Blitz shape objects: width, height, depth, data) are built
- * in memory and the same for both sets.  Covered: WBSpriteX without a
+ * in memory.  Covered: WBSpriteX without a
  * sprite (reads the word at 6, BUG(orig), #922), init, GetWBSprite on a free
  * channel, on any channel (-1), on its own channel again (GetExtSpriteA
  * fails, the channel is returned, BUG(orig), #920), on channel 0 (the mouse
@@ -37,6 +38,7 @@
  * AllocSpriteDataA or ChangeExtSpriteA (the last leaks the new data),
  * height or depth 0 (65536 rows/planes).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/sprite.h>
@@ -74,9 +76,9 @@ struct step {
     struct snap sn;
 };
 
-static struct step steps[2][NSTEP];
+static struct step steps[NSTEP];
 static int nstep;
-static UBYTE *blk[2];
+static UBYTE *blk;
 static ULONG vp;
 static UBYTE *shp[6];                   /* the shape objects */
 static struct Screen *wbscreen;         /* the Workbench screen (snapshot) */
@@ -94,7 +96,7 @@ static UBYTE *findblock(struct lib *l)
 /* a pointer of the block as offset into it */
 static ULONG relb(ULONG v)
 {
-    ULONG b = (ULONG)blk[cur];
+    ULONG b = (ULONG)blk;
     if (v >= b && v < b + BLOCK)
         return v - b + 0x40000000UL;
     return v;
@@ -102,7 +104,7 @@ static ULONG relb(ULONG v)
 
 static void snapshot(struct snap *sn, ULONG d0, LONG opened)
 {
-    UBYTE *b = blk[cur];
+    UBYTE *b = blk;
     ULONG *tab = (ULONG *)(b + 112);
     int i;
 
@@ -110,9 +112,8 @@ static void snapshot(struct snap *sn, ULONG d0, LONG opened)
     sn->d0 = d0;
     sn->opened = opened;
     memcpy(sn->block, b, BLOCK);
-    /* myviewport, shapeaddr: the same in both sets, but their addresses
-       differ from run to run (libs/tests/tape.h): the ViewPort as 1, the
-       shape as its index + 1 (0 stays 0) */
+    /* myviewport, shapeaddr: their addresses differ from run to run: the
+       ViewPort as 1, the shape as its index + 1 (0 stays 0) */
     *(ULONG *)sn->block = wbscreen && *(ULONG *)b == (ULONG)&wbscreen->ViewPort
                           ? 1 : *(ULONG *)b;
     for (i = 0; i < 6; i++)
@@ -148,12 +149,16 @@ static void snapshot(struct snap *sn, ULONG d0, LONG opened)
 static void step(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG d3, ULONG a0,
                  ULONG dontcare)
 {
-    struct step *st = &steps[cur][nstep++];
+    struct step *st = &steps[nstep++];
     LONG cnt = wbsgfx->lib_OpenCnt;
     APTR fn = ENT(LIB, idx, 0);
 
     st->name = name;
-    sprintf(st->vec, "%lX,%lX,%lX,%lX", d0, d1, d2, d3);
+    /* the ViewPort as "vp": its address differs from run to run */
+    if (vp && d0 == vp)
+        sprintf(st->vec, "vp,%lX,%lX,%lX", d1, d2, d3);
+    else
+        sprintf(st->vec, "%lX,%lX,%lX,%lX", d0, d1, d2, d3);
     markregs(&st->in);
     st->in.d[0] = d0;
     st->in.d[1] = d1;
@@ -167,7 +172,7 @@ static void step(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG 
         return;
     }
     NARGS = 0;
-    CCR[cur] = callstk(fn, &st->out, ARGS[cur], NARGS, &st->pop);
+    CCR = callstk(fn, &st->out, ARGS, NARGS, &st->pop);
     snapshot(&st->sn, st->out.d[0], wbsgfx->lib_OpenCnt - cnt);
 }
 
@@ -182,7 +187,7 @@ static void scenario(void)
     step(INIT, "init", 0, 0, 0, 0, 0, 0);
     step(GETWB, "GetWBSprite", 10, 20, 1, 2, SH(SHA), 0);
     step(GETWB, "GetWBSprite (any)", 30, 40, 2, (ULONG)-1, SH(SHA), 0);
-    any = steps[cur][nstep - 1].out.d[0];
+    any = steps[nstep - 1].out.d[0];
     step(GETWB, "GetWBSprite (32 wide)", 30, 40, 2, 6, SH(SHB), 0);
     step(GETWB, "GetWBSprite (taken)", 50, 60, 1, 2, SH(SHA), 0);
     step(GETWB, "GetWBSprite (pointer)", 0, 0, 3, 0, SH(SHC), 0);
@@ -260,23 +265,43 @@ int main(int argc, char **argv)
     static const char *names[] = { LIB, NULL };
     struct Screen *scr;
     ULONG before, after;
-    int s, i, k;
+    int i, k;
 
     if (argc < 2) {
         printf("usage: riwbspritelib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("WBSpriteX (no sprite)", d1-d7|a0|a2|a3|a6);
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("GetWBSprite", a3);
+    KEEPS("GetWBSprite (any)", a3);
+    KEEPS("GetWBSprite (32 wide)", a3);
+    KEEPS("GetWBSprite (taken)", a3);
+    KEEPS("GetWBSprite (pointer)", d0|d1|a3);
+    KEEPS("GetWBSprite (narrow)", d0-d7|a0-a3);
+    KEEPS("GetWBSprite (no data)", d1-d7|a0-a3|a6);
+    KEEPS("GetWBSprite (20 wide)", a3);
+    KEEPS("WBSpriteX", d1-d7|a2|a3|a6);
+    KEEPS("WBSpriteY", d1-d7|a2|a3|a6);
+    KEEPS("MoveWBSprite", d2|d4-d6|a2|a3);
+    KEEPS("MoveWBSprite (no sprite)", d1|d2|d4-d6|a0|a2|a3);
+    KEEPS("ChangeWBSprite", none);
+    KEEPS("ChangeWBSprite (no sprite)", d2-d7|a0|a2|a3);
+    KEEPS("ChangeWBSprite (narrow)", d2-d7|a0|a2|a3);
+    KEEPS("ChangeWBSprite (no data)", d1-d7|a0-a3|a6);
+    KEEPS("ChangeWBSprite (1 plane)", none);
+    KEEPS("FreeWBSprite", d2-d7|a3);
+    KEEPS("FreeWBSprite (none)", d2-d7|a1-a3|a6);
+    KEEPS("finit", d0-d6|a3|a6);
     wbsgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     wbsint = OpenLibrary((CONST_STRPTR)"intuition.library", 39);
     scr = wbsint ? LockPubScreen(NULL) : NULL;
     wbscreen = scr;
-    for (s = 0; s < 2; s++)
-        blk[s] = findblock(getlib(&sets[s], LIB));
-    check("riwbspritelib: data block found (orig)", blk[0] != NULL);
-    check("riwbspritelib: data block found (C)", blk[1] != NULL);
-    if (!wbsgfx || !scr || !blk[0] || !blk[1]) {
+    blk = findblock(getlib(&loaded, LIB));
+    check("riwbspritelib: data block found", blk != NULL);
+    if (!wbsgfx || !scr || !blk) {
         check("riwbspritelib: graphics, intuition 39, Workbench screen", FALSE);
         if (scr)
             UnlockPubScreen(NULL, scr);
@@ -291,48 +316,38 @@ int main(int argc, char **argv)
     shp[SHD] = mkshape(16, 5, 1, 1);
 
     before = freesprites();
-    for (s = 0; s < 2; s++) {
-        cur = s;
-        scenario();
-        after = freesprites();
-        check(s ? "riwbspritelib: the sprites free again (C)"
-                : "riwbspritelib: the sprites free again (orig)", after == before);
-    }
+    scenario();
+    after = freesprites();
+    check("riwbspritelib: the sprites free again", after == before);
 
-    /* compare step by step */
+    /* the observations step by step */
     for (k = 0; k < nstep; k++) {
-        struct step *st0 = &steps[0][k];
+        struct step *st = &steps[k];
         char buf[40];
-        ROUT = st0->name;
-        strcpy(VEC, st0->vec);
-        for (cur = 0; cur < 2; cur++) {
-            IN[cur] = steps[cur][k].in;
-            R[cur] = steps[cur][k].out;
-            POP[cur] = steps[cur][k].pop;
-        }
-        printf("  %-28s d0 orig $%08lX C $%08lX\n", st0->name, steps[0][k].sn.d0,
-               steps[1][k].sn.d0);
-        DONTCARE = st0->dontcare;
+        ROUT = st->name;
+        strcpy(VEC, st->vec);
+        IN = st->in;
+        R = st->out;
+        POP = st->pop;
+        printf("  %-28s d0 $%08lX\n", st->name, st->sn.d0);
+        DONTCARE = st->dontcare;
         preserve();
         DONTCARE = 0;
-        if (!st0->dontcare)
-            SAME("d0", steps[cur][k].sn.d0);
-        SAME("graphics.library open count", steps[cur][k].sn.opened);
+        if (!st->dontcare)
+            OBS("d0", st->sn.d0);
+        OBS("graphics.library open count", st->sn.opened);
         for (i = 0; i < BLOCK; i += 2) {
             sprintf(buf, "block +%d", i);
-            SAME(buf, *(UWORD *)(steps[cur][k].sn.block + i));
+            OBS(buf, *(UWORD *)(st->sn.block + i));
         }
         for (i = 0; i < 8; i++) {
             int j;
             for (j = 0; j < 6; j++) {
                 sprintf(buf, "sprite %d field %d", i, j);
-                SAME(buf, steps[cur][k].sn.es[i][j]);
+                OBS(buf, st->sn.es[i][j]);
             }
             sprintf(buf, "sprite %d image", i);
-            {
-                UBYTE *im[2] = { steps[0][k].sn.img[i], steps[1][k].sn.img[i] };
-                SAMEBYTES(buf, im, IMG);
-            }
+            OBSBYTES(buf, st->sn.img[i], IMG);
         }
     }
 

@@ -1,0 +1,862 @@
+# capture rwe_riregistrylib 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|calls||1	$00000000
+IsRegistryOpen|kept||1	kept
+IsRegistryOpen|popped||1	$00000000
+IsRegistryOpen|d0||1	$00000000
+IsRegistryOpen|not open||1	$00000001
+LockRegistry|kept|mode 1|1	kept
+LockRegistry|popped|mode 1|1	$00000000
+LockRegistry|d0|mode 1|1	$00000000
+LockRegistry|calls|mode 1|1	$00000000
+SetRegistryBaseLibrary|kept|form 0 ret $00010001|1	kept
+SetRegistryBaseLibrary|popped|form 0 ret $00010001|1	$00000000
+SetRegistryBaseLibrary|d0|form 0 ret $00010001|1	$00000000
+SetRegistryBaseLibrary|calls|form 0 ret $00010001|1	$00000000
+ExistsRegistryLibrary|kept|form 0 ret $00020002|1	kept
+ExistsRegistryLibrary|popped|form 0 ret $00020002|1	$00000000
+ExistsRegistryLibrary|d0|form 0 ret $00020002|1	$00000000
+ExistsRegistryLibrary|calls|form 0 ret $00020002|1	$00000000
+GetRegistryVariable|kept|form 0 ret $00030003|1	kept
+GetRegistryVariable|popped|form 0 ret $00030003|1	$00000000
+GetRegistryVariable|d0|form 0 ret $00030003|1	$00000000
+GetRegistryVariable|calls|form 0 ret $00030003|1	$00000000
+SetRegistryVariable|kept|form 0 ret $00040004|1	kept
+SetRegistryVariable|popped|form 0 ret $00040004|1	$00000000
+SetRegistryVariable|d0|form 0 ret $00040004|1	$00000000
+SetRegistryVariable|calls|form 0 ret $00040004|1	$00000000
+SetRegistryVariable|kept|form 1 ret $00050005|1	kept
+SetRegistryVariable|popped|form 1 ret $00050005|1	$00000000
+SetRegistryVariable|d0|form 1 ret $00050005|1	$00000000
+SetRegistryVariable|calls|form 1 ret $00050005|1	$00000000
+ChangeRegistryVariable|kept|form 0 ret $00060006|1	kept
+ChangeRegistryVariable|popped|form 0 ret $00060006|1	$00000000
+ChangeRegistryVariable|d0|form 0 ret $00060006|1	$00000000
+ChangeRegistryVariable|calls|form 0 ret $00060006|1	$00000000
+NewRegistryLibrary|kept|form 0 ret $00070007|1	kept
+NewRegistryLibrary|popped|form 0 ret $00070007|1	$00000000
+NewRegistryLibrary|d0|form 0 ret $00070007|1	$00000000
+NewRegistryLibrary|calls|form 0 ret $00070007|1	$00000000
+NewRegistryLibrary|kept|form 1 ret $00080008|1	kept
+NewRegistryLibrary|popped|form 1 ret $00080008|1	$00000000
+NewRegistryLibrary|d0|form 1 ret $00080008|1	$00000000
+NewRegistryLibrary|calls|form 1 ret $00080008|1	$00000000
+ParseRegistryLibrary|kept|form 0 ret $00090009|1	kept
+ParseRegistryLibrary|popped|form 0 ret $00090009|1	$00000000
+ParseRegistryLibrary|d0|form 0 ret $00090009|1	$00000000
+ParseRegistryLibrary|calls|form 0 ret $00090009|1	$00000000
+NextParseItem|kept|form 0 ret $000A000A|1	kept
+NextParseItem|popped|form 0 ret $000A000A|1	$00000000
+NextParseItem|d0|form 0 ret $000A000A|1	$00000000
+NextParseItem|calls|form 0 ret $000A000A|1	$00000000
+ChangeRegistryAccess|kept|form 0 ret $000B000B|1	kept
+ChangeRegistryAccess|popped|form 0 ret $000B000B|1	$00000000
+ChangeRegistryAccess|calls|form 0 ret $000B000B|1	$00000000
+DeleteRegistryLibrary|kept|form 0 ret $000C000C|1	kept
+DeleteRegistryLibrary|popped|form 0 ret $000C000C|1	$00000000
+DeleteRegistryLibrary|d0|form 0 ret $000C000C|1	$00000000
+DeleteRegistryLibrary|calls|form 0 ret $000C000C|1	$00000000
+DeleteRegistryVariable|kept|form 0 ret $000D000D|1	kept
+DeleteRegistryVariable|popped|form 0 ret $000D000D|1	$00000000
+DeleteRegistryVariable|d0|form 0 ret $000D000D|1	$00000000
+DeleteRegistryVariable|calls|form 0 ret $000D000D|1	$00000000
+NumRegistryLibraryVariables|kept|form 0 ret $000E000E|1	kept
+NumRegistryLibraryVariables|popped|form 0 ret $000E000E|1	$00000000
+NumRegistryLibraryVariables|d0|form 0 ret $000E000E|1	$00000000
+NumRegistryLibraryVariables|calls|form 0 ret $000E000E|1	$00000000
+SaveRegistryLibrary|kept|form 0 ret $000F000F|1	kept
+SaveRegistryLibrary|popped|form 0 ret $000F000F|1	$00000000
+SaveRegistryLibrary|d0|form 0 ret $000F000F|1	$00000000
+SaveRegistryLibrary|calls|form 0 ret $000F000F|1	$00000000
+LoadRegistryLibrary|kept|form 0 ret $00100010|1	kept
+LoadRegistryLibrary|popped|form 0 ret $00100010|1	$00000000
+LoadRegistryLibrary|d0|form 0 ret $00100010|1	$00000000
+LoadRegistryLibrary|calls|form 0 ret $00100010|1	$00000000
+SetRegistryBoolVariable|kept|form 0 ret $00110011|1	kept
+SetRegistryBoolVariable|popped|form 0 ret $00110011|1	$00000000
+SetRegistryBoolVariable|d0|form 0 ret $00110011|1	$00000000
+SetRegistryBoolVariable|calls|form 0 ret $00110011|1	$00000000
+SetRegistryIntVariable|kept|form 0 ret $00120012|1	kept
+SetRegistryIntVariable|popped|form 0 ret $00120012|1	$00000000
+SetRegistryIntVariable|d0|form 0 ret $00120012|1	$00000000
+SetRegistryIntVariable|calls|form 0 ret $00120012|1	$00000000
+DeleteRegistryLibraryVariables|kept|form 0 ret $00130013|1	kept
+DeleteRegistryLibraryVariables|popped|form 0 ret $00130013|1	$00000000
+DeleteRegistryLibraryVariables|calls|form 0 ret $00130013|1	$00000000
+SetLibraryValue|kept|form 0 ret $00140014|1	kept
+SetLibraryValue|popped|form 0 ret $00140014|1	$00000000
+SetLibraryValue|d0|form 0 ret $00140014|1	$00000000
+SetLibraryValue|calls|form 0 ret $00140014|1	$00000000
+SetRegistryVariableIndex|kept|form 0 ret $00150015|1	kept
+SetRegistryVariableIndex|popped|form 0 ret $00150015|1	$00000000
+SetRegistryVariableIndex|d0|form 0 ret $00150015|1	$00000000
+SetRegistryVariableIndex|calls|form 0 ret $00150015|1	$00000000
+RenameRegistryVariable|kept|form 0 ret $00160016|1	kept
+RenameRegistryVariable|popped|form 0 ret $00160016|1	$00000000
+RenameRegistryVariable|d0|form 0 ret $00160016|1	$00000000
+RenameRegistryVariable|calls|form 0 ret $00160016|1	$00000000
+SaveLibraryVariables|kept|form 0 ret $00170017|1	kept
+SaveLibraryVariables|popped|form 0 ret $00170017|1	$00000000
+SaveLibraryVariables|d0|form 0 ret $00170017|1	$00000000
+SaveLibraryVariables|calls|form 0 ret $00170017|1	$00000000
+RenameRegistryLibrary|kept|form 0 ret $00180018|1	kept
+RenameRegistryLibrary|popped|form 0 ret $00180018|1	$00000000
+RenameRegistryLibrary|d0|form 0 ret $00180018|1	$00000000
+RenameRegistryLibrary|calls|form 0 ret $00180018|1	$00000000
+InsertNewRegistryLibrary|kept|form 0 ret $00190019|1	kept
+InsertNewRegistryLibrary|popped|form 0 ret $00190019|1	$00000000
+InsertNewRegistryLibrary|d0|form 0 ret $00190019|1	$00000000
+InsertNewRegistryLibrary|calls|form 0 ret $00190019|1	$00000000
+InsertNewRegistryLibrary|kept|form 1 ret $001A001A|1	kept
+InsertNewRegistryLibrary|popped|form 1 ret $001A001A|1	$00000000
+InsertNewRegistryLibrary|d0|form 1 ret $001A001A|1	$00000000
+InsertNewRegistryLibrary|calls|form 1 ret $001A001A|1	$00000000
+GetStructureVariables|kept|form 0 ret $001B001B|1	kept
+GetStructureVariables|popped|form 0 ret $001B001B|1	$00000000
+GetStructureVariables|d0|form 0 ret $001B001B|1	$00000000
+GetStructureVariables|calls|form 0 ret $001B001B|1	$00000000
+FreeStructureVariables|kept|form 0 ret $001C001C|1	kept
+FreeStructureVariables|popped|form 0 ret $001C001C|1	$00000000
+FreeStructureVariables|calls|form 0 ret $001C001C|1	$00000000
+LoadLibraryVariables|kept|form 0 ret $001D001D|1	kept
+LoadLibraryVariables|popped|form 0 ret $001D001D|1	$00000000
+LoadLibraryVariables|d0|form 0 ret $001D001D|1	$00000000
+LoadLibraryVariables|calls|form 0 ret $001D001D|1	$00000000
+GetLibraryValue$|kept|"LibName" ret 4369|1	kept
+GetLibraryValue$|popped|"LibName" ret 4369|1	$00000000
+GetLibraryValue$|d0|"LibName" ret 4369|1	$00000000
+GetLibraryValue$|a3|"LibName" ret 4369|1	$00000000
+GetLibraryValue$|string area|"LibName" ret 4369|1	bytes 256 fnv C94855DD
+GetLibraryValue$|calls|"LibName" ret 4369|1	$00000000
+GetRegistryStringVariable|kept|"Var" ret 1|1	kept
+GetRegistryStringVariable|popped|"Var" ret 1|1	$00000000
+GetRegistryStringVariable|d0|"Var" ret 1|1	$00000000
+GetRegistryStringVariable|a3|"Var" ret 1|1	$00000000
+GetRegistryStringVariable|string area|"Var" ret 1|1	bytes 256 fnv 339FD9CE
+GetRegistryStringVariable|calls|"Var" ret 1|1	$00000000
+ParseItemName$|kept|"" ret 0|1	kept
+ParseItemName$|popped|"" ret 0|1	$00000000
+ParseItemName$|d0|"" ret 0|1	$00000000
+ParseItemName$|a3|"" ret 0|1	$00000004
+ParseItemName$|string area|"" ret 0|1	bytes 256 fnv D0D12AC5
+ParseItemName$|calls|"" ret 0|1	$00000000
+ParseItemValue$|kept|"" ret 0|1	kept
+ParseItemValue$|popped|"" ret 0|1	$00000000
+ParseItemValue$|d0|"" ret 0|1	$00000000
+ParseItemValue$|a3|"" ret 0|1	$00000004
+ParseItemValue$|string area|"" ret 0|1	bytes 256 fnv D0D12AC5
+ParseItemValue$|calls|"" ret 0|1	$00000000
+GetRegistryIntVariable|kept|"Int" ret 4|1	kept
+GetRegistryIntVariable|popped|"Int" ret 4|1	$00000000
+GetRegistryIntVariable|d0|"Int" ret 4|1	$00000000
+GetRegistryIntVariable|a3|"Int" ret 4|1	$00000004
+GetRegistryIntVariable|string area|"Int" ret 4|1	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 4|1	$00000000
+GetRegistryIntVariable|kept|"Int" ret 327683|1	kept
+GetRegistryIntVariable|popped|"Int" ret 327683|1	$00000000
+GetRegistryIntVariable|d0|"Int" ret 327683|1	$00000000
+GetRegistryIntVariable|a3|"Int" ret 327683|1	$00000004
+GetRegistryIntVariable|string area|"Int" ret 327683|1	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 327683|1	$00000000
+GetRegistryBoolVariable|kept|"Bool" ret 3|1	kept
+GetRegistryBoolVariable|popped|"Bool" ret 3|1	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 3|1	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 3|1	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 3|1	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 3|1	$00000000
+GetRegistryBoolVariable|kept|"Bool" ret 2|1	kept
+GetRegistryBoolVariable|popped|"Bool" ret 2|1	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 2|1	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 2|1	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 2|1	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 2|1	$00000000
+finit|kept||1	kept
+finit|popped||1	$00000000
+finit|calls||1	$00000000
+init|kept||2	kept
+init|popped||2	$00000000
+init|calls||2	$00000000
+IsRegistryOpen|kept||2	kept
+IsRegistryOpen|popped||2	$00000000
+IsRegistryOpen|d0||2	$00000001
+IsRegistryOpen|open||1	$00000001
+SetRegistryBaseLibrary|kept|form 0 ret $00010003|1	kept
+SetRegistryBaseLibrary|popped|form 0 ret $00010003|1	$00000000
+SetRegistryBaseLibrary|d0|form 0 ret $00010003|1	$00000000
+SetRegistryBaseLibrary|calls|form 0 ret $00010003|1	$00000000
+ExistsRegistryLibrary|kept|form 0 ret $00020004|1	kept
+ExistsRegistryLibrary|popped|form 0 ret $00020004|1	$00000000
+ExistsRegistryLibrary|d0|form 0 ret $00020004|1	$00000000
+ExistsRegistryLibrary|calls|form 0 ret $00020004|1	$00000000
+GetRegistryVariable|kept|form 0 ret $00030005|1	kept
+GetRegistryVariable|popped|form 0 ret $00030005|1	$00000000
+GetRegistryVariable|d0|form 0 ret $00030005|1	$00000000
+GetRegistryVariable|calls|form 0 ret $00030005|1	$00000000
+SetRegistryVariable|kept|form 0 ret $00040006|1	kept
+SetRegistryVariable|popped|form 0 ret $00040006|1	$00000000
+SetRegistryVariable|d0|form 0 ret $00040006|1	$00000000
+SetRegistryVariable|calls|form 0 ret $00040006|1	$00000000
+SetRegistryVariable|kept|form 1 ret $00050007|1	kept
+SetRegistryVariable|popped|form 1 ret $00050007|1	$00000000
+SetRegistryVariable|d0|form 1 ret $00050007|1	$00000000
+SetRegistryVariable|calls|form 1 ret $00050007|1	$00000000
+ChangeRegistryVariable|kept|form 0 ret $00060008|1	kept
+ChangeRegistryVariable|popped|form 0 ret $00060008|1	$00000000
+ChangeRegistryVariable|d0|form 0 ret $00060008|1	$00000000
+ChangeRegistryVariable|calls|form 0 ret $00060008|1	$00000000
+NewRegistryLibrary|kept|form 0 ret $00070009|1	kept
+NewRegistryLibrary|popped|form 0 ret $00070009|1	$00000000
+NewRegistryLibrary|d0|form 0 ret $00070009|1	$00000000
+NewRegistryLibrary|calls|form 0 ret $00070009|1	$00000000
+NewRegistryLibrary|kept|form 1 ret $0008000A|1	kept
+NewRegistryLibrary|popped|form 1 ret $0008000A|1	$00000000
+NewRegistryLibrary|d0|form 1 ret $0008000A|1	$00000000
+NewRegistryLibrary|calls|form 1 ret $0008000A|1	$00000000
+ParseRegistryLibrary|kept|form 0 ret $0009000B|1	kept
+ParseRegistryLibrary|popped|form 0 ret $0009000B|1	$00000000
+ParseRegistryLibrary|d0|form 0 ret $0009000B|1	$00000000
+ParseRegistryLibrary|calls|form 0 ret $0009000B|1	$00000000
+NextParseItem|kept|form 0 ret $000A000C|1	kept
+NextParseItem|popped|form 0 ret $000A000C|1	$00000000
+NextParseItem|d0|form 0 ret $000A000C|1	$00000000
+NextParseItem|calls|form 0 ret $000A000C|1	$00000000
+ChangeRegistryAccess|kept|form 0 ret $000B000D|1	kept
+ChangeRegistryAccess|popped|form 0 ret $000B000D|1	$00000000
+ChangeRegistryAccess|calls|form 0 ret $000B000D|1	$00000000
+DeleteRegistryLibrary|kept|form 0 ret $000C000E|1	kept
+DeleteRegistryLibrary|popped|form 0 ret $000C000E|1	$00000000
+DeleteRegistryLibrary|d0|form 0 ret $000C000E|1	$00000000
+DeleteRegistryLibrary|calls|form 0 ret $000C000E|1	$00000000
+DeleteRegistryVariable|kept|form 0 ret $000D000F|1	kept
+DeleteRegistryVariable|popped|form 0 ret $000D000F|1	$00000000
+DeleteRegistryVariable|d0|form 0 ret $000D000F|1	$00000000
+DeleteRegistryVariable|calls|form 0 ret $000D000F|1	$00000000
+NumRegistryLibraryVariables|kept|form 0 ret $000E0010|1	kept
+NumRegistryLibraryVariables|popped|form 0 ret $000E0010|1	$00000000
+NumRegistryLibraryVariables|d0|form 0 ret $000E0010|1	$00000000
+NumRegistryLibraryVariables|calls|form 0 ret $000E0010|1	$00000000
+SaveRegistryLibrary|kept|form 0 ret $000F0011|1	kept
+SaveRegistryLibrary|popped|form 0 ret $000F0011|1	$00000000
+SaveRegistryLibrary|d0|form 0 ret $000F0011|1	$00000000
+SaveRegistryLibrary|calls|form 0 ret $000F0011|1	$00000000
+LoadRegistryLibrary|kept|form 0 ret $00100012|1	kept
+LoadRegistryLibrary|popped|form 0 ret $00100012|1	$00000000
+LoadRegistryLibrary|d0|form 0 ret $00100012|1	$00000000
+LoadRegistryLibrary|calls|form 0 ret $00100012|1	$00000000
+SetRegistryBoolVariable|kept|form 0 ret $00110013|1	kept
+SetRegistryBoolVariable|popped|form 0 ret $00110013|1	$00000000
+SetRegistryBoolVariable|d0|form 0 ret $00110013|1	$00000000
+SetRegistryBoolVariable|calls|form 0 ret $00110013|1	$00000000
+SetRegistryIntVariable|kept|form 0 ret $00120014|1	kept
+SetRegistryIntVariable|popped|form 0 ret $00120014|1	$00000000
+SetRegistryIntVariable|d0|form 0 ret $00120014|1	$00000000
+SetRegistryIntVariable|calls|form 0 ret $00120014|1	$00000000
+DeleteRegistryLibraryVariables|kept|form 0 ret $00130015|1	kept
+DeleteRegistryLibraryVariables|popped|form 0 ret $00130015|1	$00000000
+DeleteRegistryLibraryVariables|calls|form 0 ret $00130015|1	$00000000
+SetLibraryValue|kept|form 0 ret $00140016|1	kept
+SetLibraryValue|popped|form 0 ret $00140016|1	$00000000
+SetLibraryValue|d0|form 0 ret $00140016|1	$00000000
+SetLibraryValue|calls|form 0 ret $00140016|1	$00000000
+SetRegistryVariableIndex|kept|form 0 ret $00150017|1	kept
+SetRegistryVariableIndex|popped|form 0 ret $00150017|1	$00000000
+SetRegistryVariableIndex|d0|form 0 ret $00150017|1	$00000000
+SetRegistryVariableIndex|calls|form 0 ret $00150017|1	$00000000
+RenameRegistryVariable|kept|form 0 ret $00160018|1	kept
+RenameRegistryVariable|popped|form 0 ret $00160018|1	$00000000
+RenameRegistryVariable|d0|form 0 ret $00160018|1	$00000000
+RenameRegistryVariable|calls|form 0 ret $00160018|1	$00000000
+SaveLibraryVariables|kept|form 0 ret $00170019|1	kept
+SaveLibraryVariables|popped|form 0 ret $00170019|1	$00000000
+SaveLibraryVariables|d0|form 0 ret $00170019|1	$00000000
+SaveLibraryVariables|calls|form 0 ret $00170019|1	$00000000
+RenameRegistryLibrary|kept|form 0 ret $0018001A|1	kept
+RenameRegistryLibrary|popped|form 0 ret $0018001A|1	$00000000
+RenameRegistryLibrary|d0|form 0 ret $0018001A|1	$00000000
+RenameRegistryLibrary|calls|form 0 ret $0018001A|1	$00000000
+InsertNewRegistryLibrary|kept|form 0 ret $0019001B|1	kept
+InsertNewRegistryLibrary|popped|form 0 ret $0019001B|1	$00000000
+InsertNewRegistryLibrary|d0|form 0 ret $0019001B|1	$00000000
+InsertNewRegistryLibrary|calls|form 0 ret $0019001B|1	$00000000
+InsertNewRegistryLibrary|kept|form 1 ret $001A001C|1	kept
+InsertNewRegistryLibrary|popped|form 1 ret $001A001C|1	$00000000
+InsertNewRegistryLibrary|d0|form 1 ret $001A001C|1	$00000000
+InsertNewRegistryLibrary|calls|form 1 ret $001A001C|1	$00000000
+GetStructureVariables|kept|form 0 ret $001B001D|1	kept
+GetStructureVariables|popped|form 0 ret $001B001D|1	$00000000
+GetStructureVariables|d0|form 0 ret $001B001D|1	$00000000
+GetStructureVariables|calls|form 0 ret $001B001D|1	$00000000
+FreeStructureVariables|kept|form 0 ret $001C001E|1	kept
+FreeStructureVariables|popped|form 0 ret $001C001E|1	$00000000
+FreeStructureVariables|calls|form 0 ret $001C001E|1	$00000000
+LoadLibraryVariables|kept|form 0 ret $001D001F|1	kept
+LoadLibraryVariables|popped|form 0 ret $001D001F|1	$00000000
+LoadLibraryVariables|d0|form 0 ret $001D001F|1	$00000000
+LoadLibraryVariables|calls|form 0 ret $001D001F|1	$00000000
+LockRegistry|kept|mode 2|1	kept
+LockRegistry|popped|mode 2|1	$00000000
+LockRegistry|d0|mode 2|1	prog
+LockRegistry|calls|mode 2|1	$00000001
+LockRegistry|call 0 LVO|mode 2|1	$FFFFFFE2
+LockRegistry|call 0 d0|mode 2|1	$00000002
+SetRegistryBaseLibrary|kept|form 0 ret $001E0020|1	kept
+SetRegistryBaseLibrary|popped|form 0 ret $001E0020|1	$00000000
+SetRegistryBaseLibrary|d0|form 0 ret $001E0020|1	$001E0020
+SetRegistryBaseLibrary|calls|form 0 ret $001E0020|1	$00000001
+SetRegistryBaseLibrary|call 0 LVO|form 0 ret $001E0020|1	$FFFFFFD6
+SetRegistryBaseLibrary|call 0 a0|form 0 ret $001E0020|1	prog
+SetRegistryBaseLibrary|call 0 a1|form 0 ret $001E0020|1	prog
+ExistsRegistryLibrary|kept|form 0 ret $001F0021|1	kept
+ExistsRegistryLibrary|popped|form 0 ret $001F0021|1	$00000000
+ExistsRegistryLibrary|d0|form 0 ret $001F0021|1	$001F0021
+ExistsRegistryLibrary|calls|form 0 ret $001F0021|1	$00000001
+ExistsRegistryLibrary|call 0 LVO|form 0 ret $001F0021|1	$FFFFFFD0
+ExistsRegistryLibrary|call 0 d0|form 0 ret $001F0021|1	$00000000
+ExistsRegistryLibrary|call 0 a0|form 0 ret $001F0021|1	prog
+ExistsRegistryLibrary|call 0 a1|form 0 ret $001F0021|1	prog
+GetRegistryVariable|kept|form 0 ret $00200022|1	kept
+GetRegistryVariable|popped|form 0 ret $00200022|1	$00000000
+GetRegistryVariable|d0|form 0 ret $00200022|1	$00200022
+GetRegistryVariable|calls|form 0 ret $00200022|1	$00000001
+GetRegistryVariable|call 0 LVO|form 0 ret $00200022|1	$FFFFFFC4
+GetRegistryVariable|call 0 d0|form 0 ret $00200022|1	$00000000
+GetRegistryVariable|call 0 a0|form 0 ret $00200022|1	prog
+GetRegistryVariable|call 0 a1|form 0 ret $00200022|1	prog
+SetRegistryVariable|kept|form 0 ret $00210023|1	kept
+SetRegistryVariable|popped|form 0 ret $00210023|1	$00000000
+SetRegistryVariable|d0|form 0 ret $00210023|1	$00210023
+SetRegistryVariable|calls|form 0 ret $00210023|1	$00000001
+SetRegistryVariable|call 0 LVO|form 0 ret $00210023|1	$FFFFFFBE
+SetRegistryVariable|call 0 d0|form 0 ret $00210023|1	$00000001
+SetRegistryVariable|call 0 d1|form 0 ret $00210023|1	$5A021234
+SetRegistryVariable|call 0 a0|form 0 ret $00210023|1	prog
+SetRegistryVariable|call 0 a1|form 0 ret $00210023|1	prog
+SetRegistryVariable|call 0 a2|form 0 ret $00210023|1	prog
+SetRegistryVariable|kept|form 1 ret $00220024|1	kept
+SetRegistryVariable|popped|form 1 ret $00220024|1	$00000000
+SetRegistryVariable|d0|form 1 ret $00220024|1	$00220024
+SetRegistryVariable|calls|form 1 ret $00220024|1	$00000001
+SetRegistryVariable|call 0 LVO|form 1 ret $00220024|1	$FFFFFFBE
+SetRegistryVariable|call 0 d0|form 1 ret $00220024|1	$00000002
+SetRegistryVariable|call 0 d1|form 1 ret $00220024|1	$0000004D
+SetRegistryVariable|call 0 a0|form 1 ret $00220024|1	prog
+SetRegistryVariable|call 0 a1|form 1 ret $00220024|1	prog
+SetRegistryVariable|call 0 a2|form 1 ret $00220024|1	prog
+ChangeRegistryVariable|kept|form 0 ret $00230025|1	kept
+ChangeRegistryVariable|popped|form 0 ret $00230025|1	$00000000
+ChangeRegistryVariable|d0|form 0 ret $00230025|1	$00230025
+ChangeRegistryVariable|calls|form 0 ret $00230025|1	$00000001
+ChangeRegistryVariable|call 0 LVO|form 0 ret $00230025|1	$FFFFFFB8
+ChangeRegistryVariable|call 0 d0|form 0 ret $00230025|1	$00000003
+ChangeRegistryVariable|call 0 d1|form 0 ret $00230025|1	$00000004
+ChangeRegistryVariable|call 0 a0|form 0 ret $00230025|1	prog
+ChangeRegistryVariable|call 0 a1|form 0 ret $00230025|1	prog
+ChangeRegistryVariable|call 0 a2|form 0 ret $00230025|1	prog
+NewRegistryLibrary|kept|form 0 ret $00240026|1	kept
+NewRegistryLibrary|popped|form 0 ret $00240026|1	$00000000
+NewRegistryLibrary|d0|form 0 ret $00240026|1	$00240026
+NewRegistryLibrary|calls|form 0 ret $00240026|1	$00000001
+NewRegistryLibrary|call 0 LVO|form 0 ret $00240026|1	$FFFFFFB2
+NewRegistryLibrary|call 0 a0|form 0 ret $00240026|1	prog
+NewRegistryLibrary|call 0 a1|form 0 ret $00240026|1	prog
+NewRegistryLibrary|call 0 a2|form 0 ret $00240026|1	prog
+NewRegistryLibrary|call 0 a3|form 0 ret $00240026|1	$00000000
+NewRegistryLibrary|kept|form 1 ret $00250027|1	kept
+NewRegistryLibrary|popped|form 1 ret $00250027|1	$00000000
+NewRegistryLibrary|d0|form 1 ret $00250027|1	$00250027
+NewRegistryLibrary|calls|form 1 ret $00250027|1	$00000001
+NewRegistryLibrary|call 0 LVO|form 1 ret $00250027|1	$FFFFFFB2
+NewRegistryLibrary|call 0 a0|form 1 ret $00250027|1	prog
+NewRegistryLibrary|call 0 a1|form 1 ret $00250027|1	prog
+NewRegistryLibrary|call 0 a2|form 1 ret $00250027|1	prog
+NewRegistryLibrary|call 0 a3|form 1 ret $00250027|1	prog
+ParseRegistryLibrary|kept|form 0 ret $00260028|1	kept
+ParseRegistryLibrary|popped|form 0 ret $00260028|1	$00000000
+ParseRegistryLibrary|d0|form 0 ret $00260028|1	$00260028
+ParseRegistryLibrary|calls|form 0 ret $00260028|1	$00000001
+ParseRegistryLibrary|call 0 LVO|form 0 ret $00260028|1	$FFFFFFAC
+ParseRegistryLibrary|call 0 a0|form 0 ret $00260028|1	prog
+ParseRegistryLibrary|call 0 a1|form 0 ret $00260028|1	prog
+NextParseItem|kept|form 0 ret $00270029|1	kept
+NextParseItem|popped|form 0 ret $00270029|1	$00000000
+NextParseItem|d0|form 0 ret $00270029|1	$00270029
+NextParseItem|calls|form 0 ret $00270029|1	$00000001
+NextParseItem|call 0 LVO|form 0 ret $00270029|1	$FFFFFFA0
+NextParseItem|call 0 a0|form 0 ret $00270029|1	prog
+ChangeRegistryAccess|kept|form 0 ret $0028002A|1	kept
+ChangeRegistryAccess|popped|form 0 ret $0028002A|1	$00000000
+ChangeRegistryAccess|calls|form 0 ret $0028002A|1	$00000001
+ChangeRegistryAccess|call 0 LVO|form 0 ret $0028002A|1	$FFFFFF9A
+ChangeRegistryAccess|call 0 a0|form 0 ret $0028002A|1	prog
+DeleteRegistryLibrary|kept|form 0 ret $0029002B|1	kept
+DeleteRegistryLibrary|popped|form 0 ret $0029002B|1	$00000000
+DeleteRegistryLibrary|d0|form 0 ret $0029002B|1	$0029002B
+DeleteRegistryLibrary|calls|form 0 ret $0029002B|1	$00000001
+DeleteRegistryLibrary|call 0 LVO|form 0 ret $0029002B|1	$FFFFFF94
+DeleteRegistryLibrary|call 0 a0|form 0 ret $0029002B|1	prog
+DeleteRegistryLibrary|call 0 a1|form 0 ret $0029002B|1	prog
+DeleteRegistryVariable|kept|form 0 ret $002A002C|1	kept
+DeleteRegistryVariable|popped|form 0 ret $002A002C|1	$00000000
+DeleteRegistryVariable|d0|form 0 ret $002A002C|1	$002A002C
+DeleteRegistryVariable|calls|form 0 ret $002A002C|1	$00000001
+DeleteRegistryVariable|call 0 LVO|form 0 ret $002A002C|1	$FFFFFF8E
+DeleteRegistryVariable|call 0 a0|form 0 ret $002A002C|1	prog
+DeleteRegistryVariable|call 0 a1|form 0 ret $002A002C|1	prog
+NumRegistryLibraryVariables|kept|form 0 ret $002B002D|1	kept
+NumRegistryLibraryVariables|popped|form 0 ret $002B002D|1	$00000000
+NumRegistryLibraryVariables|d0|form 0 ret $002B002D|1	$002B002D
+NumRegistryLibraryVariables|calls|form 0 ret $002B002D|1	$00000001
+NumRegistryLibraryVariables|call 0 LVO|form 0 ret $002B002D|1	$FFFFFF88
+NumRegistryLibraryVariables|call 0 a0|form 0 ret $002B002D|1	prog
+NumRegistryLibraryVariables|call 0 a1|form 0 ret $002B002D|1	prog
+SaveRegistryLibrary|kept|form 0 ret $002C002E|1	kept
+SaveRegistryLibrary|popped|form 0 ret $002C002E|1	$00000000
+SaveRegistryLibrary|d0|form 0 ret $002C002E|1	$002C002E
+SaveRegistryLibrary|calls|form 0 ret $002C002E|1	$00000001
+SaveRegistryLibrary|call 0 LVO|form 0 ret $002C002E|1	$FFFFFF82
+SaveRegistryLibrary|call 0 a0|form 0 ret $002C002E|1	prog
+SaveRegistryLibrary|call 0 a1|form 0 ret $002C002E|1	prog
+SaveRegistryLibrary|call 0 a2|form 0 ret $002C002E|1	prog
+LoadRegistryLibrary|kept|form 0 ret $002D002F|1	kept
+LoadRegistryLibrary|popped|form 0 ret $002D002F|1	$00000000
+LoadRegistryLibrary|d0|form 0 ret $002D002F|1	$002D002F
+LoadRegistryLibrary|calls|form 0 ret $002D002F|1	$00000001
+LoadRegistryLibrary|call 0 LVO|form 0 ret $002D002F|1	$FFFFFF7C
+LoadRegistryLibrary|call 0 a0|form 0 ret $002D002F|1	prog
+LoadRegistryLibrary|call 0 a1|form 0 ret $002D002F|1	prog
+LoadRegistryLibrary|call 0 a2|form 0 ret $002D002F|1	prog
+SetRegistryBoolVariable|kept|form 0 ret $002E0030|1	kept
+SetRegistryBoolVariable|popped|form 0 ret $002E0030|1	$00000000
+SetRegistryBoolVariable|d0|form 0 ret $002E0030|1	$002E0030
+SetRegistryBoolVariable|calls|form 0 ret $002E0030|1	$00000001
+SetRegistryBoolVariable|call 0 LVO|form 0 ret $002E0030|1	$FFFFFFBE
+SetRegistryBoolVariable|call 0 d0|form 0 ret $002E0030|1	$00000003
+SetRegistryBoolVariable|call 0 d1|form 0 ret $002E0030|1	$5A021234
+SetRegistryBoolVariable|call 0 a0|form 0 ret $002E0030|1	prog
+SetRegistryBoolVariable|call 0 a1|form 0 ret $002E0030|1	prog
+SetRegistryBoolVariable|call 0 a2|form 0 ret $002E0030|1	$FFFFFFFF
+SetRegistryIntVariable|kept|form 0 ret $002F0031|1	kept
+SetRegistryIntVariable|popped|form 0 ret $002F0031|1	$00000000
+SetRegistryIntVariable|d0|form 0 ret $002F0031|1	$002F0031
+SetRegistryIntVariable|calls|form 0 ret $002F0031|1	$00000001
+SetRegistryIntVariable|call 0 LVO|form 0 ret $002F0031|1	$FFFFFFBE
+SetRegistryIntVariable|call 0 d0|form 0 ret $002F0031|1	$00000004
+SetRegistryIntVariable|call 0 d1|form 0 ret $002F0031|1	$00000004
+SetRegistryIntVariable|call 0 a0|form 0 ret $002F0031|1	prog
+SetRegistryIntVariable|call 0 a1|form 0 ret $002F0031|1	prog
+SetRegistryIntVariable|call 0 a2|form 0 ret $002F0031|1	$00003039
+DeleteRegistryLibraryVariables|kept|form 0 ret $00300032|1	kept
+DeleteRegistryLibraryVariables|popped|form 0 ret $00300032|1	$00000000
+DeleteRegistryLibraryVariables|calls|form 0 ret $00300032|1	$00000001
+DeleteRegistryLibraryVariables|call 0 LVO|form 0 ret $00300032|1	$FFFFFF76
+DeleteRegistryLibraryVariables|call 0 a0|form 0 ret $00300032|1	prog
+DeleteRegistryLibraryVariables|call 0 a1|form 0 ret $00300032|1	prog
+SetLibraryValue|kept|form 0 ret $00310033|1	kept
+SetLibraryValue|popped|form 0 ret $00310033|1	$00000000
+SetLibraryValue|d0|form 0 ret $00310033|1	$00310033
+SetLibraryValue|calls|form 0 ret $00310033|1	$00000001
+SetLibraryValue|call 0 LVO|form 0 ret $00310033|1	$FFFFFF70
+SetLibraryValue|call 0 a0|form 0 ret $00310033|1	prog
+SetLibraryValue|call 0 a1|form 0 ret $00310033|1	prog
+SetLibraryValue|call 0 a2|form 0 ret $00310033|1	prog
+SetRegistryVariableIndex|kept|form 0 ret $00320034|1	kept
+SetRegistryVariableIndex|popped|form 0 ret $00320034|1	$00000000
+SetRegistryVariableIndex|d0|form 0 ret $00320034|1	$00320034
+SetRegistryVariableIndex|calls|form 0 ret $00320034|1	$00000001
+SetRegistryVariableIndex|call 0 LVO|form 0 ret $00320034|1	$FFFFFF6A
+SetRegistryVariableIndex|call 0 d0|form 0 ret $00320034|1	$00000001
+SetRegistryVariableIndex|call 0 d1|form 0 ret $00320034|1	$00000006
+SetRegistryVariableIndex|call 0 d2|form 0 ret $00320034|1	$00000009
+SetRegistryVariableIndex|call 0 a0|form 0 ret $00320034|1	prog
+SetRegistryVariableIndex|call 0 a1|form 0 ret $00320034|1	prog
+SetRegistryVariableIndex|call 0 a2|form 0 ret $00320034|1	prog
+RenameRegistryVariable|kept|form 0 ret $00330035|1	kept
+RenameRegistryVariable|popped|form 0 ret $00330035|1	$00000000
+RenameRegistryVariable|d0|form 0 ret $00330035|1	$00330035
+RenameRegistryVariable|calls|form 0 ret $00330035|1	$00000001
+RenameRegistryVariable|call 0 LVO|form 0 ret $00330035|1	$FFFFFF64
+RenameRegistryVariable|call 0 a0|form 0 ret $00330035|1	prog
+RenameRegistryVariable|call 0 a1|form 0 ret $00330035|1	prog
+RenameRegistryVariable|call 0 a2|form 0 ret $00330035|1	prog
+SaveLibraryVariables|kept|form 0 ret $00340036|1	kept
+SaveLibraryVariables|popped|form 0 ret $00340036|1	$00000000
+SaveLibraryVariables|d0|form 0 ret $00340036|1	$00340036
+SaveLibraryVariables|calls|form 0 ret $00340036|1	$00000001
+SaveLibraryVariables|call 0 LVO|form 0 ret $00340036|1	$FFFFFF5E
+SaveLibraryVariables|call 0 a0|form 0 ret $00340036|1	prog
+SaveLibraryVariables|call 0 a1|form 0 ret $00340036|1	prog
+SaveLibraryVariables|call 0 a2|form 0 ret $00340036|1	prog
+RenameRegistryLibrary|kept|form 0 ret $00350037|1	kept
+RenameRegistryLibrary|popped|form 0 ret $00350037|1	$00000000
+RenameRegistryLibrary|d0|form 0 ret $00350037|1	$00350037
+RenameRegistryLibrary|calls|form 0 ret $00350037|1	$00000001
+RenameRegistryLibrary|call 0 LVO|form 0 ret $00350037|1	$FFFFFF52
+RenameRegistryLibrary|call 0 a0|form 0 ret $00350037|1	prog
+RenameRegistryLibrary|call 0 a1|form 0 ret $00350037|1	prog
+RenameRegistryLibrary|call 0 a2|form 0 ret $00350037|1	prog
+InsertNewRegistryLibrary|kept|form 0 ret $00360038|1	kept
+InsertNewRegistryLibrary|popped|form 0 ret $00360038|1	$00000000
+InsertNewRegistryLibrary|d0|form 0 ret $00360038|1	$00360038
+InsertNewRegistryLibrary|calls|form 0 ret $00360038|1	$00000001
+InsertNewRegistryLibrary|call 0 LVO|form 0 ret $00360038|1	$FFFFFF4C
+InsertNewRegistryLibrary|call 0 a0|form 0 ret $00360038|1	prog
+InsertNewRegistryLibrary|call 0 a1|form 0 ret $00360038|1	prog
+InsertNewRegistryLibrary|call 0 a2|form 0 ret $00360038|1	prog
+InsertNewRegistryLibrary|call 0 a3|form 0 ret $00360038|1	$00000000
+InsertNewRegistryLibrary|call 0 a4|form 0 ret $00360038|1	prog
+InsertNewRegistryLibrary|kept|form 1 ret $00370039|1	kept
+InsertNewRegistryLibrary|popped|form 1 ret $00370039|1	$00000000
+InsertNewRegistryLibrary|d0|form 1 ret $00370039|1	$00370039
+InsertNewRegistryLibrary|calls|form 1 ret $00370039|1	$00000001
+InsertNewRegistryLibrary|call 0 LVO|form 1 ret $00370039|1	$FFFFFF4C
+InsertNewRegistryLibrary|call 0 a0|form 1 ret $00370039|1	prog
+InsertNewRegistryLibrary|call 0 a1|form 1 ret $00370039|1	prog
+InsertNewRegistryLibrary|call 0 a2|form 1 ret $00370039|1	prog
+InsertNewRegistryLibrary|call 0 a3|form 1 ret $00370039|1	prog
+InsertNewRegistryLibrary|call 0 a4|form 1 ret $00370039|1	prog
+GetStructureVariables|kept|form 0 ret $0038003A|1	kept
+GetStructureVariables|popped|form 0 ret $0038003A|1	$00000000
+GetStructureVariables|d0|form 0 ret $0038003A|1	$0038003A
+GetStructureVariables|calls|form 0 ret $0038003A|1	$00000001
+GetStructureVariables|call 0 LVO|form 0 ret $0038003A|1	$FFFFFF46
+GetStructureVariables|call 0 a0|form 0 ret $0038003A|1	prog
+GetStructureVariables|call 0 a1|form 0 ret $0038003A|1	prog
+GetStructureVariables|call 0 a2|form 0 ret $0038003A|1	prog
+FreeStructureVariables|kept|form 0 ret $0039003B|1	kept
+FreeStructureVariables|popped|form 0 ret $0039003B|1	$00000000
+FreeStructureVariables|calls|form 0 ret $0039003B|1	$00000001
+FreeStructureVariables|call 0 LVO|form 0 ret $0039003B|1	$FFFFFF40
+FreeStructureVariables|call 0 a0|form 0 ret $0039003B|1	prog
+FreeStructureVariables|call 0 a1|form 0 ret $0039003B|1	prog
+FreeStructureVariables|call 0 a2|form 0 ret $0039003B|1	prog
+LoadLibraryVariables|kept|form 0 ret $003A003C|1	kept
+LoadLibraryVariables|popped|form 0 ret $003A003C|1	$00000000
+LoadLibraryVariables|d0|form 0 ret $003A003C|1	$003A003C
+LoadLibraryVariables|calls|form 0 ret $003A003C|1	$00000001
+LoadLibraryVariables|call 0 LVO|form 0 ret $003A003C|1	$FFFFFF3A
+LoadLibraryVariables|call 0 a0|form 0 ret $003A003C|1	prog
+LoadLibraryVariables|call 0 a1|form 0 ret $003A003C|1	prog
+LoadLibraryVariables|call 0 a2|form 0 ret $003A003C|1	prog
+GetLibraryValue$|kept|"LibName" ret 4369|2	kept
+GetLibraryValue$|popped|"LibName" ret 4369|2	$00000000
+GetLibraryValue$|d0|"LibName" ret 4369|2	$0000000C
+GetLibraryValue$|a3|"LibName" ret 4369|2	$0000000D
+GetLibraryValue$|string area|"LibName" ret 4369|2	bytes 256 fnv BA1925EA
+GetLibraryValue$|calls|"LibName" ret 4369|2	$00000001
+GetLibraryValue$|call 0 LVO|"LibName" ret 4369|1	$FFFFFFCA
+GetLibraryValue$|call 0 d0|"LibName" ret 4369|1	$00000000
+GetLibraryValue$|call 0 a0|"LibName" ret 4369|1	prog
+GetLibraryValue$|call 0 a1|"LibName" ret 4369|1	$53000000
+GetRegistryStringVariable|kept|"Var" ret 1|2	kept
+GetRegistryStringVariable|popped|"Var" ret 1|2	$00000000
+GetRegistryStringVariable|d0|"Var" ret 1|2	$0000000C
+GetRegistryStringVariable|a3|"Var" ret 1|2	$0000000D
+GetRegistryStringVariable|string area|"Var" ret 1|2	bytes 256 fnv BA1925EA
+GetRegistryStringVariable|calls|"Var" ret 1|2	$00000001
+GetRegistryStringVariable|call 0 LVO|"Var" ret 1|1	$FFFFFFC4
+GetRegistryStringVariable|call 0 d0|"Var" ret 1|1	$00000000
+GetRegistryStringVariable|call 0 a0|"Var" ret 1|1	prog
+GetRegistryStringVariable|call 0 a1|"Var" ret 1|1	$53000000
+ParseItemName$|kept|"" ret 0|2	kept
+ParseItemName$|popped|"" ret 0|2	$00000000
+ParseItemName$|d0|"" ret 0|2	$00000004
+ParseItemName$|a3|"" ret 0|2	$00000009
+ParseItemName$|string area|"" ret 0|2	bytes 256 fnv 37B66CE5
+ParseItemName$|calls|"" ret 0|2	$00000000
+ParseItemValue$|kept|"" ret 0|2	kept
+ParseItemValue$|popped|"" ret 0|2	$00000000
+ParseItemValue$|d0|"" ret 0|2	$0000000C
+ParseItemValue$|a3|"" ret 0|2	$00000011
+ParseItemValue$|string area|"" ret 0|2	bytes 256 fnv 842DE02A
+ParseItemValue$|calls|"" ret 0|2	$00000000
+GetRegistryIntVariable|kept|"Int" ret 4|2	kept
+GetRegistryIntVariable|popped|"Int" ret 4|2	$00000000
+GetRegistryIntVariable|d0|"Int" ret 4|2	$400C6AF1
+GetRegistryIntVariable|a3|"Int" ret 4|2	$00000004
+GetRegistryIntVariable|string area|"Int" ret 4|2	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 4|2	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 4|1	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 4|1	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 4|1	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 4|1	$53000000
+GetRegistryIntVariable|kept|"Int" ret 327683|2	kept
+GetRegistryIntVariable|popped|"Int" ret 327683|2	$00000000
+GetRegistryIntVariable|d0|"Int" ret 327683|2	$400C6AF1
+GetRegistryIntVariable|a3|"Int" ret 327683|2	$00000004
+GetRegistryIntVariable|string area|"Int" ret 327683|2	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 327683|2	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 327683|1	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 327683|1	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 327683|1	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 327683|1	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 3|2	kept
+GetRegistryBoolVariable|popped|"Bool" ret 3|2	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 3|2	$400C6AF1
+GetRegistryBoolVariable|a3|"Bool" ret 3|2	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 3|2	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 3|2	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 3|1	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 3|1	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 3|1	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 3|1	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 2|2	kept
+GetRegistryBoolVariable|popped|"Bool" ret 2|2	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 2|2	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 2|2	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 2|2	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 2|2	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 2|1	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 2|1	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 2|1	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 2|1	$53000000
+GetLibraryValue$|kept|"LibName" ret 4369|3	kept
+GetLibraryValue$|popped|"LibName" ret 4369|3	$00000000
+GetLibraryValue$|d0|"LibName" ret 4369|3	$00000000
+GetLibraryValue$|a3|"LibName" ret 4369|3	$00000000
+GetLibraryValue$|string area|"LibName" ret 4369|3	bytes 256 fnv C94855DD
+GetLibraryValue$|calls|"LibName" ret 4369|3	$00000001
+GetLibraryValue$|call 0 LVO|"LibName" ret 4369|2	$FFFFFFCA
+GetLibraryValue$|call 0 d0|"LibName" ret 4369|2	$00000000
+GetLibraryValue$|call 0 a0|"LibName" ret 4369|2	prog
+GetLibraryValue$|call 0 a1|"LibName" ret 4369|2	$53000000
+GetRegistryStringVariable|kept|"Var" ret 1|3	kept
+GetRegistryStringVariable|popped|"Var" ret 1|3	$00000000
+GetRegistryStringVariable|d0|"Var" ret 1|3	$00000000
+GetRegistryStringVariable|a3|"Var" ret 1|3	$00000000
+GetRegistryStringVariable|string area|"Var" ret 1|3	bytes 256 fnv 339FD9CE
+GetRegistryStringVariable|calls|"Var" ret 1|3	$00000001
+GetRegistryStringVariable|call 0 LVO|"Var" ret 1|2	$FFFFFFC4
+GetRegistryStringVariable|call 0 d0|"Var" ret 1|2	$00000000
+GetRegistryStringVariable|call 0 a0|"Var" ret 1|2	prog
+GetRegistryStringVariable|call 0 a1|"Var" ret 1|2	$53000000
+ParseItemName$|kept|"" ret 0|3	kept
+ParseItemName$|popped|"" ret 0|3	$00000000
+ParseItemName$|d0|"" ret 0|3	$00000005
+ParseItemName$|a3|"" ret 0|3	$0000000A
+ParseItemName$|string area|"" ret 0|3	bytes 256 fnv 9C9129AA
+ParseItemName$|calls|"" ret 0|3	$00000000
+ParseItemValue$|kept|"" ret 0|3	kept
+ParseItemValue$|popped|"" ret 0|3	$00000000
+ParseItemValue$|d0|"" ret 0|3	$00000000
+ParseItemValue$|a3|"" ret 0|3	$00000004
+ParseItemValue$|string area|"" ret 0|3	bytes 256 fnv D0D12AC5
+ParseItemValue$|calls|"" ret 0|3	$00000000
+GetRegistryIntVariable|kept|"Int" ret 4|3	kept
+GetRegistryIntVariable|popped|"Int" ret 4|3	$00000000
+GetRegistryIntVariable|d0|"Int" ret 4|3	$00001267
+GetRegistryIntVariable|a3|"Int" ret 4|3	$00000004
+GetRegistryIntVariable|string area|"Int" ret 4|3	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 4|3	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 4|2	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 4|2	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 4|2	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 4|2	$53000000
+GetRegistryIntVariable|kept|"Int" ret 327683|3	kept
+GetRegistryIntVariable|popped|"Int" ret 327683|3	$00000000
+GetRegistryIntVariable|d0|"Int" ret 327683|3	$00001267
+GetRegistryIntVariable|a3|"Int" ret 327683|3	$00000004
+GetRegistryIntVariable|string area|"Int" ret 327683|3	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 327683|3	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 327683|2	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 327683|2	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 327683|2	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 327683|2	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 3|3	kept
+GetRegistryBoolVariable|popped|"Bool" ret 3|3	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 3|3	$00001267
+GetRegistryBoolVariable|a3|"Bool" ret 3|3	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 3|3	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 3|3	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 3|2	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 3|2	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 3|2	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 3|2	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 2|3	kept
+GetRegistryBoolVariable|popped|"Bool" ret 2|3	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 2|3	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 2|3	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 2|3	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 2|3	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 2|2	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 2|2	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 2|2	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 2|2	$53000000
+GetLibraryValue$|kept|"LibName" ret 4369|4	kept
+GetLibraryValue$|popped|"LibName" ret 4369|4	$00000000
+GetLibraryValue$|d0|"LibName" ret 4369|4	$00000000
+GetLibraryValue$|a3|"LibName" ret 4369|4	$00000000
+GetLibraryValue$|string area|"LibName" ret 4369|4	bytes 256 fnv C94855DD
+GetLibraryValue$|calls|"LibName" ret 4369|4	$00000001
+GetLibraryValue$|call 0 LVO|"LibName" ret 4369|3	$FFFFFFCA
+GetLibraryValue$|call 0 d0|"LibName" ret 4369|3	$00000000
+GetLibraryValue$|call 0 a0|"LibName" ret 4369|3	prog
+GetLibraryValue$|call 0 a1|"LibName" ret 4369|3	$53000000
+GetRegistryStringVariable|kept|"Var" ret 1|4	kept
+GetRegistryStringVariable|popped|"Var" ret 1|4	$00000000
+GetRegistryStringVariable|d0|"Var" ret 1|4	$00000000
+GetRegistryStringVariable|a3|"Var" ret 1|4	$00000000
+GetRegistryStringVariable|string area|"Var" ret 1|4	bytes 256 fnv 339FD9CE
+GetRegistryStringVariable|calls|"Var" ret 1|4	$00000001
+GetRegistryStringVariable|call 0 LVO|"Var" ret 1|3	$FFFFFFC4
+GetRegistryStringVariable|call 0 d0|"Var" ret 1|3	$00000000
+GetRegistryStringVariable|call 0 a0|"Var" ret 1|3	prog
+GetRegistryStringVariable|call 0 a1|"Var" ret 1|3	$53000000
+ParseItemName$|kept|"" ret 0|4	kept
+ParseItemName$|popped|"" ret 0|4	$00000000
+ParseItemName$|d0|"" ret 0|4	$00000000
+ParseItemName$|a3|"" ret 0|4	$00000004
+ParseItemName$|string area|"" ret 0|4	bytes 256 fnv D0D12AC5
+ParseItemName$|calls|"" ret 0|4	$00000000
+ParseItemValue$|kept|"" ret 0|4	kept
+ParseItemValue$|popped|"" ret 0|4	$00000000
+ParseItemValue$|d0|"" ret 0|4	$00000000
+ParseItemValue$|a3|"" ret 0|4	$00000004
+ParseItemValue$|string area|"" ret 0|4	bytes 256 fnv D0D12AC5
+ParseItemValue$|calls|"" ret 0|4	$00000000
+GetRegistryIntVariable|kept|"Int" ret 4|4	kept
+GetRegistryIntVariable|popped|"Int" ret 4|4	$00000000
+GetRegistryIntVariable|d0|"Int" ret 4|4	$00000000
+GetRegistryIntVariable|a3|"Int" ret 4|4	$00000004
+GetRegistryIntVariable|string area|"Int" ret 4|4	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 4|4	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 4|3	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 4|3	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 4|3	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 4|3	$53000000
+GetRegistryIntVariable|kept|"Int" ret 327683|4	kept
+GetRegistryIntVariable|popped|"Int" ret 327683|4	$00000000
+GetRegistryIntVariable|d0|"Int" ret 327683|4	$00000000
+GetRegistryIntVariable|a3|"Int" ret 327683|4	$00000004
+GetRegistryIntVariable|string area|"Int" ret 327683|4	bytes 256 fnv 938D4AAE
+GetRegistryIntVariable|calls|"Int" ret 327683|4	$00000001
+GetRegistryIntVariable|call 0 LVO|"Int" ret 327683|3	$FFFFFFC4
+GetRegistryIntVariable|call 0 d0|"Int" ret 327683|3	$00000000
+GetRegistryIntVariable|call 0 a0|"Int" ret 327683|3	prog
+GetRegistryIntVariable|call 0 a1|"Int" ret 327683|3	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 3|4	kept
+GetRegistryBoolVariable|popped|"Bool" ret 3|4	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 3|4	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 3|4	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 3|4	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 3|4	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 3|3	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 3|3	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 3|3	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 3|3	$53000000
+GetRegistryBoolVariable|kept|"Bool" ret 2|4	kept
+GetRegistryBoolVariable|popped|"Bool" ret 2|4	$00000000
+GetRegistryBoolVariable|d0|"Bool" ret 2|4	$00000000
+GetRegistryBoolVariable|a3|"Bool" ret 2|4	$00000005
+GetRegistryBoolVariable|string area|"Bool" ret 2|4	bytes 256 fnv 358EEAFE
+GetRegistryBoolVariable|calls|"Bool" ret 2|4	$00000001
+GetRegistryBoolVariable|call 0 LVO|"Bool" ret 2|3	$FFFFFFC4
+GetRegistryBoolVariable|call 0 d0|"Bool" ret 2|3	$00000000
+GetRegistryBoolVariable|call 0 a0|"Bool" ret 2|3	prog
+GetRegistryBoolVariable|call 0 a1|"Bool" ret 2|3	$53000000
+LockRegistry|kept|mode 1|2	kept
+LockRegistry|popped|mode 1|2	$00000000
+LockRegistry|d0|mode 1|2	prog
+LockRegistry|calls|mode 1|2	$00000001
+LockRegistry|call 0 LVO|mode 1|1	$FFFFFFE2
+LockRegistry|call 0 d0|mode 1|1	$00000001
+NextParseItem|kept|current: rs 1|1	kept
+NextParseItem|popped|current: rs 1|1	$00000000
+NextParseItem|d0|current: rs 1|1	$00000002
+NextParseItem|calls|current: rs 1|1	$00000001
+NextParseItem|call 0 LVO|current: rs 1|1	$FFFFFFA0
+NextParseItem|call 0 a0|current: rs 1|1	prog
+ParseItemValue$|kept|"" ret 0|5	kept
+ParseItemValue$|popped|"" ret 0|5	$00000000
+ParseItemValue$|d0|"" ret 0|5	$00000003
+ParseItemValue$|a3|"" ret 0|5	$00000008
+ParseItemValue$|string area|"" ret 0|5	bytes 256 fnv 63D8FAA1
+ParseItemValue$|calls|"" ret 0|5	$00000000
+LockRegistry|kept|mode 0|1	kept
+LockRegistry|popped|mode 0|1	$00000000
+LockRegistry|d0|mode 0|1	$00000000
+LockRegistry|calls|mode 0|1	$00000001
+LockRegistry|call 0 LVO|mode 0|1	$FFFFFFE2
+LockRegistry|call 0 d0|mode 0|1	$00000000
+NextParseItem|kept|current: none|1	kept
+NextParseItem|popped|current: none|1	$00000000
+NextParseItem|d0|current: none|1	$00000000
+NextParseItem|calls|current: none|1	$00000000
+UnlockRegistry|kept|of the failed lock|1	kept
+UnlockRegistry|popped|of the failed lock|1	$00000000
+UnlockRegistry|calls|of the failed lock|1	$00000000
+NextParseItem|kept|current: rs 1 again|1	kept
+NextParseItem|popped|current: rs 1 again|1	$00000000
+NextParseItem|d0|current: rs 1 again|1	$00000000
+NextParseItem|calls|current: rs 1 again|1	$00000001
+NextParseItem|call 0 LVO|current: rs 1 again|1	$FFFFFFA0
+NextParseItem|call 0 a0|current: rs 1 again|1	prog
+UnlockRegistry|kept|rs 1|1	kept
+UnlockRegistry|popped|rs 1|1	$00000000
+UnlockRegistry|calls|rs 1|1	$00000001
+UnlockRegistry|call 0 LVO|rs 1|1	$FFFFFFDC
+UnlockRegistry|call 0 a0|rs 1|1	prog
+NextParseItem|kept|current: rs 0 again|1	kept
+NextParseItem|popped|current: rs 0 again|1	$00000000
+NextParseItem|d0|current: rs 0 again|1	$00000000
+NextParseItem|calls|current: rs 0 again|1	$00000001
+NextParseItem|call 0 LVO|current: rs 0 again|1	$FFFFFFA0
+NextParseItem|call 0 a0|current: rs 0 again|1	prog
+LockRegistry|kept|mode 1|3	kept
+LockRegistry|popped|mode 1|3	$00000000
+LockRegistry|d0|mode 1|3	prog
+LockRegistry|calls|mode 1|3	$00000001
+LockRegistry|call 0 LVO|mode 1|2	$FFFFFFE2
+LockRegistry|call 0 d0|mode 1|2	$00000001
+LockRegistry|kept|mode 1|4	kept
+LockRegistry|popped|mode 1|4	$00000000
+LockRegistry|d0|mode 1|4	prog
+LockRegistry|calls|mode 1|4	$00000001
+LockRegistry|call 0 LVO|mode 1|3	$FFFFFFE2
+LockRegistry|call 0 d0|mode 1|3	$00000001
+finit|kept||2	kept
+finit|popped||2	$00000000
+finit|calls||2	$00000003
+finit|call 0 LVO||1	$FFFFFFDC
+finit|call 0 a0||1	prog
+finit|call 1 LVO||1	$FFFFFFDC
+finit|call 1 a0||1	prog
+finit|call 2 LVO||1	$FFFFFFDC
+finit|call 2 a0||1	prog
+finit|closed||1	$00000001
+init|kept||3	kept
+init|popped||3	$00000000
+init|calls||3	$00000000
+NextParseItem|kept|current: the stale rs 2|1	kept
+NextParseItem|popped|current: the stale rs 2|1	$00000000
+NextParseItem|d0|current: the stale rs 2|1	$00000000
+NextParseItem|calls|current: the stale rs 2|1	$00000001
+NextParseItem|call 0 LVO|current: the stale rs 2|1	$FFFFFFA0
+NextParseItem|call 0 a0|current: the stale rs 2|1	prog
+UnlockRegistry|kept|rs 2, to the libfin's 0|1	kept
+UnlockRegistry|popped|rs 2, to the libfin's 0|1	$00000000
+UnlockRegistry|calls|rs 2, to the libfin's 0|1	$00000001
+UnlockRegistry|call 0 LVO|rs 2, to the libfin's 0|1	$FFFFFFDC
+UnlockRegistry|call 0 a0|rs 2, to the libfin's 0|1	prog
+NextParseItem|kept|current: none (0)|1	kept
+NextParseItem|popped|current: none (0)|1	$00000000
+NextParseItem|d0|current: none (0)|1	$00000000
+NextParseItem|calls|current: none (0)|1	$00000000
+UnlockRegistry|kept|nothing, to $0000FFFF|1	kept
+UnlockRegistry|popped|nothing, to $0000FFFF|1	$00000000
+UnlockRegistry|calls|nothing, to $0000FFFF|1	$00000000
+NextParseItem|kept|current: $0000FFFF|1	kept
+NextParseItem|popped|current: $0000FFFF|1	$00000000
+NextParseItem|d0|current: $0000FFFF|1	$00000000
+NextParseItem|calls|current: $0000FFFF|1	$00000001
+NextParseItem|call 0 LVO|current: $0000FFFF|1	$FFFFFFA0
+NextParseItem|call 0 a0|current: $0000FFFF|1	$0000FFFF
+UnlockRegistry|kept|$0000FFFF|1	kept
+UnlockRegistry|popped|$0000FFFF|1	$00000000
+UnlockRegistry|calls|$0000FFFF|1	$00000001
+UnlockRegistry|call 0 LVO|$0000FFFF|1	$FFFFFFDC
+UnlockRegistry|call 0 a0|$0000FFFF|1	$0000FFFF
+finit|kept||3	kept
+finit|popped||3	$00000000
+finit|calls||3	$00000000
+finit|closed again||1	$00000001
