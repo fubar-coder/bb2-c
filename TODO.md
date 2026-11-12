@@ -713,6 +713,22 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   near their limits (ctest `RESOURCE_LOCK` or a lower `AMIGA_EMULATION_MAX`
   for the agents). First step: record which limit ended each failure
   (the `@stat` line has `end=timeout`, `tests/README.md` "Test statistics").
+- [ ] **Test model beyond the library tests** (OpenSpec change
+  `libs-tests-capture`): the shared model (`tests/README.md`, "The test
+  model") and the fix-scope check are implemented for the library tests
+  (`libs/tests/expected`) only. Open:
+  * bug-orig: the recording test becomes a compare, a recording target
+    accepts only agreeing runs, the files known to vary get a wildcard
+    with a reason;
+  * corpus: the `notes.tsv` rows become `[orig]`/`[fixed #N]` cases; both
+    then get the fix-scope check without a second tool;
+  * pure compute libraries: explicit setup/act/verify asserts instead of
+    captured values;
+  * a cheaper writer for block observations (`libs/tests/capture.c`,
+    `line_begin`: a `snprintf` and a byte loop per observation; the two
+    block programs take about 2.5 and 3 minutes of the emulator run);
+  * `LIBS_CAP_DUMP` (the bytes of a case or block) has no option in
+    `libs/tests/emulator.cmake`.
 - [ ] **rwe_residents_cd compares bytes**: since #970 Create Resident of
   blitz2-c writes 0 into the bytes the loaders do not read (pad bytes,
   a constant's data and procnum, pointer remains), so its residents are
