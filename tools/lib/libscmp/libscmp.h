@@ -211,6 +211,49 @@ int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *co
                         size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
                         FILE *err);
 
+/* --- fix-scope (design D12) -------------------------------------------- */
+
+/* issue numbers */
+struct libscmp_issues {
+    uint32_t *v;
+    size_t n, cap;
+};
+
+/** @brief Add issue n (once); 0 = ok, -1 = out of memory. */
+int libscmp_issues_add(struct libscmp_issues *is, uint32_t n);
+/** @brief The issues of the lines "Fixes #N" of commit messages (leading
+ * and trailing blanks allowed, nothing else on the line); 0 = ok, -1 = out
+ * of memory. */
+int libscmp_issues_from_log(struct libscmp_issues *is, const char *log);
+void libscmp_issues_free(struct libscmp_issues *is);
+
+/**
+ * @brief The cases a branch changes in a program's expected data that are
+ * not its own: every case (a key with its qualifier) added, changed or
+ * removed from base to branch is reported unless it is a [fixed #N] case
+ * of a named issue, the [orig] case paired with one (the same key has a
+ * [fixed #N] case of a named issue in the branch, or for a removed [orig]
+ * case in base), or an unqualified case that became such a pair.  A line
+ * per reported case: "NAME: KEY [QUAL]: added (VALUE)", "...: changed
+ * (BASE -> BRANCH)", "...: removed (VALUE)".
+ * @param base    the program's expected data before, or NULL (a new file)
+ * @param branch  the same on the branch, or NULL (a removed file)
+ * @param nchanged  set to the number of cases added, changed or removed
+ * @return the number of cases reported
+ */
+size_t libscmp_fix_scope(const struct libscmp_file *base, const struct libscmp_file *branch,
+                         const struct libscmp_issues *is, FILE *report, size_t *nchanged);
+
+/**
+ * @brief fix-scope on directories: the expected data BASE_DIR/NAME.txt
+ * (of main) against BRANCH_DIR/NAME.txt (of the branch), every NAME of
+ * both directories.
+ * @return 0 = only the named issues' cases changed, 1 = a case reported,
+ *         2 = error (a malformed or unreadable file or directory)
+ */
+int libscmp_fix_scope_dirs(const char *base_dir, const char *branch_dir,
+                           const struct libscmp_issues *is, FILE *out, FILE *err);
+
 #ifdef __cplusplus
 }
 #endif

@@ -785,8 +785,138 @@ static void test_accept_dirs(void)
     }
 }
 
+/* --- fix-scope ---------------------------------------------------------- */
+
+/* fix-scope of base against branch (NULL: no file) with the issues of
+   log; the number of cases reported, the report in report */
+static size_t scope(const char *base, const char *branch, const char *log, size_t *nchanged)
+{
+    struct libscmp_file b, r;
+    struct libscmp_issues is = { 0 };
+    size_t n;
+    FILE *m;
+
+    free(report);
+    report = NULL;
+    CHECK(libscmp_issues_from_log(&is, log) == 0);
+    if (base)
+        CHECK(parse(&b, base, LIBSCMP_EXPECTED) == 0);
+    if (branch)
+        CHECK(parse(&r, branch, LIBSCMP_EXPECTED) == 0);
+    m = open_memstream(&report, &reportlen);
+    n = libscmp_fix_scope(base ? &b : NULL, branch ? &r : NULL, &is, m, nchanged);
+    fclose(m);
+    if (base)
+        libscmp_free(&b);
+    if (branch)
+        libscmp_free(&r);
+    libscmp_issues_free(&is);
+    return n;
+}
+
+static void test_fix_scope(void)
+{
+    static const char base[] = HDR "r|a||1\t$0\nr|b||1\t$1\nr|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n";
+    static const char own[] = HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #7]\t$5\nr|b||1\t$1\n"
+                              "r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n";
+    struct libscmp_issues is = { 0 };
+    size_t nch;
+
+    /* the commit messages: lines "Fixes #N" only */
+    CHECK(libscmp_issues_from_log(&is, "fix: x\n\nFixes #12\n  Fixes #3  \nFixes #4.\nfixes #5\n"
+                                       "Refixes #6\nFixes #07\nFixes #8, #9\nFixes #\nFixes #12\nFixes #13") == 0);
+    CHECK(is.n == 3 && is.v[0] == 12 && is.v[1] == 3 && is.v[2] == 13);
+    libscmp_issues_free(&is);
+
+    /* only the fix's own cases: the pair replacing the unqualified case */
+    CHECK(scope(base, own, "Fixes #7\n", &nch) == 0 && nch == 3);
+    CHECK(!*report);
+    /* ... and a [fixed #7] value changed again, the [orig] value too */
+    CHECK(scope(own, HDR "r|a||1 [orig]\t$1\nr|a||1 [fixed #7]\t$6\nr|b||1\t$1\n"
+                     "r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n", "Fixes #7", &nch) == 0 && nch == 2);
+    /* ... a case of the port only, added */
+    CHECK(scope(base, HDR "r|a||1\t$0\nr|b||1\t$1\nr|new||1 [fixed #7]\t$1\nr|p||1 [orig]\t$3\n"
+                      "r|p||1 [fixed #8]\t$4\n", "Fixes #7", &nch) == 0 && nch == 1);
+    /* ... unchanged files */
+    CHECK(scope(base, base, "", &nch) == 0 && nch == 0);
+    /* a changed unqualified case */
+    CHECK(scope(base, HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #7]\t$5\nr|b||1\t$2\n"
+                      "r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n", "Fixes #7", &nch) == 1 && nch == 4);
+    CHECK(!strcmp(report, "prog: r|b||1: changed ($1 -> $2)\n"));
+    /* a changed [fixed #M] case of another issue, and its [orig] */
+    CHECK(scope(base, HDR "r|a||1\t$0\nr|b||1\t$1\nr|p||1 [orig]\t$9\nr|p||1 [fixed #8]\t$5\n",
+                "Fixes #7", &nch) == 2 && nch == 2);
+    CHECK(strstr(report, "prog: r|p||1 [fixed #8]: changed ($4 -> $5)\n")
+          && strstr(report, "prog: r|p||1 [orig]: changed ($3 -> $9)\n"));
+    /* ... a [fixed #8] that became [fixed #7]: #8 removed, #7 own */
+    CHECK(scope(base, HDR "r|a||1\t$0\nr|b||1\t$1\nr|p||1 [orig]\t$3\nr|p||1 [fixed #7]\t$4\n",
+                "Fixes #7", &nch) == 1 && nch == 2);
+    CHECK(!strcmp(report, "prog: r|p||1 [fixed #8]: removed ($4)\n"));
+    /* no "Fixes #N" line: every change */
+    CHECK(scope(base, own, "fix: no issue\n", &nch) == 3 && nch == 3);
+    CHECK(strstr(report, "prog: r|a||1: removed ($0)\n") && strstr(report, "prog: r|a||1 [orig]: added ($0)\n")
+          && strstr(report, "prog: r|a||1 [fixed #7]: added ($5)\n"));
+    /* added and removed unqualified cases */
+    CHECK(scope(base, HDR "r|b||1\t$1\nr|c||1\t$1\nr|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n",
+                "Fixes #7\nFixes #8", &nch) == 2);
+    CHECK(strstr(report, "prog: r|a||1: removed ($0)\n") && strstr(report, "prog: r|c||1: added ($1)\n"));
+    /* a case the fix removes ([orig] alone) names no issue: reported */
+    CHECK(scope(base, HDR "r|a||1 [orig]\t$0\nr|b||1\t$1\nr|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n",
+                "Fixes #7", &nch) == 2 && nch == 2);
+    /* the pair of a named issue removed again (the fix reverted) */
+    CHECK(scope(base, HDR "r|a||1\t$0\nr|b||1\t$1\nr|p||1\t$3\n", "Fixes #8", &nch) == 1 && nch == 3);
+    CHECK(!strcmp(report, "prog: r|p||1: added ($3)\n"));
+    /* a new and a removed file */
+    CHECK(scope(NULL, own, "Fixes #7\nFixes #8", &nch) == 1 && nch == 5);
+    CHECK(strstr(report, "prog: r|a||1 [orig]: added") == NULL && strstr(report, "prog: r|b||1: added ($1)\n"));
+    CHECK(scope(base, NULL, "", &nch) == 4 && nch == 4);
+}
+
+/* fix-scope on directories, a malformed file */
+static void test_fix_scope_dirs(void)
+{
+    struct libscmp_issues is = { 0 };
+    char *e = NULL;
+    size_t elen;
+    FILE *m, *x;
+    int s;
+
+    mkdir("libscmp-scope", 0777);
+    mkdir("libscmp-scope/base", 0777);
+    mkdir("libscmp-scope/branch", 0777);
+    put_file("libscmp-scope/base", "a", "# capture a 1\nr|c||1\t$0\n");
+    put_file("libscmp-scope/branch", "a", "# capture a 1\nr|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$1\n");
+    put_file("libscmp-scope/base", "b", "# capture b 1\nr|c||1\t$0\n");
+    put_file("libscmp-scope/branch", "b", "# capture b 1\nr|c||1\t$0\n");
+    CHECK(libscmp_issues_add(&is, 7) == 0);
+#define SCOPE() do { \
+        free(report); \
+        m = open_memstream(&report, &reportlen); \
+        x = open_memstream(&e, &elen); \
+        s = libscmp_fix_scope_dirs("libscmp-scope/base", "libscmp-scope/branch", &is, m, x); \
+        fclose(m); \
+        fclose(x); \
+    } while (0)
+    SCOPE();
+    CHECK(s == 0 && strstr(report, "fix-scope: 3 cases changed in 1 programs, 0 not of the issues #7\n"));
+    free(e);
+    put_file("libscmp-scope/branch", "b", "# capture b 1\nr|c||1\t$9\n");
+    SCOPE();
+    CHECK(s == 1 && strstr(report, "b: r|c||1: changed ($0 -> $9)\n")
+          && strstr(report, "fix-scope: 4 cases changed in 2 programs, 1 not of the issues #7\n"));
+    free(e);
+    put_file("libscmp-scope/branch", "b", "# capture b 1\nr|c||1\t$9\nr|c||1 [orig]\t$0\n");
+    SCOPE();
+    CHECK(s == 2 && strstr(e, "libscmp-scope/branch/b.txt:3: r|c||1 is unqualified and qualified"));
+    free(e);
+#undef SCOPE
+    libscmp_issues_free(&is);
+}
+
 int main(void)
 {
+    test_fix_scope();
+    test_fix_scope_dirs();
     test_equal();
     test_changed();
     test_missing_added();

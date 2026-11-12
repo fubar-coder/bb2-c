@@ -267,6 +267,42 @@ add_test(NAME libs_accept_lost_names COMMAND results libs-accept ${lc}/accept/lo
 set_tests_properties(libs_accept_lost_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "prog: r\\|ldiv\\|\\|1: lost d3: the original does not keep a stated register")
 
+# results fix-scope (design D12): the fix's own pair passes; a changed
+# unqualified case, a changed case of another issue and a change without a
+# "Fixes #N" line are named; a malformed file fails.  fix_scope_target: the
+# target's script (cmake/fix-scope.cmake) on a throwaway git repository.
+file(WRITE ${lc}/scope/base/prog.txt "${lc_head}r|c||1\t$0\nr|d||1\t$1\nr|p||1 [orig]\t$3\n"
+	"r|p||1 [fixed #8]\t$4\n")
+file(WRITE ${lc}/scope/own/prog.txt "${lc_head}r|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$5\nr|d||1\t$1\n"
+	"r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$4\n")
+file(WRITE ${lc}/scope/other/prog.txt "${lc_head}r|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$5\nr|d||1\t$2\n"
+	"r|p||1 [orig]\t$3\nr|p||1 [fixed #8]\t$6\n")
+file(WRITE ${lc}/scope/malformed/prog.txt "${lc_head}r|c||1\t$0\nr|c||1 [fixed #7]\t$5\n")
+file(WRITE ${lc}/scope/log.txt "fix: c\n\nFixes #7\n")
+file(WRITE ${lc}/scope/nolog.txt "fix: c\n\nNo issue.\n")
+add_test(NAME fix_scope_own COMMAND results fix-scope --log ${lc}/scope/log.txt ${lc}/scope/base
+	${lc}/scope/own)
+foreach(t
+		"unqualified;--fixes;7;other;prog: r\\|d\\|\\|1: changed \\(\\$1 -> \\$2\\)"
+		"other_issue;--fixes;7;other;prog: r\\|p\\|\\|1 \\[fixed #8\\]: changed \\(\\$4 -> \\$6\\)"
+		"no_fixes;--log;${lc}/scope/nolog.txt;own;prog: r\\|c\\|\\|1 \\[fixed #7\\]: added \\(\\$5\\)"
+		"malformed;--fixes;7;malformed;malformed/prog.txt:3: r\\|c\\|\\|1 is unqualified and qualified")
+	list(GET t 0 name)
+	list(GET t 1 opt)
+	list(GET t 2 arg)
+	list(GET t 3 branch)
+	list(GET t 4 re)
+	add_test(NAME fix_scope_wrong_${name} COMMAND results fix-scope ${opt} ${arg} ${lc}/scope/base
+		${lc}/scope/${branch})
+	set_tests_properties(fix_scope_wrong_${name} PROPERTIES WILL_FAIL ON)
+	add_test(NAME fix_scope_wrong_${name}_names COMMAND results fix-scope ${opt} ${arg} ${lc}/scope/base
+		${lc}/scope/${branch})
+	set_tests_properties(fix_scope_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
+add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
+	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/fix-scope.cmake
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/fix-scope-target -P ${CMAKE_CURRENT_SOURCE_DIR}/fix_scope_target.cmake)
+
 # the command-line shell of the host programs (tools/lib/cli): cli::run
 add_executable(test_cli test_cli.cpp)
 target_link_libraries(test_cli PRIVATE lib_cli snitch::snitch)

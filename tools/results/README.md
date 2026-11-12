@@ -9,7 +9,9 @@ TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
 original TED (`ted-oracle`), the cases of a library test run against
 the expected data `libs/tests/expected` (`libs-compare`), and that
 expected data written from two recording runs of the original
-(`libs-accept`) or from a run of the port (`libs-update`). The logic is in
+(`libs-accept`) or from a run of the port (`libs-update`), and the cases
+of the expected data a branch changes beyond the issues it fixes
+(`fix-scope`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
 `tools/lib/cdtable`, `tools/lib/oracletable` and `tools/lib/libscmp`,
 tested by `tools/tests/test_outmatch.c`, `test_prevcmp.c`,
@@ -38,6 +40,7 @@ SUBCOMMANDS:
   libs-accept                 the expected data of the library tests from two recording runs of
                               the original
   libs-update                 the [fixed #N] cases of the library tests from a run of the port
+  fix-scope                   the cases of the expected data a branch changes beyond its issues
 ```
 
 ### match
@@ -321,6 +324,46 @@ whose port value is the expected one, or whose key is qualified already,
 is refused. The programs are those of `EXPECTED_DIR` or the ones `--only`
 names. Nothing is written unless all is well.
 
+### fix-scope
+
+```
+Usage: results fix-scope [OPTIONS] BASE_DIR BRANCH_DIR
+
+the cases of the expected data a branch changes beyond its issues
+
+POSITIONALS:
+  BASE_DIR TEXT REQUIRED      the expected data of main (NAME.txt per program)
+  BRANCH_DIR TEXT REQUIRED    the expected data of the branch
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --fixes N           an issue the branch fixes
+          --log FILE          commit messages: their lines "Fixes #N" name issues too
+
+Every case (a key with its qualifier) added, changed or removed is reported
+unless it is a "[fixed #N]" case of a named issue, the "[orig]" case paired with
+one, or an unqualified case that became such a pair. Exit status 0 nothing
+reported, 1 a case reported, 2 usage error or a malformed or unreadable file.
+```
+
+The check before a fix is merged (design D12 of the OpenSpec change
+`libs-tests-capture`): compares the expected data of `main`, `BASE_DIR`,
+with the branch's, `BRANCH_DIR` (`NAME.txt` per program, as for
+`libs-compare`). The issues of the branch are the `--fixes N` and the
+lines `Fixes #N` of the commit messages in `--log FILE` (nothing else on
+the line but blanks). Every case, a key with its qualifier, that is
+added, changed or removed is reported, `NAME: KEY [QUAL]: added (VALUE)`,
+`changed (BASE -> BRANCH)` or `removed (VALUE)`, unless it is a
+`[fixed #N]` case of a named issue, the `[orig]` case of such a pair, or
+the unqualified case that became such a pair. A case the fix removes (an
+`[orig]` case alone) names no issue and is reported; without any issue
+every change is. A reported case is no error by itself: it is reviewed
+and named in the commit with its reason, or gets its own issue. The last
+line counts the changed and the reported cases. The target `fix-scope`
+(`cmake/fix-scope.cmake`, `FIX_SCOPE_BASE`, default `main`) exports the
+base files of the merge base with `git archive` into the build directory
+and runs this against the checkout with the log of the branch's commits.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
@@ -329,7 +372,8 @@ build directories and writes its report to stdout; `cd-update` and
 lists of hashes and writes the third; `libs-compare` reads two
 directories and writes its report to stdout, `libs-accept` and
 `libs-update` read the run directories and rewrite files of the expected
-data.
+data, `fix-scope` reads two directories (and a log) and writes its report
+to stdout.
 
 ## Exit codes
 
@@ -340,14 +384,14 @@ data.
   data have errors (nothing written); a case of a library test run
   differs, is missing or added, or a program lacks a file
   (`libs-compare`); the runs are refused, nothing written (`libs-accept`,
-  `libs-update`);
+  `libs-update`); a case changed beyond the named issues (`fix-scope`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
-  files (`libs-compare`, `libs-accept`, `libs-update`), a file that cannot
-  be written (`libs-accept`, `libs-update`);
+  files (`libs-compare`, `libs-accept`, `libs-update`, `fix-scope`), a
+  file that cannot be written (`libs-accept`, `libs-update`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -370,6 +414,9 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   `libs_accept_*` (`tools/tests/CMakeLists.txt`); the library emulator
   tests and the targets `libs-capture` and `libs-update` follow (OpenSpec
   change `libs-tests-capture`).
+* `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
+  `cmake/fix-scope.cmake`); the tests `fix_scope_*`
+  (`tools/tests/CMakeLists.txt`).
 * Tests: `help_results`, `readme_results` (`tools/results/CMakeLists.txt`).
 
 ## Example

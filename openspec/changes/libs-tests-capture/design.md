@@ -459,6 +459,19 @@ and `[fixed #M]` case. The check works on the expected data of the shared
 model, so the follow-ups for bug-orig and the corpus get it without a
 second tool.
 
+Decided with the check (task 2.7, `tools/results/README.md` "fix-scope"):
+the base is the merge base of `BASE` and `HEAD` (exported with
+`git archive`, the checkout untouched), the branch side is the working
+tree of the checkout, the issues are the lines `Fixes #N` (alone on their
+line) of the commits `BASE..HEAD`. The target takes the base from the
+cache variable `FIX_SCOPE_BASE` (default `main`), which it passes to
+`cmake/fix-scope.cmake` as `-DBASE`. A case is a key with its qualifier,
+so a `[fixed #8]` that becomes `[fixed #7]` is a removal and an addition.
+Allowed are a `[fixed #N]` case of a named issue, the `[orig]` case of
+such a pair, and the unqualified case that became such a pair; a case the
+fix removes (an `[orig]` case alone) carries no issue number and is
+reported, to be named in the commit.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the

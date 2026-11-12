@@ -155,6 +155,18 @@ add_custom_target(coverage-map
 	USES_TERMINAL
 	COMMENT "Coverage of each test as lcov tracefile: ${CMAKE_BINARY_DIR}/coverage/lcov/")
 add_dependencies(coverage-map host_tools)
+# the cases of the expected data a branch changes beyond the issues of its
+# "Fixes #N" lines, against FIX_SCOPE_BASE (cmake/fix-scope.cmake, results
+# fix-scope; not part of ALL: run by the agent of a fix and before a merge)
+set(FIX_SCOPE_BASE main CACHE STRING "fix-scope: the branch the checkout is compared with")
+add_custom_target(fix-scope
+	COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS} -DSOURCE=${PROJECT_SOURCE_DIR}
+		-DBASE=${FIX_SCOPE_BASE} -DWORK=${CMAKE_BINARY_DIR}/fix-scope
+		-P ${PROJECT_SOURCE_DIR}/cmake/fix-scope.cmake
+	USES_TERMINAL
+	COMMENT "Expected data changed beyond the issues of the branch (against ${FIX_SCOPE_BASE})"
+	VERBATIM)
+add_dependencies(fix-scope host_tools)
 
 add_subdirectory(shared/edstub)
 add_subdirectory(shared/xtra)

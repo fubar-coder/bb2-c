@@ -36,8 +36,8 @@ static std::vector<const char *> c_strings(const std::vector<std::string> &v)
     return r;
 }
 
-/* fn(err) with its error messages prefixed by "results SUB: " on stderr */
-static int prefixed(const std::string &name, const std::function<int(FILE *)> &fn)
+/* fn(err) with its error messages prefixed (results.h) */
+int prefixed(const std::string &name, const std::function<int(FILE *)> &fn)
 {
     char *text = NULL;
     size_t len = 0;
