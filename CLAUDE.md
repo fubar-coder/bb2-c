@@ -27,11 +27,13 @@ cmake --preset amiga && cmake --build --preset amiga   # result: build/amiga/bli
 ctest --preset host                                    # tests without emulator (seconds)
 ctest --preset emulator                                # tests in Amiberry
 ctest --preset all                                     # host and emulator: the acceptance run, needs no CD for
-                                                       # most tests (without it skips corpus_cd, corpus_cd_ab3,
-                                                       # libs_emulator, rwe_refbuild)
+                                                       # most tests (without it skips only corpus_cd,
+                                                       # corpus_cd_ab3); libs_emulator replays the
+                                                       # recordings of libs/tests/tapes
 ctest --preset bug-orig                                # open original bugs and port bugs: fail on purpose
 ctest --preset originals                               # label originals: comparisons with the originals, recording
-                                                       # of tests/bug-orig/*/*.orig; needs the CD
+                                                       # of tests/bug-orig/*/*.orig, libs_emulator_originals,
+                                                       # the corpus configuration orig-clib; needs the CD
 ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
                                                        # run it before merging changes of tests/ab3
 ```
