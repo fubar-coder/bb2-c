@@ -402,7 +402,11 @@ and the runs of task 1.4. This is not a proof of determinism.
   written as `not captured: Rnd of vallib takes the wheels from hardware
   timing`, and the round trip (Decrypt restores the data) stays checked
   inside the run as a check that holds for the one set (`check()`).
-  Decided during implementation.
+  Decided (task 5.1): vallib's `Rnd` has no seed state, so the program
+  loads no vallib and answers its token with a stub (`sysload_stubs`, a
+  fixed 16-bit sequence, every register but d0 kept); the random part is
+  then deterministic and observed (wheels, data, Rnd calls), nothing is
+  `not captured`.
 - `ciatrklib`: in the F00 phase the original writes DMACON through
   `$DFF096` into the hardware, the C build through its patched pointer into
   a RAM copy (`rwe/ciatrklib.c`, the comment above `dmaconr`). The
