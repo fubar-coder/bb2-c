@@ -447,6 +447,344 @@ static void test_large(void)
     libscmp_free(&e);
 }
 
+/* --- libs-accept and libs-update --------------------------------------- */
+
+static char *result;            /* the file written, NULL = refused */
+
+/* accept two runs (old: the expected data so far, NULL = none) */
+static int accept2(const char *run1, const char *run2, const char *old)
+{
+    struct libscmp_file a, b, o;
+    FILE *m;
+    int s;
+
+    free(report);
+    free(result);
+    report = result = NULL;
+    CHECK(parse(&a, run1, LIBSCMP_RUN) == 0);
+    CHECK(parse(&b, run2, LIBSCMP_RUN) == 0);
+    if (old)
+        CHECK(parse(&o, old, LIBSCMP_EXPECTED) == 0);
+    m = open_memstream(&report, &reportlen);
+    s = libscmp_accept(&a, &b, old ? &o : NULL, &result, m);
+    fclose(m);
+    CHECK((s == 0) == (result != NULL));
+    libscmp_free(&a);
+    libscmp_free(&b);
+    if (old)
+        libscmp_free(&o);
+    return s;
+}
+
+static void test_accept(void)
+{
+    static const char run[] = HDR "r|a||1\t$0\nr|find||1\t$1\nr|c||1\tkept\n";
+
+    /* equal runs: the run's cases, unqualified */
+    CHECK(accept2(run, run, NULL) == 0 && !strcmp(result, run));
+    CHECK(strstr(report, "prog: 3 cases of the original, 0 [fixed #N] cases kept\n"));
+    CHECK(accept2(run, run, HDR "r|a||1\t$5\nr|gone||1\t$5\n") == 0 && !strcmp(result, run));
+    CHECK(strstr(report, "prog: r|gone||1: not in the original's run any more, removed\n"));
+    /* a [fixed #N] case is kept, the original's value becomes [orig] */
+    {
+        static const char old[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$9\nr|find||1 [fixed #7]\t$0\n"
+                                  "r|c||1\tkept\n";
+        static const char want[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
+                                   "r|c||1\tkept\n";
+
+        CHECK(accept2(run, run, old) == 0 && !strcmp(result, want));
+        CHECK(strstr(report, "1 [fixed #N] cases kept"));
+        /* again on its own output: nothing changes */
+        CHECK(accept2(run, run, want) == 0 && !strcmp(result, want));
+    }
+    /* a case of the port only stays after the case it followed; an [orig]
+       case alone stays [orig] or goes when the run lacks it */
+    {
+        static const char old[] = HDR "r|new0||1 [fixed #3]\t$3\nr|a||1\t$0\nr|new||1 [fixed #8]\t$5\n"
+                                  "r|find||1 [orig]\t$1\nr|old||1 [orig]\t$4\nr|c||1\tkept\n";
+        static const char want[] = HDR "r|new0||1 [fixed #3]\t$3\nr|a||1\t$0\nr|new||1 [fixed #8]\t$5\n"
+                                   "r|find||1 [orig]\t$1\nr|c||1\tkept\n";
+
+        CHECK(accept2(run, run, old) == 0 && !strcmp(result, want));
+        CHECK(strstr(report, "prog: r|new||1 [fixed #8]: not in the original's run, kept as a case "
+                             "of the port only"));
+        CHECK(strstr(report, "prog: r|old||1 [orig]: not in the original's run any more, removed\n"));
+        CHECK(strstr(report, "2 [fixed #N] cases kept"));
+    }
+    /* the runs differ: nothing, and the differing cases */
+    CHECK(accept2(run, HDR "r|a||1\t$0\nr|find||1\t$2\nr|c||1\tkept\n", NULL) == 1 && !result);
+    CHECK(strstr(report, "test not deterministic: prog\n")
+          && strstr(report, "prog: r|find||1: run 1 $1, run 2 $2\n") && !strstr(report, "r|a||1"));
+    CHECK(accept2(run, HDR "r|a||1\t$0\nr|c||1\tkept\nr|x||1\t$0\n", NULL) == 1);
+    CHECK(strstr(report, "prog: r|find||1: only in run 1 ($1)\n")
+          && strstr(report, "prog: r|x||1: only in run 2 ($0)\n"));
+    CHECK(accept2(run, HDR "r|find||1\t$1\nr|a||1\t$0\nr|c||1\tkept\n", NULL) == 1);
+    CHECK(strstr(report, "test not deterministic: prog\nprog: the same cases in another order\n"));
+    /* a lost register: refused */
+    CHECK(accept2(HDR "r|a||1\t$0\nr|c||1\tlost d3 a1\n", HDR "r|a||1\t$0\nr|c||1\tlost d3 a1\n",
+                  NULL) == 1);
+    CHECK(strstr(report, "prog: r|c||1: lost d3 a1: the original does not keep a stated register")
+          && strstr(report, "prog: refused: 1 cases lost\n"));
+    CHECK(accept2(HDR "r|c||1\tlost\n", HDR "r|c||1\tlost\n", NULL) == 1);
+    CHECK(accept2(HDR "r|c||1\tlostx\n", HDR "r|c||1\tlostx\n", NULL) == 0);
+}
+
+static struct libscmp_fix fixes[4];
+
+/* update exp from run with the fixes "KEY#N" (NULL-terminated) */
+static int update(const char *run, const char *exp, const char *const *fix)
+{
+    struct libscmp_file r, e;
+    size_t n = 0;
+    FILE *m;
+    int s;
+
+    free(report);
+    free(result);
+    report = result = NULL;
+    for (n = 0; n < 4; n++)
+        libscmp_fix_free(&fixes[n]);
+    for (n = 0; fix && fix[n]; n++)
+        CHECK(libscmp_parse_fix(fix[n], &fixes[n], err, sizeof err) == 0);
+    CHECK(parse(&r, run, LIBSCMP_RUN) == 0);
+    CHECK(parse(&e, exp, LIBSCMP_EXPECTED) == 0);
+    m = open_memstream(&report, &reportlen);
+    s = libscmp_update(&r, &e, fixes, n, &result, m);
+    fclose(m);
+    libscmp_free(&r);
+    libscmp_free(&e);
+    return s;
+}
+
+static void test_update(void)
+{
+    static const char exp[] = HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
+                              "r|old||1 [orig]\t$4\nr|c||1\tkept\n";
+
+    /* the [fixed #N] values from the port, nothing else */
+    CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$2\nr|c||1\tkept\n", exp, NULL) == 0);
+    CHECK(!strcmp(result, HDR "r|a||1\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$2\n"
+                          "r|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+    CHECK(strstr(report, "prog: r|find||1 [fixed #7]: $2, was $0\n") && strstr(report, "1 cases changed"));
+    /* an unqualified case the port gives otherwise: reported, not touched */
+    CHECK(update(HDR "r|a||1\t$3\nr|find||1\t$0\nr|c||1\tkept\n", exp, NULL) == 0 && !strcmp(result, exp));
+    CHECK(strstr(report, "prog: r|a||1: the port gives $3, expected $0 (not touched"));
+    CHECK(strstr(report, "0 cases changed"));
+    /* --fix: the pair, at the place of the case */
+    {
+        static const char *const fix[] = { "r|a||1#12", NULL };
+
+        CHECK(update(HDR "r|a||1\t$3\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|a||1 [fixed #12]\t$3\nr|find||1 [orig]\t$1\n"
+                              "r|find||1 [fixed #7]\t$0\nr|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+        CHECK(fixes[0].applied == 1 && strstr(report, "prog: r|a||1: the pair [orig] $0, [fixed #12] $3\n"));
+        /* ... the port gives the expected value: nothing to fix */
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0 && !strcmp(result, exp));
+        CHECK(fixes[0].applied == 0 && fixes[0].same == 1);
+        /* ... the port lacks the case: [orig] alone */
+        CHECK(update(HDR "r|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(!strcmp(result, HDR "r|a||1 [orig]\t$0\nr|find||1 [orig]\t$1\nr|find||1 [fixed #7]\t$0\n"
+                              "r|old||1 [orig]\t$4\nr|c||1\tkept\n"));
+        CHECK(fixes[0].applied == 1 && strstr(report, "r|a||1 [orig]: not in the port's run, a case of the original only (#12)"));
+    }
+    /* --fix of a case only the port has: [fixed #N] after the case before it */
+    {
+        static const char *const fix[] = { "r|new||1#9", "r|new0||1#9", NULL };
+
+        CHECK(update(HDR "r|new0||1\t$8\nr|a||1\t$0\nr|find||1\t$0\nr|new||1\t$5\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(!strcmp(result, HDR "r|new0||1 [fixed #9]\t$8\nr|a||1\t$0\nr|find||1 [orig]\t$1\n"
+                              "r|find||1 [fixed #7]\t$0\nr|new||1 [fixed #9]\t$5\nr|old||1 [orig]\t$4\n"
+                              "r|c||1\tkept\n"));
+        CHECK(fixes[0].applied == 1 && fixes[1].applied == 1);
+        CHECK(strstr(report, "prog: r|new||1 [fixed #9]: added ($5), a case of the port only\n"));
+    }
+    /* --fix of a qualified key */
+    {
+        static const char *const fix[] = { "r|find||1#9", "r|old||1#9", NULL };
+
+        CHECK(update(HDR "r|a||1\t$0\nr|find||1\t$0\nr|c||1\tkept\n", exp, fix) == 0);
+        CHECK(fixes[0].qualified == 1 && fixes[0].applied == 0 && fixes[1].qualified == 1);
+    }
+    /* a [fixed #N] case the port's run lacks: refused */
+    CHECK(update(HDR "r|a||1\t$0\nr|c||1\tkept\n", exp, NULL) == 1 && !result);
+    CHECK(strstr(report, "prog: r|find||1 [fixed #7]: not in the port's run\n")
+          && strstr(report, "prog: refused: 1 [fixed #N] cases not in the port's run\n"));
+    /* the syntax of --fix */
+    {
+        struct libscmp_fix f;
+
+        CHECK(libscmp_parse_fix("r|c #1|v|2#15", &f, err, sizeof err) == 0 && f.issue == 15
+              && f.keylen == 10 && !memcmp(f.key, "r|c #1|v|2", 10));
+        libscmp_fix_free(&f);
+        CHECK(libscmp_parse_fix("BLOCK:3#4", &f, err, sizeof err) == 0 && f.issue == 4);
+        libscmp_fix_free(&f);
+        CHECK(libscmp_parse_fix("r|c|v|1", &f, err, sizeof err) == -1 && strstr(err, "--fix r|c|v|1: not KEY#N"));
+        CHECK(libscmp_parse_fix("r|c|v|1#0", &f, err, sizeof err) == -1);
+        CHECK(libscmp_parse_fix("r|c|v|1#", &f, err, sizeof err) == -1);
+        CHECK(libscmp_parse_fix("#5", &f, err, sizeof err) == -1);
+        CHECK(libscmp_parse_fix("r|c|v|1#5x", &f, err, sizeof err) == -1);
+        CHECK(libscmp_parse_fix("r|c|1#5", &f, err, sizeof err) == -1 && strstr(err, "--fix r|c|1#5: the key needs"));
+        CHECK(libscmp_parse_fix("r|c|v|1 [orig]#5", &f, err, sizeof err) == -1 && strstr(err, "a qualifier"));
+    }
+    for (size_t n = 0; n < 4; n++)
+        libscmp_fix_free(&fixes[n]);
+}
+
+/* the file dir/name.txt holds text */
+static int holds(const char *dir, const char *name, const char *text)
+{
+    char path[300], *s;
+    size_t len;
+    FILE *f;
+    int r;
+
+    snprintf(path, sizeof path, "%s/%s.txt", dir, name);
+    if (!(f = fopen(path, "rb")))
+        return 0;
+    s = malloc(strlen(text) + 2);
+    len = fread(s, 1, strlen(text) + 1, f);
+    fclose(f);
+    r = len == strlen(text) && !memcmp(s, text, len);
+    free(s);
+    return r;
+}
+
+/* accept and update on directories: all or nothing, the filter */
+static void test_accept_dirs(void)
+{
+    static const char *const files[] = { "r1/a", "r1/b", "r2/a", "r2/b", "exp/a", "exp/b", "exp/c" };
+    static const char a_exp[] = "# capture a 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #7]\t$0\n";
+    static const char b_old[] = "# capture b 1\nr|c||1\t$0\n";
+    char path[100], *e = NULL;
+    size_t i, elen;
+    FILE *m, *x;
+    const char *only_b[] = { "b" };
+
+    for (i = 0; i < sizeof files / sizeof *files; i++) {
+        snprintf(path, sizeof path, "libscmp-acc/%s.txt", files[i]);
+        unlink(path);
+    }
+    mkdir("libscmp-acc", 0777);
+    mkdir("libscmp-acc/r1", 0777);
+    mkdir("libscmp-acc/r2", 0777);
+    mkdir("libscmp-acc/exp", 0777);
+    put_file("libscmp-acc/r1", "a", "# capture a 1\nr|c||1\t$2\n");
+    put_file("libscmp-acc/r2", "a", "# capture a 1\nr|c||1\t$2\n");
+    put_file("libscmp-acc/r1", "b", "# capture b 1\nr|c||1\t$1\n");
+    put_file("libscmp-acc/r2", "b", "# capture b 1\nr|c||1\t$2\n");
+    put_file("libscmp-acc/exp", "a", a_exp);
+    put_file("libscmp-acc/exp", "b", b_old);
+#define ACCEPT(only, n) do { \
+        free(report); \
+        m = open_memstream(&report, &reportlen); \
+        x = open_memstream(&e, &elen); \
+        status = libscmp_accept_dirs("libscmp-acc/r1", "libscmp-acc/r2", "libscmp-acc/exp", only, n, m, x); \
+        fclose(m); \
+        fclose(x); \
+    } while (0)
+    {
+        int status;
+
+        /* b is not deterministic: nothing written, a stays too */
+        ACCEPT(NULL, 0);
+        CHECK(status == 1 && strstr(report, "test not deterministic: b\nb: r|c||1: run 1 $1, run 2 $2\n")
+              && strstr(report, "libs-accept: nothing written\n"));
+        CHECK(holds("libscmp-acc/exp", "a", a_exp) && holds("libscmp-acc/exp", "b", b_old));
+        free(e);
+        /* the filter: only b, refused; then b deterministic, only b written */
+        ACCEPT(only_b, 1);
+        CHECK(status == 1 && holds("libscmp-acc/exp", "b", b_old));
+        free(e);
+        put_file("libscmp-acc/r2", "b", "# capture b 1\nr|c||1\t$1\n");
+        put_file("libscmp-acc/r1", "a", "# capture a 1\nr|c||1\t$3\n");
+        ACCEPT(only_b, 1);
+        CHECK(status == 0 && holds("libscmp-acc/exp", "b", "# capture b 1\nr|c||1\t$1\n")
+              && holds("libscmp-acc/exp", "a", a_exp));
+        CHECK(strstr(report, "written: libscmp-acc/exp/b.txt\n1 files written, 0 unchanged\n"));
+        free(e);
+        /* all: a's runs differ now */
+        ACCEPT(NULL, 0);
+        CHECK(status == 1 && strstr(report, "test not deterministic: a\n"));
+        free(e);
+        put_file("libscmp-acc/r1", "a", "# capture a 1\nr|c||1\t$2\n");
+        ACCEPT(NULL, 0);
+        CHECK(status == 0 && holds("libscmp-acc/exp", "a", "# capture a 1\nr|c||1 [orig]\t$2\nr|c||1 [fixed #7]\t$0\n"));
+        CHECK(strstr(report, "1 files written, 1 unchanged\n"));
+        free(e);
+        /* expected data without runs */
+        put_file("libscmp-acc/exp", "c", "# capture c 1\nr|c||1\t$0\n");
+        ACCEPT(NULL, 0);
+        CHECK(status == 1 && strstr(report, "c: expected data, but no output of the runs"));
+        free(e);
+        /* a run of one program in one directory only */
+        put_file("libscmp-acc/r1", "c", "# capture c 1\nr|c||1\t$0\n");
+        ACCEPT(NULL, 0);
+        CHECK(status == 1 && strstr(report, "test not deterministic: c\nc: no output of run 2"));
+        free(e);
+        unlink("libscmp-acc/r1/c.txt");
+        unlink("libscmp-acc/exp/c.txt");
+        /* a malformed run */
+        put_file("libscmp-acc/r2", "b", "# capture b 1\nr|c||1 [orig]\t$1\n");
+        ACCEPT(NULL, 0);
+        CHECK(status == 2 && strstr(e, "libscmp-acc/r2/b.txt:2: a qualifier in a run's output"));
+        free(e);
+    }
+#undef ACCEPT
+    /* update: a --fix that applies nowhere refuses; then it applies */
+    {
+        struct libscmp_fix fx[1];
+        int status;
+
+        put_file("libscmp-acc/r1", "b", "# capture b 1\nr|c||1\t$5\n");
+        CHECK(libscmp_parse_fix("r|x||1#4", &fx[0], err, sizeof err) == 0);
+        free(report);
+        m = open_memstream(&report, &reportlen);
+        x = open_memstream(&e, &elen);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        fclose(m);
+        fclose(x);
+        CHECK(status == 1 && strstr(report, "--fix r|x||1#4: the key is in no program's expected data or run\n")
+              && strstr(report, "libs-update: nothing written"));
+        free(e);
+        libscmp_fix_free(&fx[0]);
+        CHECK(libscmp_parse_fix("r|c||1#4", &fx[0], err, sizeof err) == 0);
+        free(report);
+        m = open_memstream(&report, &reportlen);
+        x = open_memstream(&e, &elen);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        fclose(m);
+        fclose(x);
+        /* a: [fixed #7] from the port's $2 ... and b's pair */
+        CHECK(status == 0 && holds("libscmp-acc/exp", "a", "# capture a 1\nr|c||1 [orig]\t$2\nr|c||1 [fixed #7]\t$2\n"));
+        CHECK(holds("libscmp-acc/exp", "b", "# capture b 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #4]\t$5\n"));
+        free(e);
+        libscmp_fix_free(&fx[0]);
+        /* in two programs: name one with --only */
+        put_file("libscmp-acc/exp", "b", "# capture b 1\nr|c||1\t$1\n");
+        put_file("libscmp-acc/exp", "a", "# capture a 1\nr|c||1\t$1\n");
+        CHECK(libscmp_parse_fix("r|c||1#4", &fx[0], err, sizeof err) == 0);
+        free(report);
+        m = open_memstream(&report, &reportlen);
+        x = open_memstream(&e, &elen);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", NULL, 0, fx, 1, m, x);
+        fclose(m);
+        fclose(x);
+        CHECK(status == 1 && strstr(report, "the key is in more than one program (name it with --only)"));
+        free(e);
+        fx[0].applied = 0;
+        free(report);
+        m = open_memstream(&report, &reportlen);
+        x = open_memstream(&e, &elen);
+        status = libscmp_update_dirs("libscmp-acc/r1", "libscmp-acc/exp", only_b, 1, fx, 1, m, x);
+        fclose(m);
+        fclose(x);
+        CHECK(status == 0 && holds("libscmp-acc/exp", "a", "# capture a 1\nr|c||1\t$1\n")
+              && holds("libscmp-acc/exp", "b", "# capture b 1\nr|c||1 [orig]\t$1\nr|c||1 [fixed #4]\t$5\n"));
+        free(e);
+        libscmp_fix_free(&fx[0]);
+    }
+}
+
 int main(void)
 {
     test_equal();
@@ -459,6 +797,10 @@ int main(void)
     test_malformed();
     test_details();
     test_dirs();
+    test_accept();
+    test_update();
+    test_accept_dirs();
+    free(result);
     test_large();
     free(report);
     if (failures)

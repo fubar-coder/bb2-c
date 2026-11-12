@@ -139,6 +139,78 @@ int libscmp_compare(const struct libscmp_file *run, const struct libscmp_file *e
 int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_set set,
                          const char *const *only, size_t nonly, FILE *out, FILE *err);
 
+/**
+ * @brief libs-accept for one program: the expected data from two recording
+ * runs of the original.  The runs must be identical (else "test not
+ * deterministic: NAME" and the differing cases) and hold no case "lost"
+ * (a stated register the original does not keep).  The new file has the
+ * run's cases in its order, unqualified, except: a key with a [fixed #N]
+ * case in old gets the run's value as KEY [orig] and keeps the [fixed #N]
+ * case behind it; a key that has only an [orig] case in old stays [orig].
+ * A [fixed #N] case of old whose key the run lacks is kept (a case of the
+ * port only) after the case it followed and reported; an [orig] case of
+ * old whose key the run lacks is dropped and reported.
+ * @param old   the committed expected data, or NULL
+ * @param out   the new file (malloc'd), NULL when refused
+ * @param report  the messages
+ * @return 0 = *out written, 1 = refused, -1 = out of memory
+ */
+int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *run2,
+                   const struct libscmp_file *old, char **out, FILE *report);
+
+/**
+ * @brief libs-accept on directories: every program of RUN1_DIR and RUN2_DIR
+ * (or the ones only names) is accepted into EXPECTED_DIR/NAME.txt; a file
+ * of EXPECTED_DIR without runs is an error unless only leaves it out.
+ * Nothing is written unless every program is accepted; an unchanged file
+ * is not rewritten.
+ * @return 0 = written, 1 = refused (not deterministic, lost, a program
+ *         without both runs), 2 = error (malformed or unreadable file, a
+ *         file that cannot be written)
+ */
+int libscmp_accept_dirs(const char *run1_dir, const char *run2_dir, const char *exp_dir,
+                        const char *const *only, size_t nonly, FILE *out, FILE *err);
+
+/* a --fix KEY#N of libs-update; the counters are the result */
+struct libscmp_fix {
+    char *key;                          /* KEY (malloc'd) */
+    size_t keylen;
+    uint32_t issue;                     /* N */
+    unsigned applied;                   /* programs where the pair was made */
+    unsigned same;                      /* ... where the port gives the expected value */
+    unsigned qualified;                 /* ... where KEY is qualified already */
+};
+
+/** @brief "KEY#N" (split at the last '#'; KEY a key without qualifier, N
+ * from 1) into fix; 0 = ok, -1 = malformed (the message in err). */
+int libscmp_parse_fix(const char *arg, struct libscmp_fix *fix, char *err, size_t errlen);
+void libscmp_fix_free(struct libscmp_fix *fix);
+
+/**
+ * @brief libs-update for one program: the expected data exp with the value
+ * of every [fixed #N] case taken from the port's run.  A fix whose KEY is
+ * an unqualified case of exp makes it the pair KEY [orig] (the old value)
+ * and KEY [fixed #N] (the run's value), or KEY [orig] alone if the run
+ * lacks the key; a fix whose KEY only the run has adds KEY [fixed #N]
+ * after the case the run has before it.  Nothing else changes; an
+ * unqualified case the port gives another value is reported.
+ * @return 0 = *out written (malloc'd), 1 = refused (a [fixed #N] case the
+ *         run lacks; *out NULL), -1 = out of memory
+ */
+int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *exp,
+                   struct libscmp_fix *fixes, size_t nfixes, char **out, FILE *report);
+
+/**
+ * @brief libs-update on directories: every program with expected data in
+ * EXPECTED_DIR (or the ones only names) from RUN_DIR; each fix must apply
+ * in exactly one program.  Nothing is written unless all is well; an
+ * unchanged file is not rewritten.
+ * @return 0 = written, 1 = refused, 2 = error
+ */
+int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *const *only,
+                        size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
+                        FILE *err);
+
 #ifdef __cplusplus
 }
 #endif

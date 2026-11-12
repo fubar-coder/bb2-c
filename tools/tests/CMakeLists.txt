@@ -245,6 +245,28 @@ libs_compare_wrong(ambiguous run-right exp-ambiguous obj
 	"exp-ambiguous/prog.txt:6: r\\|find\\|\\|1 is unqualified and qualified")
 libs_compare_wrong(qualifier run-right exp-qualifier obj "exp-qualifier/prog.txt:6: unknown qualifier")
 
+# results libs-accept on two recording runs that differ in one case: "test
+# not deterministic" names the case, and the expected data (a copy of
+# exp/prog.txt) stays as it was; a run with a lost register is refused
+file(WRITE ${lc}/accept/exp/prog.txt ${lc_exp})
+file(WRITE ${lc}/accept/run2/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000002\n"
+	"BLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/accept/lost/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|ldiv||1\tlost d3\n")
+add_test(NAME libs_accept_nondeterministic COMMAND results libs-accept ${lc}/run-orig ${lc}/accept/run2
+	${lc}/accept/exp --only prog)
+set_tests_properties(libs_accept_nondeterministic PROPERTIES FIXTURES_SETUP libs_accept_nd
+	PASS_REGULAR_EXPRESSION "test not deterministic: prog\nprog: r\\|find\\|\\|1: run 1 \\$00000001, run 2 \\$00000002\n.*libs-accept: nothing written")
+add_test(NAME libs_accept_nondeterministic_unchanged COMMAND ${CMAKE_COMMAND} -E compare_files
+	${lc}/accept/exp/prog.txt ${lc}/exp/prog.txt)
+set_tests_properties(libs_accept_nondeterministic_unchanged PROPERTIES FIXTURES_REQUIRED libs_accept_nd)
+add_test(NAME libs_accept_lost COMMAND results libs-accept ${lc}/accept/lost ${lc}/accept/lost
+	${lc}/accept/exp --only prog)
+set_tests_properties(libs_accept_lost PROPERTIES WILL_FAIL ON)
+add_test(NAME libs_accept_lost_names COMMAND results libs-accept ${lc}/accept/lost ${lc}/accept/lost
+	${lc}/accept/exp --only prog)
+set_tests_properties(libs_accept_lost_names PROPERTIES
+	PASS_REGULAR_EXPRESSION "prog: r\\|ldiv\\|\\|1: lost d3: the original does not keep a stated register")
+
 # the command-line shell of the host programs (tools/lib/cli): cli::run
 add_executable(test_cli test_cli.cpp)
 target_link_libraries(test_cli PRIVATE lib_cli snitch::snitch)

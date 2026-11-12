@@ -1,7 +1,7 @@
 /*
  * results.h - the subcommands of results (main.cpp): each one is in
- * cmd_NAME.cpp (cd-update and cd-reference in cmd_cd.cpp) and adds itself
- * to the program.
+ * cmd_NAME.cpp (cd-update and cd-reference in cmd_cd.cpp, the libs-* ones
+ * in cmd_libs.cpp) and adds itself to the program.
  */
 #ifndef RESULTS_H
 #define RESULTS_H
@@ -14,5 +14,7 @@ void cmd_cd_update(CLI::App &app, int &status);
 void cmd_cd_reference(CLI::App &app, int &status);
 void cmd_ted_oracle(CLI::App &app, int &status);
 void cmd_libs_compare(CLI::App &app, int &status);
+void cmd_libs_accept(CLI::App &app, int &status);
+void cmd_libs_update(CLI::App &app, int &status);
 
 #endif

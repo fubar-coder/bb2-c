@@ -272,6 +272,28 @@ case `KEY` whose port value differs from the expected one into the pair
 nothing else is touched. Both targets are reviewed by `git diff`
 (`tests/README.md`).
 
+Decided with the tool commands (`results libs-accept`, `libs-update`;
+`tools/results/README.md`), before the targets of task 2.4:
+
+- Accept writes the run's cases in the run's order. A key that has only
+  an `[orig]` case in the file (a case of the original only) stays
+  `[orig]`; an `[orig]` case whose key the run no longer has is dropped
+  and reported. A `[fixed #N]` case whose key the run lacks is a case of
+  the port only: it is kept, after the case it followed in the old file,
+  and reported. "Identical" means the same bytes: the same cases in
+  another order are not deterministic either.
+- Accept and update are all or nothing over the programs of a call: if
+  one program is refused, no file is written; an unchanged file is not
+  rewritten. Without a filter, expected data of a program the runs do not
+  have is refused (not silently kept).
+- Update also takes `--only`. A `--fix KEY#N` (KEY as written in the file,
+  split at the last `#`) must apply in exactly one program; one whose port
+  value equals the expected value, or whose key is qualified already, is
+  refused. A fix of a case the port no longer has makes `KEY [orig]`
+  alone; a fix of a key only the port's run has adds `KEY [fixed #N]`
+  alone after the case the run has before it. A `[fixed #N]` case the
+  port's run lacks refuses the update.
+
 ### D6. Block hashes for the very large programs and libtest
 
 A program writes a case `BLOCK:N` with `COUNT FNV1A32 first=CHECK|VECTOR`

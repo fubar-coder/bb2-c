@@ -6,8 +6,10 @@ of the build against those of the build of the previous commit (`prev`),
 the CD result table `tests/data/blitz2-cd.tsv` written from a fresh
 run of the CD (`cd-update`, `cd-reference`), and the oracle data of the
 TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
-original TED (`ted-oracle`), and the cases of a library test run against
-the expected data `libs/tests/expected` (`libs-compare`). The logic is in
+original TED (`ted-oracle`), the cases of a library test run against
+the expected data `libs/tests/expected` (`libs-compare`), and that
+expected data written from two recording runs of the original
+(`libs-accept`) or from a run of the port (`libs-update`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
 `tools/lib/cdtable`, `tools/lib/oracletable` and `tools/lib/libscmp`,
 tested by `tools/tests/test_outmatch.c`, `test_prevcmp.c`,
@@ -33,6 +35,9 @@ SUBCOMMANDS:
   ted-oracle                  the oracle data of the TED tests from the original TED's fresh
                               run
   libs-compare                the cases of a library test run against the expected data
+  libs-accept                 the expected data of the library tests from two recording runs of
+                              the original
+  libs-update                 the [fixed #N] cases of the library tests from a run of the port
 ```
 
 ### match
@@ -241,13 +246,90 @@ at); a program with a file in only one directory fails. A malformed file
 qualified, a qualifier in a run's output, a header naming another
 program) is reported as `FILE:LINE: message`.
 
+### libs-accept
+
+```
+Usage: results libs-accept [OPTIONS] RUN1_DIR RUN2_DIR EXPECTED_DIR
+
+the expected data of the library tests from two recording runs of the original
+
+POSITIONALS:
+  RUN1_DIR TEXT REQUIRED      the output of the first run (NAME.txt per program)
+  RUN2_DIR TEXT REQUIRED      the output of the second run, another memory layout
+  EXPECTED_DIR TEXT REQUIRED  the expected data written (libs/tests/expected)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --only NAME         only this program (the other files stay as they are)
+
+The two runs of a program must be identical (else "test not deterministic: NAME"
+and the differing cases) and hold no "lost" case. The file gets the run's cases;
+a key with a "[fixed #N]" case keeps it and gets the run's value as "[orig]".
+Nothing is written unless every program is accepted. Exit status 0 written, 1
+refused, 2 usage error or a malformed, unreadable or unwritable file.
+```
+
+Writes the expected data `EXPECTED_DIR/NAME.txt` from two recording runs
+of the original, `RUN1_DIR` and `RUN2_DIR` (run with different memory
+layouts). A program's two outputs must be identical, else it reports
+`test not deterministic: NAME` and the differing cases (`NAME: KEY: run 1
+VALUE, run 2 VALUE`, `only in run 1`, `only in run 2`); a case `lost ...`
+(a stated register the original does not keep) is refused. The file gets
+the run's cases in their order, unqualified, except: a key with a
+`[fixed #N]` case keeps that case and gets the run's value as `[orig]`; a
+key with only an `[orig]` case stays `[orig]`; a `[fixed #N]` case whose
+key the run lacks is kept (a case of the port only) and reported; an
+`[orig]` case whose key the run lacks is removed and reported. The
+programs are those of the two run directories and of `EXPECTED_DIR`, or
+the ones `--only` names (the other files stay as they are); expected data
+without runs is refused. Nothing is written unless every program is
+accepted, and an unchanged file is not rewritten.
+
+### libs-update
+
+```
+Usage: results libs-update [OPTIONS] RUN_DIR EXPECTED_DIR
+
+the [fixed #N] cases of the library tests from a run of the port
+
+POSITIONALS:
+  RUN_DIR TEXT REQUIRED       the output of the port's run (NAME.txt per program)
+  EXPECTED_DIR TEXT REQUIRED  the expected data (libs/tests/expected)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --only NAME         only this program (the other files stay as they are)
+          --fix KEY#N         make the unqualified case KEY the pair "KEY [orig]" (the old
+                              value) and "KEY [fixed #N]" (the port's)
+
+Every "[fixed #N]" case gets the port's value; nothing else changes (an
+unqualified case the port gives another value is reported). A --fix must apply
+in exactly one program. Nothing is written unless all is well. Exit status 0
+written, 1 refused, 2 usage error or a malformed, unreadable or unwritable file.
+```
+
+Takes the value of every `[fixed #N]` case of the expected data from the
+port's run `RUN_DIR` (a `[fixed #N]` case the run lacks is refused);
+nothing else changes, and an unqualified case the port gives another
+value is reported. `--fix KEY#N` (KEY as it is written in the file, N the
+issue) makes the unqualified case `KEY` the pair `KEY [orig]` (the old
+value) and `KEY [fixed #N]` (the port's value), or `KEY [orig]` alone if
+the port lacks the case; a KEY only the port's run has becomes
+`KEY [fixed #N]` alone, after the case the run has before it. A `--fix`
+must apply in exactly one program (else `--only` names the program); one
+whose port value is the expected one, or whose key is qualified already,
+is refused. The programs are those of `EXPECTED_DIR` or the ones `--only`
+names. Nothing is written unless all is well.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
 build directories and writes its report to stdout; `cd-update` and
 `cd-reference` read two TSV tables and write the third, `ted-oracle` two
 lists of hashes and writes the third; `libs-compare` reads two
-directories and writes its report to stdout.
+directories and writes its report to stdout, `libs-accept` and
+`libs-update` read the run directories and rewrite files of the expected
+data.
 
 ## Exit codes
 
@@ -257,13 +339,15 @@ directories and writes its report to stdout.
   intended or an intended one does not differ; the table or the oracle
   data have errors (nothing written); a case of a library test run
   differs, is missing or added, or a program lacks a file
-  (`libs-compare`);
+  (`libs-compare`); the runs are refused, nothing written (`libs-accept`,
+  `libs-update`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
-  files (`libs-compare`);
+  files (`libs-compare`, `libs-accept`, `libs-update`), a file that cannot
+  be written (`libs-accept`, `libs-update`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -282,8 +366,10 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `ted-oracle`: the target `ted-oracle`
   (`programs/ted/tests/oracle/ted-oracle.cmake`), after the run of the
   original TED.
-* `libs-compare`: the tests `libs_compare_*` (`tools/tests/CMakeLists.txt`);
-  the library emulator tests follow (OpenSpec change `libs-tests-capture`).
+* `libs-compare`, `libs-accept`: the tests `libs_compare_*` and
+  `libs_accept_*` (`tools/tests/CMakeLists.txt`); the library emulator
+  tests and the targets `libs-capture` and `libs-update` follow (OpenSpec
+  change `libs-tests-capture`).
 * Tests: `help_results`, `readme_results` (`tools/results/CMakeLists.txt`).
 
 ## Example
