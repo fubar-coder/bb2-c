@@ -1,0 +1,3044 @@
+# capture rwe_risoundlib2 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|opens||1	$00000000
+init|closes||1	$00000000
+init|failed opens||1	$00000000
+init|BeginIOs||1	$00000000
+init|AbortIOs||1	$00000000
+init|AHI_AllocAudioRequestA||1	$00000000
+init|AHI_AudioRequestA||1	$00000000
+init|other AHI calls||1	$00000000
+init|unit||1	$00000000
+init|flags||1	$00000000
+init|ahir_Version||1	$00000000
+init|requester||1	$00000000
+init|requester tags||1	$00000000
+init|tag list||1	bytes 68 fnv 83E79215
+CloseAHI|kept|nothing open|1	kept
+CloseAHI|popped|nothing open|1	$00000000
+CloseAHI|opens|nothing open|1	$00000000
+CloseAHI|closes|nothing open|1	$00000000
+CloseAHI|failed opens|nothing open|1	$00000000
+CloseAHI|BeginIOs|nothing open|1	$00000000
+CloseAHI|AbortIOs|nothing open|1	$00000000
+CloseAHI|AHI_AllocAudioRequestA|nothing open|1	$00000000
+CloseAHI|AHI_AudioRequestA|nothing open|1	$00000000
+CloseAHI|other AHI calls|nothing open|1	$00000000
+CloseAHI|unit|nothing open|1	$00000000
+CloseAHI|flags|nothing open|1	$00000000
+CloseAHI|ahir_Version|nothing open|1	$00000000
+CloseAHI|requester|nothing open|1	$00000000
+CloseAHI|requester tags|nothing open|1	$00000000
+CloseAHI|tag list|nothing open|1	bytes 68 fnv 83E79215
+init|kept|again|1	kept
+init|popped|again|1	$00000000
+init|opens|again|1	$00000000
+init|closes|again|1	$00000000
+init|failed opens|again|1	$00000000
+init|BeginIOs|again|1	$00000000
+init|AbortIOs|again|1	$00000000
+init|AHI_AllocAudioRequestA|again|1	$00000000
+init|AHI_AudioRequestA|again|1	$00000000
+init|other AHI calls|again|1	$00000000
+init|unit|again|1	$00000000
+init|flags|again|1	$00000000
+init|ahir_Version|again|1	$00000000
+init|requester|again|1	$00000000
+init|requester tags|again|1	$00000000
+init|tag list|again|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 0 arguments|1	kept
+AHIOutputRequest|popped|no device, 0 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 0 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 0 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 0 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 0 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 0 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 0 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 0 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 0 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 0 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 0 arguments|1	kept
+AHIRequestedID|popped|no device, 0 arguments|1	$00000000
+AHIRequestedID|d0|no device, 0 arguments|1	$00000000
+AHIRequestedID|opens|no device, 0 arguments|1	$00000000
+AHIRequestedID|closes|no device, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 0 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 0 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 0 arguments|1	$00000000
+AHIRequestedID|unit|no device, 0 arguments|1	$00000000
+AHIRequestedID|flags|no device, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 0 arguments|1	$00000000
+AHIRequestedID|requester|no device, 0 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 0 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 0 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 0 arguments|1	kept
+AHIRequestedFreq|popped|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 0 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 1 arguments|1	kept
+AHIOutputRequest|popped|no device, 1 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 1 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 1 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 1 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 1 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 1 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 1 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 1 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 1 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 1 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 1 arguments|1	kept
+AHIRequestedID|popped|no device, 1 arguments|1	$00000000
+AHIRequestedID|d0|no device, 1 arguments|1	$00000000
+AHIRequestedID|opens|no device, 1 arguments|1	$00000000
+AHIRequestedID|closes|no device, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 1 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 1 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 1 arguments|1	$00000000
+AHIRequestedID|unit|no device, 1 arguments|1	$00000000
+AHIRequestedID|flags|no device, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 1 arguments|1	$00000000
+AHIRequestedID|requester|no device, 1 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 1 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 1 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 1 arguments|1	kept
+AHIRequestedFreq|popped|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 1 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 2 arguments|1	kept
+AHIOutputRequest|popped|no device, 2 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 2 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 2 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 2 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 2 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 2 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 2 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 2 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 2 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 2 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 2 arguments|1	kept
+AHIRequestedID|popped|no device, 2 arguments|1	$00000000
+AHIRequestedID|d0|no device, 2 arguments|1	$00000000
+AHIRequestedID|opens|no device, 2 arguments|1	$00000000
+AHIRequestedID|closes|no device, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 2 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 2 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 2 arguments|1	$00000000
+AHIRequestedID|unit|no device, 2 arguments|1	$00000000
+AHIRequestedID|flags|no device, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 2 arguments|1	$00000000
+AHIRequestedID|requester|no device, 2 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 2 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 2 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 2 arguments|1	kept
+AHIRequestedFreq|popped|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 2 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 4 arguments|1	kept
+AHIOutputRequest|popped|no device, 4 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 4 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 4 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 4 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 4 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 4 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 4 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 4 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 4 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 4 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 4 arguments|1	kept
+AHIRequestedID|popped|no device, 4 arguments|1	$00000000
+AHIRequestedID|d0|no device, 4 arguments|1	$00000000
+AHIRequestedID|opens|no device, 4 arguments|1	$00000000
+AHIRequestedID|closes|no device, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 4 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 4 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 4 arguments|1	$00000000
+AHIRequestedID|unit|no device, 4 arguments|1	$00000000
+AHIRequestedID|flags|no device, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 4 arguments|1	$00000000
+AHIRequestedID|requester|no device, 4 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 4 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 4 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 4 arguments|1	kept
+AHIRequestedFreq|popped|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 4 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 5 arguments|1	kept
+AHIOutputRequest|popped|no device, 5 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 5 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 5 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 5 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 5 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 5 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 5 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 5 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 5 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 5 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 5 arguments|1	kept
+AHIRequestedID|popped|no device, 5 arguments|1	$00000000
+AHIRequestedID|d0|no device, 5 arguments|1	$00000000
+AHIRequestedID|opens|no device, 5 arguments|1	$00000000
+AHIRequestedID|closes|no device, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 5 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 5 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 5 arguments|1	$00000000
+AHIRequestedID|unit|no device, 5 arguments|1	$00000000
+AHIRequestedID|flags|no device, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 5 arguments|1	$00000000
+AHIRequestedID|requester|no device, 5 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 5 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 5 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 5 arguments|1	kept
+AHIRequestedFreq|popped|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 5 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device, 6 arguments|1	kept
+AHIOutputRequest|popped|no device, 6 arguments|1	$00000000
+AHIOutputRequest|d0|no device, 6 arguments|1	$00000000
+AHIOutputRequest|opens|no device, 6 arguments|1	$00000000
+AHIOutputRequest|closes|no device, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device, 6 arguments|1	$00000000
+AHIOutputRequest|BeginIOs|no device, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device, 6 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device, 6 arguments|1	$00000000
+AHIOutputRequest|unit|no device, 6 arguments|1	$00000000
+AHIOutputRequest|flags|no device, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device, 6 arguments|1	$00000000
+AHIOutputRequest|requester|no device, 6 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device, 6 arguments|1	kept
+AHIRequestedID|popped|no device, 6 arguments|1	$00000000
+AHIRequestedID|d0|no device, 6 arguments|1	$00000000
+AHIRequestedID|opens|no device, 6 arguments|1	$00000000
+AHIRequestedID|closes|no device, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|no device, 6 arguments|1	$00000000
+AHIRequestedID|BeginIOs|no device, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device, 6 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device, 6 arguments|1	$00000000
+AHIRequestedID|unit|no device, 6 arguments|1	$00000000
+AHIRequestedID|flags|no device, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device, 6 arguments|1	$00000000
+AHIRequestedID|requester|no device, 6 arguments|1	$00000000
+AHIRequestedID|requester tags|no device, 6 arguments|1	$00000000
+AHIRequestedID|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device, 6 arguments|1	kept
+AHIRequestedFreq|popped|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|closes|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|BeginIOs|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|flags|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|requester|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device, 6 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device|1	kept
+AHIRequestedID|popped|no device|1	$00000000
+AHIRequestedID|d0|no device|1	$00000000
+AHIRequestedID|opens|no device|1	$00000000
+AHIRequestedID|closes|no device|1	$00000000
+AHIRequestedID|failed opens|no device|1	$00000000
+AHIRequestedID|BeginIOs|no device|1	$00000000
+AHIRequestedID|AbortIOs|no device|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device|1	$00000000
+AHIRequestedID|other AHI calls|no device|1	$00000000
+AHIRequestedID|unit|no device|1	$00000000
+AHIRequestedID|flags|no device|1	$00000000
+AHIRequestedID|ahir_Version|no device|1	$00000000
+AHIRequestedID|requester|no device|1	$00000000
+AHIRequestedID|requester tags|no device|1	$00000000
+AHIRequestedID|tag list|no device|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device|1	kept
+AHIRequestedFreq|popped|no device|1	$00000000
+AHIRequestedFreq|d0|no device|1	$00000000
+AHIRequestedFreq|opens|no device|1	$00000000
+AHIRequestedFreq|closes|no device|1	$00000000
+AHIRequestedFreq|failed opens|no device|1	$00000000
+AHIRequestedFreq|BeginIOs|no device|1	$00000000
+AHIRequestedFreq|AbortIOs|no device|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device|1	$00000000
+AHIRequestedFreq|other AHI calls|no device|1	$00000000
+AHIRequestedFreq|unit|no device|1	$00000000
+AHIRequestedFreq|flags|no device|1	$00000000
+AHIRequestedFreq|ahir_Version|no device|1	$00000000
+AHIRequestedFreq|requester|no device|1	$00000000
+AHIRequestedFreq|requester tags|no device|1	$00000000
+AHIRequestedFreq|tag list|no device|1	bytes 68 fnv 83E79215
+PlaySoundAHI|kept|no device|1	kept
+PlaySoundAHI|popped|no device|1	$00000000
+PlaySoundAHI|opens|no device|1	$00000000
+PlaySoundAHI|closes|no device|1	$00000000
+PlaySoundAHI|failed opens|no device|1	$00000000
+PlaySoundAHI|BeginIOs|no device|1	$00000000
+PlaySoundAHI|AbortIOs|no device|1	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no device|1	$00000000
+PlaySoundAHI|AHI_AudioRequestA|no device|1	$00000000
+PlaySoundAHI|other AHI calls|no device|1	$00000000
+PlaySoundAHI|unit|no device|1	$00000000
+PlaySoundAHI|flags|no device|1	$00000000
+PlaySoundAHI|ahir_Version|no device|1	$00000000
+PlaySoundAHI|requester|no device|1	$00000000
+PlaySoundAHI|requester tags|no device|1	$00000000
+PlaySoundAHI|tag list|no device|1	bytes 68 fnv 83E79215
+PlayRawAHI|kept|no device|1	kept
+PlayRawAHI|popped|no device|1	$00000000
+PlayRawAHI|opens|no device|1	$00000000
+PlayRawAHI|closes|no device|1	$00000000
+PlayRawAHI|failed opens|no device|1	$00000000
+PlayRawAHI|BeginIOs|no device|1	$00000000
+PlayRawAHI|AbortIOs|no device|1	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no device|1	$00000000
+PlayRawAHI|AHI_AudioRequestA|no device|1	$00000000
+PlayRawAHI|other AHI calls|no device|1	$00000000
+PlayRawAHI|unit|no device|1	$00000000
+PlayRawAHI|flags|no device|1	$00000000
+PlayRawAHI|ahir_Version|no device|1	$00000000
+PlayRawAHI|requester|no device|1	$00000000
+PlayRawAHI|requester tags|no device|1	$00000000
+PlayRawAHI|tag list|no device|1	bytes 68 fnv 83E79215
+PlaySoundAHI|kept|no device|2	kept
+PlaySoundAHI|popped|no device|2	$00000000
+PlaySoundAHI|opens|no device|2	$00000000
+PlaySoundAHI|closes|no device|2	$00000000
+PlaySoundAHI|failed opens|no device|2	$00000000
+PlaySoundAHI|BeginIOs|no device|2	$00000000
+PlaySoundAHI|AbortIOs|no device|2	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no device|2	$00000000
+PlaySoundAHI|AHI_AudioRequestA|no device|2	$00000000
+PlaySoundAHI|other AHI calls|no device|2	$00000000
+PlaySoundAHI|unit|no device|2	$00000000
+PlaySoundAHI|flags|no device|2	$00000000
+PlaySoundAHI|ahir_Version|no device|2	$00000000
+PlaySoundAHI|requester|no device|2	$00000000
+PlaySoundAHI|requester tags|no device|2	$00000000
+PlaySoundAHI|tag list|no device|2	bytes 68 fnv 83E79215
+PlayRawAHI|kept|no device|2	kept
+PlayRawAHI|popped|no device|2	$00000000
+PlayRawAHI|opens|no device|2	$00000000
+PlayRawAHI|closes|no device|2	$00000000
+PlayRawAHI|failed opens|no device|2	$00000000
+PlayRawAHI|BeginIOs|no device|2	$00000000
+PlayRawAHI|AbortIOs|no device|2	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no device|2	$00000000
+PlayRawAHI|AHI_AudioRequestA|no device|2	$00000000
+PlayRawAHI|other AHI calls|no device|2	$00000000
+PlayRawAHI|unit|no device|2	$00000000
+PlayRawAHI|flags|no device|2	$00000000
+PlayRawAHI|ahir_Version|no device|2	$00000000
+PlayRawAHI|requester|no device|2	$00000000
+PlayRawAHI|requester tags|no device|2	$00000000
+PlayRawAHI|tag list|no device|2	bytes 68 fnv 83E79215
+PlaySoundAHI|kept|no device|3	kept
+PlaySoundAHI|popped|no device|3	$00000000
+PlaySoundAHI|opens|no device|3	$00000000
+PlaySoundAHI|closes|no device|3	$00000000
+PlaySoundAHI|failed opens|no device|3	$00000000
+PlaySoundAHI|BeginIOs|no device|3	$00000000
+PlaySoundAHI|AbortIOs|no device|3	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no device|3	$00000000
+PlaySoundAHI|AHI_AudioRequestA|no device|3	$00000000
+PlaySoundAHI|other AHI calls|no device|3	$00000000
+PlaySoundAHI|unit|no device|3	$00000000
+PlaySoundAHI|flags|no device|3	$00000000
+PlaySoundAHI|ahir_Version|no device|3	$00000000
+PlaySoundAHI|requester|no device|3	$00000000
+PlaySoundAHI|requester tags|no device|3	$00000000
+PlaySoundAHI|tag list|no device|3	bytes 68 fnv 83E79215
+PlayRawAHI|kept|no device|3	kept
+PlayRawAHI|popped|no device|3	$00000000
+PlayRawAHI|opens|no device|3	$00000000
+PlayRawAHI|closes|no device|3	$00000000
+PlayRawAHI|failed opens|no device|3	$00000000
+PlayRawAHI|BeginIOs|no device|3	$00000000
+PlayRawAHI|AbortIOs|no device|3	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no device|3	$00000000
+PlayRawAHI|AHI_AudioRequestA|no device|3	$00000000
+PlayRawAHI|other AHI calls|no device|3	$00000000
+PlayRawAHI|unit|no device|3	$00000000
+PlayRawAHI|flags|no device|3	$00000000
+PlayRawAHI|ahir_Version|no device|3	$00000000
+PlayRawAHI|requester|no device|3	$00000000
+PlayRawAHI|requester tags|no device|3	$00000000
+PlayRawAHI|tag list|no device|3	bytes 68 fnv 83E79215
+OpenAHI|kept|no ahi.device unit 0|1	kept
+OpenAHI|popped|no ahi.device unit 0|1	$00000000
+OpenAHI|d0|no ahi.device unit 0|1	$00000000
+OpenAHI|opens|no ahi.device unit 0|1	$00000000
+OpenAHI|closes|no ahi.device unit 0|1	$00000000
+OpenAHI|failed opens|no ahi.device unit 0|1	$00000002
+OpenAHI|BeginIOs|no ahi.device unit 0|1	$00000000
+OpenAHI|AbortIOs|no ahi.device unit 0|1	$00000000
+OpenAHI|AHI_AllocAudioRequestA|no ahi.device unit 0|1	$00000000
+OpenAHI|AHI_AudioRequestA|no ahi.device unit 0|1	$00000000
+OpenAHI|other AHI calls|no ahi.device unit 0|1	$00000000
+OpenAHI|unit|no ahi.device unit 0|1	$00000000
+OpenAHI|flags|no ahi.device unit 0|1	$00000000
+OpenAHI|ahir_Version|no ahi.device unit 0|1	$00000004
+OpenAHI|requester|no ahi.device unit 0|1	$00000000
+OpenAHI|requester tags|no ahi.device unit 0|1	$00000000
+OpenAHI|tag list|no ahi.device unit 0|1	bytes 68 fnv 83E79215
+OpenAHI|kept|no ahi.device unit 1|1	kept
+OpenAHI|popped|no ahi.device unit 1|1	$00000000
+OpenAHI|d0|no ahi.device unit 1|1	$00000000
+OpenAHI|opens|no ahi.device unit 1|1	$00000000
+OpenAHI|closes|no ahi.device unit 1|1	$00000000
+OpenAHI|failed opens|no ahi.device unit 1|1	$00000004
+OpenAHI|BeginIOs|no ahi.device unit 1|1	$00000000
+OpenAHI|AbortIOs|no ahi.device unit 1|1	$00000000
+OpenAHI|AHI_AllocAudioRequestA|no ahi.device unit 1|1	$00000000
+OpenAHI|AHI_AudioRequestA|no ahi.device unit 1|1	$00000000
+OpenAHI|other AHI calls|no ahi.device unit 1|1	$00000000
+OpenAHI|unit|no ahi.device unit 1|1	$00000001
+OpenAHI|flags|no ahi.device unit 1|1	$00000000
+OpenAHI|ahir_Version|no ahi.device unit 1|1	$00000004
+OpenAHI|requester|no ahi.device unit 1|1	$00000000
+OpenAHI|requester tags|no ahi.device unit 1|1	$00000000
+OpenAHI|tag list|no ahi.device unit 1|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 0 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 0 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 0 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 0 arguments|1	kept
+AHIRequestedID|popped|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 0 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 0 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 0 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 0 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 0 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 0 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 1 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 1 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 1 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 1 arguments|1	kept
+AHIRequestedID|popped|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 1 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 1 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 1 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 1 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 1 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 1 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 2 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 2 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 2 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 2 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 2 arguments|1	kept
+AHIRequestedID|popped|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 2 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 2 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 2 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 2 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 2 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 2 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 2 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 4 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 4 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 4 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 4 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 4 arguments|1	kept
+AHIRequestedID|popped|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 4 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 4 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 4 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 4 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 4 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 4 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 4 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 5 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 5 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 5 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 5 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 5 arguments|1	kept
+AHIRequestedID|popped|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 5 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 5 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 5 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 5 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 5 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 5 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 5 arguments|1	bytes 68 fnv 83E79215
+AHIOutputRequest|kept|no device opened, 6 arguments|1	kept
+AHIOutputRequest|popped|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|d0|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|opens|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|closes|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|no device opened, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|other AHI calls|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|unit|no device opened, 6 arguments|1	$00000001
+AHIOutputRequest|flags|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no device opened, 6 arguments|1	$00000004
+AHIOutputRequest|requester|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|requester tags|no device opened, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|no device opened, 6 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedID|kept|no device opened, 6 arguments|1	kept
+AHIRequestedID|popped|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|d0|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|opens|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|closes|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|no device opened, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|other AHI calls|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|unit|no device opened, 6 arguments|1	$00000001
+AHIRequestedID|flags|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no device opened, 6 arguments|1	$00000004
+AHIRequestedID|requester|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|requester tags|no device opened, 6 arguments|1	$00000000
+AHIRequestedID|tag list|no device opened, 6 arguments|1	bytes 68 fnv 83E79215
+AHIRequestedFreq|kept|no device opened, 6 arguments|1	kept
+AHIRequestedFreq|popped|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|closes|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no device opened, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AudioRequestA|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|other AHI calls|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|no device opened, 6 arguments|1	$00000001
+AHIRequestedFreq|flags|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no device opened, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|requester tags|no device opened, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|no device opened, 6 arguments|1	bytes 68 fnv 83E79215
+CludgeSound|kept|8363 Hz|1	kept
+CludgeSound|popped|8363 Hz|1	$00000000
+CludgeSound|d0|8363 Hz|1	$FFFFFFFF
+CludgeSound|object fields and behind|8363 Hz|1	bytes 36 01AC0032000000000000634C20ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|guards before|8363 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|+14 (cL)|8363 Hz|1	$0000634C
+CludgeSound|+16 (rate)|8363 Hz|1	$000020AB
+CludgeSound|sample|8363 Hz|1	$00000001
+CludgeSound|kept|22050 Hz|1	kept
+CludgeSound|popped|22050 Hz|1	$00000000
+CludgeSound|d0|22050 Hz|1	$FFFFFFFF
+CludgeSound|object fields and behind|22050 Hz|1	bytes 36 00A20010000000000000634C5622A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|guards before|22050 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|+14 (cL)|22050 Hz|1	$0000634C
+CludgeSound|+16 (rate)|22050 Hz|1	$00005622
+CludgeSound|sample|22050 Hz|1	$00000001
+CludgeSound|kept|16000 Hz, after it|1	kept
+CludgeSound|popped|16000 Hz, after it|1	$00000000
+CludgeSound|d0|16000 Hz, after it|1	$FFFFFFFF
+CludgeSound|object fields and behind|16000 Hz, after it|1	bytes 36 00DF0001000000000000634C3E80A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|guards before|16000 Hz, after it|1	bytes 8 A5A5A5A5A5A5A5A5
+CludgeSound|+14 (cL)|16000 Hz, after it|1	$0000634C
+CludgeSound|+16 (rate)|16000 Hz, after it|1	$00003E80
+CludgeSound|sample|16000 Hz, after it|1	$00000001
+OpenAHI|kept|test device unit 0|1	kept
+OpenAHI|popped|test device unit 0|1	$00000000
+OpenAHI|d0|test device unit 0|1	$FFFFFFFF
+OpenAHI|opens|test device unit 0|1	$00000001
+OpenAHI|closes|test device unit 0|1	$00000000
+OpenAHI|failed opens|test device unit 0|1	$00000004
+OpenAHI|BeginIOs|test device unit 0|1	$00000000
+OpenAHI|AbortIOs|test device unit 0|1	$00000000
+OpenAHI|AHI_AllocAudioRequestA|test device unit 0|1	$00000000
+OpenAHI|AHI_AudioRequestA|test device unit 0|1	$00000000
+OpenAHI|other AHI calls|test device unit 0|1	$00000000
+OpenAHI|unit|test device unit 0|1	$00000000
+OpenAHI|flags|test device unit 0|1	$00000000
+OpenAHI|ahir_Version|test device unit 0|1	$00000004
+OpenAHI|requester|test device unit 0|1	$00000000
+OpenAHI|requester tags|test device unit 0|1	$00000000
+OpenAHI|tag list|test device unit 0|1	bytes 68 fnv 83E79215
+OpenAHI|OpenAHI opened|test device unit 0|1	$00000001
+PlaySoundAHI|kept|open|1	kept
+PlaySoundAHI|popped|open|1	$00000000
+PlaySoundAHI|opens|open|1	$00000001
+PlaySoundAHI|closes|open|1	$00000000
+PlaySoundAHI|failed opens|open|1	$00000004
+PlaySoundAHI|BeginIOs|open|1	$00000000
+PlaySoundAHI|AbortIOs|open|1	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open|1	$00000000
+PlaySoundAHI|AHI_AudioRequestA|open|1	$00000000
+PlaySoundAHI|other AHI calls|open|1	$00000000
+PlaySoundAHI|unit|open|1	$00000000
+PlaySoundAHI|flags|open|1	$00000000
+PlaySoundAHI|ahir_Version|open|1	$00000004
+PlaySoundAHI|requester|open|1	$00000000
+PlaySoundAHI|requester tags|open|1	$00000000
+PlaySoundAHI|tag list|open|1	bytes 68 fnv 83E79215
+PlayRawAHI|kept|open|1	kept
+PlayRawAHI|popped|open|1	$00000000
+PlayRawAHI|opens|open|1	$00000001
+PlayRawAHI|closes|open|1	$00000000
+PlayRawAHI|failed opens|open|1	$00000004
+PlayRawAHI|BeginIOs|open|1	$00000000
+PlayRawAHI|AbortIOs|open|1	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open|1	$00000000
+PlayRawAHI|AHI_AudioRequestA|open|1	$00000000
+PlayRawAHI|other AHI calls|open|1	$00000000
+PlayRawAHI|unit|open|1	$00000000
+PlayRawAHI|flags|open|1	$00000000
+PlayRawAHI|ahir_Version|open|1	$00000004
+PlayRawAHI|requester|open|1	$00000000
+PlayRawAHI|requester tags|open|1	$00000000
+PlayRawAHI|tag list|open|1	bytes 68 fnv 83E79215
+PlaySoundAHI|kept|open|2	kept
+PlaySoundAHI|popped|open|2	$00000000
+PlaySoundAHI|opens|open|2	$00000001
+PlaySoundAHI|closes|open|2	$00000000
+PlaySoundAHI|failed opens|open|2	$00000004
+PlaySoundAHI|BeginIOs|open|2	$00000000
+PlaySoundAHI|AbortIOs|open|2	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open|2	$00000000
+PlaySoundAHI|AHI_AudioRequestA|open|2	$00000000
+PlaySoundAHI|other AHI calls|open|2	$00000000
+PlaySoundAHI|unit|open|2	$00000000
+PlaySoundAHI|flags|open|2	$00000000
+PlaySoundAHI|ahir_Version|open|2	$00000004
+PlaySoundAHI|requester|open|2	$00000000
+PlaySoundAHI|requester tags|open|2	$00000000
+PlaySoundAHI|tag list|open|2	bytes 68 fnv 83E79215
+PlayRawAHI|kept|open|2	kept
+PlayRawAHI|popped|open|2	$00000000
+PlayRawAHI|opens|open|2	$00000001
+PlayRawAHI|closes|open|2	$00000000
+PlayRawAHI|failed opens|open|2	$00000004
+PlayRawAHI|BeginIOs|open|2	$00000000
+PlayRawAHI|AbortIOs|open|2	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open|2	$00000000
+PlayRawAHI|AHI_AudioRequestA|open|2	$00000000
+PlayRawAHI|other AHI calls|open|2	$00000000
+PlayRawAHI|unit|open|2	$00000000
+PlayRawAHI|flags|open|2	$00000000
+PlayRawAHI|ahir_Version|open|2	$00000004
+PlayRawAHI|requester|open|2	$00000000
+PlayRawAHI|requester tags|open|2	$00000000
+PlayRawAHI|tag list|open|2	bytes 68 fnv 83E79215
+PlaySoundAHI|kept|open|3	kept
+PlaySoundAHI|popped|open|3	$00000000
+PlaySoundAHI|opens|open|3	$00000001
+PlaySoundAHI|closes|open|3	$00000000
+PlaySoundAHI|failed opens|open|3	$00000004
+PlaySoundAHI|BeginIOs|open|3	$00000000
+PlaySoundAHI|AbortIOs|open|3	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open|3	$00000000
+PlaySoundAHI|AHI_AudioRequestA|open|3	$00000000
+PlaySoundAHI|other AHI calls|open|3	$00000000
+PlaySoundAHI|unit|open|3	$00000000
+PlaySoundAHI|flags|open|3	$00000000
+PlaySoundAHI|ahir_Version|open|3	$00000004
+PlaySoundAHI|requester|open|3	$00000000
+PlaySoundAHI|requester tags|open|3	$00000000
+PlaySoundAHI|tag list|open|3	bytes 68 fnv 83E79215
+PlayRawAHI|kept|open|3	kept
+PlayRawAHI|popped|open|3	$00000000
+PlayRawAHI|opens|open|3	$00000001
+PlayRawAHI|closes|open|3	$00000000
+PlayRawAHI|failed opens|open|3	$00000004
+PlayRawAHI|BeginIOs|open|3	$00000000
+PlayRawAHI|AbortIOs|open|3	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open|3	$00000000
+PlayRawAHI|AHI_AudioRequestA|open|3	$00000000
+PlayRawAHI|other AHI calls|open|3	$00000000
+PlayRawAHI|unit|open|3	$00000000
+PlayRawAHI|flags|open|3	$00000000
+PlayRawAHI|ahir_Version|open|3	$00000004
+PlayRawAHI|requester|open|3	$00000000
+PlayRawAHI|requester tags|open|3	$00000000
+PlayRawAHI|tag list|open|3	bytes 68 fnv 83E79215
+PlayRawAHI|nothing played|open|1	$00000001
+AHIOutputRequest|kept|open, 0 arguments|1	kept
+AHIOutputRequest|popped|open, 0 arguments|1	$00000000
+AHIOutputRequest|d0|open, 0 arguments|1	$00000001
+AHIOutputRequest|opens|open, 0 arguments|1	$00000001
+AHIOutputRequest|closes|open, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 0 arguments|1	$00000001
+AHIOutputRequest|AHI_AudioRequestA|open, 0 arguments|1	$00000001
+AHIOutputRequest|other AHI calls|open, 0 arguments|1	$00000000
+AHIOutputRequest|unit|open, 0 arguments|1	$00000000
+AHIOutputRequest|flags|open, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 0 arguments|1	$00000004
+AHIOutputRequest|requester|open, 0 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 0 arguments|1	bytes 68 fnv C223F788
+AHIOutputRequest|0 arguments: tags|open, 0 arguments|1	$00000001
+AHIRequestedID|kept|open, 0 arguments|1	kept
+AHIRequestedID|popped|open, 0 arguments|1	$00000000
+AHIRequestedID|d0|open, 0 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 0 arguments|1	$00000001
+AHIRequestedID|closes|open, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 0 arguments|1	$00000001
+AHIRequestedID|AHI_AudioRequestA|open, 0 arguments|1	$00000001
+AHIRequestedID|other AHI calls|open, 0 arguments|1	$00000000
+AHIRequestedID|unit|open, 0 arguments|1	$00000000
+AHIRequestedID|flags|open, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 0 arguments|1	$00000004
+AHIRequestedID|requester|open, 0 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 0 arguments|1	$00000000
+AHIRequestedID|tag list|open, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedFreq|kept|open, 0 arguments|1	kept
+AHIRequestedFreq|popped|open, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 0 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 0 arguments|1	$00000001
+AHIRequestedFreq|AHI_AudioRequestA|open, 0 arguments|1	$00000001
+AHIRequestedFreq|other AHI calls|open, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 0 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 0 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedFreq|AHIRequestedFreq 0|open, 0 arguments|1	$00000001
+AHIOutputRequest|kept|open, 1 arguments|1	kept
+AHIOutputRequest|popped|open, 1 arguments|1	$00000000
+AHIOutputRequest|d0|open, 1 arguments|1	$00000001
+AHIOutputRequest|opens|open, 1 arguments|1	$00000001
+AHIOutputRequest|closes|open, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 1 arguments|1	$00000002
+AHIOutputRequest|AHI_AudioRequestA|open, 1 arguments|1	$00000002
+AHIOutputRequest|other AHI calls|open, 1 arguments|1	$00000000
+AHIOutputRequest|unit|open, 1 arguments|1	$00000000
+AHIOutputRequest|flags|open, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 1 arguments|1	$00000004
+AHIOutputRequest|requester|open, 1 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedID|kept|open, 1 arguments|1	kept
+AHIRequestedID|popped|open, 1 arguments|1	$00000000
+AHIRequestedID|d0|open, 1 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 1 arguments|1	$00000001
+AHIRequestedID|closes|open, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 1 arguments|1	$00000002
+AHIRequestedID|AHI_AudioRequestA|open, 1 arguments|1	$00000002
+AHIRequestedID|other AHI calls|open, 1 arguments|1	$00000000
+AHIRequestedID|unit|open, 1 arguments|1	$00000000
+AHIRequestedID|flags|open, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 1 arguments|1	$00000004
+AHIRequestedID|requester|open, 1 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 1 arguments|1	$00000000
+AHIRequestedID|tag list|open, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedFreq|kept|open, 1 arguments|1	kept
+AHIRequestedFreq|popped|open, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 1 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 1 arguments|1	$00000002
+AHIRequestedFreq|AHI_AudioRequestA|open, 1 arguments|1	$00000002
+AHIRequestedFreq|other AHI calls|open, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 1 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 1 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedFreq|AHIRequestedFreq 0|open, 1 arguments|1	$00000001
+AHIOutputRequest|kept|open, 2 arguments|1	kept
+AHIOutputRequest|popped|open, 2 arguments|1	$00000000
+AHIOutputRequest|d0|open, 2 arguments|1	$00000001
+AHIOutputRequest|opens|open, 2 arguments|1	$00000001
+AHIOutputRequest|closes|open, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 2 arguments|1	$00000003
+AHIOutputRequest|AHI_AudioRequestA|open, 2 arguments|1	$00000003
+AHIOutputRequest|other AHI calls|open, 2 arguments|1	$00000000
+AHIOutputRequest|unit|open, 2 arguments|1	$00000000
+AHIOutputRequest|flags|open, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 2 arguments|1	$00000004
+AHIOutputRequest|requester|open, 2 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedID|kept|open, 2 arguments|1	kept
+AHIRequestedID|popped|open, 2 arguments|1	$00000000
+AHIRequestedID|d0|open, 2 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 2 arguments|1	$00000001
+AHIRequestedID|closes|open, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 2 arguments|1	$00000003
+AHIRequestedID|AHI_AudioRequestA|open, 2 arguments|1	$00000003
+AHIRequestedID|other AHI calls|open, 2 arguments|1	$00000000
+AHIRequestedID|unit|open, 2 arguments|1	$00000000
+AHIRequestedID|flags|open, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 2 arguments|1	$00000004
+AHIRequestedID|requester|open, 2 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 2 arguments|1	$00000000
+AHIRequestedID|tag list|open, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedFreq|kept|open, 2 arguments|1	kept
+AHIRequestedFreq|popped|open, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 2 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 2 arguments|1	$00000003
+AHIRequestedFreq|AHI_AudioRequestA|open, 2 arguments|1	$00000003
+AHIRequestedFreq|other AHI calls|open, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 2 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 2 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedFreq|AHIRequestedFreq 0|open, 2 arguments|1	$00000001
+AHIOutputRequest|kept|open, 4 arguments|1	kept
+AHIOutputRequest|popped|open, 4 arguments|1	$00000000
+AHIOutputRequest|d0|open, 4 arguments|1	$00000001
+AHIOutputRequest|opens|open, 4 arguments|1	$00000001
+AHIOutputRequest|closes|open, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 4 arguments|1	$00000004
+AHIOutputRequest|AHI_AudioRequestA|open, 4 arguments|1	$00000004
+AHIOutputRequest|other AHI calls|open, 4 arguments|1	$00000000
+AHIOutputRequest|unit|open, 4 arguments|1	$00000000
+AHIOutputRequest|flags|open, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 4 arguments|1	$00000004
+AHIOutputRequest|requester|open, 4 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 4 arguments|1	bytes 68 fnv FDECA548
+AHIOutputRequest|4 arguments: tags|open, 4 arguments|1	$00000001
+AHIRequestedID|kept|open, 4 arguments|1	kept
+AHIRequestedID|popped|open, 4 arguments|1	$00000000
+AHIRequestedID|d0|open, 4 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 4 arguments|1	$00000001
+AHIRequestedID|closes|open, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 4 arguments|1	$00000004
+AHIRequestedID|AHI_AudioRequestA|open, 4 arguments|1	$00000004
+AHIRequestedID|other AHI calls|open, 4 arguments|1	$00000000
+AHIRequestedID|unit|open, 4 arguments|1	$00000000
+AHIRequestedID|flags|open, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 4 arguments|1	$00000004
+AHIRequestedID|requester|open, 4 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 4 arguments|1	$00000000
+AHIRequestedID|tag list|open, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedFreq|kept|open, 4 arguments|1	kept
+AHIRequestedFreq|popped|open, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 4 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 4 arguments|1	$00000004
+AHIRequestedFreq|AHI_AudioRequestA|open, 4 arguments|1	$00000004
+AHIRequestedFreq|other AHI calls|open, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 4 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 4 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedFreq|AHIRequestedFreq 0|open, 4 arguments|1	$00000001
+AHIOutputRequest|kept|open, 5 arguments|1	kept
+AHIOutputRequest|popped|open, 5 arguments|1	$00000000
+AHIOutputRequest|d0|open, 5 arguments|1	$00000001
+AHIOutputRequest|opens|open, 5 arguments|1	$00000001
+AHIOutputRequest|closes|open, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 5 arguments|1	$00000005
+AHIOutputRequest|AHI_AudioRequestA|open, 5 arguments|1	$00000005
+AHIOutputRequest|other AHI calls|open, 5 arguments|1	$00000000
+AHIOutputRequest|unit|open, 5 arguments|1	$00000000
+AHIOutputRequest|flags|open, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 5 arguments|1	$00000004
+AHIOutputRequest|requester|open, 5 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedID|kept|open, 5 arguments|1	kept
+AHIRequestedID|popped|open, 5 arguments|1	$00000000
+AHIRequestedID|d0|open, 5 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 5 arguments|1	$00000001
+AHIRequestedID|closes|open, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 5 arguments|1	$00000005
+AHIRequestedID|AHI_AudioRequestA|open, 5 arguments|1	$00000005
+AHIRequestedID|other AHI calls|open, 5 arguments|1	$00000000
+AHIRequestedID|unit|open, 5 arguments|1	$00000000
+AHIRequestedID|flags|open, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 5 arguments|1	$00000004
+AHIRequestedID|requester|open, 5 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 5 arguments|1	$00000000
+AHIRequestedID|tag list|open, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedFreq|kept|open, 5 arguments|1	kept
+AHIRequestedFreq|popped|open, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 5 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 5 arguments|1	$00000005
+AHIRequestedFreq|AHI_AudioRequestA|open, 5 arguments|1	$00000005
+AHIRequestedFreq|other AHI calls|open, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 5 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 5 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedFreq|AHIRequestedFreq 0|open, 5 arguments|1	$00000001
+AHIOutputRequest|kept|open, 6 arguments|1	kept
+AHIOutputRequest|popped|open, 6 arguments|1	$00000000
+AHIOutputRequest|d0|open, 6 arguments|1	$00000001
+AHIOutputRequest|opens|open, 6 arguments|1	$00000001
+AHIOutputRequest|closes|open, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|open, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|open, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|open, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|open, 6 arguments|1	$00000006
+AHIOutputRequest|AHI_AudioRequestA|open, 6 arguments|1	$00000006
+AHIOutputRequest|other AHI calls|open, 6 arguments|1	$00000000
+AHIOutputRequest|unit|open, 6 arguments|1	$00000000
+AHIOutputRequest|flags|open, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|open, 6 arguments|1	$00000004
+AHIOutputRequest|requester|open, 6 arguments|1	$00000001
+AHIOutputRequest|requester tags|open, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|open, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|6 arguments: tags|open, 6 arguments|1	$00000001
+AHIRequestedID|kept|open, 6 arguments|1	kept
+AHIRequestedID|popped|open, 6 arguments|1	$00000000
+AHIRequestedID|d0|open, 6 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|open, 6 arguments|1	$00000001
+AHIRequestedID|closes|open, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|open, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|open, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|open, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 6 arguments|1	$00000006
+AHIRequestedID|AHI_AudioRequestA|open, 6 arguments|1	$00000006
+AHIRequestedID|other AHI calls|open, 6 arguments|1	$00000000
+AHIRequestedID|unit|open, 6 arguments|1	$00000000
+AHIRequestedID|flags|open, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|open, 6 arguments|1	$00000004
+AHIRequestedID|requester|open, 6 arguments|1	$00000001
+AHIRequestedID|requester tags|open, 6 arguments|1	$00000000
+AHIRequestedID|tag list|open, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|open, 6 arguments|1	kept
+AHIRequestedFreq|popped|open, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|open, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|open, 6 arguments|1	$00000001
+AHIRequestedFreq|closes|open, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|open, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|open, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|open, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open, 6 arguments|1	$00000006
+AHIRequestedFreq|AHI_AudioRequestA|open, 6 arguments|1	$00000006
+AHIRequestedFreq|other AHI calls|open, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|open, 6 arguments|1	$00000000
+AHIRequestedFreq|flags|open, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|open, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|open, 6 arguments|1	$00000001
+AHIRequestedFreq|requester tags|open, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|open, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|AHIRequestedFreq 0|open, 6 arguments|1	$00000001
+AHIRequestedID|kept|open, 6 arguments|2	kept
+AHIRequestedID|popped|open, 6 arguments|2	$00000000
+AHIRequestedID|d0|open, 6 arguments|2	$FFFFFFFF
+AHIRequestedID|opens|open, 6 arguments|2	$00000001
+AHIRequestedID|closes|open, 6 arguments|2	$00000000
+AHIRequestedID|failed opens|open, 6 arguments|2	$00000004
+AHIRequestedID|BeginIOs|open, 6 arguments|2	$00000000
+AHIRequestedID|AbortIOs|open, 6 arguments|2	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open, 6 arguments|2	$00000006
+AHIRequestedID|AHI_AudioRequestA|open, 6 arguments|2	$00000006
+AHIRequestedID|other AHI calls|open, 6 arguments|2	$00000000
+AHIRequestedID|unit|open, 6 arguments|2	$00000000
+AHIRequestedID|flags|open, 6 arguments|2	$00000000
+AHIRequestedID|ahir_Version|open, 6 arguments|2	$00000004
+AHIRequestedID|requester|open, 6 arguments|2	$00000001
+AHIRequestedID|requester tags|open, 6 arguments|2	$00000000
+AHIRequestedID|tag list|open, 6 arguments|2	bytes 68 fnv 02343B5D
+AHIRequestedID|AHIRequestedID -1|open, 6 arguments|1	$00000001
+AHIRequestedID|six requesters|open, 6 arguments|1	$00000001
+AHIOutputRequest|kept|cancelled, 0 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 0 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIOutputRequest|other AHI calls|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 0 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 0 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedID|kept|cancelled, 0 arguments|1	kept
+AHIRequestedID|popped|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 0 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 0 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIRequestedID|AHI_AudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIRequestedID|other AHI calls|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 0 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 0 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 0 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedFreq|kept|cancelled, 0 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 0 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 0 arguments|1	$00000007
+AHIRequestedFreq|other AHI calls|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 0 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 0 arguments|1	bytes 68 fnv C223F788
+AHIOutputRequest|kept|cancelled, 1 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 1 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIOutputRequest|other AHI calls|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 1 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 1 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedID|kept|cancelled, 1 arguments|1	kept
+AHIRequestedID|popped|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 1 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 1 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIRequestedID|AHI_AudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIRequestedID|other AHI calls|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 1 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 1 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 1 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedFreq|kept|cancelled, 1 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 1 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 1 arguments|1	$00000008
+AHIRequestedFreq|other AHI calls|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 1 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIOutputRequest|kept|cancelled, 2 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 2 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIOutputRequest|other AHI calls|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 2 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 2 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedID|kept|cancelled, 2 arguments|1	kept
+AHIRequestedID|popped|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 2 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 2 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIRequestedID|AHI_AudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIRequestedID|other AHI calls|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 2 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 2 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 2 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedFreq|kept|cancelled, 2 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 2 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 2 arguments|1	$00000009
+AHIRequestedFreq|other AHI calls|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 2 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 2 arguments|1	bytes 68 fnv DE725149
+AHIOutputRequest|kept|cancelled, 4 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 4 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIOutputRequest|other AHI calls|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 4 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 4 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedID|kept|cancelled, 4 arguments|1	kept
+AHIRequestedID|popped|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 4 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 4 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIRequestedID|AHI_AudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIRequestedID|other AHI calls|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 4 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 4 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 4 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedFreq|kept|cancelled, 4 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 4 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 4 arguments|1	$0000000A
+AHIRequestedFreq|other AHI calls|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 4 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 4 arguments|1	bytes 68 fnv FDECA548
+AHIOutputRequest|kept|cancelled, 5 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 5 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIOutputRequest|other AHI calls|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 5 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 5 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedID|kept|cancelled, 5 arguments|1	kept
+AHIRequestedID|popped|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 5 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 5 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIRequestedID|AHI_AudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIRequestedID|other AHI calls|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 5 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 5 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 5 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedFreq|kept|cancelled, 5 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 5 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 5 arguments|1	$0000000B
+AHIRequestedFreq|other AHI calls|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 5 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIOutputRequest|kept|cancelled, 6 arguments|1	kept
+AHIOutputRequest|popped|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|d0|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|opens|cancelled, 6 arguments|1	$00000001
+AHIOutputRequest|closes|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|cancelled, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIOutputRequest|AHI_AudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|unit|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|flags|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|cancelled, 6 arguments|1	$00000004
+AHIOutputRequest|requester|cancelled, 6 arguments|1	$00000001
+AHIOutputRequest|requester tags|cancelled, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|cancelled, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|cancelled, 6 arguments|1	kept
+AHIRequestedID|popped|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|d0|cancelled, 6 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|cancelled, 6 arguments|1	$00000001
+AHIRequestedID|closes|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|cancelled, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIRequestedID|AHI_AudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|unit|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|flags|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|cancelled, 6 arguments|1	$00000004
+AHIRequestedID|requester|cancelled, 6 arguments|1	$00000001
+AHIRequestedID|requester tags|cancelled, 6 arguments|1	$00000000
+AHIRequestedID|tag list|cancelled, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|cancelled, 6 arguments|1	kept
+AHIRequestedFreq|popped|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|cancelled, 6 arguments|1	$00000001
+AHIRequestedFreq|closes|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|cancelled, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIRequestedFreq|AHI_AudioRequestA|cancelled, 6 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|flags|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|cancelled, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|cancelled, 6 arguments|1	$00000001
+AHIRequestedFreq|requester tags|cancelled, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|cancelled, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|no requester, 0 arguments|1	kept
+AHIOutputRequest|popped|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 0 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 0 arguments|1	$0000000D
+AHIOutputRequest|AHI_AudioRequestA|no requester, 0 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 0 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 0 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedID|kept|no requester, 0 arguments|1	kept
+AHIRequestedID|popped|no requester, 0 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 0 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 0 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 0 arguments|1	$0000000D
+AHIRequestedID|AHI_AudioRequestA|no requester, 0 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 0 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 0 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 0 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 0 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 0 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedFreq|kept|no requester, 0 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 0 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 0 arguments|1	$0000000D
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 0 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 0 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 0 arguments|1	bytes 68 fnv C223F788
+AHIOutputRequest|kept|no requester, 1 arguments|1	kept
+AHIOutputRequest|popped|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 1 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 1 arguments|1	$0000000E
+AHIOutputRequest|AHI_AudioRequestA|no requester, 1 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 1 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 1 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedID|kept|no requester, 1 arguments|1	kept
+AHIRequestedID|popped|no requester, 1 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 1 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 1 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 1 arguments|1	$0000000E
+AHIRequestedID|AHI_AudioRequestA|no requester, 1 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 1 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 1 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 1 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 1 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 1 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedFreq|kept|no requester, 1 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 1 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 1 arguments|1	$0000000E
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 1 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 1 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIOutputRequest|kept|no requester, 2 arguments|1	kept
+AHIOutputRequest|popped|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 2 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 2 arguments|1	$0000000F
+AHIOutputRequest|AHI_AudioRequestA|no requester, 2 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 2 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 2 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedID|kept|no requester, 2 arguments|1	kept
+AHIRequestedID|popped|no requester, 2 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 2 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 2 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 2 arguments|1	$0000000F
+AHIRequestedID|AHI_AudioRequestA|no requester, 2 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 2 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 2 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 2 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 2 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 2 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedFreq|kept|no requester, 2 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 2 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 2 arguments|1	$0000000F
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 2 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 2 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 2 arguments|1	bytes 68 fnv DE725149
+AHIOutputRequest|kept|no requester, 4 arguments|1	kept
+AHIOutputRequest|popped|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 4 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 4 arguments|1	$00000010
+AHIOutputRequest|AHI_AudioRequestA|no requester, 4 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 4 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 4 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedID|kept|no requester, 4 arguments|1	kept
+AHIRequestedID|popped|no requester, 4 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 4 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 4 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 4 arguments|1	$00000010
+AHIRequestedID|AHI_AudioRequestA|no requester, 4 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 4 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 4 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 4 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 4 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 4 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedFreq|kept|no requester, 4 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 4 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 4 arguments|1	$00000010
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 4 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 4 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 4 arguments|1	bytes 68 fnv FDECA548
+AHIOutputRequest|kept|no requester, 5 arguments|1	kept
+AHIOutputRequest|popped|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 5 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 5 arguments|1	$00000011
+AHIOutputRequest|AHI_AudioRequestA|no requester, 5 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 5 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 5 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedID|kept|no requester, 5 arguments|1	kept
+AHIRequestedID|popped|no requester, 5 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 5 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 5 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 5 arguments|1	$00000011
+AHIRequestedID|AHI_AudioRequestA|no requester, 5 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 5 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 5 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 5 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 5 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 5 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedFreq|kept|no requester, 5 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 5 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 5 arguments|1	$00000011
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 5 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 5 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIOutputRequest|kept|no requester, 6 arguments|1	kept
+AHIOutputRequest|popped|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|d0|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|opens|no requester, 6 arguments|1	$00000001
+AHIOutputRequest|closes|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|no requester, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|no requester, 6 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|no requester, 6 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|unit|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|flags|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|no requester, 6 arguments|1	$00000004
+AHIOutputRequest|requester|no requester, 6 arguments|1	$00000001
+AHIOutputRequest|requester tags|no requester, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|no requester, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|no requester, 6 arguments|1	kept
+AHIRequestedID|popped|no requester, 6 arguments|1	$00000000
+AHIRequestedID|d0|no requester, 6 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|no requester, 6 arguments|1	$00000001
+AHIRequestedID|closes|no requester, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|no requester, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|no requester, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|no requester, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no requester, 6 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|no requester, 6 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|no requester, 6 arguments|1	$00000000
+AHIRequestedID|unit|no requester, 6 arguments|1	$00000000
+AHIRequestedID|flags|no requester, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|no requester, 6 arguments|1	$00000004
+AHIRequestedID|requester|no requester, 6 arguments|1	$00000001
+AHIRequestedID|requester tags|no requester, 6 arguments|1	$00000000
+AHIRequestedID|tag list|no requester, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|no requester, 6 arguments|1	kept
+AHIRequestedFreq|popped|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|no requester, 6 arguments|1	$00000001
+AHIRequestedFreq|closes|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|no requester, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no requester, 6 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|no requester, 6 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|flags|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|no requester, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|no requester, 6 arguments|1	$00000001
+AHIRequestedFreq|requester tags|no requester, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|no requester, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|open|1	kept
+AHIRequestedID|popped|open|1	$00000000
+AHIRequestedID|d0|open|1	$FFFFFFFF
+AHIRequestedID|opens|open|1	$00000001
+AHIRequestedID|closes|open|1	$00000000
+AHIRequestedID|failed opens|open|1	$00000004
+AHIRequestedID|BeginIOs|open|1	$00000000
+AHIRequestedID|AbortIOs|open|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|open|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|open|1	$0000000C
+AHIRequestedID|other AHI calls|open|1	$00000000
+AHIRequestedID|unit|open|1	$00000000
+AHIRequestedID|flags|open|1	$00000000
+AHIRequestedID|ahir_Version|open|1	$00000004
+AHIRequestedID|requester|open|1	$00000001
+AHIRequestedID|requester tags|open|1	$00000000
+AHIRequestedID|tag list|open|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|open|1	kept
+AHIRequestedFreq|popped|open|1	$00000000
+AHIRequestedFreq|d0|open|1	$00000000
+AHIRequestedFreq|opens|open|1	$00000001
+AHIRequestedFreq|closes|open|1	$00000000
+AHIRequestedFreq|failed opens|open|1	$00000004
+AHIRequestedFreq|BeginIOs|open|1	$00000000
+AHIRequestedFreq|AbortIOs|open|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|open|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|open|1	$0000000C
+AHIRequestedFreq|other AHI calls|open|1	$00000000
+AHIRequestedFreq|unit|open|1	$00000000
+AHIRequestedFreq|flags|open|1	$00000000
+AHIRequestedFreq|ahir_Version|open|1	$00000004
+AHIRequestedFreq|requester|open|1	$00000001
+AHIRequestedFreq|requester tags|open|1	$00000000
+AHIRequestedFreq|tag list|open|1	bytes 68 fnv 02343B5D
+OpenAHI|kept|again, unit 2|1	kept
+OpenAHI|popped|again, unit 2|1	$00000000
+OpenAHI|d0|again, unit 2|1	$FFFFFFFF
+OpenAHI|opens|again, unit 2|1	$00000002
+OpenAHI|closes|again, unit 2|1	$00000000
+OpenAHI|failed opens|again, unit 2|1	$00000004
+OpenAHI|BeginIOs|again, unit 2|1	$00000000
+OpenAHI|AbortIOs|again, unit 2|1	$00000000
+OpenAHI|AHI_AllocAudioRequestA|again, unit 2|1	$00000012
+OpenAHI|AHI_AudioRequestA|again, unit 2|1	$0000000C
+OpenAHI|other AHI calls|again, unit 2|1	$00000000
+OpenAHI|unit|again, unit 2|1	$00000002
+OpenAHI|flags|again, unit 2|1	$00000000
+OpenAHI|ahir_Version|again, unit 2|1	$00000004
+OpenAHI|requester|again, unit 2|1	$00000001
+OpenAHI|requester tags|again, unit 2|1	$00000000
+OpenAHI|tag list|again, unit 2|1	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|open twice|1	kept
+PlaySoundAHI|popped|open twice|1	$00000000
+PlaySoundAHI|opens|open twice|1	$00000002
+PlaySoundAHI|closes|open twice|1	$00000000
+PlaySoundAHI|failed opens|open twice|1	$00000004
+PlaySoundAHI|BeginIOs|open twice|1	$00000000
+PlaySoundAHI|AbortIOs|open twice|1	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open twice|1	$00000012
+PlaySoundAHI|AHI_AudioRequestA|open twice|1	$0000000C
+PlaySoundAHI|other AHI calls|open twice|1	$00000000
+PlaySoundAHI|unit|open twice|1	$00000002
+PlaySoundAHI|flags|open twice|1	$00000000
+PlaySoundAHI|ahir_Version|open twice|1	$00000004
+PlaySoundAHI|requester|open twice|1	$00000001
+PlaySoundAHI|requester tags|open twice|1	$00000000
+PlaySoundAHI|tag list|open twice|1	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|open twice|1	kept
+PlayRawAHI|popped|open twice|1	$00000000
+PlayRawAHI|opens|open twice|1	$00000002
+PlayRawAHI|closes|open twice|1	$00000000
+PlayRawAHI|failed opens|open twice|1	$00000004
+PlayRawAHI|BeginIOs|open twice|1	$00000000
+PlayRawAHI|AbortIOs|open twice|1	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open twice|1	$00000012
+PlayRawAHI|AHI_AudioRequestA|open twice|1	$0000000C
+PlayRawAHI|other AHI calls|open twice|1	$00000000
+PlayRawAHI|unit|open twice|1	$00000002
+PlayRawAHI|flags|open twice|1	$00000000
+PlayRawAHI|ahir_Version|open twice|1	$00000004
+PlayRawAHI|requester|open twice|1	$00000001
+PlayRawAHI|requester tags|open twice|1	$00000000
+PlayRawAHI|tag list|open twice|1	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|open twice|2	kept
+PlaySoundAHI|popped|open twice|2	$00000000
+PlaySoundAHI|opens|open twice|2	$00000002
+PlaySoundAHI|closes|open twice|2	$00000000
+PlaySoundAHI|failed opens|open twice|2	$00000004
+PlaySoundAHI|BeginIOs|open twice|2	$00000000
+PlaySoundAHI|AbortIOs|open twice|2	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open twice|2	$00000012
+PlaySoundAHI|AHI_AudioRequestA|open twice|2	$0000000C
+PlaySoundAHI|other AHI calls|open twice|2	$00000000
+PlaySoundAHI|unit|open twice|2	$00000002
+PlaySoundAHI|flags|open twice|2	$00000000
+PlaySoundAHI|ahir_Version|open twice|2	$00000004
+PlaySoundAHI|requester|open twice|2	$00000001
+PlaySoundAHI|requester tags|open twice|2	$00000000
+PlaySoundAHI|tag list|open twice|2	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|open twice|2	kept
+PlayRawAHI|popped|open twice|2	$00000000
+PlayRawAHI|opens|open twice|2	$00000002
+PlayRawAHI|closes|open twice|2	$00000000
+PlayRawAHI|failed opens|open twice|2	$00000004
+PlayRawAHI|BeginIOs|open twice|2	$00000000
+PlayRawAHI|AbortIOs|open twice|2	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open twice|2	$00000012
+PlayRawAHI|AHI_AudioRequestA|open twice|2	$0000000C
+PlayRawAHI|other AHI calls|open twice|2	$00000000
+PlayRawAHI|unit|open twice|2	$00000002
+PlayRawAHI|flags|open twice|2	$00000000
+PlayRawAHI|ahir_Version|open twice|2	$00000004
+PlayRawAHI|requester|open twice|2	$00000001
+PlayRawAHI|requester tags|open twice|2	$00000000
+PlayRawAHI|tag list|open twice|2	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|open twice|3	kept
+PlaySoundAHI|popped|open twice|3	$00000000
+PlaySoundAHI|opens|open twice|3	$00000002
+PlaySoundAHI|closes|open twice|3	$00000000
+PlaySoundAHI|failed opens|open twice|3	$00000004
+PlaySoundAHI|BeginIOs|open twice|3	$00000000
+PlaySoundAHI|AbortIOs|open twice|3	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|open twice|3	$00000012
+PlaySoundAHI|AHI_AudioRequestA|open twice|3	$0000000C
+PlaySoundAHI|other AHI calls|open twice|3	$00000000
+PlaySoundAHI|unit|open twice|3	$00000002
+PlaySoundAHI|flags|open twice|3	$00000000
+PlaySoundAHI|ahir_Version|open twice|3	$00000004
+PlaySoundAHI|requester|open twice|3	$00000001
+PlaySoundAHI|requester tags|open twice|3	$00000000
+PlaySoundAHI|tag list|open twice|3	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|open twice|3	kept
+PlayRawAHI|popped|open twice|3	$00000000
+PlayRawAHI|opens|open twice|3	$00000002
+PlayRawAHI|closes|open twice|3	$00000000
+PlayRawAHI|failed opens|open twice|3	$00000004
+PlayRawAHI|BeginIOs|open twice|3	$00000000
+PlayRawAHI|AbortIOs|open twice|3	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|open twice|3	$00000012
+PlayRawAHI|AHI_AudioRequestA|open twice|3	$0000000C
+PlayRawAHI|other AHI calls|open twice|3	$00000000
+PlayRawAHI|unit|open twice|3	$00000002
+PlayRawAHI|flags|open twice|3	$00000000
+PlayRawAHI|ahir_Version|open twice|3	$00000004
+PlayRawAHI|requester|open twice|3	$00000001
+PlayRawAHI|requester tags|open twice|3	$00000000
+PlayRawAHI|tag list|open twice|3	bytes 68 fnv 02343B5D
+CloseAHI|kept|request in use|1	kept
+CloseAHI|popped|request in use|1	$00000000
+CloseAHI|opens|request in use|1	$00000002
+CloseAHI|closes|request in use|1	$00000000
+CloseAHI|failed opens|request in use|1	$00000004
+CloseAHI|BeginIOs|request in use|1	$00000000
+CloseAHI|AbortIOs|request in use|1	$00000000
+CloseAHI|AHI_AllocAudioRequestA|request in use|1	$00000012
+CloseAHI|AHI_AudioRequestA|request in use|1	$0000000C
+CloseAHI|other AHI calls|request in use|1	$00000000
+CloseAHI|unit|request in use|1	$00000002
+CloseAHI|flags|request in use|1	$00000000
+CloseAHI|ahir_Version|request in use|1	$00000004
+CloseAHI|requester|request in use|1	$00000001
+CloseAHI|requester tags|request in use|1	$00000000
+CloseAHI|tag list|request in use|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|request in use|1	kept
+AHIRequestedID|popped|request in use|1	$00000000
+AHIRequestedID|d0|request in use|1	$FFFFFFFF
+AHIRequestedID|opens|request in use|1	$00000002
+AHIRequestedID|closes|request in use|1	$00000000
+AHIRequestedID|failed opens|request in use|1	$00000004
+AHIRequestedID|BeginIOs|request in use|1	$00000000
+AHIRequestedID|AbortIOs|request in use|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|request in use|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|request in use|1	$0000000C
+AHIRequestedID|other AHI calls|request in use|1	$00000000
+AHIRequestedID|unit|request in use|1	$00000002
+AHIRequestedID|flags|request in use|1	$00000000
+AHIRequestedID|ahir_Version|request in use|1	$00000004
+AHIRequestedID|requester|request in use|1	$00000001
+AHIRequestedID|requester tags|request in use|1	$00000000
+AHIRequestedID|tag list|request in use|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|request in use|1	kept
+AHIRequestedFreq|popped|request in use|1	$00000000
+AHIRequestedFreq|d0|request in use|1	$00000000
+AHIRequestedFreq|opens|request in use|1	$00000002
+AHIRequestedFreq|closes|request in use|1	$00000000
+AHIRequestedFreq|failed opens|request in use|1	$00000004
+AHIRequestedFreq|BeginIOs|request in use|1	$00000000
+AHIRequestedFreq|AbortIOs|request in use|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|request in use|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|request in use|1	$0000000C
+AHIRequestedFreq|other AHI calls|request in use|1	$00000000
+AHIRequestedFreq|unit|request in use|1	$00000002
+AHIRequestedFreq|flags|request in use|1	$00000000
+AHIRequestedFreq|ahir_Version|request in use|1	$00000004
+AHIRequestedFreq|requester|request in use|1	$00000001
+AHIRequestedFreq|requester tags|request in use|1	$00000000
+AHIRequestedFreq|tag list|request in use|1	bytes 68 fnv 02343B5D
+CloseAHI|kept|open|1	kept
+CloseAHI|popped|open|1	$00000000
+CloseAHI|opens|open|1	$00000002
+CloseAHI|closes|open|1	$00000000
+CloseAHI|failed opens|open|1	$00000004
+CloseAHI|BeginIOs|open|1	$00000000
+CloseAHI|AbortIOs|open|1	$00000000
+CloseAHI|AHI_AllocAudioRequestA|open|1	$00000012
+CloseAHI|AHI_AudioRequestA|open|1	$0000000C
+CloseAHI|other AHI calls|open|1	$00000000
+CloseAHI|unit|open|1	$00000002
+CloseAHI|flags|open|1	$00000000
+CloseAHI|ahir_Version|open|1	$00000004
+CloseAHI|requester|open|1	$00000001
+CloseAHI|requester tags|open|1	$00000000
+CloseAHI|tag list|open|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed|1	kept
+AHIRequestedID|popped|closed|1	$00000000
+AHIRequestedID|d0|closed|1	$00000000
+AHIRequestedID|opens|closed|1	$00000002
+AHIRequestedID|closes|closed|1	$00000000
+AHIRequestedID|failed opens|closed|1	$00000004
+AHIRequestedID|BeginIOs|closed|1	$00000000
+AHIRequestedID|AbortIOs|closed|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed|1	$0000000C
+AHIRequestedID|other AHI calls|closed|1	$00000000
+AHIRequestedID|unit|closed|1	$00000002
+AHIRequestedID|flags|closed|1	$00000000
+AHIRequestedID|ahir_Version|closed|1	$00000004
+AHIRequestedID|requester|closed|1	$00000001
+AHIRequestedID|requester tags|closed|1	$00000000
+AHIRequestedID|tag list|closed|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed|1	kept
+AHIRequestedFreq|popped|closed|1	$00000000
+AHIRequestedFreq|d0|closed|1	$00000000
+AHIRequestedFreq|opens|closed|1	$00000002
+AHIRequestedFreq|closes|closed|1	$00000000
+AHIRequestedFreq|failed opens|closed|1	$00000004
+AHIRequestedFreq|BeginIOs|closed|1	$00000000
+AHIRequestedFreq|AbortIOs|closed|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed|1	$00000000
+AHIRequestedFreq|unit|closed|1	$00000002
+AHIRequestedFreq|flags|closed|1	$00000000
+AHIRequestedFreq|ahir_Version|closed|1	$00000004
+AHIRequestedFreq|requester|closed|1	$00000001
+AHIRequestedFreq|requester tags|closed|1	$00000000
+AHIRequestedFreq|tag list|closed|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 0 arguments|1	kept
+AHIOutputRequest|popped|closed, 0 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 0 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 0 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 0 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 0 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 0 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 0 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 0 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 0 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 0 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 0 arguments|1	kept
+AHIRequestedID|popped|closed, 0 arguments|1	$00000000
+AHIRequestedID|d0|closed, 0 arguments|1	$00000000
+AHIRequestedID|opens|closed, 0 arguments|1	$00000002
+AHIRequestedID|closes|closed, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 0 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 0 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 0 arguments|1	$00000000
+AHIRequestedID|unit|closed, 0 arguments|1	$00000002
+AHIRequestedID|flags|closed, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 0 arguments|1	$00000004
+AHIRequestedID|requester|closed, 0 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 0 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 0 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 0 arguments|1	kept
+AHIRequestedFreq|popped|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 0 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 0 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 0 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 0 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 0 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 0 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 1 arguments|1	kept
+AHIOutputRequest|popped|closed, 1 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 1 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 1 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 1 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 1 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 1 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 1 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 1 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 1 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 1 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 1 arguments|1	kept
+AHIRequestedID|popped|closed, 1 arguments|1	$00000000
+AHIRequestedID|d0|closed, 1 arguments|1	$00000000
+AHIRequestedID|opens|closed, 1 arguments|1	$00000002
+AHIRequestedID|closes|closed, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 1 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 1 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 1 arguments|1	$00000000
+AHIRequestedID|unit|closed, 1 arguments|1	$00000002
+AHIRequestedID|flags|closed, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 1 arguments|1	$00000004
+AHIRequestedID|requester|closed, 1 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 1 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 1 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 1 arguments|1	kept
+AHIRequestedFreq|popped|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 1 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 1 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 1 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 1 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 1 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 1 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 2 arguments|1	kept
+AHIOutputRequest|popped|closed, 2 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 2 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 2 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 2 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 2 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 2 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 2 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 2 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 2 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 2 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 2 arguments|1	kept
+AHIRequestedID|popped|closed, 2 arguments|1	$00000000
+AHIRequestedID|d0|closed, 2 arguments|1	$00000000
+AHIRequestedID|opens|closed, 2 arguments|1	$00000002
+AHIRequestedID|closes|closed, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 2 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 2 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 2 arguments|1	$00000000
+AHIRequestedID|unit|closed, 2 arguments|1	$00000002
+AHIRequestedID|flags|closed, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 2 arguments|1	$00000004
+AHIRequestedID|requester|closed, 2 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 2 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 2 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 2 arguments|1	kept
+AHIRequestedFreq|popped|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 2 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 2 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 2 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 2 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 2 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 2 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 4 arguments|1	kept
+AHIOutputRequest|popped|closed, 4 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 4 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 4 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 4 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 4 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 4 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 4 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 4 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 4 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 4 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 4 arguments|1	kept
+AHIRequestedID|popped|closed, 4 arguments|1	$00000000
+AHIRequestedID|d0|closed, 4 arguments|1	$00000000
+AHIRequestedID|opens|closed, 4 arguments|1	$00000002
+AHIRequestedID|closes|closed, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 4 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 4 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 4 arguments|1	$00000000
+AHIRequestedID|unit|closed, 4 arguments|1	$00000002
+AHIRequestedID|flags|closed, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 4 arguments|1	$00000004
+AHIRequestedID|requester|closed, 4 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 4 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 4 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 4 arguments|1	kept
+AHIRequestedFreq|popped|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 4 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 4 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 4 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 4 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 4 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 4 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 5 arguments|1	kept
+AHIOutputRequest|popped|closed, 5 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 5 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 5 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 5 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 5 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 5 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 5 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 5 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 5 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 5 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 5 arguments|1	kept
+AHIRequestedID|popped|closed, 5 arguments|1	$00000000
+AHIRequestedID|d0|closed, 5 arguments|1	$00000000
+AHIRequestedID|opens|closed, 5 arguments|1	$00000002
+AHIRequestedID|closes|closed, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 5 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 5 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 5 arguments|1	$00000000
+AHIRequestedID|unit|closed, 5 arguments|1	$00000002
+AHIRequestedID|flags|closed, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 5 arguments|1	$00000004
+AHIRequestedID|requester|closed, 5 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 5 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 5 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 5 arguments|1	kept
+AHIRequestedFreq|popped|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 5 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 5 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 5 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 5 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 5 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 5 arguments|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|closed, 6 arguments|1	kept
+AHIOutputRequest|popped|closed, 6 arguments|1	$00000000
+AHIOutputRequest|d0|closed, 6 arguments|1	$00000000
+AHIOutputRequest|opens|closed, 6 arguments|1	$00000002
+AHIOutputRequest|closes|closed, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|closed, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|closed, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|closed, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|closed, 6 arguments|1	$00000012
+AHIOutputRequest|AHI_AudioRequestA|closed, 6 arguments|1	$0000000C
+AHIOutputRequest|other AHI calls|closed, 6 arguments|1	$00000000
+AHIOutputRequest|unit|closed, 6 arguments|1	$00000002
+AHIOutputRequest|flags|closed, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|closed, 6 arguments|1	$00000004
+AHIOutputRequest|requester|closed, 6 arguments|1	$00000001
+AHIOutputRequest|requester tags|closed, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|closed, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|closed, 6 arguments|1	kept
+AHIRequestedID|popped|closed, 6 arguments|1	$00000000
+AHIRequestedID|d0|closed, 6 arguments|1	$00000000
+AHIRequestedID|opens|closed, 6 arguments|1	$00000002
+AHIRequestedID|closes|closed, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|closed, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|closed, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|closed, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|closed, 6 arguments|1	$00000012
+AHIRequestedID|AHI_AudioRequestA|closed, 6 arguments|1	$0000000C
+AHIRequestedID|other AHI calls|closed, 6 arguments|1	$00000000
+AHIRequestedID|unit|closed, 6 arguments|1	$00000002
+AHIRequestedID|flags|closed, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|closed, 6 arguments|1	$00000004
+AHIRequestedID|requester|closed, 6 arguments|1	$00000001
+AHIRequestedID|requester tags|closed, 6 arguments|1	$00000000
+AHIRequestedID|tag list|closed, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|closed, 6 arguments|1	kept
+AHIRequestedFreq|popped|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|closed, 6 arguments|1	$00000002
+AHIRequestedFreq|closes|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|closed, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|closed, 6 arguments|1	$00000012
+AHIRequestedFreq|AHI_AudioRequestA|closed, 6 arguments|1	$0000000C
+AHIRequestedFreq|other AHI calls|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|closed, 6 arguments|1	$00000002
+AHIRequestedFreq|flags|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|closed, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|closed, 6 arguments|1	$00000001
+AHIRequestedFreq|requester tags|closed, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|closed, 6 arguments|1	bytes 68 fnv 02343B5D
+CloseAHI|kept|again|1	kept
+CloseAHI|popped|again|1	$00000000
+CloseAHI|opens|again|1	$00000002
+CloseAHI|closes|again|1	$00000000
+CloseAHI|failed opens|again|1	$00000004
+CloseAHI|BeginIOs|again|1	$00000000
+CloseAHI|AbortIOs|again|1	$00000000
+CloseAHI|AHI_AllocAudioRequestA|again|1	$00000012
+CloseAHI|AHI_AudioRequestA|again|1	$0000000C
+CloseAHI|other AHI calls|again|1	$00000000
+CloseAHI|unit|again|1	$00000002
+CloseAHI|flags|again|1	$00000000
+CloseAHI|ahir_Version|again|1	$00000004
+CloseAHI|requester|again|1	$00000001
+CloseAHI|requester tags|again|1	$00000000
+CloseAHI|tag list|again|1	bytes 68 fnv 02343B5D
+finit|kept|closed|1	kept
+finit|popped|closed|1	$00000000
+finit|opens|closed|1	$00000002
+finit|closes|closed|1	$00000000
+finit|failed opens|closed|1	$00000004
+finit|BeginIOs|closed|1	$00000000
+finit|AbortIOs|closed|1	$00000000
+finit|AHI_AllocAudioRequestA|closed|1	$00000012
+finit|AHI_AudioRequestA|closed|1	$0000000C
+finit|other AHI calls|closed|1	$00000000
+finit|unit|closed|1	$00000002
+finit|flags|closed|1	$00000000
+finit|ahir_Version|closed|1	$00000004
+finit|requester|closed|1	$00000001
+finit|requester tags|closed|1	$00000000
+finit|tag list|closed|1	bytes 68 fnv 02343B5D
+init|kept|after finit|1	kept
+init|popped|after finit|1	$00000000
+init|opens|after finit|1	$00000002
+init|closes|after finit|1	$00000000
+init|failed opens|after finit|1	$00000004
+init|BeginIOs|after finit|1	$00000000
+init|AbortIOs|after finit|1	$00000000
+init|AHI_AllocAudioRequestA|after finit|1	$00000012
+init|AHI_AudioRequestA|after finit|1	$0000000C
+init|other AHI calls|after finit|1	$00000000
+init|unit|after finit|1	$00000002
+init|flags|after finit|1	$00000000
+init|ahir_Version|after finit|1	$00000004
+init|requester|after finit|1	$00000001
+init|requester tags|after finit|1	$00000000
+init|tag list|after finit|1	bytes 68 fnv 02343B5D
+OpenAHI|kept|after init, unit 3|1	kept
+OpenAHI|popped|after init, unit 3|1	$00000000
+OpenAHI|d0|after init, unit 3|1	$FFFFFFFF
+OpenAHI|opens|after init, unit 3|1	$00000003
+OpenAHI|closes|after init, unit 3|1	$00000000
+OpenAHI|failed opens|after init, unit 3|1	$00000004
+OpenAHI|BeginIOs|after init, unit 3|1	$00000000
+OpenAHI|AbortIOs|after init, unit 3|1	$00000000
+OpenAHI|AHI_AllocAudioRequestA|after init, unit 3|1	$00000012
+OpenAHI|AHI_AudioRequestA|after init, unit 3|1	$0000000C
+OpenAHI|other AHI calls|after init, unit 3|1	$00000000
+OpenAHI|unit|after init, unit 3|1	$00000003
+OpenAHI|flags|after init, unit 3|1	$00000000
+OpenAHI|ahir_Version|after init, unit 3|1	$00000004
+OpenAHI|requester|after init, unit 3|1	$00000001
+OpenAHI|requester tags|after init, unit 3|1	$00000000
+OpenAHI|tag list|after init, unit 3|1	bytes 68 fnv 02343B5D
+AHIOutputRequest|kept|reopened, 0 arguments|1	kept
+AHIOutputRequest|popped|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 0 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 0 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 0 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 0 arguments|1	$00000013
+AHIOutputRequest|AHI_AudioRequestA|reopened, 0 arguments|1	$0000000D
+AHIOutputRequest|other AHI calls|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 0 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 0 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 0 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 0 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedID|kept|reopened, 0 arguments|1	kept
+AHIRequestedID|popped|reopened, 0 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 0 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 0 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 0 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 0 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 0 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 0 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 0 arguments|1	$00000013
+AHIRequestedID|AHI_AudioRequestA|reopened, 0 arguments|1	$0000000D
+AHIRequestedID|other AHI calls|reopened, 0 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 0 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 0 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 0 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 0 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 0 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 0 arguments|1	bytes 68 fnv C223F788
+AHIRequestedFreq|kept|reopened, 0 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 0 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 0 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 0 arguments|1	$00000013
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 0 arguments|1	$0000000D
+AHIRequestedFreq|other AHI calls|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 0 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 0 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 0 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 0 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 0 arguments|1	bytes 68 fnv C223F788
+AHIOutputRequest|kept|reopened, 1 arguments|1	kept
+AHIOutputRequest|popped|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 1 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 1 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 1 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 1 arguments|1	$00000014
+AHIOutputRequest|AHI_AudioRequestA|reopened, 1 arguments|1	$0000000E
+AHIOutputRequest|other AHI calls|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 1 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 1 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 1 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 1 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedID|kept|reopened, 1 arguments|1	kept
+AHIRequestedID|popped|reopened, 1 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 1 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 1 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 1 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 1 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 1 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 1 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 1 arguments|1	$00000014
+AHIRequestedID|AHI_AudioRequestA|reopened, 1 arguments|1	$0000000E
+AHIRequestedID|other AHI calls|reopened, 1 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 1 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 1 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 1 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 1 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 1 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIRequestedFreq|kept|reopened, 1 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 1 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 1 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 1 arguments|1	$00000014
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 1 arguments|1	$0000000E
+AHIRequestedFreq|other AHI calls|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 1 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 1 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 1 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 1 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 1 arguments|1	bytes 68 fnv E894BC0B
+AHIOutputRequest|kept|reopened, 2 arguments|1	kept
+AHIOutputRequest|popped|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 2 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 2 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 2 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 2 arguments|1	$00000015
+AHIOutputRequest|AHI_AudioRequestA|reopened, 2 arguments|1	$0000000F
+AHIOutputRequest|other AHI calls|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 2 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 2 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 2 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 2 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedID|kept|reopened, 2 arguments|1	kept
+AHIRequestedID|popped|reopened, 2 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 2 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 2 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 2 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 2 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 2 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 2 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 2 arguments|1	$00000015
+AHIRequestedID|AHI_AudioRequestA|reopened, 2 arguments|1	$0000000F
+AHIRequestedID|other AHI calls|reopened, 2 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 2 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 2 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 2 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 2 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 2 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 2 arguments|1	bytes 68 fnv DE725149
+AHIRequestedFreq|kept|reopened, 2 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 2 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 2 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 2 arguments|1	$00000015
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 2 arguments|1	$0000000F
+AHIRequestedFreq|other AHI calls|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 2 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 2 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 2 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 2 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 2 arguments|1	bytes 68 fnv DE725149
+AHIOutputRequest|kept|reopened, 4 arguments|1	kept
+AHIOutputRequest|popped|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 4 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 4 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 4 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 4 arguments|1	$00000016
+AHIOutputRequest|AHI_AudioRequestA|reopened, 4 arguments|1	$00000010
+AHIOutputRequest|other AHI calls|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 4 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 4 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 4 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 4 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedID|kept|reopened, 4 arguments|1	kept
+AHIRequestedID|popped|reopened, 4 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 4 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 4 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 4 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 4 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 4 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 4 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 4 arguments|1	$00000016
+AHIRequestedID|AHI_AudioRequestA|reopened, 4 arguments|1	$00000010
+AHIRequestedID|other AHI calls|reopened, 4 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 4 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 4 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 4 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 4 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 4 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 4 arguments|1	bytes 68 fnv FDECA548
+AHIRequestedFreq|kept|reopened, 4 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 4 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 4 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 4 arguments|1	$00000016
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 4 arguments|1	$00000010
+AHIRequestedFreq|other AHI calls|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 4 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 4 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 4 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 4 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 4 arguments|1	bytes 68 fnv FDECA548
+AHIOutputRequest|kept|reopened, 5 arguments|1	kept
+AHIOutputRequest|popped|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 5 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 5 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 5 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 5 arguments|1	$00000017
+AHIOutputRequest|AHI_AudioRequestA|reopened, 5 arguments|1	$00000011
+AHIOutputRequest|other AHI calls|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 5 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 5 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 5 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 5 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedID|kept|reopened, 5 arguments|1	kept
+AHIRequestedID|popped|reopened, 5 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 5 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 5 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 5 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 5 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 5 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 5 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 5 arguments|1	$00000017
+AHIRequestedID|AHI_AudioRequestA|reopened, 5 arguments|1	$00000011
+AHIRequestedID|other AHI calls|reopened, 5 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 5 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 5 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 5 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 5 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 5 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIRequestedFreq|kept|reopened, 5 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 5 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 5 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 5 arguments|1	$00000017
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 5 arguments|1	$00000011
+AHIRequestedFreq|other AHI calls|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 5 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 5 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 5 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 5 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 5 arguments|1	bytes 68 fnv 9A6AC75D
+AHIOutputRequest|kept|reopened, 6 arguments|1	kept
+AHIOutputRequest|popped|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|d0|reopened, 6 arguments|1	$00000001
+AHIOutputRequest|opens|reopened, 6 arguments|1	$00000003
+AHIOutputRequest|closes|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|failed opens|reopened, 6 arguments|1	$00000004
+AHIOutputRequest|BeginIOs|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|AbortIOs|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|AHI_AllocAudioRequestA|reopened, 6 arguments|1	$00000018
+AHIOutputRequest|AHI_AudioRequestA|reopened, 6 arguments|1	$00000012
+AHIOutputRequest|other AHI calls|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|unit|reopened, 6 arguments|1	$00000003
+AHIOutputRequest|flags|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|ahir_Version|reopened, 6 arguments|1	$00000004
+AHIOutputRequest|requester|reopened, 6 arguments|1	$00000001
+AHIOutputRequest|requester tags|reopened, 6 arguments|1	$00000000
+AHIOutputRequest|tag list|reopened, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|reopened, 6 arguments|1	kept
+AHIRequestedID|popped|reopened, 6 arguments|1	$00000000
+AHIRequestedID|d0|reopened, 6 arguments|1	$FFFFFFFF
+AHIRequestedID|opens|reopened, 6 arguments|1	$00000003
+AHIRequestedID|closes|reopened, 6 arguments|1	$00000000
+AHIRequestedID|failed opens|reopened, 6 arguments|1	$00000004
+AHIRequestedID|BeginIOs|reopened, 6 arguments|1	$00000000
+AHIRequestedID|AbortIOs|reopened, 6 arguments|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|reopened, 6 arguments|1	$00000018
+AHIRequestedID|AHI_AudioRequestA|reopened, 6 arguments|1	$00000012
+AHIRequestedID|other AHI calls|reopened, 6 arguments|1	$00000000
+AHIRequestedID|unit|reopened, 6 arguments|1	$00000003
+AHIRequestedID|flags|reopened, 6 arguments|1	$00000000
+AHIRequestedID|ahir_Version|reopened, 6 arguments|1	$00000004
+AHIRequestedID|requester|reopened, 6 arguments|1	$00000001
+AHIRequestedID|requester tags|reopened, 6 arguments|1	$00000000
+AHIRequestedID|tag list|reopened, 6 arguments|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|reopened, 6 arguments|1	kept
+AHIRequestedFreq|popped|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|d0|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|opens|reopened, 6 arguments|1	$00000003
+AHIRequestedFreq|closes|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|failed opens|reopened, 6 arguments|1	$00000004
+AHIRequestedFreq|BeginIOs|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|AbortIOs|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|reopened, 6 arguments|1	$00000018
+AHIRequestedFreq|AHI_AudioRequestA|reopened, 6 arguments|1	$00000012
+AHIRequestedFreq|other AHI calls|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|unit|reopened, 6 arguments|1	$00000003
+AHIRequestedFreq|flags|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|ahir_Version|reopened, 6 arguments|1	$00000004
+AHIRequestedFreq|requester|reopened, 6 arguments|1	$00000001
+AHIRequestedFreq|requester tags|reopened, 6 arguments|1	$00000000
+AHIRequestedFreq|tag list|reopened, 6 arguments|1	bytes 68 fnv 02343B5D
+finit|kept|open|1	kept
+finit|popped|open|1	$00000000
+finit|opens|open|1	$00000003
+finit|closes|open|1	$00000000
+finit|failed opens|open|1	$00000004
+finit|BeginIOs|open|1	$00000000
+finit|AbortIOs|open|1	$00000000
+finit|AHI_AllocAudioRequestA|open|1	$00000018
+finit|AHI_AudioRequestA|open|1	$00000012
+finit|other AHI calls|open|1	$00000000
+finit|unit|open|1	$00000003
+finit|flags|open|1	$00000000
+finit|ahir_Version|open|1	$00000004
+finit|requester|open|1	$00000001
+finit|requester tags|open|1	$00000000
+finit|tag list|open|1	bytes 68 fnv 02343B5D
+init|kept|no port|1	kept
+init|popped|no port|1	$00000000
+init|opens|no port|1	$00000003
+init|closes|no port|1	$00000000
+init|failed opens|no port|1	$00000004
+init|BeginIOs|no port|1	$00000000
+init|AbortIOs|no port|1	$00000000
+init|AHI_AllocAudioRequestA|no port|1	$00000018
+init|AHI_AudioRequestA|no port|1	$00000012
+init|other AHI calls|no port|1	$00000000
+init|unit|no port|1	$00000003
+init|flags|no port|1	$00000000
+init|ahir_Version|no port|1	$00000004
+init|requester|no port|1	$00000001
+init|requester tags|no port|1	$00000000
+init|tag list|no port|1	bytes 68 fnv 02343B5D
+AHIRequestedID|kept|no port|1	kept
+AHIRequestedID|popped|no port|1	$00000000
+AHIRequestedID|d0|no port|1	$00000000
+AHIRequestedID|opens|no port|1	$00000003
+AHIRequestedID|closes|no port|1	$00000000
+AHIRequestedID|failed opens|no port|1	$00000004
+AHIRequestedID|BeginIOs|no port|1	$00000000
+AHIRequestedID|AbortIOs|no port|1	$00000000
+AHIRequestedID|AHI_AllocAudioRequestA|no port|1	$00000018
+AHIRequestedID|AHI_AudioRequestA|no port|1	$00000012
+AHIRequestedID|other AHI calls|no port|1	$00000000
+AHIRequestedID|unit|no port|1	$00000003
+AHIRequestedID|flags|no port|1	$00000000
+AHIRequestedID|ahir_Version|no port|1	$00000004
+AHIRequestedID|requester|no port|1	$00000001
+AHIRequestedID|requester tags|no port|1	$00000000
+AHIRequestedID|tag list|no port|1	bytes 68 fnv 02343B5D
+AHIRequestedFreq|kept|no port|1	kept
+AHIRequestedFreq|popped|no port|1	$00000000
+AHIRequestedFreq|d0|no port|1	$00000000
+AHIRequestedFreq|opens|no port|1	$00000003
+AHIRequestedFreq|closes|no port|1	$00000000
+AHIRequestedFreq|failed opens|no port|1	$00000004
+AHIRequestedFreq|BeginIOs|no port|1	$00000000
+AHIRequestedFreq|AbortIOs|no port|1	$00000000
+AHIRequestedFreq|AHI_AllocAudioRequestA|no port|1	$00000018
+AHIRequestedFreq|AHI_AudioRequestA|no port|1	$00000012
+AHIRequestedFreq|other AHI calls|no port|1	$00000000
+AHIRequestedFreq|unit|no port|1	$00000003
+AHIRequestedFreq|flags|no port|1	$00000000
+AHIRequestedFreq|ahir_Version|no port|1	$00000004
+AHIRequestedFreq|requester|no port|1	$00000001
+AHIRequestedFreq|requester tags|no port|1	$00000000
+AHIRequestedFreq|tag list|no port|1	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|no port|1	kept
+PlaySoundAHI|popped|no port|1	$00000000
+PlaySoundAHI|opens|no port|1	$00000003
+PlaySoundAHI|closes|no port|1	$00000000
+PlaySoundAHI|failed opens|no port|1	$00000004
+PlaySoundAHI|BeginIOs|no port|1	$00000000
+PlaySoundAHI|AbortIOs|no port|1	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no port|1	$00000018
+PlaySoundAHI|AHI_AudioRequestA|no port|1	$00000012
+PlaySoundAHI|other AHI calls|no port|1	$00000000
+PlaySoundAHI|unit|no port|1	$00000003
+PlaySoundAHI|flags|no port|1	$00000000
+PlaySoundAHI|ahir_Version|no port|1	$00000004
+PlaySoundAHI|requester|no port|1	$00000001
+PlaySoundAHI|requester tags|no port|1	$00000000
+PlaySoundAHI|tag list|no port|1	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|no port|1	kept
+PlayRawAHI|popped|no port|1	$00000000
+PlayRawAHI|opens|no port|1	$00000003
+PlayRawAHI|closes|no port|1	$00000000
+PlayRawAHI|failed opens|no port|1	$00000004
+PlayRawAHI|BeginIOs|no port|1	$00000000
+PlayRawAHI|AbortIOs|no port|1	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no port|1	$00000018
+PlayRawAHI|AHI_AudioRequestA|no port|1	$00000012
+PlayRawAHI|other AHI calls|no port|1	$00000000
+PlayRawAHI|unit|no port|1	$00000003
+PlayRawAHI|flags|no port|1	$00000000
+PlayRawAHI|ahir_Version|no port|1	$00000004
+PlayRawAHI|requester|no port|1	$00000001
+PlayRawAHI|requester tags|no port|1	$00000000
+PlayRawAHI|tag list|no port|1	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|no port|2	kept
+PlaySoundAHI|popped|no port|2	$00000000
+PlaySoundAHI|opens|no port|2	$00000003
+PlaySoundAHI|closes|no port|2	$00000000
+PlaySoundAHI|failed opens|no port|2	$00000004
+PlaySoundAHI|BeginIOs|no port|2	$00000000
+PlaySoundAHI|AbortIOs|no port|2	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no port|2	$00000018
+PlaySoundAHI|AHI_AudioRequestA|no port|2	$00000012
+PlaySoundAHI|other AHI calls|no port|2	$00000000
+PlaySoundAHI|unit|no port|2	$00000003
+PlaySoundAHI|flags|no port|2	$00000000
+PlaySoundAHI|ahir_Version|no port|2	$00000004
+PlaySoundAHI|requester|no port|2	$00000001
+PlaySoundAHI|requester tags|no port|2	$00000000
+PlaySoundAHI|tag list|no port|2	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|no port|2	kept
+PlayRawAHI|popped|no port|2	$00000000
+PlayRawAHI|opens|no port|2	$00000003
+PlayRawAHI|closes|no port|2	$00000000
+PlayRawAHI|failed opens|no port|2	$00000004
+PlayRawAHI|BeginIOs|no port|2	$00000000
+PlayRawAHI|AbortIOs|no port|2	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no port|2	$00000018
+PlayRawAHI|AHI_AudioRequestA|no port|2	$00000012
+PlayRawAHI|other AHI calls|no port|2	$00000000
+PlayRawAHI|unit|no port|2	$00000003
+PlayRawAHI|flags|no port|2	$00000000
+PlayRawAHI|ahir_Version|no port|2	$00000004
+PlayRawAHI|requester|no port|2	$00000001
+PlayRawAHI|requester tags|no port|2	$00000000
+PlayRawAHI|tag list|no port|2	bytes 68 fnv 02343B5D
+PlaySoundAHI|kept|no port|3	kept
+PlaySoundAHI|popped|no port|3	$00000000
+PlaySoundAHI|opens|no port|3	$00000003
+PlaySoundAHI|closes|no port|3	$00000000
+PlaySoundAHI|failed opens|no port|3	$00000004
+PlaySoundAHI|BeginIOs|no port|3	$00000000
+PlaySoundAHI|AbortIOs|no port|3	$00000000
+PlaySoundAHI|AHI_AllocAudioRequestA|no port|3	$00000018
+PlaySoundAHI|AHI_AudioRequestA|no port|3	$00000012
+PlaySoundAHI|other AHI calls|no port|3	$00000000
+PlaySoundAHI|unit|no port|3	$00000003
+PlaySoundAHI|flags|no port|3	$00000000
+PlaySoundAHI|ahir_Version|no port|3	$00000004
+PlaySoundAHI|requester|no port|3	$00000001
+PlaySoundAHI|requester tags|no port|3	$00000000
+PlaySoundAHI|tag list|no port|3	bytes 68 fnv 02343B5D
+PlayRawAHI|kept|no port|3	kept
+PlayRawAHI|popped|no port|3	$00000000
+PlayRawAHI|opens|no port|3	$00000003
+PlayRawAHI|closes|no port|3	$00000000
+PlayRawAHI|failed opens|no port|3	$00000004
+PlayRawAHI|BeginIOs|no port|3	$00000000
+PlayRawAHI|AbortIOs|no port|3	$00000000
+PlayRawAHI|AHI_AllocAudioRequestA|no port|3	$00000018
+PlayRawAHI|AHI_AudioRequestA|no port|3	$00000012
+PlayRawAHI|other AHI calls|no port|3	$00000000
+PlayRawAHI|unit|no port|3	$00000003
+PlayRawAHI|flags|no port|3	$00000000
+PlayRawAHI|ahir_Version|no port|3	$00000004
+PlayRawAHI|requester|no port|3	$00000001
+PlayRawAHI|requester tags|no port|3	$00000000
+PlayRawAHI|tag list|no port|3	bytes 68 fnv 02343B5D
+finit|kept|no port|1	kept
+finit|popped|no port|1	$00000000
+finit|opens|no port|1	$00000003
+finit|closes|no port|1	$00000000
+finit|failed opens|no port|1	$00000004
+finit|BeginIOs|no port|1	$00000000
+finit|AbortIOs|no port|1	$00000000
+finit|AHI_AllocAudioRequestA|no port|1	$00000018
+finit|AHI_AudioRequestA|no port|1	$00000012
+finit|other AHI calls|no port|1	$00000000
+finit|unit|no port|1	$00000003
+finit|flags|no port|1	$00000000
+finit|ahir_Version|no port|1	$00000004
+finit|requester|no port|1	$00000001
+finit|requester tags|no port|1	$00000000
+finit|tag list|no port|1	bytes 68 fnv 02343B5D
+init|kept|last|1	kept
+init|popped|last|1	$00000000
+init|opens|last|1	$00000003
+init|closes|last|1	$00000000
+init|failed opens|last|1	$00000004
+init|BeginIOs|last|1	$00000000
+init|AbortIOs|last|1	$00000000
+init|AHI_AllocAudioRequestA|last|1	$00000018
+init|AHI_AudioRequestA|last|1	$00000012
+init|other AHI calls|last|1	$00000000
+init|unit|last|1	$00000003
+init|flags|last|1	$00000000
+init|ahir_Version|last|1	$00000004
+init|requester|last|1	$00000001
+init|requester tags|last|1	$00000000
+init|tag list|last|1	bytes 68 fnv 02343B5D
+finit|kept|last|1	kept
+finit|popped|last|1	$00000000
+finit|opens|last|1	$00000003
+finit|closes|last|1	$00000000
+finit|failed opens|last|1	$00000004
+finit|BeginIOs|last|1	$00000000
+finit|AbortIOs|last|1	$00000000
+finit|AHI_AllocAudioRequestA|last|1	$00000018
+finit|AHI_AudioRequestA|last|1	$00000012
+finit|other AHI calls|last|1	$00000000
+finit|unit|last|1	$00000003
+finit|flags|last|1	$00000000
+finit|ahir_Version|last|1	$00000004
+finit|requester|last|1	$00000001
+finit|requester tags|last|1	$00000000
+finit|tag list|last|1	bytes 68 fnv 02343B5D

@@ -1,0 +1,563 @@
+# capture rwe_rishapeslib 1
+init|kept||1	kept
+init|popped||1	$00000000
+LEInitShape|kept|0 20x10x2|1	kept
+LEInitShape|popped|0 20x10x2|1	$00000000
+LEInitShape|shape 0 fields|0 20x10x2|1	bytes 14 0014000A00020004028300000000
+LEInitShape|shape 0 fields|0 20x10x2|2	bytes 10 0028003C005000780000
+LEInitShape|shape 0 data set|0 20x10x2|1	$00000001
+LEInitShape|shape 0 cookie set|0 20x10x2|1	$00000001
+LEInitShape|shape 0 data|0 20x10x2|1	bytes 80 fnv C1B82605
+LEInitShape|shape 0 cookie|0 20x10x2|1	bytes 40 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+LEInitShape|kept|1 16x8x1|1	kept
+LEInitShape|popped|1 16x8x1|1	$00000000
+LEInitShape|shape 1 fields|1 16x8x1|1	bytes 14 0010000800010002020200000000
+LEInitShape|shape 1 fields|1 16x8x1|2	bytes 10 00100020001000200000
+LEInitShape|shape 1 data set|1 16x8x1|1	$00000001
+LEInitShape|shape 1 cookie set|1 16x8x1|1	$00000001
+LEInitShape|shape 1 data|1 16x8x1|1	bytes 16 00000000000000000000000000000000
+LEInitShape|shape 1 cookie|1 16x8x1|1	bytes 16 00000000000000000000000000000000
+LEInitShape|kept|2 33x5x3|1	kept
+LEInitShape|popped|2 33x5x3|1	$00000000
+LEInitShape|shape 2 fields|2 33x5x3|1	bytes 14 0021000500030006014400000000
+LEInitShape|shape 2 fields|2 33x5x3|2	bytes 10 001E0028005A00780000
+LEInitShape|shape 2 data set|2 33x5x3|1	$00000001
+LEInitShape|shape 2 cookie set|2 33x5x3|1	$00000001
+LEInitShape|shape 2 data|2 33x5x3|1	bytes 90 fnv 1C670EAD
+LEInitShape|shape 2 cookie|2 33x5x3|1	bytes 30 000000000000000000000000000000000000000000000000000000000000
+LEInitShape|kept|3 1x30x1|1	kept
+LEInitShape|popped|3 1x30x1|1	$00000000
+LEInitShape|shape 3 fields|3 1x30x1|1	bytes 14 0001001E00010002078200000000
+LEInitShape|shape 3 fields|3 1x30x1|2	bytes 10 003C0078003C00780000
+LEInitShape|shape 3 data set|3 1x30x1|1	$00000001
+LEInitShape|shape 3 cookie set|3 1x30x1|1	$00000001
+LEInitShape|shape 3 data|3 1x30x1|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+LEInitShape|shape 3 cookie|3 1x30x1|1	bytes 60 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+LEInitShape|kept|2 40x6x2|1	kept
+LEInitShape|popped|2 40x6x2|1	$00000000
+LEInitShape|shape 2 fields|2 40x6x2|1	bytes 14 0028000600020006018400000000
+LEInitShape|shape 2 fields|2 40x6x2|2	bytes 10 00240030004800600000
+LEInitShape|shape 2 data set|2 40x6x2|1	$00000001
+LEInitShape|shape 2 cookie set|2 40x6x2|1	$00000001
+LEInitShape|shape 2 data|2 40x6x2|1	bytes 72 fnv 6AEFDE65
+LEInitShape|shape 2 cookie|2 40x6x2|1	bytes 36 000000000000000000000000000000000000000000000000000000000000000000000000
+LEScanShapes|kept|0..3|1	kept
+LEScanShapes|popped|0..3|1	$00000000
+LEMaxShapeWidth|kept|0..3|1	kept
+LEMaxShapeWidth|popped|0..3|1	$00000000
+LEMaxShapeWidth|d0|0..3|1	$00000028
+LEMaxShapeHeight|kept|0..3|1	kept
+LEMaxShapeHeight|popped|0..3|1	$00000000
+LEMaxShapeHeight|d0|0..3|1	$0000001E
+LEMaxShapeDepth|kept|0..3|1	kept
+LEMaxShapeDepth|popped|0..3|1	$00000000
+LEMaxShapeDepth|d0|0..3|1	$00000002
+LEScanShapes|kept|1..1|1	kept
+LEScanShapes|popped|1..1|1	$00000000
+LEMaxShapeWidth|kept|1..1|1	kept
+LEMaxShapeWidth|popped|1..1|1	$00000000
+LEMaxShapeWidth|d0|1..1|1	$00000010
+LEMaxShapeHeight|kept|1..1|1	kept
+LEMaxShapeHeight|popped|1..1|1	$00000000
+LEMaxShapeHeight|d0|1..1|1	$00000008
+LEMaxShapeDepth|kept|1..1|1	kept
+LEMaxShapeDepth|popped|1..1|1	$00000000
+LEMaxShapeDepth|d0|1..1|1	$00000001
+LEScanShapes|kept|4..5|1	kept
+LEScanShapes|popped|4..5|1	$00000000
+LEMaxShapeWidth|kept|4..5|1	kept
+LEMaxShapeWidth|popped|4..5|1	$00000000
+LEMaxShapeWidth|d0|4..5|1	$00000000
+LEMaxShapeHeight|kept|4..5|1	kept
+LEMaxShapeHeight|popped|4..5|1	$00000000
+LEMaxShapeHeight|d0|4..5|1	$00000000
+LEMaxShapeDepth|kept|4..5|1	kept
+LEMaxShapeDepth|popped|4..5|1	$00000000
+LEMaxShapeDepth|d0|4..5|1	$00000000
+SafeToBlit|kept|shape 0 at 0,0 max 10|1	kept
+SafeToBlit|popped|shape 0 at 0,0 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at 0,0 max 10|1	$FFFFFFFF
+SafeToBlit|kept|shape 0 at 300,190 max 10|1	kept
+SafeToBlit|popped|shape 0 at 300,190 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at 300,190 max 10|1	$FFFFFFFF
+SafeToBlit|kept|shape 0 at 301,190 max 10|1	kept
+SafeToBlit|popped|shape 0 at 301,190 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at 301,190 max 10|1	$00000000
+SafeToBlit|kept|shape 0 at 300,191 max 10|1	kept
+SafeToBlit|popped|shape 0 at 300,191 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at 300,191 max 10|1	$00000000
+SafeToBlit|kept|shape 0 at -1,0 max 10|1	kept
+SafeToBlit|popped|shape 0 at -1,0 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at -1,0 max 10|1	$00000000
+SafeToBlit|kept|shape 0 at 0,-32768 max 10|1	kept
+SafeToBlit|popped|shape 0 at 0,-32768 max 10|1	$00000000
+SafeToBlit|d0|shape 0 at 0,-32768 max 10|1	$00000000
+SafeToBlit|kept|shape 1 at 304,199 max 10|1	kept
+SafeToBlit|popped|shape 1 at 304,199 max 10|1	$00000000
+SafeToBlit|d0|shape 1 at 304,199 max 10|1	$00000000
+SafeToBlit|kept|shape 4 at 0,0 max 10|1	kept
+SafeToBlit|popped|shape 4 at 0,0 max 10|1	$00000000
+SafeToBlit|d0|shape 4 at 0,0 max 10|1	$00000000
+SafeToBlit|kept|shape 31 at 0,0 max 1|1	kept
+SafeToBlit|popped|shape 31 at 0,0 max 1|1	$00000000
+SafeToBlit|d0|shape 31 at 0,0 max 1|1	$00000000
+SafeToBlit|kept|shape 32 at 0,0 max 1|1	kept
+SafeToBlit|popped|shape 32 at 0,0 max 1|1	$00000000
+SafeToBlit|d0|shape 32 at 0,0 max 1|1	$00000000
+SafeToBlit|kept|shape 0 at 0,0 max 0|1	kept
+SafeToBlit|popped|shape 0 at 0,0 max 0|1	$00000000
+SafeToBlit|d0|shape 0 at 0,0 max 0|1	$00000000
+SafeToBlit|kept|shape 0 at 0,0 max 65535|1	kept
+SafeToBlit|popped|shape 0 at 0,0 max 65535|1	$00000000
+SafeToBlit|d0|shape 0 at 0,0 max 65535|1	$00000000
+LESaveShapes|kept|0..3 up $0 pal -1 file 0|1	kept
+LESaveShapes|popped|0..3 up $0 pal -1 file 0|1	$00000000
+LESaveShapes|file length|0..3 up $0 pal -1 file 0|1	$00000144
+LESaveShapes|file written|0..3 up $0 pal -1 file 0|1	$00000001
+LESaveShapes|file|0..3 up $0 pal -1 file 0|1	bytes 30000 fnv 5778CDFB
+LESaveShapes|kept|0..3 up $0 pal 0 file 1|1	kept
+LESaveShapes|popped|0..3 up $0 pal 0 file 1|1	$00000000
+LESaveShapes|file length|0..3 up $0 pal 0 file 1|1	$00000170
+LESaveShapes|file written|0..3 up $0 pal 0 file 1|1	$00000001
+LESaveShapes|file|0..3 up $0 pal 0 file 1|1	bytes 30000 fnv 42BBA24E
+LESaveShapes|kept|0..64 up $0 pal 0 file 2|1	kept
+LESaveShapes|popped|0..64 up $0 pal 0 file 2|1	$00000000
+LESaveShapes|file length|0..64 up $0 pal 0 file 2|1	$0000044C
+LESaveShapes|file written|0..64 up $0 pal 0 file 2|1	$00000001
+LESaveShapes|file|0..64 up $0 pal 0 file 2|1	bytes 30000 fnv 033CF8A3
+LESaveShapes|kept|0..3 up $5a01 pal -1 file 3|1	kept
+LESaveShapes|popped|0..3 up $5a01 pal -1 file 3|1	$00000000
+LESaveShapes|file length|0..3 up $5a01 pal -1 file 3|1	$00000144
+LESaveShapes|file written|0..3 up $5a01 pal -1 file 3|1	$00000001
+LESaveShapes|file|0..3 up $5a01 pal -1 file 3|1	bytes 30000 fnv 353A58F2
+LECompressShapes|kept|-1|1	kept
+LECompressShapes|popped|-1|1	$00000000
+LESaveShapes|kept|0..64 up $0 pal 0 file 4|1	kept
+LESaveShapes|popped|0..64 up $0 pal 0 file 4|1	$00000000
+LESaveShapes|file length|0..64 up $0 pal 0 file 4|1	$000003E6
+LESaveShapes|file written|0..64 up $0 pal 0 file 4|1	$00000001
+LESaveShapes|file|0..64 up $0 pal 0 file 4|1	bytes 30000 fnv 6FEAA58A
+LECompressShapes|kept|0|1	kept
+LECompressShapes|popped|0|1	$00000000
+LESaveShapes|kept|2..2 up $0 pal 0 file 5|1	kept
+LESaveShapes|popped|2..2 up $0 pal 0 file 5|1	$00000000
+LESaveShapes|file length|2..2 up $0 pal 0 file 5|1	$000000B0
+LESaveShapes|file written|2..2 up $0 pal 0 file 5|1	$00000001
+LESaveShapes|file|2..2 up $0 pal 0 file 5|1	bytes 30000 fnv C6F39633
+LELoadShapes|kept|form 1 10,13 pal -1 file 0 |1	kept
+LELoadShapes|popped|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 10 fields|form 1 10,13 pal -1 file 0 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 10 fields|form 1 10,13 pal -1 file 0 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 10 data set|form 1 10,13 pal -1 file 0 |1	$00000001
+LELoadShapes|shape 10 cookie set|form 1 10,13 pal -1 file 0 |1	$00000001
+LELoadShapes|shape 10 data|form 1 10,13 pal -1 file 0 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 10 cookie|form 1 10,13 pal -1 file 0 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 11 fields|form 1 10,13 pal -1 file 0 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 11 fields|form 1 10,13 pal -1 file 0 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 11 data set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 11 cookie set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 12 fields|form 1 10,13 pal -1 file 0 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 12 fields|form 1 10,13 pal -1 file 0 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 12 data set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 12 cookie set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 13 fields|form 1 10,13 pal -1 file 0 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 13 fields|form 1 10,13 pal -1 file 0 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 13 data set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|shape 13 cookie set|form 1 10,13 pal -1 file 0 |1	$00000000
+LELoadShapes|one shape loaded|form 1 10,13 pal -1 file 0 |1	$00000001
+LELoadShapes|kept|form 0 14,17 pal 1 file 1 |1	kept
+LELoadShapes|popped|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 14 fields|form 0 14,17 pal 1 file 1 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 14 fields|form 0 14,17 pal 1 file 1 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 14 data set|form 0 14,17 pal 1 file 1 |1	$00000001
+LELoadShapes|shape 14 cookie set|form 0 14,17 pal 1 file 1 |1	$00000001
+LELoadShapes|shape 14 data|form 0 14,17 pal 1 file 1 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 14 cookie|form 0 14,17 pal 1 file 1 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 15 fields|form 0 14,17 pal 1 file 1 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 15 fields|form 0 14,17 pal 1 file 1 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 15 data set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 15 cookie set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 16 fields|form 0 14,17 pal 1 file 1 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 16 fields|form 0 14,17 pal 1 file 1 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 16 data set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 16 cookie set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 17 fields|form 0 14,17 pal 1 file 1 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 17 fields|form 0 14,17 pal 1 file 1 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 17 data set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|shape 17 cookie set|form 0 14,17 pal 1 file 1 |1	$00000000
+LELoadShapes|palette 1 count|form 0 14,17 pal 1 file 1 |1	$0000000C
+LELoadShapes|palette 1 data set|form 0 14,17 pal 1 file 1 |1	$00000001
+LELoadShapes|palette 1 data|form 0 14,17 pal 1 file 1 |1	bytes 148 fnv 02484B09
+LELoadShapes|kept|form 0 20,23 pal 1 file 2 |1	kept
+LELoadShapes|popped|form 0 20,23 pal 1 file 2 |1	$00000000
+LELoadShapes|shape 20 fields|form 0 20,23 pal 1 file 2 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 20 fields|form 0 20,23 pal 1 file 2 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 20 data set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 20 cookie set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 20 data|form 0 20,23 pal 1 file 2 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 20 cookie|form 0 20,23 pal 1 file 2 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 21 fields|form 0 20,23 pal 1 file 2 |1	bytes 14 0010000800010002020200000000
+LELoadShapes|shape 21 fields|form 0 20,23 pal 1 file 2 |2	bytes 10 00100020001000200000
+LELoadShapes|shape 21 data set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 21 cookie set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 21 data|form 0 20,23 pal 1 file 2 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 21 cookie|form 0 20,23 pal 1 file 2 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 22 fields|form 0 20,23 pal 1 file 2 |1	bytes 14 0028000600020006018400000000
+LELoadShapes|shape 22 fields|form 0 20,23 pal 1 file 2 |2	bytes 10 00240030004800600000
+LELoadShapes|shape 22 data set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 22 cookie set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|shape 22 data|form 0 20,23 pal 1 file 2 |1	bytes 72 fnv 95D54F95
+LELoadShapes|shape 22 cookie|form 0 20,23 pal 1 file 2 |1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LELoadShapes|shape 23 fields|form 0 20,23 pal 1 file 2 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 23 fields|form 0 20,23 pal 1 file 2 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 23 data set|form 0 20,23 pal 1 file 2 |1	$00000000
+LELoadShapes|shape 23 cookie set|form 0 20,23 pal 1 file 2 |1	$00000000
+LELoadShapes|palette 1 count|form 0 20,23 pal 1 file 2 |1	$0000000C
+LELoadShapes|palette 1 data set|form 0 20,23 pal 1 file 2 |1	$00000001
+LELoadShapes|palette 1 data|form 0 20,23 pal 1 file 2 |1	bytes 148 fnv 02484B09
+LELoadShapes|kept|form 1 24,27 pal -1 file 4 |1	kept
+LELoadShapes|popped|form 1 24,27 pal -1 file 4 |1	$00000000
+LELoadShapes|shape 24 fields|form 1 24,27 pal -1 file 4 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 24 fields|form 1 24,27 pal -1 file 4 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 24 data set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 24 cookie set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 24 data|form 1 24,27 pal -1 file 4 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 24 cookie|form 1 24,27 pal -1 file 4 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 25 fields|form 1 24,27 pal -1 file 4 |1	bytes 14 0010000800010002020200000000
+LELoadShapes|shape 25 fields|form 1 24,27 pal -1 file 4 |2	bytes 10 00100020001000200000
+LELoadShapes|shape 25 data set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 25 cookie set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 25 data|form 1 24,27 pal -1 file 4 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 25 cookie|form 1 24,27 pal -1 file 4 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 26 fields|form 1 24,27 pal -1 file 4 |1	bytes 14 0028000600020006018400000000
+LELoadShapes|shape 26 fields|form 1 24,27 pal -1 file 4 |2	bytes 10 00240030004800600000
+LELoadShapes|shape 26 data set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 26 cookie set|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|shape 26 data|form 1 24,27 pal -1 file 4 |1	bytes 72 fnv 95D54F95
+LELoadShapes|shape 26 cookie|form 1 24,27 pal -1 file 4 |1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LELoadShapes|shape 27 fields|form 1 24,27 pal -1 file 4 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 27 fields|form 1 24,27 pal -1 file 4 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 27 data set|form 1 24,27 pal -1 file 4 |1	$00000000
+LELoadShapes|shape 27 cookie set|form 1 24,27 pal -1 file 4 |1	$00000000
+LELoadShapes|packed shapes loaded|form 1 24,27 pal -1 file 4 |1	$00000001
+LELoadShapes|kept|form 1 10,13 pal -1 file 2 |1	kept
+LELoadShapes|popped|form 1 10,13 pal -1 file 2 |1	$00000000
+LELoadShapes|shape 10 fields|form 1 10,13 pal -1 file 2 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 10 fields|form 1 10,13 pal -1 file 2 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 10 data set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 10 cookie set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 10 data|form 1 10,13 pal -1 file 2 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 10 cookie|form 1 10,13 pal -1 file 2 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 11 fields|form 1 10,13 pal -1 file 2 |1	bytes 14 0010000800010002020200000000
+LELoadShapes|shape 11 fields|form 1 10,13 pal -1 file 2 |2	bytes 10 00100020001000200000
+LELoadShapes|shape 11 data set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 11 cookie set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 11 data|form 1 10,13 pal -1 file 2 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 11 cookie|form 1 10,13 pal -1 file 2 |1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LELoadShapes|shape 12 fields|form 1 10,13 pal -1 file 2 |1	bytes 14 0028000600020006018400000000
+LELoadShapes|shape 12 fields|form 1 10,13 pal -1 file 2 |2	bytes 10 00240030004800600000
+LELoadShapes|shape 12 data set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 12 cookie set|form 1 10,13 pal -1 file 2 |1	$00000001
+LELoadShapes|shape 12 data|form 1 10,13 pal -1 file 2 |1	bytes 72 fnv 95D54F95
+LELoadShapes|shape 12 cookie|form 1 10,13 pal -1 file 2 |1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LELoadShapes|shape 13 fields|form 1 10,13 pal -1 file 2 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 13 fields|form 1 10,13 pal -1 file 2 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 13 data set|form 1 10,13 pal -1 file 2 |1	$00000000
+LELoadShapes|shape 13 cookie set|form 1 10,13 pal -1 file 2 |1	$00000000
+LELoadShapes|kept|form 2 30,34 pal -1 file 5 |1	kept
+LELoadShapes|popped|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 30 fields|form 2 30,34 pal -1 file 5 |1	bytes 14 0028000600020006018400000000
+LELoadShapes|shape 30 fields|form 2 30,34 pal -1 file 5 |2	bytes 10 00240030004800600000
+LELoadShapes|shape 30 data set|form 2 30,34 pal -1 file 5 |1	$00000001
+LELoadShapes|shape 30 cookie set|form 2 30,34 pal -1 file 5 |1	$00000001
+LELoadShapes|shape 30 data|form 2 30,34 pal -1 file 5 |1	bytes 72 fnv 95D54F95
+LELoadShapes|shape 30 cookie|form 2 30,34 pal -1 file 5 |1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LELoadShapes|shape 31 fields|form 2 30,34 pal -1 file 5 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 31 fields|form 2 30,34 pal -1 file 5 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 31 data set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 31 cookie set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 32 fields|form 2 30,34 pal -1 file 5 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 32 fields|form 2 30,34 pal -1 file 5 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 32 data set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 32 cookie set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 33 fields|form 2 30,34 pal -1 file 5 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 33 fields|form 2 30,34 pal -1 file 5 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 33 data set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 33 cookie set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 34 fields|form 2 30,34 pal -1 file 5 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 34 fields|form 2 30,34 pal -1 file 5 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 34 data set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|shape 34 cookie set|form 2 30,34 pal -1 file 5 |1	$00000000
+LELoadShapes|kept|form 3 35,37 pal 2 file 1 |1	kept
+LELoadShapes|popped|form 3 35,37 pal 2 file 1 |1	$00000000
+LELoadShapes|shape 35 fields|form 3 35,37 pal 2 file 1 |1	bytes 14 0014000A00020004028300000000
+LELoadShapes|shape 35 fields|form 3 35,37 pal 2 file 1 |2	bytes 10 0028003C005000780000
+LELoadShapes|shape 35 data set|form 3 35,37 pal 2 file 1 |1	$00000001
+LELoadShapes|shape 35 cookie set|form 3 35,37 pal 2 file 1 |1	$00000001
+LELoadShapes|shape 35 data|form 3 35,37 pal 2 file 1 |1	bytes 80 fnv DABC2465
+LELoadShapes|shape 35 cookie|form 3 35,37 pal 2 file 1 |1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LELoadShapes|shape 36 fields|form 3 35,37 pal 2 file 1 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 36 fields|form 3 35,37 pal 2 file 1 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 36 data set|form 3 35,37 pal 2 file 1 |1	$00000000
+LELoadShapes|shape 36 cookie set|form 3 35,37 pal 2 file 1 |1	$00000000
+LELoadShapes|shape 37 fields|form 3 35,37 pal 2 file 1 |1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 37 fields|form 3 35,37 pal 2 file 1 |2	bytes 10 00000000000000000000
+LELoadShapes|shape 37 data set|form 3 35,37 pal 2 file 1 |1	$00000000
+LELoadShapes|shape 37 cookie set|form 3 35,37 pal 2 file 1 |1	$00000000
+LELoadShapes|palette 2 count|form 3 35,37 pal 2 file 1 |1	$0000000C
+LELoadShapes|palette 2 data set|form 3 35,37 pal 2 file 1 |1	$00000001
+LELoadShapes|palette 2 data|form 3 35,37 pal 2 file 1 |1	bytes 148 fnv 02484B09
+LELoadShapes|kept|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	kept
+LELoadShapes|popped|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	$00000000
+LELoadShapes|shape 40 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 40 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_none|2	bytes 10 00000000000000000000
+LELoadShapes|shape 40 data set|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	$00000000
+LELoadShapes|shape 40 cookie set|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	$00000000
+LELoadShapes|shape 41 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 41 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_none|2	bytes 10 00000000000000000000
+LELoadShapes|shape 41 data set|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	$00000000
+LELoadShapes|shape 41 cookie set|form 1 40,41 pal -1 file 0 RAM:rwesh_none|1	$00000000
+LELoadShapes|kept|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	kept
+LELoadShapes|popped|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	$00000000
+LELoadShapes|shape 40 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 40 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_form|2	bytes 10 00000000000000000000
+LELoadShapes|shape 40 data set|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	$00000000
+LELoadShapes|shape 40 cookie set|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	$00000000
+LELoadShapes|shape 41 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 41 fields|form 1 40,41 pal -1 file 0 RAM:rwesh_form|2	bytes 10 00000000000000000000
+LELoadShapes|shape 41 data set|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	$00000000
+LELoadShapes|shape 41 cookie set|form 1 40,41 pal -1 file 0 RAM:rwesh_form|1	$00000000
+LELoadShapes|kept|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	kept
+LELoadShapes|popped|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 40 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 40 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|2	bytes 10 00000000000000000000
+LELoadShapes|shape 40 data set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 40 cookie set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 41 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 41 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|2	bytes 10 00000000000000000000
+LELoadShapes|shape 41 data set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 41 cookie set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 42 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 14 0000000000000000000000000000
+LELoadShapes|shape 42 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|2	bytes 10 00000000000000000000
+LELoadShapes|shape 42 data set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 42 cookie set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000000
+LELoadShapes|shape 43 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 14 001800070002000401C200030002
+LELoadShapes|shape 43 fields|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|2	bytes 10 001C002A003800540000
+LELoadShapes|shape 43 data set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000001
+LELoadShapes|shape 43 cookie set|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000001
+LELoadShapes|shape 43 data|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 56 5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794A1AEBBC8D5E2EFFC091623303D4A5764717E8B98A5B2BFCCD9E6F3000D1A27
+LELoadShapes|shape 43 cookie|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	bytes 28 DCFDF6EFFC9DBEB7F4FDDEFFFC757E9FBCBDF6FFECFDFEF794ADBEBF
+LELoadShapes|LoadShapes into the last shape|form 1 40,43 pal -1 file 0 RAM:rwesh_acid|1	$00000001
+LECludgeShapes|kept|form 0 44,47 pal -1 flag 0 fast|1	kept
+LECludgeShapes|popped|form 0 44,47 pal -1 flag 0 fast|1	$00000000
+LECludgeShapes|shape 44 fields|form 0 44,47 pal -1 flag 0 fast|1	bytes 14 0014000A00020004028300000000
+LECludgeShapes|shape 44 fields|form 0 44,47 pal -1 flag 0 fast|2	bytes 10 0028003C005000780000
+LECludgeShapes|shape 44 data set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 44 cookie set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 44 data|form 0 44,47 pal -1 flag 0 fast|1	bytes 80 fnv DABC2465
+LECludgeShapes|shape 44 cookie|form 0 44,47 pal -1 flag 0 fast|1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LECludgeShapes|shape 45 fields|form 0 44,47 pal -1 flag 0 fast|1	bytes 14 0010000800010002020200000000
+LECludgeShapes|shape 45 fields|form 0 44,47 pal -1 flag 0 fast|2	bytes 10 00100020001000200000
+LECludgeShapes|shape 45 data set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 45 cookie set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 45 data|form 0 44,47 pal -1 flag 0 fast|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 45 cookie|form 0 44,47 pal -1 flag 0 fast|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 46 fields|form 0 44,47 pal -1 flag 0 fast|1	bytes 14 0028000600020006018400000000
+LECludgeShapes|shape 46 fields|form 0 44,47 pal -1 flag 0 fast|2	bytes 10 00240030004800600000
+LECludgeShapes|shape 46 data set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 46 cookie set|form 0 44,47 pal -1 flag 0 fast|1	$00000001
+LECludgeShapes|shape 46 data|form 0 44,47 pal -1 flag 0 fast|1	bytes 72 fnv 95D54F95
+LECludgeShapes|shape 46 cookie|form 0 44,47 pal -1 flag 0 fast|1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LECludgeShapes|shape 47 fields|form 0 44,47 pal -1 flag 0 fast|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 47 fields|form 0 44,47 pal -1 flag 0 fast|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 47 data set|form 0 44,47 pal -1 flag 0 fast|1	$00000000
+LECludgeShapes|shape 47 cookie set|form 0 44,47 pal -1 flag 0 fast|1	$00000000
+LECludgeShapes|kept|form 1 48,50 pal 3 flag -1 chip, copied|1	kept
+LECludgeShapes|popped|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000000
+LECludgeShapes|shape 48 fields|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 14 0014000A00020004028300000000
+LECludgeShapes|shape 48 fields|form 1 48,50 pal 3 flag -1 chip, copied|2	bytes 10 0028003C005000780000
+LECludgeShapes|shape 48 data set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000001
+LECludgeShapes|shape 48 cookie set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000001
+LECludgeShapes|shape 48 data|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 80 fnv DABC2465
+LECludgeShapes|shape 48 cookie|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LECludgeShapes|shape 49 fields|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 49 fields|form 1 48,50 pal 3 flag -1 chip, copied|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 49 data set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000000
+LECludgeShapes|shape 49 cookie set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000000
+LECludgeShapes|shape 50 fields|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 50 fields|form 1 48,50 pal 3 flag -1 chip, copied|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 50 data set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000000
+LECludgeShapes|shape 50 cookie set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000000
+LECludgeShapes|palette 3 count|form 1 48,50 pal 3 flag -1 chip, copied|1	$0000000C
+LECludgeShapes|palette 3 data set|form 1 48,50 pal 3 flag -1 chip, copied|1	$00000001
+LECludgeShapes|palette 3 data|form 1 48,50 pal 3 flag -1 chip, copied|1	bytes 148 fnv 02484B09
+LECludgeShapes|kept|form 1 51,54 pal -1 flag 0 chip, packed|1	kept
+LECludgeShapes|popped|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000000
+LECludgeShapes|shape 51 fields|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 14 0014000A00020004028300000000
+LECludgeShapes|shape 51 fields|form 1 51,54 pal -1 flag 0 chip, packed|2	bytes 10 0028003C005000780000
+LECludgeShapes|shape 51 data set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 51 cookie set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 51 data|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 80 fnv DABC2465
+LECludgeShapes|shape 51 cookie|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LECludgeShapes|shape 52 fields|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 14 0010000800010002020200000000
+LECludgeShapes|shape 52 fields|form 1 51,54 pal -1 flag 0 chip, packed|2	bytes 10 00100020001000200000
+LECludgeShapes|shape 52 data set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 52 cookie set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 52 data|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 52 cookie|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 53 fields|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 14 0028000600020006018400000000
+LECludgeShapes|shape 53 fields|form 1 51,54 pal -1 flag 0 chip, packed|2	bytes 10 00240030004800600000
+LECludgeShapes|shape 53 data set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 53 cookie set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000001
+LECludgeShapes|shape 53 data|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 72 fnv 95D54F95
+LECludgeShapes|shape 53 cookie|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LECludgeShapes|shape 54 fields|form 1 51,54 pal -1 flag 0 chip, packed|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 54 fields|form 1 51,54 pal -1 flag 0 chip, packed|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 54 data set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000000
+LECludgeShapes|shape 54 cookie set|form 1 51,54 pal -1 flag 0 chip, packed|1	$00000000
+LECludgeShapes|kept|form 0 55,57 pal 3 flag 0 chip, linked|1	kept
+LECludgeShapes|popped|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000000
+LECludgeShapes|shape 55 fields|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 14 0014000A00020004028300000000
+LECludgeShapes|shape 55 fields|form 0 55,57 pal 3 flag 0 chip, linked|2	bytes 10 0028003C00500078634C
+LECludgeShapes|shape 55 data set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 55 cookie set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 55 data|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 80 fnv DABC2465
+LECludgeShapes|shape 55 linked at|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000068
+LECludgeShapes|shape 55 cookie|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 40 5555555555777777776666666666777777777777777777BBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDD
+LECludgeShapes|shape 56 fields|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 14 0010000800010002020200000000
+LECludgeShapes|shape 56 fields|form 0 55,57 pal 3 flag 0 chip, linked|2	bytes 10 0010002000100020634C
+LECludgeShapes|shape 56 data set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 56 cookie set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 56 data|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 56 linked at|form 0 55,57 pal 3 flag 0 chip, linked|1	$000000C4
+LECludgeShapes|shape 56 cookie|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 16 22476C91B6DB00254B7095BADF04294E
+LECludgeShapes|shape 57 fields|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 14 0028000600020006018400000000
+LECludgeShapes|shape 57 fields|form 0 55,57 pal 3 flag 0 chip, linked|2	bytes 10 0024003000480060634C
+LECludgeShapes|shape 57 data set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 57 cookie set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|shape 57 data|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 72 fnv 95D54F95
+LECludgeShapes|shape 57 linked at|form 0 55,57 pal 3 flag 0 chip, linked|1	$000000E0
+LECludgeShapes|shape 57 cookie|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 36 777777777777777777CCCCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEE
+LECludgeShapes|palette 3 count|form 0 55,57 pal 3 flag 0 chip, linked|1	$0000000C
+LECludgeShapes|palette 3 data set|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LECludgeShapes|palette 3 data|form 0 55,57 pal 3 flag 0 chip, linked|1	bytes 148 fnv 02484B09
+LECludgeShapes|linked|form 0 55,57 pal 3 flag 0 chip, linked|1	$00000001
+LEInitShape|kept|55 8x8x1|1	kept
+LEInitShape|popped|55 8x8x1|1	$00000000
+LEInitShape|shape 55 fields|55 8x8x1|1	bytes 14 0008000800010002020200000000
+LEInitShape|shape 55 fields|55 8x8x1|2	bytes 10 00100020001000200000
+LEInitShape|shape 55 data set|55 8x8x1|1	$00000001
+LEInitShape|shape 55 cookie set|55 8x8x1|1	$00000001
+LEInitShape|shape 55 data|55 8x8x1|1	bytes 16 00000000000000000000000000000000
+LEInitShape|shape 55 cookie|55 8x8x1|1	bytes 16 00000000000000000000000000000000
+LECludgeShapes|kept|form 0 58,59 pal 3 flag 0 CMAP 7|1	kept
+LECludgeShapes|popped|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000000
+LECludgeShapes|shape 58 fields|form 0 58,59 pal 3 flag 0 CMAP 7|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 58 fields|form 0 58,59 pal 3 flag 0 CMAP 7|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 58 data set|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000000
+LECludgeShapes|shape 58 cookie set|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000000
+LECludgeShapes|shape 59 fields|form 0 58,59 pal 3 flag 0 CMAP 7|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 59 fields|form 0 58,59 pal 3 flag 0 CMAP 7|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 59 data set|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000000
+LECludgeShapes|shape 59 cookie set|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000000
+LECludgeShapes|palette 3 count|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000002
+LECludgeShapes|palette 3 data set|form 0 58,59 pal 3 flag 0 CMAP 7|1	$00000001
+LECludgeShapes|palette 3 data|form 0 58,59 pal 3 flag 0 CMAP 7|1	bytes 28 00020000030303030A0A0A0A11111111181818181F1F1F1F26262626
+LECludgeShapes|kept|form 0 58,59 pal -1 flag 0 no FORM|1	kept
+LECludgeShapes|popped|form 0 58,59 pal -1 flag 0 no FORM|1	$00000000
+LECludgeShapes|shape 58 fields|form 0 58,59 pal -1 flag 0 no FORM|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 58 fields|form 0 58,59 pal -1 flag 0 no FORM|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 58 data set|form 0 58,59 pal -1 flag 0 no FORM|1	$00000000
+LECludgeShapes|shape 58 cookie set|form 0 58,59 pal -1 flag 0 no FORM|1	$00000000
+LECludgeShapes|shape 59 fields|form 0 58,59 pal -1 flag 0 no FORM|1	bytes 14 0000000000000000000000000000
+LECludgeShapes|shape 59 fields|form 0 58,59 pal -1 flag 0 no FORM|2	bytes 10 00000000000000000000
+LECludgeShapes|shape 59 data set|form 0 58,59 pal -1 flag 0 no FORM|1	$00000000
+LECludgeShapes|shape 59 cookie set|form 0 58,59 pal -1 flag 0 no FORM|1	$00000000
+CludgeShapes|kept|60 num 0 at 0 none|1	kept
+CludgeShapes|popped|60 num 0 at 0 none|1	$00000000
+CludgeShapes|d0|60 num 0 at 0 none|1	$00000000
+CludgeShapes|kept|60 num 3 at 0 |1	kept
+CludgeShapes|popped|60 num 3 at 0 |1	$00000000
+CludgeShapes|d0|60 num 3 at 0 |1	$FFFFFFFF
+CludgeShapes|shape 60 fields|60 num 3 at 0 |1	bytes 14 0014000400020004010200030002
+CludgeShapes|shape 60 fields|60 num 3 at 0 |2	bytes 10 00100018002000300000
+CludgeShapes|shape 60 data set|60 num 3 at 0 |1	$00000001
+CludgeShapes|shape 60 cookie set|60 num 3 at 0 |1	$00000001
+CludgeShapes|shape 60 data|60 num 3 at 0 |1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+CludgeShapes|shape 60 cookie|60 num 3 at 0 |1	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
+CludgeShapes|shape 61 fields|60 num 3 at 0 |1	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 61 fields|60 num 3 at 0 |2	bytes 10 00000000000000000000
+CludgeShapes|shape 61 data set|60 num 3 at 0 |1	$00000000
+CludgeShapes|shape 61 cookie set|60 num 3 at 0 |1	$00000000
+CludgeShapes|shape 62 fields|60 num 3 at 0 |1	bytes 14 001100030003000400C200030002
+CludgeShapes|shape 62 fields|60 num 3 at 0 |2	bytes 10 000C0012002400360000
+CludgeShapes|shape 62 data set|60 num 3 at 0 |1	$00000001
+CludgeShapes|shape 62 cookie set|60 num 3 at 0 |1	$00000001
+CludgeShapes|shape 62 data|60 num 3 at 0 |1	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
+CludgeShapes|shape 62 cookie|60 num 3 at 0 |1	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
+CludgeShapes|kept|60 num 5 at 0 again, used|1	kept
+CludgeShapes|popped|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|d0|60 num 5 at 0 again, used|1	$FFFFFFFF
+CludgeShapes|shape 60 fields|60 num 5 at 0 again, used|1	bytes 14 0014000400020004010200030002
+CludgeShapes|shape 60 fields|60 num 5 at 0 again, used|2	bytes 10 00100018002000300000
+CludgeShapes|shape 60 data set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 60 cookie set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 60 data|60 num 5 at 0 again, used|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+CludgeShapes|shape 60 cookie|60 num 5 at 0 again, used|1	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
+CludgeShapes|shape 61 fields|60 num 5 at 0 again, used|1	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 61 fields|60 num 5 at 0 again, used|2	bytes 10 00000000000000000000
+CludgeShapes|shape 61 data set|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|shape 61 cookie set|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|1	bytes 14 001100030003000400C200030002
+CludgeShapes|shape 62 fields|60 num 5 at 0 again, used|2	bytes 10 000C0012002400360000
+CludgeShapes|shape 62 data set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 62 cookie set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 62 data|60 num 5 at 0 again, used|1	bytes 36 03101D2A3744515E6B7885929FACB9C6D3E0EDFA0714212E3B4855626F7C8996A3B0BDCA
+CludgeShapes|shape 62 cookie|60 num 5 at 0 again, used|1	bytes 12 BFFCFDEEFFFCFDFEEFFCBDFE
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|1	bytes 14 0000000000000000000000000000
+CludgeShapes|shape 63 fields|60 num 5 at 0 again, used|2	bytes 10 00000000000000000000
+CludgeShapes|shape 63 data set|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|shape 63 cookie set|60 num 5 at 0 again, used|1	$00000000
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|1	bytes 14 0040000200010008008400030002
+CludgeShapes|shape 64 fields|60 num 5 at 0 again, used|2	bytes 10 00100014001000140000
+CludgeShapes|shape 64 data set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 64 cookie set|60 num 5 at 0 again, used|1	$00000001
+CludgeShapes|shape 64 data|60 num 5 at 0 again, used|1	bytes 16 05121F2C394653606D7A8794A1AEBBC8
+CludgeShapes|shape 64 cookie|60 num 5 at 0 again, used|1	bytes 16 05121F2C394653606D7A8794A1AEBBC8
+CludgeShapes|the stale size skips to the next shape|60 num 5 at 0 again, used|1	$00000001
+LEAutoCookie|kept|0|1	kept
+LEAutoCookie|popped|0|1	$00000000
+CludgeShapesToAddress|kept|65 num 1 at 0 no cookie|1	kept
+CludgeShapesToAddress|popped|65 num 1 at 0 no cookie|1	$00000000
+CludgeShapesToAddress|d0|65 num 1 at 0 no cookie|1	$FFFFFFFF
+CludgeShapesToAddress|shape 65 fields|65 num 1 at 0 no cookie|1	bytes 14 0014000400020004010200030002
+CludgeShapesToAddress|shape 65 fields|65 num 1 at 0 no cookie|2	bytes 10 00100018002000300000
+CludgeShapesToAddress|shape 65 data set|65 num 1 at 0 no cookie|1	$00000001
+CludgeShapesToAddress|shape 65 cookie set|65 num 1 at 0 no cookie|1	$00000000
+CludgeShapesToAddress|shape 65 data|65 num 1 at 0 no cookie|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+LEAutoCookie|kept|1|1	kept
+LEAutoCookie|popped|1|1	$00000000
+CludgeShapesToAddress|kept|66 num 2 at 0 |1	kept
+CludgeShapesToAddress|popped|66 num 2 at 0 |1	$00000000
+CludgeShapesToAddress|d0|66 num 2 at 0 |1	$FFFFFFFF
+CludgeShapesToAddress|shape 66 fields|66 num 2 at 0 |1	bytes 14 0014000400020004010200030002
+CludgeShapesToAddress|shape 66 fields|66 num 2 at 0 |2	bytes 10 00100018002000300000
+CludgeShapesToAddress|shape 66 data set|66 num 2 at 0 |1	$00000001
+CludgeShapesToAddress|shape 66 cookie set|66 num 2 at 0 |1	$00000001
+CludgeShapesToAddress|shape 66 data|66 num 2 at 0 |1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+CludgeShapesToAddress|shape 66 cookie|66 num 2 at 0 |1	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
+CludgeShapesToAddress|shape 67 fields|66 num 2 at 0 |1	bytes 14 0000000000000000000000000000
+CludgeShapesToAddress|shape 67 fields|66 num 2 at 0 |2	bytes 10 00000000000000000000
+CludgeShapesToAddress|shape 67 data set|66 num 2 at 0 |1	$00000000
+CludgeShapesToAddress|shape 67 cookie set|66 num 2 at 0 |1	$00000000
+CludgeShapes|kept|56 num 1 at 0 into a linked shape|1	kept
+CludgeShapes|popped|56 num 1 at 0 into a linked shape|1	$00000000
+CludgeShapes|d0|56 num 1 at 0 into a linked shape|1	$FFFFFFFF
+CludgeShapes|shape 56 fields|56 num 1 at 0 into a linked shape|1	bytes 14 0014000400020004010200030002
+CludgeShapes|shape 56 fields|56 num 1 at 0 into a linked shape|2	bytes 10 00100018002000300000
+CludgeShapes|shape 56 data set|56 num 1 at 0 into a linked shape|1	$00000001
+CludgeShapes|shape 56 cookie set|56 num 1 at 0 into a linked shape|1	$00000001
+CludgeShapes|shape 56 data|56 num 1 at 0 into a linked shape|1	bytes 32 010E1B2835424F5C697683909DAAB7C4D1DEEBF805121F2C394653606D7A8794
+CludgeShapes|shape 56 cookie|56 num 1 at 0 into a linked shape|1	bytes 16 D1DEFBF835525F7C7976D3F0FDFAB7D4
+finit|kept||1	kept
+finit|popped||1	$00000000

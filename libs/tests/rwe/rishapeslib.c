@@ -1,15 +1,17 @@
 /*
- * rwe rishapeslib - the C build of rishapeslib (userlib 46) against the
+ * rwe rishapeslib - the C build of rishapeslib (userlib 46) or the
  * reference build of its source (ref/rishapeslib.obj, see
- * libs/userlibs/rwe/refbuild.cmake), method of rwecmp.h.
+ * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
+ * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rishapeslib.txt).
  *
  *   rishapeslib DIR     (DIR with rishapeslib, memlib, shapeslib,
  *                        ripacklib and the libraries they call, .obj/.orig)
  *
- * Each set has its own memlib, shapeslib and RIPackLib (the original set
- * the CD's binaries, the C set this build's), its own shape objects
- * (70), palette objects, bitmap object and files in RAM: (rwesh_o_N /
- * rwesh_c_N).  Compared: d0 of the functions and commands, the shape
+ * The set has its own memlib, shapeslib and RIPackLib (the original set
+ * the CD's binaries, the C set this build's); the test has the shape
+ * objects (70), palette objects, a bitmap object and files in RAM:
+ * (rwesh_N).  Observed: d0 of the functions and commands, the shape
  * objects (all fields but the data and cookie pointers; the data and the
  * cookie bytes; for linked shapes the offset of the data in the source
  * buffer), the palettes made by the loaders, the files LESaveShapes
@@ -35,6 +37,7 @@
  * failing chunk allocations, a palette of 0 colours (65536 colours), the
  * runtime error of a failing pack buffer.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -44,13 +47,13 @@
 enum { CLUDGE, SAFE, LELOAD, LESAVE, COMPRESS, LECLUDGE, INITSHAPE, SCAN, MAXW, MAXH, MAXD,
        AUTOCOOKIE, TOADDR, FINIT, INIT };
 
-static UBYTE shp[2][NSH][32];
-static UBYTE pal[2][4][8];
-static UBYTE bm[2][64];
-static UBYTE *srcpal[2];                /* a palette to save (12 colours) */
-static UBYTE *mem[2];                   /* sources of LECludgeShapes / CludgeShapes */
+static UBYTE shp[NSH][32];
+static UBYTE pal[4][8];
+static UBYTE bm[64];
+static UBYTE *srcpal;                   /* a palette to save (12 colours) */
+static UBYTE *mem;                      /* sources of LECludgeShapes / CludgeShapes */
 static ULONG memlen;
-static char fname[2][40];
+static char fname[40];
 
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
@@ -58,38 +61,34 @@ static char fname[2][40];
 
 static const char *setname(int n)
 {
-    sprintf(fname[cur], "RAM:rwesh_%c_%d", cur ? 'c' : 'o', n);
-    return fname[cur];
+    sprintf(fname, "RAM:rwesh_%d", n);
+    return fname;
 }
 
-/* ------------------------------------------------------------ compare */
+/* ------------------------------------------------------------ observe */
 
 static void sameshape(int i)
 {
-    const UBYTE *a[2] = { shp[0][i], shp[1][i] };
-    const UBYTE *b[2] = { shp[0][i] + 22, shp[1][i] + 22 };
     char w[60];
 
     sprintf(w, "shape %d fields", i);
-    SAMEBYTES(w, a, 14);
-    SAMEBYTES(w, b, 10);
+    OBSBYTES(w, shp[i], 14);
+    OBSBYTES(w, shp[i] + 22, 10);
     sprintf(w, "shape %d data set", i);
-    SAME(w, SL(shp[cur][i], 14) != 0);
+    OBS(w, SL(shp[i], 14) != 0);
     sprintf(w, "shape %d cookie set", i);
-    SAME(w, SL(shp[cur][i], 18) != 0);
-    if (SL(shp[0][i], 14) && SL(shp[1][i], 14) && SW(shp[0][i], 26) == SW(shp[1][i], 26)) {
-        const UBYTE *d[2] = { (UBYTE *)SL(shp[0][i], 14), (UBYTE *)SL(shp[1][i], 14) };
+    OBS(w, SL(shp[i], 18) != 0);
+    if (SL(shp[i], 14)) {
         sprintf(w, "shape %d data", i);
-        SAMEBYTES(w, d, SW(shp[0][i], 26));
-        if (SW(shp[0][i], 30) == 0x634c) {
+        OBSBYTES(w, (UBYTE *)SL(shp[i], 14), SW(shp[i], 26));
+        if (SW(shp[i], 30) == 0x634c) {
             sprintf(w, "shape %d linked at", i);
-            SAME(w, SL(shp[cur][i], 14) - (ULONG)mem[cur]);
+            OBS(w, SL(shp[i], 14) - (ULONG)mem);
         }
     }
-    if (SL(shp[0][i], 18) && SL(shp[1][i], 18) && SW(shp[0][i], 22) == SW(shp[1][i], 22)) {
-        const UBYTE *c[2] = { (UBYTE *)SL(shp[0][i], 18), (UBYTE *)SL(shp[1][i], 18) };
+    if (SL(shp[i], 18)) {
         sprintf(w, "shape %d cookie", i);
-        SAMEBYTES(w, c, SW(shp[0][i], 22));
+        OBSBYTES(w, (UBYTE *)SL(shp[i], 18), SW(shp[i], 22));
     }
 }
 
@@ -104,40 +103,36 @@ static void samepal(int p)
 {
     char w[40];
     sprintf(w, "palette %d count", p);
-    SAME(w, SW(pal[cur][p], 4));
+    OBS(w, SW(pal[p], 4));
     sprintf(w, "palette %d data set", p);
-    SAME(w, SL(pal[cur][p], 0) != 0);
-    if (SL(pal[0][p], 0) && SL(pal[1][p], 0)) {
-        const UBYTE *d[2] = { (UBYTE *)SL(pal[0][p], 0), (UBYTE *)SL(pal[1][p], 0) };
+    OBS(w, SL(pal[p], 0) != 0);
+    if (SL(pal[p], 0)) {
         sprintf(w, "palette %d data", p);
-        SAMEBYTES(w, d, 4 + 12 * (ULONG)SW(pal[0][p], 4));
+        OBSBYTES(w, (UBYTE *)SL(pal[p], 0), 4 + 12 * (ULONG)SW(pal[p], 4));
     }
 }
 
-/* the files of both sets the same */
-static UBYTE fbuf[2][30000];
-static LONG flen[2];
+/* the file read back */
+static UBYTE fbuf[30000];
+static LONG flen;
 
 static void readback(int n)
 {
     BPTR f;
-    for (cur = 0; cur < 2; cur++) {
-        flen[cur] = -1;
-        memset(fbuf[cur], 0, sizeof fbuf[cur]);
-        if ((f = Open((STRPTR)setname(n), MODE_OLDFILE)) != 0) {
-            flen[cur] = Read(f, fbuf[cur], sizeof fbuf[cur]);
-            Close(f);
-        }
+    flen = -1;
+    memset(fbuf, 0, sizeof fbuf);
+    if ((f = Open((STRPTR)setname(n), MODE_OLDFILE)) != 0) {
+        flen = Read(f, fbuf, sizeof fbuf);
+        Close(f);
     }
 }
 
 static void samefile(int n)
 {
-    const UBYTE *f[2] = { fbuf[0], fbuf[1] };
     readback(n);
-    SAME("file length", flen[cur]);
-    BOTH("file written", flen[cur] > 0);
-    SAMEBYTES("file", f, sizeof fbuf[0]);
+    OBS("file length", flen);
+    BOTH("file written", flen > 0);
+    OBSBYTES("file", fbuf, sizeof fbuf);
 }
 
 /* ------------------------------------------------------------- calls */
@@ -146,54 +141,53 @@ static void initshape(int s, UWORD w, UWORD h, UWORD d)
 {
     ROUT = "LEInitShape";
     sprintf(VEC, "%d %ux%ux%u", s, w, h, d);
-    DO2(ENT(LIB, INITSHAPE, 0), R[cur].d[0] = WA(s); R[cur].d[1] = WA(w);
-        R[cur].d[2] = WA(h); R[cur].d[3] = WA(d); R[cur].a[2] = (ULONG)shp[cur][s]);
+    DO1(ENT(LIB, INITSHAPE, 0), R.d[0] = WA(s); R.d[1] = WA(w);
+        R.d[2] = WA(h); R.d[3] = WA(d); R.a[2] = (ULONG)shp[s]);
     sameshape(s);
 }
 
-/* the data of shape s: a pattern (the same in both sets) */
+/* the data of shape s: a pattern */
 static void fillshape(int s, UBYTE seed, int runs)
 {
-    UWORD i, n = SW(shp[0][s], 26);
-    for (cur = 0; cur < 2; cur++) {
-        UBYTE *p = (UBYTE *)SL(shp[cur][s], 14);
-        for (i = 0; i < n; i++)
-            p[i] = runs ? (UBYTE)(i / 9 * 0x11 + seed) : (UBYTE)(seed + i * 37 + (i >> 3));
-    }
+    UWORD i, n = SW(shp[s], 26);
+    UBYTE *p = (UBYTE *)SL(shp[s], 14);
+    for (i = 0; i < n; i++)
+        p[i] = runs ? (UBYTE)(i / 9 * 0x11 + seed) : (UBYTE)(seed + i * 37 + (i >> 3));
 }
+
 
 static void scan(ULONG a, ULONG b)
 {
     ROUT = "LEScanShapes";
     sprintf(VEC, "%lu..%lu", a, b);
-    DO2(ENT(LIB, SCAN, 0), R[cur].d[0] = WA(a); R[cur].d[1] = WA(b);
-        R[cur].a[2] = (ULONG)shp[cur][a]; R[cur].a[3] = (ULONG)shp[cur][b]);
+    DO1(ENT(LIB, SCAN, 0), R.d[0] = WA(a); R.d[1] = WA(b);
+        R.a[2] = (ULONG)shp[a]; R.a[3] = (ULONG)shp[b]);
     ROUT = "LEMaxShapeWidth";
-    DO2(ENT(LIB, MAXW, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, MAXW, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "LEMaxShapeHeight";
-    DO2(ENT(LIB, MAXH, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, MAXH, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "LEMaxShapeDepth";
-    DO2(ENT(LIB, MAXD, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, MAXD, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void safe(ULONG s, ULONG x, ULONG y, ULONG max)
 {
     ROUT = "SafeToBlit";
     sprintf(VEC, "shape %lu at %ld,%ld max %lu", s, (LONG)(WORD)x, (LONG)(WORD)y, max);
-    DO2(ENT(LIB, SAFE, 0), R[cur].d[0] = WA(s); R[cur].d[1] = WA(x); R[cur].d[2] = WA(y);
-        R[cur].d[6] = WA(max); R[cur].a[3] = (ULONG)shp[cur][s % NSH];
-        R[cur].a[2] = (ULONG)bm[cur]);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, SAFE, 0), R.d[0] = WA(s); R.d[1] = WA(x); R.d[2] = WA(y);
+        R.d[6] = WA(max); R.a[3] = (ULONG)shp[s % NSH];
+        R.a[2] = (ULONG)bm);
+    OBS("d0", R.d[0]);
 }
 
 static void compress(ULONG on)
 {
     ROUT = "LECompressShapes";
     sprintf(VEC, "%ld", (LONG)(WORD)on);
-    DO2(ENT(LIB, COMPRESS, 0), R[cur].d[0] = WA(on));
+    DO1(ENT(LIB, COMPRESS, 0), R.d[0] = WA(on));
 }
 
 /* LESaveShapes s1,s2 (d1 with the upper word `up`), palette p (-1:
@@ -202,11 +196,11 @@ static void save(int n, int s1, int s2, ULONG up, int p)
 {
     ROUT = "LESaveShapes";
     sprintf(VEC, "%d..%d up $%lx pal %d file %d", s1, s2, up, p, n);
-    DO2(ENT(LIB, LESAVE, p < 0 ? 0 : 1), R[cur].d[0] = WA(s1);
-        R[cur].d[1] = up << 16 | (UWORD)s2; R[cur].d[2] = (ULONG)setname(n);
-        R[cur].d[3] = WA(p); R[cur].a[0] = p < 0 ? 0 : (ULONG)pal[cur][p];
-        R[cur].a[2] = (ULONG)shp[cur][s1]; R[cur].a[3] = (ULONG)shp[cur][s2];
-        R[cur].a[6] = (ULONG)DOSBase);
+    DO1(ENT(LIB, LESAVE, p < 0 ? 0 : 1), R.d[0] = WA(s1);
+        R.d[1] = up << 16 | (UWORD)s2; R.d[2] = (ULONG)setname(n);
+        R.d[3] = WA(p); R.a[0] = p < 0 ? 0 : (ULONG)pal[p];
+        R.a[2] = (ULONG)shp[s1]; R.a[3] = (ULONG)shp[s2];
+        R.a[6] = (ULONG)DOSBase);
     samefile(n);
 }
 
@@ -215,17 +209,17 @@ static void load(int form, int n, int s1, int s2, int p, const char *name)
 {
     ROUT = "LELoadShapes";
     sprintf(VEC, "form %d %d,%d pal %d file %d %s", form, s1, s2, p, n, name ? name : "");
-    DO2(ENT(LIB, LELOAD, form),
+    DO1(ENT(LIB, LELOAD, form),
         const char *fn = name ? name : setname(n);
-        R[cur].d[0] = WA(s1);
-        R[cur].a[2] = (ULONG)shp[cur][s1];
-        R[cur].a[6] = (ULONG)DOSBase;
-        R[cur].a[0] = p < 0 ? 0 : (ULONG)pal[cur][p];
+        R.d[0] = WA(s1);
+        R.a[2] = (ULONG)shp[s1];
+        R.a[6] = (ULONG)DOSBase;
+        R.a[0] = p < 0 ? 0 : (ULONG)pal[p];
         if (form < 2) {
-            R[cur].d[1] = WA(s2); R[cur].d[2] = (ULONG)fn; R[cur].a[3] = (ULONG)shp[cur][s2];
+            R.d[1] = WA(s2); R.d[2] = (ULONG)fn; R.a[3] = (ULONG)shp[s2];
         } else {
             /* the maximum in d4, a3 = shape 0 */
-            R[cur].d[1] = (ULONG)fn; R[cur].d[4] = WA(s2); R[cur].a[3] = (ULONG)shp[cur][0];
+            R.d[1] = (ULONG)fn; R.d[4] = WA(s2); R.a[3] = (ULONG)shp[0];
         });
 }
 
@@ -233,42 +227,40 @@ static void load(int form, int n, int s1, int s2, int p, const char *name)
 static void tomem(int n, ULONG flags)
 {
     readback(n);
-    for (cur = 0; cur < 2; cur++) {
-        if (mem[cur])
-            FreeMem(mem[cur], memlen);
-        mem[cur] = AllocMem(sizeof fbuf[0], flags | MEMF_CLEAR);
-        memcpy(mem[cur], fbuf[cur], sizeof fbuf[0]);
-    }
-    memlen = sizeof fbuf[0];
+    if (mem)
+        FreeMem(mem, memlen);
+    mem = AllocMem(sizeof fbuf, flags | MEMF_CLEAR);
+    memcpy(mem, fbuf, sizeof fbuf);
+    memlen = sizeof fbuf;
 }
 
 static void lecludge(int form, int s1, int s2, int p, ULONG flag, const char *what)
 {
     ROUT = "LECludgeShapes";
     sprintf(VEC, "form %d %d,%d pal %d flag %ld %s", form, s1, s2, p, (LONG)(WORD)flag, what);
-    DO2(ENT(LIB, LECLUDGE, form), R[cur].d[0] = WA(s1); R[cur].d[1] = WA(s2);
-        R[cur].d[2] = (ULONG)mem[cur]; R[cur].d[3] = WA(p); R[cur].d[4] = WA(flag);
-        R[cur].a[0] = p < 0 ? 0 : (ULONG)pal[cur][p];
-        R[cur].a[2] = (ULONG)shp[cur][s1]; R[cur].a[3] = (ULONG)shp[cur][s2];
-        R[cur].a[6] = (ULONG)DOSBase);
+    DO1(ENT(LIB, LECLUDGE, form), R.d[0] = WA(s1); R.d[1] = WA(s2);
+        R.d[2] = (ULONG)mem; R.d[3] = WA(p); R.d[4] = WA(flag);
+        R.a[0] = p < 0 ? 0 : (ULONG)pal[p];
+        R.a[2] = (ULONG)shp[s1]; R.a[3] = (ULONG)shp[s2];
+        R.a[6] = (ULONG)DOSBase);
 }
 
 static void cludge(int toaddr, int s, ULONG num, ULONG off, const char *what)
 {
     ROUT = toaddr ? "CludgeShapesToAddress" : "CludgeShapes";
     sprintf(VEC, "%d num %lu at %lu %s", s, num, off, what);
-    DO2(ENT(LIB, toaddr ? TOADDR : CLUDGE, 0),
-        R[cur].d[0] = toaddr ? (ULONG)shp[cur][s] : (ULONG)s; R[cur].d[1] = num;
-        R[cur].d[2] = (ULONG)mem[cur] + off; R[cur].a[0] = (ULONG)shp[cur][s];
-        R[cur].a[6] = (ULONG)SysBase);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, toaddr ? TOADDR : CLUDGE, 0),
+        R.d[0] = toaddr ? (ULONG)shp[s] : (ULONG)s; R.d[1] = num;
+        R.d[2] = (ULONG)mem + off; R.a[0] = (ULONG)shp[s];
+        R.a[6] = (ULONG)SysBase);
+    OBS("d0", R.d[0]);
 }
 
 static void autocookie(ULONG on)
 {
     ROUT = "LEAutoCookie";
     sprintf(VEC, "%ld", (LONG)on);
-    DO2(ENT(LIB, AUTOCOOKIE, 0), R[cur].d[0] = on);
+    DO1(ENT(LIB, AUTOCOOKIE, 0), R.d[0] = on);
 }
 
 /* shapes in memory in shapeslib's format (32 byte block + data) */
@@ -294,15 +286,13 @@ static ULONG ramshape(UBYTE *p, UWORD w, UWORD h, UWORD d, UBYTE seed)
 
 static void memlib(int idx)
 {
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), idx, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), idx, 0), &R, NULL, 0, &POP);
 }
 
 static APTR nullsub(const char *name, int off)
 {
-    struct lib *l = getlib(&sets[cur], name);
+    struct lib *l = getlib(&loaded, name);
     UBYTE *p = (UBYTE *)L(l->code + off);
     p += 6;
     while (W(p))
@@ -316,36 +306,49 @@ int main(int argc, char **argv)
                                    "bitmaplib", "environlib", "iffiolib", "ilbmifflib",
                                    "intlib", "palettelib", "scrolllib", NULL };
     ULONG avail, off;
-    int i, s;
+    int i;
 
     if (argc < 2) {
         printf("usage: rishapeslib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("LEInitShape", d3-d7|a0|a2|a3|a6);
+    KEEPS("LEScanShapes", d3-d7|a0|a1|a3|a6);
+    KEEPS("LEMaxShapeWidth", d1-d7|a0-a3|a6);
+    KEEPS("LEMaxShapeHeight", d1-d7|a0-a3|a6);
+    KEEPS("LEMaxShapeDepth", d1-d7|a0-a3|a6);
+    KEEPS("SafeToBlit", d3-d7|a0-a3|a6);
+    KEEPS("LESaveShapes", a3|a6);
+    KEEPS("LECompressShapes", d0-d7|a0-a3|a6);
+    KEEPS("LELoadShapes", a6);
+    KEEPS("LECludgeShapes", d5|d6|a6);
+    KEEPS("CludgeShapes", d3-d6|a3|a6);
+    KEEPS("LEAutoCookie", d0-d7|a0-a3|a6);
+    KEEPS("CludgeShapesToAddress", d3-d6|a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
     ROUT = "memlib/shapeslib init";
     memlib(7);
-    for (cur = 0; cur < 2; cur++) {
+    {
         struct regs r;
         markregs(&r);
         callregs(nullsub("shapeslib", 22), &r, 0, 0);
     }
     ROUT = "init";
     strcpy(VEC, "");
-    DO2(ENT(LIB, INIT, 0), (void)0);
-    for (s = 0; s < 2; s++) {
-        SW(bm[s], 56) = 320;
-        SW(bm[s], 58) = 200;
-        srcpal[s] = AllocMem(4 + 12 * 12, MEMF_CLEAR);
-        SW(srcpal[s], 0) = 12;
-        for (i = 0; i < 36; i++)
-            SL(srcpal[s], 4 + 4 * i) = 0x01010101UL * (UBYTE)(i * 7 + 3);
-        SL(pal[s][0], 0) = (ULONG)srcpal[s];
-        SW(pal[s][0], 4) = 12;
-    }
+    DO1(ENT(LIB, INIT, 0), (void)0);
+    SW(bm, 56) = 320;
+    SW(bm, 58) = 200;
+    srcpal = AllocMem(4 + 12 * 12, MEMF_CLEAR);
+    SW(srcpal, 0) = 12;
+    for (i = 0; i < 36; i++)
+        SL(srcpal, 4 + 4 * i) = 0x01010101UL * (UBYTE)(i * 7 + 3);
+    SL(pal[0], 0) = (ULONG)srcpal;
+    SW(pal[0], 4) = 12;
 
     /* LEInitShape, the data filled */
     initshape(0, 20, 10, 2);
@@ -379,7 +382,7 @@ int main(int argc, char **argv)
     save(0, 0, 3, 0, -1);               /* count 0 */
     save(1, 0, 3, 0, 0);                /* with the palette */
     printf("rishapeslib: LESaveShapes with a palette: %s\n",
-           fbuf[0][40] == 'C' ? "CMAP written" : "no CMAP (Write's Z flag)");
+           fbuf[40] == 'C' ? "CMAP written" : "no CMAP (Write's Z flag)");
     save(2, 0, 64, 0, 0);               /* count 2 */
     save(3, 0, 3, 0x5A01, -1);          /* the upper word in the count */
     compress(0xffff);
@@ -389,7 +392,7 @@ int main(int argc, char **argv)
 
     load(1, 0, 10, 13, -1, NULL);
     sameshapes(10, 13);
-    BOTH("one shape loaded", SW(shp[cur][10], 0) == 20 && !SW(shp[cur][11], 0));
+    BOTH("one shape loaded", SW(shp[10], 0) == 20 && !SW(shp[11], 0));
     load(0, 1, 14, 17, 1, NULL);
     sameshapes(14, 17);
     samepal(1);
@@ -398,7 +401,7 @@ int main(int argc, char **argv)
     samepal(1);
     load(1, 4, 24, 27, -1, NULL);       /* packed */
     sameshapes(24, 27);
-    BOTH("packed shapes loaded", SW(shp[cur][24], 0) == 20 && SW(shp[cur][26], 0) == 40);
+    BOTH("packed shapes loaded", SW(shp[24], 0) == 20 && SW(shp[26], 0) == 40);
     load(1, 2, 10, 13, -1, NULL);       /* into used shapes */
     sameshapes(10, 13);
     load(2, 5, 30, 34, -1, NULL);       /* to the maximum - 1: shape 33 */
@@ -410,7 +413,7 @@ int main(int argc, char **argv)
     sameshapes(40, 41);
 
     /* files that are no LE file */
-    for (cur = 0; cur < 2; cur++) {
+    {
         BPTR f = Open((STRPTR)"RAM:rwesh_form", MODE_NEWFILE);
         static const char form[] = "FORMxxxxILBMBMHD\0\0\0\0";
         Write(f, (APTR)form, sizeof form);
@@ -421,15 +424,13 @@ int main(int argc, char **argv)
     {
         static UBYTE acid[600];
         ULONG n = ramshape(acid, 24, 7, 2, 0x5c);
-        for (cur = 0; cur < 2; cur++) {
-            BPTR f = Open((STRPTR)"RAM:rwesh_acid", MODE_NEWFILE);
-            Write(f, acid, n);
-            Close(f);
-        }
+        BPTR f = Open((STRPTR)"RAM:rwesh_acid", MODE_NEWFILE);
+        Write(f, acid, n);
+        Close(f);
     }
     load(1, 0, 40, 43, -1, "RAM:rwesh_acid");
     sameshapes(40, 43);
-    BOTH("LoadShapes into the last shape", SW(shp[cur][43], 0) == 24 && !SW(shp[cur][40], 0));
+    BOTH("LoadShapes into the last shape", SW(shp[43], 0) == 24 && !SW(shp[40], 0));
 
     /* LECludgeShapes */
     tomem(2, MEMF_FAST);
@@ -446,42 +447,36 @@ int main(int argc, char **argv)
     lecludge(0, 55, 57, 3, 0, "chip, linked");
     sameshapes(55, 57);
     samepal(3);
-    BOTH("linked", SW(shp[cur][55], 30) == 0x634c);
+    BOTH("linked", SW(shp[55], 30) == 0x634c);
     initshape(55, 8, 8, 1);             /* a linked shape: not freed */
     /* CMAP of 7 bytes: the colours end at +6, SDAT is not found */
-    for (cur = 0; cur < 2; cur++)
-        SL(mem[cur], 44) = 7;
+    SL(mem, 44) = 7;
     lecludge(0, 58, 59, 3, 0, "CMAP 7");
     sameshapes(58, 59);
     samepal(3);
-    for (cur = 0; cur < 2; cur++)
-        SL(mem[cur], 0) = 0x464f524e;   /* FORN */
+    SL(mem, 0) = 0x464f524e;           /* FORN */
     lecludge(0, 58, 59, -1, 0, "no FORM");
     sameshapes(58, 59);
 
     /* CludgeShapes */
-    for (cur = 0; cur < 2; cur++) {
-        if (mem[cur])
-            FreeMem(mem[cur], memlen);
-        mem[cur] = AllocMem(4096, MEMF_CLEAR);
-    }
+    if (mem)
+        FreeMem(mem, memlen);
+    mem = AllocMem(4096, MEMF_CLEAR);
     memlen = 4096;
-    for (cur = 0; cur < 2; cur++) {
-        /* an empty shape advances by 32 + the size of the one before
-           (BUG(orig), #809): padding of that size behind each */
-        off = ramshape(mem[cur], 20, 4, 2, 1);                  /* 32 bytes */
-        off += ramshape(mem[cur] + off, 0, 4, 2, 2) + 32;       /* empty */
-        off += ramshape(mem[cur] + off, 17, 3, 3, 3);           /* 36 bytes */
-        off += ramshape(mem[cur] + off, 8, 0, 1, 4) + 36;       /* empty */
-        off += ramshape(mem[cur] + off, 64, 2, 1, 5);
-    }
+    /* an empty shape advances by 32 + the size of the one before
+       (BUG(orig), #809): padding of that size behind each */
+    off = ramshape(mem, 20, 4, 2, 1);                  /* 32 bytes */
+    off += ramshape(mem + off, 0, 4, 2, 2) + 32;       /* empty */
+    off += ramshape(mem + off, 17, 3, 3, 3);           /* 36 bytes */
+    off += ramshape(mem + off, 8, 0, 1, 4) + 36;       /* empty */
+    off += ramshape(mem + off, 64, 2, 1, 5);
     cludge(0, 60, 0, 0, "none");
     cludge(0, 60, 3, 0, "");
     sameshapes(60, 62);
     cludge(0, 60, 5, 0, "again, used");
     sameshapes(60, 64);
     BOTH("the stale size skips to the next shape",
-         SW(shp[cur][62], 0) == 17 && SW(shp[cur][64], 0) == 64);
+         SW(shp[62], 0) == 17 && SW(shp[64], 0) == 64);
     autocookie(0);
     cludge(1, 65, 1, 0, "no cookie");
     sameshapes(65, 65);
@@ -493,17 +488,14 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, FINIT, 0), R[cur].a[6] = (ULONG)DOSBase);
+    DO1(ENT(LIB, FINIT, 0), R.a[6] = (ULONG)DOSBase);
 
     ROUT = "memlib finit";
     memlib(8);
-    for (s = 0; s < 2; s++) {
-        FreeMem(srcpal[s], 4 + 12 * 12);
-        FreeMem(mem[s], memlen);
-    }
-    for (cur = 0; cur < 2; cur++)
-        for (i = 0; i < 6; i++)
-            DeleteFile((STRPTR)setname(i));
+    FreeMem(srcpal, 4 + 12 * 12);
+    FreeMem(mem, memlen);
+    for (i = 0; i < 6; i++)
+        DeleteFile((STRPTR)setname(i));
     DeleteFile((STRPTR)"RAM:rwesh_form");
     DeleteFile((STRPTR)"RAM:rwesh_acid");
     rwe_mem_check(LIB, avail, TRUE);

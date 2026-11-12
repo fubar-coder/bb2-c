@@ -1,0 +1,817 @@
+# capture rwe_riseriallib 1
+SerialBuffer|kept||1	kept
+SerialBuffer|popped||1	$00000000
+SerialBuffer|custom chip registers||1	bytes 512 fnv C4915FC8
+SerialBuffer|CIA-B PRA||1	$0000005A
+SerialBuffer|vector $64||1	$00000000
+SerialBuffer|vector $74||1	$00000000
+SerialBuffer|stub $64 called||1	$00000000
+SerialBuffer|stub $74 called||1	$00000000
+SerialBuffer|SerialBuffer in the library||1	$00000001
+SerialVersion|kept|d0 $00000000|1	kept
+SerialVersion|popped|d0 $00000000|1	$00000000
+SerialVersion|custom chip registers|d0 $00000000|1	bytes 512 fnv C4915FC8
+SerialVersion|CIA-B PRA|d0 $00000000|1	$0000005A
+SerialVersion|vector $64|d0 $00000000|1	$00000000
+SerialVersion|vector $74|d0 $00000000|1	$00000000
+SerialVersion|receive ring|d0 $00000000|1	bytes 1028 fnv C807C515
+SerialVersion|stub $64 called|d0 $00000000|1	$00000000
+SerialVersion|stub $74 called|d0 $00000000|1	$00000000
+SerialVersion|d0|d0 $00000000|1	$00000001
+SerialGot|kept|d0 $00000000|1	kept
+SerialGot|popped|d0 $00000000|1	$00000000
+SerialGot|custom chip registers|d0 $00000000|1	bytes 512 fnv C4915FC8
+SerialGot|CIA-B PRA|d0 $00000000|1	$0000005A
+SerialGot|vector $64|d0 $00000000|1	$00000000
+SerialGot|vector $74|d0 $00000000|1	$00000000
+SerialGot|receive ring|d0 $00000000|1	bytes 1028 fnv C807C515
+SerialGot|stub $64 called|d0 $00000000|1	$00000000
+SerialGot|stub $74 called|d0 $00000000|1	$00000000
+SerialGot|d0|d0 $00000000|1	$00000000
+SerialRead|kept|d0 $12345678|1	kept
+SerialRead|popped|d0 $12345678|1	$00000000
+SerialRead|custom chip registers|d0 $12345678|1	bytes 512 fnv C4915FC8
+SerialRead|CIA-B PRA|d0 $12345678|1	$0000005A
+SerialRead|vector $64|d0 $12345678|1	$00000000
+SerialRead|vector $74|d0 $12345678|1	$00000000
+SerialRead|receive ring|d0 $12345678|1	bytes 1028 fnv C807C515
+SerialRead|stub $64 called|d0 $12345678|1	$00000000
+SerialRead|stub $74 called|d0 $12345678|1	$00000000
+SerialRead|d0|d0 $12345678|1	$FFFFFFFF
+SerialProgress|kept|d0 $00000000|1	kept
+SerialProgress|popped|d0 $00000000|1	$00000000
+SerialProgress|custom chip registers|d0 $00000000|1	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|1	$0000005A
+SerialProgress|vector $64|d0 $00000000|1	$00000000
+SerialProgress|vector $74|d0 $00000000|1	$00000000
+SerialProgress|receive ring|d0 $00000000|1	bytes 1028 fnv C807C515
+SerialProgress|stub $64 called|d0 $00000000|1	$00000000
+SerialProgress|stub $74 called|d0 $00000000|1	$00000000
+SerialProgress|d0|d0 $00000000|1	$00000000
+SerialStop|kept|$0,$0|1	kept
+SerialStop|popped|$0,$0|1	$00000000
+SerialStop|custom chip registers|$0,$0|1	bytes 512 fnv C4915FC8
+SerialStop|CIA-B PRA|$0,$0|1	$0000005A
+SerialStop|vector $64|$0,$0|1	$00000000
+SerialStop|vector $74|$0,$0|1	$00000000
+SerialStop|receive ring|$0,$0|1	bytes 1028 fnv C807C515
+SerialStop|stub $64 called|$0,$0|1	$00000000
+SerialStop|stub $74 called|$0,$0|1	$00000000
+SerialBaud|kept|$2580,$0|1	kept
+SerialBaud|popped|$2580,$0|1	$00000000
+SerialBaud|custom chip registers|$2580,$0|1	bytes 512 fnv 88046B71
+SerialBaud|CIA-B PRA|$2580,$0|1	$0000005A
+SerialBaud|vector $64|$2580,$0|1	$00000000
+SerialBaud|vector $74|$2580,$0|1	$00000000
+SerialBaud|receive ring|$2580,$0|1	bytes 1028 fnv C807C515
+SerialBaud|stub $64 called|$2580,$0|1	$00000000
+SerialBaud|stub $74 called|$2580,$0|1	$00000000
+SerialBaud|kept|$1,$0|1	kept
+SerialBaud|popped|$1,$0|1	$00000000
+SerialBaud|custom chip registers|$1,$0|1	bytes 512 fnv 43602911
+SerialBaud|CIA-B PRA|$1,$0|1	$0000005A
+SerialBaud|vector $64|$1,$0|1	$00000000
+SerialBaud|vector $74|$1,$0|1	$00000000
+SerialBaud|receive ring|$1,$0|1	bytes 1028 fnv C807C515
+SerialBaud|stub $64 called|$1,$0|1	$00000000
+SerialBaud|stub $74 called|$1,$0|1	$00000000
+SerialBaud|kept|$6C3E1E,$0|1	kept
+SerialBaud|popped|$6C3E1E,$0|1	$00000000
+SerialBaud|custom chip registers|$6C3E1E,$0|1	bytes 512 fnv 2C8F233E
+SerialBaud|CIA-B PRA|$6C3E1E,$0|1	$0000005A
+SerialBaud|vector $64|$6C3E1E,$0|1	$00000000
+SerialBaud|vector $74|$6C3E1E,$0|1	$00000000
+SerialBaud|receive ring|$6C3E1E,$0|1	bytes 1028 fnv C807C515
+SerialBaud|stub $64 called|$6C3E1E,$0|1	$00000000
+SerialBaud|stub $74 called|$6C3E1E,$0|1	$00000000
+SerialOpen|kept|$0,$0|1	kept
+SerialOpen|popped|$0,$0|1	$00000000
+SerialOpen|custom chip registers|$0,$0|1	bytes 512 fnv 6B45DB03
+SerialOpen|CIA-B PRA|$0,$0|1	$0000003F
+SerialOpen|vector $64|$0,$0|1	$00000001
+SerialOpen|vector $74|$0,$0|1	$00000001
+SerialOpen|receive ring|$0,$0|1	bytes 1028 fnv C807C515
+SerialOpen|stub $64 called|$0,$0|1	$00000000
+SerialOpen|stub $74 called|$0,$0|1	$00000000
+SerialOpen|SerialOpen: handler $64|$0,$0|1	$00000001
+SerialOpen|SerialOpen: handler $74|$0,$0|1	$00000001
+SerialWrite|kept|$5A5A00A1,$0|1	kept
+SerialWrite|popped|$5A5A00A1,$0|1	$00000000
+SerialWrite|custom chip registers|$5A5A00A1,$0|1	bytes 512 fnv 307A2C13
+SerialWrite|CIA-B PRA|$5A5A00A1,$0|1	$0000005A
+SerialWrite|vector $64|$5A5A00A1,$0|1	$00000000
+SerialWrite|vector $74|$5A5A00A1,$0|1	$00000000
+SerialWrite|receive ring|$5A5A00A1,$0|1	bytes 1028 fnv C807C515
+SerialWrite|stub $64 called|$5A5A00A1,$0|1	$00000000
+SerialWrite|stub $74 called|$5A5A00A1,$0|1	$00000000
+SerialWrite|kept|$B2,$0|1	kept
+SerialWrite|popped|$B2,$0|1	$00000000
+SerialWrite|custom chip registers|$B2,$0|1	bytes 512 fnv C4915FC8
+SerialWrite|CIA-B PRA|$B2,$0|1	$0000005A
+SerialWrite|vector $64|$B2,$0|1	$00000000
+SerialWrite|vector $74|$B2,$0|1	$00000000
+SerialWrite|receive ring|$B2,$0|1	bytes 1028 fnv C807C515
+SerialWrite|stub $64 called|$B2,$0|1	$00000000
+SerialWrite|stub $74 called|$B2,$0|1	$00000000
+SerialWrite|kept|$FFFFFFC3,$0|1	kept
+SerialWrite|popped|$FFFFFFC3,$0|1	$00000000
+SerialWrite|custom chip registers|$FFFFFFC3,$0|1	bytes 512 fnv C4915FC8
+SerialWrite|CIA-B PRA|$FFFFFFC3,$0|1	$0000005A
+SerialWrite|vector $64|$FFFFFFC3,$0|1	$00000000
+SerialWrite|vector $74|$FFFFFFC3,$0|1	$00000000
+SerialWrite|receive ring|$FFFFFFC3,$0|1	bytes 1028 fnv C807C515
+SerialWrite|stub $64 called|$FFFFFFC3,$0|1	$00000000
+SerialWrite|stub $74 called|$FFFFFFC3,$0|1	$00000000
+SerialWrite|transmit ring found|$FFFFFFC3,$0|1	$00000001
+SerialWrite|custom chip registers|$FFFFFFC3,$0|2	bytes 512 fnv C4915FC8
+SerialWrite|CIA-B PRA|$FFFFFFC3,$0|2	$0000005A
+SerialWrite|vector $64|$FFFFFFC3,$0|2	$00000000
+SerialWrite|vector $74|$FFFFFFC3,$0|2	$00000000
+SerialWrite|receive ring|$FFFFFFC3,$0|2	bytes 1028 fnv C807C515
+SerialWrite|transmit ring|$FFFFFFC3,$0|1	bytes 1028 fnv C22AC376
+SerialWrite|stub $64 called|$FFFFFFC3,$0|2	$00000000
+SerialWrite|stub $74 called|$FFFFFFC3,$0|2	$00000000
+transmit interrupt|custom chip registers|$0001, $00|1	bytes 512 fnv C4CAFC4A
+transmit interrupt|CIA-B PRA|$0001, $00|1	$0000005A
+transmit interrupt|vector $64|$0001, $00|1	$00000000
+transmit interrupt|vector $74|$0001, $00|1	$00000000
+transmit interrupt|receive ring|$0001, $00|1	bytes 1028 fnv C807C515
+transmit interrupt|transmit ring|$0001, $00|1	bytes 1028 fnv 02026114
+transmit interrupt|stub $64 called|$0001, $00|1	$00000000
+transmit interrupt|stub $74 called|$0001, $00|1	$00000000
+transmit interrupt|custom chip registers|$0001, $00|2	bytes 512 fnv 5C0D367F
+transmit interrupt|CIA-B PRA|$0001, $00|2	$0000005A
+transmit interrupt|vector $64|$0001, $00|2	$00000000
+transmit interrupt|vector $74|$0001, $00|2	$00000000
+transmit interrupt|receive ring|$0001, $00|2	bytes 1028 fnv C807C515
+transmit interrupt|transmit ring|$0001, $00|2	bytes 1028 fnv 84C1A442
+transmit interrupt|stub $64 called|$0001, $00|2	$00000000
+transmit interrupt|stub $74 called|$0001, $00|2	$00000000
+transmit interrupt|custom chip registers|$0001, $00|3	bytes 512 fnv 13556434
+transmit interrupt|CIA-B PRA|$0001, $00|3	$0000005A
+transmit interrupt|vector $64|$0001, $00|3	$00000000
+transmit interrupt|vector $74|$0001, $00|3	$00000000
+transmit interrupt|receive ring|$0001, $00|3	bytes 1028 fnv C807C515
+transmit interrupt|transmit ring|$0001, $00|3	bytes 1028 fnv FA4CB4E0
+transmit interrupt|stub $64 called|$0001, $00|3	$00000000
+transmit interrupt|stub $74 called|$0001, $00|3	$00000000
+transmit interrupt|custom chip registers|$0001, $00|4	bytes 512 fnv D153B010
+transmit interrupt|CIA-B PRA|$0001, $00|4	$0000005A
+transmit interrupt|vector $64|$0001, $00|4	$00000000
+transmit interrupt|vector $74|$0001, $00|4	$00000000
+transmit interrupt|receive ring|$0001, $00|4	bytes 1028 fnv C807C515
+transmit interrupt|transmit ring|$0001, $00|4	bytes 1028 fnv FA4CB4E0
+transmit interrupt|stub $64 called|$0001, $00|4	$00000000
+transmit interrupt|stub $74 called|$0001, $00|4	$00000000
+transmit interrupt (not TBE)|custom chip registers|$0800, $00|1	bytes 512 fnv 1CD29080
+transmit interrupt (not TBE)|CIA-B PRA|$0800, $00|1	$0000005A
+transmit interrupt (not TBE)|vector $64|$0800, $00|1	$00000000
+transmit interrupt (not TBE)|vector $74|$0800, $00|1	$00000000
+transmit interrupt (not TBE)|receive ring|$0800, $00|1	bytes 1028 fnv C807C515
+transmit interrupt (not TBE)|transmit ring|$0800, $00|1	bytes 1028 fnv FA4CB4E0
+transmit interrupt (not TBE)|stub $64 called|$0800, $00|1	$00000001
+transmit interrupt (not TBE)|stub $74 called|$0800, $00|1	$00000000
+receive interrupt|custom chip registers|$0800, $48|1	bytes 512 fnv 7BEE2940
+receive interrupt|CIA-B PRA|$0800, $48|1	$0000005A
+receive interrupt|vector $64|$0800, $48|1	$00000000
+receive interrupt|vector $74|$0800, $48|1	$00000000
+receive interrupt|receive ring|$0800, $48|1	bytes 1028 fnv ADA393CA
+receive interrupt|transmit ring|$0800, $48|1	bytes 1028 fnv FA4CB4E0
+receive interrupt|stub $64 called|$0800, $48|1	$00000000
+receive interrupt|stub $74 called|$0800, $48|1	$00000000
+receive interrupt|custom chip registers|$0800, $00|1	bytes 512 fnv D56E5508
+receive interrupt|CIA-B PRA|$0800, $00|1	$0000005A
+receive interrupt|vector $64|$0800, $00|1	$00000000
+receive interrupt|vector $74|$0800, $00|1	$00000000
+receive interrupt|receive ring|$0800, $00|1	bytes 1028 fnv 5A75E1A7
+receive interrupt|transmit ring|$0800, $00|1	bytes 1028 fnv FA4CB4E0
+receive interrupt|stub $64 called|$0800, $00|1	$00000000
+receive interrupt|stub $74 called|$0800, $00|1	$00000000
+receive interrupt|custom chip registers|$0800, $FF|1	bytes 512 fnv C288A3C9
+receive interrupt|CIA-B PRA|$0800, $FF|1	$0000005A
+receive interrupt|vector $64|$0800, $FF|1	$00000000
+receive interrupt|vector $74|$0800, $FF|1	$00000000
+receive interrupt|receive ring|$0800, $FF|1	bytes 1028 fnv EF7BE313
+receive interrupt|transmit ring|$0800, $FF|1	bytes 1028 fnv FA4CB4E0
+receive interrupt|stub $64 called|$0800, $FF|1	$00000000
+receive interrupt|stub $74 called|$0800, $FF|1	$00000000
+receive interrupt (not RBF)|custom chip registers|$0001, $55|1	bytes 512 fnv 857D7AA0
+receive interrupt (not RBF)|CIA-B PRA|$0001, $55|1	$0000005A
+receive interrupt (not RBF)|vector $64|$0001, $55|1	$00000000
+receive interrupt (not RBF)|vector $74|$0001, $55|1	$00000000
+receive interrupt (not RBF)|receive ring|$0001, $55|1	bytes 1028 fnv EF7BE313
+receive interrupt (not RBF)|transmit ring|$0001, $55|1	bytes 1028 fnv FA4CB4E0
+receive interrupt (not RBF)|stub $64 called|$0001, $55|1	$00000000
+receive interrupt (not RBF)|stub $74 called|$0001, $55|1	$00000001
+SerialGot|kept|d0 $00000000|2	kept
+SerialGot|popped|d0 $00000000|2	$00000000
+SerialGot|custom chip registers|d0 $00000000|2	bytes 512 fnv C4915FC8
+SerialGot|CIA-B PRA|d0 $00000000|2	$0000005A
+SerialGot|vector $64|d0 $00000000|2	$00000000
+SerialGot|vector $74|d0 $00000000|2	$00000000
+SerialGot|receive ring|d0 $00000000|2	bytes 1028 fnv EF7BE313
+SerialGot|transmit ring|d0 $00000000|1	bytes 1028 fnv FA4CB4E0
+SerialGot|stub $64 called|d0 $00000000|2	$00000000
+SerialGot|stub $74 called|d0 $00000000|2	$00000000
+SerialGot|d0|d0 $00000000|2	$0000FFFF
+SerialRead|kept|d0 $12345678|2	kept
+SerialRead|popped|d0 $12345678|2	$00000000
+SerialRead|custom chip registers|d0 $12345678|2	bytes 512 fnv C4915FC8
+SerialRead|CIA-B PRA|d0 $12345678|2	$0000005A
+SerialRead|vector $64|d0 $12345678|2	$00000000
+SerialRead|vector $74|d0 $12345678|2	$00000000
+SerialRead|receive ring|d0 $12345678|2	bytes 1028 fnv E51C36A8
+SerialRead|transmit ring|d0 $12345678|1	bytes 1028 fnv FA4CB4E0
+SerialRead|stub $64 called|d0 $12345678|2	$00000000
+SerialRead|stub $74 called|d0 $12345678|2	$00000000
+SerialRead|d0|d0 $12345678|2	$12340048
+SerialRead|kept|d0 $FFFF0000|1	kept
+SerialRead|popped|d0 $FFFF0000|1	$00000000
+SerialRead|custom chip registers|d0 $FFFF0000|1	bytes 512 fnv C4915FC8
+SerialRead|CIA-B PRA|d0 $FFFF0000|1	$0000005A
+SerialRead|vector $64|d0 $FFFF0000|1	$00000000
+SerialRead|vector $74|d0 $FFFF0000|1	$00000000
+SerialRead|receive ring|d0 $FFFF0000|1	bytes 1028 fnv 8E5892CD
+SerialRead|transmit ring|d0 $FFFF0000|1	bytes 1028 fnv FA4CB4E0
+SerialRead|stub $64 called|d0 $FFFF0000|1	$00000000
+SerialRead|stub $74 called|d0 $FFFF0000|1	$00000000
+SerialRead|d0|d0 $FFFF0000|1	$FFFF0000
+SerialWait|kept|d0 $0000FFFF|1	kept
+SerialWait|popped|d0 $0000FFFF|1	$00000000
+SerialWait|custom chip registers|d0 $0000FFFF|1	bytes 512 fnv C4915FC8
+SerialWait|CIA-B PRA|d0 $0000FFFF|1	$0000005A
+SerialWait|vector $64|d0 $0000FFFF|1	$00000000
+SerialWait|vector $74|d0 $0000FFFF|1	$00000000
+SerialWait|receive ring|d0 $0000FFFF|1	bytes 1028 fnv 76485B82
+SerialWait|transmit ring|d0 $0000FFFF|1	bytes 1028 fnv FA4CB4E0
+SerialWait|stub $64 called|d0 $0000FFFF|1	$00000000
+SerialWait|stub $74 called|d0 $0000FFFF|1	$00000000
+SerialWait|d0|d0 $0000FFFF|1	$000000FF
+SerialRead|kept|d0 $00000000|1	kept
+SerialRead|popped|d0 $00000000|1	$00000000
+SerialRead|custom chip registers|d0 $00000000|1	bytes 512 fnv C4915FC8
+SerialRead|CIA-B PRA|d0 $00000000|1	$0000005A
+SerialRead|vector $64|d0 $00000000|1	$00000000
+SerialRead|vector $74|d0 $00000000|1	$00000000
+SerialRead|receive ring|d0 $00000000|1	bytes 1028 fnv 76485B82
+SerialRead|transmit ring|d0 $00000000|1	bytes 1028 fnv FA4CB4E0
+SerialRead|stub $64 called|d0 $00000000|1	$00000000
+SerialRead|stub $74 called|d0 $00000000|1	$00000000
+SerialRead|d0|d0 $00000000|1	$FFFFFFFF
+SerialGot|kept|d0 $00000000|3	kept
+SerialGot|popped|d0 $00000000|3	$00000000
+SerialGot|custom chip registers|d0 $00000000|3	bytes 512 fnv C4915FC8
+SerialGot|CIA-B PRA|d0 $00000000|3	$0000005A
+SerialGot|vector $64|d0 $00000000|3	$00000000
+SerialGot|vector $74|d0 $00000000|3	$00000000
+SerialGot|receive ring|d0 $00000000|3	bytes 1028 fnv 76485B82
+SerialGot|transmit ring|d0 $00000000|2	bytes 1028 fnv FA4CB4E0
+SerialGot|stub $64 called|d0 $00000000|3	$00000000
+SerialGot|stub $74 called|d0 $00000000|3	$00000000
+SerialGot|d0|d0 $00000000|3	$00000000
+SerialFlush|kept|$12345678,$0|1	kept
+SerialFlush|popped|$12345678,$0|1	$00000000
+SerialFlush|custom chip registers|$12345678,$0|1	bytes 512 fnv C4915FC8
+SerialFlush|CIA-B PRA|$12345678,$0|1	$0000005A
+SerialFlush|vector $64|$12345678,$0|1	$00000000
+SerialFlush|vector $74|$12345678,$0|1	$00000000
+SerialFlush|receive ring|$12345678,$0|1	bytes 1028 fnv 077C2991
+SerialFlush|transmit ring|$12345678,$0|1	bytes 1028 fnv FA4CB4E0
+SerialFlush|stub $64 called|$12345678,$0|1	$00000000
+SerialFlush|stub $74 called|$12345678,$0|1	$00000000
+SerialGot|kept|d0 $00000000|4	kept
+SerialGot|popped|d0 $00000000|4	$00000000
+SerialGot|custom chip registers|d0 $00000000|4	bytes 512 fnv C4915FC8
+SerialGot|CIA-B PRA|d0 $00000000|4	$0000005A
+SerialGot|vector $64|d0 $00000000|4	$00000000
+SerialGot|vector $74|d0 $00000000|4	$00000000
+SerialGot|receive ring|d0 $00000000|4	bytes 1028 fnv 077C2991
+SerialGot|transmit ring|d0 $00000000|3	bytes 1028 fnv FA4CB4E0
+SerialGot|stub $64 called|d0 $00000000|4	$00000000
+SerialGot|stub $74 called|d0 $00000000|4	$00000000
+SerialGot|d0|d0 $00000000|4	$00000000
+SerialSendBlock|kept|5 bytes|1	kept
+SerialSendBlock|popped|5 bytes|1	$00000000
+SerialSendBlock|custom chip registers|5 bytes|1	bytes 512 fnv 307A2C13
+SerialSendBlock|CIA-B PRA|5 bytes|1	$0000005A
+SerialSendBlock|vector $64|5 bytes|1	$00000000
+SerialSendBlock|vector $74|5 bytes|1	$00000000
+SerialSendBlock|receive ring|5 bytes|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|5 bytes|1	bytes 1028 fnv A7249C3C
+SerialSendBlock|stub $64 called|5 bytes|1	$00000000
+SerialSendBlock|stub $74 called|5 bytes|1	$00000000
+SerialProgress|kept|d0 $00000000|2	kept
+SerialProgress|popped|d0 $00000000|2	$00000000
+SerialProgress|custom chip registers|d0 $00000000|2	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|2	$0000005A
+SerialProgress|vector $64|d0 $00000000|2	$00000000
+SerialProgress|vector $74|d0 $00000000|2	$00000000
+SerialProgress|receive ring|d0 $00000000|2	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|1	bytes 1028 fnv A7249C3C
+SerialProgress|stub $64 called|d0 $00000000|2	$00000000
+SerialProgress|stub $74 called|d0 $00000000|2	$00000000
+SerialProgress|d0|d0 $00000000|2	$FFFFFFFF
+SerialSendBlock|kept|length 1|1	kept
+SerialSendBlock|popped|length 1|1	$00000000
+SerialSendBlock|custom chip registers|length 1|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|length 1|1	$0000005A
+SerialSendBlock|vector $64|length 1|1	$00000000
+SerialSendBlock|vector $74|length 1|1	$00000000
+SerialSendBlock|receive ring|length 1|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|length 1|1	bytes 1028 fnv 6DA86DC7
+SerialSendBlock|stub $64 called|length 1|1	$00000000
+SerialSendBlock|stub $74 called|length 1|1	$00000000
+SerialProgress|kept|d0 $00000000|3	kept
+SerialProgress|popped|d0 $00000000|3	$00000000
+SerialProgress|custom chip registers|d0 $00000000|3	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|3	$0000005A
+SerialProgress|vector $64|d0 $00000000|3	$00000000
+SerialProgress|vector $74|d0 $00000000|3	$00000000
+SerialProgress|receive ring|d0 $00000000|3	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|2	bytes 1028 fnv 6DA86DC7
+SerialProgress|stub $64 called|d0 $00000000|3	$00000000
+SerialProgress|stub $74 called|d0 $00000000|3	$00000000
+SerialProgress|d0|d0 $00000000|3	$FFFFFFFF
+SerialSendBlock|kept|length 0|1	kept
+SerialSendBlock|popped|length 0|1	$00000000
+SerialSendBlock|custom chip registers|length 0|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|length 0|1	$0000005A
+SerialSendBlock|vector $64|length 0|1	$00000000
+SerialSendBlock|vector $74|length 0|1	$00000000
+SerialSendBlock|receive ring|length 0|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|length 0|1	bytes 1028 fnv EAC2D415
+SerialSendBlock|stub $64 called|length 0|1	$00000000
+SerialSendBlock|stub $74 called|length 0|1	$00000000
+SerialProgress|kept|d0 $00000000|4	kept
+SerialProgress|popped|d0 $00000000|4	$00000000
+SerialProgress|custom chip registers|d0 $00000000|4	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|4	$0000005A
+SerialProgress|vector $64|d0 $00000000|4	$00000000
+SerialProgress|vector $74|d0 $00000000|4	$00000000
+SerialProgress|receive ring|d0 $00000000|4	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|3	bytes 1028 fnv EAC2D415
+SerialProgress|stub $64 called|d0 $00000000|4	$00000000
+SerialProgress|stub $74 called|d0 $00000000|4	$00000000
+SerialProgress|d0|d0 $00000000|4	$FFFFFFFE
+SerialSendBlock|kept|length -3|1	kept
+SerialSendBlock|popped|length -3|1	$00000000
+SerialSendBlock|custom chip registers|length -3|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|length -3|1	$0000005A
+SerialSendBlock|vector $64|length -3|1	$00000000
+SerialSendBlock|vector $74|length -3|1	$00000000
+SerialSendBlock|receive ring|length -3|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|length -3|1	bytes 1028 fnv 56C0FDD8
+SerialSendBlock|stub $64 called|length -3|1	$00000000
+SerialSendBlock|stub $74 called|length -3|1	$00000000
+SerialProgress|kept|d0 $00000000|5	kept
+SerialProgress|popped|d0 $00000000|5	$00000000
+SerialProgress|custom chip registers|d0 $00000000|5	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|5	$0000005A
+SerialProgress|vector $64|d0 $00000000|5	$00000000
+SerialProgress|vector $74|d0 $00000000|5	$00000000
+SerialProgress|receive ring|d0 $00000000|5	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|4	bytes 1028 fnv 56C0FDD8
+SerialProgress|stub $64 called|d0 $00000000|5	$00000000
+SerialProgress|stub $74 called|d0 $00000000|5	$00000000
+SerialProgress|d0|d0 $00000000|5	$FFFFFFFB
+SerialStop|kept|$0,$0|2	kept
+SerialStop|popped|$0,$0|2	$00000000
+SerialStop|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
+SerialStop|CIA-B PRA|$0,$0|2	$0000005A
+SerialStop|vector $64|$0,$0|2	$00000000
+SerialStop|vector $74|$0,$0|2	$00000000
+SerialStop|receive ring|$0,$0|2	bytes 1028 fnv 077C2991
+SerialStop|transmit ring|$0,$0|1	bytes 1028 fnv 56C0FDD8
+SerialStop|stub $64 called|$0,$0|2	$00000000
+SerialStop|stub $74 called|$0,$0|2	$00000000
+SerialSendBlock|kept|stopped|1	kept
+SerialSendBlock|popped|stopped|1	$00000000
+SerialSendBlock|custom chip registers|stopped|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|stopped|1	$0000005A
+SerialSendBlock|vector $64|stopped|1	$00000000
+SerialSendBlock|vector $74|stopped|1	$00000000
+SerialSendBlock|receive ring|stopped|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|stopped|1	bytes 1028 fnv 7932AD34
+SerialSendBlock|stub $64 called|stopped|1	$00000000
+SerialSendBlock|stub $74 called|stopped|1	$00000000
+SerialProgress|kept|d0 $00000000|6	kept
+SerialProgress|popped|d0 $00000000|6	$00000000
+SerialProgress|custom chip registers|d0 $00000000|6	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|6	$0000005A
+SerialProgress|vector $64|d0 $00000000|6	$00000000
+SerialProgress|vector $74|d0 $00000000|6	$00000000
+SerialProgress|receive ring|d0 $00000000|6	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|5	bytes 1028 fnv 7932AD34
+SerialProgress|stub $64 called|d0 $00000000|6	$00000000
+SerialProgress|stub $74 called|d0 $00000000|6	$00000000
+SerialProgress|d0|d0 $00000000|6	$FFFFFFFB
+SerialSendBlock|kept|200 bytes (ring wraps)|1	kept
+SerialSendBlock|popped|200 bytes (ring wraps)|1	$00000000
+SerialSendBlock|custom chip registers|200 bytes (ring wraps)|1	bytes 512 fnv 307A2C13
+SerialSendBlock|CIA-B PRA|200 bytes (ring wraps)|1	$0000005A
+SerialSendBlock|vector $64|200 bytes (ring wraps)|1	$00000000
+SerialSendBlock|vector $74|200 bytes (ring wraps)|1	$00000000
+SerialSendBlock|receive ring|200 bytes (ring wraps)|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|200 bytes (ring wraps)|1	bytes 1028 fnv AF2C1FCB
+SerialSendBlock|stub $64 called|200 bytes (ring wraps)|1	$00000000
+SerialSendBlock|stub $74 called|200 bytes (ring wraps)|1	$00000000
+SerialProgress|kept|d0 $00000000|7	kept
+SerialProgress|popped|d0 $00000000|7	$00000000
+SerialProgress|custom chip registers|d0 $00000000|7	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|7	$0000005A
+SerialProgress|vector $64|d0 $00000000|7	$00000000
+SerialProgress|vector $74|d0 $00000000|7	$00000000
+SerialProgress|receive ring|d0 $00000000|7	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|6	bytes 1028 fnv AF2C1FCB
+SerialProgress|stub $64 called|d0 $00000000|7	$00000000
+SerialProgress|stub $74 called|d0 $00000000|7	$00000000
+SerialProgress|d0|d0 $00000000|7	$FFFFFFFF
+SerialProgress|200 bytes: wbig unchanged|d0 $00000000|1	$00000001
+SerialProgress|200 bytes: wrend ran 400 on (BUG(orig), #983)|d0 $00000000|1	$00000001
+SerialProgress|200 bytes: slot of byte 1 holds byte 129 (BUG(orig), #983)|d0 $00000000|1	$00000001
+SerialStop|kept|$0,$0|3	kept
+SerialStop|popped|$0,$0|3	$00000000
+SerialStop|custom chip registers|$0,$0|3	bytes 512 fnv C4915FC8
+SerialStop|CIA-B PRA|$0,$0|3	$0000005A
+SerialStop|vector $64|$0,$0|3	$00000000
+SerialStop|vector $74|$0,$0|3	$00000000
+SerialStop|receive ring|$0,$0|3	bytes 1028 fnv 077C2991
+SerialStop|transmit ring|$0,$0|2	bytes 1028 fnv AF2C1FCB
+SerialStop|stub $64 called|$0,$0|3	$00000000
+SerialStop|stub $74 called|$0,$0|3	$00000000
+SerialSendString|kept|open|1	kept
+SerialSendString|popped|open|1	$00000000
+SerialSendString|custom chip registers|open|1	bytes 512 fnv C4915FC8
+SerialSendString|CIA-B PRA|open|1	$0000005A
+SerialSendString|vector $64|open|1	$00000000
+SerialSendString|vector $74|open|1	$00000000
+SerialSendString|receive ring|open|1	bytes 1028 fnv 077C2991
+SerialSendString|transmit ring|open|1	bytes 1028 fnv 123081C2
+SerialSendString|stub $64 called|open|1	$00000000
+SerialSendString|stub $74 called|open|1	$00000000
+SerialSendString|a2 not below the stack|open|1	$00000001
+SerialSendBlock|kept|after SerialSendString (stop flag cleared)|1	kept
+SerialSendBlock|popped|after SerialSendString (stop flag cleared)|1	$00000000
+SerialSendBlock|custom chip registers|after SerialSendString (stop flag cleared)|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|after SerialSendString (stop flag cleared)|1	$0000005A
+SerialSendBlock|vector $64|after SerialSendString (stop flag cleared)|1	$00000000
+SerialSendBlock|vector $74|after SerialSendString (stop flag cleared)|1	$00000000
+SerialSendBlock|receive ring|after SerialSendString (stop flag cleared)|1	bytes 1028 fnv 077C2991
+SerialSendBlock|transmit ring|after SerialSendString (stop flag cleared)|1	bytes 1028 fnv D3FFE215
+SerialSendBlock|stub $64 called|after SerialSendString (stop flag cleared)|1	$00000000
+SerialSendBlock|stub $74 called|after SerialSendString (stop flag cleared)|1	$00000000
+SerialProgress|kept|d0 $00000000|8	kept
+SerialProgress|popped|d0 $00000000|8	$00000000
+SerialProgress|custom chip registers|d0 $00000000|8	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|8	$0000005A
+SerialProgress|vector $64|d0 $00000000|8	$00000000
+SerialProgress|vector $74|d0 $00000000|8	$00000000
+SerialProgress|receive ring|d0 $00000000|8	bytes 1028 fnv 077C2991
+SerialProgress|transmit ring|d0 $00000000|7	bytes 1028 fnv D3FFE215
+SerialProgress|stub $64 called|d0 $00000000|8	$00000000
+SerialProgress|stub $74 called|d0 $00000000|8	$00000000
+SerialProgress|d0|d0 $00000000|8	$FFFFFFFF
+SerialReadString|kept|open: returns to d0|1	kept
+SerialReadString|popped|open: returns to d0|1	$00000000
+SerialReadString|custom chip registers|open: returns to d0|1	bytes 512 fnv C4915FC8
+SerialReadString|CIA-B PRA|open: returns to d0|1	$0000005A
+SerialReadString|vector $64|open: returns to d0|1	$00000000
+SerialReadString|vector $74|open: returns to d0|1	$00000000
+SerialReadString|receive ring|open: returns to d0|1	bytes 1028 fnv 46F36E46
+SerialReadString|transmit ring|open: returns to d0|1	bytes 1028 fnv D3FFE215
+SerialReadString|stub $64 called|open: returns to d0|1	$00000000
+SerialReadString|stub $74 called|open: returns to d0|1	$00000000
+SerialReadString|d0|open: returns to d0|1	$00000002
+SerialReadString|a3|open: returns to d0|1	$00000183
+SerialReadString|string|open: returns to d0|1	bytes 32 4F4B00EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialWriteLong|kept|$11223344,$0|1	kept
+SerialWriteLong|popped|$11223344,$0|1	$00000000
+SerialWriteLong|custom chip registers|$11223344,$0|1	bytes 512 fnv C4915FC8
+SerialWriteLong|CIA-B PRA|$11223344,$0|1	$0000005A
+SerialWriteLong|vector $64|$11223344,$0|1	$00000000
+SerialWriteLong|vector $74|$11223344,$0|1	$00000000
+SerialWriteLong|receive ring|$11223344,$0|1	bytes 1028 fnv 46F36E46
+SerialWriteLong|transmit ring|$11223344,$0|1	bytes 1028 fnv 17846E76
+SerialWriteLong|stub $64 called|$11223344,$0|1	$00000000
+SerialWriteLong|stub $74 called|$11223344,$0|1	$00000000
+SerialStop|kept|$0,$0|4	kept
+SerialStop|popped|$0,$0|4	$00000000
+SerialStop|custom chip registers|$0,$0|4	bytes 512 fnv C4915FC8
+SerialStop|CIA-B PRA|$0,$0|4	$0000005A
+SerialStop|vector $64|$0,$0|4	$00000000
+SerialStop|vector $74|$0,$0|4	$00000000
+SerialStop|receive ring|$0,$0|4	bytes 1028 fnv 46F36E46
+SerialStop|transmit ring|$0,$0|3	bytes 1028 fnv 17846E76
+SerialStop|stub $64 called|$0,$0|4	$00000000
+SerialStop|stub $74 called|$0,$0|4	$00000000
+SerialOpen|kept|$4B00,$0|1	kept
+SerialOpen|popped|$4B00,$0|1	$00000000
+SerialOpen|custom chip registers|$4B00,$0|1	bytes 512 fnv EBD7A76D
+SerialOpen|CIA-B PRA|$4B00,$0|1	$0000005A
+SerialOpen|vector $64|$4B00,$0|1	$00000000
+SerialOpen|vector $74|$4B00,$0|1	$00000000
+SerialOpen|receive ring|$4B00,$0|1	bytes 1028 fnv 46F36E46
+SerialOpen|transmit ring|$4B00,$0|1	bytes 1028 fnv 17846E76
+SerialOpen|stub $64 called|$4B00,$0|1	$00000000
+SerialOpen|stub $74 called|$4B00,$0|1	$00000000
+SerialSendBlock|kept|after SerialOpen|1	kept
+SerialSendBlock|popped|after SerialOpen|1	$00000000
+SerialSendBlock|custom chip registers|after SerialOpen|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|after SerialOpen|1	$0000005A
+SerialSendBlock|vector $64|after SerialOpen|1	$00000000
+SerialSendBlock|vector $74|after SerialOpen|1	$00000000
+SerialSendBlock|receive ring|after SerialOpen|1	bytes 1028 fnv 46F36E46
+SerialSendBlock|transmit ring|after SerialOpen|1	bytes 1028 fnv 4A0C7823
+SerialSendBlock|stub $64 called|after SerialOpen|1	$00000000
+SerialSendBlock|stub $74 called|after SerialOpen|1	$00000000
+SerialProgress|kept|d0 $00000000|9	kept
+SerialProgress|popped|d0 $00000000|9	$00000000
+SerialProgress|custom chip registers|d0 $00000000|9	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|9	$0000005A
+SerialProgress|vector $64|d0 $00000000|9	$00000000
+SerialProgress|vector $74|d0 $00000000|9	$00000000
+SerialProgress|receive ring|d0 $00000000|9	bytes 1028 fnv 46F36E46
+SerialProgress|transmit ring|d0 $00000000|8	bytes 1028 fnv 4A0C7823
+SerialProgress|stub $64 called|d0 $00000000|9	$00000000
+SerialProgress|stub $74 called|d0 $00000000|9	$00000000
+SerialProgress|d0|d0 $00000000|9	$FFFFFFFF
+SerialFlush|kept|$0,$0|1	kept
+SerialFlush|popped|$0,$0|1	$00000000
+SerialFlush|custom chip registers|$0,$0|1	bytes 512 fnv C4915FC8
+SerialFlush|CIA-B PRA|$0,$0|1	$0000005A
+SerialFlush|vector $64|$0,$0|1	$00000000
+SerialFlush|vector $74|$0,$0|1	$00000000
+SerialFlush|receive ring|$0,$0|1	bytes 1028 fnv 7BC8CE93
+SerialFlush|transmit ring|$0,$0|1	bytes 1028 fnv 4A0C7823
+SerialFlush|stub $64 called|$0,$0|1	$00000000
+SerialFlush|stub $74 called|$0,$0|1	$00000000
+SerialReceiveBlock|every byte read in time|6 bytes|1	$00000001
+SerialReceiveBlock|returned|6 bytes|1	$00000001
+SerialReceiveBlock|kept|6 bytes|1	kept
+SerialReceiveBlock|popped|6 bytes|1	$00000000
+SerialReceiveBlock|custom chip registers|6 bytes|1	bytes 512 fnv C4915FC8
+SerialReceiveBlock|CIA-B PRA|6 bytes|1	$0000005A
+SerialReceiveBlock|vector $64|6 bytes|1	$00000000
+SerialReceiveBlock|vector $74|6 bytes|1	$00000000
+SerialReceiveBlock|receive ring|6 bytes|1	bytes 1028 fnv 2E11BE1F
+SerialReceiveBlock|transmit ring|6 bytes|1	bytes 1028 fnv 4A0C7823
+SerialReceiveBlock|stub $64 called|6 bytes|1	$00000000
+SerialReceiveBlock|stub $74 called|6 bytes|1	$00000000
+SerialReceiveBlock|bytes received|6 bytes|1	bytes 64 5200FF133780EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialProgress|kept|d0 $00000000|10	kept
+SerialProgress|popped|d0 $00000000|10	$00000000
+SerialProgress|custom chip registers|d0 $00000000|10	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|10	$0000005A
+SerialProgress|vector $64|d0 $00000000|10	$00000000
+SerialProgress|vector $74|d0 $00000000|10	$00000000
+SerialProgress|receive ring|d0 $00000000|10	bytes 1028 fnv 2E11BE1F
+SerialProgress|transmit ring|d0 $00000000|9	bytes 1028 fnv 4A0C7823
+SerialProgress|stub $64 called|d0 $00000000|10	$00000000
+SerialProgress|stub $74 called|d0 $00000000|10	$00000000
+SerialProgress|d0|d0 $00000000|10	$00000000
+SerialReceiveBlock|every byte read in time|2 bytes|1	$00000001
+SerialReceiveBlock|returned|2 bytes|1	$00000001
+SerialReceiveBlock|kept|2 bytes|1	kept
+SerialReceiveBlock|popped|2 bytes|1	$00000000
+SerialReceiveBlock|custom chip registers|2 bytes|1	bytes 512 fnv C4915FC8
+SerialReceiveBlock|CIA-B PRA|2 bytes|1	$0000005A
+SerialReceiveBlock|vector $64|2 bytes|1	$00000000
+SerialReceiveBlock|vector $74|2 bytes|1	$00000000
+SerialReceiveBlock|receive ring|2 bytes|1	bytes 1028 fnv C791E482
+SerialReceiveBlock|transmit ring|2 bytes|1	bytes 1028 fnv 4A0C7823
+SerialReceiveBlock|stub $64 called|2 bytes|1	$00000000
+SerialReceiveBlock|stub $74 called|2 bytes|1	$00000000
+SerialReceiveBlock|bytes received|2 bytes|1	bytes 64 5200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialProgress|kept|d0 $00000000|11	kept
+SerialProgress|popped|d0 $00000000|11	$00000000
+SerialProgress|custom chip registers|d0 $00000000|11	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|11	$0000005A
+SerialProgress|vector $64|d0 $00000000|11	$00000000
+SerialProgress|vector $74|d0 $00000000|11	$00000000
+SerialProgress|receive ring|d0 $00000000|11	bytes 1028 fnv C791E482
+SerialProgress|transmit ring|d0 $00000000|10	bytes 1028 fnv 4A0C7823
+SerialProgress|stub $64 called|d0 $00000000|11	$00000000
+SerialProgress|stub $74 called|d0 $00000000|11	$00000000
+SerialProgress|d0|d0 $00000000|11	$00000000
+SerialReceiveBlock|every byte read in time|length 1, SerialStop|1	$00000001
+SerialReceiveBlock|returned|length 1, SerialStop|1	$00000001
+SerialReceiveBlock|kept|length 1, SerialStop|1	kept
+SerialReceiveBlock|popped|length 1, SerialStop|1	$00000000
+SerialReceiveBlock|custom chip registers|length 1, SerialStop|1	bytes 512 fnv C4915FC8
+SerialReceiveBlock|CIA-B PRA|length 1, SerialStop|1	$0000005A
+SerialReceiveBlock|vector $64|length 1, SerialStop|1	$00000000
+SerialReceiveBlock|vector $74|length 1, SerialStop|1	$00000000
+SerialReceiveBlock|receive ring|length 1, SerialStop|1	bytes 1028 fnv 44EB5DD9
+SerialReceiveBlock|transmit ring|length 1, SerialStop|1	bytes 1028 fnv 4A0C7823
+SerialReceiveBlock|stub $64 called|length 1, SerialStop|1	$00000000
+SerialReceiveBlock|stub $74 called|length 1, SerialStop|1	$00000000
+SerialReceiveBlock|bytes received|length 1, SerialStop|1	bytes 64 5200FF13EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReceiveBlock|d7 (its return address)|length 1, SerialStop|1	prog
+SerialProgress|kept|d0 $00000000|12	kept
+SerialProgress|popped|d0 $00000000|12	$00000000
+SerialProgress|custom chip registers|d0 $00000000|12	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|12	$0000005A
+SerialProgress|vector $64|d0 $00000000|12	$00000000
+SerialProgress|vector $74|d0 $00000000|12	$00000000
+SerialProgress|receive ring|d0 $00000000|12	bytes 1028 fnv 44EB5DD9
+SerialProgress|transmit ring|d0 $00000000|11	bytes 1028 fnv 4A0C7823
+SerialProgress|stub $64 called|d0 $00000000|12	$00000000
+SerialProgress|stub $74 called|d0 $00000000|12	$00000000
+SerialProgress|d0|d0 $00000000|12	$FFFFFFFD
+SerialReadLong|never returns||1	$00000001
+SerialReadLong|every byte read||1	$00000001
+SerialReadLong|custom chip registers||1	bytes 512 fnv C4915FC8
+SerialReadLong|CIA-B PRA||1	$0000005A
+SerialReadLong|vector $64||1	$00000000
+SerialReadLong|vector $74||1	$00000000
+SerialReadLong|receive ring||1	bytes 1028 fnv AE36955A
+SerialReadLong|transmit ring||1	bytes 1028 fnv 4A0C7823
+SerialReadLong|stub $64 called||1	$00000000
+SerialReadLong|stub $74 called||1	$00000000
+SerialClose|kept|$0,$0|1	kept
+SerialClose|popped|$0,$0|1	$00000000
+SerialClose|custom chip registers|$0,$0|1	bytes 512 fnv 5589C099
+SerialClose|CIA-B PRA|$0,$0|1	$000000FF
+SerialClose|vector $64|$0,$0|1	$00000000
+SerialClose|vector $74|$0,$0|1	$00000000
+SerialClose|receive ring|$0,$0|1	bytes 1028 fnv AE36955A
+SerialClose|transmit ring|$0,$0|1	bytes 1028 fnv 4A0C7823
+SerialClose|stub $64 called|$0,$0|1	$00000000
+SerialClose|stub $74 called|$0,$0|1	$00000000
+SerialClose|kept|$0,$0|2	kept
+SerialClose|popped|$0,$0|2	$00000000
+SerialClose|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
+SerialClose|CIA-B PRA|$0,$0|2	$0000005A
+SerialClose|vector $64|$0,$0|2	$00000000
+SerialClose|vector $74|$0,$0|2	$00000000
+SerialClose|receive ring|$0,$0|2	bytes 1028 fnv AE36955A
+SerialClose|transmit ring|$0,$0|2	bytes 1028 fnv 4A0C7823
+SerialClose|stub $64 called|$0,$0|2	$00000000
+SerialClose|stub $74 called|$0,$0|2	$00000000
+receive interrupt (closed)|custom chip registers|$0800, $99|1	bytes 512 fnv 0603005F
+receive interrupt (closed)|CIA-B PRA|$0800, $99|1	$0000005A
+receive interrupt (closed)|vector $64|$0800, $99|1	$00000000
+receive interrupt (closed)|vector $74|$0800, $99|1	$00000000
+receive interrupt (closed)|receive ring|$0800, $99|1	bytes 1028 fnv 259E4448
+receive interrupt (closed)|transmit ring|$0800, $99|1	bytes 1028 fnv 4A0C7823
+receive interrupt (closed)|stub $64 called|$0800, $99|1	$00000000
+receive interrupt (closed)|stub $74 called|$0800, $99|1	$00000000
+SerialFlush|kept|$0,$0|2	kept
+SerialFlush|popped|$0,$0|2	$00000000
+SerialFlush|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
+SerialFlush|CIA-B PRA|$0,$0|2	$0000005A
+SerialFlush|vector $64|$0,$0|2	$00000000
+SerialFlush|vector $74|$0,$0|2	$00000000
+SerialFlush|receive ring|$0,$0|2	bytes 1028 fnv C3079AE3
+SerialFlush|transmit ring|$0,$0|2	bytes 1028 fnv 4A0C7823
+SerialFlush|stub $64 called|$0,$0|2	$00000000
+SerialFlush|stub $74 called|$0,$0|2	$00000000
+SerialReadString|kept|closed|1	kept
+SerialReadString|popped|closed|1	$00000000
+SerialReadString|custom chip registers|closed|1	bytes 512 fnv C4915FC8
+SerialReadString|CIA-B PRA|closed|1	$0000005A
+SerialReadString|vector $64|closed|1	$00000000
+SerialReadString|vector $74|closed|1	$00000000
+SerialReadString|receive ring|closed|1	bytes 1028 fnv 6D3B88FF
+SerialReadString|transmit ring|closed|1	bytes 1028 fnv 4A0C7823
+SerialReadString|stub $64 called|closed|1	$00000000
+SerialReadString|stub $74 called|closed|1	$00000000
+SerialReadString|d0|closed|1	$00000005
+SerialReadString|a3|closed|1	$00000183
+SerialReadString|string|closed|1	bytes 32 414200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialReadString|kept|closed, again (the count goes on)|1	kept
+SerialReadString|popped|closed, again (the count goes on)|1	$00000000
+SerialReadString|custom chip registers|closed, again (the count goes on)|1	bytes 512 fnv C4915FC8
+SerialReadString|CIA-B PRA|closed, again (the count goes on)|1	$0000005A
+SerialReadString|vector $64|closed, again (the count goes on)|1	$00000000
+SerialReadString|vector $74|closed, again (the count goes on)|1	$00000000
+SerialReadString|receive ring|closed, again (the count goes on)|1	bytes 1028 fnv 53E79F71
+SerialReadString|transmit ring|closed, again (the count goes on)|1	bytes 1028 fnv 4A0C7823
+SerialReadString|stub $64 called|closed, again (the count goes on)|1	$00000000
+SerialReadString|stub $74 called|closed, again (the count goes on)|1	$00000000
+SerialReadString|d0|closed, again (the count goes on)|1	$00000007
+SerialReadString|a3|closed, again (the count goes on)|1	$00000182
+SerialReadString|string|closed, again (the count goes on)|1	bytes 32 4300EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+SerialSendString|kept|closed|1	kept
+SerialSendString|popped|closed|1	$00000000
+SerialSendString|custom chip registers|closed|1	bytes 512 fnv C4915FC8
+SerialSendString|CIA-B PRA|closed|1	$0000005A
+SerialSendString|vector $64|closed|1	$00000000
+SerialSendString|vector $74|closed|1	$00000000
+SerialSendString|receive ring|closed|1	bytes 1028 fnv 53E79F71
+SerialSendString|transmit ring|closed|1	bytes 1028 fnv 9C7FFD9A
+SerialSendString|stub $64 called|closed|1	$00000000
+SerialSendString|stub $74 called|closed|1	$00000000
+SerialSendString|a2 not below the stack|closed|1	$00000001
+SerialStop|kept|$0,$0|5	kept
+SerialStop|popped|$0,$0|5	$00000000
+SerialStop|custom chip registers|$0,$0|5	bytes 512 fnv C4915FC8
+SerialStop|CIA-B PRA|$0,$0|5	$0000005A
+SerialStop|vector $64|$0,$0|5	$00000000
+SerialStop|vector $74|$0,$0|5	$00000000
+SerialStop|receive ring|$0,$0|5	bytes 1028 fnv 53E79F71
+SerialStop|transmit ring|$0,$0|4	bytes 1028 fnv 9C7FFD9A
+SerialStop|stub $64 called|$0,$0|5	$00000000
+SerialStop|stub $74 called|$0,$0|5	$00000000
+SerialSendString|kept|closed, stop flag set|1	kept
+SerialSendString|popped|closed, stop flag set|1	$00000000
+SerialSendString|custom chip registers|closed, stop flag set|1	bytes 512 fnv C4915FC8
+SerialSendString|CIA-B PRA|closed, stop flag set|1	$0000005A
+SerialSendString|vector $64|closed, stop flag set|1	$00000000
+SerialSendString|vector $74|closed, stop flag set|1	$00000000
+SerialSendString|receive ring|closed, stop flag set|1	bytes 1028 fnv 53E79F71
+SerialSendString|transmit ring|closed, stop flag set|1	bytes 1028 fnv 4D95EEEB
+SerialSendString|stub $64 called|closed, stop flag set|1	$00000000
+SerialSendString|stub $74 called|closed, stop flag set|1	$00000000
+SerialSendString|a2 not below the stack|closed, stop flag set|1	$00000001
+SerialSendBlock|kept|after SerialSendString (stop flag still set)|1	kept
+SerialSendBlock|popped|after SerialSendString (stop flag still set)|1	$00000000
+SerialSendBlock|custom chip registers|after SerialSendString (stop flag still set)|1	bytes 512 fnv C4915FC8
+SerialSendBlock|CIA-B PRA|after SerialSendString (stop flag still set)|1	$0000005A
+SerialSendBlock|vector $64|after SerialSendString (stop flag still set)|1	$00000000
+SerialSendBlock|vector $74|after SerialSendString (stop flag still set)|1	$00000000
+SerialSendBlock|receive ring|after SerialSendString (stop flag still set)|1	bytes 1028 fnv 53E79F71
+SerialSendBlock|transmit ring|after SerialSendString (stop flag still set)|1	bytes 1028 fnv 676053F6
+SerialSendBlock|stub $64 called|after SerialSendString (stop flag still set)|1	$00000000
+SerialSendBlock|stub $74 called|after SerialSendString (stop flag still set)|1	$00000000
+SerialProgress|kept|d0 $00000000|13	kept
+SerialProgress|popped|d0 $00000000|13	$00000000
+SerialProgress|custom chip registers|d0 $00000000|13	bytes 512 fnv C4915FC8
+SerialProgress|CIA-B PRA|d0 $00000000|13	$0000005A
+SerialProgress|vector $64|d0 $00000000|13	$00000000
+SerialProgress|vector $74|d0 $00000000|13	$00000000
+SerialProgress|receive ring|d0 $00000000|13	bytes 1028 fnv 53E79F71
+SerialProgress|transmit ring|d0 $00000000|12	bytes 1028 fnv 676053F6
+SerialProgress|stub $64 called|d0 $00000000|13	$00000000
+SerialProgress|stub $74 called|d0 $00000000|13	$00000000
+SerialProgress|d0|d0 $00000000|13	$FFFFFFFD
+SerialWriteLong|kept|$A1B2C3D4,$0|1	kept
+SerialWriteLong|popped|$A1B2C3D4,$0|1	$00000000
+SerialWriteLong|custom chip registers|$A1B2C3D4,$0|1	bytes 512 fnv 12D59FB8
+SerialWriteLong|CIA-B PRA|$A1B2C3D4,$0|1	$0000003F
+SerialWriteLong|vector $64|$A1B2C3D4,$0|1	$00000001
+SerialWriteLong|vector $74|$A1B2C3D4,$0|1	$00000001
+SerialWriteLong|receive ring|$A1B2C3D4,$0|1	bytes 1028 fnv 8BE64881
+SerialWriteLong|transmit ring|$A1B2C3D4,$0|1	bytes 1028 fnv 8EF80B83
+SerialWriteLong|stub $64 called|$A1B2C3D4,$0|1	$00000000
+SerialWriteLong|stub $74 called|$A1B2C3D4,$0|1	$00000000
+finit|kept|$0,$0|1	kept
+finit|popped|$0,$0|1	$00000000
+finit|custom chip registers|$0,$0|1	bytes 512 fnv 5589C099
+finit|CIA-B PRA|$0,$0|1	$000000FF
+finit|vector $64|$0,$0|1	$00000000
+finit|vector $74|$0,$0|1	$00000000
+finit|receive ring|$0,$0|1	bytes 1028 fnv 8BE64881
+finit|transmit ring|$0,$0|1	bytes 1028 fnv 8EF80B83
+finit|stub $64 called|$0,$0|1	$00000000
+finit|stub $74 called|$0,$0|1	$00000000
+finit|kept|$0,$0|2	kept
+finit|popped|$0,$0|2	$00000000
+finit|custom chip registers|$0,$0|2	bytes 512 fnv C4915FC8
+finit|CIA-B PRA|$0,$0|2	$0000005A
+finit|vector $64|$0,$0|2	$00000000
+finit|vector $74|$0,$0|2	$00000000
+finit|receive ring|$0,$0|2	bytes 1028 fnv 8BE64881
+finit|transmit ring|$0,$0|2	bytes 1028 fnv 8EF80B83
+finit|stub $64 called|$0,$0|2	$00000000
+finit|stub $74 called|$0,$0|2	$00000000
+SerialOpen|kept|$960,$0|1	kept
+SerialOpen|popped|$960,$0|1	$00000000
+SerialOpen|custom chip registers|$960,$0|1	bytes 512 fnv 6B31F3BE
+SerialOpen|CIA-B PRA|$960,$0|1	$0000003F
+SerialOpen|vector $64|$960,$0|1	$00000001
+SerialOpen|vector $74|$960,$0|1	$00000001
+SerialOpen|receive ring|$960,$0|1	bytes 1028 fnv 8BE64881
+SerialOpen|transmit ring|$960,$0|1	bytes 1028 fnv 86734CFB
+SerialOpen|stub $64 called|$960,$0|1	$00000000
+SerialOpen|stub $74 called|$960,$0|1	$00000000
+receive ring wrapped|kept|$960,$0|1	kept
+receive ring wrapped|popped|$960,$0|1	$00000000
+receive ring wrapped|custom chip registers|$960,$0|1	bytes 512 fnv C4915FC8
+receive ring wrapped|CIA-B PRA|$960,$0|1	$0000005A
+receive ring wrapped|vector $64|$960,$0|1	$00000000
+receive ring wrapped|vector $74|$960,$0|1	$00000000
+receive ring wrapped|receive ring|$960,$0|1	bytes 1028 fnv C811D601
+receive ring wrapped|transmit ring|$960,$0|1	bytes 1028 fnv 86734CFB
+receive ring wrapped|stub $64 called|$960,$0|1	$00000000
+receive ring wrapped|stub $74 called|$960,$0|1	$00000000
+SerialFlush|kept|$0,$0|3	kept
+SerialFlush|popped|$0,$0|3	$00000000
+SerialFlush|custom chip registers|$0,$0|3	bytes 512 fnv C4915FC8
+SerialFlush|CIA-B PRA|$0,$0|3	$0000005A
+SerialFlush|vector $64|$0,$0|3	$00000000
+SerialFlush|vector $74|$0,$0|3	$00000000
+SerialFlush|receive ring|$0,$0|3	bytes 1028 fnv 7A55ED45
+SerialFlush|transmit ring|$0,$0|3	bytes 1028 fnv 86734CFB
+SerialFlush|stub $64 called|$0,$0|3	$00000000
+SerialFlush|stub $74 called|$0,$0|3	$00000000
+SerialClose|kept|$0,$0|3	kept
+SerialClose|popped|$0,$0|3	$00000000
+SerialClose|custom chip registers|$0,$0|3	bytes 512 fnv 5589C099
+SerialClose|CIA-B PRA|$0,$0|3	$000000FF
+SerialClose|vector $64|$0,$0|3	$00000000
+SerialClose|vector $74|$0,$0|3	$00000000
+SerialClose|receive ring|$0,$0|3	bytes 1028 fnv 7A55ED45
+SerialClose|transmit ring|$0,$0|3	bytes 1028 fnv 86734CFB
+SerialClose|stub $64 called|$0,$0|3	$00000000
+SerialClose|stub $74 called|$0,$0|3	$00000000
