@@ -1,7 +1,7 @@
 /*
  * rwe rimisclib - the miscellaneous commands of misclib2.bb: the C build
  * or the reference build of the source (refbuild), one set as LIBSET
- * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * says, observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rimisclib.txt).
  *
  *   rimisclib DIR       (DIR with rimisclib and floatquicklib .obj or .orig)
@@ -36,7 +36,6 @@
  * behind it, DIFF); EZRequestArgs without arguments; strings longer than
  * the buffers; OpenFontPrefs when AllocMem fails.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/dos.h>
 #include <proto/intuition.h>

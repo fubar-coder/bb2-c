@@ -3,7 +3,7 @@
  *   strings2lib, ffplib, strcomplib, floatquicklib, modlib, maxlenlib
  * (plus memlib, ldivlib, lmullib, which they call) on the Amiga: one set
  * (the original from acidlibs or the C build, as LIBSET says), observed
- * as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * as cases (sysload.h; the expected data
  * libs/tests/expected/systest_mathstr.txt).
  *
  *   systest_mathstr DIR
@@ -15,7 +15,6 @@
  * the original keeps in all calls of the routine).  Many vectors: edge
  * values and pseudo random ones (fixed seed).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 
 /* ------------------------------------------------- call with stack args */

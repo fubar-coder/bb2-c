@@ -3,21 +3,16 @@
  *   callregs()  call a routine with all registers (+ optional stack arg)
  *   loader      load NAME.orig / NAME.obj like the compiler does: relocate,
  *               resolve ALibJsr placeholders against the same set
- *   checks      check(), markregs(), kept(), cmp_preserve()
+ *   checks      check(), markregs(), kept(), the observations, KEEPS
  *
- * Usage in a test program that compares two sets (not converted yet):
+ * A test program observes one library set: it loads it with
  *   static const char *names[] = { "memlib", "mylib", NULL };
- *   load_sets(dir, names) -> sets[0] (originals), sets[1] (C build)
- *   run the same scenario on both, record struct call / values, compare
- *   through tape.h.
- *
- * A program that observes one set (openspec change libs-tests-capture,
- * design D4, D7, "Converting a program") defines LIBS_ONE_SET before it
- * includes this header and loads the set with load_set(dir, names) ->
- * loaded: NAME.obj or NAME.orig, as the shell variable LIBSET of the run
- * says (bl_libset, libs_tests.cpp).  It writes every observation as a case
- * (capture.h) to captures/NAME.txt; the key is ROUT, the check text and
- * VEC (set by the program before the observations):
+ *   load_set(dir, names) -> loaded: NAME.obj or NAME.orig
+ * as the shell variable LIBSET of the run says (bl_libset, libs_tests.cpp),
+ * and writes every observation as a case (capture.h) to captures/NAME.txt,
+ * which the run compares with the expected data libs/tests/expected/NAME.txt
+ * (results libs-compare); the key is ROUT, the check text and VEC (set by
+ * the program before the observations):
  *   OBS(what, v)                a number, written as it is ($XXXXXXXX)
  *   OBSPTR(what, v, name, base) an address: 0, prog (into the test
  *                               program), NAME+$OFF relative to base
@@ -50,15 +45,10 @@
 #include <stdlib.h>
 
 #include "capture.h"
-#ifndef LIBS_ONE_SET
-#include "tape.h"
-#endif
 
-/* the output of the program libs_tests.cpp runs (run_systest), begun by
-   its first load_sets (its tape) or load_set (its cases), ended by
-   run_systest after the program; nothing outside run_systest (bugorig.c,
-   selftest_keeps.c) */
-void bl_prog_tape(void);
+/* the cases of the program libs_tests.cpp runs (run_systest), begun by its
+   first load_set, ended by run_systest after the program; nothing outside
+   run_systest (bugorig.c, selftest_keeps.c) */
 void bl_prog_cases(void);
 
 /* ------------------------------------------------------------- register calls */
@@ -184,7 +174,7 @@ static __attribute__((unused)) UBYTE *entry_code(struct lib *l, int idx)
 
 /* optional stubs for tokens of libraries the test does not load (e.g. a
    fake runerrlib getvbr): { token, code }, ended by { 0, NULL }.  Set
-   sysload_stubs before load_sets(); the same stub is used for both sets. */
+   sysload_stubs before load_set(). */
 struct stub { UWORD tok; APTR code; };
 static const struct stub *sysload_stubs;
 
@@ -296,54 +286,10 @@ static ULONG kept(const struct regs *before, const struct regs *after)
     return m;
 }
 
-/* one routine call record per set, compared afterwards */
-struct call {
-    struct regs in, out;
-    UWORD ccr;
-};
-
 /* the library set of the run: "obj" (the C build) or "orig" (the
    original), from the shell variable LIBSET; NULL if it is not set
    (libs_tests.cpp) */
 extern const char *bl_libset;
-
-#ifndef LIBS_ONE_SET
-static void cmp_preserve(const char *what, struct call *o, struct call *c)
-{
-    ULONG ko = kept(&o->in, &o->out), kc = kept(&c->in, &c->out);
-    char buf[200];
-    ko = tape_kept(what, ko, kc);
-    snprintf(buf, sizeof buf, "%s: C build changes registers the original keeps (mask $%04lX)",
-             what, ko & ~kc);
-    check(buf, (ko & ~kc) == 0);
-}
-
-
-static struct set sets[2];
-
-/* load and link both sets: sets[0] = NAME.orig, sets[1] = NAME.obj; the
-   first call of a program libs_tests.cpp runs begins its tape */
-static BOOL load_sets(const char *dir, const char **names)
-{
-    char path[256];
-    int s, i;
-    bl_prog_tape();
-    for (s = 0; s < 2; s++) {
-        sets[s].what = s ? "C" : "orig";
-        for (i = 0; names[i]; i++) {
-            sprintf(path, "%s/%s.%s", dir, names[i], s ? "obj" : "orig");
-            sets[s].lib[i].name = names[i];
-            if (!loadfile(&sets[s].lib[i], path))
-                return FALSE;
-        }
-        sets[s].n = i;
-        if (!link_set(&sets[s]))
-            return FALSE;
-    }
-    return TRUE;
-}
-
-#else /* LIBS_ONE_SET */
 
 /* the one set of the run (load_set) */
 static struct set loaded;
@@ -564,7 +510,5 @@ static __attribute__((unused)) void kept_summary(void)
                (k->all & KEEPS_CONV) != KEEPS_CONV ? "  (a4/a5 changed: a result? DONTCARE)" : "");
     }
 }
-
-#endif /* LIBS_ONE_SET */
 
 #endif

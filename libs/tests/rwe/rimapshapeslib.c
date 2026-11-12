@@ -1,7 +1,7 @@
 /*
  * rwe rimapshapeslib - rimapshapeslib (userlib 6): the C build or
  * the reference build of rwelibsrc/MapEd/MapShape2.bb (blitz2 2.10),
- * one set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * one set as LIBSET says, observed as cases (rwecmp.h; the
  * expected data libs/tests/expected/rwe_rimapshapeslib.txt).
  *
  *   rimapshapeslib DIR     (DIR with rimapshapeslib .obj or .orig)
@@ -29,7 +29,6 @@
  * blits that leave the bitmap or have a size <= 0 (without a layer
  * nothing clips them).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>

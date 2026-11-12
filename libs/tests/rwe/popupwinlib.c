@@ -2,7 +2,7 @@
  * rwe popupwinlib - the C build of popupwinlib (userlib 16) or the
  * reference build of rwelibsrc/popuplib/popupwinlib.bb
  * (ref/popupwinlib.obj, see libs/userlibs/rwe/refbuild.cmake), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_popupwinlib.txt).
  *
  *   popupwinlib DIR     (DIR with popupwinlib .obj/.orig)
@@ -33,7 +33,6 @@
  * Not covered: a failed AllocVec or OpenWindow (BUG(orig) #467: not
  * checked), real mouse input.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/execbase.h>

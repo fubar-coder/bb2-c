@@ -1,7 +1,7 @@
 /*
  * rwe rimapeditorlib - rimapeditorlib (userlib 8): the C build or
  * the reference build of rwelibsrc/MapEd/MapEd_Bit2.bb (blitz2 2.10),
- * one set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * one set as LIBSET says, observed as cases (rwecmp.h; the
  * expected data libs/tests/expected/rwe_rimapeditorlib.txt).
  *
  *   rimapeditorlib DIR     (DIR with rimapeditorlib, maxslib, memlib
@@ -31,7 +31,6 @@
  * loops, M_InitParse of more than 255 characters (BUG(orig), #897), a map whose
  * data lies at $xxxx0000 (BUG(orig) #894: not freed).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>

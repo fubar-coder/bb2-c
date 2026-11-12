@@ -2,7 +2,7 @@
  * rwe rishapeslib - the C build of rishapeslib (userlib 46) or the
  * reference build of its source (ref/rishapeslib.obj, see
  * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rishapeslib.txt).
  *
  *   rishapeslib DIR     (DIR with rishapeslib, memlib, shapeslib,
@@ -37,7 +37,6 @@
  * failing chunk allocations, a palette of 0 colours (65536 colours), the
  * runtime error of a failing pack buffer.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

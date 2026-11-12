@@ -3,7 +3,7 @@
  *   memacclib, sortlib, mathtranslib, utillib, environlib
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
- * cases (sysload.h, LIBS_ONE_SET; the expected data
+ * cases (sysload.h; the expected data
  * libs/tests/expected/systest_cmdlibs.txt).
  *
  *   systest_cmdlibs DIR
@@ -15,7 +15,6 @@
  * found through their first form (cmd_entry).  The BASIC level (compiler
  * + program) is tested by compilerlauf/corpus/tests/t09..t13.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <proto/intuition.h>
 

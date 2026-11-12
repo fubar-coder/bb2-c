@@ -1,7 +1,7 @@
 /*
  * systest_runtime - the "runtime" group arrayslib, maxslib, errtraplib,
  * rundebuglib on the Amiga: one set (the original or the C build, as
- * LIBSET says), observed as cases (sysload.h, LIBS_ONE_SET; the expected
+ * LIBSET says), observed as cases (sysload.h; the expected
  * data libs/tests/expected/systest_runtime.txt).
  *
  *   systest_runtime DIR
@@ -20,7 +20,6 @@
  * rundebuglib TRAP #0 (requester + End) - for these only the first
  * instruction words of the handlers are written.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/execbase.h>
 #include <intuition/intuitionbase.h>

@@ -1,7 +1,7 @@
 /*
  * rwe riarrayslib - FillArray: the C build or the reference build of
  * rwelibsrc/ArraysLib.bb (blitz2 2.10), one set as LIBSET says, observed
- * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riarrayslib.txt).
  *
  *   riarrayslib DIR     (DIR with riarrayslib .obj/.orig)
@@ -19,7 +19,6 @@
  * covered: an end that is not reached exactly (BUG(orig) #882: runs through
  * memory).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "riarrayslib"

@@ -1,7 +1,7 @@
 /*
  * rwe ridisplaylib - InitView, ViewBitmap: the C build or the reference
  * build of rwelibsrc/mydisplaylib.bb (ridisplaylib.orig), one set as LIBSET
- * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * says, observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_ridisplaylib.txt).
  *
  *   ridisplaylib DIR     (DIR with ridisplaylib .obj/.orig)
@@ -23,7 +23,6 @@
  * without a list.  Not covered: InitView without chip memory or with a
  * size that is negative as a word (both write to address 0).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

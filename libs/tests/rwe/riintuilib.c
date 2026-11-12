@@ -2,7 +2,7 @@
  * rwe riintuilib - riintuilib (userlib 15): the C build or the
  * reference build of rwelibsrc/riintuilib2.bb (ref/riintuilib.obj, see
  * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riintuilib.txt).
  *
  *   riintuilib DIR     (DIR with riintuilib, inputoutputlib .obj or .orig)
@@ -25,7 +25,6 @@
  * overwrite the pens; the text would be drawn far beyond the BitMap,
  * which a RastPort without a layer does not clip).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <proto/dos.h>

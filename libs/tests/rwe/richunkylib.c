@@ -2,7 +2,7 @@
  * rwe richunkylib - chunky bitmaps (ChunkyBitmap, ChunkyToPlanar,
  * ChunkyData, RaycastSky ...): the C build or the reference build of
  * rwelibsrc/chunkylib.bb (richunkylib.orig), one set as LIBSET says,
- * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_richunkylib.txt).
  *
  *   richunkylib DIR     (DIR with lmullib, richunkylib .obj/.orig)
@@ -33,7 +33,6 @@
  * Not covered: RaycastSky with height 0 (65536 rows) or a negative x
  * (writes before the data), ChunkyToPlanar on undersized data.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>

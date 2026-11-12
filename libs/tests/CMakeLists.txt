@@ -1,15 +1,11 @@
 # libs_tests: the emulator tests of the libraries as one m68k snitch
 # program (from bb2 libs-c/tests).  The test logic is C (libtest.c,
 # systest*.c, each main renamed to NAME_main); libs_tests.cpp calls it and
-# reports every check to snitch.  The programs load every library twice,
-# the C build (NAME.obj) and the original of the CD (NAME.orig), "like the
-# compiler" (sysload.h), and compare results, registers and memory.
-# ctest libs_emulator runs it in Amiberry (emulator.cmake) against the
-# recordings of the originals' results (tape.c, tapes/), without the CD.
-# The programs converted to one set (libtest.c and the programs that
-# define LIBS_ONE_SET, sysload.h; openspec change libs-tests-capture) load
-# NAME.obj or NAME.orig, as LIBSET says, and write their cases
-# (capture.c), compared with expected/NAME.txt.
+# reports every check to snitch.  The programs load one library set "like
+# the compiler" (sysload.h), the C build (NAME.obj) or the original of the
+# CD (NAME.orig) as the shell variable LIBSET says, and write their
+# observations of results, registers and memory as cases (capture.c),
+# which are compared with the expected data expected/NAME.txt.
 
 # snitch for libnix on the 68000: no exceptions, threads, all reporters,
 # small limits (the defaults need 260 KB of data and over 100 KB of
@@ -58,7 +54,7 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_i
 add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
 
-add_executable(libs_tests libs_tests.cpp callregs.c tape.c bugorig.c selftest_keeps.c ${c_sources}
+add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_keeps.c ${c_sources}
 	${rwe_tests})
 target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set_source_files_properties(bugorig.c selftest_keeps.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
@@ -74,39 +70,34 @@ target_link_options(libs_tests PRIVATE -Wl,-u,___stkinit)
 target_link_libraries(libs_tests PRIVATE libs_capture snitch::snitch)
 
 # in Amiberry: libs_tests with every acidlib of this build and the RWE
-# userlibs (label emulator; skipped without Amiberry).  libs_emulator
-# compares them with the recordings of the originals' results
-# (tapes/NAME.tape, tape.c), without the CD; libs_emulator_originals
-# (label originals) compares them with the originals of the CD live and
-# records again: the recordings must be the committed ones.  A program
-# that observes one set (capture.h) runs with LIBSET=obj in libs_emulator
-# and LIBSET=orig in libs_emulator_originals, and its cases (the test's
-# test/captures/NAME.txt, kept for diffing) are compared with the expected
-# data (expected/NAME.txt) by results libs-compare.
+# userlibs (label emulator; skipped without Amiberry).  libs_emulator runs
+# the C build (LIBSET=obj, no CD needed), libs_emulator_originals (label
+# originals) the originals of the CD (LIBSET=orig); the cases of each run
+# (the test's test/captures/NAME.txt, kept for diffing) are compared with
+# the expected data (expected/NAME.txt) by results libs-compare.
 get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 # (the two block programs, systest_med and rwe_ridisasmlib, take about
 # 2.5 and 3 minutes of it: every one of their 6.6 million observations is
 # written and hashed)
 set(LIBS_TESTS_TIMEOUT 900 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
-set(tapes ${CMAKE_CURRENT_SOURCE_DIR}/tapes)
 set(expected ${CMAKE_CURRENT_SOURCE_DIR}/expected)
 math(EXPR limit "${LIBS_TESTS_TIMEOUT} + 300 + ${EMULATION_QUEUE_WAIT}")
-foreach(mode replay record)
+foreach(libset obj orig)
 	set(name libs_emulator)
 	set(labels emulator)
-	set(libset obj)
-	if(mode STREQUAL "record")
+	set(originals -DNO_ORIGINALS=ON)
+	if(libset STREQUAL "orig")
 		set(name libs_emulator_originals)
 		set(labels emulator originals)
-		set(libset orig)
+		set(originals -DBLITZLIB=${BLITZLIB}
+			-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS)
 	endif()
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
-		-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB}
+		-DAMIGA_RUN=${AMIGA_RUN} ${originals}
 		-DPROGRAM=$<TARGET_FILE:libs_tests>
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
-		-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
-		-DUSERLIBS=${rwe_userlibs} -DTAPE=${mode} -DTAPES=${tapes}
+		-DUSERLIBS=${rwe_userlibs}
 		-DLIBSET=${libset} -DEXPECTED=${expected} -DRESULTS=${RESULTS}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
@@ -150,7 +141,7 @@ foreach(mode capture update)
 			-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB} -DPROGRAM=$<TARGET_FILE:libs_tests>
 			-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
 			-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
-			-DUSERLIBS=${rwe_userlibs} -DTAPES=${tapes} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
+			-DUSERLIBS=${rwe_userlibs} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 			"-DFILTER=${LIBS_CAPTURE_FILTER}" "-DFIX=${fix}"
 			-P ${CMAKE_CURRENT_SOURCE_DIR}/expected.cmake
 		USES_TERMINAL
@@ -169,31 +160,9 @@ add_test(NAME libs_capture_target COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/expected-target.cmake)
 set_tests_properties(libs_capture_target PROPERTIES
 	PASS_REGULAR_EXPRESSION "expected-target: all runs as expected")
-# the checks of the recordings with broken input: a recording with a wrong
-# hash fails the replay (one program, in the emulator); a recording run
-# whose files are not the committed ones fails (tape-compare.cmake, no
-# emulator)
 set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
-	"libs_emulator_tape_wrong, libs_emulator_wrong, libs_emulator_lost, libs_keeps_wrong: time limit of the emulator run (seconds)")
+	"libs_emulator_wrong, libs_emulator_lost, libs_keeps_wrong: time limit of the emulator run (seconds)")
 math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
-add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
-	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
-	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DUSERLIBS=${rwe_userlibs} -DTAPE=replay -DTAPES=${tapes}
-	-DTAPE_CORRUPT=rwe_rizonejoylib "-DFILTER=rwe rizonejoylib"
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_tape_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
-set_tests_properties(libs_emulator_tape_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL tape rwe_rizonejoylib: observations 0\\.\\.[0-9]+ differ from the original's recording")
-add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
-	-DRECORDED=${tapes} -DCOMMITTED=${tapes} -P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
-add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
-	-DCOMMITTED=${tapes} -DCORRUPT=ON -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tapes_compare_wrong
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
-# (the first tape in name order changed, the second left out: whichever
-# tapes the conversions of the openspec change libs-tests-capture leave)
-set_tests_properties(libs_tapes_compare_wrong PROPERTIES PASS_REGULAR_EXPRESSION
-	"[a-z0-9_]+\\.tape: differs\n *[a-z0-9_]+\\.tape: committed, not recorded")
 # the check of the cases with broken input: the run's first case of
 # libtest_ldivlib changed (emulator.cmake CAPTURE_CORRUPT) fails the compare
 # with the expected data, naming the key.  The qualified cases of a fix

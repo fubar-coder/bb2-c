@@ -1,7 +1,7 @@
 /*
  * rwe risoundlib - CludgeSound: the C build or the CD original (BSS2
- * RISOUNDLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h,
- * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_risoundlib.txt).
+ * RISOUNDLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h;
+ * the expected data libs/tests/expected/rwe_risoundlib.txt).
  *
  *   risoundlib DIR     (DIR with memlib, risoundlib .obj/.orig)
  *
@@ -21,7 +21,6 @@
  * failure (BUG(orig), #831), an odd BODY length.  Not covered: rate 0 (never
  * returns), an empty BODY (copies 65536 bytes into an 8 byte block).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

@@ -2,7 +2,7 @@
  * rwe rinonvolatilelib - IsNonvolatile, StoreNVData, GetCopyNV,
  * FreeNVData, GetNVList: the C build or the CD original (BSS2
  * RINONVOLATILELIB.OBJ), one set as LIBSET says, observed as cases
- * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rinonvolatilelib.txt).
  *
  *   rinonvolatilelib DIR
@@ -23,7 +23,6 @@
  *     results (d0; StoreNVData only the low word, the command is #word).
  * Kept registers on every call.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/nonvolatile.h>
 

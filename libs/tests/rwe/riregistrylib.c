@@ -2,7 +2,7 @@
  * rwe riregistrylib - the C build of riregistrylib (userlib 3) or the
  * reference build of rwelibsrc/Registry/Registry3.bb
  * (ref/riregistrylib.obj, see libs/userlibs/rwe/refbuild.cmake), one set
- * as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * as LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_riregistrylib.txt).
  *
  *   riregistrylib DIR     (DIR with riregistrylib .obj/.orig)
@@ -36,7 +36,6 @@
  * there, DIFF); a structure while registry.library is missing (the call
  * goes to address LVO).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

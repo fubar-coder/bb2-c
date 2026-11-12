@@ -3,7 +3,7 @@
  * FreeWBSprite, MoveWBSprite, ChangeWBSprite, WBSpriteX/Y): the C build
  * or the reference build of rwelibsrc/wbspritelib/WBSprite-library2.bb
  * (riwbspritelib.orig), one set as LIBSET says, observed as cases
- * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riwbspritelib.txt).
  *
  *   riwbspritelib DIR     (DIR with riwbspritelib .obj/.orig)
@@ -38,7 +38,6 @@
  * AllocSpriteDataA or ChangeExtSpriteA (the last leaks the new data),
  * height or depth 0 (65536 rows/planes).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/sprite.h>

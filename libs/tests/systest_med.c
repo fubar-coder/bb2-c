@@ -1,7 +1,7 @@
 /*
  * systest_med - medlib (the MED player) on the Amiga with generated
  * modules: one set (the original from acidlibs or the C build, as LIBSET
- * says), observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * says), observed as cases (sysload.h; the expected data
  * libs/tests/expected/systest_med.txt).
  *
  *   systest_med DIR
@@ -33,7 +33,6 @@
  * positions, small sample offsets (the Bxx word, #203), no MIDI dump
  * (#207).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 
 /* ------------------------------------------------------------ modules */

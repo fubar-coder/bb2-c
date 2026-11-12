@@ -2,7 +2,7 @@
  * rwe risortlib - StringSort, ListBase, StringSortItem, StringSortDir,
  * SortPriorityOffset: the C build or the reference build of
  * rwelibsrc/sortlib/RISortlib2.bb (blitz2 2.10), one set as LIBSET says,
- * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_risortlib.txt).
  *
  *   risortlib DIR     (DIR with risortlib .obj/.orig)
@@ -26,7 +26,6 @@
  * checked to be sorted.  Not covered: size 0 (BUG(orig) #827: swaps 65536
  * bytes), the 68000 address error of the priority read (BUG(orig), #825).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

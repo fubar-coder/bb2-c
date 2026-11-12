@@ -1,7 +1,7 @@
 /*
  * rwe rifxlib - RWE userlib 66: the C build or the CD binary (BSS2
- * RIFXLIB.OBJ), one set as LIBSET says, observed as cases (sysload.h,
- * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_rifxlib.txt).
+ * RIFXLIB.OBJ), one set as LIBSET says, observed as cases (sysload.h;
+ * the expected data libs/tests/expected/rwe_rifxlib.txt).
  *
  *   rifxlib DIR      (DIR: rifxlib and memlib .orig or .obj)
  *
@@ -25,7 +25,6 @@
  * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (the
  * depth word: plane counts in the thousands), depths above 8.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 
 #define LIBNAME "rifxlib"

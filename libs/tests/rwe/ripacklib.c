@@ -1,7 +1,7 @@
 /*
  * rwe ripacklib - the C build of ripacklib (userlib 73) or the CD binary
  * (BUM10A RIPACKLIB.OBJ), one set as LIBSET says, observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/rwe_ripacklib.txt), in the emulator (snitch test
  * case "rwe ripacklib", argv[1] = the directory with the library files).
  *
@@ -28,7 +28,6 @@
  * default of 50 banks there is no bank 51 (0, BUG(orig), #770), so the test
  * raises it with BankLimit 60.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include "amosfunc.h"
 #include "rwemem.h"

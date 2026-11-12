@@ -6,12 +6,11 @@
 // shows up in snitch's report with its text.
 //
 // The library files are expected next to the executable (PROGDIR:):
-// NAME.orig (original from the CD's acidlibs) and NAME.obj (C build) - see
-// emulator.cmake (ctest libs_emulator).  A program that observes one set
-// (libtest.c, and every program converted with LIBS_ONE_SET, sysload.h)
-// loads NAME.<LIBSET> and writes its cases to PROGDIR:captures/NAME.txt
-// (capture.h); the others compare both sets through their tape
-// (PROGDIR:tapes/NAME.tape, tape.h).  Select tests with snitch filters:
+// NAME.obj (C build) and NAME.orig (original from the CD's acidlibs) - see
+// emulator.cmake (ctest libs_emulator).  Every program observes one set:
+// it loads NAME.<LIBSET> (sysload.h) and writes its cases to
+// PROGDIR:captures/NAME.txt (capture.h), which emulator.cmake compares
+// with the expected data.  Select tests with snitch filters:
 //   libs_tests "[mathstr]"      libs_tests "libtest ldivlib"
 // The test cases tagged [.bug-orig] (bugorig.c) are hidden: they check
 // the correct behaviour where the C build reproduces an original bug, so
@@ -29,7 +28,6 @@ extern "C" {
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include "capture.h"
-#include "tape.h"
 
 int libtest_main(int argc, char **argv);
 int systest_main(int argc, char **argv);
@@ -69,25 +67,17 @@ unsigned long __stack = 128 * 1024;
 // LIBSET, "obj" or "orig"; nullptr if it is not set (or another value)
 const char *bl_libset;
 
-// the program run_systest runs: its name, the directories of its tape and
-// its cases, and what it began (sysload.h: its first load_sets() calls
-// bl_prog_tape, its first load_set() bl_prog_cases)
-static const char *prog_name, *prog_tapes, *prog_cases;
-static enum { OUT_NONE, OUT_TAPE, OUT_CASES } prog_out;
-
-void bl_prog_tape(void)
-{
-    if (prog_name && prog_out == OUT_NONE) {
-        tape_begin(prog_tapes, prog_name);
-        prog_out = OUT_TAPE;
-    }
-}
+// the program run_systest runs: its name, the directory of its cases, and
+// whether it began them (sysload.h: its first load_set() calls
+// bl_prog_cases)
+static const char *prog_name, *prog_cases;
+static bool prog_begun;
 
 void bl_prog_cases(void)
 {
-    if (prog_name && prog_out == OUT_NONE) {
+    if (prog_name && !prog_begun) {
         cap_begin(prog_cases, prog_name);
-        prog_out = OUT_CASES;
+        prog_begun = true;
     }
 }
 }
@@ -133,17 +123,7 @@ const char *progdir()
     return buf;
 }
 
-// the recordings of the original libraries (tape.h): PROGDIR:tapes/NAME.tape
-const char *tapedir()
-{
-    static char buf[300];
-    if (!buf[0])
-        std::snprintf(buf, sizeof buf, "%s/tapes", progdir());
-    return buf;
-}
-
-// the cases of the programs that observe one set (capture.h):
-// PROGDIR:captures/NAME.txt
+// the cases of the programs (capture.h): PROGDIR:captures/NAME.txt
 const char *capdir()
 {
     static char buf[300];
@@ -166,23 +146,20 @@ int run_libtest(const char *lib)
     return libtest_main(4, argv);
 }
 
-// a systest or rwe program: it begins its tape (two sets) or its cases
-// (one set) when it loads the libraries, ended here
+// a systest or rwe program: it begins its cases when it loads the
+// libraries, ended here
 int run_systest(const char *name, int (*fn)(int, char **))
 {
     char *argv[] = {(char *)"systest", (char *)progdir(), nullptr};
     run_env env;
     prog_name = name;
-    prog_tapes = tapedir();
     prog_cases = capdir();
-    prog_out = OUT_NONE;
+    prog_begun = false;
     int rc = fn(2, argv);
-    if (prog_out == OUT_TAPE)
-        tape_end();
-    else if (prog_out == OUT_CASES && cap_end() && !rc)
+    if (prog_begun && cap_end() && !rc)
         rc = 5;
     prog_name = nullptr;
-    prog_out = OUT_NONE;
+    prog_begun = false;
     return rc;
 }
 

@@ -1,8 +1,8 @@
 /*
  * rwe rilesdebuglib - the LES debug library (LESDEBUGlib.bb of
  * 1996-12-01): the C build or the reference build of the source
- * (refbuild), one set as LIBSET says, observed as cases (rwecmp.h,
- * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_rilesdebuglib.txt).
+ * (refbuild), one set as LIBSET says, observed as cases (rwecmp.h;
+ * the expected data libs/tests/expected/rwe_rilesdebuglib.txt).
  *
  *   rilesdebuglib DIR
  *
@@ -45,7 +45,6 @@
  * (they read or write beyond the library's data); the real debugger
  * program that uses the library.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/dos.h>
 #include <graphics/gfx.h>

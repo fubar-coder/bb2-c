@@ -1,7 +1,7 @@
 /*
  * rwe rishapezlib - CludgeAcid, PeekByte, SetWinDrawShapeZ: the C build
  * or the reference build of rwelibsrc/shapezlib.bb (blitz2 2.10),
- * one set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * one set as LIBSET says, observed as cases (rwecmp.h; the
  * expected data libs/tests/expected/rwe_rishapezlib.txt).
  *
  *   rishapezlib DIR     (DIR with rishapezlib .obj/.orig)
@@ -16,7 +16,6 @@
  * memory here, mode 1, $8000 and garbage above the word, mode 0; init and
  * finit.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <intuition/intuition.h>
 

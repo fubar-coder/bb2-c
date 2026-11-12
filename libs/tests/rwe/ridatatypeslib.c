@@ -2,7 +2,7 @@
  * rwe ridatatypeslib - the DataTypes library: the C build or the
  * reference build of rwelibsrc/datatypeslib6.bb (ridatatypeslib.orig,
  * ref/ridatatypeslib.obj of ctest rwe_refbuild), one set as LIBSET says,
- * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_ridatatypeslib.txt).
  *
  *   ridatatypeslib DIR   (DIR with ridatatypeslib.obj/.orig)
@@ -42,7 +42,6 @@
  * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127
  * pairs, names over 383 characters.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #define __NOLIBBASE__
 #define INTUITION_BASE_NAME TIntui

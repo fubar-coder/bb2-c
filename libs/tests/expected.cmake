@@ -3,7 +3,7 @@
 #   cmake -DMODE=capture|update -DEMULATOR=emulator.cmake -DRESULTS=results
 #         -DEXPECTED=DIR -DWORK=DIR [-DFILTER=snitch-filter] [-DFIX=KEY#N;...]
 #         -DAMIGA_RUN=... -DPROGRAM=libs_tests -DLIBS=DIR [-DBLITZLIB=...
-#         -DORIGINALS=... -DUSERLIBS=...] [-DTAPES=DIR] [-DTIMEOUT=SEC]
+#         -DORIGINALS=... -DUSERLIBS=...] [-DTIMEOUT=SEC]
 #         -P expected.cmake
 # capture (target libs-capture, the record from the original; needs the CD,
 # the reference build of the RWE sources and Amiberry): libs_tests runs
@@ -32,8 +32,8 @@ if(MODE STREQUAL "capture")
 elseif(MODE STREQUAL "update")
 	set(target libs-update)
 	set(runs "")
-	# the programs not converted yet compare with their tapes (no CD)
-	set(set_args -DLIBSET=obj -DTAPE=replay -DTAPES=${TAPES})
+	# the C build only (no CD)
+	set(set_args -DLIBSET=obj -DNO_ORIGINALS=ON)
 else()
 	message(FATAL_ERROR "expected.cmake: MODE=${MODE}: capture or update")
 endif()

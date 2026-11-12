@@ -1,7 +1,7 @@
 /*
  * rwe rifnslib - the FNS library: the C build or the CD original
  * (BSS2 RIFNSLIB.OBJ), one set as LIBSET says, observed as cases
- * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rifnslib.txt).
  *
  *   rifnslib DIR     (DIR with rifnslib .obj or .orig)
@@ -30,7 +30,6 @@
  * or above 8 and bitmaps with flags (the bitstack overrun), FNSSetTab 0
  * (division by zero), x below 0 with xmin below 0 (writes 64 KB away).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

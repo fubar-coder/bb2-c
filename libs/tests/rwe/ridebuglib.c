@@ -2,7 +2,7 @@
  * rwe ridebuglib - AddVarTrace, DelVarTrace, VarTraceWindow,
  * DisAsmWindow, CopperTrace, ProcControl, MemoryWindow: the C build or
  * the CD original (OL RIDEBUGLIB.OBJ), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_ridebuglib.txt).
  *
  *   ridebuglib DIR
@@ -20,7 +20,6 @@
  * toggle/on/off, MemoryWindow.  The routines themselves (RTS) and
  * init/finit for the kept registers.  Not covered: the real debugger.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "ridebuglib"

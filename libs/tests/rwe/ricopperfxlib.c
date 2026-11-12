@@ -2,7 +2,7 @@
  * rwe ricopperfxlib - the RWE userlib ricopperfxlib: the C build
  * (libs/userlibs/rwe/ricopperfxlib.c) or the CD binary BSS2
  * RICOPPERFXLIB.OBJ (ricopperfxlib.orig), one set as LIBSET says, observed
- * as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * as cases (sysload.h; the expected data
  * libs/tests/expected/rwe_ricopperfxlib.txt).
  *
  *   ricopperfxlib DIR     (DIR: ricopperfxlib.obj and .orig)
@@ -20,7 +20,6 @@
  * with numlines 0 (divide-by-zero exception) or negative (65536 lines),
  * RedoColSplit with a ccoffset above $FFFF (writes 64 KB further on).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 
 static const char *names[] = { "ricopperfxlib", NULL };

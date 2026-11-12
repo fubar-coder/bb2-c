@@ -2,7 +2,7 @@
  * rwe blitzbomberslibtwo - the C build of blitzbomberslibtwo (userlib
  * 31) or the reference build of
  * rwelibsrc/blitzbomberslib/blitzbombersTwo00.bb (blitz2 2.10), one set
- * as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * as LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_blitzbomberslibtwo.txt).
  *
  *   blitzbomberslibtwo DIR     (DIR with blitzbomberslibtwo .obj/.orig)
@@ -17,7 +17,6 @@
  * bitmap.  Not covered: offsets that are negative as words (y*224 >=
  * 32768).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

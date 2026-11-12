@@ -1,8 +1,8 @@
 /*
  * rwe bb_blitlib - the C build of bb_blitlib (userlib 19) or the
  * reference build of rwelibsrc/blitzbomberslib/BB_BlitLib4.bb (blitz2
- * 2.10), one set as LIBSET says, observed as cases (rwecmp.h,
- * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_bb_blitlib.txt).
+ * 2.10), one set as LIBSET says, observed as cases (rwecmp.h;
+ * the expected data libs/tests/expected/rwe_bb_blitlib.txt).
  *
  *   bb_blitlib DIR     (DIR with bb_blitlib .obj/.orig)
  *
@@ -23,7 +23,6 @@
  * Not covered: the error checks' runtime errors (TRAP #0), depth 0 and
  * count 0 (65536 loops), blits outside the bitmaps.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #define __NOLIBBASE__

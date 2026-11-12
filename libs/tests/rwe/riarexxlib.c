@@ -2,7 +2,7 @@
  * rwe riarexxlib - riarexxlib (userlib 133): the C build or the
  * reference build of its source (ref/riarexxlib.obj, see
  * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riarexxlib.txt).
  *
  *   riarexxlib DIR     (DIR with riarexxlib, maxslib, memlib .obj/.orig)
@@ -39,7 +39,6 @@
  * tests), more than 16 or 32 messages/arguments (overflows), messages of
  * other types (replied at once).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <dos/dostags.h>

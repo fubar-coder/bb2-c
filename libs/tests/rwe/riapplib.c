@@ -1,7 +1,7 @@
 /*
  * rwe riapplib - riapplib (userlib 61): the C build or the CD binary
  * (BSS2 RIAPPLIB.OBJ), one set as LIBSET says, observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/rwe_riapplib.txt), in the emulator (snitch test
  * case "rwe riapplib", argv[1] = the directory with riapplib.obj/.orig).
  *
@@ -20,7 +20,6 @@
  * App messages are locks on RAM:.  The App messages are put to
  * AppMsgPort by the test.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/ports.h>
 #include <workbench/workbench.h>

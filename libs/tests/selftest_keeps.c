@@ -1,12 +1,11 @@
 /*
- * selftest_keeps - the checks of KEEPS (sysload.h, LIBS_ONE_SET) with
+ * selftest_keeps - the checks of KEEPS (sysload.h) with
  * broken input, no library: a set that is no register set, a routine
  * stated twice, and a call of a routine without a stated set (a routine
  * of this program that changes d2).  Each must fail with its message
  * (ctest libs_keeps_wrong; the snitch case "keeps wrong" is [.selftest]
  * and fails on purpose).  A lost stated register is libs_emulator_lost's.
  */
-#define LIBS_ONE_SET
 /* not every helper of sysload.h is used here */
 #pragma GCC diagnostic ignored "-Wunused-function"
 #include "sysload.h"

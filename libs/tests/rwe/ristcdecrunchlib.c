@@ -1,7 +1,7 @@
 /*
  * rwe ristcdecrunchlib - STCDecrunch source[,dest]: the C build or
  * the reference build of rwelibsrc/stcdecrunchlib.bb (blitz2 2.10), one
- * set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * set as LIBSET says, observed as cases (rwecmp.h; the
  * expected data libs/tests/expected/rwe_ristcdecrunchlib.txt).
  *
  *   ristcdecrunchlib DIR     (DIR with ristcdecrunchlib .obj/.orig)
@@ -17,7 +17,6 @@
  * more than 16 far offset bits (the DIFF of the run table), a far offset
  * that is negative as a word.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

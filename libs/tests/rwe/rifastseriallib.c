@@ -2,7 +2,7 @@
  * rwe rifastseriallib - the RWE userlib rifastseriallib: the C build
  * (libs/userlibs/rwe/rifastseriallib.c) or the CD binary BSS2
  * RIFASTSERIALLIB.OBJ, one set as LIBSET says, observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/rwe_rifastseriallib.txt).
  *
  *   rifastseriallib DIR     (DIR: rifastseriallib.obj or .orig)
@@ -30,7 +30,6 @@
  * forms), DoSerialIO, SyncPut, SyncGet, SyncSerial, CheckSerial with a
  * byte; the bytes on the line (no remote station).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <hardware/custom.h>
 

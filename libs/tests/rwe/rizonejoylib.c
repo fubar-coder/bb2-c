@@ -1,7 +1,7 @@
 /*
  * rwe rizonejoylib - the zone and joystick commands: the C build or the
  * CD original (BSS2 RIZONEJOYLIB.OBJ), one set as LIBSET says, observed
- * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rizonejoylib.txt).
  *
  *   rizonejoylib DIR
@@ -29,7 +29,6 @@
  * finit does not free them twice.  Not covered: negative zone or table
  * numbers and zones behind a table (they write or read outside it).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rizonejoylib"

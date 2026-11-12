@@ -2,7 +2,7 @@
  * rwe rilinkedlistlib - the linked list library: the C build or the
  * reference build of rwelibsrc/Listlib/listlib4.bb (rilinkedlistlib.orig,
  * ref/rilinkedlistlib.obj of ctest rwe_refbuild), one set as LIBSET says,
- * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rilinkedlistlib.txt).
  *
  *   rilinkedlistlib DIR  (DIR with rilinkedlistlib and riamosfunclib
@@ -42,7 +42,6 @@
  * indexes on into its code, the C build into other data), a size of 0
  * (CopyByte copies 2^32 bytes).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rilinkedlistlib"

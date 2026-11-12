@@ -2,7 +2,7 @@
  * rwe rilvcallhooklib - RetrieveCallHook and its listview render hook:
  * the C build or the reference build of
  * rwelibsrc/lvcallhook/LVCallHook3.bb (blitz2 2.10), one set as LIBSET
- * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * says, observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rilvcallhooklib.txt).
  *
  *   rilvcallhooklib DIR     (DIR with rilvcallhooklib .obj or .orig)
@@ -33,7 +33,6 @@
  * below 16 and an upper word that makes 65536 tree lines (BUG(orig), #737), a
  * text pointer 0 (BUG(orig) #742: reads address 0), negative indents.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>

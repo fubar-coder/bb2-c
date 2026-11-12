@@ -2,7 +2,7 @@
  * rwe ritrackdisklib - the C build of the RWE userlib ritrackdisklib
  * (libs/userlibs/rwe/ritrackdisklib.c) or the CD binary BSS2
  * RITRACKDISKLIB.OBJ (ritrackdisklib.orig), one set as LIBSET says,
- * observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * observed as cases (sysload.h; the expected data
  * libs/tests/expected/rwe_ritrackdisklib.txt).
  *
  *   ritrackdisklib DIR     (DIR: ritrackdisklib.obj and .orig)
@@ -30,7 +30,6 @@
  * the emulator; the hardfiles are read-only), a device name longer than
  * the 58 byte buffer (overwrites the request table, BUG(orig), #860).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/devices.h>
 #include <exec/io.h>

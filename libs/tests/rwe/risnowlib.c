@@ -2,7 +2,7 @@
  * rwe risnowlib - falling snow (InitSnowDrop, LDoSnow, KillPoint,
  * LDoSnowActivate): the C build or the reference build of
  * rwelibsrc/Snow/SnowLib3.bb (risnowlib.orig), one set as LIBSET says,
- * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_risnowlib.txt).
  *
  *   risnowlib DIR     (DIR with memlib, risnowlib .obj/.orig)
@@ -33,7 +33,6 @@
  * bits above 7 in the random table, LDoSnowActivate before the first
  * LDoSnow (all BUG(orig), #913 #912 #914 #910 #908: memory outside the library's).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>

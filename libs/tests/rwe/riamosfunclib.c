@@ -1,7 +1,7 @@
 /*
  * rwe riamosfunclib - riamosfunclib (userlib 75): the C build or AmiBlitz3's
  * SVN RIAmosFuncLib.obj, one set as LIBSET says, observed as cases
- * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riamosfunclib.txt).
  *
  *   riamosfunclib DIR   (DIR: riamosfunclib.obj / .orig, memlib.obj / .orig)
@@ -46,7 +46,6 @@
  * its lock is current (BUG(orig) #491: unlocked while in use - the test
  * restores the directory first); CurrentDir returning 0.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include "amosfunc.h"
 #include <proto/dos.h>
@@ -226,8 +225,8 @@ static void hardware(void)
     DO1(ENT(LIB, E_BLITDONE, 0), (void)0);
     OBS("d0", R.d[0]);
     ROUT = "MemFree";
-    /* the free memory differs from run to run: the difference to
-       AvailMem(MEMF_PUBLIC) of the moment */
+    /* the free memory differs from run to run (the memory layout, e.g.
+       LIBS_PAD): the difference to AvailMem(MEMF_PUBLIC) of the moment */
     DO1(ENT(LIB, E_MEMFREE, 0), freemem = AvailMem(MEMF_PUBLIC));
     OBS("d0 - AvailMem(MEMF_PUBLIC)", R.d[0] - freemem);
 }

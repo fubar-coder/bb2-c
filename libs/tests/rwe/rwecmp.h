@@ -1,30 +1,20 @@
 /*
- * rwecmp.h - the comparison framework of the RWE userlib tests
- * (libs/tests/rwe/NAME.c, header only; the method of systest_cmdlibs.c):
- * every routine is called on both sets - sets[0] the CD original
- * (NAME.orig), sets[1] the C build (NAME.obj), loaded and linked by
- * sysload.h - with the same inputs, the other registers markers; the test
- * compares results and memory (SAME), and every register the original
- * keeps must be kept by the C build (preserve, after every DO2).
+ * rwecmp.h - the framework of the RWE userlib tests (libs/tests/rwe/NAME.c,
+ * header only; the method of systest_cmdlibs.c): every routine of the one
+ * library set of the run (`loaded`, sysload.h: NAME.obj, the C build, or
+ * NAME.orig, the CD original, as LIBSET says) is called with the inputs of
+ * the case, the other registers markers, and its observations are written
+ * as cases (capture.h), compared with libs/tests/expected/NAME.txt:
  *
  *   ENT(lib, idx, form)   code of form `form` of entry `idx` of `lib` (0: none)
  *   ERR(lib, idx, form)   its error check routine (0: none)
- *   DO2(fn, setup)        call fn on both sets; `setup` sets R[cur] ...
- *   DO2S(fn, setup)       the same with stack arguments ARGS[cur][0..NARGS-1]
- *   SAME(what, expr)      expr (evaluated with cur = 0 and 1) equal
- *   fake_library() ...    a fake system library (requesters, storage)
- *   rwe_done()            summary, the exit status
- *
- * A program that observes one set (LIBS_ONE_SET defined before the
- * include; sysload.h, openspec change libs-tests-capture, design.md
- * "Converting a program") calls every routine of `loaded` once and writes
- * its observations as cases:
- *   DO1(fn, setup)        call fn; `setup` sets R (no cur, no [2] arrays)
+ *   DO1(fn, setup)        call fn; `setup` sets R
  *   DO1S(fn, setup)       the same with stack arguments ARGS[0..NARGS-1]
  *   preserve()            after every DO1: the kept case (KEEPS of ROUT,
  *                         DONTCARE exempt) and OBS("popped", POP)
- *   OBS, OBSBYTES, ...    sysload.h, in place of SAME, SAMEBYTES ...
+ *   OBS, OBSBYTES, ...    the observations (sysload.h)
  *   BOTH(what, expr)      OBS of the truth value (counted twice)
+ *   fake_library() ...    a fake system library (requesters, storage)
  *   rwe_done()            summary, the kept registers with their KEEPS
  *                         lines (kept_summary), the exit status
  */
@@ -38,31 +28,17 @@
 /* callstk() is defined in systest_mathstr.c (same executable) */
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
 
-#ifndef LIBS_ONE_SET
-static int cur;                         /* set index in setup/compare */
-static struct regs R[2], IN[2];
-static ULONG ARGS[2][6], POP[2];
-static int NARGS;
-static UWORD CCR[2];
-static const char *ROUT;                /* routine under test */
-static char VEC[100];                   /* current case, for messages */
-static int prints;
-
-/* bit 0 of the address = Amiga mode only (blitz2.s), not part of it */
-#define ENT(lib, idx, form) \
-    ((UBYTE *)((ULONG)entry_form(getlib(&sets[cur], lib), idx, form) & ~1UL))
-#else
-/* one set: the registers of the call (R after it, IN before it), its
-   stack arguments ARGS[0..NARGS-1], the bytes it popped and its CCR;
-   ROUT and VEC (the key of the cases) are sysload.h's */
+/* the registers of the call (R after it, IN before it), its stack
+   arguments ARGS[0..NARGS-1], the bytes it popped and its CCR; ROUT and
+   VEC (the key of the cases) are sysload.h's */
 static struct regs R, IN;
 static ULONG ARGS[6], POP;
 static int NARGS;
 static UWORD CCR;
 
+/* bit 0 of the address = Amiga mode only (blitz2.s), not part of it */
 #define ENT(lib, idx, form) \
     ((UBYTE *)((ULONG)entry_form(getlib(&loaded, lib), idx, form) & ~1UL))
-#endif
 
 /* entry_err(lib, idx, form): the error check routine (first !subs field)
    of form `form` of entry `idx` (NULL: none) - entry_form's walk */
@@ -115,123 +91,10 @@ static __attribute__((unused)) UBYTE *entry_err(struct lib *l, int idx, int form
     }
     return NULL;
 }
-#ifndef LIBS_ONE_SET
-#define ERR(lib, idx, form) entry_err(getlib(&sets[cur], lib), idx, form)
-
-#define MAXROUT 40
-static struct { const char *name; ULONG ko, kc; ULONG n; } stat[MAXROUT];
-static int nstat;
-
-static void note_kept(void)
-{
-    int i;
-    ULONG ko = kept(&IN[0], &R[0]), kc = kept(&IN[1], &R[1]);
-    for (i = 0; i < nstat; i++)
-        if (stat[i].name == ROUT)
-            break;
-    if (i == nstat) {
-        if (nstat == MAXROUT)
-            return;
-        stat[nstat].name = ROUT;
-        stat[nstat].ko = stat[nstat].kc = 0x7fff;
-        stat[nstat].n = 0;
-        nstat++;
-    }
-    stat[i].ko &= ko;
-    stat[i].kc &= kc;
-    stat[i].n++;
-}
-
-static void fail(const char *what, ULONG o, ULONG c)
-{
-    char buf[200];
-    if (prints++ < 60)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
-}
-
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* the bytes of both sets the same: SAME(what, memcmp(x[0], x[1], n))
-   would compare the one memcmp result with itself and never fail */
-#define SAMEBYTES(what, x, n) do {                                          \
-        if (tape_bytes((what), (x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
-    } while (0)
-
-/* SAMEBYTES of records that hold pointers into the test program (strings,
-   buffers): those are recorded as such, not by address (tape.h) */
-#define SAMEPTRBYTES(what, x, n) do {                                       \
-        if (tape_ptrbytes((what), (x)[0], (x)[1], (n))) fail(what, 0, 1);   \
-        else checks++;                                                      \
-    } while (0)
-
-/* a check on each set separately (results that may differ between the
-   sets, e.g. random numbers): `expr` must hold for both */
-#define BOTH(what, expr) do {                                               \
-        for (cur = 0; cur < 2; cur++)                                       \
-            if (!(expr)) fail(what, cur == 0, cur == 1); else checks++;     \
-    } while (0)
-
-/* registers (bit 0-7 d0-d7, 8-14 a0-a6) whose "kept" says nothing for the
-   calls that follow: a routine leaves a result there that may equal the
-   input by chance (e.g. Encrypt's d0 = buffer address with the last data
-   byte in its low byte - the buffers of the two sets are at different
-   addresses, so the chance hits one set only); their values are compared
-   by the test itself.  Set before DO2, cleared by the test. */
-static ULONG DONTCARE;
-
-static void preserve(void)
-{
-    struct call c[2];
-    char buf[140];
-    int s, r;
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-        for (r = 0; r < 15; r++)
-            if (DONTCARE & (1UL << r)) {
-                if (r < 8)
-                    c[s].out.d[r] = c[s].in.d[r];
-                else
-                    c[s].out.a[r - 8] = c[s].in.a[r - 8];
-            }
-    }
-    note_kept();
-    sprintf(buf, "%.38s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-    SAME("popped", POP[cur]);
-}
-
-#define DO2S(fn, setup) do {                                                \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            APTR fn_;                                                       \
-            markregs(&R[cur]);                                              \
-            NARGS = 0;                                                      \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            fn_ = (fn);                                                     \
-            if (!fn_) {                                                     \
-                check("entry missing", FALSE);                              \
-                continue;                                                   \
-            }                                                               \
-            CCR[cur] = callstk(fn_, &R[cur], ARGS[cur], NARGS, &POP[cur]);  \
-        }                                                                   \
-        preserve();                                                         \
-    } while (0)
-#define DO2(fn, setup) DO2S(fn, setup)
-
-#else /* LIBS_ONE_SET */
 #define ERR(lib, idx, form) entry_err(getlib(&loaded, lib), idx, form)
 
-/* a condition on the set's result (what BOTH asked of both sets): its
-   truth value is written as a case; counted twice, as when it ran on two
-   sets, so that the program's number of checks stays comparable */
+/* a condition on the set's result: its truth value is written as a case,
+   counted as two checks */
 #define BOTH(what, expr) do { OBS((what), (expr) != 0); checks++; } while (0)
 
 /* after a call: its kept case (the KEEPS of ROUT, DONTCARE exempt) and the
@@ -259,7 +122,6 @@ static void preserve(void)
         preserve();                                                         \
     } while (0)
 #define DO1(fn, setup) DO1S(fn, setup)
-#endif /* LIBS_ONE_SET */
 
 static ULONG rwe_seed = 0x13579bdf;
 static __attribute__((unused)) ULONG rnd(void)
@@ -320,19 +182,6 @@ static __attribute__((unused)) void fake_remove(struct Library *l)
    an init's OpenLibrary or AllocMem fail */
 static const UWORD rwe_fail0[] = { 0x7000, 0x4e75 };
 
-#ifndef LIBS_ONE_SET
-static int rwe_done(const char *name)
-{
-    int i;
-    rwe_mem_stop();                     /* the patches out on every way out */
-    printf("%s: %d checks, %d failures\n", name, checks, failures);
-    printf("kept registers (bit 0-7 d0-d7, 8-14 a0-a6), all calls:\n");
-    for (i = 0; i < nstat; i++)
-        printf("  %-24s %5lu calls  orig $%04lX  C $%04lX\n", stat[i].name,
-               stat[i].n, stat[i].ko, stat[i].kc);
-    return failures ? 5 : 0;
-}
-#else
 /* the summary, the kept registers of every routine with its KEEPS line
    (kept_summary), the exit status */
 static int rwe_done(const char *name)
@@ -342,6 +191,5 @@ static int rwe_done(const char *name)
     kept_summary();
     return failures ? 5 : 0;
 }
-#endif
 
 #endif

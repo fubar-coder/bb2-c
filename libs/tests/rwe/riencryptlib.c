@@ -1,7 +1,7 @@
 /*
  * rwe riencryptlib - Encrypt, Decrypt, GetWheel: the C build or the CD
  * original (BSS2 RIENCRYPTLIB.OBJ), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riencryptlib.txt).
  *
  *   riencryptlib DIR     (DIR with riencryptlib .obj/.orig)
@@ -18,7 +18,6 @@
  * wheels from GetWheel are observed, and Decrypt with them restores the
  * data.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "riencryptlib"

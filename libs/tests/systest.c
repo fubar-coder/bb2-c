@@ -2,7 +2,7 @@
  * systest - the system libraries memlib, datalib, chipbaselib,
  * strings1lib, staticslib, varslib, exitslib, clrlib on the Amiga: one set
  * (the original from blitz2:acidlibs or the C build, as LIBSET says),
- * observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * observed as cases (sysload.h; the expected data
  * libs/tests/expected/systest.txt).
  *
  *   systest DIR
@@ -18,7 +18,6 @@
  * Routines that are assembler in the C build too (exitslib) are observed
  * by their opcode words.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 
 /* ------------------------------------------------------------- scenarios */

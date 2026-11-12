@@ -1,7 +1,7 @@
 /*
  * rwe ribbmaplib - ribbmaplib (userlib 34): the C build or the reference
  * build of rwelibsrc/blitzbomberslib/bbmaplib2.bb (blitz2 2.10), one set
- * as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * as LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_ribbmaplib.txt).
  *
  *   ribbmaplib DIR     (DIR with ribbmaplib and memlib, .obj/.orig)
@@ -24,7 +24,6 @@
  * address 12), odd chunk lengths (address errors), BBGetPalette writing
  * behind its new block.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

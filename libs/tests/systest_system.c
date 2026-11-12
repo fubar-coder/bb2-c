@@ -2,7 +2,7 @@
  * systest_system - the "system" group wbstartuplib, intlib, switchlib,
  * runerrlib, debuglib on the Amiga, inside a normal AmigaOS process: one
  * set (the original or the C build, as LIBSET says), observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/systest_system.txt).
  *
  *   systest_system DIR
@@ -22,7 +22,6 @@
  * tools/asmcmp.py.
  */
 #include <stdarg.h>
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <exec/execbase.h>
 #include <graphics/gfxbase.h>

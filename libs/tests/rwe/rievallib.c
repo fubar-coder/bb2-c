@@ -1,7 +1,7 @@
 /*
  * rwe rievallib - RI Eval Lib: the C build or the CD original (BSS2
  * RIEVALLIB.OBJ, variant rwe-1999-eval), one set as LIBSET says, observed
- * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rievallib.txt).
  *
  *   rievallib DIR     (DIR with rievallib .obj/.orig)
@@ -29,7 +29,6 @@
  * (the return address as result, BUG(orig) (#644)), two results.
  * Not covered: an indirection at an odd address (address error).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rievallib"

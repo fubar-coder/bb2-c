@@ -2,7 +2,7 @@
  * rwe risoundlib2 - the C build of the RWE userlib risoundlib2
  * (libs/userlibs/rwe/risoundlib2.c) or the reference build of its
  * source rwelibsrc/soundlib/risoundlib2.bb (risoundlib2.orig), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_risoundlib2.txt).
  *
  *   risoundlib2 DIR     (DIR: risoundlib2 and memlib .obj/.orig)
@@ -42,7 +42,6 @@
  * (CheckIO of address 0); risoundlib's CludgeSound cases
  * (libs/tests/rwe/risoundlib.c, the same code).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/devices.h>
 #include <exec/io.h>

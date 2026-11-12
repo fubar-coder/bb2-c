@@ -1,7 +1,7 @@
 /*
  * rwe rianimlib - RIAnimLib: the C build or the CD binary BSS2
  * RIANIMLIB.OBJ (rianimlib.orig; = Anim-Library3 without RIDiskAnimInit),
- * one set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * one set as LIBSET says, observed as cases (rwecmp.h; the
  * expected data libs/tests/expected/rwe_rianimlib.txt).
  *
  *   rianimlib DIR        (DIR with rianimlib.obj/.orig)
@@ -34,7 +34,6 @@
  * (256 planes), runs of 0 (256 rows), widths below 8 or 32 (65536
  * columns).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rianimlib"

@@ -17,7 +17,6 @@
  * ReqFileRequest/ReqColour without the library (they call through a6 =
  * 0, BUG(orig), #788).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rireqlib"

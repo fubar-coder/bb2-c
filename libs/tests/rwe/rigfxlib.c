@@ -1,7 +1,7 @@
 /*
  * rwe rigfxlib - rigfxlib (userlib 65): the C build or the CD binary
  * (BSS2 RIGFXLIB.OBJ), one set as LIBSET says, observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/rwe_rigfxlib.txt), in the emulator (snitch test
  * case "rwe rigfxlib", argv[1] = the directory with the library files).
  *
@@ -21,7 +21,6 @@
  * FORM header and length checked, and one into a missing directory
  * (BSave fails: 0).
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include "amosfunc.h"
 #include "rwemem.h"

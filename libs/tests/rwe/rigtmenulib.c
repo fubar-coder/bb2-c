@@ -2,7 +2,7 @@
  * rwe rigtmenulib - rigtmenulib (userlib 37): the C build or the
  * reference build of its source (ref/rigtmenulib.obj, see
  * libs/userlibs/rwe/refbuild.cmake), one set as LIBSET says, observed as
- * cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_rigtmenulib.txt).
  *
  *   rigtmenulib DIR     (DIR with rigtmenulib, memlib, maxslib .obj or .orig)
@@ -30,7 +30,6 @@
  * without titles (reads address 0), the walks beyond the lists (write
  * near address 0).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <intuition/intuition.h>

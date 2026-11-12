@@ -2,7 +2,7 @@
  * rwe ricompactdisclib - the RWE userlib ricompactdisclib: the C build
  * (libs/userlibs/rwe/ricompactdisclib.c) or the reference build of its
  * source rwelibsrc/CDlib/cdSCSI.bb (ricompactdisclib.orig), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_ricompactdisclib.txt).
  *
  *   ricompactdisclib DIR     (DIR: ricompactdisclib and memlib .obj/.orig)
@@ -48,7 +48,6 @@
  * $EE (a real one would not write them: the last track's length is then
  * garbage, BUG(orig) (#583)).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/devices.h>
 #include <exec/io.h>

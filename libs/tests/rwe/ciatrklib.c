@@ -2,7 +2,7 @@
  * rwe ciatrklib - the C build of ciatrklib (userlib 56, the CIA
  * Protracker library) or the reference build of its source
  * (ref/ciatrklib.obj, see libs/userlibs/rwe/refbuild.cmake), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_ciatrklib.txt).
  *
  *   ciatrklib DIR     (DIR with ciatrklib and memlib, .obj/.orig)
@@ -56,7 +56,6 @@
  * finetune 15 / above 15 (they read behind the tables into data that
  * holds pointers, or behind the data), E8x with a loop length of 0.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <hardware/custom.h>

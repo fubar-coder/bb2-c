@@ -1,7 +1,7 @@
 /*
  * rwe neilsreqtoolslib - the ReqTools interface of RTLib.bb: the C build
  * or the reference build of the source (refbuild), one set as LIBSET
- * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * says, observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_neilsreqtoolslib.txt).
  *
  *   neilsreqtoolslib DIR   (DIR with neilsreqtoolslib, memlib, maxslib
@@ -41,7 +41,6 @@
  * without reqtools.library (they call through a6 = 0); a second finit
  * (frees again).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "neilsreqtoolslib"

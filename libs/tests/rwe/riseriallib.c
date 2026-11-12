@@ -2,7 +2,7 @@
  * rwe riseriallib - the serial port library with its own interrupts: the
  * C build or the reference build of rwelibsrc/seriallib/
  * Serial-Library.bb (riseriallib.orig), one set as LIBSET says, observed
- * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_riseriallib.txt).
  *
  *   riseriallib DIR     (DIR with ldivlib and riseriallib, .obj/.orig)
@@ -42,7 +42,6 @@
  * cache (the test clears the cache before calling a handler), SerialBaud
  * 0 (ldivlib divides by 0), a ring index with $FF in its high byte.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/tasks.h>

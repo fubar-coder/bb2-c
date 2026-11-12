@@ -1,7 +1,7 @@
 /*
  * rwe rithreadlib - CreateThread/ActiveThreads: the C build or the
  * reference build of rwelibsrc/threadlib.bb (rithreadlib.orig), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_rithreadlib.txt).
  *
  *   rithreadlib DIR     (DIR with memlib and rithreadlib, .obj/.orig)
@@ -29,7 +29,6 @@
  * them.  Not covered: two CreateThread before the first thread runs (the
  * shared registers, BUG(orig) #838: depends on the scheduling).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/tasks.h>

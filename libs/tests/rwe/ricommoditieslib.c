@@ -1,7 +1,7 @@
 /*
  * rwe ricommoditieslib - RWE userlib 89: the C build or the CD binary
  * (BSS2 RICOMMODITIESLIB.OBJ), one set as LIBSET says, observed as cases
- * (sysload.h, LIBS_ONE_SET; the expected data
+ * (sysload.h; the expected data
  * libs/tests/expected/rwe_ricommoditieslib.txt).
  *
  *   ricommoditieslib DIR      (DIR: ricommoditieslib.orig / .obj)
@@ -30,7 +30,6 @@
  * successful MakeCommodity (the first broker keeps the port finit
  * deletes), a missing commodities.library.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #include <libraries/commodities.h>
 #include <proto/commodities.h>

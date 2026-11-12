@@ -2,7 +2,7 @@
  * rwe ridisasmlib - the C build of the RWE userlib ridisasmlib
  * (libs/userlibs/rwe/ridisasmlib.c) or the reference build of its source
  * rwelibsrc/Disasmlib/Disasm-library.bb2 (ridisasmlib.orig), one set as
- * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * LIBSET says, observed as cases (rwecmp.h; the expected
  * data libs/tests/expected/rwe_ridisasmlib.txt).
  *
  *   ridisasmlib DIR     (DIR: ridisasmlib .obj/.orig)
@@ -32,7 +32,6 @@
  * Not covered: the 68000 address errors; the steps leave out some
  * extension words (time: about 380000 calls take 20 s).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

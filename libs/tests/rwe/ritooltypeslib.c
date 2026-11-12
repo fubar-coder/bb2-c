@@ -2,7 +2,7 @@
  * rwe ritooltypeslib - the C build of the RWE userlib ritooltypeslib
  * (libs/userlibs/rwe/ritooltypeslib.c) or the CD binary BSS2
  * RITOOLTYPESLIB.OBJ (ritooltypeslib.orig), one set as LIBSET says,
- * observed as cases (sysload.h, LIBS_ONE_SET; the expected data
+ * observed as cases (sysload.h; the expected data
  * libs/tests/expected/rwe_ritooltypeslib.txt).
  *
  *   ritooltypeslib DIR     (DIR: ritooltypeslib.obj, .orig and the
@@ -38,7 +38,6 @@
  * width that is a multiple of 16 (writes behind the shape's data,
  * BUG(orig), #847) or into a shape when the icon has no image.
  */
-#define LIBS_ONE_SET
 #include "sysload.h"
 #define __NOLIBBASE__
 #define ICON_BASE_NAME TTIconBase

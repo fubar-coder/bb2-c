@@ -2,7 +2,7 @@
  * rwe ritrackerlib - the Protracker player (TrackInit, TrackPlay, ...):
  * the C build or the reference build of rwelibsrc/ptlib/ptlib6.bb
  * (ritrackerlib.orig), one set as LIBSET says, observed as cases
- * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * (rwecmp.h; the expected data
  * libs/tests/expected/rwe_ritrackerlib.txt).
  *
  *   ritrackerlib DIR     (DIR with memlib, intlib, ritrackerlib .obj/.orig)
@@ -44,7 +44,6 @@
  * 15 (both read outside the library's tables, different memory in the
  * two builds), and the dead CIA/SetInt code.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <exec/interrupts.h>

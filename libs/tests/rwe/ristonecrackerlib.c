@@ -1,7 +1,7 @@
 /*
  * rwe ristonecrackerlib - STCLength, STCStart, STCSafeLen, STCLoad: the C
  * build or the CD original (BSS2 RISTONECRACKERLIB.OBJ), one set as LIBSET
- * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * says, observed as cases (rwecmp.h; the expected data
  * libs/tests/expected/rwe_ristonecrackerlib.txt).
  *
  *   ristonecrackerlib DIR     (DIR with ristonecrackerlib .obj/.orig)
@@ -26,7 +26,6 @@
  * far offset bits (the DIFF of the run table), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 

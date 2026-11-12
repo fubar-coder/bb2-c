@@ -2,8 +2,8 @@
  * rwe ridoslib - AddNotify, RemNotify, CheckNotify, WaitNotify,
  * GetDeviceList, NextDevice, FreeDeviceList, NotifyPort, GetFileName,
  * GetPathName, DeviceEntryType: the C build or the CD original (BSS2
- * RIDOSLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h,
- * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_ridoslib.txt).
+ * RIDOSLIB.OBJ), one set as LIBSET says, observed as cases (rwecmp.h;
+ * the expected data libs/tests/expected/rwe_ridoslib.txt).
  *
  *   ridoslib DIR
  *
@@ -21,7 +21,6 @@
  * Not covered: ids outside 0..63 (they write outside the tables), names
  * longer than tbuf.
  */
-#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/dos.h>
 #include <dos/dosextens.h>
