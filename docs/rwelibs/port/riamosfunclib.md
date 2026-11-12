@@ -156,8 +156,8 @@ Original behaviour that is not a defect:
 
 ## Test
 
-Both builds side by side (sysload), each with its own memlib, banks and
-files (`RAM:rwamos0`/`1`, names of the same length); compared: d0, a3 and
+One set per run (sysload), with its own memlib, banks and files
+(`RAM:rwamos0`); observed as cases and compared with the expected data: d0, a3 and
 the string area of DeviceName$, the banks' lengths and contents (where
 the memory is defined), the memory of copies, fills and loads, the files
 of BSave and SaveExec, the current directory after ChangeDir, and every
@@ -192,7 +192,7 @@ address with bit 0 (Amiga mode only) set; the compiler instead makes a
 stub (`tokecode`/`cutejsr`). The original's ALibJsr calls of FileSize and
 BLoad then jump to an odd address. `libs/tests/rwe/amosfunc.h`
 (`amosfunc_fixjsrs`) clears that bit in every resolved `JSR abs.l` after
-`load_sets` – needed by every test that loads this library (also the
+`load_set` – needed by every test that loads this library (also the
 rigfxlib and ripacklib tests: their BSave/BLoad calls).
 
 **Failing allocations:** a Reserve of a huge length (AllocMem fails for

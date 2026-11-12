@@ -128,11 +128,16 @@ the test logic itself is C:
 | Test case (tag) | File | Libraries | Checks |
 |---|---|---|---|
 | `libtest ldivlib`/`lmullib` `[libtest]` | `libtest.c` | ldivlib, lmullib | 20 729 cases per routine |
-| `[sys]` | `systest.c` | memlib, datalib, chipbaselib, strings1lib, staticslib, varslib, exitslib, clrlib | 49 |
+| `[sys]` | `systest.c` | memlib, datalib, chipbaselib, strings1lib, staticslib, varslib, exitslib, clrlib | 48 |
 | `[mathstr]` | `systest_mathstr.c` | strings2lib, ffplib, strcomplib, floatquicklib, modlib, maxlenlib | 56 864 |
 | `[runtime]` | `systest_runtime.c` | arrayslib, maxslib, errtraplib, rundebuglib | 113 |
 | `[system]` | `systest_system.c` | wbstartuplib, intlib, switchlib, runerrlib, debuglib | 178 |
-| `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below) | 2 057 |
+| `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below) | 2 059 |
+
+A test program loads one library set (the C build or the original) and
+writes every observation as a case; the cases are compared with the
+expected data `libs/tests/expected/NAME.txt` (`tests/README.md`,
+"Libraries").
 
 ```
 ctest --preset emulator -R libs_emulator          # all

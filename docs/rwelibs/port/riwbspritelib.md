@@ -66,10 +66,9 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
 ## Test
 
 The library takes real hardware sprites and shows them on the
-Workbench screen, so the two sets cannot run side by side: the whole
-scenario runs on the original (whose finit frees every sprite), then
-on the C build; each step's registers and a snapshot are recorded and
-compared step by step. Snapshot: d0 (not for MoveWBSprite), the data
+Workbench screen, so a run loads one set only: the whole scenario runs
+in it (finit frees every sprite); each step's registers and a snapshot
+are observed as cases and compared with the expected data step by step. Snapshot: d0 (not for MoveWBSprite), the data
 block (found by its "graphics.library" string; pointers as offsets or 0
 / not 0), each sprite's `ExtSprite` fields and image data, the change of
 graphics.library's open count. Afterwards the free hardware sprites

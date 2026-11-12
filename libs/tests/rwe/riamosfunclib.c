@@ -226,8 +226,8 @@ static void hardware(void)
     DO1(ENT(LIB, E_BLITDONE, 0), (void)0);
     OBS("d0", R.d[0]);
     ROUT = "MemFree";
-    /* the free memory differs from run to run (libs/tests/tape.h): the
-       difference to AvailMem(MEMF_PUBLIC) of the moment */
+    /* the free memory differs from run to run: the difference to
+       AvailMem(MEMF_PUBLIC) of the moment */
     DO1(ENT(LIB, E_MEMFREE, 0), freemem = AvailMem(MEMF_PUBLIC));
     OBS("d0 - AvailMem(MEMF_PUBLIC)", R.d[0] - freemem);
 }

@@ -354,9 +354,16 @@ converted by `bbsrc bb22` first) – and
 `rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
 byte for byte. An entry whose reference is the reference build of its
 source (stage B/C "Source", 3.3) writes `refbuild` as REFERENCE: its
-`rwe_declarations_NAME` and its pair in `libs_emulator_originals` use
-`ref/NAME.obj` (with the fixture of `rwe_refbuild`; `libs_emulator`
-compares with the recording made from it, without it).
+`rwe_declarations_NAME` and its run in `libs_emulator_originals` use
+`ref/NAME.obj` (with the fixture of `rwe_refbuild`). The test program of
+a library (`libs/tests/rwe/NAME.c`) loads one set, the C build
+(`libs_emulator`, no CD) or this reference (`libs_emulator_originals`),
+and both are compared with the same expected data
+`libs/tests/expected/rwe_NAME.txt`, which `libs-capture` records from the
+reference (`tests/README.md`, "Libraries"). The "Test" sections of the
+library pages in `port/` describe the scenario; where they say that both
+sets are compared side by side, the scenario runs once per set and the
+cases are compared with the expected data.
 
 ### 3.2 Which version is the reference (stages B and C)
 

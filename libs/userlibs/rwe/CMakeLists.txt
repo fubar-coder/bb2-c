@@ -27,9 +27,10 @@
 # this directory, if there - the format of libs/GROUP/declarations-
 # intended.txt, each entry must occur; configure again after adding the
 # file), and the
-# behaviour is compared with REFERENCE in Amiberry (libs_emulator_originals,
-# libs_emulator against its recording:
-# libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).
+# behaviour is compared in Amiberry with the expected data recorded from
+# REFERENCE (libs/tests/expected/rwe_NAME.txt): libs_emulator_originals
+# runs REFERENCE, libs_emulator the C build, one set per run
+# (libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).
 set(RWE_VARIANT rwe-1999)
 # RWE_OWN_VARIANTS: NAME|VARIANT[|REPLACES] for a library whose number
 # another library of RWE_VARIANT has: built with the numbers of VARIANT
