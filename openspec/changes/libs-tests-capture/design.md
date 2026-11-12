@@ -754,6 +754,45 @@ Facts of the conversions of `systest_med` and `rwe_ridisasmlib`
   its key and value (`capture.c`, `line_begin`); a cheaper writer is a
   possible follow-up (the output stays the same).
 
+## The tape removed (groups 7, 8)
+
+Facts of tasks 7.1-8.2 (2026-11-12):
+
+- With the last tape deleted, every test that ran the tape's replay
+  failed before the emulator started ("no recordings in
+  libs/tests/tapes"): `libs_emulator`, `libs_emulator_wrong`,
+  `libs_emulator_tape_wrong`, and `libs-update`; `libs_tapes_compare_*`
+  had no tapes to change. `libs_emulator`, `libs_emulator_wrong` and
+  `libs-update` run the C build alone now (`NO_ORIGINALS`, `LIBSET=obj`:
+  only `NAME.obj` is copied), `libs_emulator_originals` the originals
+  (`LIBSET=orig`).
+- `LIBS_ONE_SET` is gone with the two-set API; the 60 programs no longer
+  define it. `bugorig.c` includes `sysload.h` with its own loader of the
+  C build and gets the one-set statics unused, without a warning.
+- The fixed checks (`expect_fixed`) are not replaced by a library-side
+  mechanism: a fix is the pair of cases, judged by `results libs-compare`
+  (`test_libscmp.c` `test_qualifiers`, `libs_compare_wrong_fixed`,
+  `libs_compare_wrong_orig`).
+- `LIBS_CAP_DUMP` reaches the runs through `emulator.cmake`
+  (`-DCAP_DUMP=KEY|BLOCK:N`, or the environment variable `LIBS_CAP_DUMP`
+  for any libs test): the shell variable is set quoted, with AmigaDOS's
+  escape `*` before `*`, `"` and `$` (keys hold `|`, `$` and spaces);
+  the run shows each dump's path and first 40 lines and fails if no
+  program wrote one (`libs_emulator_dump_right`, `_wrong`).
+- The writer: the `|N` of every case is converted by hand instead of
+  `snprintf`; `systest_med` alone (the C build, wall clock with the
+  emulator's start, a machine with other load) took 56, 61, 63 s before
+  and 54, 50, 62 s after: within the noise. `libs_emulator` (all 61
+  programs) took 150 s alone and 257 s inside `ctest --preset all`.
+- Acceptance (task 8.2): `libs-capture` without a filter wrote nothing
+  (61 files unchanged), so every expected file is reproduced by the
+  original with two memory layouts. `ctest --preset originals` rewrites
+  three `tests/bug-orig/*.orig` files (not the library tests'), which
+  were restored. The host build with `-DHOST_SANITIZE=ON` warns twice
+  (`-Wformat-truncation`, "argument is null", in `capture.c` `join` and
+  `libscmp.c` `libscmp_path`, both `snprintf` of a path after `strlen`
+  of it): code of group 2, not changed here.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the
