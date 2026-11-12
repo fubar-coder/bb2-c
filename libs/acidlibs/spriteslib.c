@@ -35,14 +35,16 @@
  *    the variables behind it (same layout here). (#281)
  *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
  *    width (beyond the row for narrow shapes). (#282)
- *  - LoadSprites s,file$: the last sprite is base + (max - 1) << 4 as a
- *    word: from a maximum of 2049 on it lies before the table. (#939)
  *
- * Fixed (intended deviation, docs/libs/deviations.md): the original has the
- * error routines of SaveSprites/LoadSprites (err10, err11) in the normal
- * code but their messages in the error check area (without the debugger
- * d0 points behind the library); here the messages are in the normal code
- * too. (#954)
+ * Fixed (intended deviation, docs/libs/deviations.md):
+ *  - the original has the error routines of SaveSprites/LoadSprites
+ *    (err10, err11) in the normal code but their messages in the error
+ *    check area (without the debugger d0 points behind the library); here
+ *    the messages are in the normal code too. (#954)
+ *  - LoadSprites s,file$: the original computes the last sprite as base +
+ *    (max - 1) << 4 with word operations: from a maximum of 2049 on it
+ *    lies before the table and only the first sprite is loaded.  Here the
+ *    offset is a long. (#999)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -594,8 +596,9 @@ BLITZ_THUNK(doloadsprites, doloadsprites_c, "d0-d1/a0-a1");
  *
  * As LoadSprites with two sprites; the last is base + (maximum - 1) << 4.
  *
- * BUG(orig) (#939): that offset is a word: from a maximum of 2049 on the
- * last sprite lies before the table.
+ * Fixed (#999): that offset is a long (the maximum is the low word of d2);
+ * the original adds it as a word (from a maximum of 2049 on the last
+ * sprite lies before the table).
  *
  * @param base a2: the sprite table (object base); a3: the first sprite
  * @param max  d2: the maximum number of sprites
@@ -606,8 +609,8 @@ static void BLITZ_ROUTINE doloadsprites2_c(UBYTE *base BL_REG(a2), ULONG max BL_
                                            const char *name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
-    /* BUG(orig) (#939): the last sprite as a word offset */
-    loadsprites((struct bb_sprite *)blitz_string, base + (WORD)(UWORD)((UWORD)(max - 1) << 4), name, dos);
+    /* Fixed (#999): the last sprite as a long offset */
+    loadsprites((struct bb_sprite *)blitz_string, base + ((ULONG)(UWORD)(max - 1) << 4), name, dos);
 }
 BLITZ_THUNK(doloadsprites2, doloadsprites2_c, "d0-d1/a0-a1");
 

@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+made 8 16 24
+freed 0 0 0
+loadshapes 8 16 24
+decodeshapes 8 16 24
+rc=0

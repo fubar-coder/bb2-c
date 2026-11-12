@@ -44,9 +44,6 @@
  *    copied to CHIP memory.
  *  - Not a bug (word results, the compiler uses only d0.w):
  *    ShapeWidth/ShapeHeight load only the low word of d0.
- *  - LoadShapes s,file$ / DecodeShapes s,mem: the last shape is base +
- *    (max - 1) << 5 as a word (SUBQ/LSL/ADD d2,a2): from a maximum of
- *    1025 on it lies before the table. (#939)
  *
  * Fixed (intended deviation, docs/libs/deviations.md):
  *  - DecodeShapes with address 0 branches (BEQ) in the original into the
@@ -57,6 +54,10 @@
  *    original with their messages in the error check area (without the
  *    debugger d0 points behind the library); here the messages are in the
  *    normal code too. (#953)
+ *  - LoadShapes s,file$ / DecodeShapes s,mem: the original computes the
+ *    last shape as base + (max - 1) << 5 with word operations (SUBQ/LSL/
+ *    ADD d2,a2): from a maximum of 1025 on it lies before the table and
+ *    only the first shape is loaded.  Here the offset is a long. (#999)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -758,8 +759,9 @@ BLITZ_THUNK(doloadshapes, doloadshapes_c, "d0-d1/a0-a1");
  * @brief LoadShapes Shape#,Filename$ - load shapes from a3 on up to the
  * last shape object (as doloadshapes_c).
  *
- * BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5): from a
- * maximum of 1025 on it lies before the table.
+ * Fixed (#999): the last shape is a2 + (max - 1) << 5 as a long (the
+ * maximum is the low word of d2); the original adds the offset as a word
+ * (from a maximum of 1025 on the last shape lies before the table).
  *
  * @param base a2: shape 0
  * @param max  d2: the maximum
@@ -771,7 +773,7 @@ static void BLITZ_ROUTINE doloadshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
                                           struct DosLibrary *dos BL_REG(a6))
 {
     loadshapes((struct bb_shape *)blitz_string,
-               (struct bb_shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5)), name, dos);
+               (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)), name, dos);
 }
 BLITZ_THUNK(doloadshapes2, doloadshapes2_c, "d0-d1/a0-a1");
 
@@ -851,8 +853,8 @@ BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
  * @brief DecodeShapes Shape#,MemoryLocation - as cludgeshapes_c from a3 on
  * up to the last shape object.
  *
- * BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5).
- * Address 0: runtime error, as cludgeshapes_c (#270).
+ * Fixed (#999): the last shape is a2 + (max - 1) << 5 as a long, as in
+ * doloadshapes2_c.  Address 0: runtime error, as cludgeshapes_c (#270).
  *
  * @param base a2: shape 0
  * @param max  d2: the maximum
@@ -861,8 +863,8 @@ BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                           UBYTE *mem BL_REG(d1))
 {
-    /* BUG(orig) (#939) */
-    struct bb_shape *last = (struct bb_shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5));
+    /* Fixed (#999): a long offset */
+    struct bb_shape *last = (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5));
 
     if (!mem) {
         BLITZ_RUNERR(mess10);                   /* err10 */
