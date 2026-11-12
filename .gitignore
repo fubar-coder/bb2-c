@@ -21,6 +21,7 @@ cmake-build-*/
 # created by `openspec init` / `openspec update` (`docs/structure.md`)
 /.claude/commands/
 /.claude/skills/
+/.agents/
 
 # the API reference, built by the Pages workflow (Doxyfile)
 /site/static/api/

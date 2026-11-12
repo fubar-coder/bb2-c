@@ -127,7 +127,8 @@ openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)
 .claude/agents/              agent definitions for Claude Code; the
                              OpenSpec skills and commands
-                             (.claude/skills/, .claude/commands/) are
+                             (.claude/skills/, .claude/commands/,
+                             .agents/skills/) are
                              created locally by `openspec init` or
                              `openspec update` and are not in git
 ```
