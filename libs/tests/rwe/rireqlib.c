@@ -1,7 +1,8 @@
 /*
  * rwe rireqlib - ReqFileRequest, ReqFileLoc, ReqOutput, ReqFlags,
- * ReqColour: the C build against the CD original (OL RIREQLIB.OBJ),
- * method of rwecmp.h.
+ * ReqColour: the C build or the CD original (OL RIREQLIB.OBJ), one set
+ * as LIBSET says, observed as cases (rwecmp.h; the expected data
+ * libs/tests/expected/rwe_rireqlib.txt).
  *
  *   rireqlib DIR
  *
