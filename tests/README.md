@@ -1,6 +1,6 @@
 # Tests
 
-Overview of the suites. The test presets say **where** the tests run;
+Reference of the suites (an introduction for people: [docs/testing.md](../docs/testing.md)). The test presets say **where** the tests run;
 labels select within them.
 
 | Preset | Runs | Needs |

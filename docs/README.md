@@ -13,6 +13,7 @@ For working with the repository:
 | File | Content |
 |---|---|
 | [development.md](development.md) | IDE profiles (CLion and others), `.clangd`, the checks the build runs on its results |
+| [testing.md](testing.md) | how the tests work, for people: the model, the suites, walkthroughs, glossary |
 | [structure.md](structure.md) | the directory structure of the repository in full |
 | [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 |
 | [external-bugs/](external-bugs/README.md) | bugs found in third-party tools (Doxygen, ...), with reproductions and what they mean here |

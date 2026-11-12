@@ -5,7 +5,8 @@ with the changes of the CD's compiler, `docs/v2.10/`),
 editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
 built for AmigaOS (68000) with m68k-amigaos-gcc. Overview and
 building: `README.md`; structure: `docs/structure.md`; the checks in the
-build: `docs/development.md`; the tests: `tests/README.md`. Open items:
+build: `docs/development.md`; the tests: `docs/testing.md` (how they work,
+for people) and `tests/README.md` (reference). Open items:
 `TODO.md`, as task lists: `- [ ] **Title** …` open, `- [x] **Title** done (date): …` done or
 decided (also for numbered steps, `1. [x] …`); no strikethrough.
 

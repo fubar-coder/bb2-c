@@ -74,7 +74,8 @@ Some tests compare with the original CD and sources, which are not in the
 repository; `cmake -P cmake/fetch-originals.cmake` downloads them
 (`archive/README.md`), and the affected tests are skipped without them.
 The emulator tests also need Amiberry, a Kickstart ROM and hardfiles set
-up locally: `AMIGA-EMULATION-SETUP.md`. The suites, the presets and
+up locally: `AMIGA-EMULATION-SETUP.md`. How the tests work, for people:
+`docs/testing.md`; the suites, the presets and
 coverage: `tests/README.md`.
 
 ## Extensions of blitz2
