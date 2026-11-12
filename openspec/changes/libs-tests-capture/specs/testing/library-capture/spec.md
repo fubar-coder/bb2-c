@@ -59,8 +59,8 @@ The judge SHALL apply to a run with `LIBSET=orig` the cases without a qualifier 
 - **WHEN** a file holds `KEY` and `KEY [orig]`
 - **THEN** the judge fails naming the line
 
-### Requirement: Block hashes only for two very large programs
-Only `systest_med` and `rwe_ridisasmlib` SHALL write a block of observations as one case holding the block's number, its observation count and a hash (key `BLOCK:N`). Every other program, `libtest` included, SHALL write its values as cases. Where a block case differs, the compare SHALL name the block. The limits are stated: a fix inside a block program can only be a pair of block cases with hashes nobody can review, two fixes in one block share the pair and one issue number, and a fix that changes the number of observations shifts the block numbers after it.
+### Requirement: Block hashes only for the very large programs and libtest
+Only `systest_med`, `rwe_ridisasmlib` and the two `libtest` programs (`ldivlib`, `lmullib`) SHALL write a block of observations as one case holding the block's number, its observation count and a hash (key `BLOCK:N`). Every other program SHALL write its values as cases. Where a block case differs, the compare SHALL name the block. The limits are stated: a fix inside a block program can only be a pair of block cases with hashes nobody can review, two fixes in one block share the pair and one issue number, and a fix that changes the number of observations shifts the block numbers after it.
 
 #### Scenario: A block differs
 - **WHEN** a run's hash of block 17 of `rwe_ridisasmlib` differs from the expected data's

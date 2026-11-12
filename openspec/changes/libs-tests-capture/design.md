@@ -247,15 +247,18 @@ case `KEY` whose port value differs from the expected one into the pair
 nothing else is touched. Both targets are reviewed by `git diff`
 (`tests/README.md`).
 
-### D6. Block hashes for the two very large programs
+### D6. Block hashes for the very large programs and libtest
 
 A program writes a case `BLOCK:N` with `COUNT FNV1A32 first=CHECK|VECTOR`
 for each 4096 observations when it calls `cap_blocks(on)`; only
-`rwe_ridisasmlib` (3.06 million observations) and `systest_med` (3.57
-million; user decision of 2026-11-12) do. Every other program writes
-plain cases, `libtest` included (two programs of 41 459 observations each,
-about 1.5 MB of text each at 40 bytes a line; `systest_mathstr` has 56
-861). A differing block names the block number and its observation range;
+`rwe_ridisasmlib` (3.06 million observations), `systest_med` (3.57
+million) and the two `libtest` programs do (user decisions of 2026-11-12).
+`libtest` is hashed because of its size, not its count: its 41 459
+observations per program are random 32-bit quotients and products, 1.87 MB
+each and nearly incompressible, 49 % of the compressed text of all other
+programs (task 1.3), and as hex pairs not readable anyway. Every other
+program writes plain cases; `systest_mathstr` (56 861 cases) stays text
+because its maths and string results are readable. A differing block names the block number and its observation range;
 the run with `LIBS_CAP_DUMP=BLOCK:N` writes the observations of that block
 as lines, to find the differing one.
 
@@ -513,8 +516,8 @@ same savestate).
   ("13 MB, and a copy of what the original computes"). The corpus `.out`
   files are a precedent for outputs. Task 1.3 measures the committed text
   size, also compressed, and checks whether the values hold literal CD
-  data; the decision (keep text, or hash more programs) is taken from that
-  and recorded in the design.
+  data. Measured: no literal CD data; with `systest_med`, `rwe_ridisasmlib`
+  and `libtest` hashed about 10.2 MB raw and 1.0 MB compressed remain (D6).
 - [Non-deterministic checks found late] The two-run record refuses them;
   task 1.4 lists today's before the conversion, so the cost is known.
   Timing-dependent ones are not found by the layout shift (D8).
@@ -565,11 +568,6 @@ it).
   state where original and C build agree: measured, no (hardware against RAM
   copy, by construction); `not captured: REASON` stands for it. See
   "Measurements (group 1)". Decided during implementation.
-- The result of task 1.3 (size and literal CD data): measured, no literal CD
-  data and 13.96 MB raw / 2.0 MB compressed in all with the two block
-  programs hashed; whether to keep that or to hash `libtest` (-27 % raw,
-  -49 % compressed) and `systest_mathstr` is for the user to decide (D6's
-  list of hashed programs).
 - Keys that hold values or addresses (four programs hold values in the check
   text, three hold an address in the check text or vector) and values the
   range test of `tape_obs` hits by chance: the conversions of their groups
