@@ -559,6 +559,9 @@ Facts of tasks 3.1 and 3.2 (2026-11-12):
   takes it in place of `datalib.obj` (`OBJ_VARIANTS`), `systest` writes
   `lost d2` for both datalib calls, and the compare fails with
   `systest: datalib init|kept||1: expected kept, got lost d2`.
+- `libs_keeps_wrong` (`selftest_keeps.c`, no library): `KEEPS` with a set
+  that is no register set, a routine stated twice and a call of a routine
+  without a stated set each fail with their message.
 - `libs_emulator_tape_wrong` corrupts the tape of `systest_runtime` now
   (`[runtime]`): the tape of `systest` is gone.
 - `rwe/rwecmp.h` in one-set mode: `R`, `IN`, `ARGS[6]`, `POP`, `CCR`
@@ -630,7 +633,8 @@ conversion touches only the program, its expected file and its tape (and
    always added). A routine whose line says `a4/a5 changed` returns a
    result there: `DONTCARE` (bits 12/13) around that call, cleared after
    it. `KEEPS` matches `ROUT` by text: a routine with several `ROUT` names
-   (forms) needs a line for each.
+   (forms) needs a line for each, and `ROUT` must be a string that stays
+   (a literal, not a buffer the program writes again).
 7. Block programs only (`systest_med`, `ridisasmlib`, D6): `OBS_BLOCKS(1)`
    around the observations to hash.
 8. Record and check: build, then

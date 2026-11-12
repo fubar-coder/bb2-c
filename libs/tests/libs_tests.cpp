@@ -18,8 +18,9 @@
 // they fail until it is fixed; only an explicit filter runs them
 // (libs_tests "[bug-orig]", ctest bug_orig_*).  The test cases tagged
 // [.selftest] fail on purpose (selftest_fixed.c: expect_fixed with a wrong
-// value and with a stale exemption); ctest libs_expect_fixed_wrong and
-// libs_expect_fixed_stale check that they do.
+// value and with a stale exemption; selftest_keeps.c: KEEPS with broken
+// input); ctest libs_expect_fixed_wrong, libs_expect_fixed_stale and
+// libs_keeps_wrong check that they do.
 #include <snitch/snitch.hpp>
 
 #include <cstdio>
@@ -50,6 +51,7 @@ int bugorig_debuglib_findoff_flags(const char *dir);
 int selftest_fixed_pass(void);
 int selftest_fixed_wrong(void);
 int selftest_fixed_stale(void);
+int selftest_keeps_wrong(void);
 // the tests of the RWE userlibs (rwe/NAME.c, generated list)
 #define RWE_TEST(n) int rwe_##n##_main(int argc, char **argv);
 #include "rwe_tests.inc"
@@ -234,6 +236,9 @@ TEST_CASE("systest_med: medlib (generated modules)", "[med]")
 TEST_CASE("expect_fixed passes", "[expect_fixed]") { CHECK(selftest_fixed_pass() == 0); }
 TEST_CASE("expect_fixed wrong", "[.selftest]") { CHECK(selftest_fixed_wrong() == 0); }
 TEST_CASE("expect_fixed stale", "[.selftest]") { CHECK(selftest_fixed_stale() == 0); }
+
+// the checks of KEEPS (sysload.h) with broken input (selftest_keeps.c)
+TEST_CASE("keeps wrong", "[.selftest]") { CHECK(selftest_keeps_wrong() == 0); }
 
 // reproduced original bugs: fail as long as the C build reproduces them
 TEST_CASE("cliargs-parpath-cli", "[.bug-orig]")
