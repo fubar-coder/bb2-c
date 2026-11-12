@@ -41,7 +41,12 @@ extern "C" {
 
 /** @brief The rule sets. */
 enum tokenizer_rules {
-    TOKENIZER_RULES_AB3 = 1     /* AmiBlitz3 v3.14.0 (preproc_Tokenize) */
+    TOKENIZER_RULES_AB3 = 1,    /* AmiBlitz3 v3.14.0 (preproc_Tokenize) */
+    TOKENIZER_RULES_AB3_LIT = 2 /* the same, and inside a string or a
+                                   comment a byte from 128 becomes the
+                                   literal character $90 byte
+                                   (docs/formats.md 3.2; blitz2-ab3's
+                                   loader, spec ab3-compat/strings) */
 };
 
 /** @brief Results of the functions (TOKENIZER_OK = 0). */
@@ -64,6 +69,9 @@ enum tokenizer_err {
     of text: a name of one letter becomes a 2-byte token, a string or a
     comment at the end of the text gets its 0. */
 #define TOKENIZER_BOUND(len) (2 * (size_t)(len) + 2)
+
+/** @brief The first byte of a literal character (TOKENIZER_RULES_AB3_LIT). */
+#define TOKENIZER_LITHI 0x90
 
 /** @brief One name of the token list (the caller's memory). */
 struct tokenizer_entry {
@@ -128,7 +136,8 @@ int tokenizer_find(const struct tokenizer *t, const uint8_t *name, size_t len, u
  * string or a comment every byte stays except TAB (a space).  A word that
  * ends the text (no character behind it) is not looked up, a string or
  * comment that ends it gets its 0 (AmiBlitz3 reads the 0 behind its
- * buffer).
+ * buffer).  With TOKENIZER_RULES_AB3_LIT a byte from 128 inside a string or
+ * a comment is written as the pair TOKENIZER_LITHI byte.
  * @param t    the tokeniser
  * @param src  the text
  * @param len  its length
@@ -195,6 +204,18 @@ size_t tokenizer_lines(const uint8_t *src, size_t len);
  * @return the start of the next line (len after the last one)
  */
 size_t tokenizer_ab3_mainline(const uint8_t *tok, size_t len, size_t pos, size_t *keep);
+
+/**
+ * @brief tokenizer_ab3_mainline for a text tokenised with
+ *        TOKENIZER_RULES_AB3_LIT: a literal character (TOKENIZER_LITHI and
+ *        a byte from 128) counts as the one byte AmiBlitz3 keeps for it,
+ *        and the cut never falls between its two bytes; every other byte
+ *        counts one, as there.  The line kept has at most
+ *        TOKENIZER_AB3_COLUMNS bytes as well (the editor's line length is
+ *        a byte): a line with literal characters may keep fewer
+ *        characters than AmiBlitz3.
+ */
+size_t tokenizer_ab3_mainline_lit(const uint8_t *tok, size_t len, size_t pos, size_t *keep);
 
 /**
  * @brief The extension of a file name as AmiBlitz3's dos_GetExt finds it

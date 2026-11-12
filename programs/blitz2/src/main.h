@@ -36,6 +36,12 @@
 /* DIFF: 210 as in the compiler of the CD (blitz2.s says 195; docs/v2.10) */
 #define blitz2version 210     /* asm: version (renamed: `version` clashes with NDK struct fields) */
 
+/* NEW (literal characters, docs/formats.md 3.2): the token pair $90 cc
+   (cc >= $80) is the Latin-1 character cc (library 33, literallib); getcharb
+   reads it as the word $90cc, and a string reader takes its low byte.
+   TED_ISLIT in programs/ted/src/core/literal.h is the same rule. */
+#define LITCHAR(w) (((UWORD)(w) & 0xFF80) == 0x9080)
+
 /* internal library token numbers (passed to tokejsr / uselib) */
 #define wbstart     0xbf00     /* lib 65533 wbstartuplib */
 #define allocvars   65534      /* varslib */

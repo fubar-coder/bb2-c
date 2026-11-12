@@ -8,7 +8,10 @@
  *   - loads SOURCE: in AB3 mode a text source as AmiBlitz3 loads it
  *     (shared/tokenizer: AmiBlitz3's tokeniser with the token list blitz2
  *     handed over, its embedded header as empty lines, lines cut at 250
- *     characters; change ab3-mode-g2, design D3), else with TED's core as
+ *     characters; change ab3-mode-g2, design D3; a byte from $80 in a
+ *     string or a comment as the literal character $90 byte, so that the
+ *     compiled string holds the byte, rules TOKENIZER_RULES_AB3_LIT, spec
+ *     ab3-compat/strings), else with TED's core as
  *     TED does (fileopen2: a text source is tokenised with the token list
  *     of the program's mode, a tokenised source is taken as it is),
  *   - hands the compiler the options of the source (loadxtra): from
@@ -438,7 +441,7 @@ static int ab3_tokenizer(void)
     tzentry = AllocMem(tzcap * sizeof *tzentry, MEMF_PUBLIC);
     tzbucket = AllocMem(NBUCKET * sizeof *tzbucket, MEMF_PUBLIC);
     if (!tzentry || !tzbucket
-        || tokenizer_init(&tz, TOKENIZER_RULES_AB3, tzentry, tzcap, tzbucket, NBUCKET)) {
+        || tokenizer_init(&tz, TOKENIZER_RULES_AB3_LIT, tzentry, tzcap, tzbucket, NBUCKET)) {
         ab3_freetokenizer();
         report("out of memory");
         return 0;
@@ -495,7 +498,7 @@ static int ab3_loadsource(const UBYTE *src, ULONG slen)
     if (!ab3_tokenizer() || !(tok = ab3_tokenise(src + hdr, slen - hdr, nh, &tlen)))
         return 0;
     for (pos = 0; pos < tlen; n++) {
-        pos = tokenizer_ab3_mainline(tok, tlen, pos, &keep);
+        pos = tokenizer_ab3_mainline_lit(tok, tlen, pos, &keep);
         size += ITEMSIZE(keep);
     }
     if (!n) {                           /* the editor has a line at least */
@@ -520,7 +523,7 @@ static int ab3_loadsource(const UBYTE *src, ULONG slen)
         ULONG start = pos;
 
         if (pos < tlen)
-            pos = tokenizer_ab3_mainline(tok, tlen, pos, &keep);
+            pos = tokenizer_ab3_mainline_lit(tok, tlen, pos, &keep);
         else
             keep = 0;
         it = (struct item *)p;

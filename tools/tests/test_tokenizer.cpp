@@ -33,11 +33,11 @@ struct fixture {
     std::vector<uint16_t> buckets;
     std::vector<std::string> names;     // the bytes the entries point to
 
-    explicit fixture(uint32_t cap = 64, uint32_t nbucket = 16)
+    explicit fixture(uint32_t cap = 64, uint32_t nbucket = 16, int rules = TOKENIZER_RULES_AB3)
         : entries(cap), buckets(nbucket)
     {
         names.reserve(cap + 8);
-        REQUIRE(tokenizer_init(&t, TOKENIZER_RULES_AB3, entries.data(), cap, buckets.data(),
+        REQUIRE(tokenizer_init(&t, rules, entries.data(), cap, buckets.data(),
                                nbucket) == TOKENIZER_OK);
     }
 
@@ -49,9 +49,9 @@ struct fixture {
     }
 
     // the usual list: compiler tokens, then a "library" with a lower-case clash
-    static fixture standard()
+    static fixture standard(int rules = TOKENIZER_RULES_AB3)
     {
-        fixture f;
+        fixture f(64, 16, rules);
         f.add("NPrint", T_NPRINT);
         f.add("Print", T_PRINT);
         f.add("Str", T_STR);
@@ -179,6 +179,63 @@ TEST_CASE("characters outside strings and comments", "[tokenizer]")
     CHECK(f.text(std::string("Print\0End\n", 10)) == tk(T_PRINT) + Z + tk(T_END) + Z);
 }
 
+TEST_CASE("literal characters in strings and comments (TOKENIZER_RULES_AB3_LIT)", "[tokenizer]")
+{
+    fixture f = fixture::standard(TOKENIZER_RULES_AB3_LIT);
+    const std::string P(1, '\x90');
+
+    // spec ab3-compat/strings: a$="Größe" - every byte from 128 of a
+    // string, the umlauts too, is the pair $90 byte; the rest as AB3
+    CHECK(f.line("x$=\"Gr\xf6\xdf" "e\" : NPrint x$")
+          == "x$=\"Gr" + P + "\xf6" + P + "\xdf" "e\" : " + tk(T_NPRINT) + " x$" + Z);
+    CHECK(f.line("Print ; Gr\xf6\xdf" "e") == tk(T_PRINT) + " ; Gr" + P + "\xf6" + P + "\xdf" "e" + Z);
+    // outside strings and comments: '?' as AmiBlitz3
+    CHECK(f.line("x=\xe4") == "x=?" + Z);
+    // without such bytes the same as TOKENIZER_RULES_AB3
+    fixture g = fixture::standard();
+    for (const char *s : { "NPrint \"Print\"", "Print ; NPrint here", "\"a\tb\r\"", "x=1:End" })
+        CHECK(f.line(s) == g.line(s));
+    // the largest growth still fits TOKENIZER_BOUND
+    std::string all(1, '"');
+    for (int c = 128; c < 256; c++)
+        all += char(c);
+    std::string want = all.substr(0, 1);
+    for (int c = 128; c < 256; c++)
+        want += P + char(c);
+    CHECK(f.text(all) == want + Z);
+}
+
+TEST_CASE("the lines of a main source with literal characters", "[tokenizer]")
+{
+    const std::string P(1, '\x90');
+    // 200 literal characters (400 bytes) and a token: the line keeps 250
+    // bytes, 125 characters, the pair never cut
+    std::string lit;
+    for (int i = 0; i < 200; i++)
+        lit += P + "\xdf";
+    std::string tok = "\"" + lit + Z + "a" + P + "\xe9" + Z + std::string(300, 'x') + Z + "\"" + lit;
+    const uint8_t *p = reinterpret_cast<const uint8_t *>(tok.data());
+    size_t keep = 0, pos = 0;
+
+    pos = tokenizer_ab3_mainline_lit(p, tok.size(), pos, &keep);
+    CHECK(pos == 402);
+    CHECK(keep == 249);                         // '"' and 124 pairs: 249 bytes
+    pos = tokenizer_ab3_mainline_lit(p, tok.size(), pos, &keep);
+    CHECK(keep == 3);
+    // without literal characters as tokenizer_ab3_mainline
+    pos = tokenizer_ab3_mainline_lit(p, tok.size(), pos, &keep);
+    CHECK(keep == TOKENIZER_AB3_COLUMNS);
+    CHECK(p[pos - 1] == 0);
+    pos = tokenizer_ab3_mainline_lit(p, tok.size(), pos, &keep);
+    CHECK(pos == tok.size());
+    CHECK(keep == 249);
+    // a pair at the end of the text without its second byte: one byte
+    std::string half = "x" + P;
+    p = reinterpret_cast<const uint8_t *>(half.data());
+    CHECK(tokenizer_ab3_mainline_lit(p, half.size(), 0, &keep) == half.size());
+    CHECK(keep == 2);
+}
+
 TEST_CASE("the end of a text", "[tokenizer]")
 {
     fixture f = fixture::standard();
@@ -224,7 +281,7 @@ TEST_CASE("broken set-up", "[tokenizer]")
     uint16_t bk[8];
 
     CHECK(tokenizer_init(&t, 0, e, 2, bk, 8) == TOKENIZER_E_RULES);
-    CHECK(tokenizer_init(&t, 2, e, 2, bk, 8) == TOKENIZER_E_RULES);
+    CHECK(tokenizer_init(&t, 3, e, 2, bk, 8) == TOKENIZER_E_RULES);
     CHECK(tokenizer_init(&t, TOKENIZER_RULES_AB3, e, 2, bk, 0) == TOKENIZER_E_BUCKETS);
     CHECK(tokenizer_init(&t, TOKENIZER_RULES_AB3, e, 2, bk, 6) == TOKENIZER_E_BUCKETS);
     CHECK(tokenizer_init(&t, TOKENIZER_RULES_AB3, e, 2, bk, 65537) == TOKENIZER_E_BUCKETS);

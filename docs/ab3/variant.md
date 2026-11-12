@@ -533,6 +533,31 @@ name given twice keeps its first token):
 A tokenised source and BB2 mode keep TED's way of loading (TED's own
 tokeniser stays for TED, a later change).
 
+**Latin-1 in strings and comments** (change `literal-characters`, spec
+`ab3-compat/strings`): `ab3cli` tokenises with the rule set
+`TOKENIZER_RULES_AB3_LIT` (`shared/tokenizer/tokenizer.h`;
+`programs/ab3cli/src/main.c`, `ab3_tokenizer`): AmiBlitz3's rules, and
+inside a string or a comment every byte from `$80`, the umlauts too, is
+stored as the literal character `$90 cc` (`docs/formats.md` §3.2), not as
+TED's codes 26-31, which AB3's `gs` maps to other characters (ä and ö
+swapped, §4.1 there). blitz2-ab3's string readers take the pair's low
+byte (`litstring`, `programs/blitz2/src/eval.c`), and a character
+literal `@"é"` counts it as one byte (`ext_element`,
+`programs/blitz2/src/ab3chr.c`), so the compiled bytes are those
+AmiBlitz3 gives (`tests/ab3/cli/latin1_string.ab3`, REF). The 250
+characters of a main-source line count a pair as the one byte AmiBlitz3
+keeps, and the line keeps at most 250 bytes (`tokenizer_ab3_mainline_lit`;
+the editor's line length is a byte, so a long line with many such
+characters keeps fewer of them than AmiBlitz3). Measured before
+(task 1.4 of the change): the old loader copied the raw bytes, and the
+compiler took a byte from `$80` and the byte behind it for one token:
+`"Größe"` compiled to `Gr`, `$DF`, `e` (ö lost), and `"äÄýþÿ"` ended
+the compile with "No Terminating Quote" (`ÿ` took the closing quote).
+`bbsrc ab3` keeps the rules `TOKENIZER_RULES_AB3` (AmiBlitz3's own
+`-save` output, `ab3_tokenise`). A literal character outside a string
+(only in a tokenised source) is "Token Not Found : $10E9." in AB3 mode:
+AmiBlitz3's libraries have no library 33 (`tests/ab3/cli/latin1_stray.bas`).
+
 `ab3_tokenise` (label `emulator`, `tests/ab3/tokenise.cmake`) checks the
 tokens: AmiBlitz3 v3.14.0 loads each source in CLI mode and writes its
 lines (`-save NAME.bb2`), `bbsrc ab3-cmp` loads it with `shared/tokenizer`

@@ -1,0 +1,16 @@
+; Latin-1 characters in strings and comments of a text source (spec
+; ab3-compat/strings): the loader stores each byte from $80 of a string or
+; a comment as a literal character, the umlauts too; the compiled string
+; holds the bytes AmiBlitz3 gives it, a character literal the byte
+OPTIMIZE 4
+a$ = "Größe" ; Größe éè in a comment
+NPrint Len(a$)
+For i.w = 1 To Len(a$)
+  NPrint Asc(Mid$(a$, i, 1))
+Next
+b$ = "äÄýþÿ"
+NPrint Asc(b$), " ", Asc(Right$(b$, 1))
+NPrint Hex$(@"é")
+c.l = @"aé"
+NPrint Hex$(c)
+End

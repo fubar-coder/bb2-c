@@ -166,7 +166,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 5. blitz2-ab3
 
-- [ ] 5.1 `shared/tokenizer` (rules AB3) and `ab3job`/`ab3cli`: bytes >=
+- [x] 5.1 `shared/tokenizer` (rules AB3) and `ab3job`/`ab3cli`: bytes >=
   $80 inside a string and a comment of a text source become pairs
   (including the six umlauts, design D4); outside them as before (the loader,
   not `getcharb`).
@@ -174,7 +174,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   compare the bytes with what AmiBlitz3's compiler gives (`ctest --preset
   oracle`); sources without such bytes unchanged; `ab3_tokens` still equal
   to AmiBlitz3's list.
-- [ ] 5.2 `docs/ab3/variant.md`: the section on source loading names the
+- [x] 5.2 `docs/ab3/variant.md`: the section on source loading names the
   rule and the measurement of 1.4. Verify: the text names file and line.
 
 ## 6. Host tools

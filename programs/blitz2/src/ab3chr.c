@@ -49,7 +49,12 @@ BOOL ext_element(UWORD c, UWORD *type, UWORD *ret)
             break;
         if (c == 0)
             syntaxerr();
-        if (c & 0x8000) {
+        if (LITCHAR(c)) {
+            /* a literal character (the loader's form of a byte above $7F
+               in a string, spec ab3-compat/strings): its one byte */
+            n++;
+            value = value << 8 | (UBYTE)c;
+        } else if (c & 0x8000) {
             /* a byte above $7F: getcharb has read the next one with it
                (as a token) */
             n += 2;

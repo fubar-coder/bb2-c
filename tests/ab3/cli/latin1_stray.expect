@@ -1,0 +1,6 @@
+[compile]
+latin1_stray.bb2.xtra: AmiBlitz3's format, its options are not used
+latin1_stray.bb2:5: Token Not Found : $10E9.
+rc=10
+[run]
+no executable

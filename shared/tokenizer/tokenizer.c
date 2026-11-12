@@ -34,7 +34,7 @@ int tokenizer_init(struct tokenizer *t, int rules, struct tokenizer_entry *entry
 {
     uint32_t i;
 
-    if (rules != TOKENIZER_RULES_AB3)
+    if (rules != TOKENIZER_RULES_AB3 && rules != TOKENIZER_RULES_AB3_LIT)
         return TOKENIZER_E_RULES;
     if (nbucket == 0 || nbucket > 65536 || (nbucket & (nbucket - 1)))
         return TOKENIZER_E_BUCKETS;
@@ -148,7 +148,7 @@ static int run(const struct tokenizer *t, const uint8_t *src, size_t len, int lf
                size_t cap, size_t *out)
 {
     size_t end = len + (lf ? 1 : 0), sp = 0, dp = 0, tl = 0;
-    int accept = 1;
+    int accept = 1, lit = t->rules == TOKENIZER_RULES_AB3_LIT;
     unsigned c, cf;
     uint32_t found;
 
@@ -159,8 +159,14 @@ static int run(const struct tokenizer *t, const uint8_t *src, size_t len, int lf
         dst[dp++] = (uint8_t)(b);       \
     } while (0)
 
+#define PUTLIT(b) do {                  \
+        if (lit && (b) >= 128)          \
+            PUT(TOKENIZER_LITHI);       \
+        PUT(b);                         \
+    } while (0)
+
     *out = 0;
-    if (t->rules != TOKENIZER_RULES_AB3)
+    if (t->rules != TOKENIZER_RULES_AB3 && t->rules != TOKENIZER_RULES_AB3_LIT)
         return TOKENIZER_E_RULES;
     while (sp < end) {
         c = GET(sp);
@@ -200,7 +206,7 @@ static int run(const struct tokenizer *t, const uint8_t *src, size_t len, int lf
         if (cf & (F_QUOT | F_COMMENT | F_EOL | F_TAB)) {
             if (cf & F_QUOT) {          /* a string: bytes as they are */
                 do {
-                    PUT(c);
+                    PUTLIT(c);
                     sp++;
                     c = GET(sp);
                     if (c == 9)
@@ -210,7 +216,7 @@ static int run(const struct tokenizer *t, const uint8_t *src, size_t len, int lf
             }
             if (cf & F_COMMENT) {       /* a comment: to the end of the line */
                 do {
-                    PUT(c);
+                    PUTLIT(c);
                     sp++;
                     c = GET(sp);
                     if (c == 9)
@@ -239,6 +245,7 @@ space:
     return TOKENIZER_E_SPACE;
 #undef GET
 #undef PUT
+#undef PUTLIT
 }
 
 int tokenizer_text(const struct tokenizer *t, const uint8_t *src, size_t len, uint8_t *dst,
@@ -348,6 +355,25 @@ size_t tokenizer_ab3_mainline(const uint8_t *tok, size_t len, size_t pos, size_t
     while (end < len && tok[end])
         end++;
     *keep = end - pos > TOKENIZER_AB3_COLUMNS ? TOKENIZER_AB3_COLUMNS : end - pos;
+    return end < len ? end + 1 : len;
+}
+
+size_t tokenizer_ab3_mainline_lit(const uint8_t *tok, size_t len, size_t pos, size_t *keep)
+{
+    size_t end = pos, n = 0, cut = pos;
+
+    while (end < len && tok[end]) {
+        size_t w = tok[end] == TOKENIZER_LITHI && end + 1 < len && tok[end + 1] >= 128 ? 2 : 1;
+
+        if (n < TOKENIZER_AB3_COLUMNS && cut + w - pos <= TOKENIZER_AB3_COLUMNS && cut == end) {
+            n++;
+            cut = end + w;
+        }
+        end += w;
+    }
+    if (end > len)
+        end = len;
+    *keep = cut - pos;
     return end < len ? end + 1 : len;
 }
 

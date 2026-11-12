@@ -99,7 +99,8 @@ file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
 foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
-		inctok_ab3_inc|inctok_ab3_inc macrobuf_xtra|macrobuf_xtra ab3xtra_tok|ab3xtra_tok)
+		inctok_ab3_inc|inctok_ab3_inc macrobuf_xtra|macrobuf_xtra ab3xtra_tok|ab3xtra_tok
+		latin1_stray|latin1_stray)
 	string(REPLACE "|" ";" pair "${pair}")
 	list(GET pair 0 in)
 	list(GET pair 1 out)
@@ -142,6 +143,15 @@ add_custom_command(OUTPUT ${cli_gen}/ab3xtra_tok.bb2.xtra
 	COMMENT "AmiBlitz3 .xtra of ab3xtra_tok.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/ab3xtra_tok.bb2.xtra)
+# the same .xtra for latin1_stray.bb2 (AB3 mode, a literal character
+# outside a string)
+add_custom_command(OUTPUT ${cli_gen}/latin1_stray.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/ab3xtra_tok.xtra.spec ${cli_gen}/latin1_stray.bb2.xtra
+	DEPENDS ${cli_dir}/ab3xtra_tok.xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "AmiBlitz3 .xtra of latin1_stray.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/latin1_stray.bb2.xtra)
 # two residents that define the constant #c with different values (1, 2):
 # the warning resclash of wclash.ab3 (change compiler-warnings, #36)
 foreach(pair wclash1|1 wclash2|2)
@@ -291,6 +301,7 @@ ab3_cli_case(macrobuf_xtra macrobuf_xtra.bb2)
 # compiler's own options (docs/formats.md 7)
 ab3_cli_case(ab3xtra_tok ab3xtra_tok.bb2)
 ab3_cli_case(ab3xtra_tok_r ab3xtra_tok.bb2 ARGS -r)
+ab3_cli_case(latin1_stray latin1_stray.bb2)
 # warnings (change compiler-warnings, #36): two residents of the header
 # with #c=1 and #c=2 - the warning line and rc 5 (RETURN_WARN), as an
 # error (-werr) rc 10, disabled (-w) silent and rc 0 also when in -werr;
@@ -428,6 +439,7 @@ ab3_cli_case(chr_off chr_off.ab3 REF)
 ab3_cli_case(chr_bb2 chr_bb2.bb)
 ab3_cli_case(chr_space chr_space.ab3 REF)
 ab3_cli_case(chr_quick chr_quick.ab3 REF)
+ab3_cli_case(latin1_string latin1_string.ab3 REF)
 ab3_cli_case(chr_string chr_string.ab3 REF REF_EXPECT chr_string.ref.expect)
 ab3_cli_case(chr_const chr_const.ab3 REF)
 # the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
