@@ -158,6 +158,46 @@ library bases, the registry mock, `AllocAbs` buffers, free memory),
 written as `prog` or `base+$OFF`. A case `not captured: REASON` stands for
 a part that cannot be reproduced and is skipped on both sides.
 
+The details of the format, as `capture.c` writes them (`capture.h`; the
+judge parses the same):
+
+- The header is `# capture NAME 1` (`1`: the version of the format); there
+  is no closing line. Lines end with LF.
+- A key part is printable where its byte is `$20`-`$7E`; the hex digits of
+  `\xHH` are upper case. The occurrence number is counted per escaped
+  `ROUTINE|CHECK|VECTOR` and is the part after the last unescaped `|`.
+  A program has at most 114 688 distinct key parts (a fault beyond).
+- Numbers `$XXXXXXXX`; bytes `bytes N HEX` with N decimal and upper-case
+  hex (`bytes 0` for none), longer than 64 bytes `bytes N fnv XXXXXXXX`
+  (FNV-1a 32 of the bytes); a record holding pointers (`OBSBYTES` for
+  `SAMEPTRBYTES`) first has each long at any offset that points into the
+  test program replaced by the bytes `PROG` (`50524F47`), up to 16 KB.
+- Text `"..."` with `\"`, `\\` and `\xHH` for bytes outside `$20`-`$7E`
+  (TAB as `\x09`); a NULL string is `null`.
+- Addresses: 0 is `$00000000`, a value inside the test program's hunks or
+  stack `prog`, else `NAME+$OFF` or `NAME-$OFF` relative to the base the
+  program names (hex upper case, no leading zeros), without a base the
+  plain number.
+- Kept registers `kept` or `lost` with the lost ones in the order
+  `d0`-`d7`, `a0`-`a6` (`lost d3 a1`).
+- `not captured: REASON`, REASON with `\\` and `\xHH`.
+- A block case (D6) is `BLOCK:N<TAB>COUNT XXXXXXXX first=KEY`: N counted
+  from 1, COUNT decimal (4096 except for the last block before
+  `cap_blocks(0)` or the end), XXXXXXXX the FNV-1a 32 of the block's
+  observation lines `KEY<TAB>VALUE<LF>` as plain cases would be written,
+  except that their occurrence number is the observation's number among
+  the program's block observations (from 1), and `first=` the full key
+  of the block's first observation. Its key has no `|`. A `not captured`
+  case is a plain case in block mode too.
+- `LIBS_CAP_DUMP` holds a full key with its occurrence number (no
+  qualifier) or `BLOCK:N`; the run writes `NAME.dump` next to `NAME.txt`
+  (the output stays comparable): for a bytes case lines
+  `KEY<TAB>at $OFFS HEX` (OFFS four hex digits, 32 bytes a line), for a
+  block its observation lines, whose hash is the block's.
+- A fault of the writer (output not opened or written, a key longer than
+  1023 bytes, too many distinct keys) fails the run through
+  `bl_test_check` with `capture NAME: WHY`.
+
 `OBS(what, expr)` replaces `SAME`, `OBSBYTES` replaces `SAMEBYTES` and
 `SAMEPTRBYTES`, `OBSSTR` replaces `tape_strsame`; `BOTH` becomes a plain
 `OBS` of each value. A program that must reach a result by an own loop
@@ -392,7 +432,18 @@ second tool.
 - [Observations that held addresses] The tape found them by shifting the
   heap; the text format shows them → task 1.2 runs the compare with a
   padded binary and a shifted heap once, as the experiment of task 9.8;
-  afterwards every `libs-capture` repeats it (D8).
+  afterwards every `libs-capture` repeats it (D8). The normalisation has
+  the opposite fault as well: a value that is no address but falls inside
+  the test program's memory is written as `prog`, and whether it does
+  depends on the layout. Linking `capture.c` (1.6 MB of static data) into
+  `libs_tests` makes the tape replay of `rwe_blitzbomberslibtwo` fail
+  (observations 1024..3071, first `table`; most likely the pseudo-random
+  image longs of `sameimg`, compared through `tape_obs`, which normalises
+  every value, not yet proven; task 1.2 checks it). So `cap_num` writes numbers as they are and only `cap_ptr` and
+  `cap_ptrbytes` normalise; `cap_ptrbytes` is for records that hold
+  pointers, never for random data. Until the first conversion (task 2.6)
+  `capture.c` is compiled for the m68k as an object library of its own
+  and not linked into `libs_tests`.
 - [A stated kept set too weak] See D7; the set is the intersection over
   all calls, so a register the original keeps in some calls only is not
   covered. Accepted.

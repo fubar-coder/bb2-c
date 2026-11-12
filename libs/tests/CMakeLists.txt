@@ -48,6 +48,14 @@ foreach(t IN LISTS rwe_all)
 endforeach()
 file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_inc}" @ONLY)
 
+# capture.c: the case writer of the programs that observe one set
+# (capture.h; its system calls in capture_amiga.c, its host test in
+# host/), compiled here for the m68k; linked into libs_tests with the
+# first converted program (its static buffers move the heap, and the
+# tapes hash a value inside the program's memory as PROG)
+add_library(libs_capture OBJECT capture.c capture_amiga.c)
+target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
+
 add_executable(libs_tests libs_tests.cpp callregs.c tape.c bugorig.c selftest_fixed.c ${c_sources}
 	${rwe_tests})
 target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
