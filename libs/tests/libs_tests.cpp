@@ -8,8 +8,10 @@
 // The library files are expected next to the executable (PROGDIR:):
 // NAME.orig (original from the CD's acidlibs) and NAME.obj (C build) - see
 // emulator.cmake (ctest libs_emulator).  A program that observes one set
-// (libtest.c so far) loads NAME.<LIBSET> and writes its cases to
-// PROGDIR:captures/NAME.txt (capture.h).  Select tests with snitch filters:
+// (libtest.c, and every program converted with LIBS_ONE_SET, sysload.h)
+// loads NAME.<LIBSET> and writes its cases to PROGDIR:captures/NAME.txt
+// (capture.h); the others compare both sets through their tape
+// (PROGDIR:tapes/NAME.tape, tape.h).  Select tests with snitch filters:
 //   libs_tests "[mathstr]"      libs_tests "libtest ldivlib"
 // The test cases tagged [.bug-orig] (bugorig.c) are hidden: they check
 // the correct behaviour where the C build reproduces an original bug, so
@@ -27,6 +29,7 @@
 extern "C" {
 #include <proto/dos.h>
 #include <proto/exec.h>
+#include "capture.h"
 #include "tape.h"
 
 int libtest_main(int argc, char **argv);
@@ -68,6 +71,28 @@ unsigned long __stack = 128 * 1024;
 // the library set of the run (sysload.h load_set): the shell variable
 // LIBSET, "obj" or "orig"; nullptr if it is not set (or another value)
 const char *bl_libset;
+
+// the program run_systest runs: its name, the directories of its tape and
+// its cases, and what it began (sysload.h: its first load_sets() calls
+// bl_prog_tape, its first load_set() bl_prog_cases)
+static const char *prog_name, *prog_tapes, *prog_cases;
+static enum { OUT_NONE, OUT_TAPE, OUT_CASES } prog_out;
+
+void bl_prog_tape(void)
+{
+    if (prog_name && prog_out == OUT_NONE) {
+        tape_begin(prog_tapes, prog_name);
+        prog_out = OUT_TAPE;
+    }
+}
+
+void bl_prog_cases(void)
+{
+    if (prog_name && prog_out == OUT_NONE) {
+        cap_begin(prog_cases, prog_name);
+        prog_out = OUT_CASES;
+    }
+}
 }
 
 namespace {
@@ -144,13 +169,23 @@ int run_libtest(const char *lib)
     return libtest_main(4, argv);
 }
 
+// a systest or rwe program: it begins its tape (two sets) or its cases
+// (one set) when it loads the libraries, ended here
 int run_systest(const char *name, int (*fn)(int, char **))
 {
     char *argv[] = {(char *)"systest", (char *)progdir(), nullptr};
     run_env env;
-    tape_begin(tapedir(), name);
+    prog_name = name;
+    prog_tapes = tapedir();
+    prog_cases = capdir();
+    prog_out = OUT_NONE;
     int rc = fn(2, argv);
-    tape_end();
+    if (prog_out == OUT_TAPE)
+        tape_end();
+    else if (prog_out == OUT_CASES && cap_end() && !rc)
+        rc = 5;
+    prog_name = nullptr;
+    prog_out = OUT_NONE;
     return rc;
 }
 

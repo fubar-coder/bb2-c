@@ -32,7 +32,7 @@ reference".
 
 ## 3. Framework macros
 
-- [ ] 3.1 `sysload.h`: `OBS`, `OBSBYTES`, `OBSSTR`, one `struct set`, the stated-kept check with `kept`/`lost` cases (`KEEPS(routine, regs)`, D7), `check()` stays for the program's own consistency checks (a `check()` that a fix touches becomes an `OBS`). Verify: the accept test of `lost` (2.4) refuses a `lost` result, and the emulator test `libs_emulator_lost` (a routine that loses a stated register, from a variant file with a broken thunk, gives `lost` and fails)
+- [x] 3.1 `sysload.h`: `OBS`, `OBSBYTES`, `OBSSTR`, one `struct set`, the stated-kept check with `kept`/`lost` cases (`KEEPS(routine, regs)`, D7), `check()` stays for the program's own consistency checks (a `check()` that a fix touches becomes an `OBS`). Verify: the accept test of `lost` (2.4) refuses a `lost` result, and the emulator test `libs_emulator_lost` (a routine that loses a stated register, from a variant file with a broken thunk, gives `lost` and fails) Done (2026-11-12): `LIBS_ONE_SET` switches the header; first program `systest.c` (part of 6.1); `libs_accept_lost` and `libs_emulator_lost` pass; design.md "The framework macros (group 3)".
 - [ ] 3.2 `rwe/rwecmp.h`: the same for `DO2`, `DO2S`, `preserve`, `KEEPS`, `rwe_done` (the summary table of kept registers stays as the aid for the stated sets). Verify: the first converted rwe program (4.1) compiles and passes
 
 ## 4. RWE userlibs A (alphabetical)
@@ -52,7 +52,7 @@ reference".
 
 ## 6. systest programs
 
-- [ ] 6.1 `systest.c` and `systest_runtime.c`. Verify: as 4.1
+- [ ] 6.1 `systest.c` and `systest_runtime.c`. Verify: as 4.1. `systest.c` is converted (task 3.1, expected data committed, 48 checks: the old 49 held a value never set); `systest_runtime.c` is open
 - [ ] 6.2 `systest_mathstr.c` and `systest_system.c`. Verify: as 4.1
 - [ ] 6.3 `systest_cmdlibs.c` (the sort order comparison becomes an observation of the order). Verify: as 4.1
 - [ ] 6.4 `systest_med.c` with block cases (3.57 million observations). Verify: as 4.4

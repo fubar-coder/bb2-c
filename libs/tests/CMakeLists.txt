@@ -6,9 +6,10 @@
 # compiler" (sysload.h), and compare results, registers and memory.
 # ctest libs_emulator runs it in Amiberry (emulator.cmake) against the
 # recordings of the originals' results (tape.c, tapes/), without the CD.
-# The programs converted to one set (libtest.c so far; openspec change
-# libs-tests-capture) load NAME.obj or NAME.orig, as LIBSET says, and
-# write their cases (capture.c), compared with expected/NAME.txt.
+# The programs converted to one set (libtest.c and the programs that
+# define LIBS_ONE_SET, sysload.h; openspec change libs-tests-capture) load
+# NAME.obj or NAME.orig, as LIBSET says, and write their cases
+# (capture.c), compared with expected/NAME.txt.
 
 # snitch for libnix on the 68000: no exceptions, threads, all reporters,
 # small limits (the defaults need 260 KB of data and over 100 KB of
@@ -170,17 +171,17 @@ set_tests_properties(libs_capture_target PROPERTIES
 # whose files are not the committed ones fails (tape-compare.cmake, no
 # emulator)
 set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
-	"libs_expect_fixed*, libs_emulator_tape_wrong, libs_emulator_wrong: time limit of the emulator run (seconds)")
+	"libs_expect_fixed*, libs_emulator_tape_wrong, libs_emulator_wrong, libs_emulator_lost: time limit of the emulator run (seconds)")
 math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
-	-DTAPE_CORRUPT=systest -DFILTER=[sys]
+	-DTAPE_CORRUPT=systest_runtime -DFILTER=[runtime]
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_tape_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator_tape_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL tape systest: observations 0\\.\\.[0-9]+ differ from the original's recording")
+	"FAIL tape systest_runtime: observations 0\\.\\.[0-9]+ differ from the original's recording")
 add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
 	-DRECORDED=${tapes} -DCOMMITTED=${tapes} -P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
 add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
@@ -201,6 +202,22 @@ add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"libtest_ldivlib: \\|routine count\\|\\|1: expected \\$00000002, got \\$00000000\n")
+# the check of the kept registers with broken input: datalib with thunks
+# that change d2 (lost/datalib.c, a library file of this directory only)
+# in place of the C build's; systest states d2 for both datalib routines
+# (KEEPS), writes "lost d2" for their calls, and the compare fails on the
+# first of them
+blitz_library(libs_lost_datalib OBJ ${CMAKE_CURRENT_BINARY_DIR}/lost/datalib.obj lost/datalib.c)
+add_test(NAME libs_emulator_lost COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
+	-DOBJ_VARIANTS=${CMAKE_CURRENT_BINARY_DIR}/lost/datalib.obj
+	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} -DFILTER=[sys]
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_lost -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+set_tests_properties(libs_emulator_lost PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"systest: datalib init\\|kept\\|\\|1: expected kept, got lost d2\n")
 
 # reproduced original bugs (bugorig.c, hidden snitch tests [.bug-orig]):
 # each checks the correct behaviour and FAILS as long as the C build

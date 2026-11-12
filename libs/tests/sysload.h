@@ -5,14 +5,40 @@
  *               resolve ALibJsr placeholders against the same set
  *   checks      check(), markregs(), kept(), cmp_preserve()
  *
- * Usage in a test program:
+ * Usage in a test program that compares two sets (not converted yet):
  *   static const char *names[] = { "memlib", "mylib", NULL };
  *   load_sets(dir, names) -> sets[0] (originals), sets[1] (C build)
- *   run the same scenario on both, record struct call / values, compare.
- * A program that observes one set (capture.h; openspec change
- * libs-tests-capture) loads it with load_set(dir, names) -> loaded:
- * NAME.obj or NAME.orig, as the shell variable LIBSET of the run says
- * (bl_libset, libs_tests.cpp).
+ *   run the same scenario on both, record struct call / values, compare
+ *   through tape.h.
+ *
+ * A program that observes one set (openspec change libs-tests-capture,
+ * design D4, D7, "Converting a program") defines LIBS_ONE_SET before it
+ * includes this header and loads the set with load_set(dir, names) ->
+ * loaded: NAME.obj or NAME.orig, as the shell variable LIBSET of the run
+ * says (bl_libset, libs_tests.cpp).  It writes every observation as a case
+ * (capture.h) to captures/NAME.txt; the key is ROUT, the check text and
+ * VEC (set by the program before the observations):
+ *   OBS(what, v)                a number, written as it is ($XXXXXXXX)
+ *   OBSPTR(what, v, name, base) an address: 0, prog (into the test
+ *                               program), NAME+$OFF relative to base
+ *   OBSBYTES(what, p, n)        n bytes (hex up to 64, longer: length, fnv)
+ *   OBSPTRBYTES(what, p, n)     the same for a record holding pointers into
+ *                               the test program (written as PROG)
+ *   OBSSTR(what, s)             a string ("TEXT", NULL: null)
+ *   NOT_CAPTURED(what, reason)  a part that cannot be reproduced
+ *   OBS_BLOCKS(on)              block mode (only the block programs, D6)
+ *   KEEPS(routine, d2|d3|a2)    the registers the routine keeps in every
+ *                               call of the original (a4 and a5 always;
+ *                               ranges like d2-d7; none); obs_kept(in, out)
+ *                               after a call writes ROUT|kept|VEC: "kept"
+ *                               or "lost d3 a1" for the stated set
+ *   DONTCARE                    registers of results, exempt in the next
+ *                               obs_kept (cleared by the program)
+ *   kept_summary()              the kept registers of every routine in all
+ *                               calls of this set, with the KEEPS line
+ * check() stays for the program's own consistency checks.  The program
+ * does not open its output: its first load_set() does (bl_prog_cases,
+ * cap_begin), libs_tests.cpp ends it.
  */
 #ifndef SYSLOAD_H
 #define SYSLOAD_H
@@ -23,7 +49,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "capture.h"
+#ifndef LIBS_ONE_SET
 #include "tape.h"
+#endif
+
+/* the output of the program libs_tests.cpp runs (run_systest), begun by
+   its first load_sets (its tape) or load_set (its cases), ended by
+   run_systest after the program; nothing outside run_systest (bugorig.c,
+   selftest_fixed.c) */
+void bl_prog_tape(void);
+void bl_prog_cases(void);
 
 /* ------------------------------------------------------------- register calls */
 
@@ -240,6 +276,7 @@ static void check(const char *what, BOOL ok)
 #endif
 }
 
+#ifndef LIBS_ONE_SET
 /* ------------------------------------------------------------- fixed checks */
 
 /* expect_fixed(NNN, value): the original's result of one check is an
@@ -295,6 +332,7 @@ static __attribute__((unused)) void check_fixed(const char *what, struct fixed f
         } else                                                              \
             checks++;                                                       \
     } while (0)
+#endif /* !LIBS_ONE_SET */
 
 #define MARK(n) (0x5A000000UL | ((n) << 16) | 0x1234)
 
@@ -322,6 +360,12 @@ struct call {
     UWORD ccr;
 };
 
+/* the library set of the run: "obj" (the C build) or "orig" (the
+   original), from the shell variable LIBSET; NULL if it is not set
+   (libs_tests.cpp) */
+extern const char *bl_libset;
+
+#ifndef LIBS_ONE_SET
 static void cmp_preserve(const char *what, struct call *o, struct call *c)
 {
     ULONG ko = kept(&o->in, &o->out), kc = kept(&c->in, &c->out);
@@ -335,19 +379,13 @@ static void cmp_preserve(const char *what, struct call *o, struct call *c)
 
 static struct set sets[2];
 
-/* the library set of the run: "obj" (the C build) or "orig" (the
-   original), from the shell variable LIBSET; NULL if it is not set
-   (libs_tests.cpp) */
-extern const char *bl_libset;
-
-/* the one set of a program that observes one set (load_set) */
-static __attribute__((unused)) struct set loaded;
-
-/* load and link both sets: sets[0] = NAME.orig, sets[1] = NAME.obj */
+/* load and link both sets: sets[0] = NAME.orig, sets[1] = NAME.obj; the
+   first call of a program libs_tests.cpp runs begins its tape */
 static BOOL load_sets(const char *dir, const char **names)
 {
     char path[256];
     int s, i;
+    bl_prog_tape();
     for (s = 0; s < 2; s++) {
         sets[s].what = s ? "C" : "orig";
         for (i = 0; names[i]; i++) {
@@ -363,8 +401,15 @@ static BOOL load_sets(const char *dir, const char **names)
     return TRUE;
 }
 
-/* load and link the one set of the run: NAME.<LIBSET> into `loaded` */
-static __attribute__((unused)) BOOL load_set(const char *dir, const char **names)
+#else /* LIBS_ONE_SET */
+
+/* the one set of the run (load_set) */
+static struct set loaded;
+
+/* load and link the one set of the run: NAME.<LIBSET> into `loaded`; the
+   first call of a program libs_tests.cpp runs begins its cases
+   (captures/NAME.txt) */
+static BOOL load_set(const char *dir, const char **names)
 {
     char path[256];
     int i;
@@ -372,6 +417,7 @@ static __attribute__((unused)) BOOL load_set(const char *dir, const char **names
         printf("LIBSET is not set (obj or orig)\n");
         return FALSE;
     }
+    bl_prog_cases();
     loaded.what = !strcmp(bl_libset, "obj") ? "C" : "orig";
     for (i = 0; names[i]; i++) {
         sprintf(path, "%s/%s.%s", dir, names[i], bl_libset);
@@ -382,5 +428,201 @@ static __attribute__((unused)) BOOL load_set(const char *dir, const char **names
     loaded.n = i;
     return link_set(&loaded);
 }
+
+/* ------------------------------------------------------------- observations */
+
+/* the key of the cases: the routine (part 1) and the vector (part 3, the
+   inputs of the case); the check text is the `what` of each observation.
+   Neither may hold a value or an address (that is the value's part). */
+static const char *ROUT = "";
+static char VEC[100];
+
+#define OBS(what, v) do {                                                   \
+        cap_routine(ROUT); cap_num((what), VEC, (ULONG)(v)); checks++;      \
+    } while (0)
+#define OBSPTR(what, v, name, base) do {                                    \
+        cap_routine(ROUT);                                                  \
+        cap_ptr((what), VEC, (ULONG)(v), (name), (ULONG)(base)); checks++;  \
+    } while (0)
+#define OBSBYTES(what, p, n) do {                                           \
+        cap_routine(ROUT); cap_bytes((what), VEC, (p), (n)); checks++;      \
+    } while (0)
+#define OBSPTRBYTES(what, p, n) do {                                        \
+        cap_routine(ROUT); cap_ptrbytes((what), VEC, (p), (n)); checks++;   \
+    } while (0)
+#define OBSSTR(what, s) do {                                                \
+        cap_routine(ROUT); cap_str((what), VEC, (s)); checks++;             \
+    } while (0)
+#define NOT_CAPTURED(what, reason) do {                                     \
+        cap_routine(ROUT); cap_not_captured((what), VEC, (reason));         \
+    } while (0)
+#define OBS_BLOCKS(on) cap_blocks(on)
+
+/* ------------------------------------------------------------- kept registers */
+
+/* KEEPS(routine, regs): the registers `routine` (a ROUT) keeps in every
+   call of the scenario with the original (design D7: the intersection
+   over the calls, from kept_summary's listing; never less than the
+   convention's a4 and a5, which are always added).  regs is written as
+   C text, registers d0-d7/a0-a6 joined by |, ranges like d2-d7, or none:
+     KEEPS("FillArray", d2-d7|a2|a3|a6);
+   obs_kept() writes for every call of a routine one case ROUT|kept|VEC:
+   "kept", or "lost" with the stated registers the call changed. */
+#define KEEPS(routine, regs) keeps_state((routine), #regs)
+
+#define KEEPS_MAX 64
+#define KEEPS_CONV ((1UL << 12) | (1UL << 13))  /* a4, a5 */
+#define KEEPS_BAD 0x80000000UL
+
+static struct keeps {
+    const char *rout;
+    int has;                            /* KEEPS stated */
+    ULONG stated;                       /* the stated set, a4/a5 added */
+    ULONG all;                          /* kept in all calls of this set */
+    ULONG n;                            /* calls */
+} keeps[KEEPS_MAX];
+static int nkeeps;
+
+/* registers bit 0-7 d0-d7, 8-14 a0-a6, set by DONTCARE: results of the
+   next call, exempt from its kept case (cleared by the program) */
+static ULONG DONTCARE;
+
+static struct keeps *keeps_find(const char *rout)
+{
+    int i;
+    for (i = 0; i < nkeeps; i++)
+        if (!strcmp(keeps[i].rout, rout))
+            return &keeps[i];
+    if (nkeeps == KEEPS_MAX) {
+        check("KEEPS: more than KEEPS_MAX routines", FALSE);
+        return NULL;
+    }
+    keeps[nkeeps].rout = rout;
+    keeps[nkeeps].has = 0;
+    keeps[nkeeps].stated = 0;
+    keeps[nkeeps].all = 0x7fff;
+    keeps[nkeeps].n = 0;
+    return &keeps[nkeeps++];
+}
+
+/* "d2|d3-d5|a2" -> mask; KEEPS_BAD for anything else */
+static ULONG keeps_parse(const char *s)
+{
+    ULONG m = 0;
+    while (*s) {
+        int base, lo, hi;
+        if (*s == ' ' || *s == '|') {
+            s++;
+            continue;
+        }
+        if (!strncmp(s, "none", 4)) {
+            s += 4;
+            continue;
+        }
+        if ((*s != 'd' && *s != 'a') || s[1] < '0' || s[1] > '7')
+            return KEEPS_BAD;
+        base = *s == 'a' ? 8 : 0;
+        lo = hi = s[1] - '0';
+        s += 2;
+        while (*s == ' ')
+            s++;
+        if (*s == '-') {
+            s++;
+            while (*s == ' ')
+                s++;
+            if (*s != (base ? 'a' : 'd') || s[1] < '0' || s[1] > '7' || s[1] - '0' < lo)
+                return KEEPS_BAD;
+            hi = s[1] - '0';
+            s += 2;
+        }
+        if (base && hi > 6)
+            return KEEPS_BAD;
+        for (; lo <= hi; lo++)
+            m |= 1UL << (base + lo);
+    }
+    return m;
+}
+
+static __attribute__((unused)) void keeps_state(const char *rout, const char *regs)
+{
+    struct keeps *k = keeps_find(rout);
+    ULONG m = keeps_parse(regs);
+    char buf[160];
+    if (!k)
+        return;
+    if (m == KEEPS_BAD || k->has) {
+        snprintf(buf, sizeof buf, "KEEPS(\"%.40s\", %.60s): %s", rout, regs,
+                 m == KEEPS_BAD ? "not a register set" : "stated twice");
+        check(buf, FALSE);
+        return;
+    }
+    k->has = 1;
+    k->stated = m | KEEPS_CONV;
+}
+
+/* the registers of a mask as KEEPS text (d2-d7|a2) */
+static void keeps_text(char *s, ULONG m)
+{
+    int r, n = 0;
+    *s = 0;
+    for (r = 0; r < 15; r++) {
+        int e = r;
+        if (!(m & (1UL << r)))
+            continue;
+        while (e + 1 < (r < 8 ? 8 : 15) && (m & (1UL << (e + 1))))
+            e++;
+        n += sprintf(s + n, "%s%c%d", n ? "|" : "", r < 8 ? 'd' : 'a', r & 7);
+        if (e > r)
+            n += sprintf(s + n, "%s%c%d", e > r + 1 ? "-" : "|", r < 8 ? 'd' : 'a', e & 7);
+        r = e;
+    }
+    if (!n)
+        strcpy(s, "none");
+}
+
+/* after a call of ROUT with the registers `in`: the case ROUT|kept|VEC
+   for its stated set; a routine without KEEPS fails once */
+static __attribute__((unused)) void obs_kept(const struct regs *in, const struct regs *out)
+{
+    struct keeps *k = keeps_find(ROUT);
+    ULONG m = kept(in, out);
+    char buf[120];
+    if (!k)
+        return;
+    k->all &= m;
+    k->n++;
+    if (!k->has) {
+        if (k->n == 1) {
+            snprintf(buf, sizeof buf, "KEEPS: no kept set stated for \"%.60s\"", ROUT);
+            check(buf, FALSE);
+        }
+        return;
+    }
+    cap_routine(ROUT);
+    cap_regs("kept", VEC, k->stated & ~(m | DONTCARE));
+    checks++;
+}
+
+/* the kept registers of every routine in all its calls with this set,
+   the KEEPS line to state them (the set of the original's run is the one
+   to state), and the stated set */
+static __attribute__((unused)) void kept_summary(void)
+{
+    char t[64], st[64];
+    int i;
+    printf("kept registers in all calls (set %s), the KEEPS of the original's run:\n",
+           loaded.what ? loaded.what : "?");
+    for (i = 0; i < nkeeps; i++) {
+        struct keeps *k = &keeps[i];
+        keeps_text(t, k->all & ~KEEPS_CONV);
+        if (k->has)
+            keeps_text(st, k->stated & ~KEEPS_CONV);
+        printf("  %5lu calls  $%04lX  KEEPS(\"%s\", %s);%s%s%s\n", k->n, k->all, k->rout, t,
+               k->has ? "  stated: " : "  not stated", k->has ? st : "",
+               (k->all & KEEPS_CONV) != KEEPS_CONV ? "  (a4/a5 changed: a result? DONTCARE)" : "");
+    }
+}
+
+#endif /* LIBS_ONE_SET */
 
 #endif

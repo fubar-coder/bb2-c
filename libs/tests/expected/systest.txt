@@ -1,0 +1,49 @@
+# capture systest 1
+datalib init|kept||1	kept
+datalib init|d0||1	$12345678
+datalib getdstart|kept||1	kept
+datalib getdstart|d0||1	$12345678
+chipbaselib|inline length||1	$00000006
+chipbaselib|kept||1	kept
+chipbaselib|d0||1	$00DFF000
+memlib init|kept||1	kept
+memlib init|membase set||1	$00000001
+memlib localloc|kept||1	kept
+memlib localloc|cleared memory||1	$00000001
+memlib localloc (table)|kept||1	kept
+memlib localloc (table)|memory||1	$00000001
+memlib newmem|kept||1	kept
+memlib globalloc|kept||1	kept
+memlib localloc|kept||2	kept
+memlib freelast|kept||1	kept
+memlib freelast|a list (not Z)||1	$00000001
+memlib locfree|kept||1	kept
+memlib globfree|kept||1	kept
+memlib locfree|kept||2	kept
+memlib freelast|kept||2	kept
+memlib freelast|a list (not Z)||2	$00000001
+memlib freelast|kept||3	kept
+memlib freelast|no list (Z)||1	$00000001
+memlib freelast|all memory back||1	$00000001
+memlib init|kept||2	kept
+strings1lib init|kept||1	kept
+strings1lib init|buffer||1	$00000001
+strings1lib copy|kept|len 38|1	kept
+strings1lib copy|a3 advanced|len 38|1	$00000026
+strings1lib copy|copied|len 38|1	$00000001
+strings1lib copy|kept|len 3|1	kept
+strings1lib copy|a3 advanced|len 3|1	$00000003
+strings1lib copy|copied|len 3|1	$00000001
+staticslib globals|kept||1	kept
+staticslib globals|three statics||1	$00000001
+staticslib globals|cleared||1	$00000001
+staticslib locals|kept||1	kept
+staticslib locals|three statics||1	$00000001
+varslib init|kept||1	kept
+varslib init|a5 = d0||1	$00000001
+varslib init|cleared||1	$00000001
+varslib finit|kept||1	kept
+varslib finit|all memory back||1	$00000001
+memlib finit|kept||1	kept
+|number of calls||1	$00000018
+exitslib quit|instructions||1	bytes 8 2E7A504F207A4ED0

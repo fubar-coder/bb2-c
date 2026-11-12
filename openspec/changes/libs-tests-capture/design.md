@@ -526,6 +526,42 @@ Facts of tasks 2.2-2.6 (2026-11-12):
   run wrote nothing ("2 unchanged"); `libs-update` with the same filter
   changed nothing.
 
+## The framework macros (group 3)
+
+Facts of tasks 3.1 and 3.2 (2026-11-12):
+
+- A program switches to one set by `#define LIBS_ONE_SET` before it
+  includes `sysload.h` (or `rwe/rwecmp.h`); the headers then offer only the
+  one-set API (`loaded`, `load_set`, `OBS`..., `KEEPS`) and none of the
+  two-set one (`sets`, `load_sets`, `cmp_preserve`, the `tape_*` calls,
+  `SAME_FIXED`, `check_fixed`), so a half-converted program does not
+  compile. Group 8 removes the switch with the two-set branch.
+- `libs_tests.cpp` no longer begins a tape for every systest and rwe
+  program: the program's first `load_sets` begins its tape, its first
+  `load_set` its cases (`bl_prog_tape`, `bl_prog_cases`), and
+  `run_systest` ends what was begun. A converted program needs no change
+  in `libs_tests.cpp` or `CMakeLists.txt`.
+- `OBS` and its variants and every `kept` case count as one check, so a
+  program's summary line stays comparable with task 1.1's numbers. The
+  first converted `systest` has 48 checks against 49: its old loop
+  compared 23 values, of which the last was never set (0 on both sides).
+- `KEEPS(routine, regs)` takes the registers as C text (`d2-d7|a0|a6`,
+  `none`) and always adds a4 and a5 (the convention). A routine called
+  without a stated set fails once (`KEEPS: no kept set stated for
+  "ROUT"`); `kept_summary()` (and `rwe_done`) prints, per routine, the
+  calls, the mask of the registers kept in all calls of the run's set and
+  the `KEEPS(...)` line to paste, and marks a routine that changed a4 or
+  a5 (a result: `DONTCARE`). The summary counts the registers before
+  `DONTCARE`, so its line is never stricter than the original allows.
+- `libs_emulator_lost`: `libs/tests/lost/datalib.c` is datalib whose
+  thunks change d2 (a library file of `build/<preset>/libs/tests/lost/`,
+  never in acidlibs; `prev_results` counts it as added). `emulator.cmake`
+  takes it in place of `datalib.obj` (`OBJ_VARIANTS`), `systest` writes
+  `lost d2` for both datalib calls, and the compare fails with
+  `systest: datalib init|kept||1: expected kept, got lost d2`.
+- `libs_emulator_tape_wrong` corrupts the tape of `systest_runtime` now
+  (`[runtime]`): the tape of `systest` is gone.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the

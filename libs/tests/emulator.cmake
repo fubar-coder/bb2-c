@@ -5,11 +5,13 @@
 #         [-DUSERLIBS=OBJ|ORIG;...] [-DTAPE=record|replay -DTAPES=DIR
 #         [-DTAPE_CORRUPT=NAME] [-DTAPE_DUMP=ON]] [-DLIBSET=obj|orig]
 #         [-DLIBS_PAD=N] [-DEXPECTED=DIR -DRESULTS=results [-DCAPTURE_CORRUPT=NAME]]
-#         -P emulator.cmake
+#         [-DOBJ_VARIANTS=FILE;...] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig; USERLIBS: further
 # library files OBJ (C build, as NAME.obj) with their original ORIG (as
-# NAME.orig), e.g. the RWE userlibs.  The exit status is
+# NAME.orig), e.g. the RWE userlibs.  OBJ_VARIANTS: library files
+# DIR2/NAME.obj that take the place of DIR/NAME.obj (a broken build, the
+# test of a check: libs_emulator_lost).  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
 # NO_ORIGINALS: only the NAME.obj (BLITZLIB and ORIGINALS not needed).
 # TAPE (tape.c, the recordings of the original libraries, TAPES = the
@@ -91,6 +93,13 @@ foreach(obj IN LISTS objs)
 			message(FATAL_ERROR "libs_emulator: no original of ${name}")
 		endif()
 	endif()
+endforeach()
+foreach(v IN LISTS OBJ_VARIANTS)
+	get_filename_component(name ${v} NAME_WE)
+	if(NOT EXISTS ${test}/${name}.obj)
+		message(FATAL_ERROR "libs_emulator: OBJ_VARIANTS: no ${LIBS}/${name}.obj to replace")
+	endif()
+	file(COPY_FILE ${v} ${test}/${name}.obj)
 endforeach()
 
 foreach(u IN LISTS USERLIBS)
