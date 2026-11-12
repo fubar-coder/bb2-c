@@ -1,0 +1,349 @@
+# capture rwe_rifxlib 1
+before init|kept|ZoomX2|1	kept
+before init|memory|ZoomX2|1	bytes 32768 fnv 62A5E40D
+before init|kept|ZoomX4|1	kept
+before init|memory|ZoomX4|1	bytes 32768 fnv 7A9B2B89
+before init|kept|ZoomX8|1	kept
+before init|memory|ZoomX8|1	bytes 32768 fnv CB86E5ED
+before init|kept|ReduceX2|1	kept
+before init|memory|ReduceX2|1	bytes 32768 fnv D14C368D
+before init|kept|ZoomyZoom|1	kept
+before init|memory|ZoomyZoom|1	bytes 32768 fnv 1F840C6D
+before init|kept|GetZoomTables|1	kept
+before init|memory|GetZoomTables|1	bytes 32768 fnv 829E8C30
+before init|tables 0|GetZoomTables|1	$00000000
+init|kept|GetZoomTables|1	kept
+init|memory|GetZoomTables|1	bytes 32768 fnv FDBD9242
+GetZoomTables|kept||1	kept
+GetZoomTables|memory||1	bytes 32768 fnv 939DD77B
+GetZoomTables|table 0 set||1	$00000001
+GetZoomTables|x2 - reduce||1	$00000100
+GetZoomTables|x4 - reduce||1	$00000300
+GetZoomTables|x8 - reduce||1	$00000700
+GetZoomTables|table contents||1	bytes 1856 fnv 538E6F3D
+ADDValue|kept|x $0 y $0|1	kept
+ADDValue|memory|x $0 y $0|1	bytes 32768 fnv C11D6081
+ADDValue|d0|x $0 y $0|1	$00000000
+ADDValue|kept|x $0 y $1|1	kept
+ADDValue|memory|x $0 y $1|1	bytes 32768 fnv 4E6F142B
+ADDValue|d0|x $0 y $1|1	$00000028
+ADDValue|kept|x $0 y $FF|1	kept
+ADDValue|memory|x $0 y $FF|1	bytes 32768 fnv F4B244EC
+ADDValue|d0|x $0 y $FF|1	$000027D8
+ADDValue|kept|x $0 y $FFFF|1	kept
+ADDValue|memory|x $0 y $FFFF|1	bytes 32768 fnv 12CA11EE
+ADDValue|d0|x $0 y $FFFF|1	$0027FFD8
+ADDValue|kept|x $0 y $ABCD0003|1	kept
+ADDValue|memory|x $0 y $ABCD0003|1	bytes 32768 fnv 17D56F41
+ADDValue|d0|x $0 y $ABCD0003|1	$00000078
+ADDValue|kept|x $7 y $0|1	kept
+ADDValue|memory|x $7 y $0|1	bytes 32768 fnv 7C8F1584
+ADDValue|d0|x $7 y $0|1	$00000000
+ADDValue|kept|x $7 y $1|1	kept
+ADDValue|memory|x $7 y $1|1	bytes 32768 fnv 2EC48EF9
+ADDValue|d0|x $7 y $1|1	$00000028
+ADDValue|kept|x $7 y $FF|1	kept
+ADDValue|memory|x $7 y $FF|1	bytes 32768 fnv 7D0C1095
+ADDValue|d0|x $7 y $FF|1	$000027D8
+ADDValue|kept|x $7 y $FFFF|1	kept
+ADDValue|memory|x $7 y $FFFF|1	bytes 32768 fnv A52FA140
+ADDValue|d0|x $7 y $FFFF|1	$0027FFD8
+ADDValue|kept|x $7 y $ABCD0003|1	kept
+ADDValue|memory|x $7 y $ABCD0003|1	bytes 32768 fnv D9D643A6
+ADDValue|d0|x $7 y $ABCD0003|1	$00000078
+ADDValue|kept|x $8 y $0|1	kept
+ADDValue|memory|x $8 y $0|1	bytes 32768 fnv 8D5EC6AB
+ADDValue|d0|x $8 y $0|1	$00000001
+ADDValue|kept|x $8 y $1|1	kept
+ADDValue|memory|x $8 y $1|1	bytes 32768 fnv 3D400C2B
+ADDValue|d0|x $8 y $1|1	$00000029
+ADDValue|kept|x $8 y $FF|1	kept
+ADDValue|memory|x $8 y $FF|1	bytes 32768 fnv BB7A4EA9
+ADDValue|d0|x $8 y $FF|1	$000027D9
+ADDValue|kept|x $8 y $FFFF|1	kept
+ADDValue|memory|x $8 y $FFFF|1	bytes 32768 fnv 6F04B7FB
+ADDValue|d0|x $8 y $FFFF|1	$0027FFD9
+ADDValue|kept|x $8 y $ABCD0003|1	kept
+ADDValue|memory|x $8 y $ABCD0003|1	bytes 32768 fnv 03B90C7B
+ADDValue|d0|x $8 y $ABCD0003|1	$00000079
+ADDValue|kept|x $13F y $0|1	kept
+ADDValue|memory|x $13F y $0|1	bytes 32768 fnv E817460A
+ADDValue|d0|x $13F y $0|1	$00000027
+ADDValue|kept|x $13F y $1|1	kept
+ADDValue|memory|x $13F y $1|1	bytes 32768 fnv DA665B5D
+ADDValue|d0|x $13F y $1|1	$0000004F
+ADDValue|kept|x $13F y $FF|1	kept
+ADDValue|memory|x $13F y $FF|1	bytes 32768 fnv 05F638F7
+ADDValue|d0|x $13F y $FF|1	$000027FF
+ADDValue|kept|x $13F y $FFFF|1	kept
+ADDValue|memory|x $13F y $FFFF|1	bytes 32768 fnv 971FF052
+ADDValue|d0|x $13F y $FFFF|1	$0027FFFF
+ADDValue|kept|x $13F y $ABCD0003|1	kept
+ADDValue|memory|x $13F y $ABCD0003|1	bytes 32768 fnv 6A316D9A
+ADDValue|d0|x $13F y $ABCD0003|1	$0000009F
+ADDValue|kept|x $7FFF y $0|1	kept
+ADDValue|memory|x $7FFF y $0|1	bytes 32768 fnv 6CFF41E4
+ADDValue|d0|x $7FFF y $0|1	$00000FFF
+ADDValue|kept|x $7FFF y $1|1	kept
+ADDValue|memory|x $7FFF y $1|1	bytes 32768 fnv B1DCADB8
+ADDValue|d0|x $7FFF y $1|1	$00001027
+ADDValue|kept|x $7FFF y $FF|1	kept
+ADDValue|memory|x $7FFF y $FF|1	bytes 32768 fnv 8628A059
+ADDValue|d0|x $7FFF y $FF|1	$000037D7
+ADDValue|kept|x $7FFF y $FFFF|1	kept
+ADDValue|memory|x $7FFF y $FFFF|1	bytes 32768 fnv 12743B93
+ADDValue|d0|x $7FFF y $FFFF|1	$00280FD7
+ADDValue|kept|x $7FFF y $ABCD0003|1	kept
+ADDValue|memory|x $7FFF y $ABCD0003|1	bytes 32768 fnv D5ED4E6E
+ADDValue|d0|x $7FFF y $ABCD0003|1	$00001077
+ADDValue|kept|x $8000 y $0|1	kept
+ADDValue|memory|x $8000 y $0|1	bytes 32768 fnv 8396AF8B
+ADDValue|d0|x $8000 y $0|1	$0000F000
+ADDValue|kept|x $8000 y $1|1	kept
+ADDValue|memory|x $8000 y $1|1	bytes 32768 fnv 8ECA204C
+ADDValue|d0|x $8000 y $1|1	$0000F028
+ADDValue|kept|x $8000 y $FF|1	kept
+ADDValue|memory|x $8000 y $FF|1	bytes 32768 fnv A30CC670
+ADDValue|d0|x $8000 y $FF|1	$000117D8
+ADDValue|kept|x $8000 y $FFFF|1	kept
+ADDValue|memory|x $8000 y $FFFF|1	bytes 32768 fnv 2B7A9B00
+ADDValue|d0|x $8000 y $FFFF|1	$0028EFD8
+ADDValue|kept|x $8000 y $ABCD0003|1	kept
+ADDValue|memory|x $8000 y $ABCD0003|1	bytes 32768 fnv FB0D15B7
+ADDValue|d0|x $8000 y $ABCD0003|1	$0000F078
+ADDValue|kept|x $FFFF y $0|1	kept
+ADDValue|memory|x $FFFF y $0|1	bytes 32768 fnv FBC9125E
+ADDValue|d0|x $FFFF y $0|1	$0000FFFF
+ADDValue|kept|x $FFFF y $1|1	kept
+ADDValue|memory|x $FFFF y $1|1	bytes 32768 fnv 70C6272C
+ADDValue|d0|x $FFFF y $1|1	$00010027
+ADDValue|kept|x $FFFF y $FF|1	kept
+ADDValue|memory|x $FFFF y $FF|1	bytes 32768 fnv A835AE29
+ADDValue|d0|x $FFFF y $FF|1	$000127D7
+ADDValue|kept|x $FFFF y $FFFF|1	kept
+ADDValue|memory|x $FFFF y $FFFF|1	bytes 32768 fnv 21A5616C
+ADDValue|d0|x $FFFF y $FFFF|1	$0028FFD7
+ADDValue|kept|x $FFFF y $ABCD0003|1	kept
+ADDValue|memory|x $FFFF y $ABCD0003|1	bytes 32768 fnv D8862D90
+ADDValue|d0|x $FFFF y $ABCD0003|1	$00010077
+ADDValue|kept|x $12340010 y $0|1	kept
+ADDValue|memory|x $12340010 y $0|1	bytes 32768 fnv BACC7407
+ADDValue|d0|x $12340010 y $0|1	$00000002
+ADDValue|kept|x $12340010 y $1|1	kept
+ADDValue|memory|x $12340010 y $1|1	bytes 32768 fnv 5786F710
+ADDValue|d0|x $12340010 y $1|1	$0000002A
+ADDValue|kept|x $12340010 y $FF|1	kept
+ADDValue|memory|x $12340010 y $FF|1	bytes 32768 fnv BA8C3B28
+ADDValue|d0|x $12340010 y $FF|1	$000027DA
+ADDValue|kept|x $12340010 y $FFFF|1	kept
+ADDValue|memory|x $12340010 y $FFFF|1	bytes 32768 fnv 52FEAEE2
+ADDValue|d0|x $12340010 y $FFFF|1	$0027FFDA
+ADDValue|kept|x $12340010 y $ABCD0003|1	kept
+ADDValue|memory|x $12340010 y $ABCD0003|1	bytes 32768 fnv A9A14D91
+ADDValue|d0|x $12340010 y $ABCD0003|1	$0000007A
+ClearBitmap|kept|8x12 x2|1	kept
+ClearBitmap|memory|8x12 x2|1	bytes 32768 fnv 0D661BAA
+ClearBitmap|kept|10x30 x3|1	kept
+ClearBitmap|memory|10x30 x3|1	bytes 32768 fnv 8A36B86E
+ClearBitmap|kept|8x12 x2 h $5 off $3|1	kept
+ClearBitmap|memory|8x12 x2 h $5 off $3|1	bytes 32768 fnv 445E806E
+ClearBitmap|kept|8x12 x2 h $C off $0|1	kept
+ClearBitmap|memory|8x12 x2 h $C off $0|1	bytes 32768 fnv 3B338D51
+ClearBitmap|kept|6x25 x1 h $15 off $2|1	kept
+ClearBitmap|memory|6x25 x1 h $15 off $2|1	bytes 32768 fnv A4BCBF76
+ClearBitmap|kept|8x12 x2 h $10005 off $FFFF0002|1	kept
+ClearBitmap|memory|8x12 x2 h $10005 off $FFFF0002|1	bytes 32768 fnv 6A5AA74E
+FadeInBitmap|kept|8x12 x2|1	kept
+FadeInBitmap|memory|8x12 x2|1	bytes 32768 fnv 0709CAAA
+FadeInBitmap|kept|10x30 x3|1	kept
+FadeInBitmap|memory|10x30 x3|1	bytes 32768 fnv F20D9C2E
+FadeInBitmap|kept|8x12 x2 h $5 off $3,1|1	kept
+FadeInBitmap|memory|8x12 x2 h $5 off $3,1|1	bytes 32768 fnv 8EC4F03A
+FadeInBitmap|kept|8x12 x2 h $C off $0,1|1	kept
+FadeInBitmap|memory|8x12 x2 h $C off $0,1|1	bytes 32768 fnv 79CD187C
+FadeInBitmap|kept|6x25 x1 h $15 off $2,1|1	kept
+FadeInBitmap|memory|6x25 x1 h $15 off $2,1|1	bytes 32768 fnv FF04D3F6
+FadeInBitmap|kept|8x12 x2 h $10005 off $FFFF0002,1|1	kept
+FadeInBitmap|memory|8x12 x2 h $10005 off $FFFF0002,1|1	bytes 32768 fnv A493287D
+ZoomX2|kept|4x4 x2 add 0,0 w $20 h 4|1	kept
+ZoomX2|memory|4x4 x2 add 0,0 w $20 h 4|1	bytes 32768 fnv F6DC505C
+ZoomX2|kept|6x5 x2 add 1,3 w $18 h 3|1	kept
+ZoomX2|memory|6x5 x2 add 1,3 w $18 h 3|1	bytes 32768 fnv 03DF866D
+ZoomX2|kept|8x6 x3 add 8,2 w $28 h 5|1	kept
+ZoomX2|memory|8x6 x3 add 8,2 w $28 h 5|1	bytes 32768 fnv 4D36773A
+ZoomX2|kept|4x4 x1 add 0,0 w $7 h 4|1	kept
+ZoomX2|memory|4x4 x1 add 0,0 w $7 h 4|1	bytes 32768 fnv A3B84B25
+ZoomX2|kept|4x4 x1 add 0,0 w $20 h 0|1	kept
+ZoomX2|memory|4x4 x1 add 0,0 w $20 h 0|1	bytes 32768 fnv D17DED4C
+ZoomX2|kept|4x4 x1 add 0,0 w $FFFF h 2|1	kept
+ZoomX2|memory|4x4 x1 add 0,0 w $FFFF h 2|1	bytes 32768 fnv 8AD90896
+ZoomX4|kept|4x4 x2 add 0,0 w $20 h 4|1	kept
+ZoomX4|memory|4x4 x2 add 0,0 w $20 h 4|1	bytes 32768 fnv 77E2B028
+ZoomX4|kept|4x4 x2 add 0,0 w $20 h 4 sel 0|1	kept
+ZoomX4|memory|4x4 x2 add 0,0 w $20 h 4 sel 0|1	bytes 32768 fnv 1305FB4B
+ZoomX4|kept|4x4 x2 add 0,0 w $20 h 4 sel 1|1	kept
+ZoomX4|memory|4x4 x2 add 0,0 w $20 h 4 sel 1|1	bytes 32768 fnv D3EA7607
+ZoomX4|kept|4x4 x2 add 0,0 w $20 h 4 sel 2|1	kept
+ZoomX4|memory|4x4 x2 add 0,0 w $20 h 4 sel 2|1	bytes 32768 fnv C962FA89
+ZoomX4|kept|4x4 x2 add 0,0 w $20 h 4 sel 3|1	kept
+ZoomX4|memory|4x4 x2 add 0,0 w $20 h 4 sel 3|1	bytes 32768 fnv BC5468BC
+ZoomX4|kept|6x5 x2 add 1,3 w $18 h 3|1	kept
+ZoomX4|memory|6x5 x2 add 1,3 w $18 h 3|1	bytes 32768 fnv ADF314A5
+ZoomX4|kept|6x5 x2 add 1,3 w $18 h 3 sel 0|1	kept
+ZoomX4|memory|6x5 x2 add 1,3 w $18 h 3 sel 0|1	bytes 32768 fnv C2C076F9
+ZoomX4|kept|6x5 x2 add 1,3 w $18 h 3 sel 1|1	kept
+ZoomX4|memory|6x5 x2 add 1,3 w $18 h 3 sel 1|1	bytes 32768 fnv 481B203F
+ZoomX4|kept|6x5 x2 add 1,3 w $18 h 3 sel 2|1	kept
+ZoomX4|memory|6x5 x2 add 1,3 w $18 h 3 sel 2|1	bytes 32768 fnv D24D1DC3
+ZoomX4|kept|6x5 x2 add 1,3 w $18 h 3 sel 3|1	kept
+ZoomX4|memory|6x5 x2 add 1,3 w $18 h 3 sel 3|1	bytes 32768 fnv 6D0D71BF
+ZoomX4|kept|8x6 x3 add 8,2 w $28 h 5|1	kept
+ZoomX4|memory|8x6 x3 add 8,2 w $28 h 5|1	bytes 32768 fnv A0F03FCC
+ZoomX4|kept|8x6 x3 add 8,2 w $28 h 5 sel 0|1	kept
+ZoomX4|memory|8x6 x3 add 8,2 w $28 h 5 sel 0|1	bytes 32768 fnv F892891A
+ZoomX4|kept|8x6 x3 add 8,2 w $28 h 5 sel 1|1	kept
+ZoomX4|memory|8x6 x3 add 8,2 w $28 h 5 sel 1|1	bytes 32768 fnv 6F9CC090
+ZoomX4|kept|8x6 x3 add 8,2 w $28 h 5 sel 2|1	kept
+ZoomX4|memory|8x6 x3 add 8,2 w $28 h 5 sel 2|1	bytes 32768 fnv 77079B92
+ZoomX4|kept|8x6 x3 add 8,2 w $28 h 5 sel 3|1	kept
+ZoomX4|memory|8x6 x3 add 8,2 w $28 h 5 sel 3|1	bytes 32768 fnv 0DD261BC
+ZoomX4|kept|4x4 x1 add 0,0 w $7 h 4|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $7 h 4|1	bytes 32768 fnv 03B705A0
+ZoomX4|kept|4x4 x1 add 0,0 w $7 h 4 sel 0|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $7 h 4 sel 0|1	bytes 32768 fnv 45165B5E
+ZoomX4|kept|4x4 x1 add 0,0 w $7 h 4 sel 1|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $7 h 4 sel 1|1	bytes 32768 fnv 6C09F0AB
+ZoomX4|kept|4x4 x1 add 0,0 w $7 h 4 sel 2|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $7 h 4 sel 2|1	bytes 32768 fnv 77D66056
+ZoomX4|kept|4x4 x1 add 0,0 w $7 h 4 sel 3|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $7 h 4 sel 3|1	bytes 32768 fnv 38507B71
+ZoomX4|kept|4x4 x1 add 0,0 w $20 h 0|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $20 h 0|1	bytes 32768 fnv 11AFEC09
+ZoomX4|kept|4x4 x1 add 0,0 w $20 h 0 sel 0|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $20 h 0 sel 0|1	bytes 32768 fnv 3F892CF0
+ZoomX4|kept|4x4 x1 add 0,0 w $20 h 0 sel 1|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $20 h 0 sel 1|1	bytes 32768 fnv 4223E30A
+ZoomX4|kept|4x4 x1 add 0,0 w $20 h 0 sel 2|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $20 h 0 sel 2|1	bytes 32768 fnv 61AEBA3E
+ZoomX4|kept|4x4 x1 add 0,0 w $20 h 0 sel 3|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $20 h 0 sel 3|1	bytes 32768 fnv C99443A3
+ZoomX4|kept|4x4 x1 add 0,0 w $FFFF h 2|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $FFFF h 2|1	bytes 32768 fnv 3CB7737B
+ZoomX4|kept|4x4 x1 add 0,0 w $FFFF h 2 sel 0|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $FFFF h 2 sel 0|1	bytes 32768 fnv 12E52093
+ZoomX4|kept|4x4 x1 add 0,0 w $FFFF h 2 sel 1|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $FFFF h 2 sel 1|1	bytes 32768 fnv 1CEBF18F
+ZoomX4|kept|4x4 x1 add 0,0 w $FFFF h 2 sel 2|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $FFFF h 2 sel 2|1	bytes 32768 fnv A8AB1D26
+ZoomX4|kept|4x4 x1 add 0,0 w $FFFF h 2 sel 3|1	kept
+ZoomX4|memory|4x4 x1 add 0,0 w $FFFF h 2 sel 3|1	bytes 32768 fnv 15E11772
+ZoomX8|kept|4x4 x2 add 0,0 w $20 h 4|1	kept
+ZoomX8|memory|4x4 x2 add 0,0 w $20 h 4|1	bytes 32768 fnv 62230010
+ZoomX8|kept|6x5 x2 add 1,3 w $18 h 3|1	kept
+ZoomX8|memory|6x5 x2 add 1,3 w $18 h 3|1	bytes 32768 fnv 6FB79FCF
+ZoomX8|kept|8x6 x3 add 8,2 w $28 h 5|1	kept
+ZoomX8|memory|8x6 x3 add 8,2 w $28 h 5|1	bytes 32768 fnv 3E4539F0
+ZoomX8|kept|4x4 x1 add 0,0 w $7 h 4|1	kept
+ZoomX8|memory|4x4 x1 add 0,0 w $7 h 4|1	bytes 32768 fnv E232AE64
+ZoomX8|kept|4x4 x1 add 0,0 w $20 h 0|1	kept
+ZoomX8|memory|4x4 x1 add 0,0 w $20 h 0|1	bytes 32768 fnv 6DE65A7C
+ZoomX8|kept|4x4 x1 add 0,0 w $FFFF h 2|1	kept
+ZoomX8|memory|4x4 x1 add 0,0 w $FFFF h 2|1	bytes 32768 fnv D107652D
+ReduceX2|kept|4x4 x2 add 0,0 w $20 h 4|1	kept
+ReduceX2|memory|4x4 x2 add 0,0 w $20 h 4|1	bytes 32768 fnv 302203D9
+ReduceX2|kept|6x5 x2 add 1,3 w $18 h 3|1	kept
+ReduceX2|memory|6x5 x2 add 1,3 w $18 h 3|1	bytes 32768 fnv E32C2140
+ReduceX2|kept|8x6 x3 add 8,2 w $28 h 5|1	kept
+ReduceX2|memory|8x6 x3 add 8,2 w $28 h 5|1	bytes 32768 fnv E90E3FF5
+ReduceX2|kept|4x4 x1 add 0,0 w $7 h 4|1	kept
+ReduceX2|memory|4x4 x1 add 0,0 w $7 h 4|1	bytes 32768 fnv BD7FCFE3
+ReduceX2|kept|4x4 x1 add 0,0 w $20 h 0|1	kept
+ReduceX2|memory|4x4 x1 add 0,0 w $20 h 0|1	bytes 32768 fnv 11E18F8A
+ReduceX2|kept|4x4 x1 add 0,0 w $FFFF h 2|1	kept
+ReduceX2|memory|4x4 x1 add 0,0 w $FFFF h 2|1	bytes 32768 fnv E19AF862
+ReduceX2|kept|height 1|1	kept
+ReduceX2|memory|height 1|1	bytes 32768 fnv 48A79DB7
+ZoomyZoom|kept|80x32 x2|1	kept
+ZoomyZoom|memory|80x32 x2|1	bytes 32768 fnv 98740D4A
+ZoomyZoom|kept|40x64 x1 (the size is ignored)|1	kept
+ZoomyZoom|memory|40x64 x1 (the size is ignored)|1	bytes 32768 fnv 6B0441FA
+InitZoomXY|kept|add 40,80|1	kept
+InitZoomXY|memory|add 40,80|1	bytes 32768 fnv 599CFDCA
+ZoomXY|kept|1,1 h 6|1	kept
+ZoomXY|memory|1,1 h 6|1	bytes 32768 fnv 289F5521
+InitZoomXY|kept|add 40,80|2	kept
+InitZoomXY|memory|add 40,80|2	bytes 32768 fnv E76F11FA
+ZoomXY|kept|2,1 h 6|1	kept
+ZoomXY|memory|2,1 h 6|1	bytes 32768 fnv EF43B793
+InitZoomXY|kept|add 40,80|3	kept
+InitZoomXY|memory|add 40,80|3	bytes 32768 fnv 2E3532B2
+ZoomXY|kept|1,2 h 7|1	kept
+ZoomXY|memory|1,2 h 7|1	bytes 32768 fnv 715DEADE
+InitZoomXY|kept|add 40,80|4	kept
+InitZoomXY|memory|add 40,80|4	bytes 32768 fnv A7F89F24
+ZoomXY|kept|3,2 h 8|1	kept
+ZoomXY|memory|3,2 h 8|1	bytes 32768 fnv E33D6080
+InitZoomXY|kept|add 40,80|5	kept
+InitZoomXY|memory|add 40,80|5	bytes 32768 fnv F685B84F
+ZoomXY|kept|2,3 h 9|1	kept
+ZoomXY|memory|2,3 h 9|1	bytes 32768 fnv CC5F9A8C
+InitZoomXY|kept|add 40,80|6	kept
+InitZoomXY|memory|add 40,80|6	bytes 32768 fnv 691C9FCA
+ZoomXY|kept|5,4 h 10|1	kept
+ZoomXY|memory|5,4 h 10|1	bytes 32768 fnv 6CF78BED
+InitZoomXY|kept|add 40,80|7	kept
+InitZoomXY|memory|add 40,80|7	bytes 32768 fnv 375C669F
+ZoomXY|kept|0,2 h 6|1	kept
+ZoomXY|memory|0,2 h 6|1	bytes 32768 fnv 9DF5DE8E
+InitZoomXY|kept|add 40,80|8	kept
+InitZoomXY|memory|add 40,80|8	bytes 32768 fnv 9866FE1A
+ZoomXY|kept|2,0 h 6|1	kept
+ZoomXY|memory|2,0 h 6|1	bytes 32768 fnv 9592D0F3
+InitZoomXY|kept|add 40,80|9	kept
+InitZoomXY|memory|add 40,80|9	bytes 32768 fnv 0911E98D
+ZoomXY|kept|10002,30001 h 5|1	kept
+ZoomXY|memory|10002,30001 h 5|1	bytes 32768 fnv C6FE7F58
+Derez|kept|0 h 6 x2|1	kept
+Derez|memory|0 h 6 x2|1	bytes 32768 fnv DE8F3EB4
+Derez|d0|0 h 6 x2|1	$00120034
+Derez|kept|1 h 6 x2|1	kept
+Derez|memory|1 h 6 x2|1	bytes 32768 fnv C79F012A
+Derez|d0|1 h 6 x2|1	$0012FFFF
+Derez|kept|2 h 6 x2|1	kept
+Derez|memory|2 h 6 x2|1	bytes 32768 fnv D4600903
+Derez|d0|2 h 6 x2|1	$F300CCFF
+Derez|kept|2 h 7 x1|1	kept
+Derez|memory|2 h 7 x1|1	bytes 32768 fnv C1FEDFF0
+Derez|d0|2 h 7 x1|1	$00F0FC00
+Derez|kept|3 h 9 x2|1	kept
+Derez|memory|3 h 9 x2|1	bytes 32768 fnv F4C2AF46
+Derez|d0|3 h 9 x2|1	$C01F8000
+Derez|kept|4 h 8 x1|1	kept
+Derez|memory|4 h 8 x1|1	bytes 32768 fnv CB48F898
+Derez|d0|4 h 8 x1|1	$00F00000
+Derez|kept|5 h 11 x2|1	kept
+Derez|memory|5 h 11 x2|1	bytes 32768 fnv 6CA8366D
+Derez|d0|5 h 11 x2|1	$7C1F0000
+Derez|kept|7 h 8 x1|1	kept
+Derez|memory|7 h 8 x1|1	bytes 32768 fnv 33BF6EE4
+Derez|d0|7 h 8 x1|1	$0FE00000
+Derez|kept|10 h 20 x1|1	kept
+Derez|memory|10 h 20 x1|1	bytes 32768 fnv 106E4B9D
+Derez|d0|10 h 20 x1|1	$FFFF0000
+Derez|kept|11 h 20 x2|1	kept
+Derez|memory|11 h 20 x2|1	bytes 32768 fnv 9BCDD3B0
+Derez|d0|11 h 20 x2|1	$C0000000
+Derez|kept|12 h 20 x1|1	kept
+Derez|memory|12 h 20 x1|1	bytes 32768 fnv 4DA1834B
+Derez|d0|12 h 20 x1|1	$0000CCA7
+Derez|kept|19 h 30 x1|1	kept
+Derez|memory|19 h 30 x1|1	bytes 32768 fnv D0AAB351
+Derez|d0|19 h 30 x1|1	$00008D5B
+Derez|kept|28 h 41 x1|1	kept
+Derez|memory|28 h 41 x1|1	bytes 32768 fnv 9424204F
+Derez|d0|28 h 41 x1|1	$0000AF0A
+Derez|kept|FFFF0003 h 6 x1|1	kept
+Derez|memory|FFFF0003 h 6 x1|1	bytes 32768 fnv BB379428
+Derez|d0|FFFF0003 h 6 x1|1	$07E38000
+finit|kept||1	kept
+finit|memory||1	bytes 32768 fnv EEE352B7

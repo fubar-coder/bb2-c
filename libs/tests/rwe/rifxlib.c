@@ -1,15 +1,15 @@
 /*
- * rwe rifxlib - the C build of RWE userlib 66 against the CD binary
- * (BSS2 RIFXLIB.OBJ).
+ * rwe rifxlib - RWE userlib 66: the C build or the CD binary (BSS2
+ * RIFXLIB.OBJ), one set as LIBSET says, observed as cases (sysload.h,
+ * LIBS_ONE_SET; the expected data libs/tests/expected/rwe_rifxlib.txt).
  *
- *   rifxlib DIR      (DIR: rifxlib.orig / .obj, memlib.orig / .obj)
+ *   rifxlib DIR      (DIR: rifxlib and memlib .orig or .obj)
  *
- * Every call is made on both sets with the same inputs: the bitmaps are
- * built in a memory arena per set (same layout, the same pseudo-random
+ * The bitmaps are built in a memory arena (the same pseudo-random
  * contents before every call, gaps between the planes), the other
- * registers are markers.  Compared are the whole arena afterwards (the
+ * registers are markers.  Observed are the whole arena afterwards (the
  * planes and everything around them), d0 where the routine has a result,
- * and every register the original keeps must be kept by the C build.
+ * and the kept registers.
  * rifxlib calls memlib (globalloc/globfree), so memlib is loaded too.
  *
  * Covered: every routine and every form - the zooms before init (no
@@ -25,6 +25,7 @@
  * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (the
  * depth word: plane counts in the thousands), depths above 8.
  */
+#define LIBS_ONE_SET
 #include "sysload.h"
 
 #define LIBNAME "rifxlib"
@@ -37,38 +38,17 @@ enum {
 
 /* ------------------------------------------------------------ framework */
 
-static int cur;
-static struct regs R[2], IN[2];
-static const char *ROUT;
-static char VEC[100];
-static int prints;
+static struct regs R, IN;
 
-static void fail(const char *what, ULONG o, ULONG c)
+/* code of entry e, form f (bit 0 = Amiga only, cleared) */
+static APTR fn(int e, int f)
 {
-    char buf[200];
-
-    if (prints++ < 60)
-        printf("FAIL %s %s %s: orig $%08lX, C $%08lX\n", ROUT, VEC, what, o, c);
-    snprintf(buf, sizeof buf, "%s %s %s", ROUT, VEC, what);
-    check(buf, FALSE);
+    return (APTR)((ULONG)entry_form(getlib(&loaded, LIBNAME), e, f) & ~1UL);
 }
 
-#define SAME(what, expr) do {                                               \
-        ULONG v_[2];                                                        \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_obs((what), v_[0], v_[1]);                         \
-        if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
-    } while (0)
-
-/* code of entry e, form f of set s (bit 0 = Amiga only, cleared) */
-static APTR fn(int s, int e, int f)
-{
-    return (APTR)((ULONG)entry_form(getlib(&sets[s], LIBNAME), e, f) & ~1UL);
-}
-
-/* the arenas: same layout in both sets */
+/* the arena */
 #define ARENA 32768
-static UBYTE *arena[2];
+static UBYTE *arena;
 
 static ULONG seed;
 static void fill(ULONG sd)
@@ -77,52 +57,20 @@ static void fill(ULONG sd)
 
     for (i = 0; i < ARENA; i++) {
         x = x * 1103515245UL + 12345;
-        arena[0][i] = arena[1][i] = (UBYTE)(x >> 16);
+        arena[i] = (UBYTE)(x >> 16);
     }
 }
 
-static void cmp_arena(void)
-{
-    ULONG i;
-
-    for (i = 0; i < ARENA; i++)
-        if (arena[0][i] != arena[1][i])
-            break;
-    if (i < ARENA) {
-        char what[60];
-        snprintf(what, sizeof what, "memory (first difference at arena offset %lu)", i);
-        fail(what, arena[0][i], arena[1][i]);
-    } else {
-        checks++;
-    }
-}
-
-static void preserve(void)
-{
-    struct call c[2];
-    char buf[140];
-    int s;
-
-    for (s = 0; s < 2; s++) {
-        c[s].in = IN[s];
-        c[s].out = R[s];
-    }
-    snprintf(buf, sizeof buf, "%s %s", ROUT, VEC);
-    cmp_preserve(buf, &c[0], &c[1]);
-}
-
-/* one call on both sets: fresh arena contents, registers = markers, then
-   `setup`; afterwards the arena and the kept registers are compared */
-#define DO2(e, f, setup) do {                                               \
+/* one call: fresh arena contents, registers = markers, then `setup`;
+   afterwards the kept registers and the arena are observed */
+#define DO1(e, f, setup) do {                                               \
         fill(seed += 0x9e3779b9UL);                                         \
-        for (cur = 0; cur < 2; cur++) {                                     \
-            markregs(&R[cur]);                                              \
-            setup;                                                          \
-            IN[cur] = R[cur];                                               \
-            callregs(fn(cur, e, f), &R[cur], 0, 0);                         \
-        }                                                                   \
-        preserve();                                                         \
-        cmp_arena();                                                        \
+        markregs(&R);                                                       \
+        setup;                                                              \
+        IN = R;                                                             \
+        callregs(fn(e, f), &R, 0, 0);                                       \
+        obs_kept(&IN, &R);                                                  \
+        OBSBYTES("memory", arena, ARENA);                                   \
     } while (0)
 
 /* bitmaps: struct BitMap {bpr.w, rows.w, flags.b, depth.b, pad.w,
@@ -133,36 +81,32 @@ struct fbm {
     UWORD pad;
     ULONG planes[8];
 };
-static struct fbm bm[2][2];             /* [set][source, dest] */
-#define SRC (ULONG)&bm[cur][0]
-#define DST (ULONG)&bm[cur][1]
+static struct fbm bm[2];                /* [source, dest] */
+#define SRC (ULONG)&bm[0]
+#define DST (ULONG)&bm[1]
 
 static ULONG off;                       /* next free arena offset */
 
-/* bitmap i of both sets: `depth` planes of bpr*rows bytes, with 64 bytes
-   between them (and before the first) */
+/* bitmap i: `depth` planes of bpr*rows bytes, with 64 bytes between them
+   (and before the first) */
 static void mkbm(int i, UWORD bpr, UWORD rows, UBYTE depth, ULONG size)
 {
-    int s, p;
+    int p;
 
     if (!size)
         size = (ULONG)bpr * rows;
-    for (s = 0; s < 2; s++) {
-        bm[s][i].bpr = bpr;
-        bm[s][i].rows = rows;
-        bm[s][i].flags = 0;
-        bm[s][i].depth = depth;
-        bm[s][i].pad = 0;
-    }
+    bm[i].bpr = bpr;
+    bm[i].rows = rows;
+    bm[i].flags = 0;
+    bm[i].depth = depth;
+    bm[i].pad = 0;
     for (p = 0; p < 8; p++) {
         if (p < depth) {
             off += 64;
-            for (s = 0; s < 2; s++)
-                bm[s][i].planes[p] = (ULONG)arena[s] + off;
+            bm[i].planes[p] = (ULONG)arena + off;
             off += (size + 3) & ~3UL;
         } else {
-            for (s = 0; s < 2; s++)
-                bm[s][i].planes[p] = 0;
+            bm[i].planes[p] = 0;
         }
     }
     if (off + 64 > ARENA)
@@ -178,7 +122,7 @@ static void bitmaps(UWORD sbpr, UWORD srows, UBYTE sdepth, UWORD dbpr, UWORD dro
 }
 
 /* the argument frame for ZoomX4's seventh argument, -1(a2) */
-static UWORD frame[2][4];
+static UWORD frame[4];
 
 /* ------------------------------------------------------------ tests */
 
@@ -188,42 +132,38 @@ static void test_notables(void)
     ROUT = "before init";
     bitmaps(8, 8, 2, 32, 32, 2);
     strcpy(VEC, "ZoomX2");
-    DO2(E_ZOOMX2, 0, R[cur].d[2] = 0; R[cur].d[3] = 0; R[cur].d[4] = 32; R[cur].d[5] = 4;
-        R[cur].a[0] = SRC; R[cur].a[1] = DST);
+    DO1(E_ZOOMX2, 0, R.d[2] = 0; R.d[3] = 0; R.d[4] = 32; R.d[5] = 4;
+        R.a[0] = SRC; R.a[1] = DST);
     strcpy(VEC, "ZoomX4");
-    DO2(E_ZOOMX4, 0, R[cur].d[2] = 0; R[cur].d[3] = 0; R[cur].d[4] = 32; R[cur].d[5] = 4;
-        R[cur].a[0] = SRC; R[cur].a[1] = DST);
+    DO1(E_ZOOMX4, 0, R.d[2] = 0; R.d[3] = 0; R.d[4] = 32; R.d[5] = 4;
+        R.a[0] = SRC; R.a[1] = DST);
     strcpy(VEC, "ZoomX8");
-    DO2(E_ZOOMX8, 0, R[cur].d[2] = 0; R[cur].d[3] = 0; R[cur].d[4] = 16; R[cur].d[5] = 2;
-        R[cur].a[0] = SRC; R[cur].a[1] = DST);
+    DO1(E_ZOOMX8, 0, R.d[2] = 0; R.d[3] = 0; R.d[4] = 16; R.d[5] = 2;
+        R.a[0] = SRC; R.a[1] = DST);
     strcpy(VEC, "ReduceX2");
-    DO2(E_REDUCE, 0, R[cur].d[2] = 0; R[cur].d[3] = 0; R[cur].d[4] = 64; R[cur].d[5] = 8;
-        R[cur].a[0] = SRC; R[cur].a[1] = DST);
+    DO1(E_REDUCE, 0, R.d[2] = 0; R.d[3] = 0; R.d[4] = 64; R.d[5] = 8;
+        R.a[0] = SRC; R.a[1] = DST);
     strcpy(VEC, "ZoomyZoom");
-    DO2(E_ZOOMY, 0, R[cur].a[0] = SRC);
+    DO1(E_ZOOMY, 0, R.a[0] = SRC);
     strcpy(VEC, "GetZoomTables");
-    DO2(E_TABLES, 0, (void)0);
-    SAME("tables 0", L((UBYTE *)R[cur].d[0]) | L((UBYTE *)R[cur].d[0] + 4) |
-                     L((UBYTE *)R[cur].d[0] + 8) | L((UBYTE *)R[cur].d[0] + 12));
+    DO1(E_TABLES, 0, (void)0);
+    OBS("tables 0", L((UBYTE *)R.d[0]) | L((UBYTE *)R.d[0] + 4) |
+                     L((UBYTE *)R.d[0] + 8) | L((UBYTE *)R.d[0] + 12));
 }
 
 static void test_tables(void)
 {
     ROUT = "GetZoomTables";
     VEC[0] = 0;
-    DO2(E_TABLES, 0, (void)0);
-    SAME("table 0 set", L((UBYTE *)R[cur].d[0]) != 0);
-    SAME("x2 - reduce", L((UBYTE *)R[cur].d[0] + 4) - L((UBYTE *)R[cur].d[0]));
-    SAME("x4 - reduce", L((UBYTE *)R[cur].d[0] + 8) - L((UBYTE *)R[cur].d[0]));
-    SAME("x8 - reduce", L((UBYTE *)R[cur].d[0] + 12) - L((UBYTE *)R[cur].d[0]));
+    DO1(E_TABLES, 0, (void)0);
+    OBS("table 0 set", L((UBYTE *)R.d[0]) != 0);
+    OBS("x2 - reduce", L((UBYTE *)R.d[0] + 4) - L((UBYTE *)R.d[0]));
+    OBS("x4 - reduce", L((UBYTE *)R.d[0] + 8) - L((UBYTE *)R.d[0]));
+    OBS("x8 - reduce", L((UBYTE *)R.d[0] + 12) - L((UBYTE *)R.d[0]));
     {
-        UBYTE *t0 = (UBYTE *)L((UBYTE *)R[0].d[0]), *t1 = (UBYTE *)L((UBYTE *)R[1].d[0]);
-        if (t0 && t1) {
-            if (tape_bytes("table contents", t0, t1, 1856))
-                fail("table contents", 0, 1);
-            else
-                checks++;
-        }
+        UBYTE *t = (UBYTE *)L((UBYTE *)R.d[0]);
+        if (t)
+            OBSBYTES("table contents", t, 1856);
     }
 }
 
@@ -238,9 +178,9 @@ static void test_addvalue(void)
     for (i = 0; i < sizeof xs / sizeof xs[0]; i++)
         for (j = 0; j < sizeof ys / sizeof ys[0]; j++) {
             sprintf(VEC, "x $%lX y $%lX", xs[i], ys[j]);
-            DO2(E_ADDVALUE, 0, R[cur].d[0] = 0; R[cur].d[1] = xs[i]; R[cur].d[2] = ys[j];
-                R[cur].a[0] = SRC);
-            SAME("d0", R[cur].d[0]);
+            DO1(E_ADDVALUE, 0, R.d[0] = 0; R.d[1] = xs[i]; R.d[2] = ys[j];
+                R.a[0] = SRC);
+            OBS("d0", R.d[0]);
         }
 }
 
@@ -257,12 +197,12 @@ static void test_clearfade(void)
         bitmaps(c[i].bpr, c[i].rows, c[i].depth, 4, 4, 1);
         if (!c[i].h) {
             sprintf(VEC, "%ux%u x%u", c[i].bpr, c[i].rows, c[i].depth);
-            DO2(E_CLEAR, 0, R[cur].d[0] = 0; R[cur].d[1] = 1 + i % 3; R[cur].a[0] = SRC);
+            DO1(E_CLEAR, 0, R.d[0] = 0; R.d[1] = 1 + i % 3; R.a[0] = SRC);
         } else {
             sprintf(VEC, "%ux%u x%u h $%lX off $%lX", c[i].bpr, c[i].rows, c[i].depth,
                     c[i].h, c[i].o);
-            DO2(E_CLEAR, 1, R[cur].d[0] = 0; R[cur].d[1] = 1 + i % 3; R[cur].d[2] = c[i].h;
-                R[cur].d[3] = c[i].o; R[cur].a[0] = SRC);
+            DO1(E_CLEAR, 1, R.d[0] = 0; R.d[1] = 1 + i % 3; R.d[2] = c[i].h;
+                R.d[3] = c[i].o; R.a[0] = SRC);
         }
     }
 
@@ -271,14 +211,14 @@ static void test_clearfade(void)
         bitmaps(c[i].bpr, c[i].rows, c[i].depth, c[i].bpr + 4, c[i].rows + 4, c[i].depth);
         if (!c[i].h) {
             sprintf(VEC, "%ux%u x%u", c[i].bpr, c[i].rows, c[i].depth);
-            DO2(E_FADE, 0, R[cur].d[0] = 0; R[cur].d[1] = 1; R[cur].d[2] = 1 + i % 3;
-                R[cur].a[0] = SRC; R[cur].a[1] = DST);
+            DO1(E_FADE, 0, R.d[0] = 0; R.d[1] = 1; R.d[2] = 1 + i % 3;
+                R.a[0] = SRC; R.a[1] = DST);
         } else {
             sprintf(VEC, "%ux%u x%u h $%lX off $%lX,1", c[i].bpr, c[i].rows, c[i].depth,
                     c[i].h, c[i].o);
-            DO2(E_FADE, 1, R[cur].d[0] = 0; R[cur].d[1] = 1; R[cur].d[2] = 1 + i % 3;
-                R[cur].d[3] = c[i].h; R[cur].d[4] = c[i].o; R[cur].d[5] = 1;
-                R[cur].a[0] = SRC; R[cur].a[1] = DST);
+            DO1(E_FADE, 1, R.d[0] = 0; R.d[1] = 1; R.d[2] = 1 + i % 3;
+                R.d[3] = c[i].h; R.d[4] = c[i].o; R.d[5] = 1;
+                R.a[0] = SRC; R.a[1] = DST);
         }
     }
 }
@@ -300,9 +240,9 @@ static void zoomvec(const struct zc *z)
             z->sadd, z->dadd, z->w, z->h);
 }
 
-#define ZREGS(z) R[cur].d[0] = 0; R[cur].d[1] = 1; R[cur].d[2] = (z)->sadd;          \
-    R[cur].d[3] = (z)->dadd; R[cur].d[4] = (z)->w; R[cur].d[5] = (z)->h;             \
-    R[cur].a[0] = SRC; R[cur].a[1] = DST
+#define ZREGS(z) R.d[0] = 0; R.d[1] = 1; R.d[2] = (z)->sadd;          \
+    R.d[3] = (z)->dadd; R.d[4] = (z)->w; R.d[5] = (z)->h;             \
+    R.a[0] = SRC; R.a[1] = DST
 
 static void test_zooms(void)
 {
@@ -314,18 +254,18 @@ static void test_zooms(void)
         const struct zc *z = &zcs[i];
         bitmaps(z->sbpr, z->srows, z->depth, z->sbpr * 2 + 4, z->srows * 2 + 2, z->depth);
         zoomvec(z);
-        DO2(E_ZOOMX2, 0, ZREGS(z));
+        DO1(E_ZOOMX2, 0, ZREGS(z));
     }
     ROUT = "ZoomX4";
     for (i = 0; i < NZ; i++) {
         const struct zc *z = &zcs[i];
         bitmaps(z->sbpr, z->srows, z->depth, z->sbpr * 4 + 4, z->srows * 4 + 2, z->depth);
         zoomvec(z);
-        DO2(E_ZOOMX4, 0, ZREGS(z));
+        DO1(E_ZOOMX4, 0, ZREGS(z));
         for (sel = 0; sel < 4; sel++) {
             sprintf(VEC + strlen(VEC), " sel %d", sel);
-            DO2(E_ZOOMX4, 1, ZREGS(z); frame[cur][0] = 0x5a00 | sel;
-                R[cur].a[2] = (ULONG)&frame[cur][1]);
+            DO1(E_ZOOMX4, 1, ZREGS(z); frame[0] = 0x5a00 | sel;
+                R.a[2] = (ULONG)&frame[1]);
             VEC[strlen(VEC) - 6] = 0;
         }
     }
@@ -334,30 +274,30 @@ static void test_zooms(void)
         const struct zc *z = &zcs[i];
         bitmaps(z->sbpr, z->srows, z->depth, z->sbpr * 8 + 4, z->srows * 8 + 2, z->depth);
         zoomvec(z);
-        DO2(E_ZOOMX8, 0, ZREGS(z));
+        DO1(E_ZOOMX8, 0, ZREGS(z));
     }
     ROUT = "ReduceX2";
     for (i = 0; i < NZ; i++) {
         const struct zc *z = &zcs[i];
         bitmaps(z->sbpr * 2, z->srows * 2, z->depth, z->sbpr, z->srows, z->depth);
         zoomvec(z);
-        DO2(E_REDUCE, 0, ZREGS(z));
+        DO1(E_REDUCE, 0, ZREGS(z));
     }
     ROUT = "ReduceX2";
     bitmaps(8, 8, 2, 4, 4, 2);
     strcpy(VEC, "height 1");
-    DO2(E_REDUCE, 0, R[cur].d[2] = 0; R[cur].d[3] = 0; R[cur].d[4] = 64; R[cur].d[5] = 1;
-        R[cur].a[0] = SRC; R[cur].a[1] = DST);
+    DO1(E_REDUCE, 0, R.d[2] = 0; R.d[3] = 0; R.d[4] = 64; R.d[5] = 1;
+        R.a[0] = SRC; R.a[1] = DST);
 
     ROUT = "ZoomyZoom";
     off = 0;
     mkbm(0, 80, 32, 2, 0);
     strcpy(VEC, "80x32 x2");
-    DO2(E_ZOOMY, 0, R[cur].d[0] = 0; R[cur].a[0] = SRC);
+    DO1(E_ZOOMY, 0, R.d[0] = 0; R.a[0] = SRC);
     off = 0;
     mkbm(0, 40, 64, 1, 0);
     strcpy(VEC, "40x64 x1 (the size is ignored)");
-    DO2(E_ZOOMY, 0, R[cur].d[0] = 0; R[cur].a[0] = SRC);
+    DO1(E_ZOOMY, 0, R.d[0] = 0; R.a[0] = SRC);
 }
 
 /* lores bitmaps (40 bytes per line) for ZoomXY and Derez */
@@ -380,11 +320,11 @@ static void test_zoomxy(void)
         lores(12, 2, 24);
         ROUT = "InitZoomXY";
         strcpy(VEC, "add 40,80");
-        DO2(E_INITXY, 0, R[cur].d[0] = 0; R[cur].d[1] = 1; R[cur].d[2] = 40; R[cur].d[3] = 80;
-            R[cur].a[0] = SRC; R[cur].a[1] = DST);
+        DO1(E_INITXY, 0, R.d[0] = 0; R.d[1] = 1; R.d[2] = 40; R.d[3] = 80;
+            R.a[0] = SRC; R.a[1] = DST);
         ROUT = "ZoomXY";
         sprintf(VEC, "%lX,%lX h %lu", c[i].x, c[i].y, c[i].h);
-        DO2(E_ZOOMXY, 0, R[cur].d[0] = c[i].x; R[cur].d[1] = c[i].y; R[cur].d[2] = c[i].h);
+        DO1(E_ZOOMXY, 0, R.d[0] = c[i].x; R.d[1] = c[i].y; R.d[2] = c[i].h);
     }
 }
 
@@ -401,10 +341,10 @@ static void test_derez(void)
     for (i = 0; i < sizeof c / sizeof c[0]; i++) {
         lores(c[i].h + 2, c[i].depth, c[i].h + 48);
         sprintf(VEC, "%lX h %lu x%u", c[i].v, c[i].h, c[i].depth);
-        DO2(E_DEREZ, 0, R[cur].d[0] = 0x00120034; R[cur].d[1] = 1; R[cur].d[2] = 0;
-            R[cur].d[3] = 40; R[cur].d[4] = c[i].v; R[cur].d[5] = c[i].h;
-            R[cur].a[0] = SRC; R[cur].a[1] = DST);
-        SAME("d0", R[cur].d[0]);
+        DO1(E_DEREZ, 0, R.d[0] = 0x00120034; R.d[1] = 1; R.d[2] = 0;
+            R.d[3] = 40; R.d[4] = c[i].v; R.d[5] = c[i].h;
+            R.a[0] = SRC; R.a[1] = DST);
+        OBS("d0", R.d[0]);
     }
 }
 
@@ -414,32 +354,41 @@ static const char *names[] = { "memlib", LIBNAME, NULL };
 
 int main(int argc, char **argv)
 {
-    int s;
-
     if (argc < 2) {
         printf("usage: rifxlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
-    for (s = 0; s < 2; s++) {
-        arena[s] = AllocMem(ARENA, MEMF_ANY);
-        if (!arena[s]) {
-            check("rifxlib test: memory", FALSE);
-            return 20;
-        }
+    KEEPS("before init", d1-d6|a1-a3|a6);
+    KEEPS("init", d3-d7|a1-a3|a6);
+    KEEPS("GetZoomTables", d1-d7|a1-a3|a6);
+    KEEPS("ADDValue", d2-d7|a0-a3|a6);
+    KEEPS("ClearBitmap", a3|a6);
+    KEEPS("FadeInBitmap", a6);
+    KEEPS("ZoomX2", d0-d7|a0-a3|a6);
+    KEEPS("ZoomX4", d1-d6|a0-a3|a6);
+    KEEPS("ZoomX8", d0-d7|a0-a3|a6);
+    KEEPS("ReduceX2", d0-d7|a0-a3|a6);
+    KEEPS("ZoomyZoom", d1-d3|a2|a3|a6);
+    KEEPS("InitZoomXY", d0-d7|a0-a3|a6);
+    KEEPS("ZoomXY", d1-d7|a0-a3|a6);
+    KEEPS("Derez", d1-d7|a0-a3|a6);
+    KEEPS("finit", d1-d7|a0|a2|a3|a6);
+    arena = AllocMem(ARENA, MEMF_ANY);
+    if (!arena) {
+        check("rifxlib test: memory", FALSE);
+        return 20;
     }
     seed = 0x13579bdf;
 
     ROUT = "memlib init";
     VEC[0] = 0;
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], 0, 0);
-    }
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, 0, 0);
     test_notables();
     ROUT = "init";
-    DO2(E_INIT, 0, (void)0);
+    DO1(E_INIT, 0, (void)0);
     test_tables();
     test_addvalue();
     test_clearfade();
@@ -448,13 +397,11 @@ int main(int argc, char **argv)
     test_derez();                       /* after ZoomXY, see the head */
     ROUT = "finit";
     VEC[0] = 0;
-    DO2(E_FINIT, 0, (void)0);
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], 0, 0);
-    }
-    for (s = 0; s < 2; s++)
-        FreeMem(arena[s], ARENA);
+    DO1(E_FINIT, 0, (void)0);
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);
+    FreeMem(arena, ARENA);
     printf("rifxlib: %d checks, %d failures\n", checks, failures);
+    kept_summary();
     return failures ? 5 : 0;
 }
