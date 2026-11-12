@@ -159,3 +159,28 @@ Recorded in `~/.local/share/bb2-c-work/questions-for-user.md` under
 "## Offene Fragen": whether every fixed test must keep an `ID.orig`
 (planned: yes), and whether the TED recording may skip the layout variation
 (planned: yes, stated in the docs).
+
+## Findings during the implementation
+
+- Task 1.1 (2026-11-13): the fix-scope interface of `tools/lib/libscmp` on
+  main (after `libs-capture-host-blocks`) is unchanged:
+  `libscmp_parse`, `libscmp_issues_add`, `libscmp_issues_from_log`,
+  `libscmp_issues_free`, `libscmp_fix_scope` and `libscmp_fix_scope_dirs`
+  exist with the signatures D6 assumes (`libscmp.h`, "fix-scope"). The
+  change only added the raw block observations (`NAME.bin`,
+  `libscmp_parse_run`, ...), which bug-orig does not use. The adapter calls
+  `libscmp_fix_scope` on one projected file per tree (base, branch), not
+  `libscmp_fix_scope_dirs`, which reads `NAME.txt` files of a directory.
+- The projection of D6 as written does not pass a fix with
+  `libscmp_fix_scope` unchanged: the open test's unqualified key
+  `ID|SECTION|orig|1` has no `[fixed #N]` case in the branch, so its
+  removal is reported. The projection of a fixed test therefore keeps that
+  key as the pair `ID|SECTION|orig|1 [orig]` (the value of `ID.orig`) /
+  `ID|SECTION|orig|1 [fixed #N]` (the fixed text `judged by ID.expect`),
+  and the expectation is `ID|SECTION||1 [fixed #N]` (from `ID.expect`)
+  without an `[orig]` case of its own. An open test stays as D6 says
+  (`ID|SECTION||1` from `ID.expect`, `ID|SECTION|orig|1` from `ID.orig`).
+  With that, adding `; @fixed #N` and editing `ID.expect` are cases of
+  issue N, a changed `ID.orig` of a fixed test is the `[orig]` case paired
+  with `[fixed #N]`, and any change of an open test or of a test fixed by
+  another issue is reported.

@@ -6,7 +6,7 @@ deliberately broken input.
 
 ## 1. Case projection and acceptance (host side)
 
-- [ ] 1.1 Re-read the fix-scope interface of `tools/lib/libscmp` on main (`libscmp_parse`, `libscmp_issues_*`, `libscmp_fix_scope`; the change `libs-capture-host-blocks` may have changed `libscmp.h`) and note differences in the design. Verify: the design's D6 names only functions that exist.
+- [x] 1.1 Re-read the fix-scope interface of `tools/lib/libscmp` on main (`libscmp_parse`, `libscmp_issues_*`, `libscmp_fix_scope`; the change `libs-capture-host-blocks` may have changed `libscmp.h`) and note differences in the design. Verify: the design's D6 names only functions that exist.
 - [ ] 1.2 Add `tools/lib/bugorigcmp` with the projection of a test (`ID.expect`, `ID.orig`, header `@fixed #N`, TED directive) onto a `libscmp` case file, per D6. Verify: host test `tools/tests/test_bugorigcmp.c` from memory (open test, fixed test, long section, TED sections, a test without `ID.orig`).
 - [ ] 1.3 Add the acceptance of two observations (equal: result; different: "test not deterministic: ID" with sections and lines) and the wildcard-keeping rewrite of D4, plus `results bug-orig-accept RUN1 RUN2 OUT`. Verify: host tests for equal runs, one differing section, a wildcard kept, a wildcard that does not match both runs (reported, nothing written).
 
