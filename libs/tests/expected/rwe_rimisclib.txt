@@ -1,0 +1,3176 @@
+# capture rwe_rimisclib 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|d0 = IntuitionBase||1	$00000001
+TimerReset|kept||1	kept
+TimerReset|popped||1	$00000000
+TimerReset|TOD reset||1	$00000001
+PortSigBit|kept|port|1	kept
+PortSigBit|popped|port|1	$00000000
+PortSigBit|d0|port|1	$0000001F
+PortSigBit|= mp_SigBit|port|1	$00000001
+PortSigBit|kept|$A5|1	kept
+PortSigBit|popped|$A5|1	$00000000
+PortSigBit|d0|$A5|1	$000000A5
+WorkbenchHere|kept|1 screens, first "Workbench Screen"|1	kept
+WorkbenchHere|popped|1 screens, first "Workbench Screen"|1	$00000000
+WorkbenchHere|d0|1 screens, first "Workbench Screen"|1	$FFFFFFFF
+WorkbenchHere|kept|2 screens, first "Other"|1	kept
+WorkbenchHere|popped|2 screens, first "Other"|1	$00000000
+WorkbenchHere|d0|2 screens, first "Other"|1	$FFFFFFFF
+WorkbenchHere|kept|3 screens, first "WWorkbench"|1	kept
+WorkbenchHere|popped|3 screens, first "WWorkbench"|1	$00000000
+WorkbenchHere|d0|3 screens, first "WWorkbench"|1	$FFFFFFFF
+WorkbenchHere|kept|4 screens, first ""|1	kept
+WorkbenchHere|popped|4 screens, first ""|1	$00000000
+WorkbenchHere|d0|4 screens, first ""|1	$FFFFFFFF
+EZOutput|kept|none|1	kept
+EZOutput|popped|none|1	$00000000
+EZRequest|kept|body$|1	kept
+EZRequest|popped|body$|1	$00000000
+EZRequest|d0|body$|1	$00000001
+EZRequest|called once|body$|1	$00000001
+EZRequest|window|body$|1	$00000000
+EZRequest|idcmp|body$|1	$00000000
+EZRequest|args|body$|1	$00000000
+EZRequest|es_StructSize|body$|1	$00000014
+EZRequest|es_Flags|body$|1	$00000000
+EZRequest|title|body$|1	bytes 80 fnv 510EA5E0
+EZRequest|body|body$|1	bytes 200 fnv 6CB39A14
+EZRequest|gadget|body$|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|body$|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|a3 = the arguments (0)|body$|1	$00000001
+EZRequest|body buffer|body$|1	bytes 120 fnv 614EF914
+EZRequest|kept|body$,gadget$|1	kept
+EZRequest|popped|body$,gadget$|1	$00000000
+EZRequest|d0|body$,gadget$|1	$00000000
+EZRequest|called once|body$,gadget$|1	$00000001
+EZRequest|window|body$,gadget$|1	$00000000
+EZRequest|idcmp|body$,gadget$|1	$00000000
+EZRequest|args|body$,gadget$|1	$00000000
+EZRequest|es_StructSize|body$,gadget$|1	$00000014
+EZRequest|es_Flags|body$,gadget$|1	$00000000
+EZRequest|title|body$,gadget$|1	bytes 80 fnv 510EA5E0
+EZRequest|body|body$,gadget$|1	bytes 200 fnv 5DDABFF0
+EZRequest|gadget|body$,gadget$|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|body$,gadget$|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|body buffer|body$,gadget$|1	bytes 120 fnv D6B631D7
+EZRequest|kept|title$,body$,gadget$|1	kept
+EZRequest|popped|title$,body$,gadget$|1	$00000000
+EZRequest|d0|title$,body$,gadget$|1	$00000003
+EZRequest|called once|title$,body$,gadget$|1	$00000001
+EZRequest|window|title$,body$,gadget$|1	$00000000
+EZRequest|idcmp|title$,body$,gadget$|1	$00000000
+EZRequest|args|title$,body$,gadget$|1	$00000000
+EZRequest|es_StructSize|title$,body$,gadget$|1	$00000014
+EZRequest|es_Flags|title$,body$,gadget$|1	$00000000
+EZRequest|title|title$,body$,gadget$|1	bytes 80 fnv 36E13BD6
+EZRequest|body|title$,body$,gadget$|1	bytes 200 fnv 51858984
+EZRequest|gadget|title$,body$,gadget$|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|title$,body$,gadget$|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+EZOutput|kept|win#|1	kept
+EZOutput|popped|win#|1	$00000000
+EZRequest|kept|body$ on the window|1	kept
+EZRequest|popped|body$ on the window|1	$00000000
+EZRequest|d0|body$ on the window|1	$00000002
+EZRequest|called once|body$ on the window|1	$00000001
+EZRequest|window|body$ on the window|1	$CAFE0042
+EZRequest|idcmp|body$ on the window|1	$00000000
+EZRequest|args|body$ on the window|1	$00000000
+EZRequest|es_StructSize|body$ on the window|1	$00000014
+EZRequest|es_Flags|body$ on the window|1	$00000000
+EZRequest|title|body$ on the window|1	bytes 80 fnv 510EA5E0
+EZRequest|body|body$ on the window|1	bytes 200 fnv 4A2BB865
+EZRequest|gadget|body$ on the window|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|body$ on the window|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|kept|title$,body$,gadget$,var.. all types|1	kept
+EZRequest|popped|title$,body$,gadget$,var.. all types|1	$00000000
+EZRequest|d0|title$,body$,gadget$,var.. all types|1	$00000005
+EZRequest|called once|title$,body$,gadget$,var.. all types|1	$00000001
+EZRequest|window|title$,body$,gadget$,var.. all types|1	$CAFE0042
+EZRequest|idcmp|title$,body$,gadget$,var.. all types|1	$00000000
+EZRequest|args|title$,body$,gadget$,var.. all types|1	$00000001
+EZRequest|es_StructSize|title$,body$,gadget$,var.. all types|1	$00000014
+EZRequest|es_Flags|title$,body$,gadget$,var.. all types|1	$00000000
+EZRequest|title|title$,body$,gadget$,var.. all types|1	bytes 80 fnv 36E13BD6
+EZRequest|body|title$,body$,gadget$,var.. all types|1	bytes 200 fnv 06B992CC
+EZRequest|gadget|title$,body$,gadget$,var.. all types|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|title$,body$,gadget$,var.. all types|1	bytes 64 50524F4712345678FFFE0041000000050000FFFC000000030000FFFD50524F470000000000000000000000000000000000000000000000000000000000000000
+EZRequest|stack|title$,body$,gadget$,var.. all types|1	bytes 256 fnv 25B0CB6E
+EZRequest|body buffer|title$,body$,gadget$,var.. all types|1	bytes 120 fnv E4C75BCC
+EZRequest|arguments of all types|title$,body$,gadget$,var.. all types|1	$00000001
+EZRequest|body with line feeds|title$,body$,gadget$,var.. all types|1	$00000001
+EZRequest|kept|one long|1	kept
+EZRequest|popped|one long|1	$00000000
+EZRequest|d0|one long|1	$00000005
+EZRequest|called once|one long|1	$00000001
+EZRequest|window|one long|1	$CAFE0042
+EZRequest|idcmp|one long|1	$00000000
+EZRequest|args|one long|1	$00000001
+EZRequest|es_StructSize|one long|1	$00000014
+EZRequest|es_Flags|one long|1	$00000000
+EZRequest|title|one long|1	bytes 80 fnv 36E13BD6
+EZRequest|body|one long|1	bytes 200 fnv 7C9377D3
+EZRequest|gadget|one long|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|one long|1	bytes 64 FFFFFFFF12345678FFFE0041000000050000FFFC000000030000FFFD50524F470000000000000000000000000000000000000000000000000000000000000000
+EZRequest|stack|one long|1	bytes 256 fnv AFC0BC12
+EZRequest|body buffer|one long|1	bytes 120 fnv 65D5E844
+EZRequest|kept|16 longs|1	kept
+EZRequest|popped|16 longs|1	$00000000
+EZRequest|d0|16 longs|1	$00000005
+EZRequest|called once|16 longs|1	$00000001
+EZRequest|window|16 longs|1	$CAFE0042
+EZRequest|idcmp|16 longs|1	$00000000
+EZRequest|args|16 longs|1	$00000001
+EZRequest|es_StructSize|16 longs|1	$00000014
+EZRequest|es_Flags|16 longs|1	$00000000
+EZRequest|title|16 longs|1	bytes 80 fnv 36E13BD6
+EZRequest|body|16 longs|1	bytes 200 fnv 943B1DC2
+EZRequest|gadget|16 longs|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|16 longs|1	bytes 64 0000000100000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|16 longs|1	bytes 256 fnv 21FC857E
+EZRequest|body buffer|16 longs|1	bytes 120 fnv 6C2B3828
+EZRequest|kept|type 7 alone|1	kept
+EZRequest|popped|type 7 alone|1	$00000000
+EZRequest|d0|type 7 alone|1	$00000005
+EZRequest|called once|type 7 alone|1	$00000001
+EZRequest|window|type 7 alone|1	$CAFE0042
+EZRequest|idcmp|type 7 alone|1	$00000000
+EZRequest|args|type 7 alone|1	$00000001
+EZRequest|es_StructSize|type 7 alone|1	$00000014
+EZRequest|es_Flags|type 7 alone|1	$00000000
+EZRequest|title|type 7 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 7 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 7 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 7 alone|1	bytes 64 50524F4700000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 7 alone|1	bytes 256 fnv 6EB5C4EC
+EZRequest|body buffer|type 7 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 3 alone|1	kept
+EZRequest|popped|type 3 alone|1	$00000000
+EZRequest|d0|type 3 alone|1	$00000005
+EZRequest|called once|type 3 alone|1	$00000001
+EZRequest|window|type 3 alone|1	$CAFE0042
+EZRequest|idcmp|type 3 alone|1	$00000000
+EZRequest|args|type 3 alone|1	$00000001
+EZRequest|es_StructSize|type 3 alone|1	$00000014
+EZRequest|es_Flags|type 3 alone|1	$00000000
+EZRequest|title|type 3 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 3 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 3 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 3 alone|1	bytes 64 1234567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 3 alone|1	bytes 256 fnv 02B49376
+EZRequest|body buffer|type 3 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 2 alone|1	kept
+EZRequest|popped|type 2 alone|1	$00000000
+EZRequest|d0|type 2 alone|1	$00000005
+EZRequest|called once|type 2 alone|1	$00000001
+EZRequest|window|type 2 alone|1	$CAFE0042
+EZRequest|idcmp|type 2 alone|1	$00000000
+EZRequest|args|type 2 alone|1	$00000001
+EZRequest|es_StructSize|type 2 alone|1	$00000014
+EZRequest|es_Flags|type 2 alone|1	$00000000
+EZRequest|title|type 2 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 2 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 2 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 2 alone|1	bytes 64 FFFE567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 2 alone|1	bytes 256 fnv 0D537FA2
+EZRequest|body buffer|type 2 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 1 alone|1	kept
+EZRequest|popped|type 1 alone|1	$00000000
+EZRequest|d0|type 1 alone|1	$00000005
+EZRequest|called once|type 1 alone|1	$00000001
+EZRequest|window|type 1 alone|1	$CAFE0042
+EZRequest|idcmp|type 1 alone|1	$00000000
+EZRequest|args|type 1 alone|1	$00000001
+EZRequest|es_StructSize|type 1 alone|1	$00000014
+EZRequest|es_Flags|type 1 alone|1	$00000000
+EZRequest|title|type 1 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 1 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 1 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 1 alone|1	bytes 64 0041567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 1 alone|1	bytes 256 fnv 20C73061
+EZRequest|body buffer|type 1 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 4 alone|1	kept
+EZRequest|popped|type 4 alone|1	$00000000
+EZRequest|d0|type 4 alone|1	$00000005
+EZRequest|called once|type 4 alone|1	$00000001
+EZRequest|window|type 4 alone|1	$CAFE0042
+EZRequest|idcmp|type 4 alone|1	$00000000
+EZRequest|args|type 4 alone|1	$00000001
+EZRequest|es_StructSize|type 4 alone|1	$00000014
+EZRequest|es_Flags|type 4 alone|1	$00000000
+EZRequest|title|type 4 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 4 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 4 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 4 alone|1	bytes 64 0000000500000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 4 alone|1	bytes 256 fnv 7E648636
+EZRequest|body buffer|type 4 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 4 alone|2	kept
+EZRequest|popped|type 4 alone|2	$00000000
+EZRequest|d0|type 4 alone|2	$00000005
+EZRequest|called once|type 4 alone|2	$00000001
+EZRequest|window|type 4 alone|2	$CAFE0042
+EZRequest|idcmp|type 4 alone|2	$00000000
+EZRequest|args|type 4 alone|2	$00000001
+EZRequest|es_StructSize|type 4 alone|2	$00000014
+EZRequest|es_Flags|type 4 alone|2	$00000000
+EZRequest|title|type 4 alone|2	bytes 80 fnv 36E13BD6
+EZRequest|body|type 4 alone|2	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 4 alone|2	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 4 alone|2	bytes 64 0000FFFC00000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 4 alone|2	bytes 256 fnv 6C788C1C
+EZRequest|body buffer|type 4 alone|2	bytes 120 fnv A45D73A6
+EZRequest|kept|type 5 alone|1	kept
+EZRequest|popped|type 5 alone|1	$00000000
+EZRequest|d0|type 5 alone|1	$00000005
+EZRequest|called once|type 5 alone|1	$00000001
+EZRequest|window|type 5 alone|1	$CAFE0042
+EZRequest|idcmp|type 5 alone|1	$00000000
+EZRequest|args|type 5 alone|1	$00000001
+EZRequest|es_StructSize|type 5 alone|1	$00000014
+EZRequest|es_Flags|type 5 alone|1	$00000000
+EZRequest|title|type 5 alone|1	bytes 80 fnv 36E13BD6
+EZRequest|body|type 5 alone|1	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 5 alone|1	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 5 alone|1	bytes 64 0000000300000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 5 alone|1	bytes 256 fnv 565E42D5
+EZRequest|body buffer|type 5 alone|1	bytes 120 fnv A45D73A6
+EZRequest|kept|type 5 alone|2	kept
+EZRequest|popped|type 5 alone|2	$00000000
+EZRequest|d0|type 5 alone|2	$00000005
+EZRequest|called once|type 5 alone|2	$00000001
+EZRequest|window|type 5 alone|2	$CAFE0042
+EZRequest|idcmp|type 5 alone|2	$00000000
+EZRequest|args|type 5 alone|2	$00000001
+EZRequest|es_StructSize|type 5 alone|2	$00000014
+EZRequest|es_Flags|type 5 alone|2	$00000000
+EZRequest|title|type 5 alone|2	bytes 80 fnv 36E13BD6
+EZRequest|body|type 5 alone|2	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 5 alone|2	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 5 alone|2	bytes 64 0000FFFD00000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 5 alone|2	bytes 256 fnv 9DD04A8C
+EZRequest|body buffer|type 5 alone|2	bytes 120 fnv A45D73A6
+EZRequest|kept|type 7 alone|2	kept
+EZRequest|popped|type 7 alone|2	$00000000
+EZRequest|d0|type 7 alone|2	$00000005
+EZRequest|called once|type 7 alone|2	$00000001
+EZRequest|window|type 7 alone|2	$CAFE0042
+EZRequest|idcmp|type 7 alone|2	$00000000
+EZRequest|args|type 7 alone|2	$00000001
+EZRequest|es_StructSize|type 7 alone|2	$00000014
+EZRequest|es_Flags|type 7 alone|2	$00000000
+EZRequest|title|type 7 alone|2	bytes 80 fnv 36E13BD6
+EZRequest|body|type 7 alone|2	bytes 200 fnv 5F7BE75D
+EZRequest|gadget|type 7 alone|2	bytes 40 5965737C4E6F7C4D6179626500000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|type 7 alone|2	bytes 64 50524F4700000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequest|stack|type 7 alone|2	bytes 256 fnv E458F5EA
+EZRequest|body buffer|type 7 alone|2	bytes 120 fnv A45D73A6
+EZRequestArgs|kept|all types|1	kept
+EZRequestArgs|popped|all types|1	$00000000
+EZRequestArgs|d0|all types|1	$00000007
+EZRequestArgs|called once|all types|1	$00000001
+EZRequestArgs|window|all types|1	$CAFE0042
+EZRequestArgs|idcmp|all types|1	$00000000
+EZRequestArgs|args|all types|1	$00000001
+EZRequestArgs|es_StructSize|all types|1	$00000014
+EZRequestArgs|es_Flags|all types|1	$00000000
+EZRequestArgs|title|all types|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|all types|1	bytes 200 fnv 06B992CC
+EZRequestArgs|gadget|all types|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|all types|1	bytes 64 50524F4712345678FFFE0041000000050000FFFC000000030000FFFD50524F47000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|all types|1	bytes 256 fnv A5FEBC34
+EZRequestArgs|body|all types|2	$00000001
+EZRequestArgs|gadget Ok, no title|all types|1	$00000001
+EZRequestArgs|kept|one (stale end, BUG(orig) #747)|1	kept
+EZRequestArgs|popped|one (stale end, BUG(orig) #747)|1	$00000000
+EZRequestArgs|d0|one (stale end, BUG(orig) #747)|1	$00000007
+EZRequestArgs|called once|one (stale end, BUG(orig) #747)|1	$00000001
+EZRequestArgs|window|one (stale end, BUG(orig) #747)|1	$CAFE0042
+EZRequestArgs|idcmp|one (stale end, BUG(orig) #747)|1	$00000000
+EZRequestArgs|args|one (stale end, BUG(orig) #747)|1	$00000001
+EZRequestArgs|es_StructSize|one (stale end, BUG(orig) #747)|1	$00000014
+EZRequestArgs|es_Flags|one (stale end, BUG(orig) #747)|1	$00000000
+EZRequestArgs|title|one (stale end, BUG(orig) #747)|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|one (stale end, BUG(orig) #747)|1	bytes 200 fnv F6A0FECB
+EZRequestArgs|gadget|one (stale end, BUG(orig) #747)|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|one (stale end, BUG(orig) #747)|1	bytes 64 FFFFFFFF12345678FFFE0041000000050000FFFC000000030000FFFD50524F47000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|one (stale end, BUG(orig) #747)|1	bytes 256 fnv C1E6DCE2
+EZSeparator|kept|","|1	kept
+EZSeparator|popped|","|1	$00000000
+EZRequestArgs|kept|separator ,|1	kept
+EZRequestArgs|popped|separator ,|1	$00000000
+EZRequestArgs|d0|separator ,|1	$00000007
+EZRequestArgs|called once|separator ,|1	$00000001
+EZRequestArgs|window|separator ,|1	$CAFE0042
+EZRequestArgs|idcmp|separator ,|1	$00000000
+EZRequestArgs|args|separator ,|1	$00000001
+EZRequestArgs|es_StructSize|separator ,|1	$00000014
+EZRequestArgs|es_Flags|separator ,|1	$00000000
+EZRequestArgs|title|separator ,|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|separator ,|1	bytes 200 fnv 23546D4A
+EZRequestArgs|gadget|separator ,|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|separator ,|1	bytes 64 50524F4712345678FFFE0041000000050000FFFC000000030000FFFD50524F47000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|separator ,|1	bytes 256 fnv 304F9D78
+EZSeparator|kept|""|1	kept
+EZSeparator|popped|""|1	$00000000
+EZRequestArgs|kept|separator 0|1	kept
+EZRequestArgs|popped|separator 0|1	$00000000
+EZRequestArgs|d0|separator 0|1	$00000007
+EZRequestArgs|called once|separator 0|1	$00000001
+EZRequestArgs|window|separator 0|1	$CAFE0042
+EZRequestArgs|idcmp|separator 0|1	$00000000
+EZRequestArgs|args|separator 0|1	$00000001
+EZRequestArgs|es_StructSize|separator 0|1	$00000014
+EZRequestArgs|es_Flags|separator 0|1	$00000000
+EZRequestArgs|title|separator 0|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|separator 0|1	bytes 200 fnv EF28DAE1
+EZRequestArgs|gadget|separator 0|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|separator 0|1	bytes 64 50524F4712345678FFFE0041000000050000FFFC000000030000FFFD50524F47000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|separator 0|1	bytes 256 fnv 092652F4
+EZSeparator|kept|"\|x"|1	kept
+EZSeparator|popped|"\|x"|1	$00000000
+EZRequestArgs|kept|separator \| again|1	kept
+EZRequestArgs|popped|separator \| again|1	$00000000
+EZRequestArgs|d0|separator \| again|1	$00000007
+EZRequestArgs|called once|separator \| again|1	$00000001
+EZRequestArgs|window|separator \| again|1	$CAFE0042
+EZRequestArgs|idcmp|separator \| again|1	$00000000
+EZRequestArgs|args|separator \| again|1	$00000001
+EZRequestArgs|es_StructSize|separator \| again|1	$00000014
+EZRequestArgs|es_Flags|separator \| again|1	$00000000
+EZRequestArgs|title|separator \| again|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|separator \| again|1	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|separator \| again|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|separator \| again|1	bytes 64 0000000100000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|separator \| again|1	bytes 256 fnv DBFA5595
+EZRequestArgs|kept|type 7 alone|1	kept
+EZRequestArgs|popped|type 7 alone|1	$00000000
+EZRequestArgs|d0|type 7 alone|1	$00000007
+EZRequestArgs|called once|type 7 alone|1	$00000001
+EZRequestArgs|window|type 7 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 7 alone|1	$00000000
+EZRequestArgs|args|type 7 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 7 alone|1	$00000014
+EZRequestArgs|es_Flags|type 7 alone|1	$00000000
+EZRequestArgs|title|type 7 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 7 alone|1	bytes 200 fnv 8733DEDE
+EZRequestArgs|gadget|type 7 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 7 alone|1	bytes 64 50524F4700000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 7 alone|1	bytes 256 fnv 1796234C
+EZRequestArgs|kept|type 3 alone|1	kept
+EZRequestArgs|popped|type 3 alone|1	$00000000
+EZRequestArgs|d0|type 3 alone|1	$00000007
+EZRequestArgs|called once|type 3 alone|1	$00000001
+EZRequestArgs|window|type 3 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 3 alone|1	$00000000
+EZRequestArgs|args|type 3 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 3 alone|1	$00000014
+EZRequestArgs|es_Flags|type 3 alone|1	$00000000
+EZRequestArgs|title|type 3 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 3 alone|1	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|type 3 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 3 alone|1	bytes 64 1234567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 3 alone|1	bytes 256 fnv 67C66FD6
+EZRequestArgs|kept|type 2 alone|1	kept
+EZRequestArgs|popped|type 2 alone|1	$00000000
+EZRequestArgs|d0|type 2 alone|1	$00000007
+EZRequestArgs|called once|type 2 alone|1	$00000001
+EZRequestArgs|window|type 2 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 2 alone|1	$00000000
+EZRequestArgs|args|type 2 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 2 alone|1	$00000014
+EZRequestArgs|es_Flags|type 2 alone|1	$00000000
+EZRequestArgs|title|type 2 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 2 alone|1	bytes 200 fnv B6F582DF
+EZRequestArgs|gadget|type 2 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 2 alone|1	bytes 64 FFFE567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 2 alone|1	bytes 256 fnv 43E5294A
+EZRequestArgs|kept|type 1 alone|1	kept
+EZRequestArgs|popped|type 1 alone|1	$00000000
+EZRequestArgs|d0|type 1 alone|1	$00000007
+EZRequestArgs|called once|type 1 alone|1	$00000001
+EZRequestArgs|window|type 1 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 1 alone|1	$00000000
+EZRequestArgs|args|type 1 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 1 alone|1	$00000014
+EZRequestArgs|es_Flags|type 1 alone|1	$00000000
+EZRequestArgs|title|type 1 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 1 alone|1	bytes 200 fnv B6F582DF
+EZRequestArgs|gadget|type 1 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 1 alone|1	bytes 64 0041567800000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 1 alone|1	bytes 256 fnv 866E7331
+EZRequestArgs|kept|type 4 alone|1	kept
+EZRequestArgs|popped|type 4 alone|1	$00000000
+EZRequestArgs|d0|type 4 alone|1	$00000007
+EZRequestArgs|called once|type 4 alone|1	$00000001
+EZRequestArgs|window|type 4 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 4 alone|1	$00000000
+EZRequestArgs|args|type 4 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 4 alone|1	$00000014
+EZRequestArgs|es_Flags|type 4 alone|1	$00000000
+EZRequestArgs|title|type 4 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 4 alone|1	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|type 4 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 4 alone|1	bytes 64 0000000500000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 4 alone|1	bytes 256 fnv EBF9069E
+EZRequestArgs|kept|type 4 alone|2	kept
+EZRequestArgs|popped|type 4 alone|2	$00000000
+EZRequestArgs|d0|type 4 alone|2	$00000007
+EZRequestArgs|called once|type 4 alone|2	$00000001
+EZRequestArgs|window|type 4 alone|2	$CAFE0042
+EZRequestArgs|idcmp|type 4 alone|2	$00000000
+EZRequestArgs|args|type 4 alone|2	$00000001
+EZRequestArgs|es_StructSize|type 4 alone|2	$00000014
+EZRequestArgs|es_Flags|type 4 alone|2	$00000000
+EZRequestArgs|title|type 4 alone|2	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 4 alone|2	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|type 4 alone|2	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 4 alone|2	bytes 64 0000FFFC00000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 4 alone|2	bytes 256 fnv 7EBB870C
+EZRequestArgs|kept|type 5 alone|1	kept
+EZRequestArgs|popped|type 5 alone|1	$00000000
+EZRequestArgs|d0|type 5 alone|1	$00000007
+EZRequestArgs|called once|type 5 alone|1	$00000001
+EZRequestArgs|window|type 5 alone|1	$CAFE0042
+EZRequestArgs|idcmp|type 5 alone|1	$00000000
+EZRequestArgs|args|type 5 alone|1	$00000001
+EZRequestArgs|es_StructSize|type 5 alone|1	$00000014
+EZRequestArgs|es_Flags|type 5 alone|1	$00000000
+EZRequestArgs|title|type 5 alone|1	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 5 alone|1	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|type 5 alone|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 5 alone|1	bytes 64 0000000300000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 5 alone|1	bytes 256 fnv ED1A0475
+EZRequestArgs|kept|type 5 alone|2	kept
+EZRequestArgs|popped|type 5 alone|2	$00000000
+EZRequestArgs|d0|type 5 alone|2	$00000007
+EZRequestArgs|called once|type 5 alone|2	$00000001
+EZRequestArgs|window|type 5 alone|2	$CAFE0042
+EZRequestArgs|idcmp|type 5 alone|2	$00000000
+EZRequestArgs|args|type 5 alone|2	$00000001
+EZRequestArgs|es_StructSize|type 5 alone|2	$00000014
+EZRequestArgs|es_Flags|type 5 alone|2	$00000000
+EZRequestArgs|title|type 5 alone|2	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 5 alone|2	bytes 200 fnv 08BCF0B7
+EZRequestArgs|gadget|type 5 alone|2	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 5 alone|2	bytes 64 0000FFFD00000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 5 alone|2	bytes 256 fnv 8D13F7FC
+EZRequestArgs|kept|type 7 alone|2	kept
+EZRequestArgs|popped|type 7 alone|2	$00000000
+EZRequestArgs|d0|type 7 alone|2	$00000007
+EZRequestArgs|called once|type 7 alone|2	$00000001
+EZRequestArgs|window|type 7 alone|2	$CAFE0042
+EZRequestArgs|idcmp|type 7 alone|2	$00000000
+EZRequestArgs|args|type 7 alone|2	$00000001
+EZRequestArgs|es_StructSize|type 7 alone|2	$00000014
+EZRequestArgs|es_Flags|type 7 alone|2	$00000000
+EZRequestArgs|title|type 7 alone|2	bytes 80 fnv 510EA5E0
+EZRequestArgs|body|type 7 alone|2	bytes 200 fnv 8733DEDE
+EZRequestArgs|gadget|type 7 alone|2	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequestArgs|arguments|type 7 alone|2	bytes 64 50524F4700000002000000030000000400000005000000060000000700000008000000090000000A0000000B0000000C0000000D0000000E0000000F00000010
+EZRequestArgs|stack|type 7 alone|2	bytes 256 fnv A69328AA
+EZOutput|kept|none again|1	kept
+EZOutput|popped|none again|1	$00000000
+EZRequest|kept|body$ without window|1	kept
+EZRequest|popped|body$ without window|1	$00000000
+EZRequest|d0|body$ without window|1	$00000007
+EZRequest|called once|body$ without window|1	$00000001
+EZRequest|window|body$ without window|1	$00000000
+EZRequest|idcmp|body$ without window|1	$00000000
+EZRequest|args|body$ without window|1	$00000000
+EZRequest|es_StructSize|body$ without window|1	$00000014
+EZRequest|es_Flags|body$ without window|1	$00000000
+EZRequest|title|body$ without window|1	bytes 80 fnv 510EA5E0
+EZRequest|body|body$ without window|1	bytes 200 fnv A115DB1E
+EZRequest|gadget|body$ without window|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
+EZRequest|arguments|body$ without window|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+Flip$|kept|"ab"|1	kept
+Flip$|popped|"ab"|1	$00000000
+Flip$|d0|"ab"|1	$00000002
+Flip$|a3|"ab"|1	$00000017
+Flip$|out|"ab"|1	bytes 400 fnv BC7CB83E
+Flip$|kept|"abc"|1	kept
+Flip$|popped|"abc"|1	$00000000
+Flip$|d0|"abc"|1	$00000003
+Flip$|a3|"abc"|1	$00000018
+Flip$|out|"abc"|1	bytes 400 fnv 2D2DEA09
+Flip$|kept|"Hello World"|1	kept
+Flip$|popped|"Hello World"|1	$00000000
+Flip$|d0|"Hello World"|1	$0000000B
+Flip$|a3|"Hello World"|1	$00000020
+Flip$|out|"Hello World"|1	bytes 400 fnv FA3BE035
+Flip$|kept|"0123456789abcdef!"|1	kept
+Flip$|popped|"0123456789abcdef!"|1	$00000000
+Flip$|d0|"0123456789abcdef!"|1	$00000011
+Flip$|a3|"0123456789abcdef!"|1	$00000026
+Flip$|out|"0123456789abcdef!"|1	bytes 400 fnv F1077BB4
+Flip$|kept|250 characters|1	kept
+Flip$|popped|250 characters|1	$00000000
+Flip$|d0|250 characters|1	$000000FA
+Flip$|a3|250 characters|1	$0000010F
+Flip$|out|250 characters|1	bytes 400 fnv 9C500956
+Flip$|kept|0 characters (65536 swaps)|1	kept
+Flip$|popped|0 characters (65536 swaps)|1	$00000000
+Flip$|d0|0 characters (65536 swaps)|1	$00000000
+Flip$|a3|0 characters (65536 swaps)|1	$00011171
+Flip$|memory|0 characters (65536 swaps)|1	bytes 140000 fnv E872AFE2
+Flip$|kept|1 characters (65536 swaps)|1	kept
+Flip$|popped|1 characters (65536 swaps)|1	$00000000
+Flip$|d0|1 characters (65536 swaps)|1	$00000001
+Flip$|a3|1 characters (65536 swaps)|1	$00011172
+Flip$|memory|1 characters (65536 swaps)|1	bytes 140000 fnv 5D13FCCD
+NextArg$|kept|before InitArgParse|1	kept
+NextArg$|popped|before InitArgParse|1	$00000000
+NextArg$|d0|before InitArgParse|1	$00000000
+NextArg$|a3|before InitArgParse|1	$00000004
+NextArg$|out|before InitArgParse|1	bytes 400 fnv FC2BB505
+NextArgChar$|kept|before InitArgParse|1	kept
+NextArgChar$|popped|before InitArgParse|1	$00000000
+NextArgChar$|d0|before InitArgParse|1	$00000000
+NextArgChar$|a3|before InitArgParse|1	$00000004
+NextArgChar$|out|before InitArgParse|1	bytes 400 fnv FC2BB505
+InitArgParse|kept|''|1	kept
+InitArgParse|popped|''|1	$00000000
+NextArg$|kept|''|1	kept
+NextArg$|popped|''|1	$00000000
+NextArg$|d0|''|1	$00000000
+NextArg$|a3|''|1	$00000004
+NextArg$|out|''|1	bytes 400 fnv FC2BB505
+NextArg$|kept|''|2	kept
+NextArg$|popped|''|2	$00000000
+NextArg$|d0|''|2	$00000000
+NextArg$|a3|''|2	$00000004
+NextArg$|out|''|2	bytes 400 fnv FC2BB505
+NextArg$|kept|''|3	kept
+NextArg$|popped|''|3	$00000000
+NextArg$|d0|''|3	$00000000
+NextArg$|a3|''|3	$00000004
+NextArg$|out|''|3	bytes 400 fnv FC2BB505
+NextArg$|kept|''|4	kept
+NextArg$|popped|''|4	$00000000
+NextArg$|d0|''|4	$00000000
+NextArg$|a3|''|4	$00000004
+NextArg$|out|''|4	bytes 400 fnv FC2BB505
+NextArg$|kept|''|5	kept
+NextArg$|popped|''|5	$00000000
+NextArg$|d0|''|5	$00000000
+NextArg$|a3|''|5	$00000004
+NextArg$|out|''|5	bytes 400 fnv FC2BB505
+NextArg$|kept|''|6	kept
+NextArg$|popped|''|6	$00000000
+NextArg$|d0|''|6	$00000000
+NextArg$|a3|''|6	$00000004
+NextArg$|out|''|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|' '|1	kept
+InitArgParse|popped|' '|1	$00000000
+NextArg$|kept|' '|1	kept
+NextArg$|popped|' '|1	$00000000
+NextArg$|d0|' '|1	$00000000
+NextArg$|a3|' '|1	$00000004
+NextArg$|out|' '|1	bytes 400 fnv FC2BB505
+NextArg$|kept|' '|2	kept
+NextArg$|popped|' '|2	$00000000
+NextArg$|d0|' '|2	$00000000
+NextArg$|a3|' '|2	$00000004
+NextArg$|out|' '|2	bytes 400 fnv FC2BB505
+NextArg$|kept|' '|3	kept
+NextArg$|popped|' '|3	$00000000
+NextArg$|d0|' '|3	$00000000
+NextArg$|a3|' '|3	$00000004
+NextArg$|out|' '|3	bytes 400 fnv FC2BB505
+NextArg$|kept|' '|4	kept
+NextArg$|popped|' '|4	$00000000
+NextArg$|d0|' '|4	$00000000
+NextArg$|a3|' '|4	$00000004
+NextArg$|out|' '|4	bytes 400 fnv FC2BB505
+NextArg$|kept|' '|5	kept
+NextArg$|popped|' '|5	$00000000
+NextArg$|d0|' '|5	$00000000
+NextArg$|a3|' '|5	$00000004
+NextArg$|out|' '|5	bytes 400 fnv FC2BB505
+NextArg$|kept|' '|6	kept
+NextArg$|popped|' '|6	$00000000
+NextArg$|d0|' '|6	$00000000
+NextArg$|a3|' '|6	$00000004
+NextArg$|out|' '|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'one'|1	kept
+InitArgParse|popped|'one'|1	$00000000
+NextArg$|kept|'one'|1	kept
+NextArg$|popped|'one'|1	$00000000
+NextArg$|d0|'one'|1	$00000003
+NextArg$|a3|'one'|1	$00000007
+NextArg$|out|'one'|1	bytes 400 fnv 2355CFC3
+NextArg$|kept|'one'|2	kept
+NextArg$|popped|'one'|2	$00000000
+NextArg$|d0|'one'|2	$00000000
+NextArg$|a3|'one'|2	$00000004
+NextArg$|out|'one'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'one'|3	kept
+NextArg$|popped|'one'|3	$00000000
+NextArg$|d0|'one'|3	$00000000
+NextArg$|a3|'one'|3	$00000004
+NextArg$|out|'one'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'one'|4	kept
+NextArg$|popped|'one'|4	$00000000
+NextArg$|d0|'one'|4	$00000000
+NextArg$|a3|'one'|4	$00000004
+NextArg$|out|'one'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'one'|5	kept
+NextArg$|popped|'one'|5	$00000000
+NextArg$|d0|'one'|5	$00000000
+NextArg$|a3|'one'|5	$00000004
+NextArg$|out|'one'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'one'|6	kept
+NextArg$|popped|'one'|6	$00000000
+NextArg$|d0|'one'|6	$00000000
+NextArg$|a3|'one'|6	$00000004
+NextArg$|out|'one'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'one two  three '|1	kept
+InitArgParse|popped|'one two  three '|1	$00000000
+NextArg$|kept|'one two  three '|1	kept
+NextArg$|popped|'one two  three '|1	$00000000
+NextArg$|d0|'one two  three '|1	$00000003
+NextArg$|a3|'one two  three '|1	$00000007
+NextArg$|out|'one two  three '|1	bytes 400 fnv 2355CFC3
+NextArg$|kept|'one two  three '|2	kept
+NextArg$|popped|'one two  three '|2	$00000000
+NextArg$|d0|'one two  three '|2	$00000003
+NextArg$|a3|'one two  three '|2	$00000007
+NextArg$|out|'one two  three '|2	bytes 400 fnv 6DFCBA35
+NextArg$|kept|'one two  three '|3	kept
+NextArg$|popped|'one two  three '|3	$00000000
+NextArg$|d0|'one two  three '|3	$00000005
+NextArg$|a3|'one two  three '|3	$00000009
+NextArg$|out|'one two  three '|3	bytes 400 fnv 06BC1BAF
+NextArg$|kept|'one two  three '|4	kept
+NextArg$|popped|'one two  three '|4	$00000000
+NextArg$|d0|'one two  three '|4	$00000000
+NextArg$|a3|'one two  three '|4	$00000004
+NextArg$|out|'one two  three '|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'one two  three '|5	kept
+NextArg$|popped|'one two  three '|5	$00000000
+NextArg$|d0|'one two  three '|5	$00000000
+NextArg$|a3|'one two  three '|5	$00000004
+NextArg$|out|'one two  three '|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'one two  three '|6	kept
+NextArg$|popped|'one two  three '|6	$00000000
+NextArg$|d0|'one two  three '|6	$00000000
+NextArg$|a3|'one two  three '|6	$00000004
+NextArg$|out|'one two  three '|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'   lead'|1	kept
+InitArgParse|popped|'   lead'|1	$00000000
+NextArg$|kept|'   lead'|1	kept
+NextArg$|popped|'   lead'|1	$00000000
+NextArg$|d0|'   lead'|1	$00000004
+NextArg$|a3|'   lead'|1	$00000008
+NextArg$|out|'   lead'|1	bytes 400 fnv 2440879F
+NextArg$|kept|'   lead'|2	kept
+NextArg$|popped|'   lead'|2	$00000000
+NextArg$|d0|'   lead'|2	$00000000
+NextArg$|a3|'   lead'|2	$00000004
+NextArg$|out|'   lead'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'   lead'|3	kept
+NextArg$|popped|'   lead'|3	$00000000
+NextArg$|d0|'   lead'|3	$00000000
+NextArg$|a3|'   lead'|3	$00000004
+NextArg$|out|'   lead'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'   lead'|4	kept
+NextArg$|popped|'   lead'|4	$00000000
+NextArg$|d0|'   lead'|4	$00000000
+NextArg$|a3|'   lead'|4	$00000004
+NextArg$|out|'   lead'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'   lead'|5	kept
+NextArg$|popped|'   lead'|5	$00000000
+NextArg$|d0|'   lead'|5	$00000000
+NextArg$|a3|'   lead'|5	$00000004
+NextArg$|out|'   lead'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'   lead'|6	kept
+NextArg$|popped|'   lead'|6	$00000000
+NextArg$|d0|'   lead'|6	$00000000
+NextArg$|a3|'   lead'|6	$00000004
+NextArg$|out|'   lead'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'LOAD "Blitz2:" TEST'|1	kept
+InitArgParse|popped|'LOAD "Blitz2:" TEST'|1	$00000000
+NextArg$|kept|'LOAD "Blitz2:" TEST'|1	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|1	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|1	$00000004
+NextArg$|a3|'LOAD "Blitz2:" TEST'|1	$00000008
+NextArg$|out|'LOAD "Blitz2:" TEST'|1	bytes 400 fnv 3ACAF6D9
+NextArg$|kept|'LOAD "Blitz2:" TEST'|2	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|2	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|2	$00000007
+NextArg$|a3|'LOAD "Blitz2:" TEST'|2	$0000000B
+NextArg$|out|'LOAD "Blitz2:" TEST'|2	bytes 400 fnv 8CBE6A3A
+NextArg$|kept|'LOAD "Blitz2:" TEST'|3	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|3	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|3	$00000004
+NextArg$|a3|'LOAD "Blitz2:" TEST'|3	$00000008
+NextArg$|out|'LOAD "Blitz2:" TEST'|3	bytes 400 fnv 474857B5
+NextArg$|kept|'LOAD "Blitz2:" TEST'|4	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|4	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|4	$00000000
+NextArg$|a3|'LOAD "Blitz2:" TEST'|4	$00000004
+NextArg$|out|'LOAD "Blitz2:" TEST'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'LOAD "Blitz2:" TEST'|5	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|5	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|5	$00000000
+NextArg$|a3|'LOAD "Blitz2:" TEST'|5	$00000004
+NextArg$|out|'LOAD "Blitz2:" TEST'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'LOAD "Blitz2:" TEST'|6	kept
+NextArg$|popped|'LOAD "Blitz2:" TEST'|6	$00000000
+NextArg$|d0|'LOAD "Blitz2:" TEST'|6	$00000000
+NextArg$|a3|'LOAD "Blitz2:" TEST'|6	$00000004
+NextArg$|out|'LOAD "Blitz2:" TEST'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"quoted arg" x'|1	kept
+InitArgParse|popped|'"quoted arg" x'|1	$00000000
+NextArg$|kept|'"quoted arg" x'|1	kept
+NextArg$|popped|'"quoted arg" x'|1	$00000000
+NextArg$|d0|'"quoted arg" x'|1	$0000000A
+NextArg$|a3|'"quoted arg" x'|1	$0000000E
+NextArg$|out|'"quoted arg" x'|1	bytes 400 fnv 23932AB1
+NextArg$|kept|'"quoted arg" x'|2	kept
+NextArg$|popped|'"quoted arg" x'|2	$00000000
+NextArg$|d0|'"quoted arg" x'|2	$00000001
+NextArg$|a3|'"quoted arg" x'|2	$00000005
+NextArg$|out|'"quoted arg" x'|2	bytes 400 fnv D4AAFE93
+NextArg$|kept|'"quoted arg" x'|3	kept
+NextArg$|popped|'"quoted arg" x'|3	$00000000
+NextArg$|d0|'"quoted arg" x'|3	$00000000
+NextArg$|a3|'"quoted arg" x'|3	$00000004
+NextArg$|out|'"quoted arg" x'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"quoted arg" x'|4	kept
+NextArg$|popped|'"quoted arg" x'|4	$00000000
+NextArg$|d0|'"quoted arg" x'|4	$00000000
+NextArg$|a3|'"quoted arg" x'|4	$00000004
+NextArg$|out|'"quoted arg" x'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"quoted arg" x'|5	kept
+NextArg$|popped|'"quoted arg" x'|5	$00000000
+NextArg$|d0|'"quoted arg" x'|5	$00000000
+NextArg$|a3|'"quoted arg" x'|5	$00000004
+NextArg$|out|'"quoted arg" x'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"quoted arg" x'|6	kept
+NextArg$|popped|'"quoted arg" x'|6	$00000000
+NextArg$|d0|'"quoted arg" x'|6	$00000000
+NextArg$|a3|'"quoted arg" x'|6	$00000004
+NextArg$|out|'"quoted arg" x'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"a""b" c'|1	kept
+InitArgParse|popped|'"a""b" c'|1	$00000000
+NextArg$|kept|'"a""b" c'|1	kept
+NextArg$|popped|'"a""b" c'|1	$00000000
+NextArg$|d0|'"a""b" c'|1	$00000005
+NextArg$|a3|'"a""b" c'|1	$00000009
+NextArg$|out|'"a""b" c'|1	bytes 400 fnv 6B886875
+NextArg$|kept|'"a""b" c'|2	kept
+NextArg$|popped|'"a""b" c'|2	$00000000
+NextArg$|d0|'"a""b" c'|2	$00000000
+NextArg$|a3|'"a""b" c'|2	$00000004
+NextArg$|out|'"a""b" c'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b" c'|3	kept
+NextArg$|popped|'"a""b" c'|3	$00000000
+NextArg$|d0|'"a""b" c'|3	$00000000
+NextArg$|a3|'"a""b" c'|3	$00000004
+NextArg$|out|'"a""b" c'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b" c'|4	kept
+NextArg$|popped|'"a""b" c'|4	$00000000
+NextArg$|d0|'"a""b" c'|4	$00000000
+NextArg$|a3|'"a""b" c'|4	$00000004
+NextArg$|out|'"a""b" c'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b" c'|5	kept
+NextArg$|popped|'"a""b" c'|5	$00000000
+NextArg$|d0|'"a""b" c'|5	$00000000
+NextArg$|a3|'"a""b" c'|5	$00000004
+NextArg$|out|'"a""b" c'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b" c'|6	kept
+NextArg$|popped|'"a""b" c'|6	$00000000
+NextArg$|d0|'"a""b" c'|6	$00000000
+NextArg$|a3|'"a""b" c'|6	$00000004
+NextArg$|out|'"a""b" c'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"ab"cd e'|1	kept
+InitArgParse|popped|'"ab"cd e'|1	$00000000
+NextArg$|kept|'"ab"cd e'|1	kept
+NextArg$|popped|'"ab"cd e'|1	$00000000
+NextArg$|d0|'"ab"cd e'|1	$00000002
+NextArg$|a3|'"ab"cd e'|1	$00000006
+NextArg$|out|'"ab"cd e'|1	bytes 400 fnv 4940AD86
+NextArg$|kept|'"ab"cd e'|2	kept
+NextArg$|popped|'"ab"cd e'|2	$00000000
+NextArg$|d0|'"ab"cd e'|2	$00000002
+NextArg$|a3|'"ab"cd e'|2	$00000006
+NextArg$|out|'"ab"cd e'|2	bytes 400 fnv A04EF3FE
+NextArg$|kept|'"ab"cd e'|3	kept
+NextArg$|popped|'"ab"cd e'|3	$00000000
+NextArg$|d0|'"ab"cd e'|3	$00000001
+NextArg$|a3|'"ab"cd e'|3	$00000005
+NextArg$|out|'"ab"cd e'|3	bytes 400 fnv 0D63FBC6
+NextArg$|kept|'"ab"cd e'|4	kept
+NextArg$|popped|'"ab"cd e'|4	$00000000
+NextArg$|d0|'"ab"cd e'|4	$00000000
+NextArg$|a3|'"ab"cd e'|4	$00000004
+NextArg$|out|'"ab"cd e'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"ab"cd e'|5	kept
+NextArg$|popped|'"ab"cd e'|5	$00000000
+NextArg$|d0|'"ab"cd e'|5	$00000000
+NextArg$|a3|'"ab"cd e'|5	$00000004
+NextArg$|out|'"ab"cd e'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"ab"cd e'|6	kept
+NextArg$|popped|'"ab"cd e'|6	$00000000
+NextArg$|d0|'"ab"cd e'|6	$00000000
+NextArg$|a3|'"ab"cd e'|6	$00000004
+NextArg$|out|'"ab"cd e'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"unterminated'|1	kept
+InitArgParse|popped|'"unterminated'|1	$00000000
+NextArg$|kept|'"unterminated'|1	kept
+NextArg$|popped|'"unterminated'|1	$00000000
+NextArg$|d0|'"unterminated'|1	$0000000C
+NextArg$|a3|'"unterminated'|1	$00000010
+NextArg$|out|'"unterminated'|1	bytes 400 fnv DA5AF8FB
+NextArg$|kept|'"unterminated'|2	kept
+NextArg$|popped|'"unterminated'|2	$00000000
+NextArg$|d0|'"unterminated'|2	$00000000
+NextArg$|a3|'"unterminated'|2	$00000004
+NextArg$|out|'"unterminated'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'"unterminated'|3	kept
+NextArg$|popped|'"unterminated'|3	$00000000
+NextArg$|d0|'"unterminated'|3	$00000000
+NextArg$|a3|'"unterminated'|3	$00000004
+NextArg$|out|'"unterminated'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"unterminated'|4	kept
+NextArg$|popped|'"unterminated'|4	$00000000
+NextArg$|d0|'"unterminated'|4	$00000000
+NextArg$|a3|'"unterminated'|4	$00000004
+NextArg$|out|'"unterminated'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"unterminated'|5	kept
+NextArg$|popped|'"unterminated'|5	$00000000
+NextArg$|d0|'"unterminated'|5	$00000000
+NextArg$|a3|'"unterminated'|5	$00000004
+NextArg$|out|'"unterminated'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"unterminated'|6	kept
+NextArg$|popped|'"unterminated'|6	$00000000
+NextArg$|d0|'"unterminated'|6	$00000000
+NextArg$|a3|'"unterminated'|6	$00000004
+NextArg$|out|'"unterminated'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"x"'|1	kept
+InitArgParse|popped|'"x"'|1	$00000000
+NextArg$|kept|'"x"'|1	kept
+NextArg$|popped|'"x"'|1	$00000000
+NextArg$|d0|'"x"'|1	$00000001
+NextArg$|a3|'"x"'|1	$00000005
+NextArg$|out|'"x"'|1	bytes 400 fnv D4AAFE93
+NextArg$|kept|'"x"'|2	kept
+NextArg$|popped|'"x"'|2	$00000000
+NextArg$|d0|'"x"'|2	$00000000
+NextArg$|a3|'"x"'|2	$00000004
+NextArg$|out|'"x"'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'"x"'|3	kept
+NextArg$|popped|'"x"'|3	$00000000
+NextArg$|d0|'"x"'|3	$00000000
+NextArg$|a3|'"x"'|3	$00000004
+NextArg$|out|'"x"'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"x"'|4	kept
+NextArg$|popped|'"x"'|4	$00000000
+NextArg$|d0|'"x"'|4	$00000000
+NextArg$|a3|'"x"'|4	$00000004
+NextArg$|out|'"x"'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"x"'|5	kept
+NextArg$|popped|'"x"'|5	$00000000
+NextArg$|d0|'"x"'|5	$00000000
+NextArg$|a3|'"x"'|5	$00000004
+NextArg$|out|'"x"'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"x"'|6	kept
+NextArg$|popped|'"x"'|6	$00000000
+NextArg$|d0|'"x"'|6	$00000000
+NextArg$|a3|'"x"'|6	$00000004
+NextArg$|out|'"x"'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"a""'|1	kept
+InitArgParse|popped|'"a""'|1	$00000000
+NextArg$|kept|'"a""'|1	kept
+NextArg$|popped|'"a""'|1	$00000000
+NextArg$|d0|'"a""'|1	$00000002
+NextArg$|a3|'"a""'|1	$00000006
+NextArg$|out|'"a""'|1	bytes 400 fnv 86BDA8C6
+NextArg$|kept|'"a""'|2	kept
+NextArg$|popped|'"a""'|2	$00000000
+NextArg$|d0|'"a""'|2	$00000000
+NextArg$|a3|'"a""'|2	$00000004
+NextArg$|out|'"a""'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""'|3	kept
+NextArg$|popped|'"a""'|3	$00000000
+NextArg$|d0|'"a""'|3	$00000000
+NextArg$|a3|'"a""'|3	$00000004
+NextArg$|out|'"a""'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""'|4	kept
+NextArg$|popped|'"a""'|4	$00000000
+NextArg$|d0|'"a""'|4	$00000000
+NextArg$|a3|'"a""'|4	$00000004
+NextArg$|out|'"a""'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""'|5	kept
+NextArg$|popped|'"a""'|5	$00000000
+NextArg$|d0|'"a""'|5	$00000000
+NextArg$|a3|'"a""'|5	$00000004
+NextArg$|out|'"a""'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""'|6	kept
+NextArg$|popped|'"a""'|6	$00000000
+NextArg$|d0|'"a""'|6	$00000000
+NextArg$|a3|'"a""'|6	$00000004
+NextArg$|out|'"a""'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'""'|1	kept
+InitArgParse|popped|'""'|1	$00000000
+NextArg$|kept|'""'|1	kept
+NextArg$|popped|'""'|1	$00000000
+NextArg$|d0|'""'|1	$00000000
+NextArg$|a3|'""'|1	$00000004
+NextArg$|out|'""'|1	bytes 400 fnv FC2BB505
+NextArg$|kept|'""'|2	kept
+NextArg$|popped|'""'|2	$00000000
+NextArg$|d0|'""'|2	$00000000
+NextArg$|a3|'""'|2	$00000004
+NextArg$|out|'""'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'""'|3	kept
+NextArg$|popped|'""'|3	$00000000
+NextArg$|d0|'""'|3	$00000000
+NextArg$|a3|'""'|3	$00000004
+NextArg$|out|'""'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'""'|4	kept
+NextArg$|popped|'""'|4	$00000000
+NextArg$|d0|'""'|4	$00000000
+NextArg$|a3|'""'|4	$00000004
+NextArg$|out|'""'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'""'|5	kept
+NextArg$|popped|'""'|5	$00000000
+NextArg$|d0|'""'|5	$00000000
+NextArg$|a3|'""'|5	$00000004
+NextArg$|out|'""'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'""'|6	kept
+NextArg$|popped|'""'|6	$00000000
+NextArg$|d0|'""'|6	$00000000
+NextArg$|a3|'""'|6	$00000004
+NextArg$|out|'""'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"" ""'|1	kept
+InitArgParse|popped|'"" ""'|1	$00000000
+NextArg$|kept|'"" ""'|1	kept
+NextArg$|popped|'"" ""'|1	$00000000
+NextArg$|d0|'"" ""'|1	$00000000
+NextArg$|a3|'"" ""'|1	$00000004
+NextArg$|out|'"" ""'|1	bytes 400 fnv FC2BB505
+NextArg$|kept|'"" ""'|2	kept
+NextArg$|popped|'"" ""'|2	$00000000
+NextArg$|d0|'"" ""'|2	$00000000
+NextArg$|a3|'"" ""'|2	$00000004
+NextArg$|out|'"" ""'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'"" ""'|3	kept
+NextArg$|popped|'"" ""'|3	$00000000
+NextArg$|d0|'"" ""'|3	$00000000
+NextArg$|a3|'"" ""'|3	$00000004
+NextArg$|out|'"" ""'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"" ""'|4	kept
+NextArg$|popped|'"" ""'|4	$00000000
+NextArg$|d0|'"" ""'|4	$00000000
+NextArg$|a3|'"" ""'|4	$00000004
+NextArg$|out|'"" ""'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"" ""'|5	kept
+NextArg$|popped|'"" ""'|5	$00000000
+NextArg$|d0|'"" ""'|5	$00000000
+NextArg$|a3|'"" ""'|5	$00000004
+NextArg$|out|'"" ""'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"" ""'|6	kept
+NextArg$|popped|'"" ""'|6	$00000000
+NextArg$|d0|'"" ""'|6	$00000000
+NextArg$|a3|'"" ""'|6	$00000004
+NextArg$|out|'"" ""'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'a"b c"d e'|1	kept
+InitArgParse|popped|'a"b c"d e'|1	$00000000
+NextArg$|kept|'a"b c"d e'|1	kept
+NextArg$|popped|'a"b c"d e'|1	$00000000
+NextArg$|d0|'a"b c"d e'|1	$00000004
+NextArg$|a3|'a"b c"d e'|1	$00000008
+NextArg$|out|'a"b c"d e'|1	bytes 400 fnv 1FBC1F77
+NextArg$|kept|'a"b c"d e'|2	kept
+NextArg$|popped|'a"b c"d e'|2	$00000000
+NextArg$|d0|'a"b c"d e'|2	$00000001
+NextArg$|a3|'a"b c"d e'|2	$00000005
+NextArg$|out|'a"b c"d e'|2	bytes 400 fnv 9102D0CF
+NextArg$|kept|'a"b c"d e'|3	kept
+NextArg$|popped|'a"b c"d e'|3	$00000000
+NextArg$|d0|'a"b c"d e'|3	$00000001
+NextArg$|a3|'a"b c"d e'|3	$00000005
+NextArg$|out|'a"b c"d e'|3	bytes 400 fnv 0D63FBC6
+NextArg$|kept|'a"b c"d e'|4	kept
+NextArg$|popped|'a"b c"d e'|4	$00000000
+NextArg$|d0|'a"b c"d e'|4	$00000000
+NextArg$|a3|'a"b c"d e'|4	$00000004
+NextArg$|out|'a"b c"d e'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'a"b c"d e'|5	kept
+NextArg$|popped|'a"b c"d e'|5	$00000000
+NextArg$|d0|'a"b c"d e'|5	$00000000
+NextArg$|a3|'a"b c"d e'|5	$00000004
+NextArg$|out|'a"b c"d e'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'a"b c"d e'|6	kept
+NextArg$|popped|'a"b c"d e'|6	$00000000
+NextArg$|d0|'a"b c"d e'|6	$00000000
+NextArg$|a3|'a"b c"d e'|6	$00000004
+NextArg$|out|'a"b c"d e'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'"a""b""c" end'|1	kept
+InitArgParse|popped|'"a""b""c" end'|1	$00000000
+NextArg$|kept|'"a""b""c" end'|1	kept
+NextArg$|popped|'"a""b""c" end'|1	$00000000
+NextArg$|d0|'"a""b""c" end'|1	$00000005
+NextArg$|a3|'"a""b""c" end'|1	$00000009
+NextArg$|out|'"a""b""c" end'|1	bytes 400 fnv B7936953
+NextArg$|kept|'"a""b""c" end'|2	kept
+NextArg$|popped|'"a""b""c" end'|2	$00000000
+NextArg$|d0|'"a""b""c" end'|2	$00000003
+NextArg$|a3|'"a""b""c" end'|2	$00000007
+NextArg$|out|'"a""b""c" end'|2	bytes 400 fnv 2D6C0ACC
+NextArg$|kept|'"a""b""c" end'|3	kept
+NextArg$|popped|'"a""b""c" end'|3	$00000000
+NextArg$|d0|'"a""b""c" end'|3	$00000000
+NextArg$|a3|'"a""b""c" end'|3	$00000004
+NextArg$|out|'"a""b""c" end'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b""c" end'|4	kept
+NextArg$|popped|'"a""b""c" end'|4	$00000000
+NextArg$|d0|'"a""b""c" end'|4	$00000000
+NextArg$|a3|'"a""b""c" end'|4	$00000004
+NextArg$|out|'"a""b""c" end'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b""c" end'|5	kept
+NextArg$|popped|'"a""b""c" end'|5	$00000000
+NextArg$|d0|'"a""b""c" end'|5	$00000000
+NextArg$|a3|'"a""b""c" end'|5	$00000004
+NextArg$|out|'"a""b""c" end'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'"a""b""c" end'|6	kept
+NextArg$|popped|'"a""b""c" end'|6	$00000000
+NextArg$|d0|'"a""b""c" end'|6	$00000000
+NextArg$|a3|'"a""b""c" end'|6	$00000004
+NextArg$|out|'"a""b""c" end'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'""""'|1	kept
+InitArgParse|popped|'""""'|1	$00000000
+NextArg$|kept|'""""'|1	kept
+NextArg$|popped|'""""'|1	$00000000
+NextArg$|d0|'""""'|1	$00000002
+NextArg$|a3|'""""'|1	$00000006
+NextArg$|out|'""""'|1	bytes 400 fnv 17C288C7
+NextArg$|kept|'""""'|2	kept
+NextArg$|popped|'""""'|2	$00000000
+NextArg$|d0|'""""'|2	$00000000
+NextArg$|a3|'""""'|2	$00000004
+NextArg$|out|'""""'|2	bytes 400 fnv FC2BB505
+NextArg$|kept|'""""'|3	kept
+NextArg$|popped|'""""'|3	$00000000
+NextArg$|d0|'""""'|3	$00000000
+NextArg$|a3|'""""'|3	$00000004
+NextArg$|out|'""""'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'""""'|4	kept
+NextArg$|popped|'""""'|4	$00000000
+NextArg$|d0|'""""'|4	$00000000
+NextArg$|a3|'""""'|4	$00000004
+NextArg$|out|'""""'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'""""'|5	kept
+NextArg$|popped|'""""'|5	$00000000
+NextArg$|d0|'""""'|5	$00000000
+NextArg$|a3|'""""'|5	$00000004
+NextArg$|out|'""""'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'""""'|6	kept
+NextArg$|popped|'""""'|6	$00000000
+NextArg$|d0|'""""'|6	$00000000
+NextArg$|a3|'""""'|6	$00000004
+NextArg$|out|'""""'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'tab\there x'|1	kept
+InitArgParse|popped|'tab\there x'|1	$00000000
+NextArg$|kept|'tab\there x'|1	kept
+NextArg$|popped|'tab\there x'|1	$00000000
+NextArg$|d0|'tab\there x'|1	$00000008
+NextArg$|a3|'tab\there x'|1	$0000000C
+NextArg$|out|'tab\there x'|1	bytes 400 fnv F3F1A659
+NextArg$|kept|'tab\there x'|2	kept
+NextArg$|popped|'tab\there x'|2	$00000000
+NextArg$|d0|'tab\there x'|2	$00000001
+NextArg$|a3|'tab\there x'|2	$00000005
+NextArg$|out|'tab\there x'|2	bytes 400 fnv D4AAFE93
+NextArg$|kept|'tab\there x'|3	kept
+NextArg$|popped|'tab\there x'|3	$00000000
+NextArg$|d0|'tab\there x'|3	$00000000
+NextArg$|a3|'tab\there x'|3	$00000004
+NextArg$|out|'tab\there x'|3	bytes 400 fnv FC2BB505
+NextArg$|kept|'tab\there x'|4	kept
+NextArg$|popped|'tab\there x'|4	$00000000
+NextArg$|d0|'tab\there x'|4	$00000000
+NextArg$|a3|'tab\there x'|4	$00000004
+NextArg$|out|'tab\there x'|4	bytes 400 fnv FC2BB505
+NextArg$|kept|'tab\there x'|5	kept
+NextArg$|popped|'tab\there x'|5	$00000000
+NextArg$|d0|'tab\there x'|5	$00000000
+NextArg$|a3|'tab\there x'|5	$00000004
+NextArg$|out|'tab\there x'|5	bytes 400 fnv FC2BB505
+NextArg$|kept|'tab\there x'|6	kept
+NextArg$|popped|'tab\there x'|6	$00000000
+NextArg$|d0|'tab\there x'|6	$00000000
+NextArg$|a3|'tab\there x'|6	$00000004
+NextArg$|out|'tab\there x'|6	bytes 400 fnv FC2BB505
+InitArgParse|kept|'one,two,,three'|1	kept
+InitArgParse|popped|'one,two,,three'|1	$00000000
+NextArgChar$|kept|'one,two,,three'|1	kept
+NextArgChar$|popped|'one,two,,three'|1	$00000000
+NextArgChar$|d0|'one,two,,three'|1	$00000003
+NextArgChar$|a3|'one,two,,three'|1	$00000007
+NextArgChar$|out|'one,two,,three'|1	bytes 400 fnv 2355CFC3
+NextArgChar$|kept|'one,two,,three'|2	kept
+NextArgChar$|popped|'one,two,,three'|2	$00000000
+NextArgChar$|d0|'one,two,,three'|2	$00000003
+NextArgChar$|a3|'one,two,,three'|2	$00000007
+NextArgChar$|out|'one,two,,three'|2	bytes 400 fnv 6DFCBA35
+NextArgChar$|kept|'one,two,,three'|3	kept
+NextArgChar$|popped|'one,two,,three'|3	$00000000
+NextArgChar$|d0|'one,two,,three'|3	$00000000
+NextArgChar$|a3|'one,two,,three'|3	$00000004
+NextArgChar$|out|'one,two,,three'|3	bytes 400 fnv FC2BB505
+NextArgChar$|kept|'one,two,,three'|4	kept
+NextArgChar$|popped|'one,two,,three'|4	$00000000
+NextArgChar$|d0|'one,two,,three'|4	$00000005
+NextArgChar$|a3|'one,two,,three'|4	$00000009
+NextArgChar$|out|'one,two,,three'|4	bytes 400 fnv 06BC1BAF
+NextArgChar$|kept|'one,two,,three'|5	kept
+NextArgChar$|popped|'one,two,,three'|5	$00000000
+NextArgChar$|d0|'one,two,,three'|5	$00000000
+NextArgChar$|a3|'one,two,,three'|5	$00000004
+NextArgChar$|out|'one,two,,three'|5	bytes 400 fnv FC2BB505
+InitArgParse|kept|'a b,c d'|1	kept
+InitArgParse|popped|'a b,c d'|1	$00000000
+NextArg$|kept|'a b,c d'|1	kept
+NextArg$|popped|'a b,c d'|1	$00000000
+NextArg$|d0|'a b,c d'|1	$00000001
+NextArg$|a3|'a b,c d'|1	$00000005
+NextArg$|out|'a b,c d'|1	bytes 400 fnv 34B9DD22
+NextArgChar$|kept|'a b,c d'|1	kept
+NextArgChar$|popped|'a b,c d'|1	$00000000
+NextArgChar$|d0|'a b,c d'|1	$00000001
+NextArgChar$|a3|'a b,c d'|1	$00000005
+NextArgChar$|out|'a b,c d'|1	bytes 400 fnv C872B429
+NextArg$|kept|'a b,c d'|2	kept
+NextArg$|popped|'a b,c d'|2	$00000000
+NextArg$|d0|'a b,c d'|2	$00000001
+NextArg$|a3|'a b,c d'|2	$00000005
+NextArg$|out|'a b,c d'|2	bytes 400 fnv 94DEC400
+NextArg$|kept|'a b,c d'|3	kept
+NextArg$|popped|'a b,c d'|3	$00000000
+NextArg$|d0|'a b,c d'|3	$00000001
+NextArg$|a3|'a b,c d'|3	$00000005
+NextArg$|out|'a b,c d'|3	bytes 400 fnv 9102D0CF
+NextArg$|kept|'a b,c d'|4	kept
+NextArg$|popped|'a b,c d'|4	$00000000
+NextArg$|d0|'a b,c d'|4	$00000000
+NextArg$|a3|'a b,c d'|4	$00000004
+NextArg$|out|'a b,c d'|4	bytes 400 fnv FC2BB505
+NextArgChar$|kept|'a b,c d'|2	kept
+NextArgChar$|popped|'a b,c d'|2	$00000000
+NextArgChar$|d0|'a b,c d'|2	$00000000
+NextArgChar$|a3|'a b,c d'|2	$00000004
+NextArgChar$|out|'a b,c d'|2	bytes 400 fnv FC2BB505
+NextArgChar$|kept|'a b,c d'|3	kept
+NextArgChar$|popped|'a b,c d'|3	$00000000
+NextArgChar$|d0|'a b,c d'|3	$00000000
+NextArgChar$|a3|'a b,c d'|3	$00000004
+NextArgChar$|out|'a b,c d'|3	bytes 400 fnv FC2BB505
+InitArgParse|kept|'x=1;y=2'|1	kept
+InitArgParse|popped|'x=1;y=2'|1	$00000000
+NextArgChar$|kept|'x=1;y=2'|1	kept
+NextArgChar$|popped|'x=1;y=2'|1	$00000000
+NextArgChar$|d0|'x=1;y=2'|1	$00000001
+NextArgChar$|a3|'x=1;y=2'|1	$00000005
+NextArgChar$|out|'x=1;y=2'|1	bytes 400 fnv D4AAFE93
+NextArgChar$|kept|'x=1;y=2'|2	kept
+NextArgChar$|popped|'x=1;y=2'|2	$00000000
+NextArgChar$|d0|'x=1;y=2'|2	$00000001
+NextArgChar$|a3|'x=1;y=2'|2	$00000005
+NextArgChar$|out|'x=1;y=2'|2	bytes 400 fnv 77A97452
+NextArgChar$|kept|'x=1;y=2'|3	kept
+NextArgChar$|popped|'x=1;y=2'|3	$00000000
+NextArgChar$|d0|'x=1;y=2'|3	$00000001
+NextArgChar$|a3|'x=1;y=2'|3	$00000005
+NextArgChar$|out|'x=1;y=2'|3	bytes 400 fnv 6D760B6A
+NextArgChar$|kept|'x=1;y=2'|4	kept
+NextArgChar$|popped|'x=1;y=2'|4	$00000000
+NextArgChar$|d0|'x=1;y=2'|4	$00000001
+NextArgChar$|a3|'x=1;y=2'|4	$00000005
+NextArgChar$|out|'x=1;y=2'|4	bytes 400 fnv B781E499
+ProgDir$|kept|first (calls ProgPath$)|1	kept
+ProgDir$|popped|first (calls ProgPath$)|1	$00000000
+ProgDir$|d0|first (calls ProgPath$)|1	$00000005
+ProgDir$|a3|first (calls ProgPath$)|1	$0000000A
+ProgDir$|out|first (calls ProgPath$)|1	bytes 400 fnv 2D3FCB51
+ProgName$|kept||1	kept
+ProgName$|popped||1	$00000000
+ProgName$|d0||1	$0000000A
+ProgName$|a3||1	$0000000F
+ProgName$|out||1	bytes 400 fnv E4F409D1
+ProgPath$|kept||1	kept
+ProgPath$|popped||1	$00000000
+ProgPath$|d0||1	$0000000F
+ProgPath$|a3||1	$00000014
+ProgPath$|out||1	bytes 400 fnv 2326EE3D
+ProgDir$|kept|again|1	kept
+ProgDir$|popped|again|1	$00000000
+ProgDir$|d0|again|1	$00000005
+ProgDir$|a3|again|1	$0000000A
+ProgDir$|out|again|1	bytes 400 fnv 0D29BF4F
+ProgPath$|kept|no program name: the task name|1	kept
+ProgPath$|popped|no program name: the task name|1	$00000000
+ProgPath$|d0|no program name: the task name|1	$00000010
+ProgPath$|a3|no program name: the task name|1	$00000015
+ProgPath$|out|no program name: the task name|1	bytes 400 fnv F9C3A92F
+ProgName$|kept|no program name|1	kept
+ProgName$|popped|no program name|1	$00000000
+ProgName$|d0|no program name|1	$0000000B
+ProgName$|a3|no program name|1	$00000010
+ProgName$|out|no program name|1	bytes 400 fnv 0FDD6BBB
+ProgPath$|kept|no program dir: the current dir|1	kept
+ProgPath$|popped|no program dir: the current dir|1	$00000000
+ProgPath$|d0|no program dir: the current dir|1	$0000000B
+ProgPath$|a3|no program dir: the current dir|1	$00000010
+ProgPath$|out|no program dir: the current dir|1	bytes 400 fnv C4D0C0B8
+ProgDir$|kept|no program dir|1	kept
+ProgDir$|popped|no program dir|1	$00000000
+ProgDir$|d0|no program dir|1	$00000000
+ProgDir$|a3|no program dir|1	$00000005
+ProgDir$|out|no program dir|1	bytes 400 fnv C27E4ECF
+ProgPath$|kept|normal again|1	kept
+ProgPath$|popped|normal again|1	$00000000
+ProgPath$|d0|normal again|1	$0000000F
+ProgPath$|a3|normal again|1	$00000014
+ProgPath$|out|normal again|1	bytes 400 fnv 2326EE3D
+FromBlitz|kept|the test's name|1	kept
+FromBlitz|popped|the test's name|1	$00000000
+FromBlitz|d0|the test's name|1	$00000000
+FromBlitz|kept|"Blitz ][ Program Process"|1	kept
+FromBlitz|popped|"Blitz ][ Program Process"|1	$00000000
+FromBlitz|d0|"Blitz ][ Program Process"|1	$FFFFFFFF
+FromBlitz|from Blitz|"Blitz ][ Program Process"|1	$00000001
+FromBlitz|kept|"Blitz ][ Program Proc"|1	kept
+FromBlitz|popped|"Blitz ][ Program Proc"|1	$00000000
+FromBlitz|d0|"Blitz ][ Program Proc"|1	$FFFFFFFF
+FromBlitz|from Blitz|"Blitz ][ Program Proc"|1	$00000001
+FromBlitz|kept|"Blitz ][ Program Prox"|1	kept
+FromBlitz|popped|"Blitz ][ Program Prox"|1	$00000000
+FromBlitz|d0|"Blitz ][ Program Prox"|1	$00000000
+FromBlitz|kept|"Blitz ][ Program Pro"|1	kept
+FromBlitz|popped|"Blitz ][ Program Pro"|1	$00000000
+FromBlitz|d0|"Blitz ][ Program Pro"|1	$00000000
+FromBlitz|kept|"Blitz"|1	kept
+FromBlitz|popped|"Blitz"|1	$00000000
+FromBlitz|d0|"Blitz"|1	$00000000
+FromBlitz|kept|""|1	kept
+FromBlitz|popped|""|1	$00000000
+FromBlitz|d0|""|1	$00000000
+FromBlitz|kept|"blitz ][ Program Process"|1	kept
+FromBlitz|popped|"blitz ][ Program Process"|1	$00000000
+FromBlitz|d0|"blitz ][ Program Process"|1	$00000000
+FromBlitz|kept|"Blitz ][ Program Process and more"|1	kept
+FromBlitz|popped|"Blitz ][ Program Process and more"|1	$00000000
+FromBlitz|d0|"Blitz ][ Program Process and more"|1	$FFFFFFFF
+LtoS|kept|$41424344|1	kept
+LtoS|popped|$41424344|1	$00000000
+LtoS|d0|$41424344|1	$00000004
+LtoS|a3|$41424344|1	$00000008
+LtoS|out|$41424344|1	bytes 400 fnv DFB52EED
+LtoS|kept|$00FF7F80|1	kept
+LtoS|popped|$00FF7F80|1	$00000000
+LtoS|d0|$00FF7F80|1	$00000004
+LtoS|a3|$00FF7F80|1	$00000008
+LtoS|out|$00FF7F80|1	bytes 400 fnv 8644CC02
+LtoS|kept|$1F20217E|1	kept
+LtoS|popped|$1F20217E|1	$00000000
+LtoS|d0|$1F20217E|1	$00000004
+LtoS|a3|$1F20217E|1	$00000008
+LtoS|out|$1F20217E|1	bytes 400 fnv 89F7DDEE
+LtoS|kept|$80818283|1	kept
+LtoS|popped|$80818283|1	$00000000
+LtoS|d0|$80818283|1	$00000004
+LtoS|a3|$80818283|1	$00000008
+LtoS|out|$80818283|1	bytes 400 fnv 31B5EF85
+LtoS|kept|$00000000|1	kept
+LtoS|popped|$00000000|1	$00000000
+LtoS|d0|$00000000|1	$00000004
+LtoS|a3|$00000000|1	$00000008
+LtoS|out|$00000000|1	bytes 400 fnv 31B5EF85
+LtoS|kept|$FFFFFFFF|1	kept
+LtoS|popped|$FFFFFFFF|1	$00000000
+LtoS|d0|$FFFFFFFF|1	$00000004
+LtoS|a3|$FFFFFFFF|1	$00000008
+LtoS|out|$FFFFFFFF|1	bytes 400 fnv 31B5EF85
+LtoS|kept|$DE551B45|1	kept
+LtoS|popped|$DE551B45|1	$00000000
+LtoS|d0|$DE551B45|1	$00000004
+LtoS|a3|$DE551B45|1	$00000008
+LtoS|out|$DE551B45|1	bytes 400 fnv C7E88A9D
+LtoS|kept|$EBCE17AD|1	kept
+LtoS|popped|$EBCE17AD|1	$00000000
+LtoS|d0|$EBCE17AD|1	$00000004
+LtoS|a3|$EBCE17AD|1	$00000008
+LtoS|out|$EBCE17AD|1	bytes 400 fnv 31B5EF85
+LtoS|kept|$805B4650|1	kept
+LtoS|popped|$805B4650|1	$00000000
+LtoS|d0|$805B4650|1	$00000004
+LtoS|a3|$805B4650|1	$00000008
+LtoS|out|$805B4650|1	bytes 400 fnv 383AF60A
+LtoS|kept|$5F2C8EC4|1	kept
+LtoS|popped|$5F2C8EC4|1	$00000000
+LtoS|d0|$5F2C8EC4|1	$00000004
+LtoS|a3|$5F2C8EC4|1	$00000008
+LtoS|out|$5F2C8EC4|1	bytes 400 fnv B6182D96
+LtoS|kept|$4E6C09A0|1	kept
+LtoS|popped|$4E6C09A0|1	$00000000
+LtoS|d0|$4E6C09A0|1	$00000004
+LtoS|a3|$4E6C09A0|1	$00000008
+LtoS|out|$4E6C09A0|1	bytes 400 fnv BDF2608F
+LtoS|kept|$CC3518F2|1	kept
+LtoS|popped|$CC3518F2|1	$00000000
+LtoS|d0|$CC3518F2|1	$00000004
+LtoS|a3|$CC3518F2|1	$00000008
+LtoS|out|$CC3518F2|1	bytes 400 fnv CEFFBFCE
+LtoS|kept|$DFDA5117|1	kept
+LtoS|popped|$DFDA5117|1	$00000000
+LtoS|d0|$DFDA5117|1	$00000004
+LtoS|a3|$DFDA5117|1	$00000008
+LtoS|out|$DFDA5117|1	bytes 400 fnv 683D4B1C
+LtoS|kept|$1C537CB3|1	kept
+LtoS|popped|$1C537CB3|1	$00000000
+LtoS|d0|$1C537CB3|1	$00000004
+LtoS|a3|$1C537CB3|1	$00000008
+LtoS|out|$1C537CB3|1	bytes 400 fnv B5AB1318
+ASCRaw|kept|0|1	kept
+ASCRaw|popped|0|1	$00000000
+ASCRaw|d0|0|1	$00000001
+ASCRaw|a3|0|1	$00000005
+ASCRaw|out|0|1	bytes 400 fnv FEC894AE
+ASCRaw|kept|1|1	kept
+ASCRaw|popped|1|1	$00000000
+ASCRaw|d0|1|1	$00000001
+ASCRaw|a3|1|1	$00000005
+ASCRaw|out|1|1	bytes 400 fnv 324B4B80
+ASCRaw|kept|2|1	kept
+ASCRaw|popped|2|1	$00000000
+ASCRaw|d0|2|1	$00000001
+ASCRaw|a3|2|1	$00000005
+ASCRaw|out|2|1	bytes 400 fnv 60E05437
+ASCRaw|kept|3|1	kept
+ASCRaw|popped|3|1	$00000000
+ASCRaw|d0|3|1	$00000001
+ASCRaw|a3|3|1	$00000005
+ASCRaw|out|3|1	bytes 400 fnv 14C01F42
+ASCRaw|kept|4|1	kept
+ASCRaw|popped|4|1	$00000000
+ASCRaw|d0|4|1	$00000001
+ASCRaw|a3|4|1	$00000005
+ASCRaw|out|4|1	bytes 400 fnv 4BCAC631
+ASCRaw|kept|5|1	kept
+ASCRaw|popped|5|1	$00000000
+ASCRaw|d0|5|1	$00000001
+ASCRaw|a3|5|1	$00000005
+ASCRaw|out|5|1	bytes 400 fnv 6885B91C
+ASCRaw|kept|6|1	kept
+ASCRaw|popped|6|1	$00000000
+ASCRaw|d0|6|1	$00000001
+ASCRaw|a3|6|1	$00000005
+ASCRaw|out|6|1	bytes 400 fnv FBDD0573
+ASCRaw|kept|7|1	kept
+ASCRaw|popped|7|1	$00000000
+ASCRaw|d0|7|1	$00000001
+ASCRaw|a3|7|1	$00000005
+ASCRaw|out|7|1	bytes 400 fnv 53189E9E
+ASCRaw|kept|8|1	kept
+ASCRaw|popped|8|1	$00000000
+ASCRaw|d0|8|1	$00000001
+ASCRaw|a3|8|1	$00000005
+ASCRaw|out|8|1	bytes 400 fnv C41F555D
+ASCRaw|kept|9|1	kept
+ASCRaw|popped|9|1	$00000000
+ASCRaw|d0|9|1	$00000001
+ASCRaw|a3|9|1	$00000005
+ASCRaw|out|9|1	bytes 400 fnv 4DBDECA8
+ASCRaw|kept|10|1	kept
+ASCRaw|popped|10|1	$00000000
+ASCRaw|d0|10|1	$00000001
+ASCRaw|a3|10|1	$00000005
+ASCRaw|out|10|1	bytes 400 fnv 6A6F4355
+ASCRaw|kept|11|1	kept
+ASCRaw|popped|11|1	$00000000
+ASCRaw|d0|11|1	$00000001
+ASCRaw|a3|11|1	$00000005
+ASCRaw|out|11|1	bytes 400 fnv 1159CF54
+ASCRaw|kept|12|1	kept
+ASCRaw|popped|12|1	$00000000
+ASCRaw|d0|12|1	$00000001
+ASCRaw|a3|12|1	$00000005
+ASCRaw|out|12|1	bytes 400 fnv 3D888A44
+ASCRaw|kept|13|1	kept
+ASCRaw|popped|13|1	$00000000
+ASCRaw|d0|13|1	$00000001
+ASCRaw|a3|13|1	$00000005
+ASCRaw|out|13|1	bytes 400 fnv 50C5D4B9
+ASCRaw|kept|14|1	kept
+ASCRaw|popped|14|1	$00000000
+ASCRaw|d0|14|1	$00000001
+ASCRaw|a3|14|1	$00000005
+ASCRaw|out|14|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|15|1	kept
+ASCRaw|popped|15|1	$00000000
+ASCRaw|d0|15|1	$00000001
+ASCRaw|a3|15|1	$00000005
+ASCRaw|out|15|1	bytes 400 fnv 6A6F4355
+ASCRaw|kept|16|1	kept
+ASCRaw|popped|16|1	$00000000
+ASCRaw|d0|16|1	$00000001
+ASCRaw|a3|16|1	$00000005
+ASCRaw|out|16|1	bytes 400 fnv CFF83FC0
+ASCRaw|kept|17|1	kept
+ASCRaw|popped|17|1	$00000000
+ASCRaw|d0|17|1	$00000001
+ASCRaw|a3|17|1	$00000005
+ASCRaw|out|17|1	bytes 400 fnv C36D3ADE
+ASCRaw|kept|18|1	kept
+ASCRaw|popped|18|1	$00000000
+ASCRaw|d0|18|1	$00000001
+ASCRaw|a3|18|1	$00000005
+ASCRaw|out|18|1	bytes 400 fnv A550F5AC
+ASCRaw|kept|19|1	kept
+ASCRaw|popped|19|1	$00000000
+ASCRaw|d0|19|1	$00000001
+ASCRaw|a3|19|1	$00000005
+ASCRaw|out|19|1	bytes 400 fnv FDA40A77
+ASCRaw|kept|20|1	kept
+ASCRaw|popped|20|1	$00000000
+ASCRaw|d0|20|1	$00000001
+ASCRaw|a3|20|1	$00000005
+ASCRaw|out|20|1	bytes 400 fnv 9F727C71
+ASCRaw|kept|21|1	kept
+ASCRaw|popped|21|1	$00000000
+ASCRaw|d0|21|1	$00000001
+ASCRaw|a3|21|1	$00000005
+ASCRaw|out|21|1	bytes 400 fnv CF7EFAE8
+ASCRaw|kept|22|1	kept
+ASCRaw|popped|22|1	$00000000
+ASCRaw|d0|22|1	$00000001
+ASCRaw|a3|22|1	$00000005
+ASCRaw|out|22|1	bytes 400 fnv A3B9D15C
+ASCRaw|kept|23|1	kept
+ASCRaw|popped|23|1	$00000000
+ASCRaw|d0|23|1	$00000001
+ASCRaw|a3|23|1	$00000005
+ASCRaw|out|23|1	bytes 400 fnv 3D30D8B8
+ASCRaw|kept|24|1	kept
+ASCRaw|popped|24|1	$00000000
+ASCRaw|d0|24|1	$00000001
+ASCRaw|a3|24|1	$00000005
+ASCRaw|out|24|1	bytes 400 fnv C347F4B6
+ASCRaw|kept|25|1	kept
+ASCRaw|popped|25|1	$00000000
+ASCRaw|d0|25|1	$00000001
+ASCRaw|a3|25|1	$00000005
+ASCRaw|out|25|1	bytes 400 fnv C291F995
+ASCRaw|kept|26|1	kept
+ASCRaw|popped|26|1	$00000000
+ASCRaw|d0|26|1	$00000001
+ASCRaw|a3|26|1	$00000005
+ASCRaw|out|26|1	bytes 400 fnv 1B420D0A
+ASCRaw|kept|27|1	kept
+ASCRaw|popped|27|1	$00000000
+ASCRaw|d0|27|1	$00000001
+ASCRaw|a3|27|1	$00000005
+ASCRaw|out|27|1	bytes 400 fnv 97709064
+ASCRaw|kept|28|1	kept
+ASCRaw|popped|28|1	$00000000
+ASCRaw|d0|28|1	$00000001
+ASCRaw|a3|28|1	$00000005
+ASCRaw|out|28|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|29|1	kept
+ASCRaw|popped|29|1	$00000000
+ASCRaw|d0|29|1	$00000001
+ASCRaw|a3|29|1	$00000005
+ASCRaw|out|29|1	bytes 400 fnv 324B4B80
+ASCRaw|kept|30|1	kept
+ASCRaw|popped|30|1	$00000000
+ASCRaw|d0|30|1	$00000001
+ASCRaw|a3|30|1	$00000005
+ASCRaw|out|30|1	bytes 400 fnv 60E05437
+ASCRaw|kept|31|1	kept
+ASCRaw|popped|31|1	$00000000
+ASCRaw|d0|31|1	$00000001
+ASCRaw|a3|31|1	$00000005
+ASCRaw|out|31|1	bytes 400 fnv 14C01F42
+ASCRaw|kept|32|1	kept
+ASCRaw|popped|32|1	$00000000
+ASCRaw|d0|32|1	$00000001
+ASCRaw|a3|32|1	$00000005
+ASCRaw|out|32|1	bytes 400 fnv D8C252D0
+ASCRaw|kept|33|1	kept
+ASCRaw|popped|33|1	$00000000
+ASCRaw|d0|33|1	$00000001
+ASCRaw|a3|33|1	$00000005
+ASCRaw|out|33|1	bytes 400 fnv DBA81782
+ASCRaw|kept|34|1	kept
+ASCRaw|popped|34|1	$00000000
+ASCRaw|d0|34|1	$00000001
+ASCRaw|a3|34|1	$00000005
+ASCRaw|out|34|1	bytes 400 fnv BD8330C1
+ASCRaw|kept|35|1	kept
+ASCRaw|popped|35|1	$00000000
+ASCRaw|d0|35|1	$00000001
+ASCRaw|a3|35|1	$00000005
+ASCRaw|out|35|1	bytes 400 fnv B15AEA43
+ASCRaw|kept|36|1	kept
+ASCRaw|popped|36|1	$00000000
+ASCRaw|d0|36|1	$00000001
+ASCRaw|a3|36|1	$00000005
+ASCRaw|out|36|1	bytes 400 fnv C1A08CEE
+ASCRaw|kept|37|1	kept
+ASCRaw|popped|37|1	$00000000
+ASCRaw|d0|37|1	$00000001
+ASCRaw|a3|37|1	$00000005
+ASCRaw|out|37|1	bytes 400 fnv 7A5B6E2D
+ASCRaw|kept|38|1	kept
+ASCRaw|popped|38|1	$00000000
+ASCRaw|d0|38|1	$00000001
+ASCRaw|a3|38|1	$00000005
+ASCRaw|out|38|1	bytes 400 fnv 66D13F6F
+ASCRaw|kept|39|1	kept
+ASCRaw|popped|39|1	$00000000
+ASCRaw|d0|39|1	$00000001
+ASCRaw|a3|39|1	$00000005
+ASCRaw|out|39|1	bytes 400 fnv 6DEABB3A
+ASCRaw|kept|40|1	kept
+ASCRaw|popped|40|1	$00000000
+ASCRaw|d0|40|1	$00000001
+ASCRaw|a3|40|1	$00000005
+ASCRaw|out|40|1	bytes 400 fnv 69F3B169
+ASCRaw|kept|41|1	kept
+ASCRaw|popped|41|1	$00000000
+ASCRaw|d0|41|1	$00000001
+ASCRaw|a3|41|1	$00000005
+ASCRaw|out|41|1	bytes 400 fnv 19C244EA
+ASCRaw|kept|42|1	kept
+ASCRaw|popped|42|1	$00000000
+ASCRaw|d0|42|1	$00000001
+ASCRaw|a3|42|1	$00000005
+ASCRaw|out|42|1	bytes 400 fnv 2D94E392
+ASCRaw|kept|43|1	kept
+ASCRaw|popped|43|1	$00000000
+ASCRaw|d0|43|1	$00000001
+ASCRaw|a3|43|1	$00000005
+ASCRaw|out|43|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|44|1	kept
+ASCRaw|popped|44|1	$00000000
+ASCRaw|d0|44|1	$00000001
+ASCRaw|a3|44|1	$00000005
+ASCRaw|out|44|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|45|1	kept
+ASCRaw|popped|45|1	$00000000
+ASCRaw|d0|45|1	$00000001
+ASCRaw|a3|45|1	$00000005
+ASCRaw|out|45|1	bytes 400 fnv 4BCAC631
+ASCRaw|kept|46|1	kept
+ASCRaw|popped|46|1	$00000000
+ASCRaw|d0|46|1	$00000001
+ASCRaw|a3|46|1	$00000005
+ASCRaw|out|46|1	bytes 400 fnv 6885B91C
+ASCRaw|kept|47|1	kept
+ASCRaw|popped|47|1	$00000000
+ASCRaw|d0|47|1	$00000001
+ASCRaw|a3|47|1	$00000005
+ASCRaw|out|47|1	bytes 400 fnv FBDD0573
+ASCRaw|kept|48|1	kept
+ASCRaw|popped|48|1	$00000000
+ASCRaw|d0|48|1	$00000001
+ASCRaw|a3|48|1	$00000005
+ASCRaw|out|48|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|49|1	kept
+ASCRaw|popped|49|1	$00000000
+ASCRaw|d0|49|1	$00000001
+ASCRaw|a3|49|1	$00000005
+ASCRaw|out|49|1	bytes 400 fnv 72676B1F
+ASCRaw|kept|50|1	kept
+ASCRaw|popped|50|1	$00000000
+ASCRaw|d0|50|1	$00000001
+ASCRaw|a3|50|1	$00000005
+ASCRaw|out|50|1	bytes 400 fnv 2E2DA59D
+ASCRaw|kept|51|1	kept
+ASCRaw|popped|51|1	$00000000
+ASCRaw|d0|51|1	$00000001
+ASCRaw|a3|51|1	$00000005
+ASCRaw|out|51|1	bytes 400 fnv D6A351D2
+ASCRaw|kept|52|1	kept
+ASCRaw|popped|52|1	$00000000
+ASCRaw|d0|52|1	$00000001
+ASCRaw|a3|52|1	$00000005
+ASCRaw|out|52|1	bytes 400 fnv 0CC4CDB3
+ASCRaw|kept|53|1	kept
+ASCRaw|popped|53|1	$00000000
+ASCRaw|d0|53|1	$00000001
+ASCRaw|a3|53|1	$00000005
+ASCRaw|out|53|1	bytes 400 fnv 70837507
+ASCRaw|kept|54|1	kept
+ASCRaw|popped|54|1	$00000000
+ASCRaw|d0|54|1	$00000001
+ASCRaw|a3|54|1	$00000005
+ASCRaw|out|54|1	bytes 400 fnv C23AEE4B
+ASCRaw|kept|55|1	kept
+ASCRaw|popped|55|1	$00000000
+ASCRaw|d0|55|1	$00000001
+ASCRaw|a3|55|1	$00000005
+ASCRaw|out|55|1	bytes 400 fnv 02029D94
+ASCRaw|kept|56|1	kept
+ASCRaw|popped|56|1	$00000000
+ASCRaw|d0|56|1	$00000001
+ASCRaw|a3|56|1	$00000005
+ASCRaw|out|56|1	bytes 400 fnv 1C4EE929
+ASCRaw|kept|57|1	kept
+ASCRaw|popped|57|1	$00000000
+ASCRaw|d0|57|1	$00000001
+ASCRaw|a3|57|1	$00000005
+ASCRaw|out|57|1	bytes 400 fnv 68C2240B
+ASCRaw|kept|58|1	kept
+ASCRaw|popped|58|1	$00000000
+ASCRaw|d0|58|1	$00000001
+ASCRaw|a3|58|1	$00000005
+ASCRaw|out|58|1	bytes 400 fnv 09A02276
+ASCRaw|kept|59|1	kept
+ASCRaw|popped|59|1	$00000000
+ASCRaw|d0|59|1	$00000001
+ASCRaw|a3|59|1	$00000005
+ASCRaw|out|59|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|60|1	kept
+ASCRaw|popped|60|1	$00000000
+ASCRaw|d0|60|1	$00000001
+ASCRaw|a3|60|1	$00000005
+ASCRaw|out|60|1	bytes 400 fnv 68C2240B
+ASCRaw|kept|61|1	kept
+ASCRaw|popped|61|1	$00000000
+ASCRaw|d0|61|1	$00000001
+ASCRaw|a3|61|1	$00000005
+ASCRaw|out|61|1	bytes 400 fnv 53189E9E
+ASCRaw|kept|62|1	kept
+ASCRaw|popped|62|1	$00000000
+ASCRaw|d0|62|1	$00000001
+ASCRaw|a3|62|1	$00000005
+ASCRaw|out|62|1	bytes 400 fnv C41F555D
+ASCRaw|kept|63|1	kept
+ASCRaw|popped|63|1	$00000000
+ASCRaw|d0|63|1	$00000001
+ASCRaw|a3|63|1	$00000005
+ASCRaw|out|63|1	bytes 400 fnv 4DBDECA8
+ASCRaw|kept|64|1	kept
+ASCRaw|popped|64|1	$00000000
+ASCRaw|d0|64|1	$00000001
+ASCRaw|a3|64|1	$00000005
+ASCRaw|out|64|1	bytes 400 fnv A119C2E5
+ASCRaw|kept|65|1	kept
+ASCRaw|popped|65|1	$00000000
+ASCRaw|d0|65|1	$00000001
+ASCRaw|a3|65|1	$00000005
+ASCRaw|out|65|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|66|1	kept
+ASCRaw|popped|66|1	$00000000
+ASCRaw|d0|66|1	$00000001
+ASCRaw|a3|66|1	$00000005
+ASCRaw|out|66|1	bytes 400 fnv D7AFE458
+ASCRaw|kept|67|1	kept
+ASCRaw|popped|67|1	$00000000
+ASCRaw|d0|67|1	$00000001
+ASCRaw|a3|67|1	$00000005
+ASCRaw|out|67|1	bytes 400 fnv 7D8ADB34
+ASCRaw|kept|68|1	kept
+ASCRaw|popped|68|1	$00000000
+ASCRaw|d0|68|1	$00000001
+ASCRaw|a3|68|1	$00000005
+ASCRaw|out|68|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|69|1	kept
+ASCRaw|popped|69|1	$00000000
+ASCRaw|d0|69|1	$00000001
+ASCRaw|a3|69|1	$00000005
+ASCRaw|out|69|1	bytes 400 fnv 8BF0D0CA
+ASCRaw|kept|70|1	kept
+ASCRaw|popped|70|1	$00000000
+ASCRaw|d0|70|1	$00000001
+ASCRaw|a3|70|1	$00000005
+ASCRaw|out|70|1	bytes 400 fnv D586ABCD
+ASCRaw|kept|71|1	kept
+ASCRaw|popped|71|1	$00000000
+ASCRaw|d0|71|1	$00000001
+ASCRaw|a3|71|1	$00000005
+ASCRaw|out|71|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|72|1	kept
+ASCRaw|popped|72|1	$00000000
+ASCRaw|d0|72|1	$00000001
+ASCRaw|a3|72|1	$00000005
+ASCRaw|out|72|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|73|1	kept
+ASCRaw|popped|73|1	$00000000
+ASCRaw|d0|73|1	$00000001
+ASCRaw|a3|73|1	$00000005
+ASCRaw|out|73|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|74|1	kept
+ASCRaw|popped|74|1	$00000000
+ASCRaw|d0|74|1	$00000001
+ASCRaw|a3|74|1	$00000005
+ASCRaw|out|74|1	bytes 400 fnv 1159CF54
+ASCRaw|kept|75|1	kept
+ASCRaw|popped|75|1	$00000000
+ASCRaw|d0|75|1	$00000001
+ASCRaw|a3|75|1	$00000005
+ASCRaw|out|75|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|76|1	kept
+ASCRaw|popped|76|1	$00000000
+ASCRaw|d0|76|1	$00000001
+ASCRaw|a3|76|1	$00000005
+ASCRaw|out|76|1	bytes 400 fnv 0D0C0279
+ASCRaw|kept|77|1	kept
+ASCRaw|popped|77|1	$00000000
+ASCRaw|d0|77|1	$00000001
+ASCRaw|a3|77|1	$00000005
+ASCRaw|out|77|1	bytes 400 fnv A2C0E224
+ASCRaw|kept|78|1	kept
+ASCRaw|popped|78|1	$00000000
+ASCRaw|d0|78|1	$00000001
+ASCRaw|a3|78|1	$00000005
+ASCRaw|out|78|1	bytes 400 fnv DA08805B
+ASCRaw|kept|79|1	kept
+ASCRaw|popped|79|1	$00000000
+ASCRaw|d0|79|1	$00000001
+ASCRaw|a3|79|1	$00000005
+ASCRaw|out|79|1	bytes 400 fnv 71191BC6
+ASCRaw|kept|80|1	kept
+ASCRaw|popped|80|1	$00000000
+ASCRaw|d0|80|1	$00000001
+ASCRaw|a3|80|1	$00000005
+ASCRaw|out|80|1	bytes 400 fnv 8A0559F0
+ASCRaw|kept|81|1	kept
+ASCRaw|popped|81|1	$00000000
+ASCRaw|d0|81|1	$00000001
+ASCRaw|a3|81|1	$00000005
+ASCRaw|out|81|1	bytes 400 fnv 7F25AE27
+ASCRaw|kept|82|1	kept
+ASCRaw|popped|82|1	$00000000
+ASCRaw|d0|82|1	$00000001
+ASCRaw|a3|82|1	$00000005
+ASCRaw|out|82|1	bytes 400 fnv B9F65CF2
+ASCRaw|kept|83|1	kept
+ASCRaw|popped|83|1	$00000000
+ASCRaw|d0|83|1	$00000001
+ASCRaw|a3|83|1	$00000005
+ASCRaw|out|83|1	bytes 400 fnv 649A89E1
+ASCRaw|kept|84|1	kept
+ASCRaw|popped|84|1	$00000000
+ASCRaw|d0|84|1	$00000001
+ASCRaw|a3|84|1	$00000005
+ASCRaw|out|84|1	bytes 400 fnv 1A690ACC
+ASCRaw|kept|85|1	kept
+ASCRaw|popped|85|1	$00000000
+ASCRaw|d0|85|1	$00000001
+ASCRaw|a3|85|1	$00000005
+ASCRaw|out|85|1	bytes 400 fnv A8D44F63
+ASCRaw|kept|86|1	kept
+ASCRaw|popped|86|1	$00000000
+ASCRaw|d0|86|1	$00000001
+ASCRaw|a3|86|1	$00000005
+ASCRaw|out|86|1	bytes 400 fnv 89D3300E
+ASCRaw|kept|87|1	kept
+ASCRaw|popped|87|1	$00000000
+ASCRaw|d0|87|1	$00000001
+ASCRaw|a3|87|1	$00000005
+ASCRaw|out|87|1	bytes 400 fnv CA3D274D
+ASCRaw|kept|88|1	kept
+ASCRaw|popped|88|1	$00000000
+ASCRaw|d0|88|1	$00000001
+ASCRaw|a3|88|1	$00000005
+ASCRaw|out|88|1	bytes 400 fnv CDBFB5D8
+ASCRaw|kept|89|1	kept
+ASCRaw|popped|89|1	$00000000
+ASCRaw|d0|89|1	$00000001
+ASCRaw|a3|89|1	$00000005
+ASCRaw|out|89|1	bytes 400 fnv 378F788F
+ASCRaw|kept|90|1	kept
+ASCRaw|popped|90|1	$00000000
+ASCRaw|d0|90|1	$00000001
+ASCRaw|a3|90|1	$00000005
+ASCRaw|out|90|1	bytes 400 fnv 2F6CB7ED
+ASCRaw|kept|91|1	kept
+ASCRaw|popped|91|1	$00000000
+ASCRaw|d0|91|1	$00000001
+ASCRaw|a3|91|1	$00000005
+ASCRaw|out|91|1	bytes 400 fnv 6DB60478
+ASCRaw|kept|92|1	kept
+ASCRaw|popped|92|1	$00000000
+ASCRaw|d0|92|1	$00000001
+ASCRaw|a3|92|1	$00000005
+ASCRaw|out|92|1	bytes 400 fnv 09A02276
+ASCRaw|kept|93|1	kept
+ASCRaw|popped|93|1	$00000000
+ASCRaw|d0|93|1	$00000001
+ASCRaw|a3|93|1	$00000005
+ASCRaw|out|93|1	bytes 400 fnv CE01892F
+ASCRaw|kept|94|1	kept
+ASCRaw|popped|94|1	$00000000
+ASCRaw|d0|94|1	$00000001
+ASCRaw|a3|94|1	$00000005
+ASCRaw|out|94|1	bytes 400 fnv 72847AFA
+ASCRaw|kept|95|1	kept
+ASCRaw|popped|95|1	$00000000
+ASCRaw|d0|95|1	$00000001
+ASCRaw|a3|95|1	$00000005
+ASCRaw|out|95|1	bytes 400 fnv 3758F65A
+ASCRaw|kept|96|1	kept
+ASCRaw|popped|96|1	$00000000
+ASCRaw|d0|96|1	$00000001
+ASCRaw|a3|96|1	$00000005
+ASCRaw|out|96|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|97|1	kept
+ASCRaw|popped|97|1	$00000000
+ASCRaw|d0|97|1	$00000001
+ASCRaw|a3|97|1	$00000005
+ASCRaw|out|97|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|98|1	kept
+ASCRaw|popped|98|1	$00000000
+ASCRaw|d0|98|1	$00000001
+ASCRaw|a3|98|1	$00000005
+ASCRaw|out|98|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|99|1	kept
+ASCRaw|popped|99|1	$00000000
+ASCRaw|d0|99|1	$00000001
+ASCRaw|a3|99|1	$00000005
+ASCRaw|out|99|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|100|1	kept
+ASCRaw|popped|100|1	$00000000
+ASCRaw|d0|100|1	$00000001
+ASCRaw|a3|100|1	$00000005
+ASCRaw|out|100|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|101|1	kept
+ASCRaw|popped|101|1	$00000000
+ASCRaw|d0|101|1	$00000001
+ASCRaw|a3|101|1	$00000005
+ASCRaw|out|101|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|102|1	kept
+ASCRaw|popped|102|1	$00000000
+ASCRaw|d0|102|1	$00000001
+ASCRaw|a3|102|1	$00000005
+ASCRaw|out|102|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|103|1	kept
+ASCRaw|popped|103|1	$00000000
+ASCRaw|d0|103|1	$00000001
+ASCRaw|a3|103|1	$00000005
+ASCRaw|out|103|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|104|1	kept
+ASCRaw|popped|104|1	$00000000
+ASCRaw|d0|104|1	$00000001
+ASCRaw|a3|104|1	$00000005
+ASCRaw|out|104|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|105|1	kept
+ASCRaw|popped|105|1	$00000000
+ASCRaw|d0|105|1	$00000001
+ASCRaw|a3|105|1	$00000005
+ASCRaw|out|105|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|106|1	kept
+ASCRaw|popped|106|1	$00000000
+ASCRaw|d0|106|1	$00000001
+ASCRaw|a3|106|1	$00000005
+ASCRaw|out|106|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|107|1	kept
+ASCRaw|popped|107|1	$00000000
+ASCRaw|d0|107|1	$00000001
+ASCRaw|a3|107|1	$00000005
+ASCRaw|out|107|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|108|1	kept
+ASCRaw|popped|108|1	$00000000
+ASCRaw|d0|108|1	$00000001
+ASCRaw|a3|108|1	$00000005
+ASCRaw|out|108|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|109|1	kept
+ASCRaw|popped|109|1	$00000000
+ASCRaw|d0|109|1	$00000001
+ASCRaw|a3|109|1	$00000005
+ASCRaw|out|109|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|110|1	kept
+ASCRaw|popped|110|1	$00000000
+ASCRaw|d0|110|1	$00000001
+ASCRaw|a3|110|1	$00000005
+ASCRaw|out|110|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|111|1	kept
+ASCRaw|popped|111|1	$00000000
+ASCRaw|d0|111|1	$00000001
+ASCRaw|a3|111|1	$00000005
+ASCRaw|out|111|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|112|1	kept
+ASCRaw|popped|112|1	$00000000
+ASCRaw|d0|112|1	$00000001
+ASCRaw|a3|112|1	$00000005
+ASCRaw|out|112|1	bytes 400 fnv CAEBC4C5
+ASCRaw|kept|113|1	kept
+ASCRaw|popped|113|1	$00000000
+ASCRaw|d0|113|1	$00000001
+ASCRaw|a3|113|1	$00000005
+ASCRaw|out|113|1	bytes 400 fnv CAEBC4C5
+RawASC|kept|113|1	kept
+RawASC|popped|113|1	$00000000
+RawASC|kept|index 0|1	kept
+RawASC|popped|index 0|1	$00000000
+RawASC|d0|index 0|1	$00000000
+RawASC|<= index|index 0|1	$00000001
+RawASC|kept|index 0|2	kept
+RawASC|popped|index 0|2	$00000000
+RawASC|kept|index 1|1	kept
+RawASC|popped|index 1|1	$00000000
+RawASC|d0|index 1|1	$00000001
+RawASC|<= index|index 1|1	$00000001
+RawASC|kept|index 1|2	kept
+RawASC|popped|index 1|2	$00000000
+RawASC|kept|index 2|1	kept
+RawASC|popped|index 2|1	$00000000
+RawASC|d0|index 2|1	$00000002
+RawASC|<= index|index 2|1	$00000001
+RawASC|kept|index 2|2	kept
+RawASC|popped|index 2|2	$00000000
+RawASC|kept|index 3|1	kept
+RawASC|popped|index 3|1	$00000000
+RawASC|d0|index 3|1	$00000003
+RawASC|<= index|index 3|1	$00000001
+RawASC|kept|index 3|2	kept
+RawASC|popped|index 3|2	$00000000
+RawASC|kept|index 4|1	kept
+RawASC|popped|index 4|1	$00000000
+RawASC|d0|index 4|1	$00000004
+RawASC|<= index|index 4|1	$00000001
+RawASC|kept|index 4|2	kept
+RawASC|popped|index 4|2	$00000000
+RawASC|kept|index 5|1	kept
+RawASC|popped|index 5|1	$00000000
+RawASC|d0|index 5|1	$00000005
+RawASC|<= index|index 5|1	$00000001
+RawASC|kept|index 5|2	kept
+RawASC|popped|index 5|2	$00000000
+RawASC|kept|index 6|1	kept
+RawASC|popped|index 6|1	$00000000
+RawASC|d0|index 6|1	$00000006
+RawASC|<= index|index 6|1	$00000001
+RawASC|kept|index 6|2	kept
+RawASC|popped|index 6|2	$00000000
+RawASC|kept|index 7|1	kept
+RawASC|popped|index 7|1	$00000000
+RawASC|d0|index 7|1	$00000007
+RawASC|<= index|index 7|1	$00000001
+RawASC|kept|index 7|2	kept
+RawASC|popped|index 7|2	$00000000
+RawASC|kept|index 8|1	kept
+RawASC|popped|index 8|1	$00000000
+RawASC|d0|index 8|1	$00000008
+RawASC|<= index|index 8|1	$00000001
+RawASC|kept|index 8|2	kept
+RawASC|popped|index 8|2	$00000000
+RawASC|kept|index 9|1	kept
+RawASC|popped|index 9|1	$00000000
+RawASC|d0|index 9|1	$00000009
+RawASC|<= index|index 9|1	$00000001
+RawASC|kept|index 9|2	kept
+RawASC|popped|index 9|2	$00000000
+RawASC|kept|index 10|1	kept
+RawASC|popped|index 10|1	$00000000
+RawASC|d0|index 10|1	$0000000A
+RawASC|<= index|index 10|1	$00000001
+RawASC|kept|index 10|2	kept
+RawASC|popped|index 10|2	$00000000
+RawASC|kept|index 11|1	kept
+RawASC|popped|index 11|1	$00000000
+RawASC|d0|index 11|1	$0000000B
+RawASC|<= index|index 11|1	$00000001
+RawASC|kept|index 11|2	kept
+RawASC|popped|index 11|2	$00000000
+RawASC|kept|index 12|1	kept
+RawASC|popped|index 12|1	$00000000
+RawASC|d0|index 12|1	$0000000C
+RawASC|<= index|index 12|1	$00000001
+RawASC|kept|index 12|2	kept
+RawASC|popped|index 12|2	$00000000
+RawASC|kept|index 13|1	kept
+RawASC|popped|index 13|1	$00000000
+RawASC|d0|index 13|1	$0000000D
+RawASC|<= index|index 13|1	$00000001
+RawASC|kept|index 13|2	kept
+RawASC|popped|index 13|2	$00000000
+RawASC|kept|index 14|1	kept
+RawASC|popped|index 14|1	$00000000
+RawASC|d0|index 14|1	$0000000E
+RawASC|<= index|index 14|1	$00000001
+RawASC|kept|index 14|2	kept
+RawASC|popped|index 14|2	$00000000
+RawASC|kept|index 15|1	kept
+RawASC|popped|index 15|1	$00000000
+RawASC|d0|index 15|1	$0000000A
+RawASC|<= index|index 15|1	$00000001
+RawASC|kept|index 15|2	kept
+RawASC|popped|index 15|2	$00000000
+RawASC|kept|index 16|1	kept
+RawASC|popped|index 16|1	$00000000
+RawASC|d0|index 16|1	$00000010
+RawASC|<= index|index 16|1	$00000001
+RawASC|kept|index 16|2	kept
+RawASC|popped|index 16|2	$00000000
+RawASC|kept|index 17|1	kept
+RawASC|popped|index 17|1	$00000000
+RawASC|d0|index 17|1	$00000011
+RawASC|<= index|index 17|1	$00000001
+RawASC|kept|index 17|2	kept
+RawASC|popped|index 17|2	$00000000
+RawASC|kept|index 18|1	kept
+RawASC|popped|index 18|1	$00000000
+RawASC|d0|index 18|1	$00000012
+RawASC|<= index|index 18|1	$00000001
+RawASC|kept|index 18|2	kept
+RawASC|popped|index 18|2	$00000000
+RawASC|kept|index 19|1	kept
+RawASC|popped|index 19|1	$00000000
+RawASC|d0|index 19|1	$00000013
+RawASC|<= index|index 19|1	$00000001
+RawASC|kept|index 19|2	kept
+RawASC|popped|index 19|2	$00000000
+RawASC|kept|index 20|1	kept
+RawASC|popped|index 20|1	$00000000
+RawASC|d0|index 20|1	$00000014
+RawASC|<= index|index 20|1	$00000001
+RawASC|kept|index 20|2	kept
+RawASC|popped|index 20|2	$00000000
+RawASC|kept|index 21|1	kept
+RawASC|popped|index 21|1	$00000000
+RawASC|d0|index 21|1	$00000015
+RawASC|<= index|index 21|1	$00000001
+RawASC|kept|index 21|2	kept
+RawASC|popped|index 21|2	$00000000
+RawASC|kept|index 22|1	kept
+RawASC|popped|index 22|1	$00000000
+RawASC|d0|index 22|1	$00000016
+RawASC|<= index|index 22|1	$00000001
+RawASC|kept|index 22|2	kept
+RawASC|popped|index 22|2	$00000000
+RawASC|kept|index 23|1	kept
+RawASC|popped|index 23|1	$00000000
+RawASC|d0|index 23|1	$00000017
+RawASC|<= index|index 23|1	$00000001
+RawASC|kept|index 23|2	kept
+RawASC|popped|index 23|2	$00000000
+RawASC|kept|index 24|1	kept
+RawASC|popped|index 24|1	$00000000
+RawASC|d0|index 24|1	$00000018
+RawASC|<= index|index 24|1	$00000001
+RawASC|kept|index 24|2	kept
+RawASC|popped|index 24|2	$00000000
+RawASC|kept|index 25|1	kept
+RawASC|popped|index 25|1	$00000000
+RawASC|d0|index 25|1	$00000019
+RawASC|<= index|index 25|1	$00000001
+RawASC|kept|index 25|2	kept
+RawASC|popped|index 25|2	$00000000
+RawASC|kept|index 26|1	kept
+RawASC|popped|index 26|1	$00000000
+RawASC|d0|index 26|1	$0000001A
+RawASC|<= index|index 26|1	$00000001
+RawASC|kept|index 26|2	kept
+RawASC|popped|index 26|2	$00000000
+RawASC|kept|index 27|1	kept
+RawASC|popped|index 27|1	$00000000
+RawASC|d0|index 27|1	$0000001B
+RawASC|<= index|index 27|1	$00000001
+RawASC|kept|index 27|2	kept
+RawASC|popped|index 27|2	$00000000
+RawASC|kept|index 28|1	kept
+RawASC|popped|index 28|1	$00000000
+RawASC|d0|index 28|1	$0000000E
+RawASC|<= index|index 28|1	$00000001
+RawASC|kept|index 28|2	kept
+RawASC|popped|index 28|2	$00000000
+RawASC|kept|index 29|1	kept
+RawASC|popped|index 29|1	$00000000
+RawASC|d0|index 29|1	$00000001
+RawASC|<= index|index 29|1	$00000001
+RawASC|kept|index 29|2	kept
+RawASC|popped|index 29|2	$00000000
+RawASC|kept|index 30|1	kept
+RawASC|popped|index 30|1	$00000000
+RawASC|d0|index 30|1	$00000002
+RawASC|<= index|index 30|1	$00000001
+RawASC|kept|index 30|2	kept
+RawASC|popped|index 30|2	$00000000
+RawASC|kept|index 31|1	kept
+RawASC|popped|index 31|1	$00000000
+RawASC|d0|index 31|1	$00000003
+RawASC|<= index|index 31|1	$00000001
+RawASC|kept|index 31|2	kept
+RawASC|popped|index 31|2	$00000000
+RawASC|kept|index 32|1	kept
+RawASC|popped|index 32|1	$00000000
+RawASC|d0|index 32|1	$00000020
+RawASC|<= index|index 32|1	$00000001
+RawASC|kept|index 32|2	kept
+RawASC|popped|index 32|2	$00000000
+RawASC|kept|index 33|1	kept
+RawASC|popped|index 33|1	$00000000
+RawASC|d0|index 33|1	$00000021
+RawASC|<= index|index 33|1	$00000001
+RawASC|kept|index 33|2	kept
+RawASC|popped|index 33|2	$00000000
+RawASC|kept|index 34|1	kept
+RawASC|popped|index 34|1	$00000000
+RawASC|d0|index 34|1	$00000022
+RawASC|<= index|index 34|1	$00000001
+RawASC|kept|index 34|2	kept
+RawASC|popped|index 34|2	$00000000
+RawASC|kept|index 35|1	kept
+RawASC|popped|index 35|1	$00000000
+RawASC|d0|index 35|1	$00000023
+RawASC|<= index|index 35|1	$00000001
+RawASC|kept|index 35|2	kept
+RawASC|popped|index 35|2	$00000000
+RawASC|kept|index 36|1	kept
+RawASC|popped|index 36|1	$00000000
+RawASC|d0|index 36|1	$00000024
+RawASC|<= index|index 36|1	$00000001
+RawASC|kept|index 36|2	kept
+RawASC|popped|index 36|2	$00000000
+RawASC|kept|index 37|1	kept
+RawASC|popped|index 37|1	$00000000
+RawASC|d0|index 37|1	$00000025
+RawASC|<= index|index 37|1	$00000001
+RawASC|kept|index 37|2	kept
+RawASC|popped|index 37|2	$00000000
+RawASC|kept|index 38|1	kept
+RawASC|popped|index 38|1	$00000000
+RawASC|d0|index 38|1	$00000026
+RawASC|<= index|index 38|1	$00000001
+RawASC|kept|index 38|2	kept
+RawASC|popped|index 38|2	$00000000
+RawASC|kept|index 39|1	kept
+RawASC|popped|index 39|1	$00000000
+RawASC|d0|index 39|1	$00000027
+RawASC|<= index|index 39|1	$00000001
+RawASC|kept|index 39|2	kept
+RawASC|popped|index 39|2	$00000000
+RawASC|kept|index 40|1	kept
+RawASC|popped|index 40|1	$00000000
+RawASC|d0|index 40|1	$00000028
+RawASC|<= index|index 40|1	$00000001
+RawASC|kept|index 40|2	kept
+RawASC|popped|index 40|2	$00000000
+RawASC|kept|index 41|1	kept
+RawASC|popped|index 41|1	$00000000
+RawASC|d0|index 41|1	$00000029
+RawASC|<= index|index 41|1	$00000001
+RawASC|kept|index 41|2	kept
+RawASC|popped|index 41|2	$00000000
+RawASC|kept|index 42|1	kept
+RawASC|popped|index 42|1	$00000000
+RawASC|d0|index 42|1	$0000002A
+RawASC|<= index|index 42|1	$00000001
+RawASC|kept|index 42|2	kept
+RawASC|popped|index 42|2	$00000000
+RawASC|kept|index 43|1	kept
+RawASC|popped|index 43|1	$00000000
+RawASC|d0|index 43|1	$0000000E
+RawASC|<= index|index 43|1	$00000001
+RawASC|kept|index 43|2	kept
+RawASC|popped|index 43|2	$00000000
+RawASC|kept|index 44|1	kept
+RawASC|popped|index 44|1	$00000000
+RawASC|d0|index 44|1	$0000000E
+RawASC|<= index|index 44|1	$00000001
+RawASC|kept|index 44|2	kept
+RawASC|popped|index 44|2	$00000000
+RawASC|kept|index 45|1	kept
+RawASC|popped|index 45|1	$00000000
+RawASC|d0|index 45|1	$00000004
+RawASC|<= index|index 45|1	$00000001
+RawASC|kept|index 45|2	kept
+RawASC|popped|index 45|2	$00000000
+RawASC|kept|index 46|1	kept
+RawASC|popped|index 46|1	$00000000
+RawASC|d0|index 46|1	$00000005
+RawASC|<= index|index 46|1	$00000001
+RawASC|kept|index 46|2	kept
+RawASC|popped|index 46|2	$00000000
+RawASC|kept|index 47|1	kept
+RawASC|popped|index 47|1	$00000000
+RawASC|d0|index 47|1	$00000006
+RawASC|<= index|index 47|1	$00000001
+RawASC|kept|index 47|2	kept
+RawASC|popped|index 47|2	$00000000
+RawASC|kept|index 48|1	kept
+RawASC|popped|index 48|1	$00000000
+RawASC|d0|index 48|1	$0000000E
+RawASC|<= index|index 48|1	$00000001
+RawASC|kept|index 48|2	kept
+RawASC|popped|index 48|2	$00000000
+RawASC|kept|index 49|1	kept
+RawASC|popped|index 49|1	$00000000
+RawASC|d0|index 49|1	$00000031
+RawASC|<= index|index 49|1	$00000001
+RawASC|kept|index 49|2	kept
+RawASC|popped|index 49|2	$00000000
+RawASC|kept|index 50|1	kept
+RawASC|popped|index 50|1	$00000000
+RawASC|d0|index 50|1	$00000032
+RawASC|<= index|index 50|1	$00000001
+RawASC|kept|index 50|2	kept
+RawASC|popped|index 50|2	$00000000
+RawASC|kept|index 51|1	kept
+RawASC|popped|index 51|1	$00000000
+RawASC|d0|index 51|1	$00000033
+RawASC|<= index|index 51|1	$00000001
+RawASC|kept|index 51|2	kept
+RawASC|popped|index 51|2	$00000000
+RawASC|kept|index 52|1	kept
+RawASC|popped|index 52|1	$00000000
+RawASC|d0|index 52|1	$00000034
+RawASC|<= index|index 52|1	$00000001
+RawASC|kept|index 52|2	kept
+RawASC|popped|index 52|2	$00000000
+RawASC|kept|index 53|1	kept
+RawASC|popped|index 53|1	$00000000
+RawASC|d0|index 53|1	$00000035
+RawASC|<= index|index 53|1	$00000001
+RawASC|kept|index 53|2	kept
+RawASC|popped|index 53|2	$00000000
+RawASC|kept|index 54|1	kept
+RawASC|popped|index 54|1	$00000000
+RawASC|d0|index 54|1	$00000036
+RawASC|<= index|index 54|1	$00000001
+RawASC|kept|index 54|2	kept
+RawASC|popped|index 54|2	$00000000
+RawASC|kept|index 55|1	kept
+RawASC|popped|index 55|1	$00000000
+RawASC|d0|index 55|1	$00000037
+RawASC|<= index|index 55|1	$00000001
+RawASC|kept|index 55|2	kept
+RawASC|popped|index 55|2	$00000000
+RawASC|kept|index 56|1	kept
+RawASC|popped|index 56|1	$00000000
+RawASC|d0|index 56|1	$00000038
+RawASC|<= index|index 56|1	$00000001
+RawASC|kept|index 56|2	kept
+RawASC|popped|index 56|2	$00000000
+RawASC|kept|index 57|1	kept
+RawASC|popped|index 57|1	$00000000
+RawASC|d0|index 57|1	$00000039
+RawASC|<= index|index 57|1	$00000001
+RawASC|kept|index 57|2	kept
+RawASC|popped|index 57|2	$00000000
+RawASC|kept|index 58|1	kept
+RawASC|popped|index 58|1	$00000000
+RawASC|d0|index 58|1	$0000003A
+RawASC|<= index|index 58|1	$00000001
+RawASC|kept|index 58|2	kept
+RawASC|popped|index 58|2	$00000000
+RawASC|kept|index 59|1	kept
+RawASC|popped|index 59|1	$00000000
+RawASC|d0|index 59|1	$0000000E
+RawASC|<= index|index 59|1	$00000001
+RawASC|kept|index 59|2	kept
+RawASC|popped|index 59|2	$00000000
+RawASC|kept|index 60|1	kept
+RawASC|popped|index 60|1	$00000000
+RawASC|d0|index 60|1	$00000039
+RawASC|<= index|index 60|1	$00000001
+RawASC|kept|index 60|2	kept
+RawASC|popped|index 60|2	$00000000
+RawASC|kept|index 61|1	kept
+RawASC|popped|index 61|1	$00000000
+RawASC|d0|index 61|1	$00000007
+RawASC|<= index|index 61|1	$00000001
+RawASC|kept|index 61|2	kept
+RawASC|popped|index 61|2	$00000000
+RawASC|kept|index 62|1	kept
+RawASC|popped|index 62|1	$00000000
+RawASC|d0|index 62|1	$00000008
+RawASC|<= index|index 62|1	$00000001
+RawASC|kept|index 62|2	kept
+RawASC|popped|index 62|2	$00000000
+RawASC|kept|index 63|1	kept
+RawASC|popped|index 63|1	$00000000
+RawASC|d0|index 63|1	$00000009
+RawASC|<= index|index 63|1	$00000001
+RawASC|kept|index 63|2	kept
+RawASC|popped|index 63|2	$00000000
+RawASC|kept|index 64|1	kept
+RawASC|popped|index 64|1	$00000000
+RawASC|d0|index 64|1	$00000040
+RawASC|<= index|index 64|1	$00000001
+RawASC|kept|index 64|2	kept
+RawASC|popped|index 64|2	$00000000
+RawASC|kept|index 65|1	kept
+RawASC|popped|index 65|1	$00000000
+RawASC|d0|index 65|1	$0000000E
+RawASC|<= index|index 65|1	$00000001
+RawASC|kept|index 65|2	kept
+RawASC|popped|index 65|2	$00000000
+RawASC|kept|index 66|1	kept
+RawASC|popped|index 66|1	$00000000
+RawASC|d0|index 66|1	$00000042
+RawASC|<= index|index 66|1	$00000001
+RawASC|kept|index 66|2	kept
+RawASC|popped|index 66|2	$00000000
+RawASC|kept|index 67|1	kept
+RawASC|popped|index 67|1	$00000000
+RawASC|d0|index 67|1	$00000043
+RawASC|<= index|index 67|1	$00000001
+RawASC|kept|index 67|2	kept
+RawASC|popped|index 67|2	$00000000
+RawASC|kept|index 68|1	kept
+RawASC|popped|index 68|1	$00000000
+RawASC|d0|index 68|1	$0000000E
+RawASC|<= index|index 68|1	$00000001
+RawASC|kept|index 68|2	kept
+RawASC|popped|index 68|2	$00000000
+RawASC|kept|index 69|1	kept
+RawASC|popped|index 69|1	$00000000
+RawASC|d0|index 69|1	$00000045
+RawASC|<= index|index 69|1	$00000001
+RawASC|kept|index 69|2	kept
+RawASC|popped|index 69|2	$00000000
+RawASC|kept|index 70|1	kept
+RawASC|popped|index 70|1	$00000000
+RawASC|d0|index 70|1	$00000046
+RawASC|<= index|index 70|1	$00000001
+RawASC|kept|index 70|2	kept
+RawASC|popped|index 70|2	$00000000
+RawASC|kept|index 71|1	kept
+RawASC|popped|index 71|1	$00000000
+RawASC|d0|index 71|1	$0000000E
+RawASC|<= index|index 71|1	$00000001
+RawASC|kept|index 71|2	kept
+RawASC|popped|index 71|2	$00000000
+RawASC|kept|index 72|1	kept
+RawASC|popped|index 72|1	$00000000
+RawASC|d0|index 72|1	$0000000E
+RawASC|<= index|index 72|1	$00000001
+RawASC|kept|index 72|2	kept
+RawASC|popped|index 72|2	$00000000
+RawASC|kept|index 73|1	kept
+RawASC|popped|index 73|1	$00000000
+RawASC|d0|index 73|1	$0000000E
+RawASC|<= index|index 73|1	$00000001
+RawASC|kept|index 73|2	kept
+RawASC|popped|index 73|2	$00000000
+RawASC|kept|index 74|1	kept
+RawASC|popped|index 74|1	$00000000
+RawASC|d0|index 74|1	$0000000B
+RawASC|<= index|index 74|1	$00000001
+RawASC|kept|index 74|2	kept
+RawASC|popped|index 74|2	$00000000
+RawASC|kept|index 75|1	kept
+RawASC|popped|index 75|1	$00000000
+RawASC|d0|index 75|1	$0000000E
+RawASC|<= index|index 75|1	$00000001
+RawASC|kept|index 75|2	kept
+RawASC|popped|index 75|2	$00000000
+RawASC|kept|index 76|1	kept
+RawASC|popped|index 76|1	$00000000
+RawASC|d0|index 76|1	$0000004C
+RawASC|<= index|index 76|1	$00000001
+RawASC|kept|index 76|2	kept
+RawASC|popped|index 76|2	$00000000
+RawASC|kept|index 77|1	kept
+RawASC|popped|index 77|1	$00000000
+RawASC|d0|index 77|1	$0000004D
+RawASC|<= index|index 77|1	$00000001
+RawASC|kept|index 77|2	kept
+RawASC|popped|index 77|2	$00000000
+RawASC|kept|index 78|1	kept
+RawASC|popped|index 78|1	$00000000
+RawASC|d0|index 78|1	$0000004E
+RawASC|<= index|index 78|1	$00000001
+RawASC|kept|index 78|2	kept
+RawASC|popped|index 78|2	$00000000
+RawASC|kept|index 79|1	kept
+RawASC|popped|index 79|1	$00000000
+RawASC|d0|index 79|1	$0000004F
+RawASC|<= index|index 79|1	$00000001
+RawASC|kept|index 79|2	kept
+RawASC|popped|index 79|2	$00000000
+RawASC|kept|index 80|1	kept
+RawASC|popped|index 80|1	$00000000
+RawASC|d0|index 80|1	$00000050
+RawASC|<= index|index 80|1	$00000001
+RawASC|kept|index 80|2	kept
+RawASC|popped|index 80|2	$00000000
+RawASC|kept|index 81|1	kept
+RawASC|popped|index 81|1	$00000000
+RawASC|d0|index 81|1	$00000051
+RawASC|<= index|index 81|1	$00000001
+RawASC|kept|index 81|2	kept
+RawASC|popped|index 81|2	$00000000
+RawASC|kept|index 82|1	kept
+RawASC|popped|index 82|1	$00000000
+RawASC|d0|index 82|1	$00000052
+RawASC|<= index|index 82|1	$00000001
+RawASC|kept|index 82|2	kept
+RawASC|popped|index 82|2	$00000000
+RawASC|kept|index 83|1	kept
+RawASC|popped|index 83|1	$00000000
+RawASC|d0|index 83|1	$00000053
+RawASC|<= index|index 83|1	$00000001
+RawASC|kept|index 83|2	kept
+RawASC|popped|index 83|2	$00000000
+RawASC|kept|index 84|1	kept
+RawASC|popped|index 84|1	$00000000
+RawASC|d0|index 84|1	$00000054
+RawASC|<= index|index 84|1	$00000001
+RawASC|kept|index 84|2	kept
+RawASC|popped|index 84|2	$00000000
+RawASC|kept|index 85|1	kept
+RawASC|popped|index 85|1	$00000000
+RawASC|d0|index 85|1	$00000055
+RawASC|<= index|index 85|1	$00000001
+RawASC|kept|index 85|2	kept
+RawASC|popped|index 85|2	$00000000
+RawASC|kept|index 86|1	kept
+RawASC|popped|index 86|1	$00000000
+RawASC|d0|index 86|1	$00000056
+RawASC|<= index|index 86|1	$00000001
+RawASC|kept|index 86|2	kept
+RawASC|popped|index 86|2	$00000000
+RawASC|kept|index 87|1	kept
+RawASC|popped|index 87|1	$00000000
+RawASC|d0|index 87|1	$00000057
+RawASC|<= index|index 87|1	$00000001
+RawASC|kept|index 87|2	kept
+RawASC|popped|index 87|2	$00000000
+RawASC|kept|index 88|1	kept
+RawASC|popped|index 88|1	$00000000
+RawASC|d0|index 88|1	$00000058
+RawASC|<= index|index 88|1	$00000001
+RawASC|kept|index 88|2	kept
+RawASC|popped|index 88|2	$00000000
+RawASC|kept|index 89|1	kept
+RawASC|popped|index 89|1	$00000000
+RawASC|d0|index 89|1	$00000059
+RawASC|<= index|index 89|1	$00000001
+RawASC|kept|index 89|2	kept
+RawASC|popped|index 89|2	$00000000
+RawASC|kept|index 90|1	kept
+RawASC|popped|index 90|1	$00000000
+RawASC|d0|index 90|1	$0000005A
+RawASC|<= index|index 90|1	$00000001
+RawASC|kept|index 90|2	kept
+RawASC|popped|index 90|2	$00000000
+RawASC|kept|index 91|1	kept
+RawASC|popped|index 91|1	$00000000
+RawASC|d0|index 91|1	$0000005B
+RawASC|<= index|index 91|1	$00000001
+RawASC|kept|index 91|2	kept
+RawASC|popped|index 91|2	$00000000
+RawASC|kept|index 92|1	kept
+RawASC|popped|index 92|1	$00000000
+RawASC|d0|index 92|1	$0000003A
+RawASC|<= index|index 92|1	$00000001
+RawASC|kept|index 92|2	kept
+RawASC|popped|index 92|2	$00000000
+RawASC|kept|index 93|1	kept
+RawASC|popped|index 93|1	$00000000
+RawASC|d0|index 93|1	$0000005D
+RawASC|<= index|index 93|1	$00000001
+RawASC|kept|index 93|2	kept
+RawASC|popped|index 93|2	$00000000
+RawASC|kept|index 94|1	kept
+RawASC|popped|index 94|1	$00000000
+RawASC|d0|index 94|1	$0000005E
+RawASC|<= index|index 94|1	$00000001
+RawASC|kept|index 94|2	kept
+RawASC|popped|index 94|2	$00000000
+RawASC|kept|index 95|1	kept
+RawASC|popped|index 95|1	$00000000
+RawASC|d0|index 95|1	$0000005F
+RawASC|<= index|index 95|1	$00000001
+RawASC|kept|index 95|2	kept
+RawASC|popped|index 95|2	$00000000
+RawASC|kept|index 96|1	kept
+RawASC|popped|index 96|1	$00000000
+RawASC|d0|index 96|1	$0000000E
+RawASC|<= index|index 96|1	$00000001
+RawASC|kept|index 96|2	kept
+RawASC|popped|index 96|2	$00000000
+RawASC|kept|index 97|1	kept
+RawASC|popped|index 97|1	$00000000
+RawASC|d0|index 97|1	$0000000E
+RawASC|<= index|index 97|1	$00000001
+RawASC|kept|index 97|2	kept
+RawASC|popped|index 97|2	$00000000
+RawASC|kept|index 98|1	kept
+RawASC|popped|index 98|1	$00000000
+RawASC|d0|index 98|1	$0000000E
+RawASC|<= index|index 98|1	$00000001
+RawASC|kept|index 98|2	kept
+RawASC|popped|index 98|2	$00000000
+RawASC|kept|index 99|1	kept
+RawASC|popped|index 99|1	$00000000
+RawASC|d0|index 99|1	$0000000E
+RawASC|<= index|index 99|1	$00000001
+RawASC|kept|index 99|2	kept
+RawASC|popped|index 99|2	$00000000
+RawASC|kept|index 100|1	kept
+RawASC|popped|index 100|1	$00000000
+RawASC|d0|index 100|1	$0000000E
+RawASC|<= index|index 100|1	$00000001
+RawASC|kept|index 100|2	kept
+RawASC|popped|index 100|2	$00000000
+RawASC|kept|index 101|1	kept
+RawASC|popped|index 101|1	$00000000
+RawASC|d0|index 101|1	$0000000E
+RawASC|<= index|index 101|1	$00000001
+RawASC|kept|index 101|2	kept
+RawASC|popped|index 101|2	$00000000
+RawASC|kept|index 102|1	kept
+RawASC|popped|index 102|1	$00000000
+RawASC|d0|index 102|1	$0000000E
+RawASC|<= index|index 102|1	$00000001
+RawASC|kept|index 102|2	kept
+RawASC|popped|index 102|2	$00000000
+RawASC|kept|index 103|1	kept
+RawASC|popped|index 103|1	$00000000
+RawASC|d0|index 103|1	$0000000E
+RawASC|<= index|index 103|1	$00000001
+RawASC|kept|index 103|2	kept
+RawASC|popped|index 103|2	$00000000
+RawASC|kept|index 104|1	kept
+RawASC|popped|index 104|1	$00000000
+RawASC|d0|index 104|1	$0000000E
+RawASC|<= index|index 104|1	$00000001
+RawASC|kept|index 104|2	kept
+RawASC|popped|index 104|2	$00000000
+RawASC|kept|index 105|1	kept
+RawASC|popped|index 105|1	$00000000
+RawASC|d0|index 105|1	$0000000E
+RawASC|<= index|index 105|1	$00000001
+RawASC|kept|index 105|2	kept
+RawASC|popped|index 105|2	$00000000
+RawASC|kept|index 106|1	kept
+RawASC|popped|index 106|1	$00000000
+RawASC|d0|index 106|1	$0000000E
+RawASC|<= index|index 106|1	$00000001
+RawASC|kept|index 106|2	kept
+RawASC|popped|index 106|2	$00000000
+RawASC|kept|index 107|1	kept
+RawASC|popped|index 107|1	$00000000
+RawASC|d0|index 107|1	$0000000E
+RawASC|<= index|index 107|1	$00000001
+RawASC|kept|index 107|2	kept
+RawASC|popped|index 107|2	$00000000
+RawASC|kept|index 108|1	kept
+RawASC|popped|index 108|1	$00000000
+RawASC|d0|index 108|1	$0000000E
+RawASC|<= index|index 108|1	$00000001
+RawASC|kept|index 108|2	kept
+RawASC|popped|index 108|2	$00000000
+RawASC|kept|index 109|1	kept
+RawASC|popped|index 109|1	$00000000
+RawASC|d0|index 109|1	$0000000E
+RawASC|<= index|index 109|1	$00000001
+RawASC|kept|index 109|2	kept
+RawASC|popped|index 109|2	$00000000
+RawASC|kept|index 110|1	kept
+RawASC|popped|index 110|1	$00000000
+RawASC|d0|index 110|1	$0000000E
+RawASC|<= index|index 110|1	$00000001
+RawASC|kept|index 110|2	kept
+RawASC|popped|index 110|2	$00000000
+RawASC|kept|index 111|1	kept
+RawASC|popped|index 111|1	$00000000
+RawASC|d0|index 111|1	$0000000E
+RawASC|<= index|index 111|1	$00000001
+RawASC|kept|index 111|2	kept
+RawASC|popped|index 111|2	$00000000
+RawASC|kept|index 112|1	kept
+RawASC|popped|index 112|1	$00000000
+RawASC|d0|index 112|1	$0000000E
+RawASC|<= index|index 112|1	$00000001
+RawASC|kept|index 112|2	kept
+RawASC|popped|index 112|2	$00000000
+RawASC|kept|index 113|1	kept
+RawASC|popped|index 113|1	$00000000
+RawASC|d0|index 113|1	$0000000E
+RawASC|<= index|index 113|1	$00000001
+BInstr|kept|"hello world","o"|1	kept
+BInstr|popped|"hello world","o"|1	$00000000
+BInstr|d0|"hello world","o"|1	$00000008
+BInstr|kept|"abcabc","abc"|1	kept
+BInstr|popped|"abcabc","abc"|1	$00000000
+BInstr|d0|"abcabc","abc"|1	$00000004
+BInstr|kept|"abc",""|1	kept
+BInstr|popped|"abc",""|1	$00000000
+BInstr|d0|"abc",""|1	$00000000
+BInstr|kept|"","a"|1	kept
+BInstr|popped|"","a"|1	$00000000
+BInstr|d0|"","a"|1	$00000000
+BInstr|kept|"",""|1	kept
+BInstr|popped|"",""|1	$00000000
+BInstr|d0|"",""|1	$00000000
+BInstr|kept|"aaa","aa"|1	kept
+BInstr|popped|"aaa","aa"|1	$00000000
+BInstr|d0|"aaa","aa"|1	$00000002
+BInstr|kept|"abc","abcd"|1	kept
+BInstr|popped|"abc","abcd"|1	$00000000
+BInstr|d0|"abc","abcd"|1	$00000000
+BInstr|kept|"abc","x"|1	kept
+BInstr|popped|"abc","x"|1	$00000000
+BInstr|d0|"abc","x"|1	$00000000
+BInstr|kept|"abc","c"|1	kept
+BInstr|popped|"abc","c"|1	$00000000
+BInstr|d0|"abc","c"|1	$00000003
+BInstr|kept|"abc","a"|1	kept
+BInstr|popped|"abc","a"|1	$00000000
+BInstr|d0|"abc","a"|1	$00000001
+BInstr|kept|"a needle in a haystack","needle"|1	kept
+BInstr|popped|"a needle in a haystack","needle"|1	$00000000
+BInstr|d0|"a needle in a haystack","needle"|1	$00000003
+BInstr|kept|"xyzxyz","zx"|1	kept
+BInstr|popped|"xyzxyz","zx"|1	$00000000
+BInstr|d0|"xyzxyz","zx"|1	$00000003
+DefaultFontHeight|kept|not open, type $0|1	kept
+DefaultFontHeight|popped|not open, type $0|1	$00000000
+DefaultFontHeight|d0|not open, type $0|1	$00000000
+DefaultFontName|kept|not open, type $0|1	kept
+DefaultFontName|popped|not open, type $0|1	$00000000
+DefaultFontName|d0|not open, type $0|1	$00000000
+DefaultFontName|a3|not open, type $0|1	$00000004
+DefaultFontName|out|not open, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $1|1	kept
+DefaultFontHeight|popped|not open, type $1|1	$00000000
+DefaultFontHeight|d0|not open, type $1|1	$00000000
+DefaultFontName|kept|not open, type $1|1	kept
+DefaultFontName|popped|not open, type $1|1	$00000000
+DefaultFontName|d0|not open, type $1|1	$00000000
+DefaultFontName|a3|not open, type $1|1	$00000004
+DefaultFontName|out|not open, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $2|1	kept
+DefaultFontHeight|popped|not open, type $2|1	$00000000
+DefaultFontHeight|d0|not open, type $2|1	$00000000
+DefaultFontName|kept|not open, type $2|1	kept
+DefaultFontName|popped|not open, type $2|1	$00000000
+DefaultFontName|d0|not open, type $2|1	$00000000
+DefaultFontName|a3|not open, type $2|1	$00000004
+DefaultFontName|out|not open, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $7|1	kept
+DefaultFontHeight|popped|not open, type $7|1	$00000000
+DefaultFontHeight|d0|not open, type $7|1	$00000000
+DefaultFontName|kept|not open, type $7|1	kept
+DefaultFontName|popped|not open, type $7|1	$00000000
+DefaultFontName|d0|not open, type $7|1	$00000000
+DefaultFontName|a3|not open, type $7|1	$00000004
+DefaultFontName|out|not open, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $3|1	kept
+DefaultFontHeight|popped|not open, type $3|1	$00000000
+DefaultFontHeight|d0|not open, type $3|1	$00000000
+DefaultFontName|kept|not open, type $3|1	kept
+DefaultFontName|popped|not open, type $3|1	$00000000
+DefaultFontName|d0|not open, type $3|1	$00000000
+DefaultFontName|a3|not open, type $3|1	$00000004
+DefaultFontName|out|not open, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $12340001|1	kept
+DefaultFontHeight|popped|not open, type $12340001|1	$00000000
+DefaultFontHeight|d0|not open, type $12340001|1	$00000000
+DefaultFontName|kept|not open, type $12340001|1	kept
+DefaultFontName|popped|not open, type $12340001|1	$00000000
+DefaultFontName|d0|not open, type $12340001|1	$00000000
+DefaultFontName|a3|not open, type $12340001|1	$00000004
+DefaultFontName|out|not open, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|not open, type $FFFF0002|1	kept
+DefaultFontHeight|popped|not open, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|not open, type $FFFF0002|1	$00000000
+DefaultFontName|kept|not open, type $FFFF0002|1	kept
+DefaultFontName|popped|not open, type $FFFF0002|1	$00000000
+DefaultFontName|d0|not open, type $FFFF0002|1	$00000000
+DefaultFontName|a3|not open, type $FFFF0002|1	$00000004
+DefaultFontName|out|not open, type $FFFF0002|1	bytes 400 fnv FC2BB505
+CloseFontPrefs|kept|not open|1	kept
+CloseFontPrefs|popped|not open|1	$00000000
+CloseFontPrefs|d0|not open|1	$00000000
+OpenFontPrefs|kept|no file|1	kept
+OpenFontPrefs|popped|no file|1	$00000000
+OpenFontPrefs|d0|no file|1	$00000000
+DefaultFontHeight|kept|no file, type $0|1	kept
+DefaultFontHeight|popped|no file, type $0|1	$00000000
+DefaultFontHeight|d0|no file, type $0|1	$00000000
+DefaultFontName|kept|no file, type $0|1	kept
+DefaultFontName|popped|no file, type $0|1	$00000000
+DefaultFontName|d0|no file, type $0|1	$00000000
+DefaultFontName|a3|no file, type $0|1	$00000004
+DefaultFontName|out|no file, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $1|1	kept
+DefaultFontHeight|popped|no file, type $1|1	$00000000
+DefaultFontHeight|d0|no file, type $1|1	$00000000
+DefaultFontName|kept|no file, type $1|1	kept
+DefaultFontName|popped|no file, type $1|1	$00000000
+DefaultFontName|d0|no file, type $1|1	$00000000
+DefaultFontName|a3|no file, type $1|1	$00000004
+DefaultFontName|out|no file, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $2|1	kept
+DefaultFontHeight|popped|no file, type $2|1	$00000000
+DefaultFontHeight|d0|no file, type $2|1	$00000000
+DefaultFontName|kept|no file, type $2|1	kept
+DefaultFontName|popped|no file, type $2|1	$00000000
+DefaultFontName|d0|no file, type $2|1	$00000000
+DefaultFontName|a3|no file, type $2|1	$00000004
+DefaultFontName|out|no file, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $7|1	kept
+DefaultFontHeight|popped|no file, type $7|1	$00000000
+DefaultFontHeight|d0|no file, type $7|1	$00000000
+DefaultFontName|kept|no file, type $7|1	kept
+DefaultFontName|popped|no file, type $7|1	$00000000
+DefaultFontName|d0|no file, type $7|1	$00000000
+DefaultFontName|a3|no file, type $7|1	$00000004
+DefaultFontName|out|no file, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $3|1	kept
+DefaultFontHeight|popped|no file, type $3|1	$00000000
+DefaultFontHeight|d0|no file, type $3|1	$00000000
+DefaultFontName|kept|no file, type $3|1	kept
+DefaultFontName|popped|no file, type $3|1	$00000000
+DefaultFontName|d0|no file, type $3|1	$00000000
+DefaultFontName|a3|no file, type $3|1	$00000004
+DefaultFontName|out|no file, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $12340001|1	kept
+DefaultFontHeight|popped|no file, type $12340001|1	$00000000
+DefaultFontHeight|d0|no file, type $12340001|1	$00000000
+DefaultFontName|kept|no file, type $12340001|1	kept
+DefaultFontName|popped|no file, type $12340001|1	$00000000
+DefaultFontName|d0|no file, type $12340001|1	$00000000
+DefaultFontName|a3|no file, type $12340001|1	$00000004
+DefaultFontName|out|no file, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|no file, type $FFFF0002|1	kept
+DefaultFontHeight|popped|no file, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|no file, type $FFFF0002|1	$00000000
+DefaultFontName|kept|no file, type $FFFF0002|1	kept
+DefaultFontName|popped|no file, type $FFFF0002|1	$00000000
+DefaultFontName|d0|no file, type $FFFF0002|1	$00000000
+DefaultFontName|a3|no file, type $FFFF0002|1	$00000004
+DefaultFontName|out|no file, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|bad FORM|1	kept
+OpenFontPrefs|popped|bad FORM|1	$00000000
+OpenFontPrefs|d0|bad FORM|1	$00000000
+DefaultFontHeight|kept|bad FORM, type $0|1	kept
+DefaultFontHeight|popped|bad FORM, type $0|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $0|1	$00000000
+DefaultFontName|kept|bad FORM, type $0|1	kept
+DefaultFontName|popped|bad FORM, type $0|1	$00000000
+DefaultFontName|d0|bad FORM, type $0|1	$00000000
+DefaultFontName|a3|bad FORM, type $0|1	$00000004
+DefaultFontName|out|bad FORM, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $1|1	kept
+DefaultFontHeight|popped|bad FORM, type $1|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $1|1	$00000000
+DefaultFontName|kept|bad FORM, type $1|1	kept
+DefaultFontName|popped|bad FORM, type $1|1	$00000000
+DefaultFontName|d0|bad FORM, type $1|1	$00000000
+DefaultFontName|a3|bad FORM, type $1|1	$00000004
+DefaultFontName|out|bad FORM, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $2|1	kept
+DefaultFontHeight|popped|bad FORM, type $2|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $2|1	$00000000
+DefaultFontName|kept|bad FORM, type $2|1	kept
+DefaultFontName|popped|bad FORM, type $2|1	$00000000
+DefaultFontName|d0|bad FORM, type $2|1	$00000000
+DefaultFontName|a3|bad FORM, type $2|1	$00000004
+DefaultFontName|out|bad FORM, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $7|1	kept
+DefaultFontHeight|popped|bad FORM, type $7|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $7|1	$00000000
+DefaultFontName|kept|bad FORM, type $7|1	kept
+DefaultFontName|popped|bad FORM, type $7|1	$00000000
+DefaultFontName|d0|bad FORM, type $7|1	$00000000
+DefaultFontName|a3|bad FORM, type $7|1	$00000004
+DefaultFontName|out|bad FORM, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $3|1	kept
+DefaultFontHeight|popped|bad FORM, type $3|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $3|1	$00000000
+DefaultFontName|kept|bad FORM, type $3|1	kept
+DefaultFontName|popped|bad FORM, type $3|1	$00000000
+DefaultFontName|d0|bad FORM, type $3|1	$00000000
+DefaultFontName|a3|bad FORM, type $3|1	$00000004
+DefaultFontName|out|bad FORM, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $12340001|1	kept
+DefaultFontHeight|popped|bad FORM, type $12340001|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $12340001|1	$00000000
+DefaultFontName|kept|bad FORM, type $12340001|1	kept
+DefaultFontName|popped|bad FORM, type $12340001|1	$00000000
+DefaultFontName|d0|bad FORM, type $12340001|1	$00000000
+DefaultFontName|a3|bad FORM, type $12340001|1	$00000004
+DefaultFontName|out|bad FORM, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FORM, type $FFFF0002|1	kept
+DefaultFontHeight|popped|bad FORM, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|bad FORM, type $FFFF0002|1	$00000000
+DefaultFontName|kept|bad FORM, type $FFFF0002|1	kept
+DefaultFontName|popped|bad FORM, type $FFFF0002|1	$00000000
+DefaultFontName|d0|bad FORM, type $FFFF0002|1	$00000000
+DefaultFontName|a3|bad FORM, type $FFFF0002|1	$00000004
+DefaultFontName|out|bad FORM, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|bad PREF|1	kept
+OpenFontPrefs|popped|bad PREF|1	$00000000
+OpenFontPrefs|d0|bad PREF|1	$00000000
+DefaultFontHeight|kept|bad PREF, type $0|1	kept
+DefaultFontHeight|popped|bad PREF, type $0|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $0|1	$00000000
+DefaultFontName|kept|bad PREF, type $0|1	kept
+DefaultFontName|popped|bad PREF, type $0|1	$00000000
+DefaultFontName|d0|bad PREF, type $0|1	$00000000
+DefaultFontName|a3|bad PREF, type $0|1	$00000004
+DefaultFontName|out|bad PREF, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $1|1	kept
+DefaultFontHeight|popped|bad PREF, type $1|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $1|1	$00000000
+DefaultFontName|kept|bad PREF, type $1|1	kept
+DefaultFontName|popped|bad PREF, type $1|1	$00000000
+DefaultFontName|d0|bad PREF, type $1|1	$00000000
+DefaultFontName|a3|bad PREF, type $1|1	$00000004
+DefaultFontName|out|bad PREF, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $2|1	kept
+DefaultFontHeight|popped|bad PREF, type $2|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $2|1	$00000000
+DefaultFontName|kept|bad PREF, type $2|1	kept
+DefaultFontName|popped|bad PREF, type $2|1	$00000000
+DefaultFontName|d0|bad PREF, type $2|1	$00000000
+DefaultFontName|a3|bad PREF, type $2|1	$00000004
+DefaultFontName|out|bad PREF, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $7|1	kept
+DefaultFontHeight|popped|bad PREF, type $7|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $7|1	$00000000
+DefaultFontName|kept|bad PREF, type $7|1	kept
+DefaultFontName|popped|bad PREF, type $7|1	$00000000
+DefaultFontName|d0|bad PREF, type $7|1	$00000000
+DefaultFontName|a3|bad PREF, type $7|1	$00000004
+DefaultFontName|out|bad PREF, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $3|1	kept
+DefaultFontHeight|popped|bad PREF, type $3|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $3|1	$00000000
+DefaultFontName|kept|bad PREF, type $3|1	kept
+DefaultFontName|popped|bad PREF, type $3|1	$00000000
+DefaultFontName|d0|bad PREF, type $3|1	$00000000
+DefaultFontName|a3|bad PREF, type $3|1	$00000004
+DefaultFontName|out|bad PREF, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $12340001|1	kept
+DefaultFontHeight|popped|bad PREF, type $12340001|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $12340001|1	$00000000
+DefaultFontName|kept|bad PREF, type $12340001|1	kept
+DefaultFontName|popped|bad PREF, type $12340001|1	$00000000
+DefaultFontName|d0|bad PREF, type $12340001|1	$00000000
+DefaultFontName|a3|bad PREF, type $12340001|1	$00000004
+DefaultFontName|out|bad PREF, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PREF, type $FFFF0002|1	kept
+DefaultFontHeight|popped|bad PREF, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|bad PREF, type $FFFF0002|1	$00000000
+DefaultFontName|kept|bad PREF, type $FFFF0002|1	kept
+DefaultFontName|popped|bad PREF, type $FFFF0002|1	$00000000
+DefaultFontName|d0|bad PREF, type $FFFF0002|1	$00000000
+DefaultFontName|a3|bad PREF, type $FFFF0002|1	$00000004
+DefaultFontName|out|bad PREF, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|bad PRHD|1	kept
+OpenFontPrefs|popped|bad PRHD|1	$00000000
+OpenFontPrefs|d0|bad PRHD|1	$00000000
+DefaultFontHeight|kept|bad PRHD, type $0|1	kept
+DefaultFontHeight|popped|bad PRHD, type $0|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $0|1	$00000000
+DefaultFontName|kept|bad PRHD, type $0|1	kept
+DefaultFontName|popped|bad PRHD, type $0|1	$00000000
+DefaultFontName|d0|bad PRHD, type $0|1	$00000000
+DefaultFontName|a3|bad PRHD, type $0|1	$00000004
+DefaultFontName|out|bad PRHD, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $1|1	kept
+DefaultFontHeight|popped|bad PRHD, type $1|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $1|1	$00000000
+DefaultFontName|kept|bad PRHD, type $1|1	kept
+DefaultFontName|popped|bad PRHD, type $1|1	$00000000
+DefaultFontName|d0|bad PRHD, type $1|1	$00000000
+DefaultFontName|a3|bad PRHD, type $1|1	$00000004
+DefaultFontName|out|bad PRHD, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $2|1	kept
+DefaultFontHeight|popped|bad PRHD, type $2|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $2|1	$00000000
+DefaultFontName|kept|bad PRHD, type $2|1	kept
+DefaultFontName|popped|bad PRHD, type $2|1	$00000000
+DefaultFontName|d0|bad PRHD, type $2|1	$00000000
+DefaultFontName|a3|bad PRHD, type $2|1	$00000004
+DefaultFontName|out|bad PRHD, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $7|1	kept
+DefaultFontHeight|popped|bad PRHD, type $7|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $7|1	$00000000
+DefaultFontName|kept|bad PRHD, type $7|1	kept
+DefaultFontName|popped|bad PRHD, type $7|1	$00000000
+DefaultFontName|d0|bad PRHD, type $7|1	$00000000
+DefaultFontName|a3|bad PRHD, type $7|1	$00000004
+DefaultFontName|out|bad PRHD, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $3|1	kept
+DefaultFontHeight|popped|bad PRHD, type $3|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $3|1	$00000000
+DefaultFontName|kept|bad PRHD, type $3|1	kept
+DefaultFontName|popped|bad PRHD, type $3|1	$00000000
+DefaultFontName|d0|bad PRHD, type $3|1	$00000000
+DefaultFontName|a3|bad PRHD, type $3|1	$00000004
+DefaultFontName|out|bad PRHD, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $12340001|1	kept
+DefaultFontHeight|popped|bad PRHD, type $12340001|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $12340001|1	$00000000
+DefaultFontName|kept|bad PRHD, type $12340001|1	kept
+DefaultFontName|popped|bad PRHD, type $12340001|1	$00000000
+DefaultFontName|d0|bad PRHD, type $12340001|1	$00000000
+DefaultFontName|a3|bad PRHD, type $12340001|1	$00000004
+DefaultFontName|out|bad PRHD, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad PRHD, type $FFFF0002|1	kept
+DefaultFontHeight|popped|bad PRHD, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|bad PRHD, type $FFFF0002|1	$00000000
+DefaultFontName|kept|bad PRHD, type $FFFF0002|1	kept
+DefaultFontName|popped|bad PRHD, type $FFFF0002|1	$00000000
+DefaultFontName|d0|bad PRHD, type $FFFF0002|1	$00000000
+DefaultFontName|a3|bad PRHD, type $FFFF0002|1	$00000004
+DefaultFontName|out|bad PRHD, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|bad FONT|1	kept
+OpenFontPrefs|popped|bad FONT|1	$00000000
+OpenFontPrefs|d0|bad FONT|1	$00000000
+DefaultFontHeight|kept|bad FONT, type $0|1	kept
+DefaultFontHeight|popped|bad FONT, type $0|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $0|1	$00000000
+DefaultFontName|kept|bad FONT, type $0|1	kept
+DefaultFontName|popped|bad FONT, type $0|1	$00000000
+DefaultFontName|d0|bad FONT, type $0|1	$00000000
+DefaultFontName|a3|bad FONT, type $0|1	$00000004
+DefaultFontName|out|bad FONT, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $1|1	kept
+DefaultFontHeight|popped|bad FONT, type $1|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $1|1	$00000000
+DefaultFontName|kept|bad FONT, type $1|1	kept
+DefaultFontName|popped|bad FONT, type $1|1	$00000000
+DefaultFontName|d0|bad FONT, type $1|1	$00000000
+DefaultFontName|a3|bad FONT, type $1|1	$00000004
+DefaultFontName|out|bad FONT, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $2|1	kept
+DefaultFontHeight|popped|bad FONT, type $2|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $2|1	$00000000
+DefaultFontName|kept|bad FONT, type $2|1	kept
+DefaultFontName|popped|bad FONT, type $2|1	$00000000
+DefaultFontName|d0|bad FONT, type $2|1	$00000000
+DefaultFontName|a3|bad FONT, type $2|1	$00000004
+DefaultFontName|out|bad FONT, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $7|1	kept
+DefaultFontHeight|popped|bad FONT, type $7|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $7|1	$00000000
+DefaultFontName|kept|bad FONT, type $7|1	kept
+DefaultFontName|popped|bad FONT, type $7|1	$00000000
+DefaultFontName|d0|bad FONT, type $7|1	$00000000
+DefaultFontName|a3|bad FONT, type $7|1	$00000004
+DefaultFontName|out|bad FONT, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $3|1	kept
+DefaultFontHeight|popped|bad FONT, type $3|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $3|1	$00000000
+DefaultFontName|kept|bad FONT, type $3|1	kept
+DefaultFontName|popped|bad FONT, type $3|1	$00000000
+DefaultFontName|d0|bad FONT, type $3|1	$00000000
+DefaultFontName|a3|bad FONT, type $3|1	$00000004
+DefaultFontName|out|bad FONT, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $12340001|1	kept
+DefaultFontHeight|popped|bad FONT, type $12340001|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $12340001|1	$00000000
+DefaultFontName|kept|bad FONT, type $12340001|1	kept
+DefaultFontName|popped|bad FONT, type $12340001|1	$00000000
+DefaultFontName|d0|bad FONT, type $12340001|1	$00000000
+DefaultFontName|a3|bad FONT, type $12340001|1	$00000004
+DefaultFontName|out|bad FONT, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|bad FONT, type $FFFF0002|1	kept
+DefaultFontHeight|popped|bad FONT, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|bad FONT, type $FFFF0002|1	$00000000
+DefaultFontName|kept|bad FONT, type $FFFF0002|1	kept
+DefaultFontName|popped|bad FONT, type $FFFF0002|1	$00000000
+DefaultFontName|d0|bad FONT, type $FFFF0002|1	$00000000
+DefaultFontName|a3|bad FONT, type $FFFF0002|1	$00000004
+DefaultFontName|out|bad FONT, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|ok|1	kept
+OpenFontPrefs|popped|ok|1	$00000000
+OpenFontPrefs|d0|ok|1	$FFFFFFFF
+OpenFontPrefs|opened|ok|1	$00000001
+DefaultFontHeight|kept|ok, type $0|1	kept
+DefaultFontHeight|popped|ok, type $0|1	$00000000
+DefaultFontHeight|d0|ok, type $0|1	$00000008
+DefaultFontName|kept|ok, type $0|1	kept
+DefaultFontName|popped|ok, type $0|1	$00000000
+DefaultFontName|d0|ok, type $0|1	$0000000A
+DefaultFontName|a3|ok, type $0|1	$0000000F
+DefaultFontName|out|ok, type $0|1	bytes 400 fnv AE5EE7B8
+DefaultFontHeight|kept|ok, type $1|1	kept
+DefaultFontHeight|popped|ok, type $1|1	$00000000
+DefaultFontHeight|d0|ok, type $1|1	$0000000B
+DefaultFontName|kept|ok, type $1|1	kept
+DefaultFontName|popped|ok, type $1|1	$00000000
+DefaultFontName|d0|ok, type $1|1	$0000000E
+DefaultFontName|a3|ok, type $1|1	$00000013
+DefaultFontName|out|ok, type $1|1	bytes 400 fnv F41C1C85
+DefaultFontHeight|kept|ok, type $2|1	kept
+DefaultFontHeight|popped|ok, type $2|1	$00000000
+DefaultFontHeight|d0|ok, type $2|1	$0000000D
+DefaultFontName|kept|ok, type $2|1	kept
+DefaultFontName|popped|ok, type $2|1	$00000000
+DefaultFontName|d0|ok, type $2|1	$00000008
+DefaultFontName|a3|ok, type $2|1	$0000000D
+DefaultFontName|out|ok, type $2|1	bytes 400 fnv 01D84DBD
+DefaultFontHeight|kept|ok, type $7|1	kept
+DefaultFontHeight|popped|ok, type $7|1	$00000000
+DefaultFontHeight|d0|ok, type $7|1	$00000077
+DefaultFontName|kept|ok, type $7|1	kept
+DefaultFontName|popped|ok, type $7|1	$00000000
+DefaultFontName|d0|ok, type $7|1	$0000000C
+DefaultFontName|a3|ok, type $7|1	$00000011
+DefaultFontName|out|ok, type $7|1	bytes 400 fnv DA2E1E6B
+DefaultFontHeight|kept|ok, type $3|1	kept
+DefaultFontHeight|popped|ok, type $3|1	$00000000
+DefaultFontHeight|d0|ok, type $3|1	$00000000
+DefaultFontName|kept|ok, type $3|1	kept
+DefaultFontName|popped|ok, type $3|1	$00000000
+DefaultFontName|d0|ok, type $3|1	$00000000
+DefaultFontName|a3|ok, type $3|1	$00000004
+DefaultFontName|out|ok, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|ok, type $12340001|1	kept
+DefaultFontHeight|popped|ok, type $12340001|1	$00000000
+DefaultFontHeight|d0|ok, type $12340001|1	$1234000B
+DefaultFontName|kept|ok, type $12340001|1	kept
+DefaultFontName|popped|ok, type $12340001|1	$00000000
+DefaultFontName|d0|ok, type $12340001|1	$0000000E
+DefaultFontName|a3|ok, type $12340001|1	$00000013
+DefaultFontName|out|ok, type $12340001|1	bytes 400 fnv F41C1C85
+DefaultFontHeight|kept|ok, type $FFFF0002|1	kept
+DefaultFontHeight|popped|ok, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|ok, type $FFFF0002|1	$FFFF000D
+DefaultFontName|kept|ok, type $FFFF0002|1	kept
+DefaultFontName|popped|ok, type $FFFF0002|1	$00000000
+DefaultFontName|d0|ok, type $FFFF0002|1	$00000008
+DefaultFontName|a3|ok, type $FFFF0002|1	$0000000D
+DefaultFontName|out|ok, type $FFFF0002|1	bytes 400 fnv 01D84DBD
+DefaultFontName|kept|type 1|1	kept
+DefaultFontName|popped|type 1|1	$00000000
+DefaultFontName|helvetica.font|type 1|1	$00000001
+DefaultFontHeight|kept|type 1|1	kept
+DefaultFontHeight|popped|type 1|1	$00000000
+DefaultFontHeight|13|type 1|1	$00000001
+CloseFontPrefs|kept|open|1	kept
+CloseFontPrefs|popped|open|1	$00000000
+CloseFontPrefs|d0|open|1	$00000000
+CloseFontPrefs|kept|closed|1	kept
+CloseFontPrefs|popped|closed|1	$00000000
+CloseFontPrefs|d0|closed|1	$00000000
+DefaultFontHeight|kept|closed, type $0|1	kept
+DefaultFontHeight|popped|closed, type $0|1	$00000000
+DefaultFontHeight|d0|closed, type $0|1	$00000000
+DefaultFontName|kept|closed, type $0|1	kept
+DefaultFontName|popped|closed, type $0|1	$00000000
+DefaultFontName|d0|closed, type $0|1	$00000000
+DefaultFontName|a3|closed, type $0|1	$00000004
+DefaultFontName|out|closed, type $0|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $1|1	kept
+DefaultFontHeight|popped|closed, type $1|1	$00000000
+DefaultFontHeight|d0|closed, type $1|1	$00000000
+DefaultFontName|kept|closed, type $1|1	kept
+DefaultFontName|popped|closed, type $1|1	$00000000
+DefaultFontName|d0|closed, type $1|1	$00000000
+DefaultFontName|a3|closed, type $1|1	$00000004
+DefaultFontName|out|closed, type $1|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $2|1	kept
+DefaultFontHeight|popped|closed, type $2|1	$00000000
+DefaultFontHeight|d0|closed, type $2|1	$00000000
+DefaultFontName|kept|closed, type $2|1	kept
+DefaultFontName|popped|closed, type $2|1	$00000000
+DefaultFontName|d0|closed, type $2|1	$00000000
+DefaultFontName|a3|closed, type $2|1	$00000004
+DefaultFontName|out|closed, type $2|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $7|1	kept
+DefaultFontHeight|popped|closed, type $7|1	$00000000
+DefaultFontHeight|d0|closed, type $7|1	$00000000
+DefaultFontName|kept|closed, type $7|1	kept
+DefaultFontName|popped|closed, type $7|1	$00000000
+DefaultFontName|d0|closed, type $7|1	$00000000
+DefaultFontName|a3|closed, type $7|1	$00000004
+DefaultFontName|out|closed, type $7|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $3|1	kept
+DefaultFontHeight|popped|closed, type $3|1	$00000000
+DefaultFontHeight|d0|closed, type $3|1	$00000000
+DefaultFontName|kept|closed, type $3|1	kept
+DefaultFontName|popped|closed, type $3|1	$00000000
+DefaultFontName|d0|closed, type $3|1	$00000000
+DefaultFontName|a3|closed, type $3|1	$00000004
+DefaultFontName|out|closed, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $12340001|1	kept
+DefaultFontHeight|popped|closed, type $12340001|1	$00000000
+DefaultFontHeight|d0|closed, type $12340001|1	$00000000
+DefaultFontName|kept|closed, type $12340001|1	kept
+DefaultFontName|popped|closed, type $12340001|1	$00000000
+DefaultFontName|d0|closed, type $12340001|1	$00000000
+DefaultFontName|a3|closed, type $12340001|1	$00000004
+DefaultFontName|out|closed, type $12340001|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|closed, type $FFFF0002|1	kept
+DefaultFontHeight|popped|closed, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|closed, type $FFFF0002|1	$00000000
+DefaultFontName|kept|closed, type $FFFF0002|1	kept
+DefaultFontName|popped|closed, type $FFFF0002|1	$00000000
+DefaultFontName|d0|closed, type $FFFF0002|1	$00000000
+DefaultFontName|a3|closed, type $FFFF0002|1	$00000004
+DefaultFontName|out|closed, type $FFFF0002|1	bytes 400 fnv FC2BB505
+OpenFontPrefs|kept|PRHD of 10 bytes, longer file|1	kept
+OpenFontPrefs|popped|PRHD of 10 bytes, longer file|1	$00000000
+OpenFontPrefs|d0|PRHD of 10 bytes, longer file|1	$FFFFFFFF
+DefaultFontHeight|kept|PRHD of 10 bytes, type $0|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $0|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $0|1	$00000008
+DefaultFontName|kept|PRHD of 10 bytes, type $0|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $0|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $0|1	$0000000A
+DefaultFontName|a3|PRHD of 10 bytes, type $0|1	$0000000F
+DefaultFontName|out|PRHD of 10 bytes, type $0|1	bytes 400 fnv AE5EE7B8
+DefaultFontHeight|kept|PRHD of 10 bytes, type $1|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $1|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $1|1	$0000000B
+DefaultFontName|kept|PRHD of 10 bytes, type $1|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $1|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $1|1	$0000000E
+DefaultFontName|a3|PRHD of 10 bytes, type $1|1	$00000013
+DefaultFontName|out|PRHD of 10 bytes, type $1|1	bytes 400 fnv F41C1C85
+DefaultFontHeight|kept|PRHD of 10 bytes, type $2|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $2|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $2|1	$0000000D
+DefaultFontName|kept|PRHD of 10 bytes, type $2|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $2|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $2|1	$00000008
+DefaultFontName|a3|PRHD of 10 bytes, type $2|1	$0000000D
+DefaultFontName|out|PRHD of 10 bytes, type $2|1	bytes 400 fnv 01D84DBD
+DefaultFontHeight|kept|PRHD of 10 bytes, type $7|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $7|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $7|1	$00000077
+DefaultFontName|kept|PRHD of 10 bytes, type $7|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $7|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $7|1	$0000000C
+DefaultFontName|a3|PRHD of 10 bytes, type $7|1	$00000011
+DefaultFontName|out|PRHD of 10 bytes, type $7|1	bytes 400 fnv DA2E1E6B
+DefaultFontHeight|kept|PRHD of 10 bytes, type $3|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $3|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $3|1	$00000000
+DefaultFontName|kept|PRHD of 10 bytes, type $3|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $3|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $3|1	$00000000
+DefaultFontName|a3|PRHD of 10 bytes, type $3|1	$00000004
+DefaultFontName|out|PRHD of 10 bytes, type $3|1	bytes 400 fnv FC2BB505
+DefaultFontHeight|kept|PRHD of 10 bytes, type $12340001|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $12340001|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $12340001|1	$1234000B
+DefaultFontName|kept|PRHD of 10 bytes, type $12340001|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $12340001|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $12340001|1	$0000000E
+DefaultFontName|a3|PRHD of 10 bytes, type $12340001|1	$00000013
+DefaultFontName|out|PRHD of 10 bytes, type $12340001|1	bytes 400 fnv F41C1C85
+DefaultFontHeight|kept|PRHD of 10 bytes, type $FFFF0002|1	kept
+DefaultFontHeight|popped|PRHD of 10 bytes, type $FFFF0002|1	$00000000
+DefaultFontHeight|d0|PRHD of 10 bytes, type $FFFF0002|1	$FFFF000D
+DefaultFontName|kept|PRHD of 10 bytes, type $FFFF0002|1	kept
+DefaultFontName|popped|PRHD of 10 bytes, type $FFFF0002|1	$00000000
+DefaultFontName|d0|PRHD of 10 bytes, type $FFFF0002|1	$00000008
+DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1	$0000000D
+DefaultFontName|out|PRHD of 10 bytes, type $FFFF0002|1	bytes 400 fnv 01D84DBD
+CloseFontPrefs|kept||1	kept
+CloseFontPrefs|popped||1	$00000000
+CloseFontPrefs|d0||1	$00000000
+OpenFontPrefs|kept|open for finit|1	kept
+OpenFontPrefs|popped|open for finit|1	$00000000
+OpenFontPrefs|d0|open for finit|1	$FFFFFFFF
+finit|kept|font prefs open|1	kept
+finit|popped|font prefs open|1	$00000000
