@@ -686,6 +686,39 @@ Facts of the conversion of `systest_runtime`, `systest_mathstr`,
   a flush there makes that check fail, not the cases. `systest_system`
   (6 KB) writes less than the buffer holds.
 
+### The conversions of task 4.1
+
+Facts of 2026-11-12 (`bb_blitlib`, `blitzbomberslibtwo`, `ciatrklib`,
+`neilsreqtoolslib`, `popupwinlib`; each recorded by `libs-capture`, the
+two layouts agreed, the C build gives the same cases):
+
+- Checks against task 1.1: `bb_blitlib` 8143, `blitzbomberslibtwo` 6080,
+  `neilsreqtoolslib` 1238, `popupwinlib` 224, the same; `ciatrklib` 4563
+  against 4606: its 39 DMACONR checks of the F00 phase are `not captured`
+  cases (no check), and four `check()`s of the program's own consistency
+  that ran once per set run once (the play routine's and the CIA block
+  found, mt_end's `$DFF000` found, the module table found: 8 before, 4
+  now).
+- `ciatrklib`, the F00 phase (D8): no state makes the original's and the C
+  build's DMACONR agree there (hardware against RAM copy), so each of the
+  39 calls writes `DMACONR` as `not captured: F00 phase: the original
+  writes DMACON into the hardware, the C build into its RAM copy`. The
+  program switches the audio DMA off before the phase (a defined state)
+  and after it, as before. Which `$DFF000` to patch (`findend`) follows
+  the set the run loaded (`loaded.what`) in place of `tape_orig()`.
+- `neilsreqtoolslib`: the requester calls' and RTReturnValue's d0 are
+  `OBSPTR` (`prog` for the multi-load list), the call records
+  `OBSPTRBYTES`; the check text of a record is `call N` (the LVO it held
+  is a result, the first long of its bytes). The emulator's Workbench has
+  no `reqtools.library`, so the phase with the real library does not run
+  (as in task 1.1).
+- `blitzbomberslibtwo`'s table words are plain `OBS` numbers (no
+  `tape_val`, the site of "Measurements (group 1)").
+- `popupwinlib`'s memory balance counts the one port of the first init.
+- A `ciatrklib` run without stated sets stops its ticks after 20 failures
+  (`ticks`), so its first summary listed fewer PlayTracker calls; the
+  sets taken from it held in the full run.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the
@@ -841,7 +874,9 @@ it).
   captured: REASON`. Whether the F00 phase of `ciatrklib` can be put into a
   state where original and C build agree: measured, no (hardware against RAM
   copy, by construction); `not captured: REASON` stands for it. See
-  "Measurements (group 1)". Decided during implementation.
+  "Measurements (group 1)". Decided during implementation; for
+  `ciatrklib` decided in task 4.1: `not captured` ("The conversions of
+  task 4.1").
 - Keys that hold values or addresses (four programs hold values in the check
   text, three hold an address in the check text or vector) and values the
   range test of `tape_obs` hits by chance: the conversions of their groups

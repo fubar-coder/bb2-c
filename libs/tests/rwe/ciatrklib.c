@@ -1,17 +1,18 @@
 /*
  * rwe ciatrklib - the C build of ciatrklib (userlib 56, the CIA
- * Protracker library) against the reference build of its source
- * (ref/ciatrklib.obj, see libs/userlibs/rwe/refbuild.cmake), method of
- * rwecmp.h.
+ * Protracker library) or the reference build of its source
+ * (ref/ciatrklib.obj, see libs/userlibs/rwe/refbuild.cmake), one set as
+ * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/rwe_ciatrklib.txt).
  *
  *   ciatrklib DIR     (DIR with ciatrklib and memlib, .obj/.orig)
  *
- * Paula's registers cannot be read, so the test compares the library's
+ * Paula's registers cannot be read, so the test observes the library's
  * state: its three data blocks (found in both builds: the library's
  * variables with the module table, the CIA part, the play routine's
  * voices, sample starts, song position, speed ... - the C build keeps
  * the original's layout), with the pointers into the modules taken
- * relative to each set's module; the register writes of masked channels
+ * relative to the module; the register writes of masked channels
  * (fake_channel); DMACONR's audio bits and the filter bit of CIA-A PRA
  * after every call; the modules' bytes (E8x/EFx change samples).  The
  * modules are built in memory: random notes and effects (fixed seed) in
@@ -19,16 +20,16 @@
  * sample of length 0).
  *
  * Two phases:
- *   A (CIA, each set alone): AddICRVector/RemICRVector of the CIA
+ *   A (CIA): AddICRVector/RemICRVector of the CIA
  *     resources are stand-ins that record their calls (the real ones
  *     with the original's ICR bits would remove the system's ciaa timer
- *     A vector); ciaa's fails, so init takes ciab's timer B.  Compared:
+ *     A vector); ciaa's fails, so init takes ciab's timer B.  Observed:
  *     the calls (BUG(orig) #450 #448: the bits are the longs at the addresses 1 and
  *     2; RemICRVector with bit 0), the CIA part, the timer started and
  *     stopped, the interrupt server called by hand (the tempo command,
  *     the event), StartTracker (reinstalls), WaitTrackerEvent with a
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
- *   B (VBlank, both sets call by call): DecodeModule (chip: linked; fast
+ *   B (VBlank, call by call): DecodeModule (chip: linked; fast
  *     memory: copied, size + 3), the information functions also on an
  *     empty slot (BUG(orig) #451 #430 #437: StartTracker returns the slot number,
  *     CheckTrackerID the long at address 0, GetModuleName$ slot*10),
@@ -45,14 +46,17 @@
  *     a0 with $DFF000, the voices behind read their notes from the
  *     custom chip registers): the $DFF000 of mt_end (the original's
  *     LEA operand, the C build's endcustom behind the CIA part) is
- *     patched in both builds to a RAM copy of the registers per set, filled
+ *     patched in both builds to a RAM copy of the registers, filled
  *     with a note, only for these calls (the routine polls VHPOSR,
- *     DMACONR and INTREQR: they cannot be redirected).
+ *     DMACONR and INTREQR: they cannot be redirected); DMACONR is not
+ *     captured there (the original writes DMACON into the hardware, the
+ *     C build into its RAM copy).
  * Not covered: the runtime errors (missing file, error checks that
  * fail), a Read error, failing allocations, sample numbers above 31 and
  * finetune 15 / above 15 (they read behind the tables into data that
  * holds pointers, or behind the data), E8x with a loop length of 0.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <hardware/custom.h>
@@ -65,7 +69,7 @@ enum { LOAD, START, STOP, DECODE, SIZE, LOC, FREE, GETEVT, CHKEVT, WAITEVT, CHKI
 #define CUSTOMR (*(volatile struct Custom *)0xdff000)
 #define PRA (*(volatile UBYTE *)0xbfe001)
 
-static UBYTE *blkP[2], *blkC[2], *blkG[2];
+static UBYTE *blkP, *blkC, *blkG;
 
 /* offsets in the blocks */
 #define P_CHAN      1200                /* 4 x 44 */
@@ -98,18 +102,17 @@ static void PL(UBYTE *p, ULONG v) { *(ULONG *)p = v; }
 
 /* ------------------------------------------------- pointer regions */
 
-/* memory regions of both sets (modules and their copies): a pointer into
-   region k compares as k << 24 | offset */
+/* memory regions (modules and their copies): a pointer into region k is
+   observed as k << 24 | offset */
 #define NREG 8
-static struct { UBYTE *at[2]; ULONG len; } reg[NREG];
+static struct { UBYTE *at; ULONG len; } reg[NREG];
 
-static int region(UBYTE *a0, UBYTE *a1, ULONG len)
+static int region(UBYTE *a, ULONG len)
 {
     int k;
     for (k = 0; k < NREG; k++)
         if (!reg[k].len) {
-            reg[k].at[0] = a0;
-            reg[k].at[1] = a1;
+            reg[k].at = a;
             reg[k].len = len;
             return k;
         }
@@ -124,60 +127,45 @@ static void unregion(int k)
 
 /* inside a region, else up to 64 KB behind one (a sample offset moves
    n_start beyond the sample) */
-static ULONG norm(int s, ULONG v)
+static ULONG norm(ULONG v)
 {
     ULONG slack;
     int k;
     for (slack = 0; slack <= 0x10000; slack += 0x10000)
         for (k = 0; k < NREG; k++)
-            if (reg[k].len && v >= (ULONG)reg[k].at[s]
-                && v < (ULONG)reg[k].at[s] + reg[k].len + slack)
-                return 0x80000000UL | (ULONG)k << 24 | (v - (ULONG)reg[k].at[s]);
+            if (reg[k].len && v >= (ULONG)reg[k].at && v < (ULONG)reg[k].at + reg[k].len + slack)
+                return 0x80000000UL | (ULONG)k << 24 | (v - (ULONG)reg[k].at);
     return v;
 }
 
-/* ------------------------------------------------- block compares */
+/* ------------------------------------------------- block observations */
 
-static UBYTE tmp[2][P_SIZE];
+static UBYTE tmp[P_SIZE];
 static UWORD poffs[60];
 static int npoffs;
 
-static void sameblock(const char *what, UBYTE *const blk[2], ULONG size, const UWORD *ptr,
+static void sameblock(const char *what, const UBYTE *blk, ULONG size, const UWORD *ptr,
                       int nptr, const UWORD *zero, int nzero)
 {
-    int s, i;
-    ULONG o;
-    char w[80];
-    for (s = 0; s < 2; s++) {
-        memcpy(tmp[s], blk[s], size);
-        for (i = 0; i < nptr; i++)
-            PL(tmp[s] + ptr[i], norm(s, GL(tmp[s] + ptr[i])));
-        for (i = 0; i < nzero; i++)
-            PL(tmp[s] + zero[i], 0);
-    }
-    if (!tape_bytes(what, tmp[0], tmp[1], size)) {
-        checks++;
-        return;
-    }
-    for (o = 0; o < size; o++)
-        if (tmp[0][o] != tmp[1][o])
-            break;
-    o &= ~1UL;
-    sprintf(w, "%s +%lu", what, o);
-    fail(w, (ULONG)tmp[0][o] << 24 | (ULONG)tmp[0][o + 1] << 16 | GW(tmp[0] + o + 2),
-         (ULONG)tmp[1][o] << 24 | (ULONG)tmp[1][o + 1] << 16 | GW(tmp[1] + o + 2));
+    int i;
+    memcpy(tmp, blk, size);
+    for (i = 0; i < nptr; i++)
+        PL(tmp + ptr[i], norm(GL(tmp + ptr[i])));
+    for (i = 0; i < nzero; i++)
+        PL(tmp + zero[i], 0);
+    OBSBYTES(what, tmp, size);
 }
 
 static void sameP(void)
 {
-    if (blkP[0] && blkP[1])
+    if (blkP)
         sameblock("play routine", blkP, P_SIZE, poffs, npoffs, NULL, 0);
 }
 
 static void sameG(void)
 {
     static const UWORD ptr[] = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-    if (blkG[0] && blkG[1])
+    if (blkG)
         sameblock("modtable", blkG, G_SIZE, ptr, 10, NULL, 0);
 }
 
@@ -186,7 +174,7 @@ static void sameC(void)
     /* the interrupt's node links and its name/code (in the library) */
     static const UWORD ptr[] = { C_MTDATA };
     static const UWORD zero[] = { C_INT, C_INT + 4, C_INT + 10, C_INT + 18 };
-    if (blkC[0] && blkC[1])
+    if (blkC)
         sameblock("CIA part", blkC, C_SIZE, ptr, 1, zero, 4);
 }
 
@@ -198,15 +186,12 @@ static void sameall(void)
     sameC();
 }
 
-static UWORD dmaconr[2];
 /* the F00 phase (mt_end patched): the C build writes DMACON through its
    patched custom chip pointer into the RAM copy, the original through
    $DFF096 into the hardware, so DMACONR after a call there shows the
-   original's writes for both sets; compared live only, not recorded
-   (libs/tests/tape.h: in a replay the C build would be compared with its
-   own unpatched writes) */
+   original's writes only: not captured (design D8 of the openspec change
+   libs-tests-capture) */
 static int fphase;
-static UBYTE pra[2];
 
 /* ------------------------------------------------------ calls */
 
@@ -219,32 +204,34 @@ static ULONG peekl(ULONG addr)
     return *(volatile const ULONG *)q;
 }
 
-/* a statement / function with the state after it compared */
+/* a statement / function with the state after it observed */
 static void stmt(const char *rout, int idx, ULONG d0)
 {
+    APTR fn = ENT(LIB, idx, 0);
+    UWORD dmaconr;
+    UBYTE pra;
+
     ROUT = rout;
-    for (cur = 0; cur < 2; cur++) {
-        APTR fn = ENT(LIB, idx, 0);
-        markregs(&R[cur]);
-        R[cur].d[0] = d0;
-        IN[cur] = R[cur];
-        CCR[cur] = callstk(fn, &R[cur], NULL, 0, &POP[cur]);
-        dmaconr[cur] = CUSTOMR.dmaconr & 0xf;
-        pra[cur] = PRA & 2;
-    }
+    markregs(&R);
+    R.d[0] = d0;
+    IN = R;
+    CCR = callstk(fn, &R, NULL, 0, &POP);
+    dmaconr = CUSTOMR.dmaconr & 0xf;
+    pra = PRA & 2;
     preserve();
-    if (fphase)                         /* shared state there: no observation */
-        check("DMACONR (F00 phase, live only)", dmaconr[0] == dmaconr[1]);
+    if (fphase)
+        NOT_CAPTURED("DMACONR", "F00 phase: the original writes DMACON into the hardware, "
+                     "the C build into its RAM copy");
     else
-        SAME("DMACONR", dmaconr[cur]);
-    SAME("filter", pra[cur]);
+        OBS("DMACONR", dmaconr);
+    OBS("filter", pra);
     sameall();
 }
 
 static void func(const char *rout, int idx, ULONG d0)
 {
     stmt(rout, idx, d0);
-    SAME("d0", norm(cur, R[cur].d[0]));
+    OBS("d0", norm(R.d[0]));
 }
 
 /* ------------------------------------------------------ the modules */
@@ -414,18 +401,15 @@ static void findblocks(void)
 {
     static const UBYTE funk[16] = { 0, 5, 6, 7, 8, 10, 11, 13, 16, 19, 22, 26, 32, 43, 64, 128 };
     static const char cia[] = "ciaa.resource\0ciab.resource";
-    int s, i;
-    for (s = 0; s < 2; s++) {
-        struct lib *l = getlib(&sets[s], LIB);
-        UBYTE *x;
-        blkP[s] = find(l, funk, 16, 0);
-        x = find(l, (const UBYTE *)cia, sizeof cia, 0);
-        blkC[s] = x ? x - 6 : NULL;
-    }
-    check("ciatrklib: play routine block found (orig)", blkP[0] != NULL);
-    check("ciatrklib: play routine block found (C)", blkP[1] != NULL);
-    check("ciatrklib: CIA block found (orig)", blkC[0] != NULL);
-    check("ciatrklib: CIA block found (C)", blkC[1] != NULL);
+    struct lib *l = getlib(&loaded, LIB);
+    UBYTE *x;
+    int i;
+
+    blkP = find(l, funk, 16, 0);
+    x = find(l, (const UBYTE *)cia, sizeof cia, 0);
+    blkC = x ? x - 6 : NULL;
+    check("ciatrklib: play routine block found", blkP != NULL);
+    check("ciatrklib: CIA block found", blkC != NULL);
     npoffs = 0;
     for (i = 0; i < 4; i++) {
         poffs[npoffs++] = P_CHAN + 44 * i + 4;
@@ -440,10 +424,10 @@ static void findblocks(void)
 
 /* the library's variables after init: master_volume $40, volume_flag 0,
    master_mask $0F00, then 80 zero bytes of the module table */
-static UBYTE *findG(int s)
+static UBYTE *findG(void)
 {
     static const UBYTE g[6] = { 0, 0x40, 0, 0, 0x0f, 0 };
-    UBYTE *x = find(getlib(&sets[s], LIB), g, 6, 80);
+    UBYTE *x = find(getlib(&loaded, LIB), g, 6, 80);
     return x ? x - 4 : NULL;
 }
 
@@ -452,30 +436,30 @@ static UBYTE *findG(int s)
 #define CIAWAITS 25UL                   /* phase A: frames for an event */
 
 static struct Library *fakegfx;
-static int waitmode;                    /* 0: Delay(1), 1: one tick of the set */
-static ULONG waits[2];
+static int waitmode;                    /* 0: Delay(1), 1: one tick */
+static ULONG waits;
 
 /* the CIA interrupt by hand: the server's code with a1 = its data */
-static void interrupt(int s)
+static void interrupt(void)
 {
     struct regs r;
     markregs(&r);
-    r.a[1] = GL(blkC[s] + C_INT + 14);
-    callregs((APTR)GL(blkC[s] + C_INT + 18), &r, 0, 0);
+    r.a[1] = GL(blkC + C_INT + 14);
+    callregs((APTR)GL(blkC + C_INT + 18), &r, 0, 0);
 }
 
 static void fakewaittof(void)
 {
     struct regs r;
-    waits[cur]++;
+    waits++;
     if (waitmode == 0) {
-        interrupt(cur);
+        interrupt();
     } else {
         markregs(&r);
         callregs(ENT(LIB, PLAY, 0), &r, 0, 0);
     }
-    if (waits[cur] >= (waitmode ? 3000UL : CIAWAITS) && blkP[cur])
-        blkP[cur][P_LSTEVT] = (UBYTE)~blkP[cur][P_TRKEVT];      /* give up */
+    if (waits >= (waitmode ? 3000UL : CIAWAITS) && blkP)
+        blkP[P_LSTEVT] = (UBYTE)~blkP[P_TRKEVT];        /* give up */
 }
 
 /* ------------------------------------------------------ phase A */
@@ -487,8 +471,8 @@ static void fakewaittof(void)
    record the calls; ciaa's AddICRVector fails, so the library takes the
    ciab path (timer B, free) */
 #define NICR 4
-static struct icr { ULONG res, bit, intr; } icradd[2][NICR], icrrem[2][NICR];
-static int nadd[2], nrem[2];
+static struct icr { ULONG res, bit, intr; } icradd[NICR], icrrem[NICR];
+static int nadd, nrem;
 static struct Library *ciares[2];
 
 static void icrrec(struct icr *t, int *n, struct Library *base, ULONG bit, ULONG intr)
@@ -496,20 +480,20 @@ static void icrrec(struct icr *t, int *n, struct Library *base, ULONG bit, ULONG
     if (*n < NICR) {
         t[*n].res = base == ciares[1];
         t[*n].bit = bit;
-        t[*n].intr = blkC[cur] ? intr - (ULONG)blkC[cur] : intr;
+        t[*n].intr = blkC ? intr - (ULONG)blkC : intr;
         (*n)++;
     }
 }
 
 static ULONG fakeadd(ULONG bit __asm("d0"), APTR intr __asm("a1"), struct Library *base __asm("a6"))
 {
-    icrrec(icradd[cur], &nadd[cur], base, bit, (ULONG)intr);
+    icrrec(icradd, &nadd, base, bit, (ULONG)intr);
     return base == ciares[0] ? 1 : 0;   /* ciaa: "in use" */
 }
 
 static void fakerem(ULONG bit __asm("d0"), APTR intr __asm("a1"), struct Library *base __asm("a6"))
 {
-    icrrec(icrrem[cur], &nrem[cur], base, bit, (ULONG)intr);
+    icrrec(icrrem, &nrem, base, bit, (ULONG)intr);
 }
 
 struct ciarec {
@@ -517,11 +501,14 @@ struct ciarec {
     ULONG evt, pos, waited, gaveup, base2, pratoggled, stopped;
 };
 
-static void ciaphase(UBYTE *const mod[2])
+static void ciaphase(UBYTE *mod)
 {
-    static struct ciarec rec[2];
+    static struct ciarec rec;
+    struct ciarec *c = &rec;
+    struct regs r;
+    UBYTE before;
     APTR old[2][2];
-    int s, i;
+    int i;
 
     ciares[0] = OpenResource((STRPTR)"ciaa.resource");
     ciares[1] = OpenResource((STRPTR)"ciab.resource");
@@ -533,27 +520,21 @@ static void ciaphase(UBYTE *const mod[2])
         old[i][1] = SetFunction(ciares[i], -12, (APTR)fakerem);
     }
     Permit();
-    for (s = 0; s < 2; s++) {
-        struct regs r;
-        UBYTE before;
-        struct ciarec *c = &rec[s];
-        cur = s;
 
-        markregs(&r);
-        callregs(ENT(LIB, INIT, 0), &r, 0, 0);
-        blkG[s] = findG(s);
-        if (!blkG[s] || !blkC[s] || !blkP[s])
-            continue;
-        c->base = GL(blkC[s] + C_CIABASE) != 0;
-        c->flag = GL(blkC[s] + C_TIMERFLAG);
-        c->addr = GL(blkC[s] + C_CIAADDR);
-        c->timerval = GL(blkC[s] + C_TIMERVAL);
+    markregs(&r);
+    callregs(ENT(LIB, INIT, 0), &r, 0, 0);
+    blkG = findG();
+    if (blkG && blkC && blkP) {
+        c->base = GL(blkC + C_CIABASE) != 0;
+        c->flag = GL(blkC + C_TIMERFLAG);
+        c->addr = GL(blkC + C_CIAADDR);
+        c->timerval = GL(blkC + C_TIMERVAL);
         if (c->base && c->addr)
             c->startbit = ((volatile UBYTE *)c->addr)[c->flag ? 0xf00 : 0xe00] & 1;
 
         markregs(&r);
         r.d[0] = 0;
-        r.d[1] = (ULONG)mod[s];
+        r.d[1] = (ULONG)mod;
         callregs(ENT(LIB, DECODE, 0), &r, 0, 0);
         markregs(&r);
         r.d[0] = 0;
@@ -561,25 +542,25 @@ static void ciaphase(UBYTE *const mod[2])
         /* the interrupt server by hand: row 0 with F40 on tick 6 (the
            timer of ciab), its event on tick 7 */
         for (i = 0; i < 7; i++)
-            interrupt(s);
-        c->tempo = GW(blkC[s] + C_REALTEMPO);
-        c->evt = blkP[s][P_TRKEVT];
-        c->pos = GW(blkP[s] + P_PATTPOS);
+            interrupt();
+        c->tempo = GW(blkC + C_REALTEMPO);
+        c->evt = blkP[P_TRKEVT];
+        c->pos = GW(blkP + P_PATTPOS);
 
         waitmode = 0;
-        waits[s] = 0;
+        waits = 0;
         markregs(&r);
         r.a[6] = (ULONG)fakegfx;
         callregs(ENT(LIB, WAITEVT, 0), &r, 0, 0);
-        c->waited = waits[s];
-        c->gaveup = waits[s] >= CIAWAITS;
+        c->waited = waits;
+        c->gaveup = waits >= CIAWAITS;
 
         markregs(&r);
         callregs(ENT(LIB, STOP, 0), &r, 0, 0);
         before = PRA & 2;
         markregs(&r);
         callregs(ENT(LIB, VBLANK, 0), &r, 0, 0);
-        c->base2 = GL(blkC[s] + C_CIABASE);
+        c->base2 = GL(blkC + C_CIABASE);
         c->pratoggled = (PRA & 2) != before;
         if (c->addr)
             c->stopped = !(((volatile UBYTE *)c->addr)[c->flag ? 0xf00 : 0xe00] & 1);
@@ -595,36 +576,36 @@ static void ciaphase(UBYTE *const mod[2])
     Permit();
     ROUT = "init (CIA)";
     strcpy(VEC, "");
-    SAME("AddICRVector calls", nadd[cur]);
-    for (i = 0; i < nadd[0] && i < NICR; i++) {
-        SAME("AddICRVector resource", icradd[cur][i].res);
-        SAME("AddICRVector bit", icradd[cur][i].bit);
-        SAME("AddICRVector interrupt", icradd[cur][i].intr);
+    OBS("AddICRVector calls", nadd);
+    for (i = 0; i < nadd && i < NICR; i++) {
+        OBS("AddICRVector resource", icradd[i].res);
+        OBS("AddICRVector bit", icradd[i].bit);
+        OBS("AddICRVector interrupt", icradd[i].intr);
     }
-    BOTH("AddICRVector ciaa: the long at 1", nadd[cur] > 1 && icradd[cur][0].bit == peekl(1));
-    BOTH("AddICRVector ciab: the long at 2", nadd[cur] > 1 && icradd[cur][1].bit == peekl(2));
-    SAME("CIAAbase set", rec[cur].base);
-    SAME("TimerFlag", rec[cur].flag);
-    SAME("CIAAaddr", rec[cur].addr);
-    SAME("TimerValue", rec[cur].timerval);
-    SAME("timer started", rec[cur].startbit);
+    BOTH("AddICRVector ciaa: the long at 1", nadd > 1 && icradd[0].bit == peekl(1));
+    BOTH("AddICRVector ciab: the long at 2", nadd > 1 && icradd[1].bit == peekl(2));
+    OBS("CIAAbase set", c->base);
+    OBS("TimerFlag", c->flag);
+    OBS("CIAAaddr", c->addr);
+    OBS("TimerValue", c->timerval);
+    OBS("timer started", c->startbit);
     ROUT = "the interrupt server";
-    SAME("RealTempo", rec[cur].tempo);
-    BOTH("RealTempo 64", rec[cur].tempo == 64);
-    SAME("event", rec[cur].evt);
-    SAME("PatternPos", rec[cur].pos);
+    OBS("RealTempo", c->tempo);
+    BOTH("RealTempo 64", c->tempo == 64);
+    OBS("event", c->evt);
+    OBS("PatternPos", c->pos);
     ROUT = "WaitTrackerEvent (CIA)";
-    SAME("WaitTOF calls", rec[cur].waited);
-    SAME("no event (gave up)", rec[cur].gaveup);
+    OBS("WaitTOF calls", c->waited);
+    OBS("no event (gave up)", c->gaveup);
     ROUT = "ChangeTrackerVBlank";
-    SAME("CIAAbase", rec[cur].base2);
-    SAME("filter toggled", rec[cur].pratoggled);
-    SAME("timer stopped", rec[cur].stopped);
-    SAME("RemICRVector calls", nrem[cur]);
-    for (i = 0; i < nrem[0] && i < NICR; i++) {
-        SAME("RemICRVector resource", icrrem[cur][i].res);
-        SAME("RemICRVector bit", icrrem[cur][i].bit);
-        SAME("RemICRVector interrupt", icrrem[cur][i].intr);
+    OBS("CIAAbase", c->base2);
+    OBS("filter toggled", c->pratoggled);
+    OBS("timer stopped", c->stopped);
+    OBS("RemICRVector calls", nrem);
+    for (i = 0; i < nrem && i < NICR; i++) {
+        OBS("RemICRVector resource", icrrem[i].res);
+        OBS("RemICRVector bit", icrrem[i].bit);
+        OBS("RemICRVector interrupt", icrrem[i].intr);
     }
 }
 
@@ -641,15 +622,15 @@ static void ciaphase(UBYTE *const mod[2])
    before CLR.W $A8(A0) (exactly one); in the C build the long behind the
    CIA part (ciatrklib.c ciapart.endcustom), independent of the code GCC
    makes */
-static ULONG findend(int s)
+static ULONG findend(void)
 {
-    struct lib *l = getlib(&sets[s], LIB);
+    struct lib *l = getlib(&loaded, LIB);
     ULONG i, at = 0;
     int n = 0;
-    if (s == 1 || !tape_orig()) {           /* the C build (also sets[0] in a replay) */
-        if (!blkC[s])
+    if (strcmp(loaded.what, "orig")) {      /* the C build */
+        if (!blkC)
             return 0;
-        at = blkC[s] + C_SIZE - l->code;
+        at = blkC + C_SIZE - l->code;
         return at + 4 <= l->size && GL(l->code + at) == 0xdff000UL ? at : 0;
     }
     for (i = 2; i + 8 <= l->size; i += 2)
@@ -684,74 +665,64 @@ static void buildfmod(UBYTE *m, int k)
     memset(m + 1084 + 1024, 0x33, 32);
 }
 
-/* the modules stay allocated and a region to the end: the play routine
-   keeps its pointers into them */
-static UBYTE *fm[2];
+/* the module stays allocated and a region to the end: the play routine
+   keeps its pointers into it */
+static UBYTE *fm;
 
 static void f00(void)
 {
-    UBYTE *fake[2];
-    ULONG at[2];
-    int s, k, i;
+    UBYTE *fake;
+    ULONG at;
+    int k, i;
 
-    for (s = 0; s < 2; s++) {
-        fm[s] = AllocMem(FMODALLOC, MEMF_CHIP | MEMF_CLEAR);
-        fake[s] = AllocMem(FAKESZ, MEMF_ANY | MEMF_CLEAR);
-        at[s] = findend(s);
-    }
-    check("ciatrklib: mt_end's $DFF000 found (orig)", at[0] != 0);
-    check("ciatrklib: mt_end's $DFF000 found (C)", at[1] != 0);
-    if (!fm[0] || !fm[1] || !fake[0] || !fake[1] || !at[0] || !at[1])
+    fm = AllocMem(FMODALLOC, MEMF_CHIP | MEMF_CLEAR);
+    fake = AllocMem(FAKESZ, MEMF_ANY | MEMF_CLEAR);
+    at = findend();
+    check("ciatrklib: mt_end's $DFF000 found", at != 0);
+    if (!fm || !fake || !at)
         goto out;
-    for (s = 0; s < 2; s++)
-        PL(getlib(&sets[s], LIB)->code + at[s], (ULONG)fake[s]);
+    PL(getlib(&loaded, LIB)->code + at, (ULONG)fake);
     fphase = 1;
+    CUSTOMR.dmacon = 0x000f;            /* a defined state: the audio DMA off */
     CacheClearU();
-    region(fm[0], fm[1], FMODALLOC);
+    region(fm, FMODALLOC);
     for (k = 0; k < 3; k++) {
-        for (s = 0; s < 2; s++) {
-            buildfmod(fm[s], k);
-            for (i = 0; i < FAKESZ; i += 4)
-                PL(fake[s] + i, FNOTE);
-        }
+        buildfmod(fm, k);
+        for (i = 0; i < FAKESZ; i += 4)
+            PL(fake + i, FNOTE);
         ROUT = "DecodeModule";
         sprintf(VEC, "slot 6, F00 on voice %d", k + 1);
-        DO2(ENT(LIB, DECODE, 0), R[cur].d[0] = 6; R[cur].d[1] = (ULONG)fm[cur]);
+        DO1(ENT(LIB, DECODE, 0), R.d[0] = 6; R.d[1] = (ULONG)fm);
         sameall();
         func("StartTracker", START, 6);
         for (i = 0; i < 10; i++) {
             sprintf(VEC, "F00 on voice %d, tick %d", k + 1, i);
             stmt("PlayTracker", PLAY, 0);
         }
-        BOTH("stopped", blkP[cur][P_ENABLE] == 0);
+        BOTH("stopped", blkP[P_ENABLE] == 0);
         for (i = k + 1; i < 4; i++)
             BOTH("voice behind F00: note from $DFF000 + offset",
-                 GL(blkP[cur] + P_CHAN + 44 * i) == FNOTE);
-        {
-            const UBYTE *m[2] = { fm[0], fm[1] };
-            SAMEBYTES("module bytes", m, FMODALLOC);
-        }
+                 GL(blkP + P_CHAN + 44 * i) == FNOTE);
+        OBSBYTES("module bytes", fm, FMODALLOC);
         sprintf(VEC, "F00 on voice %d", k + 1);
         stmt("StopTracker", STOP, 0);
         stmt("FreeTrackerModule", FREE, 6);
     }
-    for (s = 0; s < 2; s++)
-        PL(getlib(&sets[s], LIB)->code + at[s], 0xdff000UL);
+    PL(getlib(&loaded, LIB)->code + at, 0xdff000UL);
     fphase = 0;
     CUSTOMR.dmacon = 0x000f;            /* the audio DMA off, as the original's
                                            StopTracker left it (the C build's went
                                            to the RAM copy) */
     CacheClearU();
 out:
-    for (s = 0; s < 2; s++)
-        if (fake[s])
-            FreeMem(fake[s], FAKESZ);
+    if (fake)
+        FreeMem(fake, FAKESZ);
 }
 
 /* ------------------------------------------------------ phase B */
 
-static UBYTE *curmod[2];                /* the module that plays */
-static UBYTE pinit[2][P_SIZE];          /* the play routine's block after loading */
+static UBYTE *curmod;                   /* the module that plays */
+static UBYTE pinit[P_SIZE];             /* the play routine's block after loading */
 
 static void ticks(int n)
 {
@@ -759,10 +730,8 @@ static void ticks(int n)
     for (i = 0; i < n; i++) {
         sprintf(VEC, "tick %d", i);
         stmt("PlayTracker", PLAY, 0);
-        if (i % 16 == 15) {
-            const UBYTE *m[2] = { curmod[0], curmod[1] };
-            SAMEBYTES("module bytes", m, reflen);
-        }
+        if (i % 16 == 15)
+            OBSBYTES("module bytes", curmod, reflen);
         if (failures > 20)
             break;
     }
@@ -770,27 +739,21 @@ static void ticks(int n)
 
 static void memlib(int idx)
 {
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callstk(entry_form(getlib(&sets[cur], "memlib"), idx, 0), &R[cur], NULL, 0, &POP[cur]);
-    }
+    markregs(&R);
+    callstk(entry_form(getlib(&loaded, "memlib"), idx, 0), &R, NULL, 0, &POP);
 }
 
-static char namebuf[2][32];
+static char namebuf[32];
 
 static void getname(ULONG slot)
 {
     ROUT = "GetModuleName$";
     sprintf(VEC, "slot %lu", slot);
-    for (cur = 0; cur < 2; cur++)
-        memset(namebuf[cur], 0x5a, sizeof namebuf[cur]);
-    DO2(ENT(LIB, NAME, 0), R[cur].d[0] = slot; R[cur].a[3] = (ULONG)namebuf[cur]);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3", R[cur].a[3] - (ULONG)namebuf[cur]);
-    {
-        const UBYTE *b[2] = { (UBYTE *)namebuf[0], (UBYTE *)namebuf[1] };
-        SAMEBYTES("string", b, sizeof namebuf[0]);
-    }
+    memset(namebuf, 0x5a, sizeof namebuf);
+    DO1(ENT(LIB, NAME, 0), R.d[0] = slot; R.a[3] = (ULONG)namebuf);
+    OBS("d0", R.d[0]);
+    OBS("a3", R.a[3] - (ULONG)namebuf);
+    OBSBYTES("string", namebuf, sizeof namebuf);
 }
 
 /* the information functions of a slot */
@@ -818,7 +781,7 @@ static void errchecks(ULONG used, ULONG empty)
         ULONG sl = e[i].empty ? empty : used;
         ROUT = e[i].name;
         sprintf(VEC, "slot %lu", sl);
-        DO2(ERR(LIB, e[i].idx, 0), R[cur].d[0] = sl);
+        DO1(ERR(LIB, e[i].idx, 0), R.d[0] = sl);
     }
 }
 
@@ -840,23 +803,21 @@ static void load(ULONG slot, ULONG filelen)
     ROUT = "LoadTrackerModule";
     sprintf(VEC, "slot %lu, %lu bytes", slot, filelen);
     writefile(ref, filelen);
-    DO2(ENT(LIB, LOAD, 0), R[cur].d[0] = slot; R[cur].d[1] = (ULONG)fname;
-        R[cur].a[6] = (ULONG)DOSBase);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, LOAD, 0), R.d[0] = slot; R.d[1] = (ULONG)fname; R.a[6] = (ULONG)DOSBase);
+    OBS("d0", R.d[0]);
     {
-        UBYTE *e[2] = { blkG[0] + G_MODTABLE + 10 * slot, blkG[1] + G_MODTABLE + 10 * slot };
-        UBYTE *m[2] = { (UBYTE *)GL(e[0]), (UBYTE *)GL(e[1]) };
-        ULONG len = GL(e[0] + 4);
-        SAME("length", GL(e[cur] + 4));
-        SAME("flag", GW(e[cur] + 8));
-        BOTH("in chip memory", m[cur] && (TypeOfMem(m[cur]) & MEMF_CHIP));
-        k = region(m[0], m[1], len);
+        UBYTE *e = blkG + G_MODTABLE + 10 * slot;
+        UBYTE *m = (UBYTE *)GL(e);
+        ULONG len = GL(e + 4);
+        OBS("length", len);
+        OBS("flag", GW(e + 8));
+        BOTH("in chip memory", m && (TypeOfMem(m) & MEMF_CHIP));
+        k = region(m, len);
         sameG();
-        if (m[0] && m[1] && len == GL(e[1] + 4)) {
-            const UBYTE *mm[2] = { m[0], m[1] };
+        if (m) {
             ULONG n = len < filelen ? len : filelen;
-            SAMEBYTES("the bytes read", mm, n);
-            BOTH("the file", memcmp(m[cur], ref, n) == 0);
+            OBSBYTES("the bytes read", m, n);
+            BOTH("the file", memcmp(m, ref, n) == 0);
         }
     }
     sprintf(VEC, "slot %lu", slot);
@@ -868,48 +829,69 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { "memlib", LIB, NULL };
     static APTR vec[46];
-    UBYTE *mod[2], *ciamod[2], *mod2[2], *fast[2];
+    UBYTE *mod, *ciamod, *mod2, *fast;
     UBYTE pra0;
     ULONG avail;
-    int s, k;
+    int k;
 
     if (argc < 2) {
         printf("usage: ciatrklib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("DecodeModule", d2|d6|d7|a0-a3|a6);
+    KEEPS("GetTrackerSize", d1-d7|a0-a3|a6);
+    KEEPS("GetTrackerLocation", d1-d7|a0-a3|a6);
+    KEEPS("CheckTrackerID", d2-d7|a0-a3|a6);
+    KEEPS("ModulePatterns", d1-d7|a2|a3|a6);
+    KEEPS("GetModuleName$", d2-d7|a2|a6);
+    KEEPS("_loadcheck", d0-d7|a0-a3|a6);
+    KEEPS("_checkused", d0-d7|a0-a3|a6);
+    KEEPS("_decodecheck", d0-d7|a0-a3|a6);
+    KEEPS("_slotcheck", d0-d7|a0-a3|a6);
+    KEEPS("StartTracker", d1-d7|a0-a3|a6);
+    KEEPS("ModuleToChip", d0-d7|a0-a3|a6);
+    KEEPS("StopTracker", d0-d7|a0-a3|a6);
+    KEEPS("FreeTrackerModule", d1-d7|a0|a2|a6);
+    KEEPS("PlayTracker", d0-d7|a0-a3|a6);
+    KEEPS("GetTrackerEvent", d1-d7|a0-a3|a6);
+    KEEPS("CheckTrackerEvent", d2-d7|a0-a3|a6);
+    KEEPS("TrackerVolume", d0|d3-d7|a0-a3|a6);
+    KEEPS("ChangeTrackerMask", d0-d7|a1-a3|a6);
+    KEEPS("GetModulePosition", d1-d7|a0-a3|a6);
+    KEEPS("ModulePositionJump", d0-d7|a0-a3|a6);
+    KEEPS("PauseModule", d0-d2|d4-d7|a1-a3|a6);
+    KEEPS("WaitTrackerEvent", d2-d7|a0-a3|a6);
+    KEEPS("LoadTrackerModule", d4-d7|a0-a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
     buildmod();
-    for (s = 0; s < 2; s++) {
-        mod[s] = AllocMem(MODMAX, MEMF_CHIP | MEMF_CLEAR);
-        mod2[s] = AllocMem(MODMAX, MEMF_CHIP | MEMF_CLEAR);
-        ciamod[s] = AllocMem(1084 + 1024, MEMF_CHIP | MEMF_CLEAR);
-        fast[s] = AllocMem(MODMAX, MEMF_FAST | MEMF_CLEAR);
-        memcpy(mod[s], ref, reflen);
-        memcpy(mod2[s], ref, reflen);
-        buildciamod(ciamod[s]);
-        if (fast[s])
-            memcpy(fast[s], ref, reflen);
-    }
+    mod = AllocMem(MODMAX, MEMF_CHIP | MEMF_CLEAR);
+    mod2 = AllocMem(MODMAX, MEMF_CHIP | MEMF_CLEAR);
+    ciamod = AllocMem(1084 + 1024, MEMF_CHIP | MEMF_CLEAR);
+    fast = AllocMem(MODMAX, MEMF_FAST | MEMF_CLEAR);
+    memcpy(mod, ref, reflen);
+    memcpy(mod2, ref, reflen);
+    buildciamod(ciamod);
+    if (fast)
+        memcpy(fast, ref, reflen);
     findblocks();
-    if (!blkP[0] || !blkP[1] || !blkC[0] || !blkC[1])
+    if (!blkP || !blkC)
         return rwe_done(LIB);
-    for (s = 0; s < 2; s++)
-        memcpy(pinit[s], blkP[s], P_SIZE);
+    memcpy(pinit, blkP, P_SIZE);
     vec[44] = (APTR)fakewaittof;        /* -270 WaitTOF */
     fakegfx = fake_library("ciatrk_gfx.library", 0, vec, 45);
     pra0 = PRA;
     ROUT = "memlib init";
     memlib(7);
 
-    /* phase A: the CIA interrupt, each set alone */
-    k = region(ciamod[0], ciamod[1], 1084 + 1024);
+    /* phase A: the CIA interrupt */
+    k = region(ciamod, 1084 + 1024);
     ciaphase(ciamod);
-    check("ciatrklib: module table found (orig)", blkG[0] != NULL);
-    check("ciatrklib: module table found (C)", blkG[1] != NULL);
-    if (!blkG[0] || !blkG[1])
+    check("ciatrklib: module table found", blkG != NULL);
+    if (!blkG)
         return rwe_done(LIB);
     ROUT = "after the CIA phase";
     strcpy(VEC, "");
@@ -917,17 +899,15 @@ int main(int argc, char **argv)
     sameC();
     /* the ticks of phase A depend on the timing: the play routine's state
        back to the one after loading */
-    for (s = 0; s < 2; s++)
-        memcpy(blkP[s], pinit[s], P_SIZE);
-    BOTH("mt_LowMask 0", blkP[cur][P_LOWMASK] == 0);
+    memcpy(blkP, pinit, P_SIZE);
+    BOTH("mt_LowMask 0", blkP[P_LOWMASK] == 0);
 
     /* phase B: the play routine called by PlayTracker */
-    region(mod[0], mod[1], MODMAX);
-    curmod[0] = mod[0];
-    curmod[1] = mod[1];
+    region(mod, MODMAX);
+    curmod = mod;
     ROUT = "DecodeModule";
     strcpy(VEC, "slot 0, chip");
-    DO2(ENT(LIB, DECODE, 0), R[cur].d[0] = 0; R[cur].d[1] = (ULONG)mod[cur]);
+    DO1(ENT(LIB, DECODE, 0), R.d[0] = 0; R.d[1] = (ULONG)mod);
     sameall();
     info(0);
     errchecks(0, 4);
@@ -938,29 +918,22 @@ int main(int argc, char **argv)
 
     /* a slot length above the sample addresses: mt_init clears the first
        long of every sample (BUG(orig), #438) */
-    k = region(mod2[0], mod2[1], MODMAX);
+    k = region(mod2, MODMAX);
     ROUT = "DecodeModule";
     strcpy(VEC, "slot 2, chip");
-    DO2(ENT(LIB, DECODE, 0), R[cur].d[0] = 2; R[cur].d[1] = (ULONG)mod2[cur]);
-    for (s = 0; s < 2; s++)
-        PL(blkG[s] + G_MODTABLE + 20 + 4, 0x7fffffffUL);
+    DO1(ENT(LIB, DECODE, 0), R.d[0] = 2; R.d[1] = (ULONG)mod2);
+    PL(blkG + G_MODTABLE + 20 + 4, 0x7fffffffUL);
     strcpy(VEC, "slot 2, length $7FFFFFFF");
     func("StartTracker", START, 2);
-    {
-        const UBYTE *m[2] = { mod2[0], mod2[1] };
-        SAMEBYTES("module bytes", m, reflen);
-        BOTH("first longs cleared", memcmp(mod2[cur], ref, reflen) != 0);
-    }
+    OBSBYTES("module bytes", mod2, reflen);
+    BOTH("first longs cleared", memcmp(mod2, ref, reflen) != 0);
     stmt("StopTracker", STOP, 0);
     stmt("FreeTrackerModule", FREE, 2);
 
     strcpy(VEC, "slot 0");
     func("StartTracker", START, 0);
-    {
-        const UBYTE *m[2] = { mod[0], mod[1] };
-        SAMEBYTES("module bytes", m, reflen);
-        BOTH("module unchanged", memcmp(mod[cur], ref, reflen) == 0);
-    }
+    OBSBYTES("module bytes", mod, reflen);
+    BOTH("module unchanged", memcmp(mod, ref, reflen) == 0);
     ticks(260);
     strcpy(VEC, "");
     func("GetTrackerEvent", GETEVT, 0xa5a5a5a5UL);
@@ -994,52 +967,48 @@ int main(int argc, char **argv)
     ticks(1);
     strcpy(VEC, "");
     func("GetModulePosition", GETPOS, 0);
-    BOTH("ModulePositionJump 3: position 4", blkP[cur][P_SONGPOS] == 4);
+    BOTH("ModulePositionJump 3: position 4", blkP[P_SONGPOS] == 4);
     stmt("PauseModule", PAUSE, 0);
     ticks(2);
-    BOTH("paused", blkP[cur][P_ENABLE] == 0);
+    BOTH("paused", blkP[P_ENABLE] == 0);
     stmt("PauseModule", PAUSE, 0);
     ticks(60);
 
-    /* WaitTrackerEvent: its WaitTOF plays a tick of the set */
+    /* WaitTrackerEvent: its WaitTOF plays a tick */
     waitmode = 1;
     for (k = 0; k < 4; k++) {
         ROUT = "WaitTrackerEvent";
         sprintf(VEC, "%d", k);
-        waits[0] = waits[1] = 0;
-        DO2(ENT(LIB, WAITEVT, 0), R[cur].a[6] = (ULONG)fakegfx);
-        SAME("WaitTOF calls", waits[cur]);
-        BOTH("an event", waits[cur] < 3000);
+        waits = 0;
+        DO1(ENT(LIB, WAITEVT, 0), R.a[6] = (ULONG)fakegfx);
+        OBS("WaitTOF calls", waits);
+        BOTH("an event", waits < 3000);
         sameall();
     }
     strcpy(VEC, "");
     stmt("StopTracker", STOP, 0);
-    BOTH("stopped", blkP[cur][P_ENABLE] == 0);
+    BOTH("stopped", blkP[P_ENABLE] == 0);
     stmt("FreeTrackerModule", FREE, 0);
-    {
-        const UBYTE *m[2] = { mod[0], mod[1] };
-        SAMEBYTES("module bytes", m, reflen);
-    }
+    OBSBYTES("module bytes", mod, reflen);
 
     /* F00 on voices 1-3 (BUG(orig), #475) */
     f00();
 
     /* DecodeModule from fast memory: a copy in chip memory */
-    if (fast[0] && fast[1] && (LONG)fast[0] >= 0x200000 && (LONG)fast[1] >= 0x200000) {
-        UBYTE *e[2] = { blkG[0] + G_MODTABLE + 10, blkG[1] + G_MODTABLE + 10 };
-        k = region(fast[0], fast[1], MODMAX);
+    if (fast && (LONG)fast >= 0x200000) {
+        UBYTE *e = blkG + G_MODTABLE + 10;
+        k = region(fast, MODMAX);
         ROUT = "DecodeModule";
         strcpy(VEC, "slot 1, fast memory");
-        DO2(ENT(LIB, DECODE, 0), R[cur].d[0] = 1; R[cur].d[1] = (ULONG)fast[cur]);
-        SAME("length", GL(e[cur] + 4));
-        SAME("flag", GW(e[cur] + 8));
-        BOTH("copied to chip memory", (TypeOfMem((APTR)GL(e[cur])) & MEMF_CHIP) != 0);
+        DO1(ENT(LIB, DECODE, 0), R.d[0] = 1; R.d[1] = (ULONG)fast);
+        OBS("length", GL(e + 4));
+        OBS("flag", GW(e + 8));
+        BOTH("copied to chip memory", (TypeOfMem((APTR)GL(e)) & MEMF_CHIP) != 0);
         {
-            UBYTE *m[2] = { (UBYTE *)GL(e[0]), (UBYTE *)GL(e[1]) };
-            int k2 = region(m[0], m[1], GL(e[0] + 4));
-            const UBYTE *mm[2] = { m[0], m[1] };
-            BOTH("the copy", memcmp(m[cur], ref, reflen) == 0);
-            SAMEBYTES("the copy", mm, GL(e[0] + 4));
+            UBYTE *m = (UBYTE *)GL(e);
+            int k2 = region(m, GL(e + 4));
+            BOTH("the copy", memcmp(m, ref, reflen) == 0);
+            OBSBYTES("the copy", m, GL(e + 4));
             sameG();
             info(1);
             strcpy(VEC, "slot 1");
@@ -1061,15 +1030,13 @@ int main(int argc, char **argv)
     stmt("finit", FINIT, 0);
     ROUT = "memlib finit";
     memlib(8);
-    for (s = 0; s < 2; s++) {
-        FreeMem(mod[s], MODMAX);
-        FreeMem(mod2[s], MODMAX);
-        FreeMem(ciamod[s], 1084 + 1024);
-        if (fast[s])
-            FreeMem(fast[s], MODMAX);
-        if (fm[s])
-            FreeMem(fm[s], FMODALLOC);
-    }
+    FreeMem(mod, MODMAX);
+    FreeMem(mod2, MODMAX);
+    FreeMem(ciamod, 1084 + 1024);
+    if (fast)
+        FreeMem(fast, MODMAX);
+    if (fm)
+        FreeMem(fm, FMODALLOC);
     fake_remove(fakegfx);
     PRA = (PRA & ~2) | (pra0 & 2);
     /* this task's balance: AvailMem() also counts what other tasks
