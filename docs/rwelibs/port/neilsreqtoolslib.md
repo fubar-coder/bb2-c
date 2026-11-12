@@ -118,19 +118,23 @@ of 108 whatever its own length is (reqtools' file name buffer size).
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_neilsreqtoolslib.txt` recorded from the
+original.
+
 reqtools.library 39.3 is in the emulator's system, but its requesters
 need a user. So the test puts a fake reqtools.library before it in the
 library list (priority 10). Each fake function logs its registers, the
 tag list (pairs up to TAG_DONE) and the strings and buffers it gets –
 pointers into the library, into the test's requesters and into the
-string area made comparable between the two sets – and answers with a
+string area made independent of the layout – and answers with a
 chosen result: the file requester writes the chosen directory into the
 requester and the chosen name into the buffer, rtGetStringA/rtGetLongA
 the chosen value, rtFontRequestA the fields of the font and screen mode
 requester, the multi-load a file list, an RT_ReqHandler tag gets a
-handler. Compared with the reference build, besides d0, a3, the string
-area and the kept registers of every call: the log of reqtools calls and
-RTReturnValue after every call.
+handler. Observed after every call: d0, a3, the string area, the kept
+registers, the log of reqtools calls and RTReturnValue.
 
 Cases: the routines that need no library before init; init when
 OpenLibrary fails and when each of the seven rtAllocRequestA fails (the
@@ -149,8 +153,8 @@ RTLockWindow/RTUnlockWindow; both asynchronous requesters up and not up
 with their check and end; finit (seven rtFreeRequest, rtFreeFileList,
 CloseLibrary). Then with the real reqtools.library: init, IsReqToolsActive,
 RTVersion/RTRevision, RTEZSetDefaultDirectory/RTEZSetPattern 0-4, finit.
-Besides the comparison: the result string of one file requester, the
-font requester call of RTEZScreenModeRequest, the missing title of
+Besides these: the result string of one file requester, the font
+requester call of RTEZScreenModeRequest, the missing title of
 RTEZFlagsRequest, RTEZGetLong's value on cancel, the multi-load's
 address result.
 

@@ -65,14 +65,17 @@ last written there) for every byte received; `SyncPut` only waits for
 the answer, its value does not matter.
 
 **Test** (`libs/tests/rwe/rifastseriallib.c`, snitch case "rwe
-rifastseriallib"): C build and CD original side by side. The emulator has
+rifastseriallib"): each run loads one library set (the C build or the CD
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_rifastseriallib.txt` recorded
+from the original. The emulator has
 no serial connection: SERDATR always shows TBE and RBF never comes
 (Amiberry does not let a program set RBF through INTREQ either; probed),
-so what sends can run and nothing that waits for a byte. Compared: d0 of
+so what sends can run and nothing that waits for a byte. Observed: d0 of
 the functions, the kept registers, INTENAR (each call is made inside
 `Disable()` with the TBE/RBF interrupts switched on, InitSerialIO must
 switch them off, the others must not touch them), the word at `$9A`, and
-the 18-byte state block of each library (found after the first
+the 18-byte state block of the library (found after the first
 InitSerialIO by its inbuf/outbuf values; it holds the SERPER value
 written, which cannot be read back from the chip). Cases: CheckSerial
 without a byte, FlushSerialIO, SetSerialMode, EndSerialIO,

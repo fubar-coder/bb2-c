@@ -62,12 +62,15 @@ size).
 
 ## Test
 
-The objects, a `struct BitMap` with 8 contiguous planes and a guard, and
-a texture are built per set. memlib is replaced by stubs for `globalloc`
-and `globfree` (the real one ends the program with a runtime error when
-an allocation fails; the stub can fail like `AllocMem`, so the
-library's failure path is tested) that count the blocks of each set;
-lmullib is loaded. Compared after every call: the objects (the data
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_richunkylib.txt` recorded from the
+original. The objects, a `struct BitMap` with 8 contiguous planes and a
+guard, and a texture are built by the test. memlib is replaced by stubs
+for `globalloc` and `globfree` (the real one ends the program with a
+runtime error when an allocation fails; the stub can fail like
+`AllocMem`, so the library's failure path is tested) that count the
+blocks; lmullib is loaded. Observed after every call: the objects (the data
 pointer as 0 / not 0), the chunky data, the planes with the guard, the
 block count, CIA-A PRA bit 1, d0 where there is a result, kept
 registers. Cases: ChunkyData without and with data, ChunkyBitmap new /

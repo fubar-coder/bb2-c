@@ -106,7 +106,7 @@ Assembler:
   not sent yet, and `wrend == wbig` counts as an empty ring. A block of
   more than about 128 bytes loses what is in between. The library test
   sends 200 bytes without an interrupt and checks `wrend`, `wbig` and that
-  the slot of byte 1 holds byte 129, in both builds. (#983)
+  the slot of byte 1 holds byte 129, in a run of either set. (#983)
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0
@@ -114,14 +114,18 @@ through ldivlib, whose division by zero has a defined result.
 
 ## Test
 
-C build and reference build side by side (rwecmp.h). Nothing reaches
-the machine:
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases (rwecmp.h), compared with the
+expected data `libs/tests/expected/rwe_riseriallib.txt` recorded from the
+original. Nothing reaches the machine:
 
 * every absolute address `$DFF000`–`$DFF1FF` and `$BFD000` in the code of
-  both loaded libraries is patched to a RAM copy per set (13 and 2 in
-  each build); the copy is filled before each call (SERDATR with TBE,
-  INTENAR `$2A35` – the master bit off, so `SerialClose`'s `$C000` shows
-  –, INTREQR 0) and compared after it;
+  the loaded library is patched to a RAM copy (13 custom chip and 2
+  CIA-B operands in the original's code, one long per base in the C
+  build; the numbers of the run's set are checked); the copy is filled
+  before each call (SERDATR with TBE, INTENAR `$2A35` – the master bit
+  off, so `SerialClose`'s `$C000` shows –, INTREQR 0) and observed after
+  it;
 * every call runs inside `Disable()` with `$64`/`$74` set to the test's
   stubs (`RTE`, counting); what the library wrote there is recorded (a
   stub or a handler in its code), and the system's vectors are put back
@@ -136,13 +140,13 @@ then waits) and `SerialReadLong` (never returns) run in a task of their
 own at priority −1 (it runs only while the test task waits), fed byte
 by byte: the test gives the next byte only when the task has read the
 last one (the ring indices equal, then one tick more), so the bytes
-thrown away and those received are the same in both builds. The test
+thrown away and those received do not depend on timing. The test
 removes the task (`RemTask`) when it is done or, for `SerialReadLong`,
 when every byte is read (the port is open then, so the task does not
 touch the vectors). The stopped `SerialReceiveBlock` returns to a landing routine
 passed as the long above its return address.
 
-Compared after every call: the fake registers, CIA-B PRA, the vectors,
+Observed after every call: the fake registers, CIA-B PRA, the vectors,
 both rings (the receive ring in front of `SerialBuffer`'s address, the
 transmit ring found by the first three bytes written), the stubs
 called, d0 of the functions and the registers the original keeps.

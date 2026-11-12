@@ -82,11 +82,14 @@ words read back are the same). The overflow of the 36 pointer longs
 variables of the C build.
 
 **Test** (`libs/tests/rwe/rifxlib.c`, snitch case "rwe rifxlib", with
-memlib): every call on both sets with the same inputs – bitmaps in an
-arena per set (same layout, the same pseudo-random contents before every
-call, 64-byte gaps around the planes), the other registers markers;
-compared are the whole arena afterwards, d0 where there is a result, and
-the registers the original keeps (about 350 checks):
+memlib): each run loads one library set (the C build or the CD
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_rifxlib.txt` recorded from the
+original. Every routine is called – bitmaps in an arena (the same
+pseudo-random contents before every call, 64-byte gaps around the
+planes), the other registers markers; observed are the whole arena
+afterwards, d0 where there is a result, and the kept registers (348
+checks):
 
 * the zooms and `GetZoomTables` before init (no tables: nothing
   happens);

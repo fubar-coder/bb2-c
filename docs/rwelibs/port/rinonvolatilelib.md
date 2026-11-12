@@ -45,12 +45,15 @@ is the last call).
 
 ## Test
 
-Three rounds with init/finit: without the library (OpenLibrary patched to
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rinonvolatilelib.txt` recorded from the
+original. Three rounds with init/finit: without the library (OpenLibrary patched to
 fail for the two inits: every routine returns 0, no system call); with
 the system's nonvolatile.library (in Amiberry it has no storage – it
 looks for `SYS:prefs/env-archive/sys/nv_location`, the system disk is
 read-only – so StoreNV fails with NVERR_FAIL and nothing can be read back;
-only the answers are compared); with a fake `nonvolatile.library` placed
+only the answers are observed); with a fake `nonvolatile.library` placed
 before the real one, which logs every call (LVO, a0/a1/a2/d0/d1) and
 returns chosen values (0, 3, $12340001): the call sequence of every
 routine, the lengths in tens for 0, 1, 10, 25, 65535, 655359 and 655365,

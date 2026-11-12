@@ -107,18 +107,22 @@ LockRegistry and UnlockRegistry balanced.
 
 ## Test
 
-registry.library exists nowhere, so the test runs both sets first
-without it, then with a mock made by the test: MakeLibrary, in the
-system list as "registry.library". Each of its 33 functions logs its
-LVO and registers and returns a value the test chooses. LockRegistry
-returns one of three registry structures shared by both sets (name,
-type, value set by the test). Both sets call the same mock.
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_riregistrylib.txt` recorded from the
+original.
 
-Compared:
+registry.library exists nowhere, so the test runs first without it, then
+with a mock made by the test: MakeLibrary, in the system list as
+"registry.library". Each of its 33 functions logs its LVO and registers
+and returns a value the test chooses. LockRegistry returns one of three
+registry structures (name, type, value set by the test).
+
+Observed:
 
 * d0;
 * the log: the LVOs and the registers the source loads for each call
-  (pointers into a set's string area relative to it);
+  (pointers into the string area relative to it);
 * for the string functions a3 and the string area;
 * the kept registers; the mock closed again by finit; the memory back.
 

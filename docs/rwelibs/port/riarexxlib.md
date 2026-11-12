@@ -136,18 +136,22 @@ any RXCreatePort).
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_riarexxlib.txt` recorded from the original.
+
 No RexxMast is needed (if one runs, as in the emulator's OS 3.2, the
 scripts go to it). Messages go to:
 
-* the library's own port (RWERX_O / RWERX_C, one per set);
+* the library's own port (RWERX_P);
 * the test's port RWETEST: messages the test sends, and their replies;
 * a responder process (port RWERESP, and REXX if none exists). It logs
   every message and replies with a result code and string the test sets,
   which RXSendCommand needs because it waits.
 
-Compared: d0, a3 and the string area of the string functions; the
-messages the responder got (type, priority, length, action, arguments;
-ln_Name and the reply port per set); the replies the test gets (Result1,
+Observed: d0, a3 and the string area of the string functions; the
+messages the responder got (type, priority, length, action, arguments,
+ln_Name and the reply port); the replies the test gets (Result1,
 the Result2 string); the kept registers.
 
 Covered:

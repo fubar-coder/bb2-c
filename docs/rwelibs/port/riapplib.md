@@ -85,9 +85,11 @@ the original).
 
 ## Test
 
-`libs/tests/rwe/riapplib.c` (snitch "rwe riapplib"): the C build and the
-CD original side by side, every call compared (d0, strings and a3, a4
-after AddAppIcon, the registers the original keeps). workbench.library's
+`libs/tests/rwe/riapplib.c` (snitch "rwe riapplib"): each run loads one
+library set (the C build or the CD original); every call is observed as
+cases (d0, strings and a3, a4 after AddAppIcon, the replies to the App
+messages, the kept registers), compared with the expected data
+`libs/tests/expected/rwe_riapplib.txt` recorded from the original. workbench.library's
 six App functions are replaced with `SetFunction` by stubs that log each
 call (all argument registers, the DiskObject's position) and return a
 fake object or 0 – so no Workbench is needed; dos and icon.library are

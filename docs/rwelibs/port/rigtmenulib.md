@@ -105,10 +105,13 @@ list number's) stays (a word result).
 
 ## Test
 
-Each set has its own memlib/maxslib, two GTMenuList objects and a window
-on the Workbench screen, the "used screen" of both.
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rigtmenulib.txt` recorded from the
+original. The set has its memlib/maxslib, two GTMenuList objects and a
+window on the Workbench screen, the "used screen".
 
-Compared:
+Observed:
 
 * the lists: every title, item and sub item (texts, flags, shortcuts,
   mutual exclude, UserData) and the count;

@@ -73,13 +73,15 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
   run or copy count of 0 is 256 (DBRA on the byte) (#508).
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
-the test builds small ANIMs in memory (64×8, 2 planes: frames with ANHD
+each run loads one library set (the C build or the CD original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rianimlib.txt` recorded from the original.
+The test builds small ANIMs in memory (64×8, 2 planes: frames with ANHD
 operations 5, 5 with CMAP, 7, 65 and 3; one and two frame anims;
-failing ones) and gives each set its own copy, bitmap object (ebwidth
-8, guarded plane buffers) and register markers. RIPackLib is not
-loaded: UnpackIFF and ILBMPalette are stubs (`sysload_stubs`) that log
-their arguments (addresses relative to the set's ANIM). Compared after
-every call: d0, the stub log, the planes with the bytes around them and
+failing ones) and gives the set a copy, a bitmap object (ebwidth 8,
+guarded plane buffers) and register markers. RIPackLib is not loaded:
+UnpackIFF and ILBMPalette are stubs (`sysload_stubs`) that log their
+arguments (addresses relative to the ANIM). Observed after every call: d0, the stub log, the planes with the bytes around them and
 the kept registers. Cases: RIAnimDepth/Width/Height on an ANIM and on
 five kinds of wrong data; RIAnimFrameCount before and after
 RIAnimInit; RIAnimInit in all three forms (offset 0, offset 9, x,y with

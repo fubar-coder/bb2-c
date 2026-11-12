@@ -54,10 +54,14 @@ a0 too.
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rireqlib.txt` recorded from the original.
+
 The requesters need a user, so the test adds a fake `req.library` to the
 library list; its FileRequester and ColorRequester record the structure
-they are given (162 / 30 bytes) and return a chosen value. Compared with
-the original: init when OpenLibrary fails, when AllocMem fails (the
+they are given (162 / 30 bytes) and return a chosen value. Observed:
+init when OpenLibrary fails, when AllocMem fails (the
 library is closed again), when it works and a second time (nothing
 happens, d0 unchanged); ReqFileLoc (= init's buffer, cleared, a0);
 ReqFlags; ReqOutput; all three forms of ReqFileRequest with ok and cancel

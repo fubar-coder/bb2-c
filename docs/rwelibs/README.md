@@ -361,9 +361,10 @@ a library (`libs/tests/rwe/NAME.c`) loads one set, the C build
 and both are compared with the same expected data
 `libs/tests/expected/rwe_NAME.txt`, which `libs-capture` records from the
 reference (`tests/README.md`, "Libraries"). The "Test" sections of the
-library pages in `port/` describe the scenario; where they say that both
-sets are compared side by side, the scenario runs once per set and the
-cases are compared with the expected data.
+library pages in `port/` describe the scenario: each run loads one set,
+the scenario writes its observations as cases, and the cases are compared
+with the expected data. A part that cannot be reproduced is written as
+`not captured` with its reason (ciatrklib's DMACONR in the F00 phase).
 
 ### 3.2 Which version is the reference (stages B and C)
 

@@ -34,10 +34,13 @@ byte for byte. init and finit are empty C functions.
 
 ## Test
 
-The a2 stack is built in memory (type word, end address). Both inline
-routines are checked to be inline with the same length and their code
-is called as a subroutine. Compared: the array and the bytes around it,
-d0–d2/a0–a2 afterwards (addresses relative to the buffers), the kept
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_riarrayslib.txt` recorded from the
+original. The a2 stack is built in memory (type word, end address). Both
+inline routines are observed to be inline, with their length, and their
+code is called as a subroutine. Observed: the array and the bytes around
+it, d0–d2/a0–a2 afterwards (addresses relative to the buffers), the kept
 registers. Covered: byte, word and long arrays of 1–37 elements, odd
 start addresses for bytes, values with garbage above the element size,
 both forms, a type word with garbage in its upper byte, the types that

@@ -82,19 +82,22 @@ leaves it below the pairs), as in all C ports
 (`docs/libs/cmdlibs-port.md`).
 
 **Test** (`libs/tests/rwe/ridatatypeslib.c`, snitch case "rwe
-ridatatypeslib"): the test writes a 16×8 ILBM with 2 planes and 4
-colours and a text file to RAM: and opens one window per set on the
-Workbench screen; both sets use the system's datatypes.library
-(ilbm.datatype, ascii.datatype). memlib is replaced by stubs
-(`sysload_stubs`, AllocMem/FreeMem, sizes and flags compared). Compared
-after every call: d0 (the low word of word results), a3 and the string
+ridatatypeslib"): each run loads one library set (the C build or the
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_ridatatypeslib.txt` recorded
+from the original. The test writes a 16×8 ILBM with 2 planes and 4
+colours and a text file to RAM: and opens a window on the Workbench
+screen; the library uses the system's datatypes.library (ilbm.datatype,
+ascii.datatype). memlib is replaced by stubs (`sysload_stubs`,
+AllocMem/FreeMem, sizes and flags logged and observed). Observed after
+every call: d0 (the low word of word results), a3 and the string
 area, the BitMapHeader, the library's buffer after every command that
 fills it (tags of DataTypeModeID, SetDataTypeAttr, all three
 AttachDataType forms), the values of GetDataTypeAttr, the palette and
 tag list written by the commands, the kept registers; the picture's
 strings ("ILBM", "ilbm", "ilbm", "pict", "ilbm.datatype"), size, depth
-and colour 1 are also checked against their known values. DataTypeReady
-is polled on each set until the layout is done. Cases: every command
+and colour 1 are also observed as the truth of a comparison with their
+known values. DataTypeReady is polled until the layout is done. Cases: every command
 and form with nothing open; DataTypeCreate without a file; a missing
 file; the text file; a second DataTypeOpen; the picture with every
 command and form (unknown attributes, 1 and 2 pairs with a marker in

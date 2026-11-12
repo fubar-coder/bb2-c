@@ -111,13 +111,18 @@ in finit) is translated although it is never reached.
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_risoundlib2.txt` recorded from the
+original.
+
 The emulator's Workbench has an ahi.device in `DEVS:` (its requester
 would wait for the user), so the test puts its own "ahi.device" into the
 device list with priority 10, before it: it logs Open/Close/BeginIO/
 AbortIO, copies the tag list of `AHI_AllocAudioRequestA`, checks the
 requester and tags of `AHI_AudioRequestA`, counts the other vectors, and
-can fail OpenDevice, the allocation and the requester. Compared with the
-reference build: d0, what the device saw, the registers. Covered: every
+can fail OpenDevice, the allocation and the requester. Observed: d0,
+what the device saw, the kept registers. Covered: every
 command with OpenDevice failing; OpenAHI (both forms, again while open),
 PlaySoundAHI/PlayRawAHI in all forms (nothing reaches the device),
 AHIOutputRequest in all six forms with markers in d2–d5 (the tag list

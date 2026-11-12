@@ -52,12 +52,14 @@ reproduced.
   carry into the line byte (#591).
 
 **Test** (`libs/tests/rwe/ricopperfxlib.c`, snitch case "rwe
-ricopperfxlib"): C build and CD original side by side, every command
-(both forms of `CopperReset`) with markers in the other registers and
-garbage in the upper words of word arguments; compared are d0 of the
-functions, the whole custom space (8 KB per set, pattern-filled), the
-state block (pointers relative to the set's buffer and coplist) and the
-kept registers. Cases: before any reset (nothing written), after
+ricopperfxlib"): each run loads one library set (the C build or the CD
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_ricopperfxlib.txt` recorded
+from the original. Every command (both forms of `CopperReset`) is called
+with markers in the other registers and garbage in the upper words of
+word arguments; observed are d0 of the functions, the whole custom space
+(an 8 KB pattern-filled buffer), the state block (pointers relative to
+the buffer and coplist) and the kept registers. Cases: before any reset (nothing written), after
 `CopperReset` with and without ccoffset, splits across line 256 and from
 line 0, falling, rising and out-of-range colour values, `ColSplitBplcon3`,
 40 random splits with `RedoColSplit` over them, `CopperResetAdr` with

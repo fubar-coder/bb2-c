@@ -46,7 +46,7 @@ variables (`pause_status` … `modtable`, 110 bytes), the CIA part
 the play routine's block (`mt_FunkTable` … `nor_LstEvt`, 1584 bytes).
 The layout is needed: the routine reads behind `mt_PeriodTable` into
 `mt_chan1temp` and behind `mt_SampleStarts` (below), and the test finds
-the blocks in both builds. `master_mask` is a word whose first byte the
+the blocks in either build. `master_mask` is a word whose first byte the
 original addresses with BSET/BTST/BCLR; the C struct has the two bytes.
 
 The pt23f changelog (8bitbubsy, only the list of fixes was used as a
@@ -139,8 +139,11 @@ changes the string pointer) and generally more registers.
 
 ## Test
 
-Paula cannot be read, so the test compares the library's state: the
-three blocks (pointers into the modules relative to each set's module),
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_ciatrklib.txt` recorded from the original.
+Paula cannot be read, so the test observes the library's state: the
+three blocks (pointers into the modules relative to the module),
 `fake_channel`, DMACONR's audio bits, the filter bit and the module bytes
 after every call. The modules are built in memory (fixed random seed: 6
 patterns, 9 positions, 31 samples with loops, finetunes 0–14, a volume
@@ -150,19 +153,22 @@ numbers above 31).
 F00 has a module of its own (sample 1; row 0 notes and F01, row 1 F00 on
 voice 1, 2 or 3 and nothing behind it), played to the stop for each
 voice. For these calls the test patches the `$DFF000` of `mt_end` in the
-code of both builds (`LEA $DFF000,A0` before `CLR.W $A8(A0)` in the
-original, `MOVE.L #$DFF000,patdata` in the C build; exactly one of each
-is required) to a RAM copy of the registers per set, filled with a note
+code of the loaded set (`LEA $DFF000,A0` before `CLR.W $A8(A0)` in the
+original, `MOVE.L #$DFF000,patdata` in the C build; exactly one is
+required) to a RAM copy of the registers, filled with a note
 (period 428, sample 1, C20), and restores it afterwards. Only this one
 address is redirected: the routine polls VHPOSR, DMACONR and INTREQR,
-which a RAM copy would never change. Compared besides the blocks: the
-voices behind the F00 hold the note from the copy.
+which a RAM copy would never change. Observed besides the blocks: the
+voices behind the F00 hold the note from the copy. DMACONR in this phase
+is `not captured` (the original writes DMACON into the hardware, the C
+build into its RAM copy); the audio DMA is switched off before the phase
+and after it.
 
-* Phase A (CIA, each set alone): `AddICRVector`/`RemICRVector` of both
+* Phase A (CIA): `AddICRVector`/`RemICRVector` of both
   CIA resources are replaced (SetFunction) by stand-ins that record the
   calls – the real ones with the original's bits break the system's
   ciaa timer A (above); ciaa's stand-in fails, so the library takes the
-  ciab path (timer B, free). Compared: the calls (resource, bit = the
+  ciab path (timer B, free). Observed: the calls (resource, bit = the
   long at 1 / 2, the interrupt), init's state (CIAAbase, TimerFlag,
   CIAAaddr, TimerValue, the timer's start bit), the interrupt server
   called by hand (`is_Code` with `is_Data`: row 0 with F40 sets
@@ -170,7 +176,7 @@ voices behind the F00 hold the note from the copy.
   (removes and adds again), `WaitTrackerEvent` with a WaitTOF that runs
   the server, `ChangeTrackerVBlank` (CIAAbase 0, the timer stopped, the
   filter toggled, `RemICRVector` with bit 0).
-* Phase B (both sets call by call): `DecodeModule` (chip; fast memory:
+* Phase B (call by call): `DecodeModule` (chip; fast memory:
   the copy), the information functions also on an empty slot, the error
   checks without an error, `mt_init`'s clearing with a slot length of
   $7FFFFFFF, ~540 `PlayTracker` ticks with the masks $F, 5 and 0,

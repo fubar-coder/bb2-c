@@ -63,10 +63,13 @@ ports, `docs/libs/cmdlibs-port.md` "General").
 
 ## Test
 
-docall is replaced by a stub (`sysload_stubs`) that records the whole
-message; the checks of every form run in one sequence on both sets and
-the messages are compared after each (so the bytes left from the
-previous message too): AddVarTrace with the types 0..7, output 0/1/2 and
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_ridebuglib.txt` recorded from the
+original. docall is replaced by a stub (`sysload_stubs`) that records
+the whole message; the checks of every form run in one sequence and the
+message is observed after each (so the bytes left from the previous
+message too): AddVarTrace with the types 0..7, output 0/1/2 and
 the empty name, DelVarTrace (also empty), VarTraceWindow, DisAsmWindow
 (called from a small code block with a TRAP #1 word in front: the address
 must be that word), CopperTrace with 0, an address, an object with the

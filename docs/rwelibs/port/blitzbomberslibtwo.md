@@ -45,11 +45,14 @@ build keeps). The address arithmetic is the original's: word results
 
 ## Test
 
-Each set has its own memory with the same contents. `KillInvader` 40
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_blitzbomberslibtwo.txt` recorded from the
+original. `KillInvader` 40
 times with x 0..63, y 0..20 and offsets −256..511 on random images
-behind a table of pointers (the pointers compared relative to the
+behind a table of pointers (the pointers relative to the
 memory); `DrawStarField` over 60 frames with 50 stars (speeds 0..240,
 bits 0..15) that wrap; `DrawBullet`/`EraseBullet` 100 times anywhere on
-four 320×256 planes. After every call the whole memory of both sets is
-compared, and the kept registers. Not covered: offsets that are negative
+four 320×256 planes. After every call the whole memory is
+observed, and the kept registers. Not covered: offsets that are negative
 as words.

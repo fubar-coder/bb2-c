@@ -157,7 +157,9 @@ Original behaviour that is not a defect:
 ## Test
 
 One set per run (sysload), with its own memlib, banks and files
-(`RAM:rwamos0`); observed as cases and compared with the expected data: d0, a3 and
+(`RAM:rwamos0`); observed as cases and compared with the expected data
+`libs/tests/expected/rwe_riamosfunclib.txt` (recorded from the
+original): d0, a3 and
 the string area of DeviceName$, the banks' lengths and contents (where
 the memory is defined), the memory of copies, fills and loads, the files
 of BSave and SaveExec, the current directory after ChangeDir, and every

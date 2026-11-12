@@ -115,11 +115,14 @@ so the built-in font equals the binary's byte for byte.
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rifnslib.txt` recorded from the original.
 Bitmaps in memory (40 × 64 bytes, depth 1..8, planes in one buffer with
-guards per set), fonts made in the test (16, 32, 48, 64 pixels and a
+guards), fonts made in the test (16, 32, 48, 64 pixels and a
 24-pixel one drawn as 16; random glyphs, widths 0..width), the built-in
 font, RIAmosFuncLib replaced by stubs (BLoad/Start/Erase, calls
-recorded). Compared with the original: the whole bitmap buffer after every
+recorded). Observed: the whole bitmap buffer after every
 print, the end position at a0 (or a0 unchanged without a font), d0, the
 kept registers, the stub calls. Covered: see the header of the test (all
 entries and forms, all prefs, colours and `chr$(1)`, tabs and FNSSetTab,

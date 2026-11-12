@@ -73,10 +73,13 @@ is 0 before); that is the documented usage, not a defect.
 
 ## Test
 
-`RetrieveCallHook` with a6 = graphics.library gives each set's hook; it
-is called like GadTools does with a RastPort on a BitMap per set (2
-planes, 1280 × 48, cleared to a pattern before each call, topaz 8).
-Compared (after `WaitBlit`: the hook returns while its last blit may
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rilvcallhooklib.txt` recorded from the
+original. `RetrieveCallHook` with a6 = graphics.library gives the hook;
+it is called like GadTools does with a RastPort on a BitMap (2 planes,
+1280 × 48, cleared to a pattern before each call, topaz 8). Observed
+(after `WaitBlit`: the hook returns while its last blit may
 still run): d0, both planes, the RastPort without the BitMap pointer,
 kept registers. 150 random items: bounds, states 0/1/2/8/4, 1–4 fields of
 texts and BitMaps (left/right, BitMaps wider/higher than the field

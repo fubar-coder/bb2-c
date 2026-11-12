@@ -49,10 +49,13 @@ absolute addresses the original reads (below), as volatile words.
 
 ## Test
 
-Compared after every call: d0 (InitView: as "is the list the library
-keeps"), `viewsize` and `cop`, the list's eight words (each equal to the
-word at its address, BUG(orig) #889, and equal between the sets for the
-even ones), the change of graphics.library's open count, the test task's
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_ridisplaylib.txt` recorded from the
+original. Observed after every call: d0 (InitView: as "is the list the
+library keeps"), `viewsize` and `cop`, the list's eight words (each
+equal to the word at its address, BUG(orig) #889, and the value of the
+ones in the vector table), the change of graphics.library's open count, the test task's
 memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
 words, colour counts that change nothing), ViewBitmap, finit with a
 list, finit again (nothing), init and finit without a list. The lists

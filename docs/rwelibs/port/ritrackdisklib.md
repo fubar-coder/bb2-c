@@ -62,18 +62,21 @@ original's changes of a6 and d4-d7 are not reproduced.
   library crashes at start-up (#941).
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
-ritrackdisklib"): C build and CD original side by side against a device
-of the test, `rwetest.device` (MakeLibrary + AddDevice): a RAM disk of
-32 sectors per set that logs every request (command, flags, length,
-offset, buffer, unit, checksum of the data written) and refuses units 2
-and -2. Compared are d0, the request the device saw, the disk image and
+ritrackdisklib"): each run loads one library set (the C build or the CD
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_ritrackdisklib.txt` recorded
+from the original. The library talks to a device of the test,
+`rwetest.device` (MakeLibrary + AddDevice): a RAM disk of 32 sectors
+that logs every request (command, flags, length, offset, buffer, unit,
+checksum of the data written) and refuses units 2 and -2. Observed are
+d0, the request the device saw, the disk image and
 the buffers, BootProg's checksum, the open/close counts and the kept
 registers. Cases: every command before OpenDisk, OpenDisk of units 5, 4
 (with name), 0-3, -1 and -2, the kept name, a second OpenDisk of an open
 unit, sector commands with and without count (offset overflow of
 `sector << 9`), device errors (positive and negative io_Error),
 FormatTrack with the track's upper word set, both WriteBoot forms (the
-default block compared by its 8 bytes), BootProg twice, DiskStatus,
+default block observed by its 8 bytes), BootProg twice, DiskStatus,
 DiskIO, DiskMotor, CloseDisk of open/closed/invalid units, finit (unit 3
 stays open) and init again (unit 3's stale entry). Then the real
 trackdisk.device on the empty DF0: of the emulator: OpenDisk, MotorOn,

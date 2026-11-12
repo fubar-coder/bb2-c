@@ -175,11 +175,14 @@ first); an unknown `%x` drops the x (intended by the source).
 
 ## Test
 
-RawStatus is a stub (sysload_stubs) that counts its calls, records the
-key and answers a chosen value; it keeps all registers but d0 (the
-original's SearchMem relies on a1). Memory the routines read is one
-block for both sets, so results that are addresses compare too. Compared
-with the reference build: init; D_GetSR (11 values); D_HexWord (1-8
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rilesdebuglib.txt` recorded from the
+original. RawStatus is a stub (sysload_stubs) that counts its calls,
+records the key and answers a chosen value; it keeps all registers but
+d0 (the original's SearchMem relies on a1). Memory the routines read is
+one block, so results that are addresses are observed as offsets into
+it. Observed: init; D_GetSR (11 values); D_HexWord (1-8
 words, even and odd source, from $41C/$41B/$41F and $FFFFFFF0);
 D_CheckNMove/A/Word (both forms, 1-5, zero bytes, below $420 and from
 $FFFFFFF0); D_FindStringPtr (found, the long at areg5, not found, 0);
@@ -190,8 +193,8 @@ odd digits, BFD); GetCustomReg for $000-$1FD and 6 more (above $1FC, a
 negative long); GetCustomRegAdr for every name and 16 more (prefixes,
 8 characters, NOOP, lower case, empty); the font printer – positions,
 the row change, the empty string, FInverse 1 and $100, FYOffset, the
-right edge, all characters 1-255, columns from 210 on – compared on both
-planes after every call; FPrintDetoke with 4 lines × 6 cio × 5
+right edge, all characters 1-255, columns from 210 on – observed on both
+bitplanes after every call; FPrintDetoke with 4 lines × 6 cio × 5
 lineoffsets × 2 marker types × tokenise off/on (480 calls), the right
 edge inside and in front of a token, FInverse 1/$100, no token list, no
 plane 1; OutTextPen/OutText on a RastPort of the test (pen, cp_x/cp_y,

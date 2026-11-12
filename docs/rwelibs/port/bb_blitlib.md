@@ -83,13 +83,15 @@ Original behaviour that is not a defect:
 
 ## Test
 
-One chip memory block per set with the same contents at the same
-offsets: three 6-plane bitmaps (40 and 48 bytes per line, 64 lines), the
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_bb_blitlib.txt` recorded from the
+original. One chip memory block with random contents: three 6-plane bitmaps (40 and 48 bytes per line, 64 lines), the
 data and cookies of the shapes (16×16×6, 32×20×5, 32×12×4 with handles,
 destinations), four images, the memory of a `Buffer`. Every call runs
 with the blitter owned (`OwnBlitter`) and waited for (`WaitBlit`), then
-the bitmaps, shape data and images of both sets are compared byte for
-byte, the buffer records (pointers relative to the block, the saved data
+the bitmaps, shape data and images are observed byte for byte, the
+buffer records (pointers relative to the block, the saved data
 the blit wrote), the shape objects `CreateShape` made, d0 of
 `PredatorBlit`, the kept registers. All 12 routines, both forms of
 `SpecialBlock`/`SpecialBlockBitmap`, all shifts, `SetupMapTwo` 48 and back

@@ -57,11 +57,15 @@ reads its own code as the table, the C build takes the index modulo 16.
 
 The S404 files of `libs/tests/rwe/s404.h` (as for `ristonecrackerlib`:
 random sequences of every code, 0..16 far offset bits, first bit buffers
-of 0..16 bits), 40 files up to 20000 bytes. Form 1 unpacks a copy of
-each in a prefilled buffer in place, form 2 from the file into another
-prefilled buffer at 0 or 1..199 bytes in; compared with the reference
-build: d0 (relative to the buffer in form 1), both whole buffers, and on
-each set the expected data, d0 = start / 1, the bytes around the data.
+of 0..16 bits), 40 files up to 20000 bytes. Each run loads one library
+set (the C build or the original); the scenario writes its observations
+as cases, compared with the expected data
+`libs/tests/expected/rwe_ristcdecrunchlib.txt` recorded from the
+original. Form 1 unpacks a copy of each in a prefilled buffer in place,
+form 2 from the file into another prefilled buffer at 0 or 1..199 bytes
+in; observed: d0 (relative to the buffer in form 1), both whole buffers,
+and as truth values that the data equal what the test's encoder started
+from, d0 = start / 1, the bytes around the data.
 Both forms with data that are no S404 file (0, nothing written), kept
 registers. Not covered: corrupt data, more than 16 far offset bits (the
 DIFF), a far offset that is negative as a word.

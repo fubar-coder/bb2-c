@@ -64,9 +64,13 @@ are one packed struct in the order of the original's data block, so that
 No `DIFF`.
 
 **Test** (`libs/tests/rwe/ricommoditieslib.c`, snitch case
-"rwe ricommoditieslib"): the same scenario on the original and then on
-the C build (init … finit each); all results and the register
-preservation of every call are compared (about 400 checks):
+"rwe ricommoditieslib"): each run loads one library set (the C build or
+the original) and runs the scenario once (init … finit); every result is
+observed as a case, and every call writes the kept registers of its
+routine (stated per routine, `KEEPS`), compared with the expected data
+`libs/tests/expected/rwe_ricommoditieslib.txt` recorded from the
+original (399 checks). Only values that do not depend on addresses are
+observed (results, "port != 0", message counts):
 
 * every command before `MakeCommodity` (no broker, no port);
 * the inline constants, copied with an RTS as the compiler does;

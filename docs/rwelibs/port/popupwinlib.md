@@ -72,6 +72,11 @@ items − 1, but nothing uses the field.
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_popupwinlib.txt` recorded from the
+original.
+
 PopUpWindow waits for the mouse, so the test drives it. While a popup
 runs, exec's WaitPort is patched (SetFunction). When the library waits
 on its port, the patch:
@@ -81,20 +86,20 @@ on its port, the patch:
 * puts the script's IntuiMessage (MOUSEMOVE, MOUSEBUTTONS,
   INACTIVEWINDOW) into the port.
 
-The windows open on the Workbench screen at 0,0 (the screen object of
-both sets is the Workbench screen); the library closes them all before
-PopUpWindow returns.
+The windows open on the Workbench screen at 0,0 (the screen object is
+the Workbench screen); the library closes them all before PopUpWindow
+returns.
 
-Compared:
+Observed:
 
 * per snapshot: the popup windows (position, size, IDCMP), their
   contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA relative
   to the start;
 * the number of waits and of menu levels opened, d0, the kept
   registers;
-* no memory lost after the first popup. The first windows leave memory
-  in the system's caches (layers' ClipRects …), differently for each
-  set, so the memory is counted from there.
+* no memory lost after the first popup (a check of the program's own,
+  not a case). The first windows leave memory in the system's caches
+  (layers' ClipRects …), so the memory is counted from there.
 
 Covered:
 

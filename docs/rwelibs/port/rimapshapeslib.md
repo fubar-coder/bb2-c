@@ -85,9 +85,12 @@ what it does).
 
 ## Test
 
-Blitz shapes (random data in chip memory), a window object whose
-Window/RastPort/BitMap are built by the test (no layer), the map shapes
-and group of the library. Compared: the map shapes (all fields, the
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rimapshapeslib.txt` recorded from the
+original. Blitz shapes (random data in chip memory), a window object
+whose Window/RastPort/BitMap are built by the test (no layer), the map
+shapes and group of the library. Observed: the map shapes (all fields, the
 plane pointers relative to the shapes' data), the group (member
 addresses relative to map shape 0, the offsets), the results relative to
 the blocks, the bitmap after every blit (and that a blit changed it, an

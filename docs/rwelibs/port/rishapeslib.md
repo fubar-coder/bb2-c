@@ -142,11 +142,14 @@ Original behaviour that is no defect:
 
 ## Test
 
-Each set has its own memlib, shapeslib and RIPackLib (originals: the
-CD's binaries; C set: this build), its own 70 shape objects, its own
-palettes and bitmap object, and its own files in RAM:.
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rishapeslib.txt` recorded from the
+original. The set has its own memlib, shapeslib and RIPackLib (original
+set: the CD's binaries; C set: this build); the test has 70 shape
+objects, palettes, a bitmap object and files in RAM:.
 
-Compared:
+Observed:
 
 * the results;
 * the shape objects: every field but the pointers; the data and cookie
@@ -156,9 +159,10 @@ Compared:
 * the kept registers;
 * memlib's memory, all back at the end.
 
-Checks of the expected effect make sure the scenarios do what they say
-(one shape loaded, packed shapes loaded, "cL", LoadShapes into the last
-shape, the stale-size skip).
+Cases of the expected effect (the truth value of a condition, observed
+like any other) show that the scenarios do what they say (one shape
+loaded, packed shapes loaded, "cL", LoadShapes into the last shape, the
+stale-size skip).
 
 Covered:
 

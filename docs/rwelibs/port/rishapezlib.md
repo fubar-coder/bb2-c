@@ -39,8 +39,11 @@ a4 is the global `rishapez_myold` (the original keeps it in its code).
 
 ## Test
 
-Window and RastPort are memory of the test (a windowslib object = a
-pointer to the Window). Compared: d0 and a4, the RastPort fields set
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rishapezlib.txt` recorded from the
+original. Window and RastPort are memory of the test (a windowslib
+object = a pointer to the Window). Observed: d0 and a4, the RastPort fields set
 (the pattern by its words) and their neighbours, the kept registers.
 Covered: `CludgeAcid` before anything was saved, 0/1 with garbage above
 the low byte; `PeekByte` inline with the same length, and its code as a

@@ -170,14 +170,19 @@ pt23f changelog served as the checklist, no code was taken from it):
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_ritrackerlib.txt` recorded from the
+original.
+
 Paula's registers are write-only, so the test redirects them: every
-absolute address `$DFF000`–`$DFF1FF` in the loaded code of both
-libraries is patched to a RAM copy of the custom registers per set (19
-places in the reference build, 16 in the C build), filled with a pattern
-before each call; the values written are compared after it (AUDxLC as
-module offsets, AUDxLEN/PER/VOL, the last DMACON word). No audio is
-played. Compared after every call as well: the data block and the glue
-variables (found in both libraries by the tables and by `RealTempo` and
+absolute address `$DFF000`–`$DFF1FF` in the loaded code of the library
+is patched to a RAM copy of the custom registers (at least one; the
+number differs between the builds), filled with a pattern before each
+call; the values written are observed after it (AUDxLC as module
+offsets, AUDxLEN/PER/VOL, the last DMACON word). No audio is played.
+Observed after every call as well: the data block and the glue
+variables (found in the library by the tables and by `RealTempo` and
 the module address; pointers as module offsets), the module and 16 bytes
 behind it, the filter bit of CIA-A PRA, CIA-B timer A's counter (the
 test allocates the timer through ciab.resource and keeps it stopped, so

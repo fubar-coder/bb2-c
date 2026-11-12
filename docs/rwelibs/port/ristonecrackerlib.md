@@ -96,9 +96,13 @@ continuation, near/middle/far distances with 0..16 offset bits, first bit
 buffers of 0..16 bits) is written as the bit stream, and the data it
 stands for is worked out at the same time. 40 files (up to 20000 bytes,
 code subsets and all codes) are written to `RAM:` and loaded with
-`STCLoad` into a buffer prefilled per case; compared with the original:
-d0, the whole buffer, and on each set the expected data, the start and
-the header; the three header functions on each file and on other data
+`STCLoad` into a buffer prefilled per case. Each run loads one library
+set (the C build or the original); the scenario writes its observations
+as cases, compared with the expected data
+`libs/tests/expected/rwe_ristonecrackerlib.txt` recorded from the
+original: d0, the whole buffer, and as truth values that the data equal
+what the test worked out, the start and the header; the three header
+functions on each file and on other data
 (0). Also a file that is no S404 file (unpacked anyway), a missing file
 and a directory (OpenFromLock fails), kept registers. Not covered:
 corrupt data (writes anywhere), more than 16 offset bits (the DIFF), a

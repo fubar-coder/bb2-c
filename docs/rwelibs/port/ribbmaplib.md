@@ -77,7 +77,10 @@ character). `BBGetPalette` calls memlib's globalloc/globfree.
 
 ## Test
 
-One buffer per set with the same files at the same offsets: a full
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_ribbmaplib.txt` recorded from the
+original. One buffer holds the files: a full
 scenario, a full map, a scenario with only `GFX!`, `SFX!` and a `COLR`
 of $81..$83 (or none), a map without `MFRM`, a `FORM` of the wrong type;
 chunks shuffled with random lengths and contents, six rounds. Every
@@ -87,7 +90,7 @@ index overflow and a negative index, author strings at odd and even
 addresses, `BBGetPalette` without and with a new block (from 0–4 and 4
 colours, twice), with 200 colours, low > high and without `COLR`, a
 failed `SetBBScenarioLoc` and a failed `SetBBMapLoc` after a good one.
-Compared with the reference build: d0 (addresses relative to the
+Observed: d0 (addresses relative to the
 buffer), strings and a3, palette objects and colour blocks, kept
 registers. Not covered: calls before the first `Set…`, odd chunk
 lengths, `BBGetPalette` writing behind its block.

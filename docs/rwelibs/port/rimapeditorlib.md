@@ -118,9 +118,12 @@ Original behaviour that is not a defect:
 
 ## Test
 
-Each set has its own memlib/maxslib (names), MapObjects, Blitz shapes,
-bitmap object, RastPort/BitMap (chip memory, topaz 8), window object and
-globals (a5). Compared: the MapObjects (all fields; data and name by
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rimapeditorlib.txt` recorded from the
+original. The set has its memlib/maxslib (names), MapObjects, Blitz
+shapes, bitmap object, RastPort/BitMap (chip memory, topaz 8), window
+object and globals (a5). Observed: the MapObjects (all fields; data and name by
 content, the addresses at 24/28 relative), the used map, a3, the
 strings, d0, the shapes' data, the bitmap and the RastPort after the
 text commands, the kept registers; all memory back at the end. Covered:

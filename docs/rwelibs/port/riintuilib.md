@@ -61,10 +61,13 @@ bug-orig test of #698).
 
 ## Test
 
-Each set has its own inputoutputlib, Rast object and BitMap (320 × 16,
-2 planes).
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_riintuilib.txt` recorded from the
+original. The set has its inputoutputlib, a Rast object and a BitMap
+(320 × 16, 2 planes).
 
-Compared:
+Observed:
 
 * the Rast (every field but the BitMap pointer, which must be the set's
   BitMap);

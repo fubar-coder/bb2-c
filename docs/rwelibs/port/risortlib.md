@@ -60,9 +60,12 @@ see the second bug below.
 
 ## Test
 
-Lists built in memory, the same on both sets; the strings are shared, so
-after a sort the data in list order are compared between the sets byte
-for byte (and the links checked unchanged). Covered: a sort before init
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_risortlib.txt` recorded from the original.
+Lists are built in memory; after a sort the data of the items in list
+order are observed byte for byte (the string pointers as the strings'
+first bytes). Covered: a sort before init
 (0); `ListBase`; no list, no current item, an empty list, one item; 60
 random lists (2..40 items of 8..17 bytes, strings that differ in case
 only, are equal, empty, prefixes; both directions, both start items, both

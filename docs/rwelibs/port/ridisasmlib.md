@@ -58,11 +58,19 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   is an address error on a 68000 (#617).
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
-C build and reference build disassemble the same buffer (same addresses,
-so PC relative targets are equal) into their own string areas; compared
-after every call are d0, how far a3 moved, 40 bytes of the string area,
-InstrSize and the kept registers - about 380000 calls, 3 million checks
-(about 20 s in the emulator). Cases: InstrSize before the first call;
+each run loads one library set (the C build or the original) and
+disassembles a code buffer at a fixed address (so PC relative targets
+are absolute and every run gives the same text) into a string area;
+observed after every call are d0, how far a3 moved, 40 bytes of the
+string area, InstrSize and the kept registers - about 380000 calls, 3
+million observations (3058392 checks, about 3 minutes in the emulator
+with the C build). The expected data
+`libs/tests/expected/rwe_ridisasmlib.txt` (recorded from the original)
+holds 770 cases: the sweeps over the instruction words are 747 block
+cases (a block of consecutive observations is one case with a hash,
+`LIBS_CAP_DUMP=BLOCK:N` writes its observations), init, the first
+InstrSize, the odd address, the odd a3 and finit are 23 plain cases.
+Cases: InstrSize before the first call;
 every first word $0000-$FFFF with brief and again with full format
 extension words behind it; the extension words of MOVE.l
 (bd,a0,xn),(bd,a0,xn) (source every one, destination every third) and

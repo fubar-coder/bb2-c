@@ -75,13 +75,17 @@ right-first), COLOR00 is written as the original writes it.
 
 ## Test
 
-Per set a bitmap object with three planes of 40 × 48 bytes in one
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_risnowlib.txt` recorded from the original.
+A bitmap object with three planes of 40 × 48 bytes in one
 memory area with margins (flakes at the edges read and write next to
-the planes), the planes filled with the same random ground, obstacles,
+the planes), the planes filled with random ground, obstacles,
 pause and blue pixels; a random table with bits 0–7. COLOR00 is
-redirected: every absolute `$DFF180` in the code of both loaded
-libraries is patched to a word per set (the display is not touched).
-memlib is loaded for `globalloc`. Compared after every call: the
+redirected: every absolute `$DFF180` in the code of the loaded
+library is patched to a word in RAM (the display is not touched; at
+least one address must be patched, their number differs between the
+builds). memlib is loaded for `globalloc`. Observed after every call: the
 memory area, the random table, the list table and the field blocks
 (pointers as offsets), the COLOR00 word, d0 where there is a result,
 kept registers. Cases: two fields on the same bitmap, 140 LDoSnow steps

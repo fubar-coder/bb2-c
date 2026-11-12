@@ -46,11 +46,15 @@ two calls - random bytes either way.
 
 ## Test
 
-Every form against the original: Encrypt with wheels, Decrypt with five
-and six arguments (mode 0, 1, $101, 2), GetWheel 0..4, $101 and a long
-with upper bits; lengths 0, 1, 5, 7, 300, 700 with wheels that carry into
-wheel 2 and 3 and a mode 1 case that overflows; buffer with guards, d0,
-wheels, kept registers. Encrypt without wheels depends on the hardware
-timing (Rnd), so it is checked on each set by itself: the wheels are
-bytes, nothing outside the block changes, Decrypt with the wheels of
-GetWheel restores the data.
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_riencryptlib.txt` recorded from the
+original. Every form: Encrypt with wheels, Decrypt with five and six
+arguments (mode 0, 1, $101, 2), GetWheel 0..4, $101 and a long with upper
+bits; lengths 0, 1, 5, 7, 300, 700 with wheels that carry into wheel 2
+and 3 and a mode 1 case that overflows; buffer with guards, d0, wheels,
+kept registers. Encrypt without wheels takes its wheels from vallib's
+`Rnd`, which is hardware noise without a seed; vallib is not loaded and
+its `Rnd` is a stub (`sysload_stubs`) that answers a fixed sequence, so
+the random wheels and what follows are defined and observed: the wheels
+from GetWheel, and Decrypt with them restores the data.

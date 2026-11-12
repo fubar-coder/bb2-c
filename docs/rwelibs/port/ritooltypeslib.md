@@ -75,11 +75,14 @@ original uses it as a work register and leaves it on its Image or the
 shape); a2 unchanged.
 
 **Test** (`libs/tests/rwe/ritooltypeslib.c`, snitch case "rwe
-ritooltypeslib"): the test writes `RAM:rwett.info` (icon.library's
-default tool icon with its own seven tool types); both sets (each with
-its own memlib, shapeslib and the libraries they need, string area,
-argument stack, shapes, output files) work on it with the same inputs.
-Compared: d0, a3 and the string area, the kept registers, the open icon
+ritooltypeslib"): each run loads one library set (the C build or the CD
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_ritooltypeslib.txt` recorded
+from the original. The test writes `RAM:rwett.info` (icon.library's
+default tool icon with its own seven tool types); the set (with its
+memlib, shapeslib and the libraries they need) works on it, with the
+test's string area, argument stack, shapes and output files.
+Observed: d0, a3 and the string area, the kept registers, the open icon
 (tool types, default tool, type, gadget size and flags, both images), the
 shapes of IconToShape (fields, data, cookie) and the written icons (read
 back). Cases: every command and form without an icon; GetIconObject

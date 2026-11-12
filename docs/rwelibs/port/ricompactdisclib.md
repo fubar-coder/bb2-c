@@ -80,19 +80,23 @@ d1/d2 (CDTrackLength) are not reproduced.
   and the fade time in `io_Offset`; cd.device wants it the other way round
   (`io_Offset` = volume, `io_Length` = fade in frames), so
   `CDVolume 32767,0` asks for silence with a fade of 32767 frames. The
-  library test checks the swapped fields in both builds. (#982)
+  library test checks the swapped fields in a run of either set. (#982)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
-ricompactdisclib"): C build and reference build side by side, each with
-its own memlib, against a device of the test, `rwecd.device`
+ricompactdisclib"): each run loads one library set (the C build or the
+original) with memlib; the scenario writes its observations as cases,
+compared with the expected data
+`libs/tests/expected/rwe_ricompactdisclib.txt` recorded from the
+original. The library talks to a device of the test, `rwecd.device`
 (MakeLibrary + AddDevice) - there is no CD drive in the emulator. It
 plays a CD of 9, 50 or 20 tracks (CD_INFO with a Status word, CD_TOCMSF
 summary and entries, a moving CD_QCODEMSF position, HD_SCSICMD READ TOC
 header), logs every request (command, flags, length, offset, where the
 data pointer points, the SCSICmd and its command bytes), opens, closes
-and AbortIOs, refuses unit 3 and sets an io_Error on request. Compared
+and AbortIOs, refuses unit 3 and sets an io_Error on request. Observed
 are d0, the requests, the Q-code bytes behind `CDUpdateInfo`'s address
-and the kept registers; at the end all memory must be back. Cases:
+and the kept registers; at the end all memory must be back (a check of
+the program's own). Cases:
 every command without a device; OpenCD of cd.device (not in the
 emulator: the failure path), of unit 3, with the name kept, while open
 and in all three forms; all CD commands with on/off values 0-3 and -1;

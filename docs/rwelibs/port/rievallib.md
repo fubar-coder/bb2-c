@@ -145,8 +145,11 @@ caller's upper word of d0 (a word result).
 
 ## Test
 
-`libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): every
-routine against the original, 2049 checks – ConvToPostFix on 52 strings
+`libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): each run
+loads one library set (the C build or the original); every routine is
+observed as cases (2049 checks), compared with the expected data
+`libs/tests/expected/rwe_rievallib.txt` recorded from the original –
+ConvToPostFix on 52 strings
 (all operators and precedences, brackets in excess, signs, operands of
 every kind, upper case, the `.` at the end with a tail behind the 0, 200
 nested brackets and 150-deep operators), PFEvaluate on about 120 strings

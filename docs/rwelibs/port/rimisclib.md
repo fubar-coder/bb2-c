@@ -138,6 +138,10 @@ Original behaviour that is no defect:
 
 ## Test
 
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rimisclib.txt` recorded from the original.
+
 EasyRequestArgs is replaced (SetFunction) by a stub that records window,
 EasyStruct, its three strings and 16 longs of arguments and returns a
 chosen value; GetProgramName/GetProgramDir are replaced by `moveq #0,d0`
@@ -145,8 +149,8 @@ for ProgPath$'s fallbacks; the font prefs are files the test writes to
 `ENV:SYS/Font.Prefs`, with `ENV:` assigned to a directory of its own
 (`RAM:rimisclib-env`) for that part: the system's IPrefs watches the real
 file and reads every version of it (Workbench 3.1's keeps the one with
-the bad PRHD in use, every later write fails). Compared
-with the reference build: init (d0 = IntuitionBase); TimerReset (the TOD
+the bad PRHD in use, every later write fails). Observed:
+init (d0 = IntuitionBase); TimerReset (the TOD
 right after it); PortSigBit; WorkbenchHere on a fake IntuitionBase with
 1-4 fake screens (found first, later, after partial matches, empty
 title); EZOutput both forms; EZRequest all four forms – the body buffer
@@ -164,7 +168,7 @@ for every character of the table; the font prefs (not open, no file, bad
 FORM/PREF/PRHD/FONT, a PRHD of 10 bytes, types 0-3 and 7 – one found in
 the padding behind the chunks –, d0's high word, CloseFontPrefs twice);
 BInstr (12 pairs); finit with the font prefs open (both buffers freed).
-Besides the comparison: the argument array and body text of one call,
+Besides these: the argument array and body text of one call,
 the font of type 1/2, FromBlitz -1. Kept registers on every call.
 
 Not covered: ClickWait (needs the mouse button); WorkbenchHere's endless

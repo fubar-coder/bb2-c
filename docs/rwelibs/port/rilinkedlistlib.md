@@ -67,13 +67,16 @@ tables: into the code behind them in the original, into other data in
 the C build (not reproducible, not tested).
 
 **Test** (`libs/tests/rwe/rilinkedlistlib.c`, snitch case "rwe
-rilinkedlistlib"): memlib is replaced by stubs (`sysload_stubs`) that
-allocate from a 64 KB aligned region per set (blocks filled with a
-pattern like uncleared memory, freed ones overwritten), log every call
-and can make the n-th allocation of a call fail; the wrong free of
-DelListItem is only logged (the real memlib would stop the program).
-CopyByte is the real one of each set's RIAmosFuncLib. The variables lie
-in the region. Compared after every call: d0 (region addresses
+rilinkedlistlib"): each run loads one library set (the C build or the
+original); the scenario writes its observations as cases, compared with
+the expected data `libs/tests/expected/rwe_rilinkedlistlib.txt` recorded
+from the original. memlib is replaced by stubs (`sysload_stubs`) that
+allocate from a 64 KB aligned region (blocks filled with a pattern like
+uncleared memory, freed ones overwritten), log every call and can make
+the n-th allocation of a call fail; the wrong free of DelListItem is
+only logged (the real memlib would stop the program). CopyByte is the
+real one of the set's RIAmosFuncLib. The variables lie in the region.
+Observed after every call: d0 (region addresses
 relative), the memlib log, the used region word by word, the variables,
 and the kept registers. Cases: init/finit; SizeOfListItem (also size
 words 3 and 7); every command that is safe on empty lists 0–4;

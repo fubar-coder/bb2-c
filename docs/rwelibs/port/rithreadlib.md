@@ -63,7 +63,10 @@ never returns 0 (it raises "Out of Memory!").
 
 ## Test
 
-C build and reference build, each set alone (rwecmp.h). The thread code
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases (rwecmp.h), compared with the
+expected data `libs/tests/expected/rwe_rithreadlib.txt` recorded from the
+original. The thread code
 is the test's: it records the registers it starts with, its process
 name and whether its memory is cleared, signals the test task, waits for
 CTRL-F and returns. Every thread is started and ended before the next
@@ -79,7 +82,8 @@ when the test ends.
   thread D, finit returns at once while D runs (`ActiveThreads` 1,
   BUG(orig) #837), D ends.
 
-Compared: the registers of every call (the original's kept ones kept),
+Observed: the registers of every call (the kept ones stated per
+routine, `KEEPS`),
 `ActiveThreads`, the signal of each init and whether it is pending, the
 thread's registers (d1–d7/a1/a5/a6 the same, a0 = the code, a2/a3/a4 =
 memory + 1024/3072/7168, the memory cleared) and its name. The test

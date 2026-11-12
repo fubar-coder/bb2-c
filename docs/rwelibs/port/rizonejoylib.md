@@ -97,11 +97,14 @@ Original behaviour that is no defect:
 
 ## Test
 
-Every form against the original, in two sessions. With table 0: init,
+Each run loads one library set (the C build or the original); the
+scenario writes its observations as cases, compared with the expected
+data `libs/tests/expected/rwe_rizonejoylib.txt` recorded from the
+original. Every form, in two sessions. With table 0: init,
 SetZone (rectangles with swapped corners, a point, circles with radius 40,
 200, 300 and 1, y2 = -1, a negative y2, x1 < 0, a y range that overflows,
 a zone out of range), Zone on a 19 x 19 grid in the 68020 mode and the
-68000 mode (341 / 270 hits – the modes differ, the builds agree),
+68000 mode (341 / 270 hits – the modes differ),
 ZoneTest with one zone and with ranges (clamped start, bad ranges, upper
 bits), GetZoneX1/Y1/X2/Y2, ZoneInit's three forms with bad ranges;
 NewZoneTable with bad numbers and sizes, a 300 zone table (ZoneTest from
@@ -111,9 +114,8 @@ the current table; its entry stays set); the joystick commands for ports
 0..5 with the adaptor off and on, AllFire with all 16 bit masks,
 ReadJoyPad for ports 0..2; finit (all memory back). Without memory
 (AllocMem patched to fail for init): every zone command without a table.
-Kept registers on every call. The test finds `zonetablelist` in each
-build's data and clears the entries of freed tables, so they are not
+Kept registers on every call. The test finds `zonetablelist` in the
+library's data and clears the entries of freed tables, so they are not
 freed twice. Not covered: negative zone/table numbers and zones behind a
 table (they write or read outside the table), real joystick input (the
-emulator has nobody at the joysticks: both builds read the same idle
-values).
+emulator has nobody at the joysticks: the idle values are read).

@@ -105,14 +105,15 @@ odd address).
 
 ## Test
 
-`libs/tests/rwe/ripacklib.c` (snitch "rwe ripacklib"): the C build and
-the CD original with memlib, side by side (d0, output buffers, palette
-and bitmap objects, the registers the original keeps). The data is
+`libs/tests/rwe/ripacklib.c` (snitch "rwe ripacklib"): each run loads
+one library set (the C build or the CD original) with memlib; the
+scenario writes its observations as cases (d0, output buffers, palette
+and bitmap objects, the kept registers), compared with the expected data
+`libs/tests/expected/rwe_ripacklib.txt` recorded from the original. The data is
 built in the test: plain data with noise, runs and repeats; ByteRun1 by
 PackPBM and by a small packer of the test; ILBM files with BMHD, CMAP
 and BODY; Pack-Ice data from an encoder written against the decruncher
-(the original's output must equal the plain data – a check of the
-encoder). Covered: PackPBM on 0…4000 bytes and runs around 127/128,
+(the output must equal the plain data – a check of the encoder). Covered: PackPBM on 0…4000 bytes and runs around 127/128,
 round trips through UnPackPBM, the failure path (with d3 0, 4, -8),
 UnPackPBM with no-ops and short source/destination limits; DeIce with
 literal runs of every length class, strings of every length and offset
@@ -129,14 +130,14 @@ back.
 RIAmosFuncLib is loaded too ([riamosfunclib.md](riamosfunclib.md)): its C
 build with the C set, the AmiBlitz3 binary (the port's reference; its
 token list is the one of the BSS2 binary the original was built against)
-with the original, both initialised after memlib, the ALibJsr targets
+with the original, initialised after memlib, the ALibJsr targets
 fixed up with `amosfunc_fixjsrs` (`libs/tests/rwe/amosfunc.h`: BLoad is
 Amiga mode only). LoadIFF reads an ILBM of the test from `RAM:`; besides
-bitmap and palette the bank afterwards is compared (bank 51 free again,
+bitmap and palette the bank afterwards is observed (bank 51 free again,
 NextBank(51)). With RIAmosFuncLib's default of 50 banks there is no
 bank 51: LoadIFF returns 0 (a real program needs `BankLimit` above 51 –
-BUG(orig) of the combination, #770); the test checks that case and then raises
-the limit to 60.
+BUG(orig) of the combination, #770); the test observes that case and then
+raises the limit to 60.
 
 Not covered: corrupt ICE data, PackPBM's failure with a large d3,
 nPlanes 0, DIVU overflows (CMAP chunks of 196 KB), a failing memlib
