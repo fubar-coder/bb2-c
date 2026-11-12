@@ -44,9 +44,9 @@ reference".
 
 ## 5. RWE userlibs B
 
-- [ ] 5.1 `riencryptlib` with the seeding or `not captured` decision of D8. Verify: as 4.1
-- [ ] 5.2 `rievallib`, `rifastseriallib`, `rifnslib`, `rifxlib`, `rigfxlib`, `rigtmenulib`, `riintuilib`. Verify: as 4.1
-- [ ] 5.3 `rilesdebuglib`, `rilinkedlistlib`, `rilvcallhooklib`, `rimapeditorlib`, `rimapshapeslib`, `rimisclib`, `rinonvolatilelib`. Verify: as 4.1
+- [x] 5.1 `riencryptlib` with the seeding or `not captured` decision of D8. Verify: as 4.1 Done (2026-11-12): vallib's Rnd is a stub (D8), nothing `not captured`; 1226 checks, 24 more than task 1.1's 1202 (the random part, under `tape_pause` before, is observed now).
+- [x] 5.2 `rievallib`, `rifastseriallib`, `rifnslib`, `rifxlib`, `rigfxlib`, `rigtmenulib`, `riintuilib`. Verify: as 4.1 Done (2026-11-12): the numbers of task 1.1, except `rifastseriallib` 268 (270: its two per-set "state block found" checks are one, the original-only inten check goes, the case `inten` observes it).
+- [x] 5.3 `rilesdebuglib`, `rilinkedlistlib`, `rilvcallhooklib`, `rimapeditorlib`, `rimapshapeslib`, `rimisclib`, `rinonvolatilelib`. Verify: as 4.1 Done (2026-11-12): the numbers of task 1.1.
 - [ ] 5.4 `ripacklib`, `riregistrylib`, `rireqlib`, `riseriallib` (its patched-address counts become observations of the one set, not `tape_orig()`), `rishapeslib`, `rishapezlib`, `risnowlib`. Verify: as 4.1
 - [ ] 5.5 `risortlib`, `risoundlib2`, `risoundlib`, `ristcdecrunchlib`, `ristonecrackerlib`, `rithreadlib`, `ritooltypeslib`, `ritrackdisklib`, `ritrackerlib`, `riwbspritelib`, `rizonejoylib`. Verify: as 4.1
 

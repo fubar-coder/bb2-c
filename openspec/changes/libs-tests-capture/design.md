@@ -779,6 +779,12 @@ differs from a recording with a binary of another size, segment 2, and equals
 one with the committed layout) and `systest_mathstr.c:272`, `:389` (numeric
 results in the range). A number must not be normalised (D4: `prog` only where
 the site names a pointer). `capture.c`'s static buffers move the range too.
+Found in the conversions of tasks 5.1-5.3, beyond this list (the heap shift
+does not move the test program's own data): `riintuilib`'s vector of the
+character output held the address of a string of the program, and
+`rimisclib`'s RawASC vector held the character ASCRaw returned (a result);
+`rilesdebuglib`'s vectors also held arguments that are no address in its
+shared area as their distance from it ($FFFFFFF0, $DEADBEEF).
 
 **Text size (task 1.3).** Written as D4 cases, 6 909 451 cases, 310.9 MB
 plain; `rwe_ridisasmlib` 199.5 MB (gzip -9 9.7 MB) and `systest_med` 97.6 MB
