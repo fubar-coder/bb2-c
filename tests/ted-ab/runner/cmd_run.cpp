@@ -26,12 +26,13 @@ static void add(CLI::App &app, int &status, int lint)
         sub->footer("No emulator. Exit status 0 no problem, 1 problems, 2 usage error or a pass "
                     "file that cannot be read.");
     else
-        sub->footer("With BUGORIG_RECORD=1 in the environment a bug-orig pass (bugorig=1, orig=) "
-                    "records the observation of the original instead. Exit status 0 all gates "
-                    "and runs OK and every comparison as expected, 1 not, 2 error (usage, pass "
-                    "file, scripts), 77 the emulator or a file is missing (skipped). A bug-orig "
-                    "pass gives the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4 "
-                    "DIFFERS (with BUGORIG_RECORD=1 0 when recorded).");
+        sub->footer("With the pass key record=check a bug-orig pass (bugorig=1, orig=) runs only "
+                    "the original and compares its observation with the recorded one. Exit "
+                    "status 0 all gates and runs OK and every comparison as expected, 1 not, 2 "
+                    "error (usage, pass file, scripts), 77 the emulator or a file is missing "
+                    "(skipped). A bug-orig pass gives the worst verdict: 0 all FIXED, 1 "
+                    "REPRODUCED, 3 BROKEN, 4 DIFFERS (with record=check 0 the same, 1 it "
+                    "differs).");
     sub->callback([sub, passfile, lint, &status] {
         const std::string name = cli::name(*sub);
 

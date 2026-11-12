@@ -144,11 +144,17 @@
  *                     it is only used to record), judges the others against
  *                     the expectation and this file, and gives BROKEN
  *                     before any session if the file matches the
- *                     expectation (3), or exit status 2 if it is missing.
- *                     With BUGORIG_RECORD=1 in the environment (corpus_select)
- *                     the run is the recording: only the reference
- *                     configuration runs and its observation is written to
- *                     PATH (exit status 0; 2 if the session failed)
+ *                     expectation (3), or exit status 2 if it is missing
+ *                     or breaks the rule of its wildcard lines (bugorig.h)
+ *   record=check      with orig=: the compare test of the recorded original
+ *                     (ctest bug_orig_record_ID, label originals): only the
+ *                     reference configuration runs (corpus_select) and its
+ *                     observation is compared with orig= (its wildcard lines
+ *                     included, corpus_record_check); exit status 0 = it
+ *                     matches, 1 = it differs (the report names the section
+ *                     and the first differing line), 2 = the session failed
+ *                     or orig= is missing or malformed.  No file of the
+ *                     source tree is written
  *   orig_by=TEXT      the note in the first line of the recorded file
  *                     (which original it is)
  *   regression=on     with expect=: an expect test instead (an extension of
@@ -178,6 +184,7 @@
 #include "previntended.h"
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
+enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK };
 
 struct corpus_config {
     char *tag;
@@ -197,7 +204,7 @@ struct corpus_pass {
     struct cnotes cnotes;               /* the rows of notes= (corpus_load_notes) */
     int update;                         /* corpus_update: write the expected outputs */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
-    int record;                         /* corpus_select: the recording run */
+    int record;                         /* record=: enum corpus_record */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
     unsigned timeout, parallel, stack;
@@ -220,11 +227,18 @@ struct corpus_pass {
 int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errlen);
 void corpus_free(struct corpus_pass *p);
 
-/* the configurations a bug-orig pass (orig=) runs: the recording (record)
-   keeps only the reference, the normal run drops it and the files that are
-   for it only; a pass without orig= is left as it is.  Behind the check of
-   corpus_parse */
-void corpus_select(struct corpus_pass *p, int record);
+/* the configurations a bug-orig pass (orig=) runs: the compare test of the
+   recorded original (record=) keeps only the reference, the normal run
+   drops it and the files that are for it only; a pass without orig= is
+   left as it is.  Behind the check of corpus_parse */
+void corpus_select(struct corpus_pass *p);
+
+/* record=check: the observation of the original (obs, the text of an
+   observation file, bugorig_format) against the recorded original in the
+   file orig (read only, never written); 0 = it matches, 1 = it differs
+   (msg: "[SECTION] line N: recorded \"...\", observed \"...\""), 2 = orig
+   is missing, unreadable or malformed (msg) */
+int corpus_record_check(const char *orig, const char *obs, char *msg, size_t msglen);
 
 /* after corpus_select: the normal run of a bug-orig pass (orig=) judges
    what is there.  A configuration whose compiler or libraries are missing

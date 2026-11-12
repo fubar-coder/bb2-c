@@ -50,9 +50,10 @@
 #                    not for a fixed test or a port regression test).  The
 #                    normal run judges against it and starts no session of
 #                    the original; ctest bug_orig_record_ID (label
-#                    originals, preset originals; or BUGORIG_RECORD=1)
-#                    writes it with the original (the reference build of
-#                    blitz2.s, or the CD's 2.10 for @rwe) and needs the CD
+#                    originals, preset originals, pass key record=check)
+#                    compares the original (the reference build of
+#                    blitz2.s, or the CD's 2.10 for @rwe) with it, needs the
+#                    CD and writes nothing
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
 # bug-orig and emulator, skipped (77) without Amiberry.  Without the CD
 # the configuration port (the CD's libraries) is not judged and the run
@@ -125,7 +126,7 @@ bug_orig_fixed_orig_check(${CMAKE_CURRENT_SOURCE_DIR})
 set(bug_orig_sources)
 set(bug_orig_deps)
 function(bug_orig_test bas name)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "REGRESSION" "WANT" "")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REGRESSION" "WANT;CHANGED_ORIG" "")
 	get_filename_component(id ${bas} NAME_WE)
 	get_filename_component(dir ${bas} DIRECTORY)
 	set(expect ${dir}/${id}.expect)
@@ -270,10 +271,10 @@ function(bug_orig_test bas name)
 	else()
 		# an open bug: judged against the recorded original (ID.orig, next
 		# to the test).  The first configuration is the original, which only
-		# the recording run (BUGORIG_RECORD=1, ctest bug_orig_record_ID,
-		# label originals) starts; the normal run drops it and what is only
-		# for it, and judges the others without the CD files it lacks
-		# (corpus.h orig=)
+		# its compare test (record=check, ctest bug_orig_record_ID, label
+		# originals) starts; the normal run drops it and what is only for
+		# it, and judges the others without the CD files it lacks (corpus.h
+		# orig=)
 		string(APPEND text "orig=${dir}/${id}.orig\norig_by=${orig_by}\n"
 			"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 			"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
@@ -307,21 +308,33 @@ function(bug_orig_test bas name)
 	math(EXPR cost "${session_limit} * ${nsessions}")
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
-	# the recording of the original (an open bug): one session of the
-	# reference configuration, writes ID.orig; label originals only (in no
-	# preset but originals), needs the CD and, for RWE libraries, the
-	# reference build
+	# the compare test of the recorded original (an open bug): one session
+	# of the reference configuration, its observation compared with ID.orig
+	# (pass key record=check, ID-record.pass; it writes no file of the
+	# source tree); label originals only (in no preset but originals), needs
+	# the CD and, for RWE libraries, the reference build.  CHANGED_ORIG: the
+	# pass ID-changed.pass of the same against another recorded original
+	# (broken input)
 	if(NOT noref)
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
-		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} pass ${work}.pass)
-		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
-			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1)
 		# the reference build of blitz2.s (not ALL)
 		list(APPEND fixtures originals_refbuild)
-		if(fixtures)
-			set_tests_properties(${rec_name} PROPERTIES FIXTURES_REQUIRED "${fixtures}")
+		set(rec_kinds record)
+		set(rec_origs ${dir}/${id}.orig)
+		if(arg_CHANGED_ORIG)
+			list(APPEND rec_kinds changed)
+			list(APPEND rec_origs ${arg_CHANGED_ORIG})
 		endif()
+		foreach(rk ro IN ZIP_LISTS rec_kinds rec_origs)
+			string(REPLACE "work=${work}\nreport=${work}.txt\n"
+				"work=${work}-${rk}\nreport=${work}-${rk}.txt\n" rtext "${text}")
+			string(REPLACE "orig=${dir}/${id}.orig\n" "orig=${ro}\n" rtext "${rtext}")
+			file(GENERATE OUTPUT ${work}-${rk}.pass CONTENT "${rtext}record=check\n")
+		endforeach()
+		add_test(NAME ${rec_name} COMMAND ${CORPUSRUN} pass ${work}-record.pass)
+		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+			TIMEOUT ${rec_limit} FIXTURES_REQUIRED "${fixtures}")
 		set(fixtures "")
 	endif()
 	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION AND NOT fixed)
@@ -403,8 +416,18 @@ endforeach()
 
 # the self test: an expectation equal to what the original does must be
 # reported as broken (exit status 3), not as a reproduced bug
+# Its compare test against a recorded original with a changed line
+# (bug_orig_record_changed, label originals) must fail naming the line.
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
-	bug_orig_selftest_broken WANT 3)
+	bug_orig_selftest_broken WANT 3
+	CHANGED_ORIG ${CMAKE_CURRENT_SOURCE_DIR}/selftest/record-changed.orig)
+add_test(NAME bug_orig_record_changed COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DSUB=pass
+	-DPASS=${CMAKE_CURRENT_BINARY_DIR}/bug-orig-selftest-broken-changed.pass -DWANT=1
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(bug_orig_record_changed PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	TIMEOUT ${rec_limit} FIXTURES_REQUIRED originals_refbuild PASS_REGULAR_EXPRESSION
+	"DIFFERS: \\[run\\] line 1: recorded \"hullo\", observed \"hello\"")
 # the recorded original (ID.orig) with broken input, before any session (no
 # emulator, no files of the pass needed): a file that is missing, not an
 # observation or with a wildcard line without a reason is an error (2), one
@@ -553,20 +576,22 @@ function(bug_orig_ted_test scripts id name)
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_originals C5 "fixed=1\n")
 	else()
 		set(fixed_test FALSE)
-		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} R5,C5
-			"orig=${scripts}/${id}.orig\norig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
+		set(orig_keys "orig=${scripts}/${id}.orig\norig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
+		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} R5,C5 "${orig_keys}")
+		# the compare test of the recorded original (record=check): only
+		# the reference run (R5), compared with ID.orig, writes no file of
+		# the source tree
+		bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_record R5,C5 "${orig_keys}record=check\n")
 	endif()
-	# the recording of the original (BUGORIG_RECORD=1): only the reference
-	# run (R5), writes ID.orig; label originals only
-	# (a fixed test has none)
+	# the compare test of the recorded original: label originals only (a
+	# fixed test has none)
 	if(NOT fixed_test)
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
-		add_test(NAME ${rec_name} COMMAND ${TEDAB} run ${work}.pass)
+		add_test(NAME ${rec_name} COMMAND ${TEDAB} run ${work}_record.pass)
 		# the reference build of ted.s (not ALL)
 		set_tests_properties(${rec_name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
-			TIMEOUT ${rec_limit} ENVIRONMENT BUGORIG_RECORD=1
-			FIXTURES_REQUIRED originals_refbuild)
+			TIMEOUT ${rec_limit} FIXTURES_REQUIRED originals_refbuild)
 	endif()
 	# one session (C5 or Cc; the reference R5 only for the recording),
 	# maybe repeated once (gates failed), maybe waiting for a slot
@@ -625,6 +650,18 @@ endif()
 # original TED does must be reported as broken (exit status 3)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-bug-orig-selftest-broken
 	bug_orig_ted_selftest_broken WANT 3)
+# its compare test against a recorded original with a changed state
+# (bug_orig_ted_record_changed, label originals) must fail naming the line
+bug_orig_ted_pass(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-bug-orig-selftest-broken
+	bug_orig_ted_record_changed ${CMAKE_CURRENT_BINARY_DIR}/ted-bug-orig-selftest-broken_changed R5,C5
+	"orig=${CMAKE_CURRENT_SOURCE_DIR}/selftest/ted-record-changed.orig\norig_by=TED 1.1\nrecord=check\n")
+add_test(NAME bug_orig_ted_record_changed COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
+	-DPASS=${CMAKE_CURRENT_BINARY_DIR}/ted-bug-orig-selftest-broken_changed.pass -DWANT=1
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(bug_orig_ted_record_changed PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	TIMEOUT ${rec_limit} FIXTURES_REQUIRED originals_refbuild PASS_REGULAR_EXPRESSION
+	"DIFFERS: \\[state\\] line 1: recorded \"FAIL step 9\", observed \"OK\"")
 
 # the fixed form (@fixed #N, pass key fixed=1): a script whose expectations
 # hold of TED-C is FIXED (exit status 0); the same with an expectation that

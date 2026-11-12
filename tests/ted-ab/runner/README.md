@@ -49,12 +49,12 @@ POSITIONALS:
 OPTIONS:
   -h,     --help              Print this help message and exit
 
-With BUGORIG_RECORD=1 in the environment a bug-orig pass (bugorig=1, orig=)
-records the observation of the original instead. Exit status 0 all gates and
-runs OK and every comparison as expected, 1 not, 2 error (usage, pass file,
-scripts), 77 the emulator or a file is missing (skipped). A bug-orig pass gives
-the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4 DIFFERS (with
-BUGORIG_RECORD=1 0 when recorded).
+With the pass key record=check a bug-orig pass (bugorig=1, orig=) runs only the
+original and compares its observation with the recorded one. Exit status 0 all
+gates and runs OK and every comparison as expected, 1 not, 2 error (usage, pass
+file, scripts), 77 the emulator or a file is missing (skipped). A bug-orig pass
+gives the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4 DIFFERS (with
+record=check 0 the same, 1 it differs).
 ```
 
 Runs the tests of the pass file `PASSFILE` in Amiberry and writes the
@@ -65,8 +65,9 @@ packed into sessions (the combinations of a test stay together), at most
 remaining runs for a later session. With `bugorig=1` (the bug-orig mode,
 `tests/bug-orig/ted`) every run has a session of its own and each
 combination but the reference gets a verdict against the recorded
-original `orig=`; with `BUGORIG_RECORD=1` in the environment only the
-reference runs and its observation is written to `orig=`. With `fixed=1`
+original `orig=`; with the pass key `record=check` only the reference
+runs and its observation is compared with `orig=`, which is never
+written (the compare test `bug_orig_record_ID`). With `fixed=1`
 in place of `orig=` the scripts are fixed tests (`; @fixed #NNN`, no
 pair): every combination (the pass names C5) is judged by the script's
 expectations alone, FIXED (exit status 0) or REGRESSED (1).
@@ -181,7 +182,7 @@ dumps get a decoded `NAME.txt`. The dump format is in `teddump.h`.
   77 the emulator or a file is missing (skipped), 2 error (usage, pass
   file, scripts). In the bug-orig mode: 0 all FIXED, 1 REPRODUCED,
   3 BROKEN, 4 DIFFERS (the worst of them), 2 error; with
-  `BUGORIG_RECORD=1` 0 when recorded.
+  `record=check` 0 the same, 1 it differs.
 * `lint`: 0 no problem, 1 problems, 2 usage error or a pass file that
   cannot be read.
 * `info`, `text`, `cmp`: 0 success (`cmp`: the same), 1 `cmp`: different,

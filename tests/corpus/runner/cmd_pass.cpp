@@ -5,8 +5,8 @@
  *
  * Exit status 0 = no differences, 1 = differences (report), 77 = skipped
  * (no emulator, or the CD's libraries are missing), 2 = error.  With the
- * environment variable BUGORIG_RECORD=1 a bug-orig pass (orig=) records the
- * original's observation instead (corpus.h).  --update-expect TAG runs the
+ * pass key record=check a bug-orig pass (orig=) compares the original's
+ * observation with the recorded one instead (corpus.h).  --update-expect TAG runs the
  * configuration TAG only and writes its outputs to expect_dir=
  * (corpus_update in corpus.h): 0 = all written, 1 = some not.
  */
@@ -48,8 +48,8 @@ static int pass(const char *me, const char *path, const char *update)
         corpus_free(&p);
         return 2;
     }
-    /* BUGORIG_RECORD=1: the recording run of a bug-orig test (orig=) */
-    corpus_select(&p, getenv("BUGORIG_RECORD") && !strcmp(getenv("BUGORIG_RECORD"), "1"));
+    /* the configurations of a bug-orig test (orig=; record=: the reference) */
+    corpus_select(&p);
     corpus_skip_missing(&p, stdout);
     rc = corpus_run(&p, stdout);
     corpus_free(&p);
@@ -68,8 +68,8 @@ void cmd_pass(CLI::App &app, int &status)
                     "(NAME.out, with serial=on NAME.serial) instead of comparing")
         ->type_name("TAG");
     sub->add_option("PASSFILE", o->passfile, "the pass file (its keys: tests/corpus/runner/corpus.h)")->required();
-    sub->footer("With BUGORIG_RECORD=1 in the environment a bug-orig pass (orig=) records the "
-                "observation of the original instead. Exit status 0 no differences (--update-expect: "
+    sub->footer("With the pass key record=check a bug-orig pass (orig=) runs only the original and "
+                "compares its observation with the recorded one (1 if it differs). Exit status 0 no differences (--update-expect: "
                 "all written), 1 differences (the report; --update-expect: some not written), 2 "
                 "error (usage, pass file), 77 skipped (no emulator, or the CD's libraries are "
                 "missing). A bug-orig pass gives the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 "

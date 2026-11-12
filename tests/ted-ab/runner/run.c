@@ -71,10 +71,16 @@
  *                      reference run (tedab.h, tedab_orig_format).  The
  *                      normal run starts no session of the reference; the
  *                      status is 3 (BROKEN) before any session if the file
- *                      says OK without problems, 2 if the file is missing.
- *                      With BUGORIG_RECORD=1 in the environment only the
- *                      reference runs and its observation is written to
- *                      PATH (exit status 0)
+ *                      says OK without problems, 2 if the file is missing
+ *                      or breaks the rule of its wildcard lines
+ *   record=check       with orig=: the compare test of the recorded
+ *                      original (ctest bug_orig_record_ID, label originals):
+ *                      only the reference runs and its observation is
+ *                      compared with orig= (wildcard lines included);
+ *                      exit status 0 = it matches, 1 = it differs (the
+ *                      report names the section and the first differing
+ *                      line), 2 = no run or orig= missing or malformed.  No
+ *                      file of the source tree is written
  *   orig_by=TEXT       the note in the first line of the file
  *
  * The runs are packed into sessions (the combinations of a test stay
@@ -121,7 +127,7 @@ struct pass {
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *libs, *libs_prev;             /* the libraries instead of the CD's */
     char *inject, *wbrun, *gates;
-    char *orig, *orig_by;
+    char *orig, *orig_by, *record;      /* record=: check */
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
     unsigned timeout, budget, parallel, stack, bugorig, fixed;
 };
@@ -146,7 +152,7 @@ static size_t nnocd;
 static struct run *runs;
 static size_t nruns;
 static int combo_order[TEDAB_NCOMBOS], ncombo_order;
-static int record;                      /* the recording run (BUGORIG_RECORD=1) */
+static int record;                      /* record=check: the compare of the recorded original */
 static int lint_mode;                   /* tedab lint: the pass file needs no orig= or fixed= */
 
 /* ----------------------------------------------------------- pass file */
@@ -168,7 +174,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "ted_prev", &P.ted_prev }, { "blitz2_prev", &P.blitz2_prev },
         { "libs", &P.libs }, { "libs_prev", &P.libs_prev },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
-        { "orig", &P.orig }, { "orig_by", &P.orig_by },
+        { "orig", &P.orig }, { "orig_by", &P.orig_by }, { "record", &P.record },
     };
     static const struct {
         const char *key;
@@ -294,8 +300,8 @@ static int parse(const char *text, char *err, size_t errlen)
         }
     }
     /* the bug-orig mode is judged against the recorded original (orig=);
-       its reference, the first combination, only runs for the recording
-       (BUGORIG_RECORD=1) */
+       its reference, the first combination, only runs for the compare test
+       of the recorded original (record=check) */
     if (P.bugorig && !P.orig && !P.fixed && !lint_mode) {
         snprintf(err, errlen, "bugorig=1 needs orig=, the recorded observation of the original, "
                               "or fixed=1 (fixed tests)");
@@ -314,10 +320,12 @@ static int parse(const char *text, char *err, size_t errlen)
         snprintf(err, errlen, "orig=: the reference and another combination are needed");
         return -1;
     }
+    if (P.record && (strcmp(P.record, "check") || !P.orig)) {
+        snprintf(err, errlen, "record=check, with orig=");
+        return -1;
+    }
     if (P.orig) {
-        const char *r = getenv("BUGORIG_RECORD");
-
-        record = r && !strcmp(r, "1");
+        record = P.record != NULL;
         if (record)
             ncombo_order = 1;
         else {
@@ -881,12 +889,13 @@ static void bugorig_verdicts(const struct tedab_test *t, struct run **tr, struct
     }
 }
 
-/* the recording run: the observation of the reference run into orig=;
-   *worst = 2 if it cannot be made */
+/* the compare test of the recorded original (record=check): the
+   observation of the reference run against orig=; *worst = 0 the same, 1
+   it differs, 2 no observation or no recorded original */
 static void record_orig(const struct tedab_test *t, struct run **tr, struct text *rep, int *worst)
 {
     int ref = combo_order[0];
-    char rs[300], err[200];
+    char rs[300], err[600];
     struct text rp = { 0 }, f;
 
     if (!tr[ref] || !tr[ref]->gates_ok) {
@@ -902,25 +911,44 @@ static void record_orig(const struct tedab_test *t, struct run **tr, struct text
         text_add(rep, "  bug-orig: %s\n", rp.bad ? "out of memory" : err);
         *worst = 2;
     } else {
-        if (write_file(P.orig, f.p, f.n)) {
-            text_add(rep, "  bug-orig: cannot write %s\n", P.orig);
-            *worst = 2;
-        } else {
-            text_add(rep, "  bug-orig %s: recorded in %s (state %s)\n", tedab_combo_names[ref],
-                     P.orig, rs);
-            if (*worst < 0)
-                *worst = 0;
+        size_t len;
+        char *text = (char *)read_file(P.orig, &len);
+        struct bugorigcmp_obs o, g;
+        int r = 2;
+
+        if (!text)
+            snprintf(err, sizeof err, "no %s, the recorded observation of the original: record "
+                     "it with the target bug-orig-record", P.orig);
+        else if (!bugorigcmp_parse(text, P.orig, BUGORIGCMP_ORIG, &o, err, sizeof err)) {
+            if (!bugorigcmp_parse(f.p, "the observation", BUGORIGCMP_RUN, &g, err, sizeof err)) {
+                r = bugorigcmp_compare(&o, &g, err, sizeof err);
+                bugorigcmp_free(&g);
+            }
+            bugorigcmp_free(&o);
         }
+        free(text);
+        if (r == 2)
+            text_add(rep, "  bug-orig: %s\n", err);
+        else if (r)
+            text_add(rep, "  bug-orig %s against its recorded observation %s: DIFFERS: %s - the "
+                          "original or the recording changed: record it again with the target "
+                          "bug-orig-record and review the difference\n",
+                     tedab_combo_names[ref], P.orig, err);
+        else
+            text_add(rep, "  bug-orig %s against its recorded observation %s: SAME\n",
+                     tedab_combo_names[ref], P.orig);
+        if (*worst < 0 || verdict_rank(r) > verdict_rank(*worst))
+            *worst = r;
+        tr[ref]->verdict = r == 2 ? "NOTRUN" : r ? "differs" : "same";
         free(f.p);
     }
-    tr[ref]->verdict = "recorded";
     free(rp.p);
 }
 
 /* the recorded original of a bug-orig pass: 0 = loaded, 3 = BROKEN (the
    original shows the expected behaviour: OK without a problem; the test
    would not show a bug), 2 = error (the file is missing: it is recorded
-   by BUGORIG_RECORD=1 or ctest bug_orig_record_...) */
+   by the target bug-orig-record; or malformed) */
 static int load_orig(FILE *log)
 {
     size_t len;
@@ -928,7 +956,7 @@ static int load_orig(FILE *log)
 
     if (!text) {
         fprintf(log, "%s: no %s, the recorded observation of the original: record it with "
-                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", me, P.orig);
+                "the target bug-orig-record\n", me, P.orig);
         return 2;
     }
     /* its wildcard lines each behind a "# varies: REASON" line */
@@ -954,7 +982,7 @@ static int load_orig(FILE *log)
 
 static int run(FILE *log)
 {
-    /* the original TED only runs for the recording */
+    /* the original TED only runs for the compare test of the recorded original */
     unsigned used = 0;          /* the combinations of combos= */
     int cu;
 
@@ -1413,8 +1441,9 @@ int tedab_start(const char *prog, const char *passfile, int lint)
     free(text);
     bad = load_tests(stdout);
     /* the selected tests of a bug-orig pass are all fixed (fixed=1) or all
-       open (orig=); the lint of the directory takes both */
-    for (size_t i = 0; P.bugorig && !lint && i < ntests; i++) {
+       open (orig=); the lint of the directory and the compare of the
+       recorded original (record=check) take both */
+    for (size_t i = 0; P.bugorig && !lint && !record && i < ntests; i++) {
         if (P.fixed && !tests[i].fixed_bug) {
             printf("%s: fixed=1, but the script has no @fixed #NNN\n", tests[i].name);
             bad++;

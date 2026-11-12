@@ -1,12 +1,15 @@
 /*
- * test_corpus.c - the pass file (valid and broken) and the masking of the
- * trap #1 / trap #4 parameter blocks (the emulator part runs in the
- * corpus_* ctests).
+ * test_corpus.c - the pass file (valid and broken), the masking of the
+ * trap #1 / trap #4 parameter blocks and the compare of the recorded
+ * original (record=check: it reads the file and never writes it) (the
+ * emulator part runs in the corpus_* ctests).
  */
 #define _XOPEN_SOURCE 700       /* open_memstream */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "corpus.h"
 #include "util.h"
 
@@ -195,14 +198,14 @@ int main(void)
               "orig_by=blitz2 1.95\nfile=x/ref|/r|ref\nfile=x/port|/p|port\nfile=x/all|/a\n"
         CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
         CHECK(!strcmp(p.orig, "/o") && !strcmp(p.orig_by, "blitz2 1.95") && p.nconfigs == 3);
-        corpus_select(&p, 0);
+        corpus_select(&p);
         CHECK(!p.record && p.nconfigs == 2 && !strcmp(p.configs[0].tag, "port")
               && !strcmp(p.configs[1].tag, "clib") && p.configs[0].expect == CORPUS_EXE);
         CHECK(p.nfiles == 2 && !strcmp(p.file_dest[0], "x/port") && !strcmp(p.file_dest[1], "x/all"));
         corpus_free(&p);
-        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
-        corpus_select(&p, 1);
-        CHECK(p.record && p.nconfigs == 1 && p.configs[0].expect == CORPUS_REF
+        CHECK(corpus_parse(ORIG "record=check\n", &p, err, sizeof err) == 0);
+        corpus_select(&p);
+        CHECK(p.record == CORPUS_RECORD_CHECK && p.nconfigs == 1 && p.configs[0].expect == CORPUS_REF
               && !strcmp(p.configs[0].tag, "ref"));
         CHECK(p.nfiles == 2 && !strcmp(p.file_dest[0], "x/ref") && !strcmp(p.file_dest[1], "x/all"));
         corpus_free(&p);
@@ -212,7 +215,7 @@ int main(void)
                            "config=ref|ref|/no/a|/no/b|/no/c\nconfig=port|exe|/|/no/b|/\n"
                            "config=clib|output|/|/|/\nsource=/s\nexpect=/e\norig=/o\n",
                            &p, err, sizeof err) == 0);
-        corpus_select(&p, 0);
+        corpus_select(&p);
         corpus_skip_missing(&p, NULL);
         CHECK(p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib") && !p.defaultdbug);
         corpus_free(&p);
@@ -222,7 +225,7 @@ int main(void)
                            "runtime_errors=on\nconfig=ref|ref|/no/a|/no/b|/no/c\n"
                            "config=clib|output|/|/|/\nsource=/s\nexpect=/e\norig=/o\n",
                            &p, err, sizeof err) == 0);
-        corpus_select(&p, 0);
+        corpus_select(&p);
         corpus_skip_missing(&p, NULL);
         CHECK(p.nconfigs == 1 && !p.defaultdbug);
         corpus_free(&p);
@@ -231,21 +234,25 @@ int main(void)
                            "config=ref|ref|/no/a|/no/b|/no/c\nconfig=port|exe|/no/a|/b|/c\n"
                            "config=clib|output|/no/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n",
                            &p, err, sizeof err) == 0);
-        corpus_select(&p, 0);
+        corpus_select(&p);
         corpus_skip_missing(&p, NULL);
         CHECK(p.nconfigs == 1 && !strcmp(p.configs[0].tag, "port"));
         corpus_free(&p);
-        /* the recording is not touched */
-        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
-        corpus_select(&p, 1);
+        /* the compare test of the recorded original is not touched */
+        CHECK(corpus_parse(ORIG "record=check\n", &p, err, sizeof err) == 0);
+        corpus_select(&p);
         corpus_skip_missing(&p, NULL);
         CHECK(p.nconfigs == 1 && p.defaultdbug);
         corpus_free(&p);
         /* a pass without orig= is left alone */
         CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0);
-        corpus_select(&p, 1);
+        corpus_select(&p);
         CHECK(!p.record && p.nconfigs == 2);
         corpus_free(&p);
+        /* broken on purpose: record= without orig=, another value */
+        CHECK(parse(BASE CONFIGS "source=/s\nrecord=check\n", err, sizeof err) == -1
+              && strstr(err, "record= needs orig="));
+        CHECK(parse(ORIG "record=yes\n", err, sizeof err) == -1 && strstr(err, "record=check"));
         /* broken on purpose: a bug-orig test without orig=, orig= without expect=
            or with fixed= / regression=on */
         CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\n", err, sizeof err) == -1
@@ -643,6 +650,50 @@ int main(void)
 
         corpus_mask_traps(d, sizeof d);
         CHECK(!memcmp(d, want, sizeof d));
+    }
+
+    /* record=check: the observation of the original against the recorded
+       one, a read-only file that stays as it is (it is never opened for
+       writing: that would fail); its wildcard lines match, a changed line
+       is named, a missing or malformed file is an error */
+    {
+        static const char orig[] = "# the original\n[session]\ndone\n[run]\n"
+                                   "# varies: an address\nptr=$*\nrc=0\n";
+        char dir[] = "/tmp/corpus-record-XXXXXX", msg[600], *path, *bad, *back;
+        struct stat before, after;
+        size_t len;
+
+        if (!mkdtemp(dir)) {
+            perror("mkdtemp");
+            return 1;
+        }
+        path = str_printf("%s/t.orig", dir);
+        bad = str_printf("%s/bad.orig", dir);
+        CHECK(write_file(path, orig, strlen(orig)) == 0 && chmod(path, 0444) == 0);
+        CHECK(write_file(bad, "[run]\nx*\n", 9) == 0);
+        CHECK(stat(path, &before) == 0);
+        CHECK(corpus_record_check(path, "# the original\n[session]\ndone\n[run]\nptr=$1234\nrc=0\n",
+                                  msg, sizeof msg) == 0);
+        CHECK(corpus_record_check(path, "# the original\n[session]\ndone\n[run]\nptr=$1234\nrc=5\n",
+                                  msg, sizeof msg) == 1);
+        CHECK(!strcmp(msg, "[run] line 2: recorded \"rc=0\", observed \"rc=5\""));
+        CHECK(corpus_record_check(path, "[session]\ntimeout\n[run]\nptr=$1\nrc=0\n", msg, sizeof msg) == 1);
+        CHECK(!strncmp(msg, "[session] line 1:", 17));
+        CHECK(stat(path, &after) == 0 && after.st_mtime == before.st_mtime
+              && after.st_size == before.st_size && (after.st_mode & 0777) == 0444);
+        back = (char *)read_file(path, &len);
+        CHECK(back && len == strlen(orig) && !memcmp(back, orig, len));
+        free(back);
+        CHECK(corpus_record_check(bad, "[run]\nx\n", msg, sizeof msg) == 2
+              && strstr(msg, "bad.orig:2: a wildcard line"));
+        unlink(bad);
+        CHECK(corpus_record_check(bad, "[run]\nx\n", msg, sizeof msg) == 2
+              && strstr(msg, "the target bug-orig-record"));
+        chmod(path, 0644);
+        unlink(path);
+        rmdir(dir);
+        free(path);
+        free(bad);
     }
     return failures != 0;
 }

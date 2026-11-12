@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "bugorig.h"
+#include "bugorigcmp.h"
 #include "corpus.h"
 #include "serial.h"
 #include "statline_emulation.h"
@@ -230,6 +231,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             free(val);
             continue;
         }
+        if (!strcmp(key, "record")) {
+            if (strcmp(val, "check")) {
+                free(val);
+                return fail(p, err, errlen, "line %u: record=check", no);
+            }
+            p->record = CORPUS_RECORD_CHECK;
+            free(val);
+            continue;
+        }
         if (!strcmp(key, "config")) {
             struct corpus_config c, *v2;
             const char *s = val;
@@ -434,6 +444,10 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if (p->orig && (p->fixed || p->regression))
         return fail(p, err, errlen,
                     "orig= belongs to a bug-orig test, not to fixed= or regression=on");
+    /* the compare test of the recorded original: of a pass with the
+       reference */
+    if (p->record && !p->orig)
+        return fail(p, err, errlen, "record= needs orig= (a bug-orig test with the reference)");
     /* the expected outputs: for the runs of a pass that compares */
     if (p->expect_dir && (!*p->expect_dir || !p->run || p->expect))
         return fail(p, err, errlen, "expect_dir=DIR: not with run=off or expect=");
@@ -517,12 +531,11 @@ static void drop_config(struct corpus_pass *p, size_t k)
     p->nconfigs--;
 }
 
-void corpus_select(struct corpus_pass *p, int record)
+void corpus_select(struct corpus_pass *p)
 {
     if (!p->orig)
         return;
-    p->record = record;
-    if (record)
+    if (p->record)
         while (p->nconfigs > 1)
             drop_config(p, 1);
     else
@@ -1176,8 +1189,8 @@ static int observe(const struct corpus_pass *p, size_t c, enum amiga_emulation_s
    observation of the original into orig (the caller frees it) and checks
    it against the expectation.  -1 = go on; 3 = BROKEN (the original shows
    the expected behaviour: the test does not show a bug; the report is
-   written); 2 = error (the file is missing: it is recorded by
-   BUGORIG_RECORD=1 or ctest bug_orig_record_ID) */
+   written); 2 = error (the file is missing: it is recorded by the target
+   bug-orig-record; or malformed) */
 static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FILE *log)
 {
     struct bugorig_obs e;
@@ -1193,7 +1206,7 @@ static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FIL
     }
     if (!otext) {
         fprintf(log, "corpus: no %s, the recorded observation of the original: record it with "
-                "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", p->orig);
+                "the target bug-orig-record\n", p->orig);
         goto out_e;
     }
     if (bugorig_load_orig(otext, p->orig, orig, err, sizeof err)) {
@@ -1226,14 +1239,42 @@ out:
     return rc;
 }
 
-/* the recording run: the observation of the one configuration (the
-   reference) into orig=; 0 = written, 2 = no observation */
+int corpus_record_check(const char *orig, const char *obs, char *msg, size_t msglen)
+{
+    struct bugorigcmp_obs o, g;
+    size_t len;
+    char *text = (char *)read_file(orig, &len);
+    int r;
+
+    if (!text) {
+        snprintf(msg, msglen, "no %s, the recorded observation of the original: record it with "
+                 "the target bug-orig-record", orig);
+        return 2;
+    }
+    r = bugorigcmp_parse(text, orig, BUGORIGCMP_ORIG, &o, msg, msglen);
+    free(text);
+    if (r)
+        return 2;
+    if (bugorigcmp_parse(obs, "the observation", BUGORIGCMP_RUN, &g, msg, msglen)) {
+        bugorigcmp_free(&o);
+        return 2;
+    }
+    r = bugorigcmp_compare(&o, &g, msg, msglen);
+    bugorigcmp_free(&o);
+    bugorigcmp_free(&g);
+    return r;
+}
+
+/* the compare test of the recorded original (record=check): the
+   observation of the one configuration (the reference) against orig=; 0 =
+   it matches, 1 = it differs, 2 = no observation or no recorded original */
 static int record(const struct corpus_pass *p, enum amiga_emulation_status st, const char *slog,
                   struct statline *stl, FILE *log)
 {
     struct bugorig_obs o;
-    struct text t;
-    char err[300];
+    struct text t, rep = { 0 };
+    char err[600];
+    int rc;
 
     /* a session that could not run is no observation (a timeout is one) */
     if (st == AMIGA_EMULATION_FAILED || st == AMIGA_EMULATION_EXITED) {
@@ -1246,20 +1287,32 @@ static int record(const struct corpus_pass *p, enum amiga_emulation_status st, c
         return 2;
     }
     if (bugorig_format(&o, p->orig_by, &t, err, sizeof err)) {
-        fprintf(log, "corpus: %s: %s\n", p->orig, err);
+        fprintf(log, "corpus: %s: %s\n", p->configs[0].tag, err);
         bugorig_free(&o);
         return 2;
     }
     bugorig_free(&o);
-    if (write_file(p->orig, t.p, t.n)) {
-        fprintf(log, "corpus: cannot write %s\n", p->orig);
-        free(t.p);
+    rc = corpus_record_check(p->orig, t.p, err, sizeof err);
+    free(t.p);
+    if (rc == 2) {
+        fprintf(log, "corpus: %s\n", err);
         return 2;
     }
-    statline_set(stl[0].verdict, sizeof stl[0].verdict, "recorded");
-    fprintf(log, "corpus: recorded %s (session %s)\n", p->orig, amiga_emulation_status_name(st));
-    free(t.p);
-    return 0;
+    statline_set(stl[0].verdict, sizeof stl[0].verdict, rc ? "differs" : "same");
+    text_add(&rep, "== the original against its recorded observation %s (session %s)\n", p->orig,
+             amiga_emulation_status_name(st));
+    if (rc)
+        text_add(&rep, "DIFFERS: %s - the original or the recording changed: record it again "
+                 "with the target bug-orig-record and review the difference\n", err);
+    else
+        text_add(&rep, "SAME\n");
+    if (rep.bad || write_file(p->report, rep.p, rep.n)) {
+        fprintf(log, "corpus: cannot write %s\n", p->report);
+        rc = 2;
+    } else
+        fwrite(rep.p, 1, rep.n, log);
+    free(rep.p);
+    return rc;
 }
 
 /* bug-orig mode (expect=): every configuration judged against the
