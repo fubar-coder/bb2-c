@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+quarter 9 21 pixels 189
+half 21 9 pixels 189
+rc=0

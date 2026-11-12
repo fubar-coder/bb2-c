@@ -19,9 +19,9 @@
  * are mirrored and bit-reversed by the CPU.  YFlip swaps rows.  Rotate:
  * angle = Quick 0..1 -> 256 steps; the new size comes from the rotated
  * corners; every destination pixel is rotated back (rotit, sin table,
- * rounding +-$8000) and copied when it falls inside the source.  Scale:
- * new size = size * ratio (lmullib $CA00, at least 1), source steps
- * 1/ratio (ldivlib $CB00); every destination pixel takes the colour with
+ * rounding +$8000, fixed #1004) and copied when it falls inside the
+ * source.  Scale: new size = size * ratio (lmullib $CA00, at least 1),
+ * source steps 1/ratio (ldivlib $CB00); every destination pixel takes the colour with
  * the highest sum of "brightness" over the source pixels it covers
  * (without a palette all colours count 1, so the most frequent colour;
  * with a palette r+g+b+3 of the top bytes).
@@ -399,14 +399,14 @@ static ULONG mulcos(WORD val, UWORD angle)
     return mulsin(val, (UWORD)(angle + 64) & 255);
 }
 
-/* rotit: (x, y) by angle -> rounded new x, y */
+/* rotit: (x, y) by angle -> rounded new x, y.  Fixed (#1004): +$8000
+   for both signs (the nearest integer, halves up); the original took
+   -$8000 for a negative value, floor(v - 0.5) */
 static void rotit(WORD x, WORD y, UWORD angle, WORD *nx, WORD *ny)
 {
-    ULONG rx = mulcos(x, angle) + mulsin(y, angle);
-    ULONG ry = mulcos(y, angle) - mulsin(x, angle);
+    ULONG rx = mulcos(x, angle) + mulsin(y, angle) + 0x8000UL;
+    ULONG ry = mulcos(y, angle) - mulsin(x, angle) + 0x8000UL;
 
-    ry += (LONG)ry < 0 ? -0x8000UL : 0x8000UL;
-    rx += (LONG)rx < 0 ? -0x8000UL : 0x8000UL;
     *nx = (WORD)(rx >> 16);
     *ny = (WORD)(ry >> 16);
 }
@@ -433,7 +433,7 @@ static void rotit2(WORD x, WORD y, UWORD angle)
  *
  * a3 = the shape.  angle = Quick 0..1 -> 256 steps; the new size comes
  * from the rotated corners; every destination pixel is rotated back
- * (rotit, sin table, rounding +-$8000) and copied when it falls inside
+ * (rotit, sin table, rounding +$8000) and copied when it falls inside
  * the source.  The new shape (newshape, MEMF_CHIP|MEMF_CLEAR, not
  * checked, handle 0) replaces the old one; a cookie is made again if the
  * shape had one.
