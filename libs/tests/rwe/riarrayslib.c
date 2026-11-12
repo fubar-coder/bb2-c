@@ -1,15 +1,17 @@
 /*
- * rwe riarrayslib - FillArray: the C build against the reference build of
- * rwelibsrc/ArraysLib.bb (blitz2 2.10), method of rwecmp.h.
+ * rwe riarrayslib - FillArray: the C build or the reference build of
+ * rwelibsrc/ArraysLib.bb (blitz2 2.10), one set as LIBSET says, observed
+ * as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_riarrayslib.txt).
  *
  *   riarrayslib DIR     (DIR with riarrayslib .obj/.orig)
  *
- * Both forms are inline routines: checked to be inline ($A000) with the
- * same length, then their code (behind the 4 bytes) is called like a
+ * Both forms are inline routines: observed to be inline ($A000) with
+ * their length, then their code (behind the 4 bytes) is called like a
  * subroutine.  The compiler's a2 stack is built here: the type word and,
- * on top, the end of the array.  Compared: the array bytes (and the
+ * on top, the end of the array.  Observed: the array bytes (and the
  * guard bytes around them), d0-d2/a0-a2 after the call (a0/a1/a2
- * relative to the set's buffers), the kept registers.  Covered: byte,
+ * relative to the buffers), the kept registers.  Covered: byte,
  * word and long arrays of 1..37 elements at even and odd offsets
  * (bytes), values with garbage above the element size, both forms; the
  * types that do nothing (0, quick, float, string, 8, and a type word
@@ -17,15 +19,15 @@
  * covered: an end that is not reached exactly (BUG(orig) #882: runs through
  * memory).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "riarrayslib"
 enum { FILL, FINIT, INIT };
 
 #define BUF 200
-static UBYTE buf[2][BUF];
-static UBYTE stk[2][8];                 /* the a2 stack: type.w, end.l */
-static UBYTE before[BUF];
+static UBYTE buf[BUF];
+static UBYTE stk[8];                    /* the a2 stack: type.w, end.l */
 
 /* FillArray (form 0: value, 1: zero) on the elements [off, off + n*size)
    of buf with the type word `type` */
@@ -35,22 +37,19 @@ static void fill(int form, UWORD type, int size, int off, int n, ULONG value)
     sprintf(VEC, "form %d type $%04X size %d off %d n %d value $%08lX", form, type, size, off,
             n, value);
     for (d = 0; d < BUF; d++)
-        before[d] = (UBYTE)(rnd() >> 8);
-    for (cur = 0; cur < 2; cur++) {
-        memcpy(buf[cur], before, BUF);
-        *(UWORD *)stk[cur] = type;
-        *(ULONG *)(stk[cur] + 2) = (ULONG)buf[cur] + off + n * size;
-    }
+        buf[d] = (UBYTE)(rnd() >> 8);
+    *(UWORD *)stk = type;
+    *(ULONG *)(stk + 2) = (ULONG)buf + off + n * size;
     ROUT = form ? "FillArray zero" : "FillArray";
-    DO2(ENT(LIB, FILL, form) + 4, R[cur].d[0] = (ULONG)buf[cur] + off; R[cur].d[1] = value;
-        R[cur].a[2] = (ULONG)stk[cur] + 6);
-    SAMEBYTES("array", buf, BUF);
-    SAME("d0", R[cur].d[0] - (ULONG)buf[cur]);
-    SAME("d1", R[cur].d[1]);
-    SAME("d2", R[cur].d[2]);
-    SAME("a0", R[cur].a[0] - (ULONG)buf[cur]);
-    SAME("a1", R[cur].a[1] - (ULONG)buf[cur]);
-    SAME("a2", R[cur].a[2] - (ULONG)stk[cur]);
+    DO1(ENT(LIB, FILL, form) + 4, R.d[0] = (ULONG)buf + off; R.d[1] = value;
+        R.a[2] = (ULONG)stk + 6);
+    OBSBYTES("array", buf, BUF);
+    OBS("d0", R.d[0] - (ULONG)buf);
+    OBS("d1", R.d[1]);
+    OBS("d2", R.d[2]);
+    OBS("a0", R.a[0] - (ULONG)buf);
+    OBS("a1", R.a[1] - (ULONG)buf);
+    OBS("a2", R.a[2] - (ULONG)stk);
 }
 
 int main(int argc, char **argv)
@@ -63,17 +62,21 @@ int main(int argc, char **argv)
         printf("usage: riarrayslib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("FillArray", d0|d1|d3-d7|a3|a6);
+    KEEPS("FillArray zero", d0|d1|d3-d7|a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
 
     ROUT = "init";
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
 
     for (form = 0; form < 2; form++) {
         ROUT = "FillArray";
         sprintf(VEC, "form %d inline", form);
         BOTH("inline", W(ENT(LIB, FILL, form)) == 0xa000);
-        SAME("inline length", W(ENT(LIB, FILL, form) + 2));
+        OBS("inline length", W(ENT(LIB, FILL, form) + 2));
         for (size = 1; size <= 4; size <<= 1)
             for (i = 0; i < 12; i++) {
                 n = i < 3 ? i + 1 : (int)(rnd() % 37) + 1;
@@ -88,6 +91,6 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
     return rwe_done(LIB);
 }

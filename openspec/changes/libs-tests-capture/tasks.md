@@ -33,12 +33,12 @@ reference".
 ## 3. Framework macros
 
 - [x] 3.1 `sysload.h`: `OBS`, `OBSBYTES`, `OBSSTR`, one `struct set`, the stated-kept check with `kept`/`lost` cases (`KEEPS(routine, regs)`, D7), `check()` stays for the program's own consistency checks (a `check()` that a fix touches becomes an `OBS`). Verify: the accept test of `lost` (2.4) refuses a `lost` result, and the emulator test `libs_emulator_lost` (a routine that loses a stated register, from a variant file with a broken thunk, gives `lost` and fails) Done (2026-11-12): `LIBS_ONE_SET` switches the header; first program `systest.c` (part of 6.1); `libs_accept_lost` and `libs_emulator_lost` pass; design.md "The framework macros (group 3)".
-- [ ] 3.2 `rwe/rwecmp.h`: the same for `DO2`, `DO2S`, `preserve`, `KEEPS`, `rwe_done` (the summary table of kept registers stays as the aid for the stated sets). Verify: the first converted rwe program (4.1) compiles and passes
+- [x] 3.2 `rwe/rwecmp.h`: the same for `DO2`, `DO2S`, `preserve`, `KEEPS`, `rwe_done` (the summary table of kept registers stays as the aid for the stated sets). Verify: the first converted rwe program (4.1) compiles and passes Done (2026-11-12): one-set branch of `rwecmp.h` (`DO1`, `DO1S`); the first converted rwe program is `riarrayslib` (of 4.2), 820 checks as in 1.1, `libs_emulator` passes; the steps for the later programs in design.md, "Converting a program".
 
 ## 4. RWE userlibs A (alphabetical)
 
 - [ ] 4.1 `bb_blitlib`, `blitzbomberslibtwo`, `ciatrklib` (with the determinism decision of D8 for the F00 phase), `neilsreqtoolslib`, `popupwinlib`. Verify: per program the number of checks equals task 1.1's, the expected data is committed by `libs-capture` (which accepted it, so two layouts agree), `libs_emulator` passes, a stated kept set is the intersection of the original's calls
-- [ ] 4.2 `riamosfunclib`, `rianimlib`, `riapplib`, `riarexxlib`, `riarrayslib`, `ribbmaplib`, `richunkylib`. Verify: as 4.1
+- [ ] 4.2 `riamosfunclib`, `rianimlib`, `riapplib`, `riarexxlib`, `riarrayslib`, `ribbmaplib`, `richunkylib`. Verify: as 4.1. `riarrayslib` is converted (task 3.2, expected data committed, 820 checks); the others are open
 - [ ] 4.3 `ricommoditieslib`, `ricompactdisclib`, `ricopperfxlib`, `ridatatypeslib`, `ridebuglib`, `ridisplaylib`, `ridoslib`. Verify: as 4.1
 - [ ] 4.4 `ridisasmlib` with block cases (`cap_blocks`), its code buffer at the fixed address stays; the opcode words stay data of the cases. Verify: as 4.1; a changed block hash fails naming the block (host test of 2.3); the expected file is smaller than 1 MB
 

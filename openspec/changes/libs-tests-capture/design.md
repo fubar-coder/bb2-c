@@ -561,6 +561,99 @@ Facts of tasks 3.1 and 3.2 (2026-11-12):
   `systest: datalib init|kept||1: expected kept, got lost d2`.
 - `libs_emulator_tape_wrong` corrupts the tape of `systest_runtime` now
   (`[runtime]`): the tape of `systest` is gone.
+- `rwe/rwecmp.h` in one-set mode: `R`, `IN`, `ARGS[6]`, `POP`, `CCR`
+  without `[2]`, `ENT`/`ERR` on `loaded`, `DO1`/`DO1S` in place of
+  `DO2`/`DO2S` (the call, then `preserve()`: the kept case and
+  `OBS("popped", POP)`), `BOTH` as `OBS` of the truth value counted twice
+  (its old count), `rwe_done` prints `kept_summary()`. The first converted
+  rwe program is `riarrayslib` (task 4.2): 820 checks as in task 1.1, 818
+  cases (two `BOTH`).
+- `expected.cmake` passed `USERLIBS` to the runs as a list, so the runs got
+  only its first entry; fixed (one argument, `;` escaped), and
+  `libs_capture_target` checks that every entry arrives.
+
+### Converting a program
+
+The steps for the programs of groups 4-6, one program at a time; a
+conversion touches only the program, its expected file and its tape (and
+`tasks.md`), so programs can be converted in parallel.
+
+1. Define `LIBS_ONE_SET` on the line before the first include of
+   `sysload.h` or `rwecmp.h` (also before a direct include of `sysload.h`
+   next to `rwecmp.h`).
+2. One set: `load_sets(dir, names)` becomes `load_set(dir, names)`,
+   `sets[cur]`, `sets[0]`, `sets[1]` become `loaded`. Remove every `cur`
+   loop and every `[2]` array: `R[cur]` is `R`, `ARGS[cur][i]` is
+   `ARGS[i]`, `POP[cur]` `POP`, `CCR[cur]` `CCR`, `buf[cur]` `buf`;
+   a `for (cur = 0; cur < 2; cur++)` body runs once. `DO2`/`DO2S` become
+   `DO1`/`DO1S`. A `rnd()` inside a removed `cur` loop ran twice per case;
+   once now gives other inputs from there on (allowed: the expected data
+   is recorded anew; the coverage stays). A systest program that runs `run(&sets[s], &res[s])` for
+   both sets and compares afterwards writes each value with `OBS` where
+   it is computed (`systest.c`).
+3. Observations, with the old check text as `what`: `SAME` -> `OBS`,
+   `SAMEBYTES(what, x, n)` -> `OBSBYTES(what, x, n)` (x the one buffer),
+   `SAMEPTRBYTES` -> `OBSPTRBYTES`, `tape_strsame` and string compares ->
+   `OBSSTR`, `check(..., tape_same(...))` -> `OBS`. `BOTH` stays. A check
+   that compared the two sets (`check(w, o == c)`, `cmp_preserve`,
+   `check_fixed`, `SAME_FIXED`) becomes an `OBS` of the value or the kept
+   case; `check()` stays only for a condition that holds in every run of
+   either set (the program's own consistency). A part under `tape_pause`
+   becomes deterministic or `NOT_CAPTURED(what, "REASON")`; a
+   `tape_orig()` condition becomes a condition of the own set.
+4. Numbers and pointers: `OBS` writes a number as it is, never
+   normalised. A value that is an address is written as an offset (`R.a[0]
+   - (ULONG)buf`, as the programs already do) or with `OBSPTR(what, v,
+   "NAME", base)`; a pointer into the test program is `OBSPTR(what, v,
+   NULL, 0)` (written `prog`), a record holding such pointers
+   `OBSPTRBYTES`. Only where the site names a pointer (the list of
+   "Measurements (group 1)", task 1.2); a number the tape normalised by
+   chance (`tape_val` sites, `blitzbomberslibtwo.c:50`,
+   `systest_mathstr.c:272`, `:389`) is a plain `OBS`.
+5. Keys: `ROUT`, the check text and `VEC` must not hold a value or an
+   address, or the key changes with the result or the layout. Such a part
+   moves into the value: `"value %d: orig $%08lX, C $%08lX"` becomes the
+   check text `"value N"` (or a name) with the value as the case; an
+   address in `VEC` becomes an offset or goes. Known sites:
+   `rilesdebuglib.c:150`, `riwbspritelib.c:156`, `systest_runtime.c:351`,
+   `systest.c:157` (done), `ricommoditieslib.c:374`, `systest_system.c`
+   (about line 470). `VEC` holds the inputs of the case where they are
+   data; a check repeated with the same key gets the next occurrence
+   number by itself.
+6. Kept registers: every `ROUT` that is called needs a `KEEPS(ROUT,
+   regs)` statement (after `load_set`); a routine without one fails once
+   (`KEEPS: no kept set stated`). Find the sets with a run against the
+   original: state `none` first (or nothing), run `libs-capture` with the
+   program's filter (below), and take the `KEEPS("...", ...);` lines from
+   the summary in `build/amiga/libs/tests/libs-capture/run1/test/
+   libs_tests.txt` (the original's intersection over all calls; a4/a5 are
+   always added). A routine whose line says `a4/a5 changed` returns a
+   result there: `DONTCARE` (bits 12/13) around that call, cleared after
+   it. `KEEPS` matches `ROUT` by text: a routine with several `ROUT` names
+   (forms) needs a line for each.
+7. Block programs only (`systest_med`, `ridisasmlib`, D6): `OBS_BLOCKS(1)`
+   around the observations to hash.
+8. Record and check: build, then
+   ```
+   cmake --preset amiga "-DLIBS_CAPTURE_FILTER=rwe NAME"   # a snitch filter: [sys], "rwe NAME"
+   cmake --build --preset amiga --target libs-capture       # CD; RWE refbuild: ctest --preset originals -R rwe_refbuild
+   ```
+   It writes `libs/tests/expected/NAME.txt` only if the runs with two
+   memory layouts agree (else "test not deterministic" with the cases),
+   and refuses a `lost` case (a stated set too strict). The program's
+   summary line (`NAME: N checks`) must give task 1.1's number (`OBS` and
+   each kept case count one, `BOTH` two); name a difference and its reason
+   in the commit. Then `ctest --preset all -R '^libs_emulator$'` (the C
+   build against the expected data, no CD) and `ctest --preset originals
+   -R libs_emulator_originals`; reset the filter with
+   `-DLIBS_CAPTURE_FILTER=` afterwards.
+9. Commit the program, `libs/tests/expected/NAME.txt` and `git rm
+   libs/tests/tapes/NAME.tape`; nothing in `libs_tests.cpp` or
+   `CMakeLists.txt` (the program's first `load_set` opens its cases).
+   Tests that need a particular tape move when it goes:
+   `libs_emulator_tape_wrong` corrupts `systest_runtime.tape`,
+   `libs_tapes_compare_wrong` the first two tapes in name order
+   (`rwe_bb_blitlib`, `rwe_blitzbomberslibtwo`).
 
 ## Measurements (group 1)
 

@@ -14,6 +14,19 @@
  *   SAME(what, expr)      expr (evaluated with cur = 0 and 1) equal
  *   fake_library() ...    a fake system library (requesters, storage)
  *   rwe_done()            summary, the exit status
+ *
+ * A program that observes one set (LIBS_ONE_SET defined before the
+ * include; sysload.h, openspec change libs-tests-capture, design.md
+ * "Converting a program") calls every routine of `loaded` once and writes
+ * its observations as cases:
+ *   DO1(fn, setup)        call fn; `setup` sets R (no cur, no [2] arrays)
+ *   DO1S(fn, setup)       the same with stack arguments ARGS[0..NARGS-1]
+ *   preserve()            after every DO1: the kept case (KEEPS of ROUT,
+ *                         DONTCARE exempt) and OBS("popped", POP)
+ *   OBS, OBSBYTES, ...    sysload.h, in place of SAME, SAMEBYTES ...
+ *   BOTH(what, expr)      OBS of the truth value (counted twice)
+ *   rwe_done()            summary, the kept registers with their KEEPS
+ *                         lines (kept_summary), the exit status
  */
 #ifndef RWECMP_H
 #define RWECMP_H
@@ -25,6 +38,7 @@
 /* callstk() is defined in systest_mathstr.c (same executable) */
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
 
+#ifndef LIBS_ONE_SET
 static int cur;                         /* set index in setup/compare */
 static struct regs R[2], IN[2];
 static ULONG ARGS[2][6], POP[2];
@@ -37,6 +51,18 @@ static int prints;
 /* bit 0 of the address = Amiga mode only (blitz2.s), not part of it */
 #define ENT(lib, idx, form) \
     ((UBYTE *)((ULONG)entry_form(getlib(&sets[cur], lib), idx, form) & ~1UL))
+#else
+/* one set: the registers of the call (R after it, IN before it), its
+   stack arguments ARGS[0..NARGS-1], the bytes it popped and its CCR;
+   ROUT and VEC (the key of the cases) are sysload.h's */
+static struct regs R, IN;
+static ULONG ARGS[6], POP;
+static int NARGS;
+static UWORD CCR;
+
+#define ENT(lib, idx, form) \
+    ((UBYTE *)((ULONG)entry_form(getlib(&loaded, lib), idx, form) & ~1UL))
+#endif
 
 /* entry_err(lib, idx, form): the error check routine (first !subs field)
    of form `form` of entry `idx` (NULL: none) - entry_form's walk */
@@ -89,6 +115,7 @@ static __attribute__((unused)) UBYTE *entry_err(struct lib *l, int idx, int form
     }
     return NULL;
 }
+#ifndef LIBS_ONE_SET
 #define ERR(lib, idx, form) entry_err(getlib(&sets[cur], lib), idx, form)
 
 #define MAXROUT 40
@@ -199,6 +226,41 @@ static void preserve(void)
     } while (0)
 #define DO2(fn, setup) DO2S(fn, setup)
 
+#else /* LIBS_ONE_SET */
+#define ERR(lib, idx, form) entry_err(getlib(&loaded, lib), idx, form)
+
+/* a condition on the set's result (what BOTH asked of both sets): its
+   truth value is written as a case; counted twice, as when it ran on two
+   sets, so that the program's number of checks stays comparable */
+#define BOTH(what, expr) do { OBS((what), (expr) != 0); checks++; } while (0)
+
+/* after a call: its kept case (the KEEPS of ROUT, DONTCARE exempt) and the
+   bytes it popped */
+static void preserve(void)
+{
+    obs_kept(&IN, &R);
+    OBS("popped", POP);
+}
+
+/* call fn of the set: markers in all registers, `setup` sets R (and
+   ARGS[0..], NARGS for stack arguments), then preserve() */
+#define DO1S(fn, setup) do {                                                \
+        APTR fn_;                                                           \
+        markregs(&R);                                                       \
+        NARGS = 0;                                                          \
+        setup;                                                              \
+        IN = R;                                                             \
+        fn_ = (fn);                                                         \
+        if (!fn_) {                                                         \
+            check("entry missing", FALSE);                                  \
+            break;                                                          \
+        }                                                                   \
+        CCR = callstk(fn_, &R, ARGS, NARGS, &POP);                          \
+        preserve();                                                         \
+    } while (0)
+#define DO1(fn, setup) DO1S(fn, setup)
+#endif /* LIBS_ONE_SET */
+
 static ULONG rwe_seed = 0x13579bdf;
 static __attribute__((unused)) ULONG rnd(void)
 {
@@ -258,6 +320,7 @@ static __attribute__((unused)) void fake_remove(struct Library *l)
    an init's OpenLibrary or AllocMem fail */
 static const UWORD rwe_fail0[] = { 0x7000, 0x4e75 };
 
+#ifndef LIBS_ONE_SET
 static int rwe_done(const char *name)
 {
     int i;
@@ -269,5 +332,16 @@ static int rwe_done(const char *name)
                stat[i].n, stat[i].ko, stat[i].kc);
     return failures ? 5 : 0;
 }
+#else
+/* the summary, the kept registers of every routine with its KEEPS line
+   (kept_summary), the exit status */
+static int rwe_done(const char *name)
+{
+    rwe_mem_stop();                     /* the patches out on every way out */
+    printf("%s: %d checks, %d failures\n", name, checks, failures);
+    kept_summary();
+    return failures ? 5 : 0;
+}
+#endif
 
 #endif
