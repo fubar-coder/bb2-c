@@ -126,11 +126,30 @@ static void emits(const char *s)
     emit(s, (uint32_t)strlen(s));
 }
 
+/* append the N bytes at S to DST (length *len, size SIZE > 0), cut at
+ * SIZE - 1 bytes like snprintf */
+static void put_part(char *dst, uint32_t size, uint32_t *len, const char *s, uint32_t n)
+{
+    if (n > size - 1 - *len)
+        n = size - 1 - *len;
+    memcpy(dst + *len, s, n);
+    *len += n;
+}
+
+/* DIR, a "/" unless DIR is empty or ends in ':' or '/', and FILE into DST
+ * (size SIZE > 0), cut like snprintf.  Copied with the lengths already
+ * taken: with -fsanitize=undefined, gcc keeps a path on which strlen(dir)
+ * was handed NULL (the check reports and goes on) and warns about a null
+ * %s argument of snprintf there (-Wformat-truncation). */
 static void join(char *dst, uint32_t size, const char *dir, const char *file)
 {
-    uint32_t n = (uint32_t)strlen(dir);
-    const char *sep = n && dir[n - 1] != ':' && dir[n - 1] != '/' ? "/" : "";
-    snprintf(dst, size, "%s%s%s", dir, sep, file);
+    uint32_t n = (uint32_t)strlen(dir), len = 0;
+
+    put_part(dst, size, &len, dir, n);
+    if (n && dir[n - 1] != ':' && dir[n - 1] != '/')
+        put_part(dst, size, &len, "/", 1);
+    put_part(dst, size, &len, file, (uint32_t)strlen(file));
+    dst[len] = 0;
 }
 
 /* ------------------------------------------------------------- the key */

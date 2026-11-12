@@ -609,11 +609,19 @@ int libscmp_names_dir(struct libscmp_names *l, const char *dir, FILE *err)
 
 char *libscmp_path(const char *dir, const char *name)
 {
-    size_t n = strlen(dir) + strlen(name) + 6;
-    char *p = malloc(n);
+    /* "DIR/NAME.txt" in a buffer of exactly its size.  Copied with the
+     * lengths already taken: with -fsanitize=undefined, gcc keeps a path
+     * on which strlen was handed NULL (the check reports and goes on) and
+     * warns about a null %s argument of snprintf there. */
+    size_t nd = strlen(dir), nn = strlen(name);
+    char *p = malloc(nd + 1 + nn + sizeof ".txt");
 
-    if (p)
-        snprintf(p, n, "%s/%s.txt", dir, name);
+    if (p) {
+        memcpy(p, dir, nd);
+        p[nd] = '/';
+        memcpy(p + nd + 1, name, nn);
+        memcpy(p + nd + 1 + nn, ".txt", sizeof ".txt");
+    }
     return p;
 }
 
