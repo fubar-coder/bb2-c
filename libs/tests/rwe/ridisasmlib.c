@@ -1,16 +1,22 @@
 /*
  * rwe ridisasmlib - the C build of the RWE userlib ridisasmlib
- * (libs/userlibs/rwe/ridisasmlib.c) against the reference build of its
- * source rwelibsrc/Disasmlib/Disasm-library.bb2 (ridisasmlib.orig),
- * method of rwecmp.h.
+ * (libs/userlibs/rwe/ridisasmlib.c) or the reference build of its source
+ * rwelibsrc/Disasmlib/Disasm-library.bb2 (ridisasmlib.orig), one set as
+ * LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected
+ * data libs/tests/expected/rwe_ridisasmlib.txt).
  *
  *   ridisasmlib DIR     (DIR: ridisasmlib .obj/.orig)
  *
- * Both sets disassemble the same code buffer (the same addresses: the
- * PC relative targets are equal), each into its own string area (a3,
- * filled with $AA before every call); compared after every call are d0
- * (34 or 5), how far a3 moved, the string area (40 bytes: the string and
- * what is behind it), InstrSize and the registers the original keeps.
+ * The set disassembles a code buffer at a fixed address (the PC relative
+ * targets in the text are absolute, so every run gives the same text)
+ * into a string area (a3, filled with $AA before every call); observed
+ * after every call are d0 (34 or 5), how far a3 moved, the string area
+ * (40 bytes: the string and what is behind it), InstrSize and the kept
+ * registers.  The cases of the sweeps over the instruction words (about
+ * 3 million) are written as block cases (design D6 of the openspec change
+ * libs-tests-capture: LIBS_CAP_DUMP=BLOCK:N writes the observations of
+ * block N); init, the first InstrSize, the odd address and a3 and finit
+ * are plain cases.
  * Covered: InstrSize before the first call; every first instruction word
  * $0000-$FFFF, twice: with brief extension words behind it and with
  * full format ones (memory indirect, long displacements); the extension
@@ -26,6 +32,7 @@
  * Not covered: the 68000 address errors; the steps leave out some
  * extension words (time: about 380000 calls take 20 s).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 
@@ -37,7 +44,7 @@ enum { E_DIS, E_SIZE, E_FINIT, E_INIT };
 #define CODEADDR 0x47000000UL           /* in the Zorro III RAM of default.uae */
 #define SAREA 48
 static UWORD *code;
-static UBYTE *sarea[2];
+static UBYTE *sarea;
 static ULONG calls;
 
 /* VEC without sprintf (millions of calls): "w0 w1 w2" in hex */
@@ -58,24 +65,16 @@ static void setvec(int n)
 /* DisAssemble$(code + off) with a3 = string area + aoff, then InstrSize */
 static void dis(ULONG off, ULONG aoff)
 {
-    const UBYTE *s[2];
-
     calls++;
-    for (cur = 0; cur < 2; cur++)
-        memset(sarea[cur], 0xaa, SAREA);
+    memset(sarea, 0xaa, SAREA);
     ROUT = "DisAssemble$";
-    DO2(ENT(LIB, E_DIS, 0), R[cur].d[0] = (ULONG)code + off;
-        R[cur].a[3] = (ULONG)sarea[cur] + aoff);
-    SAME("d0", R[cur].d[0]);
-    SAME("a3 moved", R[cur].a[3] - (ULONG)sarea[cur]);
-    for (cur = 0; cur < 2; cur++)
-        s[cur] = sarea[cur];
-    if (memcmp(s[0], s[1], 40) && prints < 60)
-        printf("  orig \"%.34s\"\n  C    \"%.34s\"\n", (const char *)s[0], (const char *)s[1]);
-    SAMEBYTES("string", s, 40);
+    DO1(ENT(LIB, E_DIS, 0), R.d[0] = (ULONG)code + off; R.a[3] = (ULONG)sarea + aoff);
+    OBS("d0", R.d[0]);
+    OBS("a3 moved", R.a[3] - (ULONG)sarea);
+    OBSBYTES("string", sarea, 40);
     ROUT = "InstrSize";
-    DO2(ENT(LIB, E_SIZE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_SIZE, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void fill(const UWORD *ext, int n)
@@ -97,7 +96,7 @@ static void allops(const char *what, const UWORD *ext, int n)
         setvec(4);
         dis(0, 0);
     }
-    printf("%s: %lu calls, %d failures so far\n", what, calls, failures);
+    printf("%s: %lu calls so far\n", what, calls);
 }
 
 /* the instruction words op[0..nop-1], word `at` = every value in steps
@@ -114,7 +113,7 @@ static void allwords(const char *what, const UWORD *op, int nop, int at, ULONG s
         setvec(nop);
         dis(0, 0);
     }
-    printf("%s: %lu calls, %d failures so far\n", what, calls, failures);
+    printf("%s: %lu calls so far\n", what, calls);
 }
 
 int main(int argc, char **argv)
@@ -135,17 +134,21 @@ int main(int argc, char **argv)
     static const UWORD movem3[] = { 0x4890, 0x0000 };
     static const UWORD movec[] = { 0x4e7a, 0x0000 };
     ULONG avail;
-    int s;
 
     if (argc < 2) {
         printf("usage: ridisasmlib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("InstrSize (before DisAssemble$)", d1-d7|a0-a3|a6);
+    KEEPS("DisAssemble$", a2|a6);
+    KEEPS("InstrSize", d1-d7|a0-a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
     /* the code buffer at a fixed address: the PC relative targets in the
-       text are absolute, and a recording (libs/tests/tape.h) needs the same
-       text in every run; any free block if that one is taken.  Outside
+       text are absolute, and the expected data needs the same text in
+       every run; any free block if that one is taken.  Outside
        the memory balance (rwe_mem_start does not count AllocAbs) */
     code = AllocAbs(CODEWORDS * 2, (APTR)CODEADDR);
     if (!code)
@@ -154,15 +157,16 @@ int main(int argc, char **argv)
         memset(code, 0, CODEWORDS * 2);
     avail = AvailMem(MEMF_ANY);
     rwe_mem_start();
-    for (s = 0; s < 2; s++)
-        sarea[s] = AllocMem(SAREA, MEMF_PUBLIC);
+    sarea = AllocMem(SAREA, MEMF_PUBLIC);
 
     strcpy(VEC, "");
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     ROUT = "InstrSize (before DisAssemble$)";
-    DO2(ENT(LIB, E_SIZE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_SIZE, 0), (void)0);
+    OBS("d0", R.d[0]);
+
+    OBS_BLOCKS(1);
 
     allops("all first words, brief extensions", brief, 14);
     allops("all first words, full format extensions", full, 14);
@@ -173,6 +177,7 @@ int main(int argc, char **argv)
     allwords("MOVEM (a7)+", movem2, 2, 1, 3);
     allwords("MOVEM (a0)", movem3, 2, 1, 3);
     allwords("MOVEC", movec, 2, 1, 3);
+    OBS_BLOCKS(0);
 
     /* an odd instruction address, an odd a3 (68020: no address error) */
     fill(brief, 14);
@@ -187,10 +192,9 @@ int main(int argc, char **argv)
 
     strcpy(VEC, "");
     ROUT = "finit";
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
 
-    for (s = 0; s < 2; s++)
-        FreeMem(sarea[s], SAREA);
+    FreeMem(sarea, SAREA);
     rwe_mem_check(LIB, avail, TRUE);
     FreeMem(code, CODEWORDS * 2);
     printf("ridisasmlib: %lu DisAssemble$ calls\n", calls);

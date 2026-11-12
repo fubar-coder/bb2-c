@@ -723,6 +723,37 @@ two layouts agreed, the C build gives the same cases):
   (`ticks`), so its first summary listed fewer PlayTracker calls; the
   sets taken from it held in the full run.
 
+### The block programs (tasks 4.4, 6.4)
+
+Facts of the conversions of `systest_med` and `rwe_ridisasmlib`
+(2026-11-12):
+
+- `systest_med`: 11884 checks as in task 1.1. The player state after a
+  call (about 400 values) is written value by value, uncounted, as the
+  cases of the one check `player state`, whose own case is the number of
+  values (the old check compared the values and their number). The
+  period table offset is a plain uncounted case (before a tape
+  observation, no check). Everything from `medlib init` on is in block
+  mode: 1 plain case and 871 blocks, 3 567 195 observations, as many as
+  the tape had; 60 KB.
+- `rwe_ridisasmlib`: 3 058 392 checks as in task 1.1. `init`, the first
+  `InstrSize`, the odd address and the odd a3 and `finit` are plain cases
+  (23, the disassembly of the odd ones readable as bytes); the sweeps over
+  the instruction words are 747 blocks; 63 KB. The code buffer stays at
+  its fixed address (`AllocAbs` at `$47000000`).
+- A kept case inside a block is hashed with the others, so `libs-accept`
+  cannot refuse a `lost` there (D5): a stated set that is too strict
+  shows only as a block that differs between a recording and the
+  summary. The stated sets of both programs are the summary's
+  intersection of the original's run (the second recording printed
+  `stated:` equal to it and wrote the same file as a run with `none`).
+- Time: the two programs take about 2.5 and 3 minutes in the emulator
+  with the C build; `libs_emulator` (all programs) went from about 90 s
+  with the tapes to about 480 s on a loaded machine, so `LIBS_TESTS_TIMEOUT` is 900 s. A
+  block observation costs a `snprintf` of its number and a byte loop over
+  its key and value (`capture.c`, `line_begin`); a cheaper writer is a
+  possible follow-up (the output stays the same).
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the
