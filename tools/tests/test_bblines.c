@@ -38,6 +38,26 @@ static void test_comment(void)
     CHECK(bblines_comment(src, sizeof src - 1, 0x80C1, &out, &n, &count, err, sizeof err) == 0);
     CHECK(count == 0 && n == sizeof src - 1 && !memcmp(out, src, n));
     free(out);
+    {
+        /* literal characters ($90 cc) at the start and the end of a line
+           stay whole (a line that starts with one is no INCDIR line); an
+           INCDIR line with one in its string is commented out */
+        static const uint8_t lit[] =
+            "\x90\xDF" "a$=\"\x90\xE9\"\x90\xE9\0"
+            "; caf\x90\xE9\0"
+            "\x90\xDF\x80\xBF \"x\"\0"
+            "\x80\xBF \"\x90\xFF\"\0";
+        static const uint8_t litwant[] =
+            "\x90\xDF" "a$=\"\x90\xE9\"\x90\xE9\0"
+            "; caf\x90\xE9\0"
+            "\x90\xDF\x80\xBF \"x\"\0"
+            ";\0";
+
+        CHECK(bblines_comment(lit, sizeof lit - 1, INCDIR, &out, &n, &count, err,
+                              sizeof err) == 0);
+        CHECK(count == 1 && n == sizeof litwant - 1 && !memcmp(out, litwant, n));
+        free(out);
+    }
     /* empty */
     CHECK(bblines_comment(src, 0, INCDIR, &out, &n, &count, err, sizeof err) == 0 && n == 0);
     free(out);

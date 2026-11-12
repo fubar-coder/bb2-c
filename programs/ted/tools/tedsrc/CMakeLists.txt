@@ -41,6 +41,13 @@ add_test(NAME teddetok_good COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/good.bb2
 add_test(NAME teddetok_long COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/long.bb2
 	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/long.txt -DEXPECT=${t}/long.txt
 	"-DNOTE=2 lines in the file, 3 in TED" -P ${t}/run.cmake)
+# literal characters ($90 cc: in a string, a comment, at the end of a
+# line, the umlaut code 27 as it is): detok writes the byte, tok turns
+# the text back into the same file (spec tooling/literal-characters)
+add_test(NAME teddetok_literal COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/literal.bb2
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/literal.txt -DEXPECT=${t}/literal.txt -P ${t}/run.cmake)
+add_test(NAME tedtok_literal COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/literal.txt
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/literal.bb2 -DEXPECT=${t}/literal.bb2 -P ${t}/tok.cmake)
 # broken: a token TED does not know, a token byte at the end of the file
 add_test(NAME teddetok_unknown COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/unknown.bb2
 	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/unknown.txt "-DERROR=unknown.bb2:2: unknown token \\$9001"

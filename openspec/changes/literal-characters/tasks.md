@@ -179,7 +179,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 6. Host tools
 
-- [ ] 6.1 `bbdetok` writes a literal as its byte; `tedsrc tok`/`detok`
+- [x] 6.1 `bbdetok` writes a literal as its byte; `tedsrc tok`/`detok`
   through the TED core; `bblines` test with a literal at the start and
   end of a line. Verify: tool tests per spec (round trip `detok` then
   `tok`, a literal at the end of a line).

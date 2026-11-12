@@ -105,6 +105,13 @@ int bbdetok_text(const struct bbdetok *d, int rules, const uint8_t *src, size_t 
                 free(t.p);
                 return -1;
             }
+            if (c == 0x90 && (src[i + 1] & 0x80)) {
+                /* a literal character (docs/formats.md 3.2): its byte */
+                put(&t, &src[i + 1], 1);
+                r->literals++;
+                i += 2;
+                continue;
+            }
             w = (unsigned)(c << 8 | src[i + 1]) & 0x7FFF;
             r->tokens++;
             if ((name = d->name[w]))

@@ -65,6 +65,32 @@ int main(void)
     CHECK(t && !strcmp(t, ";Print \xFCl \x81\nZero\n") && r.tokens == 2 && r.comment == 1
           && r.unknown == 0);
 
+    /* a literal character ($90 cc, cc from $80) is its byte, in strings,
+       comments and code, with both rules where a token is read, also
+       when the list names the word; $90 with a second byte below $80 is
+       a token of library 32 */
+    t = TEXT(BBDETOK_TED, "a$=\"Gr\x1b\x90\xDF" "e\" ;caf\x90\xE9\0\x90\xE9\x90\xFF\0", err);
+    CHECK(t && !strcmp(t, "a$=\"Gr\x1b\xDF" "e\" ;caf\xE9\n\xE9\xFF\n"));
+    CHECK(r.literals == 4 && r.tokens == 0 && r.unknown == 0);
+    t = TEXT(BBDETOK_AB, "\x90\xE9 \x90\x01\0", err);
+    CHECK(t && !strcmp(t, "\xE9 {32:1}\n") && r.literals == 1 && r.unknown == 1);
+    {
+        struct blitztokens l2 = { 0 };
+        struct bbdetok d2;
+        char list2[] = "90E9 named\n";
+        char *out;
+        size_t n;
+
+        CHECK(blitztokens_read(list2, sizeof list2 - 1, &l2, err, sizeof err) == 0);
+        CHECK(bbdetok_init(&d2, &l2) == 0);
+        CHECK(bbdetok_text(&d2, BBDETOK_TED, (const uint8_t *)"\x90\xE9\0", 3, &out, &n, &r,
+                           err, sizeof err) == 0);
+        CHECK(n == 2 && !memcmp(out, "\xE9\n", 2));
+        free(out);
+        bbdetok_free(&d2);
+        blitztokens_free(&l2);
+    }
+
     /* a token's second byte 0 does not end the line; a last line without
        its 0 is written (open); an empty file */
     t = TEXT(BBDETOK_AB, "\x82\x00x\0y", err);

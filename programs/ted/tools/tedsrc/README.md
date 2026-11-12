@@ -63,7 +63,10 @@ list cannot be read or OUT is not written, 2 usage error.
 
 Loads `IN` (text or tokenised) and writes it tokenised to `OUT`. A text
 line wider than a row of TED's character map (128 characters) is refused:
-TED would split it.
+TED would split it. A byte from $80 of a text is a literal character, the
+pair `$90 cc` (`docs/formats.md` §3.2; ä ö ü Ä Ö Ü become TED's codes
+26-31 instead), so a line with more than 64 of them is longer than TED's
+line buffer and refused as well.
 
 ### detok
 
@@ -95,9 +98,10 @@ Writes `IN` as TED shows it to `OUT`, one line per line of TED, each with
 an LF. The text is TED's, with its quirks: TAB expanded to tabstop 2, a
 line wider than 128 columns (or longer than TED's line buffer, 129 bytes,
 tokenised) split into several (noted on stderr), a text line tokenised and detokenised again.
-A token TED does not know (TED shows `?????`) or a token byte without its
-second byte is an error. `--check IN...` only checks the files, without
-output.
+A literal character is written as its byte, the codes 26-31 as they are,
+so `tok` of the text gives the tokenised file again. A token TED does not
+know (TED shows `?????`) or a token byte without its second byte is an
+error. `--check IN...` only checks the files, without output.
 
 ## Inputs and outputs
 

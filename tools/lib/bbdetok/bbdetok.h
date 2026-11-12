@@ -32,8 +32,11 @@
  * $8000 + L*128 + N; the compiler's own tokens are L 0 and 1, a system
  * library counts from its own number, bit 15 set).  In Blitz code "{"
  * only follows a name (arguments), so "{L:N}" cannot be source text
- * outside strings and comments.  Every other byte is written as it is
- * (TAB, control characters); each line ends with an LF.
+ * outside strings and comments.  A literal character, the word $90cc with
+ * cc from $80 (library 33, docs/formats.md 3.2), is written as its byte cc
+ * where a token would be read, whatever the list holds.  Every other byte
+ * is written as it is (TAB, control characters); each line ends with an
+ * LF.
  */
 #ifndef BBDETOK_H
 #define BBDETOK_H
@@ -61,6 +64,7 @@ struct bbdetok {
 struct bbdetok_result {
     size_t lines;               /* lines written */
     size_t tokens;              /* token words */
+    size_t literals;            /* literal characters (not in tokens) */
     size_t unknown;             /* of them not in the list */
     size_t comment;             /* of them in comments (BBDETOK_AB) */
     size_t kinds;               /* different unknown numbers */
