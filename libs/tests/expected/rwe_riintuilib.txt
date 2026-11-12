@@ -1,0 +1,183 @@
+# capture rwe_riintuilib 1
+inputoutputlib init|kept||1	kept
+inputoutputlib init|popped||1	$00000000
+init|kept||1	kept
+init|popped||1	$00000000
+IPBitMap|kept||1	kept
+IPBitMap|popped||1	$00000000
+IPBitMap|Rast||1	bytes 128 fnv AE969EEC
+IPBitMap|Rast's BitMap||1	$00000001
+IPBitMap|plane||1	bytes 640 fnv 455F9FC5
+IPBitMap|plane||2	bytes 640 fnv 455F9FC5
+IPBitMap|a2 area||1	bytes 128 fnv A7B537C5
+IPLocate|kept|$5A00000A,$5A000007|1	kept
+IPLocate|popped|$5A00000A,$5A000007|1	$00000000
+IPLocate|Rast|$5A00000A,$5A000007|1	bytes 128 fnv F02FCE57
+IPLocate|Rast's BitMap|$5A00000A,$5A000007|1	$00000001
+IPLocate|plane|$5A00000A,$5A000007|1	bytes 640 fnv 455F9FC5
+IPLocate|plane|$5A00000A,$5A000007|2	bytes 640 fnv 455F9FC5
+IPLocate|a2 area|$5A00000A,$5A000007|1	bytes 128 fnv A7B537C5
+IPLocate|kept|$12340005,$FFFF0003|1	kept
+IPLocate|popped|$12340005,$FFFF0003|1	$00000000
+IPLocate|Rast|$12340005,$FFFF0003|1	bytes 128 fnv 0ED7C9CA
+IPLocate|Rast's BitMap|$12340005,$FFFF0003|1	$00000001
+IPLocate|plane|$12340005,$FFFF0003|1	bytes 640 fnv 455F9FC5
+IPLocate|plane|$12340005,$FFFF0003|2	bytes 640 fnv 455F9FC5
+IPLocate|a2 area|$12340005,$FFFF0003|1	bytes 128 fnv A7B537C5
+IPLocate|kept|$5A00FFFE,$5A008000|1	kept
+IPLocate|popped|$5A00FFFE,$5A008000|1	$00000000
+IPLocate|Rast|$5A00FFFE,$5A008000|1	bytes 128 fnv FFA56765
+IPLocate|Rast's BitMap|$5A00FFFE,$5A008000|1	$00000001
+IPLocate|plane|$5A00FFFE,$5A008000|1	bytes 640 fnv 455F9FC5
+IPLocate|plane|$5A00FFFE,$5A008000|2	bytes 640 fnv 455F9FC5
+IPLocate|a2 area|$5A00FFFE,$5A008000|1	bytes 128 fnv A7B537C5
+IPLocate|kept|$5A000000,$5A000000|1	kept
+IPLocate|popped|$5A000000,$5A000000|1	$00000000
+IPLocate|Rast|$5A000000,$5A000000|1	bytes 128 fnv 55A41048
+IPLocate|Rast's BitMap|$5A000000,$5A000000|1	$00000001
+IPLocate|plane|$5A000000,$5A000000|1	bytes 640 fnv 455F9FC5
+IPLocate|plane|$5A000000,$5A000000|2	bytes 640 fnv 455F9FC5
+IPLocate|a2 area|$5A000000,$5A000000|1	bytes 128 fnv A7B537C5
+IPColour|kept|form 0 $5A000003,$5A011234|1	kept
+IPColour|popped|form 0 $5A000003,$5A011234|1	$00000000
+IPColour|Rast|form 0 $5A000003,$5A011234|1	bytes 128 fnv 9D85A1DC
+IPColour|Rast's BitMap|form 0 $5A000003,$5A011234|1	$00000001
+IPColour|plane|form 0 $5A000003,$5A011234|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 0 $5A000003,$5A011234|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 0 $5A000003,$5A011234|1	bytes 128 fnv A7B537C5
+IPColour|kept|form 0 $5A00FFFF,$5A011234|1	kept
+IPColour|popped|form 0 $5A00FFFF,$5A011234|1	$00000000
+IPColour|Rast|form 0 $5A00FFFF,$5A011234|1	bytes 128 fnv 9D85A1DC
+IPColour|Rast's BitMap|form 0 $5A00FFFF,$5A011234|1	$00000001
+IPColour|plane|form 0 $5A00FFFF,$5A011234|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 0 $5A00FFFF,$5A011234|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 0 $5A00FFFF,$5A011234|1	bytes 128 fnv A7B537C5
+IPColour|kept|form 1 $5A000002,$5A000001|1	kept
+IPColour|popped|form 1 $5A000002,$5A000001|1	$00000000
+IPColour|Rast|form 1 $5A000002,$5A000001|1	bytes 128 fnv 3E5ADAE6
+IPColour|Rast's BitMap|form 1 $5A000002,$5A000001|1	$00000001
+IPColour|plane|form 1 $5A000002,$5A000001|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 1 $5A000002,$5A000001|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 1 $5A000002,$5A000001|1	bytes 128 fnv A7B537C5
+IPColour|kept|form 1 $5A008001,$5A000003|1	kept
+IPColour|popped|form 1 $5A008001,$5A000003|1	$00000000
+IPColour|Rast|form 1 $5A008001,$5A000003|1	bytes 128 fnv 3E5ADAE6
+IPColour|Rast's BitMap|form 1 $5A008001,$5A000003|1	$00000001
+IPColour|plane|form 1 $5A008001,$5A000003|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 1 $5A008001,$5A000003|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 1 $5A008001,$5A000003|1	bytes 128 fnv 239FEE1E
+IPColour|kept|form 1 $5A000001,$5A00FFFF|1	kept
+IPColour|popped|form 1 $5A000001,$5A00FFFF|1	$00000000
+IPColour|Rast|form 1 $5A000001,$5A00FFFF|1	bytes 128 fnv 3C35566B
+IPColour|Rast's BitMap|form 1 $5A000001,$5A00FFFF|1	$00000001
+IPColour|plane|form 1 $5A000001,$5A00FFFF|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 1 $5A000001,$5A00FFFF|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 1 $5A000001,$5A00FFFF|1	bytes 128 fnv 239FEE1E
+IPColour|kept|form 1 $5A00FFFF,$5A00FFFF|1	kept
+IPColour|popped|form 1 $5A00FFFF,$5A00FFFF|1	$00000000
+IPColour|Rast|form 1 $5A00FFFF,$5A00FFFF|1	bytes 128 fnv 3C35566B
+IPColour|Rast's BitMap|form 1 $5A00FFFF,$5A00FFFF|1	$00000001
+IPColour|plane|form 1 $5A00FFFF,$5A00FFFF|1	bytes 640 fnv 455F9FC5
+IPColour|plane|form 1 $5A00FFFF,$5A00FFFF|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 1 $5A00FFFF,$5A00FFFF|1	bytes 128 fnv 239FEE1E
+IPOutput|kept|form 1 $5A00FFFF,$5A00FFFF|1	kept
+IPOutput|popped|form 1 $5A00FFFF,$5A00FFFF|1	$00000000
+IPOutput|Rast|form 1 $5A00FFFF,$5A00FFFF|1	bytes 128 fnv 3C35566B
+IPOutput|Rast's BitMap|form 1 $5A00FFFF,$5A00FFFF|1	$00000001
+IPOutput|plane|form 1 $5A00FFFF,$5A00FFFF|1	bytes 640 fnv 455F9FC5
+IPOutput|plane|form 1 $5A00FFFF,$5A00FFFF|2	bytes 640 fnv 455F9FC5
+IPOutput|a2 area|form 1 $5A00FFFF,$5A00FFFF|1	bytes 128 fnv 239FEE1E
+output|kept|string d0 $5A001234 "Hello, World"|1	kept
+output|popped|string d0 $5A001234 "Hello, World"|1	$00000000
+output|Rast|string d0 $5A001234 "Hello, World"|1	bytes 128 fnv 1424A065
+output|Rast's BitMap|string d0 $5A001234 "Hello, World"|1	$00000001
+output|plane|string d0 $5A001234 "Hello, World"|1	bytes 640 fnv 08434F05
+output|plane|string d0 $5A001234 "Hello, World"|2	bytes 640 fnv 455F9FC5
+output|a2 area|string d0 $5A001234 "Hello, World"|1	bytes 128 fnv 239FEE1E
+output|text drawn|string d0 $5A001234 "Hello, World"|1	$00000001
+output|kept|empty string d0 $5A001234 ""|1	kept
+output|popped|empty string d0 $5A001234 ""|1	$00000000
+output|Rast|empty string d0 $5A001234 ""|1	bytes 128 fnv 83CDF8C5
+output|Rast's BitMap|empty string d0 $5A001234 ""|1	$00000001
+output|plane|empty string d0 $5A001234 ""|1	bytes 640 fnv 455F9FC5
+output|plane|empty string d0 $5A001234 ""|2	bytes 640 fnv 455F9FC5
+output|a2 area|empty string d0 $5A001234 ""|1	bytes 128 fnv 239FEE1E
+output|nothing drawn|empty string d0 $5A001234 ""|1	$00000001
+output|kept|a0/d0 d0 $5A000005 "Blitz Basic"|1	kept
+output|popped|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000000
+output|Rast|a0/d0 d0 $5A000005 "Blitz Basic"|1	bytes 128 fnv C49B4FFD
+output|Rast's BitMap|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000001
+output|plane|a0/d0 d0 $5A000005 "Blitz Basic"|1	bytes 640 fnv 6F85DC4D
+output|plane|a0/d0 d0 $5A000005 "Blitz Basic"|2	bytes 640 fnv 455F9FC5
+output|a2 area|a0/d0 d0 $5A000005 "Blitz Basic"|1	bytes 128 fnv 239FEE1E
+output|text drawn|a0/d0 d0 $5A000005 "Blitz Basic"|1	$00000001
+output|kept|a0/d0 0 d0 $5A000000 "nothing"|1	kept
+output|popped|a0/d0 0 d0 $5A000000 "nothing"|1	$00000000
+output|Rast|a0/d0 0 d0 $5A000000 "nothing"|1	bytes 128 fnv 83CDF8C5
+output|Rast's BitMap|a0/d0 0 d0 $5A000000 "nothing"|1	$00000001
+output|plane|a0/d0 0 d0 $5A000000 "nothing"|1	bytes 640 fnv 455F9FC5
+output|plane|a0/d0 0 d0 $5A000000 "nothing"|2	bytes 640 fnv 455F9FC5
+output|a2 area|a0/d0 0 d0 $5A000000 "nothing"|1	bytes 128 fnv 239FEE1E
+output|nothing drawn|a0/d0 0 d0 $5A000000 "nothing"|1	$00000001
+output|kept|character d0 &"Q" ""|1	kept
+output|popped|character d0 &"Q" ""|1	$00000000
+output|Rast|character d0 &"Q" ""|1	bytes 128 fnv 14142A1D
+output|Rast's BitMap|character d0 &"Q" ""|1	$00000001
+output|plane|character d0 &"Q" ""|1	bytes 640 fnv 4A11E21F
+output|plane|character d0 &"Q" ""|2	bytes 640 fnv 455F9FC5
+output|a2 area|character d0 &"Q" ""|1	bytes 128 fnv 239FEE1E
+output|text drawn|character d0 &"Q" ""|1	$00000001
+output|kept|character 65 d0 $00000041 ""|1	kept
+output|popped|character 65 d0 $00000041 ""|1	$00000000
+output|Rast|character 65 d0 $00000041 ""|1	bytes 128 fnv 14142A1D
+output|Rast's BitMap|character 65 d0 $00000041 ""|1	$00000001
+output|plane|character 65 d0 $00000041 ""|1	bytes 640 fnv 61C84C39
+output|plane|character 65 d0 $00000041 ""|2	bytes 640 fnv 455F9FC5
+output|a2 area|character 65 d0 $00000041 ""|1	bytes 128 fnv 239FEE1E
+IPColour|kept|form 1 $5A000001,$5A000002|1	kept
+IPColour|popped|form 1 $5A000001,$5A000002|1	$00000000
+IPColour|Rast|form 1 $5A000001,$5A000002|1	bytes 128 fnv 1C0046EE
+IPColour|Rast's BitMap|form 1 $5A000001,$5A000002|1	$00000001
+IPColour|plane|form 1 $5A000001,$5A000002|1	bytes 640 fnv 61C84C39
+IPColour|plane|form 1 $5A000001,$5A000002|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 1 $5A000001,$5A000002|1	bytes 128 fnv 239FEE1E
+output|kept|pens 1/2 d0 $5A001234 "Pens"|1	kept
+output|popped|pens 1/2 d0 $5A001234 "Pens"|1	$00000000
+output|Rast|pens 1/2 d0 $5A001234 "Pens"|1	bytes 128 fnv 5A3C7956
+output|Rast's BitMap|pens 1/2 d0 $5A001234 "Pens"|1	$00000001
+output|plane|pens 1/2 d0 $5A001234 "Pens"|1	bytes 640 fnv 266EB053
+output|plane|pens 1/2 d0 $5A001234 "Pens"|2	bytes 640 fnv 455F9FC5
+output|a2 area|pens 1/2 d0 $5A001234 "Pens"|1	bytes 128 fnv 239FEE1E
+output|text drawn|pens 1/2 d0 $5A001234 "Pens"|1	$00000001
+IPColour|kept|form 0 $5A000003,$00000000|1	kept
+IPColour|popped|form 0 $5A000003,$00000000|1	$00000000
+IPColour|Rast|form 0 $5A000003,$00000000|1	bytes 128 fnv F229AA14
+IPColour|Rast's BitMap|form 0 $5A000003,$00000000|1	$00000001
+IPColour|plane|form 0 $5A000003,$00000000|1	bytes 640 fnv 266EB053
+IPColour|plane|form 0 $5A000003,$00000000|2	bytes 640 fnv 455F9FC5
+IPColour|a2 area|form 0 $5A000003,$00000000|1	bytes 128 fnv 239FEE1E
+output|kept|pen 3 d0 $5A000004 "Pen 3!"|1	kept
+output|popped|pen 3 d0 $5A000004 "Pen 3!"|1	$00000000
+output|Rast|pen 3 d0 $5A000004 "Pen 3!"|1	bytes 128 fnv F229AA14
+output|Rast's BitMap|pen 3 d0 $5A000004 "Pen 3!"|1	$00000001
+output|plane|pen 3 d0 $5A000004 "Pen 3!"|1	bytes 640 fnv 4E0A0D91
+output|plane|pen 3 d0 $5A000004 "Pen 3!"|2	bytes 640 fnv 4E0A0D91
+output|a2 area|pen 3 d0 $5A000004 "Pen 3!"|1	bytes 128 fnv 239FEE1E
+output|text drawn|pen 3 d0 $5A000004 "Pen 3!"|1	$00000001
+IPLocate|kept|$5A000064,$5A00000A|1	kept
+IPLocate|popped|$5A000064,$5A00000A|1	$00000000
+IPLocate|Rast|$5A000064,$5A00000A|1	bytes 128 fnv 0168447C
+IPLocate|Rast's BitMap|$5A000064,$5A00000A|1	$00000001
+IPLocate|plane|$5A000064,$5A00000A|1	bytes 640 fnv 4E0A0D91
+IPLocate|plane|$5A000064,$5A00000A|2	bytes 640 fnv 4E0A0D91
+IPLocate|a2 area|$5A000064,$5A00000A|1	bytes 128 fnv 239FEE1E
+output|kept|after IPLocate d0 $5A001234 "0,0"|1	kept
+output|popped|after IPLocate d0 $5A001234 "0,0"|1	$00000000
+output|Rast|after IPLocate d0 $5A001234 "0,0"|1	bytes 128 fnv 6B2F925C
+output|Rast's BitMap|after IPLocate d0 $5A001234 "0,0"|1	$00000001
+output|plane|after IPLocate d0 $5A001234 "0,0"|1	bytes 640 fnv FD7AB175
+output|plane|after IPLocate d0 $5A001234 "0,0"|2	bytes 640 fnv FD7AB175
+output|a2 area|after IPLocate d0 $5A001234 "0,0"|1	bytes 128 fnv 239FEE1E
+output|text drawn|after IPLocate d0 $5A001234 "0,0"|1	$00000001
+finit|kept||1	kept
+finit|popped||1	$00000000
