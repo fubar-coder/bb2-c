@@ -13,5 +13,6 @@ void cmd_prev(CLI::App &app, int &status);
 void cmd_cd_update(CLI::App &app, int &status);
 void cmd_cd_reference(CLI::App &app, int &status);
 void cmd_ted_oracle(CLI::App &app, int &status);
+void cmd_libs_compare(CLI::App &app, int &status);
 
 #endif

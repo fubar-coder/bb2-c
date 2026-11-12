@@ -19,5 +19,6 @@ int main(int argc, char **argv)
     cmd_cd_update(app, status);
     cmd_cd_reference(app, status);
     cmd_ted_oracle(app, status);
+    cmd_libs_compare(app, status);
     return cli::run(app, argc, argv, status);
 }

@@ -226,6 +226,31 @@ format. No staleness rule: when the port gives the original's value again
 `.gitattributes` gets `/libs/tests/expected/** -text diff` as for the
 corpus.
 
+Decided with the judge (task 2.3, `tools/lib/libscmp/libscmp.h`), where
+the text above leaves a choice; the writer (`capture.[ch]`) follows them:
+
+- The header is exactly line 1, `# capture NAME 1`: NAME of
+  `[A-Za-z0-9_.-]`, at most 63 characters, the file's name without `.txt`;
+  `1` is the format version. There are no other comment lines and no empty
+  lines; the last line may lack its newline.
+- One spelling per key, so that keys compare as text: `\xHH` with two
+  upper-case hex digits, only for a byte outside 0x20-0x7E that is not a
+  TAB (a TAB is always `\t`); a needless escape (`\x41`), another escape
+  (`\n`) or a raw byte outside 0x20-0x7E in a key is a malformed line.
+- The occurrence number is decimal from 1 without a leading zero. A block
+  key is `BLOCK:N` alone (no `|` parts), N decimal from 0; block N holds
+  the observations N*4096 to N*4096+COUNT-1, counted from 0 as the tape's
+  segments, and its value starts with the decimal COUNT and a space (the
+  judge names that range).
+- A qualifier is one space after the key, then `[orig]` or `[fixed #N]`
+  (N decimal from 1), then the TAB; one `[fixed]` case per key.
+- A value is printable ASCII (0x20-0x7E), not empty, without TAB. The
+  judge compares values as text and reads only three forms: a value
+  starting `not captured: ` (two such values pass whatever the reasons; one
+  against another value is a difference), a value `lost` or starting
+  `lost ` (refused by `libs-accept`), and the COUNT of a block.
+- The order of the cases does not count; a key is looked up.
+
 ### D5. Record and update targets
 
 `libs-capture` (a custom target, not in `all`, needs the CD): two runs with

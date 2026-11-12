@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h)
 foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
-		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusnotes)
+		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusnotes libscmp)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -179,6 +179,71 @@ set_tests_properties(prevcmp_malformed_entry PROPERTIES WILL_FAIL ON)
 add_test(NAME prevcmp_malformed_entry_names COMMAND results prev --intended corpuss:t01 ${prevcmp_dirs})
 set_tests_properties(prevcmp_malformed_entry_names PROPERTIES
 	PASS_REGULAR_EXPRESSION "PREV_INTENDED entry \"corpuss:t01\": unknown test")
+
+# results libs-compare (the judge of the library tests, lib/libscmp) on
+# fake runs and expected data made here: the right run passes, each broken
+# run or expected file fails with its message (the logic in detail:
+# test_libscmp.c)
+set(lc ${CMAKE_CURRENT_BINARY_DIR}/libscmp)
+set(lc_head "# capture prog 1\n")
+set(lc_exp "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1 [orig]\t$00000001\n"
+	"r|find||1 [fixed #7]\t$00000000\nBLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/exp/prog.txt ${lc_exp})
+file(WRITE ${lc}/exp/other.txt "# capture other 1\nr|c||1\t$0\n")
+file(WRITE ${lc}/run-right/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000000\n"
+	"BLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/run-right/other.txt "# capture other 1\nr|c||1\t$0\n")
+file(WRITE ${lc}/run-orig/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000001\n"
+	"BLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/run-value/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000004\nr|find||1\t$00000000\n"
+	"BLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/run-missing/prog.txt "${lc_head}r|find||1\t$00000000\nBLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/run-added/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000000\n"
+	"BLOCK:2\t4096 0BADF00D first=x\nr|new||1\t$5\n")
+file(WRITE ${lc}/run-block/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000000\n"
+	"BLOCK:2\t4096 0BADF00E first=x\n")
+file(WRITE ${lc}/run-fixed/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000001\n"
+	"BLOCK:2\t4096 0BADF00D first=x\n")
+file(WRITE ${lc}/exp-malformed/prog.txt "${lc_exp}r|ldiv d0|$7 $2|1\t$00000003\n")
+file(WRITE ${lc}/exp-ambiguous/prog.txt "${lc_exp}r|find||1\t$00000000\n")
+file(WRITE ${lc}/exp-qualifier/prog.txt "${lc_exp}r|c||1 [fix #7]\t$0\n")
+add_test(NAME libs_compare_right COMMAND results libs-compare ${lc}/run-right ${lc}/exp --set obj)
+add_test(NAME libs_compare_right_orig COMMAND results libs-compare ${lc}/run-orig ${lc}/exp --set orig
+	--only prog)
+# the filter: other differs, prog alone passes
+add_test(NAME libs_compare_only COMMAND results libs-compare ${lc}/run-value ${lc}/exp --set obj
+	--only other)
+set_tests_properties(libs_compare_only PROPERTIES WILL_FAIL ON)
+add_test(NAME libs_compare_only_names COMMAND results libs-compare ${lc}/run-value ${lc}/exp --set obj
+	--only other)
+set_tests_properties(libs_compare_only_names PROPERTIES PASS_REGULAR_EXPRESSION "other: no output of the run")
+# a broken input: fails (exit status 1 or 2) and names the case (RE)
+function(libs_compare_wrong name run exp set re)
+	add_test(NAME libs_compare_wrong_${name} COMMAND results libs-compare ${lc}/${run} ${lc}/${exp}
+		--set ${set} --only prog)
+	set_tests_properties(libs_compare_wrong_${name} PROPERTIES WILL_FAIL ON)
+	add_test(NAME libs_compare_wrong_${name}_names COMMAND results libs-compare ${lc}/${run}
+		${lc}/${exp} --set ${set} --only prog)
+	set_tests_properties(libs_compare_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
+endfunction()
+libs_compare_wrong(value run-value exp obj
+	"prog: r\\|ldiv d0\\|\\$7 \\$2\\|1: expected \\$00000003, got \\$00000004")
+libs_compare_wrong(missing run-missing exp obj
+	"prog: r\\|ldiv d0\\|\\$7 \\$2\\|1: missing \\(expected \\$00000003\\)")
+libs_compare_wrong(added run-added exp obj "prog: r\\|new\\|\\|1: added \\(got \\$5\\)")
+libs_compare_wrong(block run-block exp obj
+	"prog: BLOCK:2 \\(observations 8192..12287\\): expected 4096 0BADF00D first=x, got 4096 0BADF00E")
+# the port regressed: the [fixed #7] case fails
+libs_compare_wrong(fixed run-fixed exp obj
+	"prog: r\\|find\\|\\|1 \\[fixed #7\\]: expected \\$00000000, got \\$00000001")
+# the original's value changed: the [orig] case fails
+libs_compare_wrong(orig run-right exp orig
+	"prog: r\\|find\\|\\|1 \\[orig\\]: expected \\$00000001, got \\$00000000")
+libs_compare_wrong(malformed run-right exp-malformed obj
+	"exp-malformed/prog.txt:6: duplicate key r\\|ldiv d0\\|\\$7 \\$2\\|1 \\(first at line 2\\)")
+libs_compare_wrong(ambiguous run-right exp-ambiguous obj
+	"exp-ambiguous/prog.txt:6: r\\|find\\|\\|1 is unqualified and qualified")
+libs_compare_wrong(qualifier run-right exp-qualifier obj "exp-qualifier/prog.txt:6: unknown qualifier")
 
 # the command-line shell of the host programs (tools/lib/cli): cli::run
 add_executable(test_cli test_cli.cpp)

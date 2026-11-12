@@ -6,11 +6,13 @@ of the build against those of the build of the previous commit (`prev`),
 the CD result table `tests/data/blitz2-cd.tsv` written from a fresh
 run of the CD (`cd-update`, `cd-reference`), and the oracle data of the
 TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
-original TED (`ted-oracle`). The logic is in `tools/lib/outmatch`,
-`tools/lib/prevcmp` (with `tools/lib/previntended`), `tools/lib/cdtable`
-and `tools/lib/oracletable`, tested by `tools/tests/test_outmatch.c`,
-`test_prevcmp.c`, `test_previntended.c`, `test_cdtable.c` and
-`test_oracletable.c`.
+original TED (`ted-oracle`), and the cases of a library test run against
+the expected data `libs/tests/expected` (`libs-compare`). The logic is in
+`tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
+`tools/lib/cdtable`, `tools/lib/oracletable` and `tools/lib/libscmp`,
+tested by `tools/tests/test_outmatch.c`, `test_prevcmp.c`,
+`test_previntended.c`, `test_cdtable.c`, `test_oracletable.c` and
+`test_libscmp.c`.
 
 ## Usage
 
@@ -30,6 +32,7 @@ SUBCOMMANDS:
   cd-reference                the CD result table from the original's fresh run
   ted-oracle                  the oracle data of the TED tests from the original TED's fresh
                               run
+  libs-compare                the cases of a library test run against the expected data
 ```
 
 ### match
@@ -191,12 +194,60 @@ row is missing from `NEW`, a note is not of that form or names the row's
 own hash, or a file is malformed; the report goes to stdout (written) or
 stderr (not written).
 
+### libs-compare
+
+```
+Usage: results libs-compare [OPTIONS] RUN_DIR EXPECTED_DIR
+
+the cases of a library test run against the expected data
+
+POSITIONALS:
+  RUN_DIR TEXT REQUIRED       the run's output (NAME.txt per program)
+  EXPECTED_DIR TEXT REQUIRED  the expected data (libs/tests/expected)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --set SET           the library set of the run (required): obj (the C build) or orig
+                              (the original)
+          --only NAME         only this program (the others are not looked at)
+
+A case is KEY<TAB>VALUE; for --set obj the unqualified and the "KEY [fixed #N]"
+cases apply, for orig the unqualified and the "KEY [orig]" ones. Every
+differing, missing and added case is a finding (the first 11 per program on
+stdout). Exit status 0 equal, 1 a finding, 2 usage error or a malformed or
+unreadable file.
+```
+
+Compares the output of a library test run, `RUN_DIR/NAME.txt` per
+program, with the expected data `EXPECTED_DIR/NAME.txt`
+(`tools/lib/libscmp/libscmp.h`, the format: design D4 of the OpenSpec
+change `libs-tests-capture`). A file starts with the header
+`# capture NAME 1`; each further line is a case `KEY<TAB>VALUE`, the key
+`ROUTINE|CHECK|VECTOR|OCC` or `BLOCK:N`. In the expected data a key may
+carry a qualifier, `KEY [orig]` or `KEY [fixed #N]`: for `--set obj` (the
+run of the C build) the unqualified and the `[fixed #N]` cases apply, for
+`--set orig` (the run of the original) the unqualified and the `[orig]`
+ones. The run must have exactly the keys that apply, with the same
+values; two values `not captured: REASON` pass. Each differing case is a
+line `NAME: KEY: expected VALUE, got VALUE` (a qualified key with its
+qualifier, a block with its observation range), a case the run lacks
+`NAME: KEY: missing (expected VALUE)`, one it has in addition
+`NAME: KEY: added (got VALUE)`; the first 11 per program, then
+`NAME: ... N more`, then the program's summary line and at the end
+`libs-compare: N programs, ...`. The programs are those with a file in
+either directory, or the ones `--only` names (the others are not looked
+at); a program with a file in only one directory fails. A malformed file
+(a line not of the format, a duplicate key, a key both unqualified and
+qualified, a qualifier in a run's output, a header naming another
+program) is reported as `FILE:LINE: message`.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
 build directories and writes its report to stdout; `cd-update` and
 `cd-reference` read two TSV tables and write the third, `ted-oracle` two
-lists of hashes and writes the third.
+lists of hashes and writes the third; `libs-compare` reads two
+directories and writes its report to stdout.
 
 ## Exit codes
 
@@ -204,11 +255,15 @@ lists of hashes and writes the third.
   as intended, the table is written);
 * 1 the output does not match; a library file differs without being
   intended or an intended one does not differ; the table or the oracle
-  data have errors (nothing written);
+  data have errors (nothing written); a case of a library test run
+  differs, is missing or added, or a program lacks a file
+  (`libs-compare`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
-  written, a malformed `--intended` entry or another error (`prev`);
+  written, a malformed `--intended` entry or another error (`prev`); a
+  malformed run or expected file, or a program `--only` names without
+  files (`libs-compare`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -227,6 +282,8 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `ted-oracle`: the target `ted-oracle`
   (`programs/ted/tests/oracle/ted-oracle.cmake`), after the run of the
   original TED.
+* `libs-compare`: the tests `libs_compare_*` (`tools/tests/CMakeLists.txt`);
+  the library emulator tests follow (OpenSpec change `libs-tests-capture`).
 * Tests: `help_results`, `readme_results` (`tools/results/CMakeLists.txt`).
 
 ## Example

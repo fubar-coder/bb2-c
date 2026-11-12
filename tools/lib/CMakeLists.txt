@@ -51,6 +51,8 @@
 #              the prev build (PREV_INTENDED entries)
 #   corpusnotes  the intended deviations of the corpus programs from the
 #              original (tests/corpus/notes.tsv)
+#   libscmp    the judge of the library tests: the cases of a run against
+#              the expected data (libs/tests/expected)
 #   cli        the command-line shell of the host programs on CLI11
 #              (cli.hpp, C++20, header only: cli::run, the help format)
 add_subdirectory(hunk)
@@ -83,4 +85,5 @@ add_subdirectory(oracletable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
 add_subdirectory(corpusnotes)
+add_subdirectory(libscmp)
 add_subdirectory(cli)
