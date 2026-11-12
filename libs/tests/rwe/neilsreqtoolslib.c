@@ -1,7 +1,8 @@
 /*
  * rwe neilsreqtoolslib - the ReqTools interface of RTLib.bb: the C build
- * against the reference build of the source (refbuild), method of
- * rwecmp.h.
+ * or the reference build of the source (refbuild), one set as LIBSET
+ * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_neilsreqtoolslib.txt).
  *
  *   neilsreqtoolslib DIR   (DIR with neilsreqtoolslib, memlib, maxslib
  *                           .obj/.orig)
@@ -10,7 +11,7 @@
  * in the system library list (priority 10: before a real one): each of
  * its functions logs its registers, the tag list and the strings and
  * buffers it gets - pointers into the library, the test's requesters
- * and the string area made comparable between the sets - and answers
+ * and the string area made independent of the layout - and answers
  * with a chosen result (a file requester writes the chosen directory and
  * file, GetString/GetLong the chosen value, the font requester its
  * TextAttr and screen mode fields, a multi-load a file list).
@@ -40,6 +41,7 @@
  * without reqtools.library (they call through a6 = 0); a second finit
  * (frees again).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "neilsreqtoolslib"
@@ -57,10 +59,10 @@ enum { E_EZREQ, E_LOAD, E_FONT, E_SM, E_PAL, E_GETLONG, E_GETLONGRNG, E_GETSTR, 
 #define NVEC 27                         /* up to rtUnlockWindow (-162) */
 #define NREQ 8
 static struct Library *fake;
-static UBYTE pool[2][NREQ][256];        /* the requesters of each set */
-static int npool[2], allocfail = -1;
-static ULONG opens[2];
-static UBYTE hinfo[2][16];              /* the "rtHandlerInfo" */
+static UBYTE pool[NREQ][256];           /* the requesters */
+static int npool, allocfail = -1;
+static ULONG opens;
+static UBYTE hinfo[16];                 /* the "rtHandlerInfo" */
 
 static ULONG fk_ret, fk_long;
 static const char *fk_dir = "", *fk_name = "", *fk_str = "";
@@ -74,24 +76,24 @@ struct rec {
     UBYTE s[2][64];
 };
 #define NLOG 16
-static struct rec log_[2][NLOG];
-static int nlog[2];
-static UBYTE out[2][300];
+static struct rec log_[NLOG];
+static int nlog;
+static UBYTE out[300];
 
 /* a pointer made comparable: into the library, a requester of the set,
    its string area, its handler info */
 static ULONG norm(ULONG p)
 {
-    struct lib *l = getlib(&sets[cur], LIB);
+    struct lib *l = getlib(&loaded, LIB);
     int k;
     if (p >= (ULONG)l->code && p < (ULONG)l->code + l->size)
         return 0x4c000000;
     for (k = 0; k < NREQ; k++)
-        if (p >= (ULONG)pool[cur][k] && p < (ULONG)pool[cur][k] + 256)
-            return 0x52000000 | k << 16 | (p - (ULONG)pool[cur][k]);
-    if (p >= (ULONG)out[cur] && p < (ULONG)out[cur] + sizeof out[0])
-        return 0x4f000000 | (p - (ULONG)out[cur]);
-    if (p == (ULONG)hinfo[cur])
+        if (p >= (ULONG)pool[k] && p < (ULONG)pool[k] + 256)
+            return 0x52000000 | k << 16 | (p - (ULONG)pool[k]);
+    if (p >= (ULONG)out && p < (ULONG)out + sizeof out)
+        return 0x4f000000 | (p - (ULONG)out);
+    if (p == (ULONG)hinfo)
         return 0x48000000;
     return p;
 }
@@ -114,9 +116,9 @@ static struct rec *logcall(LONG lvo, ULONG d0, ULONG a0, ULONG a1, ULONG a2, ULO
     struct rec *r;
     ULONG *t = (ULONG *)a0;
     int i;
-    if (nlog[cur] == NLOG)
-        return &log_[cur][NLOG - 1];
-    r = &log_[cur][nlog[cur]++];
+    if (nlog == NLOG)
+        return &log_[NLOG - 1];
+    r = &log_[nlog++];
     memset(r, 0, sizeof *r);
     r->lvo = lvo;
     r->d0 = d0;
@@ -131,7 +133,7 @@ static struct rec *logcall(LONG lvo, ULONG d0, ULONG a0, ULONG a1, ULONG a2, ULO
             ULONG data = t[2 * i + 1];
             r->tags[2 * i] = t[2 * i];
             if (t[2 * i] == RT_ReqHandler)
-                *(APTR *)data = hinfo[cur];             /* reqtools sets it */
+                *(APTR *)data = hinfo;             /* reqtools sets it */
             if (t[2 * i] == RTFI_OkText)
                 data = *(const ULONG *)data;            /* the text */
             r->tags[2 * i + 1] = norm(data);
@@ -142,24 +144,24 @@ static struct rec *logcall(LONG lvo, ULONG d0, ULONG a0, ULONG a1, ULONG a2, ULO
 static struct Library *fk_open(struct Library *base __asm("a6"))
 {
     base->lib_OpenCnt++;
-    opens[cur]++;
+    opens++;
     return base;
 }
 
 static ULONG fk_close(struct Library *base __asm("a6"))
 {
     base->lib_OpenCnt--;
-    opens[cur]--;
+    opens--;
     return 0;
 }
 
 static ULONG fk_alloc(ULONG type __asm("d0"), ULONG tags __asm("a0"))
 {
     logcall(-30, type, tags, 0, 0, 0, 0);
-    if (npool[cur] == allocfail || npool[cur] == NREQ)
+    if (npool == allocfail || npool == NREQ)
         return 0;
-    memset(pool[cur][npool[cur]], 0, 256);
-    return (ULONG)pool[cur][npool[cur]++];
+    memset(pool[npool], 0, 256);
+    return (ULONG)pool[npool++];
 }
 
 static ULONG fk_free(ULONG req __asm("a1"))
@@ -283,73 +285,74 @@ static void fake_add(void)
 
 static void logreset(void)
 {
-    nlog[cur] = 0;                      /* in the setup of each set */
+    nlog = 0;                           /* in the setup of the call */
 }
 
-/* the calls of both sets the same */
+/* the calls of the library: each record (its LVO first, the pointers
+   into the test program as such) */
 static void logcheck(void)
 {
     int k;
-    SAME("reqtools calls", nlog[cur]);
-    for (k = 0; k < nlog[0] && k < nlog[1]; k++) {
+    OBS("reqtools calls", nlog);
+    for (k = 0; k < nlog; k++) {
         char what[40];
-        sprintf(what, "call %d (LVO %ld)", k, (long)log_[0][k].lvo);
-        SAMEPTRBYTES(what, ((struct rec *[]){ &log_[0][k], &log_[1][k] }), sizeof(struct rec));
+        sprintf(what, "call %d", k);
+        OBSPTRBYTES(what, &log_[k], sizeof(struct rec));
     }
 }
 
-/* RTReturnValue */
+/* RTReturnValue (the result of the last requester: a pointer into the
+   test program as such) */
 static void retval(void)
 {
     const char *rout = ROUT;
     ROUT = "RTReturnValue";
-    DO2(ENT(LIB, E_RETVAL, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_RETVAL, 0), (void)0);
+    OBSPTR("d0", R.d[0], NULL, 0);
     ROUT = rout;
 }
 
 /* the string arguments at out+20 one after another, a3 behind the last,
    their lengths below a2 (the first at -4) */
-static ULONG frame[2][4];
+static ULONG frame[4];
 static void strargs(const char *s1, const char *s2, const char *s3)
 {
     const char *s[3] = { s1, s2, s3 };
     UBYTE *p;
     int i;
-    memset(out[cur], 0xee, sizeof out[0]);
-    p = out[cur] + 20;
+    memset(out, 0xee, sizeof out);
+    p = out + 20;
     for (i = 0; i < 3; i++) {
-        frame[cur][2 - i] = s[i] ? strlen(s[i]) : 0;
+        frame[2 - i] = s[i] ? strlen(s[i]) : 0;
         if (!s[i])
             continue;
         strcpy((char *)p, s[i]);
-        R[cur].d[i] = (ULONG)p;
+        R.d[i] = (ULONG)p;
         p += strlen(s[i]) + 1;
     }
-    R[cur].a[2] = (ULONG)&frame[cur][3];
-    R[cur].a[3] = (ULONG)p;
+    R.a[2] = (ULONG)&frame[3];
+    R.a[3] = (ULONG)p;
 }
 
 /* a call, its reqtools calls, RTReturnValue after it; RES = the
    registers after the call */
-static struct regs RES[2];
+static struct regs RES;
 #define DOREQ(e, form, setup) do {                                          \
-        DO2(ENT(LIB, e, form), logreset(); setup);                          \
-        SAME("d0", norm(R[cur].d[0]));  /* a pointer into the library: */  \
-        logcheck();                     /* compared as such */              \
-        RES[0] = R[0];                                                      \
-        RES[1] = R[1];                                                      \
+        DO1(ENT(LIB, e, form), logreset(); setup);                          \
+        /* a pointer into the library or the test program: as such */      \
+        OBSPTR("d0", norm(R.d[0]), NULL, 0);                                \
+        logcheck();                                                         \
+        RES = R;                                                            \
         retval();                                                           \
     } while (0)
 
-/* a string result (after DOREQ / after DO2) */
+/* a string result (after DOREQ / after DO1) */
 #define STRRES() do {                                                       \
-        SAME("a3", RES[cur].a[3] - (ULONG)out[cur]);                        \
-        SAMEBYTES("out", out, sizeof out[0]);                               \
+        OBS("a3", RES.a[3] - (ULONG)out);                                   \
+        OBSBYTES("out", out, sizeof out);                                   \
     } while (0)
 #define STRRES2() do {                                                      \
-        RES[0] = R[0];                                                      \
-        RES[1] = R[1];                                                      \
+        RES = R;                                                            \
         STRRES();                                                           \
     } while (0)
 
@@ -360,16 +363,16 @@ static void before_init(void)
     int k;
     strcpy(VEC, "before init");
     ROUT = "IsReqToolsActive";
-    DO2(ENT(LIB, E_ACTIVE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ACTIVE, 0), (void)0);
+    OBS("d0", R.d[0]);
     retval();
     ROUT = "RTEZFreePattern";
     for (k = 0; k < 4; k++)
-        DO2(ENT(LIB, E_FREEPAT, 0), R[cur].d[0] = k);
+        DO1(ENT(LIB, E_FREEPAT, 0), R.d[0] = k);
     ROUT = "RTNextPathEntry";
-    DO2(ENT(LIB, E_NEXT, 0), memset(out[cur], 0xee, sizeof out[0]);
-        R[cur].a[3] = (ULONG)out[cur] + 4);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_NEXT, 0), memset(out, 0xee, sizeof out);
+        R.a[3] = (ULONG)out + 4);
+    OBS("d0", R.d[0]);
     STRRES2();
 }
 
@@ -378,13 +381,13 @@ static void init_case(const char *what, int failat)
     ROUT = "init";
     strcpy(VEC, what);
     allocfail = failat;
-    DO2(ENT(LIB, E_INIT, 0), logreset(); npool[cur] = 0; opens[cur] = 0);
+    DO1(ENT(LIB, E_INIT, 0), logreset(); npool = 0; opens = 0);
     logcheck();
-    SAME("library opened", opens[cur]);
+    OBS("library opened", opens);
     allocfail = -1;
     ROUT = "IsReqToolsActive";
-    DO2(ENT(LIB, E_ACTIVE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ACTIVE, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void inits(void)
@@ -397,17 +400,17 @@ static void inits(void)
     Forbid();
     old = SetFunction((struct Library *)SysBase, -552, (APTR)rwe_fail0);
     CacheClearU();
-    DO2(ENT(LIB, E_INIT, 0), logreset());
+    DO1(ENT(LIB, E_INIT, 0), logreset());
     SetFunction((struct Library *)SysBase, -552, old);
     CacheClearU();
     Permit();
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     logcheck();
     ROUT = "IsReqToolsActive";
-    DO2(ENT(LIB, E_ACTIVE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_ACTIVE, 0), (void)0);
+    OBS("d0", R.d[0]);
     ROUT = "finit (inactive)";
-    DO2(ENT(LIB, E_FINIT, 0), logreset());
+    DO1(ENT(LIB, E_FINIT, 0), logreset());
     logcheck();
 
     fake_add();
@@ -417,25 +420,25 @@ static void inits(void)
         init_case(what, k);
         /* BUG(orig) (#460): the library stays open, finit does nothing */
         ROUT = "finit (inactive)";
-        DO2(ENT(LIB, E_FINIT, 0), logreset(); opens[cur] = 0);
+        DO1(ENT(LIB, E_FINIT, 0), logreset(); opens = 0);
         logcheck();
-        SAME("library closed", opens[cur]);
+        OBS("library closed", opens);
     }
     init_case("ok", -1);
-    BOTH("active", R[cur].d[0] == 0xffffffffUL);
-    BOTH("seven requesters", nlog[cur] == 7 && npool[cur] == 7);
+    BOTH("active", R.d[0] == 0xffffffffUL);
+    BOTH("seven requesters", nlog == 7 && npool == 7);
 }
 
 static void versions(void)
 {
     strcpy(VEC, "");
     ROUT = "RTVersion";
-    DO2(ENT(LIB, E_VER, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
-    BOTH("99", (UWORD)R[cur].d[0] == 99);
+    DO1(ENT(LIB, E_VER, 0), (void)0);
+    OBS("d0", R.d[0]);
+    BOTH("99", (UWORD)R.d[0] == 99);
     ROUT = "RTRevision";
-    DO2(ENT(LIB, E_REV, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_REV, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void ezrequests(void)
@@ -448,9 +451,9 @@ static void ezrequests(void)
         sprintf(VEC, "title \"%s\"", titles[t]);
         fk_ret = 3 + t;
         DOREQ(E_EZREQ, 0, strargs(titles[t], "Body text", "Ok|Cancel"));
-        DOREQ(E_EZREQ, 1, strargs(titles[t], "Body", "_Yes|_No"); R[cur].d[3] = 4);
-        DOREQ(E_EZREQ, 2, strargs(titles[t], "Body", "A|B|C"); R[cur].d[3] = 0;
-              R[cur].d[4] = 2; R[cur].d[5] = 0x5);
+        DOREQ(E_EZREQ, 1, strargs(titles[t], "Body", "_Yes|_No"); R.d[3] = 4);
+        DOREQ(E_EZREQ, 2, strargs(titles[t], "Body", "A|B|C"); R.d[3] = 0;
+              R.d[4] = 2; R.d[5] = 0x5);
     }
     strcpy(VEC, "defaults again");
     DOREQ(E_EZREQ, 0, strargs("", "x", "y"));
@@ -460,11 +463,11 @@ static void ezrequests(void)
         sprintf(VEC, "gadgets %s", t ? "none" : "\"Ok\"");
         fk_ret = 7;
         DOREQ(E_FLAGS, 0, strargs("Flags title", "Body", t ? "" : "Ok");
-              R[cur].d[3] = 0x00000208);
-        BOTH("no title (BUG(orig) #455)", log_[cur][0].tags[0] == 0x80000014UL
-             && log_[cur][0].tags[1] == 0 && (log_[cur][0].a2 != 0) == !t);
+              R.d[3] = 0x00000208);
+        BOTH("no title (BUG(orig) #455)", log_[0].tags[0] == 0x80000014UL
+             && log_[0].tags[1] == 0 && (log_[0].a2 != 0) == !t);
         DOREQ(E_FLAGS, 1, strargs("Flags title", "Body", t ? "" : "Ok");
-              R[cur].d[3] = 0x10; R[cur].d[4] = 1);
+              R.d[3] = 0x10; R.d[4] = 1);
     }
     ROUT = "RTEZRequest";
     strcpy(VEC, "after RTEZFlagsRequest, no title");
@@ -475,7 +478,7 @@ static void ezrequests(void)
         static const ULONG tags[] = { 0x80000003UL, 0, 0x80000014UL, (ULONG)"t", 0, 0 };
         strcpy(VEC, "tag list");
         fk_ret = 0;
-        DOREQ(E_REQ, 0, strargs("Body", "Gad", NULL); R[cur].d[2] = (ULONG)tags);
+        DOREQ(E_REQ, 0, strargs("Body", "Gad", NULL); R.d[2] = (ULONG)tags);
     }
 }
 
@@ -489,16 +492,16 @@ static void filereq(int e, int form, const char *what, ULONG tags)
         fk_ret = 1;
         fk_dir = dirs[i];
         fk_name = i == 2 ? "" : "chosen.file";
-        DOREQ(e, form, strargs("A title", "default.name", NULL); R[cur].d[2] = tags);
+        DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags);
         STRRES();
         if (e == E_LOAD && i == 3)
             BOTH("Work:a/b/chosen.file at the title",
-                 !strcmp((char *)out[cur] + 20, "Work:a/b/chosen.file")
-                 && RES[cur].d[0] == 20 && RES[cur].a[3] == (ULONG)out[cur] + 41);
+                 !strcmp((char *)out + 20, "Work:a/b/chosen.file")
+                 && RES.d[0] == 20 && RES.a[3] == (ULONG)out + 41);
     }
     sprintf(VEC, "%s cancel", what);
     fk_ret = 0;
-    DOREQ(e, form, strargs("A title", "default.name", NULL); R[cur].d[2] = tags);
+    DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags);
     STRRES();
 }
 
@@ -519,9 +522,9 @@ static void filereqs(void)
     for (k = 0; k < 5; k++) {
         ROUT = "RTEZSetDefaultDirectory";
         sprintf(VEC, "requester %d", k);
-        DOREQ(E_SETDIR, 0, logreset(); R[cur].d[0] = k; R[cur].d[1] = (ULONG)"Work:dir");
+        DOREQ(E_SETDIR, 0, logreset(); R.d[0] = k; R.d[1] = (ULONG)"Work:dir");
         ROUT = "RTEZSetPattern";
-        DOREQ(E_SETPAT, 0, logreset(); R[cur].d[0] = k; R[cur].d[1] = (ULONG)"#?.info");
+        DOREQ(E_SETPAT, 0, logreset(); R.d[0] = k; R.d[1] = (ULONG)"#?.info");
     }
     /* the flags the pattern set: seen by the next requesters */
     ROUT = "RTEZLoadFile";
@@ -531,8 +534,8 @@ static void filereqs(void)
     for (k = 0; k < 4; k++) {
         ROUT = "RTEZFreePattern";
         sprintf(VEC, "requester %d", k);
-        DO2(ENT(LIB, E_FREEPAT, 0), R[cur].d[0] = k);
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_FREEPAT, 0), R.d[0] = k);
+        OBS("d0", R.d[0]);
     }
     ROUT = "RTEZLoadFile";
     filereq(E_LOAD, 0, "pattern freed", 0);
@@ -563,7 +566,7 @@ static void multiload(void)
 
     ROUT = "RTEZSetPattern";
     strcpy(VEC, "multi-load");
-    DOREQ(E_SETPAT, 0, R[cur].d[0] = 3; R[cur].d[1] = (ULONG)"#?");
+    DOREQ(E_SETPAT, 0, R.d[0] = 3; R.d[1] = (ULONG)"#?");
     for (n = 0; n < 3; n++) {
         ROUT = "RTEZMultiLoadFile";
         sprintf(VEC, "%s", n == 0 ? "list of 3" : n == 1 ? "list at $xx00" : "cancel");
@@ -572,14 +575,14 @@ static void multiload(void)
         fk_dir = n == 0 ? "Work:dir" : "RAM:";
         DOREQ(E_MULTI, 0, strargs("Multi", NULL, NULL));
         if (n == 1)
-            BOTH("the list, not -1 (BUG(orig) #462)", RES[cur].d[0] == (ULONG)aligned);
+            BOTH("the list, not -1 (BUG(orig) #462)", RES.d[0] == (ULONG)aligned);
         fk_list = NULL;
         for (k = 0; k < 4; k++) {
             ROUT = "RTNextPathEntry";
             sprintf(VEC, "list %d entry %d", n, k);
-            DO2(ENT(LIB, E_NEXT, 0), logreset(); memset(out[cur], 0xee, sizeof out[0]);
-                R[cur].a[3] = (ULONG)out[cur] + 4);
-            SAME("d0", R[cur].d[0]);
+            DO1(ENT(LIB, E_NEXT, 0), logreset(); memset(out, 0xee, sizeof out);
+                R.a[3] = (ULONG)out + 4);
+            OBS("d0", R.d[0]);
             STRRES2();
             logcheck();
         }
@@ -588,7 +591,7 @@ static void multiload(void)
 
 static void others(void)
 {
-    UBYTE res[2][16];
+    UBYTE res[16];
     int k;
 
     ROUT = "RTEZFontRequest";
@@ -597,28 +600,26 @@ static void others(void)
         fk_ret = !k;
         DOREQ(E_FONT, 0, strargs("Font", NULL, NULL));
         if (!k) {
-            for (cur = 0; cur < 2; cur++)
-                memcpy(res[cur], (UBYTE *)RES[cur].d[0], 8);
-            SAMEPTRBYTES("the TextAttr", res, 8);
+            memcpy(res, (UBYTE *)RES.d[0], 8);
+            OBSPTRBYTES("the TextAttr", res, 8);
         }
     }
     ROUT = "RTEZScreenModeRequest";
     for (k = 0; k < 4; k++) {
         sprintf(VEC, "form %d %s", k & 1, k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
-        DOREQ(E_SM, k & 1, strargs("Screen", NULL, NULL); R[cur].d[1] = 0x12345);
-        BOTH("rtFontRequestA (BUG(orig) #466)", nlog[cur] == 1 && log_[cur][0].lvo == -96);
+        DOREQ(E_SM, k & 1, strargs("Screen", NULL, NULL); R.d[1] = 0x12345);
+        BOTH("rtFontRequestA (BUG(orig) #466)", nlog == 1 && log_[0].lvo == -96);
         if (!(k & 2)) {
-            for (cur = 0; cur < 2; cur++)
-                memcpy(res[cur], (UBYTE *)RES[cur].d[0], 16);
-            SAMEPTRBYTES("the screen mode", res, 16);
+            memcpy(res, (UBYTE *)RES.d[0], 16);
+            OBSPTRBYTES("the screen mode", res, 16);
         }
     }
     ROUT = "RTEZPaletteRequest";
     for (k = 0; k < 2; k++) {
         sprintf(VEC, "ret %d", 5 - 6 * k);
         fk_ret = 5 - 6 * k;
-        DOREQ(E_PAL, 0, strargs("Palette", NULL, NULL); R[cur].d[1] = 3 + k);
+        DOREQ(E_PAL, 0, strargs("Palette", NULL, NULL); R.d[1] = 3 + k);
     }
 
     ROUT = "RTEZGetLong";
@@ -626,16 +627,16 @@ static void others(void)
         sprintf(VEC, "form %d %s", k & 1, k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         fk_long = 1000 + k;
-        DOREQ(E_GETLONG, k & 1, strargs("Number", "Enter it", NULL); R[cur].d[2] = 77 + k);
-        BOTH("the value, also on cancel (BUG(orig) #457)", RES[cur].d[0] == 1000 + (ULONG)k);
+        DOREQ(E_GETLONG, k & 1, strargs("Number", "Enter it", NULL); R.d[2] = 77 + k);
+        BOTH("the value, also on cancel (BUG(orig) #457)", RES.d[0] == 1000 + (ULONG)k);
     }
     ROUT = "RTEZGetLongRange";
     for (k = 0; k < 4; k++) {
         sprintf(VEC, "form %d %s", k & 1, k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         fk_long = 2000 + k;
-        DOREQ(E_GETLONGRNG, k & 1, strargs("Range", "Enter it", NULL); R[cur].d[2] = 10;
-              R[cur].d[3] = 20 + k; R[cur].d[4] = 15);
+        DOREQ(E_GETLONGRNG, k & 1, strargs("Range", "Enter it", NULL); R.d[2] = 10;
+              R.d[3] = 20 + k; R.d[4] = 15);
     }
 
     ROUT = "RTEZGetString";
@@ -643,37 +644,35 @@ static void others(void)
         sprintf(VEC, "form %d %s", k & 1, k >= 4 ? "empty" : k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         fk_str = k >= 4 ? "" : "typed text";
-        DOREQ(E_GETSTR, k & 1, strargs("String", "Enter it", NULL); R[cur].d[2] = 40;
-              R[cur].d[3] = (ULONG)"default");
+        DOREQ(E_GETSTR, k & 1, strargs("String", "Enter it", NULL); R.d[2] = 40;
+              R.d[3] = (ULONG)"default");
         STRRES();
     }
 
     ROUT = "RTLockWindow";
     {
-        static ULONG winobj[2][2];
-        for (cur = 0; cur < 2; cur++)
-            winobj[cur][0] = 0xcafe0042UL;
+        static ULONG winobj[2];
+        winobj[0] = 0xcafe0042UL;
         strcpy(VEC, "");
-        DOREQ(E_LOCK, 0, R[cur].a[1] = (ULONG)winobj[cur]);
+        DOREQ(E_LOCK, 0, R.a[1] = (ULONG)winobj);
         ROUT = "RTUnlockWindow";
-        DOREQ(E_UNLOCK, 0, R[cur].a[1] = (ULONG)winobj[cur]; R[cur].d[1] = 0x10c1234);
+        DOREQ(E_UNLOCK, 0, R.a[1] = (ULONG)winobj; R.d[1] = 0x10c1234);
     }
 }
 
 static void async(void)
 {
     static struct MsgPort port;
-    static UBYTE obj[2][100];
+    static UBYTE obj[100];
     int k;
 
     port.mp_SigBit = 5;
-    for (cur = 0; cur < 2; cur++)
-        *(ULONG *)(obj[cur] + 86) = (ULONG)&port;
+    *(ULONG *)(obj + 86) = (ULONG)&port;
     for (k = 0; k < 2; k++) {
         sprintf(VEC, "%s", k ? "not up" : "up");
         ROUT = "RTASyncRequest";
         fk_ret = k ? 2 : CALL_HANDLER;
-        DOREQ(E_ASYNC, 0, strargs("Async", "Body", "Ok"); R[cur].a[1] = (ULONG)obj[cur]);
+        DOREQ(E_ASYNC, 0, strargs("Async", "Body", "Ok"); R.a[1] = (ULONG)obj);
         ROUT = "RTCheckASyncRequest";
         DOREQ(E_CHECKAS, 0, (void)0);
         fk_ret = 0;
@@ -684,8 +683,8 @@ static void async(void)
 
         ROUT = "RTASyncPaletteRequest";
         fk_ret = k ? 2 : CALL_HANDLER;
-        DOREQ(E_ASYNCP, 0, strargs("Async palette", NULL, NULL); R[cur].d[1] = 7;
-              R[cur].a[1] = (ULONG)obj[cur]);
+        DOREQ(E_ASYNCP, 0, strargs("Async palette", NULL, NULL); R.d[1] = 7;
+              R.a[1] = (ULONG)obj);
         ROUT = "RTCheckASyncPaletteRequest";
         fk_ret = CALL_HANDLER;
         DOREQ(E_CHECKASP, 0, (void)0);
@@ -713,34 +712,34 @@ static void realphase(void)
     cnt = real->lib_OpenCnt;            /* others may have it open too */
     strcpy(VEC, "real reqtools.library");
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
-    BOTH("a requester", R[cur].d[0] != 0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    BOTH("a requester", R.d[0] != 0);
     ROUT = "IsReqToolsActive";
-    DO2(ENT(LIB, E_ACTIVE, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
-    BOTH("active", R[cur].d[0] == 0xffffffffUL);
+    DO1(ENT(LIB, E_ACTIVE, 0), (void)0);
+    OBS("d0", R.d[0]);
+    BOTH("active", R.d[0] == 0xffffffffUL);
     ROUT = "RTVersion";
-    DO2(ENT(LIB, E_VER, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
-    BOTH("= lib_Version", (UWORD)R[cur].d[0] == real->lib_Version);
+    DO1(ENT(LIB, E_VER, 0), (void)0);
+    OBS("d0", R.d[0]);
+    BOTH("= lib_Version", (UWORD)R.d[0] == real->lib_Version);
     ROUT = "RTRevision";
-    DO2(ENT(LIB, E_REV, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_REV, 0), (void)0);
+    OBS("d0", R.d[0]);
     for (k = 0; k < 5; k++) {
         ROUT = "RTEZSetDefaultDirectory";
         sprintf(VEC, "real, requester %d", k);
-        DO2(ENT(LIB, E_SETDIR, 0), R[cur].d[0] = k; R[cur].d[1] = (ULONG)"RAM:");
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_SETDIR, 0), R.d[0] = k; R.d[1] = (ULONG)"RAM:");
+        OBS("d0", R.d[0]);
         ROUT = "RTEZSetPattern";
-        DO2(ENT(LIB, E_SETPAT, 0), R[cur].d[0] = k; R[cur].d[1] = (ULONG)"#?.txt");
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_SETPAT, 0), R.d[0] = k; R.d[1] = (ULONG)"#?.txt");
+        OBS("d0", R.d[0]);
     }
     ROUT = "finit";
     strcpy(VEC, "real reqtools.library");
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     printf("neilsreqtoolslib: real reqtools.library %u.%u, open count %u before init, "
            "%u after finit\n", real->lib_Version, real->lib_Revision, cnt, real->lib_OpenCnt);
-    check("neilsreqtoolslib: real reqtools closed by both finits", real->lib_OpenCnt == cnt);
+    check("neilsreqtoolslib: real reqtools closed by finit", real->lib_OpenCnt == cnt);
     CloseLibrary(real);
 }
 
@@ -754,14 +753,45 @@ int main(int argc, char **argv)
         printf("usage: neilsreqtoolslib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("IsReqToolsActive", d1-d7|a0-a3|a6);
+    KEEPS("RTReturnValue", d1-d7|a0-a3|a6);
+    KEEPS("RTEZFreePattern", d1-d7|a0-a3|a6);
+    KEEPS("RTNextPathEntry", d3-d7|a2|a6);
+    KEEPS("init", d2-d7|a2|a3);
+    KEEPS("finit (inactive)", d1-d7|a0-a3|a6);
+    KEEPS("RTVersion", d1-d7|a0|a2|a3|a6);
+    KEEPS("RTRevision", d0-d7|a0|a2|a3|a6);
+    KEEPS("RTEZRequest", d2-d7|a3|a6);
+    KEEPS("RTEZFlagsRequest", d2-d7|a3|a6);
+    KEEPS("RTRequest", d2-d7|a3|a6);
+    KEEPS("RTEZLoadFile", d2-d7|a6);
+    KEEPS("RTEZSaveFile", d2-d7|a3|a6);
+    KEEPS("RTFileRequest", d2-d7|a6);
+    KEEPS("RTEZPathRequest", d2-d7|a6);
+    KEEPS("RTEZSetDefaultDirectory", d2-d7|a2|a3|a6);
+    KEEPS("RTEZSetPattern", d2-d7|a2|a3|a6);
+    KEEPS("RTEZMultiLoadFile", d2-d7|a3|a6);
+    KEEPS("RTEZFontRequest", d2-d7|a2|a3|a6);
+    KEEPS("RTEZScreenModeRequest", d2-d7|a2|a3|a6);
+    KEEPS("RTEZPaletteRequest", d2-d7|a3|a6);
+    KEEPS("RTEZGetLong", d2-d7|a3|a6);
+    KEEPS("RTEZGetLongRange", d2-d7|a3|a6);
+    KEEPS("RTEZGetString", d2-d7|a6);
+    KEEPS("RTLockWindow", d2-d7|a2|a3|a6);
+    KEEPS("RTUnlockWindow", d2-d7|a2|a3|a6);
+    KEEPS("RTASyncRequest", d2-d7|a3|a6);
+    KEEPS("RTCheckASyncRequest", d2-d7|a2|a3|a6);
+    KEEPS("RTEndASyncRequest", d2-d7|a2|a3|a6);
+    KEEPS("RTASyncPaletteRequest", d2-d7|a3|a6);
+    KEEPS("RTCheckASyncPaletteRequest", d2-d7|a2|a3|a6);
+    KEEPS("RTEndASyncPaletteRequest", d2-d7|a2|a3|a6);
+    KEEPS("finit", d2-d7|a2|a3);
     ROUT = "memlib init";
     VEC[0] = 0;
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], 0, 0);
-    }
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 7, 0), &R, 0, 0);
 
     {
         /* for the notes only: the fake is used either way */
@@ -782,17 +812,15 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_FINIT, 0), logreset(); opens[cur] = 1);
+    DO1(ENT(LIB, E_FINIT, 0), logreset(); opens = 1);
     logcheck();
-    SAME("library closed", opens[cur]);
-    BOTH("seven requesters and the file list freed", nlog[cur] == 8);
+    OBS("library closed", opens);
+    BOTH("seven requesters and the file list freed", nlog == 8);
     check("neilsreqtoolslib: fake closed (only the failed inits' opens left)",
-          fake->lib_OpenCnt == 2 * 7);
+          fake->lib_OpenCnt == 7);
 
-    for (cur = 0; cur < 2; cur++) {
-        markregs(&R[cur]);
-        callregs(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], 0, 0);
-    }
+    markregs(&R);
+    callregs(entry_form(getlib(&loaded, "memlib"), 8, 0), &R, 0, 0);
     Forbid();
     fake->lib_OpenCnt = 0;
     Permit();

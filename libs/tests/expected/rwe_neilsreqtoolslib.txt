@@ -1,0 +1,1220 @@
+# capture rwe_neilsreqtoolslib 1
+IsReqToolsActive|kept|before init|1	kept
+IsReqToolsActive|popped|before init|1	$00000000
+IsReqToolsActive|d0|before init|1	$00000000
+RTReturnValue|kept|before init|1	kept
+RTReturnValue|popped|before init|1	$00000000
+RTReturnValue|d0|before init|1	$00000000
+RTEZFreePattern|kept|before init|1	kept
+RTEZFreePattern|popped|before init|1	$00000000
+RTEZFreePattern|kept|before init|2	kept
+RTEZFreePattern|popped|before init|2	$00000000
+RTEZFreePattern|kept|before init|3	kept
+RTEZFreePattern|popped|before init|3	$00000000
+RTEZFreePattern|kept|before init|4	kept
+RTEZFreePattern|popped|before init|4	$00000000
+RTNextPathEntry|kept|before init|1	kept
+RTNextPathEntry|popped|before init|1	$00000000
+RTNextPathEntry|d0|before init|1	$00000000
+RTNextPathEntry|a3|before init|1	$00000004
+RTNextPathEntry|out|before init|1	bytes 300 fnv 1BC9DCB5
+init|kept|OpenLibrary fails|1	kept
+init|popped|OpenLibrary fails|1	$00000000
+init|d0|OpenLibrary fails|1	$00000000
+init|reqtools calls|OpenLibrary fails|1	$00000000
+IsReqToolsActive|kept|OpenLibrary fails|1	kept
+IsReqToolsActive|popped|OpenLibrary fails|1	$00000000
+IsReqToolsActive|d0|OpenLibrary fails|1	$00000000
+finit (inactive)|kept|OpenLibrary fails|1	kept
+finit (inactive)|popped|OpenLibrary fails|1	$00000000
+finit (inactive)|reqtools calls|OpenLibrary fails|1	$00000000
+init|kept|rtAllocRequestA 0 fails|1	kept
+init|popped|rtAllocRequestA 0 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 0 fails|1	$00000001
+init|call 0|rtAllocRequestA 0 fails|1	bytes 256 fnv 8C75FCE2
+init|library opened|rtAllocRequestA 0 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 0 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 0 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 0 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 0 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 0 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 0 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 0 fails|1	$00000000
+init|kept|rtAllocRequestA 1 fails|1	kept
+init|popped|rtAllocRequestA 1 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 1 fails|1	$00000002
+init|call 0|rtAllocRequestA 1 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 1 fails|1	bytes 256 fnv 42DE087C
+init|library opened|rtAllocRequestA 1 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 1 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 1 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 1 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 1 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 1 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 1 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 1 fails|1	$00000000
+init|kept|rtAllocRequestA 2 fails|1	kept
+init|popped|rtAllocRequestA 2 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 2 fails|1	$00000003
+init|call 0|rtAllocRequestA 2 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 2 fails|1	bytes 256 fnv 42DE087C
+init|call 2|rtAllocRequestA 2 fails|1	bytes 256 fnv E7AA02AF
+init|library opened|rtAllocRequestA 2 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 2 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 2 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 2 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 2 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 2 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 2 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 2 fails|1	$00000000
+init|kept|rtAllocRequestA 3 fails|1	kept
+init|popped|rtAllocRequestA 3 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 3 fails|1	$00000004
+init|call 0|rtAllocRequestA 3 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 3 fails|1	bytes 256 fnv 42DE087C
+init|call 2|rtAllocRequestA 3 fails|1	bytes 256 fnv E7AA02AF
+init|call 3|rtAllocRequestA 3 fails|1	bytes 256 fnv 8C75FCE2
+init|library opened|rtAllocRequestA 3 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 3 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 3 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 3 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 3 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 3 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 3 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 3 fails|1	$00000000
+init|kept|rtAllocRequestA 4 fails|1	kept
+init|popped|rtAllocRequestA 4 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 4 fails|1	$00000005
+init|call 0|rtAllocRequestA 4 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 4 fails|1	bytes 256 fnv 42DE087C
+init|call 2|rtAllocRequestA 4 fails|1	bytes 256 fnv E7AA02AF
+init|call 3|rtAllocRequestA 4 fails|1	bytes 256 fnv 8C75FCE2
+init|call 4|rtAllocRequestA 4 fails|1	bytes 256 fnv 8C75FCE2
+init|library opened|rtAllocRequestA 4 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 4 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 4 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 4 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 4 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 4 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 4 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 4 fails|1	$00000000
+init|kept|rtAllocRequestA 5 fails|1	kept
+init|popped|rtAllocRequestA 5 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 5 fails|1	$00000006
+init|call 0|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 5 fails|1	bytes 256 fnv 42DE087C
+init|call 2|rtAllocRequestA 5 fails|1	bytes 256 fnv E7AA02AF
+init|call 3|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
+init|call 4|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
+init|call 5|rtAllocRequestA 5 fails|1	bytes 256 fnv 8C75FCE2
+init|library opened|rtAllocRequestA 5 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 5 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 5 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 5 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 5 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 5 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 5 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 5 fails|1	$00000000
+init|kept|rtAllocRequestA 6 fails|1	kept
+init|popped|rtAllocRequestA 6 fails|1	$00000000
+init|reqtools calls|rtAllocRequestA 6 fails|1	$00000007
+init|call 0|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|call 1|rtAllocRequestA 6 fails|1	bytes 256 fnv 42DE087C
+init|call 2|rtAllocRequestA 6 fails|1	bytes 256 fnv E7AA02AF
+init|call 3|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|call 4|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|call 5|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|call 6|rtAllocRequestA 6 fails|1	bytes 256 fnv 8C75FCE2
+init|library opened|rtAllocRequestA 6 fails|1	$00000001
+IsReqToolsActive|kept|rtAllocRequestA 6 fails|1	kept
+IsReqToolsActive|popped|rtAllocRequestA 6 fails|1	$00000000
+IsReqToolsActive|d0|rtAllocRequestA 6 fails|1	$00000000
+finit (inactive)|kept|rtAllocRequestA 6 fails|1	kept
+finit (inactive)|popped|rtAllocRequestA 6 fails|1	$00000000
+finit (inactive)|reqtools calls|rtAllocRequestA 6 fails|1	$00000000
+finit (inactive)|library closed|rtAllocRequestA 6 fails|1	$00000000
+init|kept|ok|1	kept
+init|popped|ok|1	$00000000
+init|reqtools calls|ok|1	$00000007
+init|call 0|ok|1	bytes 256 fnv 8C75FCE2
+init|call 1|ok|1	bytes 256 fnv 42DE087C
+init|call 2|ok|1	bytes 256 fnv E7AA02AF
+init|call 3|ok|1	bytes 256 fnv 8C75FCE2
+init|call 4|ok|1	bytes 256 fnv 8C75FCE2
+init|call 5|ok|1	bytes 256 fnv 8C75FCE2
+init|call 6|ok|1	bytes 256 fnv 8C75FCE2
+init|library opened|ok|1	$00000001
+IsReqToolsActive|kept|ok|1	kept
+IsReqToolsActive|popped|ok|1	$00000000
+IsReqToolsActive|d0|ok|1	$FFFFFFFF
+IsReqToolsActive|active|ok|1	$00000001
+IsReqToolsActive|seven requesters|ok|1	$00000001
+RTVersion|kept||1	kept
+RTVersion|popped||1	$00000000
+RTVersion|d0||1	$5A000063
+RTVersion|99||1	$00000001
+RTRevision|kept||1	kept
+RTRevision|popped||1	$00000000
+RTRevision|d0||1	$5A001234
+RTEZRequest|kept|title "Title"|1	kept
+RTEZRequest|popped|title "Title"|1	$00000000
+RTEZRequest|d0|title "Title"|1	$00000003
+RTEZRequest|reqtools calls|title "Title"|1	$00000001
+RTEZRequest|call 0|title "Title"|1	bytes 256 fnv 76EAB977
+RTReturnValue|kept|title "Title"|1	kept
+RTReturnValue|popped|title "Title"|1	$00000000
+RTReturnValue|d0|title "Title"|1	$00000003
+RTEZRequest|kept|title "Title"|2	kept
+RTEZRequest|popped|title "Title"|2	$00000000
+RTEZRequest|d0|title "Title"|2	$00000003
+RTEZRequest|reqtools calls|title "Title"|2	$00000001
+RTEZRequest|call 0|title "Title"|2	bytes 256 fnv 8CD979B8
+RTReturnValue|kept|title "Title"|2	kept
+RTReturnValue|popped|title "Title"|2	$00000000
+RTReturnValue|d0|title "Title"|2	$00000003
+RTEZRequest|kept|title "Title"|3	kept
+RTEZRequest|popped|title "Title"|3	$00000000
+RTEZRequest|d0|title "Title"|3	$00000003
+RTEZRequest|reqtools calls|title "Title"|3	$00000001
+RTEZRequest|call 0|title "Title"|3	bytes 256 fnv CC009862
+RTReturnValue|kept|title "Title"|3	kept
+RTReturnValue|popped|title "Title"|3	$00000000
+RTReturnValue|d0|title "Title"|3	$00000003
+RTEZRequest|kept|title ""|1	kept
+RTEZRequest|popped|title ""|1	$00000000
+RTEZRequest|d0|title ""|1	$00000004
+RTEZRequest|reqtools calls|title ""|1	$00000001
+RTEZRequest|call 0|title ""|1	bytes 256 fnv 2B6328F8
+RTReturnValue|kept|title ""|1	kept
+RTReturnValue|popped|title ""|1	$00000000
+RTReturnValue|d0|title ""|1	$00000004
+RTEZRequest|kept|title ""|2	kept
+RTEZRequest|popped|title ""|2	$00000000
+RTEZRequest|d0|title ""|2	$00000004
+RTEZRequest|reqtools calls|title ""|2	$00000001
+RTEZRequest|call 0|title ""|2	bytes 256 fnv C6C0D221
+RTReturnValue|kept|title ""|2	kept
+RTReturnValue|popped|title ""|2	$00000000
+RTReturnValue|d0|title ""|2	$00000004
+RTEZRequest|kept|title ""|3	kept
+RTEZRequest|popped|title ""|3	$00000000
+RTEZRequest|d0|title ""|3	$00000004
+RTEZRequest|reqtools calls|title ""|3	$00000001
+RTEZRequest|call 0|title ""|3	bytes 256 fnv 45177913
+RTReturnValue|kept|title ""|3	kept
+RTReturnValue|popped|title ""|3	$00000000
+RTReturnValue|d0|title ""|3	$00000004
+RTEZRequest|kept|defaults again|1	kept
+RTEZRequest|popped|defaults again|1	$00000000
+RTEZRequest|d0|defaults again|1	$00000004
+RTEZRequest|reqtools calls|defaults again|1	$00000001
+RTEZRequest|call 0|defaults again|1	bytes 256 fnv F6CAE0E0
+RTReturnValue|kept|defaults again|1	kept
+RTReturnValue|popped|defaults again|1	$00000000
+RTReturnValue|d0|defaults again|1	$00000004
+RTEZFlagsRequest|kept|gadgets "Ok"|1	kept
+RTEZFlagsRequest|popped|gadgets "Ok"|1	$00000000
+RTEZFlagsRequest|d0|gadgets "Ok"|1	$00000007
+RTEZFlagsRequest|reqtools calls|gadgets "Ok"|1	$00000001
+RTEZFlagsRequest|call 0|gadgets "Ok"|1	bytes 256 fnv 832AD6B1
+RTReturnValue|kept|gadgets "Ok"|1	kept
+RTReturnValue|popped|gadgets "Ok"|1	$00000000
+RTReturnValue|d0|gadgets "Ok"|1	$00000007
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets "Ok"|1	$00000001
+RTEZFlagsRequest|kept|gadgets "Ok"|2	kept
+RTEZFlagsRequest|popped|gadgets "Ok"|2	$00000000
+RTEZFlagsRequest|d0|gadgets "Ok"|2	$00000007
+RTEZFlagsRequest|reqtools calls|gadgets "Ok"|2	$00000001
+RTEZFlagsRequest|call 0|gadgets "Ok"|2	bytes 256 fnv 189C2C6E
+RTReturnValue|kept|gadgets "Ok"|2	kept
+RTReturnValue|popped|gadgets "Ok"|2	$00000000
+RTReturnValue|d0|gadgets "Ok"|2	$00000007
+RTEZFlagsRequest|kept|gadgets none|1	kept
+RTEZFlagsRequest|popped|gadgets none|1	$00000000
+RTEZFlagsRequest|d0|gadgets none|1	$00000007
+RTEZFlagsRequest|reqtools calls|gadgets none|1	$00000001
+RTEZFlagsRequest|call 0|gadgets none|1	bytes 256 fnv 5F215D6D
+RTReturnValue|kept|gadgets none|1	kept
+RTReturnValue|popped|gadgets none|1	$00000000
+RTReturnValue|d0|gadgets none|1	$00000007
+RTEZFlagsRequest|no title (BUG(orig) #455)|gadgets none|1	$00000001
+RTEZFlagsRequest|kept|gadgets none|2	kept
+RTEZFlagsRequest|popped|gadgets none|2	$00000000
+RTEZFlagsRequest|d0|gadgets none|2	$00000007
+RTEZFlagsRequest|reqtools calls|gadgets none|2	$00000001
+RTEZFlagsRequest|call 0|gadgets none|2	bytes 256 fnv 44B4ADCA
+RTReturnValue|kept|gadgets none|2	kept
+RTReturnValue|popped|gadgets none|2	$00000000
+RTReturnValue|d0|gadgets none|2	$00000007
+RTEZRequest|kept|after RTEZFlagsRequest, no title|1	kept
+RTEZRequest|popped|after RTEZFlagsRequest, no title|1	$00000000
+RTEZRequest|d0|after RTEZFlagsRequest, no title|1	$00000007
+RTEZRequest|reqtools calls|after RTEZFlagsRequest, no title|1	$00000001
+RTEZRequest|call 0|after RTEZFlagsRequest, no title|1	bytes 256 fnv F6CAE0E0
+RTReturnValue|kept|after RTEZFlagsRequest, no title|1	kept
+RTReturnValue|popped|after RTEZFlagsRequest, no title|1	$00000000
+RTReturnValue|d0|after RTEZFlagsRequest, no title|1	$00000007
+RTRequest|kept|tag list|1	kept
+RTRequest|popped|tag list|1	$00000000
+RTRequest|d0|tag list|1	$00000000
+RTRequest|reqtools calls|tag list|1	$00000001
+RTRequest|call 0|tag list|1	bytes 256 fnv 81DC9C74
+RTReturnValue|kept|tag list|1	kept
+RTReturnValue|popped|tag list|1	$00000000
+RTReturnValue|d0|tag list|1	$00000000
+RTEZLoadFile|kept| dir ""|1	kept
+RTEZLoadFile|popped| dir ""|1	$00000000
+RTEZLoadFile|d0| dir ""|1	$0000000B
+RTEZLoadFile|reqtools calls| dir ""|1	$00000001
+RTEZLoadFile|call 0| dir ""|1	bytes 256 fnv B6630C82
+RTReturnValue|kept| dir ""|1	kept
+RTReturnValue|popped| dir ""|1	$00000000
+RTReturnValue|d0| dir ""|1	$00000001
+RTEZLoadFile|a3| dir ""|1	$00000020
+RTEZLoadFile|out| dir ""|1	bytes 300 fnv 61706191
+RTEZLoadFile|kept| dir "RAM:"|1	kept
+RTEZLoadFile|popped| dir "RAM:"|1	$00000000
+RTEZLoadFile|d0| dir "RAM:"|1	$0000000F
+RTEZLoadFile|reqtools calls| dir "RAM:"|1	$00000001
+RTEZLoadFile|call 0| dir "RAM:"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept| dir "RAM:"|1	kept
+RTReturnValue|popped| dir "RAM:"|1	$00000000
+RTReturnValue|d0| dir "RAM:"|1	$00000001
+RTEZLoadFile|a3| dir "RAM:"|1	$00000024
+RTEZLoadFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZLoadFile|kept| dir "RAM:t"|1	kept
+RTEZLoadFile|popped| dir "RAM:t"|1	$00000000
+RTEZLoadFile|d0| dir "RAM:t"|1	$00000006
+RTEZLoadFile|reqtools calls| dir "RAM:t"|1	$00000001
+RTEZLoadFile|call 0| dir "RAM:t"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept| dir "RAM:t"|1	kept
+RTReturnValue|popped| dir "RAM:t"|1	$00000000
+RTReturnValue|d0| dir "RAM:t"|1	$00000001
+RTEZLoadFile|a3| dir "RAM:t"|1	$0000001B
+RTEZLoadFile|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZLoadFile|kept| dir "Work:a/b"|1	kept
+RTEZLoadFile|popped| dir "Work:a/b"|1	$00000000
+RTEZLoadFile|d0| dir "Work:a/b"|1	$00000014
+RTEZLoadFile|reqtools calls| dir "Work:a/b"|1	$00000001
+RTEZLoadFile|call 0| dir "Work:a/b"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept| dir "Work:a/b"|1	kept
+RTReturnValue|popped| dir "Work:a/b"|1	$00000000
+RTReturnValue|d0| dir "Work:a/b"|1	$00000001
+RTEZLoadFile|a3| dir "Work:a/b"|1	$00000029
+RTEZLoadFile|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1	$00000001
+RTEZLoadFile|kept| cancel|1	kept
+RTEZLoadFile|popped| cancel|1	$00000000
+RTEZLoadFile|d0| cancel|1	$00000000
+RTEZLoadFile|reqtools calls| cancel|1	$00000001
+RTEZLoadFile|call 0| cancel|1	bytes 256 fnv B6630C82
+RTReturnValue|kept| cancel|1	kept
+RTReturnValue|popped| cancel|1	$00000000
+RTReturnValue|d0| cancel|1	$00000000
+RTEZLoadFile|a3| cancel|1	$00000014
+RTEZLoadFile|out| cancel|1	bytes 300 fnv EFE49DCA
+RTEZSaveFile|kept| dir ""|1	kept
+RTEZSaveFile|popped| dir ""|1	$00000000
+RTEZSaveFile|d0| dir ""|1	$0000000B
+RTEZSaveFile|reqtools calls| dir ""|1	$00000001
+RTEZSaveFile|call 0| dir ""|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept| dir ""|2	kept
+RTReturnValue|popped| dir ""|2	$00000000
+RTReturnValue|d0| dir ""|2	$00000001
+RTEZSaveFile|a3| dir ""|1	$00000029
+RTEZSaveFile|out| dir ""|1	bytes 300 fnv 61706191
+RTEZSaveFile|kept| dir "RAM:"|1	kept
+RTEZSaveFile|popped| dir "RAM:"|1	$00000000
+RTEZSaveFile|d0| dir "RAM:"|1	$0000000F
+RTEZSaveFile|reqtools calls| dir "RAM:"|1	$00000001
+RTEZSaveFile|call 0| dir "RAM:"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept| dir "RAM:"|2	kept
+RTReturnValue|popped| dir "RAM:"|2	$00000000
+RTReturnValue|d0| dir "RAM:"|2	$00000001
+RTEZSaveFile|a3| dir "RAM:"|1	$00000029
+RTEZSaveFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZSaveFile|kept| dir "RAM:t"|1	kept
+RTEZSaveFile|popped| dir "RAM:t"|1	$00000000
+RTEZSaveFile|d0| dir "RAM:t"|1	$00000006
+RTEZSaveFile|reqtools calls| dir "RAM:t"|1	$00000001
+RTEZSaveFile|call 0| dir "RAM:t"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept| dir "RAM:t"|2	kept
+RTReturnValue|popped| dir "RAM:t"|2	$00000000
+RTReturnValue|d0| dir "RAM:t"|2	$00000001
+RTEZSaveFile|a3| dir "RAM:t"|1	$00000029
+RTEZSaveFile|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZSaveFile|kept| dir "Work:a/b"|1	kept
+RTEZSaveFile|popped| dir "Work:a/b"|1	$00000000
+RTEZSaveFile|d0| dir "Work:a/b"|1	$00000014
+RTEZSaveFile|reqtools calls| dir "Work:a/b"|1	$00000001
+RTEZSaveFile|call 0| dir "Work:a/b"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept| dir "Work:a/b"|2	kept
+RTReturnValue|popped| dir "Work:a/b"|2	$00000000
+RTReturnValue|d0| dir "Work:a/b"|2	$00000001
+RTEZSaveFile|a3| dir "Work:a/b"|1	$00000029
+RTEZSaveFile|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZSaveFile|kept| cancel|1	kept
+RTEZSaveFile|popped| cancel|1	$00000000
+RTEZSaveFile|d0| cancel|1	$00000000
+RTEZSaveFile|reqtools calls| cancel|1	$00000001
+RTEZSaveFile|call 0| cancel|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept| cancel|2	kept
+RTReturnValue|popped| cancel|2	$00000000
+RTReturnValue|d0| cancel|2	$00000000
+RTEZSaveFile|a3| cancel|1	$00000029
+RTEZSaveFile|out| cancel|1	bytes 300 fnv EFE49DCA
+RTFileRequest|kept| dir ""|1	kept
+RTFileRequest|popped| dir ""|1	$00000000
+RTFileRequest|d0| dir ""|1	$0000000B
+RTFileRequest|reqtools calls| dir ""|1	$00000001
+RTFileRequest|call 0| dir ""|1	bytes 256 fnv 391B55CA
+RTReturnValue|kept| dir ""|3	kept
+RTReturnValue|popped| dir ""|3	$00000000
+RTReturnValue|d0| dir ""|3	$00000001
+RTFileRequest|a3| dir ""|1	$00000020
+RTFileRequest|out| dir ""|1	bytes 300 fnv 61706191
+RTFileRequest|kept| dir "RAM:"|1	kept
+RTFileRequest|popped| dir "RAM:"|1	$00000000
+RTFileRequest|d0| dir "RAM:"|1	$0000000F
+RTFileRequest|reqtools calls| dir "RAM:"|1	$00000001
+RTFileRequest|call 0| dir "RAM:"|1	bytes 256 fnv 391B55CA
+RTReturnValue|kept| dir "RAM:"|3	kept
+RTReturnValue|popped| dir "RAM:"|3	$00000000
+RTReturnValue|d0| dir "RAM:"|3	$00000001
+RTFileRequest|a3| dir "RAM:"|1	$00000024
+RTFileRequest|out| dir "RAM:"|1	bytes 300 fnv 16140D64
+RTFileRequest|kept| dir "RAM:t"|1	kept
+RTFileRequest|popped| dir "RAM:t"|1	$00000000
+RTFileRequest|d0| dir "RAM:t"|1	$00000006
+RTFileRequest|reqtools calls| dir "RAM:t"|1	$00000001
+RTFileRequest|call 0| dir "RAM:t"|1	bytes 256 fnv 391B55CA
+RTReturnValue|kept| dir "RAM:t"|3	kept
+RTReturnValue|popped| dir "RAM:t"|3	$00000000
+RTReturnValue|d0| dir "RAM:t"|3	$00000001
+RTFileRequest|a3| dir "RAM:t"|1	$0000001B
+RTFileRequest|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTFileRequest|kept| dir "Work:a/b"|1	kept
+RTFileRequest|popped| dir "Work:a/b"|1	$00000000
+RTFileRequest|d0| dir "Work:a/b"|1	$00000014
+RTFileRequest|reqtools calls| dir "Work:a/b"|1	$00000001
+RTFileRequest|call 0| dir "Work:a/b"|1	bytes 256 fnv 391B55CA
+RTReturnValue|kept| dir "Work:a/b"|3	kept
+RTReturnValue|popped| dir "Work:a/b"|3	$00000000
+RTReturnValue|d0| dir "Work:a/b"|3	$00000001
+RTFileRequest|a3| dir "Work:a/b"|1	$00000029
+RTFileRequest|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTFileRequest|kept| cancel|1	kept
+RTFileRequest|popped| cancel|1	$00000000
+RTFileRequest|d0| cancel|1	$00000000
+RTFileRequest|reqtools calls| cancel|1	$00000001
+RTFileRequest|call 0| cancel|1	bytes 256 fnv 391B55CA
+RTReturnValue|kept| cancel|3	kept
+RTReturnValue|popped| cancel|3	$00000000
+RTReturnValue|d0| cancel|3	$00000000
+RTFileRequest|a3| cancel|1	$00000014
+RTFileRequest|out| cancel|1	bytes 300 fnv EFE49DCA
+RTEZPathRequest|kept| dir ""|1	kept
+RTEZPathRequest|popped| dir ""|1	$00000000
+RTEZPathRequest|d0| dir ""|1	$00000000
+RTEZPathRequest|reqtools calls| dir ""|1	$00000001
+RTEZPathRequest|call 0| dir ""|1	bytes 256 fnv 5B56BD0A
+RTReturnValue|kept| dir ""|4	kept
+RTReturnValue|popped| dir ""|4	$00000000
+RTReturnValue|d0| dir ""|4	$00000001
+RTEZPathRequest|a3| dir ""|1	$00000014
+RTEZPathRequest|out| dir ""|1	bytes 300 fnv EFE49DCA
+RTEZPathRequest|kept| dir "RAM:"|1	kept
+RTEZPathRequest|popped| dir "RAM:"|1	$00000000
+RTEZPathRequest|d0| dir "RAM:"|1	$00000004
+RTEZPathRequest|reqtools calls| dir "RAM:"|1	$00000001
+RTEZPathRequest|call 0| dir "RAM:"|1	bytes 256 fnv 5B56BD0A
+RTReturnValue|kept| dir "RAM:"|4	kept
+RTReturnValue|popped| dir "RAM:"|4	$00000000
+RTReturnValue|d0| dir "RAM:"|4	$00000001
+RTEZPathRequest|a3| dir "RAM:"|1	$00000018
+RTEZPathRequest|out| dir "RAM:"|1	bytes 300 fnv E732116A
+RTEZPathRequest|kept| dir "RAM:t"|1	kept
+RTEZPathRequest|popped| dir "RAM:t"|1	$00000000
+RTEZPathRequest|d0| dir "RAM:t"|1	$00000006
+RTEZPathRequest|reqtools calls| dir "RAM:t"|1	$00000001
+RTEZPathRequest|call 0| dir "RAM:t"|1	bytes 256 fnv 5B56BD0A
+RTReturnValue|kept| dir "RAM:t"|4	kept
+RTReturnValue|popped| dir "RAM:t"|4	$00000000
+RTReturnValue|d0| dir "RAM:t"|4	$00000001
+RTEZPathRequest|a3| dir "RAM:t"|1	$0000001A
+RTEZPathRequest|out| dir "RAM:t"|1	bytes 300 fnv 8A15FB5B
+RTEZPathRequest|kept| dir "Work:a/b"|1	kept
+RTEZPathRequest|popped| dir "Work:a/b"|1	$00000000
+RTEZPathRequest|d0| dir "Work:a/b"|1	$00000009
+RTEZPathRequest|reqtools calls| dir "Work:a/b"|1	$00000001
+RTEZPathRequest|call 0| dir "Work:a/b"|1	bytes 256 fnv 5B56BD0A
+RTReturnValue|kept| dir "Work:a/b"|4	kept
+RTReturnValue|popped| dir "Work:a/b"|4	$00000000
+RTReturnValue|d0| dir "Work:a/b"|4	$00000001
+RTEZPathRequest|a3| dir "Work:a/b"|1	$0000001D
+RTEZPathRequest|out| dir "Work:a/b"|1	bytes 300 fnv 06051BFF
+RTEZPathRequest|kept| cancel|1	kept
+RTEZPathRequest|popped| cancel|1	$00000000
+RTEZPathRequest|d0| cancel|1	$00000000
+RTEZPathRequest|reqtools calls| cancel|1	$00000001
+RTEZPathRequest|call 0| cancel|1	bytes 256 fnv 5B56BD0A
+RTReturnValue|kept| cancel|4	kept
+RTReturnValue|popped| cancel|4	$00000000
+RTReturnValue|d0| cancel|4	$00000000
+RTEZPathRequest|a3| cancel|1	$00000014
+RTEZPathRequest|out| cancel|1	bytes 300 fnv EFE49DCA
+RTEZSetDefaultDirectory|kept|requester 0|1	kept
+RTEZSetDefaultDirectory|popped|requester 0|1	$00000000
+RTEZSetDefaultDirectory|d0|requester 0|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|requester 0|1	$00000001
+RTEZSetDefaultDirectory|call 0|requester 0|1	bytes 256 fnv 6C7EEA70
+RTReturnValue|kept|requester 0|1	kept
+RTReturnValue|popped|requester 0|1	$00000000
+RTReturnValue|d0|requester 0|1	$00000000
+RTEZSetPattern|kept|requester 0|1	kept
+RTEZSetPattern|popped|requester 0|1	$00000000
+RTEZSetPattern|d0|requester 0|1	$00000000
+RTEZSetPattern|reqtools calls|requester 0|1	$00000001
+RTEZSetPattern|call 0|requester 0|1	bytes 256 fnv B8637413
+RTReturnValue|kept|requester 0|2	kept
+RTReturnValue|popped|requester 0|2	$00000000
+RTReturnValue|d0|requester 0|2	$00000000
+RTEZSetDefaultDirectory|kept|requester 1|1	kept
+RTEZSetDefaultDirectory|popped|requester 1|1	$00000000
+RTEZSetDefaultDirectory|d0|requester 1|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|requester 1|1	$00000001
+RTEZSetDefaultDirectory|call 0|requester 1|1	bytes 256 fnv 371D7DC5
+RTReturnValue|kept|requester 1|1	kept
+RTReturnValue|popped|requester 1|1	$00000000
+RTReturnValue|d0|requester 1|1	$00000000
+RTEZSetPattern|kept|requester 1|1	kept
+RTEZSetPattern|popped|requester 1|1	$00000000
+RTEZSetPattern|d0|requester 1|1	$00000000
+RTEZSetPattern|reqtools calls|requester 1|1	$00000001
+RTEZSetPattern|call 0|requester 1|1	bytes 256 fnv 44A97CC2
+RTReturnValue|kept|requester 1|2	kept
+RTReturnValue|popped|requester 1|2	$00000000
+RTReturnValue|d0|requester 1|2	$00000000
+RTEZSetDefaultDirectory|kept|requester 2|1	kept
+RTEZSetDefaultDirectory|popped|requester 2|1	$00000000
+RTEZSetDefaultDirectory|d0|requester 2|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|requester 2|1	$00000001
+RTEZSetDefaultDirectory|call 0|requester 2|1	bytes 256 fnv 375CB5D4
+RTReturnValue|kept|requester 2|1	kept
+RTReturnValue|popped|requester 2|1	$00000000
+RTReturnValue|d0|requester 2|1	$00000000
+RTEZSetPattern|kept|requester 2|1	kept
+RTEZSetPattern|popped|requester 2|1	$00000000
+RTEZSetPattern|d0|requester 2|1	$00000000
+RTEZSetPattern|reqtools calls|requester 2|1	$00000000
+RTReturnValue|kept|requester 2|2	kept
+RTReturnValue|popped|requester 2|2	$00000000
+RTReturnValue|d0|requester 2|2	$00000000
+RTEZSetDefaultDirectory|kept|requester 3|1	kept
+RTEZSetDefaultDirectory|popped|requester 3|1	$00000000
+RTEZSetDefaultDirectory|d0|requester 3|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|requester 3|1	$00000001
+RTEZSetDefaultDirectory|call 0|requester 3|1	bytes 256 fnv 7324B5FE
+RTReturnValue|kept|requester 3|1	kept
+RTReturnValue|popped|requester 3|1	$00000000
+RTReturnValue|d0|requester 3|1	$00000000
+RTEZSetPattern|kept|requester 3|1	kept
+RTEZSetPattern|popped|requester 3|1	$00000000
+RTEZSetPattern|d0|requester 3|1	$00000000
+RTEZSetPattern|reqtools calls|requester 3|1	$00000001
+RTEZSetPattern|call 0|requester 3|1	bytes 256 fnv 7D9ECEE1
+RTReturnValue|kept|requester 3|2	kept
+RTReturnValue|popped|requester 3|2	$00000000
+RTReturnValue|d0|requester 3|2	$00000000
+RTEZSetDefaultDirectory|kept|requester 4|1	kept
+RTEZSetDefaultDirectory|popped|requester 4|1	$00000000
+RTEZSetDefaultDirectory|d0|requester 4|1	$00000000
+RTEZSetDefaultDirectory|reqtools calls|requester 4|1	$00000000
+RTReturnValue|kept|requester 4|1	kept
+RTReturnValue|popped|requester 4|1	$00000000
+RTReturnValue|d0|requester 4|1	$00000000
+RTEZSetPattern|kept|requester 4|1	kept
+RTEZSetPattern|popped|requester 4|1	$00000000
+RTEZSetPattern|d0|requester 4|1	$00000000
+RTEZSetPattern|reqtools calls|requester 4|1	$00000000
+RTReturnValue|kept|requester 4|2	kept
+RTReturnValue|popped|requester 4|2	$00000000
+RTReturnValue|d0|requester 4|2	$00000000
+RTEZLoadFile|kept|with pattern dir ""|1	kept
+RTEZLoadFile|popped|with pattern dir ""|1	$00000000
+RTEZLoadFile|d0|with pattern dir ""|1	$0000000B
+RTEZLoadFile|reqtools calls|with pattern dir ""|1	$00000001
+RTEZLoadFile|call 0|with pattern dir ""|1	bytes 256 fnv 396E73D2
+RTReturnValue|kept|with pattern dir ""|1	kept
+RTReturnValue|popped|with pattern dir ""|1	$00000000
+RTReturnValue|d0|with pattern dir ""|1	$00000001
+RTEZLoadFile|a3|with pattern dir ""|1	$00000020
+RTEZLoadFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
+RTEZLoadFile|kept|with pattern dir "RAM:"|1	kept
+RTEZLoadFile|popped|with pattern dir "RAM:"|1	$00000000
+RTEZLoadFile|d0|with pattern dir "RAM:"|1	$0000000F
+RTEZLoadFile|reqtools calls|with pattern dir "RAM:"|1	$00000001
+RTEZLoadFile|call 0|with pattern dir "RAM:"|1	bytes 256 fnv 396E73D2
+RTReturnValue|kept|with pattern dir "RAM:"|1	kept
+RTReturnValue|popped|with pattern dir "RAM:"|1	$00000000
+RTReturnValue|d0|with pattern dir "RAM:"|1	$00000001
+RTEZLoadFile|a3|with pattern dir "RAM:"|1	$00000024
+RTEZLoadFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZLoadFile|kept|with pattern dir "RAM:t"|1	kept
+RTEZLoadFile|popped|with pattern dir "RAM:t"|1	$00000000
+RTEZLoadFile|d0|with pattern dir "RAM:t"|1	$00000006
+RTEZLoadFile|reqtools calls|with pattern dir "RAM:t"|1	$00000001
+RTEZLoadFile|call 0|with pattern dir "RAM:t"|1	bytes 256 fnv 396E73D2
+RTReturnValue|kept|with pattern dir "RAM:t"|1	kept
+RTReturnValue|popped|with pattern dir "RAM:t"|1	$00000000
+RTReturnValue|d0|with pattern dir "RAM:t"|1	$00000001
+RTEZLoadFile|a3|with pattern dir "RAM:t"|1	$0000001B
+RTEZLoadFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZLoadFile|kept|with pattern dir "Work:a/b"|1	kept
+RTEZLoadFile|popped|with pattern dir "Work:a/b"|1	$00000000
+RTEZLoadFile|d0|with pattern dir "Work:a/b"|1	$00000014
+RTEZLoadFile|reqtools calls|with pattern dir "Work:a/b"|1	$00000001
+RTEZLoadFile|call 0|with pattern dir "Work:a/b"|1	bytes 256 fnv 396E73D2
+RTReturnValue|kept|with pattern dir "Work:a/b"|1	kept
+RTReturnValue|popped|with pattern dir "Work:a/b"|1	$00000000
+RTReturnValue|d0|with pattern dir "Work:a/b"|1	$00000001
+RTEZLoadFile|a3|with pattern dir "Work:a/b"|1	$00000029
+RTEZLoadFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZLoadFile|Work:a/b/chosen.file at the title|with pattern dir "Work:a/b"|1	$00000001
+RTEZLoadFile|kept|with pattern cancel|1	kept
+RTEZLoadFile|popped|with pattern cancel|1	$00000000
+RTEZLoadFile|d0|with pattern cancel|1	$00000000
+RTEZLoadFile|reqtools calls|with pattern cancel|1	$00000001
+RTEZLoadFile|call 0|with pattern cancel|1	bytes 256 fnv 396E73D2
+RTReturnValue|kept|with pattern cancel|1	kept
+RTReturnValue|popped|with pattern cancel|1	$00000000
+RTReturnValue|d0|with pattern cancel|1	$00000000
+RTEZLoadFile|a3|with pattern cancel|1	$00000014
+RTEZLoadFile|out|with pattern cancel|1	bytes 300 fnv EFE49DCA
+RTEZSaveFile|kept|with pattern dir ""|1	kept
+RTEZSaveFile|popped|with pattern dir ""|1	$00000000
+RTEZSaveFile|d0|with pattern dir ""|1	$0000000B
+RTEZSaveFile|reqtools calls|with pattern dir ""|1	$00000001
+RTEZSaveFile|call 0|with pattern dir ""|1	bytes 256 fnv C297E93A
+RTReturnValue|kept|with pattern dir ""|2	kept
+RTReturnValue|popped|with pattern dir ""|2	$00000000
+RTReturnValue|d0|with pattern dir ""|2	$00000001
+RTEZSaveFile|a3|with pattern dir ""|1	$00000029
+RTEZSaveFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
+RTEZSaveFile|kept|with pattern dir "RAM:"|1	kept
+RTEZSaveFile|popped|with pattern dir "RAM:"|1	$00000000
+RTEZSaveFile|d0|with pattern dir "RAM:"|1	$0000000F
+RTEZSaveFile|reqtools calls|with pattern dir "RAM:"|1	$00000001
+RTEZSaveFile|call 0|with pattern dir "RAM:"|1	bytes 256 fnv C297E93A
+RTReturnValue|kept|with pattern dir "RAM:"|2	kept
+RTReturnValue|popped|with pattern dir "RAM:"|2	$00000000
+RTReturnValue|d0|with pattern dir "RAM:"|2	$00000001
+RTEZSaveFile|a3|with pattern dir "RAM:"|1	$00000029
+RTEZSaveFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZSaveFile|kept|with pattern dir "RAM:t"|1	kept
+RTEZSaveFile|popped|with pattern dir "RAM:t"|1	$00000000
+RTEZSaveFile|d0|with pattern dir "RAM:t"|1	$00000006
+RTEZSaveFile|reqtools calls|with pattern dir "RAM:t"|1	$00000001
+RTEZSaveFile|call 0|with pattern dir "RAM:t"|1	bytes 256 fnv C297E93A
+RTReturnValue|kept|with pattern dir "RAM:t"|2	kept
+RTReturnValue|popped|with pattern dir "RAM:t"|2	$00000000
+RTReturnValue|d0|with pattern dir "RAM:t"|2	$00000001
+RTEZSaveFile|a3|with pattern dir "RAM:t"|1	$00000029
+RTEZSaveFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZSaveFile|kept|with pattern dir "Work:a/b"|1	kept
+RTEZSaveFile|popped|with pattern dir "Work:a/b"|1	$00000000
+RTEZSaveFile|d0|with pattern dir "Work:a/b"|1	$00000014
+RTEZSaveFile|reqtools calls|with pattern dir "Work:a/b"|1	$00000001
+RTEZSaveFile|call 0|with pattern dir "Work:a/b"|1	bytes 256 fnv C297E93A
+RTReturnValue|kept|with pattern dir "Work:a/b"|2	kept
+RTReturnValue|popped|with pattern dir "Work:a/b"|2	$00000000
+RTReturnValue|d0|with pattern dir "Work:a/b"|2	$00000001
+RTEZSaveFile|a3|with pattern dir "Work:a/b"|1	$00000029
+RTEZSaveFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZSaveFile|kept|with pattern cancel|1	kept
+RTEZSaveFile|popped|with pattern cancel|1	$00000000
+RTEZSaveFile|d0|with pattern cancel|1	$00000000
+RTEZSaveFile|reqtools calls|with pattern cancel|1	$00000001
+RTEZSaveFile|call 0|with pattern cancel|1	bytes 256 fnv C297E93A
+RTReturnValue|kept|with pattern cancel|2	kept
+RTReturnValue|popped|with pattern cancel|2	$00000000
+RTReturnValue|d0|with pattern cancel|2	$00000000
+RTEZSaveFile|a3|with pattern cancel|1	$00000029
+RTEZSaveFile|out|with pattern cancel|1	bytes 300 fnv EFE49DCA
+RTEZFreePattern|kept|requester 0|1	kept
+RTEZFreePattern|popped|requester 0|1	$00000000
+RTEZFreePattern|d0|requester 0|1	$00000000
+RTEZFreePattern|kept|requester 1|1	kept
+RTEZFreePattern|popped|requester 1|1	$00000000
+RTEZFreePattern|d0|requester 1|1	$00000000
+RTEZFreePattern|kept|requester 2|1	kept
+RTEZFreePattern|popped|requester 2|1	$00000000
+RTEZFreePattern|d0|requester 2|1	$00000000
+RTEZFreePattern|kept|requester 3|1	kept
+RTEZFreePattern|popped|requester 3|1	$00000000
+RTEZFreePattern|d0|requester 3|1	$00000000
+RTEZLoadFile|kept|pattern freed dir ""|1	kept
+RTEZLoadFile|popped|pattern freed dir ""|1	$00000000
+RTEZLoadFile|d0|pattern freed dir ""|1	$0000000B
+RTEZLoadFile|reqtools calls|pattern freed dir ""|1	$00000001
+RTEZLoadFile|call 0|pattern freed dir ""|1	bytes 256 fnv B6630C82
+RTReturnValue|kept|pattern freed dir ""|1	kept
+RTReturnValue|popped|pattern freed dir ""|1	$00000000
+RTReturnValue|d0|pattern freed dir ""|1	$00000001
+RTEZLoadFile|a3|pattern freed dir ""|1	$00000020
+RTEZLoadFile|out|pattern freed dir ""|1	bytes 300 fnv 61706191
+RTEZLoadFile|kept|pattern freed dir "RAM:"|1	kept
+RTEZLoadFile|popped|pattern freed dir "RAM:"|1	$00000000
+RTEZLoadFile|d0|pattern freed dir "RAM:"|1	$0000000F
+RTEZLoadFile|reqtools calls|pattern freed dir "RAM:"|1	$00000001
+RTEZLoadFile|call 0|pattern freed dir "RAM:"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept|pattern freed dir "RAM:"|1	kept
+RTReturnValue|popped|pattern freed dir "RAM:"|1	$00000000
+RTReturnValue|d0|pattern freed dir "RAM:"|1	$00000001
+RTEZLoadFile|a3|pattern freed dir "RAM:"|1	$00000024
+RTEZLoadFile|out|pattern freed dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZLoadFile|kept|pattern freed dir "RAM:t"|1	kept
+RTEZLoadFile|popped|pattern freed dir "RAM:t"|1	$00000000
+RTEZLoadFile|d0|pattern freed dir "RAM:t"|1	$00000006
+RTEZLoadFile|reqtools calls|pattern freed dir "RAM:t"|1	$00000001
+RTEZLoadFile|call 0|pattern freed dir "RAM:t"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept|pattern freed dir "RAM:t"|1	kept
+RTReturnValue|popped|pattern freed dir "RAM:t"|1	$00000000
+RTReturnValue|d0|pattern freed dir "RAM:t"|1	$00000001
+RTEZLoadFile|a3|pattern freed dir "RAM:t"|1	$0000001B
+RTEZLoadFile|out|pattern freed dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZLoadFile|kept|pattern freed dir "Work:a/b"|1	kept
+RTEZLoadFile|popped|pattern freed dir "Work:a/b"|1	$00000000
+RTEZLoadFile|d0|pattern freed dir "Work:a/b"|1	$00000014
+RTEZLoadFile|reqtools calls|pattern freed dir "Work:a/b"|1	$00000001
+RTEZLoadFile|call 0|pattern freed dir "Work:a/b"|1	bytes 256 fnv B6630C82
+RTReturnValue|kept|pattern freed dir "Work:a/b"|1	kept
+RTReturnValue|popped|pattern freed dir "Work:a/b"|1	$00000000
+RTReturnValue|d0|pattern freed dir "Work:a/b"|1	$00000001
+RTEZLoadFile|a3|pattern freed dir "Work:a/b"|1	$00000029
+RTEZLoadFile|out|pattern freed dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZLoadFile|Work:a/b/chosen.file at the title|pattern freed dir "Work:a/b"|1	$00000001
+RTEZLoadFile|kept|pattern freed cancel|1	kept
+RTEZLoadFile|popped|pattern freed cancel|1	$00000000
+RTEZLoadFile|d0|pattern freed cancel|1	$00000000
+RTEZLoadFile|reqtools calls|pattern freed cancel|1	$00000001
+RTEZLoadFile|call 0|pattern freed cancel|1	bytes 256 fnv B6630C82
+RTReturnValue|kept|pattern freed cancel|1	kept
+RTReturnValue|popped|pattern freed cancel|1	$00000000
+RTReturnValue|d0|pattern freed cancel|1	$00000000
+RTEZLoadFile|a3|pattern freed cancel|1	$00000014
+RTEZLoadFile|out|pattern freed cancel|1	bytes 300 fnv EFE49DCA
+RTEZSaveFile|kept|pattern freed dir ""|1	kept
+RTEZSaveFile|popped|pattern freed dir ""|1	$00000000
+RTEZSaveFile|d0|pattern freed dir ""|1	$0000000B
+RTEZSaveFile|reqtools calls|pattern freed dir ""|1	$00000001
+RTEZSaveFile|call 0|pattern freed dir ""|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept|pattern freed dir ""|2	kept
+RTReturnValue|popped|pattern freed dir ""|2	$00000000
+RTReturnValue|d0|pattern freed dir ""|2	$00000001
+RTEZSaveFile|a3|pattern freed dir ""|1	$00000029
+RTEZSaveFile|out|pattern freed dir ""|1	bytes 300 fnv 61706191
+RTEZSaveFile|kept|pattern freed dir "RAM:"|1	kept
+RTEZSaveFile|popped|pattern freed dir "RAM:"|1	$00000000
+RTEZSaveFile|d0|pattern freed dir "RAM:"|1	$0000000F
+RTEZSaveFile|reqtools calls|pattern freed dir "RAM:"|1	$00000001
+RTEZSaveFile|call 0|pattern freed dir "RAM:"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept|pattern freed dir "RAM:"|2	kept
+RTReturnValue|popped|pattern freed dir "RAM:"|2	$00000000
+RTReturnValue|d0|pattern freed dir "RAM:"|2	$00000001
+RTEZSaveFile|a3|pattern freed dir "RAM:"|1	$00000029
+RTEZSaveFile|out|pattern freed dir "RAM:"|1	bytes 300 fnv 16140D64
+RTEZSaveFile|kept|pattern freed dir "RAM:t"|1	kept
+RTEZSaveFile|popped|pattern freed dir "RAM:t"|1	$00000000
+RTEZSaveFile|d0|pattern freed dir "RAM:t"|1	$00000006
+RTEZSaveFile|reqtools calls|pattern freed dir "RAM:t"|1	$00000001
+RTEZSaveFile|call 0|pattern freed dir "RAM:t"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept|pattern freed dir "RAM:t"|2	kept
+RTReturnValue|popped|pattern freed dir "RAM:t"|2	$00000000
+RTReturnValue|d0|pattern freed dir "RAM:t"|2	$00000001
+RTEZSaveFile|a3|pattern freed dir "RAM:t"|1	$00000029
+RTEZSaveFile|out|pattern freed dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
+RTEZSaveFile|kept|pattern freed dir "Work:a/b"|1	kept
+RTEZSaveFile|popped|pattern freed dir "Work:a/b"|1	$00000000
+RTEZSaveFile|d0|pattern freed dir "Work:a/b"|1	$00000014
+RTEZSaveFile|reqtools calls|pattern freed dir "Work:a/b"|1	$00000001
+RTEZSaveFile|call 0|pattern freed dir "Work:a/b"|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept|pattern freed dir "Work:a/b"|2	kept
+RTReturnValue|popped|pattern freed dir "Work:a/b"|2	$00000000
+RTReturnValue|d0|pattern freed dir "Work:a/b"|2	$00000001
+RTEZSaveFile|a3|pattern freed dir "Work:a/b"|1	$00000029
+RTEZSaveFile|out|pattern freed dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
+RTEZSaveFile|kept|pattern freed cancel|1	kept
+RTEZSaveFile|popped|pattern freed cancel|1	$00000000
+RTEZSaveFile|d0|pattern freed cancel|1	$00000000
+RTEZSaveFile|reqtools calls|pattern freed cancel|1	$00000001
+RTEZSaveFile|call 0|pattern freed cancel|1	bytes 256 fnv BD7D8C2A
+RTReturnValue|kept|pattern freed cancel|2	kept
+RTReturnValue|popped|pattern freed cancel|2	$00000000
+RTReturnValue|d0|pattern freed cancel|2	$00000000
+RTEZSaveFile|a3|pattern freed cancel|1	$00000029
+RTEZSaveFile|out|pattern freed cancel|1	bytes 300 fnv EFE49DCA
+RTEZSetPattern|kept|multi-load|1	kept
+RTEZSetPattern|popped|multi-load|1	$00000000
+RTEZSetPattern|d0|multi-load|1	$00000000
+RTEZSetPattern|reqtools calls|multi-load|1	$00000001
+RTEZSetPattern|call 0|multi-load|1	bytes 256 fnv 7D9ECEE1
+RTReturnValue|kept|multi-load|1	kept
+RTReturnValue|popped|multi-load|1	$00000000
+RTReturnValue|d0|multi-load|1	$00000000
+RTEZMultiLoadFile|kept|list of 3|1	kept
+RTEZMultiLoadFile|popped|list of 3|1	$00000000
+RTEZMultiLoadFile|d0|list of 3|1	$FFFFFFFF
+RTEZMultiLoadFile|reqtools calls|list of 3|1	$00000002
+RTEZMultiLoadFile|call 0|list of 3|1	bytes 256 fnv 72E3B230
+RTEZMultiLoadFile|call 1|list of 3|1	bytes 256 fnv F64C79C9
+RTReturnValue|kept|list of 3|1	kept
+RTReturnValue|popped|list of 3|1	$00000000
+RTReturnValue|d0|list of 3|1	prog
+RTNextPathEntry|kept|list 0 entry 0|1	kept
+RTNextPathEntry|popped|list 0 entry 0|1	$00000000
+RTNextPathEntry|d0|list 0 entry 0|1	$0000000E
+RTNextPathEntry|a3|list 0 entry 0|1	$00000013
+RTNextPathEntry|out|list 0 entry 0|1	bytes 300 fnv 8920ED5D
+RTNextPathEntry|reqtools calls|list 0 entry 0|1	$00000000
+RTNextPathEntry|kept|list 0 entry 1|1	kept
+RTNextPathEntry|popped|list 0 entry 1|1	$00000000
+RTNextPathEntry|d0|list 0 entry 1|1	$0000000E
+RTNextPathEntry|a3|list 0 entry 1|1	$00000013
+RTNextPathEntry|out|list 0 entry 1|1	bytes 300 fnv 194CFB66
+RTNextPathEntry|reqtools calls|list 0 entry 1|1	$00000000
+RTNextPathEntry|kept|list 0 entry 2|1	kept
+RTNextPathEntry|popped|list 0 entry 2|1	$00000000
+RTNextPathEntry|d0|list 0 entry 2|1	$00000009
+RTNextPathEntry|a3|list 0 entry 2|1	$0000000E
+RTNextPathEntry|out|list 0 entry 2|1	bytes 300 fnv 51873E2E
+RTNextPathEntry|reqtools calls|list 0 entry 2|1	$00000000
+RTNextPathEntry|kept|list 0 entry 3|1	kept
+RTNextPathEntry|popped|list 0 entry 3|1	$00000000
+RTNextPathEntry|d0|list 0 entry 3|1	$00000000
+RTNextPathEntry|a3|list 0 entry 3|1	$00000004
+RTNextPathEntry|out|list 0 entry 3|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 0 entry 3|1	$00000000
+RTEZMultiLoadFile|kept|list at $xx00|1	kept
+RTEZMultiLoadFile|popped|list at $xx00|1	$00000000
+RTEZMultiLoadFile|d0|list at $xx00|1	prog
+RTEZMultiLoadFile|reqtools calls|list at $xx00|1	$00000002
+RTEZMultiLoadFile|call 0|list at $xx00|1	bytes 256 fnv 492089F4
+RTEZMultiLoadFile|call 1|list at $xx00|1	bytes 256 fnv EB8A4017
+RTReturnValue|kept|list at $xx00|1	kept
+RTReturnValue|popped|list at $xx00|1	$00000000
+RTReturnValue|d0|list at $xx00|1	prog
+RTEZMultiLoadFile|the list, not -1 (BUG(orig) #462)|list at $xx00|1	$00000001
+RTNextPathEntry|kept|list 1 entry 0|1	kept
+RTNextPathEntry|popped|list 1 entry 0|1	$00000000
+RTNextPathEntry|d0|list 1 entry 0|1	$00000008
+RTNextPathEntry|a3|list 1 entry 0|1	$0000000D
+RTNextPathEntry|out|list 1 entry 0|1	bytes 300 fnv 9F0B2F6B
+RTNextPathEntry|reqtools calls|list 1 entry 0|1	$00000000
+RTNextPathEntry|kept|list 1 entry 1|1	kept
+RTNextPathEntry|popped|list 1 entry 1|1	$00000000
+RTNextPathEntry|d0|list 1 entry 1|1	$00000000
+RTNextPathEntry|a3|list 1 entry 1|1	$00000004
+RTNextPathEntry|out|list 1 entry 1|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 1 entry 1|1	$00000000
+RTNextPathEntry|kept|list 1 entry 2|1	kept
+RTNextPathEntry|popped|list 1 entry 2|1	$00000000
+RTNextPathEntry|d0|list 1 entry 2|1	$00000000
+RTNextPathEntry|a3|list 1 entry 2|1	$00000004
+RTNextPathEntry|out|list 1 entry 2|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 1 entry 2|1	$00000000
+RTNextPathEntry|kept|list 1 entry 3|1	kept
+RTNextPathEntry|popped|list 1 entry 3|1	$00000000
+RTNextPathEntry|d0|list 1 entry 3|1	$00000000
+RTNextPathEntry|a3|list 1 entry 3|1	$00000004
+RTNextPathEntry|out|list 1 entry 3|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 1 entry 3|1	$00000000
+RTEZMultiLoadFile|kept|cancel|1	kept
+RTEZMultiLoadFile|popped|cancel|1	$00000000
+RTEZMultiLoadFile|d0|cancel|1	$00000000
+RTEZMultiLoadFile|reqtools calls|cancel|1	$00000002
+RTEZMultiLoadFile|call 0|cancel|1	bytes 256 fnv 492089F4
+RTEZMultiLoadFile|call 1|cancel|1	bytes 256 fnv EB8A4017
+RTReturnValue|kept|cancel|1	kept
+RTReturnValue|popped|cancel|1	$00000000
+RTReturnValue|d0|cancel|1	$00000000
+RTNextPathEntry|kept|list 2 entry 0|1	kept
+RTNextPathEntry|popped|list 2 entry 0|1	$00000000
+RTNextPathEntry|d0|list 2 entry 0|1	$00000000
+RTNextPathEntry|a3|list 2 entry 0|1	$00000004
+RTNextPathEntry|out|list 2 entry 0|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 2 entry 0|1	$00000000
+RTNextPathEntry|kept|list 2 entry 1|1	kept
+RTNextPathEntry|popped|list 2 entry 1|1	$00000000
+RTNextPathEntry|d0|list 2 entry 1|1	$00000000
+RTNextPathEntry|a3|list 2 entry 1|1	$00000004
+RTNextPathEntry|out|list 2 entry 1|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 2 entry 1|1	$00000000
+RTNextPathEntry|kept|list 2 entry 2|1	kept
+RTNextPathEntry|popped|list 2 entry 2|1	$00000000
+RTNextPathEntry|d0|list 2 entry 2|1	$00000000
+RTNextPathEntry|a3|list 2 entry 2|1	$00000004
+RTNextPathEntry|out|list 2 entry 2|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 2 entry 2|1	$00000000
+RTNextPathEntry|kept|list 2 entry 3|1	kept
+RTNextPathEntry|popped|list 2 entry 3|1	$00000000
+RTNextPathEntry|d0|list 2 entry 3|1	$00000000
+RTNextPathEntry|a3|list 2 entry 3|1	$00000004
+RTNextPathEntry|out|list 2 entry 3|1	bytes 300 fnv 1BC9DCB5
+RTNextPathEntry|reqtools calls|list 2 entry 3|1	$00000000
+RTEZFontRequest|kept|ok|1	kept
+RTEZFontRequest|popped|ok|1	$00000000
+RTEZFontRequest|d0|ok|1	$4C000000
+RTEZFontRequest|reqtools calls|ok|1	$00000001
+RTEZFontRequest|call 0|ok|1	bytes 256 fnv 14184900
+RTReturnValue|kept|ok|1	kept
+RTReturnValue|popped|ok|1	$00000000
+RTReturnValue|d0|ok|1	$00000001
+RTEZFontRequest|the TextAttr|ok|1	bytes 8 50524F473D404346
+RTEZFontRequest|kept|cancel|1	kept
+RTEZFontRequest|popped|cancel|1	$00000000
+RTEZFontRequest|d0|cancel|1	$00000000
+RTEZFontRequest|reqtools calls|cancel|1	$00000001
+RTEZFontRequest|call 0|cancel|1	bytes 256 fnv 14184900
+RTReturnValue|kept|cancel|2	kept
+RTReturnValue|popped|cancel|2	$00000000
+RTReturnValue|d0|cancel|2	$00000000
+RTEZScreenModeRequest|kept|form 0 ok|1	kept
+RTEZScreenModeRequest|popped|form 0 ok|1	$00000000
+RTEZScreenModeRequest|d0|form 0 ok|1	$4C000000
+RTEZScreenModeRequest|reqtools calls|form 0 ok|1	$00000001
+RTEZScreenModeRequest|call 0|form 0 ok|1	bytes 256 fnv E2D83B38
+RTReturnValue|kept|form 0 ok|1	kept
+RTReturnValue|popped|form 0 ok|1	$00000000
+RTReturnValue|d0|form 0 ok|1	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1	$00000001
+RTEZScreenModeRequest|the screen mode|form 0 ok|1	bytes 16 50524F473D50524F47A0A3A6A9ACAFB2
+RTEZScreenModeRequest|kept|form 1 ok|1	kept
+RTEZScreenModeRequest|popped|form 1 ok|1	$00000000
+RTEZScreenModeRequest|d0|form 1 ok|1	$4C000000
+RTEZScreenModeRequest|reqtools calls|form 1 ok|1	$00000001
+RTEZScreenModeRequest|call 0|form 1 ok|1	bytes 256 fnv 4B860B67
+RTReturnValue|kept|form 1 ok|1	kept
+RTReturnValue|popped|form 1 ok|1	$00000000
+RTReturnValue|d0|form 1 ok|1	$00000001
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 ok|1	$00000001
+RTEZScreenModeRequest|the screen mode|form 1 ok|1	bytes 16 50524F473D50524F47A0A3A6A9ACAFB2
+RTEZScreenModeRequest|kept|form 0 cancel|1	kept
+RTEZScreenModeRequest|popped|form 0 cancel|1	$00000000
+RTEZScreenModeRequest|d0|form 0 cancel|1	$00000000
+RTEZScreenModeRequest|reqtools calls|form 0 cancel|1	$00000001
+RTEZScreenModeRequest|call 0|form 0 cancel|1	bytes 256 fnv E2D83B38
+RTReturnValue|kept|form 0 cancel|1	kept
+RTReturnValue|popped|form 0 cancel|1	$00000000
+RTReturnValue|d0|form 0 cancel|1	$00000000
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 cancel|1	$00000001
+RTEZScreenModeRequest|kept|form 1 cancel|1	kept
+RTEZScreenModeRequest|popped|form 1 cancel|1	$00000000
+RTEZScreenModeRequest|d0|form 1 cancel|1	$00000000
+RTEZScreenModeRequest|reqtools calls|form 1 cancel|1	$00000001
+RTEZScreenModeRequest|call 0|form 1 cancel|1	bytes 256 fnv 4B860B67
+RTReturnValue|kept|form 1 cancel|1	kept
+RTReturnValue|popped|form 1 cancel|1	$00000000
+RTReturnValue|d0|form 1 cancel|1	$00000000
+RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 cancel|1	$00000001
+RTEZPaletteRequest|kept|ret 5|1	kept
+RTEZPaletteRequest|popped|ret 5|1	$00000000
+RTEZPaletteRequest|d0|ret 5|1	$00000005
+RTEZPaletteRequest|reqtools calls|ret 5|1	$00000001
+RTEZPaletteRequest|call 0|ret 5|1	bytes 256 fnv 94868A09
+RTReturnValue|kept|ret 5|1	kept
+RTReturnValue|popped|ret 5|1	$00000000
+RTReturnValue|d0|ret 5|1	$00000000
+RTEZPaletteRequest|kept|ret -1|1	kept
+RTEZPaletteRequest|popped|ret -1|1	$00000000
+RTEZPaletteRequest|d0|ret -1|1	$FFFFFFFF
+RTEZPaletteRequest|reqtools calls|ret -1|1	$00000001
+RTEZPaletteRequest|call 0|ret -1|1	bytes 256 fnv 7C00AC04
+RTReturnValue|kept|ret -1|1	kept
+RTReturnValue|popped|ret -1|1	$00000000
+RTReturnValue|d0|ret -1|1	$00000000
+RTEZGetLong|kept|form 0 ok|1	kept
+RTEZGetLong|popped|form 0 ok|1	$00000000
+RTEZGetLong|d0|form 0 ok|1	$000003E8
+RTEZGetLong|reqtools calls|form 0 ok|1	$00000001
+RTEZGetLong|call 0|form 0 ok|1	bytes 256 fnv 21D9FE83
+RTReturnValue|kept|form 0 ok|2	kept
+RTReturnValue|popped|form 0 ok|2	$00000000
+RTReturnValue|d0|form 0 ok|2	$00000001
+RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 ok|1	$00000001
+RTEZGetLong|kept|form 1 ok|1	kept
+RTEZGetLong|popped|form 1 ok|1	$00000000
+RTEZGetLong|d0|form 1 ok|1	$000003E9
+RTEZGetLong|reqtools calls|form 1 ok|1	$00000001
+RTEZGetLong|call 0|form 1 ok|1	bytes 256 fnv 41413DC9
+RTReturnValue|kept|form 1 ok|2	kept
+RTReturnValue|popped|form 1 ok|2	$00000000
+RTReturnValue|d0|form 1 ok|2	$00000001
+RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 1 ok|1	$00000001
+RTEZGetLong|kept|form 0 cancel|1	kept
+RTEZGetLong|popped|form 0 cancel|1	$00000000
+RTEZGetLong|d0|form 0 cancel|1	$000003EA
+RTEZGetLong|reqtools calls|form 0 cancel|1	$00000001
+RTEZGetLong|call 0|form 0 cancel|1	bytes 256 fnv 2600DEBF
+RTReturnValue|kept|form 0 cancel|2	kept
+RTReturnValue|popped|form 0 cancel|2	$00000000
+RTReturnValue|d0|form 0 cancel|2	$00000000
+RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 0 cancel|1	$00000001
+RTEZGetLong|kept|form 1 cancel|1	kept
+RTEZGetLong|popped|form 1 cancel|1	$00000000
+RTEZGetLong|d0|form 1 cancel|1	$000003EB
+RTEZGetLong|reqtools calls|form 1 cancel|1	$00000001
+RTEZGetLong|call 0|form 1 cancel|1	bytes 256 fnv 8C651113
+RTReturnValue|kept|form 1 cancel|2	kept
+RTReturnValue|popped|form 1 cancel|2	$00000000
+RTReturnValue|d0|form 1 cancel|2	$00000000
+RTEZGetLong|the value, also on cancel (BUG(orig) #457)|form 1 cancel|1	$00000001
+RTEZGetLongRange|kept|form 0 ok|1	kept
+RTEZGetLongRange|popped|form 0 ok|1	$00000000
+RTEZGetLongRange|d0|form 0 ok|1	$000007D0
+RTEZGetLongRange|reqtools calls|form 0 ok|1	$00000001
+RTEZGetLongRange|call 0|form 0 ok|1	bytes 256 fnv F31E9BED
+RTReturnValue|kept|form 0 ok|3	kept
+RTReturnValue|popped|form 0 ok|3	$00000000
+RTReturnValue|d0|form 0 ok|3	$00000001
+RTEZGetLongRange|kept|form 1 ok|1	kept
+RTEZGetLongRange|popped|form 1 ok|1	$00000000
+RTEZGetLongRange|d0|form 1 ok|1	$000007D1
+RTEZGetLongRange|reqtools calls|form 1 ok|1	$00000001
+RTEZGetLongRange|call 0|form 1 ok|1	bytes 256 fnv 52ADC207
+RTReturnValue|kept|form 1 ok|3	kept
+RTReturnValue|popped|form 1 ok|3	$00000000
+RTReturnValue|d0|form 1 ok|3	$00000001
+RTEZGetLongRange|kept|form 0 cancel|1	kept
+RTEZGetLongRange|popped|form 0 cancel|1	$00000000
+RTEZGetLongRange|d0|form 0 cancel|1	$00000000
+RTEZGetLongRange|reqtools calls|form 0 cancel|1	$00000001
+RTEZGetLongRange|call 0|form 0 cancel|1	bytes 256 fnv A5D40517
+RTReturnValue|kept|form 0 cancel|3	kept
+RTReturnValue|popped|form 0 cancel|3	$00000000
+RTReturnValue|d0|form 0 cancel|3	$00000000
+RTEZGetLongRange|kept|form 1 cancel|1	kept
+RTEZGetLongRange|popped|form 1 cancel|1	$00000000
+RTEZGetLongRange|d0|form 1 cancel|1	$00000000
+RTEZGetLongRange|reqtools calls|form 1 cancel|1	$00000001
+RTEZGetLongRange|call 0|form 1 cancel|1	bytes 256 fnv DB3F51AD
+RTReturnValue|kept|form 1 cancel|3	kept
+RTReturnValue|popped|form 1 cancel|3	$00000000
+RTReturnValue|d0|form 1 cancel|3	$00000000
+RTEZGetString|kept|form 0 ok|1	kept
+RTEZGetString|popped|form 0 ok|1	$00000000
+RTEZGetString|d0|form 0 ok|1	$0000000A
+RTEZGetString|reqtools calls|form 0 ok|1	$00000001
+RTEZGetString|call 0|form 0 ok|1	bytes 256 fnv B715ED82
+RTReturnValue|kept|form 0 ok|4	kept
+RTReturnValue|popped|form 0 ok|4	$00000000
+RTReturnValue|d0|form 0 ok|4	$00000001
+RTEZGetString|a3|form 0 ok|1	$0000001E
+RTEZGetString|out|form 0 ok|1	bytes 300 fnv 94EF74B6
+RTEZGetString|kept|form 1 ok|1	kept
+RTEZGetString|popped|form 1 ok|1	$00000000
+RTEZGetString|d0|form 1 ok|1	$0000000A
+RTEZGetString|reqtools calls|form 1 ok|1	$00000001
+RTEZGetString|call 0|form 1 ok|1	bytes 256 fnv FDD2085D
+RTReturnValue|kept|form 1 ok|4	kept
+RTReturnValue|popped|form 1 ok|4	$00000000
+RTReturnValue|d0|form 1 ok|4	$00000001
+RTEZGetString|a3|form 1 ok|1	$0000001E
+RTEZGetString|out|form 1 ok|1	bytes 300 fnv 94EF74B6
+RTEZGetString|kept|form 0 cancel|1	kept
+RTEZGetString|popped|form 0 cancel|1	$00000000
+RTEZGetString|d0|form 0 cancel|1	$00000000
+RTEZGetString|reqtools calls|form 0 cancel|1	$00000001
+RTEZGetString|call 0|form 0 cancel|1	bytes 256 fnv B715ED82
+RTReturnValue|kept|form 0 cancel|4	kept
+RTReturnValue|popped|form 0 cancel|4	$00000000
+RTReturnValue|d0|form 0 cancel|4	$00000000
+RTEZGetString|a3|form 0 cancel|1	$00000024
+RTEZGetString|out|form 0 cancel|1	bytes 300 fnv BDE79A05
+RTEZGetString|kept|form 1 cancel|1	kept
+RTEZGetString|popped|form 1 cancel|1	$00000000
+RTEZGetString|d0|form 1 cancel|1	$00000000
+RTEZGetString|reqtools calls|form 1 cancel|1	$00000001
+RTEZGetString|call 0|form 1 cancel|1	bytes 256 fnv FDD2085D
+RTReturnValue|kept|form 1 cancel|4	kept
+RTReturnValue|popped|form 1 cancel|4	$00000000
+RTReturnValue|d0|form 1 cancel|4	$00000000
+RTEZGetString|a3|form 1 cancel|1	$00000024
+RTEZGetString|out|form 1 cancel|1	bytes 300 fnv BDE79A05
+RTEZGetString|kept|form 0 empty|1	kept
+RTEZGetString|popped|form 0 empty|1	$00000000
+RTEZGetString|d0|form 0 empty|1	$00000000
+RTEZGetString|reqtools calls|form 0 empty|1	$00000001
+RTEZGetString|call 0|form 0 empty|1	bytes 256 fnv B715ED82
+RTReturnValue|kept|form 0 empty|1	kept
+RTReturnValue|popped|form 0 empty|1	$00000000
+RTReturnValue|d0|form 0 empty|1	$00000001
+RTEZGetString|a3|form 0 empty|1	$00000014
+RTEZGetString|out|form 0 empty|1	bytes 300 fnv BDE79A05
+RTEZGetString|kept|form 1 empty|1	kept
+RTEZGetString|popped|form 1 empty|1	$00000000
+RTEZGetString|d0|form 1 empty|1	$00000000
+RTEZGetString|reqtools calls|form 1 empty|1	$00000001
+RTEZGetString|call 0|form 1 empty|1	bytes 256 fnv FDD2085D
+RTReturnValue|kept|form 1 empty|1	kept
+RTReturnValue|popped|form 1 empty|1	$00000000
+RTReturnValue|d0|form 1 empty|1	$00000001
+RTEZGetString|a3|form 1 empty|1	$00000014
+RTEZGetString|out|form 1 empty|1	bytes 300 fnv BDE79A05
+RTLockWindow|kept||1	kept
+RTLockWindow|popped||1	$00000000
+RTLockWindow|d0||1	$CC0A0042
+RTLockWindow|reqtools calls||1	$00000001
+RTLockWindow|call 0||1	bytes 256 fnv B615B836
+RTReturnValue|kept||1	kept
+RTReturnValue|popped||1	$00000000
+RTReturnValue|d0||1	$00000001
+RTUnlockWindow|kept||1	kept
+RTUnlockWindow|popped||1	$00000000
+RTUnlockWindow|d0||1	$00000000
+RTUnlockWindow|reqtools calls||1	$00000001
+RTUnlockWindow|call 0||1	bytes 256 fnv 6B49422B
+RTReturnValue|kept||2	kept
+RTReturnValue|popped||2	$00000000
+RTReturnValue|d0||2	$00000001
+RTASyncRequest|kept|up|1	kept
+RTASyncRequest|popped|up|1	$00000000
+RTASyncRequest|d0|up|1	$FFFFFFFF
+RTASyncRequest|reqtools calls|up|1	$00000001
+RTASyncRequest|call 0|up|1	bytes 256 fnv 6AEC4326
+RTReturnValue|kept|up|1	kept
+RTReturnValue|popped|up|1	$00000000
+RTReturnValue|d0|up|1	$80000000
+RTCheckASyncRequest|kept|up|1	kept
+RTCheckASyncRequest|popped|up|1	$00000000
+RTCheckASyncRequest|d0|up|1	$FFFFFFFF
+RTCheckASyncRequest|reqtools calls|up|1	$00000001
+RTCheckASyncRequest|call 0|up|1	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|up|2	kept
+RTReturnValue|popped|up|2	$00000000
+RTReturnValue|d0|up|2	$80000000
+RTCheckASyncRequest|kept|up|2	kept
+RTCheckASyncRequest|popped|up|2	$00000000
+RTCheckASyncRequest|d0|up|2	$00000000
+RTCheckASyncRequest|reqtools calls|up|2	$00000001
+RTCheckASyncRequest|call 0|up|2	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|up|3	kept
+RTReturnValue|popped|up|3	$00000000
+RTReturnValue|d0|up|3	$80000000
+RTEndASyncRequest|kept|up|1	kept
+RTEndASyncRequest|popped|up|1	$00000000
+RTEndASyncRequest|d0|up|1	$00000001
+RTEndASyncRequest|reqtools calls|up|1	$00000001
+RTEndASyncRequest|call 0|up|1	bytes 256 fnv 05E053F0
+RTReturnValue|kept|up|4	kept
+RTReturnValue|popped|up|4	$00000000
+RTReturnValue|d0|up|4	$80000000
+RTASyncPaletteRequest|kept|up|1	kept
+RTASyncPaletteRequest|popped|up|1	$00000000
+RTASyncPaletteRequest|d0|up|1	$FFFFFFFF
+RTASyncPaletteRequest|reqtools calls|up|1	$00000001
+RTASyncPaletteRequest|call 0|up|1	bytes 256 fnv 023FC3C2
+RTReturnValue|kept|up|5	kept
+RTReturnValue|popped|up|5	$00000000
+RTReturnValue|d0|up|5	$80000000
+RTCheckASyncPaletteRequest|kept|up|1	kept
+RTCheckASyncPaletteRequest|popped|up|1	$00000000
+RTCheckASyncPaletteRequest|d0|up|1	$FFFFFFFF
+RTCheckASyncPaletteRequest|reqtools calls|up|1	$00000001
+RTCheckASyncPaletteRequest|call 0|up|1	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|up|6	kept
+RTReturnValue|popped|up|6	$00000000
+RTReturnValue|d0|up|6	$80000000
+RTCheckASyncPaletteRequest|kept|up|2	kept
+RTCheckASyncPaletteRequest|popped|up|2	$00000000
+RTCheckASyncPaletteRequest|d0|up|2	$00000000
+RTCheckASyncPaletteRequest|reqtools calls|up|2	$00000001
+RTCheckASyncPaletteRequest|call 0|up|2	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|up|7	kept
+RTReturnValue|popped|up|7	$00000000
+RTReturnValue|d0|up|7	$80000000
+RTEndASyncPaletteRequest|kept|up|1	kept
+RTEndASyncPaletteRequest|popped|up|1	$00000000
+RTEndASyncPaletteRequest|d0|up|1	$00000001
+RTEndASyncPaletteRequest|reqtools calls|up|1	$00000001
+RTEndASyncPaletteRequest|call 0|up|1	bytes 256 fnv 05E053F0
+RTReturnValue|kept|up|8	kept
+RTReturnValue|popped|up|8	$00000000
+RTReturnValue|d0|up|8	$80000000
+RTASyncRequest|kept|not up|1	kept
+RTASyncRequest|popped|not up|1	$00000000
+RTASyncRequest|d0|not up|1	$00000002
+RTASyncRequest|reqtools calls|not up|1	$00000001
+RTASyncRequest|call 0|not up|1	bytes 256 fnv 6AEC4326
+RTReturnValue|kept|not up|1	kept
+RTReturnValue|popped|not up|1	$00000000
+RTReturnValue|d0|not up|1	$00000002
+RTCheckASyncRequest|kept|not up|1	kept
+RTCheckASyncRequest|popped|not up|1	$00000000
+RTCheckASyncRequest|d0|not up|1	$00000002
+RTCheckASyncRequest|reqtools calls|not up|1	$00000001
+RTCheckASyncRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|not up|2	kept
+RTReturnValue|popped|not up|2	$00000000
+RTReturnValue|d0|not up|2	$00000002
+RTCheckASyncRequest|kept|not up|2	kept
+RTCheckASyncRequest|popped|not up|2	$00000000
+RTCheckASyncRequest|d0|not up|2	$00000000
+RTCheckASyncRequest|reqtools calls|not up|2	$00000001
+RTCheckASyncRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|not up|3	kept
+RTReturnValue|popped|not up|3	$00000000
+RTReturnValue|d0|not up|3	$00000002
+RTEndASyncRequest|kept|not up|1	kept
+RTEndASyncRequest|popped|not up|1	$00000000
+RTEndASyncRequest|d0|not up|1	$00000001
+RTEndASyncRequest|reqtools calls|not up|1	$00000001
+RTEndASyncRequest|call 0|not up|1	bytes 256 fnv 05E053F0
+RTReturnValue|kept|not up|4	kept
+RTReturnValue|popped|not up|4	$00000000
+RTReturnValue|d0|not up|4	$00000002
+RTASyncPaletteRequest|kept|not up|1	kept
+RTASyncPaletteRequest|popped|not up|1	$00000000
+RTASyncPaletteRequest|d0|not up|1	$00000002
+RTASyncPaletteRequest|reqtools calls|not up|1	$00000001
+RTASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 023FC3C2
+RTReturnValue|kept|not up|5	kept
+RTReturnValue|popped|not up|5	$00000000
+RTReturnValue|d0|not up|5	$00000002
+RTCheckASyncPaletteRequest|kept|not up|1	kept
+RTCheckASyncPaletteRequest|popped|not up|1	$00000000
+RTCheckASyncPaletteRequest|d0|not up|1	$FFFFFFFF
+RTCheckASyncPaletteRequest|reqtools calls|not up|1	$00000001
+RTCheckASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|not up|6	kept
+RTReturnValue|popped|not up|6	$00000000
+RTReturnValue|d0|not up|6	$00000002
+RTCheckASyncPaletteRequest|kept|not up|2	kept
+RTCheckASyncPaletteRequest|popped|not up|2	$00000000
+RTCheckASyncPaletteRequest|d0|not up|2	$00000000
+RTCheckASyncPaletteRequest|reqtools calls|not up|2	$00000001
+RTCheckASyncPaletteRequest|call 0|not up|2	bytes 256 fnv 7FA6D708
+RTReturnValue|kept|not up|7	kept
+RTReturnValue|popped|not up|7	$00000000
+RTReturnValue|d0|not up|7	$00000002
+RTEndASyncPaletteRequest|kept|not up|1	kept
+RTEndASyncPaletteRequest|popped|not up|1	$00000000
+RTEndASyncPaletteRequest|d0|not up|1	$00000001
+RTEndASyncPaletteRequest|reqtools calls|not up|1	$00000001
+RTEndASyncPaletteRequest|call 0|not up|1	bytes 256 fnv 05E053F0
+RTReturnValue|kept|not up|8	kept
+RTReturnValue|popped|not up|8	$00000000
+RTReturnValue|d0|not up|8	$00000002
+finit|kept||1	kept
+finit|popped||1	$00000000
+finit|reqtools calls||1	$00000008
+finit|call 0||1	bytes 256 fnv DADC5FEA
+finit|call 1||1	bytes 256 fnv 783EE675
+finit|call 2||1	bytes 256 fnv A01752D4
+finit|call 3||1	bytes 256 fnv 3D79D95F
+finit|call 4||1	bytes 256 fnv 02B4CC49
+finit|call 5||1	bytes 256 fnv 2A8D38A8
+finit|call 6||1	bytes 256 fnv 655245BE
+finit|call 7||1	bytes 256 fnv 72E3B230
+finit|library closed||1	$00000000
+finit|seven requesters and the file list freed||1	$00000001
