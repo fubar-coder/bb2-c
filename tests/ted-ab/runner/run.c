@@ -953,7 +953,7 @@ static int run(FILE *log)
                             used & (1u << TEDAB_R5 | 1u << TEDAB_C5 | 1u << TEDAB_P5)
                             ? P.blitz2_ref : NULL,
                             P.blitz2_c, P.oracle, P.ted_prev, P.blitz2_prev };
-    struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
+    struct session *ss = NULL;
     size_t *queue = NULL, nq = 0, i, k;
     struct teddump_fonts fonts;
     unsigned nsess = 0, running = 0;     /* running: sessions started, not evaluated */
@@ -993,7 +993,7 @@ static int run(FILE *log)
         fprintf(log, "%s: no fonts in %s\n", me, P.fonts);
         return 2;
     }
-    if (!ss)
+    if (!(ss = calloc(MAXSESSIONS + 1, sizeof *ss)))
         return 2;
     rm_tree(P.work);
     for (i = 0; i < ntests; i++)
