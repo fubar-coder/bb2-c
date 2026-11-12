@@ -409,6 +409,98 @@ and `[fixed #M]` case. The check works on the expected data of the shared
 model, so the follow-ups for bug-orig and the corpus get it without a
 second tool.
 
+## Measurements (group 1)
+
+Facts measured on 2026-11-12 with throwaway patches (not committed): the
+original libraries run live in the record mode of the tape, every observation
+written as a D4 case; seven runs of all 60 programs (two binaries, heap shift
+0, 4104, 12296, 20488, 36872 bytes, one exact repeat). Details: the
+coordinator's scratch file `libs-capture-group1.md`.
+
+**Checks (task 1.1), for D11.** The programs' own summary lines, in the order
+of `libs_tests.cpp`: `systest` 49, `systest_mathstr` 56864, `systest_runtime`
+113, `systest_system` 178, `systest_cmdlibs` 2059, `systest_med` 11884;
+`libtest` prints no `checks` line (41458 tests per tape file: 2 routines times
+20729); the rwe programs: `bb_blitlib` 8143, `blitzbomberslibtwo` 6080,
+`ciatrklib` 4606, `neilsreqtoolslib` 1238, `popupwinlib` 224, `riamosfunclib`
+818, `rianimlib` 440, `riapplib` 602, `riarexxlib` 1463, `riarrayslib` 820,
+`ribbmaplib` 4314, `richunkylib` 1318, `ricommoditieslib` 399,
+`ricompactdisclib` 12193, `ricopperfxlib` 2260, `ridatatypeslib` 683,
+`ridebuglib` 216, `ridisasmlib` 3058392, `ridisplaylib` 194, `ridoslib` 664,
+`riencryptlib` 1202, `rievallib` 2049, `rifastseriallib` 270, `rifnslib` 7318,
+`rifxlib` 348, `rigfxlib` 447, `rigtmenulib` 2154, `riintuilib` 215,
+`rilesdebuglib` 8078, `rilinkedlistlib` 967, `rilvcallhooklib` 1217,
+`rimapeditorlib` 2967, `rimapshapeslib` 2028, `rimisclib` 3334,
+`rinonvolatilelib` 593, `ripacklib` 434, `riregistrylib` 866, `rireqlib` 120,
+`riseriallib` 840, `rishapeslib` 574, `rishapezlib` 99, `risnowlib` 5107,
+`risortlib` 1251, `risoundlib` 301, `risoundlib2` 3060, `ristcdecrunchlib`
+1019, `ristonecrackerlib` 909, `rithreadlib` 196, `ritooltypeslib` 2594,
+`ritrackdisklib` 951, `ritrackerlib` 13481, `riwbspritelib` 3720,
+`rizonejoylib` 5405. Seven rwe programs and the six systest programs print
+the line without a name. The numbers are the same in all seven runs. The
+check count differs from the D4 case count (a string observation is one case;
+`kept` is one case per call; `systest_med` has 3 567 195 cases for 11884
+checks); the D4 case counts are in the scratch file.
+
+**Addresses (task 1.2).** No observed value changes with the heap shift: the
+programs already turn heap, library and `AllocAbs` addresses into offsets
+before they observe them, so no current value needs `base+$OFF`. Pointers into
+the test program are normalised by the range test of `tape_obs`
+(`prog`): `neilsreqtoolslib.c:307`, `:573`, `riamosfunclib.c:199`,
+`rinonvolatilelib.c:107`, `:109`, `:111`, `riregistrylib.c:146`, `:231`,
+`:256`, `riapplib.c:207`, `rievallib.c:99`, `riseriallib.c:464`,
+`systest_runtime.c:353`, and inside records (`SAMEPTRBYTES`)
+`neilsreqtoolslib.c:297`, `:602`, `:614`, `rimisclib.c:204`, `:261`, `:271`,
+`rireqlib.c:110`, `risortlib.c:122`; their raw values change with the binary.
+Three programs have an address in the key (check text or vector), which
+changes with the heap shift: `rilesdebuglib.c:150` (`D_HexWord` vector),
+`riwbspritelib.c:156` (the `MoveWBSprite` vector holds a ViewPort address),
+`systest_runtime.c:351` (the stack pointer in the check text). Four programs
+put the two values into the check text: `systest.c:157`,
+`systest_runtime.c:351`, `ricommoditieslib.c:374`, `systest_system.c` (about
+line 470); a key must not hold a value. The range test normalises two kinds
+of values wrongly: `blitzbomberslibtwo.c:50` (data words of the table; 7 of
+6080 observations fall into the range; the committed tape of this program
+differs from a recording with a binary of another size, segment 2, and equals
+one with the committed layout) and `systest_mathstr.c:272`, `:389` (numeric
+results in the range). A number must not be normalised (D4: `prog` only where
+the site names a pointer). `capture.c`'s static buffers move the range too.
+
+**Text size (task 1.3).** Written as D4 cases, 6 909 451 cases, 310.9 MB
+plain; `rwe_ridisasmlib` 199.5 MB (gzip -9 9.7 MB) and `systest_med` 97.6 MB
+(gzip 11.4 MB) as plain text, as D6 blocks 747 + 871 lines, about 100 KB. The
+other 59 files: 283 865 cases, 13.86 MB raw (49 bytes a case; the 40 of the
+estimate holds for `libtest` and `mathstr`), gzip -9 per file 1.93 MB, xz -9
+1.36 MB; with the blocks about 13.96 MB raw and 2.0 MB compressed. The two
+`libtest` files (1.87 MB each, 0.94 MB gzip together) and `systest_mathstr`
+(2.3 MB, 0.33 MB gzip) are 43 % of the raw and 66 % of the compressed text;
+without `libtest` 10.13 MB raw and 0.99 MB gzip are left; no other file is
+above 1.1 MB. Literal CD data: none found. Hex buffers (up to 64 bytes, 22
+programs) and strings (5 programs) are records filled in by the routines,
+texts computed from the test's inputs, or the test's own names; of 54
+original files (the CD's `ACIDLIBS`, the CD userlibs, the reference builds)
+only 27 short hex values occur in the expected data, all zero runs or short
+headers followed by zeros, and 20 strings that are public routine names.
+`ridisasmlib`'s 382 298 text values (disassembly lines) occur nowhere in the
+originals.
+
+**Determinism (task 1.4).** In seven runs with six layouts no observation of
+any program differs (normalised value, raw value, kept mask), apart from the
+layout-dependent `blitzbomberslibtwo.c:50` hash above and the keys of the
+three programs above. Not covered by that: `riencryptlib` under `tape_pause`
+(16 observations: the kept mask of `Decrypt 5 (random)` alternates `$7EF1` and
+`$7EF9` between runs, and the wheels differ in every run in both sets;
+vallib's `Rnd` is hardware noise (VHPOSR, JOY0DAT, CIA timer,
+`libs/acidlibs/vallib.c:623`) with no seed state; a `sysload_stubs` entry for
+its token would be the way to a defined state). `ciatrklib`: in six runs
+with printing (and the live check passed in the seven full runs) the
+original's DMACONR after all 39 F00-phase calls is identical every time
+(`$0 $8 $C $E $F`); a C-only run reads `$F` after 33 of the 39 and `$0` after
+6, by construction (hardware against RAM copy), so the two sets cannot agree
+there; that DMACONR is a live-only `check()` today, no observation. Not
+measured: values that depend on date or timing (every run starts from the
+same savestate).
+
 ## Risks / Trade-offs
 
 - [Size of the text, and CD content] 6.9 million observations in all, about
@@ -466,11 +558,22 @@ it).
 
 ## Open Questions
 
-- Whether vallib's `Rnd` can be seeded for `riencryptlib` (D8), and
-  whether the F00 phase of `ciatrklib` can be put into a state where
-  original and C build agree; else `not captured: REASON` cases stand.
-  Decided during implementation.
-- The result of task 1.3 (size and literal CD data) may change D6's list
-  of hashed programs.
+- Whether vallib's `Rnd` can be seeded for `riencryptlib` (D8): measured,
+  it has no seed state (hardware noise); a stub for its token through
+  `sysload_stubs` is the remaining way to a defined state, else `not
+  captured: REASON`. Whether the F00 phase of `ciatrklib` can be put into a
+  state where original and C build agree: measured, no (hardware against RAM
+  copy, by construction); `not captured: REASON` stands for it. See
+  "Measurements (group 1)". Decided during implementation.
+- The result of task 1.3 (size and literal CD data): measured, no literal CD
+  data and 13.96 MB raw / 2.0 MB compressed in all with the two block
+  programs hashed; whether to keep that or to hash `libtest` (-27 % raw,
+  -49 % compressed) and `systest_mathstr` is for the user to decide (D6's
+  list of hashed programs).
+- Keys that hold values or addresses (four programs hold values in the check
+  text, three hold an address in the check text or vector) and values the
+  range test of `tape_obs` hits by chance: the conversions of their groups
+  change the check texts and use `prog` only where a site names a pointer
+  ("Measurements (group 1)").
 - Whether `libs-update --fix` should also accept a hand-edit workflow only
   (no flag); the flag is a convenience.
