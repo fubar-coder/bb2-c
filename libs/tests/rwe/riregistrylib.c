@@ -234,7 +234,7 @@ static void strfn(int idx, const char *name, const char *arg, ULONG ret)
         R.d[0] = (ULONG)strbuf;
         R.a[2] = (ULONG)&stk[8];
         R.a[3] = (ULONG)strbuf + (arg ? strlen(arg) + 1 : 4));
-    OBS("d0", R.d[0]);
+    OBSPTR("d0", R.d[0], NULL, 0);    /* a number, or the value pointer of rs */
     OBS("a3", R.a[3] - (ULONG)strbuf);
     OBSBYTES("string area", strbuf, sizeof strbuf);
     samelog();

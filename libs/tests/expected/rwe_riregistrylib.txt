@@ -572,7 +572,7 @@ ParseItemValue$|string area|"" ret 0|2	bytes 256 fnv 842DE02A
 ParseItemValue$|calls|"" ret 0|2	$00000000
 GetRegistryIntVariable|kept|"Int" ret 4|2	kept
 GetRegistryIntVariable|popped|"Int" ret 4|2	$00000000
-GetRegistryIntVariable|d0|"Int" ret 4|2	$400C6AF1
+GetRegistryIntVariable|d0|"Int" ret 4|2	prog
 GetRegistryIntVariable|a3|"Int" ret 4|2	$00000004
 GetRegistryIntVariable|string area|"Int" ret 4|2	bytes 256 fnv 938D4AAE
 GetRegistryIntVariable|calls|"Int" ret 4|2	$00000001
@@ -582,7 +582,7 @@ GetRegistryIntVariable|call 0 a0|"Int" ret 4|1	prog
 GetRegistryIntVariable|call 0 a1|"Int" ret 4|1	$53000000
 GetRegistryIntVariable|kept|"Int" ret 327683|2	kept
 GetRegistryIntVariable|popped|"Int" ret 327683|2	$00000000
-GetRegistryIntVariable|d0|"Int" ret 327683|2	$400C6AF1
+GetRegistryIntVariable|d0|"Int" ret 327683|2	prog
 GetRegistryIntVariable|a3|"Int" ret 327683|2	$00000004
 GetRegistryIntVariable|string area|"Int" ret 327683|2	bytes 256 fnv 938D4AAE
 GetRegistryIntVariable|calls|"Int" ret 327683|2	$00000001
@@ -592,7 +592,7 @@ GetRegistryIntVariable|call 0 a0|"Int" ret 327683|1	prog
 GetRegistryIntVariable|call 0 a1|"Int" ret 327683|1	$53000000
 GetRegistryBoolVariable|kept|"Bool" ret 3|2	kept
 GetRegistryBoolVariable|popped|"Bool" ret 3|2	$00000000
-GetRegistryBoolVariable|d0|"Bool" ret 3|2	$400C6AF1
+GetRegistryBoolVariable|d0|"Bool" ret 3|2	prog
 GetRegistryBoolVariable|a3|"Bool" ret 3|2	$00000005
 GetRegistryBoolVariable|string area|"Bool" ret 3|2	bytes 256 fnv 358EEAFE
 GetRegistryBoolVariable|calls|"Bool" ret 3|2	$00000001
