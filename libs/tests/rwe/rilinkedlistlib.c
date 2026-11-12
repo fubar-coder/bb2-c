@@ -1,24 +1,25 @@
 /*
- * rwe rilinkedlistlib - the linked list library: the C build against the
+ * rwe rilinkedlistlib - the linked list library: the C build or the
  * reference build of rwelibsrc/Listlib/listlib4.bb (rilinkedlistlib.orig,
- * ref/rilinkedlistlib.obj of ctest rwe_refbuild), method of rwecmp.h.
+ * ref/rilinkedlistlib.obj of ctest rwe_refbuild), one set as LIBSET says,
+ * observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rilinkedlistlib.txt).
  *
  *   rilinkedlistlib DIR  (DIR with rilinkedlistlib and riamosfunclib
- *                         .obj/.orig)
+ *                         .obj or .orig)
  *
  * memlib is not loaded: stubs (sysload_stubs) for globalloc/globfree
- * allocate from a 64 KB aligned region per set (blocks filled with a
+ * allocate from a 64 KB aligned region (blocks filled with a
  * pattern, as AllocMem without MEMF_CLEAR leaves garbage; freed blocks
  * overwritten), log every call (sizes, flags, addresses relative to the
  * region) and can let the n-th allocation of a call fail.  A wrong free
  * (DelListItem, BUG(orig) #729) is only logged - the real memlib would stop
  * with "Unable to Free Memory".  The copies are made by the real
- * RIAmosFuncLib CopyByte of each set (C build / AmiBlitz3 binary).  The
+ * RIAmosFuncLib CopyByte of the set (C build / AmiBlitz3 binary).  The
  * variables lie in the region too, with their size word in front.
- * Compared after every call: d0 (addresses relative to the region), the
- * log, the whole used region word by word (the upper word of a region
- * address counts as equal in both sets) and every register the original
- * keeps.
+ * Observed after every call: d0 (addresses relative to the region), the
+ * log, the whole used region (the upper word of a region address written
+ * as $5247) and the kept registers.
  *
  * Covered: every command and the init/finit; SizeOfListItem (sizes 12, 0
  * words below 8: almost 4 GB); AddrListItem, FirstListItem, LastListItem,
@@ -41,6 +42,7 @@
  * indexes on into its code, the C build into other data), a size of 0
  * (CopyByte copies 2^32 bytes).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rilinkedlistlib"
@@ -57,25 +59,25 @@ enum { INITLIST, ADDLISTITEM, SETLISTITEM, NEXTLISTITEM, GETLISTITEM, PREVLISTIT
 #define VARSZ  0x400UL
 
 static UBYTE *raw;
-static UBYTE *base[2];
-static ULONG top[2];                    /* next free offset of the pool */
-static int failin[2];                   /* the n-th allocation fails (0: none) */
-static int nalloc[2];
+static UBYTE *base;
+static ULONG top;                       /* next free offset of the pool */
+static int failin;                      /* the n-th allocation fails (0: none) */
+static int nalloc;
 
 #define LOGMAX 200
-static struct { ULONG op, a, b; } mlog[2][LOGMAX];
-static int nlog[2], logdone;
+static struct { ULONG op, a, b; } mlog[LOGMAX];
+static int nlog, logdone;
 
 static UWORD hi(void)
 {
-    return (UWORD)((ULONG)base[cur] >> 16);
+    return (UWORD)((ULONG)base >> 16);
 }
 
 /* an address in the region relative to it (tagged), the region's upper
    word in the low word (DelListItem's misread data pointer) tagged too */
 static ULONG norm(ULONG x)
 {
-    ULONG b = (ULONG)base[cur];
+    ULONG b = (ULONG)base;
 
     if (x >= b && x < b + REGION)
         return 0x40000000UL | (x - b);
@@ -86,12 +88,12 @@ static ULONG norm(ULONG x)
 
 static void logit(ULONG op, ULONG a, ULONG b)
 {
-    if (nlog[cur] < LOGMAX) {
-        mlog[cur][nlog[cur]].op = op;
-        mlog[cur][nlog[cur]].a = a;
-        mlog[cur][nlog[cur]].b = b;
+    if (nlog < LOGMAX) {
+        mlog[nlog].op = op;
+        mlog[nlog].a = a;
+        mlog[nlog].b = b;
     }
-    nlog[cur]++;
+    nlog++;
 }
 
 static ULONG __attribute__((used)) st_globalloc_c(ULONG size, ULONG flags)
@@ -100,22 +102,22 @@ static ULONG __attribute__((used)) st_globalloc_c(ULONG size, ULONG flags)
     ULONG i, n;
 
     logit(1, size, flags);
-    if (failin[cur] && ++nalloc[cur] == failin[cur])
+    if (failin && ++nalloc == failin)
         return 0;
-    if (size > POOLSZ - top[cur] - 8)
+    if (size > POOLSZ - top - 8)
         return 0;
-    p = base[cur] + top[cur];
+    p = base + top;
     *(ULONG *)p = size;
     for (i = 4; i < size + 8; i++)      /* garbage, the same in both sets */
-        p[i] = (UBYTE)(0x80 | ((top[cur] + i) * 13));
+        p[i] = (UBYTE)(0x80 | ((top + i) * 13));
     n = (size + 8 + 7) & ~7UL;
-    top[cur] += n;
+    top += n;
     return (ULONG)(p + 8);
 }
 
 static void __attribute__((used)) st_globfree_c(ULONG mem, ULONG size)
 {
-    ULONG b = (ULONG)base[cur], i, n;
+    ULONG b = (ULONG)base, i, n;
 
     logit(2, norm(mem), size);
     if (mem < b + 8 || mem >= b + POOLSZ)
@@ -160,49 +162,43 @@ static const struct stub stubs[] = {
 /* a variable of `size` bytes in slot k: its word in front = size + 8 */
 static ULONG var(int k)
 {
-    return (ULONG)base[cur] + VAROFF + 8 + (ULONG)k * 0x40;
+    return (ULONG)base + VAROFF + 8 + (ULONG)k * 0x40;
 }
 
 static void mkvar(int k, UWORD word, UBYTE seed)
 {
-    int s, i;
-    for (s = 0; s < 2; s++) {
-        UBYTE *v = base[s] + VAROFF + 8 + k * 0x40;
-        *(UWORD *)(v - 2) = word;
-        for (i = 0; i < 0x30; i++)
-            v[i] = (UBYTE)(0x80 | (seed + i * 5));
-    }
+    int i;
+    UBYTE *v = base + VAROFF + 8 + k * 0x40;
+    *(UWORD *)(v - 2) = word;
+    for (i = 0; i < 0x30; i++)
+        v[i] = (UBYTE)(0x80 | (seed + i * 5));
 }
 
-/* the log entries since the last comparison, the used region */
+/* the log entries since the last observation, the used region: its
+   words that are the region's upper word (of an address in it) written
+   as $5247 ("RG"; the garbage bytes and the variables have bit 7 set) */
 static void same_state(void)
 {
+    static UWORD pool[POOLSZ / 2];
     int i;
-    ULONG n, w;
+    ULONG w;
     char buf[40];
 
-    SAME("memlib calls", nlog[cur]);
-    for (i = logdone; i < nlog[0] && i < nlog[1] && i < LOGMAX; i++) {
+    OBS("memlib calls", nlog);
+    for (i = logdone; i < nlog && i < LOGMAX; i++) {
         sprintf(buf, "memlib call %d", i);
-        SAME(buf, mlog[cur][i].op << 28 ^ mlog[cur][i].a);
-        SAME(buf, mlog[cur][i].b);
+        OBS(buf, mlog[i].op << 28 ^ mlog[i].a);
+        sprintf(buf, "memlib call %d d1", i);
+        OBS(buf, mlog[i].b);
     }
-    logdone = nlog[0] > nlog[1] ? nlog[0] : nlog[1];
-    SAME("pool used", top[cur]);
-    n = top[0] > top[1] ? top[0] : top[1];
-    for (w = 0; w < n; w += 2) {
-        UWORD a = *(UWORD *)(base[0] + w), b = *(UWORD *)(base[1] + w);
-        if (a == (UWORD)((ULONG)base[0] >> 16) && b == (UWORD)((ULONG)base[1] >> 16))
-            continue;
-        a = (UWORD)tape_obs("pool", a, b);
-        if (a != b) {
-            sprintf(buf, "pool offset $%04lX", w);
-            fail(buf, a, b);
-            return;
-        }
+    logdone = nlog;
+    OBS("pool used", top);
+    for (w = 0; w < top && w < POOLSZ; w += 2) {
+        UWORD a = *(UWORD *)(base + w);
+        pool[w / 2] = a == hi() ? 0x5247 : a;
     }
-    checks++;
-    SAMEBYTES("variables", ((UBYTE *[]){ base[0] + VAROFF, base[1] + VAROFF }), VARSZ);
+    OBSBYTES("pool", pool, w);
+    OBSBYTES("variables", base + VAROFF, VARSZ);
 }
 
 /* a call with d0 = list# (and d1 = a variable), compared */
@@ -210,11 +206,10 @@ static void call(const char *rout, int idx, ULONG list, int v, int failn)
 {
     ROUT = rout;
     sprintf(VEC, "list %lu var %d fail %d", list, v, failn);
-    DO2(ENT(LIB, idx, 0), R[cur].d[0] = list; if (v >= 0) R[cur].d[1] = var(v);
-        failin[cur] = failn; nalloc[cur] = 0);
-    for (cur = 0; cur < 2; cur++)
-        failin[cur] = 0;
-    SAME("d0", norm(R[cur].d[0]));
+    DO1(ENT(LIB, idx, 0), R.d[0] = list; if (v >= 0) R.d[1] = var(v);
+        failin = failn; nalloc = 0);
+    failin = 0;
+    OBS("d0", norm(R.d[0]));
     same_state();
 }
 
@@ -229,31 +224,45 @@ int main(int argc, char **argv)
         printf("usage: rilinkedlistlib DIR\n");
         return 20;
     }
-    raw = AllocMem(3 * REGION, MEMF_PUBLIC | MEMF_CLEAR);
+    raw = AllocMem(2 * REGION, MEMF_PUBLIC | MEMF_CLEAR);
     if (!raw) {
-        check("rilinkedlistlib: memory for the regions", FALSE);
+        check("rilinkedlistlib: memory for the region", FALSE);
         return 20;
     }
-    base[0] = (UBYTE *)(((ULONG)raw + REGION - 1) & ~(REGION - 1));
-    base[1] = base[0] + REGION;
+    base = (UBYTE *)(((ULONG)raw + REGION - 1) & ~(REGION - 1));
     sysload_stubs = stubs;
-    if (!load_sets(argv[1], names)) {
+    if (!load_set(argv[1], names)) {
         sysload_stubs = NULL;
-        FreeMem(raw, 3 * REGION);
+        FreeMem(raw, 2 * REGION);
         return 20;
     }
     sysload_stubs = NULL;
-    /* d0 is the result of every routine, compared by "d0" */
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("finit", d1-d7|a0-a3|a6);
+    KEEPS("SizeOfListItem", d1-d7|a1-a3|a6);
+    KEEPS("AddrListItem", d1-d7|a1-a3|a6);
+    KEEPS("FirstListItem", d2-d7|a2|a3|a6);
+    KEEPS("LastListItem", d2-d7|a2|a3|a6);
+    KEEPS("DelListItem", d1-d7|a2|a3|a6);
+    KEEPS("InitList", d3-d7|a3|a6);
+    KEEPS("GetListItem", d3-d7|a2|a3|a6);
+    KEEPS("AddListItem", d2-d7|a2|a3|a6);
+    KEEPS("SetListItem", d3-d7|a2|a3|a6);
+    KEEPS("AddLastListItem", d2-d7|a2|a3|a6);
+    KEEPS("NextListItem", d2-d7|a2|a3|a6);
+    KEEPS("PrevListItem", d2-d7|a2|a3|a6);
+    KEEPS("AddFirstListItem", d2-d7|a1-a3|a6);
+    /* d0 is the result of every routine, observed by "d0" */
     DONTCARE = 1;
     strcpy(VEC, "");
 
     ROUT = "init";
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
     ROUT = "finit";
-    DO2(ENT(LIB, FINIT, 0), (void)0);
-    SAME("finit d0", R[cur].d[0]);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    OBS("finit d0", R.d[0]);
     ROUT = "init";
-    DO2(ENT(LIB, INIT, 0), (void)0);
+    DO1(ENT(LIB, INIT, 0), (void)0);
 
     /* the variables: 12, 20, 6, 32 bytes; size words 3 and 7 */
     mkvar(0, 12 + 8, 0x11);
@@ -268,8 +277,8 @@ int main(int argc, char **argv)
     for (l = 0; l < 6; l++) {
         ROUT = "SizeOfListItem";
         sprintf(VEC, "var %d", l);
-        DO2(ENT(LIB, SIZEOFLISTITEM, 0), R[cur].d[0] = var(l));
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, SIZEOFLISTITEM, 0), R.d[0] = var(l));
+        OBS("d0", R.d[0]);
     }
 
     /* empty lists */
@@ -382,9 +391,9 @@ int main(int argc, char **argv)
         ADDR(l);
     ROUT = "finit";
     strcpy(VEC, "");
-    DO2(ENT(LIB, FINIT, 0), (void)0);
-    SAME("finit d0", R[cur].d[0]);
+    DO1(ENT(LIB, FINIT, 0), (void)0);
+    OBS("finit d0", R.d[0]);
 
-    FreeMem(raw, 3 * REGION);
+    FreeMem(raw, 2 * REGION);
     return rwe_done("rilinkedlistlib");
 }

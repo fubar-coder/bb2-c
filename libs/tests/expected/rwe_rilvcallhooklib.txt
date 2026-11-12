@@ -1,0 +1,1065 @@
+# capture rwe_rilvcallhooklib 1
+RetrieveCallHook|kept|RetrieveCallHook|1	kept
+RetrieveCallHook|popped|RetrieveCallHook|1	$00000000
+RetrieveCallHook|in the library|RetrieveCallHook|1	$00000001
+hook|kept|method 1|1	kept
+hook|popped|method 1|1	$00000000
+hook|d0|method 1|1	$00000001
+hook|plane 0|method 1|1	bytes 7680 fnv 0FD3ADC5
+hook|plane 1|method 1|1	bytes 7680 fnv 9FE603C5
+hook|RastPort|method 1|1	bytes 100 fnv CED49F89
+hook|LVCB_UNKNOWN|method 1|1	$00000001
+hook|kept|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	kept
+hook|popped|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	$00000000
+hook|d0|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	$00000000
+hook|plane 0|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	bytes 7680 fnv D2260519
+hook|plane 1|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	bytes 7680 fnv A1A6E91D
+hook|RastPort|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	bytes 100 fnv D4A4CE67
+hook|LVCB_OK|#0: (243,4)-(509,20), state 4, 2 fields, indent 0, d7 $0000ED7F|1	$00000001
+hook|kept|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	kept
+hook|popped|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	$00000000
+hook|d0|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	$00000000
+hook|plane 0|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	bytes 7680 fnv D4375B5C
+hook|plane 1|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	bytes 7680 fnv 847AADEB
+hook|RastPort|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	bytes 100 fnv 6B1E3A58
+hook|LVCB_OK|#1: (224,4)-(417,13), state 2, 2 fields, indent 32, d7 $8000CF10|1	$00000001
+hook|kept|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	kept
+hook|popped|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	$00000000
+hook|d0|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	$00000000
+hook|plane 0|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	bytes 7680 fnv 4FA4B547
+hook|plane 1|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	bytes 7680 fnv 884709AE
+hook|RastPort|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	bytes 100 fnv 27BA5709
+hook|LVCB_OK|#2: (220,8)-(372,27), state 2, 1 fields, indent 5, d7 $80018490|1	$00000001
+hook|kept|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	kept
+hook|popped|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	$00000000
+hook|d0|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	$00000000
+hook|plane 0|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	bytes 7680 fnv 5B3F1723
+hook|plane 1|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	bytes 7680 fnv CED865F3
+hook|RastPort|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	bytes 100 fnv 87817B21
+hook|LVCB_OK|#5: (230,7)-(507,23), state 4, 2 fields, indent 16, d7 $FFFFCB2D|1	$00000001
+hook|kept|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	kept
+hook|popped|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	$00000000
+hook|d0|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	$00000000
+hook|plane 0|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	bytes 7680 fnv 951B694B
+hook|plane 1|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	bytes 7680 fnv 629B9238
+hook|RastPort|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	bytes 100 fnv 9C7DD22F
+hook|LVCB_OK|#6: (227,4)-(377,23), state 2, 2 fields, indent 0, d7 $00005334|1	$00000001
+hook|kept|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	kept
+hook|popped|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	$00000000
+hook|d0|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	$00000000
+hook|plane 0|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	bytes 7680 fnv 6C11E7C4
+hook|plane 1|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	bytes 7680 fnv 29D26535
+hook|RastPort|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	bytes 100 fnv 634D1A5A
+hook|LVCB_OK|#7: (248,6)-(375,23), state 2, 4 fields, indent 60, d7 $FFFF0468|1	$00000001
+hook|kept|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	kept
+hook|popped|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	$00000000
+hook|d0|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	$00000000
+hook|plane 0|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	bytes 7680 fnv FFAFA278
+hook|plane 1|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	bytes 7680 fnv F4AA1A2A
+hook|RastPort|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	bytes 100 fnv 311A6948
+hook|LVCB_OK|#8: (233,6)-(385,19), state 2, 1 fields, indent 15, d7 $0000629B|1	$00000001
+hook|kept|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	kept
+hook|popped|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	$00000000
+hook|d0|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	$00000000
+hook|plane 0|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	bytes 7680 fnv 88EF5894
+hook|plane 1|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	bytes 7680 fnv F65757F4
+hook|RastPort|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	bytes 100 fnv C6E55D6F
+hook|LVCB_OK|#9: (229,4)-(430,16), state 8, 4 fields, indent 0, d7 $80014D0F|1	$00000001
+hook|kept|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	kept
+hook|popped|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	$00000000
+hook|d0|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	$00000000
+hook|plane 0|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	bytes 7680 fnv 6CA8339F
+hook|plane 1|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	bytes 7680 fnv D54B354D
+hook|RastPort|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	bytes 100 fnv E715774E
+hook|LVCB_OK|#10: (223,4)-(494,24), state 2, 2 fields, indent 15, d7 $80019025|1	$00000001
+hook|kept|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	kept
+hook|popped|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	$00000000
+hook|d0|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	$00000000
+hook|plane 0|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	bytes 7680 fnv E725A31B
+hook|plane 1|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	bytes 7680 fnv 114032F6
+hook|RastPort|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	bytes 100 fnv B8AE2AF0
+hook|LVCB_OK|#11: (226,9)-(423,21), state 8, 3 fields, indent 5, d7 $00002524|1	$00000001
+hook|kept|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	kept
+hook|popped|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	$00000000
+hook|d0|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	$00000000
+hook|plane 0|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	bytes 7680 fnv 636729DD
+hook|plane 1|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	bytes 7680 fnv D7C4DD06
+hook|RastPort|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	bytes 100 fnv 5A49AF51
+hook|LVCB_OK|#12: (242,4)-(396,21), state 4, 1 fields, indent 0, d7 $800165CA|1	$00000001
+hook|kept|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	kept
+hook|popped|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	$00000000
+hook|d0|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	$00000000
+hook|plane 0|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	bytes 7680 fnv 6F1CD4E8
+hook|plane 1|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	bytes 7680 fnv 6C97C3F2
+hook|RastPort|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	bytes 100 fnv F4269150
+hook|LVCB_OK|#13: (242,8)-(476,19), state 0, 4 fields, indent 40, d7 $000019B2|1	$00000001
+hook|kept|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	kept
+hook|popped|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	$00000000
+hook|d0|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	$00000000
+hook|plane 0|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	bytes 7680 fnv 6B44F51F
+hook|plane 1|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	bytes 7680 fnv FE4F0331
+hook|RastPort|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	bytes 100 fnv A9678236
+hook|LVCB_OK|#14: (229,9)-(386,27), state 2, 3 fields, indent 32, d7 $0001DD00|1	$00000001
+hook|kept|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	kept
+hook|popped|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	$00000000
+hook|d0|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	$00000000
+hook|plane 0|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	bytes 7680 fnv BBCAB459
+hook|plane 1|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	bytes 7680 fnv 9448DDB5
+hook|RastPort|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	bytes 100 fnv 9CA95131
+hook|LVCB_OK|#15: (221,4)-(363,18), state 4, 2 fields, indent 0, d7 $80016747|1	$00000001
+hook|kept|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	kept
+hook|popped|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	$00000000
+hook|d0|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	$00000000
+hook|plane 0|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	bytes 7680 fnv F2E6BAD1
+hook|plane 1|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	bytes 7680 fnv A312BD53
+hook|RastPort|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	bytes 100 fnv 3A82D467
+hook|LVCB_OK|#16: (232,4)-(336,15), state 8, 1 fields, indent 32, d7 $00000A48|1	$00000001
+hook|kept|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	kept
+hook|popped|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	$00000000
+hook|d0|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	$00000000
+hook|plane 0|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	bytes 7680 fnv E97321C9
+hook|plane 1|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	bytes 7680 fnv 58A80098
+hook|RastPort|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	bytes 100 fnv 884EA67B
+hook|LVCB_OK|#17: (221,9)-(396,19), state 1, 4 fields, indent 5, d7 $FFFFCD94|1	$00000001
+hook|kept|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	kept
+hook|popped|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	$00000000
+hook|d0|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	$00000000
+hook|plane 0|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	bytes 7680 fnv 22B274F2
+hook|plane 1|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	bytes 7680 fnv E27A2436
+hook|RastPort|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	bytes 100 fnv 5B5B9C22
+hook|LVCB_OK|#18: (243,5)-(504,21), state 0, 2 fields, indent 0, d7 $80019CD6|1	$00000001
+hook|kept|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	kept
+hook|popped|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	$00000000
+hook|d0|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	$00000000
+hook|plane 0|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	bytes 7680 fnv 5D1CB7A6
+hook|plane 1|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	bytes 7680 fnv A256D782
+hook|RastPort|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	bytes 100 fnv 7D9AC589
+hook|LVCB_OK|#19: (226,10)-(328,26), state 8, 1 fields, indent 5, d7 $0000EEBC|1	$00000001
+hook|kept|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	kept
+hook|popped|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	$00000000
+hook|d0|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	$00000000
+hook|plane 0|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	bytes 7680 fnv D856EFC7
+hook|plane 1|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	bytes 7680 fnv 74F3D506
+hook|RastPort|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	bytes 100 fnv 8429B6C9
+hook|LVCB_OK|#20: (235,9)-(398,19), state 0, 4 fields, indent 15, d7 $8001DC26|1	$00000001
+hook|kept|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	kept
+hook|popped|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	$00000000
+hook|d0|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	$00000000
+hook|plane 0|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	bytes 7680 fnv 4F7BF846
+hook|plane 1|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	bytes 7680 fnv 0237D95F
+hook|RastPort|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	bytes 100 fnv CB3BB0D1
+hook|LVCB_OK|#21: (235,8)-(353,17), state 4, 3 fields, indent 0, d7 $FFFF3C1D|1	$00000001
+hook|kept|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	kept
+hook|popped|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	$00000000
+hook|d0|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	$00000000
+hook|plane 0|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	bytes 7680 fnv B8CB7F62
+hook|plane 1|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	bytes 7680 fnv 22AA0E58
+hook|RastPort|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	bytes 100 fnv 72453A31
+hook|LVCB_OK|#22: (244,6)-(460,16), state 8, 4 fields, indent 1, d7 $0000AE6D|1	$00000001
+hook|kept|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	kept
+hook|popped|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	$00000000
+hook|d0|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	$00000000
+hook|plane 0|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	bytes 7680 fnv 2FB137E5
+hook|plane 1|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	bytes 7680 fnv FF75D865
+hook|RastPort|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	bytes 100 fnv D8430DC9
+hook|LVCB_OK|#24: (240,9)-(494,28), state 1, 1 fields, indent 0, d7 $80016183|1	$00000001
+hook|kept|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	kept
+hook|popped|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	$00000000
+hook|d0|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	$00000000
+hook|plane 0|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	bytes 7680 fnv F3F9C71C
+hook|plane 1|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	bytes 7680 fnv 166E6FAB
+hook|RastPort|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	bytes 100 fnv 34550EAD
+hook|LVCB_OK|#25: (238,5)-(470,22), state 1, 2 fields, indent 60, d7 $0001E7CA|1	$00000001
+hook|kept|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	kept
+hook|popped|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	$00000000
+hook|d0|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	$00000000
+hook|plane 0|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	bytes 7680 fnv 2F4E0765
+hook|plane 1|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	bytes 7680 fnv 62D45B3F
+hook|RastPort|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	bytes 100 fnv 7F793DB8
+hook|LVCB_OK|#26: (242,9)-(489,27), state 0, 1 fields, indent 5, d7 $FFFFC29F|1	$00000001
+hook|kept|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	kept
+hook|popped|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	$00000000
+hook|d0|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	$00000000
+hook|plane 0|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	bytes 7680 fnv 1AE9AD4D
+hook|plane 1|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	bytes 7680 fnv 572DEA05
+hook|RastPort|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	bytes 100 fnv DF346298
+hook|LVCB_OK|#27: (241,7)-(450,22), state 1, 2 fields, indent 0, d7 $800196D8|1	$00000001
+hook|kept|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	kept
+hook|popped|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	$00000000
+hook|d0|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	$00000000
+hook|plane 0|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	bytes 7680 fnv 407B953B
+hook|plane 1|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	bytes 7680 fnv 9F13B478
+hook|RastPort|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	bytes 100 fnv 7724EC34
+hook|LVCB_OK|#28: (247,9)-(508,26), state 4, 3 fields, indent 32, d7 $FFFFD92F|1	$00000001
+hook|kept|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	kept
+hook|popped|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	$00000000
+hook|d0|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	$00000000
+hook|plane 0|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	bytes 7680 fnv AC6E11C5
+hook|plane 1|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	bytes 7680 fnv 4E7BA0F9
+hook|RastPort|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	bytes 100 fnv DA83D5FC
+hook|LVCB_OK|#29: (229,7)-(486,16), state 8, 3 fields, indent 31, d7 $FFFF6E9F|1	$00000001
+hook|kept|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	kept
+hook|popped|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	$00000000
+hook|d0|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	$00000000
+hook|plane 0|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	bytes 7680 fnv 8AD514FD
+hook|plane 1|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	bytes 7680 fnv 8BB7232D
+hook|RastPort|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	bytes 100 fnv 2C094C5A
+hook|LVCB_OK|#30: (231,8)-(390,17), state 0, 1 fields, indent 0, d7 $80015EB2|1	$00000001
+hook|kept|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	kept
+hook|popped|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	$00000000
+hook|d0|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	$00000000
+hook|plane 0|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	bytes 7680 fnv 7B4C1A46
+hook|plane 1|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	bytes 7680 fnv 2D525465
+hook|RastPort|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	bytes 100 fnv AEEDB9C1
+hook|LVCB_OK|#31: (224,8)-(362,21), state 4, 3 fields, indent 60, d7 $00017D6B|1	$00000001
+hook|kept|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	kept
+hook|popped|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	$00000000
+hook|d0|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	$00000000
+hook|plane 0|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	bytes 7680 fnv B3EFD13F
+hook|plane 1|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	bytes 7680 fnv 8DD05EC2
+hook|RastPort|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	bytes 100 fnv A1B62776
+hook|LVCB_OK|#32: (221,4)-(477,19), state 8, 2 fields, indent 47, d7 $0000AD9F|1	$00000001
+hook|kept|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	kept
+hook|popped|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	$00000000
+hook|d0|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	$00000000
+hook|plane 0|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	bytes 7680 fnv 6E927BE5
+hook|plane 1|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	bytes 7680 fnv 2CEDD305
+hook|RastPort|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	bytes 100 fnv A2D26F73
+hook|LVCB_OK|#33: (234,7)-(361,20), state 1, 1 fields, indent 0, d7 $8001CB8A|1	$00000001
+hook|kept|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	kept
+hook|popped|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	$00000000
+hook|d0|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	$00000000
+hook|plane 0|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	bytes 7680 fnv B2EC9065
+hook|plane 1|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	bytes 7680 fnv BF588BDF
+hook|RastPort|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	bytes 100 fnv C185477C
+hook|LVCB_OK|#34: (237,7)-(338,19), state 1, 1 fields, indent 60, d7 $00006496|1	$00000001
+hook|kept|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	kept
+hook|popped|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	$00000000
+hook|d0|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	$00000000
+hook|plane 0|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	bytes 7680 fnv A71CFF93
+hook|plane 1|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	bytes 7680 fnv 219F1431
+hook|RastPort|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	bytes 100 fnv 07339186
+hook|LVCB_OK|#35: (238,6)-(384,19), state 8, 3 fields, indent 15, d7 $8001DC5E|1	$00000001
+hook|kept|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	kept
+hook|popped|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	$00000000
+hook|d0|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	$00000000
+hook|plane 0|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	bytes 7680 fnv 35FF6BD8
+hook|plane 1|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	bytes 7680 fnv A0E0A125
+hook|RastPort|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	bytes 100 fnv 3611E316
+hook|LVCB_OK|#36: (237,7)-(404,20), state 2, 4 fields, indent 0, d7 $00000B06|1	$00000001
+hook|kept|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	kept
+hook|popped|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	$00000000
+hook|d0|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	$00000000
+hook|plane 0|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	bytes 7680 fnv A26D9511
+hook|plane 1|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	bytes 7680 fnv D16EBC77
+hook|RastPort|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	bytes 100 fnv 215C67CD
+hook|LVCB_OK|#37: (233,6)-(373,25), state 8, 4 fields, indent 5, d7 $80012169|1	$00000001
+hook|kept|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	kept
+hook|popped|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	$00000000
+hook|d0|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	$00000000
+hook|plane 0|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	bytes 7680 fnv 019282F4
+hook|plane 1|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	bytes 7680 fnv 6D95039C
+hook|RastPort|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	bytes 100 fnv 455525EF
+hook|LVCB_OK|#38: (232,9)-(356,27), state 4, 3 fields, indent 5, d7 $FFFFC31F|1	$00000001
+hook|kept|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	kept
+hook|popped|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	$00000000
+hook|d0|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	$00000000
+hook|plane 0|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	bytes 7680 fnv 9B46AB9E
+hook|plane 1|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	bytes 7680 fnv 3FC82C39
+hook|RastPort|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	bytes 100 fnv F800B712
+hook|LVCB_OK|#39: (246,8)-(397,28), state 0, 2 fields, indent 0, d7 $0000DC5C|1	$00000001
+hook|kept|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	kept
+hook|popped|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	$00000000
+hook|d0|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	$00000000
+hook|plane 0|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	bytes 7680 fnv E7FFA61D
+hook|plane 1|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	bytes 7680 fnv 1924B1FE
+hook|RastPort|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	bytes 100 fnv F011B090
+hook|LVCB_OK|#40: (225,10)-(425,25), state 4, 2 fields, indent 15, d7 $00000C91|1	$00000001
+hook|kept|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	kept
+hook|popped|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	$00000000
+hook|d0|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	$00000000
+hook|plane 0|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	bytes 7680 fnv BE0F3C04
+hook|plane 1|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	bytes 7680 fnv 6DBEA409
+hook|RastPort|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	bytes 100 fnv 867A12FF
+hook|LVCB_OK|#41: (237,9)-(380,29), state 4, 4 fields, indent 32, d7 $80005E84|1	$00000001
+hook|kept|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	kept
+hook|popped|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	$00000000
+hook|d0|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	$00000000
+hook|plane 0|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	bytes 7680 fnv D84A5DE9
+hook|plane 1|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	bytes 7680 fnv FFA7D61F
+hook|RastPort|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	bytes 100 fnv 57690CCF
+hook|LVCB_OK|#42: (249,8)-(461,28), state 0, 3 fields, indent 0, d7 $FFFF5494|1	$00000001
+hook|kept|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	kept
+hook|popped|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	$00000000
+hook|d0|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	$00000000
+hook|plane 0|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	bytes 7680 fnv F5367D9F
+hook|plane 1|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	bytes 7680 fnv 5B377114
+hook|RastPort|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	bytes 100 fnv 14061C51
+hook|LVCB_OK|#43: (221,8)-(454,21), state 2, 1 fields, indent 60, d7 $00016EA8|1	$00000001
+hook|kept|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	kept
+hook|popped|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	$00000000
+hook|d0|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	$00000000
+hook|plane 0|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	bytes 7680 fnv D59D5AA5
+hook|plane 1|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	bytes 7680 fnv 36ACD759
+hook|RastPort|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	bytes 100 fnv 1C490ADA
+hook|LVCB_OK|#44: (236,7)-(515,22), state 2, 1 fields, indent 1, d7 $0000A407|1	$00000001
+hook|kept|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	kept
+hook|popped|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	$00000000
+hook|d0|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	$00000000
+hook|plane 0|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	bytes 7680 fnv 83A32185
+hook|plane 1|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	bytes 7680 fnv 3EFF8C45
+hook|RastPort|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	bytes 100 fnv EEBADB66
+hook|LVCB_OK|#45: (246,6)-(362,21), state 4, 3 fields, indent 0, d7 $8001A84C|1	$00000001
+hook|kept|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	kept
+hook|popped|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	$00000000
+hook|d0|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	$00000000
+hook|plane 0|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	bytes 7680 fnv 9241664A
+hook|plane 1|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	bytes 7680 fnv D2BA5B8C
+hook|RastPort|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	bytes 100 fnv 566E0B12
+hook|LVCB_OK|#46: (244,5)-(409,19), state 0, 3 fields, indent 40, d7 $00012301|1	$00000001
+hook|kept|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	kept
+hook|popped|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	$00000000
+hook|d0|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	$00000000
+hook|plane 0|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	bytes 7680 fnv B82A26DF
+hook|plane 1|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	bytes 7680 fnv 8E382DFB
+hook|RastPort|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	bytes 100 fnv 5CB7A5BC
+hook|LVCB_OK|#47: (246,4)-(364,23), state 8, 4 fields, indent 32, d7 $FFFF5D51|1	$00000001
+hook|kept|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	kept
+hook|popped|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	$00000000
+hook|d0|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	$00000000
+hook|plane 0|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	bytes 7680 fnv 505F0C58
+hook|plane 1|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	bytes 7680 fnv 8B839A14
+hook|RastPort|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	bytes 100 fnv D76D3E05
+hook|LVCB_OK|#48: (249,6)-(466,25), state 1, 4 fields, indent 0, d7 $00001FFF|1	$00000001
+hook|kept|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	kept
+hook|popped|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	$00000000
+hook|d0|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	$00000000
+hook|plane 0|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	bytes 7680 fnv 63A1E0E5
+hook|plane 1|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	bytes 7680 fnv 78339362
+hook|RastPort|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	bytes 100 fnv 059387B4
+hook|LVCB_OK|#49: (222,4)-(484,14), state 2, 1 fields, indent 47, d7 $FFFF0CB8|1	$00000001
+hook|kept|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	kept
+hook|popped|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	$00000000
+hook|d0|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	$00000000
+hook|plane 0|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	bytes 7680 fnv A363A314
+hook|plane 1|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	bytes 7680 fnv 77225491
+hook|RastPort|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	bytes 100 fnv 6AC794F5
+hook|LVCB_OK|#50: (235,10)-(467,23), state 0, 3 fields, indent 40, d7 $000139E0|1	$00000001
+hook|kept|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	kept
+hook|popped|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	$00000000
+hook|d0|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	$00000000
+hook|plane 0|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	bytes 7680 fnv 0D1B0BD5
+hook|plane 1|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	bytes 7680 fnv 8AF59C41
+hook|RastPort|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	bytes 100 fnv 69D0F704
+hook|LVCB_OK|#51: (234,8)-(474,17), state 1, 4 fields, indent 0, d7 $800183AA|1	$00000001
+hook|kept|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	kept
+hook|popped|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	$00000000
+hook|d0|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	$00000000
+hook|plane 0|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	bytes 7680 fnv 344E4BF2
+hook|plane 1|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	bytes 7680 fnv E7460296
+hook|RastPort|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	bytes 100 fnv A6567AB8
+hook|LVCB_OK|#52: (246,9)-(377,26), state 8, 1 fields, indent 31, d7 $00009BF6|1	$00000001
+hook|kept|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	kept
+hook|popped|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	$00000000
+hook|d0|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	$00000000
+hook|plane 0|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	bytes 7680 fnv F65C9D50
+hook|plane 1|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	bytes 7680 fnv 3857D3F8
+hook|RastPort|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	bytes 100 fnv 6DE827F9
+hook|LVCB_OK|#53: (243,4)-(385,13), state 0, 2 fields, indent 31, d7 $0001AD59|1	$00000001
+hook|kept|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	kept
+hook|popped|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	$00000000
+hook|d0|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	$00000000
+hook|plane 0|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	bytes 7680 fnv 07E53A33
+hook|plane 1|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	bytes 7680 fnv AD49ACF5
+hook|RastPort|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	bytes 100 fnv B1C31374
+hook|LVCB_OK|#54: (250,6)-(378,16), state 0, 1 fields, indent 0, d7 $FFFFD959|1	$00000001
+hook|kept|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	kept
+hook|popped|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	$00000000
+hook|d0|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	$00000000
+hook|plane 0|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	bytes 7680 fnv 737C6883
+hook|plane 1|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	bytes 7680 fnv EB9CCD07
+hook|RastPort|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	bytes 100 fnv 394D9466
+hook|LVCB_OK|#55: (235,8)-(515,26), state 4, 1 fields, indent 1, d7 $8001F009|1	$00000001
+hook|kept|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	kept
+hook|popped|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	$00000000
+hook|d0|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	$00000000
+hook|plane 0|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	bytes 7680 fnv 95D2E2E9
+hook|plane 1|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	bytes 7680 fnv 296133A5
+hook|RastPort|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	bytes 100 fnv 363FE526
+hook|LVCB_OK|#56: (224,8)-(457,25), state 4, 3 fields, indent 5, d7 $FFFFFA09|1	$00000001
+hook|kept|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	kept
+hook|popped|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	$00000000
+hook|d0|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	$00000000
+hook|plane 0|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	bytes 7680 fnv CF8B1C93
+hook|plane 1|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	bytes 7680 fnv 448E661F
+hook|RastPort|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	bytes 100 fnv 019207AA
+hook|LVCB_OK|#57: (239,8)-(348,17), state 4, 2 fields, indent 0, d7 $0000D897|1	$00000001
+hook|kept|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	kept
+hook|popped|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	$00000000
+hook|d0|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	$00000000
+hook|plane 0|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	bytes 7680 fnv C6FF05C5
+hook|plane 1|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	bytes 7680 fnv 89B72972
+hook|RastPort|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	bytes 100 fnv AD6C646B
+hook|LVCB_OK|#58: (238,4)-(469,23), state 4, 1 fields, indent 1, d7 $00000B91|1	$00000001
+hook|kept|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	kept
+hook|popped|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	$00000000
+hook|d0|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	$00000000
+hook|plane 0|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	bytes 7680 fnv 115D9D77
+hook|plane 1|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	bytes 7680 fnv B46FF615
+hook|RastPort|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	bytes 100 fnv 757786D2
+hook|LVCB_OK|#59: (223,9)-(453,22), state 1, 1 fields, indent 16, d7 $0000EA98|1	$00000001
+hook|kept|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	kept
+hook|popped|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	$00000000
+hook|d0|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	$00000000
+hook|plane 0|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	bytes 7680 fnv 0241F3E5
+hook|plane 1|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	bytes 7680 fnv 32B5889F
+hook|RastPort|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	bytes 100 fnv FB27826A
+hook|LVCB_OK|#60: (241,5)-(470,18), state 4, 3 fields, indent 0, d7 $FFFF5DE3|1	$00000001
+hook|kept|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	kept
+hook|popped|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	$00000000
+hook|d0|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	$00000000
+hook|plane 0|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	bytes 7680 fnv 8DF2EA3D
+hook|plane 1|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	bytes 7680 fnv 93F6807D
+hook|RastPort|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	bytes 100 fnv 7D9F468E
+hook|LVCB_OK|#62: (227,7)-(393,26), state 1, 2 fields, indent 47, d7 $FFFF165A|1	$00000001
+hook|kept|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	kept
+hook|popped|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	$00000000
+hook|d0|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	$00000000
+hook|plane 0|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	bytes 7680 fnv 161D9F6A
+hook|plane 1|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	bytes 7680 fnv B7DB8F84
+hook|RastPort|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	bytes 100 fnv 6D3F2D87
+hook|LVCB_OK|#63: (243,7)-(364,21), state 0, 2 fields, indent 0, d7 $8001BD5C|1	$00000001
+hook|kept|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	kept
+hook|popped|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	$00000000
+hook|d0|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	$00000000
+hook|plane 0|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	bytes 7680 fnv 0FDE6736
+hook|plane 1|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	bytes 7680 fnv E7F777AE
+hook|RastPort|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	bytes 100 fnv D7D90CF6
+hook|LVCB_OK|#64: (241,8)-(490,25), state 1, 3 fields, indent 16, d7 $0000ABF4|1	$00000001
+hook|kept|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	kept
+hook|popped|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	$00000000
+hook|d0|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	$00000000
+hook|plane 0|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	bytes 7680 fnv AD06A28E
+hook|plane 1|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	bytes 7680 fnv 704E7B2C
+hook|RastPort|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	bytes 100 fnv 90E457B3
+hook|LVCB_OK|#65: (229,10)-(458,28), state 8, 1 fields, indent 16, d7 $000020E2|1	$00000001
+hook|kept|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	kept
+hook|popped|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	$00000000
+hook|d0|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	$00000000
+hook|plane 0|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	bytes 7680 fnv 46823B8D
+hook|plane 1|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	bytes 7680 fnv DD414245
+hook|RastPort|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	bytes 100 fnv 8BB09381
+hook|LVCB_OK|#66: (226,4)-(386,23), state 0, 2 fields, indent 0, d7 $FFFFE634|1	$00000001
+hook|kept|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	kept
+hook|popped|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	$00000000
+hook|d0|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	$00000000
+hook|plane 0|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	bytes 7680 fnv 2A963570
+hook|plane 1|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	bytes 7680 fnv B00B0F49
+hook|RastPort|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	bytes 100 fnv 45208E0E
+hook|LVCB_OK|#67: (244,10)-(478,26), state 0, 2 fields, indent 47, d7 $00004772|1	$00000001
+hook|kept|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	kept
+hook|popped|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	$00000000
+hook|d0|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	$00000000
+hook|plane 0|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	bytes 7680 fnv B46D828B
+hook|plane 1|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	bytes 7680 fnv 7453D405
+hook|RastPort|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	bytes 100 fnv 9913DD7E
+hook|LVCB_OK|#68: (248,8)-(394,21), state 2, 3 fields, indent 31, d7 $00008069|1	$00000001
+hook|kept|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	kept
+hook|popped|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	$00000000
+hook|d0|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	$00000000
+hook|plane 0|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	bytes 7680 fnv 7965CABC
+hook|plane 1|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	bytes 7680 fnv 76C71F2F
+hook|RastPort|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	bytes 100 fnv 8B5E92C1
+hook|LVCB_OK|#69: (243,6)-(347,17), state 8, 2 fields, indent 0, d7 $FFFFADFE|1	$00000001
+hook|kept|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	kept
+hook|popped|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	$00000000
+hook|d0|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	$00000000
+hook|plane 0|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	bytes 7680 fnv 992C56F4
+hook|plane 1|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	bytes 7680 fnv E216D77B
+hook|RastPort|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	bytes 100 fnv 3618671C
+hook|LVCB_OK|#70: (245,7)-(415,27), state 4, 3 fields, indent 5, d7 $FFFF35D6|1	$00000001
+hook|kept|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	kept
+hook|popped|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	$00000000
+hook|d0|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	$00000000
+hook|plane 0|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	bytes 7680 fnv 93A0EC10
+hook|plane 1|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	bytes 7680 fnv 77A4624C
+hook|RastPort|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	bytes 100 fnv 4F2B1224
+hook|LVCB_OK|#71: (220,6)-(426,20), state 4, 4 fields, indent 31, d7 $800072FB|1	$00000001
+hook|kept|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	kept
+hook|popped|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	$00000000
+hook|d0|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	$00000000
+hook|plane 0|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	bytes 7680 fnv D2F8905E
+hook|plane 1|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	bytes 7680 fnv 0B72F273
+hook|RastPort|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	bytes 100 fnv 1BA86D6A
+hook|LVCB_OK|#72: (238,8)-(347,24), state 8, 2 fields, indent 0, d7 $8001AB80|1	$00000001
+hook|kept|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	kept
+hook|popped|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	$00000000
+hook|d0|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	$00000000
+hook|plane 0|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	bytes 7680 fnv AAE7D0E3
+hook|plane 1|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	bytes 7680 fnv FDC9747C
+hook|RastPort|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	bytes 100 fnv F094A074
+hook|LVCB_OK|#73: (222,6)-(323,16), state 1, 1 fields, indent 5, d7 $00007F32|1	$00000001
+hook|kept|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	kept
+hook|popped|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	$00000000
+hook|d0|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	$00000000
+hook|plane 0|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	bytes 7680 fnv B7F1F4D4
+hook|plane 1|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	bytes 7680 fnv 83CB4F34
+hook|RastPort|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	bytes 100 fnv 838EED41
+hook|LVCB_OK|#74: (248,5)-(389,17), state 0, 4 fields, indent 31, d7 $0000895C|1	$00000001
+hook|kept|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	kept
+hook|popped|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	$00000000
+hook|d0|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	$00000000
+hook|plane 0|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	bytes 7680 fnv F2AC2BD5
+hook|plane 1|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	bytes 7680 fnv 0AFA79F5
+hook|RastPort|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	bytes 100 fnv A147EF4A
+hook|LVCB_OK|#75: (234,6)-(359,19), state 2, 2 fields, indent 0, d7 $8001E85E|1	$00000001
+hook|kept|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	kept
+hook|popped|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	$00000000
+hook|d0|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	$00000000
+hook|plane 0|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	bytes 7680 fnv 19B0AF40
+hook|plane 1|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	bytes 7680 fnv 2EE08D12
+hook|RastPort|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	bytes 100 fnv 8A964B06
+hook|LVCB_OK|#76: (221,10)-(347,25), state 8, 1 fields, indent 32, d7 $000043D8|1	$00000001
+hook|kept|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	kept
+hook|popped|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	$00000000
+hook|d0|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	$00000000
+hook|plane 0|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	bytes 7680 fnv 366D44BE
+hook|plane 1|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	bytes 7680 fnv 5ECE9982
+hook|RastPort|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	bytes 100 fnv 6B1E3A58
+hook|LVCB_OK|#77: (231,10)-(396,27), state 8, 1 fields, indent 1, d7 $8001D9EC|1	$00000001
+hook|kept|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	kept
+hook|popped|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	$00000000
+hook|d0|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	$00000000
+hook|plane 0|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	bytes 7680 fnv 86D4284E
+hook|plane 1|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	bytes 7680 fnv E15E1104
+hook|RastPort|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	bytes 100 fnv 0325206E
+hook|LVCB_OK|#78: (222,9)-(416,21), state 4, 4 fields, indent 0, d7 $000095BA|1	$00000001
+hook|kept|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	kept
+hook|popped|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	$00000000
+hook|d0|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	$00000000
+hook|plane 0|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	bytes 7680 fnv FC28D646
+hook|plane 1|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	bytes 7680 fnv 5AAEC449
+hook|RastPort|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	bytes 100 fnv 39293420
+hook|LVCB_OK|#79: (249,10)-(488,26), state 0, 1 fields, indent 32, d7 $8000F15A|1	$00000001
+hook|kept|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	kept
+hook|popped|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	$00000000
+hook|d0|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	$00000000
+hook|plane 0|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	bytes 7680 fnv B49070A4
+hook|plane 1|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	bytes 7680 fnv 310F74C4
+hook|RastPort|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	bytes 100 fnv 112A39F8
+hook|LVCB_OK|#80: (249,5)-(482,16), state 1, 1 fields, indent 16, d7 $80008A61|1	$00000001
+hook|kept|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	kept
+hook|popped|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	$00000000
+hook|d0|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	$00000000
+hook|plane 0|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	bytes 7680 fnv 0CD8BDA8
+hook|plane 1|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	bytes 7680 fnv 8064A406
+hook|RastPort|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	bytes 100 fnv D4A4CE67
+hook|LVCB_OK|#81: (235,8)-(454,28), state 4, 4 fields, indent 0, d7 $FFFF64B6|1	$00000001
+hook|kept|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	kept
+hook|popped|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	$00000000
+hook|d0|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	$00000000
+hook|plane 0|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	bytes 7680 fnv B4AE49FE
+hook|plane 1|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	bytes 7680 fnv 217A17ED
+hook|RastPort|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	bytes 100 fnv B068F1C8
+hook|LVCB_OK|#82: (233,10)-(459,23), state 1, 2 fields, indent 47, d7 $00000A54|1	$00000001
+hook|kept|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	kept
+hook|popped|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	$00000000
+hook|d0|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	$00000000
+hook|plane 0|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	bytes 7680 fnv DF2F7F44
+hook|plane 1|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	bytes 7680 fnv 9FC682CA
+hook|RastPort|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	bytes 100 fnv 27BA5709
+hook|LVCB_OK|#83: (232,10)-(506,19), state 8, 1 fields, indent 47, d7 $80003C1D|1	$00000001
+hook|kept|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	kept
+hook|popped|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	$00000000
+hook|d0|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	$00000000
+hook|plane 0|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	bytes 7680 fnv 944ACF0D
+hook|plane 1|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	bytes 7680 fnv 3CE98A39
+hook|RastPort|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	bytes 100 fnv 38D93B8F
+hook|LVCB_OK|#84: (225,6)-(369,16), state 0, 3 fields, indent 0, d7 $00002BBA|1	$00000001
+hook|kept|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	kept
+hook|popped|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	$00000000
+hook|d0|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	$00000000
+hook|plane 0|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	bytes 7680 fnv FE605AD6
+hook|plane 1|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	bytes 7680 fnv 3E63D01A
+hook|RastPort|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	bytes 100 fnv D3C41F6E
+hook|LVCB_OK|#87: (240,8)-(421,23), state 8, 3 fields, indent 0, d7 $0000C781|1	$00000001
+hook|kept|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	kept
+hook|popped|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	$00000000
+hook|d0|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	$00000000
+hook|plane 0|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	bytes 7680 fnv 709CD9CF
+hook|plane 1|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	bytes 7680 fnv D6FCBE24
+hook|RastPort|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	bytes 100 fnv 1FAD9FB5
+hook|LVCB_OK|#88: (238,9)-(484,29), state 1, 1 fields, indent 15, d7 $0000222F|1	$00000001
+hook|kept|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	kept
+hook|popped|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	$00000000
+hook|d0|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	$00000000
+hook|plane 0|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	bytes 7680 fnv 2578EA05
+hook|plane 1|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	bytes 7680 fnv F4F50A14
+hook|RastPort|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	bytes 100 fnv C774959B
+hook|LVCB_OK|#89: (222,7)-(427,17), state 0, 2 fields, indent 17, d7 $000137BD|1	$00000001
+hook|kept|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	kept
+hook|popped|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	$00000000
+hook|d0|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	$00000000
+hook|plane 0|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	bytes 7680 fnv 93A07126
+hook|plane 1|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	bytes 7680 fnv 957C8B04
+hook|RastPort|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	bytes 100 fnv 55A211E2
+hook|LVCB_OK|#90: (247,10)-(367,23), state 4, 2 fields, indent 0, d7 $8001DA60|1	$00000001
+hook|kept|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	kept
+hook|popped|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	$00000000
+hook|d0|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	$00000000
+hook|plane 0|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	bytes 7680 fnv 59E5845E
+hook|plane 1|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	bytes 7680 fnv 97EC7537
+hook|RastPort|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	bytes 100 fnv F95349AB
+hook|LVCB_OK|#91: (250,7)-(388,16), state 2, 2 fields, indent 32, d7 $0001A615|1	$00000001
+hook|kept|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	kept
+hook|popped|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	$00000000
+hook|d0|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	$00000000
+hook|plane 0|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	bytes 7680 fnv E5E3F3DD
+hook|plane 1|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	bytes 7680 fnv 9FED16C4
+hook|RastPort|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	bytes 100 fnv 2AF524CE
+hook|LVCB_OK|#92: (236,4)-(481,20), state 8, 3 fields, indent 16, d7 $00006714|1	$00000001
+hook|kept|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	kept
+hook|popped|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	$00000000
+hook|d0|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	$00000000
+hook|plane 0|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	bytes 7680 fnv 9B36BB3F
+hook|plane 1|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	bytes 7680 fnv 2B4B3E2E
+hook|RastPort|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	bytes 100 fnv C869B1CA
+hook|LVCB_OK|#93: (246,9)-(434,29), state 1, 4 fields, indent 0, d7 $8001072F|1	$00000001
+hook|kept|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	kept
+hook|popped|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	$00000000
+hook|d0|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	$00000000
+hook|plane 0|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	bytes 7680 fnv 29023B7B
+hook|plane 1|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	bytes 7680 fnv 480DC3BB
+hook|RastPort|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	bytes 100 fnv D92AAB51
+hook|LVCB_OK|#94: (222,8)-(497,28), state 0, 1 fields, indent 16, d7 $FFFF26D4|1	$00000001
+hook|kept|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	kept
+hook|popped|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	$00000000
+hook|d0|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	$00000000
+hook|plane 0|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	bytes 7680 fnv 1CFCA765
+hook|plane 1|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	bytes 7680 fnv EE192EEE
+hook|RastPort|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	bytes 100 fnv 82E8FAC9
+hook|LVCB_OK|#95: (222,10)-(373,25), state 0, 1 fields, indent 17, d7 $80003FF8|1	$00000001
+hook|kept|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	kept
+hook|popped|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	$00000000
+hook|d0|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	$00000000
+hook|plane 0|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	bytes 7680 fnv FC0FE2CD
+hook|plane 1|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	bytes 7680 fnv 9CCBCD5D
+hook|RastPort|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	bytes 100 fnv 05A19416
+hook|LVCB_OK|#96: (242,7)-(358,20), state 4, 3 fields, indent 0, d7 $8001DDA8|1	$00000001
+hook|kept|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	kept
+hook|popped|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	$00000000
+hook|d0|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	$00000000
+hook|plane 0|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	bytes 7680 fnv 4D78867A
+hook|plane 1|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	bytes 7680 fnv 71ED2854
+hook|RastPort|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	bytes 100 fnv EA3FB191
+hook|LVCB_OK|#97: (221,5)-(346,24), state 2, 3 fields, indent 32, d7 $00014CF9|1	$00000001
+hook|kept|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	kept
+hook|popped|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	$00000000
+hook|d0|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	$00000000
+hook|plane 0|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	bytes 7680 fnv 1C701BE0
+hook|plane 1|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	bytes 7680 fnv 80CB449D
+hook|RastPort|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	bytes 100 fnv D73C0AC1
+hook|LVCB_OK|#98: (243,5)-(413,20), state 0, 3 fields, indent 1, d7 $00003AA7|1	$00000001
+hook|kept|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	kept
+hook|popped|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	$00000000
+hook|d0|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	$00000000
+hook|plane 0|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	bytes 7680 fnv AF4637E1
+hook|plane 1|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	bytes 7680 fnv F90B875D
+hook|RastPort|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	bytes 100 fnv 52A32B2D
+hook|LVCB_OK|#99: (250,6)-(393,18), state 1, 2 fields, indent 0, d7 $00007AD8|1	$00000001
+hook|kept|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	kept
+hook|popped|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	$00000000
+hook|d0|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	$00000000
+hook|plane 0|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	bytes 7680 fnv CF51D00B
+hook|plane 1|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	bytes 7680 fnv AD16EBEF
+hook|RastPort|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	bytes 100 fnv C67B12ED
+hook|LVCB_OK|#101: (222,6)-(461,25), state 1, 4 fields, indent 1, d7 $80018092|1	$00000001
+hook|kept|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	kept
+hook|popped|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	$00000000
+hook|d0|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	$00000000
+hook|plane 0|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	bytes 7680 fnv 34B234A6
+hook|plane 1|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	bytes 7680 fnv 015CC8F4
+hook|RastPort|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	bytes 100 fnv F5360510
+hook|LVCB_OK|#102: (227,4)-(409,18), state 0, 2 fields, indent 0, d7 $8001D57A|1	$00000001
+hook|kept|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	kept
+hook|popped|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	$00000000
+hook|d0|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	$00000000
+hook|plane 0|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	bytes 7680 fnv 9DE701FD
+hook|plane 1|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	bytes 7680 fnv 6DFB5BEF
+hook|RastPort|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	bytes 100 fnv 9602161B
+hook|LVCB_OK|#103: (231,10)-(491,21), state 2, 1 fields, indent 16, d7 $FFFFD794|1	$00000001
+hook|kept|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	kept
+hook|popped|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	$00000000
+hook|d0|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	$00000000
+hook|plane 0|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	bytes 7680 fnv 0A222750
+hook|plane 1|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	bytes 7680 fnv 54E9EF09
+hook|RastPort|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	bytes 100 fnv B65494BE
+hook|LVCB_OK|#104: (236,9)-(411,18), state 4, 4 fields, indent 16, d7 $000007E9|1	$00000001
+hook|kept|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	kept
+hook|popped|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	$00000000
+hook|d0|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	$00000000
+hook|plane 0|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	bytes 7680 fnv DEAD8F3B
+hook|plane 1|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	bytes 7680 fnv 1978C07F
+hook|RastPort|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	bytes 100 fnv 70DA9F84
+hook|LVCB_OK|#105: (242,10)-(479,19), state 2, 1 fields, indent 0, d7 $8001CFB5|1	$00000001
+hook|kept|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	kept
+hook|popped|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	$00000000
+hook|d0|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	$00000000
+hook|plane 0|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	bytes 7680 fnv 843E7D58
+hook|plane 1|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	bytes 7680 fnv 25EE4E05
+hook|RastPort|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	bytes 100 fnv AA712A29
+hook|LVCB_OK|#106: (241,8)-(455,23), state 1, 3 fields, indent 32, d7 $FFFF3999|1	$00000001
+hook|kept|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	kept
+hook|popped|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	$00000000
+hook|d0|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	$00000000
+hook|plane 0|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	bytes 7680 fnv C79FF908
+hook|plane 1|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	bytes 7680 fnv EEC225DD
+hook|RastPort|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	bytes 100 fnv 2BCC8973
+hook|LVCB_OK|#107: (234,6)-(422,21), state 4, 3 fields, indent 47, d7 $00010EE3|1	$00000001
+hook|kept|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	kept
+hook|popped|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	$00000000
+hook|d0|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	$00000000
+hook|plane 0|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	bytes 7680 fnv 93822713
+hook|plane 1|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	bytes 7680 fnv 1BD3815C
+hook|RastPort|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	bytes 100 fnv D0564CD0
+hook|LVCB_OK|#108: (222,9)-(351,24), state 8, 4 fields, indent 0, d7 $00002EED|1	$00000001
+hook|kept|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	kept
+hook|popped|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	$00000000
+hook|d0|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	$00000000
+hook|plane 0|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	bytes 7680 fnv 835C56E5
+hook|plane 1|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	bytes 7680 fnv 196BB6D8
+hook|RastPort|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	bytes 100 fnv 019A1E2E
+hook|LVCB_OK|#109: (242,7)-(409,22), state 1, 3 fields, indent 15, d7 $FFFF4835|1	$00000001
+hook|kept|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	kept
+hook|popped|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	$00000000
+hook|d0|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	$00000000
+hook|plane 0|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	bytes 7680 fnv 9E273235
+hook|plane 1|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	bytes 7680 fnv 72E8CBF8
+hook|RastPort|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	bytes 100 fnv 6027C7FB
+hook|LVCB_OK|#110: (238,8)-(461,26), state 0, 3 fields, indent 40, d7 $0001415B|1	$00000001
+hook|kept|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	kept
+hook|popped|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	$00000000
+hook|d0|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	$00000000
+hook|plane 0|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	bytes 7680 fnv 538473AE
+hook|plane 1|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	bytes 7680 fnv 1D98F82D
+hook|RastPort|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	bytes 100 fnv 30C94AD5
+hook|LVCB_OK|#111: (241,6)-(418,19), state 8, 1 fields, indent 0, d7 $80019067|1	$00000001
+hook|kept|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	kept
+hook|popped|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	$00000000
+hook|d0|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	$00000000
+hook|plane 0|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	bytes 7680 fnv 8567A5B8
+hook|plane 1|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	bytes 7680 fnv 2C7529F3
+hook|RastPort|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	bytes 100 fnv B2AB4B23
+hook|LVCB_OK|#112: (242,5)-(440,25), state 0, 3 fields, indent 5, d7 $FFFF3F20|1	$00000001
+hook|kept|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	kept
+hook|popped|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	$00000000
+hook|d0|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	$00000000
+hook|plane 0|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	bytes 7680 fnv 7579270F
+hook|plane 1|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	bytes 7680 fnv DAA9A5CE
+hook|RastPort|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	bytes 100 fnv C4CFA7FB
+hook|LVCB_OK|#113: (244,10)-(442,30), state 4, 1 fields, indent 5, d7 $FFFF7CF3|1	$00000001
+hook|kept|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	kept
+hook|popped|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	$00000000
+hook|d0|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	$00000000
+hook|plane 0|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	bytes 7680 fnv 9CEB2785
+hook|plane 1|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	bytes 7680 fnv 29C318CC
+hook|RastPort|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	bytes 100 fnv 1239D33C
+hook|LVCB_OK|#114: (237,5)-(504,20), state 8, 1 fields, indent 0, d7 $0000DEE8|1	$00000001
+hook|kept|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	kept
+hook|popped|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	$00000000
+hook|d0|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	$00000000
+hook|plane 0|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	bytes 7680 fnv 0C8E219D
+hook|plane 1|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	bytes 7680 fnv 98CB0FD6
+hook|RastPort|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	bytes 100 fnv A7713290
+hook|LVCB_OK|#115: (249,8)-(448,23), state 0, 2 fields, indent 40, d7 $0001C6A0|1	$00000001
+hook|kept|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	kept
+hook|popped|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	$00000000
+hook|d0|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	$00000000
+hook|plane 0|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	bytes 7680 fnv 7D84B879
+hook|plane 1|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	bytes 7680 fnv 9F439481
+hook|RastPort|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	bytes 100 fnv 3879D48C
+hook|LVCB_OK|#117: (226,10)-(372,27), state 1, 4 fields, indent 0, d7 $FFFF5D72|1	$00000001
+hook|kept|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	kept
+hook|popped|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	$00000000
+hook|d0|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	$00000000
+hook|plane 0|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	bytes 7680 fnv 3D98433E
+hook|plane 1|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	bytes 7680 fnv 0D354BFF
+hook|RastPort|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	bytes 100 fnv 18E4513E
+hook|LVCB_OK|#118: (239,8)-(518,19), state 2, 4 fields, indent 15, d7 $FFFF6DA3|1	$00000001
+hook|kept|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	kept
+hook|popped|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	$00000000
+hook|d0|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	$00000000
+hook|plane 0|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	bytes 7680 fnv EBCEF45D
+hook|plane 1|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	bytes 7680 fnv 8754EA0D
+hook|RastPort|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	bytes 100 fnv B202883D
+hook|LVCB_OK|#119: (248,8)-(511,28), state 0, 4 fields, indent 5, d7 $8001C461|1	$00000001
+hook|kept|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	kept
+hook|popped|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	$00000000
+hook|d0|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	$00000000
+hook|plane 0|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	bytes 7680 fnv 6BC9E451
+hook|plane 1|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	bytes 7680 fnv 07A703E1
+hook|RastPort|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	bytes 100 fnv 33FFB810
+hook|LVCB_OK|#120: (247,6)-(483,26), state 8, 3 fields, indent 0, d7 $FFFFEF09|1	$00000001
+hook|kept|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	kept
+hook|popped|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	$00000000
+hook|d0|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	$00000000
+hook|plane 0|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	bytes 7680 fnv B6A1AC17
+hook|plane 1|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	bytes 7680 fnv 244723B9
+hook|RastPort|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	bytes 100 fnv CDB14F12
+hook|LVCB_OK|#121: (237,8)-(493,25), state 1, 2 fields, indent 47, d7 $FFFFFB19|1	$00000001
+hook|kept|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	kept
+hook|popped|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	$00000000
+hook|d0|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	$00000000
+hook|plane 0|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	bytes 7680 fnv 6834E695
+hook|plane 1|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	bytes 7680 fnv 323BE84B
+hook|RastPort|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	bytes 100 fnv 5863243E
+hook|LVCB_OK|#122: (245,10)-(454,24), state 8, 4 fields, indent 40, d7 $FFFF97AA|1	$00000001
+hook|kept|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	kept
+hook|popped|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	$00000000
+hook|d0|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	$00000000
+hook|plane 0|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	bytes 7680 fnv 9AA4CB67
+hook|plane 1|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	bytes 7680 fnv 0C40EA9B
+hook|RastPort|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	bytes 100 fnv 5A49AF51
+hook|LVCB_OK|#123: (231,10)-(469,23), state 0, 2 fields, indent 0, d7 $FFFFFAFC|1	$00000001
+hook|kept|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	kept
+hook|popped|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	$00000000
+hook|d0|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	$00000000
+hook|plane 0|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	bytes 7680 fnv 4494F13A
+hook|plane 1|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	bytes 7680 fnv 132BEA08
+hook|RastPort|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	bytes 100 fnv 6030F4E1
+hook|LVCB_OK|#124: (233,10)-(456,19), state 0, 1 fields, indent 32, d7 $00013689|1	$00000001
+hook|kept|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	kept
+hook|popped|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	$00000000
+hook|d0|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	$00000000
+hook|plane 0|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	bytes 7680 fnv 28C88125
+hook|plane 1|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	bytes 7680 fnv 71A8A315
+hook|RastPort|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	bytes 100 fnv AE8A5814
+hook|LVCB_OK|#125: (245,6)-(408,15), state 4, 4 fields, indent 1, d7 $8001DD9E|1	$00000001
+hook|kept|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	kept
+hook|popped|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	$00000000
+hook|d0|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	$00000000
+hook|plane 0|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	bytes 7680 fnv 659E9735
+hook|plane 1|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	bytes 7680 fnv E06E1A61
+hook|RastPort|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	bytes 100 fnv 9C7DD22F
+hook|LVCB_OK|#126: (230,4)-(419,14), state 2, 1 fields, indent 0, d7 $FFFF6D0E|1	$00000001
+hook|kept|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	kept
+hook|popped|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	$00000000
+hook|d0|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	$00000000
+hook|plane 0|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	bytes 7680 fnv A9EBAC05
+hook|plane 1|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	bytes 7680 fnv 00930909
+hook|RastPort|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	bytes 100 fnv 8B2D7427
+hook|LVCB_OK|#127: (236,4)-(400,15), state 2, 1 fields, indent 15, d7 $FFFFC042|1	$00000001
+hook|kept|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	kept
+hook|popped|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	$00000000
+hook|d0|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	$00000000
+hook|plane 0|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	bytes 7680 fnv 269C2F9C
+hook|plane 1|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	bytes 7680 fnv 2DDD8750
+hook|RastPort|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	bytes 100 fnv 0CBD2375
+hook|LVCB_OK|#128: (234,5)-(485,17), state 8, 4 fields, indent 32, d7 $000118C4|1	$00000001
+hook|kept|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	kept
+hook|popped|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	$00000000
+hook|d0|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	$00000000
+hook|plane 0|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	bytes 7680 fnv 210AD155
+hook|plane 1|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	bytes 7680 fnv D2036035
+hook|RastPort|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	bytes 100 fnv 8C0897B2
+hook|LVCB_OK|#130: (236,10)-(412,30), state 4, 3 fields, indent 47, d7 $800053E8|1	$00000001
+hook|kept|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	kept
+hook|popped|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	$00000000
+hook|d0|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	$00000000
+hook|plane 0|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	bytes 7680 fnv 3AF74F48
+hook|plane 1|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	bytes 7680 fnv EA19E74A
+hook|RastPort|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	bytes 100 fnv 1D78EEDD
+hook|LVCB_OK|#131: (228,6)-(487,24), state 2, 4 fields, indent 60, d7 $FFFF77E1|1	$00000001
+hook|kept|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	kept
+hook|popped|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	$00000000
+hook|d0|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	$00000000
+hook|plane 0|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	bytes 7680 fnv E762D20D
+hook|plane 1|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	bytes 7680 fnv 7ADDF967
+hook|RastPort|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	bytes 100 fnv 840F89B1
+hook|LVCB_OK|#133: (250,4)-(521,20), state 8, 2 fields, indent 15, d7 $0000B934|1	$00000001
+hook|kept|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	kept
+hook|popped|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	$00000000
+hook|d0|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	$00000000
+hook|plane 0|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	bytes 7680 fnv 8EF9B332
+hook|plane 1|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	bytes 7680 fnv B6528534
+hook|RastPort|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	bytes 100 fnv 7B87ABF3
+hook|LVCB_OK|#134: (223,10)-(482,20), state 0, 1 fields, indent 40, d7 $00003FA7|1	$00000001
+hook|kept|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	kept
+hook|popped|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	$00000000
+hook|d0|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	$00000000
+hook|plane 0|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	bytes 7680 fnv A4EDC470
+hook|plane 1|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	bytes 7680 fnv 1046CBD8
+hook|RastPort|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	bytes 100 fnv 49E4C917
+hook|LVCB_OK|#135: (225,5)-(449,18), state 4, 3 fields, indent 0, d7 $FFFF27DE|1	$00000001
+hook|kept|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	kept
+hook|popped|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	$00000000
+hook|d0|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	$00000000
+hook|plane 0|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	bytes 7680 fnv 60E77836
+hook|plane 1|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	bytes 7680 fnv 3D602D09
+hook|RastPort|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	bytes 100 fnv 27BA5709
+hook|LVCB_OK|#136: (249,10)-(469,29), state 8, 1 fields, indent 5, d7 $80017FD4|1	$00000001
+hook|kept|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	kept
+hook|popped|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	$00000000
+hook|d0|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	$00000000
+hook|plane 0|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	bytes 7680 fnv 53AD07E7
+hook|plane 1|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	bytes 7680 fnv 6994666F
+hook|RastPort|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	bytes 100 fnv 7B87ABF3
+hook|LVCB_OK|#137: (239,8)-(410,23), state 1, 3 fields, indent 16, d7 $0000B019|1	$00000001
+hook|kept|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	kept
+hook|popped|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	$00000000
+hook|d0|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	$00000000
+hook|plane 0|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	bytes 7680 fnv 10C2BA19
+hook|plane 1|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	bytes 7680 fnv 7E537332
+hook|RastPort|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	bytes 100 fnv 98559DC8
+hook|LVCB_OK|#138: (245,9)-(410,19), state 4, 3 fields, indent 0, d7 $FFFF7238|1	$00000001
+hook|kept|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	kept
+hook|popped|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	$00000000
+hook|d0|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	$00000000
+hook|plane 0|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	bytes 7680 fnv E98A17F4
+hook|plane 1|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	bytes 7680 fnv 6E15F9C7
+hook|RastPort|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	bytes 100 fnv 48854C00
+hook|LVCB_OK|#139: (238,5)-(491,16), state 0, 1 fields, indent 31, d7 $00002C4A|1	$00000001
+hook|kept|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	kept
+hook|popped|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	$00000000
+hook|d0|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	$00000000
+hook|plane 0|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	bytes 7680 fnv 3C55E823
+hook|plane 1|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	bytes 7680 fnv 0348A0CA
+hook|RastPort|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	bytes 100 fnv EB6710D4
+hook|LVCB_OK|#140: (232,7)-(444,24), state 4, 3 fields, indent 5, d7 $FFFFB7A1|1	$00000001
+hook|kept|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	kept
+hook|popped|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	$00000000
+hook|d0|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	$00000000
+hook|plane 0|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	bytes 7680 fnv 3F888382
+hook|plane 1|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	bytes 7680 fnv EC6C2A3A
+hook|RastPort|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	bytes 100 fnv DC5E55E7
+hook|LVCB_OK|#141: (244,7)-(464,21), state 8, 2 fields, indent 0, d7 $00002EFE|1	$00000001
+hook|kept|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	kept
+hook|popped|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	$00000000
+hook|d0|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	$00000000
+hook|plane 0|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	bytes 7680 fnv E4CB7F69
+hook|plane 1|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	bytes 7680 fnv D751DCBD
+hook|RastPort|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	bytes 100 fnv 6468B48D
+hook|LVCB_OK|#142: (235,8)-(448,22), state 1, 2 fields, indent 60, d7 $8000EFDB|1	$00000001
+hook|kept|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	kept
+hook|popped|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	$00000000
+hook|d0|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	$00000000
+hook|plane 0|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	bytes 7680 fnv DD568A0F
+hook|plane 1|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	bytes 7680 fnv CE2A404F
+hook|RastPort|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	bytes 100 fnv 9A3F8426
+hook|LVCB_OK|#144: (224,9)-(460,27), state 1, 2 fields, indent 0, d7 $8001D290|1	$00000001
+hook|kept|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	kept
+hook|popped|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	$00000000
+hook|d0|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	$00000000
+hook|plane 0|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	bytes 7680 fnv BA2DABE0
+hook|plane 1|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	bytes 7680 fnv EE94EF2E
+hook|RastPort|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	bytes 100 fnv 2A03BE73
+hook|LVCB_OK|#145: (225,4)-(356,15), state 8, 1 fields, indent 31, d7 $0000203F|1	$00000001
+hook|kept|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	kept
+hook|popped|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	$00000000
+hook|d0|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	$00000000
+hook|plane 0|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	bytes 7680 fnv 0BA2DE17
+hook|plane 1|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	bytes 7680 fnv 0F151362
+hook|RastPort|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	bytes 100 fnv 8030CE1A
+hook|LVCB_OK|#146: (230,5)-(425,17), state 8, 1 fields, indent 40, d7 $00005CB7|1	$00000001
+hook|kept|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	kept
+hook|popped|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	$00000000
+hook|d0|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	$00000000
+hook|plane 0|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	bytes 7680 fnv 8BAEA05D
+hook|plane 1|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	bytes 7680 fnv 5342F1E9
+hook|RastPort|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	bytes 100 fnv B799DFDB
+hook|LVCB_OK|#147: (228,8)-(459,25), state 1, 3 fields, indent 0, d7 $000093EB|1	$00000001
+hook|kept|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	kept
+hook|popped|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	$00000000
+hook|d0|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	$00000000
+hook|plane 0|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	bytes 7680 fnv 08E79E9D
+hook|plane 1|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	bytes 7680 fnv 8334A5E5
+hook|RastPort|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	bytes 100 fnv E711AB55
+hook|LVCB_OK|#148: (230,8)-(356,25), state 8, 3 fields, indent 5, d7 $0000B80C|1	$00000001
+hook|kept|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	kept
+hook|popped|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	$00000000
+hook|d0|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	$00000000
+hook|plane 0|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	bytes 7680 fnv F7EEC696
+hook|plane 1|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	bytes 7680 fnv C7657F52
+hook|RastPort|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	bytes 100 fnv ACC3757E
+hook|LVCB_OK|#149: (220,6)-(462,15), state 1, 2 fields, indent 5, d7 $8001E079|1	$00000001
+hook|kept|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	kept
+hook|popped|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	$00000000
+hook|d0|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	$00000000
+hook|plane 0|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	bytes 7680 fnv 6CA05483
+hook|plane 1|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	bytes 7680 fnv 0B5F1F65
+hook|RastPort|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	bytes 100 fnv 1C9E8EE2
+hook|LVCB_OK|#150: (228,8)-(504,18), state 0, 4 fields, indent 0, d7 $FFFF0CC2|1	$00000001
+hook|kept|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	kept
+hook|popped|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	$00000000
+hook|d0|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	$00000000
+hook|plane 0|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	bytes 7680 fnv 64211A22
+hook|plane 1|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	bytes 7680 fnv AC733F34
+hook|RastPort|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	bytes 100 fnv D67E24EA
+hook|LVCB_OK|#151: (239,5)-(479,24), state 4, 3 fields, indent 5, d7 $00008F6B|1	$00000001
+hook|kept|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	kept
+hook|popped|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	$00000000
+hook|d0|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	$00000000
+hook|plane 0|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	bytes 7680 fnv 1CD02B81
+hook|plane 1|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	bytes 7680 fnv 27D80F8A
+hook|RastPort|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	bytes 100 fnv CF302998
+hook|LVCB_OK|#152: (226,4)-(341,20), state 2, 2 fields, indent 40, d7 $FFFF1D9A|1	$00000001
+hook|kept|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	kept
+hook|popped|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	$00000000
+hook|d0|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	$00000000
+hook|plane 0|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	bytes 7680 fnv 86454C45
+hook|plane 1|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	bytes 7680 fnv E41BF666
+hook|RastPort|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	bytes 100 fnv 5F4FF86A
+hook|LVCB_OK|#153: (233,9)-(502,24), state 8, 3 fields, indent 0, d7 $00004CA8|1	$00000001
+hook|kept|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	kept
+hook|popped|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	$00000000
+hook|d0|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	$00000000
+hook|plane 0|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	bytes 7680 fnv FBB1B91D
+hook|plane 1|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	bytes 7680 fnv 84EFC6E0
+hook|RastPort|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	bytes 100 fnv 6C02A0FF
+hook|LVCB_OK|#154: (221,4)-(423,19), state 8, 4 fields, indent 60, d7 $00014868|1	$00000001
+hook|kept|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	kept
+hook|popped|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	$00000000
+hook|d0|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	$00000000
+hook|plane 0|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	bytes 7680 fnv A8414385
+hook|plane 1|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	bytes 7680 fnv 975C76A1
+hook|RastPort|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	bytes 100 fnv 6DA070F7
+hook|LVCB_OK|#155: (226,8)-(463,21), state 1, 1 fields, indent 32, d7 $8000EE01|1	$00000001
+hook|kept|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	kept
+hook|popped|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	$00000000
+hook|d0|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	$00000000
+hook|plane 0|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	bytes 7680 fnv 419251A0
+hook|plane 1|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	bytes 7680 fnv 3395A7F2
+hook|RastPort|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	bytes 100 fnv D0A29BC8
+hook|LVCB_OK|#156: (220,5)-(429,17), state 1, 3 fields, indent 0, d7 $80010625|1	$00000001
+hook|kept|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	kept
+hook|popped|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	$00000000
+hook|d0|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	$00000000
+hook|plane 0|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	bytes 7680 fnv C3A86811
+hook|plane 1|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	bytes 7680 fnv 2B1DD2BD
+hook|RastPort|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	bytes 100 fnv D6A08F53
+hook|LVCB_OK|#157: (238,9)-(379,23), state 0, 2 fields, indent 16, d7 $80009BA1|1	$00000001
+hook|kept|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	kept
+hook|popped|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	$00000000
+hook|d0|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	$00000000
+hook|plane 0|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	bytes 7680 fnv 262D396A
+hook|plane 1|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	bytes 7680 fnv 7DC96542
+hook|RastPort|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	bytes 100 fnv D1D0DB1D
+hook|LVCB_OK|#158: (248,7)-(476,17), state 2, 3 fields, indent 15, d7 $80010E3B|1	$00000001
+hook|kept|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	kept
+hook|popped|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	$00000000
+hook|d0|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	$00000000
+hook|plane 0|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	bytes 7680 fnv CDC498FD
+hook|plane 1|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	bytes 7680 fnv CB65D667
+hook|RastPort|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	bytes 100 fnv 65668BC0
+hook|LVCB_OK|#159: (232,9)-(343,29), state 1, 4 fields, indent 0, d7 $00009220|1	$00000001
+hook|kept|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	kept
+hook|popped|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	$00000000
+hook|d0|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	$00000000
+hook|plane 0|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	bytes 7680 fnv CD192B2C
+hook|plane 1|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	bytes 7680 fnv 0996BB02
+hook|RastPort|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	bytes 100 fnv F65EA656
+hook|LVCB_OK|#160: (240,10)-(380,20), state 0, 3 fields, indent 60, d7 $0001B38F|1	$00000001
+init|kept|init/finit|1	kept
+init|popped|init/finit|1	$00000000
+finit|kept|init/finit|1	kept
+finit|popped|init/finit|1	$00000000

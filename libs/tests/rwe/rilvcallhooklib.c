@@ -1,14 +1,16 @@
 /*
  * rwe rilvcallhooklib - RetrieveCallHook and its listview render hook:
- * the C build against the reference build of
- * rwelibsrc/lvcallhook/LVCallHook3.bb (blitz2 2.10), method of rwecmp.h.
+ * the C build or the reference build of
+ * rwelibsrc/lvcallhook/LVCallHook3.bb (blitz2 2.10), one set as LIBSET
+ * says, observed as cases (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rilvcallhooklib.txt).
  *
- *   rilvcallhooklib DIR     (DIR with rilvcallhooklib .obj/.orig)
+ *   rilvcallhooklib DIR     (DIR with rilvcallhooklib .obj or .orig)
  *
- * RetrieveCallHook (a6 = graphics.library) gives each set's hook
+ * RetrieveCallHook (a6 = graphics.library) gives the hook
  * function; it is called as GadTools would (a0 = Hook, a1 = LVDrawMsg,
- * a2 = node) with the message's RastPort on a BitMap of each set (2
- * planes, 1280 x 48, cleared to a pattern first).  Compared (after
+ * a2 = node) with the message's RastPort on a BitMap (2
+ * planes, 1280 x 48, cleared to a pattern first).  Observed (after
  * WaitBlit: the hook returns with the last blit running): d0, both
  * planes, the RastPort (pens, draw mode, line pattern, area pattern,
  * the pen position ...; without the BitMap pointer), kept registers.
@@ -31,6 +33,7 @@
  * below 16 and an upper word that makes 65536 tree lines (BUG(orig), #737), a
  * text pointer 0 (BUG(orig) #742: reads address 0), negative indents.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>
@@ -50,10 +53,10 @@ enum { E_RETRIEVE, E_FINIT, E_INIT };
 #define BMH 48
 #define DEPTH 2
 
-static struct BitMap bm[2];
-static struct RastPort rp[2];
-static struct LVDrawMsg msg[2];
-static ULONG hookfn[2];
+static struct BitMap bm;
+static struct RastPort rp;
+static struct LVDrawMsg msg;
+static ULONG hookfn;
 static struct TextFont *font;
 
 /* the node offsets */
@@ -89,62 +92,42 @@ static void mkbitmap(struct BitMap *b, int w, int h)
     }
 }
 
-/* the RastPorts and BitMaps reset before every call */
+/* the RastPort and BitMap reset before every call */
 static void reset(UWORD fg, UWORD bg)
 {
-    int s, p;
-    for (s = 0; s < 2; s++) {
-        for (p = 0; p < DEPTH; p++)
-            memset(bm[s].Planes[p], 0x5a + 0x11 * p, (BMW / 8) * BMH);
-        InitRastPort(&rp[s]);
-        rp[s].BitMap = &bm[s];
-        SetFont(&rp[s], font);
-        SetABPenDrMd(&rp[s], fg, bg, JAM1);
-    }
+    int p;
+    for (p = 0; p < DEPTH; p++)
+        memset(bm.Planes[p], 0x5a + 0x11 * p, (BMW / 8) * BMH);
+    InitRastPort(&rp);
+    rp.BitMap = &bm;
+    SetFont(&rp, font);
+    SetABPenDrMd(&rp, fg, bg, JAM1);
 }
 
-static void compare(void)
+static void observe(void)
 {
-    static struct RastPort r[2];
-    UBYTE *pl[2];
-    int s, p;
+    static struct RastPort r;
+    int p;
     WaitBlit();                         /* the last blit may still run */
-    for (p = 0; p < DEPTH; p++) {
-        pl[0] = bm[0].Planes[p];
-        pl[1] = bm[1].Planes[p];
-        SAMEBYTES(p ? "plane 1" : "plane 0", pl, (BMW / 8) * BMH);
-        if (memcmp(pl[0], pl[1], (BMW / 8) * BMH) && prints < 60) {
-            int k = 0;
-            while (pl[0][k] == pl[1][k])
-                k++;
-            printf("  first difference: x %d..%d, y %d: orig $%02X, C $%02X\n",
-                   k % (BMW / 8) * 8, k % (BMW / 8) * 8 + 7, k / (BMW / 8), pl[0][k], pl[1][k]);
-        }
-    }
-    for (s = 0; s < 2; s++) {
-        r[s] = rp[s];
-        r[s].BitMap = NULL;
-    }
-    pl[0] = (UBYTE *)&r[0];
-    pl[1] = (UBYTE *)&r[1];
-    SAMEBYTES("RastPort", pl, sizeof r[0]);
+    for (p = 0; p < DEPTH; p++)
+        OBSBYTES(p ? "plane 1" : "plane 0", bm.Planes[p], (BMW / 8) * BMH);
+    r = rp;
+    r.BitMap = NULL;
+    OBSBYTES("RastPort", &r, sizeof r);
 }
 
 static void callhook(ULONG method, ULONG state, const struct Rectangle *b, ULONG d7)
 {
-    int s;
-    for (s = 0; s < 2; s++) {
-        msg[s].lvdm_MethodID = method;
-        msg[s].lvdm_RastPort = &rp[s];
-        msg[s].lvdm_DrawInfo = NULL;
-        msg[s].lvdm_Bounds = *b;
-        msg[s].lvdm_State = state;
-    }
+    msg.lvdm_MethodID = method;
+    msg.lvdm_RastPort = &rp;
+    msg.lvdm_DrawInfo = NULL;
+    msg.lvdm_Bounds = *b;
+    msg.lvdm_State = state;
     ROUT = "hook";
-    DO2((APTR)hookfn[cur], R[cur].a[0] = (ULONG)&hook; R[cur].a[1] = (ULONG)&msg[cur];
-        R[cur].a[2] = (ULONG)nodes[0]; R[cur].d[7] = d7);
-    SAME("d0", R[cur].d[0]);
-    compare();
+    DO1((APTR)hookfn, R.a[0] = (ULONG)&hook; R.a[1] = (ULONG)&msg;
+        R.a[2] = (ULONG)nodes[0]; R.d[7] = d7);
+    OBS("d0", R.d[0]);
+    observe();
 }
 
 static int pick(int lo, int hi)
@@ -155,7 +138,7 @@ static int pick(int lo, int hi)
 /* the width of string s in the font */
 static int textw(const char *s)
 {
-    return TextLength(&rp[0], (CONST_STRPTR)s, strlen(s));
+    return TextLength(&rp, (CONST_STRPTR)s, strlen(s));
 }
 
 /* one random item; 0 if its layout is one of those skipped */
@@ -242,15 +225,8 @@ static int item(int i)
     sprintf(VEC, "#%d: (%d,%d)-(%d,%d), state %lu, %d fields, indent %d, d7 $%08lX", i, b.MinX,
             b.MinY, b.MaxX, b.MaxY, state, nf, ind, d7);
     reset((UWORD)pick(0, 3), (UWORD)pick(0, 3));
-    f = failures;
     callhook(LV_DRAW, state, &b, d7);
-    BOTH("LVCB_OK", R[cur].d[0] == LVCB_OK);
-    if (failures != f && prints < 60) {     /* the item, for the message */
-        printf("  colours %u %u %u %u, fields:", coltab[0], coltab[1], coltab[2], coltab[3]);
-        for (e = fields + 7; e[0]; e += 7)
-            printf(" %u/%u/%u/%u", e[0], e[1], e[2], e[3]);
-        printf("\n");
-    }
+    BOTH("LVCB_OK", R.d[0] == LVCB_OK);
     return 1;
 }
 
@@ -258,22 +234,23 @@ int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
     static struct TextAttr topaz = { (STRPTR)"topaz.font", 8, 0, 0 };
-    int s, i, n;
+    int i, n, p;
 
     if (argc < 2) {
         printf("usage: rilvcallhooklib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("RetrieveCallHook", d1-d7|a1-a3|a6);
+    KEEPS("hook", d2-d7|a2|a3|a6);
+    KEEPS("init", d0-d7|a0-a3|a6);
+    KEEPS("finit", d0-d7|a0-a3|a6);
     lvgfx = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
     font = OpenFont(&topaz);
-    for (s = 0; s < 2; s++) {
-        int p;
-        InitBitMap(&bm[s], DEPTH, BMW, BMH);
-        for (p = 0; p < DEPTH; p++)
-            bm[s].Planes[p] = AllocRaster(BMW, BMH);
-    }
+    InitBitMap(&bm, DEPTH, BMW, BMH);
+    for (p = 0; p < DEPTH; p++)
+        bm.Planes[p] = AllocRaster(BMW, BMH);
     mkbitmap(&srcbm[0], 16, 4);
     mkbitmap(&srcbm[1], 32, 8);
     mkbitmap(&srcbm[2], 48, 6);
@@ -281,11 +258,10 @@ int main(int argc, char **argv)
 
     strcpy(VEC, "RetrieveCallHook");
     ROUT = "RetrieveCallHook";
-    DO2(ENT(LIB, E_RETRIEVE, 0), R[cur].a[6] = (ULONG)lvgfx);
-    for (s = 0; s < 2; s++)
-        hookfn[s] = R[s].d[0];
-    BOTH("in the library", hookfn[cur] > (ULONG)getlib(&sets[cur], LIB)->code
-         && hookfn[cur] < (ULONG)getlib(&sets[cur], LIB)->code + 16384);
+    DO1(ENT(LIB, E_RETRIEVE, 0), R.a[6] = (ULONG)lvgfx);
+    hookfn = R.d[0];
+    BOTH("in the library", hookfn > (ULONG)getlib(&loaded, LIB)->code
+         && hookfn < (ULONG)getlib(&loaded, LIB)->code + 16384);
 
     /* not LV_DRAW */
     {
@@ -295,7 +271,7 @@ int main(int argc, char **argv)
         hook.h_Data = fields;
         reset(2, 1);
         callhook(1, 0, &b, 0);
-        BOTH("LVCB_UNKNOWN", R[cur].d[0] == LVCB_UNKNOWN);
+        BOTH("LVCB_UNKNOWN", R.d[0] == LVCB_UNKNOWN);
     }
 
     for (i = 0, n = 0; n < 150 && i < 2000; i++)
@@ -304,17 +280,13 @@ int main(int argc, char **argv)
 
     strcpy(VEC, "init/finit");
     ROUT = "init";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     ROUT = "finit";
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
 
-    for (s = 0; s < 2; s++) {
-        int p;
-        for (p = 0; p < DEPTH; p++)
-            FreeRaster(bm[s].Planes[p], BMW, BMH);
-    }
+    for (p = 0; p < DEPTH; p++)
+        FreeRaster(bm.Planes[p], BMW, BMH);
     for (i = 0; i < 3; i++) {
-        int p;
         for (p = 0; p < DEPTH; p++)
             FreeRaster(srcbm[i].Planes[p], srcbm[i].BytesPerRow * 8, srcbm[i].Rows);
     }
