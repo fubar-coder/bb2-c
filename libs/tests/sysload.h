@@ -9,6 +9,10 @@
  *   static const char *names[] = { "memlib", "mylib", NULL };
  *   load_sets(dir, names) -> sets[0] (originals), sets[1] (C build)
  *   run the same scenario on both, record struct call / values, compare.
+ * A program that observes one set (capture.h; openspec change
+ * libs-tests-capture) loads it with load_set(dir, names) -> loaded:
+ * NAME.obj or NAME.orig, as the shell variable LIBSET of the run says
+ * (bl_libset, libs_tests.cpp).
  */
 #ifndef SYSLOAD_H
 #define SYSLOAD_H
@@ -331,6 +335,14 @@ static void cmp_preserve(const char *what, struct call *o, struct call *c)
 
 static struct set sets[2];
 
+/* the library set of the run: "obj" (the C build) or "orig" (the
+   original), from the shell variable LIBSET; NULL if it is not set
+   (libs_tests.cpp) */
+extern const char *bl_libset;
+
+/* the one set of a program that observes one set (load_set) */
+static __attribute__((unused)) struct set loaded;
+
 /* load and link both sets: sets[0] = NAME.orig, sets[1] = NAME.obj */
 static BOOL load_sets(const char *dir, const char **names)
 {
@@ -349,6 +361,26 @@ static BOOL load_sets(const char *dir, const char **names)
             return FALSE;
     }
     return TRUE;
+}
+
+/* load and link the one set of the run: NAME.<LIBSET> into `loaded` */
+static __attribute__((unused)) BOOL load_set(const char *dir, const char **names)
+{
+    char path[256];
+    int i;
+    if (!bl_libset) {
+        printf("LIBSET is not set (obj or orig)\n");
+        return FALSE;
+    }
+    loaded.what = !strcmp(bl_libset, "obj") ? "C" : "orig";
+    for (i = 0; names[i]; i++) {
+        sprintf(path, "%s/%s.%s", dir, names[i], bl_libset);
+        loaded.lib[i].name = names[i];
+        if (!loadfile(&loaded.lib[i], path))
+            return FALSE;
+    }
+    loaded.n = i;
+    return link_set(&loaded);
 }
 
 #endif

@@ -19,9 +19,12 @@
 #include <snitch/snitch.hpp>
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 extern "C" {
 #include <proto/dos.h>
+#include <proto/exec.h>
 #include "tape.h"
 
 int libtest_main(int argc, char **argv);
@@ -59,9 +62,43 @@ void bl_test_check(const char *what, int ok)
 
 // libnix swaps to a stack of this size at startup (-Wl,-u,___stkinit)
 unsigned long __stack = 128 * 1024;
+
+// the library set of the run (sysload.h load_set): the shell variable
+// LIBSET, "obj" or "orig"; nullptr if it is not set (or another value)
+const char *bl_libset;
 }
 
 namespace {
+
+// LIBSET (the set a program that observes one set loads) and LIBS_PAD (N
+// bytes allocated before a program runs and freed after it, so that the
+// libraries and buffers it allocates are elsewhere: the second run of
+// libs-capture, design D8 of the openspec change libs-tests-capture)
+struct run_env {
+    void *pad = nullptr;
+    unsigned long padsize = 0;
+
+    run_env()
+    {
+        static char set[16];
+        char v[16];
+        bl_libset = nullptr;
+        if (GetVar((STRPTR) "LIBSET", (STRPTR)set, sizeof set, 0) > 0
+            && (!std::strcmp(set, "obj") || !std::strcmp(set, "orig")))
+            bl_libset = set;
+        if (GetVar((STRPTR) "LIBS_PAD", (STRPTR)v, sizeof v, 0) > 0)
+            padsize = std::strtoul(v, nullptr, 10);
+        if (padsize && !(pad = AllocMem(padsize, MEMF_ANY)))
+            std::printf("LIBS_PAD: cannot allocate %lu bytes\n", padsize);
+    }
+    ~run_env()
+    {
+        if (pad)
+            FreeMem(pad, padsize);
+    }
+    run_env(const run_env &) = delete;
+    run_env &operator=(const run_env &) = delete;
+};
 
 // full path of the program's directory, e.g. "TEST:"
 const char *progdir()
@@ -88,6 +125,7 @@ int run_libtest(const char *lib)
     std::snprintf(obj, sizeof obj, "%s/%s.obj", progdir(), lib);
     std::snprintf(name, sizeof name, "libtest_%s", lib);
     char *argv[] = {(char *)"libtest", orig, obj, nullptr};
+    run_env env;
     tape_begin(tapedir(), name);
     int rc = libtest_main(3, argv);
     tape_end();
@@ -97,6 +135,7 @@ int run_libtest(const char *lib)
 int run_systest(const char *name, int (*fn)(int, char **))
 {
     char *argv[] = {(char *)"systest", (char *)progdir(), nullptr};
+    run_env env;
     tape_begin(tapedir(), name);
     int rc = fn(2, argv);
     tape_end();
