@@ -196,10 +196,14 @@ set_tests_properties(libs_tapes_compare_wrong PROPERTIES PASS_REGULAR_EXPRESSION
 	"[a-z0-9_]+\\.tape: differs\n *[a-z0-9_]+\\.tape: committed, not recorded")
 # the check of the cases with broken input: the run's first case of
 # libtest_ldivlib changed (emulator.cmake CAPTURE_CORRUPT) fails the compare
-# with the expected data, naming the key
+# with the expected data, naming the key.  The qualified cases of a fix
+# (KEY [orig] / KEY [fixed #N]: a regressed port fails on the [fixed #N]
+# case, a changed original on the [orig] case) are the judge's, tested on
+# the host (tools/tests: test_libscmp.c, libs_compare_wrong_fixed and
+# libs_compare_wrong_orig)
 add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
-	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DTAPE=replay -DTAPES=${tapes}
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
 	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} -DCAPTURE_CORRUPT=libtest_ldivlib
 	"-DFILTER=libtest ldivlib"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}

@@ -60,7 +60,7 @@ reference".
 ## 7. Fixed checks and the helper's tests
 
 - [x] 7.1 Remove `selftest_fixed.c`, `expect_fixed`, `check_fixed`, `SAME_FIXED`, `fixed_verdict`; `libs_expect_fixed*` are replaced by the pair-of-cases tests of 2.3 (qualifier rules). Verify: `ctest --preset all -N | grep expect_fixed` is empty; the qualifier tests pass Done (2026-11-12): removed with the snitch cases `expect_fixed *` and the tests `libs_expect_fixed`, `_wrong`, `_stale`; `ctest --preset all -N | grep expect_fixed` is empty; the qualifier tests (`test_libscmp`, `libs_compare_wrong_fixed`, `libs_compare_wrong_orig`) pass.
-- [ ] 7.2 `libs_emulator_wrong` (changed case in an emulator run, one program via `--only`) is in place from 2.6; add a `[fixed #N]` demonstration to the host tests (a regressed port fails, a changed original fails). Verify: both fail with the key message
+- [x] 7.2 `libs_emulator_wrong` (changed case in an emulator run, one program via `--only`) is in place from 2.6; add a `[fixed #N]` demonstration to the host tests (a regressed port fails, a changed original fails). Verify: both fail with the key message Done (2026-11-12): `libs_emulator_wrong` runs without the tape replay now (`NO_ORIGINALS`, the C build only; with `tapes/` gone the replay found no recordings) and fails with `libtest_ldivlib: |routine count||1: expected $00000002, got $00000000`; the `[fixed #N]` demonstration is the host tests of 2.3 (`test_libscmp.c` `test_qualifiers`, `libs_compare_wrong_fixed`: `prog: r|find||1 [fixed #7]: expected $00000000, got $00000001`, `libs_compare_wrong_orig`: `prog: r|find||1 [orig]: expected $00000001, got $00000000`), named in `libs/tests/CMakeLists.txt`.
 
 ## 8. Tapes out
 
