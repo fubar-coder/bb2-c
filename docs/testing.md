@@ -55,8 +55,9 @@ FillArray|kept|form 0 type $0001 size 1 off 5 n 1 value $DE551B45|1	kept
 The key has four parts: the routine (`FillArray`), what is checked
 (`inline length`), the input (`form 0 inline`) and a counter that is 1
 unless the same check with the same input happens again. The value is
-`$0000002E`: the routine's result. The second line says that the
-routine kept the registers it must keep (`kept`; a failure reads `lost
+`$0000002E`: the length word of the routine's inline code (the
+compiler copies that many bytes of the command into the program). The second line says
+that the routine kept the registers it must keep (`kept`; a failure reads `lost
 d3 a1`).
 
 If the C library gave `$0000002F`, the test would say:
