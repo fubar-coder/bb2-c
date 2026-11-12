@@ -1,0 +1,179 @@
+# capture systest_system 1
+memlib init|kept||1	kept
+wbstartup init|kept|line 0|1	kept
+|wb args|line 0|1	"wb fromcli=ffff numargs=4"
+|wb arg|line 0|1	"  arg len=3 lock=0 text=<foo> term=0"
+|wb arg|line 0|2	"  arg len=7 lock=0 text=<bar baz> term=0"
+|wb arg|line 0|3	"  arg len=0 lock=0 text=<> term=0"
+|wb arg|line 0|4	"  arg len=3 lock=0 text=<qux> term=0"
+wbstartup finit|kept|line 0|1	kept
+|wb memory back|line 0|1	"wb memory back: 1"
+wbstartup init|kept|line 1|1	kept
+|wb args|line 1|1	"wb fromcli=ffff numargs=1"
+|wb arg|line 1|1	"  arg len=6 lock=0 text=<single> term=0"
+wbstartup finit|kept|line 1|1	kept
+|wb memory back|line 1|1	"wb memory back: 1"
+wbstartup init|kept|line 2|1	kept
+|wb args|line 2|1	"wb fromcli=ffff numargs=3"
+|wb arg|line 2|1	"  arg len=1 lock=0 text=<x> term=0"
+|wb arg|line 2|2	"  arg len=1 lock=0 text=<y> term=0"
+|wb arg|line 2|3	"  arg len=2 lock=0 text=<le> term=0"
+wbstartup finit|kept|line 2|1	kept
+|wb memory back|line 2|1	"wb memory back: 1"
+wbstartup init|kept|line 3|1	kept
+|wb args|line 3|1	"wb fromcli=ffff numargs=0"
+wbstartup finit|kept|line 3|1	kept
+|wb memory back|line 3|1	"wb memory back: 1"
+wbstartup init|kept|line 4|1	kept
+|wb args|line 4|1	"wb fromcli=ffff numargs=1"
+|wb arg|line 4|1	"  arg len=10 lock=0 text=<open quote> term=0"
+wbstartup finit|kept|line 4|1	kept
+|wb memory back|line 4|1	"wb memory back: 1"
+|int prefixes||1	"int prefixes a001 a001 a001"
+int init|kept||1	kept
+newint|kept||1	kept
+|newint a5||1	"newint a5=12345678"
+oldint|kept||1	kept
+setint|kept||1	kept
+setint|kept||2	kept
+|setint||1	"setint: s0 1 s1 1"
+clrint|kept||1	kept
+|clrint 5||1	"clrint 5: s0 0 s1 1"
+b_setint|kept||1	kept
+|b_setint||1	"b_setint: s2 0"
+int goblitz|kept||1	kept
+|int goblitz||1	"goblitz: s2 1"
+int goblitz|kept||2	kept
+int goamiga|kept||1	kept
+|int goamiga||1	"goamiga: s2 0"
+b_clrint|kept||1	kept
+b_setint|kept||2	kept
+setint|kept||3	kept
+int cleanup|kept||1	kept
+|cleanup||1	"cleanup: s0 0 s1 0 s2 0"
+|int memory back||1	"int memory back: 1"
+vwait|kept||1	kept
+|vwait d0||1	"vwait d0=00000000"
+b_vwait|kept||1	kept
+|b_vwait d0||1	"b_vwait d0=0000ffff"
+switch init|kept||1	kept
+|switch init||1	"switch init = keyboard.device: 1"
+OwnBlitter|kept||1	kept
+OwnBlitter|kept||2	kept
+DisownBlitter|kept||1	kept
+DisownBlitter|kept||2	kept
+goqamigaS|kept||1	kept
+|goqamigaS||1	"goqamigaS d0=abcd0000 view kept 1"
+goamiga|kept||1	kept
+|goamiga||1	"goamiga d0=12340001 view kept 1"
+goqamiga|kept||1	kept
+|goqamiga||1	"goqamiga d0=00000000 view off 1"
+goqamiga|kept||2	kept
+|goqamiga again||1	"goqamiga d0=ffff0001"
+goamiga|kept||2	kept
+|goamiga back||1	"goamiga d0=00000001 view back 1"
+setcoplist|kept||1	kept
+switch finit|kept||1	kept
+runerr init|kept||1	kept
+|runerr trapcode set||1	"runerr trapcode set 1, trapper 201f 2f7c"
+getvbr|kept||1	kept
+|getvbr||1	"getvbr 00000000"
+getcpu|kept||1	kept
+|getcpu||1	"getcpu abcd0002"
+runerr 22|kept||1	kept
+runerr 22|kept||2	kept
+runerr 23|kept||1	kept
+runerr 23|kept||2	kept
+runerr 24|kept||1	kept
+runerr 24|kept||2	kept
+runerr 25|kept||1	kept
+runerr 25|kept||2	kept
+runerr 26|kept||1	kept
+runerr 26|kept||2	kept
+runerr 27|kept||1	kept
+runerr 28|kept||1	kept
+runerr 14|kept||1	kept
+runerr 15|kept||1	kept
+datachk|kept||1	kept
+|datachk a3||1	"datachk a3+2"
+datachk|kept||2	kept
+|datachk a3||2	"datachk a3+4"
+runerr 21|kept||1	kept
+gosuper|kept||1	kept
+stackchk|kept||1	kept
+gouser|kept||1	kept
+stackchk|kept||2	kept
+|runerr checks passed||1	"runerr checks passed"
+|runerr asm entry|entry 0|1	"runerr asm entry 0: bffa"
+|runerr asm entry|entry 5|1	"runerr asm entry 5: 0c6f"
+|runerr asm entry|entry 6|1	"runerr asm entry 6: 0c6f"
+|runerr asm entry|entry 7|1	"runerr asm entry 7: 0c6f"
+|runerr asm entry|entry 17|1	"runerr asm entry 17: 6a00"
+|runerr asm entry|entry 18|1	"runerr asm entry 18: 6b00"
+|runerr asm entry|entry 19|1	"runerr asm entry 19: 0c6f"
+|runerr asm entry|entry 20|1	"runerr asm entry 20: 0c6f"
+|runerr asm entry|entry 9|1	"runerr asm entry 9: 203c"
+|runerr asm entry|entry 10|1	"runerr asm entry 10: 203c"
+runerr finit|kept||1	kept
+|runerr trapcode restored||1	"runerr trapcode restored 1"
+debug init|kept||1	kept
+|trap handler|trap 0|1	"trap 0 handler 0c80"
+|trap handler|trap 1|1	"trap 1 handler 0817"
+|trap handler|trap 2|1	"trap 2 handler 206f"
+|trap handler|trap 3|1	"trap 3 handler 51b9"
+|trap handler|trap 4|1	"trap 4 handler 48e7"
+|trap handler|trap 5|1	"trap 5 handler 2f08"
+dosethandler|kept||1	kept
+|sethandler||1	"sethandler old-state=1e tokens=vec1 1"
+|state||1	"state oldmode 0000 flags 20000000 usertext <Interrupted - program start>"
+dostop|kept||1	kept
+|dostop||1	"dostop flags 20000000 <***** Interupted *****>"
+doevaluate|kept||1	kept
+|doevaluate||1	"doevaluate flags 30000000 <a+b>"
+doexecute|kept||1	kept
+|doexecute||1	"doexecute flags 38000000 <x=1>"
+doquit|kept||1	kept
+doskip|kept||1	kept
+|quit/skip||1	"quit/skip flags bc000000"
+donewmode|kept||1	kept
+docall|kept||1	kept
+|docall||1	"docall calls 1 d0 1234 d1 42"
+dosethandler|kept||2	kept
+|sethandler old||1	"sethandler old = tab1 1"
+dodetoke|kept||1	kept
+|detoke||1	"detoke <APRINTBNPrintC?????DE> a0+14 a1+22"
+dofindoff|kept|0|1	kept
+|findoff|0|1	"findoff 0 -> 77770000"
+dofindoff|kept|1|1	kept
+|findoff|1|1	"findoff 1 -> 77770001"
+dofindoff|kept|2|1	kept
+|findoff|2|1	"findoff 2 -> 77770015"
+dofindoff|kept|3|1	kept
+|findoff|3|1	"findoff 3 -> 77770015"
+dofindoff|kept|4|1	kept
+|findoff|4|1	"findoff 4 -> 77770007"
+dofindoff|kept|5|1	kept
+|findoff|5|1	"findoff 5 -> 77770015"
+dofindoff|kept|6|1	kept
+|findoff|6|1	"findoff 6 -> 77770015"
+dofindoff|kept|7|1	kept
+|findoff|7|1	"findoff 7 -> 7777000e"
+dofindoff|kept|8|1	kept
+|findoff|8|1	"findoff 8 -> 77770015"
+dofindoff|kept|9|1	kept
+|findoff|9|1	"findoff 9 -> 77770015"
+dofindoff|kept|10|1	kept
+|findoff|10|1	"findoff 10 -> 77770014"
+dofindoff|kept|11|1	kept
+|findoff|11|1	"findoff 11 -> 77770015"
+dofindoff|kept|12|1	kept
+|findoff|12|1	"findoff 12 -> 77770015"
+dofindoff|kept|13|1	kept
+|findoff|13|1	"findoff 13 -> 77770015"
+dofindoff|kept|14|1	kept
+|findoff|14|1	"findoff 14 -> 77770015"
+debug finit|kept||1	kept
+|docall code||1	"docall code 227a 4e91 4e75"
+memlib finit|kept||1	kept
+|calls||1	"calls 92"
+|number of calls||1	$0000005C
