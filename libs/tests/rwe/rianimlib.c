@@ -1,19 +1,20 @@
 /*
- * rwe rianimlib - RIAnimLib: the C build against the CD binary BSS2
+ * rwe rianimlib - RIAnimLib: the C build or the CD binary BSS2
  * RIANIMLIB.OBJ (rianimlib.orig; = Anim-Library3 without RIDiskAnimInit),
- * method of rwecmp.h.
+ * one set as LIBSET says, observed as cases (rwecmp.h, LIBS_ONE_SET; the
+ * expected data libs/tests/expected/rwe_rianimlib.txt).
  *
  *   rianimlib DIR        (DIR with rianimlib.obj/.orig)
  *
  * The test builds small ANIMs in memory (64x8, 2 planes; frames with
  * ANHD operations 5, 65 and 7, a CMAP, an unknown operation) and gives
- * each set its own copy, bitmap object (ebwidth 8, plane pointers into
+ * the set a copy, a bitmap object (ebwidth 8, plane pointers into
  * guarded buffers) and register markers.  RIPackLib is not loaded: its
  * UnpackIFF (form 1) and ILBMPalette, which RIAnimInit and
  * RINextAnimFrame call through ALibJsr, are stubs (sysload_stubs) that
- * log their arguments (the source address relative to the set's ANIM).
- * Compared after every call: d0, the stub log, the planes (with the
- * bytes around them) and every register the original keeps.
+ * log their arguments (the source address relative to the copy of the
+ * ANIM).  Observed after every call: d0, the stub log, the planes (with
+ * the bytes around them) and the kept registers.
  *
  * Covered: RIAnimDepth/Width/Height (an ANIM, no FORM, a FORM ILBM, an
  * ANIM whose first chunk is no FORM, an ANIM without BMHD);
@@ -33,6 +34,7 @@
  * (256 planes), runs of 0 (256 rows), widths below 8 or 32 (65536
  * columns).
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 
 #define LIB "rianimlib"
@@ -45,26 +47,26 @@ enum { E_INIT, E_NEXT, E_LOOP, E_COUNT, E_DEPTH, E_WIDTH, E_HEIGHT };
 #define TOK_ilbmpalette ((73 << 7) + 4)
 
 #define ANIMSZ 4096
-static UBYTE anim[2][ANIMSZ];           /* the set's copy of the ANIM */
+static UBYTE anim[ANIMSZ];              /* the copy of the ANIM */
 
-static struct { ULONG fn, d0, d1, d2, d3; } plog[2][16];
-static int nplog[2], plogdone;
+static struct { ULONG fn, d0, d1, d2, d3; } plog[16];
+static int nplog, plogdone;
 
 static ULONG rel(ULONG a)
 {
-    return a - (ULONG)anim[cur];
+    return a - (ULONG)anim;
 }
 
 static void plogit(ULONG fn, ULONG d0, ULONG d1, ULONG d2, ULONG d3)
 {
-    if (nplog[cur] < 16) {
-        plog[cur][nplog[cur]].fn = fn;
-        plog[cur][nplog[cur]].d0 = rel(d0);
-        plog[cur][nplog[cur]].d1 = d1;
-        plog[cur][nplog[cur]].d2 = d2;
-        plog[cur][nplog[cur]].d3 = d3;
+    if (nplog < 16) {
+        plog[nplog].fn = fn;
+        plog[nplog].d0 = rel(d0);
+        plog[nplog].d1 = d1;
+        plog[nplog].d2 = d2;
+        plog[nplog].d3 = d3;
     }
-    nplog[cur]++;
+    nplog++;
 }
 
 static void __attribute__((used)) st_unpackiff_c(ULONG d0, ULONG d1, ULONG d2, ULONG d3)
@@ -316,50 +318,47 @@ static void build(void)
 
 #define PLANESZ 256
 #define PLANEAT 32                      /* the plane in its buffer */
-static UBYTE planes[2][2][PLANESZ];
-static union { ULONG l[16]; UWORD w[32]; } bmobj[2];   /* the bitmap object */
+static UBYTE planes[2][PLANESZ];
+static union { ULONG l[16]; UWORD w[32]; } bmobj;      /* the bitmap object */
 
 static void resetbitmap(void)
 {
-    int s, p, i;
+    int p, i;
 
-    for (s = 0; s < 2; s++) {
-        for (p = 0; p < 2; p++)
-            for (i = 0; i < PLANESZ; i++)
-                planes[s][p][i] = (UBYTE)(0x80 ^ (i * 7 + p));
-        memset(&bmobj[s], 0, sizeof bmobj[s]);
-        bmobj[s].w[0] = 8;    /* ebwidth */
-        bmobj[s].w[1] = 8;    /* height */
-        bmobj[s].w[2] = 2;    /* depth */
-        bmobj[s].l[2] = (ULONG)&planes[s][0][PLANEAT];
-        bmobj[s].l[3] = (ULONG)&planes[s][1][PLANEAT];
-    }
+    for (p = 0; p < 2; p++)
+        for (i = 0; i < PLANESZ; i++)
+            planes[p][i] = (UBYTE)(0x80 ^ (i * 7 + p));
+    memset(&bmobj, 0, sizeof bmobj);
+    bmobj.w[0] = 8;           /* ebwidth */
+    bmobj.w[1] = 8;           /* height */
+    bmobj.w[2] = 2;           /* depth */
+    bmobj.l[2] = (ULONG)&planes[0][PLANEAT];
+    bmobj.l[3] = (ULONG)&planes[1][PLANEAT];
 }
 
 static void same_state(void)
 {
     int i;
     char buf[30];
-    UBYTE *x[2] = { &planes[0][0][0], &planes[1][0][0] };
 
-    SAMEBYTES("planes", x, sizeof planes[0]);
-    SAME("RIPackLib calls", nplog[cur]);
-    for (i = plogdone; i < nplog[0] && i < nplog[1] && i < 16; i++) {
+    OBSBYTES("planes", planes, sizeof planes);
+    OBS("RIPackLib calls", nplog);
+    for (i = plogdone; i < nplog && i < 16; i++) {
         sprintf(buf, "RIPackLib call %d", i);
-        SAME(buf, plog[cur][i].fn);
-        SAME(buf, plog[cur][i].d0);
-        SAME(buf, plog[cur][i].d1);
-        SAME(buf, plog[cur][i].d2);
-        SAME(buf, plog[cur][i].d3);
+        OBS(buf, plog[i].fn);
+        OBS(buf, plog[i].d0);
+        OBS(buf, plog[i].d1);
+        OBS(buf, plog[i].d2);
+        OBS(buf, plog[i].d3);
     }
-    plogdone = nplog[0] > nplog[1] ? nplog[0] : nplog[1];
+    plogdone = nplog;
 }
 
 /* ------------------------------------------------------------ calls */
 
 static ULONG at(ULONG off)
 {
-    return (ULONG)anim[cur] + off;
+    return (ULONG)anim + off;
 }
 
 static void info(const char *what, ULONG off)
@@ -370,8 +369,8 @@ static void info(const char *what, ULONG off)
     for (i = 0; i < 3; i++) {
         ROUT = r[i];
         sprintf(VEC, "%s", what);
-        DO2(ENT(LIB, E_DEPTH + i, 0), R[cur].d[0] = at(off));
-        SAME("d0", R[cur].d[0]);
+        DO1(ENT(LIB, E_DEPTH + i, 0), R.d[0] = at(off));
+        OBS("d0", R.d[0]);
         same_state();
     }
 }
@@ -379,15 +378,15 @@ static void info(const char *what, ULONG off)
 static void count(void)
 {
     ROUT = "RIAnimFrameCount";
-    DO2(ENT(LIB, E_COUNT, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_COUNT, 0), (void)0);
+    OBS("d0", R.d[0]);
 }
 
 static void next(void)
 {
     ROUT = "RINextAnimFrame";
-    DO2(ENT(LIB, E_NEXT, 0), R[cur].d[0] = 0x5a5a5a03; R[cur].a[0] = (ULONG)bmobj[cur].l);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_NEXT, 0), R.d[0] = 0x5a5a5a03; R.a[0] = (ULONG)bmobj.l);
+    OBS("d0", R.d[0]);
     same_state();
 }
 
@@ -395,7 +394,7 @@ static void loop(ULONG on)
 {
     ROUT = "AnimLoop";
     sprintf(VEC, "$%08lX", on);
-    DO2(ENT(LIB, E_LOOP, 0), R[cur].d[0] = on);
+    DO1(ENT(LIB, E_LOOP, 0), R.d[0] = on);
 }
 
 /* RIAnimInit form 0 (address,bitmap#,palette#) */
@@ -403,33 +402,41 @@ static void init0(const char *what, ULONG off)
 {
     ROUT = "RIAnimInit";
     sprintf(VEC, "%s", what);
-    DO2(ENT(LIB, E_INIT, 0), R[cur].d[0] = at(off); R[cur].d[1] = 3; R[cur].d[2] = 4);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_INIT, 0), R.d[0] = at(off); R.d[1] = 3; R.d[2] = 4);
+    OBS("d0", R.d[0]);
     same_state();
 }
 
 int main(int argc, char **argv)
 {
     static const char *names[] = { LIB, NULL };
-    int s, i;
+    int i;
 
     if (argc < 2) {
         printf("usage: rianimlib DIR\n");
         return 20;
     }
     sysload_stubs = stubs;
-    if (!load_sets(argv[1], names)) {
+    if (!load_set(argv[1], names)) {
         sysload_stubs = NULL;
         return 20;
     }
     sysload_stubs = NULL;
+    KEEPS("RIAnimFrameCount", d1-d7|a2|a3|a6);
+    KEEPS("RINextAnimFrame", d1-d7|a0-a3|a6);
+    KEEPS("RIAnimDepth", d1-d7|a1|a3|a6);
+    KEEPS("RIAnimWidth", d1-d7|a1|a3|a6);
+    KEEPS("RIAnimHeight", d1-d7|a1|a3|a6);
+    KEEPS("RIAnimInit", d4-d6|a1|a3|a6);
+    KEEPS("AnimLoop", d0-d7|a0-a3|a6);
+    KEEPS("RIAnimInit offset", d3-d6|a1|a3|a6);
+    KEEPS("RIAnimInit x,y", d4|d5|a1|a3|a6);
     build();
     if (tlen > ANIMSZ) {
         check("rianimlib: the ANIMs fit", FALSE);
         return 20;
     }
-    for (s = 0; s < 2; s++)
-        memcpy(anim[s], tpl, tlen);
+    memcpy(anim, tpl, tlen);
     resetbitmap();
     DONTCARE = 1;                       /* d0: the result, compared */
     strcpy(VEC, "");
@@ -475,9 +482,9 @@ int main(int argc, char **argv)
     resetbitmap();
     ROUT = "RIAnimInit offset";
     strcpy(VEC, "offset 9");
-    DO2(ENT(LIB, E_INIT, 1), R[cur].d[0] = at(a_full); R[cur].d[1] = 0x5a5a5a01;
-        R[cur].d[2] = 0x5a5a5a02; R[cur].d[3] = 9);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_INIT, 1), R.d[0] = at(a_full); R.d[1] = 0x5a5a5a01;
+        R.d[2] = 0x5a5a5a02; R.d[3] = 9);
+    OBS("d0", R.d[0]);
     same_state();
     loop(1);
     for (i = 0; i < 6; i++)
@@ -485,19 +492,19 @@ int main(int argc, char **argv)
     resetbitmap();
     ROUT = "RIAnimInit x,y";
     strcpy(VEC, "x 17 y 1");
-    DO2(ENT(LIB, E_INIT, 2), R[cur].d[0] = at(a_full); R[cur].d[1] = 5 * 64;
-        R[cur].d[2] = 6; R[cur].d[3] = 17; R[cur].d[4] = 0x5a5a0001;
-        R[cur].a[0] = (ULONG)bmobj[cur].l);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_INIT, 2), R.d[0] = at(a_full); R.d[1] = 5 * 64;
+        R.d[2] = 6; R.d[3] = 17; R.d[4] = 0x5a5a0001;
+        R.a[0] = (ULONG)bmobj.l);
+    OBS("d0", R.d[0]);
     same_state();
     for (i = 0; i < 6; i++)
         next();
     ROUT = "RIAnimInit x,y";
     strcpy(VEC, "DIVU overflow, x -24");
-    DO2(ENT(LIB, E_INIT, 2), R[cur].d[0] = at(a_full); R[cur].d[1] = 0x01000007;
-        R[cur].d[2] = 6; R[cur].d[3] = (ULONG)-24; R[cur].d[4] = 3;
-        R[cur].a[0] = (ULONG)bmobj[cur].l);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_INIT, 2), R.d[0] = at(a_full); R.d[1] = 0x01000007;
+        R.d[2] = 6; R.d[3] = (ULONG)-24; R.d[4] = 3;
+        R.a[0] = (ULONG)bmobj.l);
+    OBS("d0", R.d[0]);
     same_state();
 
     /* short anims: the safety nets */

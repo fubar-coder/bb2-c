@@ -1,0 +1,441 @@
+# capture rwe_rianimlib 1
+RIAnimFrameCount|kept||1	kept
+RIAnimFrameCount|popped||1	$00000000
+RIAnimFrameCount|d0||1	$00000000
+RINextAnimFrame|kept||1	kept
+RINextAnimFrame|popped||1	$00000000
+RINextAnimFrame|d0||1	$00000000
+RINextAnimFrame|planes||1	bytes 512 fnv 09B9D2C5
+RINextAnimFrame|RIPackLib calls||1	$00000000
+RIAnimDepth|kept|ANIM|1	kept
+RIAnimDepth|popped|ANIM|1	$00000000
+RIAnimDepth|d0|ANIM|1	$00000002
+RIAnimDepth|planes|ANIM|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|ANIM|1	$00000000
+RIAnimWidth|kept|ANIM|1	kept
+RIAnimWidth|popped|ANIM|1	$00000000
+RIAnimWidth|d0|ANIM|1	$FFFF0040
+RIAnimWidth|planes|ANIM|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|ANIM|1	$00000000
+RIAnimHeight|kept|ANIM|1	kept
+RIAnimHeight|popped|ANIM|1	$00000000
+RIAnimHeight|d0|ANIM|1	$FFFF0008
+RIAnimHeight|planes|ANIM|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|ANIM|1	$00000000
+RIAnimDepth|kept|no FORM|1	kept
+RIAnimDepth|popped|no FORM|1	$00000000
+RIAnimDepth|d0|no FORM|1	$00000000
+RIAnimDepth|planes|no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|no FORM|1	$00000000
+RIAnimWidth|kept|no FORM|1	kept
+RIAnimWidth|popped|no FORM|1	$00000000
+RIAnimWidth|d0|no FORM|1	$00000000
+RIAnimWidth|planes|no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|no FORM|1	$00000000
+RIAnimHeight|kept|no FORM|1	kept
+RIAnimHeight|popped|no FORM|1	$00000000
+RIAnimHeight|d0|no FORM|1	$00000000
+RIAnimHeight|planes|no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|no FORM|1	$00000000
+RIAnimDepth|kept|FORM ILBM|1	kept
+RIAnimDepth|popped|FORM ILBM|1	$00000000
+RIAnimDepth|d0|FORM ILBM|1	$00000000
+RIAnimDepth|planes|FORM ILBM|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|FORM ILBM|1	$00000000
+RIAnimWidth|kept|FORM ILBM|1	kept
+RIAnimWidth|popped|FORM ILBM|1	$00000000
+RIAnimWidth|d0|FORM ILBM|1	$00000000
+RIAnimWidth|planes|FORM ILBM|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|FORM ILBM|1	$00000000
+RIAnimHeight|kept|FORM ILBM|1	kept
+RIAnimHeight|popped|FORM ILBM|1	$00000000
+RIAnimHeight|d0|FORM ILBM|1	$00000000
+RIAnimHeight|planes|FORM ILBM|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|FORM ILBM|1	$00000000
+RIAnimDepth|kept|first chunk no FORM|1	kept
+RIAnimDepth|popped|first chunk no FORM|1	$00000000
+RIAnimDepth|d0|first chunk no FORM|1	$00000000
+RIAnimDepth|planes|first chunk no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|first chunk no FORM|1	$00000000
+RIAnimWidth|kept|first chunk no FORM|1	kept
+RIAnimWidth|popped|first chunk no FORM|1	$00000000
+RIAnimWidth|d0|first chunk no FORM|1	$00000000
+RIAnimWidth|planes|first chunk no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|first chunk no FORM|1	$00000000
+RIAnimHeight|kept|first chunk no FORM|1	kept
+RIAnimHeight|popped|first chunk no FORM|1	$00000000
+RIAnimHeight|d0|first chunk no FORM|1	$00000000
+RIAnimHeight|planes|first chunk no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|first chunk no FORM|1	$00000000
+RIAnimDepth|kept|no BMHD|1	kept
+RIAnimDepth|popped|no BMHD|1	$00000000
+RIAnimDepth|d0|no BMHD|1	$00000000
+RIAnimDepth|planes|no BMHD|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|no BMHD|1	$00000000
+RIAnimWidth|kept|no BMHD|1	kept
+RIAnimWidth|popped|no BMHD|1	$00000000
+RIAnimWidth|d0|no BMHD|1	$00000000
+RIAnimWidth|planes|no BMHD|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|no BMHD|1	$00000000
+RIAnimHeight|kept|no BMHD|1	kept
+RIAnimHeight|popped|no BMHD|1	$00000000
+RIAnimHeight|d0|no BMHD|1	$00000000
+RIAnimHeight|planes|no BMHD|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|no BMHD|1	$00000000
+RIAnimDepth|kept|BMHD behind frame 1|1	kept
+RIAnimDepth|popped|BMHD behind frame 1|1	$00000000
+RIAnimDepth|d0|BMHD behind frame 1|1	$00000000
+RIAnimDepth|planes|BMHD behind frame 1|1	bytes 512 fnv 09B9D2C5
+RIAnimDepth|RIPackLib calls|BMHD behind frame 1|1	$00000000
+RIAnimWidth|kept|BMHD behind frame 1|1	kept
+RIAnimWidth|popped|BMHD behind frame 1|1	$00000000
+RIAnimWidth|d0|BMHD behind frame 1|1	$00000000
+RIAnimWidth|planes|BMHD behind frame 1|1	bytes 512 fnv 09B9D2C5
+RIAnimWidth|RIPackLib calls|BMHD behind frame 1|1	$00000000
+RIAnimHeight|kept|BMHD behind frame 1|1	kept
+RIAnimHeight|popped|BMHD behind frame 1|1	$00000000
+RIAnimHeight|d0|BMHD behind frame 1|1	$00000000
+RIAnimHeight|planes|BMHD behind frame 1|1	bytes 512 fnv 09B9D2C5
+RIAnimHeight|RIPackLib calls|BMHD behind frame 1|1	$00000000
+RIAnimInit|kept|no FORM|1	kept
+RIAnimInit|popped|no FORM|1	$00000000
+RIAnimInit|d0|no FORM|1	$00000000
+RIAnimInit|planes|no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|no FORM|1	$00000000
+RIAnimFrameCount|kept|no FORM|1	kept
+RIAnimFrameCount|popped|no FORM|1	$00000000
+RIAnimFrameCount|d0|no FORM|1	$00000000
+RIAnimInit|kept|FORM ILBM|1	kept
+RIAnimInit|popped|FORM ILBM|1	$00000000
+RIAnimInit|d0|FORM ILBM|1	$00000000
+RIAnimInit|planes|FORM ILBM|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|FORM ILBM|1	$00000000
+RIAnimFrameCount|kept|FORM ILBM|1	kept
+RIAnimFrameCount|popped|FORM ILBM|1	$00000000
+RIAnimFrameCount|d0|FORM ILBM|1	$00000000
+RIAnimInit|kept|first chunk no FORM|1	kept
+RIAnimInit|popped|first chunk no FORM|1	$00000000
+RIAnimInit|d0|first chunk no FORM|1	$00000000
+RIAnimInit|planes|first chunk no FORM|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|first chunk no FORM|1	$00000000
+RIAnimFrameCount|kept|first chunk no FORM|1	kept
+RIAnimFrameCount|popped|first chunk no FORM|1	$00000000
+RIAnimFrameCount|d0|first chunk no FORM|1	$00000002
+RIAnimInit|kept|no BMHD|1	kept
+RIAnimInit|popped|no BMHD|1	$00000000
+RIAnimInit|d0|no BMHD|1	$00000000
+RIAnimInit|planes|no BMHD|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|no BMHD|1	$00000000
+RIAnimFrameCount|kept|no BMHD|1	kept
+RIAnimFrameCount|popped|no BMHD|1	$00000000
+RIAnimFrameCount|d0|no BMHD|1	$00000002
+RIAnimInit|kept|BMHD behind frame 1|1	kept
+RIAnimInit|popped|BMHD behind frame 1|1	$00000000
+RIAnimInit|d0|BMHD behind frame 1|1	$FFFFFFFF
+RIAnimInit|planes|BMHD behind frame 1|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|BMHD behind frame 1|1	$00000002
+RIAnimInit|RIPackLib call 0|BMHD behind frame 1|1	$00000001
+RIAnimInit|RIPackLib call 0|BMHD behind frame 1|2	$000007EC
+RIAnimInit|RIPackLib call 0|BMHD behind frame 1|3	$00000003
+RIAnimInit|RIPackLib call 0|BMHD behind frame 1|4	$FFFFFFFF
+RIAnimInit|RIPackLib call 0|BMHD behind frame 1|5	$00000000
+RIAnimInit|RIPackLib call 1|BMHD behind frame 1|1	$00000002
+RIAnimInit|RIPackLib call 1|BMHD behind frame 1|2	$000007EC
+RIAnimInit|RIPackLib call 1|BMHD behind frame 1|3	$00000004
+RIAnimInit|RIPackLib call 1|BMHD behind frame 1|4	$00000000
+RIAnimInit|RIPackLib call 1|BMHD behind frame 1|5	$00000000
+RIAnimFrameCount|kept|BMHD behind frame 1|1	kept
+RIAnimFrameCount|popped|BMHD behind frame 1|1	$00000000
+RIAnimFrameCount|d0|BMHD behind frame 1|1	$00000003
+RINextAnimFrame|kept|BMHD behind frame 1|1	kept
+RINextAnimFrame|popped|BMHD behind frame 1|1	$00000000
+RINextAnimFrame|d0|BMHD behind frame 1|1	$FFFFFFFF
+RINextAnimFrame|planes|BMHD behind frame 1|1	bytes 512 fnv 4AC3CB95
+RINextAnimFrame|RIPackLib calls|BMHD behind frame 1|1	$00000002
+RIAnimInit|kept|six frames|1	kept
+RIAnimInit|popped|six frames|1	$00000000
+RIAnimInit|d0|six frames|1	$FFFFFFFF
+RIAnimInit|planes|six frames|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|six frames|1	$00000004
+RIAnimInit|RIPackLib call 2|six frames|1	$00000001
+RIAnimInit|RIPackLib call 2|six frames|2	$0000000C
+RIAnimInit|RIPackLib call 2|six frames|3	$00000003
+RIAnimInit|RIPackLib call 2|six frames|4	$FFFFFFFF
+RIAnimInit|RIPackLib call 2|six frames|5	$00000000
+RIAnimInit|RIPackLib call 3|six frames|1	$00000002
+RIAnimInit|RIPackLib call 3|six frames|2	$0000000C
+RIAnimInit|RIPackLib call 3|six frames|3	$00000004
+RIAnimInit|RIPackLib call 3|six frames|4	$00000000
+RIAnimInit|RIPackLib call 3|six frames|5	$00000000
+RIAnimFrameCount|kept|six frames|1	kept
+RIAnimFrameCount|popped|six frames|1	$00000000
+RIAnimFrameCount|d0|six frames|1	$00000006
+RINextAnimFrame|kept|six frames|1	kept
+RINextAnimFrame|popped|six frames|1	$00000000
+RINextAnimFrame|d0|six frames|1	$FFFFFFFF
+RINextAnimFrame|planes|six frames|1	bytes 512 fnv 8CE7A2D9
+RINextAnimFrame|RIPackLib calls|six frames|1	$00000004
+RINextAnimFrame|kept|six frames|2	kept
+RINextAnimFrame|popped|six frames|2	$00000000
+RINextAnimFrame|d0|six frames|2	$FFFFFFFF
+RINextAnimFrame|planes|six frames|2	bytes 512 fnv B3C1180A
+RINextAnimFrame|RIPackLib calls|six frames|2	$00000005
+RINextAnimFrame|RIPackLib call 4|six frames|1	$00000002
+RINextAnimFrame|RIPackLib call 4|six frames|2	$000001B8
+RINextAnimFrame|RIPackLib call 4|six frames|3	$00000004
+RINextAnimFrame|RIPackLib call 4|six frames|4	$00000000
+RINextAnimFrame|RIPackLib call 4|six frames|5	$00000000
+RINextAnimFrame|kept|six frames|3	kept
+RINextAnimFrame|popped|six frames|3	$00000000
+RINextAnimFrame|d0|six frames|3	$FFFFFFFF
+RINextAnimFrame|planes|six frames|3	bytes 512 fnv C8300D45
+RINextAnimFrame|RIPackLib calls|six frames|3	$00000005
+RINextAnimFrame|kept|six frames|4	kept
+RINextAnimFrame|popped|six frames|4	$00000000
+RINextAnimFrame|d0|six frames|4	$FFFFFFFF
+RINextAnimFrame|planes|six frames|4	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|six frames|4	$00000005
+RINextAnimFrame|kept|six frames|5	kept
+RINextAnimFrame|popped|six frames|5	$00000000
+RINextAnimFrame|d0|six frames|5	$00000000
+RINextAnimFrame|planes|six frames|5	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|six frames|5	$00000005
+RINextAnimFrame|kept|six frames|6	kept
+RINextAnimFrame|popped|six frames|6	$00000000
+RINextAnimFrame|d0|six frames|6	$FFFFFFFF
+RINextAnimFrame|planes|six frames|6	bytes 512 fnv AA32D832
+RINextAnimFrame|RIPackLib calls|six frames|6	$00000006
+RINextAnimFrame|RIPackLib call 5|six frames|1	$00000002
+RINextAnimFrame|RIPackLib call 5|six frames|2	$000001B8
+RINextAnimFrame|RIPackLib call 5|six frames|3	$00000004
+RINextAnimFrame|RIPackLib call 5|six frames|4	$00000000
+RINextAnimFrame|RIPackLib call 5|six frames|5	$00000000
+RINextAnimFrame|kept|six frames|7	kept
+RINextAnimFrame|popped|six frames|7	$00000000
+RINextAnimFrame|d0|six frames|7	$FFFFFFFF
+RINextAnimFrame|planes|six frames|7	bytes 512 fnv C8300D45
+RINextAnimFrame|RIPackLib calls|six frames|7	$00000006
+RINextAnimFrame|kept|six frames|8	kept
+RINextAnimFrame|popped|six frames|8	$00000000
+RINextAnimFrame|d0|six frames|8	$FFFFFFFF
+RINextAnimFrame|planes|six frames|8	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|six frames|8	$00000006
+RINextAnimFrame|kept|six frames|9	kept
+RINextAnimFrame|popped|six frames|9	$00000000
+RINextAnimFrame|d0|six frames|9	$00000000
+RINextAnimFrame|planes|six frames|9	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|six frames|9	$00000006
+AnimLoop|kept|$5A5A5A00|1	kept
+AnimLoop|popped|$5A5A5A00|1	$00000000
+RINextAnimFrame|kept|$5A5A5A00|1	kept
+RINextAnimFrame|popped|$5A5A5A00|1	$00000000
+RINextAnimFrame|d0|$5A5A5A00|1	$00000000
+RINextAnimFrame|planes|$5A5A5A00|1	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|$5A5A5A00|1	$00000006
+RINextAnimFrame|kept|$5A5A5A00|2	kept
+RINextAnimFrame|popped|$5A5A5A00|2	$00000000
+RINextAnimFrame|d0|$5A5A5A00|2	$00000000
+RINextAnimFrame|planes|$5A5A5A00|2	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|$5A5A5A00|2	$00000006
+RINextAnimFrame|kept|$5A5A5A00|3	kept
+RINextAnimFrame|popped|$5A5A5A00|3	$00000000
+RINextAnimFrame|d0|$5A5A5A00|3	$00000000
+RINextAnimFrame|planes|$5A5A5A00|3	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|$5A5A5A00|3	$00000006
+RINextAnimFrame|kept|$5A5A5A00|4	kept
+RINextAnimFrame|popped|$5A5A5A00|4	$00000000
+RINextAnimFrame|d0|$5A5A5A00|4	$00000000
+RINextAnimFrame|planes|$5A5A5A00|4	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|$5A5A5A00|4	$00000006
+RINextAnimFrame|kept|$5A5A5A00|5	kept
+RINextAnimFrame|popped|$5A5A5A00|5	$00000000
+RINextAnimFrame|d0|$5A5A5A00|5	$00000000
+RINextAnimFrame|planes|$5A5A5A00|5	bytes 512 fnv 5F0EA6CB
+RINextAnimFrame|RIPackLib calls|$5A5A5A00|5	$00000006
+AnimLoop|kept|$00000101|1	kept
+AnimLoop|popped|$00000101|1	$00000000
+RINextAnimFrame|kept|$00000101|1	kept
+RINextAnimFrame|popped|$00000101|1	$00000000
+RINextAnimFrame|d0|$00000101|1	$FFFFFFFF
+RINextAnimFrame|planes|$00000101|1	bytes 512 fnv AA32D832
+RINextAnimFrame|RIPackLib calls|$00000101|1	$00000007
+RINextAnimFrame|RIPackLib call 6|$00000101|1	$00000002
+RINextAnimFrame|RIPackLib call 6|$00000101|2	$000001B8
+RINextAnimFrame|RIPackLib call 6|$00000101|3	$00000004
+RINextAnimFrame|RIPackLib call 6|$00000101|4	$00000000
+RINextAnimFrame|RIPackLib call 6|$00000101|5	$00000000
+AnimLoop|kept|$00000000|1	kept
+AnimLoop|popped|$00000000|1	$00000000
+RINextAnimFrame|kept|$00000000|1	kept
+RINextAnimFrame|popped|$00000000|1	$00000000
+RINextAnimFrame|d0|$00000000|1	$FFFFFFFF
+RINextAnimFrame|planes|$00000000|1	bytes 512 fnv C8300D45
+RINextAnimFrame|RIPackLib calls|$00000000|1	$00000007
+RIAnimInit offset|kept|offset 9|1	kept
+RIAnimInit offset|popped|offset 9|1	$00000000
+RIAnimInit offset|d0|offset 9|1	$FFFFFFFF
+RIAnimInit offset|planes|offset 9|1	bytes 512 fnv 09B9D2C5
+RIAnimInit offset|RIPackLib calls|offset 9|1	$00000009
+RIAnimInit offset|RIPackLib call 7|offset 9|1	$00000001
+RIAnimInit offset|RIPackLib call 7|offset 9|2	$0000000C
+RIAnimInit offset|RIPackLib call 7|offset 9|3	$00000001
+RIAnimInit offset|RIPackLib call 7|offset 9|4	$FFFFFFFF
+RIAnimInit offset|RIPackLib call 7|offset 9|5	$00000009
+RIAnimInit offset|RIPackLib call 8|offset 9|1	$00000002
+RIAnimInit offset|RIPackLib call 8|offset 9|2	$0000000C
+RIAnimInit offset|RIPackLib call 8|offset 9|3	$00000002
+RIAnimInit offset|RIPackLib call 8|offset 9|4	$00000000
+RIAnimInit offset|RIPackLib call 8|offset 9|5	$00000000
+AnimLoop|kept|$00000001|1	kept
+AnimLoop|popped|$00000001|1	$00000000
+RINextAnimFrame|kept|$00000001|1	kept
+RINextAnimFrame|popped|$00000001|1	$00000000
+RINextAnimFrame|d0|$00000001|1	$FFFFFFFF
+RINextAnimFrame|planes|$00000001|1	bytes 512 fnv 5D2F5261
+RINextAnimFrame|RIPackLib calls|$00000001|1	$00000009
+RINextAnimFrame|kept|$00000001|2	kept
+RINextAnimFrame|popped|$00000001|2	$00000000
+RINextAnimFrame|d0|$00000001|2	$FFFFFFFF
+RINextAnimFrame|planes|$00000001|2	bytes 512 fnv 1818BD74
+RINextAnimFrame|RIPackLib calls|$00000001|2	$0000000A
+RINextAnimFrame|RIPackLib call 9|$00000001|1	$00000002
+RINextAnimFrame|RIPackLib call 9|$00000001|2	$000001B8
+RINextAnimFrame|RIPackLib call 9|$00000001|3	$00000002
+RINextAnimFrame|RIPackLib call 9|$00000001|4	$00000000
+RINextAnimFrame|RIPackLib call 9|$00000001|5	$00000000
+RINextAnimFrame|kept|$00000001|3	kept
+RINextAnimFrame|popped|$00000001|3	$00000000
+RINextAnimFrame|d0|$00000001|3	$FFFFFFFF
+RINextAnimFrame|planes|$00000001|3	bytes 512 fnv 16F5F1A5
+RINextAnimFrame|RIPackLib calls|$00000001|3	$0000000A
+RINextAnimFrame|kept|$00000001|4	kept
+RINextAnimFrame|popped|$00000001|4	$00000000
+RINextAnimFrame|d0|$00000001|4	$FFFFFFFF
+RINextAnimFrame|planes|$00000001|4	bytes 512 fnv E5703D73
+RINextAnimFrame|RIPackLib calls|$00000001|4	$0000000A
+RINextAnimFrame|kept|$00000001|5	kept
+RINextAnimFrame|popped|$00000001|5	$00000000
+RINextAnimFrame|d0|$00000001|5	$00000000
+RINextAnimFrame|planes|$00000001|5	bytes 512 fnv E5703D73
+RINextAnimFrame|RIPackLib calls|$00000001|5	$0000000A
+RINextAnimFrame|kept|$00000001|6	kept
+RINextAnimFrame|popped|$00000001|6	$00000000
+RINextAnimFrame|d0|$00000001|6	$FFFFFFFF
+RINextAnimFrame|planes|$00000001|6	bytes 512 fnv 086DAE18
+RINextAnimFrame|RIPackLib calls|$00000001|6	$0000000B
+RINextAnimFrame|RIPackLib call 10|$00000001|1	$00000002
+RINextAnimFrame|RIPackLib call 10|$00000001|2	$000001B8
+RINextAnimFrame|RIPackLib call 10|$00000001|3	$00000002
+RINextAnimFrame|RIPackLib call 10|$00000001|4	$00000000
+RINextAnimFrame|RIPackLib call 10|$00000001|5	$00000000
+RIAnimInit x,y|kept|x 17 y 1|1	kept
+RIAnimInit x,y|popped|x 17 y 1|1	$00000000
+RIAnimInit x,y|d0|x 17 y 1|1	$FFFFFFFF
+RIAnimInit x,y|planes|x 17 y 1|1	bytes 512 fnv 09B9D2C5
+RIAnimInit x,y|RIPackLib calls|x 17 y 1|1	$0000000D
+RIAnimInit x,y|RIPackLib call 11|x 17 y 1|1	$00000001
+RIAnimInit x,y|RIPackLib call 11|x 17 y 1|2	$0000000C
+RIAnimInit x,y|RIPackLib call 11|x 17 y 1|3	$00000005
+RIAnimInit x,y|RIPackLib call 11|x 17 y 1|4	$FFFFFFFF
+RIAnimInit x,y|RIPackLib call 11|x 17 y 1|5	$0000000A
+RIAnimInit x,y|RIPackLib call 12|x 17 y 1|1	$00000002
+RIAnimInit x,y|RIPackLib call 12|x 17 y 1|2	$0000000C
+RIAnimInit x,y|RIPackLib call 12|x 17 y 1|3	$00000006
+RIAnimInit x,y|RIPackLib call 12|x 17 y 1|4	$00000000
+RIAnimInit x,y|RIPackLib call 12|x 17 y 1|5	$00000000
+RINextAnimFrame|kept|x 17 y 1|1	kept
+RINextAnimFrame|popped|x 17 y 1|1	$00000000
+RINextAnimFrame|d0|x 17 y 1|1	$FFFFFFFF
+RINextAnimFrame|planes|x 17 y 1|1	bytes 512 fnv C31E1095
+RINextAnimFrame|RIPackLib calls|x 17 y 1|1	$0000000D
+RINextAnimFrame|kept|x 17 y 1|2	kept
+RINextAnimFrame|popped|x 17 y 1|2	$00000000
+RINextAnimFrame|d0|x 17 y 1|2	$FFFFFFFF
+RINextAnimFrame|planes|x 17 y 1|2	bytes 512 fnv 769540C6
+RINextAnimFrame|RIPackLib calls|x 17 y 1|2	$0000000E
+RINextAnimFrame|RIPackLib call 13|x 17 y 1|1	$00000002
+RINextAnimFrame|RIPackLib call 13|x 17 y 1|2	$000001B8
+RINextAnimFrame|RIPackLib call 13|x 17 y 1|3	$00000006
+RINextAnimFrame|RIPackLib call 13|x 17 y 1|4	$00000000
+RINextAnimFrame|RIPackLib call 13|x 17 y 1|5	$00000000
+RINextAnimFrame|kept|x 17 y 1|3	kept
+RINextAnimFrame|popped|x 17 y 1|3	$00000000
+RINextAnimFrame|d0|x 17 y 1|3	$FFFFFFFF
+RINextAnimFrame|planes|x 17 y 1|3	bytes 512 fnv 83D6553D
+RINextAnimFrame|RIPackLib calls|x 17 y 1|3	$0000000E
+RINextAnimFrame|kept|x 17 y 1|4	kept
+RINextAnimFrame|popped|x 17 y 1|4	$00000000
+RINextAnimFrame|d0|x 17 y 1|4	$FFFFFFFF
+RINextAnimFrame|planes|x 17 y 1|4	bytes 512 fnv 22E0020F
+RINextAnimFrame|RIPackLib calls|x 17 y 1|4	$0000000E
+RINextAnimFrame|kept|x 17 y 1|5	kept
+RINextAnimFrame|popped|x 17 y 1|5	$00000000
+RINextAnimFrame|d0|x 17 y 1|5	$00000000
+RINextAnimFrame|planes|x 17 y 1|5	bytes 512 fnv 22E0020F
+RINextAnimFrame|RIPackLib calls|x 17 y 1|5	$0000000E
+RINextAnimFrame|kept|x 17 y 1|6	kept
+RINextAnimFrame|popped|x 17 y 1|6	$00000000
+RINextAnimFrame|d0|x 17 y 1|6	$FFFFFFFF
+RINextAnimFrame|planes|x 17 y 1|6	bytes 512 fnv F85C0EBA
+RINextAnimFrame|RIPackLib calls|x 17 y 1|6	$0000000F
+RINextAnimFrame|RIPackLib call 14|x 17 y 1|1	$00000002
+RINextAnimFrame|RIPackLib call 14|x 17 y 1|2	$000001B8
+RINextAnimFrame|RIPackLib call 14|x 17 y 1|3	$00000006
+RINextAnimFrame|RIPackLib call 14|x 17 y 1|4	$00000000
+RINextAnimFrame|RIPackLib call 14|x 17 y 1|5	$00000000
+RIAnimInit x,y|kept|DIVU overflow, x -24|1	kept
+RIAnimInit x,y|popped|DIVU overflow, x -24|1	$00000000
+RIAnimInit x,y|d0|DIVU overflow, x -24|1	$FFFFFFFF
+RIAnimInit x,y|planes|DIVU overflow, x -24|1	bytes 512 fnv F85C0EBA
+RIAnimInit x,y|RIPackLib calls|DIVU overflow, x -24|1	$00000011
+RIAnimInit x,y|RIPackLib call 15|DIVU overflow, x -24|1	$00000001
+RIAnimInit x,y|RIPackLib call 15|DIVU overflow, x -24|2	$0000000C
+RIAnimInit x,y|RIPackLib call 15|DIVU overflow, x -24|3	$00000007
+RIAnimInit x,y|RIPackLib call 15|DIVU overflow, x -24|4	$FFFFFFFF
+RIAnimInit x,y|RIPackLib call 15|DIVU overflow, x -24|5	$00000015
+RIAnimInit|kept|one frame|1	kept
+RIAnimInit|popped|one frame|1	$00000000
+RIAnimInit|d0|one frame|1	$FFFFFFFF
+RIAnimInit|planes|one frame|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|one frame|1	$00000013
+RIAnimFrameCount|kept|one frame|1	kept
+RIAnimFrameCount|popped|one frame|1	$00000000
+RIAnimFrameCount|d0|one frame|1	$00000001
+RINextAnimFrame|kept|one frame|1	kept
+RINextAnimFrame|popped|one frame|1	$00000000
+RINextAnimFrame|d0|one frame|1	$00000000
+RINextAnimFrame|planes|one frame|1	bytes 512 fnv 09B9D2C5
+RINextAnimFrame|RIPackLib calls|one frame|1	$00000013
+RINextAnimFrame|kept|one frame|2	kept
+RINextAnimFrame|popped|one frame|2	$00000000
+RINextAnimFrame|d0|one frame|2	$00000000
+RINextAnimFrame|planes|one frame|2	bytes 512 fnv 09B9D2C5
+RINextAnimFrame|RIPackLib calls|one frame|2	$00000013
+RIAnimInit|kept|two frames|1	kept
+RIAnimInit|popped|two frames|1	$00000000
+RIAnimInit|d0|two frames|1	$FFFFFFFF
+RIAnimInit|planes|two frames|1	bytes 512 fnv 09B9D2C5
+RIAnimInit|RIPackLib calls|two frames|1	$00000015
+RIAnimFrameCount|kept|two frames|1	kept
+RIAnimFrameCount|popped|two frames|1	$00000000
+RIAnimFrameCount|d0|two frames|1	$00000002
+RINextAnimFrame|kept|two frames|1	kept
+RINextAnimFrame|popped|two frames|1	$00000000
+RINextAnimFrame|d0|two frames|1	$FFFFFFFF
+RINextAnimFrame|planes|two frames|1	bytes 512 fnv 6000AF17
+RINextAnimFrame|RIPackLib calls|two frames|1	$00000015
+RINextAnimFrame|kept|two frames|2	kept
+RINextAnimFrame|popped|two frames|2	$00000000
+RINextAnimFrame|d0|two frames|2	$00000000
+RINextAnimFrame|planes|two frames|2	bytes 512 fnv 6000AF17
+RINextAnimFrame|RIPackLib calls|two frames|2	$00000015
+RINextAnimFrame|kept|two frames|3	kept
+RINextAnimFrame|popped|two frames|3	$00000000
+RINextAnimFrame|d0|two frames|3	$FFFFFFFF
+RINextAnimFrame|planes|two frames|3	bytes 512 fnv 6000AF17
+RINextAnimFrame|RIPackLib calls|two frames|3	$00000015
+RINextAnimFrame|kept|two frames|4	kept
+RINextAnimFrame|popped|two frames|4	$00000000
+RINextAnimFrame|d0|two frames|4	$00000000
+RINextAnimFrame|planes|two frames|4	bytes 512 fnv 6000AF17
+RINextAnimFrame|RIPackLib calls|two frames|4	$00000015

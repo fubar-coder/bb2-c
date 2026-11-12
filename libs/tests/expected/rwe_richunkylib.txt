@@ -1,0 +1,1314 @@
+# capture rwe_richunkylib 1
+init|kept||1	kept
+init|popped||1	$00000000
+init|CIA-A PRA bit 1||1	$00000000
+init|blocks||1	$00000000
+init|object 0 w/h/d/6||1	$00000000
+init|object 0 w/h/d/6||2	$00000000
+init|object 0 data||1	$00000000
+init|object 0 12||1	$00000000
+init|object 1 w/h/d/6||1	$00000000
+init|object 1 w/h/d/6||2	$00000000
+init|object 1 data||1	$00000000
+init|object 1 12||1	$00000000
+init|object 2 w/h/d/6||1	$00000000
+init|object 2 w/h/d/6||2	$00000000
+init|object 2 data||1	$00000000
+init|object 2 12||1	$00000000
+init|object 3 w/h/d/6||1	$00000000
+init|object 3 w/h/d/6||2	$00000000
+init|object 3 data||1	$00000000
+init|object 3 12||1	$00000000
+ChunkyData|kept|0|1	kept
+ChunkyData|popped|0|1	$00000000
+ChunkyData|CIA-A PRA bit 1|0|1	$00000000
+ChunkyData|blocks|0|1	$00000000
+ChunkyData|object 0 w/h/d/6|0|1	$00000000
+ChunkyData|object 0 w/h/d/6|0|2	$00000000
+ChunkyData|object 0 data|0|1	$00000000
+ChunkyData|object 0 12|0|1	$00000000
+ChunkyData|object 1 w/h/d/6|0|1	$00000000
+ChunkyData|object 1 w/h/d/6|0|2	$00000000
+ChunkyData|object 1 data|0|1	$00000000
+ChunkyData|object 1 12|0|1	$00000000
+ChunkyData|object 2 w/h/d/6|0|1	$00000000
+ChunkyData|object 2 w/h/d/6|0|2	$00000000
+ChunkyData|object 2 data|0|1	$00000000
+ChunkyData|object 2 12|0|1	$00000000
+ChunkyData|object 3 w/h/d/6|0|1	$00000000
+ChunkyData|object 3 w/h/d/6|0|2	$00000000
+ChunkyData|object 3 data|0|1	$00000000
+ChunkyData|object 3 12|0|1	$00000000
+ChunkyData|d0 = data|0|1	$00000001
+ChunkyToPlanar|kept|0 no data|1	kept
+ChunkyToPlanar|popped|0 no data|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 no data|1	$00000000
+ChunkyToPlanar|blocks|0 no data|1	$00000000
+ChunkyToPlanar|object 0 w/h/d/6|0 no data|1	$00000000
+ChunkyToPlanar|object 0 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 0 data|0 no data|1	$00000000
+ChunkyToPlanar|object 0 12|0 no data|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 no data|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 1 data|0 no data|1	$00000000
+ChunkyToPlanar|object 1 12|0 no data|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 no data|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 2 data|0 no data|1	$00000000
+ChunkyToPlanar|object 2 12|0 no data|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 no data|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 no data|2	$00000000
+ChunkyToPlanar|object 3 data|0 no data|1	$00000000
+ChunkyToPlanar|object 3 12|0 no data|1	$00000000
+ChunkyToPlanar|planes|0 no data|1	bytes 81984 fnv 6222DFC5
+ChunkyBitmap|kept|0,320,256|1	kept
+ChunkyBitmap|popped|0,320,256|1	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|0,320,256|1	$00000000
+ChunkyBitmap|blocks|0,320,256|1	$00000001
+ChunkyBitmap|object 0 w/h/d/6|0,320,256|1	$01400100
+ChunkyBitmap|object 0 w/h/d/6|0,320,256|2	$00080000
+ChunkyBitmap|object 0 data|0,320,256|1	$00000001
+ChunkyBitmap|object 0 12|0,320,256|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,320,256|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,320,256|2	$00000000
+ChunkyBitmap|object 1 data|0,320,256|1	$00000000
+ChunkyBitmap|object 1 12|0,320,256|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,320,256|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,320,256|2	$00000000
+ChunkyBitmap|object 2 data|0,320,256|1	$00000000
+ChunkyBitmap|object 2 12|0,320,256|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,320,256|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,320,256|2	$00000000
+ChunkyBitmap|object 3 data|0,320,256|1	$00000000
+ChunkyBitmap|object 3 12|0,320,256|1	$00000000
+ChunkyBitmap|cleared|0,320,256|1	$00000001
+ChunkyData|kept|0|2	kept
+ChunkyData|popped|0|2	$00000000
+ChunkyData|CIA-A PRA bit 1|0|2	$00000000
+ChunkyData|blocks|0|2	$00000001
+ChunkyData|object 0 w/h/d/6|0|3	$01400100
+ChunkyData|object 0 w/h/d/6|0|4	$00080000
+ChunkyData|object 0 data|0|2	$00000001
+ChunkyData|object 0 12|0|2	$00000000
+ChunkyData|object 1 w/h/d/6|0|3	$00000000
+ChunkyData|object 1 w/h/d/6|0|4	$00000000
+ChunkyData|object 1 data|0|2	$00000000
+ChunkyData|object 1 12|0|2	$00000000
+ChunkyData|object 2 w/h/d/6|0|3	$00000000
+ChunkyData|object 2 w/h/d/6|0|4	$00000000
+ChunkyData|object 2 data|0|2	$00000000
+ChunkyData|object 2 12|0|2	$00000000
+ChunkyData|object 3 w/h/d/6|0|3	$00000000
+ChunkyData|object 3 w/h/d/6|0|4	$00000000
+ChunkyData|object 3 data|0|2	$00000000
+ChunkyData|object 3 12|0|2	$00000000
+ChunkyData|d0 = data|0|2	$00000001
+ChunkyToPlanar|kept|0 depth 8|1	kept
+ChunkyToPlanar|popped|0 depth 8|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 depth 8|1	$00000000
+ChunkyToPlanar|blocks|0 depth 8|1	$00000001
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 8|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 8|2	$00080000
+ChunkyToPlanar|object 0 data|0 depth 8|1	$00000001
+ChunkyToPlanar|object 0 12|0 depth 8|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 8|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 8|2	$00000000
+ChunkyToPlanar|object 1 data|0 depth 8|1	$00000000
+ChunkyToPlanar|object 1 12|0 depth 8|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 8|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 8|2	$00000000
+ChunkyToPlanar|object 2 data|0 depth 8|1	$00000000
+ChunkyToPlanar|object 2 12|0 depth 8|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 8|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 8|2	$00000000
+ChunkyToPlanar|object 3 data|0 depth 8|1	$00000000
+ChunkyToPlanar|object 3 12|0 depth 8|1	$00000000
+ChunkyToPlanar|planes|0 depth 8|1	bytes 81984 fnv 4DC42EF1
+ChunkyToPlanar|kept|0 depth 8|2	kept
+ChunkyToPlanar|popped|0 depth 8|2	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 depth 8|2	$00000000
+ChunkyToPlanar|blocks|0 depth 8|2	$00000001
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 8|3	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 8|4	$00080000
+ChunkyToPlanar|object 0 data|0 depth 8|2	$00000001
+ChunkyToPlanar|object 0 12|0 depth 8|2	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 8|3	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 8|4	$00000000
+ChunkyToPlanar|object 1 data|0 depth 8|2	$00000000
+ChunkyToPlanar|object 1 12|0 depth 8|2	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 8|3	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 8|4	$00000000
+ChunkyToPlanar|object 2 data|0 depth 8|2	$00000000
+ChunkyToPlanar|object 2 12|0 depth 8|2	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 8|3	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 8|4	$00000000
+ChunkyToPlanar|object 3 data|0 depth 8|2	$00000000
+ChunkyToPlanar|object 3 12|0 depth 8|2	$00000000
+ChunkyToPlanar|planes|0 depth 8|2	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|kept|0 depth word $0108|1	kept
+ChunkyToPlanar|popped|0 depth word $0108|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 depth word $0108|1	$00000000
+ChunkyToPlanar|blocks|0 depth word $0108|1	$00000001
+ChunkyToPlanar|object 0 w/h/d/6|0 depth word $0108|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 depth word $0108|2	$00080000
+ChunkyToPlanar|object 0 data|0 depth word $0108|1	$00000001
+ChunkyToPlanar|object 0 12|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth word $0108|2	$00000000
+ChunkyToPlanar|object 1 data|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 1 12|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth word $0108|2	$00000000
+ChunkyToPlanar|object 2 data|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 2 12|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth word $0108|2	$00000000
+ChunkyToPlanar|object 3 data|0 depth word $0108|1	$00000000
+ChunkyToPlanar|object 3 12|0 depth word $0108|1	$00000000
+ChunkyToPlanar|planes|0 depth word $0108|1	bytes 81984 fnv 63AB52D9
+ChunkyToPlanar|kept|0 depth 7|1	kept
+ChunkyToPlanar|popped|0 depth 7|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 depth 7|1	$00000000
+ChunkyToPlanar|blocks|0 depth 7|1	$00000001
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 7|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 depth 7|2	$00080000
+ChunkyToPlanar|object 0 data|0 depth 7|1	$00000001
+ChunkyToPlanar|object 0 12|0 depth 7|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 7|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth 7|2	$00000000
+ChunkyToPlanar|object 1 data|0 depth 7|1	$00000000
+ChunkyToPlanar|object 1 12|0 depth 7|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 7|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth 7|2	$00000000
+ChunkyToPlanar|object 2 data|0 depth 7|1	$00000000
+ChunkyToPlanar|object 2 12|0 depth 7|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 7|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth 7|2	$00000000
+ChunkyToPlanar|object 3 data|0 depth 7|1	$00000000
+ChunkyToPlanar|object 3 12|0 depth 7|1	$00000000
+ChunkyToPlanar|planes|0 depth 7|1	bytes 81984 fnv 6222DFC5
+ChunkyToPlanar|kept|0 depth word $8008|1	kept
+ChunkyToPlanar|popped|0 depth word $8008|1	$00000000
+ChunkyToPlanar|CIA-A PRA bit 1|0 depth word $8008|1	$00000000
+ChunkyToPlanar|blocks|0 depth word $8008|1	$00000001
+ChunkyToPlanar|object 0 w/h/d/6|0 depth word $8008|1	$01400100
+ChunkyToPlanar|object 0 w/h/d/6|0 depth word $8008|2	$00080000
+ChunkyToPlanar|object 0 data|0 depth word $8008|1	$00000001
+ChunkyToPlanar|object 0 12|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 1 w/h/d/6|0 depth word $8008|2	$00000000
+ChunkyToPlanar|object 1 data|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 1 12|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 2 w/h/d/6|0 depth word $8008|2	$00000000
+ChunkyToPlanar|object 2 data|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 2 12|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|2	$00000000
+ChunkyToPlanar|object 3 data|0 depth word $8008|1	$00000000
+ChunkyToPlanar|object 3 12|0 depth word $8008|1	$00000000
+ChunkyToPlanar|planes|0 depth word $8008|1	bytes 81984 fnv 6222DFC5
+RaycastSky|kept|x 0 height 256 column 281|1	kept
+RaycastSky|popped|x 0 height 256 column 281|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 0 height 256 column 281|1	$00000000
+RaycastSky|blocks|x 0 height 256 column 281|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 0 height 256 column 281|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 0 height 256 column 281|2	$00080000
+RaycastSky|object 0 data|x 0 height 256 column 281|1	$00000001
+RaycastSky|object 0 12|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 0 height 256 column 281|2	$00000000
+RaycastSky|object 1 data|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 1 12|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 0 height 256 column 281|2	$00000000
+RaycastSky|object 2 data|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 2 12|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 0 height 256 column 281|2	$00000000
+RaycastSky|object 3 data|x 0 height 256 column 281|1	$00000000
+RaycastSky|object 3 12|x 0 height 256 column 281|1	$00000000
+RaycastSky|chunky data|x 0 height 256 column 281|1	bytes 81920 fnv 58D26AFD
+RaycastSky|kept|x 15520 height 11 column -226|1	kept
+RaycastSky|popped|x 15520 height 11 column -226|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 15520 height 11 column -226|1	$00000000
+RaycastSky|blocks|x 15520 height 11 column -226|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 15520 height 11 column -226|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 15520 height 11 column -226|2	$00080000
+RaycastSky|object 0 data|x 15520 height 11 column -226|1	$00000001
+RaycastSky|object 0 12|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 15520 height 11 column -226|2	$00000000
+RaycastSky|object 1 data|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 1 12|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 15520 height 11 column -226|2	$00000000
+RaycastSky|object 2 data|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 2 12|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 15520 height 11 column -226|2	$00000000
+RaycastSky|object 3 data|x 15520 height 11 column -226|1	$00000000
+RaycastSky|object 3 12|x 15520 height 11 column -226|1	$00000000
+RaycastSky|chunky data|x 15520 height 11 column -226|1	bytes 81920 fnv 41F443C7
+RaycastSky|kept|x 9528 height 184 column -811|1	kept
+RaycastSky|popped|x 9528 height 184 column -811|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 9528 height 184 column -811|1	$00000000
+RaycastSky|blocks|x 9528 height 184 column -811|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 9528 height 184 column -811|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 9528 height 184 column -811|2	$00080000
+RaycastSky|object 0 data|x 9528 height 184 column -811|1	$00000001
+RaycastSky|object 0 12|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9528 height 184 column -811|2	$00000000
+RaycastSky|object 1 data|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 1 12|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9528 height 184 column -811|2	$00000000
+RaycastSky|object 2 data|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 2 12|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9528 height 184 column -811|2	$00000000
+RaycastSky|object 3 data|x 9528 height 184 column -811|1	$00000000
+RaycastSky|object 3 12|x 9528 height 184 column -811|1	$00000000
+RaycastSky|chunky data|x 9528 height 184 column -811|1	bytes 81920 fnv 069AFCFA
+RaycastSky|kept|x 13146 height 156 column -315|1	kept
+RaycastSky|popped|x 13146 height 156 column -315|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 13146 height 156 column -315|1	$00000000
+RaycastSky|blocks|x 13146 height 156 column -315|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 13146 height 156 column -315|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 13146 height 156 column -315|2	$00080000
+RaycastSky|object 0 data|x 13146 height 156 column -315|1	$00000001
+RaycastSky|object 0 12|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13146 height 156 column -315|2	$00000000
+RaycastSky|object 1 data|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 1 12|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13146 height 156 column -315|2	$00000000
+RaycastSky|object 2 data|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 2 12|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13146 height 156 column -315|2	$00000000
+RaycastSky|object 3 data|x 13146 height 156 column -315|1	$00000000
+RaycastSky|object 3 12|x 13146 height 156 column -315|1	$00000000
+RaycastSky|chunky data|x 13146 height 156 column -315|1	bytes 81920 fnv 88CB8618
+RaycastSky|kept|x 894 height 104 column -405|1	kept
+RaycastSky|popped|x 894 height 104 column -405|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 894 height 104 column -405|1	$00000000
+RaycastSky|blocks|x 894 height 104 column -405|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 894 height 104 column -405|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 894 height 104 column -405|2	$00080000
+RaycastSky|object 0 data|x 894 height 104 column -405|1	$00000001
+RaycastSky|object 0 12|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 894 height 104 column -405|2	$00000000
+RaycastSky|object 1 data|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 1 12|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 894 height 104 column -405|2	$00000000
+RaycastSky|object 2 data|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 2 12|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 894 height 104 column -405|2	$00000000
+RaycastSky|object 3 data|x 894 height 104 column -405|1	$00000000
+RaycastSky|object 3 12|x 894 height 104 column -405|1	$00000000
+RaycastSky|chunky data|x 894 height 104 column -405|1	bytes 81920 fnv 655BB9C5
+RaycastSky|kept|x 5980 height 44 column -989|1	kept
+RaycastSky|popped|x 5980 height 44 column -989|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 5980 height 44 column -989|1	$00000000
+RaycastSky|blocks|x 5980 height 44 column -989|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 5980 height 44 column -989|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 5980 height 44 column -989|2	$00080000
+RaycastSky|object 0 data|x 5980 height 44 column -989|1	$00000001
+RaycastSky|object 0 12|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 5980 height 44 column -989|2	$00000000
+RaycastSky|object 1 data|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 1 12|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 5980 height 44 column -989|2	$00000000
+RaycastSky|object 2 data|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 2 12|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 5980 height 44 column -989|2	$00000000
+RaycastSky|object 3 data|x 5980 height 44 column -989|1	$00000000
+RaycastSky|object 3 12|x 5980 height 44 column -989|1	$00000000
+RaycastSky|chunky data|x 5980 height 44 column -989|1	bytes 81920 fnv 26B6BADD
+RaycastSky|kept|x 2845 height 234 column -664|1	kept
+RaycastSky|popped|x 2845 height 234 column -664|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 2845 height 234 column -664|1	$00000000
+RaycastSky|blocks|x 2845 height 234 column -664|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 2845 height 234 column -664|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 2845 height 234 column -664|2	$00080000
+RaycastSky|object 0 data|x 2845 height 234 column -664|1	$00000001
+RaycastSky|object 0 12|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 2845 height 234 column -664|2	$00000000
+RaycastSky|object 1 data|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 1 12|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 2845 height 234 column -664|2	$00000000
+RaycastSky|object 2 data|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 2 12|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 2845 height 234 column -664|2	$00000000
+RaycastSky|object 3 data|x 2845 height 234 column -664|1	$00000000
+RaycastSky|object 3 12|x 2845 height 234 column -664|1	$00000000
+RaycastSky|chunky data|x 2845 height 234 column -664|1	bytes 81920 fnv 0539F2D1
+RaycastSky|kept|x 9251 height 132 column 152|1	kept
+RaycastSky|popped|x 9251 height 132 column 152|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 9251 height 132 column 152|1	$00000000
+RaycastSky|blocks|x 9251 height 132 column 152|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 9251 height 132 column 152|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 9251 height 132 column 152|2	$00080000
+RaycastSky|object 0 data|x 9251 height 132 column 152|1	$00000001
+RaycastSky|object 0 12|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9251 height 132 column 152|2	$00000000
+RaycastSky|object 1 data|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 1 12|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9251 height 132 column 152|2	$00000000
+RaycastSky|object 2 data|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 2 12|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9251 height 132 column 152|2	$00000000
+RaycastSky|object 3 data|x 9251 height 132 column 152|1	$00000000
+RaycastSky|object 3 12|x 9251 height 132 column 152|1	$00000000
+RaycastSky|chunky data|x 9251 height 132 column 152|1	bytes 81920 fnv 01BE4A45
+RaycastSky|kept|x 19614 height 58 column -834|1	kept
+RaycastSky|popped|x 19614 height 58 column -834|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 19614 height 58 column -834|1	$00000000
+RaycastSky|blocks|x 19614 height 58 column -834|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 19614 height 58 column -834|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 19614 height 58 column -834|2	$00080000
+RaycastSky|object 0 data|x 19614 height 58 column -834|1	$00000001
+RaycastSky|object 0 12|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 19614 height 58 column -834|2	$00000000
+RaycastSky|object 1 data|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 1 12|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 19614 height 58 column -834|2	$00000000
+RaycastSky|object 2 data|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 2 12|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 19614 height 58 column -834|2	$00000000
+RaycastSky|object 3 data|x 19614 height 58 column -834|1	$00000000
+RaycastSky|object 3 12|x 19614 height 58 column -834|1	$00000000
+RaycastSky|chunky data|x 19614 height 58 column -834|1	bytes 81920 fnv 010BF2A8
+RaycastSky|kept|x 25160 height 13 column 138|1	kept
+RaycastSky|popped|x 25160 height 13 column 138|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 25160 height 13 column 138|1	$00000000
+RaycastSky|blocks|x 25160 height 13 column 138|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 25160 height 13 column 138|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 25160 height 13 column 138|2	$00080000
+RaycastSky|object 0 data|x 25160 height 13 column 138|1	$00000001
+RaycastSky|object 0 12|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 25160 height 13 column 138|2	$00000000
+RaycastSky|object 1 data|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 1 12|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 25160 height 13 column 138|2	$00000000
+RaycastSky|object 2 data|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 2 12|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 25160 height 13 column 138|2	$00000000
+RaycastSky|object 3 data|x 25160 height 13 column 138|1	$00000000
+RaycastSky|object 3 12|x 25160 height 13 column 138|1	$00000000
+RaycastSky|chunky data|x 25160 height 13 column 138|1	bytes 81920 fnv 44FD66F5
+RaycastSky|kept|x 11932 height 158 column -757|1	kept
+RaycastSky|popped|x 11932 height 158 column -757|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 11932 height 158 column -757|1	$00000000
+RaycastSky|blocks|x 11932 height 158 column -757|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 11932 height 158 column -757|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 11932 height 158 column -757|2	$00080000
+RaycastSky|object 0 data|x 11932 height 158 column -757|1	$00000001
+RaycastSky|object 0 12|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 11932 height 158 column -757|2	$00000000
+RaycastSky|object 1 data|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 1 12|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 11932 height 158 column -757|2	$00000000
+RaycastSky|object 2 data|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 2 12|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 11932 height 158 column -757|2	$00000000
+RaycastSky|object 3 data|x 11932 height 158 column -757|1	$00000000
+RaycastSky|object 3 12|x 11932 height 158 column -757|1	$00000000
+RaycastSky|chunky data|x 11932 height 158 column -757|1	bytes 81920 fnv 6C657CC1
+RaycastSky|kept|x 13199 height 185 column 169|1	kept
+RaycastSky|popped|x 13199 height 185 column 169|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 13199 height 185 column 169|1	$00000000
+RaycastSky|blocks|x 13199 height 185 column 169|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 13199 height 185 column 169|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 13199 height 185 column 169|2	$00080000
+RaycastSky|object 0 data|x 13199 height 185 column 169|1	$00000001
+RaycastSky|object 0 12|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13199 height 185 column 169|2	$00000000
+RaycastSky|object 1 data|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 1 12|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13199 height 185 column 169|2	$00000000
+RaycastSky|object 2 data|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 2 12|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13199 height 185 column 169|2	$00000000
+RaycastSky|object 3 data|x 13199 height 185 column 169|1	$00000000
+RaycastSky|object 3 12|x 13199 height 185 column 169|1	$00000000
+RaycastSky|chunky data|x 13199 height 185 column 169|1	bytes 81920 fnv A2175890
+RaycastSky|kept|x 21447 height 80 column 262|1	kept
+RaycastSky|popped|x 21447 height 80 column 262|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 21447 height 80 column 262|1	$00000000
+RaycastSky|blocks|x 21447 height 80 column 262|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 21447 height 80 column 262|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 21447 height 80 column 262|2	$00080000
+RaycastSky|object 0 data|x 21447 height 80 column 262|1	$00000001
+RaycastSky|object 0 12|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 21447 height 80 column 262|2	$00000000
+RaycastSky|object 1 data|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 1 12|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 21447 height 80 column 262|2	$00000000
+RaycastSky|object 2 data|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 2 12|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 21447 height 80 column 262|2	$00000000
+RaycastSky|object 3 data|x 21447 height 80 column 262|1	$00000000
+RaycastSky|object 3 12|x 21447 height 80 column 262|1	$00000000
+RaycastSky|chunky data|x 21447 height 80 column 262|1	bytes 81920 fnv 8C17903B
+RaycastSky|kept|x 17307 height 148 column -978|1	kept
+RaycastSky|popped|x 17307 height 148 column -978|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 17307 height 148 column -978|1	$00000000
+RaycastSky|blocks|x 17307 height 148 column -978|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 17307 height 148 column -978|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 17307 height 148 column -978|2	$00080000
+RaycastSky|object 0 data|x 17307 height 148 column -978|1	$00000001
+RaycastSky|object 0 12|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 17307 height 148 column -978|2	$00000000
+RaycastSky|object 1 data|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 1 12|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 17307 height 148 column -978|2	$00000000
+RaycastSky|object 2 data|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 2 12|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 17307 height 148 column -978|2	$00000000
+RaycastSky|object 3 data|x 17307 height 148 column -978|1	$00000000
+RaycastSky|object 3 12|x 17307 height 148 column -978|1	$00000000
+RaycastSky|chunky data|x 17307 height 148 column -978|1	bytes 81920 fnv B7A99AF0
+RaycastSky|kept|x 25928 height 20 column -749|1	kept
+RaycastSky|popped|x 25928 height 20 column -749|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 25928 height 20 column -749|1	$00000000
+RaycastSky|blocks|x 25928 height 20 column -749|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 25928 height 20 column -749|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 25928 height 20 column -749|2	$00080000
+RaycastSky|object 0 data|x 25928 height 20 column -749|1	$00000001
+RaycastSky|object 0 12|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 25928 height 20 column -749|2	$00000000
+RaycastSky|object 1 data|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 1 12|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 25928 height 20 column -749|2	$00000000
+RaycastSky|object 2 data|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 2 12|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 25928 height 20 column -749|2	$00000000
+RaycastSky|object 3 data|x 25928 height 20 column -749|1	$00000000
+RaycastSky|object 3 12|x 25928 height 20 column -749|1	$00000000
+RaycastSky|chunky data|x 25928 height 20 column -749|1	bytes 81920 fnv B9CAC47A
+RaycastSky|kept|x 23100 height 99 column -411|1	kept
+RaycastSky|popped|x 23100 height 99 column -411|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 23100 height 99 column -411|1	$00000000
+RaycastSky|blocks|x 23100 height 99 column -411|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 23100 height 99 column -411|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 23100 height 99 column -411|2	$00080000
+RaycastSky|object 0 data|x 23100 height 99 column -411|1	$00000001
+RaycastSky|object 0 12|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 23100 height 99 column -411|2	$00000000
+RaycastSky|object 1 data|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 1 12|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 23100 height 99 column -411|2	$00000000
+RaycastSky|object 2 data|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 2 12|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 23100 height 99 column -411|2	$00000000
+RaycastSky|object 3 data|x 23100 height 99 column -411|1	$00000000
+RaycastSky|object 3 12|x 23100 height 99 column -411|1	$00000000
+RaycastSky|chunky data|x 23100 height 99 column -411|1	bytes 81920 fnv CC67E8C7
+RaycastSky|kept|x 18120 height 65 column -887|1	kept
+RaycastSky|popped|x 18120 height 65 column -887|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 18120 height 65 column -887|1	$00000000
+RaycastSky|blocks|x 18120 height 65 column -887|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 18120 height 65 column -887|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 18120 height 65 column -887|2	$00080000
+RaycastSky|object 0 data|x 18120 height 65 column -887|1	$00000001
+RaycastSky|object 0 12|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 18120 height 65 column -887|2	$00000000
+RaycastSky|object 1 data|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 1 12|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 18120 height 65 column -887|2	$00000000
+RaycastSky|object 2 data|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 2 12|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 18120 height 65 column -887|2	$00000000
+RaycastSky|object 3 data|x 18120 height 65 column -887|1	$00000000
+RaycastSky|object 3 12|x 18120 height 65 column -887|1	$00000000
+RaycastSky|chunky data|x 18120 height 65 column -887|1	bytes 81920 fnv 3DAB573B
+RaycastSky|kept|x 29587 height 156 column -918|1	kept
+RaycastSky|popped|x 29587 height 156 column -918|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 29587 height 156 column -918|1	$00000000
+RaycastSky|blocks|x 29587 height 156 column -918|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 29587 height 156 column -918|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 29587 height 156 column -918|2	$00080000
+RaycastSky|object 0 data|x 29587 height 156 column -918|1	$00000001
+RaycastSky|object 0 12|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 29587 height 156 column -918|2	$00000000
+RaycastSky|object 1 data|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 1 12|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 29587 height 156 column -918|2	$00000000
+RaycastSky|object 2 data|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 2 12|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 29587 height 156 column -918|2	$00000000
+RaycastSky|object 3 data|x 29587 height 156 column -918|1	$00000000
+RaycastSky|object 3 12|x 29587 height 156 column -918|1	$00000000
+RaycastSky|chunky data|x 29587 height 156 column -918|1	bytes 81920 fnv 45E88117
+RaycastSky|kept|x 14731 height 162 column -266|1	kept
+RaycastSky|popped|x 14731 height 162 column -266|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 14731 height 162 column -266|1	$00000000
+RaycastSky|blocks|x 14731 height 162 column -266|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 14731 height 162 column -266|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 14731 height 162 column -266|2	$00080000
+RaycastSky|object 0 data|x 14731 height 162 column -266|1	$00000001
+RaycastSky|object 0 12|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 14731 height 162 column -266|2	$00000000
+RaycastSky|object 1 data|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 1 12|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 14731 height 162 column -266|2	$00000000
+RaycastSky|object 2 data|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 2 12|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 14731 height 162 column -266|2	$00000000
+RaycastSky|object 3 data|x 14731 height 162 column -266|1	$00000000
+RaycastSky|object 3 12|x 14731 height 162 column -266|1	$00000000
+RaycastSky|chunky data|x 14731 height 162 column -266|1	bytes 81920 fnv 368A78ED
+RaycastSky|kept|x 9401 height 154 column -585|1	kept
+RaycastSky|popped|x 9401 height 154 column -585|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 9401 height 154 column -585|1	$00000000
+RaycastSky|blocks|x 9401 height 154 column -585|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 9401 height 154 column -585|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 9401 height 154 column -585|2	$00080000
+RaycastSky|object 0 data|x 9401 height 154 column -585|1	$00000001
+RaycastSky|object 0 12|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 9401 height 154 column -585|2	$00000000
+RaycastSky|object 1 data|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 1 12|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 9401 height 154 column -585|2	$00000000
+RaycastSky|object 2 data|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 2 12|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 9401 height 154 column -585|2	$00000000
+RaycastSky|object 3 data|x 9401 height 154 column -585|1	$00000000
+RaycastSky|object 3 12|x 9401 height 154 column -585|1	$00000000
+RaycastSky|chunky data|x 9401 height 154 column -585|1	bytes 81920 fnv 998BBF37
+RaycastSky|kept|x 28120 height 63 column -140|1	kept
+RaycastSky|popped|x 28120 height 63 column -140|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 28120 height 63 column -140|1	$00000000
+RaycastSky|blocks|x 28120 height 63 column -140|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 28120 height 63 column -140|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 28120 height 63 column -140|2	$00080000
+RaycastSky|object 0 data|x 28120 height 63 column -140|1	$00000001
+RaycastSky|object 0 12|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 28120 height 63 column -140|2	$00000000
+RaycastSky|object 1 data|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 1 12|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 28120 height 63 column -140|2	$00000000
+RaycastSky|object 2 data|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 2 12|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 28120 height 63 column -140|2	$00000000
+RaycastSky|object 3 data|x 28120 height 63 column -140|1	$00000000
+RaycastSky|object 3 12|x 28120 height 63 column -140|1	$00000000
+RaycastSky|chunky data|x 28120 height 63 column -140|1	bytes 81920 fnv 53E07684
+RaycastSky|kept|x 6709 height 222 column 75|1	kept
+RaycastSky|popped|x 6709 height 222 column 75|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 6709 height 222 column 75|1	$00000000
+RaycastSky|blocks|x 6709 height 222 column 75|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 6709 height 222 column 75|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 6709 height 222 column 75|2	$00080000
+RaycastSky|object 0 data|x 6709 height 222 column 75|1	$00000001
+RaycastSky|object 0 12|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 6709 height 222 column 75|2	$00000000
+RaycastSky|object 1 data|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 1 12|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 6709 height 222 column 75|2	$00000000
+RaycastSky|object 2 data|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 2 12|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 6709 height 222 column 75|2	$00000000
+RaycastSky|object 3 data|x 6709 height 222 column 75|1	$00000000
+RaycastSky|object 3 12|x 6709 height 222 column 75|1	$00000000
+RaycastSky|chunky data|x 6709 height 222 column 75|1	bytes 81920 fnv 95F4CE15
+RaycastSky|kept|x 5553 height 236 column 149|1	kept
+RaycastSky|popped|x 5553 height 236 column 149|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 5553 height 236 column 149|1	$00000000
+RaycastSky|blocks|x 5553 height 236 column 149|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 5553 height 236 column 149|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 5553 height 236 column 149|2	$00080000
+RaycastSky|object 0 data|x 5553 height 236 column 149|1	$00000001
+RaycastSky|object 0 12|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 5553 height 236 column 149|2	$00000000
+RaycastSky|object 1 data|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 1 12|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 5553 height 236 column 149|2	$00000000
+RaycastSky|object 2 data|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 2 12|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 5553 height 236 column 149|2	$00000000
+RaycastSky|object 3 data|x 5553 height 236 column 149|1	$00000000
+RaycastSky|object 3 12|x 5553 height 236 column 149|1	$00000000
+RaycastSky|chunky data|x 5553 height 236 column 149|1	bytes 81920 fnv 8BAEC43A
+RaycastSky|kept|x 3294 height 181 column 250|1	kept
+RaycastSky|popped|x 3294 height 181 column 250|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 3294 height 181 column 250|1	$00000000
+RaycastSky|blocks|x 3294 height 181 column 250|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 3294 height 181 column 250|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 3294 height 181 column 250|2	$00080000
+RaycastSky|object 0 data|x 3294 height 181 column 250|1	$00000001
+RaycastSky|object 0 12|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3294 height 181 column 250|2	$00000000
+RaycastSky|object 1 data|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 1 12|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3294 height 181 column 250|2	$00000000
+RaycastSky|object 2 data|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 2 12|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3294 height 181 column 250|2	$00000000
+RaycastSky|object 3 data|x 3294 height 181 column 250|1	$00000000
+RaycastSky|object 3 12|x 3294 height 181 column 250|1	$00000000
+RaycastSky|chunky data|x 3294 height 181 column 250|1	bytes 81920 fnv 1A80E4F8
+RaycastSky|kept|x 13756 height 50 column -232|1	kept
+RaycastSky|popped|x 13756 height 50 column -232|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 13756 height 50 column -232|1	$00000000
+RaycastSky|blocks|x 13756 height 50 column -232|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 13756 height 50 column -232|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 13756 height 50 column -232|2	$00080000
+RaycastSky|object 0 data|x 13756 height 50 column -232|1	$00000001
+RaycastSky|object 0 12|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 13756 height 50 column -232|2	$00000000
+RaycastSky|object 1 data|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 1 12|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 13756 height 50 column -232|2	$00000000
+RaycastSky|object 2 data|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 2 12|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 13756 height 50 column -232|2	$00000000
+RaycastSky|object 3 data|x 13756 height 50 column -232|1	$00000000
+RaycastSky|object 3 12|x 13756 height 50 column -232|1	$00000000
+RaycastSky|chunky data|x 13756 height 50 column -232|1	bytes 81920 fnv 32678BE4
+RaycastSky|kept|x 8004 height 159 column 152|1	kept
+RaycastSky|popped|x 8004 height 159 column 152|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 8004 height 159 column 152|1	$00000000
+RaycastSky|blocks|x 8004 height 159 column 152|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 8004 height 159 column 152|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 8004 height 159 column 152|2	$00080000
+RaycastSky|object 0 data|x 8004 height 159 column 152|1	$00000001
+RaycastSky|object 0 12|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 8004 height 159 column 152|2	$00000000
+RaycastSky|object 1 data|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 1 12|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 8004 height 159 column 152|2	$00000000
+RaycastSky|object 2 data|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 2 12|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 8004 height 159 column 152|2	$00000000
+RaycastSky|object 3 data|x 8004 height 159 column 152|1	$00000000
+RaycastSky|object 3 12|x 8004 height 159 column 152|1	$00000000
+RaycastSky|chunky data|x 8004 height 159 column 152|1	bytes 81920 fnv 1BD9CCE9
+RaycastSky|kept|x 8370 height 230 column -30|1	kept
+RaycastSky|popped|x 8370 height 230 column -30|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 8370 height 230 column -30|1	$00000000
+RaycastSky|blocks|x 8370 height 230 column -30|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 8370 height 230 column -30|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 8370 height 230 column -30|2	$00080000
+RaycastSky|object 0 data|x 8370 height 230 column -30|1	$00000001
+RaycastSky|object 0 12|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 8370 height 230 column -30|2	$00000000
+RaycastSky|object 1 data|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 1 12|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 8370 height 230 column -30|2	$00000000
+RaycastSky|object 2 data|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 2 12|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 8370 height 230 column -30|2	$00000000
+RaycastSky|object 3 data|x 8370 height 230 column -30|1	$00000000
+RaycastSky|object 3 12|x 8370 height 230 column -30|1	$00000000
+RaycastSky|chunky data|x 8370 height 230 column -30|1	bytes 81920 fnv 5A10A1E9
+RaycastSky|kept|x 12715 height 83 column -166|1	kept
+RaycastSky|popped|x 12715 height 83 column -166|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 12715 height 83 column -166|1	$00000000
+RaycastSky|blocks|x 12715 height 83 column -166|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 12715 height 83 column -166|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 12715 height 83 column -166|2	$00080000
+RaycastSky|object 0 data|x 12715 height 83 column -166|1	$00000001
+RaycastSky|object 0 12|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 12715 height 83 column -166|2	$00000000
+RaycastSky|object 1 data|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 1 12|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 12715 height 83 column -166|2	$00000000
+RaycastSky|object 2 data|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 2 12|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 12715 height 83 column -166|2	$00000000
+RaycastSky|object 3 data|x 12715 height 83 column -166|1	$00000000
+RaycastSky|object 3 12|x 12715 height 83 column -166|1	$00000000
+RaycastSky|chunky data|x 12715 height 83 column -166|1	bytes 81920 fnv 9939F8A4
+RaycastSky|kept|x 11698 height 149 column -768|1	kept
+RaycastSky|popped|x 11698 height 149 column -768|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 11698 height 149 column -768|1	$00000000
+RaycastSky|blocks|x 11698 height 149 column -768|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 11698 height 149 column -768|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 11698 height 149 column -768|2	$00080000
+RaycastSky|object 0 data|x 11698 height 149 column -768|1	$00000001
+RaycastSky|object 0 12|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 11698 height 149 column -768|2	$00000000
+RaycastSky|object 1 data|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 1 12|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 11698 height 149 column -768|2	$00000000
+RaycastSky|object 2 data|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 2 12|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 11698 height 149 column -768|2	$00000000
+RaycastSky|object 3 data|x 11698 height 149 column -768|1	$00000000
+RaycastSky|object 3 12|x 11698 height 149 column -768|1	$00000000
+RaycastSky|chunky data|x 11698 height 149 column -768|1	bytes 81920 fnv BD457FF8
+RaycastSky|kept|x 3971 height 30 column -94|1	kept
+RaycastSky|popped|x 3971 height 30 column -94|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 3971 height 30 column -94|1	$00000000
+RaycastSky|blocks|x 3971 height 30 column -94|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 3971 height 30 column -94|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 3971 height 30 column -94|2	$00080000
+RaycastSky|object 0 data|x 3971 height 30 column -94|1	$00000001
+RaycastSky|object 0 12|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3971 height 30 column -94|2	$00000000
+RaycastSky|object 1 data|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 1 12|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3971 height 30 column -94|2	$00000000
+RaycastSky|object 2 data|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 2 12|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3971 height 30 column -94|2	$00000000
+RaycastSky|object 3 data|x 3971 height 30 column -94|1	$00000000
+RaycastSky|object 3 12|x 3971 height 30 column -94|1	$00000000
+RaycastSky|chunky data|x 3971 height 30 column -94|1	bytes 81920 fnv 2459D42A
+RaycastSky|kept|x 7490 height 138 column -728|1	kept
+RaycastSky|popped|x 7490 height 138 column -728|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 7490 height 138 column -728|1	$00000000
+RaycastSky|blocks|x 7490 height 138 column -728|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 7490 height 138 column -728|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 7490 height 138 column -728|2	$00080000
+RaycastSky|object 0 data|x 7490 height 138 column -728|1	$00000001
+RaycastSky|object 0 12|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 7490 height 138 column -728|2	$00000000
+RaycastSky|object 1 data|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 1 12|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 7490 height 138 column -728|2	$00000000
+RaycastSky|object 2 data|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 2 12|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 7490 height 138 column -728|2	$00000000
+RaycastSky|object 3 data|x 7490 height 138 column -728|1	$00000000
+RaycastSky|object 3 12|x 7490 height 138 column -728|1	$00000000
+RaycastSky|chunky data|x 7490 height 138 column -728|1	bytes 81920 fnv E22A98A5
+RaycastSky|kept|x 7074 height 41 column -85|1	kept
+RaycastSky|popped|x 7074 height 41 column -85|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 7074 height 41 column -85|1	$00000000
+RaycastSky|blocks|x 7074 height 41 column -85|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 7074 height 41 column -85|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 7074 height 41 column -85|2	$00080000
+RaycastSky|object 0 data|x 7074 height 41 column -85|1	$00000001
+RaycastSky|object 0 12|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 7074 height 41 column -85|2	$00000000
+RaycastSky|object 1 data|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 1 12|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 7074 height 41 column -85|2	$00000000
+RaycastSky|object 2 data|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 2 12|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 7074 height 41 column -85|2	$00000000
+RaycastSky|object 3 data|x 7074 height 41 column -85|1	$00000000
+RaycastSky|object 3 12|x 7074 height 41 column -85|1	$00000000
+RaycastSky|chunky data|x 7074 height 41 column -85|1	bytes 81920 fnv 94F469C7
+RaycastSky|kept|x 30117 height 19 column -766|1	kept
+RaycastSky|popped|x 30117 height 19 column -766|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 30117 height 19 column -766|1	$00000000
+RaycastSky|blocks|x 30117 height 19 column -766|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 30117 height 19 column -766|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 30117 height 19 column -766|2	$00080000
+RaycastSky|object 0 data|x 30117 height 19 column -766|1	$00000001
+RaycastSky|object 0 12|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 30117 height 19 column -766|2	$00000000
+RaycastSky|object 1 data|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 1 12|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 30117 height 19 column -766|2	$00000000
+RaycastSky|object 2 data|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 2 12|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 30117 height 19 column -766|2	$00000000
+RaycastSky|object 3 data|x 30117 height 19 column -766|1	$00000000
+RaycastSky|object 3 12|x 30117 height 19 column -766|1	$00000000
+RaycastSky|chunky data|x 30117 height 19 column -766|1	bytes 81920 fnv C348F724
+RaycastSky|kept|x 10667 height 187 column 145|1	kept
+RaycastSky|popped|x 10667 height 187 column 145|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 10667 height 187 column 145|1	$00000000
+RaycastSky|blocks|x 10667 height 187 column 145|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 10667 height 187 column 145|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 10667 height 187 column 145|2	$00080000
+RaycastSky|object 0 data|x 10667 height 187 column 145|1	$00000001
+RaycastSky|object 0 12|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 10667 height 187 column 145|2	$00000000
+RaycastSky|object 1 data|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 1 12|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 10667 height 187 column 145|2	$00000000
+RaycastSky|object 2 data|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 2 12|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 10667 height 187 column 145|2	$00000000
+RaycastSky|object 3 data|x 10667 height 187 column 145|1	$00000000
+RaycastSky|object 3 12|x 10667 height 187 column 145|1	$00000000
+RaycastSky|chunky data|x 10667 height 187 column 145|1	bytes 81920 fnv EFD4091C
+RaycastSky|kept|x 217 height 88 column -987|1	kept
+RaycastSky|popped|x 217 height 88 column -987|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 217 height 88 column -987|1	$00000000
+RaycastSky|blocks|x 217 height 88 column -987|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 217 height 88 column -987|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 217 height 88 column -987|2	$00080000
+RaycastSky|object 0 data|x 217 height 88 column -987|1	$00000001
+RaycastSky|object 0 12|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 217 height 88 column -987|2	$00000000
+RaycastSky|object 1 data|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 1 12|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 217 height 88 column -987|2	$00000000
+RaycastSky|object 2 data|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 2 12|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 217 height 88 column -987|2	$00000000
+RaycastSky|object 3 data|x 217 height 88 column -987|1	$00000000
+RaycastSky|object 3 12|x 217 height 88 column -987|1	$00000000
+RaycastSky|chunky data|x 217 height 88 column -987|1	bytes 81920 fnv 13EFFA18
+RaycastSky|kept|x 3557 height 144 column 279|1	kept
+RaycastSky|popped|x 3557 height 144 column 279|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 3557 height 144 column 279|1	$00000000
+RaycastSky|blocks|x 3557 height 144 column 279|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 3557 height 144 column 279|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 3557 height 144 column 279|2	$00080000
+RaycastSky|object 0 data|x 3557 height 144 column 279|1	$00000001
+RaycastSky|object 0 12|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3557 height 144 column 279|2	$00000000
+RaycastSky|object 1 data|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 1 12|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3557 height 144 column 279|2	$00000000
+RaycastSky|object 2 data|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 2 12|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3557 height 144 column 279|2	$00000000
+RaycastSky|object 3 data|x 3557 height 144 column 279|1	$00000000
+RaycastSky|object 3 12|x 3557 height 144 column 279|1	$00000000
+RaycastSky|chunky data|x 3557 height 144 column 279|1	bytes 81920 fnv D09CFFAB
+RaycastSky|kept|x 912 height 223 column -272|1	kept
+RaycastSky|popped|x 912 height 223 column -272|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 912 height 223 column -272|1	$00000000
+RaycastSky|blocks|x 912 height 223 column -272|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 912 height 223 column -272|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 912 height 223 column -272|2	$00080000
+RaycastSky|object 0 data|x 912 height 223 column -272|1	$00000001
+RaycastSky|object 0 12|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 912 height 223 column -272|2	$00000000
+RaycastSky|object 1 data|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 1 12|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 912 height 223 column -272|2	$00000000
+RaycastSky|object 2 data|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 2 12|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 912 height 223 column -272|2	$00000000
+RaycastSky|object 3 data|x 912 height 223 column -272|1	$00000000
+RaycastSky|object 3 12|x 912 height 223 column -272|1	$00000000
+RaycastSky|chunky data|x 912 height 223 column -272|1	bytes 81920 fnv B107FCF8
+RaycastSky|kept|x 3948 height 231 column -491|1	kept
+RaycastSky|popped|x 3948 height 231 column -491|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 3948 height 231 column -491|1	$00000000
+RaycastSky|blocks|x 3948 height 231 column -491|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 3948 height 231 column -491|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 3948 height 231 column -491|2	$00080000
+RaycastSky|object 0 data|x 3948 height 231 column -491|1	$00000001
+RaycastSky|object 0 12|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 3948 height 231 column -491|2	$00000000
+RaycastSky|object 1 data|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 1 12|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 3948 height 231 column -491|2	$00000000
+RaycastSky|object 2 data|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 2 12|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 3948 height 231 column -491|2	$00000000
+RaycastSky|object 3 data|x 3948 height 231 column -491|1	$00000000
+RaycastSky|object 3 12|x 3948 height 231 column -491|1	$00000000
+RaycastSky|chunky data|x 3948 height 231 column -491|1	bytes 81920 fnv 366FDB5B
+RaycastSky|kept|x 26754 height 145 column -579|1	kept
+RaycastSky|popped|x 26754 height 145 column -579|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 26754 height 145 column -579|1	$00000000
+RaycastSky|blocks|x 26754 height 145 column -579|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 26754 height 145 column -579|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 26754 height 145 column -579|2	$00080000
+RaycastSky|object 0 data|x 26754 height 145 column -579|1	$00000001
+RaycastSky|object 0 12|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 26754 height 145 column -579|2	$00000000
+RaycastSky|object 1 data|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 1 12|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 26754 height 145 column -579|2	$00000000
+RaycastSky|object 2 data|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 2 12|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 26754 height 145 column -579|2	$00000000
+RaycastSky|object 3 data|x 26754 height 145 column -579|1	$00000000
+RaycastSky|object 3 12|x 26754 height 145 column -579|1	$00000000
+RaycastSky|chunky data|x 26754 height 145 column -579|1	bytes 81920 fnv 1781E59E
+RaycastSky|kept|x 6093 height 204 column 95|1	kept
+RaycastSky|popped|x 6093 height 204 column 95|1	$00000000
+RaycastSky|CIA-A PRA bit 1|x 6093 height 204 column 95|1	$00000000
+RaycastSky|blocks|x 6093 height 204 column 95|1	$00000001
+RaycastSky|object 0 w/h/d/6|x 6093 height 204 column 95|1	$01400100
+RaycastSky|object 0 w/h/d/6|x 6093 height 204 column 95|2	$00080000
+RaycastSky|object 0 data|x 6093 height 204 column 95|1	$00000001
+RaycastSky|object 0 12|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 1 w/h/d/6|x 6093 height 204 column 95|2	$00000000
+RaycastSky|object 1 data|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 1 12|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 2 w/h/d/6|x 6093 height 204 column 95|2	$00000000
+RaycastSky|object 2 data|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 2 12|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 3 w/h/d/6|x 6093 height 204 column 95|2	$00000000
+RaycastSky|object 3 data|x 6093 height 204 column 95|1	$00000000
+RaycastSky|object 3 12|x 6093 height 204 column 95|1	$00000000
+RaycastSky|chunky data|x 6093 height 204 column 95|1	bytes 81920 fnv 0CE2BB45
+PlanarToChunky|kept||1	kept
+PlanarToChunky|popped||1	$00000000
+PlanarToChunky|CIA-A PRA bit 1||1	$00000000
+PlanarToChunky|blocks||1	$00000001
+PlanarToChunky|object 0 w/h/d/6||1	$01400100
+PlanarToChunky|object 0 w/h/d/6||2	$00080000
+PlanarToChunky|object 0 data||1	$00000001
+PlanarToChunky|object 0 12||1	$00000000
+PlanarToChunky|object 1 w/h/d/6||1	$00000000
+PlanarToChunky|object 1 w/h/d/6||2	$00000000
+PlanarToChunky|object 1 data||1	$00000000
+PlanarToChunky|object 1 12||1	$00000000
+PlanarToChunky|object 2 w/h/d/6||1	$00000000
+PlanarToChunky|object 2 w/h/d/6||2	$00000000
+PlanarToChunky|object 2 data||1	$00000000
+PlanarToChunky|object 2 12||1	$00000000
+PlanarToChunky|object 3 w/h/d/6||1	$00000000
+PlanarToChunky|object 3 w/h/d/6||2	$00000000
+PlanarToChunky|object 3 data||1	$00000000
+PlanarToChunky|object 3 12||1	$00000000
+ChunkyLoadBitMap|kept||1	kept
+ChunkyLoadBitMap|popped||1	$00000000
+ChunkyLoadBitMap|CIA-A PRA bit 1||1	$00000000
+ChunkyLoadBitMap|blocks||1	$00000001
+ChunkyLoadBitMap|object 0 w/h/d/6||1	$01400100
+ChunkyLoadBitMap|object 0 w/h/d/6||2	$00080000
+ChunkyLoadBitMap|object 0 data||1	$00000001
+ChunkyLoadBitMap|object 0 12||1	$00000000
+ChunkyLoadBitMap|object 1 w/h/d/6||1	$00000000
+ChunkyLoadBitMap|object 1 w/h/d/6||2	$00000000
+ChunkyLoadBitMap|object 1 data||1	$00000000
+ChunkyLoadBitMap|object 1 12||1	$00000000
+ChunkyLoadBitMap|object 2 w/h/d/6||1	$00000000
+ChunkyLoadBitMap|object 2 w/h/d/6||2	$00000000
+ChunkyLoadBitMap|object 2 data||1	$00000000
+ChunkyLoadBitMap|object 2 12||1	$00000000
+ChunkyLoadBitMap|object 3 w/h/d/6||1	$00000000
+ChunkyLoadBitMap|object 3 w/h/d/6||2	$00000000
+ChunkyLoadBitMap|object 3 data||1	$00000000
+ChunkyLoadBitMap|object 3 12||1	$00000000
+ChunkyLoadBitMap|chunky data||1	bytes 81920 fnv 0CE2BB45
+ChunkyLoadBitMap|planes||1	bytes 81984 fnv 6222DFC5
+ChunkyBitmap|kept|0,100,50|1	kept
+ChunkyBitmap|popped|0,100,50|1	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|0,100,50|1	$00000002
+ChunkyBitmap|blocks|0,100,50|1	$00000001
+ChunkyBitmap|object 0 w/h/d/6|0,100,50|1	$00640032
+ChunkyBitmap|object 0 w/h/d/6|0,100,50|2	$00080000
+ChunkyBitmap|object 0 data|0,100,50|1	$00000001
+ChunkyBitmap|object 0 12|0,100,50|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,100,50|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,100,50|2	$00000000
+ChunkyBitmap|object 1 data|0,100,50|1	$00000000
+ChunkyBitmap|object 1 12|0,100,50|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,100,50|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,100,50|2	$00000000
+ChunkyBitmap|object 2 data|0,100,50|1	$00000000
+ChunkyBitmap|object 2 12|0,100,50|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,100,50|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,100,50|2	$00000000
+ChunkyBitmap|object 3 data|0,100,50|1	$00000000
+ChunkyBitmap|object 3 12|0,100,50|1	$00000000
+ChunkyBitmap|kept|0,320,256|2	kept
+ChunkyBitmap|popped|0,320,256|2	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|0,320,256|2	$00000002
+ChunkyBitmap|blocks|0,320,256|2	$00000000
+ChunkyBitmap|object 0 w/h/d/6|0,320,256|3	$00000000
+ChunkyBitmap|object 0 w/h/d/6|0,320,256|4	$00000000
+ChunkyBitmap|object 0 data|0,320,256|2	$00000000
+ChunkyBitmap|object 0 12|0,320,256|2	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,320,256|3	$00000000
+ChunkyBitmap|object 1 w/h/d/6|0,320,256|4	$00000000
+ChunkyBitmap|object 1 data|0,320,256|2	$00000000
+ChunkyBitmap|object 1 12|0,320,256|2	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,320,256|3	$00000000
+ChunkyBitmap|object 2 w/h/d/6|0,320,256|4	$00000000
+ChunkyBitmap|object 2 data|0,320,256|2	$00000000
+ChunkyBitmap|object 2 12|0,320,256|2	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,320,256|3	$00000000
+ChunkyBitmap|object 3 w/h/d/6|0,320,256|4	$00000000
+ChunkyBitmap|object 3 data|0,320,256|2	$00000000
+ChunkyBitmap|object 3 12|0,320,256|2	$00000000
+ChunkyBitmap|kept|1,16,16|1	kept
+ChunkyBitmap|popped|1,16,16|1	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|1,16,16|1	$00000000
+ChunkyBitmap|blocks|1,16,16|1	$00000000
+ChunkyBitmap|object 0 w/h/d/6|1,16,16|1	$00000000
+ChunkyBitmap|object 0 w/h/d/6|1,16,16|2	$00000000
+ChunkyBitmap|object 0 data|1,16,16|1	$00000000
+ChunkyBitmap|object 0 12|1,16,16|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|1,16,16|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|1,16,16|2	$00000000
+ChunkyBitmap|object 1 data|1,16,16|1	$00000000
+ChunkyBitmap|object 1 12|1,16,16|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|1,16,16|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|1,16,16|2	$00000000
+ChunkyBitmap|object 2 data|1,16,16|1	$00000000
+ChunkyBitmap|object 2 12|1,16,16|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|1,16,16|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|1,16,16|2	$00000000
+ChunkyBitmap|object 3 data|1,16,16|1	$00000000
+ChunkyBitmap|object 3 12|1,16,16|1	$00000000
+ChunkyBitmap|kept|2,16,16|1	kept
+ChunkyBitmap|popped|2,16,16|1	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|2,16,16|1	$00000000
+ChunkyBitmap|blocks|2,16,16|1	$00000001
+ChunkyBitmap|object 0 w/h/d/6|2,16,16|1	$00000000
+ChunkyBitmap|object 0 w/h/d/6|2,16,16|2	$00000000
+ChunkyBitmap|object 0 data|2,16,16|1	$00000000
+ChunkyBitmap|object 0 12|2,16,16|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|2,16,16|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|2,16,16|2	$00000000
+ChunkyBitmap|object 1 data|2,16,16|1	$00000000
+ChunkyBitmap|object 1 12|2,16,16|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|2,16,16|1	$00100010
+ChunkyBitmap|object 2 w/h/d/6|2,16,16|2	$00080001
+ChunkyBitmap|object 2 data|2,16,16|1	$00000001
+ChunkyBitmap|object 2 12|2,16,16|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|2,16,16|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|2,16,16|2	$00000000
+ChunkyBitmap|object 3 data|2,16,16|1	$00000000
+ChunkyBitmap|object 3 12|2,16,16|1	$00000000
+ChunkyBitmap|kept|3,8,8|1	kept
+ChunkyBitmap|popped|3,8,8|1	$00000000
+ChunkyBitmap|CIA-A PRA bit 1|3,8,8|1	$00000000
+ChunkyBitmap|blocks|3,8,8|1	$00000002
+ChunkyBitmap|object 0 w/h/d/6|3,8,8|1	$00000000
+ChunkyBitmap|object 0 w/h/d/6|3,8,8|2	$00000000
+ChunkyBitmap|object 0 data|3,8,8|1	$00000000
+ChunkyBitmap|object 0 12|3,8,8|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|3,8,8|1	$00000000
+ChunkyBitmap|object 1 w/h/d/6|3,8,8|2	$00000000
+ChunkyBitmap|object 1 data|3,8,8|1	$00000000
+ChunkyBitmap|object 1 12|3,8,8|1	$00000000
+ChunkyBitmap|object 2 w/h/d/6|3,8,8|1	$00100010
+ChunkyBitmap|object 2 w/h/d/6|3,8,8|2	$00080001
+ChunkyBitmap|object 2 data|3,8,8|1	$00000001
+ChunkyBitmap|object 2 12|3,8,8|1	$00000000
+ChunkyBitmap|object 3 w/h/d/6|3,8,8|1	$00080008
+ChunkyBitmap|object 3 w/h/d/6|3,8,8|2	$00080000
+ChunkyBitmap|object 3 data|3,8,8|1	$00000001
+ChunkyBitmap|object 3 12|3,8,8|1	$00000000
+ChunkyData|kept|3|1	kept
+ChunkyData|popped|3|1	$00000000
+ChunkyData|CIA-A PRA bit 1|3|1	$00000000
+ChunkyData|blocks|3|1	$00000002
+ChunkyData|object 0 w/h/d/6|3|1	$00000000
+ChunkyData|object 0 w/h/d/6|3|2	$00000000
+ChunkyData|object 0 data|3|1	$00000000
+ChunkyData|object 0 12|3|1	$00000000
+ChunkyData|object 1 w/h/d/6|3|1	$00000000
+ChunkyData|object 1 w/h/d/6|3|2	$00000000
+ChunkyData|object 1 data|3|1	$00000000
+ChunkyData|object 1 12|3|1	$00000000
+ChunkyData|object 2 w/h/d/6|3|1	$00100010
+ChunkyData|object 2 w/h/d/6|3|2	$00080001
+ChunkyData|object 2 data|3|1	$00000001
+ChunkyData|object 2 12|3|1	$00000000
+ChunkyData|object 3 w/h/d/6|3|1	$00080008
+ChunkyData|object 3 w/h/d/6|3|2	$00080000
+ChunkyData|object 3 data|3|1	$00000001
+ChunkyData|object 3 12|3|1	$00000000
+ChunkyData|d0 = data|3|1	$00000001
+free (object manager)|kept|3|1	kept
+free (object manager)|popped|3|1	$00000000
+free (object manager)|CIA-A PRA bit 1|3|1	$00000002
+free (object manager)|blocks|3|1	$00000001
+free (object manager)|object 0 w/h/d/6|3|1	$00000000
+free (object manager)|object 0 w/h/d/6|3|2	$00000000
+free (object manager)|object 0 data|3|1	$00000000
+free (object manager)|object 0 12|3|1	$00000000
+free (object manager)|object 1 w/h/d/6|3|1	$00000000
+free (object manager)|object 1 w/h/d/6|3|2	$00000000
+free (object manager)|object 1 data|3|1	$00000000
+free (object manager)|object 1 12|3|1	$00000000
+free (object manager)|object 2 w/h/d/6|3|1	$00100010
+free (object manager)|object 2 w/h/d/6|3|2	$00080001
+free (object manager)|object 2 data|3|1	$00000001
+free (object manager)|object 2 12|3|1	$00000000
+free (object manager)|object 3 w/h/d/6|3|1	$00000000
+free (object manager)|object 3 w/h/d/6|3|2	$00000000
+free (object manager)|object 3 data|3|1	$00000000
+free (object manager)|object 3 12|3|1	$00000000
+free (object manager)|kept|3|2	kept
+free (object manager)|popped|3|2	$00000000
+free (object manager)|CIA-A PRA bit 1|3|2	$00000000
+free (object manager)|blocks|3|2	$00000001
+free (object manager)|object 0 w/h/d/6|3|3	$00000000
+free (object manager)|object 0 w/h/d/6|3|4	$00000000
+free (object manager)|object 0 data|3|2	$00000000
+free (object manager)|object 0 12|3|2	$00000000
+free (object manager)|object 1 w/h/d/6|3|3	$00000000
+free (object manager)|object 1 w/h/d/6|3|4	$00000000
+free (object manager)|object 1 data|3|2	$00000000
+free (object manager)|object 1 12|3|2	$00000000
+free (object manager)|object 2 w/h/d/6|3|3	$00100010
+free (object manager)|object 2 w/h/d/6|3|4	$00080001
+free (object manager)|object 2 data|3|2	$00000001
+free (object manager)|object 2 12|3|2	$00000000
+free (object manager)|object 3 w/h/d/6|3|3	$00000000
+free (object manager)|object 3 w/h/d/6|3|4	$00000000
+free (object manager)|object 3 data|3|2	$00000000
+free (object manager)|object 3 12|3|2	$00000000
+free (object manager)|kept|1|1	kept
+free (object manager)|popped|1|1	$00000000
+free (object manager)|CIA-A PRA bit 1|1|1	$00000000
+free (object manager)|blocks|1|1	$00000001
+free (object manager)|object 0 w/h/d/6|1|1	$00000000
+free (object manager)|object 0 w/h/d/6|1|2	$00000000
+free (object manager)|object 0 data|1|1	$00000000
+free (object manager)|object 0 12|1|1	$00000000
+free (object manager)|object 1 w/h/d/6|1|1	$00000000
+free (object manager)|object 1 w/h/d/6|1|2	$00000000
+free (object manager)|object 1 data|1|1	$00000000
+free (object manager)|object 1 12|1|1	$00000000
+free (object manager)|object 2 w/h/d/6|1|1	$00100010
+free (object manager)|object 2 w/h/d/6|1|2	$00080001
+free (object manager)|object 2 data|1|1	$00000001
+free (object manager)|object 2 12|1|1	$00000000
+free (object manager)|object 3 w/h/d/6|1|1	$00000000
+free (object manager)|object 3 w/h/d/6|1|2	$00000000
+free (object manager)|object 3 data|1|1	$00000000
+free (object manager)|object 3 12|1|1	$00000000
+finit|kept|1|1	kept
+finit|popped|1|1	$00000000
+finit|CIA-A PRA bit 1|1|1	$00000000
+finit|blocks|1|1	$00000001
+finit|object 0 w/h/d/6|1|1	$00000000
+finit|object 0 w/h/d/6|1|2	$00000000
+finit|object 0 data|1|1	$00000000
+finit|object 0 12|1|1	$00000000
+finit|object 1 w/h/d/6|1|1	$00000000
+finit|object 1 w/h/d/6|1|2	$00000000
+finit|object 1 data|1|1	$00000000
+finit|object 1 12|1|1	$00000000
+finit|object 2 w/h/d/6|1|1	$00100010
+finit|object 2 w/h/d/6|1|2	$00080001
+finit|object 2 data|1|1	$00000001
+finit|object 2 12|1|1	$00000000
+finit|object 3 w/h/d/6|1|1	$00000000
+finit|object 3 w/h/d/6|1|2	$00000000
+finit|object 3 data|1|1	$00000000
+finit|object 3 12|1|1	$00000000
+free (object manager)|kept|2|1	kept
+free (object manager)|popped|2|1	$00000000
+free (object manager)|CIA-A PRA bit 1|2|1	$00000002
+free (object manager)|blocks|2|1	$00000000
+free (object manager)|object 0 w/h/d/6|2|1	$00000000
+free (object manager)|object 0 w/h/d/6|2|2	$00000000
+free (object manager)|object 0 data|2|1	$00000000
+free (object manager)|object 0 12|2|1	$00000000
+free (object manager)|object 1 w/h/d/6|2|1	$00000000
+free (object manager)|object 1 w/h/d/6|2|2	$00000000
+free (object manager)|object 1 data|2|1	$00000000
+free (object manager)|object 1 12|2|1	$00000000
+free (object manager)|object 2 w/h/d/6|2|1	$00000000
+free (object manager)|object 2 w/h/d/6|2|2	$00000001
+free (object manager)|object 2 data|2|1	$00000000
+free (object manager)|object 2 12|2|1	$00000000
+free (object manager)|object 3 w/h/d/6|2|1	$00000000
+free (object manager)|object 3 w/h/d/6|2|2	$00000000
+free (object manager)|object 3 data|2|1	$00000000
+free (object manager)|object 3 12|2|1	$00000000
+free (object manager)|all blocks freed|2|1	$00000001
