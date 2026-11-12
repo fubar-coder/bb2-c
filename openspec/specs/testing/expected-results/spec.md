@@ -29,25 +29,6 @@ Where expected data is derived from the original (the CD result table `tests/dat
 - **WHEN** a compiler fix changes the executable of a CD source
 - **THEN** the table update target rewrites that row with the new value, the issue and the original's hash, and the commit contains the change
 
-### Requirement: Per-check fixed values in library pair tests
-A `libs_emulator` check SHALL be able to replace "equal to the original" by a stated correct value together with the issue number (`expect_fixed(NNN, value)`); the fixed check SHALL be asserted, not skipped. Scenarios SHALL NOT be edited to avoid a difference. The original's side of every check SHALL be its recorded value (`libs/tests/tapes/NAME.tape`) in `libs_emulator` (preset `all`, no CD needed) and the live original in `libs_emulator_originals` (preset `originals`), which also records again and fails if the new recording differs from the committed one.
-
-#### Scenario: A fixed check
-- **WHEN** a library fix changes a result and the check has `expect_fixed(NNN, value)`
-- **THEN** the C library must give `value`, the original may differ, and the other checks of the scenario still compare with the original
-
-#### Scenario: Replay without the CD
-- **WHEN** `libs_emulator` runs in `all` without the CD
-- **THEN** each check compares the C library with the original's recorded value, an `expect_fixed` check with the recorded original value and `value`
-
-#### Scenario: Stale recording
-- **WHEN** a test program is changed and its recording is not renewed
-- **THEN** `libs_emulator_originals` fails because its new recording differs from the committed one
-
-#### Scenario: Stale exemption
-- **WHEN** an `expect_fixed` check finds that the C library gives the original's value
-- **THEN** the test fails, so the exemption is removed with the fix that undoes it
-
 ### Requirement: Intended-difference lists
 `refcheck data`, `rwe_declarations_NAME` and the `refcheck asm` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlib compare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed #NNN PAIR...` naming the combo pairs that must differ.
 
@@ -58,3 +39,22 @@ A `libs_emulator` check SHALL be able to replace "equal to the original" by a st
 #### Scenario: Unlisted difference
 - **WHEN** a difference occurs that no list names
 - **THEN** the test fails
+
+### Requirement: A fixed library check is a pair of cases
+A fixed library check SHALL follow the shared test model (`testing/test-model`): it SHALL be two cases of the library test, `KEY [orig]` with the original's value (run only by `libs_emulator_originals`, preset `originals`) and `KEY [fixed #N]` with the port's value after the fix (run only by `libs_emulator`, preset `all`, no CD needed), both in the committed expected data of the program (`libs/tests/expected/NAME.txt`). The fixed case SHALL be asserted, not skipped. Scenarios SHALL NOT be edited to avoid a difference. No exception table SHALL exist; the earlier `expect_fixed` is replaced by this pair.
+
+#### Scenario: A fixed check
+- **WHEN** a library fix changes a result
+- **THEN** the expected data has `KEY [orig]` with the original's value and `KEY [fixed #N]` with the port's value, `libs_emulator` requires the second, `libs_emulator_originals` the first, and the other cases of the program compare unchanged
+
+#### Scenario: Test without the CD
+- **WHEN** `libs_emulator` runs in `all` without the CD
+- **THEN** the port's output of every case equals the expected data case by case, `[fixed #N]` cases included and `[orig]` cases not run
+
+#### Scenario: Scenario changed, expected data not renewed
+- **WHEN** a test program is changed and its expected data is not recorded again with `libs-capture`
+- **THEN** `libs_emulator` and `libs_emulator_originals` fail on the first differing case
+
+#### Scenario: The port regresses a fixed check
+- **WHEN** the port gives the original's value for a `[fixed #N]` case
+- **THEN** `libs_emulator` fails on that case

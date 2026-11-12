@@ -8,7 +8,7 @@ those that would block fixes are bounded.
 ## Requirements
 
 ### Requirement: Label originals
-Every test that needs the CD or the reference build (live reference configurations of the corpus and `ted_ab`, `rwe_refbuild*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, the recording run of the bug-orig tests, the CD result table and TED oracle generators) SHALL carry the label `originals` and a preset SHALL select it. The label `oracle` SHALL keep meaning AmiBlitz3's compiler checks of `tests/ab3`.
+Every test that needs the CD or the reference build (live reference configurations of the corpus and `ted_ab`, `libs_emulator_originals`, `rwe_refbuild*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, the recording run of the bug-orig tests, the CD result table and TED oracle generators) SHALL carry the label `originals` and a preset SHALL select it. The label `oracle` SHALL keep meaning AmiBlitz3's compiler checks of `tests/ab3`.
 
 #### Scenario: all without the CD
 - **WHEN** `ctest --preset all` runs on a machine without the CD
