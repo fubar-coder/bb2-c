@@ -57,6 +57,18 @@ replay copy of `NAME.obj` as `NAME.orig` disappears. Alternative: two
 program binaries. Rejected: a variable keeps one binary and one set of
 snitch cases, and the run script stays one line.
 
+Capture and test are separate operations over this one switch:
+
+| | `LIBSET=orig` | `LIBSET=obj` |
+|---|---|---|
+| capture (`libs_capture`) | the committed reference; two runs must agree; CD | debugging output in the build directory, diff against the reference; never committed |
+| test | `libs_test_originals` (CD, label `originals`) | `libs_test` (no CD, label `emulator`, preset `all`) |
+
+Both tests call the same compare code (D3). The old mix, in which the
+originals test re-captured and compared with the committed file, is gone.
+Names: `libs_emulator` becomes `libs_test`, `libs_emulator_originals`
+becomes `libs_test_originals`; the capture is not a ctest test.
+
 ### D2. Output: `libs/tests/capture.[ch]`
 
 A program opens its output with `cap_begin(dir, name)` and ends with
@@ -71,10 +83,11 @@ CHECK<TAB>VECTOR<TAB>VALUE
 
 `CHECK` is the check text (`d0`, `popped`, a routine's name), `VECTOR` the
 input of the case (`VEC`, the register inputs, the argument), `VALUE` the
-observation: `$%08lX` for numbers; bytes as `bytes N HEX` up to 32 bytes, longer
+observation: `$%08lX` for numbers; bytes as `bytes N HEX` up to 64 bytes, longer
 buffers as `bytes N fnv FNV1A32` (a differing long buffer is then named
-by check and vector; the byte is found with the dump on demand, see Open
-Questions). Text: the string itself in quotes with `\xHH`
+by check and vector; the byte is found with `LIBS_CAP_DUMP=CHECK`, which
+makes the run write the bytes of the named check as hex lines next to
+its output). Text: the string itself in quotes with `\xHH`
 escapes. Address-valued observations use the normalisation of `tape.c`
 (`PROG`: a value inside the test program's hunks or stack; relative to
 the base for library bases, the registry mock, `AllocAbs` buffers, free
@@ -92,17 +105,24 @@ no comparison to bypass: the only way to observe is to write a line.
 
 A CMake script (no tool needed: line comparison) compares the run's
 `captures/NAME.txt` with `libs/tests/captures/NAME.txt`:
-`cmake -DRUN=DIR -DCOMMITTED=DIR -DEXCEPTIONS=FILE -P capture-compare.cmake`.
+`cmake -DRUN=DIR -DCOMMITTED=DIR [-DEXCEPTIONS=FILE] -P capture-compare.cmake`.
 It reports per program the first differing line (number, check, vector,
 captured value, run's value) and up to ten more, files missing on either
-side, and the line count if one is a prefix of the other. The same script
-in mode `-DSAME=ON` demands byte-identical files (the check that a fresh
-capture of the original equals the committed one, no exceptions applied).
-Block lines (D5) are compared the same way (the line differs, and it
-names the block). Alternative: compare in the m68k program against a
-copy of the capture. Rejected: the compare logic is easier to test on the
-host with fake files (no emulator for the checks' tests), and the emulator
-run stays the same for capture and compare.
+side, and the line count if one is a prefix of the other. `libs_test`
+passes the exceptions table; `libs_test_originals` does not, so the
+original's value is expected everywhere (no mode switch: the same code,
+one argument fewer). Block lines (D5) are compared the same way (the line
+differs, and it names the block). Alternative: compare in the m68k program
+against a copy of the capture. Rejected: the compare logic is easier to
+test on the host with fake files (no emulator for the checks' tests), and
+the emulator run stays the same for capture and compare.
+
+A second script, `capture-accept.cmake`, is the accept step of
+`libs_capture` (D7): it takes the two run directories, compares them
+byte for byte and, if equal, copies the files to `libs/tests/captures/`;
+else it prints "test not deterministic: NAME" with the differing lines
+(the same line report as the compare) and copies nothing. It also refuses
+files with a `lost` line (D6).
 
 ### D4. Exceptions: `libs/tests/exceptions.tsv`
 
@@ -113,58 +133,67 @@ PROGRAM<TAB>CHECK<TAB>#NNN<TAB>ORIGINAL<TAB>PORT<TAB>REASON
 ```
 
 `CHECK` is `CHECK` and `VECTOR` of the line joined by a tab-free separator
-`|`; it must match exactly one line of the capture. The compare replaces
-the capture's value by `PORT` for that line before comparing with the
-C build. A row is stale and fails when: the capture's value at that line
+`|`; it must match exactly one line of the capture. The compare of
+`libs_test` replaces the capture's value by `PORT` for that line before
+comparing with the C build; `libs_test_originals` ignores the table (the
+original gives the original's value). A row is stale and fails when: the capture's value at that line
 is not `ORIGINAL` (the row does not describe the committed original), the
 C build's value is `ORIGINAL` (the fix is undone, or no fix is needed), or
 the key matches no line or more than one. The table starts empty (no
 `expect_fixed` is in use today: the tapes have no `fixed` line).
 `selftest_fixed.c` and `libs_expect_fixed*` are replaced by CMake tests on
-fake captures (D8). The rule "a fix does not change the scenario to
+fake captures (D8, `libs_compare_row_*`). The rule "a fix does not change the scenario to
 avoid a difference" is kept in `tests/README.md`.
 
 ### D5. Block hashes for the two very large programs
 
 A program writes a block line `block N COUNT FNV1A32 first=CHECK|VECTOR`
-for each 4096 observations when it calls `cap_blocks(on)`; `ridisasmlib`
-(3.06 million) and `systest_med` (3.57 million) do, nothing else (the
-next, `systest_mathstr`, has 56 861 observations, about 2 MB as text at
-the average line of the other programs, and writes lines). A differing
-block line gives the block number and its observation range; the run with
-`LIBS_CAP_DUMP=1` writes the observations of one block (`BLOCK=N`) as
-lines, to find the differing one. The user decision names `ridisasmlib`
-only; `systest_med` has the same volume (the tape's `end` line of
-`systest_med.tape` is 3 567 195), so the same rule applies (Open
-Questions).
+for each 4096 observations when it calls `cap_blocks(on)`; only
+`rwe_ridisasmlib` (3.06 million observations) and `systest_med` (3.57
+million; user decision of 2026-11-12) do. Every other program writes
+lines, `libtest` included (two programs of 41 459 observations each,
+about 1.5 MB of text each at 40 bytes a line; `systest_mathstr` has 56
+861). A differing block line gives the block number and its observation
+range; the run with `LIBS_CAP_DUMP=BLOCK:N` writes the observations of
+that block as lines, to find the differing one.
 
 ### D6. Kept registers: stated by the test, written as kept/lost
 
 `DO2` still loads marker values (`markregs`) and compares the registers
 after the call with the inputs. The test program states per routine the
-registers that must be kept: by default the convention's (a4, a5, and a7
-through the stack), and a routine whose original keeps more (the port's
-agreement) lists them (`KEEPS(routine, d2|a2)`). After a call the
-program writes one line `kept` or `lost d3 a1` for the required set, the
-output being the same for original and C. The required set per routine
-comes from the original: a capture run with the original refuses (fails)
-if any required register shows `lost`, so a mask that is too strict
-cannot be committed. The listing `kept registers ... all calls` of
-`rwe_done` (the per-routine intersection) is the aid to state the masks;
-for routines whose kept registers depend on the data (`DisAssemble$`
-keeps d7 or not by the instruction) the mask is the registers kept in
-all calls. `DONTCARE` stays as the way to exempt a result register. This
-replaces `tape_kept`, the prediction and the `k` lines (30000 entries).
-The cost: kept registers beyond the stated mask are no longer compared
-(today: the C build must keep every register the original keeps in that
-call); the stated masks are the intersection over all calls of a routine,
-so a C build that loses a register the original keeps in some calls only
-is not caught. Alternative: write the full kept mask per call (15 bits)
+registers that must be kept: per routine the set the original keeps in
+all calls of the scenario (the intersection, never less than the
+convention's a4, a5 and a7 through the stack), written in the test
+program as `KEEPS(routine, d2|a2)`. After a call the program writes one
+line `kept` or `lost d3 a1` for that set, the output being the same for
+original and C. A capture run with the original refuses (fails) if any
+stated register shows `lost`, so a set that is too strict cannot be
+committed. The listing `kept registers ... all calls` of `rwe_done` (the
+per-routine intersection) is the aid to state the sets; for routines whose
+kept registers depend on the data (`DisAssemble$` keeps d7 or not by the
+instruction) the set is the registers kept in all calls. `DONTCARE` stays
+as the way to exempt a result register. This replaces `tape_kept`, the
+prediction and the `k` lines (30000 entries). The cost, accepted (user
+decision of 2026-11-12): a register the original keeps only in some
+calls of a routine is not in the set and is not compared, so a C build
+that loses it is not caught (today the C build must keep every register
+the original keeps in that call). Alternative: write the full kept mask per call (15 bits)
 and compare equally. Rejected: the C build keeps more than the original
 in many calls (about 30000 of the entries), so output would differ
 between the sets; the user decision is no subset rule.
 
 ### D7. Determinism
+
+`libs_capture` with the original proves it: each program runs twice, the
+second time with a different memory layout (`LIBS_PAD=N`: the program
+allocates N bytes of padding before it loads the sets, with N chosen so
+that heap and slot addresses shift; run 1 uses 0, run 2 a value that is
+not a multiple of the page or slot size). `capture-accept.cmake` (D3)
+compares the two outputs and refuses with "test not deterministic" and
+the differing lines. Because the normalisation of addresses (D2) is part
+of the output, a shifted layout also finds an observation that still
+holds an address. The runs of task 1.4 show today's non-deterministic
+checks before the conversion.
 
 - `riencryptlib`: Encrypt without wheels takes them from vallib's `Rnd`
   (hardware timing, comment at the head of `rwe/riencryptlib.c`). The
@@ -175,6 +204,7 @@ between the sets; the user decision is no subset rule.
   written as `not captured: Rnd of vallib takes the wheels from hardware
   timing`, and the round trip (Decrypt restores the data) stays checked
   inside the run as a check that holds for the one set (`ASSERT`).
+  Decided during implementation.
 - `ciatrklib`: in the F00 phase the original writes DMACON through
   `$DFF096` into the hardware, the C build through its patched pointer into
   a RAM copy (`rwe/ciatrklib.c`, the comment above `dmaconr`). The
@@ -183,44 +213,57 @@ between the sets; the user decision is no subset rule.
   and the C build's value are different by construction (hardware against
   RAM copy), so that observation is `not captured: F00 phase: the original
   writes DMACON into the hardware, the C build into its RAM copy` unless
-  the task finds a state in which both give the same. The checks that
-  `mt_end`'s `$DFF000` was found (`tape_orig()` today) become checks of
-  the one run's own set.
-- Every program is run twice in a capture run for the check
-  `libs_capture_repeat` (same bytes), so a new non-determinism is found.
+  the task finds a state in which both give the same (decided during
+  implementation). The checks that `mt_end`'s `$DFF000` was found
+  (`tape_orig()` today) become checks of the one run's own set.
 
 ### D8. Tests of the checks (broken input)
 
-All logic tests run on the host or as CMake scripts on fake files, no
+The logic tests run on the host or as CMake scripts on fake files, no
 emulator, no CD:
-`libs_capture_compare_same` (equal files pass), `_value` (one changed
-value fails naming the line), `_missing` and `_extra` (a line less and
-more), `_block` (a changed block hash names the block), `_lost`
-(a `lost` line in a capture is refused), `_row_stale_original` (row's
+`libs_compare_same` (equal files pass), `_value` (one changed value fails
+naming the line), `_missing` and `_extra` (a line less and more),
+`_block` (a changed block hash names the block), `_longbuf` (a changed
+buffer hash names check and vector), `_row_stale_original` (row's
 original value not the capture's), `_row_stale_port` (C build gives the
 original's value), `_row_missing_line` and `_row_ambiguous`, `_row_pass`
-(a correct row passes), `libs_capture_not_captured` (a `not captured`
-line is skipped on both sides and must be on both). The emulator side:
-`libs_emulator_wrong` runs one small program (libtest ldivlib) with a
+(a correct row passes), `_row_originals` (the same row is not applied
+without the table: the original's value is expected), `_not_captured` (a
+`not captured` line is skipped on both sides and must be on both),
+`libs_accept_nondeterministic` (two outputs differing in one line: the
+accept step fails with "test not deterministic", names the line and the
+committed directory stays unchanged), `libs_accept_same` (equal outputs
+are written), `libs_accept_lost` (a `lost` line is refused). The emulator
+side: `libs_test_wrong` runs one small program (libtest ldivlib) with a
 build whose output has a changed line and must fail with that line's
-message (replaces `libs_emulator_tape_wrong`).
+message (replaces `libs_emulator_tape_wrong`), `libs_test_originals_wrong`
+(the same for the originals test, needs the CD), and `libs_test_lost` (a
+routine that loses a stated register, from a variant file with a broken
+thunk, gives `lost` and fails).
 
 ### D9. Placement
 
-`libs_emulator` (labels `emulator`; `all`): `LIBSET=obj`, then
-`capture-compare.cmake` against `libs/tests/captures`. `libs_emulator_originals`
-(labels `emulator originals`, fixture `rwe_refbuild`): `LIBSET=orig`, then
-`capture-compare.cmake -DSAME=ON`. A capture is renewed by copying the
-files of the originals run's `test/captures/` into `libs/tests/captures/`
-(documented in `tests/README.md`).
+`libs_test` (label `emulator`; `all`): `LIBSET=obj`, then
+`capture-compare.cmake` against `libs/tests/captures` with the exceptions
+table. `libs_test_originals` (label `originals`, fixture `rwe_refbuild`;
+needs the CD): `LIBSET=orig`, the same compare without the table.
+`libs_capture` (a custom target, not in `all`, needs the CD): two runs
+with `LIBSET=orig` and different `LIBS_PAD`, then `capture-accept.cmake`;
+with `LIBSET=obj` it writes one run to the build directory
+(`libs-capture-obj/`), prints the compare report against the committed
+files, and copies nothing. Renewing a capture is `cmake --build --preset
+amiga --target libs_capture` followed by a review of the git diff
+(documented in `tests/README.md`). The emulator steps are one
+`emulator.cmake` for all three.
 
 ### D10. Migration order keeps `all` green
 
 Infrastructure first, beside the tape: `LIBSET` unset means the old
 behaviour, so unconverted programs keep running with the tape. A converted
-program reads `LIBSET`; `libs_emulator` runs the program with
+program reads `LIBSET`; during the migration `libs_emulator` (the old
+name, until the rename in group 9) runs the program with
 `LIBSTAPE=replay LIBSET=obj` and compares the programs that wrote a
-capture; `libs_emulator_originals` with `LIBSTAPE=record LIBSET=orig`.
+capture; the originals run uses `LIBSTAPE=record LIBSET=orig`.
 A converted program's tape file is deleted in the commit that converts
 it. The last group removes the tape code, the modes and the old tests.
 The check that a converted program's capture equals the old tape's
@@ -234,28 +277,32 @@ failures`, before and after; a change is named in the commit).
 
 - [Size of the text captures] 6.9 million observations in all, about 0.3
   million outside the two block programs; at about 40 bytes a line 12 MB
-  of text in git → measure in task 1.3 before converting; programs above
-  the budget (one million observations; the two named) use blocks; if the
-  total exceeds a stated size, `libtest` (82 918 observations) also writes
-  a line per routine and round instead of per observation (Open
-  Questions).
+  of text in git → measure in task 1.3 before converting; only the two
+  named programs use blocks; if the measured total is unacceptable, the
+  user decides again (the rule "plain lines for everything else" is a
+  decision, not a budget).
+- [Non-deterministic checks found late] The two-run capture refuses them;
+  task 1.4 lists today's before the conversion, so the cost is known.
 - [Large rewrite of 62 programs by hand] A conversion can change what a
   scenario covers → the number of checks per program is kept and
   compared (D10); one commit per group; the compare must pass before
   and after.
 - [Observations that held addresses] The tape found them by shifting the
   heap; the text format shows them → task 1.2 runs the compare with a
-  padded binary and a shifted heap once, as the experiment of task 9.8.
-- [A required-kept mask too weak] See D6; the mask is the intersection
-  over all calls, listed in the capture run's summary.
+  padded binary and a shifted heap once, as the experiment of task 9.8;
+  afterwards every `libs_capture` repeats it (D7).
+- [A stated kept set too weak] See D6; the set is the intersection over
+  all calls, so a register the original keeps in some calls only is not
+  covered. Accepted.
 - [Capture of the original changes with a toolchain or CD update] The CD
-  is fixed; a capture only changes with a scenario → `originals` fails
-  and names the line.
+  is fixed; a capture only changes with a scenario →
+  `libs_test_originals` fails and names the line.
 
 ## Migration Plan
 
-1. Infrastructure (`capture.[ch]`, `LIBSET`, compare script, exceptions
-   table, their tests) beside the tape.
+1. Infrastructure (`capture.[ch]`, `LIBSET`, compare and accept scripts,
+   exceptions table, the `libs_capture` target, their tests) beside the
+   tape.
 2. Convert program groups, delete each tape in the commit that converts it.
 3. Remove the tape code, `LIBSTAPE`, the replay copy, the old tests and
    rewrite the documents.
@@ -264,17 +311,7 @@ it).
 
 ## Open Questions
 
-- Whether `systest_med` writes block hashes like `ridisasmlib` (D5: the
-  design says yes, the user named `ridisasmlib` only), and whether
-  `libtest` (two programs of 41 459 observations) writes lines or blocks
-  (measure, task 1.3).
-- The required-kept sets (D6): the convention alone (a4/a5/a7), or the
-  stricter set where the original keeps more (the design assumes the
-  stricter set per routine, as the port's agreement says). Either keeps the
-  output identical.
-- Long byte buffers (D2): a hash line names check and vector, not the
-  byte; whether the second level is a dump on demand (design) or a hex
-  line for buffers up to a larger size.
 - Whether vallib's `Rnd` can be seeded for `riencryptlib` (D7), and
-  whether the F00 phase can be put into a state where original and C
-  build agree; else the `not captured` lines stand.
+  whether the F00 phase of `ciatrklib` can be put into a state where
+  original and C build agree; else `not captured: REASON` lines stand.
+  Decided during implementation.
