@@ -7,6 +7,12 @@ foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the raw block observations of the library tests (lib/libscmp, NAME.bin)
+add_executable(test_libscmp_bin test_libscmp_bin.c)
+target_link_libraries(test_libscmp_bin PRIVATE lib_libscmp lib_hunk)
+target_compile_options(test_libscmp_bin PRIVATE -Wno-unused-function)
+add_test(NAME libscmp_bin COMMAND test_libscmp_bin)
+
 # the sessions' supervisors (no emulator: the test is its own fake Amiberry)
 add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c)
 target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk)
@@ -244,6 +250,18 @@ libs_compare_wrong(malformed run-right exp-malformed obj
 libs_compare_wrong(ambiguous run-right exp-ambiguous obj
 	"exp-ambiguous/prog.txt:6: r\\|find\\|\\|1 is unqualified and qualified")
 libs_compare_wrong(qualifier run-right exp-qualifier obj "exp-qualifier/prog.txt:6: unknown qualifier")
+# a block place without the run's NAME.bin (the raw block file: its
+# records are tested from memory in test_libscmp_bin.c); libs-dump of a
+# block no NAME.bin has
+file(WRITE ${lc}/run-nobin/prog.txt "${lc_head}r|ldiv d0|$7 $2|1\t$00000003\nr|find||1\t$00000000\n"
+	"BLOCK:2\t4096 in prog.bin\n")
+libs_compare_wrong(nobin run-nobin exp obj
+	"run-nobin/prog.txt:4: a block case in prog.bin, which is missing")
+add_test(NAME libs_dump_none COMMAND results libs-dump ${lc}/run-nobin BLOCK:2)
+set_tests_properties(libs_dump_none PROPERTIES WILL_FAIL ON)
+add_test(NAME libs_dump_none_names COMMAND results libs-dump ${lc}/run-nobin BLOCK:2)
+set_tests_properties(libs_dump_none_names PROPERTIES PASS_REGULAR_EXPRESSION
+	"libs-dump BLOCK:2: in no NAME.bin of [^\n]*run-nobin")
 
 # results libs-accept on two recording runs that differ in one case: "test
 # not deterministic" names the case, and the expected data (a copy of

@@ -54,7 +54,8 @@
 #   libscmp    the judge of the library tests: the cases of a run against
 #              the expected data (libs/tests/expected), the expected data
 #              from two recording runs or with the port's [fixed #N] values,
-#              the cases a branch changes beyond its issues (fix-scope)
+#              the cases a branch changes beyond its issues (fix-scope),
+#              the raw block observations of a run (NAME.bin)
 #   cli        the command-line shell of the host programs on CLI11
 #              (cli.hpp, C++20, header only: cli::run, the help format)
 add_subdirectory(hunk)

@@ -100,6 +100,8 @@ void libscmp_free(struct libscmp_file *f)
     free(f->cases);
     free(f->entries);
     free(f->slots);
+    free(f->bin);
+    free(f->binpath);
     memset(f, 0, sizeof *f);
 }
 
@@ -607,22 +609,27 @@ int libscmp_names_dir(struct libscmp_names *l, const char *dir, FILE *err)
     return 0;
 }
 
-char *libscmp_path(const char *dir, const char *name)
+char *libscmp_path_ext(const char *dir, const char *name, const char *ext)
 {
-    /* "DIR/NAME.txt" in a buffer of exactly its size.  Copied with the
+    /* "DIR/NAMEEXT" in a buffer of exactly its size.  Copied with the
      * lengths already taken: with -fsanitize=undefined, gcc keeps a path
      * on which strlen was handed NULL (the check reports and goes on) and
      * warns about a null %s argument of snprintf there. */
-    size_t nd = strlen(dir), nn = strlen(name);
-    char *p = malloc(nd + 1 + nn + sizeof ".txt");
+    size_t nd = strlen(dir), nn = strlen(name), ne = strlen(ext);
+    char *p = malloc(nd + 1 + nn + ne + 1);
 
     if (p) {
         memcpy(p, dir, nd);
         p[nd] = '/';
         memcpy(p + nd + 1, name, nn);
-        memcpy(p + nd + 1 + nn, ".txt", sizeof ".txt");
+        memcpy(p + nd + 1 + nn, ext, ne + 1);
     }
     return p;
+}
+
+char *libscmp_path(const char *dir, const char *name)
+{
+    return libscmp_path_ext(dir, name, ".txt");
 }
 
 int libscmp_exists(const char *path)
@@ -658,15 +665,35 @@ int libscmp_program_names(struct libscmp_names *names, const char *dir1, const c
 int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name,
                        enum libscmp_kind kind, FILE *err)
 {
-    char *path = libscmp_path(dir, name);
+    char *path = libscmp_path(dir, name), *bp = libscmp_path_ext(dir, name, ".bin");
     char msg[700];
     int r;
 
-    if (!path) {
+    if (!path || !bp) {
+        free(path);
+        free(bp);
         fprintf(err, "out of memory\n");
         return -1;
     }
-    r = libscmp_load(f, path, kind, msg, sizeof msg);
+    if (kind == LIBSCMP_RUN) {
+        /* the run's NAME.txt with the block cases from its NAME.bin */
+        size_t len, blen = 0;
+        char *text = libscmp_read_file(path, &len), *bin = NULL;
+
+        memset(f, 0, sizeof *f);
+        if (!text) {
+            snprintf(msg, sizeof msg, "%s: cannot read it", path);
+            r = -3;
+        } else if (libscmp_exists(bp) && !(bin = libscmp_read_file(bp, &blen))) {
+            snprintf(msg, sizeof msg, "%s: cannot read it", bp);
+            r = -3;
+        } else
+            r = libscmp_parse_run(f, text, len, path, bin, blen, bp, msg, sizeof msg);
+        free(text);
+        free(bin);
+    } else
+        r = libscmp_load(f, path, kind, msg, sizeof msg);
+    free(bp);
     if (r)
         fprintf(err, "%s\n", msg);
     else if (strcmp(f->name, name)) {
@@ -679,6 +706,13 @@ int libscmp_load_named(struct libscmp_file *f, const char *dir, const char *name
 
 int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_set set,
                          const char *const *only, size_t nonly, FILE *out, FILE *err)
+{
+    return libscmp_compare_dirs_other(run_dir, exp_dir, NULL, set, only, nonly, out, err);
+}
+
+int libscmp_compare_dirs_other(const char *run_dir, const char *exp_dir, const char *other_dir,
+                               enum libscmp_set set, const char *const *only, size_t nonly,
+                               FILE *out, FILE *err)
 {
     struct libscmp_names names = { 0 };
     size_t i, nequal = 0, nfail = 0, nbad = 0;
@@ -731,6 +765,8 @@ int libscmp_compare_dirs(const char *run_dir, const char *exp_dir, enum libscmp_
                     nfail++;
                     if (!status)
                         status = 1;
+                    if (run.bin && libscmp_list_blocks(&run, &exp, set, run_dir, other_dir, out, err))
+                        status = 2;
                 } else
                     nequal++;
             }

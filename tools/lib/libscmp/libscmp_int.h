@@ -34,6 +34,15 @@ int libscmp_program_names(struct libscmp_names *names, const char *dir1, const c
                           const char *const *only, size_t nonly, FILE *err);
 /* DIR/NAME.txt (malloc'd) */
 char *libscmp_path(const char *dir, const char *name);
+/* the differing or added block cases of run against exp (set), the first
+   LIBSCMP_LISTED: their observations into RUN_DIR/NAME.block-N.obs, their
+   first lines and, with other_dir (may be NULL), the first observation
+   differing from other_dir/NAME.bin on out; 0 = ok, -1 = error (on err) */
+int libscmp_list_blocks(const struct libscmp_file *run, const struct libscmp_file *exp,
+                        enum libscmp_set set, const char *run_dir, const char *other_dir,
+                        FILE *out, FILE *err);
+/* DIR/NAMEEXT (malloc'd) */
+char *libscmp_path_ext(const char *dir, const char *name, const char *ext);
 int libscmp_exists(const char *path);
 /* DIR/NAME.txt parsed, its header naming NAME; 0 = ok, else the message
    on err */

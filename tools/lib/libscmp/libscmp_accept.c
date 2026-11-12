@@ -39,6 +39,7 @@ static int is_lost(const char *v, uint32_t n)
 static void nondeterministic(const struct libscmp_file *a, const struct libscmp_file *b, FILE *r)
 {
     size_t i, shown = 0;
+    uint32_t block = 0;
 
     fprintf(r, "test not deterministic: %s\n", a->name);
 #define SHOW(...) do { \
@@ -54,8 +55,11 @@ static void nondeterministic(const struct libscmp_file *a, const struct libscmp_
         else {
             const struct libscmp_case *d = &b->cases[e->plain];
 
-            if (d->vallen != c->vallen || memcmp(b->text + d->val, a->text + c->val, c->vallen))
+            if (d->vallen != c->vallen || memcmp(b->text + d->val, a->text + c->val, c->vallen)) {
                 SHOW("%s: %.*s: run 1 %.*s, run 2 %.*s\n", a->name, KEY(a, c), VAL(a, c), VAL(b, d));
+                if (!block && c->keylen > 6 && !memcmp(a->text + c->key, "BLOCK:", 6))
+                    block = (uint32_t)strtoul(a->text + c->key + 6, NULL, 10);
+            }
         }
     }
     for (i = 0; i < b->ncases; i++) {
@@ -69,6 +73,45 @@ static void nondeterministic(const struct libscmp_file *a, const struct libscmp_
         fprintf(r, "%s: the same cases in another order\n", a->name);
     else if (shown > LIBSCMP_DETAILS)
         fprintf(r, "%s: ... %zu more\n", a->name, shown - LIBSCMP_DETAILS);
+    /* the first differing block: its first differing observation */
+    if (block && a->bin && b->bin) {
+        char msg[700];
+        int x = libscmp_bin_first_diff(a, b, block, "run 1", "run 2", r, msg, sizeof msg);
+
+        if (x < 0)
+            fprintf(r, "%s\n", x == -1 ? "out of memory" : msg);
+    }
+}
+
+/* the observations "lost" in the blocks of run (its NAME.bin), reported;
+   their number, -1 = out of memory or a malformed file (reported) */
+static long lost_in_blocks(const struct libscmp_file *run, size_t shown, FILE *report)
+{
+    struct libscmp_obs o;
+    char msg[700];
+    long n = 0;
+    int ev;
+
+    if (!run->bin)
+        return 0;
+    if (libscmp_obs_begin(&o, run->bin, run->binlen, run->binpath, msg, sizeof msg)) {
+        fprintf(report, "%s\n", msg);
+        return -1;
+    }
+    while ((ev = libscmp_obs_next(&o, msg, sizeof msg)) > 0)
+        if (ev == LIBSCMP_OBS && o.type == 0x15 && o.lost) {
+            n++;
+            if (shown + (size_t)n <= LIBSCMP_DETAILS)
+                fprintf(report, "%s: %s (BLOCK:%lu): %s: the original does not keep a stated "
+                        "register (the stated set is too strict)\n", run->name, o.key,
+                        (unsigned long)o.block, o.val);
+        }
+    if (ev < 0) {
+        fprintf(report, "%s\n", ev == -1 ? "out of memory" : msg);
+        n = -1;
+    }
+    libscmp_obs_free(&o);
+    return n;
 }
 
 /* a case of old kept or dropped where the run lacks its key: the index of
@@ -137,6 +180,13 @@ int libscmp_accept(const struct libscmp_file *run1, const struct libscmp_file *r
                 fprintf(report, "%s: %.*s: %.*s: the original does not keep a stated register "
                         "(the stated set is too strict)\n", run1->name, KEY(run1, c), VAL(run1, c));
         }
+    }
+    {
+        long n = lost_in_blocks(run1, nlost, report);
+
+        if (n < 0)
+            return 1;
+        nlost += (size_t)n;
     }
     if (nlost) {
         if (nlost > LIBSCMP_DETAILS)

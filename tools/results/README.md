@@ -9,14 +9,15 @@ TED tests `tests/data/ted-oracle.sha256` written from a fresh run of the
 original TED (`ted-oracle`), the cases of a library test run against
 the expected data `libs/tests/expected` (`libs-compare`), and that
 expected data written from two recording runs of the original
-(`libs-accept`) or from a run of the port (`libs-update`), and the cases
+(`libs-accept`) or from a run of the port (`libs-update`), the dump of a
+block of a library test run (`libs-dump`), and the cases
 of the expected data a branch changes beyond the issues it fixes
 (`fix-scope`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
 `tools/lib/cdtable`, `tools/lib/oracletable` and `tools/lib/libscmp`,
 tested by `tools/tests/test_outmatch.c`, `test_prevcmp.c`,
-`test_previntended.c`, `test_cdtable.c`, `test_oracletable.c` and
-`test_libscmp.c`.
+`test_previntended.c`, `test_cdtable.c`, `test_oracletable.c`,
+`test_libscmp.c` and `test_libscmp_bin.c`.
 
 ## Usage
 
@@ -40,6 +41,8 @@ SUBCOMMANDS:
   libs-accept                 the expected data of the library tests from two recording runs of
                               the original
   libs-update                 the [fixed #N] cases of the library tests from a run of the port
+  libs-dump                   a block or a bytes case of the library tests' block observations,
+                              from the run's NAME.bin
   fix-scope                   the cases of the expected data a branch changes beyond its issues
 ```
 
@@ -218,12 +221,15 @@ OPTIONS:
           --set SET           the library set of the run (required): obj (the C build) or orig
                               (the original)
           --only NAME         only this program (the others are not looked at)
+          --other DIR         another run's output (NAME.bin per block program): the first
+                              observation of a differing block in which the two runs differ
 
 A case is KEY<TAB>VALUE; for --set obj the unqualified and the "KEY [fixed #N]"
 cases apply, for orig the unqualified and the "KEY [orig]" ones. Every
 differing, missing and added case is a finding (the first 11 per program on
-stdout). Exit status 0 equal, 1 a finding, 2 usage error or a malformed or
-unreadable file.
+stdout). The block cases of a run come from its NAME.bin; the observations of
+the first 3 differing blocks go to RUN_DIR/NAME.block-N.obs. Exit status 0
+equal, 1 a finding, 2 usage error or a malformed or unreadable file.
 ```
 
 Compares the output of a library test run, `RUN_DIR/NAME.txt` per
@@ -248,6 +254,23 @@ at); a program with a file in only one directory fails. A malformed file
 (a line not of the format, a duplicate key, a key both unqualified and
 qualified, a qualifier in a run's output, a header naming another
 program) is reported as `FILE:LINE: message`.
+
+A program in block mode (OpenSpec change `libs-capture-host-blocks`)
+writes its block observations raw to `RUN_DIR/NAME.bin` and in `NAME.txt`
+the place of each block case, `BLOCK:N<TAB>COUNT in NAME.bin`. Reading the
+run, the judge makes the block case `BLOCK:N<TAB>COUNT HASH first=KEY`
+there from `NAME.bin` (the format: `libscmp.h`); a `NAME.bin` that is
+missing, cut off, holds an unknown record or a length beyond its end, or
+whose blocks do not fit the places is a malformed file
+(`FILE: offset N: message`). For the first 3 differing or added blocks of
+a program the observation lines of the block (`KEY<TAB>VALUE`, whose
+FNV-1a is the block's hash) go to `RUN_DIR/NAME.block-N.obs`, and the
+report names the file and shows its first three lines. With `--other DIR`
+(the output of another run with its `NAME.bin`: the other library set,
+or another run of the same) the report also names the first observation
+of each such block in which the two runs differ:
+`NAME: BLOCK:N: first differing observation KEY: this run VALUE, the
+other run VALUE`.
 
 ### libs-accept
 
@@ -276,8 +299,11 @@ Writes the expected data `EXPECTED_DIR/NAME.txt` from two recording runs
 of the original, `RUN1_DIR` and `RUN2_DIR` (run with different memory
 layouts). A program's two outputs must be identical, else it reports
 `test not deterministic: NAME` and the differing cases (`NAME: KEY: run 1
-VALUE, run 2 VALUE`, `only in run 1`, `only in run 2`); a case `lost ...`
-(a stated register the original does not keep) is refused. The file gets
+VALUE, run 2 VALUE`, `only in run 1`, `only in run 2`), for the first
+differing block also its first differing observation from the runs'
+`NAME.bin` (as `libs-compare --other`); a case `lost ...` (a stated
+register the original does not keep), also an observation `lost ...`
+inside a block (`NAME: KEY (BLOCK:N): VALUE: ...`), is refused. The file gets
 the run's cases in their order, unqualified, except: a key with a
 `[fixed #N]` case keeps that case and gets the run's value as `[orig]`; a
 key with only an `[orig]` case stays `[orig]`; a `[fixed #N]` case whose
@@ -323,6 +349,38 @@ must apply in exactly one program (else `--only` names the program); one
 whose port value is the expected one, or whose key is qualified already,
 is refused. The programs are those of `EXPECTED_DIR` or the ones `--only`
 names. Nothing is written unless all is well.
+
+### libs-dump
+
+```
+Usage: results libs-dump [OPTIONS] RUN_DIR WHAT
+
+a block or a bytes case of the library tests' block observations, from the run's
+NAME.bin
+
+POSITIONALS:
+  RUN_DIR TEXT REQUIRED       the run's output (NAME.bin per block program)
+  WHAT TEXT REQUIRED          BLOCK:N, or the full key of a bytes observation in a block
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --only NAME         only this program
+
+What LIBS_CAP_DUMP names, for the observations in blocks: the observation lines
+of block N, or the bytes of the observation KEY as KEY<TAB>at $OFFS HEX (32
+bytes a line), appended to RUN_DIR/NAME.dump. Exit status 0 a dump written, 1
+none, 2 usage error or a malformed, unreadable or unwritable file.
+```
+
+The dump of `LIBS_CAP_DUMP` (`libs/tests/capture.h`) for the
+observations of the block programs, made from their `RUN_DIR/NAME.bin`:
+`BLOCK:N` gives the block's observation lines `KEY<TAB>VALUE` (their
+FNV-1a is the block's hash), the full key of a bytes observation in a
+block its bytes as `KEY<TAB>at $OFFS HEX`, 32 bytes a line - the format
+the test program writes for a plain bytes case. The lines are appended
+to `RUN_DIR/NAME.dump` (beside a dump the program wrote) and each written
+file is named on stdout. The programs are those with a `NAME.bin`, or the
+ones `--only` names.
 
 ### fix-scope
 
@@ -372,8 +430,9 @@ build directories and writes its report to stdout; `cd-update` and
 lists of hashes and writes the third; `libs-compare` reads two
 directories and writes its report to stdout, `libs-accept` and
 `libs-update` read the run directories and rewrite files of the expected
-data, `fix-scope` reads two directories (and a log) and writes its report
-to stdout.
+data, `libs-compare` also writes `NAME.block-N.obs` into the run
+directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
+two directories (and a log) and writes its report to stdout.
 
 ## Exit codes
 
@@ -384,14 +443,16 @@ to stdout.
   data have errors (nothing written); a case of a library test run
   differs, is missing or added, or a program lacks a file
   (`libs-compare`); the runs are refused, nothing written (`libs-accept`,
-  `libs-update`); a case changed beyond the named issues (`fix-scope`);
+  `libs-update`); no dump written (`libs-dump`); a case changed beyond
+  the named issues (`fix-scope`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
-  files (`libs-compare`, `libs-accept`, `libs-update`, `fix-scope`), a
-  file that cannot be written (`libs-accept`, `libs-update`);
+  files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
+  `fix-scope`), a file that cannot be written (`libs-compare`,
+  `libs-accept`, `libs-update`, `libs-dump`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -410,10 +471,11 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `ted-oracle`: the target `ted-oracle`
   (`programs/ted/tests/oracle/ted-oracle.cmake`), after the run of the
   original TED.
-* `libs-compare`, `libs-accept`: the tests `libs_compare_*` and
-  `libs_accept_*` (`tools/tests/CMakeLists.txt`); the library emulator
-  tests and the targets `libs-capture` and `libs-update` follow (OpenSpec
-  change `libs-tests-capture`).
+* `libs-compare`, `libs-accept`, `libs-update`, `libs-dump`: the library
+  emulator tests (`libs/tests/emulator.cmake`) and the targets
+  `libs-capture` and `libs-update` (`libs/tests/expected.cmake`); the tests
+  `libs_compare_*`, `libs_accept_*` and `libs_dump_*`
+  (`tools/tests/CMakeLists.txt`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
   `cmake/fix-scope.cmake`); the tests `fix_scope_*`
   (`tools/tests/CMakeLists.txt`).

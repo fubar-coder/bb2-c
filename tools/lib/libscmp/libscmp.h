@@ -35,6 +35,13 @@
  * expected data that apply are the unqualified ones and the [fixed #N]
  * (obj) or [orig] (orig) ones; the run must have exactly their keys, with
  * the same values.  Order does not count.
+ *
+ * A program in block mode writes its block observations raw to NAME.bin
+ * beside NAME.txt, and in NAME.txt the place of each block case as
+ * "BLOCK:N<TAB>COUNT in NAME.bin"; loading a run (libscmp_parse_run,
+ * libscmp_load_named) puts the block case BLOCK:N<TAB>COUNT HASH first=KEY
+ * there, made from NAME.bin as libs/tests/capture.c wrote it before (the
+ * format of NAME.bin: libscmp_obs_begin).
  */
 #ifndef LIBSCMP_H
 #define LIBSCMP_H
@@ -80,6 +87,10 @@ struct libscmp_file {
     size_t nentries, capentries;
     uint32_t *slots;                    /* hash index: entry + 1, 0 = free */
     size_t nslots;
+    unsigned char *bin;                 /* a run's raw block observations NAME.bin
+                                           (owned), or NULL */
+    size_t binlen;
+    char *binpath;                      /* its path (owned) */
 };
 
 /**
@@ -210,6 +221,143 @@ int libscmp_update(const struct libscmp_file *run, const struct libscmp_file *ex
 int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *const *only,
                         size_t nonly, struct libscmp_fix *fixes, size_t nfixes, FILE *out,
                         FILE *err);
+
+/* --- the raw block observations NAME.bin -------------------------------
+ *
+ * Written by libs/tests/capture.c in block mode (openspec change
+ * libs-capture-host-blocks, design H1): the line "# capture-bin NAME 1",
+ * then records, numbers big-endian, CHECK and VEC the raw parts (not
+ * escaped, NULL as empty), each ended by a 0 byte:
+ *
+ *   $01 ROUTINE\0               the escaped routine part of the keys
+ *   $02                         end of block mode: a partial block closes
+ *   $10 CHECK\0 VEC\0 u32       a number              $XXXXXXXX
+ *   $11 CHECK\0 VEC\0 u32 N, N bytes                  bytes N HEX / bytes N fnv XXXXXXXX
+ *   $13 CHECK\0 VEC\0 u8 0      a NULL text           null
+ *   $13 CHECK\0 VEC\0 u8 1 TEXT\0                     "TEXT"
+ *   $14 CHECK\0 VEC\0 u8 0      an address in the test program: prog
+ *   $14 CHECK\0 VEC\0 u8 1 u32  an address            $XXXXXXXX
+ *   $14 CHECK\0 VEC\0 u8 2|3 u32 OFF NAME\0           NAME+$OFF / NAME-$OFF
+ *   $15 CHECK\0 VEC\0 u16 SET   kept registers        kept / lost d3 a1
+ *
+ * Each observation is the line KEY<TAB>VALUE as capture.h describes it,
+ * with ROUTINE|CHECK|VEC|N as key (N: the observation's number in the
+ * program, from 1); LIBSCMP_BLOCK observations, or fewer before a $02,
+ * make one block. */
+
+enum { LIBSCMP_KEY_MAX = 1023 };        /* the writer's longest key */
+enum { LIBSCMP_LISTED = 3 };            /* differing blocks listed per program */
+
+/* the events of libscmp_obs_next */
+enum { LIBSCMP_OBS_END = 0, LIBSCMP_OBS = 1, LIBSCMP_OBS_BLOCK = 2 };
+
+/* the observations of a NAME.bin, one at a time */
+struct libscmp_obs {
+    const unsigned char *d;             /* the file (not owned) */
+    size_t len, pos;
+    const char *path;                   /* in messages */
+    char name[64];                      /* NAME of the header */
+    char routine[LIBSCMP_KEY_MAX + 1];
+    /* the current observation (LIBSCMP_OBS) */
+    uint32_t obs;                       /* its number, from 1 */
+    uint32_t block;                     /* the number of its block */
+    uint8_t type;                       /* its record type */
+    char key[LIBSCMP_KEY_MAX + 1];
+    size_t keylen;
+    char *val;                          /* its value (owned, 0-terminated) */
+    size_t vallen, valcap;
+    const unsigned char *bytes;         /* $11: the bytes */
+    uint32_t nbytes;
+    uint32_t lost;                      /* $15: the lost registers */
+    /* the open block */
+    uint32_t count, hash;
+    char first[LIBSCMP_KEY_MAX + 1];
+    /* the block closed by the last LIBSCMP_OBS_BLOCK */
+    uint32_t blkno, blkcount, blkhash;
+    char blkfirst[LIBSCMP_KEY_MAX + 1];
+    int full;                           /* a full block to report */
+};
+
+/**
+ * @brief Start reading the observations of a NAME.bin (data, len bytes;
+ * path in messages): its header.
+ * @return 0 = ok, -2 = malformed (err: "PATH: offset N: TEXT")
+ */
+int libscmp_obs_begin(struct libscmp_obs *o, const void *data, size_t len, const char *path,
+                      char *err, size_t errlen);
+
+/**
+ * @brief The next event: LIBSCMP_OBS (o->key, o->val, ... the observation),
+ * LIBSCMP_OBS_BLOCK (o->blkno, blkcount, blkhash, blkfirst: a block closed),
+ * LIBSCMP_OBS_END; -1 = out of memory, -2 = malformed (a truncated record,
+ * an unknown type, a length beyond the end, a bad kind, flag or register
+ * set, a key longer than LIBSCMP_KEY_MAX, the end inside a block).
+ */
+int libscmp_obs_next(struct libscmp_obs *o, char *err, size_t errlen);
+
+void libscmp_obs_free(struct libscmp_obs *o);
+
+/**
+ * @brief A run's NAME.txt (text) with the block places filled from its
+ * NAME.bin (bin, may be NULL): the text the judge parses.  Every place
+ * "BLOCK:N<TAB>COUNT in NAME.bin" must be the next block of bin with that
+ * N and COUNT, and bin must have no further block.
+ * @param out   the result (malloc'd, 0-terminated), *outlen its length
+ * @return 0 = ok, -1 = out of memory, -2 = malformed (err)
+ */
+int libscmp_bin_merge(const char *text, size_t len, const char *path, const void *bin,
+                      size_t binlen, const char *binpath, char **out, size_t *outlen, char *err,
+                      size_t errlen);
+
+/**
+ * @brief Parse a run from memory: text merged with bin (libscmp_bin_merge,
+ * bin may be NULL), the copy of bin kept in f for the diagnostics.
+ * @return as libscmp_parse
+ */
+int libscmp_parse_run(struct libscmp_file *f, const char *text, size_t len, const char *path,
+                      const void *bin, size_t binlen, const char *binpath, char *err,
+                      size_t errlen);
+
+/**
+ * @brief The dump of LIBS_CAP_DUMP from a NAME.bin: for "BLOCK:N" the
+ * observation lines of block N (whose FNV-1a is the block's hash), for
+ * the key of a bytes observation its bytes as KEY<TAB>at $OFFS HEX (32
+ * bytes a line).
+ * @return the number of lines written, -1 = out of memory, -2 = malformed
+ *         (err)
+ */
+long libscmp_bin_dump(const void *bin, size_t binlen, const char *binpath, const char *what,
+                      FILE *out, char *err, size_t errlen);
+
+/**
+ * @brief The first observation of block in which a and b (two runs'
+ * NAME.bin) differ, as a line "NAME: BLOCK:N: first differing observation
+ * KEY: LA VALUE, LB VALUE" (or "... only in LA ...", or "no differing
+ * observation" for the block).
+ * @return 1 = a difference named, 0 = none, -1 = out of memory, -2 =
+ *         malformed (err)
+ */
+int libscmp_bin_first_diff(const struct libscmp_file *a, const struct libscmp_file *b,
+                           uint32_t block, const char *la, const char *lb, FILE *out, char *err,
+                           size_t errlen);
+
+/**
+ * @brief libs-dump: libscmp_bin_dump of every RUN_DIR/NAME.bin (or the ones
+ * only names), appended to RUN_DIR/NAME.dump where it has lines.
+ * @return 0 = a dump written, 1 = none, 2 = error (on err)
+ */
+int libscmp_dump_dirs(const char *run_dir, const char *what, const char *const *only,
+                      size_t nonly, FILE *out, FILE *err);
+
+/**
+ * @brief libscmp_compare_dirs with a second run: other_dir (or NULL) holds
+ * another run's NAME.bin; a differing block of the first LIBSCMP_LISTED is
+ * written to RUN_DIR/NAME.block-N.obs (its observation lines) and, with
+ * other_dir, its first observation differing from the other run named.
+ */
+int libscmp_compare_dirs_other(const char *run_dir, const char *exp_dir, const char *other_dir,
+                               enum libscmp_set set, const char *const *only, size_t nonly,
+                               FILE *out, FILE *err);
 
 /* --- fix-scope (design D12) -------------------------------------------- */
 

@@ -2,8 +2,8 @@
 
 ## 1. The judge reads the raw block file
 
-- [ ] 1.1 `tools/lib/libscmp`: the observation iterator over `NAME.bin` (design H1, H3), the merge of the block places of `NAME.txt` on loading a run, the raw data kept with the run; verify with host tests from memory in `tools/tests` (every record type formatted as `capture.c` writes it, the block hash and `first=`, partial blocks, and broken input: a truncated record, an unknown type, a bad length, a missing `.bin`, places and blocks that do not fit, a key too long), clean also with `-DHOST_SANITIZE=ON`
-- [ ] 1.2 Diagnostics (design H4): `libs-compare` lists differing blocks into `NAME.block-N.obs` and with `--other DIR` names the first differing observation; `libs-accept` names the first differing observation of a non-deterministic block and refuses `lost` inside a block; `results libs-dump`; verify with host tests (memory and `results` on files made by `tools/tests/CMakeLists.txt`) and the `results` README/help tests
+- [x] 1.1 `tools/lib/libscmp`: the observation iterator over `NAME.bin` (design H1, H3), the merge of the block places of `NAME.txt` on loading a run, the raw data kept with the run; verify with host tests from memory in `tools/tests` (every record type formatted as `capture.c` writes it, the block hash and `first=`, partial blocks, and broken input: a truncated record, an unknown type, a bad length, a missing `.bin`, places and blocks that do not fit, a key too long), clean also with `-DHOST_SANITIZE=ON`
+- [x] 1.2 Diagnostics (design H4): `libs-compare` lists differing blocks into `NAME.block-N.obs` and with `--other DIR` names the first differing observation; `libs-accept` names the first differing observation of a non-deterministic block and refuses `lost` inside a block; `results libs-dump`; verify with host tests (memory and `results` on files made by `tools/tests/CMakeLists.txt`) and the `results` README/help tests
 
 ## 2. The writer
 
