@@ -12,7 +12,7 @@
 
 ## 3. Documentation
 
-- [ ] 3.1 `docs/testing.md`, `tests/README.md`, `tools/results/README.md`, `site/content/docs/project-structure/library-test-cases.md`, the comments of `capture.h`, `libscmp.h`: blocks, the raw file, its deletion, the dump and the diagnostics (current state only); verify `readme_results` and a hugo build of the page
+- [x] 3.1 `docs/testing.md`, `tests/README.md`, `tools/results/README.md`, `site/content/docs/project-structure/library-test-cases.md`, the comments of `capture.h`, `libscmp.h`: blocks, the raw file, its deletion, the dump and the diagnostics (current state only); verify `readme_results` and a hugo build of the page
 
 ## 4. Acceptance
 

@@ -271,8 +271,10 @@ its occurrence number) or to `BLOCK:N`, to `captures/NAME.dump`. Set it
 for one test through the environment, for example
 `LIBS_CAP_DUMP=BLOCK:294 ctest --preset all -R '^libs_emulator$'`, or
 with `emulator.cmake -DCAP_DUMP=KEY`; the run prints the path and the
-first 40 lines of the dump and fails if no program wrote one, so do not
-set the variable for a whole run of the libs tests.
+first 40 lines of the dump and fails if there is none, so do not set the
+variable for a whole run of the libs tests. The program dumps a plain
+case itself; a block, and an observation inside a block, are dumped
+after the run from the program's `NAME.bin` (`results libs-dump`, below).
 
 **Record** (`libs-capture`) runs `libs_tests` twice with `LIBSET=orig`,
 the second time with `LIBS_PAD=4104` (the program allocates that many
@@ -346,20 +348,36 @@ with a stub).
 **Block programs.** `systest_med` (3.57 million observations),
 `rwe_ridisasmlib` (3.06 million) and the two `libtest` programs would be
 hundreds of MB as text, or random numbers nobody can read. Between
-`OBS_BLOCKS(1)` and `OBS_BLOCKS(0)` the observations are not written;
-every 4096 of them are one case `BLOCK:N<TAB>COUNT XXXXXXXX first=KEY`,
-with the FNV-1a hash of the lines they would have been. A differing
-block is reported with its number and its range of observations
-(`rwe_ridisasmlib: BLOCK:294 (observations 1200129..1204224): expected
-..., got ...`); `LIBS_CAP_DUMP=BLOCK:N` writes that block's observations
-to find the one. Limits: a fix inside such a program changes a block hash
-nobody can review, and two fixes in one block share one pair and one
-issue number; a change that adds or removes an observation shifts the
-number of every later block (in a plain program, the occurrence numbers
-within a key). A `lost` case inside a block is hashed with the others, so
-a recording cannot refuse it: a stated set that is too strict shows as a
-block that differs from the summary. The two large programs take about
-2.5 and 3 minutes of the emulator run; its limit is the cache variable
+`OBS_BLOCKS(1)` and `OBS_BLOCKS(0)` every 4096 observations are one case
+`BLOCK:N<TAB>COUNT XXXXXXXX first=KEY`, with the FNV-1a hash of the lines
+they would have been. The program does not format them: it writes each
+observation raw to `captures/NAME.bin` (the records:
+`tools/lib/libscmp/libscmp.h`) and, in `NAME.txt`, the line
+`BLOCK:N<TAB>COUNT in NAME.bin` where the block case belongs; `results`
+makes the block cases from `NAME.bin` when it reads the run (a missing,
+cut off or otherwise broken `NAME.bin` fails the compare with the file
+and the offset). A differing block is reported with its number and its
+range of observations (`rwe_ridisasmlib: BLOCK:294 (observations
+1200129..1204224): expected ..., got ...`), and its observations are
+written at once to `captures/NAME.block-N.obs` (the first three blocks
+of a program; the report shows their first lines). Given another run's
+captures with its `NAME.bin` (`results libs-compare --other DIR`, for
+example the original's run against the port's), the report names the
+first observation of the block in which the two runs differ; a recording
+does so for its two runs. `LIBS_CAP_DUMP=BLOCK:N` (or the key of an
+observation in a block) writes the dump from `NAME.bin` after the run
+(`results libs-dump`). The `NAME.bin` files, about 300 MB per run, are
+deleted when the test or the recording passed and kept when it failed;
+the environment variable `LIBS_KEEP_BIN` (or `-DKEEP_BIN=ON` of
+`emulator.cmake`) keeps them. Limits: a fix inside such a program
+changes a block hash nobody can review, and two fixes in one block share
+one pair and one issue number; a change that adds or removes an
+observation shifts the number of every later block (in a plain program,
+the occurrence numbers within a key). A `lost` observation inside a
+block is refused by a recording like a `lost` case, named with its key
+and block. The two large programs take about
+26 and 30 s of the emulator run on an idle machine (the whole
+`libs_emulator` about 80 s); its limit is the cache variable
 `LIBS_TESTS_TIMEOUT` (default 900 s, `-DLIBS_TESTS_TIMEOUT=N` for a slower
 machine; the ctest time limit adds 300 s and the queue wait), that of the
 small tests below `LIBS_SELFTEST_TIMEOUT` (60 s).
@@ -367,8 +385,13 @@ small tests below `LIBS_SELFTEST_TIMEOUT` (60 s).
 **The checks have tests with broken input** (no CD): `libs_compare_*` and
 `libs_accept_*` (host: the judge on fake files: a changed value, a
 missing and an added case, a changed block, the qualifiers, a regressed
-`[fixed #N]`, a run that is not deterministic, a `lost` case),
-`libs_capture_format` (the case writer), `libs_capture_target` (the
+`[fixed #N]`, a run that is not deterministic, a `lost` case, a block
+place without its `NAME.bin`), `libscmp_bin` (the raw block file from
+memory: every record formatted, the merge, a truncated record, an
+unknown type, a bad length, places and blocks that do not fit, the
+dump, the first differing observation, `lost` inside a block),
+`libs_dump_*`, `libs_capture_format` (the case writer; block mode gives
+the lines and hashes of the text path), `libs_capture_target` (the
 record and update targets with a fake emulator run), `fix_scope_*` (the
 fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib

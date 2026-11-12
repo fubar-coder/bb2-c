@@ -215,9 +215,16 @@ the first observation of block 2 has the counter 4097. The key here says:
 the routine `$CB00` (ldivlib's first) was called with d0 $FFFFF8C3 and
 d1 $D89B8344, and its `d0` was observed.
 
+The test program does not compute the hash itself: the emulated 68000
+would spend half of the test's time on it. It writes each observation
+in a compact binary form to a file, and the comparing tool on the host
+turns them into exactly these lines and hashes them.
+
 A block cannot be read, only compared. When one differs, the test names
-its number and the range of observations it holds, and a debugging run
-can write the block's observations out (the repository's
+its number and the range of observations it holds and writes the
+block's observations to a file next to the run's output. Given the run
+of the original as well, it names the first observation in which the
+two differ (the repository's
 [description of the tests](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md),
 section "Libraries").
 

@@ -93,9 +93,10 @@ with a hash:
 BLOCK:1	4096 AEEEBB1A first=$CB00|d0|$00000000 $00000000|1
 ```
 
-A differing block is reported by number and range of observations. A
-block cannot be read by a person; the run can write its lines out
-(see below).
+The program writes these observations raw to a file `NAME.bin`; the
+host turns them into the block lines and hashes them. A differing block
+is reported by number and range of observations, and its observations
+are written out at once (see below).
 
 ### Words
 
@@ -208,7 +209,16 @@ rest of the run is in the build directory:
   `LIBS_CAP_DUMP="KEY" ctest --preset all -R '^libs_emulator$'`, and read
   `captures/NAME.dump` (the run also prints its first lines). For a
   block, set it to `BLOCK:N`, and you get the 4096 observations of that
-  block.
+  block; it is made from `captures/NAME.bin` after the run.
+* a differing block: the failing test writes its observations to
+  `captures/NAME.block-N.obs` and prints the first lines. The raw
+  observations, `captures/NAME.bin` (100-170 MB per large program), stay
+  when the test failed and are deleted when it passed; with the variable
+  `LIBS_KEEP_BIN=1` set they stay. To find the first observation in
+  which the port's run and the original's run differ, keep both and run
+  `results libs-compare` with `--other` (`tools/results/README.md`), for
+  example
+  `build/amiga/host/tools/results/results libs-compare build/amiga/libs/tests/libs_emulator/test/captures libs/tests/expected --set obj --only systest_med --other build/amiga/libs/tests/libs_emulator_originals/test/captures`.
 * to run one program only, use a snitch filter, for example
   `cmake --preset amiga "-DLIBS_CAPTURE_FILTER=rwe riarrayslib"` and the
   target `libs-update` (it leaves other programs' files alone; set the
@@ -292,7 +302,8 @@ and the `KEEPS(...)` line to paste.
 * **`[fixed #N]`**: a case that only the port must pass; issue `#N` is
   the fix.
 * **Block**: one case that stands for 4096 observations of a very large
-  program; its value is a hash (`BLOCK:N`).
+  program; its value is a hash (`BLOCK:N`), made on the host from the
+  raw observations the program writes to `NAME.bin`.
 * **Not captured**: a case that says why a value cannot be reproduced;
   it is skipped on both sides.
 * **Kept registers**: the registers a library routine must leave
