@@ -266,10 +266,13 @@ original's in `libs_emulator_originals/`; the program's log is
 `test/libs_tests.txt` next to `captures/`), compared with
 `diff -u libs/tests/expected/NAME.txt` against it. The case of a long
 buffer holds only its hash; the bytes are written by a run in which the
-shell variable `LIBS_CAP_DUMP` is set to the full key of the case (with
-its occurrence number) or to `BLOCK:N`, to `captures/NAME.dump`.
-`emulator.cmake` has no option for it: add a `Set LIBS_CAP_DUMP KEY` line
-to `vars_cmd` there for a debugging run.
+AmigaDOS variable `LIBS_CAP_DUMP` is set to the full key of the case (with
+its occurrence number) or to `BLOCK:N`, to `captures/NAME.dump`. Set it
+for one test through the environment, for example
+`LIBS_CAP_DUMP=BLOCK:294 ctest --preset all -R '^libs_emulator$'`, or
+with `emulator.cmake -DCAP_DUMP=KEY`; the run prints the path and the
+first 40 lines of the dump and fails if no program wrote one, so do not
+set the variable for a whole run of the libs tests.
 
 **Record** (`libs-capture`) runs `libs_tests` twice with `LIBSET=orig`,
 the second time with `LIBS_PAD=4104` (the program allocates that many

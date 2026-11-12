@@ -203,11 +203,12 @@ rest of the run is in the build directory:
 * the program's log: `test/libs_tests.txt` next to `captures/`. It also
   lists the kept registers per routine.
 * a long buffer shows only a hash (`bytes 200 fnv 7FA26772`). To see its
-  bytes, run with the variable `LIBS_CAP_DUMP` set to the key (with the
-  counter) and read `captures/NAME.dump`. For a block, set it to
-  `BLOCK:N`, and you get the 4096 observations of that block. (The
-  emulator script has no option for it yet: add a `Set LIBS_CAP_DUMP KEY`
-  line to `vars_cmd` in `libs/tests/emulator.cmake` for a debugging run.)
+  bytes, run that one test with the variable `LIBS_CAP_DUMP` set to the
+  key (with the counter), for example
+  `LIBS_CAP_DUMP="KEY" ctest --preset all -R '^libs_emulator$'`, and read
+  `captures/NAME.dump` (the run also prints its first lines). For a
+  block, set it to `BLOCK:N`, and you get the 4096 observations of that
+  block.
 * to run one program only, use a snitch filter, for example
   `cmake --preset amiga "-DLIBS_CAPTURE_FILTER=rwe riarrayslib"` and the
   target `libs-update` (it leaves other programs' files alone; set the
