@@ -28,11 +28,12 @@ ctest --preset host                                    # tests without emulator 
 ctest --preset emulator                                # tests in Amiberry
 ctest --preset all                                     # host and emulator: the acceptance run, needs no CD for
                                                        # most tests (without it skips only corpus_cd,
-                                                       # corpus_cd_ab3); libs_emulator replays the
-                                                       # recordings of libs/tests/tapes
+                                                       # corpus_cd_ab3); libs_emulator compares the C
+                                                       # libraries with libs/tests/expected
 ctest --preset bug-orig                                # open original bugs and port bugs: fail on purpose
 ctest --preset originals                               # label originals: comparisons with the originals, recording
-                                                       # of tests/bug-orig/*/*.orig, libs_emulator_originals,
+                                                       # of tests/bug-orig/*/*.orig, libs_emulator_originals
+                                                       # (the originals against libs/tests/expected),
                                                        # the corpus configuration orig-clib; needs the CD
 ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
                                                        # run it before merging changes of tests/ab3
@@ -107,7 +108,16 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
      `ctest --preset all`; the comment `BUG(orig)` becomes `Fixed (#N)`;
      the entry in `docs/*/deviations.md` as an intended deviation (kind
      F); the changed results named in the commit message, and a line
-     `Fixes #N` in it (GitHub closes the issue on the push);
+     `Fixes #N` in it (GitHub closes the issue on the push). Where the
+     suite keeps expected data in the shared test model (the library
+     tests: the pair `KEY [orig]` / `KEY [fixed #N]` in
+     `libs/tests/expected`, written by the target `libs-update` with
+     `LIBS_UPDATE_FIX`), the fix-scope check
+     (`cmake --build --preset amiga --target fix-scope`) reports every
+     other case the branch changes: the agent runs it and names its
+     result in its report, the coordinator runs it again before the
+     merge, and a reported case is named in the commit with its reason or
+     gets its own issue (`tests/README.md`, "Libraries");
   3. the entry on the website page of fixed original bugs
      (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
      a one-sentence entry, or a section with an example of the original's
