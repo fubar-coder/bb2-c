@@ -28,24 +28,32 @@
  *                                   not captured: REASON (a part that cannot be
  *                                   reproduced; the judge skips it)
  *
- * cap_blocks(1) starts the block mode of the two very large programs (D6):
- * the observations are not written; every CAP_BLOCK of them become one
- * case BLOCK:N<TAB>COUNT XXXXXXXX first=KEY, N counted from 1, block N
- * holding the observations (N-1)*CAP_BLOCK+1 ... ; XXXXXXXX is the FNV-1a
- * hash of the block's observation lines as they would be written
- * (KEY<TAB>VALUE<LF>), whose occurrence number is the observation's number
- * in the program (from 1), and KEY in first= is the key of the block's
- * first observation.  cap_blocks(0) and cap_end() close a partial block.
- * cap_not_captured() is written as a plain case in block mode too.
+ * cap_blocks(1) starts the block mode of the very large programs (D6):
+ * every CAP_BLOCK observations become one case BLOCK:N<TAB>COUNT XXXXXXXX
+ * first=KEY, N counted from 1; XXXXXXXX is the FNV-1a hash of the block's
+ * observation lines KEY<TAB>VALUE<LF>, whose occurrence number is the
+ * observation's number in the program (from 1), and KEY in first= is the
+ * key of the block's first observation.  cap_blocks(0) and cap_end()
+ * close a partial block.  The observations are written raw to
+ * DIR/NAME.bin (the records: tools/lib/libscmp/libscmp.h; openspec change
+ * libs-capture-host-blocks), and NAME.txt gets in place of each block case
+ * the line BLOCK:N<TAB>COUNT in NAME.bin; the judge (results) makes the
+ * block cases from NAME.bin.  NAME.bin is opened by cap_blocks(1) and
+ * closed by cap_blocks(0) (its memory is back before the program's
+ * balance check), so a program has one block mode (a second one is a
+ * fault).  cap_not_captured() is written as a plain case in block mode
+ * too.
  *
  * The shell variable LIBS_CAP_DUMP names a case by its full key (with the
- * occurrence number) or a block (BLOCK:N); the run then writes to
- * DIR/NAME.dump the bytes of that bytes case (KEY<TAB>at $OFFS HEX, 32
- * bytes a line) or the observation lines of that block.
+ * occurrence number); the run then writes to DIR/NAME.dump the bytes of
+ * that bytes case (KEY<TAB>at $OFFS HEX, 32 bytes a line).  The dump of a
+ * block (BLOCK:N) or of an observation in a block is made from NAME.bin
+ * (results libs-dump).
  *
  * cap_begin(dir, name) / cap_end() around one test program; cap_end()
  * returns the number of faults (a file not written, a key too long, too
- * many distinct keys), each also reported through bl_test_check().
+ * many distinct keys), each also reported through bl_test_check().  A key
+ * of a block observation that is too long is found by the judge.
  */
 #ifndef CAPTURE_H
 #define CAPTURE_H

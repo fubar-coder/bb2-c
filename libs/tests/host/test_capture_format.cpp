@@ -3,10 +3,13 @@
 // libs-tests-capture) with its files in memory (capture_env.h below): the
 // text written for known cases - every value format, a 64-byte and a
 // 65-byte buffer, the same check twice, a key with | TAB \ and a
-// non-printable byte, block cases, LIBS_CAP_DUMP of a case and of a
-// block - and the faults.
+// non-printable byte, block cases (written raw to NAME.bin and read
+// with the judge's merge, tools/lib/libscmp: block mode gives the lines
+// and hashes of the text path), LIBS_CAP_DUMP of a case and of a block -
+// and the faults.
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <map>
 #include <string>
 #include <vector>
@@ -14,6 +17,7 @@
 extern "C" {
 #include "capture.h"
 #include "capture_env.h"
+#include "libscmp.h"
 }
 
 namespace {
@@ -190,6 +194,90 @@ TEST_CASE("the occurrence numbers start again with each program", "[capture]")
     }
 }
 
+// the run's NAME.txt with its block cases from NAME.bin, as the judge
+// reads it (tools/lib/libscmp); "" if they do not merge
+std::string merged(const std::string &name)
+{
+    const std::string &txt = files["TEST:" + name + ".txt"];
+    auto b = files.find("TEST:" + name + ".bin");
+    char *out = nullptr, err[700];
+    size_t len = 0;
+    int r = libscmp_bin_merge(txt.data(), txt.size(), "txt", b == files.end() ? nullptr : b->second.data(),
+                              b == files.end() ? 0 : b->second.size(), "bin", &out, &len, err,
+                              sizeof err);
+    if (r) {
+        failures.push_back(err);
+        return "";
+    }
+    std::string s(out, len);
+    free(out);
+    return s;
+}
+
+// every value format: the cases of the first test
+void every_format()
+{
+    unsigned char b64[64], b65[65];
+    for (int i = 0; i < 65; i++) {
+        b65[i] = (unsigned char)i;
+        if (i < 64)
+            b64[i] = (unsigned char)i;
+    }
+    const unsigned char rec[8] = {0xAA, 0xBB, 0x00, 0x00, 0x10, 0x20, 0xCC, 0xDD};
+
+    cap_num("no routine", nullptr, 7);
+    cap_routine("rtn");
+    cap_num("finit d0", "x=1", 0x12345678);
+    cap_num("finit d0", "x=1", 0);
+    cap_num("a|b\tc\\d\x01", "v|\t\xff", 0xFFFFFFFF);
+    cap_bytes("buf", "64", b64, 64);
+    cap_bytes("buf", "65", b65, 65);
+    cap_bytes("buf", "0", b64, 0);
+    cap_ptrbytes("rec", nullptr, rec, 8);
+    cap_str("s", nullptr, "a\"b\\c\td\x80");
+    cap_str("s", "null", nullptr);
+    cap_ptr("p", "null", 0, "base", 0x8000);
+    cap_ptr("p", "prog", 0x1abc, "base", 0x8000);
+    cap_ptr("p", "above", 0x8010, "base", 0x8000);
+    cap_ptr("p", "below", 0x7ff0, "base", 0x8000);
+    cap_ptr("p", "no base", 0x40001234, nullptr, 0);
+    cap_ptr("p", "long name", 0x8010, std::string(150, 'n').c_str(), 0x8000);
+    cap_regs("regs", nullptr, 0);
+    cap_regs("regs", nullptr, (1u << 3) | (1u << 9) | (1u << 14) | 0x8000);
+    cap_routine("x|y");
+    cap_num("finit d0", "x=1", 5);
+}
+
+TEST_CASE("block mode gives the lines and hashes of the text path", "[capture]")
+{
+    reset();
+    cap_begin("TEST:", "plain");
+    every_format();
+    CHECK(cap_end() == 0);
+    cap_begin("TEST:", "blk");
+    cap_blocks(1);
+    every_format();
+    CHECK(cap_end() == 0);
+    CHECK(failures.empty());
+    CHECK(files.count("TEST:plain.bin") == 0);
+    // the plain lines with the observation's number as occurrence number
+    std::string plain = files["TEST:plain.txt"], lines, first;
+    size_t p = plain.find('\n') + 1;
+    int n = 0;
+    for (size_t e; (e = plain.find('\n', p)) != std::string::npos; p = e + 1) {
+        std::string l = plain.substr(p, e - p);
+        size_t tab = l.find('\t'), bar = l.rfind('|', tab);
+        l = l.substr(0, bar + 1) + std::to_string(++n) + l.substr(tab) + "\n";
+        if (n == 1)
+            first = l.substr(0, l.find('\t'));
+        lines += l;
+    }
+    CHECK(n == 19);
+    CHECK(files["TEST:blk.txt"] == "# capture blk 1\nBLOCK:1\t19 in blk.bin\n");
+    CHECK(merged("blk") == "# capture blk 1\nBLOCK:1\t19 " + hex8(fnv(lines)) + " first=" + first + "\n");
+    CHECK(failures.empty());
+}
+
 TEST_CASE("block cases", "[capture]")
 {
     reset();
@@ -219,9 +307,56 @@ TEST_CASE("block cases", "[capture]")
         + "med|skip||1\tnot captured: why\n"
         + "BLOCK:2\t3 " + hex8(fnv(lines2)) + " first=med|obs|v|4097\n"
         + "med|after||1\t$00000002\n";
-    CHECK(files["TEST:blk.txt"] == want);
-    // the dump of block 2: its observation lines, whose hash is the block's
-    CHECK(files["TEST:blk.dump"] == lines2);
+    CHECK(files["TEST:blk.txt"] == std::string("# capture blk 1\n")
+                                       + "med|before||1\t$00000001\n"
+                                       + "BLOCK:1\t4096 in blk.bin\n"
+                                       + "med|skip||1\tnot captured: why\n"
+                                       + "BLOCK:2\t3 in blk.bin\n"
+                                       + "med|after||1\t$00000002\n");
+    CHECK(merged("blk") == want);
+    // the dump of block 2 is the host's (LIBS_CAP_DUMP=BLOCK:2 is no key
+    // of a plain case): its observation lines, whose hash is the block's
+    CHECK(files.count("TEST:blk.dump") == 0);
+    const std::string &bin = files["TEST:blk.bin"];
+    char *d = nullptr, err[700];
+    size_t dl = 0;
+    FILE *m = open_memstream(&d, &dl);
+    CHECK(libscmp_bin_dump(bin.data(), bin.size(), "blk.bin", "BLOCK:2", m, err, sizeof err) == 3);
+    fclose(m);
+    CHECK(std::string(d, dl) == lines2);
+    free(d);
+}
+
+TEST_CASE("the block file is closed with block mode; a second block mode is a fault", "[capture]")
+{
+    reset();
+    cap_begin("TEST:", "twice");
+    cap_blocks(1);
+    cap_num("c", nullptr, 1);
+    cap_blocks(0);
+    // closed (its memory back before the programs' balance checks)
+    CHECK(files.count("TEST:twice.bin") == 1);
+    CHECK(open_files.count("TEST:twice.bin") == 0);
+    cap_blocks(1);
+    cap_num("c", nullptr, 2);
+    cap_blocks(0);
+    CHECK(cap_end() == 1);
+    REQUIRE(failures.size() == 1);
+    CHECK(failures[0] == "capture twice: block mode a second time (one block file per program)");
+}
+
+TEST_CASE("broken: the block file cannot be opened", "[capture]")
+{
+    reset();
+    cap_begin("TEST:", "nobin");
+    refuse_create = true;
+    cap_blocks(1);
+    cap_num("c", nullptr, 1);
+    cap_blocks(0);
+    refuse_create = false;
+    CHECK(cap_end() == 1);
+    REQUIRE(failures.size() == 1);
+    CHECK(failures[0] == "capture nobin: cannot open the block file");
 }
 
 TEST_CASE("LIBS_CAP_DUMP of a long buffer", "[capture]")

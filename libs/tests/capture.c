@@ -1,10 +1,11 @@
 /*
  * capture - the output of a library test program as cases (capture.h; the
- * format: openspec change libs-tests-capture, design D4 and D6).
+ * format: openspec change libs-tests-capture, design D4 and D6; the raw
+ * block observations: change libs-capture-host-blocks, design H1/H2).
  *
  * Portable C: the system is behind capture_env.h (capture_amiga.c in
  * libs_tests, memory in the host test libs_capture_format).  The output
- * goes through a static buffer, so that the memory balance checks of the
+ * goes through static buffers, so that the memory balance checks of the
  * test programs (AvailMem) stay as they are; so does the table of the
  * occurrence numbers.
  */
@@ -15,6 +16,7 @@
 #include "capture_env.h"
 
 #define OUT_MAX (64 * 1024)
+#define BIN_MAX (64 * 1024)             /* the raw block file (H1: more gains nothing) */
 #define DUMP_MAX (8 * 1024)
 #define KEY_MAX 1024
 #define KEYS (1UL << 17)                /* distinct keys of a program */
@@ -27,8 +29,9 @@ struct stream {
     char path[300];
 };
 
-static char obuf[OUT_MAX], dbuf[DUMP_MAX];
+static char obuf[OUT_MAX], bbuf[BIN_MAX], dbuf[DUMP_MAX];
 static struct stream out = { NULL, obuf, 0, OUT_MAX, "" };
+static struct stream bin = { NULL, bbuf, 0, BIN_MAX, "" };
 static struct stream dump = { NULL, dbuf, 0, DUMP_MAX, "" };
 static int begun, faults, full_reported, long_reported, write_reported;
 static char pname[64];
@@ -42,14 +45,14 @@ static uint32_t klen;
 static struct { uint32_t h1, h2, n; } keys[KEYS];
 static uint32_t nkeys;
 
-/* block mode (D6) */
-static int blocks, to_block;
-static uint32_t obsno, blkno, blkcount, blkhash;
-static char blkfirst[KEY_MAX];
+/* block mode (D6, H1/H2): the observations go raw to NAME.bin, NAME.txt
+   gets the place of each block; blkno blocks closed, blkcount
+   observations in the open one */
+static int blocks, bin_failed, bin_done;
+static uint32_t blkno, blkcount;
 
-/* LIBS_CAP_DUMP */
+/* LIBS_CAP_DUMP (a plain bytes case; the blocks are dumped on the host) */
 static char dumpkey[KEY_MAX];
-static uint32_t dumpblock;
 
 static void fault(const char *why)
 {
@@ -105,20 +108,10 @@ static void sput(struct stream *s, const char *p, uint32_t n)
     }
 }
 
-static int dumping_block(void)
-{
-    return dumpblock && dumpblock == blkno + 1;
-}
-
-/* a part of the current line: to the output, or into the block */
+/* a part of the current line */
 static void emit(const char *p, uint32_t n)
 {
-    if (to_block) {
-        blkhash = fnv(blkhash, p, n);
-        if (dumping_block())
-            sput(&dump, p, n);
-    } else
-        sput(&out, p, n);
+    sput(&out, p, n);
 }
 
 static void emits(const char *s)
@@ -231,24 +224,82 @@ static uint32_t occurrence(void)
     return ++keys[i].n;
 }
 
-static void close_block(void)
+/* ------------------------------------------------------------- block mode */
+
+/* the raw records of NAME.bin (libscmp.h, design H1): opened with the
+   first block of the program */
+static void bput(const void *p, uint32_t n)
 {
-    char l[64];
+    if (!bin.f && !bin_failed) {
+        char h[100];
+
+        if (!(bin.f = cap_env_create(bin.path))) {
+            bin_failed = 1;
+            if (!write_reported) {
+                write_reported = 1;
+                fault("cannot open the block file");
+            }
+        } else {
+            snprintf(h, sizeof h, "# capture-bin %s 1\n", pname);
+            sput(&bin, h, (uint32_t)strlen(h));
+        }
+    }
+    if (bin.f)
+        sput(&bin, p, n);
+}
+
+static void b1(uint32_t v)
+{
+    char c = (char)v;
+    bput(&c, 1);
+}
+
+static void b4(uint32_t v)
+{
+    char c[4] = { (char)(v >> 24), (char)(v >> 16), (char)(v >> 8), (char)v };
+    bput(c, 4);
+}
+
+static void bstr(const char *s)
+{
+    if (!s)
+        s = "";
+    bput(s, (uint32_t)strlen(s) + 1);
+}
+
+/* the start of an observation record of type t */
+static void bobs(uint32_t t, const char *check, const char *vec)
+{
+    b1(t);
+    bstr(check);
+    bstr(vec);
+}
+
+/* the open block closes: its place in NAME.txt; end: block mode ends
+   (record $02 in NAME.bin) */
+static void close_block(int end)
+{
+    char l[120];
 
     if (!blkcount)
         return;
+    if (end)
+        b1(0x02);
     blkno++;
-    snprintf(l, sizeof l, "BLOCK:%lu\t%lu %08lX first=", (unsigned long)blkno,
-             (unsigned long)blkcount, (unsigned long)blkhash);
+    snprintf(l, sizeof l, "BLOCK:%lu\t%lu in %s.bin\n", (unsigned long)blkno,
+             (unsigned long)blkcount, pname);
     sput(&out, l, (uint32_t)strlen(l));
-    sput(&out, blkfirst, (uint32_t)strlen(blkfirst));
-    sput(&out, "\n", 1);
     blkcount = 0;
-    blkhash = FNV_BASIS;
 }
 
-/* "|N" (N decimal) into n (16 bytes): what snprintf "|%lu" writes, without
-   its cost for every observation of the block programs */
+/* an observation written: the place of its block once it is full */
+static void bobs_end(void)
+{
+    if (++blkcount == CAP_BLOCK)
+        close_block(0);
+}
+
+/* "|N" (N decimal) into n (16 bytes): what snprintf "|%lu" writes */
 static const char *occ_text(char *n, uint32_t v)
 {
     char *p = n + 15;
@@ -262,9 +313,8 @@ static const char *occ_text(char *n, uint32_t v)
     return p;
 }
 
-/* start a case: the key and the TAB.  plain: a case of its own in block
-   mode too (not captured) */
-static void line_begin(const char *check, const char *vec, int plain)
+/* start a plain case: the key and the TAB */
+static void line_begin(const char *check, const char *vec)
 {
     char n[16];
 
@@ -274,15 +324,7 @@ static void line_begin(const char *check, const char *vec, int plain)
     esc_part(kbuf, &klen, check);
     key_add("|");
     esc_part(kbuf, &klen, vec);
-    if (blocks && !plain) {
-        key_add(occ_text(n, ++obsno));
-        if (!blkcount)
-            memcpy(blkfirst, kbuf, klen + 1);
-        to_block = 1;
-    } else {
-        key_add(occ_text(n, occurrence()));
-        to_block = 0;
-    }
+    key_add(occ_text(n, occurrence()));
     emit(kbuf, klen);
     emit("\t", 1);
 }
@@ -290,11 +332,6 @@ static void line_begin(const char *check, const char *vec, int plain)
 static void line_end(void)
 {
     emit("\n", 1);
-    if (to_block) {
-        to_block = 0;
-        if (++blkcount == CAP_BLOCK)
-            close_block();
-    }
 }
 
 /* ------------------------------------------------------------- the run */
@@ -304,30 +341,24 @@ void cap_begin(const char *dir, const char *name)
     char file[80];
     char l[100];
 
-    out.f = dump.f = NULL;
-    out.len = dump.len = 0;
+    out.f = bin.f = dump.f = NULL;
+    out.len = bin.len = dump.len = 0;
     faults = full_reported = long_reported = write_reported = 0;
     snprintf(pname, sizeof pname, "%s", name);
     rpart[0] = kbuf[0] = 0;
     klen = 0;
     memset(keys, 0, sizeof keys);
     nkeys = 0;
-    blocks = to_block = 0;
-    obsno = blkno = blkcount = 0;
-    blkhash = FNV_BASIS;
-    dumpblock = 0;
+    blocks = bin_failed = bin_done = 0;
+    blkno = blkcount = 0;
     dumpkey[0] = 0;
     if (cap_env_getvar("LIBS_CAP_DUMP", dumpkey, sizeof dumpkey) <= 0)
         dumpkey[0] = 0;
-    else if (!strncmp(dumpkey, "BLOCK:", 6)) {
-        unsigned long b = 0;
-        sscanf(dumpkey + 6, "%lu", &b);
-        dumpblock = (uint32_t)b;
-        dumpkey[0] = 0;
-    }
     cap_env_find_prog();
     snprintf(file, sizeof file, "%s.txt", name);
     join(out.path, sizeof out.path, dir, file);
+    snprintf(file, sizeof file, "%s.bin", name);
+    join(bin.path, sizeof bin.path, dir, file);
     snprintf(file, sizeof file, "%s.dump", name);
     join(dump.path, sizeof dump.path, dir, file);
     begun = 1;
@@ -347,14 +378,17 @@ int cap_end(void)
 {
     if (!begun)
         return 0;
-    close_block();
+    close_block(1);
     flush(&out);
+    flush(&bin);
     flush(&dump);
     if (out.f)
         cap_env_close(out.f);
+    if (bin.f)
+        cap_env_close(bin.f);
     if (dump.f)
         cap_env_close(dump.f);
-    out.f = dump.f = NULL;
+    out.f = bin.f = dump.f = NULL;
     begun = blocks = 0;
     return faults;
 }
@@ -363,14 +397,33 @@ void cap_routine(const char *routine)
 {
     uint32_t n = 0;
     esc_part(rpart, &n, routine);
+    if (begun && blocks) {
+        b1(0x01);
+        bstr(rpart);
+    }
 }
 
 void cap_blocks(int on)
 {
     if (!begun)
         return;
-    if (!on)
-        close_block();
+    if (!on && blocks) {
+        /* closed here, so that the file's memory is back before the
+           programs' memory balance checks */
+        close_block(1);
+        flush(&bin);
+        if (bin.f)
+            cap_env_close(bin.f);
+        bin.f = NULL;
+        bin_done = 1;
+    } else if (on && !blocks) {
+        if (bin_done && !bin_failed) {
+            bin_failed = 1;
+            fault("block mode a second time (one block file per program)");
+        }
+        b1(0x01);
+        bstr(rpart);
+    }
     blocks = on;
 }
 
@@ -390,9 +443,15 @@ void cap_num(const char *check, const char *vec, uint32_t v)
 
     if (!begun)
         return;
+    if (blocks) {
+        bobs(0x10, check, vec);
+        b4(v);
+        bobs_end();
+        return;
+    }
     s[0] = '$';
     hex8(s + 1, v);
-    line_begin(check, vec, 0);
+    line_begin(check, vec);
     emits(s);
     line_end();
 }
@@ -426,7 +485,14 @@ void cap_bytes(const char *check, const char *vec, const void *p, uint32_t n)
 
     if (!begun)
         return;
-    line_begin(check, vec, 0);
+    if (blocks) {
+        bobs(0x11, check, vec);
+        b4(n);
+        bput(p, n);
+        bobs_end();
+        return;
+    }
+    line_begin(check, vec);
     if (n <= CAP_BYTES) {
         snprintf(s, sizeof s, n ? "bytes %lu " : "bytes %lu", (unsigned long)n);
         emits(s);
@@ -472,7 +538,15 @@ void cap_str(const char *check, const char *vec, const char *s)
 
     if (!begun)
         return;
-    line_begin(check, vec, 0);
+    if (blocks) {
+        bobs(0x13, check, vec);
+        b1(s != NULL);
+        if (s)
+            bstr(s);
+        bobs_end();
+        return;
+    }
+    line_begin(check, vec);
     if (!s)
         emits("null");
     else {
@@ -503,6 +577,21 @@ void cap_ptr(const char *check, const char *vec, uint32_t v, const char *name, u
 
     if (!begun)
         return;
+    if (blocks) {
+        bobs(0x14, check, vec);
+        if (v && cap_env_is_prog(v))
+            b1(0);
+        else if (!v || !name) {
+            b1(1);
+            b4(v);
+        } else {
+            b1(v >= base ? 2 : 3);
+            b4(v >= base ? v - base : base - v);
+            bstr(name);
+        }
+        bobs_end();
+        return;
+    }
     if (v && cap_env_is_prog(v))
         snprintf(s, sizeof s, "prog");
     else if (!v || !name)
@@ -511,7 +600,7 @@ void cap_ptr(const char *check, const char *vec, uint32_t v, const char *name, u
         snprintf(s, sizeof s, "%.100s+$%lX", name, (unsigned long)(v - base));
     else
         snprintf(s, sizeof s, "%.100s-$%lX", name, (unsigned long)(base - v));
-    line_begin(check, vec, 0);
+    line_begin(check, vec);
     emits(s);
     line_end();
 }
@@ -525,6 +614,14 @@ void cap_regs(const char *check, const char *vec, uint32_t lost)
     if (!begun)
         return;
     lost &= 0x7fff;
+    if (blocks) {
+        char c[2] = { (char)(lost >> 8), (char)lost };
+
+        bobs(0x15, check, vec);
+        bput(c, 2);
+        bobs_end();
+        return;
+    }
     if (!lost)
         strcpy(s, "kept");
     else {
@@ -538,7 +635,7 @@ void cap_regs(const char *check, const char *vec, uint32_t lost)
             }
         s[n] = 0;
     }
-    line_begin(check, vec, 0);
+    line_begin(check, vec);
     emits(s);
     line_end();
 }
@@ -549,7 +646,7 @@ void cap_not_captured(const char *check, const char *vec, const char *reason)
 
     if (!begun)
         return;
-    line_begin(check, vec, 1);
+    line_begin(check, vec);
     emits("not captured: ");
     for (; reason && *reason; reason++) {
         unsigned char c = (unsigned char)*reason;

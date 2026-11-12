@@ -7,7 +7,7 @@
 
 ## 2. The writer
 
-- [ ] 2.1 `libs/tests/capture.[ch]`: block mode writes `NAME.bin` and the block places (design H1, H2), no block dump; `test_capture_format` checks the raw records and, with the judge's merge, that block mode gives the same lines and hashes as the text path for every value format
+- [x] 2.1 `libs/tests/capture.[ch]`: block mode writes `NAME.bin` and the block places (design H1, H2), no block dump; `test_capture_format` checks the raw records and, with the judge's merge, that block mode gives the same lines and hashes as the text path for every value format
 - [ ] 2.2 `emulator.cmake`, `expected.cmake`, `libs/tests/CMakeLists.txt`: the host dump of `CAP_DUMP`, `.bin` deleted after a pass and kept on failure or with `KEEP_BIN`/`LIBS_KEEP_BIN` (design H4, H5); verify with `libs_capture_target` (the fake run writes a `.bin`), `libs_emulator_dump_*` and a block dump run (`LIBS_CAP_DUMP=BLOCK:N`)
 
 ## 3. Documentation
