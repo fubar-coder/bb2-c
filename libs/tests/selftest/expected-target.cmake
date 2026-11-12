@@ -4,7 +4,8 @@
 # original's set; one whose two runs differ (the second has LIBS_PAD) is
 # refused as "test not deterministic" and leaves the expected data as it
 # was; an update with FIX makes the pair [orig]/[fixed #N] from the port's
-# run (LIBSET=obj); a skipped run (77) fails naming what it needs.
+# run (LIBSET=obj); a skipped run (77) fails naming what it needs; every
+# entry of USERLIBS reaches the runs.
 #   cmake -DRESULTS=results -DSCRIPT=expected.cmake -DFAKE=fake-emulator.cmake
 #         -DWORK=DIR -P expected-target.cmake
 foreach(v RESULTS SCRIPT FAKE WORK)
@@ -63,4 +64,10 @@ file(READ ${exp}/other.txt got)
 if(NOT got STREQUAL other)
 	message(FATAL_ERROR "expected-target: the filtered capture changed other.txt")
 endif()
+# every USERLIBS entry reaches the runs (not only the first)
+file(WRITE ${WORK}/userlibs "${head}r|userlibs||1\t\"@USERLIBS@\"\n")
+file(REMOVE ${exp}/prog.txt)
+run(capture userlibs pass "libs-capture: [^\n]*expected up to date" "-DFILTER=[prog]"
+	"-DUSERLIBS=a.obj|a.orig\\;b.obj|b.orig\\;c.obj|c.orig")
+want_file("${head}r|userlibs||1\t\"3\"\n")
 message(STATUS "expected-target: all runs as expected")

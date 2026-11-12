@@ -48,7 +48,9 @@ foreach(v BLITZLIB ORIGINALS TIMEOUT FILTER)
 	endif()
 endforeach()
 if(USERLIBS)
-	list(APPEND common "-DUSERLIBS=${USERLIBS}")
+	# one argument: its ; escaped, or the run gets the first entry only
+	string(REPLACE ";" "\\;" userlibs "${USERLIBS}")
+	list(APPEND common "-DUSERLIBS=${userlibs}")
 endif()
 
 # one run of libs_tests: its cases in WORK/NAME/test/captures
