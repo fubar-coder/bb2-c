@@ -660,6 +660,31 @@ conversion touches only the program, its expected file and its tape (and
    `libs_tapes_compare_wrong` the first two tapes in name order
    (`rwe_bb_blitlib`, `rwe_blitzbomberslibtwo`).
 
+### The systest programs (tasks 6.1-6.3)
+
+Facts of the conversion of `systest_runtime`, `systest_mathstr`,
+`systest_system` and `systest_cmdlibs` (2026-11-12):
+
+- The check counts are task 1.1's: 113, 56864, 178, 2059 (the cases plus
+  the programs' own `check()`s: 0, 3, 0, 3).
+- A program's own check that counted both sets changes with one set:
+  `systest_mathstr`'s "ffplib init: open count +2" and "finit: -2" are
+  +1 and -1 now.
+- A key must not hold a result either: the round trip of `floattoquick`
+  had the results of `quicktofloat` in its vector, now their number.
+- `systest_system` writes its log lines as text cases with a name as the
+  check; the `systest_cmdlibs` sort of strings writes the order as bytes
+  (`OBSBYTES("order")`, the number of the string per slot) in place of a
+  comparison of the two sets' orders.
+- A Write of `capture.c` inside `Forbid()` breaks it and can change the
+  free memory: `systest_cmdlibs` checks the dispatch count and the memory
+  balance of its `utillib` part under `Forbid()` with cases written there.
+  The buffer (64 KB) starts empty with the program and is flushed after
+  every 64 KB of output; the `utillib` part is bytes 94249-97210 of the
+  program's 97210, so no flush falls into it. A scenario change that moves
+  a flush there makes that check fail, not the cases. `systest_system`
+  (6 KB) writes less than the buffer holds.
+
 ## Measurements (group 1)
 
 Facts measured on 2026-11-12 with throwaway patches (not committed): the

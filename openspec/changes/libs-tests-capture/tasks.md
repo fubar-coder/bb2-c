@@ -52,9 +52,9 @@ reference".
 
 ## 6. systest programs
 
-- [ ] 6.1 `systest.c` and `systest_runtime.c`. Verify: as 4.1. `systest.c` is converted (task 3.1, expected data committed, 48 checks: the old 49 held a value never set); `systest_runtime.c` is open
-- [ ] 6.2 `systest_mathstr.c` and `systest_system.c`. Verify: as 4.1
-- [ ] 6.3 `systest_cmdlibs.c` (the sort order comparison becomes an observation of the order). Verify: as 4.1
+- [x] 6.1 `systest.c` and `systest_runtime.c`. Verify: as 4.1 Done (2026-11-12): `systest.c` in task 3.1 (48 checks: the old 49 held a value never set); `systest_runtime.c` 113 checks as in 1.1, expected data recorded by `libs-capture`, the C build equal; design.md "The systest programs (tasks 6.1-6.3)".
+- [x] 6.2 `systest_mathstr.c` and `systest_system.c`. Verify: as 4.1 Done (2026-11-12): 56864 and 178 checks as in 1.1, expected data recorded by `libs-capture`, the C build equal.
+- [x] 6.3 `systest_cmdlibs.c` (the sort order comparison becomes an observation of the order). Verify: as 4.1 Done (2026-11-12): 2059 checks as in 1.1 (the order as `OBSBYTES("order")`), expected data recorded by `libs-capture`, the C build equal.
 - [ ] 6.4 `systest_med.c` with block cases (3.57 million observations). Verify: as 4.4
 
 ## 7. Fixed checks and the helper's tests
