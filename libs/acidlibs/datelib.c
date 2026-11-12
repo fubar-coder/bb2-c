@@ -5,9 +5,9 @@
  *
  * C translation of bblibsrc/datelib (the CD binary matches the source).
  * Dates are counted from day 0 = 1/1/0000 in 4 year cycles of 1461 days
- * (every 4th year a leap year, also 1900/2100 ...), the month table is
- * the cumulative one of a leap year.  The string format is dd/mm/yyyy or
- * (DateFormat 1) mm/dd/yyyy.
+ * (every 4th year a leap year), the month table is the cumulative one of
+ * a leap year.  The string format is dd/mm/yyyy or (DateFormat 1)
+ * mm/dd/yyyy.
  *
  * The routines do their arithmetic with word operations and DIVU/DIVS;
  * to stay bit-exact also for invalid input, the C code below follows the
@@ -19,6 +19,12 @@
  * Fixed (intended deviation, #120): Date$ of day 366 of a cycle (1/1 of
  *   the year after a leap year, e.g. 1/1/1981): the original showed it as
  *   32/12 of the leap year (CMP #366: BLE instead of BLT); here BLT.
+ * Fixed (intended deviation, #1001): the 4 year cycles make 1800, 1900,
+ *   2100, 2200, ... leap years, so the original's dates were right only
+ *   from 1/3/1900 to 28/2/2100 (a day off for each century year that is
+ *   not divisible by 400).  Date$ and NumDays now correct the day count by
+ *   these days (gregskips): the dates are Gregorian, as those of
+ *   AmigaDOS; from 1/3/1900 to 28/2/2100 nothing changes.
  * Kept on purpose (BUG(orig)):
  *   - WeekDay: SUBQ.w #2 on the day count (no borrow into the high word). (#121)
  *   - NumDays: ADDQ.w #1 / SUBQ.w #1 on the day count (no carry/borrow),
@@ -221,6 +227,55 @@ ULONG BLITZ_ROUTINE date_c(struct Library *dosbase BL_REG(a6))
     return dt.stamp.ds_Days;
 }
 
+/* n / d for a 32 bit n (two DIVU.w: the quotient may need 32 bits);
+   *rem = the remainder */
+static ULONG divu32(ULONG n, UWORD d, ULONG *rem)
+{
+    ULONG hi = bl_divu_w(n >> 16, d);
+    ULONG lo = bl_divu_w((hi & 0xffff0000UL) | (UWORD)n, d);
+
+    *rem = lo >> 16;
+    return hi << 16 | (UWORD)lo;
+}
+
+/* Fixed (#1001): the century leap days of the 4 year cycles that the
+   Gregorian calendar does not have (years divisible by 100, not by 400)
+   up to the day days.l (days since 1/1/1978, Gregorian), less the 15 up
+   to 1/1/1978: what Date$ adds to the day count of the cycles.  0 from
+   1/3/1900 to 28/2/2100.  z = the days since 1/3/0000 (Gregorian), in
+   400 year eras of 146097 = 27 * 5411 days (floor division); in an era
+   the first three centuries of 36524 days each end with a skipped day. */
+static LONG gregskips(LONG days)
+{
+    ULONG z = (ULONG)days + 722390;
+    ULONG r1, r2, era, doe, cent;
+
+    if ((LONG)z >= 0) {
+        era = divu32(divu32(z, 27, &r1), 5411, &r2);
+        doe = bl_mulu_w((UWORD)r2, 27) + r1;
+    } else {                                    /* floor: z = -n - 1 */
+        era = ~divu32(divu32(~z, 27, &r1), 5411, &r2);
+        doe = 146096 - (bl_mulu_w((UWORD)r2, 27) + r1);
+    }
+    cent = (UWORD)bl_divu_w(doe, 36524);
+    if (cent > 3)
+        cent = 3;                               /* 29/2 of the 400th year */
+    return (LONG)(era + era + era + cent) - 15;
+}
+
+/* Fixed (#1001): the same for NumDays from the year of the date and
+   whether it is before March: the skipped days up to the year from March
+   on (year - 1 before March), less 15. */
+static LONG gregskips_year(UWORD year, int early)
+{
+    LONG y = (LONG)year - (early ? 1 : 0);
+
+    if (y < 0)
+        return -15;
+    return (LONG)(UWORD)bl_divu_w((ULONG)y, 100)
+         - (LONG)(UWORD)bl_divu_w((ULONG)y, 400) - 15;
+}
+
 /* two digits of the low word of r: EXT.l, DIVU #10, quotient and
    remainder + "0" (a value outside 0..99 gives other characters) */
 static void put2(ULONG r)
@@ -243,6 +298,10 @@ static void put2(ULONG r)
  * Fixed (#120): day 366 of a cycle (1/1 of the year after a leap year,
  * e.g. 1/1/1981) is the first day of the next year; the original showed
  * it as 32/12 of the leap year (CMP #366: BLE instead of BLT).
+ * Fixed (#1001): the day count of the cycles is corrected by the century
+ * leap days the Gregorian calendar does not have (gregskips): the date is
+ * Gregorian (the original showed 29/2/2100 for 1/3/2100).  WeekDay keeps
+ * the uncorrected count (the weekday follows from the days alone).
  *
  * @param days  d0: the days since 1/1/1978
  * @return d0: the length of the string, 10
@@ -258,6 +317,7 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     const UWORD *entry;
 
     totday = day;
+    day += (ULONG)gregskips(days);                      /* fixed (#1001) */
     cycles = bl_divs_w(day, DAYSINQUADYR);
     cycdays = (ULONG)(DAYSINQUADYR * (LONG)(WORD)cycles); /* MULS d1,d2 */
     day -= cycdays;                                     /* day in cycle */
@@ -353,6 +413,9 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * BUG(orig) (#124): month 0 reads the low word of the tick count of the
  * last DateStamp, months 14/15 the two words after the table.
  * BUG(orig) (#125): a 2 digit year reads past the end of the string.
+ * Fixed (#1001): the days of the cycles are corrected by the century leap
+ * days the Gregorian calendar does not have (gregskips_year); the
+ * original's NumDays("1/3/2100") was one day too high.
  *
  * @param s  d0: the date string
  * @return d0: the days since 1/1/1978; 0 if day or month are not
@@ -435,6 +498,8 @@ gety:
         BL_SETW(total, total + 1);                      /* BUG(orig) (#122): ADDQ.w */
     total += BL_EXTL(day);
     total -= DAYSP1978;
+    /* fixed (#1001): the Gregorian century rule */
+    total -= (ULONG)gregskips_year((UWORD)num, (WORD)((UWORD)moff - 6) < 0);
     BL_SETW(total, total - 1);                          /* BUG(orig) (#122): SUBQ.w */
     return total;
 }

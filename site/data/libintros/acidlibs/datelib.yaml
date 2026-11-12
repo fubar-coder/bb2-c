@@ -15,8 +15,8 @@ intro: |
   NPrint NumDays("24/12/1993")-NumDays("1/1/1993")," days"
   ```
 
-  Every fourth year is taken as a leap year, so dates are right from 1901
-  to 2099.
+  Dates follow the Gregorian calendar, as the dates of AmigaDOS do, for
+  the years 0 to 9999.
 
   Kept from the original: a date string must have a four digit year;
   with fewer digits the library reads past its end
