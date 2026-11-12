@@ -656,9 +656,10 @@ conversion touches only the program, its expected file and its tape (and
    `CMakeLists.txt` (the program's first `load_set` opens its cases).
    Tests that need a particular tape move when it goes:
    `libs_emulator_tape_wrong` corrupts `rwe_rizonejoylib.tape` (filter
-   `rwe rizonejoylib`, with `USERLIBS`),
-   `libs_tapes_compare_wrong` the first two tapes in name order
-   (`rwe_bb_blitlib`, `rwe_blitzbomberslibtwo`).
+   `rwe rizonejoylib`, with `USERLIBS`);
+   `libs_tapes_compare_wrong` changes the first tape in name order and
+   leaves out the second, whichever they are (its expected message names
+   no tape since task 4.1, so a conversion does not move it).
 
 ### The systest programs (tasks 6.1-6.3)
 

@@ -187,8 +187,10 @@ add_test(NAME libs_tapes_compare_same COMMAND ${CMAKE_COMMAND}
 add_test(NAME libs_tapes_compare_wrong COMMAND ${CMAKE_COMMAND}
 	-DCOMMITTED=${tapes} -DCORRUPT=ON -DWORK=${CMAKE_CURRENT_BINARY_DIR}/tapes_compare_wrong
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/tape-compare.cmake)
+# (the first tape in name order changed, the second left out: whichever
+# tapes the conversions of the openspec change libs-tests-capture leave)
 set_tests_properties(libs_tapes_compare_wrong PROPERTIES PASS_REGULAR_EXPRESSION
-	"rwe_bb_blitlib.tape: differs\n *rwe_blitzbomberslibtwo.tape: committed, not recorded")
+	"[a-z0-9_]+\\.tape: differs\n *[a-z0-9_]+\\.tape: committed, not recorded")
 # the check of the cases with broken input: the run's first case of
 # libtest_ldivlib changed (emulator.cmake CAPTURE_CORRUPT) fails the compare
 # with the expected data, naming the key
