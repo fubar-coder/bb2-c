@@ -539,3 +539,39 @@ spec.
   `$9080` (the C1 control `$80`) can only be named by TED-C's built-in
   table. The question is with the user; group 3 waits for the answer
   (3.4 and 3.5 do not depend on it).
+- **F11 "Token Not Found" names the word without bit 15.** `notokerr`
+  (`programs/blitz2/src/parse.c:631`) prints the number `handlelib`
+  looks up, `c & $7FFF`: a stray `$90 E9` in AB3 mode is "Token Not
+  Found : $10E9." (measured, `tests/ab3/cli/latin1_stray.bas`), not the
+  `$90E9` of the spec scenario `compiler/literal-characters` "AB3 mode";
+  the requirement ("the existing Token Not Found", no new code) holds.
+  Reported for the spec text.
+- **F12 The compiler audit (task 1.4).** String readers of blitz2-c
+  (all take the low byte of the word `getcharb` returns, so a literal
+  gives cc, unchanged): `litstring` (`eval.c`), `fetchqasm` (`eval.c`,
+  `value << 8 | (UBYTE)c`), `dodc` `Dc.b "..."` and `Data$`
+  (`tokens1.c`, `pokebyte`/`pokedata2b`), `getsp` (CNIF/CSIF strings,
+  `libcall.c`), `ext_strescape` `\\Rddc` (`ab3str.c`); `gchar2` maps
+  only a low byte < 32 (`gs`), a literal's is >= $80. Not changed: the
+  include name (`makeiname`, `libcall.c`) refuses every word >= $8000
+  with a syntax error, a literal character too (an `Include` of a file
+  whose name has `ß` cannot be written; the umlauts are 26-31 and
+  work; no test can stage such a name in the emulator). Changed: AB3's `@"..."`
+  (`ext_element`, `ab3chr.c`) counted a word as 2 bytes, a literal now
+  as 1. The scans skip a pair whole: the macro search and body scan
+  (`compile.c`), `findit`, `readinc` (an include is read like the main
+  source). The callers of `findtoke`: `handlelib` (`compile.c`) and
+  `function` (`eval.c`) give "Syntax Error" for an entry without the
+  statement or function flag (a dummy token, F10); `getmaxlib`
+  (`tokens1.c`) and `fetchit` (`eval.c`, `Free`/`Use`) give their
+  object library error for a library without maximums; `tokecode`
+  (`asmlibs.c`) and `tokejsr` (`libcall.c`) are reached only with the
+  compiler's own tokens. Without the library every one stops at
+  `findtoke` with "Token Not Found". Measured in Amiberry
+  (`tests/blitz2/literal-strings.bas`, `literal-include.bas`): blitz2-c,
+  blitz2-ab3 (BB2 mode) and the original compiler 2.10 (with the C
+  libraries) compile `"Größe"` to `47 72 F6 DF 65`, `Data$`, `Dc.b`, a
+  quoted constant (`#"ß"` = `$DF`), a macro's string and an Include's
+  string to the bytes; with the original, `literal-strings` then ends in
+  a "Software Failure" after its last output (cause not examined: the
+  bytes are right; `literal-include` ends cleanly).

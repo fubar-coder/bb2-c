@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+223 233 2
+rc=0

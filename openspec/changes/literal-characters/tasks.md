@@ -33,7 +33,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   option's font) has for $80..$FF, and what the font's default glyph is.
   Verify: the answer in the commit message of group 2; if the font stops
   below $A0 the spec's rule for a missing glyph is checked on that range.
-- [ ] 1.4 Compiler audit and measurement: list every reader of string
+- [x] 1.4 Compiler audit and measurement: list every reader of string
   characters in blitz2-c (`litstring`, `fetchqasm`, `Data$`, `Dc.b`,
   `ab3chr.c`, `ext_strescape`, the include and macro scans) and the
   original's (`blitz2.s` `litstring` and its siblings); list every caller
@@ -156,11 +156,11 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   a stray literal as statement and in an expression ("Syntax Error"
   with the library loaded, "Token Not Found : $90xx." in AB3 mode); the
   expected bytes from the spec.
-- [ ] 4.2 An `Include` of a tokenised file with a literal compiles the
+- [x] 4.2 An `Include` of a tokenised file with a literal compiles the
   byte (no code in `readinc`: `libcall.c`, `ext_bb2.c`, `ab3inc.c` are
   checked). Verify: a test in `tests/blitz2` with an include that holds a
   literal, run with blitz2-c and the original compiler.
-- [ ] 4.3 The six umlauts and `gs` unchanged: a regression test that a
+- [x] 4.3 The six umlauts and `gs` unchanged: a regression test that a
   code 27 in a string gives $F6 and a pair `$90 F6` gives $F6. Verify: the
   test; `prev_results`: executables of the corpus byte-identical.
 

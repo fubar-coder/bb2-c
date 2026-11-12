@@ -11,6 +11,8 @@
 #               header line "; @runerrs on|off" sets runtime error
 #               checking (default off)
 #   ID.expect   the expected result
+#   ID.inc      (optional) an include as text, tokenised the same way and
+#               staged as CORPUS:src/ID.inc
 # ctest blitz2_ID (- as _), label emulator, skipped (77) without Amiberry.
 set(BLITZ2_TEST_TIMEOUT 90 CACHE STRING "tests/blitz2: time limit of one emulator session (seconds)")
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
@@ -41,6 +43,21 @@ foreach(bas IN LISTS tests)
 		COMMENT "Tokenising tests/blitz2/${id}.bas"
 		VERBATIM)
 	list(APPEND blitz2_test_sources ${src})
+	# ID.inc (text, optional): an include, tokenised like ID.bas, which
+	# the program reads as CORPUS:src/ID.inc
+	set(incfile)
+	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc)
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc)
+		set(inc ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.inc)
+		add_custom_command(OUTPUT ${inc}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
+			COMMAND ${TEDSRC} tok ${ted_tokens} ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc ${inc}
+			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc ${ted_tokens} ${TEDSRC} host_tools
+			COMMENT "Tokenising tests/blitz2/${id}.inc"
+			VERBATIM)
+		list(APPEND blitz2_test_sources ${inc})
+		set(incfile "file=src/${id}.inc|${inc}\n")
+	endif()
 
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
 	file(GENERATE OUTPUT ${work}.pass CONTENT
@@ -56,7 +73,7 @@ config=clib|output|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/aci
 source=${src}
 expect=${expect}
 regression=on
-")
+${incfile}")
 	string(REPLACE "-" "_" name "blitz2_${id}")
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
 	# one session, maybe waiting for a free emulator slot
