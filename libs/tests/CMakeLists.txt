@@ -58,10 +58,10 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_i
 add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
 
-add_executable(libs_tests libs_tests.cpp callregs.c tape.c bugorig.c selftest_fixed.c selftest_keeps.c ${c_sources}
+add_executable(libs_tests libs_tests.cpp callregs.c tape.c bugorig.c selftest_keeps.c ${c_sources}
 	${rwe_tests})
 target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-set_source_files_properties(bugorig.c selftest_fixed.c selftest_keeps.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
+set_source_files_properties(bugorig.c selftest_keeps.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer
 	$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
@@ -174,7 +174,7 @@ set_tests_properties(libs_capture_target PROPERTIES
 # whose files are not the committed ones fails (tape-compare.cmake, no
 # emulator)
 set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
-	"libs_expect_fixed*, libs_emulator_tape_wrong, libs_emulator_wrong, libs_emulator_lost, libs_keeps_wrong: time limit of the emulator run (seconds)")
+	"libs_emulator_tape_wrong, libs_emulator_wrong, libs_emulator_lost, libs_keeps_wrong: time limit of the emulator run (seconds)")
 math(EXPR selflimit "${LIBS_SELFTEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME libs_emulator_tape_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
@@ -254,34 +254,6 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
 		LABELS emulator bug-orig SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 endforeach()
-
-# expect_fixed (sysload.h, selftest_fixed.c) with results from memory, no
-# CD needed: a fixed value passes (libs_expect_fixed), a wrong value and a
-# stale exemption fail with their message (the snitch cases [.selftest]
-# fail on purpose, the tests pass on the report of the failure)
-foreach(t pass wrong stale)
-	set(name libs_expect_fixed_${t})
-	set(filter "expect_fixed ${t}")
-	if(t STREQUAL "pass")
-		set(name libs_expect_fixed)
-		set(filter "expect_fixed passes")
-	endif()
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
-		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
-		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON -DFILTER=${filter}
-		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
-	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-		TIMEOUT ${selflimit})
-endforeach()
-# the test case ran and passed; the failure of the check with its values,
-# the other checks unchanged
-set_tests_properties(libs_expect_fixed PROPERTIES PASS_REGULAR_EXPRESSION
-	"expect_fixed passes: 3 checks, 0 failures\n.*success: all tests passed \\(1 test cases")
-set_tests_properties(libs_expect_fixed_wrong PROPERTIES PASS_REGULAR_EXPRESSION
-	"FAIL result: expect_fixed #99999: the C library gives \\$00000004, expected \\$00000002: orig \\$00000003, C \\$00000004\n.*result \\(check_fixed\\): expect_fixed #99999: the C library gives \\$00000004.*\nexpect_fixed wrong: 3 checks, 2 failures\n")
-set_tests_properties(libs_expect_fixed_stale PROPERTIES PASS_REGULAR_EXPRESSION
-	"FAIL result: expect_fixed #99999 stale: the C library gives the original's value \\$00000003 \\(expected \\$00000002\\): orig \\$00000003, C \\$00000003\n.*result \\(check_fixed\\): expect_fixed #99999 stale.*\nexpect_fixed stale: 3 checks, 2 failures\n")
 
 # the checks of KEEPS (sysload.h, selftest_keeps.c) with broken input, no
 # library and no CD: a set that is no register set, a routine stated

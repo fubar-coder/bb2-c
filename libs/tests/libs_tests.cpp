@@ -16,11 +16,9 @@
 // The test cases tagged [.bug-orig] (bugorig.c) are hidden: they check
 // the correct behaviour where the C build reproduces an original bug, so
 // they fail until it is fixed; only an explicit filter runs them
-// (libs_tests "[bug-orig]", ctest bug_orig_*).  The test cases tagged
-// [.selftest] fail on purpose (selftest_fixed.c: expect_fixed with a wrong
-// value and with a stale exemption; selftest_keeps.c: KEEPS with broken
-// input); ctest libs_expect_fixed_wrong, libs_expect_fixed_stale and
-// libs_keeps_wrong check that they do.
+// (libs_tests "[bug-orig]", ctest bug_orig_*).  The test case tagged
+// [.selftest] fails on purpose (selftest_keeps.c: KEEPS with broken
+// input); ctest libs_keeps_wrong checks that it does.
 #include <snitch/snitch.hpp>
 
 #include <cstdio>
@@ -48,9 +46,6 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
 int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
 int bugorig_debuglib_findoff_flags(const char *dir);
-int selftest_fixed_pass(void);
-int selftest_fixed_wrong(void);
-int selftest_fixed_stale(void);
 int selftest_keeps_wrong(void);
 // the tests of the RWE userlibs (rwe/NAME.c, generated list)
 #define RWE_TEST(n) int rwe_##n##_main(int argc, char **argv);
@@ -231,11 +226,6 @@ TEST_CASE("systest_med: medlib (generated modules)", "[med]")
     TEST_CASE("rwe " #n, "[rwe]") { CHECK(run_systest("rwe_" #n, rwe_##n##_main) == 0); }
 #include "rwe_tests.inc"
 #undef RWE_TEST
-
-// expect_fixed (sysload.h) with results from memory (selftest_fixed.c)
-TEST_CASE("expect_fixed passes", "[expect_fixed]") { CHECK(selftest_fixed_pass() == 0); }
-TEST_CASE("expect_fixed wrong", "[.selftest]") { CHECK(selftest_fixed_wrong() == 0); }
-TEST_CASE("expect_fixed stale", "[.selftest]") { CHECK(selftest_fixed_stale() == 0); }
 
 // the checks of KEEPS (sysload.h) with broken input (selftest_keeps.c)
 TEST_CASE("keeps wrong", "[.selftest]") { CHECK(selftest_keeps_wrong() == 0); }

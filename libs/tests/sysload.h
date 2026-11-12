@@ -57,7 +57,7 @@
 /* the output of the program libs_tests.cpp runs (run_systest), begun by
    its first load_sets (its tape) or load_set (its cases), ended by
    run_systest after the program; nothing outside run_systest (bugorig.c,
-   selftest_fixed.c) */
+   selftest_keeps.c) */
 void bl_prog_tape(void);
 void bl_prog_cases(void);
 
@@ -275,64 +275,6 @@ static void check(const char *what, BOOL ok)
     bl_test_check(what, ok);
 #endif
 }
-
-#ifndef LIBS_ONE_SET
-/* ------------------------------------------------------------- fixed checks */
-
-/* expect_fixed(NNN, value): the original's result of one check is an
-   original bug, fixed by issue #NNN; the C library must give `value`
-   (tests/README.md, "Libraries").  The scenario stays as it is and runs on
-   both sets; only this check no longer asks for equality with the
-   original.  It fails if the C library gives another value, and if it
-   gives the original's value (a stale exemption: the fix is undone, or the
-   check needs no exemption).
-     SAME_FIXED(what, expr, expect_fixed(NNN, value))   in place of SAME
-     check_fixed(what, expect_fixed(NNN, value), orig, c)
-   SAME_FIXED evaluates `expr` with cur = 0 (orig) and 1 (C) like the SAME
-   of the test program and reports a failure with its fail(what, o, c);
-   check_fixed is for programs that compare with check(). */
-struct fixed { int issue; ULONG value; };
-#define expect_fixed(nnn, value) ((struct fixed){ (nnn), (ULONG)(value) })
-
-/* the verdict on one fixed check: NULL = passes, else why it fails */
-static __attribute__((unused)) const char *fixed_verdict(struct fixed f, ULONG o, ULONG c)
-{
-    static char why[120];
-    if (c == o)
-        snprintf(why, sizeof why, "expect_fixed #%d stale: the C library gives"
-                 " the original's value $%08lX (expected $%08lX)", f.issue, c, f.value);
-    else if (c != f.value)
-        snprintf(why, sizeof why, "expect_fixed #%d: the C library gives $%08lX,"
-                 " expected $%08lX", f.issue, c, f.value);
-    else
-        return NULL;
-    return why;
-}
-
-static __attribute__((unused)) void check_fixed(const char *what, struct fixed f, ULONG o, ULONG c)
-{
-    const char *why;
-    char buf[200];
-    o = tape_fixed(what, o, c);
-    why = fixed_verdict(f, o, c);
-    snprintf(buf, sizeof buf, "%s: %s", what, why ? why : "expect_fixed");
-    check(buf, why == NULL);
-}
-
-#define SAME_FIXED(what, expr, fx) do {                                     \
-        ULONG v_[2];                                                        \
-        const char *why_;                                                   \
-        char fbuf_[200];                                                    \
-        for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
-        v_[0] = tape_fixed((what), v_[0], v_[1]);                           \
-        why_ = fixed_verdict((fx), v_[0], v_[1]);                           \
-        if (why_) {                                                         \
-            snprintf(fbuf_, sizeof fbuf_, "%s: %s", (what), why_);          \
-            fail(fbuf_, v_[0], v_[1]);                                      \
-        } else                                                              \
-            checks++;                                                       \
-    } while (0)
-#endif /* !LIBS_ONE_SET */
 
 #define MARK(n) (0x5A000000UL | ((n) << 16) | 0x1234)
 
