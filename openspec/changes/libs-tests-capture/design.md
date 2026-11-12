@@ -293,6 +293,31 @@ Decided with the tool commands (`results libs-accept`, `libs-update`;
   alone after the case the run has before it. A `[fixed #N]` case the
   port's run lacks refuses the update.
 
+Decided with the targets (task 2.4, `libs/tests/expected.cmake`):
+
+- The filter and the fixes are cache variables of the build, as
+  `FIX_SCOPE_BASE` of the target `fix-scope`: `LIBS_CAPTURE_FILTER` (a
+  snitch filter of `libs_tests`, for both targets; the `-DFILTER` above)
+  and `LIBS_UPDATE_FIX` (`KEY#N;...`, the `-DFIX` above), set with
+  `cmake -D...` before `cmake --build --target libs-capture`; the
+  target's comment names the filter, so a filter left in the cache shows.
+  With a filter the tool gets `--only` for each program that wrote cases;
+  one that wrote none fails the target.
+- The second recording run has `LIBS_PAD=4104` (a page and 8 bytes; run 1
+  has none). The runs stay in `build/<preset>/libs/tests/libs-capture/`
+  (`run1`, `run2`) and `libs-update/run`.
+- During the migration (D11) `libs-capture` runs the unconverted programs
+  live (no tape mode: they compare the two sets as before), `libs-update`
+  runs them in replay against their tapes (no CD); a failing run writes
+  nothing. Group 8 removes the tape mode of `libs-update`.
+- A skipped run (77: no Amiberry, no CD, no reference build of the RWE
+  sources) fails the target with what it needs.
+- `libs_capture_target` (host preset) runs `expected.cmake` with a fake
+  emulator script (`libs/tests/selftest/fake-emulator.cmake`): a
+  deterministic record, a refused non-deterministic one with the expected
+  data unchanged, an update with a fix (and `LIBSET=obj` in the port's
+  run), a skipped run, and a filter that leaves another program's file.
+
 ### D6. Block hashes for the very large programs and libtest
 
 A program writes a case `BLOCK:N` with `COUNT FNV1A32 first=CHECK|VECTOR`

@@ -115,6 +115,55 @@ if(rwe_fixtures)
 	list(REMOVE_DUPLICATES rwe_fixtures)
 	set_tests_properties(libs_emulator_originals PROPERTIES FIXTURES_REQUIRED "${rwe_fixtures}")
 endif()
+
+# writing the expected data (expected.cmake; not ALL, reviewed with
+# git diff libs/tests/expected): libs-capture records it from the original
+# (two runs with LIBSET=orig, the second with another memory layout,
+# written only if both agree; needs Amiberry, the CD and the reference
+# build of the RWE sources, ctest --preset originals -R rwe_refbuild);
+# libs-update takes the [fixed #N] cases from the port (one run with
+# LIBSET=obj, no CD), and LIBS_UPDATE_FIX (KEY#N;...) makes an
+# unqualified case such a pair.  LIBS_CAPTURE_FILTER (a snitch filter of
+# libs_tests, e.g. "libtest ldivlib") limits both to the programs it runs.
+set(LIBS_CAPTURE_FILTER "" CACHE STRING
+	"libs-capture, libs-update: only the libs_tests test cases of this snitch filter (empty: all)")
+set(LIBS_UPDATE_FIX "" CACHE STRING
+	"libs-update: KEY#N;... - the unqualified case KEY becomes the pair KEY [orig] / KEY [fixed #N]")
+foreach(mode capture update)
+	set(fix "")
+	set(what "the original (two runs) -> ${expected}")
+	if(mode STREQUAL "update")
+		string(REPLACE ";" "$<SEMICOLON>" fix "${LIBS_UPDATE_FIX}")
+		set(what "the port -> the [fixed #N] cases of ${expected}")
+	endif()
+	if(LIBS_CAPTURE_FILTER)
+		string(APPEND what " (filter ${LIBS_CAPTURE_FILTER})")
+	endif()
+	add_custom_target(libs-${mode}
+		COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DEMULATOR=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
+			-DRESULTS=${RESULTS} -DEXPECTED=${expected} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs-${mode}
+			-DAMIGA_RUN=${AMIGA_RUN} -DBLITZLIB=${BLITZLIB} -DPROGRAM=$<TARGET_FILE:libs_tests>
+			-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
+			-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
+			-DUSERLIBS=${rwe_userlibs} -DTAPES=${tapes} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
+			"-DFILTER=${LIBS_CAPTURE_FILTER}" "-DFIX=${fix}"
+			-P ${CMAKE_CURRENT_SOURCE_DIR}/expected.cmake
+		USES_TERMINAL
+		COMMENT "The library tests' cases from ${what}"
+		VERBATIM)
+	add_dependencies(libs-${mode} libs_tests acidlibs host_tools)
+endforeach()
+# the orchestration of both with a fake run (no emulator): a deterministic
+# record is written, a non-deterministic one refused with the expected
+# data unchanged, an update makes the pair, a skipped run fails, a filter
+# leaves the other files alone
+add_test(NAME libs_capture_target COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS}
+	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/expected.cmake
+	-DFAKE=${CMAKE_CURRENT_SOURCE_DIR}/selftest/fake-emulator.cmake
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_capture_target
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/expected-target.cmake)
+set_tests_properties(libs_capture_target PROPERTIES
+	PASS_REGULAR_EXPRESSION "expected-target: all runs as expected")
 # the checks of the recordings with broken input: a recording with a wrong
 # hash fails the replay (one program, in the emulator); a recording run
 # whose files are not the committed ones fails (tape-compare.cmake, no
