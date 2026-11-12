@@ -1,0 +1,593 @@
+# capture rwe_rinonvolatilelib 1
+init (fails)|kept||1	kept
+init (fails)|popped||1	$00000000
+init (fails)|d0||1	$00000000
+IsNonvolatile|kept|closed|1	kept
+IsNonvolatile|popped|closed|1	$00000000
+IsNonvolatile|d0|closed|1	$5A000000
+StoreNVData|kept|closed Item1 length 0 ret $0|1	kept
+StoreNVData|popped|closed Item1 length 0 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item1 length 0 ret $0|1	$00000000
+StoreNVData|calls|closed Item1 length 0 ret $0|1	$00000000
+StoreNVData|kept|closed Item2 length 1 ret $0|1	kept
+StoreNVData|popped|closed Item2 length 1 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item2 length 1 ret $0|1	$00000000
+StoreNVData|calls|closed Item2 length 1 ret $0|1	$00000000
+StoreNVData|kept|closed Item1 length 10 ret $0|1	kept
+StoreNVData|popped|closed Item1 length 10 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item1 length 10 ret $0|1	$00000000
+StoreNVData|calls|closed Item1 length 10 ret $0|1	$00000000
+StoreNVData|kept|closed Item2 length 25 ret $0|1	kept
+StoreNVData|popped|closed Item2 length 25 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item2 length 25 ret $0|1	$00000000
+StoreNVData|calls|closed Item2 length 25 ret $0|1	$00000000
+StoreNVData|kept|closed Item1 length 65535 ret $0|1	kept
+StoreNVData|popped|closed Item1 length 65535 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item1 length 65535 ret $0|1	$00000000
+StoreNVData|calls|closed Item1 length 65535 ret $0|1	$00000000
+StoreNVData|kept|closed Item2 length 655359 ret $0|1	kept
+StoreNVData|popped|closed Item2 length 655359 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item2 length 655359 ret $0|1	$00000000
+StoreNVData|calls|closed Item2 length 655359 ret $0|1	$00000000
+StoreNVData|kept|closed Item1 length 655365 ret $0|1	kept
+StoreNVData|popped|closed Item1 length 655365 ret $0|1	$00000000
+StoreNVData|d0.w|closed Item1 length 655365 ret $0|1	$00000000
+StoreNVData|calls|closed Item1 length 655365 ret $0|1	$00000000
+GetCopyNV|kept|closed ret $0|1	kept
+GetCopyNV|popped|closed ret $0|1	$00000000
+GetCopyNV|d0|closed ret $0|1	$00000000
+GetCopyNV|calls|closed ret $0|1	$00000000
+GetNVList|kept|closed ret $0|1	kept
+GetNVList|popped|closed ret $0|1	$00000000
+GetNVList|d0|closed ret $0|1	$00000000
+GetNVList|calls|closed ret $0|1	$00000000
+FreeNVData|kept|closed ret $0|1	kept
+FreeNVData|popped|closed ret $0|1	$00000000
+FreeNVData|calls|closed ret $0|1	$00000000
+StoreNVData|kept|closed Item1 length 0 ret $3|1	kept
+StoreNVData|popped|closed Item1 length 0 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item1 length 0 ret $3|1	$00000000
+StoreNVData|calls|closed Item1 length 0 ret $3|1	$00000000
+StoreNVData|kept|closed Item2 length 1 ret $3|1	kept
+StoreNVData|popped|closed Item2 length 1 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item2 length 1 ret $3|1	$00000000
+StoreNVData|calls|closed Item2 length 1 ret $3|1	$00000000
+StoreNVData|kept|closed Item1 length 10 ret $3|1	kept
+StoreNVData|popped|closed Item1 length 10 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item1 length 10 ret $3|1	$00000000
+StoreNVData|calls|closed Item1 length 10 ret $3|1	$00000000
+StoreNVData|kept|closed Item2 length 25 ret $3|1	kept
+StoreNVData|popped|closed Item2 length 25 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item2 length 25 ret $3|1	$00000000
+StoreNVData|calls|closed Item2 length 25 ret $3|1	$00000000
+StoreNVData|kept|closed Item1 length 65535 ret $3|1	kept
+StoreNVData|popped|closed Item1 length 65535 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item1 length 65535 ret $3|1	$00000000
+StoreNVData|calls|closed Item1 length 65535 ret $3|1	$00000000
+StoreNVData|kept|closed Item2 length 655359 ret $3|1	kept
+StoreNVData|popped|closed Item2 length 655359 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item2 length 655359 ret $3|1	$00000000
+StoreNVData|calls|closed Item2 length 655359 ret $3|1	$00000000
+StoreNVData|kept|closed Item1 length 655365 ret $3|1	kept
+StoreNVData|popped|closed Item1 length 655365 ret $3|1	$00000000
+StoreNVData|d0.w|closed Item1 length 655365 ret $3|1	$00000000
+StoreNVData|calls|closed Item1 length 655365 ret $3|1	$00000000
+GetCopyNV|kept|closed ret $3|1	kept
+GetCopyNV|popped|closed ret $3|1	$00000000
+GetCopyNV|d0|closed ret $3|1	$00000000
+GetCopyNV|calls|closed ret $3|1	$00000000
+GetNVList|kept|closed ret $3|1	kept
+GetNVList|popped|closed ret $3|1	$00000000
+GetNVList|d0|closed ret $3|1	$00000000
+GetNVList|calls|closed ret $3|1	$00000000
+FreeNVData|kept|closed ret $3|1	kept
+FreeNVData|popped|closed ret $3|1	$00000000
+FreeNVData|calls|closed ret $3|1	$00000000
+StoreNVData|kept|closed Item1 length 0 ret $12340001|1	kept
+StoreNVData|popped|closed Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item2 length 1 ret $12340001|1	kept
+StoreNVData|popped|closed Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item1 length 10 ret $12340001|1	kept
+StoreNVData|popped|closed Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item2 length 25 ret $12340001|1	kept
+StoreNVData|popped|closed Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item1 length 65535 ret $12340001|1	kept
+StoreNVData|popped|closed Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item2 length 655359 ret $12340001|1	kept
+StoreNVData|popped|closed Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|kept|closed Item1 length 655365 ret $12340001|1	kept
+StoreNVData|popped|closed Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|d0.w|closed Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|calls|closed Item1 length 655365 ret $12340001|1	$00000000
+GetCopyNV|kept|closed ret $12340001|1	kept
+GetCopyNV|popped|closed ret $12340001|1	$00000000
+GetCopyNV|d0|closed ret $12340001|1	$00000000
+GetCopyNV|calls|closed ret $12340001|1	$00000000
+GetNVList|kept|closed ret $12340001|1	kept
+GetNVList|popped|closed ret $12340001|1	$00000000
+GetNVList|d0|closed ret $12340001|1	$00000000
+GetNVList|calls|closed ret $12340001|1	$00000000
+FreeNVData|kept|closed ret $12340001|1	kept
+FreeNVData|popped|closed ret $12340001|1	$00000000
+FreeNVData|calls|closed ret $12340001|1	$00000000
+FreeNVData|no call|closed ret $12340001|1	$00000000
+finit (closed)|kept||1	kept
+finit (closed)|popped||1	$00000000
+init (system)|kept||1	kept
+init (system)|popped||1	$00000000
+init (system)|d0 != 0||1	$00000001
+IsNonvolatile|kept|system|1	kept
+IsNonvolatile|popped|system|1	$00000000
+IsNonvolatile|d0|system|1	$5A00FFFF
+StoreNVData|kept|system Item1 length 0 ret $0|1	kept
+StoreNVData|popped|system Item1 length 0 ret $0|1	$00000000
+StoreNVData|d0.w|system Item1 length 0 ret $0|1	$00000003
+StoreNVData|calls|system Item1 length 0 ret $0|1	$00000000
+StoreNVData|kept|system Item2 length 1 ret $0|1	kept
+StoreNVData|popped|system Item2 length 1 ret $0|1	$00000000
+StoreNVData|d0.w|system Item2 length 1 ret $0|1	$00000003
+StoreNVData|calls|system Item2 length 1 ret $0|1	$00000000
+StoreNVData|kept|system Item1 length 10 ret $0|1	kept
+StoreNVData|popped|system Item1 length 10 ret $0|1	$00000000
+StoreNVData|d0.w|system Item1 length 10 ret $0|1	$00000003
+StoreNVData|calls|system Item1 length 10 ret $0|1	$00000000
+StoreNVData|kept|system Item2 length 25 ret $0|1	kept
+StoreNVData|popped|system Item2 length 25 ret $0|1	$00000000
+StoreNVData|d0.w|system Item2 length 25 ret $0|1	$00000003
+StoreNVData|calls|system Item2 length 25 ret $0|1	$00000000
+GetCopyNV|kept|system ret $0|1	kept
+GetCopyNV|popped|system ret $0|1	$00000000
+GetCopyNV|d0|system ret $0|1	$00000000
+GetCopyNV|calls|system ret $0|1	$00000000
+GetNVList|kept|system ret $0|1	kept
+GetNVList|popped|system ret $0|1	$00000000
+GetNVList|d0|system ret $0|1	$00000001
+GetNVList|calls|system ret $0|1	$00000000
+FreeNVData|kept|system ret $0|1	kept
+FreeNVData|popped|system ret $0|1	$00000000
+finit (system)|kept||1	kept
+finit (system)|popped||1	$00000000
+init (fake)|kept||1	kept
+init (fake)|popped||1	$00000000
+init (fake)|d0 = fake||1	$00000001
+init (fake)|opened||1	$00000001
+IsNonvolatile|kept|fake|1	kept
+IsNonvolatile|popped|fake|1	$00000000
+IsNonvolatile|d0|fake|1	$5A00FFFF
+StoreNVData|kept|fake Item1 length 0 ret $0|1	kept
+StoreNVData|popped|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|calls|fake Item1 length 0 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 0 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 0 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item1 length 0 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 0 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 0 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item1 length 0 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item1 length 0 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item1 length 0 ret $0|1	$00000000
+StoreNVData|call 1 d1|fake Item1 length 0 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 1 ret $0|1	kept
+StoreNVData|popped|fake Item2 length 1 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $0|1	$00000000
+StoreNVData|calls|fake Item2 length 1 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 1 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 1 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item2 length 1 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item2 length 1 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 1 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 1 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 1 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 1 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item2 length 1 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item2 length 1 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item2 length 1 ret $0|1	$00000001
+StoreNVData|call 1 d1|fake Item2 length 1 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 10 ret $0|1	kept
+StoreNVData|popped|fake Item1 length 10 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $0|1	$00000000
+StoreNVData|calls|fake Item1 length 10 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 10 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 10 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item1 length 10 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item1 length 10 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 10 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 10 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 10 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 10 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item1 length 10 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item1 length 10 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item1 length 10 ret $0|1	$00000001
+StoreNVData|call 1 d1|fake Item1 length 10 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 25 ret $0|1	kept
+StoreNVData|popped|fake Item2 length 25 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $0|1	$00000000
+StoreNVData|calls|fake Item2 length 25 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 25 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 25 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item2 length 25 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item2 length 25 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 25 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 25 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 25 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 25 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item2 length 25 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item2 length 25 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item2 length 25 ret $0|1	$00000003
+StoreNVData|call 1 d1|fake Item2 length 25 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 65535 ret $0|1	kept
+StoreNVData|popped|fake Item1 length 65535 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $0|1	$00000000
+StoreNVData|calls|fake Item1 length 65535 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 65535 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 65535 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item1 length 65535 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item1 length 65535 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 65535 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 65535 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 65535 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 65535 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item1 length 65535 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item1 length 65535 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item1 length 65535 ret $0|1	$0000199A
+StoreNVData|call 1 d1|fake Item1 length 65535 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 655359 ret $0|1	kept
+StoreNVData|popped|fake Item2 length 655359 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $0|1	$00000000
+StoreNVData|calls|fake Item2 length 655359 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 655359 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 655359 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item2 length 655359 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item2 length 655359 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 655359 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 655359 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 655359 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 655359 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item2 length 655359 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item2 length 655359 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item2 length 655359 ret $0|1	$00010000
+StoreNVData|call 1 d1|fake Item2 length 655359 ret $0|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 655365 ret $0|1	kept
+StoreNVData|popped|fake Item1 length 655365 ret $0|1	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $0|1	$00000000
+StoreNVData|calls|fake Item1 length 655365 ret $0|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 655365 ret $0|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 655365 ret $0|1	prog
+StoreNVData|call 0 a1|fake Item1 length 655365 ret $0|1	prog
+StoreNVData|call 0 a2|fake Item1 length 655365 ret $0|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 655365 ret $0|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 655365 ret $0|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 655365 ret $0|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 655365 ret $0|1	prog
+StoreNVData|call 1 a1|fake Item1 length 655365 ret $0|1	prog
+StoreNVData|call 1 a2|fake Item1 length 655365 ret $0|1	prog
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $0|1	$00000006
+StoreNVData|call 1 d1|fake Item1 length 655365 ret $0|1	$FFFFFFFF
+GetCopyNV|kept|fake ret $0|1	kept
+GetCopyNV|popped|fake ret $0|1	$00000000
+GetCopyNV|d0|fake ret $0|1	$00000000
+GetCopyNV|calls|fake ret $0|1	$00000001
+GetCopyNV|call 0 lvo|fake ret $0|1	$0000001E
+GetCopyNV|call 0 a0|fake ret $0|1	prog
+GetCopyNV|call 0 a1|fake ret $0|1	prog
+GetCopyNV|call 0 a2|fake ret $0|1	$00000000
+GetCopyNV|call 0 d0|fake ret $0|1	$00000000
+GetCopyNV|call 0 d1|fake ret $0|1	$FFFFFFFF
+GetNVList|kept|fake ret $0|1	kept
+GetNVList|popped|fake ret $0|1	$00000000
+GetNVList|d0|fake ret $0|1	$00000000
+GetNVList|calls|fake ret $0|1	$00000001
+GetNVList|call 0 lvo|fake ret $0|1	$0000003C
+GetNVList|call 0 a0|fake ret $0|1	prog
+GetNVList|call 0 a1|fake ret $0|1	$00000000
+GetNVList|call 0 a2|fake ret $0|1	$00000000
+GetNVList|call 0 d0|fake ret $0|1	$00000000
+GetNVList|call 0 d1|fake ret $0|1	$FFFFFFFF
+FreeNVData|kept|fake ret $0|1	kept
+FreeNVData|popped|fake ret $0|1	$00000000
+FreeNVData|calls|fake ret $0|1	$00000001
+FreeNVData|call 0 lvo|fake ret $0|1	$00000024
+FreeNVData|call 0 a0|fake ret $0|1	prog
+FreeNVData|call 0 a1|fake ret $0|1	$00000000
+FreeNVData|call 0 a2|fake ret $0|1	$00000000
+FreeNVData|call 0 d0|fake ret $0|1	$00000000
+FreeNVData|call 0 d1|fake ret $0|1	$00000000
+StoreNVData|kept|fake Item1 length 0 ret $3|1	kept
+StoreNVData|popped|fake Item1 length 0 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item1 length 0 ret $3|1	$00000003
+StoreNVData|calls|fake Item1 length 0 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 0 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 0 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item1 length 0 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item1 length 0 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 0 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 0 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 0 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 0 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item1 length 0 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item1 length 0 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item1 length 0 ret $3|1	$00000000
+StoreNVData|call 1 d1|fake Item1 length 0 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 1 ret $3|1	kept
+StoreNVData|popped|fake Item2 length 1 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $3|1	$00000003
+StoreNVData|calls|fake Item2 length 1 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 1 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 1 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item2 length 1 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item2 length 1 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 1 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 1 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 1 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 1 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item2 length 1 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item2 length 1 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item2 length 1 ret $3|1	$00000001
+StoreNVData|call 1 d1|fake Item2 length 1 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 10 ret $3|1	kept
+StoreNVData|popped|fake Item1 length 10 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $3|1	$00000003
+StoreNVData|calls|fake Item1 length 10 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 10 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 10 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item1 length 10 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item1 length 10 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 10 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 10 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 10 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 10 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item1 length 10 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item1 length 10 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item1 length 10 ret $3|1	$00000001
+StoreNVData|call 1 d1|fake Item1 length 10 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 25 ret $3|1	kept
+StoreNVData|popped|fake Item2 length 25 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $3|1	$00000003
+StoreNVData|calls|fake Item2 length 25 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 25 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 25 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item2 length 25 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item2 length 25 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 25 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 25 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 25 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 25 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item2 length 25 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item2 length 25 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item2 length 25 ret $3|1	$00000003
+StoreNVData|call 1 d1|fake Item2 length 25 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 65535 ret $3|1	kept
+StoreNVData|popped|fake Item1 length 65535 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $3|1	$00000003
+StoreNVData|calls|fake Item1 length 65535 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 65535 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 65535 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item1 length 65535 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item1 length 65535 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 65535 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 65535 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 65535 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 65535 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item1 length 65535 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item1 length 65535 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item1 length 65535 ret $3|1	$0000199A
+StoreNVData|call 1 d1|fake Item1 length 65535 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 655359 ret $3|1	kept
+StoreNVData|popped|fake Item2 length 655359 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $3|1	$00000003
+StoreNVData|calls|fake Item2 length 655359 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 655359 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 655359 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item2 length 655359 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item2 length 655359 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 655359 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 655359 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 655359 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 655359 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item2 length 655359 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item2 length 655359 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item2 length 655359 ret $3|1	$00010000
+StoreNVData|call 1 d1|fake Item2 length 655359 ret $3|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 655365 ret $3|1	kept
+StoreNVData|popped|fake Item1 length 655365 ret $3|1	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $3|1	$00000003
+StoreNVData|calls|fake Item1 length 655365 ret $3|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 655365 ret $3|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 655365 ret $3|1	prog
+StoreNVData|call 0 a1|fake Item1 length 655365 ret $3|1	prog
+StoreNVData|call 0 a2|fake Item1 length 655365 ret $3|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 655365 ret $3|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 655365 ret $3|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 655365 ret $3|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 655365 ret $3|1	prog
+StoreNVData|call 1 a1|fake Item1 length 655365 ret $3|1	prog
+StoreNVData|call 1 a2|fake Item1 length 655365 ret $3|1	prog
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $3|1	$00000006
+StoreNVData|call 1 d1|fake Item1 length 655365 ret $3|1	$FFFFFFFF
+GetCopyNV|kept|fake ret $3|1	kept
+GetCopyNV|popped|fake ret $3|1	$00000000
+GetCopyNV|d0|fake ret $3|1	$00000003
+GetCopyNV|calls|fake ret $3|1	$00000001
+GetCopyNV|call 0 lvo|fake ret $3|1	$0000001E
+GetCopyNV|call 0 a0|fake ret $3|1	prog
+GetCopyNV|call 0 a1|fake ret $3|1	prog
+GetCopyNV|call 0 a2|fake ret $3|1	$00000000
+GetCopyNV|call 0 d0|fake ret $3|1	$00000000
+GetCopyNV|call 0 d1|fake ret $3|1	$FFFFFFFF
+GetNVList|kept|fake ret $3|1	kept
+GetNVList|popped|fake ret $3|1	$00000000
+GetNVList|d0|fake ret $3|1	$00000003
+GetNVList|calls|fake ret $3|1	$00000001
+GetNVList|call 0 lvo|fake ret $3|1	$0000003C
+GetNVList|call 0 a0|fake ret $3|1	prog
+GetNVList|call 0 a1|fake ret $3|1	$00000000
+GetNVList|call 0 a2|fake ret $3|1	$00000000
+GetNVList|call 0 d0|fake ret $3|1	$00000000
+GetNVList|call 0 d1|fake ret $3|1	$FFFFFFFF
+FreeNVData|kept|fake ret $3|1	kept
+FreeNVData|popped|fake ret $3|1	$00000000
+FreeNVData|calls|fake ret $3|1	$00000001
+FreeNVData|call 0 lvo|fake ret $3|1	$00000024
+FreeNVData|call 0 a0|fake ret $3|1	prog
+FreeNVData|call 0 a1|fake ret $3|1	$00000000
+FreeNVData|call 0 a2|fake ret $3|1	$00000000
+FreeNVData|call 0 d0|fake ret $3|1	$00000000
+FreeNVData|call 0 d1|fake ret $3|1	$00000000
+StoreNVData|kept|fake Item1 length 0 ret $12340001|1	kept
+StoreNVData|popped|fake Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item1 length 0 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item1 length 0 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 0 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 0 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item1 length 0 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 0 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 0 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item1 length 0 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item1 length 0 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item1 length 0 ret $12340001|1	$00000000
+StoreNVData|call 1 d1|fake Item1 length 0 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 1 ret $12340001|1	kept
+StoreNVData|popped|fake Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item2 length 1 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item2 length 1 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 1 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 1 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item2 length 1 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 1 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 1 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 1 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item2 length 1 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item2 length 1 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item2 length 1 ret $12340001|1	$00000001
+StoreNVData|call 1 d1|fake Item2 length 1 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 10 ret $12340001|1	kept
+StoreNVData|popped|fake Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item1 length 10 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item1 length 10 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 10 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 10 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item1 length 10 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 10 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 10 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 10 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item1 length 10 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item1 length 10 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item1 length 10 ret $12340001|1	$00000001
+StoreNVData|call 1 d1|fake Item1 length 10 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 25 ret $12340001|1	kept
+StoreNVData|popped|fake Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item2 length 25 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item2 length 25 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 25 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 25 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item2 length 25 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 25 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 25 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 25 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item2 length 25 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item2 length 25 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item2 length 25 ret $12340001|1	$00000003
+StoreNVData|call 1 d1|fake Item2 length 25 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 65535 ret $12340001|1	kept
+StoreNVData|popped|fake Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item1 length 65535 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item1 length 65535 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 65535 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 65535 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item1 length 65535 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 65535 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 65535 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 65535 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item1 length 65535 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item1 length 65535 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item1 length 65535 ret $12340001|1	$0000199A
+StoreNVData|call 1 d1|fake Item1 length 65535 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item2 length 655359 ret $12340001|1	kept
+StoreNVData|popped|fake Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item2 length 655359 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item2 length 655359 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item2 length 655359 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item2 length 655359 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item2 length 655359 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item2 length 655359 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item2 length 655359 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item2 length 655359 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item2 length 655359 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item2 length 655359 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item2 length 655359 ret $12340001|1	$00010000
+StoreNVData|call 1 d1|fake Item2 length 655359 ret $12340001|1	$FFFFFFFF
+StoreNVData|kept|fake Item1 length 655365 ret $12340001|1	kept
+StoreNVData|popped|fake Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|d0.w|fake Item1 length 655365 ret $12340001|1	$00000001
+StoreNVData|calls|fake Item1 length 655365 ret $12340001|1	$00000002
+StoreNVData|call 0 lvo|fake Item1 length 655365 ret $12340001|1	$00000030
+StoreNVData|call 0 a0|fake Item1 length 655365 ret $12340001|1	prog
+StoreNVData|call 0 a1|fake Item1 length 655365 ret $12340001|1	prog
+StoreNVData|call 0 a2|fake Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|call 0 d0|fake Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|call 0 d1|fake Item1 length 655365 ret $12340001|1	$00000000
+StoreNVData|call 1 lvo|fake Item1 length 655365 ret $12340001|1	$0000002A
+StoreNVData|call 1 a0|fake Item1 length 655365 ret $12340001|1	prog
+StoreNVData|call 1 a1|fake Item1 length 655365 ret $12340001|1	prog
+StoreNVData|call 1 a2|fake Item1 length 655365 ret $12340001|1	prog
+StoreNVData|call 1 d0|fake Item1 length 655365 ret $12340001|1	$00000006
+StoreNVData|call 1 d1|fake Item1 length 655365 ret $12340001|1	$FFFFFFFF
+GetCopyNV|kept|fake ret $12340001|1	kept
+GetCopyNV|popped|fake ret $12340001|1	$00000000
+GetCopyNV|d0|fake ret $12340001|1	$12340001
+GetCopyNV|calls|fake ret $12340001|1	$00000001
+GetCopyNV|call 0 lvo|fake ret $12340001|1	$0000001E
+GetCopyNV|call 0 a0|fake ret $12340001|1	prog
+GetCopyNV|call 0 a1|fake ret $12340001|1	prog
+GetCopyNV|call 0 a2|fake ret $12340001|1	$00000000
+GetCopyNV|call 0 d0|fake ret $12340001|1	$00000000
+GetCopyNV|call 0 d1|fake ret $12340001|1	$FFFFFFFF
+GetNVList|kept|fake ret $12340001|1	kept
+GetNVList|popped|fake ret $12340001|1	$00000000
+GetNVList|d0|fake ret $12340001|1	$12340001
+GetNVList|calls|fake ret $12340001|1	$00000001
+GetNVList|call 0 lvo|fake ret $12340001|1	$0000003C
+GetNVList|call 0 a0|fake ret $12340001|1	prog
+GetNVList|call 0 a1|fake ret $12340001|1	$00000000
+GetNVList|call 0 a2|fake ret $12340001|1	$00000000
+GetNVList|call 0 d0|fake ret $12340001|1	$00000000
+GetNVList|call 0 d1|fake ret $12340001|1	$FFFFFFFF
+FreeNVData|kept|fake ret $12340001|1	kept
+FreeNVData|popped|fake ret $12340001|1	$00000000
+FreeNVData|calls|fake ret $12340001|1	$00000001
+FreeNVData|call 0 lvo|fake ret $12340001|1	$00000024
+FreeNVData|call 0 a0|fake ret $12340001|1	prog
+FreeNVData|call 0 a1|fake ret $12340001|1	$00000000
+FreeNVData|call 0 a2|fake ret $12340001|1	$00000000
+FreeNVData|call 0 d0|fake ret $12340001|1	$00000000
+FreeNVData|call 0 d1|fake ret $12340001|1	$00000000
+finit (fake)|kept||1	kept
+finit (fake)|popped||1	$00000000

@@ -1,18 +1,20 @@
 /*
  * rwe rinonvolatilelib - IsNonvolatile, StoreNVData, GetCopyNV,
- * FreeNVData, GetNVList: the C build against the CD original (BSS2
- * RINONVOLATILELIB.OBJ), method of rwecmp.h.
+ * FreeNVData, GetNVList: the C build or the CD original (BSS2
+ * RINONVOLATILELIB.OBJ), one set as LIBSET says, observed as cases
+ * (rwecmp.h, LIBS_ONE_SET; the expected data
+ * libs/tests/expected/rwe_rinonvolatilelib.txt).
  *
  *   rinonvolatilelib DIR
  *
- * Three rounds, each init ... finit on both sets:
+ * Three rounds, each init ... finit:
  *   - without the library (OpenLibrary patched to fail for the inits):
  *     every routine returns 0;
  *   - with the system's nonvolatile.library: on a machine without NVRAM
  *     it stores in the place named by SYS:prefs/env-archive/sys/
  *     nv_location, which the read-only system disk does not have, so
- *     every StoreNV fails (NVERR_FAIL) and nothing is read - only that
- *     both builds get the same answers;
+ *     every StoreNV fails (NVERR_FAIL) and nothing is read - only the
+ *     answers;
  *   - with a fake nonvolatile.library (before the real one in the
  *     library list) that logs every call with its registers and returns
  *     chosen values: the system calls each routine makes (DeleteNV, then
@@ -21,6 +23,7 @@
  *     results (d0; StoreNVData only the low word, the command is #word).
  * Kept registers on every call.
  */
+#define LIBS_ONE_SET
 #include "rwecmp.h"
 #include <proto/nonvolatile.h>
 
@@ -35,14 +38,14 @@ static UBYTE data[64];
 #define NVEC 10                         /* up to GetNVList (-60) */
 #define MAXLOG 8
 struct logent { ULONG lvo, a0, a1, a2, d0, d1; };
-static struct logent fklog[2][MAXLOG];
-static int fkn[2];
+static struct logent fklog[MAXLOG];
+static int fkn;
 static ULONG fk_ret;
 
 static void logcall(ULONG lvo, ULONG a0, ULONG a1, ULONG a2, ULONG d0, ULONG d1)
 {
-    if (fkn[cur] < MAXLOG) {
-        struct logent *e = &fklog[cur][fkn[cur]];
+    if (fkn < MAXLOG) {
+        struct logent *e = &fklog[fkn];
         e->lvo = lvo;
         e->a0 = a0;
         e->a1 = a1;
@@ -50,7 +53,7 @@ static void logcall(ULONG lvo, ULONG a0, ULONG a1, ULONG a2, ULONG d0, ULONG d1)
         e->d0 = d0;
         e->d1 = d1;
     }
-    fkn[cur]++;
+    fkn++;
 }
 
 static ULONG fk_getcopy(ULONG a0 __asm("a0"), ULONG a1 __asm("a1"), ULONG d1 __asm("d1"))
@@ -98,25 +101,25 @@ static struct Library *fake_add(void)
 static void cmplog(void)
 {
     int k;
-    SAME("calls", fkn[cur]);
-    for (k = 0; k < fkn[0] && k < MAXLOG; k++) {
+    OBS("calls", fkn);
+    for (k = 0; k < fkn && k < MAXLOG; k++) {
         char what[40];
         sprintf(what, "call %d lvo", k);
-        SAME(what, fklog[cur][k].lvo);
+        OBS(what, fklog[k].lvo);
         sprintf(what, "call %d a0", k);
-        SAME(what, fklog[cur][k].a0);
+        OBSPTR(what, fklog[k].a0, NULL, 0);    /* a string or data of the test: prog */
         sprintf(what, "call %d a1", k);
-        SAME(what, fklog[cur][k].a1);
+        OBSPTR(what, fklog[k].a1, NULL, 0);    /* a string or data of the test: prog */
         sprintf(what, "call %d a2", k);
-        SAME(what, fklog[cur][k].a2);
+        OBSPTR(what, fklog[k].a2, NULL, 0);    /* a string or data of the test: prog */
         sprintf(what, "call %d d0", k);
-        SAME(what, fklog[cur][k].d0);
+        OBS(what, fklog[k].d0);
         sprintf(what, "call %d d1", k);
-        SAME(what, fklog[cur][k].d1);
+        OBS(what, fklog[k].d1);
     }
 }
 
-#define LOGGED(setup) do { fkn[cur] = 0; setup; } while (0)
+#define LOGGED(setup) do { fkn = 0; setup; } while (0)
 
 /* ------------------------------------------------------------- the test */
 
@@ -125,12 +128,12 @@ static void all_calls(int fake, const char *round)
     static const ULONG lens[] = { 0, 1, 10, 25, 65535, 655359, 655365 };
     static const ULONG rets[] = { 0, 3, 0x12340001UL };
     unsigned i, r;
-    ULONG got[2];
+    ULONG got;
 
     ROUT = "IsNonvolatile";
     sprintf(VEC, "%s", round);
-    DO2(ENT(LIB, E_IS, 0), (void)0);
-    SAME("d0", R[cur].d[0]);
+    DO1(ENT(LIB, E_IS, 0), (void)0);
+    OBS("d0", R.d[0]);
 
     for (r = 0; r < (fake ? sizeof rets / sizeof rets[0] : 1); r++) {
         fk_ret = rets[r];
@@ -140,35 +143,33 @@ static void all_calls(int fake, const char *round)
             if (!fake && lens[i] > sizeof data)
                 continue;
             sprintf(VEC, "%s %s length %lu ret $%lX", round, it, lens[i], fk_ret);
-            DO2(ENT(LIB, E_STORE, 0), LOGGED(R[cur].d[0] = (ULONG)app; R[cur].d[1] = (ULONG)it;
-                R[cur].d[2] = (ULONG)data; R[cur].d[3] = lens[i]));
-            SAME("d0.w", (UWORD)R[cur].d[0]);
+            DO1(ENT(LIB, E_STORE, 0), LOGGED(R.d[0] = (ULONG)app; R.d[1] = (ULONG)it;
+                R.d[2] = (ULONG)data; R.d[3] = lens[i]));
+            OBS("d0.w", (UWORD)R.d[0]);
             cmplog();
         }
         sprintf(VEC, "%s ret $%lX", round, fk_ret);
         ROUT = "GetCopyNV";
-        DO2(ENT(LIB, E_GETCOPY, 0), LOGGED(R[cur].d[0] = (ULONG)app; R[cur].d[1] = (ULONG)item1));
-        SAME("d0", fake ? R[cur].d[0] : R[cur].d[0] != 0);   /* system: an allocation */
+        DO1(ENT(LIB, E_GETCOPY, 0), LOGGED(R.d[0] = (ULONG)app; R.d[1] = (ULONG)item1));
+        OBS("d0", fake ? R.d[0] : R.d[0] != 0);   /* system: an allocation */
         cmplog();
-        for (cur = 0; cur < 2; cur++)
-            got[cur] = R[cur].d[0];
-        if (!fake && got[0]) {
+        got = R.d[0];
+        if (!fake && got) {
             ROUT = "FreeNVData";
-            DO2(ENT(LIB, E_FREE, 0), R[cur].d[0] = got[cur]);
+            DO1(ENT(LIB, E_FREE, 0), R.d[0] = got);
         }
         ROUT = "GetNVList";
-        DO2(ENT(LIB, E_LIST, 0), LOGGED(R[cur].d[0] = (ULONG)app));
-        SAME("d0", fake ? R[cur].d[0] : R[cur].d[0] != 0);
+        DO1(ENT(LIB, E_LIST, 0), LOGGED(R.d[0] = (ULONG)app));
+        OBS("d0", fake ? R.d[0] : R.d[0] != 0);
         cmplog();
-        for (cur = 0; cur < 2; cur++)
-            got[cur] = R[cur].d[0];
-        if (!fake && got[0]) {
+        got = R.d[0];
+        if (!fake && got) {
             ROUT = "FreeNVData";
-            DO2(ENT(LIB, E_FREE, 0), R[cur].d[0] = got[cur]);
+            DO1(ENT(LIB, E_FREE, 0), R.d[0] = got);
         }
         if (fake) {
             ROUT = "FreeNVData";
-            DO2(ENT(LIB, E_FREE, 0), LOGGED(R[cur].d[0] = (ULONG)data));
+            DO1(ENT(LIB, E_FREE, 0), LOGGED(R.d[0] = (ULONG)data));
             cmplog();
         }
     }
@@ -194,8 +195,19 @@ int main(int argc, char **argv)
         printf("usage: rinonvolatilelib DIR\n");
         return 20;
     }
-    if (!load_sets(argv[1], names))
+    if (!load_set(argv[1], names))
         return 20;
+    KEEPS("IsNonvolatile", d1-d7|a0-a3|a6);
+    KEEPS("StoreNVData", d2|d4-d7|a3);
+    KEEPS("GetCopyNV", d2-d7|a2|a3);
+    KEEPS("FreeNVData", d2-d7|a2|a3);
+    KEEPS("GetNVList", d2-d7|a2|a3);
+    KEEPS("init (fails)", d1-d7|a0|a2|a3);
+    KEEPS("finit (closed)", d1-d7|a0-a3|a6);
+    KEEPS("init (system)", d2-d7|a2|a3);
+    KEEPS("finit (system)", d2-d7|a2|a3);
+    KEEPS("init (fake)", d2-d7|a2|a3);
+    KEEPS("finit (fake)", d2-d7|a2|a3);
     for (i = 0; i < sizeof data; i++)
         data[i] = (UBYTE)(i * 13 + 1);
     strcpy(VEC, "");
@@ -205,26 +217,26 @@ int main(int argc, char **argv)
     oldopen = SetFunction((struct Library *)SysBase, -552, (APTR)rwe_fail0);
     CacheClearU();
     ROUT = "init (fails)";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
     SetFunction((struct Library *)SysBase, -552, oldopen);
     CacheClearU();
     Permit();
-    SAME("d0", R[cur].d[0]);
+    OBS("d0", R.d[0]);
     all_calls(1, "closed");
-    SAME("no call", fkn[cur]);
+    OBS("no call", fkn);
     ROUT = "finit (closed)";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
 
     /* the system's library, if there is one */
     ROUT = "init (system)";
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
-    SAME("d0 != 0", R[cur].d[0] != 0);
-    if (R[0].d[0]) {
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    OBS("d0 != 0", R.d[0] != 0);
+    if (R.d[0]) {
         all_calls(0, "system");
         ROUT = "finit (system)";
         strcpy(VEC, "");
-        DO2(ENT(LIB, E_FINIT, 0), (void)0);
+        DO1(ENT(LIB, E_FINIT, 0), (void)0);
     } else
         printf("rinonvolatilelib: no nonvolatile.library in the system\n");
 
@@ -232,13 +244,13 @@ int main(int argc, char **argv)
     fake = fake_add();
     ROUT = "init (fake)";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_INIT, 0), (void)0);
-    SAME("d0 = fake", R[cur].d[0] == (ULONG)fake);
-    SAME("opened", fake->lib_OpenCnt);
+    DO1(ENT(LIB, E_INIT, 0), (void)0);
+    OBS("d0 = fake", R.d[0] == (ULONG)fake);
+    OBS("opened", fake->lib_OpenCnt);
     all_calls(1, "fake");
     ROUT = "finit (fake)";
     strcpy(VEC, "");
-    DO2(ENT(LIB, E_FINIT, 0), (void)0);
+    DO1(ENT(LIB, E_FINIT, 0), (void)0);
     check("rinonvolatilelib: fake closed", fake->lib_OpenCnt == 0);
     fake_remove(fake);
     return rwe_done(LIB);
