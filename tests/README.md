@@ -7,22 +7,47 @@ labels select within them.
 |---|---|---|
 | `native` | the host tests of the native profile (for IDEs: `build/native`) | native compiler |
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
-| `emulator` | the C libraries against the committed recordings of the original libraries (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
+| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
-| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the C libraries' scenarios against the live original libraries, recording the files of `libs/tests/tapes`), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
+| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
 | `coverage` | `all` and the original bugs with the coverage compilers (`coverage/` per test) | as `all` |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
 `AMIGA-EMULATION-SETUP.md`. The tool the emulator tests use, its sessions,
 slots and snapshot mode: `tools/lib/amiga_emulation/README.md`.
 
-Contents: [Original material and presets](#original-material-and-presets) ·
+Contents: [The test model](#the-test-model) ·
+[Original material and presets](#original-material-and-presets) ·
 [host](#host-tests) · [emulator](#emulator-tests) · [prev build](#the-prev-build) ·
 [bug-orig](#bug-orig-tests) ·
 [bug-port](#bug-port-tests) · [oracle data](#oracle-data-of-the-ted-tests) ·
 [Test statistics](#test-statistics) · [Coverage](#coverage)
+
+## The test model
+
+The suites that compare program behaviour with an expectation follow one
+model (spec `testing/test-model`; implemented for the library tests
+("Libraries"), the other suites keep their own forms for now: corpus
+`expect/` files with `notes.tsv`, bug-orig `ID.expect`/`ID.orig`, TED
+oracle rows). A test is a list of **cases**; a case is a key, an input
+and an expected output, and its verdict is the difference of the actual
+output against the expected one, reported by key. The expected output
+(the **expected data**) is committed with the test; a test only compares
+and never writes it. A case on which the original and the port agree is
+one case with an unqualified key, run against both. A **fixed original
+bug** is two cases: `KEY [orig]` holds the original's behaviour and runs
+only against the original (label `originals`), `KEY [fixed #N]` the
+port's behaviour after the fix and runs only against the port (`all`);
+`#N` is the issue. Writing expected data is a separate, deliberate
+operation with a hyphenated build target, reviewed with `git diff`: to
+**record** is to write it from the original (`libs-capture`; it accepts a
+result only if two runs with another memory layout agree), to **update**
+is to write it from the port (`libs-update`, like `corpus-expect-update`).
+What a record writes is the **recorded original**; the expectation is
+never called "the reference": `ref` means the original program (the
+corpus configuration `ref`, `ted_ref`, `blitz2_ref`).
 
 ## Original material and presets
 
@@ -162,79 +187,192 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
 
 ### Libraries
 
-The test program `libs/tests/libs_tests` (snitch, m68k) loads every
-acidlib and RWE userlib of this build and its original like the
-compiler does and compares results, registers and memory (selection:
-`cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`). Every
-comparison passes its two observations through `libs/tests/tape.h`, so
-it runs in two ways:
+The test program `libs/tests/libs_tests` (snitch, m68k) runs the test
+programs of the libraries: `libtest` (`ldivlib`, `lmullib`), the six
+`systest*` programs and one program per RWE userlib (`libs/tests/rwe/`).
+A program loads **one** library set like the compiler does and writes
+every observation (a result, a register, a buffer) as a case; the cases
+are compared with the expected data in `libs/tests/expected/NAME.txt`
+([The test model](#the-test-model)). The shell variable `LIBSET` chooses
+the set: `obj` is the C build of this repository, `orig` the original
+(acidlibs from `BLITZ2/ACIDLIBS` of the CD, RWE libraries from the
+reference build of their sources). A program cannot see both sets, so
+it cannot compare the C build with itself. Selection: the snitch filters
+`[sys]`, `[mathstr]`, `[runtime]`, `[system]`, `[cmd]`, `[med]`,
+`[libtest]`, `[rwe]`, `"libtest ldivlib"`, `"rwe riarrayslib"`, passed as
+`cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake` or, for
+the targets below, as `LIBS_CAPTURE_FILTER`.
 
-* `libs_emulator_originals` (label `originals`, needs the CD and the
-  reference build of the RWE sources): against the originals, live, and
-  it records their observations into `libs/tests/tapes/NAME.tape`, one
-  file per test program, which must be the committed ones
-  (`libs/tests/tape-compare.cmake`; after an intended change, a new or
-  changed scenario, copy the recorded files from the test's
-  `test/tapes/` in the build directory into `libs/tests/tapes/`).
-* `libs_emulator` (label `emulator`, no CD needed): the C build loaded
-  in place of the original as well, its observations compared with the
-  recordings. A recording holds hashes of segments of 1024 observations
-  and their number, and of the original's values only those an
-  `expect_fixed` check compares with and the registers the original
-  keeps where they are not predicted (`libs/tests/tape.c`); a segment
-  that differs fails with its range of observations and the text of its
-  first check. The values: the live comparison, or
-  `LIBS_TAPE_DUMP=1 ctest ...` (both tests), which writes the first
-  20000 observations to `test/tapes/NAME.dump` to compare.
+**Cases.** The output of a program, `captures/NAME.txt` in the run's
+`test` directory, is one header line `# capture NAME 1` and one line
+`KEY<TAB>VALUE` per case. The key is `ROUTINE|CHECK|VECTOR|OCC`: the
+routine under test, the check text, the input of the case (`VECTOR`,
+free text) and the occurrence number of that triple, counted from 1,
+which makes a check that recurs with the same input unique. A TAB, `|`
+and `\` in a key part are written `\t`, `\|`, `\\`, other bytes outside
+`$20`-`$7E` as `\xHH`. A key holds the input of the case, never a result
+or an address. The value is `$XXXXXXXX` (a number), `bytes N HEX` (up to
+64 bytes; longer buffers `bytes N fnv XXXXXXXX`, the FNV-1a hash),
+`"text"` or `null`, `prog` or `NAME+$OFF` (an address inside the test
+program, or relative to the base of a library or buffer: an address is
+never written as a number), `kept` or `lost d3 a1` ("Kept registers"),
+or `not captured: REASON`. The format as the writer produces it:
+`libs/tests/capture.h`; as the judge reads it:
+`tools/lib/libscmp/libscmp.h`.
 
-A comparison of a new scenario goes through `SAME`/`SAMEBYTES` of the
-test program, `check_fixed`/`SAME_FIXED`, `cmp_preserve` or directly
-`tape_obs`, `tape_same`, `tape_bytes`, `tape_strsame`: a comparison of
-`sets[0]`'s and `sets[1]`'s values past them compares the C build with
-itself in `libs_emulator`. A recorded value must not depend on where
-things are in memory: a value inside the test program (its hunks and
-stack) is recorded as such by `tape_obs`, records holding such pointers
-go through `SAMEPTRBYTES`/`tape_ptrbytes`, and other addresses (a
-library base, a buffer of the test, free memory) are compared relative
-to their base; `tape_pause(1)` leaves a part whose results differ from
-run to run unrecorded (live only). A check that holds for the original
-only (a patched address count, a code pattern of the original) asks
-`tape_orig()`. After a change of a test program, check that a
-recording run gives the same files twice. `libs_emulator_tape_wrong` (a recording with a wrong
-hash fails the replay) and `libs_tapes_compare_wrong` (a recording that
-differs from the committed one, a missing one) test the two checks.
+A test program writes cases with the macros of `libs/tests/sysload.h`
+and `libs/tests/rwe/rwecmp.h` (`#define LIBS_ONE_SET` before the
+include): `OBS(what, value)`, `OBSBYTES`, `OBSSTR`, `OBSPTR(what, v,
+name, base)` and `OBSPTRBYTES` for addresses, `NOT_CAPTURED(what,
+reason)`, `KEEPS(routine, regs)`; in the RWE programs `DO1` makes the
+call and writes the kept registers and the popped stack. `check()`
+stays for a condition of the program's own (a memory balance, a handle
+found) that holds in every run of either set; whatever depends on the
+library is an `OBS`, so there is no comparison that could pass without
+looking. The summary line `NAME: N checks` counts every `OBS` and every
+`kept` case once.
 
-**A fixed original bug in a pair comparison:** where the original's
-result of a check is an original bug and the C library is fixed, the
-check states the correct value with the issue, `expect_fixed(NNN,
-value)` (`libs/tests/sysload.h`): `SAME_FIXED(what, expr,
-expect_fixed(NNN, value))` in place of the test program's
-`SAME(what, expr)`, `check_fixed(what, expect_fixed(NNN, value), orig,
-c)` where a program compares with `check()`. The check passes when the
-C library gives `value`, whatever the original gives; it fails when the
-C library gives another value, and when it gives the original's value
-(a stale exemption: the fix is undone, or the original is not wrong
-there and the check needs no exemption). The other checks of the
-scenario still compare with the original. An example
-(`libs/tests/selftest_fixed.c`, issue #99999 stands for the fix's):
+**Expected data**, `libs/tests/expected/NAME.txt` (one file per program,
+two for `libtest`; `/libs/tests/expected/** -text diff` in
+`.gitattributes`), has the same format. A key may carry a qualifier after
+the occurrence number: `KEY [orig]` or `KEY [fixed #N]`. An unqualified
+case is run against both sets, `[orig]` only against the original,
+`[fixed #N]` only against the C build; the order of the lines does not
+matter. A fixed original bug is such a pair; a case that exists on one
+side only is `KEY [orig]` or `KEY [fixed #N]` alone. The judge is
+`tools/results libs-compare` (`tools/results/README.md`): per program the
+first differing case with both values (`NAME: KEY: expected VALUE, got
+VALUE`) and up to ten more, then the cases missing from the run and the
+ones it adds; a malformed or ambiguous file is named with its line.
 
-```c
-res[0] = 3;          /* the original's result: the bug */
-res[1] = fixed_c;    /* the C library's */
-SAME_FIXED("result", res[cur], expect_fixed(99999, 2));
-check_fixed("result (check_fixed)", expect_fixed(99999, 2), res[0], res[1]);
-```
+**The operations**
 
-**No scenario dodging:** a fix does not change the inputs or the steps
-of a scenario so that it no longer meets the bug; it keeps the scenario
-and states the expected value with `expect_fixed` in the commit of the
-fix (spec `testing/expected-results`).
+| What | Command | Needs | Writes |
+|---|---|---|---|
+| test the C build | `ctest --preset all -R '^libs_emulator$'` (label `emulator`, in `all`) | Amiberry | nothing |
+| test the original | `ctest --preset originals -R libs_emulator_originals` (label `originals`) | Amiberry, the CD, the RWE reference build (`rwe_refbuild`) | nothing |
+| record (from the original) | `cmake --build --preset amiga --target libs-capture` | as the line above | `libs/tests/expected/` |
+| update (from the port) | `cmake --build --preset amiga --target libs-update` | Amiberry | the `[fixed #N]` cases of `libs/tests/expected/` |
+| fix scope | `cmake --build --preset amiga --target fix-scope` | git | nothing |
 
-`libs_expect_fixed`, `libs_expect_fixed_wrong` and
-`libs_expect_fixed_stale` (label `emulator`, no CD needed) run the
-helper's snitch cases with results from memory: a fixed value passes,
-a wrong value and a stale exemption fail on purpose (hidden tag
-`[.selftest]`), and the tests pass on the report of that failure.
+`libs_emulator` and `libs_emulator_originals` only compare: they run the
+programs with their `LIBSET`, then `results libs-compare --set obj|orig`.
+A changed expected file selects both (`tools/testinfo/rules.txt`). A
+failure names the program and the key (`libtest_ldivlib: |routine
+count||1: expected $00000002, got $00000000`). The output of the whole run
+stays in the work directory, for diffing: the port's in
+`build/amiga/libs/tests/libs_emulator/test/captures/NAME.txt` (the
+original's in `libs_emulator_originals/`; the program's log is
+`test/libs_tests.txt` next to `captures/`), compared with
+`diff -u libs/tests/expected/NAME.txt` against it. The case of a long
+buffer holds only its hash; the bytes are written by a run in which the
+shell variable `LIBS_CAP_DUMP` is set to the full key of the case (with
+its occurrence number) or to `BLOCK:N`, to `captures/NAME.dump`.
+`emulator.cmake` has no option for it: add a `Set LIBS_CAP_DUMP KEY` line
+to `vars_cmd` there for a debugging run.
+
+**Record** (`libs-capture`) runs `libs_tests` twice with `LIBSET=orig`,
+the second time with `LIBS_PAD=4104` (the program allocates that many
+bytes first, which shifts the heap and the slots), and
+`results libs-accept` writes the expected data only if both runs are
+identical. Otherwise nothing is written and the report says
+`test not deterministic: NAME` with the differing cases (`NAME: KEY: run
+1 VALUE, run 2 VALUE`); the runs stay in
+`build/amiga/libs/tests/libs-capture/run1` and `run2`. It also refuses a
+program whose original loses a stated register (a `lost` case). A key
+that has a `[fixed #N]` case keeps that case, and the original's value
+becomes its `[orig]` case. The cache variable `LIBS_CAPTURE_FILTER`
+limits the run to a snitch filter (`cmake --preset amiga
+"-DLIBS_CAPTURE_FILTER=rwe riarrayslib"`, set it empty again
+afterwards); the other programs' files stay as they are. The result is
+reviewed with `git diff libs/tests/expected` and committed with the
+change of the scenario. Two identical runs prove the independence from
+the memory layout only: date, time and emulator timing are not varied,
+so a value that depends on them and happens to agree twice is not
+found; `libs_emulator_originals` on another day is the detector.
+
+**Update** (`libs-update`, no CD) runs the C build once and rewrites the
+value of every `[fixed #N]` case. To turn an unqualified case into a pair
+after a fix, name it: `cmake --preset amiga "-DLIBS_UPDATE_FIX=KEY#N"`
+(several separated by `;`), then the target; KEY is the key as written
+in the file, N the issue. The case becomes `KEY [orig]` (the old value)
+and `KEY [fixed #N]` (the port's value), and nothing else changes; a fix
+whose port value equals the expected value is refused. The run's output
+stays in `build/amiga/libs/tests/libs-update/run/test/captures/`.
+
+**A fixed original bug** is therefore two cases in the expected data,
+written by `libs-update` with `LIBS_UPDATE_FIX` in the commit of the fix
+and reviewed with `git diff`. **No scenario dodging:** a fix does not
+change the inputs or the steps of a scenario so that it no longer meets
+the bug (spec `testing/expected-results`). **A fix changes only its own
+cases:** the target `fix-scope` compares `libs/tests/expected` of the
+checkout with its merge base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for
+another base) and reports, with the key, every case added, changed or
+removed that is not a `[fixed #N]` case of an issue named in a
+`Fixes #N` line of the branch's commits, or its paired `[orig]` case. A
+reported case is no error by itself: it is reviewed and named in the
+commit with its reason, or gets its own issue and `[fixed #M]` case. The
+agent of a fix runs the check and names its result in the report; the
+coordinator runs it again before the merge (`tools/results/README.md`,
+"fix-scope").
+
+**Kept registers.** A library routine may change every register except
+a4, a5 and a7 (`docs/libs/deviations.md`, "Register preservation"); the
+port's thunks keep at least what the original keeps. The program loads
+marker values before each call and writes one case per call, `kept` or
+`lost d3 a1`, for the registers that `KEEPS(routine, regs)` states (a4
+and a5 are always added); a stated register that shows `lost` fails the
+run with the key, and a recording refuses it. The stated set is the
+intersection of what the original keeps in all calls of the scenario
+(`none`, `d2-d7|a0|a6`, ...); the summary at the end of
+`test/libs_tests.txt` lists the calls, the mask kept in all of them and
+the `KEEPS(...)` line to paste, and marks a routine that returns a
+result in a4 or a5 (`DONTCARE`). A routine called without a stated set
+fails once. **Accepted limit:** a register the original keeps in some
+calls only is not in the set and not compared, so a C build that loses
+it in those calls is not caught.
+
+**`not captured`.** A part that cannot be reproduced has a case
+`NOT_CAPTURED(what, "REASON")`; the judge skips it on both sides, so the
+reason is text for the reader (the 39 DMACONR reads of the F00 phase of
+`ciatrklib`: the original writes into the hardware, the C build into a
+RAM copy). A value that differs from run to run is made deterministic
+first (a fixed seed; `riencryptlib` answers the token of `vallib`'s `Rnd`
+with a stub).
+
+**Block programs.** `systest_med` (3.57 million observations),
+`rwe_ridisasmlib` (3.06 million) and the two `libtest` programs would be
+hundreds of MB as text, or random numbers nobody can read. Between
+`OBS_BLOCKS(1)` and `OBS_BLOCKS(0)` the observations are not written;
+every 4096 of them are one case `BLOCK:N<TAB>COUNT XXXXXXXX first=KEY`,
+with the FNV-1a hash of the lines they would have been. A differing
+block is reported with its number and its range of observations
+(`rwe_ridisasmlib: BLOCK:294 (observations 1200129..1204224): expected
+..., got ...`); `LIBS_CAP_DUMP=BLOCK:N` writes that block's observations
+to find the one. Limits: a fix inside such a program changes a block hash
+nobody can review, and two fixes in one block share one pair and one
+issue number; a change that adds or removes an observation shifts the
+number of every later block (in a plain program, the occurrence numbers
+within a key). A `lost` case inside a block is hashed with the others, so
+a recording cannot refuse it: a stated set that is too strict shows as a
+block that differs from the summary. The two large programs take about
+2.5 and 3 minutes of the emulator run; its limit is the cache variable
+`LIBS_TESTS_TIMEOUT` (default 900 s, `-DLIBS_TESTS_TIMEOUT=N` for a slower
+machine; the ctest time limit adds 300 s and the queue wait), that of the
+small tests below `LIBS_SELFTEST_TIMEOUT` (60 s).
+
+**The checks have tests with broken input** (no CD): `libs_compare_*` and
+`libs_accept_*` (host: the judge on fake files: a changed value, a
+missing and an added case, a changed block, the qualifiers, a regressed
+`[fixed #N]`, a run that is not deterministic, a `lost` case),
+`libs_capture_format` (the case writer), `libs_capture_target` (the
+record and update targets with a fake emulator run), `fix_scope_*` (the
+fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
+a changed case fails with that key), `libs_emulator_lost` (a datalib
+whose thunks change d2: `lost d2`, the run fails) and `libs_keeps_wrong`
+(a wrong `KEEPS` statement). The test programs of the original's bugs
+(`libs/tests/bugorig.c`) run the C build only and judge the expected
+behaviour, like the other bug-orig tests ("bug-orig tests").
 
 `rwe_residents_cd`: the residents `blitzres` writes have the contents
 (`blitzres dump`: types, macros, constants without the unused node
