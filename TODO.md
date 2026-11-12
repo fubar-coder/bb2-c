@@ -717,10 +717,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `libs-tests-capture`): the shared model (`tests/README.md`, "The test
   model") and the fix-scope check are implemented for the library tests
   (`libs/tests/expected`) only. Open:
-  * bug-orig: the recording test becomes a compare, a recording target
+  * bug-orig (planned: OpenSpec change `bug-orig-test-model`): the recording test becomes a compare, a recording target
     accepts only agreeing runs, the files known to vary get a wildcard
     with a reason;
-  * corpus: the `notes.tsv` rows become `[orig]`/`[fixed #N]` cases; both
+  * corpus (planned: OpenSpec change `corpus-test-model`): the `notes.tsv` rows become `[orig]`/`[fixed #N]` cases; both
     then get the fix-scope check without a second tool;
   * pure compute libraries: explicit setup/act/verify asserts instead of
     captured values;
