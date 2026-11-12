@@ -748,6 +748,15 @@ TEST_CASE("bug-orig verdict", "[bugorig]")
     CHECK(tedab_bugorig_verdict("OK", bad, "OK", bad, 1) == TEDAB_DIFFERS);
     CHECK(tedab_bugorig_verdict("TIMEOUT", "", "FAIL step 3 timeout", "", -1) == TEDAB_DIFFERS);
     CHECK(tedab_bugorig_verdict("OK", bad, "OK", "  - expect: x missing\n", 0) == TEDAB_DIFFERS);
+    // a wildcard line of the recorded original (behind "# varies: REASON",
+    // removed before the verdict): the state line and a problem line
+    CHECK(tedab_bugorig_verdict("FAIL step *", bad, "FAIL step 3 timeout", bad, -1)
+          == TEDAB_REPRODUCED);
+    CHECK(tedab_bugorig_verdict("FAIL step 4*", bad, "FAIL step 3 timeout", bad, -1)
+          == TEDAB_DIFFERS);
+    CHECK(tedab_bugorig_verdict("OK", "  - expect: blk.txt differs*\n", "OK", bad, 0)
+          == TEDAB_REPRODUCED);
+    CHECK(tedab_bugorig_verdict("OK", "...\n", "OK", bad, 0) == TEDAB_REPRODUCED);
     CHECK(std::string(tedab_verdict_name(TEDAB_REPRODUCED)) == "REPRODUCED");
     CHECK(std::string(tedab_verdict_name(TEDAB_BROKEN)) == "BROKEN");
 }

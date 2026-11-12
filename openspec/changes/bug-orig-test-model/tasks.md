@@ -12,7 +12,7 @@ deliberately broken input.
 
 ## 2. Wildcards with a reason
 
-- [ ] 2.1 The runner (`tests/corpus/runner/bugorig.c`) reads a wildcard line only after a `# varies: REASON` line, else exit status 2 with file and line; the same for the TED mode (`tests/ted-ab/runner/run.c`). Verify: extend `tests/corpus/runner/test_bugorig.c` and a ctest on a fake `ID.orig` (`bug_orig_wildcard_noreason`, expected failure message).
+- [x] 2.1 The runner (`tests/corpus/runner/bugorig.c`) reads a wildcard line only after a `# varies: REASON` line, else exit status 2 with file and line; the same for the TED mode (`tests/ted-ab/runner/run.c`). Verify: extend `tests/corpus/runner/test_bugorig.c` and a ctest on a fake `ID.orig` (`bug_orig_wildcard_noreason`, expected failure message).
 
 ## 3. Compare-only record test and recording target
 

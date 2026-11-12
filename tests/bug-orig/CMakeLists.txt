@@ -406,9 +406,9 @@ endforeach()
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
 # the recorded original (ID.orig) with broken input, before any session (no
-# emulator, no files of the pass needed): a file that is missing or not an
-# observation is an error (2), one that meets the expectation is a broken
-# test (3)
+# emulator, no files of the pass needed): a file that is missing, not an
+# observation or with a wildcard line without a reason is an error (2), one
+# that meets the expectation is a broken test (3)
 set(orig_selftest ${CMAKE_CURRENT_SOURCE_DIR}/selftest)
 function(bug_orig_orig_test name want orig)
 	set(pass ${CMAKE_CURRENT_BINARY_DIR}/${name}.pass)
@@ -425,6 +425,11 @@ endfunction()
 bug_orig_orig_test(bug_orig_orig_missing 2 ${orig_selftest}/nonexistent.orig)
 bug_orig_orig_test(bug_orig_orig_garbage 2 ${orig_selftest}/garbage.orig)
 bug_orig_orig_test(bug_orig_orig_broken 3 ${orig_selftest}/bug-orig-selftest-broken.orig)
+# a wildcard line (`*` at the end, `...`) without a "# varies: REASON" line
+# before it is an error naming the file and the line (2)
+bug_orig_orig_test(bug_orig_wildcard_noreason 2 ${orig_selftest}/wildcard-noreason.orig)
+set_tests_properties(bug_orig_wildcard_noreason PROPERTIES PASS_REGULAR_EXPRESSION
+	"wildcard-noreason\\.orig:7: a wildcard line \\(`\\*` at the end, `\\.\\.\\.`\\) without a \"# varies: REASON\" line before it")
 # the self test of a port regression test (the expect tests of
 # tests/blitz2 too): an expectation the port does not meet must fail
 # (exit status 1, REGRESSED)
@@ -640,7 +645,8 @@ foreach(suffix combo IN ZIP_LISTS "<none>;_originals" "Cc;C5")
 endforeach()
 
 # the recorded original of a TED test with broken input, before any session
-# (no emulator): missing or not an observation is an error (2)
+# (no emulator): missing, not an observation or a wildcard line without a
+# reason is an error (2)
 function(bug_orig_ted_orig_test name orig)
 	set(pass ${CMAKE_CURRENT_BINARY_DIR}/${name}.pass)
 	string(CONCAT text
@@ -656,6 +662,10 @@ function(bug_orig_ted_orig_test name orig)
 endfunction()
 bug_orig_ted_orig_test(bug_orig_ted_orig_missing ${CMAKE_CURRENT_SOURCE_DIR}/selftest/nonexistent.orig)
 bug_orig_ted_orig_test(bug_orig_ted_orig_garbage ${CMAKE_CURRENT_SOURCE_DIR}/selftest/garbage.orig)
+bug_orig_ted_orig_test(bug_orig_ted_wildcard_noreason
+	${CMAKE_CURRENT_SOURCE_DIR}/selftest/ted-wildcard-noreason.orig)
+set_tests_properties(bug_orig_ted_wildcard_noreason PROPERTIES PASS_REGULAR_EXPRESSION
+	"ted-wildcard-noreason\\.orig:3: a wildcard line \\(`\\*` at the end, `\\.\\.\\.`\\) without a \"# varies: REASON\" line before it")
 
 # the fixed form with broken input, before any session (no emulator, exit
 # status 2 or the lint's message): a pass whose scripts and keys do not fit

@@ -103,6 +103,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "bugorigcmp.h"
 #include "run.h"
 #include "statline_emulation.h"
 #include "tedab.h"
@@ -923,13 +924,20 @@ static void record_orig(const struct tedab_test *t, struct run **tr, struct text
 static int load_orig(FILE *log)
 {
     size_t len;
-    char err[200], *text = (char *)read_file(P.orig, &len);
+    char err[600], *text = (char *)read_file(P.orig, &len);
 
     if (!text) {
         fprintf(log, "%s: no %s, the recorded observation of the original: record it with "
                 "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", me, P.orig);
         return 2;
     }
+    /* its wildcard lines each behind a "# varies: REASON" line */
+    if (bugorigcmp_check_varies(text, P.orig, err, sizeof err)) {
+        fprintf(log, "%s: %s\n", me, err);
+        free(text);
+        return 2;
+    }
+    bugorigcmp_strip_varies(text);
     if (tedab_orig_parse(text, &orig_state, &orig_problems, err, sizeof err)) {
         fprintf(log, "%s: %s: %s\n", me, P.orig, err);
         free(text);

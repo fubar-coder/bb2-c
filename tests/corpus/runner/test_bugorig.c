@@ -4,7 +4,8 @@
  * the raw outputs, the four verdicts (an expectation that equals the
  * buggy output must come out BROKEN), and those of a fixed test or an
  * expect test without a reference (FIXED or REGRESSED only; a wrong
- * expectation and the bug again come out REGRESSED).
+ * expectation and the bug again come out REGRESSED), the recorded original
+ * with its wildcard lines and their reasons (broken ones too).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,6 +226,22 @@ int main(void)
         CHECK(bugorig_parse("[session]\ndone\n[run]\n5*\nrc=0\n", &r, msg, sizeof msg) == 0);
         CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_DIFFERS);   /* 42 is not 5* */
         bugorig_free(&r);
+        /* the committed file: a wildcard line behind its reason ("# varies:
+           REASON", the comment is no part of the section); broken on
+           purpose: a wildcard line without a reason, a reason without a
+           wildcard line behind it */
+        CHECK(bugorig_load_orig("# edited\n[session]\ndone\n[run]\n# varies: a counter\n4*\nrc=0\n",
+                                "t.orig", &r, msg, sizeof msg) == 0);
+        CHECK(!strcmp(bugorig_get(&r, "run"), "4*\nrc=0\n"));
+        CHECK(judge("[run]\n41\nrc=0\n", &r, &c) == BUGORIG_REPRODUCED);
+        bugorig_free(&r);
+        CHECK(bugorig_load_orig("[session]\ndone\n[run]\n4*\nrc=0\n", "t.orig", &r, msg, sizeof msg) == -1);
+        CHECK(strstr(msg, "t.orig:4: a wildcard line") != NULL);
+        CHECK(bugorig_load_orig("[run]\n...\n", "t.orig", &r, msg, sizeof msg) == -1 && strstr(msg, "t.orig:2:"));
+        CHECK(bugorig_load_orig("[run]\n# varies: x\n42\n", "t.orig", &r, msg, sizeof msg) == -1);
+        CHECK(strstr(msg, "t.orig:2: the \"# varies:\" line is not followed") != NULL);
+        CHECK(bugorig_load_orig("[output]\n1\n", "t.orig", &r, msg, sizeof msg) == -1);
+        CHECK(strstr(msg, "t.orig: line 1: unknown section") != NULL);
         /* the first line is a comment only before the first section */
         CHECK(parses("# a note\n[run]\n# not a note\n", msg, sizeof msg));
         CHECK(!parses("[run]\n1\n[log]\n2\n#\nx\n[run]\n", msg, sizeof msg) && strstr(msg, "twice"));

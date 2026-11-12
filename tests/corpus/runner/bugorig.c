@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bugorig.h"
+#include "bugorigcmp.h"
 
 static const char *const names[] = { "session", "compile", "run", "blitz2", "log" };
 #define NNAMES (sizeof names / sizeof names[0])
@@ -277,39 +278,8 @@ int bugorig_observe(const struct bugorig_outputs *out, struct bugorig_obs *o)
 
 /* expected lines against observed lines: a line ending in '*' matches
    every line that begins with the text before it, a line "..." any
-   number of lines (also none) */
-static int text_matches(const char *want, const char *got)
-{
-    while (*want) {
-        const char *we = strchr(want, '\n'), *ge;
-        size_t wn = we ? (size_t)(we - want) : strlen(want), gn;
-
-        if (wn == 3 && !memcmp(want, "...", 3)) {
-            const char *rest = want + wn + (we != NULL);
-
-            for (;;) {
-                if (text_matches(rest, got))
-                    return 1;
-                if (!*got)
-                    return 0;
-                ge = strchr(got, '\n');
-                got = ge ? ge + 1 : got + strlen(got);
-            }
-        }
-        if (!*got)
-            return 0;
-        ge = strchr(got, '\n');
-        gn = ge ? (size_t)(ge - got) : strlen(got);
-        if (wn && want[wn - 1] == '*') {
-            if (gn < wn - 1 || memcmp(want, got, wn - 1))
-                return 0;
-        } else if (wn != gn || memcmp(want, got, wn))
-            return 0;
-        want += wn + (we != NULL);
-        got += gn + (ge != NULL);
-    }
-    return !*got;
-}
+   number of lines (also none) - the matcher of tools/lib/bugorigcmp */
+#define text_matches bugorigcmp_matches
 
 static const char *expected(const struct bugorig_obs *e, const char *name)
 {
@@ -418,6 +388,27 @@ const char *bugorig_verdict_name(enum bugorig_verdict v)
     case BUGORIG_REGRESSED: return "REGRESSED";
     default: return "BROKEN";
     }
+}
+
+int bugorig_load_orig(const char *text, const char *path, struct bugorig_obs *o, char *err,
+                      size_t errlen)
+{
+    char msg[300], *t;
+    int r;
+
+    memset(o, 0, sizeof *o);
+    if (bugorigcmp_check_varies(text, path, err, errlen))
+        return -1;
+    if (!(t = strdup(text))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    bugorigcmp_strip_varies(t);
+    r = bugorig_parse(t, o, msg, sizeof msg);
+    free(t);
+    if (r)
+        snprintf(err, errlen, "%s: %s", path, msg);
+    return r;
 }
 
 /* ---------------------------------------------------------- recording */

@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "bugorigcmp.h"
 #include "tedab.h"
 #include "tdscript.h"
 #include "sha256.h"
@@ -1820,6 +1821,18 @@ int tedab_fixed_verdict(const char *port_state, const char *port_problems)
     return !strcmp(port_state, "OK") && !*port_problems ? TEDAB_FIXED : TEDAB_REGRESSED;
 }
 
+/* the state line got against the line want of a recorded original (a
+   wildcard line, `*` at the end, matches as in the matcher of
+   tools/lib/bugorigcmp) */
+static int line_matches(const char *want, const char *got)
+{
+    size_t n = strlen(want);
+
+    if (n && want[n - 1] == '*')
+        return !strncmp(want, got, n - 1);
+    return !strcmp(want, got);
+}
+
 int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
                           const char *port_state, const char *port_problems, int compare)
 {
@@ -1829,7 +1842,7 @@ int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
         return TEDAB_BROKEN;
     if (port_ok && !*port_problems)
         return TEDAB_FIXED;
-    if (!strcmp(ref_state, port_state) && !strcmp(ref_problems, port_problems)
+    if (line_matches(ref_state, port_state) && bugorigcmp_matches(ref_problems, port_problems)
         && (!ref_ok || !compare))
         return TEDAB_REPRODUCED;
     return TEDAB_DIFFERS;

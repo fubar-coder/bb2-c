@@ -20,9 +20,13 @@
  *              is 1.95, the port 2.10)
  * Recorded observation of the original (NAME.orig): the sections of the
  * reference configuration exactly as bugorig_observe made them, the same
- * format, and an optional first line "# NOTE" (which original it was).  A
- * recording run writes it (corpus.h orig=, BUGORIG_RECORD=1); the normal
- * run judges against it and starts no reference session.
+ * format, and an optional first line "# NOTE" (which original it was); a
+ * line that varies from run to run for a reason outside the tested
+ * behaviour is a wildcard line (`*` at the end, `...`) directly behind a
+ * comment line "# varies: REASON" (tools/lib/bugorigcmp; a wildcard line
+ * without it is an error, bugorig_load_orig).  The target bug-orig-record
+ * writes it (corpus.h record=write and results bug-orig-accept); the
+ * normal run judges against it and starts no reference session.
  * Expectation (NAME.expect): the sections that matter, same format; a
  * line ending in `*` matches every line that begins with the text before
  * it, a line `...` any number of lines (also none).  [session] not given
@@ -96,6 +100,12 @@ enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bug
                                    const struct bugorig_obs *o, struct text *why);
 
 const char *bugorig_verdict_name(enum bugorig_verdict v);
+
+/* a recorded original (NAME.orig, text; path in messages): the rule of its
+   wildcard lines checked ("# varies: REASON" before each), those lines
+   removed, the rest parsed; 0 = ok, -1 = error (err: "PATH:LINE: TEXT") */
+int bugorig_load_orig(const char *text, const char *path, struct bugorig_obs *o, char *err,
+                      size_t errlen);
 
 /* the file text of an observation (NAME.orig): an optional note as the
    first line (a comment), then the sections as bugorig_parse reads them.

@@ -1,0 +1,4 @@
+# a recorded original of a TED test with a wildcard line but no reason (bug_orig_ted_wildcard_noreason)
+[state]
+FAIL step *
+[problems]

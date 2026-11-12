@@ -1182,7 +1182,7 @@ static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FIL
 {
     struct bugorig_obs e;
     size_t len;
-    char err[300], *etext = (char *)read_file(p->expect, &len);
+    char err[600], *etext = (char *)read_file(p->expect, &len);
     char *otext = (char *)read_file(p->orig, &len);
     int rc = 2;
 
@@ -1196,8 +1196,8 @@ static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FIL
                 "BUGORIG_RECORD=1 (ctest -L originals -R bug_orig_record_...)\n", p->orig);
         goto out_e;
     }
-    if (bugorig_parse(otext, orig, err, sizeof err)) {
-        fprintf(log, "corpus: %s: %s\n", p->orig, err);
+    if (bugorig_load_orig(otext, p->orig, orig, err, sizeof err)) {
+        fprintf(log, "corpus: %s\n", err);
         goto out_e;
     }
     rc = -1;

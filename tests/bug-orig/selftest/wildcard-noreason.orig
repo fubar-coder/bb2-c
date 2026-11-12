@@ -1,0 +1,8 @@
+# a recorded original with a wildcard line but no reason (bug_orig_wildcard_noreason)
+[session]
+done
+[compile]
+ok
+[run]
+hello*
+rc=0

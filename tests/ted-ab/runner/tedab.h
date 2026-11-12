@@ -260,7 +260,9 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
    tedab_compare_runs of the two (only used when both are OK).
    FIXED: the port is OK without problems; BROKEN: the reference is (the
    original does not show the bug, or the expectation describes it);
-   REPRODUCED: the port shows what the reference shows; DIFFERS: neither */
+   REPRODUCED: the port shows what the reference shows (a wildcard line of
+   the recorded original, `*` at the end or `...`, matches as in
+   tools/lib/bugorigcmp); DIFFERS: neither */
 enum { TEDAB_FIXED = 0, TEDAB_REPRODUCED = 1, TEDAB_BROKEN = 3, TEDAB_DIFFERS = 4,
        TEDAB_REGRESSED = 5 };
 int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
@@ -277,6 +279,10 @@ const char *tedab_verdict_name(int verdict);
      the state text (one line)
      [problems]
      the problem lines, as tedab_check_expects wrote them (may be empty)
+   A line that varies from run to run for a reason outside the tested
+   behaviour is a wildcard line behind a comment line "# varies: REASON"
+   (tools/lib/bugorigcmp; tedab run checks the rule and removes those lines
+   before tedab_orig_parse).
    The verdict against it is tedab_bugorig_verdict with the file's state and
    problems; the comparison of the whole run directories (compare) is not
    part of the observation.  format: 0 = ok (t malloc'd), -1 = error (err);
