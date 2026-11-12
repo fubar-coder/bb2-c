@@ -154,11 +154,17 @@ TEST_CASE("blokload of a text file with Latin-1", "[lines][blocks][files]")
     const std::string path = dir.path + "/test_blokload.blk";
 
     // a first line ending in a byte >= $80 (#374: one character of a text
-    // file): the copy behind the cursor's prefix ends at its 0
+    // file): the copy behind the cursor's prefix ends at its 0; the umlaut
+    // is the code 26 also without tokenise (spec
+    // editor/literal-characters: one stored form)
     tokenise = 0;
     loadat(path, "0123456789", 2, "\xe4\nYY\n");
     REQUIRE(numlines == 5);
-    CHECK(bytes(1) == std::string("01\xe4", 4));
+    CHECK(bytes(1) == std::string("01\x1a", 4));
+    // ... and a literal character the pair
+    loadat(path, "0123456789", 2, "\xe9\nYY\n");
+    REQUIRE(numlines == 5);
+    CHECK(bytes(1) == std::string("01\x90\xe9", 5));
     CHECK(bytes(2) == std::string("YY", 3));
     CHECK(bytes(3) == std::string("23456789", 9));
     // the same with tokenise on: the umlaut as typed (26)
@@ -172,6 +178,11 @@ TEST_CASE("blokload of a text file with Latin-1", "[lines][blocks][files]")
     loadat(path, "0123456789", 2, "x\n\xf6");
     REQUIRE(numlines == 4);
     CHECK(bytes(2) == tok("\x1b" "23456789"));
+    // ... a literal character there: the pair, the line tokenised with
+    // the tail (a column row, literal.h)
+    loadat(path, "0123456789", 2, "x\n\xe9");
+    REQUIRE(numlines == 4);
+    CHECK(bytes(2) == std::string("\x90\xe9" "23456789", 11));
 
     std::remove(path.c_str());
 }

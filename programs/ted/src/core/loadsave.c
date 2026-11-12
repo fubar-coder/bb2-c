@@ -13,6 +13,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 UBYTE *xtraat;                  /* ted.s:636 */
 UBYTE *xtranull;                /* ted.s:637 */
@@ -35,6 +36,7 @@ void blocktab(void)
         return;
     }
     bloksetup2(&bc);
+    litclear();                 /* NEW: literal characters (detok marks) */
     /* a5 = btopy, d6 = btop line; a4 = thisy, d7 = this line */
     item = bc.item;
     lineno = bc.line;
@@ -88,6 +90,7 @@ void blockuntab(void)
         return;
     }
     bloksetup2(&bc);
+    litclear();                 /* NEW: literal characters (detok marks) */
     item = bc.item;
     lineno = bc.line;
     do {
@@ -113,8 +116,15 @@ void blockuntab(void)
             src++;
             n--;
         }
-        while ((*dst++ = *src++) != 0)  /* .loop5 */
-            ;
+        do {                            /* .loop5; NEW: with the marks */
+            UBYTE l = litat(src);
+
+            if (l)
+                litput(dst, l);
+            else
+                *dst = *src;
+            src++;
+        } while (*dst++ != 0);
         dst--;
         /* @388 .loop3 */
         while (dst < charbuff3)
@@ -159,10 +169,21 @@ UWORD prtfile_line(struct item *line, UBYTE *buf)
         c = *src++;
         if (c == 0)
             break;
+        if (TED_ISLIT(c, *src)) {
+            /* NEW (literal characters): the character's byte, no ESC
+               sequence, with and without tokenise */
+            if (dst >= last)
+                break;
+            *dst++ = *src++;
+            continue;
+        }
         if (!(c & 0x80) || !tokenise) {
             if (dst >= last)
                 break;
-            *dst++ = c;
+            /* NEW (literal characters, design D6): without tokenise the
+               text loader stores the umlauts as 26-31; they are printed
+               as the Latin-1 umlauts, as a text save writes them */
+            *dst++ = tokenise ? c : unmapgerms(c);
             continue;
         }
         tok = (UWORD)(c << 8);
@@ -341,11 +362,19 @@ void realsave(UBYTE *name)
         /* @775 .loop */
         len = item->numchars;
         chars = item->chars;
-        if (!tokenise)
-            chars[len - 1] = 10; /* ASCII: the 0 byte becomes LF */
-        /* @781 .nocr */
-        written = ted_write(rd.fh, chars, len);
-        chars[len - 1] = 0;
+        if (!tokenise) {
+            /* NEW (design D6): a text save writes only text - tokens as
+               their names, a literal character as its byte, 26-31 as the
+               umlauts (textline; dosbuff is free while writing); the 0
+               byte becomes LF as in the original */
+            UBYTE *e = textline(chars, dosbuff, dosbuff + doslen - 1);
+
+            *e++ = 10;
+            written = ted_write(rd.fh, dosbuff, (LONG)(e - dosbuff));
+        } else {
+            /* @781 .nocr */
+            written = ted_write(rd.fh, chars, len);
+        }
         if (written < 0) {
             /* allalt stays set.  Fixed (#380): the original goes on to
                .skip3 and still writes the .xtra and the .info of the
@@ -468,6 +497,20 @@ void replace(void)
     showall();
 }
 
+/* NEW (literal characters): **dst = **src, a literal character with its
+   mark (literal.h); both one further */
+static void litmove(UBYTE **dst, UBYTE **src)
+{
+    UBYTE l = litat(*src);
+
+    if (l)
+        litput(*dst, l);
+    else
+        **dst = **src;
+    (*dst)++;
+    (*src)++;
+}
+
 /* ted.s:971 replace2 */
 BOOL replace2(struct item *line, struct item **lineout)
 {
@@ -477,6 +520,7 @@ BOOL replace2(struct item *line, struct item **lineout)
     WORD col;
     UWORD pos;
 
+    litclear();                 /* NEW: literal characters */
     col = isithere(line, &src);
     if (col < 0) {
         /* @1013 .skip */
@@ -490,7 +534,7 @@ BOOL replace2(struct item *line, struct item **lineout)
         dst = charbuff2;
         pos = 0;
         while (pos < (UWORD)col) {      /* cmp d0,d1 / bcc */
-            *dst++ = *src++;
+            litmove(&dst, &src);        /* NEW: with the marks */
             pos++;
         }
         /* @984 .skip2: skip the search text */
@@ -498,14 +542,23 @@ BOOL replace2(struct item *line, struct item **lineout)
             src++;
         /* @990 .skip2a: the replacement */
         p = findreqla17;
-        do
+        do {
+            /* NEW (literal characters): an umlaut as typing stores it
+               (26-31), another character >= $80 a literal character */
+            UBYTE c = (UBYTE)germs_map(*p++);
+
             pos++;
-        while ((*dst++ = *p++) != 0);
+            if (c & 0x80)
+                litput(dst, c);
+            else
+                *dst = c;
+        } while (*dst++ != 0);
         dst--;
         pos--;                  /* column behind the replacement */
         /* @998 .loop3: rest of the line */
-        while ((*dst++ = *src++) != 0)
-            ;
+        do                      /* NEW: with the marks */
+            litmove(&dst, &src);
+        while (dst[-1] != 0);
         dst--;
         if (dst > charbuff3)
             ORIG_HAZARD("replace2: line longer than charbuff2 (survey-01 I.10)");

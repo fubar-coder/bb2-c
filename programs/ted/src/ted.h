@@ -16,6 +16,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 #include "structs.h"
 #include "glue.h"

@@ -15,6 +15,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 WORD bstx = -1;                 /* ted.s:2455 F1 block start x (-1 = none) */
 WORD bsty;                      /* ted.s:2456 */
@@ -75,8 +76,11 @@ UWORD tokone(UBYTE *line)
         last++;
     while (*p++);
     last--;
+    /* NEW (literal characters): tokenised from the scratch row, a pair
+       $90 cc as the marked character (litrow_expand); the original works
+       in place - the same bytes for a line without a pair */
     if (last >= 0)                              /* bpl tokit2 */
-        return tokit2(line, line, last, NULL);
+        return tokit2(line, litscratch, (WORD)litrow_expand(line), NULL);
     /* lines >= 32768 bytes: rts with d5 undefined */
     return 0;
 }
@@ -104,7 +108,8 @@ void tokall2(void)
         /* .loop */
         last = (WORD)(item->numchars - 1);
         if (last >= 0) {                        /* bmi .noway */
-            len = tokit2(charbuff, item->chars, last, NULL);
+            /* NEW: from the scratch row, as tokone */
+            len = tokit2(charbuff, litscratch, (WORD)litrow_expand(item->chars), NULL);
             thisitem = item;
             item = makeline(item, len);
         }
@@ -137,7 +142,7 @@ void detokallz2(void)
 
     do {
         /* .loop */
-        end = detok(item->chars, charbuff, charbuff + 255);
+        end = detokpairs(item->chars, charbuff, charbuff + 255);
         thisitem = item;
         item = makeline(item, (UWORD)(end - charbuff + 1));
         item = item->nextitem;
@@ -185,7 +190,10 @@ const char *help_core(struct item *line, UWORD col, UWORD *num)
 
         if (c == 0)
             break;                              /* .done */
-        if (c & 0x80) {
+        if (TED_ISLIT(c, *p)) {
+            /* NEW (literal characters): one column, no help */
+            p++;
+        } else if (c & 0x80) {
             UWORD tok = (UWORD)((c << 8) | *p++);   /* d0 */
 
             *num = tok;                         /* move d0,helptoke */

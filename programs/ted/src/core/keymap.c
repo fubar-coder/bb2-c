@@ -35,6 +35,16 @@ ULONG germs_map(UBYTE c)
     return c;
 }
 
+/* NEW (literal characters): see keymap.h */
+UBYTE litkey(LONG event)
+{
+    if (event < 0 || (event & (1L << 30)))
+        return 0;                               /* no key, or an umlaut */
+    if ((UWORD)event >= 0xA0 && (UWORD)event <= 0xFF)
+        return (UBYTE)event;
+    return 0;
+}
+
 /* rawed.obj convert (code+$10A), data part (NEW name): the compares in
    front of RawKeyConvert (rawed.obj.dsm L7-L9), all unsigned word
    compares, the qualifier is not looked at.  0 = no special key. */

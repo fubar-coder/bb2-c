@@ -15,6 +15,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 #ifdef TED_HOST
 #include <stdio.h>
@@ -284,13 +285,13 @@ static ULONG pairwidth(UBYTE hi, UBYTE lo)
    text file, where it is a Latin-1 character: a LF, TAB or 0 behind it
    was swallowed.  In a text file (rd->textfile: its first buffer has a
    LF and no 0 byte, or an earlier line ended by LF) such a byte is one
-   character (one column; in front of the end of the file it stays); with
-   tokenise on the umlauts of the germs table are stored as typing stores
-   them (26-31, blitz2 maps them back in strings), since the tokeniser
-   clears bit 7 of every other byte >= $80 (a limitation: ß and the other
-   Latin-1 characters lose bit 7 as in the original).  With tokenise off
-   the bytes stay as they are, so the file is saved as it was loaded.
-   CR stays.
+   character (one column; in front of the end of the file it stays).
+   NEW (literal characters, design D4/D6): with and without tokenise the
+   umlauts of the germs table are stored as typing stores them (26-31,
+   blitz2 maps them back in strings) and every other such byte as the
+   literal character $90 cc (two bytes, one column); a text save writes
+   both back as the bytes (textline), so the file is saved as it was
+   loaded.  CR stays.
    Fixed (#378): the TAB expansion stops at the end of charbuff2.
    Fixed (#377): a TAB is expanded from the column the line shows (col: a
    token pair counts with the length of its name), not from the number of
@@ -315,8 +316,18 @@ int readline(struct rdstate *rd, UWORD *length)
     ascii = FALSE;
     for (;;) {
         /* .loop (dst <= lim here: the 0 always fits) */
-        if ((c & 0x80) && rd->textfile && tokenise)
-            c = (WORD)(UBYTE)germs_map((UBYTE)c);   /* fixed #374 */
+        if ((c & 0x80) && rd->textfile) {
+            /* fixed #374; literal characters (design D4, D6) */
+            c = (WORD)(UBYTE)germs_map((UBYTE)c);
+            if (c & 0x80) {
+                if (dst + 2 > lim || (dst > charbuff2 && col >= chcols))
+                    goto full;                  /* fixed #375 */
+                *dst++ = TED_LITHI;
+                *dst++ = (UBYTE)c;
+                col++;
+                goto nottab;
+            }
+        }
         if ((c & 0x80) && !rd->textfile) {      /* token pair, copied unchecked */
             WORD lo;
             ULONG w;
@@ -426,11 +437,17 @@ sit:
     return ret;
 }
 
-/* ted.s:3447 mytoke */
+/* ted.s:3447 mytoke.  NEW (literal characters): the line is tokenised
+   from the scratch row, where each pair $90 cc readline stored is one
+   marked character (litrow_expand), into charbuff2 (the original works in
+   place; a line without a pair gives the same bytes). */
 UWORD mytoke(UWORD len)
 {
     /* d1 = d5 (length), a1 = a2 = charbuff2: in place */
-    return tokit2(charbuff2, charbuff2, (WORD)len, NULL);
+    UWORD n = litrow_expand(charbuff2);
+
+    (void)len;                                  /* = n without pairs */
+    return tokit2(charbuff2, litscratch, (WORD)n, NULL);
 }
 
 /* ted.s:3349 allocline */
@@ -499,6 +516,31 @@ UBYTE *bloadadd(UBYTE *dst)
     return dst - 1;                             /* subq #1,a3: ON the 0 */
 }
 
+/* NEW: see fileio.h */
+UBYTE *bloadaddrow(UBYTE *dst)
+{
+    const UBYTE *src = charbuff2;
+
+    for (;;) {
+        UBYTE c = *src++;
+
+        if (TED_ISLIT(c, *src)) {
+            litput(dst++, *src++);
+            continue;
+        }
+        *dst++ = c;
+        if (c == 0)
+            break;
+        if (c & 0x80) {
+            c = *src++;                         /* second byte of a token */
+            *dst++ = c;
+            if (c == 0)
+                break;
+        }
+    }
+    return dst - 1;
+}
+
 /* ---------------------------------------------- tokens / detokeniser */
 
 /* ted.s:3455 detok - detokenise a0 to a1.  Fixed (#355) survey-04 I.8:
@@ -521,6 +563,10 @@ UBYTE *detok(const UBYTE *src, UBYTE *dst, const UBYTE *end)
             continue;
         }
         /* .skip */
+        if (TED_ISLIT(c, *src)) {               /* NEW: marked (literal.h) */
+            litput(dst++, *src++);
+            continue;
+        }
         name = findtoke((UWORD)((c << 8) | *src++));
         while (*name && dst < last)             /* .skip3 */
             *dst++ = (UBYTE)*name++;
@@ -529,7 +575,10 @@ UBYTE *detok(const UBYTE *src, UBYTE *dst, const UBYTE *end)
     return dst;
 }
 
-/* ted.s:3472 findtoke */
+/* ted.s:3472 findtoke.  NEW (literal characters): a word $9080-$90FF
+   that the token list does not name (no list, AB3 mode, a library set
+   without literallib) gets its one-character name from the built-in table
+   (litname); the list's entry wins when it has one. */
 const char *findtoke(UWORD tok)
 {
     const struct tokennode *node = tokens;
@@ -540,15 +589,19 @@ const char *findtoke(UWORD tok)
        follows the long at 0 and may return the "name" at address 6.  No
        token list: every token is unknown. */
     if (!node)
-        return tokeerr;
+        goto notoke;
     for (;;) {
         /* .loop */
         if (node->num == tok)
             return node->name;                  /* .got: addq #6,a3 */
         if (!node->next)
-            return tokeerr;                     /* .notoke */
+            goto notoke;                        /* .notoke */
         node = node->next;
     }
+notoke:
+    if (TED_ISLITWORD(tok))
+        return litname(tok);
+    return tokeerr;
 }
 
 /* ted.s:3759 detoka5.  Fixed (#355) survey-04 I.8: the original has no
@@ -573,6 +626,10 @@ void detoka5(struct item *line)
             continue;
         }
         /* .skip */
+        if (TED_ISLIT(c, *src)) {               /* NEW: marked (literal.h) */
+            litput(dst++, *src++);
+            continue;
+        }
         name = findtoke((UWORD)((c << 8) | *src++));
         while (*name && dst < last)             /* .found */
             *dst++ = (UBYTE)*name++;
@@ -600,6 +657,10 @@ WORD isithere2(struct item *line, UWORD col, UBYTE **text)
     if (tokenise) {
         pos = charbuff;
         detok(line->chars, charbuff, charbuff4);
+    } else if (haslit(line->chars)) {
+        /* NEW: the literal characters as the characters (shown columns) */
+        pos = charbuff;
+        detolit(line->chars, charbuff, charbuff4);
     }
     /* .skip */
     base = pos;                                 /* asm a1 */
@@ -624,6 +685,9 @@ WORD isithere2(struct item *line, UWORD col, UBYTE **text)
 
             if (want == 0)
                 return (WORD)(pos - base);      /* .found: move a5,d0 */
+            /* NEW (literal characters): an umlaut of the find text is
+               compared in the form the text stores it (26-31, germs) */
+            want = (UBYTE)germs_map(want);
             if (!findcase() && alphad0(want))
                 want &= 255 - 32;
             /* .skip2 */
@@ -799,13 +863,33 @@ UWORD bloksetup2(struct bcur *bc)
     return cur;
 }
 
+/* NEW (literal characters): with tokenise off getbchar2 reads the line
+   from charbuff3 when it holds a literal character (blokline) */
+static BOOL bloklit;
+static const struct item *bloklitline;
+
+/* NEW: the text of a block line for getbchar2: detoka5 with tokenise on;
+   without tokenise, a line with a literal character in charbuff3 as
+   detoka5 writes it (detolit: one marked byte per literal, every other
+   byte as stored), another line read from chars as in the original */
+void blokline(struct item *line)
+{
+    if (tokenise) {
+        detoka5(line);
+        return;
+    }
+    bloklit = line && haslit(line->chars);
+    bloklitline = line;
+    if (bloklit)
+        charbuff3[0] = (UBYTE)(detolit(line->chars, charbuff3 + 1, charbuff4) - charbuff3);
+}
+
 /* ted.s:3752 bloksetup */
 void bloksetup(struct bcur *bc)
 {
     bloksetup2(bc);
     bc->col = btopx;
-    if (tokenise)
-        detoka5(bc->item);                      /* bra detoka5 */
+    blokline(bc->item);                         /* bra detoka5 (tokenise) */
     /* .hendrix */
 }
 
@@ -834,11 +918,15 @@ newline:
 WORD getbchar2(struct bcur *bc)
 {
     bc->col++;
-    if (tokenise) {
+    if (tokenise || (bloklit && bc->item == bloklitline)) {
         const UBYTE *text = charbuff3;          /* a3: [0] = length + 1 */
+        UBYTE l;
 
         if ((UBYTE)bc->col >= text[0])          /* cmp.b (a3),d5 / bcc .space */
             goto space;
+        l = litat(&text[bc->col]);
+        if (l)
+            return (WORD)(TED_BLIT | l);        /* NEW: a literal character */
         return text[bc->col];                   /* tst d0: make plus! */
     }
     /* .skipz */
@@ -1005,6 +1093,14 @@ static void sa_tokprint(struct showa2 *sa, UBYTE c)
 {
     const char *name;
 
+    if (TED_ISLIT(c, *sa->src)) {
+        /* NEW (literal characters): one cell, the glyph TED_LITGLYPH in
+           the colour of the text, no token bit; with and without tokenise
+           (the cursor row's character: litrow_sync) */
+        sa->src++;
+        sa_normprint(sa, TED_LITGLYPH);
+        return;
+    }
     if (!tokenise || !(c & 0x80)) {
         sa_normprint(sa, c);
         return;
@@ -1148,16 +1244,40 @@ void chmap_showbotitem(void (*draw)(UBYTE c))
 /* --------------------------------------------------------- chmap line */
 
 /* ted.s:4173 charstobuff - transfer on screen chars to character buffer
-   (charbuff); null terminate and put length into d5 */
+   (charbuff); null terminate and put length into d5.
+   NEW (literal characters): the row is first copied to the scratch row
+   with its literal characters (litrow_copy: the cursor row of chmap, a
+   line buffer); the tokeniser writes each as the pair $90 cc, and so does
+   the copy without tokenise (design D6: one stored form), which ends in
+   front of a pair that would take the line beyond TED_LITLIMIT bytes.
+   Without a literal character the bytes are the original's (the copy
+   also makes charstobuff(charbuff) in place, blalldone, safe when a pair
+   is longer than its column). */
 UWORD charstobuff(const UBYTE *row)
 {
     UBYTE *end = charbuff, *dst;
     UWORD n = (UWORD)(chcols - 1);
 
+    litrow_copy(row, chcols);
+    row = litscratch;
+    littrunc = FALSE;
     if (tokenise)
         return tokit(charbuff, row, (WORD)n, NULL);  /* bne tokit */
     dst = end;
     do {                                        /* .loop */
+        UBYTE l = litat(row);
+
+        if (dst + (l ? 2 : 1) > charbuff + TED_LITLIMIT) {
+            /* (only with a literal character): cut, unless only blanks
+               are left */
+            do
+                if (*row++ != ' ')
+                    littrunc = TRUE;
+            while (n-- != 0);
+            break;
+        }
+        if (l)
+            *dst++ = TED_LITHI;
         *dst++ = *row++;
         if (dst[-1] != ' ')
             end = dst;

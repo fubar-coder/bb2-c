@@ -15,6 +15,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 /* ---------------------------------------------------------- tokeniser */
 
@@ -26,7 +27,21 @@
    beyond `last` while matching a token name and for the character behind
    it (in a chmap row that is the next row: "Pri" at its end and "nt" at
    the start of the next became Print); the name comparison stops at the
-   line end, which counts as a non-letter. */
+   line end, which counts as a non-letter.
+   NEW (literal characters): a literal character of the source (litat: a
+   column row with its marks, literal.h) is read as its byte cc (>= $80;
+   no letter, no quote, no remark, never part of a name) and written as
+   the pair $90 cc: in strings, in comments and outside them; it counts
+   one column against `last`, and the pair is written only while the line
+   keeps at most TED_LITLIMIT bytes (design D4a: never cut in two).  Every
+   other byte loses bit 7 as in the original. */
+static UBYTE tk_get(const UBYTE *p)
+{
+    UBYTE l = litat(p);
+
+    return l ? l : (UBYTE)(*p & 0x7F);          /* bclr #7 */
+}
+
 static UWORD tokskip(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend)
 {
     UBYTE *const start = out;                   /* (a7) for enddo */
@@ -38,8 +53,15 @@ static UWORD tokskip(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend)
 
 /* ted.s:4319 putchar: move.b d2,(a1)+ / addq #1,d0 / cmp d1,d0 /
    bhi pchover.  ted.s:4324 pchover: addq #4,a7 (drops putchar's return),
-   then pchover2 (pops a4) and enddo. */
+   then pchover2 (pops a4) and enddo.  A literal character: the pair. */
 #define putchar_() do {                                         \
+        if (c & 0x80) {                                         \
+            if ((UWORD)(out - start) + 2 > TED_LITLIMIT) {      \
+                littrunc = TRUE;                                \
+                goto enddo;                                     \
+            }                                                   \
+            *out++ = TED_LITHI;                                 \
+        }                                                       \
         *out++ = c;                                             \
         count++;                                                \
         if (count > (UWORD)last)                                \
@@ -49,7 +71,7 @@ static UWORD tokskip(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend)
     count = 0;
     invflag = 0;                                /* moveq #0,d0 / move d0,invflag */
 loop2:
-    c = *src++ & 0x7F;                          /* bclr #7,d2 */
+    c = tk_get(src++);                          /* bclr #7,d2 */
     if (c == quote)
         goto quoteon;
     /* .hendrix */
@@ -63,7 +85,7 @@ ppp2:
     if (c == remark) {
         for (;;) {                              /* .remloop: ends only via pchover */
             putchar_();
-            c = *src++ & 0x7F;
+            c = tk_get(src++);
         }
     }
     /* .notrem */
@@ -71,7 +93,7 @@ ppp2:
         goto nothex;
 hexloop:
     putchar_();
-    c = *src++ & 0x7F;
+    c = tk_get(src++);
     if (c < '0')
         goto nothex;
     if (c > 'f')
@@ -87,7 +109,7 @@ hexloop:
 nothex:
     /* the current character goes out unchecked (also quote/remark/_) */
     putchar_();
-    c = *src++ & 0x7F;
+    c = tk_get(src++);
     if (c == quote)
         goto quoteon;
     if (!alpha(c))
@@ -109,7 +131,7 @@ loop3:
             goto found;
         if (match >= end)                       /* the line ends in the name */
             break;
-        c = *match++ & 0x7F;
+        c = tk_get(match++);
         if ((UBYTE)(namec | 32) != (UBYTE)(c | 32))
             break;
     }
@@ -119,10 +141,10 @@ next:
         goto notoke;
     goto loop3;
 notoke:
-    c = *src++ & 0x7F;
+    c = tk_get(src++);
 unto2:
     putchar_();
-    c = *src++ & 0x7F;
+    c = tk_get(src++);
     if (c == quote)
         goto quoteon;
     if (alpha(c))
@@ -132,7 +154,7 @@ unto2:
 found:
     /* .found: a letter or _ behind the name -> next token (the line end
        is none) */
-    c = match < end ? (UBYTE)(*match & 0x7F) : 0;
+    c = match < end ? tk_get(match) : 0;
     if (alpha(c))
         goto next;
     if (c == '_')

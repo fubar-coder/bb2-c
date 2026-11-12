@@ -15,6 +15,11 @@ extern const UBYTE germs[2 * ngerms];
 /* handled0 RAWKEY without requester (ted.s:5950ff), data part (NEW name):
    c found in germs -> replacement | bit 30 (1 << 30); else c unchanged. */
 ULONG germs_map(UBYTE c);
+/* NEW (literal characters): the Latin-1 character getline inserts as a
+   literal character for the event of getinput (germs_map applied): $A0 to
+   $FF without bit 30 (bit 30: an umlaut of germs, typed as 26-31); 0 for
+   any other event ($80-$9F are F1-F10 and Help, rawspecial) */
+UBYTE litkey(LONG event);
 
 /* rawed.obj convert (code+$10A), data part (NEW name): the special keys
    before RawKeyConvert, independent of the qualifier: $50-$59 (F1-F10) ->

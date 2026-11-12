@@ -749,6 +749,12 @@ void showmice(void)
             c = *src++;
             if (c == 0 || c == colon || c == 32)
                 goto loop3;
+            /* NEW: a literal character as the editor draws it */
+            if (tokenise ? litat(src - 1) != 0 : TED_ISLIT(c, *src)) {
+                if (!tokenise)
+                    src++;
+                c = TED_LITGLYPH;
+            }
             qprint(c, at);
             at++;
             if (n-- == 0)                       /* dbf d5,.loop2 */

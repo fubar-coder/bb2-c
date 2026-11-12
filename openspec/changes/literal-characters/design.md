@@ -444,3 +444,98 @@ pair outside a string and compile it in a string to its low byte). No
 file is converted. Rollback of the library is the revert of its commits;
 a source that still holds pairs then shows `?????` in the original TED
 until the userlib is loaded.
+
+## Findings of the implementation
+
+Recorded while implementing (tasks 1.1-1.5 and group 2); none changes a
+spec.
+
+- **F1 Token space (task 1.1).** `bbsrc tokens` over every library file
+  the repository builds (`build/amiga/**.obj`, `acidlibs`, `deflibs`, all
+  variants): words `$90xx` only in `variants/rwe-1999/userlibs/rwe/ridoslib.obj`
+  (`$9081`-`$908B`, design D2). Tokenised sources (pair walk over
+  `tests/`, `archive/aminet`, `archive/cd`): `$90` only in the RIDosLib
+  examples of the Aminet archive (`REDHelp/REDBlitzLibs/Examples/RIDOSLib1.bb`,
+  `RIDOSLib2.bb`, `RIShapesLib1.bb`) and once `$9001` in a comment of the
+  CD's `EXTRAS/LIBSDEV/AMIGAINCLUDES/REXX/STORAGE.BB2` ("open the trace
+  `$90 01` */"): a word of library 32, which stays unknown (`?????`) and is
+  no literal character (cc < $80). No other hit.
+- **F2 The character map holds a token bit (tasks 1.2, 2.x).** TED edits
+  a line in its row of `chmap`, where bit 7 of a cell marks a token's name
+  (`sa_tokprint`, `print3` draws it in the token colour, the tokeniser
+  clears it). A literal character's byte cc >= $80 cannot share that byte:
+  it would be drawn as `cc & $7F` in the token colour and tokenised as that
+  letter. TED-C therefore keeps a literal character beside the text it is
+  in (`programs/ted/src/core/literal.h`): in `chmap` the cell holds the
+  glyph `TED_LITGLYPH` and the cursor row's characters are in a row of
+  their own (`litrow_sync` from `thisitem` at the start of `getline` and of
+  the line operations; every `gl_*` moves it with the row); in the line
+  buffers (`charbuff`..`charbuff3`, the scratch row) the byte is cc and a
+  parallel byte marks it. Every copy of a row (join, split, blocks, Block
+  Load, replace, block tab) carries the marks; `charstobuff` copies the
+  row to the scratch row first and writes a marked byte as the pair, with
+  and without tokenise. A byte >= $80 without a mark is what it was before
+  (a token cell, a token pair's byte shown raw with tokenise off), so a
+  line without a literal character is handled as before.
+- **F3 The screen font (task 1.3).** TED draws with its own fonts
+  (`chars8.b`, `chars.b`, `res.c`): 128 glyphs each, codes 0-127
+  (`fontcalc` reads behind the font for >= 128, survey-05 I.11); glyphs
+  26-31 are the umlauts, 1-25 and 127 are blank. There is no glyph for any
+  of $80-$FF, so every literal character is drawn with the same glyph
+  (`TED_LITGLYPH` = glyph 0, the corner shape no line can hold) in the
+  colour of the text: the spec's rule for a missing glyph applies to the
+  whole range. Stored, found, printed and saved is the character itself.
+  (Question to the user: a glyph set of TED-C's own is a Non-Goal here.)
+- **F4 Typing.** `getline` inserts a key's character $A0-$FF (not an
+  umlaut of `germs`, those come with bit 30) as a literal character
+  (`litkey`, `gl_islit`). $80-$9F stay the codes of F1-F10 and Help
+  (`rawspecial`); an Amiga keymap gives no character there. The original
+  passed $A0-$FF on to `mainedit`, where it was lost or matched a
+  jumptable code (253-255: mouse, menu, gadget).
+- **F5 Tokenise off.** A literal character is one cell with and without
+  tokenise (display, cursor, search, blocks). A block line with a literal
+  character is read from `charbuff3` like `detoka5` writes it (`blokline`,
+  `detolit`), another line from its bytes as before; a token pair in a
+  line edited with tokenise off (a tokenised file with the option off)
+  stays two raw bytes, as before. A text save writes only text (D6), and
+  so do Block Save and Print without tokenise: 26-31 as the umlauts, a
+  literal character as cc, a token as its name (`textline`; Block Save's
+  first and last line give their bytes as `getbchar` does, 26-31 mapped).
+- **F6 The line limit (D4a).** A row of the line editor holds 128
+  columns; with literal characters its line may need more than 129 bytes.
+  `charstobuff` ends the line in front of the pair that does not fit (as
+  the tokeniser does); `join` refuses such a line with the beep, as it
+  refuses a line wider than the row (#1005), and `blokload` a first line
+  that does not fit behind the text in front of the cursor (#1010).
+- **F7 Search and replace.** The find text is compared in the stored
+  form: its umlauts as 26-31 (`germs_map`), so "Größe" finds Gr, 27, `$90
+  DF`, e; the replacement text's umlauts become 26-31, its other Latin-1
+  characters literal characters.
+- **F8 #374 (task 1.5).** What `15762513` landed in `readline`: a byte >=
+  $80 of a text file is one character; with tokenise on `germs_map`, the
+  tokeniser cleared bit 7 of the rest; with tokenise off the byte stayed.
+  Replaced: with and without tokenise an umlaut becomes 26-31 and every
+  other byte the pair (two bytes against the line limit, one column for the
+  TAB and #375's 128 columns); `mytoke` tokenises from the scratch row (the
+  original works in place, a pair would overrun its source). `realsave`
+  and Block Save without tokenise write text (`textline`) instead of the
+  stored bytes. `test_readline_latin1`, `test_readline_noeol`,
+  `test_blokload` and `test_lines_edit` follow the new rule.
+- **F9 Not changed: Print with tokenise on** sends the codes 26-31 of the
+  umlauts as they are (27 is ESC), as the original does. That is an
+  original bug of TED's print (reported, not fixed here).
+- **F10 The library cannot name $9080, and its entries must be dummy
+  tokens (open: spec change asked).** blitz2 numbers the tokens of a user
+  library from `libnum * 128 + 1` (`fixlibs`,
+  `programs/blitz2/src/asmlibs.c:1424`, blitz2.s:6525; RIDosLib's run from
+  `$9081` too): library 33 has the words `$9081`-`$90FF`, 127 entries; a
+  128th would be `$9100`, library 34. And an entry of kind 0 (the shape of
+  `BLITZ_NULLSUB`, D3) is counted but gets no token (`fixlibs`,
+  `tools/lib/blitztokens`): the names must be dummy tokens (`!dumtoke`,
+  kind 8, `BLITZ_DUMTOKE`), which have neither the statement nor the
+  function flag and no code, so a stray literal character is still a
+  "Syntax Error" (`handlelib`, `function`). The spec
+  `libs/literal-library` asks for 128 entries `$9080`-`$90FF`; the word
+  `$9080` (the C1 control `$80`) can only be named by TED-C's built-in
+  table. The question is with the user; group 3 waits for the answer
+  (3.4 and 3.5 do not depend on it).

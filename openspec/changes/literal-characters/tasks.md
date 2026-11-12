@@ -21,7 +21,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   first byte $90 (the CD's userlibs: only `RIDOSLIB.OBJ`, done).
   Verify: the list in the commit message of group 3; a hit other than
   `ridoslib` (library 33 in the RWE variants, design D2) goes to the user.
-- [ ] 1.2 Read every place that walks a line pair by pair or clears bit 7
+- [x] 1.2 Read every place that walks a line pair by pair or clears bit 7
   in `programs/ted/src` and `programs/ted/src/core` (`c & 0x80`,
   `& 0x7F`: `fileio.c`, `lines.c:901,945`, `loadsave.c`, `services.c`,
   `tokit.c`, `lineedit.c`, `screen.c`, `reqs.c`, `mouse.c`) and the
@@ -29,7 +29,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   `tools/lib/bbdetok`, `tools/lib/bblines`. Verify: a table (place, what
   it does with a pair, needed change) in the commit message of group 2;
   every place is a task below or "no change".
-- [ ] 1.3 Screen font: which glyphs the TED screen font (`topaz` 8 or the
+- [x] 1.3 Screen font: which glyphs the TED screen font (`topaz` 8 or the
   option's font) has for $80..$FF, and what the font's default glyph is.
   Verify: the answer in the commit message of group 2; if the font stops
   below $A0 the spec's rule for a missing glyph is checked on that range.
@@ -45,7 +45,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   raw $DF in an AB3 text source through `blitz2-ab3` today. Verify: the
   tables and the byte results in the commit message of group 4; a reader
   that does not give the byte `cc` is a task in group 4.
-- [ ] 1.5 What #374 landed (`15762513`, `826d8987`): re-read `readline`
+- [x] 1.5 What #374 landed (`15762513`, `826d8987`): re-read `readline`
   (`fileio.c:262-345`), `realsave` and Block Save (`loadsave.c:324`,
   `lines.c:827`) and `test_readline_latin1.cpp`; write down the points D6
   changes (the pair for every byte >= $80 but the six umlauts, with
@@ -54,13 +54,13 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 2. TED core: the stored form
 
-- [ ] 2.1 `findtoke` answers a word `$90cc` (cc >= $80) from the token
+- [x] 2.1 `findtoke` answers a word `$90cc` (cc >= $80) from the token
   list when it has the entry and otherwise from a constant table of 128
   one-character strings (design D3); a word `$90cc` with cc < $80 stays
   `tokeerr`. Verify: a host test (one program per test file) for every cc
   with `tokens == 0` and with a list that holds the 128 entries; `detok`
   and `detoka5` give the character; `ctest --preset host`.
-- [ ] 2.2 The tokeniser (`tokskip`) emits a character >= $80 as the pair
+- [x] 2.2 The tokeniser (`tokskip`) emits a character >= $80 as the pair
   in strings, comments and outside them, and keeps the six umlauts as the
   codes 26..31 (D4: a literal counts everywhere; guaranteed only in strings and comments); keyword matching unchanged (a name byte >= $80
   never matches, `tokit.c:106-114`: a host test with the 128 entries in
@@ -68,11 +68,11 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   quotes, in a comment, at the end of a line, at the byte limit (64 and 65
   literals, D4a); a source without a byte >= $80 tokenises as in the `prev`
   build (compare over the corpus).
-- [ ] 2.3 Typing: a key that gives a character >= $80 other than the six
+- [x] 2.3 Typing: a key that gives a character >= $80 other than the six
   umlauts stores the pair, with tokenise on and off (D6). Verify: host
   test of the keymap path and the line editor (cursor over the pair,
   delete, backspace, insert in the middle).
-- [ ] 2.4 `readline` (text files): a byte >= $80 becomes a pair or, for
+- [x] 2.4 `readline` (text files): a byte >= $80 becomes a pair or, for
   the six umlauts, the code 26..31; LF and TAB after such a byte keep
   their meaning; the tab column counts a pair as 1 (the #377 rule via
   `dispcol`). Tokenised files are loaded as stored (D4). Verify: host
@@ -83,13 +83,13 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   sequence; `help_core` finds nothing and counts one column (D3). Verify:
   host tests of `help_core` and `prtfile_line`; the TED A/B script of
   group 7 for the screen.
-- [ ] 2.6 Search, replace and blocks: confirm by tests that `isithere2`
+- [x] 2.6 Search, replace and blocks: confirm by tests that `isithere2`
   via `detoka5` finds a literal typed in the find string; Block Copy, Cut,
   Paste, Load and Save keep a pair at the first and last place of a
   block; `lines.c:901,945` as decided in 1.2. Verify: host tests.
-- [ ] 2.7 Join, split (#375), the line limit: a pair is never cut in two
+- [x] 2.7 Join, split (#375), the line limit: a pair is never cut in two
   at the byte limit. Verify: host test at the limit.
-- [ ] 2.8 Save: a tokenised source is written as before (no header); a
+- [x] 2.8 Save: a tokenised source is written as before (no header); a
   text save writes only text: a literal as `cc`, 26..31 as ä ö ü Ä Ö Ü,
   tokens as their names (D6, D7). Verify: a text save of a line with
   code 26 and a token gives `$E4` and the name; host tests: no literal gives the

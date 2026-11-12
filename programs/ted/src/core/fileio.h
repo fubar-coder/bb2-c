@@ -122,6 +122,10 @@ struct item *linka0(struct item *item, struct item *prev);
 /* ted.s:3293 bloadadd: append charbuff2 (token pair aware, incl. 0) at dst
    (a3); returns dst ON the 0 byte (blokload only) */
 UBYTE *bloadadd(UBYTE *dst);
+/* NEW (literal characters): bloadadd for a line that is tokenised with the
+   rest of a column row (blokload done2/done4): a pair $90 cc of the text
+   readline stored becomes the marked cc (literal.h) */
+UBYTE *bloadaddrow(UBYTE *dst);
 
 /* ---------------------------------------------- tokens / detokeniser */
 
@@ -189,14 +193,19 @@ struct bcur {
    btopy: bc->item, bc->line = btopy.  Returns d7 = curstop+cursy.  `found`
    (3750) is its end label (only rts). */
 UWORD bloksetup2(struct bcur *bc);
-/* ted.s:3752 bloksetup: bloksetup2, bc->col = btopx, tokenise -> detoka5 */
+/* ted.s:3752 bloksetup: bloksetup2, bc->col = btopx, blokline */
 void bloksetup(struct bcur *bc);
+/* NEW: the text getbchar2 reads of a block line: tokenise -> detoka5;
+   without tokenise a line with a literal character goes to charbuff3 like
+   detoka5 (detolit), another one is read from its chars as before */
+void blokline(struct item *line);
 /* ted.s:3849 getbchar: next block character: -1 block end (asm N=1), 0 end
    of line (Z=1; bc already on the next line - caller re-runs detoka5 when
    tokenise), else the character (zero-extended in both modes; the
    original's non-token path returned bytes >= $80 negative, so umlauts
    ended the block: Fixed (#362) survey-04 I.9).  `newline` (3884) is a
-   label inside. */
+   label inside.  NEW: a literal character is TED_BLIT | cc (literal.h,
+   litstore). */
 WORD getbchar(struct bcur *bc);
 /* ted.s:3865 getbchar2: second entry without the block end check */
 WORD getbchar2(struct bcur *bc);

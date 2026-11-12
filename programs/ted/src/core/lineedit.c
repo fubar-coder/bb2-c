@@ -22,6 +22,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 /* the cursor row of chmap (asm: move.l chmap,a2 / add chloc,a2) */
 static UBYTE *chrow(void)
@@ -217,7 +218,17 @@ void gl_isasc(UBYTE c)
             break;
         row[(WORD)i] = row[(WORD)i - 1];
     }
+    litrow_shift(col, 1);               /* NEW: literal characters */
     /* .skip2: print d7 (caller; print2 writes chmap[abs. column]) */
+}
+
+/* NEW (literal characters): .isasc for a literal character cc - the row
+   one to the right as for a character (gl_isasc), the cell is the
+   character's (litrow); the caller prints TED_LITGLYPH */
+void gl_islit(UBYTE cc)
+{
+    gl_isasc(TED_LITGLYPH);
+    litrow_set(abscol(), cc);
 }
 
 /* ted.s:5665 (char127, core part) */
@@ -241,6 +252,7 @@ void gl_char127(UBYTE c)
     }
     /* .loop: (bitmap shift: caller)  .skip: chmap row one to the left */
     i = abscol();
+    litrow_shift(i, -1);                /* NEW: literal characters */
     for (;;) {
         i++;                            /* .loop3 */
         if (i >= chcols)                /* bcc .skip2 */
@@ -276,6 +288,7 @@ WORD gl_tab(void)
         blokfix();                      /* .zap3 */
     }
     /* .zap: row n columns to the right (overflow is lost) */
+    litrow_shift(col, (WORD)n);         /* NEW: literal characters */
     dst = chcols;
     for (;;) {
         dst--;                          /* .loop2 */
@@ -324,6 +337,7 @@ WORD gl_untab(void)
     {
         WORD target = dst;
 
+        litrow_shift((UWORD)dst, (WORD)(dst - src));    /* NEW: literal characters */
         do {
             row[dst] = row[src];        /* .loop5 */
             src++;
@@ -350,6 +364,7 @@ WORD gl_delright(void)
     col = (WORD)i;                      /* move d0,-(a7) */
     do {
         row[(WORD)i] = ' ';             /* .loop; no block adjust (I.4) */
+        litrow_set(i, 0);               /* NEW: literal characters */
         i++;
     } while (i < chcols);
     return col;                         /* bra reline */

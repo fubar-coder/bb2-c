@@ -23,6 +23,7 @@
 #include "tokit.h"
 #include "lineedit.h"
 #include "keymap.h"
+#include "literal.h"
 
 /* line number of the cursor: move curstop,dN / add cursy,dN (16 bit) */
 static UWORD curline(void)
@@ -315,6 +316,8 @@ void join(void)
         return;
     }
     next = cur->nextitem;
+    litrow_sync();                              /* NEW: literal characters */
+    litclear();
     row = chmap + chloc;
     len = (WORD)chcols;
     for (;;) {                                  /* .loop */
@@ -330,14 +333,23 @@ void join(void)
     /* the joined line in charbuff2 (.loop2 - .skip3; the original builds
        it after the block adjustment, which does not use it) */
     buf = charbuff2;
-    for (width = 0; width < len; width++)       /* .loop2 */
-        buf[width] = row[width];
+    for (width = 0; width < len; width++) {     /* .loop2 */
+        UBYTE l = litat(row + width);           /* NEW: marked (literal.h) */
+
+        if (l)
+            litput(buf + width, l);
+        else
+            buf[width] = row[width];
+    }
     p = buf + len;
     if (tokenise) {
         /* .skip2a.  Fixed (#355) survey-02 I.3: the original's detok has no
            length check and can run past charbuff3, the end of TED's
            buffer block */
         p = detok(next->chars, p, charbuff4);
+    } else if (haslit(next->chars)) {
+        /* NEW: a literal character as one marked column (literal.h) */
+        p = detolit(next->chars, p, charbuff4);
     } else {
         const UBYTE *s = next->chars;
 
@@ -349,6 +361,17 @@ void join(void)
        and charstobuff drops everything behind column 128 without notice.
        Refused with the beep, before anything changes */
     if (p - buf > (WORD)chcols) {
+        beepem();
+        return;
+    }
+    /* NEW (literal characters, design D4a): the joined line is made here
+       (charstobuff writes only charbuff and the scratch row; the block
+       adjustment below does not use them); when a literal character does
+       not fit its bytes (TED_LITLIMIT), refused with the beep as above */
+    while (p < charbuff3)
+        *p++ = 32;
+    size = charstobuff(charbuff2);
+    if (littrunc) {
         beepem();
         return;
     }
@@ -395,11 +418,8 @@ sskip3:
         bboty--;
     }
 sskip:
-    /* .skip3 */
-    while (p < charbuff3)
-        *p++ = 32;
-    /* .skip4 */
-    cur = makeline(cur, charstobuff(charbuff2));
+    /* .skip3 .skip4: the line made above */
+    cur = makeline(cur, size);
     old = cur->nextitem;                        /* = a5 */
     after = old->nextitem;
     if (after) {
@@ -487,13 +507,22 @@ sinmid:
         bboty++;
     }
 sskip:
+    litrow_sync();                              /* NEW: literal characters */
+    litclear();
     p = charbuff2;
     row = chmap + chloc;
     if (col >= chcols)
         ORIG_HAZARD("split: cursor column >= chcols (one byte behind the chmap row)");
     do {                                        /* .loop */
-        *p++ = row[col];
+        UBYTE l = litat(row + col);             /* NEW: marked (literal.h) */
+
+        if (l)
+            litput(p, l);
+        else
+            *p = row[col];
+        p++;
         row[col] = 32;
+        litrow_set(col, 0);
         col++;
     } while (col < chcols);                     /* bcs .loop */
     while (p < charbuff3)                       /* .loop3 */
@@ -691,11 +720,12 @@ void blokkill(void)
     }
     blokop = 0;
     allalt = (UWORD)-1;
+    litclear();                                 /* NEW: literal characters */
     bloksetup(&bc);
     bc.col = 0;                                 /* moveq #0,d5 */
     p = charbuff2;
     while ((UWORD)bc.col < (UWORD)btopx)        /* .loop: bcc .skip0 */
-        *p++ = (UBYTE)getbchar2(&bc);
+        litstore(&p, getbchar2(&bc));           /* NEW: litstore (marks) */
     /* .skip0 */
     keep = p;                                   /* move.l a0,-(a7) */
     while (bc.line < bboty) {                   /* .skip: bcc .done0 */
@@ -708,8 +738,9 @@ void blokkill(void)
     /* Fixed (#354) survey-02 I.8: the original calls detoka5 also without
        tokenise (bytes >= $80 then went to findtoke, with tokens possibly
        0); getbchar2 reads chars(a5) then and needs no detoka5 */
-    if (bc.line != btopy && tokenise)
-        detoka5(bc.item);
+    if (bc.line != btopy)
+        blokline(bc.item);                      /* NEW: without tokenise
+                                                   for a literal character */
     /* .done */
     p = keep;
     bc.col = bbotx;
@@ -719,7 +750,7 @@ void blokkill(void)
             break;
         c = getbchar2(&bc);
         bc.col--;
-        *p++ = (UBYTE)c;
+        litstore(&p, c);
     }
     /* .done2 */
     while (p < charbuff3)
@@ -799,6 +830,10 @@ void bloksave(void)
         if (c < 0)                              /* bmi .done */
             break;
         if (c != 0) {
+            /* NEW (design D6): without tokenise a text save - a literal
+               character as its byte, 26-31 as the umlauts */
+            if (!tokenise && !(c & TED_BLIT) && c >= 26 && c <= 31)
+                c = (WORD)unmapgerms((UBYTE)c);
             bsbyte(fh, (UBYTE)c);
             continue;
         }
@@ -808,6 +843,8 @@ void bloksave(void)
         for (;;) {
             /* .loop3 */
             if (bc.line >= bboty) {             /* bcs .bok */
+                if (!tokenise && bc.item)
+                    blokline(bc.item);          /* NEW: literal characters */
                 if (tokenise) {
                     /* BUG(orig) (#350) survey-02 G: a block ending behind the
                        last text line arrives here with a5 = 0 */
@@ -836,14 +873,13 @@ void bloksave(void)
                 buf[len] = 10;
                 r = ted_write(fh, buf + 1, len);
             } else {
-                static const UBYTE lf = 10;
-                const UBYTE *e = bc.item->chars;
-
-                while (*e)
-                    e++;
-                r = ted_write(fh, bc.item->chars, (LONG)(e - bc.item->chars));
-                if (r >= 0)
-                    r = ted_write(fh, &lf, 1);
+                /* NEW (design D6): a text save writes only text - tokens
+                   as their names, a literal character as its byte, 26-31
+                   as the umlauts (textline; dosbuff is free while
+                   writing) */
+                buf = textline(bc.item->chars, dosbuff, dosbuff + doslen - 1);
+                *buf++ = 10;
+                r = ted_write(fh, dosbuff, (LONG)(buf - dosbuff));
             }
             if (r < 0) {                        /* tst.l d0 / bpl .skip2 */
                 error(error3);
@@ -869,7 +905,10 @@ static UWORD loadwidth(BOOL pairs)
     UWORD w = 0;
 
     while (*p) {
-        if (pairs && (*p & 0x80) && p[1]) {
+        if (TED_ISLIT(p[0], p[1])) {            /* NEW: one column */
+            w++;
+            p += 2;
+        } else if (pairs && (*p & 0x80) && p[1]) {
             const char *name = findtoke((UWORD)((p[0] << 8) | p[1]));
 
             while (*name++)
@@ -949,6 +988,8 @@ void blokload(void)
         doclose(&rd);                           /* beq doclose */
         return;
     }
+    litrow_sync();                              /* NEW: literal characters */
+    litclear();
     src = chmap + chloc;
     endp = src + chcols;
     col = (UWORD)(cursoff + cursx);
@@ -957,10 +998,18 @@ void blokload(void)
     r = readline(&rd, &len);
     if (col > 0) {
         ULONG w = (ULONG)col + loadwidth(tokenise && r != RL_NOEOL);
+        ULONG nlit = 0;
 
         if (r == RL_NOEOL)
             w += tailwidth(src + col, endp);    /* done2: the line and the tail */
-        if (w > chcols) {
+        for (i = 0; i < col; i++)
+            if (litat(src + i))
+                nlit++;
+        /* NEW: in front of a line stored as loaded, a literal character
+           of the text in front of the cursor is a pair: the line must keep
+           TED_LITLIMIT bytes (only with literal characters) */
+        if (w > chcols
+            || (nlit && r != RL_NOEOL && col + nlit + len - 1 > TED_LITLIMIT)) {
             doclose(&rd);
             beepem();
             return;
@@ -976,7 +1025,16 @@ void blokload(void)
     dst = charbuff;
     i = 0;
     while (i < col) {                           /* .loop: bcc .skip */
-        *dst++ = *src++ & 0x7F;                 /* bclr #7,d0 */
+        UBYTE lc = litat(src);                  /* NEW: literal characters */
+
+        if (lc && r == RL_NOEOL)
+            litput(dst++, lc);                  /* done2: a column row */
+        else if (lc) {
+            *dst++ = TED_LITHI;                 /* stored as loaded: the pair */
+            *dst++ = lc;
+        } else
+            *dst++ = *src & 0x7F;               /* bclr #7,d0 */
+        src++;
         i++;
     }
     /* .skip */
@@ -1005,14 +1063,14 @@ done3:
     goto done;
 done2:
     /* ted.s:1783 done2 */
-    dst = bloadadd(dst);
+    dst = bloadaddrow(dst);                     /* NEW: bloadaddrow (marks) */
     goto done;
 done4:
     /* ted.s:1785 done4: the line is replaced by makeline in blalldone
        right away (survey-02 I.10) */
     cur = linka0(allocline(len), cur);
     dst = charbuff;
-    dst = bloadadd(dst);
+    dst = bloadaddrow(dst);                     /* NEW: bloadaddrow (marks) */
     /* falls through into done */
 done:
     /* ted.s:1791 done */
@@ -1031,7 +1089,14 @@ done:
         dst = charbuff;
     }
     while (src < endp && dst < charbuff2) {     /* cmp.l bloktopx,a2 / cmp.l charbuff2,a3 */
-        *dst++ = *src++ & 0x7F;
+        UBYTE lc = litat(src);                  /* NEW: marked (literal.h) */
+
+        if (lc)
+            litput(dst, lc);
+        else
+            *dst = *src & 0x7F;
+        dst++;
+        src++;
     }
     blankfill(dst);                             /* fixed #1012 */
     /* ted.s:1801 blalldone: charstobuff in place over charbuff
@@ -1076,6 +1141,19 @@ ok:
     bcopyok();                                  /* falls through into bcopyok */
 }
 
+/* NEW (literal characters): **dst = the chmap cell *cell with bit 7
+   cleared, a literal character of the cursor row marked (literal.h) */
+static void litcell(UBYTE **dst, const UBYTE *cell)
+{
+    UBYTE l = litat(cell);
+
+    if (l)
+        litput(*dst, l);
+    else
+        **dst = *cell & 127;
+    (*dst)++;
+}
+
 /* ted.s:1832 bcopyok */
 void bcopyok(void)
 {
@@ -1086,6 +1164,8 @@ void bcopyok(void)
     WORD c, x;
     struct bcur bc;
 
+    litrow_sync();                              /* NEW: literal characters */
+    litclear();
     bloksetup(&bc);
     /* a5 = btopy, d6 = btop line, d5 = btopx; a4 = thisy, d7 = this line */
     row = chmap + chloc;
@@ -1093,7 +1173,7 @@ void bcopyok(void)
     col = 0;                                    /* d1 */
     dst = charbuff2;
     while (col < curcol) {                      /* .loop: bcc .skip2 */
-        *dst++ = *row++ & 127;
+        litcell(&dst, row++);                   /* NEW: marks (& 127) */
         col++;
     }
     /* .skip2 */
@@ -1107,7 +1187,7 @@ void bcopyok(void)
         if (c != 0) {
             /* .proc */
             if (col < chcols) {
-                *dst++ = (UBYTE)c;
+                litstore(&dst, c);              /* NEW: litstore (marks) */
                 col++;
             }
             continue;
@@ -1153,8 +1233,7 @@ void bcopyok(void)
             bc.item = bc.item->nextitem;
         }
         /* .skipx */
-        if (tokenise)
-            detoka5(bc.item);
+        blokline(bc.item);                      /* NEW: (tokenise: detoka5) */
         /* .skipx2 */
         dst = charbuff2;
         bc.col = 0;
@@ -1166,7 +1245,7 @@ void bcopyok(void)
     col = keepcol;
     row = keeprow;
     while (col < chcols) {                      /* .oneline3 */
-        *dst++ = *row++ & 127;
+        litcell(&dst, row++);                   /* NEW: marks (& 127) */
         col++;
     }
     if (dst > charbuff3)

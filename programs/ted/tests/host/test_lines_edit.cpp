@@ -290,9 +290,11 @@ TEST_CASE("bloksave and blokload through the file hooks", "[lines][blocks][files
     CHECK(std::string_view(linetext(2)) == "cdef");
     CHECK(std::string_view(linetext(3)) == "ghij");
 
-    // bytes >= $80 (Latin-1) are characters, not the block end (#362:
-    // getbchar2 returned them negative without tokenising)
-    static const char *const t2[] = { "x", "a$=\"Gr\xf6\xdf" "e\"", "b" };
+    // bytes >= $80 are characters, not the block end (#362: getbchar2
+    // returned them negative without tokenising): a token pair's bytes
+    // shown raw, and a literal character (the pair $90 cc, written as
+    // its byte; the umlaut code 27 as Latin-1: a text save)
+    static const char *const t2[] = { "x", "a$=\"Gr\x1b\x90\xdf" "e\"\x8a\x41", "b" };
     mklist(3, t2);
     place(0, 0, 0);
     btopx = 0;
@@ -303,13 +305,15 @@ TEST_CASE("bloksave and blokload through the file hooks", "[lines][blocks][files
     b = host_readfile(path.c_str(), &len);
     REQUIRE(b != nullptr);
     CHECK(std::string_view(reinterpret_cast<const char *>(b), static_cast<size_t>(len))
-          == "x\na$=\"Gr\xf6\xdf" "e\"\n");
+          == "x\na$=\"Gr\xf6\xdf" "e\"\x8a\x41\n");
     std::free(b);
 
-    // the middle lines of a block are written as they are (#354: the
+    // the middle lines of a block are written as text (#354: the
     // original detokenised them also without tokenise, a Latin-1
-    // character and the next byte became a token name)
-    static const char *const t3[] = { "a", "; Gr\xf6\xdf" "e", "b", "c" };
+    // character and the next byte became a token name; spec
+    // editor/literal-characters: the umlaut code as Latin-1, a literal
+    // character as its byte)
+    static const char *const t3[] = { "a", "; Gr\x1b\x90\xdf" "e", "b", "c" };
     mklist(4, t3);
     place(0, 0, 0);
     btopx = 0;

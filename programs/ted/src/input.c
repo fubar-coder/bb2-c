@@ -231,6 +231,7 @@ LONG getline(UWORD *id)
     WORD newcol;
 
     anyalt = 0;
+    litrow_sync();                      /* NEW: the row's literal characters */
     cursor();
     goto getline3;
     /* ted.s:5420 getline2 */
@@ -254,6 +255,8 @@ getline3:
     }
     if ((UWORD)event < 32)              /* cmp #32,d7 / bcs charlow */
         goto charlow;
+    if (litkey(event))
+        goto islit;                     /* NEW: a literal character */
     if ((UWORD)event >= 127)            /* bcc charhi */
         goto charhi;
 isasc:
@@ -261,6 +264,19 @@ isasc:
     gl_isasc((UBYTE)event);
     shiftright(plane0, plane1, col);    /* .skip0 */
     print((UBYTE)event);                /* .skip2 */
+    cursrite();
+    goto getline2;
+
+    /* NEW (literal characters, spec editor/literal-characters): a key
+       that gives a Latin-1 character $A0-$FF other than the umlauts of
+       germs (those came with bit 30 above) is inserted as one literal
+       character; the original passed it on (charhi -> glinedone: lost, or
+       a jumptable code - 255 called the gadget routine).  $80-$9F stay
+       what they were: the codes of F1-F10 and Help (rawspecial). */
+islit:
+    gl_islit(litkey(event));
+    shiftright(plane0, plane1, col);
+    print(TED_LITGLYPH);
     cursrite();
     goto getline2;
 
