@@ -164,6 +164,15 @@ builds. Proposed rule (to be decided in step 3 of `TODO.md` §4):
 
 ### 3.1 Reference build with blitz2 2.10 (step 3)
 
+**RIDosLib and literallib** (#1018): RIDosLib keeps its number 33 in the
+variants `rwe-1999`, `rwe-1999-eval` and `rwe-1999-ahi`; 33 is reserved
+for `literallib`, the names of the literal characters
+(`docs/token-table.md`), so the two cannot be in one library set: the RWE
+variants have no `literallib` and no literal characters (TED-C still shows
+a literal character through its built-in table, a stray one is "Token Not
+Found"). The build's reservation check allows RIDosLib's 33 there only
+(`blitz_library ALLOW33`, `blitzlib numbers --allow-33`).
+
 **How libraries were built** (`EXTRAS/LIBSDEV/DOCUMENTATION`, Acid's
 "Blitz2 Library Developers Documents"): the source is compiled with
 blitz2 by *Create Executable*; the executable *is* the library file

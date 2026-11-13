@@ -342,8 +342,11 @@ The 722 tokenised files have 122 837 lines and 2.78 MB.
 * **Literal characters (this repository, not the CD):** TED-C and the
   compilers of this repository store a Latin-1 character other than the
   six umlauts of §4.1 as the token pair **`$90 cc`** (first byte `$90`,
-  second byte the character `cc`, `$80`-`$FF`): the word `$9000 + cc`, in
-  library 33's range. It has the shape of every token pair, so
+  second byte the character `cc`, `$81`-`$FF`): the word `$9000 + cc`,
+  which the library `literallib` (library 33, 127 dummy tokens
+  `$9081`-`$90FF`, #1018) names with the character. `$9080` is no
+  literal character (blitz2 numbers a user library from `libnum * 128 +
+  1`): TED-C stores a byte `$80` of a text as `?`. It has the shape of every token pair, so
   every reader that walks a line pair by pair stays in step; the file
   has no header, no flag and no extension of its own. The first byte
   `$90` (libraries 32 and 33, words `$9000`-`$90FF`) is **reserved** for

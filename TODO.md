@@ -885,23 +885,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   editor's requester, the console). It comes with the first compile-time
   warning; `resclash` (#36) is raised while the residents are loaded and
   needs no queue. The design is in the archived change's `design.md`.
-- [ ] **Literal characters** (OpenSpec change `literal-characters`,
-  approved 2026-11-12; the follow-up of #374): any Latin-1 character in
-  strings and comments as the token pair `$90 cc` (`docs/formats.md`
-  §3.2, the first byte `$90` reserved). Done: TED-C (typing, loading,
-  display, search, blocks, print, save), the compilers' strings, AB3
-  mode's loader, `bbdetok`/`tedsrc`, the TED A/B script `31-literal`.
-  Open:
-  * the library `literallib` (library 33 in `acidlibs`, the userlib
-    `literallib.obj`) and the reservation check of `blitzlib`: waiting
-    for the user's answer on the token range (blitz2 numbers a user
-    library from `libnum * 128 + 1`, so library 33 names `$9081`-`$90FF`
-    only; design finding F10);
-  * then: the stray literal character as "Syntax Error" (task 4.1), the
-    original TED with the userlib (TED A/B script, task 7.2, manual run
-    9.2), the docs of the library (`docs/libs/`, `docs/rwelibs/`);
-  * TED's fonts have no glyphs from 128: every literal character is
-    drawn with glyph 0 (question to the user: glyphs of TED-C's own).
+- [x] **Literal characters** done (2026-11-13): #1018, OpenSpec change
+  `literal-characters` (approved 2026-11-12; the follow-up of #374): any
+  Latin-1 character from `$81` in strings and comments as the token pair
+  `$90 cc` (`docs/formats.md` §3.2, the first byte `$90` reserved, the
+  library `literallib` with 127 dummy tokens `$9081`-`$90FF`, the userlib
+  `literal/literallib.obj`, the reservation check of `blitzlib`); TED-C,
+  the compilers, AB3 mode's loader, the host tools, TED A/B `31-literal`
+  and `32-literal-load`. To archive the change after the merge.
+- [ ] **TED-C glyphs for `$A0`-`$FF`** (user decision 2026-11-13, a change
+  of its own after #1018): TED's fonts (`chars8.b`, `chars.b`) have glyphs
+  0-127 only, so every literal character is drawn with glyph 0
+  (`TED_LITGLYPH`, `programs/ted/src/core/literal.h`); TED-C gets glyphs
+  of its own for the Latin-1 characters, for both font heights.
 - [ ] **Buffer access annotations** (planned 2026-11-12, implementation
   postponed by the user's decision of the same day): implement the
   OpenSpec change `buffer-access-annotations` - a `BL_ACCESS` macro for

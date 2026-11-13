@@ -1,5 +1,10 @@
 # ridoslib (33): notification, device list, path splitting
 
+Library 33 is reserved for `literallib` (#1018, `docs/token-table.md`):
+RIDosLib keeps it in the RWE variants, which therefore have no
+`literallib` and no literal characters; the two cannot be loaded
+together (`docs/rwelibs/README.md` §3.1).
+
 No author in the source (BSS2 of Red When Excited). File notification
 through one message port, the DOS device list and two string functions:
 

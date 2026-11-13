@@ -114,6 +114,10 @@ Our reference (`LESDebuglib.bb`, 1996-12-01) has `FindLineToken` and
 
 ### ridoslib (33 → 58)
 
+In this repository 33 is reserved for `literallib` (#1018); RIDosLib keeps
+33 only in the RWE variants, which have no `literallib`
+(`docs/rwelibs/README.md` §3.1). AmiBlitz3's 58 avoids the clash.
+
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
 | `AmiBlitz/AmiBlitz3@bed4b8fa` | 2026-08-17 | cosmetic | disassembled ("source code recovered by disassembly") | – |

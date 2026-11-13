@@ -120,7 +120,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   library (kind F: an addition). Verify: `tokens_port` passes and fails
   with one token removed (a test with a deliberately broken input);
   `ctest --preset all` with `-DPREV_INTENDED` naming `acidlibs`.
-- [ ] 3.3 The userlib file for the original Blitz 2: `literallib.obj` for
+- [x] 3.3 The userlib file for the original Blitz 2: `literallib.obj` for
   `blitz2:userlibs/` from the same C source (`libs/userlibs/CMakeLists.txt`,
   a directory of its own or `rwe`'s pattern), in the results the
   distribution holds. Verify: `blitzlib check`; `bbsrc tokens` over the
@@ -136,7 +136,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   once, twice, `ridoslib` with and without the exception). Verify: the tool tests and the ctest
   `biglib_check_clash` pattern (`libs/CMakeLists.txt:94-110`) with a
   deliberately broken input.
-- [ ] 3.5 `ridoslib` keeps library 33 in `rwe-1999` and its sub-variants
+- [x] 3.5 `ridoslib` keeps library 33 in `rwe-1999` and its sub-variants
   (`libs/variants/rwe-1999/libnums.h:12`, no renumbering) and these
   variants have no literal library (3.1); `rwe_numbers` and
   `rwe_declarations_ridoslib` stay as they are. `docs/rwelibs/README.md`
@@ -183,7 +183,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   through the TED core; `bblines` test with a literal at the start and
   end of a line. Verify: tool tests per spec (round trip `detok` then
   `tok`, a literal at the end of a line).
-- [ ] 6.2 `bbsrc tokens` over the built `acidlibs` lists the library
+- [x] 6.2 `bbsrc tokens` over the built `acidlibs` lists the library
   (spec `tooling/literal-characters`); `tokens-check.cmake` is covered by
   3.2. Verify: a tool test with the library's file.
 
@@ -210,7 +210,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 8. Docs
 
-- [ ] 8.1 The reservation of `$90` (libraries 32 and 33, "wherever
+- [x] 8.1 The reservation of `$90` (libraries 32 and 33, "wherever
   possible": the RWE variants keep RIDosLib as 33 and have no literal
   library; the userlib `literallib.obj` works only if no other library
   numbered 33 is loaded before it, the loaders take the first match),
@@ -221,12 +221,12 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   `LIB_literallib`), `docs/libs/deflibs.md` and `docs/libs/bb2-readme.md`
   where they list the numbers and files of the libraries. Verify: each
   text names `$90`, libraries 32 and 33, and the decision of 2026-11-11.
-- [ ] 8.2 `docs/formats.md` §3.2 (the pair), §4.1 (26..31 stay, the
+- [x] 8.2 `docs/formats.md` §3.2 (the pair), §4.1 (26..31 stay, the
   literal for the rest) and §4.2 (load and save); `docs/rwelibs/README.md`
   and `docs/ab3/userlibs.md` for RIDosLib (33 in the RWE variants, no literal
   library there). Verify: the
   texts name file and line of the code as the asserts do.
-- [ ] 8.3 `docs/ted/` (`deviations.md`, `changes.md`) and
+- [x] 8.3 `docs/ted/` (`deviations.md`, `changes.md`) and
   `docs/blitz2/`: the intended deviation (kind F) for #374 and the issue
   of this change; `docs/libs/deviations.md` for the new library (3.2).
   Verify: the rows.

@@ -533,7 +533,7 @@ name given twice keeps its first token):
 A tokenised source and BB2 mode keep TED's way of loading (TED's own
 tokeniser stays for TED, a later change).
 
-**Latin-1 in strings and comments** (change `literal-characters`, spec
+**Latin-1 in strings and comments** (#1018, change `literal-characters`, spec
 `ab3-compat/strings`): `ab3cli` tokenises with the rule set
 `TOKENIZER_RULES_AB3_LIT` (`shared/tokenizer/tokenizer.h`;
 `programs/ab3cli/src/main.c`, `ab3_tokenizer`): AmiBlitz3's rules, and

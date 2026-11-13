@@ -112,7 +112,9 @@ repository (`formats.md` §3.2: the pair `$90 cc` is the Latin-1
 character `cc`; decision of 2026-11-11), wherever possible:
 
 * the default `acidlibs` and every variant without RWE have the library
-  `literallib` as library 33, which names the words of library 33 with
+  `literallib` as library 33 (#1018: 127 dummy tokens `$9081`-`$90FF`,
+  `libs/acidlibs/literallib.c`; `$9080` is no literal character), which
+  names the words of library 33 with
   their characters, so TED (also the original) shows them; library 32
   stays free;
 * the one library of the CD with the first byte `$90` is RWE's
@@ -120,7 +122,11 @@ character `cc`; decision of 2026-11-11), wherever possible:
   `rwe-1999-eval` and `rwe-1999-ahi` keep it with its original number and
   have no literal library: literal characters are not supported there
   (TED-C still shows them through its built-in table);
-* the userlib `literallib.obj` for the original Blitz 2 works only if no
+* the reservation is checked in the build: `blitzlib check` and `numbers`
+  refuse library 32 and a library 33 that is not `literallib`, except
+  RIDosLib with `--allow-33` (`tools/blitzlib/README.md`);
+* the userlib `literallib.obj` for the original Blitz 2 (in a directory of
+  `blitz2:userlibs/`, which blitz2 loads) works only if no
   other library numbered 33 is loaded before it: blitz2 and TED take the
   first library of a number (`findlib`, `findtoke`), and userlibs are
   loaded last.

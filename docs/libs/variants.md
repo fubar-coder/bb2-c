@@ -15,6 +15,26 @@ source written for the variant come from its files (`bbsrc tokens`,
 `tedsrc detok --blitz2 … --lib …`). Test variants are in
 `libs/tests/variants/` (ctest `variant_*`).
 
+**Reserved numbers** (#1018, decision of 2026-11-11): the first byte
+`$90` of a token word - libraries **32 and 33**, the words
+`$9000`-`$90FF` - is reserved for the literal characters (`$90 cc`,
+`docs/formats.md` §3.2, `docs/token-table.md`). `literallib`
+(`libs/acidlibs/literallib.c`, `LIB_literallib` in `bb2-2.10/libnums.h`)
+is library 33 in `acidlibs` of the default variant and of every variant
+without RWE; 32 stays free. `rwe-1999`, `rwe-1999-eval` and
+`rwe-1999-ahi` keep RIDosLib as 33 (`#undef LIB_literallib` in
+`rwe-1999/libnums.h`, `ACIDLIBS_WITHOUT_LITERAL` in
+`libs/acidlibs/CMakeLists.txt`) and have no literal characters.
+`blitzlib check` and `numbers` refuse library 32 and any other library 33
+in the build (RIDosLib with `ALLOW33`); a test variant that used 33 or 32
+would fail there. The same library is built as the userlib
+`variants/bb2-2.10/userlibs/literal/literallib.obj` for the original
+Blitz 2 (copy it to a directory of `blitz2:userlibs/`, e.g.
+`blitz2:userlibs/literal/`; blitz2 loads the directories there): it works
+only if no other library numbered 33 is loaded before it - blitz2 and
+TED take the first library of a number, and userlibs are loaded last, so
+RIDosLib of the CD must not be in `blitz2:userlibs/` with it.
+
 **Userlibs** of a variant: `libs/userlibs/DIR/NAME.c` →
 `build/amiga/variants/VARIANT/userlibs/DIR/NAME.obj` (for
 `blitz2:userlibs/DIR/`). `libs/userlibs/rwe/`: the libraries of Red When
