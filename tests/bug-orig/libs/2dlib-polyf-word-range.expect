@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+small 8000 0
+wild 8000 0
+wild anti 0 8000
+half differ 0
+rc=0

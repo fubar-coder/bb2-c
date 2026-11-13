@@ -38,6 +38,16 @@
  *   - a depth of 0 makes the plane loops run 65536 (CMP.w) / 256 (CMP.b)
  *     times. (#393)
  *   - FreeFill does not clear the buffer pointer. (#394)
+ * Fixed (intended deviation, docs/libs/deviations.md):
+ *   - Polyf clips and steps the edges with word arithmetic (the slope is
+ *     one DIVS, an edge of 16384 lines gets the slope 0, the clipping
+ *     DIVS overflow, the orientation test MULS of wrapped differences):
+ *     a polygon with vertices far outside the bitmap is drawn wrongly or
+ *     not at all.  Here a polygon of 3 to 16 points that leaves the
+ *     range in which the word arithmetic is exact (polyinrange) is first
+ *     clipped to the bitmap plus one pixel with long arithmetic
+ *     (clippoly), and the orientation test compares exact products; the
+ *     polygons in that range are drawn as before. (#1000)
  * Not a bug (statements, a3 has no meaning after them): the routines leave
  * a3 where the original leaves it (bitmap, plane pointer, ...), not the
  * string pointer.
@@ -1373,14 +1383,15 @@ static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, 
 }
 
 /* tops..rside (the algorithm of polylib): the outline of the polygon in
-   polypts (n points, twice in a row) - the top line, clipped at the top
-   edge and at the sides, and the edge lists of the left side (backwards
-   through the points) and the right side.  NULL if nothing is visible,
-   else the address of the right list's end mark (where the original
-   leaves a3). */
-static UWORD *outline(UWORD n, WORD width, WORD height)
+   pts (polypts or the clipped points; n points, twice in a row) - the top
+   line, clipped at the top edge and at the sides, and the edge lists of
+   the left side (backwards through the points, into ledges) and the right
+   side (redges).  NULL if nothing is visible, else the address of the
+   right list's end mark (where the original leaves a3). */
+static UWORD *outline(const struct point *pts, UWORD n, WORD width, WORD height,
+                      UWORD *ledges, UWORD *redges)
 {
-    const struct point *p = polypts, *lp, *rp;
+    const struct point *p = pts, *lp, *rp;
     WORD lx, rx, y, ly, ry;
     UWORD k = n - 1;
 
@@ -1473,8 +1484,93 @@ static UWORD *outline(UWORD n, WORD width, WORD height)
     pv.top.left = lx;
     pv.top.y = y;
     pv.top.right = rx;
-    side(pv.ledges, lx, y, lp, -1, 0, width, height);
-    return side(pv.redges, rx, y, rp, 1, 1, width, height);
+    side(ledges, lx, y, lp, -1, 0, width, height);
+    return side(redges, rx, y, rp, 1, 1, width, height);
+}
+
+/* Fixed (#1000): the clipping of a polygon outside the range of the word
+   arithmetic.  CLIPMAX: the most points of a clipped polygon (16 + 4 for
+   a convex one; a concave one may get more, then nothing is drawn) */
+#define CLIPMAX 20
+
+/* the range in which outline, side and drawpoly compute exactly: every
+   edge (the points are twice in pts, so p[1] of the last is the first)
+   at most 8191 in x and y (the slope DIVS of side fits in a word, the
+   shift count stays positive), every point within +-16383 (twice x is a
+   word in edge_start) */
+static int polyinrange(const struct point *p, UWORD n)
+{
+    do {
+        LONG dx = (LONG)p[1].x - p->x, dy = (LONG)p[1].y - p->y;
+
+        if (p->x < -16383 || p->x > 16383 || p->y < -16383 || p->y > 16383
+            || dx < -8191 || dx > 8191 || dy < -8191 || dy > 8191)
+            return 0;
+        p++;
+    } while (--n);
+    return 1;
+}
+
+static WORD coord(const struct point *p, int yaxis)
+{
+    return yaxis ? p->y : p->x;
+}
+
+/* one pass of the clipping (Sutherland-Hodgman): the points of src (n)
+   on the kept side of the line x = c (yaxis: y = c; high: keep >= c, else
+   <= c), with the crossings of the edges, into dst.  A crossing is the
+   other coordinate of the edge at c, from its first point a, rounded:
+   the difference times the part of the edge up to c over the edge's
+   length with MULU/DIVU (all below 65536, the quotient at most the
+   difference).
+   Returns the number of points, 0 if they are more than CLIPMAX. */
+static UWORD clipline(struct point *dst, const struct point *src, UWORD n, int yaxis, WORD c,
+                      int high)
+{
+    const struct point *a = src + n - 1;
+    UWORD m = 0;
+
+    for (; n; n--, a = src++) {
+        LONG ua = coord(a, yaxis), ub = coord(src, yaxis);
+        int ain = high ? ua >= c : ua <= c, bin = high ? ub >= c : ub <= c;
+
+        if (ain != bin) {
+            LONG va = coord(a, !yaxis), dv = (LONG)coord(src, !yaxis) - va;
+            ULONG len = ub > ua ? ub - ua : ua - ub, part = c > ua ? c - ua : ua - c;
+            UWORD q = (UWORD)bl_divu_w(bl_mulu_w(dv < 0 ? -dv : dv, part) + (len >> 1), len);
+
+            if (m == CLIPMAX)
+                return 0;
+            va += dv < 0 ? -(LONG)q : (LONG)q;
+            dst[m].x = yaxis ? (WORD)va : c;
+            dst[m].y = yaxis ? c : (WORD)va;
+            m++;
+        }
+        if (bin) {
+            if (m == CLIPMAX)
+                return 0;
+            dst[m++] = *src;
+        }
+    }
+    return m;
+}
+
+/* the polygon of polypts (n points) clipped to the bitmap plus one pixel
+   (x -1..width, y -1..height; both at most 8190) into dst (2 * CLIPMAX
+   points: the passes alternate between its halves), its points twice in
+   a row as outline wants them.  Returns the number of points. */
+static UWORD clippoly(struct point *dst, UWORD n, WORD width, WORD height)
+{
+    struct point *b = dst + CLIPMAX;
+    UWORD i;
+
+    n = clipline(b, polypts, n, 0, -1, 1);
+    n = clipline(dst, b, n, 0, width, 0);
+    n = clipline(b, dst, n, 1, -1, 1);
+    n = clipline(dst, b, n, 1, height, 0);
+    for (i = 0; i < n; i++)
+        dst[n + i] = dst[i];
+    return n;
 }
 
 /* drawpoly: the polygon in polypts (plus the origin, added to both copies
@@ -1485,8 +1581,11 @@ static UWORD *outline(UWORD n, WORD width, WORD height)
 static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
 {
     UBYTE *chip = BL_CUSTOM;
-    const struct edge *le = (const struct edge *)pv.ledges;
-    const struct edge *re = (const struct edge *)pv.redges;
+    struct point clip[2 * CLIPMAX];
+    UWORD cledges[CLIPMAX * 3 + 2], credges[CLIPMAX * 3 + 2];
+    const struct point *pts = polypts;
+    UWORD *ledges = pv.ledges, *redges = pv.redges;
+    const struct edge *le, *re;
     ULONG left, right, lstep, rstep, rowoff;
     UWORD llines, rlines, rtclip, xs, xe, words, plane;
     UBYTE *end;
@@ -1505,7 +1604,24 @@ static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
             p += 2;
         } while (k-- != 0);
     }
-    end = (UBYTE *)outline(n, bm->width, bm->height);
+    /* Fixed (#1000): outside the range of the word arithmetic, clip with
+       longs first (into the edge lists of this frame: the clipped polygon
+       may have more edges per side than the lists of pv hold); fewer than
+       3 points are no polygon, more than 16 have already overflowed
+       polypts (#395), and a bitmap wider or higher than 8190 would leave
+       the range again: those go on as in the original */
+    if (n >= 3 && n <= 16 && bm->width <= 8190 && bm->height <= 8190
+        && !polyinrange(polypts, n)) {
+        n = clippoly(clip, n, bm->width, bm->height);
+        if (n < 3)
+            return a3;
+        pts = clip;
+        ledges = cledges;
+        redges = credges;
+    }
+    le = (const struct edge *)ledges;
+    re = (const struct edge *)redges;
+    end = (UBYTE *)outline(pts, n, bm->width, bm->height, ledges, redges);
     if (!end)
         return a3;
     a3 = end;
@@ -1557,18 +1673,32 @@ static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
     }
 }
 
+/* a * b > c * d for |a|, |b|, |c|, |d| below 65536 (differences of two
+   words): the magnitudes with MULU, then the signs */
+static int prodgt(LONG a, LONG b, LONG c, LONG d)
+{
+    ULONG p = bl_mulu_w(a < 0 ? -a : a, b < 0 ? -b : b);
+    ULONG q = bl_mulu_w(c < 0 ? -c : c, d < 0 ? -d : d);
+    int np = p && (a < 0) != (b < 0), nq = q && (c < 0) != (d < 0);
+
+    if (np != nq)
+        return nq;
+    return np ? p < q : p > q;
+}
+
 /* Polyf: the points twice into polypts - backwards if they run anti-
    clockwise (by the first three points), then with colour2 (#395: more
    than 16 points overflow it) */
 static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
                     UWORD colour2)
 {
-    LONG a = bl_muls_w(pts[1].x - pts[0].x, pts[2].y - pts[1].y);
-    LONG b = bl_muls_w(pts[2].x - pts[1].x, pts[1].y - pts[0].y);
     struct point *p, *q;
     UWORD k = n - 1;
 
-    if (a > b) {                                /* clck */
+    /* Fixed (#1000): the differences as longs, the products compared
+       exactly (the original: MULS of the word differences) */
+    if (prodgt((LONG)pts[1].x - pts[0].x, (LONG)pts[2].y - pts[1].y,
+               (LONG)pts[2].x - pts[1].x, (LONG)pts[1].y - pts[0].y)) {  /* clck */
         p = polypts;
         q = polypts + n;
         do {

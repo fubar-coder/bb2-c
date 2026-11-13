@@ -24,3 +24,5 @@ corpus_runerr	t124_bitmaperr	#6: the original's runtime error requester has an e
 corpus_runerr	t126_rgberr	#6: the original's runtime error requester has an empty text
 corpus	t141_shapetrix	#1004: Rotate rounds negative coordinates to the nearest integer: the rotated shapes are one pixel smaller
 corpus_runerr	t141_shapetrix	#1004: Rotate rounds negative coordinates to the nearest integer: the rotated shapes are one pixel smaller
+corpus	t158_2dfuzz	#1000: Polyf draws the polygons with vertices far outside the bitmap (line polyf wild)
+corpus_runerr	t158_2dfuzz	#1000: Polyf draws the polygons with vertices far outside the bitmap (line polyf wild)
