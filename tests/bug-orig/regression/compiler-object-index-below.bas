@@ -8,7 +8,7 @@
 ; bytes per row of that object (2); Use BitMap 511 makes Plot draw into
 ; its plane ($80 in the first byte); Free BitMap 511 clears its "own
 ; memory" field (+62).
-; @fixed #939
+; A regression test of the fix of #939: the original already gives this (correct) result.
 ; @pass jobline=max=160|512
 DEFTYPE .l
 o=Addr BitMap(0)+32704

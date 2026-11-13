@@ -2,7 +2,7 @@
 ; Function and Statement Return / Function Return against the kind of
 ; the open procedure refuses only the other kind: each kind ended and
 ; left with its own keywords compiles and runs.
-; @fixed #940
+; A regression test of the fix of #940: the original already gives this (correct) result.
 Statement s{a}
   If a=1 Then Statement Return
   NPrint "s ",a

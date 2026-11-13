@@ -4,7 +4,7 @@
 ; 32704 bytes behind BitMap 0; Used keeps the word shift (lsr.w), as in
 ; the original.
 ; Correct: after Use BitMap 511, Used BitMap is 511 and b+Used BitMap 512.
-; @fixed #998
+; A regression test of the fix of #998: the original already gives this (correct) result.
 ; @pass jobline=max=160|512
 BitMap 511,16,8,1
 BitMap 0,16,8,1

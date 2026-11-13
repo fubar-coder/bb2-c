@@ -11,7 +11,7 @@
 ; (copyconst puts the 59 characters of the last global label in front).
 ; Correct: the program compiles and stores 63, 131, 7, 131 and the
 ; address of the local label (difference 0).
-; @fixed #997
+; A regression test of the fix of #997: the original already gives this (correct) result.
 Macro s
 move.l #`1+`1+`2,dats
 End Macro
