@@ -121,16 +121,16 @@ The expected data that came from the originals changes in the fix commit
 as well, never the test program around it (`tests/README.md`):
 
 * a corpus program's output (`tests/corpus/expect/PASS/NAME.out`,
-  `NAME.serial`): written from the port's run by
+  `NAME.serial`): a fix that changes it makes it the pair
+  `NAME.orig.out` (the original's) / `NAME.fixed-N.out` (the port's), a
+  fix that changes only the code the executable pair `NAME.orig.exe` /
+  `NAME.fixed-N.exe`, written by
+  `cmake --preset amiga "-DCORPUS_UPDATE_FIX=PASS:NAME#N"` and
   `cmake --build --preset amiga --target corpus-expect-update`, checked
-  with `git diff tests/corpus/expect` ("Corpus");
+  with `git diff tests/corpus/expect` ("Corpus"); fix-scope covers it;
 * a result of a CD source (`tests/data/blitz2-cd.tsv`): the target
   `blitz2-cd-update` rewrites the row, a note `#NNN: ... (2.10: ...)`
   names the CD's result ("Corpus");
-* a corpus program that differs from the original on purpose
-  (`tests/corpus/notes.tsv`: pass, program, `#NNN: reason`): the runs of
-  `ctest --preset originals` judge it as "noted" instead of a failure, and
-  a row that no longer differs fails as stale ("Corpus");
 * an output of TED's detok, tokit2 or load and save
   (`tests/data/ted-oracle.sha256`): the row gets the port's hash and a
   note `#NNN: ... (TED 1.1: HASH)` with the original's ("Oracle data of

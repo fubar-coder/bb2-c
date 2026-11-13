@@ -29,10 +29,10 @@ Contents: [The test model](#the-test-model) ·
 
 The suites that compare program behaviour with an expectation follow one
 model (spec `testing/test-model`; implemented for the library tests
-("Libraries") and the bug-orig tests (`ID.orig` the `[orig]` side,
-`ID.expect` the expected one, [Recorded originals](#recorded-originals)),
-the other suites keep their own forms for now: corpus `expect/` files
-with `notes.tsv`, TED oracle rows). A test is a list of **cases**; a case is a key, an input
+("Libraries"), the bug-orig tests (`ID.orig` the `[orig]` side,
+`ID.expect` the expected one, [Recorded originals](#recorded-originals))
+and the corpus (`NAME.orig.out` / `NAME.fixed-N.out`, [Corpus](#corpus));
+the TED oracle keeps its own form for now: rows with an issue). A test is a list of **cases**; a case is a key, an input
 and an expected output, and its verdict is the difference of the actual
 output against the expected one, reported by key. The expected output
 (the **expected data**) is committed with the test; a test only compares
@@ -470,71 +470,95 @@ compile the same sources in several configurations and run the programs:
   serial passes also check that ref sends the same bytes with and without
   runtime error checking. Skipped without the CD. This is where the
   original stays a reference of behaviour; a fix that makes the port
-  differ names the program in `tests/corpus/notes.tsv` (below).
+  differ makes the program's file a pair of cases (below).
 
-The output of every configuration must be the committed expected output
+The output of every configuration must be the committed expected data
 `tests/corpus/expect/PASS/NAME.out` (what the program writes, with the
 `rc=N` line behind it; one directory per pass, because some programs
 write something else with runtime error checking) and, for the serial
 tests, `NAME.serial` (the bytes sent over the serial port), byte by byte
 (`expect_dir=` of `corpusrun pass`,
-[`tests/corpus/runner`](corpus/runner/README.md)). A difference names
-the configuration, the file and the first differing line; a missing file
-fails the pass before any session. The files were generated from the
-original's run and reviewed; they contain the original's behaviour where
-a program shows an original bug. A fix that changes an output changes
-its expected file in the fix commit (never the program, to avoid the
-difference) and names the issue; the files are written from the port's
-run (configuration clib) by
+[`tests/corpus/runner`](corpus/runner/README.md); the judge is
+`tools/lib/corpusexpect`). Each file is one case of the test model, key
+`PASS|NAME|OBS|1` (`OBS` out, serial, exe). Where original and port agree
+the file is unqualified; a fix of an original bug that changes a
+program's output makes it the **pair** `NAME.orig.out` (the original's
+output) and `NAME.fixed-N.out` (the port's after the fix of issue N),
+likewise for `.serial`. Each configuration is judged against the file
+that applies to it:
+
+| Configuration | Judged against |
+|---|---|
+| clib, prev (`NAME`) | `NAME.out` or `NAME.fixed-N.out` |
+| ref (`NAME_originals`) | `NAME.out` or `NAME.orig.out` |
+| port, orig-clib (`NAME_originals`) | `NAME.out`, or either file of the pair: the report says which matched, `output as expected (matched [fixed #6])` |
+
+port and orig-clib mix an original and a ported part (whether a fix
+shows depends on the bug), so they accept either file; a port that slips
+back to the original's output fails in clib, a changed original in ref.
+A fix that changes the code but not the output gets the **executable
+pair** `NAME.orig.exe` / `NAME.fixed-N.exe` (each the SHA-256 of the
+executable, 64 hex digits and a LF; with runtime error checking the trap
+blocks zeroed): ref's executable is judged against the first, port's
+against the second, instead of port against ref. These two are judged
+only in `NAME_originals` (port's executable needs the CD's libraries);
+every other program's port executable must equal ref's. A difference
+names the configuration, the file and the first differing line (or the
+two hashes). A file of another form, an unqualified file beside a
+qualified one, two `fixed` files, an unqualified `NAME.exe`, a pair of
+equal files, one file of a pair without the other, and a missing file
+fail the pass before any session (exit status 2, with the file names).
+
+The files are written by two targets, never by a test, and reviewed with
+`git diff tests/corpus/expect`:
 
 ```
-cmake --build --preset amiga --target corpus-expect-update   # about 80 s, needs Amiberry and the CD
-git diff tests/corpus/expect                                 # the changed outputs
+cmake --build --preset amiga --target corpus-expect-record   # from the original; needs Amiberry and the CD
+cmake --build --preset amiga --target corpus-expect-update   # from the port; needs Amiberry (and the CD)
 ```
 
-which leaves every file as it is on an unchanged tree. A new corpus
-program gets its files the same way. With a prev build the configuration
-prev still gives the old output: the commit names the program in
-`PREV_INTENDED` (`corpus:NAME`, `corpus_runerr:NAME`, ...).
+* `corpus-expect-record` (`tests/corpus/record.cmake`) runs every pass's
+  ref twice (`corpusrun pass --observe ref`, the second with a Stack
+  16384 bytes larger: another memory layout) and accepts a program only
+  if both runs agree (`results corpus-accept`); otherwise it reports
+  `test not deterministic: PASS:NAME` with the first differing line and
+  leaves the program's files as they are (the target fails). It writes
+  `NAME.out` / `NAME.serial`, or the `[orig]` file where the program has a
+  pair (the `[fixed #N]` file stays), and `NAME.orig.exe` beside a
+  `NAME.fixed-N.exe`. `-DCORPUS_RECORD_FILTER=PASS` or `PASS:NAME`
+  (several separated by `,`) limits it; the others are not touched.
+  The proof of determinism is limited to the memory layout.
+* `corpus-expect-update` (`tests/corpus/update.cmake`) writes from the
+  port: clib's outputs (`corpusrun pass --update-expect clib`), a new
+  program's files, a `[fixed #N]` file rewritten; a changed unqualified
+  file is refused with the program's name and the first differing line,
+  unless `-DCORPUS_UPDATE_FIX=PASS:NAME#N` (several separated by `,`)
+  names it: then it becomes the pair, `NAME.orig.out` with the old
+  content and `NAME.fixed-N.out` with the port's. Then, with the CD, the
+  executables of ref and port (`--update-expect port`) for the programs
+  with an executable pair (the `[fixed #N]` one rewritten) or a FIX (the
+  pair written if they differ). On an unchanged tree it leaves every
+  file as it is.
 
-**Intended deviations from the original** (`tests/corpus/notes.tsv`). The
-runs of `NAME_originals` judge ref, port and orig-clib against the same expected
-files, so a fix of an original bug that changes a program's output (ref
-no longer gives the expected output) or its code (port's executable is no
-longer ref's) makes them fail. The fix commit lists the program in
-`notes.tsv`, one row per pass and program, tab separated, like the note
-rows of `tests/data/blitz2-cd.tsv`:
-
-```
-PASS<TAB>NAME<TAB>#NNN: reason
-corpus_runerr	t124_bitmaperr	#6: the error text of the original is empty
-```
-
-`PASS` is `corpus`, `corpus_runerr`, `corpus_req`, `corpus_serial` or
-`corpus_serial_runerr`; `NAME` the source without `.bb2`; `NNN` the issue
-of the fix. Lines that are empty or begin with a blank or `#` are
-comments. The rule is that of the other lists of intended differences: a
-listed program may differ from the original in any configuration of the
-pass (output against the expected file, executable of port against ref's):
-the report says `OUTPUT DIFFERS (noted #6)` and ends with `noted
-corpus_runerr:t124_bitmaperr differs from the original: #6: ...`; a
-difference of a program that is not listed fails; and a listed program
-that differs in no configuration fails as stale (`STALE note
-corpus_runerr:NAME (...)`), so the list stays exact. A row of an unknown
-pass, a note without `#NNN: ` and a reason, a name with a separator and a
-program listed twice in one pass are errors (exit status 2, with the line),
-as is a missing file; they are reported before any session. The list
-starts empty; the fix commits add their rows and the clib and prev
-configurations never read it. The parsing and judging is
-`tools/lib/corpusnotes`, tested by `corpusnotes` (listed and different,
-listed and the same, not listed, comments, malformed rows) and
-`corpus_runner` (the pass file keys, the file); the tests with broken
-input, which need no emulator, are `corpus_notes_unknown_pass`,
-`corpus_notes_no_issue`, `corpus_notes_twice` and
-`corpus_notes_missing`; in the `originals` preset
-`corpus_originals_notes_stale`, `..._unlisted` and `..._noted` run the
-program `t01_int` through ref and port with a stale row, a wrong expected
-output (`tests/corpus/selftest/`) and the same output listed.
+A fix that changes a corpus output names the program in
+`CORPUS_UPDATE_FIX`, runs the update, and commits the pair with its
+`Fixes #N` line (never the program, to avoid the difference); fix-scope
+(`tests/corpus/expect`, each file a case) then sees only its own cases.
+With a prev build the configuration prev still gives the old output: the
+commit names the program in `PREV_INTENDED` (`corpus:NAME`,
+`corpus_runerr:NAME`, ...). The checks have tests with broken input: the
+malformed forms without the emulator (`corpus_expect_malformed_*`: both
+files, two `fixed`, an unknown qualifier, an equal pair, a lone file, a
+missing file, an unqualified `.exe`), `corpus_expect_fixed_regressed`
+(clib gives the `[orig]` output), in the `originals` preset
+`corpus_originals_orig_changed` (ref differs from the `[orig]` file, port
+matches the `[fixed #1]` one) and `corpus_originals_exe_unlisted` (port's
+executable differs from ref's without a pair), all on the program
+`t01_int` with expected directories made in the build directory; the
+targets' scripts in `corpus_record_target` (fake runs: a program not
+deterministic, a pair, a filter, a failed run) and `corpus_update_fix`
+(refused without FIX, the pair with it). The logic is tested by
+`corpusexpect` (`tools/tests`) and `corpus_runner`.
 
 `corpus_cd`: all 724 sources of the CD compiled with blitz2-c (like bb2's
 bb2corpus: `.xtra` of the sources, assigns to CD directories, directory
