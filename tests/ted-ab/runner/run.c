@@ -110,7 +110,13 @@
  * early (hang: time limit) leaves runs
  * that were not reached; they go into a later session once more if their
  * test did not start there or its first run is OK.  The rest stays
- * "NOTRUN".  Each session's directory: RUN/sNNN/vol (the volume TEDAB:)
+ * "NOTRUN".  The limit is wall-clock time: a run it cuts off while the
+ * run's log was written at most TEDAB_PROGRESS_SEC seconds before (a host
+ * under load, the emulator slowed down: tedab_slow_again) goes again once,
+ * in a session of its own with the runs of its test it held back; the
+ * session is reported as slow (the log, the report's "== session sNNN
+ * slow" line, the @stat verdict "slow").  A log that stood still is a
+ * TIMEOUT, as is a second cut-off.  Each session's directory: RUN/sNNN/vol (the volume TEDAB:)
  * and RUN/sNNN/emu (Amiberry), RUN the run directory (work/run-XXXXXX,
  * work/last once it has a verdict); the dumps get a decoded NAME.txt.
  * Tests with @known are not run (unless the filter names them exactly); the
@@ -166,6 +172,8 @@ struct run {
     int halted;                 /* that session ended because the CPU halted */
     char *dir;                  /* its run directory (RUN/sNNN/vol/runs/T/XX) */
     const char *verdict;        /* bug-orig: its verdict ("reference" for the reference) */
+    int slow;                   /* how often it went again for a slow session (#1022) */
+    int alone;                  /* in a session of its own (with its test's runs that go again) */
 };
 
 static struct pass P;
@@ -742,6 +750,7 @@ struct session {
     struct text gate, events;
     struct statline stat;       /* its @stat line (statline.h); test[0]: joined */
     size_t run;                 /* its first run (runs[]) */
+    struct text slow;           /* the runs the limit cut off while they made progress */
 };
 
 /* the next session from the queue: whole tests up to the budget */
@@ -754,12 +763,22 @@ static size_t take(size_t *queue, size_t nq, size_t *pos)
         *pos = start + (start < nq);
         return *pos - start;
     }
-    while (i < nq) {
+    /* runs again after a slow session: alone, with the runs of their test
+       that go again with them (#1022) */
+    if (start < nq && runs[queue[start]].alone) {
+        const struct tedab_test *t = runs[queue[start]].r.test;
+
+        while (i < nq && runs[queue[i]].alone && runs[queue[i]].r.test == t)
+            i++;
+        *pos = i;
+        return i - start;
+    }
+    while (i < nq && !runs[queue[i]].alone) {
         const struct tedab_test *t = runs[queue[i]].r.test;
         size_t j = i;
         unsigned cost = 0;
 
-        while (j < nq && runs[queue[j]].r.test == t) {
+        while (j < nq && runs[queue[j]].r.test == t && !runs[queue[j]].alone) {
             cost += (unsigned)t->est;
             j++;
         }
@@ -1289,8 +1308,21 @@ static int run(FILE *log)
             size_t *next = calloc(s->n, sizeof *next);
             char *text = lp ? (char *)read_file(lp, &len) : NULL;
             struct tedab_run *rs = calloc(s->n, sizeof *rs);
-            int *state = calloc(s->n, sizeof *state), bad = !next || !rs || !state;
+            int *state = calloc(s->n, sizeof *state), *slowed = calloc(s->n, sizeof *slowed);
+            double *age = calloc(s->n, sizeof *age);    /* of each run's log, -1 = none */
+            int bad = !next || !rs || !state || !slowed || !age;
             char sname[16];
+            struct timespec now;
+
+            /* how long before the session's end each run's log was written */
+            clock_gettime(CLOCK_REALTIME, &now);
+            for (k = 0; age && k < s->n; k++) {
+                char *lg = runs[s->ids[k]].dir ? str_printf("%s/out/log", runs[s->ids[k]].dir)
+                                               : NULL;
+
+                age[k] = tedab_log_age(lg, &now);
+                free(lg);
+            }
 
             /* the session's @stat line: the combination of its run in the
                bug-orig mode, else the session */
@@ -1329,6 +1361,23 @@ static int run(FILE *log)
                     again++;
                     continue;
                 }
+                /* the session's limit hit the run while its log was still
+                   being written: a slow host, not a hang (#1022).  Again,
+                   once, in a session of its own; the session is slow */
+                if (tedab_slow_again(r->state, st == AMIGA_EMULATION_TIMEOUT, age[k], r->slow)) {
+                    fprintf(log, "%s: %s %s: slow session: the time limit hit the run while it "
+                            "made progress (its log written %.1f s before), again in a session "
+                            "of its own\n", me, r->r.test->name, tedab_combo_names[r->r.combo],
+                            age[k]);
+                    text_add(&s->slow, "%s%s %s (log written %.1f s before the limit)",
+                             s->slow.n ? ", " : "", r->r.test->name,
+                             tedab_combo_names[r->r.combo], age[k]);
+                    r->slow++;
+                    r->alone = slowed[k] = 1;
+                    next[nn++] = s->ids[k];
+                    again++;
+                    continue;
+                }
                 if (r->state != TEDAB_NOTRUN) {
                     r->done = 1;
                     if (r->dir)
@@ -1336,11 +1385,14 @@ static int run(FILE *log)
                     continue;
                 }
                 /* not reached: again if the test's first run in this
-                   session was not reached either or is OK */
+                   session was not reached either or is OK, or goes again
+                   for a slow session (then with it, alone) */
                 for (f = 0; f < s->n && rs[f].test != r->r.test; f++)
                     ;
                 if (f == k)
                     requeue = 1;
+                else if (slowed[f])
+                    requeue = r->alone = 1;
                 else {
                     char *ok = str_printf("%s/out/ok", runs[s->ids[f]].dir);
 
@@ -1360,10 +1412,12 @@ static int run(FILE *log)
 
                 for (k = 0; ok && k < s->n; k++)
                     ok = !strcmp(state_text(&runs[s->ids[k]], buf, sizeof buf), "OK");
-                statline_set(s->stat.verdict, sizeof s->stat.verdict, ok ? "ok" : "fail");
+                statline_set(s->stat.verdict, sizeof s->stat.verdict,
+                             s->slow.n ? "slow" : ok ? "ok" : "fail");
             }
-            fprintf(log, "%s: session %03u: %s, gates %s, %zu runs again\n", me, s->no,
-                    amiga_emulation_status_name(st), s->gates_ok ? "OK" : "FAILED", again);
+            fprintf(log, "%s: session %03u: %s%s, gates %s, %zu runs again\n", me, s->no,
+                    amiga_emulation_status_name(st), s->slow.n ? " (slow)" : "",
+                    s->gates_ok ? "OK" : "FAILED", again);
             /* the runs to repeat go first */
             memmove(queue + nn, queue, nq * sizeof *queue);
             if (nn)
@@ -1372,6 +1426,8 @@ static int run(FILE *log)
             free(next);
             free(rs);
             free(state);
+            free(slowed);
+            free(age);
             free(text);
             free(lp);
             free(gd);
@@ -1394,6 +1450,9 @@ static int run(FILE *log)
         text_add(&rep, "== session s%03u: %s\n%s== gates %s\n", s->no,
                  s->events.p ? s->events.p : "", s->gate.p ? s->gate.p : "",
                  s->gates_ok ? "OK" : "FAILED");
+        if (s->slow.n)
+            text_add(&rep, "== session s%03u slow: the time limit hit %s: again in a session "
+                           "of its own\n", s->no, s->slow.p);
         all_ok &= s->gates_ok;
     }
     {
@@ -1523,6 +1582,7 @@ out:
         }
         free(ss[w].gate.p);
         free(ss[w].events.p);
+        free(ss[w].slow.p);
         free(ss[w].ids);
         free(ss[w].script);
     }

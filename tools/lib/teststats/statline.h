@@ -39,7 +39,9 @@
  *             REPRODUCED, DIFFERS, BROKEN, a fixed test REGRESSED
  *             (tedab also NOTRUN), the
  *             reference "reference"; corpus same / differs; tedab outside
- *             bug-orig ok / fail (gates and every run of the session OK);
+ *             bug-orig ok / fail (gates and every run of the session OK),
+ *             slow (the time limit hit a run that made progress: it goes
+ *             again in a session of its own, #1022);
  *             missing where the session decides nothing (cdrun, a
  *             session whose run is repeated)
  *   runs      optional: the runs in the session (tedab)

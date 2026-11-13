@@ -614,6 +614,38 @@ TEST_CASE("requesters: file requester lines", "[log]")
     CHECK(e.empty());
 }
 
+TEST_CASE("slow session", "[run]")
+{
+    // the limit hit a started run whose log was just written: again, once
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, 1.0, 0) == 1);
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, 0.0, 0) == 1);
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, TEDAB_PROGRESS_SEC, 0) == 1);
+    // a log that stood still (a hang), no log, the second time: TIMEOUT
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, TEDAB_PROGRESS_SEC + 0.5, 0) == 0);
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, -1, 0) == 0);
+    CHECK(tedab_slow_again(TEDAB_STARTED, 1, 1.0, 1) == 0);
+    // not cut off by the limit: a halted CPU, a run that ended or was not
+    // reached
+    CHECK(tedab_slow_again(TEDAB_STARTED, 0, 1.0, 0) == 0);
+    CHECK(tedab_slow_again(TEDAB_ENDED, 1, 1.0, 0) == 0);
+    CHECK(tedab_slow_again(TEDAB_NOTRUN, 1, 1.0, 0) == 0);
+
+    // the age of a log: from its modification time
+    char path[] = "test_tedab_log_XXXXXX";
+    int fd = mkstemp(path);
+    REQUIRE(fd >= 0);
+    close(fd);
+    struct stat st;
+    REQUIRE(stat(path, &st) == 0);
+    struct timespec now = st.st_mtim;
+    now.tv_sec += 3;
+    CHECK(tedab_log_age(path, &now) > 2.99);
+    CHECK(tedab_log_age(path, &now) < 3.01);
+    unlink(path);
+    CHECK(tedab_log_age(path, &now) == -1);
+    CHECK(tedab_log_age(nullptr, &now) == -1);
+}
+
 TEST_CASE("bug-orig directives", "[bugorig]")
 {
     // @file with escapes (also \x00), repeated lines append; @source F,

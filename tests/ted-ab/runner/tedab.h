@@ -87,6 +87,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 #include "previntended.h"
 #include "teddump.h"
 #include "util.h"
@@ -201,6 +202,20 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
 /* the run whose out/ok run i of a session waits for in the script: the
    test's first run, for that one the session's first (0, also for i = 0) */
 size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i);
+/* a slow session (#1022): the session limit (timeout=) is wall-clock time,
+   and a host under load slows the emulator several times, so the limit can
+   hit a script that is still running.  A run the limit cut off (state
+   TEDAB_STARTED, the session ended at its limit: timed_out) whose log
+   (out/log) was written at most TEDAB_PROGRESS_SEC seconds before (log_age,
+   < 0 = no log) was still making progress: it goes again, once (slow: how
+   often it went again for that), in a session of its own; otherwise it is
+   a TIMEOUT (a real hang: the log stood still).  1 = again */
+#define TEDAB_PROGRESS_SEC 10
+int tedab_slow_again(int state, int timed_out, double log_age, int slow);
+/* the seconds since path was written, at now (CLOCK_REALTIME); -1 = not
+   there */
+double tedab_log_age(const char *path, const struct timespec *now);
+
 /* If/EndIf balanced, no line longer than the shell takes (255); prints the
    problems, returns their number */
 int tedab_check_script(const char *script, FILE *out);

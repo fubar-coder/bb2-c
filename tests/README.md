@@ -659,6 +659,14 @@ Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`, sessions at the same time
 `-DTED_AB_PARALLEL=N` (default 5, as far as emulator slots are free);
 reports in `build/<preset>/tests/ted-ab/ted_ab.txt` and
 `ted_ab_originals.txt`, about 13 minutes for the four combinations.
+`-DTED_AB_TIMEOUT=SEC` (default 120) limits a session in wall-clock
+time; on a host under load the emulator runs several times slower, and
+the limit can hit a script that is still running. A run the limit cuts
+off while its log was written within the last 10 s goes again once, in a
+session of its own, and the session is reported as slow (`tedab run:
+... slow session`, `== session sNNN slow` in the report, `verdict=slow`
+in its `@stat` line; #1022); a run whose log stood still, or that is cut
+off a second time, is a `TIMEOUT`.
 Known bugs (`; @known REASON` in the script) are not run and are listed
 as KNOWN in the report; an exact name in the filter runs them anyway.
 `ted_ab_lint` checks the scripts without the emulator. The runner is

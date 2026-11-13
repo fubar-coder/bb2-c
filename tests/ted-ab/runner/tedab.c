@@ -1062,6 +1062,22 @@ static void gate_script(struct text *s, const char *ind, const char *key, const 
              ind, key);
 }
 
+int tedab_slow_again(int state, int timed_out, double log_age, int slow)
+{
+    return state == TEDAB_STARTED && timed_out && log_age >= 0 && log_age <= TEDAB_PROGRESS_SEC
+           && !slow;
+}
+
+double tedab_log_age(const char *path, const struct timespec *now)
+{
+    struct stat st;
+
+    if (!path || stat(path, &st))
+        return -1;
+    return (double)(now->tv_sec - st.st_mtim.tv_sec)
+           + (double)(now->tv_nsec - st.st_mtim.tv_nsec) / 1e9;
+}
+
 size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i)
 {
     size_t k;
