@@ -9,7 +9,7 @@ and is named in the commits. Group 1 changes no code.
 
 ## 1. Checks before any code
 
-- [ ] 1.1 Pin the unscii commit: fetch `viznut/unscii` (`unscii-8.hex`,
+- [x] 1.1 Pin the unscii commit: fetch `viznut/unscii` (`unscii-8.hex`,
   SHA-256 prefix of the studied copy `03094f7fbab7085c`), record the
   commit hash, the licence text of the repository and the URL for the
   source header (design D3). Verify: the hash of the pinned file equals

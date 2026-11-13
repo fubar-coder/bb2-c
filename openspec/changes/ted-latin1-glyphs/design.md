@@ -227,3 +227,37 @@ None. Decided by the user (2026-11-13): the redraw uses the whole-screen
 literal map (D4a); the 6 px approximations (circumflex, tilde, ring,
 ¼ ½ ¾ § ¶) are acceptable, and the user's review of the screenshots of
 task 5.2 is the gate.
+
+## Findings
+
+### The pinned unscii (task 1.1)
+- `viznut/unscii` has the default branch `main` (the `master` of the raw
+  URLs the research used is redirected). Pinned: commit
+  `257b4dfeb50651510fe8b9cf4f151a148a4490e4` (2021-02-24, the head of
+  `main` on 2026-11-13); `fontfiles/unscii-8.hex` was last changed by
+  `a965767e3a594a8f760c2b5b003a224cd985aad9`. Its SHA-256 at the pinned
+  commit is
+  `03094f7fbab7085cf6a6b624cee61e47e71ce5d0c2f308c2f4436afdc17f776c`, the
+  file the drafts were derived from: no differences.
+- Licence text of the repository (`README.md`): "Licensing: You can
+  consider it Public Domain (or CC-0) except for the files derived from or
+  containing parts of Roman Czyborra's Unifont project (unifont.hex,
+  hex2bdf.pl, unscii-16-full.*) which fall under GPL." `unscii-8.hex` is
+  not one of them. URL for the header: `https://github.com/viznut/unscii`.
+- Measured against the pinned file: of the draft's 95 glyphs $A1-$FF at
+  8 px, 75 are unscii-8 unchanged (among them $C4 `Ä` and $E4 `ä`, which
+  are TED's glyphs 29 and 26 too) and 20 are adapted (118 pixels): `È É Ë`
+  (a 5-row capital E drawn for them), `Ò Ó Ö` (TED's `Ö`, glyph 30),
+  `Ù Ú Ü` (TED's `U` rows 2-6, `Ü` glyph 31), `ç` (TED's `c`),
+  `è é ë ù ú` (TED's `e`/`u` rows 2-7), `ì í ï` (the stem of TED's `i`),
+  `ö ü` (TED's glyphs 27, 28). The glyph sources list them in their
+  headers.
+
+### The measured facts of the specs (task 1.2)
+- `chars.b` (6 px): glyphs 0-25 are each a single pixel (row 0, column 0);
+  127 is blank. `chars8.b` glyph 0 is the corner shape.
+- The strip layout: the first `128 * h` bytes of a 256-glyph font in the
+  layout `(c & 15) + (c >> 4) * 16 * h + r * 16` are strips 0-7, so the
+  archive file is the first half of the font unchanged; `fontcalc`'s two
+  formulas (`(c >> 4) * 128`, `(c >> 4) * 96`) give strips 8-15 for
+  128-255. `print4`/`qprint` step 16 bytes per row.
