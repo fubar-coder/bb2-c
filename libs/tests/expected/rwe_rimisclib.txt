@@ -757,14 +757,20 @@ InitArgParse|kept|'"a""b" c'|1	kept
 InitArgParse|popped|'"a""b" c'|1	$00000000
 NextArg$|kept|'"a""b" c'|1	kept
 NextArg$|popped|'"a""b" c'|1	$00000000
-NextArg$|d0|'"a""b" c'|1	$00000005
-NextArg$|a3|'"a""b" c'|1	$00000009
-NextArg$|out|'"a""b" c'|1	bytes 400 fnv 6B886875
+NextArg$|d0|'"a""b" c'|1 [orig]	$00000005
+NextArg$|d0|'"a""b" c'|1 [fixed #755]	$00000003
+NextArg$|a3|'"a""b" c'|1 [orig]	$00000009
+NextArg$|a3|'"a""b" c'|1 [fixed #755]	$00000007
+NextArg$|out|'"a""b" c'|1 [orig]	bytes 400 fnv 6B886875
+NextArg$|out|'"a""b" c'|1 [fixed #755]	bytes 400 fnv 84322842
 NextArg$|kept|'"a""b" c'|2	kept
 NextArg$|popped|'"a""b" c'|2	$00000000
-NextArg$|d0|'"a""b" c'|2	$00000000
-NextArg$|a3|'"a""b" c'|2	$00000004
-NextArg$|out|'"a""b" c'|2	bytes 400 fnv FC2BB505
+NextArg$|d0|'"a""b" c'|2 [orig]	$00000000
+NextArg$|d0|'"a""b" c'|2 [fixed #755]	$00000001
+NextArg$|a3|'"a""b" c'|2 [orig]	$00000004
+NextArg$|a3|'"a""b" c'|2 [fixed #755]	$00000005
+NextArg$|out|'"a""b" c'|2 [orig]	bytes 400 fnv FC2BB505
+NextArg$|out|'"a""b" c'|2 [fixed #755]	bytes 400 fnv 94DEC400
 NextArg$|kept|'"a""b" c'|3	kept
 NextArg$|popped|'"a""b" c'|3	$00000000
 NextArg$|d0|'"a""b" c'|3	$00000000
@@ -1045,9 +1051,12 @@ InitArgParse|kept|'""""'|1	kept
 InitArgParse|popped|'""""'|1	$00000000
 NextArg$|kept|'""""'|1	kept
 NextArg$|popped|'""""'|1	$00000000
-NextArg$|d0|'""""'|1	$00000002
-NextArg$|a3|'""""'|1	$00000006
-NextArg$|out|'""""'|1	bytes 400 fnv 17C288C7
+NextArg$|d0|'""""'|1 [orig]	$00000002
+NextArg$|d0|'""""'|1 [fixed #755]	$00000001
+NextArg$|a3|'""""'|1 [orig]	$00000006
+NextArg$|a3|'""""'|1 [fixed #755]	$00000005
+NextArg$|out|'""""'|1 [orig]	bytes 400 fnv 17C288C7
+NextArg$|out|'""""'|1 [fixed #755]	bytes 400 fnv 3D39E469
 NextArg$|kept|'""""'|2	kept
 NextArg$|popped|'""""'|2	$00000000
 NextArg$|d0|'""""'|2	$00000000

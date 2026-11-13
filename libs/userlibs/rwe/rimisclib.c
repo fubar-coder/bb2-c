@@ -51,8 +51,6 @@
  *     (#752).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
  *     and after NextArg$ came to the end it reads from address 0 (#754).
- *   - NextArg$: after "" inside quotes, the next quote copies the
- *     character behind it (#755).
  *   - EZRequestArgs writes no 0 behind the format text it builds (160
  *     byte buffer): a shorter text than the one before keeps the end of
  *     the old one (#747).  Neither form limits the arguments (16 longs)
@@ -79,6 +77,11 @@
  *     step through the buffer by 164 bytes (the size of a FONT chunk)
  *     until its end, through the uncleared memory behind the file, and
  *     read the last chunk up to 26 bytes behind the buffer (#745).
+ *
+ * Fixed (intended deviation, #755): NextArg$ takes "" inside quotes as
+ * one quote and ends the word at the quote that closes it (the original
+ * miscounted the quotes after "" and copied the character behind the
+ * closing quote); it stays on the 0 at the end of the string.
  *
  * Original behaviour that is no defect: NextArg$ ends a quoted word at
  * the closing quote even if no space follows ("ab"cd gives ab, then cd),
@@ -665,14 +668,17 @@ static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
  * Leading spaces are skipped; quotes group (a quoted word ends at the
  * closing quote even if no space follows, as ReadItem does), "" inside
  * quotes is a quote.  The word goes to a3 without a 0 (none needed,
- * #257).  BUG(orig) (#755): after "" inside quotes, the next quote copies
- * the character behind it.
+ * #257).  The parse position stays on the 0 at the end of the string.
+ * Fixed (#755): the original counts the quotes (d7) and ends the word
+ * at an even count unless a quote follows; "" moved the count on by one
+ * only, so the quote behind it copied the next character (possibly the
+ * 0, stepping behind it).  A quote now ends the word unless a quote
+ * follows, which is copied once.
  * @return d0: the length; 0 at the end (also before InitArgParse)
  */
 static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 {
     UBYTE *pos = curadr, *start = blitz_string, c;
-    ULONG quotes = 0;                                   /* d7 */
 
     if (!curadr)
         return 0;
@@ -688,23 +694,27 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
     }
     for (;;) {                                          /* 'cmploop */
         c = *pos++;
-        if (!c || c == ' ')
+        if (!c) {
+            pos--;                                      /* stay on the 0 */
+            goto endthis;
+        }
+        if (c == ' ')
             goto endthis;
         if (c == '"')
             break;
         *blitz_string++ = c;
     }
-    quotes++;                                           /* 'insidequotedloop */
     for (;;) {                                          /* 'quoteloop */
         c = *pos++;
-        if (!c)
+        if (!c) {
+            pos--;                                      /* stay on the 0 */
             break;
+        }
         if (c != '"') {
             *blitz_string++ = c;
             continue;
         }
-        quotes++;                                       /* 'gotquote */
-        if (!(quotes & 1) && *pos != '"')
+        if (*pos != '"')                                /* 'gotquote */
             break;
         *blitz_string++ = *pos++;                       /* 'cantquityet */
     }

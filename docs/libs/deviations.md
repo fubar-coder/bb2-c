@@ -1,7 +1,7 @@
 # Deviations of the C ports from the originals
 
 Complete overview of all known places where the
-C versions (`libs/acidlibs/*.c`, `libs/deflibs/*`, `programs/blitz2`, `programs/ted`) behave differently from the
+C versions (`libs/acidlibs/*.c`, `libs/deflibs/*`, `libs/userlibs/rwe/*.c` (the fixed original bugs), `programs/blitz2`, `programs/ted`) behave differently from the
 originals (CD binaries or `blitz2.s`). Basis: all `DIFF` markers
 in the sources, the DIFF sections in [cmdlibs-port.md](cmdlibs-port.md) and
 [deflibs.md](deflibs.md), the project conventions and a review of our own ports
@@ -155,6 +155,15 @@ reverted), but must be fully documented here.
 | iffmakelib | – | no deviation (check functions in the check area since c4a736d, see section 6) | – | – |
 | iffmakelib err2 (iffmakelib.c:49) | "Can't open File" (err2) traps in normal code, its message is in the error check area (without debugger d0 behind the lib) | message in normal code | **F** | #185: the same runtime error with the debugger; without it TRAP #0 with the right message (test `iffmakelib-openerr-errarea`) |
 | menuslib textcalc (menuslib.c:700) | the text of an item or subitem is copied with `allocst`, which returns 0 for a text of length 0; the 0 becomes the IntuiText's `IText` and `IntuiTextLength` is called on it: it reads the string at address 0 (Enforcer hit) and the item's width is that of whatever is there (with "ABC" at address 0: 32 instead of the 8 of the gaps alone). `MenuTitle` with an empty title also stores `MenuName` 0 (measured), but computes its width from the length alone | the same (reproduced) | – | #981: original bug carried over, not fixed (test `menuslib-empty-item-text`, measured with the CD's library and the C library; with a non-empty string for an empty text the test comes out FIXED). AmiBlitz 2.42 lists the fix, AmiBlitz3's first commit allocates a length of at least 1 |
+
+## 3a. RWE userlibs (`libs/userlibs/rwe`)
+
+The other deviations of these ports are in their notes
+(`docs/rwelibs/port/NAME.md`, DIFF); the fixed original bugs are here.
+
+| Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
+|---|---|---|---|---|
+| rimisclib NextArg$ (rimisclib.c:679) | inside a quoted word the quotes are counted and a quote at an even count ends the word unless a quote follows, which is copied as a literal quote; the pair `""` moves the count on by one only, so the closing quote behind it copies the next character and the word goes on: `"a""b" c` is the one word `a"b c`, and at the end of the string the copied character is the 0 (the word gets it, the parse position goes behind it); the end of the string leaves the parse position behind the 0 | `""` inside quotes is one quote, a quote not followed by a quote ends the word: `a"b`, then `c`; the parse position stays on the 0 at the end | **F** | #755: only quoted words with `""` inside (test `rimisclib-nextarg-doubled-quote`, `libs_emulator` cases `[fixed #755]` of `rwe_rimisclib`); otherwise the same words |
 
 ## 4. deflibs (AmigaOS call declarations)
 

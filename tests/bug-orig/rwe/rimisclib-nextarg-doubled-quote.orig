@@ -1,0 +1,25 @@
+# the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
+[session]
+done
+[compile]
+ok
+[run]
+<a"b c> 5
+<> 0
+<> 0
+4
+0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/rimisclib-nextarg-doubled-quote.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/rimisclib-nextarg-doubled-quote
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

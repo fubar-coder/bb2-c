@@ -77,6 +77,18 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
 * InitArgParse with more than 251 characters overwrites the code behind
   the buffer in the original, other data in the C build.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* NextArg$ takes `""` inside quotes as one quote and ends the word at
+  the closing quote (`"a""b" c` gives `a"b`, then `c`); the original
+  counted the pair as one quote, so the closing quote behind it copied
+  the next character and the word went on (`a"b c`; at the end of the
+  string it copied the 0) (#755). NextArg$ also stays on the 0 at the
+  end of the string; the original stepped behind it.
+
 ## BUG(orig)
 
 * WorkbenchHere takes IntuitionBase from d0 (`MOVE.l intuibase,a0` is
@@ -93,8 +105,6 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
   the copy) (#752). NextArgChar$ does not check the parse pointer: before
   InitArgParse and after NextArg$ came to the end it reads from address
   0 (#754).
-* NextArg$: after `""` inside quotes the next quote copies the character
-  behind it and the word goes on (`"a""b" c` gives `a"b c`) (#755).
 * EZRequestArgs writes no 0 behind its format text (160 byte buffer): a
   shorter text than the one before keeps the end of the old one (and so
   more formats than arguments) (#747). Neither form limits the number of
