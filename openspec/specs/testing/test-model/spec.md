@@ -5,9 +5,9 @@ Defines one model for the tests of this repository that compare program
 behaviour with an expectation: a test is a list of cases, each case has a
 key, an input and an expected output, and the verdict per case is the diff
 of the actual output against the expected one. The model is written for
-all suites (library tests, blitz2 corpus, bug-orig tests, TED); this change
-implements it for the library tests only, bug-orig and the corpus follow in
-later changes. TED already splits fixed tests this way (the `; @fixed #N`
+all suites (library tests, blitz2 corpus, bug-orig tests, TED); it is
+implemented for the library tests, the bug-orig tests (change
+bug-orig-test-model) and the corpus (change corpus-test-model). TED already splits fixed tests this way (the `; @fixed #N`
 tests run with combination Cc in `all` and with C5 in `originals`, task 9.9
 of the archived change `2026-11-12-expected-results-testing`).
 
