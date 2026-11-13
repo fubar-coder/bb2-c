@@ -893,6 +893,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `literal/literallib.obj`, the reservation check of `blitzlib`); TED-C,
   the compilers, AB3 mode's loader, the host tools, TED A/B `31-literal`
   and `32-literal-load`. To archive the change after the merge.
+- [x] **Corpus data without the CD** done (2026-11-13): OpenSpec change
+  `corpus-generated-data`: `t110_audio`, `t111_tracker` and `t112_med`
+  load two 8SVX sounds, a NoiseTracker and an MMD0 module that the build
+  generates from `tests/corpus/data/*.spec` (`mktestdata`), staged as
+  `CORPUS:data/NAME` by `corpus` and `corpus_runerr`; no corpus pass
+  mounts `BB2:`, so `ctest --preset all` runs all corpus programs without
+  the CD. Their expected outputs recorded again from the original; the
+  configure-time check `tests/corpus/check-data.cmake`. The CD variants
+  of the three programs are not kept (user decision 2026-11-13). To
+  archive the change after the merge.
 - [ ] **TED-C glyphs for `$A0`-`$FF`** (user decision 2026-11-13, a change
   of its own after #1018): TED's fonts (`chars8.b`, `chars.b`) have glyphs
   0-127 only, so every literal character is drawn with glyph 0
