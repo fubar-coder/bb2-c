@@ -1,0 +1,10 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+none
+[run]
+[blitz2]
+inject: rc=0
+rc=0
+[log]

@@ -1,0 +1,6 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+OK
+[problems]
+  - expect: stdout has "inject:   46 bytes, flags $1\n"
+  - expect: stdout has "inject:   48 bytes, flags $1\n"

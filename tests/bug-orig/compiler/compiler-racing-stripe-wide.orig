@@ -1,0 +1,39 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+97
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-racing-stripe-wide.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-racing-stripe-wide
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+PROGRESS	j000	none
+STRIPE	j000	row 0	#########################################################################
+STRIPE	j000	row 1	###########
+STRIPE	j000	row 2	#######
+STRIPE	j000	row 3	####
+GUARD	j000	before 95 after 0
+JOB	j001	CORPUS:src/compiler-racing-stripe-wide.bb2
+XTRA	j001	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/stripe-j001
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j001	ok
+PROGRESS	j001	none
+STRIPE	j001	row 0	#########################################################################
+STRIPE	j001	row 1	###########
+STRIPE	j001	row 2	#######
+STRIPE	j001	row 3	####
+GUARD	j001	before 95 after 0
+BATCH	end

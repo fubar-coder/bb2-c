@@ -61,12 +61,14 @@
  *                      exit status 0 = all FIXED, 1 = REPRODUCED, 3 =
  *                      BROKEN, 4 = DIFFERS (the worst of them: 3 before 4
  *                      before 1), 2 = error
- *   fixed=1            with bugorig=1 instead of orig=: the scripts are fixed
- *                      tests (; @fixed #NNN, no pair); every combination is
- *                      judged by the script's expectations alone: FIXED
- *                      (exit status 0) or REGRESSED (1, the report names
- *                      the bug); no recorded original, the original TED
- *                      does not run
+ *   fixed=1            with bugorig=1: the scripts are fixed tests (; @fixed
+ *                      #NNN, no pair); every combination is judged by the
+ *                      script's expectations alone: FIXED (exit status 0)
+ *                      or REGRESSED (1, the report names the bug); the
+ *                      original TED does not run.  orig= (the recorded
+ *                      original a fixed test keeps) is only checked before
+ *                      any session: 3 (BROKEN) if it says OK without
+ *                      problems
  *   orig=PATH          with bugorig=1: the recorded observation of the
  *                      reference run (tedab.h, tedab_orig_format).  The
  *                      normal run starts no session of the reference; the
@@ -314,16 +316,16 @@ static int parse(const char *text, char *err, size_t errlen)
                               "or fixed=1 (fixed tests)");
         return -1;
     }
-    if (P.fixed && (!P.bugorig || P.orig)) {
-        snprintf(err, errlen, "fixed=1 belongs to bugorig=1 and has no orig= (a fixed test "
-                              "keeps no recorded original)");
+    if (P.fixed && (!P.bugorig || P.record)) {
+        snprintf(err, errlen, "fixed=1 belongs to bugorig=1 and not to record= (the compare of "
+                              "the recorded original runs the reference)");
         return -1;
     }
     if (P.orig && !P.bugorig) {
         snprintf(err, errlen, "orig= belongs to bugorig=1");
         return -1;
     }
-    if (P.orig && ncombo_order < 2) {
+    if (P.orig && !P.fixed && ncombo_order < 2) {
         snprintf(err, errlen, "orig=: the reference and another combination are needed");
         return -1;
     }
@@ -335,7 +337,7 @@ static int parse(const char *text, char *err, size_t errlen)
         snprintf(err, errlen, "record=write and record_to=PATH belong together");
         return -1;
     }
-    if (P.orig) {
+    if (P.orig && !P.fixed) {
         record = P.record != NULL;
         if (record)
             ncombo_order = 1;
@@ -1474,8 +1476,8 @@ int tedab_start(const char *prog, const char *passfile, int lint)
             printf("%s: fixed=1, but the script has no @fixed #NNN\n", tests[i].name);
             bad++;
         } else if (!P.fixed && tests[i].fixed_bug) {
-            printf("%s: @fixed #%u: a fixed test is run with fixed=1 and no orig= (an open "
-                   "bug has no @fixed)\n", tests[i].name, tests[i].fixed_bug);
+            printf("%s: @fixed #%u: a fixed test is run with fixed=1 (an open bug has no "
+                   "@fixed)\n", tests[i].name, tests[i].fixed_bug);
             bad++;
         }
     }

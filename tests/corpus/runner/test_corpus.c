@@ -281,8 +281,16 @@ int main(void)
               && strstr(err, "orig="));
         CHECK(parse(BASE CONFIGS "source=/s\norig=/o\n", err, sizeof err) == -1
               && strstr(err, "expect="));
-        CHECK(parse(BASE "fixed=7\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n",
-                    err, sizeof err) == -1 && strstr(err, "orig="));
+        /* a fixed test keeps its recorded original (only checked), the
+           configurations stay */
+        CHECK(corpus_parse(BASE "fixed=7\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n",
+                           &p, err, sizeof err) == 0);
+        corpus_select(&p);
+        corpus_skip_missing(&p, NULL);
+        CHECK(p.fixed == 7 && p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib"));
+        corpus_free(&p);
+        CHECK(parse(BASE "fixed=7\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\norig=/o\n"
+                    "record=check\n", err, sizeof err) == -1 && strstr(err, "record="));
         CHECK(parse(BASE "regression=on\nconfig=clib|output|/a|/b|/c\nsource=/s\nexpect=/e\n"
                     "orig=/o\n", err, sizeof err) == -1 && strstr(err, "orig="));
 #undef ORIG

@@ -1,0 +1,25 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+timeout
+[compile]
+error 19 Macro not Found
+[run]
+[blitz2]
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	r	CORPUS:r.bb2
+XTRA	r	resdefaults
+ezfreq "Name of Executable to create" -> CORPUS:out/r.res
+openreq "***** COMPILING *****"
+RESULT	r	error	109	Macro too Big	a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+MENU	r	4	-1
+POINTER	r	normal
+JOB	j000	CORPUS:src/compiler-resmacs-textlen-sign.bb2
+XTRA	j000	defaults
+XTRAERR	j000	Can't Load Resident
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-resmacs-textlen-sign
+openreq "***** COMPILING *****"
+RESULT	j000	error	19	Macro not Found	!big
+BATCH	end

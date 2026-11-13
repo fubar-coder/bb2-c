@@ -453,9 +453,10 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if (p->expect && !p->fixed && !p->regression && !p->orig)
         return fail(p, err, errlen, "a bug-orig test (expect= without fixed= and "
                     "regression=on) needs orig=, the recorded observation of the original");
-    if (p->orig && (p->fixed || p->regression))
-        return fail(p, err, errlen,
-                    "orig= belongs to a bug-orig test, not to fixed= or regression=on");
+    if (p->orig && p->regression)
+        return fail(p, err, errlen, "orig= belongs to a bug-orig test, not to regression=on");
+    if (p->record && p->fixed)
+        return fail(p, err, errlen, "record= needs the reference (a pass without fixed=)");
     /* the compare test of the recorded original: of a pass with the
        reference */
     if (p->record && !p->orig)
@@ -550,7 +551,8 @@ static void drop_config(struct corpus_pass *p, size_t k)
 
 void corpus_select(struct corpus_pass *p)
 {
-    if (!p->orig)
+    /* a fixed test has no reference (its orig= is only checked) */
+    if (!p->orig || p->fixed)
         return;
     if (p->record)
         while (p->nconfigs > 1)
@@ -774,7 +776,7 @@ void corpus_skip_missing(struct corpus_pass *p, FILE *log)
         skip_missing_expect(p, log);
         return;
     }
-    if (!p->orig || p->record)
+    if (!p->orig || p->record || p->fixed)
         return;
     /* the CD's libraries (port) and blitz2:defaultdbug are missing without
        the CD: the other configurations are judged without them (one stays
@@ -1736,7 +1738,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         goto out;
     }
     if (p->expect) {
-        rc = judge(p, p->orig ? &orig : NULL, st, slog, stl, log);
+        rc = judge(p, p->orig && !p->fixed ? &orig : NULL, st, slog, stl, log);
         goto out;
     }
     text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",

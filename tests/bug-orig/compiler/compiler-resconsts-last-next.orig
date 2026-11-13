@@ -1,0 +1,33 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+320
+done
+rc=0
+[blitz2]
+inject: rc=0
+inject: pad: FreeMem inside an allocation (not done)
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	r	CORPUS:r.bb2
+XTRA	r	none
+ezfreq "Name of Executable to create" -> CORPUS:out/r.res
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	r	ok
+ezfreq "Name of Resident File to Create" -> CORPUS:out/r.res
+MENU	r	4	-1
+POINTER	r	normal
+JOB	j000	CORPUS:src/compiler-resconsts-last-next.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-resconsts-last-next
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

@@ -1,0 +1,5 @@
+# the recorded original of the fixed self test ted-fixed-selftest-regressed (written by hand: bug #99999 is not a bug of the original)
+[state]
+FAIL step 1 (self test)
+[problems]
+  - expect: the fixed self test

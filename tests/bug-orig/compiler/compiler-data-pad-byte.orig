@@ -1,0 +1,48 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+data2 pad 00000000 off 00000009
+data1 pad 00000000 found 1
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-data-pad-byte.bb2
+XTRA	j000	none
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-data-pad-byte
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+JOB	r001	CORPUS:src/filler.bb2
+XTRA	r001	none
+openreq "***** COMPILING *****"
+openreq "Not Enough Object Memory Available!"
+getinput "Not Enough Object Memory Available!" -> gadget 1 "INCREASE 150% - RECOMPILE" (object memory: increase 150%)
+openreq "***** COMPILING *****"
+openreq "Not Enough Object Memory Available!"
+getinput "Not Enough Object Memory Available!" -> gadget 1 "INCREASE 150% - RECOMPILE" (object memory: increase 150%)
+openreq "***** COMPILING *****"
+openreq "Not Enough Object Memory Available!"
+getinput "Not Enough Object Memory Available!" -> gadget 1 "INCREASE 150% - RECOMPILE" (object memory: increase 150%)
+openreq "***** COMPILING *****"
+openreq "***** EXECUTING *****"
+OPENIO	r001
+CLOSEIO	r001
+OUTPUT	r001	filler FFFFEEEE
+REQUESTERS	r001	0
+JOB	r002	CORPUS:src/compiler-data-pad-byte.bb2
+XTRA	r002	none
+openreq "***** COMPILING *****"
+openreq "***** EXECUTING *****"
+OPENIO	r002
+CLOSEIO	r002
+OUTPUT	r002	data2 pad 00000002 off 00000009
+OUTPUT	r002	data1 pad 00000045 found 1
+REQUESTERS	r002	0
+BATCH	end

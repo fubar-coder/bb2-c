@@ -1,0 +1,21 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+error 12 Library not Found : $FB4F.
+[run]
+[blitz2]
+inject: examinefail: 1 examines failed
+inject: rc=0
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+ERROR "Library not Found : $FFFA."
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-checklib-examine.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-checklib-examine
+openreq "***** COMPILING *****"
+RESULT	j000	error	12	Library not Found : $FB4F.	InitAnim 0
+BATCH	end

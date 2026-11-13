@@ -1,0 +1,39 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+1 1 5
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	r1	CORPUS:r1.bb2
+XTRA	r1	none
+ezfreq "Name of Executable to create" -> CORPUS:out/r1.res
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	r1	ok
+ezfreq "Name of Resident File to Create" -> CORPUS:out/r1.res
+MENU	r1	4	-1
+POINTER	r1	normal
+JOB	r2	CORPUS:r2.bb2
+XTRA	r2	none
+ezfreq "Name of Executable to create" -> CORPUS:out/r2.res
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	r2	ok
+ezfreq "Name of Resident File to Create" -> CORPUS:out/r2.res
+MENU	r2	4	-1
+POINTER	r2	normal
+JOB	j000	CORPUS:src/compiler-loadres-clash-many.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-loadres-clash-many
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

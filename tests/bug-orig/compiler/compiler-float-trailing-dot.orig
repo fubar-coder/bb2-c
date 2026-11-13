@@ -1,0 +1,18 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+error 5 Syntax Error
+[run]
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-float-trailing-dot.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-float-trailing-dot
+openreq "***** COMPILING *****"
+RESULT	j000	error	5	Syntax Error	a.f=1.
+BATCH	end

@@ -1,0 +1,6 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+FAIL step 6 timeout
+[problems]
+  - expect: stdout lacks "inject: allocfail: 4 allocations failed"
+  - expect: stdout lacks "inject: rc=-1"

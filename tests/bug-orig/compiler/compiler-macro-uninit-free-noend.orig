@@ -1,0 +1,22 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+error 14 Macro without End Macro
+[run]
+[blitz2]
+inject: alertlog: 1 alerts
+inject: alert 0100000f
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-macro-uninit-free-noend.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-macro-uninit-free-noend
+openreq "***** COMPILING *****"
+RESULT	j000	error	14	Macro without End Macro	Macro small
+BATCH	end

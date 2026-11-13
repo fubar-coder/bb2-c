@@ -137,9 +137,12 @@
  *                     bug, as intended), 3 = BROKEN (the original does not
  *                     show the bug), 4 = DIFFERS (the port does not
  *                     reproduce the original)
- *   orig=PATH         with expect= (not with fixed= and regression=on):
- *                     the recorded observation of the original (NAME.orig,
- *                     bugorig.h).  The normal run starts no session of the
+ *   orig=PATH         with expect= (not with regression=on): the recorded
+ *                     observation of the original (NAME.orig, bugorig.h);
+ *                     with fixed= only checked against the expectation
+ *                     before any session (BROKEN, 3: a fixed test keeps
+ *                     its recorded original, the pair of the shared test
+ *                     model).  The normal run starts no session of the
  *                     reference configuration (the first one, EXPECT ref,
  *                     it is only used to record), judges the others against
  *                     the expectation and this file, and gives BROKEN
@@ -177,7 +180,8 @@
  *   fixed=NNN         with expect=: a fixed bug-orig test (the bug is fixed
  *                     in the port, issue NNN): no reference, every
  *                     configuration (none with EXPECT ref) is judged
- *                     against the expectation only.  Exit status 0 = every
+ *                     against the expectation only (orig= is checked
+ *                     before, see there).  Exit status 0 = every
  *                     configuration FIXED, 1 = one REGRESSED (it does not
  *                     show the expected behaviour)
  * With runtime error checking the 8 byte parameter blocks behind trap #1

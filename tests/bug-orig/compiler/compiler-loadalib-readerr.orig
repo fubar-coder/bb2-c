@@ -1,0 +1,14 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+none
+[run]
+[blitz2]
+openreq "Blitz Basic 2 Version 1.95"
+extalloc AllocMem(0, $00000001) failed
+ABORT: extalloc failed
+inject: readfail: 1 reads failed
+inject: rc=20
+rc=0
+[log]

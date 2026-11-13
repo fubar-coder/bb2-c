@@ -1,0 +1,9 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+# varies: the timing of the out-of-memory requester decides at which step the run ends
+*
+[problems]
+  - expect: stdout lacks "inject: allocfail: 5 allocations failed"
+  - expect: stdout lacks "inject: alert: Not enough memory for operation!"
+# varies: whether the original reaches its exit (the inject rc line) depends on the same timing
+...

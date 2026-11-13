@@ -1,0 +1,32 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+b 6 z 4
+a 10 q 6
+7 9
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	r	CORPUS:r.bb2
+XTRA	r	none
+ezfreq "Name of Executable to create" -> CORPUS:out/r.res
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	r	ok
+ezfreq "Name of Resident File to Create" -> CORPUS:out/r.res
+MENU	r	4	-1
+POINTER	r	normal
+JOB	j000	CORPUS:src/compiler-newtype-forward-resident.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-newtype-forward-resident
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
