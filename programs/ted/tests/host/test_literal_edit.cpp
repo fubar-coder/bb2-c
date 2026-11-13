@@ -173,6 +173,7 @@ TEST_CASE("typing a literal character, with tokenise on and off", "[literal][edi
         lines({ "a$=\"\"" });
         show(0, 4);                             // between the quotes
         type(0xDF);                             // ß
+        CHECK(anyalt != 0);                     // mainedit commits the line
         CHECK(cursx == 5);                      // one step
         CHECK(chmap[chloc + 4] == TED_LITGLYPH);
         CHECK(litat(chmap + chloc + 4) == 0xDF);

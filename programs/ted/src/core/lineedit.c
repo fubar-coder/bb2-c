@@ -228,6 +228,7 @@ void gl_isasc(UBYTE c)
 void gl_islit(UBYTE cc)
 {
     gl_isasc(TED_LITGLYPH);
+    anyalt = cc;                        /* the line changed (TED_LITGLYPH is 0) */
     litrow_set(abscol(), cc);
 }
 
