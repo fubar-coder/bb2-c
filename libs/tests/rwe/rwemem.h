@@ -112,6 +112,16 @@ static __attribute__((unused)) LONG rwe_mem_stop(void)
     return rwe_membal - rwe_memotherfree;
 }
 
+/* the end of a measurement begun by rwe_mem_start() for a library test of
+   the sysload.h programs (systest*.c): TRUE if this task freed everything
+   it allocated and allocated something at all (a balance of 0 without an
+   allocation would say nothing: the patches did not see the library) */
+static __attribute__((unused)) BOOL rwe_mem_back(void)
+{
+    LONG bal = rwe_mem_stop();
+    return bal == 0 && rwe_memallocs > 0;
+}
+
 /* the end of a measurement begun by rwe_mem_start(): the check
    "LIB: all memory back" (balance 0; with `allocs` at least one
    allocation counted, for a measurement in which the library allocates);

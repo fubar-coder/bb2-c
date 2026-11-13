@@ -16,6 +16,7 @@
  * + program) is tested by compilerlauf/corpus/tests/t09..t13.
  */
 #include "sysload.h"
+#include "rwe/rwemem.h"
 #include <proto/intuition.h>
 
 /* callstk() is defined in systest_mathstr.c (same executable) */
@@ -402,7 +403,6 @@ static const char *names[] = {
 
 int main(int argc, char **argv)
 {
-    ULONG avail, after, dispatches;
     struct Library *ffp;
 
     if (argc < 2) {
@@ -437,21 +437,13 @@ int main(int argc, char **argv)
     test_mathtranslib();
     test_environlib();
 
-    /* The memory balance is measured under Forbid(): AvailMem() counts the
-       whole system, and other tasks allocate during the run (in Amiberry
-       a task took 536 bytes, 496 of them back right after, in 3 of 30
-       runs at this point, and 40 bytes a second later in every run).
-       Under Forbid() only this task and the libraries it calls change the
-       free memory, so the comparison stays exact.  Nothing in between
-       waits (utillib's Wait gets its signal beforehand, check() prints
-       only on a failure); a Wait would break the Forbid(), so the
-       dispatch counter must not change either.  The cases of this part
-       stay in capture.c's 64 KB buffer: it is flushed after every 64 KB
+    /* The memory balance is the task's own (rwemem.h: exec's AllocMem/FreeMem
+       are counted for this task only): AvailMem() counts the whole system,
+       and other tasks allocate and free while this runs.  The cases of this
+       part stay in capture.c's 64 KB buffer: it is flushed after every 64 KB
        of the program's output, and this part is written between 92 and
        95 KB. */
-    Forbid();
-    dispatches = SysBase->DispCount;
-    avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib init";
     strcpy(VEC, "");
     DO1(cmd_entry(getlib(&loaded, "memlib"), 7), (void)0);
@@ -459,11 +451,7 @@ int main(int argc, char **argv)
     test_utillib();
     ROUT = "memlib finit";
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
-    after = AvailMem(MEMF_ANY);
-    dispatches = SysBase->DispCount - dispatches;
-    Permit();
-    check("utillib: no task switch while measuring the memory", dispatches == 0);
-    check("utillib: all memory back", after == avail);
+    check("utillib: all memory back", rwe_mem_back());
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);

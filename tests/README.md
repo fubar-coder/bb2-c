@@ -402,8 +402,10 @@ the lines and hashes of the text path), `libs_capture_target` (the
 record and update targets with a fake emulator run), `fix_scope_*` (the
 fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib
-whose thunks change d2: `lost d2`, the run fails) and `libs_keeps_wrong`
-(a wrong `KEEPS` statement). The test programs of the original's bugs
+whose thunks change d2: `lost d2`, the run fails), `libs_keeps_wrong`
+(a wrong `KEEPS` statement) and `libs_mem_wrong` (the check "all memory
+back", the task's own AllocMem/FreeMem balance of `rwe/rwemem.h`: a
+block not freed, a foreign block freed, no allocation seen). The test programs of the original's bugs
 (`libs/tests/bugorig.c`) run the C build only and judge the expected
 behaviour, like the other bug-orig tests ("bug-orig tests").
 

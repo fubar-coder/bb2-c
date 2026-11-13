@@ -16,6 +16,7 @@
  * values and pseudo random ones (fixed seed).
  */
 #include "sysload.h"
+#include "rwe/rwemem.h"
 
 /* ------------------------------------------------- call with stack args */
 
@@ -537,8 +538,6 @@ static const char *names[] = {
 
 int main(int argc, char **argv)
 {
-    ULONG avail;
-
     if (argc < 2) {
         printf("usage: systest_mathstr DIR\n");
         return 20;
@@ -570,14 +569,14 @@ int main(int argc, char **argv)
     test_floatquick();
     test_strcomp();
 
-    avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib init";
     DO1(E("memlib", 7), (void)0);
     membase = R.d[0];
     test_strings();
     ROUT = "memlib finit";
     DO1(E("memlib", 8), (void)0);
-    check("strings: all memory back", AvailMem(MEMF_ANY) == avail);
+    check("strings: all memory back", rwe_mem_back());
 
     test_ffplib_finit();
 

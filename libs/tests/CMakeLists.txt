@@ -54,10 +54,10 @@ file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_i
 add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
 
-add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_keeps.c ${c_sources}
+add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_keeps.c selftest_mem.c ${c_sources}
 	${rwe_tests})
 target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-set_source_files_properties(bugorig.c selftest_keeps.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
+set_source_files_properties(bugorig.c selftest_keeps.c selftest_mem.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer
 	$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
@@ -269,6 +269,19 @@ add_test(NAME libs_keeps_wrong COMMAND ${CMAKE_COMMAND}
 set_tests_properties(libs_keeps_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"FAIL KEEPS\\(\"bad\", d2\\|x9\\): not a register set\n.*FAIL KEEPS\\(\"twice\", d3\\): stated twice\n.*FAIL KEEPS: no kept set stated for \"unstated\"\n.*keeps wrong: 3 checks, 3 failures\n")
+
+# the check "all memory back" of the library tests (rwemem.h rwe_mem_back(),
+# selftest_mem.c) with broken input, no library and no CD: a block not
+# freed, a free of a foreign block, a window without an allocation; each
+# fails, the window that frees what it allocates passes
+add_test(NAME libs_mem_wrong COMMAND ${CMAKE_COMMAND}
+	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON "-DFILTER=mem wrong"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_mem_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+set_tests_properties(libs_mem_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
+	"FAIL leak: all memory back\n.*FAIL free of a foreign block: all memory back\n.*FAIL no allocation: all memory back\n.*mem wrong: 4 checks, 3 failures\n")
 
 # the test variants (variants/selftest-*, built by ../CMakeLists.txt to
 # variants/NAME here): one with the numbers of bb2-2.10 unchanged must give

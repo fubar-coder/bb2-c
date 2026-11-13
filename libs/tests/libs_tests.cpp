@@ -17,7 +17,7 @@
 // they fail until it is fixed; only an explicit filter runs them
 // (libs_tests "[bug-orig]", ctest bug_orig_*).  The test case tagged
 // [.selftest] fails on purpose (selftest_keeps.c: KEEPS with broken
-// input); ctest libs_keeps_wrong checks that it does.
+// input); ctest libs_keeps_wrong and libs_mem_wrong check that they do.
 #include <snitch/snitch.hpp>
 
 #include <cstdio>
@@ -45,6 +45,7 @@ int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
 int bugorig_debuglib_findoff_flags(const char *dir);
 int selftest_keeps_wrong(void);
+int selftest_mem_wrong(void);
 // the tests of the RWE userlibs (rwe/NAME.c, generated list)
 #define RWE_TEST(n) int rwe_##n##_main(int argc, char **argv);
 #include "rwe_tests.inc"
@@ -206,6 +207,8 @@ TEST_CASE("systest_med: medlib (generated modules)", "[med]")
 
 // the checks of KEEPS (sysload.h) with broken input (selftest_keeps.c)
 TEST_CASE("keeps wrong", "[.selftest]") { CHECK(selftest_keeps_wrong() == 0); }
+// the check "all memory back" with broken input (selftest_mem.c)
+TEST_CASE("mem wrong", "[.selftest]") { CHECK(selftest_mem_wrong() == 0); }
 
 // reproduced original bugs: fail as long as the C build reproduces them
 TEST_CASE("cliargs-parpath-cli", "[.bug-orig]")

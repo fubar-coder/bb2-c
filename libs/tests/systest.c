@@ -14,11 +14,12 @@
  *   - results that do not depend on addresses (values, flags, contents),
  *   - the kept registers of every call (KEEPS: the set the original keeps
  *     in all calls of the routine),
- *   - memory balance (AvailMem) after alloc/free scenarios.
+ *   - memory balance (what this task allocated and freed, rwemem.h) after alloc/free scenarios.
  * Routines that are assembler in the C build too (exitslib) are observed
  * by their opcode words.
  */
 #include "sysload.h"
+#include "rwe/rwemem.h"
 
 /* ------------------------------------------------------------- scenarios */
 
@@ -58,7 +59,8 @@ static void run(struct set *s)
     /* memlib: init, local/global alloc+free, newmem/freelast */
     l = getlib(s, "memlib");
     {
-        ULONG avail = AvailMem(MEMF_ANY), membase, m1, m2, g1;
+        ULONG membase, m1, m2, g1;
+        rwe_mem_start();
         CALL("memlib init", entry_code(l, 7), (void)0, 0, 0);
         membase = r.d[0];
         OBS("membase set", membase != 0);
@@ -82,7 +84,7 @@ static void run(struct set *s)
         OBS("a list (not Z)", !(ccr & CCR_Z));
         CALL("memlib freelast", entry_code(l, 5), (void)0, 0, 0);     /* none left */
         OBS("no list (Z)", !!(ccr & CCR_Z));
-        OBS("all memory back", AvailMem(MEMF_ANY) == avail);
+        OBS("all memory back", rwe_mem_back());
         CALL("memlib init", entry_code(l, 7), (void)0, 0, 0);         /* again for the others */
     }
 
@@ -125,7 +127,8 @@ static void run(struct set *s)
     /* varslib: allocate globals, a5 = block+$8000, free */
     l = getlib(s, "varslib");
     {
-        ULONG avail = AvailMem(MEMF_ANY), a5;
+        ULONG a5;
+        rwe_mem_start();
         DONTCARE = 1UL << 13;                           /* a5: the result */
         CALL("varslib init", entry_code(l, 0), r.d[0] = 2000, 0, 0);
         DONTCARE = 0;
@@ -133,7 +136,7 @@ static void run(struct set *s)
         OBS("a5 = d0", r.a[5] == r.d[0] && r.d[0] != 0);
         OBS("cleared", *(ULONG *)(r.a[5] - 0x8000) == 0);
         CALL("varslib finit", entry_code(l, 1), r.d[0] = 2000; r.a[5] = a5, 0, 0);
-        OBS("all memory back", AvailMem(MEMF_ANY) == avail);
+        OBS("all memory back", rwe_mem_back());
     }
 
     /* memlib finit: free everything */
