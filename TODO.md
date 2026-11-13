@@ -908,6 +908,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   0-127 only, so every literal character is drawn with glyph 0
   (`TED_LITGLYPH`, `programs/ted/src/core/literal.h`); TED-C gets glyphs
   of its own for the Latin-1 characters, for both font heights.
+  Proposed as the OpenSpec change `ted-latin1-glyphs` (proposal, design,
+  specs, tasks; awaiting the user's review, nothing implemented).
 - [ ] **Buffer access annotations** (planned 2026-11-12, implementation
   postponed by the user's decision of the same day): implement the
   OpenSpec change `buffer-access-annotations` - a `BL_ACCESS` macro for
