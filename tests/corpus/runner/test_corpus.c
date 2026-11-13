@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "bugorig.h"
 #include "corpus.h"
 #include "util.h"
 
@@ -253,6 +254,66 @@ int main(void)
         CHECK(parse(BASE CONFIGS "source=/s\nrecord=check\n", err, sizeof err) == -1
               && strstr(err, "record= needs orig="));
         CHECK(parse(ORIG "record=yes\n", err, sizeof err) == -1 && strstr(err, "record=check"));
+        /* the recording run: record_to=, the layout under inject's pad (the
+           compiler and the program; added to inject's options, not where
+           it pads already or another wrapper runs) */
+        CHECK(corpus_parse(ORIG "record=write\nrecord_to=/b/run1\n", &p, err, sizeof err) == 0);
+        corpus_select(&p);
+        CHECK(p.record == CORPUS_RECORD_WRITE && p.nconfigs == 1 && !strcmp(p.record_to, "/b/run1"));
+        CHECK(corpus_layout(&p, NULL) == 0 && !p.wrap && !p.runwrap);
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG "record=write\nrecord_to=/b/run2\nlayout=pad\ninject=/i\n", &p, err,
+                           sizeof err) == 0);
+        CHECK(corpus_layout(&p, NULL) == 0);
+        CHECK(!strcmp(p.wrap, "/i") && !strcmp(p.wrap_args, "pad"));
+        CHECK(!strcmp(p.runwrap, "/i") && !strcmp(p.runwrap_args, "pad"));
+        CHECK(p.padded[0] == 2 && p.padded[1] == 2);
+        {
+            /* inject's own lines are no part of the observation */
+            struct bugorig_obs o;
+            struct bugorig_outputs out = { "done", "", "inject: pad: x\nrc=0\ninject: rc=0\n",
+                                           "1\ninject: rc=0\ninject: pad: written behind\n",
+                                           "j000" };
+
+            CHECK(bugorig_observe(&out, &o) == 0 && corpus_strip_layout(&p, &o) == 0);
+            CHECK(!strcmp(bugorig_get(&o, "blitz2"), "rc=0\n"));
+            CHECK(!strcmp(bugorig_get(&o, "run"), "1\n"));
+            bugorig_free(&o);
+        }
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG "record=write\nrecord_to=/b/run2\nlayout=pad\ninject=/i\n"
+                           "wrap=/i|allocfail=1-2\nrunwrap=/i|guard\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_layout(&p, NULL) == 0);
+        CHECK(!strcmp(p.wrap_args, "pad allocfail=1-2") && !strcmp(p.runwrap_args, "guard"));
+        CHECK(p.padded[0] == 1 && p.padded[1] == 0);
+        {
+            /* inject was there: its rc line stays, the pad lines go */
+            struct bugorig_obs o;
+            struct bugorig_outputs out = { "done", "", "inject: pad: x\ninject: rc=0\n",
+                                           "inject: pad: y\ninject: rc=0\n", "j000" };
+
+            CHECK(bugorig_observe(&out, &o) == 0 && corpus_strip_layout(&p, &o) == 0);
+            CHECK(!strcmp(bugorig_get(&o, "blitz2"), "inject: rc=0\n"));
+            CHECK(!strcmp(bugorig_get(&o, "run"), "inject: pad: y\ninject: rc=0\n"));
+            bugorig_free(&o);
+        }
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG "record=write\nrecord_to=/b/run2\nlayout=pad\ninject=/i\n"
+                           "runwrap=/w|x\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_layout(&p, NULL) == 0 && !strcmp(p.runwrap, "/w") && !strcmp(p.runwrap_args, "x"));
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG "record=write\nrecord_to=/b/run2\nlayout=pad\ninject=/i\n"
+                           "machine=a500\nrcput=/rc\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_layout(&p, NULL) == 0 && !p.wrap && !p.runwrap);
+        corpus_free(&p);
+        /* broken on purpose: record=write without record_to=, record_to=
+           without it, layout=pad without inject= or record=write */
+        CHECK(parse(ORIG "record=write\n", err, sizeof err) == -1 && strstr(err, "record_to="));
+        CHECK(parse(ORIG "record_to=/b/x\n", err, sizeof err) == -1 && strstr(err, "record_to="));
+        CHECK(parse(ORIG "record=write\nrecord_to=/b/x\nlayout=pad\n", err, sizeof err) == -1
+              && strstr(err, "inject="));
+        CHECK(parse(ORIG "layout=pad\ninject=/i\n", err, sizeof err) == -1 && strstr(err, "layout=pad"));
+        CHECK(parse(ORIG "record=write\nrecord_to=/b/x\nlayout=big\n", err, sizeof err) == -1);
         /* broken on purpose: a bug-orig test without orig=, orig= without expect=
            or with fixed= / regression=on */
         CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\n", err, sizeof err) == -1

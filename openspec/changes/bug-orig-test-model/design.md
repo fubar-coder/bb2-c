@@ -184,3 +184,36 @@ Recorded in `~/.local/share/bb2-c-work/questions-for-user.md` under
   issue N, a changed `ID.orig` of a fixed test is the `[orig]` case paired
   with `[fixed #N]`, and any change of an open test or of a test fixed by
   another issue is reported.
+- Task 3.4 (2026-11-13): `tedab` cannot vary the memory layout of the
+  original TED's run without changing what the test observes. The run
+  script (`tests/ted-ab/runner/tedab.c`, `run_script`) starts
+  `reqtrap teddrive SCRIPT blitz2:blitz2` directly; wrapping it with
+  inject's `pad` would pad teddrive's and reqtrap's own allocations as
+  well and adds inject's reports to the program's output, which the
+  scripts' `@expect stdout` and `@expect log` lines read; mounting `BB2:`
+  or not changes which tests can run (`@source K`, `@expect cd` need the
+  CD). So the TED recordings are accepted on two identical runs of the
+  same layout (the recommendation of the open question, user decision of
+  2026-11-12); `tests/README.md` ("Recorded originals") states the limit.
+  The Blitz recordings vary the layout with `layout=pad`: the compiler
+  (`wrap=`) and the program (`runwrap=`) run under inject's `pad` (added
+  to the options of an inject `wrap=`), except where another wrapper
+  runs (`wbrun`), inject pads already (`pad`, `guard`, `guardseg`) or the
+  machine has Kickstart 1.x (inject needs V36); corpusrun notes each case
+  in its log.
+- Task 3.3 (2026-11-13): inject writes lines of its own (`inject: rc=N`
+  after the command, `inject: pad: ...` for what pad finds), so the second
+  recording run of a test that had no inject wrapper differed from the
+  first in `[run]` and `[blitz2]` by those lines alone (the first trial
+  refused `rizonejoylib-zone-offset-word` for `inject: rc=0`). corpusrun
+  therefore removes, in a `layout=pad` run only, the `inject: pad:` lines
+  where it added `pad` and the `inject: rc=` lines where it added inject
+  itself (`corpus_strip_layout`); a test whose own inject options already
+  write lines keeps them in both runs.
+- The target runs both recording runs of up to
+  `BUG_ORIG_RECORD_PARALLEL` tests at the same time (a pipeline of
+  `cmake -P` processes that write nothing to stdout; the emulator slots
+  limit the sessions), accepts each test with `results bug-orig-accept`,
+  and fails at the end if a test was refused or a run failed; the files of
+  the other tests are written. A skipped run (77, e.g. an `@rwe` test
+  without the RWE reference build) skips the test and is listed.

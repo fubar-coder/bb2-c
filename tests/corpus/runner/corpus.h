@@ -155,6 +155,23 @@
  *                     and the first differing line), 2 = the session failed
  *                     or orig= is missing or malformed.  No file of the
  *                     source tree is written
+ *   record=write      with orig= and record_to=PATH: the recording run of
+ *                     the target bug-orig-record: only the reference runs
+ *                     and its observation is written to PATH (in the build
+ *                     directory; results bug-orig-accept makes orig= from
+ *                     two of them); exit status 0, 2 if the session failed
+ *   layout=pad        with record=write and inject=PATH (tests/bug-orig/
+ *                     amiga/inject.c): another memory layout for the second
+ *                     recording run (corpus_layout): the compiler (wrap=)
+ *                     and the program (runwrap=) run under inject with its
+ *                     option pad (added to the options of a wrap= of
+ *                     inject); not varied (noted in the log) where another
+ *                     wrapper is given, inject pads already (pad, guard,
+ *                     guardseg) or the machine has Kickstart 1.x (inject
+ *                     needs V36).  The lines inject adds for it are no
+ *                     part of the observation: "inject: pad: ..." where
+ *                     pad was added, "inject: rc=N" where inject was
+ *                     (corpus_strip_layout)
  *   orig_by=TEXT      the note in the first line of the recorded file
  *                     (which original it is)
  *   regression=on     with expect=: an expect test instead (an extension of
@@ -184,7 +201,7 @@
 #include "previntended.h"
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
-enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK };
+enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK, CORPUS_RECORD_WRITE };
 
 struct corpus_config {
     char *tag;
@@ -205,6 +222,11 @@ struct corpus_pass {
     int update;                         /* corpus_update: write the expected outputs */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* record=: enum corpus_record */
+    char *record_to, *inject;           /* record_to=, inject= (record=write) */
+    int layout_pad;                     /* layout=pad */
+    int padded[2];                      /* corpus_layout: [0] the compiler, [1] the program
+                                           under pad: 1 = pad added to inject, 2 = inject
+                                           added too */
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
     unsigned timeout, parallel, stack;
@@ -232,6 +254,17 @@ void corpus_free(struct corpus_pass *p);
    drops it and the files that are for it only; a pass without orig= is
    left as it is.  Behind the check of corpus_parse */
 void corpus_select(struct corpus_pass *p);
+
+/* layout=pad: the compiler and the program under inject's pad (see the key;
+   what is not varied is noted in log, may be NULL); behind corpus_select.
+   0 = ok, -1 = out of memory */
+int corpus_layout(struct corpus_pass *p, FILE *log);
+
+/* the lines inject wrote for layout=pad removed from the observation of
+   the compiler (blitz2) and of the program (run), as corpus_layout
+   wrapped them (p->padded); 0 = ok, -1 = out of memory */
+struct bugorig_obs;
+int corpus_strip_layout(const struct corpus_pass *p, struct bugorig_obs *o);
 
 /* record=check: the observation of the original (obs, the text of an
    observation file, bugorig_format) against the recorded original in the

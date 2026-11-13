@@ -81,6 +81,11 @@
  *                      report names the section and the first differing
  *                      line), 2 = no run or orig= missing or malformed.  No
  *                      file of the source tree is written
+ *   record=write       with orig= and record_to=PATH: a recording run of the
+ *                      target bug-orig-record: only the reference runs and
+ *                      its observation is written to PATH (in the build
+ *                      directory; results bug-orig-accept makes orig= from
+ *                      two of them); exit status 0, 2 if it did not run
  *   orig_by=TEXT       the note in the first line of the file
  *
  * The runs are packed into sessions (the combinations of a test stay
@@ -127,7 +132,8 @@ struct pass {
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *libs, *libs_prev;             /* the libraries instead of the CD's */
     char *inject, *wbrun, *gates;
-    char *orig, *orig_by, *record;      /* record=: check */
+    char *orig, *orig_by, *record;      /* record=: check or write */
+    char *record_to;                    /* record_to= (record=write) */
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
     unsigned timeout, budget, parallel, stack, bugorig, fixed;
 };
@@ -175,6 +181,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "libs", &P.libs }, { "libs_prev", &P.libs_prev },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
         { "orig", &P.orig }, { "orig_by", &P.orig_by }, { "record", &P.record },
+        { "record_to", &P.record_to },
     };
     static const struct {
         const char *key;
@@ -320,8 +327,12 @@ static int parse(const char *text, char *err, size_t errlen)
         snprintf(err, errlen, "orig=: the reference and another combination are needed");
         return -1;
     }
-    if (P.record && (strcmp(P.record, "check") || !P.orig)) {
-        snprintf(err, errlen, "record=check, with orig=");
+    if (P.record && ((strcmp(P.record, "check") && strcmp(P.record, "write")) || !P.orig)) {
+        snprintf(err, errlen, "record=check or record=write, with orig=");
+        return -1;
+    }
+    if (!P.record_to != !(P.record && !strcmp(P.record, "write"))) {
+        snprintf(err, errlen, "record=write and record_to=PATH belong together");
         return -1;
     }
     if (P.orig) {
@@ -891,7 +902,8 @@ static void bugorig_verdicts(const struct tedab_test *t, struct run **tr, struct
 
 /* the compare test of the recorded original (record=check): the
    observation of the reference run against orig=; *worst = 0 the same, 1
-   it differs, 2 no observation or no recorded original */
+   it differs, 2 no observation or no recorded original.  record=write: the
+   observation into record_to=; *worst = 0 written, 2 not */
 static void record_orig(const struct tedab_test *t, struct run **tr, struct text *rep, int *worst)
 {
     int ref = combo_order[0];
@@ -910,6 +922,20 @@ static void record_orig(const struct tedab_test *t, struct run **tr, struct text
     } else if (rp.bad || tedab_orig_format(rs, rp.p ? rp.p : "", P.orig_by, &f, err, sizeof err)) {
         text_add(rep, "  bug-orig: %s\n", rp.bad ? "out of memory" : err);
         *worst = 2;
+    } else if (P.record_to) {
+        /* a recording run of the target bug-orig-record: into the build
+           directory, never orig= */
+        if (write_file(P.record_to, f.p, f.n)) {
+            text_add(rep, "  bug-orig: cannot write %s\n", P.record_to);
+            *worst = 2;
+        } else {
+            text_add(rep, "  bug-orig %s: the observation of the original in %s (state %s)\n",
+                     tedab_combo_names[ref], P.record_to, rs);
+            if (*worst < 0)
+                *worst = 0;
+        }
+        tr[ref]->verdict = "recorded";
+        free(f.p);
     } else {
         size_t len;
         char *text = (char *)read_file(P.orig, &len);

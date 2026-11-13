@@ -524,6 +524,10 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   `libs-capture` and `libs-update` (`libs/tests/expected.cmake`); the tests
   `libs_compare_*`, `libs_accept_*` and `libs_dump_*`
   (`tools/tests/CMakeLists.txt`).
+* `bug-orig-accept`: the target `bug-orig-record`
+  (`tests/bug-orig/record.cmake`); the tests `bug_orig_accept`
+  (`tools/tests/CMakeLists.txt`) and `bug_orig_record_target`
+  (`tests/bug-orig/CMakeLists.txt`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
   `cmake/fix-scope.cmake`); the tests `fix_scope_*`
   (`tools/tests/CMakeLists.txt`).

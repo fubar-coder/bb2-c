@@ -27,8 +27,9 @@ static void add(CLI::App &app, int &status, int lint)
                     "file that cannot be read.");
     else
         sub->footer("With the pass key record=check a bug-orig pass (bugorig=1, orig=) runs only "
-                    "the original and compares its observation with the recorded one. Exit "
-                    "status 0 all gates and runs OK and every comparison as expected, 1 not, 2 "
+                    "the original and compares its observation with the recorded one, with "
+                    "record=write it writes the observation to record_to= (the target "
+                    "bug-orig-record). Exit status 0 all gates and runs OK and every comparison as expected, 1 not, 2 "
                     "error (usage, pass file, scripts), 77 the emulator or a file is missing "
                     "(skipped). A bug-orig pass gives the worst verdict: 0 all FIXED, 1 "
                     "REPRODUCED, 3 BROKEN, 4 DIFFERS (with record=check 0 the same, 1 it "

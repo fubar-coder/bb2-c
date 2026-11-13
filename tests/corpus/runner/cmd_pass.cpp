@@ -6,7 +6,8 @@
  * Exit status 0 = no differences, 1 = differences (report), 77 = skipped
  * (no emulator, or the CD's libraries are missing), 2 = error.  With the
  * pass key record=check a bug-orig pass (orig=) compares the original's
- * observation with the recorded one instead (corpus.h).  --update-expect TAG runs the
+ * observation with the recorded one instead, with record=write it writes
+ * it to record_to= (corpus.h).  --update-expect TAG runs the
  * configuration TAG only and writes its outputs to expect_dir=
  * (corpus_update in corpus.h): 0 = all written, 1 = some not.
  */
@@ -50,6 +51,11 @@ static int pass(const char *me, const char *path, const char *update)
     }
     /* the configurations of a bug-orig test (orig=; record=: the reference) */
     corpus_select(&p);
+    if (corpus_layout(&p, stdout)) {
+        fprintf(stderr, "%s: out of memory\n", me);
+        corpus_free(&p);
+        return 2;
+    }
     corpus_skip_missing(&p, stdout);
     rc = corpus_run(&p, stdout);
     corpus_free(&p);
@@ -69,7 +75,9 @@ void cmd_pass(CLI::App &app, int &status)
         ->type_name("TAG");
     sub->add_option("PASSFILE", o->passfile, "the pass file (its keys: tests/corpus/runner/corpus.h)")->required();
     sub->footer("With the pass key record=check a bug-orig pass (orig=) runs only the original and "
-                "compares its observation with the recorded one (1 if it differs). Exit status 0 no differences (--update-expect: "
+                "compares its observation with the recorded one (1 if it differs), with "
+                "record=write it writes the observation to record_to= (the target "
+                "bug-orig-record). Exit status 0 no differences (--update-expect: "
                 "all written), 1 differences (the report; --update-expect: some not written), 2 "
                 "error (usage, pass file), 77 skipped (no emulator, or the CD's libraries are "
                 "missing). A bug-orig pass gives the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 "

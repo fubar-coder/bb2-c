@@ -49,11 +49,13 @@ OPTIONS:
                               of comparing
 
 With the pass key record=check a bug-orig pass (orig=) runs only the original
-and compares its observation with the recorded one (1 if it differs). Exit
-status 0 no differences (--update-expect: all written), 1 differences (the
-report; --update-expect: some not written), 2 error (usage, pass file), 77
-skipped (no emulator, or the CD's libraries are missing). A bug-orig pass gives
-the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4 DIFFERS.
+and compares its observation with the recorded one (1 if it differs), with
+record=write it writes the observation to record_to= (the target
+bug-orig-record). Exit status 0 no differences (--update-expect: all written), 1
+differences (the report; --update-expect: some not written), 2 error (usage,
+pass file), 77 skipped (no emulator, or the CD's libraries are missing). A
+bug-orig pass gives the worst verdict: 0 all FIXED, 1 REPRODUCED, 3 BROKEN, 4
+DIFFERS.
 ```
 
 Runs one pass of the pass file `PASSFILE` and writes the report (to
@@ -62,7 +64,10 @@ Runs one pass of the pass file `PASSFILE` and writes the report (to
 a bug-orig pass (`orig=`) runs only the original and compares its
 observation with the recorded one, `orig=`, which it never writes (the
 compare test `bug_orig_record_ID`; `tests/README.md`, "Recorded
-originals"). A pass with
+originals"); with `record=write` it writes the observation to
+`record_to=` in the build directory, with `layout=pad` the compiler and
+the program run under inject's option `pad` (the two recording runs of
+the target `bug-orig-record`). A pass with
 `expect_dir=DIR` compares the output of every configuration (and with
 `serial=on` the bytes sent over the serial port) with the committed files
 `DIR/NAME.out` (`DIR/NAME.serial`); a missing file fails the pass before
