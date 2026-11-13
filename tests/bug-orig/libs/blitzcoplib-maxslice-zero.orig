@@ -1,6 +1,7 @@
 # the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
 [session]
-timeout
+# varies: the corrupted memory ends the session as a timeout or a halt of the CPU, depending on the memory layout (#406)
+*
 [compile]
 ok
 [run]

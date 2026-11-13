@@ -1,9 +1,12 @@
 # the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
 [session]
-halt
+# varies: the 768 KB wild write ends the session as a halt or not at all, depending on the memory layout (#820)
+*
 [compile]
 ok
 [run]
+# varies: when the program survives the wild write it prints its end and inject's report (#820)
+...
 [blitz2]
 rc=0
 [log]

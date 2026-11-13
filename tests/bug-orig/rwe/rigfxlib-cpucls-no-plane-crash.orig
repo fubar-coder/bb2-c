@@ -5,6 +5,8 @@ timeout
 ok
 [run]
 before
+# varies: the crash shows the Software Failure requester or not, depending on the memory layout (#680)
+...
 [blitz2]
 rc=0
 [log]

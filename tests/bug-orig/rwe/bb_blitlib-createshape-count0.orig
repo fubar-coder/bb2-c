@@ -1,11 +1,13 @@
 # the CD's blitz2 2.10 with the CD's libraries and the reference RWE library
 [session]
-timeout
+# varies: the crash ends the session as a timeout or a halt of the CPU, depending on the memory layout (#428)
+*
 [compile]
 ok
 [run]
 before
-shape 2 width 16
+# varies: whether the second line is printed before the crash depends on the memory layout (#428)
+...
 [blitz2]
 rc=0
 [log]

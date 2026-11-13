@@ -23,7 +23,7 @@ deliberately broken input.
 
 ## 4. The four varying files
 
-- [ ] 4.1 Give `blitzcoplib-maxslice-zero`, `bb_blitlib-createshape-count0`, `rigfxlib-cpucls-no-plane-crash` and `rishapeslib-read-palette-colour-count` (#820) a wildcard line with `# varies: REASON` where recording twice differs (find the line by recording each three times with `bug-orig-record`; where a whole section varies, apply D5). Verify: `ctest --preset originals -R bug_orig_record_` passes three times in a row with no change in `git status`, and `ctest --preset bug-orig` verdicts of the four stay REPRODUCED.
+- [x] 4.1 Give `blitzcoplib-maxslice-zero`, `bb_blitlib-createshape-count0`, `rigfxlib-cpucls-no-plane-crash` and `rishapeslib-read-palette-colour-count` (#820) a wildcard line with `# varies: REASON` where recording twice differs (find the line by recording each three times with `bug-orig-record`; where a whole section varies, apply D5). Verify: `ctest --preset originals -R bug_orig_record_` passes three times in a row with no change in `git status`, and `ctest --preset bug-orig` verdicts of the four stay REPRODUCED.
 
 ## 5. Fixed tests keep `ID.orig`
 
