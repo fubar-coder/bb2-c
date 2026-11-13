@@ -33,7 +33,7 @@ two-run accept and the projection helper this change reuses).
 
 ## 6. Acceptance
 
-- [ ] 6.1 Full run: `ctest --preset all`, `ctest --preset originals` (CD), `ctest --preset host` with `-DHOST_SANITIZE=ON`, `ctest --preset bug-orig`; the `prev` comparison byte-identical for executables, TED files and libraries. Verify: all pass.
+- [x] 6.1 Full run: `ctest --preset all`, `ctest --preset originals` (CD), `ctest --preset host` with `-DHOST_SANITIZE=ON`, `ctest --preset bug-orig`; the `prev` comparison byte-identical for executables, TED files and libraries. Verify: all pass.
 
 ## 7. Documents
 
