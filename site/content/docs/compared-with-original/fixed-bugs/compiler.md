@@ -650,9 +650,9 @@ Issue: [A program could hang the system at its end when it used a library that n
 ### Data of odd length at the end of a program {#odd-end}
 
 The compiler puts the code that ends a program behind the last statement
-of the source. When that statement was a `Dc.b` or an `IncBin` of odd
-length, the original placed this code at an odd address, where the 68000
-cannot run code.
+of the source. When that statement left an odd number of bytes - a
+`Dc.b`, `Dcb.b`, `Ds.b` or `IncBin` of odd length - the original placed
+this code at an odd address, where no 68000-family CPU can run code.
 
 **What happened**
 
@@ -680,7 +680,7 @@ before
 
 and ends normally.
 
-Issue: [A program ending with an IncBin of odd length crashed at its end (#979)](https://github.com/fubar-coder/bb2-c/issues/979).
+Issue: [A program ending with data of odd length crashed at its end (#979)](https://github.com/fubar-coder/bb2-c/issues/979).
 
 ## Other fixes
 
