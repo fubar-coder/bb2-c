@@ -35,4 +35,4 @@ Amiberry; the rest does not.
 ## 6. Documents
 
 - [x] 6.1 `tests/README.md` ("Corpus", `:455-456`: the sentence about leaving out the three programs; the corpus description mentions data from `tests/corpus/data`), `docs/testing.md` (the corpus row and the data), `docs/libs/cmdlibs-port.md` (t110 to t112 entries: "lambada.med from the CD, 700 ticks" becomes the generated module), `tests/corpus/runner/README.md` (the `mount=` example "BB2: = the CD, where the tests load sounds and modules from"), `TODO.md` (a done entry with the date; the item 9.3 text is a record of that day and stays). Verify: `rg 'BB2:' tests docs TODO.md` finds no statement that corpus programs load from the CD; text agrees with the specs.
-- [ ] 6.2 Sync `specs/testing/expected-results` into `openspec/specs` when archiving; the `testing/original-comparisons` scenario "all without the CD" needs no change.
+- [x] 6.2 Sync `specs/testing/expected-results` into `openspec/specs` when archiving; the `testing/original-comparisons` scenario "all without the CD" needs no change.
