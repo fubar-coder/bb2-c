@@ -579,6 +579,10 @@ ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
 ab3_cli_case(function_problem function_problem.ab3 REF)
 ab3_cli_case(serial_read serial_read.ab3 REF NORUN)
 ab3_cli_case(inc_error inc_error.ab3 REF)
+# a library whose entries run past its block of 127 numbers while the next
+# number is free keeps them (#960: a library's range ends only where the
+# next loaded library's begins): Mildred's MProcessor
+ab3_cli_case(libtoken_past_block libtoken_past_block.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

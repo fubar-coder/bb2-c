@@ -1488,6 +1488,26 @@ void fixlibs(void)
     }
     tail->next = NULL;
 
+    /* Fixed (#960): a user library's range ends where the range of
+       another loaded user library begins, if that lies inside it.
+       blitz2.s counts every entry, nullsubs included, so doslib (127
+       calls, then init and finit) ran to $FE81, exec's first token
+       (Supervisor_), and findtoke found that token in doslib.  The
+       nullsubs are reached through the header, not by token.  A library
+       whose next number is free keeps its entries behind its block
+       (AmiBlitz3's Mildred, library 15, and library 217 have commands
+       there) */
+    for (l = firstlib; l; l = l->next) {
+        struct blitzlib *o;
+
+        if (l->libnum < 0)
+            continue;
+        for (o = firstlib; o; o = o->next)
+            if (o->libnum >= 0 && o->firsttoken > l->firsttoken
+                && o->firsttoken < l->lasttoken)
+                l->lasttoken = o->firsttoken;
+    }
+
     /* asm: errstack=a7, errcont=.cont, ezerr=-1: a missing memlib/ffplib
        resumes at .cont (rts) */
     olderr = errjmp;

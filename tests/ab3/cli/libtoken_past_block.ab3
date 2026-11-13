@@ -1,0 +1,8 @@
+; a library whose entries run past its block of 127 numbers while the next
+; library number is free (#960): Mildred (library 15, there is no library
+; 16) has MProcessor as its entry 206, the token of library 16's entry 78;
+; the compiler finds it in Mildred.  The CPU number is not printed, only
+; that the function gives one of 0..6 (MC68000..MC68060)
+p.w = MProcessor
+If p >= 0 AND p <= 6 Then NPrint "cpu ok" Else NPrint "cpu ", p
+End

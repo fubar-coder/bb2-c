@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+cpu ok
+rc=0

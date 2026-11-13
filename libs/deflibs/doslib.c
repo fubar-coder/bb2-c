@@ -153,8 +153,10 @@ BLITZ_OSCALL(LIB_doslib, -792, "CheckSignal_", "(mask)", d1);
 BLITZ_OSCALL(LIB_doslib, -798, "ReadArgs_", "(template,array,args)", d1, d2, d3);
 BLITZ_OSCALL(LIB_doslib, -804, "FindArg_", "(keyword,template)", d1, d2);
 
-/* BUG(orig) (#960): 127 calls + init + finit run past the 127 tokens of
-   a library: finit gets $FE81, exec's first token (Supervisor_) */
+/* Fixed (#960): 127 calls + init + finit run past the 127 tokens of a
+   library: finit is counted as $FE81, exec's first token (Supervisor_);
+   the compiler ends a library's range where the next loaded library's
+   begins (asmlibs.c fixlibs), the nullsubs are reached through the header */
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_doslib, BL_LA(1));
 BLITZ_LIBFIN();
