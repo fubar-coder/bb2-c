@@ -301,6 +301,11 @@ file(WRITE ${lc}/scope/log.txt "fix: c\n\nFixes #7\n")
 file(WRITE ${lc}/scope/nolog.txt "fix: c\n\nNo issue.\n")
 add_test(NAME fix_scope_own COMMAND results fix-scope --log ${lc}/scope/log.txt ${lc}/scope/base
 	${lc}/scope/own)
+# --fixes more than once: every one is an issue of the branch
+add_test(NAME fix_scope_two_fixes COMMAND results fix-scope --fixes 9 --fixes 7 ${lc}/scope/base
+	${lc}/scope/own)
+set_tests_properties(fix_scope_two_fixes PROPERTIES PASS_REGULAR_EXPRESSION
+	"cases changed in 1 programs, 0 not of the issues #9, #7\n")
 foreach(t
 		"unqualified;--fixes;7;other;prog: r\\|d\\|\\|1: changed \\(\\$1 -> \\$2\\)"
 		"other_issue;--fixes;7;other;prog: r\\|p\\|\\|1 \\[fixed #8\\]: changed \\(\\$4 -> \\$6\\)"

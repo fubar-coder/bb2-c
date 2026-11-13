@@ -57,6 +57,7 @@ void cmd_fix_scope(CLI::App &app, int &status)
         ->type_size(1)
         ->expected(1)
         ->allow_extra_args(false)
+        ->multi_option_policy(CLI::MultiOptionPolicy::TakeAll)
         ->type_name("N");
     sub->add_option("--log", o->log, "commit messages: their lines \"Fixes #N\" name issues too")
         ->type_name("FILE");
