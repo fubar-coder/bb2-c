@@ -154,6 +154,10 @@ translated original parts nobody can grant it bindingly, since the rights
 holders cannot be reached. What is known about the license of the
 originals is in `archive/README.md`.
 
+TED-C's glyphs for the Latin-1 characters at 8 px are adapted from
+unscii-8 by viznut (public domain / CC0; the source note is in
+`programs/ted/fonts/glyphs8.txt`).
+
 The host tools are built with CLI11 (BSD-3-Clause, a build-time
 dependency, `cmake/CLI11.cmake` downloads a fixed release when the build
 is configured); nothing of it is in the m68k programs and libraries.

@@ -47,6 +47,10 @@ shared/tokenizer/            source text to tokenised lines with a rule
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
+programs/ted/fonts/          TED-C's screen fonts: the glyph sources of
+                             $80-$FF (glyphs8.txt, glyphs6.txt) and
+                             fonts.cmake (the build step with tedfont:
+                             256-glyph fonts in the build directory)
 programs/ted/tests/host/     host tests of the TED core (snitch)
 programs/ted/tools/          host tools on the TED core: tedsrc/ (tok:
                              tokenize like TED, detok: source as TED
@@ -98,7 +102,9 @@ tools/                       host tools (overview: tools/README.md):
                              cmdref (the command table of a library file
                              as JSON, the website's command reference),
                              cli (cli.hpp: the command-line shell of the
-                             tools on CLI11, cmake/CLI11.cmake);
+                             tools on CLI11, cmake/CLI11.cmake),
+                             tedfont (TED-C's screen fonts from the
+                             glyph sources and TED's font files);
                              blitzlib also compares declarations
   NAME/                      the tools: main.cpp around lib/ (C++ on
                              CLI11: the subcommands in cmd_NAME.cpp),
@@ -122,6 +128,8 @@ tools/                       host tools (overview: tools/README.md):
   xtra/                      .xtra files: dump, check, convert
   hdftool/                   AmigaDOS hardfiles: info, list, cat, check,
                              edit
+  tedfont/                   TED-C's screen fonts of 256 glyphs: build,
+                             check
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)

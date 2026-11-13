@@ -907,13 +907,18 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   configure-time check `tests/corpus/check-data.cmake`. The CD variants
   of the three programs are not kept (user decision 2026-11-13). To
   archive the change after the merge.
-- [ ] **TED-C glyphs for `$A0`-`$FF`** (user decision 2026-11-13, a change
-  of its own after #1018): TED's fonts (`chars8.b`, `chars.b`) have glyphs
-  0-127 only, so every literal character is drawn with glyph 0
-  (`TED_LITGLYPH`, `programs/ted/src/core/literal.h`); TED-C gets glyphs
-  of its own for the Latin-1 characters, for both font heights.
-  Proposed as the OpenSpec change `ted-latin1-glyphs` (proposal, design,
-  specs, tasks; awaiting the user's review, nothing implemented).
+- [x] **TED-C glyphs for `$A0`-`$FF`** done (2026-11-13): OpenSpec
+  change `ted-latin1-glyphs` (user decisions 2026-11-13, after #1018):
+  TED-C's screen fonts have 256 glyphs, generated in the build by the
+  host tool `tedfont` from TED's `chars8.b`/`chars.b` and the glyph
+  sources `programs/ted/fonts/glyphs8.txt`/`glyphs6.txt` (8 px: unscii-8,
+  public domain / CC0, adapted to TED's letters; 6 px drawn in TED's
+  style; `$81`-`$9F` a hollow box, `$A0` blank; the 6 px glyph 26
+  redrawn); a literal map beside `chmap` gives every redraw the
+  character. Host tests `test_fontlit.cpp`, `test_literal_redraw.cpp`,
+  `test_tedfont.c`; TED A/B `33-literal-glyphs`, `34-literal-glyphs6`,
+  `35-literal-typed`. The user's review of the screenshots (task 5.2) is
+  the gate of the merge; to archive the change after it.
 - [ ] **Buffer access annotations** (planned 2026-11-12, implementation
   postponed by the user's decision of the same day): implement the
   OpenSpec change `buffer-access-annotations` - a `BL_ACCESS` macro for

@@ -103,7 +103,7 @@ and is named in the commits. Group 1 changes no code.
 
 ## 5. Acceptance
 
-- [ ] 5.1 Clean `cmake --build --preset amiga` without warnings;
+- [x] 5.1 Clean `cmake --build --preset amiga` without warnings;
   `ctest --preset host` (also `-DHOST_SANITIZE=ON`: the tool and its
   tests); `ctest --preset all` with the prev build: no compiler output,
   library or TED file differs.
@@ -115,11 +115,11 @@ and is named in the commits. Group 1 changes no code.
 
 ## 6. Documents
 
-- [ ] 6.1 `docs/ted/deviations.md`: the row "Literal characters" says the
+- [x] 6.1 `docs/ted/deviations.md`: the row "Literal characters" says the
   glyphs (the font has 256 glyphs, no longer glyph 0); a new row for the
   6 px glyph 26 (kind **B**, decided by the user 2026-11-13: an original
   glyph redrawn; TED-C's display only, no file differs).
-- [ ] 6.2 `docs/ted/reference.md` (font rows), `docs/structure.md` if the
+- [x] 6.2 `docs/ted/reference.md` (font rows), `docs/structure.md` if the
   tool or directory needs a line, `README.md` "License" (one sentence:
   glyphs adapted from unscii-8, public domain / CC0), `TODO.md` (done entry).
 - [ ] 6.3 Report to the coordinator: the site text of #1018 (a screenshot of
