@@ -818,7 +818,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `rimisclib_initargparse_unbounded` (DIFFERS -> BROKEN: the original's
   overwritten NextArgChar$ code, `$78` bytes = `moveq #$78,d4`, runs
   through on 3.1 and prints "at most 255" - the expectation does not see
-  the overwrite); `bb_blitlib_createshape_count0` (clib: timeout instead
+  the overwrite; done 2026-11-13: the string is 256 characters and
+  `$70 $2A $4E $75` (`moveq #42,d0 : rts` on the entry of NextArgChar$),
+  the original returns 42 characters whatever the layout, the expectation
+  asks for the first 255; REPRODUCED for port and clib, FIXED with a
+  temporary fix); `bb_blitlib_createshape_count0` (clib: timeout instead
   of the original's halt, DIFFERS; ref and port REPRODUCED).
 - [x] **Accepted bug-orig DIFFERS (memory layout)** decided (2026-11-06):
   these tests come out DIFFERS in every saved run, because the C build's

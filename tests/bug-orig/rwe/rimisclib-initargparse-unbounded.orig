@@ -5,7 +5,7 @@ done
 ok
 [run]
 before
-at most 255
+not the first 255 characters
 rc=0
 [blitz2]
 rc=0

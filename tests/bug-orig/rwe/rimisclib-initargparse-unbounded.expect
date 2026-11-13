@@ -2,5 +2,5 @@
 ok
 [run]
 before
-at most 255
+the first 255 characters
 rc=0
