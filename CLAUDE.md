@@ -32,8 +32,9 @@ ctest --preset all                                     # host and emulator: the 
                                                        # corpus_cd_ab3); libs_emulator compares the C
                                                        # libraries with libs/tests/expected
 ctest --preset bug-orig                                # open original bugs and port bugs: fail on purpose
-ctest --preset originals                               # label originals: comparisons with the originals, recording
-                                                       # of tests/bug-orig/*/*.orig, libs_emulator_originals
+ctest --preset originals                               # label originals: comparisons with the originals (writes
+                                                       # nothing; tests/bug-orig/*/*.orig are recorded by the
+                                                       # target bug-orig-record), libs_emulator_originals
                                                        # (the originals against libs/tests/expected),
                                                        # the corpus configuration orig-clib; needs the CD
 ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
@@ -113,7 +114,8 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
      suite keeps expected data in the shared test model (the library
      tests: the pair `KEY [orig]` / `KEY [fixed #N]` in
      `libs/tests/expected`, written by the target `libs-update` with
-     `LIBS_UPDATE_FIX`), the fix-scope check
+     `LIBS_UPDATE_FIX`; the bug-orig tests: `ID.orig` / `ID.expect`, the
+     test keeps `ID.orig` with the fix), the fix-scope check
      (`cmake --build --preset amiga --target fix-scope`) reports every
      other case the branch changes: the agent runs it and names its
      result in its report, the coordinator runs it again before the

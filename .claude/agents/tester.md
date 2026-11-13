@@ -25,9 +25,11 @@ read them first):
   bug it comes out REPRODUCED in `ctest --preset bug-orig` (not BROKEN:
   the original shows the bug); once the bug is fixed it carries the
   header `; @fixed #N` and must come out FIXED in `ctest --preset all`
-  (CLAUDE.md "Original bugs are fixed deliberately", tests/README.md
-  "Fixed tests"). A test that cannot be made deterministic is reported,
-  not weakened.
+  and keeps its `ID.orig` (CLAUDE.md "Original bugs are fixed
+  deliberately", tests/README.md "Fixed tests"). `ID.orig` is written by
+  the target `bug-orig-record` (two agreeing runs), never by a test; a
+  line that legitimately varies is a wildcard behind `# varies: REASON`.
+  A test that cannot be made deterministic is reported, not weakened.
 * Do not change program code; if a test shows a defect, report it.
 * Acceptance: build without warnings, `ctest --preset host`, the tests
   you touched, results of the programs unchanged.

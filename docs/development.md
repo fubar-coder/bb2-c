@@ -96,17 +96,18 @@ A bug not fixed yet keeps its `BUG(orig)` comment and its bug-orig test,
 which comes out REPRODUCED in `ctest --preset bug-orig`. The test is
 judged against `ID.orig`, the recorded observation of the original
 (`ID.expect` is the correct behaviour); no session of the original runs
-in the normal tests. A new test gets its `ID.orig` once from
-`ctest --preset originals -R bug_orig_record_ID` (needs Amiberry and the
-CD), and the file is committed with the test; a recording run
-(`ctest --preset originals`, or `BUGORIG_RECORD=1` for `corpusrun pass` and
-`tedab run`) writes nothing but the `.orig` files and is the only run that
-needs the original compiler and TED (`tests/README.md`, "Recorded
-originals"). A fixed test (`; @fixed #NNN`, also in a TED
-`tests/bug-orig/ted/ID.drv`: no pair there, TED-C under the CD's blitz2
-is judged by the script's expectations alone, FIXED or REGRESSED,
-`tests/README.md` "bug-orig tests of TED") has no `ID.orig`: delete the
-file with the fix.
+in the normal tests. A new test gets its `ID.orig` once from the target
+`bug-orig-record` (`-DBUG_ORIG_RECORD_FILTER=ID`; needs Amiberry and the
+CD; two runs that must agree), and the file is committed with the test;
+the target writes nothing but the `.orig` files. The compare tests
+`bug_orig_record_ID` (`ctest --preset originals`) run the original
+compiler and TED, compare them with the `.orig` files and write nothing
+(`tests/README.md`, "Recorded originals"). A fixed test (`; @fixed #NNN`,
+also in a TED `tests/bug-orig/ted/ID.drv`: no pair there, TED-C under
+the CD's blitz2 is judged by the script's expectations alone, FIXED or
+REGRESSED, `tests/README.md` "bug-orig tests of TED") keeps its
+`ID.orig`: the original's side of the pair (configuring stops if it is
+missing).
 
 The instruction comparison of the acidlibs routines that stay assembler
 (`asmcmp_runerrlib`, `asmcmp_debuglib`, `asmcmp_dhandlerlib`,

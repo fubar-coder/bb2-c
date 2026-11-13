@@ -11,7 +11,7 @@ labels select within them.
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
-| `originals` | everything that compares with the original (label `originals`, in no other preset): the recording runs (`bug_orig_record_ID`: the original's observation of every open bug-orig test into `tests/bug-orig/*/ID.orig`), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
+| `originals` | everything that compares with the original (label `originals`, in no other preset): the compare tests of the recorded originals (`bug_orig_record_ID`: the original's observation of every bug-orig test, open or fixed, against its `tests/bug-orig/*/ID.orig`; they write nothing, the target `bug-orig-record` records), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
 | `coverage` | `all` and the original bugs with the coverage compilers (`coverage/` per test) | as `all` |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
@@ -29,9 +29,10 @@ Contents: [The test model](#the-test-model) ·
 
 The suites that compare program behaviour with an expectation follow one
 model (spec `testing/test-model`; implemented for the library tests
-("Libraries"), the other suites keep their own forms for now: corpus
-`expect/` files with `notes.tsv`, bug-orig `ID.expect`/`ID.orig`, TED
-oracle rows). A test is a list of **cases**; a case is a key, an input
+("Libraries") and the bug-orig tests (`ID.orig` the `[orig]` side,
+`ID.expect` the expected one, [Recorded originals](#recorded-originals)),
+the other suites keep their own forms for now: corpus `expect/` files
+with `notes.tsv`, TED oracle rows). A test is a list of **cases**; a case is a key, an input
 and an expected output, and its verdict is the difference of the actual
 output against the expected one, reported by key. The expected output
 (the **expected data**) is committed with the test; a test only compares
@@ -42,8 +43,9 @@ only against the original (label `originals`), `KEY [fixed #N]` the
 port's behaviour after the fix and runs only against the port (`all`);
 `#N` is the issue. Writing expected data is a separate, deliberate
 operation with a hyphenated build target, reviewed with `git diff`: to
-**record** is to write it from the original (`libs-capture`; it accepts a
-result only if two runs with another memory layout agree), to **update**
+**record** is to write it from the original (`libs-capture`,
+`bug-orig-record`; they accept a result only if two runs with another
+memory layout agree), to **update**
 is to write it from the port (`libs-update`, like `corpus-expect-update`).
 What a record writes is the **recorded original**; the expectation is
 never called "the reference": `ref` means the original program (the
@@ -73,7 +75,7 @@ ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
 ctest --preset bug-orig   # original bugs not fixed yet, known port bugs: fail on purpose
 ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
-ctest --preset originals  # compare with the originals; records tests/bug-orig/*/*.orig
+ctest --preset originals  # compare with the originals (writes no file)
 ```
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
@@ -310,11 +312,16 @@ written by `libs-update` with `LIBS_UPDATE_FIX` in the commit of the fix
 and reviewed with `git diff`. **No scenario dodging:** a fix does not
 change the inputs or the steps of a scenario so that it no longer meets
 the bug (spec `testing/expected-results`). **A fix changes only its own
-cases:** the target `fix-scope` compares `libs/tests/expected` of the
-checkout with its merge base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for
-another base) and reports, with the key, every case added, changed or
-removed that is not a `[fixed #N]` case of an issue named in a
-`Fixes #N` line of the branch's commits, or its paired `[orig]` case. A
+cases:** the target `fix-scope` compares `libs/tests/expected` and the
+bug-orig tests (`tests/bug-orig`, each projected onto cases: one per
+section of `ID.expect` and `ID.orig`, `[fixed #N]` with the header
+`; @fixed #N`; `tools/lib/bugorigcmp`) of the checkout with its merge
+base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for another base) and
+reports, with the key, every case added, changed or removed that is not
+a `[fixed #N]` case of an issue named in a `Fixes #N` line of the
+branch's commits, or its paired `[orig]` case (a bug-orig fix: the
+header added and `ID.expect` changed; tests of new open bugs are
+reported as added cases and reviewed). A
 reported case is no error by itself: it is reviewed and named in the
 commit with its reason, or gets its own issue and `[fixed #M]` case. The
 agent of a fix runs the check and names its result in the report; the
@@ -951,10 +958,11 @@ like `ID.bas` to `testdata/NAME`. The expectation is the correct
 behaviour (from the documentation of the command or the issue), not
 what the original does; the observation of the configurations
 (`.../ID/TAG/observation`) gives its format. Then record the original
-(needs Amiberry and the CD):
-`ctest --preset originals -R bug_orig_record_ID` writes `ID.orig` next
-to `ID.expect`; read it (it is what the original did; a nondeterministic
-line gets a wildcard, [Recorded originals](#recorded-originals)) and
+(needs Amiberry and the CD): `cmake --preset amiga
+-DBUG_ORIG_RECORD_FILTER=ID` and `cmake --build --preset amiga --target
+bug-orig-record` write `ID.orig` next to `ID.expect` from two agreeing
+runs; read it (it is what the original did; a line that varies gets a
+wildcard with its reason, [Recorded originals](#recorded-originals)) and
 commit it with the test. Run
 `ctest --preset bug-orig -R bug_orig_ID`: an open bug comes out
 REPRODUCED (not BROKEN: `ID.orig` shows the bug); check the
@@ -968,52 +976,108 @@ expectation grows by one.
 
 **Recorded originals** (`ID.orig`, next to `ID.bas` / `ID.drv`): the
 observation of the original, committed, so that the tests need no session
-of it. Format: the sections of the observation as above (`[session]`,
-`[compile]`, `[run]`, `[blitz2]`, `[log]`), raw, with a first line `# NOTE`
-that says which original it is (blitz2 1.95 built from `blitz2.s`, or the
-CD's 2.10 for `; @rwe` tests); the TED tests: `[state]` and `[problems]`
-([bug-orig tests of TED](#bug-orig-tests-of-ted)). The normal run judges
-`port` and `clib` against `ID.expect` (FIXED) and `ID.orig` (REPRODUCED,
-else DIFFERS) and checks that `ID.orig` does not meet `ID.expect`
-(BROKEN) before any session. Only the sections of the expectation count,
-as with a live reference. **Recording** is separate and on demand:
-`ctest --preset originals` (one ctest `bug_orig_record_ID` per test, label
-`originals`, which no other preset runs) or `BUGORIG_RECORD=1 corpusrun pass
-build/<preset>/tests/bug-orig/ID.pass` (`tedab run` for TED). It runs
-the original only, writes `ID.orig` and no other file, and judges
-nothing; a line of the program's output that looks like a `[section]`
-header is refused (the file would not read back). Recording is
-deterministic or reported: record twice and compare (`git diff`); an
-observation that varies from run to run is not committed as it is. A line
-of the file that depends on addresses, dates or timing may be edited to
-a wildcard of the expectation's kind (`*` at the end of a line, `...`
-for any number of lines); the lines are matched against the port's
-observation as the lines of an expectation are (`bugorig.h`), so that
-`ID.orig` also judges with the wildcard. When the original is wrong in a
-way that is not the bug, the test is not valid. Fixed tests and port
-regression tests have no `ID.orig`: configuring stops with an error naming the
-stale `ID.orig` of a test with the header `; @fixed #N` (`.bas`) or the
-directive `; @fixed #N` (`.drv`, TED), delete it with the fix
-(`tests/bug-orig/check-fixed-orig.cmake`; ctest `bug_orig_fixed_orig_broken`
-checks the check on a fake tree, `tests/bug-orig/selftest/fixed-orig/`).
-A test without `ID.orig` fails with
-exit status 2 and the hint to record it. The recorded sections are not
-compared with the original again: when the original's behaviour is
-questioned, record again and read the diff.
+of it; in the terms of the shared test model (`docs/testing.md`) the
+`[orig]` value of the test, `ID.expect` the expected value (the
+`[fixed #N]` value once the bug is fixed). Every bug-orig test has one,
+open or fixed; port regression tests have none. Format: the sections of
+the observation as above (`[session]`, `[compile]`, `[run]`, `[blitz2]`,
+`[log]`), raw, with a first line `# NOTE` that says which original it is
+(blitz2 1.95 built from `blitz2.s`, or the CD's 2.10 for `; @rwe`
+tests); the TED tests: `[state]` and `[problems]`
+([bug-orig tests of TED](#bug-orig-tests-of-ted)). The normal run of an
+open test judges `port` and `clib` against `ID.expect` (FIXED) and
+`ID.orig` (REPRODUCED, else DIFFERS); the run of every test, open or
+fixed, first checks that `ID.orig` does not meet `ID.expect` (BROKEN,
+before any session). Only the sections of the expectation count, as with
+a live reference. A test without `ID.orig` fails with exit status 2 and
+the hint to record it.
+
+**Varying lines.** A line that varies from run to run for a reason
+outside the tested behaviour (an address, a time, the way a crash ends)
+is a wildcard line of the expectation's kind (`*` at the end of a line,
+`...` for any number of lines) directly behind a comment line
+`# varies: REASON`; the wildcard covers only that line, and the comment is
+no part of the section. A wildcard line without its reason, or a reason
+without a wildcard line behind it, is an error of the runner (exit status
+2, file and line; `bug_orig_wildcard_noreason`,
+`bug_orig_ted_wildcard_noreason`). The lines are matched against the
+port's observation as the lines of an expectation are (`bugorig.h`, the
+matcher of `tools/lib/bugorigcmp`). Where a whole section varies with the
+memory layout, the test pins the layout (`; @pass mount=BB2|@CD@`, as
+`blitzcoplib-maxslice-zero` does) where that helps, and otherwise gets the
+wildcard with its reason.
+
+**The compare test** `bug_orig_record_ID` (label `originals`, preset
+`originals` only; it needs the CD and the reference builds) runs the
+original alone (pass key `record=check`, `ID-record.pass`) and compares
+its observation with `ID.orig`, wildcard lines included: it fails naming
+the section and the first differing line (`DIFFERS: [run] line 2:
+recorded "...", observed "..."`) and writes no file of the source tree. It
+detects a changed original (another CD) and a recording that is not
+deterministic. `bug_orig_record_changed` and `bug_orig_ted_record_changed`
+check it with a recorded original whose line was changed.
+
+**Recording** is the build target `bug-orig-record` (not ALL, not a
+test; `tests/bug-orig/record.cmake`):
+
+```
+cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=ID1,ID2   # IDs or globs; empty: all
+cmake --build --preset amiga --target bug-orig-record
+git diff tests/bug-orig                                 # review
+```
+
+It runs the original twice per test (`corpusrun pass` / `tedab run` with
+the pass key `record=write`, the observation into the build directory);
+the second run has another memory layout: its Stack is 16384 bytes
+larger (pass key `layout=stack` of corpusrun, `stack=` of tedab), so that
+what the compiler, the program or TED allocate lies elsewhere, and nothing
+else of the run changes. `results bug-orig-accept`
+writes `ID.orig` only if both runs agree; otherwise it reports `test not
+deterministic: ID` with the differing sections and lines and leaves the
+file as it was, and the target fails at the end. The wildcard lines of
+the committed file are kept where both runs match them and reported
+where one does not; a line of the original that would read as a wildcard
+is refused. The tests the filter leaves out are not touched, and a test
+whose runs are skipped (no Amiberry, the reference build of an RWE
+library missing: `ctest --preset originals -R rwe_refbuild`) is reported
+as skipped. The proof of determinism is limited to the memory layout
+(date, time and emulator timing are not varied). The orchestration is tested with fake runs (`bug_orig_record_target`), the
+acceptance with files (`bug_orig_accept`). When the original is wrong in
+a way that is not the bug, the test is not valid.
+
+A **fixed test keeps its `ID.orig`**: configuring stops with an error
+naming a test with the header `; @fixed #N` (`.bas`) or the directive
+`; @fixed #N` (`.drv`, TED) that has none
+(`tests/bug-orig/check-fixed-orig.cmake`; ctest
+`bug_orig_fixed_orig_broken` checks the check on a fake tree,
+`tests/bug-orig/selftest/fixed-orig/`); its compare test
+`bug_orig_record_ID` runs in `originals` as an open test's does, and its
+validity check (BROKEN) in every run (`bug_orig_fixed_equal_broken`,
+`bug_orig_ted_fixed_equal_broken`).
 
 ### Fixed tests
 
 **Fixed tests** (`; @fixed #NNN` in the header of `ID.bas`, NNN the
 issue of the bug; pass key `fixed=NNN`): the bug is fixed in the port.
-The commit that fixes the bug adds the line. The test then has no
-reference session and uses nothing of the CD (no `BB2:` volume, no
+The commit that fixes the bug adds the line and keeps `ID.orig` (the
+`[orig]` side of the pair, compared with the original by
+`bug_orig_record_ID` in `originals`; configuring stops if it is
+missing). The test then has no reference session and uses nothing of
+the CD (no `BB2:` volume, no
 `blitz2:defaultdbug`; a test that needs them names them with
 `; @pass mount=BB2|@CD@` or `; @pass defaultdbug=@CD_BLITZ2@/DEFAULTDBUG`
 and is skipped without the CD); only `clib` (blitz2-c with the C
 libraries, as the port ships) is judged, against the expectation alone:
 FIXED, or REGRESSED (the configuration does not show the expected
-behaviour: the fix is undone). The test passes only when it is FIXED
-(exit status of `corpusrun pass`: 0 FIXED, 1 REGRESSED). ctest `bug_orig_ID`
+behaviour: the fix is undone); before that its `ID.orig` must not meet
+the expectation (BROKEN, as for an open test). The test passes only when it is FIXED
+(exit status of `corpusrun pass`: 0 FIXED, 1 REGRESSED). A test that
+checks a case the original already gets right (the boundary of a fix:
+the longest text that still fits, a word offset that still fits) is no
+fixed test, since its `ID.orig` would meet the expectation (BROKEN), but
+a [port regression test](#port-regression-tests) whose comment names the
+fix (e.g. `regression/compiler-object-index-below`, #939).
+ctest `bug_orig_ID`
 as before, label `emulator` only: it runs in the presets `emulator`
 and `all`, not in `bug-orig`, and it is declared directly, not in the
 order of the bug-orig tests (it passes, ctest learns its cost).
@@ -1103,8 +1167,10 @@ for a crash or hang, `HALT` for a crash that halted the emulated CPU) and the ex
 them); REPRODUCED needs the same observation (the A/B comparison of the
 whole run directories, which a live R5 run allowed, is gone: the
 expectations are what counts). `ID.orig` says OK without a problem: BROKEN
-before any session. Recording: `bug_orig_record_ID` (label `originals`)
-plays R5 only. Made for these tests: `; @file NAME "DATA"` (a file in `work/`,
+before any session. The compare test `bug_orig_record_ID` (label
+`originals`, pass key `record=check`) plays R5 only and compares it with
+`ID.orig`; the target `bug-orig-record` records it (pass key
+`record=write`, two runs, the second with a larger Stack). Made for these tests: `; @file NAME "DATA"` (a file in `work/`,
 `"..."` with `\n`, `\t`, `\xHH`, repeated lines append), `; @source F
 NAME` (that file is loaded), `; @command ARGS` (instead of
 `blitz2:blitz2 FILE`: e.g. `blitz2:ted @FILE@` for TED alone, or with
@@ -1116,14 +1182,15 @@ report `build/<preset>/tests/bug-orig/ID.txt`, the runs in
 `.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
 the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
 out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
-glob, and `ted/ID.orig` from `ctest --preset originals -R
-bug_orig_record_ID`.
+glob, and `ted/ID.orig` from the target `bug-orig-record`
+(`-DBUG_ORIG_RECORD_FILTER=ID`).
 
 **A fixed TED bug-orig test** (`; @fixed #N` in the header of
-`ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1` instead of
-`orig=`): the commit that fixes the bug in TED-C adds the line, deletes
-`ID.orig` (configuring stops on a stale one) and keeps the script's
-expectations, which are the correct behaviour. The test then runs TED-C
+`ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1`): the commit
+that fixes the bug in TED-C adds the line, keeps `ID.orig` (configuring
+stops if it is missing; `orig=` is only checked against the script,
+BROKEN before any session) and keeps the script's expectations, which
+are the correct behaviour. The test then runs TED-C
 only, no session of the original, and is judged by the script's
 expectations alone: FIXED (exit status 0: the run is OK and no
 expectation is missed) or REGRESSED (1: the report says `bug-orig Cc:
@@ -1133,20 +1200,24 @@ lists what is missing). It is two tests: ctest `bug_orig_ID` (label
 runs Cc, TED-C under blitz2-c with the libraries of the build (pass key
 `libs=`), and needs no CD; `bug_orig_ID_originals` (label `originals`)
 runs C5, TED-C under the CD's blitz2 2.10 with the CD's libraries.
-There is no `bug_orig_record_ID` for it. The directive with a pair
+Its compare test `bug_orig_record_ID` (label `originals`) runs R5 as
+an open test's does. The directive with a pair
 (`@fixed #N R5-C5`, the `tests/ted-ab` form) is refused in
 `tests/bug-orig/ted`, and the form without a pair outside it (`tedab`
 parses the scripts of a `bugorig=1` pass in the bug-orig form,
 `bug_orig_ted_lint` too); a `fixed=1` pass over a script without
-`@fixed`, and an `orig=` pass over a fixed one, end with exit status 2
-before any session. Self tests: `bug_orig_ted_fixed_selftest_fixed`
+`@fixed`, and a pass without `fixed=1` over a fixed one, end with exit
+status 2 before any session. Self tests: `bug_orig_ted_fixed_selftest_fixed`
 (an expectation that holds of TED-C: FIXED) and
 `bug_orig_ted_fixed_selftest_regressed` (one that does not: REGRESSED,
 naming the bug; label `emulator`), the refusals
 `bug_orig_ted_fixed_open_script`, `bug_orig_ted_open_fixed_script`,
-`bug_orig_ted_fixed_with_orig`, `bug_orig_ted_fixed_no_bugorig`,
-`bug_orig_ted_no_orig_no_fixed` and `bug_orig_ted_fixed_wrong_lint`
-(scripts of `selftest/ted-fixed-wrong/`: a pair, twice, no `#`; host); the
+`bug_orig_ted_fixed_with_record`, `bug_orig_ted_fixed_no_bugorig`,
+`bug_orig_ted_no_orig_no_fixed`, `bug_orig_ted_record_no_to`,
+`bug_orig_ted_record_bad` and `bug_orig_ted_fixed_wrong_lint`
+(scripts of `selftest/ted-fixed-wrong/`: a pair, twice, no `#`; host),
+`bug_orig_ted_fixed_equal_broken` (a fixed test whose `ID.orig` says OK:
+BROKEN; host); the
 verdicts in the host test `tedab_bugorig_verdict` ("fixed bug-orig test"
 case of `tests/ted-ab/host/test_tedab.cpp`).
 
