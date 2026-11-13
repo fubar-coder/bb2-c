@@ -1,4 +1,4 @@
-; t111_tracker - trackerlib: LoadModule (NoiseTracker module from the CD),
+; t111_tracker - trackerlib: LoadModule (NoiseTracker module from the build),
 ; PlayModule (mt_init clears the first long of every sample, filter off;
 ; mt_music then runs in the vertical blank interrupt), StopModule, freeing
 ; a playing module by loading another one.  Audio output is not checked;
@@ -21,7 +21,7 @@ Statement silence{d.l,l.l}
   Next
   For a.l=d+1084+(mx+1)*1024 To d+l-1 : Poke.b a,0 : Next
 End Statement
-f$="BB2:bum9a/bum9examples2/hyperhelp/hhmusic.mus"
+f$="CORPUS:data/t111_song.mod"
 LoadModule 0,f$
 m=Addr Module(0)
 d=Peek.l(m) : l=Peek.l(m+4)

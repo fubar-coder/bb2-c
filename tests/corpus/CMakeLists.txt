@@ -35,14 +35,59 @@ foreach(dir tests tests-runerr tests-req tests-serial)
 	endforeach()
 endforeach()
 add_custom_target(corpus_sources ALL DEPENDS ${corpus_tokenised})
+
+# ------------------------------------------------------------ the data
+# The files the programs load (sounds, modules): data/NAME.spec -> data/NAME
+# in the build directory (mktestdata), staged by the passes corpus and
+# corpus_runerr as CORPUS:data/NAME (corpus_pass DATA).  Every
+# CORPUS:data/NAME a source names has its description and every
+# description is used (check-data.cmake, at configure time).
+include(${CMAKE_CURRENT_SOURCE_DIR}/check-data.cmake)
+corpus_data_check(${CMAKE_CURRENT_SOURCE_DIR})
+set(CORPUS_DATA ${CMAKE_CURRENT_BINARY_DIR}/data)
+set(corpus_data_files)
+file(GLOB specs CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/*.spec)
+foreach(spec IN LISTS specs)
+	get_filename_component(name ${spec} NAME)
+	string(REGEX REPLACE "\\.spec$" "" name "${name}")
+	set(out ${CORPUS_DATA}/${name})
+	add_custom_command(OUTPUT ${out}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CORPUS_DATA}
+		COMMAND ${MKTESTDATA} ${spec} ${out}
+		DEPENDS ${spec} ${MKTESTDATA} host_tools
+		COMMENT "Generating corpus data ${name}"
+		VERBATIM)
+	list(APPEND corpus_data_files ${out})
+endforeach()
+add_custom_target(corpus_data ALL DEPENDS ${corpus_data_files})
+add_dependencies(corpus_sources corpus_data)
+# the check with fake trees: a source naming a file without a description,
+# a description no source names, and a tree where both agree
+foreach(t source spec ok)
+	if(t STREQUAL "ok")
+		set(test corpus_data_ok)
+	else()
+		set(test corpus_data_broken_${t})
+	endif()
+	add_test(NAME ${test} COMMAND ${CMAKE_COMMAND}
+		-DROOT=${CMAKE_CURRENT_SOURCE_DIR}/selftest/data-${t}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/check-data.cmake)
+endforeach()
+set_tests_properties(corpus_data_broken_source PROPERTIES
+	PASS_REGULAR_EXPRESSION "t1_missing\\.bas:[ \n]+CORPUS:data/missing\\.med[ \n]+has[ \n]+no[ \n]+description"
+	FAIL_REGULAR_EXPRESSION "used\\.8svx")
+set_tests_properties(corpus_data_broken_spec PROPERTIES
+	PASS_REGULAR_EXPRESSION "unused\\.8svx\\.spec:[ \n]+no[ \n]+corpus[ \n]+source[ \n]+names[ \n]+CORPUS:data/unused\\.8svx")
+set_tests_properties(corpus_data_ok PROPERTIES
+	PASS_REGULAR_EXPRESSION "the sources of [^\n]*data-ok and their data agree")
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 
 # ---------------------------------------------------------- the passes
 # Every pass runs twice, as two ctest tests with their own pass files:
 #
-#   NAME           (ctest --preset all, also without the CD where the programs
-#                  allow) the configurations clib = blitz2-c with the C
+#   NAME           (ctest --preset all, also without the CD) the
+#                  configurations clib = blitz2-c with the C
 #                  libraries of this build and, with a prev build (BLITZ2_PREV,
 #                  cmake/prev.cmake), prev = the compiler and libraries of the
 #                  previous commit (its executable must be the one clib
@@ -84,7 +129,8 @@ set(REF_BLITZ2 ${CD_BLITZ2}/BLITZ2)
 set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
-#             [SERIAL_SAME_AS PASS] SOURCES FILES...): the pass files + ctest
+#             [SERIAL_SAME_AS PASS] SOURCES FILES... [DATA FILES...]): the
+#             pass files + ctest
 #   RUNTIME_ERRORS  runtime error checking on (else off)
 #   SERIAL          a remote end on the host for the serial port
 #                   (runner/serial.h)
@@ -93,9 +139,11 @@ set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 #   GATE            run first; the programs only if it returns 0
 #   SERIAL_SAME_AS  what the reference sent over the serial port must equal
 #                   that of pass PASS (run after it; the originals only)
+#   DATA            generated files staged as CORPUS:data/NAME (the data
+#                   the programs load, above)
 function(corpus_pass name)
 	cmake_parse_arguments(PARSE_ARGV 1 arg "RUNTIME_ERRORS;SERIAL" "LAUNCHER;GATE;SERIAL_SAME_AS"
-		"SOURCES")
+		"SOURCES;DATA")
 	set(runtime_errors off)
 	set(serial off)
 	if(arg_RUNTIME_ERRORS)
@@ -154,8 +202,10 @@ function(corpus_pass name)
 		# be the file that applies to it (targets corpus-expect-record and
 		# corpus-expect-update)
 		string(APPEND text "expect_dir=${CORPUS_EXPECT}/${name}\n")
-		# BB2: the CD - the tests load sounds and modules from it
-		string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n")
+		foreach(f IN LISTS arg_DATA)
+			get_filename_component(n ${f} NAME)
+			string(APPEND text "file=data/${n}|${f}\n")
+		endforeach()
 		foreach(s IN LISTS arg_SOURCES)
 			string(APPEND text "source=${s}\n")
 		endforeach()
@@ -184,7 +234,7 @@ function(corpus_pass name)
 endfunction()
 
 # without runtime error checking: the programs of tests/
-corpus_pass(corpus LAUNCHER reqtrap SOURCES ${corpus_tests})
+corpus_pass(corpus LAUNCHER reqtrap SOURCES ${corpus_tests} DATA ${corpus_data_files})
 # the TED A/B tests (tests/ted-ab) use its executables and defaults.xtra:
 # ted_ab those of the clib run (fixture corpus), ted_ab_originals those of
 # the ref run (fixture corpus_originals)
@@ -193,7 +243,7 @@ set_tests_properties(corpus_originals PROPERTIES FIXTURES_SETUP corpus_originals
 # with runtime error checking: tests/ and the programs that trigger runtime
 # errors on purpose (tests-runerr/, they would crash without the checks)
 corpus_pass(corpus_runerr RUNTIME_ERRORS LAUNCHER reqtrap
-	SOURCES ${corpus_tests} ${corpus_tests-runerr})
+	SOURCES ${corpus_tests} ${corpus_tests-runerr} DATA ${corpus_data_files})
 # requester tests: programs that call blocking requesters run through
 # reqclose (the programs say in ENV:REQCLOSE what to answer), behind the
 # gate reqclosetest (if the closer does not work, they would block)

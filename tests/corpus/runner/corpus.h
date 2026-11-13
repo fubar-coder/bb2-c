@@ -85,13 +85,13 @@
  *                     error checking off/on); if that file is missing, only
  *                     noted
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
- *                     CD, where the tests load sounds and modules from),
- *                     any number
+ *                     CD), any number
  *   file=DEST|SRC[|TAG]
  *                     SRC copied to CORPUS:DEST (DEST relative, parent
  *                     directories made), after the files above: replaces
  *                     one of them (e.g. blitz2/deflibs) or adds one (a
- *                     library in blitz2/userlibs/DIR/), any number; with
+ *                     library in blitz2/userlibs/DIR/, a file the programs
+ *                     load in data/), any number; with
  *                     TAG only for that configuration (e.g. the reference
  *                     of a library for ref, its C build for the others)
  *   dir=DEST          an empty directory CORPUS:DEST, any number

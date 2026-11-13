@@ -1,6 +1,6 @@
 ; t110_audio - audiolib: InitSound, SoundData, PeekSound, Sound, LoopSound,
 ; Volume, Filter, SetPeriod, DecodeSound (8SVX built in memory), LoadSound
-; (8SVX from the CD), the Sound objects' fields.  Audio output is not
+; (8SVX from the build), the Sound objects' fields.  Audio output is not
 ; checked (write-only hardware); Sound/LoopSound only wait for the beam.
 ; Sounds are played with zero data or volume 0 (nothing audible).
 ; DiskPlay is not used: it waits for audio interrupts.
@@ -73,11 +73,11 @@ For i=0 To 7 : Poke.b a+56+i,100-i : Next
 DecodeSound 4,a
 info{4}
 NPrint "decoded 4 cks ",Hex$(cks{Peek.l(Addr Sound(4)),8})
-; LoadSound from the CD (IFF 8SVX through iffiolib)
-LoadSound 5,"BB2:blitz2_pddisk_3/turbohockey/bounce"
+; LoadSound of two generated files (IFF 8SVX through iffiolib)
+LoadSound 5,"CORPUS:data/t110_bounce.8svx"
 info{5}
 NPrint "loaded cks ",Hex$(cks{Peek.l(Addr Sound(5)),Peek.w(Addr Sound(5)+6)*2})
-LoadSound 5,"BB2:bum9b/bum9examples1/usergame/ballblitz/data/hitwall"
+LoadSound 5,"CORPUS:data/t110_hitwall.8svx"
 info{5}
 NPrint "loaded cks ",Hex$(cks{Peek.l(Addr Sound(5)),Peek.w(Addr Sound(5)+6)*2})
 Sound 5,15,0,0,0,0

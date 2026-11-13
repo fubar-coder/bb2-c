@@ -1,8 +1,8 @@
-loaded -1 len 7646 id 4D2E4B2E
-song len 8 restart 127 cks 007D5DE0
-silenced cks 0007F26D
-playing cks 0007F26D filter 2
-stopped cks 0007F26D
-reloaded -1 len 7646 cks 007D5DE0
+loaded -1 len 3340 id 4D2E4B2E
+song len 8 restart 127 cks 00CDA7F2
+silenced cks 00450F11
+playing cks 00450F11 filter 2
+stopped cks 00450F11
+reloaded -1 len 3340 cks 00CDA7F2
 end
 rc=0

@@ -1,4 +1,4 @@
-; t112_med - medlib: LoadMedModule (MMD0 from the CD), StartMedModule
+; t112_med - medlib: LoadMedModule (MMD0 from the build), StartMedModule
 ; (relocation "MMD0" -> "RMD0"), PlayMed called for every timing pulse
 ; (no interrupt: the program drives the player), GetMedNote/GetMedInstr/
 ; GetMedVolume (read and clear), JumpMed, SetMedVolume, SetMedMask,
@@ -38,7 +38,7 @@ Statement play{t$,n.l}
   Next
   NPrint t$," sum ",Hex$(c)
 End Statement
-f$="BB2:examples/amigamode/lambada.med"
+f$="CORPUS:data/t112_song.med"
 LoadMedModule 0,f$
 o=Addr MedModule(0)
 d=Peek.l(o+8) : l=Peek.l(o+4)

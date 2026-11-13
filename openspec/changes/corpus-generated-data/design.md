@@ -186,3 +186,48 @@ no source names) and one on the correct tree.
   recordings, not as differences.
 - Without the CD the recording cannot be redone; whoever changes a
   description records again with the CD (as for every corpus program).
+
+## Findings (implementation)
+
+- **Ticks per line 2, not 6 (D2).** `GetMedNote`/`GetMedInstr`/
+  `GetMedVolume` read and clear (`medlib.c:1913-1945`) and `play{}` calls
+  them on every pulse, so a printed row (every 6th pulse, `k MOD 6 = 1`)
+  shows notes only if that pulse starts a new line. `StartMedModule` sets
+  the counter to `tempo2`, so pulse 1 of `a` and `d` starts a line; after
+  `a` the counter is `399 MOD tempo2`. With 6 ticks per line that is 3:
+  the new lines of `j`, `v` and `m` fall on the pulses 3, 9, 15, ..., and
+  every printed row of these phases is empty whatever the module holds
+  (that is why the CD module's `j`, `v` and `m` rows were all
+  `--------`). The phases print notes only with a `tempo2` that divides
+  400 and 60 and makes every 6th pulse a new line: 1 or 2. The module has
+  2 (every printed row is a new line; `a` crosses 200 lines). The
+  program's logic is not changed (task 3.1).
+- **Song length 8 (`0 1 2 3 1 0 3 2`), not 6.** With 2 ticks per line
+  `a` plays 200 lines; a song of 6 positions x 32 lines (192 lines) would
+  end `a` back at block 0 line 8, close to the start. With 8 positions
+  `pos block` after `a` is block 3 line 8 position 6, after `j` block 2
+  line 29 position 2.
+- **Notes on every line** (track 1 empty on the lines 2, 6, 10, ...), not
+  only the first twelve: the phases `v` and `m` play lines 29 to 31 of
+  block 2, block 3 and the start of block 1. The 128 note rows make the
+  description 205 lines; they are regular (one line per row, the rule in
+  the header comment), so `rep`/`endrep` (D3) would not make it shorter
+  and was not added.
+- **JumpMed plays one line of the old block first.** `JumpMed 3` sets
+  position 2 and line 0, but the next `newline()` still reads the block
+  of the current position before `nextline()` changes it
+  (`medlib.c:1889-1895`, `1326-1340`): the first row of `j` is line 0 of
+  block 3 (the block of position 6), the next ones are block 2. The
+  original does the same (the recording is the original's); this is the
+  player's design (the jump takes effect at the end of the line), noted
+  here, not reported as a bug.
+- **`SetMedMask 5` shows #334.** In `m` channel 2 prints the notes of
+  track 1 (its instrument and volume), channel 0 its own, channels 1 and
+  3 nothing: the masked track 1 is skipped before its note is read
+  (`BUG(orig) (#334)`, `medlib.c:1158`). The corpus output now covers that
+  bug; its fix will make `t112_med` a pair (`NAME.orig.out` /
+  `NAME.fixed-334.out`) in both passes.
+- **The throwaway run (task 1.4)** with `ref` and `clib` on the three
+  programs gave the same output byte for byte; the recording
+  (`corpus-expect-record`, both passes) accepted all six (no "not
+  deterministic"), and its files equal that run's.
