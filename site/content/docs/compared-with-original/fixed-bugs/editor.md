@@ -147,7 +147,9 @@ and `e`.
 Without tokenising, BLOCK TO DISK and COPY take the whole block, and
 BLOCK TO DISK and PRINT write every line as it is: the saved block holds
 `a$="Größe":NPrint a$` and `; Größe`, and the printout shows `; Größe`.
-With "Tokenise" on, as under blitz2, the commands work as before.
+With "Tokenise" on, as under blitz2, the commands work as in the original;
+how PRINT handles the umlauts there is described in
+[PRINT sent umlauts to the printer as control characters](#print-umlauts).
 
 Issues: [a character of 128 or more ended the block in BLOCK TO DISK and COPY (#362)](https://github.com/fubar-coder/bb2-c/issues/362),
 [BLOCK TO DISK wrote such characters of the middle lines as keyword names (#354)](https://github.com/fubar-coder/bb2-c/issues/354),
@@ -294,6 +296,59 @@ the same number
 ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
 
 Issue: [Latin-1 characters in strings and comments (#1018)](https://github.com/fubar-coder/bb2-c/issues/1018).
+
+### PRINT sent umlauts to the printer as control characters {#print-umlauts}
+
+With "Tokenise" on, as under blitz2, the editor keeps the umlauts
+ä ö ü Ä Ö Ü that you type or load as six codes of their own, 26 to 31
+(ä 26, ö 27, ü 28, Ä 29, Ö 30, Ü 31). The screen shows them as the
+umlauts, and the compiler turns them back into the Latin-1 umlauts in
+strings. The original PRINT did not: it sent the codes to the printer as
+they are, and these are control characters. Code 27, the ö, is ESC, so
+the printer took it and the characters after it as the start of an
+escape sequence, which swallowed or changed the text behind it. The
+other codes printed nothing or garbage, depending on the printer. Every
+printout of a source with umlauts was affected.
+
+**What happened**
+
+Under blitz2, print a source with the two lines
+
+```
+a$="Köln"
+; äöüÄÖÜ
+```
+
+The original sends these bytes to the printer (control characters
+written in angle brackets):
+
+```
+a$="K<ESC>ln"
+; <SUB><ESC><FS><GS><RS><US>
+```
+
+In the first line, the ö is missing, and the printer takes `<ESC>l`
+and what follows for an escape sequence, so the rest of the line may
+be swallowed or changed. In the second line, none of the six umlauts
+is printed.
+
+**With the port**
+
+PRINT sends the Latin-1 umlauts, the same bytes a text save writes:
+
+```
+a$="Köln"
+; äöüÄÖÜ
+```
+
+This holds everywhere in the line, in strings, in comments and behind
+keywords, with "Tokenise" on and off. Keywords are printed in bold, as
+in the original. Nothing in your sources needs to change: the editor
+stores the umlauts in the same way as the original, and only the
+printout differs. Printing without tokenising is described in
+[Accented letters broke saved blocks, copied blocks and printouts](#latin1-without-tokenise).
+
+Issue: [PRINT sent the umlaut codes 26-31 to the printer as they are: ö is ESC (#1017)](https://github.com/fubar-coder/bb2-c/issues/1017).
 
 ## Options and screen
 
