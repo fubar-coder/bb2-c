@@ -148,7 +148,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 4. blitz2-c: the compiler
 
-- [ ] 4.1 Fix what the audit (1.4) found: string readers that do not give
+- [x] 4.1 Fix what the audit (1.4) found: string readers that do not give
   the byte `cc`, the length count of a literal in a quoted constant
   (`ab3chr.c:52`), a literal outside a string gives an error and no code
   (design D3, D5). Verify: tests of every reader with `tedstub` or
