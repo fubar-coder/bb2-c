@@ -33,8 +33,10 @@ add_custom_target(ted_ab_expect ALL DEPENDS ${ted_ab_tokenised})
 #   ted_ab            (label emulator, preset all) TED-C under blitz2-c with
 #                     the port's libraries (combination Cc; Pc on top with
 #                     the prev build, the previous commit's TED, compiler and
-#                     libraries, compared with Cc), judged by the scripts'
-#                     expectations; the T sources, the expectations "corpus"
+#                     libraries, compared with Cc; its @expect corpus is the
+#                     executable of the corpus run with the prev build),
+#                     judged by the scripts' expectations; the T sources,
+#                     the expectations "corpus"
 #                     and the default .xtra come from the clib run of ctest
 #                     corpus (a fixture, ctest runs it first).  Needs no CD:
 #                     without it the scripts that read it (@source K,
@@ -54,6 +56,7 @@ if(PREV_REQUESTED)
 	string(APPEND ted_ab_combos ",Pc")
 	string(CONCAT ted_ab_prev "ted_prev=${PREV_BLITZ2_DIR}/ted\n"
 		"blitz2_prev=${PREV_BLITZ2_DIR}/blitz2\nlibs_prev=${PREV_BLITZ2_DIR}\n"
+		"corpus_out_prev=${CMAKE_BINARY_DIR}/tests/corpus/corpus/prev/vol/out\n"
 		"${PREV_INTENDED_LINES}")
 endif()
 set(TED_AB_FILTER "" CACHE STRING "ted_ab: only these tests (globs, comma separated)")

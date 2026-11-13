@@ -245,6 +245,8 @@ struct tedab_sources {
     const char *corpus_out;     /* corpus: the executables of the corpus ref run */
     const char *cd;             /* cd */
     const char *oracle;         /* tedsave: the TED oracle manifest */
+    const char *corpus_out_prev; /* corpus, combinations P5 and Pc: the executables of the
+                                    corpus run with the prev build (NULL: corpus_out) */
 };
 /* the expectations of test t in run directory rundir; returns the number of
    problems (report lines to out) */

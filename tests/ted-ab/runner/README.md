@@ -165,7 +165,10 @@ the keys are described in the header of `run.c` (directories of the
 scripts, sources and the CD, the programs of the combinations, `filter=`,
 `combos=`, `timeout=`, `parallel=`, `intended=` of the prev build,
 `bugorig=`, `orig=` ...). With `libs=DIR` the libraries come from `DIR`
-instead of the CD (`libs_prev=` for Pc) and the CD is optional: without
+instead of the CD (`libs_prev=` for Pc; `corpus_out_prev=` is the corpus run
+with the prev build, with which Pc and P5 compare `@expect corpus`, so
+an intended change of a library shows in the pair comparison only) and the
+CD is optional: without
 it the scripts that read it (`@source K`, `@expect cd`) are left out,
 `NAME: NOCD` in the report. The scripts are described in `tedab.h` and
 `tests/README.md` ("TED A/B"). `run` writes below `work=` one directory

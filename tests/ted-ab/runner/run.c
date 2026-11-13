@@ -20,6 +20,9 @@
  *   corpus_out=DIR     the corpus ref run's results: its executables
  *                      (@expect corpus) and defaults.xtra (@xtra norunerr
  *                      without the source's own .xtra)
+ *   corpus_out_prev=DIR  the same of the corpus run with the prev build: the
+ *                      combinations P5 and Pc compare their executables
+ *                      (@expect corpus) with it (default corpus_out)
  *   expect_dir=DIR     the scripts' NAME.expect tokenised (NAME.expect.bb2)
  *   cd=DIR             the CD (@source K, @expect cd, the libraries)
  *   libs=DIR           the libraries (deflibs, acidlibs and, if DIR has
@@ -110,7 +113,8 @@
 static const char *me;          /* "tedab run" or "tedab lint", the prefix of the messages */
 
 struct pass {
-    char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out;
+    char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out,
+         *corpus_out_prev;
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
@@ -155,6 +159,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "work", &P.work }, { "report", &P.report }, { "scripts", &P.scripts },
         { "filter", &P.filter }, { "combos", &P.combos }, { "src", &P.src },
         { "corpus_src", &P.corpus_src }, { "corpus_out", &P.corpus_out },
+        { "corpus_out_prev", &P.corpus_out_prev },
         { "expect_dir", &P.expect_dir }, { "cd", &P.cd }, { "oracle", &P.oracle },
         { "fonts", &P.fonts }, { "teddrive", &P.teddrive }, { "teddrivetest", &P.teddrivetest },
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
@@ -797,7 +802,8 @@ static void observe(const struct tedab_test *t, const struct run *r, char *state
                     struct text *problems)
 {
     char *staged = str_printf("%s/staged/%s/%s", P.work, t->name, t->file ? t->file : "");
-    struct tedab_sources src = { "-", staged, P.expect_dir, P.corpus_out, P.cd, P.oracle };
+    struct tedab_sources src = { "-", staged, P.expect_dir, P.corpus_out, P.cd, P.oracle,
+                                P.corpus_out_prev };
 
     state_text(r, state, slen);
     tedab_check_expects(t, r->dir, &src, problems);
@@ -1264,7 +1270,8 @@ static int run(FILE *log)
                     char *staged = str_printf("%s/staged/%s/%s", P.work, tests[i].name,
                                               tests[i].file ? tests[i].file : "");
                     struct tedab_sources src = { tedab_combo_names[cc], staged, P.expect_dir,
-                                                 P.corpus_out, P.cd, P.oracle };
+                                                 P.corpus_out, P.cd, P.oracle,
+                                                 P.corpus_out_prev };
 
                     if (tedab_check_expects(&tests[i], r->dir, &src, &exp))
                         st = "FAIL (expectations)";     /* a result OK alone is no pass */

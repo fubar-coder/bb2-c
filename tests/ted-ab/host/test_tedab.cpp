@@ -627,7 +627,7 @@ TEST_CASE("bug-orig expectations", "[bugorig]")
     put("out/stdout", "inject: rc=0\nrc=0\n");
     put("out/log", "step 1\n");
     put("out/joined.txt", "  0 |a=1.loop  \xc2\xb7\xc2\xb7loop\n");
-    tedab_sources src = { "R5", nullptr, nullptr, nullptr, nullptr, nullptr };
+    tedab_sources src = { "R5", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
     auto check = [&](const char *script, std::string *rep = nullptr) {
         Test t(script);
         REQUIRE(t.rc == 0);
@@ -667,6 +667,65 @@ TEST_CASE("bug-orig expectations", "[bugorig]")
         remove((d + "/" + f).c_str());
     rmdir((d + "/work").c_str());
     rmdir((d + "/out").c_str());
+    rmdir(dir);
+}
+
+TEST_CASE("expectation corpus: the prev combinations use the prev corpus output", "[test]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string d(dir);
+    for (const char *s : { "/work", "/out", "/cur", "/prev" })
+        mkdir((d + s).c_str(), 0755);
+    auto put = [&](const std::string &name, const std::string &data) {
+        FILE *f = fopen((d + "/" + name).c_str(), "wb");
+        fwrite(data.data(), 1, data.size(), f);
+        fclose(f);
+    };
+    // the corpus' executable of this build and of the prev build differ
+    // (an intended change of a library); each combination built its own
+    put("cur/t", "current");
+    put("prev/t", "previous");
+    put("work/t", "current");
+    Test t("; @source none\n; @expect corpus t t\n");
+    REQUIRE(t.rc == 0);
+    auto check = [&](const char *combo, bool with_prev, std::string *rep = nullptr) {
+        std::string cur = d + "/cur", prev = d + "/prev";
+        tedab_sources src = { combo, nullptr, nullptr, cur.c_str(), nullptr, nullptr,
+                              with_prev ? prev.c_str() : nullptr };
+        text out = {};
+        int n = tedab_check_expects(&t.t, dir, &src, &out);
+        if (rep)
+            *rep = out.p ? out.p : "";
+        free(out.p);
+        return n;
+    };
+    std::string rep;
+
+    // the combinations of this build: the current corpus output
+    CHECK(check("Cc", true) == 0);
+    CHECK(check("Cc", false) == 0);
+    // Pc with the previous commit's executable: the prev output, though it
+    // differs from the current one
+    put("work/t", "previous");
+    CHECK(check("Pc", true) == 0);
+    CHECK(check("P5", true) == 0);
+    // broken on purpose: a prev executable that is not the prev corpus
+    // output, a current executable that is the prev one
+    put("work/t", "something else");
+    CHECK(check("Pc", true, &rep) == 1);
+    CHECK(rep == "  Pc expect: t differs from the expected contents (corpus)\n");
+    CHECK(check("P5", true) == 1);
+    CHECK(check("Cc", true) == 1);
+    // without corpus_out_prev the current output is the reference
+    put("work/t", "previous");
+    CHECK(check("Pc", false) == 1);
+    put("work/t", "current");
+    CHECK(check("Pc", false) == 0);
+    for (const char *f : { "work/t", "cur/t", "prev/t" })
+        remove((d + "/" + f).c_str());
+    for (const char *s : { "/work", "/out", "/cur", "/prev" })
+        rmdir((d + s).c_str());
     rmdir(dir);
 }
 

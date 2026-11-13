@@ -1726,7 +1726,14 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
             wanted = 1;
             bad = !want;
         } else if (!strcmp(e->kind, "corpus")) {
-            char *q = str_printf("%s/%s", src->corpus_out, e->b);
+            /* the prev combinations carry the previous commit's libraries:
+               their executable is compared with what the corpus made with
+               them, so an intended change of a library shows in the pair
+               comparison (PREV_INTENDED) and not here */
+            int prev = src->corpus_out_prev && src->combo
+                       && (!strcmp(src->combo, tedab_combo_names[TEDAB_P5])
+                           || !strcmp(src->combo, tedab_combo_names[TEDAB_PC]));
+            char *q = str_printf("%s/%s", prev ? src->corpus_out_prev : src->corpus_out, e->b);
 
             want = q ? read_file(q, &wlen) : NULL;
             free(q);
