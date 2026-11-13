@@ -720,9 +720,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   (OpenSpec change `bug-orig-test-model`: the record test only compares,
   the target `bug-orig-record` accepts only agreeing runs, varying lines
   are wildcards behind `# varies: REASON`, a fixed test keeps its
-  `ID.orig`, fix-scope covers `tests/bug-orig`). Open:
-  * corpus (planned: OpenSpec change `corpus-test-model`): the `notes.tsv` rows become `[orig]`/`[fixed #N]` cases; both
-    then get the fix-scope check without a second tool;
+  `ID.orig`, fix-scope covers `tests/bug-orig`) and the corpus (OpenSpec
+  change `corpus-test-model`, 2026-11-13: the notes rows of
+  `tests/corpus/notes.tsv` are the pairs `NAME.orig.out` /
+  `NAME.fixed-N.out` and `NAME.orig.exe` / `NAME.fixed-N.exe` in
+  `tests/corpus/expect`, the target `corpus-expect-record` accepts only
+  agreeing runs, `corpus-expect-update` makes a pair only with
+  `CORPUS_UPDATE_FIX`, fix-scope covers `tests/corpus/expect`). Open:
   * pure compute libraries: explicit setup/act/verify asserts instead of
     captured values;
   * a cheaper writer for block observations (`libs/tests/capture.c`,
