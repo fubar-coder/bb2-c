@@ -14,6 +14,9 @@
 #                 directory), e.g. in the userlibs directory of a variant
 #   CHECK FILES   in the same step: its number is in none of FILES (the
 #                 acidlibs and deflibs it is loaded with; blitzlib numbers)
+#   ALLOW33       the library may have the number 33, which is reserved for
+#                 literallib (#1018): RIDosLib of the RWE variants
+#                 (blitzlib check/numbers --allow-33)
 #   CMDREF G/N    in the same step: the command table of the library
 #                 (blitzlib cmdref, CMDREF_DIR/G/N.json) equals the committed
 #                 site/data/libraries/G/N.json, the data of the website's
@@ -75,7 +78,7 @@ set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/blitzlib/cmdref-check.cmake)
 cmake_path(NORMAL_PATH CMDREF_CHECK)
 
 function(blitz_library name)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ;CMDREF;OPTIMIZE" "CHECK")
+	cmake_parse_arguments(PARSE_ARGV 1 arg "ALLOW33" "VARIANT;OBJ;CMDREF;OPTIMIZE" "CHECK")
 	if(NOT arg_OPTIMIZE)
 		set(arg_OPTIMIZE size)
 	endif()
@@ -104,8 +107,14 @@ function(blitz_library name)
 		file(MAKE_DIRECTORY ${dir})
 	endif()
 	set(check)
+	set(allow33)
+	set(allow33_numbers)
+	if(arg_ALLOW33)
+		set(allow33 --allow-33)
+		set(allow33_numbers --allow-33 ${obj})
+	endif()
 	if(arg_CHECK)
-		set(check COMMAND ${BLITZLIB} numbers ${obj} ${arg_CHECK})
+		set(check COMMAND ${BLITZLIB} numbers ${allow33_numbers} ${obj} ${arg_CHECK})
 	endif()
 	set(cmdref)
 	set(cmdref_files)
@@ -137,7 +146,7 @@ function(blitz_library name)
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
 			-o ${linked}
 		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
-		COMMAND ${BLITZLIB} check ${obj}
+		COMMAND ${BLITZLIB} check ${allow33} ${obj}
 		${check}
 		${cmdref}
 		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIB} ${arg_CHECK} ${cmdref_deps} host_tools

@@ -5,14 +5,16 @@
  *
  *   blitzlib join OUT LIB.obj...
  *   blitzlib extract BIGLIB NUMBER|LIB.obj OUT
- *   blitzlib numbers FILE...
+ *   blitzlib numbers [--allow-33 FILE]... FILE...
  *
  * join: every input must be a well-formed AmigaDOS load file (lib/hunk).
  * extract: the library with that number (or the number of LIB.obj, e.g.
  * the original of a library built here) as a file of its own.
  * numbers: no two libraries of the FILEs (BigLib or library files, e.g.
  * acidlibs, deflibs and the userlibs of a variant) with the same number;
- * exit status 1 with both named if there are.
+ * exit status 1 with both named if there are; and none with a reserved
+ * number (32, 33 other than literallib unless --allow-33 names its file;
+ * #1018).
  */
 #include <errno.h>
 #include <stdlib.h>
@@ -157,7 +159,7 @@ static int grow(struct biglib_entry **all, int **from, int **index, size_t n)
 }
 
 /* the libraries of FILES (BigLib or library files) with the same number */
-static int check(int n, const char *const *files)
+static int check(int n, const char *const *files, const std::vector<std::string> &allow33)
 {
     struct biglib_entry *all = NULL, *e;
     size_t nall = 0, ne, k, earlier;
@@ -195,6 +197,19 @@ static int check(int n, const char *const *files)
             index[nall++] = (int)k + 1;
         }
         free(e);
+    }
+    /* the reserved numbers 32 and 33 (#1018): a library 33 of a file
+       --allow-33 names is allowed */
+    for (k = 0; k < nall; k++) {
+        char what[600];
+        int allowed = 0;
+
+        for (const std::string &a : allow33)
+            if (a == files[from[k]])
+                allowed = 1;
+        snprintf(what, sizeof what, "%s (library %d)", files[from[k]], index[k]);
+        if (check_reserved(me, all[k].data, all[k].size, what, allowed))
+            goto done;
     }
     if ((c = biglib_clash(all, nall, &earlier)) >= 0) {
         unsigned num = 0;
@@ -277,15 +292,21 @@ void cmd_extract(CLI::App &app, int &status)
 void cmd_numbers(CLI::App &app, int &status)
 {
     auto files = std::make_shared<std::vector<std::string>>();
+    auto allow = std::make_shared<std::vector<std::string>>();
     CLI::App *sub = app.add_subcommand("numbers", "no library number twice in the FILEs (BigLib or library files)");
     sub->add_option("FILE", *files, "BigLib or library files")->required();
-    sub->footer("Exit status 0, 1 a library number is twice (both named) or a FILE cannot be read "
+    sub->add_option("--allow-33", *allow,
+                    "a FILE whose library 33 is allowed although it is not literallib (RIDosLib "
+                    "in the RWE variants)")->type_name("FILE")->expected(1)->allow_extra_args(false);
+    sub->footer("Library 32 and a library 33 other than literallib (the literal characters, "
+                "#1018) are refused, but the library 33 of a FILE named by --allow-33. Exit status "
+                "0, 1 a library number is twice (both named) or reserved, or a FILE cannot be read "
                 "or is no BigLib or library file, 2 usage error.");
-    sub->callback([sub, files, &status] {
+    sub->callback([sub, files, allow, &status] {
         const std::string name = cli::name(*sub);
         std::vector<const char *> v = c_strings(*files);
 
         me = name.c_str();
-        status = check((int)files->size(), v.data());
+        status = check((int)files->size(), v.data(), *allow);
     });
 }

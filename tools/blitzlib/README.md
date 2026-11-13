@@ -94,14 +94,21 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
+          --allow-33 FILE     a FILE whose library 33 is allowed although it is not literallib
+                              (RIDosLib in the RWE variants)
 
-Exit status 0, 1 a library number is twice (both named) or a FILE cannot be read
-or is no BigLib or library file, 2 usage error.
+Library 32 and a library 33 other than literallib (the literal characters,
+#1018) are refused, but the library 33 of a FILE named by --allow-33. Exit
+status 0, 1 a library number is twice (both named) or reserved, or a FILE cannot
+be read or is no BigLib or library file, 2 usage error.
 ```
 
 No two libraries of the `FILE`s (BigLib or library files,
 e.g. acidlibs, deflibs and the userlibs of a variant) have the same
-number; a clash names both.
+number; a clash names both. Library 32 and a library 33 other than
+`literallib` are refused: the first byte `$90` is reserved for the literal
+characters (#1018, `docs/token-table.md`); `--allow-33 FILE` allows the
+library 33 of that file (RIDosLib in the RWE variants).
 
 ### check
 
@@ -115,17 +122,22 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
+          --allow-33          a library 33 other than literallib is allowed (RIDosLib in the
+                              RWE variants)
 
 One code hunk, relocations only into it, the library header, the token table
 readable up to its end, no reference from the normal code into the error check
-area. Silent if all is right. Exit status 0, 1 a file is no valid library file
-(the findings on stderr), 2 usage error.
+area, not the reserved library numbers 32 and 33 (33 only for literallib, the
+literal characters, or with --allow-33). Silent if all is right. Exit status 0,
+1 a file is no valid library file (the findings on stderr), 2 usage error.
 ```
 
 Each file is a valid library file: one code hunk, relocations
 only into it, the library header, the token table readable up to its
 end, no reference from the normal code into the error check area
-(`docs/development.md`, "Checks in the build"). Silent if all is right.
+(`docs/development.md`, "Checks in the build"), not the number 32 or 33
+(33 only for `literallib`, identified by its 127 dummy tokens named
+`$81`-`$FF`, or with `--allow-33`; #1018). Silent if all is right.
 
 ### compare
 

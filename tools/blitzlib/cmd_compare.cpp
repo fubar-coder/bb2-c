@@ -183,11 +183,20 @@ static int compare(const char *original, const char *changed, const char *intend
         return 1;
     if (read_biglib(original, &a) || read_biglib(changed, &b))
         return 1;
-    if (a.n != b.n) {
+    if (a.n > b.n) {
         printf("%s: %zu libraries, %s: %zu\n", original, a.n, changed, b.n);
         diffs++;
     }
     n = a.n < b.n ? a.n : b.n;
+    /* a library behind the original's: a difference of its own, which
+       INTENDED can name (an addition, e.g. literallib, #1018) */
+    for (i = n; i < b.n; i++) {
+        char msg[96];
+
+        snprintf(msg, sizeof msg, "lib %u: added behind the original's libraries\n",
+                 libnum(b.h[i]));
+        diffs += blitzlib_intended(msg, intended, (size_t)nintended, seen, stdout);
+    }
     for (i = 0; i < n; i++) {
         char name[32], *msgs;
         FILE *f;

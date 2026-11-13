@@ -1,0 +1,5 @@
+# the intended differences of acidlibs against the CD's (blitzlib compare,
+# docs/development.md "Intended differences")
+# literallib (#1018): library 33, the names of the literal characters, an
+# addition of this repository behind the original's libraries
+lib 33: added behind the original's libraries

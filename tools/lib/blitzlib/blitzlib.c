@@ -304,3 +304,29 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
     blitzlib_free(&lib);
     return bad;
 }
+
+/* ------------------------------------------------- reserved numbers */
+
+int blitzlib_is_literallib(const struct blitzlib *lib)
+{
+    unsigned i;
+
+    if (lib->libnum != 33 || lib->nentries != 127)
+        return 0;
+    for (i = 0; i < lib->nentries; i++) {
+        const struct blitzlib_entry *e = &lib->entries[i];
+
+        if (e->kind != 8 || !e->name || (uint8_t)e->name[0] != 0x81 + i || e->name[1])
+            return 0;
+    }
+    return 1;
+}
+
+int blitzlib_reserved(const struct blitzlib *lib, int allow33)
+{
+    if (lib->libnum == 32)
+        return BLITZLIB_RESERVE_32;
+    if (lib->libnum != 33 || blitzlib_is_literallib(lib))
+        return BLITZLIB_RESERVE_OK;
+    return allow33 ? BLITZLIB_RESERVE_ALLOWED : BLITZLIB_RESERVE_33;
+}

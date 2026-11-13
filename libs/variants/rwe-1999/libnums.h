@@ -9,6 +9,10 @@
 #include "../bb2-2.10/libnums.h"
 
 #define LIB_ricopperfx              11   /* BSS2 RICOPPERFXLIB */
+/* RIDosLib keeps its number 33, which bb2-2.10 reserves for literallib
+   (docs/token-table.md): the RWE variants have no literal library and no
+   literal characters (ACIDLIBS_WITHOUT_LITERAL, libs/acidlibs) */
+#undef LIB_literallib
 #define LIB_ridoslib                33   /* BSS2 RIDOSLIB; AmiBlitz3 #ridoslib */
 #define LIB_rinonvolatilelib        35   /* BSS2 RINONVOLATILELIB */
 #define LIB_rifastseriallib         36   /* BSS2 RIFASTSERIALLIB */

@@ -183,5 +183,11 @@
 /* dhandlerlib: `#dhandlerlib` is not defined in libnums.bb, the binary
    has 1 (blitz2.s: dhandlerlib=1) */
 #define LIB_dhandlerlib              1
+/* literallib (#1018, not in libnums.bb): the names of the literal
+   characters $90 cc.  The first byte $90 - libraries 32 and 33, the words
+   $9000-$90FF - is reserved for them (decision of 2026-11-11,
+   docs/token-table.md); 32 stays free.  The RWE variants keep RIDosLib as
+   33 and have no literallib (rwe-1999/libnums.h) */
+#define LIB_literallib              33
 
 #endif

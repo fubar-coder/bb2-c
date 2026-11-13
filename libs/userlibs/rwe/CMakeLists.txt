@@ -190,8 +190,15 @@ foreach(l IN LISTS RWE_LIBS)
 	endforeach()
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
 	set(obj ${vout}/userlibs/rwe/${name}.obj)
+	# RIDosLib keeps the number 33, reserved for literallib, which the RWE
+	# variants do not have (#1018, docs/token-table.md)
+	set(allow33)
+	if(name STREQUAL "ridoslib")
+		set(allow33 ALLOW33)
+		set(ridos_obj ${obj})
+	endif()
 	blitz_library(${v}-${name} VARIANT ${PROJECT_SOURCE_DIR}/libs/variants/${v} OBJ ${obj}
-		CMDREF userlibs/${name} ${name}.c CHECK ${vout}/acidlibs ${vout}/deflibs)
+		${allow33} CMDREF userlibs/${name} ${name}.c CHECK ${vout}/acidlibs ${vout}/deflibs)
 	if(v STREQUAL RWE_VARIANT)
 		list(APPEND objs ${obj})
 	else()
@@ -279,7 +286,12 @@ if(readable)
 endif()
 # the whole set: no number twice in acidlibs, deflibs and all RWE userlibs
 if(objs)
-	add_test(NAME rwe_numbers COMMAND ${BLITZLIB} numbers ${out}/acidlibs ${out}/deflibs ${objs})
+	add_test(NAME rwe_numbers COMMAND ${BLITZLIB} numbers --allow-33 ${ridos_obj}
+		${out}/acidlibs ${out}/deflibs ${objs})
+	# without the exception RIDosLib's 33 is refused (#1018)
+	add_test(NAME rwe_numbers_ridoslib_33 COMMAND ${BLITZLIB} numbers
+		${out}/acidlibs ${out}/deflibs ${objs})
+	set_tests_properties(rwe_numbers_ridoslib_33 PROPERTIES WILL_FAIL TRUE)
 endif()
 # a variant of its own: its acidlibs, deflibs, the RWE userlibs (but the
 # replaced ones) and its libraries (its numbers include RWE_VARIANT's);
@@ -287,9 +299,10 @@ endif()
 # acidlibs/deflibs or the libraries they replace (must fail)
 foreach(v IN LISTS own_variants)
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
-	add_test(NAME rwe_numbers_${v} COMMAND ${BLITZLIB} numbers ${vout}/acidlibs ${vout}/deflibs
-		${objs_${v}} ${own_${v}})
-	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BLITZLIB} numbers ${out}/acidlibs
+	add_test(NAME rwe_numbers_${v} COMMAND ${BLITZLIB} numbers --allow-33 ${ridos_obj}
+		${vout}/acidlibs ${vout}/deflibs ${objs_${v}} ${own_${v}})
+	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BLITZLIB} numbers --allow-33 ${ridos_obj}
+		${out}/acidlibs
 		${out}/deflibs ${replaced_${v}} ${own_${v}})
 	set_tests_properties(rwe_numbers_${v}_clash PROPERTIES WILL_FAIL TRUE)
 endforeach()

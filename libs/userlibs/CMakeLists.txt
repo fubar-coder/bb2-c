@@ -4,3 +4,4 @@
 # its build step (blitzlib check, and no number of acidlibs/deflibs of the
 # variant twice); a ctest checks the whole set.
 add_subdirectory(rwe)
+add_subdirectory(literal)

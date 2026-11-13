@@ -135,8 +135,23 @@ set(tokens_check -DBBSRC=${BBSRC}
 	-P ${PROJECT_SOURCE_DIR}/tools/bbsrc/tokens-check.cmake)
 add_test(NAME tokens_cd COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_cd.txt
 	"-DFILES=${cd_blitz2}/BLITZ2;${cd_blitz2}/ACIDLIBS;${cd_blitz2}/DEFLIBS" ${tokens_check})
+# the port's list has literallib's 127 tokens besides the original's
+# (#1018: tests/data/literallib-tokens.txt, named as an addition)
+set(literal_tokens ${PROJECT_SOURCE_DIR}/tests/data/literallib-tokens.txt)
 add_test(NAME tokens_port COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_port.txt
-	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs;${BLITZ2_DIR}/deflibs" ${tokens_check})
+	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs;${BLITZ2_DIR}/deflibs"
+	-DADDITION=${literal_tokens} ${tokens_check})
+# the addition with its token $90DF left out (written at configure time):
+# the list then has a token neither file names, the test must fail
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${literal_tokens})
+file(READ ${literal_tokens} literal_text)
+string(REGEX REPLACE "\n90DF [^\n]*\n" "\n" literal_text "${literal_text}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/literallib-tokens-broken.txt "${literal_text}")
+add_test(NAME tokens_port_addition_broken COMMAND ${CMAKE_COMMAND}
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_port_broken.txt
+	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs;${BLITZ2_DIR}/deflibs"
+	-DADDITION=${CMAKE_CURRENT_BINARY_DIR}/literallib-tokens-broken.txt ${tokens_check})
+set_tests_properties(tokens_port_addition_broken PROPERTIES WILL_FAIL TRUE)
 set_tests_properties(tokens_cd tokens_port PROPERTIES SKIP_RETURN_CODE 77)
 # the CD's list is a comparison with the originals (preset originals)
 set_tests_properties(tokens_cd PROPERTIES LABELS originals)
@@ -149,6 +164,20 @@ set_tests_properties(tokens_broken PROPERTIES WILL_FAIL TRUE)
 add_test(NAME biglib_check_clash COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/acidlibs
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
 set_tests_properties(biglib_check_clash PROPERTIES WILL_FAIL TRUE)
+# the reservation of libraries 32 and 33 (#1018; blitzlib_reserved,
+# tools/tests/test_blitzlib.c with libraries in memory): literallib once
+# passes (the build step), twice is a clash; RIDosLib (33, rwe-1999) is
+# refused without --allow-33 by check and numbers, and passes with it
+add_test(NAME blitzlib_literallib_twice COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/acidlibs
+	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/literallib.obj)
+set_tests_properties(blitzlib_literallib_twice PROPERTIES WILL_FAIL TRUE)
+set(ridos_obj ${BLITZ_VARIANTS_DIR}/rwe-1999/userlibs/rwe/ridoslib.obj)
+add_test(NAME blitzlib_reserved_33_check COMMAND ${BLITZLIB} check ${ridos_obj})
+add_test(NAME blitzlib_reserved_33_numbers COMMAND ${BLITZLIB} numbers ${BLITZ2_DIR}/deflibs
+	${ridos_obj})
+set_tests_properties(blitzlib_reserved_33_check blitzlib_reserved_33_numbers PROPERTIES
+	WILL_FAIL TRUE)
+add_test(NAME blitzlib_reserved_33_allowed COMMAND ${BLITZLIB} check --allow-33 ${ridos_obj})
 # blitzlib compare on single library files (the RWE userlibs against their
 # originals): a file against itself, and two different libraries (must fail)
 add_test(NAME blitzlibcompare_single COMMAND ${BLITZLIB} compare

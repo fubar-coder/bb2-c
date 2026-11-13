@@ -51,6 +51,49 @@ static int check(const struct buf *code, uint32_t table_size, uint32_t type,
     return r;
 }
 
+/* the reservation of libraries 32 and 33 (#1018): libraries built in
+   memory as blitzlib_read leaves them */
+static void test_reserved(void)
+{
+    static struct blitzlib_entry e[127];
+    static char names[127][2];
+    struct blitzlib lib = { 0 };
+    unsigned i;
+
+    for (i = 0; i < 127; i++) {
+        names[i][0] = (char)(0x81 + i);
+        e[i].kind = 8;
+        e[i].name = names[i];
+    }
+    lib.entries = e;
+    lib.nentries = 127;
+    /* the literal library: 33, 127 dummy tokens $81-$FF */
+    lib.libnum = 33;
+    CHECK(blitzlib_is_literallib(&lib));
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_OK);
+    /* another library 33 (RIDosLib's statement), with and without the
+       exception */
+    e[5].kind = 1;
+    CHECK(!blitzlib_is_literallib(&lib));
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_33);
+    CHECK(blitzlib_reserved(&lib, 1) == BLITZLIB_RESERVE_ALLOWED);
+    e[5].kind = 8;
+    /* a wrong name, one entry too few: not the literal library */
+    names[10][0] = 'x';
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_33);
+    names[10][0] = (char)(0x81 + 10);
+    lib.nentries = 126;
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_33);
+    lib.nentries = 127;
+    /* library 32: refused, also with the exception and literallib's entries */
+    lib.libnum = 32;
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_32);
+    CHECK(blitzlib_reserved(&lib, 1) == BLITZLIB_RESERVE_32);
+    /* any other number: ok */
+    lib.libnum = 34;
+    CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_OK);
+}
+
 int main(void)
 {
     struct buf ok = { 0 }, b;
@@ -203,6 +246,7 @@ int main(void)
     free(b.p);
 
     free(ok.p);
+    test_reserved();
     if (failures)
         fprintf(stderr, "test_blitzlib: %d failures\n", failures);
     return failures != 0;

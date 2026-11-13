@@ -13,7 +13,12 @@ set(ACIDLIBS_ORDER
 	vallib windowslib arrayslib chipbaselib clrlib datalib debuglib
 	errtraplib exitslib ffplib floatquicklib intlib ldivlib lmullib
 	maxlenlib maxslib memlib modlib rundebuglib runerrlib staticslib
-	strcomplib strings1lib strings2lib switchlib varslib wbstartuplib)
+	strcomplib strings1lib strings2lib switchlib varslib wbstartuplib
+	literallib)
+
+# the variants without literallib (#1018): the RWE ones keep RIDosLib as
+# library 33, which the default variant gives literallib
+set(ACIDLIBS_WITHOUT_LITERAL rwe-1999 rwe-1999-eval rwe-1999-ahi)
 
 # the libraries built with the optimisation profile speed instead of size
 # (blitz_library OPTIMIZE, cmake/BlitzLibrary.cmake), in every variant:
@@ -40,7 +45,11 @@ endforeach()
 # its libnums.h): target names PREFIX + name ("" for the default variant)
 function(acidlibs_build prefix variant output)
 	set(objs)
+	get_filename_component(vname ${variant} NAME)
 	foreach(name ${ACIDLIBS_ORDER})
+		if(name STREQUAL "literallib" AND vname IN_LIST ACIDLIBS_WITHOUT_LITERAL)
+			continue()
+		endif()
 		if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
 			message(FATAL_ERROR "acidlibs: no ${name}.c")
 		endif()
@@ -52,7 +61,10 @@ function(acidlibs_build prefix variant output)
 		endif()
 		# the default variant's: checked against the command reference
 		set(cmdref CMDREF acidlibs/${name})
-		if(prefix OR NOT BLITZ_DEFAULT_VARIANT STREQUAL CMDREF_VARIANT)
+		# literallib names characters, it has no commands: no page of the
+		# command reference (#1018)
+		if(prefix OR NOT BLITZ_DEFAULT_VARIANT STREQUAL CMDREF_VARIANT
+				OR name STREQUAL "literallib")
 			set(cmdref)
 		endif()
 		set(optimize)

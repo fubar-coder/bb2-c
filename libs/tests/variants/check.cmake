@@ -31,7 +31,14 @@ if(rc)
 	message(FATAL_ERROR "bbsrc tokens: exit ${rc}")
 endif()
 file(STRINGS ${TOKENS} want)
-file(STRINGS ${OUT} have)
+# literallib's tokens ($9081-$90FF, #1018) are not in TOKENS (the
+# original's list): the variant has them like the default build.  Their
+# names are bytes from $81, which file(STRINGS) splits: the lines are
+# taken out of the text first (OUT.nolit)
+file(READ ${OUT} text)
+string(REGEX REPLACE "(^|\n)90[89A-F][0-9A-F] [^\n]*" "" text "${text}")
+file(WRITE ${OUT}.nolit "${text}")
+file(STRINGS ${OUT}.nolit have)
 list(LENGTH want n)
 list(LENGTH have m)
 if(NOT n EQUAL m)

@@ -15,7 +15,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 1. Checks before any code
 
-- [ ] 1.1 Token space: the AmiBlitz3 and CD check of design D2 is done
+- [x] 1.1 Token space: the AmiBlitz3 and CD check of design D2 is done
   (2026-11-11). Remaining: scan the corpus (`tests/corpus`, the Aminet
   archive) and every library the repository builds for tokens with the
   first byte $90 (the CD's userlibs: only `RIDOSLIB.OBJ`, done).
@@ -98,7 +98,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 3. The library and the reservation
 
-- [ ] 3.1 `libs/acidlibs/literallib.c` and `LIB_literallib 33` in
+- [x] 3.1 `libs/acidlibs/literallib.c` and `LIB_literallib 33` in
   `libs/variants/bb2-2.10/libnums.h`, left out of the RWE variants
   (`#undef LIB_literallib` in `libs/variants/rwe-1999/libnums.h`, which
   the two sub-variants include, and `acidlibs_build`
@@ -110,7 +110,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   check` passes, `bbsrc tokens` lists `$9080`..`$90FF` with the names;
   `tokens_port` (see 3.2); the `acidlibs` of `rwe-1999` and its two
   sub-variants have no `literallib`, those of the other variants have it.
-- [ ] 3.2 The checks that compare with the original: `tokens_port`
+- [x] 3.2 The checks that compare with the original: `tokens_port`
   (`libs/CMakeLists.txt:76-91`) expects the original's list
   (`tests/data/ted-tokens.txt`) plus the 128 tokens (a second expected
   file or a generated one, named as an addition); the comparison of
@@ -127,7 +127,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   CD's compiler and the file lists the 128 tokens; the original compiler
   in Amiberry compiles a string with `$90 DF` with the file in
   `userlibs` and stops with "Syntax Error" for a literal as a statement.
-- [ ] 3.4 The reservation in the build: `blitzlib numbers` and `check`
+- [x] 3.4 The reservation in the build: `blitzlib numbers` and `check`
   refuse a library numbered 32 and any library other than `literallib`
   numbered 33, except `ridoslib` in the `rwe-1999` variants (the check
   takes the exception as a parameter, so it holds for no other variant;

@@ -100,6 +100,30 @@ void blitzlib_free(struct blitzlib *lib);
  */
 int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);
 
+/** @brief Results of blitzlib_reserved. */
+enum blitzlib_reserve {
+    BLITZLIB_RESERVE_OK,        /* not 32 or 33, or the literal library */
+    BLITZLIB_RESERVE_32,        /* library 32: reserved */
+    BLITZLIB_RESERVE_33,        /* library 33 that is not the literal library */
+    BLITZLIB_RESERVE_ALLOWED    /* library 33 allowed by the caller */
+};
+
+/**
+ * @brief The reservation of the first byte $90 (#1018, docs/token-table.md):
+ *        libraries 32 and 33 are reserved for the literal characters.
+ *        Library 32 is refused; library 33 only if it is the literal library
+ *        (literallib: 127 dummy tokens, kind 8, entry n named by the one
+ *        character $80 + n) - or allow33 is set (RIDosLib in the RWE
+ *        variants, an exception the caller names).
+ * @param lib      the library (blitzlib_read)
+ * @param allow33  1: any library 33 is allowed
+ * @return an enum blitzlib_reserve
+ */
+int blitzlib_reserved(const struct blitzlib *lib, int allow33);
+
+/** @brief The library is the literal library (see blitzlib_reserved). */
+int blitzlib_is_literallib(const struct blitzlib *lib);
+
 /**
  * @brief Compare the declaration parts of two builds of a library.
  *
