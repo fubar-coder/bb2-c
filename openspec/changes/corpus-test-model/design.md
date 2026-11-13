@@ -114,12 +114,13 @@ is refused as malformed (it would mean no difference). The pass keys `notes=` an
 - `corpus-expect-update` (unchanged: from the port, `clib`, no CD for the
   output where the programs allow it): rewrites the unqualified and
   `[fixed #N]` files from `clib`. If a program's unqualified file would
-  change, the update refuses and names the key unless `FIX=PASS:NAME#N` is
-  given, which turns that unqualified file into `NAME.orig.EXT` (old
+  change, the update refuses and names the key unless
+  `CORPUS_UPDATE_FIX=PASS:NAME#N` is given, which turns that unqualified file into `NAME.orig.EXT` (old
   content) and `NAME.fixed-N.EXT` (the port's), as `libs-update`. A new
   program has no files: the update writes them unqualified. A change of
   an `[orig]` file is never made by the update.
-- `corpus-expect-record` (new; needs Amiberry and the CD; `FILTER=PASS:NAME`):
+- `corpus-expect-record` (new; needs Amiberry and the CD;
+  `CORPUS_RECORD_FILTER=PASS:NAME`):
   runs `ref` twice, the second time with a Stack 16384 bytes larger
   (the layout of the bug-orig recording, `corpus_layout`), accepts only if
   both runs agree (`results corpus-accept RUN1 RUN2 DIR`), else "test not deterministic: PASS:NAME"
@@ -201,6 +202,33 @@ executable changed; `ctest --preset originals` passes without `notes.tsv`.
   allowed while writing: the migration writes `NAME.fixed-N.out` from the
   committed file first and lets the record complete the pair with
   `NAME.orig.out`.
+
+- **The variables of the targets** are cache variables, as those of the
+  other targets (`LIBS_UPDATE_FIX`, `BUG_ORIG_RECORD_FILTER`):
+  `CORPUS_UPDATE_FIX=PASS:NAME#N,...` and `CORPUS_RECORD_FILTER=PASS` or
+  `PASS:NAME,...`; the spec and D4 name them so.
+- **The executables of the update.** `corpusrun pass --update-expect port`
+  on a pass of `NAME_originals` runs `ref` and `port` for the programs with
+  an exe pair or a FIX only (none: no session, exit status 0); without the
+  CD it is skipped, which fails the target only if a FIX names that pass.
+- **An observation works in a directory of its own** (`DIR.work`, report
+  `DIR.txt`): the two runs of the record use one pass file at the same
+  time, and with the pass's `work=` they wrote into one directory (found
+  in the first migration run: every program of `corpus_runerr` "did not
+  compile"; `corpus` happened to pass, so it was recorded again).
+  `serial_same_as=` is dropped in an observation: it judges, the record
+  only observes.
+- **`results fix-scope --fixes` once only** (a bug found here): the option
+  had no multi-option policy, so a second `--fixes` was refused; task 5.1's
+  check needs several. Fixed in its own commit, with a test.
+- **The migration (5.1)**: of the 14 rows, `corpus:t130_blit` (#46) became
+  the executable pair only (its output is the same); the other 13 became
+  output pairs, and `corpus_runerr:t130_blit` also got the executable
+  pair. All other fixed programs' executables of `ref` and `port` agree
+  (the update said so for each FIX). `orig-clib` matches `[fixed #N]` for
+  the library fixes and #6, `[orig]` for the compiler fix #46, as expected.
+- **5.2**: three full records in a row (all 215 programs of the five
+  passes, two runs each) accepted every program and changed no file.
 
 ## Open Questions
 

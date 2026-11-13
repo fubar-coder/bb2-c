@@ -29,7 +29,7 @@ two-run accept and the projection helper this change reuses).
 ## 5. Migration
 
 - [x] 5.1 Convert the 14 rows of `notes.tsv` to files (D6): `.orig.out` from `corpus-expect-record` for `corpus_runerr:t124_bitmaperr`, `t126_rgberr` (#6), `t130_blit` (#46) and the programs of the library fixes #1000 to #1004 (`t141_shapetrix`, `t158_2dfuzz`, `t30_date`, `t121_palette`, `t21_val` in `corpus` and `corpus_runerr`), the `.exe` pair for `corpus:t130_blit` (and where else ref's and port's executables differ), the current expect files as `.fixed-N.out`; delete `tests/corpus/notes.tsv`. Verify: `ctest --preset all` and `ctest --preset originals` (CD) pass, `prev_results` byte-identical, `git status` after the originals run clean; `fix-scope` against the commit before reports only these programs as pairs of their issues (run with `--fixes` of each).
-- [ ] 5.2 Record twice more (`corpus-expect-record` three times in a row, whole corpus) and check that no unqualified file changes. Verify: `git diff tests/corpus/expect` empty; any difference is a non-deterministic program: report it with its name before going on.
+- [x] 5.2 Record twice more (`corpus-expect-record` three times in a row, whole corpus) and check that no unqualified file changes. Verify: `git diff tests/corpus/expect` empty; any difference is a non-deterministic program: report it with its name before going on.
 
 ## 6. Acceptance
 

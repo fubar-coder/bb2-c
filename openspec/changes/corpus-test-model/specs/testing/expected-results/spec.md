@@ -33,7 +33,7 @@ A corpus program whose original and port differ by a fix SHALL have, for each di
 - **THEN** `NAME_originals` fails naming the program
 
 ### Requirement: Recording and updating the corpus expected data
-The build target `corpus-expect-record` (not part of ALL, needs the CD and Amiberry, filterable by `PASS:NAME`) SHALL run the `ref` configuration twice with a different memory layout and SHALL write the unqualified, `[orig]` and `exe` files only if both runs agree, otherwise report "test not deterministic" naming the program and the differing lines and write nothing for it; it SHALL keep every `[fixed #N]` file. The build target `corpus-expect-update` SHALL write from the port (configuration `clib`), SHALL create the files of a new program, SHALL rewrite `[fixed #N]` files, and SHALL refuse to change an unqualified file unless the program is named with its issue (`FIX=PASS:NAME#N`), which turns it into the pair. A test SHALL NOT write any file of the source tree.
+The build target `corpus-expect-record` (not part of ALL, needs the CD and Amiberry, filterable by `PASS` or `PASS:NAME` in `CORPUS_RECORD_FILTER`) SHALL run the `ref` configuration twice with a different memory layout and SHALL write the unqualified, `[orig]` and `exe` files only if both runs agree, otherwise report "test not deterministic" naming the program and the differing lines and write nothing for it; it SHALL keep every `[fixed #N]` file. The build target `corpus-expect-update` SHALL write from the port (configuration `clib`), SHALL create the files of a new program, SHALL rewrite `[fixed #N]` files, and SHALL refuse to change an unqualified file unless the program is named with its issue (`CORPUS_UPDATE_FIX=PASS:NAME#N`), which turns it into the pair. A test SHALL NOT write any file of the source tree.
 
 #### Scenario: Record with agreeing runs
 - **WHEN** the two runs of `ref` give the same output
@@ -44,11 +44,11 @@ The build target `corpus-expect-record` (not part of ALL, needs the CD and Amibe
 - **THEN** the record reports "test not deterministic" with the program and the differing lines and changes no file of it
 
 #### Scenario: Update refuses a silent change
-- **WHEN** `corpus-expect-update` runs without `FIX` and the port's output of a program differs from its unqualified file
+- **WHEN** `corpus-expect-update` runs without `CORPUS_UPDATE_FIX` and the port's output of a program differs from its unqualified file
 - **THEN** it names the program and writes nothing for it
 
 #### Scenario: Update with an issue
-- **WHEN** it runs with `FIX=corpus_runerr:t124_bitmaperr#6`
+- **WHEN** it runs with `CORPUS_UPDATE_FIX=corpus_runerr:t124_bitmaperr#6`
 - **THEN** `t124_bitmaperr.out` becomes `t124_bitmaperr.orig.out` with the old content and `t124_bitmaperr.fixed-6.out` has the port's output
 
 ### Requirement: The checks of the corpus model have tests with broken input
