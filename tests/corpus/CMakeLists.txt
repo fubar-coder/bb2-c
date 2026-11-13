@@ -7,8 +7,10 @@
 #             rcput (rc=N in the session scripts on Kickstart 1.x)
 #   tests*/   the test programs (text); tokenised here with tedsrc tok (the TED
 #             core), which also refuses lines TED would cut
-#   expect/   the expected outputs, one directory per pass (target
-#             corpus-expect-update)
+#   expect/   the expected data, one directory per pass (tools/lib/corpusexpect:
+#             NAME.out, NAME.serial; for a program a fix makes differ from
+#             the original the pairs NAME.orig.EXT / NAME.fixed-N.EXT;
+#             targets corpus-expect-record and corpus-expect-update)
 #   runner/   corpusrun (host side): the passes, see runner/README.md
 add_subdirectory(amiga)
 
@@ -55,11 +57,14 @@ set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 #                  (executable identical to ref's), orig-clib = the original
 #                  compiler with the C libraries of this build (are they
 #                  compatible with the original compiler?).  The output of
-#                  all three must
-#                  be the expected output, except where notes.tsv lists the
-#                  program (an intended deviation from the original, written
-#                  by the fix commit): "noted #N", and a listed program that
-#                  does not differ is stale.  Skipped without the CD.
+#                  all three must be the expected data that applies to
+#                  them: for a program a fix makes differ from the original
+#                  (the pair NAME.orig.out / NAME.fixed-N.out) ref the
+#                  [orig] file, port and orig-clib either, while clib and
+#                  prev in NAME the [fixed #N] one; an executable pair
+#                  (NAME.orig.exe / NAME.fixed-N.exe, SHA-256) replaces the
+#                  comparison of port's executable with ref's.  Skipped
+#                  without the CD.
 #
 # CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
 # control channel is a socket in a private XDG_RUNTIME_DIR only on Linux;
@@ -75,11 +80,8 @@ set(CORPUS_PARALLEL ${parallel_default} CACHE STRING
 set(CORPUS_TIMEOUT 300 CACHE STRING "corpus: time limit of one emulator session (seconds)")
 set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(REF_BLITZ2 ${CD_BLITZ2}/BLITZ2)
-# the committed expected outputs, one directory per pass
+# the committed expected data, one directory per pass
 set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
-# the intended deviations from the original (tools/lib/corpusnotes): read
-# by the runs of the originals
-set(CORPUS_NOTES ${CMAKE_CURRENT_SOURCE_DIR}/notes.tsv)
 
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
 #             [SERIAL_SAME_AS PASS] SOURCES FILES...): the pass files + ctest
@@ -146,11 +148,11 @@ function(corpus_pass name)
 			string(APPEND text
 				"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
 				"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
-				"config=orig-clib|output|${REF_BLITZ2}|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
-				"notes=${CORPUS_NOTES}\nnotes_pass=${name}\n")
+				"config=orig-clib|output|${REF_BLITZ2}|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
 		endif()
-		# the expected outputs (expect/PASS/NAME.out, NAME.serial): every
-		# configuration's output must be these (target corpus-expect-update)
+		# the expected data (expect/PASS): every configuration's output must
+		# be the file that applies to it (targets corpus-expect-record and
+		# corpus-expect-update)
 		string(APPEND text "expect_dir=${CORPUS_EXPECT}/${name}\n")
 		# BB2: the CD - the tests load sounds and modules from it
 		string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n")
@@ -310,56 +312,111 @@ cd_pass(corpus_cd_ab3 $<TARGET_FILE:blitz2-ab3> ${CMAKE_CURRENT_BINARY_DIR}/corp
 add_test(NAME corpus_cd_ab3 COMMAND ${CORPUSRUN} cd ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
 set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 
-# ------------------------------------------- the notes with broken input
-# Every check of notes.tsv needs a test on deliberately broken input
-# (tests/corpus/selftest): one small pass (the source t01_int; ref and port
-# for the three that run the emulator, label originals) with a notes file or
-# an expected output that is wrong on purpose.  The first three need no
-# emulator: the notes are read before any session.
-#   a notes row that is malformed (unknown pass, no issue, twice) or a
-#   missing notes file: exit status 2 and the message
-#   a stale note (the program does not differ): exit status 1, STALE
-#   an unlisted difference (the expected output is wrong): exit status 1,
-#   OUTPUT DIFFERS
-#   the same difference listed: exit status 0, "noted #1"
+# ---------------------------------- the expected data with broken input
+# Every check of the expected data (tools/lib/corpusexpect) needs a test on
+# deliberately broken input: one small pass (the source t01_int) against an
+# expected directory made here, in the build directory, from the committed
+# expected output of t01_int (right) and selftest/wrong/t01_int.out (one
+# line wrong).  The malformed ones need no emulator: the directory is read
+# before any session (exit status 2 and the file names).
+#   corpus_expect_fixed_regressed  clib gives the [orig] value: the
+#       [fixed #1] file fails (label emulator: no CD needed)
+#   corpus_originals_orig_changed  ref differs from the [orig] file, port
+#       matches the [fixed #1] one (label originals)
+#   corpus_originals_exe_unlisted  port's executable (here with the C
+#       libraries) differs from ref's without an exe pair (label originals)
 set(selftest ${CMAKE_CURRENT_SOURCE_DIR}/selftest)
-function(corpus_notes_selftest name want regex expect_dir notes configs)
+set(selftest_expect ${CMAKE_CURRENT_BINARY_DIR}/selftest-expect)
+file(READ ${CORPUS_EXPECT}/corpus/t01_int.out t01_right)
+file(READ ${selftest}/wrong/t01_int.out t01_wrong)
+file(REMOVE_RECURSE ${selftest_expect})
+# corpus_selftest_dir(NAME FILE|CONTENT...): the directory NAME, CONTENT
+# right, wrong or a text
+function(corpus_selftest_dir name)
+	file(MAKE_DIRECTORY ${selftest_expect}/${name})
+	foreach(f IN LISTS ARGN)
+		string(REPLACE "|" ";" f "${f}")
+		list(GET f 0 file)
+		list(GET f 1 what)
+		if(what STREQUAL "right")
+			set(what "${t01_right}")
+		elseif(what STREQUAL "wrong")
+			set(what "${t01_wrong}")
+		endif()
+		file(WRITE ${selftest_expect}/${name}/${file} "${what}")
+	endforeach()
+endfunction()
+corpus_selftest_dir(both t01_int.out|right t01_int.orig.out|wrong t01_int.fixed-1.out|right)
+corpus_selftest_dir(two-fixed t01_int.orig.out|wrong t01_int.fixed-1.out|right
+	t01_int.fixed-2.out|right)
+corpus_selftest_dir(qualifier t01_int.new.out|right)
+corpus_selftest_dir(equal t01_int.orig.out|right t01_int.fixed-1.out|right)
+corpus_selftest_dir(lone t01_int.fixed-1.out|right)
+corpus_selftest_dir(missing t02_float.out|right)
+corpus_selftest_dir(exe-plain t01_int.out|right
+	"t01_int.exe|0000000000000000000000000000000000000000000000000000000000000000\n")
+corpus_selftest_dir(regressed t01_int.orig.out|right t01_int.fixed-1.out|wrong)
+corpus_selftest_dir(orig-changed t01_int.orig.out|wrong t01_int.fixed-1.out|right)
+corpus_selftest_dir(unlisted t01_int.out|right)
+
+# corpus_expect_selftest(NAME WANT REGEX DIR CONFIGS LABEL): the pass with
+# the configurations CONFIGS (clib or ref-port or ref-port-clib)
+function(corpus_expect_selftest name want regex dir configs label)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	string(CONCAT text "# ${name}: generated by tests/corpus/CMakeLists.txt\ntest=${name}\n"
 		"work=${work}\nreport=${work}.txt\nruntime_errors=off\ntimeout=${CORPUS_TIMEOUT}\n"
 		"parallel=${CORPUS_PARALLEL}\nted=$<TARGET_FILE:tedstub>\n"
-		"launcher=$<TARGET_FILE:reqtrap>\ndefaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
-		"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
-		"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n"
-		"expect_dir=${expect_dir}\nnotes=${notes}\nnotes_pass=corpus\n"
-		"source=${CORPUS_SRC}/tests/t01_int.bb2\n")
+		"launcher=$<TARGET_FILE:reqtrap>\n")
+	if(configs STREQUAL "clib")
+		string(APPEND text
+			"config=clib|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
+		set(n 1)
+	else()
+		string(APPEND text "defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
+			"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+		if(configs STREQUAL "ref-port-clib")
+			# port with the C libraries: another executable than ref's
+			string(APPEND text
+				"config=port|exe|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
+		else()
+			string(APPEND text
+				"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+		endif()
+		set(n 2)
+	endif()
+	string(APPEND text "expect_dir=${selftest_expect}/${dir}\nsource=${CORPUS_SRC}/tests/t01_int.bb2\n")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DPASS=${work}.pass
 		-DWANT=${want} "-DREGEX=${regex}" -P ${CMAKE_CURRENT_SOURCE_DIR}/want-report.cmake)
-	if(configs)
-		math(EXPR limit "${CORPUS_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
-		set_tests_properties(${name} PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	if(label)
+		math(EXPR limit "${CORPUS_TIMEOUT} * ${n} + 120 + ${n} * ${EMULATION_QUEUE_WAIT}")
+		set_tests_properties(${name} PROPERTIES LABELS ${label} SKIP_RETURN_CODE 77
 			TIMEOUT ${limit})
 	endif()
 endfunction()
-corpus_notes_selftest(corpus_notes_unknown_pass 2 "notes-unknown-pass.tsv: line 2: unknown pass .ted_ab."
-	${CORPUS_EXPECT}/corpus ${selftest}/notes-unknown-pass.tsv OFF)
-corpus_notes_selftest(corpus_notes_no_issue 2 "notes-no-issue.tsv: line 1: the note must read"
-	${CORPUS_EXPECT}/corpus ${selftest}/notes-no-issue.tsv OFF)
-corpus_notes_selftest(corpus_notes_twice 2 "notes-twice.tsv: line 2: corpus:t01_int is listed twice"
-	${CORPUS_EXPECT}/corpus ${selftest}/notes-twice.tsv OFF)
-corpus_notes_selftest(corpus_notes_missing 2 "cannot read the notes [^\n]*no-such-notes.tsv"
-	${CORPUS_EXPECT}/corpus ${selftest}/no-such-notes.tsv OFF)
-# a stale note: t01_int does not differ in either configuration
-corpus_notes_selftest(corpus_originals_notes_stale 1
-	"STALE note corpus:t01_int \\(#1: selftest row, line 2 of [^\n]*notes-t01.tsv\\)[^\n]*\n[^\n]*1 checks, 1 with differences"
-	${CORPUS_EXPECT}/corpus ${selftest}/notes-t01.tsv ON)
-# an expected output that is wrong: both configurations differ, and the
-# program is not listed (notes-empty.tsv has no row)
-corpus_notes_selftest(corpus_originals_notes_unlisted 1
-	"ref: OUTPUT DIFFERS; port: exe identical, OUTPUT DIFFERS\n  ref: [^\n]*wrong/t01_int.out line 1: expected [^\n]*\n  port: [^\n]*\n1 checks, 1 with differences"
-	${selftest}/wrong ${selftest}/notes-empty.tsv ON)
-# the same difference listed: noted, the pass is fine
-corpus_notes_selftest(corpus_originals_notes_noted 0
-	"ref: OUTPUT DIFFERS \\(noted #1\\); port: exe identical, OUTPUT DIFFERS \\(noted #1\\)\n.*noted corpus:t01_int differs from the original: #1: selftest row\n1 checks, 0 with differences"
-	${selftest}/wrong ${selftest}/notes-t01.tsv ON)
+corpus_expect_selftest(corpus_expect_malformed_both 2
+	"selftest-expect/both/t01_int.out and t01_int.orig.out: an unqualified and a qualified file"
+	both clib "")
+corpus_expect_selftest(corpus_expect_malformed_two_fixed 2
+	"selftest-expect/two-fixed/t01_int.fixed-1.out and t01_int.fixed-2.out: two fixed files"
+	two-fixed clib "")
+corpus_expect_selftest(corpus_expect_malformed_qualifier 2
+	"selftest-expect/qualifier/t01_int.new.out: unknown qualifier .new." qualifier clib "")
+corpus_expect_selftest(corpus_expect_malformed_equal 2
+	"selftest-expect/equal/t01_int.orig.out and t01_int.fixed-1.out: a pair of equal files"
+	equal clib "")
+corpus_expect_selftest(corpus_expect_malformed_lone 2
+	"selftest-expect/lone/t01_int.fixed-1.out: without its .orig. file" lone clib "")
+corpus_expect_selftest(corpus_expect_malformed_missing 2
+	"no [^\n]*selftest-expect/missing/t01_int.out \\(the expected output" missing clib "")
+corpus_expect_selftest(corpus_expect_malformed_exe 2
+	"selftest-expect/exe-plain/t01_int.exe: an executable is only a pair" exe-plain clib "")
+corpus_expect_selftest(corpus_expect_fixed_regressed 1
+	"clib: OUTPUT DIFFERS\n  clib: [^\n]*regressed/t01_int.fixed-1.out line 1: expected \"667 1801 -699678 -3\", got \"667 1801 -699678 -2\"\n1 checks, 1 with differences"
+	regressed clib emulator)
+corpus_expect_selftest(corpus_originals_orig_changed 1
+	"ref: OUTPUT DIFFERS; port: exe identical, output as expected \\(matched \\[fixed #1\\]\\)\n  ref: [^\n]*orig-changed/t01_int.orig.out line 1: expected \"667 1801 -699678 -3\", got \"667 1801 -699678 -2\"\n1 checks, 1 with differences"
+	orig-changed ref-port originals)
+corpus_expect_selftest(corpus_originals_exe_unlisted 1
+	"ref: output as expected; port: EXE DIFFERS, output as expected\n1 checks, 1 with differences"
+	unlisted ref-port-clib originals)

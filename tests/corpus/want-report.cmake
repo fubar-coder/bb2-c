@@ -1,6 +1,6 @@
 # want-report.cmake - a corpus pass whose result is known: passes if
 # corpusrun pass PASS returns WANT and its output matches REGEX (77 =
-# skipped).  The self tests of the notes (tests/corpus/CMakeLists.txt).
+# skipped).  The self tests of the expected data (tests/corpus/CMakeLists.txt).
 #   cmake -DRUNNER=... -DPASS=... -DWANT=N -DREGEX=... -P want-report.cmake
 execute_process(COMMAND ${RUNNER} pass ${PASS} RESULT_VARIABLE rc OUTPUT_VARIABLE out
 	ERROR_VARIABLE err)

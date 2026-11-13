@@ -462,29 +462,63 @@ int main(void)
         CHECK((n = corpus_expect_path(&p, 0, ".out"))
               && !strcmp(n, "/nonexistent/expect/corpus/t01_int.out"));
         free(n);
-        /* a missing expected file: named, and the run fails before any
+        /* a missing expected directory: named, and the run fails before any
            session (also without the emulator and the CD) */
-        CHECK(corpus_expect_missing(&p, err, sizeof err) == -1
-              && strstr(err, "no /nonexistent/expect/corpus/t01_int.out")
-              && strstr(err, "corpus-expect-update"));
+        CHECK(corpus_load_expect(&p, err, sizeof err) == -1
+              && strstr(err, "/nonexistent/expect/corpus: cannot read the directory"));
         CHECK((log = open_memstream(&logtext, &loglen)) != NULL);
         if (log) {
             CHECK(corpus_run(&p, log) == 2);
             fclose(log);
-            CHECK(logtext && strstr(logtext, "no /nonexistent/expect/corpus/t01_int.out"));
+            CHECK(logtext && strstr(logtext, "/nonexistent/expect/corpus: cannot read"));
             free(logtext);
         }
-        /* the update: only the configuration named runs, compared with nothing */
-        CHECK(corpus_update(&p, "nobody", err, sizeof err) == -1 && strstr(err, "nobody"));
-        CHECK(corpus_update(&p, "clib", err, sizeof err) == 0);
-        CHECK(p.update && p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib")
-              && p.configs[0].expect == CORPUS_OUTPUT && !p.configs[0].base);
+        /* the update: only the configuration named runs, compared with
+           nothing (a directory that does not exist yet is empty) */
+        CHECK(corpus_update(&p, "nobody", NULL, 0, err, sizeof err) == -1
+              && strstr(err, "nobody"));
+        CHECK(corpus_update(&p, "clib", NULL, 0, err, sizeof err) == 0);
+        CHECK(p.update == CORPUS_UPDATE_OUT && p.nconfigs == 1 && !strcmp(p.configs[0].tag, "clib")
+              && p.configs[0].expect == CORPUS_OUTPUT && !p.configs[0].base
+              && !strcmp(p.expected.pass, "corpus") && !p.expected.n);
         corpus_free(&p);
         CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
                            "config=prev|exe:clib|/p|/q|/r\nexpect_dir=/e\nsource=/s\n",
                            &p, err, sizeof err) == 0);
-        CHECK(corpus_update(&p, "port", err, sizeof err) == 0 && p.nconfigs == 1
-              && !strcmp(p.configs[0].tag, "port") && !strcmp(p.configs[0].blitz2, "/a2"));
+        CHECK(corpus_update(&p, "clib", NULL, 0, err, sizeof err) == 0 && p.nconfigs == 1
+              && !strcmp(p.configs[0].tag, "clib") && !strcmp(p.configs[0].blitz2, "/a2"));
+        corpus_free(&p);
+        /* port (exe, compared with the reference): the executables of both,
+           only the sources with an exe pair or a fix (none here) */
+        {
+            struct cexp_fix fx;
+
+            CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
+                               "expect_dir=/nonexistent/corpus\nsource=/s/t01_int.bb2\n"
+                               "source=/s/t02.bb2\n", &p, err, sizeof err) == 0);
+            CHECK(cexp_parse_fix("corpus:t02#46", &fx, err, sizeof err) == 0);
+            CHECK(corpus_update(&p, "port", &fx, 1, err, sizeof err) == 0
+                  && p.update == CORPUS_UPDATE_EXE && p.nconfigs == 2
+                  && !strcmp(p.configs[0].tag, "ref") && !strcmp(p.configs[1].tag, "port")
+                  && p.nsources == 1 && !strcmp(p.sources[0], "/s/t02.bb2") && p.nfix == 1);
+            corpus_free(&p);
+        }
+        /* the observation of one configuration; only some sources */
+        CHECK(corpus_parse(BASE CONFIGS "config=clib|output|/a2|/b2|/c2\n"
+                           "expect_dir=/e\nsource=/s/t01_int.bb2\nsource=/s/t02.bb2\n", &p, err,
+                           sizeof err) == 0);
+        CHECK(corpus_observe(&p, "none", "/o", 1, err, sizeof err) == -1 && strstr(err, "none"));
+        CHECK(corpus_observe(&p, "ref", "/o", 1, err, sizeof err) == 0 && p.nconfigs == 1
+              && !strcmp(p.configs[0].tag, "ref") && p.layout_stack
+              && !strcmp(p.observe_to, "/o"));
+        {
+            const char *only[] = { "t02" }, *bad[] = { "t03" };
+
+            CHECK(corpus_only(&p, bad, 1, err, sizeof err) == -1
+                  && strstr(err, "t03: no source of the pass"));
+            CHECK(corpus_only(&p, only, 1, err, sizeof err) == 0 && p.nsources == 1
+                  && !strcmp(p.sources[0], "/s/t02.bb2"));
+        }
         corpus_free(&p);
         /* serial=on: NAME.serial too */
         CHECK(corpus_parse(BASE CONFIGS "serial=on\nexpect_dir=/nonexistent\nsource=/s/x.bb2\n",
@@ -494,8 +528,9 @@ int main(void)
         corpus_free(&p);
         /* without expect_dir= there is nothing to update */
         CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0);
-        CHECK(corpus_expect_missing(&p, err, sizeof err) == 0);
-        CHECK(corpus_update(&p, "port", err, sizeof err) == -1 && strstr(err, "expect_dir"));
+        CHECK(corpus_load_expect(&p, err, sizeof err) == 0);
+        CHECK(corpus_update(&p, "port", NULL, 0, err, sizeof err) == -1
+              && strstr(err, "expect_dir"));
         corpus_free(&p);
         /* broken: empty, compile only, a bug-orig test */
         CHECK(parse(BASE CONFIGS "source=/s\nexpect_dir=\n", err, sizeof err) == -1
@@ -558,65 +593,54 @@ int main(void)
           && strstr(err, "another configuration"));
     CHECK(parse(BASE "expect_dir=/e\nsource=/s\n", err, sizeof err) == -1);
 
-    /* notes=, notes_pass=: the intended deviations (tools/lib/corpusnotes) */
-    CHECK(corpus_parse(BASE CONFIGS "expect_dir=/e\nnotes=/n.tsv\nnotes_pass=corpus_runerr\n"
-                       "source=/s\n", &p, err, sizeof err) == 0
-          && !strcmp(p.notes, "/n.tsv") && !strcmp(p.notes_pass, "corpus_runerr"));
-    corpus_free(&p);
+    /* the keys of the notes are gone (the pairs of tests/corpus/expect) */
     CHECK(parse(BASE CONFIGS "expect_dir=/e\nnotes=/n.tsv\nsource=/s\n", err, sizeof err) == -1
-          && strstr(err, "belong together"));
-    CHECK(parse(BASE CONFIGS "expect_dir=/e\nnotes_pass=corpus\nsource=/s\n", err,
-                sizeof err) == -1 && strstr(err, "belong together"));
-    CHECK(parse(BASE CONFIGS "expect_dir=/e\nnotes=/n.tsv\nnotes_pass=ted_ab\nsource=/s\n", err,
-                sizeof err) == -1 && strstr(err, "notes_pass=ted_ab: not a corpus pass"));
-    CHECK(parse(BASE CONFIGS "notes=/n.tsv\nnotes_pass=corpus\nsource=/s\n", err, sizeof err)
-          == -1 && strstr(err, "need expect_dir="));
-    CHECK(parse(BASE CONFIGS "expect_dir=/e\nnotes=\nnotes_pass=corpus\nsource=/s\n", err,
-                sizeof err) == -1);
+          && strstr(err, "unknown key notes"));
 
-    /* the notes file, read when the pass runs; the files of the test in a
-       directory of its own */
+    /* the expected data, read when the pass runs; the files of the test in
+       a directory of its own */
     {
         char dir[] = "/tmp/corpus-test-XXXXXX";
-        char *good, *bad, *src1, *src2, *dbug;
+        char *good, *bad, *src1, *src2, *dbug, *edir;
         char pass[2048];
 
         if (!mkdtemp(dir)) {
             perror("mkdtemp");
             return 1;
         }
-        good = str_printf("%s/good.tsv", dir);
-        bad = str_printf("%s/bad.tsv", dir);
+        good = str_printf("%s/corpus/t01_int.out", dir);
+        bad = str_printf("%s/corpus/t01_int.fixed-6.out", dir);
+        edir = str_printf("%s/corpus", dir);
         src1 = str_printf("%s/t110_audio.bb2", dir);
         src2 = str_printf("%s/t01_int.bb2", dir);
         dbug = str_printf("%s/DEFAULTDBUG", dir);
-        CHECK(write_file(good, "# c\ncorpus\tt01_int\t#46: reason\n", 31) == 0);
-        CHECK(write_file(bad, "corpus\tt01_int\t#46: reason\ncorpus\tt02\tno issue\n", 48) == 0);
+        CHECK(mkdir_p(edir) == 0 && write_file(good, "1\n", 2) == 0);
         CHECK(write_file(src1, "LoadSound 0,\"BB2:sounds/x\"\n", 27) == 0);
         CHECK(write_file(src2, "NPrint 1\n", 9) == 0);
 
-        snprintf(pass, sizeof pass, BASE CONFIGS "expect_dir=/e\nnotes=%s\nnotes_pass=corpus\n"
-                 "source=/s\n", good);
+        snprintf(pass, sizeof pass, BASE CONFIGS "expect_dir=%s\nsource=%s\n", edir, src2);
         CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
-        CHECK(corpus_load_notes(&p, err, sizeof err) == 0 && p.cnotes.n == 1
-              && p.cnotes.e[0].issue == 46);
+        CHECK(corpus_load_expect(&p, err, sizeof err) == 0 && p.expected.n == 1);
         corpus_free(&p);
-        /* malformed: the file and the line */
-        snprintf(pass, sizeof pass, BASE CONFIGS "expect_dir=/e\nnotes=%s\nnotes_pass=corpus\n"
-                 "source=/s\n", bad);
+        /* serial=on: the serial file is missing */
+        snprintf(pass, sizeof pass, BASE CONFIGS "serial=on\nexpect_dir=%s\nsource=%s\n", edir,
+                 src2);
         CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
-        CHECK(corpus_load_notes(&p, err, sizeof err) == -1 && strstr(err, "bad.tsv: line 2:")
-              && p.cnotes.n == 0);
+        CHECK(corpus_load_expect(&p, err, sizeof err) == -1
+              && strstr(err, "/corpus/t01_int.serial (the expected output"));
         corpus_free(&p);
-        /* missing */
-        snprintf(pass, sizeof pass, BASE CONFIGS "expect_dir=/e\nnotes=%s/none.tsv\n"
-                 "notes_pass=corpus\nsource=/s\n", dir);
+        /* malformed: an unqualified and a qualified file, named */
+        CHECK(write_file(bad, "2\n", 2) == 0);
+        snprintf(pass, sizeof pass, BASE CONFIGS "expect_dir=%s\nsource=%s\n", edir, src2);
         CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
-        CHECK(corpus_load_notes(&p, err, sizeof err) == -1 && strstr(err, "cannot read the notes"));
+        CHECK(corpus_load_expect(&p, err, sizeof err) == -1
+              && strstr(err, "/corpus/t01_int.out and t01_int.fixed-6.out: an unqualified"));
         corpus_free(&p);
-        /* no notes=: nothing to load */
-        CHECK(corpus_parse(BASE CONFIGS "expect_dir=/e\nsource=/s\n", &p, err, sizeof err) == 0);
-        CHECK(corpus_load_notes(&p, err, sizeof err) == 0);
+        /* a lone fixed file: malformed for the judge */
+        unlink(good);
+        CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
+        CHECK(corpus_load_expect(&p, err, sizeof err) == -1
+              && strstr(err, "t01_int.fixed-6.out: without its [orig] file"));
         corpus_free(&p);
 
         /* without the CD: no blitz2:defaultdbug, and the source that names
@@ -653,7 +677,7 @@ int main(void)
                  "defaultdbug=%s/none\nconfig=clib|ref|/a|/b|/c\nexpect_dir=/e\n"
                  "mount=BB2|%s/no-cd\nsource=%s\nsource=%s\n", dir, dir, src1, src2);
         CHECK(corpus_parse(pass, &p, err, sizeof err) == 0);
-        CHECK(corpus_update(&p, "clib", err, sizeof err) == 0);
+        CHECK(corpus_update(&p, "clib", NULL, 0, err, sizeof err) == 0);
         corpus_skip_missing(&p, NULL);
         CHECK(p.defaultdbug && p.nsources == 2 && p.nmounts == 1);
         corpus_free(&p);
@@ -664,6 +688,7 @@ int main(void)
         free(src1);
         free(src2);
         free(dbug);
+        free(edir);
     }
 
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind

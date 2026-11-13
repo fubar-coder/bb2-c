@@ -53,8 +53,6 @@
 #              cases: the file that applies to a configuration, the record
 #              from two runs of the original, the update from the port,
 #              the cases for fix-scope
-#   corpusnotes  the intended deviations of the corpus programs from the
-#              original (tests/corpus/notes.tsv)
 #   libscmp    the judge of the library tests: the cases of a run against
 #              the expected data (libs/tests/expected), the expected data
 #              from two recording runs or with the port's [fixed #N] values,
@@ -95,7 +93,6 @@ add_subdirectory(cdtable)
 add_subdirectory(oracletable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
-add_subdirectory(corpusnotes)
 add_subdirectory(corpusexpect)
 add_subdirectory(libscmp)
 add_subdirectory(bugorigcmp)

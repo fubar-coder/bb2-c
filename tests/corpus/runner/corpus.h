@@ -44,30 +44,28 @@
  *                     With expect_dir= the first configuration is judged
  *                     against the files like the others and may be the only
  *                     one (the pass without the original: clib, prev)
- *   expect_dir=DIR    the committed expected outputs (tests/corpus/expect/
- *                     PASS): DIR/NAME.out is what source NAME writes (its
- *                     NAME.run, rc=N behind it), with serial=on
- *                     DIR/NAME.serial the bytes it sends over the serial
- *                     port.  The output (and serial data) of every
+ *   expect_dir=DIR    the committed expected data (tests/corpus/expect/
+ *                     PASS, tools/lib/corpusexpect): DIR/NAME.out is what
+ *                     source NAME writes (its NAME.run, rc=N behind it),
+ *                     with serial=on DIR/NAME.serial the bytes it sends over
+ *                     the serial port; a program a fix makes differ from
+ *                     the original has the pair NAME.orig.EXT (the
+ *                     original's) and NAME.fixed-N.EXT (the port's) instead,
+ *                     an executable the pair NAME.orig.exe / NAME.fixed-N.exe
+ *                     (SHA-256).  The output (and serial data) of every
  *                     configuration, the reference's too, is compared with
- *                     these files instead of the reference's (or BASE's);
- *                     the executables are compared as before.  A missing
+ *                     the files that apply to it (by its tag: ref the
+ *                     unqualified or [orig] one, port and orig-clib either,
+ *                     the others the unqualified or [fixed #N] one)
+ *                     instead of the reference's (or BASE's); the
+ *                     executables are compared as before, except where a
+ *                     program has an exe pair: the reference's (first
+ *                     configuration, tag ref) against NAME.orig.exe, a
+ *                     configuration with EXPECT exe against
+ *                     NAME.fixed-N.exe.  A malformed directory or a missing
  *                     file is an error before any session (exit status 2).
- *                     Not with run=off or expect=.  corpus_update writes
- *                     the files instead (corpusrun pass --update-expect)
- *   notes=PATH        with expect_dir=: the notes of intended deviations from the
- *                     original (tests/corpus/notes.tsv, tools/lib/corpusnotes),
- *                     for a pass that compares with the original (ref, port):
- *                     a program listed for notes_pass= may differ in any
- *                     configuration (output from the expected file, executable
- *                     from the base: "noted #N"); an unlisted difference
- *                     fails, a listed program that differs in no configuration
- *                     is STALE (fails).  The file is read when the pass runs
- *                     (a malformed or missing file: exit status 2 before any
- *                     session)
- *   notes_pass=PASS   the pass of the rows of notes= (corpus, corpus_runerr,
- *                     corpus_req, corpus_serial, corpus_serial_runerr); both or
- *                     neither
+ *                     Not with run=off or expect=.  corpus_update writes the
+ *                     files instead (corpusrun pass --update-expect)
  *   source=PATH       a tokenised source (NAME.bb2), any number
  *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
  *                     entries, lib/previntended)
@@ -194,12 +192,15 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "corpusnotes.h"
+#include "corpusexpect.h"
 #include "previntended.h"
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_OUTPUT };
 enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK, CORPUS_RECORD_WRITE };
 enum { CORPUS_LAYOUT_STACK = 16384 };     /* layout=stack: bytes more of Stack */
+/* corpus_update: the outputs from the configuration, or the executables
+   of the reference and the configuration */
+enum corpus_update { CORPUS_UPDATE_NONE, CORPUS_UPDATE_OUT, CORPUS_UPDATE_EXE };
 
 struct corpus_config {
     char *tag;
@@ -215,9 +216,12 @@ struct corpus_pass {
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
     char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */
     char *expect_dir;                   /* expect_dir=: the expected outputs */
-    char *notes, *notes_pass;           /* notes=, notes_pass=: the intended deviations */
-    struct cnotes cnotes;               /* the rows of notes= (corpus_load_notes) */
-    int update;                         /* corpus_update: write the expected outputs */
+    struct cexp_set expected;           /* the files of expect_dir= (corpus_load_expect,
+                                           corpus_update) */
+    int update;                         /* corpus_update: enum corpus_update */
+    struct cexp_fix *fix;               /* corpus_update: the FIX entries */
+    size_t nfix;
+    char *observe_to;                   /* corpus_observe: the directory of the observations */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
     int record;                         /* record=: enum corpus_record */
     char *record_to;                    /* record_to= (record=write) */
@@ -276,34 +280,51 @@ int corpus_record_check(const char *orig, const char *obs, char *msg, size_t msg
    (noted in log); no source left: skipped */
 void corpus_skip_missing(struct corpus_pass *p, FILE *log);
 
-/* notes=: read and parse the file into p->cnotes; 0 = ok (or no notes=), -1 =
-   unreadable or malformed (message in err).  Behind the check of corpus_parse */
-int corpus_load_notes(struct corpus_pass *p, char *err, size_t errlen);
+/* the update of the expected data (expect_dir=, corpusrun pass
+   --update-expect TAG [--fix PASS:NAME#N]...): the files of expect_dir=
+   are read (a malformed directory is an error), the fixes kept for
+   corpus_run.  If TAG is a configuration compared by its executable with
+   the reference (EXPECT exe, no BASE: port), the reference and TAG run and
+   corpus_run writes the executables (cexp_update_exe) of the sources that
+   have an exe pair or a fix of this pass (the others are left out; none:
+   nothing to update, exit status 0); else only TAG runs and corpus_run
+   writes its outputs (cexp_update: a changed unqualified file is refused
+   unless a fix names the program, which makes it the pair).  The pass is
+   the name of expect_dir=.  0 = ok, -1 = no expect_dir=, no configuration
+   TAG, a malformed directory (message in err).  Behind the check of
+   corpus_parse */
+int corpus_update(struct corpus_pass *p, const char *tag, const struct cexp_fix *fix,
+                  size_t nfix, char *err, size_t errlen);
 
-/* the update of the expected outputs (expect_dir=, corpusrun pass
-   --update-expect TAG): only the configuration TAG runs, and corpus_run
-   writes its output of every source to DIR/NAME.out (with serial=on its
-   serial data to DIR/NAME.serial) instead of comparing; a source that does
-   not compile, has no output or (serial=on) no serial data or times out
-   is not written and fails the run (exit status 1).  0 = ok, -1 = no
-   expect_dir= or no configuration TAG (message in err).  Behind the check
-   of corpus_parse */
-int corpus_update(struct corpus_pass *p, const char *tag, char *err, size_t errlen);
+/* the observation of one configuration (corpusrun pass --observe TAG --to
+   DIR, the target corpus-expect-record): only TAG runs, and corpus_run
+   writes for every source DIR/NAME.out (its output, rc=N behind it), with
+   serial=on DIR/NAME.serial and DIR/NAME.exe (the SHA-256 of its
+   executable, cexp_exe_hash; with runtime error checking the trap blocks
+   zeroed); a source that does not compile gets no files.  The directory is
+   emptied first.  layout_stack: the second run of the record (corpus_layout).
+   0 = ok, -1 = no configuration TAG (err).  Behind the check of
+   corpus_parse */
+int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int layout_stack,
+                   char *err, size_t errlen);
+
+/* only the sources named (NAME without .bb2) are run: 0 = ok, -1 = a name
+   that is no source of the pass (err) */
+int corpus_only(struct corpus_pass *p, const char *const *names, size_t n, char *err,
+                size_t errlen);
+
+/* expect_dir=: read the expected data into p->expected (strict: no lone file
+   of a pair) and check that every source has its output file (and with
+   serial=on its serial file); 0 = yes (or no expect_dir=), -1 = a
+   malformed directory or a missing file (err names it) */
+int corpus_load_expect(struct corpus_pass *p, char *err, size_t errlen);
 
 /* expect_dir=: the path of the expected file of source i (".out" or
    ".serial"; malloc'd, NULL if out of memory) */
 char *corpus_expect_path(const struct corpus_pass *p, size_t i, const char *ext);
 
-/* expect_dir=: the expected files of every source are there (NAME.out,
-   with serial=on NAME.serial); 0 = yes, -1 = no (the first missing one in
-   err) */
-int corpus_expect_missing(const struct corpus_pass *p, char *err, size_t errlen);
-
-/* the output got (glen bytes, NULL = none) against the expected want: 0 =
-   the same, 1 = it differs and what says where: "line N: expected
-   \"...\", got \"...\"" (the first differing line, without its LF;
-   characters outside 32..126 as \xNN, long lines cut with ...), "the end"
-   for a missing line */
+/* the output got (glen bytes, NULL = none) against the expected want:
+   cexp_diff (corpusexpect.h) */
 int corpus_expect_diff(const uint8_t *want, size_t wlen, const uint8_t *got, size_t glen,
                        char *what, size_t len);
 

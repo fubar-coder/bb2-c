@@ -50,9 +50,9 @@ void corpus_free(struct corpus_pass *p)
     free(p->test);
     free(p->expect_dir);
     prevint_free(&p->intended);
-    cnotes_free(&p->cnotes);
-    free(p->notes);
-    free(p->notes_pass);
+    cexp_free(&p->expected);
+    free(p->fix);
+    free(p->observe_to);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -186,8 +186,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
             || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
             || !strcmp(key, "orig") || !strcmp(key, "orig_by") || !strcmp(key, "test")
-            || !strcmp(key, "expect_dir") || !strcmp(key, "notes") || !strcmp(key, "notes_pass")
-            || !strcmp(key, "record_to")) {
+            || !strcmp(key, "expect_dir") || !strcmp(key, "record_to")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
                          : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
@@ -196,9 +195,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                          : !strcmp(key, "orig_by") ? &p->orig_by
                          : !strcmp(key, "test") ? &p->test
                          : !strcmp(key, "expect_dir") ? &p->expect_dir
-                         : !strcmp(key, "notes") ? &p->notes
-                         : !strcmp(key, "record_to") ? &p->record_to
-                         : !strcmp(key, "notes_pass") ? &p->notes_pass : &p->serial_same_as;
+                         : !strcmp(key, "record_to") ? &p->record_to : &p->serial_same_as;
 
             free(*dst);
             *dst = val;
@@ -477,12 +474,6 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                     p->machine);
     if ((p->intended.n || p->intended.all) && !p->test)
         return fail(p, err, errlen, "intended= needs test= (the ctest name)");
-    if (!p->notes != !p->notes_pass || (p->notes && (!*p->notes || !p->expect_dir)))
-        return fail(p, err, errlen, "notes=PATH and notes_pass=PASS belong together and need "
-                    "expect_dir=");
-    if (p->notes_pass && !cnotes_known_pass(p->notes_pass))
-        return fail(p, err, errlen, "notes_pass=%s: not a corpus pass (corpus, corpus_runerr, "
-                    "corpus_req, corpus_serial, corpus_serial_runerr)", p->notes_pass);
     /* names: one directory per configuration, AmigaDOS ignores case */
     for (i = 0; i < p->nconfigs; i++)
         for (k = 0; k < i; k++)
@@ -572,29 +563,156 @@ int corpus_layout(struct corpus_pass *p, FILE *log)
     return 0;
 }
 
-int corpus_update(struct corpus_pass *p, const char *tag, char *err, size_t errlen)
+/* the index of the configuration tag, nconfigs if none */
+static size_t config_index(const struct corpus_pass *p, const char *tag)
 {
     size_t k;
+
+    for (k = 0; k < p->nconfigs && strcmp(p->configs[k].tag, tag); k++)
+        ;
+    return k;
+}
+
+/* only the configurations k0 and k1 (k1 >= k0; k0 == k1: one) stay */
+static void keep_configs(struct corpus_pass *p, size_t k0, size_t k1)
+{
+    while (p->nconfigs > k1 + 1)
+        drop_config(p, k1 + 1);
+    while (k1 > k0 + 1)
+        drop_config(p, --k1);
+    while (k0 > 0) {
+        drop_config(p, 0);
+        k0--;
+    }
+}
+
+/* the source i stays (keep[i]) or goes */
+static void keep_sources(struct corpus_pass *p, const unsigned char *keep)
+{
+    size_t i, j = 0;
+
+    for (i = 0; i < p->nsources; i++) {
+        if (keep[i])
+            p->sources[j++] = p->sources[i];
+        else
+            free(p->sources[i]);
+    }
+    p->nsources = j;
+}
+
+int corpus_update(struct corpus_pass *p, const char *tag, const struct cexp_fix *fix,
+                  size_t nfix, char *err, size_t errlen)
+{
+    size_t k, i;
+    int exe;
 
     if (!p->expect_dir) {
         snprintf(err, errlen, "the pass has no expect_dir=");
         return -1;
     }
-    for (k = 0; k < p->nconfigs && strcmp(p->configs[k].tag, tag); k++)
-        ;
+    if ((k = config_index(p, tag)) == p->nconfigs) {
+        snprintf(err, errlen, "the pass has no configuration %s", tag);
+        return -1;
+    }
+    cexp_free(&p->expected);
+    if (cexp_load(&p->expected, p->expect_dir, CEXP_MISSING_OK, err, errlen))
+        return -1;
+    if (nfix && !(p->fix = malloc(nfix * sizeof *p->fix))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    if (nfix)
+        memcpy(p->fix, fix, nfix * sizeof *fix);
+    p->nfix = nfix;
+    /* port (exe, compared with the reference): the executables of both */
+    exe = k > 0 && p->configs[k].expect == CORPUS_EXE && !p->configs[k].base;
+    if (exe) {
+        unsigned char *keep = calloc(p->nsources ? p->nsources : 1, 1);
+
+        if (!keep) {
+            snprintf(err, errlen, "out of memory");
+            return -1;
+        }
+        keep_configs(p, 0, k);
+        for (i = 0; i < p->nsources; i++) {
+            char *n = corpus_name(p->sources[i]);
+            const struct cexp_prog *pr = n ? cexp_find(&p->expected, n) : NULL;
+            size_t f;
+
+            keep[i] = pr && pr->f[CEXP_EXE][CEXP_FIXED].data;
+            for (f = 0; n && f < nfix; f++)
+                if (!strcmp(fix[f].pass, p->expected.pass) && !strcmp(fix[f].name, n))
+                    keep[i] = 1;
+            free(n);
+        }
+        keep_sources(p, keep);
+        free(keep);
+        p->update = CORPUS_UPDATE_EXE;
+        return 0;
+    }
+    /* the others are not run; nothing is compared with them */
+    keep_configs(p, k, k);
+    p->configs[0].expect = CORPUS_OUTPUT;
+    free(p->configs[0].base);
+    p->configs[0].base = NULL;
+    p->update = CORPUS_UPDATE_OUT;
+    return 0;
+}
+
+int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int layout_stack,
+                   char *err, size_t errlen)
+{
+    size_t k = config_index(p, tag);
+
     if (k == p->nconfigs) {
         snprintf(err, errlen, "the pass has no configuration %s", tag);
         return -1;
     }
-    /* the others are not run; nothing is compared with them */
-    while (p->nconfigs > k + 1)
-        drop_config(p, k + 1);
-    while (p->nconfigs > 1)
-        drop_config(p, 0);
+    if (!(p->observe_to = strdup(dir))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    keep_configs(p, k, k);
     p->configs[0].expect = CORPUS_OUTPUT;
     free(p->configs[0].base);
     p->configs[0].base = NULL;
-    p->update = 1;
+    /* its own observation: not compared with the other pass */
+    free(p->serial_same_as);
+    p->serial_same_as = NULL;
+    p->layout_stack = layout_stack;
+    return 0;
+}
+
+int corpus_only(struct corpus_pass *p, const char *const *names, size_t n, char *err,
+                size_t errlen)
+{
+    unsigned char *keep;
+    size_t i, k;
+
+    if (!n)
+        return 0;
+    if (!(keep = calloc(p->nsources ? p->nsources : 1, 1))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    for (k = 0; k < n; k++) {
+        int found = 0;
+
+        for (i = 0; i < p->nsources; i++) {
+            char *nm = corpus_name(p->sources[i]);
+
+            if (nm && !strcmp(nm, names[k]))
+                keep[i] = found = 1;
+            free(nm);
+        }
+        if (!found) {
+            snprintf(err, errlen, "%s: no source of the pass", names[k]);
+            free(keep);
+            return -1;
+        }
+    }
+    keep_sources(p, keep);
+    free(keep);
     return 0;
 }
 
@@ -607,110 +725,35 @@ char *corpus_expect_path(const struct corpus_pass *p, size_t i, const char *ext)
     return path;
 }
 
-int corpus_expect_missing(const struct corpus_pass *p, char *err, size_t errlen)
+int corpus_load_expect(struct corpus_pass *p, char *err, size_t errlen)
 {
     size_t i, k;
 
-    for (i = 0; p->expect_dir && i < p->nsources; i++)
+    if (!p->expect_dir)
+        return 0;
+    cexp_free(&p->expected);
+    if (cexp_load(&p->expected, p->expect_dir, CEXP_STRICT, err, errlen))
+        return -1;
+    for (i = 0; i < p->nsources; i++)
         for (k = 0; k < (p->serial ? 2u : 1u); k++) {
-            char *path = corpus_expect_path(p, i, k ? ".serial" : ".out");
-            int missing = !path || access(path, R_OK);
+            char *n = corpus_name(p->sources[i]);
+            int missing = !n || !cexp_has(cexp_find(&p->expected, n), k ? CEXP_SERIAL : CEXP_OUT);
 
             if (missing)
-                snprintf(err, errlen, "no %s (the expected output: cmake --build --preset amiga "
-                         "--target corpus-expect-update)", path ? path : "expected file");
-            free(path);
+                snprintf(err, errlen, "no %s/%s%s (the expected output: cmake --build --preset "
+                         "amiga --target corpus-expect-update)", p->expect_dir, n ? n : "?",
+                         k ? ".serial" : ".out");
+            free(n);
             if (missing)
                 return -1;
         }
     return 0;
 }
 
-int corpus_load_notes(struct corpus_pass *p, char *err, size_t errlen)
-{
-    size_t len;
-    char msg[300];
-    uint8_t *text;
-
-    if (!p->notes)
-        return 0;
-    if (!(text = read_file(p->notes, &len))) {
-        snprintf(err, errlen, "cannot read the notes %s", p->notes);
-        return -1;
-    }
-    cnotes_free(&p->cnotes);
-    if (cnotes_parse(&p->cnotes, (const char *)text, msg, sizeof msg)) {
-        snprintf(err, errlen, "%s: %s", p->notes, msg);
-        cnotes_free(&p->cnotes);
-        free(text);
-        return -1;
-    }
-    free(text);
-    return 0;
-}
-
-/* one line (without its LF) as "\"...\"", at most about 60 characters */
-static void quote_line(char *dst, size_t len, const uint8_t *s, size_t n)
-{
-    size_t i, o = 0;
-
-    if (o + 1 < len)
-        dst[o++] = '"';
-    for (i = 0; i < n && o + 8 < len; i++) {
-        if (i == 60) {
-            o += (size_t)snprintf(dst + o, len - o, "...");
-            break;
-        }
-        if (s[i] >= 32 && s[i] < 127 && s[i] != '"' && s[i] != '\\')
-            dst[o++] = (char)s[i];
-        else
-            o += (size_t)snprintf(dst + o, len - o, "\\x%02X", s[i]);
-    }
-    if (o + 1 < len)
-        dst[o++] = '"';
-    dst[o < len ? o : len - 1] = 0;
-}
-
 int corpus_expect_diff(const uint8_t *want, size_t wlen, const uint8_t *got, size_t glen,
                        char *what, size_t len)
 {
-    size_t wp = 0, gp = 0, line = 1;
-    char a[300], b[300];
-
-    if (!got)
-        glen = 0;
-    if (got && wlen == glen && !memcmp(want, got, wlen))
-        return 0;
-    if (!got) {
-        snprintf(what, len, "no output");
-        return 1;
-    }
-    for (;;) {
-        const uint8_t *we = wp < wlen ? memchr(want + wp, '\n', wlen - wp) : NULL;
-        const uint8_t *ge = gp < glen ? memchr(got + gp, '\n', glen - gp) : NULL;
-        /* a line ends at its LF or at the end of the data */
-        size_t wn = we ? (size_t)(we - (want + wp)) : wlen - wp;
-        size_t gn = ge ? (size_t)(ge - (got + gp)) : glen - gp;
-        int wend = wp >= wlen, gend = gp >= glen;
-
-        if (wend || gend || wn != gn || memcmp(want + wp, got + gp, wn) || !we != !ge) {
-            if (wend)
-                snprintf(a, sizeof a, "the end");
-            else
-                quote_line(a, sizeof a, want + wp, wn);
-            if (gend)
-                snprintf(b, sizeof b, "the end");
-            else
-                quote_line(b, sizeof b, got + gp, gn);
-            /* the same text, only the LF at the end of the data differs */
-            snprintf(what, len, "line %zu: expected %s%s, got %s%s", line, a,
-                     !wend && !we ? " (no LF)" : "", b, !gend && !ge ? " (no LF)" : "");
-            return 1;
-        }
-        wp += wn + 1;
-        gp += gn + 1;
-        line++;
-    }
+    return cexp_diff(want, wlen, got, glen, what, len);
 }
 
 /* the files of configuration c are there */
@@ -772,7 +815,7 @@ void corpus_skip_missing(struct corpus_pass *p, FILE *log)
 {
     size_t c;
 
-    if (p->expect_dir && !p->orig && !p->expect && !p->update) {
+    if (p->expect_dir && !p->orig && !p->expect && !p->update && !p->observe_to) {
         skip_missing_expect(p, log);
         return;
     }
@@ -1466,84 +1509,333 @@ out:
 
 /* ------------------------------------------------------ expected outputs */
 
-/* corpus_update: the output of the one configuration into expect_dir=;
-   0 = every source written, 1 = some not (the report says which), 2 =
-   error */
-static int write_expect(const struct corpus_pass *p, enum amiga_emulation_status st,
+/* the report of an update or an observation: written and logged; 2 = it
+   could not be written */
+static int report_out(const struct corpus_pass *p, struct text *rep, FILE *log)
+{
+    if (rep->bad || write_file(p->report, rep->p, rep->n)) {
+        fprintf(log, "corpus: cannot write %s\n", p->report);
+        return 2;
+    }
+    fwrite(rep->p, 1, rep->n, log);
+    return 0;
+}
+
+/* a report into memory (open_memstream), for the corpusexpect functions */
+struct memrep {
+    char *p;
+    size_t n;
+    FILE *f;
+};
+
+/* corpus_update with CORPUS_UPDATE_OUT: the output of the one configuration
+   into expect_dir= (cexp_update); 0 = every source done, 1 = some refused
+   (the report says which), 2 = error */
+static int write_update(const struct corpus_pass *p, enum amiga_emulation_status st,
                         const char *slog, struct statline *stl, FILE *log)
 {
     struct text rep = { 0 };
-    size_t i, bad = 0;
+    struct cexp_set run;
+    struct cexp_plan pl = { 0 };
+    struct memrep mr = { 0 };
+    size_t i;
+    int rc = 0;
+    char err[700];
 
-    if (mkdir_p(p->expect_dir)) {
-        fprintf(log, "corpus: cannot create %s\n", p->expect_dir);
-        return 2;
-    }
+    memset(&run, 0, sizeof run);
+    run.run = 1;
     text_add(&rep, "== expected outputs of %s (runtime error checking %s, %zu sources) -> %s\n",
         p->configs[0].tag, p->runtime_errors ? "on" : "off", p->nsources, p->expect_dir);
     if (st != AMIGA_EMULATION_DONE) {
         text_add(&rep, "session %s: %s (%s/%s/emu) - nothing written\n", p->configs[0].tag,
             amiga_emulation_status_name(st), p->work, p->configs[0].tag);
-        bad = p->nsources;
+        statline_set(stl[0].verdict, sizeof stl[0].verdict, "differs");
+        return report_out(p, &rep, log) ? 2 : 1;
     }
-    for (i = 0; !bad && i < p->nsources; i++) {
+    for (i = 0; i < p->nsources && !rc; i++) {
         struct outcome o;
-        char *name = corpus_name(p->sources[i]);
-        char *out = corpus_expect_path(p, i, ".out");
-        char *ser = corpus_expect_path(p, i, ".serial");
-        const char *why = NULL;
+        char *name = corpus_name(p->sources[i]), fn[200];
 
         load_outcome(p, 0, i, slog, &o);
         if (!o.exe)
-            why = "does not compile";
-        else if (!o.run)
-            why = "no output";
-        else if (p->serial && !o.serial)
-            why = "no serial data";
-        else if (p->serial && strstr((const char *)o.run, "TIMEOUT"))
-            why = "TIMEOUT";
-        else if (!out || !ser || write_file(out, o.run, o.runlen)
-                 || (p->serial && write_file(ser, o.serial, o.seriallen)))
-            why = "cannot write the file";
-        text_add(&rep, "%-16s %s%s\n", name ? name : "?", why ? "NOT WRITTEN: " : "written",
-            why ? why : "");
-        if (!o.exe)
-            text_add(&rep, "  %s\n", o.result);
-        bad += why != NULL;
+            text_add(&rep, "%-16s does not compile: %s\n", name ? name : "?", o.result);
+        else if (p->serial && o.run && strstr((const char *)o.run, "TIMEOUT"))
+            text_add(&rep, "%-16s TIMEOUT\n", name ? name : "?");
+        else if (name && o.run) {
+            snprintf(fn, sizeof fn, "%s.out", name);
+            rc = cexp_add(&run, fn, o.run, o.runlen, err, sizeof err);
+            if (!rc && p->serial && o.serial) {
+                snprintf(fn, sizeof fn, "%s.serial", name);
+                rc = cexp_add(&run, fn, o.serial, o.seriallen, err, sizeof err);
+            }
+        }
+        /* a source without its files: cexp_update names it (no output) */
+        if (!rc && name && !cexp_find(&run, name)) {
+            snprintf(fn, sizeof fn, "%s.out", name);
+            rc = cexp_add(&run, fn, "", 0, err, sizeof err);
+            if (!rc) {
+                struct cexp_prog *pr = (struct cexp_prog *)cexp_find(&run, name);
+
+                free(pr->f[CEXP_OUT][CEXP_PLAIN].data);
+                pr->f[CEXP_OUT][CEXP_PLAIN].data = NULL;
+            }
+        }
+        free_outcome(&o);
+        free(name);
+    }
+    if (!rc && !(mr.f = open_memstream(&mr.p, &mr.n)))
+        rc = -1;
+    if (rc) {
+        fprintf(log, "corpus: %s\n", rc == -1 ? "out of memory" : err);
+        cexp_free(&run);
+        free(rep.p);
+        return 2;
+    }
+    run.pass = p->expected.pass;
+    rc = cexp_update(&run, &p->expected, p->serial, p->fix, p->nfix, &pl, mr.f);
+    run.pass = NULL;
+    if (rc >= 0 && cexp_plan_apply(&pl, p->expect_dir, mr.f, err, sizeof err)) {
+        fprintf(mr.f, "%s\n", err);
+        rc = 2;
+    }
+    fclose(mr.f);
+    text_add(&rep, "%s", mr.p ? mr.p : "");
+    free(mr.p);
+    if (rc < 0) {
+        fprintf(log, "corpus: out of memory\n");
+        rc = 2;
+    }
+    text_add(&rep, "%zu sources, %s\n", p->nsources,
+        rc == 0 ? "the expected data written" : "a program refused (nothing written for it)");
+    statline_set(stl[0].verdict, sizeof stl[0].verdict, rc ? "differs" : "recorded");
+    cexp_plan_free(&pl);
+    cexp_free(&run);
+    if (report_out(p, &rep, log))
+        rc = 2;
+    free(rep.p);
+    return rc;
+}
+
+/* the hash of an outcome's executable (CEXP_HASHLEN bytes in h), NULL: none */
+static const char *exe_hash(const struct outcome *o, char h[CEXP_HASHLEN + 1])
+{
+    if (!o->exe)
+        return NULL;
+    cexp_exe_hash(o->exe, o->exelen, h);
+    return h;
+}
+
+/* corpus_update with CORPUS_UPDATE_EXE: the executables of the reference
+   (configuration 0) and the port (1) into expect_dir= (cexp_update_exe) */
+static int write_update_exe(const struct corpus_pass *p, const enum amiga_emulation_status *st,
+                            char **slog, struct statline *stl, FILE *log)
+{
+    struct text rep = { 0 };
+    struct cexp_plan pl = { 0 };
+    struct memrep mr = { 0 };
+    size_t i, c;
+    int rc = 0, refused = 0;
+    char err[700];
+
+    text_add(&rep, "== executables of %s and %s (runtime error checking %s, %zu sources) -> %s\n",
+        p->configs[0].tag, p->configs[1].tag, p->runtime_errors ? "on" : "off", p->nsources,
+        p->expect_dir);
+    for (c = 0; c < 2; c++)
+        if (st[c] != AMIGA_EMULATION_DONE) {
+            text_add(&rep, "session %s: %s (%s/%s/emu) - nothing written\n", p->configs[c].tag,
+                amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
+            rc = 2;
+        }
+    if (!rc && !(mr.f = open_memstream(&mr.p, &mr.n)))
+        rc = -1;
+    for (i = 0; !rc && i < p->nsources; i++) {
+        struct outcome r, o;
+        char *name = corpus_name(p->sources[i]), hr[CEXP_HASHLEN + 1], hp[CEXP_HASHLEN + 1];
+
+        load_outcome(p, 0, i, slog[0], &r);
+        load_outcome(p, 1, i, slog[1], &o);
+        if (name)
+            rc = cexp_update_exe(&p->expected, name, exe_hash(&r, hr), exe_hash(&o, hp), p->fix,
+                                 p->nfix, &pl, mr.f);
+        free_outcome(&r);
+        free_outcome(&o);
+        free(name);
+        /* refused: named in the report, the others go on */
+        if (rc > 0) {
+            refused = 1;
+            rc = 0;
+        }
+    }
+    if (rc < 0) {
+        fprintf(log, "corpus: out of memory\n");
+        if (mr.f)
+            fclose(mr.f);
+        free(mr.p);
+        cexp_plan_free(&pl);
+        free(rep.p);
+        return 2;
+    }
+    if (mr.f) {
+        if (cexp_plan_apply(&pl, p->expect_dir, mr.f, err, sizeof err)) {
+            fprintf(mr.f, "%s\n", err);
+            rc = 2;
+        }
+        fclose(mr.f);
+        text_add(&rep, "%s", mr.p ? mr.p : "");
+    }
+    free(mr.p);
+    cexp_plan_free(&pl);
+    if (!rc && refused)
+        rc = 1;
+    text_add(&rep, "%zu sources, %s\n", p->nsources,
+        rc == 1 ? "a program refused (nothing written for it)" : rc ? "not written" : "done");
+    for (c = 0; c < 2; c++)
+        statline_set(stl[c].verdict, sizeof stl[c].verdict, rc ? "differs" : "recorded");
+    if (report_out(p, &rep, log))
+        rc = 2;
+    free(rep.p);
+    return rc;
+}
+
+/* corpus_observe: the observations of the one configuration into
+   observe_to= (NAME.out, NAME.serial, NAME.exe); 0 = written, 2 = the
+   session failed or a file could not be written */
+static int write_observed(const struct corpus_pass *p, enum amiga_emulation_status st,
+                          const char *slog, struct statline *stl, FILE *log)
+{
+    struct text rep = { 0 };
+    size_t i, written = 0;
+    int rc = 0;
+
+    text_add(&rep, "== observations of %s (runtime error checking %s, %zu sources%s) -> %s\n",
+        p->configs[0].tag, p->runtime_errors ? "on" : "off", p->nsources,
+        p->layout_stack ? ", the larger Stack" : "", p->observe_to);
+    if (st == AMIGA_EMULATION_FAILED || st == AMIGA_EMULATION_EXITED) {
+        text_add(&rep, "session %s: %s (%s/%s/emu) - nothing written\n", p->configs[0].tag,
+            amiga_emulation_status_name(st), p->work, p->configs[0].tag);
+        statline_set(stl[0].verdict, sizeof stl[0].verdict, "differs");
+        report_out(p, &rep, log);
+        free(rep.p);
+        return 2;
+    }
+    rm_tree(p->observe_to);
+    if (mkdir_p(p->observe_to)) {
+        fprintf(log, "corpus: cannot create %s\n", p->observe_to);
+        free(rep.p);
+        return 2;
+    }
+    for (i = 0; !rc && i < p->nsources; i++) {
+        struct outcome o;
+        char *name = corpus_name(p->sources[i]), h[CEXP_HASHLEN + 1];
+        char *out = name ? str_printf("%s/%s.out", p->observe_to, name) : NULL;
+        char *ser = name ? str_printf("%s/%s.serial", p->observe_to, name) : NULL;
+        char *exe = name ? str_printf("%s/%s.exe", p->observe_to, name) : NULL;
+
+        load_outcome(p, 0, i, slog, &o);
+        if (!out || !ser || !exe)
+            rc = 2;
+        else if (!o.exe)
+            text_add(&rep, "%-16s does not compile: %s\n", name, o.result);
+        else {
+            if ((o.run && write_file(out, o.run, o.runlen))
+                || (p->serial && o.serial && write_file(ser, o.serial, o.seriallen))
+                || write_file(exe, exe_hash(&o, h), CEXP_HASHLEN))
+                rc = 2;
+            written++;
+        }
+        if (rc)
+            fprintf(log, "corpus: cannot write the observation of %s\n", name ? name : "?");
         free_outcome(&o);
         free(name);
         free(out);
         free(ser);
+        free(exe);
     }
-    text_add(&rep, "%zu sources, %zu not written\n", p->nsources, bad);
-    statline_set(stl[0].verdict, sizeof stl[0].verdict, bad ? "differs" : "recorded");
-    if (rep.bad || write_file(p->report, rep.p, rep.n)) {
-        fprintf(log, "corpus: cannot write %s\n", p->report);
-        free(rep.p);
-        return 2;
-    }
-    fwrite(rep.p, 1, rep.n, log);
+    text_add(&rep, "%zu sources, %zu observed (session %s)\n", p->nsources, written,
+        amiga_emulation_status_name(st));
+    statline_set(stl[0].verdict, sizeof stl[0].verdict, rc ? "differs" : "recorded");
+    if (report_out(p, &rep, log))
+        rc = 2;
     free(rep.p);
-    return bad ? 1 : 0;
+    return rc;
 }
 
-/* expect_dir=: the output (ext ".out") or serial data (".serial") of
-   configuration tag for source i against the expected file; 1 = it
-   differs (the first difference to detail) */
-static int expect_judge(const struct corpus_pass *p, size_t i, const char *ext, const char *tag,
-                        const uint8_t *got, size_t glen, struct text *detail)
+/* expect_dir=: the output (CEXP_OUT) or serial data (CEXP_SERIAL) of
+   configuration cf for source name against the files that apply to it;
+   1 = it differs (each applying file's first difference to detail);
+   matched: the qualifier of the file it equals */
+static int expect_judge(const struct corpus_pass *p, const char *name, enum cexp_obs ob,
+                        const struct corpus_config *cf, const uint8_t *got, size_t glen,
+                        struct text *detail, enum cexp_qual *matched)
 {
-    char *path = corpus_expect_path(p, i, ext), what[700];
-    size_t wlen = 0;
-    uint8_t *want = path ? read_file(path, &wlen) : NULL;
-    int d = 1;
+    const struct cexp_prog *pr = name ? cexp_find(&p->expected, name) : NULL;
+    enum cexp_side side = cexp_side_of_tag(cf->tag);
+    enum cexp_qual q[2];
+    size_t n = cexp_applies(pr, ob, side, q), k;
+    int d = cexp_judge(pr, ob, side, got, glen, matched);
 
-    if (!want)
-        text_add(detail, "  %s: cannot read %s\n", tag, path ? path : "the expected file");
-    else if ((d = corpus_expect_diff(want, wlen, got, glen, what, sizeof what)) != 0)
-        text_add(detail, "  %s: %s %s\n", tag, path, what);
-    free(want);
-    free(path);
+    if (d < 0)
+        text_add(detail, "  %s: no expected file %s/%s.%s\n", cf->tag, p->expect_dir,
+            name ? name : "?", cexp_obs_name(ob));
+    for (k = 0; d > 0 && k < n; k++) {
+        char fn[200], what[700];
+
+        cexp_file_name(pr, ob, q[k], fn, sizeof fn);
+        cexp_diff(pr->f[ob][q[k]].data, pr->f[ob][q[k]].len, got, glen, what, sizeof what);
+        text_add(detail, "  %s: %s/%s %s\n", cf->tag, p->expect_dir, fn, what);
+    }
+    return d != 0;
+}
+
+/* " (matched [orig])", " (matched [fixed #N])" for a qualified file */
+static void add_matched(struct text *rep, const struct corpus_pass *p, const char *name,
+                        enum cexp_obs ob, enum cexp_qual q)
+{
+    const struct cexp_prog *pr = name ? cexp_find(&p->expected, name) : NULL;
+
+    if (q == CEXP_ORIG)
+        text_add(rep, " (matched [orig])");
+    else if (q == CEXP_FIXED && pr)
+        text_add(rep, " (matched [fixed #%u])", pr->issue[ob]);
+}
+
+/* the exe pair of source name that applies to configuration c, or -1: the
+   reference (first configuration, tag ref) [orig], a configuration with
+   EXPECT exe compared with it [fixed #N] */
+static int exe_case(const struct corpus_pass *p, size_t c, const char *name)
+{
+    const struct cexp_prog *pr = name && p->expect_dir ? cexp_find(&p->expected, name) : NULL;
+    const struct corpus_config *cf = &p->configs[c];
+
+    if (!pr || !pr->f[CEXP_EXE][CEXP_FIXED].data || cf->base)
+        return -1;
+    if (c == 0 && cexp_side_of_tag(cf->tag) == CEXP_SIDE_ORIG)
+        return CEXP_ORIG;
+    if (c > 0 && cf->expect == CORPUS_EXE)
+        return CEXP_FIXED;
+    return -1;
+}
+
+/* the executable of configuration c against its exe file (exe_case q); 1 =
+   it differs (detail) */
+static int exe_judge(const struct corpus_pass *p, size_t c, const char *name, int q,
+                     const struct outcome *o, struct text *rep, struct text *detail)
+{
+    const struct cexp_prog *pr = cexp_find(&p->expected, name);
+    const struct cexp_file *f = &pr->f[CEXP_EXE][q];
+    char h[CEXP_HASHLEN + 1], fn[200];
+    int d = !o->exe;
+
+    cexp_file_name(pr, CEXP_EXE, (enum cexp_qual)q, fn, sizeof fn);
+    if (o->exe) {
+        cexp_exe_hash(o->exe, o->exelen, h);
+        d = memcmp(h, f->data, CEXP_HASHLEN) != 0;
+    }
+    text_add(rep, !o->exe ? " NO EXE (%s)," : d ? " EXE DIFFERS FROM %s," : " exe as %s,",
+        !o->exe ? o->result : fn);
+    if (d && o->exe)
+        text_add(detail, "  %s: %s/%s: expected %.64s, got %.64s\n", p->configs[c].tag,
+            p->expect_dir, fn, (const char *)f->data, h);
     return d;
 }
 
@@ -1565,23 +1857,6 @@ static int prev_judge(struct corpus_pass *p, const struct corpus_config *cf, con
     if (v == PREVINT_INTENDED)
         text_add(rep, " (intended)");
     return v == PREVINT_DIFFERS;
-}
-
-/* The differences of a pass with notes= are judged against the notes
-   (corpusnotes.h): differs = this source differs in this configuration;
-   returns 1 if that is an error.  A noted difference gets " (noted #N)"
-   in the report line. */
-static int note_judge(struct corpus_pass *p, const char *name, int differs, struct text *rep)
-{
-    const struct cnote *n;
-    int v;
-
-    if (!p->notes_pass || !name)
-        return differs;
-    v = cnotes_judge(&p->cnotes, p->notes_pass, name, differs, &n);
-    if (v == CNOTE_NOTED)
-        text_add(rep, " (noted #%u)", n->issue);
-    return v == CNOTE_DIFFERS;
 }
 
 int corpus_run(struct corpus_pass *p, FILE *log)
@@ -1608,15 +1883,18 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     if (p->orig && !p->record && (rc = check_orig(p, &orig, log)) >= 0)
         goto out;
     rc = 2;
-    /* the expected outputs belong to the repository: missing, the pass is
-       broken (also where it would be skipped) */
-    if (p->expect_dir && !p->update && corpus_expect_missing(p, err, sizeof err)) {
+    /* the expected data belong to the repository: malformed or missing, the
+       pass is broken (also where it would be skipped) */
+    if (p->expect_dir && !p->update && !p->observe_to
+        && corpus_load_expect(p, err, sizeof err)) {
         fprintf(log, "corpus: %s\n", err);
         goto out;
     }
-    /* the notes belong to the repository as well: malformed, the pass is broken */
-    if (corpus_load_notes(p, err, sizeof err)) {
-        fprintf(log, "corpus: %s\n", err);
+    /* the update of the executables: no program with an exe pair or a fix */
+    if (p->update == CORPUS_UPDATE_EXE && !p->nsources) {
+        fprintf(log, "corpus: %s: no program with an exe pair or a FIX - nothing to update\n",
+                p->expected.pass);
+        rc = 0;
         goto out;
     }
     if (!p->nsources) {
@@ -1733,8 +2011,16 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         rc = record(p, st[0], slog[0], stl, log);
         goto out;
     }
-    if (p->update) {
-        rc = write_expect(p, st[0], slog[0], stl, log);
+    if (p->observe_to) {
+        rc = write_observed(p, st[0], slog[0], stl, log);
+        goto out;
+    }
+    if (p->update == CORPUS_UPDATE_OUT) {
+        rc = write_update(p, st[0], slog[0], stl, log);
+        goto out;
+    }
+    if (p->update == CORPUS_UPDATE_EXE) {
+        rc = write_update_exe(p, st, slog, stl, log);
         goto out;
     }
     if (p->expect) {
@@ -1833,11 +2119,14 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             const struct corpus_config *cf = &p->configs[c];
             struct outcome bo;
             const struct outcome *rb = compared_with(p, c, i, slog, &ref, &bo);
-            int cdiff = 0;
+            int cdiff = 0, xq = exe_case(p, c, name);
+            enum cexp_qual mq = CEXP_PLAIN;
 
             load_outcome(p, c, i, slog[c], &o);
             text_add(&rep, "%s %s:", c > (p->expect_dir ? 0u : 1u) ? ";" : "", cf->tag);
-            if (c && cf->expect == CORPUS_EXE) {
+            if (xq >= 0)
+                cdiff |= exe_judge(p, c, name, xq, &o, &rep, &detail);
+            else if (c && cf->expect == CORPUS_EXE) {
                 int ok = same(rb->exe, rb->exelen, o.exe, o.exelen);
 
                 text_add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
@@ -1845,9 +2134,11 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 cdiff |= !ok;
             }
             if (p->expect_dir) {
-                int d = expect_judge(p, i, ".out", cf->tag, o.run, o.runlen, &detail);
+                int d = expect_judge(p, name, CEXP_OUT, cf, o.run, o.runlen, &detail, &mq);
 
                 text_add(&rep, !o.run ? " NO OUTPUT" : d ? " OUTPUT DIFFERS" : " output as expected");
+                if (o.run && !d)
+                    add_matched(&rep, p, name, CEXP_OUT, mq);
                 cdiff |= d;
             } else {
                 if (!o.run)
@@ -1860,10 +2151,13 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             }
             if (p->serial) {
                 if (p->expect_dir) {
-                    int d = expect_judge(p, i, ".serial", cf->tag, o.serial, o.seriallen, &detail);
+                    int d = expect_judge(p, name, CEXP_SERIAL, cf, o.serial, o.seriallen, &detail,
+                                         &mq);
 
                     text_add(&rep, !o.serial ? ", NO SERIAL DATA" : d ? ", SERIAL DATA DIFFERS"
                                    : ", serial data as expected");
+                    if (o.serial && !d)
+                        add_matched(&rep, p, name, CEXP_SERIAL, mq);
                     cdiff |= d;
                 } else {
                     int ok = same(rb->serial, rb->seriallen, o.serial, o.seriallen);
@@ -1878,7 +2172,6 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 }
             }
             cdiff = prev_judge(p, cf, name, cdiff, &rep, &prevdiff);
-            cdiff = note_judge(p, name, cdiff, &rep);
             diff |= cdiff;
             vbad[c] |= cdiff;
             free_outcome(&o);
@@ -1930,25 +2223,6 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 if (!strcmp(p->configs[c].tag, "prev"))
                     vbad[c] = 1;
         }
-    }
-    /* the notes: a listed program that differs in no configuration is stale */
-    if (p->notes_pass) {
-        size_t cur = 0;
-        const struct cnote *n;
-
-        while ((n = cnotes_stale(&p->cnotes, p->notes_pass, &cur)) != NULL) {
-            text_add(&rep, "STALE note %s:%s (%s, line %u of %s): the program does not differ "
-                           "from the original in any configuration (or is not in this pass)\n",
-                p->notes_pass, n->name, n->text, n->line, p->notes);
-            bad++;
-            for (c = 0; c < p->nconfigs; c++)
-                vbad[c] = 1;
-        }
-        for (cur = 0; cur < p->cnotes.n; cur++)
-            if (!strcmp(p->cnotes.e[cur].pass, p->notes_pass) && p->cnotes.e[cur].differed) {
-                text_add(&rep, "noted %s:%s differs from the original: %s\n",
-                    p->notes_pass, p->cnotes.e[cur].name, p->cnotes.e[cur].text);
-            }
     }
     if (prevdiff.n)
         text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", prevdiff.p);

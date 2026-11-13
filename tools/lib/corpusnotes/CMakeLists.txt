@@ -1,3 +1,0 @@
-add_library(lib_corpusnotes STATIC corpusnotes.c)
-set_target_properties(lib_corpusnotes PROPERTIES OUTPUT_NAME corpusnotes)
-target_include_directories(lib_corpusnotes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
