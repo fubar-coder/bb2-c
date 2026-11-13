@@ -49,6 +49,10 @@
 #              prev build, the build of the previous commit)
 #   previntended  the intended differences of the corpus and ted_ab against
 #              the prev build (PREV_INTENDED entries)
+#   corpusexpect  the expected data of the corpus (tests/corpus/expect) as
+#              cases: the file that applies to a configuration, the record
+#              from two runs of the original, the update from the port,
+#              the cases for fix-scope
 #   corpusnotes  the intended deviations of the corpus programs from the
 #              original (tests/corpus/notes.tsv)
 #   libscmp    the judge of the library tests: the cases of a run against
@@ -92,6 +96,7 @@ add_subdirectory(oracletable)
 add_subdirectory(prevcmp)
 add_subdirectory(previntended)
 add_subdirectory(corpusnotes)
+add_subdirectory(corpusexpect)
 add_subdirectory(libscmp)
 add_subdirectory(bugorigcmp)
 add_subdirectory(cli)

@@ -1,0 +1,4 @@
+add_library(lib_corpusexpect STATIC corpusexpect.c)
+set_target_properties(lib_corpusexpect PROPERTIES OUTPUT_NAME corpusexpect)
+target_include_directories(lib_corpusexpect PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_corpusexpect PUBLIC lib_libscmp lib_sha256)
