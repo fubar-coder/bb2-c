@@ -1,0 +1,47 @@
+; Literal characters (change literal-characters, spec
+; editor/literal-characters): blitz2 with a file of one empty line (its
+; .xtra without runtime error checking), type a string with ö, ß and §
+; and a comment with ° and § (TED-C stores ß, § and ° as the pair
+; $90 cc, ö as the code 27), SAVE, TOP, FIND "ß", load the file again,
+; CREATE EXECUTABLE TEDRUN:work/lit.  The original TED cannot type ß, §
+; and ° (getline passes them on, the character is lost), so the pairs of
+; the original and TED-C differ.
+; @file lit.bas "\n"
+; @source F lit.bas
+; @fixed #374 R5-C5 Rc-Cc
+; @xtra norunerr
+; @expect exists lit.bas
+; @expect exists lit
+; @est 8
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+type "a$=\"Größe §\" ;° §\n"
+type "NPrint a$\n"
+dump typed
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 2 0
+menu 3 0
+wait req "NEXT" "PREVIOUS" "REPLACE ALL"
+str 1 "ß"
+gad 3
+wait screen
+dump found
+menu 0 1
+wait freq "Name of file to load"
+freq ok "TEDRUN:work/lit.bas"
+wait screen
+dump loaded
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "lit" "TEDRUN:work"  ; @ignore compilewindow
+timeout 10
+wait screen
+dump compiled
+menu 0 9
+wait exit

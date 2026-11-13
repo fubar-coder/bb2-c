@@ -189,7 +189,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 7. Tests across programs
 
-- [ ] 7.1 TED A/B script (`tests/ted-ab/scripts/NN-literal.drv`): type
+- [x] 7.1 TED A/B script (`tests/ted-ab/scripts/NN-literal.drv`): type
   `ß` and `é` in a string and a comment, save, reload, search, compile
   with the original compiler (C5) and blitz2-c (Cc). Verify: C5 equals
   Cc; R5 and Rc cannot type the characters: the pairs R5-C5 and Rc-Cc
