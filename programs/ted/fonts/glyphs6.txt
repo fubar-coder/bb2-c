@@ -1,0 +1,1065 @@
+; glyphs6.txt - the glyphs $80-$FF of TED-C's 8 x 6 screen font and its
+; redrawn glyph 26 (spec tooling/ted-font). The tool tedfont joins them
+; with the glyphs 0-127 of TED 1.1 (archive/sources/ted-1.1/chars.b,
+; unchanged) into the 256-glyph font ted_font6.b of the build directory,
+; which TED-C embeds (programs/ted/src/core/res.c).
+;
+; Origin: no font has an 8 x 6 cell with TED's 2-px strokes, so these
+; glyphs are drawn new in the style of TED's 6 px font, after the 8 px
+; set (glyphs8.txt: unscii-8 by viznut, https://github.com/viznut/unscii,
+; "Public Domain (or CC-0)", commit
+; 257b4dfeb50651510fe8b9cf4f151a148a4490e4). They reuse TED's own
+; letters: a lower-case letter with a mark is a one-row mark in row 0 on
+; TED's unchanged letter (rows 1-4, descender row 5); a capital is a
+; one-row mark on a 4-row capital. $F6 $FC $C4 $D6 $DC are TED's glyphs
+; 27-31; $E4 is the redrawn glyph 26. Circumflex, tilde and ring are
+; conventions, $BC $BD $BE $A7 $B6 approximations.
+;
+; Glyph 26 (TED's "a" with diaeresis, @1A): redrawn, the dots in row 0 on
+; TED's unchanged "a" in rows 1-4 (the scheme of $E0-$E2); the original
+; draws the dots, a gap and an arch, which reads as a cut-off "o" with
+; diaeresis (docs/ted/deviations.md). Glyphs 27-31 stay as TED drew them.
+;
+; Format (tools/tedfont/README.md): comment lines start with ";", blank
+; lines are ignored; "h=6", then per glyph a line "@XX" (the code in
+; hexadecimal, a comment may follow) and 6 rows of 8 characters, "#" a
+; set pixel and "." a blank one (the left character is bit 7). Every code
+; $80-$FF is given exactly once; @1A may be given in addition.
+;
+; $80-$9F: one glyph, a hollow box with 1-px lines, for the C1 controls a
+; text file can hold ($80 is never drawn: TED-C stores a byte $80 as "?").
+; $A0 (no-break space): blank.
+
+h=6
+
+@1A ; TED's a with diaeresis, redrawn: dots in row 0 on TED's a
+.##..##.
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@80 ; never drawn: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@81 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@82 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@83 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@84 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@85 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@86 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@87 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@88 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@89 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8A ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8B ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8C ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8D ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8E ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@8F ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@90 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@91 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@92 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@93 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@94 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@95 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@96 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@97 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@98 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@99 ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9A ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9B ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9C ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9D ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9E ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@9F ; C1 control: the box
+.######.
+.#....#.
+.#....#.
+.#....#.
+.######.
+........
+
+@A0 ; no-break space: blank
+........
+........
+........
+........
+........
+........
+
+@A1 ; inverted exclamation mark
+...##...
+........
+...##...
+...##...
+...##...
+........
+
+@A2 ; cent sign
+....#...
+..####..
+.##.#...
+.##.#...
+..####..
+....#...
+
+@A3 ; pound sign
+..###...
+.##.##..
+####....
+.##.....
+#######.
+........
+
+@A4 ; currency sign
+#....#..
+.####...
+.#..#...
+.####...
+#....#..
+........
+
+@A5 ; yen sign
+.##..##.
+..####..
+.######.
+...##...
+...##...
+........
+
+@A6 ; broken bar
+...##...
+...##...
+........
+...##...
+...##...
+........
+
+@A7 ; section sign
+..####..
+.###....
+.##.##..
+..##.##.
+....###.
+..####..
+
+@A8 ; diaeresis
+.##..##.
+........
+........
+........
+........
+........
+
+@A9 ; copyright sign
+.#####..
+#..##.#.
+#.#...#.
+#..##.#.
+.#####..
+........
+
+@AA ; feminine ordinal indicator
+..####..
+.##.##..
+..##.##.
+........
+.######.
+........
+
+@AB ; left-pointing double angle quotation mark
+........
+..##.##.
+.##.##..
+..##.##.
+........
+........
+
+@AC ; not sign
+........
+........
+.######.
+.....##.
+........
+........
+
+@AD ; soft hyphen
+........
+........
+..####..
+........
+........
+........
+
+@AE ; registered sign
+.#####..
+#.###.#.
+#.##..#.
+#.#.#.#.
+.#####..
+........
+
+@AF ; macron
+.######.
+........
+........
+........
+........
+........
+
+@B0 ; degree sign
+..###...
+.##.##..
+..###...
+........
+........
+........
+
+@B1 ; plus-minus sign
+...##...
+.######.
+...##...
+........
+.######.
+........
+
+@B2 ; superscript two
+.###....
+...##...
+..##....
+.####...
+........
+........
+
+@B3 ; superscript three
+.####...
+..##....
+...##...
+.###....
+........
+........
+
+@B4 ; acute accent
+....##..
+...##...
+........
+........
+........
+........
+
+@B5 ; micro sign
+........
+.##..##.
+.##..##.
+.##..##.
+.#####..
+.##.....
+
+@B6 ; pilcrow sign
+.######.
+####.##.
+.###.##.
+...#.##.
+...#.##.
+........
+
+@B7 ; middle dot
+........
+........
+...##...
+........
+........
+........
+
+@B8 ; cedilla
+........
+........
+........
+........
+....#...
+...##...
+
+@B9 ; superscript one
+..##....
+.###....
+..##....
+..##....
+........
+........
+
+@BA ; masculine ordinal indicator
+..###...
+.##.##..
+..###...
+........
+.#####..
+........
+
+@BB ; right-pointing double angle quotation mark
+........
+.##.##..
+..##.##.
+.##.##..
+........
+........
+
+@BC ; vulgar fraction one quarter
+.#...#..
+##..#...
+.#.#.##.
+..#.#.#.
+.#..###.
+......#.
+
+@BD ; vulgar fraction one half
+.#...#..
+##..#...
+.#.###..
+..#...#.
+.#...#..
+....###.
+
+@BE ; vulgar fraction three quarters
+##...#..
+.##.#...
+##.#.##.
+..#.#.#.
+.#..###.
+......#.
+
+@BF ; inverted question mark
+...##...
+........
+.###....
+##...##.
+.#####..
+........
+
+@C0 ; latin capital letter a with grave
+.##.....
+.#####..
+##...##.
+#######.
+##...##.
+........
+
+@C1 ; latin capital letter a with acute
+....##..
+.#####..
+##...##.
+#######.
+##...##.
+........
+
+@C2 ; latin capital letter a with circumflex
+..###...
+.#####..
+##...##.
+#######.
+##...##.
+........
+
+@C3 ; latin capital letter a with tilde
+.###.#..
+.#####..
+##...##.
+#######.
+##...##.
+........
+
+@C4 ; latin capital letter a with diaeresis: TED's glyph 29
+#....#..
+.####...
+##..##..
+######..
+##..##..
+........
+
+@C5 ; latin capital letter a with ring above
+...#....
+.#####..
+##...##.
+#######.
+##...##.
+........
+
+@C6 ; latin capital letter ae
+.######.
+##.##...
+#######.
+##.##...
+##.####.
+........
+
+@C7 ; latin capital letter c with cedilla
+.#####..
+##...##.
+##......
+##...##.
+.#####..
+...##...
+
+@C8 ; latin capital letter e with grave
+.##.....
+#######.
+#####...
+##......
+#######.
+........
+
+@C9 ; latin capital letter e with acute
+....##..
+#######.
+#####...
+##......
+#######.
+........
+
+@CA ; latin capital letter e with circumflex
+..###...
+#######.
+#####...
+##......
+#######.
+........
+
+@CB ; latin capital letter e with diaeresis
+##...##.
+#######.
+#####...
+##......
+#######.
+........
+
+@CC ; latin capital letter i with grave
+.##.....
+.######.
+...##...
+...##...
+.######.
+........
+
+@CD ; latin capital letter i with acute
+....##..
+.######.
+...##...
+...##...
+.######.
+........
+
+@CE ; latin capital letter i with circumflex
+..###...
+.######.
+...##...
+...##...
+.######.
+........
+
+@CF ; latin capital letter i with diaeresis
+##...##.
+.######.
+...##...
+...##...
+.######.
+........
+
+@D0 ; latin capital letter eth
+.#####..
+.##..##.
+####.##.
+.##..##.
+.#####..
+........
+
+@D1 ; latin capital letter n with tilde
+.###.#..
+##...##.
+###..##.
+##.####.
+##..###.
+........
+
+@D2 ; latin capital letter o with grave
+.##.....
+.#####..
+##...##.
+##...##.
+.#####..
+........
+
+@D3 ; latin capital letter o with acute
+....##..
+.#####..
+##...##.
+##...##.
+.#####..
+........
+
+@D4 ; latin capital letter o with circumflex
+..###...
+.#####..
+##...##.
+##...##.
+.#####..
+........
+
+@D5 ; latin capital letter o with tilde
+.###.#..
+.#####..
+##...##.
+##...##.
+.#####..
+........
+
+@D6 ; latin capital letter o with diaeresis: TED's glyph 30
+#....#..
+.####...
+##..##..
+##..##..
+.####...
+........
+
+@D7 ; multiplication sign
+........
+.##.##..
+..###...
+.##.##..
+........
+........
+
+@D8 ; latin capital letter o with stroke
+.####.#.
+##..###.
+##.#.##.
+###..##.
+#.####..
+........
+
+@D9 ; latin capital letter u with grave
+.##.....
+##...##.
+##...##.
+##...##.
+.#####..
+........
+
+@DA ; latin capital letter u with acute
+....##..
+##...##.
+##...##.
+##...##.
+.#####..
+........
+
+@DB ; latin capital letter u with circumflex
+..###...
+##...##.
+##...##.
+##...##.
+.#####..
+........
+
+@DC ; latin capital letter u with diaeresis: TED's glyph 31
+#....#..
+##..##..
+##..##..
+##..##..
+.####...
+........
+
+@DD ; latin capital letter y with acute
+....##..
+##...##.
+.######.
+.....##.
+.#####..
+........
+
+@DE ; latin capital letter thorn
+##......
+######..
+##...##.
+######..
+##......
+........
+
+@DF ; latin small letter sharp s
+.####...
+##..##..
+##.###..
+##...##.
+##.###..
+........
+
+@E0 ; latin small letter a with grave
+.##.....
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E1 ; latin small letter a with acute
+.....##.
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E2 ; latin small letter a with circumflex
+...##...
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E3 ; latin small letter a with tilde
+.###.#..
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E4 ; latin small letter a with diaeresis: the redrawn glyph 26 (@1A)
+.##..##.
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E5 ; latin small letter a with ring above
+..#..#..
+..####..
+.##.##..
+.##.##..
+..##.##.
+........
+
+@E6 ; latin small letter ae
+........
+.###.##.
+..######
+.###.#..
+.###.###
+........
+
+@E7 ; latin small letter c with cedilla
+........
+..####..
+.##.....
+.##.....
+..####..
+...##...
+
+@E8 ; latin small letter e with grave
+.##.....
+.#####..
+##..###.
+#####...
+.######.
+........
+
+@E9 ; latin small letter e with acute
+.....##.
+.#####..
+##..###.
+#####...
+.######.
+........
+
+@EA ; latin small letter e with circumflex
+...##...
+.#####..
+##..###.
+#####...
+.######.
+........
+
+@EB ; latin small letter e with diaeresis
+.##..##.
+.#####..
+##..###.
+#####...
+.######.
+........
+
+@EC ; latin small letter i with grave
+..##....
+........
+...##...
+...##...
+...##...
+........
+
+@ED ; latin small letter i with acute
+....##..
+........
+...##...
+...##...
+...##...
+........
+
+@EE ; latin small letter i with circumflex
+..####..
+........
+...##...
+...##...
+...##...
+........
+
+@EF ; latin small letter i with diaeresis
+.##..##.
+........
+...##...
+...##...
+...##...
+........
+
+@F0 ; latin small letter eth
+.#.##...
+..####..
+.##..##.
+.##..##.
+..####..
+........
+
+@F1 ; latin small letter n with tilde
+.###.#..
+.#####..
+.##..##.
+.##..##.
+.##..##.
+........
+
+@F2 ; latin small letter o with grave
+.##.....
+..####..
+.##..##.
+.##..##.
+..####..
+........
+
+@F3 ; latin small letter o with acute
+.....##.
+..####..
+.##..##.
+.##..##.
+..####..
+........
+
+@F4 ; latin small letter o with circumflex
+...##...
+..####..
+.##..##.
+.##..##.
+..####..
+........
+
+@F5 ; latin small letter o with tilde
+.###.#..
+..####..
+.##..##.
+.##..##.
+..####..
+........
+
+@F6 ; latin small letter o with diaeresis: TED's glyph 27
+##..##..
+........
+.####...
+##..##..
+.####...
+........
+
+@F7 ; division sign
+...##...
+........
+.######.
+........
+...##...
+........
+
+@F8 ; latin small letter o with stroke
+........
+..#####.
+.##.###.
+.###.##.
+.#####..
+........
+
+@F9 ; latin small letter u with grave
+.##.....
+.##..##.
+.##..##.
+.##..##.
+..#####.
+........
+
+@FA ; latin small letter u with acute
+.....##.
+.##..##.
+.##..##.
+.##..##.
+..#####.
+........
+
+@FB ; latin small letter u with circumflex
+...##...
+.##..##.
+.##..##.
+.##..##.
+..#####.
+........
+
+@FC ; latin small letter u with diaeresis: TED's glyph 28
+##..##..
+........
+##..##..
+##..##..
+.####...
+........
+
+@FD ; latin small letter y with acute
+.....##.
+.##..##.
+.##..##.
+..#####.
+.....##.
+..####..
+
+@FE ; latin small letter thorn
+.##.....
+.#####..
+.##..##.
+.##..##.
+.#####..
+.##.....
+
+@FF ; latin small letter y with diaeresis
+.##..##.
+.##..##.
+.##..##.
+..#####.
+.....##.
+..####..

@@ -261,3 +261,19 @@ task 5.2 is the gate.
   archive file is the first half of the font unchanged; `fontcalc`'s two
   formulas (`(c >> 4) * 128`, `(c >> 4) * 96`) give strips 8-15 for
   128-255. `print4`/`qprint` step 16 bytes per row.
+
+### The tool (tasks 2.2-2.5, 4.4)
+- `tedfont` follows the convention of `tools/README.md` rather than the
+  `main.c` of D2: `tools/tedfont/main.cpp` on CLI11 with the subcommands
+  `build` and `check` (the two commands of the build step), a README
+  with its help (`help_tedfont`, `readme_tedfont`); the logic is C in
+  `tools/lib/tedfont/`.
+- The fonts are generated twice, by the same function
+  (`programs/ted/fonts/fonts.cmake`): in the m68k build
+  (`build/amiga/programs/ted/fonts/`, for `ted`) and on the host side
+  (`build/amiga/host/ted-fonts/`, for the host tests of the TED core,
+  which compile `res.c` too, and for the TED A/B runner). The host step
+  runs first; a broken source stops the build there.
+- The ctest of the real step on broken inputs (`tedfont_build_broken`,
+  host side) runs the step's commands as `fonts.cmake` defines them, on
+  copies of the sources broken in the build directory.

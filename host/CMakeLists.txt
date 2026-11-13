@@ -59,6 +59,14 @@ function(host_readme_test program readme)
 endfunction()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
+# TED-C's screen fonts (programs/ted/fonts/fonts.cmake), for the host tests
+# of the TED core (res.c embeds them as on the Amiga) and the TED A/B
+# runner (it decodes the screen dumps with them): ted-fonts/; the build
+# step on broken inputs: tedfont_build_broken
+include(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/fonts/fonts.cmake)
+ted_fonts(ted_fonts $<TARGET_FILE:tedfont> ${CMAKE_CURRENT_BINARY_DIR}/ted-fonts tedfont)
+ted_fonts_broken_test(tedfont_build_broken $<TARGET_FILE:tedfont>
+	${CMAKE_CURRENT_BINARY_DIR}/ted-fonts-broken)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-tests-host)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/blitz2/tests/host blitz2-tests-host)
 # host tests of the library test framework (libs/tests/capture.c)

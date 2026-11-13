@@ -1,0 +1,101 @@
+# The build step of TED-C's fonts (fonts.cmake) on inputs broken on purpose
+# (ctest tedfont_build_broken): the commands of the step, run in order as
+# the custom command runs them, must fail and leave no font for
+#   - a source without the block @E9,
+#   - a source with a row of 7 characters,
+#   - a source that gives glyph 27,
+#   - a font replaced between build and check by one of the wrong size
+#     (the check removes it);
+# the real sources pass and leave the fonts (the control).
+#   cmake -DTOOL=tedfont -DDIR=... -DSRC_DIR=... -DARCHIVE_DIR=... -P fonts-broken.cmake
+include(${CMAKE_CURRENT_LIST_DIR}/fonts.cmake)
+set(TED_FONTS_ARCHIVE_DIR ${ARCHIVE_DIR})
+file(MAKE_DIRECTORY ${DIR})
+
+# the step's commands for height h on src into out; the exit status of the
+# last command run in ${var}_rc, the messages in ${var}_err.  REPLACE: the
+# font is replaced by the archive file between the two commands.
+function(step var h src out)
+	ted_fonts_commands(cmds ${TOOL} ${h} ${src} ${out})
+	set(cmd)
+	set(err "")
+	set(rc 0)
+	set(n 0)
+	list(APPEND cmds COMMAND)
+	foreach(w IN LISTS cmds)
+		if(NOT w STREQUAL "COMMAND")
+			list(APPEND cmd ${w})
+			continue()
+		endif()
+		if(cmd)
+			execute_process(COMMAND ${cmd} RESULT_VARIABLE rc ERROR_VARIABLE e)
+			string(APPEND err "${e}")
+			math(EXPR n "${n} + 1")
+			if(NOT rc EQUAL 0)
+				break()
+			endif()
+			if(n EQUAL 1 AND "${ARGN}" STREQUAL "REPLACE")
+				file(COPY_FILE ${cmds_archive} ${out})
+			endif()
+		endif()
+		set(cmd)
+	endforeach()
+	set(${var}_rc ${rc} PARENT_SCOPE)
+	set(${var}_err "${err}" PARENT_SCOPE)
+endfunction()
+
+# a copy of the source of height h with string(REGEX REPLACE re with)
+function(broken name h re with)
+	file(READ ${SRC_DIR}/glyphs${h}.txt text)
+	string(REGEX REPLACE "${re}" "${with}" changed "${text}")
+	if(changed STREQUAL text)
+		message(FATAL_ERROR "${name}: the replacement changed nothing")
+	endif()
+	file(WRITE ${DIR}/${name}.txt "${changed}")
+endfunction()
+
+set(failed 0)
+# expect: the step fails with a message matching want, no font left
+function(expect_fail name h src want)
+	set(out ${DIR}/${name}.b)
+	file(REMOVE ${out})
+	step(r ${h} ${src} ${out} ${ARGN})
+	if(r_rc EQUAL 0)
+		message(SEND_ERROR "${name}: the step passed")
+	elseif(NOT r_err MATCHES "${want}")
+		message(SEND_ERROR "${name}: the message \"${r_err}\" lacks \"${want}\"")
+	elseif(EXISTS ${out})
+		message(SEND_ERROR "${name}: ${out} is left")
+	else()
+		message(STATUS "${name}: refused: ${r_err}")
+		return()
+	endif()
+	set(failed 1 PARENT_SCOPE)
+endfunction()
+
+broken(missing-e9 8 "\n@E9[^\n]*\n[#.]+\n[#.]+\n[#.]+\n[#.]+\n[#.]+\n[#.]+\n[#.]+\n[#.]+\n" "\n")
+broken(row7 6 "\n@A5([^\n]*)\n[#.]([#.]+)\n" "\n@A5\\1\n\\2\n")
+broken(glyph27 6 "\nh=6\n" "\nh=6\n\n@1B\n........\n........\n........\n........\n........\n........\n")
+expect_fail(missing-e9 8 ${DIR}/missing-e9.txt "no block @E9")
+expect_fail(row7 6 ${DIR}/row7.txt "row7.txt:[0-9]+: a row of 7 characters")
+expect_fail(glyph27 6 ${DIR}/glyph27.txt "@1B: glyph \\$1B is TED's own")
+expect_fail(replaced 8 ${SRC_DIR}/glyphs8.txt "the font has 1024 bytes, 2048 expected" REPLACE)
+
+foreach(h 8 6)
+	set(out ${DIR}/good${h}.b)
+	file(REMOVE ${out})
+	step(r ${h} ${SRC_DIR}/glyphs${h}.txt ${out})
+	set(size 0)
+	if(EXISTS ${out})
+		file(SIZE ${out} size)
+	endif()
+	math(EXPR want "256 * ${h}")
+	if(NOT r_rc EQUAL 0 OR NOT size EQUAL want)
+		message(SEND_ERROR "the real glyphs${h}.txt: exit ${r_rc}, ${size} bytes: ${r_err}")
+		set(failed 1)
+	endif()
+endforeach()
+if(failed)
+	message(FATAL_ERROR "the build step let a broken input pass")
+endif()
+message(STATUS "the build step refused every broken input")

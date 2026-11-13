@@ -1,5 +1,5 @@
 # tests of lib/, with inputs built in memory (testutil.h)
-foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats
+foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines bbdetok statline teststats tedfont
 		outmatch covmap covsel hdf cmdref cdtable oracletable prevcmp previntended corpusexpect libscmp bugorigcmp)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)

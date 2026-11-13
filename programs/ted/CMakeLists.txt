@@ -50,12 +50,20 @@ add_custom_command(
 # ted-checkdata that writes the reference data of checkdata below
 add_custom_target(ted_ref DEPENDS ${REF_DIR}/ted)
 
+# TED-C's screen fonts of 256 glyphs (fonts/fonts.cmake, spec
+# tooling/ted-font): TED 1.1's chars8.b / chars.b and the glyph sources
+# fonts/glyphs8.txt / glyphs6.txt, joined by tedfont into fonts/ of the
+# build directory, checked in the same step
+include(fonts/fonts.cmake)
+ted_fonts(ted_fonts ${TEDFONT} ${CMAKE_CURRENT_BINARY_DIR}/fonts host_tools)
+
 set(core_sources)
 foreach(m IN LISTS TED_CORE_MODULES)
 	list(APPEND core_sources src/core/${m}.c)
 endforeach()
 add_library(tedcore STATIC ${core_sources} src/core/res.c)
 target_include_directories(tedcore PUBLIC src/core)
+add_dependencies(tedcore ted_fonts)
 target_compile_options(tedcore PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
 
 set(amiga_sources)

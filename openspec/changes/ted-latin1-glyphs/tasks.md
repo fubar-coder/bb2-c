@@ -26,7 +26,7 @@ and is named in the commits. Group 1 changes no code.
 
 ## 2. The glyph source and the tool
 
-- [ ] 2.1 `programs/ted/fonts/glyphs8.txt` and `glyphs6.txt` (design D1):
+- [x] 2.1 `programs/ted/fonts/glyphs8.txt` and `glyphs6.txt` (design D1):
   header comment with the source note (D3), then `h=8`/`h=6` and one block
   `@XX` plus h rows of `#`/`.` per glyph, for $80-$FF (8 px: $80 = the
   box too, so the tool has a complete range; $81-$9F the hollow box, $A0
@@ -34,17 +34,17 @@ and is named in the commits. Group 1 changes no code.
   the 6 px file, `@1A` (the redrawn ä). Verify: every glyph of the draft is
   present, the umlauts $E4 $F6 $FC $C4 $D6 $DC equal TED's 26-31 at 8 px;
   `$AD` is a dash; the file has 128 blocks (+1).
-- [ ] 2.2 The library `tools/lib/tedfont/` and the tool `tools/tedfont/`
+- [x] 2.2 The library `tools/lib/tedfont/` and the tool `tools/tedfont/`
   (`main.c`): parse the text source, read `chars8.b`/`chars.b`, write the
   1-bit strip-layout font of 256 glyphs (2048 / 1536 bytes), replacing
   glyph 26 where the source gives it (D2). Errors name file and line.
   Verify: a tool test (task 2.4) builds a font from inputs held in memory.
-- [ ] 2.3 The check in the same build step (D2): the output has the exact
+- [x] 2.3 The check in the same build step (D2): the output has the exact
   size; every glyph of $80-$FF came from the source (no gap, no duplicate,
   no unknown code, rows of exactly 8 characters, exactly h rows); strips
   0-7 equal the archive file except glyph 26 at 6 px; glyph 26 at 8 px and
   27-31 are unchanged. A failing check leaves no output file.
-- [ ] 2.4 `tools/tests/test_tedfont.c` (inputs from memory, registered in
+- [x] 2.4 `tools/tests/test_tedfont.c` (inputs from memory, registered in
   `tools/tests/CMakeLists.txt`): a good source; broken inputs (a missing
   glyph, a duplicate, a row of 7 or 9 columns, a wrong number of rows, a
   code outside $80-$FF, a glyph source that changes glyph 27, an archive
@@ -97,7 +97,7 @@ and is named in the commits. Group 1 changes no code.
   expect the characters as typed or loaded; one script at `@font 6`
   (`23-font6` or a new one). Verify: `ctest --preset all` with the
   scripts; the TED A/B expectations that change are listed in the commit.
-- [ ] 4.4 Tests of the tool's check are task 2.4; a ctest that runs the
+- [x] 4.4 Tests of the tool's check are task 2.4; a ctest that runs the
   real build check on a deliberately broken text source in the build
   (`PASS_REGULAR_EXPRESSION`) shows the build step fails.
 

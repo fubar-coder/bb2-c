@@ -22,6 +22,7 @@ endforeach()
 add_library(tedcore_host STATIC ${core_sources} ${TED_DIR}/src/core/res.c)
 target_compile_definitions(tedcore_host PUBLIC TED_HOST)
 target_include_directories(tedcore_host PUBLIC ${TED_DIR}/src/core)
+add_dependencies(tedcore_host ted_fonts)       # host/CMakeLists.txt
 target_compile_options(tedcore_host PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
 set_target_properties(tedcore_host PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 set_source_files_properties(${TED_DIR}/src/core/res.c PROPERTIES

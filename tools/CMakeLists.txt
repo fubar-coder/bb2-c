@@ -18,5 +18,6 @@ add_subdirectory(testinfo)
 add_subdirectory(results)
 add_subdirectory(bbsrc)
 add_subdirectory(hdftool)
+add_subdirectory(tedfont)
 
 add_subdirectory(tests)

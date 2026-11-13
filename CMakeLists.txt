@@ -72,6 +72,7 @@ set(BLITZLIB ${HOST_TOOLS_DIR}/blitzlib/blitzlib)               # library files:
 set(BBSRC ${HOST_TOOLS_DIR}/bbsrc/bbsrc)                        # sources and tokens without TED
 set(REFCHECK ${HOST_TOOLS_DIR}/refcheck/refcheck)               # the port against the originals
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
+set(TEDFONT ${HOST_TOOLS_DIR}/tedfont/tedfont)                  # TED-C's 256-glyph screen fonts
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
 set(MKTESTDATA ${HOST_TOOLS_DIR}/mktestdata/mktestdata)         # test data from a description
 set(BLITZRES ${HOST_TOOLS_DIR}/blitzres/blitzres)               # resident files with constants
@@ -100,7 +101,7 @@ ExternalProject_Add(host_tools
 		-DFETCHCONTENT_SOURCE_DIR_CLI11=${cli11_SOURCE_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request

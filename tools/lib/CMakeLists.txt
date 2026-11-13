@@ -64,6 +64,8 @@
 #              a test (fix-scope), the acceptance of two recording runs
 #   cli        the command-line shell of the host programs on CLI11
 #              (cli.hpp, C++20, header only: cli::run, the help format)
+#   tedfont    TED-C's 256-glyph screen fonts from a glyph text source
+#              and TED 1.1's font files (tools/tedfont)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -97,3 +99,4 @@ add_subdirectory(corpusexpect)
 add_subdirectory(libscmp)
 add_subdirectory(bugorigcmp)
 add_subdirectory(cli)
+add_subdirectory(tedfont)
