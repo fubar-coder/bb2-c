@@ -51,7 +51,8 @@ correctly.
   original libraries, with the port's compiler and the original
   libraries, and with the original compiler and the port's libraries:
   the executables of the first two must be identical, and every output
-  must be the expected one
+  must be the expected one. Where a fixed bug changes a program's output,
+  its expected data holds both outputs, the original's and the port's
   ([Comparing with the original yourself]({{< relref "/docs/compared-with-original/comparing" >}})).
 * **The CD's sources** are all compiled by the port and compared with a
   table made by the original compiler.
@@ -118,6 +119,14 @@ the original twice and writes the file only if both runs agree, like
 port is then judged against the expectation alone, and the `originals`
 run still checks that the original behaves as recorded
 ([A test for a bug of the original]({{< relref "/docs/compared-with-original/comparing#a-test-for-a-bug-of-the-original" >}})).
+
+The corpus works the same way. Each program's expected output is a file;
+when a fix changes it on purpose, the file becomes two, the original's
+output and the port's, marked with the issue. Recording
+(`corpus-expect-record`) writes the original's side from two runs that
+must agree; updating (`corpus-expect-update`) writes the port's side and
+refuses to change a program's output silently: the fix has to name the
+program and its issue.
 
 So you need the CD only to record new expected data or to check it
 against the originals. Everything in `ctest --preset all` runs without

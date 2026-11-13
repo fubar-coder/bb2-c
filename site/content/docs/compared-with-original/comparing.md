@@ -108,6 +108,28 @@ original behaves differently. If it is not on the list of fixed bugs,
 you have found a difference: please open an issue with the program and
 the report.
 
+A program whose output a fixed bug changes has two expected outputs
+instead of one, the original's and the port's, for example
+`t124_bitmaperr.orig.out` and `t124_bitmaperr.fixed-6.out` (6 is the
+issue). `ref` must give the first, the port with its own libraries the
+second; the mixed runs `port` and `orig-clib` may give either, and the
+report says which one they matched:
+
+```
+t124_bitmaperr   ref: output as expected (matched [orig]); port: exe identical, output as expected (matched [orig]); orig-clib: output as expected (matched [fixed #6])
+```
+
+If you run `corpus-expect-update` after a change of the port and an
+existing program's output is different, the update does not overwrite
+it: it names the program and writes nothing for it. A deliberate change
+is named with the program and its issue, which writes the pair:
+
+```
+cmake --preset amiga "-DCORPUS_UPDATE_FIX=corpus_runerr:t124_bitmaperr#6"
+cmake --build --preset amiga --target corpus-expect-update
+cmake --preset amiga -DCORPUS_UPDATE_FIX=
+```
+
 ## A test for a bug of the original
 
 If the original itself behaves wrongly, the port behaves the same way,
