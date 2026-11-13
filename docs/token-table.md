@@ -99,6 +99,32 @@ converted. A converter for `.bb2` has to bring the BB2.1 table
 itself; `replacedat` does not help with that. This corrects the assumption in
 `bb2-corpus.md` §5 and requirement 4 in `docs/bb2-converter/README.md`.
 
+## The first byte `$90`: reserved for literal characters
+
+The first byte of a token word is `$80 + library / 2`. Over the CD's
+compiler, `acidlibs` and `extras/bigdeflibs/deflibs` and AmiBlitz3
+v3.14.0's compiler with `baseLibs`, `csLibs`, `OsLibs` and `utilLibs`
+(4653 tokens, `bbsrc tokens`, 2026-11-10/11) the Blitz 2 libraries use
+83 first bytes and AmiBlitz3's 126, together 127: only **`$90`**
+(libraries **32 and 33**, words `$9000`-`$90FF`) is used by no token of
+either. It is **reserved** for the literal characters of this
+repository (`formats.md` §3.2: the pair `$90 cc` is the Latin-1
+character `cc`; decision of 2026-11-11), wherever possible:
+
+* the default `acidlibs` and every variant without RWE have the library
+  `literallib` as library 33, which names the words of library 33 with
+  their characters, so TED (also the original) shows them; library 32
+  stays free;
+* the one library of the CD with the first byte `$90` is RWE's
+  `RIDOSLIB.OBJ` (library 33, `$9081`-`$908B`). The variants `rwe-1999`,
+  `rwe-1999-eval` and `rwe-1999-ahi` keep it with its original number and
+  have no literal library: literal characters are not supported there
+  (TED-C still shows them through its built-in table);
+* the userlib `literallib.obj` for the original Blitz 2 works only if no
+  other library numbered 33 is loaded before it: blitz2 and TED take the
+  first library of a number (`findlib`, `findtoke`), and userlibs are
+  loaded last.
+
 ## Open
 
 * Whether files of the corpus contain known but **shifted** words

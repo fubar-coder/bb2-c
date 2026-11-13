@@ -230,7 +230,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   `docs/blitz2/`: the intended deviation (kind F) for #374 and the issue
   of this change; `docs/libs/deviations.md` for the new library (3.2).
   Verify: the rows.
-- [ ] 8.4 `TODO.md`: the entry for the change as a task list; #374's
+- [x] 8.4 `TODO.md`: the entry for the change as a task list; #374's
   entry points to it. Verify: format `- [ ] **Title** ...`, no
   strikethrough.
 

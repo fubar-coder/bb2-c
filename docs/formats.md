@@ -339,6 +339,24 @@ The 722 tokenised files have 122 837 lines and 2.78 MB.
   `$02` the USEPATH return.
 * `$807F` (`MOVEP`) and `$80AD` (`TAS`) do not occur. This is important
   because AB3 has `Chip`/`BSS` there (5.2).
+* **Literal characters (this repository, not the CD):** TED-C and the
+  compilers of this repository store a Latin-1 character other than the
+  six umlauts of §4.1 as the token pair **`$90 cc`** (first byte `$90`,
+  second byte the character `cc`, `$80`-`$FF`): the word `$9000 + cc`, in
+  library 33's range. It has the shape of every token pair, so
+  every reader that walks a line pair by pair stays in step; the file
+  has no header, no flag and no extension of its own. The first byte
+  `$90` (libraries 32 and 33, words `$9000`-`$90FF`) is **reserved** for
+  it (decision of 2026-11-11; no library of the CD's Blitz 2 nor of
+  AmiBlitz3 v3.14.0 uses it, only RWE's RIDosLib, library 33, which keeps
+  the number in the RWE variants: `docs/token-table.md`,
+  `docs/libs/variants.md`). The rule is in
+  `programs/ted/src/core/literal.h` (`TED_ISLIT`) and
+  `programs/blitz2/src/main.h` (`LITCHAR`); a string reader of the
+  compiler takes the word's low byte (`litstring`,
+  `programs/blitz2/src/eval.c`). A pair `$90 cc` with `cc` < `$80`
+  (library 32) is no literal character; the CD has one such word, `$9001`
+  in a comment of `EXTRAS/LIBSDEV/AMIGAINCLUDES/REXX/STORAGE.BB2`.
 
 ### 3.3 `.bb` versus `.bb2`
 
@@ -420,6 +438,21 @@ as Latin-1. AB3's `gs` (`F6 E4 FC D6 C4 DC`,
 Blitz 2.1. For the converter this means: in strings and comments
 `$1A`–`$1F` → ä ö ü Ä Ö Ü (Latin-1 `E4 F6 FC C4 D6 DC`).
 
+**TED-C** keeps the table: the six umlauts are stored as `$1A`–`$1F`
+when typed, loaded from a text file or Block Loaded (`germs_map`,
+`programs/ted/src/core/keymap.c`; `readline`,
+`programs/ted/src/core/fileio.c`), so a source with only German umlauts
+stays as it was. Every other Latin-1 character (typed `$A0`–`$FF`, or a
+byte from `$80` of a text file) is stored as the literal character
+`$90 cc` (§3.2; `litkey`, `keymap.c`; the tokeniser, `tokskip`,
+`programs/ted/src/core/tokit.c`), which the compiler's string readers
+compile to the byte `cc`. A pair `$90 E4` that another tool wrote is
+loaded as it is: a second stored form of `ä`, which a search for `ä`
+does not find. In AB3 mode (`blitz2-ab3`) every byte from `$80` of a
+string or comment of an AmiBlitz3 text source is a literal character,
+the umlauts too, because AB3's `gs` maps the codes to other characters
+(`TOKENIZER_RULES_AB3_LIT`, `shared/tokenizer/tokenizer.h`).
+
 ### 4.2 Loading and saving **[S]**, TED 1.1
 
 * **Loading** (`fileopen`, `readline` ted.s line 3375): a byte with
@@ -434,6 +467,20 @@ Blitz 2.1. For the converter this means: in strings and comments
   `$00`, or **LF if "Tokenise" is off**. Then follows `<name>.xtra`
   (`savextra`) and on request `<name>.info`. TED 2.1 additionally has "Save
   ASCII…". So text `.bb2` files are a regular TED format.
+* **TED-C** (this repository) loads a byte from `$80` of a text file as
+  one character, never as the start of a pair (#374): an umlaut as its
+  code `$1A`–`$1F`, any other as the literal character `$90 cc` (§3.2),
+  with and without "Tokenise" (`readline`,
+  `programs/ted/src/core/fileio.c`); the pair is two bytes of the line
+  (at most 129 and the 0, so 64 literal characters fill a line; a
+  longer text line is split, #375) and one column. A tokenised file is
+  loaded as stored. Saving with "Tokenise" on writes the lines as
+  before, the pairs included. Saving with "Tokenise" off writes only
+  text: a literal character as its byte `cc`, `$1A`–`$1F` as ä ö ü Ä Ö Ü,
+  a token as its name (`textline`, `programs/ted/src/core/literal.c`;
+  `realsave`, `programs/ted/src/core/loadsave.c`; Block Save and Print
+  without "Tokenise" the same), so loading and saving a text file gives
+  its bytes again.
 * **`BB22`:** occurs in no program of the CD, neither in TED, SuperTED,
   `blitz2` nor in the libs. It was found only as data (`$BB22` in
   `displaylib.bb2`, a sample). The header `BB22 00 08 00 13 00 01 …` from
