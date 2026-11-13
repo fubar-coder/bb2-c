@@ -658,19 +658,24 @@ Rename|popped|missing|1	$00000000
 Rename|d0|missing|1	$00000000
 FindVolume|kept|"RAM"|1	kept
 FindVolume|popped|"RAM"|1	$00000000
-FindVolume|d0|"RAM"|1	$40002C7C
+FindVolume|d0 is not 0|"RAM"|1	$00000001
+FindVolume|d0 is the DosList entry of the name|"RAM"|1	$00000001
 FindVolume|kept|"Ram Disk"|1	kept
 FindVolume|popped|"Ram Disk"|1	$00000000
-FindVolume|d0|"Ram Disk"|1	$40025894
+FindVolume|d0 is not 0|"Ram Disk"|1	$00000001
+FindVolume|d0 is the DosList entry of the name|"Ram Disk"|1	$00000001
 FindVolume|kept|"TEST"|1	kept
 FindVolume|popped|"TEST"|1	$00000000
-FindVolume|d0|"TEST"|1	$4001D3D8
+FindVolume|d0 is not 0|"TEST"|1	$00000001
+FindVolume|d0 is the DosList entry of the name|"TEST"|1	$00000001
 FindVolume|kept|"nosuchvolume"|1	kept
 FindVolume|popped|"nosuchvolume"|1	$00000000
-FindVolume|d0|"nosuchvolume"|1	$00000000
+FindVolume|d0 is not 0|"nosuchvolume"|1	$00000000
+FindVolume|d0 is the DosList entry of the name|"nosuchvolume"|1	$00000001
 FindVolume|kept|""|1	kept
 FindVolume|popped|""|1	$00000000
-FindVolume|d0|""|1	$00000000
+FindVolume|d0 is not 0|""|1	$00000000
+FindVolume|d0 is the DosList entry of the name|""|1	$00000001
 DeviceName$|kept|"RAM"|1	kept
 DeviceName$|popped|"RAM"|1	$00000000
 DeviceName$|d0|"RAM"|1	$00000004
