@@ -9,16 +9,19 @@
 # the "Fixes #N" lines of the commits BASE..HEAD.  The directories of
 # expected data: DIRS (libs/tests/expected; tests/bug-orig, the bug-orig
 # tests, each projected onto cases: results fix-scope --bug-orig, OpenSpec
-# change bug-orig-test-model, design D6).
+# change bug-orig-test-model, design D6; tests/corpus/expect, the corpus,
+# each file a case: results fix-scope --corpus, OpenSpec change
+# corpus-test-model, design D5).
 
 foreach(v RESULTS SOURCE BASE WORK)
 	if(NOT DEFINED ${v} OR "${${v}}" STREQUAL "")
 		message(FATAL_ERROR "fix-scope.cmake: -D${v}=... missing")
 	endif()
 endforeach()
-set(DIRS libs/tests/expected tests/bug-orig)
+set(DIRS libs/tests/expected tests/bug-orig tests/corpus/expect)
 set(OPTS_libs/tests/expected "")
 set(OPTS_tests/bug-orig --bug-orig)
+set(OPTS_tests/corpus/expect --corpus)
 file(MAKE_DIRECTORY ${WORK})
 
 execute_process(COMMAND git -C ${SOURCE} merge-base ${BASE} HEAD

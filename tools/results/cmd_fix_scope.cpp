@@ -3,10 +3,12 @@
  * are not the [fixed #N] cases of its issues (lib/libscmp/libscmp.h,
  * design D12 of the OpenSpec change libs-tests-capture).
  *
- *   results fix-scope BASE_DIR BRANCH_DIR [--fixes N]... [--log FILE] [--bug-orig]
+ *   results fix-scope BASE_DIR BRANCH_DIR [--fixes N]... [--log FILE] [--bug-orig|--corpus]
  *
  * With --bug-orig the directories are trees of bug-orig tests
- * (tests/bug-orig), projected onto cases (lib/bugorigcmp/bugorigcmp.h).
+ * (tests/bug-orig), projected onto cases (lib/bugorigcmp/bugorigcmp.h), with
+ * --corpus the expected data of the corpus (tests/corpus/expect, one
+ * directory per pass; lib/corpusexpect/corpusexpect.h).
  *
  * Exit status 0 = only the named issues' cases changed, 1 = a case
  * reported, 2 = wrong arguments, a malformed or unreadable file (or test).
@@ -20,6 +22,7 @@
 #include "cli.hpp"
 extern "C" {
 #include "bugorigcmp.h"
+#include "corpusexpect.h"
 #include "libscmp.h"
 }
 #include "results.h"
@@ -47,7 +50,7 @@ void cmd_fix_scope(CLI::App &app, int &status)
     struct options {
         std::string base, branch, log;
         std::vector<unsigned> fixes;
-        bool bug_orig = false;
+        bool bug_orig = false, corpus = false;
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("fix-scope", "the cases of the expected data a branch changes beyond its issues");
@@ -63,10 +66,14 @@ void cmd_fix_scope(CLI::App &app, int &status)
         ->type_name("FILE");
     sub->add_flag("--bug-orig", o->bug_orig, "BASE_DIR and BRANCH_DIR are trees of bug-orig tests "
                   "(tests/bug-orig), each test projected onto cases");
+    sub->add_flag("--corpus", o->corpus, "BASE_DIR and BRANCH_DIR are the expected data of the corpus "
+                  "(tests/corpus/expect), each file a case PASS|NAME|OBS|1");
     sub->footer("Every case (a key with its qualifier) added, changed or removed is reported unless "
                 "it is a \"[fixed #N]\" case of a named issue, the \"[orig]\" case paired with one, "
                 "or an unqualified case that became such a pair. A bug-orig test's cases: one per "
                 "section of ID.expect and ID.orig, \"[fixed #N]\" with its header \"; @fixed #N\". "
+                "A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig], "
+                "NAME.fixed-N.OBS [fixed #N]. "
                 "Exit status 0 nothing reported, 1 "
                 "a case reported, 2 usage error or a malformed or unreadable file.");
     sub->callback([sub, o, &status] {
@@ -101,7 +108,15 @@ void cmd_fix_scope(CLI::App &app, int &status)
             status = 2;
             return;
         }
+        if (o->bug_orig && o->corpus) {
+            fprintf(stderr, "%s: --bug-orig and --corpus exclude each other\n", name.c_str());
+            libscmp_issues_free(&is);
+            status = 2;
+            return;
+        }
         status = prefixed(name, [&](FILE *err) {
+            if (o->corpus)
+                return cexp_fix_scope_trees(o->base.c_str(), o->branch.c_str(), &is, stdout, err);
             if (o->bug_orig)
                 return bugorigcmp_fix_scope_trees(o->base.c_str(), o->branch.c_str(), &is, stdout,
                                                   err);

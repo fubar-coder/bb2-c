@@ -406,13 +406,16 @@ OPTIONS:
           --log FILE          commit messages: their lines "Fixes #N" name issues too
           --bug-orig          BASE_DIR and BRANCH_DIR are trees of bug-orig tests
                               (tests/bug-orig), each test projected onto cases
+          --corpus            BASE_DIR and BRANCH_DIR are the expected data of the corpus
+                              (tests/corpus/expect), each file a case PASS|NAME|OBS|1
 
 Every case (a key with its qualifier) added, changed or removed is reported
 unless it is a "[fixed #N]" case of a named issue, the "[orig]" case paired with
 one, or an unqualified case that became such a pair. A bug-orig test's cases:
 one per section of ID.expect and ID.orig, "[fixed #N]" with its header "; @fixed
-#N". Exit status 0 nothing reported, 1 a case reported, 2 usage error or a
-malformed or unreadable file.
+#N". A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig],
+NAME.fixed-N.OBS [fixed #N]. Exit status 0 nothing reported, 1 a case reported,
+2 usage error or a malformed or unreadable file.
 ```
 
 The check before a fix is merged (design D12 of the OpenSpec change
@@ -432,7 +435,8 @@ line counts the changed and the reported cases. The target `fix-scope`
 (`cmake/fix-scope.cmake`, `FIX_SCOPE_BASE`, default `main`) exports the
 base files of the merge base with `git archive` into the build directory
 and runs this against the checkout with the log of the branch's commits,
-for `libs/tests/expected` and, with `--bug-orig`, for `tests/bug-orig`.
+for `libs/tests/expected`, with `--bug-orig` for `tests/bug-orig` and with
+`--corpus` for `tests/corpus/expect`.
 With `--bug-orig` the two directories are trees of bug-orig tests
 (`AREA/ID.bas` with `ID.expect`, `ted/ID.drv`, `ID.orig` beside them; not
 `selftest/`), each test projected onto cases (`tools/lib/bugorigcmp`,
@@ -441,6 +445,14 @@ OpenSpec change `bug-orig-test-model`, design D6): one per section of
 is `ID|SECTION||1 [fixed #N]` and the recorded original the pair
 `ID|SECTION|orig|1 [orig]` / `[fixed #N]`. Adding the header and editing
 `ID.expect` are then cases of issue N; a malformed test fails (2).
+With `--corpus` the two directories are the expected data of the corpus
+(`tests/corpus/expect`, one directory per pass; `tools/lib/corpusexpect`,
+OpenSpec change `corpus-test-model`, design D5): each file is the case
+`PASS|NAME|OBS|1` (`OBS` out, serial or exe), `NAME.OBS` unqualified,
+`NAME.orig.OBS` `[orig]` and `NAME.fixed-N.OBS` `[fixed #N]`, its value
+`bytes N fnv HHHHHHHH` (an executable's `sha256 HEX`): the message names
+the key and the hashes, `git diff` shows the lines. Turning `NAME.out`
+into its pair is then a case of issue N; a malformed directory fails (2).
 
 ### bug-orig-accept
 

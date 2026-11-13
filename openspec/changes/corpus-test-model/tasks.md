@@ -24,7 +24,7 @@ two-run accept and the projection helper this change reuses).
 
 ## 4. fix-scope
 
-- [ ] 4.1 `cmake/fix-scope.cmake` and `results fix-scope` project `tests/corpus/expect` (D5) and call `libscmp_fix_scope`. Verify: extend the `fix_scope_*` host tests: the corpus pair of `Fixes #6` passes; another changed file is reported with `corpus|t01_int|out|1`; a new program is reported added; a malformed directory fails. The `fix_scope_target` test gets a corpus case on a throwaway git repository.
+- [x] 4.1 `cmake/fix-scope.cmake` and `results fix-scope` project `tests/corpus/expect` (D5) and call `libscmp_fix_scope`. Verify: extend the `fix_scope_*` host tests: the corpus pair of `Fixes #6` passes; another changed file is reported with `corpus|t01_int|out|1`; a new program is reported added; a malformed directory fails. The `fix_scope_target` test gets a corpus case on a throwaway git repository.
 
 ## 5. Migration
 

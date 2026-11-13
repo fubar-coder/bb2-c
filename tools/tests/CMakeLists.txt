@@ -289,7 +289,7 @@ set_tests_properties(libs_accept_lost_names PROPERTIES
 # unqualified case, a changed case of another issue and a change without a
 # "Fixes #N" line are named; a malformed file fails.  fix_scope_target: the
 # target's script (cmake/fix-scope.cmake) on a throwaway git repository
-# (the library expected data and a bug-orig test).
+# (the library expected data, a bug-orig test and the corpus expected data).
 file(WRITE ${lc}/scope/base/prog.txt "${lc_head}r|c||1\t$0\nr|d||1\t$1\nr|p||1 [orig]\t$3\n"
 	"r|p||1 [fixed #8]\t$4\n")
 file(WRITE ${lc}/scope/own/prog.txt "${lc_head}r|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$5\nr|d||1\t$1\n"
@@ -372,6 +372,51 @@ foreach(t
 	add_test(NAME fix_scope_bug_orig_wrong_${name}_names COMMAND results fix-scope --bug-orig ${opt}
 		${arg} ${bo}/base ${bo}/${branch})
 	set_tests_properties(fix_scope_bug_orig_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
+# the same for the corpus (--corpus: the expected data tests/corpus/expect,
+# lib/corpusexpect): the fix of #6 turns corpus_runerr/t124_bitmaperr.out
+# into its pair (passes with Fixes #6); the same with corpus/t01_int.out
+# changed names corpus|t01_int|out|1; a new program is named as added; a
+# malformed directory fails.
+set(ce ${lc}/corpus)
+function(ce_tree tree)
+	cmake_parse_arguments(PARSE_ARGV 1 a "PAIR;NEW;MALFORMED" "T01" "")
+	file(REMOVE_RECURSE ${ce}/${tree})
+	file(WRITE ${ce}/${tree}/corpus/t01_int.out "${a_T01}")
+	if(a_PAIR)
+		file(WRITE ${ce}/${tree}/corpus_runerr/t124_bitmaperr.orig.out "requester\n\nrc=0\n")
+		file(WRITE ${ce}/${tree}/corpus_runerr/t124_bitmaperr.fixed-6.out "requester\ntext\nrc=0\n")
+	else()
+		file(WRITE ${ce}/${tree}/corpus_runerr/t124_bitmaperr.out "requester\n\nrc=0\n")
+	endif()
+	if(a_NEW)
+		file(WRITE ${ce}/${tree}/corpus/t900_new.out "new\nrc=0\n")
+	endif()
+	if(a_MALFORMED)
+		file(WRITE ${ce}/${tree}/corpus/t01_int.orig.out "x\n")
+	endif()
+endfunction()
+ce_tree(base T01 "1\nrc=0\n")
+ce_tree(own PAIR T01 "1\nrc=0\n")
+ce_tree(other PAIR T01 "2\nrc=0\n")
+ce_tree(new PAIR NEW T01 "1\nrc=0\n")
+ce_tree(malformed PAIR MALFORMED T01 "1\nrc=0\n")
+add_test(NAME fix_scope_corpus_own COMMAND results fix-scope --corpus --fixes 6 ${ce}/base ${ce}/own)
+set_tests_properties(fix_scope_corpus_own PROPERTIES PASS_REGULAR_EXPRESSION
+	"fix-scope: corpus: 3 cases changed, 0 not of the issues #6\n")
+foreach(t
+		"other;other;corpus: corpus\\|t01_int\\|out\\|1: changed \\(bytes 7 fnv [0-9A-F]+ -> bytes 7 fnv [0-9A-F]+\\)"
+		"new;new;corpus: corpus\\|t900_new\\|out\\|1: added \\(bytes 9 fnv [0-9A-F]+\\)"
+		"malformed;malformed;malformed/corpus/t01_int\\.out and t01_int\\.orig\\.out: an unqualified and a qualified file")
+	list(GET t 0 name)
+	list(GET t 1 branch)
+	list(GET t 2 re)
+	add_test(NAME fix_scope_corpus_wrong_${name} COMMAND results fix-scope --corpus --fixes 6
+		${ce}/base ${ce}/${branch})
+	set_tests_properties(fix_scope_corpus_wrong_${name} PROPERTIES WILL_FAIL ON)
+	add_test(NAME fix_scope_corpus_wrong_${name}_names COMMAND results fix-scope --corpus --fixes 6
+		${ce}/base ${ce}/${branch})
+	set_tests_properties(fix_scope_corpus_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
 endforeach()
 add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
 	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/fix-scope.cmake
