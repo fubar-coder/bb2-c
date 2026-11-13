@@ -20,7 +20,7 @@ Every test that needs the CD or the reference build (live reference configuratio
 
 #### Scenario: The original compiler with the port's libraries
 - **WHEN** `ctest --preset originals` runs a corpus pass
-- **THEN** its configuration `orig-clib` (the original blitz2 2.10 with the build's acidlibs and deflibs) is judged against the expected files, and a program that differs without a row in `tests/corpus/notes.tsv` fails
+- **THEN** its configuration `orig-clib` (the original blitz2 2.10 with the build's acidlibs and deflibs) is judged against the expected data of the pass (the unqualified case and, for a fixed program, either of its `[orig]` and `[fixed #N]` files), and a program whose output matches none fails
 
 ### Requirement: BB2 definition stays compared
 The declarations of acidlibs and deflibs (`blitzlib compare` with the intended list), the token list (`tokens_port`) and the AB3 comparisons SHALL keep comparing with their definition: the CD, the original TED's list and AmiBlitz3. A fix SHALL NOT add or rename a command.
