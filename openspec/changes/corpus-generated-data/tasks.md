@@ -28,9 +28,9 @@ Amiberry; the rest does not.
 
 ## 5. Acceptance
 
-- [ ] 5.1 `ctest --preset all` without the CD (move `archive/cd` away or use a build without it): the report of `corpus` and `corpus_runerr` lists no program as left out, `t110`, `t111`, `t112` pass, `prev_results` and the `prev` configuration are byte-identical (no executable, TED file or library changed apart from the three programs' own executables, which compile the same source in `prev` and `clib`). Verify: the pass reports.
-- [ ] 5.2 `ctest --preset originals` with the CD: `corpus_originals`, `corpus_runerr_originals` pass for the three programs (`ref`, `port`, `orig-clib` against the new files); `git status` clean afterwards. Verify: all three configurations match.
-- [ ] 5.3 `ctest --preset host` (also with `-DHOST_SANITIZE=ON` if tools changed: they do not), `ctest --preset bug-orig` unchanged, `cmake --build --preset amiga` has no warnings.
+- [x] 5.1 `ctest --preset all` without the CD (move `archive/cd` away or use a build without it): the report of `corpus` and `corpus_runerr` lists no program as left out, `t110`, `t111`, `t112` pass, `prev_results` and the `prev` configuration are byte-identical (no executable, TED file or library changed apart from the three programs' own executables, which compile the same source in `prev` and `clib`). Verify: the pass reports.
+- [x] 5.2 `ctest --preset originals` with the CD: `corpus_originals`, `corpus_runerr_originals` pass for the three programs (`ref`, `port`, `orig-clib` against the new files); `git status` clean afterwards. Verify: all three configurations match.
+- [x] 5.3 `ctest --preset host` (also with `-DHOST_SANITIZE=ON` if tools changed: they do not), `ctest --preset bug-orig` unchanged, `cmake --build --preset amiga` has no warnings.
 
 ## 6. Documents
 

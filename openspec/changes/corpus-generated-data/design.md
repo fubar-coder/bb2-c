@@ -231,3 +231,15 @@ no source names) and one on the correct tree.
   programs gave the same output byte for byte; the recording
   (`corpus-expect-record`, both passes) accepted all six (no "not
   deterministic"), and its files equal that run's.
+- **Acceptance (group 5).** `prev` compiles the same new source and runs
+  it on the same staged files, so its executable equals clib's and its
+  output is the new expected one: no `PREV_INTENDED` entry applies (an
+  entry would be stale and fail). `ctest --preset all` with the CD
+  hidden (the symlink `archive/cd` removed after a configure with it):
+  `corpus` 73 and `corpus_runerr` 137 checks, none left out, 0
+  differences; skipped only `corpus_cd`, `corpus_cd_ab3`; the two
+  `rwe_refbuild_libnums_*` tests failed because they were registered by
+  the configure with the CD (a configure without it does not add them).
+  A prev build configured with the CD does not build once the CD is
+  gone (`prev/src/archive/cd` is a link to it); a build directory
+  configured without the CD is not affected.
