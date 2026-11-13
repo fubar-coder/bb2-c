@@ -263,10 +263,14 @@ static ULONG divu(ULONG dividend, UWORD y)
  * @brief QAngle(Src X,Src Y,Dest X,Dest Y) - the angle of the line dest -> src.
  *
  * Octant from the signs and the steepness, arctan from the table arc
- * (arc.bin of the original), mirrored and offset per octant (oct).  Word
- * arithmetic as in the original: NEG of -32768 stays negative, CMP/BMI is
- * the sign of the 16 bit difference (not a signed compare), DIVU with
- * overflow leaves the dividend unchanged.
+ * (arc.bin of the original), mirrored and offset per octant (oct).
+ * Fixed (intended deviation, #1003): the differences are longs, their
+ * absolute values (0..65535) are compared unsigned.  The original
+ * subtracted words: a difference of 32768 or more in magnitude wrapped
+ * (NEG of -32768 stays negative, CMP/BMI is the sign of the 16 bit
+ * difference) and gave the angle of another quadrant.  The DIVU of the
+ * smaller value << 16 by the larger cannot overflow; for differences in
+ * -32767..32767 the result is the original's.
  *
  * @param sx d0: source x
  * @param sy d1: source y
@@ -277,18 +281,22 @@ static ULONG divu(ULONG dividend, UWORD y)
 static ULONG BLITZ_ROUTINE doqangle_c(UWORD sx BL_REG(d0), UWORD sy BL_REG(d1),
                                       UWORD dx BL_REG(d2), UWORD dy BL_REG(d3))
 {
-    UWORD x = sx - dx, y = sy - dy, octant = 0, a, old_x, r;
+    /* fixed (#1003): long differences (the original: SUB d2,d0:SUB d3,d1) */
+    LONG lx = (LONG)(WORD)sx - (WORD)dx, ly = (LONG)(WORD)sy - (WORD)dy;
+    UWORD x, y, octant = 0, a, old_x, r;
     ULONG quot;
 
-    if ((WORD)y < 0) {                          /* TST d1:BPL 'hpos */
+    if (ly < 0) {                               /* TST d1:BPL 'hpos */
         octant = 16;
-        y = -y;
+        ly = -ly;
     }
-    if ((WORD)x < 0) {                          /* TST d0:BPL 'wpos */
+    if (lx < 0) {                               /* TST d0:BPL 'wpos */
         octant ^= 8;
-        x = -x;
+        lx = -lx;
     }
-    if ((WORD)(UWORD)(x - y) >= 0) {            /* CMP d1,d0:BMI 'notsteep */
+    x = (UWORD)lx;                              /* 0..65535 */
+    y = (UWORD)ly;
+    if (x >= y) {                               /* CMP d1,d0:BMI 'notsteep */
         if (x == y) {                           /* BNE 'neq */
             a = 0x2000;
             goto flow;
@@ -302,9 +310,8 @@ static ULONG BLITZ_ROUTINE doqangle_c(UWORD sx BL_REG(d0), UWORD sy BL_REG(d1),
         a = 0;
         goto flow;
     }
-    quot = (ULONG)(LONG)(WORD)x;                /* EXT.l d0 */
-    quot = quot << 16 | quot >> 16;             /* SWAP d0 */
-    quot = divu(quot, y);                       /* DIVU d1,d0 */
+    quot = (ULONG)x << 16;                      /* EXT.l d0:SWAP d0 */
+    quot = divu(quot, y);                       /* DIVU d1,d0 (x < y: fits) */
     a = arc[(((UWORD)quot >> 6) & 1022) >> 1];  /* LSR #6,d0:AND #1022,d0 */
 flow:
     a ^= (UWORD)oct[octant >> 2];               /* MOVE.l 'oct(pc,d2),d0:EOR d0,d1 */

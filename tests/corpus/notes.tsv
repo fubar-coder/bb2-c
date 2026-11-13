@@ -30,3 +30,5 @@ corpus	t30_date	#1001: Date$ and NumDays give Gregorian dates before 1/3/1900 an
 corpus_runerr	t30_date	#1001: Date$ and NumDays give Gregorian dates before 1/3/1900 and from 1/3/2100 on
 corpus	t121_palette	#1002: a CRNG range with the flags 0 (disabled) is no longer entered in the cycle table
 corpus_runerr	t121_palette	#1002: a CRNG range with the flags 0 (disabled) is no longer entered in the cycle table
+corpus	t21_val	#1003: QAngle of differences of 32768 or more in magnitude gives the angle of their direction
+corpus_runerr	t21_val	#1003: QAngle of differences of 32768 or more in magnitude gives the angle of their direction
