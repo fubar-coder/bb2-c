@@ -750,6 +750,8 @@ static void parsing(void)
 
 /* ------------------------------------------------------- D_FindVolume */
 
+#define LDF_FINDVOLUME_T (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
+
 static void findvolume(void)
 {
     static const char *names[] = { "RAM", "Ram Disk", "SYS", "TEST", "C", "NOSUCHNAME", "" };
@@ -760,7 +762,19 @@ static void findvolume(void)
         sprintf(VEC, "\"%s\"", names[i]);
         DO1(ENT(LIB, E_FINDVOL, 0), strcpy((char *)out + 600, names[i]);
             R.d[0] = (ULONG)out + 600; R.a[6] = (ULONG)DOSBase);
-        OBS("d0", R.d[0]);
+        {
+            /* the entry dos.library itself finds; the node's address
+               depends on the system, so the cases hold only whether d0
+               is 0 and whether it is that entry */
+            ULONG found = R.d[0];
+            struct DosList *dl = LockDosList(LDF_FINDVOLUME_T);
+
+            if (dl)
+                dl = FindDosEntry(dl, names[i], LDF_FINDVOLUME_T);
+            UnLockDosList(LDF_FINDVOLUME_T);
+            OBS("d0 is not 0", found != 0);
+            OBS("d0 is the DosList entry of the name", found == (ULONG)dl);
+        }
     }
 }
 

@@ -8054,24 +8054,31 @@ ProcessString|a3|after D_NextArg$|1	$00000005
 ProcessString|out|after D_NextArg$|1	bytes 800 fnv 2A1F9ACA
 D_FindVolume|kept|"RAM"|1	kept
 D_FindVolume|popped|"RAM"|1	$00000000
-D_FindVolume|d0|"RAM"|1	$40002C7C
+D_FindVolume|d0 is not 0|"RAM"|1	$00000001
+D_FindVolume|d0 is the DosList entry of the name|"RAM"|1	$00000001
 D_FindVolume|kept|"Ram Disk"|1	kept
 D_FindVolume|popped|"Ram Disk"|1	$00000000
-D_FindVolume|d0|"Ram Disk"|1	$40025894
+D_FindVolume|d0 is not 0|"Ram Disk"|1	$00000001
+D_FindVolume|d0 is the DosList entry of the name|"Ram Disk"|1	$00000001
 D_FindVolume|kept|"SYS"|1	kept
 D_FindVolume|popped|"SYS"|1	$00000000
-D_FindVolume|d0|"SYS"|1	$4001021C
+D_FindVolume|d0 is not 0|"SYS"|1	$00000001
+D_FindVolume|d0 is the DosList entry of the name|"SYS"|1	$00000001
 D_FindVolume|kept|"TEST"|1	kept
 D_FindVolume|popped|"TEST"|1	$00000000
-D_FindVolume|d0|"TEST"|1	$4001D3D8
+D_FindVolume|d0 is not 0|"TEST"|1	$00000001
+D_FindVolume|d0 is the DosList entry of the name|"TEST"|1	$00000001
 D_FindVolume|kept|"C"|1	kept
 D_FindVolume|popped|"C"|1	$00000000
-D_FindVolume|d0|"C"|1	$400101CC
+D_FindVolume|d0 is not 0|"C"|1	$00000001
+D_FindVolume|d0 is the DosList entry of the name|"C"|1	$00000001
 D_FindVolume|kept|"NOSUCHNAME"|1	kept
 D_FindVolume|popped|"NOSUCHNAME"|1	$00000000
-D_FindVolume|d0|"NOSUCHNAME"|1	$00000000
+D_FindVolume|d0 is not 0|"NOSUCHNAME"|1	$00000000
+D_FindVolume|d0 is the DosList entry of the name|"NOSUCHNAME"|1	$00000001
 D_FindVolume|kept|""|1	kept
 D_FindVolume|popped|""|1	$00000000
-D_FindVolume|d0|""|1	$00000000
+D_FindVolume|d0 is not 0|""|1	$00000000
+D_FindVolume|d0 is the DosList entry of the name|""|1	$00000001
 finit|kept||1	kept
 finit|popped||1	$00000000
