@@ -88,7 +88,8 @@ file(GLOB objs ${LIBS}/*.obj)
 foreach(obj IN LISTS objs)
 	get_filename_component(name ${obj} NAME_WE)
 	file(COPY_FILE ${obj} ${test}/${name}.obj)
-	if(NOT NO_ORIGINALS)
+	# literallib (library 33, #1018) is an addition: the CD has no original
+	if(NOT NO_ORIGINALS AND NOT name STREQUAL "literallib")
 		execute_process(COMMAND ${BLITZLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
 			RESULT_VARIABLE rc)
 		if(rc)
