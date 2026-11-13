@@ -10,8 +10,9 @@ New language features mean a "BB2 next" variant, not the faithful port.
 New keywords need token numbers, and tokenised sources should stay
 exchangeable with the original.
 
-The last two sections, "Tooling: blitz2 on the host" and "The compiler in
-a process of its own", are no language changes.
+The last three sections, "Tooling: blitz2 on the host", "The compiler in
+a process of its own" and "Tests: the TED A/B scripts without the CD",
+are no language changes.
 
 ## Order and dependencies
 
@@ -352,3 +353,18 @@ compiler in its own task through the menu routine until the compile ends.
 
 No pthreads are needed: processes and message ports are native to
 AmigaOS.
+
+## Tests: the TED A/B scripts without the CD
+
+15 TED A/B scripts load real sources from the CD (`; @source K ...`,
+for example `examples/blitzmode/blitzballs.bb2`), so `ctest --preset
+all` skips them without the CD. Their value is that the sources are
+real: long lines, Includes, many different tokens, old style.
+
+- **Own sources next to the CD's:** for each script, a source of our own
+  that has what the script tests, and a variant of the script that uses
+  it in `all`; the variant with the CD source stays in `originals`. Then
+  nothing is missing without the CD, and the check on real sources
+  stays.
+- **The work:** per script, find out what it needs from its source,
+  write that source, record the expectation once from the original.
