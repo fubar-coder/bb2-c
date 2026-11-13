@@ -67,9 +67,8 @@ const UBYTE *fontcalc(UBYTE c)
 {
     UWORD high = c & 0xf0;                      /* d1 */
 
-    /* no check: characters >= 128 lie behind the font (survey-05 I.11) */
-    if (c >= 128)
-        ORIG_HAZARD("fontcalc: character >= 128 behind the font");
+    /* no check: in the original, characters >= 128 lie behind the font
+       (survey-05 I.11); TED-C's fonts have 256 glyphs (res.c) */
     if (fonthite == 6)          /* .font6: (c >> 4) * 96 */
         return font6 + (c & 15) + (high << 1) + (high << 2);
     return font8 + (c & 15) + (high << 3);     /* (c >> 4) * 128 */

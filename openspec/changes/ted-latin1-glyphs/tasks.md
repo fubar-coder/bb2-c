@@ -14,12 +14,12 @@ and is named in the commits. Group 1 changes no code.
   commit hash, the licence text of the repository and the URL for the
   source header (design D3). Verify: the hash of the pinned file equals
   the one the draft glyphs were derived from, or the differences are listed.
-- [ ] 1.2 Confirm the measured facts the specs rely on: glyph 0 at 6 px is
+- [x] 1.2 Confirm the measured facts the specs rely on: glyph 0 at 6 px is
   one pixel (`chars.b` strip 0); `fontcalc` gives the right offsets for
   c >= 128 with the strip layout (`(c & 15) + (c >> 4) * 16 * h + r * 16`);
   `print4`/`qprint` (`programs/ted/src/screen.c:651-684`) step 16 bytes
   per row. Verify: a host test of `fontcalc` on a 256-glyph array (task 4.1).
-- [ ] 1.3 List every site that draws or redraws a cell from `chmap` or
+- [x] 1.3 List every site that draws or redraws a cell from `chmap` or
   passes a character to `print`/`qprint` (the ones of design D4, plus any
   found by `rg 'chmap|TED_LITGLYPH' programs/ted/src`). Verify: the list
   is in the commit of group 3 and every site has a test.
@@ -50,7 +50,7 @@ and is named in the commits. Group 1 changes no code.
   code outside $80-$FF, a glyph source that changes glyph 27, an archive
   file of the wrong size) each fail with their message. Verify: each
   broken input fails and writes no output.
-- [ ] 2.5 `programs/ted/CMakeLists.txt`: a custom command that runs the
+- [x] 2.5 `programs/ted/CMakeLists.txt`: a custom command that runs the
   tool into the build directory (`ted_font8.b`, `ted_font6.b`) with the
   check as another `COMMAND`, `DEPENDS` on tool, sources and archive
   files; the include path of `#embed` gets the build directory. Verify:
@@ -59,7 +59,7 @@ and is named in the commits. Group 1 changes no code.
 
 ## 3. TED
 
-- [ ] 3.1 `res.c`: `font8` and `font6` embed the generated files;
+- [x] 3.1 `res.c`: `font8` and `font6` embed the generated files;
   `static_assert` on 2048 and 1536 bytes. `fontcalc`: remove the
   `ORIG_HAZARD` for c >= 128 (the formula covers 0-255; the original
   note `ted.s:5214` stays). `checkdata.tsv`: the two entries are listed as
@@ -67,7 +67,7 @@ and is named in the commits. Group 1 changes no code.
   compared (`checkdata-intended.txt`). Verify: host test of `fontcalc`
   (every code 0-255 gives a pointer inside the font; the strips 0-7 are
   the archive bytes); `ted_checkdata_*` tests pass.
-- [ ] 3.2 The redraw design chosen in D4: the character reaches every site
+- [x] 3.2 The redraw design chosen in D4: the character reaches every site
   that draws a literal cell: `print4`/`qprint` callers `sa_tokprint`
   (`core/fileio.c:1097-1101`), typing (`input.c:275-281`, `gl_islit` in
   `core/lineedit.c:228-233`), `mouse.c:752-758`, and the redraws `refresh`
@@ -75,18 +75,18 @@ and is named in the commits. Group 1 changes no code.
   `564-569`), `reline` (`input.c:399-404`), the last cell after a delete
   (`input.c:363`). `TED_LITGLYPH` stays the marker byte in `chmap`
   (D4). Verify: host tests of task 4.2.
-- [ ] 3.3 `literal.h`/`literal.c`: the comments that say "every literal is
+- [x] 3.3 `literal.h`/`literal.c`: the comments that say "every literal is
   drawn with glyph 0" describe the new rule; `docs/ted/reference.md` font
   rows (50-51) say 256 glyphs.
 
 ## 4. Tests
 
-- [ ] 4.1 Host test `test_fontlit.cpp` (one program per file): for both
+- [x] 4.1 Host test `test_fontlit.cpp` (one program per file): for both
   heights every $A0-$FF has a glyph; $A0 is blank; $81-$9F are the box;
   the six umlauts at 8 px are glyphs 26-31; the 6 px glyph 26 has dots in
   row 0 and TED's `a` in rows 1-4; digest of the generated fonts
   (`sha256`) so an accidental change fails.
-- [ ] 4.2 Host tests with literal characters in rows other than the cursor
+- [x] 4.2 Host tests with literal characters in rows other than the cursor
   row: horizontal scroll right and left, `refresh`, `reline`, delete at
   the end of a row, mouse positioning; each checks the characters the
   screen routines draw, not `TED_LITGLYPH`.

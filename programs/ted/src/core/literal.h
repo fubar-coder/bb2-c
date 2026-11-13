@@ -14,13 +14,18 @@
  * one column there.  Its byte cc cannot tell it from a token cell (bit 7)
  * or from a byte of a token pair copied raw (tokenise off), so a column
  * row carries the literal characters beside it:
- *   - the cursor row of chmap: chmap holds TED_LITGLYPH at the column,
- *     litrow the character (litrow_sync builds it from thisitem, the line
- *     editor gl_* shifts it with the row);
+ *   - chmap: a literal cell holds TED_LITGLYPH, the literal map litmap
+ *     (chcols * edrows bytes beside chmap, design D4a of the change
+ *     ted-latin1-glyphs) the character at the same offset, 0 elsewhere;
+ *     chmap_showa2item writes both, the chmap blits (tokit.c) move both,
+ *     the line editor gl_* shifts the cursor row's part (litrow_*, which
+ *     litrow_sync builds again from thisitem);
  *   - the line buffers charbuff, charbuff2, charbuff3 and the scratch
  *     row of this module: the byte is cc and a parallel byte holds cc too.
  * litat() reads it; every byte that has no such mark is what it was
- * before this change (a token cell or a raw byte).
+ * before this change (a token cell or a raw byte).  A cell of chmap is
+ * drawn as the glyph of its character (cellglyph: the fonts have 256
+ * glyphs, spec editor/screen-font), whichever routine draws it.
  */
 #ifndef TED_LITERAL_H
 #define TED_LITERAL_H
@@ -41,10 +46,10 @@
 #define TED_ISLIT(hi, lo) ((UBYTE)(hi) == TED_LITHI && (UBYTE)(lo) > TED_NOLIT)
 /* the word w (bit 15 set or not) is a literal character */
 #define TED_ISLITWORD(w) (((UWORD)(w) & 0x7F80) == 0x1080 && ((UWORD)(w) & 0x7F))
-/* the glyph a literal character is drawn with (and its byte in chmap):
-   TED's fonts have glyphs for 0-127 only (keymap.h fontcalc), so every
-   literal character is drawn with the same glyph, glyph 0 of the font
-   (spec: "the font's default glyph"); no line holds a 0 */
+/* the byte of a literal cell in chmap (no line holds a 0); the cell is
+   drawn as the glyph of its character from litmap, and as glyph 0 of the
+   font (spec: "the font's default glyph") only where litmap has none,
+   which no stored pair gives */
 #define TED_LITGLYPH 0
 /* getbchar2's result for a literal character: TED_BLIT | cc */
 #define TED_BLIT 0x100
@@ -71,10 +76,34 @@ void litput(UBYTE *p, UBYTE cc);
 /* forget the marks of the line buffers and the scratch row */
 void litclear(void);
 
-/* the cursor row of chmap: litrow_sync builds its literal characters from
-   thisitem as chmap_showa2item shows it; litrow_shift moves the marks from
-   column `from` on by n columns (n > 0 right, the last ones lost; n < 0
-   left, blanks behind), litrow_set sets or clears one */
+/* the literal map beside chmap (size bytes, the size of chmap; NULL:
+   chmap has no literal cells); litmap_init sets it and clears it */
+extern UBYTE *litmap;
+void litmap_init(UBYTE *map, ULONG size);
+/* the map byte of the chmap cell `cell` = cc (0: no literal character) */
+void litmap_put(const UBYTE *cell, UBYTE cc);
+/* the map part of the chmap blits (tokit.c): rows row+1..edrows-1 one up
+   and the last row cleared; rows row..edrows-2 one down and row `row`
+   cleared; row `row` cleared; every row cleared */
+void litmap_scrollup(UWORD row);
+void litmap_scrolldown(UWORD row);
+void litmap_eraseline(UWORD row);
+void litmap_cls(void);
+
+/* the glyph the chmap cell `cell` is drawn with: a literal cell its
+   character (*tok = FALSE: the colour of the text), any other cell its
+   byte without bit 7 (*tok = bit 7: the token colour, print3) */
+UBYTE cellglyph(const UBYTE *cell, BOOL *tok);
+/* the next character of the text a stored line or a column row shows
+   (showmice): *src one further; with pairs (a stored line) a pair $90 cc
+   is the character cc, *src two further */
+UBYTE litnext(const UBYTE **src, BOOL pairs);
+
+/* the cursor row of chmap (its part of litmap): litrow_sync builds its
+   literal characters from thisitem as chmap_showa2item shows it;
+   litrow_shift moves the marks from column `from` on by n columns (n > 0
+   right, the last ones lost; n < 0 left, blanks behind), litrow_set sets
+   or clears one */
 void litrow_sync(void);
 void litrow_shift(UWORD from, WORD n);
 void litrow_set(UWORD col, UBYTE cc);

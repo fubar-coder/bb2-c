@@ -43,8 +43,8 @@ TEST_CASE("initial values of the globals", "[state]")
 
 TEST_CASE("embedded resources", "[state]")
 {
-    CHECK(sizeof(font6) == 768u);
-    CHECK(sizeof(font8) == 1024u);
+    CHECK(sizeof(font6) == 1536u);      // TED-C's fonts: 256 glyphs
+    CHECK(sizeof(font8) == 2048u);
     CHECK(srcinfo[0] == 0xE3);          // DiskObject magic
     CHECK(srcinfo[1] == 0x10);
 }

@@ -248,7 +248,7 @@ TEST_CASE("the line editor moves, deletes and inserts around a literal character
     }
 }
 
-TEST_CASE("display: one cell in the colour of the text, no help, print sends the byte", "[literal][display]")
+TEST_CASE("display: one cell, its glyph in the colour of the text, no help, print sends the byte", "[literal][display]")
 {
     for (UWORD tok = 0; tok < 2; tok++) {
         CAPTURE(tok);
@@ -266,9 +266,10 @@ TEST_CASE("display: one cell in the colour of the text, no help, print sends the
         drawn.clear();
         chmap_showa2item(firstitem, draw);
         REQUIRE(drawn.size() == 6);
-        CHECK(drawn[4].first == TED_LITGLYPH);
+        CHECK(drawn[4].first == 0xE9);          // the glyph of the character
         CHECK(drawn[4].second == normcol);      // not the token colour
         CHECK(chmap[chloc + 4] == TED_LITGLYPH); // no token bit
+        CHECK(litat(chmap + chloc + 4) == 0xE9); // the literal map
         CHECK(chmap[chloc + 5] == '"');
         // help on the literal character: nothing; the column behind it is 5
         UWORD num = 0;

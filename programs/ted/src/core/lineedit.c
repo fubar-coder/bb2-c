@@ -224,7 +224,7 @@ void gl_isasc(UBYTE c)
 
 /* NEW (literal characters): .isasc for a literal character cc - the row
    one to the right as for a character (gl_isasc), the cell is the
-   character's (litrow); the caller prints TED_LITGLYPH */
+   character's (the literal map); the caller prints it (printlit) */
 void gl_islit(UBYTE cc)
 {
     gl_isasc(TED_LITGLYPH);

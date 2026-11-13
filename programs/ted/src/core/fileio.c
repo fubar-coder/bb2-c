@@ -1056,6 +1056,7 @@ static void sa_print(struct showa2 *sa, UBYTE c)
     if (color != normcol)
         cell |= 128;
     chmap[(WORD)chloc + cursoff + (WORD)cursx] = cell;
+    litmap_put(&chmap[(WORD)chloc + cursoff + (WORD)cursx], 0);   /* NEW: no literal */
     if (sa->draw)
         sa->draw(c);
 }
@@ -1083,7 +1084,32 @@ static void sa_normprint(struct showa2 *sa, UBYTE c)
         return;
     }
     sa->row[(WORD)sa->col] = c;
+    litmap_put(&sa->row[(WORD)sa->col], 0);     /* NEW: no literal */
     sa_normprint2(sa, c);                       /* falls through */
+}
+
+/* NEW (literal characters): normprint for the literal character cc - the
+   cell holds TED_LITGLYPH, the literal map cc, and cc is drawn (the glyph
+   of its code, spec editor/screen-font) in the colour of the text */
+static void sa_litprint(struct showa2 *sa, UBYTE cc)
+{
+    UBYTE *cell;
+
+    if (sa->col >= chcols) {                    /* as normprint (#1011) */
+        sa->full = TRUE;
+        return;
+    }
+    sa->row[(WORD)sa->col] = TED_LITGLYPH;
+    litmap_put(&sa->row[(WORD)sa->col], cc);
+    if (sa->col < (UWORD)cursoff || sa->scrcol >= edcols)
+        return;                                 /* as normprint2 */
+    cursx = sa->scrcol;
+    cell = &chmap[(WORD)chloc + cursoff + (WORD)cursx];   /* as print2 */
+    *cell = TED_LITGLYPH;
+    litmap_put(cell, cc);
+    if (sa->draw)
+        sa->draw(cc);
+    sa->scrcol++;
 }
 
 /* tokprint (ted.s line 4152); the asm destroys a5 (exg trick).  Fixed
@@ -1094,11 +1120,9 @@ static void sa_tokprint(struct showa2 *sa, UBYTE c)
     const char *name;
 
     if (TED_ISLIT(c, *sa->src)) {
-        /* NEW (literal characters): one cell, the glyph TED_LITGLYPH in
-           the colour of the text, no token bit; with and without tokenise
-           (the cursor row's character: litrow_sync) */
-        sa->src++;
-        sa_normprint(sa, TED_LITGLYPH);
+        /* NEW (literal characters): one cell, drawn as the character in
+           the colour of the text, no token bit; with and without tokenise */
+        sa_litprint(sa, *sa->src++);
         return;
     }
     if (!tokenise || !(c & 0x80)) {
@@ -1118,6 +1142,7 @@ static void sa_tokprint(struct showa2 *sa, UBYTE c)
         }
         sa->row[(WORD)sa->col] = ch;
         sa->row[(WORD)sa->col] |= 0x80;         /* bset.b #7 */
+        litmap_put(&sa->row[(WORD)sa->col], 0); /* NEW: no literal */
         sa_normprint2(sa, ch);
         sa->col++;
     }

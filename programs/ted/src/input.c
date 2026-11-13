@@ -173,7 +173,7 @@ void refresh(void)
         cursx = 0;
         src = chmap + (WORD)chloc + cursoff;
         DBF(edcols - 1, {               /* .loop2 */
-            print3(*src++);
+            print3at(src++);            /* NEW: print3at (literal.h) */
             cursx++;
         });
         godown();
@@ -276,7 +276,7 @@ isasc:
 islit:
     gl_islit(litkey(event));
     shiftright(plane0, plane1, col);
-    print(TED_LITGLYPH);
+    printlit(litkey(event));            /* the glyph of the character */
     cursrite();
     goto getline2;
 
@@ -360,7 +360,7 @@ char127:
         UWORD sx = cursx;
 
         cursx = (UWORD)(edcols - 1);
-        print3(row[(WORD)(edcols + cursoff - 1)]);
+        print3at(&row[(WORD)(edcols + cursoff - 1)]);  /* NEW: print3at */
         cursx = sx;
     }
     goto getline2;
@@ -400,7 +400,7 @@ void reline(WORD col)
 
     cursx = 0;
     DBF(edcols - 1, {                   /* .loop3 */
-        print3(*src++);
+        print3at(src++);                /* NEW: print3at (literal.h) */
         cursx++;
     });
     cursx = sx;

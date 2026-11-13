@@ -70,6 +70,14 @@ void putblitter(void);
 /* ted.s:5125 print3: character c (asm d0) bit 7 -> tokcol else normcol,
    bit 7 cleared, draw only (print4) - no chmap write */
 void print3(UBYTE c);
+/* NEW (literal characters): print3 for the chmap cell `cell` - a literal
+   cell as the glyph of its character in the colour of the text, any
+   other cell as print3(*cell) (cellglyph, literal.h) */
+void print3at(const UBYTE *cell);
+/* NEW (literal characters): print for the literal character cc - the
+   chmap cell = TED_LITGLYPH, its literal map byte = cc, the glyph of cc
+   drawn (through printa0) */
+void printlit(UBYTE cc);
 /* ted.s:5132 print: print c at cursx/cursy in `color` (print2: chmap +
    draw), through printa0 */
 void print(UBYTE c);

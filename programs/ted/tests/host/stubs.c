@@ -9,6 +9,7 @@
 #include "hostenv.h"
 #include "fileio.h"
 #include "tokit.h"
+#include "literal.h"
 
 int host_calls[HC_COUNT];
 int host_trace;
@@ -195,11 +196,12 @@ void call_savextra(tedfh fh) { (void)fh; called(HC_SAVEXTRA); }
 
 void hostenv_init(const char *tokfile, UWORD rows)
 {
-    static UBYTE *block, *map;
+    static UBYTE *block, *map, *lmap;
     ULONG size = doslen + 3 * (chcols + 2);
 
     free(block);
     free(map);
+    free(lmap);
     block = calloc(1, size);
     dosbuff = block;                    /* ted.s:41-63 */
     charbuff = dosbuff + doslen;
@@ -211,6 +213,8 @@ void hostenv_init(const char *tokfile, UWORD rows)
     map = malloc((size_t)rows * chcols + chcols);  /* + 1 row: tokit reads past the end */
     memset(map, ' ', (size_t)rows * chcols + chcols);
     chmap = map;
+    lmap = malloc((size_t)rows * chcols);       /* the literal map (screen.c) */
+    litmap_init(lmap, (ULONG)rows * chcols);
     colon = ':';
     quote = '"';
     label = '.';

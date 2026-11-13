@@ -277,3 +277,40 @@ task 5.2 is the gate.
 - The ctest of the real step on broken inputs (`tedfont_build_broken`,
   host side) runs the step's commands as `fonts.cmake` defines them, on
   copies of the sources broken in the build directory.
+
+### TED (tasks 1.3, 3.1-3.3, 4.1, 4.2)
+- `checkdata` compares the length of the reference range from the C
+  symbol on: `_font8`'s first 1024 bytes are `chars8.b` unchanged, so it
+  is equal and needs no entry (an entry would be stale and fail); only
+  `_font6` (glyph 26, 5 bytes) is listed in `checkdata-intended.txt`,
+  under #1018 (the change has no issue of its own).
+- The sites of task 1.3 (`rg 'chmap|TED_LITGLYPH' programs/ted/src`) and
+  their tests (`test_literal_redraw.cpp` unless named):
+  - drawing a literal: `sa_tokprint` -> `sa_litprint` (`core/fileio.c`;
+    "every row draws ..."); typing, `input.c` islit -> `printlit`
+    (`screen.c`) after `gl_islit` ("typing, deleting and reline ...");
+    `showmice` (`mouse.c`) -> `litnext` ("showmice ...");
+  - redraws from `chmap`, all through `print3at` -> `cellglyph`:
+    `refresh`, `reline`, the last cell after a delete (`input.c`),
+    `scrollrite`, `scrollleft` (`screen.c`) ("horizontal scroll ...",
+    "typing, deleting and reline ...");
+  - moving or clearing `chmap`: `chmap_scrollup`, `chmap_scrolldown`,
+    `chmap_eraseline`, `chmap_cls` (`core/tokit.c`) -> `litmap_*`
+    ("the vertical scrolls ..."); allocation and release (`screen.c`
+    `screenopen2`, `freechmap`) -> `litmap_init` (the host environment
+    does the same, `stubs.c`);
+  - other cells written: `sa_print`, `sa_normprint`, the token cells of
+    `sa_tokprint` clear the map byte (`inStep` after every test step);
+    `print2` writes no map byte: its only caller (`.isasc`) comes after
+    `gl_isasc`, whose shift cleared it;
+  - the cursor row's operations (`gl_*` in `core/lineedit.c`, `join`,
+    `split`, `bcopyok`, `charstobuff`) work on the cursor row's part of
+    the map through `litrow_*` and `litat` as before
+    (`test_literal_edit.cpp`, "typing, deleting and reline ...").
+- The redraw loops stay in the AmigaOS part as the original has them;
+  the host tests check `cellglyph` of the cells each loop reads, which is
+  what `print3at` draws.
+- `showmice` with tokenise off draws a raw token byte >= $80 with the
+  glyph of its code; the original read behind its font there (garbage),
+  TED-C's glyph is a Latin-1 character. The label list shows only the
+  label name, which rarely holds a token.

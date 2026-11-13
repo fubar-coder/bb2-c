@@ -4,3 +4,8 @@
 # (the original has 4, never seen: setdefs sets it before the requester
 # opens; no behaviour changes)
 _defaultreqsg3	#363	int3 = 2 instead of 4
+# #1018 (change ted-latin1-glyphs, spec editor/screen-font): TED-C's 6 px
+# font redraws glyph 26 (the a with diaeresis: dots in row 0 on TED's a);
+# the rest of the 768 bytes of chars.b is unchanged (font8: its first 1024
+# bytes are chars8.b unchanged, no entry)
+_font6	#1018	glyph 26 redrawn (5 bytes)

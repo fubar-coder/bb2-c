@@ -6,14 +6,12 @@ include(sources.cmake)
 # archive/sources/ted-1.1: the original sources of TED 1.1 (ted.s and its
 # includes, unchanged) - for the reference build below and for the
 # resources: the binary includes of ted.s (incbin) as C arrays,
-# src/core/res.c embeds the original files at build time
+# src/core/res.c embeds the original files at build time (the fonts:
+# TED-C's, generated from the original ones, below)
 set(TED_ORIG_DIR ${PROJECT_SOURCE_DIR}/archive/sources/ted-1.1)
 set(RES_DIR ${TED_ORIG_DIR})
-set(RES_FILES sleep.bin pointer.bin src.info chars.b chars8.b)
+set(RES_FILES sleep.bin pointer.bin src.info)
 list(TRANSFORM RES_FILES PREPEND ${RES_DIR}/)
-set_source_files_properties(src/core/res.c PROPERTIES
-	COMPILE_OPTIONS --embed-dir=${RES_DIR}
-	OBJECT_DEPENDS "${RES_FILES}")
 
 # ------------------------------------------------------- reference build
 # The original ted.s assembled with vasm as Devpac did (-nocase as in
@@ -56,6 +54,9 @@ add_custom_target(ted_ref DEPENDS ${REF_DIR}/ted)
 # build directory, checked in the same step
 include(fonts/fonts.cmake)
 ted_fonts(ted_fonts ${TEDFONT} ${CMAKE_CURRENT_BINARY_DIR}/fonts host_tools)
+set_source_files_properties(src/core/res.c PROPERTIES
+	COMPILE_OPTIONS "--embed-dir=${RES_DIR};--embed-dir=${TED_FONTS_DIR}"
+	OBJECT_DEPENDS "${RES_FILES};${TED_FONT8};${TED_FONT6}")
 
 set(core_sources)
 foreach(m IN LISTS TED_CORE_MODULES)

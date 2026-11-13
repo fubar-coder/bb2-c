@@ -249,6 +249,16 @@ BOOL screenopen(void)
     chmap = AllocMem((ULONG)chcols * edrows, MEMF_CHIP);
     if (!chmap)
         goto cfail;
+    /* NEW (literal characters): the literal map beside chmap (literal.h) */
+    {
+        UBYTE *map = AllocMem((ULONG)chcols * edrows, MEMF_CLEAR);
+
+        if (!map) {
+            FreeMem(chmap, (ULONG)chcols * edrows);
+            goto cfail;
+        }
+        litmap_init(map, (ULONG)chcols * edrows);
+    }
 
     newgads.LeftEdge = 0;                       /* clr.l newgads+4 */
     newgads.TopEdge = 0;
@@ -372,6 +382,8 @@ void freechmap(void)
 
     memalt = (UWORD)size;
     FreeMem(chmap, size);
+    FreeMem(litmap, size);                      /* NEW: the literal map */
+    litmap_init(NULL, 0);
 }
 
 /* ted.s:4895 screenclose.  The UCopList goes with CloseScreen; `coplist`
@@ -527,9 +539,9 @@ void scrollrite(void)
     src = chmap + cursoff;
     n = (UWORD)(edrows - 1);
     do {                                        /* .loop ... dbf d2 */
-        print3(*src++);
+        print3at(src++);                        /* NEW: print3at (literal.h) */
         cursx = 1;
-        print3(*src);
+        print3at(src);
         cursx = 0;
         scloc += fontmul;
         src += (WORD)chcols;
@@ -564,9 +576,9 @@ void scrollleft(void)
     src = chmap + cursoff + (WORD)col;
     n = (UWORD)(edrows - 1);
     do {
-        print3(src[0]);
+        print3at(&src[0]);                      /* NEW: print3at (literal.h) */
         cursx++;
-        print3(src[1]);
+        print3at(&src[1]);
         cursx--;
         scloc += fontmul;
         src += (WORD)chcols;
@@ -588,6 +600,32 @@ void print3(UBYTE c)
         color = tokcol;
     }
     printa0(c, print4);
+}
+
+/* NEW (literal characters) */
+void print3at(const UBYTE *cell)
+{
+    BOOL tok;
+    UBYTE c = cellglyph(cell, &tok);
+
+    color = tok ? tokcol : normcol;
+    printa0(c, print4);
+}
+
+/* NEW: the chmap part of printlit (as print2), then print4 */
+static void printlit2(UBYTE cc)
+{
+    UBYTE *cell = &chmap[(WORD)chloc + cursoff + (WORD)cursx];
+
+    *cell = TED_LITGLYPH;
+    litmap_put(cell, cc);
+    print4(cc);
+}
+
+/* NEW (literal characters) */
+void printlit(UBYTE cc)
+{
+    printa0(cc, printlit2);
 }
 
 /* ted.s:5132 print - print d0 at cursx,cursy, in color (1,2,3) */
@@ -647,7 +685,8 @@ void print2(UBYTE c)
 }
 
 /* ted.s:5178 print4 - glyph into both planes (colour bits, inverse).
-   d0 >= 128 reads behind the font (survey-05 I.11). */
+   In the original d0 >= 128 reads behind the font (survey-05 I.11);
+   TED-C's fonts have 256 glyphs (keymap.h fontcalc). */
 void print4(UBYTE c)
 {
     UBYTE *p0, *p1, mask0, mask1, inv;

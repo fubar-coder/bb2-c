@@ -4,8 +4,8 @@
 _sleep_	sleep	sleepf	res.c sleep.bin
 _pointer	pointer	pointerf	res.c pointer.bin
 _srcinfo	srcinfo	srcinfof	res.c src.info
-_font6	font6	font8	res.c chars.b
-_font8	font8	1024	res.c chars8.b
+_font6	font6	font8	res.c ted_font6.b: its first 768 bytes, chars.b (glyph 26 redrawn)
+_font8	font8	1024	res.c ted_font8.b: its first 1024 bytes, chars8.b
 _germs	germs	12	keymap.c
 _powersof10	powersof10	10	fileio.c
 _defstart	defstart	defend	state.c option block

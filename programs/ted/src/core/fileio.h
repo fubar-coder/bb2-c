@@ -243,7 +243,10 @@ void orderem(struct quad *r);
    saved/restored.  The row is NOT cleared first.  For every character
    that the asm prints, `draw` (may be NULL) is called with cursx/color
    set: on the Amiga printa0 with print4 (inverse + bitmap), on the host
-   nothing. */
+   nothing.  NEW (literal characters): a literal character is one cell,
+   TED_LITGLYPH in chmap and the character in the literal map
+   (literal.h), drawn as the character (its glyph) in the colour of the
+   text; every other cell written clears its map byte. */
 void chmap_showa2item(struct item *line, void (*draw)(UBYTE c));
 /* ted.s:4050/4073/4088 (showall/showtopitem/showbotitem, core part - NEW
    names): the walks of the asm (storepos, cursy steps back from thisitem,

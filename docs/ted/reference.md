@@ -47,8 +47,8 @@ CMake: target `ted_ref` (bb2: `ref`; in `ALL`: vasm build with listing, then `te
 | `srcinfo` (827) | `src.info` | 396 | `$1074` | data: `DiskObject` (magic `$E310`, version 1) – icon written as `NAME.info` when saving | **data** – resource |
 | `rawed` (7109) | `rawed.obj` | 660 | `$73E0` | **code**: complete AmigaDOS hunk file (header 32 bytes, 624 bytes code, no relocations), entry points `rawed+32+0/4/8` | **port** (C, `rawkey.c`) |
 | `filerequest` (7967) | `filereq` | 15916 | `$8CE0` | **code**: complete hunk file (14616 bytes code+data, 312 RELOC32), relocated at runtime by `flink` (7953) itself, entry point `filerequest+36` = code+4 | **port** by taking over `libs/acidlibs/freqlib.c` (see 4.2) |
-| `font6` (8070) | `chars.b` | 768 | `$CDFA` | data: font 8 pixels wide, 6 high, 128 characters in 8 blocks of 16 (line r of character c at `(c&15) + (c>>4)*96 + r*16`, `fontcalc` 5214) | **data** – resource |
-| `font8` (8071) | `chars8.b` | 1024 | `$D0FA` | data: font 8×8 pixels, 128 characters (`(c&15) + (c>>4)*128 + r*16`) | **data** – resource |
+| `font6` (8070) | `chars.b` | 768 | `$CDFA` | data: font 8 pixels wide, 6 high, 128 characters in 8 blocks of 16 (line r of character c at `(c&15) + (c>>4)*96 + r*16`, `fontcalc` 5214) | **data** – resource; TED-C embeds `ted_font6.b` of 256 glyphs (1536 bytes), generated from it (glyph 26 redrawn) and `programs/ted/fonts/glyphs6.txt` (spec `editor/screen-font`) |
+| `font8` (8071) | `chars8.b` | 1024 | `$D0FA` | data: font 8×8 pixels, 128 characters (`(c&15) + (c>>4)*128 + r*16`) | **data** – resource; TED-C embeds `ted_font8.b` of 256 glyphs (2048 bytes), generated from it and `programs/ted/fonts/glyphs8.txt` |
 
 The pure data stays binary: it is converted into C arrays from the original files
 at build time (PLAN.md §3.4), not typed in and not placed into the

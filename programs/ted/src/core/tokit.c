@@ -441,6 +441,7 @@ void chmap_scrollup(UWORD row)
     /* .skip ... last row: chmap + (edrows-1)*chcols (add.w to a0) */
     last = chmap + (WORD)(UWORD)((edrows - 1) * chcols);
     blt_fill(last, (UWORD)((chcols >> 1) | 64));
+    litmap_scrollup(row);                       /* NEW: the literal map */
 }
 
 /* NEW: chmap part of scrolldown (ted.s:4434) INCLUDING the chmap part of
@@ -477,6 +478,7 @@ void chmap_scrolldown(UWORD row)
             *d-- = *s--;
         }
     }
+    litmap_scrolldown(row);                     /* NEW: the literal map */
     chmap_eraseline(row);                       /* falls through into eraseline */
 }
 
@@ -485,10 +487,12 @@ void chmap_eraseline(UWORD row)
 {
     blt_fill(chmap + (ULONG)row * chcols,       /* mulu chcols,d7 */
              (UWORD)(((chcols >> 1) & 63) | 64));
+    litmap_eraseline(row);                      /* NEW: the literal map */
 }
 
 /* NEW: chmap part of cls (ted.s:4986): edrows rows of spaces */
 void chmap_cls(void)
 {
     blt_fill(chmap, (UWORD)((UWORD)(edrows << 6) | ((chcols >> 1) & 63)));
+    litmap_cls();                               /* NEW: the literal map */
 }

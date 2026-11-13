@@ -24,7 +24,8 @@
 #include "state.h"
 
 /* set up the globals like outside does for blitz2: buffers (one block,
-   dosbuff + charbuff1..3 as in ted.s:41), chmap (rows x chcols), token
+   dosbuff + charbuff1..3 as in ted.s:41), chmap (rows x chcols) and its
+   literal map (litmap_init, literal.h), token
    list from tokfile (tests/data/ted-tokens.txt), colon/quote/label/remark =
    ':' '"' '.' ';', tokenise = 1.  tokfile may be NULL (no token list,
    tokenise = 0). */

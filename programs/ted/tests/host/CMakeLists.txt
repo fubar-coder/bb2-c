@@ -25,8 +25,10 @@ target_include_directories(tedcore_host PUBLIC ${TED_DIR}/src/core)
 add_dependencies(tedcore_host ted_fonts)       # host/CMakeLists.txt
 target_compile_options(tedcore_host PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
 set_target_properties(tedcore_host PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
+# res.c: the original resources and TED-C's fonts (host/CMakeLists.txt)
 set_source_files_properties(${TED_DIR}/src/core/res.c PROPERTIES
-	COMPILE_OPTIONS --embed-dir=${TED_DIR}/../../archive/sources/ted-1.1)
+	COMPILE_OPTIONS "--embed-dir=${TED_DIR}/../../archive/sources/ted-1.1;--embed-dir=${TED_FONTS_DIR}"
+	OBJECT_DEPENDS "${TED_FONT8};${TED_FONT6}")
 
 add_library(tedhost STATIC stubs.c toklist.c tokref.c)
 target_include_directories(tedhost PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -45,6 +47,7 @@ foreach(t IN LISTS tests)
 		snitch::snitch lib_sha256)
 	target_compile_definitions(ted_${name} PRIVATE
 		TED_TEST_DATA_DIR="${REPO_DIR}/tests/data"
+		TED_ARCHIVE_DIR="${REPO_DIR}/archive/sources/ted-1.1"
 		TED_CD_DIR="${REPO_DIR}/archive/cd/ultimate-blitz-basic-2.1")
 	target_compile_options(ted_${name} PRIVATE -Wall)
 	set_target_properties(ted_${name} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)

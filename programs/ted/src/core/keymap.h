@@ -29,15 +29,17 @@ UBYTE litkey(LONG event);
 UWORD rawspecial(UWORD code);
 
 /* ted.s:5214 fontcalc (chunk 05 code, here with the font data): glyph of
-   character c (asm d0; 0-127, no check: >= 128 reads behind the font,
-   survey-05 I.11): font8 + (c&15) + (c>>4)*128, or font6 + (c&15) + (c>>4)*96 if
-   fonthite == 6.  Glyph rows are 16 bytes apart. */
+   character c (asm d0): font8 + (c&15) + (c>>4)*128, or font6 + (c&15) +
+   (c>>4)*96 if fonthite == 6.  Glyph rows are 16 bytes apart.  The
+   original's fonts have 128 glyphs and it reads behind them for c >= 128
+   (survey-05 I.11); TED-C's have 256 (spec editor/screen-font), so every
+   code 0-255 has a glyph. */
 const UBYTE *fontcalc(UBYTE c);
 
 /* resources (res.c: #embed of the original files at build time, see
    CMakeLists.txt) */
-extern const UBYTE font6[768];      /* ted.s:8070 chars.b */
-extern const UBYTE font8[1024];     /* ted.s:8071 chars8.b */
+extern const UBYTE font6[1536];     /* ted.s:8070 chars.b: ted_font6.b */
+extern const UBYTE font8[2048];     /* ted.s:8071 chars8.b: ted_font8.b */
 extern const UBYTE sleep_[704];     /* ted.s:316  sleep.bin (8 frames x 88);
                                        `sleep` is a libc name */
 extern const UBYTE pointer[64];     /* ted.s:319  pointer.bin */

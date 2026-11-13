@@ -50,9 +50,10 @@ void cursrite(void);
 void gl_isasc(UBYTE c);
 /* NEW (literal characters, literal.h): gl_isasc for the literal character
    cc ($A0-$FF typed, not an umlaut of germs): the cell holds
-   TED_LITGLYPH, the cursor row's litrow the character.  The caller shifts
-   the bitmap, prints TED_LITGLYPH, cursrite.  (The line editor keeps
-   litrow in step with the row: every gl_* moves it as the row.) */
+   TED_LITGLYPH, the literal map (the cursor row's part, litrow_*) the
+   character.  The caller shifts the bitmap, prints the character
+   (printlit: its glyph), cursrite.  (The line editor keeps the map in
+   step with the row: every gl_* moves it as the row.) */
 void gl_islit(UBYTE cc);
 /* char127 (ted.s:5665): delete under the cursor: anyalt = c, block edges
    (blokfixb only if inblokf), chmap row left, chmap[chcols-1] = ' '.

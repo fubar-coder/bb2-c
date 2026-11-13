@@ -28,34 +28,41 @@ BOOL littrunc;
 static UBYTE litbuffmark[LITBUFF];      /* beside charbuff..charbuff4 */
 UBYTE litscratch[LITCOLS + 2];
 static UBYTE litscratchmark[LITCOLS + 2];
-static UBYTE litrowmark[LITCOLS];       /* beside the cursor row of chmap */
-static const UBYTE *litrowat;           /* the row litrowmark belongs to */
+UBYTE *litmap;                          /* beside chmap (literal.h) */
+static ULONG litmapsize;
 
 const char *litname(UWORD tok)
 {
     return litnames[tok & 0x7F];
 }
 
-/* the mark of p, NULL if p is in no column row with marks */
+/* the map byte of the chmap cell p, NULL if p is no cell of chmap */
+static UBYTE *mapof(const UBYTE *p)
+{
+    if (litmap && chmap && p >= chmap && p < chmap + litmapsize)
+        return &litmap[p - chmap];
+    return NULL;
+}
+
+/* the mark of p, NULL if p is in no column row with marks (chmap: mapof) */
 static UBYTE *markof(const UBYTE *p)
 {
     if (charbuff && p >= charbuff && p < charbuff + LITBUFF)
         return &litbuffmark[p - charbuff];
     if (p >= litscratch && p < litscratch + sizeof(litscratch))
         return &litscratchmark[p - litscratch];
-    if (litrowat && p >= litrowat && p < litrowat + LITCOLS && p < litrowat + chcols)
-        return &litrowmark[p - litrowat];
     return NULL;
 }
 
 UBYTE litat(const UBYTE *p)
 {
-    const UBYTE *m = markof(p);
+    const UBYTE *m = mapof(p);
 
+    if (m)
+        return *p == TED_LITGLYPH ? *m : 0;     /* chmap: the marker byte */
+    m = markof(p);
     if (!m || !*m)
         return 0;
-    if (m >= litrowmark && m < litrowmark + LITCOLS)
-        return *p == TED_LITGLYPH ? *m : 0;     /* chmap: the glyph */
     return *p == *m ? *m : 0;                   /* a line buffer: cc */
 }
 
@@ -64,8 +71,117 @@ void litput(UBYTE *p, UBYTE cc)
     UBYTE *m = markof(p);
 
     *p = cc;
-    if (m && !(m >= litrowmark && m < litrowmark + LITCOLS))
+    if (m)
         *m = cc;
+}
+
+/* ------------------------------------------------- the literal map */
+
+void litmap_init(UBYTE *map, ULONG size)
+{
+    ULONG i;
+
+    litmap = map;
+    litmapsize = map ? size : 0;
+    for (i = 0; i < litmapsize; i++)
+        litmap[i] = 0;
+}
+
+void litmap_put(const UBYTE *cell, UBYTE cc)
+{
+    UBYTE *m = mapof(cell);
+
+    if (m)
+        *m = cc;
+}
+
+/* the map offset of row `row`, or -1 if the row is not in the map (the
+   products are mulu.w: no 32-bit multiply on the 68000) */
+static LONG map_row(UWORD row)
+{
+    ULONG at = (ULONG)row * chcols;
+
+    if (!litmap || at > litmapsize || litmapsize - at < chcols)
+        return -1;
+    return (LONG)at;
+}
+
+/* n rows of the map from row `from` to row `to` (one row up or down) */
+static void map_rows(UWORD to, UWORD from, UWORD n)
+{
+    LONG d = map_row(to), s = map_row(from), last = map_row((UWORD)((to > from ? to : from) + n - 1));
+    ULONG bytes = (ULONG)n * chcols;
+
+    if (!n || d < 0 || s < 0 || last < 0)
+        return;
+    if (to < from) {
+        UBYTE *dp = litmap + d;
+        const UBYTE *sp = litmap + s;
+
+        while (bytes--)
+            *dp++ = *sp++;
+    } else {
+        UBYTE *dp = litmap + d + bytes;
+        const UBYTE *sp = litmap + s + bytes;
+
+        while (bytes--)
+            *--dp = *--sp;
+    }
+}
+
+void litmap_eraseline(UWORD row)
+{
+    LONG at = map_row(row);
+    UWORD i;
+
+    if (at < 0)
+        return;
+    for (i = 0; i < chcols; i++)
+        litmap[at + i] = 0;
+}
+
+void litmap_scrollup(UWORD row)
+{
+    if (row < edrows)
+        map_rows(row, (UWORD)(row + 1), (UWORD)(edrows - row - 1));
+    if (edrows)
+        litmap_eraseline((UWORD)(edrows - 1));
+}
+
+void litmap_scrolldown(UWORD row)
+{
+    if (row < edrows)
+        map_rows((UWORD)(row + 1), row, (UWORD)(edrows - row - 1));
+    litmap_eraseline(row);
+}
+
+void litmap_cls(void)
+{
+    UWORD r;
+
+    for (r = 0; r < edrows; r++)
+        litmap_eraseline(r);
+}
+
+UBYTE cellglyph(const UBYTE *cell, BOOL *tok)
+{
+    UBYTE cc = litat(cell);
+
+    if (cc) {
+        *tok = FALSE;
+        return cc;
+    }
+    *tok = (*cell & 0x80) != 0;
+    return (UBYTE)(*cell & 0x7F);
+}
+
+UBYTE litnext(const UBYTE **src, BOOL pairs)
+{
+    UBYTE c = *(*src)++;
+
+    if (pairs && TED_ISLIT(c, **src))
+        c = *(*src)++;
+    return c;
 }
 
 void litstore(UBYTE **p, WORD c)
@@ -92,14 +208,16 @@ void litclear(void)
 void litrow_sync(void)
 {
     const struct item *line = thisitem;
-    const UBYTE *src;
+    const UBYTE *src, *row;
     UWORD col = 0, i;
     UBYTE c;
 
-    for (i = 0; i < LITCOLS; i++)
-        litrowmark[i] = 0;
-    litrowat = chmap ? chmap + (WORD)chloc : NULL;
-    if (!line || !litrowat)
+    if (!chmap)
+        return;
+    row = chmap + (WORD)chloc;
+    for (i = 0; i < chcols; i++)
+        litmap_put(row + i, 0);
+    if (!line)
         return;
     /* the columns as chmap_showa2item gives them (fileio.c) */
     src = line->chars;
@@ -112,7 +230,7 @@ void litrow_sync(void)
     }
     while (c && col < chcols && col < LITCOLS) {
         if (TED_ISLIT(c, *src)) {
-            litrowmark[col] = *src++;
+            litmap_put(row + col, *src++);
             col++;
         } else if (tokenise && (c & 0x80)) {
             const char *name = findtoke((UWORD)((c << 8) | *src++));
@@ -126,25 +244,40 @@ void litrow_sync(void)
     }
 }
 
+/* the cursor row's part of the map, NULL without one */
+static UBYTE *maprow(void)
+{
+    LONG at = (WORD)chloc;
+
+    if (!litmap || !chmap || at < 0 || (ULONG)at + chcols > litmapsize)
+        return NULL;
+    return litmap + at;
+}
+
 void litrow_shift(UWORD from, WORD n)
 {
-    WORD i, last = (WORD)(chcols < LITCOLS ? chcols : LITCOLS) - 1;
+    UBYTE *m = maprow();
+    WORD i, last = (WORD)chcols - 1;
 
+    if (!m)
+        return;
     if (n > 0) {
         for (i = last; i >= (WORD)from + n; i--)
-            litrowmark[i] = litrowmark[i - n];
+            m[i] = m[i - n];
         for (i = (WORD)from; i < (WORD)from + n && i <= last; i++)
-            litrowmark[i] = 0;
+            m[i] = 0;
     } else if (n < 0) {
         for (i = (WORD)from; i <= last; i++)
-            litrowmark[i] = i - n <= last ? litrowmark[i - n] : 0;
+            m[i] = i - n <= last ? m[i - n] : 0;
     }
 }
 
 void litrow_set(UWORD col, UBYTE cc)
 {
-    if (col < LITCOLS)
-        litrowmark[col] = cc;
+    UBYTE *m = maprow();
+
+    if (m && col < chcols)
+        m[col] = cc;
 }
 
 /* ------------------------------------------------- the scratch row */
