@@ -77,10 +77,7 @@ void cmd_corpus_accept(CLI::App &app, int &status)
         ->required();
     sub->add_option("EXPECT_DIR", o->dir, "the expected data of the pass (tests/corpus/expect/PASS)")
         ->required();
-    sub->add_option("--only", o->only, "only this program (any number; the others are not touched)")
-        ->type_size(1)
-        ->expected(1)
-        ->allow_extra_args(false)
+    cli::add_repeated(*sub, "--only", o->only, 1, "only this program (any number; the others are not touched)")
         ->type_name("NAME");
     sub->footer("The runs must agree (\"test not deterministic: PASS:NAME\" and the first differing "
                 "line otherwise). A program's output and serial data become NAME.out and "

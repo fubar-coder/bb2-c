@@ -18,9 +18,9 @@ two-run accept and the projection helper this change reuses).
 
 ## 3. Targets
 
-- [ ] 3.1 `corpus-expect-update` refuses a changed unqualified file without `FIX=PASS:NAME#N` and turns it into the pair with it (`corpusrun pass --update-expect clib` extended; the pair writing in `corpusexpect`). Verify: host test; with the unchanged tree the target leaves `git status` clean; a fake run with a differing port output and no `FIX` names the program and writes nothing.
-- [ ] 3.2 Add `corpus-expect-record`: `ref` twice, the second with a Stack 16384 bytes larger (the layout of the bug-orig recording, `corpus_layout`; inject's `pad` changed what the bug-orig tests observe), the accept of 1.3, `FILTER`. Verify: `FILTER` on two programs leaves their files byte-identical; fake differing runs print "test not deterministic" and write nothing.
-- [ ] 3.3 `.exe` files in the record and update (`ref` and, with `FIX`, `port`). Verify: a fake pair is written and read back by the judge.
+- [x] 3.1 `corpus-expect-update` refuses a changed unqualified file without `FIX=PASS:NAME#N` and turns it into the pair with it (`corpusrun pass --update-expect clib` extended; the pair writing in `corpusexpect`). Verify: host test; with the unchanged tree the target leaves `git status` clean; a fake run with a differing port output and no `FIX` names the program and writes nothing.
+- [x] 3.2 Add `corpus-expect-record`: `ref` twice, the second with a Stack 16384 bytes larger (the layout of the bug-orig recording, `corpus_layout`; inject's `pad` changed what the bug-orig tests observe), the accept of 1.3, `FILTER`. Verify: `FILTER` on two programs leaves their files byte-identical; fake differing runs print "test not deterministic" and write nothing.
+- [x] 3.3 `.exe` files in the record and update (`ref` and, with `FIX`, `port`). Verify: a fake pair is written and read back by the judge.
 
 ## 4. fix-scope
 

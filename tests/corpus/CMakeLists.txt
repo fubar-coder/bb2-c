@@ -160,6 +160,7 @@ function(corpus_pass name)
 			string(APPEND text "source=${s}\n")
 		endforeach()
 		file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+		set(passfile_${kind} ${work}.pass)
 		add_test(NAME ${test} COMMAND ${CORPUSRUN} pass ${work}.pass)
 		# one session per configuration, one after the other if there are not
 		# enough emulator slots free, each maybe waiting for one
@@ -176,6 +177,10 @@ function(corpus_pass name)
 			endif()
 		endif()
 	endforeach()
+	# the targets corpus-expect-update and corpus-expect-record: the pass,
+	# its pass files
+	set_property(GLOBAL APPEND PROPERTY CORPUS_EXPECT_PASSES
+		"${name}|${passfile_all}|${passfile_originals}")
 endfunction()
 
 # without runtime error checking: the programs of tests/
@@ -203,22 +208,86 @@ corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 	SERIAL_SAME_AS corpus_serial
 	SOURCES ${corpus_tests-serial})
 
-# the expected outputs written from the port's run (configuration clib:
-# blitz2-c with the C libraries) - after a fix changed an output, or for a
-# new source; the commit shows the change (git diff tests/corpus/expect).
-# Not ALL: needs Amiberry and the CD (the passes mount BB2:)
-get_property(passes GLOBAL PROPERTY CORPUS_PASSES)
-set(update_commands)
-foreach(pass IN LISTS passes)
-	list(APPEND update_commands COMMAND ${CORPUSRUN} pass --update-expect clib ${pass})
-endforeach()
+# The expected data (expect/PASS) are written by two targets (not ALL, not
+# tests; reviewed with git diff tests/corpus/expect; tests/README.md,
+# "Corpus"):
+#   corpus-expect-record  from the original (record.cmake): every pass's ref
+#       twice (corpusrun pass --observe ref, the second with a Stack 16384
+#       bytes larger: another memory layout), accepted by results
+#       corpus-accept only if both agree ("test not deterministic" names the
+#       program, its files stay); writes NAME.out / NAME.serial, or the
+#       [orig] file of a pair (the [fixed #N] file stays) and NAME.orig.exe
+#       beside a NAME.fixed-N.exe.  Needs Amiberry and the CD.
+#       CORPUS_RECORD_FILTER: only these passes or programs (PASS or
+#       PASS:NAME, separated by ,).
+#   corpus-expect-update  from the port (update.cmake): clib's outputs; a
+#       changed unqualified file is refused unless CORPUS_UPDATE_FIX names
+#       the program (PASS:NAME#N, separated by ,: it becomes the pair
+#       NAME.orig.EXT / NAME.fixed-N.EXT); then the executables of ref and
+#       port (with the CD) for the programs with an exe pair or a FIX.
+get_property(expect_passes GLOBAL PROPERTY CORPUS_EXPECT_PASSES)
+list(JOIN expect_passes "\n" expect_passes)
+file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/corpus-expect.list CONTENT "${expect_passes}\n")
+set(CORPUS_UPDATE_FIX "" CACHE STRING
+	"corpus-expect-update: programs a fix makes differ from the original (PASS:NAME#N, separated by ,)")
+set(CORPUS_RECORD_FILTER "" CACHE STRING
+	"corpus-expect-record: only these passes or programs (PASS or PASS:NAME, separated by ,; empty: all)")
+set(CORPUS_RECORD_PARALLEL 2 CACHE STRING
+	"corpus-expect-record: passes recorded at the same time (two emulator sessions each)")
+set(what "")
+if(CORPUS_UPDATE_FIX)
+	set(what " (FIX ${CORPUS_UPDATE_FIX})")
+endif()
 add_custom_target(corpus-expect-update
-	${update_commands}
+	COMMAND ${CMAKE_COMMAND} -E env AMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
+		${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DLIST=${CMAKE_CURRENT_BINARY_DIR}/corpus-expect.list
+		"-DFIX=${CORPUS_UPDATE_FIX}" -P ${CMAKE_CURRENT_SOURCE_DIR}/update.cmake
 	DEPENDS blitz2 acidlibs deflibs tedstub reqtrap reqclose reqclosetest corpus_sources
 		host_tools
 	USES_TERMINAL
-	COMMENT "The corpus through the port's blitz2 and C libraries -> tests/corpus/expect"
+	COMMENT "The corpus through the port's blitz2 and C libraries -> tests/corpus/expect${what}"
 	VERBATIM)
+set(what "")
+if(CORPUS_RECORD_FILTER)
+	set(what " (filter ${CORPUS_RECORD_FILTER})")
+endif()
+add_custom_target(corpus-expect-record
+	COMMAND ${CMAKE_COMMAND} -E env AMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
+		${CMAKE_COMMAND} -DLIST=${CMAKE_CURRENT_BINARY_DIR}/corpus-expect.list
+		-DEXPECT=${CORPUS_EXPECT} -DRESULTS=${RESULTS} -DCORPUSRUN=${CORPUSRUN}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/corpus-expect-record "-DFILTER=${CORPUS_RECORD_FILTER}"
+		-DPARALLEL=${CORPUS_RECORD_PARALLEL} -P ${CMAKE_CURRENT_SOURCE_DIR}/record.cmake
+	DEPENDS tedstub reqtrap reqclose reqclosetest corpus_sources host_tools
+	USES_TERMINAL
+	COMMENT "The corpus through the original (two runs each) -> tests/corpus/expect${what}"
+	VERBATIM)
+# the orchestration of the record with fake runs (no emulator): a program
+# written, one not deterministic refused with its file unchanged, a pair's
+# [orig] files written and its [fixed #N] files kept, a program the filter
+# leaves out untouched, a failed run fails the target
+add_test(NAME corpus_record_target COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS}
+	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/record.cmake
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/corpus_record_target
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/record-target.cmake)
+set_tests_properties(corpus_record_target PROPERTIES
+	PASS_REGULAR_EXPRESSION "record-target: all runs as expected")
+# the update on a pass of t01_int whose expected output is wrong (in the
+# build directory): refused without FIX, the pair with it
+set(work ${CMAKE_CURRENT_BINARY_DIR}/corpus_update_fix)
+string(CONCAT text "# corpus_update_fix: generated by tests/corpus/CMakeLists.txt\n"
+	"test=corpus_update_fix\nwork=${work}\nreport=${work}.txt\nruntime_errors=off\n"
+	"timeout=${CORPUS_TIMEOUT}\nparallel=1\nted=$<TARGET_FILE:tedstub>\n"
+	"launcher=$<TARGET_FILE:reqtrap>\n"
+	"config=clib|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
+	"expect_dir=${work}/expect/corpus\nsource=${CORPUS_SRC}/tests/t01_int.bb2\n")
+file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
+add_test(NAME corpus_update_fix COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DPASS=${work}.pass
+	-DDIR=${work}/expect/corpus -DWRONG=${CMAKE_CURRENT_SOURCE_DIR}/selftest/wrong/t01_int.out
+	-DRIGHT=${CORPUS_EXPECT}/corpus/t01_int.out
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/update-check.cmake)
+math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120 + 3 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(corpus_update_fix PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "update-check: all updates as expected")
 
 # --------------------------------------------- the CD (corpusrun cd, runner/)
 # Every .bb2/.bb of the CD compiled (not run) as bb2's bb2corpus did: with

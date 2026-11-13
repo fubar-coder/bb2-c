@@ -90,12 +90,9 @@ void cmd_pass(CLI::App &app, int &status)
                     "write the expected data of the pass's expect_dir= from the configuration TAG "
                     "instead of comparing (port: the executables of the reference and TAG)")
         ->type_name("TAG");
-    sub->add_option("--fix", o->fix, "with --update-expect: a program a fix makes differ from the "
-                    "original (any number): its changed file becomes the pair NAME.orig.EXT / "
-                    "NAME.fixed-N.EXT")
-        ->type_size(1)
-        ->expected(1)
-        ->allow_extra_args(false)
+    cli::add_repeated(*sub, "--fix", o->fix, 1, "with --update-expect: a program a fix makes differ "
+                      "from the original (any number): its changed file becomes the pair "
+                      "NAME.orig.EXT / NAME.fixed-N.EXT")
         ->type_name("PASS:NAME#N");
     sub->add_option("--observe", o->observe,
                     "run only the configuration TAG and write its observations to --to DIR "
@@ -106,10 +103,7 @@ void cmd_pass(CLI::App &app, int &status)
         ->type_name("DIR");
     sub->add_flag("--layout-stack", o->layout_stack, "with --observe: a Stack 16384 bytes larger "
                   "(the second run of the record: another memory layout)");
-    sub->add_option("--only", o->only, "only this source (NAME without .bb2; any number)")
-        ->type_size(1)
-        ->expected(1)
-        ->allow_extra_args(false)
+    cli::add_repeated(*sub, "--only", o->only, 1, "only this source (NAME without .bb2; any number)")
         ->type_name("NAME");
     sub->add_option("PASSFILE", o->passfile, "the pass file (its keys: tests/corpus/runner/corpus.h)")->required();
     sub->footer("With the pass key record=check a bug-orig pass (orig=) runs only the original and "
