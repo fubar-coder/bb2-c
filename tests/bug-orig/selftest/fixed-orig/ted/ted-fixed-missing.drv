@@ -1,0 +1,4 @@
+; ted-fixed-missing: a fixed TED test without its recorded original (bug_orig_fixed_orig_broken)
+; @fixed #99999
+; @source none
+wait exit
