@@ -1,0 +1,30 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+bitmap reference bytes set 4880
+bitmap slope 4095 differ 0
+bitmap slope 4096 differ 4880
+bitmap cover 16383 full 8000
+bitmap cover 16384 full 0
+chunky reference pixels set 64
+chunky slope 4095 differ 0
+chunky slope 4096 differ 960
+chunky cover 16383 pixels 1024
+chunky cover 16384 pixels 0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/polylib-word-range.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/polylib-word-range
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

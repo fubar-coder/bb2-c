@@ -37,6 +37,13 @@
  *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
  *   - a depth of 0 runs the plane loop 65536 times. (#393)
+ *   - word range, won't fix: an edge of 4096 lines or more that is at least
+ *     as wide as high gets the slope 0 (DIVS overflow), two neighbouring
+ *     points 32768 or more apart wrap in the clipping (nothing is drawn),
+ *     and a start x beyond +-16383 wraps; BitMapPoly, ChunkyPoly (x and y
+ *     swapped) and RenderPoly.  Not fixed on purpose: the range check on
+ *     every call would cost speed in a rendering library; clip polygons
+ *     before the call.  (#1019)
  * DIFF (memory layout, unavoidable): what such an overflow hits.
  */
 #include "blitzlib.h"
@@ -197,7 +204,9 @@ static const UWORD lup2[16] = {
 
 /* ---------------------------------------------------------- arithmetic */
 
-/* MULS a,b : DIVS c - the quotient word (on overflow DIVS leaves the
+/* BUG(orig) (#1019), won't fix: the callers pass word differences that
+   wrap from 32768 on (see the header).
+   MULS a,b : DIVS c - the quotient word (on overflow DIVS leaves the
    product, then its low word) */
 static WORD muldiv(WORD a, WORD b, WORD c)
 {
@@ -217,7 +226,9 @@ static ULONG edge_step(ULONG pos, ULONG step, UWORD unit)
     return sum;
 }
 
-/* the start: x (sign extended) with the lower word x * unit, the fraction
+/* BUG(orig) (#1019), won't fix: x * unit is a word, wrong for a start x
+   beyond +-16383 (BitMapPoly, unit 2; by reading).
+   the start: x (sign extended) with the lower word x * unit, the fraction
    word EORed with $8000 (one half; $7FFF for a negative x) */
 static ULONG edge_start(WORD x, UWORD unit)
 {
@@ -241,7 +252,11 @@ static int next_edge(const struct edge **list, UWORD *lines, ULONG *step)
 /* lside/rside: the edges of one side from (x, y) over the points p, p +
    dir, ... down to the bottom; cut where the side leaves the clip width
    (the left side at x > width - 1, the right side at x < 0).  Returns the
-   address of the end mark. */
+   address of the end mark.
+   BUG(orig) (#1019), won't fix: the slope dx * 8^k / dy must fit a word
+   (slope below 4096, 512, 64, 8, 1 for dy below 8, 64, 512, 4096, 32768);
+   from dy = 4096 with dx >= dy bl_divs_w overflows, the edge becomes
+   vertical.  The cut at the side (muldiv) wraps for points 32768 apart. */
 static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, int right)
 {
     struct edge *e = (struct edge *)list;
@@ -288,7 +303,10 @@ static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, 
    row): the top line, clipped at the top edge and at the sides, and the
    edge lists of the left side (backwards through the points) and the
    right side.  NULL if nothing is visible, else the address of the right
-   list's end mark (where the original leaves a3). */
+   list's end mark (where the original leaves a3).
+   BUG(orig) (#1019), won't fix: the clipping at the top and at the sides
+   (muldiv with word differences) wraps for two neighbouring points 32768
+   or more apart in x or y; nothing is drawn. */
 static UWORD *outline(UWORD n)
 {
     const struct point *p = polypts, *lp, *rp;

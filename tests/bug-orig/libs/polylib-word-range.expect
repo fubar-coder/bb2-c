@@ -1,0 +1,14 @@
+[compile]
+ok
+[run]
+bitmap reference bytes set 4880
+bitmap slope 4095 differ 0
+bitmap slope 4096 differ 0
+bitmap cover 16383 full 8000
+bitmap cover 16384 full 8000
+chunky reference pixels set 64
+chunky slope 4095 differ 0
+chunky slope 4096 differ 0
+chunky cover 16383 pixels 1024
+chunky cover 16384 pixels 1024
+rc=0

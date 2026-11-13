@@ -39,6 +39,7 @@ A few issues are closed without a fix:
   These bugs are real, but fixing them would add more complexity than the fix is worth.
   They stay as they are in the original.
   An example is PANIC in the stop requester of a program run from the editor: the program is removed without any cleanup, so its files stay open and its memory and screens stay allocated ([#24](https://github.com/fubar-coder/bb2-c/issues/24)).
+  Another is the polygon commands of the 3D rendering library (BitMapPoly, ChunkyPoly, RenderPoly): they compute in 16 bit words, so a polygon with an edge of 4096 lines or more that is at least as wide as high, or with points 32768 or more apart, is drawn with a vertical edge or not at all; a range check on every call would cost speed, so clip such polygons before the call ([#1019](https://github.com/fubar-coder/bb2-c/issues/1019)).
 * Some issues have the label
   [not-a-bug](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig+label%3Anot-a-bug).
   Their behaviour turned out to be intended, or harmless in practice.
