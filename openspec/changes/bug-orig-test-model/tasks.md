@@ -38,7 +38,7 @@ deliberately broken input.
 
 ## 7. Acceptance
 
-- [ ] 7.1 Full run: `ctest --preset all`, `ctest --preset bug-orig`, `ctest --preset originals` (with the CD), `ctest --preset host` with `-DHOST_SANITIZE=ON`; the `prev` comparison shows executables, TED files and library files byte-identical. Verify: the runs pass; `git status` after `ctest --preset originals` is clean.
+- [x] 7.1 Full run: `ctest --preset all`, `ctest --preset bug-orig`, `ctest --preset originals` (with the CD), `ctest --preset host` with `-DHOST_SANITIZE=ON`; the `prev` comparison shows executables, TED files and library files byte-identical. Verify: the runs pass; `git status` after `ctest --preset originals` is clean.
 
 ## 8. Documents
 
