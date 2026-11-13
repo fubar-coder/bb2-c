@@ -141,7 +141,8 @@ static void snapshot(struct snap *sn, ULONG d0, LONG opened)
             memcpy(sn->img[i], es->es_SimpleSprite.posctldata, n < IMG ? n : IMG);
         }
     }
-    *(ULONG *)(sn->block + 162) = *(ULONG *)(b + 162) != 0;
+    /* the library base: graphics.library's, not its address */
+    *(ULONG *)(sn->block + 162) = *(ULONG *)(b + 162) == (ULONG)wbsgfx;
 }
 
 /* one step on the current set: d0-d3, a0; recorded */
@@ -183,7 +184,9 @@ static void scenario(void)
 
     nstep = 0;
     step(SPRX, "WBSpriteX (no sprite)", 0x00010005, 0, 0, 0, 0, 0);
-    step(INIT, "init", 0, 0, 0, 0, 0, 0);
+    /* init has no result (BL_NORET): d0 is not observed; the base it stores
+       at block +162 is checked against graphics.library's in the snapshot */
+    step(INIT, "init", 0, 0, 0, 0, 0, 1);
     step(GETWB, "GetWBSprite", 10, 20, 1, 2, SH(SHA), 0);
     step(GETWB, "GetWBSprite (any)", 30, 40, 2, (ULONG)-1, SH(SHA), 0);
     any = steps[nstep - 1].out.d[0];
@@ -332,7 +335,12 @@ int main(int argc, char **argv)
         DONTCARE = st->dontcare;
         preserve();
         DONTCARE = 0;
-        if (!st->dontcare)
+        if (!strcmp(st->name, "WBSpriteX (no sprite)")) {
+            /* d0 = argument high word | the word at address 6 (the low
+               word of ExecBase, #922): the relation, not the address */
+            OBS("d0 is the argument's high word with the word at address 6",
+                st->sn.d0 == ((st->in.d[0] & 0xFFFF0000UL) | *(UWORD *)6));
+        } else if (!st->dontcare)
             OBS("d0", st->sn.d0);
         OBS("graphics.library open count", st->sn.opened);
         for (i = 0; i < BLOCK; i += 2) {

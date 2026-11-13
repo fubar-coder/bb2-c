@@ -1,7 +1,7 @@
 # capture rwe_riwbspritelib 1
 WBSpriteX (no sprite)|kept|10005,0,0,0|1	kept
 WBSpriteX (no sprite)|popped|10005,0,0,0|1	$00000000
-WBSpriteX (no sprite)|d0|10005,0,0,0|1	$00010830
+WBSpriteX (no sprite)|d0 is the argument's high word with the word at address 6|10005,0,0,0|1	$00000001
 WBSpriteX (no sprite)|graphics.library open count|10005,0,0,0|1	$00000000
 WBSpriteX (no sprite)|block +0|10005,0,0,0|1	$00000000
 WBSpriteX (no sprite)|block +2|10005,0,0,0|1	$00000000
@@ -144,7 +144,6 @@ WBSpriteX (no sprite)|sprite 7 field 5|10005,0,0,0|1	$00000000
 WBSpriteX (no sprite)|sprite 7 image|10005,0,0,0|1	bytes 256 fnv E6A1D1C5
 init|kept|0,0,0,0|1	kept
 init|popped|0,0,0,0|1	$00000000
-init|d0|0,0,0,0|1	$40004EE4
 init|graphics.library open count|0,0,0,0|1	$00000000
 init|block +0|0,0,0,0|1	$00000000
 init|block +2|0,0,0,0|1	$00000000
