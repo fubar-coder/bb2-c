@@ -5,7 +5,10 @@ timeout
 ok
 [run]
 before
-REQUESTER: EasyRequest title "Software Failure" text "
+# varies: the crash shows the Software Failure requester, of which more or less is written before the session ends
+REQUESTER: EasyRequest title "Software Failure" text "*
+# varies: the rest of the requester, if it is written
+...
 [blitz2]
 rc=0
 [log]
