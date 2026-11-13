@@ -10,8 +10,9 @@ New language features mean a "BB2 next" variant, not the faithful port.
 New keywords need token numbers, and tokenised sources should stay
 exchangeable with the original.
 
-The last three sections, "Tooling: blitz2 on the host", "The compiler in
-a process of its own" and "Tests: the TED A/B scripts without the CD",
+The last four sections, "Tooling: blitz2 on the host", "The compiler in
+a process of its own", "Tests: the TED A/B scripts without the CD" and
+"TED: a screen model of line positions",
 are no language changes.
 
 ## Order and dependencies
@@ -368,3 +369,29 @@ real: long lines, Includes, many different tokens, old style.
   stays.
 - **The work:** per script, find out what it needs from its source,
   write that source, record the expectation once from the original.
+
+## TED: a screen model of line positions
+
+TED keeps a copy of the screen, `chmap`: one byte per cell with the
+character already written out (a keyword as its letters, bit 7 meaning
+"token colour"), and redraws from it - `refresh`, the two columns a
+horizontal blitter scroll uncovers, a deleted character. A literal
+character ($90 cc) does not fit that byte, so `chmap` holds a marker, and
+the change `ted-latin1-glyphs` adds a whole-screen map of the literal
+codes beside it.
+
+The idea (user, 2026-11-13): store per cell not the character but where it
+comes from - the index of the element of the line (character or token)
+and, for a token, the offset into its name (0 for a character); a
+function maps a column of a line to that element. Everything is rendered
+once, scrolling uses the blitter as now, and a function redraws the dirty
+areas that scrolling or an overlap leave, by looking the cells up in the
+line. Characters, literals and tokens are then handled alike, and the
+screen can never show anything else than the line.
+
+Cost: a rework of TED's screen model - every reader and writer of `chmap`
+(typing in the cursor row, delete, the `chmap` scroll and erase in
+`core/tokit.c`, loading, the mouse) - and a redraw that needs a valid line
+also while the cursor row or a block operation changes it. It moves TED-C
+away from the structure of `ted.s` that the comments, the TED A/B tests
+and the host tests follow, so it is a change of its own.
