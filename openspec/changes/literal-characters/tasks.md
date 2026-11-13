@@ -203,7 +203,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 - [x] 7.3 Corpus: one program with a literal in a string and one in a
   comment, in `tests/corpus`, expecting the string bytes. Verify: corpus
   runs Cc and, for the program that holds only strings, C5.
-- [ ] 7.4 The prev comparison: `ctest --preset all` with a prev build:
+- [x] 7.4 The prev comparison: `ctest --preset all` with a prev build:
   `prev_results`, corpus `prev`, `ted_ab` P5/Pc unchanged for all
   scripts without a literal, and the new script, `acidlibs` (not the RWE
   variants') and the userlib file named in `PREV_INTENDED`. Verify: the report.
@@ -236,10 +236,10 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
 
 ## 9. Final checks
 
-- [ ] 9.1 `ctest --preset host`, `--preset all`, `--preset bug-orig`,
+- [x] 9.1 `ctest --preset host`, `--preset all`, `--preset bug-orig`,
   `--preset oracle`; a build with `-DHOST_SANITIZE=ON` for the new host
   tests. Verify: no verdict changed except the intended ones.
-- [ ] 9.2 Manual run in Amiberry with `tools/amiga_run`: the original TED
+- [x] 9.2 Manual run in Amiberry with `tools/amiga_run`: the original TED
   with the userlib loads a file with `ß`, `é` (the names of the library
   reach the screen as the characters; their colour; the cursor over a
   literal; save without loss); TED-C types `ß`, `é`, `ä` in a string,

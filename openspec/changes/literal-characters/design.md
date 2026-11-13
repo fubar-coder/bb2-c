@@ -586,3 +586,19 @@ spec.
   are a later change of their own; this change keeps glyph 0. The issue
   of the change is #1018; Print's umlaut codes (F9) are #1017, not part
   of this change.
+- **F13 The original TED with the userlib (task 9.2, measured with
+  `tests/ted-ab/scripts/32-literal-load.drv` in `ted_ab_originals`).**
+  With `literallib.obj` in `blitz2:userlibs/literal/` (blitz2 2.10 loads
+  the directories of `userlibs`, not files in it) the original TED loads
+  and saves a file with literal characters without loss (`@roundtrip`)
+  and shows each as one cell: its `tokprint` draws the name's byte, which
+  is >= $80 and so read from behind its font (no Latin-1 glyph, a few
+  random pixels), in the token colour. This is the limit of D8 ("shows the
+  characters" holds only as one cell of a wrong glyph); TED-C draws glyph
+  0 in the colour of the text. Without the userlib the original shows
+  `?????` (measured before the staging was fixed). Typing é is not
+  possible in the TED A/B runner (a dead key), so the manual "type ß, é,
+  ä" of 9.2 is covered by `31-literal` with ß, § and ° (typed), and é by
+  the host tests; the program's output of the characters by
+  `tests/blitz2/literal-strings` and the corpus programs `t22_latin1`,
+  `t23_latin1rem` (blitz2-c and the original compiler).
