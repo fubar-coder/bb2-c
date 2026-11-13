@@ -545,7 +545,9 @@ BOOL replace2(struct item *line, struct item **lineout)
         do {
             /* NEW (literal characters): an umlaut as typing stores it
                (26-31), another character >= $80 a literal character */
-            UBYTE c = (UBYTE)germs_map(*p++);
+            UBYTE c = *p++;
+
+            c = (UBYTE)germs_map(TED_LITIN(c));
 
             pos++;
             if (c & 0x80)

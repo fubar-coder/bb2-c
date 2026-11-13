@@ -1,9 +1,10 @@
 // test_literal_names - the name of a literal character (spec
 // editor/literal-characters, "The name of a literal character"; design D3):
-// findtoke answers a word $9080-$90FF with the one character, from the
+// findtoke answers a word $9081-$90FF with the one character, from the
 // token list when it holds the entry (the library literallib), from the
 // built-in table when it does not (no list: standalone TED, the host
-// tests; a list without the library); a word $9000-$907F stays unknown.
+// tests; a list without the library); a word $9000-$9080 stays unknown
+// ($9080 is no literal character, decision of 2026-11-13).
 // detok and detoka5 give the character.
 #include <cstdlib>
 #include <cstring>
@@ -35,11 +36,11 @@ void freeline(struct item *it)
     ted_free(it, static_cast<UWORD>(it->numchars + lenitem));
 }
 
-// the 128 entries of literallib appended to the list: num = $1080 + n
+// the 127 entries of literallib appended to the list: num = $1080 + n
 // (bit 15 cleared, as blitz2 hands it to the editor), name = the character
 // with the code $80 + n, marked with '!' behind it so that the test can
 // tell the list's entry from the built-in one
-struct tokennode *litlist[128];
+struct tokennode *litlist[127];
 
 // the environment, set up once per program (the core keeps its globals),
 // with the original's token list or without a list
@@ -61,11 +62,11 @@ void appendlib(char mark)
 
     while (last && last->next)
         last = last->next;
-    for (int n = 0; n < 128; n++) {
+    for (int n = 0; n < 127; n++) {
         auto *node = static_cast<struct tokennode *>(std::calloc(1, sizeof(struct tokennode) + 4));
 
-        node->num = static_cast<UWORD>(0x1080 + n);
-        node->name[0] = static_cast<char>(0x80 + n);
+        node->num = static_cast<UWORD>(0x1081 + n);
+        node->name[0] = static_cast<char>(0x81 + n);
         node->name[1] = mark;
         litlist[n] = node;
         if (last)
@@ -93,7 +94,7 @@ TEST_CASE("findtoke: no token list - the built-in names", "[literal][findtoke]")
 {
     setup(false);
     REQUIRE(tokens == nullptr);
-    for (int cc = 0x80; cc <= 0xFF; cc++) {
+    for (int cc = 0x81; cc <= 0xFF; cc++) {
         CAPTURE(cc);
         const char *name = findtoke(static_cast<UWORD>(0x9000 + cc));
 
@@ -102,8 +103,8 @@ TEST_CASE("findtoke: no token list - the built-in names", "[literal][findtoke]")
         // bit 15 of the word does not matter (findtoke clears it)
         CHECK(findtoke(static_cast<UWORD>(0x1000 + cc)) == name);
     }
-    // library 32 and the words $9000-$907F: unknown
-    for (int lo = 0; lo < 0x80; lo++) {
+    // library 32 and the words $9000-$9080: unknown
+    for (int lo = 0; lo <= 0x80; lo++) {
         CAPTURE(lo);
         CHECK(findtoke(static_cast<UWORD>(0x9000 + lo)) == tokeerr);
     }
@@ -116,7 +117,7 @@ TEST_CASE("findtoke: the list's entry wins, a list without them gives the built-
     setup(true);
     REQUIRE(tokens != nullptr);
     // the original's list has no word $90xx
-    for (int cc = 0x80; cc <= 0xFF; cc++) {
+    for (int cc = 0x81; cc <= 0xFF; cc++) {
         const char *name = findtoke(static_cast<UWORD>(0x9000 + cc));
 
         CAPTURE(cc);
@@ -125,11 +126,11 @@ TEST_CASE("findtoke: the list's entry wins, a list without them gives the built-
     }
     CHECK(findtoke(0x9001) == tokeerr);
     appendlib('!');
-    for (int cc = 0x80; cc <= 0xFF; cc++) {
+    for (int cc = 0x81; cc <= 0xFF; cc++) {
         const char *name = findtoke(static_cast<UWORD>(0x9000 + cc));
 
         CAPTURE(cc);
-        CHECK(name == litlist[cc - 0x80]->name);
+        CHECK(name == litlist[cc - 0x81]->name);
         CHECK(std::string(name) == std::string(1, static_cast<char>(cc)) + "!");
     }
     droplib();
@@ -143,7 +144,7 @@ TEST_CASE("detok and detoka5 give the character", "[literal][detok]")
         setup(withlist != 0);
         if (withlist)
             appendlib('\0');
-        for (int cc = 0x80; cc <= 0xFF; cc++) {
+        for (int cc = 0x81; cc <= 0xFF; cc++) {
             CAPTURE(cc);
             std::string line = std::string("a\x90", 2) + static_cast<char>(cc) + "b";
             struct item *it = mkline(line);

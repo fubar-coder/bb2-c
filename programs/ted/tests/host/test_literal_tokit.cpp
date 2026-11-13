@@ -84,20 +84,20 @@ std::string z(const std::string &s)
     return s + std::string(1, '\0');
 }
 
-struct tokennode *litlist[128];
+struct tokennode *litlist[127];
 
-// literallib's 128 entries at the end of the list (test_literal_names)
+// literallib's 127 entries at the end of the list (test_literal_names)
 void appendlib()
 {
     struct tokennode *last = tokens;
 
     while (last->next)
         last = last->next;
-    for (int n = 0; n < 128; n++) {
+    for (int n = 0; n < 127; n++) {
         auto *node = static_cast<struct tokennode *>(std::calloc(1, sizeof(struct tokennode) + 4));
 
-        node->num = static_cast<UWORD>(0x1080 + n);
-        node->name[0] = static_cast<char>(0x80 + n);
+        node->num = static_cast<UWORD>(0x1081 + n);
+        node->name[0] = static_cast<char>(0x81 + n);
         litlist[n] = node;
         last->next = node;
         last = node;
@@ -146,7 +146,7 @@ TEST_CASE("tokeniser: a literal character is the pair, inside and outside string
     CHECK(tokrow("NPrint\xe9").size() == 5);   // the token, the pair, the 0
     // the umlauts stay the codes 26-31; every character $80-$FF a pair
     CHECK(tokrow("\"\x1a\x1b\x1c\x1d\x1e\x1f\"") == z("\"\x1a\x1b\x1c\x1d\x1e\x1f\""));
-    for (int cc = 0x80; cc <= 0xFF; cc++) {
+    for (int cc = 0x81; cc <= 0xFF; cc++) {
         CAPTURE(cc);
         CHECK(tokrow(std::string("\"") + static_cast<char>(cc) + "\"")
               == z("\"" + P + static_cast<char>(cc) + "\""));

@@ -29,10 +29,18 @@
 
 /* the first byte of a literal character (library 33, design D2) */
 #define TED_LITHI 0x90
+/* the character $80 is no literal character: library 33 has no word $9080
+   (blitz2 numbers a user library from libnum * 128 + 1); a byte $80 that
+   enters the editor is stored as TED_NOLITCHAR (decision of 2026-11-13) */
+#define TED_NOLIT 0x80
+#define TED_NOLITCHAR '?'
+/* c as a character entering the editor ($80 -> TED_NOLITCHAR); c is
+   evaluated twice */
+#define TED_LITIN(c) ((UBYTE)(c) == TED_NOLIT ? TED_NOLITCHAR : (UBYTE)(c))
 /* the pair hi lo is a literal character */
-#define TED_ISLIT(hi, lo) ((UBYTE)(hi) == TED_LITHI && ((UBYTE)(lo) & 0x80))
+#define TED_ISLIT(hi, lo) ((UBYTE)(hi) == TED_LITHI && (UBYTE)(lo) > TED_NOLIT)
 /* the word w (bit 15 set or not) is a literal character */
-#define TED_ISLITWORD(w) (((UWORD)(w) & 0x7F80) == 0x1080)
+#define TED_ISLITWORD(w) (((UWORD)(w) & 0x7F80) == 0x1080 && ((UWORD)(w) & 0x7F))
 /* the glyph a literal character is drawn with (and its byte in chmap):
    TED's fonts have glyphs for 0-127 only (keymap.h fontcalc), so every
    literal character is drawn with the same glyph, glyph 0 of the font

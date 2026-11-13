@@ -174,6 +174,13 @@ TEST_CASE("readline: a Latin-1 byte of a text file is a literal character or an 
                              : z("a$=\"\x1a\x1b\x1c" + P + "\xdf\" : NPrint a$")));
         CHECK(bytes(2).find(P + "\xfd" + P + "\xfe" + P + "\xff") != std::string::npos);
     }
+    // the character $80 is no literal character: stored as '?' (decision
+    // of 2026-11-13), with and without tokenise
+    for (UWORD t = 0; t < 2; t++) {
+        load(path, "a$=\"x\x80y\"\n", t);
+        REQUIRE(numlines == 1);
+        CHECK(bytes(0) == z("a$=\"x?y\""));
+    }
     // a tokenised file is loaded as stored: a pair $90 E4 stays a pair
     load(path, z("a" + P + "\xe4" "b") + z("c"), 1);
     REQUIRE(numlines == 2);

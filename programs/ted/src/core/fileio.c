@@ -318,7 +318,7 @@ int readline(struct rdstate *rd, UWORD *length)
         /* .loop (dst <= lim here: the 0 always fits) */
         if ((c & 0x80) && rd->textfile) {
             /* fixed #374; literal characters (design D4, D6) */
-            c = (WORD)(UBYTE)germs_map((UBYTE)c);
+            c = (WORD)(UBYTE)germs_map(TED_LITIN(c));   /* $80: '?' */
             if (c & 0x80) {
                 if (dst + 2 > lim || (dst > charbuff2 && col >= chcols))
                     goto full;                  /* fixed #375 */
