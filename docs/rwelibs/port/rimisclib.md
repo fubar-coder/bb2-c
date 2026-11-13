@@ -11,7 +11,8 @@ Steve Matty (header of the source). 24 commands:
 * `EZRequestArgs args..` – the body is built from the arguments: `%s`,
   `%ld` (long, quick, float) or `%d` (word, byte) each, separated by the
   `EZSeparator char` character (default `|`, i.e. a line feed).
-* `InitArgParse s$` copies s$ into a 256 byte buffer; `NextArg$` gives
+* `InitArgParse s$` copies s$ into a 256 byte buffer (at most 255
+  characters, the rest is cut off); `NextArg$` gives
   the next word (spaces separate, quotes group, `""` inside quotes is a
   quote), `NextArgChar$ c` everything up to the next c.
 * `ProgPath$`, `ProgDir$`, `ProgName$` – GetProgramDir/NameFromLock (no
@@ -74,8 +75,6 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
   build whatever is behind its table – a raw key above 113 (e.g. a key up
   code) or a negative one, and RawASC of a character that is not in the
   table, give other results.
-* InitArgParse with more than 251 characters overwrites the code behind
-  the buffer in the original, other data in the C build.
 
 ## Fixed
 
@@ -88,6 +87,12 @@ kind F):
   the next character and the word went on (`a"b c`; at the end of the
   string it copied the 0) (#755). NextArg$ also stays on the 0 at the
   end of the string; the original stepped behind it.
+* InitArgParse copies at most 255 characters and the 0 into its 256 byte
+  buffer, the rest of a longer string is cut off; the original copies
+  without a limit and clears four more bytes behind the copy, so a
+  string of more than 251 characters overwrites the code behind the
+  buffer (NextArgChar$ and NextArg$) (#752). The four zeros were an end
+  guard for NextArg$, which no longer steps behind the 0 (#755).
 
 ## BUG(orig)
 
@@ -101,10 +106,8 @@ kind F):
   count) (#760).
 * Flip$ of a string of 0 or 1 characters: the count `len/2 - 1` is -1,
   the DBRA swaps 65536 byte pairs around the string (#751).
-* InitArgParse copies without a limit (256 byte buffer, 4 zeros behind
-  the copy) (#752). NextArgChar$ does not check the parse pointer: before
-  InitArgParse and after NextArg$ came to the end it reads from address
-  0 (#754).
+* NextArgChar$ does not check the parse pointer: before InitArgParse and
+  after NextArg$ came to the end it reads from address 0 (#754).
 * EZRequestArgs writes no 0 behind its format text (160 byte buffer): a
   shorter text than the one before keeps the end of the old one (and so
   more formats than arguments) (#747). Neither form limits the number of

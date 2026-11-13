@@ -20,7 +20,8 @@
  *   EZRequestArgs args.. the body is built from the arguments: %s / %ld /
  *                        %d per type, separated by the EZSeparator
  *                        character ('|': a line feed), gadget "Ok"
- *   InitArgParse s$      copies s$ to a 256 byte buffer; NextArg$ gives
+ *   InitArgParse s$      copies s$ to a 256 byte buffer (at most 255
+ *                        characters); NextArg$ gives
  *                        the next word (quotes group, "" inside quotes is
  *                        a quote), NextArgChar$ c everything up to c
  *   ProgPath$/Dir$/Name$ GetProgramDir/GetProgramName (the task name if
@@ -46,9 +47,6 @@
  *     title) (#760).
  *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
  *     around the string (DBRA with -1) (#751).
- *   - InitArgParse copies without a limit into its 256 byte buffer (the
- *     original overwrites the code behind it, the C build other data)
- *     (#752).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
  *     and after NextArg$ came to the end it reads from address 0 (#754).
  *   - EZRequestArgs writes no 0 behind the format text it builds (160
@@ -82,6 +80,10 @@
  * one quote and ends the word at the quote that closes it (the original
  * miscounted the quotes after "" and copied the character behind the
  * closing quote); it stays on the 0 at the end of the string.
+ * Fixed (intended deviation, #752): InitArgParse copies at most 255
+ * characters and the 0 into its 256 byte buffer (the original copies
+ * without a limit and overwrites the code behind the buffer); the rest
+ * of a longer string is cut off.
  *
  * Original behaviour that is no defect: NextArg$ ends a quoted word at
  * the closing quote even if no space follows ("ab"cd gives ab, then cd),
@@ -644,20 +646,20 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
  * @brief InitArgParse parameter$: start parsing a string with NextArg$ /
  * NextArgChar$.
  *
- * Copies it into the 256 byte buffer with four more 0 behind it.
- * BUG(orig) (#752): the copy has no limit.
+ * Copies at most 255 characters of it and a 0 into the 256 byte
+ * buffer; the rest of a longer string is cut off.  Fixed (#752): the
+ * original copies without a limit and clears four more bytes behind the
+ * copy, an end guard for NextArg$, which stepped behind the 0 (it stays
+ * on it since #755).
  * @param s  d0: the string
  */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
-    UBYTE *dst = argbuffer;
+    UBYTE *dst = argbuffer, c;
 
-    while ((*dst++ = *s++) != 0)
-        ;
-    dst[0] = 0;
-    dst[1] = 0;
-    dst[2] = 0;
-    dst[3] = 0;
+    while (dst < argbuffer + sizeof argbuffer - 1 && (c = *s++) != 0)
+        *dst++ = c;
+    *dst = 0;
     parseadr = argbuffer;
     curadr = argbuffer;
 }

@@ -6,9 +6,9 @@
 ; NextArgChar$ and are MOVEQ #42,d0 : RTS, so the original returns a
 ; string of 42 characters whatever the memory layout is (text that is
 ; run as it comes, e.g. 300 times "x", ends in a crash or runs through,
-; depending on the address the library was loaded to).  The C build has
-; data behind its buffer and returns all 260 characters.
+; depending on the address the library was loaded to).
 ; Correct: InitArgParse copies at most 255 characters.
+; @fixed #752
 ; @rwe rimisclib
 ; @pass timeout=30
 DEFTYPE .l
