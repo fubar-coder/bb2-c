@@ -177,10 +177,13 @@ ways:
   operation, a line being edited), and costs a walk of the line per
   redraw.
 
-Recommendation: (a). The same mechanism already runs for the cursor row;
-the whole-screen version removes the special case, and the host tests of
-group 4 check that the map and `chmap` agree after each operation. The
-choice is left to the user (question 1). Either way `TED_LITGLYPH` stays
+Decided (user, 2026-11-13): (a). The same mechanism already runs for the
+cursor row; the whole-screen version removes the special case, keeps the
+original's redraw speed (no walk of a line per redraw), and the host
+tests of group 4 check that the map and `chmap` agree after each
+operation. A screen model that stores per cell the position in the line
+instead of the character is a larger rework of TED, kept as an idea in
+`IDEA.md`. Either way `TED_LITGLYPH` stays
 the marker byte in `chmap`, and `print4`/`qprint` take the real code.
 
 ### D5 What reads the fonts
@@ -220,7 +223,7 @@ commits of the group, since the font data is derived at build time.
 
 ## Open Questions
 
-1. Redraw: whole-screen literal map (recommended, D4a) or line lookup
-   (D4b)?
-2. The 6 px set is a draft: is the user's review of task 5.2 the gate for
-   changing glyphs, or do they review the text source first?
+None. Decided by the user (2026-11-13): the redraw uses the whole-screen
+literal map (D4a); the 6 px approximations (circumflex, tilde, ring,
+¼ ½ ¾ § ¶) are acceptable, and the user's review of the screenshots of
+task 5.2 is the gate.
