@@ -460,10 +460,9 @@ maximum it gives the right number
 
 **What to change**
 
-Nothing. One related bug is not fixed yet, so avoid these commands with
-such a maximum for now. `LoadShapes`, `DecodeShapes` and `LoadSprites`,
-which load a whole range of objects up to the maximum, still compute the
-last object with a 16-bit number and load only the first objects
+Nothing. `LoadShapes`, `DecodeShapes` and `LoadSprites`, which load a
+whole range of objects up to the maximum, load the whole range with such
+a maximum as well
 ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
 
 Issues: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939),

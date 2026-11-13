@@ -376,6 +376,36 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   same code and is fixed with it
   ([#160](https://github.com/fubar-coder/bb2-c/issues/160)).
 
+### Dates and numbers
+
+* `Date$` and `NumDays` made every hundredth year a leap year, so dates
+  before 1 March 1900 and from 1 March 2100 on were a day off per
+  century; they follow the Gregorian calendar, in which 1900, 2100, 2200
+  and 2300 are not leap years
+  ([#1001](https://github.com/fubar-coder/bb2-c/issues/1001)).
+* `QAngle` gave a wrong angle for points 32768 or more apart in x or y;
+  it gives the right one
+  ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).
+
+### Graphics
+
+* `LoadShapes`, `DecodeShapes` and `LoadSprites` with a raised object
+  maximum (1025 shapes or 2049 sprites and more) loaded only the first
+  object; they load the whole range
+  ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
+* `Polyf` drew polygons whose corners lie far outside the bitmap (from
+  about 8000 pixels away) wrongly or not at all; they are drawn
+  ([#1000](https://github.com/fubar-coder/bb2-c/issues/1000)).
+* `Rotate` made a rotated shape one pixel too large and lost its edge
+  pixels, so a quarter turn of a 21×9 shape gave 10×21; it rounds to the
+  nearest pixel and gives 9×21
+  ([#1004](https://github.com/fubar-coder/bb2-c/issues/1004)).
+* `DecodePalette` and `LoadPalette` cycled a colour range that the
+  picture marks as disabled, and ran ranges backwards without their
+  reverse flag; a range cycles only when enabled, backwards only when
+  marked so
+  ([#1002](https://github.com/fubar-coder/bb2-c/issues/1002)).
+
 ## Runtime errors in executables {#runtime-error-texts}
 
 An executable built with runtime error checking stops with a requester
