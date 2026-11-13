@@ -78,7 +78,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   `dispcol`). Tokenised files are loaded as stored (D4). Verify: host
   tests with the files of #374 (`28-long.drv`'s data, `Größe`, an umlaut
   at the end of a line, a Latin-1 byte before the end of the file).
-- [ ] 2.5 Display, colour, help, print: `sa_tokprint` draws a literal with
+- [x] 2.5 Display, colour, help, print: `sa_tokprint` draws a literal with
   `normcol` and no token flag; `prtfile_line` sends the byte and no ESC
   sequence; `help_core` finds nothing and counts one column (D3). Verify:
   host tests of `help_core` and `prtfile_line`; the TED A/B script of
@@ -200,7 +200,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   screen and save. Verify: load and save without loss (the saved file
   equals the loaded one); the screen of the original shows the
   characters; named differences (token colour) in the script.
-- [ ] 7.3 Corpus: one program with a literal in a string and one in a
+- [x] 7.3 Corpus: one program with a literal in a string and one in a
   comment, in `tests/corpus`, expecting the string bytes. Verify: corpus
   runs Cc and, for the program that holds only strings, C5.
 - [ ] 7.4 The prev comparison: `ctest --preset all` with a prev build:
