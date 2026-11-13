@@ -288,7 +288,8 @@ set_tests_properties(libs_accept_lost_names PROPERTIES
 # results fix-scope (design D12): the fix's own pair passes; a changed
 # unqualified case, a changed case of another issue and a change without a
 # "Fixes #N" line are named; a malformed file fails.  fix_scope_target: the
-# target's script (cmake/fix-scope.cmake) on a throwaway git repository.
+# target's script (cmake/fix-scope.cmake) on a throwaway git repository
+# (the library expected data and a bug-orig test).
 file(WRITE ${lc}/scope/base/prog.txt "${lc_head}r|c||1\t$0\nr|d||1\t$1\nr|p||1 [orig]\t$3\n"
 	"r|p||1 [fixed #8]\t$4\n")
 file(WRITE ${lc}/scope/own/prog.txt "${lc_head}r|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$5\nr|d||1\t$1\n"
@@ -316,6 +317,56 @@ foreach(t
 	add_test(NAME fix_scope_wrong_${name}_names COMMAND results fix-scope ${opt} ${arg} ${lc}/scope/base
 		${lc}/scope/${branch})
 	set_tests_properties(fix_scope_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
+# the same for the bug-orig tests (--bug-orig: trees of tests/bug-orig,
+# lib/bugorigcmp): base has the open tests t1 and t3 and t2 fixed by #8;
+# the fix of #7 adds "; @fixed #7" to t1 and changes its ID.expect (passes
+# with Fixes #7); the same with t2's ID.expect changed too, or t3's (an open
+# test), names that test's case; without a "Fixes #N" line every changed
+# case is named; a malformed ID.expect fails.
+set(bo ${lc}/bug-orig)
+set(bo_orig "# the original\n[session]\ndone\n[run]\n42\nrc=0\n")
+function(bo_tree tree)
+	cmake_parse_arguments(PARSE_ARGV 1 a "" "T1_HEAD;T1_EXPECT;T2_EXPECT;T3_EXPECT" "")
+	file(REMOVE_RECURSE ${bo}/${tree})
+	file(WRITE ${bo}/${tree}/compiler/t1.bas "; t1\n${a_T1_HEAD}Print 41\n")
+	file(WRITE ${bo}/${tree}/compiler/t1.expect "${a_T1_EXPECT}")
+	file(WRITE ${bo}/${tree}/compiler/t1.orig "${bo_orig}")
+	file(WRITE ${bo}/${tree}/libs/t2.bas "; t2\n; @fixed #8\nPrint 41\n")
+	file(WRITE ${bo}/${tree}/libs/t2.expect "${a_T2_EXPECT}")
+	file(WRITE ${bo}/${tree}/libs/t2.orig "${bo_orig}")
+	file(WRITE ${bo}/${tree}/libs/t3.bas "; t3\nPrint 41\n")
+	file(WRITE ${bo}/${tree}/libs/t3.expect "${a_T3_EXPECT}")
+	file(WRITE ${bo}/${tree}/libs/t3.orig "${bo_orig}")
+	file(WRITE ${bo}/${tree}/selftest/junk.bas "; not a test of the tree\n")
+endfunction()
+set(e41 "[run]\n41\nrc=0\n")
+set(e43 "[run]\n43\nrc=0\n")
+bo_tree(base T1_EXPECT "${e41}" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
+bo_tree(own T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
+bo_tree(other_fixed T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e43}" T3_EXPECT "${e41}")
+bo_tree(other_open T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e43}")
+bo_tree(malformed T1_HEAD "; @fixed #7\n" T1_EXPECT "junk\n" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
+add_test(NAME fix_scope_bug_orig_own COMMAND results fix-scope --bug-orig --log ${lc}/scope/log.txt
+	${bo}/base ${bo}/own)
+set_tests_properties(fix_scope_bug_orig_own PROPERTIES PASS_REGULAR_EXPRESSION
+	"fix-scope: bug-orig: [0-9]+ cases changed, 0 not of the issues #7\n")
+foreach(t
+		"other_fixed;--fixes;7;other_fixed;bug-orig: t2\\|run\\|\\|1 \\[fixed #8\\]: changed \\(\"41\\\\x0Arc=0\\\\x0A\" -> \"43\\\\x0Arc=0\\\\x0A\"\\)"
+		"other_open;--fixes;7;other_open;bug-orig: t3\\|run\\|\\|1: changed"
+		"no_fixes;--log;${lc}/scope/nolog.txt;own;bug-orig: t1\\|run\\|\\|1 \\[fixed #7\\]: added"
+		"malformed;--fixes;7;malformed;malformed/compiler/t1\\.expect:1: text before the first \\[section\\]")
+	list(GET t 0 name)
+	list(GET t 1 opt)
+	list(GET t 2 arg)
+	list(GET t 3 branch)
+	list(GET t 4 re)
+	add_test(NAME fix_scope_bug_orig_wrong_${name} COMMAND results fix-scope --bug-orig ${opt} ${arg}
+		${bo}/base ${bo}/${branch})
+	set_tests_properties(fix_scope_bug_orig_wrong_${name} PROPERTIES WILL_FAIL ON)
+	add_test(NAME fix_scope_bug_orig_wrong_${name}_names COMMAND results fix-scope --bug-orig ${opt}
+		${arg} ${bo}/base ${bo}/${branch})
+	set_tests_properties(fix_scope_bug_orig_wrong_${name}_names PROPERTIES PASS_REGULAR_EXPRESSION "${re}")
 endforeach()
 add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
 	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/fix-scope.cmake

@@ -401,11 +401,15 @@ OPTIONS:
   -h,     --help              Print this help message and exit
           --fixes N           an issue the branch fixes
           --log FILE          commit messages: their lines "Fixes #N" name issues too
+          --bug-orig          BASE_DIR and BRANCH_DIR are trees of bug-orig tests
+                              (tests/bug-orig), each test projected onto cases
 
 Every case (a key with its qualifier) added, changed or removed is reported
 unless it is a "[fixed #N]" case of a named issue, the "[orig]" case paired with
-one, or an unqualified case that became such a pair. Exit status 0 nothing
-reported, 1 a case reported, 2 usage error or a malformed or unreadable file.
+one, or an unqualified case that became such a pair. A bug-orig test's cases:
+one per section of ID.expect and ID.orig, "[fixed #N]" with its header "; @fixed
+#N". Exit status 0 nothing reported, 1 a case reported, 2 usage error or a
+malformed or unreadable file.
 ```
 
 The check before a fix is merged (design D12 of the OpenSpec change
@@ -424,7 +428,16 @@ and named in the commit with its reason, or gets its own issue. The last
 line counts the changed and the reported cases. The target `fix-scope`
 (`cmake/fix-scope.cmake`, `FIX_SCOPE_BASE`, default `main`) exports the
 base files of the merge base with `git archive` into the build directory
-and runs this against the checkout with the log of the branch's commits.
+and runs this against the checkout with the log of the branch's commits,
+for `libs/tests/expected` and, with `--bug-orig`, for `tests/bug-orig`.
+With `--bug-orig` the two directories are trees of bug-orig tests
+(`AREA/ID.bas` with `ID.expect`, `ted/ID.drv`, `ID.orig` beside them; not
+`selftest/`), each test projected onto cases (`tools/lib/bugorigcmp`,
+OpenSpec change `bug-orig-test-model`, design D6): one per section of
+`ID.expect` and `ID.orig`; with the header `; @fixed #N` the expectation
+is `ID|SECTION||1 [fixed #N]` and the recorded original the pair
+`ID|SECTION|orig|1 [orig]` / `[fixed #N]`. Adding the header and editing
+`ID.expect` are then cases of issue N; a malformed test fails (2).
 
 ### bug-orig-accept
 

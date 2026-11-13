@@ -33,8 +33,8 @@ deliberately broken input.
 
 ## 6. fix-scope covers bug-orig
 
-- [ ] 6.1 Extend `cmake/fix-scope.cmake` and `results fix-scope` with the bug-orig tests (the projection of 1.2 for base and branch, then `libscmp_fix_scope_dirs`). Verify: extend `fix_scope_*` host tests: a branch with `Fixes #7` adding `; @fixed #7` and a changed `ID.expect` passes; a branch that also changes another test is reported with its keys; a branch with no `Fixes` line reports every changed case; a malformed test file fails.
-- [ ] 6.2 The target `fix-scope` runs both on a throwaway git repository (as `fix_scope_target` does). Verify: the existing `fix_scope_target` test plus one bug-orig case.
+- [x] 6.1 Extend `cmake/fix-scope.cmake` and `results fix-scope` with the bug-orig tests (the projection of 1.2 for base and branch, then `libscmp_fix_scope_dirs`). Verify: extend `fix_scope_*` host tests: a branch with `Fixes #7` adding `; @fixed #7` and a changed `ID.expect` passes; a branch that also changes another test is reported with its keys; a branch with no `Fixes` line reports every changed case; a malformed test file fails.
+- [x] 6.2 The target `fix-scope` runs both on a throwaway git repository (as `fix_scope_target` does). Verify: the existing `fix_scope_target` test plus one bug-orig case.
 
 ## 7. Acceptance
 
