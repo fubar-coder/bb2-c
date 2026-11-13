@@ -834,7 +834,8 @@ int cexp_update(const struct cexp_set *run, const struct cexp_set *old, int seri
             cexp_plan_free(&mine);
             continue;
         }
-        if (issue && !changed)
+        /* a FIX that makes no pair: noted (an exe pair may still come) */
+        if (issue && !changed && !(op && op->f[CEXP_OUT][CEXP_FIXED].data))
             fprintf(report, "%s:%s: FIX #%u: the output is unchanged (no output pair)\n", pass,
                     a->name, issue);
         for (k = 0; k < mine.n; k++)
