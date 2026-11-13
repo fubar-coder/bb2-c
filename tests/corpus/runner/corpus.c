@@ -668,7 +668,14 @@ int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int 
         snprintf(err, errlen, "the pass has no configuration %s", tag);
         return -1;
     }
-    if (!(p->observe_to = strdup(dir))) {
+    free(p->work);
+    free(p->report);
+    /* a work directory and report of its own beside DIR: the two runs of
+       the record use the same pass file at the same time, and the pass's
+       own work directory belongs to its test */
+    p->work = str_printf("%s.work", dir);
+    p->report = str_printf("%s.txt", dir);
+    if (!(p->observe_to = strdup(dir)) || !p->work || !p->report) {
         snprintf(err, errlen, "out of memory");
         return -1;
     }

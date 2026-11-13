@@ -510,7 +510,8 @@ int main(void)
         CHECK(corpus_observe(&p, "none", "/o", 1, err, sizeof err) == -1 && strstr(err, "none"));
         CHECK(corpus_observe(&p, "ref", "/o", 1, err, sizeof err) == 0 && p.nconfigs == 1
               && !strcmp(p.configs[0].tag, "ref") && p.layout_stack
-              && !strcmp(p.observe_to, "/o"));
+              && !strcmp(p.observe_to, "/o") && !strcmp(p.work, "/o.work")
+              && !strcmp(p.report, "/o.txt"));
         {
             const char *only[] = { "t02" }, *bad[] = { "t03" };
 

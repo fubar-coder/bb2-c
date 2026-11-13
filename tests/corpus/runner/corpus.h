@@ -302,7 +302,9 @@ int corpus_update(struct corpus_pass *p, const char *tag, const struct cexp_fix 
    serial=on DIR/NAME.serial and DIR/NAME.exe (the SHA-256 of its
    executable, cexp_exe_hash; with runtime error checking the trap blocks
    zeroed); a source that does not compile gets no files.  The directory is
-   emptied first.  layout_stack: the second run of the record (corpus_layout).
+   emptied first; the run's work directory is DIR.work and its report
+   DIR.txt (not work= and report=: two observations of one pass run at
+   the same time).  layout_stack: the second run of the record (corpus_layout).
    0 = ok, -1 = no configuration TAG (err).  Behind the check of
    corpus_parse */
 int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int layout_stack,
