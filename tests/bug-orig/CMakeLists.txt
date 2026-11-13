@@ -313,14 +313,14 @@ function(bug_orig_test bas name)
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${ptext}")
 	# the recording runs of the target bug-orig-record (record=write, the
 	# observation into the build directory; the second with another memory
-	# layout, inject's pad), for every test of the original's bugs, open or
+	# layout, a larger Stack), for every test of the original's bugs, open or
 	# fixed (not for a port regression test or a self test)
 	if(NOT arg_REGRESSION AND NOT DEFINED arg_WANT)
 		foreach(k 1 2)
 			string(REPLACE "@WORK@" "${work}-rec${k}" ptext "${rtext}")
 			string(APPEND ptext "record=write\nrecord_to=${work}-rec${k}.orig\n")
 			if(k EQUAL 2)
-				string(APPEND ptext "layout=pad\ninject=${INJECT}\n")
+				string(APPEND ptext "layout=stack\n")
 			endif()
 			file(GENERATE OUTPUT ${work}-rec${k}.pass CONTENT "${ptext}")
 		endforeach()
@@ -615,12 +615,14 @@ function(bug_orig_ted_test scripts id name)
 	endif()
 	# the recording runs of the target bug-orig-record (record=write, the
 	# observation of R5 into the build directory), open or fixed, not for a
-	# self test.  The original TED runs without an inject layer: both runs
-	# have the same memory layout (tests/README.md, "Recorded originals")
+	# self test; the second with another memory layout (teddrive's Stack
+	# 16384 bytes larger, as corpusrun's layout=stack)
 	if(NOT DEFINED arg_WANT)
+		set(layout "")
 		foreach(k 1 2)
 			bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_rec${k} R5,C5
-				"${orig_keys}record=write\nrecord_to=${work}_rec${k}.orig\n")
+				"${orig_keys}record=write\nrecord_to=${work}_rec${k}.orig\n${layout}")
+			set(layout "stack=56384\n")
 		endforeach()
 		set_property(GLOBAL APPEND PROPERTY BUG_ORIG_RECORD_LIST
 			"${id}|ted|${work}_rec1.pass|${work}_rec2.pass|${work}_rec1.orig|${work}_rec2.orig|${scripts}/${id}.orig")
@@ -799,8 +801,8 @@ set_tests_properties(bug_orig_ted_fixed_wrong_lint PROPERTIES PASS_REGULAR_EXPRE
 # The recorded originals (ID.orig) written by the target bug-orig-record
 # (record.cmake; not ALL, not a test, reviewed with git diff tests/bug-orig):
 # two recording runs of the original per test (corpusrun / tedab with
-# record=write, the second Blitz run with inject's pad: another memory
-# layout), accepted by results bug-orig-accept only if they agree (else
+# record=write, the second with a larger Stack: another memory layout),
+# accepted by results bug-orig-accept only if they agree (else
 # "test not deterministic", the file unchanged).  Needs Amiberry, the CD
 # and the reference builds (blitz2_ref, ted_ref; for @rwe tests the
 # reference build of the RWE sources, ctest --preset originals -R

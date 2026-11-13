@@ -184,32 +184,29 @@ Recorded in `~/.local/share/bb2-c-work/questions-for-user.md` under
   issue N, a changed `ID.orig` of a fixed test is the `[orig]` case paired
   with `[fixed #N]`, and any change of an open test or of a test fixed by
   another issue is reported.
-- Task 3.4 (2026-11-13): `tedab` cannot vary the memory layout of the
-  original TED's run without changing what the test observes. The run
-  script (`tests/ted-ab/runner/tedab.c`, `run_script`) starts
-  `reqtrap teddrive SCRIPT blitz2:blitz2` directly; wrapping it with
-  inject's `pad` would pad teddrive's and reqtrap's own allocations as
-  well and adds inject's reports to the program's output, which the
-  scripts' `@expect stdout` and `@expect log` lines read; mounting `BB2:`
-  or not changes which tests can run (`@source K`, `@expect cd` need the
-  CD). So the TED recordings are accepted on two identical runs of the
-  same layout (the recommendation of the open question, user decision of
-  2026-11-12); `tests/README.md` ("Recorded originals") states the limit.
-  The Blitz recordings vary the layout with `layout=pad`: the compiler
-  (`wrap=`) and the program (`runwrap=`) run under inject's `pad` (added
-  to the options of an inject `wrap=`), except where another wrapper
-  runs (`wbrun`), inject pads already (`pad`, `guard`, `guardseg`) or the
-  machine has Kickstart 1.x (inject needs V36); corpusrun notes each case
-  in its log.
-- Task 3.3 (2026-11-13): inject writes lines of its own (`inject: rc=N`
-  after the command, `inject: pad: ...` for what pad finds), so the second
-  recording run of a test that had no inject wrapper differed from the
-  first in `[run]` and `[blitz2]` by those lines alone (the first trial
-  refused `rizonejoylib-zone-offset-word` for `inject: rc=0`). corpusrun
-  therefore removes, in a `layout=pad` run only, the `inject: pad:` lines
-  where it added `pad` and the `inject: rc=` lines where it added inject
-  itself (`corpus_strip_layout`); a test whose own inject options already
-  write lines keeps them in both runs.
+- Tasks 3.3/3.4 (2026-11-13): inject's `pad` does not give the second
+  recording run another layout without changing what the test observes.
+  The first implementation ran the compiler and the program under
+  `inject pad`; the recording of the fixed tests (task 5.1) showed the
+  cost: a program that was not under inject now is (`inject: rc=N`
+  lines, the shell's `failed returncode` line gone, `inject: cannot load`
+  for a program the bug makes unloadable: `compiler-loadalib-relocread`,
+  `compiler-procend-kind`, `palettelib-make4bitrgbs-lowbyte`,
+  `rundebuglib-printerr-numeric-code`), and pad itself changes behaviour
+  (an `AllocMem(0)` succeeds with the 64 bytes:
+  `compiler-loadalib-readerr`). The second run therefore varies the
+  session's **Stack** instead (pass key `layout=stack`, 16384 bytes more
+  for the compiler and the program; tedab's `stack=` the same for
+  teddrive): every command's stack is allocated before it runs, so what
+  the compiler and the program allocate lies elsewhere, and nothing else
+  of the run changes. A trial showed it works: `shapeslib-messages-errarea`
+  prints other bytes of uninitialised memory, `compiler-procend-kind`
+  crashes instead of returning a stray return code. It needs no wrapper,
+  so it also works on Kickstart 1.x and for the TED tests (which the
+  first version could not vary). This replaces "the pad option of
+  inject.c" of D3 and of the spec `testing/bug-orig` ("where the runner
+  can vary it"); question in `questions-for-user.md`. The files recorded
+  before with the pad variant (both runs agreed) were kept.
 - The target runs both recording runs of up to
   `BUG_ORIG_RECORD_PARALLEL` tests at the same time (a pipeline of
   `cmake -P` processes that write nothing to stdout; the emulator slots

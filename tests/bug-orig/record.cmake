@@ -2,9 +2,9 @@
 # OpenSpec change bug-orig-test-model, design D3): the recorded original
 # ID.orig of the bug-orig tests, written from two recording runs of the
 # original that must agree.  Only orchestration: the runs are corpusrun
-# pass / tedab run with the pass key record=write (the second Blitz run
-# with layout=pad: another memory layout), the judge is results
-# bug-orig-accept (tools/lib/bugorigcmp).
+# pass / tedab run with the pass key record=write (the second with a
+# larger Stack, layout=stack / stack=: another memory layout), the judge
+# is results bug-orig-accept (tools/lib/bugorigcmp).
 #
 #   cmake -DLIST=FILE -DRESULTS=results -DCORPUSRUN=corpusrun -DTEDAB=tedab
 #         -DWORK=DIR [-DFILTER=ID,...] [-DPARALLEL=N] [-DFAKE=DIR] -P record.cmake

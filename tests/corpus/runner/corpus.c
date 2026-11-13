@@ -47,7 +47,6 @@ void corpus_free(struct corpus_pass *p)
     free(p->orig);
     free(p->orig_by);
     free(p->record_to);
-    free(p->inject);
     free(p->test);
     free(p->expect_dir);
     prevint_free(&p->intended);
@@ -188,7 +187,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
             || !strcmp(key, "orig") || !strcmp(key, "orig_by") || !strcmp(key, "test")
             || !strcmp(key, "expect_dir") || !strcmp(key, "notes") || !strcmp(key, "notes_pass")
-            || !strcmp(key, "record_to") || !strcmp(key, "inject")) {
+            || !strcmp(key, "record_to")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
                          : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
@@ -199,7 +198,6 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                          : !strcmp(key, "expect_dir") ? &p->expect_dir
                          : !strcmp(key, "notes") ? &p->notes
                          : !strcmp(key, "record_to") ? &p->record_to
-                         : !strcmp(key, "inject") ? &p->inject
                          : !strcmp(key, "notes_pass") ? &p->notes_pass : &p->serial_same_as;
 
             free(*dst);
@@ -246,11 +244,11 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "layout")) {
-            if (strcmp(val, "pad")) {
+            if (strcmp(val, "stack")) {
                 free(val);
-                return fail(p, err, errlen, "line %u: layout=pad", no);
+                return fail(p, err, errlen, "line %u: layout=stack", no);
             }
-            p->layout_pad = 1;
+            p->layout_stack = 1;
             free(val);
             continue;
         }
@@ -465,9 +463,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if ((p->record == CORPUS_RECORD_WRITE) != (p->record_to != NULL)
         || (p->record_to && !*p->record_to))
         return fail(p, err, errlen, "record=write and record_to=PATH belong together");
-    if ((p->layout_pad && (p->record != CORPUS_RECORD_WRITE || !p->inject))
-        || (p->inject && !p->layout_pad))
-        return fail(p, err, errlen, "layout=pad needs record=write and inject=PATH");
+    if (p->layout_stack && p->record != CORPUS_RECORD_WRITE)
+        return fail(p, err, errlen, "layout=stack needs record=write");
     /* the expected outputs: for the runs of a pass that compares */
     if (p->expect_dir && (!*p->expect_dir || !p->run || p->expect))
         return fail(p, err, errlen, "expect_dir=DIR: not with run=off or expect=");
@@ -562,105 +559,14 @@ void corpus_select(struct corpus_pass *p)
         drop_config(p, 0);
 }
 
-static int kick1x(const struct corpus_pass *p);
-
-/* "pad" (or guard, guardseg: they pad too) is an option of args */
-static int pads(const char *args)
-{
-    static const char *const opt[] = { "pad", "guard", "guardseg" };
-    const char *a = args ? args : "";
-    size_t k;
-
-    while (*a) {
-        size_t n = strcspn(a, " \t");
-
-        for (k = 0; k < sizeof opt / sizeof opt[0]; k++)
-            if (n == strlen(opt[k]) && !strncmp(a, opt[k], n))
-                return 1;
-        a += n;
-        a += strspn(a, " \t");
-    }
-    return 0;
-}
-
-/* the wrapper *wrap with *args of what under inject's pad; *padded as
-   corpus_pass.padded */
-static int pad_wrap(char **wrap, char **args, const char *inject, const char *what, int *padded,
-                    FILE *log)
-{
-    char *a;
-
-    if (*wrap && strcmp(*wrap, inject)) {
-        if (log)
-            fprintf(log, "corpus: layout: %s not varied (it runs under %s)\n", what, *wrap);
-        return 0;
-    }
-    if (*wrap && pads(*args)) {
-        if (log)
-            fprintf(log, "corpus: layout: %s not varied (inject pads already)\n", what);
-        return 0;
-    }
-    if (!(a = *args ? str_printf("pad %s", *args) : strdup("pad")))
-        return -1;
-    *padded = *wrap ? 1 : 2;
-    if (!*wrap && !(*wrap = strdup(inject))) {
-        free(a);
-        return -1;
-    }
-    free(*args);
-    *args = a;
-    if (log)
-        fprintf(log, "corpus: layout: %s under inject pad\n", what);
-    return 0;
-}
-
-/* the lines of text that begin with prefix removed (in place) */
-static void drop_lines(char *text, const char *prefix)
-{
-    char *p = text, *d = text;
-    size_t k = strlen(prefix);
-
-    while (*p) {
-        size_t n = strcspn(p, "\n"), m = n + (p[n] == '\n');
-
-        if (n < k || memcmp(p, prefix, k)) {
-            memmove(d, p, m);
-            d += m;
-        }
-        p += m;
-    }
-    *d = 0;
-}
-
-int corpus_strip_layout(const struct corpus_pass *p, struct bugorig_obs *o)
-{
-    static const char *const sec[2] = { "blitz2", "run" };
-    size_t i, k;
-
-    for (k = 0; k < 2; k++)
-        for (i = 0; p->padded[k] && i < o->n; i++)
-            if (!strcmp(o->sec[i].name, sec[k])) {
-                drop_lines(o->sec[i].text, "inject: pad: ");
-                if (p->padded[k] == 2)
-                    drop_lines(o->sec[i].text, "inject: rc=");
-            }
-    return 0;
-}
-
 int corpus_layout(struct corpus_pass *p, FILE *log)
 {
-    if (!p->layout_pad)
+    if (!p->layout_stack)
         return 0;
-    if (kick1x(p)) {
-        if (log)
-            fprintf(log, "corpus: layout: not varied (Kickstart 1.x: inject needs V36)\n");
-        return 0;
-    }
-    if (pad_wrap(&p->wrap, &p->wrap_args, p->inject, "the compiler", &p->padded[0], log))
-        return -1;
-    if (p->run && pad_wrap(&p->runwrap, &p->runwrap_args, p->inject, "the program",
-                           &p->padded[1], log))
-        return -1;
+    p->stack += CORPUS_LAYOUT_STACK;
+    if (log)
+        fprintf(log, "corpus: layout: Stack %u (%u bytes more: the memory of the compiler and "
+                "the program lies elsewhere)\n", p->stack, (unsigned)CORPUS_LAYOUT_STACK);
     return 0;
 }
 
@@ -1405,7 +1311,7 @@ static int record(const struct corpus_pass *p, enum amiga_emulation_status st, c
                 amiga_emulation_status_name(st), p->work, p->configs[0].tag);
         return 2;
     }
-    if (observe(p, 0, st, slog, &o) || corpus_strip_layout(p, &o)) {
+    if (observe(p, 0, st, slog, &o)) {
         fprintf(log, "corpus: cannot observe %s\n", p->configs[0].tag);
         return 2;
     }

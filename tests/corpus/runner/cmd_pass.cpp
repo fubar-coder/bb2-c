@@ -51,11 +51,7 @@ static int pass(const char *me, const char *path, const char *update)
     }
     /* the configurations of a bug-orig test (orig=; record=: the reference) */
     corpus_select(&p);
-    if (corpus_layout(&p, stdout)) {
-        fprintf(stderr, "%s: out of memory\n", me);
-        corpus_free(&p);
-        return 2;
-    }
+    corpus_layout(&p, stdout);
     corpus_skip_missing(&p, stdout);
     rc = corpus_run(&p, stdout);
     corpus_free(&p);

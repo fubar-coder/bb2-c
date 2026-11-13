@@ -65,9 +65,9 @@ a bug-orig pass (`orig=`) runs only the original and compares its
 observation with the recorded one, `orig=`, which it never writes (the
 compare test `bug_orig_record_ID`; `tests/README.md`, "Recorded
 originals"); with `record=write` it writes the observation to
-`record_to=` in the build directory, with `layout=pad` the compiler and
-the program run under inject's option `pad` (the two recording runs of
-the target `bug-orig-record`). A pass with
+`record_to=` in the build directory, with `layout=stack` the session's
+Stack is larger, so that the compiler's and the program's memory lies
+elsewhere (the two recording runs of the target `bug-orig-record`). A pass with
 `expect_dir=DIR` compares the output of every configuration (and with
 `serial=on` the bytes sent over the serial port) with the committed files
 `DIR/NAME.out` (`DIR/NAME.serial`); a missing file fails the pass before
