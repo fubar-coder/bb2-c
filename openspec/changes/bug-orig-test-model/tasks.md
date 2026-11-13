@@ -29,7 +29,7 @@ deliberately broken input.
 
 - [x] 5.1 Record `ID.orig` of every fixed bug-orig test (one `bug-orig-record` run, reviewed with `git diff`, files only added); the validity check (BROKEN) also runs on them. Verify: `ctest --preset all` and `ctest --preset bug-orig` unchanged in verdicts; no `ID.orig` equals its `ID.expect` (BROKEN would show).
 - [x] 5.2 Replace `tests/bug-orig/check-fixed-orig.cmake` by the opposite check (a fixed test must have `ID.orig`), with its test `bug_orig_fixed_orig_broken` turned around (fake tree `tests/bug-orig/selftest/fixed-orig/`). Verify: configuring a tree with a fixed test without `ID.orig` fails with the message; with it, passes.
-- [ ] 5.3 A fixed test gets its compare test `bug_orig_record_ID` (label `originals`, as the open tests) in the Blitz and TED branches of `tests/bug-orig/CMakeLists.txt`. Verify: `ctest --preset originals -N` lists one per bug-orig test; `ctest --preset all -N` lists none of them.
+- [x] 5.3 A fixed test gets its compare test `bug_orig_record_ID` (label `originals`, as the open tests) in the Blitz and TED branches of `tests/bug-orig/CMakeLists.txt`. Verify: `ctest --preset originals -N` lists one per bug-orig test; `ctest --preset all -N` lists none of them.
 
 ## 6. fix-scope covers bug-orig
 

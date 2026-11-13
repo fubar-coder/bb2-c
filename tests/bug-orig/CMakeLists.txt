@@ -139,6 +139,7 @@ function(bug_orig_test bas name)
 	set(rwe "")
 	set(extra "")
 	set(ref_extra "")
+	set(ref_fixtures "")
 	set(fixed "")
 	set(configs_given OFF)
 	set(session_limit ${BUG_ORIG_TIMEOUT})
@@ -229,6 +230,7 @@ function(bug_orig_test bas name)
 			# regression test have none; the recording runs of a fixed test
 			# get it, ref_extra)
 			string(APPEND ref_extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
+			list(APPEND ref_fixtures ${fixture})
 			if(NOT noref)
 				string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
 				list(APPEND fixtures ${fixture})
@@ -343,14 +345,15 @@ function(bug_orig_test bas name)
 	math(EXPR cost "${session_limit} * ${nsessions}")
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
-	# the compare test of the recorded original (an open bug): one session
-	# of the reference configuration, its observation compared with ID.orig
-	# (pass key record=check, ID-record.pass; it writes no file of the
-	# source tree); label originals only (in no preset but originals), needs
-	# the CD and, for RWE libraries, the reference build.  CHANGED_ORIG: the
-	# pass ID-changed.pass of the same against another recorded original
-	# (broken input)
-	if(NOT noref)
+	# the compare test of the recorded original (a bug of the original, open
+	# or fixed): one session of the reference configuration, its observation
+	# compared with ID.orig (pass key record=check, ID-record.pass; it writes
+	# no file of the source tree); label originals only (in no preset but
+	# originals), needs the CD and, for RWE libraries, the reference build.
+	# CHANGED_ORIG: the pass ID-changed.pass of the same against another
+	# recorded original (broken input)
+	if(NOT arg_REGRESSION)
+		set(fixtures ${ref_fixtures})
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 		# the reference build of blitz2.s (not ALL)
@@ -646,9 +649,14 @@ function(bug_orig_ted_test scripts id name)
 		set_property(GLOBAL APPEND PROPERTY BUG_ORIG_RECORD_LIST
 			"${id}|ted|${work}_rec1.pass|${work}_rec2.pass|${work}_rec1.orig|${work}_rec2.orig|${scripts}/${id}.orig")
 	endif()
-	# the compare test of the recorded original: label originals only (a
-	# fixed test has none)
-	if(NOT fixed_test)
+	# the compare test of the recorded original: label originals only (for
+	# open and fixed tests; the fixed self tests have a recorded original
+	# written by hand, no compare test)
+	if(NOT fixed_test OR NOT DEFINED arg_WANT)
+		if(fixed_test)
+			bug_orig_ted_pass(${scripts} ${id} ${name} ${work}_record R5,C5
+				"${orig_keys}record=check\n")
+		endif()
 		string(REGEX REPLACE "^bug_orig_" "bug_orig_record_" rec_name "${name}")
 		math(EXPR rec_limit "${BUG_ORIG_TIMEOUT} * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
 		add_test(NAME ${rec_name} COMMAND ${TEDAB} run ${work}_record.pass)
