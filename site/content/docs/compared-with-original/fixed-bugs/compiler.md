@@ -714,6 +714,11 @@ source the original accepted are shown with examples on
   gives them
   ([#1018](https://github.com/fubar-coder/bb2-c/issues/1018)).
 
+* `Supervisor_`, the first AmigaOS function of exec, gave "Syntax
+  Error": the compiler looked it up in the dos library, whose token
+  numbers ran into exec's; it compiles
+  ([#960](https://github.com/fubar-coder/bb2-c/issues/960)).
+
 ### Names, labels and constants
 
 * A constant defined without a value, a line `#c` alone, held a random
