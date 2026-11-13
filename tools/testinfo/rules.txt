@@ -65,9 +65,10 @@ tools/**                        all
 # directory without its label too)
 # the committed expected and recorded data (openspec change
 # expected-results-testing): the recorded observation of the original
-# (ID.orig) is read by its bug-orig test and its recording
-# (bug_orig_record_ID), the corpus expect files by the corpus passes and
-# their originals runs; both as the rest of their directory below
+# (ID.orig, open and fixed tests) is read by its bug-orig test and its
+# compare test (bug_orig_record_ID), the corpus expect files by the corpus
+# passes and their originals runs; both as the rest of their directory
+# below
 tests/bug-orig/**/*.orig        label:bug-orig name:bug_orig_* name:inject_* name:regression_* name:ab3_bb2_equivalence*
 tests/corpus/expect/**          name:corpus* name:ab3_bb2_equivalence*
 tests/ab3/**                    name:ab3_*
