@@ -151,17 +151,21 @@ rc=0
 ```
 
 What the original does is recorded once, into a third file,
-`stringfunclib-mid-ueberlauf.orig`, by a run of the original compiler and
-libraries:
+`stringfunclib-mid-ueberlauf.orig`, by two runs of the original compiler
+and libraries, the second with the memory laid out differently:
 
 ```
-ctest --preset originals -R bug_orig_record_stringfunclib_mid_ueberlauf
+cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=stringfunclib-mid-ueberlauf
+cmake --build --preset amiga --target bug-orig-record
 ```
 
-It needs the CD. Read the file before you commit it: its `[run]` section
-shows what the original printed, here `2147483647` in place of `4`.
-Record it twice and compare the two: an observation that changes from
-run to run is not committed as it is.
+It needs the CD. The file is written only if both runs saw the same;
+otherwise the recording says "test not deterministic" and names the
+lines that differ. Read the file before you commit it: its `[run]`
+section shows what the original printed, here `2147483647` in place of
+`4`. A line that changes from run to run for a reason that has nothing
+to do with the bug, such as an address, is turned into a pattern, with
+a comment line `# varies:` that says why.
 
 With the three files, the test itself runs without the original:
 
@@ -177,7 +181,7 @@ expectation, the result is BROKEN: the program does not show a bug, or
 the expectation describes the wrong behaviour.
 
 The change that fixes the bug adds one line to the program's header,
-with the number of the bug's issue, and deletes the recorded original:
+with the number of the bug's issue:
 
 ```
 ; @fixed #286
@@ -185,7 +189,13 @@ with the number of the bug's issue, and deletes the recorded original:
 
 From then on the test is a *fixed test*. It runs with the normal
 emulator tests and checks only the port, with its own libraries, against
-the expectation: FIXED, or REGRESSED if the fix has been undone.
+the expectation: FIXED, or REGRESSED if the fix has been undone. The
+recorded original stays: it is the original's side of the pair, what the
+original does next to what the port now does. The `originals` run
+compares the original with it again (the test
+`bug_orig_record_stringfunclib_mid_ueberlauf`, which only compares and
+writes nothing), so a changed original or a recording that was not
+reliable shows up there.
 
 Further instructions starting with `; @pass` exist, for example one that
 fills every block of memory the compiler allocates with a pattern, so

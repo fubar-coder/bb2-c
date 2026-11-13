@@ -109,6 +109,16 @@ targets do that on purpose, and their result is reviewed with
 * **Updating** (`libs-update`) writes the `[fixed #N]` cases from the
   port's libraries, after a fix. It needs no CD.
 
+The tests of the original's bugs follow the same idea. Each keeps two
+files beside its program: the expectation, which describes the correct
+behaviour, and the *recorded original*, what the original compiler and
+libraries did with the program. The recording (`bug-orig-record`) runs
+the original twice and writes the file only if both runs agree, like
+`libs-capture`. When a bug is fixed, the recorded original stays: the
+port is then judged against the expectation alone, and the `originals`
+run still checks that the original behaves as recorded
+([A test for a bug of the original]({{< relref "/docs/compared-with-original/comparing#a-test-for-a-bug-of-the-original" >}})).
+
 So you need the CD only to record new expected data or to check it
 against the originals. Everything in `ctest --preset all` runs without
 it, apart from the compilation of the CD's own sources.
