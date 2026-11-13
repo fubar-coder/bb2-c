@@ -21,3 +21,6 @@ End Macro
 End
 d: Data$ "й€"
 c: Dc.b "иа",0
+; the Dc.b above is of odd length: Even keeps the end code of the original
+; compiler on an even address (#979), so the program also ends there
+Even
