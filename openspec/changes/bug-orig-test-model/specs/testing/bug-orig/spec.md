@@ -48,7 +48,7 @@ The ctest test `bug_orig_record_ID` (label `originals`) SHALL only compare: it o
 - **THEN** `bug_orig_record_ID` fails naming the differing line, and `ID.orig` is unchanged
 
 ### Requirement: The recording target accepts only agreeing runs
-The build target `bug-orig-record` (not part of ALL, not a test, filterable by test id) SHALL write `ID.orig` from the original. It SHALL run the `ref` configuration twice with a different memory layout (the `pad` option of `tests/bug-orig/amiga/inject.c` where the runner can vary it) and SHALL write a file only if both observations agree; otherwise it SHALL report "test not deterministic" naming the test and the differing sections and lines, and SHALL write nothing for that test. A run limited to some tests SHALL leave the files of the others untouched. The proof of determinism is limited to the memory layout.
+The build target `bug-orig-record` (not part of ALL, not a test, filterable by test id) SHALL write `ID.orig` from the original. It SHALL run the `ref` configuration twice with a different memory layout (the second run with a Stack larger by a fixed amount, so that what the original allocates lies elsewhere; nothing else of the run changes) and SHALL write a file only if both observations agree; otherwise it SHALL report "test not deterministic" naming the test and the differing sections and lines, and SHALL write nothing for that test. A run limited to some tests SHALL leave the files of the others untouched. The proof of determinism is limited to the memory layout.
 
 #### Scenario: Deterministic recording
 - **WHEN** the two runs of `bug-orig-record` give the same observation

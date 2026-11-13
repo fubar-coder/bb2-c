@@ -74,17 +74,15 @@ writing is the target's mode (D3) and reachable only from there.
 
 `bug-orig-record` (build target, not ALL, not a test; `FILTER=ID` as
 `libs-capture`) runs the `ref` configuration twice per test: the second time
-with the `inject.c` option `pad`. It hands both observations to the C tool
+with a Stack 16384 bytes larger (corpusrun pass key `layout=stack`, tedab
+`stack=`; it replaced inject's `pad`, see the findings). It hands both observations to the C tool
 (D4). On agreement it writes `ID.orig`; on a difference it prints
 `test not deterministic: ID` with the differing sections and lines and
 writes nothing for that test. A run limited by the filter leaves the other
 files untouched. The proof is limited to the memory layout (date, time and
 emulator timing are not varied), as in `libs-capture`.
-For Blitz programs `pad` is an inject option of the program run. The
-`ref` run of a TED test runs the original TED, which has no inject layer;
-task 3.4 checks whether `tedab` can vary the layout (for example through the
-`BB2:` mount, as `blitzcoplib-maxslice-zero` shows) and otherwise the TED
-recording is accepted on two identical runs, which the documents state.
+The Stack of every command is allocated before it runs, so the variation
+needs no wrapper and works for the TED tests and on Kickstart 1.x too.
 
 Alternative rejected: running twice inside the compare-only test on every
 `originals` run: it doubles the cost of 247 tests for a property that
@@ -205,7 +203,8 @@ Recorded in `~/.local/share/bb2-c-work/questions-for-user.md` under
   so it also works on Kickstart 1.x and for the TED tests (which the
   first version could not vary). This replaces "the pad option of
   inject.c" of D3 and of the spec `testing/bug-orig` ("where the runner
-  can vary it"); question in `questions-for-user.md`. The files recorded
+  can vary it"); D3 and the spec name the Stack now (question 10 of
+  `questions-for-user.md` stays open for the user). The files recorded
   before with the pad variant (both runs agreed) were kept.
 - The target runs both recording runs of up to
   `BUG_ORIG_RECORD_PARALLEL` tests at the same time (a pipeline of

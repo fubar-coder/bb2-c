@@ -33,7 +33,7 @@ follow-up. Today the bug-orig tests differ from the model in four ways
   handles wildcards), and never writes a file.
 - A recording build target `bug-orig-record` (filterable by test id) writes
   `ID.orig` from the original, but only if two runs with a different memory
-  layout (`inject.c` option `pad`) agree; otherwise it reports "test not
+  layout (the second run with a larger Stack) agree; otherwise it reports "test not
   deterministic" with the differing sections and writes nothing.
 - A line of `ID.orig` that legitimately varies is a wildcard line with a
   stated reason (a comment line before it); the four known files get theirs.
