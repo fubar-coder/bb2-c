@@ -8,7 +8,7 @@ character other than the six umlauts is lost or changed.
 
 ### Requirement: A literal character is the token pair $90 cc
 A literal character SHALL be stored in a line as two bytes: `$90`
-followed by the character's code `cc` (`$80` to `$FF`). A line SHALL hold
+followed by the character's code `cc` (`$81` to `$FF`). A line SHALL hold
 no byte >= $80 that is not the first byte of a token pair, so every
 reader that walks a line pair by pair stays in step. The editor SHALL
 treat the pair as one character in every place that counts or shows
@@ -24,7 +24,7 @@ characters, search and replace.
 - **THEN** the TAB is expanded to the next tab stop counted from column 2, not from the 4 bytes stored
 
 ### Requirement: Which characters become a literal character
-Every character with a code >= $80 that enters the editor SHALL be stored
+Every character with a code >= $81 that enters the editor SHALL be stored
 as a literal character, except ä, ö, ü, Ä, Ö and Ü, which SHALL keep the
 codes 26 to 31 of the umlaut mapping (`germs`). The characters enter by
 typing, by loading a text file, by loading a block, by pasting, and by
@@ -34,7 +34,14 @@ does the same for simplicity, but that is not a guaranteed behaviour and
 may change. A
 text file or block that holds one of the six umlauts as a byte SHALL give
 the umlaut's code 26 to 31, so an umlaut has one stored form. A tokenised
-file is loaded as it is stored.
+file is loaded as it is stored. The character $80 (a C1 control
+character, which no key gives) is no literal character (user decision of
+2026-11-13, `libs/literal-library`): a byte $80 of a text file, a block
+or a replacement text SHALL be stored as `?`.
+
+#### Scenario: The character $80
+- **WHEN** a text file with the line `a$="x` $80 `y"` is loaded
+- **THEN** the line holds `a$="x?y"`
 
 #### Scenario: Typing ß in a string
 - **WHEN** the user types `ß` between double quotes with tokenise on
@@ -120,8 +127,8 @@ without a change give the same bytes.
 The editor SHALL show a literal character as the one character of its
 code whether or not the compiler's token list names the word: the list's
 entry (the library `libs/literal-library`) when it has one, a built-in
-table of 128 one-character names when it has not (standalone TED, AB3
-mode, a Blitz 2 without the library). A word `$90cc` with `cc` < $80 SHALL
+table of 127 one-character names when it has not (standalone TED, AB3
+mode, a Blitz 2 without the library). A word `$90cc` with `cc` < $81 SHALL
 stay an unknown token.
 
 #### Scenario: No token list
@@ -129,5 +136,5 @@ stay an unknown token.
 - **THEN** it shows `é`, not `?????`
 
 #### Scenario: With the library
-- **WHEN** the token list holds the 128 entries of the library and a line holds `$90 E9`
+- **WHEN** the token list holds the 127 entries of the library and a line holds `$90 E9`
 - **THEN** it shows `é`, as without the list

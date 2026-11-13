@@ -575,3 +575,14 @@ spec.
   string to the bytes; with the original, `literal-strings` then ends in
   a "Software Failure" after its last output (cause not examined: the
   bytes are right; `literal-include` ends cleanly).
+- **Decisions of 2026-11-13 (the user, through the coordinator):**
+  question 8, option a: `literallib` is library 33 with 127 dummy tokens
+  (`BLITZ_DUMTOKE`, kind 8) `$9081`-`$90FF`, the characters `$81`-`$FF`;
+  the pair `$90 80` is not stored - TED-C stores the character `$80` of
+  a text file, a block or a replacement text as `?` (no key gives it).
+  The specs say "127 entries, the words `$9081` to `$90FF`; `$9080` is
+  not a literal character", and the AB3 scenario "Token Not Found :
+  $10E9." (F11). Question 7: TED-C glyphs of its own for `$A0`-`$FF`
+  are a later change of their own; this change keeps glyph 0. The issue
+  of the change is #1018; Print's umlaut codes (F9) are #1017, not part
+  of this change.

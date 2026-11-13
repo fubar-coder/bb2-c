@@ -20,7 +20,7 @@ strings and comments.
 ## What Changes
 
 - A new token pair, the **literal character** `$90 cc` (first byte `$90`,
-  second byte the character `cc`, $80..$FF), carries one Latin-1
+  second byte the character `cc`, $81..$FF), carries one Latin-1
   character through TED and the compilers. It has the shape of every
   token pair, so every reader that walks a line pair by pair stays in
   step. A source with literal characters is an ordinary tokenised Blitz 2
@@ -30,8 +30,8 @@ strings and comments.
   the CD's Blitz 2 nor AmiBlitz3 v3.14.0 use it (design D2); RWE's
   `RIDOSLIB` (library 33) does and keeps it in the RWE variants, which
   therefore have no literal library.
-- A new library, **`literallib`** (library 33, 128 entries named by the
-  characters $80 to $FF), goes into `acidlibs` and its variants without RWE and is
+- A new library, **`literallib`** (library 33, 127 dummy tokens named by the
+  characters $81 to $FF; $80 is no literal character), goes into `acidlibs` and its variants without RWE and is
   also shipped as a userlib file for the original Blitz 2. TED, the
   original and TED-C, then shows a literal through the normal token name
   lookup. Its entries are not callable: a literal outside a string is a
@@ -64,7 +64,7 @@ strings and comments.
 
 - `editor/literal-characters`: how TED-C stores, shows, edits, finds,
   prints and saves a literal character, and which characters become one.
-- `libs/literal-library`: the library of the 128 words, the reservation of
+- `libs/literal-library`: the library of the 127 words, the reservation of
   the first byte `$90` and its check in the build.
 - `compiler/literal-characters`: what blitz2-c compiles a literal
   character to, and what it does with one outside a string.

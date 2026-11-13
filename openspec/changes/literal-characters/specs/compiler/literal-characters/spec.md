@@ -44,7 +44,7 @@ function or write code for it. With the library of `libs/literal-library`
 loaded (blitz2-c's `acidlibs`, or the userlib with the original compiler)
 the error SHALL be "Syntax Error", as the entries have neither the
 statement nor the function flag. Without the library (AB3 mode) it SHALL be
-the existing "Token Not Found : $90xx.". Neither needs new compiler code.
+the existing "Token Not Found : $10xx." (the word without bit 15). Neither needs new compiler code.
 
 #### Scenario: Stray character as a statement
 - **WHEN** a source has `$90 E9` where a statement is expected and the library is loaded
@@ -56,7 +56,7 @@ the existing "Token Not Found : $90xx.". Neither needs new compiler code.
 
 #### Scenario: AB3 mode
 - **WHEN** blitz2-ab3 compiles a source with `$90 E9` outside a string
-- **THEN** it stops with "Token Not Found : $90E9." and writes no executable
+- **THEN** it stops with "Token Not Found : $10E9." and writes no executable
 
 ### Requirement: Compiling from the editor and with the original compiler
 A source that holds literal characters in strings and comments only SHALL

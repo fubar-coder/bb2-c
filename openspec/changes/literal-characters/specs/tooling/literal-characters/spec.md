@@ -31,13 +31,13 @@ unchanged, with the pair whole.
 - **THEN** the line ends with the whole pair
 
 ### Requirement: The token list names the library
-`bbsrc tokens` SHALL list the 128 tokens of the literal library like those
-of any library, `$9080` to `$90FF` with the one-character names, when the
+`bbsrc tokens` SHALL list the 127 tokens of the literal library like those
+of any library, `$9081` to `$90FF` with the one-character names, when the
 library is among its inputs.
 
 #### Scenario: Listing
 - **WHEN** `bbsrc tokens` runs over the compiler and the built `acidlibs`
-- **THEN** its output holds `$9080` to `$90FF`, each with the one-character name of its code
+- **THEN** its output holds `$9081` to `$90FF`, each with the one-character name of its code
 
 ### Requirement: The reserved library numbers
 `blitzlib` SHALL refuse, in `numbers` and in `check`, a library file whose
