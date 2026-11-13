@@ -1,0 +1,24 @@
+; ted-prtfile-umlaut-codes (#1017): Print copies every byte below $80 of a
+; line to the printer as it is, also the codes 26-31 that TED stores for
+; the umlauts (germs: ä 26, ö 27, ü 28, Ä 29, Ö 30, Ü 31) and shows as
+; the umlauts on screen; 27 (ö) is ESC and starts an escape sequence on
+; the printer.  A tokenised file with the lines `a$="Köln"` and
+; `; äöüÄÖÜ` (the umlauts as 26-31), loaded under blitz2 (tokenise on);
+; PRINT into the file TEDRUN:work/prt.txt, QUIT.  Correct: the umlauts as
+; the Latin-1 ä ö ü Ä Ö Ü, as a text save writes them; the original
+; prints the bytes 26-31.  Fixed in TED-C: Print maps 26-31 back.
+; @fixed #1017
+; @file bo.bb2 "a$=\"K\x1bln\"\x00; \x1a\x1b\x1c\x1d\x1e\x1f\x00"
+; @source F bo.bb2
+; @expect data prt.txt "a$=\"K\xf6ln\"\n; \xe4\xf6\xfc\xc4\xd6\xdc\n"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 5
+wait req "PRINT" "CANCEL"
+str 1 "TEDRUN:work/prt.txt"
+gad 2
+wait screen
+menu 0 9
+wait exit

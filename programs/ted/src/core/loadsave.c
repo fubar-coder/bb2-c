@@ -180,10 +180,13 @@ UWORD prtfile_line(struct item *line, UBYTE *buf)
         if (!(c & 0x80) || !tokenise) {
             if (dst >= last)
                 break;
-            /* NEW (literal characters, design D6): without tokenise the
-               text loader stores the umlauts as 26-31; they are printed
-               as the Latin-1 umlauts, as a text save writes them */
-            *dst++ = tokenise ? c : unmapgerms(c);
+            /* Fixed (#1017): the umlauts are stored as 26-31 (typed, and
+               loaded with and without tokenise, germs) and shown as the
+               umlauts wherever they are in the line; they are printed as
+               the Latin-1 umlauts, as a text save writes them (design D6
+               of literal-characters).  The original copied them as they
+               are, with tokenise on: 27 (o umlaut) is ESC to the printer */
+            *dst++ = unmapgerms(c);
             continue;
         }
         tok = (UWORD)(c << 8);

@@ -306,6 +306,35 @@ TEST_CASE("printer line format", "[search][print]")
     CHECK(n == 5);
     CHECK(std::memcmp(charbuff, "caf\xe9\n", n) == 0);
     CHECK(host_hazards == 0);
+
+    // Fixed (#1017): the umlaut codes 26-31 (germs) are printed as the
+    // Latin-1 umlauts, with and without tokenise, in a string and
+    // anywhere else in the line; the original sent them as they are
+    // (27 = ESC).  A token around them keeps its ESC sequences.
+    static const char *const l3[] = { "a$=\"K\x1bln\"", "; \x1a\x1b\x1c\x1d\x1e\x1f" };
+    for (int t = 0; t < 2; t++) {
+        tokenise = static_cast<UWORD>(t);
+        list(l3);
+        n = prtfile_line(firstitem, charbuff);
+        CHECK(std::string_view(reinterpret_cast<const char *>(charbuff), n) == "a$=\"K\xf6ln\"\n");
+        n = prtfile_line(firstitem->nextitem, charbuff);
+        CHECK(std::string_view(reinterpret_cast<const char *>(charbuff), n)
+              == "; \xe4\xf6\xfc\xc4\xd6\xdc\n");
+    }
+    std::memset(charbuff2, ' ', chcols);
+    std::memcpy(charbuff2, "NPrint", 6);
+    REQUIRE(tokit2(tok, charbuff2, 6, nullptr) == 3);
+    line = std::string(reinterpret_cast<const char *>(tok), 2) + " \"\x1d\x1e\x1f\"";
+    it = static_cast<struct item *>(ted_alloc(line.size() + 1 + lenitem, TED_MEMF_PUBLIC));
+    it->numchars = static_cast<UBYTE>(line.size() + 1);
+    std::memcpy(it->chars, line.c_str(), line.size() + 1);
+    tokenise = 1;
+    n = prtfile_line(it, charbuff);
+    tokenise = 0;
+    CHECK(std::string_view(reinterpret_cast<const char *>(charbuff), n)
+          == "\033[1mNPrint\033[22m \"\xc4\xd6\xdc\"\n");
+    ted_free(it, it->numchars + lenitem);
+    CHECK(host_hazards == 0);
 }
 
 TEST_CASE(".xtra name and realsave's .info", "[search][files]")
