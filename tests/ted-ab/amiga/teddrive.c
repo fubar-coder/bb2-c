@@ -50,7 +50,10 @@
  *   wait screen              program screen open, target = main window, idle
  *   wait req "L1" ["L2"...]  newest requester has gadgets with these labels
  *                            (case-insensitive, blanks around ignored), idle
- *   wait freq "TITLE"        newest requester has this window title, idle
+ *   wait freq "TITLE"        newest requester has this window title, idle;
+ *                            then its file lines (gadgets with id 0) into
+ *                            the log: freq list "TITLE" N, N lines
+ *                            "  line \"LABEL\""
  *   wait gone                the requester of the last `wait req`/`wait freq`
  *                            is closed, idle
  *   wait idle
@@ -577,6 +580,43 @@ static int td_haslabels(struct Window *w, char **labels, int n)
     return 1;
 }
 
+/* the file requester's lines once it is idle (wait freq): its gadgets with
+   id 0, in the order of the window's list.  It links one per directory
+   entry while it reads the directory, so the gadgets "window new" shows
+   depend on when the scan saw the window; idle, the directory is read and
+   the list sorted (#1021) */
+static void td_logfreq(struct Window *w, UBYTE *title, const char *text)
+{
+    struct tdgad all[TD_MAXGAD];
+    int k = 0, more = 0, i, n = 0;
+    ULONG lock = LockIBase(0);
+
+    if (rc_valid(w) && w->Title == title)
+        k = td_snapgads(w, all, TD_MAXGAD, &more);
+    UnlockIBase(lock);
+    for (i = 0; i < k; i++)
+        if (all[i].id == 0) n++;
+    rc_cat("freq list \"");
+    rc_cat(text);
+    rc_cat("\" ");
+    rc_dec(n);
+    rc_cat("\n");
+    td_flush();
+    for (i = 0; i < k; i++)
+        if (all[i].id == 0) {
+            rc_cat("  line \"");
+            rc_cat(all[i].label);
+            rc_cat("\"\n");
+            if (--n % 8 == 0) td_flush();
+        }
+    if (more) {
+        rc_cat("  ... ");
+        rc_dec(more);
+        rc_cat(" more\n");
+    }
+    td_flush();
+}
+
 /* wait for a condition; 1 = reached, 0 = failed (td_why) */
 static int td_wait(int what, char **args, int nargs)
 {
@@ -631,6 +671,8 @@ static int td_wait(int what, char **args, int nargs)
                     td_reqw = w;
                     td_reqtitle = title;
                 }
+                if (what == W_FREQ)
+                    td_logfreq(w, title, args[0]);
                 td_settled = needidle;
                 return 1;
             }

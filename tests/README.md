@@ -637,7 +637,13 @@ the committed table byte for byte.
 2.10), C5 (TED-C + 2.10), Cc (TED-C + blitz2-c) and Rc (original TED +
 blitz2-c); every run is checked against the expectations of the script,
 and the runs of a script are compared pairwise (result, requesters,
-screen dumps, files). Two tests:
+screen dumps, files). The requesters are compared as teddrive logged them
+when it first saw their window (title and gadget labels), without the
+file requester's lines (gadgets with id 0): the requester adds one per
+directory entry while it reads the directory, so their number at that
+moment depends on the timing (#1021). The list is compared instead as
+teddrive logs it at `wait freq`, once the requester is idle (`files TITLE
+"LINE" ...` in the report). Two tests:
 
 * `ted_ab` (label `emulator`, preset `all`): Cc with the port's
   libraries (`libs=` of the pass file; Pc on top with the prev build),

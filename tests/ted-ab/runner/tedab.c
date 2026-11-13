@@ -846,11 +846,11 @@ int tedab_postfix(const char *line, size_t len)
     return -1;
 }
 
-/* the requester just read (cur) into the sequence, unless it is the compile
-   window and appeared in a step that ignores it */
+/* the requester (or file list) just read (cur) into the sequence, unless it
+   is the compile window and appeared in a step that ignores it */
 static void flush(char ***out, size_t *n, struct text *cur, int in, int ignore)
 {
-    if (in == 2 && !cur->bad && !(ignore && !strcmp(cur->p, COMPILE_WINDOW)))
+    if (in >= 2 && !cur->bad && !(ignore && !strcmp(cur->p, COMPILE_WINDOW)))
         add_line(out, n, strdup(cur->p));
     free(cur->p);
     memset(cur, 0, sizeof *cur);
@@ -860,7 +860,8 @@ char **tedab_requesters(const char *log, size_t *n)
 {
     char **out = NULL;
     struct text cur = { 0 };
-    int in = 0;                         /* 1 = in a window, 2 = a requester */
+    int in = 0;                         /* 1 = in a window, 2 = a requester, 3 = a file
+                                           requester's list (freq list) */
     int step_ignores = 0, ignore = 0;   /* the step's / the window's */
     const char *line = log;
 
@@ -906,6 +907,38 @@ char **tedab_requesters(const char *log, size_t *n)
                 }
             }
         }
+        /* freq list "TITLE" N: the file requester's lines once it is idle
+           (wait freq, #1021), each "  line \"LABEL\"" */
+        if (len > 11 && !strncmp(line, "freq list \"", 11)) {
+            const char *t = line + 11, *e = NULL;
+
+            for (q = t; q < line + len; q++)
+                if (*q == '"')
+                    e = q;
+            if (e) {
+                flush(&out, n, &cur, in, ignore);
+                in = 3;
+                ignore = 0;
+                text_add(&cur, "files %.*s", (int)(e - t), t);
+                line = *eol ? eol + 1 : eol;
+                continue;
+            }
+        }
+        if (in == 3 && len > 8 && !strncmp(line, "  line \"", 8)) {
+            const char *lab = line + 8, *le = line + len;
+
+            while (le > lab && le[-1] != '"')
+                le--;
+            if (le > lab) {
+                for (le--; lab < le && *lab == ' '; lab++)
+                    ;
+                while (le > lab && le[-1] == ' ')
+                    le--;
+                text_add(&cur, " \"%.*s\"", (int)(le - lab), lab);
+                line = *eol ? eol + 1 : eol;
+                continue;
+            }
+        }
         /*   gadget id N ... size W,H "LABEL"[ buffer "..."]: the label is
            the first "..." after the size; the string buffer (diagnostics of
            newer teddrive versions) is not compared */
@@ -948,7 +981,11 @@ char **tedab_requesters(const char *log, size_t *n)
                                                          && end[-1] == '"')))
                         break;
                 if (le < end) {
-                    if (in == 2) {
+                    /* not the file requester's lines (id 0): it links one
+                       per entry while it reads the directory, so how many
+                       teddrive sees depends on the timing (#1021); their
+                       list is compared at wait freq (freq list, above) */
+                    if (in == 2 && !(p - id == 1 && *id == '0')) {
                         lab = s;
                         while (lab < le && *lab == ' ')
                             lab++;

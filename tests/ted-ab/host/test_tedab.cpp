@@ -560,6 +560,60 @@ TEST_CASE("requesters: compile window", "[log]")
     CHECK(v[1] == "requester  1:STOP!");
 }
 
+TEST_CASE("requesters: file requester lines", "[log]")
+{
+    // the requester as the window's first scan saw it: early (no line yet),
+    // or later (two lines linked); the file lines (id 0) are left out, so
+    // both give the same sequence (#1021)
+    const char *head =
+        "step 5 t=0.50: menu 0 4\n"
+        "window new #3 requester \"Name of Executable to create\" pos 0,0 size 1,1 flags $0 "
+        "gadgets 3\n"
+        "  gadget id 1 type $00000001 flags $0 act $0 pos 1,1 size 60,12 \"OK\"\n"
+        "  gadget id 2 type $00000001 flags $0 act $0 pos 1,1 size 60,12 \"Cancel\"\n";
+    std::string early = std::string(head) +
+        "step 6 t=0.60: wait freq \"Name of Executable to create\"\n"
+        "freq list \"Name of Executable to create\" 2\n"
+        "  line \"t08_tokquirk.bb2            \"\n"
+        "  line \"t08_tokquirk.bb2.xtra       \"\n"
+        "  ok t=0.70\n";
+    std::string late = std::string(head) +
+        "  gadget id 0 type $00000001 flags $0 act $0 pos 1,30 size 200,8 \"t08_tokquirk.bb2   \"\n"
+        "  gadget id 0 type $00000001 flags $0 act $0 pos 1,38 size 200,8 \"t08_tokquirk.bb2.xtra\"\n"
+        "  gadget id 10 type $00000004 flags $0 act $0 pos 1,1 size 60,12 \"\" buffer \"\"\n"
+        "step 6 t=0.60: wait freq \"Name of Executable to create\"\n"
+        "freq list \"Name of Executable to create\" 2\n"
+        "  line \"t08_tokquirk.bb2            \"\n"
+        "  line \"t08_tokquirk.bb2.xtra       \"\n"
+        "  ok t=0.70\n";
+    auto a = requesters(early.c_str());
+    auto b = requesters(late.c_str());
+
+    REQUIRE(a.size() == 2);
+    CHECK(a[0] == "requester Name of Executable to create 1:OK 2:Cancel");
+    CHECK(a[1] == "files Name of Executable to create \"t08_tokquirk.bb2\" "
+                  "\"t08_tokquirk.bb2.xtra\"");
+    REQUIRE(b.size() == 2);
+    CHECK(b[0] == "requester Name of Executable to create 1:OK 2:Cancel 10:");
+    CHECK(b[1] == a[1]);
+
+    // the list at wait freq is compared: another list, an empty one and a
+    // line without its closing quote (left out) differ from it
+    std::string other = std::string(head) +
+        "freq list \"Name of Executable to create\" 1\n"
+        "  line \"<DIR> sub\"\n";
+    auto c = requesters(other.c_str());
+    REQUIRE(c.size() == 2);
+    CHECK(c[1] == "files Name of Executable to create \"<DIR> sub\"");
+    auto d = requesters("freq list \"Load\" 0\n  line \"x\n");
+    REQUIRE(d.size() == 1);
+    CHECK(d[0] == "files Load");
+    // the main window is no requester: not in the sequence, id 0 or not
+    auto e = requesters("window new #1 main \"\" pos 0,0 size 1,1 flags $0 gadgets 1\n"
+                        "  gadget id 0 type $00000001 pos 1,2 size 104,12 \"Main\"\n");
+    CHECK(e.empty());
+}
+
 TEST_CASE("bug-orig directives", "[bugorig]")
 {
     // @file with escapes (also \x00), repeated lines append; @source F,

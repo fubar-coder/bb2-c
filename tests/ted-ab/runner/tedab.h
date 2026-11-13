@@ -172,8 +172,13 @@ int tedab_opts_file(const char *spec, uint8_t out[50], char *err, size_t errlen)
 
 /* the requester sequence of a teddrive log: one line per requester window,
    "requester TITLE ID:LABEL ...", without addresses (and without the
-   compile window in steps whose line has @ignore compilewindow); malloc'd lines
-   (NULL at the end), *n of them */
+   compile window in steps whose line has @ignore compilewindow), and
+   without the gadgets with id 0, the file requester's lines: it links one
+   per directory entry while it reads the directory, so how many of them
+   the window's first scan sees depends on the timing (#1021).  Instead
+   each wait freq adds the list of the idle file requester (teddrive's
+   "freq list" lines) as "files TITLE \"LINE\" ...".  malloc'd lines (NULL
+   at the end), *n of them */
 /* the postfix (a comment) of a script line: 0 = none, 1 = "@ignore
    compilewindow", -1 = an unknown one (lint) */
 int tedab_postfix(const char *line, size_t len);
