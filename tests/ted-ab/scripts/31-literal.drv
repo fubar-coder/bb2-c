@@ -8,7 +8,7 @@
 ; the original and TED-C differ.
 ; @file lit.bas "\n"
 ; @source F lit.bas
-; @fixed #374 R5-C5 Rc-Cc
+; @fixed #1018 R5-C5 Rc-Cc
 ; @xtra norunerr
 ; @expect exists lit.bas
 ; @expect exists lit

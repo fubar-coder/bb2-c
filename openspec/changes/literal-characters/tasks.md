@@ -195,7 +195,7 @@ of `tests/ab3` is checked with `ctest --preset oracle`. #374 is fixed
   Cc; R5 and Rc cannot type the characters: the pairs R5-C5 and Rc-Cc
   differ and are named in the script (`@fixed #374 R5-C5 Rc-Cc` or the
   number of the issue filed for this change); `ted_ab_lint` passes.
-- [ ] 7.2 A TED A/B script that loads a tokenised file with literals (made
+- [x] 7.2 A TED A/B script that loads a tokenised file with literals (made
   by 7.1's TED-C) in the original TED with the userlib and in TED-C:
   screen and save. Verify: load and save without loss (the saved file
   equals the loaded one); the screen of the original shows the

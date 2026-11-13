@@ -30,6 +30,10 @@
  *                      of the CD's BLITZ2; the CD is then optional: without
  *                      it the tests that read it (@source K, @expect cd) are
  *                      left out ("NOCD" in the report) and the rest runs
+ *   userlib=PATH       a library file staged in blitz2:userlibs/DIR/ of every
+ *                      combination, DIR the name of the file's directory
+ *                      (blitz2 loads the directories of userlibs;
+ *                      literal/literallib.obj for the CD's Blitz 2, #1018)
  *   libs_prev=DIR      with libs=: the libraries of the combination Pc
  *                      (the prev build's; default libs=)
  *   oracle=PATH        the TED oracle manifest (@expect tedsave)
@@ -133,6 +137,7 @@ struct pass {
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
     char *libs, *libs_prev;             /* the libraries instead of the CD's */
+    char *userlib;                      /* a file for blitz2:userlibs */
     char *inject, *wbrun, *gates;
     char *orig, *orig_by, *record;      /* record=: check or write */
     char *record_to;                    /* record_to= (record=write) */
@@ -180,7 +185,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
         { "ted_c", &P.ted_c }, { "blitz2_ref", &P.blitz2_ref }, { "blitz2_c", &P.blitz2_c },
         { "ted_prev", &P.ted_prev }, { "blitz2_prev", &P.blitz2_prev },
-        { "libs", &P.libs }, { "libs_prev", &P.libs_prev },
+        { "libs", &P.libs }, { "libs_prev", &P.libs_prev }, { "userlib", &P.userlib },
         { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
         { "orig", &P.orig }, { "orig_by", &P.orig_by }, { "record", &P.record },
         { "record_to", &P.record_to },
@@ -665,6 +670,17 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
             char *u = str_printf("%s/userlibs", dir);
 
             r = u && !mkdir_p(u) ? 0 : -1;
+            if (!r && P.userlib) {
+                const char *base = strrchr(P.userlib, '/'), *d = base;
+                char *sub = NULL;
+
+                while (d && d > P.userlib && d[-1] != '/')
+                    d--;
+                if (base && d && d < base)
+                    sub = str_printf("%s/%.*s", u, (int)(base - d), d);
+                r = sub && !mkdir_p(sub) && !copy_to(P.userlib, sub, base + 1) ? 0 : -1;
+                free(sub);
+            }
             free(u);
         }
         free(dir);

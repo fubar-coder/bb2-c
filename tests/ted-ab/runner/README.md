@@ -174,7 +174,10 @@ with the prev build, with which Pc and P5 compare `@expect corpus`, so
 an intended change of a library shows in the pair comparison only) and the
 CD is optional: without
 it the scripts that read it (`@source K`, `@expect cd`) are left out,
-`NAME: NOCD` in the report. The scripts are described in `tedab.h` and
+`NAME: NOCD` in the report. `userlib=PATH` stages a library file in
+`blitz2:userlibs/DIR/` of every combination, DIR the name of its directory
+(`ted_ab_originals`: `literal/literallib.obj`, #1018). The scripts are
+described in `tedab.h` and
 `tests/README.md` ("TED A/B"). `run` writes below `work=` one directory
 per session (`sNNN/vol` the volume `TEDAB:`, `sNNN/emu` Amiberry); the
 dumps get a decoded `NAME.txt`. The dump format is in `teddump.h`.
