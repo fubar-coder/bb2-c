@@ -42,16 +42,20 @@ struct teddump {
     uint8_t **planes;           /* depth planes of rows * rowbytes bytes */
 };
 
-/* the two fonts of TED (chars8.b: 8 pixel rows, chars.b: 6), 128 characters */
+/* the two fonts of TED-C (ted_font8.b: 8 pixel rows, ted_font6.b: 6),
+   256 characters: the 128 of TED's chars8.b / chars.b and 128 for the
+   literal characters (programs/ted/fonts, spec editor/screen-font) */
+#define TEDDUMP_GLYPHS 256
 struct teddump_fonts {
-    uint8_t f8[128 * 8], f6[128 * 6];
+    uint8_t f8[TEDDUMP_GLYPHS * 8], f6[TEDDUMP_GLYPHS * 6];
 };
 
 /* 0 = ok, -1 = broken (message in err; d empty) */
 int teddump_parse(const uint8_t *data, size_t len, struct teddump *d, char *err, size_t errlen);
 int teddump_load(const char *path, struct teddump *d, char *err, size_t errlen);
 void teddump_free(struct teddump *d);
-/* fonts from DIR/chars8.b and DIR/chars.b; 0 = ok */
+/* fonts from DIR/ted_font8.b and DIR/ted_font6.b (the build directory's
+   programs/ted/fonts); 0 = ok */
 int teddump_load_fonts(const char *dir, struct teddump_fonts *f);
 
 /* colour index of a pixel (bit 7 of a byte = leftmost) */

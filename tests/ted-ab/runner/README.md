@@ -127,8 +127,8 @@ OPTIONS:
   -h,     --help              Print this help message and exit
           --font 8|6          the height of TED's font the dump is decoded with: 8 (default) or
                               6
-          --fonts DIR         chars8.b and chars.b of TED (default: archive/sources/ted-1.1 of
-                              this repository)
+          --fonts DIR         ted_font8.b and ted_font6.b of TED-C (default: the host side's of
+                              this build)
 
 Exit status 0, 2 usage error, a file that cannot be read or no TED screen.
 ```
@@ -146,8 +146,8 @@ OPTIONS:
   -h,     --help              Print this help message and exit
           --font 8|6          the height of TED's font the dump is decoded with: 8 (default) or
                               6
-          --fonts DIR         chars8.b and chars.b of TED (default: archive/sources/ted-1.1 of
-                              this repository)
+          --fonts DIR         ted_font8.b and ted_font6.b of TED-C (default: the host side's of
+                              this build)
           --no-mask           compare the status field "Free" too (masked by default)
 
 Prints SAME, or DIFF and the differences. Exit status 0 the same, 1 different, 2
@@ -156,11 +156,16 @@ usage error or a file that cannot be read.
 
 `info` prints the header of the dump (size, depth, mode, mouse position,
 windows) and the SHA-256 of its bit planes. `text` prints the dump as
-text, decoded with TED's font of height 8 (default) or 6 (`--font`) from
-`chars8.b` / `chars.b` in `DIR` (`--fonts`, default
-`archive/sources/ted-1.1` of this repository). `cmp` compares two dumps as
-text and prints `SAME`, or `DIFF` and the differences; the status field
-"Free" is masked unless `--no-mask`.
+text, decoded with TED-C's font of height 8 (default) or 6 (`--font`)
+from `ted_font8.b` / `ted_font6.b` in `DIR` (`--fonts`, default the fonts
+of the host side of this build, `build/<preset>/host/ted-fonts`; the
+fonts of 256 glyphs, `programs/ted/fonts`). A cell shows its character
+as UTF-8: the umlauts of 26-31 and the Latin-1 characters $A0-$FF as
+themselves, the box of $80-$9F as `□`, a cell no glyph matches as `·`
+(the middle dot $B7 looks the same). The original TED draws the same
+glyphs 0-127, except the 6 px glyph 26, whose cells decode as `·`.
+`cmp` compares two dumps as text and prints `SAME`, or `DIFF` and the
+differences; the status field "Free" is masked unless `--no-mask`.
 
 ## Inputs and outputs
 

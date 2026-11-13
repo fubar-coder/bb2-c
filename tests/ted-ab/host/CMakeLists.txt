@@ -8,8 +8,8 @@ add_test(NAME ted_ab_tdscript COMMAND test_tdscript)
 
 add_executable(test_teddump test_teddump.cpp)
 target_link_libraries(test_teddump PRIVATE lib_teddump snitch::snitch)
-target_compile_definitions(test_teddump PRIVATE
-	TED_FONTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../../../archive/sources/ted-1.1")
+target_compile_definitions(test_teddump PRIVATE TED_FONTS_DIR="${TED_FONTS_DIR}")
+add_dependencies(test_teddump ted_fonts)       # host/CMakeLists.txt
 target_compile_options(test_teddump PRIVATE -Wall)
 set_target_properties(test_teddump PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME ted_ab_teddump COMMAND test_teddump)

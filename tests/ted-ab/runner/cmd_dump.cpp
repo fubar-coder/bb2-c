@@ -101,8 +101,8 @@ static void font_options(CLI::App &sub, dump_options &o)
 {
     sub.add_option("--font", o.font, "the height of TED's font the dump is decoded with: 8 (default) or 6")
         ->type_name("8|6");
-    sub.add_option("--fonts", o.fonts, "chars8.b and chars.b of TED (default: archive/sources/ted-1.1 "
-                                       "of this repository)")
+    sub.add_option("--fonts", o.fonts, "ted_font8.b and ted_font6.b of TED-C (default: the host "
+                                       "side's of this build)")
         ->type_name("DIR");
 }
 

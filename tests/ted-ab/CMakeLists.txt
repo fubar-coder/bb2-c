@@ -81,7 +81,7 @@ string(CONCAT common
 	"expect_dir=${TED_AB_EXPECT}\n"
 	"cd=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
 	"oracle=${PROJECT_SOURCE_DIR}/tests/data/ted-oracle.sha256\n"
-	"fonts=${PROJECT_SOURCE_DIR}/archive/sources/ted-1.1\n"
+	"fonts=${CMAKE_BINARY_DIR}/programs/ted/fonts\n"
 	"teddrive=$<TARGET_FILE:teddrive>\nteddrivetest=$<TARGET_FILE:teddrivetest>\n"
 	"tedprobe=$<TARGET_FILE:tedprobe>\nreqtrap=$<TARGET_FILE:reqtrap>\n"
 	"ted_ref=${CMAKE_BINARY_DIR}/programs/ted/ref/ted\nted_c=$<TARGET_FILE:ted>\n"

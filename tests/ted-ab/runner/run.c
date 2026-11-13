@@ -47,7 +47,7 @@
  *   libs_prev=DIR      with libs=: the libraries of the combination Pc
  *                      (the prev build's; default libs=)
  *   oracle=PATH        the TED oracle manifest (@expect tedsave)
- *   fonts=DIR          chars8.b / chars.b of TED (decoding the dumps)
+ *   fonts=DIR          ted_font8.b / ted_font6.b of TED-C (decoding the dumps)
  *   teddrive=, teddrivetest=, tedprobe=, reqtrap=PATH   the tools
  *   ted_ref=, ted_c=, blitz2_ref=, blitz2_c=PATH        R/C and 5/c (a
  *                      program no combination of combos= uses may be "-")

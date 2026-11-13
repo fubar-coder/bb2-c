@@ -314,3 +314,28 @@ task 5.2 is the gate.
   glyph of its code; the original read behind its font there (garbage),
   TED-C's glyph is a Latin-1 character. The label list shows only the
   label name, which rarely holds a token.
+
+### The A/B runner (task 4.3)
+- `teddump` reads `ted_font8.b`/`ted_font6.b` (exact sizes); `tedab`'s
+  default `--fonts` and `test_teddump` take the host side's fonts, the
+  pass files of `ted_ab`/`ted_ab_originals` the m68k build's
+  (`programs/ted/fonts`, the ones `ted` embeds). A cell decodes as its
+  character in UTF-8: $A0-$FF as themselves, 26-31 as the umlauts (they
+  were `~`), the box of $80-$9F as `□` (U+25A1); unknown stays `·`.
+- Glyphs that are the same, measured on the generated fonts: at 8 px
+  `Ò Ó Ù Ú` ($D2 $D3 $D9 $DA) are the glyphs of `ò ó ù ú` (TED's capital
+  with a mark is its 5-row capital, and TED's 5-row O and U are its o and
+  u); at 6 px `¡` ($A1) is TED's `i`. The decoder shows the later entry
+  (`Ò Ó Ù Ú`, `i`). For the user's review of task 5.2.
+- 31-literal and 32-literal-load run in all four combinations, and the
+  original TED (R5, Rc) cannot show the characters, so a screen
+  expectation there would fail the original's runs. The expectations of
+  the characters as typed and loaded are new TED-C-only scripts
+  (`@combos C5 Cc`): 33-literal-glyphs (8 px: every $A0-$FF and the box
+  in rows other than the cursor row, after cursor-right scrolling,
+  cursor-left scrolling, Shift+right and Shift+left), 34-literal-glyphs6
+  (the same at `@font 6`), 35-literal-typed (typed characters while the
+  line is edited and after Return). 31 and 32 keep their pair
+  comparisons; their Cc-Pc pairs differ (the screen).
+- TED's text area is 78 columns on the sessions' 640 px Workbench (the
+  prop gadget takes the last two); the expectations are written for it.

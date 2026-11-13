@@ -4,8 +4,9 @@
 ; literallib.obj, which names the words), SAVE over it, QUIT.  The saved
 ; file equals the loaded one in every combination (@roundtrip).  The
 ; original TED shows the names in the token colour, with glyphs from behind
-; its font (it has none from 128); TED-C draws glyph 0 in the colour of the
-; text: the screens of the original and TED-C differ.
+; its font (it has none from 128); TED-C draws the characters (the glyphs of
+; its fonts of 256 glyphs) in the colour of the text: the screens of the
+; original and TED-C differ (33-literal-glyphs checks TED-C's screen).
 ; @file lit.bb2 "a$=\"Gr\x1b\x90\xdfe \x90\xe9\"\x00\xdd\x82 a$\x00; caf\x90\xe9\x00"
 ; @source F lit.bb2
 ; @roundtrip

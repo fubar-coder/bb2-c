@@ -152,10 +152,10 @@ int teddump_load(const char *path, struct teddump *d, char *err, size_t errlen)
 
 int teddump_load_fonts(const char *dir, struct teddump_fonts *f)
 {
-    char *p8 = str_printf("%s/chars8.b", dir), *p6 = str_printf("%s/chars.b", dir);
+    char *p8 = str_printf("%s/ted_font8.b", dir), *p6 = str_printf("%s/ted_font6.b", dir);
     size_t l8 = 0, l6 = 0;
     uint8_t *d8 = p8 ? read_file(p8, &l8) : NULL, *d6 = p6 ? read_file(p6, &l6) : NULL;
-    int r = d8 && d6 && l8 >= sizeof f->f8 && l6 >= sizeof f->f6 ? 0 : -1;
+    int r = d8 && d6 && l8 == sizeof f->f8 && l6 == sizeof f->f6 ? 0 : -1;
 
     if (!r) {
         memcpy(f->f8, d8, sizeof f->f8);
@@ -217,8 +217,10 @@ static void glyph(const uint8_t *font, int fh, int c, uint8_t *g)
 }
 
 /* the table of print4 (and qprint) cells; a later entry wins: control
-   codes first, then the printable ones from the top, so that e.g. the
-   blank glyph decodes as a space */
+   codes first, then the box of $80-$9F and the Latin-1 characters from
+   the top, the umlauts 26-31 (the same glyphs as $C4 $D6 $DC $E4 $F6
+   $FC), then the printable ones from the top, so that e.g. the blank
+   glyph decodes as a space */
 struct entry {
     uint8_t p0[8], p1[8];
     int c;
@@ -227,26 +229,33 @@ struct entry {
 
 struct decoder {
     int fh;
-    struct entry cells[128 * 6];
+    struct entry cells[TEDDUMP_GLYPHS * 6];
     int ncells;
-    uint8_t raw[128][8];
-    int rawc[128];
+    uint8_t raw[TEDDUMP_GLYPHS][8];
+    int rawc[TEDDUMP_GLYPHS];
+    int nraw;
 };
 
 static void decoder_init(struct decoder *dec, const struct teddump_fonts *f, int fh)
 {
     static const char normal[] = "0123", inverse[] = " abc";
     const uint8_t *font = font_of(f, fh);
-    int order[128], n = 0, i, c;
+    int order[TEDDUMP_GLYPHS], n = 0, i, c;
 
-    for (c = 0; c < 32; c++)
+    for (c = 0; c < 26; c++)
         order[n++] = c;
     order[n++] = 127;
+    order[n++] = 0x80;                  /* the box of $80-$9F: one entry */
+    for (c = 0xFF; c >= 0xA0; c--)
+        order[n++] = c;
+    for (c = 26; c < 32; c++)
+        order[n++] = c;
     for (c = 126; c >= 32; c--)
         order[n++] = c;
     dec->fh = fh;
     dec->ncells = 0;
-    for (i = 0; i < 128; i++) {
+    dec->nraw = n;
+    for (i = 0; i < n; i++) {
         static const int colours[] = { 3, 2, 1 };
         uint8_t g[8];
         int k, inv, r;
@@ -270,11 +279,20 @@ static void decoder_init(struct decoder *dec, const struct teddump_fonts *f, int
     }
 }
 
+/* the umlauts of codes 26-31 (TED's germs table) */
+static const uint8_t umlauts[6] = { 0xE4, 0xF6, 0xFC, 0xC4, 0xD6, 0xDC };
+
 static void put_char(struct text *t, int c)
 {
     if (c < 0)
         text_add(t, "\xc2\xb7");        /* unknown: middle dot */
-    else
+    else if (c >= 26 && c < 32)
+        c = umlauts[c - 26];
+    else if (c >= 0x80 && c < 0xA0)
+        text_add(t, "\xe2\x96\xa1");    /* $80-$9F: the box, a white square */
+    if (c >= 0xA0)                      /* Latin-1 as UTF-8 */
+        text_add(t, "%c%c", 0xC0 | (c >> 6), 0x80 | (c & 0x3F));
+    else if (c >= 0 && c < 0x80)
         text_add(t, "%c", c >= 32 && c < 127 ? c : '~');
 }
 
@@ -320,7 +338,7 @@ static int rawcell(const struct decoder *dec, const struct teddump *d, int plane
 
     for (r = 0; r < dec->fh; r++)
         rows[r] = d->planes[plane][(y + r) * d->rowbytes + x];
-    for (i = 127; i >= 0; i--)
+    for (i = dec->nraw - 1; i >= 0; i--)
         if (!memcmp(dec->raw[i], rows, (size_t)dec->fh))
             return dec->rawc[i];
     return -1;

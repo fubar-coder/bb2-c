@@ -1,6 +1,6 @@
 // test_teddump - screen dumps of teddrive (runner/teddump.h) with dumps
 // built in memory: header and windows, broken dumps, geometry, decoding
-// with TED's fonts, comparing with the field "Free" masked.  From bb2
+// with TED-C's fonts (256 glyphs: Latin-1, the box, the umlauts), comparing with the field "Free" masked.  From bb2
 // ted-c/tests/tools/test_teddump.py.
 #include <cstdio>
 #include <cstdlib>
@@ -193,6 +193,45 @@ TEST_CASE("decoding", "[teddump]")
     CHECK(text.find("  0 |NPrint \"hi\"\n    @") == std::string::npos);
     CHECK(text.find("status |Line:   1  Column:   1") != std::string::npos);
     CHECK(text.find("12345") != std::string::npos);
+}
+
+TEST_CASE("decoding the glyphs of 128-255 and the umlauts", "[teddump]")
+{
+    dump d;
+    Planes p = ted_screen();
+    std::string all;
+
+    // all of $A0-$FF but the O and U with grave and acute: at 8 px the
+    // capitals have the glyphs of the small letters (TED's capitals with a
+    // mark are its 5-row capitals, and TED's O and U of 5 rows are its o
+    // and u), which decode as the capitals
+    for (int c = 0xA0; c <= 0xFF; c++)
+        if ((c & ~0x20) != 0xD2 && (c & ~0x20) != 0xD3 && (c & ~0x20) != 0xD9
+            && (c & ~0x20) != 0xDA)
+            all += static_cast<char>(c);
+    REQUIRE(all.size() == 88);
+    // a row of literal characters (TED-C's font: 256 glyphs), the box of
+    // $81-$9F, the umlauts 26-31 and an unknown cell
+    put(p, 12 + 3 * FH, 0, "x\x85\x9f" + std::string(1, '\x1a') + "\x1b\x1c\x1d\x1e\x1fy");
+    put(p, 12 + 4 * FH, 0, all.substr(0, 48));
+    put(p, 12 + 5 * FH, 0, all.substr(48));
+    put(p, 12 + 7 * FH, 0, "\xd2\xf2");                    // the same glyph twice
+    p[0][static_cast<size_t>((12 + 6 * FH) * RB)] = 0x81;      // no glyph
+    REQUIRE(parse(build(p), d));
+    char *t = teddump_text(&d.d, &fonts(), FH);
+    REQUIRE(t != nullptr);
+    std::string text(t);
+    std::free(t);
+
+    CHECK(text.find("  3 |x\u25a1\u25a1\u00e4\u00f6\u00fc\u00c4\u00d6\u00dcy\n") != std::string::npos);
+    std::string utf8;
+    for (unsigned char c : all)
+        utf8 += std::string{ static_cast<char>(0xC0 | (c >> 6)), static_cast<char>(0x80 | (c & 0x3F)) };
+    // $A0 is blank: the row starts with a blank cell
+    CHECK(text.find("  4 | " + utf8.substr(2, 47 * 2) + "\n") != std::string::npos);
+    CHECK(text.find("  5 |" + utf8.substr(96) + "\n") != std::string::npos);
+    CHECK(text.find("  6 |\u00b7\n") != std::string::npos);
+    CHECK(text.find("  7 |\u00d2\u00d2\n") != std::string::npos);   // the later entry: $D2
 }
 
 TEST_CASE("comparing masks the field Free", "[teddump]")

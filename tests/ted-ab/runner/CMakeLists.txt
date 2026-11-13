@@ -4,8 +4,8 @@
 #                block, requesters, session script, evaluation (tedab.h)
 #   tedab        runs them in Amiberry (run, lint: cmd_run.cpp, run.c) and shows the
 #                screen dumps by hand (info, text, cmp: cmd_dump.cpp); README.md
-set(TED_FONTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../archive/sources/ted-1.1)
-get_filename_component(TED_FONTS_DIR ${TED_FONTS_DIR} ABSOLUTE)
+# TED_FONTS_DIR: TED-C's fonts of the host side (target ted_fonts,
+# host/CMakeLists.txt), the default of tedab text/cmp --fonts
 
 add_library(lib_teddump STATIC teddump.c)
 target_include_directories(lib_teddump PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,6 +25,7 @@ set(TEDAB_SUBCOMMANDS run lint info text cmp)
 add_executable(tedab main.cpp cmd_run.cpp run.c cmd_dump.cpp)
 target_link_libraries(tedab PRIVATE lib_cli lib_tedab lib_amiga_emulation lib_statline)
 target_compile_definitions(tedab PRIVATE TED_FONTS_DIR="${TED_FONTS_DIR}")
+add_dependencies(tedab ted_fonts)
 target_compile_options(tedab PRIVATE -Wall -Wextra)
 set_target_properties(tedab PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 host_help_test(tedab ${TEDAB_SUBCOMMANDS})

@@ -90,7 +90,7 @@ and is named in the commits. Group 1 changes no code.
   row: horizontal scroll right and left, `refresh`, `reline`, delete at
   the end of a row, mouse positioning; each checks the characters the
   screen routines draw, not `TED_LITGLYPH`.
-- [ ] 4.3 `tests/ted-ab/runner/teddump.c`: `teddump_load_fonts` reads the
+- [x] 4.3 `tests/ted-ab/runner/teddump.c`: `teddump_load_fonts` reads the
   generated fonts (the runner gets the build directory); the decoder table
   (`teddump.c:209-260`) maps a 256-glyph cell back to its character, an
   unknown cell stays the middle dot. `31-literal` and `32-literal-load`

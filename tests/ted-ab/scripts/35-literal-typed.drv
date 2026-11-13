@@ -1,0 +1,31 @@
+; Typed literal characters as their glyphs (change ted-latin1-glyphs,
+; spec editor/literal-characters "Display, help and colour"): blitz2 with
+; a file of one empty line, type a string with an umlaut, a sharp s, a
+; section sign and a degree sign (German keymap); the screen while the
+; line is edited (getline draws each character as it is typed: printlit),
+; then after Return (the line tokenised and drawn again: showa2item), with
+; the cursor in the next row.  SAVE: the file holds the pairs.  TED-C
+; only: the original TED cannot type these characters (@combos; 31-literal
+; compares the two).
+; @file typed.bas "\n"
+; @source F typed.bas
+; @combos C5 Cc
+; @expect exists typed.bas
+; @expect file typed.bas "Gr\x1b\x90\xdfe \x90\xa7\x90\xb0"
+; @expect screen typing "  0 |a$=\"Gr\xc3\xb6\xc3\x9fe \xc2\xa7\xc2\xb0\""
+; @expect screen typed "  0 |a$=\"Gr\xc3\xb6\xc3\x9fe \xc2\xa7\xc2\xb0\""
+; @est 5
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+type "a$=\"Gr\xf6\xdfe \xa7\xb0\""
+dump typing
+type "\n"
+dump typed
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
