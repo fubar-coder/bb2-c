@@ -7,7 +7,7 @@ two-run accept and the projection helper this change reuses).
 
 ## 1. The judge (host side)
 
-- [ ] 1.1 Re-read the fix-scope and parse interface of `tools/lib/libscmp` on main (`libscmp.h`; the change `libs-capture-host-blocks` may have changed it) and the helper of `bug-orig-test-model` (`tools/lib/bugorigcmp`, `results bug-orig-accept`); note differences in the design. Verify: D3 to D5 name only functions that exist.
+- [x] 1.1 Re-read the fix-scope and parse interface of `tools/lib/libscmp` on main (`libscmp.h`; the change `libs-capture-host-blocks` may have changed it) and the helper of `bug-orig-test-model` (`tools/lib/bugorigcmp`, `results bug-orig-accept`); note differences in the design. Verify: D3 to D5 name only functions that exist.
 - [ ] 1.2 Replace `tools/lib/corpusnotes` by `tools/lib/corpusexpect`: list the files of a program in an expect directory, project them onto a `libscmp_file` (keys `PASS|NAME|OBS|1`, qualifiers from the names), select by configuration (D2), refuse malformed directories (unqualified plus qualified, two `fixed`, unknown qualifier, equal pair). Verify: host test from memory (every row of the D2 table, each malformed form with the file name, an `exe` pair).
 - [ ] 1.3 The two-run accept for the corpus (`results corpus-accept RUN1 RUN2 DIR`) on top of the helper of `bug-orig-test-model`. Verify: host tests for equal runs, one differing line (nothing written, "test not deterministic: PASS:NAME"), a kept `[fixed #N]` file.
 
@@ -19,7 +19,7 @@ two-run accept and the projection helper this change reuses).
 ## 3. Targets
 
 - [ ] 3.1 `corpus-expect-update` refuses a changed unqualified file without `FIX=PASS:NAME#N` and turns it into the pair with it (`corpusrun pass --update-expect clib` extended; the pair writing in `corpusexpect`). Verify: host test; with the unchanged tree the target leaves `git status` clean; a fake run with a differing port output and no `FIX` names the program and writes nothing.
-- [ ] 3.2 Add `corpus-expect-record`: `ref` twice, the second with `runwrap=` of `inject.c` `pad` (check first that `inject.c` works as `runwrap=` for corpus programs, otherwise `wrap=`; state the limit if neither varies the layout), the accept of 1.3, `FILTER`. Verify: `FILTER` on two programs leaves their files byte-identical; fake differing runs print "test not deterministic" and write nothing.
+- [ ] 3.2 Add `corpus-expect-record`: `ref` twice, the second with a Stack 16384 bytes larger (the layout of the bug-orig recording, `corpus_layout`; inject's `pad` changed what the bug-orig tests observe), the accept of 1.3, `FILTER`. Verify: `FILTER` on two programs leaves their files byte-identical; fake differing runs print "test not deterministic" and write nothing.
 - [ ] 3.3 `.exe` files in the record and update (`ref` and, with `FIX`, `port`). Verify: a fake pair is written and read back by the judge.
 
 ## 4. fix-scope
@@ -28,7 +28,7 @@ two-run accept and the projection helper this change reuses).
 
 ## 5. Migration
 
-- [ ] 5.1 Convert the 4 rows of `notes.tsv` to files (D6): `.orig.out` from `corpus-expect-record` for `corpus_runerr:t124_bitmaperr`, `t126_rgberr` (#6) and `t130_blit` (#46), the `.exe` pair for `corpus:t130_blit`, the current expect files as `.fixed-N.out`; delete `tests/corpus/notes.tsv`. Verify: `ctest --preset all` and `ctest --preset originals` (CD) pass, `prev_results` byte-identical, `git status` after the originals run clean; `fix-scope` against the commit before reports only the four programs as pairs of #6 and #46 (run with `--fixes 6 --fixes 46`).
+- [ ] 5.1 Convert the 14 rows of `notes.tsv` to files (D6): `.orig.out` from `corpus-expect-record` for `corpus_runerr:t124_bitmaperr`, `t126_rgberr` (#6), `t130_blit` (#46) and the programs of the library fixes #1000 to #1004 (`t141_shapetrix`, `t158_2dfuzz`, `t30_date`, `t121_palette`, `t21_val` in `corpus` and `corpus_runerr`), the `.exe` pair for `corpus:t130_blit` (and where else ref's and port's executables differ), the current expect files as `.fixed-N.out`; delete `tests/corpus/notes.tsv`. Verify: `ctest --preset all` and `ctest --preset originals` (CD) pass, `prev_results` byte-identical, `git status` after the originals run clean; `fix-scope` against the commit before reports only these programs as pairs of their issues (run with `--fixes` of each).
 - [ ] 5.2 Record twice more (`corpus-expect-record` three times in a row, whole corpus) and check that no unqualified file changes. Verify: `git diff tests/corpus/expect` empty; any difference is a non-deterministic program: report it with its name before going on.
 
 ## 6. Acceptance
