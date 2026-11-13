@@ -1,7 +1,8 @@
 /*
  * results.h - the subcommands of results (main.cpp): each one is in
  * cmd_NAME.cpp (cd-update and cd-reference in cmd_cd.cpp, the libs-* ones
- * in cmd_libs.cpp, fix-scope in cmd_fix_scope.cpp, bug-orig-accept in cmd_bugorig.cpp) and adds itself to
+ * in cmd_libs.cpp, fix-scope in cmd_fix_scope.cpp, bug-orig-accept in cmd_bugorig.cpp,
+ * corpus-accept in cmd_corpus.cpp) and adds itself to
  * the program.
  */
 #ifndef RESULTS_H
@@ -27,5 +28,6 @@ void cmd_libs_update(CLI::App &app, int &status);
 void cmd_libs_dump(CLI::App &app, int &status);
 void cmd_fix_scope(CLI::App &app, int &status);
 void cmd_bug_orig_accept(CLI::App &app, int &status);
+void cmd_corpus_accept(CLI::App &app, int &status);
 
 #endif

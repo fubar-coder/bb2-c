@@ -9,7 +9,7 @@ two-run accept and the projection helper this change reuses).
 
 - [x] 1.1 Re-read the fix-scope and parse interface of `tools/lib/libscmp` on main (`libscmp.h`; the change `libs-capture-host-blocks` may have changed it) and the helper of `bug-orig-test-model` (`tools/lib/bugorigcmp`, `results bug-orig-accept`); note differences in the design. Verify: D3 to D5 name only functions that exist.
 - [ ] 1.2 Replace `tools/lib/corpusnotes` by `tools/lib/corpusexpect`: list the files of a program in an expect directory, project them onto a `libscmp_file` (keys `PASS|NAME|OBS|1`, qualifiers from the names), select by configuration (D2), refuse malformed directories (unqualified plus qualified, two `fixed`, unknown qualifier, equal pair). Verify: host test from memory (every row of the D2 table, each malformed form with the file name, an `exe` pair).
-- [ ] 1.3 The two-run accept for the corpus (`results corpus-accept RUN1 RUN2 DIR`) on top of the helper of `bug-orig-test-model`. Verify: host tests for equal runs, one differing line (nothing written, "test not deterministic: PASS:NAME"), a kept `[fixed #N]` file.
+- [x] 1.3 The two-run accept for the corpus (`results corpus-accept RUN1 RUN2 DIR`) on top of the helper of `bug-orig-test-model`. Verify: host tests for equal runs, one differing line (nothing written, "test not deterministic: PASS:NAME"), a kept `[fixed #N]` file.
 
 ## 2. The runner reads cases
 

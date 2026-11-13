@@ -12,14 +12,16 @@ expected data written from two recording runs of the original
 (`libs-accept`) or from a run of the port (`libs-update`), the dump of a
 block of a library test run (`libs-dump`), and the cases
 of the expected data a branch changes beyond the issues it fixes
-(`fix-scope`), and the recorded original of a bug-orig test written from
-two recording runs of the original (`bug-orig-accept`). The logic is in
+(`fix-scope`), the recorded original of a bug-orig test written from
+two recording runs of the original (`bug-orig-accept`), and the expected
+data of a corpus pass written from two runs of the original
+(`corpus-accept`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
-`tools/lib/cdtable`, `tools/lib/oracletable`, `tools/lib/libscmp` and
-`tools/lib/bugorigcmp`, tested by `tools/tests/test_outmatch.c`,
-`test_prevcmp.c`, `test_previntended.c`, `test_cdtable.c`,
-`test_oracletable.c`, `test_libscmp.c`, `test_libscmp_bin.c` and
-`test_bugorigcmp.c`.
+`tools/lib/cdtable`, `tools/lib/oracletable`, `tools/lib/libscmp`,
+`tools/lib/bugorigcmp` and `tools/lib/corpusexpect`, tested by
+`tools/tests/test_outmatch.c`, `test_prevcmp.c`, `test_previntended.c`,
+`test_cdtable.c`, `test_oracletable.c`, `test_libscmp.c`,
+`test_libscmp_bin.c`, `test_bugorigcmp.c` and `test_corpusexpect.c`.
 
 ## Usage
 
@@ -48,6 +50,7 @@ SUBCOMMANDS:
   fix-scope                   the cases of the expected data a branch changes beyond its issues
   bug-orig-accept             the recorded original of a bug-orig test from two recording runs
                               of the original
+  corpus-accept               the expected data of a corpus pass from two runs of the original
 ```
 
 ### match
@@ -480,6 +483,53 @@ of `RUN1` (its first line `# NOTE`), then its sections; an unchanged file
 is not rewritten. The target `bug-orig-record` (`tests/bug-orig`) calls
 it for every test it records.
 
+### corpus-accept
+
+```
+Usage: results corpus-accept [OPTIONS] RUN1 RUN2 EXPECT_DIR
+
+the expected data of a corpus pass from two runs of the original
+
+POSITIONALS:
+  RUN1 TEXT REQUIRED          the observations of the first run (NAME.out, NAME.serial,
+                              NAME.exe)
+  RUN2 TEXT REQUIRED          the observations of the second run, another memory layout
+  EXPECT_DIR TEXT REQUIRED    the expected data of the pass (tests/corpus/expect/PASS)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --only NAME         only this program (any number; the others are not touched)
+
+The runs must agree ("test not deterministic: PASS:NAME" and the first differing
+line otherwise). A program's output and serial data become NAME.out and
+NAME.serial, or NAME.orig.out and NAME.orig.serial where EXPECT_DIR has the
+[fixed #N] file (kept); its executable NAME.orig.exe where EXPECT_DIR has
+NAME.fixed-N.exe. Exit status 0 every program accepted, 1 a program refused
+(nothing written for it), 2 usage error or a malformed, unreadable or unwritable
+file.
+```
+
+The expected data of a corpus pass, `tests/corpus/expect/PASS`
+(`tests/README.md`, "Corpus"), from two runs of the original (OpenSpec
+change `corpus-test-model`, design D4; `tools/lib/corpusexpect`). `RUN1`
+and `RUN2` are the observations of the configuration `ref` that
+`corpusrun pass --observe` wrote (`NAME.out`, `NAME.serial`, `NAME.exe`:
+the SHA-256 of the executable), the second with a larger Stack. A
+program whose runs differ is refused with `test not deterministic:
+PASS:NAME` and the first differing line of each file, one without output
+(it does not compile) or, in a serial pass, without serial data too.
+Otherwise its output and serial data become the unqualified files, or
+the `[orig]` files (`NAME.orig.out`, `NAME.orig.serial`) where the
+directory has the `[fixed #N]` file, which stays; its executable becomes
+`NAME.orig.exe` where the directory has `NAME.fixed-N.exe` (else the
+executables of `ref` and `port` are compared live and no file is
+written). A value equal to the `[fixed #N]` file is refused (the pair
+would be equal). Nothing is written for a refused program; the others
+are written, an unchanged file is not rewritten, and each written file
+is named. `--only` limits it to the programs named. The target
+`corpus-expect-record` (`tests/corpus/record.cmake`) calls it for every
+pass.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
@@ -491,7 +541,8 @@ directories and writes its report to stdout, `libs-accept` and
 data, `libs-compare` also writes `NAME.block-N.obs` into the run
 directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
 two directories (and a log) and writes its report to stdout,
-`bug-orig-accept` reads two runs and rewrites `OUT`.
+`bug-orig-accept` reads two runs and rewrites `OUT`, `corpus-accept`
+reads two run directories and rewrites files of `EXPECT_DIR`.
 
 ## Exit codes
 
@@ -504,16 +555,17 @@ two directories (and a log) and writes its report to stdout,
   (`libs-compare`); the runs are refused, nothing written (`libs-accept`,
   `libs-update`); no dump written (`libs-dump`); a case changed beyond
   the named issues (`fix-scope`); the runs are refused, nothing written
-  (`bug-orig-accept`);
+  (`bug-orig-accept`); a program refused, nothing written for it
+  (`corpus-accept`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
   written, a malformed `--intended` entry or another error (`prev`); a
   malformed run or expected file, or a program `--only` names without
   files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `fix-scope`, `bug-orig-accept`), a file that cannot be written
-  (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `bug-orig-accept`);
+  `fix-scope`, `bug-orig-accept`, `corpus-accept`), a file that cannot be
+  written (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
+  `bug-orig-accept`, `corpus-accept`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -541,6 +593,9 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   (`tests/bug-orig/record.cmake`); the tests `bug_orig_accept`
   (`tools/tests/CMakeLists.txt`) and `bug_orig_record_target`
   (`tests/bug-orig/CMakeLists.txt`).
+* `corpus-accept`: the target `corpus-expect-record`
+  (`tests/corpus/record.cmake`); the test `corpus_record_target`
+  (`tests/corpus/CMakeLists.txt`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
   `cmake/fix-scope.cmake`); the tests `fix_scope_*`
   (`tools/tests/CMakeLists.txt`).
