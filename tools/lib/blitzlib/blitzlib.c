@@ -286,6 +286,26 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
     }
 
     bad = 0;
+    /* a user library numbers its entries from libnum*128+1, nullsubs
+       included (blitz2.s fixlibs); a token behind the 127 numbers of the
+       library's block is the next library's number, and the compiler ends
+       the range where the next loaded library's begins (#960): such an
+       entry is found only while that number is free.  Nullsubs there are
+       reached through the header (init, finit, the object handlers of
+       !libfin) */
+    if (!(lib.libnum & 0x8000))
+        for (i = 127; i < lib.nentries; i++) {
+            const struct blitzlib_entry *e = &lib.entries[i];
+            unsigned first = ((unsigned)lib.libnum << 7) + 1;
+
+            if ((e->kind & 0xF) == 0)
+                continue;               /* nullsub: no token */
+            fprintf(out, "%s: library %u: entry %u \"%s\" gets the token $%04X, behind "
+                    "the 127 of the library ($%04X-$%04X)\n",
+                    name, (unsigned)lib.libnum, (unsigned)i + 1, e->name ? e->name : "",
+                    ((first + i) | 0x8000) & 0xFFFF, first | 0x8000, (first + 126) | 0x8000);
+            bad = 1;
+        }
     if (lib.error) {
         for (i = 0; i < h->nrelocs; i++) {
             uint32_t r = h->reloc_offset[i];

@@ -245,6 +245,56 @@ int main(void)
           && strstr(msg, "$38 refers to $52"));
     free(b.p);
 
+    /* the 127 numbers of a user library (#960): 127 statements and two
+       nullsubs behind them pass, a statement or a dumtoke as entry 128 or
+       129 fails, a system library is not limited */
+    {
+        static const struct {
+            int statements, nullsubs, dumtoke;
+            uint16_t libnum;
+            int bad;
+        } c[] = {
+            { 127, 2, 0, 252, 0 },
+            { 128, 0, 0, 252, 1 },
+            { 127, 1, 1, 252, 1 },
+            { 130, 0, 0, 0xFF9C, 0 },
+        };
+        unsigned k;
+        int i;
+
+        for (k = 0; k < sizeof c / sizeof c[0]; k++) {
+            b = (struct buf){ 0 };
+            header(&b, 0);
+            b.p[4] = (uint8_t)(c[k].libnum >> 8);
+            b.p[5] = (uint8_t)c[k].libnum;
+            for (i = 0; i < c[k].statements; i++)
+                statement(&b, 1);
+            for (i = 0; i < c[k].nullsubs; i++) {
+                put16(&b, 0); put32(&b, 0);     /* nullsub */
+                put16(&b, 0);                   /* no libs */
+                put32(&b, 0x80); put32(&b, 0); put32(&b, 0);
+            }
+            if (c[k].dumtoke) {
+                put16(&b, 8); put32(&b, 0);
+                put32(&b, 0); put16(&b, 0);
+                putbytes(&b, "Obj\0x\0", 6);
+            }
+            put16(&b, 0xFFFF);
+            put32(&b, 0);
+            put16(&b, 0x4E75);
+            CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == c[k].bad);
+            if (c[k].bad && c[k].dumtoke)
+                CHECK(strstr(msg, "lib: library 252: entry 129 \"Obj\" gets the token $FE81, "
+                                  "behind the 127 of the library ($FE01-$FE7F)") != NULL);
+            else if (c[k].bad)
+                CHECK(strstr(msg, "lib: library 252: entry 128 \"Test\" gets the token $FE80")
+                      != NULL);
+            else
+                CHECK(!*msg);
+            free(b.p);
+        }
+    }
+
     free(ok.p);
     test_reserved();
     if (failures)

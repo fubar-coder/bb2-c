@@ -89,6 +89,13 @@ void blitzlib_free(struct blitzlib *lib);
  *   - starts with the library header: MOVEQ #0,d0:RTS (libmacs) or 4 zero
  *     bytes (AmigaOS call libraries of deflibs)
  *   - header and token table read (blitzlib_read)
+ *   - a user library (libnum without bit 15): no entry with a token
+ *     (statement, function, command, AmigaOS call, dumtoke) behind the
+ *     127th entry, counted as blitz2.s fixlibs counts (every entry,
+ *     nullsubs included, from libnum*128+1): a token behind the block is
+ *     the next library's number, found in this library only while that
+ *     number is free (#960); nullsubs there are allowed (init, finit, the
+ *     object handlers of !libfin)
  *   - no relocation from the normal code into the error check area (that
  *     area is cut away when the debugger is off; the originals do it, e.g.
  *     memlib err1 -> mess1, the port has them fixed since 2026-10-31)

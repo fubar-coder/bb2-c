@@ -192,7 +192,17 @@ again):
   strip): one code hunk, relocs only into it, library header, token table
   readable up to the end, no reference from the normal code into the error
   check area (without the debugger it would point behind the end of the
-  code; the originals have such references, the port has them fixed).
+  code; the originals have such references, the port has them fixed), and
+  in a user library (number 0-255) no entry with a token (statement,
+  function, command, AmigaOS call, dumtoke) behind the 127th entry,
+  counted as the compiler counts them (every entry, nullsubs included,
+  from number×128+1): a token behind the block is the next library's
+  number, and the compiler ends a library's range where the next loaded
+  library's begins (#960), so such an entry is found only while that
+  number is free (AmiBlitz3's libraries 15 and 217 rely on that; the
+  libraries of this build keep within their block). Nullsubs behind it
+  (init, finit, the object handlers of `!libfin`) are allowed, doslib
+  has two.
   `acidlibs`/`deflibs`
   are made only from checked libraries.
 * the command reference of the website (`blitzlib cmdref`, in the same
