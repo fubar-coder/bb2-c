@@ -82,6 +82,8 @@ In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/edit
   when they were longer than 128 characters together.
 * [Accented letters broke saved blocks, copied blocks and printouts]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-without-tokenise" >}})
   in the editor on its own.
+* [ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}}):
+  only the six umlauts could be typed into a string.
 * [A tab stop of 0 crashed the editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor#tab-stop-zero" >}}),
   and the options turned every value of 80 and more into 0.
 * [The editor did not start with the small font on a 512-row Workbench]({{< relref "/docs/compared-with-original/fixed-bugs/editor#small-font-screen" >}}).

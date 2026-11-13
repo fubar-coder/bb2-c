@@ -223,12 +223,77 @@ editor shows them and blitz2 puts them into the string. Without
 tokenising, as in the editor on its own, every character is kept and
 the file is saved byte for byte as it was loaded.
 
-Other accented letters, such as ß or é, cannot be stored as characters
-in a tokenised line: with tokenising on, they lose their accent as they
-do when you type them (`ß` becomes `_`, `é` becomes `i`). In a string you
-can write them with `Chr$`, for example `Chr$(223)` for ß.
+Other accented letters, such as ß or é, are kept too, in strings and
+comments
+([ß, é and other accented letters were lost](#latin1-in-strings)).
 
 Issue: [Characters of 128 or more in text files were loaded as keywords, the next byte (also a line feed or TAB) was swallowed (#374)](https://github.com/fubar-coder/bb2-c/issues/374).
+
+## Accented letters in strings and comments
+
+### ß, é and other accented letters were lost {#latin1-in-strings}
+
+Besides the umlauts ä ö ü Ä Ö Ü, the Amiga's character set, Latin-1, has
+many more letters and signs with codes of 128 and more: ß, é, à, ñ, °, £
+and others. The original editor could keep only the six umlauts. Any
+other of these characters was lost when you typed it, and in a text file
+it was taken for a keyword
+([Umlauts in a text source joined lines](#umlauts-in-text-source)). A
+program could print such a character only through `Chr$`, for example
+`Chr$(223)` for ß.
+
+**What happened**
+
+Type this line into the original editor:
+
+```
+NPrint "Straße"
+```
+
+The ß does not appear, and the line reads `NPrint "Strae"`. The
+compiled program prints `Strae`.
+
+**With the port**
+
+The line keeps the ß, and the program prints `Straße`. The editor keeps
+every Latin-1 character in strings and comments, whether you type it,
+load it from a text file or paste it from a block, with "Tokenise" on or
+off. Saving as text writes the character's own byte, so a text file is
+saved as it was loaded. The editor's font has no signs for these codes,
+so the editor shows each of them with the same stand-in sign; the
+umlauts keep their own. Search, the cursor, BLOCK TO DISK and PRINT
+treat such a character as the one character it stands for.
+
+In a tokenised source the editor stores such a character as a *literal
+character*: the byte `$90` followed by the character's code, two bytes
+like a token
+([Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}})).
+A line therefore holds at most 64 of them. A byte `$80` in a text file
+is not a Latin-1 character and becomes `?`.
+
+Outside a string and a comment, a literal character is an error: the
+compiler stops with "Syntax Error" at its line
+([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#latin1-outside-string" >}})).
+
+**With the original Blitz Basic 2**
+
+A source with literal characters is an ordinary tokenised source, with
+no header and no marker. The original compiler reads it and puts the
+same bytes into the strings. The original editor loads and saves it
+without loss, but it cannot type such a character. It shows each one as
+`?????`, or, with the userlib `literallib.obj` installed, as one sign in
+the colour of keywords.
+
+The port builds this userlib for the original Blitz Basic 2, in
+`build/amiga/variants/bb2-2.10/userlibs/literal/`. Copy it into a
+directory inside `blitz2:userlibs/`, such as `blitz2:userlibs/literal/`.
+It is library 33, which names the literal characters. It works only when
+no other library with the number 33 is loaded before it, so do not
+install it together with RIDosLib, one of the RWE userlibs, which has
+the same number
+([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
+
+Issue: [Latin-1 characters in strings and comments (#1018)](https://github.com/fubar-coder/bb2-c/issues/1018).
 
 ## Options and screen
 

@@ -26,7 +26,9 @@ from it ([Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}})).
 The numbers in use are listed in the file
 [libnums.h of the default variant](https://github.com/fubar-coder/bb2-c/blob/main/libs/variants/bb2-2.10/libnums.h).
 Command libraries have numbers from 1 to 255. Choose one that is not in
-that list and that no other userlib you use has. This example uses 9.
+that list and that no other userlib you use has. The numbers 32 and 33
+are reserved for the editor's literal characters (33 is literallib), and
+the build refuses a library with one of them. This example uses 9.
 
 ### Write the library
 

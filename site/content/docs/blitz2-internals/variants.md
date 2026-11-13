@@ -41,7 +41,7 @@ what differs:
 | Variant | What it is |
 |---|---|
 | bb2-2.10 | the numbers of Blitz Basic 2.10, the default; its libraries are `acidlibs` and `deflibs` in the `blitz2` directory |
-| rwe-1999 | bb2-2.10 plus the numbers of the Red When Excited userlibs ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})) |
+| rwe-1999 | bb2-2.10 plus the numbers of the Red When Excited userlibs ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})); RIDosLib has number 33, so this variant and the two below have no literallib and do not support literal characters |
 | rwe-1999-eval | rwe-1999 with one library moved, to free a number one RWE userlib needs |
 | rwe-1999-ahi | rwe-1999 with the newer of two RWE sound libraries that share a number |
 

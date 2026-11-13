@@ -27,7 +27,14 @@ saved file, a line is a sequence of bytes ended by a zero byte:
 The editor stores the German umlauts, whose character codes are above
 `$80`, as control bytes below `$20`, so they cannot be mistaken for
 tokens; the compiler turns them back into the real characters inside
-strings.
+strings. Every other Latin-1 character, such as ß or é, is stored as a
+*literal character*: the byte `$90` followed by the character's code.
+It has the shape of a token of library 33, literallib, whose only
+purpose is to name these characters, so the library numbers 32 and 33
+(all tokens that start with `$90`) are reserved for them. Literal
+characters belong in strings and comments; anywhere else the compiler
+reports an error
+([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
 
 The program
 

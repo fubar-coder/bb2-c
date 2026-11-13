@@ -126,6 +126,33 @@ needs no change.
 
 Issue: [Dcb with a count of 0 made 2^32 copies (#37)](https://github.com/fubar-coder/bb2-c/issues/37).
 
+## Characters
+
+### An accented letter outside a string {#latin1-outside-string}
+
+**What happened.** The original editor could not keep a Latin-1
+character other than the umlauts ä ö ü Ä Ö Ü, such as ß or é. Typed, it
+was lost, so the line
+
+```
+café=1:NPrint café
+```
+
+became `caf=1:NPrint caf` as you typed it, a program with another
+variable name, without a message. In a text file, such a character was
+taken for a keyword.
+
+**With the port.** The editor keeps the character as a literal character
+([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
+In a string or a comment it is compiled as the character; anywhere
+else, in a name or as a statement, the compiler stops with "Syntax Error" at its
+line. In AB3 mode the message is "Token Not Found".
+
+**What to change.** Write names with plain letters, and accented letters
+only in strings and comments.
+
+Issue: [Latin-1 characters in strings and comments (#1018)](https://github.com/fubar-coder/bb2-c/issues/1018).
+
 ## Constants, labels and names
 
 ### A constant definition without a name {#constant-without-name}

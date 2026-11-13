@@ -48,6 +48,14 @@ libraries need a variant of their own:
   same number, so the two cannot be loaded together. The
   variant **rwe-1999-ahi** has the second one instead of the first.
 
+RIDosLib has the number 33, which the default variant gives to
+literallib, the library that names the editor's literal characters
+([Tokenised sources]({{< relref "/docs/how-blitz2-works/tokens" >}})).
+The three RWE variants keep RIDosLib and leave literallib out, so with
+their libraries literal characters are not supported. For the same
+reason, do not install RIDosLib together with the userlib
+`literallib.obj` in the original Blitz Basic 2.
+
 ## Using them
 
 After the build, the libraries are in

@@ -703,6 +703,16 @@ source the original accepted are shown with examples on
 * `Dcb` with a count of 0 made 2^32 copies and ran for hours; a count of 0
   emits nothing, a negative count gives "Illegal Constant"
   ([#37](https://github.com/fubar-coder/bb2-c/issues/37)).
+* A Latin-1 character other than the umlauts, such as ß or é, could not
+  reach a string, since the editor lost it; the editor keeps it as a
+  literal character
+  ([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})),
+  which gives its byte in a string, a `Data$` or `Dc.b` string and a
+  quoted constant, and is a "Syntax Error" outside a string ("Token Not
+  Found" in AB3 mode); in AB3 mode the Latin-1 characters in the strings
+  and comments of an AmiBlitz3 text source give the bytes AmiBlitz3
+  gives them
+  ([#1018](https://github.com/fubar-coder/bb2-c/issues/1018)).
 
 ### Names, labels and constants
 
