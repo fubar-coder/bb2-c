@@ -28,3 +28,5 @@ corpus	t158_2dfuzz	#1000: Polyf draws the polygons with vertices far outside the
 corpus_runerr	t158_2dfuzz	#1000: Polyf draws the polygons with vertices far outside the bitmap (line polyf wild)
 corpus	t30_date	#1001: Date$ and NumDays give Gregorian dates before 1/3/1900 and from 1/3/2100 on
 corpus_runerr	t30_date	#1001: Date$ and NumDays give Gregorian dates before 1/3/1900 and from 1/3/2100 on
+corpus	t121_palette	#1002: a CRNG range with the flags 0 (disabled) is no longer entered in the cycle table
+corpus_runerr	t121_palette	#1002: a CRNG range with the flags 0 (disabled) is no longer entered in the cycle table

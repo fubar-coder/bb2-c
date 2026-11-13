@@ -53,6 +53,12 @@
  *     var to the CRNG flag (1) for active cycles (not a bug: only the low
  *     word is used, a start value of 1 is invisible) and re-initialises
  *     (clears) the palette if it is too small (#226).
+ *   - Fixed (intended deviation, #1002): DecodePalette and LoadPalette
+ *     compared the CRNG flags word with 1 only: every other value entered
+ *     the range as an active one with the rate negated, so a disabled
+ *     range (flags 0 or 2) cycled backwards.  Here bit 0 (RNG_ACTIVE)
+ *     decides whether the range is entered and bit 1 (RNG_REVERSE)
+ *     negates the rate (flags 1 and 3 as before).
  *   - PaletteRange with start = end divides by zero (DIVS). (#227)
  *   - StopCycle does not reset `cycon`: a later Cycle does not install
  *     the interrupt again (#228).  The cycle list is freed at the end but
@@ -560,18 +566,20 @@ static void loadthepal(const UBYTE *name, struct bb_palette *p, UWORD off)
     /* cycle info */
     cy = p->cyc;
     for (;;) {
-        WORD rate, lo, hi;
+        WORD rate, flags, lo, hi;
 
         IFFCALL(TOK_ifffind, 0x43524e47, 0, z);     /* "CRNG" */
         if (!z)
             break;
         rate = (WORD)IFFCALL(TOK_ifflong, 0, 0, z);
-        if ((WORD)IFFCALL(TOK_iffword, 0, 0, z) != 1)
+        flags = (WORD)IFFCALL(TOK_iffword, 0, 0, z);
+        if (flags & 2)                          /* fixed (#1002): RNG_REVERSE */
             rate = -rate;
         lo = (BYTE)IFFCALL(TOK_iffbyte, 0, 0, z);
         cy->lo = lo;
         hi = (BYTE)IFFCALL(TOK_iffbyte, 0, 0, z);
-        if (hi == cy->lo)
+        /* fixed (#1002): a range without RNG_ACTIVE is not entered */
+        if (hi == cy->lo || !(flags & 1))
             continue;
         cy->hi = hi;
         cy->speed = rate;
@@ -625,7 +633,10 @@ BLITZ_THUNK(getpal2, getpal2_c, "d0-d1");
  * low = -1.  Not a bug (both are overwritten later): with an offset,
  * colour offset+count is first written with the offset as red value
  * (overwritten by the loop); CRNG ranges with low = high only overwrite
- * the low word of the cycle entry.
+ * the low word of the cycle entry.  Fixed (#1002): only ranges with bit 0
+ * (RNG_ACTIVE) of the CRNG flags are entered, bit 1 (RNG_REVERSE)
+ * negates the rate; the original entered every range, reversed unless
+ * the flags were 1.
  *
  * Errors: "Can't Open IFF", "Can't find IFF 'CMAP'" (runtime errors of
  * the normal code; DIFF: their messages are in the normal code too).
@@ -750,15 +761,17 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
         }
         rate = W(chunk, 2);                     /* yc */
         flags = W(chunk, 4);
-        if (flags != 1) {
-            rate = -rate;
-            flags = 0;
-        }
         lo = (BYTE)chunk[6];
         hi = (BYTE)chunk[7];
         chunk += 8;
-        if (hi == lo)
+        /* fixed (#1002): a range without RNG_ACTIVE is not entered */
+        if (hi == lo || !(flags & 1))
             continue;
+        if (flags != 1) {
+            if (flags & 2)                      /* fixed (#1002): RNG_REVERSE */
+                rate = -rate;
+            flags = 0;
+        }
         cy->lo = lo;
         cy->hi = hi;
         cy->speed = rate;
@@ -776,6 +789,9 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
  * length/3 (the remainder stays in the upper word).  Active cycles get
  * var = the CRNG flag (1; not a bug: only the low word is used, a start
  * value of 1 is invisible).  The palette is in a3.
+ * Fixed (#1002): only ranges with bit 0 (RNG_ACTIVE) of the CRNG flags
+ * are entered, bit 1 (RNG_REVERSE) negates the rate; the original entered
+ * every range, reversed unless the flags were 1.
  *
  * BUG(orig) (#225): the chunks are walked without pad bytes.
  * BUG(orig) (#226): a palette too small for offset + count is
