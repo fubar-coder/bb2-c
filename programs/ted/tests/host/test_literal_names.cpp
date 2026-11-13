@@ -41,6 +41,20 @@ void freeline(struct item *it)
 // tell the list's entry from the built-in one
 struct tokennode *litlist[128];
 
+// the environment, set up once per program (the core keeps its globals),
+// with the original's token list or without a list
+void setup(bool withlist)
+{
+    static struct tokennode *list;
+
+    if (!list) {
+        hostenv_init(oracle::tokens_file().c_str(), 4);
+        list = tokens;
+    }
+    tokens = withlist ? list : nullptr;
+    tokenise = tokens ? 1 : 0;
+}
+
 void appendlib(char mark)
 {
     struct tokennode *last = tokens;
@@ -77,7 +91,7 @@ void droplib()
 
 TEST_CASE("findtoke: no token list - the built-in names", "[literal][findtoke]")
 {
-    hostenv_init(nullptr, 4);
+    setup(false);
     REQUIRE(tokens == nullptr);
     for (int cc = 0x80; cc <= 0xFF; cc++) {
         CAPTURE(cc);
@@ -99,7 +113,7 @@ TEST_CASE("findtoke: no token list - the built-in names", "[literal][findtoke]")
 
 TEST_CASE("findtoke: the list's entry wins, a list without them gives the built-in one", "[literal][findtoke]")
 {
-    hostenv_init(oracle::tokens_file().c_str(), 4);
+    setup(true);
     REQUIRE(tokens != nullptr);
     // the original's list has no word $90xx
     for (int cc = 0x80; cc <= 0xFF; cc++) {
@@ -119,14 +133,14 @@ TEST_CASE("findtoke: the list's entry wins, a list without them gives the built-
         CHECK(std::string(name) == std::string(1, static_cast<char>(cc)) + "!");
     }
     droplib();
-    hostenv_init(nullptr, 4);
+    setup(false);
 }
 
 TEST_CASE("detok and detoka5 give the character", "[literal][detok]")
 {
     for (int withlist = 0; withlist < 2; withlist++) {
         CAPTURE(withlist);
-        hostenv_init(withlist ? oracle::tokens_file().c_str() : nullptr, 4);
+        setup(withlist != 0);
         if (withlist)
             appendlib('\0');
         for (int cc = 0x80; cc <= 0xFF; cc++) {
@@ -150,5 +164,5 @@ TEST_CASE("detok and detoka5 give the character", "[literal][detok]")
         if (withlist)
             droplib();
     }
-    hostenv_init(nullptr, 4);
+    setup(false);
 }

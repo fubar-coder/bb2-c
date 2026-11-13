@@ -22,9 +22,17 @@ namespace {
 
 const std::string P = std::string("\x90", 1);   // the first byte of the pair
 
+// the environment with the original's token list, set up once per program
+// (the core keeps its globals)
 void env()
 {
-    hostenv_init(oracle::tokens_file().c_str(), 4);
+    static struct tokennode *list;
+
+    if (!list) {
+        hostenv_init(oracle::tokens_file().c_str(), 4);
+        list = tokens;
+    }
+    tokens = list;
     REQUIRE(tokens != nullptr);
 }
 
@@ -94,6 +102,18 @@ void appendlib()
         last->next = node;
         last = node;
     }
+}
+
+// the entries of appendlib taken off the list again
+void droplib()
+{
+    struct tokennode *p = tokens;
+
+    while (p->next && p->next != litlist[0])
+        p = p->next;
+    p->next = nullptr;
+    for (auto *node : litlist)
+        std::free(node);
 }
 
 } // namespace
@@ -180,7 +200,7 @@ TEST_CASE("tokeniser: the library's names in the list match no keyword", "[liter
         CHECK(tokrow(lines[i]) == before[i]);
     }
     tokenise = keep;
-    hostenv_init(nullptr, 4);
+    droplib();
 }
 
 TEST_CASE("charstobuff without tokenise: the pair as well (one stored form)", "[literal][tokit]")
