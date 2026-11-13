@@ -875,7 +875,7 @@ OpenDisk|read buffer|0,trackdisk.device|1	bytes 4096 fnv 671EA9C5
 DiskIO|kept|0|3	kept
 DiskIO|d0 != 0|0|3	$00000001
 DiskIO|io_Device|0|2	$00000000
-DiskIO|io_Unit|0|2	$4000FB38
+DiskIO|io_Unit is not 0|0|1	$00000001
 DiskIO|io_Error|0|2	$00000000
 DiskIO|reply port = port of init|0|2	$00000001
 MotorOn (trackdisk)|kept|0|1	kept

@@ -296,7 +296,10 @@ static void diskio(LONG unit)
         reqaddr[unit] = R.d[0];
     if (R.d[0] && unit >= 0 && unit < 4) {
         OBS("io_Device", ((struct IORequest *)R.d[0])->io_Device == dev);
-        OBS("io_Unit", (ULONG)((struct IORequest *)R.d[0])->io_Unit);
+        if (((struct IORequest *)R.d[0])->io_Device == dev)
+            OBS("io_Unit", (ULONG)((struct IORequest *)R.d[0])->io_Unit);
+        else /* the real device's unit structure: an address of the system */
+            OBS("io_Unit is not 0", ((struct IORequest *)R.d[0])->io_Unit != NULL);
         OBS("io_Error", ((struct IORequest *)R.d[0])->io_Error);
         OBS("reply port = port of init", ((struct Message *)R.d[0])->mn_ReplyPort != NULL);
     }
