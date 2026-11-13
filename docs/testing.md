@@ -280,6 +280,18 @@ If the original's test (`libs_emulator_originals`) fails but the port's
 passes, the original changed or the scenario changed without a new
 recording.
 
+A corpus, bug-orig or TED A/B test that fails prints where its files
+are: `the files of the run: DIR`, a directory `run-XXXXXX` below the
+test's work directory. The last run with a verdict is also reachable as
+`last` there, for example
+`build/amiga/tests/bug-orig/ID/last/port/vol/out/` (the program's output
+and executable) or `build/amiga/tests/ted-ab/ted_ab/last/s001/vol/runs/`.
+Each run has a directory of its own, so a second ctest run in the same
+build directory does not disturb the first; the files stay until the
+next run of the same test replaces them. `no space left in DIR` (exit
+status 2) is no verdict: the disk under the build directory was (nearly)
+full before or after the sessions.
+
 ### I add or change a test program. How do I record?
 
 A library test program lives in `libs/tests/` (`rwe/NAME.c` for an RWE

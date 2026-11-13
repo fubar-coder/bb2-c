@@ -178,9 +178,13 @@ it the scripts that read it (`@source K`, `@expect cd`) are left out,
 `blitz2:userlibs/DIR/` of every combination, DIR the name of its directory
 (`ted_ab_originals`: `literal/literallib.obj`, #1018). The scripts are
 described in `tedab.h` and
-`tests/README.md` ("TED A/B"). `run` writes below `work=` one directory
-per session (`sNNN/vol` the volume `TEDAB:`, `sNNN/emu` Amiberry); the
-dumps get a decoded `NAME.txt`. The dump format is in `teddump.h`.
+`tests/README.md` ("TED A/B"). `run` works in a run directory of its own
+below `work=` (`run-XXXXXX`, `work/last` once it has a verdict;
+`tests/corpus/runner/runwork.h`, `tests/README.md` "Run directories"),
+with one directory per session (`sNNN/vol` the volume `TEDAB:`,
+`sNNN/emu` Amiberry); the dumps get a decoded `NAME.txt`. `min_free=MIB`
+(default 64): less free space before or after the sessions is exit
+status 2. The dump format is in `teddump.h`.
 
 ## Exit codes
 

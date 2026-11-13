@@ -5,7 +5,20 @@
  * results compared with the first configuration (the reference).
  *
  * The pass file (written by CMake), lines KEY=VALUE, '#' comments:
- *   work=DIR          work directory (emptied first)
+ *   work=DIR          work directory: every run works in a directory of
+ *                     its own below it, DIR/run-XXXXXX (runwork.h; two
+ *                     runs of the pass at the same time are independent),
+ *                     DIR/TAG the configuration's files; a run with a
+ *                     verdict becomes DIR/last (the run before it is
+ *                     removed), the fixed path of the results for other
+ *                     tests; a run with another exit status than 0 prints
+ *                     its directory (the files stay until a later run
+ *                     replaces them); a run without a verdict (exit status
+ *                     2 or 77) is not made DIR/last
+ *   min_free=MIB      less free space (MiB) in DIR before or after the
+ *                     sessions ends the run with exit status 2 ("no space
+ *                     left in DIR") instead of a verdict (default
+ *                     RUNWORK_MIN_FREE_MIB, 0 = no check)
  *   report=PATH       the report (also to stdout)
  *   runtime_errors=on|off
  *                     runtime error checking of the sources (no .xtra: the
@@ -229,6 +242,7 @@ struct corpus_pass {
     int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     int rtg;                            /* rtg=on: amiga_emulation_rtg */
     unsigned timeout, parallel, stack;
+    unsigned long long min_free;        /* min_free=: MiB, 0 = no check */
     unsigned fixed;                     /* fixed=NNN, 0 = not given */
     struct corpus_config *configs;
     size_t nconfigs;

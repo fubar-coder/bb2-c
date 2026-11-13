@@ -15,6 +15,7 @@
 #include "bugorigcmp.h"
 #include "corpus.h"
 #include "serial.h"
+#include "runwork.h"
 #include "statline_emulation.h"
 #include "util.h"
 
@@ -158,6 +159,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     p->parallel = 1;
     p->stack = 40000;
     p->run = 1;
+    p->min_free = RUNWORK_MIN_FREE_MIB;
     while (*line) {
         const char *eol = strchr(line, '\n'), *v;
         char key[32], *val;
@@ -229,6 +231,18 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             else
                 p->stack = (unsigned)u;
             free(val);
+            continue;
+        }
+        if (!strcmp(key, "min_free")) {
+            char *e;
+            unsigned long long u = strtoull(val, &e, 10);
+            int bad = !*val || *e || *val == '-';
+
+            free(val);
+            if (bad)
+                return fail(p, err, errlen, "line %u: min_free needs a number (MiB, 0 = no check)",
+                            no);
+            p->min_free = u;
             continue;
         }
         if (!strcmp(key, "record")) {
@@ -1881,7 +1895,9 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
     struct bugorig_obs orig = { 0 };
-    int rc = 2;
+    struct runwork rw = { NULL, NULL, -1 };
+    char *base = p->work;       /* work=; p->work is the run directory while it runs */
+    int rc = 2, ran = 0;        /* ran: a session has started */
 
     if (!e || !st || !resp || !nsessions || !slog || !stl || !vbad || !text)
         goto out;
@@ -1943,6 +1959,27 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             fprintf(log, "corpus: no %s\n", p->sources[i]);
             goto out;
         }
+    /* a run directory of its own (runwork.h); the configurations' fixed
+       directories of the runners before it go */
+    if (runwork_open(&rw, p->work, err, sizeof err)) {
+        fprintf(log, "corpus: %s\n", err);
+        goto out;
+    }
+    for (c = 0; c < p->nconfigs; c++)
+        if (strcmp(p->configs[c].tag, RUNWORK_LAST)
+            && strncmp(p->configs[c].tag, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX))) {
+            char *old = str_printf("%s/%s", p->work, p->configs[c].tag);
+
+            if (old)
+                rm_tree(old);
+            free(old);
+        }
+    base = p->work;
+    p->work = rw.dir;
+    if (runwork_space(base, p->min_free, err, sizeof err)) {
+        fprintf(log, "corpus: %s\n", err);
+        goto out;
+    }
     for (c = 0; c < p->nconfigs; c++)
         if (stage(p, c, log))
             goto out;
@@ -1988,13 +2025,14 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                 goto out;
             }
             next++;
+            ran = 1;
         }
         /* the session that has ended; none within the time: start again */
         if ((ended = amiga_emulation_wait_any(e, p->nconfigs, AMIGA_EMULATION_SLOT_RETRY_MS)) < 0)
             continue;
         c = (size_t)ended;
         st[c] = amiga_emulation_join(e[c]);
-        statline_session(&stl[c], p->work, p->configs[c].tag, e[c]);
+        statline_session(&stl[c], base, p->configs[c].tag, e[c]);
         amiga_emulation_free(e[c]);
         e[c] = NULL;
         if (resp[c]) {
@@ -2005,6 +2043,12 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             free(out);
         }
         done++;
+    }
+    /* a disk that filled up during the sessions: the files may be cut
+       short, no verdict */
+    if (runwork_space(base, p->min_free, err, sizeof err)) {
+        fprintf(log, "corpus: %s\n", err);
+        goto out;
     }
 
     for (c = 0; c < p->nconfigs; c++) {
@@ -2259,6 +2303,20 @@ out:
             serial_stop(resp[c], out ? out : ".");
             free(out);
         }
+    /* the run with a verdict becomes work/last; without one it goes
+       (before or without the sessions) or stays for a look */
+    if (rw.fd >= 0) {
+        if (ran && rc != 2 && rc != 77 && runwork_publish(&rw, err, sizeof err)) {
+            fprintf(log, "corpus: %s\n", err);
+            rc = 2;
+        }
+        if (!ran)
+            runwork_remove(&rw);
+        else if (rc)
+            fprintf(log, "corpus: the files of the run: %s\n", rw.dir);
+        p->work = base;
+        runwork_close(&rw);
+    }
     for (c = 0; slog && c < p->nconfigs; c++)
         free(slog[c]);
     free(slog);

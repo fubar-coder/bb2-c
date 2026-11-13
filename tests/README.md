@@ -156,6 +156,27 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
   holds a slot does not wait for more, it runs its sessions one after
   another). `CORPUS_TIMEOUT` limits a session; reports are in
   `build/<preset>/tests/corpus/NAME.txt`.
+* **Run directories:** `corpusrun pass` and `tedab run` work in a
+  directory of their own below the pass file's `work=` directory
+  (`WORK/run-XXXXXX`, `tests/corpus/runner/runwork.h`), so two runs of
+  the same test at the same time (two ctest runs in one build directory)
+  are independent. A run that comes to a verdict becomes `WORK/last` (a
+  link), the fixed path where other tests read its results (`corpus_out=`
+  of `ted_ab` is `tests/corpus/corpus/last/clib/vol/out`) and where the
+  files of a failed run are for diffing, for example
+  `build/<preset>/tests/bug-orig/ID/last/port/vol/out/`; a run that does
+  not end with 0 also prints its directory (`the files of the run:
+  DIR`). The run before is removed when a new one becomes `WORK/last`;
+  a run directory no runner holds any more (`flock`) and `WORK/last` does
+  not name, the leftover of a crashed or interrupted run, is removed when
+  the next run of the same pass starts. So nothing needs cleaning by hand,
+  and a run never removes a directory another run still uses. A run
+  without a verdict (exit status 2 or 77) does not become `WORK/last`:
+  without a session its directory goes at once, after one it stays until
+  the next run. Less than `min_free=` MiB free (pass key, default 64) in
+  `WORK` before or after the sessions ends the run with exit status 2,
+  `no space left in WORK (...)`, instead of a verdict on files a full disk
+  may have cut short.
 * **Slots:** over everything (all runners, build directories and
   worktrees of the machine) at most `AMIGA_EMULATION_MAX` Amiberry
   sessions run at once (environment, 0 = no limit; without it the number
@@ -893,7 +914,7 @@ reference (among them an expectation equal to the
 buggy output); `bug_orig_selftest_broken` (label `emulator`, not
 `bug-orig`) runs such a broken test on a recorded file and must come out
 BROKEN (it needs no session). Reports: `build/<preset>/tests/bug-orig/ID.txt`, the
-observation of each configuration in `.../ID/TAG/observation`.
+observation of each configuration in `.../ID/last/TAG/observation`.
 Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
 faults (no free signal, failing AllocMem of a size, also only after
 SKIP of them, Read or Write error (a Read also of a file that
@@ -992,7 +1013,7 @@ source (e.g. the source of a resident) is a text `NAME.src`, tokenised
 like `ID.bas` to `testdata/NAME`. The expectation is the correct
 behaviour (from the documentation of the command or the issue), not
 what the original does; the observation of the configurations
-(`.../ID/TAG/observation`) gives its format. Then record the original
+(`.../ID/last/TAG/observation`) gives its format. Then record the original
 (needs Amiberry and the CD): `cmake --preset amiga
 -DBUG_ORIG_RECORD_FILTER=ID` and `cmake --build --preset amiga --target
 bug-orig-record` write `ID.orig` next to `ID.expect` from two agreeing
@@ -1214,7 +1235,7 @@ script made with `@file`), `; @expect data NAME "DATA"`, `; @expect
 [no]stdout "TEXT"`, `[no]log` (teddrive's log), `[no]screen DUMP
 "TEXT"` (the decoded dump), `[no]file NAME "TEXT"`. ctest `bug_orig_ID`,
 report `build/<preset>/tests/bug-orig/ID.txt`, the runs in
-`.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
+`.../ID/last/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
 the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
 out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
 glob, and `ted/ID.orig` from the target `bug-orig-record`

@@ -9,7 +9,17 @@
  * cmd_run.cpp.
  *
  * The pass file (written by CMake), lines KEY=VALUE, '#' comments:
- *   work=DIR           work directory (emptied first)
+ *   work=DIR           work directory: every run works in a directory of
+ *                      its own below it, DIR/run-XXXXXX (runwork.h; two
+ *                      runs of the pass at the same time are independent);
+ *                      a run with a verdict becomes DIR/last (the run
+ *                      before it is removed); a run with another exit
+ *                      status than 0 prints its directory; what the
+ *                      runners before wrote to DIR itself is removed
+ *   min_free=MIB       less free space (MiB) in DIR before or after the
+ *                      sessions ends the run with exit status 2 ("no space
+ *                      left in DIR") instead of a verdict (default
+ *                      RUNWORK_MIN_FREE_MIB, 0 = no check)
  *   report=PATH        the report (also to stdout)
  *   scripts=DIR        the test scripts (*.drv; gate-*.drv are gate D's)
  *   filter=GLOB,...    only these tests (names without .drv; default all)
@@ -100,8 +110,9 @@
  * early (hang: time limit) leaves runs
  * that were not reached; they go into a later session once more if their
  * test did not start there or its first run is OK.  The rest stays
- * "NOTRUN".  Each session's directory: work/sNNN/vol (the volume TEDAB:)
- * and work/sNNN/emu (Amiberry); the dumps get a decoded NAME.txt.
+ * "NOTRUN".  Each session's directory: RUN/sNNN/vol (the volume TEDAB:)
+ * and RUN/sNNN/emu (Amiberry), RUN the run directory (work/run-XXXXXX,
+ * work/last once it has a verdict); the dumps get a decoded NAME.txt.
  * Tests with @known are not run (unless the filter names them exactly); the
  * report lists them as KNOWN with their reason, they do not fail the run.
  *
@@ -122,6 +133,7 @@
 #include "amiga_emulation.h"
 #include "bugorigcmp.h"
 #include "run.h"
+#include "runwork.h"
 #include "statline_emulation.h"
 #include "tedab.h"
 #include "util.h"
@@ -143,6 +155,7 @@ struct pass {
     char *record_to;                    /* record_to= (record=write) */
     struct prevint intended;            /* intended=: PREV_INTENDED (previntended.h) */
     unsigned timeout, budget, parallel, stack, bugorig, fixed;
+    unsigned long long min_free;        /* min_free=: MiB, 0 = no check (runwork.h) */
 };
 
 /* one run over all sessions */
@@ -151,7 +164,7 @@ struct run {
     int state, attempts, done, gates_ok;  /* gates_ok: of its last session */
     unsigned session;           /* the last one it was in */
     int halted;                 /* that session ended because the CPU halted */
-    char *dir;                  /* its run directory (work/sNNN/vol/runs/T/XX) */
+    char *dir;                  /* its run directory (RUN/sNNN/vol/runs/T/XX) */
     const char *verdict;        /* bug-orig: its verdict ("reference" for the reference) */
 };
 
@@ -205,6 +218,7 @@ static int parse(const char *text, char *err, size_t errlen)
     P.budget = 60;
     P.parallel = 1;
     P.stack = 40000;
+    P.min_free = RUNWORK_MIN_FREE_MIB;
     while (*line) {
         const char *eol = strchr(line, '\n'), *v;
         char key[32], *val;
@@ -252,6 +266,19 @@ static int parse(const char *text, char *err, size_t errlen)
                 free(val);
                 found = 1;
             }
+        if (!found && !strcmp(key, "min_free")) {
+            char *e;
+            unsigned long long u = strtoull(val, &e, 10);
+            int bad = !*val || *e || *val == '-';
+
+            free(val);
+            if (bad) {
+                snprintf(err, errlen, "line %u: min_free needs a number (MiB, 0 = no check)", no);
+                return -1;
+            }
+            P.min_free = u;
+            found = 1;
+        }
         if (!found && !strcmp(key, "intended")) {
             char msg[300];
             int r = prevint_add(&P.intended, val, msg, sizeof msg);
@@ -1024,6 +1051,29 @@ static int load_orig(FILE *log)
     return 0;
 }
 
+/* removes what the runners before the run directories left in work=
+   (sNNN/, staged/: they emptied it and worked in it directly), so that
+   nothing reads those files any more; the run directories, work/last and
+   the lock stay (runwork.h) */
+static void clean_fixed_layout(const char *work)
+{
+    DIR *d = opendir(work);
+    struct dirent *e;
+
+    while (d && (e = readdir(d))) {
+        char *path;
+
+        if (e->d_name[0] == '.' || !strcmp(e->d_name, RUNWORK_LAST)
+            || !strncmp(e->d_name, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX)))
+            continue;
+        if ((path = str_printf("%s/%s", work, e->d_name)))
+            rm_tree(path);
+        free(path);
+    }
+    if (d)
+        closedir(d);
+}
+
 static int run(FILE *log)
 {
     /* the original TED only runs for the compare test of the recorded original */
@@ -1048,6 +1098,9 @@ static int run(FILE *log)
     int told = 0;
     struct text rep = { 0 }, pdiff = { 0 };     /* pdiff: PREV_INTENDED entries of the differences */
     int rc = 2, all_ok = 1, c, worst = -1;
+    struct runwork rw = { NULL, NULL, -1 };
+    char *base = P.work, werr[400];     /* work=; P.work is the run directory while it runs */
+    int started = 0;                    /* a session has started */
 
     /* the recorded original against the expectations, before any session:
        the test shows no bug (BROKEN), or the recording is missing */
@@ -1081,12 +1134,23 @@ static int run(FILE *log)
     }
     if (!(ss = calloc(MAXSESSIONS + 1, sizeof *ss)))
         return 2;
-    rm_tree(P.work);
+    /* a run directory of its own (runwork.h); the files of the runners
+       before it, which emptied work= and used it directly, go */
+    if (runwork_open(&rw, P.work, werr, sizeof werr)) {
+        fprintf(log, "%s: %s\n", me, werr);
+        free(ss);
+        return 2;
+    }
+    clean_fixed_layout(P.work);
+    base = P.work;
+    P.work = rw.dir;
+    if (runwork_space(base, P.min_free, werr, sizeof werr)) {
+        fprintf(log, "%s: %s\n", me, werr);
+        goto out;
+    }
     for (i = 0; i < ntests; i++)
-        if ((rc = stage_test(&tests[i], log))) {
-            free(ss);
-            return rc;
-        }
+        if ((rc = stage_test(&tests[i], log)))
+            goto out;
     rc = 2;
     /* the runs: per test in the order of combos */
     runs = calloc(ntests * TEDAB_NCOMBOS + 1, sizeof *runs);
@@ -1180,6 +1244,7 @@ static int run(FILE *log)
                 ep.timeout = P.timeout;
                 ep.work_dir = emu;
                 s->e = amiga_emulation_start(&ep, err, sizeof err);
+                started |= s->e != NULL;
             }
             free(vol);
             free(emu);
@@ -1231,7 +1296,7 @@ static int run(FILE *log)
                bug-orig mode, else the session */
             snprintf(sname, sizeof sname, "s%03u", s->no);
             s->run = s->ids[0];
-            statline_session(&s->stat, P.work,
+            statline_session(&s->stat, base,
                              P.bugorig ? tedab_combo_names[runs[s->run].r.combo] : sname, s->e);
             s->stat.runs = (int)s->n;
             amiga_emulation_free(s->e);
@@ -1314,6 +1379,12 @@ static int run(FILE *log)
                 goto out;
         }
         fflush(log);
+    }
+    /* a disk that filled up during the sessions: the files may be cut
+       short, no verdict */
+    if (runwork_space(base, P.min_free, werr, sizeof werr)) {
+        fprintf(log, "%s: %s\n", me, werr);
+        goto out;
     }
 
     /* ------------------------------------------------------ the report */
@@ -1454,6 +1525,20 @@ out:
         free(ss[w].events.p);
         free(ss[w].ids);
         free(ss[w].script);
+    }
+    /* the run with a verdict becomes work/last; without one it goes
+       (without a session) or stays for a look */
+    if (rw.fd >= 0) {
+        if (started && rc != 2 && rc != 77 && runwork_publish(&rw, werr, sizeof werr)) {
+            fprintf(log, "%s: %s\n", me, werr);
+            rc = 2;
+        }
+        if (!started)
+            runwork_remove(&rw);
+        else if (rc)
+            fprintf(log, "%s: the files of the run: %s\n", me, rw.dir);
+        P.work = base;
+        runwork_close(&rw);
     }
     free(ss);
     free(act);

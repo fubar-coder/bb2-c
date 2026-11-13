@@ -1,6 +1,6 @@
 # ctest rwe_residents_cd (residents.cmake): the corpusrun pass PASS lets
 # blitz2 2.10 of the CD (ref) and blitz2-c (port) save the residents NAMES
-# of their Blitz sources with Create Resident (WORK/TAG/vol/out/NAME.res);
+# of their Blitz sources with Create Resident (WORK/last/TAG/vol/out/NAME.res);
 # each must have the contents of RESIDENTS/NAME.res, the one blitzres
 # wrote (CHECK: tools/blitzres/check.cmake).  Exit 77 (skipped) if the
 # pass is skipped (no Amiberry, no CD).
@@ -16,9 +16,9 @@ endif()
 set(bad 0)
 foreach(tag ref port)
 	foreach(n IN LISTS NAMES)
-		set(made ${WORK}/${tag}/vol/out/${n}.res)
+		set(made ${WORK}/last/${tag}/vol/out/${n}.res)
 		if(NOT EXISTS ${made})
-			message("${tag}: no ${n}.res - Create Resident failed (${WORK}/${tag}/vol/out/session.log)")
+			message("${tag}: no ${n}.res - Create Resident failed (${WORK}/last/${tag}/vol/out/session.log)")
 			set(bad 1)
 			continue()
 		endif()

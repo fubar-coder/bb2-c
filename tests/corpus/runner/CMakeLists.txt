@@ -1,7 +1,8 @@
 # corpusrun: the corpus passes (pass) and the CD runs (cd) in Amiberry, host
 # side (README.md)
-# strings and files, also for the TED A/B runner (tests/ted-ab/runner)
-add_library(lib_runner_util STATIC util.c)
+# strings and files, and the run directories (runwork.h), also for the TED
+# A/B runner (tests/ted-ab/runner)
+add_library(lib_runner_util STATIC util.c runwork.c)
 target_include_directories(lib_runner_util PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(lib_runner_util PRIVATE -Wall -Wextra)
 set_target_properties(lib_runner_util PROPERTIES C_STANDARD 23)
@@ -48,3 +49,9 @@ add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:co
 
 host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
 host_readme_test(corpusrun README.md ${CORPUSRUN_SUBCOMMANDS})
+# the run directories of corpusrun pass and tedab run (runwork.h): runs of
+# their own, the leftovers, work/last, the free-space check
+add_executable(test_runwork test_runwork.c)
+target_link_libraries(test_runwork PRIVATE lib_runner_util)
+target_compile_options(test_runwork PRIVATE -Wall -Wextra)
+add_test(NAME runner_runwork COMMAND test_runwork ${CMAKE_CURRENT_BINARY_DIR}/runner_runwork)

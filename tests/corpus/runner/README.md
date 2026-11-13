@@ -6,10 +6,12 @@ configurations of compiler and libraries, the programs run, the results
 compared with the first configuration, or in the bug-orig mode with the
 expectation), and the whole CD through one compiler (`cd`: a table of the
 results, optionally compared with a reference table). The logic is in
-`lib_corpus` (`corpus.h`, `bugorig.h`, `serial.h`) and `lib_cdcache`
-(`cdcache.h`), tested by `test_corpus.c`, `test_bugorig.c` and
-`test_cdcache.c` here (ctest `corpus_runner`, `bugorig_verdict`,
-`cdrun_cache`).
+`lib_corpus` (`corpus.h`, `bugorig.h`, `serial.h`), `lib_cdcache`
+(`cdcache.h`) and `lib_runner_util` (`runwork.h`: the run directory of
+`pass` and of `tedab run`, a directory of its own per run below `work=`),
+tested by `test_corpus.c`, `test_bugorig.c`, `test_cdcache.c` and
+`test_runwork.c` here (ctest `corpus_runner`, `bugorig_verdict`,
+`cdrun_cache`, `runner_runwork`).
 
 ## Usage
 

@@ -574,7 +574,7 @@ endif()
 # (R5: TED 1.1 under blitz2 2.10, the reference) and TED-C (C5), each run in
 # an emulator session of its own, and gives the verdict like corpusrun
 # (exit status 0 FIXED, 1 REPRODUCED, 3 BROKEN, 4 DIFFERS); report
-# ID/report.txt, the runs in ID/sNNN/vol/runs/ID/XX.  ctest bug_orig_ID,
+# ID/report.txt, the runs in ID/last/sNNN/vol/runs/ID/XX (tests/corpus/runner/runwork.h).  ctest bug_orig_ID,
 # labels bug-orig and emulator, skipped (77) without Amiberry or the CD.
 # A fixed test has the header "; @fixed #N" (no pair; the bug is fixed in
 # TED-C): it keeps its ID.orig (checked before any session, BROKEN), no
@@ -599,7 +599,7 @@ function(bug_orig_ted_pass scripts id name work combos extra)
 		"gates=${PROJECT_SOURCE_DIR}/tests/ted-ab/scripts\n"
 		"src=${PROJECT_SOURCE_DIR}/tests/ted-ab/src\ncombos=${combos}\nbugorig=1\n"
 		"corpus_src=${CMAKE_BINARY_DIR}/tests/corpus/src/tests\n"
-		"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus_originals/ref/vol/out\n"
+		"corpus_out=${CMAKE_BINARY_DIR}/tests/corpus/corpus_originals/last/ref/vol/out\n"
 		"expect_dir=${CMAKE_BINARY_DIR}/tests/ted-ab/expect\n"
 		"cd=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
 		"oracle=${PROJECT_SOURCE_DIR}/tests/data/ted-oracle.sha256\n"
