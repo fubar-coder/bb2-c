@@ -21,6 +21,7 @@
  * instruction words of the handlers are written.
  */
 #include "sysload.h"
+#include "rwe/rwemem.h"
 #include <exec/execbase.h>
 #include <intuition/intuitionbase.h>
 
@@ -133,7 +134,7 @@ static void run(struct set *s)
     struct lib *l, *mem = getlib(s, "memlib");
     struct regs r, rin;
     UBYTE *g = (UBYTE *)gvars + 0x2000, *lo = (UBYTE *)lvars + 0x2000;
-    ULONG avail0 = AvailMem(MEMF_ANY), a1;
+    struct rwe_memmark a1;
     int i;
 
     /* one call of the routine `name`: its kept case (key name|kept|VEC) */
@@ -147,6 +148,7 @@ static void run(struct set *s)
 #define V(name, val) do { if (verbose) printf("%s %s\n", s->what, name);    \
         OBS(name, val); nv++; } while (0)
 
+    rwe_mem_start();
     memset(gvars, 0, sizeof gvars);
     memset(lvars, 0, sizeof lvars);
     CALL("memlib init", entry_code(mem, 7), (void)0);
@@ -172,20 +174,20 @@ static void run(struct set *s)
         CALL("newarr", entry_code(l, 0), r.d[2] = 4; r.d[3] = 8);
         V("newarr d0 = ptr", r.d[0] && r.d[0] == *(ULONG *)(g + 4));
         V("newarr cleared", zero(*(ULONG *)(g + 4), 100));
-        a1 = AvailMem(MEMF_ANY);
+        a1 = rwe_mem_mark();
         memset((void *)*(ULONG *)(g + 4), 0x55, 100);
         CALL("newarr again", entry_code(l, 0), r.d[2] = 4; r.d[3] = 8);
         V("newarr again cleared", r.d[0] == *(ULONG *)(g + 4) && zero(r.d[0], 100));
-        V("newarr again: old one freed", AvailMem(MEMF_ANY) == a1);
+        V("newarr again: old one freed", rwe_mem_since_allocs(a1));
 
         /* newlocarr: negative offsets from a4 */
         *(ULONG *)(lo - 8) = 64;
         CALL("newlocarr", entry_code(l, 1), r.d[2] = 0xfffc; r.d[3] = 0xfff8);
         V("newlocarr d0 = ptr", r.d[0] && r.d[0] == *(ULONG *)(lo - 4));
         V("newlocarr cleared", zero(r.d[0], 64));
-        a1 = AvailMem(MEMF_ANY);
+        a1 = rwe_mem_mark();
         CALL("newlocarr again", entry_code(l, 1), r.d[2] = 0xfffc; r.d[3] = 0xfff8);
-        V("newlocarr again: old one freed", AvailMem(MEMF_ANY) == a1);
+        V("newlocarr again: old one freed", rwe_mem_since_allocs(a1));
         V("newlocarr: a5 untouched", *(ULONG *)(g - 4) == 0);
 
         /* newlist: 10 items of 12 bytes */
@@ -204,9 +206,9 @@ static void run(struct set *s)
             V("newlist id", hl[7]);
             V("newlist free list", listsig(h));
         }
-        a1 = AvailMem(MEMF_ANY);
+        a1 = rwe_mem_mark();
         CALL("newlist again", entry_code(l, 3), r.d[2] = 12; r.d[3] = 16; r.d[4] = 12);
-        V("newlist again: old one freed", AvailMem(MEMF_ANY) == a1);
+        V("newlist again: old one freed", rwe_mem_since_allocs(a1));
         V("newlist again", listsig((UBYTE *)*(ULONG *)(g + 12) - 32));
 
         /* newloclist: 40 bytes, items of 10 -> 4 items (the loop links
@@ -235,16 +237,17 @@ static void run(struct set *s)
         V("setmaxs cleared", zero(*(ULONG *)(g + 0x40), 40) &&
           zero(*(ULONG *)(g - 0x40), 100) && zero(*(ULONG *)(g + 0x44), 8));
 
-        a1 = AvailMem(MEMF_ANY);
+        a1 = rwe_mem_mark();
         CALL("allocst", entry_code(l, 1), r.d[0] = (ULONG)text; r.d[1] = 11);
         p = r.d[0];
         V("allocst length", p ? *(ULONG *)(p - 4) : 0xffffffff);
         V("allocst text", p && memcmp((void *)p, text, 11) == 0 && ((UBYTE *)p)[11] == 0);
         CALL("freest", entry_code(l, 2), r.d[0] = p);
-        V("freest: freed", AvailMem(MEMF_ANY) == a1);
+        V("freest: freed", rwe_mem_since_same(a1));
+        a1 = rwe_mem_mark();
         CALL("allocst 0", entry_code(l, 1), r.d[0] = (ULONG)text; r.d[1] = 0);
         V("allocst 0 d0", r.d[0]);
-        V("allocst 0: nothing allocated", AvailMem(MEMF_ANY) == a1);
+        V("allocst 0: nothing allocated", rwe_mem_since_none(a1));
         CALL("freest 0", entry_code(l, 2), r.d[0] = 0);
         V("freest 0 d0", r.d[0]);
     }
@@ -317,7 +320,7 @@ static void run(struct set *s)
 
     /* memlib finit: free everything */
     CALL("memlib finit", entry_code(mem, 8), (void)0);
-    V("all memory back", AvailMem(MEMF_ANY) == avail0);
+    V("all memory back", rwe_mem_back());
 #undef CALL
 #undef V
 }

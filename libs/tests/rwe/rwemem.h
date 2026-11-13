@@ -112,6 +112,39 @@ static __attribute__((unused)) LONG rwe_mem_stop(void)
     return rwe_membal - rwe_memotherfree;
 }
 
+/* a mark in a running measurement (rwe_mem_start() .. rwe_mem_stop()):
+   the balance and the allocation count now.  rwe_mem_since_same(): this
+   task's balance is what it was at the mark (what it allocated since,
+   it freed again; e.g. a routine that frees the old block of an array
+   and allocates the new one); rwe_mem_since_allocs(): and it allocated
+   at least once since.  rwe_mem_since_none(): the balance is unchanged and
+   nothing was allocated since (a routine that must not allocate).  All
+   three are FALSE without a running measurement. */
+struct rwe_memmark { LONG bal; ULONG allocs; };
+
+static __attribute__((unused)) struct rwe_memmark rwe_mem_mark(void)
+{
+    struct rwe_memmark m;
+    m.bal = rwe_membal;
+    m.allocs = rwe_memallocs;
+    return m;
+}
+
+static __attribute__((unused)) BOOL rwe_mem_since_same(struct rwe_memmark m)
+{
+    return rwe_memtask && rwe_membal == m.bal;
+}
+
+static __attribute__((unused)) BOOL rwe_mem_since_allocs(struct rwe_memmark m)
+{
+    return rwe_mem_since_same(m) && rwe_memallocs > m.allocs;
+}
+
+static __attribute__((unused)) BOOL rwe_mem_since_none(struct rwe_memmark m)
+{
+    return rwe_mem_since_same(m) && rwe_memallocs == m.allocs;
+}
+
 /* the end of a measurement begun by rwe_mem_start() for a library test of
    the sysload.h programs (systest*.c): TRUE if this task freed everything
    it allocated and allocated something at all (a balance of 0 without an

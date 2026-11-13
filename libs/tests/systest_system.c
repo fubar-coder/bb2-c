@@ -23,6 +23,7 @@
  */
 #include <stdarg.h>
 #include "sysload.h"
+#include "rwe/rwemem.h"
 #include <exec/execbase.h>
 #include <graphics/gfxbase.h>
 #include <proto/graphics.h>
@@ -139,7 +140,7 @@ static void wbtest(struct set *s)
     };
     int i;
     for (i = 0; i < 5; i++) {
-        ULONG avail = AvailMem(MEMF_ANY);
+        rwe_mem_start();   /* the empty line allocates nothing: balance only */
         static char line[64];
         strcpy(line, lines[i]);
         /* i == 1: d7 not "bLtZ" -> FindTask, our process is a CLI one */
@@ -149,7 +150,7 @@ static void wbtest(struct set *s)
         logargs(r.d[0]);
         SETUP((void)0);
         call("wbstartup finit", entry_code(l, 2));
-        LOG("wb memory back", "wb memory back: %d", AvailMem(MEMF_ANY) == avail);
+        LOG("wb memory back", "wb memory back: %d", rwe_mem_stop() == 0);
     }
     VEC[0] = 0;
 }
@@ -159,10 +160,10 @@ static void inttest(struct set *s)
     struct lib *l = getlib(s, "intlib");
     UBYTE *setint = entry_code(l, 0), *clrint = entry_code(l, 1);
     UBYTE *vwait = entry_code(l, 4);
-    ULONG avail;
+
 
     Forbid();
-    avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     LOG("int prefixes", "int prefixes %04x %04x %04x", W(setint), W(clrint), W(vwait));
     SETUP(r.a[5] = 0x12345678);
     call("int init", entry_code(l, 8));
@@ -220,7 +221,7 @@ static void inttest(struct set *s)
     cnt[0] = cnt[1] = cnt[2] = 0;
     waitframes();
     LOG("cleanup", "cleanup: s0 %d s1 %d s2 %d", cnt[0] > 0, cnt[1] > 0, cnt[2] > 0);
-    LOG("int memory back", "int memory back: %d", AvailMem(MEMF_ANY) == avail);
+    LOG("int memory back", "int memory back: %d", rwe_mem_back());
     Permit();
 
     /* VWait both variants */

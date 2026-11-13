@@ -405,7 +405,8 @@ a changed case fails with that key), `libs_emulator_lost` (a datalib
 whose thunks change d2: `lost d2`, the run fails), `libs_keeps_wrong`
 (a wrong `KEEPS` statement) and `libs_mem_wrong` (the check "all memory
 back", the task's own AllocMem/FreeMem balance of `rwe/rwemem.h`: a
-block not freed, a foreign block freed, no allocation seen). The test programs of the original's bugs
+block not freed, a foreign block freed, no allocation seen; and the marks of
+`rwe_mem_mark()` that the "old one freed" checks of `systest_runtime` use). The test programs of the original's bugs
 (`libs/tests/bugorig.c`) run the C build only and judge the expected
 behaviour, like the other bug-orig tests ("bug-orig tests").
 

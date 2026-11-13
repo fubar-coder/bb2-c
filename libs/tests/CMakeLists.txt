@@ -281,7 +281,7 @@ add_test(NAME libs_mem_wrong COMMAND ${CMAKE_COMMAND}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_mem_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL leak: all memory back\n.*FAIL free of a foreign block: all memory back\n.*FAIL no allocation: all memory back\n.*mem wrong: 4 checks, 3 failures\n")
+	"FAIL leak: all memory back\n.*FAIL free of a foreign block: all memory back\n.*FAIL no allocation: all memory back\n.*FAIL mark: block not freed: freed\n.*FAIL mark: no allocation: old one freed\n.*FAIL mark: alloc and free: nothing allocated\n.*FAIL mark: no measurement: freed\n.*mem wrong: 11 checks, 7 failures\n")
 
 # the test variants (variants/selftest-*, built by ../CMakeLists.txt to
 # variants/NAME here): one with the numbers of bb2-2.10 unchanged must give
