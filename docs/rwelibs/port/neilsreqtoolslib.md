@@ -69,8 +69,7 @@ with the original's contents and are changed in place like the original's
 (`freqFlags+4` …); init stores a requester only when it was allocated
 (the variable keeps its old value otherwise), as the original. String
 results are built from the title argument's address, like the original
-(`MOVE.l d0,a3`); a3 ends where the original leaves it (see BUG(orig),
-#465), except for the fixed a3 of RTEZLoadFile/RTFileRequest (#461).
+(`MOVE.l d0,a3`); a3 ends on the result's 0 (fixed, #461 #465).
 The thunks keep d1/a0/a1 (finit also d0), the C code d2-d7/a2-a6; the
 original changes d0-d2, a0-a2 and what reqtools changes.
 
@@ -86,6 +85,11 @@ kind F):
   cancel at the title, as before); the original wrote the 0 with
   `MOVE.b #0,(a3)+` and left a3 behind it, so in a string expression
   the next part was written one byte too far (#461).
+* RTEZSaveFile leaves a3 on the 0 of its result, as RTEZLoadFile does;
+  the original built the result at the title but restored a3 (`MOVEM
+  a3-a6`), so the next part of a string expression was written at the
+  old a3, behind the two arguments (over the end of a longer result, or
+  behind the bytes of a shorter one) (#465).
 
 ## BUG(orig)
 
@@ -107,8 +111,6 @@ kind F):
 * RTEZGetString does not free its buffer on cancel (memlib frees it at
   the end of the program) (#458); the default string is copied into the
   buffer of MaxChars bytes without a limit (#459).
-* RTEZSaveFile builds its result at the title but restores a3 (`MOVEM
-  a3-a6`) (#465).
 * RTASyncRequest/RTASyncPaletteRequest read the "user port" at offset 86
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the

@@ -57,8 +57,6 @@
  *   - RTEZGetString on cancel does not free its buffer (memlib frees it
  *     at the end of the program) (#458); the default string is copied
  *     without a limit into the buffer of MaxChars bytes (#459).
- *   - RTEZSaveFile builds its result at the title but restores a3 (MOVEM
- *     a3-a6) (#465).
  *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
@@ -73,6 +71,10 @@
  * Fixed (intended deviation, #461): RTEZLoadFile/RTFileRequest wrote
  * the 0 behind their result with MOVE.b #0,(a3)+ and left a3 behind it,
  * so a string expression went on one byte too far; a3 now ends on the 0.
+ * Fixed (intended deviation, #465): RTEZSaveFile built its result at the
+ * title like RTEZLoadFile but restored a3 (MOVEM a3-a6), so a string
+ * expression went on at the old a3, behind the two arguments; a3 now
+ * ends on the result's 0 (on cancel at the title).
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -917,23 +919,20 @@ static ULONG BLITZ_ROUTINE rtTagsfreq_c(STRPTR title BL_REG(d0), const UBYTE *fi
  * @brief RTEZSaveFile(Title$,Filename$): the save file requester ("Save"
  * button); the chosen path.
  *
- * Like RTEZLoadFile, but a3 comes back unchanged (MOVEM a3-a6):
- * BUG(orig) (#465), the result is built at the title but a3 does not
- * point behind it.
+ * Like RTEZLoadFile, a3 included (fixed, #465: the original restored a3
+ * with MOVEM a3-a6, so it did not point behind the result).
  * @param title  d0: Title$
  * @param file   d1: Filename$
  * @return d0: the length of the path, 0 on cancel
  */
 static ULONG BLITZ_ROUTINE rtsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file BL_REG(d1))
 {
-    UBYTE *savedstr = blitz_string;
     ULONG r;
 
     Sfilenamestr = allocst(file, 108);
     swsSFreq = title;
     r = filerequest(Sfilereq, title, Sfilenamestr, &SfreqTagList);
     freest(Sfilenamestr);
-    blitz_string = savedstr;
     return r;
 }
 

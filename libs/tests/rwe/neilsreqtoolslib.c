@@ -768,7 +768,7 @@ int main(int argc, char **argv)
     KEEPS("RTEZFlagsRequest", d2-d7|a3|a6);
     KEEPS("RTRequest", d2-d7|a3|a6);
     KEEPS("RTEZLoadFile", d2-d7|a6);
-    KEEPS("RTEZSaveFile", d2-d7|a3|a6);
+    KEEPS("RTEZSaveFile", d2-d7|a6);
     KEEPS("RTFileRequest", d2-d7|a6);
     KEEPS("RTEZPathRequest", d2-d7|a6);
     KEEPS("RTEZSetDefaultDirectory", d2-d7|a2|a3|a6);

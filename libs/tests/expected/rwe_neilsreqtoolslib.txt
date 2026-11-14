@@ -326,7 +326,8 @@ RTEZSaveFile|call 0| dir ""|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept| dir ""|2	kept
 RTReturnValue|popped| dir ""|2	$00000000
 RTReturnValue|d0| dir ""|2	$00000001
-RTEZSaveFile|a3| dir ""|1	$00000029
+RTEZSaveFile|a3| dir ""|1 [orig]	$00000029
+RTEZSaveFile|a3| dir ""|1 [fixed #465]	$0000001F
 RTEZSaveFile|out| dir ""|1	bytes 300 fnv 61706191
 RTEZSaveFile|kept| dir "RAM:"|1	kept
 RTEZSaveFile|popped| dir "RAM:"|1	$00000000
@@ -336,7 +337,8 @@ RTEZSaveFile|call 0| dir "RAM:"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept| dir "RAM:"|2	kept
 RTReturnValue|popped| dir "RAM:"|2	$00000000
 RTReturnValue|d0| dir "RAM:"|2	$00000001
-RTEZSaveFile|a3| dir "RAM:"|1	$00000029
+RTEZSaveFile|a3| dir "RAM:"|1 [orig]	$00000029
+RTEZSaveFile|a3| dir "RAM:"|1 [fixed #465]	$00000023
 RTEZSaveFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZSaveFile|kept| dir "RAM:t"|1	kept
 RTEZSaveFile|popped| dir "RAM:t"|1	$00000000
@@ -346,7 +348,8 @@ RTEZSaveFile|call 0| dir "RAM:t"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept| dir "RAM:t"|2	kept
 RTReturnValue|popped| dir "RAM:t"|2	$00000000
 RTReturnValue|d0| dir "RAM:t"|2	$00000001
-RTEZSaveFile|a3| dir "RAM:t"|1	$00000029
+RTEZSaveFile|a3| dir "RAM:t"|1 [orig]	$00000029
+RTEZSaveFile|a3| dir "RAM:t"|1 [fixed #465]	$0000001A
 RTEZSaveFile|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZSaveFile|kept| dir "Work:a/b"|1	kept
 RTEZSaveFile|popped| dir "Work:a/b"|1	$00000000
@@ -356,7 +359,8 @@ RTEZSaveFile|call 0| dir "Work:a/b"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept| dir "Work:a/b"|2	kept
 RTReturnValue|popped| dir "Work:a/b"|2	$00000000
 RTReturnValue|d0| dir "Work:a/b"|2	$00000001
-RTEZSaveFile|a3| dir "Work:a/b"|1	$00000029
+RTEZSaveFile|a3| dir "Work:a/b"|1 [orig]	$00000029
+RTEZSaveFile|a3| dir "Work:a/b"|1 [fixed #465]	$00000028
 RTEZSaveFile|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
 RTEZSaveFile|kept| cancel|1	kept
 RTEZSaveFile|popped| cancel|1	$00000000
@@ -366,7 +370,8 @@ RTEZSaveFile|call 0| cancel|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept| cancel|2	kept
 RTReturnValue|popped| cancel|2	$00000000
 RTReturnValue|d0| cancel|2	$00000000
-RTEZSaveFile|a3| cancel|1	$00000029
+RTEZSaveFile|a3| cancel|1 [orig]	$00000029
+RTEZSaveFile|a3| cancel|1 [fixed #465]	$00000014
 RTEZSaveFile|out| cancel|1	bytes 300 fnv EFE49DCA
 RTFileRequest|kept| dir ""|1	kept
 RTFileRequest|popped| dir ""|1	$00000000
@@ -613,7 +618,8 @@ RTEZSaveFile|call 0|with pattern dir ""|1	bytes 256 fnv C297E93A
 RTReturnValue|kept|with pattern dir ""|2	kept
 RTReturnValue|popped|with pattern dir ""|2	$00000000
 RTReturnValue|d0|with pattern dir ""|2	$00000001
-RTEZSaveFile|a3|with pattern dir ""|1	$00000029
+RTEZSaveFile|a3|with pattern dir ""|1 [orig]	$00000029
+RTEZSaveFile|a3|with pattern dir ""|1 [fixed #465]	$0000001F
 RTEZSaveFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
 RTEZSaveFile|kept|with pattern dir "RAM:"|1	kept
 RTEZSaveFile|popped|with pattern dir "RAM:"|1	$00000000
@@ -623,7 +629,8 @@ RTEZSaveFile|call 0|with pattern dir "RAM:"|1	bytes 256 fnv C297E93A
 RTReturnValue|kept|with pattern dir "RAM:"|2	kept
 RTReturnValue|popped|with pattern dir "RAM:"|2	$00000000
 RTReturnValue|d0|with pattern dir "RAM:"|2	$00000001
-RTEZSaveFile|a3|with pattern dir "RAM:"|1	$00000029
+RTEZSaveFile|a3|with pattern dir "RAM:"|1 [orig]	$00000029
+RTEZSaveFile|a3|with pattern dir "RAM:"|1 [fixed #465]	$00000023
 RTEZSaveFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZSaveFile|kept|with pattern dir "RAM:t"|1	kept
 RTEZSaveFile|popped|with pattern dir "RAM:t"|1	$00000000
@@ -633,7 +640,8 @@ RTEZSaveFile|call 0|with pattern dir "RAM:t"|1	bytes 256 fnv C297E93A
 RTReturnValue|kept|with pattern dir "RAM:t"|2	kept
 RTReturnValue|popped|with pattern dir "RAM:t"|2	$00000000
 RTReturnValue|d0|with pattern dir "RAM:t"|2	$00000001
-RTEZSaveFile|a3|with pattern dir "RAM:t"|1	$00000029
+RTEZSaveFile|a3|with pattern dir "RAM:t"|1 [orig]	$00000029
+RTEZSaveFile|a3|with pattern dir "RAM:t"|1 [fixed #465]	$0000001A
 RTEZSaveFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZSaveFile|kept|with pattern dir "Work:a/b"|1	kept
 RTEZSaveFile|popped|with pattern dir "Work:a/b"|1	$00000000
@@ -643,7 +651,8 @@ RTEZSaveFile|call 0|with pattern dir "Work:a/b"|1	bytes 256 fnv C297E93A
 RTReturnValue|kept|with pattern dir "Work:a/b"|2	kept
 RTReturnValue|popped|with pattern dir "Work:a/b"|2	$00000000
 RTReturnValue|d0|with pattern dir "Work:a/b"|2	$00000001
-RTEZSaveFile|a3|with pattern dir "Work:a/b"|1	$00000029
+RTEZSaveFile|a3|with pattern dir "Work:a/b"|1 [orig]	$00000029
+RTEZSaveFile|a3|with pattern dir "Work:a/b"|1 [fixed #465]	$00000028
 RTEZSaveFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
 RTEZSaveFile|kept|with pattern cancel|1	kept
 RTEZSaveFile|popped|with pattern cancel|1	$00000000
@@ -653,7 +662,8 @@ RTEZSaveFile|call 0|with pattern cancel|1	bytes 256 fnv C297E93A
 RTReturnValue|kept|with pattern cancel|2	kept
 RTReturnValue|popped|with pattern cancel|2	$00000000
 RTReturnValue|d0|with pattern cancel|2	$00000000
-RTEZSaveFile|a3|with pattern cancel|1	$00000029
+RTEZSaveFile|a3|with pattern cancel|1 [orig]	$00000029
+RTEZSaveFile|a3|with pattern cancel|1 [fixed #465]	$00000014
 RTEZSaveFile|out|with pattern cancel|1	bytes 300 fnv EFE49DCA
 RTEZFreePattern|kept|requester 0|1	kept
 RTEZFreePattern|popped|requester 0|1	$00000000
@@ -731,7 +741,8 @@ RTEZSaveFile|call 0|pattern freed dir ""|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept|pattern freed dir ""|2	kept
 RTReturnValue|popped|pattern freed dir ""|2	$00000000
 RTReturnValue|d0|pattern freed dir ""|2	$00000001
-RTEZSaveFile|a3|pattern freed dir ""|1	$00000029
+RTEZSaveFile|a3|pattern freed dir ""|1 [orig]	$00000029
+RTEZSaveFile|a3|pattern freed dir ""|1 [fixed #465]	$0000001F
 RTEZSaveFile|out|pattern freed dir ""|1	bytes 300 fnv 61706191
 RTEZSaveFile|kept|pattern freed dir "RAM:"|1	kept
 RTEZSaveFile|popped|pattern freed dir "RAM:"|1	$00000000
@@ -741,7 +752,8 @@ RTEZSaveFile|call 0|pattern freed dir "RAM:"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept|pattern freed dir "RAM:"|2	kept
 RTReturnValue|popped|pattern freed dir "RAM:"|2	$00000000
 RTReturnValue|d0|pattern freed dir "RAM:"|2	$00000001
-RTEZSaveFile|a3|pattern freed dir "RAM:"|1	$00000029
+RTEZSaveFile|a3|pattern freed dir "RAM:"|1 [orig]	$00000029
+RTEZSaveFile|a3|pattern freed dir "RAM:"|1 [fixed #465]	$00000023
 RTEZSaveFile|out|pattern freed dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZSaveFile|kept|pattern freed dir "RAM:t"|1	kept
 RTEZSaveFile|popped|pattern freed dir "RAM:t"|1	$00000000
@@ -751,7 +763,8 @@ RTEZSaveFile|call 0|pattern freed dir "RAM:t"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept|pattern freed dir "RAM:t"|2	kept
 RTReturnValue|popped|pattern freed dir "RAM:t"|2	$00000000
 RTReturnValue|d0|pattern freed dir "RAM:t"|2	$00000001
-RTEZSaveFile|a3|pattern freed dir "RAM:t"|1	$00000029
+RTEZSaveFile|a3|pattern freed dir "RAM:t"|1 [orig]	$00000029
+RTEZSaveFile|a3|pattern freed dir "RAM:t"|1 [fixed #465]	$0000001A
 RTEZSaveFile|out|pattern freed dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZSaveFile|kept|pattern freed dir "Work:a/b"|1	kept
 RTEZSaveFile|popped|pattern freed dir "Work:a/b"|1	$00000000
@@ -761,7 +774,8 @@ RTEZSaveFile|call 0|pattern freed dir "Work:a/b"|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept|pattern freed dir "Work:a/b"|2	kept
 RTReturnValue|popped|pattern freed dir "Work:a/b"|2	$00000000
 RTReturnValue|d0|pattern freed dir "Work:a/b"|2	$00000001
-RTEZSaveFile|a3|pattern freed dir "Work:a/b"|1	$00000029
+RTEZSaveFile|a3|pattern freed dir "Work:a/b"|1 [orig]	$00000029
+RTEZSaveFile|a3|pattern freed dir "Work:a/b"|1 [fixed #465]	$00000028
 RTEZSaveFile|out|pattern freed dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
 RTEZSaveFile|kept|pattern freed cancel|1	kept
 RTEZSaveFile|popped|pattern freed cancel|1	$00000000
@@ -771,7 +785,8 @@ RTEZSaveFile|call 0|pattern freed cancel|1	bytes 256 fnv BD7D8C2A
 RTReturnValue|kept|pattern freed cancel|2	kept
 RTReturnValue|popped|pattern freed cancel|2	$00000000
 RTReturnValue|d0|pattern freed cancel|2	$00000000
-RTEZSaveFile|a3|pattern freed cancel|1	$00000029
+RTEZSaveFile|a3|pattern freed cancel|1 [orig]	$00000029
+RTEZSaveFile|a3|pattern freed cancel|1 [fixed #465]	$00000014
 RTEZSaveFile|out|pattern freed cancel|1	bytes 300 fnv EFE49DCA
 RTEZSetPattern|kept|multi-load|1	kept
 RTEZSetPattern|popped|multi-load|1	$00000000
