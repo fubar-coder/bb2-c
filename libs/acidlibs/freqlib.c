@@ -69,6 +69,14 @@
  *   a3 was left BEHIND the 0, so a string expression went on one byte too
  *   far (FileRequest$(...)+".bak" held the 0 and lost the "k"); a3 now
  *   ends on the 0 (test freqlib-a3-behind-0).
+ * Fixed (#1042): a file name, a path or a start string that does not fit
+ *   the requester's buffers (159 / 63 characters) or the MaxLen of path$
+ *   or file$ is refused, with "Path too long" or "Name too long" in the
+ *   title bar of the screen (the screen title of the requester window);
+ *   the requester stays open and the buffers keep their contents.  The
+ *   original copied them without a limit: a file name of
+ *   64 or more characters, clicked and taken with OK, made the copy into
+ *   file$ run on without end (details in filereq_core.c).
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
@@ -133,7 +141,8 @@ static ULONG strlength(const UBYTE *s)
  * return "".  The result is copied to a3, the place of the title.
  * Fixed (#153): path$/file$ get the lengths of their new contents (the
  * original left the old lengths).  Fixed (#161): a3 ends on the terminating 0 (the original left
- * it behind the 0).
+ * it behind the 0).  Fixed (#1042): what does not fit the requester or the
+ * MaxLen of path$/file$ is refused (notice in the screen title bar).
  * The fixed bugs of the requester: see the head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not
@@ -156,6 +165,10 @@ static ULONG BLITZ_ROUTINE dofreq_c(ULONG title BL_REG(d0), ULONG path BL_REG(d1
     fq_args[0] = path;
     fq_args[1] = file;
     fq_args[3] = *scr;
+    /* fixed (#1042): the MaxLen of path$ and file$ (their alloc'd lengths;
+       an empty variable, which the debugger refuses, has none) */
+    fq_maxlen[0] = path ? *(const ULONG *)(path - 8) : 0xffffffffUL;
+    fq_maxlen[1] = file ? *(const ULONG *)(file - 8) : 0xffffffffUL;
     blitz_string = (UBYTE *)title;
     s = (UBYTE *)fq_request();
     if (!s) {

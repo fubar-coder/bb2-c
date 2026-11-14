@@ -1,0 +1,13 @@
+[compile]
+ok
+[run]
+F1 42 file 28 [m123456789m123456789m1234567]
+F2 160 path 159 aa/
+F3 4 [RAM:] file 0
+inject: rc=0
+inject: click F1/m123456789m123456789m123456: answered
+inject: click F1/OK: answered
+inject: click F2/PARENT: answered
+inject: click F2/OK: answered
+inject: click F3/OK: answered
+rc=0

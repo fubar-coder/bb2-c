@@ -1,0 +1,7 @@
+[run]
+cancel 0
+file buffer (64 bytes): 1 characters
+inject: rc=0
+inject: click FQ/a123456789b123456789c123456: answered
+inject: click FQ/CANCEL: answered
+rc=0

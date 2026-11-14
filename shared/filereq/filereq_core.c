@@ -87,6 +87,23 @@
  *   the list has at most FQ_LINES (64) lines (layout), and the window is
  *   at most FQ_MAXHEIGHT (597 = 64 * 8 + 85, the height of 64 lines) high,
  *   the first one (setheight) and an enlarged one (nw.MaxHeight).
+ * Fixed (#1042): the path buffer fq.path (160 bytes) and the file buffer
+ *   fq.file (64 bytes) hold at most 159 and 63 characters, and at most as
+ *   many as the caller's buffers take (fq_maxlen: freqlib the MaxLen of
+ *   Pathname$ and Filename$); the string gadgets take as many (MaxChars).
+ *   Whatever does not fit is refused, and the screen title of the window
+ *   (the title bar of the screen while the window is active) says "Path
+ *   too long" or "Name too long" until the next gadget is released: the
+ *   start strings (the field stays empty), the path of the current
+ *   directory (PARENT with an empty path, CD: the path stays as it was),
+ *   the "/" that PARENT adds to a path ending in "/", and a click on a
+ *   directory, volume or file line (the buffers stay as they were, the
+ *   requester stays open).  OK then copies at most 159 + 1 + 63
+ *   characters.  The original copied all of these without a limit; a
+ *   file name of 64 or more characters ran from fq.file into fq.result,
+ *   and OK, which copies fq.file behind the path into fq.result, then
+ *   read back what it wrote and never found a 0: it overwrote Filename$'s
+ *   memory, the data block and everything behind it.
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
@@ -102,6 +119,9 @@
 #define FQ_MAXHEIGHT (FQ_LINES * 8 + 85)
 /* the parts of the DOS list DRIVES reads (#156) */
 #define FQ_LDFLAGS   (LDF_READ | LDF_VOLUMES | LDF_ASSIGNS | LDF_DEVICES)
+/* the most characters of fq.path and fq.file, without the 0 (#1042) */
+#define FQ_PATHMAX   159
+#define FQ_FILEMAX   63
 
 #include <dos/dos.h>
 #include <dos/dosextens.h>
@@ -240,6 +260,15 @@ static UWORD code;              /* $944: Code of the last message */
    of the last CD (0: CD not used); fq_finit restores and unlocks them */
 static BPTR startdir;
 static BPTR cdlock;
+/* Fixed (#1042): the caller's limits, this call's limits of fq.path and
+   fq.file (the smaller of the caller's and FQ_PATHMAX/FQ_FILEMAX), the
+   notice in the screen title (0: none) and the window's own screen title */
+ULONG fq_maxlen[2] = { 0xffffffffUL, 0xffffffffUL };
+static ULONG pathmax, filemax;
+static const UBYTE *notice;
+static UBYTE *stitle;
+static const UBYTE msg_path[] = "Path too long";
+static const UBYTE msg_name[] = "Name too long";
 
 /* RefreshGList(gadget, window, 0, n) ($B74) */
 static void refresh(struct Gadget *gad, LONG n)
@@ -247,15 +276,42 @@ static void refresh(struct Gadget *gad, LONG n)
     RefreshGList(gad, fq.win, NULL, n);
 }
 
+/* the length of a string up to its 0 */
+static ULONG length(const UBYTE *s)
+{
+    const UBYTE *e = s;
+
+    while (*e)
+        e++;
+    return (ULONG)(e - s);
+}
+
 /* Fixed (#159): the size of a list node with this name: next pointer,
    type byte, the name and its 0 (the original: always 40 bytes) */
 static ULONG nodesize(const UBYTE *name)
 {
-    const UBYTE *e = name;
+    return 6 + length(name);
+}
 
-    while (*e)
-        e++;
-    return 6 + (ULONG)(e - name);
+/* Fixed (#1042): a notice in the screen title of the window, shown in the
+   title bar of the screen while the window is active (msg), or the screen
+   title it had again (msg 0); the window title is left alone */
+static void say(const UBYTE *msg)
+{
+    notice = msg;
+    SetWindowTitles(fq.win, (CONST_STRPTR)-1,
+                    (CONST_STRPTR)(msg ? msg : stitle));
+}
+
+/* Fixed (#1042): src (with its 0) to dst if it has at most max characters;
+   else dst is left as it was and the result is 0 */
+static int take(UBYTE *dst, const UBYTE *src, ULONG max)
+{
+    if (length(src) > max)
+        return 0;
+    while ((*dst++ = *src++) != 0)
+        ;
+    return 1;
 }
 
 /* $B4C - free the entries */
@@ -585,37 +641,49 @@ static ULONG pollmsg(void)
 /* $B82 - the path of the current directory into fq.path.  Fixed (#158):
    each ParentDir lock is unlocked when its parent has been taken (the
    current directory itself belongs to the process and stays); the
-   original never unlocked them */
-static void currentpath(struct FileInfoBlock *fib)
+   original never unlocked them.  Fixed (#1042): the path is built from
+   the end of fq.temp backwards (name + "/" per directory, the volume
+   name + ":", the "/" of the innermost directory dropped, as the
+   original's result) and taken only if it has at most pathmax
+   characters; otherwise fq.path stays as it was and the result is 0.
+   The original built name + "/" + fq.path in fq.temp and copied it back
+   to fq.path at every level, with no limit for either */
+static int currentpath(struct FileInfoBlock *fib)
 {
     BPTR cur = task->pr_CurrentDir, d7 = cur, parent;
-    UBYTE *a0, *a1;
+    UBYTE *end = fq.temp + sizeof fq.temp, *p = end, *a1;
+    const UBYTE *a0;
+    ULONG n;
 
-    fq.path[0] = 0;
     do {
         Examine(d7, fib);
         parent = ParentDir(d7);
         if (d7 != cur)
             UnLock(d7);
         d7 = parent;
-        a0 = (UBYTE *)fib->fib_FileName;
-        a1 = fq.temp;
-        while ((*a1++ = *a0++) != 0)
-            ;
-        a1--;
-        *a1 = d7 ? '/' : ':';
-        a1++;
-        a0 = fq.path;
-        while ((*a1++ = *a0++) != 0)
-            ;
-        a0 = fq.temp;
-        a1 = fq.path;
-        while ((*a1++ = *a0++) != 0)
-            ;
+        a0 = (const UBYTE *)fib->fib_FileName;
+        n = length(a0);
+        if ((ULONG)(p - fq.temp) < n + 1) {     /* 160 characters or more */
+            if (d7)
+                UnLock(d7);
+            return 0;
+        }
+        *--p = d7 ? '/' : ':';
+        p -= n;
+        a1 = p;
+        while (n--)
+            *a1++ = *a0++;
     } while (d7);
-    a1 -= 2;
-    if (*a1 != ':')
-        *a1 = 0;
+    if (end[-1] != ':')
+        end--;
+    n = (ULONG)(end - p);
+    if (n > pathmax)
+        return 0;
+    a1 = fq.path;
+    while (n--)
+        *a1++ = *p++;
+    *a1 = 0;
+    return 1;
 }
 
 /* $BF0 - first call: window height = screen height - 40, Fixed (#160): at
@@ -659,12 +727,22 @@ ULONG fq_request(void)
     fq.si_path.DispPos = 0;
     fq.si_file.BufferPos = 0;
     fq.si_file.DispPos = 0;
-    a0 = fq.path; a1 = (UBYTE *)fq_args[0];
-    while ((*a0++ = *a1++) != 0)
-        ;
-    a0 = fq.file; a1 = (UBYTE *)fq_args[1];
-    while ((*a0++ = *a1++) != 0)
-        ;
+    /* Fixed (#1042): this call's limits, also for typing (MaxChars with
+       the 0); a start string that does not fit leaves its field empty,
+       the screen title shows the notice */
+    pathmax = fq_maxlen[0] < FQ_PATHMAX ? fq_maxlen[0] : FQ_PATHMAX;
+    filemax = fq_maxlen[1] < FQ_FILEMAX ? fq_maxlen[1] : FQ_FILEMAX;
+    fq.si_path.MaxChars = (WORD)(pathmax + 1);
+    fq.si_file.MaxChars = (WORD)(filemax + 1);
+    notice = 0;
+    if (!take(fq.path, (const UBYTE *)fq_args[0], pathmax)) {
+        fq.path[0] = 0;
+        notice = msg_path;
+    }
+    if (!take(fq.file, (const UBYTE *)fq_args[1], filemax)) {
+        fq.file[0] = 0;
+        notice = msg_name;
+    }
     fq.img_up.ImageData = AllocMem(48, MEMF_CHIP);
     if (!fq.img_up.ImageData)
         return 0;                       /* DIFF: the original: garbage */
@@ -698,6 +776,9 @@ ULONG fq_request(void)
     fq.win = OpenWindow(&fq.nw);
     if (!fq.win)
         goto fail;
+    stitle = fq.win->ScreenTitle;       /* fixed (#1042) */
+    if (notice)
+        say(notice);
     task = (struct Process *)FindTask(NULL);
     oldwinptr = task->pr_WindowPtr;
     task->pr_WindowPtr = fq.win;
@@ -785,6 +866,8 @@ handle:                                 /* $33A */
     }
     if (d7 != IDCMP_GADGETUP)
         goto loop;
+    if (notice)                         /* fixed (#1042): the screen title again */
+        say(0);
     if (code == 9)
         goto loop;
     fq.propact = 0;
@@ -846,7 +929,8 @@ handle:                                 /* $33A */
         UBYTE *start;
         a0 = fq.path;
         if (!*a0) {
-            currentpath(fib);
+            if (!currentpath(fib))      /* fixed (#1042): too long */
+                goto pathlong;
             a0 = fq.path;
         }
         start = a0;
@@ -854,6 +938,9 @@ handle:                                 /* $33A */
             ;
         a0 -= 2;
         if (*a0 == '/') {
+            /* fixed (#1042): the "/" only if the path then still fits */
+            if ((ULONG)(a0 + 1 - fq.path) >= pathmax)
+                goto pathlong;
             a0[1] = '/';
             a0[2] = 0;
             goto reread;
@@ -882,6 +969,7 @@ handle:                                 /* $33A */
                             sizeof(struct fq_line));
         UWORD n = (UWORD)q - 1;
         UBYTE t;
+        ULONG len, sep = 0;
         a0 = firstvis;
         if ((WORD)n >= 0)
             do
@@ -890,6 +978,7 @@ handle:                                 /* $33A */
         a1 = fq.path;
         a0 += 4;
         t = *a0++;
+        len = length(a0);
         if (t < 0xfa)
             goto copyname;
         if (t == 0xfa) {
@@ -898,9 +987,13 @@ handle:                                 /* $33A */
                     ;
                 a1--;
                 if (a1[-1] != ':' && a1[-1] != '/')
-                    *a1++ = '/';
+                    sep = 1;
             }
             goto copyname;
+        }
+        if (len > filemax) {            /* fixed (#1042): refused */
+            say(msg_name);
+            goto activate;
         }
         {                               /* a file: twice = OK */
             WORD same = 0;
@@ -918,6 +1011,12 @@ handle:                                 /* $33A */
             goto ok;
         }
 copyname:
+        /* fixed (#1042): a directory (path + "/" + name) or a volume (its
+           name) only if the path then still fits; else refused */
+        if ((ULONG)(a1 - fq.path) + sep + len > pathmax)
+            goto pathlong;
+        if (sep)
+            *a1++ = '/';
         while ((*a1++ = *a0++) != 0)
             ;
         goto reread;
@@ -941,7 +1040,8 @@ copyname:
         s0 = fibmem[0];
         s1 = fibmem[1];
         s2 = fibmem[30];
-        currentpath(fib);
+        if (!currentpath(fib))          /* fixed (#1042): the path stays */
+            say(msg_path);
         fibmem[30] = s2;
         fibmem[1] = s1;
         fibmem[0] = s0;
@@ -957,6 +1057,9 @@ copyname:
         goto ok;
     if (a0 == (UBYTE *)&fq.g_cancel)
         goto cancel;
+    goto activate;
+pathlong:                               /* fixed (#1042): refused */
+    say(msg_path);
     goto activate;
 
 ok:                                     /* $646 */
