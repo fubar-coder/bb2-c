@@ -53,11 +53,12 @@
  *   - GetLibraryValue$/GetRegistryStringVariable without a structure read
  *     the type and value at 18/24 of address 0 (CallLibrary's 0 does not
  *     stop them) (#780).
- *   - The string results are copied with their 0 and leave a3 behind it
- *     (#783).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
  *     pass the caller's d2 as the size (#782).
  *   - finit leaves regstruct (and the base) set (#779).
+ * Fixed (intended deviation, #783): the string results were copied with
+ * their 0 and left a3 behind it, so a string expression went on one byte
+ * too far; a3 now ends on the 0.
  * LockRegistry stores the result also when it is 0 (the following calls
  * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
  * LockRegistry and UnlockRegistry balanced.
@@ -445,8 +446,9 @@ static ULONG calllib(WORD off, ULONG d0, ULONG d1, ULONG d2, ULONG a1, ULONG a2,
 #define CALL(off, d0, d1, d2, a1, a2) \
     calllib(off, d0, d1, d2, a1, a2, (ULONG)blitz_string, (ULONG)blitz_locals)
 
-/* retstring: the string s (with its 0) to a3, which stays behind it;
-   d0 = its length (0 for no string) */
+/* retstring: the string s (with its 0) to a3, which ends on the 0
+   (fixed, #783: the original left it behind the 0); d0 = its length (0
+   for no string) */
 static ULONG retstring(const UBYTE *s)
 {
     ULONG n;
@@ -457,6 +459,7 @@ static ULONG retstring(const UBYTE *s)
     do
         n++;
     while ((*blitz_string++ = *s++) != 0);
+    blitz_string--;                             /* fixed (#783): a3 on the 0 */
     return n;
 }
 
@@ -604,8 +607,8 @@ static ULONG getstring(WORD off, ULONG name, const ULONG *lens)
  * GetLibraryValue (-54); the result is the structure's value at +24 if its
  * type (+18) is 1 (a string), else "".  The result goes where the
  * argument was (a3 back by its length + 1).  BUG(orig): without a
- * structure the type and value are read at 18/24 of address 0 (#780);
- * the string is copied with its 0 and a3 stays behind it (#783).
+ * structure the type and value are read at 18/24 of address 0 (#780).
+ * a3 ends on the string's 0 (fixed, #783).
  * @param name  d0: the library name
  * @param lens  a2: the argument stack (lens[-1] = the length of name)
  * @return d0: the length of the string at a3
@@ -620,7 +623,8 @@ static ULONG BLITZ_ROUTINE getlibraryvalue_c(ULONG name BL_REG(d0),
  * @brief GetRegistryStringVariable(VariableName): a string variable's value.
  *
  * GetRegistryVariable (-60), then as GetLibraryValue$: the structure's
- * value if it is a string, else "" (BUG(orig) #780, #783).
+ * value if it is a string, else "" (BUG(orig) #780; a3 on the 0, fixed
+ * #783).
  * @param name  d0: the variable name
  * @param lens  a2: the argument stack (lens[-1] = the length of name)
  * @return d0: the length of the string at a3
@@ -881,7 +885,7 @@ static ULONG BLITZ_ROUTINE insertnewregistrylibrary_c(ULONG name BL_REG(d0), ULO
 /**
  * @brief ParseItemName$: the name of the last parsed item (the structure's +14).
  *
- * BUG(orig) (#783): copied with its 0, a3 stays behind it.
+ * a3 ends on the 0 (fixed, #783: the original left it behind the 0).
  * @return d0: the length of the string at a3, 0 without a structure
  */
 static ULONG BLITZ_ROUTINE parseitemname_c(void)
@@ -895,7 +899,7 @@ static ULONG BLITZ_ROUTINE parseitemname_c(void)
  * @brief ParseItemValue$: the string value of the last parsed item.
  *
  * The structure's value at +24 if its type is 1 (a string), else "".
- * BUG(orig) (#783): copied with its 0, a3 stays behind it.
+ * a3 ends on the 0 (fixed, #783: the original left it behind the 0).
  * @return d0: the length of the string at a3, 0 without a structure
  */
 static ULONG BLITZ_ROUTINE parseitemvalue_c(void)

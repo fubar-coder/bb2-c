@@ -74,6 +74,16 @@ The registers the source does not load are not handed through (the
 original passes the caller's on): a library that keeps to the interface
 above does not see a difference.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* The string results (GetLibraryValue$, GetRegistryStringVariable,
+  ParseItemName$, ParseItemValue$) leave a3 on their 0; the original
+  copied them with their 0 and left a3 behind it, so in a string
+  expression the next part was written one byte too far (#783).
+
 ## BUG(orig), kept
 
 * **The structure stack has no limits.** LockRegistry beyond 15 levels
@@ -84,8 +94,6 @@ above does not see a difference.
 * **GetLibraryValue$ and GetRegistryStringVariable without a structure**
   read the type and the value at 18/24 of address 0 (CallLibrary's 0
   does not stop them) (#780).
-* **The string results are copied with their 0**, and a3 is left behind
-  it (#783).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
   pass the caller's d2 as the size (#782).
 * **finit leaves regstruct and the base set:** after a new init, the

@@ -541,7 +541,8 @@ LoadLibraryVariables|call 0 a2|form 0 ret $003A003C|1	prog
 GetLibraryValue$|kept|"LibName" ret 4369|2	kept
 GetLibraryValue$|popped|"LibName" ret 4369|2	$00000000
 GetLibraryValue$|d0|"LibName" ret 4369|2	$0000000C
-GetLibraryValue$|a3|"LibName" ret 4369|2	$0000000D
+GetLibraryValue$|a3|"LibName" ret 4369|2 [orig]	$0000000D
+GetLibraryValue$|a3|"LibName" ret 4369|2 [fixed #783]	$0000000C
 GetLibraryValue$|string area|"LibName" ret 4369|2	bytes 256 fnv BA1925EA
 GetLibraryValue$|calls|"LibName" ret 4369|2	$00000001
 GetLibraryValue$|call 0 LVO|"LibName" ret 4369|1	$FFFFFFCA
@@ -551,7 +552,8 @@ GetLibraryValue$|call 0 a1|"LibName" ret 4369|1	$53000000
 GetRegistryStringVariable|kept|"Var" ret 1|2	kept
 GetRegistryStringVariable|popped|"Var" ret 1|2	$00000000
 GetRegistryStringVariable|d0|"Var" ret 1|2	$0000000C
-GetRegistryStringVariable|a3|"Var" ret 1|2	$0000000D
+GetRegistryStringVariable|a3|"Var" ret 1|2 [orig]	$0000000D
+GetRegistryStringVariable|a3|"Var" ret 1|2 [fixed #783]	$0000000C
 GetRegistryStringVariable|string area|"Var" ret 1|2	bytes 256 fnv BA1925EA
 GetRegistryStringVariable|calls|"Var" ret 1|2	$00000001
 GetRegistryStringVariable|call 0 LVO|"Var" ret 1|1	$FFFFFFC4
@@ -561,13 +563,15 @@ GetRegistryStringVariable|call 0 a1|"Var" ret 1|1	$53000000
 ParseItemName$|kept|"" ret 0|2	kept
 ParseItemName$|popped|"" ret 0|2	$00000000
 ParseItemName$|d0|"" ret 0|2	$00000004
-ParseItemName$|a3|"" ret 0|2	$00000009
+ParseItemName$|a3|"" ret 0|2 [orig]	$00000009
+ParseItemName$|a3|"" ret 0|2 [fixed #783]	$00000008
 ParseItemName$|string area|"" ret 0|2	bytes 256 fnv 37B66CE5
 ParseItemName$|calls|"" ret 0|2	$00000000
 ParseItemValue$|kept|"" ret 0|2	kept
 ParseItemValue$|popped|"" ret 0|2	$00000000
 ParseItemValue$|d0|"" ret 0|2	$0000000C
-ParseItemValue$|a3|"" ret 0|2	$00000011
+ParseItemValue$|a3|"" ret 0|2 [orig]	$00000011
+ParseItemValue$|a3|"" ret 0|2 [fixed #783]	$00000010
 ParseItemValue$|string area|"" ret 0|2	bytes 256 fnv 842DE02A
 ParseItemValue$|calls|"" ret 0|2	$00000000
 GetRegistryIntVariable|kept|"Int" ret 4|2	kept
@@ -633,7 +637,8 @@ GetRegistryStringVariable|call 0 a1|"Var" ret 1|2	$53000000
 ParseItemName$|kept|"" ret 0|3	kept
 ParseItemName$|popped|"" ret 0|3	$00000000
 ParseItemName$|d0|"" ret 0|3	$00000005
-ParseItemName$|a3|"" ret 0|3	$0000000A
+ParseItemName$|a3|"" ret 0|3 [orig]	$0000000A
+ParseItemName$|a3|"" ret 0|3 [fixed #783]	$00000009
 ParseItemName$|string area|"" ret 0|3	bytes 256 fnv 9C9129AA
 ParseItemName$|calls|"" ret 0|3	$00000000
 ParseItemValue$|kept|"" ret 0|3	kept
@@ -769,7 +774,8 @@ NextParseItem|call 0 a0|current: rs 1|1	prog
 ParseItemValue$|kept|"" ret 0|5	kept
 ParseItemValue$|popped|"" ret 0|5	$00000000
 ParseItemValue$|d0|"" ret 0|5	$00000003
-ParseItemValue$|a3|"" ret 0|5	$00000008
+ParseItemValue$|a3|"" ret 0|5 [orig]	$00000008
+ParseItemValue$|a3|"" ret 0|5 [fixed #783]	$00000007
 ParseItemValue$|string area|"" ret 0|5	bytes 256 fnv 63D8FAA1
 ParseItemValue$|calls|"" ret 0|5	$00000000
 LockRegistry|kept|mode 0|1	kept
