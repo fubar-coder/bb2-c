@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+freed 1
+in chain -1
+last -1
+behind 1 -1
+rc=0

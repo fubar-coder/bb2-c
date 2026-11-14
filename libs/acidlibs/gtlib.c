@@ -87,6 +87,11 @@
  *   (ng_GadgetText) of the static NewGadget: GadTools got the label of
  *   the gadget made before for the shape gadget.  handlestd sets it to 0
  *   for a shape.
+ * Fixed (intended deviation, #962): GTFreeGadget did not update the
+ *   GTList's last gadget (+8, the previous gadget of the next creator):
+ *   after freeing the last gadget the next one was linked behind the
+ *   freed one (a write into freed memory) and not into the GTList.  The
+ *   gadget in front of the freed run becomes the last one.
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -1459,9 +1464,11 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
  *
  * The whole run from the first to the last gadget with the id
  * (FreeGadgets), BUG(orig) (#175); fixed (#174, #173): with the label
- * blocks and GTShape images of the freed gadgets.  BUG(orig) (#962): the
- * GTList's last gadget (current) is not updated - freeing it leaves the
- * next creator linking into freed memory.  Amiga mode only.
+ * blocks and GTShape images of the freed gadgets.  If the run ends with
+ * the GTList's last gadget (current), the gadget in front of the run
+ * becomes the last one.  Fixed (#962): the original left current on the
+ * freed gadget - the next creator linked into freed memory.  Amiga mode
+ * only.
  * Errors (debugger only): "GTList must be detached from window first!"
  * (freegadchk).
  *
@@ -1489,6 +1496,8 @@ static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
     } while (gad && gad->GadgetID == id);
     prev->NextGadget = last->NextGadget;
     last->NextGadget = NULL;
+    if (c->current == last)             /* fixed (#962): not the freed one */
+        c->current = prev == (struct Gadget *)c ? NULL : prev;
     for (gad = first; gad; gad = gad->NextGadget)
         gtrelease(c, gad);
     FreeGadgets(first);
