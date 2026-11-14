@@ -1068,6 +1068,20 @@ int tedab_slow_again(int state, int timed_out, double log_age, int slow)
            && !slow;
 }
 
+int tedab_340_again(const char *command, int attempts)
+{
+    size_t n;
+
+    if (attempts >= TEDAB_340_ATTEMPTS)
+        return 0;
+    if (!command)
+        return 1;
+    n = strlen(command);
+    while (n && (command[n - 1] == ' ' || command[n - 1] == '\t'))
+        n--;
+    return n >= 6 && !strncmp(command + n - 6, "@FILE@", 6) && (n == 6 || command[n - 7] == ' ');
+}
+
 double tedab_log_age(const char *path, const struct timespec *now)
 {
     struct stat st;

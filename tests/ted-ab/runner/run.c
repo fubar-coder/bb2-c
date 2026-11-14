@@ -1390,12 +1390,13 @@ static int run(FILE *log)
                 /* the run hit #340 (TED's a0toname, depends on the memory
                    layout), or was skipped because the run it waited for did
                    (tedab_session_waits_for): again, first in a new session.
-                   Not with @command: teddrive takes the last word of any
-                   command for the file argument */
+                   Not with an @command that does not end in @FILE@:
+                   teddrive takes the last word of any command for the file
+                   argument (tedab_340_again) */
                 for (d = k; d && state[d] == TEDAB_SKIPPED; d = tedab_session_waits_for(rs, d))
                     ;
                 if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[s->ids[d]])))
-                    && !r->r.test->command && r->attempts < 3) {
+                    && tedab_340_again(r->r.test->command, r->attempts)) {
                     fprintf(log, "%s: %s %s: #340 (a0toname), again\n", me, r->r.test->name,
                             tedab_combo_names[r->r.combo]);
                     next[nn++] = s->ids[k];

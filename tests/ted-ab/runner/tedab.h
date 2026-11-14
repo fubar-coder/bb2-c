@@ -212,6 +212,15 @@ size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i);
    a TIMEOUT (a real hang: the log stood still).  1 = again */
 #define TEDAB_PROGRESS_SEC 10
 int tedab_slow_again(int state, int timed_out, double log_age, int slow);
+/* a run that hit #340 (TED's a0toname splits the file name by the low byte
+   of blitz2's LoadSeg result: the memory layout decides, and under `inject
+   pad` it hit about a third of the runs) goes again, in a new session, up to
+   TEDAB_340_ATTEMPTS sessions in all.  Only if teddrive knows the file
+   argument: no @command, or one whose last word is @FILE@ (any other
+   command's last word is not the file).  1 = again; attempts = the sessions
+   the run has had */
+#define TEDAB_340_ATTEMPTS 8
+int tedab_340_again(const char *command, int attempts);
 /* the seconds since path was written, at now (CLOCK_REALTIME); -1 = not
    there */
 double tedab_log_age(const char *path, const struct timespec *now);

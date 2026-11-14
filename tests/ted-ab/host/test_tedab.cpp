@@ -614,6 +614,27 @@ TEST_CASE("requesters: file requester lines", "[log]")
     CHECK(e.empty());
 }
 
+TEST_CASE("#340 again", "[run]")
+{
+    // blitz2:blitz2 FILE (no @command) and a command that ends in @FILE@
+    // (the file argument is known): again, up to TEDAB_340_ATTEMPTS sessions
+    CHECK(tedab_340_again(nullptr, 1) == 1);
+    CHECK(tedab_340_again(nullptr, TEDAB_340_ATTEMPTS - 1) == 1);
+    CHECK(tedab_340_again("TEDAB:tools/inject pad blitz2:blitz2 @FILE@", 1) == 1);
+    CHECK(tedab_340_again("@FILE@", 1) == 1);
+    CHECK(tedab_340_again("blitz2:ted @FILE@  ", 1) == 1);
+    // the attempts used up
+    CHECK(tedab_340_again(nullptr, TEDAB_340_ATTEMPTS) == 0);
+    CHECK(tedab_340_again("TEDAB:tools/inject pad blitz2:blitz2 @FILE@", TEDAB_340_ATTEMPTS) == 0);
+    // commands whose last word is not the file: teddrive's file argument
+    // is not the file TED opens, no retry
+    CHECK(tedab_340_again("Execute TEDRUN:work/run.script", 1) == 0);
+    CHECK(tedab_340_again("TEDAB:tools/inject wbfrontfail blitz2:ted", 1) == 0);
+    CHECK(tedab_340_again("blitz2:ted @FILE@ extra", 1) == 0);
+    CHECK(tedab_340_again("blitz2:ted x@FILE@", 1) == 0);
+    CHECK(tedab_340_again("", 1) == 0);
+}
+
 TEST_CASE("slow session", "[run]")
 {
     // the limit hit a started run whose log was just written: again, once
