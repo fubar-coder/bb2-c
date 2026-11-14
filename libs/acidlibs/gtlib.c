@@ -39,11 +39,12 @@
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
  *   - Without a used screen handlestd reads the border sizes from 0. (#176)
- *   - GTChangeList, GTSetHighlight, GTSetAttrs, GTSetString,
- *     GTSetInteger and GTGetAttrs pass their tag list in a3 (the string
- *     buffer pointer) and leave a3 there: as a function inside a string
- *     expression the rest of the expression is written over the tag list
- *     and what follows it in the library. (#328)
+ * Fixed (intended deviation, #328): GTChangeList, GTSetHighlight,
+ *   GTSetAttrs, GTSetString, GTSetInteger and GTGetAttrs pass their tag
+ *   list in a3 (the string buffer pointer) and left a3 there: as a
+ *   function inside a string expression the rest of the expression was
+ *   written over the tag list and what follows it in the library.  a3
+ *   now comes back as it was at the call (test gtlib-a3-tag-list).
  * Fixed (intended deviation, #168): GTPalette with a colour wrote it to
  *   the low word of the TAG_MORE pointer of its tag list (offset +38 of
  *   the source layout, which had two more tags): the colour was ignored,
@@ -1527,6 +1528,17 @@ static ULONG BLITZ_ROUTINE gtptr_c(UWORD id BL_REG(d1), struct gtcontext *c BL_R
     return (ULONG)find((struct Gadget *)c, id);
 }
 
+/* GadTools takes the tag list in a3: the NDK inline loads the fixed
+   register and does not restore it.  Fixed (#328): a3 comes back as it
+   was at the call (the original left it on the tag list).  The asm makes
+   the saved value opaque, so that the store back into a3 is kept. */
+#define KEEP_A3(call) do {                                                  \
+        UBYTE *a3_ = blitz_string;                                          \
+        __asm volatile("" : "+a"(a3_));                                     \
+        call;                                                               \
+        blitz_string = a3_;                                                 \
+    } while (0)
+
 /* set tags on the last gadget of the run with the id */
 static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int last)
 {
@@ -1536,8 +1548,7 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int l
         return 0;
     if (last)
         gad = lastof(gad, id);
-    /* BUG(orig) (#328): a3 = tags afterwards */
-    GT_SetGadgetAttrsA(gad, c->window, NULL, tags);
+    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, tags));    /* fixed (#328) */
     return 0;
 }
 
@@ -1547,7 +1558,8 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int l
  * GTLV_Labels = the List header of the list array (its address - 28) on
  * the LAST gadget of the run with the id, BUG(orig) (#175); nothing
  * without a context or gadget.  Amiga mode only.
- * BUG(orig) (#328): the tag list is left in a3.
+ * Fixed (#328): a3 comes back unchanged (the original left the tag list
+ * in a3).
  *
  * @param id    d1: the gadget id
  * @param c     a1: the GTList (!libs {#mygadtoolslib,$1180})
@@ -1568,7 +1580,8 @@ static void BLITZ_ROUTINE gtchnglist1_c(UWORD id BL_REG(d1),
  * (GTLV_Labels = -1), as GTChangeList with a list.
  *
  * Unlike the form with a list it does not test for a context first.
- * BUG(orig) (#328): the tag list is left in a3.
+ * Fixed (#328): a3 comes back unchanged (the original left the tag list
+ * in a3).
  *
  * @param id  d1: the gadget id
  * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
@@ -1587,7 +1600,8 @@ static void BLITZ_ROUTINE gtchnglist2_c(UWORD id BL_REG(d1),
  * GTLV_Selected and GTLV_MakeVisible = value on the LAST gadget of the run
  * with the id, BUG(orig) (#175); nothing without a context or gadget.
  * Amiga mode only.
- * BUG(orig) (#328): the tag list is left in a3.
+ * Fixed (#328): a3 comes back unchanged (the original left the tag list
+ * in a3).
  *
  * @param id  d1: the gadget id
  * @param v   d2: the entry
@@ -1639,7 +1653,8 @@ static void BLITZ_ROUTINE gttags_c(UWORD pairs BL_REG(d7), const ULONG *args BL_
  * GT_SetGadgetAttrs with the pairs (put into `usertags`) on the LAST
  * gadget of the run with the id, BUG(orig) (#175); nothing without a
  * context or gadget.  DIFF: a2 is not moved.  Amiga mode only.
- * BUG(orig) (#328): a3 = usertags afterwards, also as a function.
+ * Fixed (#328): a3 comes back unchanged, also as a function (the original
+ * left usertags in a3).
  *
  * @param id     d1: the gadget id
  * @param pairs  d7: the number of pairs
@@ -1660,8 +1675,7 @@ static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD pairs BL_REG(
         return 0;
     gad = lastof(gad, id);
     gttags(pairs, args);
-    /* BUG(orig) (#328): a3 = usertags afterwards (also as a function) */
-    GT_SetGadgetAttrsA(gad, c->window, NULL, usertags);
+    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, usertags)); /* fixed (#328) */
     return 0;                           /* the original: what d0 holds */
 }
 
@@ -1675,8 +1689,7 @@ static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tot
         return;
     onetag.tag.ti_Tag = gad->GadgetType == 0x104 ? tstr : tother;
     onetag.tag.ti_Data = v;
-    /* BUG(orig) (#328): a3 = onetag afterwards */
-    GT_SetGadgetAttrsA(gad, c->window, NULL, &onetag.tag);
+    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, &onetag.tag)); /* fixed (#328) */
 }
 
 /**
@@ -1686,7 +1699,8 @@ static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tot
  * GTST_String for a STRING_KIND gadget (GadgetType $104), else GTTX_Text,
  * on the FIRST gadget with the id (the search starts at the context
  * gadget); nothing if there is none.  Amiga mode only.
- * BUG(orig) (#328): the tag list is left in a3.
+ * Fixed (#328): a3 comes back unchanged (the original left the tag list
+ * in a3).
  *
  * @param id   d1: the gadget id
  * @param str  d2: the string
@@ -1704,7 +1718,8 @@ static void BLITZ_ROUTINE gtsetstring_c(UWORD id BL_REG(d1), ULONG str BL_REG(d2
  *
  * GTIN_Number for an INTEGER_KIND gadget (GadgetType $104), else
  * GTNM_Number, as GTSetString.  Amiga mode only.
- * BUG(orig) (#328): the tag list is left in a3.
+ * Fixed (#328): a3 comes back unchanged (the original left the tag list
+ * in a3).
  *
  * @param id  d1: the gadget id
  * @param v   d2: the value
@@ -1767,8 +1782,9 @@ static ULONG BLITZ_ROUTINE gtgetint_c(UWORD id BL_REG(d1), struct gtcontext *c B
  *
  * GT_GetGadgetAttrs of the tag into the library's `value` on the FIRST
  * gadget with the id.  Amiga mode only.
- * BUG(orig) (#328): a3 = gettag afterwards - in a string expression the
- * rest is written over gettag, value and what follows them.
+ * Fixed (#328): a3 comes back unchanged (the original left gettag in a3:
+ * in a string expression the rest was written over gettag, value and
+ * what follows them).
  *
  * @param id   d1: the gadget id
  * @param tag  d2: the tag
@@ -1785,9 +1801,7 @@ static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2
         return 0;
     gettag.tag.ti_Tag = tag;
     gettag.tag.ti_Data = (ULONG)&value;
-    /* BUG(orig) (#328): a3 = gettag afterwards - in a string expression the rest
-       is written over gettag, value and what follows them */
-    GT_GetGadgetAttrsA(gad, c->window, NULL, &gettag.tag);
+    KEEP_A3(GT_GetGadgetAttrsA(gad, c->window, NULL, &gettag.tag)); /* fixed (#328) */
     return value;
 }
 
