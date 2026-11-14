@@ -220,6 +220,18 @@ again):
   configuring `tests/bug-orig` fails naming the file
   (`tests/bug-orig/check-fixed-orig.cmake`; ctest
   `bug_orig_fixed_orig_broken` with a fake tree).
+* every library object, in its compile step: no call of an NDK function
+  with a parameter in a3 or a4 that returns with the register changed.
+  The libraries see the NDK's inline headers through shadow headers
+  (`cmake/ndk-calls.cmake`, generated at configure from
+  `libs/include/ndk/functions.list` and `libs/include/ndk/safe/`): a used
+  function has a safe form that keeps the register, every other one is
+  poisoned (`#pragma GCC poison`: the compiler refuses the call). At
+  configure the list is compared with the functions the NDK declares with
+  such a parameter; a difference, e.g. a function of a new NDK, fails
+  configuring and names it (ctest `ndk_list_*`, `ndk_poisoned_call*`,
+  `ndk_varargs_inline*`; `docs/libs/cmdlibs-port.md`, "OS calls with a
+  parameter in a3, a4 or a5").
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join, and every userlib in its build step (against the acidlibs and
   deflibs of its variant): no library number twice (`blitzlib numbers`; deflibs together with

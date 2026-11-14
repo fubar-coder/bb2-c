@@ -132,7 +132,22 @@ the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
 compiler and libraries (skipped without the CD) and with the ones built
 here; `tokens_broken` checks that a missing library is noticed.
 `rwe_residents_check_broken`: the comparison of two residents
-(`tools/blitzres/check.cmake`) notices other contents. The host side on its own:
+(`tools/blitzres/check.cmake`) notices other contents. The libraries'
+shadow headers of the NDK (`cmake/ndk-calls.cmake`,
+`docs/libs/cmdlibs-port.md` "OS calls with a parameter in a3, a4 or a5"):
+`ndk_list_ok` runs the configure check of `libs/include/ndk/functions.list`
+alone, `ndk_list_missing` (TextFit taken out), `ndk_list_extra` (a
+function the NDK does not have) and `ndk_list_pending` (TextFit as
+`pending`, a state the list may not hold) with the list changed in
+memory, each expecting the error naming the function;
+`ndk_poisoned_call` compiles `cmake/ndk/poisoned.c` (a call of
+BuildSysRequest, which has no safe form) with the library options and
+expects the poison error, `ndk_poisoned_call_broken` the same without the
+shadow headers, which compiles; `ndk_varargs_inline` compiles
+`cmake/ndk/varargs.c` (OpenWindowTags) and expects only its wrapper, with
+the NDK's code and without a warning, `ndk_varargs_inline_broken` without
+the shadow headers, where every wrapper of intuition.h is emitted
+(`cmake/ndk-test.cmake`; assembler text on stdout, no file). The host side on its own:
 `ctest --test-dir build/amiga/host`.
 With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
 and UBSan. With `-DHOST_COVERAGE=ON` it is built with gcov

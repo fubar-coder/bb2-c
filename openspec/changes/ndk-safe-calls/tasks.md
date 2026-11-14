@@ -63,7 +63,7 @@ writes stay byte-identical.
 
 ## 6. Docs
 
-- [ ] 6.1 `docs/libs/cmdlibs-port.md` "OS calls with a parameter in a3, a4
+- [x] 6.1 `docs/libs/cmdlibs-port.md` "OS calls with a parameter in a3, a4
   or a5": the build check and the rule for hand-written `__asm` calls;
   `tests/README.md`; `TODO.md` (the items of this change done).
 - [ ] 6.2 Report for the coordinator: website entries and labels for

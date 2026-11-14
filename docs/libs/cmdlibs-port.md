@@ -55,11 +55,42 @@ carried over (for the comparison with AmiBlitz3).
     'asm' clobber list").
 
   So such a call has to save and restore the register itself, inside the
-  `__asm` block (`movem.l a3/a4,-(sp)` before the parameters are loaded,
-  `movem.l (sp)+,a3/a4` after the `jsr`). A plain NDK call of such a
-  function in a library silently clobbers the Blitz program's string
-  pointer (a3) or variable bases (a4/a5). Audit and the durable solution
-  (a wrapper and a build check): #516.
+  `__asm` block. For the NDK's inline macros the build does that:
+  * every library sees the NDK's `inline/X.h` through a shadow header
+    (`build/<preset>/libs/include/ndk/inline/X.h`, written at configure by
+    `cmake/ndk-calls.cmake`, first in the include path of
+    `blitz_library`; blitz2 and TED do not see them). Per
+    `libs/include/ndk/functions.list` a function with a parameter in
+    a3/a4 is either **safe** - `libs/include/ndk/safe/X.h` redefines its
+    `__NAME_base` with the a3 (a4) value in a register gcc chooses and
+    `exg` with a3 (a4) around the `jsr` (4 bytes per call and register,
+    no stack, the condition codes untouched: the NDK's own technique for
+    a5) - or **poisoned**: a call does not compile
+    (`attempt to use poisoned 'NAME'`, a note at the shadow header). The
+    varargs forms of both (`EasyRequest`, `__EasyRequest_va`) are
+    poisoned (they were expanded with the NDK's macro). The a5 functions
+    are **native** (the NDK saves a5 with `exg %/d7,%/a5`). A library that
+    needs a poisoned function writes its safe form (the NDK's macro as the
+    model, as `safe/intuition.h` does) and marks it safe in the list.
+  * configuring compares the list with the functions the NDK's inline
+    headers declare with a register variable on a3/a4/a5 or an `exg` with
+    one of them, in both directions: a difference (a function of a new
+    NDK, a name the NDK no longer has, other registers, another state) is
+    a configure error naming the function and its header.
+  * the shadow headers also make the NDK's varargs wrappers `static
+    inline` (`__stdargs` redefined around the include): with
+    `-fno-toplevel-reorder` every unused one was kept as dead code.
+
+  Hand-written `__asm` calls of OS functions (or of non-NDK libraries,
+  e.g. neilsreqtoolslib's reqtools calls with `movem.l a3-a4,-(sp)`) are
+  not covered by the build: such a block saves the register inside
+  itself (`exg` with a free register as in `safe/*.h`, or
+  `movem.l a3/a4,-(sp)` before the parameters are loaded and
+  `movem.l (sp)+,a3/a4` after the `jsr`, careful with sp-relative
+  operands); the library tests record a3/a4 per routine. Tests:
+  `ndk_list_ok`, `ndk_list_missing`, `ndk_list_extra`, `ndk_list_pending`
+  (the configure check with a list changed in memory),
+  `ndk_poisoned_call` (+ `_broken`), `ndk_varargs_inline` (+ `_broken`).
 * **Shared helpers:** what several ports need is in
   `libs/include/blitzlib.h`/`blitzhelp.h` instead of locally: `BLITZ_ALIBJSR_A6`
   (ALibJsr with a6, vallib), `BLITZ_ERRCHK_THUNK`/`BLITZ_ERRCHK_MESSAGE`

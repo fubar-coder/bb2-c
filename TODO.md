@@ -925,6 +925,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   buffer+length pairs in the public headers of `shared/` and `tools/lib/`,
   `_FORTIFY_SOURCE=3` in `HOST_SANITIZE`, the rule in `CLAUDE.md`, tests
   of the checks and two small hardenings.
+- [x] **NDK calls with a parameter in a3/a4 in the libraries** done
+  (2026-11-14): OpenSpec change `ndk-safe-calls` (audit of 2026-11-14):
+  shadow headers of the NDK's inline headers for the libraries
+  (`cmake/ndk-calls.cmake`, `libs/include/ndk/`): safe forms with `exg`
+  for the seven functions the libraries call, the 28 others poisoned, a
+  configure check of the list against the NDK, the unused varargs
+  wrappers no longer emitted (about 11 KB). Fixed with it: #516
+  (riapplib AddAppIcon), #1027 (rimisclib EZRequest/EZRequestArgs);
+  reworks of gtlib (#328, KEEP_A3 gone), rundebuglib, rilvcallhooklib,
+  riwbspritelib (#1028, deviation entry). To archive the change after
+  the merge.
 
 ## 3 Only once §1 is done
 
