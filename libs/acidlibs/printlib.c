@@ -62,13 +62,14 @@
  *     buffer into the first entry (1E19) of the table of powers of ten,
  *     which changed later conversions of numbers >= 1E18 (#241); the
  *     buffer has 52 bytes now, the output is the same.
+ *   - Str$ and UStr$ of a string printed it as a byte (the low byte of
+ *     the address) (#242); now the result is the string itself.
  *
  * BUG(orig):
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
  *     below is that of the original so that this goes the same way). (#240)
- *   - Str$ of a string is printed as a byte (the low byte of the address). (#242)
  * Not bugs:
  *   - the output style of Blitz 2, the same for Quick and Float: numbers
  *     below 1 have no leading 0 (".5"); 0 is "0".
@@ -1036,6 +1037,17 @@ static ULONG wstr(ULONG value, const UBYTE *args)
     const UBYTE *sp = args;
 
     switch (BL_POPW(sp)) {
+    case 7: {
+        /* Fixed (#242): a string (its length popped after the type) is
+           the result itself, in place, as a string function returns its
+           first string argument: d0 = the length, a3 = its end (the
+           original has no case 7 and prints the low byte of the address
+           as a byte) */
+        ULONG len = BL_POPL(sp);
+
+        blitz_string = (UBYTE *)value + len;
+        return len;
+    }
     case 4:
         return pquick2(value);
     case 3:
@@ -1045,7 +1057,7 @@ static ULONG wstr(ULONG value, const UBYTE *args)
         return pword2(value);
     case 5:
         return pfloat2(value);
-    default:                                    /* also strings */
+    default:
         return pbyte2(value);
     }
 }
@@ -1060,11 +1072,12 @@ static ULONG wstr(ULONG value, const UBYTE *args)
  * Str$ pushes two entries on inputoutputlib's output stack (a ring of
  * 16).
  *
- * BUG(orig) (#242): Str$ of a string is printed as a byte (the low byte
- * of the address).
+ * Fixed (#242): Str$ of a string is the string itself (the original
+ * printed it as a byte, the low byte of the address).
  *
- * @param v d0: the value.
- * @param args a2: the argument stack: only the type word is popped.
+ * @param v d0: the value (for a string: its address).
+ * @param args a2: the argument stack: the type word is popped (for a
+ *        string then its length).
  * @return d0: the length of the string.
  */
 ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
@@ -1083,10 +1096,11 @@ ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
  * @brief UStr$(Expression) - Str$ without Format (the Format string is
  * switched off meanwhile).
  *
- * BUG(orig) (#242) as Str$.
+ * Fixed (#242) as Str$: a string is the result itself.
  *
- * @param v d0: the value.
- * @param args a2: the argument stack: only the type word is popped.
+ * @param v d0: the value (for a string: its address).
+ * @param args a2: the argument stack: the type word is popped (for a
+ *        string then its length).
  * @return d0: the length of the string.
  */
 ULONG BLITZ_ROUTINE doustrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
