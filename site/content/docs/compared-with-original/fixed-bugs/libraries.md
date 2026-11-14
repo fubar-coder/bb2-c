@@ -585,10 +585,75 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   another address; a drawer leaves the bank as it is, like a missing file
   ([#72](https://github.com/fubar-coder/bb2-c/issues/72)).
 
+### Strings
+
+* `Right$` and `UnRight$` took their characters from before the string
+  when the part they leave out was 32768 characters or longer, so
+  `Right$(a$,3)` of a string of 40003 characters did not give its last
+  three; they take the right end of any string
+  ([#285](https://github.com/fubar-coder/bb2-c/issues/285)).
+* `Mid$` with a length so large that the start plus the length passed
+  $7FFFFFFF returned a string of that length, far beyond the string and
+  the string buffer: `Len(Mid$("Hello",2,$7FFFFFFF))` gave 2147483647;
+  the result stops at the end of the string, and that length is 4
+  ([#286](https://github.com/fubar-coder/bb2-c/issues/286)).
+* `Instr` with a start position of 0 or less compared the bytes before
+  the string, so an empty search string was found at position 0 or at
+  the negative start (`Instr(a$,"",-5)` gave -5); a start position below
+  1 searches from the first character, as `Instr` without a start
+  position does
+  ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
+* `Cvi` always read two bytes of its string and `Cvl` and `Cvq` four, so
+  a shorter string gave whatever an earlier string expression had left
+  behind it; the missing bytes count as 0, so `Cvl("ab")` is $61620000
+  and `Cvi("")` is 0
+  ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+* `Peeks$` with a negative length copied up to 4 GB into the string
+  buffer and crashed the program; it returns the empty string, as a
+  length of 0 does
+  ([#214](https://github.com/fubar-coder/bb2-c/issues/214)).
+
+### Input
+
+* `Inkey$(0)` returned a string of a random length; it returns the empty
+  string ([#128](https://github.com/fubar-coder/bb2-c/issues/128)).
+* `Edit` with a default value in a window overwrote the last character
+  of the default with a space, so `Edit(9.5,5)` offered `9.` and gave 9
+  when the user just pressed Return, and `Edit(25,4)` gave 2; the whole
+  default is shown, and Return gives 9.5 and 25
+  ([#129](https://github.com/fubar-coder/bb2-c/issues/129)).
+* `Edit$` at the end of its input, such as a file given to the program
+  with `<` in the shell, returned a string of the length -1; it returns
+  the empty string, and `Edit` there returns 0
+  ([#132](https://github.com/fubar-coder/bb2-c/issues/132)).
+* The runtime error of `Inkey$` from the default input read "Can't Input
+  Character from Defualt Input"; it reads "Default"
+  ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
+
+### Arrays and sorting
+
+* A `Dim` of an array of 4 GB or more, such as `Dim a.l(32767,32767)`,
+  computed a wrong, tiny size and gave an array of a few bytes; it stops
+  with the error "Out of Memory!"
+  ([#58](https://github.com/fubar-coder/bb2-c/issues/58)).
+* `Sort` on a string array read the length of an element that was never
+  given a value from address -4 and its characters from address 0, so
+  such elements sorted to places that depended on that memory; they
+  count as empty strings and come first, or last after `SortDown`
+  ([#276](https://github.com/fubar-coder/bb2-c/issues/276)).
+* `Sort` on a word array took the word after the middle element as the
+  value it compares with, so for an array of one element it read the word
+  behind the array and searched the memory behind and possibly before it;
+  it takes the middle element. The sorted array is the same
+  ([#275](https://github.com/fubar-coder/bb2-c/issues/275)).
+
 ### Lists
 
 * `Dim List` with size 0 wrote behind its memory block; nothing is
   written there ([#59](https://github.com/fubar-coder/bb2-c/issues/59)).
+* `SortList` put keys more than 2^31 apart in the wrong order, so
+  2000000000 came before -2000000000; it sorts every key in ascending
+  order ([#201](https://github.com/fubar-coder/bb2-c/issues/201)).
 
 ### GadTools
 
@@ -662,6 +727,10 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   gives 0 ([#146](https://github.com/fubar-coder/bb2-c/issues/146)).
 * The Quick -32768 assigned to a float gave +32768; it keeps its minus
   sign ([#147](https://github.com/fubar-coder/bb2-c/issues/147)).
+* A division of longs or quicks by 0 gave the largest positive number for
+  every dividend, so -5/0 was 2147483647; it gives the largest number with
+  the sign of the dividend, so -5/0 is -2147483647, and it is still no
+  error ([#200](https://github.com/fubar-coder/bb2-c/issues/200)).
 * `Str$` and `UStr$` of a string gave a number made from the string's
   address; they give the string
   ([#242](https://github.com/fubar-coder/bb2-c/issues/242)).
