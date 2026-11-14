@@ -53,10 +53,12 @@
  *   - Format: too many integer digits gave "?" and then only padding for
  *     the whole integer part (1234.5 with "##" -> "?  ") (#238); now "?"
  *     and the lowest digits ("?35").
+ *   - Format: the sign was lost when the format has no "-"/"+" (-7 with
+ *     "###" -> "  7") (#237); now the "-" takes a leading place in front
+ *     of the number and of the zeros of "0" places (" -7", "000" ->
+ *     "-07"), or counts as an excess character of the overflow.
  *
  * BUG(orig):
- *   - Format: the sign is lost when the format has no "-"/"+" (-7 with
- *     "###" -> "  7") (#237).
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
@@ -323,8 +325,11 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
     UWORD pos;                                  /* d5: the position counter */
     UWORD over;                                 /* d5: the overflow */
     UWORD count;                                /* d5: the lead/trail loop counter */
+    UWORD sign = 0;                             /* 1: a "-" of our own to place */
     UBYTE rounded[64];                          /* the rounded digits (fmtround) */
     UBYTE *out;
+    UBYTE *first = 0;                           /* the first digit of the number */
+    UBYTE *zero = 0;                            /* the first zero of a "0" place */
     const UBYTE *p;
 
     if (!pl.formlen)                            /* MOVE formlen(pc),d1:BEQ 'done */
@@ -363,11 +368,29 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
     z.form = PL_FORM;
     z.left = pl.formlen;
 
+    /* Fixed (#237): a negative number and a format without "-" or "+"
+       (which write the sign through ezchar): the "-" needs one leading
+       place (the original drops it: -7 with "###" -> "  7").  The places
+       are filled as for the magnitude, then the "-" replaces the first
+       zero of a "0" place or else the space in front of the number (" -7",
+       "-07" with "000", " -300" with "#,###").  If it does not fit, it
+       counts as the first excess character of the overflow. */
+    if (!z.minus) {
+        sign = 1;
+        for (n = 0; n < pl.formlen; n++)
+            if (PL_FORM[n] == '-' || PL_FORM[n] == '+')
+                sign = 0;
+    }
+
     /* Leading chars first.... */
     lpad = pl.formlead - ldigits;
-    if ((WORD)lpad < 0) {                       /* Overflow! */
+    if ((WORD)(lpad - sign) < 0) {              /* Overflow! */
         *out++ = '?';
-        over = -lpad;
+        over = sign - lpad;
+        if (sign) {                             /* the "-" is dropped first */
+            sign = 0;
+            over--;
+        }
         numtext += (WORD)over;                  /* ADD d5,a0 (sign extended) */
         nchars -= over;
         /* Fixed (#238): no padding, the places take the lowest digits (the
@@ -386,17 +409,36 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
             if (*z.form++ == '#') {
                 if ((WORD)--lpad >= 0 || (WORD)--nchars < 0)
                     *out++ = ' ';               /* 'putspc */
-                else
+                else {
+                    if (!first)
+                        first = out;
                     *out++ = *numtext++;
+                }
             } else {                            /* 'iszero */
-                if ((WORD)--lpad >= 0)
+                if ((WORD)--lpad >= 0) {
+                    if (!zero)
+                        zero = out;
                     *out++ = '0';               /* 'putzero */
-                else if ((WORD)--nchars < 0)
+                } else if ((WORD)--nchars < 0)
                     *out++ = ' ';               /* -> 'putspc */
-                else
+                else {
+                    if (!first)
+                        first = out;
                     *out++ = *numtext++;
+                }
             }
         } while (--count != 0xffff);            /* DBF d5,'leadloop */
+    }
+    if (sign) {                                 /* Fixed (#237): the "-" */
+        UBYTE *q = first ? first : out;
+
+        if (zero)
+            q = zero + 1;
+        else
+            while (q > PL_CHARS && q[-1] != ' ')
+                q--;
+        if (q > PL_CHARS)
+            q[-1] = '-';
     }
 
     /* 'dotrail */
@@ -460,8 +502,8 @@ static ULONG prtype2(const UBYTE *buf)
  *
  * BUG(orig) (#240): a Format string longer than 32 characters (no check
  * without the debugger) runs over formlen/formlead/formtrail/decpos and
- * further into the conversion buffers.  The bugs of the formatting
- * itself: #237 (#235, #236, #238 fixed).
+ * further into the conversion buffers.  (The bugs of the formatting
+ * itself, #235-#238, are fixed.)
  *
  * Errors (debugger only, formatchk): "Format String too long" (> 32).
  *
@@ -908,8 +950,7 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
  *
- * BUG(orig): the Format bug #237 and the float buffer overrun
- * (#241), see the top.
+ * BUG(orig): the float buffer overrun (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
  * @param args a2: the argument stack.
