@@ -782,17 +782,32 @@ the text was missing. In the port the text follows the result.
 * `SerialReadString`
   ([#795](https://github.com/fubar-coder/bb2-c/issues/795))
 
-Two more functions left the place of the next part wrong in other ways.
-Text after `RTEZSaveFile` was written over the end of the chosen path, or
-behind bytes of its arguments; it follows the path
-([#465](https://github.com/fubar-coder/bb2-c/issues/465)).
-`ChangeWBSprite`, used as a function in a string expression, left the
-place on a tag list inside the library, so the rest of the expression was
-written over that list; the place stays where it was
-([#1028](https://github.com/fubar-coder/bb2-c/issues/1028)).
+More functions left the place of the next part wrong in other ways:
+
+* Text after `RTEZSaveFile` was written over the end of the chosen path,
+  or behind bytes of its arguments; it follows the path
+  ([#465](https://github.com/fubar-coder/bb2-c/issues/465)).
+* `EZRequest` and `EZRequestArgs`, used as functions in a string
+  expression, left the place at address 0 or on their argument list
+  inside the library, so the rest of the expression was written over the
+  start of memory or over that list: a line such as
+  `a$="Answer "+Str$(EZRequest("T","Body","Yes|No"))` came out wrong or
+  crashed the program. The rest of the expression follows the result
+  ([#1027](https://github.com/fubar-coder/bb2-c/issues/1027)).
+* `ChangeWBSprite`, used as a function in a string expression, left the
+  place on a tag list inside the library, so the rest of the expression
+  was written over that list; the place stays where it was
+  ([#1028](https://github.com/fubar-coder/bb2-c/issues/1028)).
 
 ### Other fixes
 
+* `AddAppIcon` set the base of the local variables to 0: inside a
+  Statement or Function the local variables used after the command were
+  read and written in the wrong place, and the procedure crashed when it
+  returned. Used as a function in a string expression, it also let the
+  rest of the expression be written into the data of the icon. Local
+  variables and string expressions work after `AddAppIcon`
+  ([#516](https://github.com/fubar-coder/bb2-c/issues/516)).
 * `InitArgParse` copied a line of any length into its 256 byte buffer and
   overwrote the code of the library behind it; it copies at most 255
   characters and cuts off the rest

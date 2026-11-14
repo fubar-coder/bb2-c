@@ -24,13 +24,10 @@
     `y` the icon appears at that position, without them Workbench
     chooses one.
 
-    Kept from the original: after the command, the program's string
-    work writes into the data of the icon, and the local variables of
-    procedures are read and written in the wrong place
-    ([#516](https://github.com/fubar-coder/bb2-c/issues/516)). If the
-    command fails for an id that is in use, the old icon is gone from
-    Workbench, but `DelAppIcon` or the end of the program removes it a
-    second time ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
+    Kept from the original: if the command fails for an id that is in
+    use, the old icon is gone from Workbench, but `DelAppIcon` or the end
+    of the program removes it a second time
+    ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
 "DelAppIcon":
   text: Removes the App icon with the id `id` from the Workbench desktop. Returns -1, or 0 if there is no such icon.
 "AppEvent":
