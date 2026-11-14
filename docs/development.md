@@ -126,7 +126,9 @@ libraries:
   (`audiolib_codeinit`, `debuglib_docall`). Comments keep the original's
   label (`codeinit`).
 * Original bugs: `BUG(orig) (#NNN)` while not fixed, `Fixed (#NNN)`
-  once fixed; Blitz notation (`#ld0`, `Window#`) is no link.
+  once fixed, `By design (#NNN)` where the original tests the input only
+  with runtime error checking on purpose (issue label `as-designed`);
+  Blitz notation (`#ld0`, `Window#`) is no link.
 
 ## Fixing an original bug
 
@@ -154,7 +156,11 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    a comment naming the commit).
 
 A bug not fixed yet keeps its `BUG(orig)` comment and its bug-orig test,
-which comes out REPRODUCED in `ctest --preset bug-orig`. The test is
+which comes out REPRODUCED in `ctest --preset bug-orig`. A case closed
+with the label `as-designed` (the original tests the input only in its
+error check area, BB2 style) keeps a note `By design (#NNN)` instead of
+`BUG(orig)`; its bug-orig test may stay and come out REPRODUCED, it
+documents the behaviour without runtime error checking. The test is
 judged against `ID.orig`, the recorded observation of the original
 (`ID.expect` is the correct behaviour); no session of the original runs
 in the normal tests. A new test gets its `ID.orig` once from the target

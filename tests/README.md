@@ -930,7 +930,11 @@ deliberately (CLAUDE.md "Original bugs are fixed deliberately"); the
 tests check the *correct* (expected) behaviour. As long as the bug is
 not fixed the test **fails** (REPRODUCED); the failure message names the
 bug. Label `bug-orig`: `host`, `emulator` and `all` exclude it, only the
-preset `bug-orig` runs these tests. **A fix turns its test into a fixed
+preset `bug-orig` runs these tests. A test whose issue was closed with
+the label `as-designed` (the original tests the input only with runtime
+error checking, BB2 style; the code note reads `By design (#N)`) may
+stay: it comes out REPRODUCED and documents the behaviour without the
+check. **A fix turns its test into a fixed
 test in the same commit** (header `; @fixed #N`, [Fixed tests](#fixed-tests)):
 it then runs in `emulator` and `all` and must come out FIXED there.
 The TED scripts (`tests/bug-orig/ted/`) have their fixed form too

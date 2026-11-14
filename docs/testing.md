@@ -175,7 +175,7 @@ forms.
 | `emulator` | tests in the Amiga emulator | Amiberry |
 | `all` | `host` and `emulator`: the acceptance run. It starts no session of the original | Amiberry; the CD only for a few tests that read its sources (skipped without it) |
 | `originals` | everything that compares with the original, and recordings | Amiberry and the CD (some also the reference build of the RWE sources) |
-| `bug-orig` | open original bugs; they fail on purpose | Amiberry |
+| `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry |
 | `oracle` | the compiler checks of the AmiBlitz3 tests | Amiberry and the fetched AmiBlitz3 files |
 
 So: **`all` is what you run for every change and needs no CD.** The CD
