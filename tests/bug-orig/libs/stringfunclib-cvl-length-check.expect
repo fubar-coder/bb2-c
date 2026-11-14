@@ -1,0 +1,4 @@
+[run]
+before
+REQUESTER: AutoRequest body "Cvl needs a String of at least 4 Characters" *
+rc=0

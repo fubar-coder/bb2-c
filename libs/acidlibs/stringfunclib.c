@@ -21,7 +21,10 @@
  *     character.
  *   - #288: Cvi read 2 bytes, Cvl/Cvq 4, whatever the string's length (the
  *     terminating 0 and the bytes behind a shorter string).  Here only the
- *     string's own bytes count, the missing ones are 0.
+ *     string's own bytes count, the missing ones are 0.  A shorter string
+ *     is a programming error: with runtime error checking cvichk, cvlchk
+ *     and cvqchk (error check area only, the original had none) raise
+ *     "Cvi needs a String of at least 2 Characters" (Cvl, Cvq: 4).
  *
  * String function convention of the Blitz 2 compiler:
  *   d0, d1, d2   arguments; a string argument is the address of its
@@ -69,11 +72,13 @@ void lenstring(void), unleftstring(void), unrightstring(void), striplead(void);
 void striptrail(void), lsetstring(void), rsetstring(void), centrestring(void);
 void lcasestring(void), ucasestring(void), casesensestring(void);
 void stringfunclib_codeinit(void), movestring(void);
+void cvichk(void), cvlchk(void), cvqchk(void);
 
 BLITZ_ENTRY_DECL(init);
 
-/* !libheader{#stringfunclib,init,1,0,0} */
-BLITZ_LIBHEADER(LIB_stringfunclib, init, BL_LONGRET, 0, 0);
+/* !libheader{#stringfunclib,init,1,0,errors}: the original has no error
+   check area (0); the checks of Cvi/Cvl/Cvq (#288) are its first */
+BLITZ_LIBHEADER(LIB_stringfunclib, init, BL_LONGRET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, BL_LONG);
@@ -156,13 +161,13 @@ BLITZ_NAME("Mkl$", "(Long)");
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(cvistring, 0, 0);
+BLITZ_SUBS(cvistring, cvichk, 0);
 BLITZ_NAME("Cvi", "(String$)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(cvlstring, 0, 0);
+BLITZ_SUBS(cvlstring, cvlchk, 0);
 BLITZ_NAME("Cvl", "(String$)");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -240,7 +245,7 @@ BLITZ_NAME("Mkq$", "(Quick)");
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_STRING);
 BLITZ_LIBS0();
-BLITZ_SUBS(cvlstring, 0, 0);
+BLITZ_SUBS(cvlstring, cvqchk, 0);
 BLITZ_NAME("Cvq", "(String$)");
 
 BLITZ_NULLSUB_AT(init, stringfunclib_codeinit, 0, 0);
@@ -1103,6 +1108,8 @@ static ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n)
  * Fixed (#288): only the string's own bytes are read, the missing ones of
  * a shorter string are 0 (the original read 2 bytes whatever the length:
  * the terminating 0 and the bytes behind it).
+ * Errors (debugger, cvichk): "Cvi needs a String of at least 2
+ * Characters" (#288: the original had no check).
  *
  * @param s    d0: the string
  * @param lens a2: the length stack (the string's length)
@@ -1123,6 +1130,8 @@ BLITZ_THUNK(cvistring, cvistring_c, "d1/a0-a1");
  *
  * Fixed (#288): only the string's own bytes are read, the missing ones of
  * a shorter string are 0 (the original read 4 bytes whatever the length).
+ * Errors (debugger, cvlchk/cvqchk): "Cvl needs a String of at least 4
+ * Characters", "Cvq needs ..." (#288: the original had no check).
  *
  * @param s    d0: the string
  * @param lens a2: the length stack (the string's length)
@@ -1146,3 +1155,36 @@ BLITZ_THUNK(cvlstring, cvlstring_c, "d1/a0-a1");
 BLITZ_INLINE(lenstring,
     "   move.l  d0,a3\n"
     "   move.l  -(a2),d0");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+/* The original has no error checks; the checks keep every register (the
+   thunks) and only return when the arguments are fine. */
+
+BLITZ_ERRCHK_MESSAGE(cvimess, "Cvi needs a String of at least 2 Characters");
+BLITZ_ERRCHK_MESSAGE(cvlmess, "Cvl needs a String of at least 4 Characters");
+BLITZ_ERRCHK_MESSAGE(cvqmess, "Cvq needs a String of at least 4 Characters");
+
+/* cvichk, cvlchk, cvqchk - not in the original (#288): a string shorter
+   than the 2 or 4 bytes the function reads; a2 = the length stack */
+static void BLITZ_ERRCHK cvichk_c(const ULONG *lens BL_REG(a2))
+{
+    if (lens[-1] < 2)
+        BLITZ_RUNERR(cvimess);
+}
+
+static void BLITZ_ERRCHK cvlchk_c(const ULONG *lens BL_REG(a2))
+{
+    if (lens[-1] < 4)
+        BLITZ_RUNERR(cvlmess);
+}
+
+static void BLITZ_ERRCHK cvqchk_c(const ULONG *lens BL_REG(a2))
+{
+    if (lens[-1] < 4)
+        BLITZ_RUNERR(cvqmess);
+}
+
+BLITZ_ERRCHK_THUNK(cvichk, cvichk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(cvlchk, cvlchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(cvqchk, cvqchk_c, "d0-d1/a0-a1");

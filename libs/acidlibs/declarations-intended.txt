@@ -36,3 +36,10 @@ lib 152: relocations in the declaration part 3 != 5
 lib 180: header +$2C: code offset set in only one of them
 lib 180: entry 2 Peeks$ +$C: code offset set in only one of them
 lib 180: relocations in the declaration part 4 != 6
+# #288: Cvi, Cvl and Cvq get error checks (cvichk, cvlchk, cvqchk);
+# stringfunclib gets an error check area for them (the original has none)
+lib 185: header +$2C: code offset set in only one of them
+lib 185: entry 12 Cvi +$C: code offset set in only one of them
+lib 185: entry 13 Cvl +$C: code offset set in only one of them
+lib 185: entry 26 Cvq +$C: code offset set in only one of them
+lib 185: relocations in the declaration part 31 != 35

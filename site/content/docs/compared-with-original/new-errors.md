@@ -720,6 +720,22 @@ Peeks$ a negative number of Characters!".
 
 Issue: [Peeks$ with a negative length copied up to 4 GB (#214)](https://github.com/fubar-coder/bb2-c/issues/214).
 
+### `Cvi`, `Cvl` and `Cvq` of a short string {#cvi-short-string}
+
+**What happened.** `Cvi` always read 2 bytes of its string, `Cvl` and
+`Cvq` 4, whatever the length of the string: a shorter string gave a
+number made partly of the bytes behind it.
+
+**With the port.** The missing bytes count as 0. With runtime error
+checking, a string that is too short is the error "Cvi needs a String of
+at least 2 Characters" ("Cvl needs ...", "Cvq needs a String of at least
+4 Characters").
+
+**What to change.** Give `Cvi` a string of 2 characters, `Cvl` and `Cvq`
+one of 4, as `Mki$`, `Mkl$` and `Mkq$` make them.
+
+Issue: [Cvi, Cvl and Cvq read past the end of a short string (#288)](https://github.com/fubar-coder/bb2-c/issues/288).
+
 ### A bitmap or shape of depth 0 {#depth-zero}
 
 **What happened.** `BitMap` refuses a depth of 0 with runtime error
