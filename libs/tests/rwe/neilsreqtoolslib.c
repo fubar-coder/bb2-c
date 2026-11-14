@@ -493,6 +493,8 @@ static void filereq(int e, int form, const char *what, ULONG tags)
         fk_name = i == 2 ? "" : "chosen.file";
         DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags);
         STRRES();
+        /* a3 = out + 41: the original's a3, behind the 0 (BUG(orig) #461);
+           the fixed library leaves it on the 0, so its case is 0 */
         if (e == E_LOAD && i == 3)
             BOTH("Work:a/b/chosen.file at the title",
                  !strcmp((char *)out + 20, "Work:a/b/chosen.file")

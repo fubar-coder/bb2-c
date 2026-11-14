@@ -270,7 +270,8 @@ RTEZLoadFile|call 0| dir ""|1	bytes 256 fnv B6630C82
 RTReturnValue|kept| dir ""|1	kept
 RTReturnValue|popped| dir ""|1	$00000000
 RTReturnValue|d0| dir ""|1	$00000001
-RTEZLoadFile|a3| dir ""|1	$00000020
+RTEZLoadFile|a3| dir ""|1 [orig]	$00000020
+RTEZLoadFile|a3| dir ""|1 [fixed #461]	$0000001F
 RTEZLoadFile|out| dir ""|1	bytes 300 fnv 61706191
 RTEZLoadFile|kept| dir "RAM:"|1	kept
 RTEZLoadFile|popped| dir "RAM:"|1	$00000000
@@ -280,7 +281,8 @@ RTEZLoadFile|call 0| dir "RAM:"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept| dir "RAM:"|1	kept
 RTReturnValue|popped| dir "RAM:"|1	$00000000
 RTReturnValue|d0| dir "RAM:"|1	$00000001
-RTEZLoadFile|a3| dir "RAM:"|1	$00000024
+RTEZLoadFile|a3| dir "RAM:"|1 [orig]	$00000024
+RTEZLoadFile|a3| dir "RAM:"|1 [fixed #461]	$00000023
 RTEZLoadFile|out| dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZLoadFile|kept| dir "RAM:t"|1	kept
 RTEZLoadFile|popped| dir "RAM:t"|1	$00000000
@@ -290,7 +292,8 @@ RTEZLoadFile|call 0| dir "RAM:t"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept| dir "RAM:t"|1	kept
 RTReturnValue|popped| dir "RAM:t"|1	$00000000
 RTReturnValue|d0| dir "RAM:t"|1	$00000001
-RTEZLoadFile|a3| dir "RAM:t"|1	$0000001B
+RTEZLoadFile|a3| dir "RAM:t"|1 [orig]	$0000001B
+RTEZLoadFile|a3| dir "RAM:t"|1 [fixed #461]	$0000001A
 RTEZLoadFile|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZLoadFile|kept| dir "Work:a/b"|1	kept
 RTEZLoadFile|popped| dir "Work:a/b"|1	$00000000
@@ -300,9 +303,11 @@ RTEZLoadFile|call 0| dir "Work:a/b"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept| dir "Work:a/b"|1	kept
 RTReturnValue|popped| dir "Work:a/b"|1	$00000000
 RTReturnValue|d0| dir "Work:a/b"|1	$00000001
-RTEZLoadFile|a3| dir "Work:a/b"|1	$00000029
+RTEZLoadFile|a3| dir "Work:a/b"|1 [orig]	$00000029
+RTEZLoadFile|a3| dir "Work:a/b"|1 [fixed #461]	$00000028
 RTEZLoadFile|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
-RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1 [orig]	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title| dir "Work:a/b"|1 [fixed #461]	$00000000
 RTEZLoadFile|kept| cancel|1	kept
 RTEZLoadFile|popped| cancel|1	$00000000
 RTEZLoadFile|d0| cancel|1	$00000000
@@ -371,7 +376,8 @@ RTFileRequest|call 0| dir ""|1	bytes 256 fnv 391B55CA
 RTReturnValue|kept| dir ""|3	kept
 RTReturnValue|popped| dir ""|3	$00000000
 RTReturnValue|d0| dir ""|3	$00000001
-RTFileRequest|a3| dir ""|1	$00000020
+RTFileRequest|a3| dir ""|1 [orig]	$00000020
+RTFileRequest|a3| dir ""|1 [fixed #461]	$0000001F
 RTFileRequest|out| dir ""|1	bytes 300 fnv 61706191
 RTFileRequest|kept| dir "RAM:"|1	kept
 RTFileRequest|popped| dir "RAM:"|1	$00000000
@@ -381,7 +387,8 @@ RTFileRequest|call 0| dir "RAM:"|1	bytes 256 fnv 391B55CA
 RTReturnValue|kept| dir "RAM:"|3	kept
 RTReturnValue|popped| dir "RAM:"|3	$00000000
 RTReturnValue|d0| dir "RAM:"|3	$00000001
-RTFileRequest|a3| dir "RAM:"|1	$00000024
+RTFileRequest|a3| dir "RAM:"|1 [orig]	$00000024
+RTFileRequest|a3| dir "RAM:"|1 [fixed #461]	$00000023
 RTFileRequest|out| dir "RAM:"|1	bytes 300 fnv 16140D64
 RTFileRequest|kept| dir "RAM:t"|1	kept
 RTFileRequest|popped| dir "RAM:t"|1	$00000000
@@ -391,7 +398,8 @@ RTFileRequest|call 0| dir "RAM:t"|1	bytes 256 fnv 391B55CA
 RTReturnValue|kept| dir "RAM:t"|3	kept
 RTReturnValue|popped| dir "RAM:t"|3	$00000000
 RTReturnValue|d0| dir "RAM:t"|3	$00000001
-RTFileRequest|a3| dir "RAM:t"|1	$0000001B
+RTFileRequest|a3| dir "RAM:t"|1 [orig]	$0000001B
+RTFileRequest|a3| dir "RAM:t"|1 [fixed #461]	$0000001A
 RTFileRequest|out| dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTFileRequest|kept| dir "Work:a/b"|1	kept
 RTFileRequest|popped| dir "Work:a/b"|1	$00000000
@@ -401,7 +409,8 @@ RTFileRequest|call 0| dir "Work:a/b"|1	bytes 256 fnv 391B55CA
 RTReturnValue|kept| dir "Work:a/b"|3	kept
 RTReturnValue|popped| dir "Work:a/b"|3	$00000000
 RTReturnValue|d0| dir "Work:a/b"|3	$00000001
-RTFileRequest|a3| dir "Work:a/b"|1	$00000029
+RTFileRequest|a3| dir "Work:a/b"|1 [orig]	$00000029
+RTFileRequest|a3| dir "Work:a/b"|1 [fixed #461]	$00000028
 RTFileRequest|out| dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
 RTFileRequest|kept| cancel|1	kept
 RTFileRequest|popped| cancel|1	$00000000
@@ -548,7 +557,8 @@ RTEZLoadFile|call 0|with pattern dir ""|1	bytes 256 fnv 396E73D2
 RTReturnValue|kept|with pattern dir ""|1	kept
 RTReturnValue|popped|with pattern dir ""|1	$00000000
 RTReturnValue|d0|with pattern dir ""|1	$00000001
-RTEZLoadFile|a3|with pattern dir ""|1	$00000020
+RTEZLoadFile|a3|with pattern dir ""|1 [orig]	$00000020
+RTEZLoadFile|a3|with pattern dir ""|1 [fixed #461]	$0000001F
 RTEZLoadFile|out|with pattern dir ""|1	bytes 300 fnv 61706191
 RTEZLoadFile|kept|with pattern dir "RAM:"|1	kept
 RTEZLoadFile|popped|with pattern dir "RAM:"|1	$00000000
@@ -558,7 +568,8 @@ RTEZLoadFile|call 0|with pattern dir "RAM:"|1	bytes 256 fnv 396E73D2
 RTReturnValue|kept|with pattern dir "RAM:"|1	kept
 RTReturnValue|popped|with pattern dir "RAM:"|1	$00000000
 RTReturnValue|d0|with pattern dir "RAM:"|1	$00000001
-RTEZLoadFile|a3|with pattern dir "RAM:"|1	$00000024
+RTEZLoadFile|a3|with pattern dir "RAM:"|1 [orig]	$00000024
+RTEZLoadFile|a3|with pattern dir "RAM:"|1 [fixed #461]	$00000023
 RTEZLoadFile|out|with pattern dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZLoadFile|kept|with pattern dir "RAM:t"|1	kept
 RTEZLoadFile|popped|with pattern dir "RAM:t"|1	$00000000
@@ -568,7 +579,8 @@ RTEZLoadFile|call 0|with pattern dir "RAM:t"|1	bytes 256 fnv 396E73D2
 RTReturnValue|kept|with pattern dir "RAM:t"|1	kept
 RTReturnValue|popped|with pattern dir "RAM:t"|1	$00000000
 RTReturnValue|d0|with pattern dir "RAM:t"|1	$00000001
-RTEZLoadFile|a3|with pattern dir "RAM:t"|1	$0000001B
+RTEZLoadFile|a3|with pattern dir "RAM:t"|1 [orig]	$0000001B
+RTEZLoadFile|a3|with pattern dir "RAM:t"|1 [fixed #461]	$0000001A
 RTEZLoadFile|out|with pattern dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZLoadFile|kept|with pattern dir "Work:a/b"|1	kept
 RTEZLoadFile|popped|with pattern dir "Work:a/b"|1	$00000000
@@ -578,9 +590,11 @@ RTEZLoadFile|call 0|with pattern dir "Work:a/b"|1	bytes 256 fnv 396E73D2
 RTReturnValue|kept|with pattern dir "Work:a/b"|1	kept
 RTReturnValue|popped|with pattern dir "Work:a/b"|1	$00000000
 RTReturnValue|d0|with pattern dir "Work:a/b"|1	$00000001
-RTEZLoadFile|a3|with pattern dir "Work:a/b"|1	$00000029
+RTEZLoadFile|a3|with pattern dir "Work:a/b"|1 [orig]	$00000029
+RTEZLoadFile|a3|with pattern dir "Work:a/b"|1 [fixed #461]	$00000028
 RTEZLoadFile|out|with pattern dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
-RTEZLoadFile|Work:a/b/chosen.file at the title|with pattern dir "Work:a/b"|1	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title|with pattern dir "Work:a/b"|1 [orig]	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title|with pattern dir "Work:a/b"|1 [fixed #461]	$00000000
 RTEZLoadFile|kept|with pattern cancel|1	kept
 RTEZLoadFile|popped|with pattern cancel|1	$00000000
 RTEZLoadFile|d0|with pattern cancel|1	$00000000
@@ -661,7 +675,8 @@ RTEZLoadFile|call 0|pattern freed dir ""|1	bytes 256 fnv B6630C82
 RTReturnValue|kept|pattern freed dir ""|1	kept
 RTReturnValue|popped|pattern freed dir ""|1	$00000000
 RTReturnValue|d0|pattern freed dir ""|1	$00000001
-RTEZLoadFile|a3|pattern freed dir ""|1	$00000020
+RTEZLoadFile|a3|pattern freed dir ""|1 [orig]	$00000020
+RTEZLoadFile|a3|pattern freed dir ""|1 [fixed #461]	$0000001F
 RTEZLoadFile|out|pattern freed dir ""|1	bytes 300 fnv 61706191
 RTEZLoadFile|kept|pattern freed dir "RAM:"|1	kept
 RTEZLoadFile|popped|pattern freed dir "RAM:"|1	$00000000
@@ -671,7 +686,8 @@ RTEZLoadFile|call 0|pattern freed dir "RAM:"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept|pattern freed dir "RAM:"|1	kept
 RTReturnValue|popped|pattern freed dir "RAM:"|1	$00000000
 RTReturnValue|d0|pattern freed dir "RAM:"|1	$00000001
-RTEZLoadFile|a3|pattern freed dir "RAM:"|1	$00000024
+RTEZLoadFile|a3|pattern freed dir "RAM:"|1 [orig]	$00000024
+RTEZLoadFile|a3|pattern freed dir "RAM:"|1 [fixed #461]	$00000023
 RTEZLoadFile|out|pattern freed dir "RAM:"|1	bytes 300 fnv 16140D64
 RTEZLoadFile|kept|pattern freed dir "RAM:t"|1	kept
 RTEZLoadFile|popped|pattern freed dir "RAM:t"|1	$00000000
@@ -681,7 +697,8 @@ RTEZLoadFile|call 0|pattern freed dir "RAM:t"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept|pattern freed dir "RAM:t"|1	kept
 RTReturnValue|popped|pattern freed dir "RAM:t"|1	$00000000
 RTReturnValue|d0|pattern freed dir "RAM:t"|1	$00000001
-RTEZLoadFile|a3|pattern freed dir "RAM:t"|1	$0000001B
+RTEZLoadFile|a3|pattern freed dir "RAM:t"|1 [orig]	$0000001B
+RTEZLoadFile|a3|pattern freed dir "RAM:t"|1 [fixed #461]	$0000001A
 RTEZLoadFile|out|pattern freed dir "RAM:t"|1	bytes 300 fnv 61DDB4DA
 RTEZLoadFile|kept|pattern freed dir "Work:a/b"|1	kept
 RTEZLoadFile|popped|pattern freed dir "Work:a/b"|1	$00000000
@@ -691,9 +708,11 @@ RTEZLoadFile|call 0|pattern freed dir "Work:a/b"|1	bytes 256 fnv B6630C82
 RTReturnValue|kept|pattern freed dir "Work:a/b"|1	kept
 RTReturnValue|popped|pattern freed dir "Work:a/b"|1	$00000000
 RTReturnValue|d0|pattern freed dir "Work:a/b"|1	$00000001
-RTEZLoadFile|a3|pattern freed dir "Work:a/b"|1	$00000029
+RTEZLoadFile|a3|pattern freed dir "Work:a/b"|1 [orig]	$00000029
+RTEZLoadFile|a3|pattern freed dir "Work:a/b"|1 [fixed #461]	$00000028
 RTEZLoadFile|out|pattern freed dir "Work:a/b"|1	bytes 300 fnv D2F97FF3
-RTEZLoadFile|Work:a/b/chosen.file at the title|pattern freed dir "Work:a/b"|1	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title|pattern freed dir "Work:a/b"|1 [orig]	$00000001
+RTEZLoadFile|Work:a/b/chosen.file at the title|pattern freed dir "Work:a/b"|1 [fixed #461]	$00000000
 RTEZLoadFile|kept|pattern freed cancel|1	kept
 RTEZLoadFile|popped|pattern freed cancel|1	$00000000
 RTEZLoadFile|d0|pattern freed cancel|1	$00000000

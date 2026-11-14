@@ -58,8 +58,7 @@
  *     at the end of the program) (#458); the default string is copied
  *     without a limit into the buffer of MaxChars bytes (#459).
  *   - RTEZSaveFile builds its result at the title but restores a3 (MOVEM
- *     a3-a6) (#465), RTEZLoadFile/RTFileRequest leave a3 behind the 0
- *     (#461).
+ *     a3-a6) (#465).
  *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
@@ -71,6 +70,9 @@
  *     does not clear anything (a second finit frees again) (#460).  No
  *     routine checks the library: without reqtools.library they call
  *     through a6 = 0 (RTVersion/RTRevision read address $14/$16) (#463).
+ * Fixed (intended deviation, #461): RTEZLoadFile/RTFileRequest wrote
+ * the 0 behind their result with MOVE.b #0,(a3)+ and left a3 behind it,
+ * so a string expression went on one byte too far; a3 now ends on the 0.
  * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
  * have no 0 behind them (a string function returns its length, as
  * usual); FileName$ is copied with a length of 108, whatever its own
@@ -849,8 +851,8 @@ static ULONG BLITZ_ROUTINE rtflagsrequestPos_c(STRPTR title BL_REG(d0), STRPTR b
 
 /* ------------------------------------------------------ file requesters */
 
-/* load/RTFileRequest: the path from the title on, a3 behind its 0; a3 =
-   the title on cancel */
+/* load/RTFileRequest: the path from the title on, a3 on its 0 (fixed,
+   #461: the original left it behind the 0); a3 = the title on cancel */
 static ULONG filerequest(struct rtFileRequester *req, STRPTR title, UBYTE *name, APTR tags)
 {
     ULONG r = RTJSR(LVO_rtFileRequestA, 0, tags, req, name, title);
@@ -860,7 +862,7 @@ static ULONG filerequest(struct rtFileRequester *req, STRPTR title, UBYTE *name,
     if (r) {
         r = copydir(req, 0);
         r = copystring(name, r);
-        *blitz_string++ = 0;
+        *blitz_string = 0;                              /* fixed (#461): a3 on the 0 */
     }
     return r;
 }
@@ -871,8 +873,8 @@ static ULONG filerequest(struct rtFileRequester *req, STRPTR title, UBYTE *name,
  *
  * The file name buffer is a 108-byte copy of Filename$ (maxslib); the
  * result, directory + "/" (unless it ends in ":") + file, is built from
- * the start of the title string on.  BUG(orig) (#461): a3 stays behind
- * the result's 0; on cancel a3 = the title.
+ * the start of the title string on; a3 ends on the result's 0 (fixed,
+ * #461: the original left it behind the 0); on cancel a3 = the title.
  * @param title  d0: Title$
  * @param file   d1: Filename$
  * @return d0: the length of the path, 0 on cancel (also for RTReturnValue:
@@ -893,7 +895,7 @@ static ULONG BLITZ_ROUTINE rtfreq_c(STRPTR title BL_REG(d0), const UBYTE *file B
  * @brief RTFileRequest(Title$,FileName$,TagList): a file requester of its
  * own with the caller's tag list; the chosen path.
  *
- * As RTEZLoadFile, BUG(orig) (#461) included.
+ * As RTEZLoadFile (a3 on the 0, fixed #461).
  * @param title  d0: Title$
  * @param file   d1: FileName$
  * @param tags   d2: the tag list
