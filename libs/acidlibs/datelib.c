@@ -31,9 +31,11 @@
  *   too large.  Here SUBQ.l; the count before the first Date$ is that of
  *   day 0 (WeekDay 0, as before).  Days before the year 0 (outside the
  *   range of Date$) give -1, now also -722465 and -722464.
+ * Fixed (intended deviation, #122): NumDays corrected the day count with
+ *   ADDQ.w #1 / SUBQ.w #1 (no carry/borrow): NumDays("31/12/1977") was
+ *   65535, not -1, and the day 65535 (in 2157) came back as 131071.  Here
+ *   ADDQ.l / SUBQ.l.
  * Kept on purpose (BUG(orig)):
- *   - NumDays: ADDQ.w #1 / SUBQ.w #1 on the day count (no carry/borrow),
- *     e.g. NumDays("31/12/1977") = 65535, not -1. (#122)
  *   - NumDays: a 2 digit year reads past the end of the string (the year
  *     ends only at "/" or after 4 characters) (#125); a "/" as first
  *     character of a field becomes the value 47 (#123); month 0 reads the
@@ -415,8 +417,8 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * the year / 4; d2 the character, later the leap days; d3 and d4 hold
  * the first and second field, after the EXG for mm/dd/yyyy the day and
  * the month.
- * BUG(orig) (#122): ADDQ.w #1 / SUBQ.w #1 on the day count (no
- * carry/borrow), e.g. NumDays("31/12/1977") = 65535, not -1.
+ * Fixed (#122): ADDQ.l #1 / SUBQ.l #1 on the day count (the original's
+ * word operations had no carry/borrow: NumDays("31/12/1977") = 65535).
  * BUG(orig) (#123): a "/" as first character of a field becomes the
  * value 47.
  * BUG(orig) (#124): month 0 reads the low word of the tick count of the
@@ -504,11 +506,11 @@ gety:
     /* not a leap year (the remainder, SWAP d1) and before March: one
        leap day less in the table */
     if ((UWORD)BL_SWAP(quads) != 0 && (WORD)((UWORD)moff - 6) < 0)
-        BL_SETW(total, total + 1);                      /* BUG(orig) (#122): ADDQ.w */
+        total += 1;                                     /* fixed (#122): ADDQ.l */
     total += BL_EXTL(day);
     total -= DAYSP1978;
     /* fixed (#1001): the Gregorian century rule */
     total -= (ULONG)gregskips_year((UWORD)num, (WORD)((UWORD)moff - 6) < 0);
-    BL_SETW(total, total - 1);                          /* BUG(orig) (#122): SUBQ.w */
+    total -= 1;                                         /* fixed (#122): SUBQ.l */
     return total;
 }

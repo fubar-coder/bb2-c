@@ -1,0 +1,26 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+30/12/1977 -2
+31/12/1977 65535
+1/1/1978 0
+65534 65534
+65535 131071
+65536 65536
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/datelib-numdays-word-carry.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/datelib-numdays-word-carry
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
