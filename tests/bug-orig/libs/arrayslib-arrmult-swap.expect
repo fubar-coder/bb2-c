@@ -1,5 +1,5 @@
 [compile]
 ok
 [run]
-REQUESTER: AutoRequest body *
+REQUESTER: AutoRequest body "Out of Memory!" *
 rc=0

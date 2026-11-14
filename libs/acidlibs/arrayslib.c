@@ -26,6 +26,11 @@
  *   28.l : "lIsT" : list ID
  *              32 long
  *
+ * Fixed (intended deviation, #58): arrmult added the second 16 bit product
+ *   with SWAP instead of shifting it, and an array size of 4 GB or more
+ *   went on modulo 2^32 (`Dim a.l(32767,32767)` got 1 byte).  Here the
+ *   product is shifted, and a size that does not fit in 32 bits makes the
+ *   allocation fail ("Out of Memory!").
  * Fixed (intended deviation, #59): newlist/newloclist link an item only
  *   if its node (next.l, last.l) fits in the block; the original linked
  *   the first item before checking, so a list of size 0 got 8 bytes
@@ -61,6 +66,11 @@ BLITZ_LIBFIN();
    with its node (next.l, last.l) */
 
 #define AT(base, off) (*(ULONG *)((base) + (WORD)(off)))  /* 0(a5,dN.w) */
+
+/* arrmult's size of an array that does not fit in 32 bits (#58): no
+   AllocMem can give it, and memlib's +8 (localloc) and newlist's +32 do
+   not wrap it round to a small block */
+#define ARR_TOOBIG 0x7fffffffUL
 
 /* newarr - (re)allocate an array: free the old one (if any), allocate
    0(a5,d3) bytes, cleared, and store the address at 0(a5,d2) */
@@ -122,24 +132,33 @@ BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
  * d0 = d0 * (d1.w + 1), with two 16 bit MULUs:
  *   ADDQ #1,d1:MOVE.l d0,d2:MULU d1,d0
  *   SWAP d2:MULU d1,d2:SWAP d2:ADD.l d2,d0
- * BUG(orig) (#58): the second product is SWAPped, not shifted: its high
- * word (products >= $10000) is added to the low word of the result.
+ * Fixed (#58): the second product is shifted (the original SWAPped it, so
+ * its high word was added to the low word of the result), and a size that
+ * does not fit in 32 bits becomes ARR_TOOBIG: the allocation of the array
+ * fails with memlib's runtime error "Out of Memory!" (the original went on
+ * with the size modulo 2^32, plus the SWAPped word: `Dim a.l(32767,32767)`
+ * got 1 byte and succeeded).
  * DIFF: the original returns d1.w+1 and changes d2; the compiler does not
  * use them (the next dimension is evaluated again), the C build keeps d2
  * and leaves d1 undefined.
  *
  * @param size  d0: the size so far (element size times the dimensions)
  * @param dim   d1.w: the dimension (its highest index)
- * @return d0: the new size
+ * @return d0: the new size, ARR_TOOBIG if it does not fit in 32 bits
  */
 static ULONG BLITZ_ROUTINE arrmult_c(ULONG size BL_REG(d0), ULONG dim BL_REG(d1))
 {
     UWORD n = (UWORD)dim + 1;                   /* ADDQ #1,d1 (word) */
     ULONG lo = (ULONG)(UWORD)size * n;          /* MULU d1,d0 */
     ULONG hi = (ULONG)(UWORD)(size >> 16) * n;  /* SWAP d2:MULU d1,d2 */
+    ULONG total;
 
-    hi = hi << 16 | hi >> 16;                   /* SWAP d2 */
-    return lo + hi;                             /* ADD.l d2,d0 */
+    if (hi > 0xffff)                            /* fixed (#58): >= 2^32 */
+        return ARR_TOOBIG;
+    total = lo + (hi << 16);                    /* fixed (#58): shifted */
+    if (total < lo)                             /* carry: >= 2^32 */
+        return ARR_TOOBIG;
+    return total;
 }
 BLITZ_THUNK(arrmult, arrmult_c, "a0-a1");
 

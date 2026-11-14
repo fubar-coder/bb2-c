@@ -13,13 +13,16 @@ arrmult|kept|$12345 $3|1	kept
 arrmult|kept|$10000 $7FFF|1	kept
 |arrmult d0|$10000 $7FFF|1	$80000000
 arrmult|kept|$7FFFF $FFFE|1	kept
-|arrmult d0|$7FFFF $FFFE|1	$FFF70007
+|arrmult d0|$7FFFF $FFFE|1 [orig]	$FFF70007
+|arrmult d0|$7FFFF $FFFE|1 [fixed #58]	$7FFFFFFF
 arrmult|kept|$FFFFFFFF $1|1	kept
-|arrmult d0|$FFFFFFFF $1|1	$FFFFFFFF
+|arrmult d0|$FFFFFFFF $1|1 [orig]	$FFFFFFFF
+|arrmult d0|$FFFFFFFF $1|1 [fixed #58]	$7FFFFFFF
 arrmult|kept|$20000 $40000|1	kept
 |arrmult d0|$20000 $40000|1	$00020000
 arrmult|kept|$ABCD1234 $1FF|1	kept
-|arrmult d0|$ABCD1234 $1FF|1	$9A246957
+|arrmult d0|$ABCD1234 $1FF|1 [orig]	$9A246957
+|arrmult d0|$ABCD1234 $1FF|1 [fixed #58]	$7FFFFFFF
 arrmult|kept|$0 $5|1	kept
 |arrmult d0|$0 $5|1	$00000000
 arrmult|kept|$12345678 $FFFF0003|1	kept
