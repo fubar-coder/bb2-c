@@ -751,6 +751,22 @@ searches from the first character.
 
 Issue: [Instr compared the bytes before the string for a start position of 0 or less (#287)](https://github.com/fubar-coder/bb2-c/issues/287).
 
+### A `Dim` of 4 GB or more {#dim-too-large}
+
+**What happened.** Runtime error checking checks each dimension of a
+`Dim`, but not the size of the whole array. An array of 4 GB or more,
+such as `Dim a.l(32767,32767)`, got a wrong, tiny size, and the `Dim`
+succeeded.
+
+**With the port.** Such a `Dim` fails with "Out of Memory!". With
+runtime error checking, it is the error "Array Size out of Range", at
+the dimension that makes the array too large.
+
+**What to change.** Make the array smaller; no Amiga has the memory for
+it.
+
+Issue: [A Dim of 4 GB or more got an array of a few bytes (#58)](https://github.com/fubar-coder/bb2-c/issues/58).
+
 ### A bitmap or shape of depth 0 {#depth-zero}
 
 **What happened.** `BitMap` refuses a depth of 0 with runtime error

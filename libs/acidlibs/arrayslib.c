@@ -30,7 +30,10 @@
  *   with SWAP instead of shifting it, and an array size of 4 GB or more
  *   went on modulo 2^32 (`Dim a.l(32767,32767)` got 1 byte).  Here the
  *   product is shifted, and a size that does not fit in 32 bits makes the
- *   allocation fail ("Out of Memory!").
+ *   allocation fail ("Out of Memory!").  Such a size is a programming
+ *   error: with runtime error checking arrmultchk (error check area only,
+ *   the original had none) raises "Array Size out of Range" at the
+ *   dimension that makes it too large.
  * Fixed (intended deviation, #59): newlist/newloclist link an item only
  *   if its node (next.l, last.l) fits in the block; the original linked
  *   the first item before checking, so a list of size 0 got 8 bytes
@@ -45,17 +48,18 @@
 #include <exec/lists.h>
 
 /* entry points (thunks / C, defined below) */
-void newarr(void), newlocarr(void), arrmult(void);
+void newarr(void), newlocarr(void), arrmult(void), arrmultchk(void);
 void BLITZ_ROUTINE newlist(WORD ptr BL_REG(d2), WORD size BL_REG(d3),
                            WORD itemsize BL_REG(d4));
 void BLITZ_ROUTINE newloclist(WORD ptr BL_REG(d2), WORD size BL_REG(d3),
                               WORD itemsize BL_REG(d4));
 
-/* !syslibheader{#arrayslib,$c400,$c405,0,0,0,0} */
-BLITZ_SYSLIBHEADER7(LIB_arrayslib, 0xc400, 0xc405, 0, BL_NORET, 0, 0);
+/* !syslibheader{#arrayslib,$c400,$c405,0,0,0,errors}: the original has no
+   error check area (0); arrmultchk (#58) is its first check */
+BLITZ_SYSLIBHEADER7(LIB_arrayslib, 0xc400, 0xc405, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 BLITZ_NULLSUB(newarr, 0, 0);                    /* $C400 newarr */
 BLITZ_NULLSUB(newlocarr, 0, 0);                 /* $C401 newlocarr */
-BLITZ_NULLSUB(arrmult, 0, 0);                   /* $C402 arrmult */
+BLITZ_NULLSUB(arrmult, arrmultchk, 0);          /* $C402 arrmult */
 BLITZ_NULLSUB(newlist, 0, 0);                   /* $C403 (newarr+3) */
 BLITZ_NULLSUB(newloclist, 0, 0);                /* $C404 (newlocarr+3) */
 BLITZ_LIBFIN();
@@ -138,6 +142,8 @@ BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
  * fails with memlib's runtime error "Out of Memory!" (the original went on
  * with the size modulo 2^32, plus the SWAPped word: `Dim a.l(32767,32767)`
  * got 1 byte and succeeded).
+ * Errors (debugger, arrmultchk): "Array Size out of Range" for a size
+ * that does not fit in 32 bits (#58: the original had no check).
  * DIFF: the original returns d1.w+1 and changes d2; the compiler does not
  * use them (the next dimension is evaluated again), the C build keeps d2
  * and leaves d1 undefined.
@@ -253,3 +259,21 @@ void BLITZ_ROUTINE newloclist(WORD ptr BL_REG(d2), WORD size BL_REG(d3),
 {
     new_list(blitz_locals, ptr, size, itemsize);
 }
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(sizemess, "Array Size out of Range");
+
+/* arrmultchk - not in the original (#58): the size times the dimension
+   (d1.w + 1, as arrmult) does not fit in 32 bits; arrmult would return
+   ARR_TOOBIG and the allocation fail */
+static void BLITZ_ERRCHK arrmultchk_c(ULONG size BL_REG(d0), ULONG dim BL_REG(d1))
+{
+    UWORD n = (UWORD)dim + 1;
+    ULONG lo = (ULONG)(UWORD)size * n;
+    ULONG hi = (ULONG)(UWORD)(size >> 16) * n;
+
+    if (hi > 0xffff || lo + (hi << 16) < lo)
+        BLITZ_RUNERR(sizemess);
+}
+BLITZ_ERRCHK_THUNK(arrmultchk, arrmultchk_c, "d0-d1/a0-a1");

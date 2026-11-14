@@ -179,7 +179,8 @@ the largest number with the dividend's sign, `$7FFFFFFF` or `-$7FFFFFFF`
 (#59); Quick 0 became the Float `$00000080` and Quick −32768 the Float
 +32768 (#146, #147); `arrmult` added its second partial product via SWAP
 and let an array of 4 GB or more go on modulo 2^32, now such a `Dim` fails
-with "Out of Memory!" (#58); `lmultiply` and `qmultiply` added partial
+with "Out of Memory!", with runtime error checking with "Array Size out
+of Range" (#58); `lmultiply` and `qmultiply` added partial
 products via SWAP, on an overflow the product is now the one modulo 2^32
 (#199, next section).
 
