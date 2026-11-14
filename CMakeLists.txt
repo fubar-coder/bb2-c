@@ -151,6 +151,19 @@ add_test(NAME ndk_varargs_inline_broken COMMAND ${CMAKE_COMMAND} -DMODE=varargs
 	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
 set_tests_properties(ndk_varargs_inline_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "unused varargs wrappers emitted:")
+# the configure check of libs/include/ndk/functions.list against the NDK
+# (cmake/ndk-calls.cmake): the list passes; without TextFit, and with a
+# function the NDK does not have, it fails naming the function
+set(_ndk_check ${CMAKE_COMMAND} -DINLINE=${BLITZLIB_NDK_INLINE} -DLIST=${BLITZLIB_NDK_LIST})
+add_test(NAME ndk_list_ok COMMAND ${_ndk_check} -P ${PROJECT_SOURCE_DIR}/cmake/ndk-calls.cmake)
+add_test(NAME ndk_list_missing COMMAND ${_ndk_check} -DDROP=TextFit
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-calls.cmake)
+set_tests_properties(ndk_list_missing PROPERTIES
+	PASS_REGULAR_EXPRESSION "TextFit \\(inline/graphics.h\\) has a parameter in a3, but")
+add_test(NAME ndk_list_extra COMMAND ${_ndk_check} "-DADD=graphics NoSuchFunction a3 poisoned"
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-calls.cmake)
+set_tests_properties(ndk_list_extra PROPERTIES
+	PASS_REGULAR_EXPRESSION "NoSuchFunction \\(inline/graphics.h, a3\\) is in")
 
 # the library files byte by byte against the prev build (cmake/prev.cmake,
 # tests/README.md "The prev build"); skipped (77) without one.  PREV_INTENDED

@@ -14,6 +14,15 @@
 #   ndk_read_list(LIST OUT)
 #     the project's list (libs/include/ndk/functions.list): "HEADER NAME
 #     REGS STATE" per function; a line of another form is a FATAL_ERROR
+#   ndk_check_list(INLINE_DIR LIST)
+#     compares the scan with the list in both directions (name, header,
+#     registers; native only for a5, a5 only native): a difference is a
+#     FATAL_ERROR naming the function and the header.  Run at configure
+#     (cmake/BlitzLibrary.cmake), so that an NDK of a toolchain update
+#     cannot bring a function with a parameter in a3/a4 the list lacks
+#   cmake -DINLINE=DIR -DLIST=FILE [-DDROP=NAME] [-DADD=ENTRY] -P ...
+#     the check alone, with NAME taken out of the list or ENTRY added in
+#     memory (the ctests ndk_list_*)
 #   ndk_shadow_headers(INLINE_DIR LIST SAFE_DIR OUT_DIR)
 #     writes OUT_DIR/inline/X.h for every NDK inline/X.h (openspec change
 #     ndk-safe-calls, design D1-D3): it includes the NDK's header (its
@@ -219,3 +228,64 @@ function(ndk_shadow_headers dir list safe_dir out_dir)
 		ndk_write_if_changed(${out_dir}/inline/${hname}.h "${text}")
 	endforeach()
 endfunction()
+
+# compare the NDK's functions with the list's ENTRIES ("HEADER NAME REGS
+# STATE"); every difference is named, then a FATAL_ERROR
+function(ndk_check dir entries listname)
+	ndk_scan(${dir} funcs va bases)
+	set(errors)
+	set(listed)
+	foreach(e IN LISTS entries)
+		string(REGEX MATCH "^([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$" m "${e}")
+		set(h ${CMAKE_MATCH_1})
+		set(f ${CMAKE_MATCH_2})
+		set(r ${CMAKE_MATCH_3})
+		set(state ${CMAKE_MATCH_4})
+		if("${h} ${f} ${r}" IN_LIST listed)
+			list(APPEND errors "${f} (inline/${h}.h) is in ${listname} twice")
+		endif()
+		list(APPEND listed "${h} ${f} ${r}")
+		if(NOT "${h} ${f} ${r}" IN_LIST funcs)
+			list(APPEND errors "${f} (inline/${h}.h, ${r}) is in ${listname}, but the NDK declares no such function with a parameter in ${r}")
+		endif()
+		if(r STREQUAL "a5")
+			if(NOT state STREQUAL "native")
+				list(APPEND errors "${f} (inline/${h}.h): an a5 function the NDK protects is native, not ${state}")
+			endif()
+		elseif(state STREQUAL "native")
+			list(APPEND errors "${f} (inline/${h}.h): the NDK does not save ${r}, it cannot be native")
+		endif()
+	endforeach()
+	foreach(f IN LISTS funcs)
+		if(NOT f IN_LIST listed)
+			string(REGEX MATCH "^([^ ]+) ([^ ]+) ([^ ]+)$" m "${f}")
+			list(APPEND errors "${CMAKE_MATCH_2} (inline/${CMAKE_MATCH_1}.h) has a parameter in ${CMAKE_MATCH_3}, but ${listname} lacks it")
+		endif()
+	endforeach()
+	if(errors)
+		list(JOIN errors "\n  " text)
+		message(FATAL_ERROR "the NDK's functions with a parameter in a3, a4 or a5 "
+			"(${dir}) and ${listname} differ:\n  ${text}\n"
+			"(docs/libs/cmdlibs-port.md, \"OS calls with a parameter in a3, a4 or a5\")")
+	endif()
+endfunction()
+
+function(ndk_check_list dir list)
+	ndk_read_list(${list} entries)
+	ndk_check(${dir} "${entries}" ${list})
+endfunction()
+
+# cmake -DINLINE=DIR -DLIST=FILE [-DDROP=NAME] [-DADD="HEADER NAME REGS STATE"]
+#       -P ndk-calls.cmake: the check of the list, NAME taken out of it or
+#       an entry added in memory (the tests with broken input)
+if(CMAKE_SCRIPT_MODE_FILE STREQUAL CMAKE_CURRENT_LIST_FILE)
+	ndk_read_list(${LIST} entries)
+	if(DROP)
+		list(FILTER entries EXCLUDE REGEX "^[^ ]+ ${DROP} ")
+	endif()
+	if(ADD)
+		list(APPEND entries "${ADD}")
+	endif()
+	ndk_check(${INLINE} "${entries}" ${LIST})
+	message(STATUS "${LIST}: the NDK's functions with a parameter in a3, a4 or a5")
+endif()

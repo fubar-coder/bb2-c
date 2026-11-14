@@ -33,7 +33,7 @@ writes stay byte-identical.
 
 ## 3. The configure check
 
-- [ ] 3.1 The comparison of the NDK's a3/a4/a5 functions with the list
+- [x] 3.1 The comparison of the NDK's a3/a4/a5 functions with the list
   (design D4) at configure. Verify: the test with a list lacking one name
   fails with that name; one with a name too many fails; the full list
   passes.
