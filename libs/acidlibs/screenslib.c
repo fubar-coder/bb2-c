@@ -48,6 +48,13 @@
  *   object called FreeDBufInfo through garbage (crash).  Here
  *   FreeDBufInfo goes through the graphics base that allocated the
  *   DBufInfo (dbufgfx, kept by ShowBitMap).
+ * Fixed (intended deviation, #248): freescreen closed every screen with
+ *   "bLtZ" in UserData, also one an object had only found (FindScreen) and
+ *   another object had opened: a FindScreen, WbToScreen or CloseScreen on
+ *   the finding object closed the other object's screen.  Here
+ *   FindScreen/WbToScreen mark the object as "found" (bit 0 of its
+ *   DBufInfo long, FOUND: the 8-byte object has no other room), and
+ *   freescreen only forgets the screen of such an object.
  * Fixed (intended deviation, #250): the original gives SA_DisplayID only
  *   the low word of the viewmode (MOVE d1,newmodes+2, the upper word stays
  *   0): display IDs with a monitor part (PAL, NTSC, DblPAL, ...) opened on
@@ -261,9 +268,20 @@ static_assert(sizeof sd == 2 + 36 + 20 + 26 + 2, "sd layout");
 /* a screen object, 8 bytes */
 struct scrobj {
     struct Screen *screen;                      /* +0 */
-    struct DBufInfo *dbuf;                      /* +4 ShowBitMap on V39+ */
+    struct DBufInfo *dbuf;                      /* +4 ShowBitMap on V39+; bit 0:
+                                                   FOUND (fixed #248) */
 };
 static_assert(sizeof(struct scrobj) == 8, "scrobj size");
+
+/* bit 0 of dbuf: the screen was found (FindScreen, WbToScreen), not
+   opened by this object - freescreen does not close it (fixed #248: the
+   original closed every "bLtZ" screen, also another object's).  A
+   DBufInfo (AllocMem) is never odd. */
+#define FOUND 1UL
+static struct DBufInfo *dbufof(const struct scrobj *obj)
+{
+    return (struct DBufInfo *)((ULONG)obj->dbuf & ~FOUND);
+}
 
 /* dummydata: the a2 stack of Screen n,mode: title length, d, h, w, y, x */
 static struct BL_PACKED {
@@ -446,10 +464,12 @@ static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase)
     struct GfxBase *GfxBase = dbufgfx;          /* fixed, #247 */
     struct Screen *s = obj->screen;
     struct bl_regs r = { 0 };
+    ULONG found = (ULONG)obj->dbuf & FOUND;
 
+    obj->dbuf = dbufof(obj);                    /* fixed, #248 */
     if (!s)
         return;
-    if ((ULONG)s->UserData == BLTZ) {           /* don't close non Blitzs */
+    if (!found && (ULONG)s->UserData == BLTZ) { /* don't close non Blitzs */
         r.d0 = (ULONG)s->Title;                 /* title copy */
         BLITZ_ALIBJSR(TOK_freest, r);
         CloseScreen(obj->screen);
@@ -652,9 +672,10 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
  * a3 = the screen object; the first screen with type WBENCHSCREEN, which
  * becomes the used screen.  It is never closed by the library.
  *
- * BUG(orig) (#248): the object's old screen is freed (closed if the
- * library opened it).  Fixed (#247): the original freed it with a2 =
- * the argument stack as graphics base.  Errors: "Can't find WorkBench" (err8, in the
+ * The object's old screen is freed (closed if this object opened it;
+ * Fixed (#248): the original also closed a "bLtZ" screen the object had
+ * only found).  Fixed (#247): the original freed it with a2 = the
+ * argument stack as graphics base.  The object is marked FOUND.  Errors: "Can't find WorkBench" (err8, in the
  * normal code with its text; fixed, #251: the original's text is in the
  * error area).
  *
@@ -666,7 +687,7 @@ void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), struct IntuitionBase *intui 
     struct scrobj *obj = (struct scrobj *)blitz_string;
     struct Screen *s;
 
-    freescreen_(obj, intui);                    /* fixed #247; BUG(orig) (#248) */
+    freescreen_(obj, intui);                    /* fixed #247, #248 */
     /* the list read after freescreen, which may close the front screen */
     for (s = intui->FirstScreen;; s = s->NextScreen) {
         if (!s) {
@@ -677,6 +698,7 @@ void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), struct IntuitionBase *intui 
             break;
     }
     obj->screen = s;                            /* Got WorkBench */
+    obj->dbuf = (struct DBufInfo *)((ULONG)obj->dbuf | FOUND);  /* fixed, #248 */
     *(struct scrobj **)(blitz_globals + used) = obj;
 }
 
@@ -696,7 +718,7 @@ static void findscreen(const UBYTE *title, WORD used, struct IntuitionBase *intu
     struct Screen *s = (struct Screen *)&intui->FirstScreen;
 
     *(struct scrobj **)(blitz_globals + used) = obj;
-    freescreen_(obj, intui);                    /* fixed #247; BUG(orig) (#248) */
+    freescreen_(obj, intui);                    /* fixed #247, #248 */
     for (;;) {
         s = s->NextScreen;
         if (!s) {
@@ -715,6 +737,7 @@ static void findscreen(const UBYTE *title, WORD used, struct IntuitionBase *intu
             break;
     }
     obj->screen = s;
+    obj->dbuf = (struct DBufInfo *)((ULONG)obj->dbuf | FOUND);  /* fixed, #248 */
 }
 
 /**
@@ -738,9 +761,10 @@ void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), struct IntuitionBase *intu
  * a3 = the screen object, which becomes the used screen.  The screen is
  * never closed by the library.
  *
- * BUG(orig) (#248): the object's old screen is freed (closed if the
- * library opened it).  Fixed (#247): the original freed it with a2 =
- * the argument stack as graphics base.  Errors: "Can't find Screen" (err12, in the
+ * The object's old screen is freed (closed if this object opened it;
+ * Fixed (#248): the original also closed a "bLtZ" screen the object had
+ * only found).  Fixed (#247): the original freed it with a2 = the
+ * argument stack as graphics base.  The object is marked FOUND.  Errors: "Can't find Screen" (err12, in the
  * normal code with its text; fixed, #251: the original's text is in the
  * error area).
  *
@@ -829,11 +853,11 @@ static void agashowbitmap(const struct bb_bitmap *bm, struct scrobj *obj,
                           struct GfxBase *GfxBase)
 {
     struct Screen *scr = obj->screen;
-    struct DBufInfo *db = obj->dbuf;
+    struct DBufInfo *db = dbufof(obj);          /* without FOUND, #248 */
 
     if (!db) {
         db = AllocDBufInfo(&scr->ViewPort);
-        obj->dbuf = db;
+        obj->dbuf = (struct DBufInfo *)((ULONG)db | ((ULONG)obj->dbuf & FOUND));
         dbufgfx = GfxBase;                      /* for freescreen_, #247 */
     }
     ChangeVPBitMap(&scr->ViewPort, (struct BitMap *)bm, db);
