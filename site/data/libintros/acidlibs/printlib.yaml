@@ -9,8 +9,9 @@ intro: |
 
   * Bytes, words and longs are printed in decimal, with a `-` for negative
     values.
-  * Quick values are printed with up to four decimals; trailing zeros are
-    left out, and so is a `0` before the point (`.5`).
+  * Quick values are printed rounded to four decimals; trailing zeros are
+    left out, and so is a `0` before the point (`.5`). A value that rounds
+    to a whole number is printed without a point (`3`).
   * Floats are printed with seven significant digits. `FloatMode` decides
     between the fixed point form and the exponent form (`1.234567E+7`).
   * With a format string set by `Format`, all numbers are printed in that
@@ -20,5 +21,6 @@ intro: |
   a digit or a zero, `.` the decimal point, `-` a minus sign for negative
   numbers or a space, `+` a plus or minus sign, and `,` a comma (a space
   where the number has no digits yet). Every other character is printed
-  as it is. A number with more digits before the point than the format
-  has gives a `?`.
+  as it is. A number is rounded at the last place of the format; one
+  with more digits before the point than the format has places gives a
+  `?` followed by its lowest digits (1234 with `"##"` prints `?34`).

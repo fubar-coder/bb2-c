@@ -6,6 +6,5 @@ intro: |
   also provides the operator `^` for floats.
 
   A program that uses one of these functions opens `mathtrans.library` at
-  its start. Kept from the original: if the library cannot be opened, the
-  program tries again forever
-  ([#202](https://github.com/fubar-coder/bb2-c/issues/202)).
+  its start. If the library cannot be opened, the program still runs, but
+  a call of one of these functions crashes it.

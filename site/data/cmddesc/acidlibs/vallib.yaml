@@ -1,23 +1,17 @@
 "Val":
   text: The numeric value of the string, as a float. Leading spaces are skipped; a `$` in front reads a hexadecimal number, a `%` a binary one, and a `-` a negative one. The empty string gives 0.
   notes: |
+    Of the decimal places, the first 9 count; the others are skipped.
+
     Kept from the original: hexadecimal, binary and negative numbers read
     one character behind the string
-    ([#302](https://github.com/fubar-coder/bb2-c/issues/302)); the length
-    of the string is taken as a 16-bit number, so strings of 32769 to
-    65536 characters give 0 and longer ones are read only in part
-    ([#303](https://github.com/fubar-coder/bb2-c/issues/303)); and a fraction
-    of 32 or more digits is dropped
-    ([#304](https://github.com/fubar-coder/bb2-c/issues/304)).
+    ([#302](https://github.com/fubar-coder/bb2-c/issues/302)).
 "Int":
   text: The integer part of the value, as a long; the fraction is cut off towards 0. Takes a value of any numeric type.
 "Frac":
   text: The fractional part of the float value, with the sign of the value.
 "Sgn":
   text: The sign of the value, -1, 0 or 1. Takes a value of any numeric type.
-  notes: |
-    Kept from the original: for a float, the result is always 1, whatever
-    the value ([#301](https://github.com/fubar-coder/bb2-c/issues/301)).
 "Abs":
   text: The absolute value, as a float. Takes a value of any numeric type.
 "Rnd":
