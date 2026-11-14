@@ -20,13 +20,12 @@
  * The flags argument (#push|#long, read with -(a2) in sussflags):
  *   0 = default ($52), 1 = toggle ($5B), 2 = toggle + exclude the others
  *   ($5B, MutualExclude = all but this item), 3 = checked toggle ($15B),
- *   4 = 3 + exclude, >= 5 = the flags themselves (word compare).
+ *   4 = 3 + exclude, >= 5 = the flags themselves (their low word, the
+ *   item's Flags word).
  *
  * Kept from the original (BUG(orig)):
  *   - Not a bug (word result, the compiler uses only d0.w): MenuChecked:
  *     SNE/EXT.w, the upper word of d0 stays.
- *   - The flag test is a word compare after a long test: $10000 gives
- *     word 0 < 5 and ends in the "4" branch. (#219)
  *   - Not a bug (the intended result for a new entry): a shortcut sets the
  *     entry's Flags to 4 (COMMSEQ) in findthing, the item flags are ORed
  *     in afterwards.
@@ -57,6 +56,10 @@
  *   small flag values gave the default flags.  They take the whole long
  *   now, as MenuItem; their item Flags are ORed as in menucont (the
  *   original's MOVE gave the same for the new entry).
+ * Fixed (intended deviation, #219): the flag test was a word compare
+ *   after a long test: $10000 gave word 0 < 5 and ended in the "4" branch
+ *   (checked toggle + exclude).  It compares the long now: $10000 is
+ *   ">= 5", its low word 0 the flags.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -479,7 +482,7 @@ static void sussflags(ULONG flags, UWORD item)
     mexclude = 0;
     if (flags) {
         f = (UWORD)flags;
-        if ((UWORD)flags < 5) {                 /* CMP #5,d7:BCC (word) */
+        if (flags < 5) {                        /* long, fixed (#219) */
             switch ((UWORD)flags) {
             case 1:
                 f = 0x005b;
@@ -755,8 +758,8 @@ static void menuitem(WORD m, WORD i, const UBYTE *text, struct TextAttr **font,
  * toggle ($15B), 4 = 3 + exclude, >= 5 = the flags themselves.  The list
  * is in a3.
  *
- * BUG(orig) (#219): the flag test is a word compare after a long test:
- * $10000 gives word 0 < 5 and ends in the "4" branch.
+ * Fixed (#219): the original's flag test was a word compare after a long
+ * test: $10000 gave word 0 < 5 and ended in the "4" branch.
  *
  * Errors (debugger only, itemchk2): "Uninitialized IntuiFont", "Illegal
  * Menu number", "Illegal Menu Item number" (the item may be one behind
@@ -839,7 +842,7 @@ static void subitem(WORD m, WORD i, WORD s, const UBYTE *text, struct TextAttr *
  *
  * BUG(orig) (#220): replacing an existing subitem moves the following
  * ones by (subitem number - old height) instead of the height difference
- * (d3 is the number again after textcalc).  BUG(orig) (#219) as MenuItem.
+ * (d3 is the number again after textcalc).  Fixed (#219) as MenuItem.
  *
  * Errors (debugger only, subchk2): "Uninitialized IntuiFont", "Illegal
  * Menu number", "Illegal Menu Item number", "Illegal Menu Sub Item
