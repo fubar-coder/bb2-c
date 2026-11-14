@@ -351,7 +351,7 @@ C after the CD binary (the source is a different state; DetachGTList, GTGimmeClu
 
 ## 80 asllib (`#myasllib`)
 
-C, declarations identical; the binary differs from the source (additional font tag ASL_TB+17=256, pattern "" instead of 0, freeing with FreeFileRequest -36) – the binary is the reference. BUG(orig): ASLScreenRequest returns the freed requester (#60); ASLPathRequest$ copies fr_File to the address in d2 (#61); without asl.library the length is the title address (#62). Host comparison identical; no stable emulator test (closing task in the BASIC test not reliable).
+C, declarations identical; the binary differs from the source (additional font tag ASL_TB+17=256, pattern "" instead of 0, freeing with FreeFileRequest -36) – the binary is the reference. BUG(orig): ASLScreenRequest returns the freed requester (#60); ASLPathRequest$ copies fr_File to the address in d2 (#61); without asl.library the length is the title address (#62). Fixed (#403): FreeFileRequest only for an allocated requester (the original also with 0; test `asllib-free-null-request`). Host comparison identical; no stable emulator test (closing task in the BASIC test not reliable).
 
 ## 152 freqlib
 

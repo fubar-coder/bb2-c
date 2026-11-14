@@ -32,7 +32,6 @@
  *     = the title's address as string length (the "defaults to freqlib"
  *     call is commented out in the source). (#62)
  *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
- *   - FreeFileRequest(0) when AllocAslRequest fails. (#403)
  *   - ASLPathRequest$ without dimensions keeps the pattern flag of the
  *     previous ASLFileRequest$ call (flags is not reset). (#64)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
@@ -40,6 +39,8 @@
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#403): FreeFileRequest only for a requester; the original called
+ *   it with 0 when AllocAslRequest failed (filefail).
  * The CD binary differs from the source: an extra font tag ASL_TB+17 =
  * 256 and an initial pattern "" instead of 0 (the binary is followed).
  * DIFF: the original stores maxslib's d1 (-1) into the title's length
@@ -339,7 +340,8 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     Tags.file.ti_Data = file;
     aslstruct = AllocAslRequest(ASL_FileRequest, (struct TagItem *)&Tags);
     if (!aslstruct || !AslRequest(aslstruct, (struct TagItem *)&Tags)) {
-        FREEREQ(aslstruct);      /* filefail (also with 0) */
+        if (aslstruct)                  /* filefail.  Fixed (#403): only a */
+            FREEREQ(aslstruct);         /* requester (the original: also 0) */
         *blitz_string = 0;
         Tags.flags2.ti_Data = 0;
         return 0;
@@ -384,8 +386,8 @@ static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
  * at a3 = the title argument's place in the string work area; Cancel: ""
  * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
  * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
- * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
  * @param arg0  d0: the title
@@ -414,8 +416,8 @@ static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
  * at a3 = the title argument's place in the string work area; Cancel: ""
  * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
  * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
- * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
  * @param arg0  d0: the title
@@ -446,8 +448,8 @@ static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
  * at a3 = the title argument's place in the string work area; Cancel: ""
  * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
  * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
- * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
  * @param arg0  d0: the title
@@ -479,8 +481,8 @@ static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
  * at a3 = the title argument's place in the string work area; Cancel: ""
  * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
  * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
- * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
  * @param arg0  d0: the title

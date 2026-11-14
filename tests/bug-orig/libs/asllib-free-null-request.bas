@@ -6,6 +6,7 @@
 ; the requester it gets and how often it is called (no requester is
 ; opened, nothing is freed); both vectors are restored afterwards.
 ; Correct: without a requester FreeFileRequest is not called.
+; @fixed #403
 ; @configs clib
 DEFTYPE .l
 MaxLen p$=160
