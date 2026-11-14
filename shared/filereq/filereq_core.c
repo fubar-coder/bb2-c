@@ -43,8 +43,6 @@
  * or the rest at the end of the hunk (never read).
  *
  * Kept from the original (BUG(orig)):
- *   - dos, intuition and graphics are opened (OldOpenLibrary) at every
- *     call and never closed (#154).
  *   - The volume list (DRIVES) walks the DOS list without locking it
  *     (the labels are right: dl_Type 1 = DLT_DIRECTORY -> $F9 "<ASN>",
  *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
@@ -55,6 +53,9 @@
  *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
+ * Fixed (#154): dos, intuition and graphics are opened (OldOpenLibrary) at
+ *   every call, as in the original, and closed again at its end (the
+ *   original never closes them: their open counts rose with every call).
  * Fixed (#345): "CD" clears BufferPos and DispPos of the path StringInfo
  *   ($111E/$1122, as the start of fq_request does).  The original cleared
  *   the words at $111A and $111E: the high word of UndoBuffer and its
@@ -586,6 +587,22 @@ static void setheight(void)
     fq.nw.Height = h > FQ_MAXHEIGHT ? FQ_MAXHEIGHT : h;
 }
 
+/* Fixed (#154): close the libraries this call opened (the original never
+   closes them); the bases are cleared, so the next call (or a failed
+   open) starts from 0 */
+static void closelibs(void)
+{
+    if (fq.gfxbase)
+        CloseLibrary((struct Library *)fq.gfxbase);
+    if (fq.intbase)
+        CloseLibrary((struct Library *)fq.intbase);
+    if (fq.dosbase)
+        CloseLibrary((struct Library *)fq.dosbase);
+    fq.gfxbase = NULL;
+    fq.intbase = NULL;
+    fq.dosbase = NULL;
+}
+
 /* $CA - the requester; returns fq.result or 0 */
 ULONG fq_request(void)
 {
@@ -913,6 +930,7 @@ close:
     CloseWindow(fq.win);
 fail:                                   /* $6D2 */
     FreeMem(fq.img_up.ImageData, 48);
+    closelibs();                        /* Fixed (#154) */
     return result;
 }
 

@@ -6,6 +6,7 @@
 ; the requester writes past its data block (see t93_freq).
 ; Correct: every library the process opened is closed again (+0).  The
 ; original leaves each of the three opened once more.
+; @fixed #154
 ; @configs clib
 ; @pass runwrap=@INJECT@|opencount=dos.library opencount=intuition.library opencount=graphics.library click=FQ/CANCEL
 ; @pass timeout=120

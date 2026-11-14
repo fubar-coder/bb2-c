@@ -28,8 +28,6 @@
  *
  * Kept from the original (BUG(orig)):
  *   - path$/file$ get the new contents but not their new lengths. (#153)
- *   - dos, intuition and graphics are opened (OldOpenLibrary) at every
- *     call and never closed. (#154)
  *   - The volume list (DRIVES) walks the DOS list without locking it
  *     (the labels are right: dl_Type 1 = DLT_DIRECTORY -> $F9 "<ASN>",
  *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
@@ -53,6 +51,9 @@
  *   emulator: reboot, or "ILLEGAL Instruction").  Here the list has at most
  *   64 lines and the window is at most 597 (64 * 8 + 85) high, also the
  *   first one; details in filereq_core.c (test freqlib-64-lines).
+ * Fixed (#154): dos, intuition and graphics, opened (OldOpenLibrary) at
+ *   every call, are closed again at its end; the original never closed
+ *   them.
  * Fixed (#345): "CD" clears BufferPos and DispPos of the path gadget; the
  *   original cleared the high word of its UndoBuffer pointer ($111A
  *   instead of DispPos), and Intuition then copied the path into the
@@ -98,7 +99,7 @@ BLITZ_LIBFIN();
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
  * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
- * The other BUG(orig) of the requester (#154, #156-#159): see the
+ * The other BUG(orig) of the requester (#156-#159): see the
  * head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not
