@@ -49,6 +49,16 @@ set it to 0 for the tag list. Assembler remains for:
 Not ported: `replymsg` and `waitappevent` (dead code without a token in
 the original).
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `NextAppFile`/`AppFile` leave a3 on the 0 of their result; the
+  original copied the name with its 0 and left a3 behind it, so in a
+  string expression the next part was written one byte too far
+  (`NextAppFile+".bak"` held the 0 and lost the `k`) (#519).
+
 ## BUG(orig), kept
 
 * `AddAppIcon` loads the DiskObject into a3 and the tag list (0) into a4
@@ -71,9 +81,8 @@ the original).
   lock (`ChangeMode` + `UnLock`, "Let us Unlock() it!") – and clear it in
   the message, unless the path ends with `:`. A second `AppFile` of the
   same argument then has lock 0. The `:` test reads the byte before the
-  string if the path is empty (#521). a3 ends **behind** the 0 (d0 = the
-  length is right) (#519). `AppFile(n)` with n ≤ 0 reads the WBArg
-  before the list (#520).
+  string if the path is empty (#521). `AppFile(n)` with n ≤ 0 reads the
+  WBArg before the list (#520).
 * `AppLock` reads the first WBArg without looking at `am_NumArgs` (#522).
 * finit replies to the messages still queued at the port only if a
   message is current (the last `AppEvent`); the flag `msgportflag` for the

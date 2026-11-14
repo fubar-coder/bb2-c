@@ -354,14 +354,16 @@ AppLock|d0 = lock|message 0|1	$00000001
 NextAppFile|kept|0|1	kept
 NextAppFile|popped|0|1	$00000000
 NextAppFile|d0|0|1	$0000000E
-NextAppFile|a3|0|1	$00000013
+NextAppFile|a3|0|1 [orig]	$00000013
+NextAppFile|a3|0|1 [fixed #519]	$00000012
 NextAppFile|out|0|1	bytes 300 fnv 959C587D
 NextAppFile|wa_Lock[0]|0|1	$00000001
 NextAppFile|wa_Lock[1]|0|1	$00000001
 NextAppFile|kept|0|2	kept
 NextAppFile|popped|0|2	$00000000
 NextAppFile|d0|0|2	$00000018
-NextAppFile|a3|0|2	$0000001D
+NextAppFile|a3|0|2 [orig]	$0000001D
+NextAppFile|a3|0|2 [fixed #519]	$0000001C
 NextAppFile|out|0|2	bytes 300 fnv CC6A2BA1
 NextAppFile|wa_Lock[0]|0|2	$00000001
 NextAppFile|wa_Lock[1]|0|2	$00000000
@@ -375,14 +377,16 @@ NextAppFile (none left)|wa_Lock[1]|0|1	$00000000
 AppFile|kept|1|1	kept
 AppFile|popped|1|1	$00000000
 AppFile|d0|1|1	$0000000E
-AppFile|a3|1|1	$00000013
+AppFile|a3|1|1 [orig]	$00000013
+AppFile|a3|1|1 [fixed #519]	$00000012
 AppFile|out|1|1	bytes 300 fnv 959C587D
 AppFile|wa_Lock[0]|1|1	$00000001
 AppFile|wa_Lock[1]|1|1	$00000000
 AppFile (lock 0 now)|kept|2|1	kept
 AppFile (lock 0 now)|popped|2|1	$00000000
 AppFile (lock 0 now)|d0|2|1	$00000009
-AppFile (lock 0 now)|a3|2|1	$0000000E
+AppFile (lock 0 now)|a3|2|1 [orig]	$0000000E
+AppFile (lock 0 now)|a3|2|1 [fixed #519]	$0000000D
 AppFile (lock 0 now)|out|2|1	bytes 300 fnv 0DA06B9A
 AppFile (lock 0 now)|wa_Lock[0]|2|1	$00000001
 AppFile (lock 0 now)|wa_Lock[1]|2|1	$00000000

@@ -47,8 +47,7 @@
  *   - NextAppFile/AppFile unlock the lock of the WBArg (ChangeMode +
  *     UnLock - Workbench's own lock) and clear it in the message, unless
  *     the path ends with ':'.  The ':' test reads the byte before the
- *     string if NameFromLock gives an empty path (#521).  a3 ends BEHIND
- *     the 0 of the result (d0 = the length is right) (#519).  AppFile(n)
+ *     string if NameFromLock gives an empty path (#521).  AppFile(n)
  *     with n <= 0 reads the WBArg before the list (#520); AppLock reads
  *     the first WBArg without looking at am_NumArgs (#522).
  *   - finit replies to the messages queued at the port only if a message
@@ -58,6 +57,10 @@
  *   - init: if a library does not open, the port is deleted and the block
  *     freed, but the libraries already opened stay open; AppMsgPort then
  *     still returns the deleted port (#526).
+ *
+ * Fixed (intended deviation, #519): NextAppFile/AppFile copied the file
+ * name with its 0 and left a3 behind the 0, so a string expression went
+ * on one byte too far; a3 now ends on the 0.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -447,8 +450,8 @@ BLITZ_THUNK(appeventcode, appeventcode_c, "d1/a0-a1");
  * NameFromLock of the argument's lock, '/' unless the path ends with
  * ':', then the name.  BUG(orig) (#521): the lock (Workbench's) is
  * unlocked and cleared in the message unless the path ends with ':', and
- * that test reads the byte before the string for an empty path;
- * BUG(orig) (#519): a3 ends behind the 0.
+ * that test reads the byte before the string for an empty path.  a3 ends
+ * on the 0 (fixed, #519: the original left it behind the 0).
  * @return d0: the length, 0 if there is no message, no argument left or
  *         NameFromLock fails
  */
@@ -481,7 +484,8 @@ static ULONG BLITZ_ROUTINE appfile_c(void)
     s = (UBYTE *)arg->wa_Name;
     while ((*blitz_string++ = *s++) != 0)
         ;
-    return blitz_string - start - 1;
+    blitz_string--;                             /* fixed (#519): a3 on the 0 */
+    return blitz_string - start;
 }
 BLITZ_THUNK(appfile, appfile_c, "d1/a0-a1");
 
