@@ -44,6 +44,11 @@
  *     swapped) and RenderPoly.  Not fixed on purpose: the range check on
  *     every call would cost speed in a rendering library; clip polygons
  *     before the call.  (#1019)
+ * Fixed (intended deviation, docs/libs/deviations.md):
+ *   - BitMapPoly, ChunkyPoly and RenderPoly divide by zero when a side
+ *     starts beyond the clip edge it is cut at and its first edge is
+ *     vertical (the cut at the side divides by the edge's dx); here such
+ *     an edge is not cut. (#1033)
  * DIFF (memory layout, unavoidable): what such an overflow hits.
  */
 #include "blitzlib.h"
@@ -287,8 +292,15 @@ static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, 
         }
         if (right ? x < 0 : x > last) {         /* roff/loff */
             const struct point *from = p - dir;
+            WORD dx = from->x - x;
 
-            e[-1].lines -= muldiv(right ? x : x - last, from->y - y, from->x - x);
+            /* Fixed (#1033): a vertical edge beyond the clip width has no
+               crossing to cut at (the side starts on it: the start handling
+               moves in one start only); the original divides by its dx of
+               0.  Its lines stay: the drawing loop stops at the first,
+               whose x is beyond the clip width. */
+            if (dx)
+                e[-1].lines -= muldiv(right ? x : x - last, from->y - y, dx);
             break;
         }
         p += dir;

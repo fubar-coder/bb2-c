@@ -36,8 +36,8 @@ Statement csum{t$,c.l}
   NPrint t$," ",Hex$(s)
 End Statement
 ; x and y of the points all different: where a side leaves the clip width,
-; the cut divides by the x difference to the point before (DIVS by 0 if
-; both are beyond the edge at the same x - the same in the original; the
+; the cut divides by the x difference to the point before (the original
+; divides by 0 if both are beyond the edge at the same x, #1033; the
 ; chunky form swaps x and y)
 Function.l uniq{a.l,i.l,v.l}
   Repeat

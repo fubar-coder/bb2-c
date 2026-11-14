@@ -48,6 +48,10 @@
  *     clipped to the bitmap plus one pixel with long arithmetic
  *     (clippoly), and the orientation test compares exact products; the
  *     polygons in that range are drawn as before. (#1000)
+ *   - Polyf divides by zero when a side starts beyond the clip edge it is
+ *     cut at and its first edge is vertical (the cut at the side divides
+ *     by the edge's dx); here such an edge is not cut.  The clipping of
+ *     #1000 can make such an edge (#1034). (#1033)
  * Not a bug (statements, a3 has no meaning after them): the routines leave
  * a3 where the original leaves it (bitmap, plane pointer, ...), not the
  * string pointer.
@@ -1370,8 +1374,16 @@ static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, 
         }
         if (right ? x < 0 : x > last) {         /* roff/loff */
             const struct point *from = p - dir;
+            WORD dx = from->x - x;
 
-            e[-1].lines -= muldiv(right ? x : x - last, from->y - y, from->x - x);
+            /* Fixed (#1033): a vertical edge beyond the clip width has no
+               crossing to cut at (the side starts on it: the start handling
+               moves in one start only, and the clipping of #1000 can put
+               such an edge on x = -1 or x = width, #1034); the original
+               divides by its dx of 0.  Its lines stay: the drawing loop
+               stops at the first, whose x is beyond the clip width. */
+            if (dx)
+                e[-1].lines -= muldiv(right ? x : x - last, from->y - y, dx);
             break;
         }
         p += dir;
