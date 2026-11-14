@@ -194,8 +194,10 @@ init value is the **address** of the variable `signals` (for other libs:
 * Memory error → runtime error "Failed to allocate memory for Port"
   (`TRAP #0`); the original then runs into its message text, the
   C version returns with 0 (#300, fixed in the port). Not testable.
-* `DeleteMsgPort` checks nothing: pending messages remain
-  unanswered, foreign ports destroy the list (BUG(orig), #299).
+* `DeleteMsgPort` checks nothing: foreign ports destroy the list (an
+  invalid argument). Fixed (intended deviation, #299): pending messages
+  remained unanswered; they are now replied before the port is freed
+  (bug-orig test `utillib-deletemsgport-unchecked`).
 * `Wait` waits for **all** allocated signals of the task (`tc_SigAlloc`),
   result also in `signals` (the intended semantics, not a bug). In the test beforehand with inline assembler
   `Signal(FindTask(0),SIGBREAKF_CTRL_F)`.

@@ -25,8 +25,8 @@
  *     port block stays allocated if the name allocation fails).  After
  *     TRAP #0 the original runs into its message text; not reproduced
  *     (DIFF, K: the C version returns 0, #300).
- *   - DeleteMsgPort accepts anything: pending messages are not replied,
- *     a port that utillib did not create corrupts memory. (#299)
+ *   - DeleteMsgPort accepts anything: a port that utillib did not create
+ *     corrupts memory (an invalid argument, not checked).
  *   - Not a bug (the intended semantics, any allocated signal): Wait waits
  *     for ALL allocated signals of the task (tc_SigAlloc).
  *
@@ -40,6 +40,9 @@
  *     error: the block is freed with its $2A bytes, then the runtime error
  *     "Failed to allocate signal for Port"; if the trap returns,
  *     CreateMsgPort returns 0.
+ *   - #299: DeleteMsgPort freed the port with the messages still queued
+ *     on it, without replying them (a sender waiting at its reply port
+ *     never got the message back).  Here they are replied first.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -279,11 +282,14 @@ BLITZ_THUNK(_CreateMsgPort, createmsgport_c, "d1/a1");
 /**
  * @brief DeleteMsgPort *UserPort - delete a port made by CreateMsgPort.
  *
- * RemPort and frees the name if there is one, frees the signal, unlinks
- * the port from utillib's list and frees its block.  Keeps all registers.
+ * RemPort and frees the name if there is one, replies the messages still
+ * queued, frees the signal, unlinks the port from utillib's list and frees
+ * its block.  Keeps all registers.
  *
- * BUG(orig) (#299): accepts anything: pending messages are not replied,
- * a port that utillib did not create corrupts memory.
+ * Fixed (#299): the queued messages are replied (the original freed the
+ * port with them); replies that came back to the port (NT_REPLYMSG) are
+ * only removed.  Not checked (an invalid argument): a port that
+ * utillib did not create corrupts memory.
  *
  * @param port d0: the port
  */
@@ -298,6 +304,16 @@ static void BLITZ_ROUTINE deletemsgport_c(struct MsgPort *port BL_REG(d0))
         h = (ULONG *)port->mp_Node.ln_Name - 1;         /* SUBA.l #4,a1 */
         r = (struct bl_regs){ .d0 = *h, .a1 = (ULONG)h };
         BLITZ_ALIBJSR(TOK_globfree, r);
+    }
+    {                                                   /* fixed (#299) */
+        struct Message *m;
+
+        /* only messages sent to the port: a reply that came back to it
+           (NT_REPLYMSG; the port was the reply port) is not replied again,
+           which would also put it back on this port */
+        while ((m = GetMsg(port)) != NULL)
+            if (m->mn_Node.ln_Type == NT_MESSAGE)
+                ReplyMsg(m);
     }
     /* FreeSignal: MOVEQ #0,d0:MOVE.b 15(a5),d0 - zero extended */
     BL_FREESIGNAL(port->mp_SigBit);

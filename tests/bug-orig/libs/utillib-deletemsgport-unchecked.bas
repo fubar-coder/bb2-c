@@ -6,6 +6,7 @@
 ; Here a message with reply port r is put on port p (exec PutMsg), then p
 ; is deleted.
 ; Correct: the pending message is replied - it arrives at r.
+; @fixed #299
 ; @configs clib
 p.l=CreateMsgPort("")
 r.l=CreateMsgPort("")
