@@ -9,7 +9,11 @@
 DEFTYPE .l
 Function.l rn{lo.l,hi.l}
   SHARED seed.l
-  seed=(seed*69069+1) AND $7FFFFFFF
+  ; seed*69069 as the original lmullib gives it (the high word of a cross
+  ; product also added to the low word, #199), from 16 bit products: none
+  ; overflows, so the sequence does not depend on the library
+  sl.l=seed AND $FFFF : sh.l=seed LSR 16
+  seed=(sl*3533+(((sh*3533+sl) AND $FFFF) LSL 16)+((sh*3533) LSR 16)+1) AND $7FFFFFFF
   Function Return lo+((seed/256) MOD (hi-lo+1))
 End Function
 Statement sums{t$}
