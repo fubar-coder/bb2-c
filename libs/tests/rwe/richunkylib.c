@@ -25,8 +25,9 @@
  * allocation with and without old data, the unused word
  * at offset 6 set without data: the free routine without data,
  * BUG(orig), #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
- * 8, the depth word $0108 = with bm_Flags, 7 and $8008 = nothing, an
- * object without data = nothing), RaycastSky (random columns, heights
+ * 8, the depth word $0108 = with bm_Flags, 7 = nothing, $8008 = with
+ * bm_Flags bit 7: nothing in the original, converted in the C build
+ * (#883), an object without data = nothing), RaycastSky (random columns, heights
  * 1..256, x and column with marker upper words, negative columns),
  * PlanarToChunky and ChunkyLoadBitMap (no code), the object manager's
  * free routine (a3 = the object; with and without data), init, finit.

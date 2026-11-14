@@ -49,6 +49,11 @@ kind F):
 * The free routine (ChunkyBitmap on an object with data, the end of the
   program) leaves CIA-A PRA bit 1 (the power LED / audio filter) as it
   is; the original toggled it with a `BCHG #1,$bfe001` left in (#886).
+* ChunkyToPlanar tests the byte `bm_Depth` (below 8: nothing); the
+  original compared the word `bm_Flags` * 256 + `bm_Depth` signed
+  (`CMPI.w #8,4(a1)`), so a Flags byte of 1-127 let any depth pass (8
+  planes written into a bitmap of fewer) and one with bit 7 set refused
+  even a bitmap of depth 8 (#883).
 
 ## BUG(orig), kept
 
@@ -56,9 +61,8 @@ kind F):
   the unused word and the upper word of the data pointer. Data below
   `$10000` is never freed, and a ChunkyBitmap on such an object whose
   allocation fails keeps the old pointer (#885).
-* ChunkyToPlanar checks nothing but the depth word (signed, `bm_Flags`
-  in its upper byte) (#883) and the data pointer: the sizes of both
-  bitmaps are assumed (#884).
+* ChunkyToPlanar checks nothing but the depth and the data pointer: the
+  sizes of both bitmaps are assumed (#884).
 * RaycastSky checks nothing; x and column are added as signed words, the
   height is a `DBRA` count (0 copies 65536 rows) (#887).
 

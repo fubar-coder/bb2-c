@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+flags 1 depth 5: planes 0-4 0, planes 5-7 0
+flags 128 depth 8: planes 0-4 12800, planes 5-7 7680
+rc=0

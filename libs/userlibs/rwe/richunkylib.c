@@ -36,14 +36,17 @@
  *     overwrites width and height and, if the allocation fails, clears
  *     them but keeps the old data pointer (#885).
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
- *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884); a
- *     depth word below 8 (signed) does nothing (#883).
+ *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884).
  *   - RaycastSky: no checks; the offsets x and column are added as signed
  *     words, the height is a DBRA count (height 0 copies 65536 bytes)
  *     (#887).
  * Fixed (intended deviation, #886): the free routine leaves CIA-A PRA
  * bit 1 (the power LED / audio filter) as it is; the original toggled it
  * (BCHG #1,$bfe001, a debug flash left in).
+ * Fixed (intended deviation, #883): ChunkyToPlanar tests the byte Depth
+ * (below 8: nothing); the original compared the word Flags * 256 + Depth
+ * signed, so a Flags byte of 1-127 let any depth pass and one with bit 7
+ * set refused every depth.
  * Not a defect: the free routine extends the width twice (EXT.l d0
  * twice) and not the height, so the size it computes has the caller's
  * upper word of d1 - but the size is unused (globfree needs none).
@@ -278,8 +281,10 @@ static ULONG merge2(ULONG x)
  * pixels to the 8 planes from the bitmap's first plane.
  *
  * The planes must be contiguous (plane n = plane 0 + n*10240); nothing
- * without chunky data.  BUG(orig): the sizes are ignored (#884), and the
- * depth test compares Flags and Depth as one signed word (#883).
+ * without chunky data, nothing for a bitmap of depth below 8.
+ * BUG(orig): the sizes are ignored (#884).  Fixed (#883): the depth is
+ * the byte Depth; the original compared Flags and Depth as one signed
+ * word.
  * @param o   a0: the chunky object
  * @param bm  a1: the bitmap (a struct BitMap)
  */
@@ -290,9 +295,9 @@ static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm B
     UBYTE buf[8][4];                            /* 4 bytes per plane */
     UWORD outer;
 
-    /* CMPI.w #8,4(a1): BLT - Flags and Depth as one signed word,
-       BUG(orig) (#883) */
-    if (*(WORD *)&bm->Flags < 8)
+    /* the byte Depth; fixed (#883): the original's CMPI.w #8,4(a1): BLT
+       compared Flags and Depth as one signed word */
+    if (bm->Depth < 8)
         return;
     pl = (ULONG *)*(ULONG *)&bm->Planes[0];     /* read as a long, as the data */
     if (!o->data)

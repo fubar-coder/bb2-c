@@ -207,7 +207,8 @@ ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 3 w/h/d/6|0 depth word $8008|2	$00000000
 ChunkyToPlanar|object 3 data|0 depth word $8008|1	$00000000
 ChunkyToPlanar|object 3 12|0 depth word $8008|1	$00000000
-ChunkyToPlanar|planes|0 depth word $8008|1	bytes 81984 fnv 6222DFC5
+ChunkyToPlanar|planes|0 depth word $8008|1 [orig]	bytes 81984 fnv 6222DFC5
+ChunkyToPlanar|planes|0 depth word $8008|1 [fixed #883]	bytes 81984 fnv 63AB52D9
 RaycastSky|kept|x 0 height 256 column 281|1	kept
 RaycastSky|popped|x 0 height 256 column 281|1	$00000000
 RaycastSky|CIA-A PRA bit 1|x 0 height 256 column 281|1	$00000000
@@ -1089,7 +1090,8 @@ ChunkyLoadBitMap|object 3 w/h/d/6||2	$00000000
 ChunkyLoadBitMap|object 3 data||1	$00000000
 ChunkyLoadBitMap|object 3 12||1	$00000000
 ChunkyLoadBitMap|chunky data||1	bytes 81920 fnv 0CE2BB45
-ChunkyLoadBitMap|planes||1	bytes 81984 fnv 6222DFC5
+ChunkyLoadBitMap|planes||1 [orig]	bytes 81984 fnv 6222DFC5
+ChunkyLoadBitMap|planes||1 [fixed #883]	bytes 81984 fnv 63AB52D9
 ChunkyBitmap|kept|0,100,50|1	kept
 ChunkyBitmap|popped|0,100,50|1	$00000000
 ChunkyBitmap|CIA-A PRA bit 1|0,100,50|1 [orig]	$00000002
