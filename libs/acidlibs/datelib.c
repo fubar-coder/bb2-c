@@ -35,14 +35,16 @@
  *   ADDQ.w #1 / SUBQ.w #1 (no carry/borrow): NumDays("31/12/1977") was
  *   65535, not -1, and the day 65535 (in 2157) came back as 131071.  Here
  *   ADDQ.l / SUBQ.l.
+ * Fixed (intended deviation, #124): NumDays indexed the month table with
+ *   the month without a check: month 0 read the low word of the tick count
+ *   of the last DateStamp, 13 the table's end mark 1000, 14 and 15 the
+ *   code at the end of the library, larger months foreign memory.  Here a
+ *   month outside 1-12 is invalid input: 0, like NumDays' other invalid
+ *   input.
  * Kept on purpose (BUG(orig)):
  *   - NumDays: a 2 digit year reads past the end of the string (the year
  *     ends only at "/" or after 4 characters) (#125); a "/" as first
- *     character of a field becomes the value 47 (#123); month 0 reads the
- *     low word of the tick count of the last DateStamp (word before the
- *     month table),
- *     months 14/15 read the two words after the table (MOVEQ #0,d0:RTS at
- *     the end of the original library, reproduced below) (#124).
+ *     character of a field becomes the value 47 (#123).
  * Not a bug (documented): Mins/Secs return the values of the last Hours
  * call (no DateStamp of their own).
  */
@@ -154,20 +156,16 @@ static struct {                        /* the last Date$ (dym: MOVEM d0-d2) */
 } dym;
 static_assert(sizeof dym == 3 * 2);
 
-/* stamp and months in one block, as in the original: NumDays reads
-   months-2 for month 0 (the low word of the tick count) and the words
-   after the table for months 14/15 (the original library ends there with
-   MOVEQ #0,d0:RTS). */
+/* stamp and months as in the original (stamp: Dc.l 0,0,0, months: the
+   month starts of a leap year and the end mark 1000 for Date$) */
 static struct {
     struct DateStamp stamp;
     UWORD months[13];
-    UWORD tail[2];
 } dt = {
     { 0, 0, 0 },
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 1000 },
-    { 0x7000, 0x4e75 },
 };
-static_assert(sizeof dt == 42);
+static_assert(sizeof dt == 38);
 
 /**
  * @brief Hours: get the system time, the hour of the day.
@@ -421,8 +419,9 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * word operations had no carry/borrow: NumDays("31/12/1977") = 65535).
  * BUG(orig) (#123): a "/" as first character of a field becomes the
  * value 47.
- * BUG(orig) (#124): month 0 reads the low word of the tick count of the
- * last DateStamp, months 14/15 the two words after the table.
+ * Fixed (#124): a month outside 1-12 gives 0 (the original indexed the
+ * month table with it: month 0 read the low word of the tick count of the
+ * last DateStamp, 13 the end mark, 14 and up the memory behind).
  * BUG(orig) (#125): a 2 digit year reads past the end of the string.
  * Fixed (#1001): the days of the cycles are corrected by the century leap
  * days the Gregorian calendar does not have (gregskips_year); the
@@ -430,7 +429,7 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  *
  * @param s  d0: the date string
  * @return d0: the days since 1/1/1978; 0 if day or month are not
- *         followed by "/"
+ *         followed by "/" or the month is not 1-12
  */
 ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 {
@@ -494,6 +493,11 @@ gety:
         day = field1;
         month = field2;
     }
+    /* fixed (#124): a month outside 1-12 is invalid (the original indexed
+       the table with it: month 0 read the tick word before it, 13 the end
+       mark, 14 and up what follows) */
+    if ((UWORD)((UWORD)month - 1) >= 12)
+        return 0;                                       /* skipcalc */
     total = 365UL * (UWORD)num;                         /* MULU d1,d0 */
     quads = bl_divu_w(num, 4);
     leap = digit;
