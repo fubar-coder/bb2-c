@@ -7,3 +7,7 @@ lib 33: added behind the original's libraries
 # (wtagschk, "Too Many Tags"); the original has none
 lib 138: entry 68 WindowTags +$68: code offset set in only one of them
 lib 138: relocations in the declaration part 130 != 131
+# #1031: Inkey$(n) gets an error check (inkeychk) in the error check area,
+# the original had none
+lib 186: entry 1 Inkey$ +$1C: code offset set in only one of them
+lib 186: relocations in the declaration part 11 != 12

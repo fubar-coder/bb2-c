@@ -38,10 +38,14 @@
  *   - #132: at the end of the file DefaultInput returns -1 characters (-2
  *     on a read error): Edit$ moved a3 back by one and returned the
  *     length -1, Edit gave Val the length -1.  Here nothing is read.
+ *   - #1031: Inkey$(n) counts n as an unsigned long: a negative n makes
+ *     about 4 billion attempts and appends every character that comes
+ *     past the string buffer.  The original had no error check for it;
+ *     here inkeychk (error check area only) refuses a negative n with
+ *     "Can't Inkey$ a negative number of Characters!".  Release code
+ *     unchanged (an invalid argument).
  *
  * BUG(orig), kept:
- *   - Inkey$(n) counts n as unsigned long (a negative n: ~4 billion
- *     attempts). (#1031)
  *   - Edit with n = 80 reads up to 81 characters (Read d0+1) into the
  *     80 byte buffer: the 81st overwrites the high byte of pars.length,
  *     which is written again before it is read.  Without the debugger n
@@ -67,6 +71,7 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
                            const void *caller_a6 BL_REG(a6));
 void editchk1(void), editchk2(void), editchkz(void), editchk(void);
+void inkeychk(void);
 
 /* !libheader{#editlib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_editlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -86,7 +91,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(doinkey, 0, 0);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(doinkey2, 0, 0);
+BLITZ_SUBS(doinkey2, inkeychk, 0);
 BLITZ_NAME("Inkey$", "[(Characters)]");
 
 BLITZ_AFUNCTION(BL_FLOAT);
@@ -135,6 +140,9 @@ ULONG BLITZ_ROUTINE doinkey(void)
  * the string at a3.  n counts as an unsigned long.
  * Fixed (#128): Inkey$(0) is the empty string (the original skipped
  * MOVEQ #0,d6 and returned the caller's d6 as the length).
+ * Errors (debugger, inkeychk): "Can't Inkey$ a negative number of
+ * Characters!" (fixed, #1031: the original had no check; a negative n
+ * makes about 4 billion attempts).
  *
  * @param n      d0: the number of attempts
  * @return d0: the string length (the characters that came)
@@ -328,6 +336,7 @@ ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Can't Edit 0 Characters!");
 BLITZ_ERRCHK_MESSAGE(mess2, "Can only Edit up to 80 characters");
+BLITZ_ERRCHK_MESSAGE(mess3, "Can't Inkey$ a negative number of Characters!");
 
 /* editchk1 - TST.l d0:BEQ err1 */
 static void BLITZ_ERRCHK editchk1_c(ULONG n BL_REG(d0))
@@ -352,6 +361,14 @@ static void BLITZ_ERRCHK editchk_c(ULONG n BL_REG(d1))
         BLITZ_RUNERR(mess2);
 }
 
+/* inkeychk - fixed (#1031), not in the original (Inkey$(n) had no
+   check): a negative n */
+static void BLITZ_ERRCHK inkeychk_c(ULONG n BL_REG(d0))
+{
+    if ((LONG)n < 0)
+        BLITZ_RUNERR(mess3);
+}
+
 /* editchkz - MOVE.l d0,d1, then editchk (the original leaves d1 = d0;
    doedit2 sets d1 itself) */
 static void BLITZ_ERRCHK editchkz_c(ULONG n BL_REG(d0))
@@ -365,3 +382,4 @@ BLITZ_ERRCHK_THUNK(editchk1, editchk1_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchk2, editchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchk, editchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchkz, editchkz_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(inkeychk, inkeychk_c, "d0-d1/a0-a1");
