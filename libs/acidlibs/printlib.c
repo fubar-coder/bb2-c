@@ -44,19 +44,17 @@
  *     "1.", 1/65536 -> ".", -1/65536 -> "-." (#234); now "1", "0", "0".
  *   - Quick: a fraction that rounds to 10000 (x.99995 and more) lost the
  *     carry: Print 2.99999 -> "2." (#233); now "3".
- *   - Not a bug (the output style of Blitz 2, the same for Quick and
- *     Float): numbers below 1 have no leading 0 (".5").
+ *   - Format: the original rounds after formatting, in the formatted
+ *     characters: a carry out of the first digit was lost (999.96 with
+ *     "####.#" -> " 000.0") (#235), and numbers without an integer digit
+ *     (|x| < 1: the condition d3 != 0 is then false) were never rounded
+ *     (0.567 with ".##" or "###.##" -> ".56") (#236).  Now the digits are
+ *     rounded before formatting (fmtround): "1000.0", ".57".
  *
  * BUG(orig):
- *   - Not a bug (as above): Float, fixed point: no leading 0 either
- *     (".5"); 0 is "0".
- *   - Format: rounding that carries out of the first digit is lost
- *     (999.96 with "###.#" -> "000.0") (#235); numbers without an integer
- *     digit (|x| < 1, d3 = -(integer digits) = 0) are never rounded,
- *     whatever the format (0.567 with ".##" or "###.##" -> ".56") (#236);
- *     the sign is lost when the format has no "-"/"+" (-7 with "###" ->
- *     "  7") (#237); too many integer digits give "?" and then only
- *     padding for the whole integer part (1234.5 with "##" -> "?  ")
+ *   - Format: the sign is lost when the format has no "-"/"+" (-7 with
+ *     "###" -> "  7") (#237); too many integer digits give "?" and then
+ *     only padding for the whole integer part (1234.5 with "##" -> "?  ")
  *     (#238).
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
@@ -67,7 +65,9 @@
  *     buffer into the first entry (1E19) of the table of powers of ten,
  *     which changes later conversions of numbers >= 1E18. (#241)
  *   - Str$ of a string is printed as a byte (the low byte of the address). (#242)
- * Kept from the original, not a bug (no effect):
+ * Not bugs:
+ *   - the output style of Blitz 2, the same for Quick and Float: numbers
+ *     below 1 have no leading 0 (".5"); 0 is "0".
  *   - strprint, the handler of Str$, has the same code for single
  *     characters (JSR (a6)) as for strings (a0, d0) - inputoutputlib's
  *     dooutsingle would copy d0 characters from a0.  printlib never
@@ -75,10 +75,6 @@
  *   - Str$ installs its handler with dosetout twice (install and
  *     restore), so every Str$ pushes two entries on inputoutputlib's
  *     output stack (a ring of 16, harmless).
- *   - the Format round-up loop starts at the last copied digit (d1); d1 = 0
- *     ("address -1") would need a rounding without a copied integer digit,
- *     which does not occur (rounding needs d3 != 0 = at least one integer
- *     digit). (#239)
  *
  * Registers: the original changes d0-d7/a0-a2 (Print), d0-d1/a0-a2/d4-d6
  * (Str$, d2-d3 kept), d1-d5/a0-a1 (Format, d0 kept); C keeps d2-d7/a2/a6,
@@ -276,6 +272,45 @@ static int ezchar(struct ez *z)
     }
 }
 
+/* fmtround - the digits of a number (no sign) rounded to `places` digits
+   after the point, for Format: the digit behind the last place decides
+   (>= '5' rounds up), the carry runs to the front through the digits and,
+   out of the first digit, makes a new leading "1".  The text is cut
+   behind the last place (the trailing loop of prtype1 never writes more).
+   Returns the text (num itself if nothing is cut), *len its length; buf
+   has room for a leading "1" and the cut text.
+   Fixed (#235, #236): the original rounds afterwards, in the formatted
+   characters, only if d3 != 0 (d3 is then -(the number of integer
+   digits), so a number below 1 was never rounded), and it loses a carry
+   out of the first digit (999.96 with "####.#" -> " 000.0"). */
+static const UBYTE *fmtround(UBYTE *buf, UWORD size, const UBYTE *num, UWORD *len,
+                             UWORD places)
+{
+    UWORD n = *len, point, cut, i;
+    UBYTE *q;
+
+    for (point = 0; point < n && num[point] != '.'; point++)
+        ;
+    cut = point + 1 + places;                   /* the first digit not printed */
+    if (point >= n || cut >= n || cut >= size)
+        return num;
+    for (i = 0; i < cut; i++)
+        buf[1 + i] = num[i];
+    *len = cut;
+    if (num[cut] < '5')
+        return buf + 1;
+    for (q = buf + cut; q > buf; q--) {
+        if (*q < '0' || *q > '9')
+            continue;
+        if (++*q <= '9')
+            return buf + 1;
+        *q = '0';
+    }
+    buf[0] = '1';
+    *len = cut + 1;
+    return buf;
+}
+
 /* prtype1 - output the number a0 (d0 characters), formatted with the
    Format string if there is one.  Word arithmetic as in the original. */
 static ULONG prtype1(const UBYTE *numtext, ULONG len)
@@ -287,7 +322,7 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
     UWORD pos;                                  /* d5: the position counter */
     UWORD over;                                 /* d5: the overflow */
     UWORD count;                                /* d5: the lead/trail loop counter */
-    ULONG last = 0;                             /* after the last copied digit */
+    UBYTE rounded[64];                          /* the rounded digits (fmtround) */
     UBYTE *out;
     const UBYTE *p;
 
@@ -302,7 +337,8 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
         numtext++;
         nchars--;
     }
-    ldigits = 0;                                /* leading digits */
+    numtext = fmtround(rounded, sizeof rounded, numtext, &nchars, pl.formtrail);
+    ldigits = 0;                               /* leading digits */
     trail = 0;                                  /* trailing digits */
     pos = 0;                                    /* pos counter */
     n = nchars - 1;
@@ -341,24 +377,20 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
         do {                                    /* 'leadloop */
             z.out = out;
             if (ezchar(&z))
-                goto alldone_z;
+                goto alldone;
             out = z.out;
             if (*z.form++ == '#') {
                 if ((WORD)--lpad >= 0 || (WORD)--nchars < 0)
                     *out++ = ' ';               /* 'putspc */
-                else {
+                else
                     *out++ = *numtext++;
-                    last = (ULONG)out;
-                }
             } else {                            /* 'iszero */
                 if ((WORD)--lpad >= 0)
                     *out++ = '0';               /* 'putzero */
                 else if ((WORD)--nchars < 0)
                     *out++ = ' ';               /* -> 'putspc */
-                else {
+                else
                     *out++ = *numtext++;
-                    last = (ULONG)out;
-                }
             }
         } while (--count != 0xffff);            /* DBF d5,'leadloop */
     }
@@ -377,44 +409,24 @@ askip:
         count--;
         do {                                    /* 'trailloop */
             if (ezchar(&z))
-                goto alldone2;
+                goto alldone;
             if (*z.form++ == '#') {
                 if ((WORD)--trail < 0 || (WORD)--nchars < 0)
                     *z.out++ = ' ';             /* 'putspc2 */
-                else {
+                else
                     *z.out++ = *numtext++;
-                    last = (ULONG)z.out;
-                }
             } else {
                 if ((WORD)--trail < 0 || (WORD)--nchars < 0)
                     *z.out++ = '0';             /* 'putzero2 */
-                else {
+                else
                     *z.out++ = *numtext++;
-                    last = (ULONG)z.out;
-                }
             }
         } while (--count != 0xffff);
     }
     while (!ezchar(&z))                         /* 'doexcess: BSR ezchar:BEQ */
         ;
-alldone2:
-    /* round up if the next digit is >= 5 (TST.l d3: the upper word of d3
-       is always 0) */
-    if ((WORD)--nchars >= 0 && lpad && *numtext >= '5') {
-        UBYTE *q = (UBYTE *)last;               /* 0 if no digit was copied */
-
-        for (;;) {                              /* 'sssl */
-            q = (UBYTE *)((ULONG)q - 1);
-            if ((ULONG)q < (ULONG)PL_CHARS)     /* CMP.l #chars,a0:BCS */
-                break;
-            if (*q < '0' || *q > '9')
-                continue;
-            if (++*q <= '9')
-                break;
-            *q = '0';
-        }
-    }
-alldone_z:
+    /* (the original rounds here, in the formatted characters: fmtround) */
+alldone:
     out = z.out;
     return output(PL_CHARS, out - PL_CHARS);    /* SUB.l a0,a1:MOVE.l a1,d0 */
 }
@@ -445,7 +457,7 @@ static ULONG prtype2(const UBYTE *buf)
  * BUG(orig) (#240): a Format string longer than 32 characters (no check
  * without the debugger) runs over formlen/formlead/formtrail/decpos and
  * further into the conversion buffers.  The bugs of the formatting
- * itself: #235-#238.
+ * itself: #237, #238 (#235, #236 fixed).
  *
  * Errors (debugger only, formatchk): "Format String too long" (> 32).
  *
@@ -892,7 +904,7 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
  *
- * BUG(orig): the Format bugs (#235-#238) and the float buffer overrun
+ * BUG(orig): the Format bugs #237, #238 and the float buffer overrun
  * (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
