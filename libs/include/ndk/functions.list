@@ -12,7 +12,7 @@
 #             around the call
 #   poisoned  a call in a library does not compile
 #   native    the NDK saves the register itself (a5)
-#   pending   neither, only until the safe forms are written
+# (no other state: configuring refuses one)
 #
 # HEADER    NAME                     REGS   STATE
 bsdsocket  getaddrinfo              a3     poisoned
@@ -27,8 +27,8 @@ datatypes  SetDTAttrsA              a3     poisoned
 exec       AddTask                  a3     poisoned
 exec       RawDoFmt                 a3     poisoned
 exec       Supervisor               a5     native
-gadtools   GT_GetGadgetAttrsA       a3     pending
-gadtools   GT_SetGadgetAttrsA       a3     pending
+gadtools   GT_GetGadgetAttrsA       a3     safe
+gadtools   GT_SetGadgetAttrsA       a3     safe
 graphics   AttemptLockLayerRom      a5     native
 graphics   ChangeExtSpriteA         a3     safe
 graphics   FindColor                a3     poisoned

@@ -56,7 +56,7 @@ writes stay byte-identical.
   named in the report.
 - [x] 5.2 #1027 rimisclib `EZRequest`/`EZRequestArgs`: per the measurement
   of 1.4, test pair, `Fixes #1027`, `fix-scope` run named.
-- [ ] 5.3 gtlib (#328): `GT_SetGadgetAttrsA`/`GT_GetGadgetAttrsA` get the
+- [x] 5.3 gtlib (#328): `GT_SetGadgetAttrsA`/`GT_GetGadgetAttrsA` get the
   safe macro; `KEEP_A3` removed or kept per 1.4; a rework, bytes named in
   `PREV_INTENDED`. At the end the list holds no `pending` function (a test
   of the final list).

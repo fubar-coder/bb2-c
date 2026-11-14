@@ -1528,16 +1528,9 @@ static ULONG BLITZ_ROUTINE gtptr_c(UWORD id BL_REG(d1), struct gtcontext *c BL_R
     return (ULONG)find((struct Gadget *)c, id);
 }
 
-/* GadTools takes the tag list in a3: the NDK inline loads the fixed
-   register and does not restore it.  Fixed (#328): a3 comes back as it
-   was at the call (the original left it on the tag list).  The asm makes
-   the saved value opaque, so that the store back into a3 is kept. */
-#define KEEP_A3(call) do {                                                  \
-        UBYTE *a3_ = blitz_string;                                          \
-        __asm volatile("" : "+a"(a3_));                                     \
-        call;                                                               \
-        blitz_string = a3_;                                                 \
-    } while (0)
+/* GadTools takes the tag list in a3.  Fixed (#328): a3 comes back as it
+   was at the call (the libraries' safe form of the NDK macro,
+   cmake/ndk-calls.cmake; the original left it on the tag list). */
 
 /* set tags on the last gadget of the run with the id */
 static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int last)
@@ -1548,7 +1541,7 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int l
         return 0;
     if (last)
         gad = lastof(gad, id);
-    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, tags));    /* fixed (#328) */
+    GT_SetGadgetAttrsA(gad, c->window, NULL, tags);    /* fixed (#328) */
     return 0;
 }
 
@@ -1675,7 +1668,7 @@ static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD pairs BL_REG(
         return 0;
     gad = lastof(gad, id);
     gttags(pairs, args);
-    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, usertags)); /* fixed (#328) */
+    GT_SetGadgetAttrsA(gad, c->window, NULL, usertags); /* fixed (#328) */
     return 0;                           /* the original: what d0 holds */
 }
 
@@ -1689,7 +1682,7 @@ static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tot
         return;
     onetag.tag.ti_Tag = gad->GadgetType == 0x104 ? tstr : tother;
     onetag.tag.ti_Data = v;
-    KEEP_A3(GT_SetGadgetAttrsA(gad, c->window, NULL, &onetag.tag)); /* fixed (#328) */
+    GT_SetGadgetAttrsA(gad, c->window, NULL, &onetag.tag); /* fixed (#328) */
 }
 
 /**
@@ -1801,7 +1794,7 @@ static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2
         return 0;
     gettag.tag.ti_Tag = tag;
     gettag.tag.ti_Data = (ULONG)&value;
-    KEEP_A3(GT_GetGadgetAttrsA(gad, c->window, NULL, &gettag.tag)); /* fixed (#328) */
+    GT_GetGadgetAttrsA(gad, c->window, NULL, &gettag.tag); /* fixed (#328) */
     return value;
 }
 

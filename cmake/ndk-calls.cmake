@@ -16,7 +16,8 @@
 #     REGS STATE" per function; a line of another form is a FATAL_ERROR
 #   ndk_check_list(INLINE_DIR LIST)
 #     compares the scan with the list in both directions (name, header,
-#     registers; native only for a5, a5 only native): a difference is a
+#     registers; native only for a5, a5 only native, every function safe,
+#     poisoned or native): a difference is a
 #     FATAL_ERROR naming the function and the header.  Run at configure
 #     (cmake/BlitzLibrary.cmake), so that an NDK of a toolchain update
 #     cannot bring a function with a parameter in a3/a4 the list lacks
@@ -36,9 +37,9 @@
 #             saved around the call (exg, as the NDK does for a5)
 #   poisoned  a call does not compile (#pragma GCC poison)
 #   native    the NDK saves the register itself (a5: exg %/d7,%/a5)
-#   pending   neither (only while the safe forms are written; refused at
-#             the end of the change)
-set(NDK_CALLS_STATES safe poisoned native pending)
+# Any other state (such as "pending": neither safe nor poisoned) is
+# refused, by ndk_read_list and by ndk_check.
+set(NDK_CALLS_STATES safe poisoned native)
 
 function(ndk_scan dir out_funcs out_va out_bases)
 	file(GLOB headers ${dir}/*.h)
@@ -247,6 +248,9 @@ function(ndk_check dir entries listname)
 			list(APPEND errors "${f} (inline/${h}.h) is in ${listname} twice")
 		endif()
 		list(APPEND listed "${h} ${f} ${r}")
+		if(NOT state IN_LIST NDK_CALLS_STATES)
+			list(APPEND errors "${f} (inline/${h}.h) has the state ${state}, not one of ${NDK_CALLS_STATES}")
+		endif()
 		if(NOT "${h} ${f} ${r}" IN_LIST funcs)
 			list(APPEND errors "${f} (inline/${h}.h, ${r}) is in ${listname}, but the NDK declares no such function with a parameter in ${r}")
 		endif()

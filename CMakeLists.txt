@@ -176,6 +176,12 @@ add_test(NAME ndk_list_extra COMMAND ${_ndk_check} "-DADD=graphics NoSuchFunctio
 	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-calls.cmake)
 set_tests_properties(ndk_list_extra PROPERTIES
 	PASS_REGULAR_EXPRESSION "NoSuchFunction \\(inline/graphics.h, a3\\) is in")
+# every function of the final list is safe, poisoned or native: TextFit
+# as pending (neither) is refused
+add_test(NAME ndk_list_pending COMMAND ${_ndk_check} -DDROP=TextFit
+	"-DADD=graphics TextFit a3 pending" -P ${PROJECT_SOURCE_DIR}/cmake/ndk-calls.cmake)
+set_tests_properties(ndk_list_pending PROPERTIES
+	PASS_REGULAR_EXPRESSION "TextFit \\(inline/graphics.h\\) has the state pending")
 
 # the library files byte by byte against the prev build (cmake/prev.cmake,
 # tests/README.md "The prev build"); skipped (77) without one.  PREV_INTENDED
