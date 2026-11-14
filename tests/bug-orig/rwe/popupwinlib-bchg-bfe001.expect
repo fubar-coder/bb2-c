@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+button sent 1
+filter bit kept
+rc=0

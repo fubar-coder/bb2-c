@@ -37,14 +37,15 @@
  *   - PopUpWindow always returns 0: the item chosen is returned by the
  *     menu levels, but the result is `selecteditem`, which is only
  *     cleared (#471).
- *   - Sizing a menu with sub menus toggles bit 1 of CIA-A PRA ($BFE001:
- *     the power LED / audio filter), a debug leftover (#468).
  *   - PopUpInit creates a new message port without deleting the old one
  *     (#470).
  *   - A failed AllocVec is not checked: the menu structure is at address
  *     0; a failed OpenWindow returns 0 and closes nothing else (#467).
  *   - Closing a menu window replies every message in the shared port,
  *     also those for the other levels (#469).
+ * Fixed (intended deviation, #468): sizing a menu with sub menus leaves
+ * bit 1 of CIA-A PRA ($BFE001: the power LED / audio filter) as it is;
+ * the original toggled it (BCHG #1,$bfe001, a debug leftover).
  * Not a defect: the item number count at +8 of the structure is the
  * number of items - 1, but nothing uses that field.
  */
@@ -448,10 +449,8 @@ static UWORD calcwinsize(struct popup *p, UWORD *h)
     w += 4;
     *h = y + 2;
     p->textyoffset = ((WORD)(p->itemheight - fontheight) >> 1) + baseline;    /* ASR.w */
-    if (*(UWORD *)hassubs) {
-        w += 8;
-        *(volatile UBYTE *)0xbfe001 ^= 2;           /* BUG(orig): BCHG #1,$bfe001 (#468) */
-    }
+    if (*(UWORD *)hassubs)
+        w += 8;     /* Fixed (#468): the original toggles $BFE001 bit 1 here */
     p->winwidth = w;
     return w;
 }
@@ -579,8 +578,7 @@ static void BLITZ_ROUTINE popupinit_c(void)
  * an item highlights it, an item with a sub menu opens it to the right.
  * BUG(orig) (#471): the result is selecteditem, which is only cleared:
  * always 0.  BUG(orig) (#467): a failed AllocVec is not checked;
- * BUG(orig) (#468): sizing a menu with sub menus toggles bit 1 of CIA-A
- * PRA; BUG(orig) (#469): closing a level replies every message of the
+ * BUG(orig) (#469): closing a level replies every message of the
  * shared port.
  * @param scr    a0: the screen object (screenslib; first long = the
  *               Screen)

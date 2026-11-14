@@ -52,14 +52,20 @@ Not ported: the routines of the source that nothing calls (WPrint,
 WinInnerCls, BitMaptoWin, WSizeLimits, WinGadgetHit) and the GadTools
 variant of WaitWinEvent (`#GADTOOLS = 0`).
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* Sizing a menu with sub menus leaves bit 1 of CIA-A PRA (the power LED
+  / audio filter) as it is; the original toggled it with a
+  `BCHG #1,$bfe001` left in (#468).
+
 ## BUG(orig), kept
 
 * **PopUpWindow always returns 0.** The menu levels return the chosen
   item, but the result is `selecteditem`, which is only cleared. (It is
   a statement anyway.) (#471)
-* **Sizing a menu with sub menus toggles bit 1 of CIA-A PRA**
-  (`BCHG #1,$bfe001`: the power LED / audio filter), a debug leftover
-  (#468).
 * **PopUpInit creates a new port** without deleting the old one (#470).
 * **A failed AllocVec is not checked:** the menu structure is then at
   address 0. A failed OpenWindow returns 0 and closes nothing else

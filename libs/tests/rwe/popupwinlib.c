@@ -18,7 +18,8 @@
  * and are all closed by the library before PopUpWindow returns.
  * Observed per snapshot: the popup windows (position, size, IDCMP) and
  * their contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA
- * relative to the start (BUG(orig) #468: toggled by a menu with sub menus);
+ * relative to the start (#468: the original toggles it for a menu with sub
+ * menus, fixed in the C build);
  * the number of waits and menu levels, d0 (BUG(orig) #471: always 0), the
  * kept registers; checked: no memory lost after the first popup (the
  * first windows leave memory in the system's caches).
