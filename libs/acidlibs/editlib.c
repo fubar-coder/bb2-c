@@ -41,7 +41,7 @@
  *
  * BUG(orig), kept:
  *   - Inkey$(n) counts n as unsigned long (a negative n: ~4 billion
- *     attempts).
+ *     attempts). (#1031)
  *   - Edit calls UStr$ and Val with the a6 of the caller (Edit has no
  *     !libs): Val needs the ffplib base in a6, so Edit only works when the
  *     program has just used it (the compiler caches a6).  The C routine
