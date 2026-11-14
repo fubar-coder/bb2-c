@@ -215,3 +215,61 @@ named in `PREV_INTENDED`. Issues #516 and #1027 get their usual steps
 5. **Transitional `pending` state** (D4): decided (user, 2026-11-14): keep
    `pending` so each commit stays one topic; a test of the final list
    refuses any `pending` entry.
+
+## Findings of the implementation
+
+Tasks 1.1-1.4 (2026-11-14, gcc 16.2-rc24, base main `9566e714`):
+
+- **1.1 CMake reads the NDK.** `cmake/ndk-calls.cmake` (`ndk_scan`) reads
+  every `inline/*.h` except the vbcc `*_protos.h` with `file(READ)`, drops
+  the characters that mean something in a CMake list (`\` `;` `[` `]`),
+  splits it into lines and keeps those with a `#define NAME(`, a register
+  variable `__asm("a3|a4|a5")`, an `exg %/dN,%/aN`, a varargs wrapper
+  `static __stdargs ... __X_va(` or the call of `__NAME_base(` in its
+  body. It finds the audit's 35 functions with their registers (a3; a3,a4
+  for SaveDTObjectA, GetIconRectangleA, SetPageGadgetAttrsA, AddAppIconA)
+  plus the four a5 functions the NDK protects (Supervisor, LockLayerRom,
+  UnlockLayerRom, AttemptLockLayerRom: `native`), and exactly the audit's
+  varargs forms (with RefreshDTObject and RefreshDTObjects, both reaching
+  `__RefreshDTObjectA_base`). bsdsocket.h has another shape (fd2pragma:
+  `#define WaitSelect(`, variables `__WaitSelect_x __asm("a3")`), which
+  the same scan covers; it has no `__NAME_base`, so a bsdsocket function
+  can only be poisoned (the generator refuses `safe` without
+  `__NAME_base`). The scan takes about 0.1 s; no C tool needed. Two
+  CMake pitfalls: an `if(A MATCHES x OR B MATCHES y)` evaluates both and
+  the second clears `CMAKE_MATCH_1`; the varargs wrappers of VOID
+  functions call `__NAME_base(` without `return`.
+- **1.2 Call sites.** The libraries include asl, cia, commodities,
+  console, datatypes, dos, exec, gadtools, graphics, icon, intuition,
+  layers, mathffp, nonvolatile, rexxsyslib, utility and wb (`proto/`).
+  The generator writes a shadow for every NDK inline header, not only for
+  these, so that a library that starts to include another one is covered
+  without a list of the used headers. A fresh scan of all 798 compile
+  commands with `-ffixed-a3` (`-E`, every NDK register variable
+  `__vN __asm("a3|a4|a5")` mapped to its source line and the enclosing
+  function) finds the audit's seven call sites and nothing else
+  (gtlib.c `setattrs`, `gtsetattrs_c`, `setone`, `gtgetattrs_c`;
+  rundebuglib.c:140; rilvcallhooklib.c:212; rimisclib.c `doeasybegin`);
+  every other hit is inside a varargs wrapper (among them rigtmenulib's
+  copies of `__GT_SetGadgetAttrs_va`/`__GT_GetGadgetAttrs_va`, which it
+  never calls). No a4 call.
+- **1.3 No `-fbaserel` in a library**: none of the 798 compile commands
+  with `-ffixed-a3` has it (64 others, blitz2 and TED, do). The safe form
+  of `AddAppIconA` refuses `__baserel__` with `#error`.
+- **1.4 Measurements.**
+  - *EZRequest as a function* (bug-orig test
+    `rwe/rimisclib-ezrequest-a3-args`, `"ab"+Str$(EZRequest(...))+"cd"`
+    for all forms, the emulator answers the requester with 0): restoring
+    a3 alone (thunks saving a3) gives `abT.B`, `abB.O`, `abB.0`, `abT.B`,
+    `ab0cd` (EZRequestArgs with a number only), `abx.y`: the string
+    arguments stay in the result, as #846 found for IconDefTool. With
+    a3 = the first string argument (title$, or body$ in the forms without
+    a title; for EZRequestArgs the lowest address of its string arguments,
+    a3 unchanged without one) every form gives `ab0cd`. So the fix of
+    #1027 gives back the space (Open Question 1): the safe macro keeps a3
+    around `EasyRequestArgs`, the routines then set a3 to the first string
+    argument. The original stops after the first line (a3 = 0).
+  - *gtlib* (Open Question 2): `gtlib.obj` 10364 bytes with `KEEP_A3`;
+    10356 bytes with the safe macro and `KEEP_A3` gone (`move.l
+    sp@(24),d2 / exg d2,a3 / jsr a6@(-42) / exg d2,a3`; one call takes d7,
+    already saved). The safe macro is 8 bytes smaller: `KEEP_A3` goes.

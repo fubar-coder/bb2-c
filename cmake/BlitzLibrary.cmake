@@ -41,6 +41,28 @@
 set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
 set(BLITZLIB_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/../libs/include)
 
+# the libraries' view of the NDK's inline headers (cmake/ndk-calls.cmake):
+# one shadow inline/X.h per NDK header, generated here from
+# libs/include/ndk/functions.list and the safe forms in
+# libs/include/ndk/safe/, first in the include path of every library, so
+# that a call of an NDK function with a parameter in a3/a4 either keeps
+# the register or does not compile.  blitz2 and TED do not see them.
+include(${CMAKE_CURRENT_LIST_DIR}/ndk-calls.cmake)
+set(BLITZLIB_NDK_INLINE ${AMIGA_TOOLCHAIN_PREFIX}/m68k-amigaos/ndk-include/inline)
+set(BLITZLIB_NDK_LIST ${CMAKE_CURRENT_LIST_DIR}/../libs/include/ndk/functions.list)
+set(BLITZLIB_NDK_SAFE ${CMAKE_CURRENT_LIST_DIR}/../libs/include/ndk/safe)
+cmake_path(NORMAL_PATH BLITZLIB_NDK_LIST)
+cmake_path(NORMAL_PATH BLITZLIB_NDK_SAFE)
+set(BLITZLIB_NDK_SHADOW ${CMAKE_BINARY_DIR}/libs/include/ndk)
+if(NOT EXISTS ${BLITZLIB_NDK_INLINE}/exec.h)
+	message(FATAL_ERROR "no NDK inline headers in ${BLITZLIB_NDK_INLINE} (AMIGA_TOOLCHAIN_PREFIX)")
+endif()
+file(GLOB _ndk_safe_files CONFIGURE_DEPENDS ${BLITZLIB_NDK_SAFE}/*.h)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+	${BLITZLIB_NDK_LIST} ${_ndk_safe_files})
+ndk_shadow_headers(${BLITZLIB_NDK_INLINE} ${BLITZLIB_NDK_LIST} ${BLITZLIB_NDK_SAFE}
+	${BLITZLIB_NDK_SHADOW})
+
 # the optimisation profiles of blitz_library(OPTIMIZE ...); every profile
 # optimises, also in Debug builds: -O0 would call libgcc (__mulsi3 ...)
 # - size: -Os, the default; blitz2 copies a whole library into every
@@ -90,6 +112,7 @@ function(blitz_library name)
 		set(arg_VARIANT ${BLITZ_DEFAULT_VARIANT_DIR})
 	endif()
 	target_include_directories(${name} BEFORE PUBLIC ${arg_VARIANT})
+	target_include_directories(${name} BEFORE PRIVATE ${BLITZLIB_NDK_SHADOW})
 	target_include_directories(${name} PUBLIC ${BLITZLIB_INCLUDE})
 	target_compile_options(${name} PRIVATE
 		-fomit-frame-pointer

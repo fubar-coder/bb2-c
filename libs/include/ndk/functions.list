@@ -1,0 +1,56 @@
+# The NDK functions with a parameter in a3, a4 or a5 (the inline headers
+# of the toolchain's NDK) and how the libraries call them
+# (cmake/ndk-calls.cmake; docs/libs/cmdlibs-port.md, "OS calls with a
+# parameter in a3, a4 or a5").  The libraries are compiled with
+# -ffixed-a3/a4/a5: a3 is the Blitz program's string pointer, a4 the base
+# of its locals, a5 of its globals, and gcc saves no fixed register around
+# an __asm block, so the NDK's macro of such a function returns with the
+# register changed.
+#
+# HEADER (inline/HEADER.h)  NAME  REGS (the parameters' registers)  STATE:
+#   safe      safe/HEADER.h redefines __NAME_base with the register saved
+#             around the call
+#   poisoned  a call in a library does not compile
+#   native    the NDK saves the register itself (a5)
+#   pending   neither, only until the safe forms are written
+#
+# HEADER    NAME                     REGS   STATE
+bsdsocket  getaddrinfo              a3     pending
+bsdsocket  gethostbyaddr_r          a3     pending
+bsdsocket  gethostbyname_r          a3     pending
+bsdsocket  WaitSelect               a3     pending
+datatypes  DoDTMethodA              a3     pending
+datatypes  PrintDTObjectA           a3     pending
+datatypes  RefreshDTObjectA         a3     pending
+datatypes  SaveDTObjectA            a3,a4  pending
+datatypes  SetDTAttrsA              a3     pending
+exec       AddTask                  a3     pending
+exec       RawDoFmt                 a3     pending
+exec       Supervisor               a5     native
+gadtools   GT_GetGadgetAttrsA       a3     pending
+gadtools   GT_SetGadgetAttrsA       a3     pending
+graphics   AttemptLockLayerRom      a5     native
+graphics   ChangeExtSpriteA         a3     pending
+graphics   FindColor                a3     pending
+graphics   LockLayerRom             a5     native
+graphics   TextFit                  a3     pending
+graphics   UnlockLayerRom           a5     native
+icon       DrawIconStateA           a3     pending
+icon       GetIconRectangleA        a3,a4  pending
+intuition  AutoRequest              a3     pending
+intuition  BuildEasyRequestArgs     a3     pending
+intuition  BuildSysRequest          a3     pending
+intuition  DoGadgetMethodA          a3     pending
+intuition  EasyRequestArgs          a3     pending
+intuition  SetGadgetAttrsA          a3     pending
+layers     CreateBehindHookLayer    a3     pending
+layers     CreateUpfrontHookLayer   a3     pending
+layout     LayoutLimits             a3     pending
+layout     RefreshPageGadget        a3     pending
+layout     SetPageGadgetAttrsA      a3,a4  pending
+locale     FormatDate               a3     pending
+locale     FormatString             a3     pending
+locale     ParseDate                a3     pending
+virtual    RefreshVirtualGadget     a3     pending
+virtual    RethinkVirtualSize       a3     pending
+wb         AddAppIconA              a3,a4  pending

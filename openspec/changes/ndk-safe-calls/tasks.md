@@ -8,21 +8,21 @@ writes stay byte-identical.
 
 ## 1. Checks before any code
 
-- [ ] 1.1 Confirm that CMake (`file(STRINGS)`, regular expressions) reads
+- [x] 1.1 Confirm that CMake (`file(STRINGS)`, regular expressions) reads
   the register macros of the NDK's `inline/*.h` and gives the audit's 35
   functions (design D4, Open Question 3). Verify: the list equals the
   audit's table; else switch to the tool variant before group 2.
-- [ ] 1.2 List the NDK inline headers the libraries include (`rg
+- [x] 1.2 List the NDK inline headers the libraries include (`rg
   '#include <proto/' libs shared`) and every use of an affected function
   (the audit's seven call sites, plus a fresh scan of the preprocessed
   compile commands). Verify: no call site is missing in the design.
-- [ ] 1.3 Confirm no library is compiled with `-fbaserel` (Open Question 4).
-- [ ] 1.4 Measure the function form of `EZRequest` (Open Question 1) and the
+- [x] 1.3 Confirm no library is compiled with `-fbaserel` (Open Question 4).
+- [x] 1.4 Measure the function form of `EZRequest` (Open Question 1) and the
   byte difference of gtlib with the safe macro (Open Question 2).
 
 ## 2. Shadow headers and inline varargs wrappers
 
-- [ ] 2.1 The list file and the CMake generator for the shadow headers
+- [x] 2.1 The list file and the CMake generator for the shadow headers
   (design D1, D4), the include path before the NDK in `blitz_library`.
   Verify: blitz2 and TED build byte-identical.
 - [ ] 2.2 The varargs wrappers `static inline` (design D2). Verify: a
