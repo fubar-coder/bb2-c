@@ -7,6 +7,8 @@
 ; Activation word (offset 14) for GACT_IMMEDIATE (2).
 ; A GTButton with the same flags is the control (GadTools sets both).
 ; Correct: gadget 1 is disabled, gadget 2 immediate.
+; @fixed #990
+; @configs clib
 ; @pass timeout=60
 DEFTYPE .l
 WbToScreen 0

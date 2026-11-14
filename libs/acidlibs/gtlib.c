@@ -80,6 +80,11 @@
  *   set TOGGLESELECT in the result of CreateGadget without testing it:
  *   when CreateGadget failed it set bit 0 of address 14.  Here only a
  *   gadget gets the bit.
+ * Fixed (intended deviation, #990): GTShape passed flags 64 and 128 to
+ *   CreateGadget as GA_Disabled and GA_Immediate and then replaced the
+ *   gadget's Flags (GFLG_GADGIMAGE, + GFLG_GADGHIMAGE) and Activation
+ *   (GACT_RELVERIFY): neither flag had an effect.  The two words keep
+ *   GFLG_DISABLED and GACT_IMMEDIATE now; the rest is the original's.
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -1288,11 +1293,11 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     si->select = gad->SelectRender;
     gad->GadgetRender = &si->image[0];
     gad->SelectRender = &si->image[1];
-    /* BUG(orig) (#990): the two words replace what CreateGadget made of
-       GA_Disabled and GA_Immediate (flags 64 and 128): no GFLG_DISABLED,
-       no GACT_IMMEDIATE. */
-    gad->Flags = gflags;
-    gad->Activation = GACT_RELVERIFY;
+    /* fixed (#990): the two words keep what CreateGadget made of
+       GA_Disabled and GA_Immediate (flags 64 and 128); the original
+       replaced them, so neither flag had an effect */
+    gad->Flags = gflags | (gad->Flags & GFLG_DISABLED);
+    gad->Activation = GACT_RELVERIFY | (gad->Activation & GACT_IMMEDIATE);
     gad->GadgetType = gad->GadgetType + GTYP_BOOLGADGET - 1;
     gflags = 0;
 }
