@@ -22,11 +22,13 @@
  *     scan stops at the pivot word behind the array, the backward scan
  *     may read words before it; then i > j, nothing is swapped and there
  *     is no recursion (reads only, the result is right). (#275)
- *   - string elements that were never assigned (pointer 0) read their
- *     length from -4(0). (#276)
  *   - Not a bug (a property of the quicksort algorithm): recursion depth is
  *     O(n) in the worst case (the C version needs more stack per level
  *     than the original's 12 bytes).
+ * Fixed (intended deviation, #276): string elements that were never
+ *   assigned (pointer 0) read their length from -4(0) (and their
+ *   characters from 0): the order was arbitrary.  Here a pointer 0 is the
+ *   empty string.
  * The original leaves a2 decremented by 6; the compiler does not use a2
  * afterwards (see memacclib.c).
  */
@@ -125,9 +127,12 @@ static LONG compare(const struct sorter *s, ULONG pivot, const UBYTE *p)
     case 7: {                                           /* compstrs */
         /* d0/a0 = left (pivot), d1/a1 = right: pointers to the
            characters, lengths at -4.  strcomp2 returns -1/0/1 in d0 and
-           the same in the CCR (MOVEQ / TST.l d0). */
+           the same in the CCR (MOVEQ / TST.l d0).  Fixed (#276): a
+           pointer 0 (never assigned) is the empty string, its length is
+           not read from -4(0). */
         const ULONG *l = (const ULONG *)pivot, *r = *(const ULONG *const *)p;
-        struct bl_regs rg = { .d0 = l[-1], .d1 = r[-1], .a0 = (ULONG)l, .a1 = (ULONG)r };
+        struct bl_regs rg = { .d0 = l ? l[-1] : 0, .d1 = r ? r[-1] : 0,
+                              .a0 = (ULONG)l, .a1 = (ULONG)r };
         return (LONG)BLITZ_ALIBJSR(TOK_strcomp2, rg);
     }
     default: {
@@ -213,8 +218,8 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
  * one element array it lies behind the array (reads only, the result is
  * right).
  *
- * BUG(orig) (#276): string elements that were never assigned (pointer 0)
- * read their length from -4(0).
+ * Fixed (#276): string elements that were never assigned (pointer 0) are
+ * the empty string (the original read their length from -4(0)).
  *
  * @param base d0: the base (lowest element) of the array data
  * @param args a2: the stack pointer before the pushes: -4 = the end

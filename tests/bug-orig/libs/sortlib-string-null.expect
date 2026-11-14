@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+up [] [] [a] [b]
+down [b] [a] [] []
+rc=0

@@ -136,8 +136,10 @@ the stack): 1 byte, 2 word, 5 float (mathffp `SPCmp`, a6 = ffplib),
   it lies behind the array: the forward search stops at this word, the
   backward search possibly reads words before the array; then i > j, no
   swap, no recursion – reading only, result correct (not in the corpus).
-* String elements that were never assigned (pointer 0) read their length
-  from -4(0) (BUG(orig), #276).
+* Fixed (intended deviation, #276): string elements that were never
+  assigned (pointer 0) read their length from -4(0) and their characters
+  from 0 (an arbitrary order); a pointer 0 is now the empty string (bug-orig
+  test `sortlib-string-null`).
 * Recursion depth in the worst case O(n) (a property of quicksort, not a
   bug); the C version needs per level more stack than the 12 bytes of the
   original.
