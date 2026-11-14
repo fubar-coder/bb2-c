@@ -105,6 +105,70 @@ after umlaut: 2
 
 Issue: [Characters far above the font's first character were not drawn (#148)](https://github.com/fubar-coder/bb2-c/issues/148).
 
+## Strings
+
+### Text after a string function lost its last character {#text-after-string-function}
+
+A string expression such as `FileRequest$(...)+".bak"` or
+`ProgDir$+"/data"` is built in a work area, one part behind the other. A
+function that returns a string writes its result there and leaves the
+place where the next part goes. Several library functions left that place
+one byte too far, behind the 0 byte that ends their result. The joined
+string had the right length, but it held a 0 byte between the result and
+the next part, and the last character of the next part was missing. A
+program that adds an extension to a chosen file name, or a directory to
+the program's own one, got a name that no file has.
+
+**What happened**
+
+```
+Screen 0,0,0,320,256,2,0,"freqlib",1,2
+Use Screen 0
+MaxLen p$=160
+MaxLen f$=64
+p$="RAM:"
+f$="x"
+r$=FileRequest$("FQ",p$,f$)+".bak"
+NPrint Len(r$)," ",Asc(Mid$(r$,6))," ",Asc(Mid$(r$,9))
+End
+```
+
+The file requester starts with the path `RAM:` and the file `x`, and
+the user clicks OK. The program prints the length of the result and the
+codes of its 6th and 9th characters. The original prints
+
+```
+9 0 97
+```
+
+The 6th character is a 0 byte instead of the dot, and the 9th is an `a`:
+the result is `RAM:x`, a 0 byte and `.ba`.
+
+**With the port**
+
+```
+9 46 107
+```
+
+The result is `RAM:x.bak`.
+
+Issue: [FileRequest$ followed by more text lost its last character (#161)](https://github.com/fubar-coder/bb2-c/issues/161).
+
+The same fault was in `GetRexxCommand` and `GetResultString`
+([#52](https://github.com/fubar-coder/bb2-c/issues/52)), and in several
+functions of the [RWE userlibs](#rwe-text-after-string-function). Two
+more functions left the place of the next part wrong in other ways:
+
+* `Replace$` with an empty search string left it behind its arguments,
+  so a byte of the arguments took the place of the text that followed:
+  `Replace$("ab","","c")+"x"` gave `ab` and a 0 byte instead of `abx`
+  ([#424](https://github.com/fubar-coder/bb2-c/issues/424)).
+* `GTGetAttrs` and `GTSetAttrs`, used as functions in a string
+  expression, left it on a tag list inside the library: the joined string
+  came out wrong, and the rest of the expression was written over that
+  list and the memory behind it
+  ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).
+
 ## GadTools gadgets
 
 ### A gadget took over the values of the one before {#gadtools-values}
@@ -405,6 +469,38 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   reverse flag; a range cycles only when enabled, backwards only when
   marked so
   ([#1002](https://github.com/fubar-coder/bb2-c/issues/1002)).
+* `DecodeShapes` uses shape data that lies in chip memory where it is,
+  and marks the shape so that this memory, which the library did not
+  allocate, is not freed. The mark stayed when the shape was freed or
+  replaced, so the next shape in that object was never freed before the
+  program ended; the mark goes with the shape
+  ([#269](https://github.com/fubar-coder/bb2-c/issues/269)).
+* `CopyShape` of such a shape copied the mark, so the memory of the copy
+  was never freed before the program ended; the copy has no mark
+  ([#268](https://github.com/fubar-coder/bb2-c/issues/268)).
+* A file that `SaveShapes` wrote from such a shape held the mark, and
+  `LoadShapes` of the file, or `DecodeShapes` of it outside chip memory,
+  took it over, so the loaded shapes were never freed before the program
+  ended; the mark is not taken from the file
+  ([#267](https://github.com/fubar-coder/bb2-c/issues/267)).
+* `SaveBitmap` of a bitmap whose flags are set (not one made with
+  `BitMap`, which sets none) read the depth together with the flags and
+  wrote hundreds of planes per line, from memory behind the bitmap, into
+  an invalid file; it writes the planes the bitmap has
+  ([#180](https://github.com/fubar-coder/bb2-c/issues/180)).
+* `LoadBitMap` and `LoadScreen` of a picture with more planes than a
+  bitmap whose flags are set wrote the extra planes through the memory
+  behind the bitmap; they load only the planes the bitmap has
+  ([#188](https://github.com/fubar-coder/bb2-c/issues/188)).
+
+### Sounds
+
+* `DecodeSound` uses sound data that lies in chip memory where it is, and
+  marks the sound so that this memory is not freed. The mark stayed when
+  the next sample was put into the same sound object, by `DecodeSound` of
+  other memory, `LoadSound` or `InitSound`, so that sample was never freed
+  before the program ended; it is freed when the object is reused or
+  freed ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
@@ -564,6 +660,38 @@ The closing quote ends the word, and the port prints
 
 Issue: [`NextArg$` took the closing quote after `""` inside quotes as text (#755)](https://github.com/fubar-coder/bb2-c/issues/755).
 
+### Text after a string function {#rwe-text-after-string-function}
+
+These functions had the fault described under
+[Text after a string function lost its last character](#text-after-string-function):
+followed by more text in a string expression, such as
+`ProgDir$+"/data"`, the result held a 0 byte and the last character of
+the text was missing. In the port the text follows the result.
+
+* `ProgPath$`, `ProgDir$`, `ProgName$` and `DefaultFontName`
+  ([#743](https://github.com/fubar-coder/bb2-c/issues/743))
+* `GetPathName` and `NextDevice`
+  ([#618](https://github.com/fubar-coder/bb2-c/issues/618))
+* `NextAppFile` and `AppFile`
+  ([#519](https://github.com/fubar-coder/bb2-c/issues/519))
+* `RTEZLoadFile` and `RTFileRequest`
+  ([#461](https://github.com/fubar-coder/bb2-c/issues/461))
+* `GetLibraryValue$`, `GetRegistryStringVariable`, `ParseItemName$` and
+  `ParseItemValue$` ([#783](https://github.com/fubar-coder/bb2-c/issues/783))
+* `ReqFileRequest`
+  ([#784](https://github.com/fubar-coder/bb2-c/issues/784))
+* `SerialReadString`
+  ([#795](https://github.com/fubar-coder/bb2-c/issues/795))
+
+Two more functions left the place of the next part wrong in other ways.
+Text after `RTEZSaveFile` was written over the end of the chosen path, or
+behind bytes of its arguments; it follows the path
+([#465](https://github.com/fubar-coder/bb2-c/issues/465)).
+`ChangeWBSprite`, used as a function in a string expression, left the
+place on a tag list inside the library, so the rest of the expression was
+written over that list; the place stays where it was
+([#1028](https://github.com/fubar-coder/bb2-c/issues/1028)).
+
 ### Other fixes
 
 * `InitArgParse` copied a line of any length into its 256 byte buffer and
@@ -574,3 +702,37 @@ Issue: [`NextArg$` took the closing quote after `""` inside quotes as text (#755
   some data that is not a `FORM ANIM`, such as an IFF `LIST` of type
   `ANIM`; they return normally, and for such a `LIST` `RIAnimDepth` returns
   0 ([#513](https://github.com/fubar-coder/bb2-c/issues/513)).
+* `LELoadShapes` and `LECludgeShapes` into shapes that an earlier
+  `LECludgeShapes` had linked into memory read the shape from a wrong
+  place and ended early without closing the file, and a second such shape
+  crashed the program; such a shape is replaced like any other
+  ([#807](https://github.com/fubar-coder/bb2-c/issues/807)).
+* `CludgeSound`, in both sound libraries, on a sound that `DecodeSound`
+  made from data in chip memory stopped the program with "Unable to Free
+  Memory", because it freed memory that no library had allocated; that
+  memory is left alone
+  ([#945](https://github.com/fubar-coder/bb2-c/issues/945)).
+* `CludgeSound` of the second sound library kept the mark by which
+  `DecodeSound` keeps such data from being freed, so the copy of the sample it makes was never freed before the
+  program ended; the mark is cleared
+  ([#925](https://github.com/fubar-coder/bb2-c/issues/925)).
+* Removing the CIA interrupt of the tracker library, by
+  `ChangeTrackerVBlank`, by `StartTracker` in CIA mode or at the end of
+  the program, switched the audio filter, and with it the power LED, over;
+  both stay as they are
+  ([#449](https://github.com/fubar-coder/bb2-c/issues/449)).
+* `PopUpWindow` switched the audio filter and the power LED over for
+  every menu with sub menus it showed; both stay as they are
+  ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
+* Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
+  end of the program, switched the audio filter and the power LED over;
+  both stay as they are
+  ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
+* `ChunkyToPlanar` read the depth of the bitmap together with its flags:
+  depending on the flags it wrote 8 planes into a bitmap with fewer, or
+  refused a bitmap of depth 8; it checks the depth alone
+  ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
+* `ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth of the
+  bitmap together with its flags, so a bitmap whose flags are set counted
+  as one with hundreds of planes and the program crashed; they read the
+  depth alone ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).
