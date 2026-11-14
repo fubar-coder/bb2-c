@@ -23,9 +23,6 @@
  * makes the gadget as wide as the widest part.
  *
  * Kept from the original (BUG(orig)):
- *   - freegadget never frees the SpecialInfo (StringInfo + buffer,
- *     PropInfo): the gadget type is loaded and then overwritten by
- *     MOVEQ #22,d0 before the type compares. (#163)
  *   - StringGadget with Borders off writes the border offsets to the
  *     addresses 0, 2, 36 and 38 (border pointer 0). (#164)
  *   - StringGadget with Maxlen 0 clears 65536 bytes of the (0 byte)
@@ -44,6 +41,10 @@
  *   0 = GADGHCOMP): SelectMode 1 (box) had no effect.  SelectMode now sets
  *   defflags (GADGHBOX for 1); a shape gadget with an alternative shape
  *   keeps GADGHIMAGE as its highlight.
+ * Fixed (intended deviation, #163): freegadget never freed the SpecialInfo
+ *   (StringInfo + buffer, PropInfo): the gadget type was loaded and then
+ *   overwritten by MOVEQ #22,d0 before the type compares.  It is freed
+ *   now (the buffer with MaxChars, the StringInfo, the PropInfo).
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -1484,9 +1485,9 @@ static void freerend(struct Gadget *gad, APTR r)
  * @brief _free of a GadgetList object: free its gadgets.
  *
  * a3 = the list; the list is cleared, every "bL" gadget is freed with its
- * IntuiText and text, its render and select Border or Image.  BUG(orig)
- * (#163): the SpecialInfo (StringInfo and buffer, PropInfo) is never
- * freed.
+ * IntuiText and text, its render and select Border or Image and its
+ * SpecialInfo (StringInfo and buffer, PropInfo).  Fixed (#163): the
+ * original never freed the SpecialInfo.
  */
 void BLITZ_ROUTINE freegadget(void)
 {
@@ -1506,8 +1507,20 @@ void BLITZ_ROUTINE freegadget(void)
         }
         freerend(gad, gad->GadgetRender);
         freerend(gad, gad->SelectRender);
-        /* BUG(orig) (#163): MOVEQ #22,d0 overwrites the type, the SpecialInfo
-           is never freed */
+        if (gad->SpecialInfo) {
+            /* fixed (#163): the original overwrote the type with MOVEQ #22,d0
+               before the compares, the SpecialInfo was never freed */
+            UWORD type = gad->GadgetType & 15;
+
+            if (type == 3)              /* PROPGADGET: the PropInfo */
+                globfree(gad->SpecialInfo, sizeof(struct PropInfo));
+            else if (type == 4) {       /* STRGADGET: buffer and StringInfo */
+                struct StringInfo *si = (struct StringInfo *)gad->SpecialInfo;
+
+                globfree(si->Buffer, (UWORD)si->MaxChars);
+                globfree(si, sizeof(struct StringInfo));
+            }
+        }
         n = gad->NextGadget;
         globfree(gad, GADGETSIZE);
         gad = n;
