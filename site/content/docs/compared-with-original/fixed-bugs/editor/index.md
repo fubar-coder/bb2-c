@@ -261,10 +261,28 @@ The line keeps the ß, and the program prints `Straße`. The editor keeps
 every Latin-1 character in strings and comments, whether you type it,
 load it from a text file or paste it from a block, with "Tokenise" on or
 off. Saving as text writes the character's own byte, so a text file is
-saved as it was loaded. The editor's font has no signs for these codes,
-so the editor shows each of them with the same stand-in sign; the
-umlauts keep their own. Search, the cursor, BLOCK TO DISK and PRINT
+saved as it was loaded. Search, the cursor, BLOCK TO DISK and PRINT
 treat such a character as the one character it stands for.
+
+The editor draws each of these characters as itself, in both font
+heights, also after scrolling sideways and after the screen is drawn
+again. The no-break space (code 160) is blank, and a control code from
+129 to 159, which a text file can contain, is a small hollow box. The
+umlauts keep the editor's own signs, except the ä of the 6 pixel font:
+the original's looks like an ö cut off at the bottom, so the port draws
+it as an a with two dots.
+
+The 8 pixel font takes its new signs from unscii-8 by viznut (public
+domain), the 6 pixel signs are drawn in the
+style of the editor's own font. This is how the editor shows the
+characters from code 160 on, the boxes, the umlauts and a line with
+`NPrint "Größe é £ ½"`, in the 8 pixel font:
+
+![Latin-1 characters in the editor, 8 pixel font](latin1-8px.png)
+
+and in the 6 pixel font:
+
+![Latin-1 characters in the editor, 6 pixel font](latin1-6px.png)
 
 In a tokenised source the editor stores such a character as a *literal
 character*: the byte `$90` followed by the character's code, two bytes
