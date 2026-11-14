@@ -1,0 +1,11 @@
+[compile]
+ok
+[run]
+ok 8 [CORPUS:x]
+path 7 [CORPUS:]
+file 1
+inject: rc=0
+inject: current dir at end: start
+inject: click FQ/PARENT: answered
+inject: click FQ/OK: answered
+rc=0

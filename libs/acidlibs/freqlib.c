@@ -26,8 +26,10 @@
  * compiled into this library with its options (CMakeLists.txt); this file
  * is the BlitzLib wrapper around it.  The list below covers both parts.
  *
- * Kept from the original (BUG(orig)):
- *   - path$/file$ get the new contents but not their new lengths. (#153)
+ * Fixed (#153): on OK path$ and file$ get the lengths of their new
+ *   contents (the wrapper sets them); the original copied the contents and
+ *   left the old lengths, so Len, Print and concatenations saw the old
+ *   length.
  * Fixed (#159): list entries are nodes of the size of their name, an entry
  *   without memory is left out (the original: 40-byte nodes, overrun by a
  *   name of more than 34 characters, AllocMem not checked).
@@ -111,6 +113,16 @@ static void BLITZ_ROUTINE codefinit(void)
     fq_finit();
 }
 
+/* the length of a string up to its 0 */
+static ULONG strlength(const UBYTE *s)
+{
+    const UBYTE *e = s;
+
+    while (*e)
+        e++;
+    return (ULONG)(e - s);
+}
+
 /**
  * @brief FileRequest$(Title$,Pathname$,Filename$): the file requester.
  *
@@ -119,8 +131,8 @@ static void BLITZ_ROUTINE codefinit(void)
  * the path and the file name into path$ and file$ and returns path + "/"
  * (unless it ends in ":" or "/") + file; CANCEL and the close gadget
  * return "".  The result is copied to a3, the place of the title.
- * BUG(orig) (#153): path$/file$ get the new contents but not their new
- * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
+ * Fixed (#153): path$/file$ get the lengths of their new contents (the
+ * original left the old lengths).  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
  * The fixed bugs of the requester: see the head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
@@ -150,6 +162,9 @@ static ULONG BLITZ_ROUTINE dofreq_c(ULONG title BL_REG(d0), ULONG path BL_REG(d1
         *blitz_string = 0;
         return 0;
     }
+    /* fixed (#153): the lengths of the new path$ and file$ */
+    *(ULONG *)(path - 4) = strlength((const UBYTE *)path);
+    *(ULONG *)(file - 4) = strlength((const UBYTE *)file);
     n = (ULONG)-1;
     do
         n++;

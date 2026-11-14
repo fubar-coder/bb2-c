@@ -1,6 +1,7 @@
 ; t94_freqok - freqlib FileRequest$ answered with OK by reqclose (click
-; on its OK gadget); path$/file$ get the new contents but keep their old
-; lengths (BUG(orig) (#153)).
+; on its OK gadget); path$/file$ get the new contents and their lengths
+; (fixed #153: the original kept the old lengths; here the contents do not
+; change).
 ; Own 320x256 screen: the requester window is screen height - 40 = 216
 ; high (16 list lines); on screens of 645 lines or more (the emulator's
 ; 1050-line Workbench) the original writes its line gadgets past its
