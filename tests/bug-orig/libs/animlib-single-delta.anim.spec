@@ -1,6 +1,7 @@
 ; animlib-single-delta: an ANIM of 16 x 1 pixels, one plane, with exactly
-; one delta: FORM ILBM (BMHD, BODY), FORM ILBM (ANHD op 5, one DLTA whose
-; plane offsets are all 0 - the delta changes nothing)
+; one delta: FORM ILBM (BMHD, BODY: the row $AABB), FORM ILBM (ANHD op 5,
+; one DLTA that writes the row $CCDD: plane 0 at offset 64, the other 15
+; plane offsets 0; per column one uniq op of one byte)
 form ANIM
 form ILBM
 chunk BMHD
@@ -23,7 +24,10 @@ l 0                     ; bits
 fill 16 0
 end
 chunk DLTA
-fill 64 0               ; 16 plane offsets, all 0
+l 64                    ; plane 0: its ops at offset 64
+fill 60 0               ; planes 1-15: none
+b 1 $81 $CC             ; column 0: one op, uniq 1 byte $CC
+b 1 $81 $DD             ; column 1: one op, uniq 1 byte $DD
 end
 end
 end

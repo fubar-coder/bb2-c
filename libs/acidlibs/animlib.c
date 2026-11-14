@@ -34,11 +34,16 @@
  *   - freeanim reads the next pointer of a delta node after freeing it. (#399)
  *   - LoadAnim: a missing BODY gives length -1 (memlib adds its 8 byte
  *     header, so AllocMem(7) succeeds, the read copies nothing and InitAnim
- *     decodes whatever follows the block) (#400); a single delta gives
- *     current = 0 (NextFrame would read address 0) (#401).  Not a bug:
- *     after the last delta the wrap goes to node 2 (the ANIM op-5
- *     double-buffer loop convention, the last two deltas lead back to
- *     frames 0/1).
+ *     decodes whatever follows the block) (#400).  Not a bug: after the
+ *     last delta the wrap goes to node 2 (the ANIM op-5 double-buffer
+ *     loop convention, the last two deltas lead back to frames 0/1).
+ * Fixed (#401): with a single delta the original's wrap takes node 2,
+ * which does not exist, and the current delta becomes 0; the next
+ * NextFrame read its node at address 0.  Here the wrap takes node 2, or
+ * node 1 if there is none (the anim plays once and stays on its last
+ * frame), and NextFrame does nothing when there is no current delta (an
+ * anim without ANHD or without DLTA).  The debugger's check (animchk3,
+ * "Anim has only 1 frame") is unchanged.
  * Not a bug (statements, a3 has no meaning after them), reproduced: LoadAnim
  * leaves a3 on the last delta node (or anim+18), InitAnim behind the BODY
  * data / in the last plane of the second bitmap, NextFrame on the current
@@ -289,7 +294,7 @@ static const char mess7[] = "Can't Open Anim File";
  * Errors: "Can't Open Anim File" (err7), "Anim format not supported"
  * (err6), both in the normal code (fixed, #398: the original's err7 is in
  * the error check area, err6's text too).  BUG(orig): a missing BODY
- * gives length -1 (#400); a single delta gives current = 0 (#401).
+ * gives length -1 (#400).
  *
  * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
  * @param name  d1: the file name
@@ -498,6 +503,8 @@ BLITZ_THUNK(doinitanim2, doinitanim2_c, "d0-d1/a0-a1");
  * Per plane the column ops skip/uniq/same, written (MOVE) or EORed; then
  * the next node, after the last one the SECOND node (not a bug: the ANIM
  * op-5 double-buffer loop, the last two deltas lead back to frames 0/1).
+ * Fixed (#401): the first node if there is no second one (the original
+ * makes the current delta 0), and nothing at all without a current delta.
  * a3 is left on the current (or first) node (not a bug).  Errors
  * (debugger, animchk3): "Anim has only 1 frame", "Anim not Initialized",
  * then as InitAnim.
@@ -513,12 +520,15 @@ static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
     /* the current node read as a long: as a pointer member GCC gives
        other code */
     struct delta *node = (struct delta *)*(ULONG *)&anim->current;
-    ULONG *offs = (ULONG *)node->dlta;
+    ULONG *offs;
     WORD bpr = bm->bpr;
     UWORD cols = anim->ebwidth - 1;
     ULONG delta;                        /* d0: the delta offset */
     struct delta *next;                 /* d0: the next node */
 
+    if (!node)                          /* Fixed (#401): no delta */
+        return;
+    offs = (ULONG *)node->dlta;
     do {                                            /* 'loop: planes */
         UBYTE *column = (UBYTE *)*planep++;
         UBYTE *ops;
@@ -575,6 +585,8 @@ static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
     if (!next) {
         node = anim->first;
         next = node->next;
+        if (!next)                      /* Fixed (#401): no node 2 */
+            next = node;
     }
     anim->current = next;
     blitz_string = (UBYTE *)node;       /* a3 stays on the (first) node */

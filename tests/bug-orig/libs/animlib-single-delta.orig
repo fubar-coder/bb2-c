@@ -5,9 +5,12 @@ done
 ok
 [run]
 frames 0 deltas -1
+init row 0000AABB
 init current -1
-row 0000AABB
-current is a node 0
+row 0000CCDD
+current is the node 0
+row 0000CCE2
+current is the node 0
 rc=0
 [blitz2]
 rc=0

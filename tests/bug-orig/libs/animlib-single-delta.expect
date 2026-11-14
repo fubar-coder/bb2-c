@@ -1,6 +1,9 @@
 [run]
 frames 0 deltas -1
+init row 0000AABB
 init current -1
-row 0000AABB
-current is a node -1
+row 0000CCDD
+current is the node -1
+row 0000CCDD
+current is the node -1
 rc=0

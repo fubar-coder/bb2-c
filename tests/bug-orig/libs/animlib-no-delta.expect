@@ -1,0 +1,5 @@
+[run]
+frames -1 deltas 0
+init row 0000AABB
+row 0000AABB
+rc=0
