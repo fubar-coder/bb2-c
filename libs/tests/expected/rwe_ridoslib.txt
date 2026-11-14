@@ -162,67 +162,80 @@ GetPathName|out|":x"|1	bytes 300 fnv 70E0A7C9
 GetPathName|kept|"a/"|1	kept
 GetPathName|popped|"a/"|1	$00000000
 GetPathName|d0|"a/"|1	$00000002
-GetPathName|a3|"a/"|1	$00000017
+GetPathName|a3|"a/"|1 [orig]	$00000017
+GetPathName|a3|"a/"|1 [fixed #618]	$00000016
 GetPathName|out|"a/"|1	bytes 300 fnv 895296AF
 GetPathName|kept|"a:"|1	kept
 GetPathName|popped|"a:"|1	$00000000
 GetPathName|d0|"a:"|1	$00000002
-GetPathName|a3|"a:"|1	$00000017
+GetPathName|a3|"a:"|1 [orig]	$00000017
+GetPathName|a3|"a:"|1 [fixed #618]	$00000016
 GetPathName|out|"a:"|1	bytes 300 fnv 34F3DAC0
 GetPathName|kept|"a/b"|1	kept
 GetPathName|popped|"a/b"|1	$00000000
 GetPathName|d0|"a/b"|1	$00000002
-GetPathName|a3|"a/b"|1	$00000017
+GetPathName|a3|"a/b"|1 [orig]	$00000017
+GetPathName|a3|"a/b"|1 [fixed #618]	$00000016
 GetPathName|out|"a/b"|1	bytes 300 fnv BD471DE1
 GetPathName|kept|"dh0:"|1	kept
 GetPathName|popped|"dh0:"|1	$00000000
 GetPathName|d0|"dh0:"|1	$00000004
-GetPathName|a3|"dh0:"|1	$00000019
+GetPathName|a3|"dh0:"|1 [orig]	$00000019
+GetPathName|a3|"dh0:"|1 [fixed #618]	$00000018
 GetPathName|out|"dh0:"|1	bytes 300 fnv C511A715
 GetPathName|kept|"dh0:x"|1	kept
 GetPathName|popped|"dh0:x"|1	$00000000
 GetPathName|d0|"dh0:x"|1	$00000004
-GetPathName|a3|"dh0:x"|1	$00000019
+GetPathName|a3|"dh0:x"|1 [orig]	$00000019
+GetPathName|a3|"dh0:x"|1 [fixed #618]	$00000018
 GetPathName|out|"dh0:x"|1	bytes 300 fnv CBBFC41B
 GetPathName|kept|"DH0:dir/file.txt"|1	kept
 GetPathName|popped|"DH0:dir/file.txt"|1	$00000000
 GetPathName|d0|"DH0:dir/file.txt"|1	$00000008
-GetPathName|a3|"DH0:dir/file.txt"|1	$0000001D
+GetPathName|a3|"DH0:dir/file.txt"|1 [orig]	$0000001D
+GetPathName|a3|"DH0:dir/file.txt"|1 [fixed #618]	$0000001C
 GetPathName|out|"DH0:dir/file.txt"|1	bytes 300 fnv 2028C997
 GetPathName|kept|"a//b"|1	kept
 GetPathName|popped|"a//b"|1	$00000000
 GetPathName|d0|"a//b"|1	$00000003
-GetPathName|a3|"a//b"|1	$00000018
+GetPathName|a3|"a//b"|1 [orig]	$00000018
+GetPathName|a3|"a//b"|1 [fixed #618]	$00000017
 GetPathName|out|"a//b"|1	bytes 300 fnv B09F3510
 GetPathName|kept|"ram:t/"|1	kept
 GetPathName|popped|"ram:t/"|1	$00000000
 GetPathName|d0|"ram:t/"|1	$00000006
-GetPathName|a3|"ram:t/"|1	$0000001B
+GetPathName|a3|"ram:t/"|1 [orig]	$0000001B
+GetPathName|a3|"ram:t/"|1 [fixed #618]	$0000001A
 GetPathName|out|"ram:t/"|1	bytes 300 fnv 6D121A34
 GetPathName|kept|"x:y:z"|1	kept
 GetPathName|popped|"x:y:z"|1	$00000000
 GetPathName|d0|"x:y:z"|1	$00000004
-GetPathName|a3|"x:y:z"|1	$00000019
+GetPathName|a3|"x:y:z"|1 [orig]	$00000019
+GetPathName|a3|"x:y:z"|1 [fixed #618]	$00000018
 GetPathName|out|"x:y:z"|1	bytes 300 fnv 607384DC
 GetPathName|kept|"Work:a/b/c/d.info"|1	kept
 GetPathName|popped|"Work:a/b/c/d.info"|1	$00000000
 GetPathName|d0|"Work:a/b/c/d.info"|1	$0000000B
-GetPathName|a3|"Work:a/b/c/d.info"|1	$00000020
+GetPathName|a3|"Work:a/b/c/d.info"|1 [orig]	$00000020
+GetPathName|a3|"Work:a/b/c/d.info"|1 [fixed #618]	$0000001F
 GetPathName|out|"Work:a/b/c/d.info"|1	bytes 300 fnv 1791D727
 GetPathName|kept|"//"|1	kept
 GetPathName|popped|"//"|1	$00000000
 GetPathName|d0|"//"|1	$00000002
-GetPathName|a3|"//"|1	$00000017
+GetPathName|a3|"//"|1 [orig]	$00000017
+GetPathName|a3|"//"|1 [fixed #618]	$00000016
 GetPathName|out|"//"|1	bytes 300 fnv 00B9F1B5
 GetPathName|kept|"name with spaces/and more"|1	kept
 GetPathName|popped|"name with spaces/and more"|1	$00000000
 GetPathName|d0|"name with spaces/and more"|1	$00000011
-GetPathName|a3|"name with spaces/and more"|1	$00000026
+GetPathName|a3|"name with spaces/and more"|1 [orig]	$00000026
+GetPathName|a3|"name with spaces/and more"|1 [fixed #618]	$00000025
 GetPathName|out|"name with spaces/and more"|1	bytes 300 fnv 0F46C003
 GetPathName|kept|"abc/de" length $10006|1	kept
 GetPathName|popped|"abc/de" length $10006|1	$00000000
 GetPathName|d0|"abc/de" length $10006|1	$00000004
-GetPathName|a3|"abc/de" length $10006|1	$00000019
+GetPathName|a3|"abc/de" length $10006|1 [orig]	$00000019
+GetPathName|a3|"abc/de" length $10006|1 [fixed #618]	$00000018
 GetPathName|out|"abc/de" length $10006|1	bytes 300 fnv E60249F5
 init|kept||1	kept
 init|popped||1	$00000000
@@ -294,7 +307,8 @@ GetDeviceList|d0|flags $1C|1	$FFFFFFFF
 NextDevice|kept|flags $1C entry 0|1	kept
 NextDevice|popped|flags $1C entry 0|1	$00000000
 NextDevice|d0|flags $1C entry 0|1	$00000004
-NextDevice|a3|flags $1C entry 0|1	$00000009
+NextDevice|a3|flags $1C entry 0|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 0|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 0|1	bytes 300 fnv FBC07EF7
 DeviceEntryType|kept|flags $1C entry 0|1	kept
 DeviceEntryType|popped|flags $1C entry 0|1	$00000000
@@ -302,7 +316,8 @@ DeviceEntryType|d0|flags $1C entry 0|1	$00000000
 NextDevice|kept|flags $1C entry 1|1	kept
 NextDevice|popped|flags $1C entry 1|1	$00000000
 NextDevice|d0|flags $1C entry 1|1	$00000005
-NextDevice|a3|flags $1C entry 1|1	$0000000A
+NextDevice|a3|flags $1C entry 1|1 [orig]	$0000000A
+NextDevice|a3|flags $1C entry 1|1 [fixed #618]	$00000009
 NextDevice|out|flags $1C entry 1|1	bytes 300 fnv CB2F6593
 DeviceEntryType|kept|flags $1C entry 1|1	kept
 DeviceEntryType|popped|flags $1C entry 1|1	$00000000
@@ -310,7 +325,8 @@ DeviceEntryType|d0|flags $1C entry 1|1	$00000000
 NextDevice|kept|flags $1C entry 2|1	kept
 NextDevice|popped|flags $1C entry 2|1	$00000000
 NextDevice|d0|flags $1C entry 2|1	$00000004
-NextDevice|a3|flags $1C entry 2|1	$00000009
+NextDevice|a3|flags $1C entry 2|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 2|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 2|1	bytes 300 fnv 9FD7CA1C
 DeviceEntryType|kept|flags $1C entry 2|1	kept
 DeviceEntryType|popped|flags $1C entry 2|1	$00000000
@@ -318,7 +334,8 @@ DeviceEntryType|d0|flags $1C entry 2|1	$00000003
 NextDevice|kept|flags $1C entry 3|1	kept
 NextDevice|popped|flags $1C entry 3|1	$00000000
 NextDevice|d0|flags $1C entry 3|1	$00000006
-NextDevice|a3|flags $1C entry 3|1	$0000000B
+NextDevice|a3|flags $1C entry 3|1 [orig]	$0000000B
+NextDevice|a3|flags $1C entry 3|1 [fixed #618]	$0000000A
 NextDevice|out|flags $1C entry 3|1	bytes 300 fnv ED2E9891
 DeviceEntryType|kept|flags $1C entry 3|1	kept
 DeviceEntryType|popped|flags $1C entry 3|1	$00000000
@@ -326,7 +343,8 @@ DeviceEntryType|d0|flags $1C entry 3|1	$00000001
 NextDevice|kept|flags $1C entry 4|1	kept
 NextDevice|popped|flags $1C entry 4|1	$00000000
 NextDevice|d0|flags $1C entry 4|1	$00000007
-NextDevice|a3|flags $1C entry 4|1	$0000000C
+NextDevice|a3|flags $1C entry 4|1 [orig]	$0000000C
+NextDevice|a3|flags $1C entry 4|1 [fixed #618]	$0000000B
 NextDevice|out|flags $1C entry 4|1	bytes 300 fnv 72D9F839
 DeviceEntryType|kept|flags $1C entry 4|1	kept
 DeviceEntryType|popped|flags $1C entry 4|1	$00000000
@@ -334,7 +352,8 @@ DeviceEntryType|d0|flags $1C entry 4|1	$00000001
 NextDevice|kept|flags $1C entry 5|1	kept
 NextDevice|popped|flags $1C entry 5|1	$00000000
 NextDevice|d0|flags $1C entry 5|1	$00000008
-NextDevice|a3|flags $1C entry 5|1	$0000000D
+NextDevice|a3|flags $1C entry 5|1 [orig]	$0000000D
+NextDevice|a3|flags $1C entry 5|1 [fixed #618]	$0000000C
 NextDevice|out|flags $1C entry 5|1	bytes 300 fnv 1859E5BA
 DeviceEntryType|kept|flags $1C entry 5|1	kept
 DeviceEntryType|popped|flags $1C entry 5|1	$00000000
@@ -342,7 +361,8 @@ DeviceEntryType|d0|flags $1C entry 5|1	$00000001
 NextDevice|kept|flags $1C entry 6|1	kept
 NextDevice|popped|flags $1C entry 6|1	$00000000
 NextDevice|d0|flags $1C entry 6|1	$00000004
-NextDevice|a3|flags $1C entry 6|1	$00000009
+NextDevice|a3|flags $1C entry 6|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 6|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 6|1	bytes 300 fnv BE2B38B6
 DeviceEntryType|kept|flags $1C entry 6|1	kept
 DeviceEntryType|popped|flags $1C entry 6|1	$00000000
@@ -350,7 +370,8 @@ DeviceEntryType|d0|flags $1C entry 6|1	$00000001
 NextDevice|kept|flags $1C entry 7|1	kept
 NextDevice|popped|flags $1C entry 7|1	$00000000
 NextDevice|d0|flags $1C entry 7|1	$00000005
-NextDevice|a3|flags $1C entry 7|1	$0000000A
+NextDevice|a3|flags $1C entry 7|1 [orig]	$0000000A
+NextDevice|a3|flags $1C entry 7|1 [fixed #618]	$00000009
 NextDevice|out|flags $1C entry 7|1	bytes 300 fnv 4CEA0864
 DeviceEntryType|kept|flags $1C entry 7|1	kept
 DeviceEntryType|popped|flags $1C entry 7|1	$00000000
@@ -358,7 +379,8 @@ DeviceEntryType|d0|flags $1C entry 7|1	$00000001
 NextDevice|kept|flags $1C entry 8|1	kept
 NextDevice|popped|flags $1C entry 8|1	$00000000
 NextDevice|d0|flags $1C entry 8|1	$00000001
-NextDevice|a3|flags $1C entry 8|1	$00000006
+NextDevice|a3|flags $1C entry 8|1 [orig]	$00000006
+NextDevice|a3|flags $1C entry 8|1 [fixed #618]	$00000005
 NextDevice|out|flags $1C entry 8|1	bytes 300 fnv E3EB5CA1
 DeviceEntryType|kept|flags $1C entry 8|1	kept
 DeviceEntryType|popped|flags $1C entry 8|1	$00000000
@@ -366,7 +388,8 @@ DeviceEntryType|d0|flags $1C entry 8|1	$00000001
 NextDevice|kept|flags $1C entry 9|1	kept
 NextDevice|popped|flags $1C entry 9|1	$00000000
 NextDevice|d0|flags $1C entry 9|1	$00000003
-NextDevice|a3|flags $1C entry 9|1	$00000008
+NextDevice|a3|flags $1C entry 9|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 9|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 9|1	bytes 300 fnv DECA5A04
 DeviceEntryType|kept|flags $1C entry 9|1	kept
 DeviceEntryType|popped|flags $1C entry 9|1	$00000000
@@ -374,7 +397,8 @@ DeviceEntryType|d0|flags $1C entry 9|1	$00000001
 NextDevice|kept|flags $1C entry 10|1	kept
 NextDevice|popped|flags $1C entry 10|1	$00000000
 NextDevice|d0|flags $1C entry 10|1	$00000008
-NextDevice|a3|flags $1C entry 10|1	$0000000D
+NextDevice|a3|flags $1C entry 10|1 [orig]	$0000000D
+NextDevice|a3|flags $1C entry 10|1 [fixed #618]	$0000000C
 NextDevice|out|flags $1C entry 10|1	bytes 300 fnv 052BE3EE
 DeviceEntryType|kept|flags $1C entry 10|1	kept
 DeviceEntryType|popped|flags $1C entry 10|1	$00000000
@@ -382,7 +406,8 @@ DeviceEntryType|d0|flags $1C entry 10|1	$00000002
 NextDevice|kept|flags $1C entry 11|1	kept
 NextDevice|popped|flags $1C entry 11|1	$00000000
 NextDevice|d0|flags $1C entry 11|1	$00000004
-NextDevice|a3|flags $1C entry 11|1	$00000009
+NextDevice|a3|flags $1C entry 11|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 11|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 11|1	bytes 300 fnv D3A17033
 DeviceEntryType|kept|flags $1C entry 11|1	kept
 DeviceEntryType|popped|flags $1C entry 11|1	$00000000
@@ -390,7 +415,8 @@ DeviceEntryType|d0|flags $1C entry 11|1	$00000002
 NextDevice|kept|flags $1C entry 12|1	kept
 NextDevice|popped|flags $1C entry 12|1	$00000000
 NextDevice|d0|flags $1C entry 12|1	$00000004
-NextDevice|a3|flags $1C entry 12|1	$00000009
+NextDevice|a3|flags $1C entry 12|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 12|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 12|1	bytes 300 fnv 769F73AB
 DeviceEntryType|kept|flags $1C entry 12|1	kept
 DeviceEntryType|popped|flags $1C entry 12|1	$00000000
@@ -398,7 +424,8 @@ DeviceEntryType|d0|flags $1C entry 12|1	$00000002
 NextDevice|kept|flags $1C entry 13|1	kept
 NextDevice|popped|flags $1C entry 13|1	$00000000
 NextDevice|d0|flags $1C entry 13|1	$00000006
-NextDevice|a3|flags $1C entry 13|1	$0000000B
+NextDevice|a3|flags $1C entry 13|1 [orig]	$0000000B
+NextDevice|a3|flags $1C entry 13|1 [fixed #618]	$0000000A
 NextDevice|out|flags $1C entry 13|1	bytes 300 fnv 0A47A2EE
 DeviceEntryType|kept|flags $1C entry 13|1	kept
 DeviceEntryType|popped|flags $1C entry 13|1	$00000000
@@ -406,7 +433,8 @@ DeviceEntryType|d0|flags $1C entry 13|1	$00000001
 NextDevice|kept|flags $1C entry 14|1	kept
 NextDevice|popped|flags $1C entry 14|1	$00000000
 NextDevice|d0|flags $1C entry 14|1	$00000003
-NextDevice|a3|flags $1C entry 14|1	$00000008
+NextDevice|a3|flags $1C entry 14|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 14|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 14|1	bytes 300 fnv 51CF0A8A
 DeviceEntryType|kept|flags $1C entry 14|1	kept
 DeviceEntryType|popped|flags $1C entry 14|1	$00000000
@@ -414,7 +442,8 @@ DeviceEntryType|d0|flags $1C entry 14|1	$00000001
 NextDevice|kept|flags $1C entry 15|1	kept
 NextDevice|popped|flags $1C entry 15|1	$00000000
 NextDevice|d0|flags $1C entry 15|1	$00000001
-NextDevice|a3|flags $1C entry 15|1	$00000006
+NextDevice|a3|flags $1C entry 15|1 [orig]	$00000006
+NextDevice|a3|flags $1C entry 15|1 [fixed #618]	$00000005
 NextDevice|out|flags $1C entry 15|1	bytes 300 fnv 2E3B5EBA
 DeviceEntryType|kept|flags $1C entry 15|1	kept
 DeviceEntryType|popped|flags $1C entry 15|1	$00000000
@@ -422,7 +451,8 @@ DeviceEntryType|d0|flags $1C entry 15|1	$00000001
 NextDevice|kept|flags $1C entry 16|1	kept
 NextDevice|popped|flags $1C entry 16|1	$00000000
 NextDevice|d0|flags $1C entry 16|1	$00000001
-NextDevice|a3|flags $1C entry 16|1	$00000006
+NextDevice|a3|flags $1C entry 16|1 [orig]	$00000006
+NextDevice|a3|flags $1C entry 16|1 [fixed #618]	$00000005
 NextDevice|out|flags $1C entry 16|1	bytes 300 fnv 4DE68F2A
 DeviceEntryType|kept|flags $1C entry 16|1	kept
 DeviceEntryType|popped|flags $1C entry 16|1	$00000000
@@ -430,7 +460,8 @@ DeviceEntryType|d0|flags $1C entry 16|1	$00000001
 NextDevice|kept|flags $1C entry 17|1	kept
 NextDevice|popped|flags $1C entry 17|1	$00000000
 NextDevice|d0|flags $1C entry 17|1	$00000004
-NextDevice|a3|flags $1C entry 17|1	$00000009
+NextDevice|a3|flags $1C entry 17|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 17|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 17|1	bytes 300 fnv D8061083
 DeviceEntryType|kept|flags $1C entry 17|1	kept
 DeviceEntryType|popped|flags $1C entry 17|1	$00000000
@@ -438,7 +469,8 @@ DeviceEntryType|d0|flags $1C entry 17|1	$00000001
 NextDevice|kept|flags $1C entry 18|1	kept
 NextDevice|popped|flags $1C entry 18|1	$00000000
 NextDevice|d0|flags $1C entry 18|1	$00000004
-NextDevice|a3|flags $1C entry 18|1	$00000009
+NextDevice|a3|flags $1C entry 18|1 [orig]	$00000009
+NextDevice|a3|flags $1C entry 18|1 [fixed #618]	$00000008
 NextDevice|out|flags $1C entry 18|1	bytes 300 fnv 33F80073
 DeviceEntryType|kept|flags $1C entry 18|1	kept
 DeviceEntryType|popped|flags $1C entry 18|1	$00000000
@@ -446,7 +478,8 @@ DeviceEntryType|d0|flags $1C entry 18|1	$00000001
 NextDevice|kept|flags $1C entry 19|1	kept
 NextDevice|popped|flags $1C entry 19|1	$00000000
 NextDevice|d0|flags $1C entry 19|1	$00000005
-NextDevice|a3|flags $1C entry 19|1	$0000000A
+NextDevice|a3|flags $1C entry 19|1 [orig]	$0000000A
+NextDevice|a3|flags $1C entry 19|1 [fixed #618]	$00000009
 NextDevice|out|flags $1C entry 19|1	bytes 300 fnv 89A7A1C3
 DeviceEntryType|kept|flags $1C entry 19|1	kept
 DeviceEntryType|popped|flags $1C entry 19|1	$00000000
@@ -454,7 +487,8 @@ DeviceEntryType|d0|flags $1C entry 19|1	$00000001
 NextDevice|kept|flags $1C entry 20|1	kept
 NextDevice|popped|flags $1C entry 20|1	$00000000
 NextDevice|d0|flags $1C entry 20|1	$00000001
-NextDevice|a3|flags $1C entry 20|1	$00000006
+NextDevice|a3|flags $1C entry 20|1 [orig]	$00000006
+NextDevice|a3|flags $1C entry 20|1 [fixed #618]	$00000005
 NextDevice|out|flags $1C entry 20|1	bytes 300 fnv 10F7E7D9
 DeviceEntryType|kept|flags $1C entry 20|1	kept
 DeviceEntryType|popped|flags $1C entry 20|1	$00000000
@@ -462,7 +496,8 @@ DeviceEntryType|d0|flags $1C entry 20|1	$00000001
 NextDevice|kept|flags $1C entry 21|1	kept
 NextDevice|popped|flags $1C entry 21|1	$00000000
 NextDevice|d0|flags $1C entry 21|1	$0000000C
-NextDevice|a3|flags $1C entry 21|1	$00000011
+NextDevice|a3|flags $1C entry 21|1 [orig]	$00000011
+NextDevice|a3|flags $1C entry 21|1 [fixed #618]	$00000010
 NextDevice|out|flags $1C entry 21|1	bytes 300 fnv 46D92768
 DeviceEntryType|kept|flags $1C entry 21|1	kept
 DeviceEntryType|popped|flags $1C entry 21|1	$00000000
@@ -470,7 +505,8 @@ DeviceEntryType|d0|flags $1C entry 21|1	$00000002
 NextDevice|kept|flags $1C entry 22|1	kept
 NextDevice|popped|flags $1C entry 22|1	$00000000
 NextDevice|d0|flags $1C entry 22|1	$00000003
-NextDevice|a3|flags $1C entry 22|1	$00000008
+NextDevice|a3|flags $1C entry 22|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 22|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 22|1	bytes 300 fnv ED0A0219
 DeviceEntryType|kept|flags $1C entry 22|1	kept
 DeviceEntryType|popped|flags $1C entry 22|1	$00000000
@@ -478,7 +514,8 @@ DeviceEntryType|d0|flags $1C entry 22|1	$00000000
 NextDevice|kept|flags $1C entry 23|1	kept
 NextDevice|popped|flags $1C entry 23|1	$00000000
 NextDevice|d0|flags $1C entry 23|1	$00000003
-NextDevice|a3|flags $1C entry 23|1	$00000008
+NextDevice|a3|flags $1C entry 23|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 23|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 23|1	bytes 300 fnv 070F7CF1
 DeviceEntryType|kept|flags $1C entry 23|1	kept
 DeviceEntryType|popped|flags $1C entry 23|1	$00000000
@@ -486,7 +523,8 @@ DeviceEntryType|d0|flags $1C entry 23|1	$00000000
 NextDevice|kept|flags $1C entry 24|1	kept
 NextDevice|popped|flags $1C entry 24|1	$00000000
 NextDevice|d0|flags $1C entry 24|1	$00000003
-NextDevice|a3|flags $1C entry 24|1	$00000008
+NextDevice|a3|flags $1C entry 24|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 24|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 24|1	bytes 300 fnv 2B74A5C3
 DeviceEntryType|kept|flags $1C entry 24|1	kept
 DeviceEntryType|popped|flags $1C entry 24|1	$00000000
@@ -494,7 +532,8 @@ DeviceEntryType|d0|flags $1C entry 24|1	$00000000
 NextDevice|kept|flags $1C entry 25|1	kept
 NextDevice|popped|flags $1C entry 25|1	$00000000
 NextDevice|d0|flags $1C entry 25|1	$00000003
-NextDevice|a3|flags $1C entry 25|1	$00000008
+NextDevice|a3|flags $1C entry 25|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 25|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 25|1	bytes 300 fnv F5948FAF
 DeviceEntryType|kept|flags $1C entry 25|1	kept
 DeviceEntryType|popped|flags $1C entry 25|1	$00000000
@@ -502,7 +541,8 @@ DeviceEntryType|d0|flags $1C entry 25|1	$00000000
 NextDevice|kept|flags $1C entry 26|1	kept
 NextDevice|popped|flags $1C entry 26|1	$00000000
 NextDevice|d0|flags $1C entry 26|1	$00000003
-NextDevice|a3|flags $1C entry 26|1	$00000008
+NextDevice|a3|flags $1C entry 26|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 26|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 26|1	bytes 300 fnv 7F7F5560
 DeviceEntryType|kept|flags $1C entry 26|1	kept
 DeviceEntryType|popped|flags $1C entry 26|1	$00000000
@@ -510,7 +550,8 @@ DeviceEntryType|d0|flags $1C entry 26|1	$00000000
 NextDevice|kept|flags $1C entry 27|1	kept
 NextDevice|popped|flags $1C entry 27|1	$00000000
 NextDevice|d0|flags $1C entry 27|1	$00000003
-NextDevice|a3|flags $1C entry 27|1	$00000008
+NextDevice|a3|flags $1C entry 27|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 27|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 27|1	bytes 300 fnv 76AE804B
 DeviceEntryType|kept|flags $1C entry 27|1	kept
 DeviceEntryType|popped|flags $1C entry 27|1	$00000000
@@ -518,7 +559,8 @@ DeviceEntryType|d0|flags $1C entry 27|1	$00000000
 NextDevice|kept|flags $1C entry 28|1	kept
 NextDevice|popped|flags $1C entry 28|1	$00000000
 NextDevice|d0|flags $1C entry 28|1	$00000003
-NextDevice|a3|flags $1C entry 28|1	$00000008
+NextDevice|a3|flags $1C entry 28|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 28|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 28|1	bytes 300 fnv BE0C3F39
 DeviceEntryType|kept|flags $1C entry 28|1	kept
 DeviceEntryType|popped|flags $1C entry 28|1	$00000000
@@ -526,7 +568,8 @@ DeviceEntryType|d0|flags $1C entry 28|1	$00000000
 NextDevice|kept|flags $1C entry 29|1	kept
 NextDevice|popped|flags $1C entry 29|1	$00000000
 NextDevice|d0|flags $1C entry 29|1	$00000003
-NextDevice|a3|flags $1C entry 29|1	$00000008
+NextDevice|a3|flags $1C entry 29|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 29|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 29|1	bytes 300 fnv 7B208457
 DeviceEntryType|kept|flags $1C entry 29|1	kept
 DeviceEntryType|popped|flags $1C entry 29|1	$00000000
@@ -534,7 +577,8 @@ DeviceEntryType|d0|flags $1C entry 29|1	$00000000
 NextDevice|kept|flags $1C entry 30|1	kept
 NextDevice|popped|flags $1C entry 30|1	$00000000
 NextDevice|d0|flags $1C entry 30|1	$00000003
-NextDevice|a3|flags $1C entry 30|1	$00000008
+NextDevice|a3|flags $1C entry 30|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 30|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 30|1	bytes 300 fnv 5EECE92B
 DeviceEntryType|kept|flags $1C entry 30|1	kept
 DeviceEntryType|popped|flags $1C entry 30|1	$00000000
@@ -542,7 +586,8 @@ DeviceEntryType|d0|flags $1C entry 30|1	$00000000
 NextDevice|kept|flags $1C entry 31|1	kept
 NextDevice|popped|flags $1C entry 31|1	$00000000
 NextDevice|d0|flags $1C entry 31|1	$00000003
-NextDevice|a3|flags $1C entry 31|1	$00000008
+NextDevice|a3|flags $1C entry 31|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 31|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 31|1	bytes 300 fnv 6707B4D8
 DeviceEntryType|kept|flags $1C entry 31|1	kept
 DeviceEntryType|popped|flags $1C entry 31|1	$00000000
@@ -550,7 +595,8 @@ DeviceEntryType|d0|flags $1C entry 31|1	$00000000
 NextDevice|kept|flags $1C entry 32|1	kept
 NextDevice|popped|flags $1C entry 32|1	$00000000
 NextDevice|d0|flags $1C entry 32|1	$00000003
-NextDevice|a3|flags $1C entry 32|1	$00000008
+NextDevice|a3|flags $1C entry 32|1 [orig]	$00000008
+NextDevice|a3|flags $1C entry 32|1 [fixed #618]	$00000007
 NextDevice|out|flags $1C entry 32|1	bytes 300 fnv 2B05860B
 DeviceEntryType|kept|flags $1C entry 32|1	kept
 DeviceEntryType|popped|flags $1C entry 32|1	$00000000
@@ -579,7 +625,8 @@ GetDeviceList|d0|flags $8|1	$FFFFFFFF
 NextDevice|kept|flags $8 entry 0|1	kept
 NextDevice|popped|flags $8 entry 0|1	$00000000
 NextDevice|d0|flags $8 entry 0|1	$00000008
-NextDevice|a3|flags $8 entry 0|1	$0000000D
+NextDevice|a3|flags $8 entry 0|1 [orig]	$0000000D
+NextDevice|a3|flags $8 entry 0|1 [fixed #618]	$0000000C
 NextDevice|out|flags $8 entry 0|1	bytes 300 fnv 052BE3EE
 DeviceEntryType|kept|flags $8 entry 0|1	kept
 DeviceEntryType|popped|flags $8 entry 0|1	$00000000
@@ -587,7 +634,8 @@ DeviceEntryType|d0|flags $8 entry 0|1	$00000002
 NextDevice|kept|flags $8 entry 1|1	kept
 NextDevice|popped|flags $8 entry 1|1	$00000000
 NextDevice|d0|flags $8 entry 1|1	$00000004
-NextDevice|a3|flags $8 entry 1|1	$00000009
+NextDevice|a3|flags $8 entry 1|1 [orig]	$00000009
+NextDevice|a3|flags $8 entry 1|1 [fixed #618]	$00000008
 NextDevice|out|flags $8 entry 1|1	bytes 300 fnv D3A17033
 DeviceEntryType|kept|flags $8 entry 1|1	kept
 DeviceEntryType|popped|flags $8 entry 1|1	$00000000
@@ -595,7 +643,8 @@ DeviceEntryType|d0|flags $8 entry 1|1	$00000002
 NextDevice|kept|flags $8 entry 2|1	kept
 NextDevice|popped|flags $8 entry 2|1	$00000000
 NextDevice|d0|flags $8 entry 2|1	$00000004
-NextDevice|a3|flags $8 entry 2|1	$00000009
+NextDevice|a3|flags $8 entry 2|1 [orig]	$00000009
+NextDevice|a3|flags $8 entry 2|1 [fixed #618]	$00000008
 NextDevice|out|flags $8 entry 2|1	bytes 300 fnv 769F73AB
 DeviceEntryType|kept|flags $8 entry 2|1	kept
 DeviceEntryType|popped|flags $8 entry 2|1	$00000000
@@ -603,7 +652,8 @@ DeviceEntryType|d0|flags $8 entry 2|1	$00000002
 NextDevice|kept|flags $8 entry 3|1	kept
 NextDevice|popped|flags $8 entry 3|1	$00000000
 NextDevice|d0|flags $8 entry 3|1	$0000000C
-NextDevice|a3|flags $8 entry 3|1	$00000011
+NextDevice|a3|flags $8 entry 3|1 [orig]	$00000011
+NextDevice|a3|flags $8 entry 3|1 [fixed #618]	$00000010
 NextDevice|out|flags $8 entry 3|1	bytes 300 fnv 46D92768
 DeviceEntryType|kept|flags $8 entry 3|1	kept
 DeviceEntryType|popped|flags $8 entry 3|1	$00000000
@@ -632,7 +682,8 @@ GetDeviceList|d0|flags $4|1	$FFFFFFFF
 NextDevice|kept|flags $4 entry 0|1	kept
 NextDevice|popped|flags $4 entry 0|1	$00000000
 NextDevice|d0|flags $4 entry 0|1	$00000004
-NextDevice|a3|flags $4 entry 0|1	$00000009
+NextDevice|a3|flags $4 entry 0|1 [orig]	$00000009
+NextDevice|a3|flags $4 entry 0|1 [fixed #618]	$00000008
 NextDevice|out|flags $4 entry 0|1	bytes 300 fnv FBC07EF7
 DeviceEntryType|kept|flags $4 entry 0|1	kept
 DeviceEntryType|popped|flags $4 entry 0|1	$00000000
@@ -640,7 +691,8 @@ DeviceEntryType|d0|flags $4 entry 0|1	$00000000
 NextDevice|kept|flags $4 entry 1|1	kept
 NextDevice|popped|flags $4 entry 1|1	$00000000
 NextDevice|d0|flags $4 entry 1|1	$00000005
-NextDevice|a3|flags $4 entry 1|1	$0000000A
+NextDevice|a3|flags $4 entry 1|1 [orig]	$0000000A
+NextDevice|a3|flags $4 entry 1|1 [fixed #618]	$00000009
 NextDevice|out|flags $4 entry 1|1	bytes 300 fnv CB2F6593
 DeviceEntryType|kept|flags $4 entry 1|1	kept
 DeviceEntryType|popped|flags $4 entry 1|1	$00000000

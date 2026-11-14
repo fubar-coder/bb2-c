@@ -47,15 +47,15 @@
  *     leaves the current entry: DeviceEntryType then reads the entry of
  *     the unlocked list (#622).
  *   - NextDevice without GetDeviceList returns with d0 unchanged (the
- *     result string's length is whatever d0 was) (#625); it copies the
- *     name up to its 0 (DOS BSTRs have one) and leaves a3 behind the 0
- *     (#618).
+ *     result string's length is whatever d0 was) (#625).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
- *     give "", like a name without separator (#624); the result has a3
- *     behind its 0 (#618).  GetFileName and GetPathName take the length
+ *     give "", like a name without separator (#624).  GetFileName and GetPathName take the length
  *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
  *     nothing limits tbuf to 256 characters (the original overwrites the
  *     code behind it, the C build other data) (#627).
+ * Fixed (intended deviation, #618): NextDevice and GetPathName copied
+ * their result with its 0 and left a3 behind the 0, so a string
+ * expression went on one byte too far; a3 now ends on the 0.
  * Like the original, no defects: RemNotify leaves filelens[id] set (the
  * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
  * debugging leftover, d4 is no result); finit deletes the port only if
@@ -221,10 +221,11 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
  * or :.
  *
  * Searched from the end; the argument's string space is given back and
- * the result built in tbuf, then copied to a3 with its 0.  BUG(orig): the
+ * the result built in tbuf, then copied to a3 with its 0; a3 ends on the
+ * 0 (fixed, #618: the original left it behind the 0).  BUG(orig): the
  * first character is never looked at ("/abc" and ":x" give "", like a
- * name without separator, #624); a3 ends behind the 0 (#618); the length
- * is taken as a word (#628); tbuf is not limited (#627).
+ * name without separator, #624); the length is taken as a word (#628);
+ * tbuf is not limited (#627).
  * @param s     d0: the path
  * @param lens  a2: the argument stack, the length's low word at -2(a2)
  * @return d0: the length of the result, 0 without separator
@@ -248,9 +249,10 @@ static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD 
         tbuf[i] = s[i];
     i = (ULONG)-1;
     p = tbuf;
-    do                                          /* with the 0: a3 behind it */
+    do                                          /* with the 0 */
         i++;
     while ((*blitz_string++ = *p++) != 0);
+    blitz_string--;                             /* fixed (#618): a3 on the 0 */
     return i;
 }
 
@@ -454,9 +456,10 @@ static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
  * @brief NextDevice: the name of the next entry of the locked list
  * (NextDosEntry), "" at the end.
  *
- * The name is copied to a3 up to its 0 (DOS BSTRs have one).  BUG(orig):
+ * The name is copied to a3 up to its 0 (DOS BSTRs have one); a3 ends on
+ * the 0 (fixed, #618: the original left it behind the 0).  BUG(orig):
  * without GetDeviceList d0 comes back unchanged as the string's length
- * (#625); a3 ends behind the 0 (#618).
+ * (#625).
  * @param result  d0: the caller's d0
  * @param dos     a6: the program's dos base
  * @return d0: the length byte of the name, 0 at the end, the caller's d0
@@ -476,6 +479,7 @@ static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG result BL_REG(d0),
     result = *name++;
     while ((*blitz_string++ = *name++) != 0)
         ;
+    blitz_string--;                             /* fixed (#618): a3 on the 0 */
     return result;
 }
 

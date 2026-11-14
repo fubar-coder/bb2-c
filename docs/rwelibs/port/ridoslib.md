@@ -48,6 +48,17 @@ do so in C too. The string lengths are read below a2 without changing it
 thunks keep d1/a0/a1, the C code d2-d7/a2-a6; the original changes
 d0-d2, d4/d5, a0/a1 and a6 in places.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* NextDevice and GetPathName leave a3 on the 0 of their result; the
+  original copied the result with its 0 and left a3 behind it, so in a
+  string expression the next part was written one byte too far
+  (`GetPathName("DH0:dir/file")+"x"` held the 0 and lost the `x`)
+  (#618).
+
 ## BUG(orig)
 
 * AddNotify: no range check of the id (64 entries; the offset is id*4 as
@@ -68,12 +79,9 @@ d0-d2, d4/d5, a0/a1 and a6 in places.
   leaves the current entry: DeviceEntryType then reads an entry of the
   unlocked list (#622).
 * NextDevice without GetDeviceList returns with d0 unchanged (the result
-  string's length is whatever d0 was) (#625). It copies the name up to
-  its 0 (the BSTRs of the DOS list have one) and leaves a3 behind the 0
-  (#618).
+  string's length is whatever d0 was) (#625).
 * GetPathName never looks at the first character: `/abc` and `:x` give
-  "", like a name without separator (#624); a3 ends behind the result's
-  0 (#618). GetFileName and GetPathName take the length as a word
+  "", like a name without separator (#624). GetFileName and GetPathName take the length as a word
   (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits
   the 256 byte buffer (the original overwrites the code behind it, the C
   build other data) (#627).
