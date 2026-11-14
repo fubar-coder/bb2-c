@@ -56,7 +56,6 @@
  *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
  *     (the variables are kept in the original order).
  *   - Qualifier (a #long function) only sets the low word of d0. (#313)
- *   - WScroll/WPrintScroll set the A pen to 0 (#315).
  *   - WindowTags without tags keeps the user tags of the last
  *     WindowTags (no TAG_DONE written) (#316); the tag pairs of
  *     WindowTags ...,Tag,Data... are copied without a limit into 32 longs
@@ -79,6 +78,10 @@
  *   reached.  Here they step with the object size, 32 bytes.
  * Fixed (intended deviation, #314): WCls filled the window from y = 1,
  *   the top pixel line stayed; here from y = 0.
+ * Fixed (intended deviation, #315): WScroll/WPrintScroll called
+ *   ScrollRaster through setpen2 with the colour 0 and so set the
+ *   window's A pen to 0; here only the B pen (which ScrollRaster fills
+ *   with) and the draw mode are set, the A pen stays.
  * Fixed (intended deviation, #318): Window, WindowTags and WTitle copy
  *   the titles (maxslib allocst) and never freed the copies in the
  *   original.  Here the object keeps its copies (+20 window title, +24
@@ -2263,6 +2266,18 @@ static struct RastPort *setpen2(struct bwin *w, UWORD pen, struct Library *gfxba
     return rp;
 }
 
+/* scrollpen - the pens of WScroll/WPrintScroll: the B pen (ScrollRaster
+   fills the area left free with it) and the draw mode as setpen2, the A
+   pen left as it is (Fixed (#315): the original set it to 0) */
+static struct RastPort *scrollpen(struct bwin *w, struct Library *gfxbase)
+{
+    struct RastPort *rp = w->win->RPort;
+
+    SetBPen(rp, V.bpen);
+    SetDrMd(rp, V.tjam);
+    return rp;
+}
+
 /* The drawing commands draw into the used window with the pen given, the
    WColour background pen and the WJam mode (setpen2); they are Amiga
    mode only, and with the debugger wchk checks the window ("Uninitialized
@@ -2411,7 +2426,8 @@ void BLITZ_ROUTINE dowcircle(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG r BL_RE
  * @brief WScroll X1,Y1,X2,Y2,Delta X,Delta Y - scroll an area of the used
  * window (ScrollRaster).
  *
- * BUG(orig) (#315): sets the A pen to 0.
+ * Fixed (#315): sets the B pen and the draw mode only (scrollpen); the
+ * original set the A pen to 0 as well.
  *
  * @param x0 d0: x1
  * @param y0 d1: y1
@@ -2426,7 +2442,7 @@ void BLITZ_ROUTINE dowscroll(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 
                                ULONG y1 BL_REG(d3), WORD dx BL_REG(d4), WORD dy BL_REG(d5),
                                struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
-    ScrollRaster(setpen2(w, 0, gfxbase), dx, dy, x0, y0, x1, y1);
+    ScrollRaster(scrollpen(w, gfxbase), dx, dy, x0, y0, x1, y1);
 }
 
 /**
@@ -2437,7 +2453,8 @@ void BLITZ_ROUTINE dowscroll(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 
  * cursor up by the same amount.  Not Amiga mode only.  Errors (debugger
  * only, wchk): "Uninitialized Window".
  *
- * BUG(orig) (#315): sets the A pen to 0.
+ * Fixed (#315): sets the B pen and the draw mode only (scrollpen); the
+ * original set the A pen to 0 as well.
  *
  * @param w a1: the used window object
  * @param gfxbase a6: the graphics base
@@ -2451,7 +2468,7 @@ void BLITZ_ROUTINE dowprintscroll(struct bwin *w BL_REG(a1),
     if (d <= 0)
         return;
     w->cy -= d;
-    ScrollRaster(setpen2(w, 0, gfxbase), 0, d, 0, 0, win->GZZWidth, win->GZZHeight);
+    ScrollRaster(scrollpen(w, gfxbase), 0, d, 0, 0, win->GZZWidth, win->GZZHeight);
 }
 
 /**
