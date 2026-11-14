@@ -20,16 +20,20 @@
  * ASLFontRequest(flags) returns the address of a static .fontinfo
  * {name$ (pointer to a BB2 string: length.l in front), ysize.w, style.b,
  * flags.b, pen1.b, pen2.b, drawmode.b, pad.b}, 0 on cancel.
- * ASLScreenRequest(flags) returns the ScreenModeRequester, 0 on cancel.
+ * ASLScreenRequest(flags) returns a copy of the ScreenModeRequester (fixed
+ * #60), 0 on cancel.
  *
  * Kept from the original (BUG(orig)):
- *   - ASLScreenRequest returns the requester AFTER freeing it (asl LVO
- *     -36 = FreeFileRequest, as FREEREQ below): freed memory. (#60)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
  *     static buffer (strng+4: 96 bytes including the 0; in the binary the
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#60): ASLScreenRequest returns a static copy of the requester's
+ *   fields (struct ScreenModeRequester), made before the requester is
+ *   freed; the original returned the requester after freeing it (asl LVO
+ *   -36 = FreeFileRequest, as FREEREQ below): the program read freed
+ *   memory.
  * Fixed (#63): the copies of the title and the pattern (maxslib allocst)
  *   are freed (freest) after every request, also after Cancel and without
  *   asl.library, and their tags reset (the pattern to ""); the original
@@ -155,6 +159,10 @@ static struct {
     char str[96];
 } BL_PACKED fstruct = { fstruct.str };
 static_assert(sizeof fstruct == 12 + 4 + 96);
+
+/* Fixed (#60): the result of ASLScreenRequest, a copy of the requester's
+   public fields (struct ScreenModeRequester) made before it is freed */
+static struct ScreenModeRequester smresult;
 
 /* screen mode requester tags */
 static struct {
@@ -303,15 +311,17 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
  *        used screen.
  *
  * Amiga mode only.  flags enable the gadgets (1 = width, 2 = height, 4 =
- * depth, 8 = overscan, 16 = autoscroll; ASLSM_Do*: -1/0).  BUG(orig)
- * (#60): returns the requester AFTER freeing it (asl LVO -36 =
- * FreeFileRequest): freed memory.
+ * depth, 8 = overscan, 16 = autoscroll; ASLSM_Do*: -1/0).  Fixed (#60):
+ * returns a copy of the requester's fields (static, struct
+ * ScreenModeRequester: sm_DisplayID ... sm_UserData), made before the
+ * requester is freed; the original returned the freed requester.
  *
  * @param flags  d0: the enable flags
  * @param scr    a1: the used screen object (!libs {#screenslib,$1102}):
  *               its Screen, 0 = the default public screen
- * @return d0: the ScreenModeRequester (freed), 0 on cancel (or without
- *         asl.library, or if no requester could be allocated)
+ * @return d0: the copy of the ScreenModeRequester's fields (valid until
+ *         the next call), 0 on cancel (or without asl.library, or if no
+ *         requester could be allocated)
  */
 ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1))
 {
@@ -327,10 +337,17 @@ ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_R
     if (!aslstruct)
         return 0;
     ok = AslRequest(aslstruct, (struct TagItem *)&stags);
+    if (ok) {                           /* Fixed (#60): copied before */
+        const UWORD *src = aslstruct;   /* (a loop: no memcpy here) */
+        UWORD *dst = (UWORD *)&smresult;
+
+        for (i = 0; i < (int)(sizeof smresult / 2); i++)
+            dst[i] = src[i];
+    }
     FREEREQ(aslstruct);
     if (!ok)
         return 0;
-    return (ULONG)aslstruct;
+    return (ULONG)&smresult;            /* the original: the freed one */
 }
 
 /* copy a string to the variable (length at -4) and to a3; returns its
