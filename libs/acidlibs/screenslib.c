@@ -40,7 +40,6 @@
  *     no leak found): the title copy (allocst) of FindScreen/WbToScreen
  *     objects is not involved, but a ScreenTags/Screen title is only freed
  *     when the screen is closed by the library.
- *   - ScreenTags with a taglist copies it without a limit into 32 longs. (#249)
  * Fixed (intended deviation, #247): the routines that free the old
  *   screen of an object called freescreen with a2 = their argument stack
  *   as the graphics base: if the object had a DBufInfo (ShowBitMap on
@@ -55,6 +54,12 @@
  *   FindScreen/WbToScreen mark the object as "found" (bit 0 of its
  *   DBufInfo long, FOUND: the 8-byte object has no other room), and
  *   freescreen only forgets the screen of such an object.
+ * Fixed (intended deviation, #249): ScreenTags with a tag list copied it
+ *   without a limit into usertags (32 longs = 15 tags and TAG_END); a
+ *   longer list overwrote what follows (the error check area, without the
+ *   debugger the code of the next library).  Here at most 15 tags are
+ *   copied; if the list goes on, the 16th entry is TAG_MORE to the rest
+ *   (as windowslib's WindowTags, #317).
  * Fixed (intended deviation, #250): the original gives SA_DisplayID only
  *   the low word of the viewmode (MOVE d1,newmodes+2, the upper word stays
  *   0): display IDs with a monitor part (PAL, NTSC, DblPAL, ...) opened on
@@ -1014,7 +1019,9 @@ static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont
  * SA_Font (the IntuiFont), SA_ErrorCode and the user tags, copied up to
  * TAG_END; the screen gets "bLtZ" in UserData.
  *
- * BUG(orig) (#249): the tag list is copied without a limit into 32 longs.
+ * Fixed (#249): at most 15 tags are copied, a longer list is linked with
+ * TAG_MORE from the 16th entry on; the original copied it without a limit
+ * into the 32 longs.
  * Fixed (#247): the original freed the old screen with a2 as graphics
  * base.
  *
@@ -1036,9 +1043,16 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
 
     tagstart(title, lens, ifont, used, intui);
     do {                                        /* nxtag: MOVEM.l (a2)+,d0-d1 */
-        tag = *tags++;
+        tag = tags[0];
+        if (dst == &tl.usertags[30] && tag != TAG_END) {
+            /* the last entry: the rest of the list (fixed, #249) */
+            dst[0] = TAG_MORE;
+            dst[1] = (ULONG)tags;
+            break;
+        }
         dst[0] = tag;
-        dst[1] = *tags++;
+        dst[1] = tags[1];
+        tags += 2;
         dst += 2;
     } while (tag);
     return duntags((struct scrobj *)blitz_string, intui);
