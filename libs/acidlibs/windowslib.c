@@ -44,9 +44,6 @@
  *         0 = one character (windowprint).
  *
  * Kept from the original (BUG(orig)):
- *   - A gadget down of a string gadget gives an extra "gadget up" ($40)
- *     on the next Event (kludgegnum), without taking the next message
- *     (which then comes once more). (#311)
  *   - MENUPICK: one more MENUPICK node is appended for the item's
  *     NextSelect (if not $FFFF), with qualifier and iaddress not set
  *     (memlib memory, not cleared). (#312)
@@ -73,6 +70,12 @@
  * Fixed (intended deviation, #313): Qualifier, a #long function, set
  *   only the low word of d0 (the upper word was what d0 held before);
  *   here the whole long.
+ * Fixed (intended deviation, #311): a gadget down of a string gadget
+ *   gives an artificial "gadget up" ($40) on the next Event (kludgegnum)
+ *   unless that is the real one (on purpose, kept); when another message
+ *   came in between, the real gadget up came later as a second report.
+ *   Here the real gadget up of that gadget after an artificial one is
+ *   taken without a report (Event 0), until the next gadget down.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -727,6 +730,9 @@ static WORD sizelimitsok = -1;
 static APTR oldwptr;
 static struct Library *intbase_g;
 static UWORD kludgegnum;        /* <>0: outstanding gadget up event */
+static struct Gadget *kludgegad;    /* the string gadget of kludgegnum */
+static struct Gadget *swallowgad;   /* its real gadget up is not reported
+                                       (fixed #311) */
 static UWORD maxchars;          /* the line editor */
 static ULONG origxy;
 
@@ -1703,6 +1709,11 @@ static ULONG doevent2(void)
     c = (UWORD)class;
     if (c == 0x40) {                            /* gadget up! */
         kludgegnum = 0;
+        if (e->iaddr == swallowgad) {           /* fixed, #311: reported */
+            swallowgad = NULL;                  /* already (the dummy) */
+            class = 0;
+            goto done3;
+        }
         gadgetevent(e);
         goto done;
     }
@@ -1710,14 +1721,18 @@ static ULONG doevent2(void)
         LONGAT(evmousex) = *(ULONG *)&e->mx;
         V.eventgnum = kludgegnum;
         kludgegnum = 0;
+        swallowgad = kludgegad;                 /* fixed, #311 */
         return 0x40;
     }
     if (c == 0x20) {                            /* gadget down! */
         struct Gadget *g = e->iaddr;
 
         V.eventgnum = g->GadgetID;
-        if (g->GadgetType & GTYP_STRGADGET)
+        swallowgad = NULL;                      /* fixed, #311 */
+        if (g->GadgetType & GTYP_STRGADGET) {
             kludgegnum = V.eventgnum;
+            kludgegad = g;
+        }
         goto done;
     }
     if (c == 0x100) {                           /* menu */
@@ -1786,8 +1801,10 @@ done3:
  * the outstanding key (Inkey$) and mouse button (MButtons).  Amiga mode
  * only.
  *
- * BUG(orig) (#311): a gadget down of a string gadget gives an extra
- * "gadget up" ($40) on the next Event.  BUG(orig) (#312): MENUPICK appends
+ * A gadget down of a string gadget gives an artificial "gadget up" ($40)
+ * on the next Event unless that is the real one; Fixed (#311): the real
+ * gadget up that comes after an artificial one is taken without a report
+ * (0; the original reported it a second time).  BUG(orig) (#312): MENUPICK appends
  * one more MENUPICK node for the item's NextSelect, with qualifier and
  * iaddress not set.
  *
