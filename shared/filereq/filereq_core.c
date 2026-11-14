@@ -42,9 +42,16 @@
  * TED's embedded copy differs in 7 bytes, all padding behind gadget texts
  * or the rest at the end of the hunk (never read).
  *
+ * Fixed (#157): "CD" (the gadget at $FB6) makes the path the current
+ *   directory of the process, as in the original, but keeps the directory
+ *   the process had before the first CD; a later CD unlocks only the
+ *   requester's own lock of the CD before.  fq_finit (the end of the
+ *   program: freqlib's finit, the end of TED) makes the kept directory
+ *   current again and unlocks the requester's lock.  The original
+ *   unlocked the old current directory, which belongs to whoever started
+ *   the program (the shell), and left the program in the path's
+ *   directory.
  * Kept from the original (BUG(orig)):
- *   - "CD" (the gadget at $FB6) makes the path the current directory of
- *     the process and unlocks the old current directory (#157).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
  * Fixed (#158): building the path from the current directory (PARENT with
@@ -226,6 +233,10 @@ static APTR oldwinptr;          /* $6F2 */
 static struct Process *task;    /* $6F6 */
 static UBYTE *firstvis;         /* $7CA: node of the first line */
 static UWORD code;              /* $944: Code of the last message */
+/* Fixed (#157): the current directory before the first CD, and the lock
+   of the last CD (0: CD not used); fq_finit restores and unlocks them */
+static BPTR startdir;
+static BPTR cdlock;
 
 /* RefreshGList(gadget, window, 0, n) ($B74) */
 static void refresh(struct Gadget *gad, LONG n)
@@ -894,9 +905,19 @@ copyname:
     if (a0 == (UBYTE *)&fq.g_cd) {
         BPTR lock = Lock((CONST_STRPTR)fq.path, -2);
         ULONG s0, s1, s2;
+        BPTR old;
         if (!lock)
             goto activate;
-        UnLock(CurrentDir(lock));
+        /* Fixed (#157): the directory the process had before the first
+           CD is kept for fq_finit; only the requester's own lock of an
+           earlier CD is unlocked (the original unlocked whatever was
+           current: the start lock of the shell) */
+        old = CurrentDir(lock);
+        if (!cdlock)
+            startdir = old;
+        else if (old == cdlock)
+            UnLock(old);
+        cdlock = lock;
         s0 = fibmem[0];
         s1 = fibmem[1];
         s2 = fibmem[30];
@@ -952,6 +973,28 @@ fail:                                   /* $6D2 */
     FreeMem(fq.img_up.ImageData, 48);
     closelibs();                        /* Fixed (#154) */
     return result;
+}
+
+/* Fixed (#157): the end of the program - when CD made a lock of the
+   requester the current directory, the directory the process had before
+   the first CD is current again and that lock is unlocked (a lock the
+   program made current itself since is left to it) */
+void fq_finit(void)
+{
+    BPTR cur;
+
+    if (!cdlock)
+        return;
+    fq.dosbase = (struct DosLibrary *)OldOpenLibrary((CONST_STRPTR)fq.dosname);
+    if (fq.dosbase) {
+        cur = CurrentDir(startdir);
+        if (cur == cdlock)
+            UnLock(cur);
+        CloseLibrary((struct Library *)fq.dosbase);
+        fq.dosbase = NULL;
+    }
+    cdlock = 0;
+    startdir = 0;
 }
 
 /* ------------------------------------------ the data block: contents */

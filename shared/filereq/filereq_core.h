@@ -27,7 +27,7 @@ extern ULONG fq_args[4];
  *
  * Original entry: code+4 ($CA in freqlib), the parameter block in a0.
  * Opens dos, intuition and graphics at every call and closes them at its
- * end (fixed #154); the kept original bugs (#157, #159) are listed in
+ * end (fixed #154); the kept original bug (#159) is listed in
  * filereq_core.c.
  *
  * @return the address of the result "path/file" (inside the data block),
@@ -36,5 +36,17 @@ extern ULONG fq_args[4];
  *         window cannot be opened)
  */
 ULONG fq_request(void);
+
+/**
+ * @brief The end of the program: undo the requester's CD (fixed #157).
+ *
+ * The gadget "CD" makes the path the current directory of the process and
+ * keeps the directory before the first CD.  fq_finit makes that directory
+ * current again and unlocks the requester's own lock (not a lock the
+ * program made current itself since); nothing when CD was not used.
+ * Called once at the end: freqlib's finit, the end of TED.  Opens and
+ * closes dos.library itself.
+ */
+void fq_finit(void);
 
 #endif

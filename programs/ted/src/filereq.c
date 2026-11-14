@@ -33,3 +33,9 @@ UBYTE *filerequest(const ULONG *args)
     fq_args[3] = args[3];       /* screen */
     return (UBYTE *)fq_request();
 }
+
+/* see filereq.h (fixed #157) */
+void filereq_finit(void)
+{
+    fq_finit();
+}

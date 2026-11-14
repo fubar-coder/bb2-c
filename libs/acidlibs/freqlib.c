@@ -28,8 +28,6 @@
  *
  * Kept from the original (BUG(orig)):
  *   - path$/file$ get the new contents but not their new lengths. (#153)
- *   - "CD" (the gadget at $FB6) makes the path the current directory of
- *     the process and unlocks the old current directory (#157).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them. (#159)
  * Fixed (#160): there are 64 line gadgets (144 bytes each, $15AA-$39A9,
@@ -45,6 +43,12 @@
  *   emulator: reboot, or "ILLEGAL Instruction").  Here the list has at most
  *   64 lines and the window is at most 597 (64 * 8 + 85) high, also the
  *   first one; details in filereq_core.c (test freqlib-64-lines).
+ * Fixed (#157): "CD" (the gadget at $FB6) makes the path the current
+ *   directory of the process while the program runs, as in the original,
+ *   but keeps the directory the process had before; the library's finit
+ *   (new: the original has none) makes it current again at the end of the
+ *   program and unlocks the requester's lock (fq_finit).  The original
+ *   unlocked the old current directory, the start lock of the shell.
  * Fixed (#158): building the path from the current directory unlocks the
  *   ParentDir locks it takes (the original leaked them).
  * Fixed (#156): the volume list (DRIVES) walks the DOS list locked for
@@ -73,9 +77,12 @@
 
 /* entry points (defined below) */
 void dofreq(void), freqlib_freqchk(void);
+static void BLITZ_ROUTINE codefinit(void);
 
-/* !libheader{#freqlib,0,0,0,errors} */
-BLITZ_LIBHEADER(LIB_freqlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
+BLITZ_ENTRY_DECL(finit);
+
+/* !libheader{#freqlib,0,0,finit,errors} - the finit is new (#157) */
+BLITZ_LIBHEADER(LIB_freqlib, 0, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, BL_VARPTR | BL_STRING, BL_VARPTR | BL_STRING);
@@ -83,10 +90,25 @@ BLITZ_LIBS(LIB_screenslib, 0x1102);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dofreq), freqlib_freqchk, 0);
 BLITZ_NAME("FileRequest$", "Title$,Pathname$,Filename$");
 
+BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+
 BLITZ_LIBFIN();
 
-/* the requester core: fq_args[4], fq_request() */
+/* the requester core: fq_args[4], fq_request(), fq_finit() */
 #include "filereq_core.h"
+
+/**
+ * @brief finit: the end of the program - undo the requester's CD.
+ *
+ * Fixed (#157): if the gadget "CD" changed the current directory, the
+ * directory before the first CD is current again and the requester's lock
+ * is unlocked (fq_finit, shared/filereq/filereq_core.c).  The original
+ * library has no finit.
+ */
+static void BLITZ_ROUTINE codefinit(void)
+{
+    fq_finit();
+}
 
 /**
  * @brief FileRequest$(Title$,Pathname$,Filename$): the file requester.
@@ -99,7 +121,7 @@ BLITZ_LIBFIN();
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
  * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
- * The other BUG(orig) of the requester (#157, #159): see the
+ * The other BUG(orig) of the requester (#159): see the
  * head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not

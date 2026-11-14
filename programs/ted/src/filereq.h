@@ -14,4 +14,10 @@
    d0 with Z=1). */
 UBYTE *filerequest(const ULONG *args);
 
+/* Fixed (#157): the end of TED - the directory that was current before
+   the requester's first CD is current again, the requester's lock is
+   unlocked (fq_finit); nothing when CD was not used.  No original
+   counterpart (TED's requester unlocked the old directory at CD). */
+void filereq_finit(void);
+
 #endif

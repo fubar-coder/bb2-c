@@ -1,0 +1,6 @@
+# TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)
+[state]
+OK
+[problems]
+  - expect: stdout lacks "inject: current dir at end: start\n"
+  - expect: stdout has "inject: current dir: the start lock was unlocked\n"

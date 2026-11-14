@@ -23,3 +23,11 @@ lib 154: relocations in the declaration part 36 != 37
 # MUST be greater than zero"), which the original does not have
 lib 140: entry 1 StringGadget +$16: code offset set in only one of them
 lib 140: relocations in the declaration part 66 != 67
+# freqlib (#157): a finit of its own (the gadget "CD" keeps the start
+# directory, the finit makes it current again at the end of the program);
+# the original has none
+lib 152: header +$1C: code offset set in only one of them
+lib 152: end of the table +$7E: $FF != $00
+lib 152: 1 entries != 2
+lib 152: declaration part $84 != $98 bytes
+lib 152: relocations in the declaration part 3 != 5

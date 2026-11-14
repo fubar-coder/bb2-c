@@ -1,0 +1,24 @@
+; ted-freq-cd-start-lock (#157): the gadget "CD" of TED's file requester
+; (the requester of freqlib, shared/filereq) makes the path the current
+; directory of the process and unlocks the old current directory, which
+; belongs to whoever started TED.  TED alone under inject cd (a lock of
+; inject's own is TED's current directory); Load, CD with the requester's
+; empty path (a new lock of the same directory), Cancel, QUIT.  Correct:
+; at the end the start lock is TED's current directory again and was not
+; unlocked; the original ends in the new lock and has unlocked the start
+; lock.
+; @fixed #157
+; @file bo.bas "a=1\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject cd blitz2:ted @FILE@
+; @expect stdout "inject: current dir at end: start\n"
+; @expect nostdout "inject: current dir: the start lock was unlocked\n"
+timeout 15
+wait screen
+menu 0 1
+wait freq "Name of file to load"
+gad 4
+freq cancel
+wait screen
+menu 0 9
+wait exit

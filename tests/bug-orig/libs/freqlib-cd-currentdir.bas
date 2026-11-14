@@ -8,6 +8,7 @@
 ; Correct: the current directory is the one the program was started with
 ; and its lock is not unlocked.  The original ends in RAM: and has
 ; unlocked the start lock.
+; @fixed #157
 ; @configs clib
 ; @pass runwrap=@INJECT@|cd click=FQ/CD click=FQ/CANCEL
 ; @pass timeout=120

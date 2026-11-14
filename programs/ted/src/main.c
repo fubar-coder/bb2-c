@@ -525,6 +525,11 @@ fail3:
     CloseLibrary((struct Library *)GfxBase);
 fail2:
     /* ted.s:131 fail2 */
+    /* Fixed (#157): the file requester's CD made its path the current
+       directory and unlocked the one before (the shell's, or blitz2's);
+       it now keeps that one, and the end of TED makes it current again
+       (the directory where TED was started, also under blitz2) */
+    filereq_finit();
     CloseLibrary((struct Library *)DOSBase);
     /* ted.s:132 fail1: d0 = ext.l returncode.  Fixed (#357): wb_exit keeps
        it (the original overwrote it with wbmess, survey-01 I.1): -1 (Z=0)
