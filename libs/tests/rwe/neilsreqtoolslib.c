@@ -227,8 +227,11 @@ static ULONG fk_font(UBYTE *req __asm("a1"), UBYTE *title __asm("a3"), ULONG tag
     int i;
     copys(r->s[0], title);
     if (fk_ret) {
+        /* bytes with the high bit set: no four of them are an address that
+           the pointer normalisation of the observation could take for one
+           into the test program (0x40434669 once was, by the stack's place) */
         for (i = 16; i < 64; i++)
-            req[i] = (UBYTE)(i * 3 + 1);
+            req[i] = (UBYTE)(0x80 | (i * 3 + 1));
         *(const char **)(req + 16) = "fake.font";
     }
     return fk_ret;

@@ -904,7 +904,7 @@ RTEZFontRequest|call 0|ok|1	bytes 256 fnv 14184900
 RTReturnValue|kept|ok|1	kept
 RTReturnValue|popped|ok|1	$00000000
 RTReturnValue|d0|ok|1	$00000001
-RTEZFontRequest|the TextAttr|ok|1	bytes 8 50524F473D404346
+RTEZFontRequest|the TextAttr|ok|1	bytes 8 50524F47BDC0C3C6
 RTEZFontRequest|kept|cancel|1	kept
 RTEZFontRequest|popped|cancel|1	$00000000
 RTEZFontRequest|d0|cancel|1	$00000000
@@ -922,7 +922,7 @@ RTReturnValue|kept|form 0 ok|1	kept
 RTReturnValue|popped|form 0 ok|1	$00000000
 RTReturnValue|d0|form 0 ok|1	$00000001
 RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 0 ok|1	$00000001
-RTEZScreenModeRequest|the screen mode|form 0 ok|1	bytes 16 50524F473D50524F47A0A3A6A9ACAFB2
+RTEZScreenModeRequest|the screen mode|form 0 ok|1	bytes 16 50524F47BDC0C3C69DA0A3A6A9ACAFB2
 RTEZScreenModeRequest|kept|form 1 ok|1	kept
 RTEZScreenModeRequest|popped|form 1 ok|1	$00000000
 RTEZScreenModeRequest|d0|form 1 ok|1	$4C000000
@@ -932,7 +932,7 @@ RTReturnValue|kept|form 1 ok|1	kept
 RTReturnValue|popped|form 1 ok|1	$00000000
 RTReturnValue|d0|form 1 ok|1	$00000001
 RTEZScreenModeRequest|rtFontRequestA (BUG(orig) #466)|form 1 ok|1	$00000001
-RTEZScreenModeRequest|the screen mode|form 1 ok|1	bytes 16 50524F473D50524F47A0A3A6A9ACAFB2
+RTEZScreenModeRequest|the screen mode|form 1 ok|1	bytes 16 50524F47BDC0C3C69DA0A3A6A9ACAFB2
 RTEZScreenModeRequest|kept|form 0 cancel|1	kept
 RTEZScreenModeRequest|popped|form 0 cancel|1	$00000000
 RTEZScreenModeRequest|d0|form 0 cancel|1	$00000000
