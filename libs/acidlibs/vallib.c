@@ -685,8 +685,9 @@ struct valstate {
 
 /* getdec - get a decimal number into d7, 10^ in d6 (both mod 2^32);
    d3 = the character that ended it (or the last digit's value / 0 if the
-   count ran out) */
-static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale)
+   count ran out).  Only the first `digits` digits count, the others are
+   read and skipped (the fraction: see notneg). */
+static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale, ULONG digits)
 {
     UWORD ch = 0;
     ULONG a = 0, m = 1;
@@ -696,6 +697,9 @@ static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale)
         if (ch < '0' || ch > '9')
             break;
         ch -= '0';
+        if (!digits)
+            continue;
+        digits--;
         m = (m << 1) + (m << 3);                /* multiply d6 and d7 by ten */
         a = (a << 1) + (a << 3) + ch;           /* add digit to d7 */
     }
@@ -706,8 +710,12 @@ static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale)
 
 /* 'notneg - integer part, optionally "." and fraction:
    SPFlt(int) [+ SPDiv(SPFlt(frac), SPFlt(10^n))].  No fraction digits
-   give n = 0 (divisor 1, + 0.0); BUG(orig) (#304): 32 or more fraction digits
-   make 10^n mod 2^32 = 0 and the fraction is dropped. */
+   give n = 0 (divisor 1, + 0.0).
+   Fixed (#304): only the first 9 fraction digits count (10^9 and the
+   digits still fit in a signed long; an FFP number has 7 digits).  The
+   original takes all of them modulo 2^32: from 10 decimal places on the
+   fraction was wrong, from 32 on 10^n mod 2^32 = 0 and it was dropped
+   (TST.l d6:BEQ). */
 static ULONG notneg(const void *ffp, struct valstate *s)
 {
     ULONG scale, ipart, x;
@@ -715,13 +723,11 @@ static ULONG notneg(const void *ffp, struct valstate *s)
     ULONG frac;                                 /* d7: the fraction digits */
     ULONG fracflt;                              /* d7: the fraction as float */
 
-    if (getdec(s, &inum, &scale) != '.')
+    if (getdec(s, &inum, &scale, ~0UL) != '.')
         return BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum); /* that's it! */
     ipart = BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum);
-    getdec(s, &frac, &scale);
-    if (!scale)
-        return ipart;
-    x = BLITZ_BASEJSR1(ffp, LVO_SPFlt, scale);  /* divisor to float */
+    getdec(s, &frac, &scale, 9);                /* (scale is never 0 now) */
+    x =BLITZ_BASEJSR1(ffp, LVO_SPFlt, scale);  /* divisor to float */
     fracflt = BLITZ_BASEJSR1(ffp, LVO_SPFlt, frac); /* fraction to float */
     x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, fracflt, x);
     return BLITZ_BASEJSR2(ffp, LVO_SPAdd, x, ipart);
@@ -813,9 +819,11 @@ static ULONG doval2(const void *ffp, struct valstate *s)
  * string afterwards (frees the work area).
  *
  * BUG(orig) (#302): hex, binary and negative numbers read one byte behind
- * the string (normally its terminating 0).  BUG(orig) (#304): 32 or more
- * fraction digits drop the fraction.  Fixed (#303): the length is used as
- * a long (the original used its low word: lengths 32769..65536 gave 0).
+ * the string (normally its terminating 0).  Fixed (#303): the length is
+ * used as a long (the original used its low word: lengths 32769..65536
+ * gave 0).  Fixed (#304): only the first 9 fraction digits count (the
+ * original took them all modulo 2^32: wrong from 10 decimal places on,
+ * dropped from 32 on).
  *
  * @param str d0: the string
  * @param ffp a6: the mathffp base
