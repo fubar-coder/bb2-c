@@ -120,6 +120,25 @@ TEST_CASE("every code $A0-$FF has a glyph, $81-$9F the box", "[font]")
     }
 }
 
+TEST_CASE("every glyph $A1-$FF is its own: a capital differs from its small letter", "[font]")
+{
+    // user decision 2026-11-14: no two of $A1-$FF share a glyph (the
+    // capitals with a mark included), except the umlauts, which are TED's
+    // 26-31; and the 6 px inverted exclamation mark is not TED's i
+    for (int h : { 8, 6 }) {
+        for (unsigned a = 0xA1; a <= 0xFF; a++)
+            for (unsigned b = a + 1; b <= 0xFF; b++) {
+                CAPTURE(h, a, b);
+                CHECK(glyph(font(h), h, a) != glyph(font(h), h, b));
+            }
+        for (unsigned a = 0xA1; a <= 0xFF; a++)
+            for (unsigned c = 0x21; c < 0x7F; c++) {
+                CAPTURE(h, a, c);
+                CHECK(glyph(font(h), h, a) != glyph(font(h), h, c));
+            }
+    }
+}
+
 TEST_CASE("the umlauts are TED's glyphs 26-31", "[font]")
 {
     const unsigned latin1[] = { 0xE4, 0xF6, 0xFC, 0xC4, 0xD6, 0xDC };
@@ -174,7 +193,7 @@ TEST_CASE("the digests of the fonts", "[font]")
     // a changed glyph source or archive font changes them: update after
     // looking at the change (tedfont builds the fonts, fonts.cmake)
     sha256_hex_of(font8, sizeof font8, hex);
-    CHECK(std::string(hex) == "ef41b70f754cb353e0df90ba42dbf2bf773f83af9e86b6aa7d5ba8589e9d9666");
+    CHECK(std::string(hex) == "4e0e45047a35512923dc792a46a5473f4afec7cfc5dde108f64ca0138365ea39");
     sha256_hex_of(font6, sizeof font6, hex);
-    CHECK(std::string(hex) == "671076f74edc561735ee0795a64779ef168aa8b97e69326549fc7421d7f7cac7");
+    CHECK(std::string(hex) == "e6780df6107767b034ed0f63a137a077e1cb2f192967214df87207bf06064ede");
 }

@@ -322,11 +322,17 @@ task 5.2 is the gate.
   (`programs/ted/fonts`, the ones `ted` embeds). A cell decodes as its
   character in UTF-8: $A0-$FF as themselves, 26-31 as the umlauts (they
   were `~`), the box of $80-$9F as `□` (U+25A1); unknown stays `·`.
-- Glyphs that are the same, measured on the generated fonts: at 8 px
-  `Ò Ó Ù Ú` ($D2 $D3 $D9 $DA) are the glyphs of `ò ó ù ú` (TED's capital
-  with a mark is its 5-row capital, and TED's 5-row O and U are its o and
-  u); at 6 px `¡` ($A1) is TED's `i`. The decoder shows the later entry
-  (`Ò Ó Ù Ú`, `i`). For the user's review of task 5.2.
+- Glyphs that were the same (measured on the generated fonts): at 8 px
+  `Ò Ó Ù Ú` were the glyphs of `ò ó ù ú` (TED's capital with a mark is its
+  5-row capital, and TED's 5-row O and U are its o and u); at 6 px `¡`
+  was TED's `i`. Redrawn by the user's decisions of 2026-11-14: at 8 px
+  the small letters take TED's scheme of `ö` (27: mark in row 1, blank row
+  2, the 4-row o or u of 27/28 in rows 3-6), the capitals the mark in row
+  0 on TED's O / U shortened to 6 rows (rows 1-6); at 6 px `¡` is TED's
+  `!` upside down with the stem into row 5. No other pair of $C0-$DE /
+  $E0-$FE was identical or only shifted by a row at either height;
+  `test_fontlit` checks that no two glyphs of $A1-$FF (and none of them
+  and an ASCII glyph) are the same.
 - 31-literal and 32-literal-load run in all four combinations, and the
   original TED (R5, Rc) cannot show the characters, so a screen
   expectation there would fail the original's runs. The expectations of

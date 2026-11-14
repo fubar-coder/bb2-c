@@ -201,21 +201,14 @@ TEST_CASE("decoding the glyphs of 128-255 and the umlauts", "[teddump]")
     Planes p = ted_screen();
     std::string all;
 
-    // all of $A0-$FF but the O and U with grave and acute: at 8 px the
-    // capitals have the glyphs of the small letters (TED's capitals with a
-    // mark are its 5-row capitals, and TED's O and U of 5 rows are its o
-    // and u), which decode as the capitals
     for (int c = 0xA0; c <= 0xFF; c++)
-        if ((c & ~0x20) != 0xD2 && (c & ~0x20) != 0xD3 && (c & ~0x20) != 0xD9
-            && (c & ~0x20) != 0xDA)
-            all += static_cast<char>(c);
-    REQUIRE(all.size() == 88);
+        all += static_cast<char>(c);
     // a row of literal characters (TED-C's font: 256 glyphs), the box of
     // $81-$9F, the umlauts 26-31 and an unknown cell
     put(p, 12 + 3 * FH, 0, "x\x85\x9f" + std::string(1, '\x1a') + "\x1b\x1c\x1d\x1e\x1fy");
     put(p, 12 + 4 * FH, 0, all.substr(0, 48));
     put(p, 12 + 5 * FH, 0, all.substr(48));
-    put(p, 12 + 7 * FH, 0, "\xd2\xf2");                    // the same glyph twice
+    put(p, 12 + 7 * FH, 0, "\xd2\xf2");                    // a capital and its small letter
     p[0][static_cast<size_t>((12 + 6 * FH) * RB)] = 0x81;      // no glyph
     REQUIRE(parse(build(p), d));
     char *t = teddump_text(&d.d, &fonts(), FH);
@@ -231,7 +224,7 @@ TEST_CASE("decoding the glyphs of 128-255 and the umlauts", "[teddump]")
     CHECK(text.find("  4 | " + utf8.substr(2, 47 * 2) + "\n") != std::string::npos);
     CHECK(text.find("  5 |" + utf8.substr(96) + "\n") != std::string::npos);
     CHECK(text.find("  6 |\u00b7\n") != std::string::npos);
-    CHECK(text.find("  7 |\u00d2\u00d2\n") != std::string::npos);   // the later entry: $D2
+    CHECK(text.find("  7 |\u00d2\u00f2\n") != std::string::npos);
 }
 
 TEST_CASE("comparing masks the field Free", "[teddump]")
