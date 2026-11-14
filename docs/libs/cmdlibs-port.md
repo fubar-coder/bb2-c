@@ -35,6 +35,30 @@ carried over (for the comparison with AmiBlitz3).
   except a4/a5/a7. As with the system libs, the C versions
   nevertheless preserve at least the registers that the original preserves (thunks,
   checked in `[cmd]`).
+* **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
+  `AddAppIconA`: DiskObject in a3, tag list in a4; intuition
+  `EasyRequestArgs`, `AutoRequest`, graphics `TextFit`,
+  `ChangeExtSpriteA`: a3): the libraries are compiled with
+  `-ffixed-a3/a4/a5`, and gcc does **not** restore such a register after
+  the call. Measured with gcc 16.2 (`-Os`/`-O2`, `-Wall -Wextra`,
+  2026-11-14):
+  * the NDK inline macro (`proto/*.h`, register variables on a3/a4)
+    compiles without error or warning, loads a3/a4 and returns with them
+    changed;
+  * an `__asm` block that loads a3/a4 itself with `"a3","a4"` in the
+    clobber list: the same, no warning, no save (a clobber of a fixed
+    register makes gcc save nothing; the prologue saves only the
+    callee-saved registers it allocates itself);
+  * register variables on a3/a4 plus `"a3","a4"` in the clobber list:
+    a compile error ("'asm' specifier for variable 'a3' conflicts with
+    'asm' clobber list").
+
+  So such a call has to save and restore the register itself, inside the
+  `__asm` block (`movem.l a3/a4,-(sp)` before the parameters are loaded,
+  `movem.l (sp)+,a3/a4` after the `jsr`). A plain NDK call of such a
+  function in a library silently clobbers the Blitz program's string
+  pointer (a3) or variable bases (a4/a5). Audit and the durable solution
+  (a wrapper and a build check): #516.
 * **Shared helpers:** what several ports need is in
   `libs/include/blitzlib.h`/`blitzhelp.h` instead of locally: `BLITZ_ALIBJSR_A6`
   (ALibJsr with a6, vallib), `BLITZ_ERRCHK_THUNK`/`BLITZ_ERRCHK_MESSAGE`
