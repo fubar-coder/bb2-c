@@ -30,9 +30,7 @@
  * of the plane size +22).
  *
  * BUG(orig), kept:
- *  - nPlanes is the byte at BitMap+5, the plane loop compares with the
- *    WORD at +4 (Flags<<8 | Depth) (#180); both loops (rows, planes) run
- *    at least once (#181) (and 65536 times for 0 colours in SaveScreen
+ *  - both loops (rows, planes) run at least once (#181) (and 65536 times for 0 colours in SaveScreen
  *    without AGA, #182).
  *  - savearow reads one byte behind the row (literal run test) (#183);
  *    indexes are signed words (a2 + d4.w; not a bug: matters only for rows
@@ -45,6 +43,11 @@
  *  - SaveShape does not check the depth: depth 0 writes 65536 plane
  *    pointers (DBF) from bmcopy on, depth 15 and more run past its 14
  *    pointers (usewid, scrcols, then whatever follows). (#326)
+ *
+ * Fixed (intended deviation, #180): the plane loop of the BODY compares
+ * with the byte Depth at BitMap+5, as nPlanes of the BMHD; the original
+ * compared with the WORD at +4 (Flags<<8 | Depth), so a bitmap whose
+ * Flags byte is not 0 got Flags*256 + Depth planes per row.
  *
  * Fixed (intended deviation, #185): "Can't open File" (err2 in the normal
  * code) has its message in the error check area in the original (without
@@ -306,7 +309,7 @@ static void makebody(const struct BitMap *bm)
                                   + (WORD)(UWORD)(plane << 2)) + offset,
                      bm);
             plane++;
-        } while (plane < *(UWORD *)&bm->Flags);  /* BUG(orig) (#180): Flags and Depth */
+        } while (plane < bm->Depth);            /* the byte; fixed (#180) */
         row++;
     } while (row < bm->Rows);
     if (bodylen & 1) {
@@ -357,9 +360,10 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
  * Errors: "Can't open File" if the file cannot be created (the message in
  * the normal code, fixed, #185); debugger only: "Uninitialized Bitmap"
  * (bitchk).
- * BUG(orig): the plane loop compares with the word over Flags and Depth
- * (#180), the row and plane loops run at least once (#181), savearow reads
- * one byte behind the row (#183).
+ * BUG(orig): the row and plane loops run at least once (#181), savearow
+ * reads one byte behind the row (#183).  Fixed (#180): the plane loop
+ * compares with the byte Depth (the original: the word over Flags and
+ * Depth).
  *
  * @param bm    a0: the BitMap (!libs {#bitmaplib,$1080})
  * @param name  d1: the file name
