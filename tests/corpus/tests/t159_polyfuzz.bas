@@ -1,5 +1,7 @@
 ; t159_polyfuzz - polylib with pseudo random arguments (fixed seed):
-; BitMapPoly (plain and with a dither bitmap, both point orders), RenderPoly
+; BitMapPoly (plain and with a dither bitmap, both point orders; the dither
+; bitmap has the target's size: with smaller planes the dither form reads
+; behind it, #1035), RenderPoly
 ; after RenderToBitmap (both forms) and RenderToChunky (colours 0-14: #422),
 ; ChunkyPoly (blitter and CPU form), ChunkyPlot and ChunkyVlin (the CLIP
 ; forms, the plain forms inside the area and with y1 <= y2: #417) on a
@@ -57,11 +59,11 @@ Dim p.w(40)
 a=&p(0)
 BitMap 0,160,64,3
 BitMap 1,160,64,3
-BitMap 2,160,32,3
+BitMap 2,160,64,3
 b=Addr BitMap(2)
 For i=0 To 2
   pl=Peek.l(b+8+i*4)
-  For k=0 To 20*32-1 : Poke.b pl+k,(k*7+i*29+k/5) : Next
+  For k=0 To 20*64-1 : Poke.b pl+k,(k*7+i*29+k/5) : Next
 Next
 Use BitMap 0
 VWait
