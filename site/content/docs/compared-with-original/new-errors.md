@@ -706,6 +706,20 @@ the empty string, as before.
 
 Issue: [Inkey$ with a negative count made about 4 billion attempts (#1031)](https://github.com/fubar-coder/bb2-c/issues/1031).
 
+### `Peeks$` with a negative length {#peeks-negative}
+
+**What happened.** The original took the length of `Peeks$` as an
+unsigned number: `Peeks$(Address,-1)` copied about 4 GB into the string
+buffer, over the memory behind it, and the program crashed.
+
+**With the port.** A negative length gives the empty string, as a
+length of 0 does. With runtime error checking, it is the error "Can't
+Peeks$ a negative number of Characters!".
+
+**What to change.** Use a length of 0 or more.
+
+Issue: [Peeks$ with a negative length copied up to 4 GB (#214)](https://github.com/fubar-coder/bb2-c/issues/214).
+
 ### A bitmap or shape of depth 0 {#depth-zero}
 
 **What happened.** `BitMap` refuses a depth of 0 with runtime error

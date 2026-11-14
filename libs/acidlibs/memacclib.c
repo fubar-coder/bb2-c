@@ -17,16 +17,19 @@
  *
  * Fixed (intended deviation, #214): Peeks$ with a negative length counted
  * it unsigned and copied up to 4 GB into the string buffer; here it gives
- * the empty string.
+ * the empty string.  A negative length is a programming error: with
+ * runtime error checking, peekschk (error check area only, the original
+ * had none) raises "Can't Peeks$ a negative number of Characters!".
  */
 #include "blitzlib.h"
 
 /* entry points (thunks / asm, defined below) */
 void dopeek(void), dopoke(void), memacclib_docall(void);
-void dopeeks(void);
+void dopeeks(void), peekschk(void);
 
-/* !libheader{#memacclib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_memacclib, 0, BL_NORET, 0, 0);
+/* !libheader{#memacclib,0,0,0,errors}: the original has no error check
+   area (0); peekschk (#214) is its first check */
+BLITZ_LIBHEADER(LIB_memacclib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_USTATEMENT();
 BLITZ_ARGS(BL_LONG, 0);
@@ -43,7 +46,7 @@ BLITZ_NAME("Peek", "[.Type](Address)");
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(dopeeks, 0, 0);
+BLITZ_SUBS(dopeeks, peekschk, 0);
 BLITZ_NAME("Peeks$", "(Address,Length)");
 
 BLITZ_ASTATEMENT();
@@ -104,6 +107,8 @@ BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
  *
  * Fixed (#214): a negative length gives the empty string, as 0 does (the
  * original counted it unsigned, SUBQ.l #1,d1:BNE, and copied ~4 GB).
+ * Errors (debugger, peekschk): "Can't Peeks$ a negative number of
+ * Characters!" (#214: the original had no check).
  *
  * The original changes only d0, d1, a0 (and a3); the thunk keeps a1.
  *
@@ -127,6 +132,19 @@ static ULONG BLITZ_ROUTINE dopeeks_c(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
     return len;
 }
 BLITZ_THUNK(dopeeks, dopeeks_c, "a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(peeksmess, "Can't Peeks$ a negative number of Characters!");
+
+/* peekschk - not in the original (Peeks$ had no check, #214): a negative
+   length */
+static void BLITZ_ERRCHK peekschk_c(ULONG n BL_REG(d1))
+{
+    if ((LONG)n < 0)
+        BLITZ_RUNERR(peeksmess);
+}
+BLITZ_ERRCHK_THUNK(peekschk, peekschk_c, "d0-d1/a0-a1");
 
 /**
  * @brief Poke [.Type] Address,Data - write a byte, word, long, quick,

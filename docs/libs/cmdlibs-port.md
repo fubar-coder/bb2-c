@@ -116,7 +116,11 @@ of BB2: type in d0 (1/2/3/4/5/7), address in d1, data in d2.
 * `Peeks$(a,n)`: writes no terminating 0 (as in the original, not a bug, #213: result
   only via d0 = n; without visible consequence, see General); a negative n gives the empty string, as 0
   does (fixed, intended deviation, #214: the original counted n as an unsigned
-  32-bit number and copied ~4 GB; bug-orig test `memacclib-peeks-negative`). A zero byte within the n characters stays in.
+  32-bit number and copied ~4 GB; bug-orig test `memacclib-peeks-negative`). A negative n is a
+  programming error: with runtime error checking it is the error "Can't Peeks$ a negative number
+  of Characters!" (`peekschk`, fixed, intended deviation, #214: the original had no error check,
+  memacclib has an error check area only for it; bug-orig test `memacclib-peeks-negative-check`).
+  A zero byte within the n characters stays in.
 * `Poke.s`: copies the length of the string (from the stack) + 0, embedded
   zero bytes included.
 * `Call`: `MOVE.l d0,a0:JMP (a0)` - stays assembler, because the called
