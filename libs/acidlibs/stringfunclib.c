@@ -19,6 +19,9 @@
  *   - #287: Instr(s$,f$,Startpos) did not check Startpos <= 0 and compared
  *     the bytes before the string.  Here such a start is the first
  *     character.
+ *   - #288: Cvi read 2 bytes, Cvl/Cvq 4, whatever the string's length (the
+ *     terminating 0 and the bytes behind a shorter string).  Here only the
+ *     string's own bytes count, the missing ones are 0.
  *
  * String function convention of the Blitz 2 compiler:
  *   d0, d1, d2   arguments; a string argument is the address of its
@@ -1071,6 +1074,17 @@ static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
 }
 BLITZ_THUNK(mklstring, mklstring_c, "d1/a0-a1");
 
+/* cvbytes - the first n bytes of a string of len bytes, big endian;
+   fixed (#288): bytes beyond len count as 0 (the original read them) */
+static ULONG cvbytes(const UBYTE *s, ULONG len, ULONG n)
+{
+    ULONG v = 0, i;
+
+    for (i = 0; i < n; i++)
+        v = v << 8 | (i < len ? s[i] : 0);
+    return v;
+}
+
 /**
  * @brief Cvi(String$) - the first 2 bytes of the string as a word.
  *
@@ -1080,16 +1094,18 @@ BLITZ_THUNK(mklstring, mklstring_c, "d1/a0-a1");
  * unlike the other string functions); the C version leaves a2 unchanged
  * as everywhere (same result).
  *
- * BUG(orig) (#288): the argument's length is not checked (shorter strings
- * read the bytes behind them).
+ * Fixed (#288): only the string's own bytes are read, the missing ones of
+ * a shorter string are 0 (the original read 2 bytes whatever the length:
+ * the terminating 0 and the bytes behind it).
  *
- * @param s d0: the string
+ * @param s    d0: the string
+ * @param lens a2: the length stack (the string's length)
  * @return d0.w: the word (big endian)
  */
-static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0))
+static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     blitz_string = (UBYTE *)s;
-    return ((ULONG)s & 0xffff0000) | (UWORD)(s[0] << 8 | s[1]);
+    return ((ULONG)s & 0xffff0000) | (UWORD)cvbytes(s, lens[-1], 2);
 }
 BLITZ_THUNK(cvistring, cvistring_c, "d1/a0-a1");
 
@@ -1099,15 +1115,17 @@ BLITZ_THUNK(cvistring, cvistring_c, "d1/a0-a1");
  *
  * a3 = d0$.  DIFF: the length is not popped, as in Cvi.
  *
- * BUG(orig) (#288): the argument's length is not checked.
+ * Fixed (#288): only the string's own bytes are read, the missing ones of
+ * a shorter string are 0 (the original read 4 bytes whatever the length).
  *
- * @param s d0: the string
+ * @param s    d0: the string
+ * @param lens a2: the length stack (the string's length)
  * @return d0: the long (big endian)
  */
-static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0))
+static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     blitz_string = (UBYTE *)s;
-    return (ULONG)s[0] << 24 | (ULONG)s[1] << 16 | (ULONG)s[2] << 8 | s[3];
+    return cvbytes(s, lens[-1], 4);
 }
 BLITZ_THUNK(cvlstring, cvlstring_c, "d1/a0-a1");
 

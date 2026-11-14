@@ -1,0 +1,27 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+cvl a 6100595A
+cvl ab 6162005A
+cvl 0058595A
+cvi 88
+cvi a 24832
+cvl abcd 61626364
+cvi ab 24930
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/stringfunclib-cvi-length.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/stringfunclib-cvi-length
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
