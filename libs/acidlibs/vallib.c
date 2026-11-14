@@ -493,25 +493,24 @@ BLITZ_THUNK(doint, doint_c, "d1/a0-a1");
  *
  * Errors (debugger only, intchk): a string -> "Illegal Type".
  *
- * BUG(orig) (#301): mathffp SPTst tests D1, not D0 - and d1 holds the type
- * (MOVE -(a2),d1: 5 in the low word, the caller's upper word), so Sgn of
- * a float is 1 whatever the value (Sgn(-1.0) = Sgn(0.0) = 1).  Kept: d1
- * is passed as the original has it.
+ * Fixed (#301): mathffp SPTst tests D1, not D0; the original passes d1 as
+ * it has it, the type (MOVE -(a2),d1: 5 in the low word, the caller's
+ * upper word), so Sgn of a float was 1 whatever the value (Sgn(-1.0) =
+ * Sgn(0.0) = 1).  Now SPTst gets the float in d1.
  *
  * @param v d0: the value
- * @param caller_d1 d1: the caller's d1 (its upper word goes to SPTst)
  * @param ffp a6: the mathffp base
  * @param args a2: the argument stack, -2 = the type word
  * @return d0: Quick -1, 0 or 1 ($FFFF0000, 0, $00010000)
  */
-static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), ULONG caller_d1 BL_REG(d1),
-                                   const void *ffp BL_REG(a6), const UBYTE *args BL_REG(a2))
+static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
+                                   const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
     UWORD type = BL_POPW(sp);
 
     if (type > 4)                               /* 'float: JSR -48(a6) */
-        v = BLITZ_BASEJSR2(ffp, LVO_SPTst, v, (caller_d1 & 0xffff0000) | type);
+        v = BLITZ_BASEJSR2(ffp, LVO_SPTst, v, v);
     else if (type != 4 && type != 3) {
         if (type == 1)                          /* EXT d0 */
             v = (UWORD)(WORD)(BYTE)v;
