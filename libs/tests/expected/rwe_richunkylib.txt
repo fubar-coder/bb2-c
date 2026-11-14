@@ -1092,7 +1092,8 @@ ChunkyLoadBitMap|chunky data||1	bytes 81920 fnv 0CE2BB45
 ChunkyLoadBitMap|planes||1	bytes 81984 fnv 6222DFC5
 ChunkyBitmap|kept|0,100,50|1	kept
 ChunkyBitmap|popped|0,100,50|1	$00000000
-ChunkyBitmap|CIA-A PRA bit 1|0,100,50|1	$00000002
+ChunkyBitmap|CIA-A PRA bit 1|0,100,50|1 [orig]	$00000002
+ChunkyBitmap|CIA-A PRA bit 1|0,100,50|1 [fixed #886]	$00000000
 ChunkyBitmap|blocks|0,100,50|1	$00000001
 ChunkyBitmap|object 0 w/h/d/6|0,100,50|1	$00640032
 ChunkyBitmap|object 0 w/h/d/6|0,100,50|2	$00080000
@@ -1112,7 +1113,8 @@ ChunkyBitmap|object 3 data|0,100,50|1	$00000000
 ChunkyBitmap|object 3 12|0,100,50|1	$00000000
 ChunkyBitmap|kept|0,320,256|2	kept
 ChunkyBitmap|popped|0,320,256|2	$00000000
-ChunkyBitmap|CIA-A PRA bit 1|0,320,256|2	$00000002
+ChunkyBitmap|CIA-A PRA bit 1|0,320,256|2 [orig]	$00000002
+ChunkyBitmap|CIA-A PRA bit 1|0,320,256|2 [fixed #886]	$00000000
 ChunkyBitmap|blocks|0,320,256|2	$00000000
 ChunkyBitmap|object 0 w/h/d/6|0,320,256|3	$00000000
 ChunkyBitmap|object 0 w/h/d/6|0,320,256|4	$00000000
@@ -1213,7 +1215,8 @@ ChunkyData|object 3 12|3|1	$00000000
 ChunkyData|d0 = data|3|1	$00000001
 free (object manager)|kept|3|1	kept
 free (object manager)|popped|3|1	$00000000
-free (object manager)|CIA-A PRA bit 1|3|1	$00000002
+free (object manager)|CIA-A PRA bit 1|3|1 [orig]	$00000002
+free (object manager)|CIA-A PRA bit 1|3|1 [fixed #886]	$00000000
 free (object manager)|blocks|3|1	$00000001
 free (object manager)|object 0 w/h/d/6|3|1	$00000000
 free (object manager)|object 0 w/h/d/6|3|2	$00000000
@@ -1293,7 +1296,8 @@ finit|object 3 data|1|1	$00000000
 finit|object 3 12|1|1	$00000000
 free (object manager)|kept|2|1	kept
 free (object manager)|popped|2|1	$00000000
-free (object manager)|CIA-A PRA bit 1|2|1	$00000002
+free (object manager)|CIA-A PRA bit 1|2|1 [orig]	$00000002
+free (object manager)|CIA-A PRA bit 1|2|1 [fixed #886]	$00000000
 free (object manager)|blocks|2|1	$00000000
 free (object manager)|object 0 w/h/d/6|2|1	$00000000
 free (object manager)|object 0 w/h/d/6|2|2	$00000000

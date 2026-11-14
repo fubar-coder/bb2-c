@@ -32,8 +32,6 @@
  *   - ChunkyBitmap decides whether the object holds data by TST.l 6(a0),
  *     the unused word and the upper word of the data pointer: data below
  *     $10000 is not freed (and never is) (#885).
- *   - The free routine toggles CIA-A PRA bit 1 (BCHG #1,$bfe001: the
- *     power LED / audio filter), a debug flash left in (#886).
  *   - ChunkyBitmap on an object whose data was not freed (the TST.l above)
  *     overwrites width and height and, if the allocation fails, clears
  *     them but keeps the old data pointer (#885).
@@ -43,6 +41,9 @@
  *   - RaycastSky: no checks; the offsets x and column are added as signed
  *     words, the height is a DBRA count (height 0 copies 65536 bytes)
  *     (#887).
+ * Fixed (intended deviation, #886): the free routine leaves CIA-A PRA
+ * bit 1 (the power LED / audio filter) as it is; the original toggled it
+ * (BCHG #1,$bfe001, a debug flash left in).
  * Not a defect: the free routine extends the width twice (EXT.l d0
  * twice) and not the height, so the size it computes has the caller's
  * upper word of d1 - but the size is unused (globfree needs none).
@@ -134,8 +135,6 @@ static_assert(sizeof(struct chunky) == 16);
 #define WIDTHHEIGHT(o) (*(ULONG *)&(o)->width)
 #define AT6(o) (*(ULONG *)&(o)->unused6)
 
-#define CIAA_PRA (*(volatile UBYTE *)0xbfe001)
-
 /**
  * @brief init, finit, PlanarToChunky bitmap#,chunky# and ChunkyLoadBitMap
  * filename$,chunky#: no code (RTS).
@@ -149,8 +148,8 @@ static void BLITZ_ROUTINE nothing_c(void)
 
 /* _freechunkybitmap (a0 = the object): the size width*height through
    lmullib (the width extended twice, d1's upper word the caller's - no
-   defect, the product is unused), globfree, the fields cleared, the LED
-   toggled; callerd1 = the caller's d1 */
+   defect, the product is unused), globfree, the fields cleared (fixed,
+   #886: the original toggles the LED here); callerd1 = the caller's d1 */
 static void freechunky(struct chunky *o, ULONG callerd1)
 {
     struct bl_regs r;
@@ -167,15 +166,14 @@ static void freechunky(struct chunky *o, ULONG callerd1)
     WIDTHHEIGHT(o) = 0;
     o->depth = 0;
     o->data = 0;
-    CIAA_PRA ^= 2;                              /* BCHG #1,$bfe001: BUG(orig) (#886) */
 }
 
 /**
  * @brief The object manager's free routine (_free): frees a chunky
  * object's data.
  *
- * As freechunky: nothing without data, else globfree, the fields
- * cleared and BUG(orig) (#886) the CIA-A PRA bit 1 toggled.
+ * As freechunky: nothing without data, else globfree and the fields
+ * cleared (fixed, #886: the original also toggles CIA-A PRA bit 1).
  * @param callerd1  d1: the caller's d1 (its upper word goes to lmullib)
  * @param o         a3: the object
  */

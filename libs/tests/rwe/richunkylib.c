@@ -18,8 +18,8 @@
  * call: d0 where there is a result (pointers as "is the data
  * of the object"), the objects (the data pointer as 0 / not 0), the
  * chunky data, the planes with the guard, the number of blocks
- * allocated, CIA-A PRA bit 1 (the free routine toggles it, BUG(orig) #886;
- * put back before every call and at the end) and the kept registers.
+ * allocated, CIA-A PRA bit 1 (the original's free routine toggles it, fixed in the
+ * C build, #886; put back before every call and at the end) and the kept registers.
  *
  * Covered: ChunkyBitmap (new, again with data = free first, a failing
  * allocation with and without old data, the unused word

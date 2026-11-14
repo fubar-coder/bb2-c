@@ -41,14 +41,21 @@ the original's registers. The C2P is the original's merge network
 pixels buffered and written as longs in the original's plane order) in
 C.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* The free routine (ChunkyBitmap on an object with data, the end of the
+  program) leaves CIA-A PRA bit 1 (the power LED / audio filter) as it
+  is; the original toggled it with a `BCHG #1,$bfe001` left in (#886).
+
 ## BUG(orig), kept
 
 * ChunkyBitmap decides whether the object holds data by `TST.l 6(a0)`:
   the unused word and the upper word of the data pointer. Data below
   `$10000` is never freed, and a ChunkyBitmap on such an object whose
   allocation fails keeps the old pointer (#885).
-* The free routine toggles CIA-A PRA bit 1 (`BCHG #1,$bfe001`, the power
-  LED / audio filter), a debug flash left in (#886).
 * ChunkyToPlanar checks nothing but the depth word (signed, `bm_Flags`
   in its upper byte) (#883) and the data pointer: the sizes of both
   bitmaps are assumed (#884).
