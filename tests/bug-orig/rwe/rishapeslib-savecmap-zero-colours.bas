@@ -10,7 +10,9 @@
 ; takes all of it back but its first 16 bytes (AllocAbs): the block of
 ; the CMAP chunk is there, the rest of the region is the program's; a
 ; marker 100000 bytes behind the block shows the overwrite.  The shape is
-; 16 x 8 pixels; the file goes to RAM:.
+; 16 x 8 pixels; the file goes to NIL:, as a write to RAM: lets the
+; handler run under the Forbid and allocate from the memory taken: the
+; CPU then halts in about a third of the runs (original and port alike).
 ; Correct: 0 colours are not copied, the marker stays.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
@@ -43,7 +45,7 @@ FreeMem_ r,262144
 t=AllocAbs_(262144-16,r+16)
 If t
   Poke.l r+16+100000,$12345678
-  LESaveShapes 0,0,"RAM:bug-orig.le",0
+  LESaveShapes 0,0,"NIL:",0
   v=Peek.l(r+16+100000)
   FreeMem_ r+16,262144-16
 EndIf
