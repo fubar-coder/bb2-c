@@ -42,12 +42,12 @@
  * Fixed original bugs (intended deviations, docs/libs/deviations.md):
  *   - Quick: a fraction that rounds to 0 left the point: 1+1/65536 ->
  *     "1.", 1/65536 -> ".", -1/65536 -> "-." (#234); now "1", "0", "0".
+ *   - Quick: a fraction that rounds to 10000 (x.99995 and more) lost the
+ *     carry: Print 2.99999 -> "2." (#233); now "3".
+ *   - Not a bug (the output style of Blitz 2, the same for Quick and
+ *     Float): numbers below 1 have no leading 0 (".5").
  *
  * BUG(orig):
- *   - Quick: a fraction that rounds to 10000 (x.99995 and more) loses the
- *     carry: Print 2.99999 -> "2" (four digits "0000", stripped) (#233).
- *     Not a bug (the output style of Blitz 2, the same for Quick and
- *     Float): numbers below 1 have no leading 0 (".5").
  *   - Not a bug (as above): Float, fixed point: no leading 0 either
  *     (".5"); 0 is "0".
  *   - Format: rounding that carries out of the first digit is lost
@@ -627,6 +627,13 @@ static UBYTE *quick3(ULONG value)
             frac = (frac >> 16) + 1;
         else
             frac >>= 16;
+        /* Fixed (#233): a fraction that rounds to 10000 carries into the
+           integer part (the original prints the four digits "0000" and
+           keeps the integer part: 2.99999 -> "2.") */
+        if (frac >= 10000) {
+            frac = 0;
+            value += 0x10000;
+        }
         dst = makeval3(PL_NUMBUFFF, &frac, 3);
         *--dst = '.';
         p = PL_NUMBUFFF;
@@ -885,8 +892,8 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
  *
- * BUG(orig): quick fractions that round to 10000 (#233), the Format bugs
- * (#235-#238) and the float buffer overrun (#241), see the top.
+ * BUG(orig): the Format bugs (#235-#238) and the float buffer overrun
+ * (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
  * @param args a2: the argument stack.
