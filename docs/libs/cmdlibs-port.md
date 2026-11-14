@@ -183,12 +183,14 @@ init value is the **address** of the variable `signals` (for other libs:
   area"); the name length comes from -4(a2) of the caller; copied are
   (length & $FFFF)+1 bytes (`DBRA`). Empty name: port not public,
   `ln_Name` = 0.
-* **BUG(orig) (#298):** a failure of `AllocSignal(-1)` (-1) is not
-  detected (`TST.l d0:BEQ` checks for signal 0), `mp_SigBit` = $FF;
-  `DeleteMsgPort` then calls `FreeSignal(255)` (in C explicitly
-  zero-extended, the NDK inline takes BYTE). The never-reached
-  error branch would free the port address (block+8) and $22 instead of
-  the block and $2A.
+* Fixed (intended deviation, #298): a failure of `AllocSignal(-1)` (-1)
+  was not detected (`TST.l d0:BEQ` checks for signal 0), `mp_SigBit` was
+  $FF and `DeleteMsgPort` called `FreeSignal(255)`; the never-reached
+  error branch would have freed the port address (block+8) and $22
+  instead of the block and $2A. Now -1 frees the block with $2A bytes and
+  gives the runtime error "Failed to allocate signal for Port" (bug-orig
+  test `utillib-createmsgport-no-signal`). `FreeSignal` in DeleteMsgPort
+  is zero-extended in C (the NDK inline takes BYTE).
 * Memory error → runtime error "Failed to allocate memory for Port"
   (`TRAP #0`); the original then runs into its message text, the
   C version returns with 0 (#300, fixed in the port). Not testable.

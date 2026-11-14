@@ -21,16 +21,10 @@
  *     String area from corruption") and copies (UWORD)len+1 bytes of the
  *     name (DBRA on the length's low word).  The length is -4(a2) of the
  *     caller (a2 = the compiler's argument pointer, see memacclib.c).
- *   - a failed AllocSignal (-1) is not noticed (TST.l d0:BEQ tests for
- *     signal 0, which AllocSignal(-1) never returns): mp_SigBit = $FF
- *     (#298).  The error path behind it would give globfree the port
- *     address (block+8) and $22 instead of the block and $2A, then runtime
- *     error "Failed to allocate signal for Port" (not a bug: never reached,
- *     and the program ends there).  On a failed allocation "Failed to
- *     allocate memory for Port" (the port block stays allocated if the
- *     name allocation fails).  After TRAP #0 the original runs into its
- *     message text; not reproduced (DIFF, K: the C version returns 0,
- *     #300).
+ *   - On a failed allocation "Failed to allocate memory for Port" (the
+ *     port block stays allocated if the name allocation fails).  After
+ *     TRAP #0 the original runs into its message text; not reproduced
+ *     (DIFF, K: the C version returns 0, #300).
  *   - DeleteMsgPort accepts anything: pending messages are not replied,
  *     a port that utillib did not create corrupts memory. (#299)
  *   - Not a bug (the intended semantics, any allocated signal): Wait waits
@@ -39,6 +33,13 @@
  * Fixed (intended deviations):
  *   - #297: TaskName$ of a task without a name (ln_Name 0) copied from
  *     address 0 up to the first 0 byte; here it is the empty string.
+ *   - #298: CreateMsgPort did not notice a failed AllocSignal (-1): TST.l
+ *     d0:BEQ tests for signal 0, which AllocSignal(-1) never returns, and
+ *     the port got mp_SigBit $FF; the error path behind it would have
+ *     freed the port address (block+8) with $22 bytes.  Here -1 is the
+ *     error: the block is freed with its $2A bytes, then the runtime error
+ *     "Failed to allocate signal for Port"; if the trap returns,
+ *     CreateMsgPort returns 0.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -192,10 +193,10 @@ static struct portnode *findlistend(void)
  * after a returning TRAP #0 the original runs into its message text; the
  * C version returns 0.
  *
- * BUG(orig) (#298): a failed AllocSignal (-1) is not noticed (TST.l
- * d0:BEQ tests for signal 0): mp_SigBit = $FF.  The error path behind it
- * (globfree of the port address and $22, "Failed to allocate signal for
- * Port") is never reached.
+ * Fixed (#298): a failed AllocSignal (-1) frees the block ($2A bytes) and
+ * gives the runtime error "Failed to allocate signal for Port" (the
+ * original tested for signal 0 and made a port with mp_SigBit $FF; its
+ * error path would have freed the port address with $22 bytes).
  *
  * @param name d0: the port name ("" = a private port)
  * @param lens a2: the compiler's argument pointer: -4(a2) = the name's
@@ -221,13 +222,13 @@ static ULONG BLITZ_ROUTINE createmsgport_c(const UBYTE *name BL_REG(d0),
     port = &node->port;                                 /* ADDA.l #8,a5 */
     {
         BYTE sig = AllocSignal(-1);
-        if (sig == 0) {                                 /* BUG(orig) (#298): TST.l d0 - never */
-            /* error_NoSig: frees the port address, $22 bytes */
-            r = (struct bl_regs){ .d0 = 0x22, .a1 = (ULONG)port };
+        if (sig == -1) {                                /* fixed (#298): -1, not 0 */
+            /* error_NoSig: fixed (#298): the block and its $2A bytes */
+            r = (struct bl_regs){ .d0 = PORTBLOCK, .a1 = (ULONG)node };
             BLITZ_ALIBJSR(TOK_globfree, r);
             BLITZ_RUNERR(NoSig);
-            /* DIFF (K): the original falls into Error_NoMemory (pops a0
-               and the registers a second time, TRAP #0 NoMem, then the
+            /* DIFF (K): the original would fall into Error_NoMemory (pops
+               a0 and the registers a second time, TRAP #0 NoMem, then the
                message text); here it returns 0 */
             return 0;
         }
