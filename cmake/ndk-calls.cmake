@@ -16,7 +16,8 @@
 #     REGS STATE" per function; a line of another form is a FATAL_ERROR
 #   ndk_shadow_headers(INLINE_DIR LIST SAFE_DIR OUT_DIR)
 #     writes OUT_DIR/inline/X.h for every NDK inline/X.h (openspec change
-#     ndk-safe-calls, design D1-D3): it includes the NDK's header, then
+#     ndk-safe-calls, design D1-D3): it includes the NDK's header (its
+#     varargs wrappers static inline), then
 #     redefines __NAME_base of every safe NAME by SAFE_DIR/X.h and poisons
 #     every poisoned NAME, with the varargs forms of both.  A file is
 #     written only when its text changes (no recompilation otherwise)
@@ -172,7 +173,21 @@ function(ndk_shadow_headers dir list safe_dir out_dir)
    parameter in a3, a4 or a5\"). */
 #ifndef BLITZLIB_NDK_INLINE_${guard}_H
 #define BLITZLIB_NDK_INLINE_${guard}_H
+
+/* the varargs wrappers (static __stdargs, noinline: -fno-toplevel-reorder
+   would keep every unused one) become static inline, so that only the
+   ones a library calls are emitted, with the same code.  The NDK's
+   inline headers use __stdargs for nothing else; the clib prototypes
+   that use it come in through proto/X.h before (a prototype read here
+   would not compile, nothing changes silently) */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored \"-Wattributes\"
+#pragma push_macro(\"__stdargs\")
+#undef __stdargs
+#define __stdargs inline __attribute__((__stkparm__))
 #include_next <inline/${hname}.h>
+#pragma pop_macro(\"__stdargs\")
+#pragma GCC diagnostic pop
 ")
 		if(safe)
 			set(sfile ${safe_dir}/${hname}.h)

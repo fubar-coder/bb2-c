@@ -25,7 +25,7 @@ writes stay byte-identical.
 - [x] 2.1 The list file and the CMake generator for the shadow headers
   (design D1, D4), the include path before the NDK in `blitz_library`.
   Verify: blitz2 and TED build byte-identical.
-- [ ] 2.2 The varargs wrappers `static inline` (design D2). Verify: a
+- [x] 2.2 The varargs wrappers `static inline` (design D2). Verify: a
   library test object with `proto/intuition.h` has only the used wrapper,
   byte-identical to the NDK's, no warning; no symbol of an unused `__X_va`
   wrapper in any library; the changed libraries in `PREV_INTENDED`; the

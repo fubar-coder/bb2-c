@@ -78,6 +78,17 @@ set(BLITZLIB_OPTIMIZE_size -Os)
 set(BLITZLIB_OPTIMIZE_speed -O2 -fno-tree-scev-cprop
 	-fno-inline-small-functions -fno-inline-functions)
 
+# the compiler options of every library, before and after the profile
+# (also used by the compile tests of the shadow headers, CMakeLists.txt)
+set(BLITZLIB_OPTIONS_BEFORE
+	-fomit-frame-pointer
+	-ffixed-a3 -ffixed-a4 -ffixed-a5   # Blitz string pointer/locals/globals (blitzlib.h)
+	-fno-toplevel-reorder          # token table in definition order
+	-ffreestanding -fno-tree-loop-distribute-patterns)   # no libc: no memset/memcpy calls
+set(BLITZLIB_OPTIONS_AFTER
+	-fno-strict-aliasing
+	-Wall -Wno-pointer-sign)
+
 # the variant of the libraries built to blitz2/acidlibs and deflibs (and
 # checked against the CD): libs/variants/NAME/libnums.h
 set(BLITZ_DEFAULT_VARIANT bb2-2.10 CACHE STRING
@@ -115,13 +126,9 @@ function(blitz_library name)
 	target_include_directories(${name} BEFORE PRIVATE ${BLITZLIB_NDK_SHADOW})
 	target_include_directories(${name} PUBLIC ${BLITZLIB_INCLUDE})
 	target_compile_options(${name} PRIVATE
-		-fomit-frame-pointer
-		-ffixed-a3 -ffixed-a4 -ffixed-a5   # Blitz string pointer/locals/globals (blitzlib.h)
-		-fno-toplevel-reorder          # token table in definition order
-		-ffreestanding -fno-tree-loop-distribute-patterns   # no libc: no memset/memcpy calls
+		${BLITZLIB_OPTIONS_BEFORE}
 		${BLITZLIB_OPTIMIZE_${arg_OPTIMIZE}}   # the profile (above)
-		-fno-strict-aliasing
-		-Wall -Wno-pointer-sign)
+		${BLITZLIB_OPTIONS_AFTER})
 	set(linked ${CMAKE_CURRENT_BINARY_DIR}/${name}.linked)
 	set(obj ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
 	if(arg_OBJ)

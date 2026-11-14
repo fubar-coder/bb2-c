@@ -134,6 +134,24 @@ add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_CO
 set_tests_properties(toolchain_saveds_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "__saveds does not[ \n]+load a4")  # CMake wraps long messages
 
+# the libraries' shadow headers of the NDK (cmake/ndk-calls.cmake): a
+# source with one varargs form gets only that wrapper, with the NDK's code
+# (cmake/ndk-test.cmake); without the shadow headers (the broken input)
+# all wrappers of the header are emitted
+list(JOIN BLITZLIB_OPTIONS_BEFORE " " _ndk_flags)
+list(JOIN BLITZLIB_OPTIONS_AFTER " " _ndk_after)
+set(_ndk_flags "${CMAKE_C_FLAGS} ${BLITZLIB_OPTIMIZE_size} ${_ndk_flags} ${_ndk_after} -Wextra -I${BLITZLIB_INCLUDE}")
+add_test(NAME ndk_varargs_inline COMMAND ${CMAKE_COMMAND} -DMODE=varargs
+	-DCC=${CMAKE_C_COMPILER} "-DFLAGS=${_ndk_flags}" -DSHADOW=${BLITZLIB_NDK_SHADOW}
+	-DWANT=OpenWindowTags -DSRC=${PROJECT_SOURCE_DIR}/cmake/ndk/varargs.c
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
+add_test(NAME ndk_varargs_inline_broken COMMAND ${CMAKE_COMMAND} -DMODE=varargs
+	-DCC=${CMAKE_C_COMPILER} "-DFLAGS=${_ndk_flags}" -DSHADOW=
+	-DWANT=OpenWindowTags -DSRC=${PROJECT_SOURCE_DIR}/cmake/ndk/varargs.c
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
+set_tests_properties(ndk_varargs_inline_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "unused varargs wrappers emitted:")
+
 # the library files byte by byte against the prev build (cmake/prev.cmake,
 # tests/README.md "The prev build"); skipped (77) without one.  PREV_INTENDED
 # (cmake/prev.cmake) names what may differ: the entries without a colon are
