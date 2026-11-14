@@ -23,8 +23,6 @@
  * makes the gadget as wide as the widest part.
  *
  * Kept from the original (BUG(orig)):
- *   - StringGadget with Borders off writes the border offsets to the
- *     addresses 0, 2, 36 and 38 (border pointer 0). (#164)
  *   - StringGadget with Maxlen 0 clears 65536 bytes of the (0 byte)
  *     buffer (DBF). (#165)
  *   - Not a bug (word functions, the compiler uses only d0.w):
@@ -45,6 +43,9 @@
  *   (StringInfo + buffer, PropInfo): the gadget type was loaded and then
  *   overwritten by MOVEQ #22,d0 before the type compares.  It is freed
  *   now (the buffer with MaxChars, the StringInfo, the PropInfo).
+ * Fixed (intended deviation, #164): StringGadget with Borders off wrote
+ *   the border offsets to the addresses 0, 2, 36 and 38 (border pointer
+ *   0); it writes them only into a border now.
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -786,8 +787,8 @@ void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
  * a3 = the list.  The gadget is the font height high, its border (if
  * Borders are on) goes around it; the StringInfo gets a buffer of Maxlen
  * bytes (cleared).  Flags as TextGadget.
- * BUG(orig) (#164): with Borders off the border offsets are written to
- * the addresses 0, 2, 36 and 38.
+ * Fixed (#164): with Borders off (no border) the original wrote the
+ * border offsets to the addresses 0, 2, 36 and 38.
  * BUG(orig) (#165): Maxlen 0 clears 65536 bytes of the 0 byte buffer.
  *
  * @param x  d1: the left edge
@@ -811,17 +812,16 @@ void BLITZ_ROUTINE dostringgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
     UWORD n;
 
     border = allocborder(width + g.bxxs + g.bxxs, g.fhit + g.byxs + g.byxs);
-    __asm__("" : "+a"(border));         /* may be 0, see above */
-    offset = g.bxxs;
-    x += offset;
-    offset = -offset;
-    *(volatile WORD *)&border->light.b.LeftEdge = offset;   /* border 0: BUG(orig) (#164) */
-    *(volatile WORD *)&border->shadow.b.LeftEdge = offset;
-    offset = g.byxs;
-    y += offset;
-    offset = -offset;
-    *(volatile WORD *)&border->light.b.TopEdge = offset;
-    *(volatile WORD *)&border->shadow.b.TopEdge = offset;
+    x += g.bxxs;
+    y += g.byxs;
+    if (border) {                       /* fixed (#164): 0 with Borders off */
+        offset = -g.bxxs;
+        border->light.b.LeftEdge = offset;
+        border->shadow.b.LeftEdge = offset;
+        offset = -g.byxs;
+        border->light.b.TopEdge = offset;
+        border->shadow.b.TopEdge = offset;
+    }
     gad = allocgadget(x, y, id, width, g.fhit);
     gad->GadgetType = 4;                /* STRGADGET */
     handleflags(gad, flags);
