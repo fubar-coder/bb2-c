@@ -138,12 +138,12 @@ and the corpus cannot show it. For that there are the bug tests
 a program and a description of what it *should* do.
 
 Such a test is a few files in a directory under `tests/bug-orig/`, named
-after the bug, for example `libs/stringfunclib-mid-ueberlauf.bas` and
-`stringfunclib-mid-ueberlauf.expect`. The program, with a comment that
+after the bug, for example `libs/stringfunclib-mid-overflow.bas` and
+`stringfunclib-mid-overflow.expect`. The program, with a comment that
 says what is wrong and what is right:
 
 ```
-; stringfunclib-mid-ueberlauf (#286) - Mid$(s$,start,len) compares
+; stringfunclib-mid-overflow (#286) - Mid$(s$,start,len) compares
 ; start-1+len with the length of the string signed after the addition:
 ; with len = $7FFFFFFF the sum overflows, counts as "fits", and the result
 ; gets len bytes - far beyond the string and the string buffer (printed,
@@ -173,11 +173,11 @@ rc=0
 ```
 
 What the original does is recorded once, into a third file,
-`stringfunclib-mid-ueberlauf.orig`, by two runs of the original compiler
+`stringfunclib-mid-overflow.orig`, by two runs of the original compiler
 and libraries, the second with the memory laid out differently:
 
 ```
-cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=stringfunclib-mid-ueberlauf
+cmake --preset amiga -DBUG_ORIG_RECORD_FILTER=stringfunclib-mid-overflow
 cmake --build --preset amiga --target bug-orig-record
 ```
 
@@ -192,7 +192,7 @@ a comment line `# varies:` that says why.
 With the three files, the test itself runs without the original:
 
 ```
-ctest --preset bug-orig -R bug_orig_stringfunclib_mid_ueberlauf
+ctest --preset bug-orig -R bug_orig_stringfunclib_mid_overflow
 ```
 
 It compiles and runs the program with the port and compares the result
@@ -215,7 +215,7 @@ the expectation: FIXED, or REGRESSED if the fix has been undone. The
 recorded original stays: it is the original's side of the pair, what the
 original does next to what the port now does. The `originals` run
 compares the original with it again (the test
-`bug_orig_record_stringfunclib_mid_ueberlauf`, which only compares and
+`bug_orig_record_stringfunclib_mid_overflow`, which only compares and
 writes nothing), so a changed original or a recording that was not
 reliable shows up there.
 

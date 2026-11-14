@@ -13,6 +13,9 @@
  *   - #285: Right$/UnRight$ took the offset Len-n as a sign extended word
  *     (LEA 0(a3,d0.w),a0): for Len-n >= 32768 the characters came from
  *     before the string.  Here the offset is a long.
+ *   - #286: Mid$ compared start-1+length with the length signed after the
+ *     addition: a huge length (sum > $7FFFFFFF) counted as "fits" and
+ *     copied `length` bytes.  Here the length is compared with the rest.
  *
  * String function convention of the Blitz 2 compiler:
  *   d0, d1, d2   arguments; a string argument is the address of its
@@ -681,12 +684,13 @@ BLITZ_THUNK(unrightstring, unrightstring_c, "d1/a0-a1");
 
 /* Mid$(d0$,d1,d2) - perform mid$(d0,d1,d2); first position = 0 after
    SUBQ.l #1,d1, then negative start/length count as 0.  Start beyond the
-   end: empty.  BUG(orig) (#286): start+length is compared signed after the
-   addition, so a huge length (start-1+length > $7FFFFFFF) copies
-   `length` bytes. */
+   end: empty.  Fixed (#286): the length is compared with the rest of the
+   string (len - start, no overflow); the original compared start+length
+   signed after the addition, so a huge length (start-1+length >
+   $7FFFFFFF) copied `length` bytes. */
 static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
 {
-    LONG len, end;
+    LONG len;
     const UBYTE *src;
 
     blitz_string = s;
@@ -698,8 +702,7 @@ static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
     len = BL_POPL(sp);
     if (start > len)                            /* CMP.l -(a2),d1:BGT 'skip */
         return 0;
-    end = (ULONG)start + (ULONG)n;
-    if (end > len)                              /* CMP.l (a2),d3:BGT 'skip2 (= len) */
+    if (n > len - start)                        /* fixed (#286): no overflow */
         n = len - start;
     src = blitz_string + start;                 /* LEA 0(a3,d1.l),a0 */
     return movestr(&src, n);
@@ -712,8 +715,9 @@ static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
  * First position = 0 after SUBQ.l #1,d1, then negative start/length count
  * as 0.  Start beyond the end: empty; the length is cut at the end.
  *
- * BUG(orig) (#286): start+length is compared signed after the addition,
- * so a huge length (start-1+length > $7FFFFFFF) copies `length` bytes.
+ * Fixed (#286): the length is cut at the end also when start-1+length
+ * exceeds $7FFFFFFF (the original compared the sum signed and copied
+ * `length` bytes).
  *
  * @param s     d0: the string
  * @param start d1: the first character (1-based)
@@ -733,7 +737,7 @@ BLITZ_THUNK(midstring, midstring_c, "d1/a0-a1");
  *
  * Mid$ with the length Len(d0$)-d1+1 (read from -4(a2)).
  *
- * BUG(orig) (#286): see Mid$ with three arguments.
+ * Fixed (#286): see Mid$ with three arguments.
  *
  * @param s     d0: the string
  * @param start d1: the first character (1-based)
