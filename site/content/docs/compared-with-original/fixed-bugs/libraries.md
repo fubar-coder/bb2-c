@@ -369,6 +369,63 @@ both its length, so `FileSeek f,Lof(f)` goes to the end.
 
 Issue: [Loc and Lof were one too high after Eof at the end of a file (#144)](https://github.com/fubar-coder/bb2-c/issues/144).
 
+## File requesters
+
+### `FileRequest$` left the old lengths in the path and the file name {#filerequest-lengths}
+
+`FileRequest$` takes two string variables, the path and the file name to
+start with, and after OK writes the ones the user chose back into them,
+so that the next call starts there again. The original wrote the new
+characters but left the lengths of both variables as they were. `Len`,
+`Print` and every string expression with these variables then saw the
+old length: a path that was empty before stayed empty for them, and a
+name that was longer before kept characters of the old one at its end.
+The result of `FileRequest$` itself was right.
+
+**What happened**
+
+```
+Screen 0,0,0,320,256,2,0,"freqlib",1,2
+Use Screen 0
+MaxLen p$=160
+MaxLen f$=64
+p$=""
+f$="x"+Chr$(0)+"yz"
+r$=FileRequest$("FQ",p$,f$)
+NPrint "ok ",Len(r$)," [",r$,"]"
+NPrint "path ",Len(p$)," [",p$,"]"
+NPrint "file ",Len(f$)
+End
+```
+
+The path starts empty, and the file name is `x`, a 0 byte and `yz`, 4
+characters, of which the requester shows the `x`. The program runs in the
+drawer `a` of the volume `CORPUS:`, and the user clicks PARENT, which
+with an empty path goes to the parent of the current directory, and then
+OK. The original prints
+
+```
+ok 8 [CORPUS:x]
+path 0 []
+file 4
+```
+
+The path holds `CORPUS:` but has the length 0, and the file name `x`
+still has the length 4.
+
+**With the port**
+
+```
+ok 8 [CORPUS:x]
+path 7 [CORPUS:]
+file 1
+```
+
+After OK both variables have the lengths of their new contents. Cancel
+and the close gadget leave them as they were.
+
+Issue: [FileRequest$ changed the path and file name without setting their lengths (#153)](https://github.com/fubar-coder/bb2-c/issues/153).
+
 ## GadTools gadgets
 
 ### A gadget took over the values of the one before {#gadtools-values}
@@ -688,6 +745,79 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   another address; a drawer leaves the bank as it is, like a missing file
   ([#72](https://github.com/fubar-coder/bb2-c/issues/72)).
 
+### File requesters {#file-requester-fixes}
+
+`FileRequest$` opens the file requester of Blitz Basic 2; the editor's
+file requester is the same code and has the same fixes, except for the
+[lengths of the path and the file name](#filerequest-lengths), which only
+`FileRequest$` sets. `ASLFileRequest$`, `ASLPathRequest$` and
+`ASLScreenRequest` open the requesters of the system's `asl.library`.
+
+* `FileRequest$` on a screen of 645 lines or more, such as a 1280×1024
+  RTG Workbench, wrote far behind its data and could crash the program
+  after the requester closed; the list shows at most 64 lines and the
+  window is at most 597 lines high
+  ([#160](https://github.com/fubar-coder/bb2-c/issues/160)).
+* Every list entry of the requester had room for a name of 34
+  characters, so a longer name, on a file system with long names, was
+  written behind it, and an entry for which no memory was left was
+  written from address 0 on and crashed the system; each entry gets the
+  room its name needs, and an entry without memory is left out of the
+  list ([#159](https://github.com/fubar-coder/bb2-c/issues/159)).
+* The CD button made the drawer shown the program's current directory and
+  released the directory the program had been started in, which belongs
+  to the shell that started it, and the program ended in the new drawer.
+  CD still changes the current directory while the program runs, but the
+  start directory is kept and is current again when the program ends,
+  unless the program has changed the current directory itself since
+  ([#157](https://github.com/fubar-coder/bb2-c/issues/157)).
+* After CD, every later click into the path gadget, the field with the
+  path, made the system copy the path into the first 64 KB of memory, in
+  that requester and in all later ones, because CD damaged the gadget's
+  data instead of resetting its cursor; CD resets the cursor and the scroll position of the path
+  ([#345](https://github.com/fubar-coder/bb2-c/issues/345)).
+* PARENT with an empty path and CD, which find the path of the current
+  directory, left every parent directory in use until the next reboot,
+  so that such a disk could not be renamed or ejected cleanly; the
+  directories are released
+  ([#158](https://github.com/fubar-coder/bb2-c/issues/158)).
+* DRIVES read the system's list of volumes, assigns and devices without
+  locking it, so a disk change, an assign or a mount at that moment could
+  make the requester read freed memory; it locks the list while it reads
+  it, and shows the same entries
+  ([#156](https://github.com/fubar-coder/bb2-c/issues/156)).
+* Every call opened the DOS, Intuition and graphics libraries of the
+  system and never closed them, so their use counts rose with every
+  requester; they are closed at the end of each call
+  ([#154](https://github.com/fubar-coder/bb2-c/issues/154)).
+* `ASLFileRequest$` and `ASLPathRequest$` without `asl.library`, such as
+  on Kickstart 1.3, returned a string whose length was the address of the
+  title, so an assignment copied that many bytes; they return the empty
+  string, as Cancel does
+  ([#62](https://github.com/fubar-coder/bb2-c/issues/62)).
+* `ASLFileRequest$` and `ASLPathRequest$` asked `asl.library` to free a
+  requester at address 0 when the requester could not be allocated; they
+  free only one that was allocated
+  ([#403](https://github.com/fubar-coder/bb2-c/issues/403)).
+* Every `ASLFileRequest$` and `ASLPathRequest$` kept a copy of its title
+  and pattern in memory until the program ended; the copies are freed
+  after each request
+  ([#63](https://github.com/fubar-coder/bb2-c/issues/63)).
+* `ASLPathRequest$` wrote the file name of the requester, after OK, to an
+  address it had not been given: in the form with a position, the value
+  of `x`, so `x=20` overwrote two exception vectors of the processor; it
+  writes nothing there, and the result is the same
+  ([#61](https://github.com/fubar-coder/bb2-c/issues/61)).
+* `ASLPathRequest$` without a position and size, after an
+  `ASLFileRequest$` with a pattern, showed a pattern gadget with that
+  pattern; it shows none
+  ([#64](https://github.com/fubar-coder/bb2-c/issues/64)).
+* `ASLScreenRequest` freed the requester and then returned its address,
+  so the program read the chosen mode from freed memory; it returns the
+  address of a copy of the requester's fields, which stays valid until
+  the next `ASLScreenRequest`
+  ([#60](https://github.com/fubar-coder/bb2-c/issues/60)).
+
 ### Strings
 
 * `Right$` and `UnRight$` took their characters from before the string
@@ -853,12 +983,6 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 * A screen mode with a monitor part, such as PAL or NTSC, opened on the
   default monitor; the whole mode is used
   ([#250](https://github.com/fubar-coder/bb2-c/issues/250)).
-* `FileRequest$` on a screen of 645 lines or more, such as a 1280×1024
-  RTG Workbench, wrote far behind its data and could crash the program
-  after the requester closed; the list shows at most 64 lines and the
-  window is at most 597 lines high. The editor's file requester is the
-  same code and is fixed with it
-  ([#160](https://github.com/fubar-coder/bb2-c/issues/160)).
 * `Screen`, `ScreenTags`, `WbToScreen` and `FindScreen` on a screen
   object that had used `ShowBitMap`, on Kickstart 3.0 or later, crashed
   the program when they freed the old screen; it is freed properly

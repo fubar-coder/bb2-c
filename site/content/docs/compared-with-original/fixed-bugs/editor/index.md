@@ -2,7 +2,7 @@
 title: Editor
 weight: 4
 next: /docs/compared-with-original/new-errors
-description: Fixed bugs of TED, the editor of Blitz Basic 2, in the block commands, in Join, with accented letters, in loading and saving, in the options and in starting with little memory, with examples of the ones ordinary users meet.
+description: Fixed bugs of TED, the editor of Blitz Basic 2, in the block commands, in Join, with accented letters, in loading and saving, in the file requester, in the options and in starting with little memory, with examples of the ones ordinary users meet.
 ---
 
 These bugs are in TED, the editor of Blitz Basic 2 that blitz2 loads and
@@ -510,6 +510,23 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
   still wrote the `.xtra` file and the icon next to the cut source, as if
   the save had worked; neither is written then
   ([#380](https://github.com/fubar-coder/bb2-c/issues/380)).
+
+### File requester
+
+The editor's file requester, as LOAD and SAVE show it, is the requester
+of `FileRequest$`, and the fixes of that requester on the page
+[Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#file-requester-fixes" >}})
+apply to the editor too: long names in the list, tall screens, the DRIVES
+list, the system libraries it left open, the directories it kept in use
+and the path gadget after CD. One of them changes what users of the
+editor see:
+
+* The CD button made the drawer shown the editor's current directory and
+  released the directory the editor had been started in, which still
+  belongs to the shell or to blitz2; the editor, and blitz2 with it,
+  ended in the new drawer. CD still changes the current directory while
+  the editor runs, but the start directory is kept and is current again
+  when the editor ends ([#157](https://github.com/fubar-coder/bb2-c/issues/157)).
 
 ### Options
 
