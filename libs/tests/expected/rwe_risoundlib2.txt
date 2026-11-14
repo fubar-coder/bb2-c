@@ -826,25 +826,31 @@ AHIRequestedFreq|tag list|no device opened, 6 arguments|1	bytes 68 fnv 83E79215
 CludgeSound|kept|8363 Hz|1	kept
 CludgeSound|popped|8363 Hz|1	$00000000
 CludgeSound|d0|8363 Hz|1	$FFFFFFFF
-CludgeSound|object fields and behind|8363 Hz|1	bytes 36 01AC0032000000000000634C20ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|8363 Hz|1 [orig]	bytes 36 01AC0032000000000000634C20ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|8363 Hz|1 [fixed #925]	bytes 36 01AC0032000000000000000020ABA5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
 CludgeSound|guards before|8363 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
-CludgeSound|+14 (cL)|8363 Hz|1	$0000634C
+CludgeSound|+14 (cL)|8363 Hz|1 [orig]	$0000634C
+CludgeSound|+14 (cL)|8363 Hz|1 [fixed #925]	$00000000
 CludgeSound|+16 (rate)|8363 Hz|1	$000020AB
 CludgeSound|sample|8363 Hz|1	$00000001
 CludgeSound|kept|22050 Hz|1	kept
 CludgeSound|popped|22050 Hz|1	$00000000
 CludgeSound|d0|22050 Hz|1	$FFFFFFFF
-CludgeSound|object fields and behind|22050 Hz|1	bytes 36 00A20010000000000000634C5622A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|22050 Hz|1 [orig]	bytes 36 00A20010000000000000634C5622A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|22050 Hz|1 [fixed #925]	bytes 36 00A2001000000000000000005622A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
 CludgeSound|guards before|22050 Hz|1	bytes 8 A5A5A5A5A5A5A5A5
-CludgeSound|+14 (cL)|22050 Hz|1	$0000634C
+CludgeSound|+14 (cL)|22050 Hz|1 [orig]	$0000634C
+CludgeSound|+14 (cL)|22050 Hz|1 [fixed #925]	$00000000
 CludgeSound|+16 (rate)|22050 Hz|1	$00005622
 CludgeSound|sample|22050 Hz|1	$00000001
 CludgeSound|kept|16000 Hz, after it|1	kept
 CludgeSound|popped|16000 Hz, after it|1	$00000000
 CludgeSound|d0|16000 Hz, after it|1	$FFFFFFFF
-CludgeSound|object fields and behind|16000 Hz, after it|1	bytes 36 00DF0001000000000000634C3E80A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|16000 Hz, after it|1 [orig]	bytes 36 00DF0001000000000000634C3E80A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+CludgeSound|object fields and behind|16000 Hz, after it|1 [fixed #925]	bytes 36 00DF000100000000000000003E80A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
 CludgeSound|guards before|16000 Hz, after it|1	bytes 8 A5A5A5A5A5A5A5A5
-CludgeSound|+14 (cL)|16000 Hz, after it|1	$0000634C
+CludgeSound|+14 (cL)|16000 Hz, after it|1 [orig]	$0000634C
+CludgeSound|+14 (cL)|16000 Hz, after it|1 [fixed #925]	$00000000
 CludgeSound|+16 (rate)|16000 Hz, after it|1	$00003E80
 CludgeSound|sample|16000 Hz, after it|1	$00000001
 OpenAHI|kept|test device unit 0|1	kept

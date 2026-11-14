@@ -59,9 +59,7 @@
  *   - CludgeSound: risoundlib's bugs (#831, #832, #830, #828, #829), and
  *     the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
- *     follows) (#926); +14
- *     (audiolib's "cL" mark of DecodeSound data) is no longer cleared
- *     (#925).
+ *     follows) (#926).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
  *     length in words (+6) as the length in bytes
  *     (#932) and sends the one request
@@ -73,7 +71,10 @@
  * does not free the old sample when audiolib's "cL" mark (+14) is set
  * (DecodeSound's in-place data of chip memory, which memlib never
  * allocated; the original passed it to globfree: "Unable to Free
- * Memory") (#945).
+ * Memory") (#945).  CludgeSound clears +14 (audiolib's "cL" mark) again,
+ * as risoundlib does; the original no longer did (its MOVE.w #0,14(a0)
+ * became the write of the rate at +16), so after a DecodeSound of chip
+ * data audiolib never freed CludgeSound's copy (#925).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -606,8 +607,8 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * checks, a failure leaves the freed pointer (#831); the VHDR is assumed to be 20 bytes (#832); rate 0
  * never ends the period loop (#830); no pad byte in the chunk walk
  * (#828); it copies ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
- * written at +16, behind the 16 byte object (#926), and mark (+14) is no
- * longer cleared (#925).
+ * written at +16, behind the 16 byte object (#926).  Fixed (#925): mark
+ * (+14) is cleared again, as in risoundlib.
  * @param sound  d0: sound# (its upper word goes into globfree's d0)
  * @param sram   d1: the 8SVX file in memory
  * @param saddr  a0: audiolib's sound object
@@ -666,8 +667,8 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     saddr->len = (UWORD)((slen & 0xffff) >> 1);
     saddr->rep = NULL;                  /* no loop */
     saddr->replen = 0;
-    SOUNDRATE(saddr) = (UWORD)rate;     /* BUG(orig): behind the object (#926),
-                                           mark (+14) not cleared (#925) */
+    saddr->mark = 0;                    /* Fixed (#925): as risoundlib */
+    SOUNDRATE(saddr) = (UWORD)rate;     /* BUG(orig): behind the object (#926) */
     return BB_TRUE;
 }
 

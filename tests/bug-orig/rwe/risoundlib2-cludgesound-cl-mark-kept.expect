@@ -1,0 +1,4 @@
+[run]
+cludged -1 00000000
+leak 0
+rc=0

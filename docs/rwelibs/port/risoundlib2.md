@@ -96,9 +96,7 @@ in finit) is translated although it is never reached.
 * CludgeSound: risoundlib's bugs (#831, #832, #830, #828, #829); the rate
   goes to +16, behind audiolib's 16 byte sound object – into the next
   object's sample pointer, behind the last into whatever follows the
-  objects (#926); +14, audiolib's
-  "cL" mark of DecodeSound data, is no longer cleared
-  (#925).
+  objects (#926).
 * Never reached (behind the `ahidevice` check): PlaySoundAHI gives the
   length in words (+6) as `io_Length` in bytes
   (#932), and sends the one request
@@ -116,6 +114,12 @@ kind F):
   never allocated); the original passed it to memlib globfree ("Unable to
   Free Memory") (#945; test
   `tests/bug-orig/rwe/risoundlib2-cludgesound-frees-decoded`).
+* CludgeSound clears +14, audiolib's `"cL"` mark of DecodeSound data,
+  as risoundlib does; the original replaced that `MOVE.w #0,14(a0)` by
+  the write of the rate at +16 (#926), so after a DecodeSound of chip
+  data the mark stayed on CludgeSound's copy and audiolib never freed it
+  (#925; test `tests/bug-orig/rwe/risoundlib2-cludgesound-cl-mark-kept`,
+  `libs_emulator` cases `[fixed #925]` of `rwe_risoundlib2`).
 
 ## Test
 
