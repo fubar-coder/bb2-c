@@ -53,4 +53,4 @@ locale     FormatString             a3     poisoned
 locale     ParseDate                a3     poisoned
 virtual    RefreshVirtualGadget     a3     poisoned
 virtual    RethinkVirtualSize       a3     poisoned
-wb         AddAppIconA              a3,a4  pending
+wb         AddAppIconA              a3,a4  safe

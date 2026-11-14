@@ -37,14 +37,11 @@ registers – the original saves all of them there with MOVEM, elsewhere it
 keeps less). a2 stays unchanged (DIFF, the general rule of
 [cmdlibs-port.md](../../libs/cmdlibs-port.md)): the original's
 AddAppWindow leaves it decremented, and AddAppMenu/AddAppWindow/AddAppIcon
-set it to 0 for the tag list. Assembler remains for:
-
-* `AppEventIDCMP`: an inline routine (`BLITZ_INLINE`), by nature a few
-  instructions copied by the compiler.
-* the `AddAppIconA` call: its DiskObject and tag list go in a3 and a4,
-  which are fixed registers of the Blitz program (`-ffixed-a3/a4`), so
-  GCC cannot load them for a call; a small `__asm` sets them – and leaves
-  them set, as the original does (BUG(orig) below, #516).
+set it to 0 for the tag list. Assembler remains for `AppEventIDCMP`, an
+inline routine (`BLITZ_INLINE`), by nature a few instructions copied by
+the compiler. `AddAppIconA` takes its DiskObject and tag list in a3 and
+a4, fixed registers of the Blitz program: the libraries' safe form of the
+NDK macro keeps them (`cmake/ndk-calls.cmake`).
 
 Not ported: `replymsg` and `waitappevent` (dead code without a token in
 the original).
@@ -58,12 +55,19 @@ kind F):
   original copied the name with its 0 and left a3 behind it, so in a
   string expression the next part was written one byte too far
   (`NextAppFile+".bak"` held the 0 and lost the `k`) (#519).
+* `AddAppIcon` keeps a4 and leaves a3 on `text$`, its first string
+  argument (#516). The original loaded the DiskObject into a3 and the
+  tag list (0) into a4 for `AddAppIconA` and restored neither: the locals
+  base of the Blitz program was 0 after it (a local read after it was
+  wrong, the `UNLK a4` at the end of the procedure crashed), and as a
+  function in a string expression the rest was written into the
+  DiskObject. a3 on `text$` gives back the space of the string arguments,
+  which the compiler does not take back after a function with a numeric
+  result (#846); the call itself uses the libraries' safe form of the NDK
+  macro, which keeps a3 and a4 (`cmake/ndk-calls.cmake`).
 
 ## BUG(orig), kept
 
-* `AddAppIcon` loads the DiskObject into a3 and the tag list (0) into a4
-  for `AddAppIconA` and restores neither: after it the string pointer is
-  the DiskObject and the locals base of the Blitz program is 0 (#516).
 * finit (`delapp`) clears the slot at byte offset `index*4/4` instead of
   `index*4` (`ASR.l #2,d7` before the store) – a long store at an odd
   address for odd indexes (an address error on a 68000), harmless at

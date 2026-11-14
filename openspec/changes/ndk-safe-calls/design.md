@@ -273,3 +273,20 @@ Tasks 1.1-1.4 (2026-11-14, gcc 16.2-rc24, base main `9566e714`):
     10356 bytes with the safe macro and `KEEP_A3` gone (`move.l
     sp@(24),d2 / exg d2,a3 / jsr a6@(-42) / exg d2,a3`; one call takes d7,
     already saved). The safe macro is 8 bytes smaller: `KEEP_A3` goes.
+
+Further findings (tasks 2.2-5.3):
+
+- **2.2** No library calls any NDK varargs wrapper: after the change no
+  linked library holds a `___X_va` symbol (all 210 compared with the
+  previous commit; only those symbols are gone). Saving: 6628 bytes in
+  32 acidlibs of the default variant, 4788 bytes in 18 RWE userlibs.
+- **5.1 AddAppIcon as a function** (bug-orig test
+  `rwe/riapplib-addappicon-a3-a4`): with the safe macro alone a3 is back
+  at its entry value, behind the string arguments, and
+  `"ab"+Str$(AddAppIcon(1,"T","SYS:Disk"))+"cd"` still gives `abT.S`
+  (the original the same, then the crash at `UNLK a4`). As for
+  EZRequest (1.4), the fix sets a3 to the first string argument (text$),
+  on every path, also when no icon is found or the library did not
+  initialise (where the original left a3 unchanged, behind the
+  arguments). The library test's `a3 = DiskObject` cases of these paths
+  change with it (`[fixed #516]`).

@@ -54,13 +54,15 @@ AddAppIcon|kept|form 0 id 1 RAM:rweapp|1	kept
 AddAppIcon|popped|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|d0|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb calls|form 0 id 1 RAM:rweapp|1	$00000000
-AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|1 [fixed #516]	$00000000
 AddAppIcon|a4|form 0 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|kept|form 1 id 1 RAM:rweapp|1	kept
 AddAppIcon|popped|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|d0|form 1 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb calls|form 1 id 1 RAM:rweapp|1	$00000000
-AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|1	$00000001
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|1 [fixed #516]	$00000000
 AddAppIcon|a4|form 1 id 1 RAM:rweapp|1	$00000001
 init|kept||1	kept
 init|popped||1	$00000000
@@ -235,8 +237,10 @@ AddAppIcon|wb a3 = DiskObject|form 0 id 1 RAM:rweapp|1	$00000001
 AddAppIcon|wb a4|form 0 id 1 RAM:rweapp|1	$00000000
 AddAppIcon|wb CurrentX|form 0 id 1 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 1 RAM:rweapp|1	$80000000
-AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|2	$00000001
-AddAppIcon|a4|form 0 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|2 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 1 RAM:rweapp|2 [fixed #516]	$00000000
+AddAppIcon|a4|form 0 id 1 RAM:rweapp|2 [orig]	$00000000
+AddAppIcon|a4|form 0 id 1 RAM:rweapp|2 [fixed #516]	$00000001
 AddAppIcon|kept|form 1 id 1 RAM:rweapp|2	kept
 AddAppIcon|popped|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|d0|form 1 id 1 RAM:rweapp|2	$FFFFFFFF
@@ -261,8 +265,10 @@ AddAppIcon|wb a3 = DiskObject|form 1 id 1 RAM:rweapp|2	$00000001
 AddAppIcon|wb a4|form 1 id 1 RAM:rweapp|2	$00000000
 AddAppIcon|wb CurrentX|form 1 id 1 RAM:rweapp|2	$0000000A
 AddAppIcon|wb CurrentY|form 1 id 1 RAM:rweapp|2	$00000014
-AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|2	$00000001
-AddAppIcon|a4|form 1 id 1 RAM:rweapp|2	$00000000
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|2 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 1 id 1 RAM:rweapp|2 [fixed #516]	$00000000
+AddAppIcon|a4|form 1 id 1 RAM:rweapp|2 [orig]	$00000000
+AddAppIcon|a4|form 1 id 1 RAM:rweapp|2 [fixed #516]	$00000001
 AddAppIcon|kept|form 1 id 2 RAM:rweapp|1	kept
 AddAppIcon|popped|form 1 id 2 RAM:rweapp|1	$00000000
 AddAppIcon|d0|form 1 id 2 RAM:rweapp|1	$FFFFFFFF
@@ -277,13 +283,16 @@ AddAppIcon|wb a3 = DiskObject|form 1 id 2 RAM:rweapp|1	$00000001
 AddAppIcon|wb a4|form 1 id 2 RAM:rweapp|1	$00000000
 AddAppIcon|wb CurrentX|form 1 id 2 RAM:rweapp|1	$FFFFFFFD
 AddAppIcon|wb CurrentY|form 1 id 2 RAM:rweapp|1	$00007FFF
-AddAppIcon|a3 = DiskObject|form 1 id 2 RAM:rweapp|1	$00000001
-AddAppIcon|a4|form 1 id 2 RAM:rweapp|1	$00000000
+AddAppIcon|a3 = DiskObject|form 1 id 2 RAM:rweapp|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 1 id 2 RAM:rweapp|1 [fixed #516]	$00000000
+AddAppIcon|a4|form 1 id 2 RAM:rweapp|1 [orig]	$00000000
+AddAppIcon|a4|form 1 id 2 RAM:rweapp|1 [fixed #516]	$00000001
 AddAppIcon|kept|form 0 id 3 RAM:rwe-no-such-icon|1	kept
 AddAppIcon|popped|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
 AddAppIcon|d0|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
 AddAppIcon|wb calls|form 0 id 3 RAM:rwe-no-such-icon|1	$00000000
-AddAppIcon|a3 = DiskObject|form 0 id 3 RAM:rwe-no-such-icon|1	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 3 RAM:rwe-no-such-icon|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 3 RAM:rwe-no-such-icon|1 [fixed #516]	$00000000
 AddAppIcon|a4|form 0 id 3 RAM:rwe-no-such-icon|1	$00000001
 AddAppIcon|kept|form 0 id 4 RAM:rweapp (fails)|1	kept
 AddAppIcon|popped|form 0 id 4 RAM:rweapp (fails)|1	$00000000
@@ -299,8 +308,10 @@ AddAppIcon|wb a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1	$00000001
 AddAppIcon|wb a4|form 0 id 4 RAM:rweapp (fails)|1	$00000000
 AddAppIcon|wb CurrentX|form 0 id 4 RAM:rweapp (fails)|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 4 RAM:rweapp (fails)|1	$80000000
-AddAppIcon|a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1	$00000001
-AddAppIcon|a4|form 0 id 4 RAM:rweapp (fails)|1	$00000000
+AddAppIcon|a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 4 RAM:rweapp (fails)|1 [fixed #516]	$00000000
+AddAppIcon|a4|form 0 id 4 RAM:rweapp (fails)|1 [orig]	$00000000
+AddAppIcon|a4|form 0 id 4 RAM:rweapp (fails)|1 [fixed #516]	$00000001
 DelAppIcon|kept|id 1|2	kept
 DelAppIcon|popped|id 1|2	$00000000
 DelAppIcon|d0|id 1|2	$FFFFFFFF
@@ -534,8 +545,10 @@ AddAppIcon|wb a3 = DiskObject|form 0 id 0 RAM:rweapp|1	$00000001
 AddAppIcon|wb a4|form 0 id 0 RAM:rweapp|1	$00000000
 AddAppIcon|wb CurrentX|form 0 id 0 RAM:rweapp|1	$80000000
 AddAppIcon|wb CurrentY|form 0 id 0 RAM:rweapp|1	$80000000
-AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1	$00000001
-AddAppIcon|a4|form 0 id 0 RAM:rweapp|1	$00000000
+AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1 [orig]	$00000001
+AddAppIcon|a3 = DiskObject|form 0 id 0 RAM:rweapp|1 [fixed #516]	$00000000
+AddAppIcon|a4|form 0 id 0 RAM:rweapp|1 [orig]	$00000000
+AddAppIcon|a4|form 0 id 0 RAM:rweapp|1 [fixed #516]	$00000001
 finit|kept|no current message|1	kept
 finit|popped|no current message|1	$00000000
 finit|wb calls|no current message|1	$00000005

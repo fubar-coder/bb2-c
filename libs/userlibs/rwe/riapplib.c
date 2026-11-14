@@ -25,13 +25,11 @@
  * elsewhere.  a2 stays unchanged (AddAppWindow's original leaves it
  * decremented and AddAppMenu/AddAppWindow/AddAppIcon set it to 0; DIFF,
  * see docs/libs/cmdlibs-port.md "General").  Assembler: the inline routine
- * AppEventIDCMP (Dc $a000), and the AddAppIconA call, which needs a3/a4
- * (the fixed registers of the Blitz program, see below).
+ * AppEventIDCMP (Dc $a000).  AddAppIconA takes a3/a4 (the fixed registers
+ * of the Blitz program): the libraries' safe form of the NDK macro keeps
+ * them (cmake/ndk-calls.cmake).
  *
  * BUG(orig), kept:
- *   - AddAppIcon passes the DiskObject in a3 and the tag list (0) in a4
- *     to AddAppIconA and restores neither: after it a3 (string pointer) =
- *     the DiskObject and a4 (locals of the Blitz program) = 0 (#516).
  *   - finit clears the table slot at byte offset index*4/4 instead of
  *     index*4 (ASR.l #2 before the store): a long store at an odd address
  *     for the slots 1, 3 ... (an address error on a 68000) (#524).
@@ -61,6 +59,12 @@
  * Fixed (intended deviation, #519): NextAppFile/AppFile copied the file
  * name with its 0 and left a3 behind the 0, so a string expression went
  * on one byte too far; a3 now ends on the 0.
+ * Fixed (intended deviation, #516): AddAppIcon passed the DiskObject in a3
+ * and the tag list (0) in a4 to AddAppIconA and restored neither (a3 =
+ * the DiskObject, a4, the locals base of the Blitz program, = 0); a4 now
+ * stays, and a3 ends on text$, its first string argument, giving back the
+ * space of the arguments, which the compiler does not take back after a
+ * function with a numeric result (#846).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -567,7 +571,7 @@ BLITZ_THUNK(addmenu, addmenu_c, "d1/a0-a1");
  * BUG(orig) (#517): on a used id the old AppIcon is removed and its
  * DiskObject freed, but the old AppIcon stays in the slot if AddAppIconA
  * fails; the new DiskObject is stored before and stays on failure.
- * BUG(orig) (#516): a3 = the DiskObject and a4 = 0 afterwards.
+ * Fixed (#516): a3 and a4 are kept around AddAppIconA.
  * @param id    d0: the id
  * @param text  d1: the icon's text
  * @param name  d2: the file name of the icon (without .info)
@@ -591,25 +595,12 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
         }
     }
     disklist[id] = dobj;
-    /* AddAppIconA(id,userdata,text,msgport,lock,diskobj,taglist) takes
-       the DiskObject in a3 and the tag list in a4, the registers the Blitz
-       program keeps fixed (-ffixed-a3/a4): set in assembler.  BUG(orig) (#516):
-       neither is restored - a3 = the DiskObject, a4 = 0 afterwards. */
-    {
-        register ULONG d0 __asm("d0") = id;
-        register ULONG d1 __asm("d1") = 0;
-        register STRPTR a0 __asm("a0") = text;
-        register struct MsgPort *a1 __asm("a1") = msgport;
-        register ULONG a2 __asm("a2") = 0;
-        register struct Library *a6 __asm("a6") = wbbase;
-        __asm volatile("move.l  %6,a3\n\t"
-                       "suba.l  a4,a4\n\t"
-                       "jsr     -60(a6)"
-                       : "+d"(d0), "+d"(d1), "+a"(a0), "+a"(a1), "+a"(a2), "+a"(a6)
-                       : "r"(dobj)
-                       : "cc", "memory");
-        icon = (struct AppIcon *)d0;
-    }
+    /* AddAppIconA takes the DiskObject in a3 and the tag list in a4, the
+       Blitz program's string pointer and locals base.  Fixed (#516): both
+       come back as they were (the libraries' safe form of the NDK macro,
+       cmake/ndk-calls.cmake); the original left a3 = the DiskObject and
+       a4 = 0. */
+    icon = AddAppIconA(id, 0, text, msgport, 0, dobj, NULL);
     if (!icon)
         return BB_FALSE;
     appicons[id] = (ULONG)icon;
@@ -619,6 +610,9 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
 /**
  * @brief AddAppIcon(id,text$,filename$): an App icon at a position of
  * Workbench's choice (NO_ICON_POSITION).
+ *
+ * Fixed (#516): a3 = text$ afterwards on every path (the original: the
+ * DiskObject, or behind the arguments).
  * @param id    d0: the id
  * @param text  d1: the icon's text
  * @param name  d2: the file name of the icon
@@ -627,15 +621,19 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
 static BB_BOOL BLITZ_ROUTINE addicon2_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
                                         STRPTR name BL_REG(d2))
 {
+    BB_BOOL r;
+
     iconx = icony = NO_POS;
-    if (!libflag)
-        return BB_FALSE;
-    return addicon_c(id, text, name);
+    r = libflag ? addicon_c(id, text, name) : BB_FALSE;
+    blitz_string = (UBYTE *)text;       /* fixed (#516): a3 = text$ */
+    return r;
 }
 BLITZ_THUNK(addicon, addicon2_c, "d1/a0-a1");
 
 /**
  * @brief AddAppIcon(id,text$,filename$,x,y): an App icon at x,y.
+ *
+ * Fixed (#516): a3 = text$ afterwards, as above.
  * @param id    d0: the id
  * @param text  d1: the icon's text
  * @param name  d2: the file name of the icon
@@ -647,11 +645,13 @@ static BB_BOOL BLITZ_ROUTINE addicon3_c(LONG id BL_REG(d0), STRPTR text BL_REG(d
                                         STRPTR name BL_REG(d2), ULONG x BL_REG(d3),
                                         ULONG y BL_REG(d4))
 {
+    BB_BOOL r;
+
     iconx = x;
     icony = y;
-    if (!libflag)
-        return BB_FALSE;
-    return addicon_c(id, text, name);
+    r = libflag ? addicon_c(id, text, name) : BB_FALSE;
+    blitz_string = (UBYTE *)text;       /* fixed (#516): a3 = text$ */
+    return r;
 }
 BLITZ_THUNK(addicon3, addicon3_c, "d1/a0-a1");
 

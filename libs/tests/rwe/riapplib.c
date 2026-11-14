@@ -251,12 +251,13 @@ static void addicon(int form, LONG id, const char *name, LONG x, LONG y, int fai
     ROUT = "AddAppIcon";
     sprintf(VEC, "form %d id %ld %s%s", form, id, name, failit ? " (fails)" : "");
     wbmark();
-    DONTCARE = 1UL << 12;               /* a4: a result (BUG(orig) #516), observed */
+    DONTCARE = 1UL << 12;               /* a4: observed below (#516) */
     DO1(ent(ADDICON, form), wbfail = failit; R.d[0] = id; R.d[1] = (ULONG)"App icon";
         R.d[2] = (ULONG)name; R.d[3] = x; R.d[4] = y);
     OBS("d0", R.d[0]);
     wbcompare();
-    /* BUG(orig) (#516): a3 = the DiskObject, a4 = 0 once AddAppIconA was called */
+    /* the original (#516): a3 = the DiskObject, a4 = 0 once AddAppIconA
+       was called; fixed: a3 = text$, a4 kept */
     OBS("a3 = DiskObject", nlog > mark ? R.a[3] == wblog[nlog - 1].a3
         : R.a[3] == IN.a[3]);
     OBS("a4", R.a[4] == IN.a[4] ? 1 : R.a[4]);

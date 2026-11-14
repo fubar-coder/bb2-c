@@ -51,7 +51,7 @@ writes stay byte-identical.
 
 ## 5. Fixes (one commit each, bug-fix workflow)
 
-- [ ] 5.1 #516 riapplib `AddAppIconA`: safe macro for a3 and a4, library
+- [x] 5.1 #516 riapplib `AddAppIconA`: safe macro for a3 and a4, library
   test pair `[orig]` / `[fixed #516]`, `Fixes #516`, the `fix-scope` run
   named in the report.
 - [ ] 5.2 #1027 rimisclib `EZRequest`/`EZRequestArgs`: per the measurement
