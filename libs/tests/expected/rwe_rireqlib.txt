@@ -34,7 +34,8 @@ ReqFileLoc|buffers cleared||1	$00000001
 ReqFileRequest|kept|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	kept
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000000
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$0000000D
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000022
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [orig]	$00000022
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "Work:dir/file"|1 [fixed #784]	$00000021
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	bytes 200 fnv 1F515EBC
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	$00000001
 ReqFileRequest|FrStruct|form 0 title - flags $0 ret 1 path "Work:dir/file"|1	bytes 162 fnv 0D5F082A
@@ -43,7 +44,8 @@ ReqFlags|popped|$12345678|1	$00000000
 ReqFileRequest|kept|form 0 title - flags $0 ret 1 path ""|1	kept
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path ""|1	$00000000
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path ""|1	$00000000
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1	$00000015
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1 [orig]	$00000015
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path ""|1 [fixed #784]	$00000014
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path ""|1	bytes 200 fnv 2EF980AB
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path ""|1	$00000001
 ReqFileRequest|FrStruct|form 0 title - flags $0 ret 1 path ""|1	bytes 162 fnv 2E356FFB
@@ -52,21 +54,24 @@ ReqOutput|popped||1	$00000000
 ReqFileRequest|kept|form 0 title - flags $0 ret 1 path "RAM:x"|1	kept
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000000
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000005
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1	$0000001A
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [orig]	$0000001A
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "RAM:x"|1 [fixed #784]	$00000019
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "RAM:x"|1	bytes 200 fnv AC7C2AB3
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path "RAM:x"|1	$00000001
 ReqFileRequest|FrStruct|form 0 title - flags $0 ret 1 path "RAM:x"|1	bytes 162 fnv B931CBC5
 ReqFileRequest|kept|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	kept
 ReqFileRequest|popped|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000000
 ReqFileRequest|d0|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$0000000E
-ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000023
+ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [orig]	$00000023
+ReqFileRequest|a3|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1 [fixed #784]	$00000022
 ReqFileRequest|out|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	bytes 200 fnv AD4398DF
 ReqFileRequest|called|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	$00000001
 ReqFileRequest|FrStruct|form 1 title Choose a file flags $0 ret 1 path "DH0:a/b/c.info"|1	bytes 162 fnv A4016E29
 ReqFileRequest|kept|form 1 title  flags $0 ret 5 path "x"|1	kept
 ReqFileRequest|popped|form 1 title  flags $0 ret 5 path "x"|1	$00000000
 ReqFileRequest|d0|form 1 title  flags $0 ret 5 path "x"|1	$00000001
-ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1	$00000016
+ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [orig]	$00000016
+ReqFileRequest|a3|form 1 title  flags $0 ret 5 path "x"|1 [fixed #784]	$00000015
 ReqFileRequest|out|form 1 title  flags $0 ret 5 path "x"|1	bytes 200 fnv 8A1FA97D
 ReqFileRequest|called|form 1 title  flags $0 ret 5 path "x"|1	$00000001
 ReqFileRequest|FrStruct|form 1 title  flags $0 ret 5 path "x"|1	bytes 162 fnv A4016E29
@@ -80,7 +85,8 @@ ReqFileRequest|FrStruct|form 1 title Cancel flags $0 ret 0 path "never"|1	bytes 
 ReqFileRequest|kept|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	kept
 ReqFileRequest|popped|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000000
 ReqFileRequest|d0|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000012
-ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000027
+ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [orig]	$00000027
+ReqFileRequest|a3|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1 [fixed #784]	$00000026
 ReqFileRequest|out|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	bytes 200 fnv B6DA19B7
 ReqFileRequest|called|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	$00000001
 ReqFileRequest|FrStruct|form 2 title With flags flags $80 ret 1 path "S:Startup-Sequence"|1	bytes 162 fnv F6769BC9
@@ -94,7 +100,8 @@ ReqFileRequest|FrStruct|form 2 title Cancel again flags $41 ret 0 path "never"|1
 ReqFileRequest|kept|form 0 title - flags $0 ret 1 path "title and flags stay"|1	kept
 ReqFileRequest|popped|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000000
 ReqFileRequest|d0|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000014
-ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000029
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [orig]	$00000029
+ReqFileRequest|a3|form 0 title - flags $0 ret 1 path "title and flags stay"|1 [fixed #784]	$00000028
 ReqFileRequest|out|form 0 title - flags $0 ret 1 path "title and flags stay"|1	bytes 200 fnv FA67EB9E
 ReqFileRequest|called|form 0 title - flags $0 ret 1 path "title and flags stay"|1	$00000001
 ReqFileRequest|FrStruct|form 0 title - flags $0 ret 1 path "title and flags stay"|1	bytes 162 fnv 63DB1F76

@@ -31,12 +31,14 @@
  *   - No routine checks the library base: without req.library (or after
  *     init's AllocMem failed, which closes it again) ReqFileRequest and
  *     ReqColour call through a6 = 0, ReqFileLoc returns 0 (#788).
- *   - ReqFileRequest leaves a3 behind the terminating 0 of the result
- *     (d0 = length is right); on cancel d0 = 0 and a3 stays (with a
- *     title: at the start of the title string) (#784).
  *   - ReqColour ignores its argument: DefColour stays 0 (#786).
  *   - ReqFileRequest(title$,flags) changes the flags for good (like
  *     ReqFlags), and a title stays for later calls without one (#789).
+ *
+ * Fixed (intended deviation, #784): ReqFileRequest copied the path with
+ * its 0 and left a3 behind the 0, so a string expression went on one
+ * byte too far; a3 now ends on the 0.  On cancel d0 = 0 and a3 stays
+ * (with a title: at the start of the title string), as before.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -206,10 +208,10 @@ static ULONG BLITZ_ROUTINE file_c(void)
  * @brief ReqFileRequest: the req.library file requester, the path as the
  * result.
  *
- * FileRequester(FrStruct); the path buffer is copied to a3.  BUG(orig):
- * a3 stays behind the terminating 0 (#784); FrStruct has no buffers, so
- * the path is what the program wrote with ReqFileLoc (#785); req.library
- * is not checked (#788).
+ * FileRequester(FrStruct); the path buffer is copied to a3, a3 ends on
+ * the terminating 0 (fixed, #784: the original left it behind the 0).
+ * BUG(orig): FrStruct has no buffers, so the path is what the program
+ * wrote with ReqFileLoc (#785); req.library is not checked (#788).
  * @return d0: the length of the path; 0 on cancel (a3 unchanged)
  */
 static ULONG BLITZ_ROUTINE requestfile_c(void)
@@ -224,6 +226,7 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
     do
         n++;                                            /* ADDQ.w #1,d0 */
     while ((*blitz_string++ = *s++) != 0);
+    blitz_string--;                                     /* fixed (#784): a3 on the 0 */
     return (ULONG)n - 1;
 }
 
@@ -232,8 +235,7 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
  *
  * The title string is given up (a3 back by its length + 1), then as
  * requestfile_c.  BUG(orig) (#789): the title stays for later calls
- * without one; on cancel a3 stays at the start of the title string
- * (#784).
+ * without one.  On cancel a3 stays at the start of the title string.
  * @param title  d0: the title
  * @param lens   a2: the argument stack, -4(a2) the length of title$
  * @return d0: the length of the path; 0 on cancel
