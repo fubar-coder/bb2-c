@@ -37,7 +37,7 @@
  * Format: "#" = digit or space, "0" = digit or zero, "." decimal point,
  * "-" = "-" if negative else space, "+" = "+"/"-", "," = "," (space in
  * the leading pad), other characters literally.  Too many integer digits
- * give "?" and padding (see below); rounding at the last decimal.
+ * give "?" and the lowest digits; rounding at the last decimal.
  *
  * Fixed original bugs (intended deviations, docs/libs/deviations.md):
  *   - Quick: a fraction that rounds to 0 left the point: 1+1/65536 ->
@@ -50,12 +50,13 @@
  *     (|x| < 1: the condition d3 != 0 is then false) were never rounded
  *     (0.567 with ".##" or "###.##" -> ".56") (#236).  Now the digits are
  *     rounded before formatting (fmtround): "1000.0", ".57".
+ *   - Format: too many integer digits gave "?" and then only padding for
+ *     the whole integer part (1234.5 with "##" -> "?  ") (#238); now "?"
+ *     and the lowest digits ("?35").
  *
  * BUG(orig):
  *   - Format: the sign is lost when the format has no "-"/"+" (-7 with
- *     "###" -> "  7") (#237); too many integer digits give "?" and then
- *     only padding for the whole integer part (1234.5 with "##" -> "?  ")
- *     (#238).
+ *     "###" -> "  7") (#237).
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
@@ -369,7 +370,10 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
         over = -lpad;
         numtext += (WORD)over;                  /* ADD d5,a0 (sign extended) */
         nchars -= over;
-        lpad = pl.formlead;
+        /* Fixed (#238): no padding, the places take the lowest digits (the
+           original sets d5 = formlead, so every place became padding:
+           1234.5 with "##" -> "?  ") */
+        lpad = 0;
     }
     count = pl.formlead;
     if (count) {
@@ -457,7 +461,7 @@ static ULONG prtype2(const UBYTE *buf)
  * BUG(orig) (#240): a Format string longer than 32 characters (no check
  * without the debugger) runs over formlen/formlead/formtrail/decpos and
  * further into the conversion buffers.  The bugs of the formatting
- * itself: #237, #238 (#235, #236 fixed).
+ * itself: #237 (#235, #236, #238 fixed).
  *
  * Errors (debugger only, formatchk): "Format String too long" (> 32).
  *
@@ -904,7 +908,7 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
  *
- * BUG(orig): the Format bugs #237, #238 and the float buffer overrun
+ * BUG(orig): the Format bug #237 and the float buffer overrun
  * (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
