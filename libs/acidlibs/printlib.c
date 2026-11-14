@@ -150,7 +150,7 @@ BLITZ_LIBFIN();
 
 /* The variables in the order of the original (offsets $1C6-$233 of the
    binary): a Format string longer than 32 characters overwrites the ones
-   behind `form` (BUG(orig) (#240), see above), and ezchar reads the byte before
+   behind `form` (By design (#240), see above), and ezchar reads the byte before
    `chars` ($20) for a "," at the start.  All accesses that may leave a
    member go through pointers into the whole struct. */
 static struct BL_PACKED printvars {
@@ -507,7 +507,7 @@ static ULONG prtype2(const UBYTE *buf)
  * Format string floats are always fixed point.  The original keeps d0
  * (MOVE.l d0,a0).
  *
- * BUG(orig) (#240): a Format string longer than 32 characters (no check
+ * By design (#240): a Format string longer than 32 characters (no check
  * without the debugger) runs over formlen/formlead/formtrail/decpos and
  * further into the conversion buffers.  (The bugs of the formatting
  * itself, #235-#238, are fixed.)

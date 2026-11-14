@@ -276,7 +276,7 @@ static ULONG doeditz(ULONG n, const void *caller_a6, UBYTE *saved_string)
  * Val gets the ffplib base although Edit has no !libs: the compiler links
  * the ALibJsr call through a stub that loads the callee's !libs (not a
  * bug, #130).
- * BUG(orig) (#131): n = 80 reads up to 81 characters into the 80 byte
+ * By design (#131): n = 80 reads up to 81 characters into the 80 byte
  * buffer.
  * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!", n > 80 ->
  * "Can only Edit up to 80 characters".
@@ -305,7 +305,7 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
  * first padding space overwrote its last character: UStr$ leaves a3 right
  * behind it, without a 0).
  * UStr$ and Val get their !libs bases from the ALibJsr stubs (#130).
- * BUG(orig) (#131): n = 80 reads up to 81 characters into the buffer.
+ * By design (#131): n = 80 reads up to 81 characters into the buffer.
  * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!", n > 80 ->
  * "Can only Edit up to 80 characters".
  *

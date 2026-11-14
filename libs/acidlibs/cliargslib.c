@@ -121,7 +121,7 @@ static ULONG movestring(const UBYTE *s)
  * documented failure value).  Either way nothing is written and d0 = 0.
  * Errors (debugger only, CheckParPath): "Can only call ParPath$() when
  * run from WB.", then those of Par$.
- * BUG(orig) (#106): no range check of the argument number (FindArg).
+ * By design (#106): no range check of the argument number (FindArg).
  * BUG(orig) (#107): without the error checks also called for CLI
  * arguments (lock 0).
  *
@@ -185,7 +185,7 @@ BLITZ_THUNK(GetNumPars, getnumpars_c, "d1/a0-a1");
  * Copies the argument's text to a3.  The original changes a0/a1, keeps
  * d1.  Errors (debugger only, CheckParNum): "No parameters passed.",
  * "Non-Existent Parameter." (not 1 <= Parameter# <= NumPars, signed).
- * BUG(orig) (#106): FindArg walks the list without a check: argument
+ * By design (#106): FindArg walks the list without a check: argument
  * numbers <= 0 or > NumPars run over the end of the list (argument 0:
  * 2^32 steps).
  *

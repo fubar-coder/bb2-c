@@ -985,7 +985,7 @@ static void setprop(UWORD id, ULONG pot, ULONG body, struct Gadget **list, int o
  * Quick values, 1.0 ($10000) or more becomes $FFFF.  The gadget is not
  * redrawn.
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1006,7 +1006,7 @@ BLITZ_THUNK(dosethprop, dosethprop_c, "d0-d1/a1");
  *
  * As SetHProp.
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1030,7 +1030,7 @@ static ULONG readprop(UWORD id, struct Gadget **list, int off)
  * @brief HPropPot(GadgetList#,Id): the HorizPot of a prop gadget.
  *
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1047,7 +1047,7 @@ BLITZ_THUNK(dohproppot, dohproppot_c, "a1");
  * @brief HPropBody(GadgetList#,Id): the HorizBody of a prop gadget.
  *
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1064,7 +1064,7 @@ BLITZ_THUNK(dohpropbody, dohpropbody_c, "a1");
  * @brief VPropPot(GadgetList#,Id): the VertPot of a prop gadget.
  *
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1081,7 +1081,7 @@ BLITZ_THUNK(dovproppot, dovproppot_c, "a1");
  * @brief VPropBody(GadgetList#,Id): the VertBody of a prop gadget.
  *
  * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
- * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * prop gadget).  By design (#166): without the debugger the search does
  * not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1101,7 +1101,7 @@ BLITZ_THUNK(dovpropbody, dovpropbody_c, "a1");
  *
  * RefreshGList(gadget, window, 0, 1).  Amiga mode only.  Errors
  * (debugger, redrawchk): "Uninitialized Window", "Can't Find Gadget".
- * BUG(orig) (#166): without the debugger the search does not stop at the
+ * By design (#166): without the debugger the search does not stop at the
  * end of the window's gadget list.
  *
  * @param id  d1: the gadget id
@@ -1123,7 +1123,7 @@ void BLITZ_ROUTINE doredraw(UWORD id BL_REG(d1), struct Window **win BL_REG(a1),
  *
  * ActivateGadget(gadget, window, 0).  Amiga mode only.  Errors (debugger,
  * actchk): "Uninitialized Window", "Can't Find Gadget", "Not a String
- * Gadget".  BUG(orig) (#166) as Redraw.
+ * Gadget".  By design (#166) as Redraw.
  *
  * @param id  d1: the gadget id
  * @param win  a1: the window (!libs #windowslib,$1180)
@@ -1172,7 +1172,7 @@ void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
  * @brief Toggle GadgetList#,Id,On|Off: select or deselect a gadget.
  *
  * Sets or clears SELECTED; the gadget is not redrawn.
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1194,7 +1194,7 @@ BLITZ_THUNK(gadgetslib_doselect, doselect_c, "d0-d1/a1");
 /**
  * @brief Toggle GadgetList#,Id: flip the SELECTED state of a gadget.
  *
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1209,7 +1209,7 @@ BLITZ_THUNK(gadgetslib_doselect2, doselect2_c, "d0-d1/a1");
 /**
  * @brief Enable GadgetList#,Id: clear DISABLED of a gadget.
  *
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1224,7 +1224,7 @@ BLITZ_THUNK(gadgetslib_doenable, doenable_c, "d0-d1/a1");
 /**
  * @brief Disable GadgetList#,Id: set DISABLED of a gadget.
  *
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1242,7 +1242,7 @@ BLITZ_THUNK(gadgetslib_dodisable, dodisable_c, "d0-d1/a1");
  *
  * Value 1 = the first part; ignored for toggle gadgets, gadgets without
  * text and Value 0.  The gadget is not redrawn.
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1277,7 +1277,7 @@ BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
  * part (1 = first).  For toggle gadgets and gadgets without text: -1 if
  * SELECTED, else 0 (SNE/EXT.w: not a bug, the upper word of d0 is that of
  * the GadgetText pointer).
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1344,7 +1344,7 @@ BLITZ_THUNK(dobuttonid, dobuttonid_c, "d1/a0");
  * In place: the new text is padded with spaces and never longer than the
  * old one; nothing for a gadget without text.  The gadget is not
  * redrawn.
- * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * Errors (debugger, gchk): "Can't Find Gadget".  By design (#166):
  * without the debugger the search does not stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1406,7 +1406,7 @@ BLITZ_THUNK(dosetstring, dosetstring_c, "d0-d1");
  *
  * BufferPos and DispPos 0, an empty buffer.
  * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
- * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * Gadget".  By design (#166): without the debugger the search does not
  * stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1428,7 +1428,7 @@ BLITZ_THUNK(dostringclear, dostringclear_c, "d0-d1/a1");
  *
  * BufferPos and DispPos 0, the contents stay.
  * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
- * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * Gadget".  By design (#166): without the debugger the search does not
  * stop at the end of the list.
  *
  * @param id  d1: the gadget id
@@ -1448,7 +1448,7 @@ BLITZ_THUNK(dostringreset, dostringreset_c, "d0-d1/a1");
  *
  * Copies the buffer to a3 (a3 is left on the terminating 0).
  * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
- * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * Gadget".  By design (#166): without the debugger the search does not
  * stop at the end of the list.
  *
  * @param id  d1: the gadget id

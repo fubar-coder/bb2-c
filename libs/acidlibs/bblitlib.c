@@ -17,7 +17,7 @@
  * the buffer; ShowStencil does the same through a stencil (B) without
  * emptying the buffer.  Blitz/Amiga variants as in blitlib.
  *
- * Kept from the original (BUG(orig), #73): only the error check tests for an
+ * By design (#73): only the runtime error checking tests for an
  * overflow of the buffer; a shape or bitmap of depth 0 loops 65536 times
  * (DBF) (#74); FreeBuffer leaves the write position and the last record
  * pointer stale (#75).  Not a bug: the last word mask of the blit is

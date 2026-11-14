@@ -40,7 +40,7 @@
  * PopInput/PopOutput go back one entry.  init pushes the initial handler
  * 0 on both stacks, so after one PopOutput at the start the output
  * handler is 0.  Without the debugger nothing is checked (popping more
- * than was pushed takes old ring entries, BUG(orig) (#194)).
+ * than was pushed takes old ring entries, By design (#194)).
  *
  * DIFF: in the original the single character entry of defin is `BRA err1`
  * into the error check area: with the debugger the runtime error, without
@@ -182,7 +182,7 @@ BLITZ_THUNK(dosetout, dosetout_c, "d1/a0-a1");
  *
  * Errors (debugger only): "No Input channel to pop!" (count 0).  Without
  * the debugger popping more than was pushed takes old ring entries,
- * BUG(orig) (#194).
+ * By design (#194).
  */
 static void BLITZ_ROUTINE dopopinput_c(void)
 {
@@ -193,7 +193,7 @@ BLITZ_THUNK(dopopinput, dopopinput_c, "d1/a0-a1");
 /**
  * @brief PopOutput: go back to the previous output channel, as PopInput.
  *
- * Errors (debugger only): "No Output channel to pop!".  BUG(orig) (#194)
+ * Errors (debugger only): "No Output channel to pop!".  By design (#194)
  * as PopInput; after one PopOutput at the start the handler is 0.
  */
 static void BLITZ_ROUTINE dopopoutput_c(void)

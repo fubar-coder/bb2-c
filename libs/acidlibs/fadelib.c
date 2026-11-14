@@ -266,7 +266,7 @@ static void dosyncfade(void)
  * rate between them.
  * BUG(orig) (#134): the upper byte of d0.w (palette# * 128) gets into the
  * red and green fractions of the first colour (palettes 0/1 unaffected).
- * BUG(orig) (#136): the range is not clipped to the colours of palette
+ * By design (#136): the range is not clipped to the colours of palette
  * and slice.
  * Errors (debugger, fadechk): "Uninitialized Slice", "Not enough colours
  * in Slice" also for an uninitialized palette (BUG(orig) #330), a colour
@@ -333,7 +333,8 @@ void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *p
  * of the used slice from the palette to black.
  *
  * As FadeIn, but starts at the full colours (fraction << 4) and
- * subtracts the fractions.  BUG(orig) (#134, #136) and errors as FadeIn.
+ * subtracts the fractions.  BUG(orig) (#134), by design (#136) and errors
+ * as FadeIn.
  *
  * @param palofs  d0: palette# * 128 (the compiler's object offset)
  * @param rate  d1: the frames to wait between the steps (VWait)

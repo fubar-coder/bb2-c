@@ -13,7 +13,7 @@
  * FlushQueue (inline) only empties it.  Blitz/Amiga variants as in
  * blitlib.
  *
- * Kept from the original (BUG(orig), #423): only the error check tests for an
+ * By design (#423): only the runtime error checking tests for an
  * overflow; a shape of depth 0 loops 65536 times (DBF) (#243); FreeQueue
  * leaves the write position stale (#244).  Not a bug: UnQueue clears all
  * planes of the bitmap, not only those of the shape (QBlit changes them too,
@@ -368,8 +368,8 @@ start:
  *
  * Errors (qblitchk, debugger only): "Uninitialized Queue", the blitlib
  * checks (cookie, bitmap, shape, depth, coordinates) and "Queue Overflow".
- * BUG(orig) (#423): only the error check tests for an overflow; a shape of
- * depth 0 loops 65536 times (DBF) (#243).
+ * By design (#423): only the runtime error checking tests for an overflow;
+ * a shape of depth 0 loops 65536 times (DBF) (#243).
  *
  * @param x  d2.w: the x position
  * @param y  d3.w: the y position
