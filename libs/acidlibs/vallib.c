@@ -418,7 +418,7 @@ BLITZ_THUNK(doffrac, doffrac_c, "d1/a0-a1");
  * @brief Abs(Expression) - the absolute value, as a float.
  *
  * The value as Float with the sign bit (bit 7) cleared: float as is,
- * quick via floatquicklib ($D300, Quick 0 -> $80 -> 0), byte/word sign
+ * quick via floatquicklib ($D300), byte/word sign
  * extended, everything else (long, and types >= 6) with SPFlt.
  *
  * @param v d0: the value

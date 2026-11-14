@@ -46,14 +46,16 @@ static ULONG q2f(const void *ffp, ULONG v)
 /**
  * @brief $D300 qutofl: convert a Quick (16.16 fixed point) to a Float (FFP).
  *
- * NEG.l d0:BMI 'doit:BSR 'doit2:BSET #7,d0:RTS / 'doit:NEG.l d0 ('doit2):
- * the sign test is on -d0; negative inputs are converted as their
- * magnitude (float(int part) + float(frac) / 65536.0, by mathffp) and get
- * the FFP sign bit (bit 7) set.
- * BUG(orig) (#146): 0 counts as negative (NEG gives 0, not minus): Quick 0
- * becomes $00000080, an FFP "-0".
- * BUG(orig) (#147): $80000000 (-32768.0) gives +32768.0 (NEG overflows,
- * the magnitude is $80000000 read as unsigned).
+ * The sign is tested on d0 (TST.l d0:BPL 'doit2); negative inputs are
+ * converted as their magnitude (float(int part) + float(frac) / 65536.0,
+ * by mathffp; the magnitude of $80000000 is 32768.0, read as unsigned)
+ * and get the FFP sign bit (bit 7) set.
+ * Fixed (#146, #147): the original tests the sign on -d0 (NEG.l d0:BMI
+ * 'doit:BSR 'doit2:BSET #7,d0:RTS / 'doit:NEG.l d0): 0 counted as
+ * negative (NEG gives 0, not minus), so Quick 0 became $00000080, an FFP
+ * "-0" (#146); NEG of $80000000 overflows and stays negative, so -32768.0
+ * became +32768.0 (#147).  The test on d0 costs no more than the
+ * original's (one TST.l instead of the NEG.l of a copy).
  *
  * @param q  d0: the Quick
  * @param ffpbase  a6: mathffp.library (ffplib)
@@ -61,11 +63,9 @@ static ULONG q2f(const void *ffp, ULONG v)
  */
 static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
-    ULONG n = -q;
-
-    if ((LONG)n < 0)                            /* BMI 'doit */
+    if ((LONG)q >= 0)                           /* TST.l d0:BPL 'doit2 */
         return q2f(ffpbase, q);
-    return q2f(ffpbase, n) | 0x80;              /* BSET #7,d0 */
+    return q2f(ffpbase, -q) | 0x80;             /* NEG.l d0 ... BSET #7,d0 */
 }
 BLITZ_THUNK(quicktofloat, quicktofloat_c, "d1/a0-a1");
 
