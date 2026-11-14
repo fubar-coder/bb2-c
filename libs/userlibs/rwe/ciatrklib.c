@@ -40,7 +40,7 @@
  *     without `#` - the long at address 1 / 2 (an address error on a
  *     68000) (#450).  ResetCIAInt removes the vector with bit 0 (MOVEQ #1
  *     is overwritten; in Amiberry the system's timer A vector of ciaa)
- *     (#448) and toggles the filter (BCHG #1,$bfe001) (#449).
+ *     (#448).
  *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
  *     holds (#443); the length is the file size + 3 as a byte add
  *     (ADD.b), so the carry is lost (#442); the chip memory is not
@@ -95,6 +95,10 @@
  *     (#436).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).
+ *
+ * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
+ * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
+ * #1,$bfe001, a debug leftover) at every removal of the CIA interrupt.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -590,7 +594,8 @@ static void resetciaint(void)
         struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&ciapart.MusicIntServer };
         BLITZ_BASEJSR(res, -12, r);     /* RemICRVector */
     }
-    CIAAPRA ^= 2;                       /* BCHG #1,$bfe001 (BUG(orig), #449) */
+    /* Fixed (#449): the original toggles the filter here (BCHG
+       #1,$bfe001, a debug leftover) */
 }
 
 /* SetTempo: d0 = beats per minute (>= 32), the timer TimerValue / d0 */
@@ -1809,7 +1814,7 @@ static void BLITZ_ROUTINE pausemodule_c(void)
  * @brief ChangeTrackerVBlank: play without the CIA interrupt.
  *
  * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt,
- * with its bugs #448, #449); from then on the program calls PlayTracker
+ * with its bug #448); from then on the program calls PlayTracker
  * itself and StartTracker installs no interrupt.
  */
 static void BLITZ_ROUTINE change_playtype_c(void)
@@ -1895,8 +1900,8 @@ static void BLITZ_ROUTINE inittrackerlib_c(void)
  * @brief finit: stop playing and remove the CIA interrupt.
  *
  * ResetCIAInt (unless ChangeTrackerVBlank removed it) removes the vector
- * with bit 0 (#448) and toggles the filter (#449).  The module slots are
- * not freed here.
+ * with bit 0 (#448); it leaves the filter as it is (fixed, #449).  The
+ * module slots are not freed here.
  */
 static void BLITZ_ROUTINE finittrackerlib_c(void)
 {

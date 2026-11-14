@@ -26,7 +26,8 @@ the interrupt server|PatternPos||1	$00000010
 WaitTrackerEvent (CIA)|WaitTOF calls||1	$00000006
 WaitTrackerEvent (CIA)|no event (gave up)||1	$00000000
 ChangeTrackerVBlank|CIAAbase||1	$00000000
-ChangeTrackerVBlank|filter toggled||1	$00000001
+ChangeTrackerVBlank|filter toggled||1 [orig]	$00000001
+ChangeTrackerVBlank|filter toggled||1 [fixed #449]	$00000000
 ChangeTrackerVBlank|timer stopped||1	$00000001
 ChangeTrackerVBlank|RemICRVector calls||1	$00000002
 ChangeTrackerVBlank|RemICRVector resource||1	$00000001
@@ -46,7 +47,8 @@ DecodeModule|CIA part|slot 0, chip|1	bytes 110 fnv B6319231
 GetTrackerSize|kept|slot 0|1	kept
 GetTrackerSize|popped|slot 0|1	$00000000
 GetTrackerSize|DMACONR|slot 0|1	$00000000
-GetTrackerSize|filter|slot 0|1	$00000000
+GetTrackerSize|filter|slot 0|1 [orig]	$00000000
+GetTrackerSize|filter|slot 0|1 [fixed #449]	$00000002
 GetTrackerSize|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
 GetTrackerSize|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 GetTrackerSize|CIA part|slot 0|1	bytes 110 fnv B6319231
@@ -54,7 +56,8 @@ GetTrackerSize|d0|slot 0|1	$00000001
 GetTrackerLocation|kept|slot 0|1	kept
 GetTrackerLocation|popped|slot 0|1	$00000000
 GetTrackerLocation|DMACONR|slot 0|1	$00000000
-GetTrackerLocation|filter|slot 0|1	$00000000
+GetTrackerLocation|filter|slot 0|1 [orig]	$00000000
+GetTrackerLocation|filter|slot 0|1 [fixed #449]	$00000002
 GetTrackerLocation|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
 GetTrackerLocation|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 GetTrackerLocation|CIA part|slot 0|1	bytes 110 fnv B6319231
@@ -62,7 +65,8 @@ GetTrackerLocation|d0|slot 0|1	$81000000
 CheckTrackerID|kept|slot 0|1	kept
 CheckTrackerID|popped|slot 0|1	$00000000
 CheckTrackerID|DMACONR|slot 0|1	$00000000
-CheckTrackerID|filter|slot 0|1	$00000000
+CheckTrackerID|filter|slot 0|1 [orig]	$00000000
+CheckTrackerID|filter|slot 0|1 [fixed #449]	$00000002
 CheckTrackerID|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
 CheckTrackerID|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 CheckTrackerID|CIA part|slot 0|1	bytes 110 fnv B6319231
@@ -70,7 +74,8 @@ CheckTrackerID|d0|slot 0|1	$FFFFFFFF
 ModulePatterns|kept|slot 0|1	kept
 ModulePatterns|popped|slot 0|1	$00000000
 ModulePatterns|DMACONR|slot 0|1	$00000000
-ModulePatterns|filter|slot 0|1	$00000000
+ModulePatterns|filter|slot 0|1 [orig]	$00000000
+ModulePatterns|filter|slot 0|1 [fixed #449]	$00000002
 ModulePatterns|play routine|slot 0|1	bytes 1584 fnv 5AA0D2C7
 ModulePatterns|modtable|slot 0|1	bytes 110 fnv 3786BDCF
 ModulePatterns|CIA part|slot 0|1	bytes 110 fnv B6319231
@@ -93,7 +98,8 @@ _slotcheck|popped|slot 4|1	$00000000
 GetTrackerSize|kept|slot 3|1	kept
 GetTrackerSize|popped|slot 3|1	$00000000
 GetTrackerSize|DMACONR|slot 3|1	$00000000
-GetTrackerSize|filter|slot 3|1	$00000000
+GetTrackerSize|filter|slot 3|1 [orig]	$00000000
+GetTrackerSize|filter|slot 3|1 [fixed #449]	$00000002
 GetTrackerSize|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 GetTrackerSize|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 GetTrackerSize|CIA part|slot 3|1	bytes 110 fnv B6319231
@@ -101,7 +107,8 @@ GetTrackerSize|d0|slot 3|1	$00000000
 GetTrackerLocation|kept|slot 3|1	kept
 GetTrackerLocation|popped|slot 3|1	$00000000
 GetTrackerLocation|DMACONR|slot 3|1	$00000000
-GetTrackerLocation|filter|slot 3|1	$00000000
+GetTrackerLocation|filter|slot 3|1 [orig]	$00000000
+GetTrackerLocation|filter|slot 3|1 [fixed #449]	$00000002
 GetTrackerLocation|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 GetTrackerLocation|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 GetTrackerLocation|CIA part|slot 3|1	bytes 110 fnv B6319231
@@ -109,7 +116,8 @@ GetTrackerLocation|d0|slot 3|1	$00000000
 CheckTrackerID|kept|slot 3|1	kept
 CheckTrackerID|popped|slot 3|1	$00000000
 CheckTrackerID|DMACONR|slot 3|1	$00000000
-CheckTrackerID|filter|slot 3|1	$00000000
+CheckTrackerID|filter|slot 3|1 [orig]	$00000000
+CheckTrackerID|filter|slot 3|1 [fixed #449]	$00000002
 CheckTrackerID|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 CheckTrackerID|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 CheckTrackerID|CIA part|slot 3|1	bytes 110 fnv B6319231
@@ -117,7 +125,8 @@ CheckTrackerID|d0|slot 3|1	$00000000
 ModulePatterns|kept|slot 3|1	kept
 ModulePatterns|popped|slot 3|1	$00000000
 ModulePatterns|DMACONR|slot 3|1	$00000000
-ModulePatterns|filter|slot 3|1	$00000000
+ModulePatterns|filter|slot 3|1 [orig]	$00000000
+ModulePatterns|filter|slot 3|1 [fixed #449]	$00000002
 ModulePatterns|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 ModulePatterns|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 ModulePatterns|CIA part|slot 3|1	bytes 110 fnv B6319231
@@ -130,7 +139,8 @@ GetModuleName$|string|slot 3|1	bytes 32 5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
 StartTracker|kept|slot 3|1	kept
 StartTracker|popped|slot 3|1	$00000000
 StartTracker|DMACONR|slot 3|1	$00000000
-StartTracker|filter|slot 3|1	$00000000
+StartTracker|filter|slot 3|1 [orig]	$00000000
+StartTracker|filter|slot 3|1 [fixed #449]	$00000002
 StartTracker|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 StartTracker|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 StartTracker|CIA part|slot 3|1	bytes 110 fnv B6319231
@@ -138,7 +148,8 @@ StartTracker|d0|slot 3|1	$00000003
 ModuleToChip|kept|$5|1	kept
 ModuleToChip|popped|$5|1	$00000000
 ModuleToChip|DMACONR|$5|1	$00000000
-ModuleToChip|filter|$5|1	$00000000
+ModuleToChip|filter|$5|1 [orig]	$00000000
+ModuleToChip|filter|$5|1 [fixed #449]	$00000002
 ModuleToChip|play routine|$5|1	bytes 1584 fnv 5AA0D2C7
 ModuleToChip|modtable|$5|1	bytes 110 fnv 3786BDCF
 ModuleToChip|CIA part|$5|1	bytes 110 fnv B6319231

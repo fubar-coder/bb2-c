@@ -54,6 +54,16 @@ checklist) names the known bugs of the 2.3 routine: `mt_LowMask` not
 initialised, the tremolo, the arpeggio table, `mt_init` writing out of
 bounds. They are kept here (below).
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `ResetCIAInt` (`ChangeTrackerVBlank`, `StartTracker` in CIA mode, the
+  end of the program) leaves the audio filter / power LED (bit 1 of
+  CIA-A PRA) as it is; the original toggled it with a
+  `BCHG #1,$bfe001` left in (#449).
+
 ## BUG(orig), kept
 
 * `SetCIAInt` loads the ICR bit for `AddICRVector` from the addresses 1
@@ -66,8 +76,7 @@ bounds. They are kept here (below).
   alike). `ResetCIAInt` removes the vector with bit 0 (its `MOVEQ #1,D0`
   is overwritten) – in Amiberry the system's timer A vector of ciaa (a
   first version of the test that called the real resources made the
-  later tests in the same session hang) – and toggles
-  the filter (`BCHG #1,$bfe001`) (#450, #448, #449).
+  later tests in the same session hang) (#450, #448).
 * `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
   a6 holds (#443). Length = file size + 3 as a **byte** add (a size with
   the low byte ≥ $FD loses the carry: $10FE gives $1001, and only that
@@ -175,7 +184,8 @@ and after it.
   `RealTempo` 64 and the timer, the event of tick 7), `StartTracker`
   (removes and adds again), `WaitTrackerEvent` with a WaitTOF that runs
   the server, `ChangeTrackerVBlank` (CIAAbase 0, the timer stopped, the
-  filter toggled, `RemICRVector` with bit 0).
+  filter toggled in the original and kept in the C build (#449),
+  `RemICRVector` with bit 0).
 * Phase B (call by call): `DecodeModule` (chip; fast memory:
   the copy), the information functions also on an empty slot, the error
   checks without an error, `mt_init`'s clearing with a slot length of
