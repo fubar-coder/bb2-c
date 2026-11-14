@@ -23,9 +23,6 @@
  *   4 = 3 + exclude, >= 5 = the flags themselves (word compare).
  *
  * Kept from the original (BUG(orig)):
- *   - MenuState on a whole menu (MenuState l,m,onoff) changes bit 4 of the
- *     Menu flags (changestate2, as for items) instead of MENUENABLED: no
- *     effect.  MenuState l,onoff (whole list) uses MENUENABLED. (#216)
  *   - MenuChecked with a subitem: the item and subitem DBF loops jump back
  *     to the menu loop; only (menu,item,sub) = (m,0,0) ends where it
  *     should, other values walk the lists again with a counter of -1
@@ -53,6 +50,10 @@
  *   became the MenuName or IText, read at address 0 by IntuiTextLength
  *   (the item's width) and Intuition.  It is copied with length 1 (its 0
  *   byte), the empty string, as AmiBlitz3 does.
+ * Fixed (intended deviation, #216): MenuState on a whole menu (MenuState
+ *   l,m,onoff) changed bit 4 of the Menu flags (changestate2, as for
+ *   items) instead of MENUENABLED: no effect.  It changes MENUENABLED now,
+ *   as MenuState l,onoff (the whole list) does.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -343,8 +344,8 @@ static void BLITZ_ROUTINE domenustate_c(UWORD on BL_REG(d1))
 /**
  * @brief MenuState MenuList#,Menu,On|Off - enable or disable a menu.
  *
- * BUG(orig) (#216): changes bit 4 of the Menu flags (changestate2, as for
- * items) instead of MENUENABLED: no effect.
+ * Sets or clears MENUENABLED.  Fixed (#216): the original changed bit 4
+ * of the Menu flags (changestate2, as for items): no effect.
  *
  * Errors (debugger only, statechk2): "Illegal Menu number".
  *
@@ -353,7 +354,7 @@ static void BLITZ_ROUTINE domenustate_c(UWORD on BL_REG(d1))
  */
 static void BLITZ_ROUTINE domenustate2_c(UWORD m BL_REG(d1), UWORD on BL_REG(d2))
 {
-    changestate(walk(blitz_string, m), on, 4);
+    changestate(walk(blitz_string, m), on, 0);  /* MENUENABLED, fixed (#216) */
 }
 
 /**

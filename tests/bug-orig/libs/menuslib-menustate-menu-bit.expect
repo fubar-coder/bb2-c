@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+off 00000000 other 00000001
+on 00000001
+rc=0
