@@ -23,8 +23,6 @@
  * makes the gadget as wide as the widest part.
  *
  * Kept from the original (BUG(orig)):
- *   - StringGadget with Maxlen 0 clears 65536 bytes of the (0 byte)
- *     buffer (DBF). (#165)
  *   - Not a bug (word functions, the compiler uses only d0.w):
  *     GadgetStatus of a toggle/non-text gadget: SNE/EXT.w, the upper word
  *     of d0 is that of the GadgetText pointer; ButtonId: the upper word of
@@ -46,6 +44,12 @@
  * Fixed (intended deviation, #164): StringGadget with Borders off wrote
  *   the border offsets to the addresses 0, 2, 36 and 38 (border pointer
  *   0); it writes them only into a border now.
+ * Fixed (intended deviation, #165): StringGadget with Maxlen 0 (a
+ *   programming error: no room for the 0 at the end of the text) clears
+ *   65536 bytes behind its 0 byte buffer (DBF), and the original has no
+ *   check routine for StringGadget.  The new check routine stringchk
+ *   gives the runtime error "Maxlen MUST be greater than zero" (BB2
+ *   style: the release code is the original's).
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -108,7 +112,7 @@ void BLITZ_ROUTINE freegadget(void);
 /* error checks (debugger only, thunks below) */
 void gadgetslib_sgchk(void), gadgetslib_sgchk2(void), propchk(void);
 void redrawchk(void), gchk(void), gadgetslib_wchk(void), actchk(void);
-void reschk(void), settest(void), bgroupchk(void);
+void reschk(void), settest(void), bgroupchk(void), stringchk(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -124,7 +128,7 @@ BLITZ_NAME("TextGadget", "GadgetList#,X,Y,Flags,Id,Text$");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1380);
-BLITZ_SUBS(dostringgadget, 0, 0);
+BLITZ_SUBS(dostringgadget, stringchk, 0);
 BLITZ_NAME("StringGadget", "GadgetList#,X,Y,Flags,Id,Maxlen,Width");
 
 BLITZ_ASTATEMENT();
@@ -789,7 +793,10 @@ void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
  * bytes (cleared).  Flags as TextGadget.
  * Fixed (#164): with Borders off (no border) the original wrote the
  * border offsets to the addresses 0, 2, 36 and 38.
- * BUG(orig) (#165): Maxlen 0 clears 65536 bytes of the 0 byte buffer.
+ * Fixed (#165): Maxlen 0 clears 65536 bytes behind the 0 byte buffer, as
+ * in the original; runtime error checking catches it (stringchk, which
+ * the original does not have).
+ * Errors (debugger, stringchk): "Maxlen MUST be greater than zero".
  *
  * @param x  d1: the left edge
  * @param y  d2: the top edge
@@ -1535,6 +1542,7 @@ BLITZ_ERRCHK_MESSAGE(mess3, "Not a String Gadget");
 BLITZ_ERRCHK_MESSAGE(mess4, "String to long for Gadget");
 BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess6, "Button Group MUST be greater than zero");
+BLITZ_ERRCHK_MESSAGE(mess7, "Maxlen MUST be greater than zero");
 
 /* gchk - the gadget exists; 0 (after the runtime error) if not */
 static struct Gadget *BLITZ_ERRCHK gchk1(struct Gadget **list, UWORD id)
@@ -1641,6 +1649,15 @@ static void BLITZ_ERRCHK bgroupchk_c(WORD grp BL_REG(d0))
         BLITZ_RUNERR(mess6);
 }
 
+/* stringchk - StringGadget: Maxlen at least 1 (the buffer holds the 0 at
+   the end of the text); fixed (#165), the original has no check routine
+   for StringGadget (Maxlen 0 clears the 65536 bytes behind its buffer) */
+static void BLITZ_ERRCHK stringchk_c(UWORD maxlen BL_REG(d5))
+{
+    if (!maxlen)
+        BLITZ_RUNERR(mess7);
+}
+
 /* the thunks last: GCC does not know that their asm leaves the error
    check section, so no C function may follow them */
 BLITZ_ERRCHK_THUNK(gchk, gchk_c, "d0-d1/a0-a1");
@@ -1653,3 +1670,4 @@ BLITZ_ERRCHK_THUNK(gadgetslib_wchk, wchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(gadgetslib_sgchk2, sgchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(gadgetslib_sgchk, sgchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(bgroupchk, bgroupchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(stringchk, stringchk_c, "d0-d1/a0-a1");

@@ -19,3 +19,7 @@ lib 160: relocations in the declaration part 22 != 23
 # area, the original had none
 lib 154: entry 15 InitShape +$12: code offset set in only one of them
 lib 154: relocations in the declaration part 36 != 37
+# gadgetslib (#165): StringGadget gets the check routine stringchk ("Maxlen
+# MUST be greater than zero"), which the original does not have
+lib 140: entry 1 StringGadget +$16: code offset set in only one of them
+lib 140: relocations in the declaration part 66 != 67
