@@ -177,8 +177,6 @@ int main(void)
     /* bug-orig: exactly one source */
     CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\norig=/o\n", err, sizeof err) == -1
           && strstr(err, "one source"));
-    CHECK(parse(BASE CONFIGS "source=/s\nserial_same_as=/o\nexpect=/e\norig=/o\n", err, sizeof err) == -1
-          && strstr(err, "serial_same_as"));
     /* bug-orig with the remote end on the serial port */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\norig=/o\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
@@ -439,7 +437,11 @@ int main(void)
         CHECK(parse(NORUN "runwrap=/r\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "runargs=x\n", err, sizeof err) == -1 && strstr(err, "run=off"));
         CHECK(parse(NORUN "expect=/e\n", err, sizeof err) == -1 && strstr(err, "run=off"));
-        CHECK(parse(NORUN "serial_same_as=/o\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        /* the key serial_same_as is gone (the committed .serial files are compared) */
+        CHECK(parse(NORUN "serial_same_as=/o\n", err, sizeof err) == -1 && strstr(err, "unknown key"));
+        /* publish= and run_dir= */
+        CHECK(corpus_parse(NORUN "publish=fx\nrun_dir=/r\n", &p, err, sizeof err) == 0 && !strcmp(p.publish, "fx") && !strcmp(p.run_dir, "/r"));
+        corpus_free(&p);
         CHECK(parse(NORUN "run=maybe\n", err, sizeof err) == -1);
         /* without run=off the launcher is still needed */
         CHECK(parse("work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\n" CONFIGS "source=/s\n", err,

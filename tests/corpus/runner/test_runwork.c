@@ -1,14 +1,15 @@
 /*
  * test_runwork.c - the run directories of the runners (runwork.h): two runs
  * of one work directory get directories of their own; a run directory a
- * runner holds is never removed, one nobody holds is (unless work/last
- * names it); publishing makes the run work/last and removes the one
- * before; the free-space check refuses a work directory with less than
- * min_free= MiB free.
+ * runner holds is never removed, one nobody holds is; a run that passes
+ * leaves nothing (and the work directory goes when it is empty), a run
+ * that passes with publish= becomes a fixture of the run directory, a run
+ * that fails stays and says where; the free-space check refuses a work
+ * directory with less than min_free= MiB free.
  *
  *   test_runwork DIR      (DIR: a scratch directory, emptied first)
  */
-#define _DEFAULT_SOURCE         /* flock */
+#define _DEFAULT_SOURCE         /* flock, open_memstream, unsetenv */
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,7 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "rundir.h"
 #include "runwork.h"
 #include "util.h"
 
@@ -42,31 +44,33 @@ static int unlocked(const char *path)
     return r;
 }
 
-/* the target of base/last, "" if none */
-static const char *last(const char *base)
+/* runwork_finish with its log text in *text (malloc'd) */
+static int finish(struct runwork *w, int ran, int rc, const char *publish, const char *run,
+                  char **text)
 {
-    static char buf[256];
-    char *link = str_printf("%s/" RUNWORK_LAST, base);
-    ssize_t n = link ? readlink(link, buf, sizeof buf - 1) : -1;
+    size_t n = 0;
+    FILE *f = open_memstream(text, &n);
+    int r = runwork_finish(w, ran, rc, publish, run, f, "test");
 
-    free(link);
-    buf[n > 0 ? n : 0] = 0;
-    return buf;
+    fclose(f);
+    return r;
 }
 
 int main(int argc, char **argv)
 {
-    char err[400], *base, *stale, *legacy;
+    char err[400], *base, *stale, *legacy, *run, *text = NULL;
     struct runwork a, b, c;
 
     if (argc != 2) {
         fprintf(stderr, "usage: test_runwork DIR\n");
         return 2;
     }
+    unsetenv(RUNDIR_ENV);
     rm_tree(argv[1]);
     base = str_printf("%s/work", argv[1]);
     stale = str_printf("%s/run-stale1", base);
     legacy = str_printf("%s/clib", base);
+    run = str_printf("%s/runs", argv[1]);
 
     /* two runs of one work directory: each its own directory, locked */
     CHECK(runwork_open(&a, base, err, sizeof err) == 0);
@@ -81,53 +85,118 @@ int main(int argc, char **argv)
     CHECK(runwork_clean(base) == 1);
     CHECK(!is_dir(stale) && is_dir(legacy) && is_dir(a.dir) && is_dir(b.dir));
 
-    /* a publishes: it is work/last; then b replaces it, and a's directory
-       (held no more) goes */
-    CHECK(runwork_publish(&a, err, sizeof err) == 0);
-    CHECK(!strcmp(last(base), strrchr(a.dir, '/') + 1));
+    /* a run that passes leaves nothing: its directory goes, the work
+       directory stays while another run or an entry is in it */
     {
         char *adir = strdup(a.dir);
 
-        runwork_close(&a);
-        CHECK(is_dir(adir));            /* closed: unlocked, but still work/last */
-        CHECK(runwork_clean(base) == 0 && is_dir(adir));
-        CHECK(runwork_publish(&b, err, sizeof err) == 0);
-        CHECK(!strcmp(last(base), strrchr(b.dir, '/') + 1));
-        CHECK(!is_dir(adir));
+        CHECK(finish(&a, 1, 0, NULL, run, &text) == 0 && !*text);
+        free(text);
+        CHECK(!is_dir(adir) && is_dir(base) && is_dir(b.dir) && !a.dir);
         free(adir);
     }
 
-    /* the run before is still held (a runner that has published but not
-       ended): it stays, and the next start removes it once it is free */
-    CHECK(runwork_open(&c, base, err, sizeof err) == 0);
-    CHECK(runwork_publish(&c, err, sizeof err) == 0);
-    CHECK(is_dir(b.dir) && !strcmp(last(base), strrchr(c.dir, '/') + 1));
+    /* a run that fails stays and says where, the result is the rc */
     {
         char *bdir = strdup(b.dir);
 
-        runwork_close(&b);
-        CHECK(runwork_open(&a, base, err, sizeof err) == 0);
-        CHECK(!is_dir(bdir) && is_dir(c.dir));
+        CHECK(finish(&b, 1, 1, NULL, run, &text) == 1);
+        CHECK(strstr(text, "test: the files of the run: ") && strstr(text, bdir));
+        free(text);
+        CHECK(is_dir(bdir) && unlocked(bdir) == 1);
+        /* a later run of the pass collects it */
+        CHECK(runwork_open(&c, base, err, sizeof err) == 0);
+        CHECK(!is_dir(bdir));
         free(bdir);
     }
 
-    /* a run without a verdict removes its directory */
+    /* publish=NAME: the passing run becomes RUN/NAME with its files, an
+       earlier NAME and its keep mark are replaced */
+    rm_tree(legacy);
     {
-        char *adir = strdup(a.dir);
+        char *file = str_printf("%s/vol/out/x.exe", c.dir), *got = str_printf("%s/fx/vol/out/x.exe", run),
+             *old = str_printf("%s/fx/old", run);
+        size_t len;
+        uint8_t *d;
 
-        runwork_remove(&a);
-        runwork_close(&a);
+        CHECK(mkdir_p(run) == 0);
+        CHECK(mkdir_p(old) == 0);                       /* an earlier fixture: a dir with "old" */
+        rm_tree(old);
+        CHECK(mkdir_p(old) == 0);
+        rundir_keep(run, "fx");
+        {
+            char *mark = str_printf("%s/fx" RUNDIR_KEEP, run);
+
+            CHECK(!access(mark, F_OK));
+            free(mark);
+        }
+        {
+            char *vo = str_printf("%s/vol/out", c.dir);
+
+            CHECK(mkdir_p(vo) == 0);
+            free(vo);
+        }
+        CHECK(write_file(file, "exe", 3) == 0);
+        CHECK(finish(&c, 1, 0, "fx", run, &text) == 0 && !*text);
+        free(text);
+        d = read_file(got, &len);
+        CHECK(d && len == 3 && !memcmp(d, "exe", 3));
+        free(d);
+        CHECK(!is_dir(old));
+        {
+            char *mark = str_printf("%s/fx" RUNDIR_KEEP, run);
+
+            CHECK(access(mark, F_OK) != 0);
+            free(mark);
+        }
+        CHECK(!is_dir(base));                           /* nothing left in the work directory */
+        free(file);
+        free(got);
+        free(old);
+    }
+
+    /* publish= without a run directory: the run is not published, it stays
+       and the result is 2; a failed run publishes nothing */
+    {
+        char *adir;
+
+        CHECK(runwork_open(&a, base, err, sizeof err) == 0);
+        adir = strdup(a.dir);
+        CHECK(finish(&a, 1, 0, "fx", NULL, &text) == 2 && strstr(text, RUNDIR_ENV));
+        free(text);
+        CHECK(is_dir(adir));
+        CHECK(runwork_open(&a, base, err, sizeof err) == 0);    /* collects it */
         CHECK(!is_dir(adir));
         free(adir);
+        CHECK(finish(&a, 1, 1, "fx2", run, &text) == 1);
+        free(text);
+        {
+            char *p = str_printf("%s/fx2", run);
+
+            CHECK(!is_dir(p));
+            free(p);
+        }
     }
-    runwork_close(&c);
+
+    /* a run without a session (or one that is skipped) goes */
+    {
+        CHECK(runwork_open(&a, base, err, sizeof err) == 0);
+        {
+            char *adir = strdup(a.dir);
+
+            CHECK(finish(&a, 0, 2, NULL, run, &text) == 2 && !*text);
+            free(text);
+            CHECK(!is_dir(adir));
+            free(adir);
+        }
+    }
 
     /* the free space: no check, enough, not enough (a work directory on a
        full disk), a directory that is not there */
-    CHECK(runwork_space(base, 0, err, sizeof err) == 0);
-    CHECK(runwork_space(base, 1, err, sizeof err) == 0);
-    CHECK(runwork_space(base, 1ull << 50, err, sizeof err) == -1
-          && !strncmp(err, "no space left in ", 17) && strstr(err, base));
+    CHECK(runwork_space(argv[1], 0, err, sizeof err) == 0);
+    CHECK(runwork_space(argv[1], 1, err, sizeof err) == 0);
+    CHECK(runwork_space(argv[1], 1ull << 50, err, sizeof err) == -1
+          && !strncmp(err, "no space left in ", 17) && strstr(err, argv[1]));
     CHECK(runwork_space(stale, 1, err, sizeof err) == -1 && strstr(err, "cannot read"));
 
     /* a work directory that cannot be made */
@@ -145,5 +214,6 @@ int main(int argc, char **argv)
     free(base);
     free(stale);
     free(legacy);
+    free(run);
     return failures != 0;
 }

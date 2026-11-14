@@ -127,7 +127,7 @@ add_custom_target(rwe_residents ALL DEPENDS ${RWE_RESIDENTS} ${res_sources})
 # ctest rwe_residents_cd: the residents have the contents of those blitz2
 # 2.10 of the CD (ref) and blitz2-c (port) save of their Blitz sources
 # with Create Resident (tedstub resident=, one corpusrun pass with run=off:
-# work/last/TAG/vol/out/NAME.res); the job compiles a source that uses one
+# publish=, see residents-cd.cmake); the job compiles a source that uses one
 # constant of every resident, with all of them loaded.  Label emulator,
 # skipped (77) without Amiberry or the CD.
 set(RWE_RESIDENTS_TIMEOUT 300 CACHE STRING
@@ -154,6 +154,7 @@ work=${res_work}
 report=${res_work}.txt
 runtime_errors=off
 run=off
+publish=rwe_residents_cd
 timeout=${RWE_RESIDENTS_TIMEOUT}
 parallel=2
 ted=$<TARGET_FILE:tedstub>

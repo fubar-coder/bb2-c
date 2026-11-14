@@ -15,6 +15,7 @@
 #include "bugorigcmp.h"
 #include "corpus.h"
 #include "serial.h"
+#include "rundir.h"
 #include "runwork.h"
 #include "statline_emulation.h"
 #include "util.h"
@@ -36,7 +37,8 @@ void corpus_free(struct corpus_pass *p)
     free(p->launcher);
     free(p->gate);
     free(p->defaultdbug);
-    free(p->serial_same_as);
+    free(p->publish);
+    free(p->run_dir);
     free(p->expect);
     free(p->wrap);
     free(p->wrap_args);
@@ -186,7 +188,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
 
         if (!strcmp(key, "work") || !strcmp(key, "report") || !strcmp(key, "ted")
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
-            || !strcmp(key, "serial_same_as") || !strcmp(key, "expect") || !strcmp(key, "rcput")
+            || !strcmp(key, "publish") || !strcmp(key, "run_dir") || !strcmp(key, "expect") || !strcmp(key, "rcput")
             || !strcmp(key, "orig") || !strcmp(key, "orig_by") || !strcmp(key, "test")
             || !strcmp(key, "expect_dir") || !strcmp(key, "record_to")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
@@ -197,7 +199,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                          : !strcmp(key, "orig_by") ? &p->orig_by
                          : !strcmp(key, "test") ? &p->test
                          : !strcmp(key, "expect_dir") ? &p->expect_dir
-                         : !strcmp(key, "record_to") ? &p->record_to : &p->serial_same_as;
+                         : !strcmp(key, "publish") ? &p->publish
+                         : !strcmp(key, "run_dir") ? &p->run_dir : &p->record_to;
 
             free(*dst);
             *dst = val;
@@ -437,10 +440,9 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     if (!p->work || !p->report || !p->ted || (p->run && !p->launcher))
         return fail(p, err, errlen, "work, report, ted and launcher are needed");
     /* compile only: nothing that belongs to the runs */
-    if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect
-                    || p->serial_same_as))
+    if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect))
         return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
-                    "expect or serial_same_as");
+                    "expect");
     /* a fixed bug-orig test and an expect test have no reference, every
        other pass one first */
     if (p->fixed && p->regression)
@@ -480,8 +482,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     /* the expected outputs: for the runs of a pass that compares */
     if (p->expect_dir && (!*p->expect_dir || !p->run || p->expect))
         return fail(p, err, errlen, "expect_dir=DIR: not with run=off or expect=");
-    if (p->expect && (p->nsources != 1 || p->serial_same_as))
-        return fail(p, err, errlen, "expect= needs exactly one source and no serial_same_as");
+    if (p->expect && p->nsources != 1)
+        return fail(p, err, errlen, "expect= needs exactly one source");
     /* Kickstart 1.x: no $RC (rcput instead), no gate (reqclosetest needs V36) */
     if (amiga_emulation_machine_kickstart(p->machine) < 36 && (!p->rcput || p->gate))
         return fail(p, err, errlen, "machine=%s (Kickstart 1.x) needs rcput= and no gate=",
@@ -697,9 +699,6 @@ int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int 
     p->configs[0].expect = CORPUS_OUTPUT;
     free(p->configs[0].base);
     p->configs[0].base = NULL;
-    /* its own observation: not compared with the other pass */
-    free(p->serial_same_as);
-    p->serial_same_as = NULL;
     p->layout_stack = layout_stack;
     return 0;
 }
@@ -1959,6 +1958,17 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             fprintf(log, "corpus: no %s\n", p->sources[i]);
             goto out;
         }
+    /* publish=NAME needs the run directory: before any session */
+    if (p->publish) {
+        char *run = rundir_path(p->run_dir);
+
+        if (!run) {
+            fprintf(log, "corpus: publish=%s needs a run directory: set " RUNDIR_ENV
+                    " or the pass key run_dir=\n", p->publish);
+            goto out;
+        }
+        free(run);
+    }
     /* a run directory of its own (runwork.h); the configurations' fixed
        directories of the runners before it go */
     if (runwork_open(&rw, p->work, err, sizeof err)) {
@@ -1966,8 +1976,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         goto out;
     }
     for (c = 0; c < p->nconfigs; c++)
-        if (strcmp(p->configs[c].tag, RUNWORK_LAST)
-            && strncmp(p->configs[c].tag, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX))) {
+        if (strncmp(p->configs[c].tag, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX))) {
             char *old = str_printf("%s/%s", p->work, p->configs[c].tag);
 
             if (old)
@@ -2234,25 +2243,6 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             diff = 1;
             vbad[0] = 1;
         }
-        /* the reference's serial data also as in the other pass (runtime error
-           checking off/on); not there: that pass has not run */
-        if (p->serial && p->serial_same_as && name) {
-            char *other = str_printf("%s/%s.serial", p->serial_same_as, name);
-            size_t olen;
-            uint8_t *od = other ? read_file(other, &olen) : NULL;
-
-            if (!od)
-                text_add(&rep, "; (no serial data of the other pass)");
-            else if (same(ref.serial, ref.seriallen, od, olen))
-                text_add(&rep, "; serial data as in the other pass");
-            else {
-                text_add(&rep, "; SERIAL DATA DIFFERS FROM THE OTHER PASS");
-                diff = 1;
-                vbad[0] = 1;
-            }
-            free(od);
-            free(other);
-        }
         text_add(&rep, "\n");
         if (detail.p)
             text_add(&rep, "%s", detail.p);
@@ -2303,19 +2293,11 @@ out:
             serial_stop(resp[c], out ? out : ".");
             free(out);
         }
-    /* the run with a verdict becomes work/last; without one it goes
-       (before or without the sessions) or stays for a look */
+    /* a passed run goes (publish=NAME: it becomes the fixture NAME of the
+       run directory), a failed one stays for a look (runwork.h) */
     if (rw.fd >= 0) {
-        if (ran && rc != 2 && rc != 77 && runwork_publish(&rw, err, sizeof err)) {
-            fprintf(log, "corpus: %s\n", err);
-            rc = 2;
-        }
-        if (!ran)
-            runwork_remove(&rw);
-        else if (rc)
-            fprintf(log, "corpus: the files of the run: %s\n", rw.dir);
+        rc = runwork_finish(&rw, ran, rc, p->publish, p->run_dir, log, "corpus");
         p->work = base;
-        runwork_close(&rw);
     }
     for (c = 0; slog && c < p->nconfigs; c++)
         free(slog[c]);

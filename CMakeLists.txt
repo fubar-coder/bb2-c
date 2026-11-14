@@ -112,6 +112,12 @@ include(cmake/prev.cmake)                # the build of the previous commit, on 
 # amiga-emulation/); ctest -LE emulator leaves them out.  Single host tests:
 # ctest --test-dir build/<preset>/host
 enable_testing()
+# the run directory where a test hands data to another (a ctest fixture:
+# tests/corpus/runner/rundir.h): the environment variable BB2C_TEST_RUN of
+# the ctest call, else this directory, which the cleanup removes again.
+# Two ctest runs in one build directory that run such tests at the same
+# time each set BB2C_TEST_RUN to a directory of their own.
+set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/Testing/runs/default)
 add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
 # the emulator tests of the host side three at a time (each holds its own

@@ -8,14 +8,18 @@
  *   work=DIR          work directory: every run works in a directory of
  *                     its own below it, DIR/run-XXXXXX (runwork.h; two
  *                     runs of the pass at the same time are independent),
- *                     DIR/TAG the configuration's files; a run with a
- *                     verdict becomes DIR/last (the run before it is
- *                     removed), the fixed path of the results for other
- *                     tests; a run with another exit status than 0 prints
- *                     its directory (the files stay until a later run
- *                     replaces them); a run without a verdict (exit status
- *                     2 or 77) is not made DIR/last
- *   min_free=MIB      less free space (MiB) in DIR before or after the
+ *                     DIR/TAG the configuration's files; a run that
+ *                     passes (exit status 0) leaves nothing (with
+ *                     publish= it becomes a fixture, below), a run with
+ *                     another exit status prints its directory (the files
+ *                     stay until a later run of the pass replaces them)
+ *   publish=NAME      a run that passes becomes the fixture NAME of the
+ *                     run directory, RUN/NAME (rundir.h): the tests that
+ *                     read it name RUN/NAME/TAG/vol/out as their input
+ *   run_dir=DIR       the run directory RUN when the environment variable
+ *                     BB2C_TEST_RUN is not set (rundir.h); publish= needs
+ *                     one of them: no session starts without
+ *   min_free=MIB     less free space (MiB) in DIR before or after the
  *                     sessions ends the run with exit status 2 ("no space
  *                     left in DIR") instead of a verdict (default
  *                     RUNWORK_MIN_FREE_MIB, 0 = no check)
@@ -93,10 +97,6 @@
  *                     a program sends over the serial port (NAME.serial) are
  *                     compared as well, and a TIMEOUT in an output counts as
  *                     a difference
- *   serial_same_as=DIR  what the reference sent over the serial port must
- *                     also equal DIR/NAME.serial (the other pass, runtime
- *                     error checking off/on); if that file is missing, only
- *                     noted
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
  *                     CD), any number
  *   file=DEST|SRC[|TAG]
@@ -137,8 +137,8 @@
  *   rcput=PATH        tests/corpus/amiga/rcput.c, staged as CORPUS:rcput
  *                     on a Kickstart 1.x machine (needed there, ignored
  *                     otherwise)
- *   expect=PATH       bug-orig test (bugorig.h): exactly one source, no
- *                     serial_same_as (serial=on gives the program the
+ *   expect=PATH       bug-orig test (bugorig.h): exactly one source
+ *                     (serial=on gives the program the
  *                     remote end; what it sends is not judged); instead
  *                     of comparing the configurations with the reference,
  *                     each is judged against the expectation PATH (the
@@ -224,7 +224,8 @@ struct corpus_config {
 };
 
 struct corpus_pass {
-    char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
+    char *work, *report, *ted, *launcher, *gate, *defaultdbug;
+    char *publish, *run_dir;            /* publish=, run_dir= (rundir.h) */
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
     char *orig, *orig_by;               /* orig=, orig_by= (bug-orig tests) */
     char *test;                         /* test=: the ctest name (PREV_INTENDED entries) */

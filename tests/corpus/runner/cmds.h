@@ -10,5 +10,6 @@
 
 void cmd_pass(CLI::App &app, int &status);
 void cmd_cd(CLI::App &app, int &status);
+void cmd_drop(CLI::App &app, int &status);
 
 #endif

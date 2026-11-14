@@ -1,0 +1,9 @@
+; lint: @expect corpus reads the corpus run, a pass with corpus_out=- has none
+; @source T t08_tokquirk
+; @expect corpus t08_tokquirk t08_tokquirk
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 9
+wait exit

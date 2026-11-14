@@ -173,7 +173,11 @@ The pass file (written by CMake) has lines `KEY=VALUE` and `#` comments;
 the keys are described in the header of `run.c` (directories of the
 scripts, sources and the CD, the programs of the combinations, `filter=`,
 `combos=`, `timeout=`, `parallel=`, `intended=` of the prev build,
-`bugorig=`, `orig=` ...). With `libs=DIR` the libraries come from `DIR`
+`bugorig=`, `orig=` ...). `corpus_out=run:NAME/DIR` names the corpus
+run's results in the run directory (`BB2C_TEST_RUN`, else `run_dir=`;
+`tests/corpus/runner/rundir.h`); a missing input is exit status 2 with a
+message that names the variable, `corpus_out=-` a pass without a corpus
+run. With `libs=DIR` the libraries come from `DIR`
 instead of the CD (`libs_prev=` for Pc; `corpus_out_prev=` is the corpus run
 with the prev build, with which Pc and P5 compare `@expect corpus`, so
 an intended change of a library shows in the pair comparison only) and the
@@ -184,7 +188,7 @@ it the scripts that read it (`@source K`, `@expect cd`) are left out,
 (`ted_ab_originals`: `literal/literallib.obj`, #1018). The scripts are
 described in `tedab.h` and
 `tests/README.md` ("TED A/B"). `run` works in a run directory of its own
-below `work=` (`run-XXXXXX`, `work/last` once it has a verdict;
+below `work=` (`run-XXXXXX`, kept when the run fails, else removed;
 `tests/corpus/runner/runwork.h`, `tests/README.md` "Run directories"),
 with one directory per session (`sNNN/vol` the volume `TEDAB:`,
 `sNNN/emu` Amiberry); the dumps get a decoded `NAME.txt`. `min_free=MIB`

@@ -282,13 +282,20 @@ recording.
 
 A corpus, bug-orig or TED A/B test that fails prints where its files
 are: `the files of the run: DIR`, a directory `run-XXXXXX` below the
-test's work directory. The last run with a verdict is also reachable as
-`last` there, for example
-`build/amiga/tests/bug-orig/ID/last/port/vol/out/` (the program's output
-and executable) or `build/amiga/tests/ted-ab/ted_ab/last/s001/vol/runs/`.
-Each run has a directory of its own, so a second ctest run in the same
-build directory does not disturb the first; the files stay until the
-next run of the same test replaces them. `no space left in DIR` (exit
+test's work directory, for example
+`build/amiga/tests/bug-orig/ID/run-XXXXXX/port/vol/out/` (the program's
+output and executable) or
+`build/amiga/tests/ted-ab/ted_ab/run-XXXXXX/s001/vol/runs/`. A test that
+passes leaves nothing there. Each run has a directory of its own, so a
+second ctest run in the same build directory does not disturb the first;
+the files of a failed run stay until the next run of the same test
+replaces them. Tests that read what another test made (`ted_ab` reads the
+corpus programs) are ctest fixtures; the data the setup makes are in the
+run directory `build/amiga/Testing/runs/default`, or in the directory the
+environment variable `BB2C_TEST_RUN` names, and the cleanup removes them
+again. Two ctest runs at the same time in one build directory must each
+set `BB2C_TEST_RUN` to a directory of their own (`tests/README.md`,
+"Fixtures and the run directory"). `no space left in DIR` (exit
 status 2) is no verdict: the disk under the build directory was (nearly)
 full before or after the sessions.
 

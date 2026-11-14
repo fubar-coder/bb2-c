@@ -5,27 +5,25 @@
  * ctest runs in one build directory) do not share their files.
  *
  *   WORK/run-XXXXXX   a run (mkdtemp), locked (flock) while its runner lives
- *   WORK/last         link to the run that finished last with a verdict: the
- *                     fixed path other tests read a pass's results from
- *                     (corpus_out=, serial_same_as=, ...) and where people
- *                     look for the files of a failed run
- *   WORK/.runs.lock   serialises creating, publishing and removing runs
+ *   WORK              itself locked (flock) while runs are created or removed
  *
- * A run directory is removed only when no runner holds its lock: when a
- * later run is published in its place as WORK/last, or at the start of a
- * later run (a run that crashed or ended without a verdict).  So a failed
- * run's files stay until the next run of the same pass replaces them, as
- * the fixed work directory did before.
+ * The end of a run (runwork_finish): a run that passes leaves nothing (the
+ * run directory goes, and WORK if it is empty), except that a pass with
+ * publish=NAME hands its run to the tests that read it (rundir.h); a run
+ * that fails stays, and the runner prints where.  A run directory is
+ * removed only when no runner holds its lock: at the start of a later run
+ * of the same pass (a failed run's files stay until then, a run that
+ * crashed or ended without a verdict is collected then).
  */
 #ifndef RUNWORK_H
 #define RUNWORK_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 /* the default of the pass key min_free= (MiB): less free space in the
    work directory before or after the sessions is an error, not a verdict */
 #define RUNWORK_MIN_FREE_MIB 64u
-#define RUNWORK_LAST "last"
 #define RUNWORK_PREFIX "run-"
 
 struct runwork {
@@ -38,7 +36,7 @@ struct runwork {
  * @brief Create and lock a new run directory below base.
  *
  * Makes base if needed and removes the run directories in it no runner
- * holds (except the one WORK/last names).
+ * holds.
  *
  * @return 0, or -1 with the reason in err
  */
@@ -53,16 +51,22 @@ int runwork_open(struct runwork *w, const char *base, char *err, size_t errlen);
 int runwork_space(const char *dir, unsigned long long min_mib, char *err, size_t errlen);
 
 /**
- * @brief Make the run WORK/last (atomically) and remove the run it named
- *        before, unless a runner still holds it.
+ * @brief The end of a run, then w is closed (runwork_close).
  *
- * @return 0, or -1 with the reason in err (the run directory stays)
+ * ran: a session has started.  A run that did not run, or passed (rc 0)
+ * without publish, is removed.  rc 0 with publish=NAME: the run becomes
+ * RUN/NAME (rundir_publish; run_dflt is the pass key run_dir=); if that
+ * fails the run stays and the result is 2.  Any other rc: the run
+ * stays and log gets "ME: the files of the run: DIR".  WORK is removed
+ * if nothing is left in it.
+ *
+ * @return rc, or 2 if the run could not be published
  */
-int runwork_publish(struct runwork *w, char *err, size_t errlen);
+int runwork_finish(struct runwork *w, int ran, int rc, const char *publish, const char *run_dflt,
+                   FILE *log, const char *me);
 
 /**
- * @brief Remove the run directories below base that no runner holds and
- *        WORK/last does not name.
+ * @brief Remove the run directories below base that no runner holds.
  *
  * @return how many were removed, -1 on an error
  */

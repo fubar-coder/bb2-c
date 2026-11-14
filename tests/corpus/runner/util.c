@@ -121,3 +121,43 @@ int copy_file(const char *from, const char *to)
     free(d);
     return r;
 }
+
+/* copy_tree's walk: the target root and the length of the source root */
+static const char *copy_to_root;
+static size_t copy_from_len;
+static int copy_failed;
+
+static int copy_entry(const char *path, const struct stat *st, int type, struct FTW *ftw)
+{
+    char *to = str_printf("%s%s", copy_to_root, path + copy_from_len);
+    int bad = !to;
+
+    (void)ftw;
+    if (to && type == FTW_D)
+        bad = mkdir(to, st->st_mode & 07777) && errno != EEXIST;
+    else if (to && type == FTW_SL) {
+        char buf[4096];
+        ssize_t n = readlink(path, buf, sizeof buf - 1);
+
+        if (n < 0)
+            bad = 1;
+        else {
+            buf[n] = 0;
+            bad = symlink(buf, to) != 0;
+        }
+    } else if (to && type == FTW_F)
+        bad = copy_file(path, to) || chmod(to, st->st_mode & 07777);
+    free(to);
+    copy_failed |= bad;
+    return 0;
+}
+
+int copy_tree(const char *from, const char *to)
+{
+    copy_to_root = to;
+    copy_from_len = strlen(from);
+    copy_failed = 0;
+    if (nftw(from, copy_entry, 16, FTW_PHYS))
+        return -1;
+    return copy_failed ? -1 : 0;
+}

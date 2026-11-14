@@ -1,0 +1,9 @@
+; lint: reads no corpus run, fine with corpus_out=-
+; @source T t08_tokquirk
+; @expect same t08_tokquirk.bb2
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 9
+wait exit

@@ -1,11 +1,16 @@
 # ctest rwe_residents_cd (residents.cmake): the corpusrun pass PASS lets
 # blitz2 2.10 of the CD (ref) and blitz2-c (port) save the residents NAMES
-# of their Blitz sources with Create Resident (WORK/last/TAG/vol/out/NAME.res);
+# of their Blitz sources with Create Resident (the pass publishes them as the fixture rwe_residents_cd
+# of a run directory of this test, WORK-run: TAG/vol/out/NAME.res; removed
+# when the test passes);
 # each must have the contents of RESIDENTS/NAME.res, the one blitzres
 # wrote (CHECK: tools/blitzres/check.cmake).  Exit 77 (skipped) if the
 # pass is skipped (no Amiberry, no CD).
 #   cmake -DCORPUSRUN=... -DPASS=... -DWORK=... -DBLITZRES=... -DRESIDENTS=...
 #         -DNAMES=a;b -DCHECK=... -P residents-cd.cmake
+set(run ${WORK}-run)
+file(REMOVE_RECURSE ${run})
+set(ENV{BB2C_TEST_RUN} ${run})
 execute_process(COMMAND ${CORPUSRUN} pass ${PASS} RESULT_VARIABLE rc)
 if(rc EQUAL 77)
 	cmake_language(EXIT 77)
@@ -16,9 +21,9 @@ endif()
 set(bad 0)
 foreach(tag ref port)
 	foreach(n IN LISTS NAMES)
-		set(made ${WORK}/last/${tag}/vol/out/${n}.res)
+		set(made ${run}/rwe_residents_cd/${tag}/vol/out/${n}.res)
 		if(NOT EXISTS ${made})
-			message("${tag}: no ${n}.res - Create Resident failed (${WORK}/last/${tag}/vol/out/session.log)")
+			message("${tag}: no ${n}.res - Create Resident failed (${run}/rwe_residents_cd/${tag}/vol/out/session.log)")
 			set(bad 1)
 			continue()
 		endif()
@@ -32,5 +37,6 @@ foreach(tag ref port)
 	endforeach()
 endforeach()
 if(bad)
-	message(FATAL_ERROR "the residents differ from those of Create Resident")
+	message(FATAL_ERROR "the residents differ from those of Create Resident (${run})")
 endif()
+file(REMOVE_RECURSE ${run})

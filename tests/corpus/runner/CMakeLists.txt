@@ -2,7 +2,7 @@
 # side (README.md)
 # strings and files, and the run directories (runwork.h), also for the TED
 # A/B runner (tests/ted-ab/runner)
-add_library(lib_runner_util STATIC util.c runwork.c)
+add_library(lib_runner_util STATIC util.c runwork.c rundir.c)
 target_include_directories(lib_runner_util PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(lib_runner_util PRIVATE -Wall -Wextra)
 set_target_properties(lib_runner_util PROPERTIES C_STANDARD 23)
@@ -14,8 +14,8 @@ target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_
 	lib_bugorigcmp Threads::Threads)
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
-set(CORPUSRUN_SUBCOMMANDS pass cd)
-add_executable(corpusrun main.cpp cmd_pass.cpp cmd_cd.cpp cd.c)
+set(CORPUSRUN_SUBCOMMANDS pass cd drop)
+add_executable(corpusrun main.cpp cmd_pass.cpp cmd_cd.cpp cmd_drop.cpp cd.c)
 target_link_libraries(corpusrun PRIVATE lib_cli lib_corpus lib_cdcache lib_sha256)
 target_compile_options(corpusrun PRIVATE -Wall -Wextra)
 set_target_properties(corpusrun PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
@@ -50,8 +50,21 @@ add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:co
 host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
 host_readme_test(corpusrun README.md ${CORPUSRUN_SUBCOMMANDS})
 # the run directories of corpusrun pass and tedab run (runwork.h): runs of
-# their own, the leftovers, work/last, the free-space check
+# their own, the leftovers, what a passed run leaves, the free-space check
 add_executable(test_runwork test_runwork.c)
 target_link_libraries(test_runwork PRIVATE lib_runner_util)
 target_compile_options(test_runwork PRIVATE -Wall -Wextra)
 add_test(NAME runner_runwork COMMAND test_runwork ${CMAKE_CURRENT_BINARY_DIR}/runner_runwork)
+# the run directory of the fixtures (rundir.h): RUN, an input in it, the
+# cleanup, the copy across file systems
+add_executable(test_rundir test_rundir.c)
+target_link_libraries(test_rundir PRIVATE lib_runner_util)
+target_compile_options(test_rundir PRIVATE -Wall -Wextra)
+add_test(NAME runner_rundir COMMAND test_rundir ${CMAKE_CURRENT_BINARY_DIR}/runner_rundir)
+# the fixtures and the run directory with real (nested) ctest runs on a small
+# project, no emulator (ctest-run-dir.cmake)
+add_test(NAME runner_ctest_run_dir COMMAND ${CMAKE_COMMAND}
+	-DCORPUSRUN=$<TARGET_FILE:corpusrun> -DCTEST=${CMAKE_CTEST_COMMAND}
+	-DSRC=${CMAKE_CURRENT_SOURCE_DIR}/ctest-run-dir -DWORK=${CMAKE_CURRENT_BINARY_DIR}/ctest_run_dir
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest-run-dir.cmake)
+set_tests_properties(runner_ctest_run_dir PROPERTIES PASS_REGULAR_EXPRESSION "ctest-run-dir: as expected")

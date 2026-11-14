@@ -12,10 +12,10 @@
  *   work=DIR           work directory: every run works in a directory of
  *                      its own below it, DIR/run-XXXXXX (runwork.h; two
  *                      runs of the pass at the same time are independent);
- *                      a run with a verdict becomes DIR/last (the run
- *                      before it is removed); a run with another exit
- *                      status than 0 prints its directory; what the
- *                      runners before wrote to DIR itself is removed
+ *                      a run that passes leaves nothing, a run with another
+ *                      exit status than 0 prints its directory (it stays
+ *                      until a later run of the pass replaces it); what
+ *                      the runners before wrote to DIR itself is removed
  *   min_free=MIB       less free space (MiB) in DIR before or after the
  *                      sessions ends the run with exit status 2 ("no space
  *                      left in DIR") instead of a verdict (default
@@ -29,10 +29,19 @@
  *   corpus_src=DIR     the tokenised corpus tests (@source T: NAME.bb2)
  *   corpus_out=DIR     the corpus ref run's results: its executables
  *                      (@expect corpus) and defaults.xtra (@xtra norunerr
- *                      without the source's own .xtra)
+ *                      without the source's own .xtra).  run:NAME/REL names
+ *                      them in the run directory (rundir.h) where the
+ *                      corpus pass with publish=NAME put them: missing, the
+ *                      run ends with exit status 2 and a message that names
+ *                      BB2C_TEST_RUN, before any session.  "-": the pass
+ *                      has no corpus; a script with @expect corpus or
+ *                      @xtra norunerr is a problem then (also in lint)
  *   corpus_out_prev=DIR  the same of the corpus run with the prev build: the
  *                      combinations P5 and Pc compare their executables
  *                      (@expect corpus) with it (default corpus_out)
+ *   run_dir=DIR        the run directory when BB2C_TEST_RUN is not set
+ *                      (rundir.h); a run that fails marks the fixtures it
+ *                      read, so that the cleanup keeps them
  *   expect_dir=DIR     the scripts' NAME.expect tokenised (NAME.expect.bb2)
  *   cd=DIR             the CD (@source K, @expect cd, the libraries)
  *   libs=DIR           the libraries (deflibs, acidlibs and, if DIR has
@@ -117,8 +126,8 @@
  * session is reported as slow (the log, the report's "== session sNNN
  * slow" line, the @stat verdict "slow").  A log that stood still is a
  * TIMEOUT, as is a second cut-off.  Each session's directory: RUN/sNNN/vol (the volume TEDAB:)
- * and RUN/sNNN/emu (Amiberry), RUN the run directory (work/run-XXXXXX,
- * work/last once it has a verdict); the dumps get a decoded NAME.txt.
+ * and RUN/sNNN/emu (Amiberry), RUN the run directory (work/run-XXXXXX, kept
+ * when the run fails); the dumps get a decoded NAME.txt.
  * Tests with @known are not run (unless the filter names them exactly); the
  * report lists them as KNOWN with their reason, they do not fail the run.
  *
@@ -139,6 +148,7 @@
 #include "amiga_emulation.h"
 #include "bugorigcmp.h"
 #include "run.h"
+#include "rundir.h"
 #include "runwork.h"
 #include "statline_emulation.h"
 #include "tedab.h"
@@ -150,7 +160,7 @@ static const char *me;          /* "tedab run" or "tedab lint", the prefix of th
 
 struct pass {
     char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out,
-         *corpus_out_prev;
+         *corpus_out_prev, *run_dir;
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
     char *ted_prev, *blitz2_prev;       /* the previous commit: P5, Pc */
@@ -200,7 +210,7 @@ static int parse(const char *text, char *err, size_t errlen)
         { "work", &P.work }, { "report", &P.report }, { "scripts", &P.scripts },
         { "filter", &P.filter }, { "combos", &P.combos }, { "src", &P.src },
         { "corpus_src", &P.corpus_src }, { "corpus_out", &P.corpus_out },
-        { "corpus_out_prev", &P.corpus_out_prev },
+        { "corpus_out_prev", &P.corpus_out_prev }, { "run_dir", &P.run_dir },
         { "expect_dir", &P.expect_dir }, { "cd", &P.cd }, { "oracle", &P.oracle },
         { "fonts", &P.fonts }, { "teddrive", &P.teddrive }, { "teddrivetest", &P.teddrivetest },
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
@@ -410,6 +420,15 @@ static int selected(const char *name)
     return hit;
 }
 
+/* whether the test reads the corpus run: @expect corpus, @xtra norunerr */
+static int uses_corpus(const struct tedab_test *t)
+{
+    for (size_t k = 0; k < t->nexpects; k++)
+        if (!strcmp(t->expects[k].kind, "corpus"))
+            return 1;
+    return t->norunerr;
+}
+
 /* all scripts parsed and checked (lint); the selected ones in tests[];
    returns the number of problems */
 static int load_tests(FILE *log)
@@ -485,6 +504,12 @@ static int load_tests(FILE *log)
                 bad++;
             } else if (!(sel = selected(names[i])))
                 tedab_test_free(&t);
+            else if (!strcmp(P.corpus_out, "-") && uses_corpus(&t)) {
+                fprintf(log, "%s: reads the corpus run (@expect corpus or @xtra norunerr), but the "
+                        "pass has corpus_out=-\n", names[i]);
+                tedab_test_free(&t);
+                bad++;
+            }
             else if (t.known && sel < 2)
                 known[nknown++] = t;       /* a known failure: only by name */
             else if (!lint_mode && P.libs && tedab_needs_cd(&t) && access(P.cd, R_OK | X_OK))
@@ -1072,8 +1097,7 @@ static int load_orig(FILE *log)
 
 /* removes what the runners before the run directories left in work=
    (sNNN/, staged/: they emptied it and worked in it directly), so that
-   nothing reads those files any more; the run directories, work/last and
-   the lock stay (runwork.h) */
+   nothing reads those files any more; the run directories stay (runwork.h) */
 static void clean_fixed_layout(const char *work)
 {
     DIR *d = opendir(work);
@@ -1082,8 +1106,7 @@ static void clean_fixed_layout(const char *work)
     while (d && (e = readdir(d))) {
         char *path;
 
-        if (e->d_name[0] == '.' || !strcmp(e->d_name, RUNWORK_LAST)
-            || !strncmp(e->d_name, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX)))
+        if (e->d_name[0] == '.' || !strncmp(e->d_name, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX)))
             continue;
         if ((path = str_printf("%s/%s", work, e->d_name)))
             rm_tree(path);
@@ -1120,6 +1143,8 @@ static int run(FILE *log)
     struct runwork rw = { NULL, NULL, -1 };
     char *base = P.work, werr[400];     /* work=; P.work is the run directory while it runs */
     int started = 0;                    /* a session has started */
+    char fixtures[2][64];               /* the fixtures of corpus_out=run:... read */
+    size_t nfix = 0;
 
     /* the recorded original against the expectations, before any session:
        the test shows no bug (BROKEN), or the recording is missing */
@@ -1153,6 +1178,22 @@ static int run(FILE *log)
     }
     if (!(ss = calloc(MAXSESSIONS + 1, sizeof *ss)))
         return 2;
+    /* the input in the run directory (corpus_out=run:NAME/DIR): the fixture
+       must be there, else exit status 2 and no session */
+    for (i = 0; i < 2; i++) {
+        char **spec = i ? &P.corpus_out_prev : &P.corpus_out, *path = NULL;
+
+        if (*spec && !strncmp(*spec, RUNDIR_PREFIX, strlen(RUNDIR_PREFIX))) {
+            if (rundir_input(P.run_dir, *spec, &path, fixtures[nfix], sizeof fixtures[0], werr,
+                             sizeof werr)) {
+                fprintf(log, "%s: %s\n", me, werr);
+                free(ss);
+                return 2;
+            }
+            nfix++;
+            *spec = path;
+        }
+    }
     /* a run directory of its own (runwork.h); the files of the runners
        before it, which emptied work= and used it directly, go */
     if (runwork_open(&rw, P.work, werr, sizeof werr)) {
@@ -1586,19 +1627,13 @@ out:
         free(ss[w].ids);
         free(ss[w].script);
     }
-    /* the run with a verdict becomes work/last; without one it goes
-       (without a session) or stays for a look */
+    /* a failed run: the fixture data it was judged against stay for a look
+       (the cleanup test keeps them), as its own files do; a passed run goes */
+    for (size_t f = 0; f < nfix && rc && rc != 77; f++)
+        rundir_keep(P.run_dir, fixtures[f]);
     if (rw.fd >= 0) {
-        if (started && rc != 2 && rc != 77 && runwork_publish(&rw, werr, sizeof werr)) {
-            fprintf(log, "%s: %s\n", me, werr);
-            rc = 2;
-        }
-        if (!started)
-            runwork_remove(&rw);
-        else if (rc)
-            fprintf(log, "%s: the files of the run: %s\n", me, rw.dir);
+        rc = runwork_finish(&rw, started, rc, NULL, NULL, log, me);
         P.work = base;
-        runwork_close(&rw);
     }
     free(ss);
     free(act);

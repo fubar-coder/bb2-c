@@ -12,43 +12,38 @@
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
+#include "rundir.h"
 #include "runwork.h"
 #include "util.h"
 
-#define LOCKFILE ".runs.lock"
-
-/* the lock of base's run list (LOCKFILE), held while runs are created,
-   published or removed; -1 = error */
+/* the lock of base's run list (a flock on the directory base itself, no
+   file in it), held while runs are created and removed; base is made if
+   needed (-1 = error).  A runner that ended removes an empty base under
+   the lock: the lock counts only if base is still the directory it was
+   taken on, else it is taken again. */
 static int lock_base(const char *base)
 {
-    char *path = str_printf("%s/" LOCKFILE, base);
-    int fd = path ? open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0644) : -1;
+    for (int tries = 0; tries < 20; tries++) {
+        struct stat a, b;
+        int fd;
 
-    free(path);
-    if (fd >= 0 && flock(fd, LOCK_EX)) {
+        if (mkdir_p(base))
+            return -1;
+        fd = open(base, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+        if (fd < 0)
+            return -1;
+        if (!flock(fd, LOCK_EX) && !fstat(fd, &a) && !stat(base, &b) && a.st_ino == b.st_ino
+            && a.st_dev == b.st_dev)
+            return fd;
         close(fd);
-        fd = -1;
     }
-    return fd;
+    return -1;
 }
 
 static void unlock_base(int fd)
 {
     if (fd >= 0)
         close(fd);
-}
-
-/* the name of the run WORK/last links to (malloc'd), NULL = none */
-static char *last_target(const char *base)
-{
-    char *link = str_printf("%s/" RUNWORK_LAST, base), buf[256];
-    ssize_t n = link ? readlink(link, buf, sizeof buf - 1) : -1;
-
-    free(link);
-    if (n <= 0)
-        return NULL;
-    buf[n] = 0;
-    return strdup(buf);
 }
 
 /* removes base/name if no runner holds its lock; 1 = removed */
@@ -72,19 +67,14 @@ static int clean_locked(const char *base)
 {
     DIR *d = opendir(base);
     struct dirent *de;
-    char *keep = last_target(base);
     int n = 0;
 
-    if (!d) {
-        free(keep);
+    if (!d)
         return -1;
-    }
     while ((de = readdir(d)) != NULL)
-        if (!strncmp(de->d_name, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX))
-            && (!keep || strcmp(de->d_name, keep)))
+        if (!strncmp(de->d_name, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX)))
             n += remove_unused(base, de->d_name);
     closedir(d);
-    free(keep);
     return n;
 }
 
@@ -110,7 +100,7 @@ int runwork_open(struct runwork *w, const char *base, char *err, size_t errlen)
         snprintf(err, errlen, "out of memory");
         goto fail;
     }
-    if (mkdir_p(base) || (lk = lock_base(base)) < 0) {
+    if ((lk = lock_base(base)) < 0) {
         snprintf(err, errlen, "cannot create the work directory %s: %s", base, strerror(errno));
         goto fail;
     }
@@ -154,46 +144,35 @@ int runwork_space(const char *dir, unsigned long long min_mib, char *err, size_t
     return -1;
 }
 
-int runwork_publish(struct runwork *w, char *err, size_t errlen)
-{
-    const char *name = strrchr(w->dir, '/') + 1;
-    char *link = str_printf("%s/" RUNWORK_LAST, w->base);
-    char *tmp = str_printf("%s/.%s.%ld", w->base, RUNWORK_LAST, (long)getpid());
-    char *old = NULL;
-    int lk = -1, r = -1;
-
-    if (!link || !tmp) {
-        snprintf(err, errlen, "out of memory");
-        goto out;
-    }
-    if ((lk = lock_base(w->base)) < 0) {
-        snprintf(err, errlen, "cannot lock %s: %s", w->base, strerror(errno));
-        goto out;
-    }
-    old = last_target(w->base);
-    unlink(tmp);
-    /* a relative link: the build directory may move */
-    if (symlink(name, tmp) || rename(tmp, link)) {
-        snprintf(err, errlen, "cannot make %s a link to %s: %s", link, name, strerror(errno));
-        unlink(tmp);
-        goto out;
-    }
-    if (old && strcmp(old, name) && !strncmp(old, RUNWORK_PREFIX, strlen(RUNWORK_PREFIX))
-        && !strchr(old, '/'))
-        remove_unused(w->base, old);
-    r = 0;
-out:
-    unlock_base(lk);
-    free(old);
-    free(link);
-    free(tmp);
-    return r;
-}
-
 void runwork_remove(struct runwork *w)
 {
     if (w->dir && w->fd >= 0)
         rm_tree(w->dir);
+}
+
+int runwork_finish(struct runwork *w, int ran, int rc, const char *publish, const char *run_dflt,
+                   FILE *log, const char *me)
+{
+    char err[400];
+    int lk;
+
+    if (w->fd < 0)
+        return rc;
+    if (!ran || (rc == 0 && !publish))
+        runwork_remove(w);
+    else if (rc == 0 && rundir_publish(run_dflt, publish, w->dir, err, sizeof err)) {
+        fprintf(log, "%s: %s\n%s: the files of the run: %s\n", me, err, me, w->dir);
+        rc = 2;
+    } else if (rc)
+        fprintf(log, "%s: the files of the run: %s\n", me, w->dir);
+    /* nothing of a passed run stays: the work directory goes when it is
+       empty (not while another run or a kept one is in it) */
+    if ((lk = lock_base(w->base)) >= 0) {
+        rmdir(w->base);
+        unlock_base(lk);
+    }
+    runwork_close(w);
+    return rc;
 }
 
 void runwork_close(struct runwork *w)

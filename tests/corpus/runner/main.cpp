@@ -16,5 +16,6 @@ int main(int argc, char **argv)
                "REPRODUCED, 3 BROKEN, 4 DIFFERS.");
     cmd_pass(app, status);
     cmd_cd(app, status);
+    cmd_drop(app, status);
     return cli::run(app, argc, argv, status);
 }

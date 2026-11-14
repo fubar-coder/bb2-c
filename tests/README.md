@@ -160,23 +160,46 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
   directory of their own below the pass file's `work=` directory
   (`WORK/run-XXXXXX`, `tests/corpus/runner/runwork.h`), so two runs of
   the same test at the same time (two ctest runs in one build directory)
-  are independent. A run that comes to a verdict becomes `WORK/last` (a
-  link), the fixed path where other tests read its results (`corpus_out=`
-  of `ted_ab` is `tests/corpus/corpus/last/clib/vol/out`) and where the
-  files of a failed run are for diffing, for example
-  `build/<preset>/tests/bug-orig/ID/last/port/vol/out/`; a run that does
-  not end with 0 also prints its directory (`the files of the run:
-  DIR`). The run before is removed when a new one becomes `WORK/last`;
-  a run directory no runner holds any more (`flock`) and `WORK/last` does
-  not name, the leftover of a crashed or interrupted run, is removed when
-  the next run of the same pass starts. So nothing needs cleaning by hand,
+  are independent. A run that passes leaves nothing in the build
+  directory (its directory and `WORK`, if empty, go). A run that does
+  not end with 0 stays and prints its directory (`the files of the run:
+  DIR`), where its files are for diffing, for example
+  `build/<preset>/tests/bug-orig/ID/run-XXXXXX/port/vol/out/` (the
+  program's output and executable); it stays until the next run of the
+  same pass starts: a run directory no runner holds any more (`flock`),
+  the leftover of a failed, crashed or interrupted run, is removed then,
   and a run never removes a directory another run still uses. A run
-  without a verdict (exit status 2 or 77) does not become `WORK/last`:
-  without a session its directory goes at once, after one it stays until
-  the next run. Less than `min_free=` MiB free (pass key, default 64) in
+  without a session (a skip, an error before the sessions) leaves
+  nothing. Less than `min_free=` MiB free (pass key, default 64) in
   `WORK` before or after the sessions ends the run with exit status 2,
   `no space left in WORK (...)`, instead of a verdict on files a full disk
   may have cut short.
+* **Fixtures and the run directory:** where a test reads what another
+  test made, ctest knows it: `corpus` (setup) makes the executables and
+  `defaults.xtra` that `ted_ab` reads (`corpus_originals` and
+  `ted_ab_originals` likewise), and a cleanup test after the last reader
+  (`corpus_cleanup`, `corpus_originals_cleanup`) removes the data. The
+  setup's pass publishes its run (pass key `publish=NAME`) in the **run
+  directory** `RUN`, `RUN/NAME`; the reader names its input relative to it
+  (`corpus_out=run:corpus/clib/vol/out`, `tests/corpus/runner/rundir.h`).
+  `RUN` is the environment variable `BB2C_TEST_RUN` of the ctest call,
+  else `build/<preset>/Testing/runs/default`, which the cleanup removes
+  again (a passed run leaves nothing in the build directory). Nothing
+  locks the default directory: **two ctest runs in one build directory at
+  the same time each set `BB2C_TEST_RUN`** to a directory of their own
+  (`env BB2C_TEST_RUN=(mktemp -d ...) ctest --preset all` in fish), which
+  the caller owns: the tests put only `NAME` and `NAME.keep` there and
+  remove only those. A reader whose input is missing (the setup has not
+  run, or the two runs name different directories) ends with exit status
+  2 and a message that names `BB2C_TEST_RUN`, before any session, never
+  with 77. A reader that fails marks the fixture it read
+  (`RUN/NAME.keep`): the cleanup keeps the data then, for a look, until
+  the next run of the setup replaces them. `ctest -R ted_ab` runs the
+  corpus pass first (a short run). `ted_ab_parallel` and the TED bug-orig
+  passes read no corpus run (`corpus_out=-`; `tedab lint` refuses a
+  script with `@expect corpus` or `@xtra norunerr` in such a pass). The
+  persistent caches `originals_refbuild` and `rwe_refbuild` are build
+  products, not test results, and stay.
 * **Slots:** over everything (all runners, build directories and
   worktrees of the machine) at most `AMIGA_EMULATION_MAX` Amiberry
   sessions run at once (environment, 0 = no limit; without it the number
@@ -499,8 +522,10 @@ compile the same sources in several configurations and run the programs:
   (blitz2-c with the libraries of the CD: executable equal to ref's) and
   orig-clib (the original blitz2 2.10 with the acidlibs and deflibs of this
   build: are the C libraries compatible with the original compiler?); the
-  serial passes also check that ref sends the same bytes with and without
-  runtime error checking. Skipped without the CD. This is where the
+  serial passes judge ref's serial bytes against committed files
+  (`expect/corpus_serial/` and `expect/corpus_serial_runerr/`, a host test
+  checks that they stay equal: ref sends the same with and without runtime
+  error checking). Skipped without the CD. This is where the
   original stays a reference of behaviour; a fix that makes the port
   differ makes the program's file a pair of cases (below).
 
@@ -648,7 +673,7 @@ teddrive logs it at `wait freq`, once the requester is idle (`files TITLE
 * `ted_ab` (label `emulator`, preset `all`): Cc with the port's
   libraries (`libs=` of the pass file; Pc on top with the prev build),
   the corpus programs and `defaults.xtra` from the clib run of `corpus`
-  (fixture). Needs no CD: without it the scripts that read it (`@source
+  (fixture, "Fixtures and the run directory" above). Needs no CD: without it the scripts that read it (`@source
   K`, `@expect cd`) are left out and listed as `NOCD` in the report;
 * `ted_ab_originals` (label `originals`): the four combinations
   (`-DTED_AB_COMBOS=R5,C5`, the reference first) with the CD's libraries
@@ -669,7 +694,12 @@ in its `@stat` line; #1022); a run whose log stood still, or that is cut
 off a second time, is a `TIMEOUT`.
 Known bugs (`; @known REASON` in the script) are not run and are listed
 as KNOWN in the report; an exact name in the filter runs them anyway.
-`ted_ab_lint` checks the scripts without the emulator. The runner is
+`ted_ab_lint` checks the scripts without the emulator; a script with
+`@expect corpus` or `@xtra norunerr` in a pass without a corpus run
+(`corpus_out=-`) is a problem (`ted_ab_lint_corpus_dash`, with its twin
+`ted_ab_lint_corpus_dash_ok`), and a reader whose corpus run is missing
+ends with exit status 2 and names `BB2C_TEST_RUN`
+(`ted_ab_fixture_missing`, `ted_ab_fixture_missing_env`). The runner is
 `tedab run` (`tedab lint` for the lint; the screen dumps by hand with
 `tedab info|text|cmp`):
 [`tests/ted-ab/runner/README.md`](ted-ab/runner/README.md).
@@ -928,7 +958,8 @@ reference (among them an expectation equal to the
 buggy output); `bug_orig_selftest_broken` (label `emulator`, not
 `bug-orig`) runs such a broken test on a recorded file and must come out
 BROKEN (it needs no session). Reports: `build/<preset>/tests/bug-orig/ID.txt`, the
-observation of each configuration in `.../ID/last/TAG/observation`.
+observation of each configuration in `.../ID/run-XXXXXX/TAG/observation`
+(a test that fails keeps its run directory and prints it).
 Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
 faults (no free signal, failing AllocMem of a size, also only after
 SKIP of them, Read or Write error (a Read also of a file that
@@ -1027,7 +1058,7 @@ source (e.g. the source of a resident) is a text `NAME.src`, tokenised
 like `ID.bas` to `testdata/NAME`. The expectation is the correct
 behaviour (from the documentation of the command or the issue), not
 what the original does; the observation of the configurations
-(`.../ID/last/TAG/observation`) gives its format. Then record the original
+(`.../ID/run-XXXXXX/TAG/observation`, kept when the test fails) gives its format. Then record the original
 (needs Amiberry and the CD): `cmake --preset amiga
 -DBUG_ORIG_RECORD_FILTER=ID` and `cmake --build --preset amiga --target
 bug-orig-record` write `ID.orig` next to `ID.expect` from two agreeing
@@ -1249,7 +1280,7 @@ script made with `@file`), `; @expect data NAME "DATA"`, `; @expect
 [no]stdout "TEXT"`, `[no]log` (teddrive's log), `[no]screen DUMP
 "TEXT"` (the decoded dump), `[no]file NAME "TEXT"`. ctest `bug_orig_ID`,
 report `build/<preset>/tests/bug-orig/ID.txt`, the runs in
-`.../ID/last/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
+`.../ID/run-XXXXXX/sNNN/vol/runs/ID/{R5,C5}` (kept when the test fails); `bug_orig_ted_lint` (host) checks
 the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
 out BROKEN on a recorded file. Adding a test: `ted/ID.drv`, found by a
 glob, and `ted/ID.orig` from the target `bug-orig-record`

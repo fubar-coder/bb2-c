@@ -8,10 +8,11 @@ expectation), and the whole CD through one compiler (`cd`: a table of the
 results, optionally compared with a reference table). The logic is in
 `lib_corpus` (`corpus.h`, `bugorig.h`, `serial.h`), `lib_cdcache`
 (`cdcache.h`) and `lib_runner_util` (`runwork.h`: the run directory of
-`pass` and of `tedab run`, a directory of its own per run below `work=`),
-tested by `test_corpus.c`, `test_bugorig.c`, `test_cdcache.c` and
-`test_runwork.c` here (ctest `corpus_runner`, `bugorig_verdict`,
-`cdrun_cache`, `runner_runwork`).
+`pass` and of `tedab run`, a directory of its own per run below `work=`;
+`rundir.h`: the run directory where a test hands data to another),
+tested by `test_corpus.c`, `test_bugorig.c`, `test_cdcache.c`,
+`test_runwork.c` and `test_rundir.c` here (ctest `corpus_runner`,
+`bugorig_verdict`, `cdrun_cache`, `runner_runwork`, `runner_rundir`).
 
 ## Usage
 
@@ -28,6 +29,8 @@ SUBCOMMANDS:
                               compare the sources of a pass file
   cd                          compile every .bb2/.bb of the CD with one compiler in Amiberry, a
                               table of the results
+  drop                        remove the data a pass published for other tests (the cleanup of
+                              a ctest fixture)
 
 The exit status of pass in a bug-orig pass is the worst verdict: 0 FIXED, 1
 REPRODUCED, 3 BROKEN, 4 DIFFERS.
@@ -151,6 +154,36 @@ inputs and outputs; the next run with the same inputs and unchanged
 outputs ends at once without the emulator (`CDRUN_FORCE=1` in the
 environment runs anyway).
 
+### drop
+
+```
+Usage: corpusrun drop [OPTIONS] NAME...
+
+remove the data a pass published for other tests (the cleanup of a ctest
+fixture)
+
+POSITIONALS:
+  NAME TEXT ... REQUIRED      the fixtures (the publish= of the passes)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --run-dir DIR       the run directory when the environment variable BB2C_TEST_RUN is
+                              not set (the default one is removed with Testing/runs if empty)
+
+A fixture that a failed test read stays (the next run of the passes that make it
+replaces it); a directory given by BB2C_TEST_RUN is the caller's: only the
+fixtures are removed from it. Exit status 0 done (also nothing to remove), 1 a
+fixture could not be removed.
+```
+
+The cleanup of a ctest fixture (`tests/corpus/runner/rundir.h`): a pass
+with `publish=NAME` puts its passing run in the run directory as
+`NAME`, the tests that read it name their input relative to it, and
+`drop` removes `NAME` after the last reader unless a failed reader
+marked it. The run directory is the environment variable
+`BB2C_TEST_RUN`, else `--run-dir` (the default directory of the build,
+which is removed again with `Testing/runs` if empty).
+
 ## Inputs and outputs
 
 The pass files are written by CMake, lines `KEY=VALUE` and `#` comments;
@@ -172,6 +205,7 @@ line, message, size, masked SHA-256, xtra, note
   program refused (nothing written for it), 2 error (also a pass without
   `expect_dir=` or without `TAG`, a malformed directory); `--observe` 0
   observed, 2 the session failed.
+* `drop`: 0 removed or kept or nothing to remove, 1 a fixture could not be removed.
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that
   does not compile, 77 the emulator or a file is missing (skipped),
   2 error.
@@ -193,6 +227,8 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
   `blitz2-cd-reference`, `blitz2-cd-update` (`tests/corpus/CMakeLists.txt`);
   the test `rwe_refbuild` (`libs/userlibs/rwe/refbuild.cmake`); the test
   `cdrun_source` (`check-cdrun-source.cmake` here, without emulator).
+* `drop`: the tests `corpus_cleanup`, `corpus_originals_cleanup`
+  (fixture cleanups, `tests/corpus/CMakeLists.txt`).
 * Tests: `help_corpusrun`, `readme_corpusrun`.
 
 ## Example

@@ -27,5 +27,7 @@ uint8_t *read_file(const char *path, size_t *len);
 /* 0 = ok */
 int write_file(const char *path, const void *data, size_t len);
 int copy_file(const char *from, const char *to);
+/* copies a directory tree (files with their mode, links as links); 0 = ok */
+int copy_tree(const char *from, const char *to);
 
 #endif
