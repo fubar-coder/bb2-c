@@ -2,7 +2,7 @@
 [session]
 done
 [compile]
-error 11 Syntax Error
+error 12 Syntax Error
 [run]
 [blitz2]
 rc=0
@@ -14,5 +14,5 @@ JOB	j000	CORPUS:src/compiler-supervisor-token.bb2
 XTRA	j000	defaults
 ezfreq "Name of Executable to create" -> CORPUS:out/compiler-supervisor-token
 openreq "***** COMPILING *****"
-RESULT	j000	error	11	Syntax Error	r=Supervisor_(?sup)
+RESULT	j000	error	12	Syntax Error	r=Supervisor_(?sup)
 BATCH	end
