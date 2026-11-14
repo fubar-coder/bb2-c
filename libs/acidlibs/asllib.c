@@ -28,9 +28,6 @@
  *   - ASLPathRequest$ copies fr_File into the address in d2 (no such
  *     argument: with the dimensions it is x, else whatever d2 holds) and
  *     writes its length to d2-4. (#61)
- *   - Without asl.library ASLFileRequest$/ASLPathRequest$ return with d0
- *     = the title's address as string length (the "defaults to freqlib"
- *     call is commented out in the source). (#62)
  *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
  *   - ASLPathRequest$ without dimensions keeps the pattern flag of the
  *     previous ASLFileRequest$ call (flags is not reset). (#64)
@@ -39,6 +36,10 @@
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#62): without asl.library ASLFileRequest$/ASLPathRequest$ return
+ *   the empty string (as Cancel); the original returned with d0 = the
+ *   title's address as the string length (the "defaults to freqlib" call
+ *   is commented out in the source).
  * Fixed (#403): FreeFileRequest only for a requester; the original called
  *   it with 0 when AllocAslRequest failed (filefail).
  * The CD binary differs from the source: an extra font tag ASL_TB+17 =
@@ -331,10 +332,12 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     struct FileRequester *fr;
     ULONG len, filelen;                 /* d7: drawer, then the whole; d6 */
 
-    if (!aslbase)
-        return title;                   /* BUG(orig) (#62): d0 unchanged */
-    Tags.screen.ti_Data = (ULONG)*scr;
     blitz_string = (UBYTE *)title;      /* the result goes here */
+    if (!aslbase) {                     /* Fixed (#62): the empty string */
+        *blitz_string = 0;              /* (the original: d0 = the title's */
+        return 0;                       /* address as the length) */
+    }
+    Tags.screen.ti_Data = (ULONG)*scr;
     Tags.name.ti_Data = allocst(title, lens[-1]);
     Tags.path.ti_Data = path;
     Tags.file.ti_Data = file;
@@ -384,9 +387,8 @@ static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
- * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
+ * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -414,9 +416,8 @@ static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
- * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
+ * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -446,9 +447,8 @@ static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
- * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
+ * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -479,9 +479,8 @@ static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
- * string length (#62); the title (and pattern) copies of maxslib allocst
- * are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
+ * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *

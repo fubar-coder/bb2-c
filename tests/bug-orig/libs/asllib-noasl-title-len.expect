@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+file 0
+path 0
+inject: openlibfail: 1 opens failed
+inject: rc=0
+rc=0
