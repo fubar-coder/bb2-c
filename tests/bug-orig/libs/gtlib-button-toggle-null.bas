@@ -6,6 +6,7 @@
 ; result unchecked as the previous one), set with a Poke.  Bit 0 of
 ; address 14 is cleared before and restored after.
 ; Correct: no gadget, address 14 unchanged.
+; @fixed #171
 ; @configs clib
 WbToScreen 0
 GTButton 0,1,10,10,60,12,"one",0

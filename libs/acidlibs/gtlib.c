@@ -31,8 +31,6 @@
  * Kept from the original (BUG(orig)):
  *   - GTBevelBox: flags <> 0 gives the tag GTBB_Recessed with value 0, so
  *     the box is never recessed. (#170)
- *   - GTButton toggle (bit 13) sets TOGGLESELECT even if CreateGadget
- *     failed (writes address 14). (#171)
  *   - GTShape: the label of the previous gadget stays in the NewGadget
  *     (#172).
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
@@ -78,6 +76,10 @@
  *   counted pointers and then the texts; it is remembered with its GTList
  *   and gadget (a list of the library, the GTList object stays 16 bytes)
  *   and freed with the gadget (GTFreeGadget) or the GTList (_freecontext).
+ * Fixed (intended deviation, #171): GTButton with the toggle flag (bit 13)
+ *   set TOGGLESELECT in the result of CreateGadget without testing it:
+ *   when CreateGadget failed it set bit 0 of address 14.  Here only a
+ *   gadget gets the bit.
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -749,8 +751,8 @@ static struct Gadget *create(ULONG kind, ULONG flags, struct TagItem *tags, int 
  * GA_Immediate, 13 toggle (TOGGLESELECT); ng_Flags = flags & $3F.  A
  * GTTags list given before is appended with TAG_MORE (then cleared).
  * Amiga mode only.
- * BUG(orig) (#171): with bit 13 TOGGLESELECT is set even if CreateGadget
- * failed (writes address 14).  BUG(orig) (#176), all creators: without a
+ * Fixed (#171): the original set TOGGLESELECT with bit 13 even if
+ * CreateGadget failed (it wrote address 14).  BUG(orig) (#176), all creators: without a
  * used screen the border sizes are read from address 0.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
@@ -767,10 +769,8 @@ static void BLITZ_ROUTINE gtbutton_c(STDARGS)
     buttags.disabled.ti_Data = bit(f, 6);
     buttags.immediate.ti_Data = bit(f, 7);
     gad = CREATE(BUTTON_KIND, f, buttags);
-    if (f & (1UL << 13)) {
-        __asm__("" : "+a"(gad));        /* may be 0: BUG(orig) (#171) */
+    if ((f & (1UL << 13)) && gad)       /* fixed (#171): gad may be 0 */
         HI(gad->Activation) |= GACT_TOGGLESELECT >> 8;
-    }
 }
 
 /**
