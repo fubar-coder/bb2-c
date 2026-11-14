@@ -64,6 +64,24 @@ function(host_readme_test program readme)
 endfunction()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
+# ccache and #embed with the host compiler and this project's compiler
+# launcher (cmake/ccache.cmake, cmake/ccache-embed-test.cmake; the m68k
+# compiler: ccache_embed of the top-level build); skipped (77) without one
+string(REPLACE ";" "|" _ccache_launcher "${CMAKE_C_COMPILER_LAUNCHER}")
+foreach(t ccache_embed_host ccache_embed_host_broken)
+	set(broken)
+	if(t MATCHES "_broken$")
+		set(broken -DBROKEN=ON -DWANT_FAIL=ON)
+	endif()
+	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} "-DLAUNCHER=${_ccache_launcher}"
+		-DCC=${CMAKE_C_COMPILER} "-DFLAGS=-std=gnu23|-O2" ${broken}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${t}
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../cmake/ccache-embed-test.cmake
+		-P ${WITH_WORKDIR})
+	set_tests_properties(${t} PROPERTIES SKIP_RETURN_CODE 77)
+endforeach()
+set_tests_properties(ccache_embed_host_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "stale[ \n]+cache[ \n]+hit:[ \n]+the[ \n]+object[ \n]+did[ \n]+not[ \n]+change")  # CMake wraps long messages
 # TED-C's screen fonts (programs/ted/fonts/fonts.cmake), for the host tests
 # of the TED core (res.c embeds them as on the Amiga) and the TED A/B
 # runner (it decodes the screen dumps with them): ted-fonts/; the build

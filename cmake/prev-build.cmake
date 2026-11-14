@@ -2,7 +2,7 @@
 # another commit of this repository in PREV_DIR.
 #   cmake -DREPO=SOURCE -DREV=REV -DPREV_DIR=DIR -DGENERATOR=G
 #         [-DCONFIGURE_ARGS="-D...|-D..."] [-DSNITCH_SOURCE_DIR=SNITCH -DSNITCH_PIN=SHA256]
-#         [-DCLI11_SOURCE_DIR=CLI11 -DCLI11_PIN=SHA256]
+#         [-DCLI11_SOURCE_DIR=CLI11 -DCLI11_PIN=SHA256] [-DLAUNCHER=L1|L2...]
 #         -P prev-build.cmake
 # DIR/src is `git archive REV` (the checkout is not touched); the data of
 # the checkout that git does not hold (archive/cd, ...) are linked into it.
@@ -102,8 +102,33 @@ if(EXISTS ${PREV_DIR}/src/cmake/CLI11.cmake)
 	endif()
 endif()
 
-if(NOT EXISTS ${PREV_DIR}/build.ninja AND NOT EXISTS ${PREV_DIR}/Makefile)
-	execute_process(COMMAND ${CMAKE_COMMAND} -S ${PREV_DIR}/src -B ${PREV_DIR} -G ${GENERATOR}
+# the compiler launcher (cmake/ccache.cmake), LAUNCHER with | between its
+# entries (empty: none): an initial cache (-C) of the configure, which runs
+# again when it changed - a cache entry, not a -D, so that a commit
+# without cmake/ccache.cmake does not report it as unused, and a list
+set(init)
+set(reconfigure OFF)
+if(DEFINED LAUNCHER)
+	set(launcher_file ${PREV_DIR}/launcher.cmake)
+	string(REPLACE "|" ";" launcher "${LAUNCHER}")
+	set(content "")
+	foreach(lang C CXX)
+		string(APPEND content
+			"set(CMAKE_${lang}_COMPILER_LAUNCHER \"${launcher}\" CACHE STRING \"\" FORCE)\n")
+	endforeach()
+	set(old "")
+	if(EXISTS ${launcher_file})
+		file(READ ${launcher_file} old)
+	endif()
+	if(NOT old STREQUAL content)
+		file(WRITE ${launcher_file} "${content}")
+		set(reconfigure ON)
+	endif()
+	set(init -C ${launcher_file})
+endif()
+
+if(reconfigure OR (NOT EXISTS ${PREV_DIR}/build.ninja AND NOT EXISTS ${PREV_DIR}/Makefile))
+	execute_process(COMMAND ${CMAKE_COMMAND} ${init} -S ${PREV_DIR}/src -B ${PREV_DIR} -G ${GENERATOR}
 		-DCMAKE_TOOLCHAIN_FILE=${PREV_DIR}/src/cmake/m68k-amigaos.cmake
 		-DBLITZ2_CLANGD=OFF ${CONFIGURE_ARGS}
 		RESULT_VARIABLE rc)

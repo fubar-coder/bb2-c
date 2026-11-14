@@ -70,12 +70,20 @@ if(BLITZ2_PREV)
 		# configure fetched)
 		file(STRINGS ${PROJECT_SOURCE_DIR}/cmake/CLI11.cmake cli11_pin REGEX "URL_HASH +SHA256=")
 		string(REGEX REPLACE ".*SHA256=([0-9a-fA-F]+).*" "\\1" cli11_pin "${cli11_pin}")
+		# the compiler launcher (cmake/ccache.cmake): ccache with base_dir
+		# PREV_DIR (its sources and build directory), or the one this build
+		# was given; | separates its entries (prev-build.cmake)
+		set(prev_launcher "${CMAKE_C_COMPILER_LAUNCHER}")
+		if(BB2C_CCACHE_OWN)
+			bb2c_ccache_launcher(prev_launcher ${PREV_DIR} ${BB2C_CCACHE_DEBUG})
+		endif()
+		string(REPLACE ";" "|" prev_launcher "${prev_launcher}")
 		ExternalProject_Add(blitz2_prev
 			PREFIX ${CMAKE_BINARY_DIR}/prev-ep
 			DOWNLOAD_COMMAND "" UPDATE_COMMAND "" CONFIGURE_COMMAND "" INSTALL_COMMAND ""
 			BUILD_COMMAND ${CMAKE_COMMAND} -DREPO=${PROJECT_SOURCE_DIR} -DREV=${PREV_REV}
 				-DPREV_DIR=${PREV_DIR} -DGENERATOR=${CMAKE_GENERATOR}
-				"-DCONFIGURE_ARGS=${prev_args}" -DSNITCH_PIN=${pin}
+				"-DCONFIGURE_ARGS=${prev_args}" "-DLAUNCHER=${prev_launcher}" -DSNITCH_PIN=${pin}
 				-DSNITCH_SOURCE_DIR=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 				-DCLI11_PIN=${cli11_pin} -DCLI11_SOURCE_DIR=${cli11_SOURCE_DIR}
 				-P ${PROJECT_SOURCE_DIR}/cmake/prev-build.cmake

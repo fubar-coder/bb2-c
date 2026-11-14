@@ -36,6 +36,67 @@ include paths of the toolchain found; not in the repository). After
 changing the toolchain, delete `.clangd` and configure again; switch off
 with `-DBLITZ2_CLANGD=OFF`.
 
+## ccache
+
+The C and C++ compilations go through ccache when a ccache 4.14 or later
+is found: the m68k side (libraries, blitz2, TED), the host side (the
+`ExternalProject` in `build/<preset>/host`), the `prev` build and the
+`native` profile. `-DBB2C_CCACHE=OFF` builds without it; `ON` with a
+ccache that is missing or older stops the configure. A launcher given as
+`-DCMAKE_C_COMPILER_LAUNCHER=...` is taken as it is (for both languages
+and the host side). `cmake/ccache.cmake` sets it up; the configure names
+the ccache and its cache directory.
+
+The settings are on ccache's command line (`ccache KEY=VALUE ...
+compiler`, manual "Configuration": before the environment and every
+configuration file), so a `ccache.conf` of the user cannot weaken them;
+the cache directory and its size stay the user's:
+
+* `sloppiness=` (none), `depend_mode=false`, `run_second_cpp=true`,
+  `compiler_check=mtime`: ccache's defaults, fixed so that what counts as
+  the same compilation does not depend on the user's configuration.
+* `base_dir=SOURCE` (and the build directory if it is not below the
+  source directory), `absolute_paths_in_stderr=true`: the absolute paths
+  below it are made relative to the working directory before the
+  compiler sees them, so another checkout (a git worktree) at another
+  path shares the cache; warnings name the files with absolute paths
+  again. The compiler then sees relative paths: `__FILE__` and the paths
+  in debug information change. The results have neither (`__FILE__` is
+  only in host code: TED's `ORIG_HAZARD` with `TED_HOST`, the snitch
+  messages), so they stay the same; a build with debug information
+  (`-g`: `amiga-debug`, `BLITZ2_COVERAGE`) or `HOST_COVERAGE` (its
+  `-fprofile-filter-files` matches absolute paths) gets no `base_dir`
+  (and shares nothing with other paths: ccache hashes the working
+  directory with `-g`). The `prev` build has `base_dir` =
+  `build/<preset>/prev` (its sources and build directory), so the prev
+  builds of all worktrees share their cache.
+
+`#embed` (TED's `res.c`, two RWE userlibs, `tools/lib/amiga_emulation`,
+`tools/tests/test_covsel.c`) is why 4.14 is needed: its NEWS ("Added
+detection of C23 `#embed` directives in direct and depend mode ...,
+preventing false cache hits") - an older ccache could return the object
+of an old embedded file in the direct mode. A source with `#embed` is not
+taken from the direct mode; the preprocessor mode hashes the output of
+`gcc -E` (manual, "The preprocessor mode"), which holds the embedded bytes
+(GCC's cpp manual, "Binary Resource Inclusion": the directive expands to
+the byte values). The tests `ccache_embed` (m68k compiler) and
+`ccache_embed_host` (host compiler, in `host`) compile a source with
+`#embed` through the build's launcher into a cache of their own: a second
+compilation must be a hit, one with a changed embedded file must give the
+compiler's new object; `ccache_embed_broken` and `ccache_embed_host_broken`
+write the embedded file unchanged, which must fail as a stale cache hit.
+Without a launcher they are skipped.
+
+A cache hit replays the compiler's warnings, so a clean rebuild from the
+cache shows the same warnings (none). The Amiga object format names its
+output file (the `HUNK_UNIT` of an object file): a source compiled with
+the same options into two object files (`literallib.c` for acidlibs and
+the userlib) can get the object of the other one from the cache, which
+differs in that name only; the linked and stripped results do not hold it.
+A clean build fills about 12 MB of cache (the prev build as much again):
+ccache's default `max_size` of 5 GiB is plenty; keep the cache out of
+`/tmp` (a tmpfs, cleared on reboot).
+
 ## Function comments and the references
 
 The functions are documented with Doxygen comments

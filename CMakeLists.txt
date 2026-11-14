@@ -14,6 +14,7 @@ option(BLITZ2_HOST "only the host side (tools, host tests) with the native compi
 if(BLITZ2_HOST)
 	cmake_minimum_required(VERSION 4.2.3)
 	project(blitzbasic2_native LANGUAGES C CXX)
+	include(cmake/ccache.cmake)
 	enable_testing()
 	add_subdirectory(host)
 	return()
@@ -82,6 +83,8 @@ set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # corpus passes 
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
+# ccache for the m68k and the host side and the prev build (cmake/ccache.cmake)
+include(cmake/ccache.cmake)
 # the host side takes this build's snitch source (the target snitch of
 # libs/tests, cmake/Snitch.cmake) and CLI11 source (only downloaded here,
 # cmake/CLI11.cmake): one download per build, none in a prev build
@@ -99,6 +102,9 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 		-DFETCHCONTENT_SOURCE_DIR_SNITCH=$<TARGET_PROPERTY:snitch,SOURCE_DIR>
 		-DFETCHCONTENT_SOURCE_DIR_CLI11=${cli11_SOURCE_DIR}
+	# lists: in the initial cache, not split as -D arguments would be
+	CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER_LAUNCHER:STRING=${BB2C_HOST_LAUNCHER}"
+		"-DCMAKE_CXX_COMPILER_LAUNCHER:STRING=${BB2C_HOST_LAUNCHER}"
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
 	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
@@ -133,6 +139,25 @@ add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_CO
 	-DSRC=${PROJECT_SOURCE_DIR}/cmake/saveds/broken.c -P ${PROJECT_SOURCE_DIR}/cmake/check-saveds.cmake)
 set_tests_properties(toolchain_saveds_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "__saveds does not[ \n]+load a4")  # CMake wraps long messages
+
+# ccache and #embed (cmake/ccache.cmake): with this build's compiler
+# launcher, a changed embedded file gives a new object, never a cache hit
+# of the old one; the broken input writes the embedded file unchanged.
+# Skipped (77) without a launcher (BB2C_CCACHE=OFF)
+string(REPLACE ";" "|" _ccache_launcher "${CMAKE_C_COMPILER_LAUNCHER}")
+foreach(t ccache_embed ccache_embed_broken)
+	set(broken)
+	if(t MATCHES "_broken$")
+		set(broken -DBROKEN=ON -DWANT_FAIL=ON)
+	endif()
+	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} "-DLAUNCHER=${_ccache_launcher}"
+		-DCC=${CMAKE_C_COMPILER} "-DFLAGS=-m${AMIGA_CPU}|-noixemul|-std=gnu23|-Os"
+		${broken} -DWORK=${CMAKE_BINARY_DIR}/${t}
+		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/ccache-embed-test.cmake -P ${WITH_WORKDIR})
+	set_tests_properties(${t} PROPERTIES SKIP_RETURN_CODE 77)
+endforeach()
+set_tests_properties(ccache_embed_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "stale[ \n]+cache[ \n]+hit:[ \n]+the[ \n]+object[ \n]+did[ \n]+not[ \n]+change")  # CMake wraps long messages
 
 # the libraries' shadow headers of the NDK (cmake/ndk-calls.cmake): a
 # source with one varargs form gets only that wrapper, with the NDK's code

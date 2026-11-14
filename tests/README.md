@@ -147,7 +147,17 @@ shadow headers, which compiles; `ndk_varargs_inline` compiles
 `cmake/ndk/varargs.c` (OpenWindowTags) and expects only its wrapper, with
 the NDK's code and without a warning, `ndk_varargs_inline_broken` without
 the shadow headers, where every wrapper of intuition.h is emitted
-(`cmake/ndk-test.cmake`; assembler text on stdout, no file). The host side on its own:
+(`cmake/ndk-test.cmake`; assembler text on stdout, no file).
+ccache and `#embed` (`docs/development.md`, "ccache";
+`cmake/ccache-embed-test.cmake`): `ccache_embed` (m68k compiler) and
+`ccache_embed_host` (host compiler, in the host side) compile a source
+that embeds a file with the build's compiler launcher, in a cache of
+their own in the work directory: the same compilation twice must be a
+cache hit, a changed embedded file must give the object the compiler
+gives without the launcher; `ccache_embed_broken` and
+`ccache_embed_host_broken` write the embedded file unchanged and expect
+the stale cache hit to be reported. Skipped (77) without a launcher
+(`BB2C_CCACHE=OFF`). The host side on its own:
 `ctest --test-dir build/amiga/host`.
 With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
 and UBSan. With `-DHOST_COVERAGE=ON` it is built with gcov
