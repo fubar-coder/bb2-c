@@ -677,10 +677,10 @@ BLITZ_THUNK(dornd2, dornd2_c, "d1/a0-a1");
 
 /* ----------------------------------------------------------------- Val */
 
-/* parse state of doval2: a3 (characters), d2.w (count), d3 */
+/* parse state of doval2: a3 (characters), d2 (count, a long: Fixed (#303)), d3 */
 struct valstate {
     const UBYTE *p;
-    WORD n;
+    LONG n;
 };
 
 /* getdec - get a decimal number into d7, 10^ in d6 (both mod 2^32);
@@ -777,9 +777,10 @@ static ULONG getbin(const void *ffp, struct valstate *s)
 }
 
 /* doval2 - calc val of string: leading spaces skipped, then "$" hex, "%"
-   binary, "-" negative (SPNeg), else decimal.  The count is the low WORD
-   of the length (SUBQ #1,d2:BMI): BUG(orig) (#303) lengths 32769..65536 give 0,
-   longer ones count mod 65536.
+   binary, "-" negative (SPNeg), else decimal.  The count is the whole
+   length.  Fixed (#303): the original counts the low WORD of the length
+   (SUBQ #1,d2:BMI): lengths 32769..65536 gave 0, longer ones counted mod
+   65536.
    BUG(orig) (#302): after "-" the count is not decremented, so one byte behind
    the string is read (normally the terminating 0: Val(Left$("-12",2)) =
    -1 in the tests). */
@@ -812,9 +813,9 @@ static ULONG doval2(const void *ffp, struct valstate *s)
  * string afterwards (frees the work area).
  *
  * BUG(orig) (#302): hex, binary and negative numbers read one byte behind
- * the string (normally its terminating 0).  BUG(orig) (#303): the length
- * is used as a word (lengths 32769..65536 give 0).  BUG(orig) (#304): 32
- * or more fraction digits drop the fraction.
+ * the string (normally its terminating 0).  BUG(orig) (#304): 32 or more
+ * fraction digits drop the fraction.  Fixed (#303): the length is used as
+ * a long (the original used its low word: lengths 32769..65536 gave 0).
  *
  * @param str d0: the string
  * @param ffp a6: the mathffp base
@@ -828,7 +829,7 @@ static ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0), const void *ffp BL_REG
     struct valstate s;
 
     s.p = str;
-    s.n = (WORD)BL_POPL(sp);                    /* MOVE.l -(a2),d2 (used as word) */
+    s.n = (LONG)BL_POPL(sp);                    /* MOVE.l -(a2),d2: a long (#303) */
     blitz_string = str;
     return doval2(ffp, &s);
 }
