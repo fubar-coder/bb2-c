@@ -31,7 +31,9 @@
  *     checks of the debugger do) (#166); TextGadget with an empty text has
  *     IText 0 (allocst of length 0; not a bug: Intuition prints the empty
  *     string at address 0, no effect seen).
- *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times). (#167)
+ *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times); the
+ *     error checks refuse such a shape at its creation (InitShape, #243),
+ *     so it is caught with runtime error checking (#167).
  * Fixed (intended deviation, #952): SelectMode only stored the mode
  *   (selmode), which nothing read; the gadgets got defflags (never set,
  *   0 = GADGHCOMP): SelectMode 1 (box) had no effect.  SelectMode now sets
@@ -932,7 +934,8 @@ static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
  *
  * a3 = the list.  The position is moved by the shape's handle, the
  * Image (makeintuishape) uses the shape's data.  Flags as TextGadget.
- * BUG(orig) (#167): a shape of depth 0 gives PlanePick $FF.  Errors
+ * Fixed (#167): a shape of depth 0 (PlanePick $FF) is refused at its
+ * creation by the error check of InitShape (#243).  Errors
  * (debugger, sgchk): "Uninitialized Shape".
  *
  * @param x  d1: the left edge
