@@ -949,8 +949,9 @@ BLITZ_THUNK(instrstring2, instrstring2_c, "d1/a0-a1");
  * (two MOVE.l -(a2) before BEQ 'skip), otherwise three (SUBQ #4,a2), so
  * a2 is left at different positions; the C version leaves a2 unchanged.
  *
- * BUG(orig) (#424): an empty find string returns s$ unchanged with a3
- * left at its entry value.
+ * Fixed (#424): an empty find string returns s$ unchanged with a3 on its
+ * terminating 0; the original left a3 at its entry value, behind all
+ * three arguments.
  *
  * @param s    d0: the string
  * @param f    d1: the string to find
@@ -970,8 +971,10 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
 
     slen = BL_POPL(sp);                         /* len 1 */
     flen = BL_POPL(sp);                         /* len 2 */
-    if (!flen)                                  /* BEQ 'skip */
+    if (!flen) {                                /* BEQ 'skip */
+        blitz_string = s + slen;                /* fixed (#424): a3 on the 0 */
         return slen;
+    }
     sp--;                                       /* SUBQ #4,a2: (a2) = len 3 */
     out = blitz_string;                         /* MOVE.l a3,-(a7) */
     at = s;
