@@ -53,13 +53,10 @@
  *     memory is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - ModuleToChip does nothing and
- *     returns its argument (#446).  ModulePatterns returns the song length
- *     (byte 950) (#445).
+ *   - ModuleToChip does nothing and returns its argument (#446).
+ *     ModulePatterns returns the song length (byte 950) (#445).
  *   - CheckTrackerID returns the long at ADDRESS 0 (MOVE.l 0,d0) for
  *     "not a module" and an empty slot (#430).
- *   - GetModuleName$ of an empty slot returns slot*10 as the length and
- *     writes nothing (not even the 0) (#437).
  *   - WaitTrackerEvent calls WaitTOF through whatever a6 holds (no
  *     !libs) (#453); CheckTrackerEvent changes only the low byte of d0
  *     (#431).
@@ -101,6 +98,9 @@
  * Fixed (intended deviation, #451): StartTracker of an empty slot returns
  * False (0); the original set d0 to 0 and then restored the registers
  * with MOVEM, which put the argument, the slot number, back into d0.
+ * Fixed (intended deviation, #437): GetModuleName$ of an empty slot is
+ * the empty string; the original left through 'namefalse with d0 = the
+ * slot's table offset (slot*10) and wrote nothing, not even the 0.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1640,21 +1640,22 @@ static ULONG BLITZ_ROUTINE modtochip2_c(ULONG arg BL_REG(d0))
  * @brief GetModuleName$(TrackerModule#): the name of a slot's module.
  *
  * Up to 20 characters of the module's name, at a3, and a 0.  An empty
- * slot writes nothing (not even the 0) and returns slot*10 as the length
- * (BUG(orig) (#437)).  Error check (_checkused): slots 0-8, a module in
- * the slot.
+ * slot is the empty string (fixed, #437: the original wrote nothing, not
+ * even the 0, and returned slot*10 as the length).  Error check
+ * (_checkused): slots 0-8, a module in the slot.
  * @param num  d0: the slot
  * @return d0: the length (counted as a word)
  */
 static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
 {
-    ULONG off = bl_mulu_w((UWORD)num, 10);
     const UBYTE *name = slot(num)->addr;
     UWORD left = 19;
     ULONG len;                          /* d0: the name length */
 
-    if (!name)
-        return off;                     /* BUG(orig): no string, d0 = slot*10 (#437) */
+    if (!name) {                        /* fixed (#437): the empty string */
+        *blitz_string = 0;
+        return 0;
+    }
     len = 0;
     do {
         if (!*name)

@@ -133,9 +133,11 @@ ModulePatterns|CIA part|slot 3|1	bytes 110 fnv B6319231
 ModulePatterns|d0|slot 3|1	$00000000
 GetModuleName$|kept|slot 3|1	kept
 GetModuleName$|popped|slot 3|1	$00000000
-GetModuleName$|d0|slot 3|1	$0000001E
+GetModuleName$|d0|slot 3|1 [orig]	$0000001E
+GetModuleName$|d0|slot 3|1 [fixed #437]	$00000000
 GetModuleName$|a3|slot 3|1	$00000000
-GetModuleName$|string|slot 3|1	bytes 32 5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+GetModuleName$|string|slot 3|1 [orig]	bytes 32 5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
+GetModuleName$|string|slot 3|1 [fixed #437]	bytes 32 005A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A
 StartTracker|kept|slot 3|1	kept
 StartTracker|popped|slot 3|1	$00000000
 StartTracker|DMACONR|slot 3|1	$00000000

@@ -67,6 +67,10 @@ kind F):
   to 0 and then restored the registers with `MOVEM`, which put the slot
   number back into d0 ("True" although nothing plays) (#451; library
   test `rwe_ciatrklib`, the case `StartTracker|d0|slot 3`).
+* `GetModuleName$` of an empty slot is the empty string; the original
+  left with d0 = the slot's table offset (slot × 10) and wrote nothing,
+  not even the 0: a string of slot × 10 undefined characters (#437;
+  library test `rwe_ciatrklib`, the cases `GetModuleName$|...|slot 3`).
 
 ## BUG(orig), kept
 
@@ -99,8 +103,6 @@ kind F):
   its argument (#446). `ModulePatterns` returns the song length (byte
   950) (#445). `CheckTrackerID` returns the long at **address 0**
   (`MOVE.l 0,d0`) for "no M.K./M!K!" and an empty slot (#430).
-  `GetModuleName$` of an empty slot returns slot × 10 as the length and
-  writes nothing (not even the 0) (#437).
 * `WaitTrackerEvent` calls WaitTOF (−270) through whatever a6 holds (no
   `!libs`) (#453); `CheckTrackerEvent` changes d0's low byte (no event)
   or word (−1) (#431). (`GetTrackerEvent` also changes only d0's low
