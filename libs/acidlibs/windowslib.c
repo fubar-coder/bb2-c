@@ -55,7 +55,6 @@
  *   - Not a bug (those words are cleared or reset before use): CLR.l
  *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
  *     (the variables are kept in the original order).
- *   - Qualifier (a #long function) only sets the low word of d0. (#313)
  *   - The tag pairs of WindowTags ...,Tag,Data... are copied without a
  *     limit into 32 longs (#961; only the &TagList form is fixed, #317,
  *     see below).
@@ -71,6 +70,9 @@
  *   with SUB.b/BMI: characters from lo+128 on (the Latin-1 characters of
  *   a font from 32) got tf_XSize instead of their width.  Here the test
  *   is unsigned (lo..hi).
+ * Fixed (intended deviation, #313): Qualifier, a #long function, set
+ *   only the low word of d0 (the upper word was what d0 held before);
+ *   here the whole long.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -1145,14 +1147,14 @@ static UWORD BLITZ_ROUTINE doeditexit_c(void) { return V.eexit; }
     @return d0: the code (low word) */
 static UWORD BLITZ_ROUTINE dorawkey_c(void)   { return V.lrawkey; }
 /** @brief Qualifier - the qualifier of the last key read from a window.
-    BUG(orig) (#313): a #long function, but only the low word of d0 is
-    set.
-    @return d0: the qualifier & 255 (low word) */
-static UWORD BLITZ_ROUTINE doqual_c(void)     { return V.kqualifier & 255; }
+    Fixed (#313): a #long function, d0 is set as a long; the original set
+    only its low word.
+    @return d0: the qualifier & 255 (a long) */
+static ULONG BLITZ_ROUTINE doqual_c(void)     { return V.kqualifier & 255; }
 WORD_FN(doeditat, doeditat_c);
 WORD_FN(doeditexit, doeditexit_c);
 WORD_FN(dorawkey, dorawkey_c);
-WORD_FN(doqual, doqual_c);              /* BUG(orig) (#313): a #long function */
+BLITZ_THUNK(doqual, doqual_c, "d1/a0-a1");     /* fixed, #313: a #long function */
 
 /**
  * @brief EditFrom - the next Edit$ in a window starts at position 0 and
