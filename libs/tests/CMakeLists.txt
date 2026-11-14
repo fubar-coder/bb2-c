@@ -240,10 +240,10 @@ set(LIBS_BUG_ORIG_TIMEOUT 60 CACHE STRING
 	"libs bug-orig tests: time limit of the emulator run (seconds)")
 foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		crunchlib-crm-minsecdist crunchlib-crm-overlap-4gb crunchlib-crm2-readtab
-		crunchlib-pp-readd1 debuglib-findoff-flags)
+		crunchlib-pp-readd1 debuglib-findoff-flags sortlib-word-pivot)
 	string(REPLACE "-" "_" name "bug_orig_${t}")
 	set(watch OFF)
-	if(t STREQUAL "crunch-implode-overread")
+	if(t STREQUAL "crunch-implode-overread" OR t STREQUAL "sortlib-word-pivot")
 		set(watch ON)
 	endif()
 	math(EXPR limit "${LIBS_BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")

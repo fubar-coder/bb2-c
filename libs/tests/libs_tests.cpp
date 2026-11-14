@@ -44,6 +44,7 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
 int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
 int bugorig_debuglib_findoff_flags(const char *dir);
+int bugorig_sortlib_word_pivot(const char *dir);
 int selftest_keeps_wrong(void);
 int selftest_mem_wrong(void);
 // the tests of the RWE userlibs (rwe/NAME.c, generated list)
@@ -251,4 +252,10 @@ TEST_CASE("crunchlib-pp-readd1", "[.bug-orig]")
 TEST_CASE("debuglib-findoff-flags", "[.bug-orig]")
 {
     CHECK(bugorig_debuglib_findoff_flags(progdir()) == 0);
+}
+
+// the verdict on the reads behind the array is emulator.cmake's (ILLEGAL_WATCH)
+TEST_CASE("sortlib-word-pivot", "[.bug-orig]")
+{
+    CHECK(bugorig_sortlib_word_pivot(progdir()) == 0);
 }

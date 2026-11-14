@@ -14,17 +14,16 @@
  * 7 string (strcomplib $CE02 on the string pointers), everything else
  * (3 long, 4 quick) is sorted as signed longs.
  *
- * Kept from the original (BUG(orig)):
- *   - word arrays: the pivot is read with MOVE.l and compared with CMP.w,
- *     so the pivot is the element AFTER the middle one; for a one element
- *     array (Dim a.w(0)) it lies behind the array. (#275)
- *   - the pivot of a one element array is never in range: the forward
- *     scan stops at the pivot word behind the array, the backward scan
- *     may read words before it; then i > j, nothing is swapped and there
- *     is no recursion (reads only, the result is right). (#275)
- *   - Not a bug (a property of the quicksort algorithm): recursion depth is
- *     O(n) in the worst case (the C version needs more stack per level
- *     than the original's 12 bytes).
+ * Not a bug (a property of the quicksort algorithm): recursion depth is
+ * O(n) in the worst case (the C version needs more stack per level than
+ * the original's 12 bytes).
+ * Fixed (intended deviation, #275): word arrays read the pivot with MOVE.l
+ *   and compared with CMP.w, so the pivot was the element AFTER the middle
+ *   one; for a one element array (Dim a.w(0)) it lay behind the array: the
+ *   forward scan read on behind it (up to the next word equal to what it
+ *   read there), the backward scan could read words before it (reads only,
+ *   the result was right).  Here the pivot is read as a word, the middle
+ *   element (the sorted array is the same).
  * Fixed (intended deviation, #276): string elements that were never
  *   assigned (pointer 0) read their length from -4(0) (and their
  *   characters from 0): the order was arbitrary.  Here a pointer 0 is the
@@ -167,8 +166,8 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
 
         if (step == 1)
             pivot = lo[off];                            /* MOVE.b 0(a0,d0.l),d0 */
-        else if (step == 2)                             /* AND.l #$fffffffe:MOVE.l: */
-            pivot = *(const ULONG *)(lo + (off & ~1UL));   /* low word = next element */
+        else if (step == 2)                             /* AND.l #$fffffffe: */
+            pivot = *(const UWORD *)(lo + (off & ~1UL));   /* fixed (#275): a word */
         else
             pivot = *(const ULONG *)(lo + (off & ~3UL));
 
@@ -213,10 +212,10 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
  * original leaves a2 decremented by 6; the compiler does not use a2
  * afterwards.
  *
- * BUG(orig) (#275): for word arrays the pivot is read with MOVE.l and
- * compared with CMP.w, so it is the element after the middle one; for a
- * one element array it lies behind the array (reads only, the result is
- * right).
+ * Fixed (#275): for word arrays the pivot is read as a word, the middle
+ * element (the original read it with MOVE.l and compared with CMP.w: the
+ * element after the middle one, for a one element array the word behind
+ * the array; reads only, the result was right).
  *
  * Fixed (#276): string elements that were never assigned (pointer 0) are
  * the empty string (the original read their length from -4(0)).

@@ -130,13 +130,15 @@ direction via a word in the code (init = SortUp). Type from the compiler (word o
 the stack): 1 byte, 2 word, 5 float (mathffp `SPCmp`, a6 = ffplib),
 7 string (strcomplib `$CE02`), everything else (3 long, 4 quick) as long.
 
-* **BUG(orig) (#275):** for word arrays the pivot element is read with `MOVE.l`
-  and compared with `CMP.w` - the pivot is the element **after** the
-  middle. For arrays with at least 2 elements it is still within range,
-  the result is correct; for a single element (`Dim a.w(0)`)
-  it lies behind the array: the forward search stops at this word, the
-  backward search possibly reads words before the array; then i > j, no
-  swap, no recursion – reading only, result correct (not in the corpus).
+* Fixed (intended deviation, #275): for word arrays the pivot element was
+  read with `MOVE.l` and compared with `CMP.w` - the pivot was the element
+  **after** the middle. For arrays with at least 2 elements it was still
+  within range, the result correct; for a single element (`Dim a.w(0)`)
+  it lay behind the array: the forward search read on behind it, the
+  backward search possibly read words before the array – reading only,
+  result correct. The pivot is now read as a word, the middle element
+  (snitch test `sortlib-word-pivot`, `[.bug-orig]`: the array at the end
+  of the highest memory region, the reads behind it logged by Amiberry).
 * Fixed (intended deviation, #276): string elements that were never
   assigned (pointer 0) read their length from -4(0) and their characters
   from 0 (an arbitrary order); a pointer 0 is now the empty string (bug-orig

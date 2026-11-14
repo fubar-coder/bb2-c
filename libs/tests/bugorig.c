@@ -19,9 +19,11 @@
  *                             (crunchlib)
  *   debuglib-findoff-flags    dofindoff: a position right after a token
  *                             (debuglib)
+ *   sortlib-word-pivot        Sort of a one element word array reads the
+ *                             word behind it (sortlib)
  *
- * crunch-implode-overread puts the data at the very end of the highest
- * memory region; what lies behind is not mapped, and with
+ * crunch-implode-overread and sortlib-word-pivot put the data at the very
+ * end of the highest memory region; what lies behind is not mapped, and with
  * log_illegal_mem Amiberry logs every access there.  The verdict is
  * emulator.cmake's (ILLEGAL_WATCH): this program prints the watched
  * address range and the code range of the library ("illegal-watch ...").
@@ -752,5 +754,64 @@ int bugorig_debuglib_findoff_flags(const char *dir)
                  "(BUG(orig) (#127) after a token: got %u)", want[i][0], want[i][1], got);
         check(msg, got == want[i][1]);
     }
+    return failures ? 5 : 0;
+}
+
+/* Sort (entry 0) on a word array of one element, a(0) = -32768, whose
+   word ends exactly at the end of the highest memory region; SortUp
+   before.  The arguments as the compiler passes them: d0 = the array,
+   a2 = the stack pointer before the pushes, -4 = the end address (long),
+   -6 = the type (word, 2).  Correct: no read behind the array
+   (emulator.cmake counts the logged illegal reads in the 256 bytes behind
+   it), a(0) stays -32768.  Fixed (#275): the original read the pivot with
+   MOVE.l, its low word the word behind the array (the smallest a(0):
+   no backward scan below the array, which the original also does). */
+int bugorig_sortlib_word_pivot(const char *dir)
+{
+    static const char *names[] = { "strcomplib", "sortlib", NULL };
+    static ULONG frame[4];
+    struct MemHeader *mh, *top = NULL;
+    struct lib *l;
+    UBYTE *buf, *end;
+    UWORD *a;
+
+    failures = 0;
+    if (!load_c(dir, names)) {
+        check("load sortlib and strcomplib (C build)", FALSE);
+        return 20;
+    }
+    l = getlib(&cset, "sortlib");
+    Forbid();
+    for (mh = (struct MemHeader *)SysBase->MemList.lh_Head; mh->mh_Node.ln_Succ;
+         mh = (struct MemHeader *)mh->mh_Node.ln_Succ)
+        if (!top || (ULONG)mh->mh_Upper > (ULONG)top->mh_Upper)
+            top = mh;
+    end = (UBYTE *)top->mh_Upper;
+    buf = AllocAbs(8, end - 8);
+    Permit();
+    if (!buf) {
+        check("setup: 8 bytes at the end of the highest memory region", FALSE);
+        return 20;
+    }
+    a = (UWORD *)(end - 2);
+    *a = 0x8000;
+    /* the probe: one read of the first word behind the array from here
+       (must be logged, else the range is mapped or the log is off) */
+    (void)*(volatile UWORD *)end;
+    printf("illegal-watch %08lx %08lx %08lx %08lx\n", (ULONG)end, (ULONG)end + 256,
+           (ULONG)l->code, (ULONG)l->code + l->size);
+    printf("  Sort of a word array of one element at $%08lX, sortlib at $%08lX\n",
+           (ULONG)a, (ULONG)l->code);
+    fflush(stdout);
+    markregs(&r);
+    callregs(cmd_entry(l, 1), &r, 0, 0);                            /* SortUp */
+    frame[1] = 2;                                                   /* -6: type.w */
+    frame[2] = (ULONG)end;                                          /* -4: end */
+    markregs(&r);
+    r.d[0] = (ULONG)a;
+    r.a[2] = (ULONG)&frame[3];
+    callregs(cmd_entry(l, 0), &r, 0, 0);                            /* Sort */
+    check("a(0) stays -32768", *a == 0x8000);
+    FreeMem(buf, 8);
     return failures ? 5 : 0;
 }
