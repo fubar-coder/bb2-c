@@ -20,9 +20,11 @@
  * the routine (debugger only, "Can't Open Font").
  *
  * BUG(orig), kept:
- *   - the style goes to the WORD at +6 (MOVE.w d3,6(a3)): style byte =
- *     upper byte of the argument (0 for 0..255), flags byte = style. (#197)
  *   - the name copy of a previous LoadFont is never freed (allocst). (#198)
+ * Fixed (intended deviation, #197): the original wrote the style as a
+ *   WORD to +6 (MOVE.w d3,6(a3)): ta_Style = the upper byte of the
+ *   argument (0 for 0..255), ta_Flags = the style.  Here ta_Style gets
+ *   the style's low byte and ta_Flags 0.
  * Not a bug (the documented Blitz mechanism): the routine table has the code
  * addresses +1 (`dosetifont+1`): bit 0 = Amiga mode only (blitz2.s
  * doajsrrout).
@@ -152,9 +154,10 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
     fd.textattr = f;
     freeifont(f, gfx);
     f->ta.ta_YSize = ysize;
-    /* CLR 6(a3):MOVE.w d3,6(a3) - BUG(orig) (#197): the word over ta_Style
-       and ta_Flags */
-    *(UWORD *)&f->ta.ta_Style = style;
+    /* fixed, #197: the original's CLR 6(a3):MOVE.w d3,6(a3) wrote the
+       style as a word over ta_Style and ta_Flags */
+    f->ta.ta_Style = (UBYTE)style;
+    f->ta.ta_Flags = 0;
     r.d0 = (ULONG)name;
     r.d1 = BL_POPL(sp);
     f->ta.ta_Name = (STRPTR)BLITZ_ALIBJSR(TOK_allocst, r);
@@ -196,8 +199,9 @@ BLITZ_THUNK_Z(dosetifont, dosetifont_c, "d1");
  * @brief LoadFont IntuiFont#,Fontname.font$,Y size,style: LoadFont with a
  * style.
  *
- * BUG(orig) (#197): the style goes to the WORD at +6: ta_Style = the
- * upper byte of the argument (0 for 0..255), ta_Flags = the style.
+ * ta_Style = the style's low byte, ta_Flags = 0.  Fixed (#197): the
+ * original wrote the style as a WORD to +6: ta_Style = the upper byte of
+ * the argument (0 for 0..255), ta_Flags = the style.
  *
  * @param name      d1: the font name
  * @param ysize     d2: the height

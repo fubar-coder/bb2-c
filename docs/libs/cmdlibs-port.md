@@ -280,7 +280,7 @@ C, declarations identical, binary = source. BlitzFont = TextFont pointer, only 8
 
 ## 134 intuifontlib
 
-C, CD binary older than the source (token `Text` missing) – the state of the binary is ported. Object = TextAttr + Font + Pad (16 bytes); init value = address of `textattr`. LoadFont copies the name with maxslib and calls OpenDiskFont; `loadchk` checks the CCR (assembler line, thunks set Z). BUG(orig): style goes as a word to +6 (LoadFont …,9,1 → style 0, flags 1) (#197); the old name copy is never freed (#198). Tests: t82_font, t85.
+C, CD binary older than the source (token `Text` missing) – the state of the binary is ported. Object = TextAttr + Font + Pad (16 bytes); init value = address of `textattr`. LoadFont copies the name with maxslib and calls OpenDiskFont; `loadchk` checks the CCR (assembler line, thunks set Z). BUG(orig): the old name copy is never freed (#198). Fixed (intended deviation, #197): in the original the style goes as a word to +6 (LoadFont …,9,1 → style 0, flags 1: OpenDiskFont looked for a font of these flags); here ta_Style = the style's low byte, ta_Flags = 0 (corpus t82_font, the pair `t82_font.orig.out`/`t82_font.fixed-197.out`). Tests: t82_font, t85.
 
 ## 130 rawkeylib
 
