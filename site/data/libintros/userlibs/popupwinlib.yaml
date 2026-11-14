@@ -15,7 +15,4 @@ intro: |
 
   Kept from the original, and the reason the library is of little use:
   `PopUpWindow` does not tell the program which item was chosen
-  ([#471](https://github.com/fubar-coder/bb2-c/issues/471)). It also
-  switches the power light and the audio filter of the Amiga on or off
-  for every menu with sub menus it shows
-  ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
+  ([#471](https://github.com/fubar-coder/bb2-c/issues/471)).

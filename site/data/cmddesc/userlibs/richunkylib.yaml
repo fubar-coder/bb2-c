@@ -6,21 +6,14 @@
 
     Kept from the original: data at an address below 65536 is never
     freed, and making a new chunky bitmap on such an object loses it
-    ([#885](https://github.com/fubar-coder/bb2-c/issues/885)). Freeing a
-    chunky bitmap that holds data, when it is made again or at the end
-    of the program, toggles the power LED and the audio filter
-    ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
+    ([#885](https://github.com/fubar-coder/bb2-c/issues/885)).
 "ChunkyToPlanar":
   text: Converts a chunky bitmap of 320 x 256 pixels into the eight bitplanes of a bitmap. The bitplanes must lie one after the other in memory, 10240 bytes each, from the bitmap's first plane on.
   notes: |
     Nothing happens if the bitmap has fewer than 8 bitplanes or the
     chunky bitmap has no data. Kept from the original: the sizes of
     both are not checked, so a smaller bitmap or chunky bitmap is
-    overrun ([#884](https://github.com/fubar-coder/bb2-c/issues/884)),
-    and the depth test also reads the bitmap's flags, so a bitmap with
-    flags set may be converted with fewer than 8 bitplanes, or skipped
-    with 8
-    ([#883](https://github.com/fubar-coder/bb2-c/issues/883)).
+    overrun ([#884](https://github.com/fubar-coder/bb2-c/issues/884)).
 "PlanarToChunky":
   text: Does nothing; the command was never written.
 "ChunkyLoadBitMap":

@@ -19,11 +19,6 @@
     `Filename$` is the file name the requester starts with; it is not
     changed. The requester shows only the files that match a pattern
     after `RTEZSetPattern`.
-
-    Kept from the original: when more text follows the function in a
-    string expression, a 0 byte stays between the path and that text
-    ([#461](https://github.com/fubar-coder/bb2-c/issues/461)); assign
-    the result to a string variable first.
 "RTEZFontRequest":
   text: Opens the font requester and returns the address of a `TextAttr` structure of the chosen font, its name, size, style and flags; 0 if the user cancels.
   notes: |
@@ -68,12 +63,6 @@
   text: Opens the file requester for saving and returns the path of the chosen file; an empty string if the user cancels. Its button says Save, double-clicking a file does not choose it, and a directory that does not exist can be created.
   notes: |
     `Filename$` is the file name the requester starts with.
-
-    Kept from the original: when more text follows the function in a
-    string expression, that text overwrites the end of the path or leaves
-    other bytes in between
-    ([#465](https://github.com/fubar-coder/bb2-c/issues/465)); assign the
-    result to a string variable first.
 "RTEZSetDefaultDirectory":
   text: Sets the directory that a file requester shows, 0 for loading, 1 for saving, 2 for the path requester and 3 for the multi-load requester. Other numbers do nothing.
 "RTEZPathRequest":
@@ -103,10 +92,6 @@
   text: Opens a message requester like `RTEZRequest`, set up by the reqtools tag list at the address `TagList`. Returns the number of the button chosen.
 "RTFileRequest":
   text: Opens a file requester of its own, set up by the reqtools tag list at the address `TagList`, and returns the path of the chosen file. An empty string if the user cancels.
-  notes: |
-    Kept from the original: when more text follows the function in a
-    string expression, a 0 byte stays between the path and that text
-    ([#461](https://github.com/fubar-coder/bb2-c/issues/461)).
 "RTEZMultiLoadFile":
   text: Opens a file requester in which the user can choose several files. Returns -1 if files were chosen and 0 if the user cancels; the paths of the files then come from `RTNextPathEntry`.
   notes: |

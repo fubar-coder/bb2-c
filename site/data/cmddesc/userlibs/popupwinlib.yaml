@@ -11,8 +11,6 @@
 
     * the item chosen is not passed on to the program
       ([#471](https://github.com/fubar-coder/bb2-c/issues/471));
-    * every menu with sub menus switches the power light and the audio
-      filter ([#468](https://github.com/fubar-coder/bb2-c/issues/468));
     * without free memory for a menu, the command uses memory at
       address 0 as the menu's data and writes to it; if a window cannot
       be opened, the whole menu closes at once

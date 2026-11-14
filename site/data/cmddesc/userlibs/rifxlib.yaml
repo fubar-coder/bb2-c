@@ -9,11 +9,8 @@
     ([#669](https://github.com/fubar-coder/bb2-c/issues/669)). The last
     word of the area stays and the word before it is cleared, for an
     `offset` of 0 the word before the bitplane
-    ([#668](https://github.com/fubar-coder/bb2-c/issues/668)). The depth
-    is read together with the flags of the bitmap, so a bitmap with flags
-    set is taken for one with hundreds of bitplanes and memory is
-    overwritten ([#670](https://github.com/fubar-coder/bb2-c/issues/670));
-    more than 16 bitplanes overwrite the library's data
+    ([#668](https://github.com/fubar-coder/bb2-c/issues/668)). More than
+    16 bitplanes overwrite the library's data
     ([#674](https://github.com/fubar-coder/bb2-c/issues/674)).
 "FadeInBitmap":
   text: Copies one bitmap onto another line by line from the top down, each line first through a dither pattern and 19 lines later fully, so that the picture fades in. `delay` slows the effect down; with the optional values only `height` lines are copied, from line `offset1` of the source to line `offset2` of the destination.
@@ -24,9 +21,7 @@
     delay is as for `ClearBitmap`.
 
     Kept from the original: a delay of 0 waits 4294967296 turns per line
-    ([#669](https://github.com/fubar-coder/bb2-c/issues/669)); a bitmap
-    with flags set counts as one with hundreds of bitplanes
-    ([#670](https://github.com/fubar-coder/bb2-c/issues/670)); and from 9
+    ([#669](https://github.com/fubar-coder/bb2-c/issues/669)), and from 9
     bitplanes on the bitplanes get mixed up and the library's data is
     overwritten ([#674](https://github.com/fubar-coder/bb2-c/issues/674)).
 "ZoomX4":
@@ -82,6 +77,4 @@
   notes: |
     Kept from the original: the size of the bitmap is ignored, the
     command always works on 32 lines of 80 bytes
-    ([#676](https://github.com/fubar-coder/bb2-c/issues/676)), and a
-    bitmap with flags set counts as one with hundreds of bitplanes
-    ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).
+    ([#676](https://github.com/fubar-coder/bb2-c/issues/676)).

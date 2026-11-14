@@ -37,10 +37,6 @@
     sound as it is ([#46](https://github.com/fubar-coder/bb2-c/issues/46)).
 "DecodeSound":
   text: Makes a sound from an IFF 8SVX file that is already in memory at the address. A file in chip memory is used where it is, other data is copied to chip memory.
-  notes: |
-    Kept from the original: decoding into the same sound first from chip
-    memory and then from other memory leaves the copy unfreed
-    ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
 "SetPeriod":
   text: Sets the period of the sound, for the next time it is played. A sound that is not set up is the error "Uninitialized Sound".
   notes: |

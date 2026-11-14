@@ -44,9 +44,6 @@ intro: |
 
   Kept from the original: when several gadgets of a list have the same
   `id`, some commands work on the first of them and others on the last
-  ([#175](https://github.com/fubar-coder/bb2-c/issues/175)); and the
-  commands that change gadgets through tags must not be used inside a
-  string expression
-  ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).
+  ([#175](https://github.com/fubar-coder/bb2-c/issues/175)).
 
   *Based on the bbgtlib guide by Acid Software.*

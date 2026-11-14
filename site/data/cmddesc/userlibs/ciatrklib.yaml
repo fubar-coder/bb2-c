@@ -102,13 +102,11 @@
     Call it before `StartTracker`. Tempo commands of a module have no
     effect in this mode.
 
-    Kept from the original: removing the interrupt always removes the
-    vector of timer A of the CIA in use, whichever interrupt that is,
+    Kept from the original: removing the interrupt, here and when a
+    program ends that did not use `ChangeTrackerVBlank`, always removes
+    the vector of timer A of the CIA in use, whichever interrupt that is,
     which can take an interrupt of the system away
-    ([#448](https://github.com/fubar-coder/bb2-c/issues/448)), and it
-    switches the audio filter, and with it the power LED, over
-    ([#449](https://github.com/fubar-coder/bb2-c/issues/449)). The same
-    happens when a program ends that did not use `ChangeTrackerVBlank`.
+    ([#448](https://github.com/fubar-coder/bb2-c/issues/448)).
 "PlayTracker":
   text: Plays one tick of the module. After `ChangeTrackerVBlank`, call it 50 times a second, for example from a vertical blank interrupt handler (`SetInt 5`).
   notes: |

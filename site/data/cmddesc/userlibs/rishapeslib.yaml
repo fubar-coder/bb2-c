@@ -33,11 +33,6 @@
     * A file that is not an IFF file loads only one shape, into the last
       shape of the range
       ([#813](https://github.com/fubar-coder/bb2-c/issues/813)).
-    * Loading into a shape whose data is linked into memory, as
-      `LECludgeShapes` makes them, reads that shape's data from a wrong
-      address and ends the command early without closing the file; a
-      second such shape makes the command return into the program's stack
-      ([#807](https://github.com/fubar-coder/bb2-c/issues/807)).
     * A palette chunk of fewer than 3 bytes writes 65536 colours over
       memory ([#820](https://github.com/fubar-coder/bb2-c/issues/820)).
 "LESaveShapes":
@@ -78,11 +73,7 @@
 
     Kept from the original: a palette chunk whose size is not a multiple
     of 3 makes the command miss the shape data, and nothing is loaded
-    ([#811](https://github.com/fubar-coder/bb2-c/issues/811)); decoding
-    into a shape whose data is linked into memory reads that shape's data
-    from a wrong address and ends the command early, and a second such
-    shape makes the command return into the program's stack
-    ([#807](https://github.com/fubar-coder/bb2-c/issues/807)).
+    ([#811](https://github.com/fubar-coder/bb2-c/issues/811)).
 "LEInitShape":
   text: Makes an empty shape of the given width, height and depth, with cleared data and cookie in chip memory and both handles at 0.
   notes: |

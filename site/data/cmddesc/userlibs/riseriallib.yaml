@@ -68,10 +68,9 @@
   notes: |
     Kept from the original: with the port open, the command returns to a
     wrong place
-    ([#796](https://github.com/fubar-coder/bb2-c/issues/796)); it may not
-    stop at the 0 byte ([#797](https://github.com/fubar-coder/bb2-c/issues/797));
-    and it leaves the string memory in a wrong state
-    ([#795](https://github.com/fubar-coder/bb2-c/issues/795)).
+    ([#796](https://github.com/fubar-coder/bb2-c/issues/796)), and it may
+    not stop at the 0 byte
+    ([#797](https://github.com/fubar-coder/bb2-c/issues/797)).
 "SerialProgress":
   text: The number of bytes still to send or receive of the last `SerialSendBlock` or `SerialReceiveBlock`.
 "SerialReadLong":

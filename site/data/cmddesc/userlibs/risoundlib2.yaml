@@ -4,9 +4,7 @@
     The same command as in the first sound library, with its faults kept
     from the original (see there): a failing call leaves freed memory in
     the sound object
-    ([#831](https://github.com/fubar-coder/bb2-c/issues/831)), a sound
-    made with `DecodeSound` from chip memory cannot be replaced
-    ([#945](https://github.com/fubar-coder/bb2-c/issues/945)), the rate is
+    ([#831](https://github.com/fubar-coder/bb2-c/issues/831)), the rate is
     right only for the usual header
     ([#832](https://github.com/fubar-coder/bb2-c/issues/832)) and a rate of
     0 hangs ([#830](https://github.com/fubar-coder/bb2-c/issues/830)), an
@@ -19,9 +17,7 @@
     is stored behind the sound object, over the start of the next one, so
     making sound `n` damages the sample address of sound `n+1`, and for
     the last sound object whatever follows the objects
-    ([#926](https://github.com/fubar-coder/bb2-c/issues/926)). The mark
-    that audiolib keeps for a sound made with `DecodeSound` is not cleared
-    ([#925](https://github.com/fubar-coder/bb2-c/issues/925)).
+    ([#926](https://github.com/fubar-coder/bb2-c/issues/926)).
 "OpenAHI":
   text: Opens unit `unit` of ahi.device, version 4 or newer. As a function it returns -1 on success and 0 if the device cannot be opened.
   notes: |
