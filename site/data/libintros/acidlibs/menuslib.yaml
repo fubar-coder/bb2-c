@@ -17,7 +17,7 @@ intro: |
   menu when it is checked, 3 and 4 the same as 1 and 2 but checked at the
   start; a larger value is taken as Intuition's item flags themselves.
 
-  Kept from the original: menu, item and subitem numbers are checked only
+  Menu, item and subitem numbers are checked only
   with runtime error checking; without it, a wrong number reads beyond the
   end of the lists ([#416](https://github.com/fubar-coder/bb2-c/issues/416)).
 

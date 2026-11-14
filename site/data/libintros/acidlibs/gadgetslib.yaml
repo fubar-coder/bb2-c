@@ -20,9 +20,9 @@ intro: |
   Commands that change a gadget, such as `SetString`, `Toggle` or
   `SetHProp`, do not redraw it; `Redraw` does. With runtime error
   checking, an `Id` that the list does not have is the error "Can't Find
-  Gadget". Kept from the original: without runtime error checking, the
+  Gadget"; without it, the
   search for an `Id` does not stop at the end of the list
-  ([#166](https://github.com/fubar-coder/bb2-c/issues/166)), and freeing a
+  ([#166](https://github.com/fubar-coder/bb2-c/issues/166)). Kept from the original: freeing a
   list leaves the memory of its string and proportional gadgets in use
   ([#163](https://github.com/fubar-coder/bb2-c/issues/163)).
 

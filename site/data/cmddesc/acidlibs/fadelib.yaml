@@ -1,9 +1,9 @@
 "FadeIn":
   text: Fades the colours of the used slice from black to those of the palette, from `Low Colour` to `High Colour` if they are given, else all colours both have. Blitz mode only.
   notes: |
-    Kept from the original: the colour range given is not limited to
-    the colours of the palette and the slice
-    ([#136](https://github.com/fubar-coder/bb2-c/issues/136)), and with
+    As in the original (BB2 style), a colour range that is not limited to
+    the colours of the palette and the slice is noticed only with runtime
+    error checking ([#136](https://github.com/fubar-coder/bb2-c/issues/136)), and with
     runtime error checking some mistakes give the wrong message
     ([#330](https://github.com/fubar-coder/bb2-c/issues/330),
     [#331](https://github.com/fubar-coder/bb2-c/issues/331)).
