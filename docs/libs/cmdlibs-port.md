@@ -29,8 +29,9 @@ carried over (for the comparison with AmiBlitz3).
   blitz2.s:8767–8771, C `eval.c:567`) – a3 is behind the data then.
   The entries "without 0" below (Peeks$, RexxError, ReadSerialString,
   BoxString) are therefore peculiarities without observable consequence; what does become visible
-  is an a3 that is *behind* the 0 (GetRexxCommand/GetResultString,
-  FileRequest$).
+  is an a3 that is *behind* the 0: the next part of a string expression
+  is then written one byte too far (GetRexxCommand/GetResultString,
+  fixed #52; FileRequest$).
 * **Register preservation:** according to the AmiBlitz3 spec a lib routine may change everything
   except a4/a5/a7. As with the system libs, the C versions
   nevertheless preserve at least the registers that the original preserves (thunks,
@@ -223,7 +224,7 @@ C, declarations identical, binary = source. Imploder (Implode/Deplode), Crunch-M
 
 ## 92 arexxlib
 
-C, declarations identical, binary = source. BB2 ArgStrings (memlib, ra_Size with bit 31 = "from Blitz"), RexxMsgs (128 bytes, ln_Name "REXX"). Errors (memory, no REXX port, no rexxsyslib) show a recoverable alert and return the error code (0/4/8). BUG(orig): ReplyRexxMsg checks with `BTST #17,28(a0)` (memory BTST = bit 25 = RXFUNC) instead of RXFF_RESULT (#48); ClearRexxMsg/FillRexxMsg without limit 16 (#49); index (n-1)*4 as word (n=0 = rm_Action) (#51); GetRexxCommand/GetResultString leave a3 behind the 0 (#52), GetResultString leaves rm_Result2 pointing to the freed string (#53); SendRexxCommand without REXX port: alert with interrupts disabled (#55). Kept, not a bug: RexxError without terminating 0 (invisible, see General; #54). DIFF: ReplyRexxMsg with a non-RexxMsg returns (original: crash; #47); -8(a2) is not copied to -4(a2). Test: t61_arexx with its own port "REXX" (priority 100), RexxMast not needed. Not tested: real ARexx host, error paths (alert waits for the mouse).
+C, declarations identical, binary = source. BB2 ArgStrings (memlib, ra_Size with bit 31 = "from Blitz"), RexxMsgs (128 bytes, ln_Name "REXX"). Errors (memory, no REXX port, no rexxsyslib) show a recoverable alert and return the error code (0/4/8). BUG(orig): ReplyRexxMsg checks with `BTST #17,28(a0)` (memory BTST = bit 25 = RXFUNC) instead of RXFF_RESULT (#48); ClearRexxMsg/FillRexxMsg without limit 16 (#49); index (n-1)*4 as word (n=0 = rm_Action) (#51); GetResultString leaves rm_Result2 pointing to the freed string (#53); SendRexxCommand without REXX port: alert with interrupts disabled (#55). Fixed (intended deviation, #52): GetRexxCommand/GetResultString left a3 behind the 0; a3 now ends on it (test `arexxlib-getstring-a3`). Kept, not a bug: RexxError without terminating 0 (invisible, see General; #54). DIFF: ReplyRexxMsg with a non-RexxMsg returns (original: crash; #47); -8(a2) is not copied to -4(a2). Test: t61_arexx with its own port "REXX" (priority 100), RexxMast not needed. Not tested: real ARexx host, error paths (alert waits for the mouse).
 
 ## 90 seriallib
 

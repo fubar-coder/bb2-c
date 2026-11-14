@@ -38,9 +38,8 @@
  *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
  *   - GetRexxResult/GetRexxCommand: index (n-1)*4 as word (MULU, d1.w),
  *     n = 0 reads rm_Action / rm_Result2. (#51)
- *   - GetRexxCommand/GetResultString copy ra_Length+1 bytes (the 0 too):
- *     a3 is left BEHIND the 0 (#52).  GetResultString deletes the ArgString
- *     but leaves rm_Result2 pointing to it (#53).
+ *   - GetResultString deletes the ArgString but leaves rm_Result2
+ *     pointing to it (#53).
  *   - Not a bug (by design): RexxEvent removes the first message like exec
  *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
  *     (after ClearRexxMsg).
@@ -55,6 +54,9 @@
  *     allocates length+9 bytes. (#57)
  *   - Without rexxsyslib the internal RexxMsg check shows the alert and
  *     then treats the message as valid with address 0. (#56)
+ * Fixed (intended deviation, #52): GetRexxCommand/GetResultString copied
+ * ra_Length+1 bytes (the 0 too) and left a3 BEHIND the 0, so a string
+ * expression went on one byte too far; a3 now ends on the 0.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -675,7 +677,8 @@ static ULONG BLITZ_ROUTINE getrexxresult_c(ULONG msg BL_REG(d0),
 BLITZ_THUNK(_GetRexxResult, getrexxresult_c, "d1/a0-a1");
 
 /* copy an ArgString with its 0 to a3 (DBRA on ra_Length: length+1
-   bytes, a3 behind the 0); d0 = length */
+   bytes); a3 ends on the 0 (fixed, #52: the original left it behind the
+   0); d0 = length */
 static ULONG copyarg(const UBYTE *s)
 {
     UWORD len = ARGHEAD(s)->ra_Length, n = len;
@@ -683,14 +686,15 @@ static ULONG copyarg(const UBYTE *s)
     do
         *blitz_string++ = *s++;
     while (n-- != 0);
+    blitz_string--;                             /* fixed (#52): a3 on the 0 */
     return len;
 }
 
 /**
  * @brief GetRexxCommand(rexxmsg,ARGNum): rm_Args[ARGNum-1] as string.
  *
- * Copies the ArgString to a3 (the string work area).  BUG(orig) (#52):
- * ra_Length+1 bytes are copied (the 0 too), a3 is left BEHIND the 0.
+ * Copies the ArgString to a3 (the string work area), a3 ends on the 0.
+ * Fixed (#52): the original left a3 BEHIND the 0.
  * BUG(orig) (#51): the index is a word, n = 0 reads rm_Result2.
  *
  * @param msg  d0: the RexxMsg
@@ -718,9 +722,8 @@ BLITZ_THUNK(_GetRexxCommand, getrexxcommand_c, "d1/a0-a1");
  * @brief GetResultString(rexxmsg): rm_Result2 as string, then the
  *        ArgString is deleted.
  *
- * Copied to a3 as GetRexxCommand (BUG(orig) (#52): the 0 too, a3 behind
- * it).  BUG(orig) (#53): rm_Result2 still points to the deleted
- * ArgString.
+ * Copied to a3 as GetRexxCommand (fixed, #52: a3 ends on the 0).
+ * BUG(orig) (#53): rm_Result2 still points to the deleted ArgString.
  *
  * @param msg  d0: the RexxMsg
  * @return d0: the string length; 0 if msg is no RexxMsg or rm_Result2 is
