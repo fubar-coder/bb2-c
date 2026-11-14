@@ -102,7 +102,11 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
   of this repository stays (Acceptance). A bug not fixed yet is
   documented: `BUG(orig) (#N)` in the code, a bug-orig test that comes out
   REPRODUCED (`tests/README.md`, "bug-orig tests"); `DIFF` only where
-  technically necessary. **A fix** (spec `testing/bug-fix-workflow`):
+  technically necessary. A case where the original checks invalid input
+  only in its error check area (runtime error checking) on purpose is
+  closed with the label `as-designed`; its code note reads
+  `By design (#N)` instead of `BUG(orig)`, and its bug-orig test may stay
+  and come out REPRODUCED. **A fix** (spec `testing/bug-fix-workflow`):
   1. one issue per bug;
   2. in the fix commit: the code change; the test of the expected
      behaviour - the bug-orig test gets the header `; @fixed #N` (or the
