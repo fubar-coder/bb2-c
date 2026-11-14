@@ -36,16 +36,18 @@
  * original).
  *
  * BUG(orig), kept:
- *   - the routines that free the old screen of an object call freescreen
- *     with a2 = their argument stack instead of the graphics base: if the
- *     object has a DBufInfo (ShowBitMap on V39+ before), Screen /
- *     ScreenTags / WbToScreen / FindScreen on that object call
- *     FreeDBufInfo through garbage (crash). (#247)
  *   - Not a bug (library-opened screens are always closed by the library,
  *     no leak found): the title copy (allocst) of FindScreen/WbToScreen
  *     objects is not involved, but a ScreenTags/Screen title is only freed
  *     when the screen is closed by the library.
  *   - ScreenTags with a taglist copies it without a limit into 32 longs. (#249)
+ * Fixed (intended deviation, #247): the routines that free the old
+ *   screen of an object called freescreen with a2 = their argument stack
+ *   as the graphics base: if the object had a DBufInfo (ShowBitMap on
+ *   V39+ before), Screen / ScreenTags / WbToScreen / FindScreen on that
+ *   object called FreeDBufInfo through garbage (crash).  Here
+ *   FreeDBufInfo goes through the graphics base that allocated the
+ *   DBufInfo (dbufgfx, kept by ShowBitMap).
  * Fixed (intended deviation, #250): the original gives SA_DisplayID only
  *   the low word of the viewmode (MOVE d1,newmodes+2, the upper word stays
  *   0): display IDs with a monitor part (PAL, NTSC, DblPAL, ...) opened on
@@ -433,10 +435,15 @@ BLITZ_INLINE(dosmousey, "   move.l  (a0),a0\n   move.w  16(a0),d0");
 
 /* ---------------------------------------------------------- freescreen */
 
-/* freescreen - a3 = object, a6 = intuition, a2 = graphics */
-static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase,
-                        struct GfxBase *GfxBase)
+/* the graphics base ShowBitMap allocated the DBufInfos with (fixed #247:
+   the original's callers pass a2, their argument stack, as the graphics
+   base of FreeDBufInfo) */
+static struct GfxBase *dbufgfx;
+
+/* freescreen - a3 = object, a6 = intuition */
+static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase)
 {
+    struct GfxBase *GfxBase = dbufgfx;          /* fixed, #247 */
     struct Screen *s = obj->screen;
     struct bl_regs r = { 0 };
 
@@ -460,15 +467,14 @@ static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase,
  * a3 = the screen object.  Only screens the library opened ("bLtZ" in
  * UserData) are closed (the title copy freed with maxslib $CF02, the
  * DBufInfo with FreeDBufInfo); screens of WbToScreen/FindScreen are only
- * forgotten.
+ * forgotten.  The declaration still loads graphics.library into a2; the
+ * DBufInfo is freed with the base that allocated it (dbufgfx, #247).
  *
  * @param intui a6: intuition.library
- * @param gfx   a2: graphics.library
  */
-static void BLITZ_ROUTINE freescreen_c(struct IntuitionBase *intui BL_REG(a6),
-                                       struct GfxBase *gfx BL_REG(a2))
+static void BLITZ_ROUTINE freescreen_c(struct IntuitionBase *intui BL_REG(a6))
 {
-    freescreen_((struct scrobj *)blitz_string, intui, gfx);
+    freescreen_((struct scrobj *)blitz_string, intui);     /* a2: see dbufgfx */
 }
 BLITZ_THUNK(freescreen, freescreen_c, "d1/a0-a1");
 
@@ -488,7 +494,7 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
     UWORD w;
 
     *(struct scrobj **)(blitz_globals + used) = obj;   /* set used screen! */
-    freescreen_(obj, IntuitionBase, (struct GfxBase *)args);   /* BUG(orig) (#247): a2 */
+    freescreen_(obj, IntuitionBase);            /* fixed, #247 */
     sd.ns.Font = (struct TextAttr *)font;
     sd.ns.LeftEdge = BL_POPW(sp);
     sd.ns.TopEdge = BL_POPW(sp);
@@ -524,8 +530,9 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
  * the current IntuiFont and the type CUSTOMSCREEN | the ScreenPens flag
  * NS_EXTENDED; the screen gets "bLtZ" in UserData.
  *
- * BUG(orig) (#247): the old screen is freed with a2 = the argument stack
- * as graphics base (FreeDBufInfo through garbage if it had a DBufInfo).
+ * Fixed (#247): the old screen's DBufInfo is freed with the graphics base
+ * that allocated it; the original passed a2 = the argument stack as
+ * graphics base (FreeDBufInfo through garbage).
  * Fixed (#250): SA_DisplayID gets the whole viewmode (the original only
  * its low word).
  * Fixed (#251): "Can't open Screen" is raised in the normal code (the
@@ -646,22 +653,20 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
  * becomes the used screen.  It is never closed by the library.
  *
  * BUG(orig) (#248): the object's old screen is freed (closed if the
- * library opened it), (#247) with a2 = the argument stack as graphics
- * base.  Errors: "Can't find WorkBench" (err8, in the
+ * library opened it).  Fixed (#247): the original freed it with a2 =
+ * the argument stack as graphics base.  Errors: "Can't find WorkBench" (err8, in the
  * normal code with its text; fixed, #251: the original's text is in the
  * error area).
  *
  * @param used  d6.w: the offset of the used screen in the globals
- * @param args  a2: the argument stack (passed as graphics base, see above)
  * @param intui a6: intuition.library
  */
-void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
-                              struct IntuitionBase *intui BL_REG(a6))
+void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), struct IntuitionBase *intui BL_REG(a6))
 {
     struct scrobj *obj = (struct scrobj *)blitz_string;
     struct Screen *s = intui->FirstScreen;
 
-    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
+    freescreen_(obj, intui);                    /* fixed #247; BUG(orig) (#248) */
     for (;; s = s->NextScreen) {
         if (!s) {
             BLITZ_RUNERR(mess8);                /* err8 */
@@ -683,15 +688,14 @@ static int prefix(const UBYTE *title, const UBYTE *pfx)
     return 1;
 }
 
-static void findscreen(const UBYTE *title, WORD used, const UBYTE *args,
-                       struct IntuitionBase *intui)
+static void findscreen(const UBYTE *title, WORD used, struct IntuitionBase *intui)
 {
     struct scrobj *obj = (struct scrobj *)blitz_string;
     /* the list starts at +60: &FirstScreen taken as a screen's NextScreen */
     struct Screen *s = (struct Screen *)&intui->FirstScreen;
 
     *(struct scrobj **)(blitz_globals + used) = obj;
-    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
+    freescreen_(obj, intui);                    /* fixed #247; BUG(orig) (#248) */
     for (;;) {
         s = s->NextScreen;
         if (!s) {
@@ -719,13 +723,11 @@ static void findscreen(const UBYTE *title, WORD used, const UBYTE *args,
  * as dofindscreen.
  *
  * @param used  d6.w: the offset of the used screen in the globals
- * @param args  a2: the argument stack (passed as graphics base, #247)
  * @param intui a6: intuition.library
  */
-void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
-                                struct IntuitionBase *intui BL_REG(a6))
+void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), struct IntuitionBase *intui BL_REG(a6))
 {
-    findscreen(0, used, args, intui);           /* no title */
+    findscreen(0, used, intui);           /* no title */
 }
 
 /**
@@ -736,21 +738,19 @@ void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a
  * never closed by the library.
  *
  * BUG(orig) (#248): the object's old screen is freed (closed if the
- * library opened it), (#247) with a2 = the argument stack as graphics
- * base.  Errors: "Can't find Screen" (err12, in the
+ * library opened it).  Fixed (#247): the original freed it with a2 =
+ * the argument stack as graphics base.  Errors: "Can't find Screen" (err12, in the
  * normal code with its text; fixed, #251: the original's text is in the
  * error area).
  *
  * @param title d1: the title prefix
  * @param used  d6.w: the offset of the used screen in the globals
- * @param args  a2: the argument stack (passed as graphics base, see above)
  * @param intui a6: intuition.library
  */
 void BLITZ_ROUTINE dofindscreen(const UBYTE *title BL_REG(d1), WORD used BL_REG(d6),
-                                const UBYTE *args BL_REG(a2),
                                 struct IntuitionBase *intui BL_REG(a6))
 {
-    findscreen(title, used, args, intui);
+    findscreen(title, used, intui);
 }
 
 /* ---------------------------------------------------------- LoadScreen */
@@ -833,6 +833,7 @@ static void agashowbitmap(const struct bb_bitmap *bm, struct scrobj *obj,
     if (!db) {
         db = AllocDBufInfo(&scr->ViewPort);
         obj->dbuf = db;
+        dbufgfx = GfxBase;                      /* for freescreen_, #247 */
     }
     ChangeVPBitMap(&scr->ViewPort, (struct BitMap *)bm, db);
 }
@@ -976,7 +977,7 @@ static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont
     *(struct scrobj **)(blitz_globals + used) = obj;   /* make used */
     tl.title.ti_Data = allocst(title, BL_POPL(sp));
     tl.font.ti_Data = *ifont;
-    freescreen_(obj, intui, (struct GfxBase *)sp);  /* BUG(orig) (#247): a2 */
+    freescreen_(obj, intui);                    /* fixed, #247 */
     return sp;
 }
 
@@ -989,7 +990,8 @@ static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont
  * TAG_END; the screen gets "bLtZ" in UserData.
  *
  * BUG(orig) (#249): the tag list is copied without a limit into 32 longs.
- * BUG(orig) (#247): the old screen is freed with a2 as graphics base.
+ * Fixed (#247): the original freed the old screen with a2 as graphics
+ * base.
  *
  * @param title d1: the title
  * @param tags  d2: the tag list
