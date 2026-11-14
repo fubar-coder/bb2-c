@@ -52,6 +52,12 @@
  *   byte and the bytes behind it as further digits.  Here the year also
  *   ends at the end of the string ("1/1/78" is the year 78, as "1/1/78/"),
  *   and an empty year is invalid input: 0.
+ * Fixed (intended deviation, #1029): the day and month fields of NumDays
+ *   read their second character and the "/" behind it without a test for
+ *   the end of the string: a short string ("", "1", "1/") read the 0 byte
+ *   as a digit and the bytes behind it, and parsed on into the memory
+ *   behind the string when a "/" followed.  Here such a field is invalid
+ *   input: 0.
  * Not a bug (documented): Mins/Secs return the values of the last Hours
  * call (no DateStamp of their own).
  */
@@ -431,6 +437,10 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * last DateStamp, 13 the end mark, 14 and up the memory behind).
  * Fixed (#125): the year ends at the end of the string too, an empty
  * year gives 0 (the original read a short year on past the end).
+ * Fixed (#1029): a day or month field that ends at the end of the string
+ * gives 0 (the original read the 0 byte as a digit and the bytes behind
+ * it: NumDays("") or NumDays("1") parsed on into the memory behind the
+ * string when a "/" followed).
  * Fixed (#1001): the days of the cycles are corrected by the century leap
  * days the Gregorian calendar does not have (gregskips_year); the
  * original's NumDays("1/3/2100") was one day too high.
@@ -455,10 +465,14 @@ ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
     num = *cur++;                                       /* day */
     if ((UWORD)num == '/')
         return 0;                                       /* fixed (#123) */
+    if (!num)
+        return 0;                                       /* fixed (#1029) */
     BL_SETW(num, num - 48);
     BL_SETB(digit, *cur++);
     if ((UWORD)digit == '/')
         goto getm;
+    if (!(UBYTE)digit)
+        return 0;                                       /* fixed (#1029) */
     BL_SETW(digit, digit - 48);
     num = (UWORD)num * 10UL;                            /* MULU #10,d1 */
     BL_SETW(num, num + digit);
@@ -469,10 +483,14 @@ getm:
     num = *cur++;                                       /* month */
     if ((UWORD)num == '/')
         return 0;                                       /* fixed (#123) */
+    if (!num)
+        return 0;                                       /* fixed (#1029) */
     BL_SETW(num, num - 48);
     BL_SETB(digit, *cur++);
     if ((UWORD)digit == '/')
         goto gety;
+    if (!(UBYTE)digit)
+        return 0;                                       /* fixed (#1029) */
     BL_SETW(digit, digit - 48);
     num = (UWORD)num * 10UL;
     BL_SETW(num, num + digit);
