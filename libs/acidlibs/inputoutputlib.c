@@ -55,8 +55,12 @@
  * original they do not leave a6 = dos base (the dispatchers restore a6
  * anyway).  dosetin/dosetout/pops keep d1/a1 (and a0).
  *
- * Error checks (debugger only): PopInput/PopOutput with count 0 -> "No
- * Input channel to pop!" / "No Output channel to pop!".
+ * Error checks (debugger only): PopInput/PopOutput with nothing pushed
+ * by the program -> "No Input channel to pop!" / "No Output channel to
+ * pop!".  Fixed (intended deviation, #1032): the original tested the
+ * count for 0, but init's push counts too, so the first pop right after
+ * the start passed the check (and set the handler to 0); here a count of
+ * 1 or less is the error.  Release code unchanged.
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__
@@ -180,7 +184,8 @@ BLITZ_THUNK(dosetout, dosetout_c, "d1/a0-a1");
 /**
  * @brief PopInput: go back to the previous input channel.
  *
- * Errors (debugger only): "No Input channel to pop!" (count 0).  Without
+ * Errors (debugger only): "No Input channel to pop!" (count <= 1, the
+ * initial push of init does not count; fixed, #1032).  Without
  * the debugger popping more than was pushed takes old ring entries,
  * By design (#194).
  */
@@ -355,16 +360,17 @@ DISPATCH(dooutstring2, "_iochan_out", "-8");
 BLITZ_ERRCHK_MESSAGE(mess2, "No Input channel to pop!");
 BLITZ_ERRCHK_MESSAGE(mess3, "No Output channel to pop!");
 
-/* popinputcheck - TST inputcount:BEQ err2 */
+/* popinputcheck - TST inputcount:BEQ err2; fixed (#1032): the push of
+   init counts too, so 1 is "nothing pushed by the program" */
 static void BLITZ_ERRCHK popinputcheck_c(void)
 {
-    if (!iochan_in.count)
+    if (iochan_in.count <= 1)
         BLITZ_RUNERR(mess2);
 }
 
 static void BLITZ_ERRCHK popoutputcheck_c(void)
 {
-    if (!iochan_out.count)
+    if (iochan_out.count <= 1)
         BLITZ_RUNERR(mess3);
 }
 
