@@ -29,13 +29,15 @@
  *     argument: with the dimensions it is x, else whatever d2 holds) and
  *     writes its length to d2-4. (#61)
  *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
- *   - ASLPathRequest$ without dimensions keeps the pattern flag of the
- *     previous ASLFileRequest$ call (flags is not reset). (#64)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
  *     static buffer (strng+4: 96 bytes including the 0; in the binary the
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#64): ASLPathRequest$ without dimensions clears the pattern flag
+ *   (ASLFR_Flags1), as the form with dimensions does; the original kept
+ *   the flag of the previous ASLFileRequest$ (a pattern gadget with the
+ *   old pattern).
  * Fixed (#62): without asl.library ASLFileRequest$/ASLPathRequest$ return
  *   the empty string (as Cancel); the original returned with d0 = the
  *   title's address as the string length (the "defaults to freqlib" call
@@ -510,8 +512,8 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
  *
  * As ASLFileRequest$ (aslreq).  BUG(orig) (#61): fr_File is copied into
  * the address in d2, which is no argument here (whatever d2 holds), and
- * its length written to d2-4.  BUG(orig) (#64): the pattern flag of the
- * previous ASLFileRequest$ stays (flags is not reset).  Errors (debugger,
+ * its length written to d2-4.  Fixed (#64): no pattern gadget (the
+ * original kept the pattern flag of the previous ASLFileRequest$).  Errors (debugger,
  * freqchk2): path$ must be a variable with room for 160 characters.
  *
  * @param arg0  d0: the title
@@ -525,8 +527,9 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
  */
 static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
 {
+    Tags.flags.ti_Data = 0;             /* Fixed (#64): no pattern gadget */
     Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
-    dims(20, 20, 280, 160);             /* flags stay from the last call */
+    dims(20, 20, 280, 160);
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
