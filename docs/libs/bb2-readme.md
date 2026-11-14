@@ -174,14 +174,88 @@ not a bug, only kept: `MOD` on Quick/Float uses the integer parts – the
 library returns `Quotient<<16|Rest` for Quick, a long for Float, but the
 compiler reads the result as word or long, blitz2.s:9459/9463 – which is
 the intended integer semantics of MOD):
-`lmultiply` adds
-partial products via SWAP (visible only on overflow); division by 0 returns
+division by 0 returns
 `$7FFFFFFF` regardless of the sign. Fixed since (intended deviations):
 `newlist` wrote, for size 0 (e.g. dimension −1), 8 bytes behind the block
 (#59); Quick 0 became the Float `$00000080` and Quick −32768 the Float
 +32768 (#146, #147); `arrmult` added its second partial product via SWAP
 and let an array of 4 GB or more go on modulo 2^32, now such a `Dim` fails
-with "Out of Memory!" (#58).
+with "Out of Memory!" (#58); `lmultiply` and `qmultiply` added partial
+products via SWAP, on an overflow the product is now the one modulo 2^32
+(#199, next section).
+
+### lmullib: the products of the original (#199)
+
+The Long and Quick multiplication (`*` on `.l` and `.q`, lmullib's
+`longmult` $CA01 and `quickmult` $CA00) works on the magnitudes of the
+factors with three or four 16x16 bit MULU. The original added the
+partial products SWAPped instead of shifted by 16, so the high word of a
+partial product also landed in the low word of the result. The port gives
+the product modulo 2^32 (Quick: bits 16..47 of the 64 bit product), with
+the sign applied last. With A, B the magnitudes and ah, al, bh, bl their
+16 bit halves, the original's result differs from it exactly in these
+cases:
+
+* Long: when `ah*bl` or `al*bh` is 65536 or more. The magnitude was too
+  large by the sum of the high words of these two products, at most
+  65534 (`196608*30000` gave 1603272705 instead of 1603272704). Then A*B
+  is 2^32 or more: a product that fits in 32 bits never changes, and not
+  every one that does not fit changes (`65536*65536` is the same).
+* Quick: when the product of the integer parts `ah*bh` is 65536 or more,
+  i.e. the true product is at least twice outside the Quick range. The
+  value was too large in magnitude by the high word of `ah*bh`, at most
+  16384/65536 = 0.25 (`300*300` gave `$5F90.0001` instead of
+  `$5F90.0000`).
+
+Word and byte multiplications use MULS and were never affected. A program
+that needs the original's results, e.g. a calculation that lets a Long
+overflow on purpose and must give the same numbers as before, can compute
+them with these functions (from the analysis of #199, checked in the
+emulator with 3000 pairs of mixed sizes and signs against the original
+library and the fixed one: the same results with both). Every
+multiplication in them has factors below 65536, which both libraries
+compute exactly; a call per product is far slower than the operator.
+
+```
+; the product as the original lmullib gave it (Long)
+Function.l OldMul{a.l,b.l}
+  n.l=0
+  If a<0 Then a=-a : n=1-n
+  If b<0 Then b=-b : n=1-n
+  ah.l=(a LSR 16) AND $FFFF : al.l=a AND $FFFF
+  bh.l=(b LSR 16) AND $FFFF : bl.l=b AND $FFFF
+  c1.l=ah*bl : c2.l=al*bh
+  p.l=al*bl+(((c1+c2) AND $FFFF) LSL 16)+((c1 LSR 16) AND $FFFF)+((c2 LSR 16) AND $FFFF)
+  If n Then p=-p
+  Function Return p
+End Function
+
+; the same for Quick
+Function.q OldQMul{a.q,b.q}
+  ra.l=Peek.l(&a) : rb.l=Peek.l(&b) : n.l=0
+  If ra<0 Then ra=-ra : n=1-n
+  If rb<0 Then rb=-rb : n=1-n
+  ah.l=(ra LSR 16) AND $FFFF : al.l=ra AND $FFFF
+  bh.l=(rb LSR 16) AND $FFFF : bl.l=rb AND $FFFF
+  hh.l=ah*bh
+  p.l=(((al*bl) LSR 16) AND $FFFF)+ah*bl+al*bh+(hh LSL 16)+((hh LSR 16) AND $FFFF)
+  If n Then p=-p
+  r.q=0 : Poke.l &r,p
+  Function Return r
+End Function
+```
+
+For a factor known in advance the correction is shorter: for a
+non-negative `x`, `x*69069+(((x LSR 16)*3533) LSR 16)` is the original's
+`x*69069` (69069 = 65536 + 3533; the corpus programs `t158_2dfuzz` and
+`t159_polyfuzz` compute it from 16 bit products in their `rn{}`).
+AmiBlitz3's own lmullib keeps the original routines (only its 68020
+entry `$CA02`, which its compiler uses with 68020 optimisation, multiplies
+with `MULS.L`; the AmiBlitz3 mode of `blitz2-ab3` loads that library;
+`docs/ab3/acidlibs-a-l.md`), and AmiBlitz3 lets a
+library of its userlibs directory replace a loaded library of the same
+number (`AmiBlitz/AmiBlitz3@7ab0350b`, test `ab3_cli` case `userlib`, also
+run with AmiBlitz3's compiler).
 
 ## State: command libraries (acidlibs)
 

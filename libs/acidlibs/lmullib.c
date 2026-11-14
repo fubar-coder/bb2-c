@@ -4,9 +4,13 @@
  * on Quick and Long, tokens quickmult/longmult, blitz2.s equates 170-171).
  *
  * C translation of bblibsrc/lmullib (Acid Software).  The 68000 has only a
- * 16x16->32 bit MULU, so both routines combine partial products.  The way
- * they are added is kept exactly; it differs from a true 32 bit product
- * when the result overflows (see the notes at the routines).
+ * 16x16->32 bit MULU, so both routines combine partial products.  The
+ * result is the product modulo 2^32 (Quick: bits 16..47 of the 64 bit
+ * product), also when it overflows.
+ * Fixed (#199): the original adds partial products SWAPped instead of
+ * shifted by 16, so on an overflow their high word also landed in the low
+ * word of the result.  The fixed routines take no more time than the
+ * unfixed ones (rule #1019; see the notes at the routines).
  */
 #include "blitzlib.h"
 
@@ -35,10 +39,14 @@ static inline ULONG swap(ULONG a)
  * @brief longmult ($CA01): Long multiplication, d0.l = d0.l * d1.l.
  *
  * On the magnitudes, the sign applied last.
- * BUG(orig) (#199): the cross products are added SWAPped, not shifted:
- * their high word also lands in the low word of the result.  That only
- * happens when a cross product is >= $10000, i.e. when the true product
- * does not fit in 32 bits anyway.
+ * Fixed (#199): the original adds the cross products SWAPped, not
+ * shifted: their high word also lands in the low word of the result when
+ * a cross product is >= $10000, i.e. when the true product does not fit
+ * in 32 bits anyway (196608 * 30000 gave 1603272705, not 1603272704).
+ * Now the low words of the two cross products are added and shifted
+ * once; that is 8 cycles fewer than before (ADD.w, SWAP, CLR.w, ADD.l for
+ * SWAP, ADD.l, SWAP, ADD.l: 36 instead of 44 besides the MULU), with the
+ * three MULU on the same source words.
  *
  * @param a  d0: the first factor
  * @param b  d1: the second factor
@@ -61,9 +69,10 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
     }
     acc = mulu(mag_a, mag_b);           /* 'skip2: lo(a) * lo(b) */
     cross_hilo = mulu(swap(mag_a), mag_b); /* hi(a) * lo(b) */
-    acc += swap(cross_hilo);
     cross_lohi = mulu(mag_a, swap(mag_b)); /* lo(a) * hi(b) */
-    acc += swap(cross_lohi);
+    /* Fixed (#199): the cross products shifted by 16, only their low
+       words count */
+    acc += (ULONG)(UWORD)(cross_hilo + cross_lohi) << 16;
     if (neg)
         acc = -acc;                     /* 'skip3 */
     return (LONG)acc;
@@ -74,10 +83,19 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
  * d0.q = d0.q * d1.q.
  *
  * The four partial products shifted to keep bits 16..47 of the 64 bit
- * product.  The low product contributes only its high word (CLR/SWAP:
- * truncation, no rounding).
- * BUG(orig) (#199): the high product is added SWAPped like in longmult
- * (its high word lands in the low word when hi*hi >= $10000).
+ * product (modulo 2^32).  The low product contributes only its high word
+ * (truncation, no rounding).
+ * Fixed (#199): the original adds the high product hi(a) * hi(b) SWAPped
+ * like longmult, so its high word also lands in the low word when hi*hi
+ * >= $10000 (300 * 300 gave $5F90.0001).  Now its low word goes to the
+ * high word, together with the high word of lo*lo in one long (MOVE.w,
+ * SWAP).  The core is inline assembler so that it stays as cheap as the
+ * original's (rule #1019, a hot path): the same four MULU with the same
+ * source words (lo(b), hi(b), hi(a), hi(a): their 1 bits set the MULU
+ * time), the same saved registers, and the instructions besides the
+ * MULU take 52 cycles instead of 60 from 'skip2 on (the core: MOVE.w,
+ * SWAP instead of CLR.w, SWAP ... SWAP, ADD.l; with gcc's register
+ * copies around it, counted in the built routine).
  *
  * @param a  d0: the first factor
  * @param b  d1: the second factor
@@ -85,9 +103,9 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
  */
 LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
-    ULONG mag_a = a, mag_b = b;         /* d0 d1 (d3 d4: copies of |a|) */
-    ULONG acc;                          /* d0: the product */
-    ULONG swap_b;                       /* d1: |b| SWAPped */
+    ULONG mag_a = a, mag_b = b;         /* d0 d1 */
+    ULONG swap_a, swap_b;               /* |a| and |b| SWAPped */
+    ULONG lolo;                         /* lo*lo, then the two outer words */
     UWORD neg = 0;                      /* d2.w */
 
     if ((LONG)mag_a < 0) {
@@ -98,12 +116,21 @@ LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
         mag_b = -mag_b;
         neg = ~neg;
     }
-    acc = mulu(mag_a, mag_b) >> 16;     /* 'skip2: lo*lo: CLR d0:SWAP d0 */
-    acc += mulu(swap(mag_a), mag_b);    /* + hi(a) * lo(b) */
+    swap_a = swap(mag_a);               /* 'skip2 */
     swap_b = swap(mag_b);
-    acc += mulu(mag_a, swap_b);         /* + lo(a) * hi(b) */
-    acc += swap(mulu(swap(mag_a), swap_b)); /* + hi(a) * hi(b) << 16 */
+    __asm__("move.w  %[a],%[lolo]\n\t"
+            "mulu.w  %[b],%[lolo]\n\t"  /* lo(a) * lo(b) */
+            "mulu.w  %[sb],%[a]\n\t"    /* lo(a) * hi(b) */
+            "mulu.w  %[sa],%[b]\n\t"    /* hi(a) * lo(b) */
+            "mulu.w  %[sa],%[sb]\n\t"   /* hi(a) * hi(b) */
+            "move.w  %[sb],%[lolo]\n\t" /* high word of lo*lo, low word of hi*hi */
+            "swap    %[lolo]\n\t"
+            "add.l   %[lolo],%[a]\n\t"
+            "add.l   %[b],%[a]"
+            : [lolo] "=&d"(lolo), [a] "+d"(mag_a), [b] "+d"(mag_b), [sb] "+d"(swap_b)
+            : [sa] "d"(swap_a)
+            : "cc");
     if (neg)
-        acc = -acc;                     /* 'skip3 */
-    return (LONG)acc;
+        mag_a = -mag_a;                 /* 'skip3 */
+    return (LONG)mag_a;
 }
