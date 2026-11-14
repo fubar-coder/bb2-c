@@ -65,7 +65,7 @@ that shows the fix; the pages link them.
 
 {{< cards >}}
   {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
-  {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else." >}}
+  {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler accepts beyond Blitz Basic 2." >}}
   {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}
   {{< card link="comparing" title="Comparing with the original yourself" subtitle="Compile your own program with both compilers and compare the results." >}}

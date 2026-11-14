@@ -1,7 +1,7 @@
 ---
 title: Sources that compile differently
 weight: 2
-description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, with what the original did and how to change them.
+description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, and the new runtime errors of the libraries, with what the original did and how to change them.
 ---
 
 Before this page you should know the fixed bugs of the compiler
@@ -12,7 +12,10 @@ The exceptions on this page all come from fixed bugs: the original
 accepted these sources, but compiled them to a wrong or random result, or
 crashed while compiling them. Each case shows a small program, what the
 original did with it, what the port does, and what to change in a source
-that relies on the old behaviour.
+that relies on the old behaviour. A few fixes of the libraries work the
+same way when the program runs: a command that the original carried out
+with a wrong argument stops with a runtime error
+([Runtime errors of the libraries](#runtime-errors)).
 
 The outputs shown were recorded in an emulator. The original is
 Blitz Basic 2 built from its published source, with the libraries of the
@@ -636,3 +639,135 @@ characters when the destination is a register.
 defined before the instruction, or use shorter macro parameters.
 
 Issue: [copyconst copies an operand text into namebuff without a length check (#997)](https://github.com/fubar-coder/bb2-c/issues/997).
+
+## Runtime errors of the libraries {#runtime-errors}
+
+The cases above are found by the compiler. The ones in this section
+compile as before but stop when the program runs: where the original
+went on with a wrong argument and wrote over memory or hung, the port's
+library reports a runtime error. Most of them are error checks, so they
+come only in a program compiled with runtime error checking, like the
+other checks of Blitz Basic 2; without it, the program runs as with the
+original.
+
+### `WindowTags` with too many tag pairs {#windowtags-too-many-tags}
+
+**What happened.** `WindowTags` copies the tag and data pairs given as
+arguments into a buffer of the library without a limit. With 16 pairs or
+more it wrote behind the buffer, over data and code of the library:
+
+```
+DEFTYPE .l
+WbToScreen 0
+t=$80000064
+WindowTags 0,$000E,"Tags",t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10
+DefaultOutput
+NPrint "opened"
+CloseWindow 0
+End
+```
+
+The 16 pairs all set the left edge of the window. Compiled with runtime
+error checking, the original printed `opened`.
+
+**With the port.** With runtime error checking, more than 15 pairs are
+the error "Too Many Tags"; the program above stops at `WindowTags`.
+
+**What to change.** Give a long list of tags as the address of a tag
+list, `WindowTags Window#,Flags,Title$,&TagList`: that form takes any
+number of tags.
+
+Issue: [WindowTags with tag pairs overflowed its tag buffer (#961)](https://github.com/fubar-coder/bb2-c/issues/961).
+
+### `StringGadget` with a `Maxlen` of 0 {#stringgadget-maxlen}
+
+**What happened.** `StringGadget` with a `Maxlen` of 0 cleared 65536
+bytes of memory behind the gadget's empty text buffer.
+
+**With the port.** With runtime error checking, this is the error
+"Maxlen MUST be greater than zero".
+
+**What to change.** Give a `Maxlen` of 1 or more.
+
+Issue: [StringGadget with Maxlen 0 cleared 64 KB (#165)](https://github.com/fubar-coder/bb2-c/issues/165).
+
+### `Inkey$` with a negative count {#inkey-negative}
+
+**What happened.** The original took the count of `Inkey$` as an
+unsigned number: `Inkey$(-1)` tried about 4 billion times to read a
+character, added every character it got behind the end of the string
+buffer, and did not come back.
+
+**With the port.** With runtime error checking, a negative count is the
+error "Can't Inkey$ a negative number of Characters!". `Inkey$(0)` is
+the empty string, as before.
+
+**What to change.** Use a count of 0 or more.
+
+Issue: [Inkey$ with a negative count made about 4 billion attempts (#1031)](https://github.com/fubar-coder/bb2-c/issues/1031).
+
+### A bitmap or shape of depth 0 {#depth-zero}
+
+**What happened.** `BitMap` refuses a depth of 0 with runtime error
+checking, but `CludgeBitMap` and `InitShape` had no check. A depth of 0
+made a bitmap or shape that the drawing and blitting commands treated as
+one of 65536 planes, so they ran over the memory behind it; `CludgeBitMap`
+itself already wrote 65536 plane pointers behind the bitmap object.
+
+```
+DEFTYPE .l
+NPrint "before"
+InitShape 0,16,8,0
+NPrint "after, depth ",Peek.w(Addr Shape(0)+4)
+End
+```
+
+Compiled with runtime error checking, the original printed
+
+```
+before
+after, depth 0
+```
+
+**With the port.** With runtime error checking, `CludgeBitMap` with a
+depth of 0 or more than 8 is the error "Illegal BitMap Depth", and
+`InitShape` with a depth of 0 the error "Illegal Shape Depth". The
+program above stops after `before`. The check of `InitShape` also keeps
+such a shape out of `ShapeGadget`.
+
+**What to change.** Give a depth from 1 to 8.
+
+Issues: [Bitmaps of depth 0 made the plane loops run 65536 times (#393)](https://github.com/fubar-coder/bb2-c/issues/393),
+[BBlit with depth 0 (#74)](https://github.com/fubar-coder/bb2-c/issues/74),
+[QBlit with a shape of depth 0 (#243)](https://github.com/fubar-coder/bb2-c/issues/243),
+[A shape gadget of depth 0 (#167)](https://github.com/fubar-coder/bb2-c/issues/167).
+
+### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
+
+**What happened.** With runtime error checking, the first `PopInput` or
+`PopOutput` with no switch of the channel left to undo, such as one at
+the start of the program, passed the check and left the program without
+an input or output channel. The error "No Input channel to pop!" or "No
+Output channel to pop!" came only at the next pop.
+
+**With the port.** The error comes at the first such pop.
+
+**What to change.** Pop only to undo a switch such as `FileInput` or
+`WindowOutput`.
+
+Issue: [The check of PopInput and PopOutput came one pop late (#1032)](https://github.com/fubar-coder/bb2-c/issues/1032).
+
+### `CreateMsgPort` without a free signal {#createmsgport-signal}
+
+**What happened.** A task has a limited number of signals. When none was
+free, the original's `CreateMsgPort` did not notice and made a port whose
+messages never wake the program.
+
+**With the port.** This is the runtime error "Failed to allocate signal
+for Port", also without runtime error checking, like the error "Failed to
+allocate memory for Port" of the same command.
+
+**What to change.** Free the signals or ports the program no longer
+needs before it makes a new port.
+
+Issue: [CreateMsgPort did not notice a failed signal allocation (#298)](https://github.com/fubar-coder/bb2-c/issues/298).

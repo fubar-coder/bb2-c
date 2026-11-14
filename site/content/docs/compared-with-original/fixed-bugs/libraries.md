@@ -205,6 +205,44 @@ after umlaut: 2
 
 Issue: [Characters far above the font's first character were not drawn (#148)](https://github.com/fubar-coder/bb2-c/issues/148).
 
+### `LoadFont` lost the style {#loadfont-style}
+
+`LoadFont` takes a style as its last argument: 1 underlined, 2 bold, 4
+italic, 8 extended, or a sum of them. The original wrote this value
+one byte too far into the font object, the one that describes the font
+to the system. The style itself stayed 0, and the value went into the
+flags of the font, which tell the system where to look for it. A font
+loaded with a style came out without it.
+
+**What happened**
+
+```
+DEFTYPE .l
+LoadFont 1,"topaz.font",9,1
+a=Addr IntuiFont(1)
+NPrint "style ",Peek.b(a+6)," flags ",Peek.b(a+7)
+End
+```
+
+The program loads topaz 9 underlined and reads the style and flags bytes
+of the font object. The original prints
+
+```
+style 0 flags 1
+```
+
+**With the port**
+
+The style is set and the flags are 0:
+
+```
+style 1 flags 0
+```
+
+A style above 255 counts only with its low byte.
+
+Issue: [LoadFont wrote the style into the font flags (#197)](https://github.com/fubar-coder/bb2-c/issues/197).
+
 ## Strings
 
 ### Text after a string function lost its last character {#text-after-string-function}
@@ -517,6 +555,71 @@ lost over 100000: 0
 
 Issue: [Window titles were copied and never freed (#318)](https://github.com/fubar-coder/bb2-c/issues/318).
 
+### `WCls` left the top line of the window {#wcls-top-line}
+
+`WCls` clears the used window with colour 0 or the colour given. The
+original cleared it from its second pixel line on, so the top line kept
+what was drawn there. This shows most in a window without a border,
+where that line is the first line of the contents.
+
+**What happened**
+
+The program opens a window without a border on a screen of its own,
+clears it with colour 2 and reads the colours of the pixels 5,0 and 5,1
+through the graphics library:
+
+{{% details title="The test program" closed="true" %}}
+
+```
+DEFTYPE .l
+Screen 0,0,0,320,200,3,0,"wcls",1,2
+Dim nm.l(8) : Poke.s &nm(0),"graphics.library"
+GetReg d0,&nm(0) : MOVE.l d0,a1 : MOVE.l 4,a6 : JSR -408(a6) : PutReg d0,gfx
+Window 0,20,30,100,50,$0800,"",0,1
+DefaultOutput
+rp=RastPort(0)
+x=5 : y=0 : Gosub pix : a=v : y=1 : Gosub pix : b=v
+NPrint "before ",a," ",b
+WCls 2
+x=5 : y=0 : Gosub pix : a=v : y=1 : Gosub pix : b=v
+NPrint "after ",a," ",b
+CloseWindow 0
+CloseScreen 0
+End
+
+; colour of the pixel x,y of rp -> v
+pix:
+  GetReg d0,gfx : MOVE.l d0,a6
+  GetReg d0,rp : MOVE.l d0,a1
+  GetReg d1,y
+  GetReg d0,x
+  JSR -318(a6)
+  PutReg d0,v
+Return
+```
+
+{{% /details %}}
+
+The original prints
+
+```
+before 0 0
+after 0 2
+```
+
+The top line is still colour 0.
+
+**With the port**
+
+The whole window is cleared:
+
+```
+before 0 0
+after 2 2
+```
+
+Issue: [WCls only cleared from the second line (#314)](https://github.com/fubar-coder/bb2-c/issues/314).
+
 ## Screens and palettes
 
 ### Decoded palettes were black on Kickstart before 3.0 {#palette-kickstart-13}
@@ -603,6 +706,10 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   1 searches from the first character, as `Instr` without a start
   position does
   ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
+* `Instr` with a start position near $7FFFFFFF went on searching in
+  memory far from the string, until it found the text there or hung; it
+  returns 0
+  ([#1030](https://github.com/fubar-coder/bb2-c/issues/1030)).
 * `Cvi` always read two bytes of its string and `Cvl` and `Cvq` four, so
   a shorter string gave whatever an earlier string expression had left
   behind it; the missing bytes count as 0, so `Cvl("ab")` is $61620000
@@ -629,6 +736,17 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 * The runtime error of `Inkey$` from the default input read "Can't Input
   Character from Defualt Input"; it reads "Default"
   ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
+* `Inkey$` with a negative count tried about 4 billion times to read a
+  character and added every character it got behind the end of the
+  string buffer; with runtime error checking a negative count is the
+  error "Can't Inkey$ a negative number of Characters!"
+  ([#1031](https://github.com/fubar-coder/bb2-c/issues/1031)).
+* With runtime error checking, the first `PopInput` or `PopOutput` with
+  no switch of the channel left to undo, such as one at the start of the
+  program, passed the check and left the program without a channel; the
+  error came only at the pop after it. It is reported at the first such
+  pop
+  ([#1032](https://github.com/fubar-coder/bb2-c/issues/1032)).
 
 ### Arrays and sorting
 
@@ -670,6 +788,62 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   check, and their memory was never freed; the labels are counted and the
   memory is freed with the gadget
   ([#174](https://github.com/fubar-coder/bb2-c/issues/174)).
+* A toggle `GTButton` whose gadget could not be made wrote to address 14;
+  only a gadget that was made is changed
+  ([#171](https://github.com/fubar-coder/bb2-c/issues/171)).
+* The flags 64 (disabled) and 128 (immediate) of `GTShape` had no effect;
+  they work
+  ([#990](https://github.com/fubar-coder/bb2-c/issues/990)).
+* A `GTShape` gadget got the label of the gadget made before it; it has
+  none ([#172](https://github.com/fubar-coder/bb2-c/issues/172)).
+* After `GTFreeGadget` of the last gadget of a GadTools list, the next
+  gadget was linked to the freed one and was neither shown nor freed; it
+  becomes part of the list
+  ([#962](https://github.com/fubar-coder/bb2-c/issues/962)).
+
+### Gadgets
+
+* `SelectMode` had no effect, so `SelectMode 1` did not give new gadgets
+  a box as their highlight; it does
+  ([#952](https://github.com/fubar-coder/bb2-c/issues/952)).
+* `Free GadgetList` did not free the text buffers of string gadgets and
+  the data of prop gadgets, which stayed allocated until the program
+  ended; they are freed with the list
+  ([#163](https://github.com/fubar-coder/bb2-c/issues/163)).
+* `StringGadget` after `Borders Off` wrote to the addresses 0, 2, 36 and
+  38; it writes nothing there
+  ([#164](https://github.com/fubar-coder/bb2-c/issues/164)).
+* `StringGadget` with a `Maxlen` of 0 cleared 65536 bytes of memory and
+  crashed the program; with runtime error checking it is the error
+  "Maxlen MUST be greater than zero"
+  ([#165](https://github.com/fubar-coder/bb2-c/issues/165)).
+* A `ShapeGadget` of a shape of depth 0 got a broken image; with runtime
+  error checking such a shape cannot be made, as `InitShape` refuses a
+  depth of 0
+  ([#167](https://github.com/fubar-coder/bb2-c/issues/167)).
+
+### Menus
+
+* A menu, item or subitem with an empty text read its text from address
+  0, and the item got the width of whatever was there; the text is empty,
+  and an empty item is as wide as its gaps
+  ([#981](https://github.com/fubar-coder/bb2-c/issues/981)).
+* `MenuState` of a single menu changed the wrong bit, so a menu could not
+  be disabled or enabled on its own; it can
+  ([#216](https://github.com/fubar-coder/bb2-c/issues/216)).
+* `MenuChecked` of any entry but the first item and subitem of a menu
+  walked the menu lists again and gave the state of another entry, or
+  read unrelated memory; it gives the state of the entry asked for
+  ([#217](https://github.com/fubar-coder/bb2-c/issues/217)).
+* `ShapeItem` and `ShapeSub` ignored small flag values such as toggle,
+  exclude and checked; they take their flags as `MenuItem` does
+  ([#218](https://github.com/fubar-coder/bb2-c/issues/218)).
+* Item flags such as $10000 were taken as 4, a checked toggle item that
+  excludes all others; they are taken as given
+  ([#219](https://github.com/fubar-coder/bb2-c/issues/219)).
+* Replacing a subitem moved the subitems behind it by a wrong amount, so
+  they covered it or left a gap; they move by the change of its height
+  ([#220](https://github.com/fubar-coder/bb2-c/issues/220)).
 
 ### Windows and screens
 
@@ -685,6 +859,62 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   window is at most 597 lines high. The editor's file requester is the
   same code and is fixed with it
   ([#160](https://github.com/fubar-coder/bb2-c/issues/160)).
+* `Screen`, `ScreenTags`, `WbToScreen` and `FindScreen` on a screen
+  object that had used `ShowBitMap`, on Kickstart 3.0 or later, crashed
+  the program when they freed the old screen; it is freed properly
+  ([#247](https://github.com/fubar-coder/bb2-c/issues/247)).
+* `FindScreen`, `WbToScreen` and `CloseScreen` on an object that had only
+  found a screen another object had opened closed that screen, and the
+  other object was left with a closed screen; a found screen is only
+  forgotten
+  ([#248](https://github.com/fubar-coder/bb2-c/issues/248)).
+* `ScreenTags` with the address of a tag list of more than 15 tags
+  overwrote code behind the library; up to 15 tags are copied and the
+  rest of the list is linked, as for `WindowTags`
+  ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
+* `Menus`, `MenusOn` and `MenusOff` reached only the windows in the
+  lower half of the window numbers, so `MenusOff` left the menus of the
+  others on; they reach every window
+  ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
+* `WindowTags` without tags opened the window with the extra tags of the
+  previous `WindowTags`, such as its position and size; it uses none
+  ([#316](https://github.com/fubar-coder/bb2-c/issues/316)).
+* `WindowTags` with 16 or more tag and data pairs as arguments wrote
+  behind its tag buffer, over data and code of the library; with runtime
+  error checking more than 15 pairs are the error "Too Many Tags"
+  ([#961](https://github.com/fubar-coder/bb2-c/issues/961)). A longer
+  list can be given as the address of a tag list.
+* A `Window` with the super bitmap flag `$80` but without a `BitMap#`
+  got the bitmap of the last `Window` that named one; only the form with
+  `BitMap#` gives a super bitmap window
+  ([#319](https://github.com/fubar-coder/bb2-c/issues/319)).
+* `WScroll` and `WPrintScroll` set the drawing colour of the window to 0;
+  it stays as it was
+  ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
+* `Edit$` in a window with a proportional font took the normal width of the font
+  for every character from code 160 on, such as the
+  umlauts, so the cursor and the typed text were in the wrong place; every
+  character has its own width
+  ([#321](https://github.com/fubar-coder/bb2-c/issues/321)).
+* After a gadget down of a string gadget, `Event` reports a gadget up at
+  once, which programs rely on. When another event came in between, the
+  real gadget up of that gadget was reported as well, two for one entry;
+  it is reported once
+  ([#311](https://github.com/fubar-coder/bb2-c/issues/311)).
+* The extra menu event of a menu choice with several items picked had
+  its qualifier from memory that was never set, so `EventQualifier` of it
+  was random; it has the qualifier of the menu choice
+  ([#312](https://github.com/fubar-coder/bb2-c/issues/312)).
+* `Qualifier` set only the lower half of its long result, so the upper
+  half held whatever was there before; the whole result is set
+  ([#313](https://github.com/fubar-coder/bb2-c/issues/313)).
+
+### Fonts
+
+* Every `LoadFont` on the same IntuiFont object lost the memory of the
+  copy of the previous font name; the old copy is freed. See also
+  [`LoadFont` lost the style](#loadfont-style)
+  ([#198](https://github.com/fubar-coder/bb2-c/issues/198)).
 
 ### Dates and numbers
 
@@ -711,6 +941,10 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   result depended on the memory behind it; the year ends with the
   string, so `"1/1/78"` is the year 78, and an empty year gives 0
   ([#125](https://github.com/fubar-coder/bb2-c/issues/125)).
+* `NumDays` of a string too short for its day or month, such as `""`,
+  read on into the bytes behind the string and could return a date made
+  of them; such a string gives 0
+  ([#1029](https://github.com/fubar-coder/bb2-c/issues/1029)).
 * `QAngle` gave a wrong angle for points 32768 or more apart in x or y;
   it gives the right one
   ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).
@@ -833,6 +1067,25 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   bitmap whose flags are set wrote the extra planes through the memory
   behind the bitmap; they load only the planes the bitmap has
   ([#188](https://github.com/fubar-coder/bb2-c/issues/188)).
+* `CludgeBitMap` with a depth of 0 wrote 65536 plane pointers behind the
+  bitmap object, and `InitShape` made a shape of depth 0. The drawing and
+  blitting commands, such as `Plot`, `Polyf`, `BBlit` and `QBlit`, then
+  ran up to 65536 times over memory behind the object. With runtime error
+  checking, `CludgeBitMap` refuses a depth of 0 or more than 8 with
+  "Illegal BitMap Depth", as `BitMap` does, and `InitShape` a depth of 0
+  with "Illegal Shape Depth"
+  ([#393](https://github.com/fubar-coder/bb2-c/issues/393),
+  [#74](https://github.com/fubar-coder/bb2-c/issues/74),
+  [#243](https://github.com/fubar-coder/bb2-c/issues/243)).
+* The dither form of `BitMapPoly` and `RenderPoly` took the planes from
+  the second one on from behind the dither bitmap when its planes were
+  smaller than those of the bitmap drawn on; every plane comes from the
+  dither bitmap
+  ([#1035](https://github.com/fubar-coder/bb2-c/issues/1035)).
+* `NextFrame` of an anim with a single change read its next change from
+  address 0, and so did the first `NextFrame` of an anim without any; such
+  an anim plays once and stays on its last frame
+  ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
 
 ### Sounds
 
@@ -842,6 +1095,19 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   other memory, `LoadSound` or `InitSound`, so that sample was never freed
   before the program ended; it is freed when the object is reused or
   freed ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
+
+### Tasks and message ports
+
+* `TaskName$` of a task without a name copied the text at address 0; it
+  is the empty string
+  ([#297](https://github.com/fubar-coder/bb2-c/issues/297)).
+* `CreateMsgPort` did not notice when the program had no free signal
+  left and made a port whose messages never wake the program; this is
+  the runtime error "Failed to allocate signal for Port"
+  ([#298](https://github.com/fubar-coder/bb2-c/issues/298)).
+* `DeleteMsgPort` freed a port with the messages still waiting at it, so
+  their senders never got them back; they are replied first
+  ([#299](https://github.com/fubar-coder/bb2-c/issues/299)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
@@ -1082,6 +1348,14 @@ More functions left the place of the next part wrong in other ways:
   the program, switched the audio filter, and with it the power LED, over;
   both stay as they are
   ([#449](https://github.com/fubar-coder/bb2-c/issues/449)).
+* Without runtime error checking, `StartTracker` of an empty slot
+  returned the slot number, a true value, although nothing plays; it
+  returns 0 (False)
+  ([#451](https://github.com/fubar-coder/bb2-c/issues/451)).
+* Without runtime error checking, `GetModuleName$` of an empty slot gave
+  a string of ten undefined characters per slot number; it is the empty
+  string
+  ([#437](https://github.com/fubar-coder/bb2-c/issues/437)).
 * `PopUpWindow` switched the audio filter and the power LED over for
   every menu with sub menus it showed; both stay as they are
   ([#468](https://github.com/fubar-coder/bb2-c/issues/468)).
