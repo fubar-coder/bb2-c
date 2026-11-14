@@ -19,8 +19,12 @@
  * OpenDiskFont; the CCR (Z = font not opened) is checked by loadchk after
  * the routine (debugger only, "Can't Open Font").
  *
- * BUG(orig), kept:
- *   - the name copy of a previous LoadFont is never freed (allocst). (#198)
+ * Fixed (intended deviation, #198): the name copy (allocst) of a
+ *   previous LoadFont on the object was never freed: every LoadFont cost
+ *   a copy until the program's end.  Here LoadFont frees the old copy
+ *   (maxslib freest) before it copies the new name.  Free IntuiFont keeps
+ *   it, so the object stays a valid TextAttr for the libraries that use
+ *   the current IntuiFont; memlib frees it at the end.
  * Fixed (intended deviation, #197): the original wrote the style as a
  *   WORD to +6 (MOVE.w d3,6(a3)): ta_Style = the upper byte of the
  *   argument (0 for 0..255), ta_Flags = the style.  Here ta_Style gets
@@ -120,7 +124,8 @@ static void freeifont(struct bb_intuifont *f, const void *gfx)
  * @brief Free IntuiFont#: the object's free routine (_free): close its
  * font (CloseFont), if one is open.
  *
- * The name copy is not freed, BUG(orig) (#198).  The object comes in a3.
+ * The name copy stays (the object remains a valid TextAttr; the next
+ * LoadFont frees it, #198, memlib at the end).  The object comes in a3.
  *
  * @param gfx  a6: graphics.library
  */
@@ -158,6 +163,8 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
        style as a word over ta_Style and ta_Flags */
     f->ta.ta_Style = (UBYTE)style;
     f->ta.ta_Flags = 0;
+    r.d0 = (ULONG)f->ta.ta_Name;                /* fixed, #198: the old copy */
+    BLITZ_ALIBJSR(TOK_freest, r);
     r.d0 = (ULONG)name;
     r.d1 = BL_POPL(sp);
     f->ta.ta_Name = (STRPTR)BLITZ_ALIBJSR(TOK_allocst, r);
@@ -172,8 +179,9 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
  * IntuiFont object (style 0).
  *
  * The object (a3) becomes the used and the current IntuiFont; its old
- * font is closed, the name copied with maxslib allocst (the copy of a
- * previous LoadFont is never freed, BUG(orig) (#198)), then OpenDiskFont.
+ * font is closed, the name copied with maxslib allocst (Fixed (#198):
+ * the copy of a previous LoadFont is freed first; the original never
+ * freed it), then OpenDiskFont.
  * Amiga mode only.  DIFF: a2 stays unchanged (the original pops the name
  * length).
  * Errors (debugger only): "Can't Open Font" - loadchk tests the Z flag
