@@ -43,6 +43,13 @@
  *   left the pointer to them and the record length (only an open cleared
  *   them): the object pointed to freed memory, and a Fields before the
  *   next open added to both.  Here CloseFile clears them.
+ * Fixed (intended deviation, #144): myseek set the buffer's file position
+ *   before the dos Seek and kept it when the Seek failed: after Eof at the
+ *   end of a file (a seek one byte further) Loc and Lof were 1 too high
+ *   (t50: "written lof 32 loc 32" for a file of 31 bytes), and the append
+ *   idiom FileSeek f,Lof(f) asked for a position behind the end.  Here a
+ *   failed Seek puts the old position back; positions count from 0, at
+ *   the end Loc = Lof = the length (the manual).
  * Kept from the original (BUG(orig)):
  *   - Description, not a defect (#141): Fields continues the record of the
  *     file: it adds its fields to those already set and to their record
@@ -71,11 +78,6 @@
  *     address with -1 then.
  *   - Not a bug (the correct length including buffered data): Lof does not
  *     flush: the larger of the dos length and the end of the buffer.
- *   - Eof at the end of the file: myseek has already set the buffer's
- *     file position one further when the dos Seek fails, and nothing
- *     resets it - Loc and Lof are 1 too high afterwards (t50: "written
- *     lof 32 loc 32" for a file of 31 bytes; Blitz evaluates the NPrint
- *     arguments from the right, Eof first). (#144)
  * Kept from the original, not a bug (no visible effect):
  *   - The dos buffer (memlib globalloc, MEMF_PUBLIC) and the FileInfoBlock
  *     of Exists are not checked: in the original globalloc never returns
@@ -395,11 +397,14 @@ static ULONG myread(ULONG result, struct bfile *f, UBYTE *dst, ULONG len,
 
 /* myseek - d1 = file, d2 = position, d3 = -1 from the beginning, >= 0
    from the current position; d0 (result) comes back unchanged if the
-   position is in the buffer, otherwise the result of dos Seek */
+   position is in the buffer, otherwise the result of dos Seek.  Fixed
+   (#144): if the Seek fails, the buffer keeps the position of the dos
+   file (the original kept the new one) */
 static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
                     struct Library *dosbase)
 {
     ULONG start;
+    ULONG result_seek;
 
     if ((WORD)mode >= 0) {                      /* TST d3:BMI */
         mode = -1;                              /* to offset beginning */
@@ -415,9 +420,13 @@ static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
         where += f->bufstart;
         mode = -1;
     }
+    start = f->bufstart;                        /* where dos is now */
     f->bufstart = where;
     f->flags = 1;
-    return Seek(f->fh, where, mode);
+    result_seek = Seek(f->fh, where, mode);
+    if (result_seek + 1 == 0)                   /* fixed (#144) */
+        f->bufstart = start;
+    return result_seek;
 }
 
 /* ------------------------------------------------------------ routines */
@@ -517,8 +526,8 @@ void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2)
  *
  * False while the position is in the buffer's valid bytes; otherwise
  * true if a dos seek one byte further fails (else it seeks back).
- * BUG(orig) (#144): after the failed seek the buffer's file position is
- * one too far, Loc and Lof are 1 too high afterwards.  The original keeps
+ * Fixed (#144): the failed seek leaves the position as it was (the
+ * original's Loc and Lof were 1 too high afterwards).  The original keeps
  * a0/a1 when the position is in the buffer.  Errors (debugger, fchk):
  * "Non-Existant File".
  *
