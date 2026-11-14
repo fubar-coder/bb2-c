@@ -169,6 +169,68 @@ more functions left the place of the next part wrong in other ways:
   list and the memory behind it
   ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).
 
+## Files
+
+### `Loc` and `Lof` were one too high after `Eof` {#loc-lof-after-eof}
+
+`Eof` tells whether the position in a file is at its end. To find out,
+the original tried to move one byte further, and when that failed at the
+end of the file it kept the new position all the same. Once `Eof` had
+been true, `Loc` and `Lof` were one too high: a file of 3 bytes had the
+length 4. A program that adds to a file with `FileSeek f,Lof(f)`, as the
+manual shows, then asked for a position behind the end of the file.
+
+**What happened**
+
+```
+f$="RAM:abc.dat"
+KillFile f$
+If WriteFile(0,f$)
+  e=Eof(0)
+  NPrint "new eof ",e
+  FileOutput 0 : Print "abc" : DefaultOutput
+  l1.l=Loc(0) : l2.l=Lof(0)
+  NPrint "written loc ",l1," lof ",l2
+  CloseFile 0
+EndIf
+NPrint "exists ",Exists(f$)
+If ReadFile(1,f$)
+  FileInput 1 : a$=Inkey$(3) : DefaultInput
+  e=Eof(1)
+  l1.l=Loc(1) : l2.l=Lof(1)
+  NPrint "read [",a$,"] eof ",e," loc ",l1," lof ",l2
+  CloseFile 1
+EndIf
+KillFile f$
+End
+```
+
+The program asks `Eof` of a new, empty file and writes the 3 bytes `abc`
+into it, then reads them back and asks `Eof` again. The original prints
+
+```
+new eof -1
+written loc 4 lof 4
+exists 3
+read [abc] eof -1 loc 4 lof 4
+```
+
+The file has 3 bytes, as `Exists` shows, but `Loc` and `Lof` say 4.
+
+**With the port**
+
+```
+new eof -1
+written loc 3 lof 3
+exists 3
+read [abc] eof -1 loc 3 lof 3
+```
+
+Positions count from 0, and at the end of the file `Loc` and `Lof` are
+both its length, so `FileSeek f,Lof(f)` goes to the end.
+
+Issue: [Loc and Lof were one too high after Eof at the end of a file (#144)](https://github.com/fubar-coder/bb2-c/issues/144).
+
 ## GadTools gadgets
 
 ### A gadget took over the values of the one before {#gadtools-values}
@@ -404,6 +466,25 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 
 ## Other fixes in the command libraries
 
+### Files and banks
+
+* `OpenFile`, `ReadFile` or `WriteFile` on a file number whose file was still
+  open with `Fields` cut the new file name short, so a long name was not
+  found; the name stays whole
+  ([#138](https://github.com/fubar-coder/bb2-c/issues/138)).
+* `CloseFile` freed the record fields but kept the record length and a
+  pointer to the freed fields, so a `Fields` before the next open added
+  to the old record; closing clears both
+  ([#140](https://github.com/fubar-coder/bb2-c/issues/140)).
+* `Exists` returned -1 only for a drawer: the root of a volume, on file
+  systems that report it as a root, gave its size, normally 0, and a
+  file that could not be examined gave the size of an earlier file; every
+  kind of directory gives -1, and a file that cannot be examined gives 0
+  ([#1026](https://github.com/fubar-coder/bb2-c/issues/1026)).
+* `LoadBank` of a drawer could turn the bank into one of size -1 at
+  another address; a drawer leaves the bank as it is, like a missing file
+  ([#72](https://github.com/fubar-coder/bb2-c/issues/72)).
+
 ### Lists
 
 * `Dim List` with size 0 wrote behind its memory block; nothing is
@@ -447,6 +528,24 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
   century; they follow the Gregorian calendar, in which 1900, 2100, 2200
   and 2300 are not leap years
   ([#1001](https://github.com/fubar-coder/bb2-c/issues/1001)).
+* `WeekDay` was two days off for a few dates, such as 15 and 16
+  September 1973; it is right for every date
+  ([#121](https://github.com/fubar-coder/bb2-c/issues/121)).
+* `NumDays("31/12/1977")` gave 65535 instead of -1, and the day 65535, in
+  the year 2157, came back from `NumDays(Date$(65535))` as 131071; both
+  are right
+  ([#122](https://github.com/fubar-coder/bb2-c/issues/122)).
+* `NumDays` of a date with an empty field, such as `"/5/1990"`, took the
+  empty field as 47; it returns 0, as for other dates it cannot read
+  ([#123](https://github.com/fubar-coder/bb2-c/issues/123)).
+* `NumDays` of a month outside 1 to 12 returned a number taken from
+  unrelated memory; it returns 0
+  ([#124](https://github.com/fubar-coder/bb2-c/issues/124)).
+* `NumDays` of a year with fewer than four digits at the end of the
+  string, such as `"1/1/78"`, read past the end of the string, and the
+  result depended on the memory behind it; the year ends with the
+  string, so `"1/1/78"` is the year 78, and an empty year gives 0
+  ([#125](https://github.com/fubar-coder/bb2-c/issues/125)).
 * `QAngle` gave a wrong angle for points 32768 or more apart in x or y;
   it gives the right one
   ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).

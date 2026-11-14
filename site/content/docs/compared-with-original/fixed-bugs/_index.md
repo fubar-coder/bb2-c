@@ -64,6 +64,8 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
   by the text commands.
 * [Text after a string function lost its last character]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#text-after-string-function" >}}):
   `FileRequest$(...)+".bak"` or `ProgDir$+"/data"` held a 0 byte.
+* [`Loc` and `Lof` were one too high after `Eof`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#loc-lof-after-eof" >}}):
+  a file of 3 bytes had the length 4.
 * [A GadTools gadget took over the values of the one before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#gadtools-values" >}}).
 * [Closing a window lost the events of the others]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#closewindow-events" >}}).
 * [`WSize` and `WMove` hung]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#wsize-wmove" >}})
