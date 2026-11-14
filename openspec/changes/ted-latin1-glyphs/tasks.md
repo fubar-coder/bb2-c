@@ -107,7 +107,7 @@ and is named in the commits. Group 1 changes no code.
   `ctest --preset host` (also `-DHOST_SANITIZE=ON`: the tool and its
   tests); `ctest --preset all` with the prev build: no compiler output,
   library or TED file differs.
-- [ ] 5.2 Look at the screen: 8 px and 6 px with a sample text of all
+- [x] 5.2 Look at the screen: 8 px and 6 px with a sample text of all
   $A0-$FF and the boxes, in the emulator (screenshots for the site, the
   design pass for the 6 px circumflex/tilde/ring and ¼ ½ ¾ § ¶, which are
   conventions and approximations, D1). Verify: the screenshots are in the
