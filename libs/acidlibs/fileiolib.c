@@ -39,8 +39,13 @@
  *     from -4(0) (on the A1200's 24 bit bus the last long of the ROM),
  *     then name[(WORD)length] is cleared (#138).
  *   - CloseFile frees the record fields but leaves the pointer to them
- *     and the record length; OpenFile clears them (#140).  Fields adds to
- *     the existing fields and record length (no reset) (#141).
+ *     and the record length; OpenFile clears them (#140).
+ *   - Description, not a defect (#141): Fields continues the record of the
+ *     file: it adds its fields to those already set and to their record
+ *     length (the author's comment: "record len so far"), so two Fields
+ *     statements give the same record as one with the joined list (a
+ *     field list longer than a line).  Another record needs the file
+ *     opened again.
  *   - Description, not a bug: Fields types 1/2/7 have 1/2/(long at
  *     address-8)+6 bytes, all others 4; strings start at address-4.
  *   - Description, not a bug (decision 2026-10-31, #142): the list is
@@ -744,8 +749,9 @@ BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG
  * from a2): the type (word), then the address (long).  Types 1/2/7 have
  * 1/2/(long at address-8)+6 bytes (strings start at address-4), all
  * others 4.  The list is built backwards: Put/Get transfer the fields in
- * the reverse order (#142, not a bug).  BUG(orig) (#141): adds to the
- * existing fields and record length.  The field nodes come from memlib
+ * the reverse order (#142, not a bug).  Not a defect (#141): it adds to the
+ * fields already set and to the record length ("record len so far"), a
+ * further Fields continues the record.  The field nodes come from memlib
  * globalloc (not checked).
  *
  * @param n  d7: the number of variables
