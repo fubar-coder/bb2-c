@@ -7,6 +7,7 @@
 ; Shape 2; the free CHIP memory (sum of mh_Free of the CHIP MemHeaders)
 ; before CopyShape and after the Free shows the leak.
 ; Correct: the copy owns its data and Free Shape returns it (leak 0).
+; @fixed #268
 ; @configs clib
 DEFTYPE .l
 Function.l chipfree{}

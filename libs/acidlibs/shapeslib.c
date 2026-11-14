@@ -36,8 +36,6 @@
  *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - LoadShapes: the shape block read from the file keeps its +30
  *    ("cL" from a saved DecodeShapes shape: the data is never freed). (#267)
- *  - CopyShape copies +30 too ("cL" of a DecodeShapes shape: the copy is
- *    never freed). (#268)
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -49,6 +47,9 @@
  *  - freeashape clears +30 of a "cL" shape too; the original left the
  *    mark, and a later shape in that object (InitShape, LoadShape,
  *    GetaShape ...) was never freed. (#269)
+ *  - CopyShape clears +30 of the copy, which owns its data; the original
+ *    copied "cL" of a DecodeShapes shape along (the copy was never
+ *    freed). (#268)
  *  - DecodeShapes with address 0 branches (BEQ) in the original into the
  *    error check area (err10): without the debugger behind the library.
  *    Here err10 and its message are in the normal code; without the
@@ -476,6 +477,7 @@ static void copyshape2(struct bb_shape *from, struct bb_shape *to)
     freeashape_(to);
     for (i = 0; i < 8; i++)
         ((ULONG *)to)[i] = ((ULONG *)from)[i];
+    to->cludge = 0;                     /* Fixed (#268): the copy owns its data */
     nall(from, to, offsetof(struct bb_shape, data), offsetof(struct bb_shape, size));
 }
 
@@ -486,9 +488,9 @@ static void copyshape2(struct bb_shape *from, struct bb_shape *to)
  * The destination is freed, the 32 byte block copied, then the data and
  * the cookie are copied into new CHIP memory (not checked).
  *
- * BUG(orig) (#268): +30 is copied too ("cL" of a DecodeShapes shape: the
- * copy is never freed).  Errors: "Uninitialized Shape" (cookiechk,
- * debugger only).
+ * Fixed (#268): +30 of the copy is cleared (the original copied "cL" of a
+ * DecodeShapes shape along, and the copy was never freed).  Errors:
+ * "Uninitialized Shape" (cookiechk, debugger only).
  *
  * @param dst a2: the destination shape
  */
