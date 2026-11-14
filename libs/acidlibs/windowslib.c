@@ -56,8 +56,7 @@
  *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
  *     (the variables are kept in the original order).
  *   - Qualifier (a #long function) only sets the low word of d0. (#313)
- *   - WCls fills from y = 1 (#314); WScroll/WPrintScroll set the A pen to
- *     0 (#315).
+ *   - WScroll/WPrintScroll set the A pen to 0 (#315).
  *   - WindowTags without tags keeps the user tags of the last
  *     WindowTags (no TAG_DONE written) (#316); the tag pairs of
  *     WindowTags ...,Tag,Data... are copied without a limit into 32 longs
@@ -78,6 +77,8 @@
  *   once: "was 4 (16)"), i.e. object 0, the second half of object 0,
  *   object 1 ... and only `maximum` slots: half of the windows were not
  *   reached.  Here they step with the object size, 32 bytes.
+ * Fixed (intended deviation, #314): WCls filled the window from y = 1,
+ *   the top pixel line stayed; here from y = 0.
  * Fixed (intended deviation, #318): Window, WindowTags and WTitle copy
  *   the titles (maxslib allocst) and never freed the copies in the
  *   original.  Here the object keeps its copies (+20 window title, +24
@@ -2319,7 +2320,8 @@ void BLITZ_ROUTINE dowbox(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 BL_
 /**
  * @brief WCls Colour - clear the used window with a colour.
  *
- * RectFill 0,1,Width-1,Height-1.  BUG(orig) (#314): fills from y = 1.
+ * RectFill 0,0,Width-1,Height-1.  Fixed (#314): the original filled from
+ * y = 1.
  *
  * @param c d0: the colour (pen)
  * @param w a1: the used window object
@@ -2330,7 +2332,7 @@ void BLITZ_ROUTINE dowcls2(UWORD c BL_REG(d0), struct bwin *w BL_REG(a1),
 {
     struct Window *win = w->win;
 
-    dowbox2(w, c, 0, 1, (WORD)(win->Width - 1), (WORD)(win->Height - 1), gfxbase);
+    dowbox2(w, c, 0, 0, (WORD)(win->Width - 1), (WORD)(win->Height - 1), gfxbase);
 }
 
 /**

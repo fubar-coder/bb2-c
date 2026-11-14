@@ -5,6 +5,7 @@
 ; colour Workbench gives no pens, as in the corpus test t70); WCls 2,
 ; then the pens of the pixels (5,0) and (5,1) of its RastPort.
 ; Correct: both have pen 2.
+; @fixed #314
 ; @configs clib
 DEFTYPE .l
 Screen 0,0,0,320,200,3,0,"wcls",1,2
