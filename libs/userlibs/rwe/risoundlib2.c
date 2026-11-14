@@ -61,15 +61,19 @@
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926); +14
  *     (audiolib's "cL" mark of DecodeSound data) is no longer cleared
- *     (#925); the old sample is freed without looking at that mark:
- *     after a DecodeSound of chip data the file's own BODY goes to memlib
- *     globfree ("Unable to Free Memory") (#945).
+ *     (#925).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
  *     length in words (+6) as the length in bytes
  *     (#932) and sends the one request
  *     again (SendIO) without waiting for the one before or removing its
  *     reply from the port; finit leaves everything open while it is in
  *     use (#933).
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md 3a): CludgeSound
+ * does not free the old sample when audiolib's "cL" mark (+14) is set
+ * (DecodeSound's in-place data of chip memory, which memlib never
+ * allocated; the original passed it to globfree: "Unable to Free
+ * Memory") (#945).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -595,12 +599,11 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  * @brief CludgeSound sound#,address: make a sound object of an 8SVX file in memory.
  *
  * risoundlib's routine: frees the object's old sample (memlib
- * globfree), checks "8SVX" at +8 and "VHDR" at +12, takes the rate from
+ * globfree; not DecodeSound's in-place "cL" data, fixed: #945), checks "8SVX" at +8 and "VHDR" at +12, takes the rate from
  * the VHDR, the period 3579545 / rate, finds the BODY among the first
  * seven chunks and copies it to chip memory (memlib globalloc); the
  * rate also goes to +16.  BUG(orig): the old sample is freed before the
- * checks, a failure leaves the freed pointer (#831), also DecodeSound's
- * "cL" data (#945); the VHDR is assumed to be 20 bytes (#832); rate 0
+ * checks, a failure leaves the freed pointer (#831); the VHDR is assumed to be 20 bytes (#832); rate 0
  * never ends the period loop (#830); no pad byte in the chunk walk
  * (#828); it copies ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
  * written at +16, behind the 16 byte object (#926), and mark (+14) is no
@@ -620,8 +623,10 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     UWORD sper, n;
     int chunk;
 
-    if (saddr->data) {                  /* free the old sample (BUG(orig) #831),
-                                           also "cL" data (BUG(orig) #945) */
+    if (saddr->data && saddr->mark != BB_CLUDGE) {
+                                        /* free the old sample (BUG(orig) #831),
+                                           Fixed (#945): not DecodeSound's
+                                           in-place ("cL") data */
         struct bl_regs r = { .a1 = (ULONG)saddr->data };
         r.d0 = BL_SETW(sound, saddr->len);
         BLITZ_ALIBJSR(TOK_globfree, r);

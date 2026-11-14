@@ -10,7 +10,8 @@
  * docs/rwelibs/port/risoundlib.md.
  *
  * CludgeSound sound#,address (d0, d1; a0 = the sound object, !libs
- * #audiolib,#ia0|#pd0): frees the object's old sample (memlib globfree),
+ * #audiolib,#ia0|#pd0): frees the object's old sample (memlib globfree;
+ * not DecodeSound's in-place "cL" data),
  * checks "8SVX"/"VHDR" at address+8/+12, takes the sample rate, finds
  * the BODY chunk among the first seven chunks, copies it into chip
  * memory (memlib globalloc) and fills the object: +0 sample, +4 period
@@ -25,10 +26,6 @@
  *     keeps the pointer: when CludgeSound then fails, the sound object
  *     points to freed memory (and the next CludgeSound frees it again)
  *     (#831).
- *   - The old sample is freed without looking at audiolib's "cL" mark
- *     (+14): after a DecodeSound of chip data the sample is the file's
- *     own BODY, which memlib never allocated - globfree does not find it
- *     ("Unable to Free Memory", TRAP #0) (#945).
  *   - The sample rate is the word at VHDR + 4(VHDR) (the chunk length):
  *     right only for the usual VHDR length 20 (samplesPerSec at +12 of
  *     the data) (#832); the period is a subtraction loop, rate 0 never
@@ -39,6 +36,12 @@
  *     $FFFF) + 1 bytes - 65536 for an empty BODY, only the rest modulo
  *     65536 for a longer one; the length in words is (length & $FFFF) / 2
  *     (#829).
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md 3a): the old sample
+ * is not freed when audiolib's "cL" mark (+14) is set: after a
+ * DecodeSound of chip data the sample is the file's own BODY, which
+ * memlib never allocated; the original passed it to globfree, which does
+ * not find it ("Unable to Free Memory", TRAP #0) (#945).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -85,7 +88,8 @@ static void BLITZ_ROUTINE _libfinit(void)
  * @brief CludgeSound sound#,address: an IFF 8SVX sample in memory as an
  * audiolib sound object.
  *
- * Frees the object's old sample (memlib globfree), checks "8SVX"/"VHDR"
+ * Frees the object's old sample (memlib globfree; not DecodeSound's
+ * in-place "cL" data, fixed: #945), checks "8SVX"/"VHDR"
  * at address+8/+12, takes the sample rate, finds the BODY chunk among
  * the first seven chunks, copies it into chip memory (memlib globalloc)
  * and fills the object: sample, period 3579545 / rate, length in words,
@@ -94,7 +98,6 @@ static void BLITZ_ROUTINE _libfinit(void)
  *   - the old sample is freed before the file is checked and the object
  *     keeps the pointer: a failing call leaves it pointing to freed
  *     memory (#831);
- *   - the old sample is freed without looking at the "cL" mark (#945);
  *   - the rate is the word at VHDR + its chunk length (right for length
  *     20 only, #832); rate 0 never ends the period loop (#830);
  *   - the chunk walk has no IFF pad byte (#828);
@@ -115,8 +118,10 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
     UWORD sper, n;
     int chunk;
 
-    if (saddr->data) {                  /* free the old sample (BUG(orig) #831),
-                                           also "cL" data (BUG(orig) #945) */
+    if (saddr->data && saddr->mark != BB_CLUDGE) {
+                                        /* free the old sample (BUG(orig) #831),
+                                           Fixed (#945): not DecodeSound's
+                                           in-place ("cL") data */
         struct bl_regs r = { .a1 = (ULONG)saddr->data };
         r.d0 = BL_SETW(sound, saddr->len);
         BLITZ_ALIBJSR(TOK_globfree, r);

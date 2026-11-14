@@ -7,6 +7,7 @@
 ; debugger's requester).  The 8SVX file is built in chip memory: a VHDR
 ; of the usual length 20 with samplesPerSec 8000, a BODY of 4 bytes.
 ; Correct: no runtime error, CludgeSound returns -1, the program goes on.
+; @fixed #945
 ; @rwe risoundlib
 ; @pass runtime_errors=on
 DEFTYPE .l

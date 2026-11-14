@@ -10,6 +10,7 @@
 ; 1's sample pointer (#926): the program clears it again, so that
 ; audiolib does not free a bad pointer of sound 1 at the end.
 ; Correct: no runtime error, CludgeSound returns -1, the program goes on.
+; @fixed #945
 ; @rwe risoundlib2
 ; @pass runtime_errors=on
 DEFTYPE .l
