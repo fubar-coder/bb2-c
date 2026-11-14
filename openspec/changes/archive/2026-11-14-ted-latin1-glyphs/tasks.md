@@ -122,8 +122,8 @@ and is named in the commits. Group 1 changes no code.
 - [x] 6.2 `docs/ted/reference.md` (font rows), `docs/structure.md` if the
   tool or directory needs a line, `README.md` "License" (one sentence:
   glyphs adapted from unscii-8, public domain / CC0), `TODO.md` (done entry).
-- [ ] 6.3 Report to the coordinator: the site text of #1018 (a screenshot of
+- [x] 6.3 Report to the coordinator: the site text of #1018 (a screenshot of
   `Print "Größe é £ ½"` at both heights), the label, the issue of the
   change (an extension, no `fixed-in-port` workflow).
-- [ ] 6.4 Sync `specs/editor/literal-characters`, `editor/screen-font` and
+- [x] 6.4 Sync `specs/editor/literal-characters`, `editor/screen-font` and
   `tooling/ted-font` into `openspec/specs` when archiving.
