@@ -48,7 +48,10 @@ that are not the result.
   buffer (#842).
 * FindToolValue stops at a `)` also inside the value (#844).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
-  there (#846).
+  there. This is no defect (#846, closed): it gives back the space of the
+  string argument, which the compiler does not take back after a library
+  function with a numeric result. Without it
+  `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
 * SetIconType without an icon returns its argument (#852).
 * PutIconObject ignores PutDiskObject's result (#851) and forgets the
   icon without FreeDiskObject (lost) (#850).

@@ -50,7 +50,10 @@
  *   - FindToolValue stops at ")" (the end of "(name=value)") but also at
  *     a ")" inside the value (#844).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
- *     FindToolValue does for its result) and leaves it there (#846).
+ *     FindToolValue does for its result) and leaves it there. No defect:
+ *     it gives back the space of the string argument, which the compiler
+ *     does not take back after a library function with a numeric result
+ *     (#846, closed).
  *   - SetIconType without an icon returns its argument (#852).
  *   - PutIconObject writes the icon (PutDiskObject's result ignored)
  *     (#851), then forgets it without FreeDiskObject (lost) (#850).
@@ -773,8 +776,12 @@ void BLITZ_ROUTINE c_selectrender(UWORD flags BL_REG(d0))
  * @brief IconDefTool tool$: the icon's default tool.
  *
  * A copy of tool$ (AllocMem, on the icon's FreeList) becomes
- * do_DefaultTool.  BUG(orig): a3 is rewound by the length + 1 and stays
- * there (#846); a failing AddFreeList frees address 0 (#840).
+ * do_DefaultTool.  a3 is rewound by the length + 1 and stays there: no
+ * defect, it gives back the space of the string argument, which the
+ * compiler does not take back after a library function with a numeric
+ * result (#846, closed; without it "ab"+Str$(IconDefTool("tool"))+"cd"
+ * gives "abtool" instead of "ab-1cd").  BUG(orig): a failing AddFreeList
+ * frees address 0 (#840).
  * @param tool  d0: the default tool
  * @param lens  a2: the argument stack (lens[-1] = the length of tool$)
  * @return d0: BB_TRUE done, BB_FALSE for an empty string, no memory or no icon
@@ -792,7 +799,7 @@ BB_BOOL BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *le
     if (!len)
         return BB_FALSE;
     toolbuffersize = len + 1;
-    blitz_string -= toolbuffersize;     /* BUG(orig): a3 rewound (#846) */
+    blitz_string -= toolbuffersize;     /* gives back the string argument's space (no defect, #846) */
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
         return BB_FALSE;

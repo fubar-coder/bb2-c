@@ -27,7 +27,7 @@
  * stays set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
  * entry's "(" skipped, status 0 = "(name=value)", not found), NewToolType
  * (with and without value and status), ClearToolTypes, SetIconHit,
- * IconRender, SetIconType 0-6, IconDefTool (BUG(orig) #846: a3 rewound; empty
+ * IconRender, SetIconType 0-6, IconDefTool (a3 rewound on purpose, no defect #846; empty
  * string), ShapeToIcon (both forms), IconToShape (both forms, shapes in
  * use and fresh, BUG(orig) #849: MakeCookie on the caller's a3 for a fresh
  * shape - here a3 points to a decoy shape; the second shape of the two
