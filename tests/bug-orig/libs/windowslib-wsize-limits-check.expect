@@ -1,0 +1,5 @@
+[run]
+nosize 300 100
+size 200 120
+REQUESTER: AutoRequest body "Can't Size Window" *
+rc=0

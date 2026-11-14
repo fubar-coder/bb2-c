@@ -107,10 +107,13 @@
  * Fixed (intended deviation, #320): WMove/WSize waited in a loop until
  *   the window had exactly the new position/size, without an end if
  *   Intuition limits the values (size limits, screen edge; the checks
- *   catch only the screen edge).  Here the wait also ends once Intuition
+ *   caught only the screen edge).  Here the wait also ends once Intuition
  *   has changed the window at all, and after 50 frames (WaitTOF) without
  *   a change.  AmiBlitz3 drops the wait; it is kept here, so WindowX etc.
- *   still give the new values right after WMove/WSize.
+ *   still give the new values right after WMove/WSize.  A size beyond the
+ *   window's size limits is a programming error: with runtime error
+ *   checking wsizechk also refuses it ("Can't Size Window") for a window
+ *   with a sizing gadget, the only windows Intuition limits.
  * Fixed (intended deviation, #322): CloseWindow replied every message of
  *   the shared port and dropped the whole event list in the original: the
  *   events of the other windows were lost too.  Here only the messages
@@ -2623,8 +2626,10 @@ void BLITZ_ROUTINE dowmove(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
  * @brief WSize Width,Height - resize the used window (SizeWindow by the
  * difference).
  *
- * Errors (debugger only, wsizechk): "Uninitialized Window"; a size <= 0 or
- * the window outside its screen -> "Can't Size Window".
+ * Errors (debugger only, wsizechk): "Uninitialized Window"; a size <= 0,
+ * the window outside its screen or (fixed, #320: not in the original) a
+ * window with a sizing gadget sized beyond its size limits -> "Can't Size
+ * Window".
  *
  * Waits until Intuition has sized the window: until it has the new size
  * or another one than before (Intuition limits the size), at most MAXWAIT
@@ -3456,7 +3461,10 @@ static void BLITZ_ERRCHK wmovechk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
         BLITZ_RUNERR(mess10);
 }
 
-/* wsizechk - size > 0 and the window inside its screen */
+/* wsizechk - size > 0 and the window inside its screen; fixed (#320, not
+   in the original): a window with a sizing gadget inside its size limits
+   (Intuition limits only such a window, and WSize would wait for a size
+   it never gets; MaxWidth/MaxHeight $FFFF: no limit) */
 static void BLITZ_ERRCHK wsizechk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                     struct Window **w BL_REG(a0))
 {
@@ -3471,7 +3479,13 @@ static void BLITZ_ERRCHK wsizechk_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
         return;
     }
     if ((UWORD)(x + win->LeftEdge) > (UWORD)win->WScreen->Width
-        || (UWORD)(y + win->TopEdge) > (UWORD)win->WScreen->Height)
+        || (UWORD)(y + win->TopEdge) > (UWORD)win->WScreen->Height) {
+        BLITZ_RUNERR(mess11);
+        return;
+    }
+    if ((win->Flags & WFLG_SIZEGADGET)
+        && (x < (UWORD)win->MinWidth || x > (UWORD)win->MaxWidth
+            || y < (UWORD)win->MinHeight || y > (UWORD)win->MaxHeight))
         BLITZ_RUNERR(mess11);
 }
 

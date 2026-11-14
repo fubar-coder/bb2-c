@@ -767,6 +767,24 @@ it.
 
 Issue: [A Dim of 4 GB or more got an array of a few bytes (#58)](https://github.com/fubar-coder/bb2-c/issues/58).
 
+### `WSize` beyond the size limits of a window {#wsize-limits}
+
+**What happened.** `WSize` waits until the window has the new size.
+Intuition keeps a window with a sizing gadget inside its size limits
+(`SizeLimits`), so a `WSize` beyond them never got that size, and the
+original waited forever. Runtime error checking tested only the edge of
+the screen.
+
+**With the port.** `WSize` and `WMove` stop waiting once Intuition has
+changed the window. With runtime error checking, a size outside the
+limits of a window with a sizing gadget is the error "Can't Size
+Window".
+
+**What to change.** Size the window within the limits given with
+`SizeLimits` before it was opened.
+
+Issue: [WMove and WSize waited forever when Intuition limited the values (#320)](https://github.com/fubar-coder/bb2-c/issues/320).
+
 ### A bitmap or shape of depth 0 {#depth-zero}
 
 **What happened.** `BitMap` refuses a depth of 0 with runtime error
