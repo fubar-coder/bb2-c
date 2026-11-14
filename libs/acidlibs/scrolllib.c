@@ -24,7 +24,9 @@
  * (the width word on the caller's argument stack is changed for that,
  * as in the original); BlockScroll copies whole bytes (x / 8).
  *
- * BUG(orig) (#393), kept: a bitmap of depth 0 runs the plane loops 65536 times;
+ * Fixed (#393): a bitmap of depth 0 runs the plane loops 65536 times; such
+ * a bitmap is an invalid argument, refused in the error check area by
+ * BitMap and CludgeBitMap (the loops stay).
  * Not a bug: Scroll writes the clipped width back to the argument stack (it
  * belongs to this call and is discarded by the compiler afterwards).
  * Error checks (debugger only): Plot/Point/Cls "Uninitialized BitMap";
@@ -129,7 +131,8 @@ extern const char mess1[], mess2[], mess3[];
  * unsigned compare) nothing happens.  A negative colour complements the
  * pixel in all planes (BCHG).
  *
- * BUG(orig) (#393): a bitmap of depth 0 runs the plane loop 65536 times.
+ * Fixed (#393): a bitmap of depth 0 runs the plane loop 65536 times (an
+ * invalid argument, refused at its creation in the error check area).
  * Errors: "Uninitialized BitMap" (bmchk, debugger only).
  *
  * @param x   d0.w: x
@@ -313,7 +316,8 @@ static void b_cls(UBYTE *cb, const struct bb_bitmap *bm, UWORD col)
  * one plane by plane in blits of up to 128K (clsnotint, as in the CD
  * binary).
  *
- * BUG(orig) (#393): a bitmap of depth 0 runs the plane loop 65536 times.
+ * Fixed (#393): a bitmap of depth 0 runs the plane loop 65536 times (an
+ * invalid argument, refused at its creation in the error check area).
  * Errors: "Uninitialized BitMap" (bmchk, debugger only).
  *
  * @param cb a1: the chip base ($DFF000, chipbaselib)

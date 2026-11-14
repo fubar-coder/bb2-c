@@ -35,8 +35,10 @@
  *     side overflow the edge lists l0/l1 (here ledges/redges) (#395).
  *   - AllocFill (statement) takes the bitmap from a3 = the string pointer
  *     (#390), so the routines leave a3 where the original leaves it.
- *   - a depth of 0 makes the plane loops run 65536 (CMP.w) / 256 (CMP.b)
- *     times. (#393)
+ *   - Fixed (#393): a depth of 0 makes the plane loops run 65536 (CMP.w)
+ *     / 256 (CMP.b) times; such a bitmap is an invalid argument,
+ *     refused in the error check area by BitMap and CludgeBitMap (the
+ *     loops stay).
  *   - FreeFill does not clear the buffer pointer. (#394)
  * Fixed (intended deviation, docs/libs/deviations.md):
  *   - Polyf clips and steps the edges with word arithmetic (the slope is

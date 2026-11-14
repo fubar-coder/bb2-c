@@ -32,6 +32,14 @@
  *   - CludgeBitMap does not compute the interleave/plane distance fields
  *     (+52 cleared, +54 stays from before; no library of the CD reads +54
  *     of a non-interleaved bitmap, so only the field itself differs). (#77)
+ * By design (#393, #74): BitMap with a depth of 0 stores 65536 plane
+ * pointers behind the object (DBF on depth-1); its error check _bitmapchk
+ * refuses a depth of 0 or more than 8.
+ * Fixed (intended deviation, #393, #74): CludgeBitMap had no error check
+ * at all, so a depth of 0 overran the object the same way and gave the
+ * drawing and blitting libraries a bitmap of depth 0; here its error check
+ * (cludgechk, error check area only) refuses a depth of 0 or more than 8
+ * with "Illegal BitMap Depth".  Release code unchanged.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -44,6 +52,7 @@
 
 /* entry points (thunks / C, defined below) */
 void _bitmapchk(void), _bitloadchk(void), bitmaplib_sbchk(void), cbchk(void);
+void cludgechk(void);
 void shchk(void), _usechk(void), extbitmap(void);
 void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                            WORD usedoff BL_REG(d6));
@@ -98,7 +107,7 @@ BLITZ_NAME("ShapesBitMap", "Shape#,BitMap#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_bitmaplib, 0x1380, LIB_bitmaplib, 0x0604);
-BLITZ_SUBS(_cludgebitmap, 0, 0);
+BLITZ_SUBS(_cludgebitmap, cludgechk, 0);
 BLITZ_NAME("CludgeBitMap", "BitMap#,Width,Height,Depth,Memory");
 
 BLITZ_ENTRY_DECL(_load);
@@ -266,6 +275,8 @@ void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_RE
  * other in the memory.  No interleave check: not a bug (no visible
  * effect, #77): +52 is cleared, the plane distance +54 stays from before.
  * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
+ * Errors (debugger, cludgechk): "Illegal BitMap Depth" for a depth of 0
+ * or more than 8 (fixed, #393 #74: the original had no check).
  *
  * @param w        d1.w: the width in pixels
  * @param h        d2.w: the height
@@ -460,6 +471,7 @@ BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Screen");
 BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess5, "Can't copy borrowed Bitmap");
+BLITZ_ERRCHK_MESSAGE(mess6, "Illegal BitMap Depth");
 
 /* err1: MOVEQ #1,d0:TRAP #0 - error number 1 */
 #define ERR1 ((const char *)1)
@@ -468,6 +480,14 @@ static void BLITZ_ERRCHK _bitmapchk_c(UWORD d BL_REG(d3))
 {
     if (!d || d > 8)
         BLITZ_RUNERR(ERR1);
+}
+
+/* cludgechk: fixed (#393, #74), not in the original (CludgeBitMap had no
+   check): the depth 1-8, as _bitmapchk for BitMap, with a text */
+static void BLITZ_ERRCHK cludgechk_c(UWORD d BL_REG(d3))
+{
+    if (!d || d > 8)
+        BLITZ_RUNERR(mess6);
 }
 
 static void BLITZ_ERRCHK _usechk_c(void)
@@ -506,3 +526,4 @@ BLITZ_ERRCHK_THUNK(_bitloadchk, _bitloadchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(bitmaplib_sbchk, sbchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(shchk, shchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cbchk, cbchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(cludgechk, cludgechk_c, "d0-d1/a0-a1");

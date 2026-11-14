@@ -64,6 +64,11 @@
  *    last shape as base + (max - 1) << 5 with word operations (SUBQ/LSL/
  *    ADD d2,a2): from a maximum of 1025 on it lies before the table and
  *    only the first shape is loaded.  Here the offset is a long. (#999)
+ *  - InitShape had no error check: a depth of 0 made a shape of depth 0
+ *    (with a cookie), which the blit commands' checks pass, and their
+ *    plane loops (DBF on depth-1) blitted 65536 planes.  Here its error
+ *    check (initchk, error check area only) refuses it with "Illegal
+ *    Shape Depth"; release code unchanged. (#243, #74)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -79,7 +84,7 @@ void doshapeh(void), dohandle(void), doautocookie(void), docopyshape(void);
 void dogetashape(void), b_getashape(void), dosaveshapes(void);
 void doloadshapes(void), doloadshapes2(void), domidhandle(void);
 void _cludgeshapes(void), _cludgeshapes2(void), _initshape(void);
-void shapeslib_codeinit(void), freeashape(void), cookiechk(void);
+void shapeslib_codeinit(void), freeashape(void), cookiechk(void), initchk(void);
 void funcchk(void), gschk(void), schkz(void);
 
 #define AMIGAONLY(entry) ((char *)(entry) + 1)
@@ -184,7 +189,7 @@ BLITZ_NAME("DecodeShapes", "Shape#[,Shape#],MemoryLocation");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, 0x1380);
-BLITZ_SUBS(_initshape, 0, 0);
+BLITZ_SUBS(_initshape, initchk, 0);
 BLITZ_NAME("InitShape", "Shape#,Width,Height,Depth");
 
 BLITZ_NULLSUB_AT(init, shapeslib_codeinit, 0, 0);
@@ -275,6 +280,7 @@ BLITZ_ERRCHK_MESSAGE(mess4, "First shape must be lower than second");
 BLITZ_ERRCHK_MESSAGE(mess5, "Illegal area for GetaShape");
 BLITZ_ERRCHK_MESSAGE(mess6, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess9, "Cannot GetaShape from an interleaved Bitmap");
+BLITZ_ERRCHK_MESSAGE(mess11, "Illegal Shape Depth");
 
 /* err10 of DecodeShapes (TST.l d2:BEQ err10) and its message in the
    normal code (the original has them in the error check area; fixed,
@@ -513,6 +519,9 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
  * checked), handle 0, a cleared cookie with AutoCookie on.
  *
  * BUG(orig) (#263): the sizes are the low words of MULU.
+ * Errors (debugger, initchk): "Illegal Shape Depth" for a depth of 0
+ * (fixed, #243 #74: the original had no check; a shape of depth 0 made
+ * the plane loops of the blit commands run 65536 times).
  *
  * @param w d1.w: the width in pixels
  * @param h d2.w: the height
@@ -1140,6 +1149,14 @@ static void BLITZ_ERRCHK cookiechk_c(void)
         BLITZ_RUNERR(mess1);
 }
 
+/* initchk: fixed (#243, #74), not in the original (InitShape had no
+   check): a depth of 0 made a shape the blit commands' checks pass */
+static void BLITZ_ERRCHK initchk_c(ULONG d BL_REG(d3))
+{
+    if (!(UWORD)d)
+        BLITZ_RUNERR(mess11);
+}
+
 /* GetaShape: bitmap present, not interleaved, area inside */
 static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
                                  ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2))
@@ -1167,3 +1184,4 @@ BLITZ_ERRCHK_THUNK(schkz, schkz_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(funcchk, funcchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cookiechk, cookiechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(gschk, gschk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(initchk, initchk_c, "d0-d1/a0-a1");

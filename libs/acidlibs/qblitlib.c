@@ -14,7 +14,10 @@
  * blitlib.
  *
  * By design (#423): only the runtime error checking tests for an
- * overflow; a shape of depth 0 loops 65536 times (DBF) (#243); FreeQueue
+ * overflow.  Fixed (#243): a shape of depth 0 loops 65536 times (DBF);
+ * such a shape is an invalid argument, refused in the error check area by
+ * InitShape (the loop stays; a shape never created is caught by maxchk);
+ * FreeQueue
  * leaves the write position stale (#244).  Not a bug: UnQueue clears all
  * planes of the bitmap, not only those of the shape (QBlit changes them too,
  * and UnQueue is meant to clear the area to colour 0).
@@ -368,8 +371,9 @@ start:
  *
  * Errors (qblitchk, debugger only): "Uninitialized Queue", the blitlib
  * checks (cookie, bitmap, shape, depth, coordinates) and "Queue Overflow".
- * By design (#423): only the runtime error checking tests for an overflow;
- * a shape of depth 0 loops 65536 times (DBF) (#243).
+ * By design (#423): only the runtime error checking tests for an overflow.
+ * Fixed (#243): a shape of depth 0 loops 65536 times (DBF), refused at its
+ * creation in the error check area.
  *
  * @param x  d2.w: the x position
  * @param y  d3.w: the y position

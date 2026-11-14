@@ -1,0 +1,4 @@
+[run]
+before
+REQUESTER: AutoRequest body "Illegal Shape Depth" *
+rc=0

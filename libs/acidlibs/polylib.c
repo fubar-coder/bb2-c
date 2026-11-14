@@ -36,7 +36,9 @@
  *     the edge lists l0/l1 (here ledges/redges). (#395)
  *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
- *   - a depth of 0 runs the plane loop 65536 times. (#393)
+ *   - Fixed (#393): a depth of 0 runs the plane loop 65536 times; such a
+ *     bitmap is an invalid argument, refused in the error check area by
+ *     BitMap and CludgeBitMap (the loop stays).
  *   - word range, won't fix: an edge of 4096 lines or more that is at least
  *     as wide as high gets the slope 0 (DIVS overflow), two neighbouring
  *     points 32768 or more apart wrap in the clipping (nothing is drawn),

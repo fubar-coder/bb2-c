@@ -33,8 +33,9 @@
  *    (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead of 10,
  *    SColl(6,0): 12 instead of 11) or two channels of the same pair
  *    (SColl(0,1): bit 8) the wrong bit is tested. (#110)
- *  - SetColl with 0 planes loops 65536 times (DBF; only the debugger
- *    checks it). (#111)
+ *
+ * By design (#111): SetColl with 0 planes loops 65536 times (DBF); the
+ * error check (setcolchk, "Illegal number of BitPlanes") refuses it.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -355,7 +356,8 @@ static ULONG setcol(ULONG colour, UWORD planes)
  * CLXCON = $F000 | enable bits for the planes | colour.  Errors (debugger
  * only): "Illegal number of BitPlanes" (not 1..6), "Illegal Colour for
  * Collision" (>= 2^planes).
- * BUG(orig) (#111): 0 planes loop 65536 times (DBF).
+ * By design (#111): 0 planes loop 65536 times (DBF); setcolchk refuses
+ * them.
  *
  * @param col  d0.w: the colour
  * @param planes  d1.w: the number of bitplanes
@@ -390,7 +392,8 @@ static UWORD spreadit(UWORD bits)
  * The colour bits are spread to the odd planes (spreadit), playfield 2
  * (anything but 1) one bit up; then as SetColl Colour,Bitplanes.  Errors
  * (debugger only): "PlayField must be 1 or 2", then those of SetColl.
- * BUG(orig) (#111): 0 planes loop 65536 times (DBF).
+ * By design (#111): 0 planes loop 65536 times (DBF); setcolchk refuses
+ * them.
  *
  * @param col  d0.w: the colour
  * @param planes  d1.w: the number of bitplanes

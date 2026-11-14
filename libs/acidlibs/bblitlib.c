@@ -18,8 +18,10 @@
  * emptying the buffer.  Blitz/Amiga variants as in blitlib.
  *
  * By design (#73): only the runtime error checking tests for an
- * overflow of the buffer; a shape or bitmap of depth 0 loops 65536 times
- * (DBF) (#74); FreeBuffer leaves the write position and the last record
+ * overflow of the buffer.  Fixed (#74): a shape or bitmap of depth 0 loops
+ * 65536 times (DBF); such an object is an invalid argument, refused in the
+ * error check area by BitMap, CludgeBitMap and InitShape (the loops stay);
+ * FreeBuffer leaves the write position and the last record
  * pointer stale (#75).  Not a bug: the last word mask of the blit is
  * cleared, the first one stays $FFFF from the save blit (exactly the masks
  * blitlib sets for the shape blit, same result).
@@ -437,7 +439,8 @@ nextplane:                                      /* loop3a */
  * bitmap, BLTCON0 = shift | BBlitMode).  Not a bug: the last word mask of
  * the blit is cleared, the first stays $FFFF from the save blit.
  * BUG(orig): only the error check tests for an overflow of the buffer
- * (#73); a bitmap or shape of depth 0 loops 65536 times (DBF, #74).
+ * (#73).  Fixed (#74): a bitmap or shape of depth 0 loops 65536 times
+ * (DBF), refused at its creation in the error check area.
  * Errors (debugger, bblitchk): "Uninitialized Buffer", "Shape does not
  * have a cookie cut", "Unitialized BitMap", "Uninialized Shape", "Shape
  * has too many BitPlanes", "Coords outside of BitMap", "Buffer Overflow".
@@ -467,7 +470,8 @@ static void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
  * bitmap, BLTCON0 = shift | BBlitMode).  Not a bug: the last word mask of
  * the blit is cleared, the first stays $FFFF from the save blit.
  * BUG(orig): only the error check tests for an overflow of the buffer
- * (#73); a bitmap or shape of depth 0 loops 65536 times (DBF, #74).
+ * (#73).  Fixed (#74): a bitmap or shape of depth 0 loops 65536 times
+ * (DBF), refused at its creation in the error check area.
  * Errors (debugger, bblitchk): "Uninitialized Buffer", "Shape does not
  * have a cookie cut", "Unitialized BitMap", "Uninialized Shape", "Shape
  * has too many BitPlanes", "Coords outside of BitMap", "Buffer Overflow".

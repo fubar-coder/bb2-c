@@ -11,3 +11,11 @@ lib 138: relocations in the declaration part 130 != 131
 # the original had none
 lib 186: entry 1 Inkey$ +$1C: code offset set in only one of them
 lib 186: relocations in the declaration part 11 != 12
+# #393, #74: CludgeBitMap gets an error check (cludgechk) in the error
+# check area, the original had none
+lib 160: entry 6 CludgeBitMap +$18: code offset set in only one of them
+lib 160: relocations in the declaration part 22 != 23
+# #243, #74: InitShape gets an error check (initchk) in the error check
+# area, the original had none
+lib 154: entry 15 InitShape +$12: code offset set in only one of them
+lib 154: relocations in the declaration part 36 != 37
