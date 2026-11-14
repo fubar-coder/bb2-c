@@ -5,6 +5,7 @@
 ; empty), then one with position and size tags, then again without tags.
 ; Correct: the last window opens like the first, not at 100,100 with
 ; 120x60.
+; @fixed #316
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

@@ -56,14 +56,16 @@
  *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
  *     (the variables are kept in the original order).
  *   - Qualifier (a #long function) only sets the low word of d0. (#313)
- *   - WindowTags without tags keeps the user tags of the last
- *     WindowTags (no TAG_DONE written) (#316); the tag pairs of
- *     WindowTags ...,Tag,Data... are copied without a limit into 32 longs
- *     (#317, only the &TagList form is fixed, see below).
+ *   - The tag pairs of WindowTags ...,Tag,Data... are copied without a
+ *     limit into 32 longs (#961; only the &TagList form is fixed, #317,
+ *     see below).
  *   - Window with flag $80 (super bitmap) uses the bitmap of the last
  *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
  *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
+ * Fixed (intended deviation, #316): WindowTags without tags wrote no
+ *   TAG_DONE and so took over the user tags of the last WindowTags; here
+ *   it ends the user tags with TAG_DONE.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -729,7 +731,8 @@ static struct NewWindow anewwindow = {
 /* wintags + usertags: one list; WindowTags copies the user tags behind
    the four fixed ones (&TagList: at most 15 pairs, then TAG_MORE to the
    rest, fixed #317; the tag pairs BUG(orig) (#961) without a limit), and
-   without tags writes no TAG_DONE: the last user tags stay (#316) */
+   without tags writes TAG_DONE first (fixed #316: the original wrote
+   none, the last user tags stayed) */
 static struct {
     struct TagItem flags, title, screen, newlook;   /* wintags */
     struct TagItem user[16];                        /* usertags: 32 longs */
@@ -3173,8 +3176,8 @@ static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *tit
  *
  * Errors: OpenWindowTagList fails -> "Couldn't Open Window" (err1).
  *
- * BUG(orig) (#316): without tags no TAG_DONE is written: the user tags of
- * the last WindowTags stay.  The title copy is freed when the window is
+ * Fixed (#316): the user tags are ended with TAG_DONE; the original wrote
+ * none and took over the user tags of the last WindowTags.  The title copy is freed when the window is
  * closed (fixed, #318: the original never frees it).
  *
  * @param objoff d0: the object offset (window number << 5)
@@ -3191,6 +3194,7 @@ void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
                                    const ULONG *lens BL_REG(a2),
                                    struct Library *intbase BL_REG(a6))
 {
+    tags.user[0].ti_Tag = TAG_DONE;             /* fixed, #316 */
     opentags((struct bwin *)blitz_string, objoff, flags, title, lens[-1], scr, usedoff, intbase);
 }
 
