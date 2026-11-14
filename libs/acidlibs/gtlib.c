@@ -28,7 +28,7 @@
  * as in the original; GTTags fills `usertags`, which the next gadget gets
  * via TAG_MORE (then cleared).
  *
- * Kept from the original (BUG(orig)):
+ * Kept from the original:
  *   - Not a bug (#170): GTBevelBox with flags <> 0 gives the tag
  *     GTBB_Recessed with the value 0; DrawBevelBoxA takes the tag's
  *     presence ("set to anything"), so the box is recessed (measured on
@@ -39,7 +39,10 @@
  *     the whole run (first to last).  A GadTools kind that makes helper
  *     gadgets may need the last one; two gadgets of the same id made one
  *     after the other are the program's choice.
- *   - Without a used screen handlestd reads the border sizes from 0. (#176)
+ *   - By design (#176): without a used screen handlestd reads the border
+ *     sizes from address 0 and GetVisualInfo gets screen 0; runtime error
+ *     checking stops it before the call (the compiler's test of the used
+ *     screen object: "No currently used object!").
  * Fixed (intended deviation, #328): GTChangeList, GTSetHighlight,
  *   GTSetAttrs, GTSetString, GTSetInteger and GTGetAttrs pass their tag
  *   list in a3 (the string buffer pointer) and left a3 there: as a
@@ -770,8 +773,9 @@ static struct Gadget *create(ULONG kind, ULONG flags, struct TagItem *tags, int 
  * GTTags list given before is appended with TAG_MORE (then cleared).
  * Amiga mode only.
  * Fixed (#171): the original set TOGGLESELECT with bit 13 even if
- * CreateGadget failed (it wrote address 14).  BUG(orig) (#176), all creators: without a
- * used screen the border sizes are read from address 0.
+ * CreateGadget failed (it wrote address 14).  By design (#176), all creators: without a
+ * used screen the border sizes are read from address 0 (runtime error
+ * checking stops it: no currently used screen).
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
