@@ -100,7 +100,7 @@ foreach(libset obj orig)
 		-DUSERLIBS=${rwe_userlibs}
 		-DLIBSET=${libset} -DEXPECTED=${expected} -DRESULTS=${RESULTS}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR})
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endforeach()
@@ -157,7 +157,7 @@ add_test(NAME libs_capture_target COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS}
 	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/expected.cmake
 	-DFAKE=${CMAKE_CURRENT_SOURCE_DIR}/selftest/fake-emulator.cmake
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_capture_target
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/selftest/expected-target.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/selftest/expected-target.cmake -P ${WITH_WORKDIR})
 set_tests_properties(libs_capture_target PROPERTIES
 	PASS_REGULAR_EXPRESSION "expected-target: all runs as expected")
 set(LIBS_SELFTEST_TIMEOUT 60 CACHE STRING
@@ -176,7 +176,7 @@ add_test(NAME libs_emulator_wrong COMMAND ${CMAKE_COMMAND}
 	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} -DCAPTURE_CORRUPT=libtest_ldivlib
 	"-DFILTER=libtest ldivlib"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
 set_tests_properties(libs_emulator_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"libtest_ldivlib: \\|routine count\\|\\|1: expected \\$00000002, got \\$00000000\n")
@@ -191,9 +191,11 @@ string(REGEX REPLACE "([][|$().*+?^\\])" "\\\\\\1" dump_re "${dump_key}")
 foreach(t right wrong block)
 	set(key "${dump_key}")
 	set(filter "rwe riarrayslib")
+	set(want_fail "")             # the run that must fail (wrong) is no failure
 	set(re "the dump of [^\n]*rwe_riarrayslib\\.dump \\(the first 7 lines\\)\n${dump_re}\tat \\$0000 [0-9A-F]+\n(.*\n)*${dump_re}\tat \\$00C0 [0-9A-F]+\n")
 	if(t STREQUAL "wrong")
 		set(key "FillArray|array|no such vector|1")
+		set(want_fail -DWANT_FAIL=ON)
 		set(re "FAIL LIBS_CAP_DUMP FillArray\\|array\\|no such vector\\|1: no program wrote a dump")
 	elseif(t STREQUAL "block")
 		set(key "BLOCK:2")
@@ -205,7 +207,7 @@ foreach(t right wrong block)
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON -DUSERLIBS=${rwe_userlibs}
 		-DLIBSET=obj "-DFILTER=${filter}" "-DCAP_DUMP=${key}" -DRESULTS=${RESULTS}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_dump_${t} -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake ${want_fail} -P ${WITH_WORKDIR})
 	set_tests_properties(libs_emulator_dump_${t} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION "${re}")
 endforeach()
@@ -221,7 +223,7 @@ add_test(NAME libs_emulator_lost COMMAND ${CMAKE_COMMAND}
 	-DOBJ_VARIANTS=${CMAKE_CURRENT_BINARY_DIR}/lost/datalib.obj
 	-DLIBSET=obj -DEXPECTED=${expected} -DRESULTS=${RESULTS} -DFILTER=[sys]
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_emulator_lost -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
 set_tests_properties(libs_emulator_lost PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"systest: datalib init\\|kept\\|\\|1: expected kept, got lost d2\n")
@@ -253,7 +255,7 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
 		-DILLEGAL_WATCH=${watch} -DFILTER=${t}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_BUG_ORIG_TIMEOUT}
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
+		-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -P ${WITH_WORKDIR}
 		LABELS emulator bug-orig SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 endforeach()
 
@@ -265,7 +267,7 @@ add_test(NAME libs_keeps_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON "-DFILTER=keeps wrong"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_keeps_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
 set_tests_properties(libs_keeps_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"FAIL KEEPS\\(\"bad\", d2\\|x9\\): not a register set\n.*FAIL KEEPS\\(\"twice\", d3\\): stated twice\n.*FAIL KEEPS: no kept set stated for \"unstated\"\n.*keeps wrong: 3 checks, 3 failures\n")
@@ -278,7 +280,7 @@ add_test(NAME libs_mem_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON "-DFILTER=mem wrong"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/libs_mem_wrong -DTIMEOUT=${LIBS_SELFTEST_TIMEOUT}
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
 set_tests_properties(libs_mem_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
 	"FAIL leak: all memory back\n.*FAIL free of a foreign block: all memory back\n.*FAIL no allocation: all memory back\n.*FAIL mark: block not freed: freed\n.*FAIL mark: no allocation: old one freed\n.*FAIL mark: alloc and free: nothing allocated\n.*FAIL mark: no measurement: freed\n.*mem wrong: 11 checks, 7 failures\n")

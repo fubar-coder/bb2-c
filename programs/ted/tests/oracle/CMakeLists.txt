@@ -57,7 +57,7 @@ add_test(NAME ted_oracle_reference COMMAND ${CMAKE_COMMAND}
 	-DORACLE=$<TARGET_FILE:tedoracle>
 	-DCD=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/check-run -DCHECKDIR=${CMAKE_CURRENT_BINARY_DIR}/check
-	-DDATA=${PROJECT_SOURCE_DIR}/tests/data -P ${oracle_check})
+	-DDATA=${PROJECT_SOURCE_DIR}/tests/data -DTEST_SCRIPT=${oracle_check} -P ${WITH_WORKDIR})
 math(EXPR limit "1800 + 120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(ted_oracle_reference PROPERTIES LABELS originals SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_REQUIRED originals_refbuild)

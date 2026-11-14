@@ -9,7 +9,8 @@ host_readme_test(xtra README.md ${XTRA_SUBCOMMANDS})
 # the tool on files: an AmiBlitz3 header converted to a .xtra and back,
 # dumped and checked; broken inputs refused with their message
 add_test(NAME xtra_tool COMMAND ${CMAKE_COMMAND} -DXTRA=$<TARGET_FILE:xtra>
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/tooltest -P ${CMAKE_CURRENT_SOURCE_DIR}/tooltest.cmake)
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/tooltest -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tooltest.cmake
+	-P ${WITH_WORKDIR})
 
 # the real files (skipped without them, cmake/fetch-originals.cmake): the
 # CD's and rwelibsrc's .xtra, the BB22 sources; AmiBlitz3 sources

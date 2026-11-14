@@ -15,13 +15,14 @@ host_readme_test(bbsrc README.md ${BBSRC_SUBCOMMANDS})
 # arguments, token lists and files
 add_test(NAME bbdetok_tool COMMAND ${CMAKE_COMMAND} -DBBSRC=$<TARGET_FILE:bbsrc>
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/detok-tooltest
-	-P ${CMAKE_CURRENT_SOURCE_DIR}/detok-tooltest.cmake)
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/detok-tooltest.cmake -P ${WITH_WORKDIR})
 
 # ab3 and ab3-cmp on files: a source tokenised, its output compared with
 # itself (equal) and with other bytes (the first line that differs),
 # broken arguments and token lists refused
 add_test(NAME ab3tok_tool COMMAND ${CMAKE_COMMAND} -DBBSRC=$<TARGET_FILE:bbsrc>
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/ab3-tooltest -P ${CMAKE_CURRENT_SOURCE_DIR}/ab3-tooltest.cmake)
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/ab3-tooltest -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/ab3-tooltest.cmake
+	-P ${WITH_WORKDIR})
 
 # bb22 on the real files: the 9 BB22 sources of rwelibsrc converted and
 # read by tedsrc detok (skipped without the Aminet archive or the CD)

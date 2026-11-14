@@ -118,6 +118,8 @@ enable_testing()
 # Two ctest runs in one build directory that run such tests at the same
 # time each set BB2C_TEST_RUN to a directory of their own.
 set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/Testing/runs/default)
+# runs a test script in a work directory of its own (cmake/with-workdir.cmake)
+set(WITH_WORKDIR ${PROJECT_SOURCE_DIR}/cmake/with-workdir.cmake)
 add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
 # the emulator tests of the host side three at a time (each holds its own
@@ -208,7 +210,7 @@ install(FILES ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs DESTINATION blitz2)
 add_test(NAME help_amiga COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
 	-DWORK=${CMAKE_BINARY_DIR}/help-amiga
 	"-DPROGRAMS=$<TARGET_FILE:reqtrap>;$<TARGET_FILE:reqclose>;$<TARGET_FILE:reqclosetest>;$<TARGET_FILE:inject>;$<TARGET_FILE:wbrun>;$<TARGET_FILE:teddrive>;$<TARGET_FILE:teddrivetest>;$<TARGET_FILE:tedprobe>"
-	-P ${PROJECT_SOURCE_DIR}/cmake/check-help-amiga.cmake)
+	-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/check-help-amiga.cmake -P ${WITH_WORKDIR})
 math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 

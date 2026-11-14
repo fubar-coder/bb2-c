@@ -110,7 +110,8 @@ add_test(NAME tokenizer COMMAND test_tokenizer)
 # waiters assembled the wrong way
 add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
 	-DVASM=${AMIGA_EMULATION_VASM} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/../lib/amiga_emulation
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/waiter-broken -P ${CMAKE_CURRENT_SOURCE_DIR}/waiter_broken.cmake)
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/waiter-broken -DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/waiter_broken.cmake
+	-P ${WITH_WORKDIR})
 
 # amiga_run --purge-snapshots [OWNER] (by hand): without a slot directory
 # it does nothing and succeeds; without OWNER it takes
@@ -420,14 +421,16 @@ foreach(t
 endforeach()
 add_test(NAME fix_scope_target COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
 	-DSCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/fix-scope.cmake
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/fix-scope-target -P ${CMAKE_CURRENT_SOURCE_DIR}/fix_scope_target.cmake)
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/fix-scope-target
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/fix_scope_target.cmake -P ${WITH_WORKDIR})
 
 # results bug-orig-accept (the recorded original of a bug-orig test from
 # two recording runs, lib/bugorigcmp; its logic: test_bugorigcmp.c) on
 # files: written, unchanged, refused (not deterministic, a wildcard that a
 # run does not match) and malformed, the committed file unchanged then
 add_test(NAME bug_orig_accept COMMAND ${CMAKE_COMMAND} -DRESULTS=$<TARGET_FILE:results>
-	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/bug-orig-accept -P ${CMAKE_CURRENT_SOURCE_DIR}/bug_orig_accept.cmake)
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/bug-orig-accept
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/bug_orig_accept.cmake -P ${WITH_WORKDIR})
 set_tests_properties(bug_orig_accept PROPERTIES PASS_REGULAR_EXPRESSION "bug_orig_accept: all runs as expected")
 
 # the command-line shell of the host programs (tools/lib/cli): cli::run
@@ -479,3 +482,13 @@ set_tests_properties(readme_check_changed PROPERTIES PASS_REGULAR_EXPRESSION
 	"help[ \n]+of[ \n]+`fake_cli11[ \n]+alpha`[ \n]+is[ \n]+missing.*usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+alpha[ \n]+\\[OPTIONS\\][ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer")
 set_tests_properties(readme_check_stale PROPERTIES PASS_REGULAR_EXPRESSION
 	"usage[ \n]+block[ \n]+`Usage:[ \n]+fake_cli11[ \n]+gamma[ \n]+FILE`[ \n]+is[ \n]+no[ \n]+longer[ \n]+printed")
+
+# the wrapper that gives a test script a work directory of its own
+# (cmake/with-workdir.cmake): arguments, pass, fail, skip, BB2C_TEST_RUN; the
+# test runs itself through the wrapper
+set(with_workdir ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/with-workdir.cmake)
+add_test(NAME with_workdir COMMAND ${CMAKE_COMMAND} -DWRAPPER=${with_workdir}
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/with_workdir.cmake
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/with-workdir -P ${with_workdir})
+set_tests_properties(with_workdir PROPERTIES
+	PASS_REGULAR_EXPRESSION "with_workdir: all cases as expected")

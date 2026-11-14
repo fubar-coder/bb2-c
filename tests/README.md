@@ -200,6 +200,24 @@ Run in Amiberry; without Amiberry or without the data in `amiga-emulation/`
   script with `@expect corpus` or `@xtra norunerr` in such a pass). The
   persistent caches `originals_refbuild` and `rwe_refbuild` are build
   products, not test results, and stay.
+* **Work directories of the cmake script tests:** a test that runs a
+  `cmake -P` script on a work directory (`-DWORK=`: the library tests in
+  the emulator, the TED oracle check, `help_amiga`, the tool tests of
+  `tools/`) runs it through `cmake/with-workdir.cmake` (`-DTEST_SCRIPT=...
+  -P ${WITH_WORKDIR}`): the script gets a new directory
+  `WORK/run-XXXXXX`, or `NAME-XXXXXX` below `BB2C_TEST_RUN` if the caller
+  set it (the caller's directory: only the run directory is put there and
+  removed). A script that passes or is skipped leaves nothing (the
+  directory, and `WORK` if empty); one that fails keeps the directory and
+  prints `the files of the run: DIR`. `-DWANT_FAIL=ON` for a test about a
+  script that must fail (the selftests whose output ctest matches): its
+  failure counts as the pass, a pass is kept. Two ctest runs in one build
+  directory share no such directory; `with_workdir` tests the wrapper.
+  Not yet through the wrapper: the tests whose script uses `WORK` as the
+  parent of a layout of its own (`corpus_record_target`,
+  `bug_orig_record_target`, `*_min_free`, the `want.cmake` tests), the
+  `inject_*` tests, `tests/ab3`, `tests/bug-port` and the host test
+  programs that take a directory (`runner_runwork`, `runner_rundir`).
 * **Slots:** over everything (all runners, build directories and
   worktrees of the machine) at most `AMIGA_EMULATION_MAX` Amiberry
   sessions run at once (environment, 0 = no limit; without it the number

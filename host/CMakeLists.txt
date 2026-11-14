@@ -31,6 +31,8 @@ if(HOST_COVERAGE)
 endif()
 
 enable_testing()
+# runs a test script in a work directory of its own (cmake/with-workdir.cmake)
+set(WITH_WORKDIR ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/with-workdir.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/CLI11.cmake)
