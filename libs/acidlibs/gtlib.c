@@ -31,8 +31,6 @@
  * Kept from the original (BUG(orig)):
  *   - GTBevelBox: flags <> 0 gives the tag GTBB_Recessed with value 0, so
  *     the box is never recessed. (#170)
- *   - GTShape: the label of the previous gadget stays in the NewGadget
- *     (#172).
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
@@ -85,6 +83,10 @@
  *   gadget's Flags (GFLG_GADGIMAGE, + GFLG_GADGHIMAGE) and Activation
  *   (GACT_RELVERIFY): neither flag had an effect.  The two words keep
  *   GFLG_DISABLED and GACT_IMMEDIATE now; the rest is the original's.
+ * Fixed (intended deviation, #172): GTShape did not set the label
+ *   (ng_GadgetText) of the static NewGadget: GadTools got the label of
+ *   the gadget made before for the shape gadget.  handlestd sets it to 0
+ *   for a shape.
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -699,6 +701,7 @@ static const ULONG *handlestd(UWORD id, WORD x, WORD y, WORD w, WORD h,
     wrkgadget.ng_LeftEdge = x;
     wrkgadget.ng_TopEdge = y;
     if (shape) {
+        wrkgadget.ng_GadgetText = NULL; /* no label, fixed (#172) */
         wrkgadget.ng_TextAttr = ufont;
         wrkgadget.ng_Width = image1.Width;
         wrkgadget.ng_Height = image1.Height;
@@ -1320,8 +1323,8 @@ static void shape1(const struct bb_shape *shape)
  * and the boolean gadget type, GadgetRender = a copy of Image 1,
  * SelectRender = a copy of Image 2.  Flag bits: 6 GA_Disabled, 7 GA_Immediate.  Amiga mode only.
  * Errors (debugger only): "Uninitialized Shape" (sgchk).
- * BUG(orig): the label of the previous gadget stays in the NewGadget
- * (#172).  Fixed (#173): the gadget gets copies of Image 1/2 of its own
+ * The gadget has no label.  Fixed (#172): the original left the label of
+ * the previous gadget in the NewGadget.  Fixed (#173): the gadget gets copies of Image 1/2 of its own
  * (the original overwrote GadTools' GadgetRender with Image 1 and shared
  * the static Image 2).  Fixed (#327): if CreateGadget fails, nothing is
  * written (the original wrote to addresses 12-25).
