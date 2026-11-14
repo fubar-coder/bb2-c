@@ -43,15 +43,12 @@
  *         output -8 = 0-terminated string, -4 = string with length,
  *         0 = one character (windowprint).
  *
- * Kept from the original (BUG(orig)):
+ * Kept from the original, not bugs:
  *   - Not a bug (same result: IDCMP classes are single bits): class
  *     comparisons in Event are word compares.
  *   - Not a bug (those words are cleared or reset before use): CLR.l
  *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
  *     (the variables are kept in the original order).
- *   - The tag pairs of WindowTags ...,Tag,Data... are copied without a
- *     limit into 32 longs (#961; only the &TagList form is fixed, #317,
- *     see below).
  * Fixed (intended deviation, #316): WindowTags without tags wrote no
  *   TAG_DONE and so took over the user tags of the last WindowTags; here
  *   it ends the user tags with TAG_DONE.
@@ -77,6 +74,11 @@
  *   node for the item's NextSelect (if not $FFFF); the original left its
  *   qualifier and iaddress unset (memlib memory, not cleared), here they
  *   are those of the picked event.
+ * Fixed (intended deviation, #961): WindowTags ...,Tag,Data... copies
+ *   its pairs without a limit into the 16 user tags, then TAG_DONE: 16
+ *   pairs or more write behind them.  An invalid argument: the command
+ *   is unchanged, the error check (wtagschk, debugger only) stops more
+ *   than 15 pairs with "Too Many Tags"; the original had no check.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -201,7 +203,7 @@ void docatchdoserrs(void), dowrport(void), dosetevfilter(void);
 void doeventcode(void), doeventqualifier(void), dousewindow(void);
 void idcmpchk(void), wfontchk(void), windowslib_wchk(void), wlinechk(void);
 void wpointerchk(void), wmovechk(void), wsizechk(void), wblitchk(void);
-void wbtowchk(void);
+void wbtowchk(void), wtagschk(void);
 void BLITZ_ROUTINE doactivate(struct bwin *w BL_REG(a1),
                               struct Library *intbase BL_REG(a6));
 ULONG BLITZ_ROUTINE doevent(void);
@@ -661,7 +663,7 @@ BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags3), 0, 0);
 BLITZ_REPARGS(3, 2, BL_WORD, BL_LONG, BL_STRING, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
 BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_windowslib, 0x0604,
            LIB_intuitionlib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags2), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags2), wtagschk, 0);  /* check: fixed #961 */
 BLITZ_NAME("WindowTags", "Window#,Flags,Title$ [,&TagList] or [[,Tag,Data]...]");
 
 BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_graphicslib, BL_LA(0), LIB_intuitionlib, BL_LA(1));
@@ -743,7 +745,8 @@ static struct NewWindow anewwindow = {
 
 /* wintags + usertags: one list; WindowTags copies the user tags behind
    the four fixed ones (&TagList: at most 15 pairs, then TAG_MORE to the
-   rest, fixed #317; the tag pairs BUG(orig) (#961) without a limit), and
+   rest, fixed #317; the tag pairs without a limit, at most 15 with the
+   error check, fixed #961), and
    without tags writes TAG_DONE first (fixed #316: the original wrote
    none, the last user tags stayed) */
 static struct {
@@ -3287,9 +3290,11 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
  * As WindowTags Window#,Flags,Title$; the pairs come from the argument
  * stack, then TAG_DONE (its data not set).
  *
- * BUG(orig) (#961): no limit for the 16 user tags (#317 fixed only the
- * &TagList form: these pairs come from the argument stack in reverse
- * order and cannot be linked with TAG_MORE).
+ * No limit for the 16 user tags in the command (the pairs come from the
+ * argument stack in reverse order and cannot be linked with TAG_MORE as
+ * in the &TagList form, #317).  Errors (debugger only, wtagschk): more
+ * than 15 pairs -> "Too Many Tags" (Fixed (#961): the original has no
+ * check and writes behind the user tags).
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
@@ -3394,6 +3399,7 @@ BLITZ_ERRCHK_MESSAGE(mess11, "Can't Size Window");
 BLITZ_ERRCHK_MESSAGE(mess12, "Ininitialised Shape");
 BLITZ_ERRCHK_MESSAGE(mess13, "Ininitialised BitMap");
 BLITZ_ERRCHK_MESSAGE(idcmpmess, "IDCMP must not be 0");
+BLITZ_ERRCHK_MESSAGE(tagsmess, "Too Many Tags");          /* fixed, #961 */
 
 /* wchk - a1 = used window, open */
 static void BLITZ_ERRCHK wchk_c(const ULONG *w BL_REG(a1))
@@ -3494,6 +3500,15 @@ static void BLITZ_ERRCHK wbtowchk_c(const ULONG *w BL_REG(a0), const UBYTE *bm B
         BLITZ_RUNERR(mess13);
 }
 
+/* wtagschk - WindowTags ...,Tag,Data...: d7 = the number of pairs, at
+   most 15 (the 16 user tags and TAG_DONE; fixed #961, the original has
+   no check) */
+static void BLITZ_ERRCHK wtagschk_c(UWORD n BL_REG(d7))
+{
+    if (n > 15)
+        BLITZ_RUNERR(tagsmess);
+}
+
 /* the original checks change d6/d7, a1/a2 (wmovechk, wsizechk); the C
    checks keep d0-d1/a0-a1 */
 BLITZ_ERRCHK_THUNK(windowslib_wchk, wchk_c, "d0-d1/a0-a1");
@@ -3505,3 +3520,4 @@ BLITZ_ERRCHK_THUNK(wsizechk, wsizechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(idcmpchk, idcmpchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(wblitchk, wblitchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(wbtowchk, wbtowchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(wtagschk, wtagschk_c, "d0-d1/a0-a1");

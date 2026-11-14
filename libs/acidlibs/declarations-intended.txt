@@ -3,3 +3,7 @@
 # literallib (#1018): library 33, the names of the literal characters, an
 # addition of this repository behind the original's libraries
 lib 33: added behind the original's libraries
+# windowslib (#961): WindowTags with tag pairs gets an error check
+# (wtagschk, "Too Many Tags"); the original has none
+lib 138: entry 68 WindowTags +$68: code offset set in only one of them
+lib 138: relocations in the declaration part 130 != 131
