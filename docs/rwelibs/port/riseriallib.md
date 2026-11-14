@@ -59,6 +59,15 @@ Assembler:
   (BUG(orig) below, #803, #796), the same way as the original;
 * the thunks.
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* `SerialReadString` stores up to and including the 0 and leaves a3 on
+  the 0; the original left a3 behind it, so in a string expression the
+  next part was written one byte too far (#795).
+
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
@@ -89,8 +98,7 @@ Assembler:
   address (d0) with the stop bit each time, until a long with the low
   byte 0 (#801). DIFF: a2 stays unchanged (as in all C ports, `docs/libs/
   cmdlibs-port.md`); the original leaves it below the longs it read.
-* `SerialReadString` stores up to and including the 0 and leaves a3
-  behind it (#795); d0 is the count − 1, and the count is reset only when
+* `SerialReadString`: d0 is the count − 1, and the count is reset only when
   the port is open – where the routine returns to the d0 of the call (it
   pushed d0 and never takes it back) (#796). The loop ends at a 0 only if
   the upper word of d0 at the call is 0 and no wait for a byte (−1) came

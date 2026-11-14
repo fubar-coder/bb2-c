@@ -482,7 +482,8 @@ SerialReadString|transmit ring|open: returns to d0|1	bytes 1028 fnv D3FFE215
 SerialReadString|stub $64 called|open: returns to d0|1	$00000000
 SerialReadString|stub $74 called|open: returns to d0|1	$00000000
 SerialReadString|d0|open: returns to d0|1	$00000002
-SerialReadString|a3|open: returns to d0|1	$00000183
+SerialReadString|a3|open: returns to d0|1 [orig]	$00000183
+SerialReadString|a3|open: returns to d0|1 [fixed #795]	$00000182
 SerialReadString|string|open: returns to d0|1	bytes 32 4F4B00EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialWriteLong|kept|$11223344,$0|1	kept
 SerialWriteLong|popped|$11223344,$0|1	$00000000
@@ -677,7 +678,8 @@ SerialReadString|transmit ring|closed|1	bytes 1028 fnv 4A0C7823
 SerialReadString|stub $64 called|closed|1	$00000000
 SerialReadString|stub $74 called|closed|1	$00000000
 SerialReadString|d0|closed|1	$00000005
-SerialReadString|a3|closed|1	$00000183
+SerialReadString|a3|closed|1 [orig]	$00000183
+SerialReadString|a3|closed|1 [fixed #795]	$00000182
 SerialReadString|string|closed|1	bytes 32 414200EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialReadString|kept|closed, again (the count goes on)|1	kept
 SerialReadString|popped|closed, again (the count goes on)|1	$00000000
@@ -690,7 +692,8 @@ SerialReadString|transmit ring|closed, again (the count goes on)|1	bytes 1028 fn
 SerialReadString|stub $64 called|closed, again (the count goes on)|1	$00000000
 SerialReadString|stub $74 called|closed, again (the count goes on)|1	$00000000
 SerialReadString|d0|closed, again (the count goes on)|1	$00000007
-SerialReadString|a3|closed, again (the count goes on)|1	$00000182
+SerialReadString|a3|closed, again (the count goes on)|1 [orig]	$00000182
+SerialReadString|a3|closed, again (the count goes on)|1 [fixed #795]	$00000181
 SerialReadString|string|closed, again (the count goes on)|1	bytes 32 4300EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 SerialSendString|kept|closed|1	kept
 SerialSendString|popped|closed|1	$00000000

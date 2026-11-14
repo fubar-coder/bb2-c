@@ -78,8 +78,7 @@
  *     the stop bit) once for every long it reads from the a2 stack, down
  *     to one with a low byte 0 (DIFF: a2 unchanged, as in all C ports;
  *     the original leaves it below the longs read) (#801).
- *   - SerialReadString stores up to and including the 0 and leaves a3
- *     behind it (#795); the count of characters (d0 = count - 1) is reset
+ *   - SerialReadString: the count of characters (d0 = count - 1) is reset
  *     only when the port is open, where the routine returns to the d0 of
  *     the call (it pushed it and never takes it back) (#796); the loop
  *     ends at a 0 only if the upper word of d0 at the call is 0 and no
@@ -93,6 +92,10 @@
  *     SerialSendBlock/SerialSendString/SerialWriteLong run on faster than the
  *     line sends, byte 129 on overwrites the unsent bytes 1, 2 ... and
  *     wrend == wbig counts as an empty ring (#983).
+ *
+ * Fixed (intended deviation, #795): SerialReadString stored the 0 and
+ * left a3 behind it, so a string expression went on one byte too far;
+ * a3 now ends on the 0.
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
@@ -542,8 +545,8 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstac
 /**
  * @brief SerialReadString: received bytes up to a 0, at a3.
  *
- * BUG(orig) (#795): stores up to and including the 0 and leaves a3
- * behind it; BUG(orig) (#796): the count is reset only when the port is
+ * Stores up to and including the 0, a3 ends on the 0 (fixed, #795: the
+ * original left it behind the 0).  BUG(orig) (#796): the count is reset only when the port is
  * open, and then the routine returns to the d0 of the call (assembler
  * thunk __readserialstring, riser_rsreturn); BUG(orig) (#797): the loop
  * ends at a 0 only if the upper word of d0 at the call is 0 and no wait
@@ -570,6 +573,7 @@ ULONG BLITZ_ROUTINE c_readserialstring(ULONG callerd0 BL_REG(d0))
         numchars++;
         *blitz_string++ = (UBYTE)value;
     } while (value);
+    blitz_string--;                     /* fixed (#795): a3 on the 0 */
     return numchars - 1;
 }
 
