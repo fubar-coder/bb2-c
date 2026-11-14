@@ -14,6 +14,10 @@
  *
  * String results are written at a3 (a3 then points to the terminating 0,
  * blitz_string), d0 = length.
+ *
+ * Fixed (intended deviation, #214): Peeks$ with a negative length counted
+ * it unsigned and copied up to 4 GB into the string buffer; here it gives
+ * the empty string.
  */
 #include "blitzlib.h"
 
@@ -98,19 +102,23 @@ BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
  * passes a string on as an address it appends clr.b (a3)+ itself,
  * blitz2.s:8767 sbtolong); a length of 0 copies nothing.
  *
- * BUG(orig) (#214): the count is unsigned 32 bit (SUBQ.l #1,d1:BNE), a
- * negative length copies ~4 GB.
+ * Fixed (#214): a negative length gives the empty string, as 0 does (the
+ * original counted it unsigned, SUBQ.l #1,d1:BNE, and copied ~4 GB).
  *
  * The original changes only d0, d1, a0 (and a3); the thunk keeps a1.
  *
  * @param loc d0: the address.
  * @param n d1: the number of characters.
- * @return d0: the length (= d1).
+ * @return d0: the length (= d1, 0 for a negative d1).
  */
 static ULONG BLITZ_ROUTINE dopeeks_c(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
 {
     const UBYTE *s = (const UBYTE *)loc;
-    ULONG len = n;
+    ULONG len;
+
+    if ((LONG)n < 0)                            /* fixed (#214): no 4 GB copy */
+        n = 0;
+    len = n;
 
     while (n) {
         *blitz_string++ = *s++;
