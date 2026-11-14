@@ -36,6 +36,12 @@
  *     the edge lists l0/l1 (here ledges/redges). (#395)
  *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
+ *   - Fixed (#1035): the dither form's B modulo was mod + (target plane
+ *     distance - dither plane distance), so B stepped per plane by 2 x the
+ *     target distance - the dither distance; with a dither bitmap of
+ *     smaller planes, planes 1 and up read behind it.  Here negmod is the
+ *     dither distance - the target distance: B steps by the dither
+ *     bitmap's own plane distance (computed once per call).
  *   - Fixed (#393): a depth of 0 runs the plane loop 65536 times; such a
  *     bitmap is an invalid argument, refused in the error check area by
  *     BitMap and CludgeBitMap (the loop stays).
@@ -752,7 +758,9 @@ static UBYTE *bitmappoly_dither(WORD n, const struct point *pts, UWORD colour,
     if (!a3)
         return (UBYTE *)bm;
     srcmod = bm->planes[1] - bm->planes[0] - 2;
-    negmod = (bm->planes[1] - bm->planes[0]) - (dither->planes[1] - dither->planes[0]);
+    /* fixed (#1035): B steps by the dither bitmap's own plane distance;
+       the original's target - dither made it 2 x target - dither */
+    negmod = (dither->planes[1] - dither->planes[0]) - (bm->planes[1] - bm->planes[0]);
     height = (bm->flagsdepth << 6) + 1;
     a3 = dither->planes[0] + bl_mulu_w(colour * 2, dither->bpr);
     other = a3 + (WORD)dither->bpr;
