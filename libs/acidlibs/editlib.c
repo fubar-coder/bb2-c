@@ -35,6 +35,9 @@
  *     "9."); Edit(n)'s default "0" was overwritten for n >= 2.  Here the
  *     padding starts behind the default, and Edit(n) has no default (the
  *     buffer starts with spaces, as the original showed it for n >= 2).
+ *   - #132: at the end of the file DefaultInput returns -1 characters (-2
+ *     on a read error): Edit$ moved a3 back by one and returned the
+ *     length -1, Edit gave Val the length -1.  Here nothing is read.
  *
  * BUG(orig), kept:
  *   - Inkey$(n) counts n as unsigned long (a negative n: ~4 billion
@@ -47,8 +50,6 @@
  *     80 byte buffer: the 81st overwrites the high byte of pars.length,
  *     which is written again before it is read.  Without the debugger n
  *     is not checked at all. (#131)
- *   - At end of file DefaultInput returns -1 characters: Edit$ moves a3
- *     back by one and returns length -1. (#132)
  *
  * Registers: the original changes d0/d1/a0/a1 and whatever the handler
  * changes, Inkey$(n) d6/d7; Edit$ keeps d2, Edit a2/a3/a6.  C keeps
@@ -167,7 +168,9 @@ ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0))
    Fixed (#129): the padding starts behind the default (d0+d2); the
    original started at a3-1 when the default was not at a3 (CMP.l a3,d0:
    BEQ 'noclu:SUBQ #1,a3), right for a string argument (a3 behind its 0)
-   but one character early for Edit's default from UStr$. */
+   but one character early for Edit's default from UStr$.
+   Fixed (#132): a negative count (DefaultInput at the end of the file -1,
+   on a read error -2) is 0 characters; the original added it to a3. */
 static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
 {
     struct bl_regs r = { 0 };
@@ -184,6 +187,8 @@ static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
     r.d0 = max;
     r.a0 = (ULONG)def;
     n = BLITZ_ALIBJSR(TOK_iogetstring, r);         /* input a string */
+    if ((LONG)n < 0)                            /* fixed (#132): end of file */
+        n = 0;                                  /* or error: nothing read */
     blitz_string += n;                          /* ADD.l d0,a3 */
     return n;
 }
@@ -195,8 +200,9 @@ static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
  * The buffer at a3 is padded with n spaces (for input handlers that edit
  * the buffer), then the line is read over it with inputoutputlib's
  * dogetstring (see editstr).
- * BUG(orig) (#132): at end of file DefaultInput returns -1 characters,
- * a3 moves back by one and the length is -1.
+ * Fixed (#132): at the end of the file (DefaultInput returns -1
+ * characters) the result is empty (the original moved a3 back by one and
+ * returned the length -1).
  * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!".
  *
  * @param n  d0: the maximum number of characters
@@ -215,7 +221,8 @@ ULONG BLITZ_ROUTINE doeditstr2(ULONG n BL_REG(d0))
  * buffer, then the line is read over it (see editstr).  The padding
  * starts one byte before a3 when the default is not at a3 (a3 points
  * behind the string argument's terminating 0).
- * BUG(orig) (#132): at end of file DefaultInput returns -1 characters.
+ * Fixed (#132): at the end of the file the result is empty (the original
+ * returned the length -1).
  * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!".
  * DIFF: a2 is a register parameter here (the length is popped through a
  * local cursor; the original returns with a2 decremented).
