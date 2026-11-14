@@ -21,11 +21,8 @@
   text: Plays the module of slot `TrackerModule#` from the beginning, in place of the module that played before. Returns -1.
   notes: |
     Unless `ChangeTrackerVBlank` was used, the CIA interrupt is set up
-    again. With the debugger's checks, an empty slot is a runtime error.
-
-    Kept from the original: without the checks, an empty slot returns the
-    slot number instead of 0
-    ([#451](https://github.com/fubar-coder/bb2-c/issues/451)).
+    again. With the debugger's checks, an empty slot is a runtime error;
+    without them, an empty slot plays nothing and returns 0.
 "StopTracker":
   text: Stops the module and silences the four voices.
 "DecodeModule":
@@ -84,9 +81,8 @@
 "GetModuleName$":
   text: The name of a slot's module, up to 20 characters.
   notes: |
-    Kept from the original: without the debugger's checks, an empty slot
-    gives a string of slot number × 10 undefined characters
-    ([#437](https://github.com/fubar-coder/bb2-c/issues/437)).
+    With the debugger's checks, an empty slot is a runtime error; without
+    them, it gives the empty string.
 "ModulePositionJump":
   text: Makes the module continue at another song position at the next tick. The position is not checked.
   notes: |

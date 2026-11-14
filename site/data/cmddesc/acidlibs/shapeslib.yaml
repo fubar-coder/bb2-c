@@ -6,7 +6,7 @@
     of an animation are not checked against the highest shape number
     ([#265](https://github.com/fubar-coder/bb2-c/issues/265)).
 "InitShape":
-  text: Makes an empty shape of the given width, height and depth.
+  text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
 "GetaShape":
   text: Makes a shape from an area of the used bitmap.
 "CopyShape":

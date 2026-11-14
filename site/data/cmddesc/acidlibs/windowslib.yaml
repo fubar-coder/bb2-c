@@ -2,9 +2,8 @@
   text: Opens a window on the screen in use, with position, size, Intuition window flags, title and the detail and block pens, optionally with a gadget list and a bitmap for a super bitmap window. A window that is already open with this number is closed first. The new window becomes the used, input and output window.
   notes: |
     If Intuition cannot open the window, the error is "Couldn't Open
-    Window". Kept from the original: a super bitmap window (flag `$80`)
-    uses the bitmap of the last `Window` that named one
-    ([#319](https://github.com/fubar-coder/bb2-c/issues/319)).
+    Window". A super bitmap window (flag `$80`) needs the form with
+    `BitMap#`.
 
     The flags are those of Intuition, combined with `|`; for example
     `$1|$2|$1000` gives a window with a sizing gadget and a drag bar that
@@ -25,11 +24,9 @@
 "WindowTags":
   text: Opens a window like `Window`, but through Intuition's tag list call; extra tags come as tag and data pairs, or as the address of a tag list.
   notes: |
-    Kept from the original: a `WindowTags` without tags uses the extra
-    tags of the previous one
-    ([#316](https://github.com/fubar-coder/bb2-c/issues/316)), and more
-    than 16 tag and data pairs given as arguments overflow its tag buffer
-    ([#961](https://github.com/fubar-coder/bb2-c/issues/961)).
+    With runtime error checking, more than 15 tag and data pairs given as
+    arguments are the error "Too Many Tags"; a longer list can be given
+    as the address of a tag list, which takes any number of tags.
 "CloseWindow":
   text: Closes the window. Its waiting events are dropped; those of the other windows stay. Nothing happens if the window is not open.
 "WaitEvent":
@@ -37,11 +34,11 @@
 "Event":
   text: The IDCMP class of the next event of any window, or 0 if there is none (also for a menu event without a choice or a key without a character); it does not wait.
   notes: |
-    Kept from the original: a string gadget that is pressed gives an
-    extra "gadget up" event
-    ([#311](https://github.com/fubar-coder/bb2-c/issues/311)), and a menu
-    pick can give one more menu event
-    ([#312](https://github.com/fubar-coder/bb2-c/issues/312)).
+    After a string gadget is pressed, the next `Event` reports a "gadget
+    up" for it at once, as in the original; the real one when the
+    entry ends is then not reported again. A menu choice of
+    several items gives a further menu event for the next item, with the
+    same qualifier.
 "EventWindow":
   text: The number of the window of the last event.
 "GadgetHit":
@@ -107,9 +104,6 @@
   text: The drawing mode of text and graphics in windows, one of the graphics library's draw modes.
 "WCls":
   text: Clears the used window with colour 0 or the given colour.
-  notes: |
-    Kept from the original: the top line of the window is not cleared
-    ([#314](https://github.com/fubar-coder/bb2-c/issues/314)).
 "InnerCls":
   text: Clears the inside of the used window, within its borders, with colour 0 or the given colour.
 "WPlot":
@@ -124,14 +118,8 @@
   text: Draws an ellipse in the used window.
 "WScroll":
   text: Scrolls an area of the used window by the given distances.
-  notes: |
-    Kept from the original: it sets the drawing colour to 0
-    ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
 "WPrintScroll":
   text: Scrolls the inside of the used window up if the text cursor is below its last line, so that the cursor line fits.
-  notes: |
-    Kept from the original: it sets the drawing colour to 0
-    ([#315](https://github.com/fubar-coder/bb2-c/issues/315)).
 "WBlit":
   text: Draws a shape into the used window, with its mask if it has one.
 "BitMaptoWindow":
@@ -178,9 +166,6 @@
   text: The raw key code of the last key read from a window.
 "Qualifier":
   text: The low 8 bits of the qualifier of the last key read from a window, such as the shift keys held down.
-  notes: |
-    Kept from the original: only the low word of the long result is set
-    ([#313](https://github.com/fubar-coder/bb2-c/issues/313)).
 "Cursor":
   text: The cursor of `Edit$` in a window, a block for a negative value, otherwise an underline one line thicker than the value.
 "EditFrom":
@@ -195,19 +180,10 @@
   text: Uses a shape as the mouse pointer of the used window.
 "Menus":
   text: Switches the menus of the windows on or off, as `MenusOn` and `MenusOff`.
-  notes: |
-    Kept from the original: only half of the windows are reached
-    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
 "MenusOn":
   text: Switches the menus of the windows on again.
-  notes: |
-    Kept from the original: only half of the windows are reached
-    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
 "MenusOff":
   text: Switches the menus of the windows off.
-  notes: |
-    Kept from the original: only half of the windows are reached
-    ([#310](https://github.com/fubar-coder/bb2-c/issues/310)).
 "RastPort":
   text: The address of the window's RastPort, for calling the graphics library directly.
 "CatchDosErrs":

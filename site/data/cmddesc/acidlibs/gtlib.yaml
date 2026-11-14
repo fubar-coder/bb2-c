@@ -1,9 +1,5 @@
 "GTButton":
   text: Adds a button. A flag makes it a toggle button that stays selected.
-  notes: |
-    Kept from the original: a toggle button that GadTools cannot create
-    writes to low memory
-    ([#171](https://github.com/fubar-coder/bb2-c/issues/171)).
 "GTCheckBox":
   text: Adds a check box; flags make it checked at the start or scaled to the given size.
 "GTCycle":
@@ -42,15 +38,9 @@
 "GTPalette":
   text: Adds a palette gadget for choosing one of the colours of `depth` bitplanes, optionally with a colour selected.
 "GTShape":
-  text: Adds a button that shows a shape, optionally with a second shape for the selected state.
-  notes: |
-    Kept from the original: it takes over the label of the gadget made
-    before it ([#172](https://github.com/fubar-coder/bb2-c/issues/172)).
+  text: Adds a button that shows a shape, optionally with a second shape for the selected state. It has no label.
 "GTBevelBox":
-  text: Draws a bevelled box, in GadTools' style, into the window of the GTList.
-  notes: |
-    Kept from the original: the box is never drawn recessed
-    ([#170](https://github.com/fubar-coder/bb2-c/issues/170)).
+  text: Draws a bevelled box, in GadTools' style, into the window of the GTList; raised with the flags 0, recessed with any other value.
 "AttachGTList":
   text: Adds the gadgets of the GTList to a window and draws them.
   notes: |
@@ -109,9 +99,5 @@
   text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window border sizes of the used screen and the height of its font. Use it for a GimmeZeroZero window, whose positions already start inside the borders.
 "GTFreeGadget":
   text: Removes the gadget, or all gadgets in a row with that `id`, from the GTList and frees them.
-  notes: |
-    Kept from the original: freeing the last gadget of a list makes the
-    next gadget made for that list link into freed memory
-    ([#962](https://github.com/fubar-coder/bb2-c/issues/962)).
 "GTList":
   text: The object that collects GadTools gadgets, as the introduction describes.

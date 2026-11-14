@@ -23,10 +23,8 @@
 "Instr":
   text: The position of `Findstring$` in `String$`, searching from the first character or from `Startpos`; 0 if it is not found.
   notes: |
-    A `Startpos` of 0 or less searches from the first character. Kept
-    from the original: a `Startpos` near $7FFFFFFF is not caught, and the
-    search then runs through memory far from the string
-    ([#1030](https://github.com/fubar-coder/bb2-c/issues/1030)).
+    A `Startpos` of 0 or less searches from the first character, and one
+    behind the end of `String$` gives 0.
 "Replace$":
   text: "`String$` with every occurrence of `Findstring$` replaced by `Replacestring$`."
   notes: |

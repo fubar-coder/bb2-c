@@ -7,10 +7,12 @@
 "Inkey$":
   text: The characters that are waiting on the current input channel, at most `Characters` (one without it), or "" if there are none. Not for the default input channel.
   notes: |
-    `Inkey$(0)` is the empty string. Kept from the original: a negative
-    `Characters` counts as about 4 billion, so `Inkey$` tries that many
-    times to read a character, and the program hangs there
-    ([#1031](https://github.com/fubar-coder/bb2-c/issues/1031)).
+    `Inkey$(0)` is the empty string. With runtime error checking, a
+    negative `Characters` is the error "Can't Inkey$ a negative number of
+    Characters!". In the style of Blitz Basic 2, only that check catches
+    it: without it, the count is taken as about 4 billion, so `Inkey$`
+    tries that many times to read a character and the program hangs
+    there.
 "Edit":
   text: Reads a number of at most `Characters` characters from the current input channel, like `Edit$`, and returns its value. `DefaultValue` is shown first to be edited.
   notes: |

@@ -22,8 +22,8 @@ intro: |
   checking, an `Id` that the list does not have is the error "Can't Find
   Gadget"; without it, the
   search for an `Id` does not stop at the end of the list
-  ([#166](https://github.com/fubar-coder/bb2-c/issues/166)). Kept from the original: freeing a
-  list leaves the memory of its string and proportional gadgets in use
-  ([#163](https://github.com/fubar-coder/bb2-c/issues/163)).
+  ([#166](https://github.com/fubar-coder/bb2-c/issues/166)). Freeing a
+  list frees all memory of its gadgets, also the text buffers of string
+  gadgets.
 
   *Based on the gadgetslib guide by Acid Software.*

@@ -4,9 +4,7 @@
     The width is rounded up to a multiple of 16. The height of the short
     form is that of the display, 200 lines for NTSC or 256 for PAL,
     doubled for interlace. A screen that the object already holds is
-    freed first; kept from the original, this can crash if `ShowBitMap`
-    was used on it
-    ([#247](https://github.com/fubar-coder/bb2-c/issues/247)). With
+    freed first. With
     runtime error checking, a bitmap smaller than the screen is the error
     "Can't use specified BitMap".
 
@@ -22,22 +20,20 @@
 "ScreenTags":
   text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the address of the screen or, if it cannot be opened, Intuition's error code.
   notes: |
-    Kept from the original: a tag list is copied without a limit
-    ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
+    A tag list given by its address may be of any length. Kept from the
+    original: tag and data pairs given as arguments are copied without a
+    limit, and 16 pairs or more overwrite memory behind the library's
+    buffer ([#1039](https://github.com/fubar-coder/bb2-c/issues/1039)).
 "WbToScreen":
   text: Takes the Workbench screen as the screen object and makes it the used screen, mostly to open windows on it.
   notes: |
-    Kept from the original: a screen that the object held before is
-    closed if the program opened it
-    ([#248](https://github.com/fubar-coder/bb2-c/issues/248)), and after
-    `ShowBitMap` on that object this can crash
-    ([#247](https://github.com/fubar-coder/bb2-c/issues/247)).
+    A screen that the object held before is freed first: closed if the
+    object opened it, otherwise only forgotten.
 "FindScreen":
   text: Takes a screen that is already open as the screen object - the frontmost one, or the first whose title or default title begins with `Title$` - and makes it the used screen.
   notes: |
-    Kept from the original: as with `WbToScreen`, a screen that the object
-    held before is closed if the program opened it
-    ([#248](https://github.com/fubar-coder/bb2-c/issues/248)).
+    As with `WbToScreen`, a screen that the object held before is freed
+    first: closed if the object opened it, otherwise only forgotten.
 "CloseScreen":
   text: Closes the screen if the program opened it; a screen taken with `WbToScreen` or `FindScreen` is only forgotten.
 "LoadScreen":

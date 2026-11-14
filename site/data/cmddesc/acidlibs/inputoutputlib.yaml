@@ -5,17 +5,19 @@
 "PopInput":
   text: Returns to the input channel that was current before the last switch, for example after `FileInput` or `WindowInput`.
   notes: |
-    With runtime error checking, popping when nothing is left to pop is
-    the error "No Input channel to pop!"; a pop at the start of the
-    program, before any switch, leaves it without an input channel. The channels
+    With runtime error checking, popping when nothing is left to pop, also
+    at the start of the program before any switch, is the error "No Input
+    channel to pop!"; without it, such a pop leaves the program without an
+    input channel. The channels
     are remembered in a ring of 16 entries; only runtime error checking
     notices popping too often, without it old entries are returned
     ([#194](https://github.com/fubar-coder/bb2-c/issues/194)).
 "PopOutput":
   text: Returns to the output channel that was current before the last switch, for example after `FileOutput` or `WindowOutput`.
   notes: |
-    With runtime error checking, popping when nothing is left to pop is
-    the error "No Output channel to pop!"; a pop at the start of the
-    program, before any switch, leaves it without an output channel. As with
+    With runtime error checking, popping when nothing is left to pop, also
+    at the start of the program before any switch, is the error "No Output
+    channel to pop!"; without it, such a pop leaves the program without an
+    output channel. As with
     `PopInput`, only runtime error checking notices popping too often;
     without it old entries are returned ([#194](https://github.com/fubar-coder/bb2-c/issues/194)).

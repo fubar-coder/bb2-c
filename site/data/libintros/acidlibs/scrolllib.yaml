@@ -18,7 +18,8 @@ intro: |
   BitMap", and an area of `Scroll` or `BlockScroll` outside a bitmap is
   "Illegal Scroll Area".
 
-  Kept from the original: a bitmap with no bitplanes makes these commands
-  run very long ([#393](https://github.com/fubar-coder/bb2-c/issues/393)).
+  A bitmap with no bitplanes makes these commands run very long. In the
+  style of Blitz Basic 2, only runtime error checking prevents it:
+  `BitMap` and `CludgeBitMap` then refuse a depth of 0.
 
   *Based on the scrolllib guide by Acid Software.*

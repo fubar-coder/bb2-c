@@ -2,7 +2,9 @@
   text: Makes a bitmap of the given width, height and depth in chip memory and makes it the used bitmap; a bitmap the object held before is freed. A depth of n gives 2 to the power of n colours, 8 for a depth of 3. With runtime error checking, a depth of 0 or more than 8 is an error.
   notes: |
     Kept from the original: the pointers to bitplanes beyond the depth are
-    not cleared in the object ([#80](https://github.com/fubar-coder/bb2-c/issues/80)).
+    not cleared in the object ([#80](https://github.com/fubar-coder/bb2-c/issues/80)),
+    and the error for a wrong depth reads "No currently used object!"
+    ([#1040](https://github.com/fubar-coder/bb2-c/issues/1040)).
 "LoadBitMap":
   text: Loads an IFF ILBM picture into a bitmap that is already set up, and with `Palette#` its colours into that palette object. Amiga mode only.
 "ScreensBitMap":
@@ -20,4 +22,4 @@
     bitmap of size 0 makes the copy run over memory
     ([#78](https://github.com/fubar-coder/bb2-c/issues/78)).
 "CludgeBitMap":
-  text: Takes memory of the program, such as included data, as a bitmap of the given width, height and depth, with the planes one after the other, and makes it the used bitmap. The memory must be chip memory and large enough; the program is responsible for that. A game can take one block of memory at its start for all its bitmaps this way, instead of allocating and freeing them.
+  text: Takes memory of the program, such as included data, as a bitmap of the given width, height and depth, with the planes one after the other, and makes it the used bitmap. The memory must be chip memory and large enough; the program is responsible for that. A game can take one block of memory at its start for all its bitmaps this way, instead of allocating and freeing them. With runtime error checking, a depth of 0 or more than 8 is the error "Illegal BitMap Depth".

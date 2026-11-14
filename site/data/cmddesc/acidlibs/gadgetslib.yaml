@@ -3,10 +3,9 @@
 "StringGadget":
   text: Adds a string gadget, a field for typing text, as high as the font, with a buffer of `Maxlen` bytes (room for `Maxlen`-1 characters) and the given width in pixels; a longer text scrolls inside the gadget. `StringText$` reads what was typed.
   notes: |
-    Kept from the original: with `Borders Off` it writes to low memory
-    ([#164](https://github.com/fubar-coder/bb2-c/issues/164)), and a
-    `Maxlen` of 0 overwrites memory
-    ([#165](https://github.com/fubar-coder/bb2-c/issues/165)).
+    With runtime error checking, a `Maxlen` of 0 is the error "Maxlen
+    MUST be greater than zero". In the style of Blitz Basic 2, only that
+    check catches it: without it, a `Maxlen` of 0 overwrites memory.
 "PropGadget":
   text: Adds a proportional gadget, a slider or scroller, with the given size; flags select horizontal, vertical or both directions. Its *pot* is where the knob is and its *body* how large it is, both from 0 to 1. A slider for the values 0 to 15 has a body of 1/16.
 "ShapeGadget":
@@ -65,9 +64,6 @@
 "GadgetBorder":
   text: Draws a border in the style of the gadgets into the used window.
 "SelectMode":
-  text: Meant to choose how selected gadgets are highlighted.
-  notes: |
-    Kept from the original: it has no effect
-    ([#952](https://github.com/fubar-coder/bb2-c/issues/952)).
+  text: Chooses how the gadgets made from now on are highlighted while they are selected - 1 with a box around them, 0 by inverting their colours. A shape gadget with a second shape shows that shape instead.
 "GadgetList":
   text: The object that holds a list of gadgets made with the commands of this library, as the introduction describes.

@@ -23,8 +23,8 @@ intro: |
   | 1, 2, 4, 8 | label left of, right of, above or below the gadget |
   | 16 | label inside the gadget |
   | 32 | label highlighted |
-  | 64 | disabled (all kinds but text, number and shape gadgets) |
-  | 128 | reports when it is pressed, not only when it is released (button, integer, string, slider, scroller) |
+  | 64 | disabled (all kinds but text and number gadgets) |
+  | 128 | reports when it is pressed, not only when it is released (button, integer, string, slider, scroller, shape) |
   | 256 | checked at the start (check box) |
   | 512 | scaled to the given size (check box, mutual exclude) |
   | 1024 | vertical (slider, scroller) |
@@ -42,8 +42,14 @@ intro: |
   `GTToggle`, `GTStatus`, `GTArrowSize` and `GTGimmeCludge` work in both
   modes.
 
-  Kept from the original: when several gadgets of a list have the same
-  `id`, some commands work on the first of them and others on the last
-  ([#175](https://github.com/fubar-coder/bb2-c/issues/175)).
+  The commands that make gadgets take the border sizes and the font from
+  the used screen, so a screen must be used before them, with `Screen`,
+  `WbToScreen` or `FindScreen`; with runtime error checking, a missing
+  one is the error "No currently used object!".
+
+  Several gadgets of a list can have the same `id`. `GTSetAttrs`,
+  `GTChangeList` and `GTSetHighlight` then work on the last of them, the
+  other commands on the first, and `GTFreeGadget` removes them all. A
+  GadTools kind that makes helper gadgets may need the last one.
 
   *Based on the bbgtlib guide by Acid Software.*
