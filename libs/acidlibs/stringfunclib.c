@@ -16,6 +16,9 @@
  *   - #286: Mid$ compared start-1+length with the length signed after the
  *     addition: a huge length (sum > $7FFFFFFF) counted as "fits" and
  *     copied `length` bytes.  Here the length is compared with the rest.
+ *   - #287: Instr(s$,f$,Startpos) did not check Startpos <= 0 and compared
+ *     the bytes before the string.  Here such a start is the first
+ *     character.
  *
  * String function convention of the Blitz 2 compiler:
  *   d0, d1, d2   arguments; a string argument is the address of its
@@ -868,15 +871,18 @@ static ULONG BLITZ_ROUTINE ascii_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG
 }
 BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
 
-/* Instr - find f$ in s$ from 0-based position pos+1; result 1-based
+/* Instr - find f$ in s$ from the 1-based position start; result 1-based
    position or 0.  CaseSense Off compares 'a'..'z' as upper case.
-   pos is d4: -1 for Instr(s$,f$), Startpos-2 for Instr(s$,f$,Startpos).
-   BUG(orig) (#287): Startpos <= 0 is not checked - the compare starts before
-   the string (Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5). */
-static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
+   The search position pos is d4 of the original: -1 for Instr(s$,f$),
+   Startpos-2 for Instr(s$,f$,Startpos).
+   Fixed (#287): Instr(s$,f$,Startpos) searches from the first character
+   for Startpos <= 0 (the original did not check it and compared before
+   the string: Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5). */
+static ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
 {
     LONG slen, flen, n;
     const UBYTE *scan, *fp;
+    LONG pos = start < 1 ? -1 : start - 2;      /* d4; fixed (#287): start <= 0 */
 
     blitz_string = s;                           /* fix string pointer */
     slen = BL_POPL(sp);                         /* length of string 1 */
@@ -918,7 +924,7 @@ static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
 static ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
-    return instr(s, f, -1, lens);               /* char search pos. */
+    return instr(s, f, 1, lens);                /* char search pos. (d4 = -1) */
 }
 BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
 
@@ -929,8 +935,9 @@ BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
  * d4 = Startpos-2 in the original; CaseSense Off compares 'a'..'z' as
  * upper case.  a3 = String$.
  *
- * BUG(orig) (#287): Startpos <= 0 is not checked - the compare starts
- * before the string (Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5).
+ * Fixed (#287): Startpos <= 0 counts as 1, the first character (the
+ * original compared before the string: Instr(s$,"",0) = 0,
+ * Instr(s$,"",-5) = -5).
  *
  * @param s     d0: the string to search in
  * @param f     d1: the string to find
@@ -942,7 +949,7 @@ BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
 static ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
                                           LONG start BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
-    return instr(s, f, start - 2, lens);
+    return instr(s, f, start, lens);
 }
 BLITZ_THUNK(instrstring2, instrstring2_c, "d1/a0-a1");
 
