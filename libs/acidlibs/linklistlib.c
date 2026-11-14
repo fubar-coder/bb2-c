@@ -35,6 +35,11 @@
  * DIFF: the original SortList destroys a3 (string pointer) and d6; here
  * a3 is never changed (Blitz programs do not expect a3 to survive a
  * statement, so nothing observable).
+ *
+ * Fixed (intended deviation, #201): SortList compared two keys with
+ * CMP.l:BMI, the sign of their difference, which wraps for keys more than
+ * 2^31 apart (2000000000 sorted before -2000000000).  Here the compare is
+ * signed.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -519,9 +524,9 @@ BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
  * stays the same item.  Interrupts disabled meanwhile.  Errors (debugger
  * only): "Array is not a List" (lchk).  DIFF: a3 is not changed (the
  * original destroys a3 and d6).
- * BUG(orig) (#201): items are compared with CMP.l: BMI, i.e. the sign of
- * the difference (wraps for keys more than 2^31 apart), and items with
- * equal keys are not swapped.
+ * Fixed (#201): the keys are compared signed (the original took the sign
+ * of the difference, CMP.l:BMI, which wraps for keys more than 2^31
+ * apart); items with equal keys are not swapped.
  *
  * @param base    d0: the list array
  * @param offset  d1: the offset of the key in the element
@@ -549,7 +554,7 @@ dopass:
         BLITZ_RUNERR((const char *)end);        /* TRAP #0, d0 = end */
 nxpass:
     nextkey = KEY(next);
-    if ((LONG)(nextkey - itemkey) < 0)
+    if ((LONG)nextkey < (LONG)itemkey)          /* fixed (#201): signed compare */
         goto doswap;
     itemkey = nextkey;
 nxitem:
