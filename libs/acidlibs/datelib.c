@@ -41,10 +41,14 @@
  *   code at the end of the library, larger months foreign memory.  Here a
  *   month outside 1-12 is invalid input: 0, like NumDays' other invalid
  *   input.
+ * Fixed (intended deviation, #123): a "/" as the first character of a
+ *   field of NumDays (an empty field) ended the field with the "/" itself,
+ *   47, as its value ("/5/1990" was the 47th of May; in the year field it
+ *   jumped back and made 47 the second field).  Here an empty field is
+ *   invalid input: 0.
  * Kept on purpose (BUG(orig)):
  *   - NumDays: a 2 digit year reads past the end of the string (the year
- *     ends only at "/" or after 4 characters) (#125); a "/" as first
- *     character of a field becomes the value 47 (#123).
+ *     ends only at "/" or after 4 characters) (#125).
  * Not a bug (documented): Mins/Secs return the values of the last Hours
  * call (no DateStamp of their own).
  */
@@ -417,8 +421,8 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * the month.
  * Fixed (#122): ADDQ.l #1 / SUBQ.l #1 on the day count (the original's
  * word operations had no carry/borrow: NumDays("31/12/1977") = 65535).
- * BUG(orig) (#123): a "/" as first character of a field becomes the
- * value 47.
+ * Fixed (#123): an empty field (a "/" as its first character) gives 0;
+ * the original took the "/" as the value 47.
  * Fixed (#124): a month outside 1-12 gives 0 (the original indexed the
  * month table with it: month 0 read the low word of the tick count of the
  * last DateStamp, 13 the end mark, 14 and up the memory behind).
@@ -429,7 +433,7 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  *
  * @param s  d0: the date string
  * @return d0: the days since 1/1/1978; 0 if day or month are not
- *         followed by "/" or the month is not 1-12
+ *         followed by "/", a field is empty or the month is not 1-12
  */
 ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 {
@@ -446,7 +450,7 @@ ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 
     num = *cur++;                                       /* day */
     if ((UWORD)num == '/')
-        goto getm;
+        return 0;                                       /* fixed (#123) */
     BL_SETW(num, num - 48);
     BL_SETB(digit, *cur++);
     if ((UWORD)digit == '/')
@@ -460,7 +464,7 @@ getm:
     BL_SETW(field1, num);
     num = *cur++;                                       /* month */
     if ((UWORD)num == '/')
-        goto gety;
+        return 0;                                       /* fixed (#123) */
     BL_SETW(num, num - 48);
     BL_SETB(digit, *cur++);
     if ((UWORD)digit == '/')
@@ -473,9 +477,11 @@ getm:
 gety:
     BL_SETW(field2, num);
     num = *cur++;                                       /* year */
-    /* BUG(orig) (#123): "/" here jumps back to gety (month = 47) */
+    /* fixed (#123): an empty field is invalid (the original took the "/"
+       as the value 47; here in the year it jumped back to gety and made
+       47 the second field) */
     if ((UWORD)num == '/')
-        goto gety;
+        return 0;
     BL_SETW(num, num - 48);
     for (i = 0; i < 3; i++) {
         BL_SETB(digit, *cur++);
