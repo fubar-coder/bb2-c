@@ -38,7 +38,7 @@
  * BUG(orig), kept:
  *   - ScreenTags with tag pairs copies them from the argument stack
  *     without a limit into usertags (32 longs = 16 pairs), then a TAG_END
- *     long: 16 pairs or more write behind it (issue to be filed; test
+ *     long: 16 pairs or more write behind it (#1039; test
  *     screenslib-screentags-pairs-limit).
  *   - Not a bug (library-opened screens are always closed by the library,
  *     no leak found): the title copy (allocst) of FindScreen/WbToScreen
@@ -1068,7 +1068,7 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
  *
  * As doscreentags3, the tag/data pairs from the argument stack.
  *
- * BUG(orig) (issue to be filed): no limit for the 16 user pairs; 16 or
+ * BUG(orig) (#1039): no limit for the 16 user pairs; 16 or
  * more write behind usertags (the pairs lie on the argument stack in
  * reverse order and cannot be linked with TAG_MORE as in the &TagList
  * form, #249).
