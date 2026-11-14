@@ -57,16 +57,17 @@
  *     "###" -> "  7") (#237); now the "-" takes a leading place in front
  *     of the number and of the zeros of "0" places (" -7", "000" ->
  *     "-07"), or counts as an excess character of the overflow.
+ *   - ffptoascii, fixed point with FloatMode -1 (or a Format string) and
+ *     |x| < 1E-17: the digits were written past the end of the 50 byte
+ *     buffer into the first entry (1E19) of the table of powers of ten,
+ *     which changed later conversions of numbers >= 1E18 (#241); the
+ *     buffer has 52 bytes now, the output is the same.
  *
  * BUG(orig):
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
  *     below is that of the original so that this goes the same way). (#240)
- *   - ffptoascii, fixed point with FloatMode -1 (or a Format string) and
- *     |x| < 1E-17: the digits are written past the end of the 50 byte
- *     buffer into the first entry (1E19) of the table of powers of ten,
- *     which changes later conversions of numbers >= 1E18. (#241)
  *   - Str$ of a string is printed as a byte (the low byte of the address). (#242)
  * Not bugs:
  *   - the output style of Blitz 2, the same for Quick and Float: numbers
@@ -174,10 +175,15 @@ static_assert(sizeof pl == 0x234 - 0x1c6);
 /* ffptoascii's buffers and table, in the order of the binary ($872-$9D3):
    buf1 = sign, digits and exponent form, buf2 = fixed point form (the
    point at buf2[24]), then the 48 powers of ten {binary exponent,
-   mantissa} 1E19 ... 1E-28 - writable, see BUG(orig) (#241) above. */
+   mantissa} 1E19 ... 1E-28.
+   Fixed (#241): buf2 has 52 bytes, the binary's 50: the fixed point form
+   of the smallest FFP numbers (2.7E-20 .. 1E-17, first digit at the 18th
+   to 20th decimal) writes its 7 digits and a "0" up to buf2[51]; in the
+   original these bytes are the first entry (1E19) of the table, and
+   numbers of 1E18 and more print wrong digits afterwards. */
 static struct BL_PACKED ffpvars {
     UBYTE buf1[16];
-    UBYTE buf2[50];
+    UBYTE buf2[52];
     UWORD tab[48][3];
 } fa = {
     .tab = {
@@ -202,7 +208,7 @@ static struct BL_PACKED ffpvars {
     },
 };
 
-static_assert(sizeof fa == 0x9d4 - 0x872);
+static_assert(sizeof fa == 0x9d4 - 0x872 + 2);
 
 #define FA_BASE  ((UBYTE *)&fa)
 #define FA_BUF1  (FA_BASE + offsetof(struct ffpvars, buf1))
@@ -556,9 +562,9 @@ BLITZ_THUNK(doformat, doformat_c, "d0");
  *
  * Keeps all registers like the original.
  *
- * BUG(orig) (#241): fixed point with FloatMode -1 (or a Format string)
- * and |x| < 1E-17 writes past the 50 byte buffer into the table of powers
- * of ten.
+ * Fixed (#241): fixed point with FloatMode -1 (or a Format string) and
+ * |x| < 1E-17 wrote past the 50 byte buffer into the table of powers of
+ * ten; the buffer has 52 bytes.
  *
  * @param m d0: the mode.
  */
@@ -949,8 +955,6 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * float as FloatMode says; with a Format string all numbers formatted.
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
- *
- * BUG(orig): the float buffer overrun (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
  * @param args a2: the argument stack.
