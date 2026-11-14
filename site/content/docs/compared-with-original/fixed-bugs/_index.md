@@ -60,6 +60,10 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
 
 * [`Date$` showed 1 January after a leap year as 32 December]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#date-after-leap-year" >}}):
   1 January 2025 came out as `32/12/2024`.
+* [Quicks were printed with a stray point or one too low]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#quick-print" >}}):
+  2.99998 came out as `2.`.
+* [`Format` rounded wrongly and lost the minus sign]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#format" >}}):
+  -7 with `"###"` came out as `7`.
 * [Umlauts were not drawn]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#umlauts" >}})
   by the text commands.
 * [Text after a string function lost its last character]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#text-after-string-function" >}}):

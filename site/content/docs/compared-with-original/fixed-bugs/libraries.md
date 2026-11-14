@@ -60,6 +60,106 @@ as well. Day 17167, 1 January 2025, comes out as `32/12/2024`.
 
 Issue: [Date$ showed the 1st of January after a leap year as "32/12" (#120)](https://github.com/fubar-coder/bb2-c/issues/120).
 
+## Printing numbers
+
+### Quicks were printed with a stray point or one too low {#quick-print}
+
+A Quick has 16 bits after the point, so its fraction is a multiple of
+1/65536. `Print`, `NPrint` and `Str$` show it rounded to four decimals
+and leave out the trailing zeros. When the fraction rounded to `.0000`,
+the original removed the zeros but kept the point, and when it rounded up
+to a whole number, it lost the carry into the part before the point. A
+Quick that is the result of a calculation often lies just above or below
+a whole number, so a program printed `2.` where it should print `3`.
+
+**What happened**
+
+The program sets the 32 bits of a Quick directly, to get these values
+exactly: 1.00002, 0.00002, 2.99998 and 32767.99998.
+
+```
+Statement pq{x.l}
+  q.q=0 : Poke.l &q,x
+  NPrint "quick ",Hex$(x)," <",q,"> <",Str$(q),">"
+End Statement
+pq{$00010001} : pq{$00000001} : pq{$0002FFFF} : pq{$7FFFFFFF}
+End
+```
+
+The original prints
+
+```
+quick 00010001 <1.> <1.>
+quick 00000001 <.> <.>
+quick 0002FFFF <2.> <2.>
+quick 7FFFFFFF <32767.> <32767.>
+```
+
+**With the port**
+
+```
+quick 00010001 <1> <1>
+quick 00000001 <0> <0>
+quick 0002FFFF <3> <3>
+quick 7FFFFFFF <32768> <32768>
+```
+
+A negative value that rounds to 0, such as -0.00002, prints `0` as well,
+without a minus sign.
+
+Issues: [A Quick whose fraction rounds to 0 kept the point (#234)](https://github.com/fubar-coder/bb2-c/issues/234),
+[a Quick whose fraction rounds up lost the carry (#233)](https://github.com/fubar-coder/bb2-c/issues/233).
+
+### `Format` rounded wrongly and lost the minus sign {#format}
+
+`Format` sets a format string, such as `"###.##"`, for the numbers that
+`Print`, `NPrint` and `Str$` write. The original had four faults there.
+A carry that rounded out of the first digit was lost, so 999.96 with
+`"####.#"` became ` 000.0`. A number below 1 was cut instead of
+rounded. A negative number lost its minus sign when the format string
+had no `-` or `+`. And a number with more digits before the point than
+the format has places gave a `?` followed only by spaces.
+
+**What happened**
+
+```
+f.f=999.96 : Format "####.#" : NPrint "a <",f,">"
+f=0.567 : Format ".##" : NPrint "b <",f,">"
+Format "###" : NPrint "c <",-7,">"
+Format "##" : NPrint "d <",1234,">"
+Format ""
+End
+```
+
+The original prints
+
+```
+a < 000.0>
+b <.56>
+c <  7>
+d <?  >
+```
+
+**With the port**
+
+```
+a <1000.0>
+b <.57>
+c < -7>
+d <?34>
+```
+
+The carry makes a new first digit, and if that digit does not fit, the
+number gives a `?` like any other number that is too large. The minus
+sign takes the place in front of the number, also in front of the zeros
+of `0` places: -7 with `"000"` prints `-07`. A number that is too large
+prints the `?` and then its lowest digits.
+
+Issues: [Format lost a carry out of the first digit (#235)](https://github.com/fubar-coder/bb2-c/issues/235),
+[Format did not round numbers below 1 (#236)](https://github.com/fubar-coder/bb2-c/issues/236),
+[Format without "-" or "+" lost the sign (#237)](https://github.com/fubar-coder/bb2-c/issues/237),
+[Format with too many digits printed "?" and only spaces (#238)](https://github.com/fubar-coder/bb2-c/issues/238).
+
 ## Text
 
 ### Umlauts were not drawn {#umlauts}
@@ -549,6 +649,27 @@ Issue: [Faded and decoded palettes were wrong or black on Kickstart before 3.0 (
 * `QAngle` gave a wrong angle for points 32768 or more apart in x or y;
   it gives the right one
   ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).
+* `Sgn` of a float was always 1; it is -1, 0 or 1 by the value
+  ([#301](https://github.com/fubar-coder/bb2-c/issues/301)).
+* `Val` of a string longer than 32768 characters gave 0 or read only a
+  part of it; it reads the whole string
+  ([#303](https://github.com/fubar-coder/bb2-c/issues/303)).
+* `Val` of a number with 10 or more decimal places gave a wrong fraction,
+  and from 32 places on dropped it, so `Val("1.5000…")` with 32 places
+  gave 1; the first 9 places count and the others are skipped
+  ([#304](https://github.com/fubar-coder/bb2-c/issues/304)).
+* A Quick 0 assigned to a float gave a negative zero instead of 0; it
+  gives 0 ([#146](https://github.com/fubar-coder/bb2-c/issues/146)).
+* The Quick -32768 assigned to a float gave +32768; it keeps its minus
+  sign ([#147](https://github.com/fubar-coder/bb2-c/issues/147)).
+* `Str$` and `UStr$` of a string gave a number made from the string's
+  address; they give the string
+  ([#242](https://github.com/fubar-coder/bb2-c/issues/242)).
+* A float below 1E-17 printed in fixed point form, with `FloatMode -1`
+  or a format string set by `Format`, overwrote a table of the library,
+  so numbers of 1E18 and more printed wrong digits afterwards (5E+18 as
+  `9.5E+19`); they print right
+  ([#241](https://github.com/fubar-coder/bb2-c/issues/241)).
 
 ### Graphics
 
@@ -703,6 +824,11 @@ Issue: [A program hung at its start if an AmigaOS library it calls was missing (
 * `CachePreDMA_` and `CachePostDMA_` passed their flags in the wrong
   register; the flags reach the system
   ([#959](https://github.com/fubar-coder/bb2-c/issues/959)).
+* A program that uses a transcendental function, such as `Sin`, `Sqr` or
+  `^` on floats, hung at its start when `mathtrans.library` could not be
+  opened, like the [missing AmigaOS libraries](#missing-os-library)
+  above; the program starts, and only a call of such a function crashes
+  ([#202](https://github.com/fubar-coder/bb2-c/issues/202)).
 
 ## RWE userlibs
 
