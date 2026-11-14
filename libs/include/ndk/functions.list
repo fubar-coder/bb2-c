@@ -41,7 +41,7 @@ intuition  AutoRequest              a3     safe
 intuition  BuildEasyRequestArgs     a3     poisoned
 intuition  BuildSysRequest          a3     poisoned
 intuition  DoGadgetMethodA          a3     poisoned
-intuition  EasyRequestArgs          a3     pending
+intuition  EasyRequestArgs          a3     safe
 intuition  SetGadgetAttrsA          a3     poisoned
 layers     CreateBehindHookLayer    a3     poisoned
 layers     CreateUpfrontHookLayer   a3     poisoned

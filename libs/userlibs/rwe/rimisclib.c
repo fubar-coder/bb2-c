@@ -87,6 +87,14 @@
  * DefaultFontName copied their result with its 0 and left a3 behind the
  * 0, so a string expression went on one byte too far; a3 now ends on
  * the 0.
+ * Fixed (intended deviation, #1027): EZRequest and EZRequestArgs left a3
+ * on the argument array they pass to EasyRequestArgs (0 for the forms
+ * without one); a3 now ends on the first string argument (title$, body$
+ * without a title, for EZRequestArgs the first string of the arguments,
+ * unchanged without one), giving back the space of the string arguments,
+ * which the compiler does not take back after a function with a numeric
+ * result (#846).  The call keeps a3 (the libraries' safe form of the NDK
+ * macro, cmake/ndk-calls.cmake).
  *
  * Original behaviour that is no defect: NextArg$ ends a quoted word at
  * the closing quote even if no space follows ("ab"cd gives ab, then cd),
@@ -103,10 +111,7 @@
  * DIFF: a2 stays unchanged where the original uses it as a work register
  * (EZRequest/EZRequestArgs: 0; BInstr: on the string), and so does a3 in
  * BInstr (the original leaves it on the search string),
- * docs/libs/cmdlibs-port.md "General".  EZRequest/EZRequestArgs leave
- * a3 = the argument array (0 without) like the original: the NDK inline
- * of EasyRequestArgs loads the fixed register a3 and does not restore it.
- * The format text of EZRequestArgs is written byte by byte (the
+ * docs/libs/cmdlibs-port.md "General".  The format text of EZRequestArgs is written byte by byte (the
  * original's MOVE.w at odd addresses is an address error on a 68000);
  * FromBlitz compares bytes (the original CMPM.l, also at an odd task
  * name).
@@ -343,6 +348,7 @@ static struct {
 static UBYTE ezargsbuf[160];
 static ULONG numargs;
 static UBYTE flag, sep = '|';
+static UBYTE *ezfirst;                  /* doargs: the first string argument */
 static struct Window *win;
 static const char okgad[] = "Ok";
 
@@ -777,13 +783,16 @@ static ULONG doeasybegin(void)
 /* the argument array (and with fmt the format text) from the repeated
    #unknown|#push arguments below sp: per argument the type word, below
    it the value (a string: its length, below that the address); `cnt`
-   arguments (DBRA: 0 = 65536).  a6 is passed to fltoqu. */
+   arguments (DBRA: 0 = 65536).  a6 is passed to fltoqu.  `ezfirst`: the
+   lowest address of a string argument, the first one the compiler put at
+   a3 (NULL without one, #1027). */
 static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6)
 {
     UBYTE *out = (UBYTE *)ez.args2;
     UWORD n = (UWORD)(cnt - 1);
 
     flag = 0;
+    ezfirst = NULL;
     do {
         UWORD type;
         ULONG v;
@@ -795,9 +804,14 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
         }
         type = BL_POPW(sp);
         if (type == BL_STRING) {
+            UBYTE *str;
+
             (void)BL_POPL(sp);                          /* the length */
-            *(ULONG *)out = BL_POPL(sp);
+            str = (UBYTE *)BL_POPL(sp);
+            *(ULONG *)out = (ULONG)str;
             out += 4;
+            if (!ezfirst || str < ezfirst)
+                ezfirst = str;
             if (fmt) {
                 *fmt++ = '%';
                 *fmt++ = 's';
@@ -840,8 +854,8 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
  * @brief EZRequest title$,body$,gadget$: an EasyRequest on the EZOutput
  * window ('|' in the body: a line feed).
  *
- * DIFF: a2 stays (the original: 0); a3 = 0 afterwards, like the
- * original (the NDK inline of EasyRequestArgs).
+ * DIFF: a2 stays (the original: 0).  Fixed (#1027): a3 = title$
+ * afterwards (the original: 0).
  * @param title   d0: the title
  * @param body    d1: the body text
  * @param gadget  d2: the gadgets ('|' separated)
@@ -850,26 +864,36 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
 static ULONG BLITZ_ROUTINE doeasy_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                     STRPTR gadget BL_REG(d2))
 {
+    ULONG r;
+
     ez.es.es_Title = title;
     ez.es.es_TextFormat = body;
     ez.es.es_GadgetFormat = gadget;
     ez.args = NULL;
-    return doeasybegin();
+    r = doeasybegin();
+    blitz_string = (UBYTE *)title;      /* fixed (#1027) */
+    return r;
 }
 
 /**
  * @brief EZRequest body$,gadget$: an EasyRequest without a title.
+ *
+ * Fixed (#1027): a3 = body$ afterwards (the original: 0).
  * @param body    d0: the body text
  * @param gadget  d1: the gadgets
  * @return d0: what EasyRequestArgs returns
  */
 static ULONG BLITZ_ROUTINE doeasy2_c(STRPTR body BL_REG(d0), STRPTR gadget BL_REG(d1))
 {
+    ULONG r;
+
     ez.es.es_GadgetFormat = gadget;
     ez.es.es_TextFormat = body;
     ez.es.es_Title = NULL;
     ez.args = NULL;
-    return doeasybegin();
+    r = doeasybegin();
+    blitz_string = (UBYTE *)body;       /* fixed (#1027) */
+    return r;
 }
 
 /**
@@ -887,8 +911,8 @@ static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
  * arguments as the format arguments.
  *
  * See doargs; BUG(orig): no limit of the 16 argument longs (#748), Quick
- * and Float arguments as in #749/#750.  a3 = the argument array
- * afterwards, like the original.
+ * and Float arguments as in #749/#750.  Fixed (#1027): a3 = title$
+ * afterwards (the original: the argument array).
  * @param title      d0: the title
  * @param body       d1: the body (format) text
  * @param gadget     d2: the gadgets
@@ -902,12 +926,16 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
                                      STRPTR gadget BL_REG(d2), UBYTE *args BL_REG(a2),
                                      UWORD reps BL_REG(d7), const void *caller_a6 BL_REG(a6))
 {
+    ULONG r;
+
     ez.es.es_Title = title;
     ez.es.es_TextFormat = body;
     ez.es.es_GadgetFormat = gadget;
     ez.args = ez.args2;
     doargs(args - 12, reps, NULL, caller_a6);
-    return doeasybegin();
+    r = doeasybegin();
+    blitz_string = (UBYTE *)title;      /* fixed (#1027) */
+    return r;
 }
 
 /**
@@ -918,7 +946,9 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
  * line feed), gadget "Ok", no title.  BUG(orig): no 0 behind the format
  * text (160 byte buffer, #747); no limit of the arguments (#748);
  * without arguments a type word is read from a2 and the count 0 runs the
- * loop 65536 times (#746); Quick/Float as in #749/#750.
+ * loop 65536 times (#746); Quick/Float as in #749/#750.  Fixed (#1027):
+ * a3 = the first string argument afterwards, unchanged without one (the
+ * original: the argument array).
  * @param args       a2: the argument stack, the repeated arguments
  * @param reps       d7.w: the number of arguments
  * @param caller_a6  a6: the caller's a6, passed to fltoqu (#749)
@@ -927,13 +957,18 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
 static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7),
                                      const void *caller_a6 BL_REG(a6))
 {
+    ULONG r;
+
     numargs = reps & 0xffff;
     ez.es.es_TextFormat = ezargsbuf;
     ez.args = ez.args2;
     doargs(args, (UWORD)reps, ezargsbuf, caller_a6);    /* BUG(orig): no 0 (#747) */
     ez.es.es_GadgetFormat = (STRPTR)okgad;
     ez.es.es_Title = NULL;
-    return doeasybegin();
+    r = doeasybegin();
+    if (ezfirst)
+        blitz_string = ezfirst;         /* fixed (#1027) */
+    return r;
 }
 
 /**

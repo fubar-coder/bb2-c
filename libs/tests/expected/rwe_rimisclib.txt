@@ -39,7 +39,8 @@ EZRequest|title|body$|1	bytes 80 fnv 510EA5E0
 EZRequest|body|body$|1	bytes 200 fnv 6CB39A14
 EZRequest|gadget|body$|1	bytes 40 4F6B0000000000000000000000000000000000000000000000000000000000000000000000000000
 EZRequest|arguments|body$|1	bytes 64 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-EZRequest|a3 = the arguments (0)|body$|1	$00000001
+EZRequest|a3 = the arguments (0)|body$|1 [orig]	$00000001
+EZRequest|a3 = the arguments (0)|body$|1 [fixed #1027]	$00000000
 EZRequest|body buffer|body$|1	bytes 120 fnv 614EF914
 EZRequest|kept|body$,gadget$|1	kept
 EZRequest|popped|body$,gadget$|1	$00000000

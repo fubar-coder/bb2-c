@@ -1,0 +1,17 @@
+[compile]
+ok
+[run]
+REQUESTER: EasyRequest title "T" text "B" gadgets "OK" -> answered 0
+5 ab0cd
+REQUESTER: EasyRequest title "" text "B" gadgets "OK" -> answered 0
+5 ab0cd
+REQUESTER: EasyRequest title "" text "B" gadgets "Ok" -> answered 0
+5 ab0cd
+REQUESTER: EasyRequest title "T" text "B %ld" gadgets "OK" -> answered 0
+5 ab0cd
+REQUESTER: EasyRequest title "" text "%d" gadgets "Ok" -> answered 0
+5 ab0cd
+REQUESTER: EasyRequest title "" text "%s
+%s" gadgets "Ok" -> answered 0
+5 ab0cd
+rc=0

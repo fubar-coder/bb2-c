@@ -313,7 +313,7 @@ static void easyrequest(void)
     strcpy(VEC, "body$");
     DO1(ENT(LIB, E_EZ, 2), ezsetup(); R.d[0] = BODY("Hello|World||end|"));
     ezcheck();
-    BOTH("a3 = the arguments (0)", R.a[3] == 0);
+    BOTH("a3 = the arguments (0)", R.a[3] == 0);   /* the original; fixed (#1027): body$ */
     OBSBYTES("body buffer", body, sizeof body);
     ez_ret = 0;
     strcpy(VEC, "body$,gadget$");

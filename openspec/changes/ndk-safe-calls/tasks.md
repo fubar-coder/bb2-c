@@ -54,7 +54,7 @@ writes stay byte-identical.
 - [x] 5.1 #516 riapplib `AddAppIconA`: safe macro for a3 and a4, library
   test pair `[orig]` / `[fixed #516]`, `Fixes #516`, the `fix-scope` run
   named in the report.
-- [ ] 5.2 #1027 rimisclib `EZRequest`/`EZRequestArgs`: per the measurement
+- [x] 5.2 #1027 rimisclib `EZRequest`/`EZRequestArgs`: per the measurement
   of 1.4, test pair, `Fixes #1027`, `fix-scope` run named.
 - [ ] 5.3 gtlib (#328): `GT_SetGadgetAttrsA`/`GT_GetGadgetAttrsA` get the
   safe macro; `KEEP_A3` removed or kept per 1.4; a rework, bytes named in

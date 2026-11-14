@@ -29,3 +29,20 @@
                    : "a"(__p__in_base), "a"(__v2), "d"(__v4), "d"(__v6), "d"(__v7)\
                    : "fp0", "fp1", "cc", "memory" );\
   __v_ret;})
+
+#define __EasyRequestArgs_base(__in_base, ___window, ___easyStruct, ___idcmpPtr, ___args) ({\
+  struct Window * __p____window = (struct Window *)(___window);\
+  struct EasyStruct * __p____easyStruct = (struct EasyStruct *)(___easyStruct);\
+  ULONG * __p____idcmpPtr = (ULONG *)(___idcmpPtr);\
+  APTR __p____args = (APTR)(___args);\
+  register void * __p__in_base __asm("a6") = (void *)(__in_base);\
+  register LONG __v_ret __asm("d0");\
+  register struct Window * __v0 __asm("a0") = __p____window;\
+  register struct EasyStruct * __v1 __asm("a1") = __p____easyStruct;\
+  register ULONG * __v2 __asm("a2") = __p____idcmpPtr;\
+  __asm volatile (\
+                   "exg %3,%/a3\n\tjsr %/a6@(-588:W)\n\texg %3,%/a3\n"\
+                   : "=d"(__v_ret), "+a"(__v0), "+a"(__v1), "+r"(__p____args)\
+                   : "a"(__p__in_base), "a"(__v2)\
+                   : "fp0", "fp1", "cc", "memory", "d1" );\
+  __v_ret;})

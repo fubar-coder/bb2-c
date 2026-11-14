@@ -62,9 +62,7 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
 * a2 stays unchanged where the original uses it as a work register
   (EZRequest/EZRequestArgs set it to 0, BInstr leaves it on the string),
   and BInstr keeps a3 (the original leaves it on the search string);
-  `docs/libs/cmdlibs-port.md` "General". EZRequest/EZRequestArgs leave a3
-  = the argument array (0 without) like the original: the NDK inline of
-  EasyRequestArgs loads the fixed register a3 and does not restore it.
+  `docs/libs/cmdlibs-port.md` "General".
 * EZRequestArgs writes its format text byte by byte; the original's
   `MOVE.w #"%s",(a1)+` after an odd number of bytes is an address error
   on a 68000. FromBlitz compares bytes where the original compares longs
@@ -97,6 +95,17 @@ kind F):
   of their result; the original copied the result with its 0 and left
   a3 behind it, so in a string expression the next part was written one
   byte too far (`ProgDir$+"/data"` held the 0 and lost the `a`) (#743).
+* EZRequest and EZRequestArgs leave a3 on their first string argument
+  (title$, body$ in the forms without a title, for EZRequestArgs the
+  first string among its arguments; unchanged without one); the original
+  left it on the argument array it passes to `EasyRequestArgs` (0 for
+  the forms without one), so as a function in a string expression the
+  rest of the expression was written from address 0 on or over the
+  library's argument array (#1027). a3 on the first string argument
+  gives back the space of the string arguments, which the compiler does
+  not take back after a function with a numeric result (#846); the call
+  itself uses the libraries' safe form of the NDK macro, which keeps a3
+  (`cmake/ndk-calls.cmake`).
 
 ## BUG(orig)
 
