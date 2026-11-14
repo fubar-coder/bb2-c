@@ -42,7 +42,6 @@
  *     locks. (#158)
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them. (#159)
- *   - A result of a3 + length + 1: a3 is left BEHIND the terminating 0. (#161)
  * Fixed (#160): there are 64 line gadgets (144 bytes each, $15AA-$39A9,
  *   then 48 bytes $39AA-$39D9 up to the end of the data block), but the
  *   original shows (height - 85) / 8 lines with no limit: from a window
@@ -56,6 +55,10 @@
  *   emulator: reboot, or "ILLEGAL Instruction").  Here the list has at most
  *   64 lines and the window is at most 597 (64 * 8 + 85) high, also the
  *   first one; details in filereq_core.c (test freqlib-64-lines).
+ * Fixed (intended deviation, #161): the result was copied with its 0 and
+ *   a3 was left BEHIND the 0, so a string expression went on one byte too
+ *   far (FileRequest$(...)+".bak" held the 0 and lost the "k"); a3 now
+ *   ends on the 0 (test freqlib-a3-behind-0).
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
@@ -91,7 +94,8 @@ BLITZ_LIBFIN();
  * (unless it ends in ":" or "/") + file; CANCEL and the close gadget
  * return "".  The result is copied to a3, the place of the title.
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
- * lengths.  BUG(orig) (#161): a3 is left behind the terminating 0.
+ * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
+ * it behind the 0).
  * The other BUG(orig) of the requester (#154, #156-#159, #345): see the
  * head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
@@ -125,7 +129,8 @@ static ULONG BLITZ_ROUTINE dofreq_c(ULONG title BL_REG(d0), ULONG path BL_REG(d1
     do
         n++;
     while ((*blitz_string++ = *s++) != 0);
-    return n;                           /* a3 behind the 0 */
+    blitz_string--;                     /* fixed (#161): a3 on the 0 */
+    return n;
 }
 BLITZ_THUNK(dofreq, dofreq_c, "d1/a1");
 
