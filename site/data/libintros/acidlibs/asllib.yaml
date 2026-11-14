@@ -16,6 +16,5 @@ intro: |
   with a `MaxLen` of at least 160 and 64; they give the drawer and the
   name to start with and get the ones chosen.
 
-  Kept from the original: without `asl.library`, the file and drawer
-  requesters return a broken string
-  ([#62](https://github.com/fubar-coder/bb2-c/issues/62)).
+  Without `asl.library`, the file and drawer requesters return an empty
+  string, as they do when the user cancels.

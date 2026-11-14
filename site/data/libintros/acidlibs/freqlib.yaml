@@ -16,10 +16,4 @@ intro: |
   get the ones chosen, so that the next call starts there again. After
   OK the requester also remembers its position and size.
 
-  Kept from the original: on a screen of 645 lines or more, the requester
-  overwrites memory and the program crashes afterwards
-  ([#160](https://github.com/fubar-coder/bb2-c/issues/160)); and the
-  variables get the new texts but keep their old lengths
-  ([#153](https://github.com/fubar-coder/bb2-c/issues/153)).
-
   *Based on the freqlib guide by Acid Software.*
