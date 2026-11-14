@@ -57,7 +57,7 @@ OPTIONS:
                               NAME.orig.EXT / NAME.fixed-N.EXT
           --observe TAG       run only the configuration TAG and write its observations to --to
                               DIR (NAME.out, NAME.serial, NAME.exe: the SHA-256 of the
-                              executable)
+                              executable); not for a pass with orig=, expect= or record=
           --to DIR            with --observe: the directory of the observations (emptied first)
           --layout-stack      with --observe: a Stack 16384 bytes larger (the second run of the
                               record: another memory layout)
@@ -119,7 +119,8 @@ Options:
 * `--observe TAG --to DIR`: run only the configuration `TAG` and write
   its observations to `DIR` (emptied first): `NAME.out`, `NAME.serial`
   and `NAME.exe`, the SHA-256 of the executable (with runtime error
-  checking the trap blocks zeroed). `--layout-stack` gives the session a
+  checking the trap blocks zeroed); not for a pass with `orig=`, `expect=` or
+  `record=` (refused, 2). `--layout-stack` gives the session a
   Stack 16384 bytes larger: the two runs of the target
   `corpus-expect-record`, accepted by `results corpus-accept`.
 * `--only NAME`: only this source of the pass (any number).

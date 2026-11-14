@@ -684,6 +684,14 @@ int corpus_observe(struct corpus_pass *p, const char *tag, const char *dir, int 
         snprintf(err, errlen, "the pass has no configuration %s", tag);
         return -1;
     }
+    /* the observations are the expected data of a corpus pass; a bug-orig
+       pass has its own record (record=), and its selection would drop the
+       one configuration kept here */
+    if (p->orig || p->expect || p->record) {
+        snprintf(err, errlen, "--observe is not for a bug-orig or expect pass (orig=, expect=, "
+                 "record=)");
+        return -1;
+    }
     free(p->work);
     free(p->report);
     /* a work directory and report of its own beside DIR: the two runs of
@@ -1917,6 +1925,10 @@ int corpus_run(struct corpus_pass *p, FILE *log)
         fprintf(log, "corpus: %s: no program with an exe pair or a FIX - nothing to update\n",
                 p->expected.pass);
         rc = 0;
+        goto out;
+    }
+    if (!p->nconfigs) {
+        fprintf(log, "corpus: no configuration left\n");
         goto out;
     }
     if (!p->nsources) {

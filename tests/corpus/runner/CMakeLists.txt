@@ -68,3 +68,8 @@ add_test(NAME runner_ctest_run_dir COMMAND ${CMAKE_COMMAND}
 	-DSRC=${CMAKE_CURRENT_SOURCE_DIR}/ctest-run-dir -DWORK=${CMAKE_CURRENT_BINARY_DIR}/ctest_run_dir
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/ctest-run-dir.cmake)
 set_tests_properties(runner_ctest_run_dir PROPERTIES PASS_REGULAR_EXPRESSION "ctest-run-dir: as expected")
+# corpusrun pass --observe on a bug-orig pass (orig=): refused, no report
+# (no emulator needed)
+add_test(NAME corpusrun_observe_orig COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:corpusrun>
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/corpusrun_observe_orig
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/check-observe-orig.cmake -P ${WITH_WORKDIR})

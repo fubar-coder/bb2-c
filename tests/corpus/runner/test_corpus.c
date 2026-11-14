@@ -201,6 +201,17 @@ int main(void)
               && !strcmp(p.configs[1].tag, "clib") && p.configs[0].expect == CORPUS_EXE);
         CHECK(p.nfiles == 2 && !strcmp(p.file_dest[0], "x/port") && !strcmp(p.file_dest[1], "x/all"));
         corpus_free(&p);
+        /* --observe is not for a bug-orig pass: refused, nothing dropped */
+        CHECK(corpus_parse(ORIG, &p, err, sizeof err) == 0);
+        CHECK(corpus_observe(&p, "clib", "/o", 0, err, sizeof err) == -1 && strstr(err, "orig=")
+              && p.nconfigs == 3 && !p.observe_to);
+        CHECK(corpus_observe(&p, "ref", "/o", 0, err, sizeof err) == -1 && strstr(err, "orig=")
+              && p.nconfigs == 3 && !p.observe_to);
+        corpus_free(&p);
+        CHECK(corpus_parse(ORIG "record=check\n", &p, err, sizeof err) == 0);
+        CHECK(corpus_observe(&p, "ref", "/o", 0, err, sizeof err) == -1 && strstr(err, "record=")
+              && p.nconfigs == 3);
+        corpus_free(&p);
         CHECK(corpus_parse(ORIG "record=check\n", &p, err, sizeof err) == 0);
         corpus_select(&p);
         CHECK(p.record == CORPUS_RECORD_CHECK && p.nconfigs == 1 && p.configs[0].expect == CORPUS_REF

@@ -96,7 +96,8 @@ void cmd_pass(CLI::App &app, int &status)
         ->type_name("PASS:NAME#N");
     sub->add_option("--observe", o->observe,
                     "run only the configuration TAG and write its observations to --to DIR "
-                    "(NAME.out, NAME.serial, NAME.exe: the SHA-256 of the executable)")
+                    "(NAME.out, NAME.serial, NAME.exe: the SHA-256 of the executable); "
+                    "not for a pass with orig=, expect= or record=")
         ->type_name("TAG");
     sub->add_option("--to", o->to, "with --observe: the directory of the observations "
                     "(emptied first)")
