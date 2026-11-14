@@ -6,6 +6,7 @@
 ; Windows 0 and 4 on the Workbench screen; Menus Off sets RMBTRAP
 ; ($10000 in the window flags).
 ; Correct: both windows get RMBTRAP.
+; @fixed #310
 ; @configs clib
 DEFTYPE .l
 WbToScreen 0

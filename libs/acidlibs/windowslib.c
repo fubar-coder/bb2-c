@@ -44,10 +44,6 @@
  *         0 = one character (windowprint).
  *
  * Kept from the original (BUG(orig)):
- *   - Menus/MenusOn/MenusOff step through the window objects with 16
- *     bytes (the objects were 16 bytes once: "was 4 (16)"), i.e. object
- *     0, the second half of object 0, object 1 ... and only `maximum`
- *     slots: half of the windows are not reached. (#310)
  *   - A gadget down of a string gadget gives an extra "gadget up" ($40)
  *     on the next Event (kludgegnum), without taking the next message
  *     (which then comes once more). (#311)
@@ -77,6 +73,11 @@
  *   TAG_MORE to the rest of it (AmiBlitz3 links the whole list with
  *   TAG_MORE; copying the short lists keeps them as before, also for
  *   #316).
+ * Fixed (intended deviation, #310): Menus/MenusOn/MenusOff stepped
+ *   through the window objects with 16 bytes (the objects were 16 bytes
+ *   once: "was 4 (16)"), i.e. object 0, the second half of object 0,
+ *   object 1 ... and only `maximum` slots: half of the windows were not
+ *   reached.  Here they step with the object size, 32 bytes.
  * Fixed (intended deviation, #318): Window, WindowTags and WTitle copy
  *   the titles (maxslib allocst) and never freed the copies in the
  *   original.  Here the object keeps its copies (+20 window title, +24
@@ -2594,7 +2595,8 @@ void BLITZ_ROUTINE dowsize(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
 }
 
 /* newidcmp - a2 = window objects (base), d2 = maximum; RMBTRAP and
-   MENUVERIFY of every window (BUG(orig) (#310): 16 byte steps) */
+   MENUVERIFY of every window (Fixed (#310): 32 byte steps, the object
+   size; the original stepped 16 bytes) */
 static void newidcmp(UBYTE *objs, UWORD max, UWORD verify, UWORD rmbtrap,
                      struct Library *intbase)
 {
@@ -2612,7 +2614,7 @@ static void newidcmp(UBYTE *objs, UWORD max, UWORD verify, UWORD rmbtrap,
             f |= verify;                        /* OR.w */
             ModifyIDCMP(win, f);
         }
-        objs += 16;
+        objs += 1 << 5;                 /* Fixed (#310): the original 16 */
     } while (n-- != 0);
 }
 
@@ -2622,8 +2624,8 @@ static void newidcmp(UBYTE *objs, UWORD max, UWORD verify, UWORD rmbtrap,
  * Clears RMBTRAP and MENUVERIFY of every window (newidcmp).  Amiga mode
  * only.
  *
- * BUG(orig) (#310): steps through the window objects with 16 bytes and
- * only `maximum` slots: half of the windows are not reached.
+ * Fixed (#310): the original stepped through the window objects with 16
+ * bytes and only `maximum` slots: half of the windows were not reached.
  *
  * @param objs a2: the window objects (base)
  * @param max d2: the maximum of window objects
@@ -2641,7 +2643,8 @@ void BLITZ_ROUTINE domenuson(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
  * Sets RMBTRAP and MENUVERIFY of every window (newidcmp; the event reader
  * answers MENUVERIFY with MENUCANCEL).  Amiga mode only.
  *
- * BUG(orig) (#310): only half of the windows are reached (16 byte steps).
+ * Fixed (#310): the original reached only half of the windows (16 byte
+ * steps).
  *
  * @param objs a2: the window objects (base)
  * @param max d2: the maximum of window objects
@@ -2656,7 +2659,8 @@ void BLITZ_ROUTINE domenusoff(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
 /**
  * @brief Menus On|Off - MenusOn or MenusOff.
  *
- * BUG(orig) (#310): only half of the windows are reached (16 byte steps).
+ * Fixed (#310): the original reached only half of the windows (16 byte
+ * steps).
  *
  * @param on d0: <>0 = on (a word)
  * @param objs a2: the window objects (base)
