@@ -30,8 +30,6 @@
  *   - path$/file$ get the new contents but not their new lengths. (#153)
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
  *     the process and unlocks the old current directory (#157).
- *   - Building the path from the current directory leaks the ParentDir
- *     locks. (#158)
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them. (#159)
  * Fixed (#160): there are 64 line gadgets (144 bytes each, $15AA-$39A9,
@@ -47,6 +45,8 @@
  *   emulator: reboot, or "ILLEGAL Instruction").  Here the list has at most
  *   64 lines and the window is at most 597 (64 * 8 + 85) high, also the
  *   first one; details in filereq_core.c (test freqlib-64-lines).
+ * Fixed (#158): building the path from the current directory unlocks the
+ *   ParentDir locks it takes (the original leaked them).
  * Fixed (#156): the volume list (DRIVES) walks the DOS list locked for
  *   reading (the original without a lock; the labels are right: dl_Type
  *   1 = DLT_DIRECTORY -> $F9 "<ASN>", 2 = DLT_VOLUME -> $F8 "<VOL>";
@@ -99,7 +99,7 @@ BLITZ_LIBFIN();
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
  * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
- * The other BUG(orig) of the requester (#157-#159): see the
+ * The other BUG(orig) of the requester (#157, #159): see the
  * head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not

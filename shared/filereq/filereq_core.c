@@ -45,10 +45,11 @@
  * Kept from the original (BUG(orig)):
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
  *     the process and unlocks the old current directory (#157).
- *   - Building the path from the current directory leaks the ParentDir
- *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
+ * Fixed (#158): building the path from the current directory (PARENT with
+ *   an empty path, CD) unlocks each ParentDir lock when its parent has
+ *   been taken; the original never unlocked them.
  * Fixed (#156): the volume list (DRIVES) walks the DOS list locked for
  *   reading (LockDosList; Forbid with a dos.library before V36); the
  *   original walked it without a lock and could read freed memory when
@@ -550,17 +551,22 @@ static ULONG pollmsg(void)
     return m ? takemsg(m) : 0;
 }
 
-/* $B82 - the path of the current directory into fq.path (the ParentDir
-   locks are never unlocked) */
+/* $B82 - the path of the current directory into fq.path.  Fixed (#158):
+   each ParentDir lock is unlocked when its parent has been taken (the
+   current directory itself belongs to the process and stays); the
+   original never unlocked them */
 static void currentpath(struct FileInfoBlock *fib)
 {
-    BPTR d7 = task->pr_CurrentDir;
+    BPTR cur = task->pr_CurrentDir, d7 = cur, parent;
     UBYTE *a0, *a1;
 
     fq.path[0] = 0;
     do {
         Examine(d7, fib);
-        d7 = ParentDir(d7);
+        parent = ParentDir(d7);
+        if (d7 != cur)
+            UnLock(d7);
+        d7 = parent;
         a0 = (UBYTE *)fib->fib_FileName;
         a1 = fq.temp;
         while ((*a1++ = *a0++) != 0)

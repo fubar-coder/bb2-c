@@ -7,6 +7,7 @@
 ; Own 320x256 screen (see t93_freq).
 ; Correct: no lock is left, CORPUS:a is not in use.  The original leaves
 ; the ParentDir locks of CORPUS:a and CORPUS: behind.
+; @fixed #158
 ; @configs clib
 ; @pass dir=a/b
 ; @pass runwrap=@INJECT@|cd=CORPUS:a/b inuse=CORPUS:a click=FQ/PARENT click=FQ/CANCEL
