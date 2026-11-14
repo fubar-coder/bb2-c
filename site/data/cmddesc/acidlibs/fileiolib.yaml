@@ -4,27 +4,22 @@
   text: Opens a file for reading and writing and returns true (-1), or false (0) if it cannot be opened. A file that does not exist is created. A file the object held before is closed first.
   notes: |
     Meant for records with `Fields`, `Put` and `Get`, but sequential use
-    works too. Kept from the original: opening into an object whose file
-    had `Fields` can damage the file name
-    ([#138](https://github.com/fubar-coder/bb2-c/issues/138)).
+    works too.
 "ReadFile":
   text: Opens an existing file for reading and returns true (-1), or false (0) if it cannot be opened; `FileInput` then reads from it. A file the object held before is closed first.
 "WriteFile":
   text: Creates a new file, replacing one of the same name, and returns true (-1), or false (0) if it cannot be created; `FileOutput` then writes to it. A file the object held before is closed first.
 "CloseFile":
   text: Writes what is left in the buffer, closes the file and frees its buffer and its record fields.
-  notes: |
-    Kept from the original: the record length stays set after closing
-    ([#140](https://github.com/fubar-coder/bb2-c/issues/140)).
 "KillFile":
   text: Deletes a file. Nothing tells whether that worked.
 "Fields":
   text: Names the variables that make up a record of the file, for `Put` and `Get`. A string variable must have a maximum length set with `MaxLen` and must never grow beyond it.
   notes: |
     The fields are stored in the file in the reverse order of the list,
-    the last variable first. Kept from the original: a second `Fields`
-    adds to the fields already set instead of replacing them
-    ([#141](https://github.com/fubar-coder/bb2-c/issues/141)).
+    the last variable first. A second `Fields` adds to the fields already
+    set, so a record can be named in several statements; `CloseFile`
+    clears them.
 "Put":
   text: Writes the values of the `Fields` variables as record number `Record` (counted from 0) of the file. A new record may only be added right at the end of the file; a record further on is the error "Can't Find Record".
 "Get":
@@ -41,9 +36,6 @@
   text: The current position in the file; it is 0 after opening.
 "Eof":
   text: True (-1) if the position is at the end of the file, else false (0). At the end, writing makes the file longer.
-  notes: |
-    Kept from the original: once `Eof` has been true, `Loc` and `Lof` are
-    1 too high ([#144](https://github.com/fubar-coder/bb2-c/issues/144)).
 "DosBuffLen":
   text: The size in bytes of the buffer of files opened after it; the start value is 2048. A smaller buffer saves memory.
   notes: |
@@ -54,7 +46,9 @@
 "ReadMem":
   text: Reads `Length` bytes from the file into memory at `Address`. Make sure that memory belongs to the program.
 "Exists":
-  text: The size in bytes of the file, or 0 if it does not exist.
+  text: The size in bytes of the file, or 0 if it does not exist or cannot be examined. A drawer or the root of a volume gives -1.
   notes: |
-    Kept from the original: an empty file also gives 0, and a drawer gives
-    -1 ([#143](https://github.com/fubar-coder/bb2-c/issues/143)).
+    An empty file also gives 0, so `Exists` cannot tell it from a missing
+    file; `ReadFile` can. This is kept as in the original
+    ([#143](https://github.com/fubar-coder/bb2-c/issues/143)), because
+    programs use the result as the length of the file.

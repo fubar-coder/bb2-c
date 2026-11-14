@@ -18,8 +18,7 @@ intro: |
   Dates follow the Gregorian calendar, as the dates of AmigaDOS do, for
   the years 0 to 9999.
 
-  Kept from the original: a date string must have a four digit year;
-  with fewer digits the library reads past its end
-  ([#125](https://github.com/fubar-coder/bb2-c/issues/125)).
+  `NumDays` takes the year as written, so a date string needs the full
+  year: `"24/12/93"` is a date in the year 93, not in 1993.
 
   *Based on the datelib guide by Acid Software.*
