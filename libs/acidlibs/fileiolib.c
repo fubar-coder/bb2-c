@@ -50,6 +50,13 @@
  *   idiom FileSeek f,Lof(f) asked for a position behind the end.  Here a
  *   failed Seek puts the old position back; positions count from 0, at
  *   the end Loc = Lof = the length (the manual).
+ * Fixed (intended deviation, #1026): Exists gave -1 only for
+ *   fib_DirEntryType 2 (a drawer): a volume's root on a handler that
+ *   reports type 1 (ST_ROOT) returned its fib_Size (normally 0, "not
+ *   there"); and the result of Examine was not checked, so a failing
+ *   Examine returned what the FileInfoBlock (memlib memory, not cleared)
+ *   held.  Here every directory type (> 0) gives -1 and a failing
+ *   Examine 0; files still give their length.
  * Kept from the original (BUG(orig)):
  *   - Description, not a defect (#141): Fields continues the record of the
  *     file: it adds its fields to those already set and to their record
@@ -64,9 +71,8 @@
  *     order of Fields (last field first in the file).  It is consistent
  *     with itself, and existing data files depend on it; a program that
  *     needs another order in the file lists the fields reversed.
- *   - Exists: -1 for a drawer only with fib_DirEntryType = 2 (a volume's
- *     root (1) gives its fib_Size); the FileInfoBlock comes from memlib
- *     globalloc (not checked, see below).
+ *   - Exists: the FileInfoBlock comes from memlib globalloc (not checked,
+ *     see below).
  *   - Exists of an empty file, won't fix: 0 like a missing file.  Exists
  *     returns the length of the file (the manual: "If 0 the file either
  *     does not exist or is empty"), and programs use the value as the
@@ -437,12 +443,14 @@ static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
  * Lock, Examine into a FileInfoBlock from memlib globalloc (not checked,
  * #139), UnLock.  BUG(orig) (#143), won't fix: an empty file gives 0 like
  * a missing one (Exists returns the length, the manual says so, and
- * programs use it as the length).  A volume's root gives its fib_Size.
+ * programs use it as the length).  Fixed (#1026): -1 for every directory
+ * type, 0 if Examine fails (the original: -1 only for type 2, and the
+ * FileInfoBlock's contents after a failed Examine).
  *
  * @param name  d0: the file name
  * @param dosbase  a6: dos.library
- * @return d0: the size, -1 for a drawer (fib_DirEntryType 2), 0 if the
- *         file is not there
+ * @return d0: the size, -1 for a drawer or a volume (fib_DirEntryType
+ *         > 0), 0 if the file is not there or cannot be examined
  */
 ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
                                       struct Library *dosbase BL_REG(a6))
@@ -457,11 +465,13 @@ ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
         return 0;
     r = (struct bl_regs){ .d0 = 260, .d1 = 0 };
     fib = (struct FileInfoBlock *)BLITZ_ALIBJSR(TOK_globalloc, r);
-    Examine(key, fib);
+    if (!Examine(key, fib))                     /* fixed (#1026) */
+        size = 0;
+    else if (fib->fib_DirEntryType > 0)         /* 120(a1), fixed (#1026): */
+        size = (ULONG)-1;                       /* every directory type */
+    else
+        size = fib->fib_Size;                   /* 124(a1) */
     UnLock(key);
-    size = fib->fib_Size;                       /* 124(a1) */
-    if (fib->fib_DirEntryType == 2)             /* 120(a1) */
-        size = (ULONG)-1;
     r = (struct bl_regs){ .d0 = 260, .a1 = (ULONG)fib };
     BLITZ_ALIBJSR(TOK_globfree, r);
     return size;
