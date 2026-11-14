@@ -797,6 +797,10 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
 * `Polyf` drew polygons whose corners lie far outside the bitmap (from
   about 8000 pixels away) wrongly or not at all; they are drawn
   ([#1000](https://github.com/fubar-coder/bb2-c/issues/1000)).
+* `Polyf`, `BitMapPoly`, `ChunkyPoly` and `RenderPoly` stopped with a
+  "Division by Zero" guru for some degenerate polygons with a side that
+  starts outside the bitmap on a vertical edge; such a polygon is not drawn
+  ([#1033](https://github.com/fubar-coder/bb2-c/issues/1033)).
 * `Rotate` made a rotated shape one pixel too large and lost its edge
   pixels, so a quarter turn of a 21×9 shape gave 10×21; it rounds to the
   nearest pixel and gives 9×21
