@@ -881,23 +881,24 @@ BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
    Fixed (#287): Instr(s$,f$,Startpos) searches from the first character
    for Startpos <= 0 (the original did not check it and compared before
    the string: Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5).
-   BUG(orig) (#1030): the end test adds the length of f$ to the position and
-   compares signed after the addition; a Startpos near $7FFFFFFF makes the
-   sum negative, "within the string", and the search compares memory far
-   from it, through the address space until it "finds" f$ somewhere (the
-   position depends on the memory layout) or hangs; no test yet. */
+   Fixed (#1030): the end test compares the position with the length of
+   s$ minus that of f$, computed once (the original added the length of f$
+   to the position and compared signed after the addition: a Startpos near
+   $7FFFFFFF made the sum negative, "within the string", and the search
+   compared memory far from it until it "found" f$ somewhere or hung). */
 static ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
 {
-    LONG slen, flen, n;
+    LONG slen, flen, last, n;
     const UBYTE *scan, *fp;
     LONG pos = start < 1 ? -1 : start - 2;      /* d4; fixed (#287): start <= 0 */
 
     blitz_string = s;                           /* fix string pointer */
     slen = BL_POPL(sp);                         /* length of string 1 */
     flen = BL_POPL(sp);                         /* length of string 2 */
+    last = slen - flen;                         /* fixed (#1030): no overflow */
     for (;;) {                                  /* instrl */
         pos++;
-        if ((LONG)((ULONG)pos + (ULONG)flen) > slen)    /* CMP.l d2,d5:BGT 'done */
+        if (pos > last)                         /* BGT 'done */
             return 0;                           /* not there */
         scan = s + pos;
         fp = f;
