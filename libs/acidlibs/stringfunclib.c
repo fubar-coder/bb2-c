@@ -880,7 +880,12 @@ BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
    Startpos-2 for Instr(s$,f$,Startpos).
    Fixed (#287): Instr(s$,f$,Startpos) searches from the first character
    for Startpos <= 0 (the original did not check it and compared before
-   the string: Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5). */
+   the string: Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5).
+   BUG(orig): the end test adds the length of f$ to the position and
+   compares signed after the addition; a Startpos near $7FFFFFFF makes the
+   sum negative, "within the string", and the search compares memory far
+   from it, through the address space until it "finds" f$ somewhere (the
+   position depends on the memory layout) or hangs; no test yet. */
 static ULONG instr(UBYTE *s, const UBYTE *f, LONG start, const ULONG *sp)
 {
     LONG slen, flen, n;
