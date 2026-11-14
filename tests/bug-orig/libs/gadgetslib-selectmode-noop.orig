@@ -5,6 +5,8 @@ done
 ok
 [run]
 highlight 0
+shape 2
+after 0 0
 rc=0
 [blitz2]
 rc=0

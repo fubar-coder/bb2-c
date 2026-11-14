@@ -39,9 +39,11 @@
  *     IText 0 (allocst of length 0; not a bug: Intuition prints the empty
  *     string at address 0, no effect seen).
  *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times). (#167)
- *   - SelectMode only stores the mode (selmode), which nothing reads; the
- *     gadgets get defflags (never set, 0 = GADGHCOMP): SelectMode 1 (box)
- *     has no effect. (#952)
+ * Fixed (intended deviation, #952): SelectMode only stored the mode
+ *   (selmode), which nothing read; the gadgets got defflags (never set,
+ *   0 = GADGHCOMP): SelectMode 1 (box) had no effect.  SelectMode now sets
+ *   defflags (GADGHBOX for 1); a shape gadget with an alternative shape
+ *   keeps GADGHIMAGE as its highlight.
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -462,8 +464,10 @@ BLITZ_THUNK(dobgroup, dobgroup_c, "d0-d1/a0-a1");
 /**
  * @brief SelectMode 1=Box, 0=Inverse: the highlight mode of new gadgets.
  *
- * Stores 1 for any non-zero value, 0 otherwise (g.selmode).  BUG(orig)
- * (#952): nothing reads selmode - the command has no effect.
+ * Stores 1 for any non-zero value, 0 otherwise (g.selmode), and the same
+ * as the highlight bits of the Flags of new gadgets (g.defflags: 1 =
+ * GADGHBOX, 0 = GADGHCOMP).  Fixed (#952): the original stored only
+ * selmode, which nothing reads - the command had no effect.
  *
  * @param on  d0: the mode
  */
@@ -472,6 +476,7 @@ static void BLITZ_ROUTINE doselectmode_c(UWORD on BL_REG(d0))
     g.selmode = 0;
     if (on)
         g.selmode++;
+    g.defflags = g.selmode;             /* fixed (#952): GADGHBOX or GADGHCOMP */
 }
 BLITZ_THUNK(doselectmode, doselectmode_c, "d0-d1/a0-a1");
 
@@ -633,9 +638,7 @@ static struct Gadget *allocgadget(WORD x, WORD y, UWORD id, WORD w, WORD h)
     gad->TopEdge = y;
     gad->Width = w;
     gad->Height = h;
-    /* BUG(orig) (#952): defflags is never set; SelectMode (selmode) is not
-       taken into account */
-    gad->Flags = g.defflags;
+    gad->Flags = g.defflags;            /* SelectMode, fixed (#952) */
     gad->GadgetID = id;
     gad->Activation = 3;                /* RELVERIFY|GADGIMMEDIATE */
     GUSER_BL(gad) = 0x624c;             /* "bL": blitz type gadget */
@@ -910,8 +913,8 @@ static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
     GFLAGS_LO(gad) |= 1 << 2;           /* GADGIMAGE */
     gad->GadgetRender = img;
     gad->SelectRender = alt;
-    if (alt)
-        GFLAGS_LO(gad) |= 1 << 1;       /* GADGHIMAGE */
+    if (alt)                            /* GADGHIMAGE instead of SelectMode's */
+        GFLAGS_LO(gad) = (GFLAGS_LO(gad) & ~3) | 1 << 1;   /* highlight (#952) */
     handleflags(gad, flags);
 }
 
