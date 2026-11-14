@@ -27,7 +27,7 @@ extern ULONG fq_args[4];
  *
  * Original entry: code+4 ($CA in freqlib), the parameter block in a0.
  * Opens dos, intuition and graphics at every call and never closes them
- * (BUG(orig) #154); the other kept original bugs (#156-#160, #345) are
+ * (BUG(orig) #154); the other kept original bugs (#156-#159) are
  * listed in filereq_core.c.
  *
  * @return the address of the result "path/file" (inside the data block),

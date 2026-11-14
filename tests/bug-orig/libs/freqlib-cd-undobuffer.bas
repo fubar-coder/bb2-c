@@ -10,6 +10,7 @@
 ; would overwrite low memory).  The path is a root (RAM:), as in
 ; freqlib-cd-currentdir.
 ; Correct: CD leaves the UndoBuffer pointers alone.
+; @fixed #345
 ; @configs clib
 ; @pass runwrap=@INJECT@|undobuf click=FQ/CD click=FQ/CANCEL
 ; @pass timeout=120

@@ -55,12 +55,13 @@
  *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
- *   - "CD" clears the words at $111A and $111E: the high word of the path
- *     StringInfo's UndoBuffer and its BufferPos (the start of fq_request
- *     clears BufferPos and DispPos, $111E/$1122).  UndoBuffer then points
- *     to $0000xxxx (the low word of fq.result's address), for this and all
- *     later calls: Intuition copies the path there when the gadget is
- *     activated (#345).
+ * Fixed (#345): "CD" clears BufferPos and DispPos of the path StringInfo
+ *   ($111E/$1122, as the start of fq_request does).  The original cleared
+ *   the words at $111A and $111E: the high word of UndoBuffer and its
+ *   BufferPos.  UndoBuffer then pointed to $0000xxxx (the low word of
+ *   fq.result's address), for this and all later calls, and Intuition
+ *   copied the path there (into the first 64 KB) when the gadget was
+ *   activated.
  * Fixed (#160): there are 64 line gadgets (fq.line[], 144 bytes each,
  *   $15AA-$39A9; behind them only the 48 bytes of arrow image data up to
  *   the end of the data block, $39DA), but the original shows
@@ -866,10 +867,11 @@ copyname:
         fibmem[30] = s2;
         fibmem[1] = s1;
         fibmem[0] = s0;
-        /* BUG(orig) (#345): $111A/$111E - the high word of UndoBuffer and
-           BufferPos, not BufferPos and DispPos (see the top) */
-        *(UWORD *)&fq.si_path.UndoBuffer = 0;
+        /* Fixed (#345): BufferPos and DispPos ($111E/$1122), as at the
+           start; the original cleared $111A/$111E, the high word of
+           UndoBuffer and BufferPos (see the top) */
         fq.si_path.BufferPos = 0;
+        fq.si_path.DispPos = 0;
         refresh(&fq.g_path, 1);
         goto activate;
     }

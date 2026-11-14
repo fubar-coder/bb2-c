@@ -35,9 +35,7 @@
  *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
  *     listed). (#156)
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
- *     the process and unlocks the old current directory (#157); it also
- *     clears the high word of the path gadget's UndoBuffer pointer ($111A
- *     instead of DispPos, details in filereq_core.c) (#345).
+ *     the process and unlocks the old current directory (#157).
  *   - Building the path from the current directory leaks the ParentDir
  *     locks. (#158)
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
@@ -55,6 +53,10 @@
  *   emulator: reboot, or "ILLEGAL Instruction").  Here the list has at most
  *   64 lines and the window is at most 597 (64 * 8 + 85) high, also the
  *   first one; details in filereq_core.c (test freqlib-64-lines).
+ * Fixed (#345): "CD" clears BufferPos and DispPos of the path gadget; the
+ *   original cleared the high word of its UndoBuffer pointer ($111A
+ *   instead of DispPos), and Intuition then copied the path into the
+ *   first 64 KB of memory (details in filereq_core.c).
  * Fixed (intended deviation, #161): the result was copied with its 0 and
  *   a3 was left BEHIND the 0, so a string expression went on one byte too
  *   far (FileRequest$(...)+".bak" held the 0 and lost the "k"); a3 now
@@ -96,7 +98,7 @@ BLITZ_LIBFIN();
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
  * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
- * The other BUG(orig) of the requester (#154, #156-#159, #345): see the
+ * The other BUG(orig) of the requester (#154, #156-#159): see the
  * head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not
