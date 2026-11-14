@@ -54,15 +54,9 @@
  *   - The cookie of a shape that is freed by LELoadShapes, LECludgeShapes
  *     or LEInitShape is never freed (the BEQ after a MOVEA tests the CLR
  *     before it, always taken) (#810).
- *   - LELoadShapes/LECludgeShapes on a shape that is cludged ("cL") pops
- *     a0 it never pushed: the shape data is then read from the return
- *     address into the library's code, and the routine returns to its
- *     caller's caller (LELoadShapes then neither frees its buffers nor
- *     closes the file); a second such shape returns into the Blitz
- *     program's stack (#807).  An allocation that fails in the shape loop
- *     or in the cookie returns with a0 still pushed: it jumps to the data
- *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  Stack imbalances that C cannot express: see rs_pop
- *     and rs_crash.
+ *   - An allocation that fails in the shape loop or in the cookie of
+ *     readshapes returns with a0 still pushed: it jumps to the data
+ *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
  *   - LELoadShapes form 3 (shape#,filename$,palette#) takes the palette of
  *     d3, not of the third argument (!libs #pd3) (#812).  LELoadShapes
  *     hands a non-LE file to shapeslib's LoadShapes with the shapes
@@ -82,6 +76,14 @@
  *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
  *     UnPackPBM with d3 = 12 (#772).
  *   - LECludgeShapes skips the SHHD chunk as 20 bytes (#811).
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md 3a): LELoadShapes and
+ * LECludgeShapes replace a shape in use that is cludged ("cL") like any
+ * other.  The original's readshapes skips the push of a0 for such a shape
+ * but not the pop: the shape data was read from the return address into
+ * the library's code, and the routine returned to its caller's caller
+ * (LELoadShapes then neither freed its buffers nor closed the file); a
+ * second such shape returned into the Blitz program's stack (#807).
  *
  * Original behaviour that is no defect: CludgeShapes shifts shape# as well
  * (unused since the own cookie code).  LECludgeShapes links the shapes
@@ -315,39 +317,11 @@ static ULONG gfree(ULONG mem, ULONG size)
 
 /* ------------------------------------------------- the stack imbalances */
 
-/* the stack pointer at the entries that call readshapes, after the
-   thunk saved its 4 registers: rs_sp[4] = the Blitz program's return
-   address (rs_stack) */
-ULONG *rs_sp;
-#define rs_stack (rs_sp + 4)
-static int rs_pops;                     /* the a0 popped without a push */
-
 /* an RTS with a0 still on the stack: returns to the address in a0 */
 static void __attribute__((noreturn)) rs_crash(UBYTE *pushed)
 {
     __asm volatile("jmp (%0)" : : "a"(pushed));
     __builtin_unreachable();
-}
-
-/* readshapes' MOVE.l (a7)+,a0 without the MOVE.l a0,-(a7) (a cludged
-   shape): the first gives readshapes' return address (into its caller,
-   the C analogue of the original's), the next ones the longs of the
-   Blitz program's stack from its return address on */
-static UBYTE *rs_pop(UBYTE *ret)
-{
-    UBYTE *popped = rs_pops ? (UBYTE *)rs_stack[rs_pops - 1] : ret;
-    rs_pops++;
-    return popped;
-}
-
-/* readshapes' RTS after k pops: k = 1 returns to the caller of the entry
-   (the caller of readshapes then returns at once, see rs_pops), k >= 2
-   to the k-th long of the Blitz program's stack */
-static void rs_return(void)
-{
-    if (rs_pops >= 2)
-        __asm volatile("move.l %0,sp\n\tjmp (%1)"
-                       : : "a"(rs_stack + rs_pops), "a"(rs_stack[rs_pops - 1]));
 }
 
 /* ------------------------------------------------------- init / finit */
@@ -705,22 +679,19 @@ static void read_palette(const UBYTE *cmap)
 }
 
 /* readshapes: the shapes from a0 (SDAT data) into startshape..endshape,
-   at most shapecount + 1 of them.  Returns nonzero if a cludged shape
-   unbalanced the stack (the caller then returns at once). */
-static int __attribute__((noinline)) readshapes(UBYTE *data)
+   at most shapecount + 1 of them */
+static void readshapes(UBYTE *data)
 {
     UBYTE *shape = startshape, *last = endshape, *dst;
     UWORD n, planes;
 
-    rs_pops = 0;
     for (;;) {
         if (SHW(shape, width)) {
             SHW(shape, width) = 0;
             if (SHW(shape, cludge) == BB_CLUDGE) {
-                /* BUG(orig) #807: nothing pushed, the pop below takes the
-                   return address (rs_pop) */
+                /* Fixed (#807): the original pops a0 here without its
+                   push (the data pointer from the return address) */
                 SHW(shape, cludge) = 0;
-                data = rs_pop(__builtin_return_address(0));
             } else {
                 gfree(SHL(shape, data), SHW(shape, size));
                 SHW(shape, cludge) = 0;
@@ -780,8 +751,6 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
         if ((ULONG)shape > (ULONG)last)
             break;
     }
-    rs_return();
-    return rs_pops;
 }
 
 /* ------------------------------------------------------ LECludgeShapes */
@@ -797,8 +766,9 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
  * most count + 1 shapes of the file are read.  BUG(orig): the SHHD chunk
  * is skipped as 20 bytes whatever its length (#811); a CMAP size that is
  * no multiple of 3 misses SDAT (#811); the palette as in LELoadShapes
- * (#820); a shape in use that is cludged pops a0 it never pushed and
- * returns past the caller (#807); the old cookies are not freed (#810).
+ * (#820); the old cookies are not freed (#810).  Fixed (#807): a shape
+ * in use that is cludged is replaced like any other (the original pops a0
+ * it never pushed and returns past the caller).
  * @param file     d2: the LE file in memory (address)
  * @param copymem  d4.w: copymemflag (negative: always copy)
  * @param palette  a0: the palette object of palette# (d3)
@@ -844,7 +814,7 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem
         return;
     readshapes(p + 8);
 }
-BLITZ_THUNK_PRE(_lecludgeshapes2, lecludgeshapes2_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
+BLITZ_THUNK(_lecludgeshapes2, lecludgeshapes2_c, "d0-d1/a0-a1");
 
 /**
  * @brief LECludgeShapes shape#,shape#,address,palette#: as above with
@@ -860,7 +830,7 @@ static void BLITZ_ROUTINE lecludgeshapes_c(ULONG file BL_REG(d2), UBYTE *palette
 {
     lecludgeshapes2_c(file, 0, palette, first, last);   /* CLR.l d4 */
 }
-BLITZ_THUNK_PRE(_lecludgeshapes, lecludgeshapes_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
+BLITZ_THUNK(_lecludgeshapes, lecludgeshapes_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- LELoadShapes */
 
@@ -978,8 +948,7 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
         return cleanup(FREEALL);
     if (!(chunk = readchunk(fh)))
         return cleanup(FREEMEMORY);
-    if (readshapes((UBYTE *)chunk))
-        return 0;                       /* BUG(orig): returned past us (#807) */
+    readshapes((UBYTE *)chunk);
     return cleanup(FREEALL);
 }
 
@@ -994,9 +963,10 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
  * shape are exchanged (#813); a failing chunk allocation frees the header
  * buffer and closes the file twice (#819, never in practice); the
  * palette: no check of the allocation (#821), DIVU #3 overflow, 0 colours
- * = 65536 (#820); a shape in use that is cludged pops a0 it never pushed
- * and returns past the caller without freeing the buffers or closing the
- * file (#807); the old cookies are not freed (#810).
+ * = 65536 (#820); the old cookies are not freed (#810).  Fixed (#807): a
+ * shape in use that is cludged is replaced like any other (the original
+ * pops a0 it never pushed and returns past the caller without freeing the
+ * buffers or closing the file).
  * @param shape1   d0.w: the first shape#
  * @param shape2   d1.w: the last shape#
  * @param name     d2: filename$
@@ -1013,7 +983,7 @@ static void BLITZ_ROUTINE leloadshapesp_c(ULONG shape1 BL_REG(d0), ULONG shape2 
 {
     leloadshapes(shape1, shape2, name, palette, first, last, dos);
 }
-BLITZ_THUNK_PRE(_leloadshapes, leloadshapesp_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
+BLITZ_THUNK(_leloadshapes, leloadshapesp_c, "d0-d1/a0-a1");
 
 /**
  * @brief LELoadShapes shape#,shape#,filename$: as above without a palette
@@ -1033,7 +1003,7 @@ static void BLITZ_ROUTINE leloadshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape
 {
     leloadshapes(shape1, shape2, name, NULL, first, last, dos);
 }
-BLITZ_THUNK_PRE(_leloadshapesnop, leloadshapesnop_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
+BLITZ_THUNK(_leloadshapesnop, leloadshapesnop_c, "d0-d1/a0-a1");
 
 /* the one-shape forms: the last shape = the maximum - 1 (SUBQ/LSL/ADD
    on words: a3 + (WORD)((max - 1) << 5)); d1 = d4 (the name in d1) */
@@ -1064,7 +1034,7 @@ static void BLITZ_ROUTINE leloadshapesingle_c(ULONG shapenum BL_REG(d0), ULONG n
     BL_SETW(lastoff, (UWORD)((UWORD)(maxshapes - 1) << 5));
     leloadshapes(shapenum, lastoff, name, palette, first, objects + (WORD)lastoff, dos);
 }
-BLITZ_THUNK_PRE(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
+BLITZ_THUNK(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1");
 
 /**
  * @brief LELoadShapes shape#,filename$: as above without a palette.
@@ -1083,8 +1053,7 @@ static void BLITZ_ROUTINE leloadshapesinglenop_c(ULONG shapenum BL_REG(d0), ULON
 {
     leloadshapesingle_c(shapenum, name, maxshapes, NULL, first, objects, dos);
 }
-BLITZ_THUNK_PRE(_leloadshapesinglenop, leloadshapesinglenop_c, "d0-d1/a0-a1",
-                "move.l sp,_rs_sp");
+BLITZ_THUNK(_leloadshapesinglenop, leloadshapesinglenop_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- LESaveShapes */
 

@@ -61,20 +61,9 @@ Further assembler:
   `MOVE.l paletteptr,a0` is a MOVEA and sets no flags. The `BNE` behind
   it therefore tests the Z flag that dos `Write` of the file header left.
   `write_z` calls Write and records that flag with `seq`.
-* **The stack imbalances.** The entries that call `readshapes`
-  (LELoadShapes, LECludgeShapes) record the stack pointer in their
-  thunk (`rs_sp`). A cludged shape (`"cL"`) in the target range runs a
-  `MOVE.l (a7)+,a0` without its push:
-  * The first such pop yields readshapes' return address (the C
-    analogue of the original's return address into the library code), and
-    the routine then returns to the entry's caller (the C caller returns
-    at once).
-  * Further pops yield the longs of the Blitz program's stack. The final
-    RTS then jumps there (`rs_return`).
-
-  An allocation that fails in the shape loop or in the cookie returns
-  with a0 still pushed. The original returns to that data address;
-  `rs_crash` jumps there.
+* **The stack imbalance.** An allocation that fails in readshapes'
+  shape loop or in the cookie returns with a0 still pushed. The original
+  returns to that data address; `rs_crash` jumps there.
 
 ## BUG(orig), kept
 
@@ -94,9 +83,8 @@ Further assembler:
 * **The cookie of a freed shape is never freed** (LELoadShapes,
   LECludgeShapes, LEInitShape). `MOVE.l 18(a2),a1:BEQ` after
   `CLR 30(a2)` tests the CLR, so the branch is always taken (#810).
-* **Cludged shapes reloaded:** see the stack imbalances above.
-  LELoadShapes then neither frees its buffers nor closes the file (#807;
-  a failing allocation with a0 pushed: #806).
+* **A failing allocation in readshapes** returns with a0 pushed (#806;
+  see the stack imbalance above).
 * **LELoadShapes:**
   * Form 3 uses the palette of d3 (#812).
   * A non-LE file goes to `LoadShapes` with a3 = the last shape and
@@ -140,6 +128,20 @@ Original behaviour that is no defect:
 * LEInitShape: the data and the cookie are cleared chip memory; the
   cookie is not computed (a shape of cleared data has an empty cookie).
 
+## Fixed
+
+Intended deviations from the original (`docs/libs/deviations.md`,
+kind F):
+
+* LELoadShapes and LECludgeShapes replace a shape in use that is
+  cludged (`"cL"`) like any other. The original's readshapes saves a0
+  (the read pointer) around the free of a used shape but skips the push
+  for a cludged one, not the pop: the first such shape took readshapes'
+  return address as its data pointer and the routine returned to its
+  caller's caller (LELoadShapes then neither freed its buffers nor closed
+  the file); a second one returned into the Blitz program's stack, a
+  crash (#807, test `rishapeslib-cludged-shape-pop`).
+
 ## Test
 
 Each run loads one library set (the C build or the original); the
@@ -181,6 +183,6 @@ Covered:
   empty shapes, 0 shapes, used and linked targets.
 * init and finit.
 
-Not covered: the stack imbalances and failing allocations (they jump
+Not covered: failing allocations (they jump
 into data), failing chunk allocations, a palette of 0 colours, the pack
 buffer's runtime error.

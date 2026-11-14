@@ -10,6 +10,7 @@
 ; Correct: LELoadShapes closes the file.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
+; @fixed #807
 ; @rwe rishapeslib ripacklib riamosfunclib
 ; @pass file=s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le
 ; @pass runwrap=@INJECT@|inuse=CORPUS:s.le

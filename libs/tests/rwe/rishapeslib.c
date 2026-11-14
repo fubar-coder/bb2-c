@@ -32,9 +32,10 @@
  * CludgeShapes/CludgeShapesToAddress with and without LEAutoCookie, an
  * empty shape in memory (BUG(orig) #809: the stale size), 0 shapes, into used
  * and linked shapes; LECompressShapes; finit.
- * Not covered: the stack imbalances (LELoadShapes/LECludgeShapes on a
- * linked shape, failing allocations in the shape loop: jumps into data),
- * failing chunk allocations, a palette of 0 colours (65536 colours), the
+ * Not covered: LELoadShapes/LECludgeShapes on a linked shape (the
+ * original returns past its caller; fixed, #807: bug-orig test
+ * rishapeslib-cludged-shape-pop), failing allocations in the shape loop
+ * (a jump into data), failing chunk allocations, a palette of 0 colours (65536 colours), the
  * runtime error of a failing pack buffer.
  */
 #include "rwecmp.h"
