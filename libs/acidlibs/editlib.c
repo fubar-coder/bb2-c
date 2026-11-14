@@ -24,10 +24,13 @@
  * DIFF: a2 is a register parameter of doeditstr (string length, popped
  * through a local cursor; the original returns with a2 decremented).
  *
+ * Fixed (intended deviations):
+ *   - #128: Inkey$(0) returned d0 = d6 of the caller (MOVEQ #0,d6 was
+ *     skipped): a string of a random length.  Here it is empty.
+ *
  * BUG(orig), kept:
- *   - Inkey$(0) returns d0 = d6 of the caller (MOVEQ #0,d6 is skipped):
- *     a string of a random length; the C routine takes d6 as a register
- *     parameter to return the same.  Inkey$(n) counts n as unsigned long. (#128)
+ *   - Inkey$(n) counts n as unsigned long (a negative n: ~4 billion
+ *     attempts).
  *   - The padding starts with SUBQ #1,a3 when the default is not at a3 -
  *     meant for a string argument, where a3 points behind the terminating
  *     0 (so Edit$ is fine).  Edit(value,n): UStr$ leaves a3 right behind
@@ -59,7 +62,7 @@ ULONG BLITZ_ROUTINE doeditstr2(ULONG n BL_REG(d0));
 ULONG BLITZ_ROUTINE doeditstr(UBYTE *def BL_REG(d0), ULONG n BL_REG(d1),
                               const UBYTE *args BL_REG(a2));
 ULONG BLITZ_ROUTINE doinkey(void);
-ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG count BL_REG(d6));
+ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0));
 ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6));
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
                            const void *caller_a6 BL_REG(a6));
@@ -130,18 +133,18 @@ ULONG BLITZ_ROUTINE doinkey(void)
  *
  * Calls dogetsingle n times and appends every character it returns to
  * the string at a3.  n counts as an unsigned long.
- * BUG(orig) (#128): Inkey$(0) skips MOVEQ #0,d6 and returns the caller's
- * d6 as the length (a random length).
+ * Fixed (#128): Inkey$(0) is the empty string (the original skipped
+ * MOVEQ #0,d6 and returned the caller's d6 as the length).
  *
  * @param n      d0: the number of attempts
- * @param count  d6: the caller's d6, returned for n = 0
  * @return d0: the string length (the characters that came)
  */
-ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG count BL_REG(d6))
+ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0))
 {
-    if (!n)                                     /* BEQ 'none: d6 not set */
-        return count;
-    count = 0;
+    ULONG count = 0;                            /* fixed (#128): MOVEQ #0,d6 first */
+
+    if (!n)                                     /* BEQ 'none */
+        return 0;
     do {
         ULONG c = getsingle();
 
