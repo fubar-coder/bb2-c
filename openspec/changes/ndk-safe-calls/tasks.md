@@ -66,5 +66,5 @@ writes stay byte-identical.
 - [x] 6.1 `docs/libs/cmdlibs-port.md` "OS calls with a parameter in a3, a4
   or a5": the build check and the rule for hand-written `__asm` calls;
   `tests/README.md`; `TODO.md` (the items of this change done).
-- [ ] 6.2 Report for the coordinator: website entries and labels for
+- [x] 6.2 Report for the coordinator: website entries and labels for
   #516 and #1027 (steps 3-5 of the bug-fix workflow).
