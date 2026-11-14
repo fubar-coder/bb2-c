@@ -8,6 +8,7 @@
 ; leak.
 ; Correct: the mark goes with the freed shape (+30 = 0) and Free Shape
 ; returns the data of the new shape (leak 0).
+; @fixed #269
 ; @configs clib
 DEFTYPE .l
 Function.l chipfree{}

@@ -36,8 +36,8 @@
  *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - LoadShapes: the shape block read from the file keeps its +30
  *    ("cL" from a saved DecodeShapes shape: the data is never freed). (#267)
- *  - CopyShape copies +30 too; freeashape leaves "cL" in +30 (a later
- *    shape in that object is never freed either). (#268, #269)
+ *  - CopyShape copies +30 too ("cL" of a DecodeShapes shape: the copy is
+ *    never freed). (#268)
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -46,6 +46,9 @@
  *    ShapeWidth/ShapeHeight load only the low word of d0.
  *
  * Fixed (intended deviation, docs/libs/deviations.md):
+ *  - freeashape clears +30 of a "cL" shape too; the original left the
+ *    mark, and a later shape in that object (InitShape, LoadShape,
+ *    GetaShape ...) was never freed. (#269)
  *  - DecodeShapes with address 0 branches (BEQ) in the original into the
  *    error check area (err10): without the debugger behind the library.
  *    Here err10 and its message are in the normal code; without the
@@ -298,10 +301,9 @@ static void freeashape_(struct bb_shape *s)
     if (!s->width)
         return;
     s->width = 0;
-    if (s->cludge != BB_CLUDGE) {
-        s->cludge = 0;
+    if (s->cludge != BB_CLUDGE)
         globfree(s->data, s->size);
-    }
+    s->cludge = 0;                      /* Fixed (#269): also "cL" */
     c = (ULONG)s->cookie;
     if (c) {
         s->cookie = NULL;
@@ -315,8 +317,8 @@ static void freeashape_(struct bb_shape *s)
  * a3 = the shape.  The width is cleared; the data is freed unless +30 is
  * "cL" (DecodeShapes data in place), the cookie if there is one.
  *
- * BUG(orig) (#269): "cL" stays in +30, so a later shape in this object
- * is never freed either.
+ * Fixed (#269): +30 is cleared for a "cL" shape too (the original left
+ * the mark, so a later shape in this object was never freed either).
  */
 static void BLITZ_ROUTINE freeashape_c(void)
 {
