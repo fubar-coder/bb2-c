@@ -34,8 +34,6 @@
  *    without a check against the maximum (#265).  Not a bug: only `depth`
  *    DLTA pointers are read (one per plane); the copied frame shares
  *    nothing (its cookie is cleared, made again with AutoCookie On).
- *  - LoadShapes: the shape block read from the file keeps its +30
- *    ("cL" from a saved DecodeShapes shape: the data is never freed). (#267)
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
  *    that does not match (the end of the sequence); memory below 2 MB
  *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
@@ -50,6 +48,10 @@
  *  - CopyShape clears +30 of the copy, which owns its data; the original
  *    copied "cL" of a DecodeShapes shape along (the copy was never
  *    freed). (#268)
+ *  - LoadShapes, and DecodeShapes of memory above 2 MB (which copies the
+ *    data), clear +30 of the block they take from the file; the original
+ *    kept it, and a file saved from a DecodeShapes shape holds "cL": the
+ *    data allocated for it was never freed. (#267)
  *  - DecodeShapes with address 0 branches (BEQ) in the original into the
  *    error check area (err10): without the debugger behind the library.
  *    Here err10 and its message are in the normal code; without the
@@ -715,6 +717,7 @@ static void loadshapes(struct bb_shape *s, struct bb_shape *last, const char *na
         if (n != 32)
             BLITZ_RUNERR(mess3);
         s->cookie = NULL;
+        s->cludge = 0;                  /* Fixed (#267): not the file's +30 */
         if (s->width) {
             /* check validity of shape block... */
             p = (ULONG)s->ebwidth * s->height;
@@ -742,8 +745,8 @@ static void loadshapes(struct bb_shape *s, struct bb_shape *last, const char *na
  * memory (not checked), the cookie made with AutoCookie on; the end of
  * the file ends the loading.
  *
- * BUG(orig) (#267): the block keeps its +30 ("cL" of a saved DecodeShapes
- * shape: the data is never freed).  Errors: "Can't open Shapes File",
+ * Fixed (#267): +30 of the block is cleared (the original kept "cL" of a
+ * saved DecodeShapes shape, and the data was never freed).  Errors: "Can't open Shapes File",
  * "Can't Read/Write Shapes File" (in the normal code); "First shape must
  * be lower than second" (schkz, debugger only).
  *
@@ -804,6 +807,7 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
         src += sizeof(struct bb_shape);
         shape->cookie = NULL;
         shape->data = NULL;
+        shape->cludge = 0;              /* Fixed (#267): not the block's +30 */
         if (shape->width) {
             if (fastmem) {
                 UBYTE *d = globalloc(shape->size, MEMF_CHIP);
@@ -834,7 +838,8 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
  * Stops silently at the first block that does not match (not a bug: the
  * end of the sequence).  Memory below 2 MB ($FFE00000 clear, chip RAM) is
  * used in place and marked "cL" (never freed), above it is copied to CHIP
- * memory.  Cookie with AutoCookie on.
+ * memory.  Cookie with AutoCookie on.  Fixed (#267): +30 of a block is
+ * not taken over (a copied shape owns its data).
  *
  * Address 0: runtime error "Shapes file at memory location 0? NOWAY!"
  * (err10, in the normal code; the original branches into the error check
