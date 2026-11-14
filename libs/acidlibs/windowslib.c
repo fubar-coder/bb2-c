@@ -59,13 +59,15 @@
  *   - The tag pairs of WindowTags ...,Tag,Data... are copied without a
  *     limit into 32 longs (#961; only the &TagList form is fixed, #317,
  *     see below).
- *   - Window with flag $80 (super bitmap) uses the bitmap of the last
- *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
  *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
  * Fixed (intended deviation, #316): WindowTags without tags wrote no
  *   TAG_DONE and so took over the user tags of the last WindowTags; here
  *   it ends the user tags with TAG_DONE.
+ * Fixed (intended deviation, #319): Window with flag $80 (super bitmap)
+ *   took the bitmap of the last Window with BitMap# (kept in bmapbase),
+ *   also in the forms without BitMap#; here only the form with BitMap#
+ *   gives a bitmap, the others none.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -720,7 +722,6 @@ static WORD sizelimitsok = -1;
 static APTR oldwptr;
 static struct Library *intbase_g;
 static UWORD kludgegnum;        /* <>0: outstanding gadget up event */
-static struct bwin *bmapbase;   /* dowindow3's bitmap */
 static UWORD maxchars;          /* the line editor */
 static ULONG origxy;
 
@@ -2990,10 +2991,13 @@ static void windowopened(struct bwin *w, struct Window *win, UWORD num,
 }
 
 /* Window - a3 = the object, a1 = used screen, a0 = gadget list, d6 =
-   offset of the used window, d0 = object offset (number << 5) */
+   offset of the used window, d0 = object offset (number << 5), sbm = the
+   super bitmap of the form with BitMap# (0 for the others; fixed #319:
+   the original kept the last one in bmapbase for every later Window) */
 static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *title,
                        UBYTE dpen, UBYTE bpen, ULONG *glist, struct Screen **scr,
-                       WORD usedoff, const ULONG *lens, struct Library *intbase)
+                       WORD usedoff, const ULONG *lens, struct BitMap *sbm,
+                       struct Library *intbase)
 {
     struct NewWindow *nw = &anewwindow;
     const WORD *sp = (const WORD *)lens;
@@ -3021,7 +3025,7 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
     if (V.idcmp & 0x10)                         /* MOUSEMOVE: REPORTMOUSE */
         flags |= 0x200;
     if (flags & 0x80) {                         /* super bitmap */
-        nw->BitMap = (struct BitMap *)bmapbase;
+        nw->BitMap = sbm;
         flags |= 0x20000;
     }
     nw->Flags = flags;
@@ -3058,8 +3062,8 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
  *
  * The title is copied (allocst) and freed when the window is closed
  * (fixed, intended deviation, #318: the original never frees it).
- * BUG(orig) (#319): flag $80 uses the bitmap of the last Window with
- * BitMap#.
+ * Fixed (#319): flag $80 gets no bitmap in this form; the original used
+ * the bitmap of the last Window with BitMap#.
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
@@ -3079,7 +3083,7 @@ void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                               const ULONG *lens BL_REG(a2), struct Library *intbase BL_REG(a6))
 {
     openwindow((struct bwin *)blitz_string, objoff, flags, title, dpen, bpen, glist, scr,
-               usedoff, lens, intbase);
+               usedoff, lens, NULL, intbase);
 }
 
 /**
@@ -3087,6 +3091,8 @@ void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
  * window without gadgets.
  *
  * As the form with GadgetList#, with the empty gadget list (V.zero).
+ * Fixed (#319): flag $80 gets no bitmap in this form; the original used
+ * the bitmap of the last Window with BitMap#.
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
@@ -3105,7 +3111,7 @@ void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                const ULONG *lens BL_REG(a2), struct Library *intbase BL_REG(a6))
 {
     openwindow((struct bwin *)blitz_string, objoff, flags, title, dpen, bpen, &V.zero, scr,
-               usedoff, lens, intbase);
+               usedoff, lens, NULL, intbase);
 }
 
 /**
@@ -3113,8 +3119,9 @@ void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
  * open a window with a gadget list and a super bitmap.
  *
  * As the form with GadgetList#; the pens come from the stack
- * (-10/-12(a2)), a4 = the bitmap object, kept for the super bitmap flag
- * $80 (BUG(orig) (#319): also for later windows).
+ * (-10/-12(a2)), a4 = the bitmap object, the super bitmap of flag $80 of
+ * this window only (fixed #319: the original kept it in bmapbase for the
+ * later windows too).
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
@@ -3132,9 +3139,8 @@ void BLITZ_ROUTINE dowindow3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
 {
     const UWORD *sp = (const UWORD *)lens;
 
-    bmapbase = (struct bwin *)blitz_locals;     /* MOVE.l a4,bmapbase */
     openwindow((struct bwin *)blitz_string, objoff, flags, title, (UBYTE)sp[-5], (UBYTE)sp[-6],
-               glist, scr, usedoff, lens, intbase);
+               glist, scr, usedoff, lens, (struct BitMap *)blitz_locals, intbase);
 }
 
 /* WindowTags - d1 = flags, d2 = title (copied), screen, then the user

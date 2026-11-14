@@ -6,6 +6,7 @@
 ; no bitmap.  The SuperBitMap of a window is in its layer (RastPort+0,
 ; Layer+32).
 ; Correct: window 1 does not get BitMap 0 (a bitmap of another window).
+; @fixed #319
 ; @configs clib
 DEFTYPE .l
 Screen 0,0,0,320,200,3,0,"sbm",1,2
