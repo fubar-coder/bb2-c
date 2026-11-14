@@ -25,10 +25,6 @@
  * Kept from the original (BUG(orig)):
  *   - Not a bug (word result, the compiler uses only d0.w): MenuChecked:
  *     SNE/EXT.w, the upper word of d0 stays.
- *   - ShapeItem/ShapeSub read the flags with MOVE 4(a7),d7, the HIGH word
- *     of the pushed long, through the word `temp` (with the cleared low
- *     word of mexclude in front as upper word): small flag values give
- *     the default flags.  Their item Flags are set (MOVE), not ORed. (#218)
  *   - The flag test is a word compare after a long test: $10000 gives
  *     word 0 < 5 and ends in the "4" branch. (#219)
  *   - Not a bug (the intended result for a new entry): a shortcut sets the
@@ -55,6 +51,12 @@
  *   (menu,item,sub) = (m,0,0) ended where it should, other values walked
  *   the lists again with a counter of -1 (65536 steps).  The three loops
  *   are now those of MenuState with a subitem (domenustate4).
+ * Fixed (intended deviation, #218): ShapeItem/ShapeSub read the flags
+ *   with MOVE 4(a7),d7, the HIGH word of the pushed long, through the word
+ *   `temp` (with the cleared low word of mexclude in front as upper word):
+ *   small flag values gave the default flags.  They take the whole long
+ *   now, as MenuItem; their item Flags are ORed as in menucont (the
+ *   original's MOVE gave the same for the new entry).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -253,9 +255,9 @@ static WORD subxoff = 48, subyoff = 4;
 static WORD menuxxs = 4, menuyxs = 2;
 static WORD fonthite = 8;
 static UBYTE shortcut;          /* high byte of the word `shortcut` */
-/* mexclude.l followed by temp.w: ShapeItem reads a long at temp-2 */
-static struct { ULONG mexclude; UWORD temp; } BL_PACKED mt;
-#define mexclude mt.mexclude
+/* the MutualExclude of the next item (the original's temp.w behind it, in
+   which ShapeItem passed the high word of its flags, is gone: #218) */
+static ULONG mexclude;
 
 /* dumintuitext: an IntuiText for IntuiTextLength */
 static struct IntuiText dumintuitext;
@@ -886,16 +888,15 @@ void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_RE
     subitem(m, i, s, text, font, lens, intbase);
 }
 
-/* shapecalc - BUG(orig) (#218): flags = the high word of the pushed long (MOVE
-   4(a7),d7 -> temp, read as long from temp-2 behind the cleared low word
-   of mexclude); size = shape size + 2 * gap */
-static struct textsize shapecalc(UWORD flagshi, UWORD item, const struct bb_shape *shape)
+/* shapecalc - the flags (the pushed long) as for MenuItem; size = shape
+   size + 2 * gap.  Fixed (#218): the original took the high word of the
+   pushed long (MOVE 4(a7),d7 -> temp, read as long from temp-2 behind
+   the cleared low word of mexclude) */
+static struct textsize shapecalc(ULONG flags, UWORD item, const struct bb_shape *shape)
 {
     struct textsize extent;
 
-    mt.temp = flagshi;
-    mexclude = 0;                               /* CLR.l mexclude in sussflags */
-    sussflags(*(ULONG *)((UBYTE *)&mt.temp - 2), item);
+    sussflags(flags, item);
     shortcut = 0;
     extent.width = menuxxs + menuxxs + shape->width;
     extent.height = menuyxs + menuyxs + shape->height;
@@ -920,7 +921,7 @@ static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent,
     e->item.ItemFill = im;
     e->item.Width = extent.width;
     e->item.Height = extent.height;
-    e->item.Flags = menflags & ~ITEMTEXT;       /* MOVE, not OR */
+    e->item.Flags |= menflags & ~ITEMTEXT;      /* OR as menucont (#218) */
     return e;
 }
 
@@ -931,10 +932,11 @@ static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent,
  * The item is an Image of the shape (its planes, PlanePick/PlaneOnOff
  * -1), size = shape size + 2 * MenuGap.
  *
- * BUG(orig) (#218): the flags are the high word of the pushed long (MOVE
- * 4(a7),d7, read as a long behind the cleared low word of mexclude):
- * small flag values give the default flags; the item Flags are set
- * (MOVE), not ORed.
+ * Flags as MenuItem (the item gets them without ITEMTEXT).  Fixed (#218):
+ * the original took the high word of the pushed long (MOVE 4(a7),d7, read
+ * as a long behind the cleared low word of mexclude): small flag values
+ * gave the default flags.  It also set the item Flags (MOVE) where
+ * menucont ORs them; the same for the new entry, ORed here as well.
  *
  * Errors (debugger only, shapeitemchk): "Uninitialized Shape", "Illegal
  * Menu number", "Illegal Menu Item number".
@@ -942,14 +944,13 @@ static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent,
  * @param m d1: the menu number.
  * @param i d2: the item number.
  * @param shape a2: the shape (!libs #shapeslib,$1283).
- * @param flagshi d7: the high word of the Flags long (loaded by the thunk
- *        from 8(sp)).
+ * @param flags d7: the Flags long (loaded by the thunk from 8(sp)).
  */
 static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
                                         const struct bb_shape *shape BL_REG(a2),
-                                        UWORD flagshi BL_REG(d7))
+                                        ULONG flags BL_REG(d7))
 {
-    struct textsize extent = shapecalc(flagshi, i, shape);
+    struct textsize extent = shapecalc(flags, i, shape);
 
     shapecont(getthing(blitz_string, m) + M_FIRST, i, extent, shape);
 }
@@ -959,7 +960,7 @@ static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
  * replace a subitem showing a shape.
  *
  * As ShapeItem, in the item's sublist, and moved by SubItemOff.
- * BUG(orig) (#218) as ShapeItem.
+ * Fixed (#218) as ShapeItem.
  *
  * Errors (debugger only, shapesubchk): "Uninitialized Shape", "Illegal
  * Menu number", "Illegal Menu Item number", "Illegal Menu Sub Item
@@ -969,22 +970,23 @@ static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
  * @param i d2: the item number.
  * @param s d3: the subitem number.
  * @param shape a2: the shape (!libs #shapeslib,$1284).
- * @param flagshi d7: the high word of the Flags long.
+ * @param flags d7: the Flags long.
  */
 static void BLITZ_ROUTINE doshapesub_c(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
                                        const struct bb_shape *shape BL_REG(a2),
-                                       UWORD flagshi BL_REG(d7))
+                                       ULONG flags BL_REG(d7))
 {
-    struct textsize extent = shapecalc(flagshi, s, shape);
+    struct textsize extent = shapecalc(flags, s, shape);
     UBYTE *p;
 
     p = getthing(blitz_string, m) + M_FIRST;
     p = getthing(p, i) + I_SUB;
     subcont(shapecont(p, s, extent, shape));
 }
-/* MOVE 4(a7),d7: the high word of the flags long above the return address */
-BLITZ_THUNK_PRE(doshapeitem, doshapeitem_c, "d0", "move.w 8(sp),d7");
-BLITZ_THUNK_PRE(doshapesub, doshapesub_c, "d0", "move.w 8(sp),d7");
+/* the flags long above the return address; fixed (#218): the original
+   read its high word (MOVE 4(a7),d7) */
+BLITZ_THUNK_PRE(doshapeitem, doshapeitem_c, "d0", "move.l 8(sp),d7");
+BLITZ_THUNK_PRE(doshapesub, doshapesub_c, "d0", "move.l 8(sp),d7");
 
 /* freeitem - an item (54 bytes) and its text */
 static void freeitem(struct MenuItem *e)
