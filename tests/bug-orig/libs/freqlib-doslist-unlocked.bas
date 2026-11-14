@@ -9,6 +9,7 @@
 ; Own 320x256 screen (see t93_freq).
 ; Correct: CANCEL is answered after the DOS list was unlocked.  The
 ; original answers it while the list is locked.
+; @fixed #156
 ; @configs clib
 ; @pass runwrap=@INJECT@|doslocked click=FQ/DRIVES click=FQ/CANCEL
 ; @pass timeout=120

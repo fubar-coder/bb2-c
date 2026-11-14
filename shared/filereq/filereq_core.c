@@ -43,16 +43,18 @@
  * or the rest at the end of the hunk (never read).
  *
  * Kept from the original (BUG(orig)):
- *   - The volume list (DRIVES) walks the DOS list without locking it
- *     (the labels are right: dl_Type 1 = DLT_DIRECTORY -> $F9 "<ASN>",
- *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
- *     listed) (#156).
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
  *     the process and unlocks the old current directory (#157).
  *   - Building the path from the current directory leaks the ParentDir
  *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them (#159).
+ * Fixed (#156): the volume list (DRIVES) walks the DOS list locked for
+ *   reading (LockDosList; Forbid with a dos.library before V36); the
+ *   original walked it without a lock and could read freed memory when
+ *   the list changed meanwhile (the labels are right: dl_Type 1 =
+ *   DLT_DIRECTORY -> $F9 "<ASN>", 2 = DLT_VOLUME -> $F8 "<VOL>";
+ *   late/non-binding assigns are not listed).
  * Fixed (#154): dos, intuition and graphics are opened (OldOpenLibrary) at
  *   every call, as in the original, and closed again at its end (the
  *   original never closes them: their open counts rose with every call).
@@ -87,6 +89,8 @@
    window height that shows them all, (height - 85) / 8 = FQ_LINES (#160) */
 #define FQ_LINES     64
 #define FQ_MAXHEIGHT (FQ_LINES * 8 + 85)
+/* the parts of the DOS list DRIVES reads (#156) */
+#define FQ_LDFLAGS   (LDF_READ | LDF_VOLUMES | LDF_ASSIGNS | LDF_DEVICES)
 
 #include <dos/dos.h>
 #include <dos/dosextens.h>
@@ -759,7 +763,13 @@ handle:                                 /* $33A */
         if (fq.drives)
             goto activate;
         fq.drives = ~fq.drives;
-        /* the DOS list: volumes, assigns, devices with a handler */
+        /* the DOS list: volumes, assigns, devices with a handler.  Fixed
+           (#156): walked with the list locked for reading (LockDosList,
+           dos V36; Forbid before), the names copied meanwhile */
+        if (fq.dosbase->dl_lib.lib_Version >= 36)
+            LockDosList(FQ_LDFLAGS);
+        else
+            Forbid();
         dl = BADDR(((struct RootNode *)fq.dosbase->dl_Root)->rn_Info);
         dl = BADDR(L(dl, 4));
         for (;;) {
@@ -786,6 +796,10 @@ handle:                                 /* $33A */
                 break;
             dl = BADDR(next);
         }
+        if (fq.dosbase->dl_lib.lib_Version >= 36)
+            UnLockDosList(FQ_LDFLAGS);
+        else
+            Permit();
         listrefresh();
         goto activate;
     }
