@@ -33,11 +33,13 @@
  * They keep the registers of the original (thunks); the file is the one
  * of the last FileInput/FileOutput (pointer to the object).
  *
+ * Fixed (intended deviation, #138): OpenFile/ReadFile/WriteFile first
+ *   close the File#; if that file had Fields, the original's freeing loop
+ *   left a2 = 0, and the name length was read from -4(0) (on the A1200's
+ *   24 bit bus the last long of the ROM) and name[(WORD)length] cleared:
+ *   a name longer than that was cut.  Here the length is fetched before
+ *   the file is closed.
  * Kept from the original (BUG(orig)):
- *   - OpenFile/ReadFile/WriteFile first close the File#; if that file had
- *     Fields, the original loop leaves a2 = 0, and the name length is read
- *     from -4(0) (on the A1200's 24 bit bus the last long of the ROM),
- *     then name[(WORD)length] is cleared (#138).
  *   - CloseFile frees the record fields but leaves the pointer to them
  *     and the record length; OpenFile clears them (#140).
  *   - Description, not a defect (#141): Fields continues the record of the
@@ -604,16 +606,14 @@ static void BLITZ_ROUTINE codeinit_c(struct Library *dos BL_REG(d0))
 BLITZ_THUNK(fileiolib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* dofreefile - close the file (a3), free the buffer and the record
-   fields.  Returns a2 (cursor) as the original leaves it: unchanged, or
-   0 after freeing record fields (see realopen). */
-static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
-                             struct Library *dosbase)
+   fields */
+static void freefile(struct bfile *f, struct Library *dosbase)
 {
     struct bl_regs r;
     struct rec *p;
 
     if (!f->fh)
-        return cursor;
+        return;
     myflush(f, dosbase);
     Close(f->fh);
     f->fh = 0;
@@ -621,14 +621,11 @@ static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
     f->buf = NULL;                              /* free mydos buffer */
     BLITZ_ALIBJSR(TOK_globfree, r);
     p = f->recs;                                /* BUG(orig) (#140): 12(a3) stays */
-    if (!p)
-        return cursor;
     while (p) {
         r = (struct bl_regs){ .d0 = 12, .a1 = (ULONG)p };
         p = p->next;
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
-    return NULL;                                /* the loop ends with a2 = 0 */
 }
 
 /**
@@ -642,7 +639,7 @@ static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
  */
 void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6))
 {
-    freefile((struct bfile *)blitz_string, NULL, dosbase);
+    freefile((struct bfile *)blitz_string, dosbase);
 }
 
 /* realopen - a1 = file, d1 = name, -4(a2) = its length; mode < 0 old
@@ -653,10 +650,12 @@ static BB_BOOL realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *le
 {
     struct bl_regs r;
     BPTR fh;
+    WORD len = (WORD)lens[-1];                  /* MOVE.l -(a2),d0 */
 
-    lens = freefile(f, lens, dosbase);
-    __asm__("" : "+a"(lens));                   /* may be 0: read -4(0) */
-    name[(WORD)BL_POPL(lens)] = 0;              /* CLR.b 0(a0,d0.w) */
+    /* fixed (#138): the length is fetched before dofreefile, whose loop
+       over the record fields left a2 = 0 in the original */
+    freefile(f, dosbase);
+    name[len] = 0;                              /* CLR.b 0(a0,d0.w) */
 
     fh = 0;
     if (mode <= 0) {
@@ -688,8 +687,8 @@ static BB_BOOL realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *le
  * Closes the File# first, then opens an existing file, or a new one if it
  * is not found (realopen, mode 0).  The record fields and the buffer
  * (DosBuffLen bytes, memlib globalloc, not checked: #139) are set up.
- * BUG(orig) (#138): if the old file had Fields, the name length is read
- * from -4(0) and name[length] cleared.
+ * Fixed (#138): the original read the name length from -4(0) if the old
+ * file had Fields, and cut the name there.
  *
  * @param f  a1: the file (!libs #fileiolib,$1180)
  * @param name  d1: the file name
@@ -707,8 +706,8 @@ BB_BOOL BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(
 /**
  * @brief ReadFile(File#,Filename$): open an existing file.
  *
- * As OpenFile, but only an existing file (MODE_OLDFILE).  BUG(orig)
- * (#138) as OpenFile.
+ * As OpenFile, but only an existing file (MODE_OLDFILE).  Fixed (#138)
+ * as OpenFile.
  *
  * @param f  a1: the file (!libs #fileiolib,$1180)
  * @param name  d1: the file name
@@ -726,7 +725,7 @@ BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(
 /**
  * @brief WriteFile(File#,Filename$): create a new file.
  *
- * As OpenFile, but always a new file (MODE_NEWFILE).  BUG(orig) (#138) as
+ * As OpenFile, but always a new file (MODE_NEWFILE).  Fixed (#138) as
  * OpenFile.
  *
  * @param f  a1: the file (!libs #fileiolib,$1180)
