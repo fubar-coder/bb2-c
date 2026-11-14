@@ -176,8 +176,9 @@ init value is the **address** of the variable `signals` (for other libs:
 
 * `TaskName$` leaves a3 **behind** the zero byte
   (no `SUBQ #1,a3`); d0 = length is correct, in the corpus without visible consequences
-  (`TaskName$(0)+"|"` is correct; not a bug). **BUG(orig) (#297):** a task
-  without a name reads from address 0.
+  (`TaskName$(0)+"|"` is correct; not a bug). Fixed (intended deviation,
+  #297): a task without a name copied from address 0; its name is now the
+  empty string (bug-orig test `utillib-taskname-no-name`).
 * `CreateMsgPort` returns with a3 = name argument ("Protect BB2 String
   area"); the name length comes from -4(a2) of the caller; copied are
   (length & $FFFF)+1 bytes (`DBRA`). Empty name: port not public,

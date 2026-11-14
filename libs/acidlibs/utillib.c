@@ -14,9 +14,8 @@
  * The name is copied into its own block {size.l, characters, 0}.
  *
  * Kept from the original (BUG(orig)):
- *   - TaskName$ leaves a3 BEHIND the terminating 0 (no SUBQ #1,a3; not a
- *     bug: no visible effect), d0 = length; a task without a name reads
- *     from address 0. (#297)
+ *   - Not a bug: TaskName$ leaves a3 BEHIND the terminating 0 (no
+ *     SUBQ #1,a3; no visible effect), d0 = length.
  *   - Description, not a bug (a port name of 64 KB does not occur):
  *     CreateMsgPort returns with a3 = the name argument ("Protect BB2
  *     String area from corruption") and copies (UWORD)len+1 bytes of the
@@ -36,6 +35,10 @@
  *     a port that utillib did not create corrupts memory. (#299)
  *   - Not a bug (the intended semantics, any allocated signal): Wait waits
  *     for ALL allocated signals of the task (tc_SigAlloc).
+ *
+ * Fixed (intended deviations):
+ *   - #297: TaskName$ of a task without a name (ln_Name 0) copied from
+ *     address 0 up to the first 0 byte; here it is the empty string.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -104,8 +107,9 @@ static const char NoSig[] = "Failed to allocate signal for Port";
  *
  * Copies the name to a3 including the 0.
  *
- * BUG(orig) (#297): a3 is left BEHIND the terminating 0 (no SUBQ #1,a3;
- * no visible effect); a task without a name reads from address 0.
+ * Not a bug: a3 is left BEHIND the terminating 0 (no SUBQ #1,a3; no
+ * visible effect).  Fixed (#297): a task without a name has the empty
+ * name (the original copied from address 0).
  *
  * @param task d0: the task, 0 = this task (FindTask(0))
  * @return d0: the length of the name; a3 behind its 0
@@ -119,6 +123,8 @@ static ULONG BLITZ_ROUTINE taskname_c(struct Task *task BL_REG(d0))
     if (!task)
         task = FindTask(NULL);
     s = (const UBYTE *)task->tc_Node.ln_Name;
+    if (!s)                                             /* fixed (#297) */
+        s = (const UBYTE *)"";
     do {
         n++;
         c = *s++;
