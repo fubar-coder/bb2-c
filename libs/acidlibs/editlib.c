@@ -27,15 +27,18 @@
  * Fixed (intended deviations):
  *   - #128: Inkey$(0) returned d0 = d6 of the caller (MOVEQ #0,d6 was
  *     skipped): a string of a random length.  Here it is empty.
+ *   - #129: the padding started with SUBQ #1,a3 when the default was not
+ *     at a3 - meant for a string argument, where a3 points behind the
+ *     terminating 0 (so Edit$ was fine).  Edit(value,n): UStr$ leaves a3
+ *     right behind the last digit (no 0), so the first padding space
+ *     overwrote the last character of the default (Edit(9.5,5) offered
+ *     "9."); Edit(n)'s default "0" was overwritten for n >= 2.  Here the
+ *     padding starts behind the default, and Edit(n) has no default (the
+ *     buffer starts with spaces, as the original showed it for n >= 2).
  *
  * BUG(orig), kept:
  *   - Inkey$(n) counts n as unsigned long (a negative n: ~4 billion
  *     attempts).
- *   - The padding starts with SUBQ #1,a3 when the default is not at a3 -
- *     meant for a string argument, where a3 points behind the terminating
- *     0 (so Edit$ is fine).  Edit(value,n): UStr$ leaves a3 right behind
- *     the last digit (no 0), so the first padding space overwrites the
- *     last digit of the default. (#129)
  *   - Edit calls UStr$ and Val with the a6 of the caller (Edit has no
  *     !libs): Val needs the ffplib base in a6, so Edit only works when the
  *     program has just used it (the compiler caches a6).  The C routine
@@ -160,7 +163,11 @@ ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0))
 
 /* editstr - d0 = default string, d1 = maxchars, a3 = string destination,
    d2 = the default's length: pad to maxchars with spaces, then read the
-   line at the default (a3 = behind it), d0 = number of characters */
+   line at the default (a3 = behind it), d0 = number of characters.
+   Fixed (#129): the padding starts behind the default (d0+d2); the
+   original started at a3-1 when the default was not at a3 (CMP.l a3,d0:
+   BEQ 'noclu:SUBQ #1,a3), right for a string argument (a3 behind its 0)
+   but one character early for Edit's default from UStr$. */
 static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
 {
     struct bl_regs r = { 0 };
@@ -168,8 +175,7 @@ static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
     ULONG n;
 
     if (pad >= 0 && --pad >= 0) {               /* SUB.l d2,d1:BMI:SUBQ.l #1,d1:BMI */
-        if ((ULONG)def != (ULONG)blitz_string)  /* CMP.l a3,d0:BEQ 'noclu */
-            blitz_string--;
+        blitz_string = def + deflen;            /* fixed (#129): behind the default */
         do
             *blitz_string++ = ' ';
         while (--pad >= 0);                     /* SUBQ.l #1,d1:BPL 'loop */
@@ -256,11 +262,14 @@ static ULONG doeditz(ULONG n, const void *caller_a6, UBYTE *saved_string)
 }
 
 /**
- * @brief Edit(Characters): reads a number of up to n characters, the
- *        default is "0".
+ * @brief Edit(Characters): reads a number of up to n characters, without
+ *        a default.
  *
- * The line is read over "0" in the library's 80 byte buffer and
- * converted with vallib's Val (see doeditz).
+ * The line is read in the library's 80 byte buffer and converted with
+ * vallib's Val (see doeditz).
+ * Fixed (#129): the buffer starts empty (padded with n spaces).  The
+ * original put a default "0" there, which its padding overwrote for
+ * n >= 2 (#129) and showed only for n = 1; an empty line still gives 0.
  * BUG(orig) (#130): Val is called with the caller's a6 (Edit has no
  * !libs), it needs the ffplib base there.
  * BUG(orig) (#131): n = 80 reads up to 81 characters into the 80 byte
@@ -276,9 +285,8 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
 {
     UBYTE *saved_string = blitz_string;
 
-    ed.buff[0] = '0';
-    blitz_string = ed.buff + 1;
-    ed.len = 1;
+    blitz_string = ed.buff;                     /* fixed (#129): no default */
+    ed.len = 0;
     return doeditz(n, caller_a6, saved_string);
 }
 
@@ -289,8 +297,9 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
  * The default is converted with printlib's UStr$ into the library's 80
  * byte buffer, the line is read over it and converted with Val (see
  * doeditz).
- * BUG(orig) (#129): UStr$ leaves a3 right behind the last digit, so the
- * first padding space overwrites the default's last digit.
+ * Fixed (#129): the padding starts behind the default (the original's
+ * first padding space overwrote its last character: UStr$ leaves a3 right
+ * behind it, without a 0).
  * BUG(orig) (#130): UStr$ and Val get the caller's a6.
  * BUG(orig) (#131): n = 80 reads up to 81 characters into the buffer.
  * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!", n > 80 ->

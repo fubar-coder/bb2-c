@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+edit 9.5 25
+rc=0
