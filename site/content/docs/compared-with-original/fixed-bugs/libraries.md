@@ -514,6 +514,62 @@ Issue: [A program hung at its start if an AmigaOS library it calls was missing (
 These fixes concern the
 [RWE userlibs]({{< relref "/docs/libraries/userlibs" >}}).
 
+### `NextArg$` did not end a quoted word after `""` {#nextarg-doubled-quote}
+
+`InitArgParse` takes a line of text, such as the arguments a program got
+from the CLI, and `NextArg$` returns its words one by one. Spaces
+separate the words, quotes group a word that contains spaces, and `""`
+inside a quoted word stands for one quote character. After such a `""`
+the original took the closing quote for text: the word did not end
+there but went on, spaces included, up to the next quote or the end of
+the line. `"a""b" c` gave the one word `a"b c` instead of `a"b` and then
+`c`, so a program lost an argument.
+
+**What happened**
+
+The program puts the line `"a""b" c` into memory and reads three words:
+
+```
+DEFTYPE .l
+b=AllocMem_(64,$10001)
+If b=0 Then NPrint "no memory" : End
+s$=Chr$(34)+"a"+Chr$(34)+Chr$(34)+"b"+Chr$(34)+" c"
+For i=1 To Len(s$) : Poke.b b+i-1,Asc(Mid$(s$,i,1)) : Next
+InitArgParse b
+For k=1 To 3
+  a$=NextArg$
+  NPrint "<"+a$+"> "+Str$(Len(a$))
+Next
+FreeMem_ b,64
+End
+```
+
+The original prints
+
+```
+<a"b c> 5
+<> 0
+<> 0
+```
+
+**With the port**
+
+The closing quote ends the word, and the port prints
+
+```
+<a"b> 3
+<c> 1
+<> 0
+```
+
+Issue: [`NextArg$` took the closing quote after `""` inside quotes as text (#755)](https://github.com/fubar-coder/bb2-c/issues/755).
+
+### Other fixes
+
+* `InitArgParse` copied a line of any length into its 256 byte buffer and
+  overwrote the code of the library behind it; it copies at most 255
+  characters and cuts off the rest
+  ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
 * `RIAnimInit`, `RIAnimDepth`, `RIAnimWidth` and `RIAnimHeight` crashed on
   some data that is not a `FORM ANIM`, such as an IFF `LIST` of type
   `ANIM`; they return normally, and for such a `LIST` `RIAnimDepth` returns

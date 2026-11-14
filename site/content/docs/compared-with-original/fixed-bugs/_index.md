@@ -69,6 +69,8 @@ In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bug
 * [Window titles were never freed]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#window-titles" >}}).
 * [Decoded palettes were black on Kickstart before 3.0]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#palette-kickstart-13" >}}).
 * [A missing AmigaOS library hung the program at its start]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#missing-os-library" >}}).
+* [`NextArg$` did not end a quoted word after `""`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#nextarg-doubled-quote" >}}):
+  `"a""b" c` gave the one word `a"b c`.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):
 
