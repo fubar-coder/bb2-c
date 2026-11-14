@@ -426,6 +426,69 @@ and the close gadget leave them as they were.
 
 Issue: [FileRequest$ changed the path and file name without setting their lengths (#153)](https://github.com/fubar-coder/bb2-c/issues/153).
 
+### Long file names overwrote memory {#filerequest-long-names}
+
+The file requester keeps the path in a field of 160 bytes and the file
+name in one of 64 bytes, so it has room for a path of 159 and a name of
+63 characters. The original copied names and paths into these fields
+without looking at their length. On the classic Amiga file system a name
+has at most 30 characters, but the newer file systems (FFS with long
+names, PFS, SFS) and the host directories of an emulator allow much
+longer ones. A click on a file name of 64 or more characters in the list
+wrote it behind the file name field, and OK then copied on through memory
+until the program crashed. A long path, or a path the program's string
+variable had no room for, overwrote memory the same way.
+
+The port refuses a name or a path that does not fit. It also respects
+the room the program gives: a name longer than the `MaxLen` of the
+file name variable, or a path longer than the `MaxLen` of the path
+variable, is refused too. The requester then stays open, keeps what its
+fields held, and shows "Name too long" or "Path too long" in the title
+bar of the screen until the user clicks the next button, field or line.
+
+**What happened**
+
+```
+Screen 0,0,0,320,256,2,0,"freqlib",1,2
+Use Screen 0
+d$="CORPUS:fqname/"
+If WriteFile(0,d$+"a123456789b123456789c123456789d123456789e123456789f123456789g123456789") Then CloseFile 0
+MaxLen p$=160
+MaxLen f$=64
+p$="CORPUS:fqname"
+f$="x"
+r$=FileRequest$("FQ",p$,f$)
+NPrint Len(r$)," [",r$,"] file ",Len(f$)," [",f$,"]"
+End
+```
+
+The program creates a file with a name of 70 characters and opens the
+requester in its drawer. The user clicks the name in the list and then
+OK. The original copies all 70 characters into the 64-byte field, and OK
+crashes the program.
+
+**With the port**
+
+The click is refused, and the screen's title bar says so:
+
+![The port's file requester after a click on a name of 70 characters: the screen title bar reads "Name too long", the FILE field still holds x](name-too-long.png)
+
+OK then returns the file the requester held before:
+
+```
+15 [CORPUS:fqname/x] file 1 [x]
+```
+
+A program that wants names of up to 63 characters gives its file name
+variable a `MaxLen` of 64 and its path variable one of 160, as the
+page of [freqlib]({{< relref "/docs/libraries/commands/freqlib" >}})
+shows. A program whose screen has no visible
+title bar does not see the message, but the name is refused all the
+same. The editor's file requester is the same code and has the same
+limits.
+
+Issue: [The file requester copied names longer than 63 characters without a limit (#1042)](https://github.com/fubar-coder/bb2-c/issues/1042).
+
 ## GadTools gadgets
 
 ### A gadget took over the values of the one before {#gadtools-values}
@@ -753,6 +816,12 @@ file requester is the same code and has the same fixes, except for the
 `FileRequest$` sets. `ASLFileRequest$`, `ASLPathRequest$` and
 `ASLScreenRequest` open the requesters of the system's `asl.library`.
 
+* A file name of 64 or more characters, or a path of 160 or more, was
+  copied into the requester's fields without a limit and overwrote
+  memory; the requester refuses it and says "Name too long" or "Path too
+  long" in the screen's title bar
+  ([Long file names overwrote memory](#filerequest-long-names),
+  [#1042](https://github.com/fubar-coder/bb2-c/issues/1042)).
 * `FileRequest$` on a screen of 645 lines or more, such as a 1280×1024
   RTG Workbench, wrote far behind its data and could crash the program
   after the requester closed; the list shows at most 64 lines and the

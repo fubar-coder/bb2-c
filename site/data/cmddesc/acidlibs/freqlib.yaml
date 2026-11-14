@@ -7,7 +7,9 @@
     when the program ends, the directory it was started in is current
     again.
 
-    Kept from the original: a file name longer than 63 characters, picked
-    in the list and confirmed with OK, or a very long path, is copied
-    without a limit and can overwrite memory
+    A file name has room for 63 characters and a path for 159, and for no
+    more than the `MaxLen` of `Filename$` and `Pathname$`. The requester
+    refuses a longer name or path, picked in the list or found with
+    PARENT or CD: it stays open, keeps its fields, and shows "Name too
+    long" or "Path too long" in the title bar of the screen
     ([#1042](https://github.com/fubar-coder/bb2-c/issues/1042)).

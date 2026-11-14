@@ -518,8 +518,17 @@ of `FileRequest$`, and the fixes of that requester on the page
 [Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#file-requester-fixes" >}})
 apply to the editor too: long names in the list, tall screens, the DRIVES
 list, the system libraries it left open, the directories it kept in use
-and the path gadget after CD. One of them changes what users of the
+and the path gadget after CD. Two of them change what users of the
 editor see:
+
+* A file name of 64 or more characters, which file systems with long
+  names and the host directories of an emulator allow, or a path of 160
+  or more, was copied into the requester's fields without a limit and
+  overwrote memory, and OK then crashed the editor. The requester refuses
+  such a name or path: it stays open, keeps its fields, and shows "Name
+  too long" or "Path too long" in the title bar of the editor's screen
+  ([Long file names overwrote memory]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#filerequest-long-names" >}}),
+  [#1042](https://github.com/fubar-coder/bb2-c/issues/1042)).
 
 * The CD button made the drawer shown the editor's current directory and
   released the directory the editor had been started in, which still
