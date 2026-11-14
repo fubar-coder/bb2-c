@@ -2,16 +2,10 @@
   text: The first `Length` characters of `String$`.
 "Right$":
   text: The last `Length` characters of `String$`.
-  notes: |
-    Kept from the original: with a string of 32768 characters or more,
-    characters from before the string can be taken
-    ([#285](https://github.com/fubar-coder/bb2-c/issues/285)).
 "Mid$":
   text: The characters of `String$` from position `Startchar` on, `Length` of them or, without `Length`, all to the end. A start beyond the end gives the empty string.
   notes: |
-    Kept from the original: a huge `Length`, one that overflows when
-    added to the start, copies that many bytes
-    ([#286](https://github.com/fubar-coder/bb2-c/issues/286)).
+    A `Length` beyond the end of the string stops at its end.
 "UnLeft$":
   text: "`String$` without its last `Length` characters."
 "UnRight$":
@@ -29,9 +23,10 @@
 "Instr":
   text: The position of `Findstring$` in `String$`, searching from the first character or from `Startpos`; 0 if it is not found.
   notes: |
-    Kept from the original: a `Startpos` of 0 or less is not checked, and
-    the search then starts before the string
-    ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
+    A `Startpos` of 0 or less searches from the first character. Kept
+    from the original: a `Startpos` near $7FFFFFFF is not caught, and the
+    search then runs through memory far from the string
+    ([#1030](https://github.com/fubar-coder/bb2-c/issues/1030)).
 "Replace$":
   text: "`String$` with every occurrence of `Findstring$` replaced by `Replacestring$`."
   notes: |
@@ -45,18 +40,16 @@
 "Cvi":
   text: The first two bytes of the string as a word; the reverse of `Mki$`.
   notes: |
-    The length of the string is not checked: a shorter string gives the
-    bytes behind it ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+    A shorter string counts its missing bytes as 0: `Cvi("a")` is $6100.
 "Cvl":
   text: The first four bytes of the string as a long; the reverse of `Mkl$`.
   notes: |
-    The length of the string is not checked
-    ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+    A shorter string counts its missing bytes as 0: `Cvl("ab")` is
+    $61620000.
 "Cvq":
   text: The first four bytes of the string as a quick value; the reverse of `Mkq$`.
   notes: |
-    The length of the string is not checked
-    ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+    A shorter string counts its missing bytes as 0.
 "Len":
   text: The number of characters in the string.
 "StripLead$":

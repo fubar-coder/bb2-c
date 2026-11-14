@@ -36,7 +36,3 @@
   text: Makes a new, empty item stack for `Max Items` items; the stack holds 8 at the start.
 "SortList":
   text: Sorts the items of the list into ascending order of a long in each item, given by its offset, for example `SizeOf .type\field`. The current item stays the same item.
-  notes: |
-    Kept from the original: values more than 2^31 apart are compared the
-    wrong way round
-    ([#201](https://github.com/fubar-coder/bb2-c/issues/201)).

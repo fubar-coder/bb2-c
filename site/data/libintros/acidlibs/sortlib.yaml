@@ -12,8 +12,7 @@ intro: |
   Sort n$()
   ```
 
-  Kept from the original: a string element that was never given a
-  value reads from address 0
-  ([#276](https://github.com/fubar-coder/bb2-c/issues/276)).
+  A string element that was never given a value sorts as the empty
+  string.
 
   *Based on the sortlib guide by Acid Software.*

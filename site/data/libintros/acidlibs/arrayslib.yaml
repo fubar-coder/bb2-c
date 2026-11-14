@@ -5,3 +5,6 @@ intro: |
   cleared memory, for global arrays and for the local arrays of
   procedures. For a list array it also sets up the list of its items,
   which the commands of the linklistlib library work on.
+
+  An array of 4 GB or more cannot be given memory: its `Dim` stops with
+  the error "Out of Memory!".

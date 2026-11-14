@@ -22,8 +22,6 @@ intro: |
   ```
 
   The default input reads whole lines only: `Inkey$` from it is the
-  runtime error "Can't Input Character from Defualt Input", with the
-  spelling of the original
-  ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
+  runtime error "Can't Input Character from Default Input".
 
   *Based on the inputoutputlib guide by Acid Software.*

@@ -3,6 +3,6 @@ intro: |
   The 68000 cannot divide 32 bit numbers by itself. The compiler turns
   `/` on longs and quicks into calls of this library.
 
-  Kept from the original: a division by 0 is not an error and gives the
-  largest positive number
-  ([#200](https://github.com/fubar-coder/bb2-c/issues/200)).
+  A division by 0 is not an error. It gives the largest number with the
+  sign of the dividend: for longs, 5/0 and 0/0 give 2147483647 and -5/0
+  gives -2147483647.
