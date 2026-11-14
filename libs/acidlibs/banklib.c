@@ -18,8 +18,8 @@
  *   - Not a bug (no visible effect: an unused bank has size 0 and is
  *     reallocated anyway): FreeBank frees only if pos and size are both
  *     non-zero and does not clear memtype.
- *   - LoadBank (the load rules are a description, not a bug; only the drawer
- *     case is one) asks fileiolib's Exists (ALibJsr $3E15) for the file size:
+ *   - LoadBank (the load rules are a description, not a bug) asks
+ *     fileiolib's Exists (ALibJsr $3E15) for the file size:
  *     0 (no file, or an empty file) = nothing happens.  The bank is
  *     (re)allocated with the file size if the memtype differs or if the
  *     file is not smaller than the bank (CMP.l/BMI: the same size is
@@ -27,11 +27,14 @@
  *     than the file is kept and the old contents behind the file's data
  *     stay.  Then Read(file, pos, BANK size) - the bank size, not the file
  *     size.  LoadBank without memtype uses the bank's memtype if the bank
- *     is in use, otherwise 0.  A drawer (Exists = -1) with a different
- *     memtype "allocates" $FFFFFFFF bytes: memlib's localloc adds its
- *     8 byte header (ADDQ.l #8 -> 7), AllocMem(7) succeeds, pos points
- *     right behind that 7 byte block and size is -1 (the Open of the
- *     drawer then fails silently). (#72)
+ *     is in use, otherwise 0.
+ *   - Fixed (intended deviation, #72): a drawer (Exists = -1) with a
+ *     different memtype "allocated" $FFFFFFFF bytes: memlib's localloc
+ *     adds its 8 byte header (ADDQ.l #8 -> 7), AllocMem(7) succeeds, pos
+ *     pointed right behind that 7 byte block and size was -1 (the Open of
+ *     the drawer then failed silently).  Here only a size > 0 loads (BLE
+ *     instead of BEQ): a drawer leaves the bank as it is, like a missing
+ *     file.
  *   - Not a bug (no error reporting anywhere in the library): SaveBank
  *     writes nothing for an unused bank, otherwise size bytes to a new
  *     file; errors of Open/Write are ignored.
@@ -214,10 +217,10 @@ BLITZ_THUNK(_initbank, initbank_c, "a0");
  * file size if the memtype differs or if the file is not smaller than the
  * bank (CMP.l/BMI: the same size is reallocated too); a larger bank is
  * kept, its old contents behind the file's data stay.  Then Read(file,
- * pos, BANK size).  Errors of Open/Read are ignored.  BUG(orig) (#72): a
- * drawer (Exists = -1) with a different memtype allocates $FFFFFFFF
- * bytes: memlib's header makes it AllocMem(7), pos points behind that
- * block and size is -1 (the Open of the drawer then fails silently).
+ * pos, BANK size).  Errors of Open/Read are ignored.  Fixed (#72): a
+ * drawer (Exists = -1) leaves the bank as it is; the original reallocated
+ * it with $FFFFFFFF bytes for a different memtype (memlib's header made
+ * it AllocMem(7), pos behind that block, size -1).
  *
  * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
  *
@@ -233,7 +236,7 @@ void BLITZ_ROUTINE _bankloadb(const UBYTE *name BL_REG(d1), ULONG memtype BL_REG
 
     fname = name;
     size = BLITZ_ALIBJSR_A6(TOK_exists, dosbase, (ULONG)name);
-    if (!size)
+    if (size <= 0)                              /* fixed (#72): BLE, not BEQ */
         return;
     /* CMP.l 8(a3),d2:BNE yoloc:CMP.l 4(a3),d0:BMI noloc - the N flag of
        the difference (wraps like the original) */

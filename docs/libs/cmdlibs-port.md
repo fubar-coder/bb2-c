@@ -204,7 +204,7 @@ C, declarations identical. Data of wbstartuplib in a0. FromCLI loads only the lo
 
 ## 76 banklib
 
-C, declarations identical. Object lib "Bank" (16 bytes: pos, size, memtype; maximum 5), no Free. LoadBank asks fileiolib Exists (ALibJsr `TOK_exists`, a6 = dos). InitBank stores size/type before allocating (without consequence in the original: memlib does not return on lack of memory, only with the C memlib, K; #71). Not bugs (no observable effect / description): FreeBank leaves memtype in place; LoadBank allocates anew for a different type or if the file is not smaller (sign of the difference) and reads bank-size bytes; missing or empty file: nothing. BUG(orig) (#72): LoadBank of a drawer (Exists = -1) with a different memtype makes size -1. Test: t52_bank.
+C, declarations identical. Object lib "Bank" (16 bytes: pos, size, memtype; maximum 5), no Free. LoadBank asks fileiolib Exists (ALibJsr `TOK_exists`, a6 = dos). InitBank stores size/type before allocating (without consequence in the original: memlib does not return on lack of memory, only with the C memlib, K; #71). Not bugs (no observable effect / description): FreeBank leaves memtype in place; LoadBank allocates anew for a different type or if the file is not smaller (sign of the difference) and reads bank-size bytes; missing or empty file: nothing. Fixed (intended deviation, #72): LoadBank of a drawer (Exists = -1) with a different memtype made the size -1 (an AllocMem of 7 bytes, BankLoc behind it); now only a size > 0 loads, a drawer leaves the bank as it is (test `banklib-loadbank-drawer`). Test: t52_bank.
 
 ## 164 inputoutputlib
 
