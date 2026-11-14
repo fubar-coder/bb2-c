@@ -31,14 +31,18 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 
 **Assembler:** none except the thunks (`BLITZ_THUNK`).
 
+**Fixed** (intended deviations, `docs/libs/deviations.md`, kind F):
+`ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the depth as the byte
+`bm_Depth`; the original read the word at 4 (`bm_Flags:bm_Depth`),
+right only while `bm_Flags` is 0 (#670, test
+`rwe/rifxlib-depth-word-at-4`).
+
 **BUG(orig)** (kept, commented in the code):
 
 * `ClearBitmap` starts at end-4 (its comment says 2): every line pass is
   one word too low, the last word of the area stays and the last pass
   clears the word before the area (before the bitplane for offset 0)
   (#668);
-* `ClearBitmap`, `FadeInBitmap`, `ZoomyZoom` read the depth as the word
-  at 4 (`bm_Flags:bm_Depth`), right only while `bm_Flags` is 0 (#670);
 * delay 0 in `ClearBitmap`/`FadeInBitmap` means 2^32 turns of the busy
   loop (#669);
 * `Derez` is declared with a result (`!acommand{#long}`) but sets none:
@@ -109,6 +113,7 @@ checks):
   40 (bit by bit, 40 with the 21-word table), $FFFF0003 – after the
   `ZoomXY` tests (see above).
 
-**Not covered:** delay 0 (2^32 turns), bitmaps with `bm_Flags` ≠ 0 (the
-depth word gives thousands of planes), more than 8 planes, `ZoomXY`
+**Not covered:** delay 0 (2^32 turns), bitmaps with `bm_Flags` ≠ 0 (in
+the original the depth word gives thousands of planes; the bug-orig test
+`rwe/rifxlib-depth-word-at-4` covers the case), more than 8 planes, `ZoomXY`
 after `Derez` ≥ 3 (the original's code is corrupt then).

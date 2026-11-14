@@ -22,8 +22,10 @@
  * tested before Derez: a Derez >= 3 of the original overwrites the first
  * instruction of ZoomXY (BUG(orig) (#671), see rifxlib.c).
  *
- * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (the
- * depth word: plane counts in the thousands), depths above 8.
+ * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (in the
+ * original the depth word gives plane counts in the thousands; the
+ * bug-orig test rwe/rifxlib-depth-word-at-4 covers it, #670), depths
+ * above 8.
  */
 #include "sysload.h"
 

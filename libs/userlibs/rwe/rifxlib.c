@@ -32,8 +32,6 @@
  *     word too low, the last word of the area stays and the last pass
  *     clears the word before the area (before the bitplane for offset 0)
  *     (#668);
- *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the word
- *     at 4 (bm_Flags:bm_Depth), right only while bm_Flags is 0 (#670);
  *   - delay 0 in ClearBitmap/FadeInBitmap means 2^32 turns of the loop
  *     (#669);
  *   - Derez is declared with a result (!acommand{#long}) but sets none:
@@ -64,6 +62,9 @@
  *     other variables here (one array pa[] with the four variables in the
  *     same order);
  *   - finit frees the tables but keeps the pointers (#673).
+ * Fixed (intended deviation, #670): ClearBitmap, FadeInBitmap and
+ * ZoomyZoom read the depth as the byte bm_Depth; the original read the
+ * word at 4 (bm_Flags:bm_Depth), right only while bm_Flags is 0.
  * Not bugs but limits the source names: ZoomXY, Derez (and their
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
  */
@@ -196,8 +197,6 @@ BLITZ_LIBFIN();
 #define BM(bm)        ((struct BitMap *)(bm))
 #define BM_BPR(bm)    (BM(bm)->BytesPerRow)
 #define BM_ROWS(bm)   (BM(bm)->Rows)
-/* BUG(orig) (#670): Flags and Depth read as one word (MOVE.w 4(a0)) */
-#define BM_FLDEPTH(bm) (*(UWORD *)&BM(bm)->Flags)
 /* Depth as a byte at its offset: as a member access GCC orders the loads
    of Derez/ZoomXY differently (the code must stay the same) */
 #define BM_DEPTH(bm)  B_((bm) + offsetof(struct BitMap, Depth))
@@ -379,7 +378,7 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(bm) >> 1) - 1);
-    BDepth = (UWORD)(BM_FLDEPTH(bm) - 1);       /* BUG(orig) (#670): word at 4 */
+    BDepth = (UWORD)(BM_DEPTH(bm) - 1);         /* the byte; fixed (#670) */
     BHeight = (UWORD)(h - 1);
     areaend = bl_mulu_w((UWORD)(h + off), BM_BPR(bm));
     areaend -= 4;                               /* BUG(orig) (#668): 4, not 2 */
@@ -440,9 +439,9 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
  * @brief ClearBitmap bitmap#,delay: clears the whole bitmap line by line
  * with a dither fade (see clearbitmap_c).
  *
- * Height bm_Rows, offset 0.  BUG(orig): one word too low (#668), the
- * depth from the word at 4 (#670), delay 0 = 2^32 turns (#669), more
- * than 16 planes overrun the pointer arrays (#674).
+ * Height bm_Rows, offset 0.  BUG(orig): one word too low (#668), delay
+ * 0 = 2^32 turns (#669), more than 16 planes overrun the pointer arrays
+ * (#674).  Fixed (#670): the depth is the byte bm_Depth.
  * @param delay  d1: turns of the busy loop per line
  * @param bm     a0: the bitmap (struct BitMap) of bitmap# (d0)
  * Returns nothing (keeps a4-a6 only).
@@ -459,9 +458,10 @@ static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a
  * Backwards from the end of the area: each line is first ANDed with the
  * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): starts
  * at end-4, not end-2: one word too low, the last word of the area stays
- * and the word before the area is cleared (#668); the depth is the word
- * bm_Flags:bm_Depth (#670); delay 0 = 2^32 turns (#669); more than 16
- * planes overrun the pointer arrays (#674).
+ * and the word before the area is cleared (#668); delay 0 = 2^32 turns
+ * (#669); more than 16 planes overrun the pointer arrays (#674).  Fixed
+ * (#670): the depth is the byte bm_Depth (the original read the word
+ * bm_Flags:bm_Depth).
  * @param delay  d1: turns of the busy loop per line
  * @param h      d2.w: the number of lines
  * @param off    d3.w: the first line
@@ -486,7 +486,7 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(src) >> 1) - 1);
-    BDepth = (UWORD)(BM_FLDEPTH(src) - 1);      /* BUG(orig) (#670): word at 4 */
+    BDepth = (UWORD)(BM_DEPTH(src) - 1);        /* the byte; fixed (#670) */
     BHeight = (UWORD)(h - 1);
     srcoff = bl_mulu_w(off1, BM_BPR(src));
     dstoff = bl_mulu_w(off2, BM_BPR(src));
@@ -552,9 +552,9 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
  * @brief FadeInBitmap bitmapsource#,bitmapdest#,delay: fades the whole
  * source into the destination line by line (see fadein_c).
  *
- * Height bm_Rows of the source, offsets 0.  BUG(orig): the depth from the
- * word at 4 (#670), delay 0 = 2^32 turns (#669), more than 8 planes
- * overrun the pointer arrays (#674).
+ * Height bm_Rows of the source, offsets 0.  BUG(orig): delay 0 = 2^32
+ * turns (#669), more than 8 planes overrun the pointer arrays (#674).
+ * Fixed (#670): the depth is the byte bm_Depth.
  * @param delay  d2: turns of the busy loop per line
  * @param src    a0: the source bitmap (bitmapsource#, d0)
  * @param dst    a1: the destination bitmap (bitmapdest#, d1)
@@ -573,8 +573,9 @@ static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG
  * Forwards: each line is first copied through the alternating mask
  * $AAAA/$5555, 19 lines later copied whole.  Width, depth and both line
  * offsets come from the source bitmap (offsets times the SOURCE's bytes
- * per row).  BUG(orig): the depth is the word bm_Flags:bm_Depth (#670);
- * delay 0 = 2^32 turns (#669); from 9 planes on the two pointers per
+ * per row).  Fixed (#670): the depth is the byte bm_Depth (the original
+ * read the word bm_Flags:bm_Depth).  BUG(orig): delay 0 = 2^32 turns
+ * (#669); from 9 planes on the two pointers per
  * plane overrun bit_add/dest_add (#674).
  * @param delay  d2: turns of the busy loop per line
  * @param h      d3.w: the number of lines
@@ -871,10 +872,10 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
  * @brief ZoomyZoom bitmap#: doubles the left half of the bitmap in x, in
  * place (zoomx2 table).
  *
- * BUG(orig) (#670, #676): depth = the word at 4, and fixed 32 lines of 80
- * bytes whatever the bitmap's size; the left 40 bytes of a line are
- * doubled in place (from the right, so nothing is read after it is
- * written).  Nothing without the table.
+ * BUG(orig) (#676): fixed 32 lines of 80 bytes whatever the bitmap's
+ * size; the left 40 bytes of a line are doubled in place (from the right, so nothing is read after it is
+ * written).  Nothing without the table.  Fixed (#670): the depth is the
+ * byte bm_Depth (the original read the word bm_Flags:bm_Depth).
  * @param bm  a0: the bitmap of bitmap# (d0)
  * Returns nothing (all registers kept).
  */
@@ -886,7 +887,7 @@ static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 
     if (!tab)
         return;
-    plane = (UWORD)(BM_FLDEPTH(bm) - 1);
+    plane = (UWORD)(BM_DEPTH(bm) - 1);          /* the byte; fixed (#670) */
     do {
         line = L_(planes);
         planes += 4;
