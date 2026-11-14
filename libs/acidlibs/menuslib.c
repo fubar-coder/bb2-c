@@ -23,7 +23,7 @@
  *   4 = 3 + exclude, >= 5 = the flags themselves (their low word, the
  *   item's Flags word).
  *
- * Kept from the original (BUG(orig)):
+ * Kept from the original:
  *   - Not a bug (word result, the compiler uses only d0.w): MenuChecked:
  *     SNE/EXT.w, the upper word of d0 stays.
  *   - Not a bug (the intended result for a new entry): a shortcut sets the
@@ -31,9 +31,6 @@
  *     in afterwards.
  *   - Not a bug (a limitation acknowledged in the original source): MenuTitle
  *     width = 8 * length + 8 ("8 wide font, for now").
- *   - SubItem replacing an existing subitem moves the following ones by
- *     (subitem number - old height) instead of the height difference
- *     (d3 is the number again after textcalc). (#220)
  *   - No checks without the debugger: wrong menu/item numbers walk over
  *     the end of the lists. (#416)
  * Fixed (intended deviation, #981): an empty text of a menu, item or
@@ -60,6 +57,10 @@
  *   after a long test: $10000 gave word 0 < 5 and ended in the "4" branch
  *   (checked toggle + exclude).  It compares the long now: $10000 is
  *   ">= 5", its low word 0 the flags.
+ * Fixed (intended deviation, #220): SubItem replacing an existing subitem
+ *   moved the following ones by (subitem number - old height) instead of
+ *   the height difference (d3 was the number again after textcalc).  It
+ *   passes the new height, as MenuItem does.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -676,8 +677,9 @@ void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
 
 /* finditem - findthing for an item (54 bytes, TopEdge, SubItem); sets
    size, ItemFill = the IntuiText/Image behind it, MutualExclude.  `size`
-   = d3 for moving the following entries: the height, but BUG(orig) (#220) the
-   subitem number for SubItem (MOVEM restores d3 after textcalc) */
+   = d3 for moving the following entries: the height (fixed (#220): for
+   SubItem the original passed the subitem number, MOVEM restored d3
+   after textcalc) */
 static struct item *finditem(UBYTE *head, WORD n, WORD width, WORD height, WORD size)
 {
     struct item *e = (struct item *)findthing(head, n, ITEMSIZE, I_TOP, size, I_SUB);
@@ -831,7 +833,7 @@ static void subitem(WORD m, WORD i, WORD s, const UBYTE *text, struct TextAttr *
     extent = textcalc(&lens, text, s, intbase);
     p = getthing(blitz_string, m) + M_FIRST;
     p = getthing(p, i) + I_SUB;
-    subcont(menucont(p, s, extent, s));
+    subcont(menucont(p, s, extent, extent.height));    /* fixed (#220) */
 }
 
 /**
@@ -840,9 +842,9 @@ static void subitem(WORD m, WORD i, WORD s, const UBYTE *text, struct TextAttr *
  *
  * As MenuItem, in the item's sublist, and moved by SubItemOff.
  *
- * BUG(orig) (#220): replacing an existing subitem moves the following
- * ones by (subitem number - old height) instead of the height difference
- * (d3 is the number again after textcalc).  Fixed (#219) as MenuItem.
+ * A replaced subitem moves the following ones by the height difference.
+ * Fixed (#220): the original moved them by (subitem number - old height)
+ * (d3 was the number again after textcalc).  Fixed (#219) as MenuItem.
  *
  * Errors (debugger only, subchk2): "Uninitialized IntuiFont", "Illegal
  * Menu number", "Illegal Menu Item number", "Illegal Menu Sub Item
