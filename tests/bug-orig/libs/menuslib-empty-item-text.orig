@@ -6,6 +6,7 @@ ok
 [run]
 item width 32 IText nonzero 0
 subitem width 32 IText nonzero 0
+title width 8 MenuName nonzero 0
 rc=0
 [blitz2]
 rc=0

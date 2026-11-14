@@ -1,4 +1,5 @@
 [run]
 item width 8 IText nonzero 1
 subitem width 8 IText nonzero 1
+title width 8 MenuName nonzero 1
 rc=0

@@ -48,6 +48,11 @@
  *     (d3 is the number again after textcalc). (#220)
  *   - No checks without the debugger: wrong menu/item numbers walk over
  *     the end of the lists. (#416)
+ * Fixed (intended deviation, #981): an empty text of a menu, item or
+ *   subitem was copied with allocst, which returns 0 for length 0: the 0
+ *   became the MenuName or IText, read at address 0 by IntuiTextLength
+ *   (the item's width) and Intuition.  It is copied with length 1 (its 0
+ *   byte), the empty string, as AmiBlitz3 does.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -636,7 +641,9 @@ static UBYTE *findthing(UBYTE *link, WORD n, ULONG memlen, int pos, WORD size, i
 /**
  * @brief MenuTitle MenuList#,Menu,Title$ - create or replace a menu.
  *
- * The title is copied (maxslib allocst).  Not a bug (a limitation
+ * The title is copied (maxslib allocst; fixed (#981): an empty title with
+ * length 1, the empty string, where the original stored MenuName 0 and
+ * Intuition read the title at address 0).  Not a bug (a limitation
  * acknowledged in the original source): width = 8 * length + 8 ("8 wide
  * font, for now"); the menu is placed behind the ones before it (+2), a
  * replaced menu moves the following ones by the width difference.  The
@@ -655,7 +662,7 @@ void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
 {
     ULONG len = lens[-1];                       /* MOVE.l -(a2),d1 */
     WORD w = ((UWORD)len << 3) + 8;             /* 8 wide font, for now */
-    UBYTE *title = allocst(text, len);
+    UBYTE *title = allocst(text, len + !len);   /* "": not 0, fixed (#981) */
     struct Menu *e;
 
     shortcut = 0;
@@ -702,12 +709,11 @@ static struct textsize textcalc(const ULONG **sp, const UBYTE *s, UWORD item,
     sussflags(BL_POPL(*sp), item);
     extent.height = menuyxs + menuyxs + fonthite;
     len = BL_POPL(*sp);
-    /* BUG(orig) (#981): allocst returns 0 for a text of length 0; the 0
-       becomes the IntuiText's IText and IntuiTextLength reads the string
-       at address 0 (the item gets that width). MenuTitle (domenutitle) also
-       stores MenuName 0 for an empty title, but computes its width from
-       the length alone. */
-    extent.text = allocst(s, len);
+    /* fixed (#981): allocst returns 0 for a text of length 0; the 0 became
+       the IntuiText's IText and IntuiTextLength read the string at
+       address 0 (the item got that width).  An empty text is copied with
+       length 1 (its 0 byte), as AmiBlitz3 does: the empty string. */
+    extent.text = allocst(s, len + !len);
     dumintuitext.IText = extent.text;
     extent.width = (WORD)IntuiTextLength(&dumintuitext) + menuxxs + menuxxs;
     return extent;
