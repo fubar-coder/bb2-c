@@ -63,6 +63,10 @@ kind F):
   end of the program) leaves the audio filter / power LED (bit 1 of
   CIA-A PRA) as it is; the original toggled it with a
   `BCHG #1,$bfe001` left in (#449).
+* `StartTracker` of an empty slot returns False (0); the original set d0
+  to 0 and then restored the registers with `MOVEM`, which put the slot
+  number back into d0 ("True" although nothing plays) (#451; library
+  test `rwe_ciatrklib`, the case `StartTracker|d0|slot 3`).
 
 ## BUG(orig), kept
 
@@ -91,8 +95,7 @@ kind F):
   length (a later `FreeTrackerModule` frees memory that was never
   allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that
   plays from the slot (#436).
-* `StartTracker` of an empty slot returns the slot number (the MOVEM
-  restores d0 over the 0) (#451). `ModuleToChip` is an RTS: it returns
+* `ModuleToChip` is an RTS: it returns
   its argument (#446). `ModulePatterns` returns the song length (byte
   950) (#445). `CheckTrackerID` returns the long at **address 0**
   (`MOVE.l 0,d0`) for "no M.K./M!K!" and an empty slot (#430).

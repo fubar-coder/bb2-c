@@ -31,7 +31,7 @@
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
  *   B (VBlank, call by call): DecodeModule (chip: linked; fast
  *     memory: copied, size + 3), the information functions also on an
- *     empty slot (BUG(orig) #451 #430 #437: StartTracker returns the slot number,
+ *     empty slot (fixed #451: StartTracker returns 0; BUG(orig) #430 #437:
  *     CheckTrackerID the long at address 0, GetModuleName$ slot*10),
  *     the error checks (no error), StartTracker (mt_init; a slot length
  *     above the sample addresses clears their first longs, BUG(orig), #438),
@@ -911,7 +911,7 @@ int main(int argc, char **argv)
     info(0);
     errchecks(0, 4);
     info(3);                            /* empty */
-    func("StartTracker", START, 3);     /* empty: the slot number */
+    func("StartTracker", START, 3);     /* empty: 0 (fixed #451) */
     sprintf(VEC, "$%X", 5);
     func("ModuleToChip", TOCHIP, 5);
 

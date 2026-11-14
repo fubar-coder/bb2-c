@@ -53,8 +53,7 @@
  *     memory is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - StartTracker of an empty slot returns the slot number (the MOVEM
- *     restores d0 over the 0) (#451).  ModuleToChip does nothing and
+ *   - ModuleToChip does nothing and
  *     returns its argument (#446).  ModulePatterns returns the song length
  *     (byte 950) (#445).
  *   - CheckTrackerID returns the long at ADDRESS 0 (MOVE.l 0,d0) for
@@ -99,6 +98,9 @@
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
  * #1,$bfe001, a debug leftover) at every removal of the CIA interrupt.
+ * Fixed (intended deviation, #451): StartTracker of an empty slot returns
+ * False (0); the original set d0 to 0 and then restored the registers
+ * with MOVEM, which put the argument, the slot number, back into d0.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1672,22 +1674,22 @@ static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
  * clearing: BUG(orig) (#438, #477)) and enables playing.  Error check
  * (_checkused): slots 0-8, a module in the slot.
  * @param num  d0: the slot
- * @return d0: -1 when it plays; the slot number for an empty slot (the
- *         MOVEM restores d0 over the 0, BUG(orig) (#451))
+ * @return d0: -1 when it plays; 0 for an empty slot (fixed, #451: the
+ *         original's MOVEM restored the slot number over the 0)
  */
 static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
 {
     struct modent *e = slot(num);
 
     if (!e->addr)
-        return num;                     /* BUG(orig): the slot number (#451) */
+        return 0;                       /* fixed (#451): not the slot number */
     ciapart.mt_data = e->addr;
     resetciaint();                      /* _ResetCIATempo */
     if (libvars.play_type != 1)
         setciaint();
     mt_init(e->len);
     playdata.Enable = 0xff;
-    return BB_TRUE;                     /* not BB_BOOL: or the slot (#451) */
+    return BB_TRUE;
 }
 
 /**

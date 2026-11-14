@@ -144,7 +144,8 @@ StartTracker|filter|slot 3|1 [fixed #449]	$00000002
 StartTracker|play routine|slot 3|1	bytes 1584 fnv 5AA0D2C7
 StartTracker|modtable|slot 3|1	bytes 110 fnv 3786BDCF
 StartTracker|CIA part|slot 3|1	bytes 110 fnv B6319231
-StartTracker|d0|slot 3|1	$00000003
+StartTracker|d0|slot 3|1 [orig]	$00000003
+StartTracker|d0|slot 3|1 [fixed #451]	$00000000
 ModuleToChip|kept|$5|1	kept
 ModuleToChip|popped|$5|1	$00000000
 ModuleToChip|DMACONR|$5|1	$00000000
