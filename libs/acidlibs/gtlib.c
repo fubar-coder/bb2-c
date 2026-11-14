@@ -33,9 +33,12 @@
  *     GTBB_Recessed with the value 0; DrawBevelBoxA takes the tag's
  *     presence ("set to anything"), so the box is recessed (measured on
  *     Kickstart 3.1).
- *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
- *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
- *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
+ *   - Not a bug (#175, user decision 2026-11-14): GTSetAttrs/GTChangeList/
+ *     GTSetHighlight work on the LAST gadget of a run of gadgets with the
+ *     same id, GTGetAttrs/GTGadPtr etc. on the FIRST; GTFreeGadget frees
+ *     the whole run (first to last).  A GadTools kind that makes helper
+ *     gadgets may need the last one; two gadgets of the same id made one
+ *     after the other are the program's choice.
  *   - Without a used screen handlestd reads the border sizes from 0. (#176)
  * Fixed (intended deviation, #328): GTChangeList, GTSetHighlight,
  *   GTSetAttrs, GTSetString, GTSetInteger and GTGetAttrs pass their tag
@@ -1465,7 +1468,7 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
  * and free them.
  *
  * The whole run from the first to the last gadget with the id
- * (FreeGadgets), BUG(orig) (#175); fixed (#174, #173): with the label
+ * (FreeGadgets), not a bug (#175); fixed (#174, #173): with the label
  * blocks and GTShape images of the freed gadgets.  If the run ends with
  * the GTList's last gadget (current), the gadget in front of the run
  * becomes the last one.  Fixed (#962): the original left current on the
@@ -1538,7 +1541,7 @@ static void BLITZ_ROUTINE gtbevel_c(LONG x BL_REG(d1), LONG y BL_REG(d2),
  * @brief GTGadPtr(GTList#,id): the address of the gadget with the id.
  *
  * The FIRST gadget with the id (the search starts at the context gadget,
- * id -1), BUG(orig) (#175).  Amiga mode only.
+ * id -1), not a bug (#175).  Amiga mode only.
  *
  * @param id  d1: the gadget id
  * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
@@ -1570,7 +1573,7 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int l
  * @brief GTChangeList GTList#,id,List(): give a listview new labels.
  *
  * GTLV_Labels = the List header of the list array (its address - 28) on
- * the LAST gadget of the run with the id, BUG(orig) (#175); nothing
+ * the LAST gadget of the run with the id, not a bug (#175); nothing
  * without a context or gadget.  Amiga mode only.
  * Fixed (#328): a3 comes back unchanged (the original left the tag list
  * in a3).
@@ -1612,7 +1615,7 @@ static void BLITZ_ROUTINE gtchnglist2_c(UWORD id BL_REG(d1),
  * make it visible.
  *
  * GTLV_Selected and GTLV_MakeVisible = value on the LAST gadget of the run
- * with the id, BUG(orig) (#175); nothing without a context or gadget.
+ * with the id, not a bug (#175); nothing without a context or gadget.
  * Amiga mode only.
  * Fixed (#328): a3 comes back unchanged (the original left the tag list
  * in a3).
@@ -1665,7 +1668,7 @@ static void BLITZ_ROUTINE gttags_c(UWORD pairs BL_REG(d7), const ULONG *args BL_
  * a function).
  *
  * GT_SetGadgetAttrs with the pairs (put into `usertags`) on the LAST
- * gadget of the run with the id, BUG(orig) (#175); nothing without a
+ * gadget of the run with the id, not a bug (#175); nothing without a
  * context or gadget.  DIFF: a2 is not moved.  Amiga mode only.
  * Fixed (#328): a3 comes back unchanged, also as a function (the original
  * left usertags in a3).
