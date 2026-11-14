@@ -61,6 +61,7 @@ static int pass(const char *me, const pass_options &o)
     text[n] = 0;
     if (corpus_parse(text, &p, err, sizeof err)) {
         fprintf(stderr, "%s: %s: %s\n", me, path, err);
+        free(text);
         return 2;
     }
     free(text);

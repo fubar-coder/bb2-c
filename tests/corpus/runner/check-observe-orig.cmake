@@ -4,6 +4,7 @@
 # reference, which was the observed one) and crash.  A pass file with dummy
 # files:
 #   --observe clib / ref   -> exit 2, the message, no report (OUT.txt, OUT.work)
+#   a pass file without a reference -> exit 2
 #   cmake -DCORPUSRUN=... -DWORK=... -P check-observe-orig.cmake
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK})
@@ -30,3 +31,15 @@ foreach(tag clib ref)
 		message(FATAL_ERROR "--observe ${tag} on a bug-orig pass left a report or work directory")
 	endif()
 endforeach()
+
+# a refused pass file (no reference configuration): exit 2 and nothing else
+# (under HOST_SANITIZE a leaked pass file text made it a LeakSanitizer exit)
+file(WRITE ${WORK}/bad.pass "work=${WORK}/w\nreport=${WORK}/r.txt\nted=${WORK}/ted\n"
+	"launcher=${WORK}/launcher\ndefaultdbug=${WORK}/dbug\n"
+	"config=clib|output|${WORK}/clib|${WORK}/clib|${WORK}/clib\nsource=${WORK}/t.bb2\n")
+execute_process(COMMAND ${CORPUSRUN} pass ${WORK}/bad.pass
+	RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+message("${out}")
+if(NOT rc EQUAL 2 OR NOT out MATCHES "the first configuration is the reference")
+	message(FATAL_ERROR "a pass without reference: exit ${rc}, expected 2 and the message")
+endif()
