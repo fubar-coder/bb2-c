@@ -48,9 +48,14 @@
  *     order of Fields (last field first in the file).  It is consistent
  *     with itself, and existing data files depend on it; a program that
  *     needs another order in the file lists the fields reversed.
- *   - Exists: 0 for a missing file AND for an empty file, -1 for a drawer
- *     (fib_DirEntryType = 2; a volume's root (1) gives its fib_Size); the
- *     FileInfoBlock comes from memlib globalloc (not checked, see below). (#143)
+ *   - Exists: -1 for a drawer only with fib_DirEntryType = 2 (a volume's
+ *     root (1) gives its fib_Size); the FileInfoBlock comes from memlib
+ *     globalloc (not checked, see below).
+ *   - Exists of an empty file, won't fix: 0 like a missing file.  Exists
+ *     returns the length of the file (the manual: "If 0 the file either
+ *     does not exist or is empty"), and programs use the value as the
+ *     length (AllocMem, ReadMem, LoadBank); another value for an empty
+ *     file would break them.  "Is it there" is ReadFile.  (#143)
  *   - Not a bug (that value is never -1): myseek/myread/mywrite return d0
  *     unchanged when there is nothing to do (length 0, position in the
  *     buffer): FileSeek/Put/Get compare the file number resp. the field
@@ -412,8 +417,9 @@ static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
  * @brief Exists(Filename$): the size of a file.
  *
  * Lock, Examine into a FileInfoBlock from memlib globalloc (not checked,
- * #139), UnLock.  BUG(orig) (#143): an empty file gives 0 like a missing
- * one; a volume's root gives its fib_Size.
+ * #139), UnLock.  BUG(orig) (#143), won't fix: an empty file gives 0 like
+ * a missing one (Exists returns the length, the manual says so, and
+ * programs use it as the length).  A volume's root gives its fib_Size.
  *
  * @param name  d0: the file name
  * @param dosbase  a6: dos.library

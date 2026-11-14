@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+empty file there
+missing file missing
+readfile of the empty file ok
+rc=0
