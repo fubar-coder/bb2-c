@@ -25,15 +25,17 @@
  * Kept from the original (BUG(orig)):
  *   - ASLScreenRequest returns the requester AFTER freeing it (asl LVO
  *     -36 = FreeFileRequest, as FREEREQ below): freed memory. (#60)
- *   - ASLPathRequest$ copies fr_File into the address in d2 (no such
- *     argument: with the dimensions it is x, else whatever d2 holds) and
- *     writes its length to d2-4. (#61)
  *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
  *     static buffer (strng+4: 96 bytes including the 0; in the binary the
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#61): ASLPathRequest$ has no initial file (an empty one) and
+ *   copies fr_File into the result only; the original took d2 as the
+ *   file name variable (no such argument: with the dimensions it is x,
+ *   else whatever d2 holds), copied fr_File there and wrote its length
+ *   to d2-4 (x = 20: the exception vectors at $10/$14).
  * Fixed (#64): ASLPathRequest$ without dimensions clears the pattern flag
  *   (ASLFR_Flags1), as the form with dimensions does; the original kept
  *   the flag of the previous ASLFileRequest$ (a pattern gadget with the
@@ -327,7 +329,20 @@ static UWORD copyout(const UBYTE *s, UBYTE *var)
     return n;
 }
 
-/* defna/doaslreq: d0 = title, d1 = path var, d2 = file var */
+/* copy a string to a3 only; returns its length (Fixed (#61): the file
+   name of ASLPathRequest$, which has no variable for it) */
+static UWORD copyresult(const UBYTE *s)
+{
+    UWORD n = 0;
+
+    while ((*blitz_string++ = *s++) != 0)
+        n++;
+    blitz_string--;
+    return n;
+}
+
+/* defna/doaslreq: d0 = title, d1 = path var, d2 = file var (0: none,
+   ASLPathRequest$ - fixed #61) */
 static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
                     const ULONG *lens)
 {
@@ -342,7 +357,7 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     Tags.screen.ti_Data = (ULONG)*scr;
     Tags.name.ti_Data = allocst(title, lens[-1]);
     Tags.path.ti_Data = path;
-    Tags.file.ti_Data = file;
+    Tags.file.ti_Data = file ? file : (ULONG)nullstr;  /* Fixed (#61) */
     aslstruct = AllocAslRequest(ASL_FileRequest, (struct TagItem *)&Tags);
     if (!aslstruct || !AslRequest(aslstruct, (struct TagItem *)&Tags)) {
         if (aslstruct)                  /* filefail.  Fixed (#403): only a */
@@ -358,8 +373,11 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
         *blitz_string++ = '/';
         len = (UWORD)(len + 1);
     }
-    filelen = copyout((const UBYTE *)fr->fr_File, (UBYTE *)file);
-    *(ULONG *)(file - 4) = filelen;
+    if (file) {
+        filelen = copyout((const UBYTE *)fr->fr_File, (UBYTE *)file);
+        *(ULONG *)(file - 4) = filelen;
+    } else                              /* Fixed (#61): into the result only */
+        filelen = copyresult((const UBYTE *)fr->fr_File);
     len += filelen;
     FREEREQ(aslstruct);
     Tags.flags2.ti_Data = 0;
@@ -510,15 +528,16 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
  * @brief ASLPathRequest$(Title$,Pathname$): an ASL drawer requester
  *        (FRF_DRAWERSONLY) at 20,20 280x160 (doaslfreqe).
  *
- * As ASLFileRequest$ (aslreq).  BUG(orig) (#61): fr_File is copied into
- * the address in d2, which is no argument here (whatever d2 holds), and
- * its length written to d2-4.  Fixed (#64): no pattern gadget (the
- * original kept the pattern flag of the previous ASLFileRequest$).  Errors (debugger,
+ * As ASLFileRequest$ (aslreq), without a file name variable.  Fixed
+ * (#61): no initial file, fr_File goes into the result only (the original
+ * copied it to the address in d2, which is no argument here, and wrote
+ * its length to d2-4).  Fixed (#64): no pattern gadget (the original kept
+ * the pattern flag of the previous ASLFileRequest$).  Errors (debugger,
  * freqchk2): path$ must be a variable with room for 160 characters.
  *
  * @param arg0  d0: the title
  * @param arg1  d1: the path$ variable
- * @param arg2  d2: no argument (BUG(orig), #61)
+ * @param arg2  d2: no argument (not used, fixed #61)
  * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
  *              its Screen, 0 = the default public screen
  * @param lens  a2: the compiler's string stack, -4(a2) = the title's
@@ -530,15 +549,16 @@ static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
     Tags.flags.ti_Data = 0;             /* Fixed (#64): no pattern gadget */
     Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
     dims(20, 20, 280, 160);
-    return aslreq(arg0, arg1, arg2, scr, lens);
+    return aslreq(arg0, arg1, 0, scr, lens);    /* Fixed (#61): no file */
 }
 
 /**
  * @brief ASLPathRequest$(Title$,Pathname$,x,y,w,h): an ASL drawer
  *        requester at the given position and size (doaslfreqf).
  *
- * As ASLPathRequest$; BUG(orig) (#61): fr_File is copied to the address
- * in d2 = x (and its length to x-4).  Errors (debugger, freqchk2): path$
+ * As ASLPathRequest$.  Fixed (#61): fr_File goes into the result only
+ * (the original copied it to the address in d2 = x and its length to
+ * x-4).  Errors (debugger, freqchk2): path$
  * must be a variable with room for 160 characters.
  *
  * @param arg0  d0: the title
@@ -558,7 +578,7 @@ static ULONG BLITZ_ROUTINE freqf_c(FREQ_ARGS)
     Tags.flags.ti_Data = 0;
     dims(arg2, arg3, arg4, arg5);
     Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
-    return aslreq(arg0, arg1, arg2, scr, lens);
+    return aslreq(arg0, arg1, 0, scr, lens);    /* Fixed (#61): no file */
 }
 
 /* entry labels = the C functions */
