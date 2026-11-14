@@ -39,13 +39,15 @@
  * the leading pad), other characters literally.  Too many integer digits
  * give "?" and padding (see below); rounding at the last decimal.
  *
- * BUG(orig), kept (for the comparison with AmiBlitz3):
+ * Fixed original bugs (intended deviations, docs/libs/deviations.md):
+ *   - Quick: a fraction that rounds to 0 left the point: 1+1/65536 ->
+ *     "1.", 1/65536 -> ".", -1/65536 -> "-." (#234); now "1", "0", "0".
+ *
+ * BUG(orig):
  *   - Quick: a fraction that rounds to 10000 (x.99995 and more) loses the
- *     carry: Print 2.99999 -> "2." (four digits "0000" stripped to ".")
- *     (#233); a fraction that rounds to 0 leaves the point: 1+1/65536 ->
- *     "1.", 1/65536 -> "." (#234).  Not a bug (the output style of Blitz 2,
- *     the same for Quick and Float): numbers below 1 have no leading 0
- *     (".5").
+ *     carry: Print 2.99999 -> "2" (four digits "0000", stripped) (#233).
+ *     Not a bug (the output style of Blitz 2, the same for Quick and
+ *     Float): numbers below 1 have no leading 0 (".5").
  *   - Not a bug (as above): Float, fixed point: no leading 0 either
  *     (".5"); 0 is "0".
  *   - Format: rounding that carries out of the first digit is lost
@@ -628,10 +630,14 @@ static UBYTE *quick3(ULONG value)
         dst = makeval3(PL_NUMBUFFF, &frac, 3);
         *--dst = '.';
         p = PL_NUMBUFFF;
-        /* 'f0l: the "." test compares the same '0' again, so it never
-           stops at the point (BUG(orig) (#234): "x." for .0000) */
-        while (p[-1] == '0' && *--p != '.')
-            ;
+        /* 'f0l: strip the trailing zeros, then the point if nothing is
+           left behind it.  Fixed (#234): the original compares the point
+           with the '0' it has just tested, so it never stops at the point
+           ("x." for .0000). */
+        while (p[-1] == '0')
+            p--;
+        if (p[-1] == '.')
+            p--;
         *p = 0;                                 /* 'skip2 */
     }
     return makeval2(dst, value >> 16, 4);       /* 'skip3 */
@@ -644,7 +650,9 @@ static ULONG pquick2(ULONG value)
 
     if ((LONG)quick < 0) {
         str = quick3(-quick);
-        *--str = '-';
+        /* Fixed (#234): no "-" in front of a value that rounds to 0 */
+        if (str[0] != '0' || str[1])
+            *--str = '-';
     } else
         str = quick3(quick);
     return prtype2(str);
@@ -877,9 +885,8 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
  * DIFF: a2 is left unchanged (the original returns it decremented by
  * everything it popped).
  *
- * BUG(orig): quick fractions that round to 10000 or 0 (#233, #234), the
- * Format bugs (#235-#238) and the float buffer overrun (#241), see the
- * top.
+ * BUG(orig): quick fractions that round to 10000 (#233), the Format bugs
+ * (#235-#238) and the float buffer overrun (#241), see the top.
  *
  * @param n d7: the number of arguments (move.w #numreps,d7).
  * @param args a2: the argument stack.
