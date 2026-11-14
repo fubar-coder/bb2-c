@@ -39,9 +39,11 @@
  *   24 bit bus the last long of the ROM) and name[(WORD)length] cleared:
  *   a name longer than that was cut.  Here the length is fetched before
  *   the file is closed.
+ * Fixed (intended deviation, #140): CloseFile freed the record fields but
+ *   left the pointer to them and the record length (only an open cleared
+ *   them): the object pointed to freed memory, and a Fields before the
+ *   next open added to both.  Here CloseFile clears them.
  * Kept from the original (BUG(orig)):
- *   - CloseFile frees the record fields but leaves the pointer to them
- *     and the record length; OpenFile clears them (#140).
  *   - Description, not a defect (#141): Fields continues the record of the
  *     file: it adds its fields to those already set and to their record
  *     length (the author's comment: "record len so far"), so two Fields
@@ -606,7 +608,8 @@ static void BLITZ_ROUTINE codeinit_c(struct Library *dos BL_REG(d0))
 BLITZ_THUNK(fileiolib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* dofreefile - close the file (a3), free the buffer and the record
-   fields */
+   fields; fixed (#140): the pointer to them and the record length are
+   cleared */
 static void freefile(struct bfile *f, struct Library *dosbase)
 {
     struct bl_regs r;
@@ -620,20 +623,22 @@ static void freefile(struct bfile *f, struct Library *dosbase)
     r = (struct bl_regs){ .d0 = f->buflen, .a1 = (ULONG)f->buf };
     f->buf = NULL;                              /* free mydos buffer */
     BLITZ_ALIBJSR(TOK_globfree, r);
-    p = f->recs;                                /* BUG(orig) (#140): 12(a3) stays */
+    p = f->recs;
     while (p) {
         r = (struct bl_regs){ .d0 = 12, .a1 = (ULONG)p };
         p = p->next;
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
+    f->recs = NULL;                             /* fixed (#140) */
+    f->reclen = 0;
 }
 
 /**
  * @brief CloseFile File#, and _free of a File object: close the file.
  *
  * a3 = the file.  If it is open: flush the buffer, Close, free the buffer
- * and the record fields.  BUG(orig) (#140): the pointer to the record
- * fields and the record length stay.
+ * and the record fields.  Fixed (#140): the pointer to the record fields
+ * and the record length are cleared (the original left them).
  *
  * @param dosbase  a6: dos.library
  */

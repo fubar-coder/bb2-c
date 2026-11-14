@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+open reclen 6 fields -1
+closed reclen 0 fields 0
+fields again reclen 1
+rc=0
