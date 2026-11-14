@@ -18,7 +18,9 @@
  *     copied `length` bytes.  Here the length is compared with the rest.
  *   - #287: Instr(s$,f$,Startpos) did not check Startpos <= 0 and compared
  *     the bytes before the string.  Here such a start is the first
- *     character.
+ *     character.  Such a start is a programming error: with runtime
+ *     error checking instrchk (error check area only, the original had
+ *     none) raises "Instr Startpos MUST be greater than zero".
  *   - #288: Cvi read 2 bytes, Cvl/Cvq 4, whatever the string's length (the
  *     terminating 0 and the bytes behind a shorter string).  Here only the
  *     string's own bytes count, the missing ones are 0.  A shorter string
@@ -72,7 +74,7 @@ void lenstring(void), unleftstring(void), unrightstring(void), striplead(void);
 void striptrail(void), lsetstring(void), rsetstring(void), centrestring(void);
 void lcasestring(void), ucasestring(void), casesensestring(void);
 void stringfunclib_codeinit(void), movestring(void);
-void cvichk(void), cvlchk(void), cvqchk(void);
+void cvichk(void), cvlchk(void), cvqchk(void), instrchk(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -137,7 +139,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(instrstring, 0, 0);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(instrstring2, 0, 0);
+BLITZ_SUBS(instrstring2, instrchk, 0);
 BLITZ_NAME("Instr", "(String$,Findstring$[,Startpos])");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -952,6 +954,8 @@ BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
  * Fixed (#287): Startpos <= 0 counts as 1, the first character (the
  * original compared before the string: Instr(s$,"",0) = 0,
  * Instr(s$,"",-5) = -5).
+ * Errors (debugger, instrchk): "Instr Startpos MUST be greater than
+ * zero" (#287: the original had no check).
  *
  * @param s     d0: the string to search in
  * @param f     d1: the string to find
@@ -1164,6 +1168,7 @@ BLITZ_INLINE(lenstring,
 BLITZ_ERRCHK_MESSAGE(cvimess, "Cvi needs a String of at least 2 Characters");
 BLITZ_ERRCHK_MESSAGE(cvlmess, "Cvl needs a String of at least 4 Characters");
 BLITZ_ERRCHK_MESSAGE(cvqmess, "Cvq needs a String of at least 4 Characters");
+BLITZ_ERRCHK_MESSAGE(instrmess, "Instr Startpos MUST be greater than zero");
 
 /* cvichk, cvlchk, cvqchk - not in the original (#288): a string shorter
    than the 2 or 4 bytes the function reads; a2 = the length stack */
@@ -1185,6 +1190,18 @@ static void BLITZ_ERRCHK cvqchk_c(const ULONG *lens BL_REG(a2))
         BLITZ_RUNERR(cvqmess);
 }
 
+/* instrchk - not in the original (#287): Instr(s$,f$,Startpos) with a
+   start position below 1 (d2) */
+static void BLITZ_ERRCHK instrchk_c(LONG start BL_REG(d2))
+{
+    if (start < 1)
+        BLITZ_RUNERR(instrmess);
+}
+
+/* the thunks behind all C check functions: their assembler ends with
+   `.text`, and GCC does not repeat the section of a following
+   BLITZ_ERRCHK function */
 BLITZ_ERRCHK_THUNK(cvichk, cvichk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cvlchk, cvlchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cvqchk, cvqchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(instrchk, instrchk_c, "d0-d1/a0-a1");

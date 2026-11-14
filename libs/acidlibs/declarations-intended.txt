@@ -42,4 +42,7 @@ lib 185: header +$2C: code offset set in only one of them
 lib 185: entry 12 Cvi +$C: code offset set in only one of them
 lib 185: entry 13 Cvl +$C: code offset set in only one of them
 lib 185: entry 26 Cvq +$C: code offset set in only one of them
-lib 185: relocations in the declaration part 31 != 35
+# #287: Instr(s$,f$,Startpos) gets an error check (instrchk) as well
+lib 185: entry 8 Instr +$20: code offset set in only one of them
+# the relocations of the four checks of #288 and #287
+lib 185: relocations in the declaration part 31 != 36

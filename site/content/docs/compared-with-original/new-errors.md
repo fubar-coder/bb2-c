@@ -736,6 +736,21 @@ one of 4, as `Mki$`, `Mkl$` and `Mkq$` make them.
 
 Issue: [Cvi, Cvl and Cvq read past the end of a short string (#288)](https://github.com/fubar-coder/bb2-c/issues/288).
 
+### `Instr` with a start position below 1 {#instr-startpos}
+
+**What happened.** `Instr(String$,Findstring$,Startpos)` did not check
+the start position: with 0 or less it compared the bytes before the
+string, and `Instr(a$,"",0)` gave 0, `Instr(a$,"",-5)` -5.
+
+**With the port.** A start position below 1 searches from the first
+character. With runtime error checking, it is the error "Instr Startpos
+MUST be greater than zero".
+
+**What to change.** Start at position 1 or later; `Instr(a$,f$)`
+searches from the first character.
+
+Issue: [Instr compared the bytes before the string for a start position of 0 or less (#287)](https://github.com/fubar-coder/bb2-c/issues/287).
+
 ### A bitmap or shape of depth 0 {#depth-zero}
 
 **What happened.** `BitMap` refuses a depth of 0 with runtime error
