@@ -29,8 +29,10 @@
  * via TAG_MORE (then cleared).
  *
  * Kept from the original (BUG(orig)):
- *   - GTBevelBox: flags <> 0 gives the tag GTBB_Recessed with value 0, so
- *     the box is never recessed. (#170)
+ *   - Not a bug (#170): GTBevelBox with flags <> 0 gives the tag
+ *     GTBB_Recessed with the value 0; DrawBevelBoxA takes the tag's
+ *     presence ("set to anything"), so the box is recessed (measured on
+ *     Kickstart 3.1).
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
@@ -1511,11 +1513,13 @@ static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
  *
  * DrawBevelBox with the GTList's VisualInfo in the RastPort of the window
  * it is attached to (not checked).  Amiga mode only.
- * BUG(orig) (#170): flags <> 0 gives the tag GTBB_Recessed with value 0,
- * flags = 0 ends the tag list there: the box is never recessed.
+ * Flags <> 0 gives the tag GTBB_Recessed with value 0, flags = 0 ends the
+ * tag list there.  Not a bug (#170): DrawBevelBoxA takes the tag's
+ * presence ("set to anything for a recessed-looking box"), not its value:
+ * the box is recessed (measured on Kickstart 3.1).
  *
  * @param x,y,w,h  d1-d4: position and size
- * @param flags    d5: <> 0 meant as "recessed"
+ * @param flags    d5: <> 0 "recessed"
  * @param c        a0: the GTList (!libs {#mygadtoolslib,$1080})
  */
 static void BLITZ_ROUTINE gtbevel_c(LONG x BL_REG(d1), LONG y BL_REG(d2),
@@ -1525,7 +1529,7 @@ static void BLITZ_ROUTINE gtbevel_c(LONG x BL_REG(d1), LONG y BL_REG(d2),
 {
     beveltags.vinfo.ti_Data = (ULONG)c->vinfo;
     if (flags)
-        flags = GTBB_Recessed;          /* BUG(orig) (#170): its value stays 0 */
+        flags = GTBB_Recessed;          /* value 0: its presence counts (#170) */
     beveltags.recessed.ti_Tag = flags;  /* 0: TAG_END, the end of the list */
     DrawBevelBoxA(c->window->RPort, x, y, w, h, &beveltags.vinfo);
 }
