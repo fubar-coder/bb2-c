@@ -46,9 +46,12 @@
  *   47, as its value ("/5/1990" was the 47th of May; in the year field it
  *   jumped back and made 47 the second field).  Here an empty field is
  *   invalid input: 0.
- * Kept on purpose (BUG(orig)):
- *   - NumDays: a 2 digit year reads past the end of the string (the year
- *     ends only at "/" or after 4 characters) (#125).
+ * Fixed (intended deviation, #125): the year field of NumDays ended only
+ *   at a "/" or after 4 characters, not at the end of the string: a year
+ *   of fewer than 4 digits without a "/" behind it ("1/1/78") read the 0
+ *   byte and the bytes behind it as further digits.  Here the year also
+ *   ends at the end of the string ("1/1/78" is the year 78, as "1/1/78/"),
+ *   and an empty year is invalid input: 0.
  * Not a bug (documented): Mins/Secs return the values of the last Hours
  * call (no DateStamp of their own).
  */
@@ -413,8 +416,8 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * @brief NumDays(date$): a date string as days since 1/1/1978.
  *
  * _calcdays: "dd/mm/yyyy" (or mm/dd/yyyy after DateFormat 1).  Day and
- * month: 1 or 2 digits, year: up to 4 (ends at "/" or after 4
- * characters, not at the end of the string).  "Digits" are not checked:
+ * month: 1 or 2 digits, year: up to 4 (ends at "/", at the end of the
+ * string or after 4 characters).  "Digits" are not checked:
  * every character counts as char-48.  d1 is the field being read, later
  * the year / 4; d2 the character, later the leap days; d3 and d4 hold
  * the first and second field, after the EXG for mm/dd/yyyy the day and
@@ -426,7 +429,8 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
  * Fixed (#124): a month outside 1-12 gives 0 (the original indexed the
  * month table with it: month 0 read the low word of the tick count of the
  * last DateStamp, 13 the end mark, 14 and up the memory behind).
- * BUG(orig) (#125): a 2 digit year reads past the end of the string.
+ * Fixed (#125): the year ends at the end of the string too, an empty
+ * year gives 0 (the original read a short year on past the end).
  * Fixed (#1001): the days of the cycles are corrected by the century leap
  * days the Gregorian calendar does not have (gregskips_year); the
  * original's NumDays("1/3/2100") was one day too high.
@@ -482,10 +486,15 @@ gety:
        47 the second field) */
     if ((UWORD)num == '/')
         return 0;
+    /* fixed (#125): the year ends at the end of the string too (the
+       original read the 0 byte and what follows as digits); an empty year
+       is invalid */
+    if (!num)
+        return 0;
     BL_SETW(num, num - 48);
     for (i = 0; i < 3; i++) {
         BL_SETB(digit, *cur++);
-        if ((UWORD)digit == '/')
+        if ((UWORD)digit == '/' || (UBYTE)digit == 0)
             break;
         BL_SETW(digit, digit - 48);
         num = (UWORD)num * 10UL;
