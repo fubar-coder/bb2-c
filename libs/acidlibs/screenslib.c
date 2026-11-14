@@ -664,10 +664,11 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
 void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), struct IntuitionBase *intui BL_REG(a6))
 {
     struct scrobj *obj = (struct scrobj *)blitz_string;
-    struct Screen *s = intui->FirstScreen;
+    struct Screen *s;
 
     freescreen_(obj, intui);                    /* fixed #247; BUG(orig) (#248) */
-    for (;; s = s->NextScreen) {
+    /* the list read after freescreen, which may close the front screen */
+    for (s = intui->FirstScreen;; s = s->NextScreen) {
         if (!s) {
             BLITZ_RUNERR(mess8);                /* err8 */
             return;
