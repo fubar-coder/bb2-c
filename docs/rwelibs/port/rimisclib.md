@@ -93,6 +93,10 @@ kind F):
   string of more than 251 characters overwrites the code behind the
   buffer (NextArgChar$ and NextArg$) (#752). The four zeros were an end
   guard for NextArg$, which no longer steps behind the 0 (#755).
+* ProgPath$, ProgDir$, ProgName$ and DefaultFontName leave a3 on the 0
+  of their result; the original copied the result with its 0 and left
+  a3 behind it, so in a string expression the next part was written one
+  byte too far (`ProgDir$+"/data"` held the 0 and lost the `a`) (#743).
 
 ## BUG(orig)
 
@@ -119,9 +123,8 @@ kind F):
   floatquicklib's fltoqu with the caller's a6 (fltoqu needs the ffp base
   there), and the converted value is written back onto the argument
   stack (#749).
-* ProgPath$ leaves a3 behind the 0 of the result (d0 is right) (#743) and
-  reads the byte before the result when the directory name is empty
-  (#758); ProgDir$/ProgName$ leave a3 behind the 0 too (#743).
+* ProgPath$ reads the byte before the result when the directory name is
+  empty (#758).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
   signed branch) (#753).
 * ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until

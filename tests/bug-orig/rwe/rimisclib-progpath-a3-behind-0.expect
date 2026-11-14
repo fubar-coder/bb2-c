@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+ProgPath$: 97 0
+ProgDir$: 97 0
+ProgName$: 97 0
+DefaultFontName: 97 0
+rc=0

@@ -1203,47 +1203,56 @@ NextArgChar$|out|'x=1;y=2'|4	bytes 400 fnv B781E499
 ProgDir$|kept|first (calls ProgPath$)|1	kept
 ProgDir$|popped|first (calls ProgPath$)|1	$00000000
 ProgDir$|d0|first (calls ProgPath$)|1	$00000005
-ProgDir$|a3|first (calls ProgPath$)|1	$0000000A
+ProgDir$|a3|first (calls ProgPath$)|1 [orig]	$0000000A
+ProgDir$|a3|first (calls ProgPath$)|1 [fixed #743]	$00000009
 ProgDir$|out|first (calls ProgPath$)|1	bytes 400 fnv 2D3FCB51
 ProgName$|kept||1	kept
 ProgName$|popped||1	$00000000
 ProgName$|d0||1	$0000000A
-ProgName$|a3||1	$0000000F
+ProgName$|a3||1 [orig]	$0000000F
+ProgName$|a3||1 [fixed #743]	$0000000E
 ProgName$|out||1	bytes 400 fnv E4F409D1
 ProgPath$|kept||1	kept
 ProgPath$|popped||1	$00000000
 ProgPath$|d0||1	$0000000F
-ProgPath$|a3||1	$00000014
+ProgPath$|a3||1 [orig]	$00000014
+ProgPath$|a3||1 [fixed #743]	$00000013
 ProgPath$|out||1	bytes 400 fnv 2326EE3D
 ProgDir$|kept|again|1	kept
 ProgDir$|popped|again|1	$00000000
 ProgDir$|d0|again|1	$00000005
-ProgDir$|a3|again|1	$0000000A
+ProgDir$|a3|again|1 [orig]	$0000000A
+ProgDir$|a3|again|1 [fixed #743]	$00000009
 ProgDir$|out|again|1	bytes 400 fnv 0D29BF4F
 ProgPath$|kept|no program name: the task name|1	kept
 ProgPath$|popped|no program name: the task name|1	$00000000
 ProgPath$|d0|no program name: the task name|1	$00000010
-ProgPath$|a3|no program name: the task name|1	$00000015
+ProgPath$|a3|no program name: the task name|1 [orig]	$00000015
+ProgPath$|a3|no program name: the task name|1 [fixed #743]	$00000014
 ProgPath$|out|no program name: the task name|1	bytes 400 fnv F9C3A92F
 ProgName$|kept|no program name|1	kept
 ProgName$|popped|no program name|1	$00000000
 ProgName$|d0|no program name|1	$0000000B
-ProgName$|a3|no program name|1	$00000010
+ProgName$|a3|no program name|1 [orig]	$00000010
+ProgName$|a3|no program name|1 [fixed #743]	$0000000F
 ProgName$|out|no program name|1	bytes 400 fnv 0FDD6BBB
 ProgPath$|kept|no program dir: the current dir|1	kept
 ProgPath$|popped|no program dir: the current dir|1	$00000000
 ProgPath$|d0|no program dir: the current dir|1	$0000000B
-ProgPath$|a3|no program dir: the current dir|1	$00000010
+ProgPath$|a3|no program dir: the current dir|1 [orig]	$00000010
+ProgPath$|a3|no program dir: the current dir|1 [fixed #743]	$0000000F
 ProgPath$|out|no program dir: the current dir|1	bytes 400 fnv C4D0C0B8
 ProgDir$|kept|no program dir|1	kept
 ProgDir$|popped|no program dir|1	$00000000
 ProgDir$|d0|no program dir|1	$00000000
-ProgDir$|a3|no program dir|1	$00000005
+ProgDir$|a3|no program dir|1 [orig]	$00000005
+ProgDir$|a3|no program dir|1 [fixed #743]	$00000004
 ProgDir$|out|no program dir|1	bytes 400 fnv C27E4ECF
 ProgPath$|kept|normal again|1	kept
 ProgPath$|popped|normal again|1	$00000000
 ProgPath$|d0|normal again|1	$0000000F
-ProgPath$|a3|normal again|1	$00000014
+ProgPath$|a3|normal again|1 [orig]	$00000014
+ProgPath$|a3|normal again|1 [fixed #743]	$00000013
 ProgPath$|out|normal again|1	bytes 400 fnv 2326EE3D
 FromBlitz|kept|the test's name|1	kept
 FromBlitz|popped|the test's name|1	$00000000
@@ -2998,7 +3007,8 @@ DefaultFontHeight|d0|ok, type $0|1	$00000008
 DefaultFontName|kept|ok, type $0|1	kept
 DefaultFontName|popped|ok, type $0|1	$00000000
 DefaultFontName|d0|ok, type $0|1	$0000000A
-DefaultFontName|a3|ok, type $0|1	$0000000F
+DefaultFontName|a3|ok, type $0|1 [orig]	$0000000F
+DefaultFontName|a3|ok, type $0|1 [fixed #743]	$0000000E
 DefaultFontName|out|ok, type $0|1	bytes 400 fnv AE5EE7B8
 DefaultFontHeight|kept|ok, type $1|1	kept
 DefaultFontHeight|popped|ok, type $1|1	$00000000
@@ -3006,7 +3016,8 @@ DefaultFontHeight|d0|ok, type $1|1	$0000000B
 DefaultFontName|kept|ok, type $1|1	kept
 DefaultFontName|popped|ok, type $1|1	$00000000
 DefaultFontName|d0|ok, type $1|1	$0000000E
-DefaultFontName|a3|ok, type $1|1	$00000013
+DefaultFontName|a3|ok, type $1|1 [orig]	$00000013
+DefaultFontName|a3|ok, type $1|1 [fixed #743]	$00000012
 DefaultFontName|out|ok, type $1|1	bytes 400 fnv F41C1C85
 DefaultFontHeight|kept|ok, type $2|1	kept
 DefaultFontHeight|popped|ok, type $2|1	$00000000
@@ -3014,7 +3025,8 @@ DefaultFontHeight|d0|ok, type $2|1	$0000000D
 DefaultFontName|kept|ok, type $2|1	kept
 DefaultFontName|popped|ok, type $2|1	$00000000
 DefaultFontName|d0|ok, type $2|1	$00000008
-DefaultFontName|a3|ok, type $2|1	$0000000D
+DefaultFontName|a3|ok, type $2|1 [orig]	$0000000D
+DefaultFontName|a3|ok, type $2|1 [fixed #743]	$0000000C
 DefaultFontName|out|ok, type $2|1	bytes 400 fnv 01D84DBD
 DefaultFontHeight|kept|ok, type $7|1	kept
 DefaultFontHeight|popped|ok, type $7|1	$00000000
@@ -3022,7 +3034,8 @@ DefaultFontHeight|d0|ok, type $7|1	$00000077
 DefaultFontName|kept|ok, type $7|1	kept
 DefaultFontName|popped|ok, type $7|1	$00000000
 DefaultFontName|d0|ok, type $7|1	$0000000C
-DefaultFontName|a3|ok, type $7|1	$00000011
+DefaultFontName|a3|ok, type $7|1 [orig]	$00000011
+DefaultFontName|a3|ok, type $7|1 [fixed #743]	$00000010
 DefaultFontName|out|ok, type $7|1	bytes 400 fnv DA2E1E6B
 DefaultFontHeight|kept|ok, type $3|1	kept
 DefaultFontHeight|popped|ok, type $3|1	$00000000
@@ -3038,7 +3051,8 @@ DefaultFontHeight|d0|ok, type $12340001|1	$1234000B
 DefaultFontName|kept|ok, type $12340001|1	kept
 DefaultFontName|popped|ok, type $12340001|1	$00000000
 DefaultFontName|d0|ok, type $12340001|1	$0000000E
-DefaultFontName|a3|ok, type $12340001|1	$00000013
+DefaultFontName|a3|ok, type $12340001|1 [orig]	$00000013
+DefaultFontName|a3|ok, type $12340001|1 [fixed #743]	$00000012
 DefaultFontName|out|ok, type $12340001|1	bytes 400 fnv F41C1C85
 DefaultFontHeight|kept|ok, type $FFFF0002|1	kept
 DefaultFontHeight|popped|ok, type $FFFF0002|1	$00000000
@@ -3046,7 +3060,8 @@ DefaultFontHeight|d0|ok, type $FFFF0002|1	$FFFF000D
 DefaultFontName|kept|ok, type $FFFF0002|1	kept
 DefaultFontName|popped|ok, type $FFFF0002|1	$00000000
 DefaultFontName|d0|ok, type $FFFF0002|1	$00000008
-DefaultFontName|a3|ok, type $FFFF0002|1	$0000000D
+DefaultFontName|a3|ok, type $FFFF0002|1 [orig]	$0000000D
+DefaultFontName|a3|ok, type $FFFF0002|1 [fixed #743]	$0000000C
 DefaultFontName|out|ok, type $FFFF0002|1	bytes 400 fnv 01D84DBD
 DefaultFontName|kept|type 1|1	kept
 DefaultFontName|popped|type 1|1	$00000000
@@ -3125,7 +3140,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $0|1	$00000008
 DefaultFontName|kept|PRHD of 10 bytes, type $0|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $0|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $0|1	$0000000A
-DefaultFontName|a3|PRHD of 10 bytes, type $0|1	$0000000F
+DefaultFontName|a3|PRHD of 10 bytes, type $0|1 [orig]	$0000000F
+DefaultFontName|a3|PRHD of 10 bytes, type $0|1 [fixed #743]	$0000000E
 DefaultFontName|out|PRHD of 10 bytes, type $0|1	bytes 400 fnv AE5EE7B8
 DefaultFontHeight|kept|PRHD of 10 bytes, type $1|1	kept
 DefaultFontHeight|popped|PRHD of 10 bytes, type $1|1	$00000000
@@ -3133,7 +3149,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $1|1	$0000000B
 DefaultFontName|kept|PRHD of 10 bytes, type $1|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $1|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $1|1	$0000000E
-DefaultFontName|a3|PRHD of 10 bytes, type $1|1	$00000013
+DefaultFontName|a3|PRHD of 10 bytes, type $1|1 [orig]	$00000013
+DefaultFontName|a3|PRHD of 10 bytes, type $1|1 [fixed #743]	$00000012
 DefaultFontName|out|PRHD of 10 bytes, type $1|1	bytes 400 fnv F41C1C85
 DefaultFontHeight|kept|PRHD of 10 bytes, type $2|1	kept
 DefaultFontHeight|popped|PRHD of 10 bytes, type $2|1	$00000000
@@ -3141,7 +3158,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $2|1	$0000000D
 DefaultFontName|kept|PRHD of 10 bytes, type $2|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $2|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $2|1	$00000008
-DefaultFontName|a3|PRHD of 10 bytes, type $2|1	$0000000D
+DefaultFontName|a3|PRHD of 10 bytes, type $2|1 [orig]	$0000000D
+DefaultFontName|a3|PRHD of 10 bytes, type $2|1 [fixed #743]	$0000000C
 DefaultFontName|out|PRHD of 10 bytes, type $2|1	bytes 400 fnv 01D84DBD
 DefaultFontHeight|kept|PRHD of 10 bytes, type $7|1	kept
 DefaultFontHeight|popped|PRHD of 10 bytes, type $7|1	$00000000
@@ -3149,7 +3167,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $7|1	$00000077
 DefaultFontName|kept|PRHD of 10 bytes, type $7|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $7|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $7|1	$0000000C
-DefaultFontName|a3|PRHD of 10 bytes, type $7|1	$00000011
+DefaultFontName|a3|PRHD of 10 bytes, type $7|1 [orig]	$00000011
+DefaultFontName|a3|PRHD of 10 bytes, type $7|1 [fixed #743]	$00000010
 DefaultFontName|out|PRHD of 10 bytes, type $7|1	bytes 400 fnv DA2E1E6B
 DefaultFontHeight|kept|PRHD of 10 bytes, type $3|1	kept
 DefaultFontHeight|popped|PRHD of 10 bytes, type $3|1	$00000000
@@ -3165,7 +3184,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $12340001|1	$1234000B
 DefaultFontName|kept|PRHD of 10 bytes, type $12340001|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $12340001|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $12340001|1	$0000000E
-DefaultFontName|a3|PRHD of 10 bytes, type $12340001|1	$00000013
+DefaultFontName|a3|PRHD of 10 bytes, type $12340001|1 [orig]	$00000013
+DefaultFontName|a3|PRHD of 10 bytes, type $12340001|1 [fixed #743]	$00000012
 DefaultFontName|out|PRHD of 10 bytes, type $12340001|1	bytes 400 fnv F41C1C85
 DefaultFontHeight|kept|PRHD of 10 bytes, type $FFFF0002|1	kept
 DefaultFontHeight|popped|PRHD of 10 bytes, type $FFFF0002|1	$00000000
@@ -3173,7 +3193,8 @@ DefaultFontHeight|d0|PRHD of 10 bytes, type $FFFF0002|1	$FFFF000D
 DefaultFontName|kept|PRHD of 10 bytes, type $FFFF0002|1	kept
 DefaultFontName|popped|PRHD of 10 bytes, type $FFFF0002|1	$00000000
 DefaultFontName|d0|PRHD of 10 bytes, type $FFFF0002|1	$00000008
-DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1	$0000000D
+DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1 [orig]	$0000000D
+DefaultFontName|a3|PRHD of 10 bytes, type $FFFF0002|1 [fixed #743]	$0000000C
 DefaultFontName|out|PRHD of 10 bytes, type $FFFF0002|1	bytes 400 fnv 01D84DBD
 CloseFontPrefs|kept||1	kept
 CloseFontPrefs|popped||1	$00000000

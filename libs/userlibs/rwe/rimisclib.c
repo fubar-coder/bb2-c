@@ -60,9 +60,8 @@
  *     stack (#749).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
  *     count 0 runs the DBRA loop 65536 times) (#746).
- *   - ProgPath$ leaves a3 behind the 0 of the result (d0 is right) (#743)
- *     and reads the byte before the result when the directory name is
- *     empty (#758); in ProgDir$/ProgName$ a3 is behind the 0 too (#743).
+ *   - ProgPath$ reads the byte before the result when the directory
+ *     name is empty (#758).
  *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
  *     (#753).
  *   - ASCRaw/RawASC do not check the range: a raw key beyond the 114
@@ -84,6 +83,10 @@
  * characters and the 0 into its 256 byte buffer (the original copies
  * without a limit and overwrites the code behind the buffer); the rest
  * of a longer string is cut off.
+ * Fixed (intended deviation, #743): ProgPath$, ProgDir$, ProgName$ and
+ * DefaultFontName copied their result with its 0 and left a3 behind the
+ * 0, so a string expression went on one byte too far; a3 now ends on
+ * the 0.
  *
  * Original behaviour that is no defect: NextArg$ ends a quoted word at
  * the closing quote even if no space follows ("ab"cd gives ab, then cd),
@@ -372,7 +375,8 @@ static const UBYTE rawtable[114] = {
 #define CIAA_TODMID  (*(volatile UBYTE *)0xbfe901)
 #define CIAA_TODHI   (*(volatile UBYTE *)0xbfea01)
 
-/* copy s with its 0 to a3, a3 behind the 0; the length */
+/* copy s with its 0 to a3, a3 on the 0 (fixed, #743: the original left
+   it behind the 0); the length */
 static ULONG copyout(const UBYTE *s)
 {
     ULONG n = (ULONG)-1;
@@ -380,6 +384,7 @@ static ULONG copyout(const UBYTE *s)
     do
         n++;
     while ((*blitz_string++ = *s++) != 0);
+    blitz_string--;
     return n;
 }
 
@@ -966,9 +971,9 @@ static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
  *
  * GetProgramDir (without one: the current directory) and
  * GetProgramName (empty: the task name); fills the buffers of ProgDir$
- * and ProgName$.  BUG(orig): a3 stays behind the 0 of the result (d0 is
- * right) (#743); with an empty directory name it reads the byte before
- * the result (#758).
+ * and ProgName$.  a3 ends on the 0 of the result (fixed, #743: the
+ * original left it behind the 0).  BUG(orig) (#758): with an empty
+ * directory name it reads the byte before the result.
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE doprogpath_c(void)
@@ -1003,7 +1008,6 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
             ;
     }
     n = copyout(pd.progdir);
-    blitz_string--;
     n--;
     if (blitz_string[-1] != ':') {
         n++;
@@ -1015,6 +1019,7 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
         c = *s++;
         *blitz_string++ = c;
     } while (c);
+    blitz_string--;                                     /* fixed (#743) */
     return n;
 }
 
@@ -1022,7 +1027,7 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
  * @brief ProgDir$: the program's directory.
  *
  * Calls ProgPath$ only while its buffer is empty (the directory does not
- * change).  BUG(orig) (#743): a3 stays behind the 0.
+ * change).  a3 ends on the 0 (fixed, #743).
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE doprogdir_c(void)
@@ -1039,8 +1044,8 @@ static ULONG BLITZ_ROUTINE doprogdir_c(void)
 /**
  * @brief ProgName$: the program's name.
  *
- * Calls ProgPath$ only while its buffer is empty.  BUG(orig) (#743): a3
- * stays behind the 0.
+ * Calls ProgPath$ only while its buffer is empty.  a3 ends on the 0
+ * (fixed, #743).
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE doprogname_c(void)
@@ -1142,7 +1147,7 @@ static ULONG BLITZ_ROUTINE defaultfontheight_c(ULONG type BL_REG(d0))
 /**
  * @brief DefaultFontName(fonttype): the name of a font of the font prefs.
  * @param type  d0.w: fp_Type (0 icon, 1 system, 2 screen)
- * @return d0: the length of fp_Name (at a3, a3 behind the 0); 0 ("") if
+ * @return d0: the length of fp_Name (at a3, a3 on the 0, fixed #743); 0 ("") if
  *         there is no buffer or no such chunk (#745)
  */
 static ULONG BLITZ_ROUTINE defaultfontname_c(UWORD type BL_REG(d0))
