@@ -5,10 +5,11 @@
  *
  * C translation of bblibsrc/mathtranslib (binary checked: same as the
  * source; the second `#mathtranslib=192` of libnums.bb is the one used).
- *   init:   open mathtrans.library (OldOpenLibrary); the base is the init
- *           value.  BUG(orig) (#202): if it cannot be opened, init tries again
- *           forever (TST.l d0:BEQ initloop).
- *   finit:  close it (a1 = the base, !libs #mathtranslib,#la1).
+ *   init:   open mathtrans.library (OldOpenLibrary); the base or 0 is the
+ *           init value.  Fixed (#202): the original tries again forever if
+ *           it cannot be opened (TST.l d0:BEQ initloop).
+ *   finit:  close it if the base is not 0 (a1 = the base, !libs
+ *           #mathtranslib,#la1).
  *   functions: every one is an inline routine (`Dc $a000,len`): the
  *           compiler copies `JSR lvo(a6)` to the call, a6 = the base
  *           (!libs #mathtranslib,#la6), d0 = argument, d1 = exponent for
@@ -64,33 +65,36 @@ static const char libname[] = "mathtrans.library";
 /**
  * @brief Library init - open mathtrans.library.
  *
- * initloop: OldOpenLibrary until it succeeds.
+ * OldOpenLibrary once: the base or 0.
  *
- * BUG(orig) (#202): if the library cannot be opened, the init tries
- * again forever (TST.l d0:BEQ initloop).
+ * Fixed (#202): the original tries again forever if the library cannot
+ * be opened (initloop: TST.l d0:BEQ initloop), so a program that uses a
+ * transcendental function hung at startup without LIBS:mathtrans.library.
+ * Now the program runs with base 0, as with a missing library of the
+ * deflibs (#44): a call of a function of mathtranslib then crashes (JSR
+ * to a negative offset from 0); a program that can do without them
+ * checks for the library itself first.
  *
- * @return d0: the library base, the init value (a6 of the functions).
+ * @return d0: the library base or 0, the init value (a6 of the functions).
  */
 static ULONG BLITZ_ROUTINE codeinit(void)
 {
-    struct Library *base;
-
-    do
-        base = OldOpenLibrary((CONST_STRPTR)libname);
-    while (!base);
-    return (ULONG)base;
+    return (ULONG)OldOpenLibrary((CONST_STRPTR)libname);
 }
 
 /**
  * @brief Library finit - close mathtrans.library.
  *
- * MOVE.l 4,a6:JMP _CloseLibrary(a6).
+ * MOVE.l 4,a6:JMP _CloseLibrary(a6); Fixed (#202): only if the base is
+ * not 0 (with the init above it may be; CloseLibrary(0) crashes on
+ * Kickstart 1.x).
  *
  * @param lib a1: the library base (!libs #mathtranslib,#la1).
  */
 static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
-    CloseLibrary(lib);
+    if (lib)
+        CloseLibrary(lib);
 }
 
 /* mathtrans.library LVOs */

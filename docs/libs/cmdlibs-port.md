@@ -151,8 +151,12 @@ Binary = source; the valid lib number is the second definition
 `#mathtranslib=192` in libnums.bb. All 14 routines are inline `JSR lvo(a6)`
 with a6 = mathtrans base (init value).
 
-* **BUG(orig) (#202):** init tries `OldOpenLibrary("mathtrans.library")` endlessly
-  if the library is missing.
+* **Fixed (#202, intended deviation):** the original's init tries
+  `OldOpenLibrary("mathtrans.library")` endlessly if the library is missing,
+  so a program using a transcendental function hangs at startup. Now the
+  init returns the base or 0 (as the deflibs since #44) and the finit closes
+  it only if it is not 0; a call of a function of the missing library then
+  crashes (test `mathtranslib-init-endless`).
 * Edge values (Log(0), Sqr(-1), ACos(2), 10^19 …) are delivered by mathtrans itself,
   e.g. Log(0) = -9.223371E+18; not the lib's business.
 
