@@ -30,14 +30,14 @@ exec       Supervisor               a5     native
 gadtools   GT_GetGadgetAttrsA       a3     pending
 gadtools   GT_SetGadgetAttrsA       a3     pending
 graphics   AttemptLockLayerRom      a5     native
-graphics   ChangeExtSpriteA         a3     pending
+graphics   ChangeExtSpriteA         a3     safe
 graphics   FindColor                a3     pending
 graphics   LockLayerRom             a5     native
-graphics   TextFit                  a3     pending
+graphics   TextFit                  a3     safe
 graphics   UnlockLayerRom           a5     native
 icon       DrawIconStateA           a3     pending
 icon       GetIconRectangleA        a3,a4  pending
-intuition  AutoRequest              a3     pending
+intuition  AutoRequest              a3     safe
 intuition  BuildEasyRequestArgs     a3     pending
 intuition  BuildSysRequest          a3     pending
 intuition  DoGadgetMethodA          a3     pending

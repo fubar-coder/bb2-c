@@ -40,7 +40,7 @@ writes stay byte-identical.
 
 ## 4. Safe macros, poison, behaviour-neutral reworks
 
-- [ ] 4.1 Safe macros for `AutoRequest`, `TextFit`, `ChangeExtSpriteA`
+- [x] 4.1 Safe macros for `AutoRequest`, `TextFit`, `ChangeExtSpriteA`
   (design D3) and their call sites: rundebuglib, rilvcallhooklib (the
   thunk's `/a3` goes), riwbspritelib (the own `__asm` goes). Verify:
   library tests unchanged; bytes named in `PREV_INTENDED`; the kind-F entry

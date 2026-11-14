@@ -34,11 +34,19 @@ d0–d7/a0–a2/a6). The library's variables, the tag lists (the
 `GetExtSpriteA` list has no `TAG_DONE`: the empty list behind it ends
 it), the sprite table, the library name and base are one packed struct
 in the original's order, since the routines index the table without
-bounds. Three graphics calls are inline assembler: `MoveSprite` and
+bounds. Two graphics calls are inline assembler: `MoveSprite` and
 `FreeSpriteData` (MoveWBSprite and FreeWBSprite return the d0 they
-leave) and `ChangeExtSpriteA` (its tag list in a3, a fixed register of
-the C code: saved around the call). The shape copy has a compiler
+leave). `ChangeExtSpriteA` takes its tag list in a3, a fixed register of
+the C code: the libraries' safe form of the NDK macro keeps it
+(`cmake/ndk-calls.cmake`). The shape copy has a compiler
 barrier so that GCC does not compute the end pointer with `__mulsi3`.
+
+## Fixed
+
+* ChangeWBSprite keeps a3 (#1028). The original passes its tag list to
+  `ChangeExtSpriteA` in a3 (`LEA dudtaglist(pc),a3`) and returns without
+  restoring it: as a function in a string expression the rest of the
+  expression was written over the library's tag list.
 
 ## BUG(orig), kept
 

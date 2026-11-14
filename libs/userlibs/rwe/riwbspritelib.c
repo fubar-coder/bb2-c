@@ -24,7 +24,8 @@
  * behind it (BUG(orig), #916).  A shape is copied into a bitmap of
  * AllocBitMap, which AllocSpriteDataA converts.  Assembler besides the
  * thunks: the calls of MoveSprite and FreeSpriteData (the original
- * returns the d0 they leave) and ChangeExtSpriteA (its tag list in a3).
+ * returns the d0 they leave).  Fixed (#1028): ChangeExtSprite keeps a3
+ * (the original left it on the tag list it passes to ChangeExtSpriteA).
  *
  * BUG(orig):
  *   - No routine checks the channel: GetWBSprite stores at
@@ -197,24 +198,13 @@ static ULONG freespritedata(ULONG spr)
     return d0;
 }
 
-/* ChangeExtSpriteA(vp, old, new, tags): tags in a3 (fixed in the C code:
-   saved around the call) */
+/* ChangeExtSpriteA(vp, old, new, tags): tags in a3.  Fixed (#1028): a3
+   comes back as it was (the libraries' safe form of the NDK macro,
+   cmake/ndk-calls.cmake; the original left it on its tag list) */
 static LONG changeextsprite(ULONG vp, ULONG old, ULONG new, ULONG tags)
 {
-    register ULONG d0 __asm("d0");
-    register ULONG a0 __asm("a0") = vp;
-    register ULONG a1 __asm("a1") = old;
-    register ULONG a2 __asm("a2") = new;
-    register struct Library *a6 __asm("a6") = wd.graphicslibbase;
-
-    __asm volatile("move.l a3,-(sp)\n\t"
-                   "move.l %5,a3\n\t"
-                   "jsr -1026(a6)\n\t"
-                   "move.l (sp)+,a3"
-        : "=d"(d0), "+a"(a0), "+a"(a1), "+a"(a2), "+a"(a6)
-        : "d"(tags)
-        : "d1", "cc", "memory");
-    return (LONG)d0;
+    return ChangeExtSpriteA((struct ViewPort *)vp, (struct ExtSprite *)old,
+                            (struct ExtSprite *)new, (struct TagItem *)tags);
 }
 
 /**

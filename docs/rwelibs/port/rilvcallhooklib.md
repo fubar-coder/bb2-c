@@ -38,9 +38,10 @@ reentrant, as the original).
 
 ## C and assembler
 
-All C behind `BLITZ_THUNK`s. The hook's thunk keeps d1/a0/a1 and a3
-(the original keeps a2–a6/d2–d7; `TextFit` takes its constraining extent
-in a3, which the C code, built with a3 fixed, does not save itself). The
+All C behind `BLITZ_THUNK`s. The hook's thunk keeps d1/a0/a1, the C
+code d2–d7/a2–a6 (the original keeps a2–a6/d2–d7; `TextFit` takes its
+constraining extent in a3, which the libraries' safe form of the NDK
+macro keeps, `cmake/ndk-calls.cmake`). The
 hook takes the caller's d7 as a parameter: its upper word decides on the
 tree lines (second bug below). The graphics calls get the registers the
 original passes where their upper words can matter (`TextFit`'s width

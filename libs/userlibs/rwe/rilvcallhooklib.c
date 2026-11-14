@@ -395,9 +395,10 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
 
 /* Registers: the original keeps everything in init/finit, changes d0/a0
    in RetrieveCallHook and d0 (LVCB_UNKNOWN) or d0-d1/a0-a1 (LVCB_OK) in
-   the hook; the thunks keep d1/a0-a1 (the hook's a3 too: TextFit's
-   constrainingExtent is a3), the C code d2-d7/a2/a4-a6. */
+   the hook; the thunks keep d1/a0-a1, the C code d2-d7/a2-a6 (TextFit's
+   constrainingExtent is a3: the libraries' safe form of the NDK macro
+   keeps a3, cmake/ndk-calls.cmake). */
 BLITZ_THUNK(rilvcallhooklib_libinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(rilvcallhooklib_libfinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_retrievecallhook, retrievecallhook_c, "d1/a0-a1");
-BLITZ_THUNK(hookfunc, hookfunc_c, "d1/a0-a1/a3");
+BLITZ_THUNK(hookfunc, hookfunc_c, "d1/a0-a1");
