@@ -59,8 +59,6 @@
  *   - The tag pairs of WindowTags ...,Tag,Data... are copied without a
  *     limit into 32 longs (#961; only the &TagList form is fixed, #317,
  *     see below).
- *   - The line editor (Edit$ in a window) and calcwidth: proportional
- *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
  * Fixed (intended deviation, #316): WindowTags without tags wrote no
  *   TAG_DONE and so took over the user tags of the last WindowTags; here
  *   it ends the user tags with TAG_DONE.
@@ -68,6 +66,11 @@
  *   took the bitmap of the last Window with BitMap# (kept in bmapbase),
  *   also in the forms without BitMap#; here only the form with BitMap#
  *   gives a bitmap, the others none.
+ * Fixed (intended deviation, #321): calcwidth (the line editor, Edit$
+ *   in a window) tested the index into the tables of a proportional font
+ *   with SUB.b/BMI: characters from lo+128 on (the Latin-1 characters of
+ *   a font from 32) got tf_XSize instead of their width.  Here the test
+ *   is unsigned (lo..hi).
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -1938,19 +1941,19 @@ static ULONG BLITZ_ROUTINE windowinp_c(void)
     return windowinp();
 }
 
-/* calcwidth - width of a character in the font */
+/* calcwidth - width of a character in the font (fixed #321: the index
+   test is unsigned, the original's SUB.b:BMI gave the characters from
+   lo+128 on tf_XSize) */
 static WORD calcwidth(struct TextFont *f, UBYTE c)
 {
     WORD w = f->tf_XSize;
 
-    if ((f->tf_Flags & FPF_PROPORTIONAL) && c <= f->tf_HiChar) {
-        BYTE i = (BYTE)(c - f->tf_LoChar);      /* SUB.b:BMI */
+    if ((f->tf_Flags & FPF_PROPORTIONAL) && c <= f->tf_HiChar && c >= f->tf_LoChar) {
+        UBYTE i = (UBYTE)(c - f->tf_LoChar);
 
-        if (i >= 0) {
-            w = ((WORD *)f->tf_CharSpace)[(UBYTE)i];
-            if (f->tf_CharKern)
-                w += ((WORD *)f->tf_CharKern)[(UBYTE)i];
-        }
+        w = ((WORD *)f->tf_CharSpace)[i];
+        if (f->tf_CharKern)
+            w += ((WORD *)f->tf_CharKern)[i];
     }
     return w;
 }

@@ -9,6 +9,7 @@
 ; keys x and Return put to the port by the program (as in the corpus test
 ; t72).  The pixels of both lines are compared (ReadPixel).
 ; Correct: the x is inserted behind the umlauts, both lines look the same.
+; @fixed #321
 ; @configs clib
 DEFTYPE .l
 Screen 0,0,0,640,200,3,0,"calcwidth",1,2
