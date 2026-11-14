@@ -31,9 +31,7 @@
  *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
  *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
  *   - LoadSound: Sound too long (>= 128K) after the file was opened: the
- *     file stays open (#67); DecodeSound of chip data marks the sound "cL",
- *     a later DecodeSound into fast memory does not clear that mark (the
- *     copy is then never freed) (#68).
+ *     file stays open (#67).
  *   - DiskPlay: a file whose length is a multiple of the buffer length
  *     never ends (loadbuff returns "more" at length 0). (#69)
  *   - DiskPlay allocates its chip buffer before it opens the file and does
@@ -41,6 +39,11 @@
  *     that catches the runtime error (SetErr) and goes on has lost
  *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
  *     them then). (#950)
+ * Fixed (#68): DecodeSound of chip data marks the sound "cL" (+14: the
+ * data is used in place, not freed); dofreesound left the mark in place,
+ * so the next sample of that object (DecodeSound of fast memory,
+ * LoadSound, InitSound) was never freed either.  dofreesound now clears
+ * the mark when it skips the free.
  * Fixed (#46), in the compiler: PeekSound (like every $1380 object
  * function) gets the object pointer in a3, which is also the string
  * buffer pointer; inside a string expression the original wrote the
@@ -286,8 +289,10 @@ static void freesound(struct bb_sound *s)
     if (!d)
         return;
     s->data = 0;
-    if (s->mark == BB_CLUDGE)
+    if (s->mark == BB_CLUDGE) {                 /* Fixed (#68): the mark goes */
+        s->mark = 0;                            /* with the in-place data */
         return;
+    }
     dealloc(d, (ULONG)s->len << 1);
 }
 
@@ -384,9 +389,9 @@ void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
  *        memory.
  *
  * Looks for VHDR and BODY; chip data (below 2 MB) is used in place
- * ("cL", never freed), other data copied to chip memory.  BUG(orig)
- * (#68): a later DecodeSound into fast memory does not clear the "cL"
- * mark (the copy is never freed).  Errors: "Illegal Sound file" (no
+ * ("cL", never freed), other data copied to chip memory.  Fixed (#68):
+ * freeing the sound clears the "cL" mark, so a later copy of fast memory
+ * is freed again.  Errors: "Illegal Sound file" (no
  * FORM/8SVX, no VHDR/BODY before the end of the FORM), "Sound too long"
  * (>= 128K).
  * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in

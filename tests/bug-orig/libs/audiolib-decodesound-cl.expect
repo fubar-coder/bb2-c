@@ -1,0 +1,6 @@
+[run]
+chip 0000634C
+fast 00000000
+leak 0
+initsound leak 0
+rc=0
