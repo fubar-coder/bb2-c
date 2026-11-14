@@ -44,9 +44,6 @@
  *         0 = one character (windowprint).
  *
  * Kept from the original (BUG(orig)):
- *   - MENUPICK: one more MENUPICK node is appended for the item's
- *     NextSelect (if not $FFFF), with qualifier and iaddress not set
- *     (memlib memory, not cleared). (#312)
  *   - Not a bug (same result: IDCMP classes are single bits): class
  *     comparisons in Event are word compares.
  *   - Not a bug (those words are cleared or reset before use): CLR.l
@@ -76,6 +73,10 @@
  *   came in between, the real gadget up came later as a second report.
  *   Here the real gadget up of that gadget after an artificial one is
  *   taken without a report (Event 0), until the next gadget down.
+ * Fixed (intended deviation, #312): MENUPICK appends one more MENUPICK
+ *   node for the item's NextSelect (if not $FFFF); the original left its
+ *   qualifier and iaddress unset (memlib memory, not cleared), here they
+ *   are those of the picked event.
  * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
  *   program's list without a limit into usertags (32 longs = 16 pairs),
  *   a longer list overwrote bmapbase and the code behind it.  Here at
@@ -1737,6 +1738,8 @@ static ULONG doevent2(void)
     }
     if (c == 0x100) {                           /* menu */
         UWORD code = e->code;
+        UWORD qual = e->qual;                   /* fixed, #312 */
+        APTR iaddr = e->iaddr;
         struct Menu *strip;
         struct MenuItem *it;
 
@@ -1761,7 +1764,9 @@ static ULONG doevent2(void)
             V.nextmess = &n->next;
             n->next = NULL;
             n->class = 256;
-            n->code = code;                     /* qualifier, iaddress: not set */
+            n->code = code;
+            n->qual = qual;                     /* fixed, #312: the original */
+            n->iaddr = iaddr;                   /* left both unset */
             *(ULONG *)&n->mx = LONGAT(evmousex);
             n->win = V.eventwin;
         }
@@ -1804,9 +1809,9 @@ done3:
  * A gadget down of a string gadget gives an artificial "gadget up" ($40)
  * on the next Event unless that is the real one; Fixed (#311): the real
  * gadget up that comes after an artificial one is taken without a report
- * (0; the original reported it a second time).  BUG(orig) (#312): MENUPICK appends
- * one more MENUPICK node for the item's NextSelect, with qualifier and
- * iaddress not set.
+ * (0; the original reported it a second time).  MENUPICK appends one more MENUPICK
+ * node for the item's NextSelect, with the qualifier and iaddress of the
+ * picked event (Fixed (#312): the original left them unset).
  *
  * @return d0: the IDCMP class, 0 = no event (or one with nothing to report)
  */
