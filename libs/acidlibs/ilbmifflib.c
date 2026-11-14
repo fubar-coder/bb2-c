@@ -26,9 +26,8 @@
  *    Close of 0); the result is ilbminit's -1/0. (#186)
  *  - ilbmbitmap ignores a failed ilbminit and searches "BODY" in what is
  *    left in iffiolib's buffer (C: iffstuff as after the last ilbminit). (#187)
- *  - ilbmbitmap compares the plane number with the WORD at BitMap+4
- *    (Flags<<8 | Depth); reads width-in-words*2 bytes per row and plane,
- *    stores only what fits into BytesPerRow/Depth/Rows. (#188)
+ *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
+ *    plane and stores only what fits into BytesPerRow/Depth/Rows.
  *  - DecodeILBM (memory): chunk lengths are not padded to even (#189); the
  *    end test is `end <= pointer` after skipping a chunk; it writes ALL
  *    planes of the ILBM through the BitMap's plane pointers (more planes
@@ -40,6 +39,12 @@
  *  - Not a bug (word functions, the compiler uses only d0.w):
  *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
  *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
+ *
+ * Fixed (intended deviation, #188): ilbmbitmap stores a plane while its
+ * number is below the byte Depth (BitMap+5); the original compared with
+ * the WORD at BitMap+4 (Flags<<8 | Depth), so into a bitmap whose Flags
+ * byte is not 0 it wrote the ILBM's further planes through the plane
+ * pointers behind its depth.
  *
  * Fixed (intended deviation, docs/libs/deviations.md): the original has the
  * error routines in the normal code but their messages in the error check
@@ -263,8 +268,8 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
  * Errors: "Can't Find IFF 'BODY'" (the message in the normal code, fixed:
  * #192); "Can't Read File" from ilbmgetbyte.
  * BUG(orig): a failed ilbminit is ignored and "BODY" is searched in what is
- * left in iffiolib's buffer (#187); the depth test is on the word over
- * Flags and Depth (#188).
+ * left in iffiolib's buffer (#187).  Fixed (#188): the depth test is on
+ * the byte Depth (the original: the word over Flags and Depth).
  *
  * @param value  d0: the start value of the byte reader
  * @param name   a0: the file name
@@ -276,6 +281,7 @@ static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name 
     struct iffstuff *st = &iffstuff;
     ULONG rowoff = 0;                                   /* row offset */
     UWORD row = 0;                                      /* rows */
+    UWORD depth = bm->Depth;                            /* fixed (#188): the byte */
 
     ilbminit_(name);                                    /* result ignored */
     value = ID_BODY;
@@ -292,8 +298,7 @@ static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name 
 
             do {
                 value = getbyte(value, st);
-                /* BUG(orig) (#188): the word over Flags and Depth */
-                if (col < bm->BytesPerRow && plane < *(UWORD *)&bm->Flags)
+                if (col < bm->BytesPerRow && plane < depth)
                     *(dst++ + rowoff) = (UBYTE)value;
                 col++;
             } while (count-- != 0);                     /* DBF d3 */
