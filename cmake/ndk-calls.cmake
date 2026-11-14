@@ -216,7 +216,9 @@ function(ndk_shadow_headers dir list safe_dir out_dir)
 		if(poison)
 			string(APPEND text "
 /* a3/a4 parameter without a safe form: a library may not call these (the
-   NDK's macro would return with a3/a4 changed) */
+   NDK's macro would return with a3/a4 changed).  A library that needs one
+   gets its safe form in libs/include/ndk/safe/${hname}.h, state safe in
+   libs/include/ndk/functions.list */
 ")
 			foreach(p IN LISTS poison)
 				string(APPEND text "#undef ${p}\n")

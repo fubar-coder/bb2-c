@@ -45,7 +45,7 @@ writes stay byte-identical.
   thunk's `/a3` goes), riwbspritelib (the own `__asm` goes). Verify:
   library tests unchanged; bytes named in `PREV_INTENDED`; the kind-F entry
   for #1028 in `docs/libs/deviations.md`.
-- [ ] 4.2 The poison of every affected function the libraries do not use.
+- [x] 4.2 The poison of every affected function the libraries do not use.
   Verify: a clean rebuild has no warning; the compile test with a poisoned
   call fails as expected (design D5).
 

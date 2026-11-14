@@ -151,6 +151,18 @@ add_test(NAME ndk_varargs_inline_broken COMMAND ${CMAKE_COMMAND} -DMODE=varargs
 	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
 set_tests_properties(ndk_varargs_inline_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "unused varargs wrappers emitted:")
+# a call of a function without a safe form (BuildSysRequest, a3) does not
+# compile with the shadow headers; without them (the broken input) it does
+add_test(NAME ndk_poisoned_call COMMAND ${CMAKE_COMMAND} -DMODE=poison
+	-DCC=${CMAKE_C_COMPILER} "-DFLAGS=${_ndk_flags}" -DSHADOW=${BLITZLIB_NDK_SHADOW}
+	-DWANT=BuildSysRequest -DSRC=${PROJECT_SOURCE_DIR}/cmake/ndk/poisoned.c
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
+add_test(NAME ndk_poisoned_call_broken COMMAND ${CMAKE_COMMAND} -DMODE=poison
+	-DCC=${CMAKE_C_COMPILER} "-DFLAGS=${_ndk_flags}" -DSHADOW=
+	-DWANT=BuildSysRequest -DSRC=${PROJECT_SOURCE_DIR}/cmake/ndk/poisoned.c
+	-P ${PROJECT_SOURCE_DIR}/cmake/ndk-test.cmake)
+set_tests_properties(ndk_poisoned_call_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "the call of BuildSysRequest is not refused")
 # the configure check of libs/include/ndk/functions.list against the NDK
 # (cmake/ndk-calls.cmake): the list passes; without TextFit, and with a
 # function the NDK does not have, it fails naming the function

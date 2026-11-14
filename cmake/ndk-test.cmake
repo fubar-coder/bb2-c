@@ -8,6 +8,9 @@
 #     holds the varargs wrapper __NAME_va and no other one, without a
 #     warning, and the wrapper's code equals the one the NDK's header gives
 #     without the shadow
+#   cmake -DMODE=poison ... -DWANT=NAME -DSRC=cmake/ndk/poisoned.c
+#     compiling fails with "attempt to use poisoned 'NAME'" (with SHADOW
+#     empty, the broken input, it compiles: that fails the test)
 separate_arguments(flags UNIX_COMMAND "${FLAGS}")
 
 function(compile out_asm out_err out_rc)
@@ -62,6 +65,15 @@ if(MODE STREQUAL "varargs")
 		message(FATAL_ERROR "${SRC}: ___${WANT}_va differs from the NDK's:\n${got}\n--- NDK:\n${want}")
 	endif()
 	message(STATUS "${SRC}: only ___${WANT}_va, the NDK's code")
+elseif(MODE STREQUAL "poison")
+	compile(asm err rc ${SHADOW})
+	if(rc EQUAL 0)
+		message(FATAL_ERROR "${SRC} compiles: the call of ${WANT} is not refused")
+	endif()
+	if(NOT err MATCHES "attempt to use poisoned .${WANT}.")
+		message(FATAL_ERROR "${SRC} fails, but not for ${WANT}: ${err}")
+	endif()
+	message(STATUS "${SRC}: ${WANT} refused")
 else()
-	message(FATAL_ERROR "ndk-test.cmake: MODE varargs")
+	message(FATAL_ERROR "ndk-test.cmake: MODE varargs or poison")
 endif()
