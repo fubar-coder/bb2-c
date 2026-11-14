@@ -9,6 +9,11 @@
  *   "March 1994 changed to handle new null always upgrade
  *    June 1994  ignores illegal size/length parameters"
  *
+ * Fixed (intended deviations):
+ *   - #285: Right$/UnRight$ took the offset Len-n as a sign extended word
+ *     (LEA 0(a3,d0.w),a0): for Len-n >= 32768 the characters came from
+ *     before the string.  Here the offset is a long.
+ *
  * String function convention of the Blitz 2 compiler:
  *   d0, d1, d2   arguments; a string argument is the address of its
  *                characters in the string work area,
@@ -613,9 +618,9 @@ static ULONG BLITZ_ROUTINE striplead_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1),
 BLITZ_THUNK(striplead, striplead_c, "d1/a0-a1");
 
 /* Right$(d0$,d1) - perform right$(d0,d1).
-   BUG(orig) (#285): the source address is LEA 0(a3,d0.w),a0 - the offset
-   Len-d1 is used as a sign extended WORD, so for Len-d1 >= 32768 the
-   characters are taken from before the string. */
+   Fixed (#285): the offset Len-d1 is a long; the original's LEA
+   0(a3,d0.w),a0 used it as a sign extended WORD, so for Len-d1 >= 32768
+   the characters were taken from before the string. */
 static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
 {
     LONG len;
@@ -629,7 +634,7 @@ static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
         blitz_string += len;
         return len;
     }
-    src = blitz_string + (WORD)(len - n);
+    src = blitz_string + (len - n);             /* fixed (#285): long offset */
     return movestr(&src, n);
 }
 
@@ -639,8 +644,8 @@ static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
  * Moved to the start of the argument (movestring).  A negative length
  * counts as 0; a length beyond the string gives the whole string.
  *
- * BUG(orig) (#285): the source address is LEA 0(a3,d0.w),a0 - for
- * Len-Length >= 32768 the characters are taken from before the string.
+ * Fixed (#285): the offset Len-Length is a long (the original took it as
+ * a word: for Len-Length >= 32768 the characters before the string).
  *
  * @param s    d0: the string
  * @param n    d1: the length
@@ -660,7 +665,7 @@ BLITZ_THUNK(rightstring, rightstring_c, "d1/a0-a1");
  *
  * Right$(d0$,Len(d0$)-d1); the length is read with -4(a2).
  *
- * BUG(orig) (#285): as Right$, a word offset into the string.
+ * Fixed (#285): as Right$, a long offset into the string.
  *
  * @param s    d0: the string
  * @param n    d1: the number of characters to remove
