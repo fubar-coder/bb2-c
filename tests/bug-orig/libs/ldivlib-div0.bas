@@ -4,6 +4,7 @@
 ; positive.
 ; Correct: the result has the sign of the dividend: -$7FFFFFFF for a
 ; negative dividend, $7FFFFFFF for a positive one and for 0.
+; @fixed #200
 ; @configs clib
 a.l=-5 : b.l=0
 NPrint "a ",a/b
