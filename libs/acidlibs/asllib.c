@@ -25,12 +25,16 @@
  * Kept from the original (BUG(orig)):
  *   - ASLScreenRequest returns the requester AFTER freeing it (asl LVO
  *     -36 = FreeFileRequest, as FREEREQ below): freed memory. (#60)
- *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
  *     static buffer (strng+4: 96 bytes including the 0; in the binary the
  *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
+ * Fixed (#63): the copies of the title and the pattern (maxslib allocst)
+ *   are freed (freest) after every request, also after Cancel and without
+ *   asl.library, and their tags reset (the pattern to ""); the original
+ *   never freed them: each call kept length + 5 bytes of global memory
+ *   until the program ended.
  * Fixed (#61): ASLPathRequest$ has no initial file (an empty one) and
  *   copies fr_File into the result only; the original took d2 as the
  *   file name variable (no such argument: with the dimensions it is x,
@@ -203,6 +207,21 @@ static ULONG allocst(ULONG s, ULONG len)
     return BLITZ_ALIBJSR(TOK_allocst, r);
 }
 
+/* Fixed (#63): free the copies of the title and the pattern (maxslib
+   freest) and reset their tags; the original never freed them */
+static void freecopies(void)
+{
+    struct bl_regs r = { .d0 = Tags.name.ti_Data };
+
+    BLITZ_ALIBJSR(TOK_freest, r);       /* 0: nothing */
+    Tags.name.ti_Data = 0;
+    if (Tags.pattern.ti_Data != (ULONG)nullstr) {
+        r.d0 = Tags.pattern.ti_Data;
+        BLITZ_ALIBJSR(TOK_freest, r);
+        Tags.pattern.ti_Data = (ULONG)nullstr;
+    }
+}
+
 /**
  * @brief init: OpenLibrary("asl.library",0) -> aslbase (0 if not there).
  */
@@ -352,7 +371,8 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     blitz_string = (UBYTE *)title;      /* the result goes here */
     if (!aslbase) {                     /* Fixed (#62): the empty string */
         *blitz_string = 0;              /* (the original: d0 = the title's */
-        return 0;                       /* address as the length) */
+        freecopies();                   /* address as the length); fixed */
+        return 0;                       /* (#63): the pattern copy freed */
     }
     Tags.screen.ti_Data = (ULONG)*scr;
     Tags.name.ti_Data = allocst(title, lens[-1]);
@@ -364,6 +384,7 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
             FREEREQ(aslstruct);         /* requester (the original: also 0) */
         *blitz_string = 0;
         Tags.flags2.ti_Data = 0;
+        freecopies();                   /* Fixed (#63) */
         return 0;
     }
     fr = aslstruct;
@@ -381,6 +402,7 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     len += filelen;
     FREEREQ(aslstruct);
     Tags.flags2.ti_Data = 0;
+    freecopies();                       /* Fixed (#63) */
     return len;
 }
 
@@ -407,8 +429,9 @@ static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
- * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  Fixed (#63): the
+ * title (and pattern) copies of maxslib allocst are freed after the
+ * request.  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -436,8 +459,9 @@ static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
- * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  Fixed (#63): the
+ * title (and pattern) copies of maxslib allocst are freed after the
+ * request.  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -467,8 +491,9 @@ static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
- * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  Fixed (#63): the
+ * title (and pattern) copies of maxslib allocst are freed after the
+ * request.  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
@@ -499,8 +524,9 @@ static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
  * into the path$/file$ variables (their length longs at -4 updated); the
  * result is drawer + "/" (unless empty or ending in ":") + file, written
  * at a3 = the title argument's place in the string work area; Cancel: ""
- * (0 at a3), also without asl.library (fixed #62).  BUG(orig): the title
- * (and pattern) copies of maxslib allocst are never freed (#63).  Fixed (#403): FreeFileRequest only for an
+ * (0 at a3), also without asl.library (fixed #62).  Fixed (#63): the
+ * title (and pattern) copies of maxslib allocst are freed after the
+ * request.  Fixed (#403): FreeFileRequest only for an
  * allocated requester.  Errors (debugger, freqchk): path$ and file$ must be variables
  * with room for 160/64 characters.
  *
