@@ -25,8 +25,13 @@
  *   not divisible by 400).  Date$ and NumDays now correct the day count by
  *   these days (gregskips): the dates are Gregorian, as those of
  *   AmigaDOS; from 1/3/1900 to 28/2/2100 nothing changes.
+ * Fixed (intended deviation, #121): WeekDay subtracted 2 from the day
+ *   count with SUBQ.w (no borrow into the high word): for a count whose
+ *   low word is 0 or 1 (e.g. 15/9/1973, the day -1569) the weekday was 2
+ *   too large.  Here SUBQ.l; the count before the first Date$ is that of
+ *   day 0 (WeekDay 0, as before).  Days before the year 0 (outside the
+ *   range of Date$) give -1, now also -722465 and -722464.
  * Kept on purpose (BUG(orig)):
- *   - WeekDay: SUBQ.w #2 on the day count (no borrow into the high word). (#121)
  *   - NumDays: ADDQ.w #1 / SUBQ.w #1 on the day count (no carry/borrow),
  *     e.g. NumDays("31/12/1977") = 65535, not -1. (#122)
  *   - NumDays: a 2 digit year reads past the end of the string (the year
@@ -138,7 +143,10 @@ BLITZ_LIBFIN();
    register stays unchanged, as in modlib) */
 
 static UWORD dateformat;                /* 0 = dd/mm/yyyy, else mm/dd/yyyy */
-static ULONG totday;                    /* days since 0/0/0 of the last Date$ */
+/* days since 0/0/0 of the last Date$; before the first Date$ that of
+   day 0 (1/1/1978, a Sunday): WeekDay gives 0 then, as the original's
+   SUBQ.w did for its 0 (#121) */
+static ULONG totday = DAYSP1978;
 static struct {                        /* the last Date$ (dym: MOVEM d0-d2) */
     UWORD day, year, month;
 } dym;
@@ -363,8 +371,9 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
 /**
  * @brief WeekDay: the day of the week of the last Date$ (0 = Sunday).
  *
- * BUG(orig) (#121): SUBQ.w #2 on the day count - no borrow from the high
- * word.
+ * Fixed (#121): SUBQ.l #2 on the day count; the original's SUBQ.w had no
+ * borrow from the high word (the weekday 2 too large when the low word
+ * of the count is 0 or 1).
  *
  * @return d0.w: the day of the week, 0..6
  */
@@ -372,7 +381,7 @@ ULONG BLITZ_ROUTINE weekday_c(void)
 {
     ULONG value = totday;                         /* d0 */
 
-    BL_SETW(value, value - 2);
+    value -= 2;                                   /* fixed (#121): SUBQ.l */
     value = bl_divu_w(value, 32767);
     value = BL_SWAP(value);
     value = BL_EXTL(value);
