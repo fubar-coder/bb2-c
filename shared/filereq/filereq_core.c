@@ -51,9 +51,12 @@
  *   unlocked the old current directory, which belongs to whoever started
  *   the program (the shell), and left the program in the path's
  *   directory.
- * Kept from the original (BUG(orig)):
- *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
- *     than 34 characters overrun them (#159).
+ * Fixed (#159): a list entry is a node of the size of its name (next
+ *   pointer, type byte, name, 0), and an entry whose node cannot be
+ *   allocated is left out.  The original took 40-byte nodes, so a name of
+ *   more than 34 characters (file systems with long names) was written
+ *   behind the node, and it did not check the AllocMem: without memory
+ *   the entry was written from address 0 on.
  * Fixed (#158): building the path from the current directory (PARENT with
  *   an empty path, CD) unlocks each ParentDir lock when its parent has
  *   been taken; the original never unlocked them.
@@ -244,6 +247,17 @@ static void refresh(struct Gadget *gad, LONG n)
     RefreshGList(gad, fq.win, NULL, n);
 }
 
+/* Fixed (#159): the size of a list node with this name: next pointer,
+   type byte, the name and its 0 (the original: always 40 bytes) */
+static ULONG nodesize(const UBYTE *name)
+{
+    const UBYTE *e = name;
+
+    while (*e)
+        e++;
+    return 6 + (ULONG)(e - name);
+}
+
 /* $B4C - free the entries */
 static void freelist(void)
 {
@@ -252,18 +266,24 @@ static void freelist(void)
     fq.list = 0;
     while (a2) {
         n = P(a2, 0);
-        FreeMem(a2, 40);
+        FreeMem(a2, nodesize(a2 + 5));  /* fixed (#159): its own size */
         a2 = n;
     }
 }
 
 /* $6FA - new entry (type 247..251, name) sorted into the list (by type,
-   then name, letters compared AND $DF); returns its position */
+   then name, letters compared AND $DF); returns its position.  Fixed
+   (#159): the node has the size of the name (the original: 40 bytes, a
+   name of more than 34 characters was written behind it), and an entry
+   whose node cannot be allocated is left out (returns $FFFF: not
+   visible; the original wrote it from address 0 on) */
 static UWORD addentry(UBYTE type, const UBYTE *name)
 {
-    UBYTE *node = AllocMem(40, MEMF_PUBLIC), *a1, *a3, *a2, *d2;
+    UBYTE *node = AllocMem(nodesize(name), MEMF_PUBLIC), *a1, *a3, *a2, *d2;
     UWORD d3 = 0;
 
+    if (!node)
+        return 0xffff;
     a1 = node + 4;
     *a1++ = type;
     while ((*a1++ = *name++) != 0)

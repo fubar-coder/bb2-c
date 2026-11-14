@@ -28,8 +28,9 @@
  *
  * Kept from the original (BUG(orig)):
  *   - path$/file$ get the new contents but not their new lengths. (#153)
- *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
- *     than 34 characters overrun them. (#159)
+ * Fixed (#159): list entries are nodes of the size of their name, an entry
+ *   without memory is left out (the original: 40-byte nodes, overrun by a
+ *   name of more than 34 characters, AllocMem not checked).
  * Fixed (#160): there are 64 line gadgets (144 bytes each, $15AA-$39A9,
  *   then 48 bytes $39AA-$39D9 up to the end of the data block), but the
  *   original shows (height - 85) / 8 lines with no limit: from a window
@@ -121,8 +122,7 @@ static void BLITZ_ROUTINE codefinit(void)
  * BUG(orig) (#153): path$/file$ get the new contents but not their new
  * lengths.  Fixed (#161): a3 ends on the terminating 0 (the original left
  * it behind the 0).
- * The other BUG(orig) of the requester (#159): see the
- * head comment.  DIFF: if chip memory, a library or the window cannot be
+ * The fixed bugs of the requester: see the head comment.  DIFF: if chip memory, a library or the window cannot be
  * opened, the result is "" (the original returns an uninitialized long).
  * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not
  * enough space in PATH string" (less than 160 bytes), "Not enough space
