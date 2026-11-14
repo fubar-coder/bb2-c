@@ -23,10 +23,6 @@
  *   4 = 3 + exclude, >= 5 = the flags themselves (word compare).
  *
  * Kept from the original (BUG(orig)):
- *   - MenuChecked with a subitem: the item and subitem DBF loops jump back
- *     to the menu loop; only (menu,item,sub) = (m,0,0) ends where it
- *     should, other values walk the lists again with a counter of -1
- *     (65536 steps).  Nachgebildet. (#217)
  *   - Not a bug (word result, the compiler uses only d0.w): MenuChecked:
  *     SNE/EXT.w, the upper word of d0 stays.
  *   - ShapeItem/ShapeSub read the flags with MOVE 4(a7),d7, the HIGH word
@@ -54,6 +50,11 @@
  *   l,m,onoff) changed bit 4 of the Menu flags (changestate2, as for
  *   items) instead of MENUENABLED: no effect.  It changes MENUENABLED now,
  *   as MenuState l,onoff (the whole list) does.
+ * Fixed (intended deviation, #217): MenuChecked with a subitem: the item
+ *   and subitem DBF loops jumped back to the menu loop; only
+ *   (menu,item,sub) = (m,0,0) ended where it should, other values walked
+ *   the lists again with a counter of -1 (65536 steps).  The three loops
+ *   are now those of MenuState with a subitem (domenustate4).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -440,9 +441,10 @@ BLITZ_THUNK(menuslib_domenuchecked, domenuchecked_c, "d1/a0-a1");
  * @brief MenuChecked(MenuList#,Menu,Item,Subitem) - whether a toggle
  * subitem is checked.
  *
- * BUG(orig) (#217): both inner DBF jump to the menu loop: only
- * (menu,item,sub) = (m,0,0) ends where it should, other values walk the
- * lists again with a counter of -1 (65536 steps).
+ * Walks to the subitem as domenustate4 does.  Fixed (#217): in the
+ * original both inner DBF jumped to the menu loop: only (menu,item,sub) =
+ * (m,0,0) ended where it should, other values walked the lists again with
+ * a counter of -1 (65536 steps).
  *
  * Errors (debugger only, chkchk4): "Illegal Menu number", "Illegal Menu
  * Item number", "Illegal Menu Sub Item number".
@@ -458,19 +460,11 @@ static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG hiword BL_REG(d0), UBYTE *p BL
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
 {
-menuloop:                                       /* loop1 */
-    p = P(p, 0);
-    if (m-- != 0)
-        goto menuloop;
-    p += M_FIRST;
-    p = P(p, 0);
-    if (i-- != 0)
-        goto menuloop;
-    p += I_SUB;
-    p = P(p, 0);
-    if (s-- != 0)
-        goto menuloop;
-    return checked(hiword, p);
+    /* fixed (#217): the original's item and subitem DBF jumped back to
+       the menu loop ('loop instead of 'loop2/'loop3) */
+    p = walk(p, m) + M_FIRST;
+    p = walk(p, i) + I_SUB;
+    return checked(hiword, walk(p, s));
 }
 BLITZ_THUNK(menuslib_domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
