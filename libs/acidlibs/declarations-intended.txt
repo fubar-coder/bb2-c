@@ -16,8 +16,8 @@ lib 186: relocations in the declaration part 11 != 12
 lib 160: entry 6 CludgeBitMap +$18: code offset set in only one of them
 lib 160: relocations in the declaration part 22 != 23
 # #243, #74: InitShape gets an error check (initchk) in the error check
-# area, the original had none
-lib 154: entry 15 InitShape +$12: code offset set in only one of them
+# area, the original had none (its first difference, +$12, is covered by
+# the entry 15 line of #265 below, which moves the entry)
 lib 154: relocations in the declaration part 36 != 37
 # gadgetslib (#165): StringGadget gets the check routine stringchk ("Maxlen
 # MUST be greater than zero"), which the original does not have
@@ -99,3 +99,30 @@ lib 158: relocations in the declaration part 48 != 49
 # "Illegal SpriteMode"); the original has none
 lib 112: entry 7 SpriteMode +$C: code offset set in only one of them
 lib 112: relocations in the declaration part 25 != 26
+# shapeslib (#265): both forms of LoadShape get the shape table (a2) and
+# its maximum (d3) for the last object of the ANIM frames; the longer
+# !libs list of entry 0 moves every entry behind it (the first
+# difference of each entry)
+lib 154: entry 0 LoadShape +$F: $00 != $9A
+lib 154: entry 1 MakeCookie +$0: $00 != $61
+lib 154: entry 2 ShapeWidth +$0: $02 != $6B
+lib 154: entry 3 ShapeHeight +$0: $02 != $65
+lib 154: entry 4 Handle +$0: $00 != $65
+lib 154: entry 5 AutoCookie +$0: $00 != $6E
+lib 154: entry 6 CopyShape +$0: $00 != $74
+lib 154: entry 7 GetaShape +$0: $00 != $65
+lib 154: entry 8 SaveShapes +$0: $00 != $2C
+lib 154: entry 9 LoadShapes +$0: $00 != $61
+lib 154: entry 10 (nullsub) +$0: $00 != $70
+lib 154: entry 11 Shape +$0: $00 != $00
+lib 154: entry 12 MidHandle +$0: $00 != $00
+lib 154: entry 13 (nullsub) +$0: $00 != $64
+lib 154: entry 14 DecodeShapes +$0: $00 != $00
+lib 154: entry 15 InitShape +$0: $00 != $2C
+lib 154: entry 16 (nullsub) +$0: $00 != $74
+lib 154: entry 17 (nullsub) +$0: $00 != $00
+lib 154: entry 18 (nullsub) +$0: $00 != $00
+lib 154: entry 19 (nullsub) +$0: $00 != $00
+lib 154: entry 20 (nullsub) +$0: $00 != $00
+lib 154: end of the table +$49C: $FF != $00
+lib 154: declaration part $4B8 != $4C8 bytes

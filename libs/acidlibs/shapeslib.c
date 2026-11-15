@@ -30,8 +30,7 @@
  *  - Row/plane steps ADD x(a3),An are word additions (sign extended for
  *    planes of 32K and more); sizes are low words of MULU. (#263)
  *  - LoadShape: "BODY" is not checked (the decoder reads whatever
- *    follows) (#264); ANIM frames go into the following shape objects
- *    without a check against the maximum (#265).  Not a bug: only `depth`
+ *    follows) (#264).  Not a bug: only `depth`
  *    DLTA pointers are read (one per plane); the copied frame shares
  *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - Not a bug (by design): DecodeShapes stops silently at the first block
@@ -72,6 +71,11 @@
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
+ *  - LoadShape of an ANIM put each further frame into the next shape
+ *    object without a check against the maximum: frames behind the last
+ *    shape object were written over the memory behind the shape table.
+ *    Here the load stops at the last shape object (the declarations of
+ *    LoadShape pass the table and its maximum in a2/d3). (#265)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -102,11 +106,14 @@ BLITZ_ENTRY_DECL(_free);
 BLITZ_LIBHEADER(LIB_shapeslib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
+/* fixed #265: + a2 = the shape table, d3 = its maximum (the last object
+   for the ANIM frames; the original had only a0) */
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1080);
+BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_shapeslib, 0x1201, LIB_shapeslib, 0x0303);
 BLITZ_SUBS(AMIGAONLY(doshload), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_palettelib, 0x1182);
+BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_palettelib, 0x1182, LIB_shapeslib, 0x1201,
+           LIB_shapeslib, 0x0303);
 BLITZ_SUBS(AMIGAONLY(doshload2), 0, 0);
 BLITZ_NAME("LoadShape", "Shape#,Filename$[,Palette#]");
 
@@ -906,7 +913,7 @@ BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
 static UWORD xordelta;                          /* bmode: 2 = xor, 0 = set */
 static ULONG planeoffs[8];                      /* offs: the DLTA plane offsets */
 
-static void doshload_(struct bb_shape *shape, const char *name)
+static void doshload_(struct bb_shape *shape, const char *name, const struct bb_shape *last)
 {
     struct bb_shape *first = shape, *frame;
     UBYTE *st;
@@ -992,6 +999,8 @@ static void doshload_(struct bb_shape *shape, const char *name)
         ULONG dpos = 0, *off;
         ULONG *optr;
 
+        if (frame >= last)                      /* fixed #265: no object left */
+            break;
         next = frame + 1;
         copyshape2(frame, next);
         frame = next;
@@ -1107,20 +1116,24 @@ skipanim:
  * checked in the first ANHD).
  * Fixed (#266): each frame takes the XOR bit of its own ANHD; the
  * original read only the first ANHD's.
+ * Fixed (#265): the frames stop at the last shape object (the rest of the
+ * file is not read); the original wrote them behind the shape table.
  *
  * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
- * (#264); ANIM frames go into the following shape objects without a check
- * against the maximum (#265); sizes are MULU low words (#263).
+ * (#264); sizes are MULU low words (#263).
  * Errors (in the normal code, their texts in the error area): "Can't open
  * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
  * interleave value" (<> 1).
  *
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name
+ * @param base  a2: the shape table (object 0)
+ * @param max   d3: the maximum number of shapes
  */
-static void BLITZ_ROUTINE doshload_c(struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1))
+static void BLITZ_ROUTINE doshload_c(struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1),
+                                     UBYTE *base BL_REG(a2), ULONG max BL_REG(d3))
 {
-    doshload_(shape, name);
+    doshload_(shape, name, (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)));
 }
 BLITZ_THUNK(doshload, doshload_c, "d0-d1/a0-a1");
 
@@ -1131,15 +1144,18 @@ BLITZ_THUNK(doshload, doshload_c, "d0-d1/a0-a1");
  * @param shape a0: the shape
  * @param name  d1: the file name
  * @param pal   a1: the palette object
+ * @param base  a2: the shape table (object 0)
+ * @param max   d3: the maximum number of shapes
  */
 static void BLITZ_ROUTINE doshload2_c(struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1),
-                                      void *pal BL_REG(a1))
+                                      void *pal BL_REG(a1), UBYTE *base BL_REG(a2),
+                                      ULONG max BL_REG(d3))
 {
     struct xregs r = { .d1 = (ULONG)name, .a0 = (ULONG)name, .a1 = (ULONG)pal,
                        .a3 = (ULONG)blitz_string };
 
     XJSR(TOK_palload, r);
-    doshload_(shape, name);
+    doshload_(shape, name, (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)));
 }
 BLITZ_THUNK(doshload2, doshload2_c, "d0-d1/a0-a1");
 
