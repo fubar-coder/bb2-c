@@ -24,13 +24,8 @@
  * BUG(orig), kept:
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
  *    plane and stores only what fits into BytesPerRow/Depth/Rows.
- *  - DecodeILBM (memory): the end test is `end <= pointer` after skipping a chunk; it writes ALL
- *    planes of the ILBM through the BitMap's plane pointers (more planes
- *    than the bitmap has: pointers behind Planes[], #190), ILBM row length
- *    per row, the
- *    BitMap's BytesPerRow as row step; ByteRun1 runs are not clipped at
- *    the row end (a run over the row end continues in the next plane row
- *    with a smaller count) (#191).  Uncompressed rows are copied as words.
+ *  - Not a bug: DecodeILBM (memory): the end test is `end <= pointer`
+ *    after skipping a chunk.  Uncompressed rows are copied as words.
  *  - Not a bug (word functions, the compiler uses only d0.w):
  *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
  *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
@@ -38,6 +33,15 @@
  * Fixed (intended deviation, #186): ILBMInfo calls iffclose also when the
  * file could not be opened; iffclose (iffiolib) now closes only an open
  * file, the original passed the handle 0 to dos Close.
+ *
+ * Fixed (intended deviation, #190, #191): DecodeILBM stores only the
+ * planes, rows and bytes per row that both the ILBM and the bitmap have,
+ * and cuts a ByteRun1 run at the end of the row; the rest of the ILBM's
+ * data is decoded and dropped.  The original wrote all planes of the ILBM
+ * through the bitmap's plane pointers (more planes than the bitmap has:
+ * the pointers behind its depth or behind Planes[]), all its rows, its
+ * row length per row, and a run over the row end into the next plane row
+ * (with a smaller count for that row).
  *
  * Fixed (intended deviation, #189): DecodeILBM skips the IFF pad byte of
  * a chunk of odd length when it walks the chunks; the original added the
@@ -411,6 +415,57 @@ static ULONG padded(const UBYTE *data, ULONG len)
     return len;
 }
 
+/* one plane row of a ByteRun1 BODY: decodes `left` bytes (the ILBM's
+   row) and stores the first `keep` of them at dst (fixed, #190, #191: a
+   run is cut at the end of the row and at `keep`, the rest dropped);
+   $80 is a no-op.  Returns the source behind the row. */
+static const UBYTE *unpackrow(const UBYTE *src, UBYTE *dst, LONG left, UWORD keep)
+{
+    while (left > 0) {
+        UWORD n = *src++;
+        UWORD put;
+
+        if (n < 0x80) {                                 /* copy n+1 */
+            n++;
+            left -= n;
+            put = n < keep ? n : keep;
+            keep -= put;
+            n -= put;
+            for (; put != 0; put--)
+                *dst++ = *src++;
+            src += n;
+        } else if (n != 0x80) {                         /* repeat 257-n */
+            UBYTE fill = *src++;
+
+            n = 257 - n;
+            left -= n;
+            put = n < keep ? n : keep;
+            keep -= put;
+            for (; put != 0; put--)
+                *dst++ = fill;
+        }
+    }
+    return src;
+}
+
+/* one plane row of an uncompressed BODY: `len` bytes (even), the first
+   `keep` of them stored at dst (fixed, #190), copied as words as the
+   original does */
+static const UBYTE *copyrow(const UBYTE *src, UBYTE *dst, UWORD len, UWORD keep)
+{
+    const UBYTE *next = src + len;
+    UWORD w;
+
+    for (w = keep >> 1; w != 0; w--) {
+        *(UWORD *)dst = *(const UWORD *)src;
+        dst += 2;
+        src += 2;
+    }
+    if (keep & 1)
+        *dst = *src;
+    return next;
+}
+
 /**
  * @brief DecodeILBM Bitmap#,MemoryLocation: decode an ILBM file in memory
  * into a bitmap.
@@ -422,10 +477,10 @@ static ULONG padded(const UBYTE *data, ULONG len)
  * 'BODY'" (the messages in the normal code, fixed: #192).
  * Fixed (#189): the pad byte of an odd chunk is skipped (unless it is
  * not 0: a writer without pad bytes, the original SaveBitmap).
- * BUG(orig): all planes of
- * the ILBM are written through the BitMap's plane pointers (#190); the
- * ILBM's row length per row, the BitMap's BytesPerRow as the row step,
- * runs are not clipped at the row end (#191).
+ * Fixed (#190, #191): only the planes, rows and bytes per row that both
+ * the ILBM and the bitmap have are stored, a run is cut at the row end;
+ * the rest is decoded and dropped (the original wrote all planes, rows
+ * and bytes of the ILBM, and a run over the row end into the next row).
  *
  * @param mem  d1: the address of the FORM ILBM
  */
@@ -437,7 +492,6 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
     ULONG id, len;
     UWORD rowsize, rows, depth;         /* d5: the bytes per row; d6 d7 */
     UBYTE comp;
-    LONG rowoff;                        /* a4 */
 
     id = *(const ULONG *)src;
     len = *(const ULONG *)(src + 4);
@@ -475,64 +529,36 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
         if ((LONG)end <= (LONG)src)
             BLITZ_RUNERR(mess3);
     }
-    depth--;                                            /* fb */
-    rows--;
-    rowoff = 0;
-    if (comp) {
-        do {                                            /* god */
-            UWORD plane = depth;
-            PLANEPTR *planes = bm->Planes;
+    /* fb - fixed (#190, #191): the planes, rows and bytes per row that
+       both the ILBM and the bitmap have are stored, the rest of the
+       ILBM's data is decoded and dropped */
+    {
+        UWORD planes = depth < bm->Depth ? depth : bm->Depth;
+        UWORD keep = rowsize < bm->BytesPerRow ? rowsize : bm->BytesPerRow;
+        ULONG step = bm->BytesPerRow;
+        ULONG rowoff = 0;
 
-            do {                                        /* gow */
-                UBYTE *dst = *planes++ + rowoff;
-                WORD left = (WORD)rowsize;
+        if (rows > bm->Rows)
+            rows = bm->Rows;
+        for (; rows != 0; rows--) {
+            PLANEPTR *pl = bm->Planes;
+            UWORD plane;
 
-            gol:
-                {
-                    UWORD n = *src++;
+            for (plane = 0; plane < depth; plane++) {
+                UBYTE *dst = 0;
+                UWORD k = 0;
 
-                    if (n < 0x80) {                     /* copy */
-                        left -= n;
-                        do
-                            *dst++ = *src++;
-                        while (n-- != 0);
-                    } else {
-                        UBYTE fill;
-
-                        n = (UBYTE)-(BYTE)n;
-                        if (n == 0x80)                  /* $80 = nop: BMI gol */
-                            goto gol;
-                        left -= n;
-                        fill = *src++;
-                        do
-                            *dst++ = fill;
-                        while (n-- != 0);
-                    }
+                if (plane < planes) {
+                    dst = *pl++ + rowoff;
+                    k = keep;
                 }
-                if (--left > 0)                         /* incline */
-                    goto gol;
-            } while (plane-- != 0);                     /* DBRA d4 */
-            rowoff += (WORD)bm->BytesPerRow;            /* ADD (a3),a4 */
-        } while (rows-- != 0);                          /* DBRA d6 */
-    } else {
-        UWORD rowwords = (UWORD)(rowsize >> 1) - 1; /* d5: words - 1 */
-        do {                                            /* cod */
-            UWORD plane = depth;
-            PLANEPTR *planes = bm->Planes;
-
-            do {                                        /* cow */
-                UWORD *dst = (UWORD *)(*planes++ + rowoff);
-                UWORD left = rowwords;
-
-                do
-                    *dst++ = *(const UWORD *)src, src += 2;
-                while (left-- != 0);
-                /* keep GCC from computing the pointer with a multiply
-                   (__mulsi3: no libgcc in a library) */
-                __asm__("" : "+a"(src));
-            } while (plane-- != 0);
-            rowoff += (WORD)bm->BytesPerRow;
-        } while (rows-- != 0);
+                if (comp)
+                    src = unpackrow(src, dst, rowsize, k);
+                else
+                    src = copyrow(src, dst, rowsize, k);
+            }
+            rowoff += step;
+        }
     }
 }
 BLITZ_THUNK(_decodeilbm, decodeilbm_c, "d0-d1/a0-a1");

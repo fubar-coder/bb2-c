@@ -6,6 +6,7 @@
 ; has), decoded into a 16x4 bitmap.  The original writes the rest of the
 ; run into bitmap row 2, below the picture.
 ; Correct: the run is cut at the end of the row; rows 2 and 3 stay 0.
+; @fixed #191
 ; @configs clib
 DEFTYPE .l
 Statement pb{v.l}
