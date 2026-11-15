@@ -28,8 +28,10 @@
  *
  * BUG(orig), kept:
  *   - no origin, no orientation test: the points must run clockwise. (#419)
- *   - RenderPoly after RenderToBitmap b,d draws on d with b as dither
- *     bitmap (the two are swapped, #421).
+ *   - Fixed (#421): RenderPoly after RenderToBitmap b,d drew on d with b
+ *     as dither bitmap (the two were swapped); it draws on b with d as the
+ *     dither bitmap now, as the declaration "BitMap#[,DitherBitMap#]"
+ *     says.
  *   - Fixed (#420): RenderPoly before any RenderTo... drew on a3 = the
  *     string pointer (no !libs; polyvector started at _bitmappoly); it
  *     draws nothing now (polyvector starts at render_none).
@@ -864,11 +866,13 @@ static UBYTE *render_bitmap(WORD n, const struct point *pts, UWORD colour, UBYTE
     return bitmappoly(n, pts, colour, bmap0);
 }
 
-/* BUG(orig) (#421): the bitmaps are swapped - draws on the dither bitmap */
+/* RenderToBitmap BitMap#,DitherBitMap#: on bmap0 with bmap1 as dither.
+   Fixed (#421): the original swapped them (rpoly1 loaded bmap0 as the
+   dither bitmap and bmap1 as the target) and drew on the dither bitmap */
 static UBYTE *render_dither(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
     (void)a3;
-    return bitmappoly_dither(n, pts, colour, bmap1, bmap0);
+    return bitmappoly_dither(n, pts, colour, bmap0, bmap1);
 }
 
 /* the colour through the table, index as a word (ADD d2,d2); a colour
