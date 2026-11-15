@@ -132,7 +132,48 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
      $8000      BL_IFBLITZ: loaded only in Blitz mode
      $4000      BL_IFAMIGA: loaded only in Amiga mode ($5600 = a6)
    E.g. $1080 = BL_IA0|BL_PD0 (a0 = the object of the number in d0),
-   $1201 = BL_BA2, $0303 = BL_MD3, $5600 = BL_IFAMIGA|BL_LA6. */
+   $1201 = BL_BA2, $0303 = BL_MD3, $5600 = BL_IFAMIGA|BL_LA6.
+
+   The letters of the names (LIBMACS.BB):
+     L  Library variable: the value the library's init returned (#ld*, #la*)
+     B  Base: object 0 of the library's object block (#bd*, #ba*)
+     U  Used: the current object, the one `Use` selected (#ud*, #ua*)
+     M  Max: the maximum of the compiler options, as a number (#md*, #ma*)
+     I  Item: the object whose number is an argument (#ia*), always
+        combined with
+     PD Parameter in D: the data register that holds that number
+        (#pd0..#pd7)
+   then D or A and the register number: BL_IA0|BL_PD0 = "item into a0,
+   its number from d0".
+
+   Object libraries.  B, U, M and I work only for a library that ends in
+   BLITZ_LIBFIN7(toke, load, save, use, free, defmax, shift) instead of
+   BLITZ_LIBFIN:
+     * toke names the object type ("Bank", "Shape", ...).  Under that name
+       the compiler options show the library's maximum; the program's
+       .xtra file stores it as a pair "library number, maximum"
+       (blitz2.s:15412 savextra, programs/blitz2/src/data.c savextra_c;
+       read back by the same file's loader).  defmax is the maximum
+       until the user changes it.
+     * shift is log2 of the object size (banklib: 4 = 16 bytes).
+     * The compiler reserves an a5 offset for the library (LIBMAX_VAROFF,
+       programs/blitz2/src/structs.h): at offset+0 the pointer to the
+       object block, at offset+4 the pointer to the used object.  For
+       every object library a program uses, it records "offset, maximum <<
+       shift" (blitz2.s:2750 calcmaxs, compile.c calcmaxs), and the
+       program's startup allocates each block through memlib.
+   What the compiler generates for BL_IA0|BL_PD0 (blitz2.s:11647 toreg,
+   libcall.c toreg):
+       move.l  offset(a5),a0       ; B: the object block
+       cmp.w   #max,d0             ; only with runtime error checking:
+       bcs     ok                  ;   number >= maximum is a
+       jsr     maxerr              ;   runtime error
+     ok:
+       lsl.w   #shift,d0           ; number << shift
+       adda.w  d0,a0               ; a0 = the object
+   so the routine sees d0 = number << shift, not the number.  BL_BA*
+   loads only the first line, BL_UA* loads offset+4(a5) (with checking: a
+   runtime error if it is 0), BL_MD* loads `move.w #max,dn`. */
 #define BL_LD(n)    ((n) << 8)              /* #ld0..#ld7 */
 #define BL_LA(n)    (0x1000 | ((n) << 8))   /* #la0..#la3, #la6 */
 #define BL_LPUSH    0xff00                  /* #lpush: onto the stack */
@@ -145,7 +186,7 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_IFBLITZ  0x8000                  /* only in Blitz mode */
 #define BL_IFAMIGA  0x4000                  /* only in Amiga mode */
 
-#define BL_LD0 0x0000   /* #ld0..#ld7: the library's variable */
+#define BL_LD0 0x0000   /* #ld0..#ld7: L = Library variable into dN */
 #define BL_LD1 0x0100
 #define BL_LD2 0x0200
 #define BL_LD3 0x0300
@@ -153,13 +194,13 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_LD5 0x0500
 #define BL_LD6 0x0600
 #define BL_LD7 0x0700
-#define BL_LA0 0x1000   /* #la0..#la3, #la6 */
+#define BL_LA0 0x1000   /* #la0..#la3, #la6: L = Library variable into aN */
 #define BL_LA1 0x1100
 #define BL_LA2 0x1200
 #define BL_LA3 0x1300
 #define BL_LA6 0x1600
 
-#define BL_UD0 (BL_LD0 | BL_USED)   /* #ud0..#ud7, #ua0..#ua3, #ua6: used */
+#define BL_UD0 (BL_LD0 | BL_USED)   /* #ud*, #ua*: U = Used object (LIBFIN7) */
 #define BL_UD1 (BL_LD1 | BL_USED)
 #define BL_UD2 (BL_LD2 | BL_USED)
 #define BL_UD3 (BL_LD3 | BL_USED)
@@ -173,7 +214,7 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_UA3 (BL_LA3 | BL_USED)
 #define BL_UA6 (BL_LA6 | BL_USED)
 
-#define BL_BD0 (BL_LD0 | BL_BASE)   /* #bd0..#bd7, #ba0..#ba3, #ba6: base */
+#define BL_BD0 (BL_LD0 | BL_BASE)   /* #bd*, #ba*: B = Base, object 0 (LIBFIN7) */
 #define BL_BD1 (BL_LD1 | BL_BASE)
 #define BL_BD2 (BL_LD2 | BL_BASE)
 #define BL_BD3 (BL_LD3 | BL_BASE)
@@ -187,7 +228,7 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_BA3 (BL_LA3 | BL_BASE)
 #define BL_BA6 (BL_LA6 | BL_BASE)
 
-#define BL_PD0 0        /* #pd0..#pd7: the number register of #item */
+#define BL_PD0 0        /* #pd0..#pd7: PD = Parameter in dN, the number of I */
 #define BL_PD1 1
 #define BL_PD2 2
 #define BL_PD3 3
@@ -195,13 +236,13 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_PD5 5
 #define BL_PD6 6
 #define BL_PD7 7
-#define BL_IA0 (BL_LA0 | BL_ITEM)   /* #ia0..#ia3, #ia6: item, | BL_PDn */
+#define BL_IA0 (BL_LA0 | BL_ITEM)   /* #ia*: I = Item, object number dN (| BL_PDn) */
 #define BL_IA1 (BL_LA1 | BL_ITEM)
 #define BL_IA2 (BL_LA2 | BL_ITEM)
 #define BL_IA3 (BL_LA3 | BL_ITEM)
 #define BL_IA6 (BL_LA6 | BL_ITEM)
 
-#define BL_MD0 (BL_LD0 | BL_MAX)    /* #md0..#md7, #ma0..#ma3, #ma6: max */
+#define BL_MD0 (BL_LD0 | BL_MAX)    /* #md*, #ma*: M = Max setting (LIBFIN7) */
 #define BL_MD1 (BL_LD1 | BL_MAX)
 #define BL_MD2 (BL_LD2 | BL_MAX)
 #define BL_MD3 (BL_LD3 | BL_MAX)
@@ -360,7 +401,13 @@ extern char blitz_errchk_start[];
         BL_ID(bl_libfin_) BL_HEAD = { 0xffff, 0 }
 
 /* !libfin{toke,load,save,use,free,defmax,shift} (object libraries):
-   Dc -1:Dc.l toke,load,save,use,free:Dc 0,defmax,shift */
+   Dc -1:Dc.l toke,load,save,use,free:Dc 0,defmax,shift
+   toke: the object type's name (a BLITZ_NAME_AT / BLITZ_DUMTOKE label
+   .n), shown with its maximum in the compiler options and stored in the
+   .xtra file; load, save, use, free: the library's routines for the
+   object type that the compiler calls itself (blitz2.s libfin); defmax: the default maximum; shift:
+   log2 of the object size.  See "Object libraries" at the register codes
+   above */
 #define BLITZ_LIBFIN7(toke, load, save, use, free, defmax, shift) \
     static const struct BL_PACKED { UWORD m1; bl_addr t, l, s, u, f;    \
         UWORD z, mx, sh; } BL_ID(bl_libfin_) BL_HEAD = { 0xffff,           \
