@@ -36,6 +36,12 @@
  * BUG(orig), kept:
  *  - ifffind gives up at a "BODY" id (unless it is looking for BODY) and
  *    otherwise reads ahead byte by byte (the ids need not be aligned). (#178)
+ *    Won't fix, a limit: chunks behind the BODY are not found, and an
+ *    identifier inside chunk data can be taken for a chunk.  A chunk
+ *    walker would no longer read the files the original SaveBitmap wrote
+ *    with an odd CMAP and no pad byte (#184), and every loader (ILBM,
+ *    palette, shape, sound, ANIM with its nested FORMs) depends on the
+ *    order in which the byte search finds the chunks.
  *  - Not a bug (all callers ignore d0/a0 after iffread): iffread: when the
  *    buffer position reaches 2048 the rest is read with one dos Read
  *    directly to a0 (d0 = its result, a0 not advanced); the buffer is
@@ -281,8 +287,9 @@ BLITZ_THUNK_POST(ifflong, ifflong_c, "d1/a0-a1", "tst.w _iff_fail");
  *
  * Reads up to and including the id, then the chunk length (ifflong).
  * CCR: Z = found.
- * BUG(orig) (#178): it gives up at a "BODY" id (unless it is looking for
- * BODY) and reads ahead byte by byte (the ids need not be aligned).
+ * BUG(orig) (#178), won't fix (a limit, see the head comment): it gives
+ * up at a "BODY" id (unless it is looking for BODY) and reads ahead byte
+ * by byte (the ids need not be aligned).
  *
  * @param id  d0: the chunk id
  * @return d0: the chunk length, -1 at the end of the data or at "BODY"
