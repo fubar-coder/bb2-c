@@ -47,8 +47,8 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 7. Blit core and sortlib
 
-- [ ] 7.1 Measure Blit, QBlit, BBlit/UnBuffer, ClipBlit, Block, BlitColl first; decide per file between the original's set-up and plane loop as an assembler block and `always_inline` helpers with register state; do not fix #1045 here, but do not prevent a cost-free fix
-- [ ] 7.2 Implement the decision for blitlib, qblitlib, bblitlib, 2dlib ClipBlit and stencillib, one commit per library
+- [x] 7.1 Measure Blit, QBlit, BBlit/UnBuffer, ClipBlit, Block, BlitColl first; decide per file between the original's set-up and plane loop as an assembler block and `always_inline` helpers with register state; do not fix #1045 here, but do not prevent a cost-free fix
+- [x] 7.2 Implement the decision for blitlib, qblitlib, bblitlib, 2dlib ClipBlit and stencillib, one commit per library
 - [x] 7.3 sortlib: one scan loop per element type (byte, word, long, quick inline; float and string through a call); keep the results of every element type (library test cases per type, stable order where the original is stable)
 - [ ] 7.4 Measure and tighten the budgets for the blit and Sort commands
 

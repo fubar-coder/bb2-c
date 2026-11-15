@@ -434,6 +434,49 @@ build.
     `systest_cmdlibs`, recorded from the original); the fixes #275 and
     #276 stay. sortlib.obj grows from 980 to 1244 bytes.
 
+20. **The blit core (tasks 7.1 and 7.2, 2026-11-15).** Measured first
+    (`tests/perf`, main `ecef902a`): Blit 1.42, QBlit 1.28 to 1.38,
+    BBlit/UnBuffer 1.25, ClipBlit 1.31, Block 1.23, BlitColl 1.59 times
+    the original; the disassembly shows the cause of `report.md` (H):
+    the helpers are functions with stack arguments, the blit state a
+    struct in memory, and the Blitz mode code saves four to six
+    registers. Decided for every file (blitlib, qblitlib, bblitlib,
+    2dlib ClipBlit, stencillib): C, no assembler block. The helpers
+    are `BL_ALWAYS_INLINE` (`blitzhelp.h`), so the state struct is
+    in registers; the Blitz mode code of each command (the `Dc.l` of
+    its Blitz/Amiga routine) is `BLITZ_ENTRYPOINT`, marked by
+    `BLITZ_EP_MARK` (or `BLITZ_ALIAS_EP`) for the build check: it saves
+    nothing, as the original, which changes d0-d7 and a0 too (the
+    register rule keeps a3-a7). Two things keep GCC off a6 there: the
+    plane offset is `bl_blitoff` (the original's `MULS bpr,y : ASR.w
+    #3,x : EXT.l : ADD.l`; GCC adds with LEA in an address register and
+    took a6 for it), and where the code needs more address registers
+    than a0-a2 (QBlit, BBlit, UnBuffer, ShowStencil, SBlit, ClipBlit)
+    `BLITZ_EP_KEEP_A6` makes a6 a live hard register through the
+    routine. The Amiga mode code inlines the core too (faster, but each
+    library file grows: blitlib 2448 -> 2864, qblitlib 2568 -> 3192,
+    bblitlib 2780 -> 3876, 2dlib 13576 -> 14836, stencillib 2132 ->
+    2584 bytes). Blit with Excessonoff of blitlib stays a normal
+    function (other libraries reach it through the nullsub
+    `b_doblitex`). Measured, before -> after (the original): Blit
+    2986.3 -> 2116.9 (2108.3), Blit 32 5422.3 -> 4729.4 (4723.4),
+    Block 1246.3 -> 1006.9 (1009.9), BlitColl 1398.8 -> 901.4 (881.9),
+    4 QBlit + UnQueue 16397.8 -> 12907.8 (12785.9), 4 QBlit +
+    FlushQueue 12507.8 -> 9197.8 (9087.9), 4 BBlit + UnBuffer 22781.8
+    -> 19169.9 (18173.8), ClipBlit 3286.4 -> 2577.3 (2516.3), and
+    outside the benchmark (a program of the same kind) SBlit 3515.8 ->
+    2682.9 (2702.2), 4 BBlit + ShowStencil + FlushBuffer 26309.8 ->
+    22687.9 (21731.8). Every one within 5 % of the original (BBlit:
+    GCC keeps the bitmap pointer and the plane step on the stack), so
+    no assembler block (decision 15). #1045 is not fixed; its three
+    additions are marked, and a fix (the step zero-extended once
+    outside the plane loops) costs no cycle in the loops. The library
+    test `systest_blit` (new) covers the commands in both modes: every
+    shift, junk in the upper words of x and y, the handle, the excess
+    planes, the modes, a collision and none, ClipBlit clipped at each
+    edge and outside; recorded from the original, the C build of main
+    and of the change give the same cases.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

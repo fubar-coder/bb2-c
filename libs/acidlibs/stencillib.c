@@ -19,6 +19,10 @@
  * strips of at most 64 words by 1024 rows (with the modulos of the strip).
  * Not a bug: FreeStencil leaves the memory pointer (the width is cleared,
  * which is what the free routine and the SBlit check test).
+ *
+ * Speed: the blit core of SBlit is inline (BL_ALWAYS_INLINE), and its
+ * Blitz mode code saves no register (BLITZ_ENTRYPOINT, a6 kept by
+ * BLITZ_EP_KEEP_A6; the register rule keeps a3-a7).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -248,9 +252,9 @@ struct blitstate {
 
 /* b_doblit - a0 = stencil, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3
    = x/y: blit, then OR the cookie into the stencil */
-static void sblit(const struct stencil *s, const struct bb_shape *shape,
-                  const struct bb_bitmap *bm, UBYTE *cb,
-                  WORD x, WORD y, struct blitstate *st)
+BL_ALWAYS_INLINE void sblit(const struct stencil *s, const struct bb_shape *shape,
+                            const struct bb_bitmap *bm, UBYTE *cb,
+                            WORD x, WORD y, struct blitstate *st)
 {
     ULONG smem = (ULONG)s->mem, mods, mods_swapped;
     UWORD n;
@@ -268,7 +272,7 @@ static void sblit(const struct stencil *s, const struct bb_shape *shape,
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
     BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
     st->cookie = (ULONG)shape->cookie;
-    st->off = (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
+    st->off = bl_blitoff(&bm->bpr, x, y);
     st->plane = (UBYTE **)bm->planes;
     n = shape->depth - 1;
     st->size = shape->bltsize;
@@ -294,9 +298,9 @@ stencillib_doblit:
     BL_CUSTOMW(cb, 0x58) = st->size;
 }
 
-static void sblitex(const struct stencil *s, const struct bb_shape *shape,
-                    const struct bb_bitmap *bm, UBYTE *cb,
-                    WORD x, WORD y, UWORD bits)
+BL_ALWAYS_INLINE void sblitex(const struct stencil *s, const struct bb_shape *shape,
+                              const struct bb_bitmap *bm, UBYTE *cb,
+                              WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
@@ -321,7 +325,7 @@ static void sblitex(const struct stencil *s, const struct bb_shape *shape,
 #define SBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), const struct stencil *s BL_REG(a0), \
                    UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2)
 
-static void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
 /**
  * @brief SBlit Stencil#,Shape#,X,Y - blit a shape and add its cookie to
  * the stencil (Blitz mode variant).
@@ -340,12 +344,15 @@ static void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
  * @param cb a1: the chip base (chipbaselib)
  * @param bm a2: the used bitmap; a3: the shape
  */
-static void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
 {
+    BLITZ_EP_KEEP_A6();
     struct blitstate st;
 
     sblit(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblit_c);
 
 static void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS,
                                      struct Library *gfx BL_REG(a6));
@@ -372,7 +379,7 @@ static void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS,
 }
 BLITZ_AB_ROUTINE(stencillib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
-static void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
 /**
  * @brief SBlit Stencil#,Shape#,X,Y,Excessonoff - SBlit, then the bitmap's
  * planes beyond the shape's depth (Blitz mode variant).
@@ -389,10 +396,14 @@ static void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
  * @param bm   a2: the used bitmap; a3: the shape
  * @param bits d4.w: one bit per excess plane
  */
-static void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
 {
+    BLITZ_EP_KEEP_A6();
+
     sblitex(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblitex_c);
 
 static void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
                                        struct Library *gfx BL_REG(a6));
