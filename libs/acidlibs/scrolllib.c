@@ -133,11 +133,10 @@ extern const char mess1[], mess2[], mess3[];
  * (flags and depth, as the original).
  *
  * The original's code (ADD 48(a2),d0 ... MULU (a2),d1 ... BCLR/BSET
- * d0,(a1) per plane), with d2 and d3 saved around the plane loops: the
- * original changes them, and MikesSpaceFXLib calls Plot from the loop of
- * its starfield (PlotStarfield, DoStarfield), so Plot keeps every
- * register but d0, d1, a0 and a1, as the C function did.  Assembler: the
- * C function cost about 160 cycles more per call.
+ * d0,(a1) per plane); it changes d0-d3, a0 and a1 like the original, so
+ * no caller can rely on d2 or d3 (MikesSpaceFXLib saves d0-d2 itself
+ * around its calls from the starfield loop, and nothing else of it is
+ * live).  Assembler: the C function cost about 160 cycles more per call.
  *
  * Fixed (#393): a bitmap of depth 0 runs the plane loop 65536 times (an
  * invalid argument, refused at its creation in the error check area).
@@ -153,7 +152,6 @@ BLITZ_ASM_ROUTINE(doplot,
 "   bcc.s   9f\n"
 "   cmp.w   58(a2),d1\n"               /* height */
 "   bcc.s   9f\n"
-"   movem.l d2-d3,-(sp)\n"
 "   mulu.w  (a2),d1\n"                 /* bpr */
 "   moveq   #0,d3\n"
 "   move.w  d0,d3\n"
@@ -172,12 +170,10 @@ BLITZ_ASM_ROUTINE(doplot,
 "   bcc.s   2f\n"
 "   bset    d0,(a1)\n"
 "2: dbf     d3,1b\n"
-"   movem.l (sp)+,d2-d3\n"
 "9: rts\n"
 "3: move.l  (a0)+,a1\n"                /* complement */
 "   bchg    d0,0(a1,d1.l)\n"
 "   dbf     d3,3b\n"
-"   movem.l (sp)+,d2-d3\n"
 "   rts");
 
 /**

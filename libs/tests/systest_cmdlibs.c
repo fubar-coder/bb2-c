@@ -513,8 +513,8 @@ static UBYTE *cmd_named(struct lib *l, const char *name, int form)
 
 #define N(lib, name, form) cmd_named(getlib(&loaded, lib), (name), (form))
 
-/* the registers d2-d7 and a2 (kept(): bits 2-7 and 10) */
-#define KEPT_D2D7A2 0x04fcUL
+/* the registers d4-d7 and a2 (kept(): bits 4-7 and 10) */
+#define KEPT_D4D7A2 0x04f0UL
 
 static UBYTE bmplanes[3][32];           /* a bitmap of 3 planes, 4 x 8 bytes */
 static ULONG bmobj[16];                 /* its struct bb_bitmap, 64 bytes */
@@ -573,10 +573,11 @@ static void test_smallentries(void)
         DO1(N("scrolllib", "Plot", 0), R.d[0] = plots[i].x; R.d[1] = plots[i].y;
             R.d[2] = plots[i].c; R.a[2] = (ULONG)bmobj);
         OBSBYTES("planes", bmplanes, sizeof bmplanes);
-        /* the port keeps d2-d7 and a2 (MikesSpaceFXLib calls Plot from a
-           loop); the original changes d2 and d3 */
+        /* the port keeps d4-d7 and a2; it changes d2 and d3 like the
+           original, so no caller can rely on them (MikesSpaceFXLib saves
+           d0-d2 itself around the call, nothing else of it is live) */
         if (!strcmp(loaded.what, "C"))
-            check("Plot: d2-d7 and a2 kept", (kept(&IN, &R) & KEPT_D2D7A2) == KEPT_D2D7A2);
+            check("Plot: d4-d7 and a2 kept", (kept(&IN, &R) & KEPT_D4D7A2) == KEPT_D4D7A2);
     }
     ROUT = "Point";
     for (i = 0; i < sizeof plots / sizeof plots[0]; i++) {
@@ -858,8 +859,8 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("Rnd(Range)", a0|a1);
     /* exception: ElmoreIncLib's IncSound reads (a0) after InitSound */
     KEEPS_STATEMENT("InitSound", a0);
-    /* the small entries (test_smallentries); Plot's d2-d7/a2 are checked
-       on the C build only (the original changes d2 and d3) */
+    /* the small entries (test_smallentries); Plot's d4-d7/a2 are checked
+       on the C build only (both change d2 and d3) */
     KEEPS_STATEMENT("Plot", none);
     KEEPS_FUNCTION("Point", none);
     KEEPS_FUNCTION("Joyx", none);

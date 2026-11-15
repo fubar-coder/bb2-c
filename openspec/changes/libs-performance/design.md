@@ -222,9 +222,8 @@ build.
     (-136 cycles per call), Plot (-87), PColl (-70.5), Volume (-70.5),
     UCase$ (-52), Joyr (-50), Hex$ (-46); none for Mid$, Left$, Right$,
     Instr (their `move.l a2,-(sp)` is an argument, not a save). Adopted:
-    ShowSprite, PColl, Volume, UCase$, Joyr, Hex$. Not Plot: MikesSpaceFXLib
-    calls it from a starfield loop, and the third-party analysis checked
-    only d0/d1/a0/a1 there (Plot becomes an assembler entry in 6.1).
+    ShowSprite, PColl, Volume, UCase$, Joyr, Hex$. Not Plot: it becomes
+    an assembler entry in 6.1 (decision 16).
 
 15. **String copy loops (group 5, findings).** C first, assembler only
     where C stays more than about 10 % slower than the original
@@ -290,12 +289,15 @@ build.
     d7, and genrnd is inline in both forms; Abs clears the sign with
     BCLR. Task 6.6 allowed a noinline float case; the assembler entry
     was taken directly, as the brief of the group asked for assembler
-    entries. Plot keeps d2-d7 and a2 (it saves d2/d3; the original
-    changes them): MikesSpaceFXLib calls it from a loop, which the
-    third-party analysis checked for d0/d1/a0/a1 only (decision 14).
-    Joyr and PColl replace their `__entrypoint` C functions of task 2.6.
-    Every entry is at or below the original's cycles except Plot (522.8
-    against 486.9, the d2/d3 saves). The library test `systest_cmdlibs`
+    entries. Plot changes d2 and d3 like the original and keeps d4-d7
+    and a2 (user decision 2026-11-15): the original's Plot changes them,
+    so no caller can rely on them, and MikesSpaceFXLib, which calls it
+    from its starfield loop, saves d0-d2 itself around the call, with
+    nothing else live (the analysis of the third-party libraries). A
+    first form saved d2/d3 for that loop (522.8 cycles); without the
+    save Plot takes 468.8. Joyr and PColl replace their `__entrypoint`
+    C functions of task 2.6. Every entry is at or below the original's
+    cycles (Plot 468.8 against 486.9). The library test `systest_cmdlibs`
     covers their entry conditions (upper words of word arguments, every
     type of Int/Sgn/Abs, clipping, limits, colval values through the
     operand of DoColl's MOVE); the expected data were recorded from the
