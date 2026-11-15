@@ -59,6 +59,17 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 - [ ] 8.3 `strcomp` ($CE00, keeps d0-d7), `freelast` ($C005, keeps d0 and the flags), the procedure prologue routines and the conversions `qutofl`/`fltoqu` ($D300/$D301, the original's code: `BCHG #7,d0`, the mathffp calls through `jsr -xx(a6)` and `NEG.l d0`, never touching a0/a1, so that the third-party callers of 8.1 keep a0-a1 without a thunk; user decision 2026-11-15) as assembler entries that do not touch the registers of their contract, so they need no thunk; `copstring` and `lastring`/`astring` get the same in group 5
 - [ ] 8.4 Measure string compare, procedure calls with locals, Mod and the Quick/Float conversions; tighten the budgets
 
+## 10. Remaining slow commands
+
+The commands still 10 % or more slower than the original after groups 2 to 8 and not covered there (measured 2026-11-15). Per task: find the hot part by measurement, then an assembler block or a C rework; keep the results; tighten the budgets.
+
+- [ ] 10.1 Text output and input: Print (string and number), Locate, Inkey$ (printlib, fontlib, the input libraries)
+- [ ] 10.2 Graphics primitives of 2dlib: Circle, Circlef, Box, Boxf, Line, Poly, Polyf, Green, RGB
+- [ ] 10.3 Collisions: RectsHit, ShapesHit, SpritesHit
+- [ ] 10.4 Display and palettes: Show, Show x,y, DisplayPalette, ShowPalette, Use Palette, PalRGB, FadePalette, DisplayBitMap, DisplaySprite, ShowSprite, Scroll
+- [ ] 10.5 Frac (vallib) and the per-frame interrupts of medlib and trackerlib (PlayMed, PlayModule)
+- [ ] 10.6 Measure the whole benchmark again and list every command still 10 % or more slower than the original, with the reason
+
 ## 9. Closing
 
 - [ ] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
