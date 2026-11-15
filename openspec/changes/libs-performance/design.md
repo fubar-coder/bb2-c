@@ -542,6 +542,53 @@ build.
       whole replay routine) is not done here. Task 10.5 stays open for
       that decision.
 
+22. **The drawing, display and palette commands (tasks 10.2 and 10.4,
+    2026-11-15).** Measured first; the causes were those of the blit
+    core (decision 20): helpers with stack arguments, Blitz mode code
+    behind a thunk or saving the registers of its arguments, state in
+    memory. C first, per routine:
+    - C (helpers `BL_ALWAYS_INLINE`, the Blitz mode code
+      `BLITZ_ENTRYPOINT`, a6 kept live where needed): palettelib PalRGB,
+      AGAPalRGB (the growing out of line), ShowPalette, Use Palette (the
+      top byte of a component read as a byte), RGB, Red, Green, Blue;
+      blitzcoplib Show, ShowF, ShowB (the offset added with ADD.l, the
+      high word with SWAP); 2dlib FloodFill, ReMap and Polyf without
+      their thunks.
+    - The original's code in assembler, as the C stayed more than 10 %
+      slower after those steps (decision 15): palettelib FadePalette
+      (1.12: the MOVEM.l of the three components), spriteslib ShowSprite
+      (1.12, with the fix of #283), displaylib DisplayBitMap (1.19 for
+      0,0, with #411), DisplaySprite (with #414 and the errors of #412)
+      and DisplayPalette (the colour loop, 1.8), scrolllib Scroll in Blitz
+      mode (GCC kept the offsets on the stack in the plane loop; the
+      Amiga mode code and the nullsub b_doscroll stay C), 2dlib Line,
+      Box, Poly (the line clipper, with #391), Boxf, Circle, Ellipse,
+      Circlef, Ellipsef (with #392) and the line loop of Polyf (the
+      clipping of #1000/#1033 stays C).
+    Measured (cycles per call, main -> after, the original): Circle
+    66239.8 -> 33074.8 (33609.8), Circlef 36454.8 -> 16939.8 (17189.8),
+    Polyf 87154.8 -> 50269.8 (46969.8), Box 13093.8 -> 9345.8 (9571.9),
+    Boxf 3141.8 -> 1975.8 (1991.8), Line 4993.8 -> 3891.8 (3967.8),
+    Poly 10104.8 -> 7339.8 (7524.9), Green 360.8 -> 166.4 (167.3), RGB
+    206.8 -> 179.4 (178.8), Show 1206.3 -> 583.4 (589.4), DisplayPalette
+    2370.0 -> 1287.8 (1292.0), ShowPalette 2427.9 -> 1310.0 (1616.0),
+    PalRGB 835.9 -> 456.9 (653.5), FadePalette 3844.9 -> 2999.9
+    (3044.9), DisplayBitMap 581.0 -> 496.4 (494.0), DisplaySprite 1505.0
+    -> 945.4 (965.5), ShowSprite 714.3 -> 623.9 (629.4), Scroll 9469.8 ->
+    8003.9 (8075.9). Every command is below the original or within 2 %
+    of it (Show 0,8,8 1.02, DisplayBitMap 1.01, RGB 1.00) except Polyf
+    (1.07, within the 10 %). The library
+    test `systest_gfx` (new, tag `[gfx]`) covers the commands: clipping
+    at each edge, the origin, every colour and a negative one, the
+    shifts of Show and DisplayBitMap, the sprite clipping, attached
+    sprites and both sprite banks, palettes that grow, AGA and ECS
+    colours; recorded from the original (75 cases are pairs of the
+    fixes #229, #391 and #411), the C build of main and of the change
+    give the same cases. Not in the scenario: points above the top edge
+    (#392) and a cut vertical Polyf edge (#1033), where the original
+    writes outside the bitmap or divides by zero, and the top clipping
+    of ShowSprite in SpriteMode 1 and 2 (#283).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:
