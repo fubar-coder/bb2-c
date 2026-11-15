@@ -13,6 +13,7 @@
 ; behind calcmaxs, and End then frees 100 shapes from address 0).
 ; The original leaves the cursor off: plane 0 differs.
 ; Correct: the cursor is on again, plane 0 as before.
+; @fixed #91
 ; @configs clib
 DEFTYPE .l
 Function.l sum{p.l}

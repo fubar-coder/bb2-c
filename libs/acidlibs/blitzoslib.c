@@ -39,7 +39,6 @@
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
  *    line's LF in the bank by 0. (#87)
- *  - BlitzEvent: Backspace at position 0 leaves the cursor off (#91).
  *  - DeSelectBox does not clear `selected`. (#94)
  * Fixed (intended deviations):
  *  - #81: the address of box n was memloc + n << 5 as a word (ASL #5,
@@ -63,6 +62,10 @@
  *    box also when none was selected (the word at address 8; if it was 5
  *    it wrote address 12 and drew a box from address 0).  Here only a
  *    selected list box moves.
+ *  - #91: BlitzEvent in input mode turns the cursor off before it looks
+ *    at the key; Backspace at position 0 and the other control
+ *    characters (Return, Esc, Tab, codes above 127) left without turning
+ *    it on again.  Here those exits draw it again.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -2227,8 +2230,12 @@ noselect:
             edxyc[2] = cursor;
         } else {
             if (key != 127) {
-                if (key != 8 || --cursor < 0)
+                /* fixed (#91): the cursor drawn again (the original left
+                   it off on these exits) */
+                if (key != 8 || --cursor < 0) {
+                    docursor(p);
                     return 0;
+                }
                 edxyc[2] = cursor;
             }
             while (++cursor != last)
@@ -2317,7 +2324,9 @@ moveprop:
  * list entries, prop knobs and drag boxes, presses and releases buttons.
  * Fixed (#90): cursor up/down with nothing selected moves no list (the
  * original read btype of `selected` = 0, at address 8).
- * BUG(orig) (#91): Backspace at position 0 leaves the cursor off.
+ * Fixed (#91): after Backspace at position 0 and the other control
+ * characters (Return, Esc, Tab, codes above 127) the cursor is on again
+ * (the original left it off).
  * Not a bug (#92): the character cycle of the cursor keys uses BMI after
  * CMP.b.
  *
