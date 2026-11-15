@@ -175,6 +175,29 @@ build.
     original's two calls otherwise. Measured: Long 5673 -> 519 (the
     original 2661), Long Mod 6479 -> 523 (3113).
 
+13. **The exceptions in the generated code (task 2.1, disassembly of the
+    objects of main `848bb9d1`, `-Os`, gcc 16.2-rc24).** Per entry what
+    the C function writes, and the decision:
+    - `EventWindow` (`doeventwindow_c`): `tst.l`/`move.l` of the window
+      pointer, `move.l` it to a0, `or.w 120(a0),d0`; writes d0 and a0,
+      keeps a1 by nature (the original also uses a0): **alias**.
+    - `RawStatus` (`dorstat_c`): reads the matrix pointer into a0, writes
+      d0 and d1, pushes and pops d2; keeps a1 by nature: **alias**, the
+      assembler entry of the original follows with the small entries
+      (task 6.3). The upper word of d0 is undefined (no caller needs it).
+    - `Rnd` and `Rnd(Range)` (`dornd1_c`, `dornd2_c`, `genrnd`): d0-d4
+      only (d2-d4 saved by `genrnd`, d2 by `dornd2_c`); keep a0 and a1 by
+      nature: **alias** (assembler entry in task 6.3).
+    - `WBWidth`, `WBHeight` (`move.l x,d0`), `WBDepth` (`moveq #0,d0 :
+      move.w x,d0`): d0 only, keep a0 and a1 by nature: **alias**.
+    - `ExecVersion` (`moveq #0,d0 : move.w x,d0`): a zero-extended long,
+      as decision 4 requires: **alias**.
+    - `EMouseX`, `EMouseY`, `EventCode`: `move.w x,d0 : rts` already, but
+      by gcc's choice; **assembler entries** (decision 3, task 2.4).
+    - `InitSound`: the C functions are the entries already and `alloc`
+      clears a0 before the globalloc call (#1058): **reduced thunk**
+      saving a0 (task 2.4).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:
