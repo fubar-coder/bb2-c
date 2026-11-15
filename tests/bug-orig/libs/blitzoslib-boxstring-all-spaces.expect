@@ -1,0 +1,4 @@
+[run]
+before
+len 0
+rc=0

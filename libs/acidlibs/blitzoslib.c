@@ -37,9 +37,6 @@
  * BUG(orig), kept:
  *  - SelectBox Box# is not range checked (negative: deselect only)
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
- *  - BoxString strips trailing spaces backwards without a limit: an
- *    all-space answer runs into the prompt / memory before the text (d0
- *    0: nothing, negative: a huge copy). (#85)
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
  *    line's LF in the bank by 0. (#87)
  *  - oneline: a box with tlen 0 but an old text pointer prints from
@@ -56,6 +53,10 @@
  *  - #84: AddBox with a string box 8..15 pixels wide (tlen 1): the space
  *    fill (DBRA of tlen-2) wrote 65536 spaces behind the 1-byte text;
  *    here the text is just the 0.
+ *  - #85: BoxString stripped the trailing spaces backwards without a
+ *    limit: an all-space answer ran into the prompt or the memory before
+ *    the text (a negative length: a copy of up to 65535 bytes).  Here it
+ *    stops at the start of the answer.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -1347,9 +1348,11 @@ static ULONG boxstring(struct page *p, ULONG n)
 
     BL_SETW(len, len - prompt);
     end = answer + (WORD)len - 1;
-    do                                          /* crop */
+    /* crop; fixed (#85): stops at the start of the answer (the original
+       ran on into the prompt and the memory before the text) */
+    do
         BL_SETW(len, len - 1);
-    while (*--end == ' ');
+    while ((WORD)len > 0 && *--end == ' ');
     if ((UWORD)len) {
         UWORD c = (UWORD)len - 1;
         do
@@ -1367,9 +1370,10 @@ static ULONG boxstring(struct page *p, ULONG n)
  * The answer after the prompt goes to a3; no 0 is written, a3 = the end
  * (not a bug, #86: the compiler appends the 0 itself).  Errors (always
  * checked): "UnInitialised Page", "Illegal Box# For Page".
- * BUG(orig) (#85): the trailing spaces are stripped backwards without a
- * limit: an all-space answer runs into the prompt / memory before the
- * text (d0 0: nothing, negative: a huge copy).
+ * Fixed (#85): the trailing spaces are stripped back to the start of the
+ * answer, an all-space answer is the empty string (the original ran on
+ * into the prompt and the memory before the text: a negative length
+ * copied up to 65535 bytes).
  *
  * @param n  d0.w: Box#
  * @param p  a1: the used page (!libs{#blitzoslib,$1102})
