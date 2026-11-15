@@ -546,11 +546,12 @@ static UWORD addb(UWORD w, int n)
     return (w & 0xff00) | (UBYTE)(w + n);
 }
 
-/* the period table of a finetune: _periodtable+32 + (BYTE)(finetune * 4);
-   finetunes outside -8..7 read pointers outside the table (#211) */
+/* the period table of a finetune: _periodtable+32 + (BYTE)(finetune * 4)
+   as a byte offset (the original's MOVE.l 0(a0,d0.w)); finetunes outside
+   -8..7 read pointers outside the table (#211) */
 BL_ALWAYS_INLINE UWORD *periods_of(UBYTE finetune)
 {
-    return db.periodtable[8 + (BYTE)(finetune << 2) / 4];
+    return *(UWORD **)((UBYTE *)&db.periodtable[8] + (BYTE)(finetune << 2));
 }
 
 /* a period by a byte offset (the note doubled as a byte or a word) */
@@ -1005,8 +1006,10 @@ sample:
         PT->periodtbl = periods_of(PT->finetune);
         per = PERIOD(PT->periodtbl, (UBYTE)((UBYTE)((q >> 16) + octstart[idx]) * 2));
     } else {
+        UWORD nn = n;                           /* 0-62 */
+
         PT->periodtbl = periods_of(PT->finetune);
-        per = PERIOD(PT->periodtbl, (UBYTE)(n + n));
+        per = PERIOD(PT->periodtbl, nn + nn);
         start = sp + 6;
         end = SAMPLE(sp)->length + start;
         rep = ins->repeat;
@@ -1169,16 +1172,16 @@ BL_ALWAYS_INLINE int newline(void)
     /* d4 of the original: the qualifier in the low byte, the upper byte
        left over from a track before (PlayNote, 19xx) - Bxx and 1Dxx take
        the whole word (#203) */
-    UWORD qual = 0;
+    UWORD qual = 0, ntracks;                /* ntracks: db.numtracks */
     UBYTE ch = 0;
 
     if (!mmd1(PM)) {
-        db.numtracks = block[0];
+        db.numtracks = ntracks = block[0];
         db.numlines = block[1];
-        noteptr = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), db.numtracks);
+        noteptr = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), ntracks);
     } else {
         noteptr = block + 8 + bl_mulu_w((UWORD)(line * 4), *(UWORD *)block);
-        db.numtracks = *(UWORD *)block;
+        db.numtracks = ntracks = *(UWORD *)block;
         db.numlines = *(UWORD *)(block + 2);
     }
     do {
@@ -1337,7 +1340,7 @@ fx:
         if (!PT->noteoffcnt)
             PT->noteoffcnt = -1;
         qual = playnote_in(ch, note, PT->previnstr, PT->previnstra).d4;
-    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
+    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)ntracks);
     return 1;
 }
 
@@ -1411,6 +1414,7 @@ BL_ALWAYS_INLINE void hold(void)
 BL_ALWAYS_INLINE void ticks(UBYTE counter)
 {
     struct track **tdp = db.trackdataptrs;
+    UWORD ntracks = db.numtracks;
     UBYTE ch = 0;
 
     do {
@@ -1640,7 +1644,7 @@ tmpper:
             PT->tempvol = -1;
         } else
             AC_VOL(PT->audioaddr) = PT->prevvol;
-    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
+    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)ntracks);
 }
 
 /* _IntHandler: one timing pulse.  It and the routines of a pulse
