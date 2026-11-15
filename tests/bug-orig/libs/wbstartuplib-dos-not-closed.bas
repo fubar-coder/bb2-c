@@ -6,6 +6,7 @@
 ; run from the Workbench needs (manual; wbstartuplib answers the WBStartup
 ; message).
 ; Correct: the open count is the same after the run (+0).
+; @fixed #306
 ; @configs clib
 ; @pass runwrap=@WBRUN@|dosopen
 WBStartup
