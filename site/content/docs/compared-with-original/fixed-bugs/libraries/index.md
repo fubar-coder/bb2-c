@@ -1677,6 +1677,11 @@ of them can stop an existing program:
   ([#1047](https://github.com/fubar-coder/bb2-c/issues/1047),
   [#1046](https://github.com/fubar-coder/bb2-c/issues/1046);
   [Shapes too large for their size fields]({{< relref "/docs/compared-with-original/new-errors#shape-too-big" >}})).
+* `BBlit`, `UnBuffer` and `ShowStencil` stepped from plane to plane in
+  the buffer by the shape's plane size as a signed number, so with a
+  shape of 32 KB or more per plane they stepped backwards and wrote and
+  read outside the buffer; they step forwards
+  ([#1045](https://github.com/fubar-coder/bb2-c/issues/1045)).
 
 ### Drawing and polygons
 

@@ -3029,3 +3029,11 @@ rows:
     text: "A procedure with three or more parameters and a local NewType variable keeps all its parameters; the original overwrote the third, and with five parameters the fifth."
     page: compiler
     anchor: newtypes
+  - issue: 1045
+    severity: 4
+    topic: "Graphics"
+    library: "bblitlib"
+    command: "BBlit, UnBuffer, ShowStencil"
+    text: "`BBlit`, `UnBuffer` and `ShowStencil` work on shapes of 32 KB or more per plane; the original stepped backwards between the planes and wrote outside the buffer."
+    page: libraries
+    anchor: shapes-and-sprites
