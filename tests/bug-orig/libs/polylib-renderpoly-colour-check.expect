@@ -1,0 +1,3 @@
+[run]
+REQUESTER: AutoRequest body "Illegal Colour" *
+rc=0

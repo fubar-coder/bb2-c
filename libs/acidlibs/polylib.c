@@ -33,7 +33,10 @@
  *   - Fixed (#420): RenderPoly before any RenderTo... drew on a3 = the
  *     string pointer (no !libs; polyvector started at _bitmappoly); it
  *     draws nothing now (polyvector starts at render_none).
- *   - RenderToChunky colours > 14 read behind the 15 entry colour table. (#422)
+ *   - Fixed (#422): RenderPoly after RenderToChunky reads colours > 14
+ *     behind the 15 entry colour table; such a colour is an invalid
+ *     argument: with runtime error checking _renderpolychk (error check
+ *     area only) raises "Illegal Colour", the table read stays.
  *   - Fixed (#395): more than 10 edges on one side overflowed the edge
  *     lists l0/l1 (here ledges/redges, Dcb.w 32 in the original); they
  *     have room for the 15 edges of a polygon of 16 points now.  More
@@ -76,7 +79,7 @@ void _chunkycls(void), _chunkyplot(void), _chunkyplotclip(void);
 void _chunkyvlin(void), _chunkyvlinclip(void), _chunkypoly(void), _chunkypoly2(void);
 void _bitmappoly(void), _bitmappoly2(void), _rendertobitmap(void), _rendertobitmap2(void);
 void _rendertochunky(void), _rendertochunky2(void), _renderpoly(void);
-void _polychk(void), _chunkyvlinchk(void);
+void _polychk(void), _chunkyvlinchk(void), _renderpolychk(void);
 
 
 /* !libheader {#chunkylib,0,0,0,errors}: the original has no error check
@@ -146,7 +149,7 @@ BLITZ_NAME("RenderToChunky", "CopList#[,split]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_renderpoly, BLITZ_BLITZONLY_CHK(_polychk), 0);
+BLITZ_SUBS(_renderpoly, BLITZ_BLITZONLY_CHK(_renderpolychk), 0);
 BLITZ_NAME("RenderPoly", "numpts,*coords.w,color");
 
 BLITZ_LIBFIN();
@@ -868,7 +871,8 @@ static UBYTE *render_dither(WORD n, const struct point *pts, UWORD colour, UBYTE
     return bitmappoly_dither(n, pts, colour, bmap1, bmap0);
 }
 
-/* the colour through the table, index as a word (ADD d2,d2; #422) */
+/* the colour through the table, index as a word (ADD d2,d2); a colour
+   above 14 reads behind it (refused by _renderpolychk, #422) */
 static UBYTE *render_chunky(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
     (void)a3;
@@ -917,6 +921,7 @@ BLITZ_THUNK(_renderpoly, _renderpoly_c, "d1/a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(pointsmess, "Too Many Points");
 BLITZ_ERRCHK_MESSAGE(vlinmess, "ChunkyVlin y1 MUST NOT be greater than y2");
+BLITZ_ERRCHK_MESSAGE(colourmess, "Illegal Colour");
 
 /* _polychk - not in the original (#395): ChunkyPoly, BitMapPoly or
    RenderPoly with more than POINTMAX points (d0; negative: the reverse
@@ -938,8 +943,25 @@ static void BLITZ_ERRCHK _chunkyvlinchk_c(WORD y1 BL_REG(d1), WORD y2 BL_REG(d2)
         BLITZ_RUNERR(vlinmess);
 }
 
+/* _renderpolychk - not in the original: RenderPoly with more than
+   POINTMAX points (as _polychk, #395), or (#422) after RenderToChunky
+   with a colour (d2) beyond the 15 entries of the colour table cols,
+   which render_chunky would read behind it */
+static void BLITZ_ERRCHK _renderpolychk_c(WORD n BL_REG(d0), UWORD colour BL_REG(d2))
+{
+    UWORD count = n < 0 ? -n : n;
+
+    if (count > POINTMAX) {
+        BLITZ_RUNERR(pointsmess);
+        return;
+    }
+    if (polyvector == render_chunky && colour >= sizeof cols / sizeof cols[0])
+        BLITZ_RUNERR(colourmess);
+}
+
 /* the thunks behind all C check functions: their assembler ends with
    `.text`, and GCC does not repeat the section of a following
    BLITZ_ERRCHK function */
 BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_chunkyvlinchk, _chunkyvlinchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_renderpolychk, _renderpolychk_c, "d0-d1/a0-a1");
