@@ -7,6 +7,7 @@
 ; CopList: 16 bytes per channel, POS, CTL, PTH, PTL).
 ; Correct: the sprite pointer of an unused channel is the blank sprite
 ; (not 0), its position and control words are 0.
+; @fixed #413
 ; @configs clib
 DEFTYPE .l
 InitCopList 0,44,32,$10004,8,32,80

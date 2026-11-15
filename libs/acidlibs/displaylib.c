@@ -38,10 +38,12 @@
  * normal code: with the debugger the same runtime error, without it a
  * TRAP #0 with the message. (#412)  The !subs check _checkcoplist stays
  * in the error check area.
+ * Fixed (intended deviation, #413): the init wrote mysprite's address
+ *   into the data words of the SPR0POS/SPR0CTL moves of `spp` (+2/+6):
+ *   the unused sprite channels of every CopList fetched from address 0.
+ *   Here it goes into those of SPR0PTH/PTL (+10/+14).
  *
  * Kept from the original (BUG(orig)):
- *   - the init writes mysprite's address into the data words of the
- *     SPR0POS/SPR0CTL moves of `spp` (+2/+6), not into SPR0PTH/PTL. (#413)
  *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1. (#411)
  *   - CustomColors with thru256flag sets bot = 257 without reading the
  *     flag: 0 acts as 1, a later custom command below line 256 gets no
@@ -454,8 +456,8 @@ static void BLITZ_ROUTINE _codeinit_c(void)
     ULONG m = globalloc(32, 65538);
 
     d.mysprite = m;
-    ((UWORD *)spp)[3] = (UWORD)m;               /* BUG(orig) (#413): spp+6, spp+2 */
-    ((UWORD *)spp)[1] = (UWORD)(m >> 16);
+    ((UWORD *)spp)[7] = (UWORD)m;               /* fixed #413: spp+14, spp+10 */
+    ((UWORD *)spp)[5] = (UWORD)(m >> 16);
     if ((*(volatile UWORD *)0xdff07c & 255) == 248)
         d.agamac = 0xffff;
     else
@@ -1762,8 +1764,8 @@ BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
  * (channels from numsprites on for DisplaySprite).  Space: 4n+2.
  * BUG(orig) (#324): d1 is CCOffset * 16 (the declaration has
  * DisplaySprite's !libs), the a1 the compiler loaded is not used: the
- * offset is CCOffset * 64 bytes.  BUG(orig) (#413): the moves carry the
- * template's wrong data.
+ * offset is CCOffset * 64 bytes.  Fixed (#413): the moves of an unused
+ * channel point at the blank sprite.
  * Errors: an overrun ("Not Enough Custom Cops"); fixed: in the normal code (#412).
  *
  * @param ccoffset  d1: CCOffset * 16
