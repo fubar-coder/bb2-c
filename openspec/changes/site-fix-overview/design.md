@@ -40,9 +40,8 @@ search finds the page already).
    by severity, topic, issue (the order without JavaScript); renders a
    `<table>` with `<th scope="col">` headers; links built by `relref`
    with page and anchor (`relref . (printf "%s#%s" ...)`), issue links
-   from the number. The sort order inside severity 1 puts #421 first via
-   an optional `rank` field only on the entries that need it (decision
-   open, see Open Questions: or simply ordered by issue number).
+   from the number. Inside a severity level the rows are ordered by issue number; the
+   severity-1 rows also stand in a warning box above the table.
 4. **JavaScript.** One file `site/assets/js/fix-overview.js`, loaded by
    the shortcode only on that page through `resources.Get | minify |
    fingerprint` (Hugo Pipes, built in; no external tool). Behaviour:
@@ -129,25 +128,12 @@ Add data, shortcode, page and check in one change; fill the data once;
 publish with the next push. Rollback: remove the page and the shortcode
 call; the detail pages are unchanged.
 
-## Open Questions
+## Decisions on the open questions (user, 2026-11-15)
 
-1. Name and final title of the page and the file (`what-changes.md`,
-   "What changes for existing programs" or "Compatibility overview").
-2. Order inside severity 1 and the placing of #421: a `rank` field, or
-   issue order with #421 simply the smallest? (#421 is not the smallest
-   issue number of the level-1 set: #199 is lower.)
-3. Topic list: the eight topics named (graphics, strings, files, windows
-   and gadgets, sound, compiler, editor, system) do not cover input,
-   dates and numbers, memory/lists/arrays, menus; add `numbers and dates`,
-   `data structures` and `input`, or fold them? To be settled with the
-   classification.
-4. Entries that fix several issues or one issue with several commands:
-   one row per issue (proposed) with the main command, or one row per
-   command?
-5. Editor entries and "Running Blitz 2" entries have no library: show
-   the program ("TED", "Blitz 2") in the Library/command column?
-6. Where the negative test of the check runs: only locally (podman) or
-   also in the Pages workflow; and whether `.RawContent` scanning is
-   acceptable or the detail pages should get a marker per entry.
-7. Whether the severity 3 text must say per row which runtime error
-   appears (affects the sentence length).
+1. Title "Important Fixes & Breaking Changes"; the severity-1 rows (the handful that can really break existing programs) stand in a prominent warning box above the table. File name to match (e.g. `important-fixes.md`).
+2. No `rank` field: severity 1 is a small set shown in the warning box; inside a level the rows are ordered by issue number.
+3. Topics (fixed list): Graphics, Strings, Numbers & dates, Files, Input, Windows & screens, Gadgets & menus, Sound, Data structures, System, Compiler, Editor.
+4. One row per issue; the affected commands in the column, separated by commas.
+5. Editor and compiler entries show "TED" or "Compiler" in the Library/command column.
+6. The negative test of the check runs only locally (ctest, skipped without podman); the `.RawContent` scan is acceptable, no marker per entry.
+7. Severity-3 rows name the runtime error in the sentence, in at most five words.

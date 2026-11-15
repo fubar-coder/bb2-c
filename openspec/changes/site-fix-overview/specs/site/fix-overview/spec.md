@@ -2,7 +2,7 @@
 ## ADDED Requirements
 
 ### Requirement: The overview lists the fixed original bugs
-The page "What changes for existing programs" under
+The page "Important Fixes & Breaking Changes" under
 `compared-with-original/` SHALL show one table row per fixed original bug,
 and only those: no `DIFF` case, no port bug, no item decided as designed
 or won't fix. A row SHALL have a severity, a topic, a library or command,

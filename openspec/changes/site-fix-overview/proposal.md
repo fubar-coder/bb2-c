@@ -13,7 +13,7 @@ pages.
 
 ## What Changes
 
-- A new page "What changes for existing programs" under
+- A new page "Important Fixes & Breaking Changes" under
   `site/content/docs/compared-with-original/` with one sortable and
   filterable table of the fixed original bugs (only those: not `DIFF`
   cases, port bugs, as-designed or won't-fix items).
@@ -55,7 +55,7 @@ pages.
 - New: `site/data/fixoverview.yaml` (name open, design.md), a shortcode
   and a partial under `site/layouts/`, a script and a stylesheet under
   `site/assets/` (or `static/`), the page
-  `site/content/docs/compared-with-original/what-changes.md`.
+  `site/content/docs/compared-with-original/important-fixes.md`.
 - Changed: `site/README.md` (the data file and its fields),
   the `_index.md` files of the compared-with-original chapter and the
   fixed-bugs pages (links), `.github/workflows/pages.yml` only if the
