@@ -1,3 +1,5 @@
+[compile]
+ok
 [run]
-row bytes valid
+REQUESTER: AutoRequest body "Illegal SpriteMode" pos "OKAY!" neg "OKAY!" -> answered FALSE
 rc=0

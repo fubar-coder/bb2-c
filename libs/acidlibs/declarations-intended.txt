@@ -95,3 +95,7 @@ lib 121: relocations in the declaration part 14 != 21
 # (stagschk, "Too Many Tags"); the original has none
 lib 158: entry 14 ScreenTags +$64: code offset set in only one of them
 lib 158: relocations in the declaration part 48 != 49
+# spriteslib (#281): SpriteMode gets an error check (spritemodechk,
+# "Illegal SpriteMode"); the original has none
+lib 112: entry 7 SpriteMode +$C: code offset set in only one of them
+lib 112: relocations in the declaration part 25 != 26

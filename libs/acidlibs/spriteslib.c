@@ -31,8 +31,6 @@
  *  - freeasprite (and SaveSprites/LoadSprites) compute the size with the
  *    CURRENT widthshift: after a SpriteMode change a sprite is freed with
  *    a wrong size. (#280)
- *  - SpriteMode reads the width from a table of 3 words: modes > 2 read
- *    the variables behind it (same layout here). (#281)
  *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
  *    width (beyond the row for narrow shapes). (#282)
  *
@@ -45,6 +43,11 @@
  *    (max - 1) << 4 with word operations: from a maximum of 2049 on it
  *    lies before the table and only the first sprite is loaded.  Here the
  *    offset is a long. (#999)
+ *  - SpriteMode reads the width from a table of 3 words: modes > 2 read
+ *    the variables behind it (same layout here).  An invalid argument:
+ *    the command is unchanged, the new error check spritemodechk
+ *    (debugger only) stops a mode above 2 with "Illegal SpriteMode"; the
+ *    original has no check. (#281)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -58,6 +61,7 @@ void dosavesprites(void), doloadsprites(void), doloadsprites2(void);
 void dospritemode(void), freeasprite(void);
 static ULONG codeinit(void);
 void gspchk(void), spriteslib_sspchk(void), infchk(void), ssz(void);
+void spritemodechk(void);
 
 #define AMIGAONLY(entry) ((char *)(entry) + 1)
 #define BLITZONLY(chk)   ((char *)(chk) + 1)
@@ -120,7 +124,7 @@ BLITZ_NAME("LoadSprites", "Sprite#[,Sprite#],Filename$");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(dospritemode, 0, 0);
+BLITZ_SUBS(dospritemode, spritemodechk, 0);  /* check: fixed #281 */
 BLITZ_NAME("SpriteMode", "0=16 1=32 2=64");
 
 BLITZ_DUMTOKE(_toke, "Sprite", "");
@@ -200,8 +204,10 @@ static ULONG BLITZ_ROUTINE codeinit(void)
  * Mode 0/1/2 = 16/32/64 pixels per sprite: widthshift 2/3/4, spritewid
  * 2/4/8 bytes (from the table shlup).
  *
- * BUG(orig) (#281): the width is read from a table of 3 words without a
- * check: modes > 2 read the variables behind it.
+ * The width is read from a table of 3 words: modes above 2 read the
+ * variables behind it.  Errors (debugger only, spritemodechk): a mode
+ * above 2 -> "Illegal SpriteMode" (Fixed (#281): the original has no
+ * check).
  * BUG(orig) (#280): sprites made before the change are later freed (and
  * saved/loaded) with the size of the new mode.
  *
@@ -625,6 +631,7 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Sprite Channel Unavailable");
 BLITZ_ERRCHK_MESSAGE(mess7, "Slice does not support priority");
 BLITZ_ERRCHK_MESSAGE(mess8, "Sprite Channel not in range");
 BLITZ_ERRCHK_MESSAGE(mess9, "First Sprite must be lower than second");
+BLITZ_ERRCHK_MESSAGE(modemess, "Illegal SpriteMode");     /* fixed, #281 */
 
 /* GetaSprite: shape there, 4 or 16 colours, not too wide: at most the 8
    channels of ShowSprite, 8 sprites of a 4 colour shape (sprite width * 64
@@ -676,6 +683,14 @@ static void BLITZ_ERRCHK ssz_c(UBYTE *last BL_REG(a2))
         BLITZ_RUNERR(mess9);
 }
 
+/* SpriteMode: 0, 1 or 2 (the 3 words of shlup; fixed #281, the original
+   has no check) */
+static void BLITZ_ERRCHK spritemodechk_c(ULONG m BL_REG(d0))
+{
+    if ((UWORD)m > 2)
+        BLITZ_RUNERR(modemess);
+}
+
 /* the thunks after all check functions: their assembler switches back to
    .text, which GCC does not notice (a check function after a thunk would
    end up in the normal code) */
@@ -683,3 +698,4 @@ BLITZ_ERRCHK_THUNK(gspchk, gspchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(spriteslib_sspchk, sspchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(infchk, infchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ssz, ssz_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(spritemodechk, spritemodechk_c, "d0-d1/a0-a1");
