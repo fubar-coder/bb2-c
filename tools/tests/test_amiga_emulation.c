@@ -959,6 +959,59 @@ int main(void)
         rmdir(xdg);
     }
 
+    /* no Amiberry in PATH: the start fails at once with a message naming it,
+       errno is not EAGAIN (not "no slot"), and nothing is made: the work
+       directory is not there.  With an executable of that name in PATH the
+       start gets past this check (and fails for another reason). */
+    {
+        static const struct amiga_emulation_option nohdf[] = {
+            { "kickstart_rom_file", NULL },
+            { "hardfile2", "ro,DH0:/nonexistent/x.hdf,32,1,2,512,0,,uae0" },
+        };
+        char dir[] = "/tmp/amiga-emulation-pathtest-XXXXXX", work[96], exe[96];
+        char *opath = getenv("PATH"), *spath = opath ? strdup(opath) : NULL;
+        struct amiga_emulation_params q = { 0 };
+        FILE *f;
+
+        CHECK(mkdtemp(dir) != NULL);
+        snprintf(work, sizeof work, "%s/work", dir);
+        snprintf(exe, sizeof exe, "%s/amiberry", dir);
+        setenv("PATH", dir, 1);
+        q.work_dir = work;
+        q.changes = nohdf;
+        q.nchanges = 2;
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+              && strstr(err, "amiberry not found in PATH") && !amiga_emulation_no_slot()
+              && access(work, F_OK) != 0);
+        q.amiberry = "no-such-amiberry";
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+              && strstr(err, "no-such-amiberry not found in PATH") && access(work, F_OK) != 0);
+        q.amiberry = NULL;
+        /* a file that is not executable does not count; an executable one does
+           (the start then fails for another reason) */
+        f = fopen(exe, "w");
+        CHECK(f != NULL);
+        if (f)
+            fclose(f);
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+              && strstr(err, "amiberry not found in PATH"));
+        CHECK(chmod(exe, 0755) == 0);
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL
+              && err[0] && !strstr(err, "not found in PATH"));
+        if (spath)
+            setenv("PATH", spath, 1);
+        else
+            unsetenv("PATH");
+        free(spath);
+        remove(exe);
+        {
+            char cmd[160];
+
+            snprintf(cmd, sizeof cmd, "rm -rf %s", dir);
+            CHECK(system(cmd) == 0);
+        }
+    }
+
     /* the ROM check: missing, plain, encrypted without and with rom.key
        (beside the real file, not beside a link to it) */
     {

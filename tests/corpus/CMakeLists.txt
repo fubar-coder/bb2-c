@@ -390,6 +390,28 @@ add_test(NAME corpus_min_free COMMAND ${CMAKE_COMMAND} "-DCMD=${CORPUSRUN};pass;
 	-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
 set_tests_properties(corpus_min_free PROPERTIES
 	PASS_REGULAR_EXPRESSION "runner-exit: as expected")
+# corpus_no_amiberry: a PATH without Amiberry is a skipped run (exit status
+# 77, the message names Amiberry), not a session that "exited early" (exit
+# status 2); no emulator needed, and the run leaves no directory.  The
+# same with a runner that must fail: the status 2 does not match (the test
+# corpus_no_amiberry_broken expects the failure of the check, WANT=2).
+set(work ${CMAKE_CURRENT_BINARY_DIR}/corpus_no_amiberry)
+string(REPLACE "corpus_parallel" "corpus_no_amiberry" ntext "${text}")
+file(GENERATE OUTPUT ${work}.pass CONTENT "${ntext}")
+foreach(variant "" _broken)
+	if(variant STREQUAL "")
+		set(want 77)
+	else()
+		set(want 2)
+	endif()
+	add_test(NAME corpus_no_amiberry${variant} COMMAND ${CMAKE_COMMAND}
+		"-DCMD=${CORPUSRUN};pass;${work}.pass" -DWANT=${want} "-DREGEX=amiberry not found in PATH"
+		-DWORK=${work} -DPATH_DIR=${work}-path
+		-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
+endforeach()
+set_tests_properties(corpus_no_amiberry PROPERTIES
+	PASS_REGULAR_EXPRESSION "runner-exit: as expected")
+set_tests_properties(corpus_no_amiberry_broken PROPERTIES WILL_FAIL TRUE)
 
 # --------------------------------------------- the CD (corpusrun cd, runner/)
 # Every .bb2/.bb of the CD compiled (not run) as bb2's bb2corpus did: with

@@ -1787,6 +1787,15 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     no_slot = 0;
     if (!emulation_dir || !*emulation_dir)
         emulation_dir = AMIGA_EMULATION_DIR_DEFAULT;
+    /* no Amiberry (not in PATH): fail before anything is made, so that the
+       callers skip like for a missing ROM, instead of a session that ends as
+       "exited early" */
+    if (!(path = find_program(p->amiberry ? p->amiberry : "amiberry"))) {
+        set_err(err, errlen, "%s not found in PATH", p->amiberry ? p->amiberry : "amiberry");
+        free(e);
+        return NULL;
+    }
+    free(path);
     if (!e) {
         set_err(err, errlen, "out of memory");
         return NULL;

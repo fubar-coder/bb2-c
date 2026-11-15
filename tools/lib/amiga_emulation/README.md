@@ -46,6 +46,12 @@ Requirement: Amiberry ≥ 8.4 in `PATH`, Kickstart ROM and hardfiles in
 * `exited` (`exited early`): Amiberry ended before the script did;
 * `failed`: the run could not be handled.
 
+Without an executable `amiberry` in `PATH` (or the program that
+`amiberry=` names) `amiga_emulation_start` fails at once with
+`amiberry not found in PATH`, before it makes anything, like for a
+missing ROM or hardfile: the runners end such a run as skipped (exit
+status 77), not as a session that `exited early`.
+
 With `AMIGA_EMULATION_TIMEOUT_STATE=1`, a session that ends by `timeout`
 or `halt` leaves `timeout.txt` in its working directory (how it ended,
 CPU registers, whether the CPU is halted, its threads) and the machine's
