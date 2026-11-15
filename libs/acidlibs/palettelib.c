@@ -350,11 +350,14 @@ static void globfree(APTR mem, ULONG size)
 /* ------------------------------------------------- colours of palettes */
 
 /* rep - MOVE dN,d5:LSL #8,dN:OR d5,dN:MOVE dN,d5:SWAP dN:MOVE d5,dN */
-static ULONG rep(UWORD v)
+BL_ALWAYS_INLINE ULONG rep(UWORD v)
 {
     UWORD w = (UWORD)(v << 8) | v;
+    ULONG l;
 
-    return (ULONG)w << 16 | w;
+    /* the original's MOVE/SWAP/MOVE (GCC: an AND.l, a copy and an OR.l) */
+    __asm__("move.w %1,%0\n\tswap %0\n\tmove.w %1,%0" : "=&d"(l) : "d"(w));
+    return l;
 }
 
 /* the cycle table of a palette that gets its first colour data: an end
@@ -370,31 +373,39 @@ static void cycend(struct bb_palette *p)
     p->cyc[0].lo = -1;
 }
 
+/* the palette grown to c + 1 colours (new data, the old colours copied):
+   the new data; out of line, so that the common path of palrgb saves no
+   register */
+static __attribute__((noinline)) UBYTE *palgrow(struct bb_palette *p, UWORD c)
+{
+    UBYTE *n = globalloc((ULONG)(UWORD)(c + 1) * 12 + 8, MEMF_PUBLIC | MEMF_CLEAR);
+
+    if (!p->pdata)
+        cycend(p);                              /* fixed (#229) */
+    else {
+        ULONG *s = (ULONG *)p->pdata, *dst = (ULONG *)n;
+        UWORD k = (UWORD)(p->numcols * 3) + 1;
+
+        do
+            *dst++ = *s++;
+        while (k-- != 0);
+        globfree(p->pdata, (ULONG)p->numcols * 12 + 8);
+    }
+    p->pdata = n;
+    p->numcols = c + 1;
+    W(n, 0) = c + 1;
+    return n;
+}
+
 /* dopalrgb - a0 = palette, d1 = colour, d2/d3/d4 = red/green/blue (8
-   bit); the palette grows if needed.  Keeps d0-d5/a0-a2. */
-static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
+   bit); the palette grows if needed */
+BL_ALWAYS_INLINE void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
 {
     UBYTE *d = p->pdata;
     ULONG *e;
 
-    if ((WORD)c >= (WORD)p->numcols) {          /* expand the palette */
-        UBYTE *n = globalloc((ULONG)(UWORD)(c + 1) * 12 + 8, MEMF_PUBLIC | MEMF_CLEAR);
-
-        if (!p->pdata)
-            cycend(p);                          /* fixed (#229) */
-        else {
-            ULONG *s = (ULONG *)p->pdata, *dst = (ULONG *)n;
-            UWORD k = (UWORD)(p->numcols * 3) + 1;
-
-            do
-                *dst++ = *s++;
-            while (k-- != 0);
-            globfree(p->pdata, (ULONG)p->numcols * 12 + 8);
-        }
-        p->pdata = d = n;
-        p->numcols = c + 1;
-        W(d, 0) = c + 1;
-    }
+    if ((WORD)c >= (WORD)p->numcols)            /* expand the palette */
+        d = palgrow(p, c);
     e = (ULONG *)(d + 4 + (WORD)(c * 12));
     e[0] = rep(r);
     e[1] = rep(g);
@@ -406,8 +417,7 @@ static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
  * of a palette, 8 bit components.
  *
  * The value is repeated in every byte of the component's long; the
- * palette grows if needed (new data, the old colours copied).  Keeps
- * d0-d5/a0-a2.
+ * palette grows if needed (new data, the old colours copied).
  *
  * Errors (debugger only, aaprgbchk): "Not an AGA machine!", "Colour must
  * be in the range 0-31" (colour > 255), "RGB component out of range"
@@ -419,12 +429,13 @@ static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
  * @param b d4: blue.
  * @param p a0: the palette (!libs #palettelib,$1080).
  */
-static void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2), UWORD g BL_REG(d3),
-                                     UWORD b BL_REG(d4), struct bb_palette *p BL_REG(a0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
+                                                      UWORD g BL_REG(d3), UWORD b BL_REG(d4),
+                                                      struct bb_palette *p BL_REG(a0))
 {
     palrgb(p, c, r, g, b);
 }
-BLITZ_ALIAS(dopalrgb, dopalrgb_c);
+BLITZ_ALIAS_EP(dopalrgb, dopalrgb_c);
 
 /**
  * @brief PalRGB Palette#,Colour Register,Red,Green,Blue - set a colour of
@@ -442,13 +453,13 @@ BLITZ_ALIAS(dopalrgb, dopalrgb_c);
  * @param b d4: blue.
  * @param p a0: the palette (!libs #palettelib,$1080).
  */
-static void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
-                                         UWORD g BL_REG(d3), UWORD b BL_REG(d4),
-                                         struct bb_palette *p BL_REG(a0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
+                                                          UWORD g BL_REG(d3), UWORD b BL_REG(d4),
+                                                          struct bb_palette *p BL_REG(a0))
 {
     palrgb(p, c, (UWORD)(r << 4) | r, (UWORD)(g << 4) | g, (UWORD)(b << 4) | b);
 }
-BLITZ_ALIAS(do4bitpalrgb, do4bitpalrgb_c);
+BLITZ_ALIAS_EP(do4bitpalrgb, do4bitpalrgb_c);
 
 /* make4bitrgbs - a0 = palette: up to 32 4 bit RGB words in rgbs4bit
    (from the top byte of each component, fixed #224, see above); d0 =
@@ -456,21 +467,22 @@ BLITZ_ALIAS(do4bitpalrgb, do4bitpalrgb_c);
 static UWORD make4(const struct bb_palette *p)
 {
     UWORD n = p->numcols, k;
-    const ULONG *s;
+    const UBYTE *s;
     UWORD *d = rgbs4bit;
 
     if (!n)
         return 0;
     if (n > 32)
         n = 32;
-    s = (const ULONG *)(p->pdata + 4);
+    s = p->pdata + 4;
     k = n - 1;
     do {
-        UWORD v = (UWORD)((s[0] >> 28) << 8);
-        v |= (UWORD)((s[1] >> 24) & 0xf0);
-        v |= (UWORD)(s[2] >> 28);
+        UWORD v = (UWORD)(s[0] << 4) & 0xf00;   /* the top bytes */
+
+        v |= s[4] & 0xf0;
+        v |= s[8] >> 4;
         *d++ = v;
-        s += 3;
+        s += 12;
     } while (k-- != 0);
     return n;
 }
@@ -984,26 +996,28 @@ static void showpal_amiga(struct bb_palette *p, APTR *scr, struct Library *gfx)
     }
 }
 
-/* b_showpal (Blitz) - a0 = used slice: its colour moves */
-static void showpal_blitz(struct bb_palette *p, struct bb_slice *slice)
+/* b_showpal (Blitz) - a0 = used slice: its colour moves.  The top byte
+   of each component is read as a byte (the original's ROL.l #8) */
+BL_ALWAYS_INLINE void showpal_blitz(struct bb_palette *p, struct bb_slice *slice)
 {
     UWORD *poke = (UWORD *)COLMOVES(slice);
     UWORD n = slice->colours;
-    const ULONG *s;
+    const UBYTE *s;
 
     if (n > p->numcols)
         n = p->numcols;
     if ((WORD)--n < 0)
         return;
     poke++;
-    s = (const ULONG *)(p->pdata + 4);
+    s = p->pdata + 4;
     do {
-        UWORD v = (UWORD)((s[0] >> 24) >> 4) << 8;
-        v |= (s[1] >> 24) & 0xf0;
-        v |= (s[2] >> 28);
+        UWORD v = (UWORD)(s[0] << 4) & 0xf00;
+
+        v |= s[4] & 0xf0;
+        v |= s[8] >> 4;
         *poke = v;
         poke += 2;
-        s += 3;
+        s += 12;
     } while (n-- != 0);
 }
 
@@ -1030,7 +1044,7 @@ void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6
     showpal_amiga((struct bb_palette *)blitz_string, scr, gfx);
 }
 
-void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0));
 /**
  * @brief ShowPalette Palette#, Blitz mode - write the palette into the
  * colour moves of the used slice.
@@ -1043,10 +1057,11 @@ void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0));
  *
  * @param slice a0: the used slice (!libs #blitzcoplib,$9002).
  */
-void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0))
 {
     showpal_blitz((struct bb_palette *)blitz_string, slice);
 }
+BLITZ_EP_MARK(showpal_b);
 BLITZ_AB_ROUTINE(showpal, showpal_b, "   jmp     _showpal_a");
 
 /* usepal - ShowPalette unless NewPaletteMode On */
@@ -1067,18 +1082,19 @@ void BLITZ_ROUTINE usepal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6)
         showpal_a(scr, gfx);
 }
 
-void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0));
 /**
  * @brief _use of the Palette object (Use Palette), Blitz mode -
  * ShowPalette unless NewPaletteMode On.
  *
  * @param slice a0: the used slice.
  */
-void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0))
 {
     if (!palmode)
-        showpal_b(slice);
+        showpal_blitz((struct bb_palette *)blitz_string, slice);
 }
+BLITZ_EP_MARK(usepal_b);
 BLITZ_AB_ROUTINE(usepal, usepal_b, "   jmp     _usepal_a");
 
 /* cycle - one palette's cycles one step; returns <>0 if colours moved */
@@ -1245,7 +1261,7 @@ BLITZ_ALIAS(dostopcycle, dostopcycle_c);
 
 /* Red/Green/Blue (Amiga) - GetRGB4 of the used screen's ColorMap; the
    upper word of d0 is GetRGB4's */
-static ULONG getcol_a(ULONG c, APTR *scr, struct Library *gfx, int shift)
+BL_ALWAYS_INLINE ULONG getcol_a(ULONG c, APTR *scr, struct Library *gfx, int shift)
 {
     ULONG v = GetRGB4(SL(scr)->ColorMap, c);
 
@@ -1253,11 +1269,15 @@ static ULONG getcol_a(ULONG c, APTR *scr, struct Library *gfx, int shift)
 }
 
 /* Blitz: the colour move of the used slice; upper word of d0 stays */
-static ULONG getcol_b(ULONG c, struct bb_slice *slice, int shift)
+BL_ALWAYS_INLINE ULONG getcol_b(ULONG c, struct bb_slice *slice, int shift)
 {
     UWORD v = *(UWORD *)(COLMOVES(slice) + 2 + (WORD)(UWORD)(c << 2));
 
-    return (c & 0xffff0000UL) | ((v >> shift) & 15);
+    BL_SETW(c, v);                              /* MOVE 2(a0,d0),d0 */
+    if (shift)                                  /* LSR d7,d0:AND #15,d0 */
+        __asm__("lsr.w %1,%0" : "+d"(c) : "i"(shift) : "cc");
+    __asm__("and.w #15,%0" : "+d"(c) : : "cc");
+    return c;
 }
 
 #define COLFN(name, shift)                                                  \
@@ -1268,11 +1288,12 @@ static ULONG getcol_b(ULONG c, struct bb_slice *slice, int shift)
     {                                                                       \
         return getcol_a(c, scr, gfx, shift);                                \
     }                                                                       \
-    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), struct bb_slice *slice BL_REG(a0)); \
-    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), struct bb_slice *slice BL_REG(a0)) \
+    static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0),  \
+                                                       struct bb_slice *slice BL_REG(a0)) \
     {                                                                       \
         return getcol_b(c, slice, shift);                                   \
     }                                                                       \
+    BLITZ_EP_MARK(name##_b);                                                \
     BLITZ_AB_ROUTINE(name, name##_b, "   jmp     _" #name "_a")
 
 /**
@@ -1376,8 +1397,9 @@ BLITZ_ALIAS(doagablue, doagablue_c);
    original's three instructions: SetRGB4 gets the caller's a1 unchanged
    (with a1 = the ViewPort, as a C call left it, the emulator's
    graphics.library stored green $8C instead of $88 for 8 - t122) */
-void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
-                           UWORD b BL_REG(d3), struct bb_slice *slice BL_REG(a0));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1),
+                                                   UWORD g BL_REG(d2), UWORD b BL_REG(d3),
+                                                   struct bb_slice *slice BL_REG(a0));
 /**
  * @brief RGB Colour Register,Red,Green,Blue - set a colour of the used
  * screen (Amiga mode) or slice (Blitz mode), 4 bit components.
@@ -1398,12 +1420,14 @@ void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_RE
  * @param slice a0: Blitz mode: the used slice; Amiga mode: the used
  *        screen (object), a6 = graphics.library.
  */
-void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
-                           UWORD b BL_REG(d3), struct bb_slice *slice BL_REG(a0))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1),
+                                                   UWORD g BL_REG(d2), UWORD b BL_REG(d3),
+                                                   struct bb_slice *slice BL_REG(a0))
 {
     *(UWORD *)(COLMOVES(slice) + 2 + (WORD)(UWORD)(c << 2)) =
         (UWORD)(r << 8) | (UWORD)(g << 4) | b;
 }
+BLITZ_EP_MARK(dorgb_b);
 BLITZ_AB_ROUTINE(dorgb, dorgb_b,
 "   move.l  (a0),a0\n"
 "   lea     44(a0),a0\n"
@@ -1459,39 +1483,47 @@ BLITZ_ALIAS(doaargb, doaargb_c);
  * << 8.  Nothing happens for an empty source or a destination with fewer
  * colours.
  *
+ * The original's code in assembler (the C of the loop stayed 12 %
+ * slower; its MOVEM.l loads and stores of the three components are the
+ * fastest form on the 68000): MULU takes the low word of each source
+ * long read from pdata + 2, the upper word of the component.
+ *
  * @param br d2: the brightness (Quick, 1.0 = full brightness).
  * @param s a0: the source palette.
  * @param d a1: the destination palette.
  */
-static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bb_palette *s BL_REG(a0),
-                                         struct bb_palette *d BL_REG(a1))
-{
-    UWORD n = s->numcols;
-    const ULONG *src;
-    ULONG *dst;
-    UWORD k;
-
-    if (!n || (WORD)n > (WORD)d->numcols)
-        return;
-    br >>= 8;
-    src = (const ULONG *)(s->pdata + 2);        /* +2: not a bug, see top */
-    dst = (ULONG *)(d->pdata + 4);
-    k = n - 1;
-    do {
-        int i;
-
-        for (i = 0; i < 3; i++) {
-            ULONG v = (ULONG)(UWORD)src[i] * (UWORD)br;
-
-            if (v >= 0xff0000)
-                v = 0xff0000;
-            dst[i] = v << 8;
-        }
-        src += 3;
-        dst += 3;
-    } while (k-- != 0);
-}
-BLITZ_ALIAS(_fadepalette, _fadepalette_c);
+BLITZ_ASM_ROUTINE(_fadepalette,
+"   move.w  4(a0),d0\n"
+"   beq.s   2f\n"                       /* nocols */
+"   cmp.w   4(a1),d0\n"
+"   bgt.s   2f\n"
+"   lsr.l   #8,d2\n"
+"   move.l  (a0),a0\n"
+"   addq.l  #2,a0\n"
+"   move.l  (a1),a1\n"
+"   addq.l  #4,a1\n"
+"   subq.w  #1,d0\n"
+"   move.l  #0xff0000,d7\n"             /* max */
+"1: movem.l (a0)+,d3-d5\n"              /* nxcol */
+"   mulu.w  d2,d3\n"
+"   cmp.l   d7,d3\n"
+"   bcs.s   3f\n"
+"   move.l  d7,d3\n"
+"3: asl.l   #8,d3\n"
+"   mulu.w  d2,d4\n"
+"   cmp.l   d7,d4\n"
+"   bcs.s   4f\n"
+"   move.l  d7,d4\n"
+"4: asl.l   #8,d4\n"
+"   mulu.w  d2,d5\n"
+"   cmp.l   d7,d5\n"
+"   bcs.s   5f\n"
+"   move.l  d7,d5\n"
+"5: asl.l   #8,d5\n"
+"   movem.l d3-d5,(a1)\n"
+"   lea     12(a1),a1\n"
+"   dbf     d0,1b\n"
+"2: rts");
 
 /* PaletteRange n,start,end,r0,g0,b0,r1,g1,b1 - d3-d5 = r0,g0,b0, the
    end colour on the argument stack (-2 r1, -4 g1, -6 b1) */
