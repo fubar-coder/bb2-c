@@ -16,7 +16,8 @@
  *   +6  sprites.w  +8 colours.w
  *   +10 pointer to the bitplane pointer moves   +14 sprite pointer moves
  *   +18 colour moves  +22 BPLCON1 value  +26 BPLCON2 value (all in the
- *   copper list)   +30 BPLCON1 copy.w   +32 height.w
+ *   copper list; 0 if not in it, +22 then points at +30)   +30 BPLCON1
+ *   copy.w   +32 height.w
  * The copper list (mycop, chip memory, length mycoplen) starts as the
  * dummy list {DMACON $0020, end}; every Slice/ColSplit/CustomCop inserts
  * its instructions at the right line: inscop2 allocates a new list,
@@ -43,10 +44,14 @@
  * COPJMP1 (also in Amiga mode).  Custom registers are written with MOVE
  * (helpers below), never CLR.
  *
- * Kept from the original (BUG(orig)):
- *   - Slice: unused pointers (+10..+26 = 0) are relocated like the
- *     others (0 - maxcop + position, later + list movements); Show into a
- *     slice without BPLCON1 writes to that address. (#407)
+ * Fixed (intended deviation, #407): Slice set the pointers of the
+ *   instructions its flags leave out to 0, then relocated all five
+ *   (0 - maxcop + position, later + list movements), and Show/ShowF/ShowB
+ *   wrote BPLCON1 through +22 of a slice without BPLCON1 to that random
+ *   address.  Here only pointers into maxcop (Slice) or into the old list
+ *   (inscop2) are relocated: unused ones stay 0, and +22 of a slice
+ *   without BPLCON1 points at its own +30, which Show writes anyway (Show
+ *   unchanged, no test there).
  * Fixed (intended deviation, #405): inscop2 took the long $01FE1234 for
  *   Slice's marker of the line 256 wait in every inserted block, also in
  *   a CustomCop string: it became $01FE0000 or the line 255 wait, and the
@@ -432,7 +437,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
     UWORD wline;                                /* the wait line */
     UWORD addblwait;                            /* insert the line-256 wait */
     UWORD yline;
-    ULONG cop, newlen, newlist, inslen, pos, move;
+    ULONG cop, newlen, newlist, inslen, pos, move, oldlen;
     ULONG count;                                /* d0: the longs to copy */
     UWORD *p;
     UBYTE *wait;
@@ -510,6 +515,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
             break;
     }
     old = (ULONG *)mycop;
+    oldlen = mycoplen;
     dealloc(mycop, mycoplen);
     mycop = newlist;
     mycoplen = newlen;
@@ -529,8 +535,9 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
 
                 if (!(yline > sy))
                     shift = inslen;
-                for (i = 0; i < 5; i++, q++)
-                    *q = *q - (ULONG)old + newlist + shift;
+                for (i = 0; i < 5; i++, q++)    /* fixed #407: only into the list */
+                    if (*q - (ULONG)old < oldlen)
+                        *q = *q - (ULONG)old + newlist + shift;
             }
             slice++;
         }
@@ -569,7 +576,7 @@ static void doslice2(const UWORD *args, UWORD flags, UWORD planes, UWORD sprites
     UWORD modbase;                              /* the modulo base */
     UWORD nplanes;                              /* the plane count */
     UWORD endline;                              /* the end wait line */
-    ULONG pos;
+    ULONG pos, len;
     int i;
 
     *(struct bb_slice **)(blitz_globals + used) = slice; /* set current slice */
@@ -622,7 +629,7 @@ notsmooth2:
         con0 |= bplcon0;
         *cop++ = con0;
     }
-    slice->con1 = 0;
+    slice->con1 = (ULONG)&slice->con1val;      /* fixed #407: Show writes there */
     if (flags & (1 << 14)) {                    /* BPLCON1 */
         *cop++ = 0x102;
         slice->con1 = (ULONG)cop;
@@ -763,10 +770,12 @@ notsmooth2:
         *cop++ = 0x0096;                        /* sprites off */
         *cop++ = 0x0020;
     }
-    pos = inscop3((ULONG *)maxcop, (ULONG)((UBYTE *)cop - (UBYTE *)maxcop), y);
+    len = (ULONG)((UBYTE *)cop - (UBYTE *)maxcop);
+    pos = inscop3((ULONG *)maxcop, len, y);
     slice->y = y;
-    for (i = 0; i < 5; i++)                     /* 'fixloop */
-        slice->moves[i] = slice->moves[i] - (ULONG)maxcop + pos;
+    for (i = 0; i < 5; i++)                     /* 'fixloop; fixed #407 */
+        if (slice->moves[i] - (ULONG)maxcop < len) /* only into maxcop */
+            slice->moves[i] = slice->moves[i] - (ULONG)maxcop + pos;
 }
 
 /**
@@ -781,8 +790,9 @@ notsmooth2:
  * (Lores/Hires multiple) are in the check routine only.  Errors (debugger
  * only, slicechk2): "Lores slice width MUST be multiple of 16", "Hires
  * slice width MUST be multiple of 32", "Slice already in use".
- * BUG(orig) (#407): unused copper list pointers (0) are relocated like
- * the others; Show into a slice without BPLCON1 writes to that address.
+ * Fixed (#407): only pointers into maxcop are relocated; unused ones stay
+ * 0, and the BPLCON1 pointer of a slice without BPLCON1 points at its own
+ * +30, which Show writes anyway (the original relocated them all).
  * The $01FE1234 marker is rewritten in maxcop itself (the library's
  * buffer, built anew by every Slice); fixed (#405): only there.
  *
@@ -1092,8 +1102,9 @@ static void BLITZ_ROUTINE doshow2_c(SHOWARGS) { show(bitmap, slice, 0, 0); }
  * d0-d7/a0/a2.  Errors (debugger only, nshowchk): "Unintialized Slice",
  * "Can't Show in Slice" (a dual playfield slice), "Uninitialized BitMap",
  * "Too many Bit planes to Show".
- * BUG(orig) (#407): a slice without BPLCON1 gets the value written at
- * its relocated 0 pointer.
+ * Fixed (#407): a slice without BPLCON1 gets the value written into its
+ * own +30 (the BPLCON1 copy); the original wrote it at a relocated 0
+ * pointer.
  *
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
@@ -1135,7 +1146,7 @@ static void BLITZ_ROUTINE doshowf3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_RE
  * playfields.  Errors (debugger only, showfchk): "Unintialized Slice",
  * "Uninitialized BitMap", "Too many Bit planes to Show", "Can't Show in
  * Slice" (a dual playfield slice without bit 15 in its bitplanes).
- * BUG(orig) (#407): see Show.
+ * Fixed (#407): see Show.
  *
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
@@ -1179,7 +1190,7 @@ static void BLITZ_ROUTINE doshowb3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_RE
  * "Unintialized Slice", "Uninitialized BitMap", "Too many Bit planes to
  * Show", "Can't Show in Slice" (a dual playfield slice without bit 14 in
  * its bitplanes).
- * BUG(orig) (#407): see Show.
+ * Fixed (#407): see Show.
  *
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})

@@ -5,7 +5,8 @@ done
 ok
 [run]
 bitplanes -1 sprites -1 colours -1 bplcon2 -1
-bplcon1 pointer 0 0
+bplcon1 pointer at the copy 0
+no show
 rc=0
 [blitz2]
 rc=0
