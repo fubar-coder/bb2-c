@@ -85,13 +85,13 @@ binput.loopsound            12653    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a
 bmath.lmul                    416      383.0  c=a*b
-bmath.ldiv                   5733     2661.0  c=a/b
-bmath.lmod                   6547     3113.0  c=a MOD b
+bmath.ldiv                    528     2661.0  c=a/b
+bmath.lmod                    532     3113.0  c=a MOD b
 bmath.wmul                     89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2
 bmath.asg_q                    36       32.5  q3=q1
 bmath.qmul                    467      434.0  q3=q1*q2
-bmath.qdiv                   8363     3819.5  q3=q1/q2
+bmath.qdiv                   3688     3819.5  q3=q1/q2
 bmath.asg_f                    36       34.0  f3=f1
 bmath.fmul                    555      546.0  f3=f1*f2
 bmath.fdiv                    734      723.5  f3=f1/f2

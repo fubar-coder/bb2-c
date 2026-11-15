@@ -25,8 +25,8 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 4. Long and quick division
 
-- [ ] 4.1 Replace the `divide` routine of ldivlib by an assembler block: a fast path for a divisor that fits in 16 bits (two `divu`, about 300 cycles instead of the original's 2661 for Long) and the original's loop (about 14 instructions, `ldivlib` of the CD) for a 32-bit divisor; the same for Quick division (16.16) and the Long and Quick Mod; keep the entries, the sign rules and the #200 fix bit for bit; no error check is added (#1048); measure Long, Quick and Mod division and tighten the budgets (user decision 2026-11-15: faster than the original where the 68000 allows it)
-- [ ] 4.2 Run the library tests, the corpus and bug-orig; check division results of the corpus unchanged
+- [x] 4.1 Replace the `divide` routine of ldivlib by an assembler block: a fast path for a divisor that fits in 16 bits (two `divu`, about 300 cycles instead of the original's 2661 for Long) and the original's loop (about 14 instructions, `ldivlib` of the CD) for a 32-bit divisor; the same for Quick division (16.16) and the Long and Quick Mod; keep the entries, the sign rules and the #200 fix bit for bit; no error check is added (#1048); measure Long, Quick and Mod division and tighten the budgets (user decision 2026-11-15: faster than the original where the 68000 allows it)
+- [x] 4.2 Run the library tests, the corpus and bug-orig; check division results of the corpus unchanged
 
 ## 5. String copy loops
 
