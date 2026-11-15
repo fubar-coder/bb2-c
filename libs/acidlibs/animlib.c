@@ -9,7 +9,7 @@
  *   +6  even byte width.w (ILBM words * 2)        +8  frames.w
  *   +10 BODY (memlib globalloc, MEMF_PUBLIC)       +14 its length.l
  *   +18 first delta node           +22 length of the first node
- *   +26 current delta node         +30 2 = EOR deltas, 0 = MOVE
+ *   +26 current delta node         +30 stored.b +31 2 = EOR, 0 = MOVE
  * Delta nodes: {next.l, length of the NEXT node.l, DLTA chunk}; the
  * length of a node is stored in its predecessor (+4; the anim's +22 for
  * the first).
@@ -29,8 +29,13 @@
  *   Frames: inline MOVE 8(a0),d0.
  *
  * Kept from the original (BUG(orig)):
- *   - the BODY is decoded as ByteRun1 whatever BMHD's compression says
- *     (#397).
+ *   - Fixed (intended deviation, #397): the BODY was decoded as ByteRun1
+ *     whatever BMHD's compression said, and a run longer than the rest of
+ *     the row was written behind it.  Here LoadAnim marks a BODY of
+ *     compression 0 (stored rows) with 1 in the byte +30 (the upper byte
+ *     of the original's EOR word, which is 0 there, and stays 0 for
+ *     ByteRun1; the EOR flag is the byte +31), InitAnim copies stored rows
+ *     and ends a run at the end of the row.
  *   - Fixed (intended deviation, #402): the DBF counters of InitAnim, its
  *     second form and NextFrame ran 65536 times for a BMHD with height,
  *     depth or width 0.  Here LoadAnim keeps no BODY and no deltas of
@@ -151,7 +156,11 @@ struct anim {
     struct delta *first;        /* +18: the first delta node */
     ULONG firstlen;             /* +22: its length */
     struct delta *current;      /* +26 */
-    UWORD eor;                  /* +30: 2 = EOR deltas, 0 = MOVE */
+    UBYTE stored;               /* +30: 1 = the BODY is stored rows (BMHD
+                                   compression 0), 0 = ByteRun1 (fixed,
+                                   #397: in the original the upper byte
+                                   of the EOR word, always 0) */
+    UBYTE eor;                  /* +31: 2 = EOR deltas, 0 = MOVE */
 };
 static_assert(sizeof(struct anim) == 32);
 
@@ -164,6 +173,7 @@ struct iffstuff {
     UWORD height;               /* +2 */
     UWORD planes;               /* +4 */
     UWORD words;                /* +6: width in words */
+    UWORD comp;                 /* +8: compression (low byte) */
 };
 
 /* a bitmap object: struct bb_bitmap (blitzobj.h); the planes are read as
@@ -338,6 +348,7 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     *(ULONG *)&anim->width = *(const ULONG *)&info->width;
     anim->depth = info->planes;
     anim->ebwidth = (UWORD)(info->words << 1);
+    anim->stored = !(UBYTE)info->comp;  /* fixed (#397) */
     anim->frames = 1;
     if (!anim->height || !anim->depth || !anim->ebwidth) {
         /* fixed (#402): a picture with a dimension 0 keeps no BODY and no
@@ -375,7 +386,7 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
             return;
         }
         iffskip(19);
-        anim->eor = (UWORD)(ifflong() & 2);
+        anim->eor = (UBYTE)(ifflong() & 2);
         anim->frames = 0xffff;
         for (;;) {
             dltalen = ifffind(0x444c5441, &found); /* "DLTA" */
@@ -415,7 +426,8 @@ void BLITZ_ROUTINE doanimload2(struct anim *anim BL_REG(a0), ULONG name BL_REG(d
     doanimload(anim, name);
 }
 
-/* InitAnim - a0 = anim, a1 = bitmap: BODY (ByteRun1) into the bitmap */
+/* InitAnim - a0 = anim, a1 = bitmap: BODY (ByteRun1, or stored rows for
+   compression 0) into the bitmap */
 static void initanim(struct anim *anim, struct bb_bitmap *bm)
 {
     UBYTE *src = anim->body;
@@ -433,27 +445,41 @@ static void initanim(struct anim *anim, struct bb_bitmap *bm)
             WORD left = anim->ebwidth - 1;
             UBYTE *dst = (UBYTE *)(*planep++ + rowoff);
 
-            do {                                    /* 'loop4 */
-                UWORD n = *src++;
+            if (anim->stored) {         /* fixed (#397): a stored row */
+                UWORD k = anim->ebwidth;
 
-                if (!(n & 0x80)) {
+                do
+                    *dst++ = *src++;
+                while (--k);
+                continue;
+            }
+            do {                                    /* 'loop4 */
+                UWORD n = *src++ + 1;
+                UWORD take;
+
+                if (n <= 0x80) {                    /* a literal run */
+                    /* fixed (#397): a run ends at the end of the row,
+                       its rest is dropped */
+                    take = (WORD)n > left ? (UWORD)(left + 1) : n;
                     left -= n;
-                    left -= 1;
+                    n -= take;
                     do
                         *dst++ = *src++;
-                    while ((WORD)--n != -1);
+                    while (--take);
+                    src += n;
                 } else {
                     UBYTE fill;
 
-                    n = (UBYTE)-n;                  /* NEG.b */
+                    n = (UBYTE)-(n - 1);            /* NEG.b */
                     if (n & 0x80)
                         continue;                   /* $80: nop */
+                    n += 1;
+                    take = (WORD)n > left ? (UWORD)(left + 1) : n;
                     left -= n;
-                    left -= 1;
                     fill = *src++;
                     do
                         *dst++ = fill;
-                    while ((WORD)--n != -1);
+                    while (--take);
                 }
             } while (left >= 0);                    /* 'more: TST d5:BPL */
         } while ((WORD)--planes != -1);
@@ -465,8 +491,10 @@ static void initanim(struct anim *anim, struct bb_bitmap *bm)
 /**
  * @brief InitAnim Anim#: decode BODY into the used bitmap.
  *
- * BODY is decoded as ByteRun1 whatever BMHD's compression says (BUG(orig),
- * #397); the current delta becomes the first one; an anim without BODY
+ * BODY is decoded as ByteRun1, or copied row by row for the BMHD
+ * compression 0, and a run ends at the end of the row (fixed, #397: the
+ * original decoded every BODY as ByteRun1 and wrote a long run behind
+ * the row); the current delta becomes the first one; an anim without BODY
  * data decodes nothing (fixed, #400, #402: a missing BODY or a dimension
  * 0, the original ran its counters 65536 times).  a3 is left behind the
  * BODY data (not a bug).  Errors (debugger, animchk): "Uninitialized Anim",

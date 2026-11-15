@@ -1,0 +1,4 @@
+[run]
+raw FDAAFDBB FCCC0102
+run 11110000 22220000
+rc=0
