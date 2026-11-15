@@ -25,13 +25,13 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 4. Long and quick division
 
-- [ ] 4.1 Replace the `divide` loop of ldivlib by the assembler block of the original (the loop of about 14 instructions, `ldivlib` of the CD), keeping the entry and the #200 fix; no error check is added (#1048); measure Long, Quick and Mod division and tighten the budgets
+- [ ] 4.1 Replace the `divide` routine of ldivlib by an assembler block: a fast path for a divisor that fits in 16 bits (two `divu`, about 300 cycles instead of the original's 2661 for Long) and the original's loop (about 14 instructions, `ldivlib` of the CD) for a 32-bit divisor; the same for Quick division (16.16) and the Long and Quick Mod; keep the entries, the sign rules and the #200 fix bit for bit; no error check is added (#1048); measure Long, Quick and Mod division and tighten the budgets (user decision 2026-11-15: faster than the original where the 68000 allows it)
 - [ ] 4.2 Run the library tests, the corpus and bug-orig; check division results of the corpus unchanged
 
 ## 5. String copy loops
 
 - [ ] 5.1 Replace the copy loop of `copstring` (strings1lib) by the unrolled assembler loop of the original; keep the contract of the internal token (d0-d7)
-- [ ] 5.2 Replace the copy loop of `stringass` (strings2lib) likewise; put the allocation path of `assign` in its own `noinline` function so that the common path saves no registers; keep d1-d7 and a2 of `lastring`/`astring`
+- [ ] 5.2 Replace the copy loop of `stringass` (strings2lib) likewise; put the allocation path of `assign` in its own `noinline` function so that the common path saves no registers; keep d1-d7 and a2 of `lastring`/`astring`; both entries need no thunk then (task 8.3)
 - [ ] 5.3 Measure assignment, concat, compare, Len, Mid$, Left$, Right$, Asc, Chr$, Inkey$; tighten the budgets
 
 ## 6. Small entries
@@ -51,7 +51,14 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 - [ ] 7.3 sortlib: one scan loop per element type (byte, word, long, quick inline; float and string through a call); keep the results of every element type (library test cases per type, stable order where the original is stable)
 - [ ] 7.4 Measure and tighten the budgets for the blit and Sort commands
 
-## 8. Closing
+## 8. Internal tokens
 
-- [ ] 8.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
-- [ ] 8.2 Run `ctest --preset all`, `ctest --preset bug-orig`, `ctest --preset originals` (needs the CD) and `ctest --preset perf`; run `openspec validate libs-performance`; record the final measurement table next to the old one in `~/.local/share/bb2-c-work/perf-analysis/`
+- [ ] 8.1 Analysis first: which registers and flags the third-party callers of the internal tokens `globalloc`, `globfree` ($C002/$C003, 41/37 libraries), `allocst`, `freest` ($CF01/$CF02) and `fltoqu` ($D301) rely on across the call, the same method as `analyse-thirdparty-regs.md`; #1059 (the Z flag after AllocMem) belongs here
+- [ ] 8.2 Cut the thunks of the internal tokens to the contract of `thunks.md` table 1.4: no thunk for Mod ($D400-04), qutofl/fltoqu ($D300/01, unless 8.1 finds a caller), the power routine, arrmult/newarr and maxlen; clrloc, newmem and localstat save d0-d1 only; tokens with third-party callers keep what 8.1 finds
+- [ ] 8.3 `strcomp` ($CE00, keeps d0-d7), `freelast` ($C005, keeps d0 and the flags) and the procedure prologue routines as assembler entries that do not touch the registers of their contract, so they need no thunk; `copstring` and `lastring`/`astring` get the same in group 5
+- [ ] 8.4 Measure string compare, procedure calls with locals, Mod and the Quick/Float conversions; tighten the budgets
+
+## 9. Closing
+
+- [ ] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
+- [ ] 9.2 Run `ctest --preset all`, `ctest --preset bug-orig`, `ctest --preset originals` (needs the CD) and `ctest --preset perf`; run `openspec validate libs-performance`; record the final measurement table next to the old one in `~/.local/share/bb2-c-work/perf-analysis/`
