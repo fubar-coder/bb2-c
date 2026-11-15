@@ -26,7 +26,7 @@
 ## 5. Specs and docs
 
 - [ ] 5.1 Check `site/fix-overview` and the `testing/bug-fix-workflow` delta against the implementation; adjust the text where the decisions of 1.1 changed it
-- [ ] 5.2 State the new website step in `docs/development.md` or `tests/README.md` where the fix workflow is described, and in `.claude/agents/implementer.md` (report proposes severity and topic)
+- [x] 5.2 State the new website step in `docs/development.md` or `tests/README.md` where the fix workflow is described, and in `.claude/agents/implementer.md` (report proposes severity and topic) - done: `docs/development.md` (fix step 3), `.claude/agents/implementer.md`
 
 ## 6. CLAUDE.md
 

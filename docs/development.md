@@ -150,7 +150,11 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
    a one-sentence entry, or a section with an example of the original's
    and the port's output for a bug ordinary programs meet; a source the
-   port refuses or compiles differently also goes into `new-errors.md`);
+   port refuses or compiles differently also goes into `new-errors.md`),
+   and the issue's row in the overview of fixed bugs
+   (`site/data/fixoverview.yaml`: severity, topic, library or command,
+   one sentence, page and anchor, `site/README.md`); the site build fails
+   for an issue linked on a fixed-bugs page without a row;
 4. the label `fixed-in-port` on the issue (every fix);
 5. after the push: the issue is closed (by `Fixes #NNN`; otherwise with
    a comment naming the commit).
