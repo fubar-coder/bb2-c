@@ -5,8 +5,8 @@ done
 ok
 [run]
 parent
-CORPUS:out/wbstartuplib-clistring-overflow: Command too long
-CORPUS:out/wbstartuplib-clistring-overflow failed returncode 10
+child 1 288 abc xxx
+child end
 execute -1
 rc=0
 [blitz2]

@@ -2,7 +2,7 @@
 ok
 [run]
 parent
-child 1 1006 abc xyz
+child 1 255 abc xxx
 child end
 execute -1
 rc=0

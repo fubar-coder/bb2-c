@@ -4,8 +4,11 @@
 ; after wbstartuplib) and the program crashes at its start.
 ; The corpus runner starts programs without arguments, so the program
 ; runs itself as a child (dos GetProgramName and Execute, as in the corpus
-; test t41) with an argument of 1006 characters; the child shows it.
-; Correct: the child gets the whole argument and ends normally.
+; test t41) with an argument of 306 characters (the shell refuses a
+; command line of 1000 characters with "Command too long" before the
+; program starts, so the argument stays below that); the child shows it.
+; Correct: the argument line is cut to the 255 characters that fit, the
+; child gets them as its argument and ends normally.
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l
@@ -24,7 +27,7 @@ bk$=String$(Chr$(0),32) : bk=&bk$ : Poke.l bk,dosb
 nm$=String$(Chr$(0),256) : Poke.l bk+4,&nm$
 GetReg d0,bk
 MOVE.l d0,a0:MOVE.l (a0),a6:MOVE.l 4(a0),d1:MOVE.l #255,d2:JSR -576(a6)
-c$=Peek$(&nm$)+" abc"+String$("x",1000)+"xyz"+Chr$(0) : Poke.l bk+8,&c$
+c$=Peek$(&nm$)+" abc"+String$("x",300)+"xyz"+Chr$(0) : Poke.l bk+8,&c$
 NPrint "parent"
 GetReg d0,bk
 MOVEM.l d2-d7/a2-a6,-(a7)
