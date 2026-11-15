@@ -33,12 +33,19 @@ An entry SHALL keep registers beyond the rule only if a third-party library, an 
 - **WHEN** a statement is not in the list
 - **THEN** no register beyond the rule is required of it, and it SHALL NOT get a thunk for an imagined caller
 
+### Requirement: Getters that a caller relies on are assembler entries
+A getter of two instructions in the original (`move.w x,d0 : rts`) whose registers a known caller relies on SHALL be an assembler entry of the same form, not an alias of a C function: `EMouseX`, `EMouseY` and `EventCode` of windowslib. It SHALL write only the lower word of d0 and keep every other register, and its KEEPS statement SHALL state a0 and the upper word of d0.
+
+#### Scenario: wzlib combines the mouse position
+- **WHEN** wzlib shifts the result of `EMouseX` into the upper word of d0 and calls `EMouseY` with a0 live
+- **THEN** d0 is `EMouseX<<16 | EMouseY` and a0 is unchanged, whatever code gcc generates for the rest of windowslib
+
 ### Requirement: An exception is tested and verified in the generated code
 For each exception the library test SHALL state exactly the registers its callers need (and the upper word of d0 where needed) in its KEEPS statement, so that a toolchain change that makes the code lose them fails the test. Where the entry is an alias because the code keeps the registers by nature, the disassembly of the built library SHALL have been checked to keep them, and the check SHALL be named in the commit. Where it is not, the entry SHALL be a reduced thunk that saves exactly the needed registers, or an assembler block.
 
 #### Scenario: gcc starts to use a0 in an aliased exception
-- **WHEN** a compiler update makes the C function of `EMouseX` change a0
-- **THEN** the KEEPS case of `EMouseX` reads `lost a0` and the test fails
+- **WHEN** a compiler update makes the C function of `WBWidth` change a0
+- **THEN** the KEEPS case of `WBWidth` reads `lost a0` and the test fails
 
 #### Scenario: InitSound
 - **WHEN** `IncSound` of ElmoreIncLib calls `InitSound` and reads `(a0)` afterwards

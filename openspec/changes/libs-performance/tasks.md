@@ -12,10 +12,10 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 2. Register rule
 
-- [ ] 2.1 Verify the exceptions in the generated code: disassemble `EventWindow`, `RawStatus`, `EventCode`, `EMouseX`, `EMouseY`, `Rnd`, `WBWidth`, `WBHeight`, `WBDepth` as aliases of the C functions and write down which registers each keeps by nature; decide per entry: alias, reduced thunk or assembler block (the list is in `analyse-thirdparty-regs.md` section 5)
+- [ ] 2.1 Verify the exceptions in the generated code: disassemble `EventWindow`, `RawStatus`, `Rnd`, `WBWidth`, `WBHeight`, `WBDepth` as aliases of the C functions and write down which registers each keeps by nature; decide per entry: alias, reduced thunk or assembler block (the list is in `analyse-thirdparty-regs.md` section 5)
 - [ ] 2.2 Change the KEEPS judge and the statements of the library tests to the new rule (a4 to a7, a3 for functions, the exceptions' registers and the upper word of d0 where stated); keep the result and change cases; update the summary and `tests/README.md` ("Kept registers"); add a test with deliberately broken input (a function that loses a6 fails; a statement that changes d1 passes)
 - [ ] 2.3 Replace the thunks of the user-level statements and functions without exception by aliases of the C functions, one commit per library group; keep internal tokens, nullsubs and error checks; leave banklib `AllocMem` as it is (#1059); measure with the benchmark; run `ctest --preset all` and `ctest --preset bug-orig`
-- [ ] 2.4 Implement the exceptions as decided in 2.1, each with a KEEPS statement of exactly the needed registers; `InitSound` keeps a0 (this is the fix of #1058: its own commit with the test of the expected behaviour and the line `Fixes #1058`); the word functions with a caller keep the upper word of d0; `ExecVersion` returns a zero-extended long
+- [ ] 2.4 Implement the exceptions as decided in 2.1, each with a KEEPS statement of exactly the needed registers; `InitSound` keeps a0 (this is the fix of #1058: its own commit with the test of the expected behaviour and the line `Fixes #1058`); `EMouseX`, `EMouseY` and `EventCode` become assembler entries `move.w x,d0 : rts` as in the original (they keep a0 and the upper word of d0 by their code, design.md decision 3); `ExecVersion` returns a zero-extended long
 - [ ] 2.5 Add the kind-B deviation to `docs/libs/deviations.md` with the rule, the exceptions and their callers, and name a6; update `docs/libs/cmdlibs-port.md` and the website page of differences from the original; give the fix-scope result if a fix commit is involved
 
 ## 3. Speed profile
@@ -40,8 +40,9 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 - [ ] 6.2 Joyx, Joyy, Joyb, Joyr (gameiolib) and MouseX, MouseY, MouseXSpeed, MouseYSpeed (mouselib)
 - [ ] 6.3 RawStatus (blitzkeyslib, keeping a1 as decided in 2.1), QLimit and Rnd (vallib, keeping a0 and a1 for Rnd)
 - [ ] 6.4 DoColl, SColl, PColl (collslib), ShapeWidth, ShapeHeight, Handle (shapeslib), Colour and Locate (fontlib)
-- [ ] 6.5 Sgn, Int, Abs (vallib): the float case in its own `noinline` function, or an assembler entry if that is not enough
-- [ ] 6.6 For each routine of 6.1 to 6.5 check that a library test case covers its entry conditions; add cases where the original leaves one undefined; tighten the budgets
+- [ ] 6.5 GadgetHit, MenuHit, ItemHit, SubHit, EventQualifier (windowslib) as assembler entries of the same form as EMouseX (task 2.4)
+- [ ] 6.6 Sgn, Int, Abs (vallib): the float case in its own `noinline` function, or an assembler entry if that is not enough
+- [ ] 6.7 For each routine of 6.1 to 6.6 check that a library test case covers its entry conditions; add cases where the original leaves one undefined; tighten the budgets
 
 ## 7. Blit core and sortlib
 

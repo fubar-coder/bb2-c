@@ -53,8 +53,17 @@ build.
    exactly the needed registers, or an assembler block when the entry is hot
    (Rnd, RawStatus). Each exception is verified by disassembling the
    generated code, not by reading the C.
+   A getter of two instructions whose behaviour a caller relies on
+   (EMouseX, EMouseY, EventCode) is an assembler entry as in the original,
+   `move.w x,d0 : rts`, not an alias (user decision 2026-11-15). The code
+   is as short as the C function's, and the guarantee (only d0.w is
+   written) is in the code instead of depending on gcc's choice; the KEEPS
+   test stays as a check. The other event getters of windowslib
+   (GadgetHit, MenuHit, ItemHit, SubHit, EventQualifier) get the same form
+   with the small entries.
 4. **Word functions** keep the upper word of d0 only where a caller needs it
-   (EMouseY keeps it; EventCode needs zero or kept): the entries with
+   (EMouseY keeps it; EventCode needs zero or kept; both are assembler
+   entries, point 3): the entries with
    `BLITZ_THUNK_POST(.., "move.w d0,2(sp)")` that have no such caller become
    aliases. `ExecVersion` returns a zero-extended long (the analysis: a
    caller compares the word as a long).
