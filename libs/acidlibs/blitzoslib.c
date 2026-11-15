@@ -39,7 +39,6 @@
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
  *    line's LF in the bank by 0. (#87)
- *  - DeSelectBox does not clear `selected`. (#94)
  * Fixed (intended deviations):
  *  - #81: the address of box n was memloc + n << 5 as a word (ASL #5,
  *    ADDA.w): from box 1024 on the offset was negative, from 2048 on it
@@ -66,6 +65,9 @@
  *    at the key; Backspace at position 0 and the other control
  *    characters (Return, Esc, Tab, codes above 127) left without turning
  *    it on again.  Here those exits draw it again.
+ *  - #94: DeSelectBox did not clear `selected`: the box stayed selected
+ *    (drawn so, BoxSelected returned it, BlitzEvent's keys acted on it).
+ *    Here it is cleared before the box is drawn.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -1878,11 +1880,13 @@ static void BLITZ_ROUTINE selectbox2_c(ULONG dx BL_REG(d0), ULONG dy BL_REG(d1))
 BLITZ_THUNK(_selectbox2, selectbox2_c, "d0-d1/a0-a1");
 
 /**
- * @brief DeSelectBox: draw the selected box as not pressed.
+ * @brief DeSelectBox: deselect the selected box and draw it as not
+ * pressed.
  *
  * Restores an inverted bevel and ends editing, prop and drag.  Errors
  * (always checked): "UnInitialised Page".
- * BUG(orig) (#94): does not clear `selected`.
+ * Fixed (#94): clears the selection (the original kept `selected`:
+ * BoxSelected still returned the box, BlitzEvent still acted on it).
  *
  * Reads a3: the used page.
  */
@@ -1897,6 +1901,7 @@ static void BLITZ_ROUTINE deselectbox_c(void)
         return;
     if (b->color < 0)
         b->color = ~b->color;
+    p->selected = 0;                            /* fixed (#94) */
     drawbox(p, b);
     inprop = 0;
     inedit = 0;
