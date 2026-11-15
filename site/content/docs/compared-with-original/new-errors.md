@@ -679,6 +679,22 @@ number of tags.
 
 Issue: [WindowTags with tag pairs overflowed its tag buffer (#961)](https://github.com/fubar-coder/bb2-c/issues/961).
 
+### `ScreenTags` with too many tag pairs {#screentags-too-many-tags}
+
+**What happened.** `ScreenTags Screen#,Title$,Tag,Data...` copies its tag
+and data pairs into a buffer of the library in the same way as
+`WindowTags`, without a limit. With 16 pairs or more it wrote behind the
+buffer, over code of the libraries.
+
+**With the port.** With runtime error checking, more than 15 pairs are
+the error "Too Many Tags".
+
+**What to change.** Give a long list of tags as the address of a tag
+list, `ScreenTags Screen#,Title$,&TagList`: that form takes any number of
+tags.
+
+Issue: [ScreenTags with tag pairs had no limit for the user tags (#1039)](https://github.com/fubar-coder/bb2-c/issues/1039).
+
 ### `StringGadget` with a `Maxlen` of 0 {#stringgadget-maxlen}
 
 **What happened.** `StringGadget` with a `Maxlen` of 0 cleared 65536
@@ -931,6 +947,77 @@ taken from the memory behind that set.
 **What to change.** Give a colour from 0 to 14.
 
 Issue: [RenderPoly after RenderToChunky read colours above 14 behind its table (#422)](https://github.com/fubar-coder/bb2-c/issues/422).
+
+### `LoadShape` of a picture with very large planes {#loadshape-large-plane}
+
+**What happened.** A shape keeps the size of one of its planes in 16
+bits, in memory and in the files of `SaveShapes`. `LoadShape` of an IFF
+picture with a plane of 64 KB or more, such as 1024 by 520 pixels, took
+only the lower 16 bits of that size, made the shape far too small and
+wrote the whole picture into it, over the memory behind it.
+
+**With the port.** Such a picture is the runtime error "Can't Read/Write
+Shapes File", also without runtime error checking, as for a file that
+cannot be read. The shape stays empty.
+
+**What to change.** Load the picture as a bitmap, or cut it into shapes
+whose planes are smaller than 64 KB: a plane is the width in bytes,
+rounded up to whole 16 pixel words, times the height.
+
+Issue: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263).
+
+### `GetaSprite` with a shape too wide for the sprite channels {#getasprite-width}
+
+**What happened.** With runtime error checking, `GetaSprite` refuses a
+shape too wide for the 8 sprite channels with "Sprite too Wide". The
+limits of the original were the wrong way round: it allowed 4 sprite
+widths for a 4 colour shape and 8 for a 16 colour one, which takes two
+channels per sprite. So in `SpriteMode 0` a 4 colour shape of 65 to 128
+pixels was refused, although it fits, and a 16 colour one of that width
+was accepted and failed at every `ShowSprite` with "Sprite Channel
+Unavailable".
+
+**With the port.** A 4 colour shape may be 8 sprite widths wide, a 16
+colour shape 4: in `SpriteMode 0`, 128 and 64 pixels, in `SpriteMode 1`
+256 and 128, in `SpriteMode 2` 512 and 256. A 16 colour shape of 65 to
+128 pixels in `SpriteMode 0` is the error "Sprite too Wide"; a 4
+colour one of that width is accepted.
+
+**What to change.** Cut a wider 16 colour shape into several sprites, or
+use a wider `SpriteMode`.
+
+Issue: ["Sprite too Wide" had the limits of 4 and 16 colour shapes the wrong way round (#988)](https://github.com/fubar-coder/bb2-c/issues/988).
+
+### `SpriteMode` above 2 {#spritemode-range}
+
+**What happened.** `SpriteMode` takes 0, 1 or 2 for sprites of 16, 32 or
+64 pixels. A higher mode took the width from the memory behind the
+library's table of widths, and the sprites made after it had a wrong
+size.
+
+**With the port.** With runtime error checking, a mode above 2 is the
+error "Illegal SpriteMode".
+
+**What to change.** Give a mode from 0 to 2.
+
+Issue: [SpriteMode above 2 read past the width table (#281)](https://github.com/fubar-coder/bb2-c/issues/281).
+
+### `SColl` with two channels of the same pair {#scoll-same-pair}
+
+**What happened.** The sprite channels are used in pairs, 0 and 1, 2 and
+3, 4 and 5, 6 and 7, and the hardware reports collisions only between
+sprites of different pairs. `SColl(0,1)` tested the collision of other
+channels and returned its result.
+
+**With the port.** With runtime error checking, two channels of the same
+pair are the error "Sprite channels must be of different pairs". Two
+equal channels are the error "Sprite channels must be different", as in
+the original.
+
+**What to change.** Test the collision of two sprites on channels of
+different pairs.
+
+Issue: [SColl with channel 0/1 as the second argument or channels of one pair tested the wrong bit (#110)](https://github.com/fubar-coder/bb2-c/issues/110).
 
 ### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
 

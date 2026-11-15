@@ -1184,6 +1184,12 @@ user interface
   overwrote code behind the library; up to 15 tags are copied and the
   rest of the list is linked, as for `WindowTags`
   ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
+* `ScreenTags` with 16 or more tag and data pairs as arguments wrote
+  behind its tag buffer, over code of the libraries; with runtime error
+  checking more than 15 pairs are the error "Too Many Tags", as for
+  `WindowTags`
+  ([#1039](https://github.com/fubar-coder/bb2-c/issues/1039)). A longer
+  list can be given as the address of a tag list.
 * `Menus`, `MenusOn` and `MenusOff` reached only the windows in the
   lower half of the window numbers, so `MenusOff` left the menus of the
   others on; they reach every window
@@ -1227,6 +1233,10 @@ user interface
   copy of the previous font name; the old copy is freed. See also
   [`LoadFont` lost the style](#loadfont-style)
   ([#198](https://github.com/fubar-coder/bb2-c/issues/198)).
+* `LoadBlitzFont` of a font that is not 8 by 8 pixels stopped with the
+  error "Can't Open Font" and left the font open after the program; it
+  closes the font before the error
+  ([#150](https://github.com/fubar-coder/bb2-c/issues/150)).
 
 ### Dates and numbers
 
@@ -1336,19 +1346,46 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
 
 ### Graphics
 
-* `LoadShapes`, `DecodeShapes` and `LoadSprites` with a raised object
-  maximum (1025 shapes or 2049 sprites and more) loaded only the first
-  object; they load the whole range
-  ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
-* `Rotate` made a rotated shape one pixel too large and lost its edge
-  pixels, so a quarter turn of a 21×9 shape gave 10×21; it rounds to the
-  nearest pixel and gives 9×21
-  ([#1004](https://github.com/fubar-coder/bb2-c/issues/1004)).
 * `DecodePalette` and `LoadPalette` cycled a colour range that the
   picture marks as disabled, and ran ranges backwards without their
   reverse flag; a range cycles only when enabled, backwards only when
   marked so
   ([#1002](https://github.com/fubar-coder/bb2-c/issues/1002)).
+* `NextFrame` of an anim with a single change read its next change from
+  address 0, and so did the first `NextFrame` of an anim without any; such
+  an anim plays once and stays on its last frame
+  ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
+
+### Shapes and sprites
+
+These are the commands of shapes, their changes such as `Scale` and
+`Rotate`, sprites, stencils and the collisions of sprites.
+
+* `LoadShapes`, `DecodeShapes` and `LoadSprites` with a raised object
+  maximum (1025 shapes or 2049 sprites and more) loaded only the first
+  object; they load the whole range
+  ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
+* Big shapes went wrong in the shape library. `LoadShape` of a picture
+  with planes of 32 KB or more wrote the planes from the second one on in
+  front of the shape's memory; they are in place. `SaveShapes`,
+  `LoadShapes`, `DecodeShapes` and `CopyShape` handled only part of a
+  shape of 64 KB or more, so a file the original saved from such a shape
+  holds only part of it; the whole shape is saved, loaded and copied. A
+  single plane of 64 KB or more does not fit the shapes format, which
+  keeps the size of a plane in 16 bits: `LoadShape` of such a picture
+  wrote it over the memory behind a far too small shape; such a picture
+  is the runtime error "Can't Read/Write Shapes File", also without
+  runtime error checking
+  ([#263](https://github.com/fubar-coder/bb2-c/issues/263);
+  [LoadShape of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors#loadshape-large-plane" >}})).
+* `LoadShape` of an IFF ANIM put the frames that come after the last
+  shape object into the memory behind the table of shapes; it stops at the
+  last shape object
+  ([#265](https://github.com/fubar-coder/bb2-c/issues/265)).
+* `LoadShape` of an IFF ANIM took the XOR mode of the first frame for
+  every frame, so an animation that mixes XOR frames and others came out
+  wrong; each frame has its own mode
+  ([#266](https://github.com/fubar-coder/bb2-c/issues/266)).
 * `DecodeShapes` uses shape data that lies in chip memory where it is,
   and marks the shape so that this memory, which the library did not
   allocate, is not freed. The mark stayed when the shape was freed or
@@ -1363,10 +1400,61 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   took it over, so the loaded shapes were never freed before the program
   ended; the mark is not taken from the file
   ([#267](https://github.com/fubar-coder/bb2-c/issues/267)).
-* `NextFrame` of an anim with a single change read its next change from
-  address 0, and so did the first `NextFrame` of an anim without any; such
-  an anim plays once and stays on its last frame
-  ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
+* `Rotate` made a rotated shape one pixel too large and lost its edge
+  pixels, so a quarter turn of a 21×9 shape gave 10×21; it rounds to the
+  nearest pixel and gives 9×21
+  ([#1004](https://github.com/fubar-coder/bb2-c/issues/1004)).
+* `XFlip`, `YFlip`, `Rotate` and `Scale` went wrong on shapes with planes
+  of 32 KB or more, or with more than 65535 rows in all planes together:
+  `YFlip` flipped nothing, and `XFlip` of a 16×8200 shape of 8 planes
+  flipped only 64 rows; they work on the whole shape
+  ([#274](https://github.com/fubar-coder/bb2-c/issues/274)).
+* `XFlip` of a shape whose width is not a multiple of 16 lets the blitter
+  shift the rows and then mirrors them with the processor, which started
+  before the blitter had finished, so the result depended on the timing;
+  the processor waits for the blitter
+  ([#271](https://github.com/fubar-coder/bb2-c/issues/271)).
+* `Scale` to a width or height of less than one pixel made that one pixel
+  from more pixels than the shape has, from the next rows and the memory
+  behind the shape, and could give it the wrong colour; it is made from
+  the pixels of the shape only
+  ([#273](https://github.com/fubar-coder/bb2-c/issues/273)).
+* `GetaSprite` with runtime error checking had the width limits of 4 and
+  16 colour shapes the wrong way round: in `SpriteMode 0` it refused a 4
+  colour shape of 65 to 128 pixels, which the 8 sprite channels can show,
+  and accepted a 16 colour one, which then failed at every `ShowSprite`
+  with "Sprite Channel Unavailable". A 4 colour shape may be 8 sprites
+  wide (128 pixels in `SpriteMode 0`), a 16 colour shape 4 (64 pixels);
+  a wider one is the error "Sprite too Wide"
+  ([#988](https://github.com/fubar-coder/bb2-c/issues/988)).
+* `GetaSprite` in `SpriteMode 1` or `2` of a shape whose width is not a
+  multiple of the sprite width took bytes of the next row of the shape
+  into the right edge of its last sprite; that part of the sprite is
+  empty
+  ([#282](https://github.com/fubar-coder/bb2-c/issues/282)).
+* `SpriteMode` with a mode above 2 took the sprite width from the memory
+  behind its table of widths; with runtime error checking it is the error
+  "Illegal SpriteMode"
+  ([#281](https://github.com/fubar-coder/bb2-c/issues/281)).
+* `SaveSprites`, `LoadSprites` and the freeing of a sprite took the size
+  of its image from the current `SpriteMode`, so after a change of the
+  mode `SaveSprites` wrote too many or too few bytes and `LoadSprites`
+  read them so; a sprite keeps the size of the mode it was made in
+  ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+* `ShowSprite` of a sprite cut off at the top of the slice showed the
+  wrong lines in `SpriteMode 1` and `2`, and with some values of `Y` read
+  the image from anywhere in memory; it skips the lines that are cut off
+  ([#283](https://github.com/fubar-coder/bb2-c/issues/283)).
+* `SColl` with channel 0 or 1 as the second channel, such as
+  `SColl(4,0)`, tested the collision of other channels; the order of the
+  channels does not matter. Two channels of the same pair, such as
+  `SColl(0,1)`, have no collision of their own: with runtime error
+  checking they are the error "Sprite channels must be of different
+  pairs"
+  ([#110](https://github.com/fubar-coder/bb2-c/issues/110)).
+* `Stencil` of a bitmap of more than 1024 lines, or wider than 1024
+  pixels, filled the stencil only in part; it fills the whole stencil
+  ([#284](https://github.com/fubar-coder/bb2-c/issues/284)).
 
 ### Drawing and polygons
 
