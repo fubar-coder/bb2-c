@@ -6,6 +6,7 @@
 ; on the hardware).  The original does not come back (crash or hang: the
 ; session times out).
 ; Correct: an empty string inserts no instruction, the program goes on.
+; @fixed #404
 ; @configs clib
 ; @pass timeout=30
 DEFTYPE .l

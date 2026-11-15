@@ -137,6 +137,7 @@ reverted), but must be fully documented here.
 | bblitlib (bblitlib.c:25) | entries without nullsub save a4/a5 | likewise (note: no deviation in behaviour) | – | – |
 | blitlib BlitColl Amiga (blitlib.c:323) | upper word of d0 = leftover from DisownBlitter | 0 | **T** | register leftover of the OS (undefined); #word function, not observable |
 | blitzcoplib CustomCop (blitzcoplib.c:56) | a2 decremented by 4 | unchanged | **B** | convention |
+| blitzcoplib CustomCop short string (blitzcoplib.c: `inscop2`) | the instructions are copied as length/4 longs in a loop that tests its counter only at the end (`SUBQ.l #1,d0:BNE`): a string of 0-3 bytes copies 2^32 longs over all memory behind the new copper list | a count of 0 copies nothing: the string inserts only the wait for its line | **F** | #404; observable: CustomCop with an empty string (test `blitzcoplib-customcop-short`: the program goes on) |
 | blitzkeyslib | – | no deviation (DIFF-free; binary has 6 more unused bytes) | – | – |
 | dhandlerlib | – | no deviation (byte-identical to the CD's library, relocation table included) | – | – |
 | displaylib a2 (displaylib.c:64) | a2 decremented as argument stack | unchanged | **B** | convention |

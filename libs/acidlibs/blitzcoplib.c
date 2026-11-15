@@ -47,9 +47,12 @@
  *   - Slice: unused pointers (+10..+26 = 0) are relocated like the
  *     others (0 - maxcop + position, later + list movements); Show into a
  *     slice without BPLCON1 writes to that address. (#407)
- *   - inscop2: an empty CustomCop string copies 2^32 longs (SUBQ.l/BNE)
- *     (#404); maxslice 0 runs the pointer loop 65536 times (#406); the
+ *   - inscop2: maxslice 0 runs the pointer loop 65536 times (#406); the
  *     marker also changes the source buffer (#405).
+ * Fixed (intended deviation, #404): inscop2 copied length/4 longs with
+ *   the counter tested at the end (SUBQ.l/BNE): a CustomCop string of 0-3
+ *   bytes copied 2^32 longs over all memory.  Here it inserts no
+ *   instruction (only the wait for the line).
  * Not a bug: hwait is a word, written and read as its high byte (MOVE.b,
  * consistently); the slice width checks (Lores/Hires multiple) are in the
  * check routine only (runtime checks are debugger-only by design).
@@ -467,7 +470,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
     dst++;
     count = len >> 2;                           /* MOVE.l (a7)+,d0:LSR.l #2 */
     pos = (ULONG)dst;
-    do {                                        /* 'cloop2 */
+    for (; count; count--) {                    /* 'cloop2; fixed #404: 0 longs */
         move = *src++;
         *dst++ = move;
         if (move == 0x01fe1234) {               /* kludgey bit */
@@ -481,7 +484,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
                 past256 = -1;
             }
         }
-    } while (--count);
+    }
     for (;;) {                                  /* 'cloop3 */
         ULONG c = *at++;
 
@@ -878,7 +881,8 @@ BLITZ_THUNK(bdoslice, bdoslice_c, "a2");
  * returns d0 = position, d1 = mycop and keeps d2-d7/a1-a3 (inscop3's
  * MOVEM).  DIFF: a2 stays unchanged (the original leaves it decremented
  * by 4).
- * BUG(orig) (#404): an empty string copies 2^32 longs (SUBQ.l/BNE).
+ * Fixed (#404): a string of 0-3 bytes inserts no instruction (the
+ * original copied 2^32 longs).
  * BUG(orig) (#406): maxslice 0 runs the pointer loop 65536 times.
  *
  * @param str  d0: the copper instructions
