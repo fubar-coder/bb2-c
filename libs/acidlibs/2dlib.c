@@ -36,9 +36,12 @@
  *     such a count is an invalid argument: with runtime error checking
  *     _polychk (error check area only, the original had none and no error
  *     check area) raises "Poly needs at least 2 Points"; the loop stays.
- *   - Polyf with more than 16 points overflows its 32-long point buffer,
- *     more than 10 edges on one side overflow the edge lists l0/l1 (here
- *     ledges/redges) (#395).
+ *   - Fixed (#395): more than 10 edges on one side overflowed the edge
+ *     lists l0/l1 (here ledges/redges, Dcb.w 32 in the original); they
+ *     have room for the 15 edges of a polygon of 16 points now.  More
+ *     than 16 points overflow the 32-long point buffer: an invalid
+ *     argument; with runtime error checking _polyfchk (error check area
+ *     only) raises "Too Many Points", the copy stays.
  *   - Fixed (#390): AllocFill (statement) took the bitmap from a3 = the
  *     string pointer: it was declared without a used bitmap.  It is
  *     declared with the used bitmap now (!libs {#bitmaplib,#ua3}).
@@ -84,7 +87,7 @@ void _freefill(void), _allocfill(void), _remap(void), _remap2(void);
 void _floodfill(void), _floodfill2(void), _poly(void), _polyf(void), _polyf2(void);
 void _bitplanesbitmap(void), _doclipblit(void), _doclipblitx(void), _cbchk(void);
 void _doclipblitmode(void), _bitmapwindow(void), _bitmaporigin(void), _init(void);
-void _polychk(void);
+void _polychk(void), _polyfchk(void);
 
 
 /* !libheader {#sis2dlib,0,0,0,errors}: the original has no error check
@@ -173,10 +176,10 @@ BLITZ_NAME("Poly", "numpts,*coords.w,color");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
-BLITZ_SUBS(_polyf, 0, 0);
+BLITZ_SUBS(_polyf, _polyfchk, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
-BLITZ_SUBS(_polyf2, 0, 0);
+BLITZ_SUBS(_polyf2, _polyfchk, 0);
 BLITZ_NAME("Polyf", "numpts,*coords.w,color[,color2]");
 
 BLITZ_ASTATEMENT();
@@ -260,16 +263,23 @@ struct edge {
    bit difference, which wraps on overflow (unlike a signed compare) */
 #define BMI_W(a, b) ((WORD)((a) - (b)) < 0)
 
+/* the most points of a polygon (the n points twice fill polypts) and the
+   most edges of a side between the top and the bottom point */
+#define POINTMAX 16
+#define EDGEMAX (POINTMAX - 1)
+
 /* ------------------------------------------------------------ variables */
 
-static struct point polypts[32];        /* Polyf: the n points twice */
+static struct point polypts[2 * POINTMAX];  /* Polyf: the n points twice */
 /* in the order of the original, so that an overflow of ledges runs into
    redges */
 static struct {
     struct {
         WORD left, y, right;            /* the first line of the outline */
     } top;
-    UWORD ledges[32], redges[32];       /* struct edge lists (l0, l1) */
+    /* struct edge lists (l0, l1); fixed (#395): room for EDGEMAX edges, as
+       many as a side of 16 points has (the original: Dcb.w 32, 10 edges) */
+    UWORD ledges[EDGEMAX * 3 + 2], redges[EDGEMAX * 3 + 2];
 } pv;
 static ULONG fbsize;
 /* used by the assembler part (yofill): not static */
@@ -1714,7 +1724,7 @@ static int prodgt(LONG a, LONG b, LONG c, LONG d)
 
 /* Polyf: the points twice into polypts - backwards if they run anti-
    clockwise (by the first three points), then with colour2 (#395: more
-   than 16 points overflow it) */
+   than 16 points overflow it; _polyfchk refuses them) */
 static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
                     UWORD colour2)
 {
@@ -2013,6 +2023,7 @@ BLITZ_THUNK(_cbchk, _cbchk_c, "d0-d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(polymess, "Poly needs at least 2 Points");
+BLITZ_ERRCHK_MESSAGE(pointsmess, "Too Many Points");
 
 /* _polychk - not in the original (#396): Poly with fewer than 2 points
    (d0), which would draw 65535 or 65536 lines from the words behind the
@@ -2023,7 +2034,16 @@ static void BLITZ_ERRCHK _polychk_c(WORD n BL_REG(d0))
         BLITZ_RUNERR(polymess);
 }
 
+/* _polyfchk - not in the original (#395): Polyf with more than POINTMAX
+   points (d0), which overflow polypts */
+static void BLITZ_ERRCHK _polyfchk_c(UWORD n BL_REG(d0))
+{
+    if (n > POINTMAX)
+        BLITZ_RUNERR(pointsmess);
+}
+
 /* the thunks behind all C check functions: their assembler ends with
    `.text`, and GCC does not repeat the section of a following
    BLITZ_ERRCHK function */
 BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_polyfchk, _polyfchk_c, "d0-d1/a0-a1");

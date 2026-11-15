@@ -8,6 +8,7 @@
 ; (sanity) and with 14 left edges (overflow, still 16 points: no overflow
 ; of the point buffer).  Counted: bytes of plane 0 that differ.
 ; Correct: both polygons are drawn alike in both cases.
+; @fixed #395
 ; @configs clib
 DEFTYPE .l
 Statement setp{m.l,a$}

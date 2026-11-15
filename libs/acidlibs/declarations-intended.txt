@@ -81,4 +81,11 @@ lib 119: declaration part $62E != $632 bytes
 # area for it (the original has none); the entry of Poly itself differs
 # already by the move of #390
 lib 119: header +$2C: code offset set in only one of them
-lib 119: relocations in the declaration part 27 != 29
+# #395: Polyf (both forms) gets an error check (_polyfchk) as well
+lib 119: relocations in the declaration part 27 != 31
+# #395: ChunkyPoly, BitMapPoly and RenderPoly get an error check (_polychk,
+# "Too Many Points"); polylib gets an error check area for it (the original
+# has none); ChunkyPoly and RenderPoly keep their "Blitz mode only"
+lib 121: header +$2C: code offset set in only one of them
+lib 121: entry 4 BitMapPoly +$12: code offset set in only one of them
+lib 121: relocations in the declaration part 14 != 20

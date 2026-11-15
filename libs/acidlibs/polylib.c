@@ -32,8 +32,13 @@
  *     bitmap (the two are swapped, #421); RenderPoly before any RenderTo...
  *     draws on a3 = the string pointer (no !libs) (#420).
  *   - RenderToChunky colours > 14 read behind the 15 entry colour table. (#422)
- *   - more than 16 points overflow polypts, more than 10 edges one side
- *     the edge lists l0/l1 (here ledges/redges). (#395)
+ *   - Fixed (#395): more than 10 edges on one side overflowed the edge
+ *     lists l0/l1 (here ledges/redges, Dcb.w 32 in the original); they
+ *     have room for the 15 edges of a polygon of 16 points now.  More
+ *     than 16 points overflow polypts: an invalid argument; with runtime
+ *     error checking _polychk (error check area only, the original had
+ *     none and no error check area) raises "Too Many Points", the copy
+ *     stays.
  *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
  *   - Fixed (#1035): the dither form's B modulo was mod + (target plane
@@ -66,10 +71,12 @@ void _chunkycls(void), _chunkyplot(void), _chunkyplotclip(void);
 void _chunkyvlin(void), _chunkyvlinclip(void), _chunkypoly(void), _chunkypoly2(void);
 void _bitmappoly(void), _bitmappoly2(void), _rendertobitmap(void), _rendertobitmap2(void);
 void _rendertochunky(void), _rendertochunky2(void), _renderpoly(void);
+void _polychk(void);
 
 
-/* !libheader {#chunkylib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_polylib, 0, BL_NORET, 0, 0);
+/* !libheader {#chunkylib,0,0,0,errors}: the original has no error check
+   area (0); _polychk (#395) is its first check */
+BLITZ_LIBHEADER(LIB_polylib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
@@ -98,19 +105,19 @@ BLITZ_NAME("ChunkyVlin", "x,y1,y2,color,[,CLIP]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_displaylib, 0x1302);
-BLITZ_SUBS(_chunkypoly, BLITZ_BLITZONLY, 0);
+BLITZ_SUBS(_chunkypoly, BLITZ_BLITZONLY_CHK(_polychk), 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_displaylib, 0x1302);
-BLITZ_SUBS(_chunkypoly2, BLITZ_BLITZONLY, 0);
+BLITZ_SUBS(_chunkypoly2, BLITZ_BLITZONLY_CHK(_polychk), 0);
 BLITZ_NAME("ChunkyPoly", "numpts,*coords.w,color[,noblitter]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, 0x1302);
-BLITZ_SUBS(_bitmappoly, 0, 0);
+BLITZ_SUBS(_bitmappoly, _polychk, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1083);
-BLITZ_SUBS(_bitmappoly2, 0, 0);
+BLITZ_SUBS(_bitmappoly2, _polychk, 0);
 BLITZ_NAME("BitMapPoly", "numpts,*coords.w,color[,ditherbitmap]");
 
 BLITZ_ASTATEMENT();
@@ -134,7 +141,7 @@ BLITZ_NAME("RenderToChunky", "CopList#[,split]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_renderpoly, BLITZ_BLITZONLY, 0);
+BLITZ_SUBS(_renderpoly, BLITZ_BLITZONLY_CHK(_polychk), 0);
 BLITZ_NAME("RenderPoly", "numpts,*coords.w,color");
 
 BLITZ_LIBFIN();
@@ -182,6 +189,11 @@ struct edge {
    bit difference, which wraps on overflow (unlike a signed compare) */
 #define BMI_W(a, b) ((WORD)((a) - (b)) < 0)
 
+/* the most points of a polygon (the n points twice fill polypts) and the
+   most edges of a side between the top and the bottom point */
+#define POINTMAX 16
+#define EDGEMAX (POINTMAX - 1)
+
 /* ------------------------------------------------------------ variables */
 
 static const UWORD cols[15] = {
@@ -196,14 +208,16 @@ static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3
 static renderfn polyvector = render_a3;
 static struct bb_bitmap *bmap0, *bmap1;
 static struct bb_coplist *chunk0;
-static struct point polypts[32];        /* the n points twice in a row */
+static struct point polypts[2 * POINTMAX];  /* the n points twice in a row */
 /* in the order of the original: an overflow of ledges runs into redges */
 static struct {
     UWORD width, height;                /* clip size (chunky: swapped) */
     struct {
         WORD left, y, right;            /* the first line of the outline */
     } top;
-    UWORD ledges[32], redges[32];       /* struct edge lists (l0, l1) */
+    /* struct edge lists (l0, l1); fixed (#395): room for EDGEMAX edges, as
+       many as a side of 16 points has (the original: Dcb.w 32, 10 edges) */
+    UWORD ledges[EDGEMAX * 3 + 2], redges[EDGEMAX * 3 + 2];
 } pv;
 
 static const UWORD lup1[16] = {
@@ -427,8 +441,8 @@ static UWORD *outline(UWORD n)
 }
 
 /* _calcpoly: the n points (backwards for n < 0; x and y swapped for the
-   chunky routines) twice into polypts (#395: more than 16 overflow it),
-   then the outline */
+   chunky routines) twice into polypts (#395: more than 16 overflow it;
+   _polychk refuses them), then the outline */
 static UWORD *polygon(WORD n, const struct point *pts, int swap)
 {
     int back = n < 0;
@@ -887,3 +901,23 @@ static void BLITZ_ROUTINE _renderpoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
     blitz_string = polyvector(n, (const struct point *)pts, colour, blitz_string);
 }
 BLITZ_THUNK(_renderpoly, _renderpoly_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(pointsmess, "Too Many Points");
+
+/* _polychk - not in the original (#395): ChunkyPoly, BitMapPoly or
+   RenderPoly with more than POINTMAX points (d0; negative: the reverse
+   form, its count is -d0), which overflow polypts */
+static void BLITZ_ERRCHK _polychk_c(WORD n BL_REG(d0))
+{
+    UWORD count = n < 0 ? -n : n;
+
+    if (count > POINTMAX)
+        BLITZ_RUNERR(pointsmess);
+}
+
+/* the thunks behind all C check functions: their assembler ends with
+   `.text`, and GCC does not repeat the section of a following
+   BLITZ_ERRCHK function */
+BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");
