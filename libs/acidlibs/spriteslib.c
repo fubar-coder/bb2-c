@@ -415,94 +415,102 @@ BLITZ_ALIAS(dogetsprite, dogetsprite_c);
  * @param ch    d3: the first sprite channel
  * @param slice a2: the used slice; a3: the sprite object
  */
-static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
-                                         ULONG ch BL_REG(d3), struct bb_slice *slice BL_REG(a2))
-{
-    struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
-    struct spritecop *cop;
-    WORD hpos = (WORD)x - (WORD)sp->handlex + 128;
-    WORD vpos = (WORD)y - (WORD)sp->handley;     /* d2: the start line */
-    WORD vstop;                                 /* d2: the stop line */
-    WORD maxh = (WORD)slice->height + 1 - vpos; /* max sprite height */
-    ULONG skip = 0;
-    WORD height;
-    UWORD pos, ctl, n;
-    ULONG data, diff;
-
-    if (maxh <= 0)
-        goto spriteoff;                         /* off bottom */
-    height = (WORD)sp->height;
-    if (vpos < 0) {
-        height += vpos;
-        if (height <= 0)
-            goto spriteoff;                     /* completely off top */
-        /* the clipped lines of 1 << widthshift bytes (fixed #283: the
-           original's EXG d2,d4:NEG d4:ASL #2,d4 skipped 4 bytes per line
-           in every mode, a word in the long that was d2, so the upper
-           word of the caller's y was added too) */
-        skip = (ULONG)(UWORD)-vpos << sv.shift;
-        vpos = 0;
-    }
-    if ((WORD)(maxh - height) < 0)              /* CMP d5,d0:BPL */
-        height = maxh;
-    vpos += (WORD)slice->y;                 /* y offset */
-    if (slice->flagslo & 0x10)
-        vpos += 2;
-    /* pos in d6, ctrl in d7 */
-    ctl = 0;
-    pos = (UWORD)((UWORD)vpos << 8);
-    if ((UWORD)vpos & 0x100)                    /* LSL #8: carry = bit 8 */
-        ctl = 4;
-    if (hpos & 1)
-        ctl++;
-    hpos = (WORD)((UWORD)hpos >> 1);
-    pos = (pos & 0xff00) | (UBYTE)hpos;
-    vstop = vpos + height - 1;                  /* add height! */
-    if ((UWORD)vstop & 0x100)
-        ctl += 2;
-    ctl |= (UWORD)((UWORD)vstop << 8);
-    if ((WORD)sp->flags < 0)
-        ctl |= 0x80;
-    cop = (struct spritecop *)((UBYTE *)slice->sprmoves + (WORD)(UWORD)((UWORD)ch << 4));
-    data = (ULONG)sp->data + skip;
-    diff = (ULONG)(LONG)(WORD)sp->imgsize;
-    n = sp->count - 1;
-    do {
-        cop->pos.val = pos;
-        cop->ctl.val = ctl;
-        cop->ptl.val = (UWORD)data;
-        cop->pth.val = (UWORD)(data >> 16);
-        data += diff;
-        cop++;
-        if ((WORD)sp->flags < 0) {
-            cop->pos.val = pos;
-            cop->ctl.val = ctl;
-            cop->ptl.val = (UWORD)data;
-            cop->pth.val = (UWORD)(data >> 16);
-            data += diff;
-            cop++;
-            n--;
-        }
-        pos += 8;
-    } while (n-- != 0);
-    return;
-
-spriteoff:
-    n = sp->count - 1;
-    cop = (struct spritecop *)((UBYTE *)slice->sprmoves + (WORD)(UWORD)((UWORD)ch << 4));
-    do {
-        cop->pos.val = 0;
-        cop->ctl.val = 0;
-        cop++;
-        if ((WORD)sp->flags < 0) {
-            cop->pos.val = 0;
-            cop->ctl.val = 0;
-            cop++;
-            n--;
-        }
-    } while (n-- != 0);
-}
-BLITZ_ALIAS_EP(doshowsprite, doshowsprite_c);
+/* The original's code (assembler: the C stayed 12 % slower, its word
+   arithmetic needs the carry of LSL/LSR for the control bits), with the
+   fix of #283 in the top clipping */
+BLITZ_ASM_ROUTINE(doshowsprite,
+"   sub.w   12(a3),d1\n"                /* hpos = x - handle x + 128 */
+"   add.w   #128,d1\n"
+"   sub.w   14(a3),d2\n"                /* vpos = y - handle y */
+"   move.w  32(a2),d0\n"                /* max height = slice height + 1 - vpos */
+"   addq.w  #1,d0\n"
+"   sub.w   d2,d0\n"
+"   ble     8f\n"                       /* off bottom */
+"   moveq   #0,d4\n"                    /* the clipped bytes */
+"   move.w  4(a3),d5\n"                 /* height */
+"   tst.w   d2\n"
+"   bpl.s   1f\n"
+"   add.w   d2,d5\n"
+"   ble     8f\n"                       /* completely off top */
+/* fixed (#283): (UWORD)-vpos lines of 1 << widthshift bytes; the
+   original's EXG d2,d4:NEG d4:ASL #2,d4 skipped 4 bytes per line in every
+   mode and added the upper word of the caller's y */
+"   sub.w   d2,d4\n"
+"   move.w  _sv+10(pc),d7\n"            /* widthshift */
+"   lsl.l   d7,d4\n"
+"   moveq   #0,d2\n"
+"1: cmp.w   d5,d0\n"
+"   bpl.s   2f\n"
+"   move.w  d0,d5\n"
+"2: add.w   (a2),d2\n"                  /* y offset */
+"   btst    #4,3(a2)\n"
+"   beq.s   3f\n"
+"   addq.w  #2,d2\n"
+"3: moveq   #0,d7\n"                    /* pos in d6, ctrl in d7 */
+"   move.w  d2,d6\n"
+"   lsl.w   #8,d6\n"
+"   bcc.s   4f\n"
+"   moveq   #4,d7\n"
+"4: lsr.w   #1,d1\n"
+"   bcc.s   5f\n"
+"   addq.w  #1,d7\n"
+"5: move.b  d1,d6\n"
+"   add.w   d5,d2\n"                    /* the stop line */
+"   subq.w  #1,d2\n"
+"   lsl.w   #8,d2\n"
+"   bcc.s   6f\n"
+"   addq.w  #2,d7\n"
+"6: or.w    d2,d7\n"
+"   tst.w   8(a3)\n"
+"   bpl.s   7f\n"
+"   bset    #7,d7\n"
+"7: lsl.w   #4,d3\n"
+"   move.l  14(a2),a0\n"
+"   add.w   d3,a0\n"
+"   move.l  (a3),d0\n"
+"   add.l   d4,d0\n"                    /* the clipped lines */
+"   move.w  10(a3),d1\n"
+"   ext.l   d1\n"
+"   move.w  6(a3),d2\n"
+"   subq.w  #1,d2\n"
+"10:move.w  d6,2(a0)\n"
+"   move.w  d7,6(a0)\n"
+"   move.w  d0,14(a0)\n"
+"   swap    d0\n"
+"   move.w  d0,10(a0)\n"
+"   swap    d0\n"
+"   add.l   d1,d0\n"
+"   lea     16(a0),a0\n"
+"   tst.w   8(a3)\n"
+"   bpl.s   11f\n"
+"   move.w  d6,2(a0)\n"                 /* 16 colours: the attached sprite */
+"   move.w  d7,6(a0)\n"
+"   move.w  d0,14(a0)\n"
+"   swap    d0\n"
+"   move.w  d0,10(a0)\n"
+"   swap    d0\n"
+"   add.l   d1,d0\n"
+"   lea     16(a0),a0\n"
+"   subq.w  #1,d2\n"
+"11:addq.w  #8,d6\n"
+"   dbf     d2,10b\n"
+"   rts\n"
+"8: move.w  6(a3),d2\n"                 /* spriteoff */
+"   subq.w  #1,d2\n"
+"   lsl.w   #4,d3\n"
+"   move.l  14(a2),a0\n"
+"   add.w   d3,a0\n"
+"12:clr.w   2(a0)\n"
+"   clr.w   6(a0)\n"
+"   lea     16(a0),a0\n"
+"   tst.w   8(a3)\n"
+"   bpl.s   13f\n"
+"   clr.w   2(a0)\n"
+"   clr.w   6(a0)\n"
+"   lea     16(a0),a0\n"
+"   subq.w  #1,d2\n"
+"13:dbf     d2,12b\n"
+"   rts");
 
 /**
  * @brief InFront Sprite Channel, InFrontB Sprite Channel - sprites from
