@@ -1,0 +1,4 @@
+[run]
+REQUESTER: AutoRequest body "Not enough colours in Slice" pos "OKAY!" neg "OKAY!" -> answered FALSE
+...
+rc=0

@@ -30,14 +30,15 @@
  * Fixed (intended deviation, #330): an uninitialized palette gave "Not
  *   enough colours in Slice" (err2; mess3 "Uninitialized Palette" was
  *   never used); here "Uninitialized Palette".
+ * Fixed (intended deviation, #331): a low/high colour beyond the slice's
+ *   colours gave "Uninitialized Slice" (err1); here "Not enough colours
+ *   in Slice" (err2).
  *
  * Kept from the original (BUG(orig)):
  *   - Without high/low colours the range is 0..min(colours of the
  *     palette, colours of the slice)-1; with them nothing is clipped. (#136)
  *   - Not a bug (both are meant to start at 0): the init clears fadenum and
  *     fadetype together (CLR.l fadenum).
- *   - Wrong message: a low/high colour beyond the slice's colours gives
- *     "Uninitialized Slice" (err1) (#331).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -271,9 +272,9 @@ static void dosyncfade(void)
  * and slice.
  * Errors (debugger, fadechk): "Uninitialized Slice", "Uninitialized
  * Palette" (fixed #330: the original gave "Not enough colours in Slice"),
- * "Not enough colours in Slice"; a colour beyond the slice's colours gives
- * "Uninitialized Slice" (BUG(orig) #331); fixed (#135): the palette's
- * data pointer is tested as a long.
+ * "Not enough colours in Slice", also for a colour beyond the slice's
+ * colours (fixed #331: the original gave "Uninitialized Slice"); fixed
+ * (#135): the palette's data pointer is tested as a long.
  *
  * @param rate  d1: the frames to wait between the steps (VWait)
  * @param lo  d2: the low colour
@@ -426,7 +427,7 @@ static void BLITZ_ERRCHK fadechk_c(UWORD lo BL_REG(d2), UWORD hi BL_REG(d3),
     if (!fadechk0_x(pal, slice))
         return;
     if (lo >= slice->colours || hi >= slice->colours)
-        BLITZ_RUNERR(mess1);            /* BUG(orig) (#331): err1, not err2 */
+        BLITZ_RUNERR(mess2);            /* fixed #331: err2, not err1 */
 }
 
 BLITZ_ERRCHK_THUNK(fadechk0, fadechk0_c, "d0-d1/a0-a1");
