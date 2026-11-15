@@ -1105,7 +1105,8 @@ static void column(UBYTE *chip, const struct bb_bitmap *bm, ULONG colour, WORD o
 /* monofetch/monowrite: the mask of colour over the whole bitmap into the
    fill buffer (fetch, allocates it) or colour through the mask into the
    bitmap (write).  Returns the buffer position of the last column and its
-   BLTSIZE in *size (FloodFill with border inverts only there). */
+   BLTSIZE in *size (the original's FloodFill with border inverted only
+   there, fixed #986: invertmask). */
 static UBYTE *mono(UBYTE *chip, struct bb_bitmap *bm, ULONG colour, int write, UWORD *size)
 {
     struct columns c;
@@ -1273,14 +1274,46 @@ static UBYTE *floodfill(struct bb_bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD
     return (UBYTE *)bm;
 }
 
+/* invertmask: D = NOT A over the mask that mono fetched into the fill
+   buffer, in its columns of 64 words and parts of 1024 lines (fixed,
+   #986: the original inverted only with the pointer and the size mono
+   left, those of the last column and of its last part).  A bitmap of at
+   most 1024 x 1024 pixels gets the one blit of the original, with the
+   modulos mono left. */
+static void invertmask(UBYTE *chip, const struct bb_bitmap *bm, UBYTE *last)
+{
+    struct columns c;
+    UBYTE *mask;
+    UWORD m;
+
+    columns(bm, &c);
+    mask = last - c.last;
+    BLITWAIT(chip);
+    CW(chip, BLTCON0) = 0x090f;
+    if (c.last) {
+        CW(chip, BLTAMOD) = bm->bpr - 128;
+        CW(chip, BLTDMOD) = bm->bpr - 128;
+        do {                                    /* the full columns */
+            CL(chip, BLTAPT) = (ULONG)mask;
+            CL(chip, BLTDPT) = (ULONG)mask;
+            blitsize3(chip, c.parts, c.size & 0xffc0);
+            BLITWAIT(chip);
+            mask += 128;
+        } while (mask != last);
+        m = bm->bpr & 127;
+        if (!m)
+            m = 128;
+        CW(chip, BLTAMOD) = bm->bpr - m;
+        CW(chip, BLTDMOD) = bm->bpr - m;
+    }
+    CL(chip, BLTAPT) = (ULONG)last;
+    CL(chip, BLTDPT) = (ULONG)last;
+    blitsize3(chip, c.parts, c.size);
+}
+
 /* FloodFill x,y,colour,border: fill up to the border colour (the mask of
-   the border colour inverted - only in the last column of 64 words).  The
-   border colour is a word in the register of x (SETW(d0, d3)).
-   BUG(orig) (#986): mono works in columns of 64 words (and parts of 1024
-   lines) and returns the pointer and size of the last one, so on a bitmap
-   wider than 1024 pixels (or taller than 1024 lines) the inversion covers
-   only that column (the first height MOD 1024 lines of it): the rest of
-   the mask keeps the border pixels as the fillable ones. */
+   the border colour inverted).  The border colour is a word in the
+   register of x (SETW(d0, d3)). */
 static UBYTE *floodfill2(struct bb_bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD colour,
                          UWORD border)
 {
@@ -1291,11 +1324,7 @@ static UBYTE *floodfill2(struct bb_bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWO
     coords[1] = y;
     fcol = colour;
     mask = mono(chip, bm, (x & 0xffff0000UL) | border, 0, &size);
-    BLITWAIT(chip);
-    CW(chip, BLTCON0) = 0x090f;                 /* invert the mask */
-    CL(chip, BLTAPT) = (ULONG)mask;
-    CL(chip, BLTDPT) = (ULONG)mask;
-    CW(chip, BLTSIZE) = size;
+    invertmask(chip, bm, mask);
     BLITWAIT(chip);
     yofill(bm);
     return (UBYTE *)bm;
