@@ -3,8 +3,9 @@
 "LoadAnim":
   text: Loads an IFF ANIM file into an anim object, and its colours into `Palette#` if it is given. An anim the object held before is freed. Amiga mode only.
   notes: |
-    Kept from the original: a file without a first picture is not caught
-    ([#400](https://github.com/fubar-coder/bb2-c/issues/400)).
+    A file without a first picture (BODY), or one whose picture has a
+    width, height or depth of 0, is loaded without picture data:
+    `InitAnim` and `NextFrame` then draw nothing.
 "InitAnim":
   text: Draws the first picture of the anim into the used bitmap and, with `BitMap#`, also into that bitmap, and starts the animation from its beginning.
   notes: |

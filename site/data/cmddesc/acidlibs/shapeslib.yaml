@@ -4,16 +4,32 @@
     Only ANIM files of the usual compression (method 5) are read; others
     give "ANIM format not supported". The frames go into the shape
     numbers up to the highest one; the rest of the animation is not
-    loaded. A picture with a plane of 64 KB or more, such as 1024 by 520
-    pixels, does not fit a shape and is the error "Can't Read/Write
-    Shapes File", also without runtime error checking. Kept from the
-    original: a picture whose header gives 0 bitplanes makes a shape
-    without memory, and the rest of the file is written over the memory
-    behind it ([#1052](https://github.com/fubar-coder/bb2-c/issues/1052)).
+    loaded. A picture that does not fit a shape is the error "Can't
+    Read/Write Shapes File", also without runtime error checking: one
+    with a plane of 64 KB or more, such as 1024 by 520 pixels, or one
+    taller than 1023 rows or wider than 992 pixels. A picture whose
+    header gives 0 bitplanes is the error "Illegal Shape Depth", also
+    without runtime error checking.
+    Kept from the original: a picture whose header gives a width or a
+    height of 0 makes `LoadShape` run its loops 65536 times
+    ([#1054](https://github.com/fubar-coder/bb2-c/issues/1054)). Open:
+    the 64 KB limit counts a plane without the extra word per row that
+    the checks of `InitShape` count, so a picture just under it loads,
+    though `InitShape` refuses a shape of its size
+    ([#1055](https://github.com/fubar-coder/bb2-c/issues/1055)).
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
+  notes: |
+    With runtime error checking, a width or height of 0 is the error
+    "Illegal Shape Size", and a shape too large the error "Shape too
+    Big": one with a plane of 64 KB or more (the
+    width in bytes, rounded up to whole 16 pixel words and plus 2, times
+    the height), or one taller than 1023 rows or wider than 992 pixels.
 "GetaShape":
   text: Makes a shape from an area of the used bitmap.
+  notes: |
+    With runtime error checking, an area too large for a shape is the
+    error "Shape too Big", with the limits of `InitShape`.
 "CopyShape":
   text: Copies the first shape into the second.
 "MakeCookie":

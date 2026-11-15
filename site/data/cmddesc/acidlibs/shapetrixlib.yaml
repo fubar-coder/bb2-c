@@ -5,9 +5,14 @@
     most of the pixels it replaces. With `Palette#`, the colours are
     weighed by their brightness in that palette instead, so that bright
     details survive. A size that would fall below one pixel becomes one
-    pixel, made from the whole row or column of the shape.
+    pixel, made from the whole row or column of the shape. With runtime
+    error checking, a new size too large for a shape is the error "Shape
+    too Big", with the limits of `InitShape`.
 "Rotate":
   text: Turns a shape by `Angle Ratio` of a full turn, from 0 to 1; .25 turns it by 90 degrees and .5 by 180 degrees. The shape gets the size of the turned image, and its handle becomes the top left corner.
+  notes: |
+    With runtime error checking, a turned image too large for a shape is
+    the error "Shape too Big", with the limits of `InitShape`.
 "XFlip":
   text: Mirrors a shape horizontally, from left to right.
 "YFlip":

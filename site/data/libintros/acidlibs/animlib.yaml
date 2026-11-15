@@ -23,8 +23,7 @@ intro: |
 
   A file that cannot be opened is the error "Can't Open Anim File", and a
   file with another kind of compression "Anim format not supported".
-  Kept from the original: the first picture is always unpacked as
-  compressed data, whatever the file says
-  ([#397](https://github.com/fubar-coder/bb2-c/issues/397)).
+  The first picture may be packed, as Deluxe Paint writes it, or stored
+  unpacked.
 
   *Based on the animlib guide by Acid Software.*

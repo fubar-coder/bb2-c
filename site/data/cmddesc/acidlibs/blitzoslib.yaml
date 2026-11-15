@@ -3,9 +3,8 @@
 "InitPage":
   text: Makes a page of `NumBoxes` empty boxes that draws into the bitmap `BitMap#`, and makes it the used page. Old boxes of the page are freed.
   notes: |
-    Kept from the original: a `NumBoxes` of 32768 or more is taken as a
-    negative number, so the size of the page's box table is wrong
-    ([#1043](https://github.com/fubar-coder/bb2-c/issues/1043)).
+    With runtime error checking, a `NumBoxes` of 32768 or more is the
+    error "Illegal Number of Boxes".
 "FreePage":
   text: Frees the boxes of a page.
 "SetPagePens":

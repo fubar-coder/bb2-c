@@ -9,16 +9,14 @@
 "DecodePalette":
   text: As `LoadPalette`, but reads the IFF ILBM data from memory, for example from a file included in the program with `IncBin`.
   notes: |
-    Kept from the original: the chunks of the data are read without
-    their pad bytes, so a chunk of odd length before the colours breaks
-    it ([#225](https://github.com/fubar-coder/bb2-c/issues/225)); and a
-    palette too small for the colours at the offset is cleared first
-    ([#226](https://github.com/fubar-coder/bb2-c/issues/226)).
+    A palette too small for the colours at the offset grows and keeps its
+    colours, as with `PalRGB`. A file that is not an IFF ILBM is the
+    error "Can't Open IFF", one without colours "Can't find IFF 'CMAP'".
 "InitPalette":
   text: Gives a palette room for `NumColors` colours, all black; its old colours are freed.
   notes: |
-    Kept from the original: the colour cycles of the palette are not
-    cleared ([#229](https://github.com/fubar-coder/bb2-c/issues/229)).
+    The colour cycles set for the palette with `SetCycle` stay as they
+    are.
 "PalRGB":
   text: Sets a colour of a palette object, with components from 0 to 15. The palette grows if needed; the display changes with the next `Use Palette` or `ShowPalette`.
 "AGAPalRGB":
@@ -58,9 +56,7 @@
 "StopCycle":
   text: Stops the colour cycling that `Cycle` started.
   notes: |
-    Kept from the original: after `StopCycle`, a new `Cycle` does not
-    start the cycling again
-    ([#228](https://github.com/fubar-coder/bb2-c/issues/228)).
+    A later `Cycle` starts the cycling again.
 "CyclePalette":
   text: Moves the colours of the cycles of a palette that are due by one step, in the palette object only; nothing is shown. Call it once per frame and show the palette, for example with a display of the display library.
 "FadePalette":
@@ -73,9 +69,8 @@
   text: Fills the colours from `StartCol` to `EndCol` of a palette with a gradient from `r0,g0,b0` to `r1,g1,b1`, components from 0 to 255.
   notes: |
     Nothing happens when `EndCol` is less than `StartCol` or the range is
-    larger than the palette. Kept from the original: `StartCol` equal to
-    `EndCol` divides by zero
-    ([#227](https://github.com/fubar-coder/bb2-c/issues/227)).
+    larger than the palette. With `StartCol` equal to `EndCol`, that
+    colour gets `r0,g0,b0`.
 "DuplicatePalette":
   text: Copies the colours, not the cycles, of `SrcPalette#` into `DestPalette#`, which gets the same number of colours.
 "MixPalette":

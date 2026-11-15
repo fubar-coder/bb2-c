@@ -13,6 +13,10 @@ intro: |
   the start value, every shape that is loaded or made gets its cookie
   automatically.
 
+  A shape keeps the size the blitter draws it with in one word, so it can
+  be at most 1023 rows high and 992 pixels wide, and each of its planes
+  must be smaller than 64 KB. For a larger image, use a bitmap.
+
   `LoadShape` loads an IFF ILBM picture as a shape; an IFF ANIM file
   gives one shape per frame, in the following shape numbers. `SaveShapes`
   and `LoadShapes` save and load shapes in Blitz's own file format, and
