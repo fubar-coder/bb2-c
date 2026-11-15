@@ -24,9 +24,11 @@ set(ACIDLIBS_WITHOUT_LITERAL rwe-1999 rwe-1999-eval rwe-1999-ahi)
 # (blitz_library OPTIMIZE, cmake/BlitzLibrary.cmake), in every variant:
 # the ones that gain at least 5% in their own blocks of a benchmark on a
 # cycle-exact 68000 (String$ x2.0, CopyBitMap x1.33, Sort and Val about
-# x1.06).  Not here: strcomplib (13% slower), printlib (Str$ 3% faster
-# for 13% more code, in nearly every program)
-set(ACIDLIBS_SPEED bitmaplib sortlib stringfunclib vallib)
+# x1.06; strings1lib: about 360 cycles less per string fetch, for 8
+# bytes, tests/perf).  Not here: strcomplib (13% slower), printlib (Str$
+# 3% faster for 13% more code, in nearly every program), strings2lib
+# (its assignment of 1 character, Chr$, 13 cycles slower)
+set(ACIDLIBS_SPEED bitmaplib sortlib stringfunclib strings1lib vallib)
 foreach(name ${ACIDLIBS_SPEED})
 	if(NOT name IN_LIST ACIDLIBS_ORDER)
 		message(FATAL_ERROR "ACIDLIBS_SPEED: ${name} is not in ACIDLIBS_ORDER")

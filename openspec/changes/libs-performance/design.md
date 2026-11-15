@@ -78,7 +78,14 @@ build.
    bytes, -510 cycles per 21 character assignment), medlib (-630 per PlayMed
    frame, +776 bytes) and trackerlib (-220 per PlayModule frame, +212 bytes)
    to `ACIDLIBS_SPEED` (`libs/acidlibs/CMakeLists.txt:29`). The rest stays
-   `-Os`.
+   `-Os`. Measured in `tests/perf` (task 3.1): strings1lib gains about 360
+   cycles per string fetch (`r$=a$` 2521.5 -> 2160.0, Len 1228.0 -> 864.0,
+   concat and compare about 720) for 8 bytes and slows no command, so it is
+   in the list. strings2lib is left out: its `-O2` copy loop has a longer
+   set-up (a `tst.l` of the length, the `dbf` split and an extra branch on
+   the reuse path), so a 1 character assignment gets slower (`Chr$` 807.0
+   -> 820.0) while longer ones gain (`r$=a$` another 150, String$ 140);
+   task 5.2 replaces that loop by the original's assembler anyway.
 7. **Rare paths out of line.** Where the cost is gcc's register save on a rare
    path (Sgn/Int/Abs float case, the allocation in `assign`), the rare part
    becomes a `noinline` function; an assembler entry is the alternative if
