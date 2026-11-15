@@ -767,6 +767,22 @@ it.
 
 Issue: [A Dim of 4 GB or more got an array of a few bytes (#58)](https://github.com/fubar-coder/bb2-c/issues/58).
 
+### A `Dim` with the highest index 65535 {#dim-65535}
+
+**What happened.** A dimension of an array or list has at most 65535
+elements, the indexes 0 to 65534. `Dim a(65535)` and `Dim List a(65535)`
+gave an array or list of no elements, so every access to it lay outside
+its memory. Runtime error checking refused only an index of 65536 and
+more.
+
+**With the port.** With runtime error checking, the highest index 65535
+is the error "Array Dimension out of Range" too.
+
+**What to change.** Make the highest index 65534 or less, or spread the
+elements over two dimensions.
+
+Issue: [Dim a(65535) gave an array of no elements (#1037)](https://github.com/fubar-coder/bb2-c/issues/1037).
+
 ### `WSize` beyond the size limits of a window {#wsize-limits}
 
 **What happened.** `WSize` waits until the window has the new size.
@@ -850,3 +866,50 @@ allocate memory for Port" of the same command.
 needs before it makes a new port.
 
 Issue: [CreateMsgPort did not notice a failed signal allocation (#298)](https://github.com/fubar-coder/bb2-c/issues/298).
+
+### `DeleteMsgPort` of a port `CreateMsgPort` did not make {#deletemsgport-foreign}
+
+**What happened.** `DeleteMsgPort` took any address as a port. A port
+that `CreateMsgPort` had not made, such as one the program had set up
+itself, was taken apart and freed as if it had been, which corrupts
+memory. With runtime error checking, only a memory error came, after the
+damage.
+
+**With the port.** With runtime error checking, such a port is the error
+"Port Not Created By CreateMsgPort", before anything is changed.
+
+**What to change.** Give `DeleteMsgPort` only ports that `CreateMsgPort`
+returned, and remove other ports the way they were made.
+
+Issue: [DeleteMsgPort took any address as a port (#1041)](https://github.com/fubar-coder/bb2-c/issues/1041).
+
+### `SpotBox` on a page that is not set up {#spotbox-page}
+
+**What happened.** The other Blitz OS commands stop with "UnInitialised
+Page" on a page that was not made with `InitPage`, was freed or has no
+boxes. `SpotBox` did not check its page: on such a page it searched
+65536 boxes in the memory behind the page and could return one it found
+there.
+
+**With the port.** With runtime error checking, this is the error
+"UnInitialised Page".
+
+**What to change.** Make the page with `InitPage`, with at least one box,
+before `SpotBox`.
+
+Issue: [SpotBox did not check its page (#83)](https://github.com/fubar-coder/bb2-c/issues/83).
+
+### `SelectBox` with a box the page does not have {#selectbox-range}
+
+**What happened.** The other Blitz OS commands stop with "Illegal Box#
+For Page" on a box number beyond the page's number of boxes.
+`SelectBox Box#` did not check the number: it selected and drew
+whatever lay behind the page's boxes.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Box# For Page". A negative `Box#` still selects no box.
+
+**What to change.** Select a box from 0 to one less than the number of
+boxes given to `InitPage`.
+
+Issue: [SelectBox did not check the box number (#82)](https://github.com/fubar-coder/bb2-c/issues/82).

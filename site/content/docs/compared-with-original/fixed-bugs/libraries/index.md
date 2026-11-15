@@ -631,6 +631,11 @@ size 250 100
 moved -1 20
 ```
 
+With runtime error checking, a size outside the limits of a window with a
+sizing gadget, as here, is the error "Can't Size Window", and the program
+above stops at `WSize`
+([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wsize-limits" >}})).
+
 Issue: [WMove and WSize hung when Intuition limited the new position or size (#320)](https://github.com/fubar-coder/bb2-c/issues/320).
 
 ### Window titles were never freed {#window-titles}
@@ -903,7 +908,8 @@ file requester is the same code and has the same fixes, except for the
   the string, so an empty search string was found at position 0 or at
   the negative start (`Instr(a$,"",-5)` gave -5); a start position below
   1 searches from the first character, as `Instr` without a start
-  position does
+  position does, and with runtime error checking it is the error
+  "Instr Startpos MUST be greater than zero"
   ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
 * `Instr` with a start position near $7FFFFFFF went on searching in
   memory far from the string, until it found the text there or hung; it
@@ -912,11 +918,14 @@ file requester is the same code and has the same fixes, except for the
 * `Cvi` always read two bytes of its string and `Cvl` and `Cvq` four, so
   a shorter string gave whatever an earlier string expression had left
   behind it; the missing bytes count as 0, so `Cvl("ab")` is $61620000
-  and `Cvi("")` is 0
+  and `Cvi("")` is 0. With runtime error checking a string that is too
+  short is the error "Cvi needs a String of at least 2 Characters", or
+  the same for `Cvl` and `Cvq` with 4
   ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
 * `Peeks$` with a negative length copied up to 4 GB into the string
   buffer and crashed the program; it returns the empty string, as a
-  length of 0 does
+  length of 0 does, and with runtime error checking it is the error
+  "Can't Peeks$ a negative number of Characters!"
   ([#214](https://github.com/fubar-coder/bb2-c/issues/214)).
 
 ### Input
@@ -951,8 +960,15 @@ file requester is the same code and has the same fixes, except for the
 
 * A `Dim` of an array of 4 GB or more, such as `Dim a.l(32767,32767)`,
   computed a wrong, tiny size and gave an array of a few bytes; it stops
-  with the error "Out of Memory!"
+  with the error "Out of Memory!", and with runtime error checking with
+  "Array Size out of Range"
   ([#58](https://github.com/fubar-coder/bb2-c/issues/58)).
+* A dimension of an array or list has at most 65535 elements, the indexes
+  0 to 65534. `Dim a(65535)` and `Dim List a(65535)` gave an array or
+  list of no elements, and every access to it lay outside its memory, but
+  runtime error checking refused only an index of 65536 and more; it
+  refuses 65535 too, with the error "Array Dimension out of Range"
+  ([#1037](https://github.com/fubar-coder/bb2-c/issues/1037)).
 * `Sort` on a string array read the length of an element that was never
   given a value from address -4 and its characters from address 0, so
   such elements sorted to places that depended on that memory; they
@@ -1043,6 +1059,58 @@ file requester is the same code and has the same fixes, except for the
 * Replacing a subitem moved the subitems behind it by a wrong amount, so
   they covered it or left a gap; they move by the change of its height
   ([#220](https://github.com/fubar-coder/bb2-c/issues/220)).
+
+### Blitz mode boxes
+
+The Blitz OS commands give a Blitz mode program pages of boxes as its
+user interface
+([Blitz OS]({{< relref "/docs/libraries/commands/blitzoslib" >}})).
+
+* `AddBox` of a string box 8 to 15 pixels wide, whose text has room for
+  one byte, wrote 65536 spaces behind that byte; it writes none
+  ([#84](https://github.com/fubar-coder/bb2-c/issues/84)).
+* On a page of more than 1024 boxes, the box numbers from 1024 on reached
+  the memory before the box table or, from 2048 on, the boxes from 0 on,
+  and `BoxSelected` returned a wrong number; every box number reaches its
+  own box, and `BoxSelected` returns it
+  ([#81](https://github.com/fubar-coder/bb2-c/issues/81)).
+* `BoxString` of an answer of spaces only, such as that of a string box
+  never typed into, removed the spaces beyond the start of the answer
+  and could copy up to 65535 bytes into the string buffer; it returns the
+  empty string
+  ([#85](https://github.com/fubar-coder/bb2-c/issues/85)).
+* A box added again with `AddBox` without a text printed the memory from
+  address 0 on when it was drawn; it prints nothing
+  ([#89](https://github.com/fubar-coder/bb2-c/issues/89)).
+* Cursor up or down in `BlitzEvent` with no box selected, such as right
+  after `InitPage`, read low memory as a box and could write to it; it
+  does nothing
+  ([#90](https://github.com/fubar-coder/bb2-c/issues/90)).
+* In a string box, Backspace at the start of the text and control keys
+  such as Return, Esc and Tab turned the cursor off and left it off; it
+  is drawn again
+  ([#91](https://github.com/fubar-coder/bb2-c/issues/91)).
+* `DeSelectBox` left the box selected, so it was still drawn as selected
+  and `BoxSelected` still returned it; the selection is cleared, and
+  `BoxSelected` returns -1
+  ([#94](https://github.com/fubar-coder/bb2-c/issues/94)).
+* `BoxPrint Box#,Bank#,Line` replaced the line feed at the end of the
+  printed line by a 0 in the bank itself; the bank stays as it is
+  ([#87](https://github.com/fubar-coder/bb2-c/issues/87)).
+* A list box made with `AddBox` and a text, or given a text with
+  `SetBoxTitle`, got no entries: it showed nothing, and `SetBox` on it
+  always failed with "Value Out of Range"; it gets one entry for each part
+  of the text
+  ([#989](https://github.com/fubar-coder/bb2-c/issues/989)).
+* `SpotBox` on a page that was not made with `InitPage`, was freed or has
+  no boxes searched 65536 boxes in the memory behind the page and could
+  return one found there; with runtime error checking it is the error
+  "UnInitialised Page"
+  ([#83](https://github.com/fubar-coder/bb2-c/issues/83)).
+* `SelectBox Box#` with a number the page does not have selected and drew
+  whatever lay behind the box table; with runtime error checking it is
+  the error "Illegal Box# For Page"
+  ([#82](https://github.com/fubar-coder/bb2-c/issues/82)).
 
 ### Windows and screens
 
@@ -1301,6 +1369,28 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
 * `DeleteMsgPort` freed a port with the messages still waiting at it, so
   their senders never got them back; they are replied first
   ([#299](https://github.com/fubar-coder/bb2-c/issues/299)).
+* `DeleteMsgPort` took any address as a port, so a port that
+  `CreateMsgPort` had not made was freed as if it had, which corrupts
+  memory, and runtime error checking reported only a memory error after
+  the damage; with runtime error checking such a port is the error "Port
+  Not Created By CreateMsgPort", before anything is changed
+  ([#1041](https://github.com/fubar-coder/bb2-c/issues/1041)).
+
+### Program start
+
+* A program started from the CLI with an argument line longer than 255
+  characters copied the whole line into a buffer of 256 bytes and
+  overwrote the memory behind it; the program gets the first 255
+  characters
+  ([#308](https://github.com/fubar-coder/bb2-c/issues/308)).
+* A program started from the Workbench makes its drawer the current
+  directory, and did not make the old current directory current again
+  at its end; it does
+  ([#307](https://github.com/fubar-coder/bb2-c/issues/307)).
+* A program started from the Workbench opened `dos.library` and never
+  closed it, so every start raised its use count for good; it is closed
+  at the end
+  ([#306](https://github.com/fubar-coder/bb2-c/issues/306)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 
