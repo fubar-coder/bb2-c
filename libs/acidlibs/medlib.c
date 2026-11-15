@@ -965,9 +965,9 @@ BL_ALWAYS_INLINE struct left playnote_in(UWORD ch, ULONG note, UWORD instr, stru
 
     if (!ins)
         return r;
-    if (!((ULONG)ChanMask & (1UL << (ch & 31))))
+    mask = 1UL << (ch & 31);                    /* the mask made once */
+    if (!(ChanMask & mask))
         return r;
-    mask = 1UL << (ch & 31);
     sp = *(ULONG *)((UBYTE *)PM->smplarr + (WORD)(instr << 2));
     n = note + PS->playtransp + ins->strans;
     if ((BYTE)ch < 4) {
