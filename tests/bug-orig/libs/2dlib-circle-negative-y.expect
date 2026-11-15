@@ -1,4 +1,5 @@
 [run]
 inside -1
 behind 0
+fill behind 0
 rc=0

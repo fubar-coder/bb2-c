@@ -27,9 +27,10 @@
  *
  * BUG(orig), kept (selection):
  *   - Box adds the origin twice (once itself, once in the line clipper). (#391)
- *   - Circle/Circlef with points above the top edge: MULU of the negative
- *     y gives a large offset that is not rejected - the CPU plot writes
- *     far outside the bitmap / fill buffer. (#392)
+ *   - Fixed (#392): Circle/Circlef with points above the top edge: the
+ *     MULU of the negative y gave a large offset that was not rejected -
+ *     the CPU plot wrote far outside the bitmap / fill buffer.  The
+ *     height compare is unsigned now (the same instructions).
  *   - Poly with 1 point loops 65535 times (#396); Polyf with more than 16
  *     points overflows its 32-long point buffer, more than 10 edges on one
  *     side overflow the edge lists l0/l1 (here ledges/redges) (#395).
@@ -772,14 +773,17 @@ static void ellipse_step2(struct ellipse *e)
 }
 
 /* cplot: the point x, y in colour (complement if negative) with the CPU;
-   y is checked only with a signed compare, its unsigned word multiplied
-   (#392); the plane loop counts with CMP.b on the depth byte (#393) */
+   the plane loop counts with CMP.b on the depth byte (#393).  Fixed
+   (#392): y is compared with the clip height unsigned (BCC instead of
+   BPL), so a point above the top edge is clipped; the original's signed
+   compare let it pass, and the MULU of its unsigned word wrote it up to
+   65535 rows behind the plane */
 static void cplot(struct bb_bitmap *bm, WORD x, WORD y, UWORD colour)
 {
     ULONG off;
     UBYTE bit, i = 0;
 
-    if (!BMI_W(y, bm->height))
+    if ((UWORD)y >= (UWORD)bm->height)
         return;
     off = bl_mulu_w(y, bm->bpr);
     if ((LONG)off < 0)
@@ -857,12 +861,13 @@ static void bltsize(UBYTE *chip, UWORD size)
 }
 
 /* cplot2: toggle the bit of x, y in the fill buffer, x clipped at last
-   (y as in cplot: #392) */
+   (y as in cplot, fixed #392: unsigned, a point above the top edge is
+   clipped and no longer toggled behind the fill buffer) */
 static void cplot2(const struct bb_bitmap *bm, WORD x, WORD y, WORD last)
 {
     ULONG off;
 
-    if (!BMI_W(y, bm->height))
+    if ((UWORD)y >= (UWORD)bm->height)
         return;
     off = bl_mulu_w(y, bm->bpr);
     if ((LONG)off < 0)

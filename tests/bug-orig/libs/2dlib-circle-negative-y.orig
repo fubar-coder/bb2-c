@@ -6,6 +6,7 @@ ok
 [run]
 inside -1
 behind 4
+fill behind 2
 rc=0
 [blitz2]
 rc=0
