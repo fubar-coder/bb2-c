@@ -56,3 +56,8 @@ lib 65434: relocations in the declaration part 5 != 7
 lib 117: header +$2C: code offset set in only one of them
 # #82: SelectBox Box# gets an error check (selectboxchk) as well
 lib 117: relocations in the declaration part 41 != 44
+# #1041: DeleteMsgPort gets an error check (delportchk); utillib gets an
+# error check area for it (the original has none)
+lib 194: header +$2C: code offset set in only one of them
+lib 194: entry 1 DeleteMsgPort +$C: code offset set in only one of them
+lib 194: relocations in the declaration part 8 != 10

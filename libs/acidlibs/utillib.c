@@ -25,8 +25,6 @@
  *     port block stays allocated if the name allocation fails).  After
  *     TRAP #0 the original runs into its message text; not reproduced
  *     (DIFF, K: the C version returns 0, #300).
- *   - DeleteMsgPort accepts anything: a port that utillib did not create
- *     corrupts memory (an invalid argument, not checked).
  *   - Not a bug (the intended semantics, any allocated signal): Wait waits
  *     for ALL allocated signals of the task (tc_SigAlloc).
  *
@@ -43,6 +41,12 @@
  *   - #299: DeleteMsgPort freed the port with the messages still queued
  *     on it, without replying them (a sender waiting at its reply port
  *     never got the message back).  Here they are replied first.
+ *   - #1041: DeleteMsgPort accepted anything: a port that utillib did not
+ *     create (not in its list) was unlinked through foreign pointers and
+ *     freed as a utillib block, which corrupts memory.  Here an error
+ *     check (delportchk, error check area only; utillib gets one for it)
+ *     refuses such a port with "Port Not Created By CreateMsgPort";
+ *     release code unchanged (an invalid argument).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -51,12 +55,14 @@
 void _CreateMsgPort(void), _DeleteMsgPort(void);
 ULONG _dowait(void);
 void _taskname(void), _startup(void), utillib_CloseRoutine(void);
+void delportchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* !libheader{#utillib,init,#long,finit,0} - `return` = #long = 3 */
-BLITZ_LIBHEADER(LIB_utillib, init, BL_LONG, finit, 0);
+/* !libheader{#utillib,init,#long,finit,0} - `return` = #long = 3; the
+   error field: the error check area of delportchk (fixed, #1041) */
+BLITZ_LIBHEADER(LIB_utillib, init, BL_LONG, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_STRING);
@@ -67,7 +73,7 @@ BLITZ_NAME("CreateMsgPort", " *UserPort.port=CreateMsgPort(PortName$)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_DeleteMsgPort, 0, 0);
+BLITZ_SUBS(_DeleteMsgPort, delportchk, 0);
 BLITZ_NAME("DeleteMsgPort", " *UserPort");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -288,8 +294,10 @@ BLITZ_THUNK(_CreateMsgPort, createmsgport_c, "d1/a1");
  *
  * Fixed (#299): the queued messages are replied (the original freed the
  * port with them); replies that came back to the port (NT_REPLYMSG) are
- * only removed.  Not checked (an invalid argument): a port that
- * utillib did not create corrupts memory.
+ * only removed.  Errors (debugger only, delportchk): "Port Not Created By
+ * CreateMsgPort" (fixed, #1041: the original took any address; without
+ * the debugger a port that utillib did not create still corrupts
+ * memory, an invalid argument).
  *
  * @param port d0: the port
  */
@@ -337,3 +345,29 @@ static void BLITZ_ROUTINE closeroutine_c(void)
         deletemsgport_c(&n->port);
 }
 BLITZ_THUNK(utillib_CloseRoutine, closeroutine_c, "d1/a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(NotOurs, "Port Not Created By CreateMsgPort");
+
+/**
+ * @brief The error check of DeleteMsgPort (debugger only).
+ *
+ * Fixed (#1041), not in the original (DeleteMsgPort took any address):
+ * the port must be one of utillib's list, made by CreateMsgPort and not
+ * deleted yet.
+ *
+ * Errors: "Port Not Created By CreateMsgPort".
+ *
+ * @param port d0: the port
+ */
+static void BLITZ_ERRCHK delportchk_c(const struct MsgPort *port BL_REG(d0))
+{
+    const struct portnode *n;
+
+    for (n = PortListStart.next; n; n = n->next)
+        if (&n->port == port)
+            return;
+    BLITZ_RUNERR(NotOurs);
+}
+BLITZ_ERRCHK_THUNK(delportchk, delportchk_c, "d0-d1/a0-a1");

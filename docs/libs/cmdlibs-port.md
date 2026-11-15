@@ -195,6 +195,14 @@ init value is the **address** of the variable `signals` (for other libs:
   gives the runtime error "Failed to allocate signal for Port" (bug-orig
   test `utillib-createmsgport-no-signal`). `FreeSignal` in DeleteMsgPort
   is zero-extended in C (the NDK inline takes BYTE).
+* Fixed (intended deviation, #1041): `DeleteMsgPort` takes any address;
+  a port that CreateMsgPort did not make is unlinked through its foreign
+  list pointers and freed as a utillib block (memory corrupted; with
+  runtime error checking the original only reports memlib's "Unable to
+  Free Memory" afterwards). utillib gets an error check area: the error
+  check `delportchk` looks for the port in utillib's list and raises
+  "Port Not Created By CreateMsgPort" for any other address; release code
+  unchanged (bug-orig test `utillib-deletemsgport-foreign`).
 * Memory error → runtime error "Failed to allocate memory for Port"
   (`TRAP #0`); the original then runs into its message text, the
   C version returns with 0 (#300, fixed in the port). Not testable.
