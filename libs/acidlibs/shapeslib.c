@@ -112,7 +112,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / assembler, defined below) */
+/* entry points (aliases / thunks / assembler, defined below) */
 void doshload(void), doshload2(void), docookie(void), doshapew(void);
 void doshapeh(void), dohandle(void), doautocookie(void), docopyshape(void);
 void dogetashape(void), b_getashape(void), dosaveshapes(void);
@@ -450,7 +450,7 @@ static void BLITZ_ROUTINE doautocookie_c(ULONG v BL_REG(d0))
 {
     autocook = (UWORD)v;
 }
-BLITZ_THUNK(doautocookie, doautocookie_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doautocookie, doautocookie_c);
 
 /**
  * @brief ShapeWidth(Shape#) - the shape's pixel width.
@@ -474,8 +474,8 @@ static UWORD BLITZ_ROUTINE shapew_c(struct bb_shape *s BL_REG(a0)) { return s->w
  * @return d0.w: the height
  */
 static UWORD BLITZ_ROUTINE shapeh_c(struct bb_shape *s BL_REG(a0)) { return s->height; }
-BLITZ_THUNK_POST(doshapew, shapew_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doshapeh, shapeh_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_ALIAS(doshapew, shapew_c);
+BLITZ_ALIAS(doshapeh, shapeh_c);
 
 /**
  * @brief MidHandle Shape# - put the handle in the middle (width/2,
@@ -490,7 +490,7 @@ static void BLITZ_ROUTINE domidhandle_c(void)
     s->handlex = s->width >> 1;
     s->handley = s->height >> 1;
 }
-BLITZ_THUNK(domidhandle, domidhandle_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domidhandle, domidhandle_c);
 
 /**
  * @brief Handle Shape#,X,Y - set the shape's handle; a3 = the shape.
@@ -507,7 +507,7 @@ static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
     s->handlex = (UWORD)x;
     s->handley = (UWORD)y;
 }
-BLITZ_THUNK(dohandle, dohandle_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dohandle, dohandle_c);
 
 /* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie); size:
    the bytes of the block (fixed #263: the original took the word +26 or
@@ -560,7 +560,7 @@ static void BLITZ_ROUTINE docopyshape_c(struct bb_shape *dst BL_REG(a2))
     nall((struct bb_shape *)blitz_string, dst, offsetof(struct bb_shape, cookie),
          ((struct bb_shape *)blitz_string)->planesize);
 }
-BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(docopyshape, docopyshape_c);
 
 /* ------------------------------------------------------------ InitShape */
 
@@ -617,7 +617,7 @@ static void BLITZ_ROUTINE initshape_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), UL
     if (autocook)
         s->cookie = globalloc(s->planesize, MEMF_CHIP | MEMF_CLEAR);
 }
-BLITZ_THUNK(_initshape, initshape_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_initshape, initshape_c);
 
 /* ------------------------------------------------------------ GetaShape */
 
@@ -765,7 +765,7 @@ static void BLITZ_ROUTINE dosaveshapes_c(struct bb_shape *last BL_REG(a2), const
     } while ((ULONG)s <= (ULONG)last);
     Close(fh);
 }
-BLITZ_THUNK(dosaveshapes, dosaveshapes_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosaveshapes, dosaveshapes_c);
 
 static void loadshapes(struct bb_shape *s, struct bb_shape *last, const char *name,
                        struct DosLibrary *dos)
@@ -831,7 +831,7 @@ static void BLITZ_ROUTINE doloadshapes_c(struct bb_shape *last BL_REG(a2),
 {
     loadshapes((struct bb_shape *)blitz_string, last, name, dos);
 }
-BLITZ_THUNK(doloadshapes, doloadshapes_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doloadshapes, doloadshapes_c);
 
 /**
  * @brief LoadShapes Shape#,Filename$ - load shapes from a3 on up to the
@@ -853,7 +853,7 @@ static void BLITZ_ROUTINE doloadshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
     loadshapes((struct bb_shape *)blitz_string,
                (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)), name, dos);
 }
-BLITZ_THUNK(doloadshapes2, doloadshapes2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doloadshapes2, doloadshapes2_c);
 
 /* -------------------------------------------------------- DecodeShapes */
 
@@ -927,7 +927,7 @@ static void BLITZ_ROUTINE cludgeshapes_c(struct bb_shape *last BL_REG(a2), UBYTE
     }
     cludge((struct bb_shape *)blitz_string, last, mem);
 }
-BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_cludgeshapes, cludgeshapes_c);
 
 /**
  * @brief DecodeShapes Shape#,MemoryLocation - as cludgeshapes_c from a3 on
@@ -952,7 +952,7 @@ static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
     }
     cludge((struct bb_shape *)blitz_string, last, mem);
 }
-BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_cludgeshapes2, cludgeshapes2_c);
 
 /* ------------------------------------------------------------ LoadShape */
 
@@ -1214,7 +1214,7 @@ static void BLITZ_ROUTINE doshload_c(struct bb_shape *shape BL_REG(a0), const ch
 {
     doshload_(shape, name, (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)));
 }
-BLITZ_THUNK(doshload, doshload_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doshload, doshload_c);
 
 /**
  * @brief LoadShape Shape#,Filename$,Palette# - load the file's palette
@@ -1236,7 +1236,7 @@ static void BLITZ_ROUTINE doshload2_c(struct bb_shape *shape BL_REG(a0), const c
     XJSR(TOK_palload, r);
     doshload_(shape, name, (struct bb_shape *)(base + ((ULONG)(UWORD)(max - 1) << 5)));
 }
-BLITZ_THUNK(doshload2, doshload2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doshload2, doshload2_c);
 
 /* *************************** ERROR CHECKING *************************** */
 

@@ -63,7 +63,7 @@
 #include <proto/dos.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void dogetsprite(void), doshowsprite(void), doinfront1(void), doinfront2(void);
 void dosavesprites(void), doloadsprites(void), doloadsprites2(void);
 void dospritemode(void), freeasprite(void);
@@ -229,7 +229,7 @@ static void BLITZ_ROUTINE dospritemode_c(ULONG m BL_REG(d0))
     sv.shift = (UWORD)m + 2;
     sv.wid = *(UWORD *)((UBYTE *)sv.shlup + (WORD)(UWORD)((UWORD)m + (UWORD)m));
 }
-BLITZ_THUNK(dospritemode, dospritemode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dospritemode, dospritemode_c);
 
 static void freeasprite_(struct bb_sprite *sp)
 {
@@ -390,7 +390,7 @@ static void BLITZ_ROUTINE dogetsprite_c(struct bb_shape *shape BL_REG(a2))
         avail -= (WORD)sv.wid;
     } while (count-- != 0);
 }
-BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dogetsprite, dogetsprite_c);
 
 /* ------------------------------------------------------- Blitz mode */
 
@@ -502,7 +502,7 @@ spriteoff:
         }
     } while (n-- != 0);
 }
-BLITZ_THUNK(doshowsprite, doshowsprite_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doshowsprite, doshowsprite_c);
 
 /**
  * @brief InFront Sprite Channel, InFrontB Sprite Channel - sprites from
@@ -523,7 +523,7 @@ static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), struct bb_slice *sli
 
     *bplcon2 = (UWORD)((((UWORD)ch >> 1) & 7) << 3) | (*bplcon2 & 7);
 }
-BLITZ_THUNK(doinfront1, doinfront1_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doinfront1, doinfront1_c);
 
 /**
  * @brief InFrontF Sprite Channel - sprites from the channel on appear in
@@ -543,7 +543,7 @@ static void BLITZ_ROUTINE doinfront2_c(ULONG ch BL_REG(d0), struct bb_slice *sli
 
     *bplcon2 = (UWORD)(((UWORD)ch >> 1) & 7) | (*bplcon2 & 0x38);
 }
-BLITZ_THUNK(doinfront2, doinfront2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doinfront2, doinfront2_c);
 
 /* ----------------------------------------------------- sprites files */
 
@@ -596,7 +596,7 @@ static void BLITZ_ROUTINE dosavesprites_c(UBYTE *last BL_REG(a2), const char *na
     } while ((ULONG)sp <= (ULONG)last);
     Close(fh);
 }
-BLITZ_THUNK(dosavesprites, dosavesprites_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosavesprites, dosavesprites_c);
 
 static void loadsprites(struct bb_sprite *sp, const UBYTE *last, const char *name, struct DosLibrary *dos)
 {
@@ -648,7 +648,7 @@ static void BLITZ_ROUTINE doloadsprites_c(UBYTE *last BL_REG(a2), const char *na
 {
     loadsprites((struct bb_sprite *)blitz_string, last, name, dos);
 }
-BLITZ_THUNK(doloadsprites, doloadsprites_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doloadsprites, doloadsprites_c);
 
 /**
  * @brief LoadSprites Sprite#,Filename$ - load sprites from the given one
@@ -672,7 +672,7 @@ static void BLITZ_ROUTINE doloadsprites2_c(UBYTE *base BL_REG(a2), ULONG max BL_
     /* Fixed (#999): the last sprite as a long offset */
     loadsprites((struct bb_sprite *)blitz_string, base + ((ULONG)(UWORD)(max - 1) << 4), name, dos);
 }
-BLITZ_THUNK(doloadsprites2, doloadsprites2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doloadsprites2, doloadsprites2_c);
 
 /* ************************** ERROR CHECKING ************************** */
 

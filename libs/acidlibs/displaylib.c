@@ -90,7 +90,7 @@
 #include "blitzobj.h"
 #include <stddef.h>
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 void _initcoplist2(void), _initcoplist(void), _createdisplay(void);
 void _displaybmap(void), _displaybmap2(void), _displaydbmap(void);
 void _displaydbmap2(void), _displaysprite(void), _displaypalette(void);
@@ -518,7 +518,7 @@ static void BLITZ_ROUTINE _doadjust_c(UWORD fetchwid BL_REG(d1), UWORD ddfstrt B
     W(ctrl, 6) += diwstrt;
     W(ctrl, 10) += diwstop;
 }
-BLITZ_THUNK(_doadjust, _doadjust_c, "d0-d1/a0");
+BLITZ_ALIAS(_doadjust, _doadjust_c);
 
 /**
  * @brief DisplayControls CopList#,BPLCON2,BPLCON3,BPLCON4: changes the
@@ -548,7 +548,7 @@ static void BLITZ_ROUTINE _dobplcons_c(UWORD bplcon2 BL_REG(d1), UWORD bplcon3 B
     moves[1] = move3;
     moves[2] = move4;
 }
-BLITZ_THUNK(_dobplcons, _dobplcons_c, "d0-d1/a1");
+BLITZ_ALIAS(_dobplcons, _dobplcons_c);
 
 /**
  * @brief DisplayGenlock BPLCON0: bits that later InitCopLists OR into
@@ -560,7 +560,7 @@ static void BLITZ_ROUTINE _setgenlock_c(UWORD v BL_REG(d0))
 {
     d.genlock = v;
 }
-BLITZ_THUNK(_setgenlock, _setgenlock_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setgenlock, _setgenlock_c);
 
 /**
  * @brief Free CopList: frees the list's memory (memlib globfree).
@@ -869,8 +869,8 @@ static void BLITZ_ROUTINE _initcoplist2_c(ULONG type BL_REG(d1), ULONG height BL
         colours = 32;
     initcoplist(ypos, height, type, 8, colours, colup + 1, sprmode, (WORD)used);
 }
-BLITZ_THUNK(_initcoplist, _initcoplist_c, "a2");
-BLITZ_THUNK(_initcoplist2, _initcoplist2_c, "a2");
+BLITZ_ALIAS(_initcoplist, _initcoplist_c);
+BLITZ_ALIAS(_initcoplist2, _initcoplist2_c);
 
 /* ---------------------------------------- CreateDisplay (Blitz mode only) */
 
@@ -949,7 +949,7 @@ static void BLITZ_ROUTINE _createdisplay_c(UWORD count BL_REG(d7), const UWORD *
         BLITZ_ALIBJSR(TOK_setcoplist, r);
     }
 }
-BLITZ_THUNK(_createdisplay, _createdisplay_c, "a2");
+BLITZ_ALIAS(_createdisplay, _createdisplay_c);
 
 /* ------------------------------------------------- display bitmap routines */
 
@@ -1078,8 +1078,8 @@ static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0))
         bplptr += 4;
     } while ((WORD)--planes != -1);
 }
-BLITZ_THUNK(_displaybmap, _displaybmap_c, "a1");
-BLITZ_THUNK(_displaybmap2, _displaybmap2_c, "a1");
+BLITZ_ALIAS(_displaybmap, _displaybmap_c);
+BLITZ_ALIAS(_displaybmap2, _displaybmap2_c);
 
 /* scludge: two bitmaps, d2/d5 = x (quick), d3/d6 = y */
 static void displaydbmap2(UBYTE *cop, const UBYTE *bm1, const UBYTE *bm2,
@@ -1205,8 +1205,8 @@ static void BLITZ_ROUTINE _displaydbmap_c(const UBYTE *bm1 BL_REG(a0), const UBY
             return;
     }
 }
-BLITZ_THUNK(_displaydbmap, _displaydbmap_c, "a2");
-BLITZ_THUNK(_displaydbmap2, _displaydbmap2_c, "a2");
+BLITZ_ALIAS(_displaydbmap, _displaydbmap_c);
+BLITZ_ALIAS(_displaydbmap2, _displaydbmap2_c);
 
 /* ------------------------------------------------------ sprite routines */
 
@@ -1390,7 +1390,7 @@ static void BLITZ_ROUTINE _displaysprite_c(const struct bb_sprite *spr BL_REG(a1
         posword = (UWORD)(posword + CM(cop, sspwid));
     } while ((WORD)(count = (UWORD)(count - 1)) != -1);
 }
-BLITZ_THUNK(_displaysprite, _displaysprite_c, "a1");
+BLITZ_ALIAS(_displaysprite, _displaysprite_c);
 
 /* ------------------------------------------------ palette routines */
 
@@ -1565,9 +1565,9 @@ static void BLITZ_ROUTINE _displaypalette3_c(const UBYTE *pal BL_REG(a0), ULONG 
         complex2(cop, pal, ins,
                  0x01060000 | (UWORD)(CM(cop, bplcon3) + (UWORD)(bankoff << 13)), count);
 }
-BLITZ_THUNK(_displaypalette, _displaypalette_c, "a2");
-BLITZ_THUNK(_displaypalette2, _displaypalette2_c, "a2");
-BLITZ_THUNK(_displaypalette3, _displaypalette3_c, "a2");
+BLITZ_ALIAS(_displaypalette, _displaypalette_c);
+BLITZ_ALIAS(_displaypalette2, _displaypalette2_c);
+BLITZ_ALIAS(_displaypalette3, _displaypalette3_c);
 
 /* CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols */
 static void customcols(UWORD ccoffset, UWORD ypos, const UBYTE *pal, UWORD startcol, UWORD numcols)
@@ -1641,8 +1641,8 @@ static void BLITZ_ROUTINE _customcols2_c(UWORD ccoffset BL_REG(d1), UWORD ypos B
     if (thru256)                                /* fixed #951: the flag's value */
         CM(blitz_string, bot) = 257;
 }
-BLITZ_THUNK(_customcols, _customcols_c, "a2");
-BLITZ_THUNK(_customcols2, _customcols2_c, "a2");
+BLITZ_ALIAS(_customcols, _customcols_c);
+BLITZ_ALIAS(_customcols2, _customcols2_c);
 
 /* ------------------------------------------------- custom copper routines */
 
@@ -1684,7 +1684,7 @@ static void BLITZ_ROUTINE _customstring_c(UWORD ccoffset BL_REG(d1), UWORD ypos 
     }
     OVERRUN(cop, ins);
 }
-BLITZ_THUNK(_customstring, _customstring_c, "a2");
+BLITZ_ALIAS(_customstring, _customstring_c);
 
 /* DisplayDblScan CopList#,Mode[,copoffset] */
 static void dblscan(UWORD mode, UWORD off)
@@ -1783,8 +1783,8 @@ static void BLITZ_ROUTINE _displaydblscan_c(UWORD mode BL_REG(d1), UWORD off BL_
 {
     dblscan(mode, off);
 }
-BLITZ_THUNK(_displaydblscan0, _displaydblscan0_c, "a0");
-BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
+BLITZ_ALIAS(_displaydblscan0, _displaydblscan0_c);
+BLITZ_ALIAS(_displaydblscan, _displaydblscan_c);
 
 /**
  * @brief CustomSprites CopList#,CCOffset,YPos,NumSprites: more sprite
@@ -1827,7 +1827,7 @@ static void BLITZ_ROUTINE _customsprites_c(UWORD ccoffset BL_REG(d1), UWORD ypos
     } while ((WORD)--n != -1);
     OVERRUN(cop, ins);
 }
-BLITZ_THUNK(_customsprites, _customsprites_c, "a0");
+BLITZ_ALIAS(_customsprites, _customsprites_c);
 
 /* ---------------------------------------------------- colour splits */
 
@@ -1929,8 +1929,8 @@ static void BLITZ_ROUTINE _displayrainbow_c(UWORD reg BL_REG(d1), const UBYTE *p
 {
     rainbow(reg, pal, off);
 }
-BLITZ_THUNK(_displayrainbow0, _displayrainbow0_c, "a0");
-BLITZ_THUNK(_displayrainbow, _displayrainbow_c, "a0");
+BLITZ_ALIAS(_displayrainbow0, _displayrainbow0_c);
+BLITZ_ALIAS(_displayrainbow, _displayrainbow_c);
 
 /* DisplayRGB CopList#,Register,line,r,g,b[,copoffset]: -2(a2) = offset */
 static void rgb(UWORD reg, UWORD line, UWORD red, UWORD green, UWORD blue, UWORD off)
@@ -2021,8 +2021,8 @@ static void BLITZ_ROUTINE _displayrgb_c(UWORD reg BL_REG(d1), UWORD line BL_REG(
 {
     rgb(reg, line, red, green, blue, args[-1]);
 }
-BLITZ_THUNK(_displayrgb0, _displayrgb0_c, "d0/a0");
-BLITZ_THUNK(_displayrgb, _displayrgb_c, "d0/a0");
+BLITZ_ALIAS(_displayrgb0, _displayrgb0_c);
+BLITZ_ALIAS(_displayrgb, _displayrgb_c);
 
 /* DisplayUser CopList#,Line,String[,Offset] */
 static void user(UWORD line, const ULONG *s, UWORD off, ULONG len)
@@ -2078,8 +2078,8 @@ static void BLITZ_ROUTINE _displayuser_c(UWORD line BL_REG(d1), const ULONG *tex
 {
     user(line, text, off, lens[-1]);
 }
-BLITZ_THUNK(_displayuser0, _displayuser0_c, "a2");
-BLITZ_THUNK(_displayuser, _displayuser_c, "a2");
+BLITZ_ALIAS(_displayuser0, _displayuser0_c);
+BLITZ_ALIAS(_displayuser, _displayuser_c);
 
 /* DisplayScroll CopList#,&xpos.q(n),&xpos.q(n)[,Offset]: per line a
    BPLCON1 move and the two modulos */
@@ -2195,8 +2195,8 @@ static void BLITZ_ROUTINE _displayscroll_c(ULONG callerd0 BL_REG(d0), const LONG
 {
     scroll(xpos1, xpos2, off, callerd0);
 }
-BLITZ_THUNK(_displayscroll0, _displayscroll0_c, "a2");
-BLITZ_THUNK(_displayscroll, _displayscroll_c, "a2");
+BLITZ_ALIAS(_displayscroll0, _displayscroll0_c);
+BLITZ_ALIAS(_displayscroll, _displayscroll_c);
 
 /* ------------------------------------------- chunky copper routines (AGA) */
 
@@ -2218,7 +2218,7 @@ static ULONG BLITZ_ROUTINE _customchunkysize_c(ULONG width BL_REG(d0), UWORD hei
     BL_SETW(size, (UWORD)size + 2);
     return size;
 }
-BLITZ_THUNK(_customchunkysize, _customchunkysize_c, "d1/a0-a1");
+BLITZ_ALIAS(_customchunkysize, _customchunkysize_c);
 
 /* CustomChunky CopList#,CCOffset,YPos,width,height,res */
 static void customchunky(UWORD ccoffset, UWORD ypos, UWORD width, UWORD height, UWORD res)
@@ -2342,8 +2342,8 @@ static void BLITZ_ROUTINE _customchunky2_c(UWORD ccoffset BL_REG(d1), UWORD ypos
     CM(cop, chh2) -= split;
     CM(cop, cchunky2) += mulu16(CM(cop, chc), split);
 }
-BLITZ_THUNK(_customchunky, _customchunky_c, "a2");
-BLITZ_THUNK(_customchunky2, _customchunky2_c, "a2");
+BLITZ_ALIAS(_customchunky, _customchunky_c);
+BLITZ_ALIAS(_customchunky2, _customchunky2_c);
 
 /* ---------------------------------------------------------- error handling */
 

@@ -64,7 +64,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / assembler, defined below) */
+/* entry points (aliases / thunks / assembler, defined below) */
 void doscale(void), doscale2(void), doxflip(void), doyflip(void);
 void dorotate(void), scalechk(void), scalechk2(void), shapetrixlib_fchk(void);
 void rotchk(void);
@@ -301,7 +301,7 @@ void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 {
     xflip((struct bb_shape *)blitz_string, chip);
 }
-BLITZ_THUNK(b_doxflip, b_doxflip_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(b_doxflip, b_doxflip_c);
 
 /**
  * @brief XFlip Shape# in Amiga mode: OwnBlitter, flip, wait for the
@@ -368,7 +368,7 @@ static void BLITZ_ROUTINE doyflip_c(void)
     } while (planes-- != 0);
     cookieit(s);
 }
-BLITZ_THUNK(doyflip, doyflip_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doyflip, doyflip_c);
 
 /* ------------------------------------------------------------- Rotate */
 
@@ -522,7 +522,7 @@ static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
     } while (y <= yh);
     makeshape(s);
 }
-BLITZ_THUNK(dorotate, dorotate_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dorotate, dorotate_c);
 
 /* -------------------------------------------------------------- Scale */
 
@@ -689,7 +689,7 @@ static void BLITZ_ROUTINE doscale2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
         colvals[i] = 1;
     scale((struct bb_shape *)blitz_string, xr, yr);
 }
-BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doscale2, doscale2_c);
 
 /**
  * @brief Scale Shape#,X Ratio,Y Ratio,Palette# - scale a shape, the colour
@@ -725,7 +725,7 @@ static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2),
     } while (n-- != 0);
     scale((struct bb_shape *)blitz_string, xr, yr);
 }
-BLITZ_THUNK(doscale, doscale_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doscale, doscale_c);
 
 /* ************************** ERROR CHECKING ************************** */
 

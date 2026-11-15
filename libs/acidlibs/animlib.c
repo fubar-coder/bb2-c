@@ -77,7 +77,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 struct anim;
 void doframes(void);
 void BLITZ_ROUTINE freeanim(void);
@@ -517,7 +517,7 @@ static void BLITZ_ROUTINE doinitanim_c(struct anim *anim BL_REG(a0),
 {
     initanim(anim, bm);
 }
-BLITZ_THUNK(doinitanim, doinitanim_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doinitanim, doinitanim_c);
 
 /**
  * @brief InitAnim Anim#,BitMap#: InitAnim, then the planes copied to the
@@ -566,7 +566,7 @@ static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
         blitz_string = (UBYTE *)src;    /* a3 stays in the last plane */
     } while ((WORD)--planes != -1);
 }
-BLITZ_THUNK(doinitanim2, doinitanim2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doinitanim2, doinitanim2_c);
 
 /**
  * @brief NextFrame Anim#: apply the current delta to the used bitmap.
@@ -662,7 +662,7 @@ static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
     anim->current = next;
     blitz_string = (UBYTE *)node;       /* a3 stays on the (first) node */
 }
-BLITZ_THUNK(donextframe, donextframe_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(donextframe, donextframe_c);
 
 /* ****************** ERRORS BELOW **************** */
 

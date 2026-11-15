@@ -75,7 +75,7 @@
 #include "blitzobj.h"
 #include <graphics/gfxbase.h>
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 void doqslice(void), doslice(void), docoploc(void), docustomcop(void);
 void doshow2(void), doshow(void), doshowf2(void), doshowf3(void);
 void doshowf(void), doshowb2(void), doshowb3(void), doshowb(void);
@@ -295,8 +295,8 @@ static void BLITZ_ROUTINE dosetblwait_c(ULONG v BL_REG(d0))
 {
     blwait = v;
 }
-BLITZ_THUNK(dosetbplcon0, dosetbplcon0_c, "d0-d1/a0-a1");
-BLITZ_THUNK(dosetblwait, dosetblwait_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetbplcon0, dosetbplcon0_c);
+BLITZ_ALIAS(dosetblwait, dosetblwait_c);
 
 /* DisplayOff / DisplayOn (Blitz mode only) */
 static void display(UWORD dmacon)
@@ -321,8 +321,8 @@ void BLITZ_ROUTINE dodisplayoff_c(void) { display(0x0180); }
  * (err1 = 1).
  */
 void BLITZ_ROUTINE dodisplayon_c(void)  { display(0x8180); }
-BLITZ_THUNK(dodisplayoff, dodisplayoff_c, "a0-a1");
-BLITZ_THUNK(dodisplayon, dodisplayon_c, "a0-a1");
+BLITZ_ALIAS(dodisplayoff, dodisplayoff_c);
+BLITZ_ALIAS(dodisplayon, dodisplayon_c);
 
 /* makedumcop - a new dummy list */
 static void makedumcop(void)
@@ -366,7 +366,7 @@ static void BLITZ_ROUTINE dokillslices_c(struct bb_slice *slice BL_REG(a0), UWOR
     mycop = 0;
     makedumcop();
 }
-BLITZ_THUNK(dokillslices, dokillslices_c, "a2");
+BLITZ_ALIAS(dokillslices, dokillslices_c);
 
 /**
  * @brief ShowBlitz: put the slices' copper list on the hardware (Blitz
@@ -385,7 +385,7 @@ static void BLITZ_ROUTINE doshowblitz_c(void)
     custom_w(0x1fc, 0);
     custom_w(0x106, 0xc00);             /* "hires sprite kludge" */
 }
-BLITZ_THUNK(doshowblitz, doshowblitz_c, "a2");
+BLITZ_ALIAS(doshowblitz, doshowblitz_c);
 
 /**
  * @brief The init routine: remember the slice objects, start the dummy
@@ -416,8 +416,8 @@ static ULONG BLITZ_ROUTINE docoploc_c(void) { return mycop; }
  * @return d0: the length
  */
 static ULONG BLITZ_ROUTINE docoplen_c(void) { return mycoplen; }
-BLITZ_THUNK(docoploc, docoploc_c, "d1/a0-a1");
-BLITZ_THUNK(docoplen, docoplen_c, "d1/a0-a1");
+BLITZ_ALIAS(docoploc, docoploc_c);
+BLITZ_ALIAS(docoplen, docoplen_c);
 
 /**
  * @brief The slice object's free routine: does nothing (RTS).
@@ -892,8 +892,8 @@ static void BLITZ_ROUTINE b_doqslice_c(UWORD y BL_REG(d1), UWORD fl BL_REG(d2),
 /* $A001 routines: Blitz mode entry, then the Amiga mode code */
 BLITZ_AB_ROUTINE(doqslice, b_doqslice, "   jmp     _doqslice2_c");
 BLITZ_AB_ROUTINE(doslice, bdoslice, "   jmp     _doslice2_c");
-BLITZ_THUNK(b_doqslice, b_doqslice_c, "a2");
-BLITZ_THUNK(bdoslice, bdoslice_c, "a2");
+BLITZ_ALIAS(b_doqslice, b_doqslice_c);
+BLITZ_ALIAS(bdoslice, bdoslice_c);
 
 /* ---------------------------------------------- CustomCop / ColSplit */
 
@@ -1203,15 +1203,15 @@ static void BLITZ_ROUTINE doshowb_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG
 {
     showb(bitmap, slice, x, y, x2);
 }
-/* the originals change d0-d7/a0/a2; nothing else */
-BLITZ_THUNK(doshow2, doshow2_c, "a1");
-BLITZ_THUNK(doshow, doshow_c, "a1");
-BLITZ_THUNK(doshowf2, doshowf2_c, "a1");
-BLITZ_THUNK(doshowf3, doshowf3_c, "a1");
-BLITZ_THUNK(doshowf, doshowf_c, "a1");
-BLITZ_THUNK(doshowb2, doshowb2_c, "a1");
-BLITZ_THUNK(doshowb3, doshowb3_c, "a1");
-BLITZ_THUNK(doshowb, doshowb_c, "a1");
+/* the originals change d0-d7/a0/a2 */
+BLITZ_ALIAS(doshow2, doshow2_c);
+BLITZ_ALIAS(doshow, doshow_c);
+BLITZ_ALIAS(doshowf2, doshowf2_c);
+BLITZ_ALIAS(doshowf3, doshowf3_c);
+BLITZ_ALIAS(doshowf, doshowf_c);
+BLITZ_ALIAS(doshowb2, doshowb2_c);
+BLITZ_ALIAS(doshowb3, doshowb3_c);
+BLITZ_ALIAS(doshowb, doshowb_c);
 
 /* ****************** ERRORS BELOW **************** */
 

@@ -29,7 +29,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void doqueue(void), qblitlib_doblit(void), qblitlib_doblitex(void);
 void dounqueue(void), dounqueue2(void), doqblitmode(void), doflushqueue(void);
 void qblitlib_codeinit(void), freequeue(void), qblitchk(void);
@@ -131,7 +131,7 @@ static void BLITZ_ROUTINE doqblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(doqblitmode, doqblitmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doqblitmode, doqblitmode_c);
 
 /**
  * @brief Library init: BLTCON0 back to $FCA.
@@ -201,7 +201,7 @@ static void BLITZ_ROUTINE doqueue_c(UWORD items BL_REG(d1))
     q->len = r.d0;
     q->pos = q->mem = (struct qitem *)BLITZ_ALIBJSR(TOK_globalloc, r);
 }
-BLITZ_THUNK(doqueue, doqueue_c, "a0");
+BLITZ_ALIAS(doqueue, doqueue_c);
 
 struct blitstate {
     ULONG cookie;               /* d0 */

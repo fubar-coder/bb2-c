@@ -109,7 +109,7 @@
    would order the address arithmetic differently */
 #define COLMOVES(s) (*(UBYTE *const *)&(s)->colmoves)
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void dopalload(void), dopalload2(void), getpal(void), getpal2(void);
 void docycle(void), dorgb(void), dored(void), dogreen(void), doblue(void);
 void do4bitpalrgb(void), dopalrgb(void), dosetcycle1(void), dosetcycle2(void);
@@ -424,7 +424,7 @@ static void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2), UWO
 {
     palrgb(p, c, r, g, b);
 }
-BLITZ_THUNK(dopalrgb, dopalrgb_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dopalrgb, dopalrgb_c);
 
 /**
  * @brief PalRGB Palette#,Colour Register,Red,Green,Blue - set a colour of
@@ -448,7 +448,7 @@ static void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
 {
     palrgb(p, c, (UWORD)(r << 4) | r, (UWORD)(g << 4) | g, (UWORD)(b << 4) | b);
 }
-BLITZ_THUNK(do4bitpalrgb, do4bitpalrgb_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(do4bitpalrgb, do4bitpalrgb_c);
 
 /* make4bitrgbs - a0 = palette: up to 32 4 bit RGB words in rgbs4bit
    (from the top byte of each component, fixed #224, see above); d0 =
@@ -678,7 +678,7 @@ static void BLITZ_ROUTINE dopalload_c(const UBYTE *name BL_REG(d1), struct bb_pa
 {
     loadthepal(name, p, 0);
 }
-BLITZ_THUNK(dopalload, dopalload_c, "d0-d1");
+BLITZ_ALIAS(dopalload, dopalload_c);
 
 /**
  * @brief LoadPalette Palette#,Filename$,Palette Offset - as LoadPalette,
@@ -693,7 +693,7 @@ static void BLITZ_ROUTINE dopalload2_c(const UBYTE *name BL_REG(d1), UWORD off B
 {
     loadthepal(name, p, off);
 }
-BLITZ_THUNK(dopalload2, dopalload2_c, "d0-d1");
+BLITZ_ALIAS(dopalload2, dopalload2_c);
 
 /* InitPalette n,cols - a3 = palette: new (cleared) data */
 static void initpalette(struct bb_palette *p, UWORD n)
@@ -729,7 +729,7 @@ static void BLITZ_ROUTINE _initpalette_c(UWORD n BL_REG(d1))
 {
     initpalette((struct bb_palette *)blitz_string, n);
 }
-BLITZ_THUNK(_initpalette, _initpalette_c, "a2");
+BLITZ_ALIAS(_initpalette, _initpalette_c);
 
 /* DecodePalette n,mem[,offset] - an IFF ILBM in memory: CMAP (top byte
    of each component) and CRNG chunks; a chunk of an odd length is
@@ -860,8 +860,8 @@ static void BLITZ_ROUTINE _cludgepalette2_c(UBYTE *mem BL_REG(d1))
 {
     cludgepalette(mem, 0);
 }
-BLITZ_THUNK(_cludgepalette, _cludgepalette_c, "a2");
-BLITZ_THUNK(_cludgepalette2, _cludgepalette2_c, "a2");
+BLITZ_ALIAS(_cludgepalette, _cludgepalette_c);
+BLITZ_ALIAS(_cludgepalette2, _cludgepalette2_c);
 
 /**
  * @brief _free of the Palette object (Free Palette, program end) - free
@@ -934,7 +934,7 @@ static void BLITZ_ROUTINE dosetcycle2_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2
     if (app < 0)
         c[1].lo = app;
 }
-BLITZ_THUNK(dosetcycle2, dosetcycle2_c, "d0-d1/a1");
+BLITZ_ALIAS(dosetcycle2, dosetcycle2_c);
 
 /**
  * @brief SetCycle Palette#,Cycle,Low Colour,High Colour - as SetCycle
@@ -952,7 +952,7 @@ static void BLITZ_ROUTINE dosetcycle1_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2
 {
     dosetcycle2_c(cyc, lo, hi, 0x10000, p);
 }
-BLITZ_THUNK(dosetcycle1, dosetcycle1_c, "d0-d1/a1");
+BLITZ_ALIAS(dosetcycle1, dosetcycle1_c);
 
 /**
  * @brief NewPaletteMode On|Off - whether Use Palette shows the palette
@@ -964,7 +964,7 @@ static void BLITZ_ROUTINE newpalmode_c(UWORD m BL_REG(d0))
 {
     palmode = m;
 }
-BLITZ_THUNK(newpalmode, newpalmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(newpalmode, newpalmode_c);
 
 /* ------------------------------------------- showing, cycling */
 
@@ -1162,7 +1162,7 @@ static void BLITZ_ROUTINE _cyclepalette_c(struct bb_palette *p BL_REG(a2))
     if (p->numcols)
         cyclepal(p);
 }
-BLITZ_THUNK(_cyclepalette, _cyclepalette_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_cyclepalette, _cyclepalette_c);
 
 /* cycleem - the vertical blank routine: every palette of the list, the
    ViewPort reloaded when colours moved */
@@ -1215,7 +1215,7 @@ static void BLITZ_ROUTINE docycle_c(APTR *scr BL_REG(a2))
         BLITZ_ALIBJSR(TOK_setint, r);
     }
 }
-BLITZ_THUNK(docycle, docycle_c, "a0");
+BLITZ_ALIAS(docycle, docycle_c);
 
 /**
  * @brief StopCycle - stop the colour cycling.
@@ -1239,7 +1239,7 @@ static void BLITZ_ROUTINE dostopcycle_c(void)
         n = next;
     }
 }
-BLITZ_THUNK(dostopcycle, dostopcycle_c, "a0");
+BLITZ_ALIAS(dostopcycle, dostopcycle_c);
 
 /* ------------------------------------------------- reading colours */
 
@@ -1365,9 +1365,9 @@ static ULONG BLITZ_ROUTINE doagablue_c(ULONG c BL_REG(d0), APTR *scr BL_REG(a0),
 {
     return agacol(c, scr, gfx, 2);
 }
-BLITZ_THUNK(doagared, doagared_c, "a2");
-BLITZ_THUNK(doagagreen, doagagreen_c, "a2");
-BLITZ_THUNK(doagablue, doagablue_c, "a2");
+BLITZ_ALIAS(doagared, doagared_c);
+BLITZ_ALIAS(doagagreen, doagagreen_c);
+BLITZ_ALIAS(doagablue, doagablue_c);
 
 /* ------------------------------------------------- setting colours */
 
@@ -1446,7 +1446,7 @@ static void BLITZ_ROUTINE doaargb_c(UBYTE c BL_REG(d0), UWORD r BL_REG(d1), UWOR
     table.blue = rep8(b);
     LoadRGB32(SL(scr), (ULONG *)&table);
 }
-BLITZ_THUNK(doaargb, doaargb_c, "a2");
+BLITZ_ALIAS(doaargb, doaargb_c);
 
 /* -------------------------------------------- palette calculations */
 
@@ -1491,7 +1491,7 @@ static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bb_palette 
         dst += 3;
     } while (k-- != 0);
 }
-BLITZ_THUNK(_fadepalette, _fadepalette_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_fadepalette, _fadepalette_c);
 
 /* PaletteRange n,start,end,r0,g0,b0,r1,g1,b1 - d3-d5 = r0,g0,b0, the
    end colour on the argument stack (-2 r1, -4 g1, -6 b1) */
@@ -1562,7 +1562,7 @@ static void BLITZ_ROUTINE _paletterange_c(UWORD start BL_REG(d1), UWORD stop BL_
         b += db;
     } while (n-- != 0);
 }
-BLITZ_THUNK(_paletterange, _paletterange_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_paletterange, _paletterange_c);
 
 /**
  * @brief DuplicatePalette SrcPalette#,DestPalette# - copy the colours (not
@@ -1590,7 +1590,7 @@ static void BLITZ_ROUTINE _duplicatepalette_c(struct bb_palette *s BL_REG(a2))
         *b++ = *a++;
     while (k-- != 0);
 }
-BLITZ_THUNK(_duplicatepalette, _duplicatepalette_c, "a2");
+BLITZ_ALIAS(_duplicatepalette, _duplicatepalette_c);
 
 /**
  * @brief MixPalette Palette#,Palette#,DestPalette#,fraction - mix two
@@ -1623,7 +1623,7 @@ static void BLITZ_ROUTINE _mixpalette_c(LONG f BL_REG(d3), struct bb_palette *p1
         *c++ = v + v;
     } while (k-- != 0);
 }
-BLITZ_THUNK(_mixpalette, _mixpalette_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_mixpalette, _mixpalette_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

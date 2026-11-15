@@ -44,7 +44,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void dosetcolodd(void), dosetcol(void), dosetcol2(void), dosetcolhi(void);
 void doshapeshit(void), doshsphit(void), dosphit(void), dorectshit(void);
 void doscoll(void), dopcoll(void), dodocoll(void);
@@ -148,7 +148,7 @@ static void BLITZ_ROUTINE dodocoll_c(void)
 {
     colval = CLXDAT;
 }
-BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dodocoll, dodocoll_c);
 
 /**
  * @brief SColl(Sprite Channel,Sprite Channel): whether two sprites collided.
@@ -217,7 +217,7 @@ static ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
 
     return (c & 0xffff0000UL) | (UWORD)(WORD)(BYTE)r;  /* SNE:AND:EXT */
 }
-BLITZ_THUNK(dopcoll, dopcoll_c, "d1/a0-a1");
+BLITZ_ALIAS(dopcoll, dopcoll_c);
 
 /* ----------------------------------------------------- rectangle tests */
 
@@ -263,7 +263,7 @@ static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(
                     (WORD)x2 - (UWORD)b->handlex, (WORD)y2 - (UWORD)b->handley,
                     b->width, b->height);
 }
-BLITZ_THUNK(doshapeshit, doshapeshit_c, "d1/a0-a1");
+BLITZ_ALIAS(doshapeshit, doshapeshit_c);
 
 /**
  * @brief ShapeSpriteHit(Shape#,X,Y,Sprite#,X,Y): whether a shape and a
@@ -290,7 +290,7 @@ static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2
                     (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
                     b->width, b->height - 1);
 }
-BLITZ_THUNK(doshsphit, doshsphit_c, "d1/a0-a1");
+BLITZ_ALIAS(doshsphit, doshsphit_c);
 
 /**
  * @brief SpritesHit(Sprite#,X,Y,Sprite#,X,Y): whether two sprites overlap.
@@ -316,7 +316,7 @@ static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                     (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
                     b->width, b->height - 1);
 }
-BLITZ_THUNK(dosphit, dosphit_c, "d1/a0-a1");
+BLITZ_ALIAS(dosphit, dosphit_c);
 
 /**
  * @brief RectsHit(X1,Y1,Width1,Height1,X2,Y2,Width2,Height2): whether two
@@ -344,7 +344,7 @@ static BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d
 
     return chkifhit(x1, y1, w1, h1, x2, y2, w2, h2);
 }
-BLITZ_THUNK(dorectshit, dorectshit_c, "d1/a0-a1");
+BLITZ_ALIAS(dorectshit, dorectshit_c);
 
 /* ------------------------------------------------------- SetColl ... */
 
@@ -358,7 +358,7 @@ static ULONG BLITZ_ROUTINE dosetcolodd_c(ULONG result BL_REG(d0))
 {
     return setclx(result, 64 + 1 + 0xf000);
 }
-BLITZ_THUNK(dosetcolodd, dosetcolodd_c, "d1/a0-a1");
+BLITZ_ALIAS(dosetcolodd, dosetcolodd_c);
 
 /* d0 = colour, d1 = bitplanes */
 static ULONG setcol(ULONG colour, UWORD planes)
@@ -389,7 +389,7 @@ static ULONG BLITZ_ROUTINE dosetcol_c(ULONG col BL_REG(d0), ULONG planes BL_REG(
 {
     return setcol(col, (UWORD)planes);
 }
-BLITZ_THUNK(dosetcol, dosetcol_c, "d1/a0-a1");
+BLITZ_ALIAS(dosetcol, dosetcol_c);
 
 /* spreadit: insert 0's between the bits (6 bits) */
 static UWORD spreadit(UWORD bits)
@@ -430,7 +430,7 @@ static ULONG BLITZ_ROUTINE dosetcol2_c(ULONG col BL_REG(d0), ULONG planes BL_REG
         spread <<= 1;
     return setcol((col & 0xffff0000UL) | spread, (UWORD)planes);
 }
-BLITZ_THUNK(dosetcol2, dosetcol2_c, "d1/a0-a1");
+BLITZ_ALIAS(dosetcol2, dosetcol2_c);
 
 /**
  * @brief SetCollHi Bitplanes: collisions with the highest bitplane only.
@@ -449,7 +449,7 @@ static ULONG BLITZ_ROUTINE dosetcolhi_c(ULONG planes BL_REG(d0))
     enable |= (UWORD)(enable << 6);
     return setclx(planes, enable | 0xf000);
 }
-BLITZ_THUNK(dosetcolhi, dosetcolhi_c, "d1/a0-a1");
+BLITZ_ALIAS(dosetcolhi, dosetcolhi_c);
 
 /* ************************** ERROR CHECKING ************************** */
 

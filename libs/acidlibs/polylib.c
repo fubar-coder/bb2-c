@@ -504,7 +504,7 @@ static void BLITZ_ROUTINE _chunkycls_c(UWORD c BL_REG(d0))
         } while (y-- != 0);
     } while (x-- != 0);
 }
-BLITZ_THUNK(_chunkycls, _chunkycls_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkycls, _chunkycls_c);
 
 /* the word of chunky pixel x, y: 32 colour MOVEs (4 bytes) and a bank
    switch per 132 bytes, y * bytes per line */
@@ -519,7 +519,7 @@ static void BLITZ_ROUTINE _chunkyplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 {
     *chunkypixel((struct bb_coplist *)blitz_string, x, y) = colour;
 }
-BLITZ_THUNK(_chunkyplot, _chunkyplot_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkyplot, _chunkyplot_c);
 
 static void BLITZ_ROUTINE _chunkyplotclip_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
                                             UWORD colour BL_REG(d2))
@@ -530,7 +530,7 @@ static void BLITZ_ROUTINE _chunkyplotclip_c(WORD x BL_REG(d0), WORD y BL_REG(d1)
         return;
     *chunkypixel(cl, x, y) = colour;
 }
-BLITZ_THUNK(_chunkyplotclip, _chunkyplotclip_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkyplotclip, _chunkyplotclip_c);
 
 /* y2 - y1 + 1 words down from x, y1 (DBRA: y1 > y2 gives about 65536;
    refused by _chunkyvlinchk with runtime error checking, #417) */
@@ -549,7 +549,7 @@ static void BLITZ_ROUTINE _chunkyvlin_c(UWORD x BL_REG(d0), UWORD y1 BL_REG(d1),
 {
     chunkyvlin((struct bb_coplist *)blitz_string, x, y1, y2, colour);
 }
-BLITZ_THUNK(_chunkyvlin, _chunkyvlin_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkyvlin, _chunkyvlin_c);
 
 /* Fixed (#987): x is compared with the chunky width as _chunkyplotclip
    does (the original compared it only with 0: with x at or beyond the
@@ -576,7 +576,7 @@ static void BLITZ_ROUTINE _chunkyvlinclip_c(WORD x BL_REG(d0), WORD y1 BL_REG(d1
         y2 = h - 1;
     chunkyvlin(cl, x, y1, y2, colour);
 }
-BLITZ_THUNK(_chunkyvlinclip, _chunkyvlinclip_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkyvlinclip, _chunkyvlinclip_c);
 
 /* ChunkyPoly: the polygon with x and y swapped, so that a line of the
    outline is a chunky column, filled from its top row down by one blit
@@ -675,7 +675,7 @@ static void BLITZ_ROUTINE _chunkypoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
     blitz_string = chunkypoly(n, (const struct point *)pts, colour,
                               (struct bb_coplist *)blitz_string, 0);
 }
-BLITZ_THUNK(_chunkypoly, _chunkypoly_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkypoly, _chunkypoly_c);
 
 static void BLITZ_ROUTINE _chunkypoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                          UWORD colour BL_REG(d2))
@@ -683,7 +683,7 @@ static void BLITZ_ROUTINE _chunkypoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1)
     blitz_string = chunkypoly(n, (const struct point *)pts, colour,
                               (struct bb_coplist *)blitz_string, 1);
 }
-BLITZ_THUNK(_chunkypoly2, _chunkypoly2_c, "d1/a0-a1");
+BLITZ_ALIAS(_chunkypoly2, _chunkypoly2_c);
 
 /* ---------------------------------------------------------- BitMapPoly */
 
@@ -838,7 +838,7 @@ static void BLITZ_ROUTINE _bitmappoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
     blitz_string = bitmappoly(n, (const struct point *)pts, colour,
                               (struct bb_bitmap *)blitz_string);
 }
-BLITZ_THUNK(_bitmappoly, _bitmappoly_c, "d1/a0-a1");
+BLITZ_ALIAS(_bitmappoly, _bitmappoly_c);
 
 static void BLITZ_ROUTINE _bitmappoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                          UWORD colour BL_REG(d2),
@@ -847,7 +847,7 @@ static void BLITZ_ROUTINE _bitmappoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1)
     blitz_string = bitmappoly_dither(n, (const struct point *)pts, colour,
                                      (struct bb_bitmap *)blitz_string, dither);
 }
-BLITZ_THUNK(_bitmappoly2, _bitmappoly2_c, "d1/a0-a1");
+BLITZ_ALIAS(_bitmappoly2, _bitmappoly2_c);
 
 /* ------------------------------------------------------------- Render */
 
@@ -890,7 +890,7 @@ static void BLITZ_ROUTINE _rendertobitmap_c(struct bb_bitmap *bm BL_REG(a0))
     bmap0 = bm;
     polyvector = render_bitmap;
 }
-BLITZ_THUNK(_rendertobitmap, _rendertobitmap_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_rendertobitmap, _rendertobitmap_c);
 
 static void BLITZ_ROUTINE _rendertobitmap2_c(struct bb_bitmap *bm BL_REG(a0),
                                              struct bb_bitmap *dither BL_REG(a1))
@@ -899,14 +899,14 @@ static void BLITZ_ROUTINE _rendertobitmap2_c(struct bb_bitmap *bm BL_REG(a0),
     bmap1 = dither;
     polyvector = render_dither;
 }
-BLITZ_THUNK(_rendertobitmap2, _rendertobitmap2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_rendertobitmap2, _rendertobitmap2_c);
 
 static void BLITZ_ROUTINE _rendertochunky_c(struct bb_coplist *cl BL_REG(a0))
 {
     chunk0 = cl;
     polyvector = render_chunky;
 }
-BLITZ_THUNK(_rendertochunky, _rendertochunky_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_rendertochunky, _rendertochunky_c);
 
 /* split: ASL #4,d1:ADD d1,a0 - the CopList 16 bytes per split further */
 static void BLITZ_ROUTINE _rendertochunky2_c(UWORD split BL_REG(d1), UBYTE *cl BL_REG(a0))
@@ -914,14 +914,14 @@ static void BLITZ_ROUTINE _rendertochunky2_c(UWORD split BL_REG(d1), UBYTE *cl B
     chunk0 = (struct bb_coplist *)(cl + (WORD)(split << 4));
     polyvector = render_chunky;
 }
-BLITZ_THUNK(_rendertochunky2, _rendertochunky2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_rendertochunky2, _rendertochunky2_c);
 
 static void BLITZ_ROUTINE _renderpoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                         UWORD colour BL_REG(d2))
 {
     blitz_string = polyvector(n, (const struct point *)pts, colour, blitz_string);
 }
-BLITZ_THUNK(_renderpoly, _renderpoly_c, "d1/a0-a1");
+BLITZ_ALIAS(_renderpoly, _renderpoly_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

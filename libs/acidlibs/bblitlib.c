@@ -34,7 +34,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void dobuffer(void), bblitlib_doblit(void), bblitlib_doblitex(void);
 void dounbuffer(void), dobblitmode(void), doshowstencil(void);
 void doflushbuff(void), bblitlib_codeinit(void), freebuffer(void);
@@ -148,7 +148,7 @@ static void BLITZ_ROUTINE dobblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(dobblitmode, dobblitmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dobblitmode, dobblitmode_c);
 
 /**
  * @brief init: BBlitMode $FCA (cookie cut).
@@ -211,7 +211,7 @@ static void BLITZ_ROUTINE dobuffer_c(ULONG len BL_REG(d1))
     b->last = NULL;
     b->mem = m;
 }
-BLITZ_THUNK(dobuffer, dobuffer_c, "a0");
+BLITZ_ALIAS(dobuffer, dobuffer_c);
 
 /**
  * @brief FlushBuffer Buffer#: empty the buffer without restoring the
@@ -227,7 +227,7 @@ static void BLITZ_ROUTINE doflushbuff_c(void)
     b->pos = (struct record *)b->mem;
     b->last = NULL;
 }
-BLITZ_THUNK(doflushbuff, doflushbuff_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doflushbuff, doflushbuff_c);
 
 /* the blit state for b_doblitex */
 struct blitstate {

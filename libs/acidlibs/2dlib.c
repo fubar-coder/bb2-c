@@ -80,7 +80,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (C routines / thunks / prefixes, defined below) */
+/* entry points (C routines / aliases / thunks / prefixes, defined below) */
 void _ellipse(void), _circle(void), _ellipsef(void), _circlef(void);
 void _box(void), _boxf(void), _line(void), _lineto(void), _linew(void);
 void _freefill(void), _allocfill(void), _remap(void), _remap2(void);
@@ -344,7 +344,7 @@ static void BLITZ_ROUTINE _bitmaporigin_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
     bm->xorigin = x;
     bm->yorigin = y;
 }
-BLITZ_THUNK(_bitmaporigin, _bitmaporigin_c, "d1/a0-a1");
+BLITZ_ALIAS(_bitmaporigin, _bitmaporigin_c);
 
 static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bb_bitmap *src BL_REG(a0),
                                              struct bb_bitmap *dst BL_REG(a1))
@@ -374,7 +374,7 @@ static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bb_bi
     dst->height = src->height;
     dst->isreal = 1;
 }
-BLITZ_THUNK(_bitplanesbitmap, _bitplanesbitmap_c, "d1/a0-a1");
+BLITZ_ALIAS(_bitplanesbitmap, _bitplanesbitmap_c);
 
 static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                           UWORD w BL_REG(d4), UWORD h BL_REG(d5),
@@ -405,7 +405,7 @@ static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     dst->colours = src->colours;
     dst->isreal = 1;
 }
-BLITZ_THUNK(_bitmapwindow, _bitmapwindow_c, "d1/a0-a1");
+BLITZ_ALIAS(_bitmapwindow, _bitmapwindow_c);
 
 /* ---------------------------------------------------- fill buffer */
 
@@ -435,7 +435,7 @@ static void BLITZ_ROUTINE _allocfill_c(void)
 {
     allocfill((struct bb_bitmap *)blitz_string);   /* the used bitmap (fixed, #390) */
 }
-BLITZ_THUNK(_allocfill, _allocfill_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_allocfill, _allocfill_c);
 
 static ULONG BLITZ_ROUTINE _freefill_c(void)
 {
@@ -445,7 +445,7 @@ static ULONG BLITZ_ROUTINE _freefill_c(void)
     }
     return 0;
 }
-BLITZ_THUNK(_freefill, _freefill_c, "d1/a0-a1");
+BLITZ_ALIAS(_freefill, _freefill_c);
 
 /* -------------------------------------------------------------- lines */
 
@@ -857,14 +857,14 @@ static void BLITZ_ROUTINE _ellipse_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWO
 {
     ellipse((struct bb_bitmap *)blitz_string, x, y, rx, ry, c);
 }
-BLITZ_THUNK(_ellipse, _ellipse_c, "d1/a0-a1");
+BLITZ_ALIAS(_ellipse, _ellipse_c);
 
 static void BLITZ_ROUTINE _circle_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWORD r BL_REG(d2),
                                     UWORD c BL_REG(d3))
 {
     ellipse((struct bb_bitmap *)blitz_string, x, y, r, r, c);
 }
-BLITZ_THUNK(_circle, _circle_c, "d1/a0-a1");
+BLITZ_ALIAS(_circle, _circle_c);
 
 /* a blit of `size`, or with BLTSIZV/BLTSIZH (bigsize) for size 0 */
 static void bltsize(UBYTE *chip, UWORD size)
@@ -1788,7 +1788,7 @@ static void BLITZ_ROUTINE _doclipblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(_doclipblitmode, _doclipblitmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_doclipblitmode, _doclipblitmode_c);
 
 /* what b_docblit leaves for the excess planes (b_docblitx) */
 struct cblit {
@@ -2035,9 +2035,9 @@ static void BLITZ_ROUTINE a_docblitx_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
 }
 
 void b_docblit(void), b_docblitx(void);
-BLITZ_THUNK(b_docblit, b_docblit_c, "d1/a0-a1");
+BLITZ_ALIAS(b_docblit, b_docblit_c);
 BLITZ_AB_ROUTINE(_doclipblit, b_docblit, "   jmp     _a_docblit_c");
-BLITZ_THUNK(b_docblitx, b_docblitx_c, "d1/a0-a1");
+BLITZ_ALIAS(b_docblitx, b_docblitx_c);
 BLITZ_AB_ROUTINE(_doclipblitx, b_docblitx, "   jmp     _a_docblitx_c");
 
 /* _cbchk - TST.w (a3):BEQ err2 (shape not initialised); in the normal

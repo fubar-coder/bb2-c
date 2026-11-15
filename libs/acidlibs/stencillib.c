@@ -27,7 +27,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void dostencil(void), stencillib_doblit(void), stencillib_doblitex(void);
 void stencillib_doblitmode(void), dofreestencil(void), sblitchk(void);
 
@@ -97,7 +97,7 @@ static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(stencillib_doblitmode, doblitmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(stencillib_doblitmode, doblitmode_c);
 
 /* dofreestencil (_free) */
 static void freest(struct stencil *s)

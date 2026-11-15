@@ -38,7 +38,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void blitlib_doblit(void), blitlib_doblitex(void), b_doblitex(void);
 void doblock(void), doblitcoll(void), blitlib_doblitmode(void);
 void docookiemode(void), doerasemode(void), doinvmode(void), dosolidmode(void);
@@ -474,7 +474,7 @@ static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(blitlib_doblitmode, doblitmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(blitlib_doblitmode, doblitmode_c);
 
 /**
  * @brief init: BlitMode $FCA (cookie cut) - MOVE #$fca,d0 and on into

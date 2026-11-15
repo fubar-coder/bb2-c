@@ -40,7 +40,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (C routines / thunks / prefixes, defined below) */
+/* entry points (C routines / aliases / thunks / prefixes, defined below) */
 void doscroll(void), b_doscroll(void), docls(void), docls2(void);
 void doblockscroll(void), scrolllib_codeinit(void), doplot(void);
 void dopoint(void), scchk1(void), scchk2(void), bmchk(void);
@@ -170,7 +170,7 @@ static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
         col >>= 1;
     } while (n-- != 0);
 }
-BLITZ_THUNK(doplot, doplot_c, "d1/a0-a1");
+BLITZ_ALIAS(doplot, doplot_c);
 
 /**
  * @brief Point(X,Y) - the colour of a pixel of the used bitmap.
@@ -205,7 +205,7 @@ static ULONG BLITZ_ROUTINE dopoint_c(ULONG xarg BL_REG(d0), UWORD y BL_REG(d1),
     } while (i < bm->flagsdepth);
     return (xarg & 0xffff0000) | col;           /* MOVE d2,d0 (upper word of ~x) */
 }
-BLITZ_THUNK(dopoint, dopoint_c, "d1/a0-a1");
+BLITZ_ALIAS(dopoint, dopoint_c);
 
 /* ------------------------------------------------------------------ Cls */
 
@@ -378,9 +378,9 @@ static void BLITZ_ROUTINE a_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
     DisownBlitter();
 }
 
-BLITZ_THUNK(b_docls, b_docls_c, "d1/a0-a1");
+BLITZ_ALIAS(b_docls, b_docls_c);
 BLITZ_AB_ROUTINE(docls, b_docls, "   jmp     _a_docls_c");
-BLITZ_THUNK(b_docls2, b_docls2_c, "d1/a0-a1");
+BLITZ_ALIAS(b_docls2, b_docls2_c);
 BLITZ_AB_ROUTINE(docls2, b_docls2, "   jmp     _a_docls2_c");
 
 /* ---------------------------------------------------------- init */
@@ -666,7 +666,7 @@ static void BLITZ_ROUTINE a_doblockscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_
     blitz_string = end;
 }
 void b_doblockscroll(void);
-BLITZ_THUNK(b_doblockscroll, b_doblockscroll_c, "d1/a0-a1");
+BLITZ_ALIAS(b_doblockscroll, b_doblockscroll_c);
 BLITZ_AB_ROUTINE(doblockscroll, b_doblockscroll, "   jmp     _a_doblockscroll_c");
 
 /* ------------------------------------------- error checks (debugger only) */

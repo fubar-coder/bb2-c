@@ -23,8 +23,8 @@
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bdisp.dispbitmap              665      494.0  DisplayBitMap 0,0
-bdisp.dispbitmapxy           1133      710.0  DisplayBitMap 0,0,8,8
+bdisp.dispbitmap              590      494.0  DisplayBitMap 0,0
+bdisp.dispbitmapxy           1058      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite            1581~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          2452~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -32,7 +32,7 @@ bgfx.blit16                 2988~3     2108.3  Blit 0,100,100
 bgfx.blit16s                 3021     2108.3  Blit 0,105,100
 bgfx.blit32                 5423~3     4723.4  Blit 1,100,100
 bgfx.block16                 1262     1009.9  Block 0,96,96
-bgfx.clipblit16              3438     2516.3  ClipBlit 0,100,100
+bgfx.clipblit16              3323     2516.3  ClipBlit 0,100,100
 bgfx.blitcoll               1400~5      881.9  c=BlitColl(0,100,100)
 bgfx.bblit4u              22794~44    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
 bgfx.bblit8u              45132~52    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
@@ -40,15 +40,15 @@ bgfx.qblit4u               16404~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20
 bgfx.qblit8u               32494~4    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
 bgfx.qblit4f              12510~12     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
 bgfx.qblit8f               24974~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
-bgfx.showsprite               988      629.4  ShowSprite 0,100,100,0
-bgfx.docoll                   194       66.8  DoColl
+bgfx.showsprite               863      629.4  ShowSprite 0,100,100,0
+bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
-bgfx.pcoll                    439      130.8  c=PColl(0)
+bgfx.pcoll                    331      130.8  c=PColl(0)
 bgfx.shapeshit               839~4      383.4  c=ShapesHit(0,10,10,1,20,20)
 bgfx.spriteshit              880~4      418.9  c=SpritesHit(0,10,10,0,20,20)
-bgfx.rectshit                 671      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
-bgfx.plot                     807      486.9  Plot 10,10,1
-bgfx.point                    871      478.4  c=Point(10,10)
+bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
+bgfx.plot                     692      486.9  Plot 10,10,1
+bgfx.point                    765      478.4  c=Point(10,10)
 bgfx.line                    5047     3967.8  Line 10,10,110,60,1
 bgfx.lineh                  5008~4     3991.8  Line 10,10,110,10,1
 bgfx.box                   13090~4     9571.9  Box 10,10,50,50,1
@@ -63,8 +63,8 @@ bgfx.locate                   145      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
 bgfx.print5               28522~12    13097.9  Locate 0,0 : Print "SCORE"
 bgfx.printnum              35688~4    17797.8  Locate 0,0 : Print a
-bgfx.show                    1294      589.4  Show 0
-bgfx.showxy                  1335      595.9  Show 0,8,8
+bgfx.show                    1222      589.4  Show 0
+bgfx.showxy                  1261      595.9  Show 0,8,8
 bgfx.rgb                     207~3      178.8  RGB 1,15,0,0
 bgfx.green                   361~3      167.3  c=Green(1)
 bgfx.usebitmap                 74       69.3  Use BitMap 0
@@ -116,10 +116,10 @@ bmath.pokeb                    99      111.0  Poke.b p,1
 bmath.pokew                   129      109.0  Poke.w p,1
 bmath.pokel                   156      126.5  Poke.l p,1
 bmisc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bmisc.shapewidth              256      114.9  c=ShapeWidth(0)
-bmisc.shapeheight             262      120.9  c=ShapeHeight(0)
-bmisc.handle                  257      129.4  Handle 0,0,0
-bmisc.palrgb                  972      653.5  PalRGB 0,1,15,0,0
+bmisc.shapewidth              120      114.9  c=ShapeWidth(0)
+bmisc.shapeheight             126      120.9  c=ShapeHeight(0)
+bmisc.handle                  134      129.4  Handle 0,0,0
+bmisc.palrgb                  848      653.5  PalRGB 0,1,15,0,0
 bmisc.showpalette            2464     1616.0  ShowPalette 0
 bmisc.usepalette             2506     1660.0  Use Palette 0
 bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
