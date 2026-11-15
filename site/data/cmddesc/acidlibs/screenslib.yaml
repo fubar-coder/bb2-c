@@ -37,6 +37,13 @@
   text: Closes the screen if the program opened it; a screen taken with `WbToScreen` or `FindScreen` is only forgotten.
 "LoadScreen":
   text: Loads an IFF ILBM picture into the screen's bitmap, and with `Palette#` also its colours into that palette object; `Use Palette` then shows them on the screen.
+  notes: |
+    The errors are those of `LoadBitMap`: a file that cannot be opened is
+    "Can't Open File", or "Can't Open IFF" with `Palette#`; a file
+    without a picture header "Can't Find IFF 'BMHD'", one without picture
+    data "Can't Find IFF 'BODY'". Kept from the original: after "Can't
+    Find IFF 'BODY'" the file stays open and locked
+    ([#1053](https://github.com/fubar-coder/bb2-c/issues/1053)).
 "ShowScreen":
   text: Brings the screen to the front.
 "HideScreen":

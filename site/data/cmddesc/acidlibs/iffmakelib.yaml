@@ -1,8 +1,16 @@
 "SaveBitmap":
   text: Saves a bitmap as an IFF ILBM picture, with the colours of `Palette#` if it is given. Amiga mode only.
+  notes: |
+    With runtime error checking, a palette without colours, such as one
+    made with `InitPalette p,0`, is the error "Uninitialized Palette".
 "SaveScreen":
   text: Saves a screen as an IFF ILBM picture, with its colours (at most 256). Amiga mode only.
 "SaveShape":
   text: Saves a shape as an IFF ILBM picture of the shape's size, with the colours of `Palette#` if it is given. Amiga mode only.
+  notes: |
+    A shape of depth 0 or of more than 14 planes, such as one `LoadShape`
+    made from a 24-bit picture, is the error "Illegal Shape Depth", also
+    without runtime error checking. With runtime error checking, a
+    palette without colours is the error "Uninitialized Palette".
 "SavePalette":
   text: Saves the colours of a palette as an IFF colour map chunk (CMAP), three bytes per colour, without an IFF FORM around it. Nothing is written for a palette without colours. Amiga mode only.

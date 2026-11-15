@@ -5,6 +5,14 @@
     object.
 "LoadBitMap":
   text: Loads an IFF ILBM picture into a bitmap that is already set up, and with `Palette#` its colours into that palette object. Amiga mode only.
+  notes: |
+    A file that cannot be opened is the error "Can't Open File", or "Can't
+    Open IFF" with `Palette#`; a file without a picture header "Can't
+    Find IFF 'BMHD'", one without picture data "Can't Find IFF 'BODY'".
+    Kept from the original: after "Can't Find IFF 'BODY'" the file stays
+    open and locked, also for a program that goes on after the error
+    with `SetErr`
+    ([#1053](https://github.com/fubar-coder/bb2-c/issues/1053)).
 "ScreensBitMap":
   text: Takes the bitmap of a screen as the bitmap object and makes it the used bitmap, so that the blitting and drawing commands draw on the screen. Every screen has a bitmap, also one opened without a bitmap object.
 "ShapesBitMap":

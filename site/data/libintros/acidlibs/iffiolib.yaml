@@ -4,8 +4,14 @@ intro: |
   Amiga's standard format for pictures, sounds and animations, through a
   buffer of 2048 bytes, and finds the chunks in them. The commands that
   load such files use it: `LoadPalette`, `LoadAnim`, `ILBMInfo`, the
-  picture loaders and `LoadSound`. It reads one file at a time.
+  picture loaders and `LoadSound`. It reads one file at a time. A read
+  error of the disk or device ends the file, so the load command stops
+  with its runtime error.
 
-  Kept from the original: a read error is not noticed, and the old
-  contents of the buffer are read as data
-  ([#177](https://github.com/fubar-coder/bb2-c/issues/177)).
+  A limit kept from the original: a chunk is searched byte by byte, and
+  the search stops at the picture data (BODY). A chunk behind the BODY is
+  not found, and data inside a chunk that looks like a chunk name can be
+  taken for one. The load commands rely on this search, and it also finds
+  the chunks in files without the pad bytes IFF requires, such as the
+  ones the original's save commands wrote
+  ([#178](https://github.com/fubar-coder/bb2-c/issues/178)).

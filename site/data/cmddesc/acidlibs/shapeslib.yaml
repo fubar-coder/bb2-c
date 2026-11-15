@@ -6,7 +6,10 @@
     numbers up to the highest one; the rest of the animation is not
     loaded. A picture with a plane of 64 KB or more, such as 1024 by 520
     pixels, does not fit a shape and is the error "Can't Read/Write
-    Shapes File", also without runtime error checking.
+    Shapes File", also without runtime error checking. Kept from the
+    original: a picture whose header gives 0 bitplanes makes a shape
+    without memory, and the rest of the file is written over the memory
+    behind it ([#1052](https://github.com/fubar-coder/bb2-c/issues/1052)).
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
 "GetaShape":

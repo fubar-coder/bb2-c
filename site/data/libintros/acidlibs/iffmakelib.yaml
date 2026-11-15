@@ -12,8 +12,12 @@ intro: |
   SaveBitmap 0,"RAM:picture.iff",0
   ```
 
-  Kept from the original: a palette with an odd number of colours gives a
-  colour chunk without its pad byte, which strict IFF readers reject
-  ([#184](https://github.com/fubar-coder/bb2-c/issues/184)).
+  The files follow the IFF rules, so strict readers such as programs that
+  use `iffparse.library` load them too: a colour chunk of an odd number of
+  colours is followed by its pad byte. That makes these files one byte
+  longer than the ones the original writes, and a packed row can differ
+  from the original's; the picture and the colours are the same
+  ([#184](https://github.com/fubar-coder/bb2-c/issues/184),
+  [#183](https://github.com/fubar-coder/bb2-c/issues/183)).
 
   *Based on the iffmakelib guide by Acid Software.*
