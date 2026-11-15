@@ -38,6 +38,19 @@ foreach(name ${ACIDLIBS_SPEED})
 	endif()
 endforeach()
 
+# the libraries whose static C functions take their first three integer
+# and pointer arguments in registers (-mregparm=3: d0-d2, a0-a2) instead
+# of on the stack: the players, whose per-frame code is a chain of calls
+# with structure pointers (tests/perf: PlayMed 12018 -> 11584 cycles per
+# call, medlib 348 bytes smaller; the PlayModule interrupt 3092 -> about
+# 2720 per frame, trackerlib 88 bytes smaller).  At -mregparm=4 the same;
+# with inlining (-finline-functions) PlayMed 220 cycles less for 712 more
+# bytes, the interrupt no faster: not taken.  Only for libraries that
+# call no C function compiled without it: their entries are
+# BLITZ_ROUTINE (every argument in its BL_REG register) or take nothing,
+# and they call no libgcc
+set(ACIDLIBS_REGPARM medlib trackerlib)
+
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 foreach(src ${sources})
 	get_filename_component(name ${src} NAME_WE)
@@ -77,6 +90,9 @@ function(acidlibs_build prefix variant output)
 			set(optimize OPTIMIZE speed)
 		endif()
 		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${cmdref} ${optimize} ${name}.c)
+		if(name IN_LIST ACIDLIBS_REGPARM)
+			target_compile_options(${prefix}${name} PRIVATE -mregparm=3)
+		endif()
 		list(APPEND objs ${obj})
 	endforeach()
 

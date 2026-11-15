@@ -524,6 +524,23 @@ build.
       Int and Sgn (decision 16), with the original's tail jump into
       SPSub. `q3=Frac(q1)` (with both Quick/Float conversions) 3986.1 ->
       3710.2 (3718.0).
+    - The players (task 10.5, medlib and trackerlib, `-O2` since
+      decision 6): their per-frame code is a chain of static functions
+      with structure pointers on the stack (ticks, synth, playnote;
+      mt_checkcom and the effects). `-mregparm=3` for the two libraries
+      (`ACIDLIBS_REGPARM`, `libs/acidlibs/CMakeLists.txt`; they call no
+      function compiled without it) passes them in registers: PlayMed
+      12017.8 -> 11583.6 (9950.0), the PlayModule interrupt 3091.6 ->
+      2602.8 to 2720.8 per frame (2409.5), medlib 348 and trackerlib 88
+      bytes smaller. `-mregparm=4` gives the same; inlining
+      (`-finline-functions`) PlayMed 220 cycles less for 712 bytes more
+      and nothing for the interrupt. Both stay above the 10 % of
+      decision 15 (1.16 and 1.13); their cost is spread over the
+      player's C (the disassembly shows no single hot routine: the
+      busy waits of the DMA timing are the same as the original's, the
+      register saves fewer), and an assembler player (the original's
+      whole replay routine) is not done here. Task 10.5 stays open for
+      that decision.
 
 ## Risks / Trade-offs
 

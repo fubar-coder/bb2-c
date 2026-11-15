@@ -44,9 +44,10 @@
 # unchanged (bblitlib padded to its old size gives the same values, so
 # it is not the code layout but the faster BBlit loops run before it).
 # The lines of group 10 part A (bgfx.shapeshit, bgfx.spriteshit,
-# bgfx.rectshit, bgfx.print5, bgfx.printnum, binput.inkey, bmath.frac) from
-# five runs of the group 10 part A branch on main e5eb09d0 (2026-11-15); a
-# CPU loop keeps a tolerance of at least 4.
+# bgfx.rectshit, bgfx.print5, bgfx.printnum, binput.inkey, bmath.frac,
+# bmod.vblmod, bmod.playmed) from five runs of the group 10 part A branch
+# on main e5eb09d0 (2026-11-15); a CPU loop keeps a tolerance of at least
+# 4, bmod.vblmod its 220 and bmod.playmed its 7.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -161,8 +162,8 @@ bmisc.fadepalette          3845~51     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
-bmod.vblmod                 3044~220   2409.5  PlayModule playing: its interrupt, cycles per frame
-bmod.playmed               12022~7     9950.0  PlayMed
+bmod.vblmod                 2721~220   2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.playmed               11584~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
 bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)
