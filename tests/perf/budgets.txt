@@ -32,7 +32,8 @@
 # the procedure calls (bmath.wmod to bmath.plocal, bstr.pstr, bstr.fstr)
 # from three runs of main ecef902a (2026-11-15); they, bstr.strcmp and
 # bmath.frac (two Quick/Float conversions) then from two runs after each
-# step of the internal tokens of libs-performance group 8 (2026-11-15).
+# step of the internal tokens of libs-performance group 8, the bmath ones
+# from three runs after the rebase onto main d0fcc44d (2026-11-15).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -104,12 +105,12 @@ bmath.ldiv32                 1256     2515.5  c=a2/b2 (a2=123456789, b2=70000: t
 bmath.lmod32                 1854     2973.5  c=a2 MOD b2 (same values: the slow path)
 bmath.qdivw                 2053~4     3876.5  q3=q4/q5 (q4=1000.5, q5=$00010001: the loop with most steps)
 bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: the smallest divisor of the loop)
-bmath.wmod                    253      247.0  w3=w1 MOD w2
-bmath.qmod                    285      278.0  q3=q1 MOD q2
-bmath.fmod                    979     3701.0  c=f1 MOD f2
-bmath.q2f                    1921     1905.5  f3=q1
-bmath.f2q                    1786     1764.0  q3=f1
-bmath.plocal                  332      389.5  plocal{a} (a Statement with two Long locals: link, clrloc)
+bmath.wmod                    253      248.5  w3=w1 MOD w2
+bmath.qmod                    285      276.5  q3=q1 MOD q2
+bmath.fmod                    979     3700.5  c=f1 MOD f2
+bmath.q2f                    1922     1907.5  f3=q1
+bmath.f2q                    1784     1762.5  q3=f1
+bmath.plocal                  333      391.5  plocal{a} (a Statement with two Long locals: link, clrloc)
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2
 bmath.asg_q                  35~5       32.5  q3=q1
