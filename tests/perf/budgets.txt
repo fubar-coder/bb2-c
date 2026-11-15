@@ -21,7 +21,9 @@
 # Measured with main 9b8096bb (2026-11-15); the "B~T" lines (40 loops) from 38
 # runs of the tests perf_NAME (warp mode, one session per program) of main
 # 4acd58ec (2026-11-15), ten of them with the snapshots made anew;
-# bmod.vblmod keeps the tolerance of its earlier measurement.
+# bmod.vblmod keeps the tolerance of its earlier measurement. The string
+# commands (bstr.asg_s to bstr.string, binput.inkey) from two runs after
+# the string copy loops of libs-performance group 5 (2026-11-15).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -77,7 +79,7 @@ binput.joyy                   301      186.7  c=Joyy(1)
 binput.joyb                 197~6      179.2  c=Joyb(1)
 binput.joyr                   512      376.7  c=Joyr(1)
 binput.rawstatus            250~7      145.7  c=RawStatus($45)
-binput.inkey                 1508      601.7  r$=Inkey$
+binput.inkey                 1090      601.7  r$=Inkey$
 binput.mousex                99~7       87.2  c=MouseX
 binput.mousey                 100       86.7  c=MouseY
 binput.mousexspeed            101       87.2  c=MouseXSpeed
@@ -131,21 +133,21 @@ bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 3044~220   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed               12022~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bstr.asg_s                   2185     1367.5  r$=a$
-bstr.mid                     2297     1553.5  r$=Mid$(a$,3,5)
-bstr.left                    2016     1299.0  r$=Left$(a$,5)
-bstr.right                   2208     1495.5  r$=Right$(a$,5)
-bstr.str                     5479     4131.5  r$=Str$(a)
+bstr.asg_s                   1236     1367.5  r$=a$
+bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)
+bstr.left                    1383     1299.0  r$=Left$(a$,5)
+bstr.right                   1572     1495.5  r$=Right$(a$,5)
+bstr.str                     5023     4131.5  r$=Str$(a)
 bstr.val                     3174     1927.0  c=Val(n$)
-bstr.len                      876      731.0  c=Len(a$)
-bstr.chr                      819      411.0  r$=Chr$(65)
-bstr.asc                      944      797.0  c=Asc(a$)
-bstr.instr                   4356     3513.0  c=Instr(a$,"Blitz")
-bstr.ucase                   3725     3124.0  r$=UCase$(a$)
-bstr.hex                     2184     1570.0  r$=Hex$(a)
-bstr.concat                  3645     2318.5  r$=a$+b$
-bstr.strcmp                  3603     2943.5  If a$=b$ Then c=1
-bstr.string                  4195     4376.0  r$=String$("a",20)
+bstr.len                      687      731.0  c=Len(a$)
+bstr.chr                      408      411.0  r$=Chr$(65)
+bstr.asc                      756      797.0  c=Asc(a$)
+bstr.instr                   4164     3513.0  c=Instr(a$,"Blitz")
+bstr.ucase                   2774     3124.0  r$=UCase$(a$)
+bstr.hex                     1705     1570.0  r$=Hex$(a)
+bstr.concat                  2179     2318.5  r$=a$+b$
+bstr.strcmp                  3373     2943.5  If a$=b$ Then c=1
+bstr.string                  3440     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
