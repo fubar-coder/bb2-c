@@ -47,6 +47,10 @@
  * Read result, 65535, so the old buffer contents were taken as data (and
  * ifffind could loop for ever).
  *
+ * Fixed (intended deviation, #186): iffclose closes only an open file and
+ * clears the handle; the original passed the handle unchecked to dos
+ * Close, also the 0 of a failed iffopen (ILBMInfo of a missing file).
+ *
  * Fixed (intended deviation, #179): iffskip and iffread with d0 = 0 do
  * nothing; the original tested the count only after the first byte
  * (SUBQ.l/BNE) and counted down from 2^32 (a chunk of length 0 in a file:
@@ -149,10 +153,19 @@ static ULONG BLITZ_ROUTINE iffopen_c(ULONG value BL_REG(d0), const char *name BL
 }
 BLITZ_THUNK_POST(iffopen, iffopen_c, "d1/a0-a1", "tst.w _iff_fail");
 
-/** @brief iffclose (+2): close the file (dos Close, also of 0). */
+/**
+ * @brief iffclose (+2): close the file.
+ *
+ * Fixed (#186): only a file that is open (the handle is not 0), and the
+ * handle is cleared; the original called dos Close also with 0 (after a
+ * failed iffopen, e.g. ILBMInfo of a missing file).
+ */
 static void BLITZ_ROUTINE iffclose_c(void)
 {
-    Close(filehand);
+    if (filehand) {                     /* fixed (#186) */
+        Close(filehand);
+        filehand = 0;
+    }
 }
 BLITZ_THUNK(iffclose, iffclose_c, "d0-d1/a0-a1");
 

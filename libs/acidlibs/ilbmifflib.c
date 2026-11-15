@@ -22,8 +22,6 @@
  * The file stays open (ILBMInfo closes it).
  *
  * BUG(orig), kept:
- *  - ILBMInfo closes the file also when it could not be opened (dos
- *    Close of 0); the result is ilbminit's -1/0. (#186)
  *  - ilbmbitmap ignores a failed ilbminit and searches "BODY" in what is
  *    left in iffiolib's buffer (C: iffstuff as after the last ilbminit). (#187)
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
@@ -39,6 +37,10 @@
  *  - Not a bug (word functions, the compiler uses only d0.w):
  *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
  *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
+ *
+ * Fixed (intended deviation, #186): ILBMInfo calls iffclose also when the
+ * file could not be opened; iffclose (iffiolib) now closes only an open
+ * file, the original passed the handle 0 to dos Close.
  *
  * Fixed (intended deviation, #188): ilbmbitmap stores a plane while its
  * number is below the byte Depth (BitMap+5); the original compared with
@@ -325,8 +327,8 @@ BLITZ_THUNK_POST(ilbmbitmap, ilbmbitmap_c, "d0-d1/a1", "lea _iffstuff,a0");
  *
  * View mode: pageWidth >= 480 gives $8000 (HIRES), pageHeight >= 300 |4
  * (LACE).
- * BUG(orig) (#186): the file is closed also when it could not be opened
- * (dos Close of 0).
+ * Fixed (#186): iffclose closes only an open file (the original: dos
+ * Close of 0 for a file that could not be opened).
  *
  * @param name  d0: the file name
  * @return d0: BB_TRUE ok, BB_FALSE no file / no BMHD

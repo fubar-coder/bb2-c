@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+info 0
+close(0) 0
+rc=0
