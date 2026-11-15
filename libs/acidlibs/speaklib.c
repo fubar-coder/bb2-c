@@ -35,7 +35,7 @@
 
 #define LVO_Translate (-30)     /* translator: a0 = in, d0 = len, a1 = out, d1 = size */
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 void _setvoice(void), _voiceloc(void), speaklib_libinit(void);
 void speaklib_libfinit(void);
 ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2));
@@ -199,7 +199,7 @@ static void BLITZ_ROUTINE _setvoice_c(UWORD rate BL_REG(d0), UWORD pitch BL_REG(
     ioreq.vol = vol;                            /* MOVEM d4-d5,vol */
     ioreq.sampfreq = freq;
 }
-BLITZ_THUNK(_setvoice, _setvoice_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setvoice, _setvoice_c);
 
 /**
  * @brief VoiceLoc - the address of the request's V37 part (the newvoice
@@ -213,7 +213,7 @@ static ULONG BLITZ_ROUTINE _voiceloc_c(void)
 {
     return (ULONG)ioreq.v37;
 }
-BLITZ_THUNK(_voiceloc, _voiceloc_c, "d1/a0-a1");
+BLITZ_ALIAS(_voiceloc, _voiceloc_c);
 
 /* ------------------------------------------------- Translate$, Speak */
 

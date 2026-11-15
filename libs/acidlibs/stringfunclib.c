@@ -51,8 +51,8 @@
  * callee-saved).  The inline Len keeps the original MOVE.l -(a2),d0.
  *
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
- * routine; the thunks keep d1/a0/a1 for all of them (more than the
- * original, never less).  CaseSense keeps all registers.  The CCR is no
+ * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
+ * the register rule needs.  CaseSense keeps all registers.  The CCR is no
  * result.
  *
  * Inline routines (`$a000,len` prefix, copied into the program): Chr$,
@@ -65,7 +65,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks / inline code, defined below) */
+/* entry points (aliases / thunks / inline code, defined below) */
 void leftstring(void), rightstring(void), midstring(void), midstring2(void);
 void hexstring(void), binstring(void), chrstring(void), ascii(void);
 void stringstr(void), instrstring(void), instrstring2(void), replace(void);
@@ -315,7 +315,7 @@ static void BLITZ_ROUTINE casesensestring_c(UWORD on BL_REG(d0))
 {
     csense = on;
 }
-BLITZ_THUNK(casesensestring, casesensestring_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(casesensestring, casesensestring_c);
 
 /* ------------------------------------------------------ string results */
 
@@ -347,7 +347,7 @@ static ULONG BLITZ_ROUTINE striptrail_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1)
     }
     return n + 1;
 }
-BLITZ_THUNK(striptrail, striptrail_c, "d1/a0-a1");
+BLITZ_ALIAS(striptrail, striptrail_c);
 
 /* Left$(d0$,d1) - perform left$(d0,d1).  A negative length counts as 0
    ("simon was here"). */
@@ -381,7 +381,7 @@ static ULONG BLITZ_ROUTINE leftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 {
     return left(s, n, lens);
 }
-BLITZ_THUNK(leftstring, leftstring_c, "d1/a0-a1");
+BLITZ_ALIAS(leftstring, leftstring_c);
 
 /**
  * @brief UnLeft$(String$,Length) - the string without its last Length
@@ -399,7 +399,7 @@ static ULONG BLITZ_ROUTINE unleftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
 {
     return left(s, lens[-1] - n, lens);
 }
-BLITZ_THUNK(unleftstring, unleftstring_c, "d1/a0-a1");
+BLITZ_ALIAS(unleftstring, unleftstring_c);
 
 /**
  * @brief LSet$(String$,Characters) - the string left justified in
@@ -435,7 +435,7 @@ static ULONG BLITZ_ROUTINE lsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
     blitz_string = s + n;
     return n;
 }
-BLITZ_THUNK(lsetstring, lsetstring_c, "d1/a0-a1");
+BLITZ_ALIAS(lsetstring, lsetstring_c);
 
 /**
  * @brief RSet$(String$,Characters) - the string right justified in
@@ -483,7 +483,7 @@ static ULONG BLITZ_ROUTINE rsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
     blitz_string = s + n;
     return n;
 }
-BLITZ_THUNK(rsetstring, rsetstring_c, "d1/a0-a1");
+BLITZ_ALIAS(rsetstring, rsetstring_c);
 
 /**
  * @brief Centre$(String$,Characters) - the string centred in Characters
@@ -544,7 +544,7 @@ static ULONG BLITZ_ROUTINE centrestring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
     blitz_string = s + n;
     return n;
 }
-BLITZ_THUNK(centrestring, centrestring_c, "d1/a0-a1");
+BLITZ_ALIAS(centrestring, centrestring_c);
 
 /**
  * @brief LCase$(String$) - the string in lower case ('A'..'Z' only).
@@ -572,7 +572,7 @@ static ULONG BLITZ_ROUTINE lcasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens 
     }
     return len;
 }
-BLITZ_THUNK(lcasestring, lcasestring_c, "d1/a0-a1");
+BLITZ_ALIAS(lcasestring, lcasestring_c);
 
 /**
  * @brief UCase$(String$) - the string in upper case ('a'..'z' only).
@@ -599,7 +599,7 @@ static ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens 
     }
     return len;
 }
-BLITZ_THUNK(ucasestring, ucasestring_c, "d1/a0-a1");
+BLITZ_ALIAS(ucasestring, ucasestring_c);
 
 /**
  * @brief StripLead$(String$,Ascii) - the string without the leading
@@ -631,7 +631,7 @@ static ULONG BLITZ_ROUTINE striplead_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1),
     src--;
     return movestr(&src, n + 1);
 }
-BLITZ_THUNK(striplead, striplead_c, "d1/a0-a1");
+BLITZ_ALIAS(striplead, striplead_c);
 
 /* Right$(d0$,d1) - perform right$(d0,d1).
    Fixed (#285): the offset Len-d1 is a long; the original's LEA
@@ -673,7 +673,7 @@ static ULONG BLITZ_ROUTINE rightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 {
     return right(s, n, lens);
 }
-BLITZ_THUNK(rightstring, rightstring_c, "d1/a0-a1");
+BLITZ_ALIAS(rightstring, rightstring_c);
 
 /**
  * @brief UnRight$(String$,Length) - the string without its first Length
@@ -693,7 +693,7 @@ static ULONG BLITZ_ROUTINE unrightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1
 {
     return right(s, lens[-1] - n, lens);
 }
-BLITZ_THUNK(unrightstring, unrightstring_c, "d1/a0-a1");
+BLITZ_ALIAS(unrightstring, unrightstring_c);
 
 /* Mid$(d0$,d1,d2) - perform mid$(d0,d1,d2); first position = 0 after
    SUBQ.l #1,d1, then negative start/length count as 0.  Start beyond the
@@ -743,7 +743,7 @@ static ULONG BLITZ_ROUTINE midstring_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1
 {
     return mid(s, start, n, lens);
 }
-BLITZ_THUNK(midstring, midstring_c, "d1/a0-a1");
+BLITZ_ALIAS(midstring, midstring_c);
 
 /**
  * @brief Mid$(String$,Startchar) - the rest of the string from Startchar.
@@ -762,7 +762,7 @@ static ULONG BLITZ_ROUTINE midstring2_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d
 {
     return mid(s, start, lens[-1] - start + 1, lens);
 }
-BLITZ_THUNK(midstring2, midstring2_c, "d1/a0-a1");
+BLITZ_ALIAS(midstring2, midstring2_c);
 
 /**
  * @brief Chr$(Expression) - a string of one character.
@@ -793,7 +793,7 @@ static ULONG BLITZ_ROUTINE binstring_c(ULONG v BL_REG(d0))
     }
     return 32;
 }
-BLITZ_THUNK(binstring, binstring_c, "d1/a0-a1");
+BLITZ_ALIAS(binstring, binstring_c);
 
 /**
  * @brief Hex$(Expression) - the value as 8 hexadecimal digits.
@@ -816,7 +816,7 @@ static ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
     }
     return 8;
 }
-BLITZ_THUNK(hexstring, hexstring_c, "d1/a0-a1");
+BLITZ_ALIAS(hexstring, hexstring_c);
 
 /**
  * @brief String$(String$,Repeats) - Repeats copies of the string.
@@ -859,7 +859,7 @@ static ULONG BLITZ_ROUTINE stringstr_c(UBYTE *s BL_REG(d0), LONG count BL_REG(d1
     blitz_string = s;                           /* MOVE.l (a7)+,a3 */
     return movestr(&src, total);
 }
-BLITZ_THUNK(stringstr, stringstr_c, "d1/a0-a1");
+BLITZ_ALIAS(stringstr, stringstr_c);
 
 /**
  * @brief Asc(String$) - the code of the first character.
@@ -879,7 +879,7 @@ static ULONG BLITZ_ROUTINE ascii_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG
     blitz_string = s;
     return *s;
 }
-BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
+BLITZ_ALIAS(ascii, ascii_c);
 
 /* Instr - find f$ in s$ from the 1-based position start; result 1-based
    position or 0.  CaseSense Off compares 'a'..'z' as upper case.
@@ -942,7 +942,7 @@ static ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_
 {
     return instr(s, f, 1, lens);                /* char search pos. (d4 = -1) */
 }
-BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
+BLITZ_ALIAS(instrstring, instrstring_c);
 
 /**
  * @brief Instr(String$,Findstring$,Startpos) - the position of
@@ -969,7 +969,7 @@ static ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0), const UBYTE *f BL
 {
     return instr(s, f, start, lens);
 }
-BLITZ_THUNK(instrstring2, instrstring2_c, "d1/a0-a1");
+BLITZ_ALIAS(instrstring2, instrstring2_c);
 
 /**
  * @brief Replace$(String$,Findstring$,Replacestring$) - String$ with
@@ -1054,7 +1054,7 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
     blitz_string = s;                           /* MOVE.l (a7)+,a0 */
     return movestr(&src, newlen);
 }
-BLITZ_THUNK(replace, replace_c, "d1/a0-a1");
+BLITZ_ALIAS(replace, replace_c);
 
 /**
  * @brief Mki$(Integer) - the low word as a 2 byte string (big endian).
@@ -1069,7 +1069,7 @@ static ULONG BLITZ_ROUTINE mkistring_c(ULONG v BL_REG(d0))
     blitz_string += 2;
     return 2;
 }
-BLITZ_THUNK(mkistring, mkistring_c, "d1/a0-a1");
+BLITZ_ALIAS(mkistring, mkistring_c);
 
 /**
  * @brief Mkl$(Long), Mkq$(Quick) - the value as a 4 byte string (big
@@ -1087,7 +1087,7 @@ static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
     blitz_string += 4;
     return 4;
 }
-BLITZ_THUNK(mklstring, mklstring_c, "d1/a0-a1");
+BLITZ_ALIAS(mklstring, mklstring_c);
 
 /* cvbytes - the first n bytes of a string of len bytes, big endian;
    fixed (#288): bytes beyond len count as 0 (the original read them) */
@@ -1124,7 +1124,7 @@ static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0), const ULONG *l
     blitz_string = (UBYTE *)s;
     return ((ULONG)s & 0xffff0000) | (UWORD)cvbytes(s, lens[-1], 2);
 }
-BLITZ_THUNK(cvistring, cvistring_c, "d1/a0-a1");
+BLITZ_ALIAS(cvistring, cvistring_c);
 
 /**
  * @brief Cvl(String$), Cvq(String$) - the first 4 bytes of the string as
@@ -1146,7 +1146,7 @@ static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0), const ULONG *l
     blitz_string = (UBYTE *)s;
     return cvbytes(s, lens[-1], 4);
 }
-BLITZ_THUNK(cvlstring, cvlstring_c, "d1/a0-a1");
+BLITZ_ALIAS(cvlstring, cvlstring_c);
 
 /**
  * @brief Len(String$) - the length of the string.

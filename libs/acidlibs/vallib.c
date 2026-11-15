@@ -23,8 +23,10 @@
  * being preserved (GCC: a2 is callee-saved).
  *
  * Registers: the original changes d0-d7 (Val, Rnd(n)), a0/a1 through
- * mathffp; the thunks keep d1/a0/a1 for all routines (more than the
- * original, never less).  The CCR is no result.
+ * mathffp; the entries are the C functions (BLITZ_ALIAS), which keep
+ * what the register rule needs (docs/libs/deviations.md, "Register
+ * preservation"); Rnd keeps a0/a1, which a caller needs.  The
+ * CCR is no result.
  *
  * Inline routines (`$a000,len` prefix, copied into the program): QFrac,
  * QWrap, QAbs, VPos, True, False - assembler text, as in the original.
@@ -44,7 +46,7 @@
    read through a local cursor `sp` (a copy of a2; a2 is not changed):
    BL_POPL(sp) = MOVE.l -(a2),dN, BL_POPW(sp) = MOVE -(a2),dN */
 
-/* entry points (thunks / inline code, defined below) */
+/* entry points (aliases / thunks / inline code, defined below) */
 void doval(void), doint(void), dosgn(void), doffrac(void), doqfrac(void);
 void doqwrap(void), dornd1(void), dornd2(void), doqabs(void), dofabs(void);
 void doqlimit(void), dontsc(void), dodispheight(void), dobeamy(void);
@@ -320,7 +322,7 @@ flow:
     r -= 0x4000;                                /* SUB #$4000,d0 */
     return r;
 }
-BLITZ_THUNK(doqangle, doqangle_c, "d1/a0-a1");
+BLITZ_ALIAS(doqangle, doqangle_c);
 
 /* ------------------------------------------------ True, False, VPos */
 
@@ -372,7 +374,7 @@ static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0),
 {
     return (hiword & 0xffff0000) | ((gfx->DisplayFlags & NTSC) ? 200 : 256);
 }
-BLITZ_THUNK(dodispheight, dodispheight_c, "d1/a0-a1");
+BLITZ_ALIAS(dodispheight, dodispheight_c);
 
 /**
  * @brief NTSC - whether the display is NTSC.
@@ -388,7 +390,7 @@ static ULONG BLITZ_ROUTINE dontsc_c(ULONG hiword BL_REG(d0),
 {
     return (hiword & 0xffff0000) | ((gfx->DisplayFlags & NTSC) ? 0xffff : 0);
 }
-BLITZ_THUNK(dontsc, dontsc_c, "d1/a0-a1");
+BLITZ_ALIAS(dontsc, dontsc_c);
 
 /* ---------------------------------------------------------- Frac, Abs */
 
@@ -412,7 +414,7 @@ static ULONG BLITZ_ROUTINE doffrac_c(ULONG f BL_REG(d0), const void *ffp BL_REG(
         i = BLITZ_BASEJSR1(ffp, LVO_SPFloor, f);
     return BLITZ_BASEJSR2(ffp, LVO_SPSub, f, i);
 }
-BLITZ_THUNK(doffrac, doffrac_c, "d1/a0-a1");
+BLITZ_ALIAS(doffrac, doffrac_c);
 
 /**
  * @brief Abs(Expression) - the absolute value, as a float.
@@ -446,7 +448,7 @@ static ULONG BLITZ_ROUTINE dofabs_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a
     }
     return v & ~0x80UL;                         /* BCHG #7,d0:BNE 'skip:BCHG #7,d0 */
 }
-BLITZ_THUNK(dofabs, dofabs_c, "d1/a0-a1");
+BLITZ_ALIAS(dofabs, dofabs_c);
 
 /* ------------------------------------------------------------ Int, Sgn */
 
@@ -483,7 +485,7 @@ static ULONG BLITZ_ROUTINE doint_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6
         v = (UWORD)(WORD)(BYTE)v;
     return (LONG)(WORD)v;                       /* 'word: EXT.l d0 */
 }
-BLITZ_THUNK(doint, doint_c, "d1/a0-a1");
+BLITZ_ALIAS(doint, doint_c);
 
 /**
  * @brief Sgn(Expression) - the sign: -1, 0 or 1.
@@ -522,7 +524,7 @@ static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6
         return 0;
     return 0x00010000;                          /* 'plus: MOVEQ #1,d0:SWAP d0 */
 }
-BLITZ_THUNK(dosgn, dosgn_c, "d1/a0-a1");
+BLITZ_ALIAS(dosgn, dosgn_c);
 
 /**
  * @brief intchk - error check of Int and Sgn (debugger only).
@@ -616,7 +618,7 @@ static LONG BLITZ_ROUTINE doqlimit_c(LONG q BL_REG(d0), LONG lo BL_REG(d1), LONG
         return hi;
     return q;
 }
-BLITZ_THUNK(doqlimit, doqlimit_c, "d1/a0-a1");
+BLITZ_ALIAS(doqlimit, doqlimit_c);
 
 /* ----------------------------------------------------------------- Rnd */
 
@@ -841,4 +843,4 @@ static ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0), const void *ffp BL_REG
     blitz_string = str;
     return doval2(ffp, &s);
 }
-BLITZ_THUNK(doval, doval_c, "d1/a0-a1");
+BLITZ_ALIAS(doval, doval_c);

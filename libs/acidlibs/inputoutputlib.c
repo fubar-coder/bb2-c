@@ -53,7 +53,8 @@
  * defout d1-d3/a0-a1, defout2/defin2 d1-d3/a1, defout3 d0-d3/a1 (C keeps
  * d2-d7/a2-a6 and the thunks d1/a0-a1 resp. d0-d1/a0-a1); unlike the
  * original they do not leave a6 = dos base (the dispatchers restore a6
- * anyway).  dosetin/dosetout/pops keep d1/a1 (and a0).
+ * anyway).  The statements (dosetin, dosetout, the pops) are the C
+ * functions (BLITZ_ALIAS) and keep what the register rule needs.
  *
  * Error checks (debugger only): PopInput/PopOutput with nothing pushed
  * by the program -> "No Input channel to pop!" / "No Output channel to
@@ -193,7 +194,7 @@ static void BLITZ_ROUTINE dopopinput_c(void)
 {
     popchannel(&iochan_in);
 }
-BLITZ_THUNK(dopopinput, dopopinput_c, "d1/a0-a1");
+BLITZ_ALIAS(dopopinput, dopopinput_c);
 
 /**
  * @brief PopOutput: go back to the previous output channel, as PopInput.
@@ -205,7 +206,7 @@ static void BLITZ_ROUTINE dopopoutput_c(void)
 {
     popchannel(&iochan_out);
 }
-BLITZ_THUNK(dopopoutput, dopopoutput_c, "d1/a0-a1");
+BLITZ_ALIAS(dopopoutput, dopopoutput_c);
 
 /* ------------------------------------------------------ default output */
 
@@ -291,7 +292,7 @@ static ULONG BLITZ_ROUTINE dodefin_c(void)
 {
     return setchannel(&iochan_in, defin);
 }
-BLITZ_THUNK(dodefin, dodefin_c, "d1/a0-a1");
+BLITZ_ALIAS(dodefin, dodefin_c);
 
 /**
  * @brief DefaultOutput: make the default output (dos Output(), handler
@@ -302,7 +303,7 @@ static ULONG BLITZ_ROUTINE dodefout_c(void)
 {
     return setchannel(&iochan_out, defout);
 }
-BLITZ_THUNK(dodefout, dodefout_c, "d1/a0-a1");
+BLITZ_ALIAS(dodefout, dodefout_c);
 
 /**
  * @brief The library's init: remember the dos base and Input()/Output(),

@@ -51,7 +51,7 @@
 #include "blitzlib.h"
 #include "blitzexec.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void _CreateMsgPort(void), _DeleteMsgPort(void);
 ULONG _dowait(void);
 void _taskname(void), _startup(void), utillib_CloseRoutine(void);
@@ -142,7 +142,7 @@ static ULONG BLITZ_ROUTINE taskname_c(struct Task *task BL_REG(d0))
     } while (c);
     return n - 1;                                       /* SUBQ.l #1,d0 */
 }
-BLITZ_THUNK(_taskname, taskname_c, "a1");
+BLITZ_ALIAS(_taskname, taskname_c);
 
 /**
  * @brief init - CLR.l signals:MOVE.l #signals,d0.
@@ -283,7 +283,7 @@ static ULONG BLITZ_ROUTINE createmsgport_c(const UBYTE *name BL_REG(d0),
     node->prev = end;
     return (ULONG)port;
 }
-BLITZ_THUNK(_CreateMsgPort, createmsgport_c, "d1/a1");
+BLITZ_ALIAS(_CreateMsgPort, createmsgport_c);
 
 /**
  * @brief DeleteMsgPort *UserPort - delete a port made by CreateMsgPort.
@@ -334,7 +334,7 @@ static void BLITZ_ROUTINE deletemsgport_c(struct MsgPort *port BL_REG(d0))
     r = (struct bl_regs){ .d0 = PORTBLOCK, .a1 = (ULONG)node };
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
-BLITZ_THUNK(_DeleteMsgPort, deletemsgport_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_DeleteMsgPort, deletemsgport_c);
 
 /* CloseRoutine - remove and free all ports that are still there */
 static void BLITZ_ROUTINE closeroutine_c(void)

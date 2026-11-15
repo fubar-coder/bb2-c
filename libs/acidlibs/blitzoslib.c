@@ -108,7 +108,7 @@
 #include "blitzobj.h"
 #include <graphics/gfx.h>
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases, defined below) */
 void _initpage(void), _freepage(void), _addbox(void), _addbox1(void);
 void _addbox2(void), _redrawpage(void), _redrawbox(void), _selectbox(void);
 void _selectbox2(void), _selectbox3(void), _deselectbox(void);
@@ -851,7 +851,7 @@ static void BLITZ_ROUTINE initpage_c(ULONG n BL_REG(d2), UWORD *bm BL_REG(a2), U
     p->c3 = 1;
     p->mybitmap = (UBYTE *)bm;
 }
-BLITZ_THUNK(_initpage, initpage_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_initpage, initpage_c);
 
 static void freepage_(struct page *p)
 {
@@ -874,7 +874,7 @@ static void BLITZ_ROUTINE freepage_c(void)
 {
     freepage_(PG);
 }
-BLITZ_THUNK(_freepage, freepage_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_freepage, freepage_c);
 
 /**
  * @brief SetPagePens Page#,c0,c1,c2,c3: the pens of a page.
@@ -895,7 +895,7 @@ static void BLITZ_ROUTINE setpagepens_c(ULONG dark BL_REG(d1), ULONG light BL_RE
     p->c2 = (WORD)mid;
     p->c3 = (WORD)txt;
 }
-BLITZ_THUNK(_setpagepens, setpagepens_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setpagepens, setpagepens_c);
 
 /**
  * @brief ToggleBox Box#: invert the bevel of a box (NOT of its colour).
@@ -912,7 +912,7 @@ static void BLITZ_ROUTINE togglebox_c(ULONG n BL_REG(d0))
 
     b->color = ~b->color;
 }
-BLITZ_THUNK(_togglebox, togglebox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_togglebox, togglebox_c);
 
 /**
  * @brief EnableBox Box#: enable a disabled box (a positive type).
@@ -930,7 +930,7 @@ static void BLITZ_ROUTINE enablebox_c(ULONG n BL_REG(d0))
     if (b->btype < 0)
         b->btype = -b->btype;
 }
-BLITZ_THUNK(_enablebox, enablebox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_enablebox, enablebox_c);
 
 /**
  * @brief DisableBox Box#: disable a box (a negative type).
@@ -949,7 +949,7 @@ static void BLITZ_ROUTINE disablebox_c(ULONG n BL_REG(d0))
     if (b->btype > 0)
         b->btype = -b->btype;
 }
-BLITZ_THUNK(_disablebox, disablebox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_disablebox, disablebox_c);
 
 /**
  * @brief BoxPropX Box#: the horizontal knob position of a prop box.
@@ -966,7 +966,7 @@ static ULONG BLITZ_ROUTINE boxpropx_c(ULONG n BL_REG(d0))
 {
     return (ULONG)(LONG)getbox(PG, n)->propx << 1;
 }
-BLITZ_THUNK(_boxpropx, boxpropx_c, "d1/a1");
+BLITZ_ALIAS(_boxpropx, boxpropx_c);
 
 /**
  * @brief BoxPropY Box#: the vertical knob position of a prop box.
@@ -981,7 +981,7 @@ static ULONG BLITZ_ROUTINE boxpropy_c(ULONG n BL_REG(d0))
 {
     return (ULONG)(LONG)getbox(PG, n)->propy << 1;
 }
-BLITZ_THUNK(_boxpropy, boxpropy_c, "d1/a1");
+BLITZ_ALIAS(_boxpropy, boxpropy_c);
 
 /* ----------------------------------------------------------- AddBox */
 
@@ -1075,7 +1075,7 @@ static void BLITZ_ROUTINE addbox_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG
 {
     addbox(PG, n, x, y, w, h, (WORD)args[-1]);
 }
-BLITZ_THUNK(_addbox, addbox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_addbox, addbox_c);
 
 /**
  * @brief AddBox Page#,Box#,x,y,w,h,type,shape,shape: a shape button.
@@ -1103,7 +1103,7 @@ static void BLITZ_ROUTINE addbox2_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULON
     b->shapeoff = s1;
     b->isshape = -1;
 }
-BLITZ_THUNK(_addbox2, addbox2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_addbox2, addbox2_c);
 
 /* the text of a box: d0 = length, a1 = string (nostrya / strya) */
 static void boxtext(struct box *b, ULONG len, const UBYTE *s)
@@ -1177,7 +1177,7 @@ static void BLITZ_ROUTINE addbox1_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULON
 
     boxtext(b, *(const ULONG *)(args - 6), *(const UBYTE *const *)(args - 10));
 }
-BLITZ_THUNK(_addbox1, addbox1_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_addbox1, addbox1_c);
 
 /**
  * @brief SetBoxTitle Box#,String$: the text of a box.
@@ -1201,7 +1201,7 @@ static void BLITZ_ROUTINE setboxtitle_c(ULONG n BL_REG(d0), const UBYTE *s BL_RE
         globfree(b->text, b->tlen);
     boxtext(b, len, s);
 }
-BLITZ_THUNK(_setboxtitle, setboxtitle_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setboxtitle, setboxtitle_c);
 
 /* ------------------------------------------------------- set values */
 
@@ -1232,7 +1232,7 @@ static void BLITZ_ROUTINE setbox_c(ULONG n BL_REG(d0), ULONG v BL_REG(d1))
 {
     setbox(n, v);
 }
-BLITZ_THUNK(_setbox, setbox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setbox, setbox_c);
 
 /**
  * @brief ChangeBox Page#,Box#,Value: SetBox for the box of a page.
@@ -1245,7 +1245,7 @@ static void BLITZ_ROUTINE changebox_c(ULONG n BL_REG(d1), ULONG v BL_REG(d2))
 {
     setbox(n, v);
 }
-BLITZ_THUNK(_changebox, changebox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_changebox, changebox_c);
 
 /**
  * @brief SetBox Box#,xprop,yprop: the knob position of a prop box.
@@ -1274,7 +1274,7 @@ static void BLITZ_ROUTINE setbox2_c(ULONG n BL_REG(d0), ULONG qx BL_REG(d1), ULO
     if (b->propy >= 0)
         b->propy = (UWORD)qy >> 1;
 }
-BLITZ_THUNK(_setbox2, setbox2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setbox2, setbox2_c);
 
 /**
  * @brief SetBoxColor Box#,color: the background colour of a box.
@@ -1296,7 +1296,7 @@ static void BLITZ_ROUTINE setboxcolor_c(ULONG n BL_REG(d0), ULONG c BL_REG(d1))
     b->color = (WORD)c;
     drawbox(p, b);
 }
-BLITZ_THUNK(_setboxcolor, setboxcolor_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setboxcolor, setboxcolor_c);
 
 /**
  * @brief SetBoxString Box#,String$: the answer of a string box.
@@ -1339,7 +1339,7 @@ static void BLITZ_ROUTINE setboxstring_c(ULONG n BL_REG(d0), const UBYTE *s BL_R
     }
     *dst = 0;
 }
-BLITZ_THUNK(_setboxstring, setboxstring_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_setboxstring, setboxstring_c);
 
 /* ------------------------------------------------------- functions */
 
@@ -1358,7 +1358,7 @@ static ULONG BLITZ_ROUTINE boxvalue_c(ULONG n BL_REG(d0))
 {
     return (n & 0xffff0000UL) | (UWORD)getbox(PG, n)->value;
 }
-BLITZ_THUNK(_boxvalue, boxvalue_c, "d1/a1");
+BLITZ_ALIAS(_boxvalue, boxvalue_c);
 
 /**
  * @brief BoxValue(Page#,Box#): the value of a box of a page.
@@ -1375,7 +1375,7 @@ static ULONG BLITZ_ROUTINE boxvalue2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG
     BL_SETW(callerd0, n);                       /* MOVE d1,d0 */
     return (callerd0 & 0xffff0000UL) | (UWORD)getbox(PG, callerd0)->value;
 }
-BLITZ_THUNK(_boxvalue2, boxvalue2_c, "d1/a1");
+BLITZ_ALIAS(_boxvalue2, boxvalue2_c);
 
 /* BoxString: page in a1, result at a3 (no 0 written; a3 = the end) */
 static ULONG boxstring(struct page *p, ULONG n)
@@ -1424,7 +1424,7 @@ static ULONG BLITZ_ROUTINE boxstring_c(ULONG n BL_REG(d0), struct page *p BL_REG
 {
     return boxstring(p, n);
 }
-BLITZ_THUNK(_boxstring, boxstring_c, "d1");
+BLITZ_ALIAS(_boxstring, boxstring_c);
 
 /**
  * @brief BoxString(Page#,Box#): BoxString of a box of a page.
@@ -1440,7 +1440,7 @@ static ULONG BLITZ_ROUTINE boxstring2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_RE
     BL_SETW(callerd0, n);
     return boxstring(p, callerd0);
 }
-BLITZ_THUNK(_boxstring2, boxstring2_c, "d1");
+BLITZ_ALIAS(_boxstring2, boxstring2_c);
 
 /**
  * @brief BoxSelected: the selected box of the used page.
@@ -1466,7 +1466,7 @@ static ULONG BLITZ_ROUTINE boxselected_c(void)
         return (ULONG)-1;
     return offset >> 5;
 }
-BLITZ_THUNK(_boxselected, boxselected_c, "d1/a0-a1");
+BLITZ_ALIAS(_boxselected, boxselected_c);
 
 /* ---------------------------------------------------------- drawing */
 
@@ -1495,7 +1495,7 @@ static void BLITZ_ROUTINE redrawpage_c(void)
         b++;
     } while (n-- != 0);
 }
-BLITZ_THUNK(_redrawpage, redrawpage_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_redrawpage, redrawpage_c);
 
 /**
  * @brief RedrawBox Box#: draw a box of the used page.
@@ -1514,7 +1514,7 @@ static void BLITZ_ROUTINE redrawbox_c(ULONG n BL_REG(d0))
 
     drawbox(p, getbox(p, n));
 }
-BLITZ_THUNK(_redrawbox, redrawbox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_redrawbox, redrawbox_c);
 
 /* BoxShow: a view box shows part of a bitmap (Scroll) */
 static void dobs(struct page *p, struct box *b)
@@ -1568,7 +1568,7 @@ static void BLITZ_ROUTINE boxshow_c(ULONG n BL_REG(d0), UBYTE *bm BL_REG(a2),
     b->posy = (WORD)y;
     dobs(p, b);
 }
-BLITZ_THUNK(_boxshow, boxshow_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_boxshow, boxshow_c);
 
 /**
  * @brief BoxShow Box#,dx,dy: move the view of a view box.
@@ -1592,7 +1592,7 @@ static void BLITZ_ROUTINE boxshow2_c(ULONG n BL_REG(d0), ULONG dx BL_REG(d1), UL
     b->posy += (WORD)dy;
     dobs(p, b);
 }
-BLITZ_THUNK(_boxshow2, boxshow2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_boxshow2, boxshow2_c);
 
 static UWORD cx, cy;
 
@@ -1670,7 +1670,7 @@ static void BLITZ_ROUTINE boxprint_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d
 {
     boxprint(PG, n, s, lens);
 }
-BLITZ_THUNK(_boxprint, boxprint_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_boxprint, boxprint_c);
 
 static ULONG linelen[2];                        /* length; a2 points behind */
 
@@ -1718,7 +1718,7 @@ static void BLITZ_ROUTINE boxprint2_c(ULONG n BL_REG(d0), UBYTE **bank BL_REG(a2
     linelen[0] = len;
     boxprint(PG, n, start, linelen + 1);
 }
-BLITZ_THUNK(_boxprint2, boxprint2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_boxprint2, boxprint2_c);
 
 /* ------------------------------------------------------- selecting */
 
@@ -1759,7 +1759,7 @@ static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
     if (old)
         drawbox(p, old);
 }
-BLITZ_THUNK(_selectbox, selectbox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_selectbox, selectbox_c);
 
 /* find the box at (x, y): enabled, x <= px < x+w, y <= py < y+h */
 static int inbox(struct box *b, WORD px, WORD py)
@@ -1821,7 +1821,7 @@ static ULONG BLITZ_ROUTINE selectbox3_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 {
     return selectbox3(PG, (WORD)x, (WORD)y);
 }
-BLITZ_THUNK(_selectbox3, selectbox3_c, "d1/a0-a1");
+BLITZ_ALIAS(_selectbox3, selectbox3_c);
 
 /* SelectBox dx,dy: the nearest box in that direction */
 static void selectbox2(struct page *p, WORD dx, WORD dy)
@@ -1905,7 +1905,7 @@ static void BLITZ_ROUTINE selectbox2_c(ULONG dx BL_REG(d0), ULONG dy BL_REG(d1))
 {
     selectbox2(PG, (WORD)dx, (WORD)dy);
 }
-BLITZ_THUNK(_selectbox2, selectbox2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_selectbox2, selectbox2_c);
 
 /**
  * @brief DeSelectBox: deselect the selected box and draw it as not
@@ -1935,7 +1935,7 @@ static void BLITZ_ROUTINE deselectbox_c(void)
     inedit = 0;
     indrag = 0;
 }
-BLITZ_THUNK(_deselectbox, deselectbox_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_deselectbox, deselectbox_c);
 
 /* the edit cursor: NOT 8 bytes in plane 0 */
 static void docursor(struct page *p)
@@ -2011,7 +2011,7 @@ static void BLITZ_ROUTINE activateselected_c(void)
 {
     activateselected(PG);
 }
-BLITZ_THUNK(_activateselected, activateselected_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_activateselected, activateselected_c);
 
 /**
  * @brief SpotBox: the box that the mouse is over.
@@ -2039,7 +2039,7 @@ static ULONG BLITZ_ROUTINE spotbox_c(void)
     } while (n-- != 0);
     return (ULONG)-1;
 }
-BLITZ_THUNK(_spotbox, spotbox_c, "d1/a0-a1");
+BLITZ_ALIAS(_spotbox, spotbox_c);
 
 /**
  * @brief MouseEnabled: whether BlitzEvent follows the mouse.
@@ -2057,7 +2057,7 @@ static ULONG BLITZ_ROUTINE mouseenabled_c(ULONG callerd0 BL_REG(d0))
     BL_SETW(callerd0, mo);
     return callerd0;
 }
-BLITZ_THUNK(_mouseenabled, mouseenabled_c, "d1/a0-a1");
+BLITZ_ALIAS(_mouseenabled, mouseenabled_c);
 
 /* ------------------------------------------------------- BlitzEvent */
 
@@ -2373,7 +2373,7 @@ static ULONG BLITZ_ROUTINE blitzevent_c(void)
 {
     return (ULONG)blitzevent(PG);
 }
-BLITZ_THUNK(_blitzevent, blitzevent_c, "d1/a0-a1");
+BLITZ_ALIAS(_blitzevent, blitzevent_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

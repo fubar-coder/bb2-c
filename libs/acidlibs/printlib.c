@@ -82,9 +82,8 @@
  *     output stack (a ring of 16, harmless).
  *
  * Registers: the original changes d0-d7/a0-a2 (Print), d0-d1/a0-a2/d4-d6
- * (Str$, d2-d3 kept), d1-d5/a0-a1 (Format, d0 kept); C keeps d2-d7/a2/a6,
- * the thunk of Format additionally d0, FloatMode and init keep everything
- * like the original.  a3 only changes where the original changes it
+ * (Str$, d2-d3 kept), d1-d5/a0-a1 (Format, d0 kept); C keeps d2-d7/a2/a6
+ * (the register rule), init keeps everything like the original.  a3 only changes where the original changes it
  * (string result of Str$/UStr$).
  *
  * Error check (debugger only): formatchk - Format string longer than 32
@@ -93,7 +92,7 @@
 #include "blitzlib.h"
 #include <stddef.h>
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 void doformat(void), dofloatmode(void), printlib_codeinit(void);
 void formatchk(void);
 void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
@@ -553,8 +552,7 @@ static void BLITZ_ROUTINE doformat_c(const UBYTE *s BL_REG(d0),
     *(volatile UWORD *)&pl.formlead = lead;
     *(volatile UWORD *)&pl.formtrail = trail;
 }
-/* the original keeps d0 (MOVE.l d0,a0) */
-BLITZ_THUNK(doformat, doformat_c, "d0");
+BLITZ_ALIAS(doformat, doformat_c);
 
 /**
  * @brief FloatMode Mode - how floats are printed: -1 = always fixed point
@@ -573,7 +571,7 @@ static void BLITZ_ROUTINE dofloatmode_c(UWORD m BL_REG(d0))
 {
     pl.floatmode = m;                           /* MOVE d0,floatmode */
 }
-BLITZ_THUNK(dofloatmode, dofloatmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dofloatmode, dofloatmode_c);
 
 /** @brief Library init - no Format, FloatMode 0.  Keeps all registers. */
 static void BLITZ_ROUTINE codeinit_c(void)

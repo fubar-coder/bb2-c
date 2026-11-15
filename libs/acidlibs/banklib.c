@@ -60,7 +60,7 @@ struct bank {
     ULONG memtype;              /* +8 */
 } BL_PACKED;
 
-/* entry points (thunks / C, defined below) */
+/* entry points (aliases / thunks / C, defined below) */
 void _bankloc(void), _banksize(void), _initbank(void), _freebank(void);
 void banklib_allocmem(void), _freemem(void);
 void BLITZ_ROUTINE _bankload(const UBYTE *name BL_REG(d1),
@@ -173,7 +173,7 @@ static void BLITZ_ROUTINE freebank_c(void)
 {
     freebank(BANK);
 }
-BLITZ_THUNK(_freebank, freebank_c, "a0");
+BLITZ_ALIAS(_freebank, freebank_c);
 
 /* _initbank - d1 = size, d2 = memtype */
 static void initbank(struct bank *b, ULONG size, ULONG memtype)
@@ -207,7 +207,7 @@ static void BLITZ_ROUTINE initbank_c(ULONG size BL_REG(d1), ULONG memtype BL_REG
 {
     initbank(BANK, size, memtype);
 }
-BLITZ_THUNK(_initbank, initbank_c, "a0");
+BLITZ_ALIAS(_initbank, initbank_c);
 
 /**
  * @brief LoadBank bank#,filename$,memtype: load a file into the bank.
@@ -301,7 +301,7 @@ static ULONG BLITZ_ROUTINE bankloc_c(const struct bank *b BL_REG(a0))
 {
     return (ULONG)b->pos;
 }
-BLITZ_THUNK(_bankloc, bankloc_c, "d1/a0-a1");
+BLITZ_ALIAS(_bankloc, bankloc_c);
 
 /**
  * @brief BankSize(bank#): the size of the bank.
@@ -313,7 +313,7 @@ static ULONG BLITZ_ROUTINE banksize_c(const struct bank *b BL_REG(a0))
 {
     return b->size;
 }
-BLITZ_THUNK(_banksize, banksize_c, "d1/a0-a1");
+BLITZ_ALIAS(_banksize, banksize_c);
 
 /**
  * @brief AllocMem(size,memtype): memory from memlib globalloc (freed at
@@ -352,4 +352,4 @@ static void BLITZ_ROUTINE freemem_c(ULONG mem BL_REG(d0), ULONG size BL_REG(d1))
 
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
-BLITZ_THUNK(_freemem, freemem_c, "d1/a0");
+BLITZ_ALIAS(_freemem, freemem_c);

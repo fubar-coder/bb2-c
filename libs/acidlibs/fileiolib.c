@@ -489,7 +489,7 @@ static void BLITZ_ROUTINE dodbufflen_c(ULONG n BL_REG(d0))
 {
     doslen = n;
 }
-BLITZ_THUNK(dodbufflen, dodbufflen_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dodbufflen, dodbufflen_c);
 
 /**
  * @brief WriteMem File#,Address,Length: write memory to a file.
@@ -556,8 +556,7 @@ static BB_BOOL BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL
     myseek(fileno, f, (ULONG)-1, 0, dosbase);
     return BB_FALSE;
 }
-/* the original keeps a0/a1 when the position is in the buffer */
-BLITZ_THUNK(doeof, doeof_c, "a0-a1");
+BLITZ_ALIAS(doeof, doeof_c);
 
 /**
  * @brief Lof(File#): the length of the file.
@@ -596,7 +595,7 @@ static ULONG BLITZ_ROUTINE doloc_c(const struct bfile *f BL_REG(a2))
 {
     return f->pos + f->bufstart;
 }
-BLITZ_THUNK(doloc, doloc_c, "d1/a0-a1");
+BLITZ_ALIAS(doloc, doloc_c);
 
 /**
  * @brief FileSeek File#,Position: set the position in the file.
@@ -909,7 +908,7 @@ static void BLITZ_ROUTINE dofileinput_c(void)
     infile = (struct bfile *)blitz_string;
     BLITZ_ALIBJSR(TOK_setin, r);
 }
-BLITZ_THUNK(dofileinput, dofileinput_c, "d1/a1");
+BLITZ_ALIAS(dofileinput, dofileinput_c);
 
 /**
  * @brief FileOutput File#: send the output to a file.
@@ -926,7 +925,7 @@ static void BLITZ_ROUTINE dofileoutput_c(void)
     outfile = (struct bfile *)blitz_string;
     BLITZ_ALIBJSR(TOK_setout, r);
 }
-BLITZ_THUNK(dofileoutput, dofileoutput_c, "d1/a1");
+BLITZ_ALIAS(dofileoutput, dofileoutput_c);
 
 /* inputhandler - one character: d0 = 0..255, -1 at the end */
 static ULONG BLITZ_ROUTINE inchar_c(void)

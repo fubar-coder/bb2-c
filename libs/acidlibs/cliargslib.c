@@ -12,8 +12,8 @@
  *
  * Kept from the original (BUG(orig)):
  *   - Not a bug (word function, the compiler uses only d0.w): FromCLI
- *     loads only the low word of d0 (MOVE.w): the upper word stays (thunk
- *     with "move.w d0,2(sp)").
+ *     loads only the low word of d0 (MOVE.w): the upper word stays in
+ *     the original (here it is undefined, the register rule).
  *   - FindArg walks the list without a check: argument numbers <= 0 or
  *     > NumPars (only caught by the error checks) run over the end of
  *     the list (argument 0: 2^32 steps). (#106)
@@ -48,7 +48,7 @@ struct argdata {
     struct arg *first;                          /* 6.l firstArg */
 } BL_PACKED;
 
-/* entry points (thunks / C, defined below) */
+/* entry points (aliases / C, defined below) */
 void GetNumPars(void), GetParString(void), FromCLI(void);
 void CheckParNum(void), CheckParPath(void);
 ULONG BLITZ_ROUTINE GetParPath(const struct argdata *wb BL_REG(a0), ULONG n BL_REG(d0),
@@ -153,8 +153,9 @@ ULONG BLITZ_ROUTINE GetParPath(const struct argdata *wb BL_REG(a0), ULONG n BL_R
 /**
  * @brief FromCLI: whether the program was started from the CLI.
  *
- * MOVE.w (a0),d0: a word function; the upper word of d0 stays (thunk
- * with "move.w d0,2(sp)"; not a bug, the compiler uses only d0.w).
+ * MOVE.w (a0),d0: a word function; the upper word of d0 stays in the
+ * original and is undefined here (the register rule: the compiler uses
+ * only d0.w).
  *
  * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
  * @return d0.w: -1 = CLI (or Blitz), 0 = Workbench
@@ -163,7 +164,7 @@ static UWORD BLITZ_ROUTINE fromcli_c(const struct argdata *wb BL_REG(a0))
 {
     return wb->fromcli;
 }
-BLITZ_THUNK_POST(FromCLI, fromcli_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_ALIAS(FromCLI, fromcli_c);
 
 /**
  * @brief NumPars: the number of arguments passed to the program.
@@ -177,7 +178,7 @@ static ULONG BLITZ_ROUTINE getnumpars_c(const struct argdata *wb BL_REG(a0))
 {
     return wb->numargs;
 }
-BLITZ_THUNK(GetNumPars, getnumpars_c, "d1/a0-a1");
+BLITZ_ALIAS(GetNumPars, getnumpars_c);
 
 /**
  * @brief Par$(Parameter#): the text of an argument.
@@ -198,7 +199,7 @@ static ULONG BLITZ_ROUTINE getparstring_c(const struct argdata *wb BL_REG(a0),
 {
     return movestring(findarg(wb, n)->text);
 }
-BLITZ_THUNK(GetParString, getparstring_c, "d1");
+BLITZ_ALIAS(GetParString, getparstring_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

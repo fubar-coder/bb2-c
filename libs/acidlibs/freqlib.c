@@ -80,8 +80,9 @@
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
- * Registers: the requester keeps d1-a6 (MOVEM) - the thunk keeps d1/a1
- * (the original changes a0 and a3).
+ * Registers: the original keeps d1-a6 (MOVEM; it changes a0 and a3);
+ * the entry is the C function (BLITZ_ALIAS) and keeps what the register
+ * rule needs.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -185,7 +186,7 @@ static ULONG BLITZ_ROUTINE dofreq_c(ULONG title BL_REG(d0), ULONG path BL_REG(d1
     blitz_string--;                     /* fixed (#161): a3 on the 0 */
     return n;
 }
-BLITZ_THUNK(dofreq, dofreq_c, "d1/a1");
+BLITZ_ALIAS(dofreq, dofreq_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

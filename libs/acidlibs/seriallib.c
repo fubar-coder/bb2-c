@@ -673,7 +673,7 @@ void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
  * @brief SerialEvent(unit#) - which of the unit's signals came (_checkevent).
  *
  * No check whether the unit is open (not a bug: it tests bit 0 of a
- * cleared slot and returns 0).  Keeps a0/a1 as the original (thunk).
+ * cleared slot and returns 0).
  * BUG(orig) (#252): the slot is unit*128.
  *
  * @param unit d0.w: the unit
@@ -694,4 +694,4 @@ static ULONG BLITZ_ROUTINE checkevent_c(UWORD unit BL_REG(d0),
         r = 2;
     return r;
 }
-BLITZ_THUNK(checkevent, checkevent_c, "a0-a1");
+BLITZ_ALIAS(checkevent, checkevent_c);

@@ -74,7 +74,7 @@
 #include <proto/dos.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void dorecord(void), dorecord2(void), doplayback(void), doplayback2(void);
 void dosavetape(void), doloadtape(void), doabsmouse(void), dorelmouse(void);
 void domousebutton(void), doclickbutton(void), domacrokey(void);
@@ -346,7 +346,7 @@ static ULONG BLITZ_ROUTINE doxstatus_c(void)
 {
     return mode;                                /* MOVEQ #0:MOVE */
 }
-BLITZ_THUNK(doxstatus, doxstatus_c, "d1/a0-a1");
+BLITZ_ALIAS(doxstatus, doxstatus_c);
 
 /**
  * @brief QuickPlay On|Off: play tapes without their timing.
@@ -359,7 +359,7 @@ static void BLITZ_ROUTINE doqplay_c(ULONG v BL_REG(d0))
 {
     qplay = (UWORD)v;
 }
-BLITZ_THUNK(doqplay, doqplay_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doqplay, doqplay_c);
 
 /**
  * @brief TapeTrap [Tape#]: append the simple events to a tape.
@@ -378,8 +378,8 @@ static void BLITZ_ROUTINE dotapeadd2_c(void)
 {
     tapeadd = (struct tape *)blitz_string;
 }
-BLITZ_THUNK(dotapeadd, dotapeadd2_c, "d0-d1/a0-a1");
-BLITZ_THUNK(dotapeadd2, dotapeadd2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dotapeadd, dotapeadd2_c);
+BLITZ_ALIAS(dotapeadd2, dotapeadd2_c);
 
 /**
  * @brief QuietTrap On|Off: whether trapped events are only appended.
@@ -393,7 +393,7 @@ static void BLITZ_ROUTINE dotapemode_c(ULONG v BL_REG(d0))
 {
     trap_mode = (UWORD)v;
 }
-BLITZ_THUNK(dotapemode, dotapemode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dotapemode, dotapemode_c);
 
 /* ----------------------------------------------------------- macro keys */
 
@@ -427,7 +427,7 @@ static void BLITZ_ROUTINE dofreemacrokey_c(ULONG key BL_REG(d0), ULONG qual BL_R
 {
     freemacrokey((UBYTE)key, (UBYTE)qual);
 }
-BLITZ_THUNK(dofreemacrokey, dofreemacrokey_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dofreemacrokey, dofreemacrokey_c);
 
 /**
  * @brief MacroKey Tape#,Rawkey,Qualifier: a key that plays a tape.
@@ -453,7 +453,7 @@ static void BLITZ_ROUTINE domacrokey_c(ULONG key BL_REG(d1), ULONG qual BL_REG(d
     m->rawkey = (UBYTE)key;
     m->qual = (UBYTE)qual;
 }
-BLITZ_THUNK(domacrokey, domacrokey_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domacrokey, domacrokey_c);
 
 /* ------------------------------------------------------- simple events */
 
@@ -479,7 +479,7 @@ static void BLITZ_ROUTINE doabsmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
     movemouse(x, y, 0);
 }
-BLITZ_THUNK(doabsmouse, doabsmouse_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doabsmouse, doabsmouse_c);
 
 /**
  * @brief RelMouse X Offset,Y Offset: a relative mouse move.
@@ -494,7 +494,7 @@ static void BLITZ_ROUTINE dorelmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
     movemouse(x, y, IEQUALIFIER_RELATIVEMOUSE);
 }
-BLITZ_THUNK(dorelmouse, dorelmouse_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dorelmouse, dorelmouse_c);
 
 /* mouse button d0 (0 = left), d1 = down (<> 0) / up */
 static ULONG mousebutton(ULONG b, ULONG on)
@@ -524,7 +524,7 @@ static void BLITZ_ROUTINE domousebutton_c(ULONG b BL_REG(d0), ULONG on BL_REG(d1
 {
     mousebutton(b, on);
 }
-BLITZ_THUNK(domousebutton, domousebutton_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domousebutton, domousebutton_c);
 
 /**
  * @brief ClickButton Button: a mouse button press and release.
@@ -541,7 +541,7 @@ static void BLITZ_ROUTINE doclickbutton_c(ULONG b BL_REG(d0))
 {
     mousebutton(mousebutton(b, 1), 0);
 }
-BLITZ_THUNK(doclickbutton, doclickbutton_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doclickbutton, doclickbutton_c);
 
 /**
  * @brief Type String$: the characters of a string as key events.
@@ -571,7 +571,7 @@ static void BLITZ_ROUTINE dotype_c(const UBYTE *s BL_REG(d0), const ULONG *lens 
         n--;
     }
 }
-BLITZ_THUNK(dotype, dotype_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dotype, dotype_c);
 
 /* ------------------------------------------------ record and playback */
 
@@ -650,7 +650,7 @@ static void BLITZ_ROUTINE dorecord_c(void)
 {
     recordoff();
 }
-BLITZ_THUNK(dorecord, dorecord_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dorecord, dorecord_c);
 
 /**
  * @brief Record Tape#: record the input events into a tape.
@@ -672,7 +672,7 @@ static void BLITZ_ROUTINE dorecord2_c(void)
     dumevent.ie_Class = IECLASS_NULL;
     mode = 0x8001;
 }
-BLITZ_THUNK(dorecord2, dorecord2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dorecord2, dorecord2_c);
 
 /**
  * @brief PlayBack: stop a playback.
@@ -683,7 +683,7 @@ static void BLITZ_ROUTINE doplayback_c(void)
 {
     playbackoff();
 }
-BLITZ_THUNK(doplayback, doplayback_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doplayback, doplayback_c);
 
 /* dopb: play tape t if it has events; sig = signal at the end */
 static void dopb(struct tape *tape, UWORD sig)
@@ -710,7 +710,7 @@ static void BLITZ_ROUTINE doplayback2_c(void)
 {
     dopb((struct tape *)blitz_string, 0);
 }
-BLITZ_THUNK(doplayback2, doplayback2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doplayback2, doplayback2_c);
 
 /**
  * @brief PlayWait: wait for the end of a playback.
@@ -729,7 +729,7 @@ static void BLITZ_ROUTINE doplaywait_c(void)
     dopb((struct tape *)blitz_string, 0xffff);
     Wait(mysig);
 }
-BLITZ_THUNK(doplaywait, doplaywait_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doplaywait, doplaywait_c);
 
 /* ------------------------------------------------------- files */
 
@@ -768,7 +768,7 @@ static void BLITZ_ROUTINE dosavetape_c(const char *name BL_REG(d1), struct DosLi
         Write(fh, (UBYTE *)ev + 4, IESIZE - 4);
     Close(fh);
 }
-BLITZ_THUNK(dosavetape, dosavetape_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosavetape, dosavetape_c);
 
 /**
  * @brief LoadTape Tape#,filename$: load a tape from a file.
@@ -804,7 +804,7 @@ static void BLITZ_ROUTINE doloadtape_c(const char *name BL_REG(d1), struct DosLi
     }
     Close(fh);
 }
-BLITZ_THUNK(doloadtape, doloadtape_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doloadtape, doloadtape_c);
 
 /* ------------------------------------------------- input.device */
 

@@ -102,19 +102,19 @@ bmath.f2l                     230      224.5  c=f1
 bmath.l2f                     454      445.5  f3=a
 bmath.rnd                     520      302.5  q3=Rnd
 bmath.rndn                    586      388.0  q3=Rnd(100)
-bmath.sgn                     505      226.5  c=Sgn(a)
-bmath.abs                    1058      764.0  c=Abs(a)
+bmath.sgn                     398      226.5  c=Sgn(a)
+bmath.abs                     953      764.0  c=Abs(a)
 bmath.qabs                     59       56.5  q3=QAbs(q1)
-bmath.int                     462      192.5  q3=Int(q1)
-bmath.frac                   5129     3718.0  q3=Frac(q1)
-bmath.qlimit                  241      134.5  q3=QLimit(q1,0,10)
+bmath.int                     354      192.5  q3=Int(q1)
+bmath.frac                   5025     3718.0  q3=Frac(q1)
+bmath.qlimit                  136      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
-bmath.peekb                   223      129.0  c=Peek.b(p)
-bmath.peekw                   234      121.0  c=Peek.w(p)
-bmath.peekl                   249      130.5  c=Peek.l(p)
-bmath.pokeb                   204      111.0  Poke.b p,1
-bmath.pokew                   235      109.0  Poke.w p,1
-bmath.pokel                   263      126.5  Poke.l p,1
+bmath.peekb                   134      129.0  c=Peek.b(p)
+bmath.peekw                   144      121.0  c=Peek.w(p)
+bmath.peekl                   160      130.5  c=Peek.l(p)
+bmath.pokeb                    99      111.0  Poke.b p,1
+bmath.pokew                   129      109.0  Poke.w p,1
+bmath.pokel                   156      126.5  Poke.l p,1
 bmisc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmisc.shapewidth              256      114.9  c=ShapeWidth(0)
 bmisc.shapeheight             262      120.9  c=ShapeHeight(0)
@@ -124,7 +124,7 @@ bmisc.showpalette            2464     1616.0  ShowPalette 0
 bmisc.usepalette             2506     1660.0  Use Palette 0
 bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
-bmisc.ntsc                    216      100.4  c=NTSC
+bmisc.ntsc                    107      100.4  c=NTSC
 bmisc.infront                252~4      134.9  InFront 4
 bmod.vblmod                 3106~220   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed               12223~1     9950.0  PlayMed
@@ -134,16 +134,16 @@ bstr.mid                     2402     1553.5  r$=Mid$(a$,3,5)
 bstr.left                    2122     1299.0  r$=Left$(a$,5)
 bstr.right                   2315     1495.5  r$=Right$(a$,5)
 bstr.str                     5479     4131.5  r$=Str$(a)
-bstr.val                     3283     1927.0  c=Val(n$)
+bstr.val                     3239     1927.0  c=Val(n$)
 bstr.len                      876      731.0  c=Len(a$)
 bstr.chr                      819      411.0  r$=Chr$(65)
 bstr.asc                     1054      797.0  c=Asc(a$)
 bstr.instr                   4464     3513.0  c=Instr(a$,"Blitz")
 bstr.ucase                   3879     3124.0  r$=UCase$(a$)
-bstr.hex                     2341     1570.0  r$=Hex$(a)
+bstr.hex                     2231     1570.0  r$=Hex$(a)
 bstr.concat                  3645     2318.5  r$=a$+b$
 bstr.strcmp                  3603     2943.5  If a$=b$ Then c=1
-bstr.string                  4304     4376.0  r$=String$("a",20)
+bstr.string                  4195     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()

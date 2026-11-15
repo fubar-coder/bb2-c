@@ -23,7 +23,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks / asm, defined below) */
+/* entry points (aliases / asm, defined below) */
 void dopeek(void), dopoke(void), memacclib_docall(void);
 void dopeeks(void), peekschk(void);
 
@@ -93,8 +93,7 @@ static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
         return n;
     }
 }
-/* the original changes only d0, a0 (and a3 for strings) */
-BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
+BLITZ_ALIAS(dopeek, dopeek_c);
 
 /**
  * @brief Peeks$(Address,Length) - a string of Length characters from
@@ -110,7 +109,7 @@ BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
  * Errors (debugger, peekschk): "Can't Peeks$ a negative number of
  * Characters!" (#214: the original had no check).
  *
- * The original changes only d0, d1, a0 (and a3); the thunk keeps a1.
+ * The original changes only d0, d1, a0 (and a3).
  *
  * @param loc d0: the address.
  * @param n d1: the number of characters.
@@ -131,7 +130,7 @@ static ULONG BLITZ_ROUTINE dopeeks_c(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
     }
     return len;
 }
-BLITZ_THUNK(dopeeks, dopeeks_c, "a1");
+BLITZ_ALIAS(dopeeks, dopeeks_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 
@@ -184,8 +183,7 @@ static void BLITZ_ROUTINE dopoke_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1),
         *d = 0;                                 /* CLR.b (a0) */
     }
 }
-/* the original changes a0 (strings: also d0, a1, a2) */
-BLITZ_THUNK(dopoke, dopoke_c, "d0-d1/a1");
+BLITZ_ALIAS(dopoke, dopoke_c);
 
 /**
  * @brief Call Address - jump to machine code.

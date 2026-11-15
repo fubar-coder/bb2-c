@@ -69,8 +69,9 @@
  *   - CreateRexxMsg does not copy the host length -8(a2) to -4(a2) on the
  *     compiler's stack (the original does, to call CreateArgString again);
  *     a2 is never changed.
- * Registers: the thunks keep d1/a0/a1 for functions and d0/d1/a0/a1 for
- * statements, at least what the original keeps.
+ * Registers: the statements and functions are the C functions
+ * (BLITZ_ALIAS) and keep what the register rule needs; init and finit
+ * keep their thunks.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -82,7 +83,7 @@
 #include <proto/intuition.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void _CreateRexxMsg(void), _DeleteRexxMsg(void), _FillRexxMsg(void);
 void _ClearRexxMsg(void), _CreateArgString(void), _DeleteArgString(void);
 void _SendRexxCommand(void), _ReplyRexxMsg(void), _GetRexxResult(void);
@@ -412,7 +413,7 @@ static ULONG BLITZ_ROUTINE createrexxmsg_c(ULONG port BL_REG(d0),
         return error_routine(ERR_NOMEM);
     return (ULONG)m;
 }
-BLITZ_THUNK(_CreateRexxMsg, createrexxmsg_c, "d1/a0-a1");
+BLITZ_ALIAS(_CreateRexxMsg, createrexxmsg_c);
 
 /**
  * @brief DeleteRexxMsg rexxmsg: delete rm_FileExt, rm_CommAddr and the
@@ -437,7 +438,7 @@ static void BLITZ_ROUTINE deleterexxmsg_c(ULONG msg BL_REG(d0))
     r = (struct bl_regs){ .d0 = m->rm_Node.mn_Length, .a1 = msg };
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
-BLITZ_THUNK(_DeleteRexxMsg, deleterexxmsg_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_DeleteRexxMsg, deleterexxmsg_c);
 
 /**
  * @brief ClearRexxMsg rexxmsg: delete the ArgStrings of rm_Args[].
@@ -455,7 +456,7 @@ static void BLITZ_ROUTINE clearrexxmsg_c(ULONG msg BL_REG(d0))
 {
     clearrexxmsg(msg);
 }
-BLITZ_THUNK(_ClearRexxMsg, clearrexxmsg_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_ClearRexxMsg, clearrexxmsg_c);
 
 /**
  * @brief FillRexxMsg rexxmsg,&FillStruct: fill rm_Args[] from a
@@ -506,7 +507,7 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
         *(ULONG *)((UBYTE *)&((struct RexxMsg *)msg)->rm_Result2 + (WORD)off) = v;
     }
 }
-BLITZ_THUNK(_FillRexxMsg, fillrexxmsg_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_FillRexxMsg, fillrexxmsg_c);
 
 /**
  * @brief CreateArgString(String): a BB2 ArgString.
@@ -529,7 +530,7 @@ static ULONG BLITZ_ROUTINE createargstring_c(const UBYTE *s BL_REG(d0),
     blitz_string = (UBYTE *)s;
     return createargstring(s, lens[-1]);
 }
-BLITZ_THUNK(_CreateArgString, createargstring_c, "d1/a0-a1");
+BLITZ_ALIAS(_CreateArgString, createargstring_c);
 
 /**
  * @brief DeleteArgString argstring: free an ArgString.
@@ -545,7 +546,7 @@ static void BLITZ_ROUTINE deleteargstring_c(ULONG arg BL_REG(d0))
 {
     deleteargstring(arg);
 }
-BLITZ_THUNK(_DeleteArgString, deleteargstring_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_DeleteArgString, deleteargstring_c);
 
 /**
  * @brief SendRexxCommand rexxmsg,CommandString,ActionCodes: send the
@@ -599,7 +600,7 @@ static void BLITZ_ROUTINE sendrexxcommand_c(ULONG msg BL_REG(d0),
     PutMsg(port, &m->rm_Node);
     Enable();
 }
-BLITZ_THUNK(_SendRexxCommand, sendrexxcommand_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_SendRexxCommand, sendrexxcommand_c);
 
 /**
  * @brief ReplyRexxMsg rexxmsg,Result1,Result2,ResultString: reply to a
@@ -651,7 +652,7 @@ static void BLITZ_ROUTINE replyrexxmsg_c(ULONG msg BL_REG(d0),
     m->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
     ReplyMsg(&m->rm_Node);
 }
-BLITZ_THUNK(_ReplyRexxMsg, replyrexxmsg_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_ReplyRexxMsg, replyrexxmsg_c);
 
 /**
  * @brief GetRexxResult(rexxmsg,ResultNum): rm_Result1 (1) or rm_Result2
@@ -674,7 +675,7 @@ static ULONG BLITZ_ROUTINE getrexxresult_c(ULONG msg BL_REG(d0),
     return *(const ULONG *)((const UBYTE *)&((struct RexxMsg *)msg)->rm_Result1
                             + argindex(n));
 }
-BLITZ_THUNK(_GetRexxResult, getrexxresult_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetRexxResult, getrexxresult_c);
 
 /* copy an ArgString with its 0 to a3 (DBRA on ra_Length: length+1
    bytes); a3 ends on the 0 (fixed, #52: the original left it behind the
@@ -716,7 +717,7 @@ static ULONG BLITZ_ROUTINE getrexxcommand_c(ULONG msg BL_REG(d0),
         return 0;
     return copyarg((const UBYTE *)arg);
 }
-BLITZ_THUNK(_GetRexxCommand, getrexxcommand_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetRexxCommand, getrexxcommand_c);
 
 /**
  * @brief GetResultString(rexxmsg): rm_Result2 as string, then the
@@ -742,7 +743,7 @@ static ULONG BLITZ_ROUTINE getresultstring_c(ULONG msg BL_REG(d0))
     deleteargstring(arg);
     return len;
 }
-BLITZ_THUNK(_GetResultString, getresultstring_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetResultString, getresultstring_c);
 
 /**
  * @brief RexxEvent(PortAddress): the first message of the port, removed.
@@ -783,7 +784,7 @@ static ULONG BLITZ_ROUTINE rexxevent_c(struct MsgPort *port BL_REG(d0))
         clearrexxmsg((ULONG)n);
     return (ULONG)n;
 }
-BLITZ_THUNK(_RexxEvent, rexxevent_c, "d1/a0-a1");
+BLITZ_ALIAS(_RexxEvent, rexxevent_c);
 
 /**
  * @brief IsRexxMsg(rexxmsg): rexxsyslib IsRexxMsg.
@@ -800,7 +801,7 @@ static ULONG BLITZ_ROUTINE isrexxmsg_c(ULONG msg BL_REG(d0))
         return error_routine(ERR_REXXSYS);
     return IsRexxMsg((struct RexxMsg *)msg) ? 1 : 0;
 }
-BLITZ_THUNK(_IsRexxMsg, isrexxmsg_c, "d1/a0-a1");
+BLITZ_ALIAS(_IsRexxMsg, isrexxmsg_c);
 
 /**
  * @brief RexxError(ErrorCode): the ARexx error message as string.
@@ -833,4 +834,4 @@ static ULONG BLITZ_ROUTINE rexxerror_c(ULONG code BL_REG(d0))
     } while (*s);
     return n;
 }
-BLITZ_THUNK(_RexxError, rexxerror_c, "d1/a0-a1");
+BLITZ_ALIAS(_RexxError, rexxerror_c);

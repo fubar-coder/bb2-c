@@ -63,7 +63,8 @@
  * changed during Implode (the original uses it as work register and
  * restores it).
  * Registers: Implode/Deplode keep d2-d7/a2-a6 like the original;
- * CrMDecrunch and PPDecrunch keep all registers (thunks).
+ * CrMDecrunch and PPDecrunch keep what the register rule needs (the
+ * C functions are the entries, BLITZ_ALIAS).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -1096,7 +1097,7 @@ static void BLITZ_ROUTINE crm_c(const UBYTE *src BL_REG(d0))
 {
     overlapdecrunch(src, (UBYTE *)src);
 }
-BLITZ_THUNK(_crm, crm_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_crm, crm_c);
 
 /**
  * @brief CrMDecrunch Bufferadr,Destinationadr: decrunches Crunch-Mania
@@ -1118,7 +1119,7 @@ static void BLITZ_ROUTINE crm2_c(const UBYTE *src BL_REG(d0),
 {
     overlapdecrunch(src, dst);
 }
-BLITZ_THUNK(_crm2, crm2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_crm2, crm2_c);
 
 /* =========================================================== PowerPacker */
 
@@ -1240,4 +1241,4 @@ static void BLITZ_ROUTINE ppdecrunch_c(const UBYTE *start BL_REG(d0),
 {
     ppdecrunch(start, end, dest);
 }
-BLITZ_THUNK(_ppdecrunch, ppdecrunch_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_ppdecrunch, ppdecrunch_c);

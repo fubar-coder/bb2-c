@@ -754,6 +754,18 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
          holds: saved registers (4 bytes each), the caller's return
          address, the caller's stack arguments. */
 #define BLITZ_THUNK(entry, cfunc, save) BL_THUNK_(entry, cfunc, save, "", "")
+
+/* BLITZ_ALIAS(entry, cfunc) - the entry `entry` of the token table is the
+   C function `cfunc` itself, without a thunk: the entry of a user-level
+   statement or function, which keeps a4-a7 and (a function) a3 and
+   nothing else must survive it (the register rule, docs/libs/deviations.md
+   "Register preservation"); GCC keeps d2-d7/a2/a6 anyway, a3-a5 are
+   fixed.  `cfunc` is a BLITZ_ROUTINE (used), so GCC emits it under its
+   own name with the register parameters it declares.  An exception of
+   the rule that GCC's code keeps by nature is an alias too; its KEEPS
+   statement in the library tests states the registers. */
+#define BLITZ_ALIAS(entry, cfunc) \
+    __asm__("   .globl  _" #entry "\n   .set    _" #entry ",_" #cfunc)
 #define BLITZ_THUNK_Z(entry, cfunc, save) \
     BL_THUNK_(entry, cfunc, save, "", "   tst.l   d0\n")
 #define BLITZ_THUNK_PRE(entry, cfunc, save, pre) \
