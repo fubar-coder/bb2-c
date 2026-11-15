@@ -26,13 +26,17 @@
  * highest plane; SetCollOdd = $F041.  They return CLXDAT (statements, the
  * value is not used).  DoColl latches CLXDAT; SColl/PColl test bits of it.
  *
- * BUG(orig), kept:
- *  - SColl tests with BTST Dn,<memory> a bit of the HIGH byte of the
- *    latched word (intended: CLXDAT bits 9-14 = sprite pairs).  Right for
- *    the lower channel first; with channel 0/1 as the SECOND argument
- *    (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead of 10,
- *    SColl(6,0): 12 instead of 11) or two channels of the same pair
- *    (SColl(0,1): bit 8) the wrong bit is tested. (#110)
+ * Fixed (intended deviation, #110): SColl tests with BTST Dn,<memory> a
+ *   bit of the HIGH byte of the latched word (intended: CLXDAT bits 9-14
+ *   = sprite pairs).  The original's bit number is right only for the
+ *   lower channel first; with channel 0/1 as the SECOND argument
+ *   (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead of 10,
+ *   SColl(6,0): 12 instead of 11) the wrong bit was tested.  Here the
+ *   channels are put in order first.  Two channels of the same pair
+ *   (SColl(0,1): the original tests bit 8) are an invalid argument (the
+ *   hardware has no collision within a pair): the error check scollchk
+ *   (debugger only) stops them with "Sprite channels must be of
+ *   different pairs"; the original refused only equal channels.
  *
  * By design (#111): SetColl with 0 planes loops 65536 times (DBF); the
  * error check (setcolchk, "Illegal number of BitPlanes") refuses it.
@@ -154,11 +158,12 @@ BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
  * of the latched word, bit number mod 8.  Blitz mode only.  A word
  * function: the upper word of d0 is the caller's.
  * Errors (debugger only): "Illegal Sprite channel" (>= 8), "Sprite
- * channels must be different".
- * BUG(orig) (#110): right only with the lower channel first; with channel
- * 0/1 as the SECOND argument (SColl(2,0): bit 10 instead of 9, SColl(4,0):
- * 11 instead of 10, SColl(6,0): 12 instead of 11) or two channels of the
- * same pair (SColl(0,1): bit 8) the wrong bit is tested.
+ * channels must be different", "Sprite channels must be of different
+ * pairs" (the last fixed #110, the original has no such check).
+ * Fixed (#110): the channels are put in order first; the original's bit
+ * number was right only with the lower channel first (SColl(2,0): bit 10
+ * instead of 9, SColl(4,0): 11 instead of 10, SColl(6,0): 12 instead of
+ * 11).
  *
  * @param c0  d0.w: the first sprite channel (0..7)
  * @param c1  d1.w: the second sprite channel (0..7)
@@ -166,8 +171,16 @@ BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
  */
 static ULONG BLITZ_ROUTINE doscoll_c(ULONG c0 BL_REG(d0), ULONG c1 BL_REG(d1))
 {
-    UWORD a = (UWORD)c0 >> 1, b = (UWORD)c1 >> 1;
+    UWORD a = (UWORD)c0, b = (UWORD)c1;
 
+    if (a > b) {                                /* fixed #110: lower channel first */
+        UWORD t = a;
+
+        a = b;
+        b = t;
+    }
+    a >>= 1;
+    b >>= 1;
     if (a) {
         a++;
         b += a;
@@ -439,6 +452,7 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Sprite");
 BLITZ_ERRCHK_MESSAGE(mess6, "Illegal Sprite channel");
 BLITZ_ERRCHK_MESSAGE(mess7, "Sprite channels must be different");
+BLITZ_ERRCHK_MESSAGE(pairmess, "Sprite channels must be of different pairs"); /* #110 */
 
 /* d0 = colour, d1 = bitplanes */
 static void BLITZ_ERRCHK setcolchk_c(ULONG col BL_REG(d0), ULONG planes BL_REG(d1))
@@ -494,6 +508,8 @@ static void BLITZ_ERRCHK scollchk_c(ULONG c0 BL_REG(d0), ULONG c1 BL_REG(d1))
         BLITZ_RUNERR(mess6);
     if ((UWORD)c0 == (UWORD)c1)
         BLITZ_RUNERR(mess7);
+    if ((UWORD)c0 >> 1 == (UWORD)c1 >> 1)       /* fixed #110: a pair has no */
+        BLITZ_RUNERR(pairmess);                 /* collision bit */
 }
 
 static void BLITZ_ERRCHK pcollchk_c(ULONG c BL_REG(d0))

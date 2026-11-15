@@ -8,6 +8,7 @@
 ; and 4.
 ; Correct: SColl(4,0) = SColl(0,4) = -1 (true), SColl(0,2) = SColl(2,0)
 ; = 0.
+; @fixed #110
 ; @configs clib
 DEFTYPE .l
 BitMap 0,320,200,2
