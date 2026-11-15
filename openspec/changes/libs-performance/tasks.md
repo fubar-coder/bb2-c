@@ -77,6 +77,8 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 - [ ] 10.10 The players (medlib, trackerlib) by tuning the C source: an analysis first compares the original's replay code with GCC's output and counts the cycles per pattern (sign/zero extension from integer promotion, reloads of the channel state from memory, `volatile` reloads, `switch` against the original's jump table, stack spills for lack of address registers); then the C is reworked pattern by pattern (types that avoid extension, the channel state in locals and `restrict`, values in data registers, `goto *tab[cmd]` for the effect dispatch), measured after each step; assembler only where C stays more than 1-2 % behind (user decision 2026-11-15)
 
+- [ ] 10.11 Polyf (2dlib): `prodgt` as `BL_ALWAYS_INLINE` without the zero extensions the value range makes unnecessary; then measure and tune the C clipping of Polyf (the fixes #1000 and #1033 stay) as the players in 10.10: extensions, reloads, spilled registers; C as long as it comes within 1-2 % of the original (user decision 2026-11-16)
+
 ## 9. Closing
 
 - [ ] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
