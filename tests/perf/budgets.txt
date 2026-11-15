@@ -24,6 +24,9 @@
 # bmod.vblmod keeps the tolerance of its earlier measurement. The string
 # commands (bstr.asg_s to bstr.string, binput.inkey) from two runs after
 # the string copy loops of libs-performance group 5 (2026-11-15).
+# The 24 lines of the small entries (group 6: Peek, Poke, Plot, Point,
+# PColl, Locate, Joy*, RawStatus, Mouse*, Rnd, Sgn, Int, Abs, QLimit) from
+# six runs of the group 6 branch on main 4a94ee23 (2026-11-15).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -47,12 +50,12 @@ bgfx.qblit8f              24976~13    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20
 bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
-bgfx.pcoll                  257~8      130.8  c=PColl(0)
+bgfx.pcoll                  111~1      130.8  c=PColl(0)
 bgfx.shapeshit               732~4      383.4  c=ShapesHit(0,10,10,1,20,20)
 bgfx.spriteshit              772~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
-bgfx.plot                     692      486.9  Plot 10,10,1
-bgfx.point                    765      478.4  c=Point(10,10)
+bgfx.plot                     532      486.9  Plot 10,10,1
+bgfx.point                    471      478.4  c=Point(10,10)
 bgfx.line                    5047     3967.8  Line 10,10,110,60,1
 bgfx.lineh                 5012~16     3991.8  Line 10,10,110,10,1
 bgfx.box                  13090~13     9571.9  Box 10,10,50,50,1
@@ -63,7 +66,7 @@ bgfx.cls                84730~1081    84709.9  Cls
 bgfx.poly3                10105~71     7524.9  Poly 3,&pts(0),1
 bgfx.polyf3               87155~11    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32              9478~17     8075.9  Scroll 0,0,32,32,100,100
-bgfx.locate                   145      128.3  Locate 0,0
+bgfx.locate                   134      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
 bgfx.print5               28340~12    13097.9  Locate 0,0 : Print "SCORE"
 bgfx.printnum              35584~5    17797.8  Locate 0,0 : Print a
@@ -74,15 +77,15 @@ bgfx.green                   361~3      167.3  c=Green(1)
 bgfx.usebitmap                 74       69.3  Use BitMap 0
 bgfx.useslice                  74       69.3  Use Slice 0
 binput.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
-binput.joyx                   292      173.7  c=Joyx(1)
-binput.joyy                   301      186.7  c=Joyy(1)
-binput.joyb                 197~6      179.2  c=Joyb(1)
-binput.joyr                   512      376.7  c=Joyr(1)
-binput.rawstatus            250~7      145.7  c=RawStatus($45)
+binput.joyx                   154      173.7  c=Joyx(1)
+binput.joyy                   167      186.7  c=Joyy(1)
+binput.joyb                 181~1      179.2  c=Joyb(1)
+binput.joyr                   169      376.7  c=Joyr(1)
+binput.rawstatus            149~5      145.7  c=RawStatus($45)
 binput.inkey                 1090      601.7  r$=Inkey$
-binput.mousex                99~7       87.2  c=MouseX
-binput.mousey                 100       86.7  c=MouseY
-binput.mousexspeed            101       87.2  c=MouseXSpeed
+binput.mousex                88~1       87.2  c=MouseX
+binput.mousey                  92       86.7  c=MouseY
+binput.mousexspeed             94       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
 binput.volume                 390      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1
@@ -104,21 +107,21 @@ bmath.fdiv                    734      723.5  f3=f1/f2
 bmath.fadd                    314      307.0  f3=f1+f2
 bmath.f2l                     230      224.5  c=f1
 bmath.l2f                     454      445.5  f3=a
-bmath.rnd                     415      302.5  q3=Rnd
-bmath.rndn                    480      388.0  q3=Rnd(100)
-bmath.sgn                     398      226.5  c=Sgn(a)
-bmath.abs                     953      764.0  c=Abs(a)
+bmath.rnd                     309      302.5  q3=Rnd
+bmath.rndn                    372      388.0  q3=Rnd(100)
+bmath.sgn                     218      226.5  c=Sgn(a)
+bmath.abs                     747      764.0  c=Abs(a)
 bmath.qabs                     59       56.5  q3=QAbs(q1)
-bmath.int                     354      192.5  q3=Int(q1)
+bmath.int                     196      192.5  q3=Int(q1)
 bmath.frac                   5025     3718.0  q3=Frac(q1)
-bmath.qlimit                  136      134.5  q3=QLimit(q1,0,10)
+bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
-bmath.peekb                   134      129.0  c=Peek.b(p)
-bmath.peekw                 142~6      121.0  c=Peek.w(p)
-bmath.peekl                   160      130.5  c=Peek.l(p)
-bmath.pokeb                  98~5      111.0  Poke.b p,1
-bmath.pokew                   129      109.0  Poke.w p,1
-bmath.pokel                   156      126.5  Poke.l p,1
+bmath.peekb                   126      129.0  c=Peek.b(p)
+bmath.peekw                 118~1      121.0  c=Peek.w(p)
+bmath.peekl                   131      130.5  c=Peek.l(p)
+bmath.pokeb                  94~1      111.0  Poke.b p,1
+bmath.pokew                   106      109.0  Poke.w p,1
+bmath.pokel                   126      126.5  Poke.l p,1
 bmisc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmisc.shapewidth            117~4      114.9  c=ShapeWidth(0)
 bmisc.shapeheight             126      120.9  c=ShapeHeight(0)
