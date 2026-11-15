@@ -12,7 +12,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (a thunk, assembler; defined below) */
 void allocst(void), locallocst(void);
 
 /* !syslibheader{#staticslib,$c500,$c502,0,0,0,0} */
@@ -60,6 +60,12 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
  * @brief $C501 (localstat) - allocate the NEWTYPE memory of local
  * statics.
  *
+ * The loop of alstat in assembler, with a0 = the table, a1 = the offset
+ * from a4, d4 = the count, around memlib localloc (which keeps a0-a1).
+ * Saves d0-d1/d4 and changes a0/a1 only: C cannot keep d0/d1 without a
+ * thunk.  DIFF: the original changes d2 (the offset) and d4 (the DBF
+ * count) and leaves a2 behind the table; here only a0/a1 change.
+ *
  * As alstat, with the offsets from a4 (the original swaps a4/a5 around a
  * call of allocst).  Keeps d0-d7/a2-a6: the compiler calls it in the
  * procedure prologue with the parameters in d0-d5 (perf-analysis
@@ -69,8 +75,15 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
  * @param tab a2: the compiler's table (calcstatic, blitz2.s 6740)
  * @param n   d4: the number of entries - 1
  */
-static void BLITZ_ROUTINE locallocst_c(const struct staticent *tab BL_REG(a2), UWORD n BL_REG(d4))
-{
-    alloc_statics(tab, n, blitz_locals);
-}
-BLITZ_THUNK(locallocst, locallocst_c, "d0-d1");
+BLITZ_ASM_ROUTINE(locallocst,
+        "   movem.l d0-d1/d4,-(sp)\n"
+        "   move.l  a2,a0\n"
+        "1: move.w  (a0)+,a1\n"             /* the offset from a4 */
+        "   moveq   #0,d0\n"
+        "   move.w  (a0)+,d0\n"             /* the size */
+        "   move.l  #0x10001,d1\n"          /* MEMF_PUBLIC|MEMF_CLEAR */
+        "   jsr     _blitz_tok+0x80000000+" BL_STR(TOK_localloc) "\n"
+        "   move.l  d0,0(a4,a1.w)\n"
+        "   dbf     d4,1b\n"
+        "   movem.l (sp)+,d0-d1/d4\n"
+        "   rts");

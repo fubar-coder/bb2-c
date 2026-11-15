@@ -33,7 +33,7 @@
 #include "blitzlib.h"
 #include "blitzexec.h"
 
-/* entry points (thunks / asm, defined below) */
+/* entry points (thunks, newmem and freelast assembler; defined below) */
 void localloc(void), locfree(void), globalloc(void), globfree(void);
 void newmem(void), freelast(void), memlib_codeinit(void);
 void memlib_codefinit(void);
@@ -74,26 +74,26 @@ static UWORD memerr;
 static const char mess1[] = "Out of Memory!";
 static const char mess2[] = "Unable to Free Memory";
 
-static ULONG freelast_c(void);
-
 /**
  * @brief Library finit and token $C006 - free ALL memory allocated: every
  * list (local and global) with all its blocks.
  *
- * Keeps all registers.
+ * freelast until there is no list (freelast's Z is firstdata = 0).
+ * Keeps all registers (the thunk; freelast keeps d0/d2-d7/a2-a6).
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
-    while (freelast_c())
-        ;
+    while (firstdata)
+        __asm volatile("jsr     _freelast(pc)" : : : "d1", "a0", "a1", "cc", "memory");
 }
 BLITZ_THUNK(memlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
 /* err1 - out of memory: free everything, runtime error.
    DIFF: the original jumps here from localloc/newmem with their saved
    registers still on the stack and never returns (the runtime error ends
-   the program); here err1 returns and the caller returns 0. */
-static void err1(void)
+   the program); here err1 returns and the caller returns 0.  Called from
+   the assembler of newmem too (BLITZ_ROUTINE: GCC emits it). */
+static void BLITZ_ROUTINE err1(void)
 {
     codefinit_c();
     BLITZ_RUNERR(mess1);
@@ -103,26 +103,37 @@ static void err1(void)
  * @brief newmem ($C004, at procedure entry) - create a new node (for
  * local stuff): a new current local list.
  *
- * Keeps d0-d7/a2-a6: the compiler calls it in the procedure prologue
- * with the parameters in d0-d5 (perf-analysis thunks.md 1.4); a0 and a1
- * are free (the original keeps them), no third-party library calls it.
+ * AllocMem(8, MEMF_PUBLIC), the list header in front of firstdata, no
+ * blocks.  Keeps d0-d7/a2-a6: the compiler calls it in the procedure
+ * prologue with the parameters in d0-d5 (perf-analysis thunks.md 1.4);
+ * a0 and a1 are free (the original keeps them), no third-party library
+ * calls it.
+ *
+ * An assembler entry, the original's code with d0-d1/a6 saved: C cannot
+ * keep d0/d1 across AllocMem, and a thunk around the C function saved
+ * them a second time.
  *
  * Errors: no memory for the list header - err1: all memory is freed and
- * the runtime error "Out of Memory!" raised.
+ * the runtime error "Out of Memory!" raised (DIFF: err1 returns, see
+ * there).
  */
-static void BLITZ_ROUTINE newmem_c(void)
-{
-    struct memlist *l = AllocMem(sizeof *l, MEMF_PUBLIC);
-
-    if (!l) {
-        err1();
-        return;
-    }
-    l->next = firstdata;
-    firstdata = l;
-    l->first = NULL;
-}
-BLITZ_THUNK(newmem, newmem_c, "d0-d1");
+BLITZ_ASM_ROUTINE(newmem,
+        "   movem.l d0-d1/a6,-(sp)\n"
+        "   moveq   #8,d0\n"                /* sizeof (struct memlist) */
+        "   moveq   #1,d1\n"                /* MEMF_PUBLIC */
+        "   move.l  4.w,a6\n"
+        "   jsr     -198(a6)\n"             /* AllocMem */
+        "   tst.l   d0\n"
+        "   beq.s   1f\n"
+        "   move.l  d0,a0\n"
+        "   move.l  _firstdata,(a0)\n"      /* next */
+        "   move.l  a0,_firstdata\n"
+        "   clr.l   4(a0)\n"                /* first: no blocks */
+        "   movem.l (sp)+,d0-d1/a6\n"
+        "   rts\n"
+        "1: jsr     _err1(pc)\n"
+        "   movem.l (sp)+,d0-d1/a6\n"
+        "   rts");
 
 /**
  * @brief Library init - start with one list (the global one).
@@ -133,7 +144,7 @@ BLITZ_THUNK(newmem, newmem_c, "d0-d1");
 static ULONG BLITZ_ROUTINE codeinit_c(void)
 {
     firstdata = NULL;
-    newmem_c();
+    __asm volatile("jsr     _newmem(pc)" : : : "a0", "a1", "cc", "memory");
     memerr = 0;
     return (ULONG)membase;
 }
@@ -279,26 +290,36 @@ BLITZ_THUNK(globfree, globfree_c, "d1/a0");
  * @brief freelast ($C005, at procedure exit) - free up most recent node
  * with all its blocks.
  *
- * Keeps all registers.
+ * The list header (8 bytes), then every block with its stored length
+ * (FreeMem).  Keeps d0 and d2-d7/a2-a6: the compiler calls it at the end
+ * of a procedure with the result of a Function in d0 (perf-analysis
+ * thunks.md 1.4); d1, a0 and a1 are free (the original keeps them), no
+ * third-party library calls it.
  *
- * @return Z = 1 if there was none (result 0, tested as long; an exec
- *         BOOL, internal, not a Blitz truth value).
+ * An assembler entry, the original's code with d0/a2/a6 saved: C cannot
+ * keep d0 nor return a flag, and the thunk around the C function saved
+ * d0-d1/a0-a1.
+ *
+ * @return Z = 1 if there was none (the original's MOVEQ #-1,d0 / the
+ *         BEQ on firstdata; internal, not a Blitz truth value).
  */
-static ULONG BLITZ_ROUTINE freelast_c(void)
-{
-    struct memlist *l = firstdata;
-    struct memblock *b;
-
-    if (!l)
-        return FALSE;
-    firstdata = l->next;
-    b = l->first;
-    FreeMem(l, sizeof *l);
-    while (b) {
-        struct memblock *next = b->next;
-        FreeMem(b, b->len);
-        b = next;
-    }
-    return TRUE;
-}
-BLITZ_THUNK_Z(freelast, freelast_c, "d0-d1/a0-a1");
+BLITZ_ASM_ROUTINE(freelast,
+        "   movem.l d0/a2/a6,-(sp)\n"
+        "   move.l  4.w,a6\n"
+        "   move.l  _firstdata,d0\n"
+        "   beq.s   2f\n"                   /* none: Z = 1 */
+        "   move.l  d0,a1\n"
+        "   move.l  (a1),_firstdata\n"
+        "   move.l  4(a1),a2\n"             /* the first block */
+        "   moveq   #8,d0\n"
+        "   jsr     -210(a6)\n"             /* FreeMem the list header */
+        "1: move.l  a2,d0\n"
+        "   beq.s   3f\n"
+        "   move.l  a2,a1\n"
+        "   move.l  4(a2),d0\n"             /* its length + 8 */
+        "   move.l  (a2),a2\n"
+        "   jsr     -210(a6)\n"             /* FreeMem */
+        "   bra.s   1b\n"
+        "3: moveq   #-1,d0\n"               /* a list: Z = 0 */
+        "2: movem.l (sp)+,d0/a2/a6\n"       /* the CCR stays */
+        "   rts");

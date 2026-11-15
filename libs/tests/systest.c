@@ -24,6 +24,57 @@
 
 /* ------------------------------------------------------------- scenarios */
 
+/* clrloc in a procedure's frame: the stub does LINK a4,#-N, fills the
+   frame with $55555555, calls clrfn (JSR, the frame right above the
+   return address), copies the frame to clrframe and does UNLK a4; a
+   clrloc that cleared the saved a4 above the frame loses a4 */
+APTR clrfn;
+ULONG clrframe[8];
+static int zeros(const ULONG *p, int n)
+{
+    while (n--)
+        if (*p++)
+            return 0;
+    return 1;
+}
+void clrstub4(void), clrstub32(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"_clrstub4:\n"
+"   link    a4,#-4\n"
+"   move.l  #0x55555555,-4(a4)\n"
+"   pea     1f\n"
+"   move.l  _clrfn,-(sp)\n"
+"   rts\n"
+"1: move.l  -4(a4),_clrframe\n"
+"   unlk    a4\n"
+"   rts\n"
+"_clrstub32:\n"
+"   link    a4,#-32\n"
+"   move.l  #0x55555555,-32(a4)\n"
+"   move.l  #0x55555555,-28(a4)\n"
+"   move.l  #0x55555555,-24(a4)\n"
+"   move.l  #0x55555555,-20(a4)\n"
+"   move.l  #0x55555555,-16(a4)\n"
+"   move.l  #0x55555555,-12(a4)\n"
+"   move.l  #0x55555555,-8(a4)\n"
+"   move.l  #0x55555555,-4(a4)\n"
+"   pea     2f\n"
+"   move.l  _clrfn,-(sp)\n"
+"   rts\n"
+"2: move.l  -32(a4),_clrframe\n"
+"   move.l  -28(a4),_clrframe+4\n"
+"   move.l  -24(a4),_clrframe+8\n"
+"   move.l  -20(a4),_clrframe+12\n"
+"   move.l  -16(a4),_clrframe+16\n"
+"   move.l  -12(a4),_clrframe+20\n"
+"   move.l  -8(a4),_clrframe+24\n"
+"   move.l  -4(a4),_clrframe+28\n"
+"   unlk    a4\n"
+"   rts\n"
+);
+
 static ULONG gvars[4096];           /* fake globals (a5 region) */
 static UBYTE cpsrc[70016], cpbuf[70016];    /* strings1lib copy */
 
@@ -179,6 +230,15 @@ static void run(struct set *s)
         OBS("all memory back", rwe_mem_back());
     }
 
+    /* clrlib: clear a frame of 1 and of 8 longs */
+    l = getlib(s, "clrlib");
+    memset(clrframe, 0xaa, sizeof clrframe);
+    CALL("clrlib clrloc", (APTR)clrstub4, clrfn = entry_code(l, 0), 0, 0);
+    OBS("cleared 1", clrframe[0] == 0 && clrframe[1] == 0xaaaaaaaa);
+    memset(clrframe, 0xaa, sizeof clrframe);
+    CALL("clrlib clrloc", (APTR)clrstub32, clrfn = entry_code(l, 0), 0, 0);
+    OBS("cleared 8", zeros(clrframe, 8));
+
     /* memlib finit: free everything */
     l = getlib(s, "memlib");
     CALL("memlib finit", entry_code(l, 8), (void)0, 0, 0);
@@ -241,6 +301,9 @@ int main(int argc, char **argv)
     KEEPS("memlib finit", d0-d7|a0-a3|a6);
     KEEPS("strings1lib init", d2-d7|a0-a3|a6);
     KEEPS("strings1lib copy", d0-d7|a2|a6);
+    /* compiler: clrloc in the procedure prologue, with the parameters in
+       d0-d5 */
+    KEEPS("clrlib clrloc", d0-d7|a2|a3|a6);
     KEEPS("staticslib globals", d3|d5-d7|a0|a1|a3|a6);
     /* compiler: localstat in the procedure prologue, with the parameters
        in d0-d5 (d4 pushed around it by the compiler); the original

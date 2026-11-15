@@ -355,6 +355,27 @@ build.
       lengths, which end that loop before a character is read, and
       strings above 64K for the second DBNE pass). `If a$=b$` 3337.8 ->
       2158.9 (original 2943.5).
+    - The procedure entry and exit (`clrloc`, `newmem`, `localstat`,
+      `freelast`): `clrloc` clears with `MOVE.l a1,(a0)+` up to a4 and
+      saves nothing (28 cycles per long; the original's DBF loop needs
+      d0-d1 saved and a count, faster only from 11 longs of locals on);
+      `newmem` and `freelast` are the original's code with d0-d1/a6 and
+      d0/a2/a6 saved, `freelast`'s Z from the original's MOVEQ #-1 / BEQ;
+      `localstat` is the loop of `alstat` on a0/a1 with d0-d1/d4 saved
+      (it keeps d2, which the original changes: see the finding below).
+      The library finit (`codefinit`) calls the `freelast` entry while
+      there is a list, the init the `newmem` entry. A new library case
+      for `clrloc` (a frame of 1 and of 8 longs between LINK and UNLK).
+      `plocal{a}` 444.5 -> 325.1 (original 389.5), `pstr{a$}` 12359.8 ->
+      11991.8 (11614.0), `c=fstr{a$}` 13049.0 -> 12686.2 (12353.5).
+    - Finding (static, not run): the original's `localstat` changes d2
+      (`MOVE (a2)+,d2` in `alstat`) and d4 (`DBF`), and the compiler
+      calls it in the prologue before it stores the parameters, pushing
+      only d4 (five or more parameters, `procfixer`). With three or more
+      parameters and a local NEWTYPE variable the third parameter would
+      arrive as the last table offset in the original. The port's
+      `localstat` keeps d2 (the C function did as well); reported to the
+      coordinator for an issue.
 
 ## Risks / Trade-offs
 

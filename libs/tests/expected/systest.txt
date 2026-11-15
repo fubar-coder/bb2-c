@@ -101,6 +101,10 @@ varslib init|a5 = d0||1	$00000001
 varslib init|cleared||1	$00000001
 varslib finit|kept||1	kept
 varslib finit|all memory back||1	$00000001
+clrlib clrloc|kept||1	kept
+clrlib clrloc|cleared 1||1	$00000001
+clrlib clrloc|kept||2	kept
+clrlib clrloc|cleared 8||1	$00000001
 memlib finit|kept||1	kept
-|number of calls||1	$00000027
+|number of calls||1	$00000029
 exitslib quit|instructions||1	bytes 8 2E7A504F207A4ED0
