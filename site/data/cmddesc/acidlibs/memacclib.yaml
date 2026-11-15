@@ -5,6 +5,8 @@
 "Peeks$":
   text: A string of the `Length` bytes from `Address` on, zero bytes included.
   notes: |
-    A negative `Length` gives the empty string, as 0 does.
+    A negative `Length` gives the empty string, as 0 does; with runtime
+    error checking, it is the error "Can't Peeks$ a negative number of
+    Characters!".
 "Call":
   text: Jumps to the machine code at `Address`; the code returns to the program with `RTS`.

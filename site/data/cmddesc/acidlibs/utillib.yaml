@@ -4,10 +4,10 @@
   text: Deletes a message port made with `CreateMsgPort`.
   notes: |
     The messages still waiting at the port are replied first, so that
-    their senders get them back. Kept from the original: anything else
-    than a port of `CreateMsgPort` corrupts memory, also with runtime
-    error checking
-    ([#1041](https://github.com/fubar-coder/bb2-c/issues/1041)).
+    their senders get them back. With runtime error checking, an
+    address that is not a port of `CreateMsgPort` is the error "Port Not
+    Created By CreateMsgPort"; without it, such an address corrupts
+    memory.
 "Wait":
   text: Waits until one of the signals the program has, such as those of its message ports and windows, comes. As a function, it returns the signals that came.
 "TaskName$":

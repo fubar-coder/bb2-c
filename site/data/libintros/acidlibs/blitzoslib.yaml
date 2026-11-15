@@ -44,5 +44,7 @@ intro: |
   The commands that name only a box work on the used page, the one made
   or used last. A page that is not made is the error "UnInitialised
   Page", a box beyond the page's number of boxes "Illegal Box# For
-  Page"; these checks are always on. Most commands that change a box do
+  Page". These checks are always on, except that `SpotBox` checks its
+  page, and `SelectBox Box#` its box number, only with runtime error
+  checking. Most commands that change a box do
   not draw it; `RedrawBox` does.

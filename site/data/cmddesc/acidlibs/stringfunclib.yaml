@@ -24,7 +24,9 @@
   text: The position of `Findstring$` in `String$`, searching from the first character or from `Startpos`; 0 if it is not found.
   notes: |
     A `Startpos` of 0 or less searches from the first character, and one
-    behind the end of `String$` gives 0.
+    behind the end of `String$` gives 0. With runtime error checking, a
+    `Startpos` below 1 is the error "Instr Startpos MUST be greater than
+    zero".
 "Replace$":
   text: "`String$` with every occurrence of `Findstring$` replaced by `Replacestring$`."
   notes: |
@@ -38,16 +40,21 @@
 "Cvi":
   text: The first two bytes of the string as a word; the reverse of `Mki$`.
   notes: |
-    A shorter string counts its missing bytes as 0: `Cvi("a")` is $6100.
+    A shorter string counts its missing bytes as 0: `Cvi("a")` is $6100. With
+    runtime error checking, a string shorter than 2 characters is the
+    error "Cvi needs a String of at least 2 Characters".
 "Cvl":
   text: The first four bytes of the string as a long; the reverse of `Mkl$`.
   notes: |
     A shorter string counts its missing bytes as 0: `Cvl("ab")` is
-    $61620000.
+    $61620000. With runtime error checking, a string shorter than 4
+    characters is the error "Cvl needs a String of at least 4 Characters".
 "Cvq":
   text: The first four bytes of the string as a quick value; the reverse of `Mkq$`.
   notes: |
-    A shorter string counts its missing bytes as 0.
+    A shorter string counts its missing bytes as 0. With runtime error
+    checking, a string shorter than 4 characters is the error "Cvq needs a
+    String of at least 4 Characters".
 "Len":
   text: The number of characters in the string.
 "StripLead$":

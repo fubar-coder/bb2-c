@@ -134,8 +134,10 @@
 "WSize":
   text: Changes the size of the used window and waits until Intuition has done it.
   notes: |
-    With runtime error checking, a size of 0 or less or a window that
-    would leave the screen is the error "Can't Size Window".
+    With runtime error checking, a size of 0 or less, a window that would
+    leave the screen, or, for a window with a sizing gadget, a size
+    outside the limits set with `SizeLimits` is the error "Can't Size
+    Window".
 "SizeLimits":
   text: The smallest and largest size of the windows opened from now on.
 "Activate":
