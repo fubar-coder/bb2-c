@@ -39,13 +39,16 @@
  *    refill). (#177)
  *  - ifffind gives up at a "BODY" id (unless it is looking for BODY) and
  *    otherwise reads ahead byte by byte (the ids need not be aligned). (#178)
- *  - iffskip with d0 = 0 and iffread with d0 = 0 count down from 2^32
- *    (SUBQ.l/BNE). (#179)
  *  - Not a bug (all callers ignore d0/a0 after iffread): iffread: when the
  *    buffer position reaches 2048 the rest is read with one dos Read
  *    directly to a0 (d0 = its result, a0 not advanced); the buffer is
  *    refilled by the next iffbyte.  When the data ends inside
  *    the buffer, d0 = the bytes still wanted and a0 = the end.
+ *
+ * Fixed (intended deviation, #179): iffskip and iffread with d0 = 0 do
+ * nothing; the original tested the count only after the first byte
+ * (SUBQ.l/BNE) and counted down from 2^32 (a chunk of length 0 in a file:
+ * iffread copied the rest of the file behind the destination).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__
@@ -298,15 +301,19 @@ BLITZ_THUNK_POST(ifffind, ifffind_c, "d1/a0-a1", "tst.w _iff_fail");
  * @brief iffskip (+7): skip bytes (the source says "long words").
  *
  * CCR: Z when all bytes were skipped, not Z at the end of the data.
- * BUG(orig) (#179): d0 = 0 counts down from 2^32.
+ * Fixed (#179): d0 = 0 skips nothing (Z, d0 = 0); the original counted
+ * down from 2^32.
  *
  * @param n  d0: the number of bytes
- * @return d0: the last iffbyte result
+ * @return d0: the last iffbyte result (0 for n = 0)
  */
 static ULONG BLITZ_ROUTINE iffskip_c(ULONG n BL_REG(d0))
 {
     ULONG value = n;                    /* d0 */
 
+    iff_fail = 0;
+    if (n == 0)                         /* fixed (#179) */
+        return 0;
     for (;;) {
         value = byte_(value);
         if (iff_fail)
@@ -325,7 +332,8 @@ BLITZ_THUNK_POST(iffskip, iffskip_c, "d1/a0-a1", "tst.w _iff_fail");
  * refilled by the next iffbyte).  When the data ends inside the buffer,
  * d0 = the bytes still wanted and a0 = the end.  Not a bug: all callers
  * ignore d0/a0 afterwards.
- * BUG(orig) (#179): d0 = 0 counts down from 2^32.
+ * Fixed (#179): d0 = 0 copies nothing (d0 = 0, a0 unchanged); the
+ * original counted down from 2^32.
  *
  * @param n    d0: the number of bytes
  * @param dst  a0: the destination; a0 afterwards: see above
@@ -336,6 +344,10 @@ static ULONG BLITZ_ROUTINE iffread_c(ULONG n BL_REG(d0), UBYTE *dst BL_REG(a0))
     UWORD at = charat;                  /* d1 */
     LONG res;
 
+    if (n == 0) {                       /* fixed (#179) */
+        iff_a0 = dst;
+        return 0;
+    }
     for (;;) {
         if (at >= BUFSIZE)
             break;

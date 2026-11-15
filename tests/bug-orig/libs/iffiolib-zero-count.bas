@@ -8,6 +8,7 @@
 ; LoadSound's block takes its place, and the bytes behind it are the
 ; second block (cleared), which the program reads back.
 ; Correct: an empty BODY copies nothing - the second block stays 0.
+; @fixed #179
 ; @configs clib
 ; @pass file=empty.8svx|@TESTDATA@/iffiolib-zero-count.8svx
 DEFTYPE .l
