@@ -129,7 +129,7 @@ BLITZ_LIBFIN();
 #define CLXDAT (*(volatile UWORD *)0xdff00e)
 #define CLXCON (*(volatile UWORD *)0xdff098)
 
-static UWORD colval;                            /* latched CLXDAT */
+static UWORD colval __attribute__((used));       /* latched CLXDAT (SColl: asm) */
 
 /* CLXCON = v, then result.w = CLXDAT (result = d0, its upper word stays) */
 static ULONG setclx(ULONG result, UWORD v)
@@ -156,39 +156,47 @@ BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
  * Tests the bit of the pair in the CLXDAT value latched by DoColl (bits
  * 9-14 = sprite pairs) - with `BTST Dn,<memory>`: a bit of the HIGH byte
  * of the latched word, bit number mod 8.  Blitz mode only.  A word
- * function: the upper word of d0 is the caller's.
+ * function: the upper word of d0 is the caller's.  Changes d0.w and d1,
+ * as the original.
  * Errors (debugger only): "Illegal Sprite channel" (>= 8), "Sprite
  * channels must be different", "Sprite channels must be of different
  * pairs" (the last fixed #110, the original has no such check).
- * Fixed (#110): the channels are put in order first; the original's bit
- * number was right only with the lower channel first (SColl(2,0): bit 10
- * instead of 9, SColl(4,0): 11 instead of 10, SColl(6,0): 12 instead of
- * 11).
+ * Fixed (#110): the original's bit number was right only with the lower
+ * channel first (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead
+ * of 10, SColl(6,0): 12 instead of 11).  The routine compares the
+ * channels and runs the original's computation (LSR, LSR, BEQ, ADDQ, ADD,
+ * BTST, SNE, EXT) with the lower channel as the pair base: as the
+ * original for d0 <= d1, the same code with d0 and d1 exchanged for
+ * d1 < d0.
+ * Assembler in the argument registers: as a C function SColl cost a
+ * thunk, a register save and copies (about 250 cycles more per call); the
+ * two paths cost the fix only the CMP and the Bcc (12/14 cycles), no swap
+ * (EXG would also exchange the upper word of d0).
  *
- * @param c0  d0.w: the first sprite channel (0..7)
- * @param c1  d1.w: the second sprite channel (0..7)
- * @return d0.w: -1 = collision, 0 = none
+ * In:  d0.w the first sprite channel (0..7), d1.w the second
+ * Out: d0.w -1 = collision, 0 = none
  */
-static ULONG BLITZ_ROUTINE doscoll_c(ULONG c0 BL_REG(d0), ULONG c1 BL_REG(d1))
-{
-    UWORD a = (UWORD)c0, b = (UWORD)c1;
-
-    if (a > b) {                                /* fixed #110: lower channel first */
-        UWORD t = a;
-
-        a = b;
-        b = t;
-    }
-    a >>= 1;
-    b >>= 1;
-    if (a) {
-        a++;
-        b += a;
-    }
-    /* BTST d1,colval: byte operand (the high byte), bit mod 8 */
-    return (c0 & 0xffff0000UL) | (*(UBYTE *)&colval & (1 << (b & 7)) ? 0xffff : 0);
-}
-BLITZ_THUNK(doscoll, doscoll_c, "d1/a0-a1");
+BLITZ_ASM_ROUTINE(doscoll,
+"   cmp.w   d0,d1\n"                /* fixed #110: lower channel first */
+"   bcs.s   1f\n"
+"   lsr.w   #1,d1\n"                /* d0 <= d1: the original's code */
+"   lsr.w   #1,d0\n"
+"   beq.s   0f\n"
+"   addq.w  #1,d0\n"
+"   add.w   d0,d1\n"
+"0: btst    d1,_colval(pc)\n"
+"   sne     d0\n"
+"   ext.w   d0\n"
+"   rts\n"
+"1: lsr.w   #1,d0\n"                /* d1 < d0: the same, d0/d1 exchanged */
+"   lsr.w   #1,d1\n"
+"   beq.s   2f\n"
+"   addq.w  #1,d1\n"
+"   add.w   d1,d0\n"
+"2: btst    d0,_colval(pc)\n"
+"   sne     d0\n"
+"   ext.w   d0\n"
+"   rts");
 
 /**
  * @brief PColl(Sprite Channel): whether a sprite collided with the playfield.
