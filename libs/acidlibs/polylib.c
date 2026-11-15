@@ -26,8 +26,9 @@
  * routine owns the blitter (no Blitz/Amiga variants), as the original.
  * RenderToBitmap/RenderToChunky choose what RenderPoly draws.
  *
- * BUG(orig), kept:
- *   - no origin, no orientation test: the points must run clockwise. (#419)
+ * Original behaviour and fixes:
+ *   - Not a bug (#419, user decision Q15): no origin, no orientation
+ *     test - the points must run clockwise, the bitmap origin is not used.
  *   - Fixed (#421): RenderPoly after RenderToBitmap b,d drew on d with b
  *     as dither bitmap (the two were swapped); it draws on b with d as the
  *     dither bitmap now, as the declaration "BitMap#[,DitherBitMap#]"
@@ -50,7 +51,8 @@
  *     65536 words; such a range is an invalid argument (the plain form is
  *     the fast form): with runtime error checking _chunkyvlinchk (error
  *     check area only) raises "ChunkyVlin y1 MUST NOT be greater than y2".
- *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
+ *   - Not a bug (#418, user decision Q15): the dither form assumes evenly
+ *     spaced bitplanes (plane 1 - plane 0).
  *   - Fixed (#1035): the dither form's B modulo was mod + (target plane
  *     distance - dither plane distance), so B stepped per plane by 2 x the
  *     target distance - the dither distance; with a dither bitmap of
