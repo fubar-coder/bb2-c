@@ -52,9 +52,13 @@
  *     without the pad byte of an odd length (the chunk behind it read one
  *     byte early: CMAP or CRNG not found); here the length is rounded up.
  *   - DecodePalette decodes count = DIVU length/3 (the remainder stays
- *     in the upper word), sets var to the CRNG flag (1) for active cycles (not a bug: only the low
- *     word is used, a start value of 1 is invisible) and re-initialises
- *     (clears) the palette if it is too small (#226).
+ *     in the upper word) and sets var to the CRNG flag (1) for active
+ *     cycles (not a bug: only the low word is used, a start value of 1 is
+ *     invisible).
+ *   - Fixed (intended deviation, #226): DecodePalette re-initialised
+ *     (cleared) a palette too small for offset + count, so the colours
+ *     below the offset were lost; here the palette grows and keeps them,
+ *     as PalRGB does.
  *   - Fixed (intended deviation, #1002): DecodePalette and LoadPalette
  *     compared the CRNG flags word with 1 only: every other value entered
  *     the range as an active one with the rate negated, so a disabled
@@ -740,8 +744,10 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
     }
     cend = chunk + PAD(len);                    /* fc; fixed (#225) */
     ncols = bl_divu_w(len, 3);
-    if (!p->pdata || (WORD)(UWORD)(ncols + myoff) > (WORD)p->numcols)
+    if (!p->pdata)
         initpalette(p, (UWORD)(ncols + myoff));
+    else if ((WORD)(UWORD)(ncols + myoff) > (WORD)p->numcols)
+        palrgb(p, (UWORD)(ncols + myoff - 1), 0, 0, 0);  /* fixed (#226): grow */
     entry = p->pdata + 4 + (WORD)(UWORD)(myoff * 12);
     n = (UWORD)ncols - 1;
     do {
@@ -802,8 +808,8 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
  * (the CMAP search, the end of the CMAP, the CRNG search); the original
  * added the length only and read the chunk behind an odd one shifted by
  * a byte.
- * BUG(orig) (#226): a palette too small for offset + count is
- * re-initialised (cleared).
+ * Fixed (#226): a palette too small for offset + count grows and keeps
+ * its colours (as PalRGB); the original re-initialised (cleared) it.
  *
  * Errors: no FORM ILBM - "Can't Open IFF"; no CMAP - "Can't find IFF
  * 'CMAP'".
