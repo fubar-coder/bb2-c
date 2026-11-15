@@ -6,7 +6,8 @@
  * C translation of bblibsrc/strcomplib (binary checked: same as the
  * source).  The result is -1/0/1 in d0 AND in the CCR (MOVEQ: N and Z,
  * V=C=0): the compiler branches on the flags right after the call
- * (doeqcmp.., selbne).  The thunks set the same flags with TST.l d0.
+ * (doeqcmp.., selbne).  The thunks set the same flags with TST.l d0,
+ * strcomp with MOVEQ like the original.
  * Bytes compare unsigned (CMPM.b / BCS).
  *
  *   strcomp ($CE00):     both strings at the end of the string work area:
@@ -14,7 +15,8 @@
  *                        it; lengths on the stack (8(a7) left, 4(a7)
  *                        right), removed by the routine.  a3 is moved
  *                        back to the start of the left string (output).
- *                        Keeps d0-d1 (result only in the CCR!).
+ *                        Keeps d0-d7 (result only in the CCR!); an
+ *                        assembler entry.
  *   casestrcomp ($CE01): d0 = CASE string, 4(a7) its length (removed by
  *                        the routine), 8(a7) = SELECT string (its length
  *                        at -4; left on the stack for the next CASE).
@@ -22,7 +24,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (thunks, strcomp assembler; defined below) */
 void strcomp(void), casestrcomp(void), strcomp2(void);
 
 /* !syslibheader{#strcomplib,$ce00,$ce03,0,0,0,0} */
@@ -102,24 +104,76 @@ BLITZ_THUNK_POP(casestrcomp, casestrcomp_c, "", "move.l 4(sp),d1\n   move.l 8(sp
  *
  * The right string is just below a3, the left string below it; their
  * lengths are on the stack (8(a7) left, 4(a7) right) and removed by the
- * routine.  a3 = the start of the left string afterwards.  Keeps d0-d1:
- * the result is only in the CCR.
+ * routine.  a3 = the start of the left string afterwards.  The result is
+ * only in the CCR, as MOVEQ of -1/0/1 sets it (left <, =, > right; V = C
+ * = 0).  Keeps d0-d7/a2/a4-a6: the compiler saves nothing around it, with
+ * d0..d(regat-1) live (perf-analysis thunks.md 1.4); a0 and a1 are free
+ * (the original changes them too).  No third-party library calls it.
  *
- * @param llen d0: the left length (from 8(a7), loaded by the thunk)
- * @param rlen d1: the right length (from 4(a7))
- * @return the CCR: as TST.l of -1/0/1 (left <, =, > right)
+ * An assembler entry: C cannot keep d0/d1, and the thunk around the C
+ * function cost about 100 cycles (bstr.strcmp 3336 against the
+ * original's 2944).  For lengths below 2^31 (every string) the loop is
+ * CMPM.b/DBNE over the shorter length, then the lengths decide; that is
+ * the original's result, whose loop counts both lengths down
+ * (SUBQ.l/BMI), at 22 instead of 54 cycles per character.  A length
+ * from 2^31 on takes the original's loop, with its results for such
+ * lengths.
  */
-static LONG BLITZ_ROUTINE strcomp_c(ULONG llen BL_REG(d0), ULONG rlen BL_REG(d1))
-{
-    const UBYTE *r, *l;
-
-    blitz_string -= rlen;                       /* SUB.l d1,a3 */
-    r = blitz_string;
-    blitz_string -= llen;                       /* SUB.l d0,a3 */
-    l = blitz_string;
-    return compare(l, llen, r, rlen);
-}
-/* saved d0-d1 (8 bytes) + return address: right length at 12(sp), left
-   length at 16(sp) */
-BLITZ_THUNK_POP(strcomp, strcomp_c, "d0-d1", "move.l 16(sp),d0\n   move.l 12(sp),d1",
-                "tst.l d0", 8);
+BLITZ_ASM_ROUTINE(strcomp,
+        "   move.l  8(sp),a0\n"             /* the left length */
+        "   move.l  4(sp),a1\n"             /* the right length */
+        "   move.l  (sp),8(sp)\n"
+        "   addq.l  #8,sp\n"
+        "   movem.l d0-d1,-(sp)\n"
+        "   move.l  a1,d1\n"
+        "   suba.l  d1,a3\n"
+        "   move.l  a3,a1\n"                /* the right string */
+        "   move.l  a0,d0\n"
+        "   suba.l  d0,a3\n"
+        "   move.l  a3,a0\n"                /* the left string */
+        "   tst.l   d0\n"
+        "   bmi.s   .Lslow\n"
+        "   tst.l   d1\n"
+        "   bmi.s   .Lslow\n"
+        "   sub.l   d0,d1\n"                /* right - left length */
+        "   bpl.s   1f\n"
+        "   add.l   d1,d0\n"                /* the shorter one */
+        "1: subq.l  #1,d0\n"
+        "   bcs.s   .Ltie\n"
+        ".Lloop:\n"
+        "   cmpm.b  (a1)+,(a0)+\n"
+        "   dbne    d0,.Lloop\n"
+        "   bne.s   .Ldiff\n"
+        "   sub.l   #0x10000,d0\n"          /* the next 64K characters */
+        "   bcc.s   .Lloop\n"
+        ".Ltie:\n"                          /* equal up to the shorter */
+        "   tst.l   d1\n"
+        "   beq.s   .Leq\n"
+        "   bpl.s   .Llt\n"                 /* the left one is shorter */
+        ".Lgt:\n"
+        "   moveq   #1,d0\n"
+        "   movem.l (sp)+,d0-d1\n"          /* the CCR stays */
+        "   rts\n"
+        ".Ldiff:\n"
+        "   bhi.s   .Lgt\n"                 /* CMPM: left byte > right */
+        ".Llt:\n"
+        "   moveq   #-1,d0\n"
+        "   movem.l (sp)+,d0-d1\n"
+        "   rts\n"
+        ".Leq:\n"
+        "   moveq   #0,d0\n"
+        "   movem.l (sp)+,d0-d1\n"
+        "   rts\n"
+        ".Lslow:\n"                         /* the original's loop */
+        "   subq.l  #1,d0\n"
+        "   bmi.s   .Leos\n"
+        "   subq.l  #1,d1\n"
+        "   bmi.s   .Lgt\n"
+        "   cmpm.b  (a1)+,(a0)+\n"
+        "   beq.s   .Lslow\n"
+        "   bcs.s   .Llt\n"
+        "   bra.s   .Lgt\n"
+        ".Leos:\n"
+        "   tst.l   d1\n"
+        "   bne.s   .Llt\n"
+        "   bra.s   .Leq");

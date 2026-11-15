@@ -161,7 +161,7 @@ bstr.instr                   4164     3513.0  c=Instr(a$,"Blitz")
 bstr.ucase                   2774     3124.0  r$=UCase$(a$)
 bstr.hex                     1705     1570.0  r$=Hex$(a)
 bstr.concat                  2179     2318.5  r$=a$+b$
-bstr.strcmp                  3373     2943.5  If a$=b$ Then c=1
+bstr.strcmp                  2184     2943.5  If a$=b$ Then c=1
 bstr.string                  3440     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend

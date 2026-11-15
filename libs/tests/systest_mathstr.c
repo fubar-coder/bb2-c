@@ -436,6 +436,7 @@ static const struct str strs[] = {
 #define NS (sizeof strs / sizeof strs[0])
 
 static UBYTE workbuf[256];
+static UBYTE bigcmp[132008];           /* strcomp of strings above 64K */
 static ULONG selbuf[8];
 
 static void test_strcomp(void)
@@ -488,6 +489,47 @@ static void test_strcomp(void)
             OBS("ccr", CCR);
             OBS("a3", R.a[3] - (ULONG)workbuf);
         }
+    /* lengths from 2^31 on: the original's loop ends before it reads a
+       character (a length of 1 to 2^31 counts, any other ends it at
+       once, then the other length decides) */
+    {
+        static const ULONG ln[][2] = {
+            { 0x80000001, 0 }, { 0x80000001, 5 }, { 0xffffffff, 0 },
+            { 0xffffffff, 0xffffffff }, { 5, 0xffffffff }, { 0, 0x80000000 },
+            { 0x80000000, 0 }, { 0, 0xffffffff },
+        };
+        for (i = 0; i < sizeof ln / sizeof ln[0]; i++) {
+            sprintf(VEC, "len $%lX,$%lX", ln[i][0], ln[i][1]);
+            DO1(E("strcomplib", 0),
+                R.a[3] = (ULONG)workbuf + 128;
+                ARGS[0] = ln[i][0]; ARGS[1] = ln[i][1]; NARGS = 2);
+            OBS("ccr", CCR);
+            OBS("a3", R.a[3] - (ULONG)workbuf);
+        }
+    }
+    /* strings longer than 64K: equal, one longer, a difference near the
+       start and one behind the first 65536 characters */
+    {
+        static const ULONG cs[][3] = {      /* left, right length, changed */
+            { 66000, 66000, 0 }, { 66000, 66001, 0 }, { 66001, 66000, 0 },
+            { 66000, 66000, 65600 }, { 66000, 66000, 400 },
+        };
+        for (i = 0; i < sizeof cs / sizeof cs[0]; i++) {
+            ULONG l = cs[i][0], r = cs[i][1];
+            sprintf(VEC, "long %lu,%lu,%lu", l, r, cs[i][2]);
+            for (j = 0; j < l; j++)
+                bigcmp[j] = (UBYTE)(j * 7 + 3);
+            for (j = 0; j < r; j++)
+                bigcmp[l + j] = (UBYTE)(j * 7 + 3);
+            if (cs[i][2])
+                bigcmp[cs[i][2]] ^= 0x80;
+            DO1(E("strcomplib", 0),
+                R.a[3] = (ULONG)bigcmp + l + r;
+                ARGS[0] = l; ARGS[1] = r; NARGS = 2);
+            OBS("ccr", CCR);
+            OBS("a3", R.a[3] - (ULONG)bigcmp);
+        }
+    }
 
     /* casestrcomp: d0 = CASE string, 4(a7) its length, 8(a7) SELECT */
     ROUT = "casestrcomp";

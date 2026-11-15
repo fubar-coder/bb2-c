@@ -344,6 +344,17 @@ build.
     `f2q`, `plocal` (a Statement with Long locals) and `bstr.pstr`,
     `fstr` (a Statement and a Function with a string parameter and a
     local string).
+    Task 8.3, assembler entries without a thunk (C cannot keep the
+    registers of these contracts or return a flag):
+    - `strcomp` ($CE00): the original's frame (lengths from the stack,
+      d0-d1 saved, a3 to the left string, the result as MOVEQ flags), the
+      loop CMPM.b/DBNE over the shorter length followed by the lengths'
+      difference, 22 instead of 54 cycles per character. That is the
+      original's result for every length below 2^31; a length from 2^31
+      on takes the original's SUBQ.l/BMI loop (new library cases: such
+      lengths, which end that loop before a character is read, and
+      strings above 64K for the second DBNE pass). `If a$=b$` 3337.8 ->
+      2158.9 (original 2943.5).
 
 ## Risks / Trade-offs
 

@@ -55258,6 +55258,58 @@ strcomp|kept|18,18|1	kept
 strcomp|popped|18,18|1	$00000008
 strcomp|ccr|18,18|1	$00000004
 strcomp|a3|18,18|1	$00000004
+strcomp|kept|len $80000001,$0|1	kept
+strcomp|popped|len $80000001,$0|1	$00000008
+strcomp|ccr|len $80000001,$0|1	$00000004
+strcomp|a3|len $80000001,$0|1	$8000007F
+strcomp|kept|len $80000001,$5|1	kept
+strcomp|popped|len $80000001,$5|1	$00000008
+strcomp|ccr|len $80000001,$5|1	$00000008
+strcomp|a3|len $80000001,$5|1	$8000007A
+strcomp|kept|len $FFFFFFFF,$0|1	kept
+strcomp|popped|len $FFFFFFFF,$0|1	$00000008
+strcomp|ccr|len $FFFFFFFF,$0|1	$00000004
+strcomp|a3|len $FFFFFFFF,$0|1	$00000081
+strcomp|kept|len $FFFFFFFF,$FFFFFFFF|1	kept
+strcomp|popped|len $FFFFFFFF,$FFFFFFFF|1	$00000008
+strcomp|ccr|len $FFFFFFFF,$FFFFFFFF|1	$00000008
+strcomp|a3|len $FFFFFFFF,$FFFFFFFF|1	$00000082
+strcomp|kept|len $5,$FFFFFFFF|1	kept
+strcomp|popped|len $5,$FFFFFFFF|1	$00000008
+strcomp|ccr|len $5,$FFFFFFFF|1	$00000000
+strcomp|a3|len $5,$FFFFFFFF|1	$0000007C
+strcomp|kept|len $0,$80000000|1	kept
+strcomp|popped|len $0,$80000000|1	$00000008
+strcomp|ccr|len $0,$80000000|1	$00000008
+strcomp|a3|len $0,$80000000|1	$80000080
+strcomp|kept|len $80000000,$0|1	kept
+strcomp|popped|len $80000000,$0|1	$00000008
+strcomp|ccr|len $80000000,$0|1	$00000000
+strcomp|a3|len $80000000,$0|1	$80000080
+strcomp|kept|len $0,$FFFFFFFF|1	kept
+strcomp|popped|len $0,$FFFFFFFF|1	$00000008
+strcomp|ccr|len $0,$FFFFFFFF|1	$00000008
+strcomp|a3|len $0,$FFFFFFFF|1	$00000081
+strcomp|kept|long 66000,66000,0|1	kept
+strcomp|popped|long 66000,66000,0|1	$00000008
+strcomp|ccr|long 66000,66000,0|1	$00000004
+strcomp|a3|long 66000,66000,0|1	$00000000
+strcomp|kept|long 66000,66001,0|1	kept
+strcomp|popped|long 66000,66001,0|1	$00000008
+strcomp|ccr|long 66000,66001,0|1	$00000008
+strcomp|a3|long 66000,66001,0|1	$00000000
+strcomp|kept|long 66001,66000,0|1	kept
+strcomp|popped|long 66001,66000,0|1	$00000008
+strcomp|ccr|long 66001,66000,0|1	$00000000
+strcomp|a3|long 66001,66000,0|1	$00000000
+strcomp|kept|long 66000,66000,65600|1	kept
+strcomp|popped|long 66000,66000,65600|1	$00000008
+strcomp|ccr|long 66000,66000,65600|1	$00000008
+strcomp|a3|long 66000,66000,65600|1	$00000000
+strcomp|kept|long 66000,66000,400|1	kept
+strcomp|popped|long 66000,66000,400|1	$00000008
+strcomp|ccr|long 66000,66000,400|1	$00000008
+strcomp|a3|long 66000,66000,400|1	$00000000
 casestrcomp|kept|0,0|1	kept
 casestrcomp|popped|0,0|1	$00000004
 casestrcomp|d0|0,0|1	$00000000
