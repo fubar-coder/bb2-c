@@ -17,7 +17,8 @@
  *     overwritten with 0).  Workbench: wait for the WBStartup message,
  *     CurrentDir to the program's lock, arguments = the WBArgs after the
  *     program itself.
- *   finit: free the argument list, reply the WBStartup message (under
+ *   finit: free the argument list, restore the current directory of a
+ *     Workbench start (fixed, #307), reply the WBStartup message (under
  *     Forbid, so Workbench cannot unload the program before it ends).
  * Everything is C.
  */
@@ -64,6 +65,10 @@ static_assert(sizeof argData == 10);
 static BPTR thisLock;                           /* lock for the next AddArg */
 static struct arg *prevArg;
 static struct Message *wbMsg;
+/* Workbench start: dos.library and the current directory before
+   CurrentDir to the program's lock, restored by finit (fixed, #307) */
+static struct Library *wbDos;
+static BPTR oldDir;
 static UWORD inQuote;
 /* the CLI string: at most CLIMAX characters and their 0 (fixed, #308);
    the byte behind them is never written and stays 0, so the scan that
@@ -139,8 +144,9 @@ static UBYTE *getcliarg(UBYTE **pp, UWORD *len)
  * Errors: no memory for an argument node raises "Can't read args!" (see
  * addarg, fixed (#305)).
  *
- * BUG(orig) (#306, #307): dos.library is never closed, the old current
- * directory is not restored.  Fixed (#308): the CLI string is cut to the
+ * BUG(orig) (#306): dos.library is never closed.  Fixed (#307): the old
+ * current directory is kept and restored by finit (the original dropped
+ * it).  Fixed (#308): the CLI string is cut to the
  * 255 characters that fit into cliString (the original copied it without
  * a length check into its 256 bytes); see also #309.
  *
@@ -154,6 +160,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
     argData.numargs = 0;
     argData.first = NULL;
     wbMsg = NULL;
+    wbDos = NULL;
 
     if (magic != 0x624c745a) {          /* "bLtZ" */
         struct Process *pr = (struct Process *)FindTask(NULL);
@@ -171,10 +178,12 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
             if (!wbMsg)
                 return (ULONG)&argData;
             wb = (struct WBStartup *)wbMsg;
-            /* BUG(orig) (#306, #307): dos.library is never closed, the old current
-               directory is not restored */
+            /* BUG(orig) (#306): dos.library is never closed.  Fixed
+               (#307): the old current directory is kept for finit (the
+               original dropped CurrentDir's result) */
             dosbase = OldOpenLibrary((STRPTR)"dos.library");
-            CurrentDir(wb->sm_ArgList->wa_Lock);
+            wbDos = dosbase;
+            oldDir = CurrentDir(wb->sm_ArgList->wa_Lock);
             n = wb->sm_NumArgs - 1;     /* forget the program itself */
             argData.numargs = n;
             if (n <= 0)
@@ -238,7 +247,8 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
 BLITZ_THUNK(wbstartuplib_codeinit, codeinit_c, "d1/a1");
 
 /**
- * @brief finit - free the arguments, reply the Workbench message.
+ * @brief finit - free the arguments, restore the current directory (a
+ * Workbench start, fixed (#307)), reply the Workbench message.
  *
  * The WBStartup message is replied under Forbid (no Permit: the program
  * ends, Workbench cannot unload it before).  argData.first is not cleared
@@ -254,6 +264,13 @@ static void BLITZ_ROUTINE codefinit_c(void)
         next = a->next;
         FreeMem(a, DATSIZE);
         a = next;
+    }
+    if (wbDos) {
+        /* fixed (#307): back to the current directory of the start */
+        struct Library *dosbase = wbDos;
+
+        CurrentDir(oldDir);
+        wbDos = NULL;
     }
     if (wbMsg) {
         Forbid();                       /* no Permit: the program ends */
