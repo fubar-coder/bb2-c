@@ -46,7 +46,7 @@
    read through a local cursor `sp` (a copy of a2; a2 is not changed):
    BL_POPL(sp) = MOVE.l -(a2),dN, BL_POPW(sp) = MOVE -(a2),dN */
 
-/* entry points (aliases / thunks / inline code, defined below) */
+/* entry points (aliases / assembler / inline code, defined below) */
 void doval(void), doint(void), dosgn(void), doffrac(void), doqfrac(void);
 void doqwrap(void), dornd1(void), dornd2(void), doqabs(void), dofabs(void);
 void doqlimit(void), dontsc(void), dodispheight(void), dobeamy(void);
@@ -158,8 +158,8 @@ BLITZ_LIBFIN();
 
 /* ----------------------------------------------------------- Rnd state */
 
-static UWORD last;
-static UWORD sweor;
+static UWORD last __attribute__((used));    /* read by the assembler of Rnd */
+static UWORD sweor __attribute__((used));
 
 /* -------------------------------------------------------------- QAngle */
 
@@ -603,83 +603,84 @@ BLITZ_INLINE(doqabs,
  * @brief QLimit(Quick,Low,High) - limit q to low..high.
  *
  * Signed: below low -> low, at or above high -> high (CMP.l d2,d0:BLT -
- * q = high also gives high, low wins if low > high only below low).
+ * q = high also gives high, low wins if low > high only below low).  The
+ * original's code, an assembler entry: it changes only d0, whatever GCC
+ * would make of a C function.
  *
- * @param q d0: the Quick value
- * @param lo d1: the lower limit
- * @param hi d2: the upper limit
- * @return d0: the limited value
+ * In:  d0 the Quick value, d1 the lower limit, d2 the upper limit
+ * Out: d0 the limited value
  */
-static LONG BLITZ_ROUTINE doqlimit_c(LONG q BL_REG(d0), LONG lo BL_REG(d1), LONG hi BL_REG(d2))
-{
-    if (q < lo)                                 /* CMP.l d1,d0:BGE 'skip */
-        return lo;
-    if (q >= hi)                                /* CMP.l d2,d0:BLT 'skip2 */
-        return hi;
-    return q;
-}
-BLITZ_ALIAS(doqlimit, doqlimit_c);
+BLITZ_ASM_ROUTINE(doqlimit,
+"   cmp.l   d1,d0\n"
+"   bge.s   0f\n"
+"   move.l  d1,d0\n"
+"   rts\n"
+"0: cmp.l   d2,d0\n"
+"   blt.s   1f\n"
+"   move.l  d2,d0\n"
+"1: rts");
 
 /* ----------------------------------------------------------------- Rnd */
 
-/* genrnd ("not bad, this one...") - 16 random bits in the low word of d0
-   (the upper word is the caller's): VHPOSR ^ ror8(JOY0DAT) ^
-   rol(JOY0DAT-low<<8 | CIA-A TALO, last) ^ last ^ sweor, with sweor =
-   ror1(sweor ^ $AAAA); last = the result.  MOVE.b $bfe601,d1 only
-   replaces the low byte of d1, the high byte is still the rotated
-   JOY0DAT.  ROL.w d2,d1 rotates by last mod 64 = mod 16 for a word. */
-static UWORD genrnd(void)
-{
-    UWORD r, noise, n;
-
-    r = *(volatile UWORD *)0xdff006;            /* MOVE $dff006,d0 */
-    noise = *(volatile UWORD *)0xdff00a;        /* MOVE $dff00a,d1:ROR #8,d1 */
-    noise = noise >> 8 | noise << 8;
-    r ^= noise;
-    noise = (noise & 0xff00) | *(volatile UBYTE *)0xbfe601; /* MOVE.b $bfe601,d1 */
-    n = last & 15;                              /* MOVE last(pc),d2:ROL d2,d1 */
-    if (n)
-        noise = noise << n | noise >> (16 - n);
-    r ^= noise;
-    r ^= last;                                  /* EOR d2,d0 */
-    noise = sweor ^ 0xaaaa;                     /* EOR #$aaaa,d1:ROR #1,d1 */
-    noise = noise >> 1 | noise << 15;
-    sweor = noise;
-    r ^= noise;
-    last = r;
-    return r;
-}
+/* GENRND - the original's genrnd ("not bad, this one..."), 16 random bits
+   in the low word of d0 (the upper word is the caller's): VHPOSR ^
+   ror8(JOY0DAT) ^ rol(JOY0DAT-low<<8 | CIA-A TALO, last) ^ last ^ sweor,
+   with sweor = ror1(sweor ^ $AAAA); last = the result.  MOVE.b $bfe601,d1
+   only replaces the low byte of d1, the high byte is still the rotated
+   JOY0DAT.  ROL.w d2,d1 rotates by last mod 64 = mod 16 for a word.
+   Changes d0.w, d1.w and d2.w; every operation on d1 is a word or byte
+   one, so the upper word of d1 survives (Rnd(Range) keeps the range
+   there).  In both entries, without the original's BSR. */
+#define GENRND                                                              \
+"   move.w  0xdff006,d0\n"              /* VHPOSR */                        \
+"   move.w  0xdff00a,d1\n"              /* JOY0DAT */                       \
+"   ror.w   #8,d1\n"                                                        \
+"   eor.w   d1,d0\n"                                                        \
+"   move.b  0xbfe601,d1\n"              /* CIA-A TALO */                    \
+"   move.w  _last(pc),d2\n"                                                 \
+"   rol.w   d2,d1\n"                                                        \
+"   eor.w   d1,d0\n"                                                        \
+"   eor.w   d2,d0\n"                                                        \
+"   move.w  _sweor(pc),d1\n"                                                \
+"   eor.w   #0xaaaa,d1\n"                                                   \
+"   ror.w   #1,d1\n"                                                        \
+"   move.w  d1,_sweor\n"                                                    \
+"   eor.w   d1,d0\n"                                                        \
+"   move.w  d0,_last\n"
 
 /**
  * @brief Rnd - a random fraction.
  *
- * MOVEQ #0,d0 + genrnd (hardware noise, see genrnd).  Rnd and Rnd(Range)
+ * MOVEQ #0,d0 + genrnd (hardware noise, see GENRND).  Rnd and Rnd(Range)
  * keep a0 and a1, which the CD programs SQUIRT2_TO and SQUIRT3_TO hold
- * across them (inline assembler): the C functions use only d0-d4 (d2-d4
- * saved; checked in the disassembly; KEEPS a0|a1 in
- * libs/tests/systest_cmdlibs.c).
+ * across them (inline assembler): the assembler changes only d0-d2
+ * (KEEPS a0|a1 in libs/tests/systest_cmdlibs.c).
  *
- * @return d0: Quick 0..$FFFF/$10000 (16 random bits in the low word)
+ * Out: d0 Quick 0..$FFFF/$10000 (16 random bits in the low word)
  */
-static ULONG BLITZ_ROUTINE dornd1_c(void)
-{
-    return genrnd();
-}
-BLITZ_ALIAS(dornd1, dornd1_c);
+BLITZ_ASM_ROUTINE(dornd1,
+"   moveq   #0,d0\n"
+GENRND
+"   rts");
 
 /**
  * @brief Rnd(Range) - a random value 0..range.
  *
  * MULU range.w,genrnd (range as unsigned word: Rnd(-1) = Rnd(65535)).
+ * The original keeps the range in d7 (MOVE d0,d7); here it waits in the
+ * upper word of d1, which GENRND does not touch, so Rnd(Range) changes
+ * only d0-d2, as Rnd.
  *
- * @param range d0: the range (unsigned word)
- * @return d0: Quick 0..range (exclusive)
+ * In:  d0.w the range (unsigned word)
+ * Out: d0 Quick 0..range (exclusive)
  */
-static ULONG BLITZ_ROUTINE dornd2_c(UWORD range BL_REG(d0))
-{
-    return (ULONG)genrnd() * range;
-}
-BLITZ_ALIAS(dornd2, dornd2_c);
+BLITZ_ASM_ROUTINE(dornd2,
+"   move.w  d0,d1\n"
+"   swap    d1\n"
+GENRND
+"   swap    d1\n"
+"   mulu.w  d1,d0\n"
+"   rts");
 
 /* ----------------------------------------------------------------- Val */
 

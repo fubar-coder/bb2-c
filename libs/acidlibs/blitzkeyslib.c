@@ -38,7 +38,7 @@
 #include "blitzlib.h"
 #include <exec/libraries.h>
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (thunks / C routines / assembler, defined below) */
 void dorstat(void), doblitzqualifier(void), binkey(void);
 void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0));
 void BLITZ_ROUTINE doblitzrepeat(void);
@@ -94,11 +94,11 @@ BLITZ_LIBFIN();
 
 /* ********************* CODE BELOW ********************** */
 
-static UBYTE *key;                      /* keyboard.device */
+static UBYTE *key __attribute__((used)); /* keyboard.device (also read by RawStatus) */
 static UWORD ison;                      /* flag for if blitzkeys is already on */
 static UWORD bqual;
 UBYTE *oldin;                           /* old input handler (dobinkey2) */
-static WORD matoff;
+static WORD matoff __attribute__((used));
 
 /* rawkeylib qconvertkey: d0 = raw code, d1 = qualifier -> d0 = character */
 #define TOK_qconvertkey ((LIB_rawkeylib << 7) + 3)
@@ -234,20 +234,24 @@ BLITZ_ASM_BLOCK(binkey,
 /**
  * @brief RawStatus(Rawkey): whether a key is down.
  *
- * Bit code&7 of byte code>>3 of keyboard.device's key matrix
- * (BTST d1,0(a0,d0.w):SNE d0:EXT d0).  A word function: the upper word of
- * d0 is the caller's in the original, undefined here (the register rule;
- * the compiler uses only d0.w).  Keeps a1, which RILesDebugLib's SearchMem
- * holds across it: the C function uses only d0, d1, d2 (saved) and a0
- * (checked in the disassembly; KEEPS a1 in libs/tests/systest_cmdlibs.c).
+ * Bit code&7 of byte code>>3 of keyboard.device's key matrix: the
+ * original's code (MOVE.l key(pc),a0 ... BTST d1,0(a0,d0.w):SNE d0:EXT
+ * d0), an assembler entry, as a C function it cost 100 cycles more.  A
+ * word function: the upper word of d0 is the caller's (undefined by the
+ * register rule; the compiler uses only d0.w).  Changes d0, d1 and a0 and
+ * keeps a1, which RILesDebugLib's SearchMem holds across it (KEEPS a1 in
+ * libs/tests/systest_cmdlibs.c).
  *
- * @param code  d0.w: the raw key code
- * @return d0.w: -1 = down, 0 = up
+ * In:  d0.w the raw key code
+ * Out: d0.w -1 = down, 0 = up
  */
-static UWORD BLITZ_ROUTINE dorstat_c(UWORD code BL_REG(d0))
-{
-    UBYTE *matrix = key + matoff;       /* ADD matoff(pc),a0 (ADDA.w) */
-
-    return (matrix[(WORD)(code >> 3)] & (1 << (code & 7))) ? 0xffff : 0;
-}
-BLITZ_ALIAS(dorstat, dorstat_c);
+BLITZ_ASM_ROUTINE(dorstat,
+"   move.l  _key(pc),a0\n"
+"   move.w  d0,d1\n"
+"   and.w   #7,d1\n"
+"   lsr.w   #3,d0\n"
+"   add.w   _matoff(pc),a0\n"           /* ADDA.w: matoff sign extended */
+"   btst    d1,0(a0,d0.w)\n"
+"   sne     d0\n"
+"   ext.w   d0\n"
+"   rts");
