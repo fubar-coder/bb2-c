@@ -30,7 +30,11 @@
  * of the plane size +22).
  *
  * BUG(orig), kept:
- *  - both loops (rows, planes) run at least once (#181).
+ *  - By design (#181): both loops of the BODY (rows, planes) run at least
+ *    once; only a bitmap or shape of height or depth 0 meets that, and
+ *    the error checks refuse those at their creation (BitMap: _bitmapchk,
+ *    depth 1-8 and, since #78, height 0; InitShape: initchk, depth 0
+ *    since #243), SaveShape a depth of 0 since #326.
  *  - Not a bug in practice: SaveScreen with a ColorMap of 0 colours would
  *    write 65536 colours (#182); a screen always has colours.
  *  - Not a bug: savearow's indexes are signed words (a2 + d4.w; matters
@@ -395,7 +399,7 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
  * Errors: "Can't open File" if the file cannot be created (the message in
  * the normal code, fixed, #185); debugger only: "Uninitialized Bitmap"
  * (bitchk).
- * BUG(orig): the row and plane loops run at least once (#181).  Fixed
+ * By design (#181): the row and plane loops run at least once.  Fixed
  * (#183): savearow no longer reads the byte behind the row.  Fixed
  * (#180): the plane loop
  * compares with the byte Depth (the original: the word over Flags and
