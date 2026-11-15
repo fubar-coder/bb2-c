@@ -71,8 +71,9 @@ void dodplay2(void), dodplay(void), dodiskbuff(void), dofilter(void);
 void dovolume(void), dosdata(void), dopsound(void), audiolib_codeinit(void);
 void audiolib_codefinit(void), dofreesound(void), sndchk(void), dpchk(void);
 void vchk(void), ischk1(void), ischk2(void), sdatachk(void);
+void doisound2(void), doisound3(void), doisound(void);
 BLITZ_ENTRY_C(doloadsound); BLITZ_ENTRY_C(dosound2); BLITZ_ENTRY_C(dosound); BLITZ_ENTRY_C(dosoundl2); BLITZ_ENTRY_C(dosoundl);
-BLITZ_ENTRY_C(doisound2); BLITZ_ENTRY_C(doisound3); BLITZ_ENTRY_C(doisound); BLITZ_ENTRY_C(_cludgesound); BLITZ_ENTRY_C(_setperiod);
+BLITZ_ENTRY_C(_cludgesound); BLITZ_ENTRY_C(_setperiod);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -138,13 +139,13 @@ BLITZ_NAME("LoopSound", "Sound#,Channelmask[,Vol1[,Vol2...]]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
-BLITZ_SUBS(e_doisound2, ischk1, 0);
+BLITZ_SUBS(doisound2, ischk1, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
-BLITZ_SUBS(e_doisound3, ischk1, 0);
+BLITZ_SUBS(doisound3, ischk1, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
-BLITZ_SUBS(e_doisound, ischk2, 0);
+BLITZ_SUBS(doisound, ischk2, 0);
 BLITZ_NAME("InitSound", "Sound#,Length[,Period[,Repeat]]");
 
 BLITZ_ASTATEMENT();
@@ -488,7 +489,11 @@ void BLITZ_ROUTINE _setperiod(UWORD period BL_REG(d1))
     s->period = period;
 }
 
-/* InitSound n,len[,period[,repeat]] - empty chip memory */
+/* InitSound n,len[,period[,repeat]] - empty chip memory.  The entries
+   keep a0 (their thunks, the exception of the register rule,
+   docs/libs/deviations.md "Register preservation"): ElmoreIncLib's
+   IncSound reads (a0) after the call; alloc's globalloc call changes a0.
+   Fixed (#1058): the entries were the C functions and lost a0. */
 static void initsound(ULONG len, UWORD period, ULONG rep)
 {
     struct bb_sound *s = (struct bb_sound *)blitz_string;
@@ -513,10 +518,11 @@ static void initsound(ULONG len, UWORD period, ULONG rep)
  *
  * @param len  d1: the length in bytes
  */
-void BLITZ_ROUTINE doisound2(ULONG len BL_REG(d1))
+static void BLITZ_ROUTINE doisound2_c(ULONG len BL_REG(d1))
 {
     initsound(len, 428, 0);
 }
+BLITZ_THUNK(doisound2, doisound2_c, "a0");
 
 /**
  * @brief InitSound Sound#,Length,Period: InitSound with a period.
@@ -528,10 +534,11 @@ void BLITZ_ROUTINE doisound2(ULONG len BL_REG(d1))
  * @param len     d1: the length in bytes
  * @param period  d2.w: the period
  */
-void BLITZ_ROUTINE doisound3(ULONG len BL_REG(d1), UWORD period BL_REG(d2))
+static void BLITZ_ROUTINE doisound3_c(ULONG len BL_REG(d1), UWORD period BL_REG(d2))
 {
     initsound(len, period, 0);
 }
+BLITZ_THUNK(doisound3, doisound3_c, "a0");
 
 /**
  * @brief InitSound Sound#,Length,Period,Repeat: InitSound with a period
@@ -546,11 +553,12 @@ void BLITZ_ROUTINE doisound3(ULONG len BL_REG(d1), UWORD period BL_REG(d2))
  * @param period  d2.w: the period
  * @param rep     d3: the repeat offset in bytes
  */
-void BLITZ_ROUTINE doisound(ULONG len BL_REG(d1), UWORD period BL_REG(d2),
-                            ULONG rep BL_REG(d3))
+static void BLITZ_ROUTINE doisound_c(ULONG len BL_REG(d1), UWORD period BL_REG(d2),
+                                     ULONG rep BL_REG(d3))
 {
     initsound(len, period, rep);
 }
+BLITZ_THUNK(doisound, doisound_c, "a0");
 
 /**
  * @brief SoundData Sound#,Offset,Data: write a byte of the sample (inline

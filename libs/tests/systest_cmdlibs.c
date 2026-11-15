@@ -453,12 +453,37 @@ static void test_exceptions(void)
     DO1(cmd_form(getlib(&loaded, "vallib"), 6, 1), R.d[0] = 100);
 }
 
+/* ---------------------------------------------------------- audiolib */
+
+/* InitSound Sound#,Length: an empty sound in chip memory.  The Sound
+   object comes in a3 (the compiler's !libs {#audiolib,$1380}); the memory
+   is memlib's (freed by its finit).  It keeps a0 (#1058). */
+static void test_audiolib(void)
+{
+    static UBYTE snd[16];
+
+    ROUT = "memlib init";
+    strcpy(VEC, "audiolib");
+    DO1(cmd_entry(getlib(&loaded, "memlib"), 7), (void)0);
+    ROUT = "InitSound";
+    strcpy(VEC, "sound 0, 64 bytes");
+    memset(snd, 0, sizeof snd);
+    DO1(E("audiolib", 7), R.d[0] = 0; R.d[1] = 64; R.a[3] = (ULONG)snd);
+    OBS("data != 0", L(snd) != 0);
+    OBS("period, length", L(snd + 4));
+    OBS("repeat - data", L(snd + 8) - L(snd));
+    OBS("repeat length, mark", L(snd + 12));
+    ROUT = "memlib finit";
+    strcpy(VEC, "audiolib");
+    DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
+}
+
 /* ------------------------------------------------------------------ main */
 
 static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
     "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
-    "floatquicklib", "vallib", NULL
+    "floatquicklib", "vallib", "iffiolib", "audiolib", NULL
 };
 
 int main(int argc, char **argv)
@@ -512,6 +537,8 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("RawStatus", a1);
     KEEPS_FUNCTION("Rnd", a0|a1);
     KEEPS_FUNCTION("Rnd(Range)", a0|a1);
+    /* exception: ElmoreIncLib's IncSound reads (a0) after InitSound */
+    KEEPS_STATEMENT("InitSound", a0);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -536,6 +563,7 @@ int main(int argc, char **argv)
     ROUT = "memlib finit";
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
     check("utillib: all memory back", rwe_mem_back());
+    test_audiolib();
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);

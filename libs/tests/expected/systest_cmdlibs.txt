@@ -2075,3 +2075,13 @@ utillib finit|popped||1	$00000000
 utillib finit|findport gone||1	$00000001
 memlib finit|kept||1	kept
 memlib finit|popped||1	$00000000
+memlib init|kept|audiolib|1	kept
+memlib init|popped|audiolib|1	$00000000
+InitSound|kept|sound 0, 64 bytes|1	kept
+InitSound|popped|sound 0, 64 bytes|1	$00000000
+InitSound|data != 0|sound 0, 64 bytes|1	$00000001
+InitSound|period, length|sound 0, 64 bytes|1	$01AC0020
+InitSound|repeat - data|sound 0, 64 bytes|1	$00000000
+InitSound|repeat length, mark|sound 0, 64 bytes|1	$00200000
+memlib finit|kept|audiolib|1	kept
+memlib finit|popped|audiolib|1	$00000000
