@@ -260,9 +260,18 @@ int perf_read_budgets(struct perf_budgets *b, const char *text, char *err, size_
             FAIL("line %zu: the command \"%.*s\" is not PROGRAM.TEST", lineno, (int)len[0], f[0]);
         if (len[0] > 6 && !strncmp(f[0] + len[0] - 6, ".empty", 6))
             FAIL("line %zu: %.*s is the empty loop, not a command", lineno, (int)len[0], f[0]);
-        if (number(f[1], len[1], &x.budget))
-            FAIL("line %zu: the budget \"%.*s\" is not a whole number of cycles", lineno,
-                 (int)len[1], f[1]);
+        {
+            /* "B" or "B~T" */
+            const char *tilde = memchr(f[1], '~', len[1]);
+            size_t bl = tilde ? (size_t)(tilde - f[1]) : len[1];
+
+            if (number(f[1], bl, &x.budget))
+                FAIL("line %zu: the budget \"%.*s\" is not a whole number of cycles", lineno,
+                     (int)len[1], f[1]);
+            if (tilde && (number(tilde + 1, len[1] - bl - 1, &x.tolerance) || x.tolerance <= 0))
+                FAIL("line %zu: the tolerance in \"%.*s\" is not a positive whole number of "
+                     "cycles", lineno, (int)len[1], f[1]);
+        }
         if (len[2] == 1 && f[2][0] == '-')
             x.has_target = 0;
         else if (decimal(f[2], len[2], &x.target))
@@ -328,9 +337,13 @@ int perf_judge(const struct perf_run *r, const struct perf_budgets *b, FILE *f)
         if (!(p = budget_of(b, m->name))) {
             fprintf(f, "%s: measured %.1f cycles per %s, no budget\n", m->name, m->value, per);
             failed++;
-        } else if (m->value > p->budget) {
-            fprintf(f, "%s: measured %.1f cycles per %s, budget %ld\n", m->name, m->value, per,
-                    p->budget);
+        } else if (m->value > p->budget + p->tolerance) {
+            if (p->tolerance)
+                fprintf(f, "%s: measured %.1f cycles per %s, budget %ld + tolerance %ld\n",
+                        m->name, m->value, per, p->budget, p->tolerance);
+            else
+                fprintf(f, "%s: measured %.1f cycles per %s, budget %ld\n", m->name, m->value,
+                        per, p->budget);
             failed++;
         }
     }
@@ -367,8 +380,13 @@ void perf_table(const struct perf_run *r, const struct perf_budgets *b, FILE *f)
                 if (p->target >= 1)
                     snprintf(factor, sizeof factor, "%.2f", m->value / p->target);
             }
-            fprintf(f, "%-24s %10.1f %8ld %10s %7s  %s%s\n", m->name, m->value, p->budget,
-                    target, factor, p->text, m->frame ? " (per frame)" : "");
+            char tol[32] = "";
+
+            if (p->tolerance)
+                snprintf(tol, sizeof tol, " (varies, tolerance %ld)", p->tolerance);
+            fprintf(f, "%-24s %10.1f %8ld %10s %7s  %s%s%s\n", m->name, m->value,
+                    p->budget + p->tolerance, target, factor, p->text,
+                    m->frame ? " (per frame)" : "", tol);
         }
     }
 }

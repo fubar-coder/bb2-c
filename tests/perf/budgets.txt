@@ -5,7 +5,12 @@
 #
 #   COMMAND    PROGRAM.TEST, the loop TEST of tests/perf/bench/PROGRAM.bas
 #   BUDGET     the measurement of the build that set it (the larger value
-#              of two runs) plus 1 %, rounded up, plus 3 cycles
+#              of two runs) plus 1 %, rounded up, plus 3 cycles; for a loop
+#              that waits for the blitter or follows the frame (its
+#              repeated runs differ by more than 1 cycle per call) "B~T":
+#              B the highest value of five runs, T the tolerance, twice
+#              the spread of those runs (rounded up), B + T the highest
+#              allowed value
 #   TARGET     the original's value: the same program with the CD's
 #              ACIDLIBS and DEFLIBS (target perf-original); the goal, not
 #              checked ("-": none)
@@ -13,54 +18,55 @@
 #
 # A step that makes a command faster tightens its budget in the same
 # commit; a budget that goes up is a decision named in the commit.
-# Measured with main 9b8096bb (2026-11-15).
+# Measured with main 9b8096bb (2026-11-15); the "B~T" lines (30 loops) from five
+# runs of main 5b2921e8 (2026-11-15).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              665      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy           1133      710.0  DisplayBitMap 0,0,8,8
-bdisp.dispsprite             1598      965.5  DisplaySprite 0,0,100,100,0
-bdisp.disppalette            2472     1292.0  DisplayPalette 0,0
+bdisp.dispsprite            1581~4      965.5  DisplaySprite 0,0,100,100,0
+bdisp.disppalette          2452~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bgfx.blit16                  3020     2108.3  Blit 0,100,100
+bgfx.blit16                 2988~3     2108.3  Blit 0,100,100
 bgfx.blit16s                 3021     2108.3  Blit 0,105,100
-bgfx.blit32                  5479     4723.4  Blit 1,100,100
+bgfx.blit32                 5423~3     4723.4  Blit 1,100,100
 bgfx.block16                 1262     1009.9  Block 0,96,96
 bgfx.clipblit16              3438     2516.3  ClipBlit 0,100,100
-bgfx.blitcoll                1415      881.9  c=BlitColl(0,100,100)
-bgfx.bblit4u                23019    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
-bgfx.bblit8u                45583    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
-bgfx.qblit4u                16571    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
-bgfx.qblit8u                32822    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
-bgfx.qblit4f                12636     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
-bgfx.qblit8f                25229    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
+bgfx.blitcoll               1400~5      881.9  c=BlitColl(0,100,100)
+bgfx.bblit4u              22794~44    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
+bgfx.bblit8u              45132~52    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
+bgfx.qblit4u               16404~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
+bgfx.qblit8u               32494~4    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
+bgfx.qblit4f              12510~12     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
+bgfx.qblit8f               24974~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
 bgfx.showsprite               988      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                   194       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
 bgfx.pcoll                    439      130.8  c=PColl(0)
-bgfx.shapeshit                849      383.4  c=ShapesHit(0,10,10,1,20,20)
-bgfx.spriteshit               891      418.9  c=SpritesHit(0,10,10,0,20,20)
+bgfx.shapeshit               839~4      383.4  c=ShapesHit(0,10,10,1,20,20)
+bgfx.spriteshit              880~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 671      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
 bgfx.plot                     807      486.9  Plot 10,10,1
 bgfx.point                    871      478.4  c=Point(10,10)
 bgfx.line                    5047     3967.8  Line 10,10,110,60,1
-bgfx.lineh                   5061     3991.8  Line 10,10,110,10,1
-bgfx.box                    13222     9571.9  Box 10,10,50,50,1
-bgfx.boxf                    3183     1991.8  Boxf 10,10,25,25,2
-bgfx.circle                 67012    33609.8  Circle 100,100,10,1
-bgfx.circlef                36838    17189.8  Circlef 100,100,10,1
-bgfx.cls                    85217    84709.9  Cls
-bgfx.poly3                  10204     7524.9  Poly 3,&pts(0),1
-bgfx.polyf3                 88030    46969.8  Polyf 3,&pts(0),1
-bgfx.scroll32                9570     8075.9  Scroll 0,0,32,32,100,100
+bgfx.lineh                  5008~4     3991.8  Line 10,10,110,10,1
+bgfx.box                   13090~4     9571.9  Box 10,10,50,50,1
+bgfx.boxf                   3148~4     1991.8  Boxf 10,10,25,25,2
+bgfx.circle               66345~40    33609.8  Circle 100,100,10,1
+bgfx.circlef              36475~30    17189.8  Circlef 100,100,10,1
+bgfx.cls                84610~1080    84709.9  Cls
+bgfx.poly3                10105~10     7524.9  Poly 3,&pts(0),1
+bgfx.polyf3               87155~10    46969.8  Polyf 3,&pts(0),1
+bgfx.scroll32               9474~4     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   252      128.3  Locate 0,0
 bgfx.colour                   192       62.3  Colour 1
-bgfx.print5                 28813    13097.9  Locate 0,0 : Print "SCORE"
-bgfx.printnum               36048    17797.8  Locate 0,0 : Print a
+bgfx.print5               28522~12    13097.9  Locate 0,0 : Print "SCORE"
+bgfx.printnum              35688~4    17797.8  Locate 0,0 : Print a
 bgfx.show                    1294      589.4  Show 0
 bgfx.showxy                  1335      595.9  Show 0,8,8
-bgfx.rgb                      211      178.8  RGB 1,15,0,0
-bgfx.green                    369      167.3  c=Green(1)
+bgfx.rgb                     207~3      178.8  RGB 1,15,0,0
+bgfx.green                   361~3      167.3  c=Green(1)
 bgfx.usebitmap                 74       69.3  Use BitMap 0
 bgfx.useslice                  74       69.3  Use Slice 0
 binput.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -114,12 +120,12 @@ bmisc.handle                  257      129.4  Handle 0,0,0
 bmisc.palrgb                  972      653.5  PalRGB 0,1,15,0,0
 bmisc.showpalette            2464     1616.0  ShowPalette 0
 bmisc.usepalette             2506     1660.0  Use Palette 0
-bmisc.fadepalette            3988     3044.9  FadePalette 1,2,q1
+bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                    216      100.4  c=NTSC
-bmisc.infront                 256      134.9  InFront 4
-bmod.vblmod                  3250     2409.5  PlayModule playing: its interrupt, cycles per frame
-bmod.playmed                12987     9950.0  PlayMed
+bmisc.infront                252~4      134.9  InFront 4
+bmod.vblmod                3001~15     2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.playmed               12855~5     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   2550     1367.5  r$=a$
 bstr.mid                     2767     1553.5  r$=Mid$(a$,3,5)

@@ -197,6 +197,11 @@ than its budget fails the test:
 results perf: bmath.peekb: measured 217.0 cycles per call, budget 130
 ```
 
+A loop that waits for the blitter or follows the frame (Cls, Circle,
+BBlit, PlayModule per frame) does not repeat to the cycle; its budget is
+written `B~T`, the highest of five runs plus a tolerance of twice their
+spread.
+
 A change that makes a command faster lowers its budget in the same
 commit. Run `ctest --preset perf` for every change that can touch the
 speed of a library; `all` leaves it out. Details: `tests/README.md`,

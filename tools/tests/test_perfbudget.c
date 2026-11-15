@@ -94,6 +94,7 @@ static int judge(const struct perf_run *r, const struct perf_budgets *b, char *b
 
     if (!f)
         abort();
+    buf[0] = 0;
     k = perf_judge(r, b, f);
     fclose(f);
     return k;
@@ -152,6 +153,37 @@ static void test_budgets(void)
     perf_run_free(&r);
 }
 
+/* a marked loop (BUDGET "B~T"): B + T is the highest allowed value; an
+   unmarked loop keeps its plain budget */
+static void test_tolerance(void)
+{
+    struct perf_run r = { 0 };
+    struct perf_budgets b = { 0 };
+    char err[300], out[2000], table[4000];
+    FILE *f;
+
+    CHECK(perf_read_out(&r, "bmath", "empty 2520 20000 1\npeekb 686 2000 1\n"
+                        "pokeb 650 2000 1\nrc=0\n", err, sizeof err) == 0);
+    /* peekb 217.0: within 200 + 18, over 200 + 16; the unmarked pokeb 199.0
+       is over a plain 198 */
+    CHECK(perf_read_budgets(&b, "bmath.peekb 200~18 - x\nbmath.pokeb 199 - y\n", err,
+                            sizeof err) == 0);
+    CHECK(b.n == 2 && b.b[0].budget == 200 && b.b[0].tolerance == 18 && b.b[1].tolerance == 0);
+    CHECK(judge(&r, &b, out, sizeof out) == 0 && !out[0]);
+    CHECK((f = fmemopen(table, sizeof table, "w")) != NULL);
+    perf_table(&r, &b, f);
+    fclose(f);
+    CHECK(strstr(table, " 218 ") && strstr(table, "(varies, tolerance 18)"));
+    CHECK(perf_read_budgets(&b, "bmath.peekb 200~16 - x\nbmath.pokeb 198 - y\n", err,
+                            sizeof err) == 0);
+    CHECK(judge(&r, &b, out, sizeof out) == 2
+          && strstr(out, "bmath.peekb: measured 217.0 cycles per call, budget 200 + tolerance "
+                    "16\n")
+          && strstr(out, "bmath.pokeb: measured 199.0 cycles per call, budget 198\n"));
+    perf_budgets_free(&b);
+    perf_run_free(&r);
+}
+
 /* the budget file is refused with msg (and the line); b stays as it was */
 static int budgets_refused(const char *text, const char *msg)
 {
@@ -178,6 +210,11 @@ static void test_budgets_malformed(void)
     CHECK(budgets_refused("bmath.empty 130 126.0 x\n", "the empty loop"));
     CHECK(budgets_refused("bmath.peekb 22.5 129.0 x\n", "the budget \"22.5\""));
     CHECK(budgets_refused("bmath.peekb -1 129.0 x\n", "the budget \"-1\""));
+    CHECK(budgets_refused("bmath.peekb 223~ 129.0 x\n", "the tolerance in \"223~\""));
+    CHECK(budgets_refused("bmath.peekb 223~0 129.0 x\n", "the tolerance in \"223~0\""));
+    CHECK(budgets_refused("bmath.peekb 223~-5 129.0 x\n", "the tolerance in \"223~-5\""));
+    CHECK(budgets_refused("bmath.peekb 223~5~6 129.0 x\n", "the tolerance in \"223~5~6\""));
+    CHECK(budgets_refused("bmath.peekb ~5 129.0 x\n", "the budget \"~5\""));
     CHECK(budgets_refused("bmath.peekb 223 12x x\n", "the target \"12x\""));
     CHECK(budgets_refused("bmath.peekb 223 12. x\n", "the target \"12.\""));
     CHECK(budgets_refused("bmath.peekb 223 .5 x\n", "the target \".5\""));
@@ -191,6 +228,7 @@ int main(void)
     test_values();
     test_malformed();
     test_budgets();
+    test_tolerance();
     test_budgets_malformed();
     if (failures)
         fprintf(stderr, "%d failures\n", failures);

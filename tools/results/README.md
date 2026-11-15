@@ -565,10 +565,11 @@ OPTIONS:
 A line "TEST T N PER" of NAME.out is the loop TEST of the program NAME: T units
 of 1000 cycles for N iterations, PER calls per iteration or "frame"; the
 program's empty loop is subtracted. A line "COMMAND BUDGET TARGET TEXT" of FILE
-is the budget of PROGRAM.TEST (TARGET the original's value, only shown). Exit
-status 0 the table written (every command within its budget), 1 a command over
-its budget, without a budget or not measured, 2 usage error, a file that cannot
-be read or a malformed observation or budget file.
+is the budget of PROGRAM.TEST (BUDGET a whole number, or B~T: a loop whose runs
+vary, B + T the limit; TARGET the original's value, only shown). Exit status 0
+the table written (every command within its budget), 1 a command over its
+budget, without a budget or not measured, 2 usage error, a file that cannot be
+read or a malformed observation or budget file.
 ```
 
 The cycles per call of the library benchmark (`tests/perf`,
@@ -586,11 +587,11 @@ With `--budgets FILE` (`tests/perf/budgets.txt`) the table also has each
 command's budget, the original's value (`TARGET`, shown with the factor to
 it, never judged) and the loop, and every command is judged: one measured
 over its budget (`bmath.peekb: measured 217.0 cycles per call, budget
-130`), a measured command without a budget and a budget without a
+130`; for a `B~T` budget `budget 200 + tolerance 16`), a measured command without a budget and a budget without a
 measurement each give a line on stderr and exit status 1. The empty
 loops have no budget. A malformed budget file (a line without four
 fields, a name that is not `PROGRAM.TEST`, a budget that is not a whole
-number, a target that is neither a number nor `-`, a command twice) is
+number, a tolerance in `B~T` that is not a positive whole number, a target that is neither a number nor `-`, a command twice) is
 refused with its line.
 
 ## Inputs and outputs

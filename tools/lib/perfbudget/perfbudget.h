@@ -65,14 +65,20 @@ void perf_run_free(struct perf_run *r);
  *
  *   PROGRAM.TEST BUDGET TARGET TEXT
  *
- *   BUDGET  the highest allowed cycles per call (per frame), a whole number
+ *   BUDGET  the highest allowed cycles per call (per frame), a whole number;
+ *           "B~T" marks a loop whose repeated runs differ by more than a
+ *           cycle per call (it waits for the blitter or depends on the
+ *           frame): B is the highest value of the runs, T the tolerance (a
+ *           positive whole number, twice the spread of the runs), and
+ *           B + T the highest allowed value
  *   TARGET  the original's value (a decimal number, or "-": none), only
  *           shown
  *   TEXT    what the loop does (the rest of the line, not empty)
  */
 struct perf_budget {
     char *name;                         /* PROGRAM.TEST */
-    long budget;
+    long budget;                        /* B, or the plain budget */
+    long tolerance;                     /* T of "B~T", else 0: the CPU alone */
     double target;
     int has_target;
     char *text;
@@ -94,7 +100,7 @@ void perf_budgets_free(struct perf_budgets *b);
 /**
  * @brief Judge the measurements against the budgets: one line to f per
  *        command over its budget ("NAME: measured X cycles per call, budget
- *        B"), per measured command without a budget and per budget without
+ *        B", for a marked loop "budget B + tolerance T"), per measured command without a budget and per budget without
  *        a measurement.  The empty loops have no budget.
  * @return the number of those lines (0 = every command within its budget)
  */

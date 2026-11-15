@@ -857,12 +857,21 @@ slower than its budget. Only the preset `perf` runs it; it runs alone
   per call, prints the table and judges it. A repeated run differs by at
   most 1 cycle per call for the commands the CPU alone does; loops that
   wait for the blitter or follow the frame vary more (Cls by 0.4 %, the
-  PlayModule frame value by up to 7 %). Without Amiberry or the emulation
+  PlayModule frame value by up to 7 % in one early session); those 30
+  loops carry their own tolerance in `budgets.txt` (below). Without Amiberry or the emulation
   data the test is skipped (77).
 * **The budgets:** `tests/perf/budgets.txt`, one line per command,
   `PROGRAM.TEST BUDGET TARGET LOOP`. `BUDGET` is the highest allowed
   value: the measurement of the build that set it (the larger value of
-  two runs) plus 1 %, rounded up, plus 3 cycles. `TARGET` is the original's value (the same programs with
+  two runs) plus 1 %, rounded up, plus 3 cycles. A loop whose repeated
+  runs differ by more than 1 cycle per call (it waits for the blitter or
+  follows the frame: Cls, Circle, BBlit, QBlit, Print, PlayModule, ...)
+  is written `B~T`: `B` the highest value of five runs of one build, `T`
+  the tolerance, twice the spread of those runs (rounded up); `B + T` is
+  the highest allowed value (a failure names both: `budget 200 + tolerance
+  16`). The table marks such a command `(varies, tolerance T)`. A step that
+  changes such a loop measures five runs again and sets `B` and `T`
+  anew. `TARGET` is the original's value (the same programs with
   the CD's `ACIDLIBS` and `DEFLIBS`), the goal: shown with the factor to
   it, never judged. A command over its budget fails the test with its
   name and both values (`bmath.peekb: measured 217.0 cycles per call,

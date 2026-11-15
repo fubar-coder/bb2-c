@@ -99,7 +99,8 @@ void cmd_perf(CLI::App &app, int &status)
     sub->footer("A line \"TEST T N PER\" of NAME.out is the loop TEST of the program NAME: T units "
                 "of 1000 cycles for N iterations, PER calls per iteration or \"frame\"; the "
                 "program's empty loop is subtracted. A line \"COMMAND BUDGET TARGET TEXT\" of "
-                "FILE is the budget of PROGRAM.TEST (TARGET the original's value, only shown). "
+                "FILE is the budget of PROGRAM.TEST (BUDGET a whole number, or B~T: a loop whose "
+                "runs vary, B + T the limit; TARGET the original's value, only shown). "
                 "Exit status 0 the table written (every command within its budget), 1 a command "
                 "over its budget, without a budget or not measured, 2 usage error, a file that "
                 "cannot be read or a malformed observation or budget file.");

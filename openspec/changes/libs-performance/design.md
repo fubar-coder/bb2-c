@@ -99,7 +99,8 @@ build.
    subtracts the empty loop. A budget file states per command the allowed
    cycles per call. The ctest label is `perf`; the preset `perf` is separate
    and not part of `all` (one configuration takes about 3 minutes, one
-   emulator session at a time). The method repeats to 1 cycle per call.
+   emulator session at a time). The method repeats to 1 cycle per call for the commands the CPU does alone;
+   blitter- and frame-dependent loops have a stated tolerance (Decision 11).
 10. **Acceptance.** Library bytes change on purpose, so `prev_results` and
     the corpus `prev` configuration are run with `-DPREV_INTENDED`; each
     commit names the library files and executables whose bytes change.
@@ -191,9 +192,13 @@ budgets need them. Rollback is one commit per entry group.
   more where the loop waits for the blitter or follows the frame: Cls 300
   of 84000 per call (0.4 %), Circle and Circlef 15, BBlit 14 per 8 blits,
   and the PlayModule frame value 3214 against 3000 (7 %; the analysis's
-  two runs agreed there). The 1 % covers the blitter cases; the PlayModule
-  value is the one budget close to a spurious failure (36 cycles above the
-  higher run). Every measured command has a budget (125 with the
+  two runs agreed there). Five further runs of one build (all
+  `snapshot=fallback`) differ by more than 1 cycle per call for 30
+  commands (Cls 540, BBlit 8 loop 26, Circle 20, Circlef 15, PlayModule
+  frame value 7, the rest at most 8): those 30 carry a tolerance of their
+  own, `B~T` in `budgets.txt` (B the highest of the five runs, T twice their
+  spread, rounded up; B + T the limit); the other commands keep the rule
+  above. Every measured command has a budget (125 with the
   seven `emptylong` checks of the subtraction), not only the 101 that are
   slower; a measured command without a budget fails the test.
 - Whether EventWindow and RawStatus keep their registers by nature
