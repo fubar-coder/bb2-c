@@ -35,7 +35,7 @@ BLITZ_OSCALL(LIB_crmlib, -78, "cmAllocCrunchStructA_", "(Tags)", a0);
 BLITZ_OSCALL(LIB_crmlib, -84, "cmFreeCrunchStruct_", "(CrunchStruct)", a0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_crmlib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_crmlib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "CrM.library";

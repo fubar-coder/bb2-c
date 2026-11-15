@@ -40,7 +40,7 @@ BLITZ_NULLSUB(domodbyte, 0, 0);                         /* $D400 modbyte */
 BLITZ_NULLSUB(domodword, 0, 0);                         /* $D401 modword */
 BLITZ_NULLSUB(domodlong, 0, 0);                         /* $D402 modlong */
 BLITZ_NULLSUB(domodquick, 0, 0);                        /* $D403 modquick */
-BLITZ_NULLSUB(domodfloat, 0, 0, LIB_ffplib, BL_LA(6));  /* $D404 modfloat */
+BLITZ_NULLSUB(domodfloat, 0, 0, LIB_ffplib, BL_LA6);    /* $D404 modfloat */
 BLITZ_LIBFIN();
 
 /* domodword - EXT.l d0:DIVS d1,d0:SWAP d0:TST d0:BPL 'skip:ADD d1,d0

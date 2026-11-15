@@ -104,7 +104,7 @@ BLITZ_NAME("ILBMViewMode", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, 0x1380);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_decodeilbm, 0, 0);
 BLITZ_NAME("DecodeILBM", "Bitmap#,MemoryLocation");
 

@@ -72,33 +72,30 @@ void rimapshapeslib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* #ia<a>|#pd<p>: the object of the number in d<p> into a<a> */
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))
-
 /* !libheader {#rimapshapeslib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_rimapshapeslib, init, BL_NORET, finit, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 0));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_shapetomapshape, 0, 0);
 BLITZ_NAME("ShapeToMapShape", "source shape,dest Mapshape");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, IA(1, 0), LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_blitmapshape, 0, 0);
 BLITZ_NAME("BlitMapShape", "window#,mapshape#,x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_chipbaselib, BL_LA(2), 254, 0x5600);
+BLITZ_LIBS(LIB_chipbaselib, BL_LA2, 254, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_remapmapshape, 0, 0);
 BLITZ_NAME("RemapMapShape", "mapshape#,botcol,topcol");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, IA(1, 0), LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_blitmapshapesize, 0, 0);
 BLITZ_NAME("BlitMapShapeSize", "window#,mapshape#,x,y,width,height");
 
@@ -128,7 +125,7 @@ BLITZ_NAME("AddGroupMember", "shape#,dx,dy");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, IA(1, 0));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_blitgroup, 0, 0);
 BLITZ_NAME("BlitGroup", "window#,x,y");
 

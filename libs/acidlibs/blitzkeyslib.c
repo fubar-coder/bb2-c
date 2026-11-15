@@ -87,7 +87,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(binkey, 0, 0);
 BLITZ_NAME("BlitzKey", ";same as inkey$ after a bitmapinput");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_switchlib, BL_LA(0));
+BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_switchlib, BL_LA0);
 
 BLITZ_LIBFIN();
 

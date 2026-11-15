@@ -29,7 +29,7 @@ BLITZ_OSCALL(LIB_colorwheellib, -30, "ConvertHSBToRGB_", "(hsb,rgb)", a0, a1);
 BLITZ_OSCALL(LIB_colorwheellib, -36, "ConvertRGBToHSB_", "(rgb,hsb)", a0, a1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_colorwheellib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_colorwheellib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "gadgets/colorwheel.gadget";

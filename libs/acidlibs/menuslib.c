@@ -115,43 +115,43 @@ BLITZ_LIBHEADER(LIB_menuslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_menuslib, 0x1380);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(domenutitle, menutitlechk, 0);
 BLITZ_NAME("MenuTitle", "MenuList#,Menu,Title$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1202, LIB_menuslib, 0x1380, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA2, LIB_menuslib, BL_IA3|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosetmenu), setmenuchk, 0);           /* Amiga mode only */
 BLITZ_NAME("SetMenu", "Menulist#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_intuifontlib, BL_LA(1), LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(domenuitem, itemchk2, 0);
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_STRING, BL_STRING);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_intuifontlib, BL_LA(1), LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(domenuitem2, itemchk2, 0);
 BLITZ_NAME("MenuItem", "MenuList#,Flags,Menu,Item,Itemtext$[,Shortcut$]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_intuifontlib, BL_LA(1), LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dosubitem, subchk2, 0);
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_WORD, BL_STRING, BL_STRING);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_intuifontlib, BL_LA(1), LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dosubitem2, subchk2, 0);
 BLITZ_NAME("SubItem", "MenuList#,Flags,Menu,Item,Subitem,Subitemtext$[,Shortcut$]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_shapeslib, 0x1283);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD3);
 BLITZ_SUBS(doshapeitem, shapeitemchk, 0);
 BLITZ_NAME("ShapeItem", "MenuList#,Flags,Menu,Item,Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_PUSH | BL_LONG, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380, LIB_shapeslib, 0x1284);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD4);
 BLITZ_SUBS(doshapesub, shapesubchk, 0);
 BLITZ_NAME("ShapeSub", "MenuList#,Flags,Menu,Item,Subitem,Shape#");
 
@@ -171,16 +171,16 @@ BLITZ_NULLSUB(0, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(menuslib_domenustate, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(menuslib_domenustate2, menuslib_statechk2, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(menuslib_domenustate3, menuslib_statechk3, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1380);
+BLITZ_LIBS(LIB_menuslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(menuslib_domenustate4, menuslib_statechk4, 0);
 BLITZ_NAME("MenuState", "MenuList#[,Menu[,Item[,Subitem]]],On|Off");
 
@@ -192,10 +192,10 @@ BLITZ_NAME("MenuColour", "Colour");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1280);
+BLITZ_LIBS(LIB_menuslib, BL_IA2|BL_PD0);
 BLITZ_SUBS(menuslib_domenuchecked, menuslib_chkchk3, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_menuslib, 0x1280);
+BLITZ_LIBS(LIB_menuslib, BL_IA2|BL_PD0);
 BLITZ_SUBS(menuslib_domenuchecked2, menuslib_chkchk4, 0);
 BLITZ_NAME("MenuChecked", "(MenuList#,Menu,Item[,Subitem])");
 

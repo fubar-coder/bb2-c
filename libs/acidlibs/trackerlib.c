@@ -80,13 +80,13 @@ BLITZ_DUMTOKE(_toke, "Module", "A Sound or Noise tracker module");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_trackerlib, 0x1380, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_trackerlib, BL_IA3|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doloadmod), 0, 0);
 BLITZ_NAME("LoadModule", "Module#,Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_trackerlib, 0x1380);
+BLITZ_LIBS(LIB_trackerlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doplaymod, playchk, 0);
 BLITZ_NAME("PlayModule", "Module#");
 

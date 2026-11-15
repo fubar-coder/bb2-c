@@ -83,31 +83,31 @@ BLITZ_DUMTOKE(_toke, "Anim", "- IFF Anim");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_animlib, 0x1080);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0);
 BLITZ_SUBS((char *)doanimload + 1, 0, 0);       /* +1: Amiga mode only */
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_animlib, 0x1080, LIB_palettelib, 0x1182);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD2);
 BLITZ_SUBS((char *)doanimload2 + 1, 0, 0);
 BLITZ_NAME("LoadAnim", "Anim#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_animlib, 0x1080, LIB_bitmaplib, 0x1102);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_UA1);
 BLITZ_SUBS(doinitanim, animchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_animlib, 0x1080, LIB_bitmaplib, 0x1102, LIB_bitmaplib, 0x1281);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_UA1, LIB_bitmaplib, BL_IA2|BL_PD1);
 BLITZ_SUBS(doinitanim2, animchk2, 0);
 BLITZ_NAME("InitAnim", "Anim#[,BitMap#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_animlib, 0x1080, LIB_bitmaplib, 0x1102);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_UA1);
 BLITZ_SUBS(donextframe, animchk3, 0);
 BLITZ_NAME("NextFrame", "Anim#");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_animlib, 0x1080);
+BLITZ_LIBS(LIB_animlib, BL_IA0|BL_PD0);
 BLITZ_SUBS(doframes, animchk4, 0);
 BLITZ_NAME("Frames", "(Anim#)");
 

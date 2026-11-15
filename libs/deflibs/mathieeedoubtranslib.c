@@ -44,7 +44,7 @@ BLITZ_OSCALL(LIB_mathieeedoubtranslib, -120, "IEEEDPAcos_", "(parm)", d0, d1);
 BLITZ_OSCALL(LIB_mathieeedoubtranslib, -126, "IEEEDPLog10_", "(parm)", d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_mathieeedoubtranslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_mathieeedoubtranslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "mathieeedoubtrans.library";

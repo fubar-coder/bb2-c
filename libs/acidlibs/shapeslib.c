@@ -117,35 +117,35 @@ BLITZ_ASTATEMENT();
 /* fixed #265: + a2 = the shape table, d3 = its maximum (the last object
    for the ANIM frames; the original had only a0) */
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_shapeslib, 0x1201, LIB_shapeslib, 0x0303);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_shapeslib, BL_BA2, LIB_shapeslib, BL_MD3);
 BLITZ_SUBS(AMIGAONLY(doshload), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_palettelib, 0x1182, LIB_shapeslib, 0x1201,
-           LIB_shapeslib, 0x0303);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD2, LIB_shapeslib, BL_BA2,
+           LIB_shapeslib, BL_MD3);
 BLITZ_SUBS(AMIGAONLY(doshload2), 0, 0);
 BLITZ_NAME("LoadShape", "Shape#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(docookie, cookiechk, 0);
 BLITZ_NAME("MakeCookie", "Shape#");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(doshapew, funcchk, 0);
 BLITZ_NAME("ShapeWidth", "(Shape#)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(doshapeh, funcchk, 0);
 BLITZ_NAME("ShapeHeight", "(Shape#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dohandle, cookiechk, 0);
 BLITZ_NAME("Handle", "Shape#,X,Y");
 
@@ -157,29 +157,29 @@ BLITZ_NAME("AutoCookie", "On|Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1281);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(docopyshape, cookiechk, 0);
 BLITZ_NAME("CopyShape", "Shape#,Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_bitmaplib, 0x1202, LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_UA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(dogetashape, gschk, 0);
 BLITZ_NAME("GetaShape", "Shape#,X,Y,Width,Height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1281, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(dosaveshapes), schkz, 0);
 BLITZ_NAME("SaveShapes", "Shape#,Shape#,Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1201, LIB_shapeslib, 0x0203,
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_BA2, LIB_shapeslib, BL_MD2,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(doloadshapes2), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1281, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(doloadshapes), schkz, 0);
 BLITZ_NAME("LoadShapes", "Shape#[,Shape#],Filename$");
 
@@ -189,7 +189,7 @@ BLITZ_DUMTOKE(_toke, "Shape", "- image");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(domidhandle, cookiechk, 0);
 BLITZ_NAME("MidHandle", "Shape#");
 
@@ -197,16 +197,16 @@ BLITZ_NULLSUB(b_getashape, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1201, LIB_shapeslib, 0x0203);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_BA2, LIB_shapeslib, BL_MD2);
 BLITZ_SUBS(_cludgeshapes2, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_shapeslib, 0x1281);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_cludgeshapes, 0, 0);
 BLITZ_NAME("DecodeShapes", "Shape#[,Shape#],MemoryLocation");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_initshape, initchk, 0);
 BLITZ_NAME("InitShape", "Shape#,Width,Height,Depth");
 

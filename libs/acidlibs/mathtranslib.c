@@ -32,12 +32,12 @@ BLITZ_ENTRY_DECL(finit);
 /* !libheader{#mathtranslib,init,1,finit,0} */
 BLITZ_LIBHEADER(LIB_mathtranslib, init, BL_LONGRET, finit, 0);
 
-BLITZ_NULLSUB(dopow, 0, 0, LIB_mathtranslib, BL_LA(6));
+BLITZ_NULLSUB(dopow, 0, 0, LIB_mathtranslib, BL_LA6);
 
 #define MT_FUNC(code, name)                                 \
     BLITZ_AFUNCTION(BL_FLOAT);                              \
     BLITZ_ARGS(BL_FLOAT);                                   \
-    BLITZ_LIBS(LIB_mathtranslib, BL_LA(6));                 \
+    BLITZ_LIBS(LIB_mathtranslib, BL_LA6);                   \
     BLITZ_SUBS(code, 0, 0);                                 \
     BLITZ_NAME(name, "(Float)")
 
@@ -56,7 +56,7 @@ MT_FUNC(sptan, "Tan");
 MT_FUNC(sptanh, "HTan");
 
 BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0, LIB_mathtranslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, codefinit, 0, 0, LIB_mathtranslib, BL_LA1);
 
 BLITZ_LIBFIN();
 

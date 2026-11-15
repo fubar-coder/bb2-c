@@ -35,7 +35,7 @@ BLITZ_OSCALL(LIB_ciablib, -18, "AbleICR_b", "(resource,mask)", a6, d0);
 BLITZ_OSCALL(LIB_ciablib, -24, "SetICR_b", "(resource,mask)", a6, d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_ciablib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_ciablib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "ciab.resource";

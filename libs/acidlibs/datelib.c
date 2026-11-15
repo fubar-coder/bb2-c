@@ -86,7 +86,7 @@ BLITZ_LIBHEADER(LIB_datelib, 0, BL_NORET, 0, 0);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(date_c, 0, 0);
 BLITZ_NAME("SystemDate", "Returns system date as number of days since 1/1/1978");
 
@@ -134,7 +134,7 @@ BLITZ_NAME("WeekDay", " ;returns day of week calculated in last call to date$");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(hours_c, 0, 0);
 BLITZ_NAME("Hours", " ;gets system time and returns hour of day");
 

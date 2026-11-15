@@ -55,25 +55,25 @@ BLITZ_LIBHEADER(LIB_vallib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_FLOAT);              /* return a FLOAT */
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(doval, 0, 0);
 BLITZ_NAME("Val", "(String$)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(doint, intchk, 0);
 BLITZ_NAME("Int", "(Expression)");
 
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(dosgn, intchk, 0);
 BLITZ_NAME("Sgn", "(Expression)");
 
 BLITZ_AFUNCTION(BL_FLOAT);
 BLITZ_ARGS(BL_FLOAT);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(doffrac, 0, 0);
 BLITZ_NAME("Frac", "(Expression)");
 
@@ -106,7 +106,7 @@ BLITZ_NAME("QAbs", "(Quick)");
 
 BLITZ_AFUNCTION(BL_FLOAT);
 BLITZ_ARGS(BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(dofabs, 0, 0);
 BLITZ_NAME("Abs", "(Expression)");
 
@@ -118,13 +118,13 @@ BLITZ_NAME("QLimit", "(Quick,Low,High)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_graphicslib, BL_LA(0));
+BLITZ_LIBS(LIB_graphicslib, BL_LA0);
 BLITZ_SUBS(dontsc, 0, 0);
 BLITZ_NAME("NTSC", "");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_graphicslib, BL_LA(0));
+BLITZ_LIBS(LIB_graphicslib, BL_LA0);
 BLITZ_SUBS(dodispheight, 0, 0);
 BLITZ_NAME("DispHeight", "");
 

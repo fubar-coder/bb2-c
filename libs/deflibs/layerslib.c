@@ -59,7 +59,7 @@ BLITZ_OSCALL(LIB_layerslib, -210, "SortLayerCR_", "(layer,dx,dy)", a0, d0, d1);
 BLITZ_OSCALL(LIB_layerslib, -216, "DoHookClipRects_", "(hook,rport,rect)", a0, a1, a2);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_layerslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_layerslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "layers.library";

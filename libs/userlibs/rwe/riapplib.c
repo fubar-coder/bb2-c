@@ -90,15 +90,13 @@ void appeventidcmp(void), riapplib_libinit(void), riapplib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(n) (BL_LA(n) | BL_ITEM | BL_PD(n))   /* #ia<n>|#pd<n> */
-
 /* !libheader {#riapplib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_riapplib, init, BL_NORET, finit, 0);
 
 /* all code addresses odd (`label+1`): Amiga mode only */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_PUSH | BL_LONG);
-BLITZ_LIBS(LIB_windowslib, IA(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(addwindow), 0, 0);
 BLITZ_NAME("AddAppWindow", "(windownumber)");
 

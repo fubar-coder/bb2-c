@@ -44,7 +44,7 @@ BLITZ_OSCALL(LIB_amigaguidelib, -144, "RemoveAmigaGuideHostA_", "(hh,attrs)", a0
 BLITZ_OSCALL(LIB_amigaguidelib, -210, "GetAmigaGuideString_", "(id)", d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_amigaguidelib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_amigaguidelib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "amigaguide.library";

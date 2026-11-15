@@ -203,7 +203,7 @@ BLITZ_NAME("NextArg$", "- get next parameter");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_windowslib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_ezoutput, 0, 0);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
@@ -306,7 +306,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_binstr, 0, 0);
 BLITZ_NAME("BInstr", "(String$,Findstring$)");
 
-BLITZ_NULLSUB_AT(finit, rimisclib_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(finit, rimisclib_libfinit, 0, 0, LIB_doslib, BL_LA6);
 BLITZ_NULLSUB_AT(init, rimisclib_libinit, 0, 0);
 
 BLITZ_LIBFIN();

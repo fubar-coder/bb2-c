@@ -53,7 +53,7 @@ ENV_FUNC(BL_LONG, docr_vbr, "cr_vbr");
 ENV_FUNC(BL_WORD, doexecversion, "ExecVersion");
 ENV_FUNC(BL_WORD, doextwbviewmode, "WBExtViewMode");
 
-BLITZ_NULLSUB_AT(init, environlib_codeinit, 0, 0, LIB_intuitionlib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, environlib_codeinit, 0, 0, LIB_intuitionlib, BL_LA6);
 
 BLITZ_LIBFIN();
 

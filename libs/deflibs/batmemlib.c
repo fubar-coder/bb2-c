@@ -35,7 +35,7 @@ BLITZ_OSCALL(LIB_batmemlib, -18, "ReadBattMem_", "(buffer,offset,length)", a0, d
 BLITZ_OSCALL(LIB_batmemlib, -24, "WriteBattMem_", "(buffer,offset,length)", a0, d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_batmemlib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_batmemlib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "battmem.resource";

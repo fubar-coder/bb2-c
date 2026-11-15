@@ -60,36 +60,33 @@ BLITZ_ENTRY_DECL(_save);
 BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-#define UA(a) (BL_LA(a) | BL_USED)                  /* #ua<a> */
-
 /* !libheader {#riintuilib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_riintuilib, init, BL_NORET, finit, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_riintuilib, IA(0, 0), LIB_bitmaplib, IA(1, 1));
+BLITZ_LIBS(LIB_riintuilib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_ipbitmap, 0, 0);
 BLITZ_NAME("IPBitMap", "rast,bitmap");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_riintuilib, UA(0));
+BLITZ_LIBS(LIB_riintuilib, BL_UA0);
 BLITZ_SUBS(_iplocate, 0, 0);
 BLITZ_NAME("IPLocate", "x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_riintuilib, UA(0));
+BLITZ_LIBS(LIB_riintuilib, BL_UA0);
 BLITZ_SUBS(_ipcolour, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_riintuilib, UA(0));
+BLITZ_LIBS(LIB_riintuilib, BL_UA0);
 BLITZ_SUBS(_ipcolour2, 0, 0);
 BLITZ_NAME("IPColour", "fgpen[,bgpen]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_riintuilib, IA(0, 0));
+BLITZ_LIBS(LIB_riintuilib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_ipoutput, 0, 0);
 BLITZ_NAME("IPOutput", "rast");
 

@@ -34,7 +34,7 @@ BLITZ_OSCALL(LIB_potgolib, -12, "FreePotBits_", "(bits)", d0);
 BLITZ_OSCALL(LIB_potgolib, -18, "WritePotgo_", "(word,mask)", d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_potgolib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_potgolib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "potgo.resource";

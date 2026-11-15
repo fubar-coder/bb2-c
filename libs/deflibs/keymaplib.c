@@ -31,7 +31,7 @@ BLITZ_OSCALL(LIB_keymaplib, -42, "MapRawKey_", "(event,buffer,length,keyMap)", a
 BLITZ_OSCALL(LIB_keymaplib, -48, "MapANSI_", "(string,count,buffer,length,keyMap)", a0, d0, a1, d1, a2);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_keymaplib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_keymaplib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "keymap.library";

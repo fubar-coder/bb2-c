@@ -36,13 +36,13 @@ BLITZ_LIBHEADER(LIB_stencillib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_stencillib, 0x1380, LIB_bitmaplib, 0x1281, LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_stencillib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_IA2|BL_PD1, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(dostencil, 0, 0);
 BLITZ_NAME_AT(_toke, "Stencil", "Stencil#,BitMap#");
 
-#define SBLIT_LIBS BLITZ_LIBS(LIB_stencillib, 0x1080, LIB_shapeslib, 0x1381,       \
-                              LIB_graphicslib, 0x5600, LIB_bitmaplib, 0x1202,      \
-                              LIB_chipbaselib, BL_LA(1))
+#define SBLIT_LIBS BLITZ_LIBS(LIB_stencillib, BL_IA0|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, \
+                              LIB_graphicslib, BL_IFAMIGA|BL_LA6, LIB_bitmaplib, BL_UA2,   \
+                              LIB_chipbaselib, BL_LA1)
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);

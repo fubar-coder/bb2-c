@@ -146,7 +146,7 @@ BLITZ_OSCALL(LIB_execlib, -774, "AddMemHandler_", "(memhand)", a1);
 BLITZ_OSCALL(LIB_execlib, -780, "RemMemHandler_", "(memhand)", a1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_execlib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_execlib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "exec.library";

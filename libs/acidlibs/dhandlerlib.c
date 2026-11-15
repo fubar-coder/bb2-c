@@ -95,10 +95,10 @@ __asm__("   .section .blitzlib.head\ndh_hunk0:\n");
 BLITZ_LIBHEADER(LIB_dhandlerlib, init, BL_NORET, finit, 0);
 /* init:!nullsub{codeinit,0,0,#doslib,#la6,#graphicslib,#ld6} */
 BLITZ_NULLSUB_AT(init, dhandlerlib_codeinit, 0, 0,
-                 LIB_doslib, BL_LA(6), LIB_graphicslib, BL_LD(6));
+                 LIB_doslib, BL_LA6, LIB_graphicslib, BL_LD6);
 /* finit:!nullsub{codefinit,0,0,#doslib,#la6,#graphicslib,#ld6} */
 BLITZ_NULLSUB_AT(finit, dhandlerlib_codefinit, 0, 0,
-                 LIB_doslib, BL_LA(6), LIB_graphicslib, BL_LD(6));
+                 LIB_doslib, BL_LA6, LIB_graphicslib, BL_LD6);
 BLITZ_LIBFIN();
 
 /* debuglib's tokens (debuglib.c): donewmode $D500 ... doskip $D508 */

@@ -43,7 +43,7 @@ BLITZ_OSCALL(LIB_datatypeslib, -114, "PrintDTObjectA_", "(o,w,r,msg)", a0, a1, a
 BLITZ_OSCALL(LIB_datatypeslib, -138, "GetDTString_", "(id)", d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_datatypeslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_datatypeslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "datatypes.library";

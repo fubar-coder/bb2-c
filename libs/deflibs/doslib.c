@@ -158,7 +158,7 @@ BLITZ_OSCALL(LIB_doslib, -804, "FindArg_", "(keyword,template)", d1, d2);
    the compiler ends a library's range where the next loaded library's
    begins (asmlibs.c fixlibs), the nullsubs are reached through the header */
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_doslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_doslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "dos.library";

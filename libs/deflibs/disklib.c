@@ -37,7 +37,7 @@ BLITZ_OSCALL(LIB_disklib, -30, "GetUnitID_", "(unitNum)", d0);
 BLITZ_OSCALL(LIB_disklib, -36, "ReadUnitID_", "(unitNum)", d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_disklib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_disklib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "disk.resource";

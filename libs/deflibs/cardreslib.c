@@ -48,7 +48,7 @@ BLITZ_OSCALL(LIB_cardreslib, -96, "CardChangeCount_", "");
 BLITZ_OSCALL(LIB_cardreslib, -102, "CardInterface_", "");
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_cardreslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_cardreslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "card.resource";

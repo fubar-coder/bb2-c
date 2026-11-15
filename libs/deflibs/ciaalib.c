@@ -35,7 +35,7 @@ BLITZ_OSCALL(LIB_ciaalib, -18, "AbleICR_a", "(resource,mask)", a6, d0);
 BLITZ_OSCALL(LIB_ciaalib, -24, "SetICR_a", "(resource,mask)", a6, d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_ciaalib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_ciaalib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "ciaa.resource";

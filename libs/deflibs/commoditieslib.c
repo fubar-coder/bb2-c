@@ -53,7 +53,7 @@ BLITZ_OSCALL(LIB_commoditieslib, -180, "AddIEvents_", "(events)", a0);
 BLITZ_OSCALL(LIB_commoditieslib, -204, "MatchIX_", "(event,ix)", a0, a1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_commoditieslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_commoditieslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "commodities.library";

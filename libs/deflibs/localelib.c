@@ -51,7 +51,7 @@ BLITZ_OSCALL(LIB_localelib, -174, "StrConvert_", "(locale,string,buffer,bufferSi
 BLITZ_OSCALL(LIB_localelib, -180, "StrnCmp_", "(locale,string1,string2,length,type)", a0, a1, a2, d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_localelib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_localelib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "locale.library";

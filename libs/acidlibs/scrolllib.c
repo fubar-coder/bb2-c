@@ -52,12 +52,12 @@ BLITZ_LIBHEADER(LIB_scrolllib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, 0x42, 0x42, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1002, LIB_chipbaselib, BL_LA(1),
-           LIB_graphicslib, 0x4600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_UA0, LIB_chipbaselib, BL_LA1,
+           LIB_graphicslib, BL_IFAMIGA|BL_LD6);
 BLITZ_SUBS(doscroll, scchk1, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, 0x42, 0x42, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1084, LIB_chipbaselib, BL_LA(1),
-           LIB_graphicslib, 0x4600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_IA0|BL_PD4, LIB_chipbaselib, BL_LA1,
+           LIB_graphicslib, BL_IFAMIGA|BL_LD6);
 BLITZ_SUBS(doscroll, scchk2, 0);
 BLITZ_NAME("Scroll", "X1,Y1,Width,Height,X2,Y2[,BitMap#]");
 
@@ -65,33 +65,33 @@ BLITZ_NULLSUB(b_doscroll, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1202);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA2);
 BLITZ_SUBS(doplot, bmchk, 0);
 BLITZ_NAME("Plot", "X,Y,Colour");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1202);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA2);
 BLITZ_SUBS(dopoint, bmchk, 0);
 BLITZ_NAME("Point", "X,Y,Colour");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_bitmaplib, 0x1202, LIB_chipbaselib, BL_LA(1), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(docls, bmchk, 0);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1202, LIB_chipbaselib, BL_LA(1), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(docls2, bmchk, 0);
 BLITZ_NAME("Cls", "[Colour]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, 0x42, 0x42, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1002, LIB_chipbaselib, BL_LA(1),
-           LIB_graphicslib, 0x4600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_UA0, LIB_chipbaselib, BL_LA1,
+           LIB_graphicslib, BL_IFAMIGA|BL_LD6);
 BLITZ_SUBS(doblockscroll, scchk1, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, 0x42, 0x42, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1084, LIB_chipbaselib, BL_LA(1),
-           LIB_graphicslib, 0x4600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_IA0|BL_PD4, LIB_chipbaselib, BL_LA1,
+           LIB_graphicslib, BL_IFAMIGA|BL_LD6);
 BLITZ_SUBS(doblockscroll, scchk2, 0);
 BLITZ_NAME("BlockScroll", "X1,Y1,Width,Height,X2,Y2[,BitMap#]");
 

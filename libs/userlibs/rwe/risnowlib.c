@@ -67,8 +67,6 @@ void _DoKillList(void), risnowlib_libinit(void), risnowlib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {195,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_risnowlib, init, BL_NORET, finit, 0);
 
@@ -80,7 +78,7 @@ BLITZ_NAME("LDoSnow", "listnum,randomtable");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, IA(3, 2));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA3|BL_PD2);
 BLITZ_SUBS(_InitSnowDrop, 0, 0);
 BLITZ_NAME("InitSnowDrop", "listnum,numpoints,bitmap,bp_size");
 

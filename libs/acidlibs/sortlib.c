@@ -45,7 +45,7 @@ BLITZ_LIBHEADER(LIB_sortlib, init, BL_NORET, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_ARRAY | BL_ARRAYEND | BL_UNKNOWN);       /* $38 */
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));                       /* for ffp sorts */
+BLITZ_LIBS(LIB_ffplib, BL_LA6);                         /* for ffp sorts */
 BLITZ_SUBS(dosort, 0, 0);
 BLITZ_NAME("Sort", "Arrayname()");
 

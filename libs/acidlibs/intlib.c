@@ -44,7 +44,7 @@ BLITZ_NULLSUB(newint, 0, 0);                    /* $C102 */
 BLITZ_NULLSUB(oldint, 0, 0);                    /* $C103 */
 /* !nullsub{dovwait,0,0,#graphicslib,$5600}: $5600 = #la6|$4000 as in the
    original (graphics base in a6) */
-BLITZ_NULLSUB(dovwait, 0, 0, LIB_graphicslib, 0x5600); /* $C104 */
+BLITZ_NULLSUB(dovwait, 0, 0, LIB_graphicslib, BL_IFAMIGA|BL_LA6); /* $C104 */
 BLITZ_NULLSUB(cleanup, 0, 0);                   /* $C105 */
 BLITZ_NULLSUB(intlib_goblitz, 0, 0);            /* $C106 */
 BLITZ_NULLSUB(intlib_goamiga, 0, 0);            /* $C107 */

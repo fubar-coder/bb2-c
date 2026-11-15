@@ -106,15 +106,114 @@ static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
 #define BL_NORET    0
 #define BL_LONGRET  1
 
-/* register codes for BLITZ_LIBS: value of lib `lib` into a register */
+/* Register codes for BLITZ_LIBS / BLITZ_NULLSUB (!libs{lib,code,...}):
+   what the compiler loads from library `lib` into a register before the
+   call.  The names are the constants of the original's
+   archive/cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/LIBMACS.BB with
+   the prefix BL_ in capitals (#ld0 = BL_LD0, #ia0 = BL_IA0, #pd0 =
+   BL_PD0 ...).  A code is a word, register | kind:
+     high byte  the register: $00-$07 d0-d7 (#ld0..#ld7), $10-$13 and $16
+                a0-a3 and a6 (#la0..#la3, #la6); $FF00 = pushed onto the
+                stack (#lpush)
+     low byte   the kind:
+       0        the library's variable (its init result, e.g. the library
+                base): #ld*, #la*
+       1        #base: the base item (item 0) of an object library's block
+                of objects: #bd* = #ld*|#base, #ba*
+       2        #used: the currently used object: #ud*, #ua*
+       3        #max: the maximum setting of the compiler options: #md*,
+                #ma*
+       $80|n    #item: the object whose number is in dn (#pd0..#pd7 = n);
+                the pointer ends in an address register: #ia*|#pd*
+   Not in LIBMACS.BB, from the compiler (blitz2.s:11647 toreg; the
+   original sources write them in hex):
+       4        BL_USEDOFF: the a5 offset of the pointer to the used object
+                (move.w #offset,dn; $0604 = d6)
+     $8000      BL_IFBLITZ: loaded only in Blitz mode
+     $4000      BL_IFAMIGA: loaded only in Amiga mode ($5600 = a6)
+   E.g. $1080 = BL_IA0|BL_PD0 (a0 = the object of the number in d0),
+   $1201 = BL_BA2, $0303 = BL_MD3, $5600 = BL_IFAMIGA|BL_LA6. */
 #define BL_LD(n)    ((n) << 8)              /* #ld0..#ld7 */
 #define BL_LA(n)    (0x1000 | ((n) << 8))   /* #la0..#la3, #la6 */
 #define BL_LPUSH    0xff00                  /* #lpush: onto the stack */
 #define BL_BASE     1                       /* #base: item 0 of the objects */
 #define BL_USED     2                       /* #used: current object */
 #define BL_MAX      3                       /* #max: maximum setting */
+#define BL_USEDOFF  4                       /* a5 offset of the used object */
 #define BL_ITEM     0x80                    /* #item: object from param dN */
 #define BL_PD(n)    (n)                     /* #pd0..#pd7 */
+#define BL_IFBLITZ  0x8000                  /* only in Blitz mode */
+#define BL_IFAMIGA  0x4000                  /* only in Amiga mode */
+
+#define BL_LD0 0x0000   /* #ld0..#ld7: the library's variable */
+#define BL_LD1 0x0100
+#define BL_LD2 0x0200
+#define BL_LD3 0x0300
+#define BL_LD4 0x0400
+#define BL_LD5 0x0500
+#define BL_LD6 0x0600
+#define BL_LD7 0x0700
+#define BL_LA0 0x1000   /* #la0..#la3, #la6 */
+#define BL_LA1 0x1100
+#define BL_LA2 0x1200
+#define BL_LA3 0x1300
+#define BL_LA6 0x1600
+
+#define BL_UD0 (BL_LD0 | BL_USED)   /* #ud0..#ud7, #ua0..#ua3, #ua6: used */
+#define BL_UD1 (BL_LD1 | BL_USED)
+#define BL_UD2 (BL_LD2 | BL_USED)
+#define BL_UD3 (BL_LD3 | BL_USED)
+#define BL_UD4 (BL_LD4 | BL_USED)
+#define BL_UD5 (BL_LD5 | BL_USED)
+#define BL_UD6 (BL_LD6 | BL_USED)
+#define BL_UD7 (BL_LD7 | BL_USED)
+#define BL_UA0 (BL_LA0 | BL_USED)
+#define BL_UA1 (BL_LA1 | BL_USED)
+#define BL_UA2 (BL_LA2 | BL_USED)
+#define BL_UA3 (BL_LA3 | BL_USED)
+#define BL_UA6 (BL_LA6 | BL_USED)
+
+#define BL_BD0 (BL_LD0 | BL_BASE)   /* #bd0..#bd7, #ba0..#ba3, #ba6: base */
+#define BL_BD1 (BL_LD1 | BL_BASE)
+#define BL_BD2 (BL_LD2 | BL_BASE)
+#define BL_BD3 (BL_LD3 | BL_BASE)
+#define BL_BD4 (BL_LD4 | BL_BASE)
+#define BL_BD5 (BL_LD5 | BL_BASE)
+#define BL_BD6 (BL_LD6 | BL_BASE)
+#define BL_BD7 (BL_LD7 | BL_BASE)
+#define BL_BA0 (BL_LA0 | BL_BASE)
+#define BL_BA1 (BL_LA1 | BL_BASE)
+#define BL_BA2 (BL_LA2 | BL_BASE)
+#define BL_BA3 (BL_LA3 | BL_BASE)
+#define BL_BA6 (BL_LA6 | BL_BASE)
+
+#define BL_PD0 0        /* #pd0..#pd7: the number register of #item */
+#define BL_PD1 1
+#define BL_PD2 2
+#define BL_PD3 3
+#define BL_PD4 4
+#define BL_PD5 5
+#define BL_PD6 6
+#define BL_PD7 7
+#define BL_IA0 (BL_LA0 | BL_ITEM)   /* #ia0..#ia3, #ia6: item, | BL_PDn */
+#define BL_IA1 (BL_LA1 | BL_ITEM)
+#define BL_IA2 (BL_LA2 | BL_ITEM)
+#define BL_IA3 (BL_LA3 | BL_ITEM)
+#define BL_IA6 (BL_LA6 | BL_ITEM)
+
+#define BL_MD0 (BL_LD0 | BL_MAX)    /* #md0..#md7, #ma0..#ma3, #ma6: max */
+#define BL_MD1 (BL_LD1 | BL_MAX)
+#define BL_MD2 (BL_LD2 | BL_MAX)
+#define BL_MD3 (BL_LD3 | BL_MAX)
+#define BL_MD4 (BL_LD4 | BL_MAX)
+#define BL_MD5 (BL_LD5 | BL_MAX)
+#define BL_MD6 (BL_LD6 | BL_MAX)
+#define BL_MD7 (BL_LD7 | BL_MAX)
+#define BL_MA0 (BL_LA0 | BL_MAX)
+#define BL_MA1 (BL_LA1 | BL_MAX)
+#define BL_MA2 (BL_LA2 | BL_MAX)
+#define BL_MA3 (BL_LA3 | BL_MAX)
+#define BL_MA6 (BL_LA6 | BL_MAX)
 
 /* ------------------------------------------------------ fixed registers */
 

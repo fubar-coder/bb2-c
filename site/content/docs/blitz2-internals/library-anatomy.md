@@ -54,7 +54,7 @@ BLITZ_LIBHEADER(LIB_cliargslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0));
+BLITZ_LIBS(LIB_wbstartuplib, BL_LA0);
 BLITZ_SUBS(GetParString, CheckParNum, 0);
 BLITZ_NAME("Par$", "  parameter$=Par$(Paramter#)   Returns the string value of a parameter.");
 ```
@@ -72,7 +72,7 @@ Line by line:
   type long. A command can have several forms with different numbers of
   arguments; the compiler picks the one that fits the call. A form can
   also end in a group of arguments that may repeat, as `Print` has.
-* **`BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0))`**: before the call, put the
+* **`BLITZ_LIBS(LIB_wbstartuplib, BL_LA0)`**: before the call, put the
   value of the library with the start-up arguments into register a0. This
   is how one library uses what another library's start routine prepared.
   It also makes the compiler copy that other library into the program.

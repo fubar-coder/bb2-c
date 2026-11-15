@@ -99,53 +99,53 @@ BLITZ_LIBHEADER(LIB_displaylib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_DUMTOKE(_toke, "CopList", "");
 
-#define COP 0x1380                      /* #displaylib,$1380: a3 = coplist */
+#define COP (BL_IA3|BL_PD0)             /* #displaylib,$1380: a3 = coplist */
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_spriteslib, BL_LA(0), LIB_displaylib, 0x0604);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_spriteslib, BL_LA0, LIB_displaylib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_initcoplist2, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_spriteslib, BL_LA(0), LIB_displaylib, 0x0604);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_spriteslib, BL_LA0, LIB_displaylib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_initcoplist, 0, 0);
 BLITZ_NAME("InitCopList", "CopList#[,type]|[,ypos,height,type,sprites,colors,numcustoms]");
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 1, BL_PUSH | BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1001);
+BLITZ_LIBS(LIB_displaylib, BL_BA0);
 BLITZ_SUBS(_createdisplay, (void *)1, 0);
 BLITZ_NAME("CreateDisplay", "CopList#[,CopList#..]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, 0x1081);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, BL_IA0|BL_PD1);
 BLITZ_SUBS(_displaybmap, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, 0x1081);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, BL_IA0|BL_PD1);
 BLITZ_SUBS(_displaybmap2, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, 0x1081, LIB_bitmaplib, 0x1182);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, BL_IA0|BL_PD1, LIB_bitmaplib, BL_IA1|BL_PD2);
 BLITZ_SUBS(_displaydbmap, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK, BL_WORD, BL_WORD, BL_QUICK, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, 0x1081, LIB_bitmaplib, 0x1184);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_bitmaplib, BL_IA0|BL_PD1, LIB_bitmaplib, BL_IA1|BL_PD4);
 BLITZ_SUBS(_displaydbmap2, _checkcoplist, 0);
 BLITZ_NAME("DisplayBitMap", "CopList#,bmap[,x,y] [,bmap[,x,y]]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_spriteslib, 0x1181, LIB_displaylib, COP);
+BLITZ_LIBS(LIB_spriteslib, BL_IA1|BL_PD1, LIB_displaylib, COP);
 BLITZ_SUBS(_displaysprite, _checkcoplist, 0);
 BLITZ_NAME("DisplaySprite", "CopList#,Sprite#,X,Y,Sprite Channel");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1081);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA0|BL_PD1);
 BLITZ_SUBS(_displaypalette, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1081);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA0|BL_PD1);
 BLITZ_SUBS(_displaypalette2, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1081);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA0|BL_PD1);
 BLITZ_SUBS(_displaypalette3, _checkcoplist, 0);
 BLITZ_NAME("DisplayPalette", "CopList#,Palette# [,coloroffset] [,coloroffset,bankoffset]");
 
@@ -163,10 +163,10 @@ BLITZ_NAME("DisplayAdjust", "CopList#,fetchwid,ddfstrt,ddfstop,diwstrt,diwstop")
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1083);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA0|BL_PD3);
 BLITZ_SUBS(_customcols2, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1083);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA0|BL_PD3);
 BLITZ_SUBS(_customcols, _checkcoplist, 0);
 BLITZ_NAME("CustomColors", "CopList#,CCOffset,YPos,Palette,startcol,numcols[,thru256flag]  ;ecs=2+n aga=2+n+n+n/16");
 
@@ -187,10 +187,10 @@ BLITZ_NAME("DisplayDblScan", "CopList#,Mode[,copoffset]   ;2");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1282);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA2|BL_PD2);
 BLITZ_SUBS(_displayrainbow0, _checkcoplist, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, 0x1282);
+BLITZ_LIBS(LIB_displaylib, COP, LIB_palettelib, BL_IA2|BL_PD2);
 BLITZ_SUBS(_displayrainbow, _checkcoplist, 0);
 BLITZ_NAME("DisplayRainbow", "CopList#,Register,Palette[,copoffset] ;ecs=1 aga=4");
 
@@ -225,7 +225,7 @@ BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 /* BUG(orig) (#324): copied from DisplaySprite - $1181 loads a sprite object for
    CCOffset (d1 arrives shifted by 4, checked against the sprite maximum) */
-BLITZ_LIBS(LIB_spriteslib, 0x1181, LIB_displaylib, COP);
+BLITZ_LIBS(LIB_spriteslib, BL_IA1|BL_PD1, LIB_displaylib, COP);
 BLITZ_SUBS(_customsprites, _checkcoplist, 0);
 BLITZ_NAME("CustomSprites", "CopList#,CCOffset,YPos,NumSprites ;4n+2");
 

@@ -37,7 +37,7 @@ BLITZ_OSCALL(LIB_rexxsyslib, -450, "LockRexxBase_", "(resource)", d0);
 BLITZ_OSCALL(LIB_rexxsyslib, -456, "UnlockRexxBase_", "(resource)", d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_rexxsyslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_rexxsyslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "rexxsyslib.library";

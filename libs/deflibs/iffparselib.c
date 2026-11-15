@@ -67,7 +67,7 @@ BLITZ_OSCALL(LIB_iffparselib, -264, "GoodType_", "(type)", d0);
 BLITZ_OSCALL(LIB_iffparselib, -270, "IDtoStr_", "(id,buf)", d0, a0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_iffparselib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_iffparselib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "iffparse.library";

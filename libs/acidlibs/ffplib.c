@@ -25,9 +25,9 @@ BLITZ_ENTRY_DECL(finit);
 
 /* !syslibheader{64935,$c900,$c901,init,1,finit,0} */
 BLITZ_SYSLIBHEADER7(LIB_ffplib, 0xc900, 0xc901, init, BL_LONGRET, finit, 0);
-BLITZ_NULLSUB(0, 0, 0, LIB_ffplib, BL_LA(6));           /* $C900 getffpbase */
+BLITZ_NULLSUB(0, 0, 0, LIB_ffplib, BL_LA6);             /* $C900 getffpbase */
 BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0, LIB_ffplib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, codefinit, 0, 0, LIB_ffplib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char ffpname[] = "mathffp.library";

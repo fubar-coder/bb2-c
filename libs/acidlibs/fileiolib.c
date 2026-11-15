@@ -174,49 +174,49 @@ BLITZ_LIBHEADER(LIB_fileiolib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_fileiolib, 0x1180, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA1|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doopenfile, 0, 0);
 BLITZ_NAME("OpenFile", "(File#,Filename$)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1380, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dofreefile, 0, 0);
 BLITZ_NAME("CloseFile", "File#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(dokillfile, 0, 0);
 BLITZ_NAME("KillFile", "Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(1, 1, BL_WORD, BL_VARPTR);
-BLITZ_LIBS(LIB_fileiolib, 0x1380);
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dorecord, 0, 0);
 BLITZ_NAME("Fields", "File#,Var1[,Var2...]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1380, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doput, racchk, 0);
 BLITZ_NAME("Put", "File#,Record");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1380, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doget, racchk, 0);
 BLITZ_NAME("Get", "File#,Record");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1380);
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dofileoutput, 0, 0);
 BLITZ_NAME("FileOutput", "File#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1380);
+BLITZ_LIBS(LIB_fileiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dofileinput, 0, 0);
 BLITZ_NAME("FileInput", "File#");
 
@@ -224,25 +224,25 @@ BLITZ_NULLSUB(0, 0, 0);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dolof, fileiolib_fchk, 0);
 BLITZ_NAME("Lof", "(File#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dofileseek, fileiolib_fchk, 0);
 BLITZ_NAME("FileSeek", "File#,Position");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1280);
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0);
 BLITZ_SUBS(doloc, fileiolib_fchk, 0);
 BLITZ_NAME("Loc", "(File#)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doeof, fileiolib_fchk, 0);
 BLITZ_NAME("Eof", "(File#)");
 
@@ -252,37 +252,37 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dodbufflen, dbchk, 0);
 BLITZ_NAME("DosBuffLen", "Bytes");
 
-BLITZ_NULLSUB_AT(init, fileiolib_codeinit, 0, 0, LIB_doslib, BL_LD(0));
+BLITZ_NULLSUB_AT(init, fileiolib_codeinit, 0, 0, LIB_doslib, BL_LD0);
 
 BLITZ_DUMTOKE(_toke, "File", "");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_fileiolib, 0x1180, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA1|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doreadfile, 0, 0);
 BLITZ_NAME("ReadFile", "(File#,Filename$)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_fileiolib, 0x1180, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA1|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dowritefile, 0, 0);
 BLITZ_NAME("WriteFile", "(File#,Filename$)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dowritemem, fileiolib_fchk, 0);
 BLITZ_NAME("WriteMem", "File#,Address,Length");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_fileiolib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doreadmem, fileiolib_fchk, 0);
 BLITZ_NAME("ReadMem", "File#,Address,Length");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(doexists, 0, 0);
 BLITZ_NAME("Exists", "(Filename$)");
 
@@ -293,7 +293,7 @@ BLITZ_ENTRY_DECL(_free);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
-BLITZ_NULLSUB_AT(_free, dofreefile, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(_free, dofreefile, 0, 0, LIB_doslib, BL_LA6);
 
 /* !libfin{_toke,_load,_save,_use,_free,5,5} */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);

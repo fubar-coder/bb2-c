@@ -97,11 +97,6 @@ BLITZ_ENTRY_DECL(_free);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* #ia<a>|#pd<p>: the object of the number in d<p> into a<a>; #ua<a>: the
-   used object */
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))
-#define UA(a) (BL_LA(a) | BL_USED)
-
 /* !libheader {#rimapeditorlib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_rimapeditorlib, init, BL_NORET, finit, 0);
 
@@ -109,13 +104,13 @@ BLITZ_DUMTOKE(_toke, "MapObject", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 0), LIB_shapeslib, IA(1, 1));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_shapeslib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_shapetosquare, 0, 0);
 BLITZ_NAME("ShapeTo1616", "source shape,dest shape");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 0));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_shapemaskfill, 0, 0);
 BLITZ_NAME("ShapeMaskFill", "shape#");
 
@@ -125,7 +120,7 @@ BLITZ_NULLSUB(0, 0, 0);
 
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 0));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_scanshapes, 0, 0);
 BLITZ_NAME("ScanShapes", "startnum,highest - returns last shape scanned (null shape)");
 
@@ -149,79 +144,79 @@ BLITZ_NAME("ScanMaxdepth", "- returns max depth found after Scan");
 
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapdatachanged, 0, 0);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapdatachanged2, 0, 0);
 BLITZ_NAME("MapDataChanged", "[newstate] - has map changed since last load?");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 0));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_fillbitplane, 0, 0);
 BLITZ_NAME("FillBitplane", "bitmap#,width,height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_rimapeditorlib, IA(3, 0), LIB_rimapeditorlib, 0x0604);
+BLITZ_LIBS(LIB_rimapeditorlib, BL_IA3|BL_PD0, LIB_rimapeditorlib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_newmap, 0, 0);
 BLITZ_NAME("CreateMap", "map#,width,height,bwidth,bheight,name$");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(8, UA(3));                   /* the source's literal 8 */
+BLITZ_LIBS(8, BL_UA3);                  /* the source's literal 8 */
 BLITZ_SUBS(_mapdataadr, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapdataadr2, 0, 0);
 BLITZ_NAME("MapDataAdr", "[x,y] - returns adress of the current map");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapdatasize, 0, 0);
 BLITZ_NAME("MapDataSize", "- returns byte size of map data");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapobjwidth, 0, 0);
 BLITZ_NAME("MapObjWidth", "- returns width of the current map");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapobjheight, 0, 0);
 BLITZ_NAME("MapObjheight", "- returns height of the current map");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapgrab, 0, 0);
 BLITZ_NAME("MapDataGrab", "address,datasize,mapnull");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(1));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA1);
 BLITZ_SUBS(_mapobjname, 0, 0);
 BLITZ_NAME("MapObjName$", "- returns name of the current map");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_setmapobjname, 0, 0);
 BLITZ_NAME("SetMapObjName$", "name$");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapobjviewx, 0, 0);
 BLITZ_NAME("MapObjViewX", "- returns viewx of the current map");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_mapobjviewy, 0, 0);
 BLITZ_NAME("MapObjViewY", "- returns viewy of the current map");
 
@@ -233,10 +228,10 @@ BLITZ_NAME("MapOutText", "x,y,rastport,address/string");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_rubthroughmap1, 0, 0);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_rimapeditorlib, IA(0, 0), LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_IA0|BL_PD0, LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_rubthroughmap2, 0, 0);
 BLITZ_NAME("RubThroughMap", "[mapobject#]");
 
@@ -248,19 +243,19 @@ BLITZ_NAME("SetStencil", "<array> - a byte array holding stencil data");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_candraw, 0, 0);
 BLITZ_NAME("MapCanDraw", "(shape#,mapx,mapy)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_lastcandrawaddress, 0, 0);
 BLITZ_NAME("MapCanDrawAddr", "- returns last address calculated by DoDraw");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_rimapeditorlib, UA(3));
+BLITZ_LIBS(LIB_rimapeditorlib, BL_UA3);
 BLITZ_SUBS(_clearrubthroughmap, 0, 0);
 BLITZ_NAME("ClearRubThroughMap", "");
 
@@ -284,7 +279,7 @@ BLITZ_NAME("MapOutTextRight", "x,y,rastport,address/string");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, UA(0));
+BLITZ_LIBS(LIB_windowslib, BL_UA0);
 BLITZ_SUBS(rimapeditorlib_SetWindowDraw, 0, 0);
 BLITZ_NAME("SetWindowDraw", "mode    -- 0=normal, 1=meshed");
 

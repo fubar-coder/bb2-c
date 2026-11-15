@@ -111,7 +111,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dopopoutput, popoutputcheck, 0);
 BLITZ_NAME("PopOutput", "");
 
-BLITZ_NULLSUB_AT(init, inputoutputlib_codeinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, inputoutputlib_codeinit, 0, 0, LIB_doslib, BL_LA6);
 
 BLITZ_LIBFIN();
 

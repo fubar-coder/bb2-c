@@ -59,11 +59,11 @@ BLITZ_LIBHEADER(LIB_risoundlib, init, BL_NORET, finit, 0);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0), LIB_execlib, BL_LA(6));
+BLITZ_LIBS(LIB_audiolib, BL_IA0|BL_PD0, LIB_execlib, BL_LA6);
 BLITZ_SUBS(risoundlib_loadsounds, 0, 0);
 BLITZ_NAME("CludgeSound", "sound#,address");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA6);
 BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();

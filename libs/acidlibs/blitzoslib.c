@@ -127,12 +127,12 @@ BLITZ_LIBHEADER(LIB_blitzoslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_DUMTOKE(_toke, "Page", "");
 
-#define PAGE   LIB_blitzoslib, 0x1380           /* a3 = page of param d0 */
-#define UPAGE  LIB_blitzoslib, 0x1302           /* #ua3: a3 = used page */
+#define PAGE   LIB_blitzoslib, BL_IA3|BL_PD0    /* a3 = page of param d0 */
+#define UPAGE  LIB_blitzoslib, BL_UA3           /* a3 = used page */
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1281, PAGE, LIB_blitzoslib, 0x0604);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA2|BL_PD1, PAGE, LIB_blitzoslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_initpage, 0, 0);
 BLITZ_NAME("InitPage", "Page#,BitMap#,NumBoxes");
 
@@ -216,16 +216,16 @@ BLITZ_NAME("SetBoxString", "Box#,String$");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_blitzoslib, 0x1102);             /* #ua1: a1! */
+BLITZ_LIBS(LIB_blitzoslib, BL_UA1);             /* a1! */
 BLITZ_SUBS(_boxstring, 1, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_blitzoslib, 0x1180);             /* a1! */
+BLITZ_LIBS(LIB_blitzoslib, BL_IA1|BL_PD0);      /* a1! */
 BLITZ_SUBS(_boxstring2, 1, 0);
 BLITZ_NAME("BoxString", "(Box#)|(Page#,Box#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(UPAGE, LIB_bitmaplib, 0x1281);
+BLITZ_LIBS(UPAGE, LIB_bitmaplib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_boxshow, 1, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(UPAGE);
@@ -243,7 +243,7 @@ BLITZ_ARGS(BL_WORD, BL_STRING);
 BLITZ_LIBS(UPAGE);
 BLITZ_SUBS(_boxprint, 1, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(UPAGE, LIB_banklib, 0x1281);
+BLITZ_LIBS(UPAGE, LIB_banklib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_boxprint2, 1, 0);
 BLITZ_NAME("BoxPrint", "Box#[,String$]|[Bank#,Line]");
 

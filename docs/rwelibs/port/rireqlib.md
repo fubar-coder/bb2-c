@@ -22,8 +22,8 @@ library and frees the block.
 All routines are C behind `BLITZ_THUNK`; the requesters are called with
 `BLITZ_BASEJSR` (a0 = the structure, a6 = the library base), the result
 string is written through `blitz_string` (a3). `ReqOutput` gets the window
-object in a0 (`!libs {#windowslib,#ia0|#pd0}` = `BL_LA(0) | BL_ITEM |
-BL_PD(0)`). The structures `FrStruct` (34 bytes + 32 longs) and the colour
+object in a0 (`!libs {#windowslib,#ia0|#pd0}` = `BL_IA0|BL_PD0`).
+The structures `FrStruct` (34 bytes + 32 longs) and the colour
 requester's are packed C structs with the original's initial values. The
 title length is read from -4(a2) without changing a2 (DIFF as in all C
 ports, `docs/libs/cmdlibs-port.md` "General"). init returns d0 unchanged

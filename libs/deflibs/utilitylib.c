@@ -65,7 +65,7 @@ BLITZ_OSCALL(LIB_utilitylib, -264, "RemNamedObject_", "(object,message)", a0, a1
 BLITZ_OSCALL(LIB_utilitylib, -270, "GetUniqueID_", "");
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_utilitylib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_utilitylib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "utility.library";

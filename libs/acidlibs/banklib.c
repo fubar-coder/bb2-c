@@ -75,46 +75,46 @@ BLITZ_LIBHEADER(LIB_banklib, 0, BL_NORET, 0, 0);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_banklib, 0x1080);
+BLITZ_LIBS(LIB_banklib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_bankloc, 0, 0);
 BLITZ_NAME_AT(_toke, "Bank", "(bank#)  ;returns location of bank, 0 if not in use");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_banklib, 0x1380);
+BLITZ_LIBS(LIB_banklib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_initbank, 0, 0);
 BLITZ_NAME("InitBank", "bank#,size,memtype ;0=fast 2=chip 65536=clrmem");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_banklib, 0x1380);
+BLITZ_LIBS(LIB_banklib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_freebank, 0, 0);
 BLITZ_NAME("FreeBank", "bank#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_doslib, BL_LA(6), LIB_banklib, 0x1380);
+BLITZ_LIBS(LIB_doslib, BL_LA6, LIB_banklib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_bankload, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_LONG);
-BLITZ_LIBS(LIB_doslib, BL_LA(6), LIB_banklib, 0x1380);
+BLITZ_LIBS(LIB_doslib, BL_LA6, LIB_banklib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_bankloadb, 0, 0);
 BLITZ_NAME("LoadBank", "bank#,filename$[,memtype]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_doslib, BL_LA(6), LIB_banklib, 0x1380);
+BLITZ_LIBS(LIB_doslib, BL_LA6, LIB_banklib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_banksave, 0, 0);
 BLITZ_NAME("SaveBank", "bank#,filename$");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_banklib, 0x1080);
+BLITZ_LIBS(LIB_banklib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_bankloc, 0, 0);
 BLITZ_NAME("BankLoc", "(bank#)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_banklib, 0x1080);
+BLITZ_LIBS(LIB_banklib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_banksize, 0, 0);
 BLITZ_NAME("BankSize", "(bank#)");
 

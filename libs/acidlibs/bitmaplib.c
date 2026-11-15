@@ -78,22 +78,22 @@ BLITZ_LIBHEADER(LIB_bitmaplib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1380, LIB_bitmaplib, 0x0604);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_bitmap, _bitmapchk, 0);
 BLITZ_NAME_AT(_toke, "BitMap", "BitMap#,Width,Height,Depth");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_bitmaplib, 0x1180);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA1|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_bitload), _bitloadchk, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1180, LIB_palettelib, 0x1082);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA1|BL_PD0, LIB_palettelib, BL_IA0|BL_PD2);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_bitload2), _bitloadchk, 0);
 BLITZ_NAME("LoadBitMap", "BitMap#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1280, LIB_bitmaplib, 0x1381, LIB_bitmaplib, 0x0604);
+BLITZ_LIBS(LIB_screenslib, BL_IA2|BL_PD0, LIB_bitmaplib, BL_IA3|BL_PD1, LIB_bitmaplib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(doscbitmap, bitmaplib_sbchk, 0);
 BLITZ_NAME("ScreensBitMap", "Screen#,BitMap#");
 
@@ -101,19 +101,19 @@ BLITZ_NULLSUB(extbitmap, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1280, LIB_bitmaplib, 0x1381);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA2|BL_PD0, LIB_bitmaplib, BL_IA3|BL_PD1);
 BLITZ_SUBS(docopybitmap, cbchk, 0);
 BLITZ_NAME("CopyBitMap", "Src BitMap#,Dest BitMap#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1280, LIB_bitmaplib, 0x1381, LIB_bitmaplib, 0x0604);
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_bitmaplib, BL_IA3|BL_PD1, LIB_bitmaplib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(doshbitmap, shchk, 0);
 BLITZ_NAME("ShapesBitMap", "Shape#,BitMap#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, 0x1380, LIB_bitmaplib, 0x0604);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(_cludgebitmap, cludgechk, 0);
 BLITZ_NAME("CludgeBitMap", "BitMap#,Width,Height,Depth,Memory");
 

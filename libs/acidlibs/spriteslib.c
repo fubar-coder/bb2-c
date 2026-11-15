@@ -85,47 +85,47 @@ BLITZ_LIBHEADER(LIB_spriteslib, init, BL_LONG, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_shapeslib, 0x1281);
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(dogetsprite, gspchk, 0);
 BLITZ_NAME("GetaSprite", "Sprite#,Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_blitzcoplib, 0x1202);
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_blitzcoplib, BL_UA2);
 BLITZ_SUBS(doshowsprite, BLITZONLY(spriteslib_sspchk), 0);
 BLITZ_NAME("ShowSprite", "Sprite#,X,Y,Sprite Channel");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1202);
+BLITZ_LIBS(LIB_blitzcoplib, BL_UA2);
 BLITZ_SUBS(doinfront1, BLITZONLY(infchk), 0);
 BLITZ_NAME("InFront", "Sprite Channel");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1202);
+BLITZ_LIBS(LIB_blitzcoplib, BL_UA2);
 BLITZ_SUBS(doinfront2, BLITZONLY(infchk), 0);
 BLITZ_NAME("InFrontF", "Sprite Channel");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1202);
+BLITZ_LIBS(LIB_blitzcoplib, BL_UA2);
 BLITZ_SUBS(doinfront1, BLITZONLY(infchk), 0);
 BLITZ_NAME("InFrontB", "Sprite Channel");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_spriteslib, 0x1281, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_spriteslib, BL_IA2|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(dosavesprites), ssz, 0);
 BLITZ_NAME("SaveSprites", "Sprite#,Sprite#,Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_spriteslib, 0x1201, LIB_spriteslib, 0x0203,
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_spriteslib, BL_BA2, LIB_spriteslib, BL_MD2,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(doloadsprites2), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_spriteslib, 0x1281, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_spriteslib, BL_IA2|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(AMIGAONLY(doloadsprites), ssz, 0);
 BLITZ_NAME("LoadSprites", "Sprite#[,Sprite#],Filename$");
 

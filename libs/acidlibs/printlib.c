@@ -108,19 +108,19 @@ BLITZ_LIBHEADER(LIB_printlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 1, BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(doprint, 0, 0);
 BLITZ_NAME("Print", "Expression[,Expression...]");
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 1, BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(donprint, 0, 0);
 BLITZ_NAME("NPrint", "Expression[,Expression...]");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(dostrstr, 0, 0);
 BLITZ_NAME("Str$", "(Expression)");
 
@@ -138,7 +138,7 @@ BLITZ_NAME("FloatMode", "Mode : -1=standard, 0=guess, 1=exp");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_UNKNOWN);
-BLITZ_LIBS(LIB_ffplib, BL_LA(6));
+BLITZ_LIBS(LIB_ffplib, BL_LA6);
 BLITZ_SUBS(doustrstr, 0, 0);
 BLITZ_NAME("UStr$", "(Expression)");
 

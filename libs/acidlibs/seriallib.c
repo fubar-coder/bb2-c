@@ -152,7 +152,7 @@ BLITZ_NAME("SetSerialParams", "unit#");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_utillib, BL_LA(0));
+BLITZ_LIBS(LIB_utillib, BL_LA0);
 BLITZ_SUBS(checkevent, 0, 0);
 BLITZ_NAME("SerialEvent", "(unit#)");
 

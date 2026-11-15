@@ -116,23 +116,23 @@ BLITZ_LIBHEADER(LIB_palettelib, init, BL_LONGRET, finit, BLITZ_ERROR_AREA);
 
 /* !libs codes of the Blitz/Amiga tokens: graphics in a6 (Amiga mode),
    used screen in a0/a2 (Amiga), used slice in a0 (Blitz) */
-#define L_GFXA   LIB_graphicslib, 0x5600
-#define L_SCRA0  LIB_screenslib, 0x5002
-#define L_SCRA2  LIB_screenslib, 0x5202
-#define L_SLICE  LIB_blitzcoplib, 0x9002
+#define L_GFXA   LIB_graphicslib, BL_IFAMIGA|BL_LA6
+#define L_SCRA0  LIB_screenslib, BL_IFAMIGA|BL_UA0
+#define L_SCRA2  LIB_screenslib, BL_IFAMIGA|BL_UA2
+#define L_SLICE  LIB_blitzcoplib, BL_IFBLITZ|BL_UA0
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_palettelib, 0x1180);
+BLITZ_LIBS(LIB_palettelib, BL_IA1|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dopalload), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1180);
+BLITZ_LIBS(LIB_palettelib, BL_IA1|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dopalload2), 0, 0);
 BLITZ_NAME("LoadPalette", "Palette#,Filename$[,Palette Offset]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1380, LIB_screenslib, 0x1202);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA2);
 BLITZ_SUBS(BLITZ_AMIGAONLY(docycle), docyclechk, 0);
 BLITZ_NAME("Cycle", "Palette#");
 
@@ -167,16 +167,16 @@ BLITZ_DUMTOKE(_toke, "Palette", "colour and cycling information");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1080);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(do4bitpalrgb, prgbchk, 0);
 BLITZ_NAME("PalRGB", "Palette#,Colour Register,Red,Green,Blue");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1080);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(dosetcycle1, setcyclechk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_QUICK);
-BLITZ_LIBS(LIB_palettelib, 0x1080);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(dosetcycle2, setcyclechk2, 0);
 BLITZ_NAME("SetCycle", "Palette#,Cycle,Low Colour,High Colour[,Speed]");
 
@@ -188,13 +188,13 @@ BLITZ_NAME("StopCycle", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1002, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_UA0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaargb), aargbchk, 0);
 BLITZ_NAME("AGARGB", "Colour Register,Red,Green,Blue");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1080);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(dopalrgb, aaprgbchk, 0);
 BLITZ_NAME("AGAPalRGB", "Palette#,Colour Register,Red,Green,Blue");
 
@@ -203,7 +203,7 @@ BLITZ_NULLSUB(make4bitrgbs, 0, 0);
 #define AGA_FN(code, name)                                              \
     BLITZ_AFUNCTION(BL_WORD);                                           \
     BLITZ_ARGS(BL_WORD);                                                \
-    BLITZ_LIBS(LIB_screenslib, 0x1002, LIB_graphicslib, BL_LA(6));      \
+    BLITZ_LIBS(LIB_screenslib, BL_UA0, LIB_graphicslib, BL_LA6);        \
     BLITZ_SUBS(code, agacolchk, 0);                                     \
     BLITZ_NAME(name, "(Colour Register)")
 
@@ -213,7 +213,7 @@ AGA_FN(doagablue, "AGABlue");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1380, L_SCRA2, L_GFXA, L_SLICE);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0, L_SCRA2, L_GFXA, L_SLICE);
 BLITZ_SUBS(showpal, showpalchk, 0);
 BLITZ_NAME("ShowPalette", "Palette#");
 
@@ -225,46 +225,46 @@ BLITZ_NAME("NewPaletteMode", "On|Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1280);
+BLITZ_LIBS(LIB_palettelib, BL_IA2|BL_PD0);
 BLITZ_SUBS(_cyclepalette, 0, 0);
 BLITZ_NAME("CyclePalette", "Palette#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK);
-BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_palettelib, 0x1181);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_fadepalette, 0, 0);
 BLITZ_NAME("FadePalette", "SrcPalette#,DestPalette#,Brightness.q");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1380);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_initpalette, 0, 0);
 BLITZ_NAME("InitPalette", "Palette#,NumColors");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1380);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_paletterange, 0, 0);
 BLITZ_NAME("PaletteRange", "Palette#,StartCol,EndCol,r0,g0,b0,r1,g1,b1");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1280, LIB_palettelib, 0x1381);
+BLITZ_LIBS(LIB_palettelib, BL_IA2|BL_PD0, LIB_palettelib, BL_IA3|BL_PD1);
 BLITZ_SUBS(_duplicatepalette, 0, 0);
 BLITZ_NAME("DuplicatePalette", "SrcPalette#,DestPalette#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, 0x1380);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_cludgepalette, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_palettelib, 0x1380);
+BLITZ_LIBS(LIB_palettelib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_cludgepalette2, 0, 0);
 BLITZ_NAME("DecodePalette", "Palette#,MemoryLocation[,Palette Offset]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_QUICK);
-BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_palettelib, 0x1281, LIB_palettelib, 0x1382);
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA2|BL_PD1, LIB_palettelib, BL_IA3|BL_PD2);
 BLITZ_SUBS(_mixpalette, 0, 0);
 BLITZ_NAME("MixPalette", "Palette#,Palette#,DestPalette#,fraction");
 
@@ -276,7 +276,7 @@ BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, usepal, usepalchk, 0, L_SCRA2, L_GFXA, L_SLICE);
 BLITZ_NULLSUB_AT(_free, freepal, 0, 0);
-BLITZ_NULLSUB_AT(init, palettelib_codeinit, 0, 0, LIB_graphicslib, BL_LA(0));
+BLITZ_NULLSUB_AT(init, palettelib_codeinit, 0, 0, LIB_graphicslib, BL_LA0);
 BLITZ_NULLSUB_AT(finit, palettelib_codefinit, 0, 0);
 
 /* !libfin{_toke,_load,_save,_use,_free,4,7} */

@@ -77,7 +77,7 @@ BLITZ_LIBHEADER(LIB_rilvcallhooklib, init, BL_NORET, finit, 0);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_retrievecallhook, 0, 0);
 BLITZ_NAME("RetrieveCallHook", "");
 

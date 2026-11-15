@@ -97,7 +97,7 @@ BLITZ_LIBHEADER(LIB_freqlib, 0, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, BL_VARPTR | BL_STRING, BL_VARPTR | BL_STRING);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dofreq), freqlib_freqchk, 0);
 BLITZ_NAME("FileRequest$", "Title$,Pathname$,Filename$");
 

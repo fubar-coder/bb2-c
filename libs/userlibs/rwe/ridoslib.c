@@ -115,19 +115,19 @@ BLITZ_NAME("WaitNotify", "");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(_lockdoslist, 0, 0);
 BLITZ_NAME("GetDeviceList", "flags");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(ridoslib_nextlistitem, 0, 0);
 BLITZ_NAME("NextDevice", "");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(_unlockdoslist, 0, 0);
 BLITZ_NAME("FreeDeviceList", "");
 

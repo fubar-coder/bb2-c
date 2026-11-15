@@ -28,8 +28,8 @@ void stringass(void), gstringass(void);
 
 /* !syslibheader{#strings2lib,$c700,$c702,0,0,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_strings2lib, 0xc700, 0xc702, 0, BL_NORET, 0, 0);
-BLITZ_NULLSUB(stringass, 0, 0, LIB_memlib, BL_LA(6));   /* $C700 lastring */
-BLITZ_NULLSUB(gstringass, 0, 0, LIB_memlib, BL_LA(6));  /* $C701 astring */
+BLITZ_NULLSUB(stringass, 0, 0, LIB_memlib, BL_LA6);     /* $C700 lastring */
+BLITZ_NULLSUB(gstringass, 0, 0, LIB_memlib, BL_LA6);    /* $C701 astring */
 BLITZ_LIBFIN();
 
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,

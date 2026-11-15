@@ -74,8 +74,6 @@ static void codefinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader{#ribbmaplib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_ribbmaplib, init, BL_NORET, finit, 0);
 
@@ -128,7 +126,7 @@ FN0(BL_LONG, _bbtunnelsloc, "BBTunnelsLoc", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0, 0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_bbgetpalette, 0, 0);
 BLITZ_NAME("BBGetPalette", "palette#");
 

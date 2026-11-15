@@ -104,8 +104,6 @@ void ridatatypeslib_libinit(void), ridatatypeslib_libfinit(void);
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
 
-#define IA(n) (BL_LA(n) | BL_ITEM | BL_PD(n))   /* #ia<n>|#pd<n> */
-
 /* !libheader {#ridatatypeslib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_ridatatypeslib, init, BL_NORET, finit, 0);
 
@@ -150,13 +148,13 @@ BLITZ_NAME("DataTypeCreate", "[&taglist]");
 
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, IA(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_attachdatatype), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, IA(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_attachdatatype2), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, IA(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_attachdatatype3), 0, 0);
 BLITZ_NAME("AttachDataType", "window,id[,x,y,width,height] | window,id,&taglist");
 
@@ -180,7 +178,7 @@ BLITZ_NAME("DataTypeBitmap", "");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_datatypespalette), 0, 0);
 BLITZ_NAME("DataTypesPalette", "palette#");
 

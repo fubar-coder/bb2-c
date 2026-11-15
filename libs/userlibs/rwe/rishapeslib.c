@@ -116,21 +116,19 @@ void rishapeslib_libinit(void), rishapeslib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {#rishapeslib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_rishapeslib, init, BL_NORET, finit, 0);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 0), LIB_execlib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_execlib, BL_LA6);
 BLITZ_SUBS(_loadshapes, 0, 0);
 BLITZ_NAME("CludgeShapes", "shape#,numshapes,address");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(3, 0), LIB_bitmaplib, BL_LA(2) | BL_USED,
-           LIB_shapeslib, BL_LD(6) | BL_MAX);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_UA2,
+           LIB_shapeslib, BL_MD6);
 BLITZ_SUBS(_safetoblit, 0, 0);
 BLITZ_NAME("SafeToBlit", "shape,x,y");
 
@@ -138,30 +136,30 @@ BLITZ_NAME("SafeToBlit", "shape,x,y");
    the flags of #la6, as built) */
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_palettelib, IA(0, 3),
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_palettelib, BL_IA0|BL_PD3,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(_leloadshapes, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(_leloadshapesnop, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, BL_LD(4) | BL_MAX,
-           LIB_shapeslib, BL_LA(3) | BL_BASE, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_MD4,
+           LIB_shapeslib, BL_BA3, LIB_doslib, BL_LA6);
 BLITZ_SUBS(_leloadshapesinglenop, 0, 0);
 /* "This little bastard won't work below": the palette of d3 */
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_palettelib, IA(0, 3), LIB_shapeslib,
-           BL_LD(4) | BL_MAX, LIB_shapeslib, BL_LA(3) | BL_BASE, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_palettelib, BL_IA0|BL_PD3, LIB_shapeslib,
+           BL_MD4, LIB_shapeslib, BL_BA3, LIB_doslib, BL_LA6);
 BLITZ_SUBS(_leloadshapesingle, 0, 0);
 BLITZ_NAME("LELoadShapes", "shape#[,shape#],filename$[,palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(_lesaveshapesnop, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_palettelib, IA(0, 3),
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_palettelib, BL_IA0|BL_PD3,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(_lesaveshapes, 0, 0);
 BLITZ_NAME("LESaveShapes", "shape#,shape#,filename$[,palette#]");
 
@@ -173,24 +171,24 @@ BLITZ_NAME("LECompressShapes", "True|False");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_palettelib, IA(0, 3),
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_palettelib, BL_IA0|BL_PD3,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(_lecludgeshapes, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1), LIB_palettelib, IA(0, 3),
-           LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1, LIB_palettelib, BL_IA0|BL_PD3,
+           LIB_doslib, BL_LA6);
 BLITZ_SUBS(_lecludgeshapes2, 0, 0);
 BLITZ_NAME("LECludgeShapes", "shape#,shape#,address,palette#[,copymemflag]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0);
 BLITZ_SUBS(_leinitshape, 0, 0);
 BLITZ_NAME("LEInitShape", "shape#,width,height,depth");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(2, 0), LIB_shapeslib, IA(3, 1));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD1);
 BLITZ_SUBS(_lescanshapes, 0, 0);
 BLITZ_NAME("LEScanShapes", "startshape#,endshape#");
 
@@ -220,11 +218,11 @@ BLITZ_NAME("LEAutoCookie", "on|off");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_execlib, BL_LA(6));
+BLITZ_LIBS(LIB_execlib, BL_LA6);
 BLITZ_SUBS(_loadshapestoaddress, 0, 0);
 BLITZ_NAME("CludgeShapesToAddress", "Address,numshapes,address");
 
-BLITZ_NULLSUB_AT(finit, rishapeslib_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(finit, rishapeslib_libfinit, 0, 0, LIB_doslib, BL_LA6);
 BLITZ_NULLSUB_AT(init, rishapeslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();

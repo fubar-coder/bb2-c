@@ -86,14 +86,14 @@ BLITZ_LIBHEADER(LIB_fontlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_fontlib, 0x1380, LIB_diskfontlib, BL_LA(6), LIB_fontlib, 0x0504,
-           LIB_graphicslib, 0x0600);
+BLITZ_LIBS(LIB_fontlib, BL_IA3|BL_PD0, LIB_diskfontlib, BL_LA6, LIB_fontlib, BL_LD5|BL_USEDOFF,
+           LIB_graphicslib, BL_LD6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doloadfont), 0, 0);
 BLITZ_NAME("LoadBlitzFont", "BlitzFont#,Fontname.font$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(dobitmapoutput, 0, 0);
 BLITZ_NAME("BitMapOutput", "Bitmap#");
 
@@ -130,12 +130,12 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dobitmapinput, 1, 0);                /* error1 = 1: Blitz mode bit */
 BLITZ_NAME("BitMapInput", "");
 
-BLITZ_NULLSUB_AT(init, fontlib_codeinit, 0, 0, LIB_fontlib, 0x1301, LIB_fontlib, 0x0504,
-                 LIB_diskfontlib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, fontlib_codeinit, 0, 0, LIB_fontlib, BL_BA3, LIB_fontlib, BL_LD5|BL_USEDOFF,
+                 LIB_diskfontlib, BL_LA6);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, dousefont, 0, 0);
-BLITZ_NULLSUB_AT(_free, dofreefont, 0, 0, LIB_graphicslib, BL_LA(6));
+BLITZ_NULLSUB_AT(_free, dofreefont, 0, 0, LIB_graphicslib, BL_LA6);
 
 BLITZ_DUMTOKE(_toke, "BlitzFont", "");
 

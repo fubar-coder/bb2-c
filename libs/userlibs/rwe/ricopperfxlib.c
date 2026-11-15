@@ -100,10 +100,10 @@ BLITZ_NAME("RedoColSplit", "cols_adr,numlines,ccoffset");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, BL_LA(0) | BL_ITEM | BL_PD(0));   /* #ia0|#pd0 */
+BLITZ_LIBS(LIB_displaylib, BL_IA0|BL_PD0);                   /* #ia0|#pd0 */
 BLITZ_SUBS(splitreset2, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_displaylib, BL_IA0|BL_PD0);
 BLITZ_SUBS(splitreset, 0, 0);
 BLITZ_NAME("CopperReset", "coplist#,startline[,ccoffset]");
 

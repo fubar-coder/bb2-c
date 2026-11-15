@@ -86,13 +86,13 @@ BLITZ_LIBHEADER(LIB_medlib, init, BL_NORET, finit, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_medlib, 0x1380, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_medlib, BL_IA3|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(_loadmedmodule, 0, 0);
 BLITZ_NAME("LoadMedModule", "MedModule#,Name");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_medlib, 0x1380);
+BLITZ_LIBS(LIB_medlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_StartMedModule, 0, 0);
 BLITZ_NAME("StartMedModule", "MedModule#");
 
@@ -146,7 +146,7 @@ BLITZ_NAME("SetMedMask", "Channel Mask");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_medlib, 0x1380);
+BLITZ_LIBS(LIB_medlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_cludgemedmodule, 0, 0);
 BLITZ_NAME("DecodeMedModule", "MedModule#,MemoryLocation");
 

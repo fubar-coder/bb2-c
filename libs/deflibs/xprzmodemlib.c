@@ -33,7 +33,7 @@ BLITZ_OSCALL(LIB_xprzmodemlib, -54, "XProtocolHostMon_", "(io,serbuff,actual,max
 BLITZ_OSCALL(LIB_xprzmodemlib, -60, "XProtocolUserMon_", "(io,serbuff,actual,maxsize)", a0, a1, d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_xprzmodemlib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_xprzmodemlib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "xprzmodem.library";

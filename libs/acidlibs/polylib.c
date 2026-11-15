@@ -92,61 +92,61 @@ BLITZ_LIBHEADER(LIB_polylib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkycls, 0, 0);
 BLITZ_NAME("ChunkyCLS", "color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkyplot, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkyplotclip, 0, 0);
 BLITZ_NAME("ChunkyPlot", "x,y,color,[,CLIP]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkyvlin, _chunkyvlinchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkyvlinclip, 0, 0);
 BLITZ_NAME("ChunkyVlin", "x,y1,y2,color,[,CLIP]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkypoly, BLITZ_BLITZONLY_CHK(_polychk), 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1302);
+BLITZ_LIBS(LIB_displaylib, BL_UA3);
 BLITZ_SUBS(_chunkypoly2, BLITZ_BLITZONLY_CHK(_polychk), 0);
 BLITZ_NAME("ChunkyPoly", "numpts,*coords.w,color[,noblitter]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3);
 BLITZ_SUBS(_bitmappoly, _polychk, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1083);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_IA0|BL_PD3);
 BLITZ_SUBS(_bitmappoly2, _polychk, 0);
 BLITZ_NAME("BitMapPoly", "numpts,*coords.w,color[,ditherbitmap]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_rendertobitmap, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_bitmaplib, 0x1181);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_rendertobitmap2, 0, 0);
 BLITZ_NAME("RenderToBitmap", "BitMap#[,DitherBitMap#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1080);
+BLITZ_LIBS(LIB_displaylib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_rendertochunky, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_displaylib, 0x1080);
+BLITZ_LIBS(LIB_displaylib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_rendertochunky2, 0, 0);
 BLITZ_NAME("RenderToChunky", "CopList#[,split]");
 

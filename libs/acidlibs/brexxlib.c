@@ -92,7 +92,7 @@ BLITZ_ENTRY_DECL(_free);
 /* !libheader{#brexxlib,init,0,finit,errors} */
 BLITZ_LIBHEADER(LIB_brexxlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
-#define TAPEOBJ LIB_brexxlib, 0x1380            /* a3 = tape object */
+#define TAPEOBJ LIB_brexxlib, BL_IA3|BL_PD0     /* a3 = tape object */
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
@@ -114,13 +114,13 @@ BLITZ_NAME("PlayBack", "[Tape#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(TAPEOBJ, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(TAPEOBJ, LIB_doslib, BL_LA6);
 BLITZ_SUBS(dosavetape, 0, 0);
 BLITZ_NAME("SaveTape", "Tape#,Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(TAPEOBJ, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(TAPEOBJ, LIB_doslib, BL_LA6);
 BLITZ_SUBS(doloadtape, 0, 0);
 BLITZ_NAME("LoadTape", "Tape#,filename$");
 

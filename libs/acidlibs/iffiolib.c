@@ -71,7 +71,7 @@ BLITZ_NULLSUB(ifffind, 0, 0);
 BLITZ_NULLSUB(iffskip, 0, 0);
 BLITZ_NULLSUB(iffread, 0, 0);
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_doslib, BL_LA(0));
+BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_doslib, BL_LA0);
 
 BLITZ_LIBFIN();
 

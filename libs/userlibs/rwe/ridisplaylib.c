@@ -56,7 +56,7 @@ BLITZ_NAME("InitView", "height,depth,numsprites,numcolours");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, BL_LA(0) | BL_PD(0));
+BLITZ_LIBS(LIB_bitmaplib, BL_LA0|BL_PD0);
 BLITZ_SUBS(_viewbitmap, 0, 0);
 BLITZ_NAME("ViewBitmap", "bitmap");
 

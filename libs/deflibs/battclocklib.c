@@ -34,7 +34,7 @@ BLITZ_OSCALL(LIB_battclocklib, -12, "ReadBattClock_", "");
 BLITZ_OSCALL(LIB_battclocklib, -18, "WriteBattClock_", "(time)", d0);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_battclocklib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_battclocklib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "battclock.resource";

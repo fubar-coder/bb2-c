@@ -154,7 +154,7 @@ BLITZ_OSCALL(LIB_graphicslib, -798, "ModeNotAvailable_", "(modeID)", d0);
 BLITZ_OSCALL(LIB_graphicslib, -804, "WeighTAMatch_", "(reqTextAttr,targetTextAttr,targetTags)", a0, a1, a2);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_graphicslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_graphicslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "graphics.library";

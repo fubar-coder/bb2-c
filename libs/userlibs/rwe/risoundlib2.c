@@ -97,14 +97,12 @@ void _AHIRequestedFreq(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define UA0 (BL_LA(0) | BL_USED)        /* #ua0 */
-
 /* !libheader {#risoundlib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_risoundlib, init, BL_NORET, finit, 0);
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0), LIB_execlib, BL_LA(6));
+BLITZ_LIBS(LIB_audiolib, BL_IA0|BL_PD0, LIB_execlib, BL_LA6);
 BLITZ_SUBS(risoundlib2_loadsounds, 0, 0);
 BLITZ_NAME("CludgeSound", "sound#,address");
 
@@ -125,13 +123,13 @@ BLITZ_NAME("CloseAHI", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_audiolib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_PlaySoundAHI, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_QUICK);
-BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_audiolib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_PlaySoundAHI1, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_QUICK, BL_QUICK);
-BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_audiolib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_PlaySoundAHI2, 0, 0);
 BLITZ_NAME("PlaySoundAHI", "sound,[volume,[balance]]");
 
@@ -151,22 +149,22 @@ BLITZ_NAME("PlayRawAHI", "address,length,frequency,[volume,[balance]]");
    arguments are mixed up */
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest1), 0, 0);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest3), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest4), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest2), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest5), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, UA0);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(_AHIOutputRequest6), 0, 0);
 BLITZ_NAME("AHIOutputRequest", "[x,y,width,height[,modeid,[frequency]]]");
 
@@ -182,7 +180,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_AHIRequestedFreq, 0, 0);
 BLITZ_NAME("AHIRequestedFreq", "");
 
-BLITZ_NULLSUB_AT(finit, risoundlib2_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(finit, risoundlib2_libfinit, 0, 0, LIB_doslib, BL_LA6);
 BLITZ_NULLSUB_AT(init, risoundlib2_libinit, 0, 0);
 
 BLITZ_LIBFIN();

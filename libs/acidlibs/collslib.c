@@ -82,19 +82,19 @@ BLITZ_NAME("SetCollHi", "Bitplanes");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_shapeslib, 0x1183);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_shapeslib, BL_IA1|BL_PD3);
 BLITZ_SUBS(doshapeshit, shitchk, 0);
 BLITZ_NAME("ShapesHit", "(Shape#,X,Y,Shape#,X,Y)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_spriteslib, 0x1183);
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_spriteslib, BL_IA1|BL_PD3);
 BLITZ_SUBS(doshsphit, shspchk, 0);
 BLITZ_NAME("ShapeSpriteHit", "(Shape#,X,Y,Sprite#,X,Y)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_spriteslib, 0x1080, LIB_spriteslib, 0x1183);
+BLITZ_LIBS(LIB_spriteslib, BL_IA0|BL_PD0, LIB_spriteslib, BL_IA1|BL_PD3);
 BLITZ_SUBS(dosphit, spspchk, 0);
 BLITZ_NAME("SpritesHit", "(Sprite#,X,Y,Sprite#,X,Y)");
 

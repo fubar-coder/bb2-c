@@ -77,8 +77,6 @@ void _InitAnim2(void), _InitAnim(void), _InitAnim3(void), _NextAnimFrame(void);
 void _AnimLoop(void), _CountFrames(void), _AnimDepth(void), _AnimWidth(void);
 void _AnimHeight(void);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {#rianimlib,0,0,0,0} */
 BLITZ_LIBHEADER(LIB_rianimlib, 0, BL_NORET, 0, 0);
 
@@ -90,13 +88,13 @@ BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS0();
 BLITZ_SUBS(_InitAnim, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 1));                /* !bmap {0,1} */
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD1);           /* !bmap {0,1} */
 BLITZ_SUBS(_InitAnim3, 0, 0);
 BLITZ_NAME("RIAnimInit", "(address,bitmap#,palette# [,xy_offset]|[,x,y])");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_BYTE);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 0));                /* !bmap {0,0} */
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);           /* !bmap {0,0} */
 BLITZ_SUBS(_NextAnimFrame, 0, 0);
 BLITZ_NAME("RINextAnimFrame", "(bitmap#)");
 

@@ -193,13 +193,13 @@ BLITZ_NAME("RTEZPathRequest", "(Title$)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_windowslib, BL_PD(0) + (BL_LA(1) | BL_ITEM));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_rtlockwin, 0, 0);
 BLITZ_NAME("RTLockWindow", "(Window#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, BL_PD(0) + (BL_LA(1) | BL_ITEM));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_rtunlockwin, 0, 0);
 BLITZ_NAME("RTUnlockWindow", "Window#,Lock");
 
@@ -251,7 +251,7 @@ BLITZ_NAME("RTNextPathEntry", "");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
-BLITZ_LIBS(LIB_windowslib, BL_LA(1) | BL_USED);
+BLITZ_LIBS(LIB_windowslib, BL_UA1);
 BLITZ_SUBS(_rtasrequest, 0, 0);
 BLITZ_NAME("RTASyncRequest", "(Title$,BodyText$,GadgetText$)");
 
@@ -287,7 +287,7 @@ BLITZ_NAME("IsReqToolsActive", "");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_STRING, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, BL_LA(1) | BL_USED);
+BLITZ_LIBS(LIB_windowslib, BL_UA1);
 BLITZ_SUBS(_rtasPrequest, 0, 0);
 BLITZ_NAME("RTASyncPaletteRequest", "(Title$,FirstColour)");
 

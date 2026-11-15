@@ -84,10 +84,10 @@ BLITZ_LIBHEADER(LIB_blitzcoplib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1380, LIB_blitzcoplib, 0x0604, LIB_graphicslib, 0x1000);
+BLITZ_LIBS(LIB_blitzcoplib, BL_IA3|BL_PD0, LIB_blitzcoplib, BL_LD6|BL_USEDOFF, LIB_graphicslib, BL_LA0);
 BLITZ_SUBS(doqslice, slicechk, 0);
 BLITZ_ARGS(BL_WORD, 0x42, 0x42, 0x42, BL_LONG, BL_WORD, BL_WORD, BL_WORD, 0x42, 0x42);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1380, LIB_blitzcoplib, 0x0604);
+BLITZ_LIBS(LIB_blitzcoplib, BL_IA3|BL_PD0, LIB_blitzcoplib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(doslice, slicechk2, 0);
 BLITZ_NAME_AT(_toke, "Slice",
               "[Slice#,Y,Flags]|[Slice#,Y,Width,Hite,Flgs,Bitplns,Sprts,Colrs,Fscrnw,Bscrnw]");
@@ -106,34 +106,34 @@ BLITZ_NAME("CustomCop", "Copins$,Y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshow2, nshowchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshow, nshowchk, 0);
 BLITZ_NAME("Show", "Bitmap#[,X,Y]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowf2, showfchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowf3, showfchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowf, showfchk, 0);
 BLITZ_NAME("ShowF", "Bitmap#[,X,Y[,ShowB X]]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowb2, showbchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowb3, showbchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(doshowb, showbchk, 0);
 BLITZ_NAME("ShowB", "Bitmap#[,X,Y[,ShowF X]]");
 
@@ -145,7 +145,7 @@ BLITZ_NAME("CopLen", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_blitzcoplib, 0x1102);
+BLITZ_LIBS(LIB_blitzcoplib, BL_UA1);
 BLITZ_SUBS(blitzcoplib_docolsplit, cspltst, 0);
 BLITZ_NAME("ColSplit", "Colour Register,Red,Green,Blue,Y");
 
@@ -157,7 +157,7 @@ BLITZ_NAME("ShowBlitz", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_blitzcoplib, 0x1001, LIB_blitzcoplib, 0x0003, LIB_graphicslib, 0x1100);
+BLITZ_LIBS(LIB_blitzcoplib, BL_BA0, LIB_blitzcoplib, BL_MD0, LIB_graphicslib, BL_LA1);
 BLITZ_SUBS(dokillslices, 0, 0);
 BLITZ_NAME("FreeSlices", "");
 
@@ -185,7 +185,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dosetblwait, 0, 0);
 BLITZ_NAME("SetBLWait", "Wait move for line 256 (eg:$ffe1fffe");
 
-BLITZ_NULLSUB_AT(init, blitzcoplib_doinit, 0, 0, LIB_blitzcoplib, 0x1001, LIB_blitzcoplib, 0x0003);
+BLITZ_NULLSUB_AT(init, blitzcoplib_doinit, 0, 0, LIB_blitzcoplib, BL_BA0, LIB_blitzcoplib, BL_MD0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);

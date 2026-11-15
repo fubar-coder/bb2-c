@@ -50,7 +50,7 @@ BLITZ_NAME("PeekByte", "addres");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_windowslib, BL_UA0);
 BLITZ_SUBS(rishapezlib_SetWindowDraw, 0, 0);
 BLITZ_NAME("SetWinDrawShapeZ", "mode    -- 0=normal, 1=meshed");
 

@@ -68,8 +68,6 @@ void paladjust(void), paladjust2(void), fillpalette(void), fillpalette2(void);
 void agafillpalette(void), agafillpalette2(void), copycolour(void);
 void cpucls(void), savecmap(void), mergebitplanes(void);
 
-#define IA(n) (BL_LA(n) | BL_ITEM | BL_PD(n))   /* #ia<n>|#pd<n> */
-
 /* !libheader {#rigfxlib,0,0,0,0} */
 BLITZ_LIBHEADER(LIB_rigfxlib, 0, BL_NORET, 0, 0);
 
@@ -93,7 +91,7 @@ BLITZ_NAME("PalBlue", "(colour#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(paletteinfo, 0, 0);
 BLITZ_NAME("PaletteInfo", "palette#");
 
@@ -117,53 +115,53 @@ BLITZ_NAME("AGAPalBlue", "(colour#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(paladjust, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_QUICK, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(paladjust2, 0, 0);
 BLITZ_NAME("PalAdjust", "palette#,ratio.q[,start_col,end_col]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(fillpalette, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(fillpalette2, 0, 0);
 BLITZ_NAME("FillPalette", "palette#,r,g,b[,start_col,end_col] - fill palette with r,g,b values");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(agafillpalette, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(agafillpalette2, 0, 0);
 BLITZ_NAME("AGAFillPalette",
            "palette#,r,g,b[,start_col,end_col] - fill palette with AGA r,g,b values");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_palettelib, IA(0), LIB_palettelib, IA(1));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD1);
 BLITZ_SUBS(copycolour, 0, 0);
 BLITZ_NAME("CopyColour", "sourcepal#,destpal#,colsource#,coldest#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, IA(0));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(cpucls, 0, 0);
 BLITZ_NAME("CPUCls", "bitmap#");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_palettelib, IA(0));
+BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(savecmap), 0, 0);
 BLITZ_NAME("SaveCMAP", "palette#,filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, IA(0), LIB_bitmaplib, IA(1), LIB_bitmaplib, IA(2));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1, LIB_bitmaplib, BL_IA2|BL_PD2);
 BLITZ_SUBS(mergebitplanes, 0, 0);
 BLITZ_NAME("MergeBitplanes", "srcbitmap,srcbitmap,destbitmap,numplanes");
 

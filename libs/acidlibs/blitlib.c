@@ -49,8 +49,8 @@ BLITZ_ENTRY_DECL(init);
 /* !libheader{#blitlib,init,0,0,errors} */
 BLITZ_LIBHEADER(LIB_blitlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
-#define BLIT_LIBS BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_graphicslib, 0x5600, \
-                             LIB_bitmaplib, 0x1202, LIB_chipbaselib, BL_LA(1))
+#define BLIT_LIBS BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_graphicslib, BL_IFAMIGA|BL_LA6, \
+                             LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1)
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);

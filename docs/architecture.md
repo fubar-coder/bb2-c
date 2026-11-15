@@ -497,7 +497,13 @@ Lib image:
 Details (kind values, register codes `#ld0`/`#la6`/`#lpush`/`#pd0`,
 repetition groups) are in the macros
 `archive/cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/LIBMACS.BB` or their C reproduction
-`libs/include/blitzlib.h`. Additionally important for linking:
+`libs/include/blitzlib.h`. The register codes of `!libs` are named there as
+in LIBMACS.BB with the prefix `BL_` (`#ia0|#pd0` = `BL_IA0|BL_PD0` = `$1080`,
+`#ua2` = `BL_UA2`, `#md3` = `BL_MD3`, `#lpush` = `BL_LPUSH`), plus the codes
+the compiler knows but LIBMACS.BB does not name (`blitz2.s:11647 toreg`):
+kind 4 `BL_USEDOFF` (the a5 offset of the used object, `$0604`) and the
+mode bits `BL_IFBLITZ` (`$8000`) and `BL_IFAMIGA` (`$4000`, e.g. `$5600` =
+a6 only in Amiga mode). Additionally important for linking:
 
 * **Inline routines:** if a routine begins with `$A000,len`, the
   compiler copies `len` bytes to the call site instead of `jsr`; `$A001,adr.l`

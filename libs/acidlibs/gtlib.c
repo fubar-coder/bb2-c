@@ -153,7 +153,7 @@ BLITZ_DUMTOKE(_toke, "GTList", "A GadTools GadgetList");
 
 #define A (char *)              /* +1: Amiga mode only */
 #define STD BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_STRING, BL_LONG
-#define STDLIBS BLITZ_LIBS(LIB_mygadtoolslib, 0x1380, LIB_intuifontlib, BL_LA(0), LIB_screenslib, 0x1102)
+#define STDLIBS BLITZ_LIBS(LIB_mygadtoolslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA0, LIB_screenslib, BL_UA1)
 #define WPUSH (BL_WORD | BL_PUSH)
 
 BLITZ_ASTATEMENT();
@@ -254,7 +254,7 @@ BLITZ_NAME("GTText", "GTList#,id,x,y,w,h,Text$,flags,Display$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180, LIB_windowslib, 0x1081, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0, LIB_windowslib, BL_IA0|BL_PD1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(A _attachgtlist + 1, attachchk, 0);
 BLITZ_NAME("AttachGTList", "GTList#,Window#");
 
@@ -266,96 +266,96 @@ BLITZ_NAME("GTTags", "Tag,Value [,Tag,Value...]");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtptr + 1, 0, 0);
 BLITZ_NAME("GTGadPtr", "(GTList#,id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1080);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(A _gtbevel + 1, 0, 0);
 BLITZ_NAME("GTBevelBox", "GTList#,x,y,w,h,flags");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_ARRAY | BL_PUSH);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtchnglist1 + 1, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtchnglist2 + 1, 0, 0);
 BLITZ_NAME("GTChangeList", "GTList#,id [ ,List() ]");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_REPARGS(2, 2, BL_WORD, BL_WORD, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtsetattrs + 1, 0, 0);
 BLITZ_NAME("GTSetAttrs", "GTList#,id [,Tag,Value...]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtsetstring + 1, 0, 0);
 BLITZ_NAME("GTSetString", "GTList#,id,string$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtsetint + 1, 0, 0);
 BLITZ_NAME("GTSetInteger", "GTList#,id,value");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtgetstring + 1, 0, 0);
 BLITZ_NAME("GTGetString", "GTList#,id");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtgetint + 1, 0, 0);
 BLITZ_NAME("GTGetInteger", "GTList#,id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1380, LIB_intuifontlib, BL_LA(0), LIB_screenslib, 0x1102,
-           LIB_shapeslib, 0x1685);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA0, LIB_screenslib, BL_UA1,
+           LIB_shapeslib, BL_IA6|BL_PD5);
 BLITZ_SUBS(A _gtshape + 1, gtlib_sgchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1380, LIB_intuifontlib, BL_LA(0), LIB_screenslib, 0x1102,
-           LIB_shapeslib, 0x1685, LIB_shapeslib, 0x1286);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA0, LIB_screenslib, BL_UA1,
+           LIB_shapeslib, BL_IA6|BL_PD5, LIB_shapeslib, BL_IA2|BL_PD6);
 BLITZ_SUBS(A _gtshape2 + 1, gtlib_sgchk2, 0);
 BLITZ_NAME("GTShape", "GTList#,id,x,y,flags,Shape#[,Shape#]");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtgetattrs + 1, 0, 0);
 BLITZ_NAME("GTGetAttrs", "(GTList#,id,Tag)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gtlib_doenable, 0, 0);
 BLITZ_NAME("GTEnable", "GTList#,Id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gtlib_dodisable, 0, 0);
 BLITZ_NAME("GTDisable", "GTList#,Id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gtlib_doselect, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gtlib_doselect2, 0, 0);
 BLITZ_NAME("GTToggle", "GTList#,Id [,On|Off]");
 
 BLITZ_AFUNCTION(BL_BYTE);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_gtgetstatus, 0, 0);
 BLITZ_NAME("GTStatus", "GTList#,Id");
 
@@ -367,7 +367,7 @@ BLITZ_NAME("GTArrowSize", "size");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(A _detachgtlist + 1, detachchk, 0);
 BLITZ_NAME("DetachGTList", "GTList#");
 
@@ -379,13 +379,13 @@ BLITZ_NAME("GTGimmeCludge", "On/Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtsethighlight + 1, 0, 0);
 BLITZ_NAME("GTSetHighlight", "GTList#,id,value");
 
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
+BLITZ_LIBS(LIB_mygadtoolslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(A _gtfreegadget + 1, freegadchk, 0);
 BLITZ_NAME("GTFreeGadget", "GTList#,id");
 

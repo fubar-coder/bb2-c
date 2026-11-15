@@ -20,7 +20,7 @@ BLITZ_ENTRY_DECL(init);
 /* !syslibheader{#strings1lib,$c600,$c602,init,1,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_strings1lib, 0xc600, 0xc602, init, BL_LONGRET, 0, 0);
 BLITZ_NULLSUB(stringmode, 0, 0);                        /* $C600 copstring */
-BLITZ_NULLSUB(0, 0, 0, LIB_strings1lib, BL_LA(3));      /* $C601 workstart */
+BLITZ_NULLSUB(0, 0, 0, LIB_strings1lib, BL_LA3);        /* $C601 workstart */
 BLITZ_NULLSUB_AT(init, strings1lib_codeinit, 0, 0);
 BLITZ_LIBFIN();
 

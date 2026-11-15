@@ -69,8 +69,6 @@ void popupwinlib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {#popupwinlib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_popupwinlib, init, BL_NORET, finit, 0);
 
@@ -82,7 +80,7 @@ BLITZ_NAME("PopUpInit", "-- initialise the popup window system");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, IA(0, 0));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_dopopup, 0, 0);
 BLITZ_NAME("PopUpWindow", "Screen#,*items");
 

@@ -72,48 +72,46 @@ static void _libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define UA0 (BL_LA(0) | BL_USED)                    /* #ua0 */
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
 /* the !libs of the buffered blits (as bblitlib's BBlit) */
-#define BUFLIBS LIB_bblitlib, 0x1080, LIB_bitmaplib, 0x1202, LIB_chipbaselib, 0x1100, \
-                LIB_graphicslib, 0x5600
+#define BUFLIBS LIB_bblitlib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1, \
+                LIB_graphicslib, BL_IFAMIGA|BL_LA6
 
 /* !libheader {19,init,0,finit,errors} */
 BLITZ_LIBHEADER(LIB_bb_blitlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0), LIB_shapeslib, IA(2, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_specialblock, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0), LIB_shapeslib, IA(2, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_specialblock2, 0, 0);
 BLITZ_NAME("SpecialBlock", "topshape,bottomshape,(x,y)|offset");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0), LIB_bitmaplib, IA(2, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_bitmaplib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_specialblockbitmap, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0), LIB_bitmaplib, IA(2, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0, LIB_bitmaplib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_specialblockbitmap2, 0, 0);
 BLITZ_NAME("SpecialBlockBitmap", "topshape,bitmap,(x,y)|offset");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_tblock, 0, 0);
 BLITZ_NAME("TBlock", "shape,x,y");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0, LIB_shapeslib, IA(1, 0));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0, LIB_shapeslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(_predatorblit, 0, 0);
 BLITZ_NAME("PredatorBlit", "shape,x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1381, BUFLIBS);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, BUFLIBS);
 BLITZ_SUBS(_bpredatorblit, 0, 0);
 BLITZ_NAME("BPredatorBlit", "buffer,shape,x,y");
 
@@ -125,31 +123,31 @@ BLITZ_NAME("SetupMapTwo", "ebwidth");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1280, LIB_shapeslib, 0x1383);
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_shapeslib, BL_IA3|BL_PD3);
 BLITZ_SUBS(_createshape, 0, 0);
 BLITZ_NAME("CreateShape", "start_shape,count,chipmemblock,like_shape");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(1, 0), LIB_shapeslib, IA(2, 1), LIB_shapeslib, IA(0, 2));
+BLITZ_LIBS(LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1, LIB_shapeslib, BL_IA0|BL_PD2);
 BLITZ_SUBS(_specialblocktoshape, _errSBlockToShape, 0);
 BLITZ_NAME("SpecialBlockToShape", "topshape,bottomshape,destshape");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(1, 0), LIB_shapeslib, IA(2, 1));
+BLITZ_LIBS(LIB_shapeslib, BL_IA1|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD1);
 BLITZ_SUBS(_blocktoshape, _errBlockToShape, 0);
 BLITZ_NAME("BlockToShape", "shape,destshape");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1381, BUFLIBS);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, BUFLIBS);
 BLITZ_SUBS(docolblit, 0, 0);
 BLITZ_NAME("BColourBlit", "buffer,shape,x,y,colour");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, UA0);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
 BLITZ_SUBS(_tblockimage, 0, 0);
 BLITZ_NAME("TBlockImage", "image_addr,image,x,y");
 

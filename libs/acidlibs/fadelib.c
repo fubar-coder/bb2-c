@@ -67,13 +67,13 @@ BLITZ_LIBHEADER(LIB_fadelib_header, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 #define FADE_FORMS(palonly, withrate, withrange)                            \
     BLITZ_ARGS(BL_WORD);                                                    \
-    BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
-    BLITZ_SUBS(palonly, BLITZ_BLITZONLY_CHK(fadechk0), 0);                           \
+    BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);     \
+    BLITZ_SUBS(palonly, BLITZ_BLITZONLY_CHK(fadechk0), 0);                  \
     BLITZ_ARGS(BL_WORD, BL_WORD);                                           \
-    BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
-    BLITZ_SUBS(withrate, BLITZ_BLITZONLY_CHK(fadechk0), 0);                          \
+    BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);     \
+    BLITZ_SUBS(withrate, BLITZ_BLITZONLY_CHK(fadechk0), 0);                 \
     BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);                         \
-    BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
+    BLITZ_LIBS(LIB_palettelib, BL_IA0|BL_PD0, LIB_blitzcoplib, BL_UA1);     \
     BLITZ_SUBS(withrange, BLITZ_BLITZONLY_CHK(fadechk), 0)
 
 BLITZ_ASTATEMENT();

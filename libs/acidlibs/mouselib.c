@@ -55,7 +55,7 @@ BLITZ_NAME("Mouse", "On|Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_blitzcoplib, 0x1202);   /* used slice */
+BLITZ_LIBS(LIB_spriteslib, BL_IA3|BL_PD0, LIB_blitzcoplib, BL_UA2); /* used slice */
 BLITZ_SUBS(dopointer, BLITZ_BLITZONLY_CHK(mouselib_sspchk), 0);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
@@ -98,7 +98,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(doposmouse, 0, 0);
 BLITZ_NAME("PositionMouse", "x,y");
 
-BLITZ_NULLSUB_AT(init, mouselib_codeinit, 0, 0, LIB_blitzcoplib, 0x0004);
+BLITZ_NULLSUB_AT(init, mouselib_codeinit, 0, 0, LIB_blitzcoplib, BL_LD0|BL_USEDOFF);
 
 BLITZ_LIBFIN();
 

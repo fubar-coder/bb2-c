@@ -66,28 +66,28 @@ BLITZ_LIBHEADER(LIB_shapetrixlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK, BL_QUICK);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doscale2, scalechk2, 0);
 BLITZ_ARGS(BL_WORD, BL_QUICK, BL_QUICK, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_palettelib, 0x1283);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_palettelib, BL_IA2|BL_PD3);
 BLITZ_SUBS(doscale, scalechk, 0);
 BLITZ_NAME("Scale", "Shape#,X Ratio,Y Ratio[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_chipbaselib, BL_LA(1), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA1, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(doxflip, shapetrixlib_fchk, 0);
 BLITZ_NAME("XFlip", "Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doyflip, shapetrixlib_fchk, 0);
 BLITZ_NAME("YFlip", "Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK);
-BLITZ_LIBS(LIB_shapeslib, 0x1380);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dorotate, shapetrixlib_fchk, 0);
 BLITZ_NAME("Rotate", "Shape#,Angle Ratio");
 

@@ -123,70 +123,70 @@ BLITZ_LIBHEADER(LIB_gadgetslib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_gadgetslib, 0x1380, LIB_intuitionlib, BL_LA(6), LIB_intuifontlib, BL_LA(1));
+BLITZ_LIBS(LIB_gadgetslib, BL_IA3|BL_PD0, LIB_intuitionlib, BL_LA6, LIB_intuifontlib, BL_LA1);
 BLITZ_SUBS(dotextgadget, 0, 0);
 BLITZ_NAME("TextGadget", "GadgetList#,X,Y,Flags,Id,Text$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1380);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dostringgadget, stringchk, 0);
 BLITZ_NAME("StringGadget", "GadgetList#,X,Y,Flags,Id,Maxlen,Width");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1380);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dopropgadget, 0, 0);
 BLITZ_NAME("PropGadget", "GadgetList#,X,Y,Flags,Id,Width,Height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1380, LIB_shapeslib, 0x1285);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD5);
 BLITZ_SUBS(doshapegadget, gadgetslib_sgchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1380, LIB_shapeslib, 0x1285, LIB_shapeslib, 0x1186);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA3|BL_PD0, LIB_shapeslib, BL_IA2|BL_PD5, LIB_shapeslib, BL_IA1|BL_PD6);
 BLITZ_SUBS(doshapegadget2, gadgetslib_sgchk2, 0);
 BLITZ_NAME("ShapeGadget", "GadgetList#,X,Y,Flags,Id,Shape#[,Shape#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK, BL_QUICK);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dosethprop, propchk, 0);
 BLITZ_NAME("SetHProp", "GadgetList#,Id,Pot,Body");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_QUICK, BL_QUICK);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dosetvprop, propchk, 0);
 BLITZ_NAME("SetVProp", "GadgetList#,Id,Pot,Body");
 
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dohproppot, propchk, 0);
 BLITZ_NAME("HPropPot", "(GadgetList#,Id)");
 
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dohpropbody, propchk, 0);
 BLITZ_NAME("HPropBody", "(GadgetList#,Id)");
 
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dovproppot, propchk, 0);
 BLITZ_NAME("VPropPot", "(GadgetList#,Id)");
 
 BLITZ_AFUNCTION(BL_QUICK);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dovpropbody, propchk, 0);
 BLITZ_NAME("VPropBody", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1180, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doredraw), redrawchk, 0);             /* Amiga mode only */
 BLITZ_NAME("Redraw", "Window#,Id");
 
@@ -196,10 +196,10 @@ BLITZ_NULLSUB(0, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gadgetslib_doselect, gchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gadgetslib_doselect2, gchk, 0);
 BLITZ_NAME("Toggle", "GadgetList#,Id [,On|Off]");
 
@@ -207,7 +207,7 @@ BLITZ_NULLSUB(0, 0, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dogborder), gadgetslib_wchk, 0);
 BLITZ_NAME("GadgetBorder", "X,Y,Width,Height");
 
@@ -222,25 +222,25 @@ BLITZ_NAME("Borders", "[On|Off]|[Width,Height]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1180, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dostringactivate), actchk, 0);
 BLITZ_NAME("ActivateString", "Window#,Id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dostringreset, reschk, 0);
 BLITZ_NAME("ResetString", "GadgetList#,Id");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dostringtext, reschk, 0);
 BLITZ_NAME("StringText$", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dostringclear, reschk, 0);
 BLITZ_NAME("ClearString", "GadgetList#,Id");
 
@@ -275,7 +275,7 @@ BLITZ_NAME("SelectMode", "1=Box, 0=Inverse");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dosetstring, settest, 0);
 BLITZ_NAME("SetString", "GadgetList#,Id,String$");
 
@@ -287,37 +287,37 @@ BLITZ_NAME("ButtonGroup", "Group");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dogstatus, gchk, 0);
 BLITZ_NAME("GadgetStatus", "(GadgetList#,Id)");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dobuttonid, 0, 0);
 BLITZ_NAME("ButtonId", "(GadgetList#,ButtonGroup)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gadgetslib_doenable, gchk, 0);
 BLITZ_NAME("Enable", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(gadgetslib_dodisable, gchk, 0);
 BLITZ_NAME("Disable", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(setdogstatus, gchk, 0);
 BLITZ_NAME("SetGadgetStatus", "(GadgetList#,Id,Value)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_gadgetslib, 0x1180);
+BLITZ_LIBS(LIB_gadgetslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(settextgadget, gchk, 0);
 BLITZ_NAME("SetTextGadget", "GadgetList#,Id,Text$");
 

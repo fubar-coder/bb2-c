@@ -74,7 +74,7 @@ BLITZ_NAME("ReqFileLoc", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_windowslib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_reqoutput, 0, 0);
 BLITZ_NAME("ReqOutput", "windowptr");
 

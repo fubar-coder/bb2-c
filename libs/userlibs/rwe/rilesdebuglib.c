@@ -150,7 +150,7 @@ BLITZ_LIBHEADER(LIB_riLESDEBUGlib, init, BL_NORET, finit, 0);
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(rilesdebuglib_finddev), 0, 0);
 BLITZ_NAME("D_FindVolume", "(volumename)");
 
@@ -195,13 +195,13 @@ BLITZ_NAME("FLocate", "x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_bitmaplib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
 BLITZ_SUBS(_fprint, 0, 0);
 BLITZ_NAME("FPrint", "a$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING);
-BLITZ_LIBS(LIB_bitmaplib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
 BLITZ_SUBS(_fnprint, 0, 0);
 BLITZ_NAME("FNPrint", "a$");
 
@@ -276,7 +276,7 @@ BLITZ_NAME("GetCustomRegAdr", "name$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA0);
 BLITZ_SUBS(_fprintdetoke, 0, 0);
 BLITZ_NAME("FPrintDetoke", "tokenised_string,cio,typ,lineoffset");
 

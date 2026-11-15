@@ -39,7 +39,7 @@ BLITZ_OSCALL(LIB_mathieeedoubbaslib, -90, "IEEEDPFloor_", "(parm)", d0, d1);
 BLITZ_OSCALL(LIB_mathieeedoubbaslib, -96, "IEEEDPCeil_", "(parm)", d0, d1);
 
 BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_mathieeedoubbaslib, BL_LA(1));
+BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_mathieeedoubbaslib, BL_LA1);
 BLITZ_LIBFIN();
 
 static const char libname[] = "mathieeedoubbas.library";

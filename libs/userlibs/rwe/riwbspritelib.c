@@ -68,15 +68,13 @@ void riwbspritelib_libinit(void), riwbspritelib_libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {10,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_riwbspritelib, init, BL_NORET, finit, 0);
 
 /* `#ia0|pd2` in the source: pd2 is 2, the shape of parameter 2 */
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 2));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD2);
 BLITZ_SUBS((char *)_GetWBSprite + 1, 0, 0);     /* +1: Amiga mode only */
 BLITZ_NAME("GetWBSprite", "x,y,shape[,spritechannel]");
 
@@ -94,7 +92,7 @@ BLITZ_NAME("MoveWBSprite", "viewport,x,y,sprite_channel");
 
 BLITZ_ACOMMAND(BL_BYTE);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, IA(0, 2));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD2);
 BLITZ_SUBS((char *)_changewbsprite + 1, 0, 0);
 BLITZ_NAME("ChangeWBSprite", "viewport,sprite_channel,shape#");
 

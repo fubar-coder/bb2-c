@@ -77,9 +77,9 @@ BLITZ_NULLSUB(ltobover, 0, 0);                  /* $C316 */
 BLITZ_NULLSUB(wtobover, 0, 0);                  /* $C317 */
 BLITZ_NULLSUB(ltowover, 0, 0);                  /* $C318 */
 BLITZ_NULLSUB(qtobover, 0, 0);                  /* $C319 */
-BLITZ_NULLSUB(ftobover, 0, 0, LIB_ffplib, BL_LA(6));    /* $C31A */
-BLITZ_NULLSUB(ftowover, 0, 0, LIB_ffplib, BL_LA(6));    /* $C31B */
-BLITZ_NULLSUB(ftolover, 0, 0, LIB_ffplib, BL_LA(6));    /* $C31C */
+BLITZ_NULLSUB(ftobover, 0, 0, LIB_ffplib, BL_LA6);      /* $C31A */
+BLITZ_NULLSUB(ftowover, 0, 0, LIB_ffplib, BL_LA6);      /* $C31B */
+BLITZ_NULLSUB(ftolover, 0, 0, LIB_ffplib, BL_LA6);      /* $C31C */
 BLITZ_NULLSUB(getvbr, 0, 0);                    /* $C31D */
 BLITZ_NULLSUB(getcpu, 0, 0);                    /* $C31E */
 BLITZ_NULLSUB_AT(init, runerrlib_codeinit, 0, 0);

@@ -74,9 +74,6 @@ static void libfinit(void);
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
-/* #ia<a>|#pd<p>: object `p` of the library into a<a> */
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))
-
 /* !libheader {#ripacklib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_ripacklib, init, BL_NORET, finit, 0);
 
@@ -94,35 +91,35 @@ BLITZ_NAME("DeIce", "(sourceaddr,destaddr)");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, IA(1, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(iff1, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, IA(1, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(unpackiff, 0, 0);
 BLITZ_NAME("UnpackIFF", "(sourceaddr,bitmap#[,numlines,xy_offset])");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_palettelib, IA(1, 1));
+BLITZ_LIBS(LIB_palettelib, BL_IA1|BL_PD1);
 BLITZ_SUBS(ilbmpalette, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_palettelib, IA(1, 1));
+BLITZ_LIBS(LIB_palettelib, BL_IA1|BL_PD1);
 BLITZ_SUBS(ilbmpalette2, 0, 0);
 BLITZ_NAME("ILBMPalette", "(sourceaddr,palette#[,#offset)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 1), LIB_palettelib, IA(1, 2));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD1, LIB_palettelib, BL_IA1|BL_PD2);
 BLITZ_SUBS(ilbmgrab, 0, 0);
 BLITZ_NAME("ILBMGrab", "sourceaddr,bitmap#,palette#");
 
 /* !subs {...,0,1}: error2 = 1 as in the original */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 1));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD1);
 BLITZ_SUBS(ilbmloadnopal, 0, 1);
 BLITZ_ARGS(BL_STRING, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, IA(0, 1), LIB_palettelib, IA(1, 2));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD1, LIB_palettelib, BL_IA1|BL_PD2);
 BLITZ_SUBS(ilbmload, 0, 1);
 BLITZ_NAME("LoadIFF", "(filename$,bitmap[,palette])");
 

@@ -14,7 +14,7 @@ order as the original).
 | Header | like `!libheader`, but 4 zero bytes instead of `MOVEQ #0,d0:RTS`; `init`/`finit` point to the two nullsub entries, `return` = 1 (long), `error` = 0 | `BLITZ_OSLIBHEADER(lib, init, BL_LONGRET, finit)` |
 | one entry of type 6 per call | `Dc 6,0,0:Dc baselib,lvo:Dc.b regs,$ff:Even:Dc.l 0:Dc 0:Dc.b name,0,help,0:Even` | `BLITZ_OSCALL(baselib, lvo, "Name_", "(help)", d1, d2, …)` |
 | init | nullsub without `!libs` | `BLITZ_NULLSUB_AT(init, libinit, 0, 0)` |
-| finit | nullsub, `!libs own lib,#la1` (own base in a1) | `BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_x, BL_LA(1))` |
+| finit | nullsub, `!libs own lib,#la1` (own base in a1) | `BLITZ_NULLSUB_AT(finit, libfinit, 0, 0, LIB_x, BL_LA1)` |
 | End | `!libfin`, then code and the AmigaOS name | `BLITZ_LIBFIN()`, C functions, `libname[]` |
 
 Register codes (blitz2.s `stamigalib`): bit 4 = address register, bits 0–2 =

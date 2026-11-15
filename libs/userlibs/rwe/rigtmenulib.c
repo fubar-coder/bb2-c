@@ -90,7 +90,6 @@ BLITZ_ENTRY_DECL(_save);
 BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
 #define W BL_WORD
 #define S BL_STRING
 #define LG BL_LONG
@@ -102,118 +101,118 @@ BLITZ_DUMTOKE(_toke, "GTMenuList", "List of GT Menus");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0), LIB_screenslib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA0);
 BLITZ_SUBS(_CreateMenuStrip, createchk, 0);
 BLITZ_NAME("CreateMenuStrip", "GTMenuList#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0), LIB_windowslib, BL_LA(1) | BL_USED, LIB_intuitionlib,
-           BL_LA(6), LIB_screenslib, BL_LA(0) | BL_USED);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0, LIB_windowslib, BL_UA1, LIB_intuitionlib,
+           BL_LA6, LIB_screenslib, BL_UA0);
 BLITZ_SUBS(_setmenu, setchk, 0);
 BLITZ_NAME("GTSetMenu", "GTMenuList#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, BL_LA(2) | BL_USED, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA2, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(_gtunsetmenu, 0, 0);
 BLITZ_NAME("GTUnSetMenu", "- removes the gtmenulist from the current window");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W, S);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenutitle, 0, 0);
 BLITZ_NAME("GTMenuTitle", "GTMenuList#,menu,title$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenuitem2, 0, 0);
 BLITZ_ARGS(W, W, W, W, S);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenuitem3, 0, 0);
 BLITZ_ARGS(W, W, W, W, S, S);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenuitem, 0, 0);
 BLITZ_ARGS(W, W, W, W, S, S, LG);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenuitem4, 0, 0);
 BLITZ_ARGS(W, W, W, W, S, S, LG, LG);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtmenuitem5, 0, 0);
 BLITZ_NAME("GTMenuItem",
            "GTMenuList#,flags,menu,item[,itemtext$[,shortcut$[,mutualexclude[,UserData]]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenustate, 0, 0);
 BLITZ_ARGS(W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenustate2, rigtmenulib_statechk2, 0);
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenustate3, rigtmenulib_statechk3, 0);
 BLITZ_ARGS(W, W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenustate4, rigtmenulib_statechk4, 0);
 BLITZ_NAME("GTMenuState", "GTMenuList#[,Menu[,Item[,Subitem]]],On|Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtsubitem2, 0, 0);
 BLITZ_ARGS(W, W, W, W, W, S);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtsubitem3, 0, 0);
 BLITZ_ARGS(W, W, W, W, W, S, S | BL_PUSH);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtsubitem, 0, 0);
 BLITZ_ARGS(W, W, W, W, W, S, S, LG);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtsubitem4, 0, 0);
 BLITZ_ARGS(W, W, W, W, W, S, S, LG, LG);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_gtsubitem5, 0, 0);
 BLITZ_NAME("GTSubItem", "GTMenuList#,flags,menu,item,subitem[,itemtext$[,shortcut$"
            "[,mutualexclude[,UserData]]]]");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenuchecked, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(rigtmenulib_domenuchecked2, rigtmenulib_chkchk4, 0);
 BLITZ_NAME("GTMenuChecked", "(GTMenuList#,Menu,Item[,Subitem])");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(setmenuchecked, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(setmenuchecked2, rigtmenulib_chkchk4, 0);
 BLITZ_NAME("GTSetMenuChecked", "GTMenuList#,Menu,Item[,Subitem],Off|On");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_freetitle, 0, 0);
 BLITZ_ARGS(W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_freeitem, 0, 0);
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, IA(3, 0));
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA3|BL_PD0);
 BLITZ_SUBS(_freesubitem, 0, 0);
 BLITZ_NAME("GTFreeMenu", "GTMenuList#,Menu[,Item[,Subitem]]");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(_GetUserData, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W);
-BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
+BLITZ_LIBS(LIB_rigtmenulib, BL_IA2|BL_PD0);
 BLITZ_SUBS(_GetUserData2, chkchk5, 0);
 BLITZ_NAME("GTGetUserData", "(GTMenuList#,Menu,Item[,Subitem])");
 

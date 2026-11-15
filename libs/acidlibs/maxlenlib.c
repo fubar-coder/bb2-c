@@ -31,8 +31,8 @@ void domaxlen(void), domaxlenl(void), echk1(void);
 
 /* !syslibheader{64135,$d000,$d002,0,0,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_maxlenlib, 0xd000, 0xd002, 0, BL_NORET, 0, 0);
-BLITZ_NULLSUB(domaxlen, echk1, 0, LIB_memlib, BL_LA(6));    /* $D000 maxlen */
-BLITZ_NULLSUB(domaxlenl, echk1, 0, LIB_memlib, BL_LA(6));   /* $D001 lmaxlen */
+BLITZ_NULLSUB(domaxlen, echk1, 0, LIB_memlib, BL_LA6);      /* $D000 maxlen */
+BLITZ_NULLSUB(domaxlenl, echk1, 0, LIB_memlib, BL_LA6);     /* $D001 lmaxlen */
 BLITZ_LIBFIN();
 
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,

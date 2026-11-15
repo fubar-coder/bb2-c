@@ -79,33 +79,33 @@ BLITZ_LIBHEADER(LIB_iffmakelib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosavebitmap2), bitchk, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_palettelib, 0x1182, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD2, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosavebitmap), bitchk2, 0);
 BLITZ_NAME("SaveBitmap", "BitMap#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_graphicslib, BL_LA(1), LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_graphicslib, BL_LA1, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosavescreen), scrchk, 0);
 BLITZ_NAME("SaveScreen", "Screen#,Filename$");
 
-BLITZ_NULLSUB(dosavebitmap, 0, 0, 252, BL_LA(6));
+BLITZ_NULLSUB(dosavebitmap, 0, 0, 252, BL_LA6);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosaveshape1), sschk1, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1080, LIB_palettelib, 0x1182, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD2, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosaveshape2), sschk2, 0);
 BLITZ_NAME("SaveShape", "Shape#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_palettelib, 0x1280, LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_palettelib, BL_IA2|BL_PD0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosavepalette), 0, 0);
 BLITZ_NAME("SavePalette", "Palette#,Filename$");
 

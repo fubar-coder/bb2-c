@@ -96,43 +96,43 @@ BLITZ_LIBHEADER(LIB_sis2dlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3);
 BLITZ_SUBS(_ellipse, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3);
 BLITZ_SUBS(_circle, 0, 0);
 BLITZ_NAME("Circle", "x,y,rx[,ry],color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_graphicslib, 0x5600, LIB_chipbaselib, BL_LA(2));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_graphicslib, BL_IFAMIGA|BL_LA6, LIB_chipbaselib, BL_LA2);
 BLITZ_SUBS(_ellipsef, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_graphicslib, 0x5600, LIB_chipbaselib, BL_LA(2));
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_graphicslib, BL_IFAMIGA|BL_LA6, LIB_chipbaselib, BL_LA2);
 BLITZ_SUBS(_circlef, 0, 0);
 BLITZ_NAME("Circlef", "x,y,rx[,ry],color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_box, 0, 0);
 BLITZ_NAME("Box", "x1,y1,x2,y2,color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_boxf, 0, 0);
 BLITZ_NAME("Boxf", "x1,y1,x2,y2,color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_line, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_lineto, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_linew, 0, 0);
 BLITZ_NAME("Line", "[x1,y1,]x2,y2,color[,width]");
 
@@ -144,58 +144,58 @@ BLITZ_NAME("FreeFill", "frees memory allocated for 2d fill routines");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_bitmaplib, 0x1302);         /* fixed (#390): the used bitmap in a3 */
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3);         /* fixed (#390): the used bitmap in a3 */
 BLITZ_SUBS(_allocfill, 0, 0);
 BLITZ_NAME("AllocFill", "for internal use only (polylib.obj)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_remap, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1082, LIB_chipbaselib, BL_LA(2),
-           LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_bitmaplib, BL_IA0|BL_PD2, LIB_chipbaselib, BL_LA2,
+           LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_remap2, 0, 0);
 BLITZ_NAME("ReMap", "colour# to replace,destination colour# [,BitMap destintion");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_floodfill, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_floodfill2, 0, 0);
 BLITZ_NAME("FloodFill", "x,y,colour [,border colour]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_poly, _polychk, 0);
 BLITZ_NAME("Poly", "numpts,*coords.w,color");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_polyf, _polyfchk, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bitmaplib, BL_UA3, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_polyf2, _polyfchk, 0);
 BLITZ_NAME("Polyf", "numpts,*coords.w,color[,color2]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_bitmaplib, 0x1181);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_bitplanesbitmap, 0, 0);
 BLITZ_NAME("BitPlanesBitMap", "srcbitmap,destbitmap,planepick");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_chipbaselib, BL_LA(1), LIB_bitmaplib, 0x1202,
-           LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA1, LIB_bitmaplib, BL_UA2,
+           LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_doclipblit, _cbchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_chipbaselib, BL_LA(1), LIB_bitmaplib, 0x1202,
-           LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA1, LIB_bitmaplib, BL_UA2,
+           LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(_doclipblitx, _cbchk, 0);
 BLITZ_NAME("ClipBlit", "Shape#,X,Y,[Excess]");
 
@@ -207,13 +207,13 @@ BLITZ_NAME("ClipBlitMode", "BPLCON0");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080, LIB_bitmaplib, 0x1181);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_bitmapwindow, 0, 0);
 BLITZ_NAME("BitMapWindow", "srcbitmap,destbitmap,x,y,w,h");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bitmaplib, 0x1080);
+BLITZ_LIBS(LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_bitmaporigin, 0, 0);
 BLITZ_NAME("BitMapOrigin", "BitMap#,x,y");
 

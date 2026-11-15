@@ -56,12 +56,12 @@ BLITZ_LIBHEADER(LIB_intuifontlib, init, BL_LONGRET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_intuifontlib, 0x1380, LIB_diskfontlib, BL_LA(6),
-           LIB_graphicslib, BL_LD(6), LIB_intuifontlib, 0x0504);
+BLITZ_LIBS(LIB_intuifontlib, BL_IA3|BL_PD0, LIB_diskfontlib, BL_LA6,
+           LIB_graphicslib, BL_LD6, LIB_intuifontlib, BL_LD5|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosetifont), 0, loadchk);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_intuifontlib, 0x1380, LIB_diskfontlib, BL_LA(6),
-           LIB_graphicslib, BL_LD(6), LIB_intuifontlib, 0x0504);
+BLITZ_LIBS(LIB_intuifontlib, BL_IA3|BL_PD0, LIB_diskfontlib, BL_LA6,
+           LIB_graphicslib, BL_LD6, LIB_intuifontlib, BL_LD5|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dosetifont2), 0, loadchk);
 BLITZ_NAME("LoadFont", "IntuiFont#,Fontname.font$,Y size [,style]");
 
@@ -71,7 +71,7 @@ BLITZ_NULLSUB_AT(init, intuifontlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, douseifont, 0, 0);
-BLITZ_NULLSUB_AT(_free, dofreeifont, 0, 0, LIB_graphicslib, BL_LA(6));
+BLITZ_NULLSUB_AT(_free, dofreeifont, 0, 0, LIB_graphicslib, BL_LA6);
 
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 4);
 

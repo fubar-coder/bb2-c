@@ -22,8 +22,8 @@ void quicktofloat(void), floattoquick(void);
 
 /* !syslibheader{#floatquicklib,$d300,$d302,0,0,0,0,$4000} */
 BLITZ_SYSLIBHEADER(LIB_floatquicklib, 0xd300, 0xd302, 0, 0, 0, 0, 0x4000);
-BLITZ_NULLSUB(quicktofloat, 0, 0, LIB_ffplib, BL_LA(6));  /* $D300 qutofl */
-BLITZ_NULLSUB(floattoquick, 0, 0, LIB_ffplib, BL_LA(6));  /* $D301 fltoqu */
+BLITZ_NULLSUB(quicktofloat, 0, 0, LIB_ffplib, BL_LA6);    /* $D300 qutofl */
+BLITZ_NULLSUB(floattoquick, 0, 0, LIB_ffplib, BL_LA6);    /* $D301 fltoqu */
 BLITZ_LIBFIN();
 
 #define f65536 0x80000051UL                     /* 65536.0 in FFP */

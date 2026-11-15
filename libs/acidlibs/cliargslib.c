@@ -59,25 +59,25 @@ BLITZ_LIBHEADER(LIB_cliargslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0));
+BLITZ_LIBS(LIB_wbstartuplib, BL_LA0);
 BLITZ_SUBS(GetNumPars, 0, 0);
 BLITZ_NAME("NumPars", "  pars.w=NumPars  Number of paramters passed to program.");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0));
+BLITZ_LIBS(LIB_wbstartuplib, BL_LA0);
 BLITZ_SUBS(GetParString, CheckParNum, 0);
 BLITZ_NAME("Par$", "  parameter$=Par$(Paramter#)   Returns the string value of a parameter.");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0));
+BLITZ_LIBS(LIB_wbstartuplib, BL_LA0);
 BLITZ_SUBS(FromCLI, 0, 0);
 BLITZ_NAME("FromCLI", "  result=FromCLI   0=Run from WorkBench, -1=Run from CLI");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_wbstartuplib, BL_LA(0), LIB_doslib, BL_LA(6));
+BLITZ_LIBS(LIB_wbstartuplib, BL_LA0, LIB_doslib, BL_LA6);
 BLITZ_SUBS(GetParPath, CheckParPath, 0);
 BLITZ_NAME("ParPath$", "  path$=ParPath$(Par#,#type)  Full/Dir path of WB arg. (v36+ only!)");
 

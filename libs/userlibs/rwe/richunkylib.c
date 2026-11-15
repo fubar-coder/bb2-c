@@ -66,44 +66,42 @@ BLITZ_ENTRY_DECL(_save);
 BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
-#define IA(a, p) (BL_LA(a) | BL_ITEM | BL_PD(p))   /* #ia<a>|#pd<p> */
-
 /* !libheader {#richunkylib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_richunkylib, init, BL_NORET, finit, 0);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_richunkylib, IA(0, 0));
+BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0);
 BLITZ_SUBS((char *)_chunkybitmap + 1, 0, 0);    /* +1: Amiga mode only */
 BLITZ_NAME_AT(_toke, "ChunkyBitmap", "bitmap#,width,height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_richunkylib, IA(0, 0), LIB_bitmaplib, IA(1, 1));
+BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0, LIB_bitmaplib, BL_IA1|BL_PD1);
 BLITZ_SUBS(_c2p, 0, 0);
 BLITZ_NAME("ChunkyToPlanar", "chunkybitmap,bitmap    --320x256x8 bitmap");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_richunkylib, IA(1, 1), LIB_bitmaplib, IA(0, 0));
+BLITZ_LIBS(LIB_richunkylib, BL_IA1|BL_PD1, LIB_bitmaplib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_p2c, 0, 0);
 BLITZ_NAME("PlanarToChunky", "bitmap,chunkybitmap    --320x256x8 bitmap");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_richunkylib, IA(0, 1));
+BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD1);
 BLITZ_SUBS((char *)_chunkyloadbitmap + 1, 0, 0);
 BLITZ_NAME("ChunkyLoadBitMap", "filename$,chunkybitmap#");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_richunkylib, IA(0, 0));
+BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_chunkydata, 0, 0);
 BLITZ_NAME("ChunkyData", "chunkybitmap#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_richunkylib, IA(0, 0));
+BLITZ_LIBS(LIB_richunkylib, BL_IA0|BL_PD0);
 BLITZ_SUBS(_raycastsky, 0, 0);
 BLITZ_NAME("RaycastSky", "chunkybitmap#,x,height,column,&texture");
 

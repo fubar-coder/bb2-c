@@ -47,13 +47,13 @@ BLITZ_LIBHEADER(LIB_bblitlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_bblitlib, 0x1380);
+BLITZ_LIBS(LIB_bblitlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dobuffer, 0, 0);
 BLITZ_NAME_AT(_toke, "Buffer", "Buffer#,Memorylen");
 
-#define BBLIT_LIBS BLITZ_LIBS(LIB_shapeslib, 0x1381, LIB_bblitlib, 0x1080,        \
-                              LIB_bitmaplib, 0x1202, LIB_chipbaselib, 0x1100,      \
-                              LIB_graphicslib, 0x5600)
+#define BBLIT_LIBS BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, LIB_bblitlib, BL_IA0|BL_PD0, \
+                              LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1,            \
+                              LIB_graphicslib, BL_IFAMIGA|BL_LA6)
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
@@ -66,7 +66,7 @@ BLITZ_NAME("BBlit", "Buffer#,Shape#,X,Y[,Excessonoff]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bblitlib, 0x1380, LIB_chipbaselib, 0x1200, LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_bblitlib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(dounbuffer, unbufferchk, 0);
 BLITZ_NAME("UnBuffer", "Buffer#");
 
@@ -78,14 +78,14 @@ BLITZ_NAME("BBlitMode", "BLTCON0");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_bblitlib, 0x1380, LIB_chipbaselib, 0x1200, LIB_graphicslib, 0x5600,
-           LIB_stencillib, 0x1181);
+BLITZ_LIBS(LIB_bblitlib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA2, LIB_graphicslib, BL_IFAMIGA|BL_LA6,
+           LIB_stencillib, BL_IA1|BL_PD1);
 BLITZ_SUBS(doshowstencil, unbufferchk2, 0);
 BLITZ_NAME("ShowStencil", "Buffer#,Stencil#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_bblitlib, 0x1380);
+BLITZ_LIBS(LIB_bblitlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doflushbuff, unbufferchk, 0);
 BLITZ_NAME("FlushBuffer", "Buffer#");
 

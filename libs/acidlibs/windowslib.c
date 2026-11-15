@@ -334,16 +334,17 @@ BLITZ_LIBHEADER(LIB_windowslib, init, BL_LONG, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, W42, W42, W42, W42, BL_LONG, BL_STRING, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_windowslib, 0x0604,
-           LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_windowslib, BL_LD6|BL_USEDOFF,
+           LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindow2), 0, 0);
 BLITZ_ARGS(BL_WORD, W42, W42, W42, W42, BL_LONG, BL_STRING, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_gadgetslib, 0x1085,
-           LIB_windowslib, 0x0604, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_gadgetslib, BL_IA0|BL_PD5,
+           LIB_windowslib, BL_LD6|BL_USEDOFF, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindow), 0, 0);
 BLITZ_ARGS(BL_WORD, W42, W42, W42, W42, BL_LONG, BL_STRING, W42, W42, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_gadgetslib, 0x1083,
-           LIB_windowslib, 0x0604, LIB_intuitionlib, BL_LA(6), LIB_bitmaplib, 0x1484);
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_gadgetslib, BL_IA0|BL_PD3,
+           LIB_windowslib, BL_LD6|BL_USEDOFF, LIB_intuitionlib, BL_LA6,
+           LIB_bitmaplib, 0x1484);      /* a4 = bitmap of d4: the original's $1484 */
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindow3), 0, 0);
 BLITZ_NAME_AT(_toke, "Window",
     "Window#,X,Y,Width,Height,Flags,Title$,Dpen,Bpen[,GadgetList#[,BitMap#]]");
@@ -378,18 +379,18 @@ SIMPLE_FN(BL_WORD, dosubhit, "SubHit");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuifontlib, 0x1080, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_intuifontlib, BL_IA0|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowfont), wfontchk, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuifontlib, 0x1080, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_intuifontlib, BL_IA0|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowfont2), wfontchk, 0);
 BLITZ_NAME("WindowFont", "IntuiFont# [,SoftStyle]");
 
-#define GFX_STMT(code, chk, name, help, ...)            \
-    BLITZ_ASTATEMENT();                                 \
-    BLITZ_ARGS(__VA_ARGS__);                            \
-    BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6)); \
-    BLITZ_SUBS(BLITZ_AMIGAONLY(code), chk, 0);                \
+#define GFX_STMT(code, chk, name, help, ...)                     \
+    BLITZ_ASTATEMENT();                                          \
+    BLITZ_ARGS(__VA_ARGS__);                                     \
+    BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6); \
+    BLITZ_SUBS(BLITZ_AMIGAONLY(code), chk, 0);                   \
     BLITZ_NAME(name, help)
 
 GFX_STMT(dowplot, windowslib_wchk, "WPlot", "X,Y,Colour", BL_WORD, BL_WORD, BL_WORD);
@@ -401,28 +402,28 @@ GFX_STMT(dowellipse, windowslib_wchk, "WEllipse", "X,Y,X Radius,Y Radius,Colour"
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls), windowslib_wchk, 0);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls2), windowslib_wchk, 0);
 BLITZ_NAME("WCls", "[Colour]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102);
+BLITZ_LIBS(LIB_windowslib, BL_UA1);
 BLITZ_SUBS(dowlocate, windowslib_wchk, 0);
 BLITZ_NAME("WLocate", "Cursor x,Cursor y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380);
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doinwindow, 0, 0);
 BLITZ_NAME("WindowInput", "Window#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380);
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dooutwindow, 0, 0);
 BLITZ_NAME("WindowOutput", "Window#");
 
@@ -454,8 +455,8 @@ GFX_STMT(dowscroll, windowslib_wchk, "WScroll", "X1,Y1,X2,Y2,Delta X,Delta Y", B
 #define USED_FN(code, name)                             \
     BLITZ_AFUNCTION(BL_WORD);                           \
     BLITZ_ARGS0();                                      \
-    BLITZ_LIBS(LIB_windowslib, 0x1102);                 \
-    BLITZ_SUBS(code, windowslib_wchk, 0);                          \
+    BLITZ_LIBS(LIB_windowslib, BL_UA1);                 \
+    BLITZ_SUBS(code, windowslib_wchk, 0);               \
     BLITZ_NAME(name, "")
 
 USED_FN(dowmousex, "WMouseX");
@@ -478,13 +479,13 @@ BLITZ_NAME("WJam", "Jammode");
 
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 2, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowline), wlinechk, 0);
 BLITZ_NAME("WLine", "X1,Y1,X2,Y3[,Xn,Yn...],Colour");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1180, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doactivate), windowslib_wchk, 0);
 BLITZ_NAME("Activate", "Window#");
 
@@ -495,7 +496,7 @@ SIMPLE_FN(BL_WORD, BLITZ_AMIGAONLY(buttons), "MButtons");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1201, LIB_windowslib, 0x0203, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_BA2, LIB_windowslib, BL_MD2, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(domenusok), 0, 0);
 BLITZ_NAME("Menus", "On|Off");
 
@@ -504,31 +505,31 @@ USED_FN(dowcursy, "WCursY");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_shapeslib, 0x1280, LIB_windowslib, 0x1302, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_shapeslib, BL_IA2|BL_PD0, LIB_windowslib, BL_UA3, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowpointer), wpointerchk, 0);
 BLITZ_NAME("WPointer", "Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1201, LIB_windowslib, 0x0203, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_BA2, LIB_windowslib, BL_MD2, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(domenuson), 0, 0);
 BLITZ_NAME("MenusOn", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1201, LIB_windowslib, 0x0203, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_BA2, LIB_windowslib, BL_MD2, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(domenusoff), 0, 0);
 BLITZ_NAME("MenusOff", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1002, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dowmove, wmovechk, 0);
 BLITZ_NAME("WMove", "X,Y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1002, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dowsize, wsizechk, 0);
 BLITZ_NAME("WSize", "Width,Height");
 
@@ -539,10 +540,10 @@ USED_FN(dogzzheight, "InnerHeight");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls), windowslib_wchk, 0);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls2), windowslib_wchk, 0);
 BLITZ_NAME("InnerCls", "[Colour]");
 
@@ -584,13 +585,13 @@ BLITZ_NAME("FlushEvents", "[IDCMP_Flag]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1102);
+BLITZ_LIBS(LIB_windowslib, BL_UA1);
 BLITZ_SUBS(docatchdoserrs, windowslib_wchk, 0);
 BLITZ_NAME("CatchDosErrs", "");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1180);
+BLITZ_LIBS(LIB_windowslib, BL_IA1|BL_PD0);
 BLITZ_SUBS(dowrport, windowslib_wchk, 0);
 BLITZ_NAME("RastPort", "(Window#)");
 
@@ -602,34 +603,34 @@ BLITZ_NAME("SetEventFilter", "preprocess,postprocess");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING, BL_STRING);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dowtitle, windowslib_wchk, 0);
 BLITZ_NAME("WTitle", "windowtitle$,screentitle$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(freewindow, 0, 0);
 BLITZ_NAME("CloseWindow", "Window#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(dowprintscroll, windowslib_wchk, 0);
 BLITZ_NAME("WPrintScroll", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1002, LIB_shapeslib, 0x1280, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA0, LIB_shapeslib, BL_IA2|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(dowblit, wblitchk, 0);
 BLITZ_NAME("WBlit", "Shape#,x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1081, LIB_bitmaplib, 0x1180, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD1, LIB_bitmaplib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(dobtow1, wbtowchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1081, LIB_bitmaplib, 0x1180, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA0|BL_PD1, LIB_bitmaplib, BL_IA1|BL_PD0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(dobtow2, wbtowchk, 0);
 BLITZ_NAME("BitMaptoWindow", "Bitmap#,Window#[,srcx,srcy,destx,desty,wid,height]");
 
@@ -638,38 +639,38 @@ SIMPLE_FN(BL_WORD, BLITZ_AMIGAONLY(doeventqualifier), "EventQualifier");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_layerslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA1, LIB_layerslib, BL_LA6);
 BLITZ_SUBS(_showsuper, 0, 0);
 BLITZ_NAME("PositionSuperBitMap", "x,y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1002, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_windowtobitmap, 0, 0);
 BLITZ_NAME("GetSuperBitMap", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_windowslib, 0x1002, LIB_graphicslib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_UA0, LIB_graphicslib, BL_LA6);
 BLITZ_SUBS(_bitmaptowindow, 0, 0);
 BLITZ_NAME("PutSuperBitMap", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_STRING);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_windowslib, 0x0604,
-           LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_windowslib, BL_LD6|BL_USEDOFF,
+           LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags1), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_STRING, BL_LONG);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_windowslib, 0x0604,
-           LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_windowslib, BL_LD6|BL_USEDOFF,
+           LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags3), 0, 0);
 BLITZ_REPARGS(3, 2, BL_WORD, BL_LONG, BL_STRING, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
-BLITZ_LIBS(LIB_windowslib, 0x1380, LIB_screenslib, 0x1102, LIB_windowslib, 0x0604,
-           LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_windowslib, BL_IA3|BL_PD0, LIB_screenslib, BL_UA1, LIB_windowslib, BL_LD6|BL_USEDOFF,
+           LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(BLITZ_AMIGAONLY(dowindowtags2), wtagschk, 0);  /* check: fixed #961 */
 BLITZ_NAME("WindowTags", "Window#,Flags,Title$ [,&TagList] or [[,Tag,Data]...]");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_graphicslib, BL_LA(0), LIB_intuitionlib, BL_LA(1));
+BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_graphicslib, BL_LA0, LIB_intuitionlib, BL_LA1);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 
 BLITZ_ENTRY_DECL(_load);
@@ -679,7 +680,7 @@ BLITZ_ENTRY_DECL(_free);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, dousewindow, 0, 0);
-BLITZ_NULLSUB_AT(_free, freewindow, 0, 0, LIB_intuitionlib, BL_LA(6));
+BLITZ_NULLSUB_AT(_free, freewindow, 0, 0, LIB_intuitionlib, BL_LA6);
 
 /* !libfin{_toke,_load,_save,_use,_free,5,5} */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);

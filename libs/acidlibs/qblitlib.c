@@ -42,13 +42,13 @@ BLITZ_LIBHEADER(LIB_qblitlib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_qblitlib, 0x1380);
+BLITZ_LIBS(LIB_qblitlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doqueue, 0, 0);
 BLITZ_NAME_AT(_toke, "Queue", "Queue#,Max Items");
 
-#define QBLIT_LIBS BLITZ_LIBS(LIB_shapeslib, 0x1381, LIB_qblitlib, 0x1080,         \
-                              LIB_bitmaplib, 0x1202, LIB_chipbaselib, 0x1100,      \
-                              LIB_graphicslib, 0x5600)
+#define QBLIT_LIBS BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD1, LIB_qblitlib, BL_IA0|BL_PD0, \
+                              LIB_bitmaplib, BL_UA2, LIB_chipbaselib, BL_LA1,            \
+                              LIB_graphicslib, BL_IFAMIGA|BL_LA6)
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
@@ -61,11 +61,11 @@ BLITZ_NAME("QBlit", "Queue#,Shape#,X,Y[,Excessonoff]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_qblitlib, 0x1380, LIB_chipbaselib, 0x1100, LIB_graphicslib, 0x5600);
+BLITZ_LIBS(LIB_qblitlib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA1, LIB_graphicslib, BL_IFAMIGA|BL_LA6);
 BLITZ_SUBS(dounqueue, unqueuechk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_qblitlib, 0x1380, LIB_chipbaselib, 0x1100, LIB_graphicslib, 0x5600,
-           LIB_bitmaplib, 0x1281);
+BLITZ_LIBS(LIB_qblitlib, BL_IA3|BL_PD0, LIB_chipbaselib, BL_LA1, LIB_graphicslib, BL_IFAMIGA|BL_LA6,
+           LIB_bitmaplib, BL_IA2|BL_PD1);
 BLITZ_SUBS(dounqueue2, unqueuechk2, 0);
 BLITZ_NAME("UnQueue", "Queue#[,BitMap#]");
 
@@ -77,7 +77,7 @@ BLITZ_NAME("QBlitMode", "BLTCON0");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_qblitlib, 0x1380);
+BLITZ_LIBS(LIB_qblitlib, BL_IA3|BL_PD0);
 BLITZ_SUBS(doflushqueue, unqueuechk, 0);
 BLITZ_NAME("FlushQueue", "Queue#");
 

@@ -179,11 +179,11 @@ BLITZ_NAME("SetIconHit", "width,height");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, BL_LA(0) | BL_ITEM | BL_PD(0));          /* #ia0|#pd0 */
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);                          /* #ia0|#pd0 */
 BLITZ_SUBS(BLITZ_AMIGAONLY(shapetoicon), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, BL_LA(0) | BL_ITEM | BL_PD(0),
-           LIB_shapeslib, BL_LA(1) | BL_ITEM | BL_PD(1));          /* #ia1|#pd1 */
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0,
+           LIB_shapeslib, BL_IA1|BL_PD1);                          /* #ia1|#pd1 */
 BLITZ_SUBS(BLITZ_AMIGAONLY(shapetoicon2), 0, 0);
 BLITZ_NAME("ShapeToIcon", "shape[,shape]");
 
@@ -216,11 +216,11 @@ BLITZ_NAME("FindToolType", "(tooltype$[,bracket_check])");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(icontoshape), 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_shapeslib, BL_LA(0) | BL_ITEM | BL_PD(0),
-           LIB_shapeslib, BL_LA(1) | BL_ITEM | BL_PD(1));
+BLITZ_LIBS(LIB_shapeslib, BL_IA0|BL_PD0,
+           LIB_shapeslib, BL_IA1|BL_PD1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(icontoshape2), 0, 0);
 BLITZ_NAME("IconToShape", "shape[,shape]");
 

@@ -101,16 +101,16 @@ BLITZ_NAME("DiskBuffer", "Bufferlen");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_doloadsound, 0, 0);
 BLITZ_NAME("LoadSound", "Sound#,Filename$");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_dosound2, sndchk, 0);
 BLITZ_REPARGS(2, 1, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_dosound, sndchk, 0);
 BLITZ_NAME_AT(_toke, "Sound", "Sound#,Channelmask[,Vol1[,Vol2...]]");
 
@@ -128,46 +128,46 @@ BLITZ_NAME("Filter", "On|Off");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_dosoundl2, sndchk, 0);
 BLITZ_REPARGS(2, 1, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_dosoundl, sndchk, 0);
 BLITZ_NAME("LoopSound", "Sound#,Channelmask[,Vol1[,Vol2...]]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_doisound2, ischk1, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_doisound3, ischk1, 0);
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e_doisound, ischk2, 0);
 BLITZ_NAME("InitSound", "Sound#,Length[,Period[,Repeat]]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_BYTE);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dosdata, sdatachk, 0);
 BLITZ_NAME("SoundData", "Sound#,Offset,Data");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(dopsound, sdatachk, 0);
 BLITZ_NAME("PeekSound", "(Sound#,Offset)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e__cludgesound, 0, 0);
 BLITZ_NAME("DecodeSound", "Sound#,MemoryLocation");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_audiolib, 0x1380);
+BLITZ_LIBS(LIB_audiolib, BL_IA3|BL_PD0);
 BLITZ_SUBS(e__setperiod, sndchk, 0);
 BLITZ_NAME("SetPeriod", "Sound#,Period");
 

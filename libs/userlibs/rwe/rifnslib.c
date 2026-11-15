@@ -103,7 +103,7 @@ BLITZ_ENTRY_DECL(finit);
 /* !libheader {#rifnslib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_rifnslib, init, BL_NORET, finit, 0);
 
-#define BMAP0 LIB_bitmaplib, BL_LA(0) | BL_ITEM | BL_PD(0)     /* !bmap {0,0} */
+#define BMAP0 LIB_bitmaplib, BL_IA0|BL_PD0                     /* !bmap {0,0} */
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_UNKNOWN);

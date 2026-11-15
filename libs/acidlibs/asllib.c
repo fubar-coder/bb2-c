@@ -91,37 +91,37 @@ BLITZ_LIBHEADER(LIB_myasllib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqa), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_STRING);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqb), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqc), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_STRING, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqd), asllib_freqchk, 0);
 BLITZ_NAME("ASLFileRequest$", "Title$,Pathname$,Filename$ [,Pattern$] [,x,y,w,h]");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfont), 0, 0);
 BLITZ_NAME("ASLFontRequest", "enable flags (1=pen 2=bckgrnd 4=style 8=drawmode 16=fixedsize)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslscreen), 0, 0);
 BLITZ_NAME("ASLScreenRequest", "enable flags (1=width 2=height 4=depth 8=overscan 16=scroll)");
 
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, SVAR);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqe), freqchk2, 0);
 BLITZ_ARGS(BL_STRING, SVAR, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
-BLITZ_LIBS(LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_screenslib, BL_UA1);
 BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqf), freqchk2, 0);
 BLITZ_NAME("ASLPathRequest$", "Title$,Pathname$ [,x,y,w,h]");
 

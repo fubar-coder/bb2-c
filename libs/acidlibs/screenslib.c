@@ -123,63 +123,63 @@ BLITZ_LIBHEADER(LIB_screenslib, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604, LIB_graphicslib, BL_LA(0));
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF, LIB_graphicslib, BL_LA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_domode), modechk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604, LIB_graphicslib, BL_LA(0));
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF, LIB_graphicslib, BL_LA0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_domode2), modechk, 0);
 BLITZ_ARGS(BL_WORD, 0x42, 0x42, 0x42, 0x42, 0x42, BL_LONG, BL_STRING, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e__screen), prescreen, 0);
 BLITZ_ARGS(BL_WORD, 0x42, 0x42, 0x42, 0x42, 0x42, BL_LONG, BL_STRING, BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_bitmaplib, 0x1085,
-           LIB_intuifontlib, BL_LA(1), LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_bitmaplib, BL_IA0|BL_PD5,
+           LIB_intuifontlib, BL_LA1, LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e__screen2), prescreen2, 0);
 BLITZ_NAME_AT(_toke, "Screen",
     "[Screen#,Mode[,Title$]]|[Screen#,X,Y,W,H,D,Viewmode,Title$,Dpen,Bpen[,BitMap#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(e_dowbscreen, 0, 0);
 BLITZ_NAME("WbToScreen", "Screen#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_screenslib, 0x1080);
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doloadscreen), loadscreenchk, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_palettelib, 0x1182);
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_palettelib, BL_IA1|BL_PD2);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doloadscreen2), loadscreenchk, 0);
 BLITZ_NAME("LoadScreen", "Screen#,Filename$[,Palette#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(e_dofstoscreen, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(e_dofindscreen, 0, 0);
 BLITZ_NAME("FindScreen", "Screen#[,Title$]");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_screenslib, 0x1002);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(dosmousex, loadscreenchk, 0);
 BLITZ_NAME("SMouseX", "");
 
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_screenslib, 0x1002);
+BLITZ_LIBS(LIB_screenslib, BL_UA0);
 BLITZ_SUBS(dosmousey, loadscreenchk, 0);
 BLITZ_NAME("SMouseY", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(doshowscreen, loadscreenchk, 0);
 BLITZ_NAME("ShowScreen", "Screen#");
 
@@ -194,56 +194,56 @@ BLITZ_NAME("ScreenPens", "Text,Shine,Shadow,Fill,FillText,Background,HighLight")
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080);
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0);
 BLITZ_SUBS(dosviewport, loadscreenchk, 0);
 BLITZ_NAME("ViewPort", "(Screen#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS(LIB_graphicslib, BL_LA(6), LIB_intuitionlib, BL_LA(3), LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_graphicslib, BL_LA6, LIB_intuitionlib, BL_LA3, LIB_screenslib, BL_UA1);
 BLITZ_SUBS(e_doshowbitmap0, showbmchk0, 0);
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_graphicslib, BL_LA(6), LIB_intuitionlib, BL_LA(3), LIB_bitmaplib, 0x1080,
-           LIB_screenslib, 0x1102);
+BLITZ_LIBS(LIB_graphicslib, BL_LA6, LIB_intuitionlib, BL_LA3, LIB_bitmaplib, BL_IA0|BL_PD0,
+           LIB_screenslib, BL_UA1);
 BLITZ_SUBS(e_doshowbitmap1, showbmchk, 0);
 BLITZ_NAME("ShowBitMap", "[BitMap#]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1380, LIB_intuitionlib, BL_LA(6), LIB_graphicslib, BL_LA(2));
+BLITZ_LIBS(LIB_screenslib, BL_IA3|BL_PD0, LIB_intuitionlib, BL_LA6, LIB_graphicslib, BL_LA2);
 BLITZ_SUBS(freescreen, 0, 0);
 BLITZ_NAME("CloseScreen", "Screen#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dohidescreen, loadscreenchk, 0);
 BLITZ_NAME("HideScreen", "Screen#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(dobeepscreen, loadscreenchk, 0);
 BLITZ_NAME("BeepScreen", "Screen#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
-BLITZ_LIBS(LIB_screenslib, 0x1080, LIB_intuitionlib, BL_LA(6));
+BLITZ_LIBS(LIB_screenslib, BL_IA0|BL_PD0, LIB_intuitionlib, BL_LA6);
 BLITZ_SUBS(domovescreen, loadscreenchk, 0);
 BLITZ_NAME("MoveScreen", "Screen#,deltax,deltay");
 
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_WORD, BL_STRING);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags2), 0, 0);
 BLITZ_ARGS(BL_WORD, BL_STRING, BL_LONG);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags3), 0, 0);
 BLITZ_REPARGS(2, 2, BL_WORD, BL_STRING, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
-BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
-           LIB_screenslib, 0x0604);
+BLITZ_LIBS(LIB_intuitionlib, BL_LA6, LIB_screenslib, BL_IA3|BL_PD0, LIB_intuifontlib, BL_LA1,
+           LIB_screenslib, BL_LD6|BL_USEDOFF);
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags), stagschk, 0);  /* check: fixed #1039 */
 BLITZ_NAME("ScreenTags", "Screen#,Title$ [&TagList] or [[,Tag,Data]...]");
 
@@ -251,7 +251,7 @@ BLITZ_NULLSUB_AT(init, screenslib_doinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
-BLITZ_NULLSUB_AT(_free, freescreen, 0, 0, LIB_intuitionlib, BL_LA(6), LIB_graphicslib, BL_LA(2));
+BLITZ_NULLSUB_AT(_free, freescreen, 0, 0, LIB_intuitionlib, BL_LA6, LIB_graphicslib, BL_LA2);
 
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 3);
 
