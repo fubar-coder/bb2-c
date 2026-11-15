@@ -126,23 +126,23 @@ bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                    216      100.4  c=NTSC
 bmisc.infront                252~4      134.9  InFront 4
-bmod.vblmod                3214~442    2409.5  PlayModule playing: its interrupt, cycles per frame
-bmod.playmed               12855~5     9950.0  PlayMed
+bmod.vblmod                 3106~15    2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.playmed               12223~1     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bstr.asg_s                   2550     1367.5  r$=a$
-bstr.mid                     2767     1553.5  r$=Mid$(a$,3,5)
-bstr.left                    2486     1299.0  r$=Left$(a$,5)
-bstr.right                   2679     1495.5  r$=Right$(a$,5)
+bstr.asg_s                   2185     1367.5  r$=a$
+bstr.mid                     2402     1553.5  r$=Mid$(a$,3,5)
+bstr.left                    2122     1299.0  r$=Left$(a$,5)
+bstr.right                   2315     1495.5  r$=Right$(a$,5)
 bstr.str                     5479     4131.5  r$=Str$(a)
-bstr.val                     3348     1927.0  c=Val(n$)
-bstr.len                     1244      731.0  c=Len(a$)
+bstr.val                     3283     1927.0  c=Val(n$)
+bstr.len                      876      731.0  c=Len(a$)
 bstr.chr                      819      411.0  r$=Chr$(65)
-bstr.asc                     1414      797.0  c=Asc(a$)
-bstr.instr                   4891     3513.0  c=Instr(a$,"Blitz")
-bstr.ucase                   4249     3124.0  r$=UCase$(a$)
+bstr.asc                     1054      797.0  c=Asc(a$)
+bstr.instr                   4464     3513.0  c=Instr(a$,"Blitz")
+bstr.ucase                   3879     3124.0  r$=UCase$(a$)
 bstr.hex                     2341     1570.0  r$=Hex$(a)
-bstr.concat                  4377     2318.5  r$=a$+b$
-bstr.strcmp                  4332     2943.5  If a$=b$ Then c=1
+bstr.concat                  3645     2318.5  r$=a$+b$
+bstr.strcmp                  3603     2943.5  If a$=b$ Then c=1
 bstr.string                  4304     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
