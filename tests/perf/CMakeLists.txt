@@ -73,7 +73,10 @@ math(EXPR limit "${PERF_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME perf COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DRESULTS=${RESULTS}
 	-DPASS=${PERF_PASS} -DTAG=clib -DWORK=${CMAKE_CURRENT_BINARY_DIR}/perf-run
 	-DTEST_SCRIPT=${PERF_SCRIPT} -P ${WITH_WORKDIR})
-set_tests_properties(perf PROPERTIES LABELS "perf;emulator" RUN_SERIAL TRUE TIMEOUT ${limit})
+# label perf: only the preset perf runs it (all, host, emulator and the
+# others exclude it); skipped (77) without Amiberry or the emulation data
+set_tests_properties(perf PROPERTIES LABELS "perf;emulator" SKIP_RETURN_CODE 77 RUN_SERIAL TRUE
+	TIMEOUT ${limit})
 # the target perf-original (not ALL, not a test; needs the CD and Amiberry):
 # the same benchmark with the CD's libraries, the original's cycles per call
 add_custom_target(perf-original
