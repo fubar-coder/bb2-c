@@ -32,6 +32,13 @@
  * transposes (period table rows), synth table jumps only to command
  * positions, small sample offsets (the Bxx word, #203), no MIDI dump
  * (#207).
+ *
+ * A third MMD0 module, after the blocks, plays notes below 0 (a song
+ * transpose of -40): playnote adds 12 until the note is not negative.
+ * It has sample and IFF octave instruments only and no commands (a synth
+ * note, an arpeggio or a hybrid would read period table entries outside
+ * the tables with such notes); its cases are the audio registers after
+ * every pulse.
  */
 #include "sysload.h"
 
@@ -121,6 +128,9 @@ static ULONG sample(ULONG o, ULONG len, UWORD type)
     return align4(o + 6 + len);
 }
 
+/* the third module: notes below 0 (see the head) */
+static int lowtrans;
+
 /* one note: MMD0 3 bytes (instrument bits 4/5 in the note byte), MMD1 4 */
 static ULONG note(ULONG o, int mmd1)
 {
@@ -130,11 +140,15 @@ static ULONG note(ULONG o, int mmd1)
         0x15, 0x16, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
     };
     static const UBYTE fq[] = { 0x00, 0xf1, 0xf2, 0xf3, 0xf8, 0xf9, 0xfd, 0xff, 0x10, 0x80 };
+    static const UBYTE lowins[] = { 1, 2, 3, 4, 7 };   /* no synth, no hybrid */
     UWORD n = rnd(10) < 4 ? 1 + rnd(48) : 0, ins = 0, cmd = 0, q = 0;
 
-    if (n || rnd(4) == 0)
+    if (lowtrans) {
+        if (n)
+            ins = lowins[rnd(sizeof lowins)];
+    } else if (n || rnd(4) == 0)
         ins = rnd(4) ? 1 + rnd(NSAMPLES) : 0;
-    if (rnd(2)) {
+    if (!lowtrans && rnd(2)) {
         cmd = mmd1 ? cmds1[rnd(sizeof cmds1)] : cmds0[rnd(sizeof cmds0)];
         /* the jumps, breaks, loops and delays rarely: else the song keeps
            to a few lines */
@@ -194,7 +208,7 @@ static void build(int mmd1)
     for (i = 0; i < 10; i++)
         p8(song + 508 + i, i % NBLOCKS);
     p16(song + 764, 125);
-    p8(song + 766, mmd1 ? 2 : 0);               /* transpose */
+    p8(song + 766, lowtrans ? -40 : mmd1 ? 2 : 0);      /* transpose */
     p8(song + 767, mmd1 ? 0x31 : 0x00);         /* flags */
     p8(song + 768, mmd1 ? 0x20 : 0x00);         /* flags2 (BPM: every 4th pulse) */
     p8(song + 769, mmd1 ? 3 : 4);               /* ticks per line */
@@ -508,6 +522,53 @@ static void song(const char *name, int pulses, int mincmds)
           && lines >= 40);
 }
 
+/* the third module: its audio registers after every pulse (the start as
+   an offset into the module, or "outside" for the library's zero
+   sample) */
+static void lowtrans_song(void)
+{
+    ULONG nonzero = 0;
+    UBYTE *mem;
+    int ch, k;
+
+    what = "low transpose StartMedModule";
+    markregs(&R);                               /* memlib again (its finit ran) */
+    callregs(entry_code(getlib(&loaded, "memlib"), 7), &R, 0, 0);
+    CALL1(E_INIT, (void)0);
+    lowtrans = 1;
+    build(0);
+    mem = module = AllocMem(modlen + 256, MEMF_CHIP | MEMF_CLEAR);
+    memcpy(module, mod, modlen);
+    obj[0] = L(mod);
+    obj[1] = modlen;
+    obj[2] = (ULONG)module;
+    CALL1(E_START, R.a[3] = (ULONG)obj);
+    what = "low transpose";
+    for (k = 0, ticks = 0; k < 400; k++) {
+        ticks++;
+        CALL1(E_PLAY, (void)0);
+        for (ch = 0; ch < 4; ch++) {
+            ULONG a = L(audio[ch]);
+
+            ROUT = "medlib";
+            if (a >= (ULONG)module && a < (ULONG)module + modlen)
+                OBS("start", a - (ULONG)module);
+            else
+                OBS("start outside", 1);
+            OBS("length", W(audio[ch] + 4));
+            OBS("period", W(audio[ch] + 6));
+            OBS("volume", audio[ch][9]);
+            nonzero += W(audio[ch] + 6) != 0;
+        }
+    }
+    what = "low transpose finit";
+    CALL1(E_FINIT, (void)0);
+    markregs(&R);                               /* memlib frees chipzero */
+    callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
+    FreeMem(mem, modlen + 256);
+    check("medlib low transpose: the module plays", nonzero > 400);
+}
+
 static const char *names[] = { "memlib", "medlib", NULL };
 
 int main(int argc, char **argv)
@@ -610,6 +671,7 @@ int main(int argc, char **argv)
     callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
     FreeMem(mmd0, len0 + 256);
     FreeMem(copy, modlen + 256);
+    lowtrans_song();
     printf("%d checks, %d failures\n", checks, failures);
     kept_summary();
     return failures ? 5 : 0;
