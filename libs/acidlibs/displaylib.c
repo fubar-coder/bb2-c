@@ -50,11 +50,12 @@
  *   overwrote spri, so a later DisplaySprite with hires/superhires
  *   sprites positioned by a wrong x handle.  Here the 14 bytes of the
  *   description are copied.
+ * Fixed (intended deviation, #951): CustomColors with thru256flag set
+ *   bot = 257 without reading the flag: 0 acted as 1, and a later custom
+ *   command below line 256 got no wait for line 255.  Here only a flag
+ *   other than 0 sets bot = 257 (programs that passed 0 change).
  *
  * Kept from the original (BUG(orig)):
- *   - CustomColors with thru256flag sets bot = 257 without reading the
- *     flag: 0 acts as 1, a later custom command below line 256 gets no
- *     wait for line 255. (#951)
  *   - Not a bug (only with out-of-range arguments that do not occur):
  *     word arithmetic, DBF counters (a 0/negative count runs 65536 times,
  *     e.g. cpline 4 per line), ADDA.w of colour offsets (palette entries
@@ -1595,24 +1596,27 @@ static void BLITZ_ROUTINE _customcols_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL
 
 /**
  * @brief CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols,
- *        thru256flag: as CustomColors, then bot = 257.
+ *        thru256flag: as CustomColors, then bot = 257 for a flag other
+ *        than 0.
  *
- * BUG(orig) (#951): the flag's value is not read (thru256flag 0 acts as
- * 1): bot = 257 means that the next wait does not add the line 256 wait.
+ * bot = 257 means that the next wait does not add the line 256 wait.
+ * Fixed (#951): a flag of 0 leaves bot as the form without the flag
+ * does; the original did not read the flag (0 acted as 1).
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the line
  * @param pal       a0: the palette (!libs {#palettelib,$1083})
  * @param startcol  d4: the first colour
  * @param numcols   d5: the number of colours
+ * @param thru256   d6: thru256flag
  */
 static void BLITZ_ROUTINE _customcols2_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                          const UBYTE *pal BL_REG(a0), UWORD startcol BL_REG(d4),
-                                         UWORD numcols BL_REG(d5))
+                                         UWORD numcols BL_REG(d5), UWORD thru256 BL_REG(d6))
 {
     customcols(ccoffset, ypos, pal, startcol, numcols);
-    /* BUG(orig) (#951): the flag (d6) is not read */
-    CM(blitz_string, bot) = 257;
+    if (thru256)                                /* fixed #951: the flag's value */
+        CM(blitz_string, bot) = 257;
 }
 BLITZ_THUNK(_customcols, _customcols_c, "a2");
 BLITZ_THUNK(_customcols2, _customcols2_c, "a2");

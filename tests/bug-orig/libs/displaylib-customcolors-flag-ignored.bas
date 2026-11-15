@@ -9,6 +9,7 @@
 ; with thru256flag 0, then at line 220 (264) at offset 4.
 ; Correct: with the flag 0 the second one starts with the wait for line
 ; 255, as after the form without the flag.
+; @fixed #951
 ; @configs clib
 DEFTYPE .l
 InitPalette 0,32
