@@ -42,9 +42,11 @@
  *   into the data words of the SPR0POS/SPR0CTL moves of `spp` (+2/+6):
  *   the unused sprite channels of every CopList fetched from address 0.
  *   Here it goes into those of SPR0PTH/PTL (+10/+14).
+ * Fixed (intended deviation, #411): DisplayBitMap without x,y stored the
+ *   caller's d2/d3 in x0/x1, the start of DisplayScroll; here 0 (as the
+ *   double form and the smooth scrolling resolutions do).
  *
  * Kept from the original (BUG(orig)):
- *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1. (#411)
  *   - CustomColors with thru256flag sets bot = 257 without reading the
  *     flag: 0 acts as 1, a later custom command below line 256 gets no
  *     wait for line 255. (#951)
@@ -1015,18 +1017,16 @@ static void BLITZ_ROUTINE _displaybmap2_c(const UBYTE *bm BL_REG(a0), ULONG x BL
  *
  * Sets the modulos and the bitplane pointers (HAM8: planes 7 and 8
  * first); with smooth scrolling in the type (bit 4) the x,y form at 0,0.
- * BUG(orig) (#411): without smooth scrolling x0/x1 get the caller's
- * d2/d3.
+ * Fixed (#411): without smooth scrolling x0/x1 (DisplayScroll's start)
+ * are 0 too; the original stored the caller's d2/d3 there.
  * Errors (debugger only): uninitialised coplist.
  *
  * @param bm       a0: the bitmap (!libs {#bitmaplib,$1081})
- * @param staled2  d2: the caller's d2, stored in x0
- * @param staled3  d3: the caller's d3, stored in x1
  */
-static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0), ULONG staled2 BL_REG(d2),
-                                         ULONG staled3 BL_REG(d3))
+static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0))
 {
     UBYTE *cop = blitz_string;
+    ULONG zero;
     UWORD *bplptr;
     UWORD planes, modulo;
     const UWORD *plane;
@@ -1035,8 +1035,10 @@ static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0), ULONG stale
         displaybmap2(cop, bm, 0, 0);
         return;
     }
-    CM(cop, x0) = staled2;                     /* BUG(orig) (#411): stale d2/d3 */
-    CM(cop, x1) = staled3;
+    zero = 0;                                   /* fixed #411: not d2/d3 */
+    OPAQUE(zero);                               /* MOVEQ + 2 MOVE.l, not CLR.l */
+    CM(cop, x0) = zero;
+    CM(cop, x1) = zero;
     bplptr = (UWORD *)CM(cop, bplanes);
     planes = CM(cop, numbp);
     if (!planes)

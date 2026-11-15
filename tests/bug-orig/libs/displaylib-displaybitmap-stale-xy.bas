@@ -6,6 +6,7 @@
 ; known values by inline assembler right before the call.
 ; Correct: the form without x,y starts at 0,0 (as the double form
 ; without coordinates and the smooth scrolling resolutions do).
+; @fixed #411
 ; @configs clib
 DEFTYPE .l
 BitMap 0,320,32,4
