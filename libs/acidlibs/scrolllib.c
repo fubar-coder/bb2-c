@@ -580,6 +580,212 @@ static void BLITZ_ROUTINE b_doscroll_c(SCROLL_REGS)
     blitz_string = scroll(x1, y1, x2, y2, src, cb, args);
 }
 
+/* The Blitz mode code of the command: the original's code (assembler:
+   the C was 17 % slower than the original; with its helpers inline and
+   no register saved GCC still kept the offsets on the stack in the plane
+   loop, as it needs more address registers than it has free - the
+   original saves a4/a5 for the masks and the cookie buffer).  The same
+   results as b_doscroll_c, which the nullsub b_doscroll keeps for other
+   libraries */
+void b_doscroll_blitz(void);
+BLITZ_ASM_ROUTINE(b_doscroll_blitz,
+"   cmp.w   #961,-2(a2)\n"
+"   bmi.s   1f\n"                       /* simon */
+"   move.w  -2(a2),-(sp)\n"             /* wider than 960: two parts */
+"   move.w  #960,-2(a2)\n"
+"   movem.l d0-d7/a0-a3,-(sp)\n"
+"   bsr.s   1f\n"
+"   movem.l (sp)+,d0-d7/a0-a3\n"
+"   move.w  (sp)+,-2(a2)\n"
+"   sub.w   #960,-2(a2)\n"
+"   add.w   #960,d0\n"
+"   add.w   #960,d2\n"
+"1: cmp.w   d1,d3\n"                    /* simon */
+"   bhi     3f\n"
+"   bne.s   2f\n"
+"   cmp.w   d0,d2\n"
+"   bhi     3f\n"
+/* doasc: ascending */
+"2: movem.l a4-a5,-(sp)\n"
+"   move.w  d1,d6\n"                    /* the source offset */
+"   mulu.w  (a0),d6\n"
+"   move.w  d0,d4\n"
+"   asr.w   #3,d4\n"
+"   ext.l   d4\n"
+"   add.l   d4,d6\n"
+"   move.w  d3,d7\n"                    /* the destination offset */
+"   mulu.w  (a3),d7\n"
+"   move.w  d2,d4\n"
+"   asr.w   #3,d4\n"
+"   ext.l   d4\n"
+"   add.l   d4,d7\n"
+"   bsr     9f\n"                       /* cookwait */
+"   move.w  d0,d4\n"                    /* the words of the blit */
+"   and.w   #0xfff0,d4\n"
+"   move.w  d0,d5\n"
+"   add.w   -2(a2),d5\n"
+"   and.w   #0xfff0,d5\n"
+"   sub.w   d4,d5\n"
+"   lsr.w   #4,d5\n"
+"   addq.w  #3,d5\n"
+"   move.w  d2,d4\n"                    /* the shift */
+"   move.w  d0,d3\n"
+"   and.w   #15,d4\n"
+"   and.w   #15,d3\n"
+"   sub.w   d3,d4\n"
+"   bpl.s   4f\n"
+"   and.w   #15,d4\n"
+"   subq.l  #2,d7\n"
+"4: ror.w   #4,d4\n"
+"   move.w  d4,0x42(a1)\n"
+"   or.w    _scminiterm(pc),d4\n"
+"   move.w  d4,0x40(a1)\n"
+"   move.w  d0,d4\n"                    /* the masks into the cookie */
+"   and.w   #15,d4\n"
+"   add.w   d4,d4\n"
+"   lea     _masks(pc),a4\n"
+"   move.w  0(a4,d4.w),(a5)\n"
+"   move.w  d0,d4\n"
+"   add.w   -2(a2),d4\n"
+"   and.w   #15,d4\n"
+"   add.w   d4,d4\n"
+"   move.w  d5,d3\n"
+"   add.w   d3,d3\n"
+"   subq.w  #6,d3\n"
+"   move.w  d3,_offset\n"
+"   move.w  0(a4,d4.w),d4\n"
+"   not.w   d4\n"
+"   and.w   d4,0(a5,d3.w)\n"
+"   clr.l   2(a5,d3.w)\n"
+"   move.l  a5,0x4c(a1)\n"
+"   bra     5f\n"
+/* dodesc: descending */
+"3: movem.l a4-a5,-(sp)\n"
+"   move.w  d1,d6\n"
+"   add.w   -4(a2),d6\n"
+"   subq.w  #1,d6\n"
+"   mulu.w  (a0),d6\n"
+"   move.w  d0,d4\n"
+"   add.w   -2(a2),d4\n"
+"   subq.w  #1,d4\n"
+"   asr.w   #3,d4\n"
+"   ext.l   d4\n"
+"   add.l   d4,d6\n"
+"   move.w  d3,d7\n"
+"   add.w   -4(a2),d7\n"
+"   subq.w  #1,d7\n"
+"   mulu.w  (a3),d7\n"
+"   move.w  d2,d4\n"
+"   add.w   -2(a2),d4\n"
+"   subq.w  #1,d4\n"
+"   asr.w   #3,d4\n"
+"   ext.l   d4\n"
+"   add.l   d4,d7\n"
+"   bsr     9f\n"                       /* cookwait */
+"   move.w  d0,d4\n"                    /* the words of the blit */
+"   subq.w  #1,d4\n"
+"   and.w   #0xfff0,d4\n"
+"   move.w  d0,d5\n"
+"   add.w   -2(a2),d5\n"
+"   subq.w  #1,d5\n"
+"   and.w   #0xfff0,d5\n"
+"   sub.w   d4,d5\n"
+"   lsr.w   #4,d5\n"
+"   addq.w  #3,d5\n"
+"   move.w  d2,d3\n"                    /* the shift */
+"   move.w  d0,d4\n"
+"   add.w   -2(a2),d3\n"
+"   subq.w  #1,d3\n"
+"   add.w   -2(a2),d4\n"
+"   subq.w  #1,d4\n"
+"   and.w   #15,d4\n"
+"   and.w   #15,d3\n"
+"   sub.w   d3,d4\n"
+"   bpl.s   6f\n"
+"   and.w   #15,d4\n"
+"   addq.l  #2,d7\n"
+"6: ror.w   #4,d4\n"
+"   move.w  d4,d3\n"
+"   or.w    #2,d3\n"
+"   move.w  d3,0x42(a1)\n"
+"   or.w    _scminiterm(pc),d4\n"
+"   move.w  d4,0x40(a1)\n"
+"   lea     _masks(pc),a4\n"            /* the masks into the cookie */
+"   move.w  d0,d4\n"
+"   add.w   -2(a2),d4\n"
+"   subq.w  #1,d4\n"
+"   and.w   #15,d4\n"
+"   add.w   d4,d4\n"
+"   move.w  2(a4,d4.w),d4\n"
+"   not.w   d4\n"
+"   move.w  d4,142(a5)\n"               /* CWIDTH - 2 */
+"   move.w  d5,d4\n"
+"   add.w   d4,d4\n"
+"   move.w  #144,d3\n"                  /* CWIDTH */
+"   sub.w   d4,d3\n"
+"   move.w  d3,_offset\n"
+"   move.w  d0,d4\n"
+"   subq.w  #1,d4\n"
+"   and.w   #15,d4\n"
+"   add.w   d4,d4\n"
+"   move.w  2(a4,d4.w),d4\n"
+"   clr.l   0(a5,d3.w)\n"
+"   and.w   d4,4(a5,d3.w)\n"
+"   lea     142(a5),a5\n"
+"   move.l  a5,0x4c(a1)\n"
+/* doit: d6 source / d7 destination offset, d5 words */
+"5: moveq   #-1,d4\n"
+"   move.l  d4,0x44(a1)\n"              /* first/last word masks */
+"   move.w  4(a0),d4\n"                 /* the planes of the shallower bitmap */
+"   cmp.w   4(a3),d4\n"
+"   bls.s   7f\n"
+"   move.w  4(a3),d4\n"
+"7: subq.w  #1,d4\n"
+"   move.w  d5,d3\n"
+"   add.w   d3,d3\n"
+"   move.w  (a0),d2\n"
+"   sub.w   d3,d2\n"
+"   move.w  d2,0x64(a1)\n"
+"   move.w  (a3),d2\n"
+"   sub.w   d3,d2\n"
+"   move.w  d2,0x60(a1)\n"
+"   move.w  d2,0x66(a1)\n"
+"   neg.w   d3\n"
+"   move.w  d3,0x62(a1)\n"
+"   move.w  -4(a2),d2\n"
+"   lsl.w   #6,d2\n"
+"   or.w    d5,d2\n"
+"   addq.l  #8,a0\n"
+"   addq.l  #8,a3\n"
+"   bra.s   8f\n"
+"10:btst    #6,2(a1)\n"                 /* the blitter */
+"11:btst    #6,2(a1)\n"
+"   bne.s   11b\n"
+"8: move.l  (a0)+,d0\n"
+"   add.l   d6,d0\n"
+"   move.l  d0,0x50(a1)\n"
+"   move.l  (a3)+,d0\n"
+"   add.l   d7,d0\n"
+"   move.l  d0,0x48(a1)\n"
+"   move.l  d0,0x54(a1)\n"
+"   move.w  d2,0x58(a1)\n"
+"   dbf     d4,10b\n"
+"   movem.l (sp)+,a4-a5\n"
+"   rts\n"
+/* cookwait: wait, the cookie words of the last scroll back to $FFFF */
+"9: btst    #6,2(a1)\n"
+"12:btst    #6,2(a1)\n"
+"   bne.s   12b\n"
+"   move.l  _cookie(pc),a5\n"
+"   moveq   #-1,d5\n"
+"   move.w  d5,(a5)\n"
+"   move.w  d5,142(a5)\n"
+"   move.w  _offset(pc),d4\n"
+"   move.l  d5,0(a5,d4.w)\n"
+"   move.w  d5,4(a5,d4.w)\n"
+"   rts");
+static_assert(CWIDTH == 144);
+
 /**
  * @brief Scroll in Amiga mode: b_doscroll_c between OwnBlitter and
  * DisownBlitter, waiting for the blitter at the end.
@@ -597,7 +803,7 @@ static void BLITZ_ROUTINE a_doscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_REG(d
     blitz_string = end;
 }
 BLITZ_THUNK(b_doscroll, b_doscroll_c, "d1/a0-a1");
-BLITZ_AB_ROUTINE(doscroll, b_doscroll, "   jmp     _a_doscroll_c");
+BLITZ_AB_ROUTINE(doscroll, b_doscroll_blitz, "   jmp     _a_doscroll_c");
 
 /* --------------------------------------------------------- BlockScroll */
 
