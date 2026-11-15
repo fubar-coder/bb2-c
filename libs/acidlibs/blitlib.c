@@ -116,14 +116,14 @@ struct blitstate {
 };
 
 /* the destination offset: MULS bpr,y + x ASR 3 */
-static ULONG offset(const struct bb_bitmap *bm, WORD x, WORD y)
+BL_ALWAYS_INLINE ULONG offset(const struct bb_bitmap *bm, WORD x, WORD y)
 {
-    return (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
+    return bl_blitoff(&bm->bpr, x, y);
 }
 
 /* the modulos: C = D = bpr - ebwidth - 2, A = B = -2 (mods_cb = d6 for
    BLTCMOD/BLTBMOD, mods_ad = d7 for BLTAMOD/BLTDMOD) */
-static void setmods(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb)
+BL_ALWAYS_INLINE void setmods(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb)
 {
     ULONG mods_ad = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
     ULONG mods_cb = mods_ad << 16 | mods_ad >> 16;
@@ -134,8 +134,8 @@ static void setmods(const struct bb_shape *shape, const struct bb_bitmap *bm, UB
 }
 
 /* b_doblit - a3 = shape, a2 = used bitmap, a1 = chip base, d1/d2 = x/y */
-static void blit(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y,
-                 struct blitstate *st)
+BL_ALWAYS_INLINE void blit(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
+                           WORD x, WORD y, struct blitstate *st)
 {
     UWORD shiftbits, n;
 
@@ -173,8 +173,8 @@ blitlib_doblit:
 
 /* b_doblitex - and the excess planes: d3 = one bit per plane, set =
    minterm $FA, clear = $0A */
-static void blitex(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y,
-                   UWORD bits)
+BL_ALWAYS_INLINE void blitex(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
+                             WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
@@ -197,7 +197,8 @@ static void blitex(const struct bb_shape *shape, const struct bb_bitmap *bm, UBY
 }
 
 /* b_doblock - A -> D copy, without the extra word */
-static void block(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y)
+BL_ALWAYS_INLINE void block(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
+                            WORD x, WORD y)
 {
     UWORD n = shape->depth, size;
     UBYTE **plane = (UBYTE **)bm->planes;
@@ -226,7 +227,8 @@ blitlib_doblit:
 }
 
 /* b_doblitcoll - A = cookie, C = every bitmap plane, no D: BZERO */
-static UWORD blitcoll(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y)
+BL_ALWAYS_INLINE UWORD blitcoll(const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
+                                WORD x, WORD y)
 {
     UWORD shiftbits, n, size;
     UBYTE **plane = (UBYTE **)bm->planes;
@@ -275,13 +277,14 @@ static UWORD blitcoll(const struct bb_shape *shape, const struct bb_bitmap *bm, 
  * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  */
-static void BLITZ_ROUTINE b_doblit_c(REG_ARGS);
-static void BLITZ_ROUTINE b_doblit_c(REG_ARGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(REG_ARGS);
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(REG_ARGS)
 {
     struct blitstate st;
 
     blit((const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
 }
+BLITZ_EP_MARK(b_doblit_c);
 
 /**
  * @brief Blit Shape#,X,Y (Amiga mode).
@@ -377,11 +380,12 @@ BLITZ_AB_ROUTINE(blitlib_doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
  * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  */
-void BLITZ_ROUTINE b_doblock_c(REG_ARGS);
-void BLITZ_ROUTINE b_doblock_c(REG_ARGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblock_c(REG_ARGS);
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblock_c(REG_ARGS)
 {
     block((const struct bb_shape *)blitz_string, bm, cb, x, y);
 }
+BLITZ_EP_MARK(b_doblock_c);
 
 /**
  * @brief Block Shape#,X,Y (Amiga mode).
@@ -425,13 +429,14 @@ BLITZ_AB_ROUTINE(doblock, b_doblock_c, "   jmp     _a_doblock_c");
  * @return d0: BB_TRUE if any plane has a set pixel under the cookie (BZERO
  *         clear), else BB_FALSE (a word function, MOVEQ: the full long)
  */
-BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
-BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
 {
     /* EXT.l of the word -1/0: BB_TRUE/BB_FALSE */
     return (BB_BOOL)(LONG)(WORD)blitcoll((const struct bb_shape *)blitz_string,
                                          bm, cb, x, y);
 }
+BLITZ_EP_MARK(b_doblitcoll_c);
 
 /**
  * @brief BlitColl(Shape#,x,y) (Amiga mode).
@@ -496,6 +501,11 @@ BLITZ_THUNK(blitlib_codeinit, codeinit_c, "d1/a0-a1");
  *
  * Inline MOVE.w #mode,d0 (not a bug: the upper word of d0 stays; word
  * results, the compiler uses only d0.w).
+ *
+ * Speed: the helpers are inline (BL_ALWAYS_INLINE), so the blit state is
+ * in registers as in the original, and the Blitz mode code of Blit,
+ * Block and BlitColl saves no register (BLITZ_ENTRYPOINT; the original
+ * changes d0-d7 and a0 too, the register rule keeps a3-a7).
  */
 BLITZ_INLINE(docookiemode, "move.w #0xfca,d0");
 BLITZ_INLINE(doerasemode, "move.w #0xb0a,d0");
