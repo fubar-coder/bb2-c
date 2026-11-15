@@ -107,6 +107,39 @@ build.
     library, TED's files, and the behaviour measured by the library tests
     (`libs_emulator`, KEEPS under the new judge), the corpus, the bug-orig
     tests, and the perf budgets.
+11. **Where the benchmark lives (task 1.1, decided with the first
+    measurement of 2026-11-15).** In `tests/perf/`, beside the corpus,
+    whose machinery it uses:
+    - `tests/perf/bench/*.bas`: the Blitz sources of the measurement
+      (`perf-analysis/bench/`, generated there by a throw-away script, now
+      plain sources kept by hand), one program per area, tokenised by
+      `tedsrc tok` like the corpus. `bmod` is reworked: an `empty` loop
+      like the others, the PlayModule interrupt as a loop of the kind
+      `frame` (the cycles per PAL frame the handler takes from the empty
+      loop: 142102 x (1 - E / loop), E the empty loop), the timed one-call
+      loops of the start and stop commands dropped (a resolution of 1000
+      cycles).
+    - The run: not a new runner on `tools/lib/amiga_emulation` but
+      `corpusrun pass --observe` (`tests/perf/perf.cmake`), which already
+      compiles with blitz2 in Amiberry, runs on Kickstart 1.3 (`rcput`),
+      stages the module files, takes the `machine=`/`uae=` lines of the
+      cycle-exact A500 and skips without Amiberry; the measurement of
+      `report.md` used it too. One session (`parallel=1`), the test
+      `RUN_SERIAL`.
+    - The arithmetic and the budgets in C: `results perf` with the logic
+      in `tools/lib/perfbudget` (the Python `res4.py` of the analysis
+      ported), tested by `tools/tests/test_perfbudget.c`.
+    - The budget file `tests/perf/budgets.txt`; the original's values
+      come from the target `perf-original` (the same pass with the CD's
+      libraries, not a test).
+    The first measurement in the repository (clib, then the CD's
+    libraries, one session each, 216 s and 168 s) reproduces `report.md`
+    to the cycle for the unchanged commands (e.g. Long division 5673.1
+    against 2661.0, Peek.b 217.1 against 129.0, Sort 653474 against
+    77694); it differs where main changed since `b59cbe2e` (SColl 136.4,
+    from the SColl rework; DisplaySprite 1578.5). Of 119 commands 101 are
+    slower than the original by more than 2 %, 15 equal, 3 faster (Float
+    assignment, QAbs, String$).
 
 ## Risks / Trade-offs
 
@@ -141,7 +174,8 @@ budgets need them. Rollback is one commit per entry group.
 
 ## Open Questions
 
-- Where the benchmark sources live; decided in task 1.1.
+- Where the benchmark sources live (decided in task 1.1, Decision 11):
+  `tests/perf/`.
 - Budgets (decided): each command's budget is the current measurement plus
   a tolerance (a guard against slowing down) and is tightened after each
   step; the original's measurement is recorded next to it as the target.
