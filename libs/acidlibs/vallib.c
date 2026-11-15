@@ -653,7 +653,11 @@ static UWORD genrnd(void)
 /**
  * @brief Rnd - a random fraction.
  *
- * MOVEQ #0,d0 + genrnd (hardware noise, see genrnd).
+ * MOVEQ #0,d0 + genrnd (hardware noise, see genrnd).  Rnd and Rnd(Range)
+ * keep a0 and a1, which the CD programs SQUIRT2_TO and SQUIRT3_TO hold
+ * across them (inline assembler): the C functions use only d0-d4 (d2-d4
+ * saved; checked in the disassembly; KEEPS a0|a1 in
+ * libs/tests/systest_cmdlibs.c).
  *
  * @return d0: Quick 0..$FFFF/$10000 (16 random bits in the low word)
  */
@@ -661,7 +665,7 @@ static ULONG BLITZ_ROUTINE dornd1_c(void)
 {
     return genrnd();
 }
-BLITZ_THUNK(dornd1, dornd1_c, "d1/a0-a1");
+BLITZ_ALIAS(dornd1, dornd1_c);
 
 /**
  * @brief Rnd(Range) - a random value 0..range.
@@ -675,7 +679,7 @@ static ULONG BLITZ_ROUTINE dornd2_c(UWORD range BL_REG(d0))
 {
     return (ULONG)genrnd() * range;
 }
-BLITZ_THUNK(dornd2, dornd2_c, "d1/a0-a1");
+BLITZ_ALIAS(dornd2, dornd2_c);
 
 /* ----------------------------------------------------------------- Val */
 

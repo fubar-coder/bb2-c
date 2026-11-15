@@ -27,7 +27,7 @@
 #include "blitzexec.h"
 #include <intuition/screens.h>
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void environlib_codeinit(void), dowbwidth(void), dowbhite(void);
 void dowbdepth(void), dowbviewmode(void), doprocessor(void), docr_vbr(void);
 void doexecversion(void), doextwbviewmode(void);
@@ -118,7 +118,7 @@ BLITZ_THUNK(environlib_codeinit, codeinit_c, "a0-a1");
  * The value read at program start (GetScreenData, not checked: a failed
  * call leaves 0).
  *
- * @return d0: the width (long); every other register kept
+ * @return d0: the width (long)
  */
 static ULONG BLITZ_ROUTINE wbwidth_c(void) { return wbwidth_; }
 
@@ -127,7 +127,7 @@ static ULONG BLITZ_ROUTINE wbwidth_c(void) { return wbwidth_; }
  *
  * The value read at program start (GetScreenData, not checked).
  *
- * @return d0: the height (long); every other register kept
+ * @return d0: the height (long)
  */
 static ULONG BLITZ_ROUTINE wbhite_c(void) { return wbhite_; }
 
@@ -138,7 +138,7 @@ static ULONG BLITZ_ROUTINE wbhite_c(void) { return wbhite_; }
  * the 68000.  Fixed (#42): the original reads it only from the 68020 on
  * (0 on a 68010).
  *
- * @return d0: the VBR (long); every other register kept
+ * @return d0: the VBR (long)
  */
 static ULONG BLITZ_ROUTINE cr_vbr_c(void) { return vbr_; }
 
@@ -147,7 +147,7 @@ static ULONG BLITZ_ROUTINE cr_vbr_c(void) { return vbr_; }
  *
  * The value read at program start (RastPort.BitMap->Depth of the copy).
  *
- * @return d0.w: the depth; the upper word of d0 stays as it was
+ * @return d0: the depth (zero-extended)
  */
 static ULONG BLITZ_ROUTINE wbdepth_c(void) { return wbdepth_; }
 
@@ -156,7 +156,7 @@ static ULONG BLITZ_ROUTINE wbdepth_c(void) { return wbdepth_; }
  *
  * ViewPort.Modes of the copy read at program start (MOVE.w wbview_).
  *
- * @return d0.w: the modes; the upper word of d0 stays as it was
+ * @return d0.w: the modes (the upper word of d0 is undefined)
  */
 static ULONG BLITZ_ROUTINE wbviewmode_c(void) { return wbview_ >> 16; }
 
@@ -167,7 +167,7 @@ static ULONG BLITZ_ROUTINE wbviewmode_c(void) { return wbview_ >> 16; }
  * The low word of the long read at ViewPort.Modes at program start
  * (MOVE.w wbview_+2): ViewPort.SpritePriority and ExtendedModes.
  *
- * @return d0.w: the word; the upper word of d0 stays as it was
+ * @return d0.w: the word (the upper word of d0 is undefined)
  */
 static ULONG BLITZ_ROUTINE extwbviewmode_c(void) { return (UWORD)wbview_; }
 
@@ -177,24 +177,29 @@ static ULONG BLITZ_ROUTINE extwbviewmode_c(void) { return (UWORD)wbview_; }
  * The number of shifts until AttnFlags & 15 is 0: 0 = 68000, 1 = 68010,
  * 2 = 68020, 3 = 68030, 4 = 68040.
  *
- * @return d0.w: the number; the upper word of d0 stays as it was
+ * @return d0.w: the number (the upper word of d0 is undefined)
  */
 static ULONG BLITZ_ROUTINE processor_c(void) { return cpu_; }
 
 /**
  * @brief ExecVersion: exec.library's version (SysBase->LibNode.lib_Version).
  *
- * @return d0.w: the version; the upper word of d0 stays as it was
+ * @return d0: the version, a zero-extended long (ElmoreSysLib's checkrom
+ *         and ElmoreLib compare it as a long, CMP.l #36,d0)
  */
 static ULONG BLITZ_ROUTINE execversion_c(void) { return execver_; }
 
-/* long functions: MOVE.l x,d0 - every other register kept */
-BLITZ_THUNK(dowbwidth, wbwidth_c, "d1/a0-a1");
-BLITZ_THUNK(dowbhite, wbhite_c, "d1/a0-a1");
-BLITZ_THUNK(docr_vbr, cr_vbr_c, "d1/a0-a1");
-/* word functions: MOVE.w x,d0 - the upper word of d0 kept */
-BLITZ_THUNK_POST(dowbdepth, wbdepth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(dowbviewmode, wbviewmode_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doextwbviewmode, extwbviewmode_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doprocessor, processor_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doexecversion, execversion_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+/* The entries are the C functions (the register rule,
+   docs/libs/deviations.md "Register preservation"): MOVE.l x,d0 or
+   MOVEQ #0,d0:MOVE.w x,d0, nothing else.  WBWidth, WBHeight and WBDepth
+   keep a0 and a1, which the CD program WBDEMO.BB2 holds across them
+   (inline assembler); ExecVersion returns a zero-extended long (checked
+   in the disassembly; KEEPS in libs/tests/systest_cmdlibs.c). */
+BLITZ_ALIAS(dowbwidth, wbwidth_c);
+BLITZ_ALIAS(dowbhite, wbhite_c);
+BLITZ_ALIAS(docr_vbr, cr_vbr_c);
+BLITZ_ALIAS(dowbdepth, wbdepth_c);
+BLITZ_ALIAS(dowbviewmode, wbviewmode_c);
+BLITZ_ALIAS(doextwbviewmode, extwbviewmode_c);
+BLITZ_ALIAS(doprocessor, processor_c);
+BLITZ_ALIAS(doexecversion, execversion_c);

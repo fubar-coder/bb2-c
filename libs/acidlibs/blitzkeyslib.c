@@ -28,8 +28,8 @@
  * only tested for 0); the -8 entry of the input handler (string output) is
  * no BRA (an input handler is never called there); RawStatus,
  * BlitzQualifier: word results, the upper word of d0 is the caller's in
- * the original (RawStatus: a thunk; BlitzQualifier: undefined, the
- * register rule; the compiler uses only d0.w); BlitzKey writes the read index of
+ * the original (here undefined, the register rule; the compiler uses only
+ * d0.w); BlitzKey writes the read index of
  * keyboard.device for every entry it passes, also key up codes (needed to
  * get past them).
  * Registers: BlitzKey keeps d1/a0-a1 (MOVEM in the original, here the
@@ -236,7 +236,10 @@ BLITZ_ASM_BLOCK(binkey,
  *
  * Bit code&7 of byte code>>3 of keyboard.device's key matrix
  * (BTST d1,0(a0,d0.w):SNE d0:EXT d0).  A word function: the upper word of
- * d0 is the caller's (thunk; the compiler uses only d0.w).
+ * d0 is the caller's in the original, undefined here (the register rule;
+ * the compiler uses only d0.w).  Keeps a1, which RILesDebugLib's SearchMem
+ * holds across it: the C function uses only d0, d1, d2 (saved) and a0
+ * (checked in the disassembly; KEEPS a1 in libs/tests/systest_cmdlibs.c).
  *
  * @param code  d0.w: the raw key code
  * @return d0.w: -1 = down, 0 = up
@@ -247,4 +250,4 @@ static UWORD BLITZ_ROUTINE dorstat_c(UWORD code BL_REG(d0))
 
     return (matrix[(WORD)(code >> 3)] & (1 << (code & 7))) ? 0xffff : 0;
 }
-BLITZ_THUNK_POST(dorstat, dorstat_c, "d0/a1", "move.w d0,2(sp)");
+BLITZ_ALIAS(dorstat, dorstat_c);

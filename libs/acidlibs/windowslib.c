@@ -1206,12 +1206,6 @@ BLITZ_ALIAS(docursor, docursor_c);
 
 /* the event data (word functions, see above) */
 
-/** @brief EMouseX - the mouse x position of the last event.
-    @return d0: the position (low word) */
-static UWORD BLITZ_ROUTINE doemousex_c(void)        { return V.evmousex; }
-/** @brief EMouseY - the mouse y position of the last event.
-    @return d0: the position (low word) */
-static UWORD BLITZ_ROUTINE doemousey_c(void)        { return V.evmousey; }
 /** @brief GadgetHit - the gadget id of the last gadget event (-1 at init).
     @return d0: the id (low word) */
 static UWORD BLITZ_ROUTINE dogadgethit_c(void)      { return V.eventgnum; }
@@ -1224,26 +1218,66 @@ static UWORD BLITZ_ROUTINE doitemhit_c(void)        { return V.itemnum; }
 /** @brief SubHit - the subitem number of the last menu event, -1 for none.
     @return d0: the number (low word) */
 static UWORD BLITZ_ROUTINE dosubhit_c(void)         { return V.subnum; }
-/** @brief EventCode - the IDCMP code of the last event.
-    @return d0: the code (low word) */
-static UWORD BLITZ_ROUTINE doeventcode_c(void)      { return V.evcode; }
 /** @brief EventQualifier - the qualifier of the last event.
     @return d0: the qualifier (low word) */
 static UWORD BLITZ_ROUTINE doeventqualifier_c(void) { return V.evqualifier; }
-BLITZ_THUNK_POST(doemousex, doemousex_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doemousey, doemousey_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 WORD_FN(dogadgethit, dogadgethit_c);
 WORD_FN(domenuhit, domenuhit_c);
 WORD_FN(doitemhit, doitemhit_c);
 WORD_FN(dosubhit, dosubhit_c);
-BLITZ_THUNK_POST(doeventcode, doeventcode_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 WORD_FN(doeventqualifier, doeventqualifier_c);
+
+/* the offsets of the event fields in V, for the assembler entries below */
+#define V_EVCODE 8
+#define V_EVMOUSEX 98
+#define V_EVMOUSEY 100
+static_assert(offsetof(__typeof__(V), evcode) == V_EVCODE);
+static_assert(offsetof(__typeof__(V), evmousex) == V_EVMOUSEX);
+static_assert(offsetof(__typeof__(V), evmousey) == V_EVMOUSEY);
+
+/* EMouseX, EMouseY and EventCode are MOVE.w x,d0:RTS as in the original,
+   assembler entries (not C functions) because a caller relies on what
+   they keep: wzlib holds a0 across them and builds EMouseX<<16|EMouseY in
+   d0 (WZInput, WZInputstr, WZGadHelp, WZGetNode, WZMenuHelp).  They write
+   only the low word of d0 and keep every other register, whatever GCC
+   makes of the rest of the library (the exceptions of the register rule,
+   docs/libs/deviations.md "Register preservation"; KEEPS a0|d0u in
+   libs/tests/systest_cmdlibs.c). */
+
+/**
+ * @brief EMouseX - the mouse x position of the last event.
+ * @return d0.w: the position; every other register (and the upper word
+ *         of d0) kept
+ */
+BLITZ_ASM_ROUTINE(doemousex,
+"   move.w  _V+" BL_STR(V_EVMOUSEX) "(pc),d0\n"
+"   rts");
+
+/**
+ * @brief EMouseY - the mouse y position of the last event.
+ * @return d0.w: the position; every other register (and the upper word
+ *         of d0) kept
+ */
+BLITZ_ASM_ROUTINE(doemousey,
+"   move.w  _V+" BL_STR(V_EVMOUSEY) "(pc),d0\n"
+"   rts");
+
+/**
+ * @brief EventCode - the IDCMP code of the last event.
+ * @return d0.w: the code; every other register (and the upper word of
+ *         d0) kept
+ */
+BLITZ_ASM_ROUTINE(doeventcode,
+"   move.w  _V+" BL_STR(V_EVCODE) "(pc),d0\n"
+"   rts");
 
 /**
  * @brief EventWindow - the window number of the last event.
  *
  * MOVE.w into d0 after MOVE.l eventwin,d0: upper word = upper word of the
- * pointer.
+ * pointer.  Keeps a1, which wzlib holds across it (WZGadHelp, WZMenuHelp,
+ * WZGadName, WZMenuName): the C function uses only d0 and a0 (checked in
+ * the disassembly; KEEPS a1 in libs/tests/systest_cmdlibs.c).
  *
  * @return d0: the window number (low word), -1 if there was no event
  */
@@ -1255,7 +1289,7 @@ static ULONG BLITZ_ROUTINE doeventwindow_c(void)
         return (ULONG)-1;
     return (w & 0xffff0000UL) | WUD(w)->num;
 }
-BLITZ_THUNK(doeventwindow, doeventwindow_c, "d1/a0-a1");
+BLITZ_ALIAS(doeventwindow, doeventwindow_c);
 
 /* --------------------------------------------------- windows' text */
 
