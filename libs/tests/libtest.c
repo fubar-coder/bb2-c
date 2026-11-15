@@ -15,7 +15,7 @@
  * Inputs: all pairs of a list of edge values in d0/d1, plus ROUNDS
  * (default 20000) pseudo random pairs (fixed seed, reproducible), as
  * block cases; for ldivlib then the limits of its paths as plain cases
- * (check "limit d0").
+ * (check "limit d0") and the steps of its normalisation ("norm d0").
  * Output: one line per routine; exit 0 if the library loads and its
  * cases are written.
  */
@@ -206,6 +206,19 @@ int main(int argc, char **argv)
                         ULONG d1 = sg & 2 ? -divisors[y] : divisors[y];
                         sprintf(vec, "$%08lX $%08lX", d0, d1);
                         cap_num("limit d0", vec, call(a.code[i], d0, d1));
+                    }
+            /* the loop's normalisation: a divisor with its top bit at
+               every place from 16 to 31, (1 << m) + 1 and (2 << m) - 1
+               (fraction bits for Quick), both signs of the dividend */
+            for (x = 0; x < NDIVIDENDS; x++)
+                for (y = 16; y < 32; y++)
+                    for (sg = 0; sg < 4; sg++) {
+                        ULONG d0 = sg & 1 ? -dividends[x] : dividends[x];
+                        ULONG d1 = sg & 2 ? (2UL << y) - 1 : (1UL << y) + 1;
+                        if ((sg & 2) && y == 31)
+                            continue;           /* $FFFFFFFF: -1 */
+                        sprintf(vec, "$%08lX $%08lX", d0, d1);
+                        cap_num("norm d0", vec, call(a.code[i], d0, d1));
                     }
         }
     }

@@ -149,14 +149,15 @@ build.
     a divisor below `$10000`; Quick with a divisor without a fraction
     (two DIVU by its high word) or below 1.0 (two DIVU for the integer
     part, then the 16 fraction steps on words). Every other divisor runs
-    the original's loop, among them the benchmark's 3.25: Quick there
-    goes from 8277 to 3648 cycles, only 4 % under the original's 3820.
-    The rest of that gap is the loop's first steps, which only move the
-    divisor bit by bit into d3 (17 of 48 for 3.25); normalising the
-    divisor first (and a compare step without the original's d1 test)
-    would give the same bits faster, an estimated 1000 to 1500 cycles
-    for 3.25, but leaves the original's loop (not done: task 4.1 keeps
-    it; an open point). Long Mod uses the same DIVU remainder for a divisor below
+    the loop, among them the benchmark's 3.25. With the original's loop
+    Quick went from 8277 to 3648 cycles there, only 4 % under the
+    original's 3820: the loop's first steps only move the divisor bit by
+    bit into d3 (17 of 48 for 3.25). The loop therefore normalises the
+    divisor first (shifts by 8, 4 and single bits until bit 31 is set)
+    and runs only the compare steps, without the original's tests of d1
+    and of d3 = 0 (never 0 for a divisor from `$10000` on); the same
+    bits (user decision 2026-11-15), 1965 cycles for 3.25. Long Mod uses
+    the same DIVU remainder for a divisor below
     `$10000` (a - (a/b)*b is the remainder of the magnitudes with the
     dividend's sign, as lmultiply is exact modulo 2^32) and the
     original's two calls otherwise. Measured: Long 5673 -> 519 (the

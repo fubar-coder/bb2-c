@@ -42,8 +42,8 @@ BLITZ_LIBFIN();
  * divisor is shifted right out of d1 into d3 from the top; once d1 is
  * empty each step shifts d3 one further right and subtracts it from the
  * dividend (the remainder in the end) where it fits, one quotient bit in
- * d4 per step.  32 steps for Long (d5 = 31) give the exact quotient of
- * the magnitudes.  Quick has 16 more (d5 = 47): the 16 fraction bits,
+ * d4 per step.  32 steps for Long (dbra count 31) give the exact quotient of
+ * the magnitudes.  Quick has 16 more (count 47): the 16 fraction bits,
  * computed with the divisor shifted right past bit 0: its lost low bits
  * make a fraction bit 1 where an exact division gives 0 (1/3.25 is
  * $00004EC5 here, $00004EC4 exact); quotient bits above bit 31 are lost.
@@ -59,9 +59,16 @@ BLITZ_LIBFIN();
  *    fraction steps on words (remainder and shifted divisor are below
  *    $10000).
  * Any other divisor (from $10000 on; for Quick with a fraction) runs the
- * original's loop.  Cycles per call on the A500 (tests/perf, the call
- * included): 123456/789 519 (the original 2661), Quick 12.5/3.25 (the
- * loop) 3648 (the original 3820).
+ * loop, with the same steps but faster: the original's first steps only
+ * move the divisor bit by bit into d3 until d1 is empty (one step per bit
+ * below its top bit m, no quotient bit), so the divisor is normalised
+ * first instead (shifted left until bit 31 is set: by 8, 4 and single
+ * bits), and the 32 - m (Long) or 48 - m (Quick) compare steps follow
+ * without the original's tests of d1 and of d3 = 0 (for a divisor from
+ * $10000 on d3 is never 0 there: its last value is the divisor >> 16).
+ * Cycles per call on the A500 (tests/perf, the call included): 123456/789
+ * 519 (the original 2661), Quick 12.5/3.25 (the loop) 3648 before the
+ * normalisation, 1965 now (the original 3820).
  *
  * A divisor 0 gives the largest number with the dividend's sign, no
  * error without the debugger (with it, divchk reports "Division by Zero"
@@ -122,9 +129,9 @@ BLITZ_ASM_BLOCK(divide,
         "   move.l  (sp)+,d4\n"
         "   bra.s   .Lsign\n"
         ".Lqloop:\n"
-        "   movem.l d4-d5,-(sp)\n"
-        "   moveq   #47,d5\n"
-        "   bra.s   .Lloop0\n"
+        "   move.l  d4,-(sp)\n"
+        "   moveq   #16,d4\n"               /* 16 fraction steps more */
+        "   bra.s   .Lnorm\n"
         "   .globl  _ldivide\n"
         "_ldivide:\n"
         "   tst.l   d1\n"
@@ -158,31 +165,38 @@ BLITZ_ASM_BLOCK(divide,
         "   neg.l   d0\n"
         "4: movem.l (sp)+,d2-d3\n"
         "   rts\n"
+        /* the loop for a divisor from $10000 on: normalised first (d1
+           shifted left until bit 31 is set, d4 counts the shifts: k, from
+           0 to 15), then the compare steps of 'loop, 32 - (31 - k) for
+           Long and 16 more for Quick (dbra count d4 = k, 16 + k) */
         ".Llloop:\n"
-        "   movem.l d4-d5,-(sp)\n"
-        "   moveq   #31,d5\n"
-        ".Lloop0:\n"                        /* 'skip2 */
-        "   moveq   #0,d3\n"
+        "   move.l  d4,-(sp)\n"
         "   moveq   #0,d4\n"
-        ".Lloop:\n"                         /* 'loop */
-        "   lsl.l   #1,d4\n"
-        "   lsr.l   #1,d1\n"
-        "   beq.s   .Lskip6\n"
-        "   roxr.l  #1,d3\n"
-        "   dbra    d5,.Lloop\n"
-        "   bra.s   .Lskip7\n"
-        ".Lskip6:\n"
-        "   roxr.l  #1,d3\n"
-        "   beq.s   .Lskip3\n"
-        "   cmp.l   d3,d0\n"
-        "   bcs.s   .Lskip3\n"
-        "   sub.l   d3,d0\n"
-        "   addq.w  #1,d4\n"                /* bit 0 is free */
-        ".Lskip3:\n"
-        "   dbra    d5,.Lloop\n"
-        ".Lskip7:\n"
-        "   move.l  d4,d0\n"
-        "   movem.l (sp)+,d4-d5\n"
+        ".Lnorm:\n"
+        "   cmp.l   #0x00ffffff,d1\n"
+        "   bhi.s   1f\n"
+        "   lsl.l   #8,d1\n"
+        "   addq.w  #8,d4\n"
+        "1: cmp.l   #0x0fffffff,d1\n"
+        "   bhi.s   2f\n"
+        "   lsl.l   #4,d1\n"
+        "   addq.w  #4,d4\n"
+        "2: tst.l   d1\n"
+        "   bmi.s   4f\n"
+        "3: addq.w  #1,d4\n"
+        "   add.l   d1,d1\n"
+        "   bpl.s   3b\n"
+        "4: moveq   #0,d3\n"
+        ".Lstep:\n"                         /* 'skip6 without the tests */
+        "   add.l   d3,d3\n"
+        "   cmp.l   d1,d0\n"
+        "   bcs.s   5f\n"
+        "   sub.l   d1,d0\n"
+        "   addq.w  #1,d3\n"                /* bit 0 is free */
+        "5: lsr.l   #1,d1\n"
+        "   dbra    d4,.Lstep\n"
+        "   move.l  d3,d0\n"
+        "   move.l  (sp)+,d4\n"
         "   bra.s   .Lsign");
 
 /* ------------------------------------------- error checks (debugger only) */
