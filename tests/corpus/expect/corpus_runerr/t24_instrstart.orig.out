@@ -1,0 +1,5 @@
+instr 1 5
+start 0 0 8
+start -5 -5 5
+done
+rc=0

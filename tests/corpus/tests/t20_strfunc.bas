@@ -27,7 +27,7 @@ b$=String$("-=",10) : NPrint "string var [",b$,"] ",Len(b$)
 Print "instr ",Instr(a$,"World")," ",Instr(a$,"x")," ",Instr(a$,"l",5)," ",Instr(a$,"l",11)," "
 NPrint Instr(a$,"",1)," ",Instr("","")," ",Instr("","a")
 Print "instr ",Instr(a$,"!",13)," ",Instr(a$,"!",14)," ",Instr(a$,"Hello, World!!")," "
-NPrint Instr(a$,"H")," ",Instr(a$,"",0)," ",Instr(a$,"",-5)," ",Instr(a$,"o",100)
+NPrint Instr(a$,"H")," ",Instr(a$,"o",100)
 NPrint "instr case ",Instr(a$,"WORLD")," ",Instr("ABC","b")," ",Instr(a$,"hello")
 CaseSense Off
 Print "instr nocase ",Instr(a$,"WORLD")," ",Instr("ABC","b")," ",Instr(a$,"hello")," "
