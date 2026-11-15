@@ -904,10 +904,13 @@ cycle values do not depend on the host's load or on what else runs
   `PROGRAM.TEST BUDGET TARGET LOOP`. `BUDGET` is the highest allowed
   value: the measurement of the build that set it (the larger value of
   two runs) plus 1 %, rounded up, plus 3 cycles. A loop whose repeated
-  runs differ by more than 1 cycle per call (it waits for the blitter or
-  follows the frame: Cls, Circle, BBlit, QBlit, Print, PlayModule, ...)
-  is written `B~T`: `B` the highest value of five runs of one build, `T`
-  the tolerance, twice the spread of those runs (rounded up); `B + T` is
+  runs differ by more than 1 cycle per call and by more than that margin
+  absorbs (it waits for the blitter or follows the frame: Cls, Circle,
+  BBlit, QBlit, Print, PlayModule, ...; also a few small loops whose
+  runs differ by 2 to 3 cycles) is written `B~T`: `B` the highest value
+  of at least five runs (the current table: 38 runs, ten with the snapshots of the slots
+  made anew) of the setup of the test, `T` the tolerance, twice the
+  spread of those runs (rounded up); `B + T` is
   the highest allowed value (a failure names both: `budget 200 + tolerance
   16`). The table marks such a command `(varies, tolerance T)`. A step that
   changes such a loop measures five runs again and sets `B` and `T`
