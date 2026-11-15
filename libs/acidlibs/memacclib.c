@@ -61,39 +61,38 @@ BLITZ_LIBFIN();
  * @brief Peek [.Type](Address) - read a byte, word, long, quick, float or
  * string from memory.
  *
- * CMP #2,d0:BHI 'long:BEQ 'word: the type compare is a word compare (type
- * 0 reads a byte too); byte/word results replace only the low byte/word
- * of d0 (MOVE.b (a0),d0 / MOVE (a0),d0), the rest of d0 is the type's
- * upper bits (0 for the compiler's types).  A string is copied to a3 up
- * to and including its 0; a3 then points to the 0.  The original changes
- * only d0, a0 (and a3 for strings).
+ * The original's code (MOVE.l d1,a0:CMP #2,d0:BHI 'long:BEQ 'word ...):
+ * the type compare is a word compare (type 0 reads a byte too); byte/word
+ * results replace only the low byte/word of d0 (MOVE.b (a0),d0 / MOVE
+ * (a0),d0), the rest of d0 is the type's upper bits (0 for the compiler's
+ * types).  A string is copied to a3 up to and including its 0; a3 then
+ * points to the 0.  Changes only d0, a0 (and a3 for strings).  Assembler
+ * as in the original: Peek runs in the loops of programs that walk memory,
+ * and the C function's compares and merges cost up to 30 cycles more.
  *
- * @param type d0: the type the compiler chose (1 byte, 2 word, 3 long,
- *        4 quick, 5 float, 7 string).
- * @param loc d1: the address.
- * @return d0: the value; for a string its length.
+ * In:  d0 the type the compiler chose (1 byte, 2 word, 3 long, 4 quick,
+ *      5 float, 7 string), d1 the address.
+ * Out: d0 the value; for a string its length.
  */
-static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
-{
-    UWORD type_word = (UWORD)type;
-
-    if (type_word < 2)                          /* byte (also type 0) */
-        return (type & 0xffffff00) | *(const UBYTE *)loc;
-    if (type_word == 2)                         /* 'word */
-        return (type & 0xffff0000) | *(const UWORD *)loc;
-    if (type_word != 7)                         /* 'long: long, quick, float */
-        return *(const ULONG *)loc;
-    {                                           /* 'string: copy up to the 0 */
-        const UBYTE *s = (const UBYTE *)loc;
-        ULONG n = (ULONG)-1;                    /* MOVEQ #-1,d0 */
-        do
-            n++;
-        while ((*blitz_string++ = *s++) != 0);
-        blitz_string--;                         /* SUBQ #1,a3 */
-        return n;
-    }
-}
-BLITZ_ALIAS(dopeek, dopeek_c);
+BLITZ_ASM_ROUTINE(dopeek,
+"   move.l  d1,a0\n"
+"   cmp.w   #2,d0\n"
+"   bhi.s   1f\n"
+"   beq.s   0f\n"
+"   move.b  (a0),d0\n"                 /* byte (also type 0) */
+"   rts\n"
+"0: move.w  (a0),d0\n"                 /* 'word */
+"   rts\n"
+"1: cmp.w   #7,d0\n"                   /* 'long: long, quick, float */
+"   beq.s   2f\n"
+"   move.l  (a0),d0\n"
+"   rts\n"
+"2: moveq   #-1,d0\n"                  /* 'string: copy up to the 0 */
+"3: addq.l  #1,d0\n"
+"   move.b  (a0)+,(a3)+\n"
+"   bne.s   3b\n"
+"   subq.l  #1,a3\n"
+"   rts");
 
 /**
  * @brief Peeks$(Address,Length) - a string of Length characters from
@@ -149,41 +148,41 @@ BLITZ_ERRCHK_THUNK(peekschk, peekschk_c, "d0-d1/a0-a1");
  * @brief Poke [.Type] Address,Data - write a byte, word, long, quick,
  * float or string to memory.
  *
- * The type compare is a word compare as in Peek.  Poke.s copies the
- * length's bytes and writes a 0 behind them.  The original changes a0
- * (strings: also d0, a1, a2); C keeps a2 (the compiler does not use it
- * after the call).
+ * The original's code (MOVE.l d1,a0:CMP #2,d0:BHI 'long:BEQ 'word ...),
+ * with the type compares as SUBQ on d0.w (the same unsigned word
+ * compares; 6 to 8 cycles fewer than CMP, d0 is no result of a
+ * statement).  Poke.s copies the length's bytes and writes a 0 behind
+ * them.  Changes d0 and a0 (strings: also a1).  The original takes the length with MOVE.l -(a2),d0 and
+ * leaves a2 decremented; here MOVE.l -4(a2),d0 keeps a2 (the compiler
+ * does not use it after the call).  Assembler as in the original (see
+ * Peek).
  *
- * @param type d0: the type the compiler chose (1 byte, 2 word, 3 long,
- *        4 quick, 5 float, 7 string).
- * @param loc d1: the address.
- * @param data d2: the value; for a string the characters.
- * @param lens a2: the stack pointer before the arguments; a string's
- *        length is the long at -4(a2) (MOVE.l -(a2),d0).
+ * In:  d0 the type the compiler chose (1 byte, 2 word, 3 long, 4 quick,
+ *      5 float, 7 string), d1 the address, d2 the value (for a string the
+ *      characters), a2 the stack pointer before the arguments (a string's
+ *      length is the long at -4(a2)).
  */
-static void BLITZ_ROUTINE dopoke_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1),
-                                   ULONG data BL_REG(d2), const ULONG *lens BL_REG(a2))
-{
-    UWORD type_word = (UWORD)type;
-
-    if (type_word < 2)
-        *(UBYTE *)loc = (UBYTE)data;
-    else if (type_word == 2)
-        *(UWORD *)loc = (UWORD)data;
-    else if (type_word != 7)
-        *(ULONG *)loc = data;
-    else {
-        const UBYTE *s = (const UBYTE *)data;
-        UBYTE *d = (UBYTE *)loc;
-        ULONG n = lens[-1];                     /* MOVE.l -(a2),d0 */
-        while (n) {
-            *d++ = *s++;
-            n--;
-        }
-        *d = 0;                                 /* CLR.b (a0) */
-    }
-}
-BLITZ_ALIAS(dopoke, dopoke_c);
+BLITZ_ASM_ROUTINE(dopoke,
+"   move.l  d1,a0\n"
+"   subq.w  #2,d0\n"                   /* the original's CMP #2,d0:BHI:BEQ */
+"   bcs.s   1f\n"
+"   beq.s   0f\n"
+"   subq.w  #5,d0\n"                   /* 'long: CMP #7,d0:BEQ 'string */
+"   beq.s   2f\n"
+"   move.l  d2,(a0)\n"                 /* long, quick, float */
+"   rts\n"
+"1: move.b  d2,(a0)\n"                 /* byte (also type 0) */
+"   rts\n"
+"0: move.w  d2,(a0)\n"                 /* 'word */
+"   rts\n"
+"2: move.l  d2,a1\n"                   /* 'string */
+"   move.l  -4(a2),d0\n"
+"   beq.s   4f\n"
+"3: move.b  (a1)+,(a0)+\n"
+"   subq.l  #1,d0\n"
+"   bne.s   3b\n"
+"4: clr.b   (a0)\n"
+"   rts");
 
 /**
  * @brief Call Address - jump to machine code.

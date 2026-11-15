@@ -129,83 +129,97 @@ extern const char mess1[], mess2[], mess3[];
  *
  * The bitmap's origin (+48/+50) is added; outside the clip size (+56/+58,
  * unsigned compare) nothing happens.  A negative colour complements the
- * pixel in all planes (BCHG).
+ * pixel in all planes (BCHG).  The planes are counted with the word +4
+ * (flags and depth, as the original).
+ *
+ * The original's code (ADD 48(a2),d0 ... MULU (a2),d1 ... BCLR/BSET
+ * d0,(a1) per plane), with d2 and d3 saved around the plane loops: the
+ * original changes them, and MikesSpaceFXLib calls Plot from the loop of
+ * its starfield (PlotStarfield, DoStarfield), so Plot keeps every
+ * register but d0, d1, a0 and a1, as the C function did.  Assembler: the
+ * C function cost about 160 cycles more per call.
  *
  * Fixed (#393): a bitmap of depth 0 runs the plane loop 65536 times (an
  * invalid argument, refused at its creation in the error check area).
  * Errors: "Uninitialized BitMap" (bmchk, debugger only).
  *
- * @param x   d0.w: x
- * @param y   d1.w: y
- * @param col d2.w: the colour, < 0 = complement
- * @param bm  a2: the used bitmap
+ * In:  d0.w x, d1.w y, d2.w the colour (< 0 = complement), a2 the used
+ *      bitmap (struct bb_bitmap).
  */
-static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
-                                   UWORD col BL_REG(d2), const struct bb_bitmap *bm BL_REG(a2))
-{
-    ULONG off;
-    UBYTE bit;
-    UWORD n;
-    UBYTE **pl = (UBYTE **)bm->planes;
-
-    x += (UWORD)bm->xorigin;
-    y += (UWORD)bm->yorigin;
-    if (x >= bm->width || y >= bm->height)
-        return;
-    off = (ULONG)y * bm->bpr + (x >> 3);
-    bit = ~x & 7;                               /* NOT d0, bit mod 8 */
-    n = bm->flagsdepth - 1;
-    if ((WORD)col < 0) {
-        do
-            (*pl++)[off] ^= 1 << bit;           /* BCHG */
-        while (n-- != 0);
-        return;
-    }
-    do {
-        UBYTE *p = *pl++ + off;
-
-        *p &= ~(1 << bit);
-        if (col & 1)
-            *p |= 1 << bit;
-        col >>= 1;
-    } while (n-- != 0);
-}
-BLITZ_ALIAS(doplot, doplot_c);
+BLITZ_ASM_ROUTINE(doplot,
+"   add.w   48(a2),d0\n"               /* xorigin */
+"   add.w   50(a2),d1\n"               /* yorigin */
+"   cmp.w   56(a2),d0\n"               /* width */
+"   bcc.s   9f\n"
+"   cmp.w   58(a2),d1\n"               /* height */
+"   bcc.s   9f\n"
+"   movem.l d2-d3,-(sp)\n"
+"   mulu.w  (a2),d1\n"                 /* bpr */
+"   moveq   #0,d3\n"
+"   move.w  d0,d3\n"
+"   lsr.w   #3,d3\n"
+"   add.l   d3,d1\n"                   /* d1 = the byte offset */
+"   not.w   d0\n"                      /* the bit (mod 8) */
+"   lea     8(a2),a0\n"                /* planes */
+"   move.w  4(a2),d3\n"                /* flags and depth */
+"   subq.w  #1,d3\n"
+"   tst.w   d2\n"
+"   bmi.s   3f\n"
+"1: move.l  (a0)+,a1\n"
+"   add.l   d1,a1\n"
+"   bclr    d0,(a1)\n"
+"   lsr.w   #1,d2\n"
+"   bcc.s   2f\n"
+"   bset    d0,(a1)\n"
+"2: dbf     d3,1b\n"
+"   movem.l (sp)+,d2-d3\n"
+"9: rts\n"
+"3: move.l  (a0)+,a1\n"                /* complement */
+"   bchg    d0,0(a1,d1.l)\n"
+"   dbf     d3,3b\n"
+"   movem.l (sp)+,d2-d3\n"
+"   rts");
 
 /**
  * @brief Point(X,Y) - the colour of a pixel of the used bitmap.
  *
- * Origin and clipping as in Plot.
+ * Origin and clipping as in Plot.  The original's code; it changes d1-d3,
+ * a0 and a1 (the register rule keeps a3-a7 for a function).  Assembler:
+ * the C function cost about 290 cycles more per call.
  *
  * Errors: "Uninitialized BitMap" (bmchk, debugger only).
  *
- * @param xarg d0.w: x
- * @param y    d1.w: y
- * @param bm   a2: the used bitmap
- * @return d0.w: the colour, 0 outside the bitmap (MOVEQ #0,d0); the upper
- *         word is the one of @p xarg (MOVE d2,d0)
+ * In:  d0.w x, d1.w y, a2 the used bitmap (struct bb_bitmap).
+ * Out: d0.w the colour, 0 outside the bitmap (MOVEQ #0,d0); the upper
+ *      word is the one of the x argument (MOVE d2,d0)
  */
-static ULONG BLITZ_ROUTINE dopoint_c(ULONG xarg BL_REG(d0), UWORD y BL_REG(d1),
-                                     const struct bb_bitmap *bm BL_REG(a2))
-{
-    UWORD x = xarg + (UWORD)bm->xorigin, col = 0, i = 0;
-    UBYTE **pl = (UBYTE **)bm->planes;
-    ULONG off;
-    UBYTE bit;
-
-    y += (UWORD)bm->yorigin;
-    if (x >= bm->width || y >= bm->height)
-        return 0;                               /* MOVEQ #0,d0 */
-    off = (ULONG)y * bm->bpr + (x >> 3);
-    bit = ~x & 7;
-    do {
-        if ((*pl++)[off] & (1 << bit))
-            col |= 1 << (i & 31);               /* BSET d3,d2 */
-        i++;
-    } while (i < bm->flagsdepth);
-    return (xarg & 0xffff0000) | col;           /* MOVE d2,d0 (upper word of ~x) */
-}
-BLITZ_ALIAS(dopoint, dopoint_c);
+BLITZ_ASM_ROUTINE(dopoint,
+"   add.w   48(a2),d0\n"               /* xorigin */
+"   add.w   50(a2),d1\n"               /* yorigin */
+"   cmp.w   56(a2),d0\n"               /* width */
+"   bcc.s   9f\n"
+"   cmp.w   58(a2),d1\n"               /* height */
+"   bcc.s   9f\n"
+"   mulu.w  (a2),d1\n"                 /* bpr */
+"   moveq   #0,d3\n"
+"   move.w  d0,d3\n"
+"   lsr.w   #3,d3\n"
+"   add.l   d3,d1\n"                   /* d1 = the byte offset */
+"   not.w   d0\n"                      /* the bit (mod 8) */
+"   lea     8(a2),a0\n"                /* planes */
+"   moveq   #0,d3\n"                   /* the plane */
+"   moveq   #0,d2\n"                   /* the colour */
+"1: move.l  (a0)+,a1\n"
+"   btst    d0,0(a1,d1.l)\n"
+"   beq.s   2f\n"
+"   bset    d3,d2\n"
+"2: addq.w  #1,d3\n"
+"   cmp.w   4(a2),d3\n"                /* flags and depth */
+"   bcs.s   1b\n"
+"   move.w  d2,d0\n"
+"   rts\n"
+"9: moveq   #0,d0\n"
+"   rts");
 
 /* ------------------------------------------------------------------ Cls */
 
