@@ -26,7 +26,8 @@
 # the string copy loops of libs-performance group 5 (2026-11-15).
 # The 24 lines of the small entries (group 6: Peek, Poke, Plot, Point,
 # PColl, Locate, Joy*, RawStatus, Mouse*, Rnd, Sgn, Int, Abs, QLimit) from
-# six runs of the group 6 branch on main 4a94ee23 (2026-11-15).
+# six runs of the group 6 branch on main 4a94ee23 (2026-11-15); bgfx.plot
+# from six runs of the Plot that changes d2/d3 (on main ecef902a, 2026-11-15).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -54,7 +55,7 @@ bgfx.pcoll                  111~4      130.8  c=PColl(0)
 bgfx.shapeshit               732~4      383.4  c=ShapesHit(0,10,10,1,20,20)
 bgfx.spriteshit              772~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
-bgfx.plot                     532      486.9  Plot 10,10,1
+bgfx.plot                     477      486.9  Plot 10,10,1
 bgfx.point                    471      478.4  c=Point(10,10)
 bgfx.line                    5047     3967.8  Line 10,10,110,60,1
 bgfx.lineh                 5012~16     3991.8  Line 10,10,110,10,1
