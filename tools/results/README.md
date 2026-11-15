@@ -664,7 +664,8 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `corpus-accept`: the target `corpus-expect-record`
   (`tests/corpus/record.cmake`); the test `corpus_record_target`
   (`tests/corpus/CMakeLists.txt`).
-* `perf`: the tests `perf`, `perf_budget_ok`, `perf_budget_broken` and
+* `perf`: the tests `perf_bmath` ... `perf_bmod`, `perf_budget_ok`,
+  `perf_budget_broken`, `perf_budget_program_*` and
   the target `perf-original`
   (`tests/perf/perf.cmake`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,

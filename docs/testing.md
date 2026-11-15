@@ -177,7 +177,7 @@ forms.
 | `originals` | everything that compares with the original, and recordings | Amiberry and the CD (some also the reference build of the RWE sources) |
 | `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry |
 | `oracle` | the compiler checks of the AmiBlitz3 tests | Amiberry and the fetched AmiBlitz3 files |
-| `perf` | the benchmark of the libraries: the cycles each command costs, against a budget per command; about four minutes, alone | Amiberry |
+| `perf` | the benchmark of the libraries: the cycles each command costs, against a budget per command; seven sessions side by side, about 15 s | Amiberry |
 
 So: **`all` is what you run for every change and needs no CD.** The CD
 (`cmake -P cmake/fetch-originals.cmake`) is needed to check the expected
@@ -186,8 +186,11 @@ data against the originals and to record. Details and the full list:
 
 `perf` is the odd one: it checks speed, not results. Each command of the
 libraries runs in a loop on an emulated A500 whose CPU, memory and
-blitter are cycle-exact; a CIA timer measures the loop, and the empty loop
-is subtracted, so the value is the command's cycles per call. The file
+blitter are cycle-exact (in warp mode: the emulation does not wait for
+the clock, the cycles stay the same); a CIA timer measures the loop, and
+the empty loop is subtracted, so the value is the command's cycles per
+call. One test per bench program (`perf_bmath`, ...) runs in a session of its
+own, and the preset runs seven at a time. The file
 `tests/perf/budgets.txt` gives each command a budget (what it cost when
 the budget was set, plus a little) and, for information, what the
 original libraries need. A library change that makes a command slower

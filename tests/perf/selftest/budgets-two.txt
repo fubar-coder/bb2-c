@@ -1,0 +1,6 @@
+# budgets of two programs: the observation selftest/obs is bmath's only.
+# PROGRAM=bmath keeps the first line (judged, passes); PROGRAM=bstr keeps
+# the second, which has no measurement (fails); PROGRAM=bdisp keeps no line
+# (fails); without PROGRAM the second line has no measurement either.
+bmath.peekb 223 129.0 c=Peek.b(p)
+bstr.len 900 731.0 c=Len(a$)

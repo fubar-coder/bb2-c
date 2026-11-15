@@ -92,7 +92,7 @@ selects the tests then. `host`, `emulator` and `all` leave them out.
 
 The preset `perf` (label `perf`) holds the benchmark of the libraries
 (`perf`, "The benchmark" below): it measures, it does not compare
-results, and it takes about four minutes in one emulator session, so
+results, and it starts seven emulator sessions (about 15 s in all), so
 `host`, `emulator`, `all` and the others leave it out. Run it for a change
 that can make a library command slower or faster.
 
@@ -841,8 +841,11 @@ for a test outside the label filter.
 `perf` (labels `perf` and `emulator`, `ctest --preset perf`;
 `tests/perf/`, spec `testing/performance-budgets`) measures what each
 command of the C libraries costs in 68000 cycles and fails when one is
-slower than its budget. Only the preset `perf` runs it; it runs alone
-(`RUN_SERIAL`, one emulator session, about four minutes).
+slower than its budget. Only the preset `perf` runs it. It is one test per
+program (`perf_bmath`, `perf_bstr`, ...), each in an emulator session of its
+own; the preset runs them side by side (`jobs` 7), about 15 s in all. The
+cycle values do not depend on the host's load or on what else runs
+("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
   `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`), tokenised by
@@ -860,18 +863,43 @@ slower than its budget. Only the preset `perf` runs it; it runs alone
   PAL frame (142102 cycles) the interrupt takes.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
-  libraries, of the pass `build/<preset>/tests/perf/perf.pass` with
-  `corpusrun pass --observe`: the machine `a500` (68000, Kickstart 1.3,
-  ECS) with cycle-exact CPU, memory and blitter at real speed
+  libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the
+  one program NAME) with `corpusrun pass --observe`: the machine `a500`
+  (68000, Kickstart 1.3, ECS) with cycle-exact CPU, memory and blitter
   (`cpu_cycle_exact`, `cpu_memory_cycle_exact`, `blitter_cycle_exact`,
-  `cycle_exact`, `cpu_speed=real`), runtime error checking off. Then
-  `results perf --budgets` (`tools/lib/perfbudget`) computes the cycles
-  per call, prints the table and judges it. A repeated run differs by at
-  most 1 cycle per call for the commands the CPU alone does; loops that
-  wait for the blitter or follow the frame vary more (Cls by 0.4 %, the
-  PlayModule frame value by up to 7 % in one early session); those 30
-  loops carry their own tolerance in `budgets.txt` (below). Without Amiberry or the emulation
-  data the test is skipped (77).
+  `cycle_exact`, `cpu_speed=real`) in warp mode (`warp=true`), runtime
+  error checking off. Then `results perf --budgets` (`tools/lib/perfbudget`)
+  computes the cycles per call, prints the table and judges it; with
+  `-DPROGRAM=NAME` `perf.cmake` keeps the lines `NAME.*` of `budgets.txt`
+  (a program without a line fails). `perf.pass` (all programs in one
+  session) is for the target `perf-original`.
+* **Speed:** the emulated machine waits for the real time by default, so
+  one session of all seven programs took 168 s. Two things make it faster
+  and leave the values as they are (measured on 2026-11-15, 127 commands,
+  several runs of each setup; the values of one setup differ from each
+  other by as much as those of different setups do):
+  * *Warp mode* (`uae=warp=true`: Amiberry's turbo emulation; only the
+    wait for the host's clock goes, the cycle-exact CPU, chipset and
+    blitter run as before): one session of all programs takes 30 s, one
+    program 5 to 13 s. `cpu_speed=max` is not this: it speeds the CPU up
+    against the chipset (values 10 to 40 % lower, the same 165 s), and
+    `turbo_emulation=true` in the configuration file does nothing.
+  * *One session per program*, side by side: the CIA timer counts emulated
+    cycles, so a loaded host (24 busy loops on 16 cores) gives the same
+    values. A program run alone differs by a few cycles per call from the
+    same program in the one-session run (the memory layout of the run
+    moves the timer phase); that is as much as two runs of either differ.
+
+  A repeated run differs by up to 3 cycles per call for the commands the
+  CPU alone does; loops that wait for the blitter or follow the frame vary
+  more (Cls by 0.6 %, `bgfx.poly3` by 0.4 %, the PlayModule frame value by
+  8 %). The first run after a session slot's snapshot was made anew (the
+  first session of a configuration in a slot, or `amiga_run
+  --purge-snapshots`) gives other values for `bmod.vblmod`, `bgfx.cls`,
+  `bgfx.poly3` and `bmisc.ntsc`. A loop that varies by more than its
+  plain budget's margin carries its own tolerance in `budgets.txt`
+  (below). Without Amiberry or the emulation data the test is skipped
+  (77).
 * **The budgets:** `tests/perf/budgets.txt`, one line per command,
   `PROGRAM.TEST BUDGET TARGET LOOP`. `BUDGET` is the highest allowed
   value: the measurement of the build that set it (the larger value of
@@ -902,7 +930,11 @@ slower than its budget. Only the preset `perf` runs it; it runs alone
   `tests/perf/selftest/obs` (Peek.b at 217.0 cycles per call) against a
   budget of 130 and must fail with the command and both values;
   `perf_budget_ok` judges it against the right budget and must pass (no
-  emulator, both in `host` and `all`). The host test `perfbudget`
+  emulator, both in `host` and `all`). `perf_budget_program_ok`,
+  `perf_budget_program_bstr` and `perf_budget_program_bdisp` check the
+  filter of one program on two programs' budgets (`selftest/budgets-two.txt`):
+  bmath passes, bstr has a budget without a measurement, bdisp has no
+  line. The host test `perfbudget`
   (`tools/tests/test_perfbudget.c`) covers the arithmetic, the judge and
   the malformed observations and budget files.
 
