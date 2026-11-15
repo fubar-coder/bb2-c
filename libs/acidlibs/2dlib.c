@@ -1784,6 +1784,10 @@ static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWOR
 
 /* ------------------------------------------------------------- ClipBlit */
 
+/* Speed: the clip and blit code is inline (BL_ALWAYS_INLINE), and the
+   Blitz mode code of ClipBlit saves no register (BLITZ_ENTRYPOINT, a6
+   kept by BLITZ_EP_KEEP_A6; the register rule keeps a3-a7). */
+
 static void BLITZ_ROUTINE _doclipblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
@@ -1803,8 +1807,8 @@ struct cblit {
    onto the planes of bm (cookie cut, BLTCON0 = shift | ClipBlitMode),
    clipped at all edges.  r6/r7: the caller's d6/d7 (MOVEM.l d6-d7,$60
    (a1), overwritten before the blit).  Returns 0 if nothing was blitted. */
-static int docblit(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm, WORD x, WORD y,
-                   ULONG r6, ULONG r7, struct cblit *cb)
+BL_ALWAYS_INLINE int docblit(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm,
+                             WORD x, WORD y, ULONG r6, ULONG r7, struct cblit *cb)
 {
     ULONG src = 0, planesize, p;
     WORD bottom, amod, dmod, over, rowbytes;
@@ -1900,8 +1904,8 @@ static int docblit(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm, WORD 
 
 /* b_docblitx: and the planes of bm beyond the shape's depth through the
    cookie: bit set in excess = set, else cleared */
-static void docblitx(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm, WORD x, WORD y,
-                     UWORD excess, ULONG r6, ULONG r7)
+BL_ALWAYS_INLINE void docblitx(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm,
+                               WORD x, WORD y, UWORD excess, ULONG r6, ULONG r7)
 {
     struct cblit cb;
     UWORD i;
@@ -2002,12 +2006,14 @@ ABENTRY(_polyf2, polyf2);
                struct bb_bitmap *bm BL_REG(a2)
 #define SHAPE ((struct bb_shape *)blitz_string)
 
-static void BLITZ_ROUTINE b_docblit_c(CBREGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_docblit_c(CBREGS)
 {
+    BLITZ_EP_KEEP_A6();
     struct cblit cb;
 
     (void)excess;
     docblit(chip, SHAPE, bm, x, y, r6, r7, &cb);
+    BLITZ_EP_KEEP_A6_END();
 }
 
 static void BLITZ_ROUTINE a_docblit_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
@@ -2021,9 +2027,12 @@ static void BLITZ_ROUTINE a_docblit_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
     DisownBlitter();
 }
 
-static void BLITZ_ROUTINE b_docblitx_c(CBREGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_docblitx_c(CBREGS)
 {
+    BLITZ_EP_KEEP_A6();
+
     docblitx(chip, SHAPE, bm, x, y, excess, r6, r7);
+    BLITZ_EP_KEEP_A6_END();
 }
 
 static void BLITZ_ROUTINE a_docblitx_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
@@ -2035,9 +2044,9 @@ static void BLITZ_ROUTINE a_docblitx_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
 }
 
 void b_docblit(void), b_docblitx(void);
-BLITZ_ALIAS(b_docblit, b_docblit_c);
+BLITZ_ALIAS_EP(b_docblit, b_docblit_c);
 BLITZ_AB_ROUTINE(_doclipblit, b_docblit, "   jmp     _a_docblit_c");
-BLITZ_ALIAS(b_docblitx, b_docblitx_c);
+BLITZ_ALIAS_EP(b_docblitx, b_docblitx_c);
 BLITZ_AB_ROUTINE(_doclipblitx, b_docblitx, "   jmp     _a_docblitx_c");
 
 /* _cbchk - TST.w (a3):BEQ err2 (shape not initialised); in the normal
