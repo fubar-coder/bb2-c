@@ -80,6 +80,11 @@
  *    and the error checks of InitShape and GetaShape (and of Rotate and
  *    Scale in shapetrixlib) refuse such a shape with "Shape too Big";
  *    the blit commands are unchanged. (#1046)
+ *  - LoadShape took the number of planes from the BMHD without a check:
+ *    0 planes made a shape of depth 0 with a data block of 0 bytes, and
+ *    the plane loop (DBF on depth - 1) wrote 65536 planes of every row
+ *    behind it.  Here LoadShape refuses such a picture (file data:
+ *    "Illegal Shape Depth", nothing loaded). (#1052)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -326,6 +331,9 @@ static const char mess10[] = "Shapes file at memory location 0? NOWAY!";
    area; fixed, #953) */
 static const char mess2[] = "Can't open Shapes File";
 static const char mess3[] = "Can't Read/Write Shapes File";
+/* LoadShape of a picture with 0 planes (fixed, #1052; the text of the
+   error check's mess11, here in the normal code) */
+static const char mess14[] = "Illegal Shape Depth";
 static const char mess7[] = "ANIM format not supported";
 static const char mess8[] = "Illegal ANIM interleave value";
 
@@ -987,6 +995,15 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     bltsize = (UWORD)(bltsize << 6);
     depth = SW(st, 4);
     first->depth = depth;
+    if (!depth) {
+        /* fixed #1052: a picture with 0 planes is refused (nothing
+           loaded): the shape would get a data block of 0 bytes, and the
+           plane loop (DBF on depth - 1) would write 65536 planes of every
+           row behind it */
+        first->width = 0;
+        IJSR(TOK_iffclose, 0, st);
+        BLITZ_RUNERR(mess14);
+    }
     bpr = (UWORD)(SW(st, 6) << 1);
     first->ebwidth = bpr;
     first->bltsize = bltsize | (UWORD)((bpr >> 1) + 1);
@@ -1183,7 +1200,9 @@ skipanim:
  * Errors (in the normal code, their texts in the error area): "Can't open
  * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
  * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane of
- * 64K or more, fixed #263).
+ * 64K or more, fixed #263; more than 1023 rows or 62 words, fixed
+ * #1046), "Illegal Shape Depth" (0 planes, fixed #1052: the original
+ * wrote 65536 planes of every row behind a block of 0 bytes).
  *
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name
