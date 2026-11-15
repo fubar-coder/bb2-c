@@ -1,0 +1,96 @@
+/* The table of the page "Important Fixes & Breaking Changes" (shortcode
+   fix-overview). The table itself keeps the theme's table style; colours
+   come from currentColor, so the light and the dark theme both work. */
+.fix-overview-table caption {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 0.5rem;
+  opacity: 0.75;
+}
+.fix-overview {
+  overflow-x: auto;
+}
+.fix-overview-table {
+  display: table;
+  width: 100%;
+}
+.fix-overview-table td {
+  vertical-align: top;
+}
+.fix-overview-table td:nth-child(3) {
+  max-width: 11rem;
+  overflow-wrap: anywhere;
+}
+.fix-overview-table td:nth-child(4) {
+  min-width: 18rem;
+}
+.fix-overview-table th button {
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.fix-overview-table th button::after {
+  content: " \2195";
+  opacity: 0.4;
+}
+.fix-overview-table th[aria-sort="ascending"] button::after {
+  content: " \2191";
+  opacity: 1;
+}
+.fix-overview-table th[aria-sort="descending"] button::after {
+  content: " \2193";
+  opacity: 1;
+}
+.fix-overview-table th button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.fix-overview-level {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.4em;
+  border: 1px solid currentColor;
+  border-radius: 0.4em;
+  text-align: center;
+  font-weight: 600;
+}
+.fix-overview-level-1 {
+  color: #b45309;
+}
+html.dark .fix-overview-level-1 {
+  color: #fbbf24;
+}
+.fix-overview-library {
+  opacity: 0.75;
+  font-size: 0.9em;
+}
+.fix-overview-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.fix-overview-filters label {
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+.fix-overview-filters select {
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.4rem;
+}
+.fix-overview-filters option {
+  color: initial;
+  background: initial;
+}
+.fix-overview-count {
+  margin-top: 0.75rem;
+}

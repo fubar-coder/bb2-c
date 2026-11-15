@@ -1,0 +1,77 @@
+{{- /*
+  Checks the data of the overview of fixed original bugs against the
+  fixed-bugs pages and fails the build (errorf) for every problem:
+
+  * a row without a required field, with a severity other than 1-4 or a
+    topic that is not in the file's topics list;
+  * an issue that is a row twice, or a row and a notRows entry;
+  * a row whose anchor is no heading id of its page;
+  * an issue linked on a fixed-bugs page that is neither a row nor on the
+    notRows list (a raw-text scan of the pages' Markdown).
+
+  Called by the shortcode fix-overview with
+  (dict "data" $data "name" $name), $name the data file's key for the
+  messages. The limits: an anchor is proven to exist, not that the entry is
+  below it; an issue number in a code block counts as linked.
+*/ -}}
+{{- $d := .data -}}
+{{- $name := .name -}}
+{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
+{{- $section := site.GetPage $base -}}
+{{- if not $section -}}
+  {{- errorf "fixoverview (%s): the section %s does not exist" $name $base -}}
+{{- end -}}
+{{- $topics := $d.topics | default slice -}}
+{{- $levels := slice -}}
+{{- range $d.levels }}{{ $levels = $levels | append .level }}{{ end -}}
+{{- $seen := dict -}}
+{{- range $d.rows -}}
+  {{- $row := . -}}
+  {{- $id := printf "%v" (.issue | default "?") -}}
+  {{- range slice "issue" "severity" "topic" "library" "text" "page" "anchor" -}}
+    {{- if not (index $row .) -}}
+      {{- errorf "fixoverview (%s): row #%s has no %s" $name $id . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not (in $levels .severity) -}}
+    {{- errorf "fixoverview (%s): row #%s has the severity %v, not one of the levels" $name $id .severity -}}
+  {{- end -}}
+  {{- if not (in $topics .topic) -}}
+    {{- errorf "fixoverview (%s): row #%s has the topic %q, which is not in the topics list" $name $id .topic -}}
+  {{- end -}}
+  {{- if index $seen $id -}}
+    {{- errorf "fixoverview (%s): issue #%s has more than one row" $name $id -}}
+  {{- end -}}
+  {{- $seen = merge $seen (dict $id true) -}}
+  {{- with .page -}}
+    {{- $p := site.GetPage (printf "%s/%s" $base .) -}}
+    {{- if not $p -}}
+      {{- errorf "fixoverview (%s): row #%s names the page %q, which does not exist" $name $id . -}}
+    {{- else if not ($p.Fragments.Identifiers.Contains $row.anchor) -}}
+      {{- errorf "fixoverview (%s): row #%s names the anchor %q, which is no heading on the page %s" $name $id $row.anchor . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- range $d.notRows -}}
+  {{- $id := printf "%v" .issue -}}
+  {{- if not .reason -}}
+    {{- errorf "fixoverview (%s): the notRows entry #%s has no reason" $name $id -}}
+  {{- end -}}
+  {{- if index $seen $id -}}
+    {{- errorf "fixoverview (%s): issue #%s is a row and on the notRows list" $name $id -}}
+  {{- end -}}
+  {{- $seen = merge $seen (dict $id true) -}}
+{{- end -}}
+{{- with $section -}}
+  {{- range .RegularPagesRecursive | append . -}}
+    {{- $page := . -}}
+    {{- $found := dict -}}
+    {{- range findRE `github\.com/fubar-coder/bb2-c/issues/[0-9]+` .RawContent -}}
+      {{- $id := replaceRE `.*/` "" . -}}
+      {{- if and (not (index $seen $id)) (not (index $found $id)) -}}
+        {{- errorf "fixoverview (%s): issue #%s is linked on %s but has no row and is not on the notRows list" $name $id $page.RelPermalink -}}
+      {{- end -}}
+      {{- $found = merge $found (dict $id true) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

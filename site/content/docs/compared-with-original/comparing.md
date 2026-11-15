@@ -1,6 +1,6 @@
 ---
 title: Comparing with the original yourself
-weight: 5
+weight: 6
 description: Compile your own program with the original compiler and with the port, compare the results, and write a test for a bug you found.
 next: /docs/ab3-mode
 ---

@@ -8,6 +8,8 @@ These bugs concern blitz2 as a program rather than the code it compiles:
 how it loads its libraries, how it starts and ends, and what the
 compiler menu of the editor does. Each is one sentence here; its issue
 has the details.
+The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
+lists all fixed bugs by what they can change in a program.
 
 ## Loading the libraries
 

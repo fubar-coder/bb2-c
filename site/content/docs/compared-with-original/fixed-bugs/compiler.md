@@ -9,6 +9,8 @@ wrong result, a program that crashed, or an error message where none
 belonged. The first sections show the ones an ordinary program can run
 into, each with a short program. The other fixes follow as a list, one
 sentence each with a link to its issue.
+The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
+lists all fixed bugs by what they can change in a program.
 
 The outputs shown were recorded in an emulator. The original is Blitz
 Basic 2 built from its published source, with the libraries of the Blitz

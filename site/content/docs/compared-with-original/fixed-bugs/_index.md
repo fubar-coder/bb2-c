@@ -1,8 +1,8 @@
 ---
 title: Fixed original bugs
-weight: 1
+weight: 2
 description: The bugs of Blitz Basic 2 that the BB2 C port fixes, with examples of the ones an ordinary program can run into.
-prev: /docs/compared-with-original
+prev: /docs/compared-with-original/important-fixes
 next: /docs/compared-with-original/fixed-bugs/compiler
 ---
 
@@ -32,7 +32,9 @@ programs that were written to make up for the bug; no known example
 program, demo or game uses the commands this way. The next two change
 every program that uses the commands with the values named, and the last
 one stops a program that loads a very large picture as a shape. Check
-your own programs:
+your own programs (all fixes, sorted by what they can change in a
+program, are in one table on
+[Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})):
 
 * [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on

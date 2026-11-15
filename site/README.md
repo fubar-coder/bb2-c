@@ -97,6 +97,57 @@ reads it as a new key and the build fails ("mapping value is not
 allowed"). Quote such a value, or write it as a block scalar (`|` or
 `>`), as `intro` and `notes` above.
 
+## The overview of fixed bugs
+
+The page "Important Fixes & Breaking Changes"
+(`content/docs/compared-with-original/important-fixes.md`) shows one table
+row per fixed original bug. The rows are in `data/fixoverview.yaml`; the
+shortcode `fix-overview` (`layouts/_shortcodes/fix-overview.html`) renders
+them, and `assets/js/fix-overview.js` and `assets/css/fix-overview.css`
+add sorting and filters. The file has four parts:
+
+* `levels`: the four severity levels, each with `level` (1-4), `name` and
+  `text`, shown on the page and in the filter.
+* `topics`: the list of topics a row may have.
+* `notRows`: issues linked on a fixed-bugs page that are not a row of their
+  own (a cross-reference to a kept bug, for example), each with `issue` and
+  `reason`.
+* `rows`: one entry per fixed issue:
+
+  ```
+  - issue: 421
+    severity: 1          # 1 changes correct programs, 2 new compile error,
+                         # 3 new runtime error, 4 fix without side effects
+    topic: "Graphics"    # one of topics
+    library: "polylib"   # the library of the command reference, or
+                         # "Compiler" or "TED"
+    command: "RenderToBitmap, RenderPoly"   # may be ""
+    text: "One sentence for the reader: what the port does, and what the original did."
+    page: libraries      # the fixed-bugs page: compiler, running-blitz2,
+                         # libraries or editor
+    anchor: rendertobitmap-dither   # a heading id on that page
+  ```
+
+  The level answers one question: can a program that ran correctly with
+  the original behave differently with the port? A level-3 sentence names
+  the runtime error in at most five words. Quote every text value.
+
+Every fix that gets an entry on a fixed-bugs page also gets its row here.
+The build checks the file (`layouts/_partials/fix-overview/check.html`)
+and fails when a row lacks a field, has an unknown level or topic, names an
+anchor that is no heading of its page, or appears twice, and when an issue
+linked on a fixed-bugs page has no row and is not on `notRows`. A list
+entry under a `###` group heading uses that heading's id as its anchor;
+where two headings of a page have the same text, the second gets an
+explicit id (`### Other fixes {#rwe-other-fixes}`).
+
+The ctest label `site` tests the check: `site_fixoverview` builds the site
+as it is, and `site_fixoverview_*` build it with the broken data files of
+`tests/fixoverview/data/` (through `tests/fixoverview/config.yaml` and the
+site parameter `fixOverviewData`) and expect each to fail with its
+message. The tests need podman and the image above and are skipped
+without them.
+
 ## API reference
 
 `static/api/` holds the Doxygen HTML of the library headers and sources

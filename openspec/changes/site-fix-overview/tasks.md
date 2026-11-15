@@ -1,25 +1,25 @@
 ## 1. Decide the open points
 
-- [ ] 1.1 Settle the open questions of design.md with the user (title, ordering of severity 1, topic list, rows per issue, library column for TED/Blitz 2)
+- [x] 1.1 Settle the open questions of design.md with the user (title, ordering of severity 1, topic list, rows per issue, library column for TED/Blitz 2) - done (2026-11-15): design.md, "Decisions on the open questions (user, 2026-11-15)"
 
 ## 2. Data and classification
 
-- [ ] 2.1 Define the data file `site/data/fixoverview.yaml`: `levels`, `topics`, `notRows`, `rows` with the fields of design.md, and document the fields in `site/README.md`
-- [ ] 2.2 Classify all issues linked on the fixed-bugs pages (about 250 rows) by an agent: severity, topic, library or command, one sentence, page and anchor; proposal in `~/.local/share/bb2-c-work/`
+- [x] 2.1 Define the data file `site/data/fixoverview.yaml`: `levels`, `topics`, `notRows`, `rows` with the fields of design.md, and document the fields in `site/README.md`
+- [x] 2.2 Classify all issues linked on the fixed-bugs pages (about 250 rows) by an agent: severity, topic, library or command, one sentence, page and anchor; proposal in `~/.local/share/bb2-c-work/` - done (2026-11-15): 371 rows; proposal `~/.local/share/bb2-c-work/site-fix-overview-classification.yaml`, levels of the round reports kept where given
 - [ ] 2.3 Show the severity 1 rows to the user and apply the corrections
-- [ ] 2.4 Add explicit heading ids on the fixed-bugs pages where a group heading's generated id is ambiguous
+- [x] 2.4 Add explicit heading ids on the fixed-bugs pages where a group heading's generated id is ambiguous - done: `#other-strings`, `#amigaos-other-fixes`, `#rwe-other-fixes` (libraries), `#other-joining-lines` (editor)
 
 ## 3. Page, shortcode and script
 
-- [ ] 3.1 Write the shortcode that renders the table in the initial order with `th scope`, `relref` links and data attributes
-- [ ] 3.2 Write `site/assets/js/fix-overview.js` (sort buttons with `aria-sort`, severity and topic filter with labels, live count) and the style
-- [ ] 3.3 Write the page with the explanation of the four levels; link it from the chapter `_index.md` and from the fixed-bugs pages
-- [ ] 3.4 Build the site (podman, `site/README.md`), look at the page in light and dark mode with and without JavaScript, test keyboard use; build without errors or warnings
+- [x] 3.1 Write the shortcode that renders the table in the initial order with `th scope`, `relref` links and data attributes
+- [x] 3.2 Write `site/assets/js/fix-overview.js` (sort buttons with `aria-sort`, severity and topic filter with labels, live count) and the style
+- [x] 3.3 Write the page with the explanation of the four levels; link it from the chapter `_index.md` and from the fixed-bugs pages
+- [x] 3.4 Build the site (podman, `site/README.md`), look at the page in light and dark mode with and without JavaScript, test keyboard use; build without errors or warnings
 
 ## 4. The check
 
-- [ ] 4.1 Write the partial with the checks of design.md Decision 6 (anchor, severity, topic, duplicates, entry without row, `notRows`) failing with `errorf`
-- [ ] 4.2 Fill `notRows` with the cross-references found by the first run, each with a reason
+- [x] 4.1 Write the partial with the checks of design.md Decision 6 (anchor, severity, topic, duplicates, entry without row, `notRows`) failing with `errorf`
+- [x] 4.2 Fill `notRows` with the cross-references found by the first run, each with a reason - done: the first run found no cross-reference (every linked issue is a fix), the list is empty
 - [ ] 4.3 Add the data file parameter and the broken data files under `site/tests/` (missing anchor, severity 5, unknown topic, duplicate issue, entry without row)
 - [ ] 4.4 Add the CMake test (label `site`, 77 without podman or image) that expects each broken file to fail with its message and the real one to build
 

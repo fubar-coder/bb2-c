@@ -3,7 +3,7 @@ title: Differences from the original
 weight: 4
 description: Where the BB2 C port behaves differently from Blitz Basic 2.10, and how to find out for yourself.
 prev: /docs/libraries
-next: /docs/compared-with-original/fixed-bugs
+next: /docs/compared-with-original/important-fixes
 ---
 
 The BB2 C port is Blitz Basic 2.10, not a new version of it, and its goal
@@ -64,6 +64,7 @@ Every fixed bug has an issue on GitHub with the details and the test
 that shows the fix; the pages link them.
 
 {{< cards >}}
+  {{< card link="important-fixes" title="Important Fixes & Breaking Changes" subtitle="All fixed bugs in one table, by what they can change in an existing program." >}}
   {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
   {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler accepts beyond Blitz Basic 2." >}}

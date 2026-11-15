@@ -10,6 +10,8 @@ changes only that library, and a program behaves differently only where
 it ran into the bug. The first sections show the ones an ordinary program
 can run into, each with a short program; the other fixes follow as a
 list, one sentence each with a link to its issue.
+The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
+lists all fixed bugs by what they can change in a program.
 
 The outputs shown were recorded in an emulator: the original is the
 program compiled with the libraries of the Blitz Basic 2 CD, the port the
@@ -1032,7 +1034,7 @@ file requester is the same code and has the same fixes, except for the
   the next `ASLScreenRequest`
   ([#60](https://github.com/fubar-coder/bb2-c/issues/60)).
 
-### Strings
+### Strings {#other-strings}
 
 * `Right$` and `UnRight$` took their characters from before the string
   when the part they leave out was 32768 characters or longer, so
@@ -1986,7 +1988,7 @@ A call of a function of the missing library would still crash.
 
 Issue: [A program hung at its start if an AmigaOS library it calls was missing (#44)](https://github.com/fubar-coder/bb2-c/issues/44).
 
-### Other fixes
+### Other fixes {#amigaos-other-fixes}
 
 * A program that calls a resource, such as the battery clock or the CIA
   resources, hung at its start; the resource is opened
@@ -2095,7 +2097,7 @@ More functions left the place of the next part wrong in other ways:
   was written over that list; the place stays where it was
   ([#1028](https://github.com/fubar-coder/bb2-c/issues/1028)).
 
-### Other fixes
+### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a
   Statement or Function the local variables used after the command were

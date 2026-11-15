@@ -1,0 +1,3007 @@
+# The rows of the page "Important Fixes & Breaking Changes"
+# (content/docs/compared-with-original/important-fixes.md), one per fixed
+# original bug. The fields are described in site/README.md. The site build
+# checks this file against the fixed-bugs pages
+# (layouts/_partials/fix-overview/check.html).
+
+levels:
+  - level: 1
+    name: Changes correct programs
+    text: A program that ran correctly with the original can behave differently. Check your sources for the commands named.
+  - level: 2
+    name: New compile error
+    text: The compiler refuses a source that the original accepted, mostly with a wrong or random result.
+  - level: 3
+    name: New runtime error
+    text: A program that went wrong with the original stops with a runtime error instead, in most cases only with runtime error checking.
+  - level: 4
+    name: Fix without side effects
+    text: A crash, hang, leak or wrong result is fixed. A program that never met the bug behaves as before.
+
+topics:
+  - Graphics
+  - Strings
+  - "Numbers & dates"
+  - Files
+  - Input
+  - "Windows & screens"
+  - "Gadgets & menus"
+  - Sound
+  - Data structures
+  - System
+  - Compiler
+  - Editor
+
+# Issues linked on the fixed-bugs pages that are not a row of their own,
+# each with the reason.
+notRows: []
+
+rows:
+  - issue: 1
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An inline assembler expression of 240 characters or more in a macro or include is freed correctly; the original freed it with a wrong size."
+    page: compiler
+    anchor: inline-assembler
+  - issue: 3
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A library file that cannot be read completely is left out; the original ignored the read error and used whatever was in its buffer."
+    page: running-blitz2
+    anchor: loading-the-libraries
+  - issue: 6
+    severity: 4
+    topic: "System"
+    library: "rundebuglib"
+    command: ""
+    text: "An executable with runtime error checking shows the texts \"End of Program\", \"No currently used object!\" and \"Offset out of range\"; the original showed an empty requester."
+    page: libraries
+    anchor: runtime-error-texts
+  - issue: 7
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A constant definition without a name, `#=5`, is \"Syntax Error\"; the original accepted it."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 8
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Without chip memory for the options requester's arrows, blitz2 gives up at the start with return code -1; the original wrote to and freed address 0."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 9
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "=<"
+    text: "`=<` is less-or-equal, the same as `<=`; the original compiled it as \"not equal\" without a message."
+    page: compiler
+    anchor: less-or-equal
+  - issue: 10
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A number ending in a decimal point, such as `1.`, compiles as a number; the original reported a syntax error."
+    page: compiler
+    anchor: float-literals
+  - issue: 11
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An exponent after a fraction of 0, as in `1.0e5`, is applied; the original ignored it and gave 1."
+    page: compiler
+    anchor: float-literals
+  - issue: 13
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A number without a fraction in a Quick calculation, such as `q=1.0`, is a Quick constant; the original converted a float at run time (same value, longer code)."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 14
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Select"
+    text: "A full object buffer during an assignment or `Select` loses no memory; the original lost a little."
+    page: compiler
+    anchor: the-compilers-memory
+  - issue: 15
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Dim"
+    text: "Arrays with 256-byte elements have their elements 256 bytes apart; the original put them 65536 bytes apart and overwrote memory."
+    page: compiler
+    anchor: arrays-256
+  - issue: 16
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "IncDir"
+    text: "An `IncDir` path of 96 characters or more is \"Path too Long\"; the original overwrote the compiler's data and the program crashed."
+    page: compiler
+    anchor: paths-and-include-files
+  - issue: 17
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "IncDir, Include, XInclude, IncBin"
+    text: "A quoted path of `IncDir`, `Include`, `XInclude` or `IncBin` ends at its closing quote, other text after it is \"Syntax Error\"; the original took the whole line."
+    page: compiler
+    anchor: text-after-path
+  - issue: 19
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Started from the Workbench, blitz2 closes a short or damaged icon file after reading; the original kept it in use until the reboot."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 20
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Started from the Workbench without a project icon, the editor starts with no program; the original could ask it to load its own icon as a program."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 21
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Started from the Workbench, blitz2 goes back to its start directory when it ends; the original did not."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 22
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "blitz2 returns -1 to the shell when it cannot start and 0 after a normal session; the original always returned 0."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 23
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "LOAD DEBUG MODULE"
+    text: "LOAD DEBUG MODULE resets the busy pointer also when no debugger module was loaded before; the original left the busy pointer on."
+    page: running-blitz2
+    anchor: the-editors-compiler-menu
+  - issue: 25
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "RUN, COMPILE AND RUN"
+    text: "When RUN or COMPILE AND RUN cannot start the program for lack of memory, the `EXECUTING` requester closes; the original left it open."
+    page: running-blitz2
+    anchor: the-editors-compiler-menu
+  - issue: 26
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "With 256 MB or more free memory, blitz2 frees its memory test request at once; the original lost 256 MB when it ended."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 27
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "When blitz2 cannot examine `blitz2:deflibs` or `blitz2:acidlibs`, the file counts as missing; the original loaded it with the previous file's length."
+    page: running-blitz2
+    anchor: loading-the-libraries
+  - issue: 28
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A directory in `blitz2:userlibs` with a name of 32 characters or more is skipped; the original overwrote memory."
+    page: running-blitz2
+    anchor: loading-the-libraries
+  - issue: 29
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A name of more than 127 characters, possible through a macro, is \"Syntax Error\"; the original overwrote the compiler's data."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 30
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Goto, Gosub, Restore"
+    text: "A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name is \"Syntax Error\"; the original searched 65536 bytes of memory for an empty name."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 31
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "UsePath"
+    text: "A `UsePath` path of 128 characters or more is \"Path too Long\"; the original overwrote the compiler's own code."
+    page: compiler
+    anchor: paths-and-include-files
+  - issue: 34
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "The constant list of a resident ends inside the resident; the original's last constant pointed behind it, and every compile freed foreign memory."
+    page: compiler
+    anchor: residents
+  - issue: 35
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "NEWTYPE"
+    text: "A resident with a `NewType` without fields loads everything defined behind it; the original lost those types, macros and constants."
+    page: compiler
+    anchor: residents
+  - issue: 36
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Two residents defining the same constant differently give the warning \"Clash in Residents\" and use the first value; the original used it silently."
+    page: compiler
+    anchor: residents
+  - issue: 37
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Dcb"
+    text: "`Dcb` with a count of 0 emits nothing and a negative count is \"Illegal Constant\"; the original made about four thousand million copies."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 38
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "IncBin"
+    text: "`IncBin` releases its file or directory after an error; the original kept it in use."
+    page: compiler
+    anchor: paths-and-include-files
+  - issue: 39
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "For"
+    text: "`For` with a global string variable is \"Bad Type for For...Next\"; the original compiled it and treated the string as a number."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 42
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "On a 68010 with a moved vector table, runtime errors and the debugger use that table; the original took the trap vectors from the wrong one."
+    page: compiler
+    anchor: the-executable
+  - issue: 44
+    severity: 4
+    topic: "System"
+    library: "deflibs"
+    command: ""
+    text: "A program that calls a function of an AmigaOS library the system lacks starts normally; the original hung at its start, even if it never made the call."
+    page: libraries
+    anchor: missing-os-library
+  - issue: 45
+    severity: 4
+    topic: "System"
+    library: "deflibs"
+    command: ""
+    text: "A program that calls a resource, such as the battery clock or the CIA resources, opens it at its start; the original always hung there."
+    page: libraries
+    anchor: amigaos-other-fixes
+  - issue: 46
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "PeekSound"
+    text: "`PeekSound` inside a string expression leaves the sound object intact; the original overwrote it."
+    page: compiler
+    anchor: object-function-in-string
+  - issue: 52
+    severity: 4
+    topic: "System"
+    library: "arexxlib"
+    command: "GetRexxCommand, GetResultString"
+    text: "Text added after `GetRexxCommand` or `GetResultString` comes out whole; the original left a 0 byte in between and lost its last character."
+    page: libraries
+    anchor: text-after-string-function
+  - issue: 58
+    severity: 3
+    topic: "Data structures"
+    library: "arrayslib"
+    command: "Dim"
+    text: "A `Dim` of 4 GB or more stops with \"Out of Memory!\", also without runtime error checking (with it \"Array Size out of Range\"); the original made an array of a few bytes."
+    page: libraries
+    anchor: arrays-and-sorting
+  - issue: 59
+    severity: 4
+    topic: "Data structures"
+    library: "arrayslib"
+    command: "Dim List"
+    text: "`Dim List` with size 0 writes nothing behind its memory block; the original wrote 8 bytes past it."
+    page: libraries
+    anchor: lists
+  - issue: 60
+    severity: 4
+    topic: "Windows & screens"
+    library: "asllib"
+    command: "ASLScreenRequest"
+    text: "`ASLScreenRequest` returns a copy of the chosen mode that stays valid until the next call; the original returned the freed requester."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 61
+    severity: 4
+    topic: "Files"
+    library: "asllib"
+    command: "ASLPathRequest$"
+    text: "`ASLPathRequest$` writes nothing to an address it was not given; the original wrote the file name there, such as to the value of `x`."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 62
+    severity: 4
+    topic: "Files"
+    library: "asllib"
+    command: "ASLFileRequest$, ASLPathRequest$"
+    text: "`ASLFileRequest$` and `ASLPathRequest$` without `asl.library` return the empty string; the original returned a string as long as the title's address."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 63
+    severity: 4
+    topic: "Files"
+    library: "asllib"
+    command: "ASLFileRequest$, ASLPathRequest$"
+    text: "`ASLFileRequest$` and `ASLPathRequest$` free their copies of title and pattern after each request; the original kept them until the program ended."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 64
+    severity: 4
+    topic: "Files"
+    library: "asllib"
+    command: "ASLPathRequest$"
+    text: "`ASLPathRequest$` without position and size shows no pattern gadget; the original showed the pattern of an earlier `ASLFileRequest$`."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 68
+    severity: 4
+    topic: "Sound"
+    library: "audiolib"
+    command: "DecodeSound, LoadSound, InitSound"
+    text: "A sound object reused after `DecodeSound` frees its next sample when reused or freed; the original kept the mark and never freed that sample."
+    page: libraries
+    anchor: sounds
+  - issue: 70
+    severity: 4
+    topic: "System"
+    library: "audiolib"
+    command: "SetPeriod"
+    text: "Without runtime error checking, `SetPeriod` without a sound stops with its runtime error and the sound errors carry their text; the original jumped behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 72
+    severity: 4
+    topic: "Files"
+    library: "banklib"
+    command: "LoadBank"
+    text: "`LoadBank` of a drawer leaves the bank as it is, like a missing file; the original could turn it into a bank of size -1."
+    page: libraries
+    anchor: files-and-banks
+  - issue: 74
+    severity: 3
+    topic: "Graphics"
+    library: "bblitlib"
+    command: "BBlit"
+    text: "Bitmaps and shapes of depth 0, which made `BBlit` run over 65536 planes in the original, stop at their creation with runtime error checking (\"Illegal BitMap Depth\")."
+    page: libraries
+    anchor: bitmaps
+  - issue: 76
+    severity: 4
+    topic: "Graphics"
+    library: "bitmaplib"
+    command: "BitMap"
+    text: "A bitmap whose height times depth is 65536 or more gets all its memory; the original allocated too little and its planes overlapped other memory."
+    page: libraries
+    anchor: bitmaps
+  - issue: 78
+    severity: 3
+    topic: "Graphics"
+    library: "bitmaplib"
+    command: "BitMap, CludgeBitMap, CopyBitMap"
+    text: "A `BitMap` or `CludgeBitMap` of width or height 0 stops with runtime error checking (\"Illegal BitMap Size\"); the original accepted it and `CopyBitMap` overwrote memory."
+    page: libraries
+    anchor: bitmaps
+  - issue: 79
+    severity: 4
+    topic: "Graphics"
+    library: "bitmaplib"
+    command: "ShapesBitMap"
+    text: "`ShapesBitMap` of a shape with planes of 32 KB or more puts the planes in order; the original placed them in front of the shape."
+    page: libraries
+    anchor: bitmaps
+  - issue: 80
+    severity: 4
+    topic: "Graphics"
+    library: "bitmaplib"
+    command: "BitMap"
+    text: "`BitMap` clears the plane pointers above its depth; the original left them pointing into freed memory of an earlier bitmap."
+    page: libraries
+    anchor: bitmaps
+  - issue: 81
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "BoxSelected"
+    text: "On a page of more than 1024 boxes every box number reaches its own box and `BoxSelected` returns it; the original reached wrong memory or other boxes."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 82
+    severity: 3
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "SelectBox"
+    text: "With runtime error checking, `SelectBox` with a box the page does not have stops with \"Illegal Box# For Page\"; the original selected and drew memory behind the table."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 83
+    severity: 3
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "SpotBox"
+    text: "With runtime error checking, `SpotBox` on a page not set up or without boxes stops with \"UnInitialised Page\"; the original searched 65536 boxes of foreign memory."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 84
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "AddBox"
+    text: "`AddBox` of a string box 8 to 15 pixels wide writes no spaces behind its one-byte text; the original wrote 65536."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 85
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "BoxString"
+    text: "`BoxString` of an answer of spaces only returns the empty string; the original trimmed past its start and could copy up to 64 KB."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 87
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "BoxPrint"
+    text: "`BoxPrint Box#,Bank#,Line` leaves the bank unchanged; the original replaced the line feed of the printed line by a 0 in the bank."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 89
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "AddBox"
+    text: "A box added again with `AddBox` without a text prints nothing; the original printed the memory from address 0 on."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 90
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "BlitzEvent"
+    text: "Cursor up or down in `BlitzEvent` with no box selected does nothing; the original read low memory as a box and could write to it."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 91
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "BlitzEvent"
+    text: "In a string box the cursor is drawn again after Backspace at the start and after control keys; the original left it off."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 94
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "DeSelectBox, BoxSelected"
+    text: "`DeSelectBox` clears the selection and `BoxSelected` then returns -1; the original left the box selected."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 110
+    severity: 3
+    topic: "Graphics"
+    library: "collslib"
+    command: "SColl"
+    text: "`SColl` tests its two channels in either order, and with runtime error checking two channels of one pair stop with \"different pairs\"; the original tested other channels."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 120
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "Date$, Days, Months, Years"
+    text: "`Date$` shows 1 January after a leap year correctly; the original showed it as 32 December of the leap year."
+    page: libraries
+    anchor: date-after-leap-year
+  - issue: 121
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "WeekDay"
+    text: "`WeekDay` is right for every date; the original was two days off for a few, such as 15 September 1973."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 122
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "NumDays"
+    text: "`NumDays(\"31/12/1977\")` returns -1 and day 65535 converts back right; the original returned 65535 and 131071."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 123
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "NumDays"
+    text: "`NumDays` of a date with an empty field, such as `\"/5/1990\"`, returns 0; the original took the empty field as 47."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 124
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "NumDays"
+    text: "`NumDays` of a month outside 1 to 12 returns 0; the original returned a number from unrelated memory."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 125
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "NumDays"
+    text: "`NumDays` reads a year of fewer than four digits up to the end of the string, so `\"1/1/78\"` is year 78; the original read past the string."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 128
+    severity: 4
+    topic: "Input"
+    library: "editlib"
+    command: "Inkey$"
+    text: "`Inkey$(0)` returns the empty string; the original returned a string of random length."
+    page: libraries
+    anchor: input
+  - issue: 129
+    severity: 4
+    topic: "Input"
+    library: "editlib"
+    command: "Edit"
+    text: "`Edit` shows the whole default value and Return gives it, so `Edit(25,4)` gives 25; the original overwrote its last character and gave 2."
+    page: libraries
+    anchor: input
+  - issue: 132
+    severity: 4
+    topic: "Input"
+    library: "editlib"
+    command: "Edit$, Edit"
+    text: "`Edit$` at the end of its input returns the empty string and `Edit` 0; the original returned a string of length -1."
+    page: libraries
+    anchor: input
+  - issue: 134
+    severity: 4
+    topic: "Graphics"
+    library: "fadelib"
+    command: "FadeIn, FadeOut"
+    text: "`FadeIn` and `FadeOut` of palette 2 or higher fade all colours evenly; with the original the red or green of the first colour ran ahead."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 135
+    severity: 3
+    topic: "Graphics"
+    library: "fadelib"
+    command: "FadeIn, FadeOut"
+    text: "With runtime error checking, `FadeIn` and `FadeOut` accept a palette whose colours lie in the lowest 64 KB of memory; the original took it as uninitialised."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 138
+    severity: 4
+    topic: "Files"
+    library: "fileiolib"
+    command: "OpenFile, ReadFile, WriteFile, Fields"
+    text: "Opening a file on a file number still open with `Fields` keeps the new name whole; the original cut it short, so a long name was not found."
+    page: libraries
+    anchor: files-and-banks
+  - issue: 140
+    severity: 4
+    topic: "Files"
+    library: "fileiolib"
+    command: "CloseFile, Fields"
+    text: "`CloseFile` clears the record length and fields, so a later `Fields` starts a new record; the original kept them and added to the freed one."
+    page: libraries
+    anchor: files-and-banks
+  - issue: 144
+    severity: 4
+    topic: "Files"
+    library: "fileiolib"
+    command: "Eof, Loc, Lof"
+    text: "`Loc` and `Lof` stay correct after `Eof` at the end of a file; the original made both one too high."
+    page: libraries
+    anchor: loc-lof-after-eof
+  - issue: 146
+    severity: 4
+    topic: "Numbers & dates"
+    library: "floatquicklib"
+    command: ""
+    text: "A Quick 0 assigned to a float gives 0; the original gave a negative zero."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 147
+    severity: 4
+    topic: "Numbers & dates"
+    library: "floatquicklib"
+    command: ""
+    text: "The Quick -32768 assigned to a float keeps its minus sign; the original gave +32768."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 148
+    severity: 4
+    topic: "Graphics"
+    library: "fontlib"
+    command: "BitMapOutput, Print"
+    text: "Text on a bitmap draws umlauts and other characters 128 or more above the font's first one; the original skipped them and left the cursor."
+    page: libraries
+    anchor: umlauts
+  - issue: 150
+    severity: 4
+    topic: "Graphics"
+    library: "fontlib"
+    command: "LoadBlitzFont"
+    text: "`LoadBlitzFont` of a font that is not 8 by 8 closes the font before its error; the original left it open after the program."
+    page: libraries
+    anchor: fonts
+  - issue: 153
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "After OK, `FileRequest$` sets the lengths of the path and file name variables it fills; the original left their old lengths."
+    page: libraries
+    anchor: filerequest-lengths
+  - issue: 154
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "`FileRequest$` closes the system libraries it opens; the original opened them on every call and never closed them."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 156
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "The requester's DRIVES locks the system's volume list while reading it; the original could read freed memory during a disk change."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 157
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "The requester's CD button keeps the program's start directory and restores it at the end; the original released it and the program ended elsewhere."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 158
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "The requester's PARENT and CD release the parent directories they look up; the original kept them in use until reboot."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 159
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "The file requester's list holds names of any length and leaves out an entry it has no memory for; the original overwrote memory and could crash."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 160
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "`FileRequest$` on a screen of 645 lines or more stays within its data; the original wrote far behind it and could crash."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 161
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "`FileRequest$(...)+\".bak\"` joins the text properly; the original left a 0 byte after the result and lost the last character of the following text."
+    page: libraries
+    anchor: text-after-string-function
+  - issue: 163
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gadgetslib"
+    command: "Free GadgetList"
+    text: "`Free GadgetList` frees the text buffers of string gadgets and the data of prop gadgets; the original kept them until the program ended."
+    page: libraries
+    anchor: gadgets
+  - issue: 164
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gadgetslib"
+    command: "StringGadget, Borders"
+    text: "`StringGadget` after `Borders Off` writes nothing to low memory; the original wrote to the addresses 0, 2, 36 and 38."
+    page: libraries
+    anchor: gadgets
+  - issue: 165
+    severity: 3
+    topic: "Gadgets & menus"
+    library: "gadgetslib"
+    command: "StringGadget"
+    text: "With runtime error checking, `StringGadget` with a `Maxlen` of 0 stops with \"Maxlen MUST be greater than zero\"; the original cleared 64 KB of memory and crashed."
+    page: libraries
+    anchor: gadgets
+  - issue: 167
+    severity: 3
+    topic: "Gadgets & menus"
+    library: "gadgetslib, shapeslib"
+    command: "ShapeGadget, InitShape"
+    text: "With runtime error checking, `InitShape` refuses a depth of 0 (\"Illegal Shape Depth\"), so no `ShapeGadget` of such a shape exists; the original gave it a broken image."
+    page: libraries
+    anchor: gadgets
+  - issue: 168
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTPalette"
+    text: "`GTPalette` with a colour sets that colour; the original ignored it and broke a following tag list."
+    page: libraries
+    anchor: gadtools
+  - issue: 169
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTCycle, GTMX, GTString, GTScroller, GTSlider, GTListView"
+    text: "A GadTools gadget created without an optional value gets the default; the original gave it the value of the gadget created before."
+    page: libraries
+    anchor: gadtools-values
+  - issue: 171
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTButton"
+    text: "A toggle `GTButton` whose gadget could not be made writes nothing; the original wrote to address 14."
+    page: libraries
+    anchor: gadtools
+  - issue: 172
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTShape"
+    text: "A `GTShape` gadget has no label; in the original it got the label of the gadget made before it."
+    page: libraries
+    anchor: gadtools
+  - issue: 173
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTShape"
+    text: "Each `GTShape` gadget keeps its own images; in the original all showed the images of the last one and GadTools' own image was overwritten."
+    page: libraries
+    anchor: gadtools
+  - issue: 174
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTCycle, GTMX"
+    text: "Cycle and MX gadgets count their labels and free the label memory with the gadget; the original had a fixed, unchecked room and never freed it."
+    page: libraries
+    anchor: gadtools
+  - issue: 177
+    severity: 4
+    topic: "Files"
+    library: "iffiolib"
+    command: ""
+    text: "A read error during an IFF load ends the data and the load command stops with its runtime error; the original reused old buffer contents or hung."
+    page: libraries
+    anchor: iff-files
+  - issue: 179
+    severity: 4
+    topic: "Files"
+    library: "iffiolib"
+    command: ""
+    text: "An IFF chunk of length 0 reads nothing; the original read it as 4 GB, so `LoadSound` of an empty BODY overwrote memory."
+    page: libraries
+    anchor: iff-files
+  - issue: 180
+    severity: 4
+    topic: "Graphics"
+    library: "iffmakelib"
+    command: "SaveBitmap"
+    text: "`SaveBitmap` of a bitmap with flags set writes the planes the bitmap has; the original wrote hundreds of planes from memory into an invalid file."
+    page: libraries
+    anchor: bitmaps
+  - issue: 182
+    severity: 3
+    topic: "Graphics"
+    library: "iffmakelib"
+    command: "SaveBitmap, SaveShape"
+    text: "`SaveBitmap` and `SaveShape` with a palette of 0 colours stop with runtime error checking (\"Uninitialized Palette\"); the original wrote 65536 colours over memory."
+    page: libraries
+    anchor: iff-files
+  - issue: 183
+    severity: 4
+    topic: "Graphics"
+    library: "iffmakelib"
+    command: "SaveBitmap, SaveScreen, SaveShape"
+    text: "The packer of the save commands packs every row from its own bytes, so saved bytes can differ but the picture does not; the original read the byte behind the row."
+    page: libraries
+    anchor: iff-files
+  - issue: 184
+    severity: 4
+    topic: "Graphics"
+    library: "iffmakelib"
+    command: "SaveBitmap, SaveScreen, SaveShape, SavePalette"
+    text: "A saved palette of an odd number of colours gets the pad byte IFF requires, so the file is one byte longer; the original's files failed in strict IFF readers."
+    page: libraries
+    anchor: iff-files
+  - issue: 185
+    severity: 4
+    topic: "System"
+    library: "iffmakelib"
+    command: "SaveBitmap, SaveScreen, SaveShape, SavePalette"
+    text: "Without runtime error checking, a save command whose file cannot be opened reports \"Can't open File\" with its text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 186
+    severity: 4
+    topic: "Graphics"
+    library: "ilbmifflib"
+    command: "ILBMInfo"
+    text: "`ILBMInfo` of a file that could not be opened does not close it; the original closed it anyway, which crashes older AmigaOS versions."
+    page: libraries
+    anchor: iff-files
+  - issue: 187
+    severity: 3
+    topic: "Graphics"
+    library: "bitmaplib, screenslib"
+    command: "LoadBitMap, LoadScreen"
+    text: "`LoadBitMap` and `LoadScreen` of a missing file stop with \"Can't Open File\", also without runtime error checking; the original showed an old picture or garbage."
+    page: libraries
+    anchor: iff-files
+  - issue: 188
+    severity: 4
+    topic: "Graphics"
+    library: "bitmaplib, screenslib"
+    command: "LoadBitMap, LoadScreen"
+    text: "`LoadBitMap` and `LoadScreen` load only the planes a bitmap with flags set has; the original wrote the extra planes through memory behind it."
+    page: libraries
+    anchor: bitmaps
+  - issue: 189
+    severity: 4
+    topic: "Graphics"
+    library: "ilbmifflib"
+    command: "DecodeILBM"
+    text: "`DecodeILBM` skips the pad byte after a chunk of odd length; the original read the next chunk one byte early and failed or took wrong data."
+    page: libraries
+    anchor: iff-files
+  - issue: 190
+    severity: 4
+    topic: "Graphics"
+    library: "ilbmifflib"
+    command: "DecodeILBM"
+    text: "`DecodeILBM` stores only the part of the picture that fits the bitmap; the original wrote all planes and rows through memory behind a smaller bitmap."
+    page: libraries
+    anchor: iff-files
+  - issue: 191
+    severity: 4
+    topic: "Graphics"
+    library: "ilbmifflib"
+    command: "DecodeILBM"
+    text: "`DecodeILBM` ends every packed run with its row; the original let a run across the row end continue into the next row."
+    page: libraries
+    anchor: iff-files
+  - issue: 192
+    severity: 4
+    topic: "System"
+    library: "ilbmifflib"
+    command: ""
+    text: "Without runtime error checking, the errors of loading IFF pictures carry their text; the original's messages pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 193
+    severity: 4
+    topic: "Input"
+    library: "inputoutputlib"
+    command: "Inkey$"
+    text: "The runtime error of `Inkey$` from the default input reads \"Default Input\"; the original misspelt it \"Defualt\"."
+    page: libraries
+    anchor: input
+  - issue: 197
+    severity: 4
+    topic: "Graphics"
+    library: "intuifontlib"
+    command: "LoadFont"
+    text: "`LoadFont` with a style loads the font in that style; the original wrote the style into the font's flags and lost it."
+    page: libraries
+    anchor: loadfont-style
+  - issue: 198
+    severity: 4
+    topic: "Graphics"
+    library: "intuifontlib"
+    command: "LoadFont"
+    text: "`LoadFont` on the same IntuiFont object frees the copy of the previous font name; the original lost that memory."
+    page: libraries
+    anchor: fonts
+  - issue: 199
+    severity: 1
+    topic: "Numbers & dates"
+    library: "lmullib"
+    command: ""
+    text: "A Long or Quick multiplication that overflows gives the product with the excess bits cut off; the original added part of the lost bits back, so results differed slightly."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 200
+    severity: 3
+    topic: "Numbers & dates"
+    library: "ldivlib"
+    command: ""
+    text: "With runtime error checking, a Long or Quick division by 0 stops with \"Division by Zero\"; without it, the result has the dividend's sign, where the original always returned 2147483647."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 201
+    severity: 4
+    topic: "Data structures"
+    library: "linklistlib"
+    command: "SortList"
+    text: "`SortList` sorts every key in ascending order; the original put keys more than 2^31 apart the wrong way round."
+    page: libraries
+    anchor: lists
+  - issue: 202
+    severity: 4
+    topic: "System"
+    library: "mathtranslib"
+    command: "Sin, Sqr"
+    text: "A program using transcendental float functions starts when `mathtrans.library` cannot be opened; the original hung at its start."
+    page: libraries
+    anchor: amigaos-other-fixes
+  - issue: 214
+    severity: 3
+    topic: "Strings"
+    library: "memacclib"
+    command: "Peeks$"
+    text: "`Peeks$` with a negative length returns the empty string and with checking stops (\"Can't Peeks$ a negative number\"); the original copied up to 4 GB and crashed."
+    page: libraries
+    anchor: other-strings
+  - issue: 216
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "MenuState"
+    text: "`MenuState` disables or enables a single whole menu; the original changed the wrong bit."
+    page: libraries
+    anchor: menus
+  - issue: 217
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "MenuChecked"
+    text: "`MenuChecked` gives the state of the entry asked for; for most entries the original gave the state of another entry or read unrelated memory."
+    page: libraries
+    anchor: menus
+  - issue: 218
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "ShapeItem, ShapeSub"
+    text: "`ShapeItem` and `ShapeSub` take their flags as `MenuItem` does; the original ignored small flag values such as toggle, exclude and checked."
+    page: libraries
+    anchor: menus
+  - issue: 219
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "MenuItem, SubItem"
+    text: "Menu item flags such as $10000 are taken as given; the original took them as 4, a checked toggle item excluding all others."
+    page: libraries
+    anchor: menus
+  - issue: 220
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "SubItem"
+    text: "Replacing a subitem moves the subitems behind it by the change of its height; the original moved them by a wrong amount, covering it or leaving a gap."
+    page: libraries
+    anchor: menus
+  - issue: 224
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "DecodePalette, FadePalette"
+    text: "Decoded and faded palettes show the right colours on Kickstart before 3.0; the original took the wrong byte and made them black."
+    page: libraries
+    anchor: palette-kickstart-13
+  - issue: 225
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "DecodePalette"
+    text: "`DecodePalette` skips the pad byte behind a chunk of odd length and finds the colours and cycles behind it; the original missed them."
+    page: libraries
+    anchor: palettes
+  - issue: 226
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "DecodePalette"
+    text: "`DecodePalette` with an offset into a too small palette enlarges it and keeps the colours below the offset; the original cleared them."
+    page: libraries
+    anchor: palettes
+  - issue: 227
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "PaletteRange"
+    text: "`PaletteRange` with the same start and end colour sets that colour to the start colour; the original divided by zero."
+    page: libraries
+    anchor: palettes
+  - issue: 228
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "StopCycle, Cycle"
+    text: "`Cycle` after `StopCycle` starts the colour cycling again; with the original it did not start."
+    page: libraries
+    anchor: palettes
+  - issue: 229
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "InitPalette, PalRGB, AGAPalRGB, CyclePalette, Cycle"
+    text: "`InitPalette`, `PalRGB` and `AGAPalRGB` end the colour cycle list of a new palette; with the original, `CyclePalette` and `Cycle` read on into the next palette."
+    page: libraries
+    anchor: palettes
+  - issue: 233
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Print, NPrint, Str$"
+    text: "A Quick whose fraction rounds up to a whole number prints that number, such as `3`; the original lost the carry and printed `2.`."
+    page: libraries
+    anchor: quick-print
+  - issue: 234
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Print, NPrint, Str$"
+    text: "A Quick whose fraction rounds to 0 prints without a point, such as `1`; the original printed `1.`."
+    page: libraries
+    anchor: quick-print
+  - issue: 235
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Format"
+    text: "`Format` keeps a rounding carry out of the first digit, so 999.96 with `\"####.#\"` prints `1000.0`; the original printed ` 000.0`."
+    page: libraries
+    anchor: format
+  - issue: 236
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Format"
+    text: "`Format` rounds numbers below 1, so 0.567 with `\".##\"` prints `.57`; the original cut them to `.56`."
+    page: libraries
+    anchor: format
+  - issue: 237
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Format"
+    text: "`Format` without `-` or `+` in the format string prints the minus sign of a negative number; the original lost it."
+    page: libraries
+    anchor: format
+  - issue: 238
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "Format"
+    text: "A number too large for its `Format` prints a `?` and then its lowest digits; the original printed the `?` and only spaces."
+    page: libraries
+    anchor: format
+  - issue: 241
+    severity: 4
+    topic: "Numbers & dates"
+    library: "printlib"
+    command: "FloatMode, Format"
+    text: "A float below 1E-17 printed in fixed point form leaves the library's power-of-ten table intact; the original overwrote it, so later large numbers printed wrong digits."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 242
+    severity: 4
+    topic: "Strings"
+    library: "printlib"
+    command: "Str$, UStr$"
+    text: "`Str$` and `UStr$` of a string return the string; the original returned a number made from its address."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 243
+    severity: 3
+    topic: "Graphics"
+    library: "shapeslib, qblitlib"
+    command: "InitShape, QBlit"
+    text: "`InitShape` with depth 0 stops with runtime error checking (\"Illegal Shape Depth\"); the original made a shape that `QBlit` blitted as 65536 planes."
+    page: libraries
+    anchor: bitmaps
+  - issue: 247
+    severity: 4
+    topic: "Windows & screens"
+    library: "screenslib"
+    command: "Screen, ScreenTags, WbToScreen, FindScreen, ShowBitMap"
+    text: "Replacing a screen that had used `ShowBitMap` frees it properly on Kickstart 3.0 and later; the original crashed."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 248
+    severity: 4
+    topic: "Windows & screens"
+    library: "screenslib"
+    command: "FindScreen, WbToScreen, CloseScreen"
+    text: "A screen object that only found a screen forgets it without closing it; the original closed a screen another object had opened."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 249
+    severity: 4
+    topic: "Windows & screens"
+    library: "screenslib"
+    command: "ScreenTags"
+    text: "`ScreenTags` with the address of a tag list of more than 15 tags copies 15 and links the rest; the original overwrote code behind the library."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 250
+    severity: 4
+    topic: "Windows & screens"
+    library: "screenslib"
+    command: "Screen, ScreenTags"
+    text: "A screen mode with a monitor part, such as PAL or NTSC, opens on that monitor; the original used only the low word and opened on the default monitor."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 251
+    severity: 4
+    topic: "System"
+    library: "screenslib"
+    command: "Screen"
+    text: "Without runtime error checking, a screen that cannot be opened stops with \"Can't open Screen\"; the original jumped behind the library and crashed."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 263
+    severity: 3
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape, SaveShapes, LoadShapes, DecodeShapes, CopyShape"
+    text: "Shapes of 64 KB or more are saved, loaded and copied whole, and a picture with a 64 KB plane stops with \"Can't Read/Write Shapes File\", also without runtime error checking; the original overwrote memory."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 265
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` of an IFF ANIM stops at the last shape object; the original put further frames into the memory behind the shape table."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 266
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` of an IFF ANIM uses each frame's own XOR mode; the original took the mode of the first frame for all."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 267
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShapes, DecodeShapes, SaveShapes"
+    text: "`LoadShapes` and `DecodeShapes` ignore the in-place mark stored in a shapes file; the original took it over, so the loaded shapes were never freed."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 268
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "CopyShape"
+    text: "`CopyShape` of a shape that `DecodeShapes` made in place gives a copy that is freed; the original copied the mark, so the copy was never freed."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 269
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "DecodeShapes"
+    text: "Freeing or replacing a shape that `DecodeShapes` made in place in chip memory removes its mark; with the original the next shape in that object was never freed."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 270
+    severity: 4
+    topic: "System"
+    library: "shapeslib"
+    command: "DecodeShapes"
+    text: "Without runtime error checking, `DecodeShapes` of address 0 stops with its runtime error; the original jumped behind the library and crashed."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 271
+    severity: 4
+    topic: "Graphics"
+    library: "shapetrixlib"
+    command: "XFlip"
+    text: "`XFlip` of a shape whose width is not a multiple of 16 waits for the blitter before mirroring; the original's result depended on timing."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 273
+    severity: 4
+    topic: "Graphics"
+    library: "shapetrixlib"
+    command: "Scale"
+    text: "`Scale` to less than one pixel wide or high uses only the shape's pixels; the original also read the memory behind the shape."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 274
+    severity: 4
+    topic: "Graphics"
+    library: "shapetrixlib"
+    command: "XFlip, YFlip, Rotate, Scale"
+    text: "`XFlip`, `YFlip`, `Rotate` and `Scale` work on the whole of shapes with planes of 32 KB or more; the original flipped only part of them or nothing."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 275
+    severity: 4
+    topic: "Data structures"
+    library: "sortlib"
+    command: "Sort"
+    text: "`Sort` on a word array compares with the middle element; the original took the word after it, reading behind a one-element array."
+    page: libraries
+    anchor: arrays-and-sorting
+  - issue: 276
+    severity: 4
+    topic: "Data structures"
+    library: "sortlib"
+    command: "Sort, SortDown"
+    text: "`Sort` on a string array treats never-assigned elements as empty strings; the original read their length and characters from low memory and sorted them anywhere."
+    page: libraries
+    anchor: arrays-and-sorting
+  - issue: 280
+    severity: 4
+    topic: "Graphics"
+    library: "spriteslib"
+    command: "SaveSprites, LoadSprites, SpriteMode"
+    text: "A sprite keeps the size of the `SpriteMode` it was made in for `SaveSprites`, `LoadSprites` and freeing; the original used the current mode."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 281
+    severity: 3
+    topic: "Graphics"
+    library: "spriteslib"
+    command: "SpriteMode"
+    text: "With runtime error checking, `SpriteMode` above 2 stops with \"Illegal SpriteMode\"; the original read the sprite width from behind its table."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 282
+    severity: 4
+    topic: "Graphics"
+    library: "spriteslib"
+    command: "GetaSprite"
+    text: "`GetaSprite` in `SpriteMode 1` or `2` leaves the right edge of the last sprite empty; the original took bytes of the next shape row into it."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 283
+    severity: 4
+    topic: "Graphics"
+    library: "spriteslib"
+    command: "ShowSprite"
+    text: "`ShowSprite` of a sprite cut off at the top of the slice skips the cut lines; the original showed wrong lines or read anywhere in memory."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 284
+    severity: 4
+    topic: "Graphics"
+    library: "stencillib"
+    command: "Stencil"
+    text: "`Stencil` of a bitmap taller or wider than 1024 pixels fills the whole stencil; the original filled only part of it."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 285
+    severity: 4
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Right$, UnRight$"
+    text: "`Right$` and `UnRight$` work on strings of any length; the original took characters from before the string when 32768 or more were left out."
+    page: libraries
+    anchor: other-strings
+  - issue: 286
+    severity: 4
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Mid$"
+    text: "`Mid$` with a very large length stops at the end of the string; the original returned a string reaching far beyond it."
+    page: libraries
+    anchor: other-strings
+  - issue: 287
+    severity: 3
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Instr"
+    text: "`Instr` with a start position below 1 searches from the first character and is \"Instr Startpos MUST be greater than zero\" with checking; the original compared bytes before the string."
+    page: libraries
+    anchor: other-strings
+  - issue: 288
+    severity: 3
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Cvi, Cvl, Cvq"
+    text: "`Cvi`, `Cvl` and `Cvq` of a short string count missing bytes as 0 and with checking stop (\"Cvi needs a String\"); the original read bytes behind the string."
+    page: libraries
+    anchor: other-strings
+  - issue: 297
+    severity: 4
+    topic: "System"
+    library: "utillib"
+    command: "TaskName$"
+    text: "`TaskName$` of a task without a name returns the empty string; the original copied the text at address 0."
+    page: libraries
+    anchor: tasks-and-message-ports
+  - issue: 298
+    severity: 3
+    topic: "System"
+    library: "utillib"
+    command: "CreateMsgPort"
+    text: "`CreateMsgPort` without a free signal stops with \"Failed to allocate signal\", also without runtime error checking; the original made a port that never woke the program."
+    page: libraries
+    anchor: tasks-and-message-ports
+  - issue: 299
+    severity: 4
+    topic: "System"
+    library: "utillib"
+    command: "DeleteMsgPort"
+    text: "`DeleteMsgPort` replies the messages still waiting at the port before freeing it; the original freed it and the senders never got them back."
+    page: libraries
+    anchor: tasks-and-message-ports
+  - issue: 301
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "Sgn"
+    text: "`Sgn` of a float returns -1, 0 or 1 by its value; the original always returned 1."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 303
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "Val"
+    text: "`Val` reads the whole of a string longer than 32768 characters; the original gave 0 or read only part of it."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 304
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "Val"
+    text: "`Val` of a number with 10 or more decimal places counts the first 9 and skips the rest; the original gave a wrong fraction or dropped it."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 305
+    severity: 4
+    topic: "System"
+    library: "wbstartuplib"
+    command: ""
+    text: "Without runtime error checking, a program that gets no memory for its Workbench arguments stops with its runtime error; the original jumped behind the library and crashed."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 306
+    severity: 4
+    topic: "System"
+    library: "wbstartuplib"
+    command: ""
+    text: "A program started from the Workbench closes `dos.library` at its end; the original never closed it, raising its use count with every start."
+    page: libraries
+    anchor: program-start
+  - issue: 307
+    severity: 4
+    topic: "System"
+    library: "wbstartuplib"
+    command: ""
+    text: "A program started from the Workbench restores the old current directory at its end; the original left its drawer current."
+    page: libraries
+    anchor: program-start
+  - issue: 308
+    severity: 4
+    topic: "Input"
+    library: "wbstartuplib"
+    command: ""
+    text: "A program started from the CLI with an argument line over 255 characters gets the first 255; the original overwrote the memory behind its buffer."
+    page: libraries
+    anchor: program-start
+  - issue: 310
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "Menus, MenusOn, MenusOff"
+    text: "`Menus`, `MenusOn` and `MenusOff` reach every window; the original reached only the lower half of the window numbers."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 311
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "Event"
+    text: "A string gadget entry reports its gadget up once; the original reported a second one when another event came in between."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 312
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "EventQualifier"
+    text: "The extra menu event of a multi-item menu choice has the qualifier of the choice; in the original `EventQualifier` of it was random."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 313
+    severity: 4
+    topic: "Input"
+    library: "windowslib"
+    command: "Qualifier"
+    text: "`Qualifier` sets its whole long result; the original set only the lower half, leaving garbage in the upper."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 314
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WCls"
+    text: "`WCls` clears the whole window; the original left its top pixel line."
+    page: libraries
+    anchor: wcls-top-line
+  - issue: 315
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WScroll, WPrintScroll"
+    text: "`WScroll` and `WPrintScroll` keep the drawing colour of the window; the original set it to 0."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 316
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WindowTags"
+    text: "`WindowTags` without tags opens the window with no extra tags; the original reused the tags of the previous `WindowTags`."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 317
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WindowTags"
+    text: "`WindowTags` with a long tag list copies only a part and links the rest; the original overwrote code of the library."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 318
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "Window, WindowTags, WTitle"
+    text: "Window title copies are freed with the window or the next title; the original never freed them and lost memory."
+    page: libraries
+    anchor: window-titles
+  - issue: 319
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "Window"
+    text: "A `Window` with the super bitmap flag `$80` but no `BitMap#` is no super bitmap window; the original gave it the bitmap of an earlier `Window`."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 320
+    severity: 3
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WSize, WMove"
+    text: "`WSize` and `WMove` return when Intuition limits the size or position, and a size beyond the window's limits is \"Can't Size Window\" with checking; the original hung."
+    page: libraries
+    anchor: wsize-wmove
+  - issue: 321
+    severity: 4
+    topic: "Input"
+    library: "windowslib"
+    command: "Edit$"
+    text: "`Edit$` in a window with a proportional font uses each character's own width, also from code 160 on; the original misplaced the cursor and text for umlauts."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 322
+    severity: 4
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "CloseWindow"
+    text: "`CloseWindow` discards only the closed window's waiting events; the original threw away those of all windows."
+    page: libraries
+    anchor: closewindow-events
+  - issue: 324
+    severity: 1
+    topic: "Graphics"
+    library: "displaylib"
+    command: "CustomSprites"
+    text: "`CustomSprites` counts its `CCOffset` in copper instructions, as documented; the original took it 16 times too large."
+    page: libraries
+    anchor: customsprites-ccoffset
+  - issue: 325
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Include, XInclude, IncBin, IncDir"
+    text: "An include file name that is more than 127 characters with the `IncDir` path is \"Path too Long\"; the original overwrote the compiler's data."
+    page: compiler
+    anchor: paths-and-include-files
+  - issue: 326
+    severity: 3
+    topic: "Graphics"
+    library: "iffmakelib"
+    command: "SaveShape"
+    text: "`SaveShape` of a shape of depth 0 or more than 14 stops with \"Illegal Shape Depth\", also without runtime error checking; the original overwrote the library's memory."
+    page: libraries
+    anchor: iff-files
+  - issue: 327
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTShape"
+    text: "`GTShape` leaves a gadget that could not be created alone; the original wrote to low memory."
+    page: libraries
+    anchor: gadtools
+  - issue: 328
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTGetAttrs, GTSetAttrs"
+    text: "`GTGetAttrs` and `GTSetAttrs` in a string expression give a correct joined string; the original built it over a tag list inside the library and overwrote memory."
+    page: libraries
+    anchor: text-after-string-function
+  - issue: 330
+    severity: 3
+    topic: "Graphics"
+    library: "fadelib"
+    command: "FadeIn, FadeOut"
+    text: "With runtime error checking, `FadeIn` and `FadeOut` of a palette never made report \"Uninitialized Palette\"; the original reported \"Not enough colours in Slice\"."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 331
+    severity: 3
+    topic: "Graphics"
+    library: "fadelib"
+    command: "FadeIn, FadeOut"
+    text: "With runtime error checking, `FadeIn` and `FadeOut` with a colour beyond the slice's colours report \"Not enough colours in Slice\"; the original reported \"Uninitialized Slice\"."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 335
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A program using a library that needs objects only through another library ends cleanly; the original could hang the system at its end."
+    page: compiler
+    anchor: os-commands-end
+  - issue: 336
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "The Macro Buffer option sets the largest macro text, a longer one is \"Macro too Big\"; the original ignored the option and could crash when ending."
+    page: compiler
+    anchor: macros
+  - issue: 337
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Started from the Workbench, blitz2 has ended before the Workbench unloads it; the original could crash at its very end, for example under MungWall."
+    page: running-blitz2
+    anchor: starting-and-ending
+  - issue: 340
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Started by blitz2 with a source, the editor always opens that source; the original sometimes opened a wrong file or none, depending on memory layout."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 341
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Include, IncDir"
+    text: "After `IncDir`, a file name with a device or assign is included as given; the original put the `IncDir` path in front and failed."
+    page: compiler
+    anchor: include-with-device
+  - issue: 342
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "IncDir"
+    text: "The path of `IncDir` applies only to the compile that set it; the original kept it for the following compiles."
+    page: compiler
+    anchor: incdir-next-compile
+  - issue: 343
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Character constants in inline assembler are read correctly on every line; after a calculation such as `#\">\"*8`, the original could make an earlier `#\" \"` 0."
+    page: compiler
+    anchor: inline-assembler
+  - issue: 344
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An AmigaOS function called inside an expression keeps the expression's intermediate values; the original overwrote them."
+    page: compiler
+    anchor: amigaos-call-in-expression
+  - issue: 345
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "After the requester's CD button, clicking into the path field works normally; the original damaged the gadget and the system copied the path into low memory."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 346
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "JOIN"
+    text: "A `JOIN` that moves a block's start past column 127 removes the block; the original left an inverted ghost block to the end of the text."
+    page: editor
+    anchor: other-joining-lines
+  - issue: 347
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK TAB"
+    text: "Without tokenising, `BLOCK TAB` adds only indentation; the original added an invisible 0 byte to each line, an extra empty line after saving and reloading."
+    page: editor
+    anchor: blocks
+  - issue: 348
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK UNTAB"
+    text: "`BLOCK UNTAB` removes only the indentation of each line; the original removed the first tab-size characters whatever they were, and cleared short lines."
+    page: editor
+    anchor: block-untab
+  - issue: 349
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Typing inside a block marked over several lines keeps the block's end; the original stretched it to the end of its last line, so block commands acted on more text."
+    page: editor
+    anchor: blocks
+  - issue: 351
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "The editor starts with the small font on a Workbench where (height - 20) is a multiple of the font height; the original opened a screen one row too tall and failed."
+    page: editor
+    anchor: small-font-screen
+  - issue: 352
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "DEFAULTS"
+    text: "Switching from the 6 to the 8 pixel font keeps the cursor in the text; the original left it below the last row of the editor."
+    page: editor
+    anchor: options
+  - issue: 353
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "DELETE LINE"
+    text: "`DELETE LINE` on the only line of a one-line block ends the block completely; the original left the block menu items, the status and the start mark set."
+    page: editor
+    anchor: blocks
+  - issue: 354
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK TO DISK"
+    text: "Without tokenising, `BLOCK TO DISK` writes accented letters of the middle lines as they are; the original wrote them as keyword names."
+    page: editor
+    anchor: latin1-without-tokenise
+  - issue: 355
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "KILL, BLOCK TO DISK, JOIN"
+    text: "A tokenised line longer than about 128 characters is cut at the end of the buffer; the original overwrote memory behind the editor's buffers."
+    page: editor
+    anchor: long-lines-and-keywords
+  - issue: 356
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "NEW, LOAD"
+    text: "When the empty first line cannot be allocated, the editor reports out of memory and `NEW` keeps the old text; the original went on with freed lines."
+    page: editor
+    anchor: low-memory
+  - issue: 357
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "A failed editor start is reported as an error, so blitz2 takes its error exit; the original reported success and blitz2 crashed."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 358
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "`LOAD` of an empty file frees the memory of the previous text; the original kept it allocated until the next reboot."
+    page: editor
+    anchor: loading-and-saving
+  - issue: 359
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Without a keyword list, as in the editor on its own, no keyword is found; the original looked keywords up at address 0, giving garbage or a crash."
+    page: editor
+    anchor: long-lines-and-keywords
+  - issue: 361
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "KILL"
+    text: "`KILL` of a block that is the whole only line, without memory for the new empty line, reports out of memory and keeps the line; the original left freed memory in use."
+    page: editor
+    anchor: low-memory
+  - issue: 362
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK TO DISK, COPY"
+    text: "Without tokenising, a character of 128 or more in a block is kept in `BLOCK TO DISK` and `COPY`; the original ended the block there."
+    page: editor
+    anchor: latin1-without-tokenise
+  - issue: 364
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "JOIN"
+    text: "`JOIN` frees the memory of the joined line completely; the original lost 8 to 16 bytes with every join."
+    page: editor
+    anchor: other-joining-lines
+  - issue: 365
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "JOIN"
+    text: "`JOIN` with a next line that starts with a label removes that label from the label column; the original left it pointing to freed memory."
+    page: editor
+    anchor: other-joining-lines
+  - issue: 366
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Without memory for the title bar's colour gradient, the editor opens its screen without it; the original crashed."
+    page: editor
+    anchor: low-memory
+  - issue: 367
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Without chip memory for its mouse pointer the editor ends cleanly; the original copied the pointer images to address 0 and crashed the system."
+    page: editor
+    anchor: low-memory
+  - issue: 368
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "CLI"
+    text: "`CLI` with the Workbench screen closed runs the shell and closes its console window afterwards; the original did not run it and left the window open."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 370
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "When the start file does not fit into memory, the editor shows the out-of-memory alert and ends with an error; the original crashed while loading it."
+    page: editor
+    anchor: low-memory
+  - issue: 371
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "PRINT"
+    text: "Without tokenising, `PRINT` prints accented letters as they are; the original printed them as bold keyword names."
+    page: editor
+    anchor: latin1-without-tokenise
+  - issue: 372
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "PRINT"
+    text: "`PRINT` of a line with many keywords ends with the last keyword that fits; the original overwrote memory behind the editor's buffers."
+    page: editor
+    anchor: long-lines-and-keywords
+  - issue: 373
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "When console.device cannot be opened the editor ends cleanly; the original crashed during its start."
+    page: editor
+    anchor: low-memory
+  - issue: 374
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "Characters of 128 or more in a text source load as the characters they are; the original loaded them as keywords and swallowed the next byte, joining lines."
+    page: editor
+    anchor: umlauts-in-text-source
+  - issue: 375
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD, BLOCK LOAD"
+    text: "A line longer than 128 columns is split into pieces without loss and the whole file is loaded; the original lost three characters and `BLOCK LOAD` stopped there."
+    page: editor
+    anchor: loading-and-saving
+  - issue: 376
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "The last line of a text source without a final line feed is tokenised on loading; the original left it untokenised."
+    page: editor
+    anchor: last-line-not-tokenised
+  - issue: 377
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "In a tokenised source a TAB behind a keyword goes to the column the line shows; the original counted the keyword as two characters."
+    page: editor
+    anchor: loading-and-saving
+  - issue: 378
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "With a tab stop above 133 from the options file, TAB expansion stops at the end of the line buffer; the original overwrote memory behind it."
+    page: editor
+    anchor: options
+  - issue: 379
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "A last byte of 128 or more in a file is dropped; the original left half a keyword at the end of the last line and read garbage behind it."
+    page: editor
+    anchor: loading-and-saving
+  - issue: 380
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "SAVE"
+    text: "After a write error while saving, neither the `.xtra` file nor the icon is written; the original wrote both next to the cut source."
+    page: editor
+    anchor: loading-and-saving
+  - issue: 382
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "When the editor's window or character memory cannot be allocated, it closes its screen and ends; the original crashed and left the screen open."
+    page: editor
+    anchor: low-memory
+  - issue: 383
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "DEFAULTS"
+    text: "For \"Tokenise\" and \"Create Icons\" in the options file only the lowest bit counts; other values in the original disabled or misdrew the check box."
+    page: editor
+    anchor: options
+  - issue: 384
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "DEFAULTS"
+    text: "A colour value of 4 or more in a damaged options file counts as 0 to 3; the original marked wrong colour buttons and changed other requester data."
+    page: editor
+    anchor: options
+  - issue: 385
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "OPTIONS"
+    text: "A tab stop of 0 is refused; the original accepted it, also set it for values of 80 and more, and crashed at every TAB."
+    page: editor
+    anchor: tab-stop-zero
+  - issue: 386
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "A word that reaches column 128 ends with the line; the original matched it together with the start of the next line, so `Pri` and `nt` became `Print`."
+    page: editor
+    anchor: long-lines-and-keywords
+  - issue: 387
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Started from the Workbench, the editor is unloaded only after it has ended; the original could be unloaded while still running and crash at its end."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 388
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "Started from the Workbench without a readable `.info` file, the editor starts with an empty text; the original tried to load the `.info` name or bytes as text."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 389
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "A too short `.info` file of the editor is closed; the original left it open until the next reboot."
+    page: editor
+    anchor: starting-and-ending
+  - issue: 390
+    severity: 4
+    topic: "Graphics"
+    library: "2dlib"
+    command: "AllocFill"
+    text: "`AllocFill` as a statement makes the fill buffer for the used bitmap; the original took the size from the string buffer and made a wrong buffer or none."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 391
+    severity: 1
+    topic: "Graphics"
+    library: "2dlib"
+    command: "Box"
+    text: "`Box` adds the `BitMapOrigin` origin once, like `Line` and `Boxf`; the original added it twice."
+    page: libraries
+    anchor: box-origin
+  - issue: 392
+    severity: 4
+    topic: "Graphics"
+    library: "2dlib"
+    command: "Circle, Circlef"
+    text: "`Circle` and `Circlef` clip the points above the top edge of the bitmap; the original wrote them into memory behind the planes or the fill buffer."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 393
+    severity: 3
+    topic: "Graphics"
+    library: "bitmaplib, scrolllib, 2dlib, polylib"
+    command: "CludgeBitMap, Plot, Polyf, BitMapPoly"
+    text: "`CludgeBitMap` with depth 0 or above 8 stops with runtime error checking (\"Illegal BitMap Depth\"); the original made a bitmap the drawing commands treated as 65536 planes."
+    page: libraries
+    anchor: bitmaps
+  - issue: 395
+    severity: 3
+    topic: "Graphics"
+    library: "2dlib, polylib"
+    command: "Polyf, BitMapPoly, ChunkyPoly, RenderPoly"
+    text: "The polygon commands draw sides of 11 to 15 edges right, and more than 16 points stop with runtime error checking (\"Too Many Points\"); the original crashed."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 396
+    severity: 3
+    topic: "Graphics"
+    library: "2dlib"
+    command: "Poly"
+    text: "`Poly` with fewer than 2 points stops with runtime error checking (\"Poly needs at least 2 Points\"); the original drew 65535 lines from memory."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 397
+    severity: 4
+    topic: "Graphics"
+    library: "animlib"
+    command: "InitAnim"
+    text: "`InitAnim` copies an unpacked first picture and ends every packed run with its row; the original unpacked every picture and wrote long runs behind the row."
+    page: libraries
+    anchor: animations
+  - issue: 398
+    severity: 4
+    topic: "System"
+    library: "animlib"
+    command: "LoadAnim"
+    text: "Without runtime error checking, `LoadAnim` of a file it cannot open stops with \"Can't Open Anim File\"; the original jumped behind the library and crashed."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 399
+    severity: 4
+    topic: "Graphics"
+    library: "animlib"
+    command: "Free Anim"
+    text: "Freeing an anim reads the link to its next change before freeing it; the original read it from freed memory."
+    page: libraries
+    anchor: animations
+  - issue: 400
+    severity: 4
+    topic: "Graphics"
+    library: "animlib"
+    command: "LoadAnim, InitAnim"
+    text: "An anim file without a first picture loads without one and `InitAnim` draws nothing; the original took \"not found\" as the length and unpacked random memory."
+    page: libraries
+    anchor: animations
+  - issue: 401
+    severity: 4
+    topic: "Graphics"
+    library: "animlib"
+    command: "NextFrame"
+    text: "`NextFrame` of an anim with one change or none plays it once and stays on the last frame; the original read the next change from address 0."
+    page: libraries
+    anchor: animations
+  - issue: 402
+    severity: 4
+    topic: "Graphics"
+    library: "animlib"
+    command: "LoadAnim, InitAnim, NextFrame"
+    text: "An anim with a width, height or depth of 0 loads without picture data and draws nothing; the original ran its loops 65536 times over memory."
+    page: libraries
+    anchor: animations
+  - issue: 403
+    severity: 4
+    topic: "Files"
+    library: "asllib"
+    command: "ASLFileRequest$, ASLPathRequest$"
+    text: "`ASLFileRequest$` and `ASLPathRequest$` free a requester only if one was allocated; the original asked to free one at address 0."
+    page: libraries
+    anchor: file-requester-fixes
+  - issue: 404
+    severity: 4
+    topic: "Graphics"
+    library: "blitzcoplib"
+    command: "CustomCop"
+    text: "`CustomCop` with a string of 0 to 3 bytes inserts only the wait for its line; the original copied about four thousand million instructions over memory."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 405
+    severity: 4
+    topic: "Graphics"
+    library: "blitzcoplib"
+    command: "CustomCop"
+    text: "`CustomCop` puts the instruction `$01FE1234` into the copper list as given; the original took it for an internal mark of `Slice` and changed it."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 406
+    severity: 4
+    topic: "Graphics"
+    library: "blitzcoplib"
+    command: "CustomCop"
+    text: "`CustomCop` in a program with a Slice maximum of 0 leaves memory alone; the original changed 4 MB behind the slice objects."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 407
+    severity: 4
+    topic: "Graphics"
+    library: "blitzcoplib"
+    command: "Show, ShowF, ShowB, Slice"
+    text: "`Show`, `ShowF` and `ShowB` on a slice made without the BPLCON1 instruction change nothing outside the slice; the original wrote to a random address."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 411
+    severity: 4
+    topic: "Graphics"
+    library: "displaylib"
+    command: "DisplayBitMap, DisplayScroll"
+    text: "`DisplayBitMap CopList#,BitMap#` without a position starts `DisplayScroll` at 0,0; the original started at values left over in registers."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 412
+    severity: 4
+    topic: "System"
+    library: "displaylib"
+    command: ""
+    text: "Without runtime error checking, the runtime errors of displays and copper lists are reported with their text; the original jumped behind the library and crashed."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 413
+    severity: 4
+    topic: "Graphics"
+    library: "displaylib"
+    command: "InitCopList, CustomSprites"
+    text: "Sprite channels of a copper list that show no sprite show an empty sprite; the original fetched them from chip memory address 0 and showed garbage."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 414
+    severity: 3
+    topic: "Graphics"
+    library: "displaylib"
+    command: "DisplaySprite, CustomSprites"
+    text: "`DisplaySprite` of a sprite running into the `CustomSprites` channels stops with \"Not Enough Sprite Channels\", also without runtime error checking; the original overwrote copper instructions."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 417
+    severity: 3
+    topic: "Graphics"
+    library: "polylib"
+    command: "ChunkyVlin"
+    text: "`ChunkyVlin` without `CLIP` and `y1` above `y2` stops with runtime error checking (\"y1 MUST NOT be greater\"); the original wrote about 65536 words."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 420
+    severity: 4
+    topic: "Graphics"
+    library: "polylib"
+    command: "RenderPoly"
+    text: "`RenderPoly` before any `RenderToBitmap` or `RenderToChunky` draws nothing; the original drew into random memory."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 421
+    severity: 1
+    topic: "Graphics"
+    library: "polylib"
+    command: "RenderToBitmap, RenderPoly"
+    text: "`RenderPoly` after `RenderToBitmap b,d` draws on bitmap `b` with `d` as the dither pattern, as documented; the original swapped the two."
+    page: libraries
+    anchor: rendertobitmap-dither
+  - issue: 422
+    severity: 3
+    topic: "Graphics"
+    library: "polylib"
+    command: "RenderPoly, RenderToChunky"
+    text: "`RenderPoly` after `RenderToChunky` with a colour above 14 stops with runtime error checking (\"Illegal Colour\"); the original read the colour from memory behind its table."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 424
+    severity: 4
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Replace$"
+    text: "Text added after `Replace$` with an empty search string comes out right; the original put a byte of its arguments in its place."
+    page: libraries
+    anchor: text-after-string-function
+  - issue: 437
+    severity: 4
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "GetModuleName$"
+    text: "Without runtime error checking, `GetModuleName$` of an empty slot returns the empty string; the original returned ten undefined characters per slot number."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 449
+    severity: 4
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "ChangeTrackerVBlank, StartTracker"
+    text: "Removing the tracker library's CIA interrupt leaves the audio filter and power LED as they are; the original toggled them."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 451
+    severity: 4
+    topic: "Sound"
+    library: "ciatrklib"
+    command: "StartTracker"
+    text: "Without runtime error checking, `StartTracker` of an empty slot returns 0 (False); the original returned the slot number."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 461
+    severity: 4
+    topic: "Strings"
+    library: "neilsreqtoolslib"
+    command: "RTEZLoadFile, RTFileRequest"
+    text: "Text appended to `RTEZLoadFile` or `RTFileRequest` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 465
+    severity: 4
+    topic: "Strings"
+    library: "neilsreqtoolslib"
+    command: "RTEZSaveFile"
+    text: "Text appended to `RTEZSaveFile` follows the chosen path; the original wrote it over the end of the path or behind its arguments."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 468
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "popupwinlib"
+    command: "PopUpWindow"
+    text: "`PopUpWindow` leaves the audio filter and power LED as they are; the original toggled them for every menu with sub menus."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 513
+    severity: 4
+    topic: "Graphics"
+    library: "rianimlib"
+    command: "RIAnimInit, RIAnimDepth, RIAnimWidth, RIAnimHeight"
+    text: "`RIAnimInit` and the `RIAnim` size functions return normally on data that is not a `FORM ANIM`; the original crashed on some, such as a `LIST`."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 516
+    severity: 4
+    topic: "System"
+    library: "riapplib"
+    command: "AddAppIcon"
+    text: "Local variables and string expressions work after `AddAppIcon`; the original set the base of the local variables to 0, so procedures crashed."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 519
+    severity: 4
+    topic: "Strings"
+    library: "riapplib"
+    command: "NextAppFile, AppFile"
+    text: "Text appended to `NextAppFile` or `AppFile` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 618
+    severity: 4
+    topic: "Strings"
+    library: "ridoslib"
+    command: "GetPathName, NextDevice"
+    text: "Text appended to `GetPathName` or `NextDevice` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 670
+    severity: 4
+    topic: "Graphics"
+    library: "rifxlib"
+    command: "ClearBitmap, FadeInBitmap, ZoomyZoom"
+    text: "`ClearBitmap`, `FadeInBitmap` and `ZoomyZoom` read the bitmap's depth alone; the original read it with the flags and crashed on bitmaps with flags set."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 743
+    severity: 4
+    topic: "Strings"
+    library: "rimisclib"
+    command: "ProgPath$, ProgDir$, ProgName$, DefaultFontName"
+    text: "Text appended to `ProgPath$`, `ProgDir$`, `ProgName$` or `DefaultFontName` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 752
+    severity: 4
+    topic: "Input"
+    library: "rimisclib"
+    command: "InitArgParse"
+    text: "`InitArgParse` copies at most 255 characters and cuts off the rest; the original overwrote the library's code with a longer line."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 755
+    severity: 4
+    topic: "Input"
+    library: "rimisclib"
+    command: "NextArg$"
+    text: "`NextArg$` ends a quoted word at its closing quote after a doubled quote `\"\"`; the original ran on to the next quote, merging arguments."
+    page: libraries
+    anchor: nextarg-doubled-quote
+  - issue: 783
+    severity: 4
+    topic: "Strings"
+    library: "riregistrylib"
+    command: "GetLibraryValue$, GetRegistryStringVariable, ParseItemName$, ParseItemValue$"
+    text: "Text appended to the string functions of the registry library follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 784
+    severity: 4
+    topic: "Strings"
+    library: "rireqlib"
+    command: "ReqFileRequest"
+    text: "Text appended to `ReqFileRequest` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 795
+    severity: 4
+    topic: "Strings"
+    library: "riseriallib"
+    command: "SerialReadString"
+    text: "Text appended to `SerialReadString` follows the result; the original left a 0 byte between and lost the last character."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 807
+    severity: 4
+    topic: "Graphics"
+    library: "rishapeslib"
+    command: "LELoadShapes, LECludgeShapes"
+    text: "`LELoadShapes` and `LECludgeShapes` replace a shape linked by an earlier `LECludgeShapes` like any other; the original read wrongly, left the file open and crashed."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 883
+    severity: 4
+    topic: "Graphics"
+    library: "richunkylib"
+    command: "ChunkyToPlanar"
+    text: "`ChunkyToPlanar` checks the bitmap's depth alone; the original read it with the flags, wrote 8 planes into smaller bitmaps or refused depth 8."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 886
+    severity: 4
+    topic: "Graphics"
+    library: "richunkylib"
+    command: "ChunkyBitmap"
+    text: "Freeing a chunky bitmap leaves the audio filter and power LED as they are; the original toggled them."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 925
+    severity: 4
+    topic: "Sound"
+    library: "risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` of the second sound library clears the `DecodeSound` mark, so its copy of the sample is freed; the original never freed it."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 937
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Dim List"
+    text: "A List array indexed by an element of another array reads the right element; the original used a wrong element size."
+    page: compiler
+    anchor: list-array-index
+  - issue: 939
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Objects 32 KB or more into their table are addressed correctly with a raised object maximum; the original addressed memory before the table."
+    page: compiler
+    anchor: object-numbers-above-32k
+  - issue: 940
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "End Statement, End Function, Statement Return, Function Return"
+    text: "Ending or leaving a procedure with the statement of the other kind is \"Illegal End Procedure\"; the original compiled it and the program crashed."
+    page: compiler
+    anchor: end-of-procedure
+  - issue: 942
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A one-line macro with a colon right after its name, `Macro a:1:End Macro`, expands to `1`; the original kept the colon in the text."
+    page: compiler
+    anchor: macros
+  - issue: 943
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Very large executables with very many relocations load on AmigaOS 2.0 and later; the original wrote one relocation block that did not load."
+    page: compiler
+    anchor: the-executable
+  - issue: 945
+    severity: 4
+    topic: "Sound"
+    library: "risoundlib, risoundlib2"
+    command: "CludgeSound"
+    text: "`CludgeSound` on a sound `DecodeSound` made from chip memory leaves that memory alone; the original stopped with \"Unable to Free Memory\"."
+    page: libraries
+    anchor: rwe-other-fixes
+  - issue: 949
+    severity: 4
+    topic: "Graphics"
+    library: "displaylib"
+    command: "CustomChunky, DisplaySprite"
+    text: "`CustomChunky` with a split position keeps the sprite resolution of the copper list; with the original, `DisplaySprite` then put high resolution sprites too far left."
+    page: libraries
+    anchor: blitz-mode-displays
+  - issue: 951
+    severity: 1
+    topic: "Graphics"
+    library: "displaylib"
+    command: "CustomColors"
+    text: "`CustomColors` with a `thru256flag` of 0 acts as if the flag were left out; the original treated 0 as 1."
+    page: libraries
+    anchor: customcolors-thru256flag
+  - issue: 952
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gadgetslib"
+    command: "SelectMode"
+    text: "`SelectMode 1` gives new gadgets a box as their highlight; in the original `SelectMode` had no effect."
+    page: libraries
+    anchor: gadgets
+  - issue: 953
+    severity: 4
+    topic: "System"
+    library: "shapeslib"
+    command: "LoadShapes, SaveShapes, LoadShape"
+    text: "Without runtime error checking, the shape file errors such as \"Can't open Shapes File\" carry their text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 954
+    severity: 4
+    topic: "System"
+    library: "spriteslib"
+    command: "LoadSprites, SaveSprites"
+    text: "Without runtime error checking, the sprite file errors such as \"Can't open Sprites file\" carry their text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 955
+    severity: 4
+    topic: "System"
+    library: "fontlib"
+    command: "LoadBlitzFont, BitMapOutput"
+    text: "Without runtime error checking, the font errors such as \"Can't Open Font\" carry their text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 956
+    severity: 4
+    topic: "System"
+    library: "memlib"
+    command: ""
+    text: "Without runtime error checking, \"Out of Memory!\" and \"Unable to Free Memory\" carry their text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 957
+    severity: 4
+    topic: "System"
+    library: "trackerlib"
+    command: "LoadModule"
+    text: "Without runtime error checking, `LoadModule` reports \"Error Accessing Module File\" with its text; the original's message pointed behind the library."
+    page: libraries
+    anchor: runtime-errors-without-the-debugger
+  - issue: 958
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "AmigaOS function calls with an argument in register a4 or a5 keep the program's variables; the original crashed or destroyed them."
+    page: compiler
+    anchor: the-executable
+  - issue: 959
+    severity: 4
+    topic: "System"
+    library: "execlib"
+    command: "CachePreDMA_, CachePostDMA_"
+    text: "`CachePreDMA_` and `CachePostDMA_` pass their flags to the system; the original passed them in the wrong register, so the system got a random value."
+    page: libraries
+    anchor: amigaos-other-fixes
+  - issue: 960
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Supervisor_"
+    text: "`Supervisor_` compiles; the original gave \"Syntax Error\" because it looked the name up in the dos library."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 961
+    severity: 3
+    topic: "Windows & screens"
+    library: "windowslib"
+    command: "WindowTags"
+    text: "With runtime error checking, `WindowTags` with more than 15 tag pairs stops with \"Too Many Tags\"; the original wrote over data and code of the library."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 962
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTFreeGadget"
+    text: "After `GTFreeGadget` of the last gadget of a list, the next gadget joins the list; in the original it was linked to the freed one and neither shown nor freed."
+    page: libraries
+    anchor: gadtools
+  - issue: 964
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A macro text of 65536 bytes or more is \"Macro too Big\"; the original cut it and lost part of its memory until a reboot."
+    page: compiler
+    anchor: macros
+  - issue: 965
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "An error inside a macro definition is shown; the original could crash the compiler freeing a macro text it never set."
+    page: compiler
+    anchor: macros
+  - issue: 966
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A `~` inside a string literal is an ordinary character; the original evaluated `~...~` there as a constant expression, so `\"a~1+2~b\"` became `a3b`."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 968
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro, End"
+    text: "A macro line ending in `End` keeps the rest of the macro and of the calling line, as in AmiBlitz3; the original cut both off."
+    page: compiler
+    anchor: macros
+  - issue: 969
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Even, Ds"
+    text: "Pad bytes from `Even`, alignment and `Ds` are zero; the original filled them with random bytes."
+    page: compiler
+    anchor: the-executable
+  - issue: 970
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "CREATE RESIDENT writes the same file each time, with unused bytes zero; the original wrote bytes it never set."
+    page: compiler
+    anchor: residents
+  - issue: 971
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "AddBox"
+    text: "A string addition nested seven levels deep, or in a late register argument such as the text of `AddBox`, gets the right length; the original's was wrong."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 972
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A constant defined without a value, a line `#c` alone, is 0; the original gave it a random value."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 973
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "NEWTYPE"
+    text: "A NewType field of the type being defined is \"Illegal Type\", a pointer to it stays allowed; the original gave the field a random size."
+    page: compiler
+    anchor: newtypes
+  - issue: 974
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "NEWTYPE, SizeOf"
+    text: "A NewType field of a type defined later gets that type's size, and using it too early is \"Type not yet defined\"; the original gave a wrong size."
+    page: compiler
+    anchor: newtype-defined-later
+  - issue: 977
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Goto, Gosub"
+    text: "A jump to a label named like a constant of value 0 is \"Label has been used as a Constant\"; the original gave a nonsense error or touched random memory."
+    page: compiler
+    anchor: names-labels-and-constants
+  - issue: 978
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A Byte variable compared with a constant from 128 to 255 matches when it holds that byte; the original comparison never matched."
+    page: compiler
+    anchor: byte-compare
+  - issue: 979
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "IncBin"
+    text: "A program ending with data of odd length ends normally; the original put its end code on an odd address and crashed."
+    page: compiler
+    anchor: odd-end
+  - issue: 980
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "TED draws the compile progress bar itself, also on wide RTG screens; the original compiler wrote about 28 KB before TED's screen memory there."
+    page: compiler
+    anchor: the-progress-bar-while-compiling
+  - issue: 981
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "menuslib"
+    command: "MenuTitle, MenuItem, SubItem"
+    text: "A menu, item or subitem with an empty text has an empty text and an empty item is as wide as its gaps; the original read the text from address 0."
+    page: libraries
+    anchor: menus
+  - issue: 986
+    severity: 4
+    topic: "Graphics"
+    library: "2dlib"
+    command: "FloodFill"
+    text: "`FloodFill` with a border colour fills bitmaps wider or taller than 1024 pixels correctly; the original filled them wrongly."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 987
+    severity: 4
+    topic: "Graphics"
+    library: "polylib"
+    command: "ChunkyVlin"
+    text: "`ChunkyVlin` with `CLIP` clips away a line at an x beyond the chunky width; the original drew it into other rows or behind the area."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 988
+    severity: 3
+    topic: "Graphics"
+    library: "spriteslib"
+    command: "GetaSprite, ShowSprite, SpriteMode"
+    text: "With runtime error checking, `GetaSprite` allows 4 colour shapes 8 sprites wide and 16 colour shapes 4, else \"Sprite too Wide\"; the original had the limits swapped."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 989
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "AddBox, SetBoxTitle, SetBox"
+    text: "A list box given a text with `AddBox` or `SetBoxTitle` gets one entry per part of the text; in the original it stayed empty and `SetBox` always failed."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 990
+    severity: 4
+    topic: "Gadgets & menus"
+    library: "gtlib"
+    command: "GTShape"
+    text: "The `GTShape` flags 64 (disabled) and 128 (immediate) work; in the original they had no effect."
+    page: libraries
+    anchor: gadtools
+  - issue: 993
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "A library file whose relocation data cannot be read is left out; the original used it and patched random places."
+    page: running-blitz2
+    anchor: loading-the-libraries
+  - issue: 994
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Select"
+    text: "A compile error in some assignments or in `Select` loses no memory; the original lost its code save buffer."
+    page: compiler
+    anchor: the-compilers-memory
+  - issue: 995
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A resident with a macro text of 32767 bytes or more loads correctly; the original read the definitions behind it from the wrong place."
+    page: compiler
+    anchor: residents
+  - issue: 997
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "An inline assembler operand too long for its buffer is \"Operand too Long\"; the original cut it into wrong code or overwrote the compiler's data."
+    page: compiler
+    anchor: inline-assembler
+  - issue: 998
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Used"
+    text: "`Used` gives the right object number with a raised object maximum; the original gave a wrong number from 64 KB into the object table."
+    page: compiler
+    anchor: object-numbers-above-32k
+  - issue: 999
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "LoadShapes, DecodeShapes, LoadSprites"
+    text: "`LoadShapes`, `DecodeShapes` and `LoadSprites` load the whole range with a raised object maximum; the original loaded only the first objects."
+    page: compiler
+    anchor: object-numbers-above-32k
+  - issue: 1000
+    severity: 4
+    topic: "Graphics"
+    library: "2dlib"
+    command: "Polyf"
+    text: "`Polyf` draws polygons whose corners lie far outside the bitmap; the original drew them wrongly or not at all."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 1001
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "Date$, NumDays"
+    text: "`Date$` and `NumDays` follow the Gregorian calendar; the original made 1900, 2100 and every hundredth year a leap year, a day off per century."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 1002
+    severity: 4
+    topic: "Graphics"
+    library: "palettelib"
+    command: "DecodePalette, LoadPalette"
+    text: "A colour range of a picture cycles only when it is enabled, and backwards only when marked so; the original cycled disabled ranges and reversed unmarked ones."
+    page: libraries
+    anchor: palettes
+  - issue: 1003
+    severity: 4
+    topic: "Numbers & dates"
+    library: "vallib"
+    command: "QAngle"
+    text: "`QAngle` gives the right angle for points 32768 or more apart; the original gave a wrong one."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 1004
+    severity: 4
+    topic: "Graphics"
+    library: "shapetrixlib"
+    command: "Rotate"
+    text: "`Rotate` rounds to the nearest pixel, so a quarter turn of a 21×9 shape gives 9×21; the original made it a pixel too large and lost edge pixels."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 1005
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "JOIN"
+    text: "`JOIN` of two lines longer than 128 characters together keeps all the text; the original silently dropped the text behind column 128."
+    page: editor
+    anchor: join-long-lines
+  - issue: 1006
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "DELETE LINE"
+    text: "`DELETE LINE` on the only line, without memory for its replacement, shows the alert and keeps the line; the original left the editor on the freed line."
+    page: editor
+    anchor: low-memory
+  - issue: 1007
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "When the editor's screen cannot be reopened, the editor shows the out-of-memory alert and ends with an error; the original drew into freed memory and hung."
+    page: editor
+    anchor: low-memory
+  - issue: 1009
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "LOAD"
+    text: "When the first line of an opened file does not fit into memory, the editor shows the alert and leaves an empty text; the original went on with the freed old text."
+    page: editor
+    anchor: low-memory
+  - issue: 1010
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK LOAD"
+    text: "`BLOCK LOAD` at a cursor column refuses with a beep when the file's first line does not fit; the original joined them into an over-long line that the first edit cut."
+    page: editor
+    anchor: blocks
+  - issue: 1011
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: ""
+    text: "The line display ends at column 128; the original wrote a wider line into the next screen row and behind the character map."
+    page: editor
+    anchor: long-lines-and-keywords
+  - issue: 1012
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "BLOCK LOAD"
+    text: "`BLOCK LOAD` puts the text behind the cursor on a line of its own when it does not fit; the original cut it at column 128."
+    page: editor
+    anchor: blocks
+  - issue: 1017
+    severity: 4
+    topic: "Editor"
+    library: "TED"
+    command: "PRINT"
+    text: "`PRINT` sends umlauts to the printer as printable characters; the original sent their internal codes 26-31, so that ö was ESC."
+    page: editor
+    anchor: print-umlauts
+  - issue: 1018
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: ""
+    text: "Accented Latin-1 letters such as ß or é compile in strings and comments, elsewhere they are \"Syntax Error\"; the original editor lost them."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 1026
+    severity: 4
+    topic: "Files"
+    library: "fileiolib"
+    command: "Exists"
+    text: "`Exists` gives -1 for every kind of directory, also a volume's root, and 0 for a file it cannot examine; the original gave a size there."
+    page: libraries
+    anchor: files-and-banks
+  - issue: 1027
+    severity: 4
+    topic: "Strings"
+    library: "rimisclib"
+    command: "EZRequest, EZRequestArgs"
+    text: "`EZRequest` and `EZRequestArgs` in a string expression let the rest of the expression follow the result; the original wrote it over address 0 or its argument list."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 1028
+    severity: 4
+    topic: "Strings"
+    library: "riwbspritelib"
+    command: "ChangeWBSprite"
+    text: "`ChangeWBSprite` in a string expression leaves the rest of the expression where it was; the original wrote it over a tag list inside the library."
+    page: libraries
+    anchor: rwe-text-after-string-function
+  - issue: 1029
+    severity: 4
+    topic: "Numbers & dates"
+    library: "datelib"
+    command: "NumDays"
+    text: "`NumDays` of a string too short for its day or month returns 0; the original read on into the bytes behind the string."
+    page: libraries
+    anchor: dates-and-numbers
+  - issue: 1030
+    severity: 4
+    topic: "Strings"
+    library: "stringfunclib"
+    command: "Instr"
+    text: "`Instr` with a start position near $7FFFFFFF returns 0; the original searched memory far from the string or hung."
+    page: libraries
+    anchor: other-strings
+  - issue: 1031
+    severity: 3
+    topic: "Input"
+    library: "editlib"
+    command: "Inkey$"
+    text: "`Inkey$` with a negative count stops with checking (\"Can't Inkey$ a negative number\"); the original tried about 4 billion reads and overwrote memory behind the string buffer."
+    page: libraries
+    anchor: input
+  - issue: 1032
+    severity: 4
+    topic: "Input"
+    library: "inputoutputlib"
+    command: "PopInput, PopOutput"
+    text: "With runtime error checking, the first `PopInput` or `PopOutput` with nothing to undo is reported; the original let it pass and reported only the next one."
+    page: libraries
+    anchor: input
+  - issue: 1033
+    severity: 4
+    topic: "Graphics"
+    library: "2dlib, polylib"
+    command: "Polyf, BitMapPoly, ChunkyPoly, RenderPoly"
+    text: "Some degenerate polygons with a vertical first edge outside the bitmap are not drawn; the original stopped with a \"Division by Zero\" guru."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 1035
+    severity: 4
+    topic: "Graphics"
+    library: "polylib"
+    command: "BitMapPoly, RenderPoly"
+    text: "The dither form of `BitMapPoly` and `RenderPoly` takes every plane from the dither bitmap; the original read later planes from memory behind it."
+    page: libraries
+    anchor: drawing-and-polygons
+  - issue: 1037
+    severity: 3
+    topic: "Data structures"
+    library: "arrayslib"
+    command: "Dim, Dim List"
+    text: "With runtime error checking, `Dim a(65535)` and `Dim List a(65535)` stop with \"Array Dimension out of Range\"; the original made an empty array whose accesses lay outside its memory."
+    page: libraries
+    anchor: arrays-and-sorting
+  - issue: 1039
+    severity: 3
+    topic: "Windows & screens"
+    library: "screenslib"
+    command: "ScreenTags"
+    text: "With runtime error checking, `ScreenTags` with more than 15 tag pairs stops with \"Too Many Tags\"; the original wrote over code of the libraries."
+    page: libraries
+    anchor: windows-and-screens
+  - issue: 1040
+    severity: 4
+    topic: "Graphics"
+    library: "bitmaplib"
+    command: "BitMap"
+    text: "`BitMap` with a depth of 0 or more than 8 reports \"Illegal BitMap Depth\"; the original showed \"No currently used object!\" or an empty text."
+    page: libraries
+    anchor: bitmaps
+  - issue: 1041
+    severity: 3
+    topic: "System"
+    library: "utillib"
+    command: "DeleteMsgPort"
+    text: "`DeleteMsgPort` of a port not made by `CreateMsgPort` stops with runtime error checking (\"Port Not Created By CreateMsgPort\"); the original freed it and corrupted memory."
+    page: libraries
+    anchor: tasks-and-message-ports
+  - issue: 1042
+    severity: 4
+    topic: "Files"
+    library: "freqlib"
+    command: "FileRequest$"
+    text: "The file requester refuses a name of 64 or more characters or a path of 160 or more with \"Name too long\"; the original copied it and overwrote memory."
+    page: libraries
+    anchor: filerequest-long-names
+  - issue: 1043
+    severity: 3
+    topic: "Gadgets & menus"
+    library: "blitzoslib"
+    command: "InitPage"
+    text: "With runtime error checking, `InitPage` with 32768 boxes or more stops with \"Illegal Number of Boxes\"; the original took the number as negative and ran out of memory."
+    page: libraries
+    anchor: blitz-mode-boxes
+  - issue: 1044
+    severity: 2
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Mod"
+    text: "A division or `Mod` by a constant 0 is the compile error \"Division by Zero\"; the original crashed the compiler or compiled the largest Long number."
+    page: compiler
+    anchor: expressions-and-statements
+  - issue: 1046
+    severity: 1
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` refuses a picture taller than 1023 rows or wider than 992 pixels (\"Can't Read/Write Shapes File\"), also without runtime error checking; the original loaded it with a wrapped blit size."
+    page: libraries
+    anchor: loadshape-blit-size
+  - issue: 1047
+    severity: 3
+    topic: "Graphics"
+    library: "shapeslib, shapetrixlib"
+    command: "InitShape, GetaShape, Rotate, Scale"
+    text: "With runtime error checking, a shape too large for its size fields stops with \"Shape too Big\", and `InitShape` of size 0 with \"Illegal Shape Size\"; the original overwrote memory."
+    page: libraries
+    anchor: shapes-and-sprites
+  - issue: 1048
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "TokeJsr, ALibJsr"
+    text: "Without runtime error checking, `TokeJsr` and `ALibJsr` call a routine with an error check directly; the original went through an extra 8-byte stub."
+    page: compiler
+    anchor: the-executable
+  - issue: 1049
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Mod"
+    text: "A constant operation such as `7 Mod 3` as the first use of a library keeps that library's relocations; the original dropped them, and a later `Mod` could crash."
+    page: compiler
+    anchor: the-executable
+  - issue: 1052
+    severity: 4
+    topic: "Graphics"
+    library: "shapeslib"
+    command: "LoadShape"
+    text: "`LoadShape` of a picture with 0 bitplanes stops with \"Illegal Shape Depth\", also without runtime error checking; the original wrote the picture behind an empty shape."
+    page: libraries
+    anchor: shapes-and-sprites

@@ -12,6 +12,8 @@ starts and runs at all, not the programs that are compiled from it. The
 first sections show the ones an ordinary user can run into, each with a
 short example; the other fixes follow as a list, one sentence each with
 a link to its issue.
+The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
+lists all fixed bugs by what they can change in a program.
 
 The menu items are named as the editor's menus show them: BLOCK UNTAB,
 BLOCK TAB, COPY, KILL, BLOCK TO DISK, JOIN and DELETE LINE are in the
@@ -444,7 +446,7 @@ Issue: [The editor screen was one row taller than the Workbench when (height −
   line and the start mark of the block set; the block ends completely
   ([#353](https://github.com/fubar-coder/bb2-c/issues/353)).
 
-### Joining lines
+### Joining lines {#other-joining-lines}
 
 * Every JOIN lost 8 to 16 bytes of memory until the next reboot; the
   memory of the joined line is freed completely

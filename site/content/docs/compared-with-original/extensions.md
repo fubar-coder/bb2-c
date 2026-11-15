@@ -1,6 +1,6 @@
 ---
 title: Extensions
-weight: 3
+weight: 4
 description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, and the rule that keeps old sources unchanged.
 ---
 
