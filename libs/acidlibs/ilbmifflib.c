@@ -24,8 +24,7 @@
  * BUG(orig), kept:
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
  *    plane and stores only what fits into BytesPerRow/Depth/Rows.
- *  - DecodeILBM (memory): chunk lengths are not padded to even (#189); the
- *    end test is `end <= pointer` after skipping a chunk; it writes ALL
+ *  - DecodeILBM (memory): the end test is `end <= pointer` after skipping a chunk; it writes ALL
  *    planes of the ILBM through the BitMap's plane pointers (more planes
  *    than the bitmap has: pointers behind Planes[], #190), ILBM row length
  *    per row, the
@@ -39,6 +38,13 @@
  * Fixed (intended deviation, #186): ILBMInfo calls iffclose also when the
  * file could not be opened; iffclose (iffiolib) now closes only an open
  * file, the original passed the handle 0 to dos Close.
+ *
+ * Fixed (intended deviation, #189): DecodeILBM skips the IFF pad byte of
+ * a chunk of odd length when it walks the chunks; the original added the
+ * length as it is, so after a chunk of odd length BMHD/BODY were not
+ * found or read at the wrong place.  A byte other than 0 in the place of
+ * the pad byte is taken as the start of the next chunk: the files the
+ * original SaveBitmap wrote with an odd CMAP (#184) stay readable.
  *
  * Fixed (intended deviation, #187): ilbmbitmap stops when ilbminit
  * fails: "Can't Open File" (the original's unused mess1) for a file that
@@ -394,6 +400,17 @@ BLITZ_THUNK(doilbmviewmode, ilbmviewmode_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ DecodeILBM */
 
+/* the length of a chunk with its pad byte (fixed, #189).  A writer that
+   left the pad byte out - the original SaveBitmap/SaveShape/SaveScreen
+   with an odd number of colours (#184) - is recognised by a byte that is
+   not 0 where the pad byte should be: then the next chunk starts there */
+static ULONG padded(const UBYTE *data, ULONG len)
+{
+    if ((len & 1) && data[len] == 0)
+        len++;
+    return len;
+}
+
 /**
  * @brief DecodeILBM Bitmap#,MemoryLocation: decode an ILBM file in memory
  * into a bitmap.
@@ -403,7 +420,9 @@ BLITZ_THUNK(doilbmviewmode, ilbmviewmode_c, "d1/a0-a1");
  * {#bitmaplib,$1380}).
  * Errors: "Can't Find IFF 'BMHD'" (no FORM/ILBM/BMHD), "Can't Find IFF
  * 'BODY'" (the messages in the normal code, fixed: #192).
- * BUG(orig): chunk lengths are not padded to even (#189); all planes of
+ * Fixed (#189): the pad byte of an odd chunk is skipped (unless it is
+ * not 0: a writer without pad bytes, the original SaveBitmap).
+ * BUG(orig): all planes of
  * the ILBM are written through the BitMap's plane pointers (#190); the
  * ILBM's row length per row, the BitMap's BytesPerRow as the row step,
  * runs are not clipped at the row end (#191).
@@ -435,7 +454,7 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
         src += 8;
         if (id == ID_BMHD)
             break;
-        src += len;
+        src += padded(src, len);                        /* fixed (#189) */
         if ((LONG)end <= (LONG)src)                     /* CMP.l a0,a1:BLE */
             BLITZ_RUNERR(mess4);
     }
@@ -445,14 +464,14 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
     rowsize = (UWORD)(rowsize + rowsize);               /* bytes per row */
     depth = ((const struct BitMapHeader *)src)->bmh_Depth;  /* planes */
     comp = ((const struct BitMapHeader *)src)->bmh_Compression;
-    src += len;
+    src += padded(src, len);                            /* fixed (#189) */
     for (;;) {                                          /* cb */
         id = *(const ULONG *)src;
         len = *(const ULONG *)(src + 4);
         src += 8;
         if (id == ID_BODY)
             break;
-        src += len;
+        src += padded(src, len);                        /* fixed (#189) */
         if ((LONG)end <= (LONG)src)
             BLITZ_RUNERR(mess3);
     }

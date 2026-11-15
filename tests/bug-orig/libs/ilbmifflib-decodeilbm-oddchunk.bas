@@ -6,6 +6,7 @@
 ; the FORM: runtime error "Can't find BODY" (caught with SetErr).
 ; Correct: the pad byte is skipped, the BODY is found - the row of the
 ; picture ($A55A) is in the plane of the BitMap.
+; @fixed #189
 ; @configs clib
 ; @pass file=pic.ilbm|@TESTDATA@/ilbmifflib-decodeilbm-oddchunk.ilbm
 DEFTYPE .l
