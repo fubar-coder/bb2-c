@@ -174,7 +174,8 @@ library returns `Quotient<<16|Rest` for Quick, a long for Float, but the
 compiler reads the result as word or long, blitz2.s:9459/9463 – which is
 the intended integer semantics of MOD. Fixed since (intended deviations): division by 0 gives
 the largest number with the dividend's sign, `$7FFFFFFF` or `-$7FFFFFFF`
-(#200);
+(#200), with runtime error checking it is "GURU! - Division by Zero" as
+for a Word division (#200);
 `newlist` wrote, for size 0 (e.g. dimension −1), 8 bytes behind the block
 (#59); Quick 0 became the Float `$00000080` and Quick −32768 the Float
 +32768 (#146, #147); `arrmult` added its second partial product via SWAP

@@ -126,3 +126,9 @@ lib 154: entry 19 (nullsub) +$0: $00 != $00
 lib 154: entry 20 (nullsub) +$0: $00 != $00
 lib 154: end of the table +$49C: $FF != $00
 lib 154: declaration part $4B8 != $4C8 bytes
+# #200: quickdiv and longdiv get an error check (divchk, "Division by
+# Zero"); ldivlib gets an error check area for it (the original has none)
+lib 64735: header +$2C: code offset set in only one of them
+lib 64735: entry 0 ($CB00) (nullsub) +$8: code offset set in only one of them
+lib 64735: entry 1 ($CB01) (nullsub) +$8: code offset set in only one of them
+lib 64735: relocations in the declaration part 2 != 5

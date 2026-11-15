@@ -1,0 +1,7 @@
+667 1801 -699678 -2
+99993 100007 -700000 -14285 5 2
+byte wrap -106
+word wrap -32768
+long wrap -2147483648
+REQUESTER: AutoRequest body "GURU! - Division by Zero" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

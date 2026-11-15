@@ -7,16 +7,23 @@
  * kept bit for bit, including the results for overflow; it is a restoring
  * shift/subtract division and NOT the same as C's `/` in all cases.  The
  * result of a division by 0 has the dividend's sign (fixed, #200).
+ *
+ * Errors (debugger, divchk): "Division by Zero" for a divisor 0 (#200;
+ * the original has no error check area).  The compiler never runs the
+ * check at compile time: it refuses a constant divisor 0 itself (#1044).
  */
 #include "blitzlib.h"
 
 LONG BLITZ_ROUTINE qdivide(LONG a BL_REG(d0), LONG b BL_REG(d1));
 LONG BLITZ_ROUTINE ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1));
+void divchk(void);
 
-/* !syslibheader{#ldivlib,$cb00,$cb02,0,0,0,0,$4000} */
-BLITZ_SYSLIBHEADER(LIB_ldivlib, 0xcb00, 0xcb02, 0, 0, 0, 0, 0x4000);
-BLITZ_NULLSUB(qdivide, 0, 0);           /* $CB00 quickdiv */
-BLITZ_NULLSUB(ldivide, 0, 0);           /* $CB01 longdiv */
+/* !syslibheader{#ldivlib,$cb00,$cb02,0,0,0,errors,$4000}: the original
+   has no error check area (0); divchk (#200) is its first check */
+BLITZ_SYSLIBHEADER(LIB_ldivlib, 0xcb00, 0xcb02, 0, 0, 0, BLITZ_ERROR_AREA,
+                   0x4000);
+BLITZ_NULLSUB(qdivide, divchk, 0);      /* $CB00 quickdiv */
+BLITZ_NULLSUB(ldivide, divchk, 0);      /* $CB01 longdiv */
 BLITZ_LIBFIN();
 
 /* divide - common part, called by quickdiv and longdiv with a divisor
@@ -63,7 +70,8 @@ static LONG __attribute__((used)) divide(ULONG dividend, ULONG divisor,
  * dividend, d1 the divisor; result: d0 the quotient.
  *
  * A divisor 0 gives the largest number with the dividend's sign, no
- * error: $7FFFFFFF for a dividend >= 0, -$7FFFFFFF ($80000001) for a
+ * error without the debugger (with it, divchk reports "Division by Zero"
+ * first): $7FFFFFFF for a dividend >= 0, -$7FFFFFFF ($80000001) for a
  * negative one ('infinity).  Fixed (#200): the original returned
  * $7FFFFFFF ("LARGEST POSITIVE NUMBER") for any sign, it tested the
  * divisor before the signs.
@@ -103,3 +111,23 @@ __asm__("   .text\n"
         "   rts\n"
         "1: move.l  #0x80000001,d0\n"
         "   rts\n");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+/*
+ * divchk - not in the original (a divisor 0 gave $7FFFFFFF without a
+ * message, #200): the check of quickdiv and longdiv, d1 the divisor.  A
+ * divisor 0 executes DIVU.W with it, the CPU's own division trap: the
+ * debugger reports it as for a Word division, "GURU! - Division by Zero".
+ * In assembler for that trap (a C division by 0 is undefined); d0/d1 stay
+ * as they are (the trap leaves them unchanged).
+ */
+__asm__("   .section .blitzlib.errchk,\"ax\"\n"
+        "   .even\n"
+        "   .globl  _divchk\n"
+        "_divchk:\n"
+        "   tst.l   d1\n"
+        "   bne.s   1f\n"
+        "   divu.w  d1,d0\n"
+        "1: rts\n"
+        "   .text\n");
