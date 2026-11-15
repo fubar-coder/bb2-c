@@ -68,9 +68,11 @@
  *   - Fixed (intended deviation, #227): PaletteRange with start = end
  *     divided by zero (DIVS); here the range of one colour gets the start
  *     colour.
- *   - StopCycle does not reset `cycon`: a later Cycle does not install
- *     the interrupt again (#228).  The cycle list is freed at the end but
- *     not cleared (not a bug: only at program end).
+ *   - Fixed (intended deviation, #228): StopCycle did not reset `cycon`,
+ *     so a later Cycle did not install the interrupt again.  Here StopCycle
+ *     clears it and frees the cycle list (else a palette cycled twice per
+ *     frame after the next Cycle).  At the end the list is freed but not
+ *     cleared (not a bug: only at program end).
  *   - Fixed (intended deviation, #229): InitPalette (and PalRGB/AGAPalRGB
  *     growing an empty palette) wrote no end mark into the cycle table: in
  *     a palette object never used the 14 entries are 0 without an end, and
@@ -1218,16 +1220,24 @@ BLITZ_THUNK(docycle, docycle_c, "a0");
 /**
  * @brief StopCycle - stop the colour cycling.
  *
- * ClrInt only (cycon stays).
- *
- * BUG(orig) (#228): StopCycle does not reset `cycon`: a later Cycle does
- * not install the interrupt again.
+ * ClrInt of the cycling interrupt; Fixed (#228): cycon is cleared and the
+ * cycle list freed, so a later Cycle installs the interrupt again with a
+ * new list (the original left cycon set: a later Cycle did nothing).
  */
 static void BLITZ_ROUTINE dostopcycle_c(void)
 {
     struct bl_regs r = { .d0 = 0x8005 };
+    struct cnode *n = cyclelist;
 
     BLITZ_ALIBJSR(TOK_clrint, r);
+    cycon = 0;                                  /* fixed (#228) */
+    cyclelist = NULL;
+    while (n) {
+        struct cnode *next = n->next;
+
+        globfree(n, 12);
+        n = next;
+    }
 }
 BLITZ_THUNK(dostopcycle, dostopcycle_c, "a0");
 

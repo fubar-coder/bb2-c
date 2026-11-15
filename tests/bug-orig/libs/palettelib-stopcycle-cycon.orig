@@ -1,0 +1,25 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+# varies: the original hangs at the program end in some memory layouts (timeout); not the tested behaviour
+*
+[compile]
+ok
+[run]
+first Cycle: changed 1
+StopCycle: changed 0
+second Cycle: changed 0
+# varies: the original hangs at the program end in some memory layouts (session timeout, no rc line); not the tested behaviour
+...
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/palettelib-stopcycle-cycon.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/palettelib-stopcycle-cycon
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
