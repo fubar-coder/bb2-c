@@ -132,3 +132,19 @@ lib 64735: header +$2C: code offset set in only one of them
 lib 64735: entry 0 ($CB00) (nullsub) +$8: code offset set in only one of them
 lib 64735: entry 1 ($CB01) (nullsub) +$8: code offset set in only one of them
 lib 64735: relocations in the declaration part 2 != 5
+# displaylib (#324): CustomSprites is declared with the CopList only
+# (!libs {#displaylib,$1380}); the original has DisplaySprite's
+# {#spriteslib,$1181,...}, which loads a sprite object for CCOffset: its
+# entry is 4 bytes shorter, and the entries behind it move
+lib 143: entry 15 CustomSprites +$D: $70 != $8F
+lib 143: entry 16 CustomChunky +$0: $00 != $00
+lib 143: entry 17 CustomChunkySize +$0: $03 != $00
+lib 143: entry 18 DisplayGenlock +$0: $00 != $00
+lib 143: entry 19 (nullsub) +$0: $00 != $00
+lib 143: entry 20 (nullsub) +$0: $00 != $00
+lib 143: entry 21 (nullsub) +$0: $00 != $00
+lib 143: entry 22 (nullsub) +$0: $00 != $00
+lib 143: entry 23 (nullsub) +$0: $00 != $00
+lib 143: entry 24 (nullsub) +$0: $00 != $00
+lib 143: end of the table +$926: $01 != $00
+lib 143: declaration part $930 != $92C bytes

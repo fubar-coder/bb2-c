@@ -54,6 +54,12 @@
  *   bot = 257 without reading the flag: 0 acted as 1, and a later custom
  *   command below line 256 got no wait for line 255.  Here only a flag
  *   other than 0 sets bot = 257 (programs that passed 0 change).
+ * Fixed (intended deviation, #324): CustomSprites was declared with the
+ *   !libs of DisplaySprite (#spriteslib,$1181): the compiler treated
+ *   CCOffset as a sprite number (maximum check, d1 shifted by 4) and the
+ *   routine's ASL #2 made the offset CCOffset * 64 bytes instead of * 4.
+ *   Here it is declared with the CopList only (programs that passed a
+ *   CCOffset other than 0 change).
  *
  * Kept from the original (BUG(orig)):
  *   - Not a bug (only with out-of-range arguments that do not occur):
@@ -63,10 +69,6 @@
  *   - Not a bug (statements: the compiler reloads a3 for every string
  *     expression): DisplayBitMap / the double form leave a3 on the bp1
  *     table, CreateDisplay on the last coplist - reproduced.
- *   - CustomSprites is declared with the !libs of DisplaySprite
- *     (#spriteslib,$1181): the compiler treats CCOffset as a sprite
- *     number (maximum check, d1 shifted by 4) and the routine's ASL #2
- *     makes the offset CCOffset * 64 bytes instead of * 4. (#324)
  * DIFF: a2 stays unchanged where it is the argument stack (port
  * convention, notes/cmdlibs-port.md); the error branches are JSRs (a
  * return address more on the stack); indexes outside the data tables
@@ -229,9 +231,10 @@ BLITZ_NAME("DisplayScroll", "CopList#,&xpos.q(n),&xpos.q(n)[,Offset]   ;3");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-/* BUG(orig) (#324): copied from DisplaySprite - $1181 loads a sprite object for
-   CCOffset (d1 arrives shifted by 4, checked against the sprite maximum) */
-BLITZ_LIBS(LIB_spriteslib, BL_IA1|BL_PD1, LIB_displaylib, COP);
+/* Fixed (#324): the original has DisplaySprite's !libs {#spriteslib,$1181,...},
+   which loads a sprite object for CCOffset (d1 shifted by 4, checked against
+   the sprite maximum); here only the CopList */
+BLITZ_LIBS(LIB_displaylib, COP);
 BLITZ_SUBS(_customsprites, _checkcoplist, 0);
 BLITZ_NAME("CustomSprites", "CopList#,CCOffset,YPos,NumSprites ;4n+2");
 
@@ -1769,13 +1772,13 @@ BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
  *
  * A wait for the line, then NumSprites x 4 moves of the template spp
  * (channels from numsprites on for DisplaySprite).  Space: 4n+2.
- * BUG(orig) (#324): d1 is CCOffset * 16 (the declaration has
- * DisplaySprite's !libs), the a1 the compiler loaded is not used: the
- * offset is CCOffset * 64 bytes.  Fixed (#413): the moves of an unused
+ * Fixed (#324): d1 is CCOffset, the offset CCOffset * 4 bytes (the
+ * original's declaration had DisplaySprite's !libs: d1 was CCOffset * 16,
+ * the offset CCOffset * 64 bytes).  Fixed (#413): the moves of an unused
  * channel point at the blank sprite.
  * Errors: an overrun ("Not Enough Custom Cops"); fixed: in the normal code (#412).
  *
- * @param ccoffset  d1: CCOffset * 16
+ * @param ccoffset  d1: CCOffset (longs)
  * @param ypos      d2: the line
  * @param count     d3: the number of sprite channels
  */
