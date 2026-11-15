@@ -84,6 +84,11 @@
  *    check (spotboxchk, error check area only) raises "UnInitialised
  *    Page"; release code unchanged (an invalid argument).  SelectBox
  *    0,x,y and x+,y+ have the same loop but check the page always.
+ *  - #1043: InitPage computed the size of the box table as NumBoxes x 32
+ *    of the word sign-extended: from 32768 boxes on the size was
+ *    negative (a huge allocation, "Out of Memory!").  Here an error check
+ *    (initpagechk, error check area only) raises "Illegal Number of
+ *    Boxes"; release code unchanged (an invalid argument).
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -115,7 +120,7 @@ void _setboxcolor(void), _blitzevent(void), _setboxtitle(void);
 void _disablebox(void), _enablebox(void), _mouseenabled(void);
 void _setpagepens(void), _boxpropx(void), _boxpropy(void), _changebox(void);
 void _togglebox(void), _spotbox(void);
-void spotboxchk(void), selectboxchk(void);
+void spotboxchk(void), selectboxchk(void), initpagechk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -133,7 +138,7 @@ BLITZ_DUMTOKE(_toke, "Page", "");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, BL_IA2|BL_PD1, PAGE, LIB_blitzoslib, BL_LD6|BL_USEDOFF);
-BLITZ_SUBS(_initpage, 0, 0);
+BLITZ_SUBS(_initpage, initpagechk, 0);          /* check: fixed #1043 */
 BLITZ_NAME("InitPage", "Page#,BitMap#,NumBoxes");
 
 BLITZ_ASTATEMENT();
@@ -819,7 +824,10 @@ static void freepage_(struct page *p);
  * Frees the page's old boxes, allocates NumBoxes cleared boxes (32 bytes
  * each, MEMF_PUBLIC|MEMF_CLEAR), sets the pens 1,3,2,1 (the help text of
  * SetPagePens says 3,1,2,3) and makes the page the used one.  Errors
- * (always checked): "Unitialised BitMap".
+ * (always checked): "Unitialised BitMap".  Debugger only (initpagechk):
+ * "Illegal Number of Boxes" for NumBoxes of 32768 or more (fixed, #1043:
+ * the original has no check, the table size NumBoxes x 32 of the
+ * sign-extended word became negative).
  *
  * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
  * @param n  d2: NumBoxes
@@ -2369,6 +2377,8 @@ BLITZ_THUNK(_blitzevent, blitzevent_c, "d1/a0-a1");
 
 /* ------------------------------------------- error checks (debugger only) */
 
+BLITZ_ERRCHK_MESSAGE(mess9, "Illegal Number of Boxes");    /* fixed, #1043 */
+
 /**
  * @brief The error check of SpotBox (debugger only).
  *
@@ -2385,7 +2395,6 @@ static void BLITZ_ERRCHK spotboxchk_c(void)
     if (!PG->memsize)
         BLITZ_RUNERR(mess1);
 }
-BLITZ_ERRCHK_THUNK(spotboxchk, spotboxchk_c, "d0-d1/a0-a1");
 
 /**
  * @brief The error check of SelectBox Box# (debugger only).
@@ -2408,4 +2417,28 @@ static void BLITZ_ERRCHK selectboxchk_c(ULONG n BL_REG(d0))
     else if ((WORD)n >= 0 && (UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
 }
+
+/**
+ * @brief The error check of InitPage (debugger only).
+ *
+ * Fixed (#1043), not in the original (InitPage had no check): the size of
+ * the box table is NumBoxes x 32 of the word sign-extended, so NumBoxes of
+ * 32768 or more gives a negative size.  0 boxes stay valid (a page
+ * without boxes, #83).
+ *
+ * Errors: "Illegal Number of Boxes".
+ *
+ * @param n  d2.w: NumBoxes
+ */
+static void BLITZ_ERRCHK initpagechk_c(ULONG n BL_REG(d2))
+{
+    if ((WORD)n < 0)
+        BLITZ_RUNERR(mess9);
+}
+
+/* the thunks after all check functions: their assembler switches back to
+   .text, which GCC does not notice (a check function after a thunk would
+   end up in the normal code, as selectboxchk_c did before #1043) */
+BLITZ_ERRCHK_THUNK(spotboxchk, spotboxchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(selectboxchk, selectboxchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(initpagechk, initpagechk_c, "d0-d1/a0-a1");

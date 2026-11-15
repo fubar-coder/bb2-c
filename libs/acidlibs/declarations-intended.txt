@@ -54,8 +54,10 @@ lib 65434: relocations in the declaration part 5 != 7
 # #83: SpotBox gets an error check (spotboxchk); blitzoslib gets an error
 # check area for it (the original has none)
 lib 117: header +$2C: code offset set in only one of them
-# #82: SelectBox Box# gets an error check (selectboxchk) as well
-lib 117: relocations in the declaration part 41 != 44
+# #82: SelectBox Box# gets an error check (selectboxchk) as well;
+# #1043: InitPage too (initpagechk, "Illegal Number of Boxes")
+lib 117: entry 1 InitPage +$1A: code offset set in only one of them
+lib 117: relocations in the declaration part 41 != 45
 # #1041: DeleteMsgPort gets an error check (delportchk); utillib gets an
 # error check area for it (the original has none)
 lib 194: header +$2C: code offset set in only one of them
