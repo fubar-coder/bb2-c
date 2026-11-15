@@ -12,8 +12,4 @@ intro: |
   freed with the bitmap. With runtime error checking, using a bitmap that
   is not set up is an error.
 
-  Kept from the original: the size of a bitmap is computed with 16 bit
-  multiplications, so very large bitmaps get a wrong size
-  ([#76](https://github.com/fubar-coder/bb2-c/issues/76)).
-
   *Based on the bitmaplib guide by Acid Software.*

@@ -3,32 +3,31 @@
 "ChunkyPlot":
   text: Sets the pixel at `x,y` of the chunky area of the used CopList to `color`. With `CLIP`, a pixel outside the area is left alone; without it, nothing is checked.
 "ChunkyVlin":
-  text: Draws a vertical line in `color` from `y1` to `y2` at column `x` of the chunky area of the used CopList. With `CLIP`, the line is cut at the top and bottom edges of the area and a negative `x` draws nothing; an `x` beyond the right edge is not checked.
+  text: Draws a vertical line in `color` from `y1` to `y2` at column `x` of the chunky area of the used CopList. With `CLIP`, the line is cut at the top and bottom edges of the area, `y1` and `y2` may be given in either order, and an `x` outside the area draws nothing.
   notes: |
-    Kept from the original: without `CLIP`, a `y1` greater than `y2`
-    writes far beyond the area
-    ([#417](https://github.com/fubar-coder/bb2-c/issues/417)).
+    Without `CLIP`, nothing is checked and `y1` must not be greater than
+    `y2`; with runtime error checking, it is the error "ChunkyVlin y1 MUST
+    NOT be greater than y2".
 "ChunkyPoly":
   text: Draws a filled polygon of `numpts` points in `color` on the chunky area of the used CopList, with the blitter. With a fourth argument, whatever its value, it draws with the processor instead.
 "BitMapPoly":
   text: Draws a filled polygon of `numpts` points in `color` on the used bitmap, with the blitter. With `ditherbitmap`, the colour is a pattern of two lines of that bitmap, from line `color` * 2 on.
   notes: |
-    Kept from the original: the dither form expects bitplanes evenly
-    spaced in memory, as `BitMap` makes them
-    ([#418](https://github.com/fubar-coder/bb2-c/issues/418)).
+    The dither form expects the bitplanes of both bitmaps evenly spaced
+    in memory, as `BitMap` makes them.
 "RenderToBitmap":
   text: Makes `RenderPoly` draw as `BitMapPoly` on the bitmap given, with the dither bitmap if it is given.
   notes: |
-    Kept from the original: with a dither bitmap, the two bitmaps are
-    swapped and `RenderPoly` draws on the dither bitmap
-    ([#421](https://github.com/fubar-coder/bb2-c/issues/421)).
+    `RenderPoly` draws on the first bitmap, with the pattern of the
+    second; Blitz Basic 2 took them the other way round
+    ([`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}})).
 "RenderToChunky":
   text: Makes `RenderPoly` draw as `ChunkyPoly` on the chunky area of the CopList given, or with a `split` of 1 on the second part of an area split by `CustomChunky`. The colour is then a number from 0 to 14 for a fixed set of colours.
   notes: |
-    Kept from the original: a colour above 14 reads beyond the set of
-    colours ([#422](https://github.com/fubar-coder/bb2-c/issues/422)).
+    With runtime error checking, a colour above 14 is the error "Illegal
+    Colour" at `RenderPoly`.
 "RenderPoly":
   text: Draws a filled polygon of `numpts` points in `color` where `RenderToBitmap` or `RenderToChunky` chose.
   notes: |
-    Kept from the original: before either of them it draws into a wrong
-    place ([#420](https://github.com/fubar-coder/bb2-c/issues/420)).
+    Before the first `RenderToBitmap` or `RenderToChunky` it draws
+    nothing.

@@ -1,20 +1,18 @@
 "Circle":
   text: Draws a circle of radius `rx` around `x,y`, or an ellipse with the radii `rx` and `ry`.
   notes: |
-    Kept from the original: a circle that reaches above the top edge of
-    the bitmap writes outside it
-    ([#392](https://github.com/fubar-coder/bb2-c/issues/392)).
+    The parts of the circle beyond the edges of the bitmap are not drawn.
 "Circlef":
   text: Draws a filled circle of radius `rx` around `x,y`, or a filled ellipse with the radii `rx` and `ry`.
   notes: |
-    Kept from the original: as with `Circle`, a circle that reaches above
-    the top edge writes outside the bitmap
-    ([#392](https://github.com/fubar-coder/bb2-c/issues/392)).
+    As with `Circle`, the parts beyond the edges of the bitmap are not
+    drawn.
 "Box":
   text: Draws the outline of a rectangle with the corners `x1,y1` and `x2,y2`.
   notes: |
-    Kept from the original: the origin set with `BitMapOrigin` is added
-    twice ([#391](https://github.com/fubar-coder/bb2-c/issues/391)).
+    The origin set with `BitMapOrigin` is added once, as for `Line` and
+    `Boxf`; Blitz Basic 2 added it twice
+    ([`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#box-origin" >}})).
 "Boxf":
   text: Draws a filled rectangle with the corners `x1,y1` and `x2,y2`.
 "Line":
@@ -22,15 +20,14 @@
 "Poly":
   text: Draws the outline of a polygon of `numpts` points, which are pairs of words at the address given.
   notes: |
-    Kept from the original: a polygon of one point makes it run very long
-    ([#396](https://github.com/fubar-coder/bb2-c/issues/396)).
+    With runtime error checking, fewer than 2 points are the error "Poly
+    needs at least 2 Points".
 "Polyf":
   text: Draws a filled polygon of `numpts` points, which are pairs of words at the address given. A polygon whose points run anticlockwise is drawn in `color2` if it is given, which helps to show the back of a face in 3D graphics.
   notes: |
     The direction is taken from the first three points. A negative colour
-    draws nothing. Kept from the
-    original: more than 16 points, or more than 10 edges on one side,
-    overwrite memory ([#395](https://github.com/fubar-coder/bb2-c/issues/395)).
+    draws nothing. A polygon has at most 16 points; with runtime error
+    checking, more are the error "Too Many Points".
 "FloodFill":
   text: Fills the area around `x,y` with `colour`. Without `border colour`, the area is all connected pixels of the colour at `x,y`; with it, all pixels up to a border of that colour.
 "ReMap":
@@ -38,10 +35,7 @@
 "FreeFill":
   text: Frees the fill buffer that `Circlef`, `FloodFill` and `ReMap` use; the next of them makes it again.
 "AllocFill":
-  text: Meant to make the fill buffer for the used bitmap; it is declared for internal use only, and a program does not need it.
-  notes: |
-    Kept from the original: called from a program, it takes a wrong
-    bitmap ([#390](https://github.com/fubar-coder/bb2-c/issues/390)).
+  text: Makes the fill buffer for the used bitmap. It is declared for internal use only, and a program does not need it, since `Circlef`, `FloodFill` and `ReMap` make the buffer themselves.
 "BitPlanesBitMap":
   text: Makes `destbitmap` a bitmap that shows only the bitplanes of `srcbitmap` selected by the bits of `planepick`. Drawing on fewer planes is faster. Nothing happens when `destbitmap` already holds a bitmap.
 "BitMapWindow":

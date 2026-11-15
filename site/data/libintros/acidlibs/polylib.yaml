@@ -3,7 +3,7 @@ intro: |
   This library draws filled polygons fast, for 3D graphics. The points
   of a polygon are pairs of words in memory, given by the address of the
   first, as for `Polyf`; they must run clockwise, and the bitmap's origin
-  is not used ([#419](https://github.com/fubar-coder/bb2-c/issues/419)).
+  set with `BitMapOrigin` is not used.
 
   `BitMapPoly` draws on the used bitmap; with a dither bitmap, it fills
   with a pattern of two lines taken from that bitmap. The `Chunky...` commands draw
@@ -23,6 +23,5 @@ intro: |
   RenderPoly 3,&pts(0),2
   ```
 
-  Kept from the original: a polygon with more than 16 points or more than
-  10 edges on one side overwrites memory
-  ([#395](https://github.com/fubar-coder/bb2-c/issues/395)).
+  A polygon has at most 16 points. With runtime error checking, more
+  points are the error "Too Many Points".
