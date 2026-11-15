@@ -142,6 +142,7 @@ static UWORD eval4(UWORD *type);
 static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD doop(struct opentry *op, UWORD type);
+static void divzerochk(const struct opentry *op, UWORD type);
 static void pushprec(struct opentry *op, UWORD prec);
 static struct opentry *popprec(UWORD *prec);
 static UWORD getelement(UWORD *type);
@@ -831,6 +832,7 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         if (left)
             convtypef(left, *type); /* could possibly fuck regat+1 ! */
         cur = popprec(&prec);       /* .skip */
+        divzerochk(cur, *type);
         *type = doop(cur, *type);
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
@@ -960,6 +962,58 @@ static UWORD doop(struct opentry *op, UWORD type)
     if (!h)
         illoperr();
     return h(type);                 /* jmp (a0) */
+}
+
+/* Fixed (#1044): not in blitz2.s - a division or Mod by a constant 0.
+   When both operands are constants, eval5 folds the operation by running
+   the code just generated in the compiler's own process (blitz2.s:9007),
+   without looking at the divisor: a Byte or Word division and Mod
+   (DIVS.W, modlib) and a Float division (mathffp SPDiv) by 0 raised the
+   CPU's division trap in the compiler (exec's alert 8000 0005, no
+   result), a Long or Quick one gave ldivlib's $7FFFFFFF, a Long Mod the
+   dividend.  Before doop, with both operands constant (also in cfetchmode:
+   #c=..., Dim, CNIF), the operands' code is run up to the divisor (the
+   right operand, D(regat+1), already of the operation's type) and a
+   divisor 0 is "Division by Zero": the low word for Byte and Word (what
+   DIVS.W divides by), the long for Long and Quick, a mantissa 0 for Float
+   (FFP zero).  The two instructions poked for the run are overwritten by
+   doop: pc, bigpc and nomemleft are restored, no code changes. */
+static void divzerochk(const struct opentry *op, UWORD type)
+{
+    struct forthent *fs = forthsp;
+    struct m68kregs r;
+    ULONG at = pc, big = bigpc, value;
+    WORD s_nomemleft = nomemleft;
+    BOOL zero;
+
+    if ((op != opdiv && op != opmod) || type < T_BYTE || type > T_FLOAT)
+        return;                     /* doop refuses the other types */
+    if ((fs[-2].constgot | fs[-1].constgot) || nomemleft)
+        return;                     /* not folded: the program divides */
+    pokewd(0x2000 | (regat + 1));   /* move.l D(regat+1),d0 */
+    pokewd(0x4e75);                 /* rts */
+    if (nomemleft) {                /* doop's code reaches as far */
+        pc = at;
+        bigpc = big;
+        nomemleft = s_nomemleft;
+        return;
+    }
+    memset(&r, 0, sizeof(r));       /* the registers of the fold */
+    r.a[6] = (ULONG)MathBase;
+    r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
+    flushc();
+    callregs((APTR)fs[-2].pc, &r);
+    value = r.d[0];
+    pc = at;
+    bigpc = big;
+    if (type < T_LONG)
+        zero = (UWORD)value == 0;
+    else if (type == T_FLOAT)
+        zero = (value >> 8) == 0;
+    else
+        zero = value == 0;
+    if (zero)
+        divzeroerr();
 }
 
 /* blitz2.s:9153 pushprec - push operator on stack */

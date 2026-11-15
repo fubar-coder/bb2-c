@@ -772,6 +772,7 @@ NORETURN void badpenderr(void) { err("Illegal End Procedure"); }                
 NORETURN void pathlongerr(void) { err("Path too Long"); }                                    /* Fixed (#16) */
 NORETURN void notdeferr(void) { err("Type not yet defined"); }                               /* Fixed (#974) */
 NORETURN void oplongerr(void) { err("Operand too Long"); }                                   /* Fixed (#997) */
+NORETURN void divzeroerr(void) { err("Division by Zero"); }                                  /* Fixed (#1044) */
 
 /* =================================================================
  * char classes (TRUE = asm Z=1)

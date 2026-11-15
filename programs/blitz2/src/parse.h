@@ -250,6 +250,9 @@ NORETURN void notdeferr(void);     /* "Type not yet defined" */
 /* Fixed (#997): not in blitz2.s - the text of an inline assembler operand
    (from an include, a macro or with a local label) longer than its buffer */
 NORETURN void oplongerr(void);     /* "Operand too Long" */
+/* Fixed (#1044): not in blitz2.s - a division or Mod by a constant 0,
+   which the constant folding ran in the compiler */
+NORETURN void divzeroerr(void);    /* "Division by Zero" */
 
 /* ================================================== char classes */
 /* all: TRUE == asm Z=1 */

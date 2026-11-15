@@ -240,6 +240,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #995 | closed | [compiler/Residents] A macro text of 32767 bytes or more breaks the resident (length rounded in a word; `resmacs`, `fixmacs`) | **fixed in the port** |
 | #997 | closed | [compiler/Assembler] copyconst copies an operand text into namebuff without a length check (`asmlibs.c` copyconst, test `bug_orig_compiler_copyconst_overflow`) | **fixed in the port** ("Operand too Long") |
 | #998 | closed | [compiler/Objects] Used Object returns a wrong number from n << shift = $10000 on (word shift in `doused`) | **fixed in the port** |
+| #1044 | closed | [compiler/Expressions] A division or Mod by a constant 0 is folded by running it in the compiler without a test of the divisor: Byte, Word and Float crash the compiler (alert 8000 0005), Long, Quick and `#constants` compile to $7FFFFFFF (`eval.c` eval5, divzerochk; tests `bug_orig_compiler_constdiv_*`) | **fixed in the port** ("Division by Zero") |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well, except the bugs the port has

@@ -189,6 +189,8 @@ extern struct forthent *forthsp;
    blitz2.s:14704 operators - 0-terminated table (moved here from chunk 10's
    range).  Entries named in the asm: */
 extern struct opentry operators[];
+#define opdiv (&operators[3])
+#define opmod (&operators[13])
 #define opeq (&operators[15])
 #define opne (&operators[16])
 #define oplt (&operators[17])
