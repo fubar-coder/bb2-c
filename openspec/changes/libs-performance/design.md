@@ -386,6 +386,29 @@ build.
       arrive as the last table offset in the original. The port's
       `localstat` keeps d2 (the C function did as well); reported to the
       coordinator for an issue.
+    Task 8.4, the whole benchmark twice on the final state (cycles per
+    call: main ecef902a -> group 8, the original):
+
+    | Command | main | group 8 | original |
+    |---|---:|---:|---:|
+    | `If a$=b$` | 3337.8 | 2159.1 | 2943.5 |
+    | `w3=w1 MOD w2` | 440.6 | 247.2 | 247.0 |
+    | `q3=q1 MOD q2` | 472.6 | 278.7 | 278.0 |
+    | `c=f1 MOD f2` | 1310.5 | 966.2 | 3701.0 |
+    | `c=a MOD b` (Long, group 4) | 522.5 | 523.2 | 3113.0 |
+    | `f3=q1` | 2394.7 | 1899.7 | 1905.5 |
+    | `q3=f1` | 2253.7 | 1762.7 | 1764.0 |
+    | `q3=Frac(q1)` (both conversions) | 4971.6 | 3986.2 | 3718.0 |
+    | `plocal{a}` | 444.6 | 323.7 | 389.5 |
+    | `pstr{a$}` | 12393.2 | 11991.6 | 11614.0 |
+    | `c=fstr{a$}` | 13082.2 | 12686.5 | 12353.5 |
+
+    Every command of the group is at or below the original except the
+    two procedures with a string (3 % above; most of their 12000 cycles
+    are exec's AllocMem and FreeMem and the string assignment of group
+    5, not looked into further) and Frac (7 %, task 10.5). The other
+    commands of the benchmark stay within their budgets; `bmath.frac`
+    is tightened (5025 -> 4030).
 
 ## Risks / Trade-offs
 
