@@ -334,7 +334,7 @@ BLITZ_THUNK(inputoutputlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 #define DISPATCH(entry, code, off)                                          \
     BLITZ_ASM_ROUTINE(entry,                                                \
         "   move.l  a6,-(sp)\n"                                             \
-        "   move.l  " code ",a6\n"                                          \
+        "   move.l  " code "(pc),a6\n"                                      \
         "   jsr     " off "(a6)\n"                                          \
         "   move.l  (sp)+,a6\n"                                             \
         "   rts")

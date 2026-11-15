@@ -32,8 +32,8 @@
  * d0.w); BlitzKey writes the read index of
  * keyboard.device for every entry it passes, also key up codes (needed to
  * get past them).
- * Registers: BlitzKey keeps d1/a0-a1 (MOVEM in the original, here the
- * thunk; GCC keeps d2-d7/a2-a6 around the ALibJsr).
+ * Registers: BlitzKey keeps d1/a0-a1 (MOVEM; the original's assembler,
+ * like RawStatus).
  */
 #include "blitzlib.h"
 #include <exec/libraries.h>
@@ -96,12 +96,9 @@ BLITZ_LIBFIN();
 
 static UBYTE *key __attribute__((used)); /* keyboard.device (also read by RawStatus) */
 static UWORD ison;                      /* flag for if blitzkeys is already on */
-static UWORD bqual;
+static UWORD bqual __attribute__((used)); /* written by binkey */
 UBYTE *oldin;                           /* old input handler (dobinkey2) */
 static WORD matoff __attribute__((used));
-
-/* rawkeylib qconvertkey: d0 = raw code, d1 = qualifier -> d0 = character */
-#define TOK_qconvertkey ((LIB_rawkeylib << 7) + 3)
 
 /**
  * @brief BlitzQualifier: the qualifier of the last key BlitzKey read.
@@ -179,52 +176,43 @@ void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
  * writes the read index for every entry it passes, also key up codes
  * (bit 7, skipped; needed to get past them); $7D gives -1.  The character
  * comes from rawkeylib qconvertkey (+3) with the qualifier, which is also
- * kept for BlitzQualifier.  Keeps d1/a0-a1 (MOVEM in the original, here
- * the thunk; GCC keeps d2-d7/a2-a6 around the ALibJsr).
+ * kept for BlitzQualifier.  Keeps d1/a0-a1 (MOVEM).
  *
- * @param code  d0: the caller's register; its low word gets the raw code
- *              (the upper word survives the word loads of the original)
- * @param callerd1  d1: the caller's register; first the buffer position,
- *                  then its low word gets the qualifier
- * @return d0: the character, -1 = no key
+ * The original's code, an assembler entry: Inkey$ calls it through the
+ * input handler, and as a C function behind a thunk it cost about 90
+ * cycles more for "no key" (the call of the C function, the save of
+ * d2/d3).  The upper words of d0 and d1 are the caller's (word loads);
+ * qconvertkey gets d0 = the code, d1 = the qualifier, a0 = the key data
+ * and the caller's a1 (it does not read a1).
+ *
+ * The handler: -4 = BRA dobinkey2 (read a line through the old handler),
+ * 0 = binkey (one character).
+ *
+ * Out: d0 the character, -1 = no key
  */
-static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG callerd1 BL_REG(d1))
-{
-    UBYTE *keydata = key;
-    struct bl_regs r;
-    UWORD pos;                          /* d1.w: the buffer position */
-    ULONG qual = callerd1;              /* d1: the qualifier */
-
-    pos = *(UWORD *)(keydata + 0x70);
-    for (;;) {
-        pos = (pos + 4) & 127;
-        if (pos == *(UWORD *)(keydata + 0x72))
-            return (ULONG)-1;           /* nokey */
-        *(UWORD *)(keydata + 0x70) = pos;
-        BL_SETW(code, *(UWORD *)(keydata + 0x74 + (WORD)pos));
-        if (code & 0x80)
-            continue;                   /* key up: retry */
-        if ((UWORD)code == 0x7d)
-            return (ULONG)-1;
-        break;
-    }
-    BL_SETW(qual, *(UWORD *)(keydata + 0x76 + (WORD)pos));
-    bqual = (UWORD)qual;
-    r.d0 = code;
-    r.d1 = qual;
-    r.a0 = (ULONG)keydata;
-    r.a1 = 0;
-    return BLITZ_ALIBJSR(TOK_qconvertkey, r);
-}
-
-/* the handler: -4 = BRA dobinkey2 (read a line through the old handler),
-   0 = binkey (one character, d1/a0-a1 kept) */
 BLITZ_ASM_BLOCK(binkey,
         "   bra.w   _dobinkey2\n"
         "   .globl  _binkey\n"
         "_binkey:\n"
         "   movem.l d1/a0-a1,-(sp)\n"
-        "   jsr     _binkey_c\n"
+        "   move.l  _key(pc),a0\n"
+        "   move.w  0x70(a0),d1\n"
+        "0: addq.w  #4,d1\n"                    /* 'retry */
+        "   and.w   #127,d1\n"
+        "   cmp.w   0x72(a0),d1\n"
+        "   beq.s   1f\n"
+        "   move.w  d1,0x70(a0)\n"
+        "   move.w  0x74(a0,d1.w),d0\n"
+        "   btst    #7,d0\n"                    /* key up: retry */
+        "   bne.s   0b\n"
+        "   cmp.w   #0x7d,d0\n"
+        "   beq.s   1f\n"
+        "   move.w  0x76(a0,d1.w),d1\n"
+        "   move.w  d1,_bqual\n"
+        "   jsr     _blitz_tok+" BL_ASMTOK(LIB_rawkeylib, 3) "\n" /* qconvertkey */
+        "   movem.l (sp)+,d1/a0-a1\n"
+        "   rts\n"
+        "1: moveq   #-1,d0\n"                   /* 'nokey */
         "   movem.l (sp)+,d1/a0-a1\n"
         "   rts\n"
         "_dobinkey2:\n"

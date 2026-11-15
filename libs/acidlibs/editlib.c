@@ -53,7 +53,8 @@
  *
  * Registers: the original changes d0/d1/a0/a1 and whatever the handler
  * changes, Inkey$(n) d6/d7; Edit$ keeps d2, Edit a2/a3/a6.  C keeps
- * d2-d7/a2/a6, Edit restores a3.
+ * d2-d7/a2/a6, Edit restores a3; Inkey$ is the original's assembler and
+ * changes what the handler changes.
  *
  * Error checks (debugger only): Edit$/Edit with 0 characters -> "Can't
  * Edit 0 Characters!", Edit with more than 80 -> "Can only Edit up to 80
@@ -65,7 +66,7 @@
 ULONG BLITZ_ROUTINE doeditstr2(ULONG n BL_REG(d0));
 ULONG BLITZ_ROUTINE doeditstr(UBYTE *def BL_REG(d0), ULONG n BL_REG(d1),
                               const UBYTE *args BL_REG(a2));
-ULONG BLITZ_ROUTINE doinkey(void);
+void doinkey(void);
 ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0));
 ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6));
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
@@ -118,19 +119,24 @@ static ULONG getsingle(void)
  * @brief Inkey$: one character from the current input, "" if none came.
  *
  * Reads one character with inputoutputlib's dogetsingle (d0 negative =
- * none) and appends it to the string at a3.
+ * none) and appends it to the string at a3.  The original's code, an
+ * assembler entry: as a C function it saved d2-d7/a2/a6 around the
+ * ALibJsr (the handler may change them) and cleared d0/d1/a0/a1 for it,
+ * about 160 cycles per call.  Like the original it changes what the
+ * input handler changes (the handler keeps a3-a6: BlitzKey keeps d1/a0/
+ * a1 too, the C handlers d2-d7/a2/a6).
  *
- * @return d0: the string length, 1 or 0
+ * Out: d0 the string length, 1 or 0; a3 behind the character
  */
-ULONG BLITZ_ROUTINE doinkey(void)
-{
-    ULONG c = getsingle();
-
-    if ((WORD)c < 0)                            /* TST d0:BMI 'null */
-        return 0;
-    *blitz_string++ = (UBYTE)c;
-    return 1;
-}
+BLITZ_ASM_ROUTINE(doinkey,
+"   jsr     _blitz_tok+" BL_ASMTOK(LIB_inputoutputlib, 5) "\n" /* ALibJsr dogetsingle */
+"   tst.w   d0\n"
+"   bmi.s   0f\n"
+"   move.b  d0,(a3)+\n"
+"   moveq   #1,d0\n"
+"   rts\n"
+"0: moveq   #0,d0\n"
+"   rts");
 
 /**
  * @brief Inkey$(Characters): n attempts to read a character, the

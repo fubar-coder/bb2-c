@@ -341,9 +341,14 @@ BLITZ_ALIAS(docursy, docursy_c);
 
 /* ------------------------------------------------------------- drawing */
 
+/* The drawing helpers are inline (BL_ALWAYS_INLINE): at -Os GCC kept
+   them as functions with their arguments and the line offset on the
+   stack, and Print "SCORE" on a bitmap took 2.2 times the original's
+   cycles. */
+
 /* calcoff - check bitmap and font: bitmap, font, lineoff (d7) = line
    offset */
-static int calcoff(struct bb_bitmap **bm, struct TextFont **font, LONG *lineoff)
+BL_ALWAYS_INLINE int calcoff(struct bb_bitmap **bm, struct TextFont **font, LONG *lineoff)
 {
     if (!bitmapout || !bitmapout->bpr) {
         BLITZ_RUNERR(mess2);                    /* err2 */
@@ -361,7 +366,7 @@ static int calcoff(struct bb_bitmap **bm, struct TextFont **font, LONG *lineoff)
 
 /* docr - new line: col (d1) = 0, row (d2) += 8, lineoff (d7) += bytes
    per row * 8 */
-static void docr(struct bb_bitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
+BL_ALWAYS_INLINE void docr(struct bb_bitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
 {
     *col = 0;
     *row += 8;
@@ -371,13 +376,26 @@ static void docr(struct bb_bitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
 /* bitchar - d0 = character, a0 = bitmap, a1 = font, lineoff (d7) = offset
    of the line's left edge in the bitmap (changed by a new line);
    col/row = d1/d2, backbits/forebits = d4/d5 (background/foreground
-   colour bits) */
-static void bitchar(UBYTE c, struct bb_bitmap *bm, struct TextFont *font, LONG *lineoff)
+   colour bits).  The plane loop is assembler: in C GCC ran out of
+   registers and kept the pointers of the unrolled lines on the stack
+   (Print "SCORE" 1.15 times the original's cycles).  A line of a plane
+   is written once with the bits of the original's two writes, (~font &
+   bg) | (font & fg) = bg ^ (font & (bg ^ fg)). */
+#define BITCHAR_LINE                                                        \
+    "   move.b  (%[s]),%[t]\n"                                              \
+    "   and.b   %[x],%[t]\n"                                                \
+    "   eor.b   %[bg],%[t]\n"                                               \
+    "   move.b  %[t],(%[d])\n"                                              \
+    "   add.w   %[mod],%[s]\n"                                              \
+    "   add.w   %[bpr],%[d]\n"
+BL_ALWAYS_INLINE void bitchar(UBYTE c, struct bb_bitmap *bm, struct TextFont *font,
+                              LONG *lineoff)
 {
-    UWORD col, row = bm->cursy, backbits, forebits, depth, bpr, modulo;
+    UWORD col, row = bm->cursy, backbits, forebits, depth;
+    WORD bpr, modulo;
     const UBYTE *src;
+    UBYTE *const *plane;
     LONG off;
-    UWORD i, k;
 
     if (c == 10) {
         docr(bm, &col, &row, lineoff);
@@ -409,23 +427,34 @@ static void bitchar(UBYTE c, struct bb_bitmap *bm, struct TextFont *font, LONG *
     bpr = bm->bpr;
     forebits = pcolour;
     backbits = pback;
-    i = 0;
-    do {                                        /* 'loop: one bitplane */
-        UBYTE *dst = bm->planes[i] + off;
-        const UBYTE *s = src;
-        UBYTE bg = (backbits & 1) ? 0xff : 0;   /* LSR #1,d4:SCS d3 */
-        UBYTE fg = (forebits & 1) ? 0xff : 0;   /* LSR #1,d5:SCS d2 */
+    plane = bm->planes;
+    /* 'loop: one bitplane after the other (depth 0: 65536 times, #149);
+       the eight lines of a plane as the original's !oneline, each line
+       written once (above) */
+    {
+        UBYTE *dst;
+        const UBYTE *s;
+        UBYTE bg, diff, t;
 
-        backbits >>= 1;
-        forebits >>= 1;
-        for (k = 0; k < 8; k++) {               /* !oneline x 8 */
-            *dst = ~*s & bg;
-            *dst |= *s & fg;
-            s += (WORD)modulo;
-            dst += (WORD)bpr;
-        }
-        i++;
-    } while (--depth);                          /* SUBQ #1,(a7):BNE */
+        __asm__ volatile(
+            "1: move.l  (%[pl])+,%[d]\n"        /* bitplane */
+            "   add.l   %[off],%[d]\n"
+            "   move.l  %[src],%[s]\n"          /* char data */
+            "   lsr.w   #1,%[bb]\n"             /* 0's or 1's for background */
+            "   scs     %[bg]\n"
+            "   lsr.w   #1,%[fb]\n"             /* ... for character colour */
+            "   scs     %[x]\n"
+            "   eor.b   %[bg],%[x]\n"
+            BITCHAR_LINE BITCHAR_LINE BITCHAR_LINE BITCHAR_LINE
+            BITCHAR_LINE BITCHAR_LINE BITCHAR_LINE BITCHAR_LINE
+            "   subq.w  #1,%[n]\n"              /* SUBQ #1,(a7):BNE 'loop */
+            "   jbne    1b\n"
+            : [pl] "+a"(plane), [d] "=&a"(dst), [s] "=&a"(s), [bb] "+d"(backbits),
+              [fb] "+d"(forebits), [bg] "=&d"(bg), [x] "=&d"(diff), [t] "=&d"(t),
+              [n] "+dm"(depth)
+            : [off] "g"(off), [src] "g"(src), [mod] "g"(modulo), [bpr] "g"(bpr)
+            : "cc", "memory");
+    }
 }
 
 /* bitout - one character d0 */
@@ -437,22 +466,6 @@ static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 
     if (calcoff(&bm, &font, &lineoff))
         bitchar(c, bm, font, &lineoff);
-}
-
-/* bitout2 - string a0, length d0 */
-static void bitout2_(const UBYTE *s, ULONG len)
-{
-    struct bb_bitmap *bm;
-    struct TextFont *font;
-    LONG lineoff;
-
-    if (!len)
-        return;
-    if (!calcoff(&bm, &font, &lineoff))
-        return;
-    do
-        bitchar(*s++, bm, font, &lineoff);
-    while (--len);
 }
 
 /**
@@ -472,7 +485,17 @@ static void bitout2_(const UBYTE *s, ULONG len)
  */
 static void BLITZ_ROUTINE bitout2_c(ULONG len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
-    bitout2_(s, len);
+    struct bb_bitmap *bm;
+    struct TextFont *font;
+    LONG lineoff;
+
+    if (!len)
+        return;
+    if (!calcoff(&bm, &font, &lineoff))
+        return;
+    do
+        bitchar(*s++, bm, font, &lineoff);
+    while (--len);
 }
 
 /**
@@ -490,7 +513,7 @@ static void BLITZ_ROUTINE bitout3_c(const UBYTE *s BL_REG(a0))
         n++;
     while (*p++);
     if (n)
-        bitout2_(s, n);
+        bitout2_c(n, s);
 }
 
 /* output handler: -8 bitout3, -4 bitout2, 0 bitout */
@@ -557,7 +580,7 @@ static void edstring(struct bb_bitmap *bm, UBYTE *buf, UWORD max, UWORD x)
     ULONG save = *(ULONG *)&bm->cursx;
 
     bm->cursx += x << 3;
-    bitout2_(buf + (WORD)x, (UWORD)(max - x));
+    bitout2_c((UWORD)(max - x), buf + (WORD)x);
     *(ULONG *)&bm->cursx = save;
 }
 

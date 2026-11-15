@@ -494,6 +494,31 @@ build.
       save nothing and change d0-d5 (the original changes d0-d7). C, no
       assembler: ShapesHit 731.4 -> 361.4 (383.4), SpritesHit 771.4 ->
       391.9 (418.9), RectsHit 553.4 -> 262.9 (286.9).
+    - Print on a bitmap (task 10.1, fontlib): the drawing helpers
+      (`calcoff`, `docr`, `bitchar`) were functions with the line
+      offset in memory, and GCC built the two colour masks of each
+      plane with MULS. With the helpers `BL_ALWAYS_INLINE`, the masks
+      from `-(bits & 1)` and the eight lines unrolled, C reached 1.15
+      (`Print "SCORE"`) and 1.11 (`Print a`) times the original: GCC ran
+      out of registers and kept the line pointers on the stack. So the
+      plane loop is an assembler block inside `bitchar` (decision 15),
+      the original's loop with each line written once: (~font & bg) |
+      (font & fg) = bg ^ (font & (bg ^ fg)), the same bytes as the
+      original's two writes. `bitout2` takes its arguments in registers.
+      `Print "SCORE"` 28319.8 -> 12079.9 (13097.9), `Print a` 35567.8 ->
+      16111.9 (17797.8); fontlib grows from 2560 to 2836 bytes. Locate
+      stays at 128.3 (128.3, group 6).
+    - Inkey$ (task 10.1): Inkey$ (editlib) and BlitzKey (blitzkeyslib,
+      the input handler of BlitzKeys On) are the original's assembler.
+      In C Inkey$ saved d2-d7/a2/a6 around its ALibJsr, and BlitzKey was
+      a C function behind a thunk that saved d2/d3; a C BlitzKey with the
+      key conversion out of line stayed at 1.26. The channel
+      dispatchers of inputoutputlib read the handler PC-relative, as the
+      original. `r$=Inkey$` 1075.5 -> 662.5 (601.7): 1.10; the rest is
+      the assignment of the empty string (strings2lib, decision 15: its
+      C path calls the copy routine and tests the length before it sees
+      0, about 50 cycles more than the original's `BEQ 'endass`), not
+      changed here.
 
 ## Risks / Trade-offs
 
