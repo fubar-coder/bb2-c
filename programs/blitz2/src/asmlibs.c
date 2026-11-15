@@ -1027,6 +1027,24 @@ static ULONG putcode_lsub(struct blitzlib *lib, ULONG suboff)
     return old;
 }
 
+/* The error check fields of a form (before; the routine at +4, after at
+   +8) that make tokecode build a stub.  Fixed (#1048): the original
+   built the stub whenever a field is set, also without runtime error
+   checking, where makelsub3 calls no check: the stub was only a jsr to
+   the routine and an rts.  Without runtime error checking only bit 0 of
+   before counts (the routine runs only in Blitz mode: makelsub3 checks
+   that while compiling); the token call then goes straight to the
+   routine.  An entry without a routine (only checks) keeps its stub:
+   then only an rts. */
+static ULONG tokechx(const UBYTE *before)
+{
+    ULONG chx = L_(before) | L_(before + 8);
+
+    if (!(debugga & 0xff00) && L_(before + 4) != 0)     /* tst.b debugga */
+        chx = L_(before) & 1;
+    return chx;
+}
+
 /* blitz2.s:6047 tokecode - d1=token number, d2=form number!
    return d7, address to jsr! */
 ULONG tokecode(UWORD tok, UWORD form)
@@ -1063,8 +1081,8 @@ ULONG tokecode(UWORD tok, UWORD form)
     }
     if (W_(sub) != 0)
         goto go4it;                     /* libs to fetch.... */
-    if ((L_(sub + 2) | L_(sub + 10)) != 0)
-        goto go4it;                     /* error chx... */
+    if (tokechx(sub + 2))
+        goto go4it;                     /* error chx... (Fixed (#1048)) */
     if (B_(sub + 9) & 1)
         goto go4it;                     /* ditto... */
     off = L_(sub + 6);                  /* sub offset */
@@ -1080,8 +1098,8 @@ simple:
         tokeerr();
     if (W_(sub + 6))
         goto be4it;
-    if ((L_(sub + 8) | L_(sub + 16)) != 0)
-        goto be4it;
+    if (tokechx(sub + 8))
+        goto be4it;                     /* Fixed (#1048) */
     if (B_(sub + 15) & 1)
         goto be4it;
     off = L_(sub + 12);

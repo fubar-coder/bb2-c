@@ -697,7 +697,8 @@ and immediately processes:
 At the end of the pass `fixjsrs` (6003) resolves the collected
 placeholders: `tokecode` (6047) returns the address of the target routine (and links
 its lib in if not done yet). If the routine needs
-register parameters from `!libs` or check calls, `tokecode` generates a
+register parameters from `!libs` or check calls (these only with runtime
+error checking: fixed, #1048), `tokecode` generates a
 small stub behind the program (`… jsr routine : rts`); otherwise the
 address is entered directly. In front of the stubs there is a `jmp` that
 skips them.

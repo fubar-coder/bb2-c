@@ -241,6 +241,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #997 | closed | [compiler/Assembler] copyconst copies an operand text into namebuff without a length check (`asmlibs.c` copyconst, test `bug_orig_compiler_copyconst_overflow`) | **fixed in the port** ("Operand too Long") |
 | #998 | closed | [compiler/Objects] Used Object returns a wrong number from n << shift = $10000 on (word shift in `doused`) | **fixed in the port** |
 | #1044 | closed | [compiler/Expressions] A division or Mod by a constant 0 is folded by running it in the compiler without a test of the divisor: Byte, Word and Float crash the compiler (alert 8000 0005), Long, Quick and `#constants` compile to $7FFFFFFF (`eval.c` eval5, divzerochk; tests `bug_orig_compiler_constdiv_*`) | **fixed in the port** ("Division by Zero") |
+| #1048 | closed | [compiler/Libraries] A token jsr (`TokeJsr`, `ALibJsr`) to a library routine with an error check goes through a stub `jsr routine / rts` also without runtime error checking (`asmlibs.c` tokecode, test `bug_orig_compiler_tokecode_stub_release`) | **fixed in the port** |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well, except the bugs the port has

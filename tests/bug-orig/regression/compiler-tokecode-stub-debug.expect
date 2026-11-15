@@ -1,0 +1,4 @@
+[run]
+joyb 0
+jsrs 1 stubs 1
+rc=0
