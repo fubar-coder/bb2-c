@@ -1,0 +1,5 @@
+[run]
+spri before 1
+spri after 1
+chunky2 418 20 8 2 2 44
+rc=0

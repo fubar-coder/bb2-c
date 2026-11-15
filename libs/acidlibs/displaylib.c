@@ -45,6 +45,11 @@
  * Fixed (intended deviation, #411): DisplayBitMap without x,y stored the
  *   caller's d2/d3 in x0/x1, the start of DisplayScroll; here 0 (as the
  *   double form and the smooth scrolling resolutions do).
+ * Fixed (intended deviation, #949): CustomChunky with a split position
+ *   copied 16 bytes from cchunky to cchunky2: the last word (pad0, 0)
+ *   overwrote spri, so a later DisplaySprite with hires/superhires
+ *   sprites positioned by a wrong x handle.  Here the 14 bytes of the
+ *   description are copied.
  *
  * Kept from the original (BUG(orig)):
  *   - CustomColors with thru256flag sets bot = 257 without reading the
@@ -57,10 +62,6 @@
  *   - Not a bug (statements: the compiler reloads a3 for every string
  *     expression): DisplayBitMap / the double form leave a3 on the bp1
  *     table, CreateDisplay on the last coplist - reproduced.
- *   - CustomChunky with a split position copies 16 bytes from cchunky
- *     to cchunky2: the last word (pad0, 0) overwrites spri, so a later
- *     DisplaySprite on hires/superhires sprites positions by a wrong x
- *     handle. (#949)
  *   - CustomSprites is declared with the !libs of DisplaySprite
  *     (#spriteslib,$1181): the compiler treats CCOffset as a sprite
  *     number (maximum check, d1 shifted by 4) and the routine's ASL #2
@@ -1230,8 +1231,8 @@ static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
  * reused; the word loads into d2/d3 keep the upper word of the caller's
  * register (BL_SETW below).
  * BUG(orig) (#414): a sprite spanning the last normal channel and the
- * CustomSprites bank overwrites the BPLCON moves.  BUG(orig) (#949):
- * after CustomChunky's split form spri is 0.
+ * CustomSprites bank overwrites the BPLCON moves.  Fixed (#949): spri
+ * stays after CustomChunky's split form (the original: 0).
  * Errors: an uninitialised sprite ("Uninitialised Sprite"), not enough
  * channels ("Not Enough Sprite Channels"); fixed: in the normal code (#412).
  *
@@ -2278,7 +2279,8 @@ static void BLITZ_ROUTINE _customchunky_c(UWORD ccoffset BL_REG(d1), UWORD ypos 
  * The description is copied to the second one (cchunky2...): the first
  * part gets the height splitpos, the second the rest, starting splitpos
  * lines later.
- * BUG(orig) (#949): the 16 byte copy overwrites spri (see below).
+ * Fixed (#949): 14 bytes are copied; the original's 16 byte copy
+ * overwrote spri (see below).
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the first line
@@ -2292,21 +2294,24 @@ static void BLITZ_ROUTINE _customchunky2_c(UWORD ccoffset BL_REG(d1), UWORD ypos
                                            UWORD res BL_REG(d5), const UWORD *args BL_REG(a2))
 {
     UBYTE *cop = blitz_string;
-    ULONG saved[4];
+    ULONG saved[3];
+    UWORD chc;
     UWORD split;
     int k;
 
     customchunky(ccoffset, ypos, width, height, res);
-    /* MOVEM.l !m{cchunky},d0-d3 ... MOVEM.l d0-d3,!m{cchunky2}: 16 bytes,
-       cchunky..pad0 to cchunky2..spri.  BUG(orig) (#949): the last word,
-       pad0 (always 0), overwrites spri, the sprite resolution shift that
-       DisplaySprite uses for the x handle */
-    for (k = 0; k < 4; k++)
+    /* the original: MOVEM.l !m{cchunky},d0-d3 ... MOVEM.l d0-d3,
+       !m{cchunky2}, 16 bytes, whose last word (pad0, always 0) overwrote
+       spri, the sprite resolution shift of DisplaySprite's x handle.
+       Fixed (#949): the 14 bytes cchunky..chc to cchunky2..chc2 */
+    for (k = 0; k < 3; k++)
         saved[k] = L(cop, CMOFF(cchunky) + 4 * k);
+    chc = CM(cop, chc);
     split = args[-1];
     CM(cop, chh) = split;
-    for (k = 0; k < 4; k++)
+    for (k = 0; k < 3; k++)
         L(cop, CMOFF(cchunky2) + 4 * k) = saved[k];
+    CM(cop, chc2) = chc;
     CM(cop, chh2) -= split;
     CM(cop, cchunky2) += mulu16(CM(cop, chc), split);
 }
