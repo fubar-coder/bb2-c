@@ -27,16 +27,17 @@
  *   word of the palette's data pointer (TST (a0)): a palette whose data
  *   lie in the lower 64 KB counted as not there.  Here the long.  (Its
  *   word test of the slice is right: +0 of a slice is the word y.)
+ * Fixed (intended deviation, #330): an uninitialized palette gave "Not
+ *   enough colours in Slice" (err2; mess3 "Uninitialized Palette" was
+ *   never used); here "Uninitialized Palette".
  *
  * Kept from the original (BUG(orig)):
  *   - Without high/low colours the range is 0..min(colours of the
  *     palette, colours of the slice)-1; with them nothing is clipped. (#136)
  *   - Not a bug (both are meant to start at 0): the init clears fadenum and
  *     fadetype together (CLR.l fadenum).
- *   - Wrong messages: an uninitialized palette gives "Not enough colours
- *     in Slice" (err2; mess3 "Uninitialized Palette" is never used) (#330),
- *     a low/high colour beyond the slice's colours "Uninitialized Slice"
- *     (err1) (#331).
+ *   - Wrong message: a low/high colour beyond the slice's colours gives
+ *     "Uninitialized Slice" (err1) (#331).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -268,10 +269,11 @@ static void dosyncfade(void)
  * fractions of the first colour for palettes 2 and up).
  * By design (#136): the range is not clipped to the colours of palette
  * and slice.
- * Errors (debugger, fadechk): "Uninitialized Slice", "Not enough colours
- * in Slice" also for an uninitialized palette (BUG(orig) #330), a colour
- * beyond the slice's colours gives "Uninitialized Slice" (BUG(orig)
- * #331); fixed (#135): the palette's data pointer is tested as a long.
+ * Errors (debugger, fadechk): "Uninitialized Slice", "Uninitialized
+ * Palette" (fixed #330: the original gave "Not enough colours in Slice"),
+ * "Not enough colours in Slice"; a colour beyond the slice's colours gives
+ * "Uninitialized Slice" (BUG(orig) #331); fixed (#135): the palette's
+ * data pointer is tested as a long.
  *
  * @param rate  d1: the frames to wait between the steps (VWait)
  * @param lo  d2: the low colour
@@ -388,7 +390,7 @@ void BLITZ_ROUTINE dofadeout2(const struct bb_palette *pal BL_REG(a0),
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Slice");
 BLITZ_ERRCHK_MESSAGE(mess2, "Not enough colours in Slice");
-BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig) (#330): unused */
+BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* fixed #330: used */
 
 /* fadechk0 - slice (the word y) and palette (its data pointer, a long:
    fixed #135, the original tested its high word) set up, slice with
@@ -399,8 +401,12 @@ static int BLITZ_ERRCHK fadechk0_x(const struct bb_palette *pal, const struct bb
         BLITZ_RUNERR(mess1);
         return 0;
     }
-    if (!pal->pdata || !slice->colours) {
-        BLITZ_RUNERR(mess2);            /* BUG(orig) (#330): also for the palette */
+    if (!pal->pdata) {
+        BLITZ_RUNERR(mess3);            /* fixed #330: not err2 */
+        return 0;
+    }
+    if (!slice->colours) {
+        BLITZ_RUNERR(mess2);
         return 0;
     }
     return 1;

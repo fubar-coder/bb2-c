@@ -1,0 +1,4 @@
+[run]
+REQUESTER: AutoRequest body "Uninitialized Palette" pos "OKAY!" neg "OKAY!" -> answered FALSE
+...
+rc=0
