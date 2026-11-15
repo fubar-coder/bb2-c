@@ -88,7 +88,10 @@ BLITZ_ENTRY_DECL(finit);
 
 /* offset 0 of .blitzlib.head (this library is the only object there),
    for the ALibJsr placeholder that is a reference to the library's own
-   section in the original's relocation table (see above) */
+   section in the original's relocation table (see above).  The only
+   section directive the build allows in a library's assembler
+   (cmake/check-asm-sections.cmake): GCC keeps the header as data in
+   .blitzlib.head, so a function cannot go there */
 __asm__("   .section .blitzlib.head\ndh_hunk0:\n");
 
 /* !libheader{#dhandlerlib,init,0,finit,0} */

@@ -87,6 +87,18 @@ add_test(NAME cmdref_check_broken COMMAND ${CMAKE_COMMAND}
 set_tests_properties(cmdref_check_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "differs[ \n]+from[ \n]+[^ \n]*/acidlibs/trackerlib\\.json")  # CMake wraps long messages
 
+# the check of the library build step that a source writes no section
+# directive of its own (cmake/check-asm-sections.cmake, #1057): every
+# directive of the broken input with its line, nothing of the good one
+add_test(NAME blitzlib_asm_sections_broken COMMAND ${CMAKE_COMMAND}
+	-DSOURCES=${PROJECT_SOURCE_DIR}/cmake/asm-sections/broken.c
+	-P ${BLITZLIB_ASM_SECTIONS_CHECK})
+set_tests_properties(blitzlib_asm_sections_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "broken\\.c:6: \\.section \\.blitzlib\\.errchk\n *[^\n]*broken\\.c:9: \\.text\n *[^\n]*broken\\.c:12: \\.text\n *[^\n]*broken\\.c:14: \\.data\n")
+add_test(NAME blitzlib_asm_sections_good COMMAND ${CMAKE_COMMAND}
+	-DSOURCES=${PROJECT_SOURCE_DIR}/cmake/asm-sections/good.c
+	-P ${BLITZLIB_ASM_SECTIONS_CHECK})
+
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
 # in the same order (the compiler's token list order), as committed data

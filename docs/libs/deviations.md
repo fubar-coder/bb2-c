@@ -510,10 +510,11 @@ of `blitzlib.h` (`BLITZ_ERRCHK_THUNK`, `BLITZ_ERRCHK_MESSAGE`,
 `BLITZ_ERRCHK_AB`, the thunks of the normal code ...) are therefore C
 functions whose body is the assembler text, and GCC switches the section
 itself (#1056). So is the libraries' own assembler (`BLITZ_ERRCHK_ASM`,
-`BLITZ_ASM_ROUTINE`, `BLITZ_ASM_BLOCK`, #1057). `blitzlib check` reports
-a check thunk in the error check area whose C function is in the normal
-code, in the build step of every library (`docs/development.md`,
-"Checks in the build"). Every
+`BLITZ_ASM_ROUTINE`, `BLITZ_ASM_BLOCK`), and the build step of every
+library refuses a section directive in the assembler of its sources
+(#1057). `blitzlib check` reports a check thunk in the error check area
+whose C function is in the normal code, in the build step of every
+library (`docs/development.md`, "Checks in the build"). Every
 `BLITZ_ERRCHK` function and message of the acidlibs and the RWE userlibs
 is in the error check area (checked against the symbols of all `.linked`
 files for #1056).

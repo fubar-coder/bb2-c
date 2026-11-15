@@ -278,6 +278,17 @@ again):
   theirs there, as the originals do).
   `acidlibs`/`deflibs`
   are made only from checked libraries.
+* the sources of every library file (`cmake/check-asm-sections.cmake`,
+  in the same step, before the link): no section directive (`.section`,
+  `.text`, `.data`, `.bss`) at the start of an assembler line in a
+  string literal. GCC does not see a section switch in assembler text,
+  so its next function of the section it believes current can land in
+  another one (#1056, #1057); a library's assembler is in the functions
+  of `blitzlib.h` (`BLITZ_ASM_ROUTINE`, `BLITZ_ASM_BLOCK`,
+  `BLITZ_ERRCHK_ASM`, the thunks), whose section GCC chooses. Allowed:
+  `.section .blitzlib.head` (dhandlerlib's code in the header section).
+  ctest `blitzlib_asm_sections_broken`, `blitzlib_asm_sections_good`:
+  the check with broken and with good input.
 * the command reference of the website (`blitzlib cmdref`, in the same
   step as link and strip of every library file of acidlibs and deflibs of
   the default variant and of every RWE userlib): the command table the

@@ -65,9 +65,11 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
   Therefore a library writes no section directive of its own (#1057):
   assembler in the error check area is `BLITZ_ERRCHK_ASM`, assembler in the
   normal code `BLITZ_ASM_ROUTINE` or, for several routines, handlers with
-  BRA entries in front and data, `BLITZ_ASM_BLOCK`. Only dhandlerlib
-  writes `.section .blitzlib.head` (its code is in the header section,
-  where GCC cannot place a function). `blitzlib check`
+  BRA entries in front and data, `BLITZ_ASM_BLOCK`. The build step of every
+  library refuses a `.section`, `.text`, `.data` or `.bss` in the
+  assembler of its sources (`cmake/check-asm-sections.cmake`); only
+  dhandlerlib's `.section .blitzlib.head` is allowed (its code is in the
+  header section, where GCC cannot place a function). `blitzlib check`
   reports a check thunk whose C function is in the normal code.
 * **Fidelity:** algorithms are taken over bit-exactly (e.g. division by 0,
   overflow), not replaced by C operators.

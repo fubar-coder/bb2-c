@@ -806,7 +806,8 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    (with .globl for the entries of the header) and ends with a return or
    a trap; `name` only names the block (the static function
    bl_errchk_asm_name, BL_ASM_FUNC_, which starts at the block's first
-   byte).  A library writes no section directive of its own (#1057). */
+   byte).  A library writes no section directive of its own (#1057, the
+   build checks it: cmake/check-asm-sections.cmake). */
 #define BLITZ_ERRCHK_ASM(name, text)                                        \
     BL_ASM_FUNC_(static BLITZ_ERRCHK, bl_errchk_asm_##name, text "\n")
 

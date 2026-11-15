@@ -32,8 +32,10 @@
 #                 libs/blitzlib.ld already makes the layout; the relocs stay
 #                 in ld's order, a library without relocs has no
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
-#                 The same build step checks it (blitzlib check: one
-#                 hunk, header, token table, no reference from the normal
+#                 The same build step checks the sources first (no
+#                 section directive in their assembler,
+#                 check-asm-sections.cmake), then the library (blitzlib
+#                 check: one hunk, header, token table, no reference from the normal
 #                 code into the error check area, no check thunk calling a
 #                 check function in the normal code): if the check fails, NAME.obj does
 #                 not count as built and nothing that uses it is built.
@@ -112,6 +114,11 @@ set(CMDREF_VARIANT bb2-2.10)
 set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/blitzlib/cmdref-check.cmake)
 cmake_path(NORMAL_PATH CMDREF_CHECK)
 
+# the check that a library source writes no section directive of its own
+# (#1057), in the build step of every library
+set(BLITZLIB_ASM_SECTIONS_CHECK ${CMAKE_CURRENT_LIST_DIR}/check-asm-sections.cmake)
+cmake_path(NORMAL_PATH BLITZLIB_ASM_SECTIONS_CHECK)
+
 function(blitz_library name)
 	cmake_parse_arguments(PARSE_ARGV 1 arg "ALLOW33" "VARIANT;OBJ;CMDREF;OPTIMIZE" "CHECK")
 	if(NOT arg_OPTIMIZE)
@@ -171,8 +178,15 @@ function(blitz_library name)
 			list(APPEND cmdref_deps ${committed})
 		endif()
 	endif()
+	set(sources)
+	foreach(src IN LISTS arg_UNPARSED_ARGUMENTS)
+		cmake_path(ABSOLUTE_PATH src BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+		list(APPEND sources ${src})
+	endforeach()
+	list(JOIN sources "|" sources)
 	add_custom_command(OUTPUT ${obj}
 		BYPRODUCTS ${cmdref_files}
+		COMMAND ${CMAKE_COMMAND} -DSOURCES=${sources} -P ${BLITZLIB_ASM_SECTIONS_CHECK}
 		COMMAND ${CMAKE_C_COMPILER} -m${AMIGA_CPU} -noixemul -nostartfiles -nostdlib
 			-Wl,-T,${BLITZLIB_LD}
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
@@ -182,6 +196,7 @@ function(blitz_library name)
 		${check}
 		${cmdref}
 		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIB} ${arg_CHECK} ${cmdref_deps} host_tools
+			${BLITZLIB_ASM_SECTIONS_CHECK}
 		COMMENT "Blitz library ${name}.obj"
 		VERBATIM)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})
