@@ -1858,6 +1858,11 @@ and the same colours.
   other memory, `LoadSound` or `InitSound`, so that sample was never freed
   before the program ended; it is freed when the object is reused or
   freed ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
+* `GetMedVolume`, `GetMedNote` and `GetMedInstr` changed the pointer at
+  which a string expression builds its parts, so a line such as
+  `a$="V"+Str$(GetMedVolume(0))` gave a cut string or crashed the
+  program; they leave the pointer alone
+  ([#1061](https://github.com/fubar-coder/bb2-c/issues/1061)).
 
 ### Tasks and message ports
 
@@ -1877,6 +1882,12 @@ and the same colours.
   the damage; with runtime error checking such a port is the error "Port
   Not Created By CreateMsgPort", before anything is changed
   ([#1041](https://github.com/fubar-coder/bb2-c/issues/1041)).
+* `TaskName$` and `Wait` changed the register that holds the base of the
+  library a command calls, so a later function of the same line, such as
+  the second `SystemDate` in `a=SystemDate+Len(TaskName$(0))+SystemDate`,
+  was called with the wrong base and could crash the program; they keep
+  the register
+  ([#1060](https://github.com/fubar-coder/bb2-c/issues/1060)).
 
 ### Program start
 

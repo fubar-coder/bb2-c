@@ -3005,3 +3005,19 @@ rows:
     text: "`LoadShape` of a picture with 0 bitplanes stops with \"Illegal Shape Depth\", also without runtime error checking; the original wrote the picture behind an empty shape."
     page: libraries
     anchor: shapes-and-sprites
+  - issue: 1060
+    severity: 4
+    topic: "System"
+    library: "utillib"
+    command: "TaskName$, Wait"
+    text: "`TaskName$` and `Wait` keep the library base register, so a line such as `a=SystemDate+Len(TaskName$(0))+SystemDate` no longer crashes; the original changed it."
+    page: libraries
+    anchor: tasks-and-message-ports
+  - issue: 1061
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "GetMedVolume, GetMedNote, GetMedInstr"
+    text: "The three functions no longer cut or crash a string expression such as `a$=\"V\"+Str$(GetMedVolume(0))`; the original changed the pointer the string is built at."
+    page: libraries
+    anchor: sounds
