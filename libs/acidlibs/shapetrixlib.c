@@ -26,8 +26,6 @@
  * (without a palette all colours count 1, so the most frequent colour;
  * with a palette r+g+b+3 of the top bytes).
  *
- * BUG(orig), kept:
- *  - Word arithmetic: row/plane steps ADDA.w, sizes are MULU low words. (#274)
  * Kept from the original, not a bug: the brightness table keeps the values
  * of an earlier Scale with a palette for colours beyond the current
  * palette (never used: the colour choice only compares
@@ -40,6 +38,12 @@
  *   for the blitter after the last blit, and the Amiga mode waits with a
  *   loop before DisownBlitter.  The shift still uses the shape's
  *   bltsize-1 words per plane, as the original.
+ * Fixed (intended deviation, #274): the plane steps of YFlip, Rotate and
+ *   Scale were word additions (ADDA.w, sign extended: backwards for planes
+ *   of 32K and more), XFlip's row count (depth x height) and Scale's step
+ *   back over all planes were the low words of MULU.  Here the steps are
+ *   unsigned and the counts and sizes longs.  A new shape of Rotate or
+ *   Scale with a plane of 64K or more does not fit +22 (not checked).
  * Fixed (intended deviation, #273): Scale with a target size below 1
  *   (raised to 1) collected for the one destination pixel 1/Ratio source
  *   pixels from pixel 0 on, more than the shape has (the rest of the row,
@@ -153,6 +157,7 @@ static struct bb_shape newshape __attribute__((aligned(4)));
 static UWORD colvals[256];                      /* table of brightness's */
 static UWORD usevals[256];                      /* currently collected pixels */
 static ULONG xadd, yadd;
+static ULONG scaleall;          /* Scale: planesize x depth (fixed #274) */
 static UWORD numcols;                           /* dbf */
 
 /* allocshape: width, height, depth of newshape set; the rest and the
@@ -183,7 +188,7 @@ static void makeshape(struct bb_shape *shape)
     ULONG cookie;
     int i;
 
-    globfree(shape->data, shape->size);
+    globfree(shape->data, bl_mulu_w(shape->planesize, shape->depth)); /* #274 */
     cookie = (ULONG)shape->cookie;
     if (cookie)
         globfree((void *)cookie, shape->planesize);
@@ -219,7 +224,7 @@ static void blitwait(volatile UBYTE *chip)
 static void xflip(struct bb_shape *s, volatile UBYTE *chip)
 {
     UWORD pad = (UWORD)(s->ebwidth << 3) - s->width; /* d0: the pad bits */
-    UWORD rows;
+    ULONG rows;                                 /* fixed #274: a long */
     UBYTE *row;
 
     if (pad) {
@@ -246,7 +251,7 @@ static void xflip(struct bb_shape *s, volatile UBYTE *chip)
         blitwait(chip);         /* fixed #271: the last blit before the CPU */
     }
     /* now, to do the flipping! */
-    rows = (UWORD)((ULONG)s->depth * s->height) - 1;
+    rows = bl_mulu_w(s->depth, s->height) - 1;
     row = s->data;
     do {
         UWORD l = 0, r = s->ebwidth - 1;          /* left, right bytes */
@@ -277,9 +282,9 @@ static void xflip(struct bb_shape *s, volatile UBYTE *chip)
  *
  * The shift uses the shape's bltsize-1 words per plane.  Fixed (#271):
  * the CPU waits for the last blit before it flips the bytes (the
- * original did not; the result depended on timing).  BUG(orig) (#274): row steps ADDA.w, the
- * row count a MULU low word.  Errors: "Uninitialized Shape" (fchk,
- * debugger only).
+ * original did not; the result depended on timing).  Fixed (#274): the
+ * row count (depth x height) is a long (the original: a MULU low word).
+ * Errors: "Uninitialized Shape" (fchk, debugger only).
  *
  * @param chip a1: the chip base ($DFF000, chipbaselib)
  */
@@ -322,7 +327,8 @@ BLITZ_AB_ROUTINE(doxflip, b_doxflip,
  * plane); a3 = the shape.
  *
  * A cookie is made again if the shape had one (shapeslib +11).
- * BUG(orig) (#274): plane steps ADDA.w.  Errors: "Uninitialized Shape"
+ * Fixed (#274): the plane steps are unsigned (the original's ADDA.w went
+ * backwards for planes of 32K and more).  Errors: "Uninitialized Shape"
  * (fchk, debugger only).
  */
 static void BLITZ_ROUTINE doyflip_c(void)
@@ -332,7 +338,7 @@ static void BLITZ_ROUTINE doyflip_c(void)
     UBYTE *plane = s->data;
 
     do {
-        UBYTE *top = plane, *bot = plane + (WORD)s->planesize; /* top, bottom */
+        UBYTE *top = plane, *bot = plane + s->planesize; /* top, bottom */
 
         for (;;) {
             WORD off;
@@ -350,7 +356,7 @@ static void BLITZ_ROUTINE doyflip_c(void)
             } while (off >= 0);
             top += (WORD)s->ebwidth;
         }
-        plane += (WORD)s->planesize;
+        plane += s->planesize;                  /* fixed #274: unsigned */
     } while (planes-- != 0);
     cookieit(s);
 }
@@ -444,7 +450,8 @@ static void rotit2(WORD x, WORD y, UWORD angle)
  * checked, handle 0) replaces the old one; a cookie is made again if the
  * shape had one.
  *
- * BUG(orig) (#274): word arithmetic (ADDA.w steps, MULU low words).
+ * Fixed (#274): the plane steps are unsigned (the original's ADDA.w went
+ * backwards for planes of 32K and more).
  * Errors: "Uninitialized Shape" (fchk, debugger only).
  *
  * @param q d1: the angle as a Quick (0..1 = a full turn)
@@ -452,6 +459,7 @@ static void rotit2(WORD x, WORD y, UWORD angle)
 static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
 {
     struct bb_shape *s = (struct bb_shape *)blitz_string, *ns = &newshape;
+    ULONG sps, nps;                             /* plane steps, fixed #274 */
     UBYTE *row;
     UWORD angle = 256 - (UWORD)(((q << 8) >> 16) & 255);
     WORD y;
@@ -464,6 +472,8 @@ static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
     ns->height = yh - yl + 1;
     ns->depth = s->depth;
     allocshape(ns);
+    sps = s->planesize;
+    nps = ns->planesize;
     angle = 256 - angle;
     y = yl;
     row = ns->data;
@@ -487,8 +497,8 @@ static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
                 do {
                     if (*src & (1 << bit))
                         *dplane |= (UBYTE)(1 << dbit);
-                    src += (WORD)s->planesize;
-                    dplane += (WORD)ns->planesize;
+                    src += sps;
+                    dplane += nps;
                 } while (planes-- != 0);
             }
             if (--dbit < 0) {                   /* across an X... */
@@ -513,6 +523,7 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
     ULONG sxq, syq, w;
     UWORD dx, dy;
     UBYTE xone = 0, yone = 0;                   /* size raised to 1 */
+    const ULONG ps = shape->planesize;          /* fixed #274: unsigned */
 
     w = qcall(TOK_qmultiply, (ULONG)shape->width << 16, xr);
     if ((WORD)(w >> 16) < 1) {
@@ -528,6 +539,7 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
     ns->height = (UWORD)(w >> 16);
     ns->depth = shape->depth;
     allocshape(ns);
+    scaleall = bl_mulu_w(shape->planesize, shape->depth);
     xadd = qcall(TOK_qdivide, 1UL << 16, xr);   /* 1/ratio */
     yadd = qcall(TOK_qdivide, 1UL << 16, yr);
     /* fixed #273: a size raised to 1 takes the whole shape as its step
@@ -574,18 +586,29 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
                     WORD cols = xcount;
 
                     do {                        /* xl */
-                        UWORD pl = 0;
-                        ULONG c = 0;
+                        ULONG c = 0, t, pl = 0;
+                        UWORD n = shape->depth - 1;
 
-                        do {
-                            if (*q & (1 << (b & 7)))
-                                c |= 1UL << (pl & 31);  /* BSET d2,d6 */
-                            q += (WORD)shape->planesize;
-                            __asm__("" : "+a"(q));      /* no __mulsi3 */
-                            pl++;
-                        } while (pl < shape->depth);
+                        /* the pixel of every plane: BSET pl,c for a set
+                           bit (the original's BSET d2,d6); the plane step
+                           an ADDA.l of the unsigned bytes per plane
+                           (fixed #274: the original ADDA.w went backwards
+                           for planes of 32K and more).  Assembler: GCC
+                           spilled the step from the loop */
+                        __asm__("1: moveq #0,%[t]\n\t"
+                                "move.b (%[q]),%[t]\n\t"
+                                "btst %[b],%[t]\n\t"
+                                "beq.s 2f\n\t"
+                                "bset %[pl],%[c]\n"
+                                "2: adda.l %[ps],%[q]\n\t"
+                                "addq.w #1,%[pl]\n\t"
+                                "dbf %[n],1b"
+                                : [q] "+a"(q), [c] "+d"(c), [pl] "+d"(pl), [n] "+d"(n),
+                                  [t] "=&d"(t)
+                                : [b] "d"((ULONG)(b & 7)), [ps] "r"(ps)
+                                : "cc", "memory");
                         usevals[(UWORD)c] += colvals[(UWORD)c];
-                        q -= (WORD)shape->size;
+                        q -= scaleall;  /* fixed #274: a long, not the word +26 */
                         if ((WORD)--b < 0) {
                             b = 7;
                             q++;
@@ -614,7 +637,7 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
                     if (col & 1)
                         *q |= (UBYTE)(1 << bit);
                     col >>= 1;
-                    q += (WORD)ns->planesize;
+                    q += ns->planesize;     /* fixed #274: unsigned */
                 } while (n-- != 0);
             }
             sxq = nx;
@@ -638,7 +661,8 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
  *
  * Fixed (#273): a target size below 1 raised to 1 collects exactly the
  * shape's row/column (the original read 1/Ratio pixels, past the shape).
- * BUG(orig) (#274): word arithmetic.  Errors: "Uninitialized Shape" (scalechk2, debugger only).
+ * Fixed (#274): unsigned plane steps, the step back over all planes a
+ * long (the original: ADDA.w, the word +26).  Errors: "Uninitialized Shape" (scalechk2, debugger only).
  *
  * @param xr d1: the x ratio (Quick)
  * @param yr d2: the y ratio (Quick)

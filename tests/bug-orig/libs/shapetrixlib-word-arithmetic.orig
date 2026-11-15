@@ -6,6 +6,7 @@ ok
 [run]
 shape 512 520 per plane 33280
 top AB bottom 00
+xflip last row 8000
 rc=0
 [blitz2]
 rc=0
