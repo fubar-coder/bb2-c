@@ -2008,11 +2008,14 @@ utillib init|popped||1	$00000000
 utillib init|*init = 0||1	$00000000
 TaskName$|kept|task 0|1	kept
 TaskName$|popped|task 0|1	$00000000
+TaskName$|a6 kept|task 0|1 [orig]	$00000000
+TaskName$|a6 kept|task 0|1 [fixed #1060]	$00000001
 TaskName$|d0|task 0|1	$0000000B
 TaskName$|a3|task 0|1	$0000000C
 TaskName$|out|task 0|1	bytes 256 fnv D1C4DC77
 TaskName$|kept|task FindTask(0)|1	kept
 TaskName$|popped|task FindTask(0)|1	$00000000
+TaskName$|a6 kept|task FindTask(0)|1	$00000001
 TaskName$|d0|task FindTask(0)|1	$0000000B
 TaskName$|a3|task FindTask(0)|1	$0000000C
 TaskName$|out|task FindTask(0)|1	bytes 256 fnv D1C4DC77
@@ -2069,6 +2072,8 @@ DeleteMsgPort|popped|public|1	$00000000
 DeleteMsgPort|findport gone|public|1	$00000001
 Wait|kept||1	kept
 Wait|popped||1	$00000000
+Wait|a6 kept||1 [orig]	$00000000
+Wait|a6 kept||1 [fixed #1060]	$00000001
 Wait|d0 & CTRL_F||1	$00008000
 utillib finit|kept||1	kept
 utillib finit|popped||1	$00000000

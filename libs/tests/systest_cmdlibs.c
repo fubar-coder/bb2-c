@@ -335,6 +335,8 @@ static void test_utillib(void)
         memset(out, 0xEE, 256);
         DO1(E("utillib", 3), R.d[0] = i ? (ULONG)FindTask(NULL) : 0;
             R.a[3] = (ULONG)out);
+        /* the original loses a6 in TaskName$ of task 0 (#1060) */
+        OBS("a6 kept", R.a[6] == IN.a[6]);
         OBS("d0", R.d[0]);
         OBS("a3", R.a[3] - (ULONG)out);
         OBSBYTES("out", out, 256);
@@ -379,6 +381,7 @@ static void test_utillib(void)
     Signal(FindTask(NULL), SIGBREAKF_CTRL_F);
     CCR = callstk(E("utillib", 2), &R, NULL, 0, &POP);
     preserve();
+    OBS("a6 kept", R.a[6] == IN.a[6]);           /* the original loses it (#1060) */
     /* other pending signals of the test task may differ between the calls */
     OBS("d0 & CTRL_F", R.d[0] & SIGBREAKF_CTRL_F);
 
@@ -517,9 +520,9 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("WBExtViewMode", none);
     KEEPS("memlib init", d1-d7|a0-a3|a6);
     KEEPS("utillib init", d1-d7|a0-a3|a6);
-    /* the original loses a6 in TaskName$ and Wait: the rule's a6 is not
-       stated for them (an original bug to decide, see the report of
-       libs-performance group 2) */
+    /* the original loses a6 in TaskName$ and Wait (#1060): the rule's a6
+       is not stated for them here, the cases "a6 kept" are the pair
+       [orig] / [fixed #1060] */
     KEEPS("TaskName$", none);
     KEEPS_FUNCTION("CreateMsgPort", none);
     KEEPS_STATEMENT("DeleteMsgPort", none);

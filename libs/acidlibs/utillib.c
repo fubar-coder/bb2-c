@@ -47,6 +47,12 @@
  *     check (delportchk, error check area only; utillib gets one for it)
  *     refuses such a port with "Port Not Created By CreateMsgPort";
  *     release code unchanged (an invalid argument).
+ *   - #1060: TaskName$ of task 0 (FindTask(0)) and Wait changed a6 and did
+ *     not restore it, although the compiler keeps the library base it
+ *     loaded in a6 across a statement (lasta6): a call behind TaskName$ in
+ *     the same expression went through exec's base.  Here both keep a6
+ *     (the compiled C routines do; test: library test cases "a6 kept",
+ *     bug-orig test utillib-taskname-a6).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
