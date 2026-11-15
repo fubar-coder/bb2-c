@@ -26,7 +26,4 @@ intro: |
   Wend
   ```
 
-  Kept from the original: from palette 2 on, the first colour of a fade
-  comes out wrong ([#134](https://github.com/fubar-coder/bb2-c/issues/134)).
-
   *Based on the fadelib guide by Acid Software.*

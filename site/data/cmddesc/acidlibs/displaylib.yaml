@@ -25,10 +25,15 @@
     A sprite that has not been made is the error "Uninitialised Sprite",
     one that needs more channels than the list has "Not Enough Sprite
     Channels". The channels after the list's own sprites are those of
-    `CustomSprites`.
-    Kept from the original: a sprite that spans the last normal channel
-    and the first channel of `CustomSprites` overwrites other parts of
-    the list ([#414](https://github.com/fubar-coder/bb2-c/issues/414)).
+    `CustomSprites`. The channels of a sprite must all lie in one of
+    the two banks, the list's own channels or those of `CustomSprites`,
+    since the banks show their sprites in different parts of the
+    display; a sprite that runs from one into the other is the error
+    "Not Enough Sprite Channels" too.
+    Kept from the original: a sprite on a channel of `CustomSprites`
+    moved completely above or below the display stays visible, and other
+    instructions of the list are overwritten
+    ([#1051](https://github.com/fubar-coder/bb2-c/issues/1051)).
 "DisplayPalette":
   text: Copies the colours of a palette into a copper list, from colour `coloroffset` of the palette on and, with the AGA chip set, into colour bank `bankoffset`.
   notes: |
@@ -62,9 +67,7 @@
     Give `thru256flag` when the copper instructions of the change run on
     past line 255 (a large AGA palette change can take several lines of
     the display): the custom commands after it then add no second wait
-    for line 255. Kept from the original:
-    its value is not read, so 0 acts as 1
-    ([#951](https://github.com/fubar-coder/bb2-c/issues/951)).
+    for line 255. A `thru256flag` of 0 is the same as leaving it out.
 "CustomString":
   text: Puts the copper instructions in `Copper$`, four bytes each, at line `YPos`, through the custom copper instructions from `CCOffset` on.
   notes: |
@@ -73,19 +76,14 @@
 "CustomSprites":
   text: Sets up `NumSprites` further sprites from line `YPos` on, through the custom copper instructions; `DisplaySprite` shows them on the channels after the list's own sprites, 8 to 15 for a list with 8. It needs 4n+2 instructions.
   notes: |
-    Kept from the original: the offset is taken 16 times too large, and
-    the sprites are not set up right
-    ([#324](https://github.com/fubar-coder/bb2-c/issues/324),
-    [#413](https://github.com/fubar-coder/bb2-c/issues/413)).
+    `CCOffset` counts copper instructions, as for `CustomColors` and
+    `CustomString`. Channels that show no sprite show an empty one.
 "CustomChunky":
   text: Makes a chunky area of `width` by `height` blocks from line `YPos` on, each block a colour register changed by the copper, `res` lines high; with `splitpos`, the area is split into two parts. AGA only.
   notes: |
     `CustomChunkySize` gives the number of custom instructions it needs.
     `YPos` must not be lower than `res`, else this is the error
-    "CustomChunky must start at ypos greater than res". Kept from the original: the split
-    form changes the position of high and super high resolution sprites
-    shown later with `DisplaySprite`
-    ([#949](https://github.com/fubar-coder/bb2-c/issues/949)).
+    "CustomChunky must start at ypos greater than res".
 "CustomChunkySize":
   text: The number of custom copper instructions `CustomChunky` needs for an area of `width` by `height`.
 "DisplayDblScan":
