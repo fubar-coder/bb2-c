@@ -1,8 +1,9 @@
 ; bmath - perf benchmark: Long, Quick and Float arithmetic, Rnd, Sgn, Abs, Int, Frac, QLimit, Peek, Poke
 DEFTYPE .l
-Dim t(34)
+Dim t(36)
 a=123456 : b=789 : c=0 : a2=123456789 : b2=70000
 q1.q=12.5 : q2.q=3.25 : q3.q=0
+q4.q=1000.5 : q5.q=1.0000153 : a3=123456789 : b3=65536
 f1.f=12.5 : f2.f=3.25 : f3.f=0
 w1.w=1234 : w2.w=57 : w3.w=0
 Dim buf.l(10)
@@ -182,6 +183,16 @@ For i=1 To 2000
 c=a2 MOD b2
 Next
 Gosub tod : t(33)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+q3=q4/q5
+Next
+Gosub tod : t(34)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=a3/b3
+Next
+Gosub tod : t(35)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -218,6 +229,8 @@ NPrint "pokew ",t(30)," 2000 1"
 NPrint "pokel ",t(31)," 2000 1"
 NPrint "ldiv32 ",t(32)," 2000 1"
 NPrint "lmod32 ",t(33)," 2000 1"
+NPrint "qdivw ",t(34)," 2000 1"
+NPrint "ldivw ",t(35)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

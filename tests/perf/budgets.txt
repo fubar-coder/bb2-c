@@ -97,6 +97,8 @@ bmath.ldiv                    528     2661.0  c=a/b
 bmath.lmod                    532     3113.0  c=a MOD b
 bmath.ldiv32                 1256     2515.5  c=a2/b2 (a2=123456789, b2=70000: the divisor loop)
 bmath.lmod32                 1854     2973.5  c=a2 MOD b2 (same values: the slow path)
+bmath.qdivw                 2053~4     3876.5  q3=q4/q5 (q4=1000.5, q5=$00010001: the loop with most steps)
+bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: the smallest divisor of the loop)
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2
 bmath.asg_q                  35~5       32.5  q3=q1
