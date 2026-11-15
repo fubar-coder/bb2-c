@@ -4,7 +4,8 @@ done
 [compile]
 ok
 [run]
-at most 11 words 0
+40 to 50: 11
+50 to 40, at most 22 words 0
 rc=0
 [blitz2]
 rc=0

@@ -39,7 +39,10 @@
  *     error checking _polychk (error check area only, the original had
  *     none and no error check area) raises "Too Many Points", the copy
  *     stays.
- *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
+ *   - Fixed (#417): ChunkyVlin without CLIP does not swap y1 > y2: about
+ *     65536 words; such a range is an invalid argument (the plain form is
+ *     the fast form): with runtime error checking _chunkyvlinchk (error
+ *     check area only) raises "ChunkyVlin y1 MUST NOT be greater than y2".
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
  *   - Fixed (#1035): the dither form's B modulo was mod + (target plane
  *     distance - dither plane distance), so B stepped per plane by 2 x the
@@ -71,7 +74,7 @@ void _chunkycls(void), _chunkyplot(void), _chunkyplotclip(void);
 void _chunkyvlin(void), _chunkyvlinclip(void), _chunkypoly(void), _chunkypoly2(void);
 void _bitmappoly(void), _bitmappoly2(void), _rendertobitmap(void), _rendertobitmap2(void);
 void _rendertochunky(void), _rendertochunky2(void), _renderpoly(void);
-void _polychk(void);
+void _polychk(void), _chunkyvlinchk(void);
 
 
 /* !libheader {#chunkylib,0,0,0,errors}: the original has no error check
@@ -96,7 +99,7 @@ BLITZ_NAME("ChunkyPlot", "x,y,color,[,CLIP]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_displaylib, 0x1302);
-BLITZ_SUBS(_chunkyvlin, 0, 0);
+BLITZ_SUBS(_chunkyvlin, _chunkyvlinchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_displaylib, 0x1302);
 BLITZ_SUBS(_chunkyvlinclip, 0, 0);
@@ -520,7 +523,8 @@ static void BLITZ_ROUTINE _chunkyplotclip_c(WORD x BL_REG(d0), WORD y BL_REG(d1)
 }
 BLITZ_THUNK(_chunkyplotclip, _chunkyplotclip_c, "d1/a0-a1");
 
-/* y2 - y1 + 1 words down from x, y1 (DBRA: y1 > y2 gives about 65536, #417) */
+/* y2 - y1 + 1 words down from x, y1 (DBRA: y1 > y2 gives about 65536;
+   refused by _chunkyvlinchk with runtime error checking, #417) */
 static void chunkyvlin(const struct bb_coplist *cl, UWORD x, UWORD y1, UWORD y2, UWORD colour)
 {
     UWORD *p = chunkypixel(cl, x, y1), n = y2 - y1;
@@ -905,6 +909,7 @@ BLITZ_THUNK(_renderpoly, _renderpoly_c, "d1/a0-a1");
 /* ------------------------------------------- error checks (debugger only) */
 
 BLITZ_ERRCHK_MESSAGE(pointsmess, "Too Many Points");
+BLITZ_ERRCHK_MESSAGE(vlinmess, "ChunkyVlin y1 MUST NOT be greater than y2");
 
 /* _polychk - not in the original (#395): ChunkyPoly, BitMapPoly or
    RenderPoly with more than POINTMAX points (d0; negative: the reverse
@@ -917,7 +922,17 @@ static void BLITZ_ERRCHK _polychk_c(WORD n BL_REG(d0))
         BLITZ_RUNERR(pointsmess);
 }
 
+/* _chunkyvlinchk - not in the original (#417): ChunkyVlin without CLIP
+   with y1 (d1) greater than y2 (d2), which would write about 65536 words
+   (the plain form does not swap them, the CLIP form does) */
+static void BLITZ_ERRCHK _chunkyvlinchk_c(WORD y1 BL_REG(d1), WORD y2 BL_REG(d2))
+{
+    if (y2 < y1)
+        BLITZ_RUNERR(vlinmess);
+}
+
 /* the thunks behind all C check functions: their assembler ends with
    `.text`, and GCC does not repeat the section of a following
    BLITZ_ERRCHK function */
 BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(_chunkyvlinchk, _chunkyvlinchk_c, "d0-d1/a0-a1");
