@@ -3021,3 +3021,11 @@ rows:
     text: "The three functions no longer cut or crash a string expression such as `a$=\"V\"+Str$(GetMedVolume(0))`; the original changed the pointer the string is built at."
     page: libraries
     anchor: sounds
+  - issue: 1063
+    severity: 4
+    topic: "Compiler"
+    library: "staticslib"
+    command: "Statement, Function"
+    text: "A procedure with three or more parameters and a local NewType variable keeps all its parameters; the original overwrote the third, and with five parameters the fifth."
+    page: compiler
+    anchor: newtypes

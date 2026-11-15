@@ -755,6 +755,11 @@ source the original accepted are shown with examples on
 * A NewType that contained a field of its own type got a random size; the
   compiler reports "Illegal Type", and a pointer to the own type stays
   allowed ([#973](https://github.com/fubar-coder/bb2-c/issues/973)).
+* A Statement or Function with three or more parameters and a local
+  NewType variable got a wrong third parameter, and with five parameters a
+  wrong fifth one too, because the code that sets up the local variables
+  at the start of the procedure overwrote them; every parameter keeps its
+  value ([#1063](https://github.com/fubar-coder/bb2-c/issues/1063)).
 
 ### Paths and include files
 
