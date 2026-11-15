@@ -1981,6 +1981,9 @@ ExecVersion|d0||1	$00000028
 WBExtViewMode|kept||1	kept
 WBExtViewMode|popped||1	$00000000
 WBExtViewMode|d0.w||1	$00002400
+ExecVersion|kept|d0 upper word set|1	kept
+ExecVersion|popped|d0 upper word set|1	$00000000
+ExecVersion|d0.w|d0 upper word set|1	$00000028
 EMouseX|kept||1	kept
 EMouseX|popped||1	$00000000
 EMouseX|d0.w||1	$00000000

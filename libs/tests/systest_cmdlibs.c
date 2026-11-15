@@ -417,6 +417,17 @@ static void test_environlib(void)
         else
             OBS("d0", R.d[0]);
     }
+    /* ExecVersion with the upper word of d0 set before the call: the
+       original leaves it (a word result), the C build returns a
+       zero-extended long, which the callers' long compare needs.  Both
+       sets give the same d0.w; the zero extension is checked on the C
+       build only (the original has no such contract) */
+    ROUT = "ExecVersion";
+    strcpy(VEC, "d0 upper word set");
+    DO1(E("environlib", 6), R.d[0] = 0x5a5a0000);
+    OBS("d0.w", R.d[0] & 0xffff);
+    if (!strcmp(loaded.what, "C"))
+        check("ExecVersion: the upper word of d0 is 0 although it was set", R.d[0] <= 0xffff);
     CloseLibrary(ib);
 }
 
