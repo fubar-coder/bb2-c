@@ -28,9 +28,9 @@ set(ACIDLIBS_WITHOUT_LITERAL rwe-1999 rwe-1999-eval rwe-1999-ahi)
 # cycles less per frame, for 776 bytes) and trackerlib (the PlayModule
 # interrupt 110 less per frame, for 212 bytes).  Not here: strcomplib
 # (13% slower), printlib (Str$ 3% faster for 13% more code, in nearly
-# every program), strings1lib (its copy loop, bl_strcopy, is shaped for
-# -Os: at -O2 GCC adds register copies to it, tests/perf), strings2lib
-# (its assignment of 1 character, Chr$, 13 cycles slower)
+# every program), strings1lib and strings2lib (their copy loop,
+# BL_STRCOPY, is shaped for -Os: at -O2 GCC adds register copies to it,
+# r$=a$ 78 and Chr$ 63 cycles slower, tests/perf)
 set(ACIDLIBS_SPEED bitmaplib medlib sortlib stringfunclib trackerlib vallib)
 foreach(name ${ACIDLIBS_SPEED})
 	if(NOT name IN_LIST ACIDLIBS_ORDER)

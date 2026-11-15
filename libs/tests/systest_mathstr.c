@@ -482,7 +482,7 @@ static void test_strcomp(void)
 
 /* ----------------------------------------------- strings2lib/maxlenlib */
 
-static UBYTE src[1200];
+static UBYTE src[70016];
 static ULONG var[4];                    /* string variables */
 
 static ULONG hdr(int v, int k)         /* -8 alloc'd, -4 len */
@@ -546,6 +546,9 @@ static void test_strings(void)
             assign(g, g, i * 3, lens[i]);
         /* string from scratch with length 0 */
         assign(g, 2 + g, 0, 0);
+        /* lengths above 16 bits: new memory, then reused with a rest of 1 */
+        assign(g, 2 + g, 5, 70007);
+        assign(g, 2 + g, 6, 70001);
     }
     /* MaxLen, then strings into the buffer */
     for (g = 0; g < 2; g++) {
@@ -611,8 +614,8 @@ int main(int argc, char **argv)
     KEEPS("strcomp", d0-d7|a2|a6);
     KEEPS("casestrcomp", d2-d7|a2|a3|a6);
     KEEPS("memlib init", d1-d7|a0-a3|a6);
-    KEEPS("stringass", d1-d7|a0|a2|a6);
-    KEEPS("gstringass", d1-d7|a0|a2);
+    KEEPS("stringass", d1-d7|a2|a6);
+    KEEPS("gstringass", d1-d7|a2);
     KEEPS("domaxlen", d3-d7|a3);
     KEEPS("domaxlenl", d3-d7|a3|a6);
     KEEPS("maxlen echk1", d0-d7|a0-a3|a6);

@@ -56896,6 +56896,24 @@ stringass|content|var2 len 0|1	$00000001
 stringass|alloc'd|var2 len 0|1	$00000000
 stringass|len|var2 len 0|1	$00000000
 stringass|a6|var2 len 0|1	$00000000
+stringass|kept|var2 len 70007|1	kept
+stringass|popped|var2 len 70007|1	$00000004
+stringass|a3 advanced|var2 len 70007|1	$00011177
+stringass|fits|var2 len 70007|1	$00000000
+stringass|reused|var2 len 70007|1	$00000001
+stringass|content|var2 len 70007|1	$00000001
+stringass|alloc'd|var2 len 70007|1	$00011177
+stringass|len|var2 len 70007|1	$00011177
+stringass|a6|var2 len 70007|1	$00000000
+stringass|kept|var2 len 70001|1	kept
+stringass|popped|var2 len 70001|1	$00000004
+stringass|a3 advanced|var2 len 70001|1	$00011171
+stringass|fits|var2 len 70001|1	$00000001
+stringass|reused|var2 len 70001|1	$00000001
+stringass|content|var2 len 70001|1	$00000001
+stringass|alloc'd|var2 len 70001|1	$00011177
+stringass|len|var2 len 70001|1	$00011171
+stringass|a6|var2 len 70001|1	$00000000
 gstringass|kept|var1 len 5|1	kept
 gstringass|popped|var1 len 5|1	$00000004
 gstringass|a3 advanced|var1 len 5|1	$00000005
@@ -57112,6 +57130,24 @@ gstringass|content|var3 len 0|1	$00000001
 gstringass|alloc'd|var3 len 0|1	$00000000
 gstringass|len|var3 len 0|1	$00000000
 gstringass|a6|var3 len 0|1	$00000008
+gstringass|kept|var3 len 70007|1	kept
+gstringass|popped|var3 len 70007|1	$00000004
+gstringass|a3 advanced|var3 len 70007|1	$00011177
+gstringass|fits|var3 len 70007|1	$00000000
+gstringass|reused|var3 len 70007|1	$00000001
+gstringass|content|var3 len 70007|1	$00000001
+gstringass|alloc'd|var3 len 70007|1	$00011177
+gstringass|len|var3 len 70007|1	$00011177
+gstringass|a6|var3 len 70007|1	$00000008
+gstringass|kept|var3 len 70001|1	kept
+gstringass|popped|var3 len 70001|1	$00000004
+gstringass|a3 advanced|var3 len 70001|1	$00011171
+gstringass|fits|var3 len 70001|1	$00000001
+gstringass|reused|var3 len 70001|1	$00000001
+gstringass|content|var3 len 70001|1	$00000001
+gstringass|alloc'd|var3 len 70001|1	$00011177
+gstringass|len|var3 len 70001|1	$00011171
+gstringass|a6|var3 len 70001|1	$00000008
 domaxlenl|kept|var0 maxlen 100|1	kept
 domaxlenl|popped|var0 maxlen 100|1	$00000000
 domaxlenl|d0 = var|var0 maxlen 100|1	$00000001

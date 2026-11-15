@@ -251,6 +251,28 @@ build.
     (3074.2), Instr 4307.0 -> 4118.9 (4074.7). The C version is faster
     where the strings have the same parity and slower by about its thunk
     where they do not (the second operand of compare and concat).
+    `lastring`/`astring` are C too: `stringass_c` is the common path (the
+    string fits: the length is set, then `BL_STRCOPY` from a3 itself),
+    the allocation path is `stringass_new` (`noinline`); the length is
+    read back from the header after that call, so no register is kept
+    across it and the function uses d0, d1, a0 and a3 only. The thunk is
+    a small assembler block that saves only d1 (contract d1-d7 and a2;
+    a0 is not needed, thunks.md 1.4: the KEEPS statements follow the
+    contract), loads the length, removes it from the stack with `move.l
+    (sp)+,(sp)` (the `BLITZ_THUNK_POP` sequence costs about 50 cycles
+    more) and lets `astring` add 8 to a6 and fall into `lastring`.
+    strings2lib stays at `-Os` (`-O2` is slower, above). Measured, after
+    5.1 -> after 5.2 (`g5-asm` in brackets, original): `r$=a$` 1972.5 ->
+    1219.5 (1261.0, 1367.5), Chr$ 807.0 -> 400.0 (332.0, 411.0), Mid$
+    2083.4 -> 1642.5 (1599.5, 1553.5), concat 3386.9 -> 2154.0 (2181.5,
+    2318.5), UCase$ 3500.4 -> 2743.5 (2788.0, 3124.0), Hex$ 2159.4 ->
+    1684.5 (1592.5, 1570.0), Inkey$ 1486.0 -> 1076.0 (1014.1, 601.7).
+    No command whose cost is the copy stays more than 10 % above the
+    original (Mid$ 1.06, Left$ 1.05, Right$ 1.04, Hex$ 1.07, Chr$ 0.97);
+    Str$, Val, Instr, compare and Inkey$ are 13 to 80 % above it with the
+    assembler version too, their cost is in printlib, vallib,
+    stringfunclib, strcomplib and the input libraries. So neither
+    routine needs the assembler loop.
 
 ## Risks / Trade-offs
 
