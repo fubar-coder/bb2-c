@@ -143,7 +143,7 @@ the test logic itself is C:
 | `[mathstr]` | `systest_mathstr.c` | strings2lib, ffplib, strcomplib, floatquicklib, modlib, maxlenlib | 56 864 |
 | `[runtime]` | `systest_runtime.c` | arrayslib, maxslib, errtraplib, rundebuglib | 113 |
 | `[system]` | `systest_system.c` | wbstartuplib, intlib, switchlib, runerrlib, debuglib | 178 |
-| `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below) | 2 059 |
+| `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below); the exceptions of the register rule; the small assembler entries of vallib, scrolllib, gameiolib, mouselib, collslib, shapeslib, fontlib, windowslib and blitzkeyslib | 2 837 |
 
 A test program loads one library set (the C build or the original) and
 writes every observation as a case; the cases are compared with the

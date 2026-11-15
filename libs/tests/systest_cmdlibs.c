@@ -1,6 +1,8 @@
 /*
  * systest_cmdlibs - the basic command libraries
- *   memacclib, sortlib, mathtranslib, utillib, environlib
+ *   memacclib, sortlib, mathtranslib, utillib, environlib, and the small
+ *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
+ *   shapeslib, fontlib, windowslib and blitzkeyslib
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -467,6 +469,287 @@ static void test_exceptions(void)
     DO1(cmd_form(getlib(&loaded, "vallib"), 6, 1), R.d[0] = 100);
 }
 
+/* ------------------------------------------------------- small entries */
+
+/* code of form `form` of the command `name` (the names are the same in
+   both sets; found by name, not by the entry's place in the table) */
+static UBYTE *cmd_named(struct lib *l, const char *name, int form)
+{
+    UBYTE *b = l->code, *p = b + 0x30;
+    while (!(W(p) & 0x8000)) {
+        UWORD kind = W(p);
+        UBYTE *code = NULL;
+        p += 6;
+        if ((kind & 0xf) == 0) {                /* nullsub */
+            while (W(p)) p += 4;
+            p += 2 + 12;
+        } else {
+            int f = 0;
+            if (kind != 8) {
+                while (W(p) != 0xffff) {        /* forms */
+                    p += 2 + (W(p) & 0xff);
+                    p = b + ((p - b + 1) & ~1);
+                    while (W(p)) p += 4;
+                    p += 2;
+                    if (f++ == form)
+                        code = (UBYTE *)L(p + 4);
+                    p += 12;
+                }
+                p += 2;
+            }
+            p += 6;                             /* next.l, num.w */
+            if (!strcmp((const char *)p, name)) {
+                check("cmd_named: the form exists", code != NULL);
+                return (UBYTE *)((ULONG)code & ~1UL);
+            }
+            while (*p++) ;                      /* name */
+            while (*p++) ;                      /* help */
+            p = b + ((p - b + 1) & ~1);
+        }
+    }
+    check("cmd_named: the command exists", FALSE);
+    return NULL;
+}
+
+#define N(lib, name, form) cmd_named(getlib(&loaded, lib), (name), (form))
+
+/* the registers d2-d7 and a2 (kept(): bits 2-7 and 10) */
+#define KEPT_D2D7A2 0x04fcUL
+
+static UBYTE bmplanes[3][32];           /* a bitmap of 3 planes, 4 x 8 bytes */
+static ULONG bmobj[16];                 /* its struct bb_bitmap, 64 bytes */
+static UBYTE shobj[32];                 /* a struct bb_shape */
+
+static void mkbitmap(void)
+{
+    UBYTE *b = (UBYTE *)bmobj;
+    int i;
+    memset(bmobj, 0, sizeof bmobj);
+    memset(bmplanes, 0x5a, sizeof bmplanes);
+    *(UWORD *)(b + 0) = 4;                      /* bpr */
+    *(UWORD *)(b + 2) = 8;                      /* rows */
+    *(UWORD *)(b + 4) = 3;                      /* flags 0, depth 3 */
+    for (i = 0; i < 3; i++)
+        *(UBYTE **)(b + 8 + 4 * i) = bmplanes[i];
+    *(WORD *)(b + 48) = 2;                      /* origin x */
+    *(WORD *)(b + 50) = 1;                      /* origin y */
+    *(UWORD *)(b + 56) = 30;                    /* clip width */
+    *(UWORD *)(b + 58) = 7;                     /* clip height */
+}
+
+/* The small entries (OpenSpec change libs-performance, group 6: assembler
+   entries in the original's form): their entry conditions - the upper
+   words of word arguments, every argument type, the clipping, the limits
+   - against both sets.  Hardware-dependent results (Joyx ..., Rnd,
+   DoColl) are taken as the emulator gives them, the rest exactly. */
+static void test_smallentries(void)
+{
+    static const struct { ULONG x, y, c; } plots[] = {
+        { 0, 0, 5 }, { 3, 2, 7 }, { 0xabcd000a, 0x12340003, 0x77770002 },
+        { 27, 5, 0 }, { 17, 0, 0xffff }, { 26, 3, 0x80000001 }, { 9, 4, 0xfffe },
+        { 28, 0, 1 }, { 0, 6, 1 }, { 0xfffe, 0, 1 }, { 0, 0xffff, 3 }, { 1, 1, 0x7fff } };
+    static const ULONG qlim[][3] = {
+        { 5, 0, 10 }, { (ULONG)-5, 0, 10 }, { 10, 0, 10 }, { 0, 0, 10 }, { 11, 0, 10 },
+        { 0x80000000, 0, 0x7fffffff }, { 0x7fffffff, 0x80000000, 0x7fffffff },
+        { 0xfff80000, 0xfff00000, 0x00100000 }, { 3, 10, 0 }, { 20, 10, 0 },
+        { 0x00018000, 0x00010000, 0x00020000 } };
+    static const struct { UWORD type; ULONG v; } nums[] = {
+        { 1, 0x123456f0 }, { 1, 0x12345670 }, { 1, 0 }, { 0, 0xabcd0081 },
+        { 2, 0x1234fff0 }, { 2, 0x12340010 }, { 2, 0 }, { 3, 0xfffffff0 },
+        { 3, 0x00012345 }, { 3, 0 }, { 4, 0x00038000 }, { 4, 0xfffc8000 },
+        { 4, 0xffff0000 }, { 4, 0x00004000 }, { 4, 0 }, { 4, 0x80000000 },
+        { 5, 0xa0000042 }, { 5, 0xa00000c2 }, { 5, 0 }, { 5, 0xc0000041 },
+        { 6, 0x00000007 }, { 8, 0xfffffffb } };
+    static UWORD tframe[2];
+    UBYTE *p;
+    unsigned i, j;
+
+    /* Plot, Point: scrolllib on a bitmap object made here (origin 2,1,
+       clip 30 x 7) */
+    mkbitmap();
+    ROUT = "Plot";
+    for (i = 0; i < sizeof plots / sizeof plots[0]; i++) {
+        sprintf(VEC, "x $%lX y $%lX colour $%lX", plots[i].x, plots[i].y, plots[i].c);
+        DO1(N("scrolllib", "Plot", 0), R.d[0] = plots[i].x; R.d[1] = plots[i].y;
+            R.d[2] = plots[i].c; R.a[2] = (ULONG)bmobj);
+        OBSBYTES("planes", bmplanes, sizeof bmplanes);
+        /* the port keeps d2-d7 and a2 (MikesSpaceFXLib calls Plot from a
+           loop); the original changes d2 and d3 */
+        if (!strcmp(loaded.what, "C"))
+            check("Plot: d2-d7 and a2 kept", (kept(&IN, &R) & KEPT_D2D7A2) == KEPT_D2D7A2);
+    }
+    ROUT = "Point";
+    for (i = 0; i < sizeof plots / sizeof plots[0]; i++) {
+        ULONG x = (plots[i].x & 0xffff) | 0x5a5a0000UL;
+        sprintf(VEC, "x $%lX y $%lX", x, plots[i].y);
+        DO1(N("scrolllib", "Point", 0), R.d[0] = x; R.d[1] = plots[i].y;
+            R.a[2] = (ULONG)bmobj);
+        OBS("d0", R.d[0]);
+    }
+
+    /* Joyx, Joyy, Joyr, Joyb: the hardware as the emulator has it; the
+       port is a word (TST.w d0), the upper word is no part of it */
+    {
+        static const char *joys[] = { "Joyx", "Joyy", "Joyr", "Joyb" };
+        static const ULONG ports[] = { 0, 1, 2, 0x12340000, 0xffff0001 };
+        for (i = 0; i < 4; i++) {
+            ROUT = joys[i];
+            for (j = 0; j < sizeof ports / sizeof ports[0]; j++) {
+                sprintf(VEC, "port $%lX", ports[j]);
+                DO1(N("gameiolib", joys[i], 0), R.d[0] = ports[j]);
+                OBS("d0", R.d[0]);
+            }
+        }
+    }
+
+    /* MouseX ... after PositionMouse (the speeds: their initial value) */
+    ROUT = "PositionMouse";
+    strcpy(VEC, "x $5A5A0123 y $A5A5FF80");
+    DO1(N("mouselib", "PositionMouse", 0), R.d[0] = 0x5a5a0123; R.d[1] = 0xa5a5ff80);
+    {
+        static const char *mice[] = { "MouseX", "MouseY", "MouseXSpeed", "MouseYSpeed" };
+        for (i = 0; i < 4; i++) {
+            ROUT = mice[i];
+            strcpy(VEC, "after PositionMouse");
+            DO1(N("mouselib", mice[i], 0), (void)0);
+            OBS("d0", R.d[0]);
+        }
+    }
+
+    /* RawStatus with the upper word of d0 set (no key matrix: the library
+       variables are 0, the bit is read from low memory, the same in both
+       sets) */
+    ROUT = "RawStatus";
+    for (i = 0; i < 3; i++) {
+        sprintf(VEC, "rawkey $5A5A%04X", i * 33);
+        DO1(N("blitzkeyslib", "RawStatus", 0), R.d[0] = 0x5a5a0000UL | (i * 33));
+        OBS("d0.w", R.d[0] & 0xffff);
+    }
+
+    /* QLimit: signed limits, q = low and q = high, low > high */
+    ROUT = "QLimit";
+    for (i = 0; i < sizeof qlim / sizeof qlim[0]; i++) {
+        sprintf(VEC, "q $%lX low $%lX high $%lX", qlim[i][0], qlim[i][1], qlim[i][2]);
+        DO1(N("vallib", "QLimit", 0), R.d[0] = qlim[i][0]; R.d[1] = qlim[i][1];
+            R.d[2] = qlim[i][2]);
+        OBS("d0", R.d[0]);
+    }
+
+    /* Rnd(Range): the range is an unsigned word; the result (hardware
+       noise, not compared as a value) is below range << 16 */
+    ROUT = "Rnd(Range)";
+    {
+        static const ULONG ranges[] = { 0, 1, 0x5a5a0064, 0xffff, 0x00010000 };
+        for (i = 0; i < sizeof ranges / sizeof ranges[0]; i++) {
+            ULONG r = ranges[i] & 0xffff;
+            sprintf(VEC, "range $%lX", ranges[i]);
+            DO1(N("vallib", "Rnd", 1), R.d[0] = ranges[i]);
+            OBS("d0 in range", r ? R.d[0] < (r << 16) : R.d[0] == 0);
+        }
+    }
+
+    /* Int, Sgn, Abs: every type, the upper bits of byte and word values;
+       the type word at -2(a2), a6 = mathffp */
+    {
+        static const char *fns[] = { "Int", "Sgn", "Abs" };
+        for (j = 0; j < 3; j++) {
+            ROUT = fns[j];
+            for (i = 0; i < sizeof nums / sizeof nums[0]; i++) {
+                if (j < 2 && nums[i].type >= 6)
+                    continue;                   /* intchk refuses them */
+                sprintf(VEC, "type %u value $%lX", nums[i].type, nums[i].v);
+                tframe[0] = nums[i].type;
+                DO1(N("vallib", fns[j], 0), R.d[0] = nums[i].v;
+                    R.a[2] = (ULONG)&tframe[1]; R.a[6] = ffpbase);
+                OBS("d0", R.d[0]);
+            }
+        }
+    }
+
+    /* PColl on chosen values of colval, DoColl's variable: its address is
+       the operand of DoColl's MOVE $DFF00E,colval, the same instruction in
+       both sets.  DoColl itself reads CLXDAT as the emulator has it. */
+    p = N("collslib", "DoColl", 0);
+    ROUT = "DoColl";
+    strcpy(VEC, "");
+    DO1(p, (void)0);
+    if (p && W(p) == 0x33f9 && L(p + 2) == 0xdff00eUL) {
+        UWORD *colval = (UWORD *)L(p + 6);
+        static const UWORD vals[] = { 0, 0xffff, 0x0022, 0x0044, 0x0088, 0x0110, 0x0002,
+                                      0x0020, 0x8001, 0x7ffe };
+        ROUT = "PColl";
+        for (i = 0; i < sizeof vals / sizeof vals[0]; i++)
+            for (j = 0; j < 9; j++) {
+                ULONG ch = j < 8 ? 0x5a5a0000UL | j : 0x0000fffeUL;
+                sprintf(VEC, "colval $%04X channel $%lX", vals[i], ch);
+                *colval = vals[i];
+                DO1(N("collslib", "PColl", 0), R.d[0] = ch);
+                OBS("d0", R.d[0]);
+            }
+    } else
+        NOT_CAPTURED("DoColl instruction", "not MOVE.w $DFF00E,abs.l");
+
+    /* ShapeWidth, ShapeHeight (a0 = the shape), Handle (a3) */
+    memset(shobj, 0xa5, sizeof shobj);
+    *(UWORD *)shobj = 0x8123;
+    *(UWORD *)(shobj + 2) = 0x0456;
+    ROUT = "ShapeWidth";
+    strcpy(VEC, "width $8123");
+    DO1(N("shapeslib", "ShapeWidth", 0), R.a[0] = (ULONG)shobj);
+    OBS("d0.w", R.d[0] & 0xffff);
+    ROUT = "ShapeHeight";
+    strcpy(VEC, "height $0456");
+    DO1(N("shapeslib", "ShapeHeight", 0), R.a[0] = (ULONG)shobj);
+    OBS("d0.w", R.d[0] & 0xffff);
+    ROUT = "Handle";
+    strcpy(VEC, "x $AAAA0010 y $BBBBFFF0");
+    DO1(N("shapeslib", "Handle", 0), R.d[1] = 0xaaaa0010; R.d[2] = 0xbbbbfff0;
+        R.a[3] = (ULONG)shobj);
+    OBSBYTES("shape", shobj, sizeof shobj);
+
+    /* Colour (it sets library variables only: the kept case), Locate on
+       the output bitmap of BitMapOutput, read back with CursX and CursY */
+    ROUT = "Colour";
+    strcpy(VEC, "fg $5A5A0003");
+    DO1(N("fontlib", "Colour", 0), R.d[0] = 0x5a5a0003);
+    strcpy(VEC, "fg $5A5A0002 bg $A5A50001");
+    DO1(N("fontlib", "Colour", 1), R.d[0] = 0x5a5a0002; R.d[1] = 0xa5a50001);
+    mkbitmap();
+    ROUT = "BitMapOutput";
+    strcpy(VEC, "");
+    DO1(N("fontlib", "BitMapOutput", 0), R.a[0] = (ULONG)bmobj);
+    {
+        static const ULONG locs[][2] = {
+            { 0, 0 }, { 3, 0x00020000 }, { 0x5a5a0007, 0x00058000 }, { 0x1fff, 0x0003ffff },
+            { 0xffff, 0xfffe0000 }, { 2, 0x2000a000 } };
+        for (i = 0; i < sizeof locs / sizeof locs[0]; i++) {
+            sprintf(VEC, "x $%lX y $%lX", locs[i][0], locs[i][1]);
+            ROUT = "Locate";
+            DO1(N("fontlib", "Locate", 0), R.d[0] = locs[i][0]; R.d[1] = locs[i][1]);
+            OBSBYTES("cursor", (UBYTE *)bmobj + 40, 4);
+            ROUT = "CursX";
+            DO1(N("fontlib", "CursX", 0), (void)0);
+            OBS("d0", R.d[0]);
+            ROUT = "CursY";
+            DO1(N("fontlib", "CursY", 0), (void)0);
+            OBS("d0", R.d[0]);
+        }
+    }
+
+    /* GadgetHit ... EventQualifier: the library's values without an
+       event (the form of EMouseX, test_exceptions) */
+    {
+        static const char *evs[] = { "GadgetHit", "MenuHit", "ItemHit", "SubHit",
+                                     "EventQualifier" };
+        for (i = 0; i < 5; i++) {
+            ROUT = evs[i];
+            strcpy(VEC, "no event");
+            DO1(N("windowslib", evs[i], 0), (void)0);
+            OBS("d0.w", R.d[0] & 0xffff);
+        }
+    }
+}
+
 /* ---------------------------------------------------------- audiolib */
 
 /* InitSound Sound#,Length: an empty sound in chip memory.  The Sound
@@ -497,8 +780,29 @@ static void test_audiolib(void)
 static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
     "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
-    "floatquicklib", "vallib", "iffiolib", "audiolib", NULL
+    "floatquicklib", "vallib", "iffiolib", "audiolib", "scrolllib", "gameiolib", "mouselib",
+    "collslib", "shapeslib", "fontlib", NULL
 };
+
+/* the tokens of the libraries the small entries call and this program
+   does not load (spriteslib, intlib, bitmaplib, ilbmifflib, palettelib:
+   Pointer, Mouse, LoadShape ..., never called here): an RTS each */
+static const UWORD stubrts[] = { 0x4e75 };
+static struct stub stubs[5 * 16 + 1];
+
+static void mkstubs(void)
+{
+    static const UWORD bases[] = { 112 << 7, 0xc100, 160 << 7, 161 << 7, 156 << 7 };
+    int i, j, n = 0;
+    for (i = 0; i < 5; i++)
+        for (j = 0; j < 16; j++) {
+            stubs[n].tok = (UWORD)(bases[i] + j);
+            stubs[n++].code = (APTR)stubrts;
+        }
+    stubs[n].tok = 0;
+    stubs[n].code = NULL;
+    sysload_stubs = stubs;
+}
 
 int main(int argc, char **argv)
 {
@@ -508,6 +812,7 @@ int main(int argc, char **argv)
         printf("usage: systest_cmdlibs DIR\n");
         return 20;
     }
+    mkstubs();
     if (!load_set(argv[1], names))
         return 20;
     KEEPS_FUNCTION("Peek", none);
@@ -553,6 +858,38 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("Rnd(Range)", a0|a1);
     /* exception: ElmoreIncLib's IncSound reads (a0) after InitSound */
     KEEPS_STATEMENT("InitSound", a0);
+    /* the small entries (test_smallentries); Plot's d2-d7/a2 are checked
+       on the C build only (the original changes d2 and d3) */
+    KEEPS_STATEMENT("Plot", none);
+    KEEPS_FUNCTION("Point", none);
+    KEEPS_FUNCTION("Joyx", none);
+    KEEPS_FUNCTION("Joyy", none);
+    KEEPS_FUNCTION("Joyr", none);
+    KEEPS_FUNCTION("Joyb", none);
+    KEEPS_STATEMENT("PositionMouse", none);
+    KEEPS_FUNCTION("MouseX", none);
+    KEEPS_FUNCTION("MouseY", none);
+    KEEPS_FUNCTION("MouseXSpeed", none);
+    KEEPS_FUNCTION("MouseYSpeed", none);
+    KEEPS_FUNCTION("QLimit", none);
+    KEEPS_FUNCTION("Int", none);
+    KEEPS_FUNCTION("Sgn", none);
+    KEEPS_FUNCTION("Abs", none);
+    KEEPS_STATEMENT("DoColl", none);
+    KEEPS_FUNCTION("PColl", none);
+    KEEPS_FUNCTION("ShapeWidth", none);
+    KEEPS_FUNCTION("ShapeHeight", none);
+    KEEPS_STATEMENT("Handle", none);
+    KEEPS_STATEMENT("Colour", none);
+    KEEPS_STATEMENT("BitMapOutput", none);
+    KEEPS_STATEMENT("Locate", none);
+    KEEPS_FUNCTION("CursX", none);
+    KEEPS_FUNCTION("CursY", none);
+    KEEPS_FUNCTION("GadgetHit", none);
+    KEEPS_FUNCTION("MenuHit", none);
+    KEEPS_FUNCTION("ItemHit", none);
+    KEEPS_FUNCTION("SubHit", none);
+    KEEPS_FUNCTION("EventQualifier", none);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -561,6 +898,7 @@ int main(int argc, char **argv)
     test_mathtranslib();
     test_environlib();
     test_exceptions();
+    test_smallentries();
 
     /* The memory balance is the task's own (rwemem.h: exec's AllocMem/FreeMem
        are counted for this task only): AvailMem() counts the whole system,

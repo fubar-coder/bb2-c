@@ -2004,6 +2004,753 @@ Rnd|kept||1	kept
 Rnd|popped||1	$00000000
 Rnd(Range)|kept|range 100|1	kept
 Rnd(Range)|popped|range 100|1	$00000000
+Plot|kept|x $0 y $0 colour $5|1	kept
+Plot|popped|x $0 y $0 colour $5|1	$00000000
+Plot|planes|x $0 y $0 colour $5|1	bytes 96 fnv 83D7BAC5
+Plot|kept|x $3 y $2 colour $7|1	kept
+Plot|popped|x $3 y $2 colour $7|1	$00000000
+Plot|planes|x $3 y $2 colour $7|1	bytes 96 fnv 87D0F661
+Plot|kept|x $ABCD000A y $12340003 colour $77770002|1	kept
+Plot|popped|x $ABCD000A y $12340003 colour $77770002|1	$00000000
+Plot|planes|x $ABCD000A y $12340003 colour $77770002|1	bytes 96 fnv EDEFBBA1
+Plot|kept|x $1B y $5 colour $0|1	kept
+Plot|popped|x $1B y $5 colour $0|1	$00000000
+Plot|planes|x $1B y $5 colour $0|1	bytes 96 fnv EDEFBBA1
+Plot|kept|x $11 y $0 colour $FFFF|1	kept
+Plot|popped|x $11 y $0 colour $FFFF|1	$00000000
+Plot|planes|x $11 y $0 colour $FFFF|1	bytes 96 fnv 00BC9BF1
+Plot|kept|x $1A y $3 colour $80000001|1	kept
+Plot|popped|x $1A y $3 colour $80000001|1	$00000000
+Plot|planes|x $1A y $3 colour $80000001|1	bytes 96 fnv 49D73B61
+Plot|kept|x $9 y $4 colour $FFFE|1	kept
+Plot|popped|x $9 y $4 colour $FFFE|1	$00000000
+Plot|planes|x $9 y $4 colour $FFFE|1	bytes 96 fnv 09B28791
+Plot|kept|x $1C y $0 colour $1|1	kept
+Plot|popped|x $1C y $0 colour $1|1	$00000000
+Plot|planes|x $1C y $0 colour $1|1	bytes 96 fnv 09B28791
+Plot|kept|x $0 y $6 colour $1|1	kept
+Plot|popped|x $0 y $6 colour $1|1	$00000000
+Plot|planes|x $0 y $6 colour $1|1	bytes 96 fnv 09B28791
+Plot|kept|x $FFFE y $0 colour $1|1	kept
+Plot|popped|x $FFFE y $0 colour $1|1	$00000000
+Plot|planes|x $FFFE y $0 colour $1|1	bytes 96 fnv B756CF11
+Plot|kept|x $0 y $FFFF colour $3|1	kept
+Plot|popped|x $0 y $FFFF colour $3|1	$00000000
+Plot|planes|x $0 y $FFFF colour $3|1	bytes 96 fnv 0035E2D1
+Plot|kept|x $1 y $1 colour $7FFF|1	kept
+Plot|popped|x $1 y $1 colour $7FFF|1	$00000000
+Plot|planes|x $1 y $1 colour $7FFF|1	bytes 96 fnv 0035E2D1
+Point|kept|x $5A5A0000 y $0|1	kept
+Point|popped|x $5A5A0000 y $0|1	$00000000
+Point|d0|x $5A5A0000 y $0|1	$5A5A0005
+Point|kept|x $5A5A0003 y $2|1	kept
+Point|popped|x $5A5A0003 y $2|1	$00000000
+Point|d0|x $5A5A0003 y $2|1	$5A5A0007
+Point|kept|x $5A5A000A y $12340003|1	kept
+Point|popped|x $5A5A000A y $12340003|1	$00000000
+Point|d0|x $5A5A000A y $12340003|1	$5A5A0002
+Point|kept|x $5A5A001B y $5|1	kept
+Point|popped|x $5A5A001B y $5|1	$00000000
+Point|d0|x $5A5A001B y $5|1	$5A5A0000
+Point|kept|x $5A5A0011 y $0|1	kept
+Point|popped|x $5A5A0011 y $0|1	$00000000
+Point|d0|x $5A5A0011 y $0|1	$5A5A0000
+Point|kept|x $5A5A001A y $3|1	kept
+Point|popped|x $5A5A001A y $3|1	$00000000
+Point|d0|x $5A5A001A y $3|1	$5A5A0001
+Point|kept|x $5A5A0009 y $4|1	kept
+Point|popped|x $5A5A0009 y $4|1	$00000000
+Point|d0|x $5A5A0009 y $4|1	$5A5A0000
+Point|kept|x $5A5A001C y $0|1	kept
+Point|popped|x $5A5A001C y $0|1	$00000000
+Point|d0|x $5A5A001C y $0|1	$00000000
+Point|kept|x $5A5A0000 y $6|1	kept
+Point|popped|x $5A5A0000 y $6|1	$00000000
+Point|d0|x $5A5A0000 y $6|1	$00000000
+Point|kept|x $5A5AFFFE y $0|1	kept
+Point|popped|x $5A5AFFFE y $0|1	$00000000
+Point|d0|x $5A5AFFFE y $0|1	$5A5A0001
+Point|kept|x $5A5A0000 y $FFFF|1	kept
+Point|popped|x $5A5A0000 y $FFFF|1	$00000000
+Point|d0|x $5A5A0000 y $FFFF|1	$5A5A0003
+Point|kept|x $5A5A0001 y $1|1	kept
+Point|popped|x $5A5A0001 y $1|1	$00000000
+Point|d0|x $5A5A0001 y $1|1	$5A5A0007
+Joyx|kept|port $0|1	kept
+Joyx|popped|port $0|1	$00000000
+Joyx|d0|port $0|1	$00000000
+Joyx|kept|port $1|1	kept
+Joyx|popped|port $1|1	$00000000
+Joyx|d0|port $1|1	$00000000
+Joyx|kept|port $2|1	kept
+Joyx|popped|port $2|1	$00000000
+Joyx|d0|port $2|1	$00000000
+Joyx|kept|port $12340000|1	kept
+Joyx|popped|port $12340000|1	$00000000
+Joyx|d0|port $12340000|1	$00000000
+Joyx|kept|port $FFFF0001|1	kept
+Joyx|popped|port $FFFF0001|1	$00000000
+Joyx|d0|port $FFFF0001|1	$00000000
+Joyy|kept|port $0|1	kept
+Joyy|popped|port $0|1	$00000000
+Joyy|d0|port $0|1	$00000000
+Joyy|kept|port $1|1	kept
+Joyy|popped|port $1|1	$00000000
+Joyy|d0|port $1|1	$00000000
+Joyy|kept|port $2|1	kept
+Joyy|popped|port $2|1	$00000000
+Joyy|d0|port $2|1	$00000000
+Joyy|kept|port $12340000|1	kept
+Joyy|popped|port $12340000|1	$00000000
+Joyy|d0|port $12340000|1	$00000000
+Joyy|kept|port $FFFF0001|1	kept
+Joyy|popped|port $FFFF0001|1	$00000000
+Joyy|d0|port $FFFF0001|1	$00000000
+Joyr|kept|port $0|1	kept
+Joyr|popped|port $0|1	$00000000
+Joyr|d0|port $0|1	$00000008
+Joyr|kept|port $1|1	kept
+Joyr|popped|port $1|1	$00000000
+Joyr|d0|port $1|1	$00000008
+Joyr|kept|port $2|1	kept
+Joyr|popped|port $2|1	$00000000
+Joyr|d0|port $2|1	$00000008
+Joyr|kept|port $12340000|1	kept
+Joyr|popped|port $12340000|1	$00000000
+Joyr|d0|port $12340000|1	$00000008
+Joyr|kept|port $FFFF0001|1	kept
+Joyr|popped|port $FFFF0001|1	$00000000
+Joyr|d0|port $FFFF0001|1	$00000008
+Joyb|kept|port $0|1	kept
+Joyb|popped|port $0|1	$00000000
+Joyb|d0|port $0|1	$00000000
+Joyb|kept|port $1|1	kept
+Joyb|popped|port $1|1	$00000000
+Joyb|d0|port $1|1	$00000000
+Joyb|kept|port $2|1	kept
+Joyb|popped|port $2|1	$00000000
+Joyb|d0|port $2|1	$00000000
+Joyb|kept|port $12340000|1	kept
+Joyb|popped|port $12340000|1	$00000000
+Joyb|d0|port $12340000|1	$00000000
+Joyb|kept|port $FFFF0001|1	kept
+Joyb|popped|port $FFFF0001|1	$00000000
+Joyb|d0|port $FFFF0001|1	$00000000
+PositionMouse|kept|x $5A5A0123 y $A5A5FF80|1	kept
+PositionMouse|popped|x $5A5A0123 y $A5A5FF80|1	$00000000
+MouseX|kept|after PositionMouse|1	kept
+MouseX|popped|after PositionMouse|1	$00000000
+MouseX|d0|after PositionMouse|1	$01230000
+MouseY|kept|after PositionMouse|1	kept
+MouseY|popped|after PositionMouse|1	$00000000
+MouseY|d0|after PositionMouse|1	$FF800000
+MouseXSpeed|kept|after PositionMouse|1	kept
+MouseXSpeed|popped|after PositionMouse|1	$00000000
+MouseXSpeed|d0|after PositionMouse|1	$00000000
+MouseYSpeed|kept|after PositionMouse|1	kept
+MouseYSpeed|popped|after PositionMouse|1	$00000000
+MouseYSpeed|d0|after PositionMouse|1	$00000000
+RawStatus|kept|rawkey $5A5A0000|1	kept
+RawStatus|popped|rawkey $5A5A0000|1	$00000000
+RawStatus|d0.w|rawkey $5A5A0000|1	$00000000
+RawStatus|kept|rawkey $5A5A0021|1	kept
+RawStatus|popped|rawkey $5A5A0021|1	$00000000
+RawStatus|d0.w|rawkey $5A5A0021|1	$00000000
+RawStatus|kept|rawkey $5A5A0042|1	kept
+RawStatus|popped|rawkey $5A5A0042|1	$00000000
+RawStatus|d0.w|rawkey $5A5A0042|1	$00000000
+QLimit|kept|q $5 low $0 high $A|1	kept
+QLimit|popped|q $5 low $0 high $A|1	$00000000
+QLimit|d0|q $5 low $0 high $A|1	$00000005
+QLimit|kept|q $FFFFFFFB low $0 high $A|1	kept
+QLimit|popped|q $FFFFFFFB low $0 high $A|1	$00000000
+QLimit|d0|q $FFFFFFFB low $0 high $A|1	$00000000
+QLimit|kept|q $A low $0 high $A|1	kept
+QLimit|popped|q $A low $0 high $A|1	$00000000
+QLimit|d0|q $A low $0 high $A|1	$0000000A
+QLimit|kept|q $0 low $0 high $A|1	kept
+QLimit|popped|q $0 low $0 high $A|1	$00000000
+QLimit|d0|q $0 low $0 high $A|1	$00000000
+QLimit|kept|q $B low $0 high $A|1	kept
+QLimit|popped|q $B low $0 high $A|1	$00000000
+QLimit|d0|q $B low $0 high $A|1	$0000000A
+QLimit|kept|q $80000000 low $0 high $7FFFFFFF|1	kept
+QLimit|popped|q $80000000 low $0 high $7FFFFFFF|1	$00000000
+QLimit|d0|q $80000000 low $0 high $7FFFFFFF|1	$00000000
+QLimit|kept|q $7FFFFFFF low $80000000 high $7FFFFFFF|1	kept
+QLimit|popped|q $7FFFFFFF low $80000000 high $7FFFFFFF|1	$00000000
+QLimit|d0|q $7FFFFFFF low $80000000 high $7FFFFFFF|1	$7FFFFFFF
+QLimit|kept|q $FFF80000 low $FFF00000 high $100000|1	kept
+QLimit|popped|q $FFF80000 low $FFF00000 high $100000|1	$00000000
+QLimit|d0|q $FFF80000 low $FFF00000 high $100000|1	$FFF80000
+QLimit|kept|q $3 low $A high $0|1	kept
+QLimit|popped|q $3 low $A high $0|1	$00000000
+QLimit|d0|q $3 low $A high $0|1	$0000000A
+QLimit|kept|q $14 low $A high $0|1	kept
+QLimit|popped|q $14 low $A high $0|1	$00000000
+QLimit|d0|q $14 low $A high $0|1	$00000000
+QLimit|kept|q $18000 low $10000 high $20000|1	kept
+QLimit|popped|q $18000 low $10000 high $20000|1	$00000000
+QLimit|d0|q $18000 low $10000 high $20000|1	$00018000
+Rnd(Range)|kept|range $0|1	kept
+Rnd(Range)|popped|range $0|1	$00000000
+Rnd(Range)|d0 in range|range $0|1	$00000001
+Rnd(Range)|kept|range $1|1	kept
+Rnd(Range)|popped|range $1|1	$00000000
+Rnd(Range)|d0 in range|range $1|1	$00000001
+Rnd(Range)|kept|range $5A5A0064|1	kept
+Rnd(Range)|popped|range $5A5A0064|1	$00000000
+Rnd(Range)|d0 in range|range $5A5A0064|1	$00000001
+Rnd(Range)|kept|range $FFFF|1	kept
+Rnd(Range)|popped|range $FFFF|1	$00000000
+Rnd(Range)|d0 in range|range $FFFF|1	$00000001
+Rnd(Range)|kept|range $10000|1	kept
+Rnd(Range)|popped|range $10000|1	$00000000
+Rnd(Range)|d0 in range|range $10000|1	$00000001
+Int|kept|type 1 value $123456F0|1	kept
+Int|popped|type 1 value $123456F0|1	$00000000
+Int|d0|type 1 value $123456F0|1	$FFFFFFF0
+Int|kept|type 1 value $12345670|1	kept
+Int|popped|type 1 value $12345670|1	$00000000
+Int|d0|type 1 value $12345670|1	$00000070
+Int|kept|type 1 value $0|1	kept
+Int|popped|type 1 value $0|1	$00000000
+Int|d0|type 1 value $0|1	$00000000
+Int|kept|type 0 value $ABCD0081|1	kept
+Int|popped|type 0 value $ABCD0081|1	$00000000
+Int|d0|type 0 value $ABCD0081|1	$FFFFFF81
+Int|kept|type 2 value $1234FFF0|1	kept
+Int|popped|type 2 value $1234FFF0|1	$00000000
+Int|d0|type 2 value $1234FFF0|1	$FFFFFFF0
+Int|kept|type 2 value $12340010|1	kept
+Int|popped|type 2 value $12340010|1	$00000000
+Int|d0|type 2 value $12340010|1	$00000010
+Int|kept|type 2 value $0|1	kept
+Int|popped|type 2 value $0|1	$00000000
+Int|d0|type 2 value $0|1	$00000000
+Int|kept|type 3 value $FFFFFFF0|1	kept
+Int|popped|type 3 value $FFFFFFF0|1	$00000000
+Int|d0|type 3 value $FFFFFFF0|1	$FFFFFFF0
+Int|kept|type 3 value $12345|1	kept
+Int|popped|type 3 value $12345|1	$00000000
+Int|d0|type 3 value $12345|1	$00012345
+Int|kept|type 3 value $0|1	kept
+Int|popped|type 3 value $0|1	$00000000
+Int|d0|type 3 value $0|1	$00000000
+Int|kept|type 4 value $38000|1	kept
+Int|popped|type 4 value $38000|1	$00000000
+Int|d0|type 4 value $38000|1	$00000003
+Int|kept|type 4 value $FFFC8000|1	kept
+Int|popped|type 4 value $FFFC8000|1	$00000000
+Int|d0|type 4 value $FFFC8000|1	$FFFFFFFD
+Int|kept|type 4 value $FFFF0000|1	kept
+Int|popped|type 4 value $FFFF0000|1	$00000000
+Int|d0|type 4 value $FFFF0000|1	$FFFFFFFF
+Int|kept|type 4 value $4000|1	kept
+Int|popped|type 4 value $4000|1	$00000000
+Int|d0|type 4 value $4000|1	$00000000
+Int|kept|type 4 value $0|1	kept
+Int|popped|type 4 value $0|1	$00000000
+Int|d0|type 4 value $0|1	$00000000
+Int|kept|type 4 value $80000000|1	kept
+Int|popped|type 4 value $80000000|1	$00000000
+Int|d0|type 4 value $80000000|1	$FFFF8000
+Int|kept|type 5 value $A0000042|1	kept
+Int|popped|type 5 value $A0000042|1	$00000000
+Int|d0|type 5 value $A0000042|1	$00000002
+Int|kept|type 5 value $A00000C2|1	kept
+Int|popped|type 5 value $A00000C2|1	$00000000
+Int|d0|type 5 value $A00000C2|1	$FFFFFFFE
+Int|kept|type 5 value $0|1	kept
+Int|popped|type 5 value $0|1	$00000000
+Int|d0|type 5 value $0|1	$00000000
+Int|kept|type 5 value $C0000041|1	kept
+Int|popped|type 5 value $C0000041|1	$00000000
+Int|d0|type 5 value $C0000041|1	$00000001
+Sgn|kept|type 1 value $123456F0|1	kept
+Sgn|popped|type 1 value $123456F0|1	$00000000
+Sgn|d0|type 1 value $123456F0|1	$FFFF0000
+Sgn|kept|type 1 value $12345670|1	kept
+Sgn|popped|type 1 value $12345670|1	$00000000
+Sgn|d0|type 1 value $12345670|1	$00010000
+Sgn|kept|type 1 value $0|1	kept
+Sgn|popped|type 1 value $0|1	$00000000
+Sgn|d0|type 1 value $0|1	$00000000
+Sgn|kept|type 0 value $ABCD0081|1	kept
+Sgn|popped|type 0 value $ABCD0081|1	$00000000
+Sgn|d0|type 0 value $ABCD0081|1	$00010000
+Sgn|kept|type 2 value $1234FFF0|1	kept
+Sgn|popped|type 2 value $1234FFF0|1	$00000000
+Sgn|d0|type 2 value $1234FFF0|1	$FFFF0000
+Sgn|kept|type 2 value $12340010|1	kept
+Sgn|popped|type 2 value $12340010|1	$00000000
+Sgn|d0|type 2 value $12340010|1	$00010000
+Sgn|kept|type 2 value $0|1	kept
+Sgn|popped|type 2 value $0|1	$00000000
+Sgn|d0|type 2 value $0|1	$00000000
+Sgn|kept|type 3 value $FFFFFFF0|1	kept
+Sgn|popped|type 3 value $FFFFFFF0|1	$00000000
+Sgn|d0|type 3 value $FFFFFFF0|1	$FFFF0000
+Sgn|kept|type 3 value $12345|1	kept
+Sgn|popped|type 3 value $12345|1	$00000000
+Sgn|d0|type 3 value $12345|1	$00010000
+Sgn|kept|type 3 value $0|1	kept
+Sgn|popped|type 3 value $0|1	$00000000
+Sgn|d0|type 3 value $0|1	$00000000
+Sgn|kept|type 4 value $38000|1	kept
+Sgn|popped|type 4 value $38000|1	$00000000
+Sgn|d0|type 4 value $38000|1	$00010000
+Sgn|kept|type 4 value $FFFC8000|1	kept
+Sgn|popped|type 4 value $FFFC8000|1	$00000000
+Sgn|d0|type 4 value $FFFC8000|1	$FFFF0000
+Sgn|kept|type 4 value $FFFF0000|1	kept
+Sgn|popped|type 4 value $FFFF0000|1	$00000000
+Sgn|d0|type 4 value $FFFF0000|1	$FFFF0000
+Sgn|kept|type 4 value $4000|1	kept
+Sgn|popped|type 4 value $4000|1	$00000000
+Sgn|d0|type 4 value $4000|1	$00010000
+Sgn|kept|type 4 value $0|1	kept
+Sgn|popped|type 4 value $0|1	$00000000
+Sgn|d0|type 4 value $0|1	$00000000
+Sgn|kept|type 4 value $80000000|1	kept
+Sgn|popped|type 4 value $80000000|1	$00000000
+Sgn|d0|type 4 value $80000000|1	$FFFF0000
+Sgn|kept|type 5 value $A0000042|1	kept
+Sgn|popped|type 5 value $A0000042|1	$00000000
+Sgn|d0|type 5 value $A0000042|1	$00010000
+Sgn|kept|type 5 value $A00000C2|1	kept
+Sgn|popped|type 5 value $A00000C2|1	$00000000
+Sgn|d0|type 5 value $A00000C2|1 [orig]	$00010000
+Sgn|d0|type 5 value $A00000C2|1 [fixed #301]	$FFFF0000
+Sgn|kept|type 5 value $0|1	kept
+Sgn|popped|type 5 value $0|1	$00000000
+Sgn|d0|type 5 value $0|1 [orig]	$00010000
+Sgn|d0|type 5 value $0|1 [fixed #301]	$00000000
+Sgn|kept|type 5 value $C0000041|1	kept
+Sgn|popped|type 5 value $C0000041|1	$00000000
+Sgn|d0|type 5 value $C0000041|1	$00010000
+Abs|kept|type 1 value $123456F0|1	kept
+Abs|popped|type 1 value $123456F0|1	$00000000
+Abs|d0|type 1 value $123456F0|1	$80000045
+Abs|kept|type 1 value $12345670|1	kept
+Abs|popped|type 1 value $12345670|1	$00000000
+Abs|d0|type 1 value $12345670|1	$E0000047
+Abs|kept|type 1 value $0|1	kept
+Abs|popped|type 1 value $0|1	$00000000
+Abs|d0|type 1 value $0|1	$00000000
+Abs|kept|type 0 value $ABCD0081|1	kept
+Abs|popped|type 0 value $ABCD0081|1	$00000000
+Abs|d0|type 0 value $ABCD0081|1	$FE000047
+Abs|kept|type 2 value $1234FFF0|1	kept
+Abs|popped|type 2 value $1234FFF0|1	$00000000
+Abs|d0|type 2 value $1234FFF0|1	$80000045
+Abs|kept|type 2 value $12340010|1	kept
+Abs|popped|type 2 value $12340010|1	$00000000
+Abs|d0|type 2 value $12340010|1	$80000045
+Abs|kept|type 2 value $0|1	kept
+Abs|popped|type 2 value $0|1	$00000000
+Abs|d0|type 2 value $0|1	$00000000
+Abs|kept|type 3 value $FFFFFFF0|1	kept
+Abs|popped|type 3 value $FFFFFFF0|1	$00000000
+Abs|d0|type 3 value $FFFFFFF0|1	$80000045
+Abs|kept|type 3 value $12345|1	kept
+Abs|popped|type 3 value $12345|1	$00000000
+Abs|d0|type 3 value $12345|1	$91A28051
+Abs|kept|type 3 value $0|1	kept
+Abs|popped|type 3 value $0|1	$00000000
+Abs|d0|type 3 value $0|1	$00000000
+Abs|kept|type 4 value $38000|1	kept
+Abs|popped|type 4 value $38000|1	$00000000
+Abs|d0|type 4 value $38000|1	$E0000042
+Abs|kept|type 4 value $FFFC8000|1	kept
+Abs|popped|type 4 value $FFFC8000|1	$00000000
+Abs|d0|type 4 value $FFFC8000|1	$E0000042
+Abs|kept|type 4 value $FFFF0000|1	kept
+Abs|popped|type 4 value $FFFF0000|1	$00000000
+Abs|d0|type 4 value $FFFF0000|1	$80000041
+Abs|kept|type 4 value $4000|1	kept
+Abs|popped|type 4 value $4000|1	$00000000
+Abs|d0|type 4 value $4000|1	$8000003F
+Abs|kept|type 4 value $0|1	kept
+Abs|popped|type 4 value $0|1	$00000000
+Abs|d0|type 4 value $0|1	$00000000
+Abs|kept|type 4 value $80000000|1	kept
+Abs|popped|type 4 value $80000000|1	$00000000
+Abs|d0|type 4 value $80000000|1	$80000050
+Abs|kept|type 5 value $A0000042|1	kept
+Abs|popped|type 5 value $A0000042|1	$00000000
+Abs|d0|type 5 value $A0000042|1	$A0000042
+Abs|kept|type 5 value $A00000C2|1	kept
+Abs|popped|type 5 value $A00000C2|1	$00000000
+Abs|d0|type 5 value $A00000C2|1	$A0000042
+Abs|kept|type 5 value $0|1	kept
+Abs|popped|type 5 value $0|1	$00000000
+Abs|d0|type 5 value $0|1	$00000000
+Abs|kept|type 5 value $C0000041|1	kept
+Abs|popped|type 5 value $C0000041|1	$00000000
+Abs|d0|type 5 value $C0000041|1	$C0000041
+Abs|kept|type 6 value $7|1	kept
+Abs|popped|type 6 value $7|1	$00000000
+Abs|d0|type 6 value $7|1	$E0000043
+Abs|kept|type 8 value $FFFFFFFB|1	kept
+Abs|popped|type 8 value $FFFFFFFB|1	$00000000
+Abs|d0|type 8 value $FFFFFFFB|1	$A0000043
+DoColl|kept||1	kept
+DoColl|popped||1	$00000000
+PColl|kept|colval $0000 channel $5A5A0000|1	kept
+PColl|popped|colval $0000 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0001|1	kept
+PColl|popped|colval $0000 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0002|1	kept
+PColl|popped|colval $0000 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0003|1	kept
+PColl|popped|colval $0000 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0004|1	kept
+PColl|popped|colval $0000 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0005|1	kept
+PColl|popped|colval $0000 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0006|1	kept
+PColl|popped|colval $0000 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0000 channel $5A5A0007|1	kept
+PColl|popped|colval $0000 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0000 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0000 channel $FFFE|1	kept
+PColl|popped|colval $0000 channel $FFFE|1	$00000000
+PColl|d0|colval $0000 channel $FFFE|1	$00000000
+PColl|kept|colval $FFFF channel $5A5A0000|1	kept
+PColl|popped|colval $FFFF channel $5A5A0000|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0000|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0001|1	kept
+PColl|popped|colval $FFFF channel $5A5A0001|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0001|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0002|1	kept
+PColl|popped|colval $FFFF channel $5A5A0002|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0002|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0003|1	kept
+PColl|popped|colval $FFFF channel $5A5A0003|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0003|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0004|1	kept
+PColl|popped|colval $FFFF channel $5A5A0004|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0004|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0005|1	kept
+PColl|popped|colval $FFFF channel $5A5A0005|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0005|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0006|1	kept
+PColl|popped|colval $FFFF channel $5A5A0006|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0006|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $5A5A0007|1	kept
+PColl|popped|colval $FFFF channel $5A5A0007|1	$00000000
+PColl|d0|colval $FFFF channel $5A5A0007|1	$5A5AFFFF
+PColl|kept|colval $FFFF channel $FFFE|1	kept
+PColl|popped|colval $FFFF channel $FFFE|1	$00000000
+PColl|d0|colval $FFFF channel $FFFE|1	$0000FFFF
+PColl|kept|colval $0022 channel $5A5A0000|1	kept
+PColl|popped|colval $0022 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0000|1	$5A5AFFFF
+PColl|kept|colval $0022 channel $5A5A0001|1	kept
+PColl|popped|colval $0022 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0001|1	$5A5AFFFF
+PColl|kept|colval $0022 channel $5A5A0002|1	kept
+PColl|popped|colval $0022 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0022 channel $5A5A0003|1	kept
+PColl|popped|colval $0022 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0022 channel $5A5A0004|1	kept
+PColl|popped|colval $0022 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0022 channel $5A5A0005|1	kept
+PColl|popped|colval $0022 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0022 channel $5A5A0006|1	kept
+PColl|popped|colval $0022 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0022 channel $5A5A0007|1	kept
+PColl|popped|colval $0022 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0022 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0022 channel $FFFE|1	kept
+PColl|popped|colval $0022 channel $FFFE|1	$00000000
+PColl|d0|colval $0022 channel $FFFE|1	$00000000
+PColl|kept|colval $0044 channel $5A5A0000|1	kept
+PColl|popped|colval $0044 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0044 channel $5A5A0001|1	kept
+PColl|popped|colval $0044 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0044 channel $5A5A0002|1	kept
+PColl|popped|colval $0044 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0002|1	$5A5AFFFF
+PColl|kept|colval $0044 channel $5A5A0003|1	kept
+PColl|popped|colval $0044 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0003|1	$5A5AFFFF
+PColl|kept|colval $0044 channel $5A5A0004|1	kept
+PColl|popped|colval $0044 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0044 channel $5A5A0005|1	kept
+PColl|popped|colval $0044 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0044 channel $5A5A0006|1	kept
+PColl|popped|colval $0044 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0044 channel $5A5A0007|1	kept
+PColl|popped|colval $0044 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0044 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0044 channel $FFFE|1	kept
+PColl|popped|colval $0044 channel $FFFE|1	$00000000
+PColl|d0|colval $0044 channel $FFFE|1	$00000000
+PColl|kept|colval $0088 channel $5A5A0000|1	kept
+PColl|popped|colval $0088 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0088 channel $5A5A0001|1	kept
+PColl|popped|colval $0088 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0088 channel $5A5A0002|1	kept
+PColl|popped|colval $0088 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0088 channel $5A5A0003|1	kept
+PColl|popped|colval $0088 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0088 channel $5A5A0004|1	kept
+PColl|popped|colval $0088 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0004|1	$5A5AFFFF
+PColl|kept|colval $0088 channel $5A5A0005|1	kept
+PColl|popped|colval $0088 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0005|1	$5A5AFFFF
+PColl|kept|colval $0088 channel $5A5A0006|1	kept
+PColl|popped|colval $0088 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0088 channel $5A5A0007|1	kept
+PColl|popped|colval $0088 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0088 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0088 channel $FFFE|1	kept
+PColl|popped|colval $0088 channel $FFFE|1	$00000000
+PColl|d0|colval $0088 channel $FFFE|1	$00000000
+PColl|kept|colval $0110 channel $5A5A0000|1	kept
+PColl|popped|colval $0110 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0001|1	kept
+PColl|popped|colval $0110 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0002|1	kept
+PColl|popped|colval $0110 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0003|1	kept
+PColl|popped|colval $0110 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0004|1	kept
+PColl|popped|colval $0110 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0005|1	kept
+PColl|popped|colval $0110 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0110 channel $5A5A0006|1	kept
+PColl|popped|colval $0110 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0006|1	$5A5AFFFF
+PColl|kept|colval $0110 channel $5A5A0007|1	kept
+PColl|popped|colval $0110 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0110 channel $5A5A0007|1	$5A5AFFFF
+PColl|kept|colval $0110 channel $FFFE|1	kept
+PColl|popped|colval $0110 channel $FFFE|1	$00000000
+PColl|d0|colval $0110 channel $FFFE|1	$00000000
+PColl|kept|colval $0002 channel $5A5A0000|1	kept
+PColl|popped|colval $0002 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0001|1	kept
+PColl|popped|colval $0002 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0002|1	kept
+PColl|popped|colval $0002 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0003|1	kept
+PColl|popped|colval $0002 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0004|1	kept
+PColl|popped|colval $0002 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0005|1	kept
+PColl|popped|colval $0002 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0006|1	kept
+PColl|popped|colval $0002 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0002 channel $5A5A0007|1	kept
+PColl|popped|colval $0002 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0002 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0002 channel $FFFE|1	kept
+PColl|popped|colval $0002 channel $FFFE|1	$00000000
+PColl|d0|colval $0002 channel $FFFE|1	$00000000
+PColl|kept|colval $0020 channel $5A5A0000|1	kept
+PColl|popped|colval $0020 channel $5A5A0000|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0001|1	kept
+PColl|popped|colval $0020 channel $5A5A0001|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0002|1	kept
+PColl|popped|colval $0020 channel $5A5A0002|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0003|1	kept
+PColl|popped|colval $0020 channel $5A5A0003|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0004|1	kept
+PColl|popped|colval $0020 channel $5A5A0004|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0005|1	kept
+PColl|popped|colval $0020 channel $5A5A0005|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0006|1	kept
+PColl|popped|colval $0020 channel $5A5A0006|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $0020 channel $5A5A0007|1	kept
+PColl|popped|colval $0020 channel $5A5A0007|1	$00000000
+PColl|d0|colval $0020 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $0020 channel $FFFE|1	kept
+PColl|popped|colval $0020 channel $FFFE|1	$00000000
+PColl|d0|colval $0020 channel $FFFE|1	$00000000
+PColl|kept|colval $8001 channel $5A5A0000|1	kept
+PColl|popped|colval $8001 channel $5A5A0000|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0000|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0001|1	kept
+PColl|popped|colval $8001 channel $5A5A0001|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0001|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0002|1	kept
+PColl|popped|colval $8001 channel $5A5A0002|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0002|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0003|1	kept
+PColl|popped|colval $8001 channel $5A5A0003|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0003|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0004|1	kept
+PColl|popped|colval $8001 channel $5A5A0004|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0004|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0005|1	kept
+PColl|popped|colval $8001 channel $5A5A0005|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0005|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0006|1	kept
+PColl|popped|colval $8001 channel $5A5A0006|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0006|1	$5A5A0000
+PColl|kept|colval $8001 channel $5A5A0007|1	kept
+PColl|popped|colval $8001 channel $5A5A0007|1	$00000000
+PColl|d0|colval $8001 channel $5A5A0007|1	$5A5A0000
+PColl|kept|colval $8001 channel $FFFE|1	kept
+PColl|popped|colval $8001 channel $FFFE|1	$00000000
+PColl|d0|colval $8001 channel $FFFE|1	$00000000
+PColl|kept|colval $7FFE channel $5A5A0000|1	kept
+PColl|popped|colval $7FFE channel $5A5A0000|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0000|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0001|1	kept
+PColl|popped|colval $7FFE channel $5A5A0001|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0001|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0002|1	kept
+PColl|popped|colval $7FFE channel $5A5A0002|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0002|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0003|1	kept
+PColl|popped|colval $7FFE channel $5A5A0003|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0003|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0004|1	kept
+PColl|popped|colval $7FFE channel $5A5A0004|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0004|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0005|1	kept
+PColl|popped|colval $7FFE channel $5A5A0005|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0005|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0006|1	kept
+PColl|popped|colval $7FFE channel $5A5A0006|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0006|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $5A5A0007|1	kept
+PColl|popped|colval $7FFE channel $5A5A0007|1	$00000000
+PColl|d0|colval $7FFE channel $5A5A0007|1	$5A5AFFFF
+PColl|kept|colval $7FFE channel $FFFE|1	kept
+PColl|popped|colval $7FFE channel $FFFE|1	$00000000
+PColl|d0|colval $7FFE channel $FFFE|1	$00000000
+ShapeWidth|kept|width $8123|1	kept
+ShapeWidth|popped|width $8123|1	$00000000
+ShapeWidth|d0.w|width $8123|1	$00008123
+ShapeHeight|kept|height $0456|1	kept
+ShapeHeight|popped|height $0456|1	$00000000
+ShapeHeight|d0.w|height $0456|1	$00000456
+Handle|kept|x $AAAA0010 y $BBBBFFF0|1	kept
+Handle|popped|x $AAAA0010 y $BBBBFFF0|1	$00000000
+Handle|shape|x $AAAA0010 y $BBBBFFF0|1	bytes 32 81230456A5A5A5A5A5A50010FFF0A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5
+Colour|kept|fg $5A5A0003|1	kept
+Colour|popped|fg $5A5A0003|1	$00000000
+Colour|kept|fg $5A5A0002 bg $A5A50001|1	kept
+Colour|popped|fg $5A5A0002 bg $A5A50001|1	$00000000
+BitMapOutput|kept||1	kept
+BitMapOutput|popped||1	$00000000
+Locate|kept|x $0 y $0|1	kept
+Locate|popped|x $0 y $0|1	$00000000
+Locate|cursor|x $0 y $0|1	bytes 4 00000000
+CursX|kept|x $0 y $0|1	kept
+CursX|popped|x $0 y $0|1	$00000000
+CursX|d0|x $0 y $0|1	$00000000
+CursY|kept|x $0 y $0|1	kept
+CursY|popped|x $0 y $0|1	$00000000
+CursY|d0|x $0 y $0|1	$00000000
+Locate|kept|x $3 y $20000|1	kept
+Locate|popped|x $3 y $20000|1	$00000000
+Locate|cursor|x $3 y $20000|1	bytes 4 00180010
+CursX|kept|x $3 y $20000|1	kept
+CursX|popped|x $3 y $20000|1	$00000000
+CursX|d0|x $3 y $20000|1	$00030000
+CursY|kept|x $3 y $20000|1	kept
+CursY|popped|x $3 y $20000|1	$00000000
+CursY|d0|x $3 y $20000|1	$00020000
+Locate|kept|x $5A5A0007 y $58000|1	kept
+Locate|popped|x $5A5A0007 y $58000|1	$00000000
+Locate|cursor|x $5A5A0007 y $58000|1	bytes 4 0038002C
+CursX|kept|x $5A5A0007 y $58000|1	kept
+CursX|popped|x $5A5A0007 y $58000|1	$00000000
+CursX|d0|x $5A5A0007 y $58000|1	$00070000
+CursY|kept|x $5A5A0007 y $58000|1	kept
+CursY|popped|x $5A5A0007 y $58000|1	$00000000
+CursY|d0|x $5A5A0007 y $58000|1	$00058000
+Locate|kept|x $1FFF y $3FFFF|1	kept
+Locate|popped|x $1FFF y $3FFFF|1	$00000000
+Locate|cursor|x $1FFF y $3FFFF|1	bytes 4 FFF8001F
+CursX|kept|x $1FFF y $3FFFF|1	kept
+CursX|popped|x $1FFF y $3FFFF|1	$00000000
+CursX|d0|x $1FFF y $3FFFF|1	$1FFF0000
+CursY|kept|x $1FFF y $3FFFF|1	kept
+CursY|popped|x $1FFF y $3FFFF|1	$00000000
+CursY|d0|x $1FFF y $3FFFF|1	$0003E000
+Locate|kept|x $FFFF y $FFFE0000|1	kept
+Locate|popped|x $FFFF y $FFFE0000|1	$00000000
+Locate|cursor|x $FFFF y $FFFE0000|1	bytes 4 FFF8FFF0
+CursX|kept|x $FFFF y $FFFE0000|1	kept
+CursX|popped|x $FFFF y $FFFE0000|1	$00000000
+CursX|d0|x $FFFF y $FFFE0000|1	$1FFF0000
+CursY|kept|x $FFFF y $FFFE0000|1	kept
+CursY|popped|x $FFFF y $FFFE0000|1	$00000000
+CursY|d0|x $FFFF y $FFFE0000|1	$1FFE0000
+Locate|kept|x $2 y $2000A000|1	kept
+Locate|popped|x $2 y $2000A000|1	$00000000
+Locate|cursor|x $2 y $2000A000|1	bytes 4 00100005
+CursX|kept|x $2 y $2000A000|1	kept
+CursX|popped|x $2 y $2000A000|1	$00000000
+CursX|d0|x $2 y $2000A000|1	$00020000
+CursY|kept|x $2 y $2000A000|1	kept
+CursY|popped|x $2 y $2000A000|1	$00000000
+CursY|d0|x $2 y $2000A000|1	$0000A000
+GadgetHit|kept|no event|1	kept
+GadgetHit|popped|no event|1	$00000000
+GadgetHit|d0.w|no event|1	$00000000
+MenuHit|kept|no event|1	kept
+MenuHit|popped|no event|1	$00000000
+MenuHit|d0.w|no event|1	$00000000
+ItemHit|kept|no event|1	kept
+ItemHit|popped|no event|1	$00000000
+ItemHit|d0.w|no event|1	$00000000
+SubHit|kept|no event|1	kept
+SubHit|popped|no event|1	$00000000
+SubHit|d0.w|no event|1	$00000000
+EventQualifier|kept|no event|1	kept
+EventQualifier|popped|no event|1	$00000000
+EventQualifier|d0.w|no event|1	$00000000
 memlib init|kept||1	kept
 memlib init|popped||1	$00000000
 utillib init|kept||1	kept

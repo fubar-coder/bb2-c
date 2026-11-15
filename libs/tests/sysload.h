@@ -70,7 +70,7 @@ extern UWORD callregs(APTR fn, struct regs *r, ULONG arg, ULONG pusharg);
 
 /* ------------------------------------------------------------- loader */
 
-#define MAXLIBS 16
+#define MAXLIBS 32
 
 struct lib {
     const char *name;
@@ -385,7 +385,7 @@ static char VEC[100];
     keeps_state((routine), KEEPS_A3 | KEEPS_A6, #extra)
 #define KEEPS_STRFUNCTION(routine, extra) keeps_state((routine), KEEPS_A6, #extra)
 
-#define KEEPS_MAX 64
+#define KEEPS_MAX 128
 #define KEEPS_CONV ((1UL << 12) | (1UL << 13))  /* a4, a5 */
 #define KEEPS_A3 (1UL << 11)
 #define KEEPS_A6 (1UL << 14)

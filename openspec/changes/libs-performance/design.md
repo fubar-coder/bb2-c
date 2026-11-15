@@ -274,6 +274,35 @@ build.
     stringfunclib, strcomplib and the input libraries. So neither
     routine needs the assembler loop.
 
+16. **The small entries (group 6, 2026-11-15).** Peek, Poke, Plot, Point,
+    Joyx, Joyy, Joyr, Joyb, the four mouse functions, RawStatus, QLimit,
+    Rnd, DoColl, PColl, ShapeWidth, ShapeHeight, Handle, Colour, Locate,
+    the five event getters of windowslib, Int, Sgn and Abs are assembler
+    entries (`BLITZ_ASM_ROUTINE`) in the original's form, data read
+    PC-relative where the original does. Where a few instructions make
+    the original's code faster with the same results, they differ:
+    Poke compares the type with SUBQ on d0; Joyx/Joyy/Joyr read JOY1DAT
+    first (port 1 is 14 cycles faster); Joyr takes its result from one
+    table of 16 longs indexed by the counter bits 9, 8, 1 and 0 (the
+    original's d0 for each of the 65536 counter words, checked); PColl
+    tests its second bit only when the first is set; Rnd(Range) keeps
+    the range in the upper word of d1 (genrnd works on words) instead of
+    d7, and genrnd is inline in both forms; Abs clears the sign with
+    BCLR. Task 6.6 allowed a noinline float case; the assembler entry
+    was taken directly, as the brief of the group asked for assembler
+    entries. Plot keeps d2-d7 and a2 (it saves d2/d3; the original
+    changes them): MikesSpaceFXLib calls it from a loop, which the
+    third-party analysis checked for d0/d1/a0/a1 only (decision 14).
+    Joyr and PColl replace their `__entrypoint` C functions of task 2.6.
+    Every entry is at or below the original's cycles except Plot (522.8
+    against 486.9, the d2/d3 saves). The library test `systest_cmdlibs`
+    covers their entry conditions (upper words of word arguments, every
+    type of Int/Sgn/Abs, clipping, limits, colval values through the
+    operand of DoColl's MOVE); the expected data were recorded from the
+    original, and the C build of main (the prev build) and the
+    assembler give the same cases; two cases of Sgn of a float are the
+    pair `[orig]` / `[fixed #301]`.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:
