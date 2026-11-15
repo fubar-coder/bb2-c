@@ -256,6 +256,7 @@ BLITZ_LIBFIN();
 struct point {
     WORD x, y;
 };
+static_assert(sizeof(struct point) == 4);     /* Polyf copies it as a long */
 
 /* an edge of one side of a filled polygon: the lines it covers - 1 and
    the x step per half line (edge_step); the long -1 ends a list */
@@ -1930,18 +1931,25 @@ static UWORD *outline(const struct point *pts, UWORD n, WORD width, WORD height,
    a convex one; a concave one may get more, then nothing is drawn) */
 #define CLIPMAX 20
 
+/* POLYQUICK(any): every point (any = the points ORed together as longs)
+   at 0..8191 in x and y - then polyinrange is true (the points within
+   +-16383, every edge within +-8191), without its loop */
+#define POLYQUICK(any) (!((any) & 0xe000e000UL))
+
 /* the range in which outline, side and drawpoly compute exactly: every
    edge (the points are twice in pts, so p[1] of the last is the first)
    at most 8191 in x and y (the slope DIVS of side fits in a word, the
    shift count stays positive), every point within +-16383 (twice x is a
-   word in edge_start) */
+   word in edge_start).  The differences in word arithmetic: they wrap
+   only where a point is out of range, and then the answer is 0 anyway
+   (every point is tested). */
 static int polyinrange(const struct point *p, UWORD n)
 {
     do {
-        LONG dx = (LONG)p[1].x - p->x, dy = (LONG)p[1].y - p->y;
+        UWORD dx = p[1].x - p->x, dy = p[1].y - p->y;
 
-        if (p->x < -16383 || p->x > 16383 || p->y < -16383 || p->y > 16383
-            || dx < -8191 || dx > 8191 || dy < -8191 || dy > 8191)
+        if ((UWORD)(p->x + 16383) > 32766 || (UWORD)(p->y + 16383) > 32766
+            || (UWORD)(dx + 8191) > 16382 || (UWORD)(dy + 8191) > 16382)
             return 0;
         p++;
     } while (--n);
@@ -2119,8 +2127,10 @@ BLITZ_ASM_BLOCK(ploop,
    of the points) filled with the blitter, one blit per line and plane: A
    = $FFFF in the span's masks, D = C = the plane, set or cleared by the
    colour bit; a negative colour draws nothing.  a3 = what the copy loop
-   left; returns the a3 the original leaves (or that one). */
-static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
+   left; returns the a3 the original leaves (or that one).  any: the
+   points ORed together (as longs), for the quick range test. */
+BL_ALWAYS_INLINE UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3,
+                                 ULONG any)
 {
     struct point clip[2 * CLIPMAX];
     UWORD cledges[CLIPMAX * 3 + 2], credges[CLIPMAX * 3 + 2];
@@ -2137,6 +2147,8 @@ static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
         struct point *p = polypts;
         UWORD k = n - 1;
 
+        any = 0xffffffffUL;                     /* the full range test */
+
         do {
             p[0].x += bm->xorigin;
             p[0].y += bm->yorigin;
@@ -2152,7 +2164,7 @@ static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
        polypts (#395), and a bitmap wider or higher than 8190 would leave
        the range again: those go on as in the original */
     if (n >= 3 && n <= 16 && bm->width <= 8190 && bm->height <= 8190
-        && !polyinrange(polypts, n)) {
+        && !POLYQUICK(any) && !polyinrange(polypts, n)) {
         n = clippoly(clip, n, bm->width, bm->height);
         if (n < 3)
             return a3;
@@ -2221,29 +2233,36 @@ BL_ALWAYS_INLINE int prodgt(LONG a, LONG b, LONG c, LONG d)
 static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
                     UWORD colour2)
 {
-    struct point *p, *q;
+    const ULONG *s = (const ULONG *)pts;
+    ULONG *p, *q, any = 0;
     UWORD k = n - 1;
 
     /* Fixed (#1000): the differences as longs, the products compared
        exactly (the original: MULS of the word differences) */
     if (prodgt((LONG)pts[1].x - pts[0].x, (LONG)pts[2].y - pts[1].y,
                (LONG)pts[2].x - pts[1].x, (LONG)pts[1].y - pts[0].y)) {  /* clck */
-        p = polypts;
-        q = polypts + n;
-        do {
-            *p++ = *pts;
-            *q++ = *pts++;
+        p = (ULONG *)polypts;
+        q = p + n;
+        do {                                    /* a point as one long */
+            ULONG v = *s++;
+
+            any |= v;
+            *p++ = v;
+            *q++ = v;
         } while (k-- != 0);
     } else {                                    /* anti */
-        p = polypts + n;
+        p = (ULONG *)polypts + n;
         q = p + n;
         do {
-            *--p = *pts;
-            *--q = *pts++;
+            ULONG v = *s++;
+
+            any |= v;
+            *--p = v;
+            *--q = v;
         } while (k-- != 0);
         colour = colour2;
     }
-    return drawpoly(bm, n, colour, (UBYTE *)q);
+    return drawpoly(bm, n, colour, (UBYTE *)q, any);
 }
 
 /* ------------------------------------------------------------- ClipBlit */
