@@ -21,7 +21,10 @@
  *   - Sizes are MULU word products: h * depth * bytes per row is
  *     truncated (the second MULU uses the low word of h * depth). (#76)
  *   - CopyBitMap copies plane by plane with (bytes per row * rows) / 2
- *     words (0 words = 4 billion) (#78), into one MEMF_CHIP block (not
+ *     words (0 words = 4 billion; fixed, #78: a bitmap of width or height
+ *     0 is an invalid argument, refused with runtime error checking by the
+ *     checks of BitMap and CludgeBitMap, "Illegal BitMap Size"), into one
+ *     MEMF_CHIP block (not
  *     cleared) and does not set the used bitmap (not a bug: every word is
  *     overwritten by the copy, and CopyBitMap is not documented to select
  *     the bitmap).
@@ -251,7 +254,8 @@ BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
  * the planes beyond the depth are not cleared (#80).  Errors (debugger,
  * _bitmapchk): "Illegal BitMap Depth" if the depth is 0 or more than 8
  * (fixed, #1040: the original raised error number 1, "No currently used
- * object!").
+ * object!"); "Illegal BitMap Size" for a width or height below 1 (fixed,
+ * #78: not in the original).
  * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
  *
  * @param w        d1.w: the width in pixels
@@ -280,7 +284,8 @@ void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_RE
  * effect, #77): +52 is cleared, the plane distance +54 stays from before.
  * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
  * Errors (debugger, cludgechk): "Illegal BitMap Depth" for a depth of 0
- * or more than 8 (fixed, #393 #74: the original had no check).
+ * or more than 8 (fixed, #393 #74: the original had no check); "Illegal
+ * BitMap Size" for a width or height below 1 (fixed, #78).
  *
  * @param w        d1.w: the width in pixels
  * @param h        d2.w: the height
@@ -325,7 +330,8 @@ void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d
  *
  * Frees the destination, allocates one MEMF_CHIP block (not cleared) and
  * copies plane by plane.  BUG(orig): (bytes per row * rows) / 2 words per
- * plane, 0 words = 4 billion (#78); the size is a MULU word product
+ * plane, 0 words = 4 billion (#78: such a source is refused at its
+ * creation with runtime error checking); the size is a MULU word product
  * (#76).  Not a bug: the used bitmap is not set (CopyBitMap is not
  * documented to select it).  Errors (debugger, cbchk): "Can't copy
  * borrowed Bitmap" (the destination is borrowed).
@@ -476,22 +482,41 @@ BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Screen");
 BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess5, "Can't copy borrowed Bitmap");
 BLITZ_ERRCHK_MESSAGE(mess6, "Illegal BitMap Depth");
+BLITZ_ERRCHK_MESSAGE(mess7, "Illegal BitMap Size");
+
+/* the size of a new bitmap (fixed, #78, not in the original): a width or
+   height of 0 gives planes of 0 bytes (so does a width of -1: the bytes
+   per row wrap), and CopyBitMap of such a bitmap copies 2^32 words; a
+   negative size is no size either */
+static void BLITZ_ERRCHK bmsize(WORD w, WORD h)
+{
+    if (w < 1 || h < 1)
+        BLITZ_RUNERR(mess7);
+}
 
 /* _bitmapchk: the depth 1-8.  Fixed (#1040): the original raised error
    number 1 (MOVEQ #1,d0:TRAP #0), which the debugger shows as "No
-   currently used object!"; here the text of cludgechk */
-static void BLITZ_ERRCHK _bitmapchk_c(UWORD d BL_REG(d3))
+   currently used object!"; here the text of cludgechk.  Then the size
+   (fixed, #78) */
+static void BLITZ_ERRCHK _bitmapchk_c(WORD w BL_REG(d1), WORD h BL_REG(d2), UWORD d BL_REG(d3))
 {
-    if (!d || d > 8)
+    if (!d || d > 8) {
         BLITZ_RUNERR(mess6);
+        return;
+    }
+    bmsize(w, h);
 }
 
 /* cludgechk: fixed (#393, #74), not in the original (CludgeBitMap had no
-   check): the depth 1-8, as _bitmapchk for BitMap, with a text */
-static void BLITZ_ERRCHK cludgechk_c(UWORD d BL_REG(d3))
+   check): the depth 1-8, as _bitmapchk for BitMap, with a text; then the
+   size (fixed, #78) */
+static void BLITZ_ERRCHK cludgechk_c(WORD w BL_REG(d1), WORD h BL_REG(d2), UWORD d BL_REG(d3))
 {
-    if (!d || d > 8)
+    if (!d || d > 8) {
         BLITZ_RUNERR(mess6);
+        return;
+    }
+    bmsize(w, h);
 }
 
 static void BLITZ_ERRCHK _usechk_c(void)
