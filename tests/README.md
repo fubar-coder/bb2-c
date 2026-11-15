@@ -416,7 +416,8 @@ coordinator runs it again before the merge (`tools/results/README.md`,
 "fix-scope").
 
 **Kept registers.** A library routine may change every register except
-a4, a5 and a7 (`docs/libs/deviations.md`, "Register preservation"); the
+a4, a5, a6 and a7, and a function also keeps a3
+(`docs/libs/deviations.md`, "Register preservation"); the
 port's thunks keep at least what the original keeps. The program loads
 marker values before each call and writes one case per call, `kept` or
 `lost d3 a1`, for the registers that `KEEPS(routine, regs)` states (a4

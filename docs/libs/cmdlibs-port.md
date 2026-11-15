@@ -33,7 +33,9 @@ carried over (for the comparison with AmiBlitz3).
   is then written one byte too far (GetRexxCommand/GetResultString,
   fixed #52; FileRequest$, fixed #161).
 * **Register preservation:** according to the AmiBlitz3 spec a lib routine may change everything
-  except a4/a5/a7. As with the system libs, the C versions
+  except a4/a5/a7; the LIBSDEV documentation (EXTRAS/LIBSDEV/DOCUMENTATION:796-805)
+  also requires a6, which the compiler keeps across calls within a statement,
+  and a3 in functions. As with the system libs, the C versions
   nevertheless preserve at least the registers that the original preserves (thunks,
   checked in `[cmd]`).
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
