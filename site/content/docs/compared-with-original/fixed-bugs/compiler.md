@@ -703,6 +703,12 @@ source the original accepted are shown with examples on
 * `Dcb` with a count of 0 made 2^32 copies and ran for hours; a count of 0
   emits nothing, a negative count gives "Illegal Constant"
   ([#37](https://github.com/fubar-coder/bb2-c/issues/37)).
+* A division or `Mod` by a constant 0, such as `a.w=5/0`, crashed the
+  compiler with "Software Failure" (Byte, Word and Float division, Word
+  `Mod`) or compiled to the largest Long number (Long and Quick division,
+  constants such as `#c=5/0`); it is the compile error "Division by Zero"
+  ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors#division-by-zero" >}}),
+  [#1044](https://github.com/fubar-coder/bb2-c/issues/1044)).
 * A Latin-1 character other than the umlauts, such as ß or é, could not
   reach a string, since the editor lost it; the editor keeps it as a
   literal character

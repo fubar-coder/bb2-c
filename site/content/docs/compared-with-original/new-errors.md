@@ -129,6 +129,34 @@ needs no change.
 
 Issue: [Dcb with a count of 0 made 2^32 copies (#37)](https://github.com/fubar-coder/bb2-c/issues/37).
 
+### A division by a constant 0 {#division-by-zero}
+
+**What happened.** When both operands of `/` or `Mod` are constants, the
+compiler computes the result while it compiles. The original did not look
+at the divisor first. A Byte, Word or Float division by 0, and a Word
+`Mod` by 0, crashed the compiler with "Software Failure". A Long or Quick
+division by 0, also in a constant definition such as `#c=5/0`, compiled to
+the largest Long number, and a Long `Mod` by 0 gave the dividend:
+
+```
+NPrint "before"
+d.l=7/0
+NPrint d
+End
+```
+
+compiled and printed `before` and `2147483647`.
+
+**With the port.** Each of these cases is the compile error "Division by
+Zero" at its line (line 2 here), for every type. The compiler finds only
+a divisor that is a constant; a division by a variable that holds 0 is
+not found while compiling.
+
+**What to change.** Remove the division, or write the value you meant
+instead of the division by 0.
+
+Issue: [A division or Mod by a constant 0 crashed the compiler (#1044)](https://github.com/fubar-coder/bb2-c/issues/1044).
+
 ## Characters
 
 ### An accented letter outside a string {#latin1-outside-string}
