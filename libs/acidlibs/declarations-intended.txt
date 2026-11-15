@@ -51,3 +51,7 @@ lib 185: relocations in the declaration part 31 != 36
 lib 65434: header +$2C: code offset set in only one of them
 lib 65434: entry 2 ($C402) (nullsub) +$8: code offset set in only one of them
 lib 65434: relocations in the declaration part 5 != 7
+# #83: SpotBox gets an error check (spotboxchk); blitzoslib gets an error
+# check area for it (the original has none)
+lib 117: header +$2C: code offset set in only one of them
+lib 117: relocations in the declaration part 41 != 43

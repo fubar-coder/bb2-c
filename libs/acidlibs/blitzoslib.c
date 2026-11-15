@@ -30,13 +30,15 @@
  * a3-a4/a4 around its drawing).
  *
  * Most tokens have `1` as the first error check field of !subs (a plain
- * 1, no address; kept).  The checks "UnInitialised Page" / "Illegal Box#
- * For Page" ... are in the normal code (always on, there is no error
- * check area).
+ * 1, no address: Blitz mode only, no check; kept).  The checks
+ * "UnInitialised Page" / "Illegal Box# For Page" ... are in the normal
+ * code (always on).  The original has no error check area; here the
+ * library has one for the checks the original lacks (SpotBox, #83):
+ * they run only with runtime error checking (BLITZ_BLITZONLY_CHK).
  *
  * BUG(orig), kept:
  *  - SelectBox Box# is not range checked (negative: deselect only)
- *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
+ *    (#82).
  * Fixed (intended deviations):
  *  - #87: BoxPrint Bank#,Line replaced the LF at the end of the printed
  *    line in the bank by 0 (the line is printed with its length anyway).
@@ -73,6 +75,12 @@
  *    strings as range only for the box types 0 and 1: a list box (type
  *    5) kept 0 entries (nothing drawn, SetBox "Value Out of Range").
  *    Here a list box gets it too.
+ *  - #83: SpotBox had no page check (the other commands raise
+ *    "UnInitialised Page" for a page with memory size 0: none, freed, or
+ *    0 boxes) and with 0 boxes scanned 65536 entries.  Here an error
+ *    check (spotboxchk, error check area only) raises "UnInitialised
+ *    Page"; release code unchanged (an invalid argument).  SelectBox
+ *    0,x,y and x+,y+ have the same loop but check the page always.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -104,6 +112,7 @@ void _setboxcolor(void), _blitzevent(void), _setboxtitle(void);
 void _disablebox(void), _enablebox(void), _mouseenabled(void);
 void _setpagepens(void), _boxpropx(void), _boxpropy(void), _changebox(void);
 void _togglebox(void), _spotbox(void);
+void spotboxchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -111,7 +120,7 @@ BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
 /* !libheader{#blitzoslib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_blitzoslib, 0, BL_NORET, 0, 0);
+BLITZ_LIBHEADER(LIB_blitzoslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_DUMTOKE(_toke, "Page", "");
 
@@ -304,7 +313,7 @@ BLITZ_NAME("ToggleBox", "Box#");
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS0();
 BLITZ_LIBS(UPAGE);
-BLITZ_SUBS(_spotbox, 1, 0);
+BLITZ_SUBS(_spotbox, BLITZ_BLITZONLY_CHK(spotboxchk), 0);
 BLITZ_NAME("SpotBox", "; returns box that mouse is over");
 
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
@@ -1995,7 +2004,9 @@ BLITZ_THUNK(_activateselected, activateselected_c, "d0-d1/a0-a1");
  * @brief SpotBox: the box that the mouse is over.
  *
  * The first enabled box under (mx,my) of the last BlitzEvent.
- * BUG(orig) (#83): no page check; with 0 boxes it scans 65536.
+ * Errors (debugger only, spotboxchk): "UnInitialised Page" (fixed, #83:
+ * the original had no page check; without the debugger a page without
+ * boxes is still scanned 65536 entries far, an invalid argument).
  *
  * Reads a3: the used page.
  * @return d0.w: the Box#, -1 for none (the upper word is mx's sign)
@@ -2350,3 +2361,23 @@ static ULONG BLITZ_ROUTINE blitzevent_c(void)
     return (ULONG)blitzevent(PG);
 }
 BLITZ_THUNK(_blitzevent, blitzevent_c, "d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+/**
+ * @brief The error check of SpotBox (debugger only).
+ *
+ * Fixed (#83), not in the original (SpotBox had no page check): the used
+ * page must be initialised (a memory size, i.e. InitPage with at least
+ * one box), as the other commands check always.
+ *
+ * Errors: "UnInitialised Page".
+ *
+ * Reads a3: the used page.
+ */
+static void BLITZ_ERRCHK spotboxchk_c(void)
+{
+    if (!PG->memsize)
+        BLITZ_RUNERR(mess1);
+}
+BLITZ_ERRCHK_THUNK(spotboxchk, spotboxchk_c, "d0-d1/a0-a1");
