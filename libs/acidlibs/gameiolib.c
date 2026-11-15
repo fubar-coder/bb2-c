@@ -152,7 +152,7 @@ static const UWORD rots[16] = { 8, 2, 8, 6, 4, 3, 8, 5, 8, 8, 8, 8, 0, 1, 8, 7 }
  * @param port  d0: the port
  * @return d0.w: the direction
  */
-static ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
 {
     UWORD dat = joydat(port);
     UWORD x = (UWORD)joyx(dat);
@@ -193,7 +193,7 @@ static ULONG BLITZ_ROUTINE _joyb_c(UWORD port BL_REG(d0))
 
 BLITZ_ALIAS(_joyx, _joyx_c);
 BLITZ_ALIAS(_joyy, _joyy_c);
-BLITZ_ALIAS(_joyr, _joyr_c);
+BLITZ_ALIAS_EP(_joyr, _joyr_c);
 BLITZ_ALIAS(_joyb, _joyb_c);
 
 /**

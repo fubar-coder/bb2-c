@@ -25,8 +25,8 @@
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bdisp.dispbitmap              590      494.0  DisplayBitMap 0,0
 bdisp.dispbitmapxy           1058      710.0  DisplayBitMap 0,0,8,8
-bdisp.dispsprite            1581~4      965.5  DisplaySprite 0,0,100,100,0
-bdisp.disppalette          2452~16     1292.0  DisplayPalette 0,0
+bdisp.dispsprite            1506~4      965.5  DisplaySprite 0,0,100,100,0
+bdisp.disppalette          2373~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2988~3     2108.3  Blit 0,100,100
 bgfx.blit16s                 3021     2108.3  Blit 0,105,100
@@ -40,12 +40,12 @@ bgfx.qblit4u               16404~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20
 bgfx.qblit8u               32494~4    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
 bgfx.qblit4f              12510~12     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
 bgfx.qblit8f               24974~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
-bgfx.showsprite               863      629.4  ShowSprite 0,100,100,0
+bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
-bgfx.pcoll                    331      130.8  c=PColl(0)
-bgfx.shapeshit               839~4      383.4  c=ShapesHit(0,10,10,1,20,20)
-bgfx.spriteshit              880~4      418.9  c=SpritesHit(0,10,10,0,20,20)
+bgfx.pcoll                    260      130.8  c=PColl(0)
+bgfx.shapeshit               732~4      383.4  c=ShapesHit(0,10,10,1,20,20)
+bgfx.spriteshit              772~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
 bgfx.plot                     692      486.9  Plot 10,10,1
 bgfx.point                    765      478.4  c=Point(10,10)
@@ -53,16 +53,16 @@ bgfx.line                    5047     3967.8  Line 10,10,110,60,1
 bgfx.lineh                  5008~4     3991.8  Line 10,10,110,10,1
 bgfx.box                   13090~4     9571.9  Box 10,10,50,50,1
 bgfx.boxf                   3148~4     1991.8  Boxf 10,10,25,25,2
-bgfx.circle               66345~40    33609.8  Circle 100,100,10,1
+bgfx.circle               66245~40    33609.8  Circle 100,100,10,1
 bgfx.circlef              36475~30    17189.8  Circlef 100,100,10,1
-bgfx.cls                84610~1080    84709.9  Cls
-bgfx.poly3                10105~10     7524.9  Poly 3,&pts(0),1
+bgfx.cls                84510~1080    84709.9  Cls
+bgfx.poly3                10075~10     7524.9  Poly 3,&pts(0),1
 bgfx.polyf3               87155~10    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32               9474~4     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   145      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
-bgfx.print5               28522~12    13097.9  Locate 0,0 : Print "SCORE"
-bgfx.printnum              35688~4    17797.8  Locate 0,0 : Print a
+bgfx.print5               28340~12    13097.9  Locate 0,0 : Print "SCORE"
+bgfx.printnum              35584~4    17797.8  Locate 0,0 : Print a
 bgfx.show                    1222      589.4  Show 0
 bgfx.showxy                  1261      595.9  Show 0,8,8
 bgfx.rgb                     207~3      178.8  RGB 1,15,0,0
@@ -73,14 +73,14 @@ binput.emptylong                3          -  the empty loop again, 150000 itera
 binput.joyx                   292      173.7  c=Joyx(1)
 binput.joyy                   301      186.7  c=Joyy(1)
 binput.joyb                   200      179.2  c=Joyb(1)
-binput.joyr                   562      376.7  c=Joyr(1)
+binput.joyr                   512      376.7  c=Joyr(1)
 binput.rawstatus              253      145.7  c=RawStatus($45)
 binput.inkey                 1508      601.7  r$=Inkey$
 binput.mousex                 101       87.2  c=MouseX
 binput.mousey                 100       86.7  c=MouseY
 binput.mousexspeed            101       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
-binput.volume                 461      278.7  Volume 1,32
+binput.volume                 390      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a
@@ -122,25 +122,25 @@ bmisc.handle                  134      129.4  Handle 0,0,0
 bmisc.palrgb                  848      653.5  PalRGB 0,1,15,0,0
 bmisc.showpalette            2464     1616.0  ShowPalette 0
 bmisc.usepalette             2506     1660.0  Use Palette 0
-bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
+bmisc.fadepalette          3845~10     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                    107      100.4  c=NTSC
-bmisc.infront                252~4      134.9  InFront 4
-bmod.vblmod                 3106~220   2409.5  PlayModule playing: its interrupt, cycles per frame
-bmod.playmed               12223~1     9950.0  PlayMed
+bmisc.infront                129~4      134.9  InFront 4
+bmod.vblmod                 3044~220   2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.playmed               12019~1     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   2185     1367.5  r$=a$
-bstr.mid                     2402     1553.5  r$=Mid$(a$,3,5)
-bstr.left                    2122     1299.0  r$=Left$(a$,5)
-bstr.right                   2315     1495.5  r$=Right$(a$,5)
+bstr.mid                     2297     1553.5  r$=Mid$(a$,3,5)
+bstr.left                    2016     1299.0  r$=Left$(a$,5)
+bstr.right                   2208     1495.5  r$=Right$(a$,5)
 bstr.str                     5479     4131.5  r$=Str$(a)
-bstr.val                     3239     1927.0  c=Val(n$)
+bstr.val                     3174     1927.0  c=Val(n$)
 bstr.len                      876      731.0  c=Len(a$)
 bstr.chr                      819      411.0  r$=Chr$(65)
-bstr.asc                     1054      797.0  c=Asc(a$)
-bstr.instr                   4464     3513.0  c=Instr(a$,"Blitz")
-bstr.ucase                   3879     3124.0  r$=UCase$(a$)
-bstr.hex                     2231     1570.0  r$=Hex$(a)
+bstr.asc                      944      797.0  c=Asc(a$)
+bstr.instr                   4356     3513.0  c=Instr(a$,"Blitz")
+bstr.ucase                   3725     3124.0  r$=UCase$(a$)
+bstr.hex                     2184     1570.0  r$=Hex$(a)
 bstr.concat                  3645     2318.5  r$=a$+b$
 bstr.strcmp                  3603     2943.5  If a$=b$ Then c=1
 bstr.string                  4195     4376.0  r$=String$("a",20)

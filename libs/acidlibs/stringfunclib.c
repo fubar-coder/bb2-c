@@ -583,7 +583,7 @@ BLITZ_ALIAS(lcasestring, lcasestring_c);
  * @param lens a2: the length stack (the string's length)
  * @return d0: the length; a3 = the end of the result
  */
-static ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
     ULONG len = BL_POPL(sp), n;
@@ -599,7 +599,7 @@ static ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens 
     }
     return len;
 }
-BLITZ_ALIAS(ucasestring, ucasestring_c);
+BLITZ_ALIAS_EP(ucasestring, ucasestring_c);
 
 /**
  * @brief StripLead$(String$,Ascii) - the string without the leading
@@ -803,7 +803,7 @@ BLITZ_ALIAS(binstring, binstring_c);
  * @param v d0: the value
  * @return d0: 8, the length; a3 = the end of the result
  */
-static ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
 {
     UWORD i, c;
 
@@ -816,7 +816,7 @@ static ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
     }
     return 8;
 }
-BLITZ_ALIAS(hexstring, hexstring_c);
+BLITZ_ALIAS_EP(hexstring, hexstring_c);
 
 /**
  * @brief String$(String$,Repeats) - Repeats copies of the string.

@@ -198,6 +198,34 @@ build.
       clears a0 before the globalloc call (#1058): **reduced thunk**
       saving a0 (task 2.4).
 
+14. **`__entrypoint` (task 2.6, experiment of 2026-11-15, gcc 16.2-rc24).**
+    Of the 417 aliases of 2.3/2.4, 138 C functions save callee-saved
+    registers at their start (a `movem.l`/`move.l` to `-(sp)`); many of
+    them save a6 because they call the OS. Three properties of GCC's
+    `__entrypoint` shape its use:
+    - GCC uses a6 as a free register in such a function (`lea tab,a6`
+      in a loop), so the rule's a6 is lost unless the check refuses it;
+    - a caller in the same unit does not know that the function keeps
+      nothing: it keeps its values in d2/d3 across the call (reproduced);
+    - identical code folding merges a plain function with the same body
+      into a jump to the `__entrypoint` one (the plain function loses its
+      saves, reported by the coordinator); `__attribute__((no_icf))` keeps
+      them apart (the spelling `noicf` is ignored with a warning).
+    So `BLITZ_ENTRYPOINT` is `__entrypoint __attribute__((no_icf))`, the
+    function is never called from C, `BLITZ_ALIAS_EP` marks it, and the
+    build step of every library runs `blitzlib entrypoints`
+    (`tools/lib/epcheck`): a6 written without a save at the start, a call
+    or jump into the routine from other code, and a routine that begins
+    with a jump into another one are refused (tests with broken input:
+    `blitzlib_entrypoints_broken_*`, `cmake/entrypoint/`). Measured on 11
+    candidates without a6 and without a C caller: a gain for ShowSprite
+    (-136 cycles per call), Plot (-87), PColl (-70.5), Volume (-70.5),
+    UCase$ (-52), Joyr (-50), Hex$ (-46); none for Mid$, Left$, Right$,
+    Instr (their `move.l a2,-(sp)` is an argument, not a save). Adopted:
+    ShowSprite, PColl, Volume, UCase$, Joyr, Hex$. Not Plot: MikesSpaceFXLib
+    calls it from a starfield loop, and the third-party analysis checked
+    only d0/d1/a0/a1 there (Plot becomes an assembler entry in 6.1).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

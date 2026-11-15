@@ -209,7 +209,7 @@ BLITZ_ASM_ROUTINE(doscoll,
  * @param c  d0.w: the sprite channel (0..7)
  * @return d0.w: -1 = both bits set, 0 otherwise
  */
-static ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
 {
     UWORD a = ((UWORD)c >> 1) + 1, b = a + 4;
     UWORD r = (colval & (1UL << (a & 31)) ? 0xff : 0) &
@@ -217,7 +217,7 @@ static ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
 
     return (c & 0xffff0000UL) | (UWORD)(WORD)(BYTE)r;  /* SNE:AND:EXT */
 }
-BLITZ_ALIAS(dopcoll, dopcoll_c);
+BLITZ_ALIAS_EP(dopcoll, dopcoll_c);
 
 /* ----------------------------------------------------- rectangle tests */
 

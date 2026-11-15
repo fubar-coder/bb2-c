@@ -269,7 +269,7 @@ BLITZ_ALIAS(dodiskbuff, dodiskbuff_c);
  * @param mask  d0.w: the channel mask
  * @param args  a2: the compiler's stack with the volumes (words)
  */
-static void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
     int ch;
@@ -278,7 +278,7 @@ static void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL
         if (mask & 1)
             *(volatile UWORD *)AUD(ch, 8) = BL_POPW(sp);
 }
-BLITZ_ALIAS(dovolume, dovolume_c);
+BLITZ_ALIAS_EP(dovolume, dovolume_c);
 
 /* ------------------------------------------------------------- sounds */
 

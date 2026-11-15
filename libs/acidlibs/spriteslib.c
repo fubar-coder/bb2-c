@@ -415,7 +415,7 @@ BLITZ_ALIAS(dogetsprite, dogetsprite_c);
  * @param ch    d3: the first sprite channel
  * @param slice a2: the used slice; a3: the sprite object
  */
-static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
                                          ULONG ch BL_REG(d3), struct bb_slice *slice BL_REG(a2))
 {
     struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
@@ -502,7 +502,7 @@ spriteoff:
         }
     } while (n-- != 0);
 }
-BLITZ_ALIAS(doshowsprite, doshowsprite_c);
+BLITZ_ALIAS_EP(doshowsprite, doshowsprite_c);
 
 /**
  * @brief InFront Sprite Channel, InFrontB Sprite Channel - sprites from
