@@ -27,10 +27,6 @@
  * outside.  InFront/InFrontB set the playfield 2 priority bits (BPLCON2
  * 3-5) in the copper list of the slice, InFrontF those of playfield 1.
  *
- * BUG(orig), kept:
- *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
- *    width (beyond the row for narrow shapes). (#282)
- *
  * Fixed (intended deviation, docs/libs/deviations.md):
  *  - the original has the error routines of SaveSprites/LoadSprites
  *    (err10, err11) in the normal code but their messages in the error
@@ -51,6 +47,11 @@
  *    them so (and a sprite was freed with a wrong size).  Here the size
  *    is the sprite's own bytes per image (+10, set by GetaSprite in the
  *    mode it was made in) times its number of hardware sprites. (#280)
+ *  - GetaSprite read 16/32/64 pixels per sprite whatever the shape's
+ *    width: in SpriteMode 1/2 the last sprite of a shape whose byte width
+ *    is no multiple of the sprite width took bytes of the next row (or
+ *    from behind the shape) into its right edge.  Here that sprite copies
+ *    only the bytes the row has and 0 for the rest. (#282)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -244,12 +245,48 @@ BLITZ_THUNK(freeasprite, freeasprite_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------------- GetaSprite */
 
+/* the last sprite of a narrow shape (fixed #282): per row the avail bytes
+   the shape's row still has (a whole number of words, fewer than the
+   sprite width), 0 for the rest of the sprite width; then a 0 line */
+static UBYTE *partsprite(const UBYTE *src, UBYTE *dst, UWORD height, const struct bb_shape *shape,
+                         UWORD avail)
+{
+    UWORD n = height - 2, wid = sv.wid, k;
+    WORD ps = (WORD)shape->planesize, bw = (WORD)shape->ebwidth;
+
+    do {
+        for (k = 0; k < wid; k += 2) {
+            UWORD w0 = 0, w1 = 0;
+
+            if (k < avail) {
+                w0 = *(const UWORD *)(src + k);
+                w1 = *(const UWORD *)(src + ps + k);
+            }
+            *(UWORD *)(dst + k) = w0;
+            *(UWORD *)(dst + wid + k) = w1;
+        }
+        dst += 2 * wid;
+        src += bw;
+        __asm__("" : "+a"(dst));                /* no __mulsi3 */
+    } while (n-- != 0);
+    for (k = 0; k < 2 * wid; k += 2)
+        *(UWORD *)(dst + k) = 0;
+    return dst + 2 * wid;
+}
+
 /* one sprite image: two planes from a0 (row step = the shape's byte
-   width) to a1, then a 0 line; returns the new a1 */
-static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const struct bb_shape *shape)
+   width) to a1, then a 0 line; returns the new a1.  avail: the bytes of
+   the shape's row from src on; fewer than the sprite width only in the
+   last sprite of a narrow shape in SpriteMode 1/2 (fixed #282: the
+   original copied the whole sprite width, bytes of the next row) */
+static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const struct bb_shape *shape,
+                        WORD avail)
 {
     UWORD n = height - 2;
     WORD ps = (WORD)shape->planesize, bw = (WORD)shape->ebwidth;
+
+    if (avail < (WORD)sv.wid)
+        return partsprite(src, dst, height, shape, (UWORD)avail);
 
     if (sv.mode == 0) {
         do {
@@ -301,8 +338,10 @@ static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const struct
  * Errors (debugger, gspchk): "Uninitialized Shape", "Shape MUST be 4 or
  * 16 colours", "Sprite too Wide".
  *
- * BUG(orig) (#282): reads 16/32/64 pixels per sprite whatever the
- * shape's width (beyond the row for narrow shapes).
+ * Fixed (#282): the last sprite of a shape whose byte width is no
+ * multiple of the sprite width (SpriteMode 1/2) takes only the bytes of
+ * the row and 0 for the rest; the original copied the whole sprite width
+ * (bytes of the next row).
  *
  * @param shape a2: the shape object; a3: the sprite object
  */
@@ -312,6 +351,7 @@ static void BLITZ_ROUTINE dogetsprite_c(struct bb_shape *shape BL_REG(a2))
     UBYTE *dst;
     const UBYTE *src;
     UWORD height, count, imgsize;
+    WORD avail;                                 /* bytes left in the row */
 
     freeasprite_(sp);
     sp->handlex = (UWORD)shape->handlex;
@@ -334,14 +374,16 @@ static void BLITZ_ROUTINE dogetsprite_c(struct bb_shape *shape BL_REG(a2))
     dst = globalloc((ULONG)imgsize * count, MEMF_CHIP);
     sp->data = dst;
     src = shape->data;
+    avail = (WORD)shape->ebwidth;
     count--;                                    /* number of sprites to do */
     do {
-        dst = onesprite(src, dst, height, shape);
+        dst = onesprite(src, dst, height, shape, avail);
         if ((WORD)sp->flags < 0) {
-            dst = onesprite(src + 2 * (WORD)shape->planesize, dst, height, shape);
+            dst = onesprite(src + 2 * (WORD)shape->planesize, dst, height, shape, avail);
             count--;
         }
         src += (WORD)sv.wid;
+        avail -= (WORD)sv.wid;
     } while (count-- != 0);
 }
 BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
