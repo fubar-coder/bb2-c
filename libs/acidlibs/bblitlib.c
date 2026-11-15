@@ -26,6 +26,14 @@
  * cleared, the first one stays $FFFF from the save blit (exactly the masks
  * blitlib sets for the shape blit, same result).
  * DIFF: the nullsub-less entries keep a4/a5 (the original saves them too).
+ * BUG(orig) (#1045): BBlit, UnBuffer and ShowStencil step from plane to
+ * plane in the record by the plane size as a signed word (ADD.w of
+ * shape +24), backwards for a plane of 32 KB or more.
+ *
+ * Speed: the blit core is inline (BL_ALWAYS_INLINE), and the Blitz mode
+ * code of BBlit, UnBuffer and ShowStencil saves no register
+ * (BLITZ_ENTRYPOINT, a6 kept by BLITZ_EP_KEEP_A6; the register rule keeps
+ * a3-a7).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -240,8 +248,9 @@ struct blitstate {
 
 /* b_doblit - a0 = buffer, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3
    = x/y: save the background into a record, then blit */
-static void bblit(struct buffer *b, const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
-                  WORD x, WORD y, struct blitstate *st)
+BL_ALWAYS_INLINE void bblit(struct buffer *b, const struct bb_shape *shape,
+                            const struct bb_bitmap *bm, UBYTE *cb,
+                            WORD x, WORD y, struct blitstate *st)
 {
     struct record *hdr = b->pos;
     UBYTE *rec;                                 /* behind the header */
@@ -256,7 +265,7 @@ static void bblit(struct buffer *b, const struct bb_shape *shape, const struct b
     admod = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
     hdr->mod = (UWORD)admod;
     cbmod = admod << 16 | admod >> 16;
-    st->off = (ULONG)bl_muls_w(y, bm->bpr) + (LONG)(WORD)(x >> 3);
+    st->off = bl_blitoff(&bm->bpr, x, y);
     st->size = shape->bltsize;
     hdr->size = st->size;
     n = bm->flagsdepth - 1;
@@ -284,7 +293,7 @@ saveplane:                                      /* saveit2 */
             rec += 4;
             BL_CUSTOML(cb, 0x54) = (ULONG)rec;
             BL_CUSTOMW(cb, 0x58) = st->size;
-            rec += (WORD)save;
+            rec += (WORD)save;                  /* BUG(orig) (#1045): signed */
             __asm__("" : "+a"(rec));            /* no IV multiplication */
         }
     } while (n-- != 0);
@@ -317,8 +326,9 @@ bblitlib_doblit:
 }
 
 /* b_doblitex - excess planes, d4 = bits (one per plane) */
-static void bblitex(struct buffer *b, const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
-                    WORD x, WORD y, UWORD bits)
+BL_ALWAYS_INLINE void bblitex(struct buffer *b, const struct bb_shape *shape,
+                              const struct bb_bitmap *bm, UBYTE *cb,
+                              WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
@@ -341,7 +351,7 @@ static void bblitex(struct buffer *b, const struct bb_shape *shape, const struct
 }
 
 /* b_dounbuffer - a3 = buffer, a2 = chip base: the records back */
-static void unbuffer(struct buffer *b, UBYTE *cb)
+BL_ALWAYS_INLINE void unbuffer(struct buffer *b, UBYTE *cb)
 {
     struct record *rec = b->last;
 
@@ -371,7 +381,7 @@ nextplane:                                      /* loop3a */
             cur += 4;
             BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOMW(cb, 0x58) = size;
-            cur += (WORD)save;
+            cur += (WORD)save;                  /* BUG(orig) (#1045): signed */
         } while (n-- != 0);
         rec = rec->prev;
     } while (rec);
@@ -381,7 +391,7 @@ nextplane:                                      /* loop3a */
 
 /* b_showstencil - as UnBuffer, through the stencil (a1) as B; the buffer
    stays */
-static void showstencil(struct buffer *b, UBYTE *cb, const struct stencil *stencil)
+BL_ALWAYS_INLINE void showstencil(struct buffer *b, UBYTE *cb, const struct stencil *stencil)
 {
     struct record *rec = b->last;
 
@@ -418,7 +428,7 @@ nextplane:                                      /* loop3a */
             BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOML(cb, 0x4c) = st;
             BL_CUSTOMW(cb, 0x58) = size;
-            cur += (WORD)save;
+            cur += (WORD)save;                  /* BUG(orig) (#1045): signed */
         } while (n-- != 0);
         rec = rec->prev;
     } while (rec);
@@ -452,13 +462,16 @@ nextplane:                                      /* loop3a */
  * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  */
-static void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS);
-static void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS);
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
 {
+    BLITZ_EP_KEEP_A6();
     struct blitstate st;
 
     bblit(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblit_c);
 
 /**
  * @brief BBlit Buffer#,Shape#,X,Y (Amiga mode).
@@ -513,11 +526,15 @@ BLITZ_AB_ROUTINE(bblitlib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  * @param bits d4.w: Excessonoff, one bit per excess plane (set = $FA)
  */
-static void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
-static void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
 {
+    BLITZ_EP_KEEP_A6();
+
     bblitex(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblitex_c);
 
 /**
  * @brief BBlit Buffer#,Shape#,X,Y,Excessonoff (Amiga mode).
@@ -558,11 +575,15 @@ BLITZ_AB_ROUTINE(bblitlib_doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
  *
  * @param cb  a2: the custom chip base $DFF000 (chipbaselib)
  */
-void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2));
-void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2))
 {
+    BLITZ_EP_KEEP_A6();
+
     unbuffer((struct buffer *)blitz_string, cb);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_dounbuffer_c);
 
 /**
  * @brief UnBuffer Buffer# (Amiga mode).
@@ -598,11 +619,17 @@ BLITZ_AB_ROUTINE(dounbuffer, b_dounbuffer_c, "   jmp     _a_dounbuffer_c");
  *            in d1)
  * @param cb  a2: the custom chip base $DFF000 (chipbaselib)
  */
-void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2));
-void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1),
+                                                           UBYTE *cb BL_REG(a2));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1),
+                                                           UBYTE *cb BL_REG(a2))
 {
+    BLITZ_EP_KEEP_A6();
+
     showstencil((struct buffer *)blitz_string, cb, st);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_showstencil_c);
 
 /**
  * @brief ShowStencil Buffer#,Stencil# (Amiga mode; the wait is a single
