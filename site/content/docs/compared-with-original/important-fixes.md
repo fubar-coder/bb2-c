@@ -1,6 +1,7 @@
 ---
 title: Important Fixes & Breaking Changes
 weight: 1
+width: wide
 description: All fixed bugs of Blitz Basic 2 in one table, sorted by what they can change in an existing program, with the few fixes that change correct programs first.
 prev: /docs/compared-with-original
 next: /docs/compared-with-original/fixed-bugs

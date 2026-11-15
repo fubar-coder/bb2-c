@@ -7,22 +7,38 @@
   padding-bottom: 0.5rem;
   opacity: 0.75;
 }
+/* The table fits the content column: fixed layout, the narrow columns
+   (level, issue) get a fixed width, topic and library a share, and the
+   fix text takes the rest. Long names break inside their cell. Only on a
+   very narrow screen the table keeps a minimum width and scrolls inside
+   its box. */
 .fix-overview {
   overflow-x: auto;
 }
 .fix-overview-table {
   display: table;
   width: 100%;
+  min-width: 36rem;
+  table-layout: fixed;
+}
+.fix-overview-table th:nth-child(1) {
+  width: 4.5rem;
+}
+.fix-overview-table th:nth-child(2) {
+  width: 14%;
+}
+.fix-overview-table th:nth-child(3) {
+  width: 22%;
+}
+.fix-overview-table th:nth-child(5) {
+  width: 4.5rem;
+}
+.fix-overview-table th,
+.fix-overview-table td {
+  overflow-wrap: anywhere;
 }
 .fix-overview-table td {
   vertical-align: top;
-}
-.fix-overview-table td:nth-child(3) {
-  max-width: 11rem;
-  overflow-wrap: anywhere;
-}
-.fix-overview-table td:nth-child(4) {
-  min-width: 18rem;
 }
 .fix-overview-table th button {
   font: inherit;
@@ -33,18 +49,17 @@
   padding: 0;
   cursor: pointer;
   text-align: left;
-  white-space: nowrap;
 }
 .fix-overview-table th button::after {
-  content: " \2195";
+  content: "\00a0\2195";
   opacity: 0.4;
 }
 .fix-overview-table th[aria-sort="ascending"] button::after {
-  content: " \2191";
+  content: "\00a0\2191";
   opacity: 1;
 }
 .fix-overview-table th[aria-sort="descending"] button::after {
-  content: " \2193";
+  content: "\00a0\2193";
   opacity: 1;
 }
 .fix-overview-table th button:focus-visible {
