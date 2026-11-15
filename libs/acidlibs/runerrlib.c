@@ -408,7 +408,14 @@ static void BLITZ_ROUTINE ftolover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 BLITZ_THUNK(ftolover, ftolover_c, "d0-d1/a0-a1");
 
 /**
- * @brief sarraychk ($C30E) - an array dimension must be < 65536.
+ * @brief sarraychk ($C30E) - an array dimension (its highest index) must
+ * be < 65535.
+ *
+ * An array or list has at most 65535 elements: arrmult counts the
+ * elements of a dimension as a word (highest index + 1).  Fixed (#1037):
+ * the highest index 65535 is refused too (the original refused only
+ * 65536 and more; 65535 gave 0 elements, every access outside the
+ * block).
  *
  * Errors: "Array Dimension out of Range".
  *
@@ -416,13 +423,16 @@ BLITZ_THUNK(ftolover, ftolover_c, "d0-d1/a0-a1");
  */
 static void BLITZ_ROUTINE sarraychk_c(ULONG d BL_REG(d0))
 {
-    if (d >= 65536)
+    if (d >= 65535)                             /* fixed (#1037) */
         BLITZ_RUNERR(sarraymess);
 }
 BLITZ_THUNK(sarraychk, sarraychk_c, "d0-d1/a0-a1");
 
 /**
- * @brief aarraychk ($C30F) - as sarraychk, the dimension in d1.
+ * @brief aarraychk ($C30F) - as sarraychk, the dimension in d1 (the check
+ * of each dimension of Dim and Dim List).
+ *
+ * Fixed (#1037): refuses 65535 too, as sarraychk.
  *
  * Errors: "Array Dimension out of Range".
  *
@@ -430,7 +440,7 @@ BLITZ_THUNK(sarraychk, sarraychk_c, "d0-d1/a0-a1");
  */
 static void BLITZ_ROUTINE aarraychk_c(ULONG d BL_REG(d1))
 {
-    if (d >= 65536)
+    if (d >= 65535)                             /* fixed (#1037) */
         BLITZ_RUNERR(sarraymess);
 }
 BLITZ_THUNK(aarraychk, aarraychk_c, "d0-d1/a0-a1");

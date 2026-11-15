@@ -315,7 +315,9 @@ static void runerrtest(struct set *s)
     call("runerr 27", entry_code(l, 27));
     SETUP(r.d[0] = 0xF42400D4 /* FFP -1e6 */; r.a[6] = (ULONG)MathBase);
     call("runerr 28", entry_code(l, 28));
-    SETUP(r.d[0] = 65535); call("runerr 14", entry_code(l, 14));
+    /* the highest dimension in range: 65534 (65535 elements; fixed #1037:
+       65535 is out of range, the original passed it) */
+    SETUP(r.d[0] = 65534); call("runerr 14", entry_code(l, 14));
     SETUP(r.d[1] = 0); call("runerr 15", entry_code(l, 15));
     SETUP(r.d[0] = 3; r.a[3] = (ULONG)data); call("datachk", entry_code(l, 16));
     LOG("datachk a3", "datachk a3+%ld", r.a[3] - (ULONG)data);

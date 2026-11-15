@@ -144,6 +144,9 @@ BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
  * got 1 byte and succeeded).
  * Errors (debugger, arrmultchk): "Array Size out of Range" for a size
  * that does not fit in 32 bits (#58: the original had no check).
+ * The count is a word: a dimension has at most 65535 elements, the
+ * highest index 65535 gives 0 (an invalid argument; with runtime error
+ * checking runerrlib's aarraychk refuses it, fixed #1037).
  * DIFF: the original returns d1.w+1 and changes d2; the compiler does not
  * use them (the next dimension is evaluated again), the C build keeps d2
  * and leaves d1 undefined.
