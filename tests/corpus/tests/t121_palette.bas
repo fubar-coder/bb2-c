@@ -3,8 +3,8 @@
 ; MixPalette, FadePalette, SetCycle, CyclePalette, DecodePalette (ILBM in
 ; memory: CMAP + CRNG), LoadPalette (the same ILBM as a file, with and
 ; without offset); every palette printed as data words/longs.  SetCycle
-; on an empty palette first: only that writes the end marker of the cycles
-; (InitPalette does not), CyclePalette would run over the 14 entries.
+; on an empty palette first (InitPalette writes the end marker of the
+; cycles too since #229).
 DEFTYPE .l
 PalRGB 0,0,1,2,3 : PalRGB 0,1,15,8,4 : PalRGB 0,3,7,0,15
 pn=0 : Gosub pdump
