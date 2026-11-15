@@ -38,6 +38,7 @@ int systest_cmdlibs_main(int argc, char **argv);
 int systest_blit_main(int argc, char **argv);
 int systest_gfx_main(int argc, char **argv);
 int systest_med_main(int argc, char **argv);
+int systest_tracker_main(int argc, char **argv);
 int bugorig_cliargs_parpath_cli(const char *dir);
 int bugorig_crunch_implode_overread(const char *dir);
 int bugorig_crunch_decrunch_corrupt(const char *dir);
@@ -210,6 +211,11 @@ TEST_CASE("systest_gfx: 2dlib palettelib blitzcoplib spriteslib displaylib scrol
 TEST_CASE("systest_med: medlib (generated modules)", "[med]")
 {
     CHECK(run_systest("systest_med", systest_med_main) == 0);
+}
+
+TEST_CASE("systest_tracker: trackerlib (a generated module)", "[tracker]")
+{
+    CHECK(run_systest("systest_tracker", systest_tracker_main) == 0);
 }
 
 // the RWE userlibs (libs/userlibs/rwe), each against its CD binary
