@@ -39,14 +39,19 @@
  *  - CMAP chunks of an odd size are not padded. (#184)
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
- *  - SaveShape does not check the depth: depth 0 writes 65536 plane
- *    pointers (DBF) from bmcopy on, depth 15 and more run past its 14
- *    pointers (usewid, scrcols, then whatever follows). (#326)
  *
  * Fixed (intended deviation, #180): the plane loop of the BODY compares
  * with the byte Depth at BitMap+5, as nPlanes of the BMHD; the original
  * compared with the WORD at +4 (Flags<<8 | Depth), so a bitmap whose
  * Flags byte is not 0 got Flags*256 + Depth planes per row.
+ *
+ * Fixed (intended deviation, #326): SaveShape stops with "Illegal Shape
+ * Depth" for a shape of depth 0 or deeper than the 14 plane pointers of
+ * bmcopy (tempbm); the original did not check the depth: depth 0 wrote
+ * 65536 plane pointers (DBF) from bmcopy on, depth 15 and more ran past
+ * its 14 pointers (usewid, scrcols, then whatever follows).  In release
+ * code: LoadShape takes the depth of a file's BMHD as it is (a 24 bit
+ * ILBM gives a shape of depth 24).
  *
  * Fixed (intended deviation, #182): SaveBitmap and SaveShape with a
  * palette of 0 colours (InitPalette p,0) wrote 65536 colours (DBF) over
@@ -136,13 +141,15 @@ static UBYTE iffbuff[BUFSIZE] __attribute__((aligned(4)));
 static ULONG ifflen, bodylen, bodyseek;
 static ULONG scrcols[3 * 256 + 2];              /* tempcols: SaveScreen's colours */
 static struct palette scrpal = { scrcols, 0 };  /* temppal */
-/* tempbm: a BitMap (+ 24 bytes, SaveShape's plane pointers may run into
-   them, #326) */
+/* tempbm: a BitMap (+ 24 bytes: SaveShape's plane pointers of a shape
+   deeper than 8 run into them, up to SHAPEPLANES; fixed #326) */
 static struct {
     struct BitMap bm;
     ULONG more[6];
 } bmcopy;
 static_assert(sizeof bmcopy == 64);
+#define SHAPEPLANES ((sizeof bmcopy - offsetof(struct BitMap, Planes)) / sizeof(PLANEPTR))
+static_assert(SHAPEPLANES == 14);
 static UWORD usewid;
 
 static const UBYTE jeeze[4] = { 0x80, 0, 0, 0 };
@@ -166,6 +173,8 @@ BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Shape");
 /* err2's message in the normal code (fixed, #185: in the original it
    lies in the error check area) */
 static const char mess2[] = "Can't open File";
+/* SaveShape's depth limit (fixed, #326), in the normal code */
+static const char mess6[] = "Illegal Shape Depth";
 
 /* -------------------------------------------------------------- chunks */
 
@@ -417,12 +426,14 @@ static void saveshape(const struct bb_shape *shape, const char *name, const stru
     UBYTE *plane;
     UWORD count;
 
+    if ((UWORD)(shape->depth - 1) >= SHAPEPLANES)  /* fixed (#326) */
+        BLITZ_RUNERR(mess6);
     usewid = shape->width;
     bmcopy.bm.BytesPerRow = shape->ebwidth;
     bmcopy.bm.Rows = shape->height;
     *(UWORD *)&bmcopy.bm.Flags = shape->depth;  /* the word: Flags = 0, Depth */
     plane = shape->data;
-    count = shape->depth - 1;                   /* BUG(orig) (#326): depth unchecked */
+    count = shape->depth - 1;
     do {
         *dst++ = plane;
         plane += (WORD)shape->planesize;        /* ADD 22(a0),a1 */
@@ -438,8 +449,9 @@ static void saveshape(const struct bb_shape *shape, const char *name, const stru
  * of its plane size); the BMHD width is the shape's pixel width.  Amiga
  * mode only.  Errors as SaveBitmap; debugger only: "Uninitialized Shape"
  * (sschk1).
- * BUG(orig) (#326): the depth is not checked: depth 0 writes 65536 plane
- * pointers, depth 15 and more run past the 14 pointers of tempbm.
+ * Errors: also "Illegal Shape Depth" for a depth of 0 or more than 14
+ * (fixed, #326: the original wrote 65536 plane pointers for depth 0 and
+ * ran past the 14 pointers of tempbm from depth 15 on).
  *
  * @param shape  a0: the shape (!libs {#shapeslib,$1080})
  * @param name   d1: the file name

@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+shape 16 15
+runtime error
+rc=0
