@@ -1009,9 +1009,10 @@ BLITZ_AB_ROUTINE(blitzcoplib_docolsplit, b_colsplit,
 
 /* calcoff - d1 = x, d2 = y, a1 = slice, a0 = bitmap: d1 (x adjusted)
    and the offset d4 */
-static LONG calcoff(UWORD *x, WORD y, const struct bb_bitmap *bitmap, const struct bb_slice *slice)
+BL_ALWAYS_INLINE LONG calcoff(UWORD *x, WORD y, const struct bb_bitmap *bitmap, const struct bb_slice *slice)
 {
     WORD offset;
+    LONG o;
 
     if (!(slice->flagslo & 8))
         *x += 16;
@@ -1021,25 +1022,34 @@ static LONG calcoff(UWORD *x, WORD y, const struct bb_bitmap *bitmap, const stru
         offset <<= 1;
         offset -= 2;
     }
-    return (LONG)offset + muls16((WORD)bitmap->bpr, y);
+    o = muls16((WORD)bitmap->bpr, y);
+    /* EXT.l d4:ADD.l d2,d4 (GCC adds with LEA in an address register) */
+    __asm__("add.l %1,%0" : "+d"(o) : "d"((LONG)offset) : "cc");
+    return o;
 }
 
-/* the bitplane pointers: step = 8 or 16 bytes */
-static void setplanes(const struct bb_bitmap *bitmap, UWORD *moves, LONG offset, WORD step)
+/* the bitplane pointers: step = 8 or 16 bytes (in the __entrypoint
+   routines of Show, ShowF and ShowB: a6 kept live, so that GCC keeps
+   the pointers in a0-a2 instead of taking a6) */
+BL_ALWAYS_INLINE void setplanes(const struct bb_bitmap *bitmap, UWORD *moves, LONG offset, WORD step)
 {
-    const ULONG *pl = (const ULONG *)bitmap->planes;
+    BLITZ_EP_KEEP_A6();
     UWORD n = bitmap->flagsdepth - 1;
+    const ULONG *pl = (const ULONG *)bitmap->planes;
 
     do {
         ULONG plane = *pl++ + offset;
 
+        __asm__("" : "+a"(pl));                 /* MOVE.l (a2)+: not a data register */
         moves[3] = (UWORD)plane;
-        moves[1] = (UWORD)(plane >> 16);
+        __asm__("swap %0" : "+d"(plane));
+        moves[1] = (UWORD)plane;
         moves = (UWORD *)((UBYTE *)moves + step);
     } while ((WORD)--n != -1);
+    BLITZ_EP_KEEP_A6_END();
 }
 
-static void show(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y)
+BL_ALWAYS_INLINE void show(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UWORD scroll;                               /* in x: the BPLCON1 scroll */
@@ -1052,7 +1062,7 @@ static void show(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x
     slice->con1val = con1;
 }
 
-static void showf(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
+BL_ALWAYS_INLINE void showf(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UWORD scroll, scroll2;                      /* in x, x2: the BPLCON1 scrolls */
@@ -1065,7 +1075,7 @@ static void showf(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD 
     slice->con1val = scroll;
 }
 
-static void showb(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
+BL_ALWAYS_INLINE void showb(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UBYTE *moves = (UBYTE *)slice->bplmoves + 8;   /* start at even */
@@ -1093,7 +1103,7 @@ static void showb(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD 
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
  */
-static void BLITZ_ROUTINE doshow2_c(SHOWARGS) { show(bitmap, slice, 0, 0); }
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshow2_c(SHOWARGS) { show(bitmap, slice, 0, 0); }
 /**
  * @brief Show Bitmap#,X,Y: show a bitmap in the used slice from X,Y.
  *
@@ -1111,7 +1121,7 @@ static void BLITZ_ROUTINE doshow2_c(SHOWARGS) { show(bitmap, slice, 0, 0); }
  * @param x  d1.w: X
  * @param y  d2.w: Y
  */
-static void BLITZ_ROUTINE doshow_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshow_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     show(bitmap, slice, x, y);
 }
@@ -1123,7 +1133,7 @@ static void BLITZ_ROUTINE doshow_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
  */
-static void BLITZ_ROUTINE doshowf2_c(SHOWARGS) { showf(bitmap, slice, 0, 0, 0); }
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowf2_c(SHOWARGS) { showf(bitmap, slice, 0, 0, 0); }
 /**
  * @brief ShowF Bitmap#,X,Y: show a bitmap as the front playfield from X,Y.
  *
@@ -1134,7 +1144,7 @@ static void BLITZ_ROUTINE doshowf2_c(SHOWARGS) { showf(bitmap, slice, 0, 0, 0); 
  * @param x  d1.w: X
  * @param y  d2.w: Y
  */
-static void BLITZ_ROUTINE doshowf3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowf3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     showf(bitmap, slice, x, y, 0);
 }
@@ -1154,7 +1164,7 @@ static void BLITZ_ROUTINE doshowf3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_RE
  * @param y  d2.w: Y
  * @param x2  d3.w: the X of the back playfield (for BPLCON1)
  */
-static void BLITZ_ROUTINE doshowf_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowf_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                     UWORD x2 BL_REG(d3))
 {
     showf(bitmap, slice, x, y, x2);
@@ -1167,7 +1177,7 @@ static void BLITZ_ROUTINE doshowf_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG
  * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
  * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
  */
-static void BLITZ_ROUTINE doshowb2_c(SHOWARGS) { showb(bitmap, slice, 0, 0, 0); }
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowb2_c(SHOWARGS) { showb(bitmap, slice, 0, 0, 0); }
 /**
  * @brief ShowB Bitmap#,X,Y: show a bitmap as the back playfield from X,Y.
  *
@@ -1178,7 +1188,7 @@ static void BLITZ_ROUTINE doshowb2_c(SHOWARGS) { showb(bitmap, slice, 0, 0, 0); 
  * @param x  d1.w: X
  * @param y  d2.w: Y
  */
-static void BLITZ_ROUTINE doshowb3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowb3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     showb(bitmap, slice, x, y, 0);
 }
@@ -1198,20 +1208,20 @@ static void BLITZ_ROUTINE doshowb3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_RE
  * @param y  d2.w: Y
  * @param x2  d3.w: the X of the front playfield (for BPLCON1)
  */
-static void BLITZ_ROUTINE doshowb_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE doshowb_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                     UWORD x2 BL_REG(d3))
 {
     showb(bitmap, slice, x, y, x2);
 }
 /* the originals change d0-d7/a0/a2 */
-BLITZ_ALIAS(doshow2, doshow2_c);
-BLITZ_ALIAS(doshow, doshow_c);
-BLITZ_ALIAS(doshowf2, doshowf2_c);
-BLITZ_ALIAS(doshowf3, doshowf3_c);
-BLITZ_ALIAS(doshowf, doshowf_c);
-BLITZ_ALIAS(doshowb2, doshowb2_c);
-BLITZ_ALIAS(doshowb3, doshowb3_c);
-BLITZ_ALIAS(doshowb, doshowb_c);
+BLITZ_ALIAS_EP(doshow2, doshow2_c);
+BLITZ_ALIAS_EP(doshow, doshow_c);
+BLITZ_ALIAS_EP(doshowf2, doshowf2_c);
+BLITZ_ALIAS_EP(doshowf3, doshowf3_c);
+BLITZ_ALIAS_EP(doshowf, doshowf_c);
+BLITZ_ALIAS_EP(doshowb2, doshowb2_c);
+BLITZ_ALIAS_EP(doshowb3, doshowb3_c);
+BLITZ_ALIAS_EP(doshowb, doshowb_c);
 
 /* ****************** ERRORS BELOW **************** */
 
