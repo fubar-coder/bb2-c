@@ -22,7 +22,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 ## 3. Speed profile
 
 - [x] 3.1 Add strings1lib and strings2lib to `ACIDLIBS_SPEED` (`libs/acidlibs/CMakeLists.txt`); measure string assignment, concat, compare, Len; name the changed library files
-- [ ] 3.2 Add medlib and trackerlib to `ACIDLIBS_SPEED`; measure PlayMed and PlayModule per frame; name the size change of `acidlibs`
+- [x] 3.2 Add medlib and trackerlib to `ACIDLIBS_SPEED`; measure PlayMed and PlayModule per frame; name the size change of `acidlibs`
 
 ## 4. Long and quick division
 

@@ -86,6 +86,11 @@ build.
    the reuse path), so a 1 character assignment gets slower (`Chr$` 807.0
    -> 820.0) while longer ones gain (`r$=a$` another 150, String$ 140);
    task 5.2 replaces that loop by the original's assembler anyway.
+   medlib and trackerlib are in the list (task 3.2, five runs each): PlayMed
+   12854.8 -> 12222.2 cycles per frame (original 9950.0) for 776 bytes
+   (12388 -> 13164), the PlayModule interrupt 3214.0 -> 3106.0 per frame
+   (original 2409.5; the five runs within 7 cycles) for 212 bytes
+   (3356 -> 3568); `acidlibs` grows by 988 bytes (285436 -> 286424).
 7. **Rare paths out of line.** Where the cost is gcc's register save on a rare
    path (Sgn/Int/Abs float case, the allocation in `assign`), the rare part
    becomes a `noinline` function; an assembler entry is the alternative if
