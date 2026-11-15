@@ -83,8 +83,7 @@ static LONG __attribute__((used)) divide(ULONG dividend, ULONG divisor,
  * form of the fix made gcc lay out divide differently and cost the
  * correct divisions 4-14 cycles more.
  */
-__asm__("   .text\n"
-        "   .even\n"
+BLITZ_ASM_BLOCK(divide_entries,
         "   .globl  _qdivide\n"
         "_qdivide:\n"
         "   pea     47.w\n"
@@ -122,12 +121,10 @@ __asm__("   .text\n"
  * In assembler for that trap (a C division by 0 is undefined); d0/d1 stay
  * as they are (the trap leaves them unchanged).
  */
-__asm__("   .section .blitzlib.errchk,\"ax\"\n"
-        "   .even\n"
+BLITZ_ERRCHK_ASM(divchk,
         "   .globl  _divchk\n"
         "_divchk:\n"
         "   tst.l   d1\n"
         "   bne.s   1f\n"
         "   divu.w  d1,d0\n"
-        "1: rts\n"
-        "   .text\n");
+        "1: rts");

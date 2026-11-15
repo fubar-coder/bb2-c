@@ -491,7 +491,7 @@ static void BLITZ_ROUTINE bitout3_c(const UBYTE *s BL_REG(a0))
 }
 
 /* output handler: -8 bitout3, -4 bitout2, 0 bitout */
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(bitout,
         "   bra.w   _bitout3\n"
         "   bra.w   _bitout2\n"
         "   .globl  _bitout\n"
@@ -615,7 +615,7 @@ cursrite:
 
 /* input handler: -4 doinput2, 0 doinput1 (assembler: jumps on to the
    previous handler with all registers) */
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(doinput1,
         "   bra.w   1f\n"
         "   .globl  _doinput1\n"
         "_doinput1:\n"

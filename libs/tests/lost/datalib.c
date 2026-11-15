@@ -10,9 +10,7 @@
 
 #undef BL_THUNK_
 #define BL_THUNK_(entry, cfunc, save, pre, tail)                            \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(, entry,                                                   \
             "   movem.l " save ",-(sp)\n" pre                               \
             "   jsr     _" #cfunc "\n" tail                                 \
             "   moveq   #-1,d2\n"                                           \

@@ -217,7 +217,7 @@ static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG callerd1 BL_REG
 
 /* the handler: -4 = BRA dobinkey2 (read a line through the old handler),
    0 = binkey (one character, d1/a0-a1 kept) */
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(binkey,
         "   bra.w   _dobinkey2\n"
         "   .globl  _binkey\n"
         "_binkey:\n"

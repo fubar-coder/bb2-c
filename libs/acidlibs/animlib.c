@@ -667,13 +667,12 @@ BLITZ_THUNK(donextframe, donextframe_c, "d0-d1/a0-a1");
 /* ****************** ERRORS BELOW **************** */
 
 /* err1..err5 as in the original (err7 moved into doanimload, #398) */
-__asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
+BLITZ_ERRCHK_ASM(errors,
         "_err1:   move.l  #_mess1,d0\n   trap    #0\n"
         "_err2:   move.l  #_mess2,d0\n   trap    #0\n"
         "_err3:   move.l  #_mess3,d0\n   trap    #0\n"
         "_err4:   move.l  #_mess4,d0\n   trap    #0\n"
-        "_err5:   move.l  #_mess5,d0\n   trap    #0\n"
-        "   .text\n");
+        "_err5:   move.l  #_mess5,d0\n   trap    #0\n");
 
 BLITZ_ERRCHK_MESSAGE(mess1, "BitMap not large enough for ANIM");
 BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");

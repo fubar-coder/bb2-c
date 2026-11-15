@@ -61,11 +61,14 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
   `__asm__` that switches the section is invisible to GCC (the GNU as of this
   toolchain has no `.pushsection`/`.popsection`): if it ends in another
   section than the one GCC believes current, the next function of that
-  section gets no section directive and lands where the asm left off. A
-  library's own top-level asm that switches into `.blitzlib.errchk` and back
-  to `.text` therefore must not stand between two check functions (in front
-  of a normal function it is harmless). `blitzlib check` reports a check
-  thunk whose C function is in the normal code.
+  section gets no section directive and lands where the asm left off.
+  Therefore a library writes no section directive of its own (#1057):
+  assembler in the error check area is `BLITZ_ERRCHK_ASM`, assembler in the
+  normal code `BLITZ_ASM_ROUTINE` or, for several routines, handlers with
+  BRA entries in front and data, `BLITZ_ASM_BLOCK`. Only dhandlerlib
+  writes `.section .blitzlib.head` (its code is in the header section,
+  where GCC cannot place a function). `blitzlib check`
+  reports a check thunk whose C function is in the normal code.
 * **Fidelity:** algorithms are taken over bit-exactly (e.g. division by 0,
   overflow), not replaced by C operators.
 
@@ -84,8 +87,10 @@ Further macros in `libs/include/blitzlib.h` (details in the comments there):
 | `BLITZ_ERRCHK_AB(entry, blitz, amiga)` | error check with Blitz/Amiga variant (`$a001` prefix) in the error check area |
 | `BLITZ_ERRCHK_THUNK(entry, cfunc, save)` | thunk of an error check in the error check area; `save` = registers that the original check preserves |
 | `BLITZ_ERRCHK_MESSAGE(label, "Text")` | error message as assembler data in the error check area (GCC allows no code and data in the same named section) |
+| `BLITZ_ERRCHK_ASM(name, "text")` | assembler in the error check area (checks that test the CCR or need the caller's return address, error branches); the text has its own labels |
 | `BLITZ_RUNERR(msg)` | runtime error (`TRAP #0`) |
 | `BLITZ_INLINE`, `BLITZ_AB_ROUTINE`, `BLITZ_ASM_ROUTINE` | inline routine, Blitz/Amiga variant, assembler routine |
+| `BLITZ_ASM_BLOCK(name, "text")` | assembler in the normal code with its own labels: several routines, handlers with BRA entries in front, data in the code hunk |
 
 `libs/include/blitzhelp.h` (included by `blitzlib.h`) contains small
 shared helpers: `BL_SETW`/`BL_SETB` (word/byte operation, rest of the

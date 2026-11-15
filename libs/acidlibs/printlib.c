@@ -1017,7 +1017,7 @@ static ULONG BLITZ_ROUTINE stprint3_c(const UBYTE *s BL_REG(a0))
 }
 
 void strprint(void);
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(strprint,
         "   bra.w   1f\n"                       /* -8: stprint3 */
         "   bra.w   _strprint\n"                /* -4: stprint2 */
         "   .globl  _strprint\n"

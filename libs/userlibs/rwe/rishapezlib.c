@@ -84,7 +84,7 @@ ULONG rishapez_myold;
  * BUG(orig) (#907): PeekByte has no RTS - as a subroutine it runs into
  * CludgeAcid with d0 = the byte.
  */
-__asm__("   .text\n   .even\n   .globl  __peekb\n"
+BLITZ_ASM_BLOCK(peekb, "   .globl  __peekb\n"
         "__peekb:\n"
         "   .word   0xa000,2f-1f\n"
         "1: move.l  d0,a0\n"

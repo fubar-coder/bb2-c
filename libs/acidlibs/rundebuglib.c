@@ -70,9 +70,7 @@ static struct IntuiText postext = { 1, 0, 0, 0, 0, NULL, text2, NULL };
 static struct IntuiText negtext = { 1, 0, 0, 0, 0, NULL, text3, NULL };
 
 /* the trap handlers: exception frames (SR, PC at 2(sp)) and RTE */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(traps,
 "   .globl  _mytrap0, _mytrap1, _mytrap2, _mytrap3, _mytrap4, _mytrap5\n"
 "_mytrap4:\n"
 "   addq.l  #8,2(sp)\n"

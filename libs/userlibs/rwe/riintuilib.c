@@ -311,7 +311,7 @@ BLITZ_THUNK(_ipcolour2, ipcolour2_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_ipoutput, ipoutput_c, "d0-d1/a0-a1");
 
 /* the output handler: -8 ipprint0, -4 ipprint1, 0 ipprint */
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(ipprint,
         "   bra.w   _ipprint0\n"
         "   bra.w   _ipprint1\n"
         "   .globl  _ipprint\n"

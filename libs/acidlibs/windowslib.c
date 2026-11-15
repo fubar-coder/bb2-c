@@ -2220,7 +2220,7 @@ static ULONG BLITZ_ROUTINE inputstr_c(UBYTE *buf BL_REG(a0), UWORD max BL_REG(d0
 BLITZ_THUNK(inputstr_h, inputstr_c, "d1/a1");
 BLITZ_THUNK(windowprint2_h, windowprint2_c, "d1/a1");
 BLITZ_THUNK(windowprint3_h, windowprint3_c, "d1/a1");
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(handlers,
         "   bra.w   _inputstr_h\n"                /* -4 */
         "   .globl  _windowinp_h\n"
         "_windowinp_h:\n"                         /*  0 */

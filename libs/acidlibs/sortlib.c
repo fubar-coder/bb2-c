@@ -94,7 +94,7 @@ void BLITZ_ROUTINE dosortdown(void)
    turn exactly that CCR into 1 (GT) / -1 (LT) / 0; mathffp keeps
    d2-d7/a2-a6 like every system library. */
 LONG ffpcmp(ULONG pivot BL_REG(d0), ULONG elem BL_REG(d1), const void *ffp BL_REG(a6));
-__asm__("   .text\n   .even\n_ffpcmp:\n"
+BLITZ_ASM_BLOCK(ffpcmp, "_ffpcmp:\n"
     "   jsr     -42(a6)\n"
     "   bgt.s   1f\n"
     "   blt.s   2f\n"

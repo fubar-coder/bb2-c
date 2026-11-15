@@ -695,7 +695,7 @@ ULONG BLITZ_ROUTINE c_writeint(void)
 
 /* the handlers: RTE, or on to the old vector */
 #define BL_INTHANDLER(entry, cfunc, old)                                    \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
+    BLITZ_ASM_BLOCK(entry, "   .globl  _" #entry "\n"                       \
             "_" #entry ":\n"                                                \
             "   movem.l d0-d1/a0-a1,-(sp)\n"                                \
             "   jsr     _" #cfunc "\n"                                      \
@@ -730,9 +730,7 @@ BLITZ_THUNK(_buffcount2, c_buffcount2, "d1/a0-a1");
 
 /* SerialReceiveBlock: stopped, the original takes its return address
    into d7 and returns to the long above it (BUG(orig) #803) */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(serreceive,
 "   .globl  __serreceive\n"
 "__serreceive:\n"
 "   movem.l d0-d1/a0-a1,-(sp)\n"
@@ -746,9 +744,7 @@ __asm__(
 
 /* SerialReadString: with the port open the original pushed the d0 of
    the call and returns to it (BUG(orig) #796) */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(readserialstring,
 "   .globl  __readserialstring\n"
 "__readserialstring:\n"
 "   move.l  d0,-(sp)\n"

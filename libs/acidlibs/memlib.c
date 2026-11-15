@@ -137,9 +137,7 @@ BLITZ_THUNK(memlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* membase - the init value: BRA localloc / locfree / globalloc / globfree
    (4 bytes each, called through the table by other code) */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(membase,
 "   .globl  _membase\n"
 "_membase:\n"
 "   bra.w   _localloc\n"

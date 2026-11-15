@@ -42,9 +42,7 @@ BLITZ_NULLSUB_AT(finit, errtraplib_codefinit, 0, 0);
 BLITZ_LIBFIN();
 
 /* data: in the code hunk, read pc-relative by the trap code */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(data,
 "_oldtrap: .long 0\n"                   /* old TRAP #0 vector */
 "_ernum:   .word 0\n"                   /* Ern: d1 at the last trap */
 "_ertext:  .long 0\n"                   /* last error message (d0) */
@@ -197,9 +195,7 @@ BLITZ_THUNK(doclrerr, doclrerr_c, "d0-d1/a0-a1");
    MOVE.l #mess,d0:TRAP #0), so Ern returns a random value.  The old
    vector gets the trap with d1 = 0 and a0 changed; the old handlers
    (debuglib/rundebuglib mytrap0) only read d0, so that has no effect. */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(newtrap,
 "   .globl  _newtrap\n"
 "_newtrap:\n"
 "   btst    #5,(sp)\n"                  /* can't trap errors on interupts */

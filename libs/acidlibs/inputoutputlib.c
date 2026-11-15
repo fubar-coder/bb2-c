@@ -237,7 +237,7 @@ static void BLITZ_ROUTINE defout3_c(const UBYTE *s BL_REG(a0))
 }
 
 void defout(void);
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(defout,
         "   bra.w   2f\n"                       /* -8: defout3 */
         "   bra.w   1f\n"                       /* -4: defout2 */
         "   .globl  _defout\n"
@@ -269,7 +269,7 @@ static LONG BLITZ_ROUTINE defin2_c(ULONG len BL_REG(d0), UBYTE *buf BL_REG(a0))
 const char mess1[] = "Can't Input Character from Default Input";
 
 void defin(void);
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(defin,
         "   bra.w   1f\n"                       /* -4: defin2 */
         "   .globl  _defin\n"
         "_defin:\n"                             /*  0: BRA err1 */

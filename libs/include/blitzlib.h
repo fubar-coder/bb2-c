@@ -800,10 +800,30 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
             "   .long   _" #blitz "\n"                                      \
             "   jmp     _" #amiga "\n")
 
+/* BLITZ_ERRCHK_ASM(name, "text") - assembler in the error check area: check
+   routines that need assembler (a CCR input, the caller's return address,
+   a CPU trap) and their error branches.  `text` brings its own labels
+   (with .globl for the entries of the header) and ends with a return or
+   a trap; `name` only names the block (the static function
+   bl_errchk_asm_name, BL_ASM_FUNC_, which starts at the block's first
+   byte).  A library writes no section directive of its own (#1057). */
+#define BLITZ_ERRCHK_ASM(name, text)                                        \
+    BL_ASM_FUNC_(static BLITZ_ERRCHK, bl_errchk_asm_##name, text "\n")
+
 /* A routine that is assembler by nature (stack pointer manipulation,
    exception frames, hardware): BLITZ_ASM_ROUTINE(entry, "text").  Keep the
    original instructions and say in a comment why C cannot do it. */
 #define BLITZ_ASM_ROUTINE(entry, text) BL_ASM_FUNC_(, entry, text "\n")
+
+/* BLITZ_ASM_BLOCK(name, "text") - assembler in the normal code that is not
+   one routine with its entry first: handlers with BRA entries in front
+   of their label, several routines, data in the code hunk.  `text` brings
+   its own labels (and .globl); `name` only names the block (the static
+   function bl_asm_name, BL_ASM_FUNC_, which starts at the block's first
+   byte).  Like BLITZ_ERRCHK_ASM it replaces top-level asm with a section
+   directive of its own (#1057). */
+#define BLITZ_ASM_BLOCK(name, text)                                         \
+    BL_ASM_FUNC_(static BLITZ_ROUTINE, bl_asm_##name, text "\n")
 
 /* Inline routine (blitz2.s doajsr2): `Dc $a000,len` before the code;
    the compiler copies the `len` bytes to the call instead of a JSR.

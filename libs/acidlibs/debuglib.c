@@ -105,9 +105,7 @@ extern APTR oldouth;                    /* ne = old output handler! */
 extern UBYTE astring[];                 /* 256+16: evaluate in/output */
 extern UWORD doutx;                     /* output position in astring */
 
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(data,
 "   .globl  _intsoff,_oldmode,_flags,_tokens,_supertext,_usertext,_evaltext\n"
 "   .globl  _exectext,_handler,_statehandler,_superhandler,_userhandler\n"
 "   .globl  _waithandler,_evalhandler,_h6,_h7,_procsp,_procstack,_intsp\n"
@@ -877,8 +875,7 @@ static UWORD BLITZ_ROUTINE dofindoff_c(const UBYTE *s BL_REG(a0), UWORD pos BL_R
 BLITZ_THUNK_POST(dofindoff, dofindoff_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
 /* unreferenced, as in the binary: makes the compiler include printlib */
-__asm__(
-"   .text\n"
+BLITZ_ASM_BLOCK(printlib_ref,
 "   jsr     _blitz_tok+" BL_ASMTOK(LIB_printlib, 1) "\n"
 "   jsr     _blitz_tok+" BL_ASMTOK(LIB_printlib, 1) "\n"
 );

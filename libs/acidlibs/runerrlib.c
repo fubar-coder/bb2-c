@@ -96,9 +96,7 @@ extern APTR oldtrap;
 extern const char overmess[], sarraymess[], datamess[], currentmess[];
 extern char trapper[];
 
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(data,
 "   .globl  _cpu_,_vbr_,_ostack,_supernest,_maxstack,_oldtrap\n"
 "_cpu_:      .word   0\n"
 "_vbr_:      .long   0\n"
@@ -241,9 +239,7 @@ BLITZ_ASM_ROUTINE(amodechk,
    is on the supervisor stack; return to user mode at 'more and raise the
    runtime error "GURU! - ..." (traps #0-#15 and above: "TRAP! - Trap
    Instruction", unknown numbers: "No Idea") */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(trapper,
 "   .globl  _trapper\n"
 "_trapper:\n"
 "   move.l  (a7)+,d0\n"

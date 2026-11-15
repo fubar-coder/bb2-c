@@ -341,12 +341,11 @@ BLITZ_ERRCHK_THUNK(_memadrchk, memadr_c, "d0-d1/a0-a1");
 /* DisAsmWindow's check: the return address of the call (MOVE.l (a7),a0
    in the original) is above the saved registers - assembler, a C
    function only sees the thunk's own return address */
-__asm__("   .section .blitzlib.errchk,\"ax\"\n"
-        "   .even\n   .globl  __disasmchk\n"
+BLITZ_ERRCHK_ASM(disasmchk,
+        "   .globl  __disasmchk\n"
         "__disasmchk:\n"
         "   movem.l d0-d1/a0-a1,-(sp)\n"
         "   move.l  16(sp),a0\n"
         "   jsr     _disasm_c\n"
         "   movem.l (sp)+,d0-d1/a0-a1\n"
-        "   rts\n"
-        "   .text\n");
+        "   rts");

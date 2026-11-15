@@ -1035,7 +1035,7 @@ static void BLITZ_ROUTINE outcstring_c(const UBYTE *s BL_REG(a0))
 BLITZ_THUNK(inhandle2, instring_c, "d1/a1");
 BLITZ_THUNK(outhandle2, outstring_c, "d1/a1");
 BLITZ_THUNK(outhandle3, outcstring_c, "d0-d1/a1");
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(handlers,
         "   bra.w   _inhandle2\n"               /* -4 */
         "   .globl  _inputhandler\n"
         "_inputhandler:\n"                      /*  0 */

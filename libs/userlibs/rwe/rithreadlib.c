@@ -111,9 +111,7 @@ static const char dosname[] = "dos.library";
 
 /* the process's start: the saved registers, a2/a3/a4 in its memory, a0 =
    the code, which it jumps to */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(startupcode,
 "   .globl  _startupcode\n"
 "_startupcode:\n"
 "   move.l  _th+64,a0\n"                /* regptr */

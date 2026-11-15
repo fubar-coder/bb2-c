@@ -233,13 +233,12 @@ BLITZ_THUNK_Z(dosetifont2, dosetifont2_c, "d1");
 
 /* loadchk - BEQ err1:RTS, err1: MOVE.l #mess1,d0:TRAP #0.  Assembler: it
    tests the CCR that LoadFont leaves (Z = font not opened). */
-__asm__("   .section .blitzlib.errchk,\"ax\"\n"
-        "   .even\n   .globl  _loadchk\n"
+BLITZ_ERRCHK_ASM(loadchk,
+        "   .globl  _loadchk\n"
         "_loadchk:\n"
         "   beq.s   1f\n"
         "   rts\n"
         "1: move.l  #_mess1,d0\n"
-        "   trap    #0\n"
-        "   .text\n");
+        "   trap    #0");
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Can't Open Font");

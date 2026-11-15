@@ -2354,9 +2354,9 @@ BLITZ_THUNK(_customchunky2, _customchunky2_c, "a2");
    handler: a clean crash, not a silent error value). */
 #define MESSAGE(label, text)                                                \
     extern const char label[];                                              \
-    __asm__("   .text\n_" #label ":\n   .asciz \"" text "\"\n   .even\n")
+    BLITZ_ASM_BLOCK(label, "_" #label ":\n   .asciz \"" text "\"\n   .even\n")
 
-__asm__("   .text\n   .even\n"
+BLITZ_ASM_BLOCK(errors,
         "   .globl  _maxbperr, _uniniterr, _nopalerr, _nosprierr, _freakerr\n"
         "   .globl  _linerr, _agapalerr, _toolowerr, _overrunerr, _spriterr\n"
         "_maxbperr:   move.l  #_mess1,d0\n   trap    #0\n"
@@ -2382,10 +2382,9 @@ MESSAGE(mess9, "Not Enough Custom Cops");
 MESSAGE(mess10, "Not Enough Sprite Channels");
 
 /* _checkcoplist: TST.l !m{size}:BEQ uniniterr */
-__asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
+BLITZ_ERRCHK_ASM(checkcoplist,
         "   .globl  __checkcoplist\n"
         "__checkcoplist:\n"
         "   tst.l   (a3)\n"
         "   beq.w   _uniniterr\n"
-        "   rts\n"
-        "   .text\n");
+        "   rts");

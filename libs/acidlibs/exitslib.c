@@ -24,9 +24,7 @@ BLITZ_NULLSUB(quit, 0, 0);                      /* $C800 endjmp */
 BLITZ_NULLSUB_AT(init, exitslib_codeinit, 0, 0); /* init */
 BLITZ_LIBFIN();
 
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(data,
 "cleanup: .long 0\n"
 "stack:   .long 0\n"
 );

@@ -574,9 +574,7 @@ BLITZ_THUNK(_AnimHeight, c_AnimHeight, "d1/a0-a1");
 /* RINextAnimFrame: d1-d7/a0-a6 saved as by the original; restored unless
    the C function says the original does not (d1 = 1: the RTS takes the
    saved d1 as its return address, BUG(orig), #515) */
-__asm__(
-"   .text\n"
-"   .even\n"
+BLITZ_ASM_BLOCK(nextanimframe,
 "   .globl  __NextAnimFrame\n"
 "__NextAnimFrame:\n"
 "   movem.l d1-d7/a0-a6,-(sp)\n"
