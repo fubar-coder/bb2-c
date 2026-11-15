@@ -548,7 +548,7 @@ static UWORD addb(UWORD w, int n)
 
 /* the period table of a finetune: _periodtable+32 + (BYTE)(finetune * 4);
    finetunes outside -8..7 read pointers outside the table (#211) */
-static UWORD *periods_of(UBYTE finetune)
+BL_ALWAYS_INLINE UWORD *periods_of(UBYTE finetune)
 {
     return db.periodtable[8 + (BYTE)(finetune << 2) / 4];
 }
@@ -556,13 +556,13 @@ static UWORD *periods_of(UBYTE finetune)
 /* a period by a byte offset (the note doubled as a byte or a word) */
 #define PERIOD(tbl, off) (*(UWORD *)((UBYTE *)(tbl) + (off)))
 
-static int mmd1(const struct mmd *m)
+BL_ALWAYS_INLINE int mmd1(const struct mmd *m)
 {
     return m->id[3] == '1';
 }
 
 /* the block of the module's position (pblock * 4 as a word) */
-static UBYTE *curblock(const struct mmd *m)
+BL_ALWAYS_INLINE UBYTE *curblock(const struct mmd *m)
 {
     return *(UBYTE **)((UBYTE *)m->blockarr + (WORD)(m->pblock << 2));
 }
@@ -1102,7 +1102,7 @@ static void cmd_F(struct track *t, UWORD ch, UBYTE q, UBYTE counter)
 /* ------------------------------------------------------------ player */
 
 /* Wait1Lin: n + 1 raster lines (DBRA) */
-static void wait1lin(UWORD n)
+BL_ALWAYS_INLINE void wait1lin(UWORD n)
 {
     UBYTE b;
 
@@ -1114,7 +1114,7 @@ static void wait1lin(UWORD n)
 }
 
 /* the volume slide of 5, 6, A, D: up by the high nibble, else down */
-static void volslide(struct track *t, UBYTE q)
+BL_ALWAYS_INLINE void volslide(struct track *t, UBYTE q)
 {
     BYTE v;
 
@@ -1131,13 +1131,13 @@ static void volslide(struct track *t, UBYTE q)
 }
 
 /* the instrument of the song by number (number * 8 as a word) */
-static struct instr *instrument(struct song *song, UBYTE i)
+BL_ALWAYS_INLINE struct instr *instrument(struct song *song, UBYTE i)
 {
     return (struct instr *)((UBYTE *)song + (WORD)(i << 3));
 }
 
 /* plr_loop0: the notes and the commands of a new line */
-static int newline(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
 {
     struct track **tdp = db.trackdataptrs;
     UBYTE *block = curblock(m), *noteptr;
@@ -1319,7 +1319,7 @@ fx:
 
 /* advance the song pointer: the next line, a pattern break, the next
    position (only the low bytes of pseqnum and pblock) */
-static void nextline(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE void nextline(struct mmd *m, struct song *song)
 {
     UWORD line;
 
@@ -1349,7 +1349,7 @@ static void nextline(struct mmd *m, struct song *song)
 
 /* hold: the notes held on into the new line (no new note, or a note with
    command 3) get the ticks of the line added */
-static void hold(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE void hold(struct mmd *m, struct song *song)
 {
     struct track **tdp = db.trackdataptrs;
     UBYTE *block = curblock(m), *p, tempo = song->tempo2;
@@ -1386,7 +1386,7 @@ static void hold(struct mmd *m, struct song *song)
 
 /* plr_loop1: the commands in every tick, the synth tables, the period
    and the volume to Paula (tracks 0-3) */
-static void ticks(struct song *song, UBYTE counter)
+BL_ALWAYS_INLINE void ticks(struct song *song, UBYTE counter)
 {
     struct track **tdp = db.trackdataptrs;
     UBYTE ch = 0;
@@ -1621,8 +1621,12 @@ tmpper:
     } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
 }
 
-/* _IntHandler: one timing pulse */
-static void IntHandler(void)
+/* _IntHandler: one timing pulse.  It and the routines of a pulse
+   (newline, nextline, hold, ticks and their helpers) are inline in
+   _PlayMed, one function as in the original: as functions each saved its
+   registers and got its arguments (libs-performance task 10.10); playnote
+   and synth stay functions. */
+BL_ALWAYS_INLINE void IntHandler(void)
 {
     struct mmd *m;
     struct song *song;
