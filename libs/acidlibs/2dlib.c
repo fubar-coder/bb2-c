@@ -1956,7 +1956,7 @@ static int polyinrange(const struct point *p, UWORD n)
     return 1;
 }
 
-static WORD coord(const struct point *p, int yaxis)
+BL_ALWAYS_INLINE WORD coord(const struct point *p, int yaxis)
 {
     return yaxis ? p->y : p->x;
 }
