@@ -6,6 +6,7 @@
 ; Here: an ANIM (generated) whose first frame has a BMHD but no BODY;
 ; only LoadAnim, the program reads the BODY length of the object (+14).
 ; Correct: a missing BODY is not taken as a BODY of $FFFFFFFF bytes.
+; @fixed #400
 ; @configs clib
 ; @pass file=nobody.anim|@TESTDATA@/animlib-missing-body.anim
 DEFTYPE .l

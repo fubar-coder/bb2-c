@@ -32,11 +32,15 @@
  *   - the BODY is decoded as ByteRun1 whatever BMHD's compression says
  *     (#397); DBF counters: height/depth/width 0 run 65536 times (#402).
  *   - freeanim reads the next pointer of a delta node after freeing it. (#399)
- *   - LoadAnim: a missing BODY gives length -1 (memlib adds its 8 byte
- *     header, so AllocMem(7) succeeds, the read copies nothing and InitAnim
- *     decodes whatever follows the block) (#400).  Not a bug: after the
- *     last delta the wrap goes to node 2 (the ANIM op-5 double-buffer
- *     loop convention, the last two deltas lead back to frames 0/1).
+ *   - Fixed (intended deviation, #400): LoadAnim took the "not found"
+ *     result -1 of a missing BODY as its length (memlib adds its 8 byte
+ *     header, so AllocMem(7) succeeded, the read copied nothing and
+ *     InitAnim decoded whatever followed the block).  Here a missing BODY
+ *     is no BODY (length 0, nothing allocated) and InitAnim decodes
+ *     nothing.
+ *   - Not a bug: after the last delta the wrap goes to node 2 (the ANIM
+ *     op-5 double-buffer loop convention, the last two deltas lead back
+ *     to frames 0/1).
  * Fixed (#401): with a single delta the original's wrap takes node 2,
  * which does not exist, and the current delta becomes 0; the next
  * NextFrame read its node at address 0.  Here the wrap takes node 2, or
@@ -246,7 +250,8 @@ static void freeanim_c(struct anim *anim)
     if (!anim->width)
         return;
     anim->width = 0;
-    globfree((ULONG)anim->body, anim->bodylen);
+    if (anim->body)                     /* fixed (#400): none without BODY */
+        globfree((ULONG)anim->body, anim->bodylen);
     link = HEADNODE(anim);
     while ((next = link->next) != 0) {
         ULONG len = link->nextlen;      /* d0: the node length */
@@ -293,8 +298,9 @@ static const char mess7[] = "Can't Open Anim File";
  * iffiolib.  a3 is left on the last delta node (or anim+18; not a bug).
  * Errors: "Can't Open Anim File" (err7), "Anim format not supported"
  * (err6), both in the normal code (fixed, #398: the original's err7 is in
- * the error check area, err6's text too).  BUG(orig): a missing BODY
- * gives length -1 (#400).
+ * the error check area, err6's text too).  Fixed (#400): a missing BODY
+ * is length 0 and nothing is allocated (the original took the "not
+ * found" -1 as the length).
  *
  * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
  * @param name  d1: the file name
@@ -329,11 +335,16 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     anim->ebwidth = (UWORD)(info->words << 1);
     anim->frames = 1;
     bodylen = ifffind(0x424f4459, &found); /* "BODY" */
+    if (!found)                         /* fixed (#400): no BODY, no data */
+        bodylen = 0;
     anim->bodylen = bodylen;
     len = bodylen;
-    bodymem = globalloc(bodylen, 1);
+    bodymem = 0;
+    if (bodylen) {
+        bodymem = globalloc(bodylen, 1);
+        iffread(bodymem, len);
+    }
     anim->body = (UBYTE *)bodymem;
-    iffread(bodymem, len);
     anim->current = 0;
     anim->eor = 0;
     node = HEADNODE(anim);
@@ -393,6 +404,9 @@ static void initanim(struct anim *anim, struct bb_bitmap *bm)
     ULONG rowoff = 0;
     UWORD rows = anim->height - 1;
 
+    anim->current = anim->first;
+    if (!anim->bodylen)                 /* fixed (#400): nothing to decode */
+        return;
     do {                                            /* 'loop2: rows */
         UWORD planes = anim->depth - 1;
         ULONG *planep = (ULONG *)bm->planes;
@@ -427,7 +441,6 @@ static void initanim(struct anim *anim, struct bb_bitmap *bm)
         } while ((WORD)--planes != -1);
         rowoff += (LONG)(WORD)bm->bpr;              /* ADD (a1),a6 */
     } while ((WORD)--rows != -1);
-    anim->current = anim->first;
     blitz_string = src;                 /* a3 stays behind the BODY data */
 }
 
