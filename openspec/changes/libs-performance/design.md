@@ -132,9 +132,13 @@ budgets need them. Rollback is one commit per entry group.
 
 ## Open Questions
 
-- Where the benchmark sources live and whether the budgets are relative to
-  the originals or absolute; decided in task 1.1 with the first measurement.
+- Where the benchmark sources live; decided in task 1.1.
+- Budgets (decided): each command's budget is the current measurement plus
+  a tolerance (a guard against slowing down) and is tightened after each
+  step; the original's measurement is recorded next to it as the target.
+  The goal is the original's speed or better (the user's rule: no change
+  may make correct programs slower).
 - Whether EventWindow and RawStatus keep their registers by nature
   (task 2.1; if not: reduced thunk or, for RawStatus, an assembler entry).
-- #1058: the InitSound fix is the same code as this change's InitSound
-  entry; one commit, with `Fixes #1058`, either here or under the issue.
+- #1058 (decided): the InitSound fix is done in this change, task 2.4, in
+  one commit with its test and `Fixes #1058`.

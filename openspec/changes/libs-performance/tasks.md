@@ -4,7 +4,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 1. Benchmark and preset
 
-- [ ] 1.1 Decide with the first measurement where the benchmark sources live and whether the budgets are relative to the originals or absolute (design.md, Open Questions); write the decision into design.md
+- [ ] 1.1 Decide with the first measurement where the benchmark sources live (design.md, Open Questions); record the original's value next to each budget as the target; write the decision into design.md
 - [ ] 1.2 Bring the measurement method of `perf-analysis/` (bench sources, CIA-B timer cascade, empty loop subtraction, cycle-exact A500 configuration) into the repository as a test, in C/CMake and Blitz sources only (no Python); one run at a time
 - [ ] 1.3 Add the `perf` preset to `CMakePresets.json` (label `perf`, not in `all`, `host` or `emulator`) and let the test skip with 77 without Amiberry or data
 - [ ] 1.4 Add the budget file with the measured values of the current build per command plus a tolerance, covering the 100 commands slower than the originals; a broken budget (a value below the measurement) must make the test fail with the command and both values; add that test with deliberately broken input
@@ -15,7 +15,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 - [ ] 2.1 Verify the exceptions in the generated code: disassemble `EventWindow`, `RawStatus`, `EventCode`, `EMouseX`, `EMouseY`, `Rnd`, `WBWidth`, `WBHeight`, `WBDepth` as aliases of the C functions and write down which registers each keeps by nature; decide per entry: alias, reduced thunk or assembler block (the list is in `analyse-thirdparty-regs.md` section 5)
 - [ ] 2.2 Change the KEEPS judge and the statements of the library tests to the new rule (a4 to a7, a3 for functions, the exceptions' registers and the upper word of d0 where stated); keep the result and change cases; update the summary and `tests/README.md` ("Kept registers"); add a test with deliberately broken input (a function that loses a6 fails; a statement that changes d1 passes)
 - [ ] 2.3 Replace the thunks of the user-level statements and functions without exception by aliases of the C functions, one commit per library group; keep internal tokens, nullsubs and error checks; leave banklib `AllocMem` as it is (#1059); measure with the benchmark; run `ctest --preset all` and `ctest --preset bug-orig`
-- [ ] 2.4 Implement the exceptions as decided in 2.1, each with a KEEPS statement of exactly the needed registers; `InitSound` keeps a0 (this is the fix of #1058: add its test of the expected behaviour and `Fixes #1058`, or leave it to that issue, one commit only); the word functions with a caller keep the upper word of d0; `ExecVersion` returns a zero-extended long
+- [ ] 2.4 Implement the exceptions as decided in 2.1, each with a KEEPS statement of exactly the needed registers; `InitSound` keeps a0 (this is the fix of #1058: its own commit with the test of the expected behaviour and the line `Fixes #1058`); the word functions with a caller keep the upper word of d0; `ExecVersion` returns a zero-extended long
 - [ ] 2.5 Add the kind-B deviation to `docs/libs/deviations.md` with the rule, the exceptions and their callers, and name a6; update `docs/libs/cmdlibs-port.md` and the website page of differences from the original; give the fix-scope result if a fix commit is involved
 
 ## 3. Speed profile
