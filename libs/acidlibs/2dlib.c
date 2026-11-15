@@ -34,8 +34,9 @@
  *   - Poly with 1 point loops 65535 times (#396); Polyf with more than 16
  *     points overflows its 32-long point buffer, more than 10 edges on one
  *     side overflow the edge lists l0/l1 (here ledges/redges) (#395).
- *   - AllocFill (statement) takes the bitmap from a3 = the string pointer
- *     (#390), so the routines leave a3 where the original leaves it.
+ *   - Fixed (#390): AllocFill (statement) took the bitmap from a3 = the
+ *     string pointer: it was declared without a used bitmap.  It is
+ *     declared with the used bitmap now (!libs {#bitmaplib,#ua3}).
  *   - Fixed (#393): a depth of 0 makes the plane loops run 65536 (CMP.w)
  *     / 256 (CMP.b) times; such a bitmap is an invalid argument,
  *     refused in the error check area by BitMap and CludgeBitMap (the
@@ -133,7 +134,7 @@ BLITZ_NAME("FreeFill", "frees memory allocated for 2d fill routines");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS0();
+BLITZ_LIBS(LIB_bitmaplib, 0x1302);         /* fixed (#390): the used bitmap in a3 */
 BLITZ_SUBS(_allocfill, 0, 0);
 BLITZ_NAME("AllocFill", "for internal use only (polylib.obj)");
 
@@ -415,7 +416,7 @@ static ULONG allocfill(const struct bb_bitmap *bm)
 
 static void BLITZ_ROUTINE _allocfill_c(void)
 {
-    allocfill((struct bb_bitmap *)blitz_string);   /* BUG(orig) (#390): no bitmap here */
+    allocfill((struct bb_bitmap *)blitz_string);   /* the used bitmap (fixed, #390) */
 }
 BLITZ_THUNK(_allocfill, _allocfill_c, "d0-d1/a0-a1");
 

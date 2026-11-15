@@ -61,3 +61,19 @@ lib 117: relocations in the declaration part 41 != 44
 lib 194: header +$2C: code offset set in only one of them
 lib 194: entry 1 DeleteMsgPort +$C: code offset set in only one of them
 lib 194: relocations in the declaration part 8 != 10
+# #390: AllocFill is declared with the used bitmap (!libs {#bitmaplib,#ua3});
+# the original declares it without: its entry grows by the 4 bytes of the
+# pair, and the entries behind it move
+lib 119: entry 6 AllocFill +$9: $00 != $A0
+lib 119: entry 7 ReMap +$0: $00 != $62
+lib 119: entry 8 FloodFill +$0: $00 != $6F
+lib 119: entry 9 Poly +$0: $00 != $75
+lib 119: entry 10 Polyf +$0: $00 != $6C
+lib 119: entry 11 BitPlanesBitMap +$0: $00 != $72
+lib 119: entry 12 ClipBlit +$0: $00 != $63
+lib 119: entry 13 ClipBlitMode +$0: $00 != $73
+lib 119: entry 14 BitMapWindow +$0: $00 != $4E
+lib 119: entry 15 BitMapOrigin +$0: $00 != $77
+lib 119: entry 16 (nullsub) +$0: $00 != $2C
+lib 119: end of the table +$628: $FF != $00
+lib 119: declaration part $62E != $632 bytes

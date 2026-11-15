@@ -11,8 +11,8 @@
  * overflow), CMP/BMI (sign of the 16 bit difference) where the original
  * tests that, and the edge positions as its swapped fixed point numbers
  * (edge_step).  Where the original leaves a3 (bitmap, edge list, plane
- * line ...), the routines leave it too: AllocFill and RenderPoly read it
- * (#390, #420).
+ * line ...), the routines leave it too: RenderPoly reads it (#420), and
+ * so did AllocFill of 2dlib (fixed, #390).
  *
  * Chunky commands work on the copper chunky area of the used CopList
  * (displaylib CustomChunky): cchunky (96) = first MOVE of the area,

@@ -9,6 +9,7 @@
 ; after AllocFill gives the size of the fill buffer.
 ; Correct: the buffer is sized for the used bitmap (320/8*200 = 8000
 ; bytes).  The original reads 0 and 0 behind a3 and allocates nothing.
+; @fixed #390
 ; @configs clib
 DEFTYPE .l
 Function.l chipfree{}
