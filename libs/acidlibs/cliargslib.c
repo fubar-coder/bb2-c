@@ -122,7 +122,7 @@ static ULONG movestring(const UBYTE *s)
  * Errors (debugger only, CheckParPath): "Can only call ParPath$() when
  * run from WB.", then those of Par$.
  * By design (#106): no range check of the argument number (FindArg).
- * BUG(orig) (#107): without the error checks also called for CLI
+ * By design (#107): without the error checks also called for CLI
  * arguments (lock 0).
  *
  * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
