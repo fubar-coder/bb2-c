@@ -48,9 +48,11 @@
  *     first writes colour offset+count with the offset as red value
  *     (overwritten by the loop); CRNG ranges with low = high only
  *     overwrite the low word of the cycle entry.
- *   - DecodePalette walks the chunks without pad bytes (#225), decodes
- *     count = DIVU length/3 (the remainder stays in the upper word), sets
- *     var to the CRNG flag (1) for active cycles (not a bug: only the low
+ *   - Fixed (intended deviation, #225): DecodePalette walked the chunks
+ *     without the pad byte of an odd length (the chunk behind it read one
+ *     byte early: CMAP or CRNG not found); here the length is rounded up.
+ *   - DecodePalette decodes count = DIVU length/3 (the remainder stays
+ *     in the upper word), sets var to the CRNG flag (1) for active cycles (not a bug: only the low
  *     word is used, a start value of 1 is invisible) and re-initialises
  *     (clears) the palette if it is too small (#226).
  *   - Fixed (intended deviation, #1002): DecodePalette and LoadPalette
@@ -698,7 +700,10 @@ static void BLITZ_ROUTINE _initpalette_c(UWORD n BL_REG(d1))
 BLITZ_THUNK(_initpalette, _initpalette_c, "a2");
 
 /* DecodePalette n,mem[,offset] - an IFF ILBM in memory: CMAP (top byte
-   of each component) and CRNG chunks */
+   of each component) and CRNG chunks; a chunk of an odd length is
+   followed by a pad byte (fixed, #225) */
+#define PAD(len) (((len) + 1) & ~1UL)
+
 static void cludgepalette(UBYTE *chunk, UWORD off)
 {
     struct bb_palette *p = (struct bb_palette *)blitz_string;
@@ -727,13 +732,13 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
         chunk += 8;
         if (id == 0x434d4150)                   /* "CMAP" */
             break;
-        chunk += len;
+        chunk += PAD(len);                      /* fixed (#225) */
         if ((LONG)(end - chunk) <= 0) {
             BLITZ_RUNERR(mess1);
             return;
         }
     }
-    cend = chunk + len;                         /* fc */
+    cend = chunk + PAD(len);                    /* fc; fixed (#225) */
     ncols = bl_divu_w(len, 3);
     if (!p->pdata || (WORD)(UWORD)(ncols + myoff) > (WORD)p->numcols)
         initpalette(p, (UWORD)(ncols + myoff));
@@ -754,7 +759,7 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
         len = L(chunk, 4);
         chunk += 8;
         if (id != 0x43524e47) {                 /* "CRNG" */
-            chunk += len;
+            chunk += PAD(len);                  /* fixed (#225) */
             if ((LONG)(end - chunk) <= 0)
                 break;
             continue;
@@ -793,7 +798,10 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
  * are entered, bit 1 (RNG_REVERSE) negates the rate; the original entered
  * every range, reversed unless the flags were 1.
  *
- * BUG(orig) (#225): the chunks are walked without pad bytes.
+ * Fixed (#225): the chunks are walked with the pad byte of an odd length
+ * (the CMAP search, the end of the CMAP, the CRNG search); the original
+ * added the length only and read the chunk behind an odd one shifted by
+ * a byte.
  * BUG(orig) (#226): a palette too small for offset + count is
  * re-initialised (cleared).
  *

@@ -8,6 +8,7 @@
 ; find CMAP", whose code is not there without the debugger, #232.)
 ; Correct: the pad byte is skipped, the CRNG is found - cycle 0 of the
 ; palette object (+6: low, high, speed) is 0 1 1000.
+; @fixed #225
 ; @configs clib
 ; @pass file=pal.ilbm|@TESTDATA@/palettelib-decodepalette-nopad.ilbm
 DEFTYPE .l
