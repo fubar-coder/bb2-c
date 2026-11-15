@@ -86,10 +86,112 @@ static void test_malformed(void)
     CHECK(refused("empty 2520 20000 1\nrc=0\npeekb 686 2000 1\n", "after the exit status"));
 }
 
+/* the judge's lines for run against budgets, in buf; the number of failures */
+static int judge(const struct perf_run *r, const struct perf_budgets *b, char *buf, size_t n)
+{
+    FILE *f = fmemopen(buf, n, "w");
+    int k;
+
+    if (!f)
+        abort();
+    k = perf_judge(r, b, f);
+    fclose(f);
+    return k;
+}
+
+static void test_budgets(void)
+{
+    struct perf_run r = { 0 };
+    struct perf_budgets b = { 0 };
+    char err[300], out[2000], table[4000];
+    FILE *f;
+
+    CHECK(perf_read_out(&r, "bmath", "empty 2520 20000 1\npeekb 686 2000 1\n"
+                        "pokeb 650 2000 1\nrc=0\n", err, sizeof err) == 0);
+    CHECK(perf_read_out(&r, "bmod", "empty 2520 20000 1\nvblmod 19200 150000 frame\nrc=0\n",
+                        err, sizeof err) == 0);
+    /* within the budgets (217.0 against 223, the frame test 2220.3 against
+       2300); comments, blank lines, a target without decimals, none (-),
+       the text with blanks and a trailing CR */
+    CHECK(perf_read_budgets(&b, "# the budgets\n\n"
+                            "bmath.peekb   223   129.0  c=Peek.b(p)\r\n"
+                            "bmath.pokeb   204   111    Poke.b p,1\n"
+                            "bmod.vblmod  2300   -      PlayModule playing\n", err,
+                            sizeof err) == 0);
+    CHECK(b.n == 3 && b.b[0].budget == 223 && b.b[0].has_target && b.b[0].target == 129.0
+          && !strcmp(b.b[0].text, "c=Peek.b(p)") && !strcmp(b.b[1].text, "Poke.b p,1")
+          && b.b[1].target == 111.0 && !b.b[2].has_target);
+    CHECK(judge(&r, &b, out, sizeof out) == 0 && !out[0]);
+    /* the table: the budget, the target and the factor, the text */
+    CHECK((f = fmemopen(table, sizeof table, "w")) != NULL);
+    perf_table(&r, &b, f);
+    fclose(f);
+    CHECK(strstr(table, "bmath.peekb") && strstr(table, "217.0") && strstr(table, "223")
+          && strstr(table, "129.0") && strstr(table, "1.68") && strstr(table, "c=Peek.b(p)"));
+    CHECK(strstr(table, "bmath.empty") && strstr(table, "(empty loop, per iteration)"));
+
+    /* the broken budget of the spec: Peek.b measured 217 against 130 fails
+       with the command and both values; the others pass */
+    CHECK(perf_read_budgets(&b, "bmath.peekb 130 129.0 c=Peek.b(p)\n"
+                            "bmath.pokeb 204 111.0 Poke.b p,1\n"
+                            "bmod.vblmod 2300 - PlayModule playing\n", err, sizeof err) == 0);
+    CHECK(judge(&r, &b, out, sizeof out) == 1
+          && !strcmp(out, "bmath.peekb: measured 217.0 cycles per call, budget 130\n"));
+    /* exactly the budget passes, a frame test over its budget names the frame */
+    CHECK(perf_read_budgets(&b, "bmath.peekb 217 - x\nbmath.pokeb 204 - x\n"
+                            "bmod.vblmod 2200 - x\n", err, sizeof err) == 0);
+    CHECK(judge(&r, &b, out, sizeof out) == 1
+          && !strcmp(out, "bmod.vblmod: measured 2220.3 cycles per frame, budget 2200\n"));
+    /* a measured command without a budget, a budget without a measurement */
+    CHECK(perf_read_budgets(&b, "bmath.peekb 223 - x\nbmod.vblmod 2300 - x\n"
+                            "bmath.peekw 230 - x\n", err, sizeof err) == 0);
+    CHECK(judge(&r, &b, out, sizeof out) == 2
+          && strstr(out, "bmath.pokeb: measured 199.0 cycles per call, no budget\n")
+          && strstr(out, "bmath.peekw: not measured (budget 230)\n"));
+    perf_budgets_free(&b);
+    perf_run_free(&r);
+}
+
+/* the budget file is refused with msg (and the line); b stays as it was */
+static int budgets_refused(const char *text, const char *msg)
+{
+    struct perf_budgets b = { 0 };
+    char err[300] = "";
+    int ok;
+
+    CHECK(perf_read_budgets(&b, "x.y 1 - kept\n", err, sizeof err) == 0);
+    ok = perf_read_budgets(&b, text, err, sizeof err) == -1 && strstr(err, msg)
+        && b.n == 1 && !strcmp(b.b[0].name, "x.y");
+    if (!ok)
+        fprintf(stderr, "budgets_refused(%s): %s\n", msg, err);
+    perf_budgets_free(&b);
+    return ok;
+}
+
+static void test_budgets_malformed(void)
+{
+    CHECK(budgets_refused("bmath.peekb 223 129.0\n", "line 1: not \"COMMAND BUDGET TARGET TEXT\""));
+    CHECK(budgets_refused("# c\npeekb 223 129.0 x\n", "line 2: the command \"peekb\" is not "
+                          "PROGRAM.TEST"));
+    CHECK(budgets_refused("bmath. 223 129.0 x\n", "not PROGRAM.TEST"));
+    CHECK(budgets_refused(".peekb 223 129.0 x\n", "not PROGRAM.TEST"));
+    CHECK(budgets_refused("bmath.empty 130 126.0 x\n", "the empty loop"));
+    CHECK(budgets_refused("bmath.peekb 22.5 129.0 x\n", "the budget \"22.5\""));
+    CHECK(budgets_refused("bmath.peekb -1 129.0 x\n", "the budget \"-1\""));
+    CHECK(budgets_refused("bmath.peekb 223 12x x\n", "the target \"12x\""));
+    CHECK(budgets_refused("bmath.peekb 223 12. x\n", "the target \"12.\""));
+    CHECK(budgets_refused("bmath.peekb 223 .5 x\n", "the target \".5\""));
+    CHECK(budgets_refused("bmath.peekb 223 1.2.3 x\n", "the target \"1.2.3\""));
+    CHECK(budgets_refused("bmath.peekb 223 - x\nbmath.peekb 224 - y\n",
+                          "line 2: the command bmath.peekb twice"));
+}
+
 int main(void)
 {
     test_values();
     test_malformed();
+    test_budgets();
+    test_budgets_malformed();
     if (failures)
         fprintf(stderr, "%d failures\n", failures);
     return failures != 0;

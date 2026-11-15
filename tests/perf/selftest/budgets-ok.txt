@@ -1,0 +1,2 @@
+# the right budget: Peek.b measured 217.0, budget 223
+bmath.peekb 223 129.0 c=Peek.b(p)

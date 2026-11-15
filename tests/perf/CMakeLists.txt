@@ -4,7 +4,10 @@
 # subtracted; the cycles per call of the C libraries.
 #   bench/    the Blitz sources, one program per area (text, tokenised here
 #             with tedsrc tok like the corpus)
+#   budgets.txt the budgets: the highest allowed cycles per call of each
+#             command, and the original's value as the target
 #   perf.cmake  the test script: corpusrun pass --observe, then results perf
+#   selftest/   an observation and budgets for the checks of the budgets
 
 # --------------------------------------------------------- the sources
 set(PERF_SRC ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -67,18 +70,21 @@ set(PERF_PASS ${work}.pass)
 set(PERF_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/perf.cmake)
 
 # ------------------------------------------------------------ the test
-# ctest perf: the C libraries of this build (one session; RUN_SERIAL: no
-# other test runs beside it)
+# ctest perf: the C libraries of this build against the budgets (one
+# session; RUN_SERIAL: no other test runs beside it)
+set(PERF_BUDGETS ${CMAKE_CURRENT_SOURCE_DIR}/budgets.txt)
 math(EXPR limit "${PERF_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 add_test(NAME perf COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DRESULTS=${RESULTS}
-	-DPASS=${PERF_PASS} -DTAG=clib -DWORK=${CMAKE_CURRENT_BINARY_DIR}/perf-run
+	-DPASS=${PERF_PASS} -DTAG=clib -DBUDGETS=${PERF_BUDGETS}
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/perf-run
 	-DTEST_SCRIPT=${PERF_SCRIPT} -P ${WITH_WORKDIR})
 # label perf: only the preset perf runs it (all, host, emulator and the
 # others exclude it); skipped (77) without Amiberry or the emulation data
 set_tests_properties(perf PROPERTIES LABELS "perf;emulator" SKIP_RETURN_CODE 77 RUN_SERIAL TRUE
 	TIMEOUT ${limit})
 # the target perf-original (not ALL, not a test; needs the CD and Amiberry):
-# the same benchmark with the CD's libraries, the original's cycles per call
+# the same benchmark with the CD's libraries, the table of the original's
+# cycles per call (the TARGET column of budgets.txt), no budgets
 add_custom_target(perf-original
 	COMMAND ${CMAKE_COMMAND} -E env AMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 		${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DRESULTS=${RESULTS} -DPASS=${PERF_PASS}
@@ -88,3 +94,25 @@ add_custom_target(perf-original
 	USES_TERMINAL
 	COMMENT "The benchmark with the CD's libraries (the original's cycles per call)"
 	VERBATIM)
+
+# the check of the budgets with broken input (no emulator: the committed
+# observation selftest/obs, Peek.b at 217.0 cycles per call, through
+# perf.cmake): a budget below the measurement fails with the command and
+# both values, the right budget passes
+foreach(t ok low)
+	if(t STREQUAL "ok")
+		set(test perf_budget_ok)
+		set(want)
+	else()
+		set(test perf_budget_broken)
+		set(want -DWANT_FAIL=ON)
+	endif()
+	add_test(NAME ${test} COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULTS}
+		-DOBS=${CMAKE_CURRENT_SOURCE_DIR}/selftest/obs
+		-DBUDGETS=${CMAKE_CURRENT_SOURCE_DIR}/selftest/budgets-${t}.txt ${want}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${test} -DTEST_SCRIPT=${PERF_SCRIPT} -P ${WITH_WORKDIR})
+endforeach()
+set_tests_properties(perf_budget_ok PROPERTIES
+	PASS_REGULAR_EXPRESSION "results perf: every command within its budget \\(1 measured\\)")
+set_tests_properties(perf_budget_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "results perf: bmath\\.peekb: measured 217\\.0 cycles per call, budget 130\n.*perf: a command over its budget")

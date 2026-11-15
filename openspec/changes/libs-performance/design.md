@@ -180,7 +180,22 @@ budgets need them. Rollback is one commit per entry group.
   a tolerance (a guard against slowing down) and is tightened after each
   step; the original's measurement is recorded next to it as the target.
   The goal is the original's speed or better (the user's rule: no change
-  may make correct programs slower).
+  may make correct programs slower). The tolerance (task 1.4): the larger
+  value of two runs plus 1 %, rounded up, plus 3 cycles
+  (`tests/perf/budgets.txt`): above the resolution (0.5 cycles per call at
+  N = 2000, 20 for Sort and Cls at N = 50) and the run-to-run spread, small
+  enough that an extra register save (8 cycles) or a lost inline helper
+  fails a small entry. The spread of two runs of the same build (the
+  first after a new snapshot key, the second from the snapshot): at most
+  1 cycle per call for the CPU-bound commands (spec: repeated to 1 cycle),
+  more where the loop waits for the blitter or follows the frame: Cls 300
+  of 84000 per call (0.4 %), Circle and Circlef 15, BBlit 14 per 8 blits,
+  and the PlayModule frame value 3214 against 3000 (7 %; the analysis's
+  two runs agreed there). The 1 % covers the blitter cases; the PlayModule
+  value is the one budget close to a spurious failure (36 cycles above the
+  higher run). Every measured command has a budget (125 with the
+  seven `emptylong` checks of the subtraction), not only the 101 that are
+  slower; a measured command without a budget fails the test.
 - Whether EventWindow and RawStatus keep their registers by nature
   (task 2.1; if not: reduced thunk or, for RawStatus, an assembler entry).
 - #1058 (decided): the InitSound fix is done in this change, task 2.4, in

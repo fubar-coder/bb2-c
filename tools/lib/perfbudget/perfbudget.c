@@ -185,15 +185,190 @@ void perf_run_free(struct perf_run *r)
     r->n = 0;
 }
 
-void perf_table(const struct perf_run *r, FILE *f)
+/* ------------------------------------------------------------ budgets */
+
+void perf_budgets_free(struct perf_budgets *b)
 {
     size_t i;
 
-    fprintf(f, "%-24s %12s\n", "command", "cycles");
+    for (i = 0; i < b->n; i++) {
+        free(b->b[i].name);
+        free(b->b[i].text);
+    }
+    free(b->b);
+    b->b = NULL;
+    b->n = 0;
+}
+
+/* the decimal number [s, s+n) without sign, with at most one decimal point
+   followed by a digit: 0 = read (in *v) */
+static int decimal(const char *s, size_t n, double *v)
+{
+    double x = 0, scale = 0;
+    size_t i, digits = 0;
+
+    if (!n || n > 15)
+        return -1;
+    for (i = 0; i < n; i++) {
+        if (s[i] == '.' && !scale && digits) {
+            scale = 1;
+        } else if (s[i] >= '0' && s[i] <= '9') {
+            x = x * 10 + (s[i] - '0');
+            scale *= 10;
+            digits++;
+        } else {
+            return -1;
+        }
+    }
+    if (scale == 1)
+        return -1;
+    *v = scale ? x / scale : x;
+    return 0;
+}
+
+int perf_read_budgets(struct perf_budgets *b, const char *text, char *err, size_t errlen)
+{
+    struct perf_budgets nb = { 0 };
+    const char *s = text;
+    size_t lineno = 0, i;
+
+#define FAIL(...) do { snprintf(err, errlen, __VA_ARGS__); perf_budgets_free(&nb); return -1; } while (0)
+    while (*s) {
+        const char *e = strchr(s, '\n'), *f[4] = { 0 }, *t;
+        size_t len[4], nf;
+        struct perf_budget x = { 0 };
+        struct perf_budget *p;
+
+        if (!e)
+            e = s + strlen(s);
+        lineno++;
+        nf = split(s, e, f, len, 3);
+        if (nf == 0 || *f[0] == '#') {
+            s = *e ? e + 1 : e;
+            continue;
+        }
+        /* the text: the rest of the line after the third field */
+        if (nf > 3) {
+            f[3] = f[2] + len[2];
+            while (*f[3] == ' ' || *f[3] == '\t')
+                f[3]++;
+        }
+        if (nf <= 3)
+            FAIL("line %zu: not \"COMMAND BUDGET TARGET TEXT\": \"%.*s\"", lineno, (int)(e - s),
+                 s);
+        if (!memchr(f[0], '.', len[0]) || f[0][0] == '.' || f[0][len[0] - 1] == '.')
+            FAIL("line %zu: the command \"%.*s\" is not PROGRAM.TEST", lineno, (int)len[0], f[0]);
+        if (len[0] > 6 && !strncmp(f[0] + len[0] - 6, ".empty", 6))
+            FAIL("line %zu: %.*s is the empty loop, not a command", lineno, (int)len[0], f[0]);
+        if (number(f[1], len[1], &x.budget))
+            FAIL("line %zu: the budget \"%.*s\" is not a whole number of cycles", lineno,
+                 (int)len[1], f[1]);
+        if (len[2] == 1 && f[2][0] == '-')
+            x.has_target = 0;
+        else if (decimal(f[2], len[2], &x.target))
+            FAIL("line %zu: the target \"%.*s\" is not a number of cycles or -", lineno,
+                 (int)len[2], f[2]);
+        else
+            x.has_target = 1;
+        for (i = 0; i < nb.n; i++)
+            if (strlen(nb.b[i].name) == len[0] && !strncmp(nb.b[i].name, f[0], len[0]))
+                FAIL("line %zu: the command %.*s twice", lineno, (int)len[0], f[0]);
+        /* the text: from the fourth field to the end of the line */
+        t = e;
+        while (t > f[3] && (t[-1] == ' ' || t[-1] == '\t' || t[-1] == '\r'))
+            t--;
+        if (!(x.name = dup_n(f[0], len[0])) || !(x.text = dup_n(f[3], (size_t)(t - f[3])))
+            || !(p = realloc(nb.b, (nb.n + 1) * sizeof *p))) {
+            free(x.name);
+            free(x.text);
+            FAIL("out of memory");
+        }
+        nb.b = p;
+        nb.b[nb.n++] = x;
+        s = *e ? e + 1 : e;
+    }
+#undef FAIL
+    perf_budgets_free(b);
+    *b = nb;
+    return 0;
+}
+
+static const struct perf_budget *budget_of(const struct perf_budgets *b, const char *name)
+{
+    size_t i;
+
+    for (i = 0; i < b->n; i++)
+        if (!strcmp(b->b[i].name, name))
+            return &b->b[i];
+    return NULL;
+}
+
+static int measured(const struct perf_run *r, const char *name)
+{
+    size_t i;
+
+    for (i = 0; i < r->n; i++)
+        if (!strcmp(r->m[i].name, name))
+            return 1;
+    return 0;
+}
+
+int perf_judge(const struct perf_run *r, const struct perf_budgets *b, FILE *f)
+{
+    size_t i;
+    int failed = 0;
+
     for (i = 0; i < r->n; i++) {
         const struct perf_meas *m = &r->m[i];
+        const struct perf_budget *p;
+        const char *per = m->frame ? "frame" : "call";
 
-        fprintf(f, "%-24s %12.1f%s\n", m->name, m->value,
-                m->empty ? "  (empty loop, per iteration)" : m->frame ? "  (per frame)" : "");
+        if (m->empty)
+            continue;
+        if (!(p = budget_of(b, m->name))) {
+            fprintf(f, "%s: measured %.1f cycles per %s, no budget\n", m->name, m->value, per);
+            failed++;
+        } else if (m->value > p->budget) {
+            fprintf(f, "%s: measured %.1f cycles per %s, budget %ld\n", m->name, m->value, per,
+                    p->budget);
+            failed++;
+        }
+    }
+    for (i = 0; i < b->n; i++)
+        if (!measured(r, b->b[i].name)) {
+            fprintf(f, "%s: not measured (budget %ld)\n", b->b[i].name, b->b[i].budget);
+            failed++;
+        }
+    return failed;
+}
+
+void perf_table(const struct perf_run *r, const struct perf_budgets *b, FILE *f)
+{
+    size_t i;
+
+    if (b)
+        fprintf(f, "%-24s %10s %8s %10s %7s  %s\n", "command", "cycles", "budget", "target",
+                "factor", "loop");
+    else
+        fprintf(f, "%-24s %10s\n", "command", "cycles");
+    for (i = 0; i < r->n; i++) {
+        const struct perf_meas *m = &r->m[i];
+        const struct perf_budget *p = b ? budget_of(b, m->name) : NULL;
+
+        if (m->empty) {
+            fprintf(f, "%-24s %10.1f  (empty loop, per iteration)\n", m->name, m->value);
+        } else if (!p) {
+            fprintf(f, "%-24s %10.1f%s\n", m->name, m->value, m->frame ? "  (per frame)" : "");
+        } else {
+            char target[24] = "-", factor[24] = "-";
+
+            if (p->has_target) {
+                snprintf(target, sizeof target, "%.1f", p->target);
+                if (p->target >= 1)
+                    snprintf(factor, sizeof factor, "%.2f", m->value / p->target);
+            }
+            fprintf(f, "%-24s %10.1f %8ld %10s %7s  %s%s\n", m->name, m->value, p->budget,
+                    target, factor, p->text, m->frame ? " (per frame)" : "");
+        }
     }
 }

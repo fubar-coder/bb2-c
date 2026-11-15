@@ -4,10 +4,10 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 1. Benchmark and preset
 
-- [ ] 1.1 Decide with the first measurement where the benchmark sources live (design.md, Open Questions); record the original's value next to each budget as the target; write the decision into design.md
+- [x] 1.1 Decide with the first measurement where the benchmark sources live (design.md, Open Questions); record the original's value next to each budget as the target; write the decision into design.md
 - [x] 1.2 Bring the measurement method of `perf-analysis/` (bench sources, CIA-B timer cascade, empty loop subtraction, cycle-exact A500 configuration) into the repository as a test, in C/CMake and Blitz sources only (no Python); one run at a time
 - [x] 1.3 Add the `perf` preset to `CMakePresets.json` (label `perf`, not in `all`, `host` or `emulator`) and let the test skip with 77 without Amiberry or data
-- [ ] 1.4 Add the budget file with the measured values of the current build per command plus a tolerance, covering the 100 commands slower than the originals; a broken budget (a value below the measurement) must make the test fail with the command and both values; add that test with deliberately broken input
+- [x] 1.4 Add the budget file with the measured values of the current build per command plus a tolerance, covering the 100 commands slower than the originals; a broken budget (a value below the measurement) must make the test fail with the command and both values; add that test with deliberately broken input
 - [ ] 1.5 Document the preset in `tests/README.md` and `docs/testing.md`
 
 ## 2. Register rule

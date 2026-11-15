@@ -1,6 +1,6 @@
 /*
  * perfbudget.h - the benchmark of the libraries (tests/perf): the cycles per
- * call from the programs' output.
+ * call from the programs' output and its budgets.
  *
  * A benchmark program (tests/perf/bench/NAME.bas) runs one For loop per
  * command and prints one line per loop:
@@ -59,11 +59,54 @@ int perf_read_out(struct perf_run *r, const char *program, const char *text, cha
                   size_t errlen);
 void perf_run_free(struct perf_run *r);
 
+/*
+ * The budget file (tests/perf/budgets.txt), '#' comments, one line per
+ * command:
+ *
+ *   PROGRAM.TEST BUDGET TARGET TEXT
+ *
+ *   BUDGET  the highest allowed cycles per call (per frame), a whole number
+ *   TARGET  the original's value (a decimal number, or "-": none), only
+ *           shown
+ *   TEXT    what the loop does (the rest of the line, not empty)
+ */
+struct perf_budget {
+    char *name;                         /* PROGRAM.TEST */
+    long budget;
+    double target;
+    int has_target;
+    char *text;
+};
+
+struct perf_budgets {
+    struct perf_budget *b;
+    size_t n;
+};
+
+/**
+ * @brief Read a budget file.
+ * @return 0 = read (replaces *b), -1 = malformed or out of memory (message
+ *         in err with the line; *b unchanged)
+ */
+int perf_read_budgets(struct perf_budgets *b, const char *text, char *err, size_t errlen);
+void perf_budgets_free(struct perf_budgets *b);
+
+/**
+ * @brief Judge the measurements against the budgets: one line to f per
+ *        command over its budget ("NAME: measured X cycles per call, budget
+ *        B"), per measured command without a budget and per budget without
+ *        a measurement.  The empty loops have no budget.
+ * @return the number of those lines (0 = every command within its budget)
+ */
+int perf_judge(const struct perf_run *r, const struct perf_budgets *b, FILE *f);
+
 /**
  * @brief The table of the measurements: per command its cycles per call,
- *        the empty loops as the programs' baseline.
+ *        the empty loops as the programs' baseline; with budgets (b not
+ *        NULL) also the budget, the target and the factor to it, and the
+ *        text.
  */
-void perf_table(const struct perf_run *r, FILE *f);
+void perf_table(const struct perf_run *r, const struct perf_budgets *b, FILE *f);
 
 #ifdef __cplusplus
 }

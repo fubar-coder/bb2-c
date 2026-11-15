@@ -559,11 +559,16 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
+          --budgets FILE      the budget file (tests/perf/budgets.txt): every command must be
+                              within its budget
 
 A line "TEST T N PER" of NAME.out is the loop TEST of the program NAME: T units
 of 1000 cycles for N iterations, PER calls per iteration or "frame"; the
-program's empty loop is subtracted. Exit status 0 the table written, 2 usage
-error, a file that cannot be read or a malformed observation.
+program's empty loop is subtracted. A line "COMMAND BUDGET TARGET TEXT" of FILE
+is the budget of PROGRAM.TEST (TARGET the original's value, only shown). Exit
+status 0 the table written (every command within its budget), 1 a command over
+its budget, without a budget or not measured, 2 usage error, a file that cannot
+be read or a malformed observation or budget file.
 ```
 
 The cycles per call of the library benchmark (`tests/perf`,
@@ -576,6 +581,17 @@ program's empty loop (`empty`, cycles per iteration) is subtracted, and a
 handler takes from it. The command is named `PROGRAM.TEST`. An output
 without the empty loop or the runner's `rc=0`, or with another line, is
 refused.
+
+With `--budgets FILE` (`tests/perf/budgets.txt`) the table also has each
+command's budget, the original's value (`TARGET`, shown with the factor to
+it, never judged) and the loop, and every command is judged: one measured
+over its budget (`bmath.peekb: measured 217.0 cycles per call, budget
+130`), a measured command without a budget and a budget without a
+measurement each give a line on stderr and exit status 1. The empty
+loops have no budget. A malformed budget file (a line without four
+fields, a name that is not `PROGRAM.TEST`, a budget that is not a whole
+number, a target that is neither a number nor `-`, a command twice) is
+refused with its line.
 
 ## Inputs and outputs
 
@@ -590,7 +606,8 @@ directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
 two directories (and a log) and writes its report to stdout,
 `bug-orig-accept` reads two runs and rewrites `OUT`, `corpus-accept`
 reads two run directories and rewrites files of `EXPECT_DIR`, `perf` reads
-a directory and writes its table to stdout.
+a directory (and with `--budgets` the budget file) and writes its table to
+stdout.
 
 ## Exit codes
 
@@ -604,7 +621,8 @@ a directory and writes its table to stdout.
   `libs-update`); no dump written (`libs-dump`); a case changed beyond
   the named issues (`fix-scope`); the runs are refused, nothing written
   (`bug-orig-accept`); a program refused, nothing written for it
-  (`corpus-accept`);
+  (`corpus-accept`); a command over its budget, without a budget or not
+  measured (`perf --budgets`);
 * 2 usage error; also a file that cannot be read (`match`, `cd-update`,
   `cd-reference`, `ted-oracle`), a broken expect file (`match`), a table
   or the oracle data that cannot be
@@ -613,7 +631,8 @@ a directory and writes its table to stdout.
   files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
   `fix-scope`, `bug-orig-accept`, `corpus-accept`), a file that cannot be
   written (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `bug-orig-accept`, `corpus-accept`); a malformed observation (`perf`);
+  `bug-orig-accept`, `corpus-accept`); a malformed observation or budget
+  file (`perf`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -644,7 +663,8 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `corpus-accept`: the target `corpus-expect-record`
   (`tests/corpus/record.cmake`); the test `corpus_record_target`
   (`tests/corpus/CMakeLists.txt`).
-* `perf`: the test `perf` and the target `perf-original`
+* `perf`: the tests `perf`, `perf_budget_ok`, `perf_budget_broken` and
+  the target `perf-original`
   (`tests/perf/perf.cmake`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
   `cmake/fix-scope.cmake`); the tests `fix_scope_*`

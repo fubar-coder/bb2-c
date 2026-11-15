@@ -1,11 +1,14 @@
 /*
  * results perf - the benchmark of the libraries (tests/perf): the cycles per
- * call from the observations of a run (lib/perfbudget/perfbudget.h).
+ * call from the observations of a run, against the budgets
+ * (lib/perfbudget/perfbudget.h).
  *
- *   results perf OBSERVATIONS
+ *   results perf [--budgets FILE] OBSERVATIONS
  *
- * Exit status 0 the table written, 2 usage error, a directory or file that
- * cannot be read, a malformed observation.
+ * Exit status 0 the table written (every command within its budget), 1 a
+ * command over its budget, without a budget or not measured, 2 usage error,
+ * a directory or file that cannot be read, a malformed observation or
+ * budget file.
  */
 #include <errno.h>
 #include <stdio.h>
@@ -83,28 +86,69 @@ static int read_run(const char *me, const std::string &dir, perf_run *r)
 void cmd_perf(CLI::App &app, int &status)
 {
     struct options {
-        std::string obs;
+        std::string obs, budgets;
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("perf", "the cycles per call of the library benchmark "
                                        "from the observations of a run");
+    sub->add_option("--budgets", o->budgets, "the budget file (tests/perf/budgets.txt): every "
+                    "command must be within its budget")
+        ->type_name("FILE");
     sub->add_option("OBSERVATIONS", o->obs, "the directory of the observations (NAME.out of "
                     "corpusrun pass --observe)")->required();
     sub->footer("A line \"TEST T N PER\" of NAME.out is the loop TEST of the program NAME: T units "
                 "of 1000 cycles for N iterations, PER calls per iteration or \"frame\"; the "
-                "program's empty loop is subtracted. Exit status 0 the table written, 2 usage "
-                "error, a file that cannot be read or a malformed observation.");
+                "program's empty loop is subtracted. A line \"COMMAND BUDGET TARGET TEXT\" of "
+                "FILE is the budget of PROGRAM.TEST (TARGET the original's value, only shown). "
+                "Exit status 0 the table written (every command within its budget), 1 a command "
+                "over its budget, without a budget or not measured, 2 usage error, a file that "
+                "cannot be read or a malformed observation or budget file.");
     sub->callback([sub, o, &status] {
         const std::string name = cli::name(*sub);
+        const char *me = name.c_str();
         perf_run r = {};
+        perf_budgets b = {};
+        char err[600];
+        int failed = 0;
 
-        if (read_run(name.c_str(), o->obs, &r)) {
+        if (sub->count("--budgets")) {
+            char *text = read_file(o->budgets.c_str());
+
+            if (!text) {
+                fprintf(stderr, "%s: %s: %s\n", me, o->budgets.c_str(), strerror(errno));
+                status = 2;
+                return;
+            }
+            failed = perf_read_budgets(&b, text, err, sizeof err);
+            free(text);
+            if (failed) {
+                fprintf(stderr, "%s: %s: %s\n", me, o->budgets.c_str(), err);
+                status = 2;
+                return;
+            }
+        }
+        if (read_run(me, o->obs, &r)) {
             perf_run_free(&r);
+            perf_budgets_free(&b);
             status = 2;
             return;
         }
-        perf_table(&r, stdout);
+        perf_table(&r, sub->count("--budgets") ? &b : NULL, stdout);
+        if (sub->count("--budgets")) {
+            size_t i, n = 0;
+
+            fflush(stdout);
+            failed = prefixed(name, [&](FILE *f) { return perf_judge(&r, &b, f); });
+            for (i = 0; i < r.n; i++)
+                n += !r.m[i].empty;
+            if (failed)
+                printf("%s: %d budget failures, %zu commands measured (%s)\n", me, failed, n,
+                       o->budgets.c_str());
+            else
+                printf("%s: every command within its budget (%zu measured)\n", me, n);
+        }
         perf_run_free(&r);
-        status = 0;
+        perf_budgets_free(&b);
+        status = failed ? 1 : 0;
     });
 }

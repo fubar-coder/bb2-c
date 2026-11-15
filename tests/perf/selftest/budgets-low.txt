@@ -1,0 +1,2 @@
+# a budget below the measurement: Peek.b measured 217.0, budget 130
+bmath.peekb 130 129.0 c=Peek.b(p)
