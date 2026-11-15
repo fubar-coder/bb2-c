@@ -681,9 +681,11 @@ int main(int argc, char **argv)
        symmetry: the original touches neither */
     KEEPS("quickmult", d2-d7|a0-a3|a6);
     KEEPS("longmult", d2-d7|a0-a3|a6);
-    /* compiler: a conversion, like an operator */
-    KEEPS("quicktofloat", d2-d7|a2|a3|a6);
-    /* compiler, and third party: RIMiscLib holds a0 and a1 across it */
+    /* compiler: a conversion, like an operator (d2-d7); both are the
+       original's code, which leaves a0 and a1 alone (user decision
+       2026-11-15), for floattoquick because RIMiscLib holds a0 and a1
+       across it (third party) */
+    KEEPS("quicktofloat", d2-d7|a0-a3|a6);
     KEEPS("floattoquick", d2-d7|a0-a3|a6);
     KEEPS("strcomp2", d2-d7|a2|a3|a6);
     KEEPS("strcomp", d0-d7|a2|a6);

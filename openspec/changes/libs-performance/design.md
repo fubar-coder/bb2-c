@@ -368,6 +368,16 @@ build.
       for `clrloc` (a frame of 1 and of 8 longs between LINK and UNLK).
       `plocal{a}` 444.5 -> 325.1 (original 389.5), `pstr{a$}` 12359.8 ->
       11991.8 (11614.0), `c=fstr{a$}` 13049.0 -> 12686.2 (12353.5).
+    - `qutofl`/`fltoqu` ($D300/$D301): the original's code (user
+      decision 2026-11-15), with the TST.l of the #146/#147 fix at the
+      start of `qutofl`; they write only d0, d1 and the stack (d2 saved)
+      and call mathffp through `jsr -xx(a6)` with the original's
+      operands, so a0/a1 are the caller's (the ROM's mathffp leaves them
+      alone, as the original relies on); both `KEEPS` state a0-a1. `f3=q1`
+      2287.7 -> 1898.2 (original 1905.5), `q3=f1` 2237.7 -> 1764.7
+      (1764.0).
+    - `copstring` and `lastring`/`astring` keep their minimal thunks of
+      group 5 (d0-d1, d1; Decision 15).
     - Finding (static, not run): the original's `localstat` changes d2
       (`MOVE (a2)+,d2` in `alstat`) and d4 (`DBF`), and the compiler
       calls it in the prologue before it stores the parameters, pushing

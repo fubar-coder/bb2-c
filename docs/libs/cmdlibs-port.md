@@ -44,7 +44,7 @@ carried over (for the comparison with AmiBlitz3).
   a zero-extended long (the callers: `deviations.md`, "Register
   preservation"). Internal tokens keep their contract: what the
   compiler's code holds across them and, for the tokens third-party
-  libraries call (globalloc, globfree, allocst, freest, fltoqu,
+  libraries call (globalloc, globfree, allocst, freest, fltoqu, qutofl,
   longmult), what those callers hold (the list: `deviations.md`). Init and
   finit, nullsubs and error checks keep their thunks and preserve at
   least what the original preserves.

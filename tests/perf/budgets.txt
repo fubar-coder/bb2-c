@@ -105,8 +105,8 @@ bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: 
 bmath.wmod                    253      247.0  w3=w1 MOD w2
 bmath.qmod                    285      278.0  q3=q1 MOD q2
 bmath.fmod                    979     3701.0  c=f1 MOD f2
-bmath.q2f                    2314     1905.5  f3=q1
-bmath.f2q                    2264     1764.0  q3=f1
+bmath.q2f                    1921     1905.5  f3=q1
+bmath.f2q                    1786     1764.0  q3=f1
 bmath.plocal                  332      389.5  plocal{a} (a Statement with two Long locals: link, clrloc)
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2

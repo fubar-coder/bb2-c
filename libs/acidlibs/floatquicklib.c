@@ -4,10 +4,9 @@
  * qutofl/fltoqu, blitz2.s equates 135-136, used by the type conversion
  * code, blitz2.s 8638/8679).
  *
- * C translation of bblibsrc/floatquicklib (binary checked: same as the
- * source).  All arithmetic is done by mathffp (a6 = ffplib base, same
- * calls with the same operands as the original); the sign is handled
- * outside, on the magnitude:
+ * The original's code of bblibsrc/floatquicklib (binary checked: same as
+ * the source), in assembler.  All arithmetic is done by mathffp (a6 =
+ * ffplib base); the sign is handled outside, on the magnitude:
  *   quicktofloat: d0.q -> d0.f = float(int part) + float(frac)/65536.0
  *   floattoquick: d0.f -> d0.q = SPFix(x)<<16 | SPFix((x-int)*65536.0)
  *
@@ -16,10 +15,18 @@
  * a0-a1 for RIMiscLib, which calls it with both live
  * (analyse-internal-token-callers.md).  d1 is free.  The CCR is not a
  * result (the original leaves the flags of the last mathffp call / BSET).
+ *
+ * Both are assembler entries in the original's form (user decision
+ * 2026-11-15): only d0, d1 and the stack are written, d2 is saved, and
+ * mathffp is called through jsr -xx(a6) with the original's operands, so
+ * a0 and a1 stay what the caller had (the ROM's mathffp does not touch
+ * them, which the original relies on as well) and no thunk is needed.
+ * In C, BLITZ_BASEJSR loaded a0/a1 with 0 for each call and made GCC
+ * save d2-d7/a2/a6, a thunk kept a0/a1.
  */
 #include "blitzlib.h"
 
-/* entry points (the C function, a thunk; defined below) */
+/* entry points (assembler, defined below) */
 void quicktofloat(void), floattoquick(void);
 
 /* !syslibheader{#floatquicklib,$d300,$d302,0,0,0,0,$4000} */
@@ -28,22 +35,7 @@ BLITZ_NULLSUB(quicktofloat, 0, 0, LIB_ffplib, BL_LA6);    /* $D300 qutofl */
 BLITZ_NULLSUB(floattoquick, 0, 0, LIB_ffplib, BL_LA6);    /* $D301 fltoqu */
 BLITZ_LIBFIN();
 
-#define f65536 0x80000051UL                     /* 65536.0 in FFP */
-
-/* 'doit2 of quicktofloat: d0 = magnitude (as unsigned) */
-static ULONG q2f(const void *ffp, ULONG v)
-{
-    ULONG frac, i;
-
-    /* SWAP d0:CLR d0:SWAP d0  d0=float of frac (eg 32768 for .5) */
-    frac = BLITZ_BASEJSR1(ffp, LVO_SPFlt, v & 0xffff);
-    /* MOVE.l #f65536,d1:JSR -84(a6) */
-    frac = BLITZ_BASEJSR2(ffp, LVO_SPDiv, frac, f65536);
-    /* MOVE.l 4(a7),d0:CLR d0:SWAP d0 */
-    i = BLITZ_BASEJSR1(ffp, LVO_SPFlt, v >> 16);
-    /* MOVE.l (a7)+,d1:JMP -66(a6) */
-    return BLITZ_BASEJSR2(ffp, LVO_SPAdd, i, frac);
-}
+#define f65536 0x80000051                       /* 65536.0 in FFP */
 
 /**
  * @brief $D300 qutofl: convert a Quick (16.16 fixed point) to a Float (FFP).
@@ -61,30 +53,31 @@ static ULONG q2f(const void *ffp, ULONG v)
  *
  * @param q  d0: the Quick
  * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Float; d2-d7/a2-a6 kept (the compiler's contract; no
- *         third-party caller)
+ * @return d0: the Float; d1 changed, a0/a1 and d2-d7/a2-a6 kept
  */
-static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbase BL_REG(a6))
-{
-    if ((LONG)q >= 0)                           /* TST.l d0:BPL 'doit2 */
-        return q2f(ffpbase, q);
-    return q2f(ffpbase, -q) | 0x80;             /* NEG.l d0 ... BSET #7,d0 */
-}
-BLITZ_ALIAS(quicktofloat, quicktofloat_c);
-
-/* 'doit2 of floattoquick: d0 = FFP number with the sign bit clear */
-static ULONG f2q(const void *ffp, ULONG x)
-{
-    ULONG i, intpart;
-
-    i = BLITZ_BASEJSR1(ffp, LVO_SPFix, x);          /* JSR -30(a6) */
-    intpart = (ULONG)(UWORD)i << 16;                /* MOVE d0,d2:SWAP d2:CLR d2 ;integer part */
-    i = BLITZ_BASEJSR1(ffp, LVO_SPFlt, i);          /* d0=float of INT PART */
-    x = BLITZ_BASEJSR2(ffp, LVO_SPSub, x, i);       /* num-int -> d0=float of fraction */
-    x = BLITZ_BASEJSR2(ffp, LVO_SPMul, x, f65536);  /* frac * 65536 */
-    x = BLITZ_BASEJSR1(ffp, LVO_SPFix, x);          /* back to int. */
-    return intpart | (UWORD)x;                      /* MOVE d0,d2:MOVE.l d2,d0 */
-}
+BLITZ_ASM_ROUTINE(quicktofloat,
+        "   tst.l   d0\n"
+        "   bpl.s   .Lq2f\n"
+        "   neg.l   d0\n"                   /* the magnitude */
+        "   bsr.s   .Lq2f\n"
+        "   bset    #7,d0\n"                /* the FFP sign */
+        "   rts\n"
+        ".Lq2f:\n"                          /* 'doit2: d0 = the magnitude */
+        "   move.l  d0,-(sp)\n"
+        "   swap    d0\n"
+        "   clr.w   d0\n"
+        "   swap    d0\n"
+        "   jsr     " BL_STR(LVO_SPFlt) "(a6)\n" /* the float of the fraction */
+        "   move.l  #" BL_STR(f65536) ",d1\n"
+        "   jsr     " BL_STR(LVO_SPDiv) "(a6)\n"
+        "   move.l  d0,-(sp)\n"
+        "   move.l  4(sp),d0\n"
+        "   clr.w   d0\n"
+        "   swap    d0\n"
+        "   jsr     " BL_STR(LVO_SPFlt) "(a6)\n" /* the float of the integer */
+        "   move.l  (sp)+,d1\n"
+        "   addq.l  #4,sp\n"
+        "   jmp     " BL_STR(LVO_SPAdd) "(a6)");
 
 /**
  * @brief $D301 fltoqu: convert a Float (FFP) to a Quick (16.16 fixed point).
@@ -95,13 +88,31 @@ static ULONG f2q(const void *ffp, ULONG x)
  *
  * @param f  d0: the Float
  * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Quick; a0/a1 kept (third party: RIMiscLib) and
- *         d2-d7/a2-a6
+ * @return d0: the Quick; d1 changed, a0/a1 (third party: RIMiscLib) and
+ *         d2-d7/a2-a6 kept
  */
-static ULONG BLITZ_ROUTINE floattoquick_c(ULONG f BL_REG(d0), const void *ffpbase BL_REG(a6))
-{
-    if (!(f & 0x80))                            /* BEQ 'doit */
-        return f2q(ffpbase, f);
-    return -f2q(ffpbase, f & ~0x80UL);          /* NEG.l d0 */
-}
-BLITZ_THUNK(floattoquick, floattoquick_c, "a0-a1");
+BLITZ_ASM_ROUTINE(floattoquick,
+        "   bchg    #7,d0\n"
+        "   beq.s   1f\n"                   /* the sign bit was clear */
+        "   bsr.s   .Lf2q\n"
+        "   neg.l   d0\n"
+        "   rts\n"
+        "1: bchg    #7,d0\n"
+        ".Lf2q:\n"                          /* 'doit2: d0 = the magnitude */
+        "   move.l  d2,-(sp)\n"
+        "   move.l  d0,-(sp)\n"
+        "   jsr     " BL_STR(LVO_SPFix) "(a6)\n"
+        "   move.w  d0,d2\n"                /* the integer part */
+        "   swap    d2\n"
+        "   clr.w   d2\n"
+        "   jsr     " BL_STR(LVO_SPFlt) "(a6)\n" /* the float of the integer */
+        "   move.l  d0,d1\n"
+        "   move.l  (sp)+,d0\n"
+        "   jsr     " BL_STR(LVO_SPSub) "(a6)\n" /* the fraction */
+        "   move.l  #" BL_STR(f65536) ",d1\n"
+        "   jsr     " BL_STR(LVO_SPMul) "(a6)\n" /* times 65536 */
+        "   jsr     " BL_STR(LVO_SPFix) "(a6)\n"
+        "   move.w  d0,d2\n"
+        "   move.l  d2,d0\n"
+        "   move.l  (sp)+,d2\n"
+        "   rts");
