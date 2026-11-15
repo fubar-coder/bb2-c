@@ -30,14 +30,13 @@
  * of the plane size +22).
  *
  * BUG(orig), kept:
- *  - both loops (rows, planes) run at least once (#181) (and 65536 times for 0 colours in SaveScreen
- *    without AGA, #182).
+ *  - both loops (rows, planes) run at least once (#181).
+ *  - Not a bug in practice: SaveScreen with a ColorMap of 0 colours would
+ *    write 65536 colours (#182); a screen always has colours.
  *  - savearow reads one byte behind the row (literal run test) (#183);
  *    indexes are signed words (a2 + d4.w; not a bug: matters only for rows
  *    of 32 KB or more, which are not usable).
  *  - CMAP chunks of an odd size are not padded. (#184)
- *  - SaveBitmap with a palette of 0 colours writes 65536 colours (DBF) -
- *    over the end of the buffer (not tested). (#182)
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
  *  - SaveShape does not check the depth: depth 0 writes 65536 plane
@@ -49,13 +48,20 @@
  * compared with the WORD at +4 (Flags<<8 | Depth), so a bitmap whose
  * Flags byte is not 0 got Flags*256 + Depth planes per row.
  *
+ * Fixed (intended deviation, #182): SaveBitmap and SaveShape with a
+ * palette of 0 colours (InitPalette p,0) wrote 65536 colours (DBF) over
+ * the end of the 4096 byte buffer; a programming error: the error checks
+ * bitchk2/sschk2 (debugger only) now refuse it with "Uninitialized
+ * Palette", the commands are unchanged.
+ *
  * Fixed (intended deviation, #185): "Can't open File" (err2 in the normal
  * code) has its message in the error check area in the original (without
  * the debugger d0 points behind the library); here the message is in the
  * normal code.
  *
  * Error checks (debugger only): uninitialized bitmap (BytesPerRow word 0),
- * palette (colour pointer 0), screen (pointer 0), shape (width 0).
+ * palette (colour pointer 0, or 0 colours: fixed, #182), screen (pointer
+ * 0), shape (width 0).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -383,9 +389,10 @@ BLITZ_THUNK(dosavebitmap2, dosavebitmap2_c, "d0-d1/a0-a1");
  *
  * As SaveBitmap without a palette, plus the CMAP chunk (3 bytes per
  * colour, the top bytes of the palette's longs) when a palette is given.
- * Errors (debugger only): also "Uninitialized Palette" (bitchk2).
- * BUG(orig): CMAP chunks of an odd size are not padded (#184); a palette of
- * 0 colours writes 65536 colours over the end of the buffer (#182).
+ * Errors (debugger only): also "Uninitialized Palette" (bitchk2; also for
+ * a palette of 0 colours, fixed #182: the original wrote 65536 colours over
+ * the end of the buffer).
+ * BUG(orig): CMAP chunks of an odd size are not padded (#184).
  *
  * @param bm    a0: the BitMap (!libs {#bitmaplib,$1080})
  * @param name  d1: the file name
@@ -449,7 +456,8 @@ BLITZ_THUNK(dosaveshape1, dosaveshape1_c, "d0-d1/a0-a1");
  * @brief SaveShape Shape#,Filename$,Palette#: SaveShape with a CMAP of the
  * palette (as SaveBitmap with a palette).
  *
- * Errors (debugger only): also "Uninitialized Palette" (sschk2).
+ * Errors (debugger only): also "Uninitialized Palette" (sschk2; also for
+ * a palette of 0 colours, fixed #182).
  *
  * @param shape  a0: the shape (!libs {#shapeslib,$1080})
  * @param name   d1: the file name
@@ -512,7 +520,8 @@ static ULONG makelong(UWORD v)
  * BitMap, Flags cleared), then saved as SaveBitmap with a palette.  Amiga
  * mode only.  Errors: as SaveBitmap; debugger only: "Uninitialized
  * Screen" (scrchk).
- * BUG(orig) (#182): 0 colours without AGA run the colour loop 65536 times.
+ * Not a bug in practice (#182): a ColorMap of 0 colours would run the
+ * colour loops 65536 times; a screen always has colours.
  *
  * @param scr   a0: the screen object (!libs {#screenslib,$1080})
  * @param name  d1: the file name
@@ -580,10 +589,17 @@ static void BLITZ_ERRCHK bitchk_c(UWORD *bm BL_REG(a0))
         BLITZ_RUNERR(mess1);
 }
 
-static void BLITZ_ERRCHK bitchk2_c(UWORD *bm BL_REG(a0), ULONG *pal BL_REG(a1))
+/* a palette with colours: the colour pointer, and fixed (#182): a
+   palette of 0 colours (InitPalette p,0) made makecolor write 65536 */
+static void BLITZ_ERRCHK palchk_c(const struct palette *pal)
 {
-    if (!*pal)
+    if (!pal->cols || !pal->num)
         BLITZ_RUNERR(mess3);
+}
+
+static void BLITZ_ERRCHK bitchk2_c(UWORD *bm BL_REG(a0), const struct palette *pal BL_REG(a1))
+{
+    palchk_c(pal);
     bitchk_c(bm);
 }
 
@@ -593,10 +609,9 @@ static void BLITZ_ERRCHK sschk1_c(UWORD *shape BL_REG(a0))
         BLITZ_RUNERR(mess5);
 }
 
-static void BLITZ_ERRCHK sschk2_c(UWORD *shape BL_REG(a0), ULONG *pal BL_REG(a1))
+static void BLITZ_ERRCHK sschk2_c(UWORD *shape BL_REG(a0), const struct palette *pal BL_REG(a1))
 {
-    if (!*pal)
-        BLITZ_RUNERR(mess3);
+    palchk_c(pal);
     sschk1_c(shape);
 }
 

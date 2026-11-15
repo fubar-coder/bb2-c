@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+save
+REQUESTER: AutoRequest body "Uninitialized Palette" *
+rc=*
