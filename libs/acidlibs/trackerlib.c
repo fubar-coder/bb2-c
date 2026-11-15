@@ -402,7 +402,10 @@ static void mt_portdown(struct voice *v, ULONG aud)
     RW(aud, 6) = v->period & 0xfff;
 }
 
-static void mt_checkcom(struct voice *v, ULONG aud)
+/* mt_checkcom, mt_checkcom2 and mt_playvoice are inline in mt_music: as
+   functions each voice cost a call, the argument moves and a register
+   save (the original has them inline as well) */
+BL_ALWAYS_INLINE void mt_checkcom(struct voice *v, ULONG aud)
 {
     UBYTE cmd;
 
@@ -433,7 +436,7 @@ static void mt_checkcom(struct voice *v, ULONG aud)
         mt_volslide(v, aud);
 }
 
-static void mt_checkcom2(struct voice *v, ULONG aud)
+BL_ALWAYS_INLINE void mt_checkcom2(struct voice *v, ULONG aud)
 {
     switch (v->cmd & 0xf) {
     case 0xe:                                   /* mt_setfilt */
@@ -469,14 +472,13 @@ static void mt_checkcom2(struct voice *v, ULONG aud)
 #define SINFO(off, f) (*(const UWORD *)(sinfo + (off) + offsetof(struct modsampinfo, f)))
 /* ------------------------------------------------------------- new row */
 
-static void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *pat, ULONG *pos,
-                         const UBYTE *sinfo)
+BL_ALWAYS_INLINE void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *note,
+                                   const UBYTE *sinfo)
 {
-    ULONG sample;
+    UWORD sample;
     UWORD repeat, len;
 
-    v->note = *(const ULONG *)(pat + *pos);
-    *pos += 4;
+    v->note = *(const ULONG *)note;
     sample = (UBYTE)((v->cmd & 0xf0) >> 4) | (v->notehi & 0xf0);
     if (sample) {
         ULONG off = (UWORD)((UWORD)sample * 0x1e); /* MULU #$1e,d4 */
@@ -521,7 +523,7 @@ static void mt_music(void)
     /* a0 at mt_endr: the song length and restart bytes; after a break
        still the patterns or the module (BUG(orig) (#292), see above) */
     const UBYTE *songend = mod;
-    int i;
+    WORD i;
 
     mt_counter++;
     if (mt_counter < mt_speed) {                /* CMP.b mt_speed,d0:BLT */
@@ -541,8 +543,8 @@ static void mt_music(void)
         pos = (ULONG)order[mt_songpos] << 10;
         BL_SETW(pos, pos + mt_pattpos);         /* ADD.w mt_pattpos,d1 */
         mt_dmacon = 0;
-        for (i = 0; i < 4; i++)
-            mt_playvoice(&mt_voices[i], 0xdff0a0 + 16 * i, patterns, &pos, sinfo);
+        for (i = 0; i < 4; i++, pos += 4)
+            mt_playvoice(&mt_voices[i], 0xdff0a0 + 16 * i, patterns + pos, sinfo);
 
         mt_delay();                             /* mt_setdma */
         BL_CUSTOMW(BL_CUSTOM, 0x96) = mt_dmacon | 0x8000;

@@ -65,6 +65,14 @@
 # The four bgfx.qblit lines then from five runs of the second look at
 # QBlit and UnQueue (2026-11-16, after the rebase onto part B), with
 # their tolerances.
+# bmod.vblmod and bmod.playmed from seven runs after each step of the
+# players of libs-performance task 10.10 on main f7960476 (2026-11-16),
+# the first after the snapshot was made anew; they keep their tolerances.
+# bmod.vblmod moves with the layout of the libraries in the program (the
+# empty loop it subtracts runs 150000 times, so 0.3 cycles per iteration
+# are 340 per frame): with trackerlib unchanged, the next step of medlib
+# gives 2224.9 to 2614.1 instead of 2115.5 and 2292.2, so its B is the
+# highest value of the runs of both layouts.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -179,7 +187,7 @@ bmisc.fadepalette          3005~51     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
-bmod.vblmod                 2721~220   2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.vblmod                 2615~220   2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed               11584~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
