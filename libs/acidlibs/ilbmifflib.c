@@ -22,8 +22,6 @@
  * The file stays open (ILBMInfo closes it).
  *
  * BUG(orig), kept:
- *  - ilbmbitmap ignores a failed ilbminit and searches "BODY" in what is
- *    left in iffiolib's buffer (C: iffstuff as after the last ilbminit). (#187)
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
  *    plane and stores only what fits into BytesPerRow/Depth/Rows.
  *  - DecodeILBM (memory): chunk lengths are not padded to even (#189); the
@@ -41,6 +39,13 @@
  * Fixed (intended deviation, #186): ILBMInfo calls iffclose also when the
  * file could not be opened; iffclose (iffiolib) now closes only an open
  * file, the original passed the handle 0 to dos Close.
+ *
+ * Fixed (intended deviation, #187): ilbmbitmap stops when ilbminit
+ * fails: "Can't Open File" (the original's unused mess1) for a file that
+ * cannot be opened, "Can't Find IFF 'BMHD'" (the file closed first) for
+ * one without a BMHD; the original ignored the result and searched "BODY"
+ * in what was left in iffiolib's buffer, with a0 from dos.library as
+ * iffstuff (C: iffstuff as after the last ilbminit).
  *
  * Fixed (intended deviation, #188): ilbmbitmap stores a plane while its
  * number is below the byte Depth (BitMap+5); the original compared with
@@ -136,13 +141,14 @@ static_assert(sizeof iffstuff == 14);
 #define LOBYTE(w) (((UBYTE *)&(w))[1])
 
 static UWORD ilbmvmode;
+static UBYTE ilbmnofile;        /* the last ilbminit could not open the file */
 
 /* ---------------------------------------------------------------- errors */
 
-/* mess1 has no user (#187) and stays in the error check area; the others
-   are in the normal code like the error routines (the original has them
-   in the error check area; fixed, #192) */
-BLITZ_ERRCHK_MESSAGE(mess1, "Can't Open File");
+/* the messages are in the normal code like the error routines (the
+   original has them in the error check area; fixed, #192); mess1 has a
+   user since #187 (ilbmbitmap) */
+static const char mess1[] = "Can't Open File";
 static const char mess2[] = "Can't Read File";
 static const char mess3[] = "Can't Find IFF 'BODY'";
 static const char mess4[] = "Can't Find IFF 'BMHD'";
@@ -158,8 +164,10 @@ static BB_BOOL ilbminit_(const char *name)
     ULONG value = 0;
     UWORD vmode = 0;
 
+    ilbmnofile = 1;
     if (!IFFJSR(TOK_iffopen, &value, name))             /* open iff */
         return BB_FALSE;
+    ilbmnofile = 0;
     value = ID_BMHD;
     if (!IFFJSR(TOK_ifffind, &value, st))               /* find BMHD */
         return BB_FALSE;
@@ -267,11 +275,12 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
  *
  * Reads row after row, plane after plane, width-in-words*2 bytes each,
  * and stores what fits into BytesPerRow/Depth/Rows; closes the file.
- * Errors: "Can't Find IFF 'BODY'" (the message in the normal code, fixed:
- * #192); "Can't Read File" from ilbmgetbyte.
- * BUG(orig): a failed ilbminit is ignored and "BODY" is searched in what is
- * left in iffiolib's buffer (#187).  Fixed (#188): the depth test is on
- * the byte Depth (the original: the word over Flags and Depth).
+ * Errors: "Can't Open File", "Can't Find IFF 'BMHD'" (fixed, #187: the
+ * original ignored a failed ilbminit and searched "BODY" in what was left
+ * in iffiolib's buffer), "Can't Find IFF 'BODY'" (the messages in the
+ * normal code, fixed: #192); "Can't Read File" from ilbmgetbyte.
+ * Fixed (#188): the depth test is on the byte Depth (the original: the
+ * word over Flags and Depth).
  *
  * @param value  d0: the start value of the byte reader
  * @param name   a0: the file name
@@ -285,7 +294,14 @@ static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name 
     UWORD row = 0;                                      /* rows */
     UWORD depth = bm->Depth;                            /* fixed (#188): the byte */
 
-    ilbminit_(name);                                    /* result ignored */
+    if (!ilbminit_(name)) {                             /* fixed (#187) */
+        ULONG zero = 0;
+
+        if (ilbmnofile)
+            BLITZ_RUNERR(mess1);
+        IFFJSR(TOK_iffclose, &zero, st);
+        BLITZ_RUNERR(mess4);
+    }
     value = ID_BODY;
     if (!IFFJSR(TOK_ifffind, &value, st))
         BLITZ_RUNERR(mess3);
