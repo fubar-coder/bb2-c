@@ -37,9 +37,10 @@
  * BUG(orig), kept:
  *  - SelectBox Box# is not range checked (negative: deselect only)
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
- *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
- *    line's LF in the bank by 0. (#87)
  * Fixed (intended deviations):
+ *  - #87: BoxPrint Bank#,Line replaced the LF at the end of the printed
+ *    line in the bank by 0 (the line is printed with its length anyway).
+ *    Here the bank is not changed.
  *  - #81: the address of box n was memloc + n << 5 as a word (ASL #5,
  *    ADDA.w): from box 1024 on the offset was negative, from 2048 on it
  *    wrapped to the boxes from 0 on (InitPage allows more than 1024
@@ -1652,8 +1653,9 @@ static ULONG linelen[2];                        /* length; a2 points behind */
  *
  * The line (ended by LF or 0) is printed as BoxPrint Box#,String$.
  * Errors (always checked): "Unitialised Bank", then those of BoxPrint.
- * BUG(orig) (#87): lines over 0 bytes are skipped too, and the line's LF
- * in the bank is replaced by 0.
+ * A line ends at LF or 0 (both count when the lines before it are
+ * skipped).  Fixed (#87): the bank is not changed (the original replaced
+ * the line's LF in the bank by 0).
  *
  * Reads a3: the used page.
  * @param n  d0.w: Box#
@@ -1682,12 +1684,10 @@ static void BLITZ_ROUTINE boxprint2_c(ULONG n BL_REG(d0), UBYTE **bank BL_REG(a2
         UBYTE c = *pos++;
 
         len++;
-        if (!c)
+        /* fixed (#87): the LF stays in the bank (the original replaced it
+           by 0; the line is printed with its length) */
+        if (!c || c == 10)
             break;
-        if (c == 10) {
-            pos[-1] = 0;
-            break;
-        }
     }
     linelen[0] = len;
     boxprint(PG, n, start, linelen + 1);
