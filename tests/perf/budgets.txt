@@ -124,7 +124,7 @@ bmisc.fadepalette          3950~10     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                    216      100.4  c=NTSC
 bmisc.infront                252~4      134.9  InFront 4
-bmod.vblmod                3001~15     2409.5  PlayModule playing: its interrupt, cycles per frame
+bmod.vblmod                3214~442    2409.5  PlayModule playing: its interrupt, cycles per frame
 bmod.playmed               12855~5     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   2550     1367.5  r$=a$
