@@ -54,4 +54,5 @@ lib 65434: relocations in the declaration part 5 != 7
 # #83: SpotBox gets an error check (spotboxchk); blitzoslib gets an error
 # check area for it (the original has none)
 lib 117: header +$2C: code offset set in only one of them
-lib 117: relocations in the declaration part 41 != 43
+# #82: SelectBox Box# gets an error check (selectboxchk) as well
+lib 117: relocations in the declaration part 41 != 44

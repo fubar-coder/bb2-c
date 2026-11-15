@@ -33,13 +33,16 @@
  * 1, no address: Blitz mode only, no check; kept).  The checks
  * "UnInitialised Page" / "Illegal Box# For Page" ... are in the normal
  * code (always on).  The original has no error check area; here the
- * library has one for the checks the original lacks (SpotBox, #83):
- * they run only with runtime error checking (BLITZ_BLITZONLY_CHK).
+ * library has one for the checks the original lacks (SpotBox #83,
+ * SelectBox Box# #82): they run only with runtime error checking
+ * (BLITZ_BLITZONLY_CHK).
  *
- * BUG(orig), kept:
- *  - SelectBox Box# is not range checked (negative: deselect only)
- *    (#82).
  * Fixed (intended deviations):
+ *  - #82: SelectBox Box# did not check the number against the number of
+ *    boxes: one behind the table selected and drew whatever memory lies
+ *    there.  Here an error check (selectboxchk, error check area only)
+ *    raises "Illegal Box# For Page"; release code unchanged (an invalid
+ *    argument); a negative number still deselects.
  *  - #87: BoxPrint Bank#,Line replaced the LF at the end of the printed
  *    line in the bank by 0 (the line is printed with its length anyway).
  *    Here the bank is not changed.
@@ -112,7 +115,7 @@ void _setboxcolor(void), _blitzevent(void), _setboxtitle(void);
 void _disablebox(void), _enablebox(void), _mouseenabled(void);
 void _setpagepens(void), _boxpropx(void), _boxpropy(void), _changebox(void);
 void _togglebox(void), _spotbox(void);
-void spotboxchk(void);
+void spotboxchk(void), selectboxchk(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -166,7 +169,7 @@ BLITZ_NAME("RedrawBox", "Box#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(UPAGE);
-BLITZ_SUBS(_selectbox, 1, 0);
+BLITZ_SUBS(_selectbox, BLITZ_BLITZONLY_CHK(selectboxchk), 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(UPAGE);
 BLITZ_SUBS(_selectbox2, 1, 0);
@@ -1726,7 +1729,9 @@ static constexpr WORD pspd = 1024;              /* prop speed */
  * Fixed (#81): the offset is computed as a long (the original's ASL #5 as
  * a word made the boxes 1024..2047 deselect only and wrapped from 2048
  * on).
- * BUG(orig) (#82): Box# is not range checked.
+ * Errors (debugger only, selectboxchk): "Illegal Box# For Page" (fixed,
+ * #82: the original did not check Box#; without the debugger a number
+ * behind the table still selects what lies there, an invalid argument).
  *
  * Reads a3: the used page.
  * @param n  d0.w: Box#
@@ -2381,3 +2386,26 @@ static void BLITZ_ERRCHK spotboxchk_c(void)
         BLITZ_RUNERR(mess1);
 }
 BLITZ_ERRCHK_THUNK(spotboxchk, spotboxchk_c, "d0-d1/a0-a1");
+
+/**
+ * @brief The error check of SelectBox Box# (debugger only).
+ *
+ * Fixed (#82), not in the original (SelectBox Box# did not check the
+ * number): a Box# from 0 on must be a box of the used page (a negative
+ * one deselects).  The page is checked first, as SelectBox does.
+ *
+ * Errors: "UnInitialised Page", "Illegal Box# For Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
+static void BLITZ_ERRCHK selectboxchk_c(ULONG n BL_REG(d0))
+{
+    const struct page *p = PG;
+
+    if (!p->memsize)
+        BLITZ_RUNERR(mess1);
+    else if ((WORD)n >= 0 && (UWORD)n >= p->numboxes)
+        BLITZ_RUNERR(mess2);
+}
+BLITZ_ERRCHK_THUNK(selectboxchk, selectboxchk_c, "d0-d1/a0-a1");
