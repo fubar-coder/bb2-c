@@ -1,0 +1,2671 @@
+# capture systest_blit 1
+Blit|kept|shape 0 at 0,0|1	kept
+Blit|popped|shape 0 at 0,0|1	$00000000
+Blit|planes|shape 0 at 0,0|1	bytes 576 fnv 523A4D0E
+Blit|kept|shape 0 at 0,5|1	kept
+Blit|popped|shape 0 at 0,5|1	$00000000
+Blit|planes|shape 0 at 0,5|1	bytes 576 fnv 1AC8650F
+Blit|kept|shape 0 at 1,0|1	kept
+Blit|popped|shape 0 at 1,0|1	$00000000
+Blit|planes|shape 0 at 1,0|1	bytes 576 fnv A15DC78F
+Blit|kept|shape 0 at 1,5|1	kept
+Blit|popped|shape 0 at 1,5|1	$00000000
+Blit|planes|shape 0 at 1,5|1	bytes 576 fnv B9C7EF74
+Blit|kept|shape 0 at 7,0|1	kept
+Blit|popped|shape 0 at 7,0|1	$00000000
+Blit|planes|shape 0 at 7,0|1	bytes 576 fnv 23A6E569
+Blit|kept|shape 0 at 7,5|1	kept
+Blit|popped|shape 0 at 7,5|1	$00000000
+Blit|planes|shape 0 at 7,5|1	bytes 576 fnv 51554376
+Blit|kept|shape 0 at 15,0|1	kept
+Blit|popped|shape 0 at 15,0|1	$00000000
+Blit|planes|shape 0 at 15,0|1	bytes 576 fnv 71F7E159
+Blit|kept|shape 0 at 15,5|1	kept
+Blit|popped|shape 0 at 15,5|1	$00000000
+Blit|planes|shape 0 at 15,5|1	bytes 576 fnv 9E48D05C
+Blit|kept|shape 0 at 16,0|1	kept
+Blit|popped|shape 0 at 16,0|1	$00000000
+Blit|planes|shape 0 at 16,0|1	bytes 576 fnv 0D855618
+Blit|kept|shape 0 at 16,5|1	kept
+Blit|popped|shape 0 at 16,5|1	$00000000
+Blit|planes|shape 0 at 16,5|1	bytes 576 fnv 2297C15E
+Blit|kept|shape 0 at 33,0|1	kept
+Blit|popped|shape 0 at 33,0|1	$00000000
+Blit|planes|shape 0 at 33,0|1	bytes 576 fnv EFEC9DB8
+Blit|kept|shape 0 at 33,5|1	kept
+Blit|popped|shape 0 at 33,5|1	$00000000
+Blit|planes|shape 0 at 33,5|1	bytes 576 fnv 7F8DBA36
+Blit|kept|shape 1 at 0,0|1	kept
+Blit|popped|shape 1 at 0,0|1	$00000000
+Blit|planes|shape 1 at 0,0|1	bytes 576 fnv F097E813
+Blit|kept|shape 1 at 0,5|1	kept
+Blit|popped|shape 1 at 0,5|1	$00000000
+Blit|planes|shape 1 at 0,5|1	bytes 576 fnv 9BFDF70D
+Blit|kept|shape 1 at 1,0|1	kept
+Blit|popped|shape 1 at 1,0|1	$00000000
+Blit|planes|shape 1 at 1,0|1	bytes 576 fnv 8599D705
+Blit|kept|shape 1 at 1,5|1	kept
+Blit|popped|shape 1 at 1,5|1	$00000000
+Blit|planes|shape 1 at 1,5|1	bytes 576 fnv DA3D073A
+Blit|kept|shape 1 at 7,0|1	kept
+Blit|popped|shape 1 at 7,0|1	$00000000
+Blit|planes|shape 1 at 7,0|1	bytes 576 fnv 537A0147
+Blit|kept|shape 1 at 7,5|1	kept
+Blit|popped|shape 1 at 7,5|1	$00000000
+Blit|planes|shape 1 at 7,5|1	bytes 576 fnv BB36DB8F
+Blit|kept|shape 1 at 15,0|1	kept
+Blit|popped|shape 1 at 15,0|1	$00000000
+Blit|planes|shape 1 at 15,0|1	bytes 576 fnv C2BBD2AB
+Blit|kept|shape 1 at 15,5|1	kept
+Blit|popped|shape 1 at 15,5|1	$00000000
+Blit|planes|shape 1 at 15,5|1	bytes 576 fnv EC85A0D5
+Blit|kept|shape 1 at 16,0|1	kept
+Blit|popped|shape 1 at 16,0|1	$00000000
+Blit|planes|shape 1 at 16,0|1	bytes 576 fnv E7FBB963
+Blit|kept|shape 1 at 16,5|1	kept
+Blit|popped|shape 1 at 16,5|1	$00000000
+Blit|planes|shape 1 at 16,5|1	bytes 576 fnv 81831B3F
+Blit|kept|shape 1 at 33,0|1	kept
+Blit|popped|shape 1 at 33,0|1	$00000000
+Blit|planes|shape 1 at 33,0|1	bytes 576 fnv FD4D102B
+Blit|kept|shape 1 at 33,5|1	kept
+Blit|popped|shape 1 at 33,5|1	$00000000
+Blit|planes|shape 1 at 33,5|1	bytes 576 fnv E8D02796
+Blit|kept|shape 2 at 0,0|1	kept
+Blit|popped|shape 2 at 0,0|1	$00000000
+Blit|planes|shape 2 at 0,0|1	bytes 576 fnv 452E64CE
+Blit|kept|shape 2 at 0,5|1	kept
+Blit|popped|shape 2 at 0,5|1	$00000000
+Blit|planes|shape 2 at 0,5|1	bytes 576 fnv 4DAEB01C
+Blit|kept|shape 2 at 1,0|1	kept
+Blit|popped|shape 2 at 1,0|1	$00000000
+Blit|planes|shape 2 at 1,0|1	bytes 576 fnv 9601EFB9
+Blit|kept|shape 2 at 1,5|1	kept
+Blit|popped|shape 2 at 1,5|1	$00000000
+Blit|planes|shape 2 at 1,5|1	bytes 576 fnv 54487023
+Blit|kept|shape 2 at 7,0|1	kept
+Blit|popped|shape 2 at 7,0|1	$00000000
+Blit|planes|shape 2 at 7,0|1	bytes 576 fnv E2A6AACC
+Blit|kept|shape 2 at 7,5|1	kept
+Blit|popped|shape 2 at 7,5|1	$00000000
+Blit|planes|shape 2 at 7,5|1	bytes 576 fnv 1329BFCD
+Blit|kept|shape 2 at 15,0|1	kept
+Blit|popped|shape 2 at 15,0|1	$00000000
+Blit|planes|shape 2 at 15,0|1	bytes 576 fnv C1AF429D
+Blit|kept|shape 2 at 15,5|1	kept
+Blit|popped|shape 2 at 15,5|1	$00000000
+Blit|planes|shape 2 at 15,5|1	bytes 576 fnv D9CF337A
+Blit|kept|shape 2 at 16,0|1	kept
+Blit|popped|shape 2 at 16,0|1	$00000000
+Blit|planes|shape 2 at 16,0|1	bytes 576 fnv 58D8D971
+Blit|kept|shape 2 at 16,5|1	kept
+Blit|popped|shape 2 at 16,5|1	$00000000
+Blit|planes|shape 2 at 16,5|1	bytes 576 fnv E73E7DA1
+Blit|kept|shape 2 at 33,0|1	kept
+Blit|popped|shape 2 at 33,0|1	$00000000
+Blit|planes|shape 2 at 33,0|1	bytes 576 fnv 31F3FC26
+Blit|kept|shape 2 at 33,5|1	kept
+Blit|popped|shape 2 at 33,5|1	$00000000
+Blit|planes|shape 2 at 33,5|1	bytes 576 fnv 7D354C97
+BlitMode|kept|$B0A|1	kept
+BlitMode|popped|$B0A|1	$00000000
+Blit|kept|mode $B0A shape 0 at 3,2|1	kept
+Blit|popped|mode $B0A shape 0 at 3,2|1	$00000000
+Blit|planes|mode $B0A shape 0 at 3,2|1	bytes 576 fnv 6681753C
+BlitMode|kept|$B5A|1	kept
+BlitMode|popped|$B5A|1	$00000000
+Blit|kept|mode $B5A shape 0 at 3,2|1	kept
+Blit|popped|mode $B5A shape 0 at 3,2|1	$00000000
+Blit|planes|mode $B5A shape 0 at 3,2|1	bytes 576 fnv 39B34083
+BlitMode|kept|$BFA|1	kept
+BlitMode|popped|$BFA|1	$00000000
+Blit|kept|mode $BFA shape 0 at 3,2|1	kept
+Blit|popped|mode $BFA shape 0 at 3,2|1	$00000000
+Blit|planes|mode $BFA shape 0 at 3,2|1	bytes 576 fnv DAAC772C
+BlitMode|kept|$5CA|1	kept
+BlitMode|popped|$5CA|1	$00000000
+Blit|kept|mode $5CA shape 0 at 3,2|1	kept
+Blit|popped|mode $5CA shape 0 at 3,2|1	$00000000
+Blit|planes|mode $5CA shape 0 at 3,2|1	bytes 576 fnv 7C3072C9
+BlitMode|kept|$FCA|1	kept
+BlitMode|popped|$FCA|1	$00000000
+Blit|kept|mode $FCA shape 0 at 3,2|1	kept
+Blit|popped|mode $FCA shape 0 at 3,2|1	$00000000
+Blit|planes|mode $FCA shape 0 at 3,2|1	bytes 576 fnv D81DF0F0
+Blit excess|kept|bits 0 shape 0 at 7,4|1	kept
+Blit excess|popped|bits 0 shape 0 at 7,4|1	$00000000
+Blit excess|planes|bits 0 shape 0 at 7,4|1	bytes 576 fnv 9AF50CC9
+Blit excess|kept|bits 0 shape 1 at 15,4|1	kept
+Blit excess|popped|bits 0 shape 1 at 15,4|1	$00000000
+Blit excess|planes|bits 0 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess|kept|bits 0 shape 2 at 16,4|1	kept
+Blit excess|popped|bits 0 shape 2 at 16,4|1	$00000000
+Blit excess|planes|bits 0 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess|kept|bits 1 shape 0 at 7,4|1	kept
+Blit excess|popped|bits 1 shape 0 at 7,4|1	$00000000
+Blit excess|planes|bits 1 shape 0 at 7,4|1	bytes 576 fnv 27AF53E1
+Blit excess|kept|bits 1 shape 1 at 15,4|1	kept
+Blit excess|popped|bits 1 shape 1 at 15,4|1	$00000000
+Blit excess|planes|bits 1 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess|kept|bits 1 shape 2 at 16,4|1	kept
+Blit excess|popped|bits 1 shape 2 at 16,4|1	$00000000
+Blit excess|planes|bits 1 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess|kept|bits 2 shape 0 at 7,4|1	kept
+Blit excess|popped|bits 2 shape 0 at 7,4|1	$00000000
+Blit excess|planes|bits 2 shape 0 at 7,4|1	bytes 576 fnv 9AF50CC9
+Blit excess|kept|bits 2 shape 1 at 15,4|1	kept
+Blit excess|popped|bits 2 shape 1 at 15,4|1	$00000000
+Blit excess|planes|bits 2 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess|kept|bits 2 shape 2 at 16,4|1	kept
+Blit excess|popped|bits 2 shape 2 at 16,4|1	$00000000
+Blit excess|planes|bits 2 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess|kept|bits 3 shape 0 at 7,4|1	kept
+Blit excess|popped|bits 3 shape 0 at 7,4|1	$00000000
+Blit excess|planes|bits 3 shape 0 at 7,4|1	bytes 576 fnv 27AF53E1
+Blit excess|kept|bits 3 shape 1 at 15,4|1	kept
+Blit excess|popped|bits 3 shape 1 at 15,4|1	$00000000
+Blit excess|planes|bits 3 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess|kept|bits 3 shape 2 at 16,4|1	kept
+Blit excess|popped|bits 3 shape 2 at 16,4|1	$00000000
+Blit excess|planes|bits 3 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Block|kept|shape 0 at 8,2|1	kept
+Block|popped|shape 0 at 8,2|1	$00000000
+Block|planes|shape 0 at 8,2|1	bytes 576 fnv 17672B8A
+Block|kept|shape 0 at 9,2|1	kept
+Block|popped|shape 0 at 9,2|1	$00000000
+Block|planes|shape 0 at 9,2|1	bytes 576 fnv 17672B8A
+Block|kept|shape 0 at 15,2|1	kept
+Block|popped|shape 0 at 15,2|1	$00000000
+Block|planes|shape 0 at 15,2|1	bytes 576 fnv 17672B8A
+Block|kept|shape 0 at 23,2|1	kept
+Block|popped|shape 0 at 23,2|1	$00000000
+Block|planes|shape 0 at 23,2|1	bytes 576 fnv 4BFD198C
+Block|kept|shape 0 at 24,2|1	kept
+Block|popped|shape 0 at 24,2|1	$00000000
+Block|planes|shape 0 at 24,2|1	bytes 576 fnv 4BFD198C
+Block|kept|shape 0 at 41,2|1	kept
+Block|popped|shape 0 at 41,2|1	$00000000
+Block|planes|shape 0 at 41,2|1	bytes 576 fnv 939DFFB7
+Block|kept|shape 1 at 8,3|1	kept
+Block|popped|shape 1 at 8,3|1	$00000000
+Block|planes|shape 1 at 8,3|1	bytes 576 fnv 9EEDE068
+Block|kept|shape 1 at 9,3|1	kept
+Block|popped|shape 1 at 9,3|1	$00000000
+Block|planes|shape 1 at 9,3|1	bytes 576 fnv 9EEDE068
+Block|kept|shape 1 at 15,3|1	kept
+Block|popped|shape 1 at 15,3|1	$00000000
+Block|planes|shape 1 at 15,3|1	bytes 576 fnv 9EEDE068
+Block|kept|shape 1 at 23,3|1	kept
+Block|popped|shape 1 at 23,3|1	$00000000
+Block|planes|shape 1 at 23,3|1	bytes 576 fnv 6CC3C9E7
+Block|kept|shape 1 at 24,3|1	kept
+Block|popped|shape 1 at 24,3|1	$00000000
+Block|planes|shape 1 at 24,3|1	bytes 576 fnv 6CC3C9E7
+Block|kept|shape 1 at 41,3|1	kept
+Block|popped|shape 1 at 41,3|1	$00000000
+Block|planes|shape 1 at 41,3|1	bytes 576 fnv D470A057
+Block|kept|shape 2 at 8,4|1	kept
+Block|popped|shape 2 at 8,4|1	$00000000
+Block|planes|shape 2 at 8,4|1	bytes 576 fnv 22BEAFDD
+Block|kept|shape 2 at 9,4|1	kept
+Block|popped|shape 2 at 9,4|1	$00000000
+Block|planes|shape 2 at 9,4|1	bytes 576 fnv 22BEAFDD
+Block|kept|shape 2 at 15,4|1	kept
+Block|popped|shape 2 at 15,4|1	$00000000
+Block|planes|shape 2 at 15,4|1	bytes 576 fnv 22BEAFDD
+Block|kept|shape 2 at 23,4|1	kept
+Block|popped|shape 2 at 23,4|1	$00000000
+Block|planes|shape 2 at 23,4|1	bytes 576 fnv 2724D63B
+Block|kept|shape 2 at 24,4|1	kept
+Block|popped|shape 2 at 24,4|1	$00000000
+Block|planes|shape 2 at 24,4|1	bytes 576 fnv 2724D63B
+Block|kept|shape 2 at 41,4|1	kept
+Block|popped|shape 2 at 41,4|1	$00000000
+Block|planes|shape 2 at 41,4|1	bytes 576 fnv A15958BA
+BlitColl|kept|bitmap 0 shape 0 at 0,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 0,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 0,3|1	$0000FFFF
+BlitColl|kept|bitmap 0 shape 0 at 1,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 1,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 1,3|1	$0000FFFF
+BlitColl|kept|bitmap 0 shape 0 at 7,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 7,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 7,3|1	$0000FFFF
+BlitColl|kept|bitmap 0 shape 0 at 15,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 15,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 15,3|1	$0000FFFF
+BlitColl|kept|bitmap 0 shape 0 at 16,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 16,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 16,3|1	$0000FFFF
+BlitColl|kept|bitmap 0 shape 0 at 33,3|1	kept
+BlitColl|popped|bitmap 0 shape 0 at 33,3|1	$00000000
+BlitColl|d0.w|bitmap 0 shape 0 at 33,3|1	$0000FFFF
+BlitColl|kept|bitmap 1 shape 0 at 0,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 0,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 0,3|1	$00000000
+BlitColl|kept|bitmap 1 shape 0 at 1,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 1,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 1,3|1	$00000000
+BlitColl|kept|bitmap 1 shape 0 at 7,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 7,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 7,3|1	$00000000
+BlitColl|kept|bitmap 1 shape 0 at 15,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 15,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 15,3|1	$00000000
+BlitColl|kept|bitmap 1 shape 0 at 16,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 16,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 16,3|1	$00000000
+BlitColl|kept|bitmap 1 shape 0 at 33,3|1	kept
+BlitColl|popped|bitmap 1 shape 0 at 33,3|1	$00000000
+BlitColl|d0.w|bitmap 1 shape 0 at 33,3|1	$00000000
+BlitColl|kept|bitmap 2 shape 0 at 0,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 0,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 0,3|1	$00000000
+BlitColl|kept|bitmap 2 shape 0 at 1,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 1,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 1,3|1	$00000000
+BlitColl|kept|bitmap 2 shape 0 at 7,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 7,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 7,3|1	$00000000
+BlitColl|kept|bitmap 2 shape 0 at 15,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 15,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 15,3|1	$0000FFFF
+BlitColl|kept|bitmap 2 shape 0 at 16,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 16,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 16,3|1	$00000000
+BlitColl|kept|bitmap 2 shape 0 at 33,3|1	kept
+BlitColl|popped|bitmap 2 shape 0 at 33,3|1	$00000000
+BlitColl|d0.w|bitmap 2 shape 0 at 33,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 0,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 0,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 0,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 1,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 1,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 1,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 7,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 7,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 7,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 15,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 15,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 15,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 16,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 16,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 16,3|1	$00000000
+BlitColl|kept|bitmap 3 shape 0 at 33,3|1	kept
+BlitColl|popped|bitmap 3 shape 0 at 33,3|1	$00000000
+BlitColl|d0.w|bitmap 3 shape 0 at 33,3|1	$00000000
+Blit (Amiga mode)|kept|shape 0 at 0,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 0,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 0,0|1	bytes 576 fnv 523A4D0E
+Blit (Amiga mode)|kept|shape 0 at 0,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 0,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 0,5|1	bytes 576 fnv 1AC8650F
+Blit (Amiga mode)|kept|shape 0 at 1,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 1,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 1,0|1	bytes 576 fnv A15DC78F
+Blit (Amiga mode)|kept|shape 0 at 1,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 1,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 1,5|1	bytes 576 fnv B9C7EF74
+Blit (Amiga mode)|kept|shape 0 at 7,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 7,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 7,0|1	bytes 576 fnv 23A6E569
+Blit (Amiga mode)|kept|shape 0 at 7,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 7,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 7,5|1	bytes 576 fnv 51554376
+Blit (Amiga mode)|kept|shape 0 at 15,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 15,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 15,0|1	bytes 576 fnv 71F7E159
+Blit (Amiga mode)|kept|shape 0 at 15,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 15,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 15,5|1	bytes 576 fnv 9E48D05C
+Blit (Amiga mode)|kept|shape 0 at 16,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 16,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 16,0|1	bytes 576 fnv 0D855618
+Blit (Amiga mode)|kept|shape 0 at 16,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 16,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 16,5|1	bytes 576 fnv 2297C15E
+Blit (Amiga mode)|kept|shape 0 at 33,0|1	kept
+Blit (Amiga mode)|popped|shape 0 at 33,0|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 33,0|1	bytes 576 fnv EFEC9DB8
+Blit (Amiga mode)|kept|shape 0 at 33,5|1	kept
+Blit (Amiga mode)|popped|shape 0 at 33,5|1	$00000000
+Blit (Amiga mode)|planes|shape 0 at 33,5|1	bytes 576 fnv 7F8DBA36
+Blit (Amiga mode)|kept|shape 1 at 0,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 0,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 0,0|1	bytes 576 fnv F097E813
+Blit (Amiga mode)|kept|shape 1 at 0,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 0,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 0,5|1	bytes 576 fnv 9BFDF70D
+Blit (Amiga mode)|kept|shape 1 at 1,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 1,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 1,0|1	bytes 576 fnv 8599D705
+Blit (Amiga mode)|kept|shape 1 at 1,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 1,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 1,5|1	bytes 576 fnv DA3D073A
+Blit (Amiga mode)|kept|shape 1 at 7,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 7,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 7,0|1	bytes 576 fnv 537A0147
+Blit (Amiga mode)|kept|shape 1 at 7,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 7,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 7,5|1	bytes 576 fnv BB36DB8F
+Blit (Amiga mode)|kept|shape 1 at 15,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 15,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 15,0|1	bytes 576 fnv C2BBD2AB
+Blit (Amiga mode)|kept|shape 1 at 15,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 15,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 15,5|1	bytes 576 fnv EC85A0D5
+Blit (Amiga mode)|kept|shape 1 at 16,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 16,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 16,0|1	bytes 576 fnv E7FBB963
+Blit (Amiga mode)|kept|shape 1 at 16,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 16,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 16,5|1	bytes 576 fnv 81831B3F
+Blit (Amiga mode)|kept|shape 1 at 33,0|1	kept
+Blit (Amiga mode)|popped|shape 1 at 33,0|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 33,0|1	bytes 576 fnv FD4D102B
+Blit (Amiga mode)|kept|shape 1 at 33,5|1	kept
+Blit (Amiga mode)|popped|shape 1 at 33,5|1	$00000000
+Blit (Amiga mode)|planes|shape 1 at 33,5|1	bytes 576 fnv E8D02796
+Blit (Amiga mode)|kept|shape 2 at 0,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 0,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 0,0|1	bytes 576 fnv 452E64CE
+Blit (Amiga mode)|kept|shape 2 at 0,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 0,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 0,5|1	bytes 576 fnv 4DAEB01C
+Blit (Amiga mode)|kept|shape 2 at 1,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 1,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 1,0|1	bytes 576 fnv 9601EFB9
+Blit (Amiga mode)|kept|shape 2 at 1,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 1,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 1,5|1	bytes 576 fnv 54487023
+Blit (Amiga mode)|kept|shape 2 at 7,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 7,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 7,0|1	bytes 576 fnv E2A6AACC
+Blit (Amiga mode)|kept|shape 2 at 7,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 7,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 7,5|1	bytes 576 fnv 1329BFCD
+Blit (Amiga mode)|kept|shape 2 at 15,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 15,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 15,0|1	bytes 576 fnv C1AF429D
+Blit (Amiga mode)|kept|shape 2 at 15,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 15,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 15,5|1	bytes 576 fnv D9CF337A
+Blit (Amiga mode)|kept|shape 2 at 16,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 16,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 16,0|1	bytes 576 fnv 58D8D971
+Blit (Amiga mode)|kept|shape 2 at 16,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 16,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 16,5|1	bytes 576 fnv E73E7DA1
+Blit (Amiga mode)|kept|shape 2 at 33,0|1	kept
+Blit (Amiga mode)|popped|shape 2 at 33,0|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 33,0|1	bytes 576 fnv 31F3FC26
+Blit (Amiga mode)|kept|shape 2 at 33,5|1	kept
+Blit (Amiga mode)|popped|shape 2 at 33,5|1	$00000000
+Blit (Amiga mode)|planes|shape 2 at 33,5|1	bytes 576 fnv 7D354C97
+BlitMode|kept|$B0A|2	kept
+BlitMode|popped|$B0A|2	$00000000
+Blit (Amiga mode)|kept|mode $B0A shape 0 at 3,2|1	kept
+Blit (Amiga mode)|popped|mode $B0A shape 0 at 3,2|1	$00000000
+Blit (Amiga mode)|planes|mode $B0A shape 0 at 3,2|1	bytes 576 fnv 6681753C
+BlitMode|kept|$B5A|2	kept
+BlitMode|popped|$B5A|2	$00000000
+Blit (Amiga mode)|kept|mode $B5A shape 0 at 3,2|1	kept
+Blit (Amiga mode)|popped|mode $B5A shape 0 at 3,2|1	$00000000
+Blit (Amiga mode)|planes|mode $B5A shape 0 at 3,2|1	bytes 576 fnv 39B34083
+BlitMode|kept|$BFA|2	kept
+BlitMode|popped|$BFA|2	$00000000
+Blit (Amiga mode)|kept|mode $BFA shape 0 at 3,2|1	kept
+Blit (Amiga mode)|popped|mode $BFA shape 0 at 3,2|1	$00000000
+Blit (Amiga mode)|planes|mode $BFA shape 0 at 3,2|1	bytes 576 fnv DAAC772C
+BlitMode|kept|$5CA|2	kept
+BlitMode|popped|$5CA|2	$00000000
+Blit (Amiga mode)|kept|mode $5CA shape 0 at 3,2|1	kept
+Blit (Amiga mode)|popped|mode $5CA shape 0 at 3,2|1	$00000000
+Blit (Amiga mode)|planes|mode $5CA shape 0 at 3,2|1	bytes 576 fnv 7C3072C9
+BlitMode|kept|$FCA|2	kept
+BlitMode|popped|$FCA|2	$00000000
+Blit (Amiga mode)|kept|mode $FCA shape 0 at 3,2|1	kept
+Blit (Amiga mode)|popped|mode $FCA shape 0 at 3,2|1	$00000000
+Blit (Amiga mode)|planes|mode $FCA shape 0 at 3,2|1	bytes 576 fnv D81DF0F0
+Blit excess (Amiga mode)|kept|bits 0 shape 0 at 7,4|1	kept
+Blit excess (Amiga mode)|popped|bits 0 shape 0 at 7,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 0 shape 0 at 7,4|1	bytes 576 fnv 9AF50CC9
+Blit excess (Amiga mode)|kept|bits 0 shape 1 at 15,4|1	kept
+Blit excess (Amiga mode)|popped|bits 0 shape 1 at 15,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 0 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess (Amiga mode)|kept|bits 0 shape 2 at 16,4|1	kept
+Blit excess (Amiga mode)|popped|bits 0 shape 2 at 16,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 0 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess (Amiga mode)|kept|bits 1 shape 0 at 7,4|1	kept
+Blit excess (Amiga mode)|popped|bits 1 shape 0 at 7,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 1 shape 0 at 7,4|1	bytes 576 fnv 27AF53E1
+Blit excess (Amiga mode)|kept|bits 1 shape 1 at 15,4|1	kept
+Blit excess (Amiga mode)|popped|bits 1 shape 1 at 15,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 1 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess (Amiga mode)|kept|bits 1 shape 2 at 16,4|1	kept
+Blit excess (Amiga mode)|popped|bits 1 shape 2 at 16,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 1 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess (Amiga mode)|kept|bits 2 shape 0 at 7,4|1	kept
+Blit excess (Amiga mode)|popped|bits 2 shape 0 at 7,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 2 shape 0 at 7,4|1	bytes 576 fnv 9AF50CC9
+Blit excess (Amiga mode)|kept|bits 2 shape 1 at 15,4|1	kept
+Blit excess (Amiga mode)|popped|bits 2 shape 1 at 15,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 2 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess (Amiga mode)|kept|bits 2 shape 2 at 16,4|1	kept
+Blit excess (Amiga mode)|popped|bits 2 shape 2 at 16,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 2 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Blit excess (Amiga mode)|kept|bits 3 shape 0 at 7,4|1	kept
+Blit excess (Amiga mode)|popped|bits 3 shape 0 at 7,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 3 shape 0 at 7,4|1	bytes 576 fnv 27AF53E1
+Blit excess (Amiga mode)|kept|bits 3 shape 1 at 15,4|1	kept
+Blit excess (Amiga mode)|popped|bits 3 shape 1 at 15,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 3 shape 1 at 15,4|1	bytes 576 fnv 44AA76CB
+Blit excess (Amiga mode)|kept|bits 3 shape 2 at 16,4|1	kept
+Blit excess (Amiga mode)|popped|bits 3 shape 2 at 16,4|1	$00000000
+Blit excess (Amiga mode)|planes|bits 3 shape 2 at 16,4|1	bytes 576 fnv F039F8CD
+Block (Amiga mode)|kept|shape 0 at 8,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 8,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 8,2|1	bytes 576 fnv 17672B8A
+Block (Amiga mode)|kept|shape 0 at 9,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 9,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 9,2|1	bytes 576 fnv 17672B8A
+Block (Amiga mode)|kept|shape 0 at 15,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 15,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 15,2|1	bytes 576 fnv 17672B8A
+Block (Amiga mode)|kept|shape 0 at 23,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 23,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 23,2|1	bytes 576 fnv 4BFD198C
+Block (Amiga mode)|kept|shape 0 at 24,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 24,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 24,2|1	bytes 576 fnv 4BFD198C
+Block (Amiga mode)|kept|shape 0 at 41,2|1	kept
+Block (Amiga mode)|popped|shape 0 at 41,2|1	$00000000
+Block (Amiga mode)|planes|shape 0 at 41,2|1	bytes 576 fnv 939DFFB7
+Block (Amiga mode)|kept|shape 1 at 8,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 8,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 8,3|1	bytes 576 fnv 9EEDE068
+Block (Amiga mode)|kept|shape 1 at 9,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 9,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 9,3|1	bytes 576 fnv 9EEDE068
+Block (Amiga mode)|kept|shape 1 at 15,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 15,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 15,3|1	bytes 576 fnv 9EEDE068
+Block (Amiga mode)|kept|shape 1 at 23,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 23,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 23,3|1	bytes 576 fnv 6CC3C9E7
+Block (Amiga mode)|kept|shape 1 at 24,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 24,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 24,3|1	bytes 576 fnv 6CC3C9E7
+Block (Amiga mode)|kept|shape 1 at 41,3|1	kept
+Block (Amiga mode)|popped|shape 1 at 41,3|1	$00000000
+Block (Amiga mode)|planes|shape 1 at 41,3|1	bytes 576 fnv D470A057
+Block (Amiga mode)|kept|shape 2 at 8,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 8,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 8,4|1	bytes 576 fnv 22BEAFDD
+Block (Amiga mode)|kept|shape 2 at 9,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 9,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 9,4|1	bytes 576 fnv 22BEAFDD
+Block (Amiga mode)|kept|shape 2 at 15,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 15,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 15,4|1	bytes 576 fnv 22BEAFDD
+Block (Amiga mode)|kept|shape 2 at 23,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 23,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 23,4|1	bytes 576 fnv 2724D63B
+Block (Amiga mode)|kept|shape 2 at 24,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 24,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 24,4|1	bytes 576 fnv 2724D63B
+Block (Amiga mode)|kept|shape 2 at 41,4|1	kept
+Block (Amiga mode)|popped|shape 2 at 41,4|1	$00000000
+Block (Amiga mode)|planes|shape 2 at 41,4|1	bytes 576 fnv A15958BA
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 0,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 0,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 1,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 1,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 7,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 7,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 15,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 15,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 16,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 16,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 0 shape 0 at 33,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 0 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 0 shape 0 at 33,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 0,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 1,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 7,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 15,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 16,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 1 shape 0 at 33,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 1 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 1 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 0,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 1,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 7,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 15,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 15,3|1	$0000FFFF
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 16,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 2 shape 0 at 33,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 2 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 2 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 0,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 0,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 1,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 1,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 7,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 7,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 15,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 15,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 16,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 16,3|1	$00000000
+BlitColl (Amiga mode)|kept|bitmap 3 shape 0 at 33,3|1	kept
+BlitColl (Amiga mode)|popped|bitmap 3 shape 0 at 33,3|1	$00000000
+BlitColl (Amiga mode)|d0.w|bitmap 3 shape 0 at 33,3|1	$00000000
+QBlitMode|kept|$FCA|1	kept
+QBlitMode|popped|$FCA|1	$00000000
+QBlit|kept|run 0 shape 0 at 3,2|1	kept
+QBlit|popped|run 0 shape 0 at 3,2|1	$00000000
+QBlit|planes|run 0 shape 0 at 3,2|1	bytes 576 fnv 5CB544A8
+QBlit|queue position|run 0 shape 0 at 3,2|1	$0000000E
+QBlit|kept|run 0 shape 1 at 20,10|1	kept
+QBlit|popped|run 0 shape 1 at 20,10|1	$00000000
+QBlit|planes|run 0 shape 1 at 20,10|1	bytes 576 fnv 35DEEA7F
+QBlit|queue position|run 0 shape 1 at 20,10|1	$0000001C
+QBlit|kept|run 0 shape 2 at 41,4|1	kept
+QBlit|popped|run 0 shape 2 at 41,4|1	$00000000
+QBlit|planes|run 0 shape 2 at 41,4|1	bytes 576 fnv 5576E95D
+QBlit|queue position|run 0 shape 2 at 41,4|1	$0000002A
+QBlit|kept|run 0 shape 0 at 1,15|1	kept
+QBlit|popped|run 0 shape 0 at 1,15|1	$00000000
+QBlit|planes|run 0 shape 0 at 1,15|1	bytes 576 fnv D6765153
+QBlit|queue position|run 0 shape 0 at 1,15|1	$00000038
+QBlit|kept|run 0 shape 1 at 30,3|1	kept
+QBlit|popped|run 0 shape 1 at 30,3|1	$00000000
+QBlit|planes|run 0 shape 1 at 30,3|1	bytes 576 fnv 16703F3D
+QBlit|queue position|run 0 shape 1 at 30,3|1	$00000046
+UnQueue|kept|run 0|1	kept
+UnQueue|popped|run 0|1	$00000000
+UnQueue|planes|run 0|1	bytes 576 fnv C0694F3A
+UnQueue|queue position|run 0|1	$00000000
+UnQueue|kept|run 0 empty|1	kept
+UnQueue|popped|run 0 empty|1	$00000000
+UnQueue|planes|run 0 empty|1	bytes 576 fnv C0694F3A
+QBlit|kept|run 1 shape 0 at 3,2|1	kept
+QBlit|popped|run 1 shape 0 at 3,2|1	$00000000
+QBlit|planes|run 1 shape 0 at 3,2|1	bytes 576 fnv 5CB544A8
+QBlit|queue position|run 1 shape 0 at 3,2|1	$0000000E
+QBlit|kept|run 1 shape 1 at 20,10|1	kept
+QBlit|popped|run 1 shape 1 at 20,10|1	$00000000
+QBlit|planes|run 1 shape 1 at 20,10|1	bytes 576 fnv 35DEEA7F
+QBlit|queue position|run 1 shape 1 at 20,10|1	$0000001C
+QBlit|kept|run 1 shape 2 at 41,4|1	kept
+QBlit|popped|run 1 shape 2 at 41,4|1	$00000000
+QBlit|planes|run 1 shape 2 at 41,4|1	bytes 576 fnv 5576E95D
+QBlit|queue position|run 1 shape 2 at 41,4|1	$0000002A
+QBlit|kept|run 1 shape 0 at 1,15|1	kept
+QBlit|popped|run 1 shape 0 at 1,15|1	$00000000
+QBlit|planes|run 1 shape 0 at 1,15|1	bytes 576 fnv D6765153
+QBlit|queue position|run 1 shape 0 at 1,15|1	$00000038
+QBlit|kept|run 1 shape 1 at 30,3|1	kept
+QBlit|popped|run 1 shape 1 at 30,3|1	$00000000
+QBlit|planes|run 1 shape 1 at 30,3|1	bytes 576 fnv 16703F3D
+QBlit|queue position|run 1 shape 1 at 30,3|1	$00000046
+UnQueue bitmap|kept|run 1|1	kept
+UnQueue bitmap|popped|run 1|1	$00000000
+UnQueue bitmap|planes|run 1|1	bytes 576 fnv A83B406A
+UnQueue bitmap|queue position|run 1|1	$00000000
+UnQueue bitmap|kept|run 1 empty|1	kept
+UnQueue bitmap|popped|run 1 empty|1	$00000000
+UnQueue bitmap|planes|run 1 empty|1	bytes 576 fnv A83B406A
+QBlit excess|kept|run 2 shape 0 at 3,2|1	kept
+QBlit excess|popped|run 2 shape 0 at 3,2|1	$00000000
+QBlit excess|planes|run 2 shape 0 at 3,2|1	bytes 576 fnv 2BEBF83A
+QBlit excess|queue position|run 2 shape 0 at 3,2|1	$0000000E
+QBlit excess|kept|run 2 shape 1 at 20,10|1	kept
+QBlit excess|popped|run 2 shape 1 at 20,10|1	$00000000
+QBlit excess|planes|run 2 shape 1 at 20,10|1	bytes 576 fnv CA23AD3D
+QBlit excess|queue position|run 2 shape 1 at 20,10|1	$0000001C
+QBlit excess|kept|run 2 shape 2 at 41,4|1	kept
+QBlit excess|popped|run 2 shape 2 at 41,4|1	$00000000
+QBlit excess|planes|run 2 shape 2 at 41,4|1	bytes 576 fnv 766292D8
+QBlit excess|queue position|run 2 shape 2 at 41,4|1	$0000002A
+QBlit excess|kept|run 2 shape 0 at 1,15|1	kept
+QBlit excess|popped|run 2 shape 0 at 1,15|1	$00000000
+QBlit excess|planes|run 2 shape 0 at 1,15|1	bytes 576 fnv F890E5DD
+QBlit excess|queue position|run 2 shape 0 at 1,15|1	$00000038
+QBlit excess|kept|run 2 shape 1 at 30,3|1	kept
+QBlit excess|popped|run 2 shape 1 at 30,3|1	$00000000
+QBlit excess|planes|run 2 shape 1 at 30,3|1	bytes 576 fnv C6B46C7F
+QBlit excess|queue position|run 2 shape 1 at 30,3|1	$00000046
+UnQueue|kept|run 2|1	kept
+UnQueue|popped|run 2|1	$00000000
+UnQueue|planes|run 2|1	bytes 576 fnv C0694F3A
+UnQueue|queue position|run 2|1	$00000000
+UnQueue|kept|run 2 empty|1	kept
+UnQueue|popped|run 2 empty|1	$00000000
+UnQueue|planes|run 2 empty|1	bytes 576 fnv C0694F3A
+QBlit (Amiga mode)|kept|run 0 shape 0 at 3,2|1	kept
+QBlit (Amiga mode)|popped|run 0 shape 0 at 3,2|1	$00000000
+QBlit (Amiga mode)|planes|run 0 shape 0 at 3,2|1	bytes 576 fnv 5CB544A8
+QBlit (Amiga mode)|queue position|run 0 shape 0 at 3,2|1	$0000000E
+QBlit (Amiga mode)|kept|run 0 shape 1 at 20,10|1	kept
+QBlit (Amiga mode)|popped|run 0 shape 1 at 20,10|1	$00000000
+QBlit (Amiga mode)|planes|run 0 shape 1 at 20,10|1	bytes 576 fnv 35DEEA7F
+QBlit (Amiga mode)|queue position|run 0 shape 1 at 20,10|1	$0000001C
+QBlit (Amiga mode)|kept|run 0 shape 2 at 41,4|1	kept
+QBlit (Amiga mode)|popped|run 0 shape 2 at 41,4|1	$00000000
+QBlit (Amiga mode)|planes|run 0 shape 2 at 41,4|1	bytes 576 fnv 5576E95D
+QBlit (Amiga mode)|queue position|run 0 shape 2 at 41,4|1	$0000002A
+QBlit (Amiga mode)|kept|run 0 shape 0 at 1,15|1	kept
+QBlit (Amiga mode)|popped|run 0 shape 0 at 1,15|1	$00000000
+QBlit (Amiga mode)|planes|run 0 shape 0 at 1,15|1	bytes 576 fnv D6765153
+QBlit (Amiga mode)|queue position|run 0 shape 0 at 1,15|1	$00000038
+QBlit (Amiga mode)|kept|run 0 shape 1 at 30,3|1	kept
+QBlit (Amiga mode)|popped|run 0 shape 1 at 30,3|1	$00000000
+QBlit (Amiga mode)|planes|run 0 shape 1 at 30,3|1	bytes 576 fnv 16703F3D
+QBlit (Amiga mode)|queue position|run 0 shape 1 at 30,3|1	$00000046
+UnQueue (Amiga mode)|kept|run 0|1	kept
+UnQueue (Amiga mode)|popped|run 0|1	$00000000
+UnQueue (Amiga mode)|planes|run 0|1	bytes 576 fnv C0694F3A
+UnQueue (Amiga mode)|queue position|run 0|1	$00000000
+UnQueue (Amiga mode)|kept|run 0 empty|1	kept
+UnQueue (Amiga mode)|popped|run 0 empty|1	$00000000
+UnQueue (Amiga mode)|planes|run 0 empty|1	bytes 576 fnv C0694F3A
+QBlit (Amiga mode)|kept|run 1 shape 0 at 3,2|1	kept
+QBlit (Amiga mode)|popped|run 1 shape 0 at 3,2|1	$00000000
+QBlit (Amiga mode)|planes|run 1 shape 0 at 3,2|1	bytes 576 fnv 5CB544A8
+QBlit (Amiga mode)|queue position|run 1 shape 0 at 3,2|1	$0000000E
+QBlit (Amiga mode)|kept|run 1 shape 1 at 20,10|1	kept
+QBlit (Amiga mode)|popped|run 1 shape 1 at 20,10|1	$00000000
+QBlit (Amiga mode)|planes|run 1 shape 1 at 20,10|1	bytes 576 fnv 35DEEA7F
+QBlit (Amiga mode)|queue position|run 1 shape 1 at 20,10|1	$0000001C
+QBlit (Amiga mode)|kept|run 1 shape 2 at 41,4|1	kept
+QBlit (Amiga mode)|popped|run 1 shape 2 at 41,4|1	$00000000
+QBlit (Amiga mode)|planes|run 1 shape 2 at 41,4|1	bytes 576 fnv 5576E95D
+QBlit (Amiga mode)|queue position|run 1 shape 2 at 41,4|1	$0000002A
+QBlit (Amiga mode)|kept|run 1 shape 0 at 1,15|1	kept
+QBlit (Amiga mode)|popped|run 1 shape 0 at 1,15|1	$00000000
+QBlit (Amiga mode)|planes|run 1 shape 0 at 1,15|1	bytes 576 fnv D6765153
+QBlit (Amiga mode)|queue position|run 1 shape 0 at 1,15|1	$00000038
+QBlit (Amiga mode)|kept|run 1 shape 1 at 30,3|1	kept
+QBlit (Amiga mode)|popped|run 1 shape 1 at 30,3|1	$00000000
+QBlit (Amiga mode)|planes|run 1 shape 1 at 30,3|1	bytes 576 fnv 16703F3D
+QBlit (Amiga mode)|queue position|run 1 shape 1 at 30,3|1	$00000046
+UnQueue bitmap (Amiga mode)|kept|run 1|1	kept
+UnQueue bitmap (Amiga mode)|popped|run 1|1	$00000000
+UnQueue bitmap (Amiga mode)|planes|run 1|1	bytes 576 fnv A83B406A
+UnQueue bitmap (Amiga mode)|queue position|run 1|1	$00000000
+UnQueue bitmap (Amiga mode)|kept|run 1 empty|1	kept
+UnQueue bitmap (Amiga mode)|popped|run 1 empty|1	$00000000
+UnQueue bitmap (Amiga mode)|planes|run 1 empty|1	bytes 576 fnv A83B406A
+QBlit excess (Amiga mode)|kept|run 2 shape 0 at 3,2|1	kept
+QBlit excess (Amiga mode)|popped|run 2 shape 0 at 3,2|1	$00000000
+QBlit excess (Amiga mode)|planes|run 2 shape 0 at 3,2|1	bytes 576 fnv 2BEBF83A
+QBlit excess (Amiga mode)|queue position|run 2 shape 0 at 3,2|1	$0000000E
+QBlit excess (Amiga mode)|kept|run 2 shape 1 at 20,10|1	kept
+QBlit excess (Amiga mode)|popped|run 2 shape 1 at 20,10|1	$00000000
+QBlit excess (Amiga mode)|planes|run 2 shape 1 at 20,10|1	bytes 576 fnv CA23AD3D
+QBlit excess (Amiga mode)|queue position|run 2 shape 1 at 20,10|1	$0000001C
+QBlit excess (Amiga mode)|kept|run 2 shape 2 at 41,4|1	kept
+QBlit excess (Amiga mode)|popped|run 2 shape 2 at 41,4|1	$00000000
+QBlit excess (Amiga mode)|planes|run 2 shape 2 at 41,4|1	bytes 576 fnv 766292D8
+QBlit excess (Amiga mode)|queue position|run 2 shape 2 at 41,4|1	$0000002A
+QBlit excess (Amiga mode)|kept|run 2 shape 0 at 1,15|1	kept
+QBlit excess (Amiga mode)|popped|run 2 shape 0 at 1,15|1	$00000000
+QBlit excess (Amiga mode)|planes|run 2 shape 0 at 1,15|1	bytes 576 fnv F890E5DD
+QBlit excess (Amiga mode)|queue position|run 2 shape 0 at 1,15|1	$00000038
+QBlit excess (Amiga mode)|kept|run 2 shape 1 at 30,3|1	kept
+QBlit excess (Amiga mode)|popped|run 2 shape 1 at 30,3|1	$00000000
+QBlit excess (Amiga mode)|planes|run 2 shape 1 at 30,3|1	bytes 576 fnv C6B46C7F
+QBlit excess (Amiga mode)|queue position|run 2 shape 1 at 30,3|1	$00000046
+UnQueue (Amiga mode)|kept|run 2|1	kept
+UnQueue (Amiga mode)|popped|run 2|1	$00000000
+UnQueue (Amiga mode)|planes|run 2|1	bytes 576 fnv C0694F3A
+UnQueue (Amiga mode)|queue position|run 2|1	$00000000
+UnQueue (Amiga mode)|kept|run 2 empty|1	kept
+UnQueue (Amiga mode)|popped|run 2 empty|1	$00000000
+UnQueue (Amiga mode)|planes|run 2 empty|1	bytes 576 fnv C0694F3A
+BBlitMode|kept|$FCA|1	kept
+BBlitMode|popped|$FCA|1	$00000000
+SBlitMode|kept|$FCA|1	kept
+SBlitMode|popped|$FCA|1	$00000000
+BBlit|kept|run 0 shape 0 at 3,2|1	kept
+BBlit|popped|run 0 shape 0 at 3,2|1	$00000000
+BBlit|planes|run 0 shape 0 at 3,2|1	bytes 576 fnv D12D4858
+BBlit|buffer position|run 0 shape 0 at 3,2|1	$0000007C
+BBlit|kept|run 0 shape 1 at 20,10|1	kept
+BBlit|popped|run 0 shape 1 at 20,10|1	$00000000
+BBlit|planes|run 0 shape 1 at 20,10|1	bytes 576 fnv 39D338CF
+BBlit|buffer position|run 0 shape 1 at 20,10|1	$000000F8
+BBlit|kept|run 0 shape 2 at 41,4|1	kept
+BBlit|popped|run 0 shape 2 at 41,4|1	$00000000
+BBlit|planes|run 0 shape 2 at 41,4|1	bytes 576 fnv 4C8EAD9E
+BBlit|buffer position|run 0 shape 2 at 41,4|1	$00000180
+BBlit|kept|run 0 shape 0 at 1,15|1	kept
+BBlit|popped|run 0 shape 0 at 1,15|1	$00000000
+BBlit|planes|run 0 shape 0 at 1,15|1	bytes 576 fnv 77D091FE
+BBlit|buffer position|run 0 shape 0 at 1,15|1	$000001FC
+BBlit|kept|run 0 shape 1 at 30,3|1	kept
+BBlit|popped|run 0 shape 1 at 30,3|1	$00000000
+BBlit|planes|run 0 shape 1 at 30,3|1	bytes 576 fnv FB3308E7
+BBlit|buffer position|run 0 shape 1 at 30,3|1	$00000278
+UnBuffer|kept|run 0|1	kept
+UnBuffer|popped|run 0|1	$00000000
+UnBuffer|planes|run 0|1	bytes 576 fnv 886F3291
+UnBuffer|buffer position|run 0|1	$00000000
+UnBuffer|last record|run 0|1	$00000000
+UnBuffer|kept|run 0 empty|1	kept
+UnBuffer|popped|run 0 empty|1	$00000000
+UnBuffer|planes|run 0 empty|1	bytes 576 fnv 886F3291
+SBlit|kept|run 0 shape 0 at 20,10|1	kept
+SBlit|popped|run 0 shape 0 at 20,10|1	$00000000
+SBlit|planes|run 0 shape 0 at 20,10|1	bytes 576 fnv 59084417
+SBlit|stencil|run 0 shape 0 at 20,10|1	bytes 192 fnv 656C7404
+SBlit|kept|run 0 shape 1 at 41,4|1	kept
+SBlit|popped|run 0 shape 1 at 41,4|1	$00000000
+SBlit|planes|run 0 shape 1 at 41,4|1	bytes 576 fnv 3363F20C
+SBlit|stencil|run 0 shape 1 at 41,4|1	bytes 192 fnv A8513694
+SBlit|kept|run 0 shape 2 at 1,15|1	kept
+SBlit|popped|run 0 shape 2 at 1,15|1	$00000000
+SBlit|planes|run 0 shape 2 at 1,15|1	bytes 576 fnv 7EB74755
+SBlit|stencil|run 0 shape 2 at 1,15|1	bytes 192 fnv 8C0F1AF9
+BBlit|kept|run 0 over the stencil shape 2 at 5,3|1	kept
+BBlit|popped|run 0 over the stencil shape 2 at 5,3|1	$00000000
+BBlit|planes|run 0 over the stencil shape 2 at 5,3|1	bytes 576 fnv 3E64F785
+BBlit|kept|run 0 over the stencil shape 1 at 22,11|1	kept
+BBlit|popped|run 0 over the stencil shape 1 at 22,11|1	$00000000
+BBlit|planes|run 0 over the stencil shape 1 at 22,11|1	bytes 576 fnv 6DF9B47C
+BBlit|kept|run 0 over the stencil shape 0 at 43,5|1	kept
+BBlit|popped|run 0 over the stencil shape 0 at 43,5|1	$00000000
+BBlit|planes|run 0 over the stencil shape 0 at 43,5|1	bytes 576 fnv 42505DD1
+ShowStencil|kept|run 0|1	kept
+ShowStencil|popped|run 0|1	$00000000
+ShowStencil|planes|run 0|1	bytes 576 fnv A1176AA2
+ShowStencil|buffer position|run 0|1	$00000180
+BBlit excess|kept|run 1 shape 0 at 3,2|1	kept
+BBlit excess|popped|run 1 shape 0 at 3,2|1	$00000000
+BBlit excess|planes|run 1 shape 0 at 3,2|1	bytes 576 fnv 69FA5F78
+BBlit excess|buffer position|run 1 shape 0 at 3,2|1	$0000007C
+BBlit excess|kept|run 1 shape 1 at 20,10|1	kept
+BBlit excess|popped|run 1 shape 1 at 20,10|1	$00000000
+BBlit excess|planes|run 1 shape 1 at 20,10|1	bytes 576 fnv D5ADB508
+BBlit excess|buffer position|run 1 shape 1 at 20,10|1	$000000F8
+BBlit excess|kept|run 1 shape 2 at 41,4|1	kept
+BBlit excess|popped|run 1 shape 2 at 41,4|1	$00000000
+BBlit excess|planes|run 1 shape 2 at 41,4|1	bytes 576 fnv 083BEC1C
+BBlit excess|buffer position|run 1 shape 2 at 41,4|1	$00000180
+BBlit excess|kept|run 1 shape 0 at 1,15|1	kept
+BBlit excess|popped|run 1 shape 0 at 1,15|1	$00000000
+BBlit excess|planes|run 1 shape 0 at 1,15|1	bytes 576 fnv 70097441
+BBlit excess|buffer position|run 1 shape 0 at 1,15|1	$000001FC
+BBlit excess|kept|run 1 shape 1 at 30,3|1	kept
+BBlit excess|popped|run 1 shape 1 at 30,3|1	$00000000
+BBlit excess|planes|run 1 shape 1 at 30,3|1	bytes 576 fnv 47FA684C
+BBlit excess|buffer position|run 1 shape 1 at 30,3|1	$00000278
+UnBuffer|kept|run 1|1	kept
+UnBuffer|popped|run 1|1	$00000000
+UnBuffer|planes|run 1|1	bytes 576 fnv 886F3291
+UnBuffer|buffer position|run 1|1	$00000000
+UnBuffer|last record|run 1|1	$00000000
+UnBuffer|kept|run 1 empty|1	kept
+UnBuffer|popped|run 1 empty|1	$00000000
+UnBuffer|planes|run 1 empty|1	bytes 576 fnv 886F3291
+SBlit excess|kept|run 1 shape 0 at 20,10|1	kept
+SBlit excess|popped|run 1 shape 0 at 20,10|1	$00000000
+SBlit excess|planes|run 1 shape 0 at 20,10|1	bytes 576 fnv 4786359D
+SBlit excess|stencil|run 1 shape 0 at 20,10|1	bytes 192 fnv 656C7404
+SBlit excess|kept|run 1 shape 1 at 41,4|1	kept
+SBlit excess|popped|run 1 shape 1 at 41,4|1	$00000000
+SBlit excess|planes|run 1 shape 1 at 41,4|1	bytes 576 fnv BE09942E
+SBlit excess|stencil|run 1 shape 1 at 41,4|1	bytes 192 fnv A8513694
+SBlit excess|kept|run 1 shape 2 at 1,15|1	kept
+SBlit excess|popped|run 1 shape 2 at 1,15|1	$00000000
+SBlit excess|planes|run 1 shape 2 at 1,15|1	bytes 576 fnv ACC43D7A
+SBlit excess|stencil|run 1 shape 2 at 1,15|1	bytes 192 fnv 8C0F1AF9
+BBlit excess|kept|run 1 over the stencil shape 2 at 5,3|1	kept
+BBlit excess|popped|run 1 over the stencil shape 2 at 5,3|1	$00000000
+BBlit excess|planes|run 1 over the stencil shape 2 at 5,3|1	bytes 576 fnv EB8DA22A
+BBlit excess|kept|run 1 over the stencil shape 1 at 22,11|1	kept
+BBlit excess|popped|run 1 over the stencil shape 1 at 22,11|1	$00000000
+BBlit excess|planes|run 1 over the stencil shape 1 at 22,11|1	bytes 576 fnv EB24678C
+BBlit excess|kept|run 1 over the stencil shape 0 at 43,5|1	kept
+BBlit excess|popped|run 1 over the stencil shape 0 at 43,5|1	$00000000
+BBlit excess|planes|run 1 over the stencil shape 0 at 43,5|1	bytes 576 fnv 5C6E957C
+ShowStencil|kept|run 1|1	kept
+ShowStencil|popped|run 1|1	$00000000
+ShowStencil|planes|run 1|1	bytes 576 fnv E30A45CD
+ShowStencil|buffer position|run 1|1	$00000180
+BBlit (Amiga mode)|kept|run 0 shape 0 at 3,2|1	kept
+BBlit (Amiga mode)|popped|run 0 shape 0 at 3,2|1	$00000000
+BBlit (Amiga mode)|planes|run 0 shape 0 at 3,2|1	bytes 576 fnv D12D4858
+BBlit (Amiga mode)|buffer position|run 0 shape 0 at 3,2|1	$0000007C
+BBlit (Amiga mode)|kept|run 0 shape 1 at 20,10|1	kept
+BBlit (Amiga mode)|popped|run 0 shape 1 at 20,10|1	$00000000
+BBlit (Amiga mode)|planes|run 0 shape 1 at 20,10|1	bytes 576 fnv 39D338CF
+BBlit (Amiga mode)|buffer position|run 0 shape 1 at 20,10|1	$000000F8
+BBlit (Amiga mode)|kept|run 0 shape 2 at 41,4|1	kept
+BBlit (Amiga mode)|popped|run 0 shape 2 at 41,4|1	$00000000
+BBlit (Amiga mode)|planes|run 0 shape 2 at 41,4|1	bytes 576 fnv 4C8EAD9E
+BBlit (Amiga mode)|buffer position|run 0 shape 2 at 41,4|1	$00000180
+BBlit (Amiga mode)|kept|run 0 shape 0 at 1,15|1	kept
+BBlit (Amiga mode)|popped|run 0 shape 0 at 1,15|1	$00000000
+BBlit (Amiga mode)|planes|run 0 shape 0 at 1,15|1	bytes 576 fnv 77D091FE
+BBlit (Amiga mode)|buffer position|run 0 shape 0 at 1,15|1	$000001FC
+BBlit (Amiga mode)|kept|run 0 shape 1 at 30,3|1	kept
+BBlit (Amiga mode)|popped|run 0 shape 1 at 30,3|1	$00000000
+BBlit (Amiga mode)|planes|run 0 shape 1 at 30,3|1	bytes 576 fnv FB3308E7
+BBlit (Amiga mode)|buffer position|run 0 shape 1 at 30,3|1	$00000278
+UnBuffer (Amiga mode)|kept|run 0|1	kept
+UnBuffer (Amiga mode)|popped|run 0|1	$00000000
+UnBuffer (Amiga mode)|planes|run 0|1	bytes 576 fnv 886F3291
+UnBuffer (Amiga mode)|buffer position|run 0|1	$00000000
+UnBuffer (Amiga mode)|last record|run 0|1	$00000000
+UnBuffer (Amiga mode)|kept|run 0 empty|1	kept
+UnBuffer (Amiga mode)|popped|run 0 empty|1	$00000000
+UnBuffer (Amiga mode)|planes|run 0 empty|1	bytes 576 fnv 886F3291
+SBlit (Amiga mode)|kept|run 0 shape 0 at 20,10|1	kept
+SBlit (Amiga mode)|popped|run 0 shape 0 at 20,10|1	$00000000
+SBlit (Amiga mode)|planes|run 0 shape 0 at 20,10|1	bytes 576 fnv 59084417
+SBlit (Amiga mode)|stencil|run 0 shape 0 at 20,10|1	bytes 192 fnv 656C7404
+SBlit (Amiga mode)|kept|run 0 shape 1 at 41,4|1	kept
+SBlit (Amiga mode)|popped|run 0 shape 1 at 41,4|1	$00000000
+SBlit (Amiga mode)|planes|run 0 shape 1 at 41,4|1	bytes 576 fnv 3363F20C
+SBlit (Amiga mode)|stencil|run 0 shape 1 at 41,4|1	bytes 192 fnv A8513694
+SBlit (Amiga mode)|kept|run 0 shape 2 at 1,15|1	kept
+SBlit (Amiga mode)|popped|run 0 shape 2 at 1,15|1	$00000000
+SBlit (Amiga mode)|planes|run 0 shape 2 at 1,15|1	bytes 576 fnv 7EB74755
+SBlit (Amiga mode)|stencil|run 0 shape 2 at 1,15|1	bytes 192 fnv 8C0F1AF9
+BBlit (Amiga mode)|kept|run 0 over the stencil shape 2 at 5,3|1	kept
+BBlit (Amiga mode)|popped|run 0 over the stencil shape 2 at 5,3|1	$00000000
+BBlit (Amiga mode)|planes|run 0 over the stencil shape 2 at 5,3|1	bytes 576 fnv 3E64F785
+BBlit (Amiga mode)|kept|run 0 over the stencil shape 1 at 22,11|1	kept
+BBlit (Amiga mode)|popped|run 0 over the stencil shape 1 at 22,11|1	$00000000
+BBlit (Amiga mode)|planes|run 0 over the stencil shape 1 at 22,11|1	bytes 576 fnv 6DF9B47C
+BBlit (Amiga mode)|kept|run 0 over the stencil shape 0 at 43,5|1	kept
+BBlit (Amiga mode)|popped|run 0 over the stencil shape 0 at 43,5|1	$00000000
+BBlit (Amiga mode)|planes|run 0 over the stencil shape 0 at 43,5|1	bytes 576 fnv 42505DD1
+ShowStencil (Amiga mode)|kept|run 0|1	kept
+ShowStencil (Amiga mode)|popped|run 0|1	$00000000
+ShowStencil (Amiga mode)|planes|run 0|1	bytes 576 fnv A1176AA2
+ShowStencil (Amiga mode)|buffer position|run 0|1	$00000180
+BBlit excess (Amiga mode)|kept|run 1 shape 0 at 3,2|1	kept
+BBlit excess (Amiga mode)|popped|run 1 shape 0 at 3,2|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 shape 0 at 3,2|1	bytes 576 fnv 69FA5F78
+BBlit excess (Amiga mode)|buffer position|run 1 shape 0 at 3,2|1	$0000007C
+BBlit excess (Amiga mode)|kept|run 1 shape 1 at 20,10|1	kept
+BBlit excess (Amiga mode)|popped|run 1 shape 1 at 20,10|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 shape 1 at 20,10|1	bytes 576 fnv D5ADB508
+BBlit excess (Amiga mode)|buffer position|run 1 shape 1 at 20,10|1	$000000F8
+BBlit excess (Amiga mode)|kept|run 1 shape 2 at 41,4|1	kept
+BBlit excess (Amiga mode)|popped|run 1 shape 2 at 41,4|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 shape 2 at 41,4|1	bytes 576 fnv 083BEC1C
+BBlit excess (Amiga mode)|buffer position|run 1 shape 2 at 41,4|1	$00000180
+BBlit excess (Amiga mode)|kept|run 1 shape 0 at 1,15|1	kept
+BBlit excess (Amiga mode)|popped|run 1 shape 0 at 1,15|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 shape 0 at 1,15|1	bytes 576 fnv 70097441
+BBlit excess (Amiga mode)|buffer position|run 1 shape 0 at 1,15|1	$000001FC
+BBlit excess (Amiga mode)|kept|run 1 shape 1 at 30,3|1	kept
+BBlit excess (Amiga mode)|popped|run 1 shape 1 at 30,3|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 shape 1 at 30,3|1	bytes 576 fnv 47FA684C
+BBlit excess (Amiga mode)|buffer position|run 1 shape 1 at 30,3|1	$00000278
+UnBuffer (Amiga mode)|kept|run 1|1	kept
+UnBuffer (Amiga mode)|popped|run 1|1	$00000000
+UnBuffer (Amiga mode)|planes|run 1|1	bytes 576 fnv 886F3291
+UnBuffer (Amiga mode)|buffer position|run 1|1	$00000000
+UnBuffer (Amiga mode)|last record|run 1|1	$00000000
+UnBuffer (Amiga mode)|kept|run 1 empty|1	kept
+UnBuffer (Amiga mode)|popped|run 1 empty|1	$00000000
+UnBuffer (Amiga mode)|planes|run 1 empty|1	bytes 576 fnv 886F3291
+SBlit excess (Amiga mode)|kept|run 1 shape 0 at 20,10|1	kept
+SBlit excess (Amiga mode)|popped|run 1 shape 0 at 20,10|1	$00000000
+SBlit excess (Amiga mode)|planes|run 1 shape 0 at 20,10|1	bytes 576 fnv 4786359D
+SBlit excess (Amiga mode)|stencil|run 1 shape 0 at 20,10|1	bytes 192 fnv 656C7404
+SBlit excess (Amiga mode)|kept|run 1 shape 1 at 41,4|1	kept
+SBlit excess (Amiga mode)|popped|run 1 shape 1 at 41,4|1	$00000000
+SBlit excess (Amiga mode)|planes|run 1 shape 1 at 41,4|1	bytes 576 fnv BE09942E
+SBlit excess (Amiga mode)|stencil|run 1 shape 1 at 41,4|1	bytes 192 fnv A8513694
+SBlit excess (Amiga mode)|kept|run 1 shape 2 at 1,15|1	kept
+SBlit excess (Amiga mode)|popped|run 1 shape 2 at 1,15|1	$00000000
+SBlit excess (Amiga mode)|planes|run 1 shape 2 at 1,15|1	bytes 576 fnv ACC43D7A
+SBlit excess (Amiga mode)|stencil|run 1 shape 2 at 1,15|1	bytes 192 fnv 8C0F1AF9
+BBlit excess (Amiga mode)|kept|run 1 over the stencil shape 2 at 5,3|1	kept
+BBlit excess (Amiga mode)|popped|run 1 over the stencil shape 2 at 5,3|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 over the stencil shape 2 at 5,3|1	bytes 576 fnv EB8DA22A
+BBlit excess (Amiga mode)|kept|run 1 over the stencil shape 1 at 22,11|1	kept
+BBlit excess (Amiga mode)|popped|run 1 over the stencil shape 1 at 22,11|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 over the stencil shape 1 at 22,11|1	bytes 576 fnv EB24678C
+BBlit excess (Amiga mode)|kept|run 1 over the stencil shape 0 at 43,5|1	kept
+BBlit excess (Amiga mode)|popped|run 1 over the stencil shape 0 at 43,5|1	$00000000
+BBlit excess (Amiga mode)|planes|run 1 over the stencil shape 0 at 43,5|1	bytes 576 fnv 5C6E957C
+ShowStencil (Amiga mode)|kept|run 1|1	kept
+ShowStencil (Amiga mode)|popped|run 1|1	$00000000
+ShowStencil (Amiga mode)|planes|run 1|1	bytes 576 fnv E30A45CD
+ShowStencil (Amiga mode)|buffer position|run 1|1	$00000180
+ClipBlitMode|kept|$FCA|1	kept
+ClipBlitMode|popped|$FCA|1	$00000000
+ClipBlit|kept|shape 0 at -30,-12|1	kept
+ClipBlit|popped|shape 0 at -30,-12|1	$00000000
+ClipBlit|planes|shape 0 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,-5|1	kept
+ClipBlit|popped|shape 0 at -30,-5|1	$00000000
+ClipBlit|planes|shape 0 at -30,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,0|1	kept
+ClipBlit|popped|shape 0 at -30,0|1	$00000000
+ClipBlit|planes|shape 0 at -30,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,19|1	kept
+ClipBlit|popped|shape 0 at -30,19|1	$00000000
+ClipBlit|planes|shape 0 at -30,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,23|1	kept
+ClipBlit|popped|shape 0 at -30,23|1	$00000000
+ClipBlit|planes|shape 0 at -30,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,24|1	kept
+ClipBlit|popped|shape 0 at -30,24|1	$00000000
+ClipBlit|planes|shape 0 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -30,30|1	kept
+ClipBlit|popped|shape 0 at -30,30|1	$00000000
+ClipBlit|planes|shape 0 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,-12|1	kept
+ClipBlit|popped|shape 0 at -17,-12|1	$00000000
+ClipBlit|planes|shape 0 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,-5|1	kept
+ClipBlit|popped|shape 0 at -17,-5|1	$00000000
+ClipBlit|planes|shape 0 at -17,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,0|1	kept
+ClipBlit|popped|shape 0 at -17,0|1	$00000000
+ClipBlit|planes|shape 0 at -17,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,19|1	kept
+ClipBlit|popped|shape 0 at -17,19|1	$00000000
+ClipBlit|planes|shape 0 at -17,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,23|1	kept
+ClipBlit|popped|shape 0 at -17,23|1	$00000000
+ClipBlit|planes|shape 0 at -17,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,24|1	kept
+ClipBlit|popped|shape 0 at -17,24|1	$00000000
+ClipBlit|planes|shape 0 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -17,30|1	kept
+ClipBlit|popped|shape 0 at -17,30|1	$00000000
+ClipBlit|planes|shape 0 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,-12|1	kept
+ClipBlit|popped|shape 0 at -16,-12|1	$00000000
+ClipBlit|planes|shape 0 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,-5|1	kept
+ClipBlit|popped|shape 0 at -16,-5|1	$00000000
+ClipBlit|planes|shape 0 at -16,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,0|1	kept
+ClipBlit|popped|shape 0 at -16,0|1	$00000000
+ClipBlit|planes|shape 0 at -16,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,19|1	kept
+ClipBlit|popped|shape 0 at -16,19|1	$00000000
+ClipBlit|planes|shape 0 at -16,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,23|1	kept
+ClipBlit|popped|shape 0 at -16,23|1	$00000000
+ClipBlit|planes|shape 0 at -16,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,24|1	kept
+ClipBlit|popped|shape 0 at -16,24|1	$00000000
+ClipBlit|planes|shape 0 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -16,30|1	kept
+ClipBlit|popped|shape 0 at -16,30|1	$00000000
+ClipBlit|planes|shape 0 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -9,-12|1	kept
+ClipBlit|popped|shape 0 at -9,-12|1	$00000000
+ClipBlit|planes|shape 0 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -9,-5|1	kept
+ClipBlit|popped|shape 0 at -9,-5|1	$00000000
+ClipBlit|planes|shape 0 at -9,-5|1	bytes 576 fnv 206308E3
+ClipBlit|kept|shape 0 at -9,0|1	kept
+ClipBlit|popped|shape 0 at -9,0|1	$00000000
+ClipBlit|planes|shape 0 at -9,0|1	bytes 576 fnv 690F228F
+ClipBlit|kept|shape 0 at -9,19|1	kept
+ClipBlit|popped|shape 0 at -9,19|1	$00000000
+ClipBlit|planes|shape 0 at -9,19|1	bytes 576 fnv 041BBFCD
+ClipBlit|kept|shape 0 at -9,23|1	kept
+ClipBlit|popped|shape 0 at -9,23|1	$00000000
+ClipBlit|planes|shape 0 at -9,23|1	bytes 576 fnv 2FEDD4AD
+ClipBlit|kept|shape 0 at -9,24|1	kept
+ClipBlit|popped|shape 0 at -9,24|1	$00000000
+ClipBlit|planes|shape 0 at -9,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -9,30|1	kept
+ClipBlit|popped|shape 0 at -9,30|1	$00000000
+ClipBlit|planes|shape 0 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -1,-12|1	kept
+ClipBlit|popped|shape 0 at -1,-12|1	$00000000
+ClipBlit|planes|shape 0 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -1,-5|1	kept
+ClipBlit|popped|shape 0 at -1,-5|1	$00000000
+ClipBlit|planes|shape 0 at -1,-5|1	bytes 576 fnv D61DEDB9
+ClipBlit|kept|shape 0 at -1,0|1	kept
+ClipBlit|popped|shape 0 at -1,0|1	$00000000
+ClipBlit|planes|shape 0 at -1,0|1	bytes 576 fnv 54E8CF48
+ClipBlit|kept|shape 0 at -1,19|1	kept
+ClipBlit|popped|shape 0 at -1,19|1	$00000000
+ClipBlit|planes|shape 0 at -1,19|1	bytes 576 fnv 8F6C6619
+ClipBlit|kept|shape 0 at -1,23|1	kept
+ClipBlit|popped|shape 0 at -1,23|1	$00000000
+ClipBlit|planes|shape 0 at -1,23|1	bytes 576 fnv 67832EE0
+ClipBlit|kept|shape 0 at -1,24|1	kept
+ClipBlit|popped|shape 0 at -1,24|1	$00000000
+ClipBlit|planes|shape 0 at -1,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at -1,30|1	kept
+ClipBlit|popped|shape 0 at -1,30|1	$00000000
+ClipBlit|planes|shape 0 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 0,-12|1	kept
+ClipBlit|popped|shape 0 at 0,-12|1	$00000000
+ClipBlit|planes|shape 0 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 0,-5|1	kept
+ClipBlit|popped|shape 0 at 0,-5|1	$00000000
+ClipBlit|planes|shape 0 at 0,-5|1	bytes 576 fnv 21059DC7
+ClipBlit|kept|shape 0 at 0,0|1	kept
+ClipBlit|popped|shape 0 at 0,0|1	$00000000
+ClipBlit|planes|shape 0 at 0,0|1	bytes 576 fnv 5817355C
+ClipBlit|kept|shape 0 at 0,19|1	kept
+ClipBlit|popped|shape 0 at 0,19|1	$00000000
+ClipBlit|planes|shape 0 at 0,19|1	bytes 576 fnv 9BFB2C7D
+ClipBlit|kept|shape 0 at 0,23|1	kept
+ClipBlit|popped|shape 0 at 0,23|1	$00000000
+ClipBlit|planes|shape 0 at 0,23|1	bytes 576 fnv 8F0B4F40
+ClipBlit|kept|shape 0 at 0,24|1	kept
+ClipBlit|popped|shape 0 at 0,24|1	$00000000
+ClipBlit|planes|shape 0 at 0,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 0,30|1	kept
+ClipBlit|popped|shape 0 at 0,30|1	$00000000
+ClipBlit|planes|shape 0 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 3,-12|1	kept
+ClipBlit|popped|shape 0 at 3,-12|1	$00000000
+ClipBlit|planes|shape 0 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 3,-5|1	kept
+ClipBlit|popped|shape 0 at 3,-5|1	$00000000
+ClipBlit|planes|shape 0 at 3,-5|1	bytes 576 fnv 33BB8985
+ClipBlit|kept|shape 0 at 3,0|1	kept
+ClipBlit|popped|shape 0 at 3,0|1	$00000000
+ClipBlit|planes|shape 0 at 3,0|1	bytes 576 fnv 37FF3FCB
+ClipBlit|kept|shape 0 at 3,19|1	kept
+ClipBlit|popped|shape 0 at 3,19|1	$00000000
+ClipBlit|planes|shape 0 at 3,19|1	bytes 576 fnv 4BAB2563
+ClipBlit|kept|shape 0 at 3,23|1	kept
+ClipBlit|popped|shape 0 at 3,23|1	$00000000
+ClipBlit|planes|shape 0 at 3,23|1	bytes 576 fnv 8E0A8008
+ClipBlit|kept|shape 0 at 3,24|1	kept
+ClipBlit|popped|shape 0 at 3,24|1	$00000000
+ClipBlit|planes|shape 0 at 3,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 3,30|1	kept
+ClipBlit|popped|shape 0 at 3,30|1	$00000000
+ClipBlit|planes|shape 0 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 40,-12|1	kept
+ClipBlit|popped|shape 0 at 40,-12|1	$00000000
+ClipBlit|planes|shape 0 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 40,-5|1	kept
+ClipBlit|popped|shape 0 at 40,-5|1	$00000000
+ClipBlit|planes|shape 0 at 40,-5|1	bytes 576 fnv A157B529
+ClipBlit|kept|shape 0 at 40,0|1	kept
+ClipBlit|popped|shape 0 at 40,0|1	$00000000
+ClipBlit|planes|shape 0 at 40,0|1	bytes 576 fnv 49FAE3A9
+ClipBlit|kept|shape 0 at 40,19|1	kept
+ClipBlit|popped|shape 0 at 40,19|1	$00000000
+ClipBlit|planes|shape 0 at 40,19|1	bytes 576 fnv 5850762A
+ClipBlit|kept|shape 0 at 40,23|1	kept
+ClipBlit|popped|shape 0 at 40,23|1	$00000000
+ClipBlit|planes|shape 0 at 40,23|1	bytes 576 fnv 453B190C
+ClipBlit|kept|shape 0 at 40,24|1	kept
+ClipBlit|popped|shape 0 at 40,24|1	$00000000
+ClipBlit|planes|shape 0 at 40,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 40,30|1	kept
+ClipBlit|popped|shape 0 at 40,30|1	$00000000
+ClipBlit|planes|shape 0 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 49,-12|1	kept
+ClipBlit|popped|shape 0 at 49,-12|1	$00000000
+ClipBlit|planes|shape 0 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 49,-5|1	kept
+ClipBlit|popped|shape 0 at 49,-5|1	$00000000
+ClipBlit|planes|shape 0 at 49,-5|1	bytes 576 fnv 5B81D014
+ClipBlit|kept|shape 0 at 49,0|1	kept
+ClipBlit|popped|shape 0 at 49,0|1	$00000000
+ClipBlit|planes|shape 0 at 49,0|1	bytes 576 fnv 5E375D3C
+ClipBlit|kept|shape 0 at 49,19|1	kept
+ClipBlit|popped|shape 0 at 49,19|1	$00000000
+ClipBlit|planes|shape 0 at 49,19|1	bytes 576 fnv 8C241F2B
+ClipBlit|kept|shape 0 at 49,23|1	kept
+ClipBlit|popped|shape 0 at 49,23|1	$00000000
+ClipBlit|planes|shape 0 at 49,23|1	bytes 576 fnv 824543B5
+ClipBlit|kept|shape 0 at 49,24|1	kept
+ClipBlit|popped|shape 0 at 49,24|1	$00000000
+ClipBlit|planes|shape 0 at 49,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 49,30|1	kept
+ClipBlit|popped|shape 0 at 49,30|1	$00000000
+ClipBlit|planes|shape 0 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 55,-12|1	kept
+ClipBlit|popped|shape 0 at 55,-12|1	$00000000
+ClipBlit|planes|shape 0 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 55,-5|1	kept
+ClipBlit|popped|shape 0 at 55,-5|1	$00000000
+ClipBlit|planes|shape 0 at 55,-5|1	bytes 576 fnv E0400865
+ClipBlit|kept|shape 0 at 55,0|1	kept
+ClipBlit|popped|shape 0 at 55,0|1	$00000000
+ClipBlit|planes|shape 0 at 55,0|1	bytes 576 fnv CF6D231F
+ClipBlit|kept|shape 0 at 55,19|1	kept
+ClipBlit|popped|shape 0 at 55,19|1	$00000000
+ClipBlit|planes|shape 0 at 55,19|1	bytes 576 fnv FDF6E817
+ClipBlit|kept|shape 0 at 55,23|1	kept
+ClipBlit|popped|shape 0 at 55,23|1	$00000000
+ClipBlit|planes|shape 0 at 55,23|1	bytes 576 fnv FA6FABB8
+ClipBlit|kept|shape 0 at 55,24|1	kept
+ClipBlit|popped|shape 0 at 55,24|1	$00000000
+ClipBlit|planes|shape 0 at 55,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 55,30|1	kept
+ClipBlit|popped|shape 0 at 55,30|1	$00000000
+ClipBlit|planes|shape 0 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 63,-12|1	kept
+ClipBlit|popped|shape 0 at 63,-12|1	$00000000
+ClipBlit|planes|shape 0 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 63,-5|1	kept
+ClipBlit|popped|shape 0 at 63,-5|1	$00000000
+ClipBlit|planes|shape 0 at 63,-5|1	bytes 576 fnv 5B52669A
+ClipBlit|kept|shape 0 at 63,0|1	kept
+ClipBlit|popped|shape 0 at 63,0|1	$00000000
+ClipBlit|planes|shape 0 at 63,0|1	bytes 576 fnv 981D08C6
+ClipBlit|kept|shape 0 at 63,19|1	kept
+ClipBlit|popped|shape 0 at 63,19|1	$00000000
+ClipBlit|planes|shape 0 at 63,19|1	bytes 576 fnv 4D17E15E
+ClipBlit|kept|shape 0 at 63,23|1	kept
+ClipBlit|popped|shape 0 at 63,23|1	$00000000
+ClipBlit|planes|shape 0 at 63,23|1	bytes 576 fnv 11B64445
+ClipBlit|kept|shape 0 at 63,24|1	kept
+ClipBlit|popped|shape 0 at 63,24|1	$00000000
+ClipBlit|planes|shape 0 at 63,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 63,30|1	kept
+ClipBlit|popped|shape 0 at 63,30|1	$00000000
+ClipBlit|planes|shape 0 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,-12|1	kept
+ClipBlit|popped|shape 0 at 64,-12|1	$00000000
+ClipBlit|planes|shape 0 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,-5|1	kept
+ClipBlit|popped|shape 0 at 64,-5|1	$00000000
+ClipBlit|planes|shape 0 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,0|1	kept
+ClipBlit|popped|shape 0 at 64,0|1	$00000000
+ClipBlit|planes|shape 0 at 64,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,19|1	kept
+ClipBlit|popped|shape 0 at 64,19|1	$00000000
+ClipBlit|planes|shape 0 at 64,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,23|1	kept
+ClipBlit|popped|shape 0 at 64,23|1	$00000000
+ClipBlit|planes|shape 0 at 64,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,24|1	kept
+ClipBlit|popped|shape 0 at 64,24|1	$00000000
+ClipBlit|planes|shape 0 at 64,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 64,30|1	kept
+ClipBlit|popped|shape 0 at 64,30|1	$00000000
+ClipBlit|planes|shape 0 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,-12|1	kept
+ClipBlit|popped|shape 0 at 80,-12|1	$00000000
+ClipBlit|planes|shape 0 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,-5|1	kept
+ClipBlit|popped|shape 0 at 80,-5|1	$00000000
+ClipBlit|planes|shape 0 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,0|1	kept
+ClipBlit|popped|shape 0 at 80,0|1	$00000000
+ClipBlit|planes|shape 0 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,19|1	kept
+ClipBlit|popped|shape 0 at 80,19|1	$00000000
+ClipBlit|planes|shape 0 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,23|1	kept
+ClipBlit|popped|shape 0 at 80,23|1	$00000000
+ClipBlit|planes|shape 0 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,24|1	kept
+ClipBlit|popped|shape 0 at 80,24|1	$00000000
+ClipBlit|planes|shape 0 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 0 at 80,30|1	kept
+ClipBlit|popped|shape 0 at 80,30|1	$00000000
+ClipBlit|planes|shape 0 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,-12|1	kept
+ClipBlit|popped|shape 1 at -30,-12|1	$00000000
+ClipBlit|planes|shape 1 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,-5|1	kept
+ClipBlit|popped|shape 1 at -30,-5|1	$00000000
+ClipBlit|planes|shape 1 at -30,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,0|1	kept
+ClipBlit|popped|shape 1 at -30,0|1	$00000000
+ClipBlit|planes|shape 1 at -30,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,19|1	kept
+ClipBlit|popped|shape 1 at -30,19|1	$00000000
+ClipBlit|planes|shape 1 at -30,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,23|1	kept
+ClipBlit|popped|shape 1 at -30,23|1	$00000000
+ClipBlit|planes|shape 1 at -30,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,24|1	kept
+ClipBlit|popped|shape 1 at -30,24|1	$00000000
+ClipBlit|planes|shape 1 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -30,30|1	kept
+ClipBlit|popped|shape 1 at -30,30|1	$00000000
+ClipBlit|planes|shape 1 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,-12|1	kept
+ClipBlit|popped|shape 1 at -17,-12|1	$00000000
+ClipBlit|planes|shape 1 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,-5|1	kept
+ClipBlit|popped|shape 1 at -17,-5|1	$00000000
+ClipBlit|planes|shape 1 at -17,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,0|1	kept
+ClipBlit|popped|shape 1 at -17,0|1	$00000000
+ClipBlit|planes|shape 1 at -17,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,19|1	kept
+ClipBlit|popped|shape 1 at -17,19|1	$00000000
+ClipBlit|planes|shape 1 at -17,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,23|1	kept
+ClipBlit|popped|shape 1 at -17,23|1	$00000000
+ClipBlit|planes|shape 1 at -17,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,24|1	kept
+ClipBlit|popped|shape 1 at -17,24|1	$00000000
+ClipBlit|planes|shape 1 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -17,30|1	kept
+ClipBlit|popped|shape 1 at -17,30|1	$00000000
+ClipBlit|planes|shape 1 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,-12|1	kept
+ClipBlit|popped|shape 1 at -16,-12|1	$00000000
+ClipBlit|planes|shape 1 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,-5|1	kept
+ClipBlit|popped|shape 1 at -16,-5|1	$00000000
+ClipBlit|planes|shape 1 at -16,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,0|1	kept
+ClipBlit|popped|shape 1 at -16,0|1	$00000000
+ClipBlit|planes|shape 1 at -16,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,19|1	kept
+ClipBlit|popped|shape 1 at -16,19|1	$00000000
+ClipBlit|planes|shape 1 at -16,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,23|1	kept
+ClipBlit|popped|shape 1 at -16,23|1	$00000000
+ClipBlit|planes|shape 1 at -16,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,24|1	kept
+ClipBlit|popped|shape 1 at -16,24|1	$00000000
+ClipBlit|planes|shape 1 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -16,30|1	kept
+ClipBlit|popped|shape 1 at -16,30|1	$00000000
+ClipBlit|planes|shape 1 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -9,-12|1	kept
+ClipBlit|popped|shape 1 at -9,-12|1	$00000000
+ClipBlit|planes|shape 1 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -9,-5|1	kept
+ClipBlit|popped|shape 1 at -9,-5|1	$00000000
+ClipBlit|planes|shape 1 at -9,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -9,0|1	kept
+ClipBlit|popped|shape 1 at -9,0|1	$00000000
+ClipBlit|planes|shape 1 at -9,0|1	bytes 576 fnv 0BF1A385
+ClipBlit|kept|shape 1 at -9,19|1	kept
+ClipBlit|popped|shape 1 at -9,19|1	$00000000
+ClipBlit|planes|shape 1 at -9,19|1	bytes 576 fnv 181CCB85
+ClipBlit|kept|shape 1 at -9,23|1	kept
+ClipBlit|popped|shape 1 at -9,23|1	$00000000
+ClipBlit|planes|shape 1 at -9,23|1	bytes 576 fnv 98E14885
+ClipBlit|kept|shape 1 at -9,24|1	kept
+ClipBlit|popped|shape 1 at -9,24|1	$00000000
+ClipBlit|planes|shape 1 at -9,24|1	bytes 576 fnv 531FCA05
+ClipBlit|kept|shape 1 at -9,30|1	kept
+ClipBlit|popped|shape 1 at -9,30|1	$00000000
+ClipBlit|planes|shape 1 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -1,-12|1	kept
+ClipBlit|popped|shape 1 at -1,-12|1	$00000000
+ClipBlit|planes|shape 1 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -1,-5|1	kept
+ClipBlit|popped|shape 1 at -1,-5|1	$00000000
+ClipBlit|planes|shape 1 at -1,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at -1,0|1	kept
+ClipBlit|popped|shape 1 at -1,0|1	$00000000
+ClipBlit|planes|shape 1 at -1,0|1	bytes 576 fnv ED4D0DA8
+ClipBlit|kept|shape 1 at -1,19|1	kept
+ClipBlit|popped|shape 1 at -1,19|1	$00000000
+ClipBlit|planes|shape 1 at -1,19|1	bytes 576 fnv 8D14B823
+ClipBlit|kept|shape 1 at -1,23|1	kept
+ClipBlit|popped|shape 1 at -1,23|1	$00000000
+ClipBlit|planes|shape 1 at -1,23|1	bytes 576 fnv F1B1C2DB
+ClipBlit|kept|shape 1 at -1,24|1	kept
+ClipBlit|popped|shape 1 at -1,24|1	$00000000
+ClipBlit|planes|shape 1 at -1,24|1	bytes 576 fnv 99900519
+ClipBlit|kept|shape 1 at -1,30|1	kept
+ClipBlit|popped|shape 1 at -1,30|1	$00000000
+ClipBlit|planes|shape 1 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 0,-12|1	kept
+ClipBlit|popped|shape 1 at 0,-12|1	$00000000
+ClipBlit|planes|shape 1 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 0,-5|1	kept
+ClipBlit|popped|shape 1 at 0,-5|1	$00000000
+ClipBlit|planes|shape 1 at 0,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 0,0|1	kept
+ClipBlit|popped|shape 1 at 0,0|1	$00000000
+ClipBlit|planes|shape 1 at 0,0|1	bytes 576 fnv 7A50EE91
+ClipBlit|kept|shape 1 at 0,19|1	kept
+ClipBlit|popped|shape 1 at 0,19|1	$00000000
+ClipBlit|planes|shape 1 at 0,19|1	bytes 576 fnv ACFDED15
+ClipBlit|kept|shape 1 at 0,23|1	kept
+ClipBlit|popped|shape 1 at 0,23|1	$00000000
+ClipBlit|planes|shape 1 at 0,23|1	bytes 576 fnv 034BD168
+ClipBlit|kept|shape 1 at 0,24|1	kept
+ClipBlit|popped|shape 1 at 0,24|1	$00000000
+ClipBlit|planes|shape 1 at 0,24|1	bytes 576 fnv BE43A443
+ClipBlit|kept|shape 1 at 0,30|1	kept
+ClipBlit|popped|shape 1 at 0,30|1	$00000000
+ClipBlit|planes|shape 1 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 3,-12|1	kept
+ClipBlit|popped|shape 1 at 3,-12|1	$00000000
+ClipBlit|planes|shape 1 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 3,-5|1	kept
+ClipBlit|popped|shape 1 at 3,-5|1	$00000000
+ClipBlit|planes|shape 1 at 3,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 3,0|1	kept
+ClipBlit|popped|shape 1 at 3,0|1	$00000000
+ClipBlit|planes|shape 1 at 3,0|1	bytes 576 fnv 0483CF93
+ClipBlit|kept|shape 1 at 3,19|1	kept
+ClipBlit|popped|shape 1 at 3,19|1	$00000000
+ClipBlit|planes|shape 1 at 3,19|1	bytes 576 fnv 1857D83F
+ClipBlit|kept|shape 1 at 3,23|1	kept
+ClipBlit|popped|shape 1 at 3,23|1	$00000000
+ClipBlit|planes|shape 1 at 3,23|1	bytes 576 fnv 733534BE
+ClipBlit|kept|shape 1 at 3,24|1	kept
+ClipBlit|popped|shape 1 at 3,24|1	$00000000
+ClipBlit|planes|shape 1 at 3,24|1	bytes 576 fnv EC1020D7
+ClipBlit|kept|shape 1 at 3,30|1	kept
+ClipBlit|popped|shape 1 at 3,30|1	$00000000
+ClipBlit|planes|shape 1 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 40,-12|1	kept
+ClipBlit|popped|shape 1 at 40,-12|1	$00000000
+ClipBlit|planes|shape 1 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 40,-5|1	kept
+ClipBlit|popped|shape 1 at 40,-5|1	$00000000
+ClipBlit|planes|shape 1 at 40,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 40,0|1	kept
+ClipBlit|popped|shape 1 at 40,0|1	$00000000
+ClipBlit|planes|shape 1 at 40,0|1	bytes 576 fnv D05CD422
+ClipBlit|kept|shape 1 at 40,19|1	kept
+ClipBlit|popped|shape 1 at 40,19|1	$00000000
+ClipBlit|planes|shape 1 at 40,19|1	bytes 576 fnv 8B77E83D
+ClipBlit|kept|shape 1 at 40,23|1	kept
+ClipBlit|popped|shape 1 at 40,23|1	$00000000
+ClipBlit|planes|shape 1 at 40,23|1	bytes 576 fnv 77B3F610
+ClipBlit|kept|shape 1 at 40,24|1	kept
+ClipBlit|popped|shape 1 at 40,24|1	$00000000
+ClipBlit|planes|shape 1 at 40,24|1	bytes 576 fnv E24A0E98
+ClipBlit|kept|shape 1 at 40,30|1	kept
+ClipBlit|popped|shape 1 at 40,30|1	$00000000
+ClipBlit|planes|shape 1 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 49,-12|1	kept
+ClipBlit|popped|shape 1 at 49,-12|1	$00000000
+ClipBlit|planes|shape 1 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 49,-5|1	kept
+ClipBlit|popped|shape 1 at 49,-5|1	$00000000
+ClipBlit|planes|shape 1 at 49,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 49,0|1	kept
+ClipBlit|popped|shape 1 at 49,0|1	$00000000
+ClipBlit|planes|shape 1 at 49,0|1	bytes 576 fnv AF847899
+ClipBlit|kept|shape 1 at 49,19|1	kept
+ClipBlit|popped|shape 1 at 49,19|1	$00000000
+ClipBlit|planes|shape 1 at 49,19|1	bytes 576 fnv 30E6EE82
+ClipBlit|kept|shape 1 at 49,23|1	kept
+ClipBlit|popped|shape 1 at 49,23|1	$00000000
+ClipBlit|planes|shape 1 at 49,23|1	bytes 576 fnv 9EBE2EA4
+ClipBlit|kept|shape 1 at 49,24|1	kept
+ClipBlit|popped|shape 1 at 49,24|1	$00000000
+ClipBlit|planes|shape 1 at 49,24|1	bytes 576 fnv 91AEF838
+ClipBlit|kept|shape 1 at 49,30|1	kept
+ClipBlit|popped|shape 1 at 49,30|1	$00000000
+ClipBlit|planes|shape 1 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 55,-12|1	kept
+ClipBlit|popped|shape 1 at 55,-12|1	$00000000
+ClipBlit|planes|shape 1 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 55,-5|1	kept
+ClipBlit|popped|shape 1 at 55,-5|1	$00000000
+ClipBlit|planes|shape 1 at 55,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 55,0|1	kept
+ClipBlit|popped|shape 1 at 55,0|1	$00000000
+ClipBlit|planes|shape 1 at 55,0|1	bytes 576 fnv 33D8CACE
+ClipBlit|kept|shape 1 at 55,19|1	kept
+ClipBlit|popped|shape 1 at 55,19|1	$00000000
+ClipBlit|planes|shape 1 at 55,19|1	bytes 576 fnv 42CAA433
+ClipBlit|kept|shape 1 at 55,23|1	kept
+ClipBlit|popped|shape 1 at 55,23|1	$00000000
+ClipBlit|planes|shape 1 at 55,23|1	bytes 576 fnv 8AE0EF1E
+ClipBlit|kept|shape 1 at 55,24|1	kept
+ClipBlit|popped|shape 1 at 55,24|1	$00000000
+ClipBlit|planes|shape 1 at 55,24|1	bytes 576 fnv C4C95826
+ClipBlit|kept|shape 1 at 55,30|1	kept
+ClipBlit|popped|shape 1 at 55,30|1	$00000000
+ClipBlit|planes|shape 1 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 63,-12|1	kept
+ClipBlit|popped|shape 1 at 63,-12|1	$00000000
+ClipBlit|planes|shape 1 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 63,-5|1	kept
+ClipBlit|popped|shape 1 at 63,-5|1	$00000000
+ClipBlit|planes|shape 1 at 63,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 63,0|1	kept
+ClipBlit|popped|shape 1 at 63,0|1	$00000000
+ClipBlit|planes|shape 1 at 63,0|1	bytes 576 fnv F388AAD8
+ClipBlit|kept|shape 1 at 63,19|1	kept
+ClipBlit|popped|shape 1 at 63,19|1	$00000000
+ClipBlit|planes|shape 1 at 63,19|1	bytes 576 fnv 5C7894C3
+ClipBlit|kept|shape 1 at 63,23|1	kept
+ClipBlit|popped|shape 1 at 63,23|1	$00000000
+ClipBlit|planes|shape 1 at 63,23|1	bytes 576 fnv 84BDC412
+ClipBlit|kept|shape 1 at 63,24|1	kept
+ClipBlit|popped|shape 1 at 63,24|1	$00000000
+ClipBlit|planes|shape 1 at 63,24|1	bytes 576 fnv A4C88D17
+ClipBlit|kept|shape 1 at 63,30|1	kept
+ClipBlit|popped|shape 1 at 63,30|1	$00000000
+ClipBlit|planes|shape 1 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 64,-12|1	kept
+ClipBlit|popped|shape 1 at 64,-12|1	$00000000
+ClipBlit|planes|shape 1 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 64,-5|1	kept
+ClipBlit|popped|shape 1 at 64,-5|1	$00000000
+ClipBlit|planes|shape 1 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 64,0|1	kept
+ClipBlit|popped|shape 1 at 64,0|1	$00000000
+ClipBlit|planes|shape 1 at 64,0|1	bytes 576 fnv F28BE33A
+ClipBlit|kept|shape 1 at 64,19|1	kept
+ClipBlit|popped|shape 1 at 64,19|1	$00000000
+ClipBlit|planes|shape 1 at 64,19|1	bytes 576 fnv F425E9A7
+ClipBlit|kept|shape 1 at 64,23|1	kept
+ClipBlit|popped|shape 1 at 64,23|1	$00000000
+ClipBlit|planes|shape 1 at 64,23|1	bytes 576 fnv C392C0FA
+ClipBlit|kept|shape 1 at 64,24|1	kept
+ClipBlit|popped|shape 1 at 64,24|1	$00000000
+ClipBlit|planes|shape 1 at 64,24|1	bytes 576 fnv E5AECF85
+ClipBlit|kept|shape 1 at 64,30|1	kept
+ClipBlit|popped|shape 1 at 64,30|1	$00000000
+ClipBlit|planes|shape 1 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,-12|1	kept
+ClipBlit|popped|shape 1 at 80,-12|1	$00000000
+ClipBlit|planes|shape 1 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,-5|1	kept
+ClipBlit|popped|shape 1 at 80,-5|1	$00000000
+ClipBlit|planes|shape 1 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,0|1	kept
+ClipBlit|popped|shape 1 at 80,0|1	$00000000
+ClipBlit|planes|shape 1 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,19|1	kept
+ClipBlit|popped|shape 1 at 80,19|1	$00000000
+ClipBlit|planes|shape 1 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,23|1	kept
+ClipBlit|popped|shape 1 at 80,23|1	$00000000
+ClipBlit|planes|shape 1 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,24|1	kept
+ClipBlit|popped|shape 1 at 80,24|1	$00000000
+ClipBlit|planes|shape 1 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 1 at 80,30|1	kept
+ClipBlit|popped|shape 1 at 80,30|1	$00000000
+ClipBlit|planes|shape 1 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -30,-12|1	kept
+ClipBlit|popped|shape 2 at -30,-12|1	$00000000
+ClipBlit|planes|shape 2 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -30,-5|1	kept
+ClipBlit|popped|shape 2 at -30,-5|1	$00000000
+ClipBlit|planes|shape 2 at -30,-5|1	bytes 576 fnv 469A12C5
+ClipBlit|kept|shape 2 at -30,0|1	kept
+ClipBlit|popped|shape 2 at -30,0|1	$00000000
+ClipBlit|planes|shape 2 at -30,0|1	bytes 576 fnv D263ED45
+ClipBlit|kept|shape 2 at -30,19|1	kept
+ClipBlit|popped|shape 2 at -30,19|1	$00000000
+ClipBlit|planes|shape 2 at -30,19|1	bytes 576 fnv A2471045
+ClipBlit|kept|shape 2 at -30,23|1	kept
+ClipBlit|popped|shape 2 at -30,23|1	$00000000
+ClipBlit|planes|shape 2 at -30,23|1	bytes 576 fnv 476B2585
+ClipBlit|kept|shape 2 at -30,24|1	kept
+ClipBlit|popped|shape 2 at -30,24|1	$00000000
+ClipBlit|planes|shape 2 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -30,30|1	kept
+ClipBlit|popped|shape 2 at -30,30|1	$00000000
+ClipBlit|planes|shape 2 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -17,-12|1	kept
+ClipBlit|popped|shape 2 at -17,-12|1	$00000000
+ClipBlit|planes|shape 2 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -17,-5|1	kept
+ClipBlit|popped|shape 2 at -17,-5|1	$00000000
+ClipBlit|planes|shape 2 at -17,-5|1	bytes 576 fnv EB1508D2
+ClipBlit|kept|shape 2 at -17,0|1	kept
+ClipBlit|popped|shape 2 at -17,0|1	$00000000
+ClipBlit|planes|shape 2 at -17,0|1	bytes 576 fnv 12063573
+ClipBlit|kept|shape 2 at -17,19|1	kept
+ClipBlit|popped|shape 2 at -17,19|1	$00000000
+ClipBlit|planes|shape 2 at -17,19|1	bytes 576 fnv 17C09E2C
+ClipBlit|kept|shape 2 at -17,23|1	kept
+ClipBlit|popped|shape 2 at -17,23|1	$00000000
+ClipBlit|planes|shape 2 at -17,23|1	bytes 576 fnv 9C9DBF4D
+ClipBlit|kept|shape 2 at -17,24|1	kept
+ClipBlit|popped|shape 2 at -17,24|1	$00000000
+ClipBlit|planes|shape 2 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -17,30|1	kept
+ClipBlit|popped|shape 2 at -17,30|1	$00000000
+ClipBlit|planes|shape 2 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -16,-12|1	kept
+ClipBlit|popped|shape 2 at -16,-12|1	$00000000
+ClipBlit|planes|shape 2 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -16,-5|1	kept
+ClipBlit|popped|shape 2 at -16,-5|1	$00000000
+ClipBlit|planes|shape 2 at -16,-5|1	bytes 576 fnv 014064E0
+ClipBlit|kept|shape 2 at -16,0|1	kept
+ClipBlit|popped|shape 2 at -16,0|1	$00000000
+ClipBlit|planes|shape 2 at -16,0|1	bytes 576 fnv 502F8C04
+ClipBlit|kept|shape 2 at -16,19|1	kept
+ClipBlit|popped|shape 2 at -16,19|1	$00000000
+ClipBlit|planes|shape 2 at -16,19|1	bytes 576 fnv FE4A4297
+ClipBlit|kept|shape 2 at -16,23|1	kept
+ClipBlit|popped|shape 2 at -16,23|1	$00000000
+ClipBlit|planes|shape 2 at -16,23|1	bytes 576 fnv D492B39C
+ClipBlit|kept|shape 2 at -16,24|1	kept
+ClipBlit|popped|shape 2 at -16,24|1	$00000000
+ClipBlit|planes|shape 2 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -16,30|1	kept
+ClipBlit|popped|shape 2 at -16,30|1	$00000000
+ClipBlit|planes|shape 2 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -9,-12|1	kept
+ClipBlit|popped|shape 2 at -9,-12|1	$00000000
+ClipBlit|planes|shape 2 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -9,-5|1	kept
+ClipBlit|popped|shape 2 at -9,-5|1	$00000000
+ClipBlit|planes|shape 2 at -9,-5|1	bytes 576 fnv 86A216B3
+ClipBlit|kept|shape 2 at -9,0|1	kept
+ClipBlit|popped|shape 2 at -9,0|1	$00000000
+ClipBlit|planes|shape 2 at -9,0|1	bytes 576 fnv 94AA9FD9
+ClipBlit|kept|shape 2 at -9,19|1	kept
+ClipBlit|popped|shape 2 at -9,19|1	$00000000
+ClipBlit|planes|shape 2 at -9,19|1	bytes 576 fnv E4AFAFEA
+ClipBlit|kept|shape 2 at -9,23|1	kept
+ClipBlit|popped|shape 2 at -9,23|1	$00000000
+ClipBlit|planes|shape 2 at -9,23|1	bytes 576 fnv 7EB71D51
+ClipBlit|kept|shape 2 at -9,24|1	kept
+ClipBlit|popped|shape 2 at -9,24|1	$00000000
+ClipBlit|planes|shape 2 at -9,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -9,30|1	kept
+ClipBlit|popped|shape 2 at -9,30|1	$00000000
+ClipBlit|planes|shape 2 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -1,-12|1	kept
+ClipBlit|popped|shape 2 at -1,-12|1	$00000000
+ClipBlit|planes|shape 2 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -1,-5|1	kept
+ClipBlit|popped|shape 2 at -1,-5|1	$00000000
+ClipBlit|planes|shape 2 at -1,-5|1	bytes 576 fnv F817D871
+ClipBlit|kept|shape 2 at -1,0|1	kept
+ClipBlit|popped|shape 2 at -1,0|1	$00000000
+ClipBlit|planes|shape 2 at -1,0|1	bytes 576 fnv 5FAC20B3
+ClipBlit|kept|shape 2 at -1,19|1	kept
+ClipBlit|popped|shape 2 at -1,19|1	$00000000
+ClipBlit|planes|shape 2 at -1,19|1	bytes 576 fnv C2C257B4
+ClipBlit|kept|shape 2 at -1,23|1	kept
+ClipBlit|popped|shape 2 at -1,23|1	$00000000
+ClipBlit|planes|shape 2 at -1,23|1	bytes 576 fnv DBB85D9B
+ClipBlit|kept|shape 2 at -1,24|1	kept
+ClipBlit|popped|shape 2 at -1,24|1	$00000000
+ClipBlit|planes|shape 2 at -1,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at -1,30|1	kept
+ClipBlit|popped|shape 2 at -1,30|1	$00000000
+ClipBlit|planes|shape 2 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 0,-12|1	kept
+ClipBlit|popped|shape 2 at 0,-12|1	$00000000
+ClipBlit|planes|shape 2 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 0,-5|1	kept
+ClipBlit|popped|shape 2 at 0,-5|1	$00000000
+ClipBlit|planes|shape 2 at 0,-5|1	bytes 576 fnv 76717F2B
+ClipBlit|kept|shape 2 at 0,0|1	kept
+ClipBlit|popped|shape 2 at 0,0|1	$00000000
+ClipBlit|planes|shape 2 at 0,0|1	bytes 576 fnv 43164CCD
+ClipBlit|kept|shape 2 at 0,19|1	kept
+ClipBlit|popped|shape 2 at 0,19|1	$00000000
+ClipBlit|planes|shape 2 at 0,19|1	bytes 576 fnv AEE051F5
+ClipBlit|kept|shape 2 at 0,23|1	kept
+ClipBlit|popped|shape 2 at 0,23|1	$00000000
+ClipBlit|planes|shape 2 at 0,23|1	bytes 576 fnv CB495472
+ClipBlit|kept|shape 2 at 0,24|1	kept
+ClipBlit|popped|shape 2 at 0,24|1	$00000000
+ClipBlit|planes|shape 2 at 0,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 0,30|1	kept
+ClipBlit|popped|shape 2 at 0,30|1	$00000000
+ClipBlit|planes|shape 2 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 3,-12|1	kept
+ClipBlit|popped|shape 2 at 3,-12|1	$00000000
+ClipBlit|planes|shape 2 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 3,-5|1	kept
+ClipBlit|popped|shape 2 at 3,-5|1	$00000000
+ClipBlit|planes|shape 2 at 3,-5|1	bytes 576 fnv DADB5E16
+ClipBlit|kept|shape 2 at 3,0|1	kept
+ClipBlit|popped|shape 2 at 3,0|1	$00000000
+ClipBlit|planes|shape 2 at 3,0|1	bytes 576 fnv 33639C84
+ClipBlit|kept|shape 2 at 3,19|1	kept
+ClipBlit|popped|shape 2 at 3,19|1	$00000000
+ClipBlit|planes|shape 2 at 3,19|1	bytes 576 fnv A803F6AA
+ClipBlit|kept|shape 2 at 3,23|1	kept
+ClipBlit|popped|shape 2 at 3,23|1	$00000000
+ClipBlit|planes|shape 2 at 3,23|1	bytes 576 fnv E581D060
+ClipBlit|kept|shape 2 at 3,24|1	kept
+ClipBlit|popped|shape 2 at 3,24|1	$00000000
+ClipBlit|planes|shape 2 at 3,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 3,30|1	kept
+ClipBlit|popped|shape 2 at 3,30|1	$00000000
+ClipBlit|planes|shape 2 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 40,-12|1	kept
+ClipBlit|popped|shape 2 at 40,-12|1	$00000000
+ClipBlit|planes|shape 2 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 40,-5|1	kept
+ClipBlit|popped|shape 2 at 40,-5|1	$00000000
+ClipBlit|planes|shape 2 at 40,-5|1	bytes 576 fnv 6FB1CD06
+ClipBlit|kept|shape 2 at 40,0|1	kept
+ClipBlit|popped|shape 2 at 40,0|1	$00000000
+ClipBlit|planes|shape 2 at 40,0|1	bytes 576 fnv 9F715B72
+ClipBlit|kept|shape 2 at 40,19|1	kept
+ClipBlit|popped|shape 2 at 40,19|1	$00000000
+ClipBlit|planes|shape 2 at 40,19|1	bytes 576 fnv 073F6842
+ClipBlit|kept|shape 2 at 40,23|1	kept
+ClipBlit|popped|shape 2 at 40,23|1	$00000000
+ClipBlit|planes|shape 2 at 40,23|1	bytes 576 fnv 29A8B48C
+ClipBlit|kept|shape 2 at 40,24|1	kept
+ClipBlit|popped|shape 2 at 40,24|1	$00000000
+ClipBlit|planes|shape 2 at 40,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 40,30|1	kept
+ClipBlit|popped|shape 2 at 40,30|1	$00000000
+ClipBlit|planes|shape 2 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 49,-12|1	kept
+ClipBlit|popped|shape 2 at 49,-12|1	$00000000
+ClipBlit|planes|shape 2 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 49,-5|1	kept
+ClipBlit|popped|shape 2 at 49,-5|1	$00000000
+ClipBlit|planes|shape 2 at 49,-5|1	bytes 576 fnv 420D68B8
+ClipBlit|kept|shape 2 at 49,0|1	kept
+ClipBlit|popped|shape 2 at 49,0|1	$00000000
+ClipBlit|planes|shape 2 at 49,0|1	bytes 576 fnv F153EE50
+ClipBlit|kept|shape 2 at 49,19|1	kept
+ClipBlit|popped|shape 2 at 49,19|1	$00000000
+ClipBlit|planes|shape 2 at 49,19|1	bytes 576 fnv B8B28683
+ClipBlit|kept|shape 2 at 49,23|1	kept
+ClipBlit|popped|shape 2 at 49,23|1	$00000000
+ClipBlit|planes|shape 2 at 49,23|1	bytes 576 fnv 798B0334
+ClipBlit|kept|shape 2 at 49,24|1	kept
+ClipBlit|popped|shape 2 at 49,24|1	$00000000
+ClipBlit|planes|shape 2 at 49,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 49,30|1	kept
+ClipBlit|popped|shape 2 at 49,30|1	$00000000
+ClipBlit|planes|shape 2 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 55,-12|1	kept
+ClipBlit|popped|shape 2 at 55,-12|1	$00000000
+ClipBlit|planes|shape 2 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 55,-5|1	kept
+ClipBlit|popped|shape 2 at 55,-5|1	$00000000
+ClipBlit|planes|shape 2 at 55,-5|1	bytes 576 fnv 3630A54F
+ClipBlit|kept|shape 2 at 55,0|1	kept
+ClipBlit|popped|shape 2 at 55,0|1	$00000000
+ClipBlit|planes|shape 2 at 55,0|1	bytes 576 fnv 61D3E45F
+ClipBlit|kept|shape 2 at 55,19|1	kept
+ClipBlit|popped|shape 2 at 55,19|1	$00000000
+ClipBlit|planes|shape 2 at 55,19|1	bytes 576 fnv 41CD1CA6
+ClipBlit|kept|shape 2 at 55,23|1	kept
+ClipBlit|popped|shape 2 at 55,23|1	$00000000
+ClipBlit|planes|shape 2 at 55,23|1	bytes 576 fnv 85BAA445
+ClipBlit|kept|shape 2 at 55,24|1	kept
+ClipBlit|popped|shape 2 at 55,24|1	$00000000
+ClipBlit|planes|shape 2 at 55,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 55,30|1	kept
+ClipBlit|popped|shape 2 at 55,30|1	$00000000
+ClipBlit|planes|shape 2 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 63,-12|1	kept
+ClipBlit|popped|shape 2 at 63,-12|1	$00000000
+ClipBlit|planes|shape 2 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 63,-5|1	kept
+ClipBlit|popped|shape 2 at 63,-5|1	$00000000
+ClipBlit|planes|shape 2 at 63,-5|1	bytes 576 fnv 360A2D0E
+ClipBlit|kept|shape 2 at 63,0|1	kept
+ClipBlit|popped|shape 2 at 63,0|1	$00000000
+ClipBlit|planes|shape 2 at 63,0|1	bytes 576 fnv 26C2ADDD
+ClipBlit|kept|shape 2 at 63,19|1	kept
+ClipBlit|popped|shape 2 at 63,19|1	$00000000
+ClipBlit|planes|shape 2 at 63,19|1	bytes 576 fnv A53FD131
+ClipBlit|kept|shape 2 at 63,23|1	kept
+ClipBlit|popped|shape 2 at 63,23|1	$00000000
+ClipBlit|planes|shape 2 at 63,23|1	bytes 576 fnv 6490BDF2
+ClipBlit|kept|shape 2 at 63,24|1	kept
+ClipBlit|popped|shape 2 at 63,24|1	$00000000
+ClipBlit|planes|shape 2 at 63,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 63,30|1	kept
+ClipBlit|popped|shape 2 at 63,30|1	$00000000
+ClipBlit|planes|shape 2 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,-12|1	kept
+ClipBlit|popped|shape 2 at 64,-12|1	$00000000
+ClipBlit|planes|shape 2 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,-5|1	kept
+ClipBlit|popped|shape 2 at 64,-5|1	$00000000
+ClipBlit|planes|shape 2 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,0|1	kept
+ClipBlit|popped|shape 2 at 64,0|1	$00000000
+ClipBlit|planes|shape 2 at 64,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,19|1	kept
+ClipBlit|popped|shape 2 at 64,19|1	$00000000
+ClipBlit|planes|shape 2 at 64,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,23|1	kept
+ClipBlit|popped|shape 2 at 64,23|1	$00000000
+ClipBlit|planes|shape 2 at 64,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,24|1	kept
+ClipBlit|popped|shape 2 at 64,24|1	$00000000
+ClipBlit|planes|shape 2 at 64,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 64,30|1	kept
+ClipBlit|popped|shape 2 at 64,30|1	$00000000
+ClipBlit|planes|shape 2 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,-12|1	kept
+ClipBlit|popped|shape 2 at 80,-12|1	$00000000
+ClipBlit|planes|shape 2 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,-5|1	kept
+ClipBlit|popped|shape 2 at 80,-5|1	$00000000
+ClipBlit|planes|shape 2 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,0|1	kept
+ClipBlit|popped|shape 2 at 80,0|1	$00000000
+ClipBlit|planes|shape 2 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,19|1	kept
+ClipBlit|popped|shape 2 at 80,19|1	$00000000
+ClipBlit|planes|shape 2 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,23|1	kept
+ClipBlit|popped|shape 2 at 80,23|1	$00000000
+ClipBlit|planes|shape 2 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,24|1	kept
+ClipBlit|popped|shape 2 at 80,24|1	$00000000
+ClipBlit|planes|shape 2 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit|kept|shape 2 at 80,30|1	kept
+ClipBlit|popped|shape 2 at 80,30|1	$00000000
+ClipBlit|planes|shape 2 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit excess|kept|bits 0 shape 0 at -30,-5|1	kept
+ClipBlit excess|popped|bits 0 shape 0 at -30,-5|1	$00000000
+ClipBlit excess|planes|bits 0 shape 0 at -30,-5|1	bytes 576 fnv 7964EFDB
+ClipBlit excess|kept|bits 0 shape 0 at -9,-5|1	kept
+ClipBlit excess|popped|bits 0 shape 0 at -9,-5|1	$00000000
+ClipBlit excess|planes|bits 0 shape 0 at -9,-5|1	bytes 576 fnv A78BBF3F
+ClipBlit excess|kept|bits 0 shape 0 at 3,-5|1	kept
+ClipBlit excess|popped|bits 0 shape 0 at 3,-5|1	$00000000
+ClipBlit excess|planes|bits 0 shape 0 at 3,-5|1	bytes 576 fnv 3126104A
+ClipBlit excess|kept|bits 0 shape 0 at 55,-5|1	kept
+ClipBlit excess|popped|bits 0 shape 0 at 55,-5|1	$00000000
+ClipBlit excess|planes|bits 0 shape 0 at 55,-5|1	bytes 576 fnv 04553E02
+ClipBlit excess|kept|bits 0 shape 0 at 80,-5|1	kept
+ClipBlit excess|popped|bits 0 shape 0 at 80,-5|1	$00000000
+ClipBlit excess|planes|bits 0 shape 0 at 80,-5|1	bytes 576 fnv 7964EFDB
+ClipBlit excess|kept|bits 1 shape 0 at -30,0|1	kept
+ClipBlit excess|popped|bits 1 shape 0 at -30,0|1	$00000000
+ClipBlit excess|planes|bits 1 shape 0 at -30,0|1	bytes 576 fnv 7964EFDB
+ClipBlit excess|kept|bits 1 shape 0 at -9,0|1	kept
+ClipBlit excess|popped|bits 1 shape 0 at -9,0|1	$00000000
+ClipBlit excess|planes|bits 1 shape 0 at -9,0|1	bytes 576 fnv A546A8A1
+ClipBlit excess|kept|bits 1 shape 0 at 3,0|1	kept
+ClipBlit excess|popped|bits 1 shape 0 at 3,0|1	$00000000
+ClipBlit excess|planes|bits 1 shape 0 at 3,0|1	bytes 576 fnv FCAF4A2F
+ClipBlit excess|kept|bits 1 shape 0 at 55,0|1	kept
+ClipBlit excess|popped|bits 1 shape 0 at 55,0|1	$00000000
+ClipBlit excess|planes|bits 1 shape 0 at 55,0|1	bytes 576 fnv 293A2E3D
+ClipBlit excess|kept|bits 1 shape 0 at 80,0|1	kept
+ClipBlit excess|popped|bits 1 shape 0 at 80,0|1	$00000000
+ClipBlit excess|planes|bits 1 shape 0 at 80,0|1	bytes 576 fnv 7964EFDB
+ClipBlit (Amiga mode)|kept|shape 0 at -30,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -30,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -30,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -17,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -17,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -16,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -16,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -9,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -9,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,-5|1	bytes 576 fnv 206308E3
+ClipBlit (Amiga mode)|kept|shape 0 at -9,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,0|1	bytes 576 fnv 690F228F
+ClipBlit (Amiga mode)|kept|shape 0 at -9,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,19|1	bytes 576 fnv 041BBFCD
+ClipBlit (Amiga mode)|kept|shape 0 at -9,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,23|1	bytes 576 fnv 2FEDD4AD
+ClipBlit (Amiga mode)|kept|shape 0 at -9,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -9,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -9,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -1,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -1,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,-5|1	bytes 576 fnv D61DEDB9
+ClipBlit (Amiga mode)|kept|shape 0 at -1,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,0|1	bytes 576 fnv 54E8CF48
+ClipBlit (Amiga mode)|kept|shape 0 at -1,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,19|1	bytes 576 fnv 8F6C6619
+ClipBlit (Amiga mode)|kept|shape 0 at -1,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,23|1	bytes 576 fnv 67832EE0
+ClipBlit (Amiga mode)|kept|shape 0 at -1,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at -1,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at -1,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 0,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 0,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,-5|1	bytes 576 fnv 21059DC7
+ClipBlit (Amiga mode)|kept|shape 0 at 0,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,0|1	bytes 576 fnv 5817355C
+ClipBlit (Amiga mode)|kept|shape 0 at 0,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,19|1	bytes 576 fnv 9BFB2C7D
+ClipBlit (Amiga mode)|kept|shape 0 at 0,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,23|1	bytes 576 fnv 8F0B4F40
+ClipBlit (Amiga mode)|kept|shape 0 at 0,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 0,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 0,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 3,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 3,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,-5|1	bytes 576 fnv 33BB8985
+ClipBlit (Amiga mode)|kept|shape 0 at 3,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,0|1	bytes 576 fnv 37FF3FCB
+ClipBlit (Amiga mode)|kept|shape 0 at 3,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,19|1	bytes 576 fnv 4BAB2563
+ClipBlit (Amiga mode)|kept|shape 0 at 3,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,23|1	bytes 576 fnv 8E0A8008
+ClipBlit (Amiga mode)|kept|shape 0 at 3,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 3,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 3,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 40,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 40,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,-5|1	bytes 576 fnv A157B529
+ClipBlit (Amiga mode)|kept|shape 0 at 40,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,0|1	bytes 576 fnv 49FAE3A9
+ClipBlit (Amiga mode)|kept|shape 0 at 40,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,19|1	bytes 576 fnv 5850762A
+ClipBlit (Amiga mode)|kept|shape 0 at 40,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,23|1	bytes 576 fnv 453B190C
+ClipBlit (Amiga mode)|kept|shape 0 at 40,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 40,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 40,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 49,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 49,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,-5|1	bytes 576 fnv 5B81D014
+ClipBlit (Amiga mode)|kept|shape 0 at 49,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,0|1	bytes 576 fnv 5E375D3C
+ClipBlit (Amiga mode)|kept|shape 0 at 49,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,19|1	bytes 576 fnv 8C241F2B
+ClipBlit (Amiga mode)|kept|shape 0 at 49,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,23|1	bytes 576 fnv 824543B5
+ClipBlit (Amiga mode)|kept|shape 0 at 49,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 49,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 49,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 55,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 55,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,-5|1	bytes 576 fnv E0400865
+ClipBlit (Amiga mode)|kept|shape 0 at 55,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,0|1	bytes 576 fnv CF6D231F
+ClipBlit (Amiga mode)|kept|shape 0 at 55,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,19|1	bytes 576 fnv FDF6E817
+ClipBlit (Amiga mode)|kept|shape 0 at 55,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,23|1	bytes 576 fnv FA6FABB8
+ClipBlit (Amiga mode)|kept|shape 0 at 55,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 55,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 55,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 63,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 63,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,-5|1	bytes 576 fnv 5B52669A
+ClipBlit (Amiga mode)|kept|shape 0 at 63,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,0|1	bytes 576 fnv 981D08C6
+ClipBlit (Amiga mode)|kept|shape 0 at 63,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,19|1	bytes 576 fnv 4D17E15E
+ClipBlit (Amiga mode)|kept|shape 0 at 63,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,23|1	bytes 576 fnv 11B64445
+ClipBlit (Amiga mode)|kept|shape 0 at 63,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 63,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 63,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 64,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 64,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 0 at 80,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 0 at 80,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 0 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -30,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -30,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -17,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -17,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -16,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -16,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -9,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -9,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -9,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,0|1	bytes 576 fnv 0BF1A385
+ClipBlit (Amiga mode)|kept|shape 1 at -9,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,19|1	bytes 576 fnv 181CCB85
+ClipBlit (Amiga mode)|kept|shape 1 at -9,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,23|1	bytes 576 fnv 98E14885
+ClipBlit (Amiga mode)|kept|shape 1 at -9,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,24|1	bytes 576 fnv 531FCA05
+ClipBlit (Amiga mode)|kept|shape 1 at -9,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -9,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -1,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -1,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at -1,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,0|1	bytes 576 fnv ED4D0DA8
+ClipBlit (Amiga mode)|kept|shape 1 at -1,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,19|1	bytes 576 fnv 8D14B823
+ClipBlit (Amiga mode)|kept|shape 1 at -1,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,23|1	bytes 576 fnv F1B1C2DB
+ClipBlit (Amiga mode)|kept|shape 1 at -1,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,24|1	bytes 576 fnv 99900519
+ClipBlit (Amiga mode)|kept|shape 1 at -1,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at -1,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 0,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 0,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 0,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,0|1	bytes 576 fnv 7A50EE91
+ClipBlit (Amiga mode)|kept|shape 1 at 0,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,19|1	bytes 576 fnv ACFDED15
+ClipBlit (Amiga mode)|kept|shape 1 at 0,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,23|1	bytes 576 fnv 034BD168
+ClipBlit (Amiga mode)|kept|shape 1 at 0,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,24|1	bytes 576 fnv BE43A443
+ClipBlit (Amiga mode)|kept|shape 1 at 0,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 0,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 3,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 3,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 3,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,0|1	bytes 576 fnv 0483CF93
+ClipBlit (Amiga mode)|kept|shape 1 at 3,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,19|1	bytes 576 fnv 1857D83F
+ClipBlit (Amiga mode)|kept|shape 1 at 3,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,23|1	bytes 576 fnv 733534BE
+ClipBlit (Amiga mode)|kept|shape 1 at 3,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,24|1	bytes 576 fnv EC1020D7
+ClipBlit (Amiga mode)|kept|shape 1 at 3,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 3,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 40,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 40,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 40,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,0|1	bytes 576 fnv D05CD422
+ClipBlit (Amiga mode)|kept|shape 1 at 40,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,19|1	bytes 576 fnv 8B77E83D
+ClipBlit (Amiga mode)|kept|shape 1 at 40,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,23|1	bytes 576 fnv 77B3F610
+ClipBlit (Amiga mode)|kept|shape 1 at 40,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,24|1	bytes 576 fnv E24A0E98
+ClipBlit (Amiga mode)|kept|shape 1 at 40,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 40,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 49,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 49,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 49,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,0|1	bytes 576 fnv AF847899
+ClipBlit (Amiga mode)|kept|shape 1 at 49,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,19|1	bytes 576 fnv 30E6EE82
+ClipBlit (Amiga mode)|kept|shape 1 at 49,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,23|1	bytes 576 fnv 9EBE2EA4
+ClipBlit (Amiga mode)|kept|shape 1 at 49,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,24|1	bytes 576 fnv 91AEF838
+ClipBlit (Amiga mode)|kept|shape 1 at 49,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 49,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 55,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 55,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 55,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,0|1	bytes 576 fnv 33D8CACE
+ClipBlit (Amiga mode)|kept|shape 1 at 55,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,19|1	bytes 576 fnv 42CAA433
+ClipBlit (Amiga mode)|kept|shape 1 at 55,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,23|1	bytes 576 fnv 8AE0EF1E
+ClipBlit (Amiga mode)|kept|shape 1 at 55,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,24|1	bytes 576 fnv C4C95826
+ClipBlit (Amiga mode)|kept|shape 1 at 55,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 55,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 63,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 63,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 63,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,0|1	bytes 576 fnv F388AAD8
+ClipBlit (Amiga mode)|kept|shape 1 at 63,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,19|1	bytes 576 fnv 5C7894C3
+ClipBlit (Amiga mode)|kept|shape 1 at 63,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,23|1	bytes 576 fnv 84BDC412
+ClipBlit (Amiga mode)|kept|shape 1 at 63,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,24|1	bytes 576 fnv A4C88D17
+ClipBlit (Amiga mode)|kept|shape 1 at 63,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 63,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 64,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 64,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 64,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,0|1	bytes 576 fnv F28BE33A
+ClipBlit (Amiga mode)|kept|shape 1 at 64,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,19|1	bytes 576 fnv F425E9A7
+ClipBlit (Amiga mode)|kept|shape 1 at 64,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,23|1	bytes 576 fnv C392C0FA
+ClipBlit (Amiga mode)|kept|shape 1 at 64,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,24|1	bytes 576 fnv E5AECF85
+ClipBlit (Amiga mode)|kept|shape 1 at 64,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 64,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 1 at 80,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 1 at 80,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 1 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -30,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -30,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,-5|1	bytes 576 fnv 469A12C5
+ClipBlit (Amiga mode)|kept|shape 2 at -30,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,0|1	bytes 576 fnv D263ED45
+ClipBlit (Amiga mode)|kept|shape 2 at -30,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,19|1	bytes 576 fnv A2471045
+ClipBlit (Amiga mode)|kept|shape 2 at -30,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,23|1	bytes 576 fnv 476B2585
+ClipBlit (Amiga mode)|kept|shape 2 at -30,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -30,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -30,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -30,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -17,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -17,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,-5|1	bytes 576 fnv EB1508D2
+ClipBlit (Amiga mode)|kept|shape 2 at -17,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,0|1	bytes 576 fnv 12063573
+ClipBlit (Amiga mode)|kept|shape 2 at -17,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,19|1	bytes 576 fnv 17C09E2C
+ClipBlit (Amiga mode)|kept|shape 2 at -17,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,23|1	bytes 576 fnv 9C9DBF4D
+ClipBlit (Amiga mode)|kept|shape 2 at -17,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -17,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -17,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -17,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -16,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -16,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,-5|1	bytes 576 fnv 014064E0
+ClipBlit (Amiga mode)|kept|shape 2 at -16,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,0|1	bytes 576 fnv 502F8C04
+ClipBlit (Amiga mode)|kept|shape 2 at -16,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,19|1	bytes 576 fnv FE4A4297
+ClipBlit (Amiga mode)|kept|shape 2 at -16,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,23|1	bytes 576 fnv D492B39C
+ClipBlit (Amiga mode)|kept|shape 2 at -16,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -16,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -16,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -16,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -9,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -9,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,-5|1	bytes 576 fnv 86A216B3
+ClipBlit (Amiga mode)|kept|shape 2 at -9,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,0|1	bytes 576 fnv 94AA9FD9
+ClipBlit (Amiga mode)|kept|shape 2 at -9,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,19|1	bytes 576 fnv E4AFAFEA
+ClipBlit (Amiga mode)|kept|shape 2 at -9,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,23|1	bytes 576 fnv 7EB71D51
+ClipBlit (Amiga mode)|kept|shape 2 at -9,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -9,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -9,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -9,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -1,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -1,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,-5|1	bytes 576 fnv F817D871
+ClipBlit (Amiga mode)|kept|shape 2 at -1,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,0|1	bytes 576 fnv 5FAC20B3
+ClipBlit (Amiga mode)|kept|shape 2 at -1,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,19|1	bytes 576 fnv C2C257B4
+ClipBlit (Amiga mode)|kept|shape 2 at -1,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,23|1	bytes 576 fnv DBB85D9B
+ClipBlit (Amiga mode)|kept|shape 2 at -1,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at -1,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at -1,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at -1,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 0,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 0,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,-5|1	bytes 576 fnv 76717F2B
+ClipBlit (Amiga mode)|kept|shape 2 at 0,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,0|1	bytes 576 fnv 43164CCD
+ClipBlit (Amiga mode)|kept|shape 2 at 0,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,19|1	bytes 576 fnv AEE051F5
+ClipBlit (Amiga mode)|kept|shape 2 at 0,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,23|1	bytes 576 fnv CB495472
+ClipBlit (Amiga mode)|kept|shape 2 at 0,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 0,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 0,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 0,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 3,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 3,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,-5|1	bytes 576 fnv DADB5E16
+ClipBlit (Amiga mode)|kept|shape 2 at 3,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,0|1	bytes 576 fnv 33639C84
+ClipBlit (Amiga mode)|kept|shape 2 at 3,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,19|1	bytes 576 fnv A803F6AA
+ClipBlit (Amiga mode)|kept|shape 2 at 3,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,23|1	bytes 576 fnv E581D060
+ClipBlit (Amiga mode)|kept|shape 2 at 3,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 3,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 3,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 3,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 40,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 40,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,-5|1	bytes 576 fnv 6FB1CD06
+ClipBlit (Amiga mode)|kept|shape 2 at 40,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,0|1	bytes 576 fnv 9F715B72
+ClipBlit (Amiga mode)|kept|shape 2 at 40,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,19|1	bytes 576 fnv 073F6842
+ClipBlit (Amiga mode)|kept|shape 2 at 40,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,23|1	bytes 576 fnv 29A8B48C
+ClipBlit (Amiga mode)|kept|shape 2 at 40,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 40,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 40,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 40,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 49,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 49,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,-5|1	bytes 576 fnv 420D68B8
+ClipBlit (Amiga mode)|kept|shape 2 at 49,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,0|1	bytes 576 fnv F153EE50
+ClipBlit (Amiga mode)|kept|shape 2 at 49,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,19|1	bytes 576 fnv B8B28683
+ClipBlit (Amiga mode)|kept|shape 2 at 49,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,23|1	bytes 576 fnv 798B0334
+ClipBlit (Amiga mode)|kept|shape 2 at 49,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 49,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 49,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 49,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 55,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 55,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,-5|1	bytes 576 fnv 3630A54F
+ClipBlit (Amiga mode)|kept|shape 2 at 55,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,0|1	bytes 576 fnv 61D3E45F
+ClipBlit (Amiga mode)|kept|shape 2 at 55,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,19|1	bytes 576 fnv 41CD1CA6
+ClipBlit (Amiga mode)|kept|shape 2 at 55,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,23|1	bytes 576 fnv 85BAA445
+ClipBlit (Amiga mode)|kept|shape 2 at 55,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 55,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 55,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 55,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 63,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 63,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,-5|1	bytes 576 fnv 360A2D0E
+ClipBlit (Amiga mode)|kept|shape 2 at 63,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,0|1	bytes 576 fnv 26C2ADDD
+ClipBlit (Amiga mode)|kept|shape 2 at 63,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,19|1	bytes 576 fnv A53FD131
+ClipBlit (Amiga mode)|kept|shape 2 at 63,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,23|1	bytes 576 fnv 6490BDF2
+ClipBlit (Amiga mode)|kept|shape 2 at 63,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 63,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 63,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 63,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 64,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 64,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 64,30|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,-12|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,-12|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,-12|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,-5|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,-5|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,-5|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,0|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,0|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,0|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,19|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,19|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,19|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,23|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,23|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,23|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,24|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,24|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,24|1	bytes 576 fnv 6590BF85
+ClipBlit (Amiga mode)|kept|shape 2 at 80,30|1	kept
+ClipBlit (Amiga mode)|popped|shape 2 at 80,30|1	$00000000
+ClipBlit (Amiga mode)|planes|shape 2 at 80,30|1	bytes 576 fnv 6590BF85
+ClipBlit excess (Amiga mode)|kept|bits 0 shape 0 at -30,-5|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 0 shape 0 at -30,-5|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 0 shape 0 at -30,-5|1	bytes 576 fnv 7964EFDB
+ClipBlit excess (Amiga mode)|kept|bits 0 shape 0 at -9,-5|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 0 shape 0 at -9,-5|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 0 shape 0 at -9,-5|1	bytes 576 fnv A78BBF3F
+ClipBlit excess (Amiga mode)|kept|bits 0 shape 0 at 3,-5|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 0 shape 0 at 3,-5|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 0 shape 0 at 3,-5|1	bytes 576 fnv 3126104A
+ClipBlit excess (Amiga mode)|kept|bits 0 shape 0 at 55,-5|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 0 shape 0 at 55,-5|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 0 shape 0 at 55,-5|1	bytes 576 fnv 04553E02
+ClipBlit excess (Amiga mode)|kept|bits 0 shape 0 at 80,-5|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 0 shape 0 at 80,-5|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 0 shape 0 at 80,-5|1	bytes 576 fnv 7964EFDB
+ClipBlit excess (Amiga mode)|kept|bits 1 shape 0 at -30,0|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 1 shape 0 at -30,0|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 1 shape 0 at -30,0|1	bytes 576 fnv 7964EFDB
+ClipBlit excess (Amiga mode)|kept|bits 1 shape 0 at -9,0|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 1 shape 0 at -9,0|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 1 shape 0 at -9,0|1	bytes 576 fnv A546A8A1
+ClipBlit excess (Amiga mode)|kept|bits 1 shape 0 at 3,0|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 1 shape 0 at 3,0|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 1 shape 0 at 3,0|1	bytes 576 fnv FCAF4A2F
+ClipBlit excess (Amiga mode)|kept|bits 1 shape 0 at 55,0|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 1 shape 0 at 55,0|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 1 shape 0 at 55,0|1	bytes 576 fnv 293A2E3D
+ClipBlit excess (Amiga mode)|kept|bits 1 shape 0 at 80,0|1	kept
+ClipBlit excess (Amiga mode)|popped|bits 1 shape 0 at 80,0|1	$00000000
+ClipBlit excess (Amiga mode)|planes|bits 1 shape 0 at 80,0|1	bytes 576 fnv 7964EFDB
