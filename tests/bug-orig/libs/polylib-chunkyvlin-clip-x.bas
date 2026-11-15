@@ -11,6 +11,8 @@
 ; (x beyond the width).  Counted: words written.  Control: the same with
 ; x = 5 (inside) writes 16 words.
 ; Correct: nothing is written for x = 100 (clipped away).
+; @fixed #987
+; @configs clib
 ; @pass timeout=60
 DEFTYPE .l
 cs=CustomChunkySize(64,16)
