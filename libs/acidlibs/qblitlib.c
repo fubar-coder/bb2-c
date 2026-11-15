@@ -21,6 +21,10 @@
  * leaves the write position stale (#244).  Not a bug: UnQueue clears all
  * planes of the bitmap, not only those of the shape (QBlit changes them too,
  * and UnQueue is meant to clear the area to colour 0).
+ *
+ * Speed: the blit core is inline (BL_ALWAYS_INLINE), and the Blitz mode
+ * code of QBlit and UnQueue saves no register (BLITZ_ENTRYPOINT, a6 kept
+ * by BLITZ_EP_KEEP_A6; the register rule keeps a3-a7).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -212,9 +216,9 @@ struct blitstate {
 };
 
 /* b_doblit - a0 = queue, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3 */
-static void qblit(struct queue *q, const struct bb_shape *shape, const struct bb_bitmap *bm,
-                  UBYTE *cb,
-                  WORD x, WORD y, struct blitstate *st)
+BL_ALWAYS_INLINE void qblit(struct queue *q, const struct bb_shape *shape,
+                            const struct bb_bitmap *bm, UBYTE *cb,
+                            WORD x, WORD y, struct blitstate *st)
 {
     struct qitem *item = q->pos;
     ULONG mods, mods_swapped;
@@ -234,7 +238,7 @@ static void qblit(struct queue *q, const struct bb_shape *shape, const struct bb
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
     BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
     st->cookie = (ULONG)shape->cookie;
-    st->off = (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
+    st->off = bl_blitoff(&bm->bpr, x, y);
     n = shape->depth - 1;
     st->size = shape->bltsize;
     item->size = st->size;
@@ -258,9 +262,9 @@ qblitlib_doblit:
     } while (n-- != 0);
 }
 
-static void qblitex(struct queue *q, const struct bb_shape *shape, const struct bb_bitmap *bm,
-                    UBYTE *cb,
-                    WORD x, WORD y, UWORD bits)
+BL_ALWAYS_INLINE void qblitex(struct queue *q, const struct bb_shape *shape,
+                              const struct bb_bitmap *bm, UBYTE *cb,
+                              WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
@@ -283,7 +287,7 @@ static void qblitex(struct queue *q, const struct bb_shape *shape, const struct 
 }
 
 /* b_dounqueue - clear the queued areas (D only, minterm 0) */
-static void unqueue(struct queue *q, UBYTE *cb)
+BL_ALWAYS_INLINE void unqueue(struct queue *q, UBYTE *cb)
 {
     struct qitem *end = q->pos, *it = q->mem;
 
@@ -318,7 +322,7 @@ start:
 }
 
 /* b_dounqueue2 - copy the queued areas from the bitmap a2 */
-static void unqueue2(struct queue *q, UBYTE *cb, const struct bb_bitmap *src)
+BL_ALWAYS_INLINE void unqueue2(struct queue *q, UBYTE *cb, const struct bb_bitmap *src)
 {
     struct qitem *end = q->pos, *it = q->mem;
 
@@ -381,13 +385,16 @@ start:
  * @param cb a1: the chip base ($DFF000, chipbaselib)
  * @param bm a2: the used bitmap
  */
-static void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS);
-static void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS);
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
 {
+    BLITZ_EP_KEEP_A6();
     struct blitstate st;
 
     qblit(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblit_c);
 
 /**
  * @brief QBlit Queue#,Shape#,X,Y in Amiga mode: b_doblit_c between
@@ -422,11 +429,15 @@ BLITZ_AB_ROUTINE(qblitlib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
  *
  * @param bits d4.w: one bit per excess plane
  */
-static void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
-static void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
 {
+    BLITZ_EP_KEEP_A6();
+
     qblitex(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_doblitex_c);
 
 /**
  * @brief QBlit Queue#,Shape#,X,Y,Excessonoff in Amiga mode: b_doblitex_c
@@ -460,11 +471,15 @@ BLITZ_AB_ROUTINE(qblitlib_doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
  *
  * @param cb a1: the chip base ($DFF000)
  */
-void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1));
-void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1))
 {
+    BLITZ_EP_KEEP_A6();
+
     unqueue((struct queue *)blitz_string, cb);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_dounqueue_c);
 
 /**
  * @brief UnQueue Queue# in Amiga mode: b_dounqueue_c between OwnBlitter
@@ -496,11 +511,17 @@ BLITZ_AB_ROUTINE(dounqueue, b_dounqueue_c, "   jmp     _a_dounqueue_c");
  * @param cb a1: the chip base ($DFF000)
  * @param bm a2: the bitmap to copy from
  */
-void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2));
-void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2))
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1),
+                                                     const struct bb_bitmap *bm BL_REG(a2));
+static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1),
+                                                     const struct bb_bitmap *bm BL_REG(a2))
 {
+    BLITZ_EP_KEEP_A6();
+
     unqueue2((struct queue *)blitz_string, cb, bm);
+    BLITZ_EP_KEEP_A6_END();
 }
+BLITZ_EP_MARK(b_dounqueue2_c);
 
 /**
  * @brief UnQueue Queue#,BitMap# in Amiga mode: b_dounqueue2_c between
