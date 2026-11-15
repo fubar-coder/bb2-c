@@ -9,6 +9,7 @@
 ; program starts, so the argument stays below that); the child shows it.
 ; Correct: the argument line is cut to the 255 characters that fit, the
 ; child gets them as its argument and ends normally.
+; @fixed #308
 ; @configs clib
 ; @pass timeout=60
 DEFTYPE .l

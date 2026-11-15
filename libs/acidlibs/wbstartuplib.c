@@ -65,7 +65,11 @@ static BPTR thisLock;                           /* lock for the next AddArg */
 static struct arg *prevArg;
 static struct Message *wbMsg;
 static UWORD inQuote;
-static UBYTE cliString[256];
+/* the CLI string: at most CLIMAX characters and their 0 (fixed, #308);
+   the byte behind them is never written and stays 0, so the scan that
+   goes on behind the 0 of a full line (#309) ends there */
+#define CLIMAX 255
+static UBYTE cliString[CLIMAX + 2];
 
 /* AddArg's message in the normal code (fixed, #305: in the original it
    lies after `errors`, in the error check area); errMsg2 is unused (its
@@ -136,8 +140,9 @@ static UBYTE *getcliarg(UBYTE **pp, UWORD *len)
  * addarg, fixed (#305)).
  *
  * BUG(orig) (#306, #307): dos.library is never closed, the old current
- * directory is not restored.  BUG(orig) (#308): no length check of the CLI
- * string (cliString has 256 bytes); see also #309.
+ * directory is not restored.  Fixed (#308): the CLI string is cut to the
+ * 255 characters that fit into cliString (the original copied it without
+ * a length check into its 256 bytes); see also #309.
  *
  * @param argptr a0: the CLI argument string
  * @param magic d7: "bLtZ" when started from Blitz
@@ -194,12 +199,14 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
     }
 
     /* was run from CLI: copy the CLI string to our buffer.
-       BUG(orig) (#308): no length check (cliString has 256 bytes). */
+       Fixed (#308): at most CLIMAX characters (the original copied up
+       to the 0 without a length check). */
     {
         UBYTE *d = cliString, *p;
 
-        while ((*d++ = *argptr++) != 0)
-            ;
+        while (d < cliString + CLIMAX && (*d = *argptr++) != 0)
+            d++;
+        *d = 0;
         p = cliString;
         argData.numargs = 0;
         argData.fromcli = 0xffff;
@@ -220,8 +227,9 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
                the 0 of this argument.  If it was the 0 at the end of the
                string, the scan goes on behind it - harmless in a program
                (cliString is cleared and written once, the next byte is 0);
-               only with old contents (host test) or after the overflow of
-               a full buffer (no length check above) extra arguments (#309). */
+               only with old contents (host test) extra arguments (#309).
+               Behind a full line it reads the byte behind the CLIMAX
+               characters and their 0, which stays 0 (#308). */
             p[-1] = 0;
         }
     }
