@@ -35,10 +35,8 @@
  * check area).
  *
  * BUG(orig), kept:
- *  - Box numbers: ASL #5 as word, ADDA.w (box >= 1024 gives negative
- *    offsets) (#81); SelectBox Box# is not range checked (negative or
- *    >= 1024: deselect only) (#82); SpotBox has no page check, with 0
- *    boxes it scans 65536 (#83).
+ *  - SelectBox Box# is not range checked (negative: deselect only)
+ *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
  *  - BoxString strips trailing spaces backwards without a limit: an
  *    all-space answer runs into the prompt / memory before the text (d0
  *    0: nothing, negative: a huge copy). (#85)
@@ -51,6 +49,10 @@
  *    cursor off (#91).
  *  - DeSelectBox does not clear `selected`. (#94)
  * Fixed (intended deviations):
+ *  - #81: the address of box n was memloc + n << 5 as a word (ASL #5,
+ *    ADDA.w): from box 1024 on the offset was negative, from 2048 on it
+ *    wrapped to the boxes from 0 on (InitPage allows more than 1024
+ *    boxes); BoxSelected shifted back as a word.  Here both are longs.
  *  - #84: AddBox with a string box 8..15 pixels wide (tlen 1): the space
  *    fill (DBRA of tlen-2) wrote 65536 spaces behind the 1-byte text;
  *    here the text is just the 0.
@@ -492,8 +494,10 @@ struct page {
 } BL_PACKED;
 static_assert(sizeof(struct page) == 26);
 
-/* box n: memloc + n << 5 as a word (ASL #5:ADDA.w, BUG(orig) (#81)) */
-#define BOXAT(p, off) ((struct box *)((UBYTE *)(p)->memloc + (off)))
+/* box n (a word, 0..65535): memloc + n << 5 as a long.  Fixed (#81): the
+   original shifts and adds as a word (ASL #5:ADDA.w), from box 1024 on
+   the offset is negative, from 2048 on it wraps */
+#define BOXAT(p, n) ((struct box *)((UBYTE *)(p)->memloc + ((ULONG)(UWORD)(n) << 5)))
 
 static const char mess1[] = "UnInitialised Page";
 static const char mess2[] = "Illegal Box# For Page";
@@ -513,7 +517,7 @@ static struct box *getbox(struct page *p, ULONG n)
         BLITZ_RUNERR(mess1);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    return BOXAT(p, (WORD)(UWORD)(n << 5));   /* ASL #5:ADD d0,a0 */
+    return BOXAT(p, n);
 }
 
 static void chkpage(struct page *p)
@@ -950,7 +954,7 @@ static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, UL
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    b = BOXAT(p, (WORD)(UWORD)(n << 5));
+    b = BOXAT(p, n);
     if (b->tlen) {
         globfree(b->text, b->tlen);
         b->tlen = 0;
@@ -1396,8 +1400,9 @@ BLITZ_THUNK(_boxstring2, boxstring2_c, "d1");
 /**
  * @brief BoxSelected: the selected box of the used page.
  *
- * (selected - memloc) >> 5 (LSR.w).  Errors (always checked):
- * "UnInitialised Page".
+ * (selected - memloc) >> 5.  Errors (always checked): "UnInitialised
+ * Page".  Fixed (#81): shifted as a long (the original's LSR.w gave the
+ * wrong number from box 2048 on).
  *
  * Reads a3: the used page.
  * @return d0.w: the Box#, -1 for none
@@ -1414,8 +1419,7 @@ static ULONG BLITZ_ROUTINE boxselected_c(void)
     offset -= (ULONG)p->memloc;
     if ((LONG)offset < 0)
         return (ULONG)-1;
-    BL_SETW(offset, (UWORD)offset >> 5);
-    return offset;
+    return offset >> 5;
 }
 BLITZ_THUNK(_boxselected, boxselected_c, "d1/a0-a1");
 
@@ -1556,7 +1560,7 @@ static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    b = BOXAT(p, (WORD)(UWORD)(n << 5));
+    b = BOXAT(p, n);
     if (b->btype)
         BLITZ_RUNERR(mess5);
     len = lens[-1];
@@ -1684,10 +1688,12 @@ static constexpr WORD pspd = 1024;              /* prop speed */
 /**
  * @brief SelectBox Box#: select a box (and draw it and the old one).
  *
- * Errors (always checked): "UnInitialised Page".
- * BUG(orig) (#81): the offset is computed as a word (ASL #5).
- * BUG(orig) (#82): Box# is not range checked: negative or >= 1024 only
- * deselect.
+ * A negative Box# only deselects.  Errors (always checked):
+ * "UnInitialised Page".
+ * Fixed (#81): the offset is computed as a long (the original's ASL #5 as
+ * a word made the boxes 1024..2047 deselect only and wrapped from 2048
+ * on).
+ * BUG(orig) (#82): Box# is not range checked.
  *
  * Reads a3: the used page.
  * @param n  d0.w: Box#
@@ -1696,14 +1702,12 @@ static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
 {
     struct page *p = PG;
     struct box *old;
-    WORD off;
 
     chkpage(p);
     old = p->selected;
     p->selected = 0;
-    off = (WORD)(UWORD)(n << 5);
-    if (off >= 0) {
-        p->selected = BOXAT(p, off);
+    if ((WORD)n >= 0) {
+        p->selected = BOXAT(p, n);
         drawbox(p, p->selected);
     }
     if (old)
