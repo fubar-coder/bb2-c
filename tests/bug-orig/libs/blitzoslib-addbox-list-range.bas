@@ -10,6 +10,7 @@
 ; the boxes.  Runtime error checking on (the error is raised by the
 ; debugger's requester).
 ; Correct: range 3, SetBox 0,1 selects entry 1.
+; @fixed #989
 ; @pass runtime_errors=on
 DEFTYPE .l
 BitMap 0,320,200,2

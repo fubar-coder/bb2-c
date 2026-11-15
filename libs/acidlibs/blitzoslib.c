@@ -69,6 +69,10 @@
  *  - #94: DeSelectBox did not clear `selected`: the box stayed selected
  *    (drawn so, BoxSelected returned it, BlitzEvent's keys acted on it).
  *    Here it is cleared before the box is drawn.
+ *  - #989: AddBox with a text and SetBoxTitle stored the number of
+ *    strings as range only for the box types 0 and 1: a list box (type
+ *    5) kept 0 entries (nothing drawn, SetBox "Value Out of Range").
+ *    Here a list box gets it too.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -1117,10 +1121,11 @@ static void boxtext(struct box *b, ULONG len, const UBYTE *s)
         }
     }
     *dst = 0;
-    /* BUG(orig) (#989): only the box types 0 and 1 keep the count of
-       strings as range; a list box (type 5, AddBox type argument 10) is drawn
-       and set by range and keeps 0 (SetBox: "Value Out of Range"). */
-    if (b->btype - 2 < 0) {               /* CMP #2:BPL stdun */
+    /* the box types 0, 1 and 5 keep the count of strings as range.
+       Fixed (#989): the original (CMP #2:BPL stdun) left out the list box
+       (type 5, AddBox type argument 10), which is drawn and set by range:
+       it kept 0 entries (SetBox: "Value Out of Range"). */
+    if (b->btype - 2 < 0 || b->btype == 5) {
         b->range = strings;
         b->value = 0;
     }
@@ -1132,8 +1137,9 @@ static void boxtext(struct box *b, ULONG len, const UBYTE *s)
  * As AddBox, then the text: for a string box the prompt (copied into the
  * spaces; error "No Room For String" if it does not fit); otherwise a
  * copy (memlib globalloc) with "|" as separator of several strings (a
- * text starting with "|" is taken verbatim), view and button boxes get
- * value 0 and range = the number of strings.
+ * text starting with "|" is taken verbatim), view, button and list boxes
+ * get value 0 and range = the number of strings (list boxes: fixed,
+ * #989).
  *
  * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
  * @param n  d1.w: Box#
