@@ -1,9 +1,12 @@
 # the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
 [session]
-timeout
+done
 [compile]
 ok
 [run]
+2 points, at most 2 bytes set -1
+1 point, bytes set 60
+rc=0
 [blitz2]
 rc=0
 [log]

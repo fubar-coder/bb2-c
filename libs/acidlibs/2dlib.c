@@ -32,9 +32,13 @@
  *     MULU of the negative y gave a large offset that was not rejected -
  *     the CPU plot wrote far outside the bitmap / fill buffer.  The
  *     height compare is unsigned now (the same instructions).
- *   - Poly with 1 point loops 65535 times (#396); Polyf with more than 16
- *     points overflows its 32-long point buffer, more than 10 edges on one
- *     side overflow the edge lists l0/l1 (here ledges/redges) (#395).
+ *   - Fixed (#396): Poly with 1 point loops 65535 times (0 points: 65536);
+ *     such a count is an invalid argument: with runtime error checking
+ *     _polychk (error check area only, the original had none and no error
+ *     check area) raises "Poly needs at least 2 Points"; the loop stays.
+ *   - Polyf with more than 16 points overflows its 32-long point buffer,
+ *     more than 10 edges on one side overflow the edge lists l0/l1 (here
+ *     ledges/redges) (#395).
  *   - Fixed (#390): AllocFill (statement) took the bitmap from a3 = the
  *     string pointer: it was declared without a used bitmap.  It is
  *     declared with the used bitmap now (!libs {#bitmaplib,#ua3}).
@@ -80,10 +84,12 @@ void _freefill(void), _allocfill(void), _remap(void), _remap2(void);
 void _floodfill(void), _floodfill2(void), _poly(void), _polyf(void), _polyf2(void);
 void _bitplanesbitmap(void), _doclipblit(void), _doclipblitx(void), _cbchk(void);
 void _doclipblitmode(void), _bitmapwindow(void), _bitmaporigin(void), _init(void);
+void _polychk(void);
 
 
-/* !libheader {#sis2dlib,0,0,0,0} */
-BLITZ_LIBHEADER(LIB_sis2dlib, 0, BL_NORET, 0, 0);
+/* !libheader {#sis2dlib,0,0,0,errors}: the original has no error check
+   area (0); _polychk (#396) is its first check */
+BLITZ_LIBHEADER(LIB_sis2dlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
@@ -161,7 +167,7 @@ BLITZ_NAME("FloodFill", "x,y,colour [,border colour]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_chipbaselib, BL_LA(2), LIB_graphicslib, 0x5600);
-BLITZ_SUBS(_poly, 0, 0);
+BLITZ_SUBS(_poly, _polychk, 0);
 BLITZ_NAME("Poly", "numpts,*coords.w,color");
 
 BLITZ_ASTATEMENT();
@@ -1300,7 +1306,9 @@ static UBYTE *remap(struct bb_bitmap *bm, UBYTE *chip, ULONG from, ULONG to, str
 
 /* Poly: the lines between the points and back to the first; the count
    is decremented after the first line (SUB #1,pfc:BNE): 1 point draws
-   65536 lines (#396).  Returns the a3 of the last line. */
+   65536 lines.  Fixed (#396): fewer than 2 points are an invalid
+   argument, refused by _polychk with runtime error checking (the loop
+   unchanged).  Returns the a3 of the last line. */
 static UBYTE *poly(struct bb_bitmap *bm, UBYTE *chip, UWORD n, const struct point *pts,
                    UWORD colour)
 {
@@ -2001,3 +2009,21 @@ static void BLITZ_ROUTINE _cbchk_c(void)
         BLITZ_RUNERR(mess1);
 }
 BLITZ_THUNK(_cbchk, _cbchk_c, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(polymess, "Poly needs at least 2 Points");
+
+/* _polychk - not in the original (#396): Poly with fewer than 2 points
+   (d0), which would draw 65535 or 65536 lines from the words behind the
+   coordinates */
+static void BLITZ_ERRCHK _polychk_c(WORD n BL_REG(d0))
+{
+    if (n < 2)
+        BLITZ_RUNERR(polymess);
+}
+
+/* the thunks behind all C check functions: their assembler ends with
+   `.text`, and GCC does not repeat the section of a following
+   BLITZ_ERRCHK function */
+BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");

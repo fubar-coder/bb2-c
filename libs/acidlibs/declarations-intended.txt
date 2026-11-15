@@ -77,3 +77,8 @@ lib 119: entry 15 BitMapOrigin +$0: $00 != $77
 lib 119: entry 16 (nullsub) +$0: $00 != $2C
 lib 119: end of the table +$628: $FF != $00
 lib 119: declaration part $62E != $632 bytes
+# #396: Poly gets an error check (_polychk); 2dlib gets an error check
+# area for it (the original has none); the entry of Poly itself differs
+# already by the move of #390
+lib 119: header +$2C: code offset set in only one of them
+lib 119: relocations in the declaration part 27 != 29
