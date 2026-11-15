@@ -69,6 +69,9 @@
  *    plane loops (DBF on depth-1) blitted 65536 planes.  Here its error
  *    check (initchk, error check area only) refuses it with "Illegal
  *    Shape Depth"; release code unchanged. (#243, #74)
+ *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
+ *    first ANHD and applied every later frame with it; here each frame
+ *    takes the bit of its own ANHD. (#266)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -1080,7 +1083,15 @@ static void doshload_(struct bb_shape *shape, const char *name)
         if (autocook)
             cookie_(frame);
         res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
-    } while (z);
+        if (!z)
+            break;
+        /* fixed #266: the XOR bit of this frame's ANHD (the original read
+           only the first ANHD's): operation, 17 bytes, interleave and
+           pad skipped, then the bits */
+        res = IJSR(TOK_iffskip, 20, st);
+        res = IJSR(TOK_ifflong, res, st);
+        xordelta = (UWORD)res & 2;
+    } while (1);
 skipanim:
     IJSR(TOK_iffclose, res, st);             /* close the IFF */
 }
@@ -1092,7 +1103,10 @@ skipanim:
  * memory (not checked), cookie with AutoCookie on.  After the first frame
  * every "ANHD" (ANIM op 5, interleave 1) gives a delta frame in the NEXT
  * shape object (a copy of the previous frame with the DLTA applied, XOR
- * or set per the ANHD bits).
+ * or set per the bits of its ANHD; the operation and the interleave are
+ * checked in the first ANHD).
+ * Fixed (#266): each frame takes the XOR bit of its own ANHD; the
+ * original read only the first ANHD's.
  *
  * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
  * (#264); ANIM frames go into the following shape objects without a check

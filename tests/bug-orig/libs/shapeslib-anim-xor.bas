@@ -7,6 +7,7 @@
 ; (bits 0, the first byte set to $33); LoadShape puts them in shapes 0-2.
 ; The original applies frame 2 with XOR as well: $F1 XOR $33 = $C2.
 ; Correct: frame 2 sets the byte: $33.
+; @fixed #266
 ; @configs clib
 DEFTYPE .l
 Statement pb{v.l}
