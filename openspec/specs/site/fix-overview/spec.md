@@ -1,7 +1,7 @@
 # site/fix-overview Specification
 
 ## Purpose
-TBD - created by archiving change site-fix-overview. Update Purpose after archive.
+Defines the overview page "Important Fixes & Breaking Changes" of the website: one sortable and filterable table of every fixed original bug, with its severity level, topic and library or command, so that a reader with a Blitz Basic 2 program can see which fixes can change that program without reading all the pages of fixed bugs. The site build checks the table against the fixed-bugs pages.
 
 ## Requirements
 
