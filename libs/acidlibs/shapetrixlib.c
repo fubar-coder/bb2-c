@@ -48,6 +48,9 @@
  *   Here the error checks (rotchk, scalechk, scalechk2; error check area
  *   only) compute the new size as the command does and refuse such a
  *   shape with "Shape too Big"; release code unchanged.
+ * Fixed (intended deviation, #1046): the same checks refuse a new shape
+ *   taller than 1023 rows or wider than 62 words (992 pixels), which the
+ *   blit size word (+8: height << 6 | words + 1) cannot hold.
  * Fixed (intended deviation, #273): Scale with a target size below 1
  *   (raised to 1) collected for the one destination pixel 1/Ratio source
  *   pixels from pixel 0 on, more than the shape has (the rest of the row,
@@ -738,13 +741,14 @@ static void BLITZ_ERRCHK fchk_c(void)
 
 /* the new shape of w x h pixels: a plane with the extra word of every
    row ((bytes per row + 2) x height, the word +24) of 64K or more does
-   not fit the shape's word sizes (fixed, #1047: the original has no
-   check) */
+   not fit the shape's word sizes (fixed, #1047), more than 1023 rows or
+   62 words (992 pixels) not its blit size word (height << 6 | words + 1;
+   fixed, #1046); the original has no check */
 static void BLITZ_ERRCHK sizechk(UWORD w, UWORD h)
 {
     UWORD bpr = (UWORD)((UWORD)(w + 15) >> 4) << 1;
 
-    if (bl_mulu_w(bpr + 2, h) > 0xffff)
+    if (h > 1023 || bpr > 124 || bl_mulu_w(bpr + 2, h) > 0xffff)
         BLITZ_RUNERR(mess3);
 }
 

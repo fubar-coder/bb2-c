@@ -72,6 +72,14 @@
  *    refuse them with "Shape too Big" ((bytes per row + 2) x height of
  *    64K or more), and initchk a width or height of 0 with "Illegal
  *    Shape Size"; release code unchanged. (#1047)
+ *  - The blit size word (+8: height << 6 | words + 1, as BLTSIZE) holds
+ *    10 bits of height and 6 of width: a shape taller than 1023 rows or
+ *    wider than 62 words (992 pixels; from 63 words the + 1 carries into
+ *    the height) got a wrong blit size.  Here LoadShape refuses such a
+ *    picture (file data: "Can't Read/Write Shapes File", nothing loaded)
+ *    and the error checks of InitShape and GetaShape (and of Rotate and
+ *    Scale in shapetrixlib) refuse such a shape with "Shape too Big";
+ *    the blit commands are unchanged. (#1046)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -560,7 +568,9 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
  * of depth 0 made the plane loops of the blit commands run 65536 times);
  * "Illegal Shape Size" for a width or height of 0 and "Shape too Big"
  * for a plane of 64K or more with the extra word per row (fixed, #1047:
- * not checked in the original, the word sizes +22/+24 were wrong).
+ * not checked in the original, the word sizes +22/+24 were wrong) or a
+ * shape taller than 1023 rows or wider than 62 words (992 pixels; fixed,
+ * #1046: the blit size word +8 overflowed).
  *
  * @param w d1.w: the width in pixels
  * @param h d2.w: the height
@@ -658,8 +668,8 @@ static void getashape(struct bb_shape *shape, struct bb_bitmap *bm,
  *
  * Errors (gschk, debugger only): "Uninitialized BitMap", "Cannot GetaShape
  * from an interleaved Bitmap", "Illegal area for GetaShape", "Shape too
- * Big" (a plane of 64K or more with the extra word per row; fixed,
- * #1047: the original has no check).
+ * Big" (a plane of 64K or more with the extra word per row, more than
+ * 1023 rows or 62 words; fixed, #1047, #1046: the original has no check).
  *
  * @param x  d1.w: x
  * @param y  d2.w: y
@@ -986,9 +996,11 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     p = (ULONG)(UWORD)p * depth;
     first->xsize = (UWORD)p;
     p = (ULONG)bpr * rows;
-    if (p > 0xffff) {
+    if (p > 0xffff || rows > 1023 || bpr > 124) {
         /* fixed #263: the shape keeps the bytes per plane in a word; a
-           plane of 64K or more is refused (nothing loaded) */
+           plane of 64K or more is refused (nothing loaded).  Fixed #1046:
+           so is a picture taller than 1023 rows or wider than 62 words
+           (992 pixels), which the blit size word cannot hold */
         first->width = 0;
         IJSR(TOK_iffclose, 0, st);
         BLITZ_RUNERR(mess3);
@@ -1228,13 +1240,18 @@ static void BLITZ_ERRCHK cookiechk_c(void)
 }
 
 /* a shape of w x h pixels: is a plane with the extra word of every row
-   ((bytes per row + 2) x height, the word +24) 64K or more?  The shape
-   keeps its plane sizes in words (fixed, #1047: the original has no
-   check) */
+   ((bytes per row + 2) x height, the word +24) 64K or more, or the shape
+   taller than 1023 rows or wider than 62 words?  The shape keeps its
+   plane sizes and its blit size in words (fixed, #1047, #1046: the
+   original has no check) */
 static int BLITZ_ERRCHK toobig(UWORD w, UWORD h)
 {
     UWORD bpr = (UWORD)((UWORD)(w + 15) >> 4) << 1;
 
+    /* fixed, #1046: the blit size word (height << 6 | words + 1) holds
+       at most 1023 rows and 62 words (992 pixels) */
+    if (h > 1023 || bpr > 124)
+        return 1;
     return bl_mulu_w(bpr + 2, h) > 0xffff;
 }
 
