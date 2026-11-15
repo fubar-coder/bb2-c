@@ -26,9 +26,10 @@
  * cleared, the first one stays $FFFF from the save blit (exactly the masks
  * blitlib sets for the shape blit, same result).
  * DIFF: the nullsub-less entries keep a4/a5 (the original saves them too).
- * BUG(orig) (#1045): BBlit, UnBuffer and ShowStencil step from plane to
+ * Fixed (#1045): BBlit, UnBuffer and ShowStencil stepped from plane to
  * plane in the record by the plane size as a signed word (ADD.w of
- * shape +24), backwards for a plane of 32 KB or more.
+ * shape +24), backwards for a plane of 32 KB or more; the step is now
+ * the unsigned word (zero-extended once, outside the plane loops).
  *
  * Speed: the blit core is inline (BL_ALWAYS_INLINE), and the Blitz mode
  * code of BBlit, UnBuffer and ShowStencil saves no register
@@ -293,7 +294,7 @@ saveplane:                                      /* saveit2 */
             rec += 4;
             BL_CUSTOML(cb, 0x54) = (ULONG)rec;
             BL_CUSTOMW(cb, 0x58) = st->size;
-            rec += (WORD)save;                  /* BUG(orig) (#1045): signed */
+            rec += save;                        /* Fixed (#1045): unsigned */
             __asm__("" : "+a"(rec));            /* no IV multiplication */
         }
     } while (n-- != 0);
@@ -381,7 +382,7 @@ nextplane:                                      /* loop3a */
             cur += 4;
             BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOMW(cb, 0x58) = size;
-            cur += (WORD)save;                  /* BUG(orig) (#1045): signed */
+            cur += save;                        /* Fixed (#1045): unsigned */
         } while (n-- != 0);
         rec = rec->prev;
     } while (rec);
@@ -428,7 +429,7 @@ nextplane:                                      /* loop3a */
             BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOML(cb, 0x4c) = st;
             BL_CUSTOMW(cb, 0x58) = size;
-            cur += (WORD)save;                  /* BUG(orig) (#1045): signed */
+            cur += save;                        /* Fixed (#1045): unsigned */
         } while (n-- != 0);
         rec = rec->prev;
     } while (rec);

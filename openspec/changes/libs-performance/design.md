@@ -467,10 +467,13 @@ build.
     outside the benchmark (a program of the same kind) SBlit 3515.8 ->
     2682.9 (2702.2), 4 BBlit + ShowStencil + FlushBuffer 26309.8 ->
     22687.9 (21731.8). Every one within 5 % of the original (BBlit:
-    GCC keeps the bitmap pointer and the plane step on the stack), so
-    no assembler block (decision 15). #1045 is not fixed; its three
-    additions are marked, and a fix (the step zero-extended once
-    outside the plane loops) costs no cycle in the loops. The library
+    GCC keeps the bitmap pointer on the stack), so
+    no assembler block (decision 15). The fix of #1045 zero-extends
+    the plane step once outside the plane loops; GCC then keeps the
+    step of BBlit in a register (ADDA.l, 8 cycles a plane instead of
+    24 from the stack: 4 BBlit + UnBuffer 19168 -> 19072, 8 BBlit +
+    UnBuffer 38002 -> 37666), and the loops of UnBuffer and
+    ShowStencil are the same instructions as before. The library
     test `systest_blit` (new) covers the commands in both modes: every
     shift, junk in the upper words of x and y, the handle, the excess
     planes, the modes, a collision and none, ClipBlit clipped at each

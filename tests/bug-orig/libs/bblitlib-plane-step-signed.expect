@@ -1,0 +1,5 @@
+[run]
+bytes per plane 33600
+write position 33620
+after UnBuffer 0 0
+rc=0

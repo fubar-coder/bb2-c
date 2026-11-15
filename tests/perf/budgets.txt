@@ -38,6 +38,11 @@
 # bgfx.qblit8f, bstr.sort201) from twelve runs of the group 7 branch on
 # main ecef902a (2026-11-15), three of them with the snapshots made anew,
 # and three runs after the rebase onto main b75b2fd7 (2026-11-15).
+# bgfx.bblit4u, bgfx.bblit8u and bgfx.qblit4f from nine runs of the fix of
+# #1045 on main e5eb09d0 (2026-11-15), two of them with the snapshots made
+# anew; qblit4f went up by 2 to 6 cycles with it although qblitlib is
+# unchanged (bblitlib padded to its old size gives the same values, so
+# it is not the code layout but the faster BBlit loops run before it).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -52,11 +57,11 @@ bgfx.blit32                 4730~3     4723.4  Blit 1,100,100
 bgfx.block16                 1021     1009.9  Block 0,96,96
 bgfx.clipblit16              2607     2516.3  ClipBlit 0,100,100
 bgfx.blitcoll                902~1      881.9  c=BlitColl(0,100,100)
-bgfx.bblit4u               19172~8    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
-bgfx.bblit8u              38012~37    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
+bgfx.bblit4u              19086~28    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
+bgfx.bblit8u              37670~12    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
 bgfx.qblit4u               12912~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
 bgfx.qblit8u              25722~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
-bgfx.qblit4f               9200~5     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
+bgfx.qblit4f               9206~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
 bgfx.qblit8f               18308~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
 bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
