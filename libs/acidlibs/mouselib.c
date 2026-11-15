@@ -104,9 +104,9 @@ BLITZ_LIBFIN();
 
 /* ********************** CODE BELOW ********************** */
 
-static WORD mx, my;                     /* mousex, mousey */
+static WORD mx __attribute__((used)), my __attribute__((used)); /* mousex, mousey (also read by the assembler entries) */
 static UBYTE lx, ly;                    /* last x, last y */
-static WORD xs, ys;                     /* x speed, y speed */
+static WORD xs __attribute__((used)), ys __attribute__((used)); /* x speed, y speed */
 static WORD snum;                       /* mouse sprite number (-1 if none) */
 static WORD cnum;                       /* mouse sprite channel */
 static WORD minx, miny, maxx, maxy;
@@ -140,26 +140,41 @@ static void BLITZ_ROUTINE doposmouse_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 }
 BLITZ_ALIAS(doposmouse, doposmouse_c);
 
-/* MouseX ... - Quick: MOVE w,d0:SWAP d0:CLR d0.  Blitz mode only. */
+/* MouseX ... - Quick: MOVE w(pc),d0:SWAP d0:CLR d0, assembler entries as
+   in the original (a game reads them every frame; the C functions' MOVEQ
+   and absolute MOVE cost 9 cycles more).  They change only d0.  Blitz mode
+   only. */
 
 /** @brief MouseX - the mouse's x position (Blitz mode only).
     @return d0: the position as a Quick (the value in the upper word). */
-static ULONG BLITZ_ROUTINE domousex_c(void)  { return (ULONG)(UWORD)mx << 16; }
+BLITZ_ASM_ROUTINE(domousex,
+"   move.w  _mx(pc),d0\n"
+"   swap    d0\n"
+"   clr.w   d0\n"
+"   rts");
 /** @brief MouseY - the mouse's y position (Blitz mode only).
     @return d0: the position as a Quick (the value in the upper word). */
-static ULONG BLITZ_ROUTINE domousey_c(void)  { return (ULONG)(UWORD)my << 16; }
+BLITZ_ASM_ROUTINE(domousey,
+"   move.w  _my(pc),d0\n"
+"   swap    d0\n"
+"   clr.w   d0\n"
+"   rts");
 /** @brief MouseXSpeed - the last horizontal movement, the counter
     difference of the last vertical blank (Blitz mode only).
     @return d0: the speed as a Quick (the value in the upper word). */
-static ULONG BLITZ_ROUTINE domousexs_c(void) { return (ULONG)(UWORD)xs << 16; }
+BLITZ_ASM_ROUTINE(domousexs,
+"   move.w  _xs(pc),d0\n"
+"   swap    d0\n"
+"   clr.w   d0\n"
+"   rts");
 /** @brief MouseYSpeed - the last vertical movement, the counter
     difference of the last vertical blank (Blitz mode only).
     @return d0: the speed as a Quick (the value in the upper word). */
-static ULONG BLITZ_ROUTINE domouseys_c(void) { return (ULONG)(UWORD)ys << 16; }
-BLITZ_ALIAS(domousex, domousex_c);
-BLITZ_ALIAS(domousey, domousey_c);
-BLITZ_ALIAS(domousexs, domousexs_c);
-BLITZ_ALIAS(domouseys, domouseys_c);
+BLITZ_ASM_ROUTINE(domouseys,
+"   move.w  _ys(pc),d0\n"
+"   swap    d0\n"
+"   clr.w   d0\n"
+"   rts");
 
 /**
  * @brief Library init - keep a5 and the offset of the used slice; mouse

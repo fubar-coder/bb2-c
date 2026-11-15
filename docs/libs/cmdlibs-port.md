@@ -328,7 +328,7 @@ C, declarations identical. Object lib "MenuList" (4 bytes). Not a bug, by design
 
 ## 108 mouselib
 
-C, declarations identical. Almost everything only in Blitz mode (err1 = 1). BUG(orig): Mouse On swaps the JOY0DAT bytes (#223). Not bugs: the interrupt leaves a5 in place (a scratch register for interrupt servers); the sprite number of Pointer is object offset >> 4 (offset = number * 16, correct). Test t74 (Blitz mode without Mouse On; interrupt and Pointer with sprite not testable).
+C, declarations identical. Almost everything only in Blitz mode (err1 = 1). BUG(orig): Mouse On swaps the JOY0DAT bytes (#223). Not bugs: the interrupt leaves a5 in place (a scratch register for interrupt servers); the sprite number of Pointer is object offset >> 4 (offset = number * 16, correct). MouseX, MouseY, MouseXSpeed and MouseYSpeed are the original's assembler (`MOVE x(pc),d0:SWAP d0:CLR d0`). Test t74 (Blitz mode without Mouse On; interrupt and Pointer with sprite not testable).
 
 ## 162 iffiolib
 
@@ -424,7 +424,7 @@ BUG(orig): FreeFill leaves the buffer pointer in place (#394); depth 0: 65536 or
 
 ## 190 gameiolib
 
-C, declarations identical, binary = source. Joyx/Joyy/Joyr/Joyb/Gameb read JOY0DAT/JOY1DAT, CIAA PRA and POTGOR directly (Amiga and Blitz mode); Joyb tests with BTST on the byte $DFF016 (POTGOR bit 10/14). BUG(orig) (#415): Gameb port 0 jumps via DBF into the loop of port 1 and leaves it via its exit (POTGO $3000 instead of $0300). Not a bug (a word function): Joyr keeps the upper word of Joyy's MOVEQ. Test: t160 (without input; port 0 against our own decoding of JOY0DAT, Gameb with Disable), t165. Not tested: real inputs.
+C, declarations identical, binary = source. Joyx/Joyy/Joyr/Joyb/Gameb read JOY0DAT/JOY1DAT, CIAA PRA and POTGOR directly (Amiga and Blitz mode); Joyb tests with BTST on the byte $DFF016 (POTGOR bit 10/14). BUG(orig) (#415): Gameb port 0 jumps via DBF into the loop of port 1 and leaves it via its exit (POTGO $3000 instead of $0300). Not a bug (a word function): Joyr keeps the upper word of Joyy's MOVEQ. Joyx, Joyy, Joyr and Joyb are assembler entries (Joyx/Joyy/Joyb the original's code; Joyy uses d0 instead of d2 as its scratch register; Joyr looks its result up in one table of 16 longs indexed by the bits 9, 8, 1 and 0 of the counter word instead of calling Joyx and Joyy, the same d0 for every counter word) and change only d0 and d1; they read JOY1DAT first and JOY0DAT for port 0 (the original JOY0DAT first). Test: t160 (without input; port 0 against our own decoding of JOY0DAT, Gameb with Disable), t165. Not tested: real inputs.
 
 ## 98 blitzkeyslib
 
