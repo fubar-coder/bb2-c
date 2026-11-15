@@ -1769,8 +1769,8 @@ BL_ALWAYS_INLINE int next_edge(const struct edge **list, UWORD *lines, ULONG *st
    dir, ... down to the bottom; cut where the side leaves the clip width
    (the left side at x > width - 1, the right side at x < 0).  Returns the
    address of the end mark. */
-static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, int right,
-                   WORD width, WORD height)
+BL_ALWAYS_INLINE UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir,
+                              int right, WORD width, WORD height)
 {
     struct edge *e = (struct edge *)list;
     WORD last = width - 1, tx = p->x, ty = p->y;
@@ -1826,8 +1826,8 @@ static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, 
    the left side (backwards through the points, into ledges) and the right
    side (redges).  NULL if nothing is visible, else the address of the
    right list's end mark (where the original leaves a3). */
-static UWORD *outline(const struct point *pts, UWORD n, WORD width, WORD height,
-                      UWORD *ledges, UWORD *redges)
+BL_ALWAYS_INLINE UWORD *outline(const struct point *pts, UWORD n, WORD width, WORD height,
+                                UWORD *ledges, UWORD *redges)
 {
     const struct point *p = pts, *lp, *rp;
     WORD lx, rx, y, ly, ry;
@@ -2177,6 +2177,11 @@ BL_ALWAYS_INLINE UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UB
     end = (UBYTE *)outline(pts, n, bm->width, bm->height, ledges, redges);
     if (!end)
         return a3;
+    /* the end mark of the right list, where the original leaves a3; for
+       a clipped polygon that list is in this frame, and the a3 left is
+       only an address (nothing reads through it): the empty asm keeps
+       GCC from tracing it to the frame (-Wreturn-local-addr) */
+    __asm__("" : "+r"(end));
     a3 = end;
     rowoff = bl_mulu_w(pv.top.y, bm->bpr);
     rtclip = (bm->width - 1) * 2;
