@@ -68,8 +68,13 @@
  *   - PaletteRange with start = end divides by zero (DIVS). (#227)
  *   - StopCycle does not reset `cycon`: a later Cycle does not install
  *     the interrupt again (#228).  The cycle list is freed at the end but
- *     not cleared (not a bug: only at program end).  InitPalette writes no
- *     end marker for the cycles (#229).
+ *     not cleared (not a bug: only at program end).
+ *   - Fixed (intended deviation, #229): InitPalette (and PalRGB/AGAPalRGB
+ *     growing an empty palette) wrote no end mark into the cycle table: in
+ *     a palette object never used the 14 entries are 0 without an end, and
+ *     CyclePalette/Cycle ran behind them into the next object.  Here a
+ *     palette that gets its first colour data gets the end mark unless the
+ *     table has one.
  *   - ShowPalette/Use Palette in Amiga mode with an empty palette run
  *     into b_showpal (V39: a0 from somewhere; else make4bitrgbs, a0 = the
  *     palette) and write nothing (count 0) - here both simply return (DIFF). (#230)
@@ -348,6 +353,19 @@ static ULONG rep(UWORD v)
     return (ULONG)w << 16 | w;
 }
 
+/* the cycle table of a palette that gets its first colour data: an end
+   mark if none of the 14 entries has one (a palette object never used is
+   all 0; fixed, #229) */
+static void cycend(struct bb_palette *p)
+{
+    UWORD k;
+
+    for (k = 0; k < 14; k++)
+        if (p->cyc[k].lo < 0)
+            return;
+    p->cyc[0].lo = -1;
+}
+
 /* dopalrgb - a0 = palette, d1 = colour, d2/d3/d4 = red/green/blue (8
    bit); the palette grows if needed.  Keeps d0-d5/a0-a2. */
 static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
@@ -358,7 +376,9 @@ static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
     if ((WORD)c >= (WORD)p->numcols) {          /* expand the palette */
         UBYTE *n = globalloc((ULONG)(UWORD)(c + 1) * 12 + 8, MEMF_PUBLIC | MEMF_CLEAR);
 
-        if (p->pdata) {
+        if (!p->pdata)
+            cycend(p);                          /* fixed (#229) */
+        else {
             ULONG *s = (ULONG *)p->pdata, *dst = (ULONG *)n;
             UWORD k = (UWORD)(p->numcols * 3) + 1;
 
@@ -679,7 +699,8 @@ static void initpalette(struct bb_palette *p, UWORD n)
     if (p->pdata) {
         s = (ULONG)p->numcols * 12;
         globfree(p->pdata, (s & 0xffff0000UL) | (UWORD)(s + 8));   /* ADDQ.w #8 */
-    }
+    } else
+        cycend(p);                              /* fixed (#229) */
     s = (ULONG)n * 12;
     p->pdata = globalloc((s & 0xffff0000UL) | (UWORD)(s + 8), MEMF_PUBLIC | MEMF_CLEAR);
     p->numcols = n;
@@ -693,7 +714,10 @@ static void initpalette(struct bb_palette *p, UWORD n)
  * The old data is freed.  The palette is in a3.  Not a bug (overflows
  * only for palettes of 2731+ colours): the size with ADDQ.w #8.
  *
- * BUG(orig) (#229): no end marker is written for the cycles.
+ * Fixed (#229): a palette that had no colour data gets an end mark in
+ * its cycle table unless one of the 14 entries has one (a cycle SetCycle
+ * set on the empty palette stays); the original wrote none, so a palette
+ * object never used had 14 entries of 0 without an end.
  *
  * @param n d1: the number of colours.
  */

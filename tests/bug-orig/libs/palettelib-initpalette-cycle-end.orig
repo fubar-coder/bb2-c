@@ -1,0 +1,25 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+next object 128
+end 0
+1 00000000 000000FF 00000000
+2 000000FF 00000000 00000000
+palette 2 var 0
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/palettelib-initpalette-cycle-end.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/palettelib-initpalette-cycle-end
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
