@@ -1659,7 +1659,6 @@ BL_ALWAYS_INLINE void IntHandler(void)
 {
     UBYTE counter;
     UWORD dma;
-    int k, bit;
 
     if ((BYTE)db.bpmcounter[0] >= 0) {          /* SEQ: every 4th pulse */
         if ((BYTE)--db.bpmcounter[0] > 0)
@@ -1695,17 +1694,29 @@ fxtime:
     DMACON = dma;
     wait1lin(8);
     /* pushnewvals: the repeat part.  BUG(orig) (#208): for a channel mask
-       with gaps the k-th channel of the mask takes track k and bit k */
-    for (bit = 0, k = 0; bit < 4; bit++) {
-        struct track *t;
+       with gaps the k-th channel of the mask takes track k and bit k.  The
+       mask and the DMA bits are shifted as they are used, the tracks taken
+       in turn (a DBF loop over bits 0-3) */
+    {
+        struct track **tp = db.trackdataptrs;
+        UWORD mask = ChanMask;
+        WORD n = 3;
 
-        if (!(ChanMask & (1 << bit)))
-            continue;
-        t = db.trackdataptrs[k];
-        if ((dma >> k++) & 1 && t->sampleptr) {
-            AC_PTR(t->audioaddr) = t->sampleptr;
-            AC_LEN(t->audioaddr) = t->samplelen;
-        }
+        do {
+            if (mask & 1) {
+                struct track *t = *tp++;
+                ULONG rep = t->sampleptr;
+
+                if ((dma & 1) && rep) {
+                    volatile UBYTE *a = t->audioaddr;
+
+                    AC_PTR(a) = rep;
+                    AC_LEN(a) = t->samplelen;
+                }
+                dma >>= 1;
+            }
+            mask >>= 1;
+        } while (--n != -1);
     }
 }
 
