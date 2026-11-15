@@ -5,6 +5,7 @@
 ; these pointers (into freed memory); here the program reads the pointers
 ; of the object (+8: Planes[8]) back.
 ; Correct: the pointers above the depth are cleared (0).
+; @fixed #80
 ; @configs clib
 DEFTYPE .l
 BitMap 0,16,1,5

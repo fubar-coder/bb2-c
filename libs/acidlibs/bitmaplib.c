@@ -31,8 +31,8 @@
  *     the bitmap).
  *   - Fixed (#79): ShapesBitMap added the plane size as a word (sign
  *     extended): planes of 32 KB and more pointed backwards; unsigned now.
- *   - The planes beyond the depth are not cleared by BitMap (they are
- *     whatever the object held). (#80)
+ *   - Fixed (#80): the planes beyond the depth were not cleared by BitMap
+ *     and extbitmap (they were whatever the object held); cleared now.
  * Kept from the original, not a bug (no visible effect):
  *   - CludgeBitMap does not compute the interleave/plane distance fields
  *     (+52 cleared, +54 stays from before; no library of the CD reads +54
@@ -149,7 +149,10 @@ static ULONG bmbytes(UWORD rows, UWORD depth, UWORD bpr)
     return bl_mulu_w((UWORD)rd, bpr) + (bl_mulu_w((UWORD)(rd >> 16), bpr) << 16);
 }
 
-/* _freebitmap - our own memory (isreal < 0) is freed */
+/* _freebitmap - our own memory (isreal < 0) is freed.  The plane
+   pointers stay (#80): CopyBitMap b,b frees the source before it reads
+   it, and with cleared pointers it would copy from address 0 instead of
+   the freed block; BitMap and extbitmap set all 8 again */
 static void freebitmap(struct bb_bitmap *b)
 {
     if (b->isreal < 0) {
@@ -238,6 +241,8 @@ static void ext(struct bb_bitmap *b, UWORD w, UWORD h, UWORD d)
         *p++ = (UBYTE *)mem;
         mem += psize;
     } while (n-- != 0);
+    while (p < b->planes + 8)                   /* fixed (#80): the rest cleared */
+        *p++ = 0;
     prepxtra(b);
 }
 
@@ -265,7 +270,8 @@ BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
  *
  * Becomes the used bitmap; frees the old one, isreal = -1 (own memory),
  * then as extbitmap (fixed, #76: the size is a long product);
- * the planes beyond the depth are not cleared (#80).  Errors (debugger,
+ * the plane pointers beyond the depth are cleared (fixed, #80: the
+ * original left what the object held).  Errors (debugger,
  * _bitmapchk): "Illegal BitMap Depth" if the depth is 0 or more than 8
  * (fixed, #1040: the original raised error number 1, "No currently used
  * object!"); "Illegal BitMap Size" for a width or height below 1 (fixed,
