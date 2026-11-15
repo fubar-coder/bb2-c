@@ -70,6 +70,9 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 - [ ] 10.5 Frac (vallib) and the per-frame interrupts of medlib and trackerlib (PlayMed, PlayModule)
 - [ ] 10.6 Measure the whole benchmark again and list every command still 10 % or more slower than the original, with the reason
 
+- [ ] 10.7 Sort with the original's tail recursion: the right part as a loop around the body, only the left part a recursive call (the original: `BRA 'recurs`, two longs per level); the same results, since the two parts are sorted independently (user decision 2026-11-15)
+- [ ] 10.8 BBlit, UnBuffer and QBlit: keep the bitmap pointer, the plane step and the other values that are only added and written to the custom registers as `ULONG` in data registers (pinned with `register ... __asm("dN")` where needed), as the original does with d1/d3/d6/d7, so that GCC does not spill them to the stack in the plane loop; C, assembler only if C stays more than 1-2 % behind the original (user decision 2026-11-15)
+
 ## 9. Closing
 
 - [ ] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
