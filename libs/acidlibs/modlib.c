@@ -17,7 +17,8 @@
  *              (the fractions of the inputs are ignored).  Kept bit for
  *              bit.
  *   long:      a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib
- *              lmultiply ($CA01), plus b if negative.
+ *              lmultiply ($CA01), plus b if negative; for a divisor
+ *              below $10000 in magnitude the same remainder from DIVU.
  *   float:     SPFix both (mathffp, a6 = ffplib base), then the long code;
  *              The result is a Long, not an FFP number - the compiler
  *              types it as a Long (blitz2.s:9463 domodf "now a long"), so
@@ -30,7 +31,7 @@
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (thunks, domodlong assembler; defined below) */
 void domodbyte(void), domodword(void), domodlong(void);
 void domodquick(void), domodfloat(void);
 
@@ -106,37 +107,68 @@ static ULONG BLITZ_ROUTINE domodquick_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 }
 BLITZ_THUNK(domodquick, domodquick_c, "d1/a0-a1");
 
-/* domodlong - d0 = a - ldivide(a,b)*b; if negative, + b */
-static ULONG mod_l(ULONG a, ULONG b)
-{
-    struct bl_regs r = { .d0 = a, .d1 = b };
-    ULONG rem;
-
-    BLITZ_ALIBJSR(TOK_ldivide, r);
-    r.d1 = b;                                       /* MOVE.l (a7),d1 */
-    BLITZ_ALIBJSR(TOK_lmultiply, r);
-    rem = a - r.d0;                                 /* SUB.l d1,d0 */
-    if ((LONG)rem < 0)                              /* BPL 'done */
-        rem += b;                                   /* ADD.l (a7),d0 */
-    return rem;
-}
-
 /**
  * @brief a MOD b for Long (token modlong $D402).
  *
  * a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib lmultiply ($CA01),
- * plus b if negative.  Keeps a0/a1; d1 is changed (the original leaves
- * (a/b)*b in d1).
+ * plus b if negative (the original's code).  Keeps d2-d7 and a0-a6; d1
+ * is changed (the original leaves (a/b)*b in d1).
+ *
+ * In assembler for speed (a hot path, every Mod on Long).  For a divisor
+ * of 1 to $FFFF in magnitude the remainder comes from two DIVU instead
+ * of the two calls, with the same result: ldivide's quotient is the
+ * exact one of the magnitudes with the sign applied, lmultiply's product
+ * is the one modulo 2^32, so a - (a/b)*b is the remainder of the
+ * magnitudes with the dividend's sign.  A divisor 0 (ldivide's
+ * 'infinity; the result is a) or one from $10000 on takes the calls.
  *
  * @param a d0: the left operand.
  * @param b d1: the right operand.
  * @return d0: the remainder.
  */
-static ULONG BLITZ_ROUTINE domodlong_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
-{
-    return mod_l(a, b);
-}
-BLITZ_THUNK(domodlong, domodlong_c, "a0-a1");
+BLITZ_ASM_ROUTINE(domodlong,
+        "   move.l  d1,-(sp)\n"             /* b */
+        "   beq.s   .Lcalls\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d1\n"
+        "1: cmp.l   #0xffff,d1\n"
+        "   bhi.s   .Lcalls\n"
+        "   move.l  d0,-(sp)\n"             /* a, for its sign */
+        "   bpl.s   2f\n"
+        "   neg.l   d0\n"
+        "2: move.l  d2,-(sp)\n"
+        "   moveq   #0,d2\n"                /* |a| MOD |b| with two DIVU */
+        "   swap    d0\n"
+        "   move.w  d0,d2\n"
+        "   divu    d1,d2\n"
+        "   swap    d0\n"
+        "   move.w  d0,d2\n"
+        "   divu    d1,d2\n"
+        "   clr.w   d2\n"
+        "   swap    d2\n"
+        "   move.l  d2,d0\n"
+        "   move.l  (sp)+,d2\n"
+        "   tst.l   (sp)+\n"
+        "   bpl.s   3f\n"
+        "   neg.l   d0\n"                   /* the dividend's sign */
+        "   bpl.s   3f\n"
+        "   add.l   (sp),d0\n"              /* negative: + b */
+        "3: addq.l  #4,sp\n"
+        "   rts\n"
+        ".Lcalls:\n"
+        "   move.l  (sp),d1\n"
+        "   movem.l d0/a0-a1,-(sp)\n"       /* a; lmultiply may change a0/a1 */
+        "   jsr     _blitz_tok+0x80000000+" BL_STR(TOK_ldivide) "\n"
+        "   move.l  12(sp),d1\n"
+        "   jsr     _blitz_tok+0x80000000+" BL_STR(TOK_lmultiply) "\n"
+        "   move.l  d0,d1\n"
+        "   move.l  (sp),d0\n"
+        "   sub.l   d1,d0\n"
+        "   bpl.s   4f\n"
+        "   add.l   12(sp),d0\n"
+        "4: movem.l 4(sp),a0-a1\n"          /* the CCR stays */
+        "   lea     16(sp),sp\n"
+        "   rts");
 
 /**
  * @brief a MOD b for Float (token modfloat $D404).
@@ -156,12 +188,19 @@ static ULONG BLITZ_ROUTINE domodfloat_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1),
                                         const void *ffp BL_REG(a6))
 {
     struct bl_regs r = { .d0 = a, .d1 = b };
-    ULONG ia, ib;
+    ULONG ia;
 
     ia = BLITZ_BASEJSR(ffp, LVO_SPFix, r);
     r.d0 = b;
     r.d1 = b;                                       /* MOVE.l (a7)+,d1 */
-    ib = BLITZ_BASEJSR(ffp, LVO_SPFix, r);
-    return mod_l(ia, ib);
+    {
+        register ULONG d1 __asm("d1") = BLITZ_BASEJSR(ffp, LVO_SPFix, r);
+        register ULONG d0 __asm("d0") = ia;
+
+        /* the Long code: domodlong, which keeps all but d0/d1 */
+        __asm volatile("jsr     _domodlong(pc)"
+                       : "+d"(d0), "+d"(d1) : : "cc", "memory");
+        return d0;
+    }
 }
 BLITZ_THUNK(domodfloat, domodfloat_c, "a0-a1");
