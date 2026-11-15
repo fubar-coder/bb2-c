@@ -294,7 +294,7 @@ the set: `obj` is the C build of this repository, `orig` the original
 (acidlibs from `BLITZ2/ACIDLIBS` of the CD, RWE libraries from the
 reference build of their sources). A program cannot see both sets, so
 it cannot compare the C build with itself. Selection: the snitch filters
-`[sys]`, `[mathstr]`, `[runtime]`, `[system]`, `[cmd]`, `[med]`,
+`[sys]`, `[mathstr]`, `[runtime]`, `[system]`, `[cmd]`, `[blit]`, `[med]`,
 `[libtest]`, `[rwe]`, `"libtest ldivlib"`, `"rwe riarrayslib"`, passed as
 `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake` or, for
 the targets below, as `LIBS_CAPTURE_FILTER`.
@@ -385,12 +385,16 @@ that has a `[fixed #N]` case keeps that case, and the original's value
 becomes its `[orig]` case. The cache variable `LIBS_CAPTURE_FILTER`
 limits the run to a snitch filter (`cmake --preset amiga
 "-DLIBS_CAPTURE_FILTER=rwe riarrayslib"`, set it empty again
-afterwards); the other programs' files stay as they are. The result is
-reviewed with `git diff libs/tests/expected` and committed with the
-change of the scenario. Two identical runs prove the independence from
-the memory layout only: date, time and emulator timing are not varied,
-so a value that depends on them and happens to agree twice is not
-found; `libs_emulator_originals` on another day is the detector.
+afterwards); the other programs' files stay as they are. Use a tag
+filter (`[blit]`) or the full name of a test case, no `*`: the filter is
+a quoted argument of the AmigaDOS script, where `*` is the escape
+character (`"systest_blit*"` matches nothing, and nothing is written).
+The result is reviewed with `git diff libs/tests/expected` and committed
+with the change of the scenario. Two identical runs prove the
+independence from the memory layout only: date, time and emulator
+timing are not varied, so a value that depends on them and happens
+to agree twice is not found; `libs_emulator_originals` on another day
+is the detector.
 
 **Update** (`libs-update`, no CD) runs the C build once and rewrites the
 value of every `[fixed #N]` case. To turn an unqualified case into a pair
