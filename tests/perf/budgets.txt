@@ -54,6 +54,8 @@
 # bmisc.fadepalette) from six runs of the group 10 B branch on main
 # e5eb09d0 (2026-11-15), two of them with the snapshots made anew; a "B~T"
 # line keeps at least its earlier tolerance (from 38 runs).
+# bgfx.polyf3 from six runs of task 10.11 (Polyf's set-up) on main
+# f7960476 (2026-11-16): 46659.7 to 46669.9.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -91,7 +93,7 @@ bgfx.circle               33070~40    33609.8  Circle 100,100,10,1
 bgfx.circlef              16950~30    17189.8  Circlef 100,100,10,1
 bgfx.cls                84730~1081    84709.9  Cls
 bgfx.poly3                 7365~91     7524.9  Poly 3,&pts(0),1
-bgfx.polyf3               50270~11    46969.8  Polyf 3,&pts(0),1
+bgfx.polyf3               46670~21    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32              7998~17     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   134      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1

@@ -588,6 +588,25 @@ build.
     (#392) and a cut vertical Polyf edge (#1033), where the original
     writes outside the bitmap or divides by zero, and the top clipping
     of ShowSprite in SpriteMode 1 and 2 (#283).
+    - Polyf's set-up (task 10.11, 2026-11-16), C except the line loop:
+      the cycles went to call shape and to the line loop's addressing,
+      not to the clipping of #1000/#1033 (polyinrange and clippoly run
+      only for points outside 0..8191). Per step, Polyf 3 points (the
+      original 46969.8): `prodgt` inline, its MULU without zero
+      extension (the magnitudes fit in the low word) 50269.7 ->
+      50094.8; the state of ploop read PC-relative as the original
+      (`cmp.w _pq+8(pc)`, `btst d6,_pq+11(pc)`: 4 cycles per access, 28
+      per line with three planes) -> 48969.9; the points copied as
+      longs, ORed together for a quick range test (no bit of
+      $E000E000 and no origin: polyinrange is true without its loop),
+      drawpoly inline -> 47734.9; outline and both sides inline (they
+      were functions with seven and eight stack arguments, each saving
+      eight registers) -> 46659.9 (0.99). 2dlib 13380 -> 13308 bytes.
+      Not taken: polyinrange inline (180 cycles more on the quick path,
+      register pressure; it stays a function and compares words);
+      the original's `MOVE lup1(pc,d6),$44(a4)` (the tables would have
+      to be within 128 bytes of the loop, 130 with the loop's code: two
+      LEA of 8 cycles per line stay, 640 cycles of the benchmark).
 
 ## Risks / Trade-offs
 
