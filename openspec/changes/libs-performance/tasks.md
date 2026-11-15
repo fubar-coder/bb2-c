@@ -31,8 +31,8 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 5. String copy loops
 
-- [x] 5.1 Replace the copy loop of `copstring` (strings1lib) by the unrolled assembler loop of the original; keep the contract of the internal token (d0-d7)
-- [x] 5.2 Replace the copy loop of `stringass` (strings2lib) likewise; put the allocation path of `assign` in its own `noinline` function so that the common path saves no registers; keep d1-d7 and a2 of `lastring`/`astring`; both entries need no thunk then (task 8.3)
+- [x] 5.1 Replace the copy loop of `copstring` (strings1lib) by a C loop that reaches the original (longs or 8 bytes per pass, `BL_STRCOPY`; user decision 2026-11-15: C first, assembler only where C stays more than about 10 % slower); keep the contract of the internal token (d0-d7)
+- [x] 5.2 Replace the copy loop of `stringass` (strings2lib) likewise, in C with a thunk that saves only d1; put the allocation path of `assign` in its own `noinline` function so that the common path saves no registers; keep d1-d7 and a2 of `lastring`/`astring`; both entries need no thunk then (task 8.3)
 - [x] 5.3 Measure assignment, concat, compare, Len, Mid$, Left$, Right$, Asc, Chr$, Inkey$; tighten the budgets
 
 ## 6. Small entries
@@ -56,7 +56,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 - [x] 8.1 Analysis first: which registers and flags the third-party callers of the internal tokens `globalloc`, `globfree` ($C002/$C003, 41/37 libraries), `allocst`, `freest` ($CF01/$CF02) and `fltoqu` ($D301) rely on across the call, the same method as `analyse-thirdparty-regs.md`; #1059 (the Z flag after AllocMem) belongs here - done (2026-11-15): `~/.local/share/bb2-c-work/analyse-internal-token-callers.md`
 - [ ] 8.2 Cut the thunks of the internal tokens to the contract of `thunks.md` table 1.4 and the 8.1 analysis: no thunk for Mod ($D400-04), qutofl ($D300), the power routine, arrmult/newarr and maxlen; clrloc, newmem and localstat save d0-d1 only; third-party contracts (8.1): globalloc keeps a0-a1 and leaves Z clear after success (#1059 is fixed separately), globfree keeps d1/a0, allocst keeps a0-a1 (d1 can go), freest keeps d0/a0-a1 (d1 can go; d0 for LotanArray ArSet), fltoqu keeps a0-a1 (d1 can go), longmult keeps a0 (no thunk; the routine must not use a0/a1); or write these entries as assembler that does not touch those registers; each with a KEEPS statement whose reason names the third-party caller
-- [ ] 8.3 `strcomp` ($CE00, keeps d0-d7), `freelast` ($C005, keeps d0 and the flags), the procedure prologue routines and the conversions `qutofl`/`fltoqu` ($D300/$D301, the original's code: `BCHG #7,d0`, the mathffp calls through `jsr -xx(a6)` and `NEG.l d0`, never touching a0/a1, so that the third-party callers of 8.1 keep a0-a1 without a thunk; user decision 2026-11-15) as assembler entries that do not touch the registers of their contract, so they need no thunk; `copstring` and `lastring`/`astring` get the same in group 5
+- [ ] 8.3 `strcomp` (copstring and lastring/astring keep their minimal thunks of group 5, d0-d1 and d1; the assembler variant on branch `g5-asm` would drop them for 40-100 cycles, only if a measurement asks for it) ($CE00, keeps d0-d7), `freelast` ($C005, keeps d0 and the flags), the procedure prologue routines and the conversions `qutofl`/`fltoqu` ($D300/$D301, the original's code: `BCHG #7,d0`, the mathffp calls through `jsr -xx(a6)` and `NEG.l d0`, never touching a0/a1, so that the third-party callers of 8.1 keep a0-a1 without a thunk; user decision 2026-11-15) as assembler entries that do not touch the registers of their contract, so they need no thunk; `copstring` and `lastring`/`astring` get the same in group 5
 - [ ] 8.4 Measure string compare, procedure calls with locals, Mod and the Quick/Float conversions; tighten the budgets
 
 ## 10. Remaining slow commands

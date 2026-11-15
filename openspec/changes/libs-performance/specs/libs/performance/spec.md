@@ -8,7 +8,7 @@ A change made for speed SHALL NOT change what a command returns, draws or report
 - **THEN** every quotient, remainder and the fix kept at the entry (#200) give the values of the expected data
 
 ### Requirement: The speed profile
-The libraries SHALL be built at `-Os` except those in the speed profile. The speed profile (`ACIDLIBS_SPEED`) SHALL contain bitmaplib, sortlib, stringfunclib, vallib, strings1lib, strings2lib, medlib and trackerlib.
+The libraries SHALL be built at `-Os` except those in the speed profile. The speed profile (`ACIDLIBS_SPEED`) SHALL contain bitmaplib, sortlib, stringfunclib, vallib, medlib and trackerlib. A library joins it only where the measurement shows a gain (strings1lib and strings2lib measured faster at `-Os` after their copy loops were rewritten, design.md Decision 15).
 
 #### Scenario: The profile list
 - **WHEN** the library build is configured
