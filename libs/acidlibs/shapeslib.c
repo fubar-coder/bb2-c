@@ -27,8 +27,6 @@
  * 5, interleave 1) gives a delta frame in the NEXT shape object.
  *
  * BUG(orig), kept:
- *  - Row/plane steps ADD x(a3),An are word additions (sign extended for
- *    planes of 32K and more); sizes are low words of MULU. (#263)
  *  - LoadShape: "BODY" is not checked (the decoder reads whatever
  *    follows) (#264).  Not a bug: only `depth`
  *    DLTA pointers are read (one per plane); the copied frame shares
@@ -76,6 +74,16 @@
  *    shape object were written over the memory behind the shape table.
  *    Here the load stops at the last shape object (the declarations of
  *    LoadShape pass the table and its maximum in a2/d3). (#265)
+ *  - The plane steps (LoadShape, the cookie, the ANIM deltas) were word
+ *    additions (sign extended: planes of 32K and more went backwards,
+ *    LoadShape wrote before its data block), and the size of the data
+ *    (+26, a word) was used for SaveShapes, LoadShapes, DecodeShapes and
+ *    CopyShape (a shape of 64K or more was saved and copied in part).
+ *    Here the steps are unsigned and the size of the data is bytes per
+ *    plane x depth as a long (+26 keeps its low word, as before).  The
+ *    format keeps the bytes per plane in a word: LoadShape refuses an
+ *    ILBM with a plane of 64K or more ("Can't Read/Write Shapes File",
+ *    nothing loaded), LoadShapes/DecodeShapes such a block. (#263)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -312,6 +320,13 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(shapeslib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
+/* the size of a shape's data: bytes per plane x depth as a long (fixed
+   #263: +26 holds only its low word) */
+static ULONG shsize(const struct bb_shape *s)
+{
+    return bl_mulu_w(s->planesize, s->depth);
+}
+
 /* free a shape's data and cookie (a3) */
 static void freeashape_(struct bb_shape *s)
 {
@@ -321,7 +336,7 @@ static void freeashape_(struct bb_shape *s)
         return;
     s->width = 0;
     if (s->cludge != BB_CLUDGE)
-        globfree(s->data, s->size);
+        globfree(s->data, shsize(s));
     s->cludge = 0;                      /* Fixed (#269): also "cL" */
     c = (ULONG)s->cookie;
     if (c) {
@@ -349,7 +364,8 @@ BLITZ_THUNK(freeashape, freeashape_c, "d0-d1/a0-a1");
 static void cookie_(struct bb_shape *s)
 {
     UBYTE *plane, *ck;
-    UWORD psize, rows;
+    ULONG psize;                                /* fixed #263: unsigned */
+    UWORD rows;
 
     if (s->cookie) {
         void *c = s->cookie;
@@ -374,7 +390,7 @@ static void cookie_(struct bb_shape *s)
                 dst += 2;
             } while (words-- != 0);
             src -= (WORD)s->ebwidth;
-            src += (WORD)psize;
+            src += psize;
             dst -= (WORD)s->ebwidth;
             __asm__("" : "+a"(src));            /* no __mulsi3 */
         } while (planes-- != 0);
@@ -469,18 +485,20 @@ static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 }
 BLITZ_THUNK(dohandle, dohandle_c, "d0-d1/a0-a1");
 
-/* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie) */
-static void nall(struct bb_shape *from, struct bb_shape *to, UWORD ptroff, UWORD sizeoff)
+/* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie); size:
+   the bytes of the block (fixed #263: the original took the word +26 or
+   +22, a shape of 64K or more was copied in part) */
+static void nall(struct bb_shape *from, struct bb_shape *to, UWORD ptroff, ULONG size)
 {
     UBYTE *src, *dst;
-    UWORD n;
+    ULONG n;
 
     if (!SL(from, ptroff))
         return;
-    dst = globalloc(SW(from, sizeoff), MEMF_CHIP);
+    dst = globalloc(size, MEMF_CHIP);
     SP(to, ptroff) = dst;
     src = SP(from, ptroff);
-    n = (UWORD)(SW(from, sizeoff) >> 1) - 1;
+    n = (size >> 1) - 1;
     do {
         *(UWORD *)dst = *(UWORD *)src;
         dst += 2;
@@ -496,7 +514,7 @@ static void copyshape2(struct bb_shape *from, struct bb_shape *to)
     for (i = 0; i < 8; i++)
         ((ULONG *)to)[i] = ((ULONG *)from)[i];
     to->cludge = 0;                     /* Fixed (#268): the copy owns its data */
-    nall(from, to, offsetof(struct bb_shape, data), offsetof(struct bb_shape, size));
+    nall(from, to, offsetof(struct bb_shape, data), shsize(from));
 }
 
 /**
@@ -516,7 +534,7 @@ static void BLITZ_ROUTINE docopyshape_c(struct bb_shape *dst BL_REG(a2))
 {
     copyshape2((struct bb_shape *)blitz_string, dst);
     nall((struct bb_shape *)blitz_string, dst, offsetof(struct bb_shape, cookie),
-         offsetof(struct bb_shape, planesize));
+         ((struct bb_shape *)blitz_string)->planesize);
 }
 BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
 
@@ -528,8 +546,9 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
  * a3 = the shape; the old one is freed.  Data cleared (CHIP, not
  * checked), handle 0, a cleared cookie with AutoCookie on.
  *
- * BUG(orig) (#263): the sizes are the low words of MULU.
- * Errors (debugger, initchk): "Illegal Shape Depth" for a depth of 0
+ * The sizes +22/+26 are the low words of MULU; the data is allocated with
+ * the long product (a plane of 64K or more does not fit +22: not
+ * checked).  Errors (debugger, initchk): "Illegal Shape Depth" for a depth of 0
  * (fixed, #243 #74: the original had no check; a shape of depth 0 made
  * the plane loops of the blit commands run 65536 times).
  *
@@ -707,7 +726,9 @@ static void BLITZ_ROUTINE dosaveshapes_c(struct bb_shape *last BL_REG(a2), const
         if (Write(fh, s, 32) != 32)
             BLITZ_RUNERR(mess3);
         if (s->width) {
-            if ((UWORD)Write(fh, s->data, s->size) != s->size)
+            ULONG n = shsize(s);                /* fixed #263: not +26 */
+
+            if ((ULONG)Write(fh, s->data, n) != n)
                 BLITZ_RUNERR(mess3);
         }
         s++;
@@ -738,15 +759,16 @@ static void loadshapes(struct bb_shape *s, struct bb_shape *last, const char *na
         s->cookie = NULL;
         s->cludge = 0;                  /* Fixed (#267): not the file's +30 */
         if (s->width) {
-            /* check validity of shape block... */
+            /* check validity of shape block... (fixed #263: a plane of
+               64K or more is refused, the data is planesize x depth) */
             p = (ULONG)s->ebwidth * s->height;
-            if ((UWORD)p != s->planesize)
+            if (p > 0xffff || (UWORD)p != s->planesize)
                 BLITZ_RUNERR(mess3);
             p = (ULONG)(UWORD)p * s->depth;
             if ((UWORD)p != s->size)
                 BLITZ_RUNERR(mess3);
-            s->data = globalloc(s->size, MEMF_CHIP);
-            if ((UWORD)Read(fh, s->data, s->size) != s->size)
+            s->data = globalloc(p, MEMF_CHIP);
+            if ((ULONG)Read(fh, s->data, p) != p)
                 BLITZ_RUNERR(mess3);
             if (autocook)
                 cookie_(s);
@@ -812,12 +834,12 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
 
     do {
         const struct bb_shape *hd = (const struct bb_shape *)src;    /* the block */
-        ULONG p = (ULONG)hd->ebwidth * hd->height;
+        ULONG p = bl_mulu_w(hd->ebwidth, hd->height);
         int i;
 
-        if ((UWORD)p != hd->planesize)
+        if (p > 0xffff || (UWORD)p != hd->planesize)   /* fixed #263 */
             return;
-        p = (ULONG)(UWORD)p * hd->depth;
+        p = bl_mulu_w((UWORD)p, hd->depth);
         if ((UWORD)p != hd->size)
             return;
         freeashape_(shape);
@@ -829,8 +851,8 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
         shape->cludge = 0;              /* Fixed (#267): not the block's +30 */
         if (shape->width) {
             if (fastmem) {
-                UBYTE *d = globalloc(shape->size, MEMF_CHIP);
-                UWORD n = (UWORD)(shape->size >> 1) - 1;
+                UBYTE *d = globalloc(p, MEMF_CHIP);     /* fixed #263: */
+                ULONG n = (p >> 1) - 1;                 /* not +26 */
 
                 shape->data = d;
                 do {
@@ -840,7 +862,7 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
                 } while (n-- != 0);
             } else {
                 shape->data = src;            /* in chip: use in place */
-                src += shape->size;
+                src += p;                       /* fixed #263: not +26 */
                 shape->cludge = BB_CLUDGE;         /* don't free me freeshape! */
             }
             if (autocook)
@@ -921,7 +943,8 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     struct bb_shape *next;                         /* a2: the next frame's shape */
     UWORD bpr, rows, depth;
     UWORD planesize;                            /* d7 */
-    UWORD pstep;                                /* d7: row end to the next plane */
+    ULONG pstep;                                /* d7: row end to the next plane
+                                                   (fixed #263: unsigned) */
     UWORD bltsize;                              /* d0 */
     ULONG res;                                  /* d0: chained through the IFF calls */
     ULONG p;
@@ -951,6 +974,13 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
     p = (ULONG)(UWORD)p * depth;
     first->xsize = (UWORD)p;
     p = (ULONG)bpr * rows;
+    if (p > 0xffff) {
+        /* fixed #263: the shape keeps the bytes per plane in a word; a
+           plane of 64K or more is refused (nothing loaded) */
+        first->width = 0;
+        IJSR(TOK_iffclose, 0, st);
+        BLITZ_RUNERR(mess3);
+    }
     first->planesize = (UWORD)p;
     planesize = (UWORD)p;
     p = (ULONG)(UWORD)p * depth;
@@ -972,7 +1002,7 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
                 res = IJSR(TOK_ilbmgetbyte, res, st); /* get byte */
                 *dst++ = (UBYTE)res;
             } while (n-- != 0);
-            dst += (WORD)pstep;
+            dst += pstep;
         } while (count-- != 0);
         dst = row + (WORD)bpr;
     } while (rows-- != 0);
@@ -1087,7 +1117,7 @@ static void doshload_(struct bb_shape *shape, const char *name, const struct bb_
                     dst = col;
                 }
             }
-            dst += (WORD)frame->planesize;         /* pskip */
+            dst += frame->planesize;    /* pskip (fixed #263: unsigned) */
         } while (planes-- != 0);
         if (autocook)
             cookie_(frame);
@@ -1119,11 +1149,17 @@ skipanim:
  * Fixed (#265): the frames stop at the last shape object (the rest of the
  * file is not read); the original wrote them behind the shape table.
  *
+ * Fixed (#263): the plane steps are unsigned (the original's word steps
+ * went backwards for planes of 32K and more); an ILBM with a plane of 64K
+ * or more is refused with "Can't Read/Write Shapes File" (the shape
+ * keeps the bytes per plane in a word).
+ *
  * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
- * (#264); sizes are MULU low words (#263).
+ * (#264).
  * Errors (in the normal code, their texts in the error area): "Can't open
  * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
- * interleave value" (<> 1).
+ * interleave value" (<> 1), "Can't Read/Write Shapes File" (a plane of
+ * 64K or more, fixed #263).
  *
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name

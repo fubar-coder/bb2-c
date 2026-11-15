@@ -5,6 +5,7 @@
 ; +26 is 80000 mod 65536 = 14464, and SaveShapes writes only that many
 ; bytes of the data behind the 32 byte block (file 14496 bytes).
 ; Correct: the whole shape is saved: 32 + 80000 = 80032 bytes.
+; @fixed #263
 ; @configs clib
 DEFTYPE .l
 Statement pb{v.l}

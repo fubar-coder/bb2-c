@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+plane 0 00000011 plane 1 0000005A
+inject: rc=0
+rc=0
