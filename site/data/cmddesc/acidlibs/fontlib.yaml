@@ -5,13 +5,14 @@
   notes: |
     Only fonts of 8 pixels height with all characters 8 pixels wide are
     accepted; any other font, or one that cannot be found, is the error
-    "Can't Open Font". Kept from the original: a font refused for its size
-    stays open ([#150](https://github.com/fubar-coder/bb2-c/issues/150)).
+    "Can't Open Font", also without runtime error checking. A font
+    refused for its size is closed before the error.
 "BitMapOutput":
   text: Sends the output of `Print` and `NPrint` to the bitmap given, drawn with the used BlitzFont from the bitmap's cursor position.
   notes: |
-    Each bitmap keeps its own cursor position. Kept from the original: a
-    bitmap without bitplanes makes the output run very long
+    Each bitmap keeps its own cursor position. As in the original, a
+    bitmap without bitplanes makes the output run very long; with runtime
+    error checking, `BitMap` and `CludgeBitMap` refuse to make one
     ([#149](https://github.com/fubar-coder/bb2-c/issues/149)).
 "Colour":
   text: The colours of the text on bitmaps, `Foreground Colour` for the characters and `Background Colour`, if given, for the space around them.

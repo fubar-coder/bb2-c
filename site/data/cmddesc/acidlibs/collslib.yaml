@@ -24,8 +24,10 @@
 "SColl":
   text: True (-1) if the sprites on the two channels collided, as `DoColl` read it, else false (0). Blitz mode only.
   notes: |
-    Kept from the original: with channel 0 or 1 as the second channel, or
-    two channels of the same pair, another collision is tested
-    ([#110](https://github.com/fubar-coder/bb2-c/issues/110)).
+    The order of the two channels does not matter. Sprites of the same
+    pair of channels (0 and 1, 2 and 3, 4 and 5, 6 and 7) have no
+    collision of their own: with runtime error checking, two such
+    channels are the error "Sprite channels must be of different pairs",
+    two equal ones "Sprite channels must be different".
 "PColl":
   text: True (-1) if the sprite on the channel collided with a bitmap colour that counts, as `DoColl` read it, else false (0). Blitz mode only.

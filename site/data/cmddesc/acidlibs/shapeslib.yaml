@@ -2,9 +2,11 @@
   text: Loads an IFF ILBM picture as a shape, and with `Palette#` its colours into that palette object. An IFF ANIM file gives its first frame in this shape and each further frame in the next shape number.
   notes: |
     Only ANIM files of the usual compression (method 5) are read; others
-    give "ANIM format not supported". Kept from the original: the frames
-    of an animation are not checked against the highest shape number
-    ([#265](https://github.com/fubar-coder/bb2-c/issues/265)).
+    give "ANIM format not supported". The frames go into the shape
+    numbers up to the highest one; the rest of the animation is not
+    loaded. A picture with a plane of 64 KB or more, such as 1024 by 520
+    pixels, does not fit a shape and is the error "Can't Read/Write
+    Shapes File", also without runtime error checking.
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
 "GetaShape":

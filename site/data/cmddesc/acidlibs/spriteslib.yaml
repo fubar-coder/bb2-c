@@ -5,19 +5,17 @@
   notes: |
     With runtime error checking, a shape of another number of colours is
     the error "Shape MUST be 4 or 16 colours", one too wide for the
-    sprite channels "Sprite too Wide". Kept from the original: the image
-    is read in the full width of a channel, also beyond the right edge of
-    a narrower shape
-    ([#282](https://github.com/fubar-coder/bb2-c/issues/282)).
+    sprite channels "Sprite too Wide": a 4 colour shape may be 8 sprites
+    wide, a 16 colour shape, which takes two channels per sprite, 4 (in
+    `SpriteMode 0` 128 and 64 pixels). Where the shape ends inside the
+    last sprite, the rest of that sprite is empty.
 "ShowSprite":
   text: Shows a sprite on the used slice at `X,Y`, always in low resolution pixels, through sprite channel `Sprite Channel` (0 to 7) and, for a wide or 16 colour sprite, the channels after it. Blitz mode only.
   notes: |
     The sprite is cut at the top and the bottom of the slice, and
     switched off when it is completely outside. With runtime error
     checking, a channel the sprite does not fit into is the error "Sprite
-    Channel Unavailable". Kept from the original: in the 32 and 64 pixel
-    modes, a sprite cut at the top shows the wrong lines
-    ([#283](https://github.com/fubar-coder/bb2-c/issues/283)).
+    Channel Unavailable".
 "InFront":
   text: Sprites on channels from `Sprite Channel` on appear behind the bitmaps of the used slice, those on lower channels in front of them. `Sprite Channel` is an even number from 0 to 8. Blitz mode only.
   notes: |
@@ -35,23 +33,17 @@
   text: Saves the sprites from the first `Sprite#` to the second into a file. Amiga mode only.
   notes: |
     A file that cannot be opened is the error "Can't open Sprites file",
-    a failed write "Error reading/writing Sprites file". Kept from the
-    original: a sprite made before a change of `SpriteMode` is saved with
-    the size of the new mode
-    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+    a failed write "Error reading/writing Sprites file". Each sprite is
+    saved in the size of the `SpriteMode` it was made in.
 "LoadSprites":
   text: Loads sprites saved with `SaveSprites` into the sprite objects from the first `Sprite#` on, up to the second if it is given. Amiga mode only.
   notes: |
     When the file has fewer sprites than the range, the sprite after the
-    last one loaded is freed and the others stay as they are. The errors are those of `SaveSprites`. Kept from the
-    original: the size of a sprite's image depends on the `SpriteMode` at
-    the time of loading
-    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+    last one loaded is freed and the others stay as they are. The errors
+    are those of `SaveSprites`. Each sprite keeps the size it was saved
+    with, whatever the current `SpriteMode`.
 "SpriteMode":
   text: The width of the sprite channels for the sprites made and shown after it, 0 for 16, 1 for 32 and 2 for 64 pixels. The wider modes need the AGA chip set and a display of the display library set up for them.
   notes: |
-    Kept from the original: the mode is not checked, and a mode above 2
-    gives a wrong width
-    ([#281](https://github.com/fubar-coder/bb2-c/issues/281)); a sprite
-    made in another mode is later freed with the wrong size
-    ([#280](https://github.com/fubar-coder/bb2-c/issues/280)).
+    With runtime error checking, a mode above 2 is the error "Illegal
+    SpriteMode". Sprites made before keep the size of their own mode.

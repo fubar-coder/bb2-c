@@ -20,10 +20,9 @@
 "ScreenTags":
   text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the address of the screen or, if it cannot be opened, Intuition's error code.
   notes: |
-    A tag list given by its address may be of any length. Kept from the
-    original: tag and data pairs given as arguments are copied without a
-    limit, and 16 pairs or more overwrite memory behind the library's
-    buffer ([#1039](https://github.com/fubar-coder/bb2-c/issues/1039)).
+    With runtime error checking, more than 15 tag and data pairs given as
+    arguments are the error "Too Many Tags"; a longer list can be given
+    as the address of a tag list, which takes any number of tags.
 "WbToScreen":
   text: Takes the Workbench screen as the screen object and makes it the used screen, mostly to open windows on it.
   notes: |

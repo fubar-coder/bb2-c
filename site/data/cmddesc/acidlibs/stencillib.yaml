@@ -1,9 +1,8 @@
 "Stencil":
   text: Makes a stencil from a bitmap, set at every pixel that is not colour 0 in any of its bitplanes. An old stencil of the object is freed first.
   notes: |
-    Kept from the original: the stencil is right only for bitmaps of up
-    to 1024 lines and 1024 pixels in width
-    ([#284](https://github.com/fubar-coder/bb2-c/issues/284)).
+    The stencil covers the whole bitmap, also one of more than 1024 lines
+    or wider than 1024 pixels.
 "SBlit":
   text: Draws a shape into the used bitmap as `Blit` does, at `X,Y` minus the shape's handle, and adds the shape's pixels to the stencil at the same position.
   notes: |
