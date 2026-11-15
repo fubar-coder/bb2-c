@@ -39,8 +39,6 @@
  *    offsets) (#81); SelectBox Box# is not range checked (negative or
  *    >= 1024: deselect only) (#82); SpotBox has no page check, with 0
  *    boxes it scans 65536 (#83).
- *  - AddBox with a string box 8..15 pixels wide: tlen 1, the space fill
- *    (DBRA of tlen-2) writes 65536 spaces. (#84)
  *  - BoxString strips trailing spaces backwards without a limit: an
  *    all-space answer runs into the prompt / memory before the text (d0
  *    0: nothing, negative: a huge copy). (#85)
@@ -52,6 +50,10 @@
  *    when nothing is selected (#90); Backspace at position 0 leaves the
  *    cursor off (#91).
  *  - DeSelectBox does not clear `selected`. (#94)
+ * Fixed (intended deviations):
+ *  - #84: AddBox with a string box 8..15 pixels wide (tlen 1): the space
+ *    fill (DBRA of tlen-2) wrote 65536 spaces behind the 1-byte text;
+ *    here the text is just the 0.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -974,10 +976,14 @@ static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, UL
         b->tlen = len;
         fill = globalloc(len, 0);
         b->text = fill;
+        /* len-1 spaces (DBRA of len-2); fixed (#84): none for a length of
+           1, where the original's counter -1 wrote 65536 spaces */
         c = (UWORD)(len - 2);
-        do
-            *fill++ = ' ';
-        while (c-- != 0);
+        if ((WORD)c >= 0) {
+            do
+                *fill++ = ' ';
+            while (c-- != 0);
+        }
         *fill = 0;
     } else if (type == 3) {
         /* a prop: bsize & bval */
@@ -1009,7 +1015,8 @@ static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, UL
  * a prop box its knob (fixed axis -1 if the track is too short).  Not
  * drawn.  Errors (always checked): "UnInitialised Page", "Illegal Box#
  * For Page", "No Room For String" (a string box narrower than 8 pixels).
- * BUG(orig) (#84): a string box 8..15 pixels wide writes 65536 spaces.
+ * Fixed (#84): a string box 8..15 pixels wide gets the empty text (the
+ * original wrote 65536 spaces behind its 1 byte).
  *
  * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
  * @param n  d1.w: Box#

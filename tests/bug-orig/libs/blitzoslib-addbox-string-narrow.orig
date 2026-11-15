@@ -1,0 +1,26 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+added
+inject: rc=0
+inject: guard: written behind an allocation of 9 bytes
+inject: guard: written behind an allocation of 40 bytes
+inject: guard: written behind an allocation of 1080 bytes
+inject: guard: written behind an allocation of 2056 bytes
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/blitzoslib-addbox-string-narrow.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/blitzoslib-addbox-string-narrow
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end
