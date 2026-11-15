@@ -226,6 +226,32 @@ build.
     calls it from a starfield loop, and the third-party analysis checked
     only d0/d1/a0/a1 there (Plot becomes an assembler entry in 6.1).
 
+15. **String copy loops (group 5, findings).** C first, assembler only
+    where C stays more than about 10 % slower than the original
+    (coordinator, 2026-11-15, after a first assembler version; that one
+    is kept on the branch `g5-asm` for the comparison). The copy is one
+    macro, `BL_STRCOPY` (`blitzhelp.h`): from 8 bytes on by longs where
+    both addresses have the same parity (below 64K), otherwise 8 bytes
+    per pass as in the original, the rest by a byte DBF loop. What makes
+    GCC compile it well: word counters compared with -1 (`(WORD)--n !=
+    -1` after a check for 0) give DBF; an empty `asm` with the pointers
+    as `"+a"` operands in each copy step keeps GCC from turning them into
+    an index register plus copies (it then saved d2/a2/a6); a macro on
+    lvalues instead of an inline function, so that the loop works on a3
+    itself instead of a copy (8 cycles per call); `-Os` (at `-O2` GCC
+    adds register copies to the loops: `r$=a$` 78, Chr$ 63 cycles slower
+    than at `-Os`), so strings1lib leaves `ACIDLIBS_SPEED`. `copstring`
+    keeps the thunk for d0-d1 (contract d0-d7; the KEEPS statement of the
+    test follows the contract, without the a1 the original keeps by
+    chance); its C function uses d0, d1, a0 and a3 only. Measured
+    (`tests/perf`, cycles per call, main -> C, the assembler version of
+    `g5-asm` in brackets): `r$=a$` 2160.0 -> 1972.5 (1997.7), Len 864.0
+    -> 677.5 (701.6), Asc 931.0 -> 745.0 (767.1), concat 3607.0 -> 3386.9
+    (3283.7), compare 3564.0 -> 3335.9 (3237.7), Val 3139.0 -> 3137.9
+    (3074.2), Instr 4307.0 -> 4118.9 (4074.7). The C version is faster
+    where the strings have the same parity and slower by about its thunk
+    where they do not (the second operand of compare and concat).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

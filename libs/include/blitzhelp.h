@@ -4,6 +4,7 @@
  *
  *   register arithmetic   BL_SETW BL_SETB BL_EXTL BL_SWAP bl_divu_w bl_divs_w
  *                         bl_mulu_w bl_muls_w
+ *   string copy           BL_STRCOPY
  *   a2 argument stack     BL_POPL BL_POPW
  *   custom chips          BL_CUSTOM BL_CUSTOMW BL_CUSTOML BL_BLITBUSY
  *                         BL_BLITWAIT BL_INTENA BL_INTS_OFF BL_INTS_ON
@@ -63,6 +64,73 @@ static inline LONG bl_muls_w(WORD a, WORD b)
     __asm__("muls.w %1,%0" : "+d"(r) : "dmi"(b) : "cc");
     return r;
 }
+
+/* -------------------------------------------------------- string copy */
+
+/* BL_STRCOPY(d, s, len) - copy len bytes from s to d, forward, and
+   advance both pointers past the copied bytes (no terminating 0): the
+   copy loops of strings1lib copstring and strings2lib lastring/astring.
+   d and s are pointer lvalues (blitz_string, a3, may be one of them: the
+   loops then work on a3 itself), len an ULONG variable (changed).  From
+   8 bytes on, where both addresses have the same parity (and len is
+   below 64K), an odd first byte is copied alone and the rest by longs (a
+   MOVE.l (a0)+,(a1)+ DBF loop); otherwise by bytes, 8 per pass as in the
+   original (below 512K).  The rest, and strings of 512K and more, by a
+   MOVE.b DBF loop (with an outer loop above 64K).  The empty asm
+   statements keep GCC from rewriting the pointers into index registers
+   (it would then need more registers and save them).  The result in
+   memory is the one of a byte loop, as the strings do not overlap.  A
+   macro, not an inline function, so that a3 is not copied to a local
+   register; shaped for -Os: at -O2 GCC adds register copies to the
+   loops. */
+#define BL_STRCOPY_B_(d, s) do {                                            \
+        *(d)++ = *(s)++;                                                    \
+        __asm__("" : "+a"(d), "+a"(s));                                     \
+    } while (0)
+#define BL_STRCOPY(d, s, len) do {                                          \
+    UWORD n_;                                                               \
+    if ((len) >= 8) {                                                       \
+        if ((len) < 0x10000 && !(((ULONG)(s) - (ULONG)(d)) & 1)) {          \
+            if ((ULONG)(d) & 1) {                                           \
+                BL_STRCOPY_B_(d, s);                                        \
+                (len)--;                                                    \
+            }                                                               \
+            n_ = (UWORD)(((len) >> 2) - 1);                                 \
+            do {                                                            \
+                *(ULONG *)(d) = *(const ULONG *)(s);                        \
+                (d) += 4;                                                   \
+                (s) += 4;                                                   \
+                __asm__("" : "+a"(d), "+a"(s));                             \
+            } while ((WORD)--n_ != -1);                                     \
+            (len) &= 3;                                                     \
+        } else if ((len) < 0x80000) {                                       \
+            n_ = (UWORD)(((len) >> 3) - 1);                                 \
+            do {                                                            \
+                BL_STRCOPY_B_(d, s); BL_STRCOPY_B_(d, s);                   \
+                BL_STRCOPY_B_(d, s); BL_STRCOPY_B_(d, s);                   \
+                BL_STRCOPY_B_(d, s); BL_STRCOPY_B_(d, s);                   \
+                BL_STRCOPY_B_(d, s); BL_STRCOPY_B_(d, s);                   \
+            } while ((WORD)--n_ != -1);                                     \
+            (len) &= 7;                                                     \
+        }                                                                   \
+    }                                                                       \
+    if ((len) < 8) {                                                        \
+        if (len) {                                                          \
+            n_ = (UWORD)((len) - 1);                                        \
+            do                                                              \
+                BL_STRCOPY_B_(d, s);                                        \
+            while ((WORD)--n_ != -1);                                       \
+        }                                                                   \
+    } else {                                                                \
+        ULONG hi_ = ((len) - 1) >> 16;                                      \
+        n_ = (UWORD)((len) - 1);                                            \
+        do {                                                                \
+            do                                                              \
+                BL_STRCOPY_B_(d, s);                                        \
+            while ((WORD)--n_ != -1);                                       \
+        } while (hi_-- != 0);                                               \
+    }                                                                       \
+} while (0)
 
 /* ------------------------------------------------- a2 argument stack */
 

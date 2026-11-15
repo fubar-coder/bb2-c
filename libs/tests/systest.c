@@ -25,6 +25,7 @@
 /* ------------------------------------------------------------- scenarios */
 
 static ULONG gvars[4096];           /* fake globals (a5 region) */
+static UBYTE cpsrc[70016], cpbuf[70016];    /* strings1lib copy */
 
 static void run(struct set *s)
 {
@@ -126,6 +127,26 @@ static void run(struct set *s)
         OBS("copied", buf[3] == 0 && buf[0] == 'H');
         VEC[0] = 0;
     }
+    /* the edges of the copy loop (8 bytes per pass, then the rest): no
+       character, one, an odd length below 8, whole passes, passes with a
+       rest, a length above 16 bits */
+    {
+        static const ULONG lens[] = { 0, 1, 7, 8, 9, 15, 16, 17, 23, 64, 255, 70007 };
+        unsigned i, j;
+        for (j = 0; j < sizeof cpsrc; j++)
+            cpsrc[j] = (UBYTE)(j * 7 + 3);
+        for (i = 0; i < sizeof lens / sizeof lens[0]; i++) {
+            ULONG n = lens[i];
+            memset(cpbuf, 0x55, n + 8);
+            sprintf(VEC, "len %lu", n);
+            CALL("strings1lib copy", entry_code(l, 0), r.a[0] = (ULONG)cpsrc + 1;
+                 r.a[3] = (ULONG)cpbuf + 2, n, 1);
+            OBS("a3 advanced", r.a[3] - (ULONG)cpbuf - 2);
+            OBS("copied", memcmp(cpbuf + 2, cpsrc + 1, n) == 0 && cpbuf[2 + n] == 0);
+            OBS("untouched", cpbuf[0] == 0x55 && cpbuf[1] == 0x55 && cpbuf[3 + n] == 0x55);
+        }
+        VEC[0] = 0;
+    }
 
     /* staticslib: allocate 3 statics into fake globals / locals */
     l = getlib(s, "staticslib");
@@ -210,7 +231,7 @@ int main(int argc, char **argv)
     KEEPS("memlib globfree", d1-d7|a0|a2|a3|a6);
     KEEPS("memlib finit", d0-d7|a0-a3|a6);
     KEEPS("strings1lib init", d2-d7|a0-a3|a6);
-    KEEPS("strings1lib copy", d0-d7|a1|a2|a6);
+    KEEPS("strings1lib copy", d0-d7|a2|a6);
     KEEPS("staticslib globals", d3|d5-d7|a0|a1|a3|a6);
     KEEPS("staticslib locals", d0|d1|d3|d5-d7|a0|a1|a3|a6);
     KEEPS("varslib init", d2-d7|a0|a2|a3);

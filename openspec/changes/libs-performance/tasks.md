@@ -31,7 +31,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 
 ## 5. String copy loops
 
-- [ ] 5.1 Replace the copy loop of `copstring` (strings1lib) by the unrolled assembler loop of the original; keep the contract of the internal token (d0-d7)
+- [x] 5.1 Replace the copy loop of `copstring` (strings1lib) by the unrolled assembler loop of the original; keep the contract of the internal token (d0-d7)
 - [ ] 5.2 Replace the copy loop of `stringass` (strings2lib) likewise; put the allocation path of `assign` in its own `noinline` function so that the common path saves no registers; keep d1-d7 and a2 of `lastring`/`astring`; both entries need no thunk then (task 8.3)
 - [ ] 5.3 Measure assignment, concat, compare, Len, Mid$, Left$, Right$, Asc, Chr$, Inkey$; tighten the budgets
 

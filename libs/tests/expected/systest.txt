@@ -43,6 +43,54 @@ strings1lib copy|copied|len 38|1	$00000001
 strings1lib copy|kept|len 3|1	kept
 strings1lib copy|a3 advanced|len 3|1	$00000003
 strings1lib copy|copied|len 3|1	$00000001
+strings1lib copy|kept|len 0|1	kept
+strings1lib copy|a3 advanced|len 0|1	$00000000
+strings1lib copy|copied|len 0|1	$00000001
+strings1lib copy|untouched|len 0|1	$00000001
+strings1lib copy|kept|len 1|1	kept
+strings1lib copy|a3 advanced|len 1|1	$00000001
+strings1lib copy|copied|len 1|1	$00000001
+strings1lib copy|untouched|len 1|1	$00000001
+strings1lib copy|kept|len 7|1	kept
+strings1lib copy|a3 advanced|len 7|1	$00000007
+strings1lib copy|copied|len 7|1	$00000001
+strings1lib copy|untouched|len 7|1	$00000001
+strings1lib copy|kept|len 8|1	kept
+strings1lib copy|a3 advanced|len 8|1	$00000008
+strings1lib copy|copied|len 8|1	$00000001
+strings1lib copy|untouched|len 8|1	$00000001
+strings1lib copy|kept|len 9|1	kept
+strings1lib copy|a3 advanced|len 9|1	$00000009
+strings1lib copy|copied|len 9|1	$00000001
+strings1lib copy|untouched|len 9|1	$00000001
+strings1lib copy|kept|len 15|1	kept
+strings1lib copy|a3 advanced|len 15|1	$0000000F
+strings1lib copy|copied|len 15|1	$00000001
+strings1lib copy|untouched|len 15|1	$00000001
+strings1lib copy|kept|len 16|1	kept
+strings1lib copy|a3 advanced|len 16|1	$00000010
+strings1lib copy|copied|len 16|1	$00000001
+strings1lib copy|untouched|len 16|1	$00000001
+strings1lib copy|kept|len 17|1	kept
+strings1lib copy|a3 advanced|len 17|1	$00000011
+strings1lib copy|copied|len 17|1	$00000001
+strings1lib copy|untouched|len 17|1	$00000001
+strings1lib copy|kept|len 23|1	kept
+strings1lib copy|a3 advanced|len 23|1	$00000017
+strings1lib copy|copied|len 23|1	$00000001
+strings1lib copy|untouched|len 23|1	$00000001
+strings1lib copy|kept|len 64|1	kept
+strings1lib copy|a3 advanced|len 64|1	$00000040
+strings1lib copy|copied|len 64|1	$00000001
+strings1lib copy|untouched|len 64|1	$00000001
+strings1lib copy|kept|len 255|1	kept
+strings1lib copy|a3 advanced|len 255|1	$000000FF
+strings1lib copy|copied|len 255|1	$00000001
+strings1lib copy|untouched|len 255|1	$00000001
+strings1lib copy|kept|len 70007|1	kept
+strings1lib copy|a3 advanced|len 70007|1	$00011177
+strings1lib copy|copied|len 70007|1	$00000001
+strings1lib copy|untouched|len 70007|1	$00000001
 staticslib globals|kept||1	kept
 staticslib globals|three statics||1	$00000001
 staticslib globals|cleared||1	$00000001
@@ -54,5 +102,5 @@ varslib init|cleared||1	$00000001
 varslib finit|kept||1	kept
 varslib finit|all memory back||1	$00000001
 memlib finit|kept||1	kept
-|number of calls||1	$0000001B
+|number of calls||1	$00000027
 exitslib quit|instructions||1	bytes 8 2E7A504F207A4ED0

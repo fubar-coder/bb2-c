@@ -45,8 +45,12 @@ BLITZ_THUNK(strings1lib_codeinit, codeinit_c, "a0-a1");
  * @brief $C600 (copstring) - copy a string into the work buffer at a3.
  *
  * Copies `len` bytes from a0 to a3 and terminates with 0; a3 then points
- * to the 0.  The original copies in blocks of 8 bytes plus the rest; the
- * result is the same as this byte loop.  d0/d1 are preserved.
+ * to the 0.  The original copies in blocks of 8 bytes plus the rest;
+ * BL_STRCOPY copies by longs where the parity of both addresses allows
+ * it, otherwise by bytes, with the same result.  The compiler calls it
+ * with every data register live (stvar, makelit: no save), so the thunk
+ * keeps d0/d1; the C function uses only d0, d1, a0 and a3 (no save of
+ * its own, checked in the disassembly).
  *
  * @param src a0: the characters
  * @param len d0: the length - the caller's stack argument (the compiler
@@ -55,8 +59,7 @@ BLITZ_THUNK(strings1lib_codeinit, codeinit_c, "a0-a1");
  */
 static void BLITZ_ROUTINE stringmode_c(const UBYTE *src BL_REG(a0), ULONG len BL_REG(d0))
 {
-    while (len--)
-        *blitz_string++ = *src++;
+    BL_STRCOPY(blitz_string, src, len);
     *blitz_string = 0;                          /* CLR.b (a3) */
 }
 BLITZ_THUNK_PRE(stringmode, stringmode_c, "d0-d1", "move.l 4+8(sp),d0");
