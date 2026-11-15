@@ -42,8 +42,12 @@
  *   Scale were word additions (ADDA.w, sign extended: backwards for planes
  *   of 32K and more), XFlip's row count (depth x height) and Scale's step
  *   back over all planes were the low words of MULU.  Here the steps are
- *   unsigned and the counts and sizes longs.  A new shape of Rotate or
- *   Scale with a plane of 64K or more does not fit +22 (not checked).
+ *   unsigned and the counts and sizes longs.
+ * Fixed (intended deviation, #1047): a new shape of Rotate or Scale with
+ *   a plane of 64K or more did not fit the word sizes +22/+24 (no check).
+ *   Here the error checks (rotchk, scalechk, scalechk2; error check area
+ *   only) compute the new size as the command does and refuse such a
+ *   shape with "Shape too Big"; release code unchanged.
  * Fixed (intended deviation, #273): Scale with a target size below 1
  *   (raised to 1) collected for the one destination pixel 1/Ratio source
  *   pixels from pixel 0 on, more than the shape has (the rest of the row,
@@ -60,6 +64,7 @@
 /* entry points (thunks / assembler, defined below) */
 void doscale(void), doscale2(void), doxflip(void), doyflip(void);
 void dorotate(void), scalechk(void), scalechk2(void), shapetrixlib_fchk(void);
+void rotchk(void);
 
 /* !libheader{#shapetrixlib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_shapetrixlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -88,7 +93,7 @@ BLITZ_NAME("YFlip", "Shape#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK);
 BLITZ_LIBS(LIB_shapeslib, BL_IA3|BL_PD0);
-BLITZ_SUBS(dorotate, shapetrixlib_fchk, 0);
+BLITZ_SUBS(dorotate, rotchk, 0);                /* own check: fixed #1047 */
 BLITZ_NAME("Rotate", "Shape#,Angle Ratio");
 
 BLITZ_LIBFIN();
@@ -452,7 +457,9 @@ static void rotit2(WORD x, WORD y, UWORD angle)
  *
  * Fixed (#274): the plane steps are unsigned (the original's ADDA.w went
  * backwards for planes of 32K and more).
- * Errors: "Uninitialized Shape" (fchk, debugger only).
+ * Errors (rotchk, debugger only): "Uninitialized Shape", "Shape too Big"
+ * (the rotated size with a plane of 64K or more with the extra word per
+ * row; fixed, #1047: the original has no check).
  *
  * @param q d1: the angle as a Quick (0..1 = a full turn)
  */
@@ -662,7 +669,10 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
  * Fixed (#273): a target size below 1 raised to 1 collects exactly the
  * shape's row/column (the original read 1/Ratio pixels, past the shape).
  * Fixed (#274): unsigned plane steps, the step back over all planes a
- * long (the original: ADDA.w, the word +26).  Errors: "Uninitialized Shape" (scalechk2, debugger only).
+ * long (the original: ADDA.w, the word +26).  Errors (scalechk2, debugger
+ * only): "Uninitialized Shape", "Shape too Big" (the scaled size with a
+ * plane of 64K or more with the extra word per row; fixed, #1047: the
+ * original has no check).
  *
  * @param xr d1: the x ratio (Quick)
  * @param yr d2: the y ratio (Quick)
@@ -688,7 +698,7 @@ BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
  * only compares usevals[0..numcols]).
  *
  * Errors (scalechk, debugger only): "Uninitialized Palette",
- * "Uninitialized Shape".
+ * "Uninitialized Shape", "Shape too Big" (fixed, #1047).
  *
  * @param xr  d1: the x ratio (Quick)
  * @param yr  d2: the y ratio (Quick)
@@ -718,23 +728,75 @@ BLITZ_THUNK(doscale, doscale_c, "d0-d1/a0-a1");
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized Palette");
+BLITZ_ERRCHK_MESSAGE(mess3, "Shape too Big");           /* fixed, #1047 */
 
-static void BLITZ_ERRCHK scalechk2_c(void)
+static void BLITZ_ERRCHK fchk_c(void)
 {
     if (!((const struct bb_shape *)blitz_string)->width)
         BLITZ_RUNERR(mess1);
 }
 
-static void BLITZ_ERRCHK scalechk_c(struct bb_palette *pal BL_REG(a2))
+/* the new shape of w x h pixels: a plane with the extra word of every
+   row ((bytes per row + 2) x height, the word +24) of 64K or more does
+   not fit the shape's word sizes (fixed, #1047: the original has no
+   check) */
+static void BLITZ_ERRCHK sizechk(UWORD w, UWORD h)
+{
+    UWORD bpr = (UWORD)((UWORD)(w + 15) >> 4) << 1;
+
+    if (bl_mulu_w(bpr + 2, h) > 0xffff)
+        BLITZ_RUNERR(mess3);
+}
+
+/* the size Scale gives a side of n pixels: the low word of the integer
+   part of n x ratio (qmultiply), 1 if that is below 1 */
+static UWORD BLITZ_ERRCHK scaled(UWORD n, ULONG ratio)
+{
+    UWORD w;
+
+    if ((LONG)ratio < 0)
+        return 1;
+    w = (UWORD)(bl_mulu_w(n, (UWORD)(ratio >> 16))
+                + (bl_mulu_w(n, (UWORD)ratio) >> 16));
+    return (WORD)w < 1 ? 1 : w;
+}
+
+/* Scale: the shape there; the new size (fixed, #1047) */
+static void BLITZ_ERRCHK scalechk2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
+{
+    const struct bb_shape *s = (const struct bb_shape *)blitz_string;
+
+    fchk_c();
+    sizechk(scaled(s->width, xr), scaled(s->height, yr));
+}
+
+static void BLITZ_ERRCHK scalechk_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2),
+                                    struct bb_palette *pal BL_REG(a2))
 {
     if (!pal->pdata)
         BLITZ_RUNERR(mess2);
-    scalechk2_c();
+    scalechk2_c(xr, yr);
+}
+
+/* Rotate: the shape there; the new size from the rotated corners as the
+   command computes it (fixed, #1047) */
+static void BLITZ_ERRCHK rotchk_c(ULONG q BL_REG(d1))
+{
+    const struct bb_shape *s = (const struct bb_shape *)blitz_string;
+    UWORD angle = 256 - (UWORD)(((q << 8) >> 16) & 255);
+
+    fchk_c();
+    xl = yl = xh = yh = 0;
+    rotit2(s->width - 1, 0, angle);
+    rotit2(s->width - 1, s->height - 1, angle);
+    rotit2(0, s->height - 1, angle);
+    sizechk(xh - xl + 1, yh - yl + 1);
 }
 
 /* the thunks after all check functions: their assembler switches back to
    .text, which GCC does not notice (a check function after a thunk would
    end up in the normal code) */
 BLITZ_ERRCHK_THUNK(scalechk2, scalechk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(shapetrixlib_fchk, scalechk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(shapetrixlib_fchk, fchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(scalechk, scalechk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rotchk, rotchk_c, "d0-d1/a0-a1");

@@ -66,6 +66,12 @@
  *    plane loops (DBF on depth-1) blitted 65536 planes.  Here its error
  *    check (initchk, error check area only) refuses it with "Illegal
  *    Shape Depth"; release code unchanged. (#243, #74)
+ *  - InitShape and GetaShape made shapes with a plane of 64K or more
+ *    without a check (the word sizes +22/+24 wrong, memory overwritten).
+ *    Here their error checks (initchk, gschk; error check area only)
+ *    refuse them with "Shape too Big" ((bytes per row + 2) x height of
+ *    64K or more), and initchk a width or height of 0 with "Illegal
+ *    Shape Size"; release code unchanged. (#1047)
  *  - LoadShape of an ANIM read the XOR bit (ANHD bits & 2) only from the
  *    first ANHD and applied every later frame with it; here each frame
  *    takes the bit of its own ANHD. (#266)
@@ -299,6 +305,8 @@ BLITZ_ERRCHK_MESSAGE(mess5, "Illegal area for GetaShape");
 BLITZ_ERRCHK_MESSAGE(mess6, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess9, "Cannot GetaShape from an interleaved Bitmap");
 BLITZ_ERRCHK_MESSAGE(mess11, "Illegal Shape Depth");
+BLITZ_ERRCHK_MESSAGE(mess12, "Shape too Big");          /* fixed, #1047 */
+BLITZ_ERRCHK_MESSAGE(mess13, "Illegal Shape Size");     /* fixed, #1047 */
 
 /* err10 of DecodeShapes (TST.l d2:BEQ err10) and its message in the
    normal code (the original has them in the error check area; fixed,
@@ -547,10 +555,12 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
  * checked), handle 0, a cleared cookie with AutoCookie on.
  *
  * The sizes +22/+26 are the low words of MULU; the data is allocated with
- * the long product (a plane of 64K or more does not fit +22: not
- * checked).  Errors (debugger, initchk): "Illegal Shape Depth" for a depth of 0
- * (fixed, #243 #74: the original had no check; a shape of depth 0 made
- * the plane loops of the blit commands run 65536 times).
+ * the long product.  Errors (debugger, initchk): "Illegal Shape Depth"
+ * for a depth of 0 (fixed, #243 #74: the original had no check; a shape
+ * of depth 0 made the plane loops of the blit commands run 65536 times);
+ * "Illegal Shape Size" for a width or height of 0 and "Shape too Big"
+ * for a plane of 64K or more with the extra word per row (fixed, #1047:
+ * not checked in the original, the word sizes +22/+24 were wrong).
  *
  * @param w d1.w: the width in pixels
  * @param h d2.w: the height
@@ -647,7 +657,9 @@ static void getashape(struct bb_shape *shape, struct bb_bitmap *bm,
  * AutoCookie on.
  *
  * Errors (gschk, debugger only): "Uninitialized BitMap", "Cannot GetaShape
- * from an interleaved Bitmap", "Illegal area for GetaShape".
+ * from an interleaved Bitmap", "Illegal area for GetaShape", "Shape too
+ * Big" (a plane of 64K or more with the extra word per row; fixed,
+ * #1047: the original has no check).
  *
  * @param x  d1.w: x
  * @param y  d2.w: y
@@ -1215,12 +1227,29 @@ static void BLITZ_ERRCHK cookiechk_c(void)
         BLITZ_RUNERR(mess1);
 }
 
-/* initchk: fixed (#243, #74), not in the original (InitShape had no
-   check): a depth of 0 made a shape the blit commands' checks pass */
-static void BLITZ_ERRCHK initchk_c(ULONG d BL_REG(d3))
+/* a shape of w x h pixels: is a plane with the extra word of every row
+   ((bytes per row + 2) x height, the word +24) 64K or more?  The shape
+   keeps its plane sizes in words (fixed, #1047: the original has no
+   check) */
+static int BLITZ_ERRCHK toobig(UWORD w, UWORD h)
+{
+    UWORD bpr = (UWORD)((UWORD)(w + 15) >> 4) << 1;
+
+    return bl_mulu_w(bpr + 2, h) > 0xffff;
+}
+
+/* initchk: fixed (#243, #74, #1047), not in the original (InitShape had
+   no check): a depth of 0 made a shape the blit commands' checks pass; a
+   width or height of 0 makes no shape; a plane of 64K or more does not
+   fit the shape's word sizes */
+static void BLITZ_ERRCHK initchk_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), ULONG d BL_REG(d3))
 {
     if (!(UWORD)d)
         BLITZ_RUNERR(mess11);
+    if (!(UWORD)w || !(UWORD)h)
+        BLITZ_RUNERR(mess13);
+    if (toobig((UWORD)w, (UWORD)h))
+        BLITZ_RUNERR(mess12);
 }
 
 /* GetaShape: bitmap present, not interleaved, area inside */
@@ -1241,6 +1270,8 @@ static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w
     limit = bm->height;
     if ((UWORD)y >= limit || (UWORD)((UWORD)y + (UWORD)h) > limit)
         BLITZ_RUNERR(mess5);
+    if (toobig((UWORD)w, (UWORD)h))             /* fixed, #1047 */
+        BLITZ_RUNERR(mess12);
 }
 
 /* the thunks after all check functions: their assembler switches back to

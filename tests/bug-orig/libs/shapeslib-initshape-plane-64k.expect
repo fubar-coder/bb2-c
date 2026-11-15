@@ -1,0 +1,4 @@
+[run]
+before
+REQUESTER: AutoRequest body "Shape too Big" *
+rc=0
