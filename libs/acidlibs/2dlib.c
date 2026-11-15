@@ -26,7 +26,8 @@
  * 14 data, 18 cookie (mask).
  *
  * BUG(orig), kept (selection):
- *   - Box adds the origin twice (once itself, once in the line clipper). (#391)
+ *   - Fixed (#391): Box added the origin twice (once itself, once in the
+ *     line clipper); only the line clipper adds it now.
  *   - Fixed (#392): Circle/Circlef with points above the top edge: the
  *     MULU of the negative y gave a large offset that was not rejected -
  *     the CPU plot wrote far outside the bitmap / fill buffer.  The
@@ -578,17 +579,14 @@ static UBYTE *linew(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2
 
 /* ----------------------------------------------------------- Box, Boxf */
 
-/* Box: four lines; the origin is added here and again in the line
-   clipper (BUG(orig) #391) */
+/* Box: four lines; the line clipper adds the origin.  Fixed (#391): the
+   original added it here too, so Box was drawn displaced by twice the
+   origin */
 static UBYTE *box(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                   UWORD colour)
 {
     WORD t;
 
-    x1 += bm->xorigin;
-    x2 += bm->xorigin;
-    y1 += bm->yorigin;
-    y2 += bm->yorigin;
     if (BMI_W(x2, x1))
         t = x1, x1 = x2, x2 = t;
     if (BMI_W(y2, y1))
