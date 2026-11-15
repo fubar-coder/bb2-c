@@ -30,7 +30,7 @@
 
 ## 6. CLAUDE.md
 
-- [ ] 6.1 Propose the sentence for CLAUDE.md fix workflow step 3 ("one row per fixed issue in the overview data file") to the user; edit CLAUDE.md only with the user's OK
+- [x] 6.1 Propose the sentence for CLAUDE.md fix workflow step 3 ("one row per fixed issue in the overview data file") to the user; edit CLAUDE.md only with the user's OK
 
 ## 7. Closing
 
