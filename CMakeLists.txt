@@ -265,6 +265,7 @@ add_subdirectory(tests/bug-port)
 add_subdirectory(tests/blitz2)
 add_subdirectory(tests/ab3)
 add_subdirectory(tests/ted-ab)
+add_subdirectory(site/tests)
 
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
 include(programs/ted/tools/tedsrc/bblibsrc.cmake)

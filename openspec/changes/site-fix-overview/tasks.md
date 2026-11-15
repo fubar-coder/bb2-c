@@ -20,8 +20,8 @@
 
 - [x] 4.1 Write the partial with the checks of design.md Decision 6 (anchor, severity, topic, duplicates, entry without row, `notRows`) failing with `errorf`
 - [x] 4.2 Fill `notRows` with the cross-references found by the first run, each with a reason - done: the first run found no cross-reference (every linked issue is a fix), the list is empty
-- [ ] 4.3 Add the data file parameter and the broken data files under `site/tests/` (missing anchor, severity 5, unknown topic, duplicate issue, entry without row)
-- [ ] 4.4 Add the CMake test (label `site`, 77 without podman or image) that expects each broken file to fail with its message and the real one to build
+- [x] 4.3 Add the data file parameter and the broken data files under `site/tests/` (missing anchor, severity 5, unknown topic, duplicate issue, entry without row) - done: `site/tests/fixoverview/` (data files and the config that mounts them), the parameter `fixOverviewData` set through `HUGO_PARAMS_FIXOVERVIEWDATA`
+- [x] 4.4 Add the CMake test (label `site`, 77 without podman or image) that expects each broken file to fail with its message and the real one to build - done: `site/tests/CMakeLists.txt`, `cmake/site-fixoverview-test.cmake`; `site_fixoverview` and five `site_fixoverview_*`
 
 ## 5. Specs and docs
 

@@ -1,0 +1,18 @@
+# A broken data file for the test of the fix overview's check
+# (site/tests/CMakeLists.txt): #421 has a topic that is not in the list.
+levels:
+  - {level: 1, name: One, text: One.}
+  - {level: 2, name: Two, text: Two.}
+  - {level: 3, name: Three, text: Three.}
+  - {level: 4, name: Four, text: Four.}
+topics: [Graphics, Compiler]
+notRows: []
+rows:
+  - issue: 421
+    severity: 1
+    topic: Cooking
+    library: polylib
+    command: RenderToBitmap
+    text: A row.
+    page: libraries
+    anchor: rendertobitmap-dither
