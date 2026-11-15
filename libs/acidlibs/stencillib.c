@@ -11,10 +11,14 @@
  *         stencil at the same position (bltcon0 $BFA).
  * Blitz/Amiga variants as in blitlib; Stencil uses $DFF000 directly.
  *
- * Kept from the original (BUG(orig), #284): the stencil's bltsize is rows << 6
- * | bpr / 2 (correct only up to 1024 rows / 64 words).  Not a bug:
- * FreeStencil leaves the memory pointer (the width is cleared, which is what
- * the free routine and the SBlit check test).
+ * Fixed (intended deviation, #284): the original makes the stencil with
+ * one blit of bltsize rows << 6 | bpr / 2, right only up to 1024 rows / 64
+ * words (BLTSIZE has 10 + 6 bits; from 65 words the words overflow into
+ * the rows): a bigger bitmap got a stencil filled only in part.  Here a
+ * bitmap within those limits takes the one blit as before, a bigger one
+ * strips of at most 64 words by 1024 rows (with the modulos of the strip).
+ * Not a bug: FreeStencil leaves the memory pointer (the width is cleared,
+ * which is what the free routine and the SBlit check test).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -121,6 +125,42 @@ static void BLITZ_ROUTINE dofreestencil_c(void)
 }
 BLITZ_THUNK(dofreestencil, dofreestencil_c, "a0");
 
+/* a stencil of a bitmap of more than 1024 rows or 64 words (fixed #284:
+   the original's one blit had a wrong BLTSIZE): A | C -> D in strips of
+   at most 64 words by 1024 rows, per strip all planes; the modulos are the
+   rest of the row (A, C and D: the stencil has the bitmap's bytes per
+   row) */
+static void bigstencil(UBYTE *cb, const struct bb_bitmap *bm, UBYTE *mem)
+{
+    UBYTE *const *planes = (UBYTE *const *)bm->planes;
+    UWORD bpr = bm->bpr, depth = bm->flagsdepth, col, row;
+
+    for (col = 0; col < bpr; col += 128) {
+        UWORD w = bpr - col > 128 ? 128 : bpr - col;     /* bytes */
+        UWORD mod = bpr - w;
+
+        for (row = 0; row < bm->rows; row += 1024) {
+            UWORD h = bm->rows - row > 1024 ? 1024 : bm->rows - row;
+            UWORD size = (UWORD)((h & 1023) << 6) | ((w >> 1) & 63);
+            ULONG off = (ULONG)row * bpr + col;
+            UWORD p;
+
+            for (p = 0; p < depth; p++) {
+                BL_BLITWAIT(cb);
+                BL_CUSTOML(cb, 0x40) = 0x0bfa0000;
+                BL_CUSTOML(cb, 0x44) = 0xffffffff;
+                BL_CUSTOMW(cb, 0x60) = mod;     /* C */
+                BL_CUSTOMW(cb, 0x64) = mod;     /* A */
+                BL_CUSTOMW(cb, 0x66) = mod;     /* D */
+                BL_CUSTOML(cb, 0x50) = (ULONG)planes[p] + off;
+                BL_CUSTOML(cb, 0x48) = (ULONG)mem + off;
+                BL_CUSTOML(cb, 0x54) = (ULONG)mem + off;
+                BL_CUSTOMW(cb, 0x58) = size;
+            }
+        }
+    }
+}
+
 /* b_dostencil - a3 = stencil, a2 = bitmap: OR of the planes */
 static void makestencil(struct stencil *s, const struct bb_bitmap *bm)
 {
@@ -135,6 +175,10 @@ static void makestencil(struct stencil *s, const struct bb_bitmap *bm)
     mem = BLITZ_ALIBJSR(TOK_globalloc, r);
     *(ULONG *)s = *(const ULONG *)&bm->bpr;
     s->mem = (UBYTE *)mem;
+    if (bm->rows > 1024 || bm->bpr > 128) {     /* fixed #284 */
+        bigstencil(cb, bm, (UBYTE *)mem);
+        return;
+    }
     size = (UWORD)(bm->rows << 6) | (UWORD)(bm->bpr >> 1);
     n = bm->flagsdepth - 1;
     BL_BLITWAIT(cb);
@@ -162,8 +206,9 @@ void BLITZ_ROUTINE b_dostencil_c(const struct bb_bitmap *bm BL_REG(a2));
  * and ORs the planes into it with the blitter (A | C -> D, $DFF000
  * directly).
  *
- * BUG(orig) (#284): bltsize is rows << 6 | bpr / 2 - right only up to
- * 1024 rows / 64 words.
+ * Fixed (#284): a bitmap of more than 1024 rows or 64 words is done in
+ * strips of at most 64 words by 1024 rows; the original's one blit of
+ * bltsize rows << 6 | bpr / 2 was right only up to those limits.
  *
  * @param bm a2: the bitmap; a3: the stencil object
  */
@@ -178,7 +223,7 @@ void BLITZ_ROUTINE a_dostencil_c(const struct bb_bitmap *bm BL_REG(a2),
  * @brief Stencil Stencil#,BitMap# - Amiga mode variant: as the Blitz mode
  * one between OwnBlitter and DisownBlitter.
  *
- * BUG(orig) (#284): see the Blitz mode variant.
+ * Fixed (#284): see the Blitz mode variant.
  *
  * @param bm  a2: the bitmap; a3: the stencil object
  * @param gfx a6: graphics.library
