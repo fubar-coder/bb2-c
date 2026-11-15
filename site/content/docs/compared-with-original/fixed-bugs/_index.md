@@ -25,6 +25,21 @@ it, and what the port does. Seven more are in the editor: they change the
 source you are writing, or crash the editor; they are shown in the same
 way.
 
+## Changes for existing programs
+
+Two fixes change what a program draws if it was written to make up for
+the bug. No known example program, demo or game uses the commands this
+way, but check your own programs:
+
+* [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
+  `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
+  bitmap 0, with bitmap 1 as the pattern; a program that swapped the two
+  numbers has to put them in this order.
+* [`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#box-origin" >}})
+  after `BitMapOrigin`. It adds it once, as `Line` and `Boxf` do; a program
+  that gave `Box` reduced coordinates has to give the same ones as for
+  `Line`.
+
 ## Bugs an ordinary program can meet
 
 In the compiler ([Compiling]({{< relref "/docs/compared-with-original/fixed-bugs/compiler" >}})):

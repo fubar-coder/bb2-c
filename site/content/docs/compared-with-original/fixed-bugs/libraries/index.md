@@ -16,6 +16,57 @@ program compiled with the libraries of the Blitz Basic 2 CD, the port the
 same program compiled with the port's libraries. The programs run without
 runtime error checking unless the text says otherwise.
 
+## Changes for existing programs
+
+Two of the fixes change what a program draws when it was written to make
+up for the bug. No known example program, demo or game uses these
+commands this way, but a program of your own might.
+
+### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
+
+`RenderToBitmap BitMap#,DitherBitMap#` makes `RenderPoly` draw on
+`BitMap#`, filled with the pattern of `DitherBitMap#`, as `BitMapPoly`
+does with a dither bitmap.
+
+**What happened.** The original took the two bitmaps the other way
+round: after
+
+```
+RenderToBitmap 0,1
+RenderPoly 3,&pts(0),2
+```
+
+it drew the polygon on bitmap 1, with bitmap 0 as the pattern, and left
+bitmap 0 unchanged. A program that wanted to draw on bitmap 0 had to write
+`RenderToBitmap 1,0`.
+
+**With the port.** `RenderPoly` draws on the first bitmap with the second
+as the pattern, as the command is documented: the lines above draw on
+bitmap 0. `RenderToBitmap` with one bitmap is not affected.
+
+**What to change.** A program that swapped the two arguments to get the
+polygon on the right bitmap now draws on the dither bitmap. Write the
+bitmap to draw on first and the dither bitmap second.
+
+Issue: [RenderToBitmap b,d and RenderPoly drew on the dither bitmap (#421)](https://github.com/fubar-coder/bb2-c/issues/421).
+
+### `Box` added the bitmap origin twice {#box-origin}
+
+`BitMapOrigin` moves the point 0,0 of a bitmap for the drawing commands.
+`Line`, `Boxf` and `Plot` add the origin to their coordinates once;
+`Box` added it twice, so after `BitMapOrigin 0,50,50` the line
+`Box 0,0,10,10,1` drew its corner at 100,100.
+
+**With the port.** `Box` adds the origin once, like the others: the corner
+is at 50,50. Without `BitMapOrigin`, or with the origin 0,0, nothing
+changes.
+
+**What to change.** A program that gave `Box` coordinates reduced by the
+origin to make up for the doubling now draws the box displaced. Give
+`Box` the same coordinates as `Line` and `Boxf`.
+
+Issue: [Box added the bitmap origin twice (#391)](https://github.com/fubar-coder/bb2-c/issues/391).
+
 ## Dates
 
 ### `Date$` showed 1 January after a leap year as 32 December {#date-after-leap-year}
@@ -1289,13 +1340,6 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   maximum (1025 shapes or 2049 sprites and more) loaded only the first
   object; they load the whole range
   ([#999](https://github.com/fubar-coder/bb2-c/issues/999)).
-* `Polyf` drew polygons whose corners lie far outside the bitmap (from
-  about 8000 pixels away) wrongly or not at all; they are drawn
-  ([#1000](https://github.com/fubar-coder/bb2-c/issues/1000)).
-* `Polyf`, `BitMapPoly`, `ChunkyPoly` and `RenderPoly` stopped with a
-  "Division by Zero" guru for some degenerate polygons with a side that
-  starts outside the bitmap on a vertical edge; such a polygon is not drawn
-  ([#1033](https://github.com/fubar-coder/bb2-c/issues/1033)).
 * `Rotate` made a rotated shape one pixel too large and lost its edge
   pixels, so a quarter turn of a 21×9 shape gave 10×21; it rounds to the
   nearest pixel and gives 9×21
@@ -1319,6 +1363,93 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   took it over, so the loaded shapes were never freed before the program
   ended; the mark is not taken from the file
   ([#267](https://github.com/fubar-coder/bb2-c/issues/267)).
+* `NextFrame` of an anim with a single change read its next change from
+  address 0, and so did the first `NextFrame` of an anim without any; such
+  an anim plays once and stays on its last frame
+  ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
+
+### Drawing and polygons
+
+These are the drawing commands on bitmaps and the polygon commands for 3D
+graphics. Two more fixes of them change what an existing program draws:
+[`RenderToBitmap` with a dither bitmap](#rendertobitmap-dither) and
+[`Box` with `BitMapOrigin`](#box-origin).
+
+* `Circle` and `Circlef` wrote the points of a circle that reaches above
+  the top edge of the bitmap far behind its planes or into the memory
+  behind the fill buffer; such points are clipped, like those below the
+  bottom edge
+  ([#392](https://github.com/fubar-coder/bb2-c/issues/392)).
+* `AllocFill` as a statement took the size of the fill buffer from two
+  words of the string buffer instead of the used bitmap, so it made a
+  buffer of the wrong size or none; it makes the buffer for the used bitmap
+  ([#390](https://github.com/fubar-coder/bb2-c/issues/390)).
+* `Poly` with fewer than 2 points drew 65535 lines from the memory behind
+  the coordinates; with runtime error checking it is the error "Poly
+  needs at least 2 Points"
+  ([#396](https://github.com/fubar-coder/bb2-c/issues/396)).
+* `Polyf`, `BitMapPoly`, `ChunkyPoly` and `RenderPoly` drew a polygon of
+  up to 16 points wrongly when one of its sides had 11 to 15 edges; it is
+  drawn right. More than 16 points overwrote the code of the library and
+  crashed the program; with runtime error checking they are the error
+  "Too Many Points"
+  ([#395](https://github.com/fubar-coder/bb2-c/issues/395)).
+* `Polyf` drew polygons whose corners lie far outside the bitmap (from
+  about 8000 pixels away) wrongly or not at all; they are drawn
+  ([#1000](https://github.com/fubar-coder/bb2-c/issues/1000)).
+* `Polyf`, `BitMapPoly`, `ChunkyPoly` and `RenderPoly` stopped with a
+  "Division by Zero" guru for some degenerate polygons with a side that
+  starts outside the bitmap on a vertical edge; such a polygon is not drawn
+  ([#1033](https://github.com/fubar-coder/bb2-c/issues/1033)).
+* `FloodFill` with a border colour filled wrongly on a bitmap wider than
+  1024 pixels or taller than 1024 lines; it fills these bitmaps as it
+  fills smaller ones
+  ([#986](https://github.com/fubar-coder/bb2-c/issues/986)).
+* `ChunkyVlin` with `CLIP` drew a line at an x at or beyond the width of
+  the chunky area into other rows or behind the area; such a line is
+  clipped away, as `ChunkyPlot` with `CLIP` does
+  ([#987](https://github.com/fubar-coder/bb2-c/issues/987)).
+* `ChunkyVlin` without `CLIP` and a `y1` greater than `y2` wrote about
+  65536 words, one per chunky line; with runtime error checking it is the
+  error "ChunkyVlin y1 MUST NOT be greater than y2"
+  ([#417](https://github.com/fubar-coder/bb2-c/issues/417)).
+* `RenderPoly` before any `RenderToBitmap` or `RenderToChunky` drew the
+  polygon into memory it took for a bitmap; it draws nothing
+  ([#420](https://github.com/fubar-coder/bb2-c/issues/420)).
+* `RenderPoly` after `RenderToChunky` took a colour above 14 from the
+  memory behind its table of 15 colours; with runtime error checking it
+  is the error "Illegal Colour"
+  ([#422](https://github.com/fubar-coder/bb2-c/issues/422)).
+* The dither form of `BitMapPoly` and `RenderPoly` took the planes from
+  the second one on from behind the dither bitmap when its planes were
+  smaller than those of the bitmap drawn on; every plane comes from the
+  dither bitmap
+  ([#1035](https://github.com/fubar-coder/bb2-c/issues/1035)).
+
+### Bitmaps
+
+* `BitMap` with a depth of 0 or more than 8 stopped, with runtime error
+  checking, with the error text "No currently used object!", or an empty
+  text in an executable; the text is "Illegal BitMap Depth", as for
+  `CludgeBitMap`
+  ([#1040](https://github.com/fubar-coder/bb2-c/issues/1040)).
+* A `BitMap` or `CludgeBitMap` of width or height 0 was accepted, and
+  `CopyBitMap` of it copied about four thousand million words through the
+  memory; with runtime error checking a width or height below 1 is the
+  error "Illegal BitMap Size"
+  ([#78](https://github.com/fubar-coder/bb2-c/issues/78)).
+* A bitmap whose height times depth is 65536 or more, such as
+  `BitMap 0,16,8192,8`, got too little memory, and its planes pointed
+  behind it into memory of others; it gets all of its memory
+  ([#76](https://github.com/fubar-coder/bb2-c/issues/76)).
+* `ShapesBitMap` of a shape with planes of 32 KB or more put each further
+  plane of the bitmap in front of the previous one, so drawing on it wrote
+  in front of the shape; the planes follow each other as in the shape
+  ([#79](https://github.com/fubar-coder/bb2-c/issues/79)).
+* `BitMap` set only the plane pointers up to its depth and left the
+  others of the object as they were, pointing into the freed memory of an
+  earlier bitmap of more planes; they are cleared
+  ([#80](https://github.com/fubar-coder/bb2-c/issues/80)).
 * `SaveBitmap` of a bitmap whose flags are set (not one made with
   `BitMap`, which sets none) read the depth together with the flags and
   wrote hundreds of planes per line, from memory behind the bitmap, into
@@ -1338,15 +1469,6 @@ NPrint OldMul{196608,30000}   ; 1603272705, as with the original
   ([#393](https://github.com/fubar-coder/bb2-c/issues/393),
   [#74](https://github.com/fubar-coder/bb2-c/issues/74),
   [#243](https://github.com/fubar-coder/bb2-c/issues/243)).
-* The dither form of `BitMapPoly` and `RenderPoly` took the planes from
-  the second one on from behind the dither bitmap when its planes were
-  smaller than those of the bitmap drawn on; every plane comes from the
-  dither bitmap
-  ([#1035](https://github.com/fubar-coder/bb2-c/issues/1035)).
-* `NextFrame` of an anim with a single change read its next change from
-  address 0, and so did the first `NextFrame` of an anim without any; such
-  an anim plays once and stays on its last frame
-  ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
 
 ### Sounds
 

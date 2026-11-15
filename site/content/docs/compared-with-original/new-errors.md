@@ -837,6 +837,101 @@ Issues: [Bitmaps of depth 0 made the plane loops run 65536 times (#393)](https:/
 [QBlit with a shape of depth 0 (#243)](https://github.com/fubar-coder/bb2-c/issues/243),
 [A shape gadget of depth 0 (#167)](https://github.com/fubar-coder/bb2-c/issues/167).
 
+### `BitMap` with a wrong depth {#bitmap-depth-text}
+
+**What happened.** With runtime error checking, `BitMap` with a depth of
+0 or more than 8 stopped with the error text "No currently used object!",
+which has nothing to do with the depth; in an executable the text was
+empty.
+
+**With the port.** The error text is "Illegal BitMap Depth", as for
+`CludgeBitMap`.
+
+**What to change.** Give a depth from 1 to 8.
+
+Issue: [BitMap with a wrong depth reported "No currently used object!" (#1040)](https://github.com/fubar-coder/bb2-c/issues/1040).
+
+### A bitmap of width or height 0 {#bitmap-size}
+
+**What happened.** `BitMap` and `CludgeBitMap` accepted a width or
+height of 0, also with runtime error checking. `CopyBitMap` of such a
+bitmap copied about four thousand million words through the memory.
+
+```
+BitMap 0,16,10,1
+NPrint "16 x 10"
+BitMap 1,0,10,1
+NPrint "0 x 10"
+End
+```
+
+Compiled with runtime error checking, the original printed both lines.
+
+**With the port.** With runtime error checking, a width or height below 1
+is the error "Illegal BitMap Size"; the program above stops after
+`16 x 10`.
+
+**What to change.** Give a width and a height of 1 or more.
+
+Issue: [CopyBitMap of a bitmap of size 0 copied 4 billion words (#78)](https://github.com/fubar-coder/bb2-c/issues/78).
+
+### `Poly` with fewer than 2 points {#poly-points}
+
+**What happened.** `Poly` draws a line from each point to the next. With
+1 point or none it counted down past 0 and drew 65535 or 65536 lines from the
+words in memory behind the coordinates.
+
+**With the port.** With runtime error checking, this is the error "Poly
+needs at least 2 Points".
+
+**What to change.** Give `Poly` at least 2 points; draw a single point
+with `Plot`.
+
+Issue: [Poly with 1 point drew 65535 lines (#396)](https://github.com/fubar-coder/bb2-c/issues/396).
+
+### A polygon of more than 16 points {#too-many-points}
+
+**What happened.** `Polyf`, `BitMapPoly`, `ChunkyPoly` and `RenderPoly`
+take at most 16 points. More points overwrote the code of the library,
+and the program crashed, also with runtime error checking.
+
+**With the port.** With runtime error checking, more than 16 points are
+the error "Too Many Points"; for the polygon commands that take a
+negative count for the points in the other order, so is a count below
+-16.
+
+**What to change.** Split the polygon into polygons of at most 16 points.
+
+Issue: [Polyf, BitMapPoly and ChunkyPoly overflowed with more than 16 points (#395)](https://github.com/fubar-coder/bb2-c/issues/395).
+
+### `ChunkyVlin` with the ends the wrong way round {#chunkyvlin-ends}
+
+**What happened.** `ChunkyVlin x,y1,y2,colour` without `CLIP` draws from
+`y1` down to `y2`. With `y1` greater than `y2` it wrote about 65536 words,
+one in each chunky line, far beyond the chunky area.
+
+**With the port.** With runtime error checking, this is the error
+"ChunkyVlin y1 MUST NOT be greater than y2". The form with `CLIP` takes
+the ends in either order.
+
+**What to change.** Give the upper end first, or use the form with
+`CLIP`.
+
+Issue: [ChunkyVlin with y2 below y1 wrote about 65536 words (#417)](https://github.com/fubar-coder/bb2-c/issues/417).
+
+### `RenderPoly` with a colour above 14 on a chunky area {#renderpoly-colour}
+
+**What happened.** After `RenderToChunky`, the colour of `RenderPoly` is
+a number from 0 to 14 for a fixed set of colours. A colour above 14 was
+taken from the memory behind that set.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Colour".
+
+**What to change.** Give a colour from 0 to 14.
+
+Issue: [RenderPoly after RenderToChunky read colours above 14 behind its table (#422)](https://github.com/fubar-coder/bb2-c/issues/422).
+
 ### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
 
 **What happened.** With runtime error checking, the first `PopInput` or
