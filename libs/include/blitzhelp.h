@@ -2,12 +2,14 @@
  * blitzhelp.h - small helpers shared by the C library ports (included by
  * blitzlib.h; no need to include it separately).
  *
+ *   inlining              BL_ALWAYS_INLINE
  *   register arithmetic   BL_SETW BL_SETB BL_EXTL BL_SWAP bl_divu_w bl_divs_w
  *                         bl_mulu_w bl_muls_w
  *   string copy           BL_STRCOPY
  *   a2 argument stack     BL_POPL BL_POPW
  *   custom chips          BL_CUSTOM BL_CUSTOMW BL_CUSTOML BL_BLITBUSY
- *                         BL_BLITWAIT BL_INTENA BL_INTS_OFF BL_INTS_ON
+ *                         BL_BLITWAIT bl_blitoff BL_INTENA BL_INTS_OFF
+ *                         BL_INTS_ON
  *   mathffp               LVO_SPFix ... LVO_SPCeil (with BLITZ_BASEJSR1/2)
  *   system lib routines   TOK_globalloc ... (for BLITZ_ALIBJSR),
  *                         MEMBASE_localloc ... (memlib table, BLITZ_BASEJSR)
@@ -20,6 +22,13 @@
 #define BLITZHELP_H
 
 #include <exec/types.h>     /* already there via blitzlib.h; for the IDE */
+
+/* ------------------------------------------------------------ inlining */
+
+/* BL_ALWAYS_INLINE - a static helper of a hot routine that GCC is to
+   inline: at -Os it keeps static helpers as functions with their
+   arguments on the stack and their state in memory (the blit core). */
+#define BL_ALWAYS_INLINE static inline __attribute__((always_inline))
 
 /* ------------------------------------------------- register arithmetic */
 
@@ -161,6 +170,19 @@ static inline LONG bl_muls_w(WORD a, WORD b)
 /* the usual blitter wait (libmacs `blitwait`): BTST once for the Agnus
    bug, then loop while busy */
 #define BL_BLITWAIT(cb)    do { (void)BL_BLITBUSY(cb); while (BL_BLITBUSY(cb)) ; } while (0)
+/* bl_blitoff(&bm->bpr, x, y) - the byte offset of pixel x, y in a plane
+   as the blit libraries compute it: MULS bpr,y : ASR.w #3,x : EXT.l x :
+   ADD.l x,y (only the low words of x and y count).  Assembler because
+   GCC adds with LEA in an address register instead, and takes a6 for it
+   in an __entrypoint routine, which must keep a6. */
+BL_ALWAYS_INLINE ULONG bl_blitoff(const UWORD *bpr, WORD x, WORD y)
+{
+    ULONG off;
+
+    __asm__("muls.w %2,%0\n\tasr.w #3,%1\n\text.l %1\n\tadd.l %1,%0"
+            : "=d"(off), "+d"(x) : "m"(*bpr), "0"(y) : "cc");
+    return off;
+}
 /* INTENA: all interrupts off/on (MOVE #$4000/$C000,$DFF09A) */
 #define BL_INTENA          (*(volatile UWORD *)0xdff09a)
 #define BL_INTS_OFF()      (BL_INTENA = 0x4000)

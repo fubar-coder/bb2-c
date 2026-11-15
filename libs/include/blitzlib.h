@@ -793,6 +793,26 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
     __asm__("   .globl  _" #entry "\n   .set    _" #entry ",_" #cfunc       \
             "\n   .globl  ___blitz_entrypoint_" #entry                       \
             "\n   .set    ___blitz_entrypoint_" #entry ",_" #cfunc)
+/* BLITZ_EP_MARK(cfunc) - the marker of BLITZ_ALIAS_EP alone, for an
+   __entrypoint routine that is the Blitz mode code of a
+   BLITZ_AB_ROUTINE (reached through its `Dc.l`, not a symbol of its own) */
+#define BLITZ_EP_MARK(cfunc)                                                \
+    __asm__("   .globl  ___blitz_entrypoint_" #cfunc                         \
+            "\n   .set    ___blitz_entrypoint_" #cfunc ",_" #cfunc)
+/* BLITZ_EP_KEEP_A6() / BLITZ_EP_KEEP_A6_END() - at the start and the end
+   of an __entrypoint routine that needs more address registers than GCC
+   finds in a0-a2: the caller's a6 is a live hard register from the one
+   to the other, so GCC does not take a6 (the build check refuses a
+   routine that writes it) and keeps its pointers in a0-a2 and d0-d7 */
+#ifndef BL_CODE_MODEL
+#define BLITZ_EP_KEEP_A6()                                                  \
+    register ULONG bl_keep_a6_ __asm("a6");                                 \
+    __asm__ volatile("" : "=a"(bl_keep_a6_))
+#define BLITZ_EP_KEEP_A6_END() __asm__ volatile("" : : "a"(bl_keep_a6_))
+#else
+#define BLITZ_EP_KEEP_A6()
+#define BLITZ_EP_KEEP_A6_END()
+#endif
 #define BLITZ_THUNK_Z(entry, cfunc, save) \
     BL_THUNK_(entry, cfunc, save, "", "   tst.l   d0\n")
 #define BLITZ_THUNK_PRE(entry, cfunc, save, pre) \

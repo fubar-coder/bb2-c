@@ -296,9 +296,11 @@ again):
 * the `__entrypoint` routines of every library file (`blitzlib
   entrypoints` on its static library, in the same step, before the
   link): a C function with `BLITZ_ENTRYPOINT` (GCC saves no callee-saved
-  register in it), marked by `BLITZ_ALIAS_EP`, must not write a6 without
-  saving it at its start (the register rule keeps a6, and GCC then uses
-  a6 as a free register), must not be called or jumped into from other
+  register in it), marked by `BLITZ_ALIAS_EP` (or `BLITZ_EP_MARK` for
+  the Blitz mode code of a Blitz/Amiga routine), must not write a6
+  without saving it at its start (the register rule keeps a6, and GCC
+  then uses a6 as a free register; `BLITZ_EP_KEEP_A6` keeps it from
+  doing so), must not be called or jumped into from other
   code (GCC does not know at a call site that it keeps nothing), and must
   not be folded with a function of the same body (identical code folding;
   `BLITZ_ENTRYPOINT` carries `no_icf`). ctest
