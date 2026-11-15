@@ -170,7 +170,7 @@ int run_systest(const char *name, int (*fn)(int, char **))
 TEST_CASE("libtest ldivlib", "[libtest]") { CHECK(run_libtest("ldivlib") == 0); }
 TEST_CASE("libtest lmullib", "[libtest]") { CHECK(run_libtest("lmullib") == 0); }
 
-TEST_CASE("systest: memlib datalib chipbaselib strings1lib staticslib varslib exitslib clrlib", "[sys]")
+TEST_CASE("systest: memlib datalib chipbaselib strings1lib staticslib varslib exitslib clrlib banklib", "[sys]")
 {
     CHECK(run_systest("systest", systest_main) == 0);
 }

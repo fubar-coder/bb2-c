@@ -1,6 +1,7 @@
 /*
  * systest - the system libraries memlib, datalib, chipbaselib,
- * strings1lib, staticslib, varslib, exitslib, clrlib on the Amiga: one set
+ * strings1lib, staticslib, varslib, exitslib, clrlib (and banklib AllocMem,
+ * which calls memlib) on the Amiga: one set
  * (the original from blitz2:acidlibs or the C build, as LIBSET says),
  * observed as cases (sysload.h; the expected data
  * libs/tests/expected/systest.txt).
@@ -86,7 +87,25 @@ static void run(struct set *s)
         OBS("no list (Z)", !!(ccr & CCR_Z));
         OBS("all memory back", rwe_mem_back());
         CALL("memlib init", entry_code(l, 7), (void)0, 0, 0);         /* again for the others */
+        /* the flags after a successful allocation, with the caller's d2 = 0:
+           Z clear, as third-party libraries test them with `beq` right
+           after the call (#1059; freed by memlib finit) */
+        CALL("memlib globalloc (d2 = 0)", entry_code(l, 2), r.d[0] = 16; r.d[1] = MEMF_PUBLIC;
+             r.d[2] = 0, 0, 0);
+        OBS("memory", r.d[0] != 0);
+        OBS("not Z", !(ccr & CCR_Z));
+        CALL("memlib localloc (d2 = 0)", entry_code(l, 0), r.d[0] = 16; r.d[1] = MEMF_PUBLIC;
+             r.d[2] = 0, 0, 0);
+        OBS("memory", r.d[0] != 0);
+        OBS("not Z", !(ccr & CCR_Z));
     }
+
+    /* banklib AllocMem: memlib globalloc, its flags too (#1059) */
+    l = getlib(s, "banklib");
+    CALL("banklib AllocMem (d2 = 0)", entry_code(l, 7), r.d[0] = 16; r.d[1] = MEMF_PUBLIC;
+         r.d[2] = 0, 0, 0);
+    OBS("memory", r.d[0] != 0);
+    OBS("not Z", !(ccr & CCR_Z));
 
     /* strings1lib: init allocates the buffer (memlib globalloc) */
     l = getlib(s, "strings1lib");
@@ -149,7 +168,18 @@ static void run(struct set *s)
 
 static const char *names[] = {
     "memlib", "datalib", "chipbaselib", "strings1lib", "staticslib", "varslib",
-    "exitslib", "clrlib", NULL
+    "exitslib", "clrlib", "banklib", NULL
+};
+
+/* banklib's LoadBank calls fileiolib Exists, which this set does not load;
+   the scenario only calls AllocMem, so the stub is never run */
+static void stub_exists(void)
+{
+}
+
+static const struct stub stubs[] = {
+    { 0x3e15, (APTR)stub_exists },      /* fileiolib (124) Exists, TOK_exists */
+    { 0, NULL }
 };
 
 int main(int argc, char **argv)
@@ -158,6 +188,7 @@ int main(int argc, char **argv)
         printf("usage: systest DIR\n");
         return 20;
     }
+    sysload_stubs = stubs;
     if (!load_set(argv[1], names))
         return 20;
     KEEPS("datalib init", d0-d7|a0-a3|a6);
@@ -168,6 +199,12 @@ int main(int argc, char **argv)
     KEEPS("memlib localloc (table)", d2-d7|a0-a3|a6);
     KEEPS("memlib newmem", d0-d7|a0-a3|a6);
     KEEPS("memlib globalloc", d2-d7|a0-a3|a6);
+    /* third party: a0 and a1 across globalloc (RIGTMenuLib, QuickLib,
+       EFMUILib and others), the contract the port keeps for those callers */
+    KEEPS("memlib globalloc (d2 = 0)", a0-a1);
+    KEEPS("memlib localloc (d2 = 0)", a0-a1);
+    /* banklib AllocMem keeps a0/a1 like globalloc */
+    KEEPS("banklib AllocMem (d2 = 0)", a0-a1);
     KEEPS("memlib freelast", d0-d7|a0-a3|a6);
     KEEPS("memlib locfree", d1-d7|a0|a2|a3|a6);
     KEEPS("memlib globfree", d1-d7|a0|a2|a3|a6);

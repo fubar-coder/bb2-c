@@ -26,6 +26,15 @@ memlib freelast|kept||3	kept
 memlib freelast|no list (Z)||1	$00000001
 memlib freelast|all memory back||1	$00000001
 memlib init|kept||2	kept
+memlib globalloc (d2 = 0)|kept||1	kept
+memlib globalloc (d2 = 0)|memory||1	$00000001
+memlib globalloc (d2 = 0)|not Z||1	$00000001
+memlib localloc (d2 = 0)|kept||1	kept
+memlib localloc (d2 = 0)|memory||1	$00000001
+memlib localloc (d2 = 0)|not Z||1	$00000001
+banklib AllocMem (d2 = 0)|kept||1	kept
+banklib AllocMem (d2 = 0)|memory||1	$00000001
+banklib AllocMem (d2 = 0)|not Z||1	$00000001
 strings1lib init|kept||1	kept
 strings1lib init|buffer||1	$00000001
 strings1lib copy|kept|len 38|1	kept
@@ -45,5 +54,5 @@ varslib init|cleared||1	$00000001
 varslib finit|kept||1	kept
 varslib finit|all memory back||1	$00000001
 memlib finit|kept||1	kept
-|number of calls||1	$00000018
+|number of calls||1	$0000001B
 exitslib quit|instructions||1	bytes 8 2E7A504F207A4ED0

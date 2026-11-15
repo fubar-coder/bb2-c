@@ -323,7 +323,11 @@ BLITZ_THUNK(_banksize, banksize_c, "d1/a0-a1");
  *
  * @param size     d0: the size in bytes
  * @param memtype  d1: the memory type (0 = fast, 2 = chip, 65536 = clear)
- * @return d0: the address (no memory: memlib's "Out of Memory!")
+ * @return d0: the address (no memory: memlib's "Out of Memory!"); the
+ *         flags of globalloc's `tst.l d0` (Z clear after success), which
+ *         callers test with `beq` (MikesMapLib, MikesSpaceFXLib, #1059):
+ *         allocmem_c ends with `movem`/`rts` after the call, which keep
+ *         them (pinned by libs/tests/systest.c, "banklib AllocMem").
  */
 static ULONG BLITZ_ROUTINE allocmem_c(ULONG size BL_REG(d0), ULONG memtype BL_REG(d1))
 {

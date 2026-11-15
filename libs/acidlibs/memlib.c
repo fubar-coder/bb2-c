@@ -166,7 +166,9 @@ static struct memlist *findglob(struct memlist *l)
  *
  * @param size d0: the size in bytes.
  * @param flags d1: the AllocMem flags.
- * @return d0: the memory.
+ * @return d0: the memory; the flags of `tst.l d0` (Z clear after a
+ *         successful allocation, as in the original, whose failure does
+ *         not return; the same as globalloc).
  */
 static ULONG BLITZ_ROUTINE localloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
 {
@@ -183,7 +185,7 @@ static ULONG BLITZ_ROUTINE localloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(
     b->len = size;
     return (ULONG)(b + 1);
 }
-BLITZ_THUNK(localloc, localloc_c, "a0-a1");
+BLITZ_THUNK_Z(localloc, localloc_c, "a0-a1");
 
 /**
  * @brief locfree ($C001) - free memory of the current local list.
@@ -227,9 +229,18 @@ BLITZ_THUNK(locfree, locfree_c, "d1/a0");
  *
  * Keeps a0-a1.  Errors as localloc.
  *
+ * Third-party libraries (XBCiaTrackerLib, XBSoundSystemLib, RIARexxLib,
+ * EFMUILib, and banklib AllocMem's callers) test the result with `beq`
+ * right after the call, without a `tst`: the original leaves Z clear (its
+ * last flag-setting instruction moves the list head, never 0, and a
+ * failure does not return).  Fixed (#1059): the thunk ends with
+ * `tst.l d0` (BLITZ_THUNK_Z), so the flags do not depend on the caller's
+ * registers.
+ *
  * @param size d0: the size in bytes.
  * @param flags d1: the AllocMem flags.
- * @return d0: the memory.
+ * @return d0: the memory; the flags of `tst.l d0` (Z clear after a
+ *         successful allocation).
  */
 static ULONG BLITZ_ROUTINE globalloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
 {
@@ -241,7 +252,7 @@ static ULONG BLITZ_ROUTINE globalloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG
     firstdata = save;
     return mem;
 }
-BLITZ_THUNK(globalloc, globalloc_c, "a0-a1");
+BLITZ_THUNK_Z(globalloc, globalloc_c, "a0-a1");
 
 /**
  * @brief globfree ($C003) - like locfree, in the global list.
