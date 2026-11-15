@@ -35,11 +35,7 @@
  * BeepScreen, MoveScreen, SMouseX, SMouseY (assembler text, as in the
  * original).
  *
- * BUG(orig), kept:
- *   - ScreenTags with tag pairs copies them from the argument stack
- *     without a limit into usertags (32 longs = 16 pairs), then a TAG_END
- *     long: 16 pairs or more write behind it (#1039; test
- *     screenslib-screentags-pairs-limit).
+ * Kept from the original, not a bug:
  *   - Not a bug (library-opened screens are always closed by the library,
  *     no leak found): the title copy (allocst) of FindScreen/WbToScreen
  *     objects is not involved, but a ScreenTags/Screen title is only freed
@@ -58,6 +54,12 @@
  *   FindScreen/WbToScreen mark the object as "found" (bit 0 of its
  *   DBufInfo long, FOUND: the 8-byte object has no other room), and
  *   freescreen only forgets the screen of such an object.
+ * Fixed (intended deviation, #1039): ScreenTags ...,Tag,Data... copies
+ *   its pairs from the argument stack without a limit into usertags (32
+ *   longs = 16 pairs), then a TAG_END long: 16 pairs or more write behind
+ *   it.  An invalid argument: the command is unchanged, the error check
+ *   (stagschk, debugger only) stops more than 15 pairs with "Too Many
+ *   Tags"; the original had no check.
  * Fixed (intended deviation, #249): ScreenTags with a tag list copied it
  *   without a limit into usertags (32 longs = 15 tags and TAG_END); a
  *   longer list overwrote what follows (the error check area, without the
@@ -92,7 +94,7 @@ void dosmousex(void), dosmousey(void), doshowscreen(void), doscreenpens2(void);
 void doscreenpens(void), dosviewport(void), freescreen(void);
 void dohidescreen(void), dobeepscreen(void), domovescreen(void);
 void screenslib_doinit(void), modechk(void), prescreen(void), prescreen2(void);
-void loadscreenchk(void), showbmchk0(void), showbmchk(void);
+void loadscreenchk(void), showbmchk0(void), showbmchk(void), stagschk(void);
 /* C routines with register parameters, for the table: e_NAME = NAME */
 BLITZ_ENTRY_C(domode);
 BLITZ_ENTRY_C(domode2);
@@ -242,7 +244,7 @@ BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags3), 0, 0);
 BLITZ_REPARGS(2, 2, BL_WORD, BL_STRING, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
 BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib, BL_LA(1),
            LIB_screenslib, 0x0604);
-BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags), stagschk, 0);  /* check: fixed #1039 */
 BLITZ_NAME("ScreenTags", "Screen#,Title$ [&TagList] or [[,Tag,Data]...]");
 
 BLITZ_NULLSUB_AT(init, screenslib_doinit, 0, 0);
@@ -319,7 +321,7 @@ static const char mess13[] = "Can't find CopIns!";
 
 /* messages in the error area (BLITZ_ERRCHK_MESSAGE at the end) */
 extern const char mess2[], mess3[], mess5[], mess6[], mess7[];
-extern const char mess9[], mess10[], mess11[], mess14[];
+extern const char mess9[], mess10[], mess11[], mess14[], tagsmess[];
 
 static UWORD execversion(void)
 {
@@ -1068,10 +1070,11 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
  *
  * As doscreentags3, the tag/data pairs from the argument stack.
  *
- * BUG(orig) (#1039): no limit for the 16 user pairs; 16 or
- * more write behind usertags (the pairs lie on the argument stack in
- * reverse order and cannot be linked with TAG_MORE as in the &TagList
- * form, #249).
+ * No limit for the 16 user pairs in the command (the pairs lie on the
+ * argument stack in reverse order and cannot be linked with TAG_MORE as
+ * in the &TagList form, #249).  Errors (debugger only, stagschk): more
+ * than 15 pairs -> "Too Many Tags" (Fixed (#1039): the original has no
+ * check and writes behind usertags).
  *
  * @param n     d7.w: the number of tag/data pairs on the a2 stack
  * @param title d1: the title
@@ -1190,6 +1193,15 @@ static void BLITZ_ERRCHK showbmchk_c(const struct bb_bitmap *bm BL_REG(a0),
         BLITZ_RUNERR(mess14);
 }
 
+/* stagschk - ScreenTags ...,Tag,Data...: d7 = the number of pairs, at
+   most 15 (the 16 user pairs and TAG_END; fixed #1039, the original has
+   no check) */
+static void BLITZ_ERRCHK stagschk_c(UWORD n BL_REG(d7))
+{
+    if (n > 15)
+        BLITZ_RUNERR(tagsmess);
+}
+
 /* the thunks and messages last: they leave the assembler in .text while
    GCC still assumes the error check section */
 BLITZ_ERRCHK_THUNK(prescreen, prescreen_c, "d0-d1/a0-a1");
@@ -1198,6 +1210,7 @@ BLITZ_ERRCHK_THUNK(loadscreenchk, loadscreenchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(modechk, modechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showbmchk0, showbmchk0_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showbmchk, showbmchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(stagschk, stagschk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess3, "Can't use specified BitMap");
 BLITZ_ERRCHK_MESSAGE(mess5, "Screen width MUST be at least 320");
@@ -1207,3 +1220,4 @@ BLITZ_ERRCHK_MESSAGE(mess9, "Illegal number of BitPlanes");
 BLITZ_ERRCHK_MESSAGE(mess10, "Uninitialized IntuiFont");
 BLITZ_ERRCHK_MESSAGE(mess11, "Illegal Mode");
 BLITZ_ERRCHK_MESSAGE(mess14, "Screen and BitMap MUST be same size");
+BLITZ_ERRCHK_MESSAGE(tagsmess, "Too Many Tags");          /* fixed, #1039 */

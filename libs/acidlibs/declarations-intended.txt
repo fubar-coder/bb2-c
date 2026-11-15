@@ -91,3 +91,7 @@ lib 121: entry 4 BitMapPoly +$12: code offset set in only one of them
 # #417: ChunkyVlin (without CLIP) gets an error check (_chunkyvlinchk)
 lib 121: entry 2 ChunkyVlin +$12: code offset set in only one of them
 lib 121: relocations in the declaration part 14 != 21
+# screenslib (#1039): ScreenTags with tag pairs gets an error check
+# (stagschk, "Too Many Tags"); the original has none
+lib 158: entry 14 ScreenTags +$64: code offset set in only one of them
+lib 158: relocations in the declaration part 48 != 49
