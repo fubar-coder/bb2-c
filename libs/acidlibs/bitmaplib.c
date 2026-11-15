@@ -18,8 +18,9 @@
  * height, depth - allocate and set up without freeing.
  *
  * Kept from the original (BUG(orig)):
- *   - Sizes are MULU word products: h * depth * bytes per row is
- *     truncated (the second MULU uses the low word of h * depth). (#76)
+ *   - Fixed (#76): sizes were MULU word products: h * depth * bytes per
+ *     row was truncated (the second MULU used the low word of h * depth);
+ *     a long product now (bmbytes).
  *   - CopyBitMap copies plane by plane with (bytes per row * rows) / 2
  *     words (0 words = 4 billion; fixed, #78: a bitmap of width or height
  *     0 is an invalid argument, refused with runtime error checking by the
@@ -136,13 +137,24 @@ static void setused(WORD off)
     *(struct bb_bitmap **)(blitz_globals + off) = BM;     /* MOVE.l a3,0(a5,d6) */
 }
 
+/* the memory of rows * depth * bytes per row as a long.  Fixed (#76): the
+   original's two MULUs took only the low word of rows * depth, so a
+   bitmap of 65536 or more rows * depth got too little memory, and its
+   planes lay behind the block */
+static ULONG bmbytes(UWORD rows, UWORD depth, UWORD bpr)
+{
+    ULONG rd = bl_mulu_w(rows, depth);
+
+    return bl_mulu_w((UWORD)rd, bpr) + (bl_mulu_w((UWORD)(rd >> 16), bpr) << 16);
+}
+
 /* _freebitmap - our own memory (isreal < 0) is freed */
 static void freebitmap(struct bb_bitmap *b)
 {
     if (b->isreal < 0) {
         struct bl_regs r = { 0 };
 
-        r.d0 = (ULONG)(UWORD)(b->rows * b->flagsdepth) * b->bpr;
+        r.d0 = bmbytes(b->rows, b->flagsdepth, b->bpr);
         r.a1 = (ULONG)b->planes[0];
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
@@ -153,8 +165,9 @@ static void freebitmap(struct bb_bitmap *b)
  * @brief Free BitMap (the object's _free nullsub): free the planes of the
  *        bitmap in a3 if they are its own memory (isreal < 0).
  *
- * memlib globfree of rows * depth * bytes per row (BUG(orig) (#76): MULU
- * word products); isreal = 0.
+ * memlib globfree of rows * depth * bytes per row (fixed, #76: a long
+ * product, the original's MULUs kept the low word of rows * depth);
+ * isreal = 0.
  */
 void BLITZ_ROUTINE _freebitmap(void)
 {
@@ -216,7 +229,7 @@ static void ext(struct bb_bitmap *b, UWORD w, UWORD h, UWORD d)
     b->flags = 0;
     b->depth = d;
     psize = (ULONG)w * h;                       /* MULU d1,d2 */
-    r.d0 = (ULONG)(UWORD)((ULONG)h * d) * w;    /* MULU d3,d0:MULU d1,d0 */
+    r.d0 = bmbytes(h, d, w);                    /* fixed (#76): a long product */
     r.d1 = MEMF_CHIP | MEMF_CLEAR;
     mem = BLITZ_ALIBJSR(TOK_globalloc, r);
     n = d - 1;
@@ -232,7 +245,7 @@ static void ext(struct bb_bitmap *b, UWORD w, UWORD h, UWORD d)
  *        the bitmap in a3 without freeing it first.
  *
  * Even byte width, one MEMF_CHIP|MEMF_CLEAR block for all planes (memlib
- * globalloc; BUG(orig) (#76): the size is a MULU word product), then the
+ * globalloc; fixed (#76): the size is a long product), then the
  * extra fields (prepxtra).  isreal is not set.
  *
  * @param w  d1.w: the width in pixels
@@ -250,7 +263,7 @@ BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
  * @brief BitMap BitMap#,Width,Height,Depth: a new bitmap in chip memory.
  *
  * Becomes the used bitmap; frees the old one, isreal = -1 (own memory),
- * then as extbitmap.  BUG(orig): the size is a MULU word product (#76);
+ * then as extbitmap (fixed, #76: the size is a long product);
  * the planes beyond the depth are not cleared (#80).  Errors (debugger,
  * _bitmapchk): "Illegal BitMap Depth" if the depth is 0 or more than 8
  * (fixed, #1040: the original raised error number 1, "No currently used
@@ -331,8 +344,8 @@ void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d
  * Frees the destination, allocates one MEMF_CHIP block (not cleared) and
  * copies plane by plane.  BUG(orig): (bytes per row * rows) / 2 words per
  * plane, 0 words = 4 billion (#78: such a source is refused at its
- * creation with runtime error checking); the size is a MULU word product
- * (#76).  Not a bug: the used bitmap is not set (CopyBitMap is not
+ * creation with runtime error checking); the size is a long product
+ * (fixed, #76).  Not a bug: the used bitmap is not set (CopyBitMap is not
  * documented to select it).  Errors (debugger, cbchk): "Can't copy
  * borrowed Bitmap" (the destination is borrowed).
  *
@@ -350,7 +363,7 @@ void BLITZ_ROUTINE docopybitmap(struct bb_bitmap *src BL_REG(a2))
 
     freebitmap(b);
     words = ((ULONG)src->bpr * src->rows) >> 1;
-    r.d0 = (ULONG)(UWORD)((ULONG)src->rows * *(UWORD *)&src->flags) * src->bpr;
+    r.d0 = bmbytes(src->rows, *(UWORD *)&src->flags, src->bpr);    /* fixed (#76) */
     r.d1 = MEMF_CHIP;
     mem = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
     *(ULONG *)&b->bpr = *(ULONG *)&src->bpr;
