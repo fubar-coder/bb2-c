@@ -20,10 +20,8 @@
  *
  * ShowSprite, InFront, InFrontF, InFrontB are Blitz mode only (odd error
  * check address in !subs).  ShowSprite clips at the top (data pointer
- * advanced 4 bytes per line - also in 32/64 pixel modes, BUG(orig) (#283); the
- * offset is a long register whose upper word is the caller's y, as in
- * the original) and
- * the bottom of the slice, switches the sprites off when completely
+ * advanced by the clipped lines of 4/8/16 bytes, fixed #283) and the
+ * bottom of the slice, switches the sprites off when completely
  * outside.  InFront/InFrontB set the playfield 2 priority bits (BPLCON2
  * 3-5) in the copper list of the slice, InFrontF those of playfield 1.
  *
@@ -52,6 +50,12 @@
  *    is no multiple of the sprite width took bytes of the next row (or
  *    from behind the shape) into its right edge.  Here that sprite copies
  *    only the bytes the row has and 0 for the rest. (#282)
+ *  - ShowSprite clipped at the top advanced the data pointer by 4 bytes
+ *    per clipped line also in SpriteMode 1/2 (8/16 bytes per line), and
+ *    added the offset as a long whose upper word was that of the y
+ *    argument's register (the pointer anywhere).  Here the clipped lines
+ *    shifted by the width shift, a long without the y's upper word.
+ *    (#283)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -396,16 +400,15 @@ BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
  *
  * Writes position, control and data pointer of each hardware sprite into
  * the slice's copper list from the channel on.  Clips at the top (the
- * data pointer is advanced 4 bytes per line; the offset is a long
- * register whose upper word is the caller's y, as in the original) and
+ * data pointer is advanced by the clipped lines, 4/8/16 bytes each) and
  * the bottom of the slice; switches the sprites off when completely
  * outside.
  *
  * Errors (debugger, sspchk): "Uninitialized Sprite", "Uninitialized
  * Slice", "Sprite Channel Unavailable".
  *
- * BUG(orig) (#283): the top clipping skips 4 bytes per line also in the
- * 32/64 pixel modes.
+ * Fixed (#283): the original's top clipping skips 4 bytes per line also
+ * in the 32/64 pixel modes and adds the upper word of the y register.
  *
  * @param x     d1: x position
  * @param y     d2: y position
@@ -433,9 +436,11 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
         height += vpos;
         if (height <= 0)
             goto spriteoff;                     /* completely off top */
-        /* EXG d2,d4:NEG d4:ASL #2,d4 - word operations on the long
-           that was d2 (upper word from the caller's y), added as long */
-        skip = (y & 0xffff0000UL) | (UWORD)((UWORD)-vpos << 2);
+        /* the clipped lines of 1 << widthshift bytes (fixed #283: the
+           original's EXG d2,d4:NEG d4:ASL #2,d4 skipped 4 bytes per line
+           in every mode, a word in the long that was d2, so the upper
+           word of the caller's y was added too) */
+        skip = (ULONG)(UWORD)-vpos << sv.shift;
         vpos = 0;
     }
     if ((WORD)(maxh - height) < 0)              /* CMP d5,d0:BPL */
