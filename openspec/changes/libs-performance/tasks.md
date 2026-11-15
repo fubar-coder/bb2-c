@@ -75,6 +75,8 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 - [ ] 10.9 Frac with an argument of unknown type (`BL_UNKNOWN`, as Int, Sgn and Abs), still a Float result: a Quick argument builds the FFP result directly from its fraction word (normalise, mantissa, exponent, sign) without `qutofl` and the mathffp calls; the Float argument keeps its path (a bit-mask variant instead of SPFix/SPFlt/SPSub only if it gives the same bits). The Quick path does not reproduce the original's loss of low fraction bits for large integer parts (qutofl's 24-bit mantissa): the result is the exact fraction (user decision 2026-11-15); this is an intended deviation, documented in docs/libs/deviations.md and on the website, with the library cases where it differs as a pair; the compiled code of every program that uses Frac changes, the corpus outputs must not
 
+- [ ] 10.10 The players (medlib, trackerlib) by tuning the C source: an analysis first compares the original's replay code with GCC's output and counts the cycles per pattern (sign/zero extension from integer promotion, reloads of the channel state from memory, `volatile` reloads, `switch` against the original's jump table, stack spills for lack of address registers); then the C is reworked pattern by pattern (types that avoid extension, the channel state in locals and `restrict`, values in data registers, `goto *tab[cmd]` for the effect dispatch), measured after each step; assembler only where C stays more than 1-2 % behind (user decision 2026-11-15)
+
 ## 9. Closing
 
 - [ ] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it
