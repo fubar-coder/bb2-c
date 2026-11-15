@@ -48,13 +48,19 @@
 # bmod.vblmod, bmod.playmed) from five runs of the group 10 part A branch
 # on main e5eb09d0 (2026-11-15); a CPU loop keeps a tolerance of at least
 # 4, bmod.vblmod its 220 and bmod.playmed its 7.
+# The 22 lines of the drawing, display and palette commands (group 10
+# part B: bgfx.line to bgfx.scroll32, bgfx.show to bgfx.green,
+# bgfx.showsprite, bdisp.dispbitmap to bdisp.disppalette, bmisc.palrgb to
+# bmisc.fadepalette) from six runs of the group 10 B branch on main
+# e5eb09d0 (2026-11-15), two of them with the snapshots made anew; a "B~T"
+# line keeps at least its earlier tolerance (from 38 runs).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
-bdisp.dispbitmap              590      494.0  DisplayBitMap 0,0
-bdisp.dispbitmapxy           1058      710.0  DisplayBitMap 0,0,8,8
-bdisp.dispsprite            1506~4      965.5  DisplaySprite 0,0,100,100,0
-bdisp.disppalette          2373~16     1292.0  DisplayPalette 0,0
+bdisp.dispbitmap              507      494.0  DisplayBitMap 0,0
+bdisp.dispbitmapxy            718      710.0  DisplayBitMap 0,0,8,8
+bdisp.dispsprite             948~4      965.5  DisplaySprite 0,0,100,100,0
+bdisp.disppalette          1289~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bgfx.blit16                 2118~2     2108.3  Blit 0,100,100
 bgfx.blit16s                 2142     2108.3  Blit 0,105,100
@@ -68,7 +74,7 @@ bgfx.qblit4u               12912~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20
 bgfx.qblit8u              25722~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
 bgfx.qblit4f               9206~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
 bgfx.qblit8f               18308~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
-bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
+bgfx.showsprite               635      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
 bgfx.pcoll                  111~4      130.8  c=PColl(0)
@@ -77,24 +83,24 @@ bgfx.spriteshit              392~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 269      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
 bgfx.plot                     477      486.9  Plot 10,10,1
 bgfx.point                    471      478.4  c=Point(10,10)
-bgfx.line                    5047     3967.8  Line 10,10,110,60,1
-bgfx.lineh                 5012~16     3991.8  Line 10,10,110,10,1
-bgfx.box                  13090~13     9571.9  Box 10,10,50,50,1
-bgfx.boxf                   3146~5     1991.8  Boxf 10,10,25,25,2
-bgfx.circle               66245~40    33609.8  Circle 100,100,10,1
-bgfx.circlef              36475~30    17189.8  Circlef 100,100,10,1
+bgfx.line                    3938     3967.8  Line 10,10,110,60,1
+bgfx.lineh                 3934~16     3991.8  Line 10,10,110,10,1
+bgfx.box                   9346~13     9571.9  Box 10,10,50,50,1
+bgfx.boxf                   1980~5     1991.8  Boxf 10,10,25,25,2
+bgfx.circle               33070~40    33609.8  Circle 100,100,10,1
+bgfx.circlef              16950~30    17189.8  Circlef 100,100,10,1
 bgfx.cls                84730~1081    84709.9  Cls
-bgfx.poly3                10105~71     7524.9  Poly 3,&pts(0),1
-bgfx.polyf3               87155~11    46969.8  Polyf 3,&pts(0),1
-bgfx.scroll32              9478~17     8075.9  Scroll 0,0,32,32,100,100
+bgfx.poly3                 7365~91     7524.9  Poly 3,&pts(0),1
+bgfx.polyf3               50270~11    46969.8  Polyf 3,&pts(0),1
+bgfx.scroll32              7998~17     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   134      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
 bgfx.print5                12080~4    13097.9  Locate 0,0 : Print "SCORE"
 bgfx.printnum              16112~4    17797.8  Locate 0,0 : Print a
-bgfx.show                    1222      589.4  Show 0
-bgfx.showxy                  1261      595.9  Show 0,8,8
-bgfx.rgb                     207~3      178.8  RGB 1,15,0,0
-bgfx.green                   361~3      167.3  c=Green(1)
+bgfx.show                     595      589.4  Show 0
+bgfx.showxy                   615      595.9  Show 0,8,8
+bgfx.rgb                     180~3      178.8  RGB 1,15,0,0
+bgfx.green                   167~3      167.3  c=Green(1)
 bgfx.usebitmap                 74       69.3  Use BitMap 0
 bgfx.useslice                  74       69.3  Use Slice 0
 binput.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -155,10 +161,10 @@ bmisc.emptylong                 3          -  the empty loop again, 150000 itera
 bmisc.shapewidth            117~4      114.9  c=ShapeWidth(0)
 bmisc.shapeheight             126      120.9  c=ShapeHeight(0)
 bmisc.handle                  134      129.4  Handle 0,0,0
-bmisc.palrgb                  848      653.5  PalRGB 0,1,15,0,0
-bmisc.showpalette            2464     1616.0  ShowPalette 0
-bmisc.usepalette             2506     1660.0  Use Palette 0
-bmisc.fadepalette          3845~51     3044.9  FadePalette 1,2,q1
+bmisc.palrgb                  467      653.5  PalRGB 0,1,15,0,0
+bmisc.showpalette            1326     1616.0  ShowPalette 0
+bmisc.usepalette             1369     1660.0  Use Palette 0
+bmisc.fadepalette          3005~51     3044.9  FadePalette 1,2,q1
 bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
