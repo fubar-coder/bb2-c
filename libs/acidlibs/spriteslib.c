@@ -28,9 +28,6 @@
  * 3-5) in the copper list of the slice, InFrontF those of playfield 1.
  *
  * BUG(orig), kept:
- *  - freeasprite (and SaveSprites/LoadSprites) compute the size with the
- *    CURRENT widthshift: after a SpriteMode change a sprite is freed with
- *    a wrong size. (#280)
  *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
  *    width (beyond the row for narrow shapes). (#282)
  *
@@ -48,6 +45,12 @@
  *    the command is unchanged, the new error check spritemodechk
  *    (debugger only) stops a mode above 2 with "Illegal SpriteMode"; the
  *    original has no check. (#281)
+ *  - freeasprite, SaveSprites and LoadSprites computed the size of a
+ *    sprite's data with the CURRENT widthshift: after a SpriteMode change
+ *    SaveSprites wrote too many or too few bytes and LoadSprites read
+ *    them so (and a sprite was freed with a wrong size).  Here the size
+ *    is the sprite's own bytes per image (+10, set by GetaSprite in the
+ *    mode it was made in) times its number of hardware sprites. (#280)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -176,7 +179,6 @@ static void globfree(void *mem, ULONG size)
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
 
-/* size of a sprite's data with the current width shift */
 /* LSL.w Dn,d: count mod 64 */
 static UWORD lslw(UWORD v, UWORD n)
 {
@@ -184,9 +186,12 @@ static UWORD lslw(UWORD v, UWORD n)
     return n < 16 ? (UWORD)(v << n) : 0;
 }
 
+/* size of a sprite's data: its bytes per image (made in the sprite's own
+   mode) times its hardware sprites (fixed #280: the original took the
+   height shifted by the CURRENT width shift) */
 static ULONG spsize(const struct bb_sprite *sp)
 {
-    return (ULONG)lslw(sp->height, sv.shift) * sp->count;
+    return (ULONG)sp->imgsize * sp->count;
 }
 
 static ULONG BLITZ_ROUTINE codeinit(void)
@@ -208,8 +213,8 @@ static ULONG BLITZ_ROUTINE codeinit(void)
  * variables behind it.  Errors (debugger only, spritemodechk): a mode
  * above 2 -> "Illegal SpriteMode" (Fixed (#281): the original has no
  * check).
- * BUG(orig) (#280): sprites made before the change are later freed (and
- * saved/loaded) with the size of the new mode.
+ * Fixed (#280): sprites made before the change keep their size (the
+ * original freed, saved and loaded them with the size of the new mode).
  *
  * @param m d0.w: the mode
  */
@@ -514,7 +519,8 @@ static const char mess11[] = "Error reading/writing Sprites file";
  * code: #954); debugger (ssz): "First
  * Sprite must be lower than second".
  *
- * BUG(orig) (#280): the data size uses the current SpriteMode.
+ * Fixed (#280): the data size is the sprite's own (bytes per image x
+ * hardware sprites); the original used the current SpriteMode.
  *
  * @param last a2: the last sprite object; a3: the first
  * @param name d2: the file name
@@ -583,7 +589,8 @@ static void loadsprites(struct bb_sprite *sp, const UBYTE *last, const char *nam
  *
  * Errors: as SaveSprites.
  *
- * BUG(orig) (#280): the data size uses the current SpriteMode.
+ * Fixed (#280): the data size is the sprite's own (bytes per image x
+ * hardware sprites); the original used the current SpriteMode.
  *
  * @param last a2: the last sprite object; a3: the first
  * @param name d2: the file name

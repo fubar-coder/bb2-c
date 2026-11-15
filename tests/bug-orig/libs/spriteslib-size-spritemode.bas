@@ -6,6 +6,7 @@
 ; of 8 bytes (72 bytes, the second half from behind the data).
 ; Correct: the file holds the 16 byte block and the 36 bytes of the
 ; sprite (52 bytes), whatever the SpriteMode at the time of saving.
+; @fixed #280
 ; @configs clib
 DEFTYPE .l
 BitMap 0,16,8,2
