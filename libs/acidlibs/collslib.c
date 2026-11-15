@@ -141,14 +141,14 @@ static ULONG setclx(ULONG result, UWORD v)
 /**
  * @brief DoColl: latch the hardware collision bits (Blitz mode only).
  *
- * Reads CLXDAT (which clears it) into colval, which SColl and PColl test.
- * Errors: Blitz mode only (err1 = 1).
+ * MOVE $DFF00E,colval: reads CLXDAT (which clears it) into colval, which
+ * SColl and PColl test.  The original's code (GCC made the same of the C
+ * function), an assembler entry like SColl and PColl; it changes no
+ * register.  Errors: Blitz mode only (err1 = 1).
  */
-static void BLITZ_ROUTINE dodocoll_c(void)
-{
-    colval = CLXDAT;
-}
-BLITZ_ALIAS(dodocoll, dodocoll_c);
+BLITZ_ASM_ROUTINE(dodocoll,
+"   move.w  0xdff00e,_colval\n"         /* CLXDAT */
+"   rts");
 
 /**
  * @brief SColl(Sprite Channel,Sprite Channel): whether two sprites collided.
@@ -201,23 +201,33 @@ BLITZ_ASM_ROUTINE(doscoll,
 /**
  * @brief PColl(Sprite Channel): whether a sprite collided with the playfield.
  *
- * Tests two bits of the CLXDAT value latched by DoColl (pair + 1 and
- * pair + 5, SNE:AND:EXT).  Blitz mode only.  A word function: the upper
- * word of d0 is the caller's.  Errors (debugger only): "Illegal Sprite
- * channel" (>= 8).
+ * Tests two bits of the CLXDAT value latched by DoColl, pair + 1 and
+ * pair + 5 (mod 32, BTST on a register).  Blitz mode only.  A word
+ * function: the upper word of d0 is the caller's.  Errors (debugger only):
+ * "Illegal Sprite channel" (>= 8).
+ * The original tests both bits into d0 and d1 (SNE d0, SNE d1, AND d1,d0,
+ * EXT d0) with colval in d2; here the second test is made only when the
+ * first bit is set, with colval in d1: the same d0 (EXT uses only the low
+ * byte of the AND, so the high bytes of the bit numbers do not matter),
+ * and only d0 and d1 change.  Assembler: as a C function PColl cost 120
+ * cycles more.
  *
- * @param c  d0.w: the sprite channel (0..7)
- * @return d0.w: -1 = both bits set, 0 otherwise
+ * In:  d0.w the sprite channel (0..7)
+ * Out: d0.w -1 = both bits set, 0 otherwise
  */
-static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
-{
-    UWORD a = ((UWORD)c >> 1) + 1, b = a + 4;
-    UWORD r = (colval & (1UL << (a & 31)) ? 0xff : 0) &
-              (colval & (1UL << (b & 31)) ? 0xff : 0);
-
-    return (c & 0xffff0000UL) | (UWORD)(WORD)(BYTE)r;  /* SNE:AND:EXT */
-}
-BLITZ_ALIAS_EP(dopcoll, dopcoll_c);
+BLITZ_ASM_ROUTINE(dopcoll,
+"   lsr.w   #1,d0\n"
+"   addq.w  #1,d0\n"                    /* pair + 1 */
+"   move.w  _colval(pc),d1\n"
+"   btst    d0,d1\n"
+"   beq.s   0f\n"
+"   addq.w  #4,d0\n"                    /* pair + 5 */
+"   btst    d0,d1\n"
+"   sne     d0\n"
+"   ext.w   d0\n"
+"   rts\n"
+"0: clr.w   d0\n"
+"   rts");
 
 /* ----------------------------------------------------- rectangle tests */
 

@@ -40,7 +40,7 @@ changed results (`PREV_INTENDED`) and the measured cycles before and after.
 - [x] 6.1 Peek and Poke (memacclib), Plot and Point (scrolllib) as assembler routines of the original
 - [x] 6.2 Joyx, Joyy, Joyb, Joyr (gameiolib) and MouseX, MouseY, MouseXSpeed, MouseYSpeed (mouselib)
 - [x] 6.3 RawStatus (blitzkeyslib, keeping a1 as decided in 2.1), QLimit and Rnd (vallib, keeping a0 and a1 for Rnd)
-- [ ] 6.4 DoColl, SColl, PColl (collslib), ShapeWidth, ShapeHeight, Handle (shapeslib), Colour and Locate (fontlib)
+- [x] 6.4 DoColl, SColl, PColl (collslib), ShapeWidth, ShapeHeight, Handle (shapeslib), Colour and Locate (fontlib)
 - [ ] 6.5 GadgetHit, MenuHit, ItemHit, SubHit, EventQualifier (windowslib) as assembler entries of the same form as EMouseX (task 2.4)
 - [ ] 6.6 Sgn, Int, Abs (vallib): the float case in its own `noinline` function, or an assembler entry if that is not enough
 - [ ] 6.7 For each routine of 6.1 to 6.6 check that a library test case covers its entry conditions; add cases where the original leaves one undefined; tighten the budgets

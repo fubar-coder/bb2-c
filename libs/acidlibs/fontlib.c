@@ -264,49 +264,52 @@ BLITZ_THUNK(fontlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* ----------------------------------------------- Colour, Locate, CursX/Y */
 
+/* Colour and Locate are the original's code, assembler entries: Locate
+   runs before every Print at a place, and as a C function it cost 10
+   cycles more (the C shifts and stores); Colour is the code GCC made, kept
+   so whatever GCC makes of the rest of the library. */
+
 /**
  * @brief Colour Foreground Colour,Background Colour: the colours of the
  * bitmap output.
  *
- * @param fg  d0: the foreground colour (the planes that get the
- *            character bits)
- * @param bg  d1: the background colour
+ * MOVE.b d1,pback and on into the one-argument form.  Changes no
+ * register.
+ *
+ * In:  d0.b the foreground colour (the planes that get the character
+ *      bits), d1.b the background colour
  */
-static void BLITZ_ROUTINE docolour_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
-{
-    pback = bg;
-    pcolour = fg;
-}
-BLITZ_ALIAS(docolour, docolour_c);
+BLITZ_ASM_ROUTINE(docolour,
+"   move.b  d1,_pback\n"
+"   move.b  d0,_pcolour\n"
+"   rts");
 
 /**
  * @brief Colour Foreground Colour: the foreground colour only.
  *
- * @param fg  d0: the foreground colour
+ * In:  d0.b the foreground colour
  */
-static void BLITZ_ROUTINE docolour2_c(UBYTE fg BL_REG(d0))
-{
-    pcolour = fg;
-}
-BLITZ_ALIAS(docolour2, docolour2_c);
+BLITZ_ASM_ROUTINE(docolour2,
+"   move.b  d0,_pcolour\n"
+"   rts");
 
 /**
  * @brief Locate X,Y: the cursor of the bitmap output, in characters.
  *
  * LSL #3,d0:LSL.l #3,d1:SWAP d1:MOVEM d0-d1,40(a0): the pixel cursor of
- * the output bitmap = x * 8, the integer part of y * 8.  Not a bug: Y is
- * a Quick, X a word.  Errors (debugger, locatechk): "Uninitialized
- * BitMap".
+ * the output bitmap (cursx, cursy) = x * 8, the integer part of y * 8.
+ * Not a bug: Y is a Quick, X a word.  Changes d0, d1 and a0.  Errors
+ * (debugger, locatechk): "Uninitialized BitMap".
  *
- * @param x  d0: the column
- * @param y  d1: the line (Quick)
+ * In:  d0.w the column, d1 the line (Quick)
  */
-static void BLITZ_ROUTINE dolocate_c(UWORD x BL_REG(d0), ULONG y BL_REG(d1))
-{
-    bitmapout->cursx = x << 3;
-    bitmapout->cursy = (y << 3) >> 16;
-}
-BLITZ_ALIAS(dolocate, dolocate_c);
+BLITZ_ASM_ROUTINE(dolocate,
+"   move.l  _bitmapout(pc),a0\n"
+"   lsl.w   #3,d0\n"
+"   lsl.l   #3,d1\n"
+"   swap    d1\n"
+"   movem.w d0-d1,40(a0)\n"             /* cursx, cursy */
+"   rts");
 
 /**
  * @brief CursX: the cursor column of the bitmap output.

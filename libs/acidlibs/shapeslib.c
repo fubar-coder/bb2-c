@@ -452,6 +452,11 @@ static void BLITZ_ROUTINE doautocookie_c(ULONG v BL_REG(d0))
 }
 BLITZ_ALIAS(doautocookie, doautocookie_c);
 
+/* ShapeWidth, ShapeHeight and Handle are the original's code (MOVE
+   (a0),d0:RTS ...), assembler entries: GCC made the same instructions of
+   the C functions, the assembler keeps them so (they change only d0,
+   Handle nothing) whatever GCC makes of the rest of the library. */
+
 /**
  * @brief ShapeWidth(Shape#) - the shape's pixel width.
  *
@@ -460,22 +465,25 @@ BLITZ_ALIAS(doautocookie, doautocookie_c);
  *
  * Errors: "Uninitialized Shape" (funcchk, debugger only).
  *
- * @param s a0: the shape
- * @return d0.w: the width
+ * In:  a0 the shape
+ * Out: d0.w the width
  */
-static UWORD BLITZ_ROUTINE shapew_c(struct bb_shape *s BL_REG(a0)) { return s->width; }
+BLITZ_ASM_ROUTINE(doshapew,
+"   move.w  (a0),d0\n"                  /* width */
+"   rts");
+
 /**
  * @brief ShapeHeight(Shape#) - the shape's pixel height (only the low word
  * of d0, as ShapeWidth).
  *
  * Errors: "Uninitialized Shape" (funcchk, debugger only).
  *
- * @param s a0: the shape
- * @return d0.w: the height
+ * In:  a0 the shape
+ * Out: d0.w the height
  */
-static UWORD BLITZ_ROUTINE shapeh_c(struct bb_shape *s BL_REG(a0)) { return s->height; }
-BLITZ_ALIAS(doshapew, shapew_c);
-BLITZ_ALIAS(doshapeh, shapeh_c);
+BLITZ_ASM_ROUTINE(doshapeh,
+"   move.w  2(a0),d0\n"                 /* height */
+"   rts");
 
 /**
  * @brief MidHandle Shape# - put the handle in the middle (width/2,
@@ -497,17 +505,12 @@ BLITZ_ALIAS(domidhandle, domidhandle_c);
  *
  * Errors: "Uninitialized Shape" (cookiechk, debugger only).
  *
- * @param x d1.w: the handle x
- * @param y d2.w: the handle y
+ * In:  a3 the shape, d1.w the handle x, d2.w the handle y
  */
-static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
-{
-    struct bb_shape *s = (struct bb_shape *)blitz_string;
-
-    s->handlex = (UWORD)x;
-    s->handley = (UWORD)y;
-}
-BLITZ_ALIAS(dohandle, dohandle_c);
+BLITZ_ASM_ROUTINE(dohandle,
+"   move.w  d1,10(a3)\n"                /* handlex */
+"   move.w  d2,12(a3)\n"                /* handley */
+"   rts");
 
 /* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie); size:
    the bytes of the block (fixed #263: the original took the word +26 or
