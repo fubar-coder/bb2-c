@@ -183,7 +183,9 @@ extern struct forthent *forthsp;
        flushc();
        callregs((APTR)left->pc, &r);   value = r.d[0]
    then rewinds pc to left->pc, emits move.l/move.w #value,Dn and frees the
-   offset nodes added since left->firstoff (exec FreeMem, 8 bytes). */
+   offset nodes added since left->firstoff that lie in the folded code
+   (exec FreeMem, 8 bytes; fixed #1049: those of a library linked in
+   meanwhile stay). */
 
 /* ================================================ operator code generators
    blitz2.s:14704 operators - 0-terminated table (moved here from chunk 10's

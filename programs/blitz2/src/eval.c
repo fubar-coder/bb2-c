@@ -842,12 +842,13 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         if (!fs[-2].constgot && !nomemleft) {
             /* YES! We can do it!  Set up MOVE.l regat,d0 */
             struct m68kregs r;
-            struct offnode *node, *keep;
-            ULONG value;
+            struct offnode *node, *keep, **link;
+            ULONG value, foldend;
             UWORD opcode;
 
             pokewd(0x2000 | regat);
             pokewd(0x4e75);                         /* rts */
+            foldend = pc;                           /* end of the folded code */
             /* Fixed (#343): only the word lasta6 is restored.  The
                original's long move (blitz2.s:9025) also restored
                quoteflag as getelement2 saved it - after getchar3 had read
@@ -875,15 +876,24 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
                 pokewd(opcode);
                 pokel(value);
             }
-            /* .mode - clean up offset stack */
+            /* .mode - clean up offset stack.  Fixed (#1049): only the
+               offsets inside the folded code (fs[-2].pc up to foldend) are
+               freed.  The original freed every offset added since the
+               fold began, also the relocations of a library that uselib3
+               linked in meanwhile (its code lies in the library area, not
+               in the program code): a constant Mod as the first use of
+               modlib left modlib's calls of ldivlib and lmullib at their
+               compile-time addresses in the executable. */
             keep = fs[-2].firstoff;
-            node = firstoff;
-            firstoff = keep;
-            while (keep != node) {
-                struct offnode *dead = node;
-                numoffs--;
-                node = node->next;
-                FreeMem(dead, 8);
+            link = &firstoff;
+            while ((node = *link) != keep) {
+                if (node->offset >= fs[-2].pc - pcat
+                    && node->offset < foldend - pcat) {
+                    *link = node->next;
+                    numoffs--;
+                    FreeMem(node, 8);
+                } else
+                    link = &node->next;
             }
             fs = forthsp;
         }
