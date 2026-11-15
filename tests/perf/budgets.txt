@@ -95,8 +95,8 @@ bgfx.polyf3               50270~11    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32              7998~17     8075.9  Scroll 0,0,32,32,100,100
 bgfx.locate                   134      128.3  Locate 0,0
 bgfx.colour                    67       62.3  Colour 1
-bgfx.print5                12080~4    13097.9  Locate 0,0 : Print "SCORE"
-bgfx.printnum              16112~4    17797.8  Locate 0,0 : Print a
+bgfx.print5                12088~8    13097.9  Locate 0,0 : Print "SCORE"
+bgfx.printnum              16112~8    17797.8  Locate 0,0 : Print a
 bgfx.show                     595      589.4  Show 0
 bgfx.showxy                   615      595.9  Show 0,8,8
 bgfx.rgb                     181~3      178.8  RGB 1,15,0,0
