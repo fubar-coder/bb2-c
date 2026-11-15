@@ -1,0 +1,4 @@
+[run]
+depth 2
+REQUESTER: AutoRequest body "Illegal BitMap Depth" *
+rc=0

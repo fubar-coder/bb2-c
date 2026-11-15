@@ -34,7 +34,9 @@
  *     of a non-interleaved bitmap, so only the field itself differs). (#77)
  * By design (#393, #74): BitMap with a depth of 0 stores 65536 plane
  * pointers behind the object (DBF on depth-1); its error check _bitmapchk
- * refuses a depth of 0 or more than 8.
+ * refuses a depth of 0 or more than 8.  Fixed (intended deviation, #1040):
+ * with the text "Illegal BitMap Depth"; the original raised error number
+ * 1, which the debugger shows as "No currently used object!".
  * Fixed (intended deviation, #393, #74): CludgeBitMap had no error check
  * at all, so a depth of 0 overran the object the same way and gave the
  * drawing and blitting libraries a bitmap of depth 0; here its error check
@@ -247,7 +249,9 @@ BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
  * Becomes the used bitmap; frees the old one, isreal = -1 (own memory),
  * then as extbitmap.  BUG(orig): the size is a MULU word product (#76);
  * the planes beyond the depth are not cleared (#80).  Errors (debugger,
- * _bitmapchk): error 1 if the depth is 0 or more than 8.
+ * _bitmapchk): "Illegal BitMap Depth" if the depth is 0 or more than 8
+ * (fixed, #1040: the original raised error number 1, "No currently used
+ * object!").
  * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
  *
  * @param w        d1.w: the width in pixels
@@ -473,13 +477,13 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Shape");
 BLITZ_ERRCHK_MESSAGE(mess5, "Can't copy borrowed Bitmap");
 BLITZ_ERRCHK_MESSAGE(mess6, "Illegal BitMap Depth");
 
-/* err1: MOVEQ #1,d0:TRAP #0 - error number 1 */
-#define ERR1 ((const char *)1)
-
+/* _bitmapchk: the depth 1-8.  Fixed (#1040): the original raised error
+   number 1 (MOVEQ #1,d0:TRAP #0), which the debugger shows as "No
+   currently used object!"; here the text of cludgechk */
 static void BLITZ_ERRCHK _bitmapchk_c(UWORD d BL_REG(d3))
 {
     if (!d || d > 8)
-        BLITZ_RUNERR(ERR1);
+        BLITZ_RUNERR(mess6);
 }
 
 /* cludgechk: fixed (#393, #74), not in the original (CludgeBitMap had no
