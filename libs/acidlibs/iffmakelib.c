@@ -33,9 +33,8 @@
  *  - both loops (rows, planes) run at least once (#181).
  *  - Not a bug in practice: SaveScreen with a ColorMap of 0 colours would
  *    write 65536 colours (#182); a screen always has colours.
- *  - savearow reads one byte behind the row (literal run test) (#183);
- *    indexes are signed words (a2 + d4.w; not a bug: matters only for rows
- *    of 32 KB or more, which are not usable).
+ *  - Not a bug: savearow's indexes are signed words (a2 + d4.w; matters
+ *    only for rows of 32 KB or more, which are not usable).
  *  - CMAP chunks of an odd size are not padded. (#184)
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
@@ -44,6 +43,13 @@
  * with the byte Depth at BitMap+5, as nPlanes of the BMHD; the original
  * compared with the WORD at +4 (Flags<<8 | Depth), so a bitmap whose
  * Flags byte is not 0 got Flags*256 + Depth planes per row.
+ *
+ * Fixed (intended deviation, #183): savearow's literal run no longer
+ * reads the byte behind the row: at the row's last byte no run of three
+ * can start, so it is taken into the literal without the test (a loop
+ * bound, no test per byte).  The original compared it with the byte
+ * behind the row (the next row's first, or memory behind the bitplane)
+ * and, if that matched, ended the literal one byte early.
  *
  * Fixed (intended deviation, #326): SaveShape stops with "Illegal Shape
  * Depth" for a shape of depth 0 or deeper than the 14 plane pointers of
@@ -281,14 +287,19 @@ static void savearow(const UBYTE *row, const struct BitMap *bm)
         } else {
             /* a literal lot */
             UBYTE last = row[(WORD)pos + 1];    /* last byte */
+            UWORD stop = bpr - 1;               /* fixed (#183) */
 
-            while (runlen < 128 && scan < bpr) {
+            while (runlen < 128 && scan < stop) {
                 if (row[(WORD)scan + 1] == last && row[(WORD)scan] == last)
                     break;
                 last = row[(WORD)scan];
                 runlen++;
                 scan++;
             }
+            /* fixed (#183): the row's last byte without the look behind
+               the row (no run of three can start there) */
+            if (runlen < 128 && scan == stop)
+                runlen++;
             runlen--;
             *out++ = (UBYTE)runlen;
             do                                  /* DBF d1 */
@@ -375,8 +386,9 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
  * Errors: "Can't open File" if the file cannot be created (the message in
  * the normal code, fixed, #185); debugger only: "Uninitialized Bitmap"
  * (bitchk).
- * BUG(orig): the row and plane loops run at least once (#181), savearow
- * reads one byte behind the row (#183).  Fixed (#180): the plane loop
+ * BUG(orig): the row and plane loops run at least once (#181).  Fixed
+ * (#183): savearow no longer reads the byte behind the row.  Fixed
+ * (#180): the plane loop
  * compares with the byte Depth (the original: the word over Flags and
  * Depth).
  *
