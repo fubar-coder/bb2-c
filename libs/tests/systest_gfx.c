@@ -365,6 +365,16 @@ static const struct poly polys[] = {
     { 2, { 4, 4, 50, 18 } },
 };
 #define NPOLYS (sizeof polys / sizeof polys[0])
+static const struct poly fpolys[] = {
+    { 3, { 10, 10, 8191, 12, 30, 20 } },
+    { 3, { 10, 10, 8192, 12, 30, 20 } },
+    { 3, { 8191, 2, 8191, 20, 20, 10 } },
+    { 3, { 20, 2, 8200, 12, 20, 22 } },
+    { 4, { 2, 2, 60, 2, 60, 8193, 2, 8193 } },
+    { 3, { -8000, 4, 40, 6, 20, 20 } },
+    { 3, { 5, 5, 50, 10, 5, 8196 } },
+};
+#define NFPOLYS (sizeof fpolys / sizeof fpolys[0])
 static WORD ptbuf[16];
 
 static void test_polys(void)
@@ -396,6 +406,28 @@ static void test_polys(void)
             DRAW(f1, a, 12, R.d[0] = 0xfff00000UL | polys[i].n; R.d[1] = (ULONG)ptbuf;
                  R.d[2] = 0xfff00000UL | (UWORD)cols[(k + 2) % NCOLS];
                  R.d[3] = 0xfff00000UL | (UWORD)cols[(k + 3) % NCOLS]);
+        }
+        /* Polyf with the origin of BitMapOrigin (added to the points before
+           the range test of #1000) */
+        origin(&bm, 3, -2);
+        for (i = 0; i < 6; i++) {
+            k = i % NCOLS;
+            memcpy(ptbuf, polys[i].p, sizeof ptbuf);
+            ROUT = a ? "Polyf (Amiga mode)" : "Polyf";
+            VECF("origin 3,-2 polygon %u colour %d", i, cols[(k + 1) % NCOLS]);
+            DRAW(f0, a, 13, R.d[0] = 0xfff00000UL | polys[i].n; R.d[1] = (ULONG)ptbuf;
+                 R.d[2] = 0xfff00000UL | (UWORD)cols[(k + 1) % NCOLS]);
+        }
+        origin(&bm, 0, 0);
+        /* Polyf at the bounds of its quick range test (every point at
+           0..8191) and of the word arithmetic (#1000: points within
+           +-16383, edges within +-8191) */
+        for (i = 0; i < NFPOLYS; i++) {
+            memcpy(ptbuf, fpolys[i].p, sizeof ptbuf);
+            ROUT = a ? "Polyf (Amiga mode)" : "Polyf";
+            VECF("range polygon %u colour %d", i, cols[i % 5]);
+            DRAW(f0, a, 14, R.d[0] = 0xfff00000UL | fpolys[i].n; R.d[1] = (ULONG)ptbuf;
+                 R.d[2] = 0xfff00000UL | (UWORD)cols[i % 5]);
         }
     }
 }

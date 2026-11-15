@@ -1357,6 +1357,45 @@ Polyf two colours|planes|polygon 10 colours 0 1|1	bytes 576 fnv D827385B
 Poly|kept|polygon 11 colour -1|1	kept
 Poly|popped|polygon 11 colour -1|1	$00000000
 Poly|planes|polygon 11 colour -1|1	bytes 576 fnv 6590BF85
+Polyf|kept|origin 3,-2 polygon 0 colour 1|1	kept
+Polyf|popped|origin 3,-2 polygon 0 colour 1|1	$00000000
+Polyf|planes|origin 3,-2 polygon 0 colour 1|1	bytes 576 fnv 55264F5E
+Polyf|kept|origin 3,-2 polygon 1 colour 2|1	kept
+Polyf|popped|origin 3,-2 polygon 1 colour 2|1	$00000000
+Polyf|planes|origin 3,-2 polygon 1 colour 2|1	bytes 576 fnv 0BF38749
+Polyf|kept|origin 3,-2 polygon 2 colour 5|1	kept
+Polyf|popped|origin 3,-2 polygon 2 colour 5|1	$00000000
+Polyf|planes|origin 3,-2 polygon 2 colour 5|1	bytes 576 fnv 5AF78116
+Polyf|kept|origin 3,-2 polygon 3 colour 7|1	kept
+Polyf|popped|origin 3,-2 polygon 3 colour 7|1	$00000000
+Polyf|planes|origin 3,-2 polygon 3 colour 7|1	bytes 576 fnv 69B39549
+Polyf|kept|origin 3,-2 polygon 4 colour -1|1	kept
+Polyf|popped|origin 3,-2 polygon 4 colour -1|1	$00000000
+Polyf|planes|origin 3,-2 polygon 4 colour -1|1	bytes 576 fnv 77F99ACF
+Polyf|kept|origin 3,-2 polygon 5 colour 0|1	kept
+Polyf|popped|origin 3,-2 polygon 5 colour 0|1	$00000000
+Polyf|planes|origin 3,-2 polygon 5 colour 0|1	bytes 576 fnv AD36EB7F
+Polyf|kept|range polygon 0 colour 0|1	kept
+Polyf|popped|range polygon 0 colour 0|1	$00000000
+Polyf|planes|range polygon 0 colour 0|1	bytes 576 fnv 8E40E097
+Polyf|kept|range polygon 1 colour 1|1	kept
+Polyf|popped|range polygon 1 colour 1|1	$00000000
+Polyf|planes|range polygon 1 colour 1|1	bytes 576 fnv E634B1B5
+Polyf|kept|range polygon 2 colour 2|1	kept
+Polyf|popped|range polygon 2 colour 2|1	$00000000
+Polyf|planes|range polygon 2 colour 2|1	bytes 576 fnv 5FCF3E7A
+Polyf|kept|range polygon 3 colour 5|1	kept
+Polyf|popped|range polygon 3 colour 5|1	$00000000
+Polyf|planes|range polygon 3 colour 5|1	bytes 576 fnv 80C54597
+Polyf|kept|range polygon 4 colour 7|1	kept
+Polyf|popped|range polygon 4 colour 7|1	$00000000
+Polyf|planes|range polygon 4 colour 7|1	bytes 576 fnv BBE53747
+Polyf|kept|range polygon 5 colour 0|1	kept
+Polyf|popped|range polygon 5 colour 0|1	$00000000
+Polyf|planes|range polygon 5 colour 0|1	bytes 576 fnv DCE05118
+Polyf|kept|range polygon 6 colour 1|1	kept
+Polyf|popped|range polygon 6 colour 1|1	$00000000
+Polyf|planes|range polygon 6 colour 1|1	bytes 576 fnv B790D88F
 Poly (Amiga mode)|kept|polygon 0 colour 0|1	kept
 Poly (Amiga mode)|popped|polygon 0 colour 0|1	$00000000
 Poly (Amiga mode)|planes|polygon 0 colour 0|1	bytes 576 fnv F2AF27D4
@@ -1459,6 +1498,45 @@ Polyf two colours (Amiga mode)|planes|polygon 10 colours 0 1|1	bytes 576 fnv D82
 Poly (Amiga mode)|kept|polygon 11 colour -1|1	kept
 Poly (Amiga mode)|popped|polygon 11 colour -1|1	$00000000
 Poly (Amiga mode)|planes|polygon 11 colour -1|1	bytes 576 fnv 6590BF85
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 0 colour 1|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 0 colour 1|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 0 colour 1|1	bytes 576 fnv 55264F5E
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 1 colour 2|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 1 colour 2|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 1 colour 2|1	bytes 576 fnv 0BF38749
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 2 colour 5|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 2 colour 5|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 2 colour 5|1	bytes 576 fnv 5AF78116
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 3 colour 7|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 3 colour 7|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 3 colour 7|1	bytes 576 fnv 69B39549
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 4 colour -1|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 4 colour -1|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 4 colour -1|1	bytes 576 fnv 77F99ACF
+Polyf (Amiga mode)|kept|origin 3,-2 polygon 5 colour 0|1	kept
+Polyf (Amiga mode)|popped|origin 3,-2 polygon 5 colour 0|1	$00000000
+Polyf (Amiga mode)|planes|origin 3,-2 polygon 5 colour 0|1	bytes 576 fnv AD36EB7F
+Polyf (Amiga mode)|kept|range polygon 0 colour 0|1	kept
+Polyf (Amiga mode)|popped|range polygon 0 colour 0|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 0 colour 0|1	bytes 576 fnv 8E40E097
+Polyf (Amiga mode)|kept|range polygon 1 colour 1|1	kept
+Polyf (Amiga mode)|popped|range polygon 1 colour 1|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 1 colour 1|1	bytes 576 fnv E634B1B5
+Polyf (Amiga mode)|kept|range polygon 2 colour 2|1	kept
+Polyf (Amiga mode)|popped|range polygon 2 colour 2|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 2 colour 2|1	bytes 576 fnv 5FCF3E7A
+Polyf (Amiga mode)|kept|range polygon 3 colour 5|1	kept
+Polyf (Amiga mode)|popped|range polygon 3 colour 5|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 3 colour 5|1	bytes 576 fnv 80C54597
+Polyf (Amiga mode)|kept|range polygon 4 colour 7|1	kept
+Polyf (Amiga mode)|popped|range polygon 4 colour 7|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 4 colour 7|1	bytes 576 fnv BBE53747
+Polyf (Amiga mode)|kept|range polygon 5 colour 0|1	kept
+Polyf (Amiga mode)|popped|range polygon 5 colour 0|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 5 colour 0|1	bytes 576 fnv DCE05118
+Polyf (Amiga mode)|kept|range polygon 6 colour 1|1	kept
+Polyf (Amiga mode)|popped|range polygon 6 colour 1|1	$00000000
+Polyf (Amiga mode)|planes|range polygon 6 colour 1|1	bytes 576 fnv B790D88F
 FreeFill|kept||1	kept
 FreeFill|popped||1	$00000000
 PalRGB|kept|palette 0 colour 0 15,0,0|1	kept
