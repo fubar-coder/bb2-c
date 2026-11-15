@@ -1198,9 +1198,7 @@ static void BLITZ_ERRCHK instrchk_c(LONG start BL_REG(d2))
         BLITZ_RUNERR(instrmess);
 }
 
-/* the thunks behind all C check functions: their assembler ends with
-   `.text`, and GCC does not repeat the section of a following
-   BLITZ_ERRCHK function */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(cvichk, cvichk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cvlchk, cvlchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cvqchk, cvqchk_c, "d0-d1/a0-a1");

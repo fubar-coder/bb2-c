@@ -797,9 +797,7 @@ static void BLITZ_ERRCHK rotchk_c(ULONG q BL_REG(d1))
     sizechk(xh - xl + 1, yh - yl + 1);
 }
 
-/* the thunks after all check functions: their assembler switches back to
-   .text, which GCC does not notice (a check function after a thunk would
-   end up in the normal code) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(scalechk2, scalechk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(shapetrixlib_fchk, fchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(scalechk, scalechk_c, "d0-d1/a0-a1");

@@ -2436,9 +2436,7 @@ static void BLITZ_ERRCHK initpagechk_c(ULONG n BL_REG(d2))
         BLITZ_RUNERR(mess9);
 }
 
-/* the thunks after all check functions: their assembler switches back to
-   .text, which GCC does not notice (a check function after a thunk would
-   end up in the normal code, as selectboxchk_c did before #1043) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(spotboxchk, spotboxchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(selectboxchk, selectboxchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(initpagechk, initpagechk_c, "d0-d1/a0-a1");

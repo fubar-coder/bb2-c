@@ -745,9 +745,7 @@ static void BLITZ_ERRCHK spritemodechk_c(ULONG m BL_REG(d0))
         BLITZ_RUNERR(modemess);
 }
 
-/* the thunks after all check functions: their assembler switches back to
-   .text, which GCC does not notice (a check function after a thunk would
-   end up in the normal code) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(gspchk, gspchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(spriteslib_sspchk, sspchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(infchk, infchk_c, "d0-d1/a0-a1");

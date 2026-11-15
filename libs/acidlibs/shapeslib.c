@@ -1310,9 +1310,7 @@ static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w
         BLITZ_RUNERR(mess12);
 }
 
-/* the thunks after all check functions: their assembler switches back to
-   .text, which GCC does not notice (a check function after a thunk would
-   end up in the normal code) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(schkz, schkz_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(funcchk, funcchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cookiechk, cookiechk_c, "d0-d1/a0-a1");

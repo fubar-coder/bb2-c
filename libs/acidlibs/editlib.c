@@ -376,8 +376,7 @@ static void BLITZ_ERRCHK editchkz_c(ULONG n BL_REG(d0))
     editchk_c(n);
 }
 
-/* the thunks after all check functions: they leave the assembler in .text
-   while GCC still assumes the error check section */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(editchk1, editchk1_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchk2, editchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(editchk, editchk_c, "d0-d1/a0-a1");

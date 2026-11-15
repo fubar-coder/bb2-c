@@ -655,6 +655,5 @@ static void BLITZ_ERRCHK locatechk_c(void)
         BLITZ_RUNERR(mess2);
 }
 
-/* the thunk last: it leaves the assembler in .text while GCC still
-   assumes the error check section */
+/* the thunk of the check */
 BLITZ_ERRCHK_THUNK(locatechk, locatechk_c, "d0-d1/a0-a1");

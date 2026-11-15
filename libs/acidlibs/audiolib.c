@@ -928,8 +928,7 @@ static void BLITZ_ERRCHK sdatachk_c(ULONG off BL_REG(d1))
         BLITZ_RUNERR(mess9);
 }
 
-/* the thunks and messages last: they leave the assembler in .text while
-   GCC still assumes the error check section */
+/* the thunks and messages of the checks */
 BLITZ_ERRCHK_THUNK(sndchk, sndchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(dpchk, dpchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(vchk, vchk_c, "d0-d1/a0-a1");

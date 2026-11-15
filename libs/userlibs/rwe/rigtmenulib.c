@@ -1307,10 +1307,7 @@ static void BLITZ_ERRCHK chkchk5_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
     statechk(obj, (UWORD)subno == 0xffff ? 3 : 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 
-/* the thunks after all check functions: BLITZ_ERRCHK_THUNK ends with
-   `.text` while GCC still assumes the error check section, so a check
-   function behind a thunk would land in the normal code
-   (docs/libs/deviations.md, section 6) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(rigtmenulib_statechk2, statechk2_c, "d0-d1/a0-a1");

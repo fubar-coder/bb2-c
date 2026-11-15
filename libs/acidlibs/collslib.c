@@ -526,9 +526,7 @@ static void BLITZ_ERRCHK pcollchk_c(ULONG c BL_REG(d0))
         BLITZ_RUNERR(mess6);
 }
 
-/* the thunks after all check functions: their assembler switches back to
-   .text, which GCC does not notice (a check function after a thunk would
-   end up in the normal code) */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(setcolchk, setcolchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(setcolchk2, setcolchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(colbpchk, colbpchk_c, "d0-d1/a0-a1");

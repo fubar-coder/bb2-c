@@ -53,15 +53,19 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
   debugger, behind the end of the code (the originals partly do that too, e.g.
   memlib err1 → mess1); until 27.10.2026 `mkblitzlib.py` warned about it, since then
   nobody checks this automatically any more (here `blitzlib check` warns again).
-* **Order in the error check area:** the GNU as of this toolchain does not know
-  `.pushsection`/`.popsection`. `BLITZ_ERRCHK_THUNK` (likewise
-  `BLITZ_ERRCHK_MESSAGE` and `BLITZ_ERRCHK_AB`) therefore switches with
-  `.section .blitzlib.errchk` and at the end back to `.text`, hard-coded. GCC
-  notices nothing of this: if such a macro is between two `BLITZ_ERRCHK`
-  C functions, GCC believes it is still in `.blitzlib.errchk`, emits no
-  section switch, and the second check function ends up in normal code.
-  Therefore place all `BLITZ_ERRCHK_THUNK`s behind the `BLITZ_ERRCHK` C functions
-  (messages before or after, not in between).
+* **Order in the error check area:** the assembler routines of `blitzlib.h`
+  (`BLITZ_THUNK`, `BLITZ_ERRCHK_THUNK`, `BLITZ_ERRCHK_MESSAGE`,
+  `BLITZ_ERRCHK_AB`, `BLITZ_ASM_ROUTINE` ...) are C functions whose body is
+  only the assembler text, so GCC switches to their section itself; thunks,
+  messages and check functions may come in any order (#1056). Top-level
+  `__asm__` that switches the section is invisible to GCC (the GNU as of this
+  toolchain has no `.pushsection`/`.popsection`): if it ends in another
+  section than the one GCC believes current, the next function of that
+  section gets no section directive and lands where the asm left off. A
+  library's own top-level asm that switches into `.blitzlib.errchk` and back
+  to `.text` therefore must not stand between two check functions (in front
+  of a normal function it is harmless). `blitzlib check` reports a check
+  thunk whose C function is in the normal code.
 * **Fidelity:** algorithms are taken over bit-exactly (e.g. division by 0,
   overflow), not replaced by C operators.
 

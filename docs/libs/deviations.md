@@ -501,23 +501,20 @@ file requester.
 
 ## 6. Error checks outside the error check area
 
-`BLITZ_ERRCHK_THUNK`/`BLITZ_ERRCHK_MESSAGE` switch back in the inline assembler
-with `.text`; GCC does not notice this. If a `BLITZ_ERRCHK`
-C function follows such a thunk, GCC emits no new
-`.section` directive and the function ends up in normal code
-(the assembler of this toolchain does not know `.previous`/`.pushsection`).
-Behaviour the same (the thunks are in the check area and call them), but without
-debugger the code is not cut off. Remedy: all thunks behind all
-check functions (as in shapeslib, shapetrixlib, spriteslib, collslib).
-Checked by compiling all `libs/acidlibs/*.c` with `-S` and evaluating the
-effective section of each `BLITZ_ERRCHK` function (as of c4a736d):
-**no** check function is in normal code. (iffmakelib had four –
-`bitchk_c`, `bitchk2_c`, `sschk1_c`, `sschk2_c` –, fixed in c4a736d.)
-The RWE userlib rigtmenulib had seven (`existschk`, `statechk`,
-`statechk2_c`–`statechk4_c`, `chkchk3_c`–`chkchk5_c`, behind the thunks
-of createchk/setchk): their references to the messages were the three
-`blitzlib check` warnings of rigtmenulib; the thunks now follow all check
-functions.
+A check function in the normal code is kept in every program, also
+without the debugger (the behaviour is the same: the thunks in the check
+area call it). Top-level assembler that switches the section is
+invisible to GCC: a `BLITZ_ERRCHK` C function behind it can get no
+section directive and land in the normal code. The assembler routines
+of `blitzlib.h` (`BLITZ_ERRCHK_THUNK`, `BLITZ_ERRCHK_MESSAGE`,
+`BLITZ_ERRCHK_AB`, the thunks of the normal code ...) are therefore C
+functions whose body is the assembler text, and GCC switches the section
+itself (#1056). `blitzlib check` reports a check thunk in the error
+check area whose C function is in the normal code, in the build step of
+every library (`docs/development.md`, "Checks in the build"). Every
+`BLITZ_ERRCHK` function and message of the acidlibs and the RWE userlibs
+is in the error check area (checked against the symbols of all `.linked`
+files for #1056).
 
 ## 7. State
 

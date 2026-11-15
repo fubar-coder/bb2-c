@@ -965,9 +965,7 @@ static void BLITZ_ERRCHK _renderpolychk_c(WORD n BL_REG(d0), UWORD colour BL_REG
         BLITZ_RUNERR(colourmess);
 }
 
-/* the thunks behind all C check functions: their assembler ends with
-   `.text`, and GCC does not repeat the section of a following
-   BLITZ_ERRCHK function */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(_polychk, _polychk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_chunkyvlinchk, _chunkyvlinchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_renderpolychk, _renderpolychk_c, "d0-d1/a0-a1");

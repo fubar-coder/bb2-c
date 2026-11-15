@@ -374,7 +374,6 @@ static void BLITZ_ERRCHK popoutputcheck_c(void)
         BLITZ_RUNERR(mess3);
 }
 
-/* the thunks after all check functions: they leave the assembler in .text
-   while GCC still assumes the error check section */
+/* the thunks of the check functions */
 BLITZ_ERRCHK_THUNK(popinputcheck, popinputcheck_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(popoutputcheck, popoutputcheck_c, "d0-d1/a0-a1");

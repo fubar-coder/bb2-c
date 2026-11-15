@@ -1202,8 +1202,7 @@ static void BLITZ_ERRCHK stagschk_c(UWORD n BL_REG(d7))
         BLITZ_RUNERR(tagsmess);
 }
 
-/* the thunks and messages last: they leave the assembler in .text while
-   GCC still assumes the error check section */
+/* the thunks and messages of the checks */
 BLITZ_ERRCHK_THUNK(prescreen, prescreen_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(prescreen2, prescreen2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(loadscreenchk, loadscreenchk_c, "d0-d1/a0-a1");

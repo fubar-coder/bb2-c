@@ -637,7 +637,6 @@ static ULONG BLITZ_ROUTINE posthandler_c(struct IntuiMessage *m BL_REG(d0))
     return (ULONG)GT_PostFilterIMsg(m);
 }
 BLITZ_THUNK_POST(_posthandler, posthandler_c, "d1", "move.l  4.w,a6");
-void _prehandler(void), _posthandler(void);
 
 static void BLITZ_ROUTINE _codeinit(void)
 {

@@ -664,6 +664,33 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 
 /* ------------------------------------------------------------- thunks */
 
+/* BL_ASM_FUNC_(attrs, name, text) - the function `name` (void name(void),
+   with `attrs`, e.g. BLITZ_ERRCHK) whose code is only the assembler
+   `text`, which ends with its own return (rts, jmp) or is data: GCC adds
+   nothing but `.align 2` (= .even), `.globl` and the label; noipa: GCC
+   must not fold two routines with the same text into one (identical code
+   folding would make one a call of the other, which with
+   __builtin_unreachable has no return behind it).  All
+   assembler routines of this file are such functions and not top-level
+   asm: GCC switches to their section itself and knows the section it is
+   in behind them.  A section switch in top-level asm is invisible to GCC
+   (the assembler of this toolchain has no .pushsection/.popsection to
+   undo it), so a function behind it that GCC places in the section it
+   believes current gets no section directive and lands in the section
+   the asm left (#1056: check functions behind BLITZ_ERRCHK_THUNK in the
+   normal code). */
+#ifndef BL_CODE_MODEL
+#define BL_NOIPA_ __attribute__((noipa))
+#else
+#define BL_NOIPA_                       /* clang has no noipa */
+#endif
+#define BL_ASM_FUNC_(attrs, name, text)                                     \
+    attrs BL_NOIPA_ void name(void)                                         \
+    {                                                                       \
+        __asm volatile(text);                                               \
+        __builtin_unreachable();                                            \
+    }
+
 /* Library entry with a register contract that a C function cannot express
    itself.  `entry` is the label used in the token table.  The thunk saves
    the registers `save` - the ones the original routine preserves but GCC
@@ -692,9 +719,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 #define BLITZ_THUNK_POST(entry, cfunc, save, post) \
     BL_THUNK_(entry, cfunc, save, "", "   " post "\n")
 #define BL_THUNK_(entry, cfunc, save, pre, tail)                            \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(, entry,                                                   \
             "   movem.l " save ",-(sp)\n" pre                               \
             "   jsr     _" #cfunc "\n" tail                                 \
             "   movem.l (sp)+," save "\n"                                   \
@@ -713,9 +738,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
            routine with a CCR result but nothing to save)
    (added by the mathstr group: strings2lib, strcomplib) */
 #define BLITZ_THUNK_POP(entry, cfunc, save, pre, tail, pop)                 \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(, entry,                                                   \
             "   .ifnc \"" save "\",\"\"\n"                                  \
             "   movem.l " save ",-(sp)\n"                                   \
             "   .endif\n"                                                   \
@@ -748,58 +771,46 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    function can take its inputs as register parameters (d0, a2 ...);
    they arrive unchanged. */
 #define BLITZ_ERRCHK_THUNK(entry, cfunc, save)                              \
-    void entry(void);                                                       \
-    __asm__("   .section .blitzlib.errchk,\"ax\"\n"                         \
-            "   .even\n   .globl  _" #entry "\n"                            \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(BLITZ_ERRCHK, entry,                                       \
             "   movem.l " save ",-(sp)\n"                                   \
             "   jsr     _" #cfunc "\n"                                      \
             "   movem.l (sp)+," save "\n"                                   \
-            "   rts\n"                                                      \
-            "   .text\n")
+            "   rts\n")
 
 /* BLITZ_ERRCHK_MESSAGE(label, "text") - a runtime error message
    (BLITZ_RUNERR(label)) in the error check area, i.e. cut away with the
-   checks when the debugger is off, as in the original.  Assembler data:
-   GCC refuses code and data in the same named section, so as soon as a
-   unit has C check functions (BLITZ_ERRCHK) there, its messages cannot be
-   C arrays with BLITZ_ERRCHK (units without check code may do that, see
-   memlib).  `text` is a C string literal without " or \ escapes. */
+   checks when the debugger is off, as in the original.  Assembler data
+   (in the function bl_errchk_message_label, BL_ASM_FUNC_): GCC refuses
+   code and data in the same named section, so as soon as a unit has C
+   check functions (BLITZ_ERRCHK) there, its messages cannot be C arrays
+   with BLITZ_ERRCHK (units without check code may do that, see memlib).
+   `text` is a C string literal without " or \ escapes. */
 #define BLITZ_ERRCHK_MESSAGE(label, text)                                   \
     extern const char label[];                                              \
-    __asm__("   .section .blitzlib.errchk,\"ax\"\n"                         \
-            "_" #label ":\n   .asciz \"" text "\"\n   .even\n   .text\n")
+    BL_ASM_FUNC_(static BLITZ_ERRCHK, bl_errchk_message_##label,            \
+            "_" #label ":\n   .asciz \"" text "\"\n   .even\n")
 
 /* BLITZ_ERRCHK_AB(entry, blitz, amiga) - an error check with Blitz/Amiga
    variants in the error check area: `Dc $a001:Dc.l blitz` and then the
    Amiga mode check (JMP amiga), see BLITZ_AB_ROUTINE.  `blitz`/`amiga`
    are check entries (BLITZ_ERRCHK_THUNK or asm). */
 #define BLITZ_ERRCHK_AB(entry, blitz, amiga)                                \
-    void entry(void);                                                       \
-    __asm__("   .section .blitzlib.errchk,\"ax\"\n"                         \
-            "   .even\n   .globl  _" #entry "\n"                            \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(BLITZ_ERRCHK, entry,                                       \
             "   .word   0xa001\n"                                           \
             "   .long   _" #blitz "\n"                                      \
-            "   jmp     _" #amiga "\n"                                      \
-            "   .text\n")
+            "   jmp     _" #amiga "\n")
 
 /* A routine that is assembler by nature (stack pointer manipulation,
    exception frames, hardware): BLITZ_ASM_ROUTINE(entry, "text").  Keep the
    original instructions and say in a comment why C cannot do it. */
-#define BLITZ_ASM_ROUTINE(entry, text)                                      \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n" text "\n")
+#define BLITZ_ASM_ROUTINE(entry, text) BL_ASM_FUNC_(, entry, text "\n")
 
 /* Inline routine (blitz2.s doajsr2): `Dc $a000,len` before the code;
    the compiler copies the `len` bytes to the call instead of a JSR.
    Inline code is by nature a few instructions, so it is given as
    assembler text; the final RTS is for the JSR case (constant folding). */
 #define BLITZ_INLINE(entry, text)                                           \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(, entry,                                                   \
             "   .word   0xa000,2f-1f\n"                                     \
             "1: " text "\n"                                                 \
             "2: rts\n")
@@ -811,9 +822,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    `text` is the Amiga mode code, e.g. a thunk sequence that calls a C
    function; `blitzentry` is an ordinary routine (BLITZ_THUNK, C, asm). */
 #define BLITZ_AB_ROUTINE(entry, blitzentry, text)                           \
-    void entry(void);                                                       \
-    __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
-            "_" #entry ":\n"                                                \
+    BL_ASM_FUNC_(, entry,                                                   \
             "   .word   0xa001\n"                                           \
             "   .long   _" #blitzentry "\n" text "\n")
 
