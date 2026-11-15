@@ -530,9 +530,9 @@ int main(int argc, char **argv)
     KEEPS_STATEMENT("JumpMed", none);
     KEEPS_STATEMENT("SetMedVolume", none);
     /* the original's GetMedVolume, GetMedNote and GetMedInstr change a3
-       (MOVEA.l (a2),a3): the rule's a3 of a function is not stated for
-       them (an original bug to decide, see the report of
-       libs-performance group 2) */
+       (MOVEA.l (a2),a3, #1061): the rule's a3 of a function is not
+       stated for them here, the cases "a3 kept" after the blocks are the
+       pair [orig] / [fixed #1061] */
     KEEPS("GetMedVolume", a6);
     KEEPS("GetMedNote", a6);
     KEEPS("GetMedInstr", a6);
@@ -596,6 +596,16 @@ int main(int argc, char **argv)
     what = "finit";
     CALL1(E_FINIT, (void)0);
     OBS_BLOCKS(0);
+    /* a3 of the three getters: the cases are outside the blocks, so that
+       the original's loss of a3 (#1061) is a pair of cases */
+    what = "a3 after init";
+    CALL1(E_INIT, (void)0);
+    for (e = E_GETVOL; e <= E_GETINSTR; e++) {
+        CALL1(e, R.d[0] = 0);
+        OBS("a3 kept", R.a[3] == IN.a[3]);
+    }
+    what = "a3 finit";
+    CALL1(E_FINIT, (void)0);
     markregs(&R);                               /* memlib frees the chip copy */
     callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
     FreeMem(mmd0, len0 + 256);

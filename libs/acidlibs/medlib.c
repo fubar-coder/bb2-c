@@ -56,6 +56,11 @@
  *   - finetune values outside -8..7 read pointers outside _periodtable. (#211)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
  *     next note. (#212)
+ * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
+ * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
+ * keeps a3, the build pointer of a string expression ("V"+Str$(
+ * GetMedVolume(0)) was built at the wrong place).  Here a3 is unchanged
+ * (library test cases "a3 kept", bug-orig test medlib-getmedvolume-a3).
  * DIFF: a3 (string pointer) is not changed by LoadMedModule and
  * SetMedVolume (the original leaves it at object+8 / a track structure;
  * statements, nothing reads it).

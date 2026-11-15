@@ -871,3 +871,11 @@ BLOCK:868	4096 2DAF7B7D first=medlib|audio 0|SetMedMask tick 6566|3551233
 BLOCK:869	4096 D84CCA86 first=medlib|audio 0|SetMedMask tick 6576|3555329
 BLOCK:870	4096 7F0B19F2 first=medlib|audio 0|SetMedMask tick 6586|3559425
 BLOCK:871	3674 AD759F37 first=medlib|audio 0|SetMedMask tick 6596|3563521
+medlib init|kept|a3 after init tick 6603|1	kept
+GetMedVolume|a3 kept|a3 after init tick 6603|1 [orig]	$00000000
+GetMedVolume|a3 kept|a3 after init tick 6603|1 [fixed #1061]	$00000001
+GetMedNote|a3 kept|a3 after init tick 6603|1 [orig]	$00000000
+GetMedNote|a3 kept|a3 after init tick 6603|1 [fixed #1061]	$00000001
+GetMedInstr|a3 kept|a3 after init tick 6603|1 [orig]	$00000000
+GetMedInstr|a3 kept|a3 after init tick 6603|1 [fixed #1061]	$00000001
+medlib finit|kept|a3 finit tick 6603|1	kept
