@@ -65,7 +65,9 @@
  *     range (flags 0 or 2) cycled backwards.  Here bit 0 (RNG_ACTIVE)
  *     decides whether the range is entered and bit 1 (RNG_REVERSE)
  *     negates the rate (flags 1 and 3 as before).
- *   - PaletteRange with start = end divides by zero (DIVS). (#227)
+ *   - Fixed (intended deviation, #227): PaletteRange with start = end
+ *     divided by zero (DIVS); here the range of one colour gets the start
+ *     colour.
  *   - StopCycle does not reset `cycon`: a later Cycle does not install
  *     the interrupt again (#228).  The cycle list is freed at the end but
  *     not cleared (not a bug: only at program end).
@@ -1506,7 +1508,8 @@ static ULONG startval(WORD v)
  * Nothing happens for EndCol < StartCol or a range larger than the
  * palette.  The palette is in a3.
  *
- * BUG(orig) (#227): StartCol = EndCol divides by zero (DIVS).
+ * Fixed (#227): StartCol = EndCol (a range of one colour) sets the start
+ * colour; the original divided by zero (DIVS, Guru 8000 0005).
  *
  * @param start d1: StartCol.
  * @param stop d2: EndCol.
@@ -1530,9 +1533,12 @@ static void BLITZ_ROUTINE _paletterange_c(UWORD start BL_REG(d1), UWORD stop BL_
         return;
     n--;
     e = (ULONG *)(p->pdata + 4 + (WORD)(UWORD)(start * 12));
-    db = step(args[-3] - b0, n);
-    dg = step(args[-2] - g0, n);
-    dr = step(args[-1] - r0, n);
+    if (n) {
+        db = step(args[-3] - b0, n);
+        dg = step(args[-2] - g0, n);
+        dr = step(args[-1] - r0, n);
+    } else                                      /* fixed (#227): one colour */
+        db = dg = dr = 0;
     r = startval(r0);
     g = startval(g0);
     b = startval(b0);
