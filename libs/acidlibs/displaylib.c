@@ -68,6 +68,10 @@
  *   ("Not Enough Sprite Channels" otherwise, as without CustomSprites).
  *
  * Kept from the original (BUG(orig)):
+ *   - DisplaySprite of a sprite above or below the display on a channel
+ *     of the CustomSprites bank: spriteoff writes the blank sprite into
+ *     the normal sprite moves at channel x 16, behind them (over the
+ *     BPLCON moves); the custom channel keeps the sprite.
  *   - Not a bug (only with out-of-range arguments that do not occur):
  *     word arithmetic, DBF counters (a 0/negative count runs 65536 times,
  *     e.g. cpline 4 per line), ADDA.w of colour offsets (palette entries
@@ -1206,6 +1210,11 @@ BLITZ_THUNK(_displaydbmap2, _displaydbmap2_c, "a2");
 
 /* ------------------------------------------------------ sprite routines */
 
+/* spriteoff - the blank sprite into the channels of a sprite above or
+   below the display.  BUG(orig): always in the normal sprite moves at
+   chan x 16: a channel of the CustomSprites bank writes behind them, over
+   the BPLCON moves, and the custom channel keeps the sprite (bug-orig
+   test displaylib-spriteoff-custom-bank) */
 static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
 {
     UWORD count = spr->count - 1;
