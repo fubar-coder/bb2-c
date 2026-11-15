@@ -9,9 +9,11 @@
 ; @fixed #78
 ; @configs clib
 ; @pass runtime_errors=on
+DEFTYPE .l
 m=AllocMem(1000,$10002)
 CludgeBitMap 0,16,10,1,m
 NPrint "16 x 10"
 CludgeBitMap 1,16,0,1,m
 NPrint "16 x 0"
+FreeMem m,1000
 End
