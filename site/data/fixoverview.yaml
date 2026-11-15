@@ -614,7 +614,7 @@ rows:
     page: libraries
     anchor: blitz-mode-displays
   - issue: 135
-    severity: 3
+    severity: 4
     topic: "Graphics"
     library: "fadelib"
     command: "FadeIn, FadeOut"
@@ -958,7 +958,7 @@ rows:
     page: libraries
     anchor: fonts
   - issue: 199
-    severity: 1
+    severity: 4
     topic: "Numbers & dates"
     library: "lmullib"
     command: ""
@@ -2534,7 +2534,7 @@ rows:
     page: compiler
     anchor: macros
   - issue: 966
-    severity: 1
+    severity: 4
     topic: "Compiler"
     library: "Compiler"
     command: ""

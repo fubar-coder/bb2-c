@@ -27,15 +27,19 @@ way.
 
 ## Changes for existing programs
 
-Five fixes change what an existing program does. The first two concern
-programs that were written to make up for the bug; no known example
-program, demo or game uses the commands this way. The next two change
+Six fixes change what an existing program does. The first is in the
+compiler and changes every program that uses the comparison `=<`. The next
+two concern programs that were written to make up for the bug; no known example
+program, demo or game uses the commands this way. The two after them change
 every program that uses the commands with the values named, and the last
 one stops a program that loads a very large picture as a shape. Check
 your own programs (all fixes, sorted by what they can change in a
 program, are in one table on
 [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})):
 
+* [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
+  `If a=<b` was true whenever `a` and `b` differed. It is less-or-equal,
+  as `<=`; a program that used `=<` for "not equal" has to write `<>`.
 * [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
   bitmap 0, with bitmap 1 as the pattern; a program that swapped the two
@@ -62,8 +66,6 @@ program, are in one table on
 
 In the compiler ([Compiling]({{< relref "/docs/compared-with-original/fixed-bugs/compiler" >}})):
 
-* [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
-  `If a=<b` was true whenever `a` and `b` differed.
 * [Numbers like `1.` and `1.0e5`]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#float-literals" >}})
   were refused.
 * [Arrays with 256-byte elements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#arrays-256" >}})

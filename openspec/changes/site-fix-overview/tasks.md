@@ -6,7 +6,7 @@
 
 - [x] 2.1 Define the data file `site/data/fixoverview.yaml`: `levels`, `topics`, `notRows`, `rows` with the fields of design.md, and document the fields in `site/README.md`
 - [x] 2.2 Classify all issues linked on the fixed-bugs pages (about 250 rows) by an agent: severity, topic, library or command, one sentence, page and anchor; proposal in `~/.local/share/bb2-c-work/` - done (2026-11-15): 371 rows; proposal `~/.local/share/bb2-c-work/site-fix-overview-classification.yaml`, levels of the round reports kept where given
-- [ ] 2.3 Show the severity 1 rows to the user and apply the corrections
+- [x] 2.3 Show the severity 1 rows to the user and apply the corrections - done (2026-11-15, user review via the coordinator): level 1 #9, #324, #391, #421, #951, #1046; #966, #199 and #135 to level 4; #9 added to "Changes for existing programs" of the fixed-bugs index
 - [x] 2.4 Add explicit heading ids on the fixed-bugs pages where a group heading's generated id is ambiguous - done: `#other-strings`, `#amigaos-other-fixes`, `#rwe-other-fixes` (libraries), `#other-joining-lines` (editor)
 
 ## 3. Page, shortcode and script
