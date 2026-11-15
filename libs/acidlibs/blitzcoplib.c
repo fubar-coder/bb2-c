@@ -47,8 +47,11 @@
  *   - Slice: unused pointers (+10..+26 = 0) are relocated like the
  *     others (0 - maxcop + position, later + list movements); Show into a
  *     slice without BPLCON1 writes to that address. (#407)
- *   - inscop2: maxslice 0 runs the pointer loop 65536 times (#406); the
- *     marker also changes the source buffer (#405).
+ *   - inscop2: the marker also changes the source buffer (#405).
+ * Fixed (intended deviation, #406): with a Slice maximum of 0 (the
+ *   compiler options) inscop2's pointer loop ran 65536 times (DBF on
+ *   maximum - 1) and "relocated" 4 MB from the empty object area on.
+ *   Here it makes no pass.
  * Fixed (intended deviation, #404): inscop2 copied length/4 longs with
  *   the counter tested at the end (SUBQ.l/BNE): a CustomCop string of 0-3
  *   bytes copied 2^32 longs over all memory.  Here it inserts no
@@ -504,9 +507,10 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
     yline = y;
     {
         struct bb_slice *slice = slicebase;
-        UWORD k = maxslice - 1;
+        UWORD k;
 
-        do {                                    /* 'adjloop */
+        /* 'adjloop; fixed #406: no slice objects (maximum 0), no pass */
+        for (k = maxslice; k; k--) {
             UWORD sy = slice->y;
 
             if (sy) {
@@ -520,7 +524,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
                     *q = *q - (ULONG)old + newlist + shift;
             }
             slice++;
-        } while ((WORD)--k != -1);
+        }
     }
     return pos;
 }
@@ -883,7 +887,8 @@ BLITZ_THUNK(bdoslice, bdoslice_c, "a2");
  * by 4).
  * Fixed (#404): a string of 0-3 bytes inserts no instruction (the
  * original copied 2^32 longs).
- * BUG(orig) (#406): maxslice 0 runs the pointer loop 65536 times.
+ * Fixed (#406): with a Slice maximum of 0 the pointer loop makes no pass
+ * (the original: 65536).
  *
  * @param str  d0: the copper instructions
  * @param y  d1.w: the line

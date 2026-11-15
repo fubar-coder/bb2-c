@@ -8,14 +8,11 @@
 ; library 144), one CustomCop (needs no slice) in Amiga mode.  The
 ; original does not come back (memory corrupted: the session times out).
 ; Correct: with no slice objects no pointer is moved, the program goes on.
-; How it fails depends on the memory layout (a time out or a halt of the
-; CPU); with the JIT even Amiberry itself could die ("JIT: Caught
-; SIGSEGV outside JIT code", the session ends "exited early" without a
-; verdict).  So the session runs without the JIT (cachesize=0), where
-; the stray writes stay inside the emulated memory; the volume is mounted
-; so that clib fails as the original does.
+; How the original fails depends on the memory layout (a time out or a
+; halt of the CPU); with the JIT even Amiberry itself could die, so the
+; session runs without the JIT (cachesize=0); its .orig accepts both.
+; @fixed #406
 ; @configs clib
-; @pass mount=BB2|@CD@
 ; @pass jobline=max=144|0
 ; @pass uae=cachesize=0
 ; @pass timeout=30
