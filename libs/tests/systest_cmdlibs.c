@@ -2,7 +2,9 @@
  * systest_cmdlibs - the basic command libraries
  *   memacclib, sortlib, mathtranslib, utillib, environlib, and the small
  *   entries of vallib, scrolllib, gameiolib, mouselib, collslib,
- *   shapeslib, fontlib, windowslib and blitzkeyslib
+ *   shapeslib, fontlib, windowslib and blitzkeyslib; the rectangle tests
+ *   of collslib, Frac, BlitzKey and Inkey$ (editlib), Print on a bitmap
+ *   (printlib, fontlib)
  * (plus memlib and strcomplib, which they call) on the Amiga: one set (the
  * original from acidlibs or the C build, as LIBSET says), observed as
  * cases (sysload.h; the expected data
@@ -20,6 +22,12 @@
 #include "sysload.h"
 #include "rwe/rwemem.h"
 #include <proto/intuition.h>
+#define __NOLIBBASE__
+#define GRAPHICS_BASE_NAME gfxb
+#include <proto/graphics.h>
+#undef __NOLIBBASE__
+
+static struct Library *gfxb;            /* graphics.library (test_print) */
 
 /* callstk() is defined in systest_mathstr.c (same executable) */
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
@@ -802,13 +810,314 @@ static void test_audiolib(void)
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
 }
 
+/* ------------------------------------------------------- collisions */
+
+/* ShapesHit, ShapeSpriteHit, SpritesHit and RectsHit: the second object
+   at offsets around the first one's edges (each edge at -1, 0 and +1),
+   junk in the upper words of the coordinates.  The objects: a shape
+   16x12 with the handle (3,-2) and one 9x20 with (1,2); a sprite 16 wide,
+   10 high (+4 = height + 1) with (2,1) and one 8x24 with (0,5) */
+static const WORD hitoffs[] = { -40, -16, -15, -14, -12, -11, -10, -5, 0, 3, 12, 13, 14,
+                                15, 16, 17, 40 };
+
+static void test_hits(void)
+{
+    static UBYTE sha[32], shb[32], spa[16], spb[16];
+    static UWORD rstk[3];
+    static const struct { const char *name; UBYTE *a, *b; } kinds[] = {
+        { "ShapesHit", sha, shb }, { "ShapeSpriteHit", sha, spb },
+        { "SpritesHit", spa, spb } };
+    unsigned i, j, k;
+
+    memset(sha, 0xa5, sizeof sha);
+    memset(shb, 0x5a, sizeof shb);
+    memset(spa, 0xa5, sizeof spa);
+    memset(spb, 0x5a, sizeof spb);
+    *(UWORD *)(sha + 0) = 16; *(UWORD *)(sha + 2) = 12;     /* width, height */
+    *(WORD *)(sha + 10) = 3; *(WORD *)(sha + 12) = -2;      /* handle */
+    *(UWORD *)(shb + 0) = 9; *(UWORD *)(shb + 2) = 20;
+    *(WORD *)(shb + 10) = 1; *(WORD *)(shb + 12) = 2;
+    *(UWORD *)(spa + 4) = 11; spa[9] = 16;                  /* height + 1, width */
+    *(UWORD *)(spa + 12) = 2; *(UWORD *)(spa + 14) = 1;     /* handle */
+    *(UWORD *)(spb + 4) = 25; spb[9] = 8;
+    *(UWORD *)(spb + 12) = 0; *(UWORD *)(spb + 14) = 5;
+    for (k = 0; k < sizeof kinds / sizeof kinds[0]; k++) {
+        ROUT = kinds[k].name;
+        for (i = 0; i < sizeof hitoffs / sizeof hitoffs[0]; i++)
+            for (j = 0; j < sizeof hitoffs / sizeof hitoffs[0]; j++) {
+                ULONG up = (i + j) & 1 ? 0x5a5a0000UL : 0;
+                sprintf(VEC, "dx %d dy %d up $%lX", hitoffs[i], hitoffs[j], up);
+                DO1(N("collslib", kinds[k].name, 0),
+                    R.d[1] = up | 100; R.d[2] = up | 50;
+                    R.d[4] = up | (UWORD)(100 + hitoffs[i]);
+                    R.d[5] = up | (UWORD)(50 + hitoffs[j]);
+                    R.a[0] = (ULONG)kinds[k].a; R.a[1] = (ULONG)kinds[k].b);
+                OBS("d0", R.d[0]);
+            }
+        /* signed word compares at the edge of the word range */
+        sprintf(VEC, "x $7FF8 against $8004");
+        DO1(N("collslib", kinds[k].name, 0),
+            R.d[1] = 0x7ff8; R.d[2] = 50; R.d[4] = 0x8004; R.d[5] = 50;
+            R.a[0] = (ULONG)kinds[k].a; R.a[1] = (ULONG)kinds[k].b);
+        OBS("d0", R.d[0]);
+    }
+    /* RectsHit: 16x12 at (100,50) against 9x20; Width2/Height2 on the a2
+       stack (-2: width, -4: height) */
+    ROUT = "RectsHit";
+    for (i = 0; i < sizeof hitoffs / sizeof hitoffs[0]; i++)
+        for (j = 0; j < sizeof hitoffs / sizeof hitoffs[0]; j++) {
+            ULONG up = (i + j) & 1 ? 0xa5a50000UL : 0;
+            sprintf(VEC, "dx %d dy %d up $%lX", hitoffs[i], hitoffs[j], up);
+            rstk[0] = 20;                                   /* height2 */
+            rstk[1] = 9;                                    /* width2 */
+            DO1(N("collslib", "RectsHit", 0),
+                R.d[0] = up | 100; R.d[1] = up | 50; R.d[2] = up | 16; R.d[3] = up | 12;
+                R.d[4] = up | (UWORD)(100 + hitoffs[i]);
+                R.d[5] = up | (UWORD)(50 + hitoffs[j]);
+                R.a[2] = (ULONG)&rstk[2]);
+            OBS("d0", R.d[0]);
+        }
+    sprintf(VEC, "negative sizes");
+    rstk[0] = (UWORD)-3;
+    rstk[1] = (UWORD)-4;
+    DO1(N("collslib", "RectsHit", 0),
+        R.d[0] = 10; R.d[1] = 10; R.d[2] = (UWORD)-2; R.d[3] = (UWORD)-2;
+        R.d[4] = 12; R.d[5] = 12; R.a[2] = (ULONG)&rstk[2]);
+    OBS("d0", R.d[0]);
+}
+
+/* ------------------------------------------------------------ Frac */
+
+/* Frac on FFP values: specials and pseudo-random values of both signs
+   with exponents from 2^-9 to 2^31 (mathffp of the ROM computes, the same
+   in both sets) */
+static void test_frac(void)
+{
+    static const ULONG specials[] = {
+        0, 0x80000041UL, 0x800000c1UL, 0xc0000041UL, 0xc00000c1UL, 0x8000003fUL,
+        0x800000bfUL, 0xb0000042UL, 0xb00000c2UL, 0xffffff60UL, 0xffffffe0UL,
+        0xffffff7fUL, 0x80000001UL, 0xaaaaaa58UL, 0xaaaaaad8UL };
+    unsigned i;
+
+    ROUT = "Frac";
+    for (i = 0; i < sizeof specials / sizeof specials[0]; i++) {
+        sprintf(VEC, "ffp $%08lX", specials[i]);
+        DO1(N("vallib", "Frac", 0), R.d[0] = specials[i]; R.a[6] = ffpbase);
+        OBS("d0", R.d[0]);
+    }
+    seed = 0x13579bdf;
+    for (i = 0; i < 64; i++) {
+        ULONG m = rnd() | 0x80000000UL;
+        ULONG f = (m & 0xffffff00UL) | (0x37 + i % 0x29) | (i & 1 ? 0x80 : 0);
+        sprintf(VEC, "ffp $%08lX", f);
+        DO1(N("vallib", "Frac", 0), R.d[0] = f; R.a[6] = ffpbase);
+        OBS("d0", R.d[0]);
+    }
+}
+
+/* ------------------------------------------- BlitzKey, Inkey$ */
+
+/* keyboard.device as blitzkeyslib reads it, a copy in the test's memory:
+   the read index at +$70, the write index at +$72, 32 events {code.w,
+   qualifier.w} from +$74; the init takes its address (a0) */
+static UWORD kbd[0x140 / 2];
+
+static void kbd_put(UWORD rd, UWORD wr, const UWORD *ev, unsigned n)
+{
+    unsigned i;
+    memset(kbd, 0, sizeof kbd);
+    kbd[0x70 / 2] = rd;
+    kbd[0x72 / 2] = wr;
+    for (i = 0; i < n && i < 4; i++) {        /* behind the read index */
+        UWORD at = (rd + 4 + 4 * i) & 127;
+        kbd[(0x74 + at) / 2] = ev[2 * i];
+        kbd[(0x76 + at) / 2] = ev[2 * i + 1];
+    }
+}
+
+static void test_keys(void)
+{
+    /* n events after the read index (the first one 4 behind it), the write
+       index 4 behind the last one: BlitzKey stops where its next position
+       is the write index; more than 4 events: the rest are zeros */
+    static const struct { const char *vec; UWORD rd; UWORD n; UWORD ev[8]; } bufs[] = {
+        { "empty", 0x10, 0, { 0 } },
+        { "a", 0x10, 1, { 0x20, 0 } },
+        { "shift a", 0x20, 1, { 0x20, 1 } },
+        { "caps a", 0x30, 1, { 0x20, 4 } },
+        { "ctrl a", 0x40, 1, { 0x20, 8 } },
+        { "key up then b", 0x50, 2, { 0xa0, 0, 0x35, 0 } },
+        { "two key ups", 0x60, 2, { 0xa0, 0, 0xb5, 0 } },
+        { "$7D", 0x70, 1, { 0x7d, 0 } },
+        { "wrap at 127: 1", 0x7c, 1, { 0x01, 0 } },
+        { "return", 0x08, 1, { 0x44, 0 } },
+        { "f1 (no character)", 0x0c, 1, { 0x50, 0 } },
+        { "read = write: 31 events", 0x18, 31, { 0x21, 0 } },
+    };
+    static UBYTE sbuf[8];
+    unsigned i;
+
+    /* the tables of qconvertkey (console.device, the default keymap) */
+    ROUT = "rawkeylib init";
+    strcpy(VEC, "");
+    DO1(cmd_entry(getlib(&loaded, "rawkeylib"), 3), (void)0);
+    ROUT = "blitzkeyslib init";
+    strcpy(VEC, "keyboard data");
+    DO1(cmd_entry(getlib(&loaded, "blitzkeyslib"), 6), R.a[0] = (ULONG)kbd);
+    for (i = 0; i < sizeof bufs / sizeof bufs[0]; i++) {
+        kbd_put(bufs[i].rd, (bufs[i].rd + 4 * (bufs[i].n + 1)) & 127, bufs[i].ev, bufs[i].n);
+        ROUT = "BlitzKey";
+        strcpy(VEC, bufs[i].vec);
+        DO1(N("blitzkeyslib", "BlitzKey", 0), R.d[0] = 0x5a5a0000UL; R.d[1] = 0xa5a50000UL);
+        OBS("d0", R.d[0]);
+        OBS("read index", kbd[0x70 / 2]);
+        ROUT = "BlitzQualifier";
+        DO1(N("blitzkeyslib", "BlitzQualifier", 0), (void)0);
+        OBS("d0.w", R.d[0] & 0xffff);
+    }
+    /* Inkey$ through the input handler of BlitzKeys On (inputoutputlib:
+       Inkey$ -> dogetsingle -> BlitzKey) */
+    ROUT = "BlitzKeys";
+    strcpy(VEC, "On");
+    DO1(N("blitzkeyslib", "BlitzKeys", 0), R.d[0] = 1);
+    for (i = 0; i < sizeof bufs / sizeof bufs[0]; i++) {
+        kbd_put(bufs[i].rd, (bufs[i].rd + 4 * (bufs[i].n + 1)) & 127, bufs[i].ev, bufs[i].n);
+        memset(sbuf, 0xee, sizeof sbuf);
+        ROUT = "Inkey$";
+        strcpy(VEC, bufs[i].vec);
+        DO1(N("editlib", "Inkey$", 0), R.a[3] = (ULONG)sbuf);
+        OBS("d0", R.d[0]);
+        OBS("a3 - string", R.a[3] - (ULONG)sbuf);
+        OBSBYTES("string", sbuf, sizeof sbuf);
+        OBS("read index", kbd[0x70 / 2]);
+    }
+    ROUT = "rawkeylib finit";
+    strcpy(VEC, "");
+    DO1(cmd_entry(getlib(&loaded, "rawkeylib"), 4), (void)0);
+}
+
+/* -------------------------------------------------- Print on a bitmap */
+
+/* Print and the output handler of BitMapOutput (fontlib bitout, bitout2):
+   strings and numbers on a bitmap of 3 planes, 5 bytes x 20 rows, with
+   topaz 8 of the ROM; every colour pair, a new line (10), the right edge
+   (a new line), the bottom (nothing drawn), characters outside the
+   font */
+static UBYTE pplanes[3][100];
+static ULONG pbm[16];                   /* struct bb_bitmap */
+
+/* a long on the a2 stack of words */
+#define STKL(i, v) (stk[i] = (UWORD)((ULONG)(v) >> 16), stk[(i) + 1] = (UWORD)(ULONG)(v))
+
+static void test_print(void)
+{
+    static const struct TextAttr topaz = { (STRPTR)"topaz.font", 8, 0, 0 };
+    static ULONG fontobj;
+    static const char *strs[] = { "SCORE", "Ab", "a\nb", "123456789", "\x7f\x1f\x80 ~",
+                                  "x" };
+    static const ULONG longs[] = { 0, 1, 123456, (ULONG)-7, 0x7fffffffUL, 0x80000000UL };
+    struct TextFont *font = NULL;
+    UBYTE *b = (UBYTE *)pbm;
+    UWORD stk[8];
+    unsigned i, fg, bg;
+
+    gfxb = OpenLibrary((STRPTR)"graphics.library", 0);
+    if (gfxb)
+        font = OpenFont((struct TextAttr *)&topaz);
+    if (!font) {
+        check("topaz 8", FALSE);
+        return;
+    }
+    fontobj = (ULONG)font;
+    ROUT = "BlitzFont _use";
+    strcpy(VEC, "topaz 8");
+    DO1(cmd_entry(getlib(&loaded, "fontlib"), 10), R.a[3] = (ULONG)&fontobj);
+    memset(pbm, 0, sizeof pbm);
+    *(UWORD *)(b + 0) = 5;                      /* bpr */
+    *(UWORD *)(b + 2) = 20;                     /* rows */
+    *(UWORD *)(b + 4) = 3;                      /* depth */
+    for (i = 0; i < 3; i++)
+        *(UBYTE **)(b + 8 + 4 * i) = pplanes[i];
+    ROUT = "BitMapOutput";
+    strcpy(VEC, "5 x 20");
+    DO1(N("fontlib", "BitMapOutput", 0), R.a[0] = (ULONG)pbm);
+    for (i = 0; i < sizeof strs / sizeof strs[0]; i++)
+        for (fg = 0; fg < 8; fg += i ? 7 : 1)
+            for (bg = 0; bg < 8; bg += i ? 7 : 3) {
+                ULONG len = strlen(strs[i]);
+                memset(pplanes, 0x3c, sizeof pplanes);
+                ROUT = "Colour";
+                sprintf(VEC, "fg %u bg %u", fg, bg);
+                DO1(N("fontlib", "Colour", 1), R.d[0] = fg; R.d[1] = bg);
+                ROUT = "Locate";
+                DO1(N("fontlib", "Locate", 0), R.d[0] = 1; R.d[1] = 0x8000);
+                ROUT = "Print";
+                sprintf(VEC, "string %u fg %u bg %u", i, fg, bg);
+                /* the a2 stack: address, length, type 7 */
+                STKL(0, (ULONG)strs[i]);
+                STKL(2, len);
+                stk[4] = 7;
+                DO1(N("printlib", "Print", 0), R.d[7] = 1; R.a[2] = (ULONG)&stk[5];
+                    R.a[6] = ffpbase);
+                OBSBYTES("plane 0", pplanes[0], 100);
+                OBSBYTES("plane 1", pplanes[1], 100);
+                OBSBYTES("plane 2", pplanes[2], 100);
+                OBSBYTES("cursor", b + 40, 4);
+            }
+    /* the bottom: nothing drawn, the cursor moves */
+    memset(pplanes, 0x3c, sizeof pplanes);
+    ROUT = "Locate";
+    strcpy(VEC, "bottom");
+    DO1(N("fontlib", "Locate", 0), R.d[0] = 3; R.d[1] = 0x20000);
+    ROUT = "Print";
+    STKL(0, (ULONG)"ABCD");
+    STKL(2, 4);
+    stk[4] = 7;
+    DO1(N("printlib", "Print", 0), R.d[7] = 1; R.a[2] = (ULONG)&stk[5]; R.a[6] = ffpbase);
+    OBSBYTES("plane 0", pplanes[0], 100);
+    OBSBYTES("cursor", b + 40, 4);
+    /* numbers (Long), two arguments in one Print */
+    ROUT = "Colour";
+    strcpy(VEC, "fg 5 bg 2");
+    DO1(N("fontlib", "Colour", 1), R.d[0] = 5; R.d[1] = 2);
+    for (i = 0; i < sizeof longs / sizeof longs[0]; i++) {
+        memset(pplanes, 0x3c, sizeof pplanes);
+        ROUT = "Locate";
+        sprintf(VEC, "long $%lX", longs[i]);
+        DO1(N("fontlib", "Locate", 0), R.d[0] = 0; R.d[1] = 0);
+        ROUT = "Print";
+        /* two arguments: the long, then the word 12 */
+        STKL(0, longs[i]);
+        stk[2] = 3;
+        stk[3] = 12;
+        stk[4] = 2;
+        DO1(N("printlib", "Print", 0), R.d[7] = 2; R.a[2] = (ULONG)&stk[5]; R.a[6] = ffpbase);
+        OBSBYTES("plane 0", pplanes[0], 100);
+        OBSBYTES("plane 1", pplanes[1], 100);
+        OBSBYTES("plane 2", pplanes[2], 100);
+        OBSBYTES("cursor", b + 40, 4);
+    }
+    /* one character through the handler's entry 0 (dooutsingle) */
+    memset(pplanes, 0x3c, sizeof pplanes);
+    ROUT = "Locate";
+    strcpy(VEC, "character Q");
+    DO1(N("fontlib", "Locate", 0), R.d[0] = 4; R.d[1] = 0x10000);
+    ROUT = "dooutsingle";
+    DO1(cmd_entry(getlib(&loaded, "inputoutputlib"), 6), R.d[0] = 'Q');
+    OBSBYTES("plane 0", pplanes[0], 100);
+    OBSBYTES("plane 2", pplanes[2], 100);
+    OBSBYTES("cursor", b + 40, 4);
+    CloseFont(font);
+    CloseLibrary(gfxb);
+}
+
 /* ------------------------------------------------------------------ main */
 
 static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
     "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
     "floatquicklib", "vallib", "iffiolib", "audiolib", "scrolllib", "gameiolib", "mouselib",
-    "collslib", "shapeslib", "fontlib", NULL
+    "collslib", "shapeslib", "fontlib", "editlib", "printlib", NULL
 };
 
 /* the tokens of the libraries the small entries call and this program
@@ -917,6 +1226,24 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("ItemHit", none);
     KEEPS_FUNCTION("SubHit", none);
     KEEPS_FUNCTION("EventQualifier", none);
+    /* test_hits, test_frac, test_keys, test_print */
+    KEEPS_FUNCTION("ShapesHit", none);
+    KEEPS_FUNCTION("ShapeSpriteHit", none);
+    KEEPS_FUNCTION("SpritesHit", none);
+    KEEPS_FUNCTION("RectsHit", none);
+    KEEPS_FUNCTION("Frac", none);
+    KEEPS("rawkeylib init", none);
+    KEEPS("rawkeylib finit", none);
+    KEEPS("blitzkeyslib init", d2-d7|a2-a3|a6);
+    /* the input handler entry keeps d1/a0-a1 (inputoutputlib passes every
+       register on) */
+    KEEPS_FUNCTION("BlitzKey", d1|a0|a1);
+    KEEPS_FUNCTION("BlitzQualifier", none);
+    KEEPS_STATEMENT("BlitzKeys", none);
+    KEEPS_STRFUNCTION("Inkey$", none);
+    KEEPS("BlitzFont _use", d0-d7|a0-a3|a6);
+    KEEPS_STATEMENT("Print", none);
+    KEEPS("dooutsingle", d1-d7|a0-a3|a6);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -943,6 +1270,10 @@ int main(int argc, char **argv)
     DO1(cmd_entry(getlib(&loaded, "memlib"), 8), (void)0);
     check("utillib: all memory back", rwe_mem_back());
     test_audiolib();
+    test_hits();
+    test_frac();
+    test_keys();
+    test_print();
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);
