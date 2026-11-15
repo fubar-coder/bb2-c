@@ -28,7 +28,7 @@
  *         after the last one to the SECOND node.
  *   Frames: inline MOVE 8(a0),d0.
  *
- * Kept from the original (BUG(orig)):
+ * Bugs of the original:
  *   - Fixed (intended deviation, #397): the BODY was decoded as ByteRun1
  *     whatever BMHD's compression said, and a run longer than the rest of
  *     the row was written behind it.  Here LoadAnim marks a BODY of
@@ -41,7 +41,10 @@
  *     depth or width 0.  Here LoadAnim keeps no BODY and no deltas of
  *     such a picture: InitAnim decodes nothing, its second form copies
  *     nothing, NextFrame has no delta.
- *   - freeanim reads the next pointer of a delta node after freeing it. (#399)
+ *   - Fixed (intended deviation, #399): freeanim read the next pointer of a
+ *     delta node after freeing it (a use after free: a memory checker or
+ *     another task reusing the block sends the walk into garbage).  Here
+ *     the pointer and the length are read first.
  *   - Fixed (intended deviation, #400): LoadAnim took the "not found"
  *     result -1 of a missing BODY as its length (memlib adds its 8 byte
  *     header, so AllocMem(7) succeeded, the read copied nothing and
@@ -259,20 +262,25 @@ static void globfree(ULONG mem, ULONG size)
 /* freeanim with a3 = the anim */
 static void freeanim_c(struct anim *anim)
 {
-    struct delta *link;
-    struct delta *next;                 /* d0: the next pointer */
+    struct delta *node;
+    ULONG len;
 
     if (!anim->width)
         return;
     anim->width = 0;
     if (anim->body)                     /* fixed (#400): none without BODY */
         globfree((ULONG)anim->body, anim->bodylen);
-    link = HEADNODE(anim);
-    while ((next = link->next) != 0) {
-        ULONG len = link->nextlen;      /* d0: the node length */
+    node = anim->first;
+    len = anim->firstlen;
+    while (node) {
+        /* fixed (#399): the next node and its length are read before the
+           node is freed */
+        struct delta *next = node->next;
+        ULONG nextlen = node->nextlen;
 
-        link = next;
-        globfree((ULONG)next, len);     /* BUG(orig) (#399): (a2) read after */
+        globfree((ULONG)node, len);
+        node = next;
+        len = nextlen;
     }
 }
 
@@ -280,8 +288,9 @@ static void freeanim_c(struct anim *anim)
  * @brief Free Anim (the object's _free nullsub): free BODY and the delta
  *        nodes of the anim in a3.
  *
- * Only a loaded anim (width not 0); width is cleared.  BUG(orig) (#399):
- * the next pointer of a delta node is read after the node was freed.
+ * Only a loaded anim (width not 0); width is cleared.  Fixed (#399): the
+ * next pointer of a delta node is read before the node is freed (the
+ * original read it after the FreeMem).
  */
 void BLITZ_ROUTINE freeanim(void)
 {
