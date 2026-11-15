@@ -639,6 +639,45 @@ build.
       comparisons and swaps is the original's, so the results are the
       same bit for bit (the library cases of `systest_cmdlibs`, every
       type, both directions, 201 elements).
+    - BBlit, UnBuffer and QBlit (task 10.8): measured with two extra
+      loops (not committed: 4 BBlit + FlushBuffer, 1 BBlit + UnBuffer;
+      the original 13849.9 and 4767.9): BBlit was 93 cycles a call
+      behind, UnBuffer 28 a record. The plane loops wait for the blitter,
+      so what counts is the CPU code between a wait and the write of
+      BLTSIZE and the setup of the command, not the loop alone: the
+      original's loops as asm blocks in the C of decision 20 gave nothing
+      (18640 -> 18662). What helped, in this order: BBlit reads
+      everything from the shape and the bitmap first, so the bitmap
+      pointer is dead before the record is written; the bitmap's Planes
+      is a `ULONG` in a data register (the original keeps the bitmap in
+      a2, here the record pointer) and the buffer pointer goes to the
+      stack once (a `volatile` local, stored once and read once), so no
+      other value is spilled; the shift is `AND #15 : ROR #4` (an asm of
+      one instruction; GCC's `MOVEQ #12 : LSL` costs 12 cycles more); the
+      values of the shape blit (the swapped modulos, BLTCON0) are
+      computed before the wait; UnBuffer reads a record's fields before
+      the wait. `register ... __asm("dN")` was tried and not kept: GCC
+      moved the values to other registers or the stack anyway. With that
+      C around them, the plane loops in C (empty `asm` barriers on the
+      pointers) stay 1.6 % behind (4 BBlit + UnBuffer 18460), GCC copying
+      the plane pointer between a data and an address register each
+      plane; so the save and blit loops of BBlit and the plane loop of
+      UnBuffer are the original's loops as asm blocks (`MOVE.l
+      (a0)+,d0 : ADD.l d3,d0 ... DBF`; the step `ADD.l`, #1045 stays
+      fixed). QBlit keeps its C loop: with the `ROR` it is 0.7 % behind
+      (an asm loop: 0.3 %), within the 1-2 % of the user's rule; moving
+      its offset and item code before the wait made it slower (9510:
+      more spills, and the blitter of the short blits is idle by then).
+      Five runs: 4 BBlit + UnBuffer 19072 -> 18160 (18173.8), 8 BBlit +
+      UnBuffer 37666 -> 35890 (36041.8), 4 QBlit + FlushQueue 9200 ->
+      9154 (9087.9), 8 QBlit + FlushQueue 18306 -> 18250 (18063.8), 4
+      QBlit + UnQueue 12910 -> 12908 (12785.9), 8 QBlit + UnQueue 25714
+      -> 25706 (25417.8); of the extra loops 4 BBlit + FlushBuffer 14222
+      -> 13880 (13849.9) and 1 BBlit + UnBuffer 4810 -> 4802 (4767.9).
+      bblitlib 3844 -> 3764 bytes, qblitlib 3192 -> 3200. ShowStencil,
+      which the benchmark does not run, is unchanged; the library cases
+      of `systest_blit` (BBlit, UnBuffer and QBlit in both modes, every
+      plane count, the excess planes) give the same values.
 
 ## Risks / Trade-offs
 

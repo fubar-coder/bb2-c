@@ -232,7 +232,13 @@ BL_ALWAYS_INLINE void qblit(struct queue *q, const struct bb_shape *shape,
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x60) = mods_swapped;
     BL_CUSTOML(cb, 0x64) = mods;
-    st->shift = (UWORD)((x & 15) << 12);
+    {
+        UWORD shift = (UWORD)(x & 15);
+
+        /* AND #15:ROR #4 (GCC: MOVEQ #12:LSL, 12 cycles more) */
+        __asm__("ror.w #4,%0" : "+d"(shift) : : "cc");
+        st->shift = shift;
+    }
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;

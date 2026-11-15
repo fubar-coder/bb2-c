@@ -34,7 +34,11 @@
  * Speed: the blit core is inline (BL_ALWAYS_INLINE), and the Blitz mode
  * code of BBlit, UnBuffer and ShowStencil saves no register
  * (BLITZ_ENTRYPOINT, a6 kept by BLITZ_EP_KEEP_A6; the register rule keeps
- * a3-a7).
+ * a3-a7).  The plane loops of BBlit and UnBuffer are the original's
+ * assembler loops (asm blocks: in C, GCC kept the plane pointer, the
+ * record pointer or the plane step on the stack or copied them between
+ * data and address registers, 1.6 % slower than the original); the C
+ * around them computes what it can before each blitter wait.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -253,77 +257,100 @@ BL_ALWAYS_INLINE void bblit(struct buffer *b, const struct bb_shape *shape,
                             const struct bb_bitmap *bm, UBYTE *cb,
                             WORD x, WORD y, struct blitstate *st)
 {
-    struct record *hdr = b->pos;
-    UBYTE *rec;                                 /* behind the header */
-    ULONG admod, cbmod;                         /* d5, d4: A:D and C:B modulos */
-    UWORD n, save;
-    UBYTE **plane;
+    struct record *hdr;
+    struct buffer *volatile bsave;              /* the original's a4 */
+    UBYTE *rec;                                 /* a5: behind the header */
+    const ULONG *plane;                         /* a0: the bitmap's planes */
+    ULONG off, save, planes, tmp;               /* d3, d1, LEA 8(a2) */
+    ULONG admod, cbmod;                         /* d5, d4 */
+    UWORD mod, size, n, shift, con0;            /* d5, d6, d7, d0 */
 
+    /* Speed: everything from the shape and the bitmap first, so that the
+       bitmap pointer is dead before the record is written; the bitmap's
+       Planes as a ULONG in a data register (the original keeps the bitmap
+       in a2, which here is the record pointer) and the buffer on the
+       stack (stored once, read once): no other value goes to the stack */
     x -= shape->handlex;
     y -= shape->handley;
+    shift = (UWORD)(x & 15);
+    __asm__("ror.w #4,%0" : "+d"(shift) : : "cc");     /* AND #15:ROR #4 */
+    mod = bm->bpr - shape->ebwidth - 2;
+    off = bl_blitoff(&bm->bpr, x, y);
+    n = bm->flagsdepth - 1;
+    planes = (ULONG)bm->planes;
+    __asm__("" : "+d"(planes));
+    size = shape->bltsize;
+    save = shape->xplanesize;                   /* Fixed (#1045): unsigned */
+    hdr = b->pos;
     hdr->prev = b->last;                        /* link the record */
     b->last = hdr;
-    admod = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
-    hdr->mod = (UWORD)admod;
-    cbmod = admod << 16 | admod >> 16;
-    st->off = bl_blitoff(&bm->bpr, x, y);
-    st->size = shape->bltsize;
-    hdr->size = st->size;
-    n = bm->flagsdepth - 1;
+    bsave = b;
+    hdr->mod = mod;
+    hdr->size = size;
     hdr->planes = n;
-    save = shape->xplanesize;
-    hdr->save = save;
-    hdr->off = st->off;
+    hdr->save = (UWORD)save;
+    hdr->off = off;
     rec = (UBYTE *)(hdr + 1);
+    plane = (const ULONG *)planes;
     /* the SAVE loop: bitmap -> buffer */
     BL_BLITWAIT(cb);
-    BL_CUSTOMW(cb, 0x64) = (UWORD)admod;
+    BL_CUSTOMW(cb, 0x64) = mod;
     BL_CUSTOMW(cb, 0x66) = 0;
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
-    plane = (UBYTE **)bm->planes;
-    goto saveplane;
-    do {
-        BL_BLITWAIT(cb);
-saveplane:                                      /* saveit2 */
-        {
-            ULONG a = (ULONG)*plane++ + st->off;
-
-            BL_CUSTOML(cb, 0x50) = a;
-            *(ULONG *)rec = a;
-            rec += 4;
-            BL_CUSTOML(cb, 0x54) = (ULONG)rec;
-            BL_CUSTOMW(cb, 0x58) = st->size;
-            rec += save;                        /* Fixed (#1045): unsigned */
-            __asm__("" : "+a"(rec));            /* no IV multiplication */
-        }
-    } while (n-- != 0);
-    b->pos = (struct record *)rec;
-    /* the blit */
-    st->shift = (UWORD)((x & 15) << 12);
+    /* 'saveit: per plane the plane address + offset into BLTAPT and the
+       record, the record's data into BLTDPT (the original's loop) */
+    __asm__ volatile(
+        "   bra.s   1f\n"
+        "0: tst.b   2(%[cb])\n"                 /* blitwait */
+        "2: btst    #6,2(%[cb])\n"
+        "   bne.s   2b\n"
+        "1: move.l  (%[pl])+,%[t]\n"
+        "   add.l   %[off],%[t]\n"
+        "   move.l  %[t],0x50(%[cb])\n"
+        "   move.l  %[t],(%[rec])+\n"
+        "   move.l  %[rec],0x54(%[cb])\n"
+        "   move.w  %[size],0x58(%[cb])\n"
+        "   add.l   %[save],%[rec]\n"
+        "   dbf     %[n],0b"
+        : [pl] "+a"(plane), [rec] "+a"(rec), [n] "+d"(n), [t] "=&d"(tmp)
+        : [cb] "a"(cb), [off] "d"(off), [size] "d"(size), [save] "d"(save)
+        : "cc", "memory");
+    bsave->pos = (struct record *)rec;
+    /* the blit: its values before the wait, after it only the writes */
+    admod = 0xfffe0000UL | mod;
+    cbmod = admod << 16 | admod >> 16;
+    con0 = shift | bcon0;
+    st->shift = shift;
+    st->cookie = (ULONG)shape->cookie;
     n = shape->depth - 1;
-    st->plane = (UBYTE **)bm->planes;
+    plane = (const ULONG *)planes;
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x60) = cbmod;                       /* MOVEM.l d4-d5,$060 */
     BL_CUSTOML(cb, 0x64) = admod;
-    BL_CUSTOMW(cb, 0x42) = st->shift;
-    BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
+    BL_CUSTOMW(cb, 0x42) = shift;
+    BL_CUSTOMW(cb, 0x40) = con0;
     BL_CUSTOMW(cb, 0x46) = 0;
     BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
-    st->cookie = (ULONG)shape->cookie;
-    goto bblitlib_doblit;
-    do {
-        BL_BLITWAIT(cb);
-bblitlib_doblit:
-        BL_CUSTOML(cb, 0x50) = st->cookie;
-        {
-            ULONG dst = (ULONG)*st->plane++ + st->off;
-
-            BL_CUSTOML(cb, 0x48) = dst;
-            BL_CUSTOML(cb, 0x54) = dst;
-        }
-        BL_CUSTOMW(cb, 0x58) = st->size;
-    } while (n-- != 0);
+    /* 'doblit: per shape plane A = cookie, C = D = the plane + offset */
+    __asm__ volatile(
+        "   bra.s   1f\n"
+        "0: tst.b   2(%[cb])\n"                 /* blitwait */
+        "2: btst    #6,2(%[cb])\n"
+        "   bne.s   2b\n"
+        "1: move.l  %[ck],0x50(%[cb])\n"
+        "   move.l  (%[pl])+,%[t]\n"
+        "   add.l   %[off],%[t]\n"
+        "   move.l  %[t],0x48(%[cb])\n"
+        "   move.l  %[t],0x54(%[cb])\n"
+        "   move.w  %[size],0x58(%[cb])\n"
+        "   dbf     %[n],0b"
+        : [pl] "+a"(plane), [n] "+d"(n), [t] "=&d"(tmp)
+        : [cb] "a"(cb), [off] "d"(off), [size] "d"(size), [ck] "d"(st->cookie)
+        : "cc", "memory");
+    st->size = size;
+    st->off = off;
+    st->plane = (UBYTE **)plane;
 }
 
 /* b_doblitex - excess planes, d4 = bits (one per plane) */
@@ -354,7 +381,7 @@ BL_ALWAYS_INLINE void bblitex(struct buffer *b, const struct bb_shape *shape,
 /* b_dounbuffer - a3 = buffer, a2 = chip base: the records back */
 BL_ALWAYS_INLINE void unbuffer(struct buffer *b, UBYTE *cb)
 {
-    struct record *rec = b->last;
+    const struct record *rec = b->last;
 
     if (!rec)
         return;
@@ -362,28 +389,30 @@ BL_ALWAYS_INLINE void unbuffer(struct buffer *b, UBYTE *cb)
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     BL_CUSTOMW(cb, 0x64) = 0;
-    goto nextrec;
-    do {
-        UBYTE *cur;                             /* a1: in the record */
-        UWORD size, n, save;
+    do {                                        /* loop2 */
+        const UBYTE *cur = (const UBYTE *)(rec + 1);    /* a1: in the record */
+        UWORD mod = rec->mod, size = rec->size, n = rec->planes;
+        ULONG save = rec->save;                 /* Fixed (#1045): unsigned */
 
+        /* the record is read before the wait (for the first record the
+           blitter is idle already) */
         BL_BLITWAIT(cb);
-nextrec:                                        /* loop2 */
-        BL_CUSTOMW(cb, 0x66) = rec->mod;
-        size = rec->size;
-        n = rec->planes;
-        save = rec->save;
-        cur = (UBYTE *)(rec + 1);
-        goto nextplane;
-        do {
-            BL_BLITWAIT(cb);
-nextplane:                                      /* loop3a */
-            BL_CUSTOML(cb, 0x54) = *(ULONG *)cur;
-            cur += 4;
-            BL_CUSTOML(cb, 0x50) = (ULONG)cur;
-            BL_CUSTOMW(cb, 0x58) = size;
-            cur += save;                        /* Fixed (#1045): unsigned */
-        } while (n-- != 0);
+        BL_CUSTOMW(cb, 0x66) = mod;
+        /* loop3a: per plane the saved data (BLTAPT) back to the plane
+           (BLTDPT), the original's loop */
+        __asm__ volatile(
+            "   bra.s   1f\n"
+            "0: tst.b   2(%[cb])\n"             /* blitwait */
+            "2: btst    #6,2(%[cb])\n"
+            "   bne.s   2b\n"
+            "1: move.l  (%[cur])+,0x54(%[cb])\n"
+            "   move.l  %[cur],0x50(%[cb])\n"
+            "   move.w  %[size],0x58(%[cb])\n"
+            "   add.l   %[save],%[cur]\n"
+            "   dbf     %[n],0b"
+            : [cur] "+a"(cur), [n] "+d"(n)
+            : [cb] "a"(cb), [size] "d"(size), [save] "d"(save)
+            : "cc", "memory");
         rec = rec->prev;
     } while (rec);
     b->last = NULL;
