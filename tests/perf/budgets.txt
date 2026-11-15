@@ -56,6 +56,8 @@
 # line keeps at least its earlier tolerance (from 38 runs).
 # bgfx.polyf3 from six runs of task 10.11 (Polyf's set-up) on main
 # f7960476 (2026-11-16): 46659.7 to 46669.9.
+# bstr.sort201 from two runs of the Sort of task 10.7 on main 349a9c18
+# (2026-11-16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -192,6 +194,6 @@ bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
-bstr.sort201                84110    77694.0  Sort sa()
+bstr.sort201                78576    77694.0  Sort sa()
 bstr.pstr                   12115    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
 bstr.fstr                   12817    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))

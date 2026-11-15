@@ -608,6 +608,38 @@ build.
       to be within 128 bytes of the loop, 130 with the loop's code: two
       LEA of 8 cycles per line stay, 640 cycles of the benchmark).
 
+23. **Sort, the buffered blits and Frac (tasks 10.7 to 10.9,
+    2026-11-16).** Cycles per call, before -> after (the original).
+    - Sort (task 10.7): the C of decision 19 already had the original's
+      tail recursion (GCC compiled the right part as a loop: the
+      `for (;;)` around the body, only the left part a `JSR`); the 7 %
+      came from elsewhere, found in the disassembly. GCC kept `sdir`,
+      `first`, `last` and `i - 1` in registers of their own and saved
+      four registers per level (`MOVEM.l d2-d4/a2`), and it kept the
+      backward scan's element in a register for the swap, which needed a
+      fifth. Now: `lo` is the first element itself (`i` is its own
+      register), `sdir` is read in every round of `'loop0` as in the
+      original (a register less per level for a `TST.w` of 16 cycles a
+      round; keeping it in a register measured 78574, worse), an empty
+      `asm` after `i--` makes GCC step `i` itself, a memory barrier
+      before the swap makes it read `*j` again (`MOVE.l (a1),(a0)+`),
+      and the original's `j++` before the backward scan and `j--` after a
+      swap, which cancel, are left out (`j` is decremented only when the
+      loop ends after a swap). The integer sorts save two registers per
+      level (`MOVE.l a2,-(sp) : MOVE.l d2,-(sp)`, the original pushes two
+      longs), the swap is three moves and a compare. The float and string
+      sorts keep their pointers with `"r"` instead of `"a"` (their
+      comparison is a call that may change a0/a1; the `"a"` made GCC copy
+      the pointer between a data and an address register each step).
+      Left as it is: GCC never compiles a compare with `(An)+` as its
+      source (tried in five forms and with `-fno-ivopts`), so the forward
+      scan is `MOVE.l (a2)+,d1 : CMP.l d0,d1` (4 cycles a step more than
+      `CMP.l (a0)+,d0`). C, no assembler: `bstr.sort201` 83274 -> 77794
+      (77694), 1.001; sortlib.obj 1244 -> 1132 bytes. The order of the
+      comparisons and swaps is the original's, so the results are the
+      same bit for bit (the library cases of `systest_cmdlibs`, every
+      type, both directions, 201 elements).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

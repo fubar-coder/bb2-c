@@ -17,8 +17,8 @@
  * (SORT_FN; floats and strings through a call).
  *
  * Not a bug (a property of the quicksort algorithm): recursion depth is
- * O(n) in the worst case (the C version needs more stack per level than
- * the original's 12 bytes).
+ * O(n) in the worst case (12 bytes per level as in the original for the
+ * integer sorts, more for floats and strings).
  * Fixed (intended deviation, #275): word arrays read the pivot with MOVE.l
  *   and compared with CMP.w, so the pivot was the element AFTER the middle
  *   one; for a one element array (Dim a.w(0)) it lay behind the array: the
@@ -134,20 +134,22 @@ static __attribute__((noinline)) LONG strcmpptr(ULONG pivot, ULONG elem)
 /* the scan loops: on while the pivot is COND than the element, the
    forward one with *i++ (CMP.x (a0)+,d0), the backward one with --j
    first (SUBQ #size,a1:CMP.x (a1),d0).  The empty asm keeps the pointer
-   in its address register, so that GCC loads with (a0)+ and (a1)
-   instead of through a copy of the pointer. */
-#define SCAN_UP(T, COND, p) do {                                            \
+   in a register of the class R ("a" for the integer types: an address
+   register, so that GCC loads with (a0)+ and (a1) instead of through a
+   copy of the pointer; "r" for floats and strings, whose comparison is a
+   call that may change a0/a1). */
+#define SCAN_UP(T, COND, R, p) do {                                         \
     T v_;                                                                   \
     do {                                                                    \
         v_ = *p++;                                                          \
-        __asm__("" : "+a"(p));                                              \
+        __asm__("" : "+" R(p));                                             \
     } while (COND(pivot, v_, ffp));                                         \
 } while (0)
-#define SCAN_DOWN(T, COND, p) do {                                          \
+#define SCAN_DOWN(T, COND, R, p) do {                                       \
     T v_;                                                                   \
     do {                                                                    \
         p--;                                                                \
-        __asm__("" : "+a"(p));                                              \
+        __asm__("" : "+" R(p));                                             \
         v_ = *p;                                                            \
     } while (COND(pivot, v_, ffp));                                         \
 } while (0)
@@ -157,50 +159,66 @@ static __attribute__((noinline)) LONG strcmpptr(ULONG pivot, ULONG elem)
    lo = L, hi = R, both inclusive element addresses; pointer comparisons
    are unsigned (BHI/BLS/BCC).  The pivot is the middle element,
    lo[(R - L) / 2] (LSR.l #1 of the byte distance, AND.l #-size; fixed
-   (#275): for words read as a word, not with MOVE.l). */
-#define SORT_FN(name, T, GT, LT)                                            \
+   (#275): for words read as a word, not with MOVE.l).  As the original,
+   only the left part is a recursive call; the right part is the next
+   round of the outer loop (BRA 'recurs), and sdir is read in every round
+   of 'loop0 (MOVE sdir(pc),d1).  The original's j++ before the backward
+   scan and its j-- after a swap cancel (the scan starts at the element
+   below the swapped one either way); here j is decremented only when the
+   loop ends after a swap.  The empty asm after i-- makes GCC step i
+   itself instead of keeping i - 1 in another register; the memory
+   barrier before the swap makes it read *j again (MOVE.x (a1),(a0)+)
+   instead of keeping the backward scan's element in a register.  So the
+   integer sorts keep two registers of their own per level, as the
+   original pushes two longs. */
+#define SORT_FN(name, T, GT, LT, R)                                         \
 static void name(T *lo BL_REG(a0), T *hi BL_REG(a1), const void *ffp BL_REG(a6)) \
 {                                                                           \
     (void)ffp;                                                              \
     for (;;) {                                                              \
-        T *first = lo, *last = hi;                      /* copies of */     \
         T pivot = lo[(ULONG)(hi - lo) >> 1];                                \
-        T *i = lo, *j = hi;                                                 \
+        T *i = lo, *j = hi + 1;                                             \
                                                                             \
-        do {                                            /* 'loop0 */        \
-            j++;                                                            \
+        for (;;) {                                      /* 'loop0 */        \
             if (sdir == 0) {                                                \
-                SCAN_UP(T, GT, i);                      /* 'loop1: BGT */   \
-                SCAN_DOWN(T, LT, j);                    /* 'loop2: BLT */   \
+                SCAN_UP(T, GT, R, i);                   /* 'loop1: BGT */   \
+                i--;                                                        \
+                __asm__("" : "+" R(i));                                     \
+                SCAN_DOWN(T, LT, R, j);                 /* 'loop2: BLT */   \
             } else {                                                        \
-                SCAN_UP(T, LT, i);                      /* 'loop3: BLT */   \
-                SCAN_DOWN(T, GT, j);                    /* 'loop4: BGT */   \
+                SCAN_UP(T, LT, R, i);                   /* 'loop3: BLT */   \
+                i--;                                                        \
+                __asm__("" : "+" R(i));                                     \
+                SCAN_DOWN(T, GT, R, j);                 /* 'loop4: BGT */   \
             }                                                               \
-            i--;                                                            \
             if (i > j)                                  /* 'lskip: BHI */   \
                 break;                                                      \
+            __asm__("" ::: "memory");                                       \
             {                                                               \
                 T t = *i;                                                   \
                                                                             \
                 *i++ = *j;                                                  \
-                *j-- = t;                                                   \
+                *j = t;                                                     \
             }                                                               \
-        } while (i <= j);                               /* BLS 'loop0 */    \
+            if (i >= j) {                               /* BLS 'loop0 */    \
+                j--;                                                        \
+                break;                                                      \
+            }                                                               \
+        }                                                                   \
                                                                             \
-        if (first < j)                                  /* BCC 'skip2 */    \
-            name(first, j, ffp);                                            \
-        if (!(i < last))                                /* BCC 'skip3 */    \
+        if (lo < j)                                     /* BCC 'skip2 */    \
+            name(lo, j, ffp);                                               \
+        if (!(i < hi))                                  /* BCC 'skip3 */    \
             return;                                                         \
         lo = i;                                         /* BRA 'recurs */   \
-        hi = last;                                                          \
     }                                                                       \
 }
 
-SORT_FN(sortbyte, BYTE, GT_I, LT_I)
-SORT_FN(sortword, WORD, GT_I, LT_I)
-SORT_FN(sortlong, LONG, GT_I, LT_I)
-SORT_FN(sortfloat, ULONG, GT_F, LT_F)
-SORT_FN(sortstring, ULONG, GT_S, LT_S)
+SORT_FN(sortbyte, BYTE, GT_I, LT_I, "a")
+SORT_FN(sortword, WORD, GT_I, LT_I, "a")
+SORT_FN(sortlong, LONG, GT_I, LT_I, "a")
+SORT_FN(sortfloat, ULONG, GT_F, LT_F, "r")
+SORT_FN(sortstring, ULONG, GT_S, LT_S, "r")
 
 
 /**
