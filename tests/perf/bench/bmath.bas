@@ -1,11 +1,14 @@
-; bmath - perf benchmark: Long, Quick and Float arithmetic, Rnd, Sgn, Abs, Int, Frac, QLimit, Peek, Poke
+; bmath - perf benchmark: arithmetic, Mod, Quick/Float conversion, a procedure, Rnd, Sgn, Abs, Int, Frac, QLimit, Peek, Poke
 DEFTYPE .l
-Dim t(36)
+Dim t(42)
 a=123456 : b=789 : c=0 : a2=123456789 : b2=70000
 q1.q=12.5 : q2.q=3.25 : q3.q=0
 q4.q=1000.5 : q5.q=1.0000153 : a3=123456789 : b3=65536
 f1.f=12.5 : f2.f=3.25 : f3.f=0
 w1.w=1234 : w2.w=57 : w3.w=0
+Statement plocal{x.l}
+y.l=x+1 : z.l=y
+End Statement
 Dim buf.l(10)
 p=&buf(0)
 VWait 5
@@ -193,6 +196,36 @@ For i=1 To 2000
 c=a3/b3
 Next
 Gosub tod : t(35)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+w3=w1 MOD w2
+Next
+Gosub tod : t(36)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+q3=q1 MOD q2
+Next
+Gosub tod : t(37)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=f1 MOD f2
+Next
+Gosub tod : t(38)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+f3=q1
+Next
+Gosub tod : t(39)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+q3=f1
+Next
+Gosub tod : t(40)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+plocal{a}
+Next
+Gosub tod : t(41)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -231,6 +264,12 @@ NPrint "ldiv32 ",t(32)," 2000 1"
 NPrint "lmod32 ",t(33)," 2000 1"
 NPrint "qdivw ",t(34)," 2000 1"
 NPrint "ldivw ",t(35)," 2000 1"
+NPrint "wmod ",t(36)," 2000 1"
+NPrint "qmod ",t(37)," 2000 1"
+NPrint "fmod ",t(38)," 2000 1"
+NPrint "q2f ",t(39)," 2000 1"
+NPrint "f2q ",t(40)," 2000 1"
+NPrint "plocal ",t(41)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

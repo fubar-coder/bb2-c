@@ -1,9 +1,16 @@
-; bstr - perf benchmark: strings, Read, lists, Sort
+; bstr - perf benchmark: strings, Read, lists, Sort, procedures with a string parameter
 DEFTYPE .l
 Dim t(24)
 a=123456 : c=0
 a$="Hello, World of Blitz" : b$="Hello, World of Blitz" : n$="12345"
 r$=String$(" ",80)
+Statement pstr{s$}
+u$=s$
+End Statement
+Function.l fstr{s$}
+u$=s$
+Function Return Len(u$)
+End Function
 Dim List ll.l(100)
 For i=1 To 50
 If AddItem(ll()) Then ll()=i
@@ -128,6 +135,16 @@ For i=1 To 50
 Sort sa()
 Next
 Gosub tod : t(21)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+pstr{a$}
+Next
+Gosub tod : t(22)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+c=fstr{a$}
+Next
+Gosub tod : t(23)=(tt-t0)&65535
 Goto skipdata
 dd:
 Data.l 1,2,3,4
@@ -156,6 +173,8 @@ NPrint "nextitem51 ",t(18)," 500 51"
 NPrint "addkill ",t(19)," 2000 1"
 NPrint "resetlist ",t(20)," 2000 1"
 NPrint "sort201 ",t(21)," 50 1"
+NPrint "pstr ",t(22)," 2000 1"
+NPrint "fstr ",t(23)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255
