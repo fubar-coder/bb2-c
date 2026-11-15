@@ -10,6 +10,7 @@
 ; work buffer, which is changed); the original puts blwait and the wait
 ; $80010F00 into the list instead of the two moves.
 ; Correct: the list holds the instructions as given.
+; @fixed #405
 ; @configs clib
 DEFTYPE .l
 c$=Mki$($1FE)+Mki$($1234)+Mki$($180)+Mki$($F00)

@@ -47,7 +47,11 @@
  *   - Slice: unused pointers (+10..+26 = 0) are relocated like the
  *     others (0 - maxcop + position, later + list movements); Show into a
  *     slice without BPLCON1 writes to that address. (#407)
- *   - inscop2: the marker also changes the source buffer (#405).
+ * Fixed (intended deviation, #405): inscop2 took the long $01FE1234 for
+ *   Slice's marker of the line 256 wait in every inserted block, also in
+ *   a CustomCop string: it became $01FE0000 or the line 255 wait, and the
+ *   word behind it a wait.  Here only Slice's buffer maxcop is searched
+ *   for it; CustomCop and ColSplit are copied as given.
  * Fixed (intended deviation, #406): with a Slice maximum of 0 (the
  *   compiler options) inscop2's pointer loop ran 65536 times (DBF on
  *   maximum - 1) and "relocated" 4 MB from the empty object area on.
@@ -473,18 +477,23 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
     dst++;
     count = len >> 2;                           /* MOVE.l (a7)+,d0:LSR.l #2 */
     pos = (ULONG)dst;
-    for (; count; count--) {                    /* 'cloop2; fixed #404: 0 longs */
-        move = *src++;
-        *dst++ = move;
-        if (move == 0x01fe1234) {               /* kludgey bit */
-            dst[-1] = 0x01fe0000;
-            p = (UWORD *)src;
-            move = (move & 0xffff0000UL) | *p;  /* MOVE (a2),d1 */
-            *(UBYTE *)p = (UBYTE)move;
-            ((UBYTE *)p)[1] = 1;
-            if (!past256 && (UWORD)move >= 256) {
-                dst[-1] = blwait;
-                past256 = -1;
+    if (src != (ULONG *)maxcop) {               /* fixed #405: no marker */
+        for (; count; count--)                  /* CustomCop, ColSplit */
+            *dst++ = *src++;
+    } else {
+        for (; count; count--) {                /* 'cloop2; fixed #404: 0 longs */
+            move = *src++;
+            *dst++ = move;
+            if (move == 0x01fe1234) {           /* kludgey bit (Slice) */
+                dst[-1] = 0x01fe0000;
+                p = (UWORD *)src;
+                move = (move & 0xffff0000UL) | *p; /* MOVE (a2),d1 */
+                *(UBYTE *)p = (UBYTE)move;
+                ((UBYTE *)p)[1] = 1;
+                if (!past256 && (UWORD)move >= 256) {
+                    dst[-1] = blwait;
+                    past256 = -1;
+                }
             }
         }
     }
@@ -774,7 +783,8 @@ notsmooth2:
  * slice width MUST be multiple of 32", "Slice already in use".
  * BUG(orig) (#407): unused copper list pointers (0) are relocated like
  * the others; Show into a slice without BPLCON1 writes to that address.
- * BUG(orig) (#405): the $01FE1234 marker also changes maxcop.
+ * The $01FE1234 marker is rewritten in maxcop itself (the library's
+ * buffer, built anew by every Slice); fixed (#405): only there.
  *
  * Reads a3: the slice (!libs{#blitzcoplib,$1380} from Slice# in d0).
  * @param args  a2: the argument stack: -2 Y, -4 Width, -6 Hite, -8 Fscrnw,
@@ -889,6 +899,8 @@ BLITZ_THUNK(bdoslice, bdoslice_c, "a2");
  * original copied 2^32 longs).
  * Fixed (#406): with a Slice maximum of 0 the pointer loop makes no pass
  * (the original: 65536).
+ * Fixed (#405): the string is copied as given (the original took a long
+ * $01FE1234 for Slice's marker).
  *
  * @param str  d0: the copper instructions
  * @param y  d1.w: the line
