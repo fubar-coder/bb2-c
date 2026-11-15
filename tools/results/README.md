@@ -13,15 +13,17 @@ expected data written from two recording runs of the original
 block of a library test run (`libs-dump`), and the cases
 of the expected data a branch changes beyond the issues it fixes
 (`fix-scope`), the recorded original of a bug-orig test written from
-two recording runs of the original (`bug-orig-accept`), and the expected
+two recording runs of the original (`bug-orig-accept`), the expected
 data of a corpus pass written from two runs of the original
-(`corpus-accept`). The logic is in
+(`corpus-accept`), and the cycles per call of the library benchmark
+(`perf`). The logic is in
 `tools/lib/outmatch`, `tools/lib/prevcmp` (with `tools/lib/previntended`),
 `tools/lib/cdtable`, `tools/lib/oracletable`, `tools/lib/libscmp`,
-`tools/lib/bugorigcmp` and `tools/lib/corpusexpect`, tested by
+`tools/lib/bugorigcmp`, `tools/lib/corpusexpect` and `tools/lib/perfbudget`, tested by
 `tools/tests/test_outmatch.c`, `test_prevcmp.c`, `test_previntended.c`,
 `test_cdtable.c`, `test_oracletable.c`, `test_libscmp.c`,
-`test_libscmp_bin.c`, `test_bugorigcmp.c` and `test_corpusexpect.c`.
+`test_libscmp_bin.c`, `test_bugorigcmp.c`, `test_corpusexpect.c` and
+`test_perfbudget.c`.
 
 ## Usage
 
@@ -51,6 +53,8 @@ SUBCOMMANDS:
   bug-orig-accept             the recorded original of a bug-orig test from two recording runs
                               of the original
   corpus-accept               the expected data of a corpus pass from two runs of the original
+  perf                        the cycles per call of the library benchmark from the
+                              observations of a run
 ```
 
 ### match
@@ -542,6 +546,37 @@ is named. `--only` limits it to the programs named. The target
 `corpus-expect-record` (`tests/corpus/record.cmake`) calls it for every
 pass.
 
+### perf
+
+```
+Usage: results perf [OPTIONS] OBSERVATIONS
+
+the cycles per call of the library benchmark from the observations of a run
+
+POSITIONALS:
+  OBSERVATIONS TEXT REQUIRED  the directory of the observations (NAME.out of corpusrun pass
+                              --observe)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+
+A line "TEST T N PER" of NAME.out is the loop TEST of the program NAME: T units
+of 1000 cycles for N iterations, PER calls per iteration or "frame"; the
+program's empty loop is subtracted. Exit status 0 the table written, 2 usage
+error, a file that cannot be read or a malformed observation.
+```
+
+The cycles per call of the library benchmark (`tests/perf`,
+`tests/README.md`, "The benchmark"; `tools/lib/perfbudget`) from the
+observations `NAME.out` that `corpusrun pass --observe` wrote, one per
+benchmark program. Each loop's line gives its time in units of the CIA-B
+cascade (1000 CPU cycles), its iterations and its calls per iteration; the
+program's empty loop (`empty`, cycles per iteration) is subtracted, and a
+`frame` loop gives the cycles per PAL frame (142102 cycles) an interrupt
+handler takes from it. The command is named `PROGRAM.TEST`. An output
+without the empty loop or the runner's `rc=0`, or with another line, is
+refused.
+
 ## Inputs and outputs
 
 `match` reads two text files and writes only a message; `prev` reads two
@@ -554,7 +589,8 @@ data, `libs-compare` also writes `NAME.block-N.obs` into the run
 directory, `libs-dump` appends to `NAME.dump` there, `fix-scope` reads
 two directories (and a log) and writes its report to stdout,
 `bug-orig-accept` reads two runs and rewrites `OUT`, `corpus-accept`
-reads two run directories and rewrites files of `EXPECT_DIR`.
+reads two run directories and rewrites files of `EXPECT_DIR`, `perf` reads
+a directory and writes its table to stdout.
 
 ## Exit codes
 
@@ -577,7 +613,7 @@ reads two run directories and rewrites files of `EXPECT_DIR`.
   files (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
   `fix-scope`, `bug-orig-accept`, `corpus-accept`), a file that cannot be
   written (`libs-compare`, `libs-accept`, `libs-update`, `libs-dump`,
-  `bug-orig-accept`, `corpus-accept`);
+  `bug-orig-accept`, `corpus-accept`); a malformed observation (`perf`);
 * 77 `prev`: `PREV` does not exist (no prev build: skipped), said on
   stderr.
 
@@ -608,6 +644,8 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
 * `corpus-accept`: the target `corpus-expect-record`
   (`tests/corpus/record.cmake`); the test `corpus_record_target`
   (`tests/corpus/CMakeLists.txt`).
+* `perf`: the test `perf` and the target `perf-original`
+  (`tests/perf/perf.cmake`).
 * `fix-scope`: the target `fix-scope` (`CMakeLists.txt`,
   `cmake/fix-scope.cmake`); the tests `fix_scope_*`
   (`tools/tests/CMakeLists.txt`).

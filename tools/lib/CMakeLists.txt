@@ -66,6 +66,8 @@
 #              (cli.hpp, C++20, header only: cli::run, the help format)
 #   tedfont    TED-C's 256-glyph screen fonts from a glyph text source
 #              and TED 1.1's font files (tools/tedfont)
+#   perfbudget the benchmark of the libraries (tests/perf): the cycles per
+#              call from the programs' output
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -100,3 +102,4 @@ add_subdirectory(libscmp)
 add_subdirectory(bugorigcmp)
 add_subdirectory(cli)
 add_subdirectory(tedfont)
+add_subdirectory(perfbudget)

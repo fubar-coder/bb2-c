@@ -29,5 +29,6 @@ void cmd_libs_dump(CLI::App &app, int &status);
 void cmd_fix_scope(CLI::App &app, int &status);
 void cmd_bug_orig_accept(CLI::App &app, int &status);
 void cmd_corpus_accept(CLI::App &app, int &status);
+void cmd_perf(CLI::App &app, int &status);
 
 #endif

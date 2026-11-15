@@ -32,5 +32,6 @@ int main(int argc, char **argv)
     cmd_fix_scope(app, status);
     cmd_bug_orig_accept(app, status);
     cmd_corpus_accept(app, status);
+    cmd_perf(app, status);
     return cli::run(app, argc, argv, status);
 }

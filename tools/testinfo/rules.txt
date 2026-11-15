@@ -53,6 +53,7 @@ tools/lib/amiga_emulation/**    label:emulator name:host/*
 tools/amiga_run/**              label:emulator name:host/*
 tools/lib/teststats/**          label:emulator name:host/*
 tools/lib/outmatch/**           label:emulator name:host/*
+tools/lib/perfbudget/**         name:host/* name:perf*
 tools/results/**                label:emulator name:host/* name:prev_results
 tools/lib/covmap/**             name:host/*
 tools/lib/covsel/**             name:host/*
@@ -75,7 +76,9 @@ tests/ab3/**                    name:ab3_*
 tests/blitz2/**                 name:blitz2_*
 tests/bug-orig/**               label:bug-orig name:bug_orig_* name:inject_* name:regression_* name:ab3_bb2_equivalence*
 tests/bug-port/**               label:bug-port name:bug_port_* name:lsclear_*
+tests/corpus/data/**            name:corpus* name:ab3_bb2_equivalence* name:perf*
 tests/corpus/**                 name:corpus* name:ab3_bb2_equivalence*
+tests/perf/**                   name:perf*
 tests/ted-ab/**                 name:ted_ab* name:bug_orig_ted_*
 
 # the expected data of the library tests (openspec change
