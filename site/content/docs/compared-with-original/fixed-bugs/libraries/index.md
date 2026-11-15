@@ -18,12 +18,13 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Four of the fixes change what an existing program shows. Two of them
+Five of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
-way, but a program of your own might. The other two concern the custom
-copper instructions of the display library and change every program that
-uses the commands with the values named.
+way, but a program of your own might. Two concern the custom copper
+instructions of the display library and change every program that uses
+the commands with the values named. The last one makes `LoadShape` stop
+with a runtime error on pictures it loaded before.
 
 ### `RenderToBitmap` with a dither bitmap drew on the wrong bitmap {#rendertobitmap-dither}
 
@@ -130,6 +131,30 @@ wait for line 255 and comes at its line.
 the flag set has to give 1.
 
 Issue: [CustomColors ignored the value of thru256flag (#951)](https://github.com/fubar-coder/bb2-c/issues/951).
+
+### `LoadShape` refuses pictures too large to blit {#loadshape-blit-size}
+
+The blitter draws a shape in one go, with its size given as one word: 10
+bits for the height and 6 for the width in 16 pixel words. A shape
+keeps that word, so it can be at most 1023 rows high and 62 words, 992
+pixels, wide.
+
+**What happened.** `LoadShape` loaded a taller or wider picture all the
+same. The size word wrapped, and every blit of the shape drew a wrong
+part of it: a picture 1100 rows high was blitted 76 rows high.
+
+**With the port.** `LoadShape` of a picture taller than 1023 rows or
+wider than 992 pixels is the runtime error "Can't Read/Write Shapes
+File", also without runtime error checking, and the shape stays empty.
+This can stop a program that ran with the original: one that loaded
+such a picture as a shape only to read its size with `ShapeWidth` and
+`ShapeHeight`, and never blitted it.
+
+**What to change.** Load such a picture as a bitmap, with `LoadBitMap`,
+or cut it into shapes of at most 1023 rows and 992 pixels
+([`LoadShape` of a picture too large to blit]({{< relref "/docs/compared-with-original/new-errors#loadshape-blit-size" >}})).
+
+Issue: [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046).
 
 ## Dates
 
@@ -1226,6 +1251,12 @@ user interface
   whatever lay behind the box table; with runtime error checking it is
   the error "Illegal Box# For Page"
   ([#82](https://github.com/fubar-coder/bb2-c/issues/82)).
+* `InitPage` with 32768 boxes or more took the number as a negative one
+  and asked for a box table of a wrong size, which stopped the program
+  with "Out of Memory!"; with runtime error checking it is the error
+  "Illegal Number of Boxes"
+  ([#1043](https://github.com/fubar-coder/bb2-c/issues/1043);
+  [`InitPage` with 32768 boxes or more]({{< relref "/docs/compared-with-original/new-errors#initpage-numboxes" >}})).
 
 ### Windows and screens
 
@@ -1411,17 +1442,61 @@ End Function
 NPrint OldMul{196608,30000}   ; 1603272705, as with the original
 ```
 
-### Graphics
+### Palettes
+
+These are the palette objects, their colour cycles and the commands that
+read colours from IFF pictures.
 
 * `DecodePalette` and `LoadPalette` cycled a colour range that the
   picture marks as disabled, and ran ranges backwards without their
   reverse flag; a range cycles only when enabled, backwards only when
   marked so
   ([#1002](https://github.com/fubar-coder/bb2-c/issues/1002)).
+* `DecodePalette` did not skip the pad byte behind a chunk of odd length,
+  such as a name or a short text in the picture, so it missed the colours
+  or the colour cycles behind it; it finds them
+  ([#225](https://github.com/fubar-coder/bb2-c/issues/225)).
+* `DecodePalette` with an offset into a palette too small for the
+  colours cleared the palette first, so its colours below the offset were
+  lost; the palette grows and keeps them, as with `PalRGB`
+  ([#226](https://github.com/fubar-coder/bb2-c/issues/226)).
+* The list of colour cycles of a palette object that was never used has
+  no end mark. `InitPalette`, and `PalRGB` or `AGAPalRGB` on such a
+  palette, left it so, and `CyclePalette` and `Cycle` read on into the
+  next palette object; they end the list
+  ([#229](https://github.com/fubar-coder/bb2-c/issues/229)).
+* `PaletteRange` with the same start and end colour divided by zero; it
+  sets that colour to the start colour of the gradient
+  ([#227](https://github.com/fubar-coder/bb2-c/issues/227)).
+* After `StopCycle`, a new `Cycle` did not start the colour cycling
+  again; it does
+  ([#228](https://github.com/fubar-coder/bb2-c/issues/228)).
+
+### Animations
+
+These are the anim objects, which play IFF ANIM files on bitmaps.
+
 * `NextFrame` of an anim with a single change read its next change from
   address 0, and so did the first `NextFrame` of an anim without any; such
   an anim plays once and stays on its last frame
   ([#401](https://github.com/fubar-coder/bb2-c/issues/401)).
+* `LoadAnim` of a file without a first picture (BODY) took the value for
+  "not found" as the length of the picture, and `InitAnim` then unpacked
+  whatever lay in memory; such an anim has no first picture, and
+  `InitAnim` draws nothing
+  ([#400](https://github.com/fubar-coder/bb2-c/issues/400)).
+* An anim whose file gives a width, height or depth of 0 made `InitAnim`
+  and `NextFrame` run their loops 65536 times and write over memory; such
+  an anim is loaded without picture data, and they draw nothing
+  ([#402](https://github.com/fubar-coder/bb2-c/issues/402)).
+* `InitAnim` unpacked every first picture as packed data, also one the
+  file stores unpacked, and a packed run longer than the rest of its row
+  was written behind the row; an unpacked first picture is copied, and
+  every run ends with its row
+  ([#397](https://github.com/fubar-coder/bb2-c/issues/397)).
+* Freeing an anim read the link to its next change from memory it had
+  just freed; the link is read first
+  ([#399](https://github.com/fubar-coder/bb2-c/issues/399)).
 
 ### Blitz mode displays
 
@@ -1487,7 +1562,9 @@ existing program shows:
 ### Shapes and sprites
 
 These are the commands of shapes, their changes such as `Scale` and
-`Rotate`, sprites, stencils and the collisions of sprites.
+`Rotate`, sprites, stencils and the collisions of sprites. One more fix
+of them can stop an existing program:
+[`LoadShape` refuses pictures too large to blit](#loadshape-blit-size).
 
 * `LoadShapes`, `DecodeShapes` and `LoadSprites` with a raised object
   maximum (1025 shapes or 2049 sprites and more) loaded only the first
@@ -1583,6 +1660,21 @@ These are the commands of shapes, their changes such as `Scale` and
 * `Stencil` of a bitmap of more than 1024 lines, or wider than 1024
   pixels, filled the stencil only in part; it fills the whole stencil
   ([#284](https://github.com/fubar-coder/bb2-c/issues/284)).
+* `LoadShape` of a picture whose header gives 0 bitplanes made a shape
+  without memory and wrote the picture data behind it; such a picture is
+  the runtime error "Illegal Shape Depth", also without runtime error
+  checking
+  ([#1052](https://github.com/fubar-coder/bb2-c/issues/1052);
+  [`LoadShape` of a picture of 0 bitplanes]({{< relref "/docs/compared-with-original/new-errors#loadshape-no-planes" >}})).
+* `InitShape`, `GetaShape`, `Rotate` and `Scale` made shapes too large
+  for the size fields of a shape without a check, so the shape's memory
+  was overwritten or blitted wrongly. With runtime error checking, a
+  shape with a plane of 64 KB or more, taller than 1023 rows or wider
+  than 992 pixels is the error "Shape too Big", and `InitShape` with a
+  width or height of 0 the error "Illegal Shape Size"
+  ([#1047](https://github.com/fubar-coder/bb2-c/issues/1047),
+  [#1046](https://github.com/fubar-coder/bb2-c/issues/1046);
+  [Shapes too large for their size fields]({{< relref "/docs/compared-with-original/new-errors#shape-too-big" >}})).
 
 ### Drawing and polygons
 

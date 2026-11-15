@@ -1023,6 +1023,64 @@ rounded up to whole 16 pixel words, times the height.
 
 Issue: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263).
 
+### `LoadShape` of a picture too large to blit {#loadshape-blit-size}
+
+**What happened.** A shape keeps the size the blitter draws it with in
+one word: 10 bits for the height and 6 for the width in 16 pixel words.
+`LoadShape` of a picture taller than 1023 rows or wider than 992 pixels
+loaded it all the same, and the size wrapped: a picture 16 by 1100
+pixels was blitted 76 rows high.
+
+**With the port.** Such a picture is the runtime error "Can't
+Read/Write Shapes File", also without runtime error checking, and the
+shape stays empty. This change can stop a program that worked with the
+original, such as one that loaded a large picture as a shape only to
+read `ShapeWidth` and `ShapeHeight` and never blitted it.
+
+**What to change.** Load the picture as a bitmap, or cut it into shapes
+of at most 1023 rows and 992 pixels.
+
+Issue: [The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046).
+
+### `LoadShape` of a picture of 0 bitplanes {#loadshape-no-planes}
+
+**What happened.** `LoadShape` took the number of bitplanes from the
+header of the picture without a check. A header that gives 0 bitplanes,
+in a damaged or unusual file, made a shape without memory, and the
+picture data was written behind it until the file ended.
+
+**With the port.** Such a picture is the runtime error "Illegal Shape
+Depth", also without runtime error checking, and the shape stays empty.
+
+**What to change.** Nothing for a correct picture; a picture of 0
+bitplanes holds no image.
+
+Issue: [LoadShape of an ILBM with 0 planes writes the file behind an empty block (#1052)](https://github.com/fubar-coder/bb2-c/issues/1052).
+
+### Shapes too large for their size fields {#shape-too-big}
+
+**What happened.** A shape keeps the size of a plane, with an extra word
+per row, in 16 bits, and the size the blitter draws it with in one word.
+`InitShape`, `GetaShape`, `Rotate` and `Scale` made shapes without
+checking either: a shape with a plane of 64 KB or more got wrong sizes,
+and its memory was overwritten; a shape taller than 1023 rows or wider
+than 992 pixels was blitted wrongly. `InitShape` also made a shape of
+width or height 0, whose blits ran their loops 65536 times.
+
+**With the port.** With runtime error checking, `InitShape`,
+`GetaShape`, `Rotate` and `Scale` stop with "Shape too Big" when the new
+shape has a plane of 64 KB or more (the width in bytes, rounded up to
+whole 16 pixel words and plus 2, times the height), is taller than 1023
+rows or is wider than 992 pixels. `InitShape` with a width or height of
+0 is the error "Illegal Shape Size". Without runtime error checking, the
+commands are as before.
+
+**What to change.** Keep shapes within these sizes; draw a larger image
+on a bitmap.
+
+Issues: [InitShape, GetaShape, Rotate and Scale do not check for planes of 64 KB or more (#1047)](https://github.com/fubar-coder/bb2-c/issues/1047),
+[The blit size word of a shape taller than 1023 rows overflows (#1046)](https://github.com/fubar-coder/bb2-c/issues/1046).
+
 ### A palette of 0 colours for `SaveBitmap` and `SaveShape` {#save-palette-no-colours}
 
 **What happened.** `InitPalette p,0` makes a palette without colours.
@@ -1261,3 +1319,18 @@ whatever lay behind the page's boxes.
 boxes given to `InitPage`.
 
 Issue: [SelectBox did not check the box number (#82)](https://github.com/fubar-coder/bb2-c/issues/82).
+
+### `InitPage` with 32768 boxes or more {#initpage-numboxes}
+
+**What happened.** `InitPage Page#,BitMap#,NumBoxes` took a `NumBoxes`
+of 32768 or more as a negative number, so the size of the box table came
+out wrong and far too large, and the program stopped with "Out of
+Memory!", a message that does not name the cause.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Number of Boxes". Without runtime error checking, the command
+is as before.
+
+**What to change.** Give a page fewer than 32768 boxes.
+
+Issue: [InitPage with NumBoxes of 32768 or more gives a negative table size (#1043)](https://github.com/fubar-coder/bb2-c/issues/1043).

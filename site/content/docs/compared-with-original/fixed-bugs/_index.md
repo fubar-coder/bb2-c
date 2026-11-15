@@ -27,11 +27,12 @@ way.
 
 ## Changes for existing programs
 
-Four fixes change what an existing program shows. The first two concern
+Five fixes change what an existing program does. The first two concern
 programs that were written to make up for the bug; no known example
-program, demo or game uses the commands this way. The other two change
-every program that uses the commands with the values named. Check your
-own programs:
+program, demo or game uses the commands this way. The next two change
+every program that uses the commands with the values named, and the last
+one stops a program that loads a very large picture as a shape. Check
+your own programs:
 
 * [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
@@ -49,6 +50,11 @@ own programs:
 * [`CustomColors` with a `thru256flag` of 0 acted as 1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customcolors-thru256flag" >}}).
   A flag of 0 is the same as leaving it out; a program that gives 0 and
   needs the flag set has to give 1.
+* [`LoadShape` refuses pictures too large to blit]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#loadshape-blit-size" >}}):
+  a picture taller than 1023 rows or wider than 992 pixels is the runtime
+  error "Can't Read/Write Shapes File", also without runtime error
+  checking. A program that loaded such a picture as a shape now stops
+  there; load it as a bitmap instead.
 
 ## Bugs an ordinary program can meet
 

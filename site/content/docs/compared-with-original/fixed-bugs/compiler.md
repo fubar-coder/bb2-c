@@ -826,6 +826,14 @@ source the original accepted are shown with examples on
   more and one more call each time, for a check that is not part of the
   program. The call goes straight to the routine
   ([#1048](https://github.com/fubar-coder/bb2-c/issues/1048)).
+* An operation of two constants, such as `7 Mod 3`, is worked out while
+  compiling. When it was the first use of a library, such as the one of
+  `Mod`, the addresses in that library's code were left out of the list
+  AmigaOS uses to adjust addresses when it loads the program. They
+  pointed into the compiler's memory, so a later `Mod` of Long values
+  jumped there and worked only while that memory was unchanged; the
+  addresses are in the list
+  ([#1049](https://github.com/fubar-coder/bb2-c/issues/1049)).
 
 ### Inline assembler
 
