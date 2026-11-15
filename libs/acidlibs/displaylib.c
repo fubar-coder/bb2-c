@@ -954,58 +954,11 @@ BLITZ_ALIAS(_createdisplay, _createdisplay_c);
 /* ------------------------------------------------- display bitmap routines */
 
 /* the bitplane pointer moves: one plane */
-static UWORD *setptr(UWORD *a2, ULONG v)
+BL_ALWAYS_INLINE UWORD *setptr(UWORD *a2, ULONG v)
 {
     a2[2] = (UWORD)v;
     a2[0] = (UWORD)(v >> 16);
     return a2 + 4;
-}
-
-/* _displaybmap2: d2 = x (quick), d3 = y, a0 = bitmap, a3 = coplist */
-static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
-{
-    UWORD *bplptr;
-    ULONG planes, modulo, fine, xmask, shift;
-    ULONG fetchwid;                             /* d5 */
-    ULONG ham8;                                 /* d5: the HAM8 flag */
-
-    CM(cop, x0) = xoff;
-    CM(cop, x1) = xoff;
-    shift = CM(cop, resshift);
-    xoff = BL_SWAP(asl_l(xoff, shift));
-    bplptr = (UWORD *)CM(cop, bplanes);
-    planes = CM(cop, numbp);
-    if (!planes)
-        return;
-    planes--;
-    fetchwid = BL_EXTL(CM(cop, fetchwid));
-    xmask = BL_EXTL(CM(cop, xand));
-    shift = BL_EXTL(CM(cop, xshift));
-    modulo = (UWORD)(W(bm, 0) - (UWORD)fetchwid);
-    bplptr[-3] = (UWORD)modulo;
-    bplptr[-1] = (UWORD)modulo;
-    fine = (UWORD)((UWORD)xoff & (UWORD)xmask);
-    ham8 = CM(cop, ham8);
-    fine = (UWORD)(fine + fine);
-    blitz_string = (UBYTE *)bp1;                /* LEA bp1(pc),a3 */
-    bplptr[-5] = BP1(fine);
-    BL_SETW(xmask, ~(UWORD)xmask);
-    BL_SETW(xoff, (UWORD)xoff & (UWORD)xmask);
-    xoff = BL_EXTL(xoff);
-    xoff = asr_w(xoff, shift);
-    yoff = mulu16(W(bm, 0), (UWORD)yoff);
-    xoff += yoff;
-    bm += 8;
-    bplptr += 1;
-    if ((UWORD)ham8) {
-        bplptr = setptr(bplptr, L(bm, 24) + xoff);
-        bplptr = setptr(bplptr, L(bm, 28) + xoff);
-        BL_SETW(planes, (UWORD)planes - 2);
-    }
-    do {
-        bplptr = setptr(bplptr, *(const ULONG *)bm + xoff);
-        bm += 4;
-    } while ((WORD)--planes != -1);
 }
 
 /**
@@ -1021,11 +974,68 @@ static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
  * @param x   d2: the x position (quick)
  * @param y   d3: the y position
  */
-static void BLITZ_ROUTINE _displaybmap2_c(const UBYTE *bm BL_REG(a0), ULONG x BL_REG(d2),
-                                          ULONG y BL_REG(d3))
-{
-    displaybmap2(blitz_string, bm, x, y);
-}
+/* The original's code (assembler: the C of DisplayBitMap stayed 19 %
+   slower, GCC kept the plane pointer in a data register); offsets of
+   struct bb_coplist: x0 62, x1 66, resshift 74, bplanes 20, numbp 38,
+   fetchwid/xand/xshift 42-46 (MOVEM), ham8 90, res 52 */
+#define CMAT(m, o) static_assert(offsetof(struct bb_coplist, m) == (o))
+CMAT(colors, 8); CMAT(sprites, 12); CMAT(bplanes, 20); CMAT(dob, 32); CMAT(numbp, 38);
+CMAT(fetchwid, 42); CMAT(xand, 44); CMAT(xshift, 46); CMAT(ypos, 48); CMAT(height, 50);
+CMAT(res, 52); CMAT(numsprites, 54); CMAT(numcols, 56); CMAT(x0, 62); CMAT(x1, 66);
+CMAT(bplcon3, 70); CMAT(aga, 72); CMAT(resshift, 74); CMAT(spif, 84); CMAT(sspwid, 88);
+CMAT(ham8, 90); CMAT(csprites, 92); CMAT(spri, 126);
+BLITZ_ASM_ROUTINE(_displaybmap2,
+"   move.l  d2,62(a3)\n"                /* x0, x1 */
+"   move.l  d2,66(a3)\n"
+"   move.w  74(a3),d7\n"                /* resshift */
+"   asl.l   d7,d2\n"
+"   swap    d2\n"
+"   move.l  20(a3),a2\n"                /* the bitplane moves */
+"   move.w  38(a3),d0\n"                /* numbp */
+"   beq.s   2f\n"
+"   subq.w  #1,d0\n"
+"   movem.w 42(a3),d5-d7\n"             /* fetchwid, xand, xshift */
+"   move.w  (a0),d1\n"                  /* the modulos */
+"   sub.w   d5,d1\n"
+"   move.w  d1,-6(a2)\n"
+"   move.w  d1,-2(a2)\n"
+"   move.w  d2,d4\n"                    /* the fine scroll */
+"   and.w   d6,d4\n"
+"   move.w  90(a3),d5\n"                /* ham8 */
+"   add.w   d4,d4\n"
+"   lea     _bp1(pc),a3\n"              /* a3 stays here (not a bug) */
+"   move.w  0(a3,d4.w),-10(a2)\n"
+"   not.w   d6\n"
+"   and.w   d6,d2\n"
+"   ext.l   d2\n"
+"   asr.w   d7,d2\n"
+"   mulu.w  (a0),d3\n"                  /* the offset */
+"   add.l   d3,d2\n"
+"   lea     8(a0),a0\n"
+"   addq.l  #2,a2\n"
+"   tst.w   d5\n"
+"   beq.s   1f\n"
+"   move.l  24(a0),d1\n"                /* HAM8: planes 7 and 8 first */
+"   add.l   d2,d1\n"
+"   move.w  d1,4(a2)\n"
+"   swap    d1\n"
+"   move.w  d1,(a2)\n"
+"   addq.l  #8,a2\n"
+"   move.l  28(a0),d1\n"
+"   add.l   d2,d1\n"
+"   move.w  d1,4(a2)\n"
+"   swap    d1\n"
+"   move.w  d1,(a2)\n"
+"   addq.l  #8,a2\n"
+"   subq.w  #2,d0\n"
+"1: move.l  (a0)+,d1\n"
+"   add.l   d2,d1\n"
+"   move.w  d1,4(a2)\n"
+"   swap    d1\n"
+"   move.w  d1,(a2)\n"
+"   addq.l  #8,a2\n"
+"   dbf     d0,1b\n"
+"2: rts");
 
 /**
  * @brief DisplayBitMap CopList#,bmap: shows a bitmap.
@@ -1038,48 +1048,43 @@ static void BLITZ_ROUTINE _displaybmap2_c(const UBYTE *bm BL_REG(a0), ULONG x BL
  *
  * @param bm       a0: the bitmap (!libs {#bitmaplib,$1081})
  */
-static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0))
-{
-    UBYTE *cop = blitz_string;
-    ULONG zero;
-    UWORD *bplptr;
-    UWORD planes, modulo;
-    const UWORD *plane;
-
-    if (B(cop, CMOFF(res) + 1) & (1 << 4)) {
-        displaybmap2(cop, bm, 0, 0);
-        return;
-    }
-    zero = 0;                                   /* fixed #411: not d2/d3 */
-    OPAQUE(zero);                               /* MOVEQ + 2 MOVE.l, not CLR.l */
-    CM(cop, x0) = zero;
-    CM(cop, x1) = zero;
-    bplptr = (UWORD *)CM(cop, bplanes);
-    planes = CM(cop, numbp);
-    if (!planes)
-        return;
-    planes--;
-    modulo = W(bm, 0) - CM(cop, fetchwid);
-    bplptr[-3] = modulo;
-    bplptr[-1] = modulo;
-    plane = (const UWORD *)(bm + 8);
-    bplptr += 1;
-    if (CM(cop, ham8)) {
-        bplptr[0] = plane[12];
-        bplptr[2] = plane[13];
-        bplptr[4] = plane[14];
-        bplptr[6] = plane[15];
-        bplptr += 8;
-        planes -= 2;
-    }
-    do {
-        bplptr[0] = *plane++;
-        bplptr[2] = *plane++;
-        bplptr += 4;
-    } while ((WORD)--planes != -1);
-}
-BLITZ_ALIAS(_displaybmap, _displaybmap_c);
-BLITZ_ALIAS(_displaybmap2, _displaybmap2_c);
+/* the original's code (see _displaybmap2) with the fix of #411 */
+BLITZ_ASM_ROUTINE(_displaybmap,
+"   btst    #4,53(a3)\n"                /* smooth scrolling: the x,y form at 0,0 */
+"   beq.s   1f\n"
+"   moveq   #0,d2\n"
+"   moveq   #0,d3\n"
+"   bra     __displaybmap2\n"
+"1: moveq   #0,d0\n"                    /* fixed (#411): x0/x1 0, not d2/d3 */
+"   move.l  d0,62(a3)\n"
+"   move.l  d0,66(a3)\n"
+"   move.l  20(a3),a2\n"
+"   move.w  38(a3),d0\n"
+"   beq.s   3f\n"
+"   subq.w  #1,d0\n"
+"   move.w  (a0),d1\n"
+"   sub.w   42(a3),d1\n"
+"   move.w  d1,-6(a2)\n"
+"   move.w  d1,-2(a2)\n"
+"   lea     8(a0),a0\n"
+"   addq.l  #2,a2\n"
+"   tst.w   90(a3)\n"
+"   beq.s   2f\n"
+"   move.w  24(a0),(a2)\n"              /* HAM8: planes 7 and 8 first */
+"   addq.l  #4,a2\n"
+"   move.w  26(a0),(a2)\n"
+"   addq.l  #4,a2\n"
+"   move.w  28(a0),(a2)\n"
+"   addq.l  #4,a2\n"
+"   move.w  30(a0),(a2)\n"
+"   addq.l  #4,a2\n"
+"   subq.w  #2,d0\n"
+"2: move.w  (a0)+,(a2)\n"
+"   addq.l  #4,a2\n"
+"   move.w  (a0)+,(a2)\n"
+"   addq.l  #4,a2\n"
+"   dbf     d0,2b\n"
+"3: rts");
 
 /* scludge: two bitmaps, d2/d5 = x (quick), d3/d6 = y */
 static void displaydbmap2(UBYTE *cop, const UBYTE *bm1, const UBYTE *bm2,
@@ -1210,33 +1215,6 @@ BLITZ_ALIAS(_displaydbmap2, _displaydbmap2_c);
 
 /* ------------------------------------------------------ sprite routines */
 
-/* spriteoff - the blank sprite into the channels of a sprite above or
-   below the display.  BUG(orig) (#1051): always in the normal sprite moves at
-   chan x 16: a channel of the CustomSprites bank writes behind them, over
-   the BPLCON moves, and the custom channel keeps the sprite (bug-orig
-   test displaylib-spriteoff-custom-bank) */
-static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
-{
-    UWORD count = spr->count - 1;
-    UBYTE *sprmove = (UBYTE *)CM(cop, sprites) + (WORD)(UWORD)(chan << 4);
-
-    do {
-        W(sprmove, 2) = 0;
-        W(sprmove, 6) = 0;
-        W(sprmove, 10) = (UWORD)(d.mysprite >> 16);
-        W(sprmove, 14) = (UWORD)d.mysprite;
-        sprmove += 16;
-        if ((WORD)spr->flags < 0) {
-            W(sprmove, 2) = 0;
-            W(sprmove, 6) = 0;
-            W(sprmove, 10) = (UWORD)(d.mysprite >> 16);
-            W(sprmove, 14) = (UWORD)d.mysprite;
-            sprmove += 16;
-            count--;
-        }
-    } while ((WORD)--count != -1);
-}
-
 /**
  * @brief DisplaySprite CopList#,Sprite#,X,Y,Sprite Channel: shows a
  *        sprite on one or more channels.
@@ -1263,134 +1241,154 @@ static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
  * @param y        d3: the y position
  * @param channel  d4: the first sprite channel
  */
-static void BLITZ_ROUTINE _displaysprite_c(const struct bb_sprite *spr BL_REG(a1),
-                                           ULONG x BL_REG(d2),
-                                           ULONG y BL_REG(d3), ULONG channel BL_REG(d4))
-{
-    UBYTE *cop = blitz_string, *sprmove;
-    ULONG vpos;                                 /* d2: y, then the start line */
-    ULONG vstop;                                /* d2: the stop line */
-    ULONG count;                                /* d2: the sprite count */
-    ULONG chan;                                 /* d3: the channel */
-    ULONG xhandle;                              /* d4 */
-    ULONG skip;                                 /* d4: the data skip */
-    ULONG chanend;                              /* d5: channel + sprite width */
-    ULONG yhandle;                              /* d5 */
-    ULONG height;                               /* d5 */
-    ULONG lines;                                /* d0: the visible lines */
-    ULONG data;                                 /* d0: the data address */
-    ULONG hpos;                                 /* d1: the x position */
-    ULONG step;                                 /* d1: the data step */
-    ULONG nspr;                                 /* d6: the sprite channels */
-    ULONG posword, ctlword;                     /* d6 d7: SPRxPOS, SPRxCTL */
-
-    if (!spr->data)
-        GOTO(nosprierr);
-    chanend = (UWORD)channel;
-    nspr = CM(cop, numsprites);
-    /* fixed #414: the custom bank only for a first channel in it (the
-       original doubled nspr for every channel with CustomSprites) */
-    if ((UWORD)channel >= (UWORD)nspr && CM(cop, csprites))
-        nspr = (UWORD)(nspr + nspr);
-    chanend = (UWORD)(chanend + spr->count);
-    if ((WORD)((UWORD)nspr - (UWORD)chanend) < 0) /* CMP d5,d6:BMI */
-        GOTO(spriterr);
-    hpos = x;
-    vpos = x;
-    BL_SETW(vpos, (UWORD)y);
-    chan = y;
-    BL_SETW(chan, (UWORD)channel);
-    xhandle = BL_EXTL(spr->handlex);
-    yhandle = BL_EXTL(spr->handley);
-    xhandle = asr_w(asl_w(xhandle, 2), CM(cop, spri));
-    hpos = BL_SWAP(hpos);
-    hpos = rol_l(hpos, CM(cop, resshift));
-    BL_SETW(hpos, (UWORD)hpos + 512);
-    BL_SETW(hpos, (UWORD)hpos - (UWORD)xhandle);
-    BL_SETW(vpos, (UWORD)vpos - (UWORD)yhandle);
-    {
-        WORD bottom = (WORD)(CM(cop, height) + 1);
-
-        if (bottom <= (WORD)vpos) {             /* SUB d2,d0:BLE */
-            spriteoff(cop, spr, (UWORD)chan);
-            return;
-        }
-        lines = (UWORD)(bottom - (WORD)vpos);
-    }
-    skip = 0;
-    height = spr->height;
-    if ((WORD)vpos < 0) {                       /* off the top */
-        if ((LONG)(WORD)height + (WORD)vpos <= 0) { /* ADD d2,d5:BLE */
-            spriteoff(cop, spr, (UWORD)chan);
-            return;
-        }
-        height = (UWORD)((UWORD)height + (UWORD)vpos);
-        skip = vpos;                            /* EXG d2,d4 */
-        vpos = 0;
-        BL_SETW(skip, -(WORD)skip);
-        skip = asl_l(BL_EXTL(skip), CM(cop, spif));
-    }
-    if ((WORD)((UWORD)lines - (UWORD)height) < 0) /* CMP d5,d0:BPL */
-        height = (UWORD)lines;
-    BL_SETW(vpos, (UWORD)vpos + CM(cop, ypos));
-    ctlword = 0;
-    posword = (UWORD)vpos;
-    if (posword & 0x100)                        /* ASL #8,d6: carry */
-        ctlword |= 1 << 2;
-    posword = (UWORD)(posword << 8);
-    if (!d.agamac)
-        BL_SETW(hpos, (UWORD)hpos & 0xfffc);
-    if (hpos & 1)
-        ctlword |= 1 << 3;
-    BL_SETW(hpos, (UWORD)hpos >> 1);
-    if (hpos & 1)
-        ctlword |= 1 << 4;
-    BL_SETW(hpos, (UWORD)hpos >> 1);
-    if (hpos & 1)
-        ctlword |= 1 << 0;
-    BL_SETW(hpos, (UWORD)hpos >> 1);
-    if ((WORD)hpos < 0)
-        hpos = 0;
-    if ((WORD)((UWORD)hpos - 256) >= 0)         /* CMP #256,d1:BMI */
-        BL_SETW(hpos, 255);
-    posword = (posword & 0xff00) | (UBYTE)hpos;
-    vstop = vpos;
-    BL_SETW(vstop, (UWORD)vpos + (UWORD)height - 1);
-    if (vstop & 0x100)                          /* LSL #8,d2: carry */
-        ctlword |= 1 << 1;
-    BL_SETW(vstop, (UWORD)vstop << 8);
-    ctlword |= (UWORD)vstop;
-    if ((WORD)spr->flags < 0)
-        ctlword |= 1 << 7;
-    sprmove = (UBYTE *)CM(cop, sprites);
-    if ((UWORD)chan >= CM(cop, numsprites)) {
-        BL_SETW(chan, (UWORD)chan - CM(cop, numsprites));
-        sprmove = (UBYTE *)CM(cop, csprites);
-    }
-    sprmove += (WORD)(UWORD)((UWORD)chan << 4);
-    data = (ULONG)spr->data + skip;
-    step = BL_EXTL(spr->imgsize);
-    count = (UWORD)(spr->count - 1);
-    do {
-        W(sprmove, 2) = (UWORD)posword;
-        W(sprmove, 6) = (UWORD)ctlword;
-        W(sprmove, 14) = (UWORD)data;
-        W(sprmove, 10) = (UWORD)(data >> 16);
-        data += step;
-        sprmove += 16;
-        if ((WORD)spr->flags < 0) {             /* attached */
-            W(sprmove, 2) = (UWORD)posword;
-            W(sprmove, 6) = (UWORD)ctlword;
-            W(sprmove, 14) = (UWORD)data;
-            W(sprmove, 10) = (UWORD)(data >> 16);
-            data += step;
-            sprmove += 16;
-            count = (UWORD)(count - 1);
-        }
-        posword = (UWORD)(posword + CM(cop, sspwid));
-    } while ((WORD)(count = (UWORD)(count - 1)) != -1);
-}
-BLITZ_ALIAS(_displaysprite, _displaysprite_c);
+/* The original's code (assembler: the C stayed 1.56 times slower, it
+   needs the carry of ASL/LSL/LSR for the control bits and the upper
+   words of the registers), with the fix of #414 and the errors in the
+   normal code (#412, by JSR as before).  Offsets of struct bb_coplist:
+   sprites 12, numsprites 54, csprites 92, spri 126, resshift 74, height
+   50, spif 84, ypos 48, sspwid 88; of d: mysprite 22, agamac 26 */
+/* spriteoff (label 20) - the blank sprite into the channels of a sprite above or
+   below the display.  BUG(orig) (#1051): always in the normal sprite moves at
+   chan x 16: a channel of the CustomSprites bank writes behind them, over
+   the BPLCON moves, and the custom channel keeps the sprite (bug-orig
+   test displaylib-spriteoff-custom-bank) */
+static_assert(offsetof(__typeof__(d), mysprite) == 22);
+static_assert(offsetof(__typeof__(d), agamac) == 26);
+BLITZ_ASM_ROUTINE(_displaysprite,
+"   tst.l   (a1)\n"
+"   bne.s   1f\n"
+"   jsr     _nosprierr\n"
+"1: move.w  d4,d5\n"
+"   move.w  54(a3),d6\n"                /* numsprites */
+"   cmp.w   d6,d4\n"                    /* fixed (#414): the custom bank */
+"   bcs.s   2f\n"                       /* only for a first channel in it */
+"   tst.l   92(a3)\n"                   /* csprites */
+"   beq.s   2f\n"
+"   add.w   d6,d6\n"
+"2: add.w   6(a1),d5\n"
+"   cmp.w   d5,d6\n"
+"   bpl.s   3f\n"
+"   jsr     _spriterr\n"
+"3: move.l  d2,d1\n"
+"   move.w  d3,d2\n"
+"   move.w  d4,d3\n"
+"   movem.w 12(a1),d4-d5\n"             /* the handle */
+"   move.w  126(a3),d6\n"               /* spri */
+"   asl.w   #2,d4\n"
+"   asr.w   d6,d4\n"
+"   swap    d1\n"
+"   move.w  74(a3),d6\n"                /* resshift */
+"   rol.l   d6,d1\n"
+"   add.w   #128*4,d1\n"
+"   sub.w   d4,d1\n"
+"   sub.w   d5,d2\n"
+"   move.w  50(a3),d0\n"                /* height */
+"   addq.w  #1,d0\n"
+"   sub.w   d2,d0\n"
+"   ble     20f\n"                      /* off bottom */
+"   moveq   #0,d4\n"
+"   move.w  4(a1),d5\n"
+"   tst.w   d2\n"
+"   bpl.s   4f\n"
+"   add.w   d2,d5\n"
+"   ble     20f\n"                      /* off top */
+"   exg     d2,d4\n"
+"   neg.w   d4\n"
+"   move.w  84(a3),d7\n"                /* spif */
+"   ext.l   d4\n"
+"   asl.l   d7,d4\n"
+"4: cmp.w   d5,d0\n"
+"   bpl.s   5f\n"
+"   move.w  d0,d5\n"
+"5: add.w   48(a3),d2\n"                /* ypos: d2 = start, d5 = height */
+"   moveq   #0,d7\n"                    /* pos/ctrl in d6/d7 */
+"   move.w  d2,d6\n"
+"   asl.w   #8,d6\n"
+"   bcc.s   6f\n"
+"   bset    #2,d7\n"
+"6: tst.w   _d+26\n"                    /* agamac */
+"   bne.s   7f\n"
+"   and.w   #0xfffc,d1\n"
+"7: lsr.w   #1,d1\n"
+"   bcc.s   8f\n"
+"   bset    #3,d7\n"
+"8: lsr.w   #1,d1\n"
+"   bcc.s   9f\n"
+"   bset    #4,d7\n"
+"9: lsr.w   #1,d1\n"
+"   bcc.s   10f\n"
+"   bset    #0,d7\n"
+"10:tst.w   d1\n"
+"   bpl.s   11f\n"
+"   moveq   #0,d1\n"
+"11:cmp.w   #256,d1\n"
+"   bmi.s   12f\n"
+"   move.w  #255,d1\n"
+"12:move.b  d1,d6\n"
+"   add.w   d5,d2\n"                    /* the end line - 1 */
+"   subq.w  #1,d2\n"
+"   lsl.w   #8,d2\n"
+"   bcc.s   13f\n"
+"   bset    #1,d7\n"
+"13:or.w    d2,d7\n"
+"   tst.w   8(a1)\n"
+"   bpl.s   14f\n"
+"   bset    #7,d7\n"
+"14:move.l  12(a3),a0\n"                /* sprites */
+"   cmp.w   54(a3),d3\n"
+"   bcs.s   15f\n"
+"   sub.w   54(a3),d3\n"
+"   move.l  92(a3),a0\n"                /* the CustomSprites bank */
+"15:lsl.w   #4,d3\n"
+"   add.w   d3,a0\n"
+"   move.l  (a1),d0\n"
+"   add.l   d4,d0\n"
+"   move.w  10(a1),d1\n"
+"   ext.l   d1\n"
+"   move.w  6(a1),d2\n"
+"   subq.w  #1,d2\n"
+"16:move.w  d6,2(a0)\n"
+"   move.w  d7,6(a0)\n"
+"   move.w  d0,14(a0)\n"
+"   swap    d0\n"
+"   move.w  d0,10(a0)\n"
+"   swap    d0\n"
+"   add.l   d1,d0\n"
+"   lea     16(a0),a0\n"
+"   tst.w   8(a1)\n"
+"   bpl.s   17f\n"
+"   move.w  d6,2(a0)\n"                 /* attached */
+"   move.w  d7,6(a0)\n"
+"   move.w  d0,14(a0)\n"
+"   swap    d0\n"
+"   move.w  d0,10(a0)\n"
+"   swap    d0\n"
+"   add.l   d1,d0\n"
+"   lea     16(a0),a0\n"
+"   subq.w  #1,d2\n"
+"17:add.w   88(a3),d6\n"                /* sspwid */
+"   dbf     d2,16b\n"
+"   rts\n"
+"20:move.w  6(a1),d2\n"                 /* spriteoff, see above */
+"   subq.w  #1,d2\n"
+"   lsl.w   #4,d3\n"
+"   move.l  12(a3),a0\n"
+"   add.w   d3,a0\n"
+"21:clr.w   2(a0)\n"
+"   clr.w   6(a0)\n"
+"   move.w  _d+22(pc),10(a0)\n"         /* mysprite */
+"   move.w  _d+24(pc),14(a0)\n"
+"   lea     16(a0),a0\n"
+"   tst.w   8(a1)\n"
+"   bpl.s   22f\n"
+"   clr.w   2(a0)\n"
+"   clr.w   6(a0)\n"
+"   move.w  _d+22(pc),10(a0)\n"
+"   move.w  _d+24(pc),14(a0)\n"
+"   lea     16(a0),a0\n"
+"   subq.w  #1,d2\n"
+"22:dbf     d2,21b\n"
+"   rts");
 
 /* ------------------------------------------------ palette routines */
 
@@ -1485,24 +1483,6 @@ static const UBYTE *paldata(const UBYTE *palobj)
  * @param pal     a0: the palette (!libs {#palettelib,$1081})
  * @param palnum  d1: the palette number (not used)
  */
-static void BLITZ_ROUTINE _displaypalette_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1))
-{
-    UBYTE *cop = blitz_string;
-    ULONG *ins;
-    UWORD count;
-
-    pal = paldata(pal);
-    ins = (ULONG *)CM(cop, colors);
-    count = CM(cop, numcols);
-    if (!count) {
-        OVERRUN(cop, ins);
-        return;
-    }
-    if ((WORD)CM(cop, aga) >= 0)
-        simple(cop, pal, ins, count);
-    else
-        complex2(cop, pal, ins, 0x01060000 | CM(cop, bplcon3), count);
-}
 
 /**
  * @brief DisplayPalette CopList#,Palette#,coloroffset: as DisplayPalette,
@@ -1513,26 +1493,6 @@ static void BLITZ_ROUTINE _displaypalette_c(const UBYTE *pal BL_REG(a0), ULONG p
  * @param coloff  d2: the first colour taken from the palette (word
  *                offset of 12 bytes per entry: >= 2731 goes backwards)
  */
-static void BLITZ_ROUTINE _displaypalette2_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1),
-                                             UWORD coloff BL_REG(d2))
-{
-    UBYTE *cop = blitz_string;
-    ULONG *ins;
-    UWORD count;
-
-    pal = paldata(pal);
-    pal += (WORD)(UWORD)mulu16(coloff, 12);
-    ins = (ULONG *)CM(cop, colors);
-    count = CM(cop, numcols);
-    if (!count) {
-        OVERRUN(cop, ins);
-        return;
-    }
-    if ((WORD)CM(cop, aga) >= 0)
-        simple(cop, pal, ins, count);
-    else
-        complex2(cop, pal, ins, 0x01060000 | CM(cop, bplcon3), count);
-}
 
 /**
  * @brief DisplayPalette CopList#,Palette#,coloroffset,bankoffset: as
@@ -1544,30 +1504,125 @@ static void BLITZ_ROUTINE _displaypalette2_c(const UBYTE *pal BL_REG(a0), ULONG 
  * @param coloff   d2: the first colour taken from the palette
  * @param bankoff  d3: added to the bank bits of BPLCON3 (bits 13-15)
  */
-static void BLITZ_ROUTINE _displaypalette3_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1),
-                                             UWORD coloff BL_REG(d2), UWORD bankoff BL_REG(d3))
-{
-    UBYTE *cop = blitz_string;
-    ULONG *ins;
-    UWORD count;
-
-    pal = paldata(pal);
-    pal += (WORD)(UWORD)mulu16(coloff, 12);
-    ins = (ULONG *)CM(cop, colors);
-    count = CM(cop, numcols);
-    if (!count) {
-        OVERRUN(cop, ins);
-        return;
-    }
-    if ((WORD)CM(cop, aga) >= 0)
-        simple(cop, pal, ins, count);
-    else
-        complex2(cop, pal, ins,
-                 0x01060000 | (UWORD)(CM(cop, bplcon3) + (UWORD)(bankoff << 13)), count);
-}
-BLITZ_ALIAS(_displaypalette, _displaypalette_c);
-BLITZ_ALIAS(_displaypalette2, _displaypalette2_c);
-BLITZ_ALIAS(_displaypalette3, _displaypalette3_c);
+/* The three forms of DisplayPalette: the original's code (assembler:
+   the C of the colour loop stayed 1.8 times slower, its word and byte
+   moves into one register are MOVE.b and LSR/ASL.w on the 68000); the
+   errors in the normal code (#412), reached by JSR as from the C of
+   CustomColors.  Offsets of struct bb_coplist: colors 8, numcols 56, aga
+   72, bplcon3 70, dob 32 */
+BLITZ_ASM_BLOCK(displaypalette,
+"   .globl  __displaypalette, __displaypalette2, __displaypalette3\n"
+"__displaypalette3:\n"
+"   move.l  (a0),d0\n"
+"   bne.s   1f\n"
+"   jsr     _nopalerr\n"
+"1: move.l  d0,a0\n"
+"   addq.l  #4,a0\n"
+"   mulu.w  #12,d2\n"                   /* the colour offset */
+"   add.w   d2,a0\n"
+"   move.l  8(a3),a1\n"                 /* colors */
+"   move.w  56(a3),d7\n"                /* numcols */
+"   beq     9f\n"
+"   tst.w   72(a3)\n"                   /* aga */
+"   bpl     10f\n"
+"   asl.w   #8,d3\n"                    /* the bank offset */
+"   asl.w   #5,d3\n"
+"   move.l  #0x1060000,d0\n"
+"   move.w  70(a3),d0\n"                /* bplcon3 */
+"   add.w   d3,d0\n"
+"   bra.s   5f\n"
+"__displaypalette2:\n"
+"   move.l  (a0),d0\n"
+"   bne.s   1f\n"
+"   jsr     _nopalerr\n"
+"1: move.l  d0,a0\n"
+"   addq.l  #4,a0\n"
+"   mulu.w  #12,d2\n"
+"   add.w   d2,a0\n"
+"   bra.s   2f\n"
+"__displaypalette:\n"
+"   move.l  (a0),d0\n"
+"   bne.s   1f\n"
+"   jsr     _nopalerr\n"
+"1: move.l  d0,a0\n"
+"   addq.l  #4,a0\n"
+"2: move.l  8(a3),a1\n"
+"   move.w  56(a3),d7\n"
+"   beq     9f\n"
+"   tst.w   72(a3)\n"
+"   bpl     10f\n"
+"   move.l  #0x1060000,d0\n"            /* complex: AGA */
+"   move.w  70(a3),d0\n"
+"5: moveq   #2,d2\n"                    /* complex2: banks of 32 colours */
+"   swap    d2\n"
+"   moveq   #12,d3\n"
+"   subq.w  #1,d7\n"
+"6: moveq   #31,d6\n"                   /* nxbank */
+"   cmp.w   d6,d7\n"
+"   bpl.s   7f\n"
+"   move.w  d7,d6\n"
+"7: move.l  d0,(a1)+\n"
+"   move.w  d6,d5\n"
+"   move.w  #0x180,d1\n"
+"   swap    d1\n"
+"   move.l  a0,a2\n"
+"8: move.w  (a0),d1\n"                  /* nxcb1: the high nibbles */
+"   lsr.w   #4,d1\n"
+"   move.b  4(a0),d1\n"
+"   asl.w   #4,d1\n"
+"   move.b  8(a0),d1\n"
+"   lsr.w   #4,d1\n"
+"   move.l  d1,(a1)+\n"
+"   add.l   d2,d1\n"
+"   add.w   d3,a0\n"
+"   dbf     d5,8b\n"
+"   bchg    #9,d0\n"
+"   move.l  d0,(a1)+\n"
+"   move.w  d6,d5\n"
+"   move.w  #0x180,d1\n"
+"   swap    d1\n"
+"   move.l  a2,a0\n"
+"11:move.w  (a0),d1\n"                  /* nxcb2: the low nibbles */
+"   move.b  8(a0),d1\n"
+"   and.b   #15,d1\n"
+"   move.b  4(a0),d4\n"
+"   asl.b   #4,d4\n"
+"   or.b    d4,d1\n"
+"   move.l  d1,(a1)+\n"
+"   add.l   d2,d1\n"
+"   add.w   d3,a0\n"
+"   dbf     d5,11b\n"
+"   bchg    #9,d0\n"
+"   add.w   #0x2000,d0\n"
+"   sub.w   #32,d7\n"
+"   bpl     6b\n"
+"9: cmp.l   32(a3),a1\n"                /* dunp: dob */
+"   ble.s   12f\n"
+"   jsr     _overrunerr\n"
+"12:rts\n"
+"10:cmp.w   #32,d7\n"                   /* simple: ECS */
+"   ble.s   13f\n"
+"   jsr     _agapalerr\n"
+"13:move.w  #0x180,d0\n"
+"   swap    d0\n"
+"   moveq   #2,d1\n"
+"   swap    d1\n"
+"   moveq   #12,d2\n"
+"   subq.w  #1,d7\n"
+"14:move.w  (a0),d0\n"                  /* sloop */
+"   lsr.w   #4,d0\n"
+"   move.b  4(a0),d0\n"
+"   asl.w   #4,d0\n"
+"   move.b  8(a0),d0\n"
+"   lsr.w   #4,d0\n"
+"   move.l  d0,(a1)+\n"
+"   add.l   d1,d0\n"
+"   add.w   d2,a0\n"
+"   dbf     d7,14b\n"
+"   cmp.l   32(a3),a1\n"
+"   ble.s   15f\n"
+"   jsr     _overrunerr\n"
+"15:rts");
 
 /* CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols */
 static void customcols(UWORD ccoffset, UWORD ypos, const UBYTE *pal, UWORD startcol, UWORD numcols)
