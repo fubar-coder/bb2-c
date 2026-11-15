@@ -2046,7 +2046,7 @@ BLITZ_ASM_BLOCK(ploop,
 "   bcc.s   4f\n"
 "   addq.w  #2,d1\n"
 "4: move.w  d0,d6\n"
-"   cmp.w   _pq+8,d6\n"
+"   cmp.w   _pq+8(pc),d6\n"
 "   bgt     20f\n"
 "   swap    d6\n"                       /* the start word in the upper word */
 "   move.w  d0,d6\n"
@@ -2054,19 +2054,19 @@ BLITZ_ASM_BLOCK(ploop,
 "   moveq   #0,d6\n"
 "5: tst.w   d1\n"
 "   bmi     20f\n"
-"   move.w  _pq+8,d7\n"
+"   move.w  _pq+8(pc),d7\n"
 "   cmp.w   d1,d7\n"
 "   bmi.s   6f\n"
 "   move.w  d1,d7\n"
 "6: btst    #6,2(a4)\n"
 "7: btst    #6,2(a4)\n"
 "   bne.s   7b\n"
-"   lea     _lup1,a2\n"
+"   lea     _lup1(pc),a2\n"
 "   and.w   #30,d6\n"
 "   move.w  0(a2,d6.w),0x44(a4)\n"
 "   move.w  d7,d6\n"
 "   and.w   #30,d6\n"
-"   lea     _lup2,a2\n"
+"   lea     _lup2(pc),a2\n"
 "   move.w  0(a2,d6.w),0x46(a4)\n"
 "   swap    d6\n"
 "   lsr.w   #5,d6\n"
@@ -2075,7 +2075,7 @@ BLITZ_ASM_BLOCK(ploop,
 "   bmi     20f\n"
 "   add.w   #65,d7\n"
 "   add.w   d6,d6\n"
-"   move.l  _pq,a2\n"                   /* bmoff */
+"   move.l  _pq(pc),a2\n"               /* bmoff */
 "   add.w   d6,a2\n"
 "   moveq   #0,d6\n"
 "   lea     8(a6),a5\n"
@@ -2083,7 +2083,7 @@ BLITZ_ASM_BLOCK(ploop,
 "9: btst    #6,2(a4)\n"
 "   bne.s   9b\n"
 "   move.w  #0x3fa,0x40(a4)\n"
-"   btst    d6,_pq+11\n"                /* the colour bit (byte) */
+"   btst    d6,_pq+11(pc)\n"            /* the colour bit (byte) */
 "   bne.s   10f\n"
 "   move.w  #0x30a,0x40(a4)\n"
 "10:move.l  (a5)+,a3\n"
@@ -2094,7 +2094,7 @@ BLITZ_ASM_BLOCK(ploop,
 "   addq.w  #1,d6\n"
 "   cmp.w   4(a6),d6\n"
 "   bne.s   8b\n"
-"   move.l  _pq+4,d7\n"                 /* the next line */
+"   move.l  _pq+4(pc),d7\n"             /* the next line */
 "   add.l   d7,_pq\n"
 "   add.l   d4,d0\n"
 "   bcc.s   11f\n"
