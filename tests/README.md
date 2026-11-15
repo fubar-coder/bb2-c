@@ -294,8 +294,8 @@ the set: `obj` is the C build of this repository, `orig` the original
 (acidlibs from `BLITZ2/ACIDLIBS` of the CD, RWE libraries from the
 reference build of their sources). A program cannot see both sets, so
 it cannot compare the C build with itself. Selection: the snitch filters
-`[sys]`, `[mathstr]`, `[runtime]`, `[system]`, `[cmd]`, `[blit]`, `[med]`,
-`[libtest]`, `[rwe]`, `"libtest ldivlib"`, `"rwe riarrayslib"`, passed as
+`[sys]`, `[mathstr]`, `[runtime]`, `[system]`, `[cmd]`, `[blit]`, `[gfx]`,
+`[med]`, `[libtest]`, `[rwe]`, `"libtest ldivlib"`, `"rwe riarrayslib"`, passed as
 `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake` or, for
 the targets below, as `LIBS_CAPTURE_FILTER`.
 

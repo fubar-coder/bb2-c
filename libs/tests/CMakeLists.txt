@@ -27,7 +27,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/Snitch.cmake)
 target_compile_options(snitch PRIVATE -fno-exceptions -fno-rtti)
 
 set(c_tests libtest systest systest_mathstr systest_runtime systest_system systest_cmdlibs
-	systest_blit
+	systest_blit systest_gfx
 	systest_med)
 list(TRANSFORM c_tests APPEND .c OUTPUT_VARIABLE c_sources)
 # the tests of the RWE userlibs: rwe/NAME.c (main renamed rwe_NAME_main;
