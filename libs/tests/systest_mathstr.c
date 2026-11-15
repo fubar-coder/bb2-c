@@ -313,6 +313,32 @@ static void test_modlib(void)
     }
 }
 
+/* ------------------------------------------------------------- ldivlib */
+
+/* quickdiv and longdiv with the kept registers: one call per path (DIVU
+   for a divisor below $10000, Quick DIVU by the integer part, Quick
+   below 1.0, the loop, a divisor 0); their results are libtest's */
+static void test_ldivlib(void)
+{
+    static const ULONG pairs[][2] = {
+        { 123456, 789 }, { 0xfff0bdc0, 0xffff }, { 0x000c8000, 0x00030000 },
+        { 0x000c8000, 0x0000c000 }, { 0x000c8000, 0x00034000 },
+        { 0x7fffffff, 0x10001 }, { 0x80000000, 0x80000000 }, { 5, 0 },
+    };
+    static const char *names[] = { "quickdiv", "longdiv" };
+    unsigned i;
+    int e;
+
+    for (e = 0; e < 2; e++) {
+        ROUT = names[e];
+        for (i = 0; i < sizeof pairs / sizeof pairs[0]; i++) {
+            sprintf(VEC, "$%08lX,$%08lX", pairs[i][0], pairs[i][1]);
+            DO1(E("ldivlib", e), R.d[0] = pairs[i][0]; R.d[1] = pairs[i][1]);
+            OBS("d0", R.d[0]);
+        }
+    }
+}
+
 /* ------------------------------------------------------- floatquicklib */
 
 static void test_floatquick(void)
@@ -575,6 +601,10 @@ int main(int argc, char **argv)
     KEEPS("domodquick", d2-d7|a0-a3|a6);
     KEEPS("domodlong", d2-d7|a0-a3|a6);
     KEEPS("domodfloat", d2-d7|a0-a3|a6);
+    /* third party: RWEMathLib calls quickdiv with d7 live; the compiler
+       keeps intermediates in d2-d7 across an operator */
+    KEEPS("quickdiv", d2-d7|a0-a3|a6);
+    KEEPS("longdiv", d2-d7|a0-a3|a6);
     KEEPS("quicktofloat", d2-d7|a0-a3|a6);
     KEEPS("floattoquick", d2-d7|a0-a3|a6);
     KEEPS("strcomp2", d2-d7|a2|a3|a6);
@@ -591,6 +621,7 @@ int main(int argc, char **argv)
 
     test_ffplib_init();
     test_modlib();
+    test_ldivlib();
     test_floatquick();
     test_strcomp();
 
