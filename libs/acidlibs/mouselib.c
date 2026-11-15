@@ -34,7 +34,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void dopointer(void), dopointer2(void), domousearea(void), domousex(void);
 void domousey(void), domousexs(void), domouseys(void), doposmouse(void);
 void mouselib_codeinit(void), mouselib_sspchk(void);
@@ -138,7 +138,7 @@ static void BLITZ_ROUTINE doposmouse_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
     mx = x;
     my = y;
 }
-BLITZ_THUNK(doposmouse, doposmouse_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doposmouse, doposmouse_c);
 
 /* MouseX ... - Quick: MOVE w,d0:SWAP d0:CLR d0.  Blitz mode only. */
 
@@ -156,10 +156,10 @@ static ULONG BLITZ_ROUTINE domousexs_c(void) { return (ULONG)(UWORD)xs << 16; }
     difference of the last vertical blank (Blitz mode only).
     @return d0: the speed as a Quick (the value in the upper word). */
 static ULONG BLITZ_ROUTINE domouseys_c(void) { return (ULONG)(UWORD)ys << 16; }
-BLITZ_THUNK(domousex, domousex_c, "d1/a0-a1");
-BLITZ_THUNK(domousey, domousey_c, "d1/a0-a1");
-BLITZ_THUNK(domousexs, domousexs_c, "d1/a0-a1");
-BLITZ_THUNK(domouseys, domouseys_c, "d1/a0-a1");
+BLITZ_ALIAS(domousex, domousex_c);
+BLITZ_ALIAS(domousey, domousey_c);
+BLITZ_ALIAS(domousexs, domousexs_c);
+BLITZ_ALIAS(domouseys, domouseys_c);
 
 /**
  * @brief Library init - keep a5 and the offset of the used slice; mouse
@@ -204,7 +204,7 @@ static void BLITZ_ROUTINE dopointer_c(UWORD off BL_REG(d0), WORD chan BL_REG(d1)
     snum = off >> 4;                    /* LSR #4,d0 */
     cnum = chan;
 }
-BLITZ_THUNK(dopointer, dopointer_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dopointer, dopointer_c);
 
 /** @brief Pointer (no arguments) - no mouse sprite any more (Blitz mode
     only). */
@@ -212,7 +212,7 @@ static void BLITZ_ROUTINE dopointer2_c(void)
 {
     snum = -1;
 }
-BLITZ_THUNK(dopointer2, dopointer2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dopointer2, dopointer2_c);
 
 /**
  * @brief MouseArea Minx,Miny,Maxx,Maxy - the area the mouse position is
@@ -233,7 +233,7 @@ static void BLITZ_ROUTINE domousearea_c(WORD left BL_REG(d0), WORD top BL_REG(d1
     maxx = right;
     maxy = bottom;
 }
-BLITZ_THUNK(domousearea, domousearea_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domousearea, domousearea_c);
 
 /**
  * @brief Mouse On|Off - read the mouse in the vertical blank interrupt

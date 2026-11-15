@@ -27,8 +27,9 @@
  * Not a bug (no observable effect): ison is toggled with NOT (On: $FFFF;
  * only tested for 0); the -8 entry of the input handler (string output) is
  * no BRA (an input handler is never called there); RawStatus,
- * BlitzQualifier: word results, the upper word of d0 is the caller's
- * (thunks; the compiler uses only d0.w); BlitzKey writes the read index of
+ * BlitzQualifier: word results, the upper word of d0 is the caller's in
+ * the original (RawStatus: a thunk; BlitzQualifier: undefined, the
+ * register rule; the compiler uses only d0.w); BlitzKey writes the read index of
  * keyboard.device for every entry it passes, also key up codes (needed to
  * get past them).
  * Registers: BlitzKey keeps d1/a0-a1 (MOVEM in the original, here the
@@ -105,8 +106,9 @@ static WORD matoff;
 /**
  * @brief BlitzQualifier: the qualifier of the last key BlitzKey read.
  *
- * MOVE bqual(pc),d0: a word function, the upper word of d0 is the
- * caller's (thunk; the compiler uses only d0.w).
+ * MOVE bqual(pc),d0: a word function; the upper word of d0 is the
+ * caller's in the original and undefined here (the register rule; the
+ * compiler uses only d0.w).
  *
  * @return d0.w: the qualifier word of the key event
  */
@@ -114,7 +116,7 @@ static UWORD BLITZ_ROUTINE doblitzqualifier_c(void)
 {
     return bqual;
 }
-BLITZ_THUNK_POST(doblitzqualifier, doblitzqualifier_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_ALIAS(doblitzqualifier, doblitzqualifier_c);
 
 /**
  * @brief The init routine: remember keyboard.device and its key matrix.

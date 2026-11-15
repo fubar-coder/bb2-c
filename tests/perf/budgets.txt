@@ -59,8 +59,8 @@ bgfx.cls                84610~1080    84709.9  Cls
 bgfx.poly3                10105~10     7524.9  Poly 3,&pts(0),1
 bgfx.polyf3               87155~10    46969.8  Polyf 3,&pts(0),1
 bgfx.scroll32               9474~4     8075.9  Scroll 0,0,32,32,100,100
-bgfx.locate                   252      128.3  Locate 0,0
-bgfx.colour                   192       62.3  Colour 1
+bgfx.locate                   145      128.3  Locate 0,0
+bgfx.colour                    67       62.3  Colour 1
 bgfx.print5               28522~12    13097.9  Locate 0,0 : Print "SCORE"
 bgfx.printnum              35688~4    17797.8  Locate 0,0 : Print a
 bgfx.show                    1294      589.4  Show 0
@@ -70,15 +70,15 @@ bgfx.green                   361~3      167.3  c=Green(1)
 bgfx.usebitmap                 74       69.3  Use BitMap 0
 bgfx.useslice                  74       69.3  Use Slice 0
 binput.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
-binput.joyx                   381      173.7  c=Joyx(1)
-binput.joyy                   390      186.7  c=Joyy(1)
-binput.joyb                   311      179.2  c=Joyb(1)
-binput.joyr                   652      376.7  c=Joyr(1)
+binput.joyx                   292      173.7  c=Joyx(1)
+binput.joyy                   301      186.7  c=Joyy(1)
+binput.joyb                   200      179.2  c=Joyb(1)
+binput.joyr                   562      376.7  c=Joyr(1)
 binput.rawstatus              356      145.7  c=RawStatus($45)
 binput.inkey                 1508      601.7  r$=Inkey$
-binput.mousex                 206       87.2  c=MouseX
-binput.mousey                 208       86.7  c=MouseY
-binput.mousexspeed            208       87.2  c=MouseXSpeed
+binput.mousex                 101       87.2  c=MouseX
+binput.mousey                 100       86.7  c=MouseY
+binput.mousexspeed            101       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
 binput.volume                 566      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1

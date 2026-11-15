@@ -28,13 +28,15 @@
  *     bit cleared is the right one, d3 = 6). (#415)
  *   - Not a bug (word function, the compiler uses the low word only): Joyr:
  *     the upper word of d0 is the one of Joyy's MOVEQ (-1 -> $FFFF).
- * Registers: the thunks keep what the original keeps (Joyx/Joyy/Joyr
- * change d0-d1 (Joyy d2, Joyr d2-d3), Joyb only d0; Gameb changes
- * d0-d4/a0-a1 in the original, GCC keeps d2-d4).
+ * Registers: the entries are the C functions (BLITZ_ALIAS) and keep
+ * what the register rule needs (docs/libs/deviations.md, "Register
+ * preservation"; the original's Joyx/Joyy/Joyr change d0-d1 (Joyy d2,
+ * Joyr d2-d3), Joyb only d0; Gameb changes d0-d4/a0-a1, GCC keeps
+ * d2-d4).
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void _joyx(void), _joyy(void), _joyr(void), _joyb(void), _joychk(void);
 ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0));
 
@@ -189,10 +191,10 @@ static ULONG BLITZ_ROUTINE _joyb_c(UWORD port BL_REG(d0))
     return buttons;
 }
 
-BLITZ_THUNK(_joyx, _joyx_c, "a0-a1");
-BLITZ_THUNK(_joyy, _joyy_c, "a0-a1");
-BLITZ_THUNK(_joyr, _joyr_c, "a0-a1");
-BLITZ_THUNK(_joyb, _joyb_c, "d1/a0-a1");
+BLITZ_ALIAS(_joyx, _joyx_c);
+BLITZ_ALIAS(_joyy, _joyy_c);
+BLITZ_ALIAS(_joyr, _joyr_c);
+BLITZ_ALIAS(_joyb, _joyb_c);
 
 /**
  * @brief Gameb(Port): the buttons of a CD32 pad.

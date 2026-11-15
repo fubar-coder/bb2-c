@@ -45,7 +45,7 @@
 
 /* intlib vwait (Blitz mode): d0 = frames */
 
-/* entry points (thunks / C, defined below) */
+/* entry points (aliases / thunks / C, defined below) */
 void fadechk0(void), fadechk(void), dosetfade(void), dofadestatus(void);
 void fadelib_codeinit(void);
 void BLITZ_ROUTINE dofadein2(const struct bb_palette *pal BL_REG(a0),
@@ -150,7 +150,7 @@ static void BLITZ_ROUTINE dosetfade_c(UWORD type BL_REG(d0))
 {
     F.fadetype = type;
 }
-BLITZ_THUNK(dosetfade, dosetfade_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetfade, dosetfade_c);
 
 /**
  * @brief FadeStatus: the steps of the fade still to do.
@@ -163,7 +163,7 @@ static UWORD BLITZ_ROUTINE dofadestatus_c(void)
 {
     return F.fadenum;
 }
-BLITZ_THUNK_POST(dofadestatus, dofadestatus_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_ALIAS(dofadestatus, dofadestatus_c);
 
 /**
  * @brief DoFade: one step of the fade.

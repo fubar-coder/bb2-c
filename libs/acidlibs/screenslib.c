@@ -89,7 +89,7 @@
 
 #define BLTZ            0x624c745aUL                  /* "bLtZ" */
 
-/* entry points (thunks / inline code, defined below) */
+/* entry points (aliases / thunks / inline code, defined below) */
 void dosmousex(void), dosmousey(void), doshowscreen(void), doscreenpens2(void);
 void doscreenpens(void), dosviewport(void), freescreen(void);
 void dohidescreen(void), dobeepscreen(void), domovescreen(void);
@@ -369,7 +369,7 @@ static void BLITZ_ROUTINE doscreenpens2_c(UWORD on BL_REG(d0))
 {
     sd.defstype = on ? 0x1000 : 0;
 }
-BLITZ_THUNK(doscreenpens2, doscreenpens2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doscreenpens2, doscreenpens2_c);
 
 /**
  * @brief ScreenPens Text,Shine,Shadow,Fill,FillText,Background,HighLight -
@@ -401,7 +401,7 @@ static void BLITZ_ROUTINE doscreenpens_c(UWORD p0 BL_REG(d0), UWORD p1 BL_REG(d1
     sd.pens[7] = p5;
     sd.pens[8] = BL_POPW(sp);
 }
-BLITZ_THUNK(doscreenpens, doscreenpens_c, "d0-d1/a1");
+BLITZ_ALIAS(doscreenpens, doscreenpens_c);
 
 /* ------------------------------------------------------- inline routines */
 

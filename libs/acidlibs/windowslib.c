@@ -191,7 +191,7 @@ static_assert(sizeof(struct evnode) == 24);
 /* the shape and the IntuiFont (intuifontlib, +8 the opened font) objects:
    struct bb_shape, struct bb_intuifont (blitzobj.h) */
 
-/* entry points (thunks / C / asm, defined below) */
+/* entry points (aliases / thunks / C / asm, defined below) */
 void dogadgethit(void), doeventwindow(void), dowindowidcmp(void);
 void domenuhit(void), doitemhit(void), dosubhit(void), dowlocate(void);
 void doinwindow(void), dooutwindow(void), doqual(void), dorawkey(void);
@@ -770,9 +770,11 @@ static const char mess7[] = "Invalid Output Window";
 
 #define THISPROC ((struct Process *)SysBase->ThisTask)
 
-/* word functions: MOVE.w x,d0 - the upper word of d0 stays */
-#define WORD_FN(entry, cfunc) \
-    BLITZ_THUNK_POST(entry, cfunc, "d0-d1/a0-a1", "move.w d0,2(sp)")
+/* word functions: MOVE.w x,d0 in the original, which keeps the upper
+   word of d0; here the entry is the C function and the upper word is
+   undefined (the register rule, docs/libs/deviations.md "Register
+   preservation"; the compiler uses only d0.w) */
+#define WORD_FN(entry, cfunc) BLITZ_ALIAS(entry, cfunc)
 
 /* memlib / maxslib */
 static APTR globalloc(ULONG size, ULONG flags)
@@ -829,7 +831,7 @@ static void BLITZ_ROUTINE dosetevfilter_c(ULONG pre BL_REG(d0), ULONG post BL_RE
     prefilter = pre;
     postfilter = post;
 }
-BLITZ_THUNK(dosetevfilter, dosetevfilter_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetevfilter, dosetevfilter_c);
 
 /**
  * @brief RastPort(Window#) - the RastPort of a window (inline).
@@ -857,7 +859,7 @@ static void BLITZ_ROUTINE docatchdoserrs_c(struct bwin *w BL_REG(a1))
 {
     THISPROC->pr_WindowPtr = w->win;
 }
-BLITZ_THUNK(docatchdoserrs, docatchdoserrs_c, "d0-d1/a1");
+BLITZ_ALIAS(docatchdoserrs, docatchdoserrs_c);
 
 /**
  * @brief AddIDCMP IDCMP_Flags - add flags to the IDCMP of the next windows.
@@ -867,7 +869,7 @@ static void BLITZ_ROUTINE doaddidcmp_c(ULONG f BL_REG(d0))
 {
     V.idcmp |= f;
 }
-BLITZ_THUNK(doaddidcmp, doaddidcmp_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doaddidcmp, doaddidcmp_c);
 
 /**
  * @brief SubIDCMP IDCMP_Flags - remove flags from the IDCMP of the next windows.
@@ -882,7 +884,7 @@ static ULONG BLITZ_ROUTINE dosubidcmp_c(ULONG f BL_REG(d0))
     V.idcmp &= ~f;
     return ~f;
 }
-BLITZ_THUNK(dosubidcmp, dosubidcmp_c, "d1/a0-a1");
+BLITZ_ALIAS(dosubidcmp, dosubidcmp_c);
 
 /**
  * @brief DefaultIDCMP IDCMP_Flags - the IDCMP of the windows opened next.
@@ -895,7 +897,7 @@ static void BLITZ_ROUTINE dowindowidcmp_c(ULONG f BL_REG(d0))
 {
     V.idcmp = f;
 }
-BLITZ_THUNK(dowindowidcmp, dowindowidcmp_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dowindowidcmp, dowindowidcmp_c);
 
 /**
  * @brief SizeLimits Min Width,Min Height,Max Width,Max Height - the size
@@ -913,7 +915,7 @@ static void BLITZ_ROUTINE doslimits_c(WORD a BL_REG(d0), WORD b BL_REG(d1), WORD
     sizelimits.maxw = c;
     sizelimits.maxh = d;
 }
-BLITZ_THUNK(doslimits, doslimits_c, "d0-d1/a1");
+BLITZ_ALIAS(doslimits, doslimits_c);
 
 /**
  * @brief SizeLimits Flag (the one argument form) - whether the next
@@ -927,7 +929,7 @@ static void BLITZ_ROUTINE doslimits2_c(WORD on BL_REG(d0))
 {
     sizelimitsok = on;
 }
-BLITZ_THUNK(doslimits2, doslimits2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doslimits2, doslimits2_c);
 
 /**
  * @brief WTopOff - the height of the used window's top border.
@@ -943,7 +945,7 @@ static ULONG BLITZ_ROUTINE dowtopoff_c(struct bwin *w BL_REG(a1))
 {
     return (UBYTE)w->win->BorderTop;
 }
-BLITZ_THUNK(dowtopoff, dowtopoff_c, "d1/a1");
+BLITZ_ALIAS(dowtopoff, dowtopoff_c);
 
 /**
  * @brief WLeftOff - the width of the used window's left border.
@@ -959,12 +961,12 @@ static ULONG BLITZ_ROUTINE dowleftoff_c(struct bwin *w BL_REG(a1))
 {
     return (UBYTE)w->win->BorderLeft;
 }
-BLITZ_THUNK(dowleftoff, dowleftoff_c, "d1/a1");
+BLITZ_ALIAS(dowleftoff, dowleftoff_c);
 
 /**
  * @brief WindowWidth - the width of the used window.
  *
- * Word functions (WORD_FN): MOVE.w into d0, the upper word stays.
+ * Word functions (WORD_FN): MOVE.w into d0 in the original.
  * Errors (debugger only, wchk): "Uninitialized Window".
  *
  * @param w a1: the used window object
@@ -1042,7 +1044,7 @@ static void BLITZ_ROUTINE dosetpens2_c(UWORD f BL_REG(d0), UWORD b BL_REG(d1))
     V.bpen = b;
     V.fpen = f;
 }
-BLITZ_THUNK(dosetpens2, dosetpens2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetpens2, dosetpens2_c);
 
 /**
  * @brief WColour Foreground Colour - the foreground pen of the window output.
@@ -1052,7 +1054,7 @@ static void BLITZ_ROUTINE dosetpens_c(UWORD f BL_REG(d0))
 {
     V.fpen = f;
 }
-BLITZ_THUNK(dosetpens, dosetpens_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetpens, dosetpens_c);
 
 /**
  * @brief WJam Jammode - the drawing mode of the window output and drawing.
@@ -1062,7 +1064,7 @@ static void BLITZ_ROUTINE dosetjam_c(UWORD j BL_REG(d0))
 {
     V.tjam = j;
 }
-BLITZ_THUNK(dosetjam, dosetjam_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosetjam, dosetjam_c);
 
 /* WindowX/WindowY: the window position, + border for GIMMEZEROZERO;
    WMouseX/WMouseY: the mouse in the window, - border for GZZ */
@@ -1147,8 +1149,7 @@ static UWORD BLITZ_ROUTINE dowmousey_c(struct bwin *w BL_REG(a1))
 }
 WORD_FN(dowmousey, dowmousey_c);
 
-/* the editor's variables; word functions (WORD_FN): MOVE.w into d0, the
-   upper word stays */
+/* the editor's variables; word functions (WORD_FN) */
 
 /** @brief Editat - where the last Edit$ in a window ended (cursor position).
     @return d0: the position (low word) */
@@ -1168,7 +1169,7 @@ static ULONG BLITZ_ROUTINE doqual_c(void)     { return V.kqualifier & 255; }
 WORD_FN(doeditat, doeditat_c);
 WORD_FN(doeditexit, doeditexit_c);
 WORD_FN(dorawkey, dorawkey_c);
-BLITZ_THUNK(doqual, doqual_c, "d1/a0-a1");     /* fixed, #313: a #long function */
+BLITZ_ALIAS(doqual, doqual_c);     /* fixed, #313: a #long function */
 
 /**
  * @brief EditFrom - the next Edit$ in a window starts at position 0 and
@@ -1179,7 +1180,7 @@ static void BLITZ_ROUTINE doeditfrom_c(void)
     V.emode = 0;
     V.efrom = 0;
 }
-BLITZ_THUNK(doeditfrom, doeditfrom_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doeditfrom, doeditfrom_c);
 
 /**
  * @brief EditFrom Characterpos - the next Edit$ in a window starts at that
@@ -1191,7 +1192,7 @@ static void BLITZ_ROUTINE doeditfrom2_c(UWORD at BL_REG(d0))
     V.emode = -1;
     V.efrom = at;
 }
-BLITZ_THUNK(doeditfrom2, doeditfrom2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doeditfrom2, doeditfrom2_c);
 
 /**
  * @brief Cursor Thickness - the cursor of Edit$ in a window.
@@ -1201,7 +1202,7 @@ static void BLITZ_ROUTINE docursor_c(WORD u BL_REG(d0))
 {
     V.underline = u;
 }
-BLITZ_THUNK(docursor, docursor_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(docursor, docursor_c);
 
 /* the event data (word functions, see above) */
 
@@ -1229,13 +1230,13 @@ static UWORD BLITZ_ROUTINE doeventcode_c(void)      { return V.evcode; }
 /** @brief EventQualifier - the qualifier of the last event.
     @return d0: the qualifier (low word) */
 static UWORD BLITZ_ROUTINE doeventqualifier_c(void) { return V.evqualifier; }
-WORD_FN(doemousex, doemousex_c);
-WORD_FN(doemousey, doemousey_c);
+BLITZ_THUNK_POST(doemousex, doemousex_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_THUNK_POST(doemousey, doemousey_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 WORD_FN(dogadgethit, dogadgethit_c);
 WORD_FN(domenuhit, domenuhit_c);
 WORD_FN(doitemhit, doitemhit_c);
 WORD_FN(dosubhit, dosubhit_c);
-WORD_FN(doeventcode, doeventcode_c);
+BLITZ_THUNK_POST(doeventcode, doeventcode_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 WORD_FN(doeventqualifier, doeventqualifier_c);
 
 /**
@@ -1304,7 +1305,7 @@ static void BLITZ_ROUTINE dowlocate_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
     w->cx = x + WUD(w->win)->orgx;
     w->cy = y + WUD(w->win)->orgy;
 }
-BLITZ_THUNK(dowlocate, dowlocate_c, "a1");
+BLITZ_ALIAS(dowlocate, dowlocate_c);
 
 /* setpcursor - move the rastport to the print position, set the pens;
    returns the rastport */
@@ -1529,7 +1530,7 @@ static void BLITZ_ROUTINE doflushevents_c(void)
     V.outkey = 0;
     V.outmouse = 0;
 }
-BLITZ_THUNK(doflushevents, doflushevents_c, "a0");
+BLITZ_ALIAS(doflushevents, doflushevents_c);
 
 /**
  * @brief FlushEvents IDCMP_Flag - drop all events of one class.
@@ -2255,7 +2256,7 @@ static void BLITZ_ROUTINE doinwindow_c(void)
     V.inwindow = (struct bwin *)blitz_string;
     BLITZ_ALIBJSR(TOK_setin, r);
 }
-BLITZ_THUNK(doinwindow, doinwindow_c, "d1/a1");
+BLITZ_ALIAS(doinwindow, doinwindow_c);
 
 /**
  * @brief WindowOutput Window# - Print/NPrint write to a window.
@@ -2272,7 +2273,7 @@ static void BLITZ_ROUTINE dooutwindow_c(void)
     V.prwindow = (struct bwin *)blitz_string;
     BLITZ_ALIBJSR(TOK_setout, r);
 }
-BLITZ_THUNK(dooutwindow, dooutwindow_c, "d1/a1");
+BLITZ_ALIAS(dooutwindow, dooutwindow_c);
 
 static void dousewindow2(void)
 {

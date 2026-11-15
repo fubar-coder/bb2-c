@@ -27,8 +27,9 @@
  *  - Not a bug: DecodeILBM (memory): the end test is `end <= pointer`
  *    after skipping a chunk.  Uncompressed rows are copied as words.
  *  - Not a bug (word functions, the compiler uses only d0.w):
- *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
- *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
+ *    ILBMWidth/Height/Depth load only the low word of d0 (here the
+ *    upper word is undefined, the register rule); ILBMViewMode is a long
+ *    (MOVEQ #0 first).
  *
  * Fixed (intended deviation, #186): ILBMInfo calls iffclose also when the
  * file could not be opened; iffclose (iffiolib) now closes only an open
@@ -76,7 +77,7 @@
 #include <graphics/gfx.h>
 #include <datatypes/pictureclass.h>    /* struct BitMapHeader */
 
-/* entry points (thunks / C, defined below) */
+/* entry points (aliases / thunks / C, defined below) */
 void ilbminit(void), ilbmgetbyte(void), ilbmbitmap(void), doilbminfo(void);
 void doilbmwidth(void), doilbmheight(void), doilbmdepth(void);
 void doilbmviewmode(void);
@@ -367,7 +368,7 @@ static BB_BOOL BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
     IFFJSR(TOK_iffclose, &value, &iffstuff);            /* close ? */
     return r;
 }
-BLITZ_THUNK(doilbminfo, doilbminfo_c, "d1/a0-a1");
+BLITZ_ALIAS(doilbminfo, doilbminfo_c);
 
 /**
  * @brief ILBMWidth: the width in pixels of the last ILBMInfo (ilbminit).
@@ -386,10 +387,10 @@ static UWORD BLITZ_ROUTINE ilbmheight_c(void) { return iffstuff.height; }
  */
 static UWORD BLITZ_ROUTINE ilbmdepth_c(void) { return iffstuff.planes; }
 
-/* MOVE x(pc),d0: the upper word of d0 stays */
-BLITZ_THUNK_POST(doilbmwidth, ilbmwidth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doilbmheight, ilbmheight_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
-BLITZ_THUNK_POST(doilbmdepth, ilbmdepth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+/* MOVE x(pc),d0 in the original: the upper word of d0 is undefined */
+BLITZ_ALIAS(doilbmwidth, ilbmwidth_c);
+BLITZ_ALIAS(doilbmheight, ilbmheight_c);
+BLITZ_ALIAS(doilbmdepth, ilbmdepth_c);
 
 /**
  * @brief ILBMViewMode: the view mode of the last ILBMInfo (ilbminit):
@@ -400,7 +401,7 @@ static ULONG BLITZ_ROUTINE ilbmviewmode_c(void)
 {
     return ilbmvmode;                                   /* MOVEQ #0:MOVE */
 }
-BLITZ_THUNK(doilbmviewmode, ilbmviewmode_c, "d1/a0-a1");
+BLITZ_ALIAS(doilbmviewmode, ilbmviewmode_c);
 
 /* ------------------------------------------------------------ DecodeILBM */
 
@@ -561,4 +562,4 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
         }
     }
 }
-BLITZ_THUNK(_decodeilbm, decodeilbm_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_decodeilbm, decodeilbm_c);

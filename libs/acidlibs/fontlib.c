@@ -67,7 +67,7 @@
 #define LVO_OpenDiskFont (-30)  /* diskfont: a0 = TextAttr */
 #define LVO_CloseFont    (-78)  /* graphics: a1 = font */
 
-/* entry points (thunks / C routines, defined below) */
+/* entry points (aliases / thunks / C routines, defined below) */
 void dobitmapoutput(void), dobitmapinput(void), docolour(void);
 void docolour2(void), dolocate(void), docursx(void), docursy(void);
 void fontlib_codeinit(void), dousefont(void), dofreefont(void), bitout2(void);
@@ -277,7 +277,7 @@ static void BLITZ_ROUTINE docolour_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
     pback = bg;
     pcolour = fg;
 }
-BLITZ_THUNK(docolour, docolour_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(docolour, docolour_c);
 
 /**
  * @brief Colour Foreground Colour: the foreground colour only.
@@ -288,7 +288,7 @@ static void BLITZ_ROUTINE docolour2_c(UBYTE fg BL_REG(d0))
 {
     pcolour = fg;
 }
-BLITZ_THUNK(docolour2, docolour2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(docolour2, docolour2_c);
 
 /**
  * @brief Locate X,Y: the cursor of the bitmap output, in characters.
@@ -306,7 +306,7 @@ static void BLITZ_ROUTINE dolocate_c(UWORD x BL_REG(d0), ULONG y BL_REG(d1))
     bitmapout->cursx = x << 3;
     bitmapout->cursy = (y << 3) >> 16;
 }
-BLITZ_THUNK(dolocate, dolocate_c, "d1/a0-a1");
+BLITZ_ALIAS(dolocate, dolocate_c);
 
 /**
  * @brief CursX: the cursor column of the bitmap output.
@@ -320,7 +320,7 @@ static ULONG BLITZ_ROUTINE docursx_c(void)
 {
     return ((ULONG)bitmapout->cursx << 16) >> 3;
 }
-BLITZ_THUNK(docursx, docursx_c, "d1/a0-a1");
+BLITZ_ALIAS(docursx, docursx_c);
 
 /**
  * @brief CursY: the cursor line of the bitmap output.
@@ -334,7 +334,7 @@ static ULONG BLITZ_ROUTINE docursy_c(void)
 {
     return ((ULONG)bitmapout->cursy << 16) >> 3;
 }
-BLITZ_THUNK(docursy, docursy_c, "d1/a0-a1");
+BLITZ_ALIAS(docursy, docursy_c);
 
 /* ------------------------------------------------------------- drawing */
 
@@ -519,7 +519,7 @@ static void BLITZ_ROUTINE dobitmapoutput_c(struct bb_bitmap *bm BL_REG(a0))
     r.a0 = (ULONG)bitout;
     BLITZ_ALIBJSR(TOK_setout, r);
 }
-BLITZ_THUNK(dobitmapoutput, dobitmapoutput_c, "d1/a0-a1");
+BLITZ_ALIAS(dobitmapoutput, dobitmapoutput_c);
 
 /* --------------------------------------------------------- BitMapInput */
 
@@ -644,7 +644,7 @@ static void BLITZ_ROUTINE dobitmapinput_c(void)
     r.a0 = (ULONG)doinput1;
     fontlib_oldin = (void *)BLITZ_ALIBJSR(TOK_setin, r);
 }
-BLITZ_THUNK(dobitmapinput, dobitmapinput_c, "d1/a0-a1");
+BLITZ_ALIAS(dobitmapinput, dobitmapinput_c);
 
 /* ------------------------------------------- error check (debugger only) */
 

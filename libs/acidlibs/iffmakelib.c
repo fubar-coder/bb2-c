@@ -93,7 +93,7 @@
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-/* entry points (thunks, defined below) */
+/* entry points (aliases / thunks, defined below) */
 void dosavebitmap2(void), dosavebitmap(void), dosavescreen(void);
 void dosaveshape1(void), dosaveshape2(void), dosavepalette(void);
 void bitchk(void), bitchk2(void), scrchk(void), sschk1(void), sschk2(void);
@@ -415,7 +415,7 @@ static void BLITZ_ROUTINE dosavebitmap2_c(const struct BitMap *bm BL_REG(a0), co
     usewid = 0;
     savebm(bm, name, 0, dos);
 }
-BLITZ_THUNK(dosavebitmap2, dosavebitmap2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosavebitmap2, dosavebitmap2_c);
 
 /**
  * @brief SaveBitmap BitMap#,Filename$,Palette#: save a bitmap as an ILBM
@@ -487,7 +487,7 @@ static void BLITZ_ROUTINE dosaveshape1_c(const struct bb_shape *shape BL_REG(a0)
 {
     saveshape(shape, name, 0, dos);
 }
-BLITZ_THUNK(dosaveshape1, dosaveshape1_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosaveshape1, dosaveshape1_c);
 
 /**
  * @brief SaveShape Shape#,Filename$,Palette#: SaveShape with a CMAP of the
@@ -507,7 +507,7 @@ static void BLITZ_ROUTINE dosaveshape2_c(const struct bb_shape *shape BL_REG(a0)
 {
     saveshape(shape, name, pal, dos);
 }
-BLITZ_THUNK(dosaveshape2, dosaveshape2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosaveshape2, dosaveshape2_c);
 
 /**
  * @brief SavePalette Palette#,Filename$: save a palette as a file with
@@ -534,7 +534,7 @@ static void BLITZ_ROUTINE dosavepalette_c(const struct palette *pal BL_REG(a2),
     makecolor(pal);
     Close(fh);
 }
-BLITZ_THUNK(dosavepalette, dosavepalette_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosavepalette, dosavepalette_c);
 
 /* 4 bit colour value -> 32 bits */
 static ULONG makelong(UWORD v)
@@ -610,7 +610,7 @@ static void BLITZ_ROUTINE dosavescreen_c(struct Screen **scr BL_REG(a0), const c
     usewid = 0;
     savebm(&bmcopy.bm, name, &scrpal, dos);
 }
-BLITZ_THUNK(dosavescreen, dosavescreen_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosavescreen, dosavescreen_c);
 
 /* ************************* ERROR CHECKING ************************* */
 

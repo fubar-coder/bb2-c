@@ -1984,18 +1984,17 @@ E(_gtsetint, gtsetint_c);
 E(_gtgetattrs, gtgetattrs_c);
 E(_gtshape, gtshape_c);
 E(_gtshape2, gtshape2_c);
-/* small ones keep what the original keeps */
-BLITZ_THUNK(gtlib_gttags, gttags_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_gtptr, gtptr_c, "d1/a1");
-BLITZ_THUNK(_gtgetstring, gtgetstring_c, "d1/a1");
-BLITZ_THUNK(_gtgetint, gtgetint_c, "d1/a1");
-BLITZ_THUNK(_gtgetstatus, gtgetstatus_c, "d1/a1");
-BLITZ_THUNK(_gtarrowsize, gtarrowsize_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_gtcludge, gtcludge_c, "d0/a0-a1");
-BLITZ_THUNK(gtlib_doenable, doenable_c, "d1/a1");
-BLITZ_THUNK(gtlib_dodisable, dodisable_c, "d1/a1");
-BLITZ_THUNK(gtlib_doselect, doselect_c, "d1/a1");
-BLITZ_THUNK(gtlib_doselect2, doselect2_c, "d1/a1");
+BLITZ_ALIAS(gtlib_gttags, gttags_c);
+BLITZ_ALIAS(_gtptr, gtptr_c);
+BLITZ_ALIAS(_gtgetstring, gtgetstring_c);
+BLITZ_ALIAS(_gtgetint, gtgetint_c);
+BLITZ_ALIAS(_gtgetstatus, gtgetstatus_c);
+BLITZ_ALIAS(_gtarrowsize, gtarrowsize_c);
+BLITZ_ALIAS(_gtcludge, gtcludge_c);
+BLITZ_ALIAS(gtlib_doenable, doenable_c);
+BLITZ_ALIAS(gtlib_dodisable, dodisable_c);
+BLITZ_ALIAS(gtlib_doselect, doselect_c);
+BLITZ_ALIAS(gtlib_doselect2, doselect2_c);
 
 /* ------------------------------------------- error checks (debugger only) */
 

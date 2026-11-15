@@ -73,7 +73,7 @@
 
 /* maxslib: string copies in global memory */
 
-/* entry points (thunks / C, defined below) */
+/* entry points (aliases / thunks / C, defined below) */
 void doshapeitem(void), doshapesub(void), domenugap(void), dosubitemoff(void);
 void menuslib_domenustate(void), menuslib_domenustate2(void);
 void menuslib_domenustate3(void), menuslib_domenustate4(void);
@@ -308,7 +308,7 @@ static void BLITZ_ROUTINE domenupens_c(UBYTE c BL_REG(d0))
 {
     menupens[0] = c;
 }
-BLITZ_THUNK(domenupens, domenupens_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domenupens, domenupens_c);
 
 /* changestate: MENUENABLED (bit 0 of the flags' low byte),
    changestate2: bit 4 (ITEMENABLED) */
@@ -407,11 +407,10 @@ static void BLITZ_ROUTINE domenustate4_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
     p = walk(p, i) + I_SUB;
     changestate(walk(p, s), on, 4);
 }
-/* the original changes d7, a3 and keeps d0-d1/a0-a1 */
-BLITZ_THUNK(menuslib_domenustate, domenustate_c, "d0-d1/a0-a1");
-BLITZ_THUNK(menuslib_domenustate2, domenustate2_c, "d0-d1/a0-a1");
-BLITZ_THUNK(menuslib_domenustate3, domenustate3_c, "d0-d1/a0-a1");
-BLITZ_THUNK(menuslib_domenustate4, domenustate4_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(menuslib_domenustate, domenustate_c);
+BLITZ_ALIAS(menuslib_domenustate2, domenustate2_c);
+BLITZ_ALIAS(menuslib_domenustate3, domenustate3_c);
+BLITZ_ALIAS(menuslib_domenustate4, domenustate4_c);
 
 /* checked: BTST #0,12(a2):SNE d0:EXT d0 - upper word of d0 stays */
 static ULONG checked(ULONG hiword, const UBYTE *p)
@@ -441,7 +440,7 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG hiword BL_REG(d0), UBYTE *p BL_
     p = walk(p, m) + M_FIRST;
     return checked(hiword, walk(p, i));
 }
-BLITZ_THUNK(menuslib_domenuchecked, domenuchecked_c, "d1/a0-a1");
+BLITZ_ALIAS(menuslib_domenuchecked, domenuchecked_c);
 
 /**
  * @brief MenuChecked(MenuList#,Menu,Item,Subitem) - whether a toggle
@@ -472,7 +471,7 @@ static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG hiword BL_REG(d0), UBYTE *p BL
     p = walk(p, i) + I_SUB;
     return checked(hiword, walk(p, s));
 }
-BLITZ_THUNK(menuslib_domenuchecked2, domenuchecked2_c, "d1/a0-a1");
+BLITZ_ALIAS(menuslib_domenuchecked2, domenuchecked2_c);
 
 /* sussflags - the flags argument (popped long) -> menflags, mexclude;
    d5 = item number (for the exclusion) */
@@ -518,7 +517,7 @@ static void BLITZ_ROUTINE domenugap_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
     menuxxs = x;
     menuyxs = y;
 }
-BLITZ_THUNK(domenugap, domenugap_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(domenugap, domenugap_c);
 
 /**
  * @brief SubItemOff X Offset,Y Offset - the offset of subitems created
@@ -532,7 +531,7 @@ static void BLITZ_ROUTINE dosubitemoff_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
     subxoff = x;
     subyoff = y;
 }
-BLITZ_THUNK(dosubitemoff, dosubitemoff_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dosubitemoff, dosubitemoff_c);
 
 /* setmax - a0 = address of a list head: every entry gets the largest
    width (sublists first, recursively) */

@@ -467,7 +467,7 @@ static void BLITZ_ROUTINE dobgroup_c(UWORD grp BL_REG(d0))
 {
     g.bgroup = grp;
 }
-BLITZ_THUNK(dobgroup, dobgroup_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dobgroup, dobgroup_c);
 
 /**
  * @brief SelectMode 1=Box, 0=Inverse: the highlight mode of new gadgets.
@@ -486,7 +486,7 @@ static void BLITZ_ROUTINE doselectmode_c(UWORD on BL_REG(d0))
         g.selmode++;
     g.defflags = g.selmode;             /* fixed (#952): GADGHBOX or GADGHCOMP */
 }
-BLITZ_THUNK(doselectmode, doselectmode_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(doselectmode, doselectmode_c);
 
 /**
  * @brief GadgetJam Jammode: the draw mode of the gadget texts.
@@ -497,7 +497,7 @@ static void BLITZ_ROUTINE dogjam_c(UBYTE mode BL_REG(d0))
 {
     g.mode = mode;
 }
-BLITZ_THUNK(dogjam, dogjam_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dogjam, dogjam_c);
 
 /**
  * @brief GadgetPens Foreground Colour,Background Colour: the pens of the
@@ -511,7 +511,7 @@ static void BLITZ_ROUTINE dogpens_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
     g.bpen = bg;
     g.fpen = fg;
 }
-BLITZ_THUNK(dogpens, dogpens_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dogpens, dogpens_c);
 
 /**
  * @brief GadgetPens Foreground Colour: the front pen only.
@@ -522,7 +522,7 @@ static void BLITZ_ROUTINE dogpens2_c(UBYTE fg BL_REG(d0))
 {
     g.fpen = fg;
 }
-BLITZ_THUNK(dogpens2, dogpens2_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dogpens2, dogpens2_c);
 
 /**
  * @brief BorderPens Highlight Colour,Shadow Colour: the pens of the
@@ -536,7 +536,7 @@ static void BLITZ_ROUTINE dobpens_c(UBYTE light BL_REG(d0), UBYTE shadow BL_REG(
     g.bco1 = light;
     g.bco2 = shadow;
 }
-BLITZ_THUNK(dobpens, dobpens_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dobpens, dobpens_c);
 
 /**
  * @brief Borders Width,Height: the space between a gadget's text and its
@@ -555,7 +555,7 @@ static void BLITZ_ROUTINE dogb_c(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
     g.bxxs2 = g.bxxs;
     g.byxs2 = g.byxs;
 }
-BLITZ_THUNK(dogb, dogb_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dogb, dogb_c);
 
 /**
  * @brief Borders On|Off: give new gadgets borders or not.
@@ -583,7 +583,7 @@ static void BLITZ_ROUTINE dogb2_c(WORD on BL_REG(d0))
         g.byxs = 0;
     }
 }
-BLITZ_THUNK(dogb2, dogb2_c, "d0/a0-a1");
+BLITZ_ALIAS(dogb2, dogb2_c);
 
 /* --------------------------------------------------- allocation helpers */
 
@@ -1012,7 +1012,7 @@ static void BLITZ_ROUTINE dosethprop_c(UWORD id BL_REG(d1), ULONG pot BL_REG(d2)
 {
     setprop(id, pot, body, list, offsetof(struct PropInfo, HorizPot));
 }
-BLITZ_THUNK(dosethprop, dosethprop_c, "d0-d1/a1");
+BLITZ_ALIAS(dosethprop, dosethprop_c);
 
 /**
  * @brief SetVProp GadgetList#,Id,Pot,Body: the vertical pot and body of a
@@ -1033,7 +1033,7 @@ static void BLITZ_ROUTINE dosetvprop_c(UWORD id BL_REG(d1), ULONG pot BL_REG(d2)
 {
     setprop(id, pot, body, list, offsetof(struct PropInfo, VertPot));
 }
-BLITZ_THUNK(dosetvprop, dosetvprop_c, "d0-d1/a1");
+BLITZ_ALIAS(dosetvprop, dosetvprop_c);
 
 static ULONG readprop(UWORD id, struct Gadget **list, int off)
 {
@@ -1055,7 +1055,7 @@ static ULONG BLITZ_ROUTINE dohproppot_c(UWORD id BL_REG(d1), struct Gadget **lis
 {
     return readprop(id, list, offsetof(struct PropInfo, HorizPot));
 }
-BLITZ_THUNK(dohproppot, dohproppot_c, "a1");
+BLITZ_ALIAS(dohproppot, dohproppot_c);
 
 /**
  * @brief HPropBody(GadgetList#,Id): the HorizBody of a prop gadget.
@@ -1072,7 +1072,7 @@ static ULONG BLITZ_ROUTINE dohpropbody_c(UWORD id BL_REG(d1), struct Gadget **li
 {
     return readprop(id, list, offsetof(struct PropInfo, HorizBody));
 }
-BLITZ_THUNK(dohpropbody, dohpropbody_c, "a1");
+BLITZ_ALIAS(dohpropbody, dohpropbody_c);
 
 /**
  * @brief VPropPot(GadgetList#,Id): the VertPot of a prop gadget.
@@ -1089,7 +1089,7 @@ static ULONG BLITZ_ROUTINE dovproppot_c(UWORD id BL_REG(d1), struct Gadget **lis
 {
     return readprop(id, list, offsetof(struct PropInfo, VertPot));
 }
-BLITZ_THUNK(dovproppot, dovproppot_c, "a1");
+BLITZ_ALIAS(dovproppot, dovproppot_c);
 
 /**
  * @brief VPropBody(GadgetList#,Id): the VertBody of a prop gadget.
@@ -1106,7 +1106,7 @@ static ULONG BLITZ_ROUTINE dovpropbody_c(UWORD id BL_REG(d1), struct Gadget **li
 {
     return readprop(id, list, offsetof(struct PropInfo, VertBody));
 }
-BLITZ_THUNK(dovpropbody, dovpropbody_c, "a1");
+BLITZ_ALIAS(dovpropbody, dovpropbody_c);
 
 /* ------------------------------------------------------ window commands */
 
@@ -1203,7 +1203,7 @@ static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
     else
         GFLAGS_LO(gad) &= ~0x80;
 }
-BLITZ_THUNK(gadgetslib_doselect, doselect_c, "d0-d1/a1");
+BLITZ_ALIAS(gadgetslib_doselect, doselect_c);
 
 /**
  * @brief Toggle GadgetList#,Id: flip the SELECTED state of a gadget.
@@ -1218,7 +1218,7 @@ static void BLITZ_ROUTINE doselect2_c(UWORD id BL_REG(d1), struct Gadget **list 
 {
     GFLAGS_LO(findgadget(list, id)) ^= 0x80;
 }
-BLITZ_THUNK(gadgetslib_doselect2, doselect2_c, "d0-d1/a1");
+BLITZ_ALIAS(gadgetslib_doselect2, doselect2_c);
 
 /**
  * @brief Enable GadgetList#,Id: clear DISABLED of a gadget.
@@ -1233,7 +1233,7 @@ static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), struct Gadget **list B
 {
     GFLAGS_HI(findgadget(list, id)) &= ~1;
 }
-BLITZ_THUNK(gadgetslib_doenable, doenable_c, "d0-d1/a1");
+BLITZ_ALIAS(gadgetslib_doenable, doenable_c);
 
 /**
  * @brief Disable GadgetList#,Id: set DISABLED of a gadget.
@@ -1248,7 +1248,7 @@ static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), struct Gadget **list 
 {
     GFLAGS_HI(findgadget(list, id)) |= 1;
 }
-BLITZ_THUNK(gadgetslib_dodisable, dodisable_c, "d0-d1/a1");
+BLITZ_ALIAS(gadgetslib_dodisable, dodisable_c);
 
 /**
  * @brief SetGadgetStatus GadgetList#,Id,Value: show text part Value of a
@@ -1281,7 +1281,7 @@ static void BLITZ_ROUTINE setdogstatus_c(UWORD id BL_REG(d1), UWORD v BL_REG(d2)
             ;
     it->it.IText = text;
 }
-BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
+BLITZ_ALIAS(setdogstatus, setdogstatus_c);
 
 /**
  * @brief GadgetStatus(GadgetList#,Id): the shown text part, or whether
@@ -1321,7 +1321,7 @@ static ULONG BLITZ_ROUTINE dogstatus_c(UWORD id BL_REG(d1), struct Gadget **list
        GadgetText pointer stays) */
     return ((ULONG)it & 0xffff0000UL) | ((GFLAGS_LO(gad) & 0x80) ? 0xffff : 0);
 }
-BLITZ_THUNK(dogstatus, dogstatus_c, "d1");
+BLITZ_ALIAS(dogstatus, dogstatus_c);
 
 /**
  * @brief ButtonId(GadgetList#,ButtonGroup): the selected gadget of a
@@ -1349,7 +1349,7 @@ static ULONG BLITZ_ROUTINE dobuttonid_c(UWORD grp BL_REG(d1), struct Gadget **li
             return (next & 0xffff0000UL) | (UWORD)gad->GadgetID;
     }
 }
-BLITZ_THUNK(dobuttonid, dobuttonid_c, "d1/a0");
+BLITZ_ALIAS(dobuttonid, dobuttonid_c);
 
 /**
  * @brief SetTextGadget GadgetList#,Id,Text$: overwrite the text of a
@@ -1388,7 +1388,7 @@ static void BLITZ_ROUTINE settextgadget_c(UWORD id BL_REG(d1), const UBYTE *src 
     while (*text)                       /* nxc2 */
         *text++ = ' ';
 }
-BLITZ_THUNK(settextgadget, settextgadget_c, "d1");
+BLITZ_ALIAS(settextgadget, settextgadget_c);
 
 /* ------------------------------------------------------- string gadgets */
 
@@ -1413,7 +1413,7 @@ static void BLITZ_ROUTINE dosetstring_c(UWORD id BL_REG(d1), const UBYTE *s BL_R
     while ((*buf++ = *s++) != 0)
         ;
 }
-BLITZ_THUNK(dosetstring, dosetstring_c, "d0-d1");
+BLITZ_ALIAS(dosetstring, dosetstring_c);
 
 /**
  * @brief ClearString GadgetList#,Id: empty a string gadget.
@@ -1434,7 +1434,7 @@ static void BLITZ_ROUTINE dostringclear_c(UWORD id BL_REG(d1), struct Gadget **l
     si->DispPos = 0;
     *si->Buffer = 0;
 }
-BLITZ_THUNK(dostringclear, dostringclear_c, "d0-d1/a1");
+BLITZ_ALIAS(dostringclear, dostringclear_c);
 
 /**
  * @brief ResetString GadgetList#,Id: the cursor of a string gadget to
@@ -1455,7 +1455,7 @@ static void BLITZ_ROUTINE dostringreset_c(UWORD id BL_REG(d1), struct Gadget **l
     si->BufferPos = 0;
     si->DispPos = 0;
 }
-BLITZ_THUNK(dostringreset, dostringreset_c, "d0-d1/a1");
+BLITZ_ALIAS(dostringreset, dostringreset_c);
 
 /**
  * @brief StringText$(GadgetList#,Id): the contents of a string gadget.
@@ -1480,7 +1480,7 @@ static ULONG BLITZ_ROUTINE dostringtext_c(UWORD id BL_REG(d1), struct Gadget **l
     blitz_string--;
     return n;
 }
-BLITZ_THUNK(dostringtext, dostringtext_c, "d1/a1");
+BLITZ_ALIAS(dostringtext, dostringtext_c);
 
 /* ------------------------------------------------------------- _free */
 
