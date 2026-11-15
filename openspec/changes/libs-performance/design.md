@@ -110,8 +110,7 @@ build.
    Kickstart 1.3, runtime error checking off), reads a CIA-B timer cascade,
    subtracts the empty loop. A budget file states per command the allowed
    cycles per call. The ctest label is `perf`; the preset `perf` is separate
-   and not part of `all` (one configuration takes about 3 minutes, one
-   emulator session at a time). The method repeats to 1 cycle per call for the commands the CPU does alone;
+   and not part of `all`. The emulator runs in warp mode (`warp=true`: no wait for the host clock, CPU, chipset and blitter stay cycle-exact) with one session per bench program, seven side by side; the preset takes about 13 s (it took about 3 minutes at real speed in one session, with the same values). The method repeats to 2-3 cycles per call for the commands the CPU does alone;
    blitter- and frame-dependent loops have a stated tolerance (Decision 11).
 10. **Acceptance.** Library bytes change on purpose, so `prev_results` and
     the corpus `prev` configuration are run with `-DPREV_INTENDED`; each
@@ -137,8 +136,9 @@ build.
       compiles with blitz2 in Amiberry, runs on Kickstart 1.3 (`rcput`),
       stages the module files, takes the `machine=`/`uae=` lines of the
       cycle-exact A500 and skips without Amiberry; the measurement of
-      `report.md` used it too. One session (`parallel=1`), the test
-      `RUN_SERIAL`.
+      `report.md` used it too. One session per bench program (the tests
+      `perf_bmath` ... `perf_bmod`) in warp mode; `perf.pass` with all
+      programs in one session stays for the target `perf-original`.
     - The arithmetic and the budgets in C: `results perf` with the logic
       in `tools/lib/perfbudget` (the Python `res4.py` of the analysis
       ported), tested by `tools/tests/test_perfbudget.c`.
