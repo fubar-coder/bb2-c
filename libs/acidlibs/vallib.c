@@ -416,76 +416,84 @@ static ULONG BLITZ_ROUTINE doffrac_c(ULONG f BL_REG(d0), const void *ffp BL_REG(
 }
 BLITZ_ALIAS(doffrac, doffrac_c);
 
+/* Abs, Int and Sgn are assembler entries in the original's form: their
+   integer and Quick cases are a few instructions, and the C functions,
+   which call mathffp or floatquicklib on one path, saved d2-d7/a2/a6 on
+   every path (155 to 205 cycles more per call).  The type word is read with
+   MOVE.w -2(a2),d1 (the original's MOVE -(a2),d1 leaves a2 decremented;
+   the compiler does not use a2 after the call, the C functions kept it,
+   and so do these). */
+
 /**
  * @brief Abs(Expression) - the absolute value, as a float.
  *
  * The value as Float with the sign bit (bit 7) cleared: float as is,
- * quick via floatquicklib ($D300), byte/word sign
- * extended, everything else (long, and types >= 6) with SPFlt.
+ * quick via floatquicklib ($D300), byte/word sign extended, everything
+ * else (long, and types >= 6) with SPFlt.  The original clears the bit
+ * with BCHG #7,d0:BNE 'skip:BCHG #7,d0; here BCLR #7,d0, the same bits.
  *
- * @param v d0: the value
- * @param ffp a6: the mathffp base
- * @param args a2: the argument stack, -2 = the type word (1 byte, 2 word,
- *        3 long, 4 quick, 5 float)
- * @return d0: |v| (FFP)
+ * In:  d0 the value, a6 the mathffp base, a2 the argument stack (-2 =
+ *      the type word: 1 byte, 2 word, 3 long, 4 quick, 5 float)
+ * Out: d0 |v| (FFP)
  */
-static ULONG BLITZ_ROUTINE dofabs_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
-                                    const UBYTE *args BL_REG(a2))
-{
-    const UBYTE *sp = args;
-    UWORD type = BL_POPW(sp);
-
-    if (type == 5)                              /* 'float */
-        ;
-    else if (type == 4)                         /* 'quick: ALibJsr $d300 */
-        v = BLITZ_ALIBJSR_A6(TOK_qutofl, ffp, v);
-    else {
-        if (type < 2)                           /* 'byte: EXT d0 */
-            v = (UWORD)(WORD)(BYTE)v;
-        if (type <= 2)                          /* 'word: EXT.l d0 */
-            v = (LONG)(WORD)v;
-        v = BLITZ_BASEJSR1(ffp, LVO_SPFlt, v);  /* 'long */
-    }
-    return v & ~0x80UL;                         /* BCHG #7,d0:BNE 'skip:BCHG #7,d0 */
-}
-BLITZ_ALIAS(dofabs, dofabs_c);
+BLITZ_ASM_ROUTINE(dofabs,
+"   move.w  -2(a2),d1\n"
+"   cmp.w   #5,d1\n"
+"   beq.s   2f\n"                       /* 'float */
+"   cmp.w   #4,d1\n"
+"   beq.s   3f\n"                       /* 'quick */
+"   cmp.w   #2,d1\n"
+"   bhi.s   1f\n"                       /* 'long */
+"   beq.s   0f\n"                       /* 'word */
+"   ext.w   d0\n"                       /* 'byte */
+"0: ext.l   d0\n"
+"1: jsr     -36(a6)\n"                  /* SPFlt */
+"2: bclr    #7,d0\n"
+"   rts\n"
+"3: jsr     _blitz_tok+0x80000000+" BL_STR(TOK_qutofl) "\n"  /* ALibJsr $d300 */
+"   bclr    #7,d0\n"
+"   rts");
 
 /* ------------------------------------------------------------ Int, Sgn */
 
 /**
  * @brief Int(Expression) - the integer part as a long.
  *
- * Float with SPFix (truncates), quick truncated towards 0 (negative:
- * NEG.l, integer part, NEG), byte/word sign extended, long as is.
+ * Float with SPFix (truncates, JMP -30(a6)), quick truncated towards 0
+ * (negative: NEG.l, integer part, NEG), byte/word sign extended, long as
+ * is.
  *
  * Errors (debugger only, intchk): a string -> "Illegal Type".
  *
- * @param v d0: the value
- * @param ffp a6: the mathffp base
- * @param args a2: the argument stack, -2 = the type word
- * @return d0: the long
+ * In:  d0 the value, a6 the mathffp base, a2 the argument stack (-2 =
+ *      the type word)
+ * Out: d0 the long
  */
-static ULONG BLITZ_ROUTINE doint_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
-                                   const UBYTE *args BL_REG(a2))
-{
-    const UBYTE *sp = args;
-    UWORD type = BL_POPW(sp);
-
-    if (type >= 4) {                            /* CMP #4,d1:BCC 'over3 */
-        if (type != 4)                          /* 'float: JMP -30(a6) */
-            return BLITZ_BASEJSR1(ffp, LVO_SPFix, v);
-        if ((LONG)v >= 0)                       /* 'pos: CLR d0:SWAP d0:EXT.l d0 */
-            return (LONG)(WORD)(v >> 16);
-        v = -v;                                 /* NEG.l d0:CLR d0:SWAP d0 */
-        return (LONG)(WORD)-(WORD)(v >> 16);    /* NEG d0:EXT.l d0 */
-    }
-    if (type == 3)                              /* 'done */
-        return v;
-    if (type != 2)                              /* EXT d0 */
-        v = (UWORD)(WORD)(BYTE)v;
-    return (LONG)(WORD)v;                       /* 'word: EXT.l d0 */
-}
-BLITZ_ALIAS(doint, doint_c);
+BLITZ_ASM_ROUTINE(doint,
+"   move.w  -2(a2),d1\n"
+"   cmp.w   #4,d1\n"
+"   bcc.s   2f\n"                       /* 'over3 */
+"   cmp.w   #3,d1\n"
+"   beq.s   1f\n"                       /* 'done */
+"   cmp.w   #2,d1\n"
+"   beq.s   0f\n"                       /* 'word */
+"   ext.w   d0\n"
+"0: ext.l   d0\n"
+"1: rts\n"
+"2: bne.s   4f\n"                       /* 'float */
+"   tst.l   d0\n"                       /* quick */
+"   bpl.s   3f\n"
+"   neg.l   d0\n"
+"   clr.w   d0\n"
+"   swap    d0\n"
+"   neg.w   d0\n"
+"   ext.l   d0\n"
+"   rts\n"
+"3: clr.w   d0\n"                       /* 'pos */
+"   swap    d0\n"
+"   ext.l   d0\n"
+"   rts\n"
+"4: jmp     -30(a6)");                  /* SPFix */
 
 /**
  * @brief Sgn(Expression) - the sign: -1, 0 or 1.
@@ -498,33 +506,38 @@ BLITZ_ALIAS(doint, doint_c);
  * Fixed (#301): mathffp SPTst tests D1, not D0; the original passes d1 as
  * it has it, the type (MOVE -(a2),d1: 5 in the low word, the caller's
  * upper word), so Sgn of a float was 1 whatever the value (Sgn(-1.0) =
- * Sgn(0.0) = 1).  Now SPTst gets the float in d1.
+ * Sgn(0.0) = 1).  Now SPTst gets the float in d1 (MOVE.l d0,d1).
  *
- * @param v d0: the value
- * @param ffp a6: the mathffp base
- * @param args a2: the argument stack, -2 = the type word
- * @return d0: Quick -1, 0 or 1 ($FFFF0000, 0, $00010000)
+ * In:  d0 the value, a6 the mathffp base, a2 the argument stack (-2 =
+ *      the type word)
+ * Out: d0 Quick -1, 0 or 1 ($FFFF0000, 0, $00010000)
  */
-static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
-                                   const UBYTE *args BL_REG(a2))
-{
-    const UBYTE *sp = args;
-    UWORD type = BL_POPW(sp);
-
-    if (type > 4)                               /* 'float: JSR -48(a6) */
-        v = BLITZ_BASEJSR2(ffp, LVO_SPTst, v, v);
-    else if (type != 4 && type != 3) {
-        if (type == 1)                          /* EXT d0 */
-            v = (UWORD)(WORD)(BYTE)v;
-        v = (LONG)(WORD)v;                      /* 'word: EXT.l d0 */
-    }
-    if ((LONG)v < 0)                            /* 'minus: MOVEQ #-1,d0:SWAP d0:CLR d0 */
-        return 0xffff0000;
-    if (!v)                                     /* 'zilch */
-        return 0;
-    return 0x00010000;                          /* 'plus: MOVEQ #1,d0:SWAP d0 */
-}
-BLITZ_ALIAS(dosgn, dosgn_c);
+BLITZ_ASM_ROUTINE(dosgn,
+"   move.w  -2(a2),d1\n"
+"   cmp.w   #4,d1\n"
+"   bhi.s   5f\n"                       /* 'float */
+"   beq.s   1f\n"                       /* 'long (quick) */
+"   cmp.w   #3,d1\n"
+"   beq.s   1f\n"                       /* 'long */
+"   cmp.w   #1,d1\n"
+"   bne.s   0f\n"                       /* 'word */
+"   ext.w   d0\n"
+"0: ext.l   d0\n"
+"1: tst.l   d0\n"                       /* 'long */
+"   bmi.s   2f\n"
+"   beq.s   3f\n"
+"   moveq   #1,d0\n"                    /* 'plus */
+"   swap    d0\n"
+"   rts\n"
+"2: moveq   #-1,d0\n"                   /* 'minus */
+"   swap    d0\n"
+"   clr.w   d0\n"
+"   rts\n"
+"3: moveq   #0,d0\n"                    /* 'zilch */
+"   rts\n"
+"5: move.l  d0,d1\n"                    /* fixed #301: SPTst tests d1 */
+"   jsr     -48(a6)\n"                  /* SPTst */
+"   bra.s   1b");
 
 /**
  * @brief intchk - error check of Int and Sgn (debugger only).
