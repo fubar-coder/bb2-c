@@ -29,7 +29,8 @@
  *     cleared) and does not set the used bitmap (not a bug: every word is
  *     overwritten by the copy, and CopyBitMap is not documented to select
  *     the bitmap).
- *   - ShapesBitMap adds the plane size as a word (sign extended). (#79)
+ *   - Fixed (#79): ShapesBitMap added the plane size as a word (sign
+ *     extended): planes of 32 KB and more pointed backwards; unsigned now.
  *   - The planes beyond the depth are not cleared by BitMap (they are
  *     whatever the object held). (#80)
  * Kept from the original, not a bug (no visible effect):
@@ -419,8 +420,9 @@ void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
  *        (borrowed, isreal = 1).
  *
  * Becomes the used bitmap; frees the old one; bytes per row, rows and
- * depth from the shape.  BUG(orig) (#79): the plane size is added as a
- * word (sign extended).  Errors (debugger, shchk): "Uninitialized Shape".
+ * depth from the shape.  Fixed (#79): the plane size is added unsigned
+ * (the original added it as a sign extended word: planes of 32 KB and
+ * more pointed backwards).  Errors (debugger, shchk): "Uninitialized Shape".
  *
  * @param shape    a2: the shape (!libs {#shapeslib,$1280}); the bitmap
  *                 comes in a3 ($1381)
@@ -431,7 +433,7 @@ void BLITZ_ROUTINE doshbitmap(const struct bb_shape *shape BL_REG(a2), WORD used
 {
     struct bb_bitmap *b = BM;
     UBYTE *pl;
-    WORD size;
+    UWORD size;
     UWORD n;
     UBYTE **p = b->planes;
 
@@ -447,7 +449,7 @@ void BLITZ_ROUTINE doshbitmap(const struct bb_shape *shape BL_REG(a2), WORD used
     size = shape->planesize;
     do {
         *p++ = pl;
-        pl += size;
+        pl += size;                             /* fixed (#79): unsigned, as a long */
     } while (n-- != 0);
     prepxtra(b);
 }
