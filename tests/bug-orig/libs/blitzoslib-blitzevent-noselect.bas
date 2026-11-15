@@ -15,6 +15,7 @@
 ; The original sets address 12 to 0 (the value moved up a line).
 ; Correct: no box is selected, nothing is read or written: address 12
 ; still holds 1.
+; @fixed #90
 ; @configs clib
 DEFTYPE .l
 Dim s.l(7)

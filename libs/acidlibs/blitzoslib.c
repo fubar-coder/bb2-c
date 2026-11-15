@@ -39,9 +39,7 @@
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
  *    line's LF in the bank by 0. (#87)
- *  - BlitzEvent: with cursor up/down it reads btype of `selected` also
- *    when nothing is selected (#90); Backspace at position 0 leaves the
- *    cursor off (#91).
+ *  - BlitzEvent: Backspace at position 0 leaves the cursor off (#91).
  *  - DeSelectBox does not clear `selected`. (#94)
  * Fixed (intended deviations):
  *  - #81: the address of box n was memloc + n << 5 as a word (ASL #5,
@@ -61,6 +59,10 @@
  *    printed from address 0 with the old pointer as the length.  Here
  *    AddBox clears the pointer too, and a box without a text prints
  *    nothing.
+ *  - #90: BlitzEvent, on cursor up/down, tested the type of the selected
+ *    box also when none was selected (the word at address 8; if it was 5
+ *    it wrote address 12 and drew a box from address 0).  Here only a
+ *    selected list box moves.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -2088,7 +2090,9 @@ checkdir:
         goto dobutton;
     if (status & 1) {
         box = p->selected;
-        if (box->btype == 5)
+        /* fixed (#90): only with a selected box (the original read btype
+           at address 8 without one) */
+        if (box && box->btype == 5)
             goto movelist;
     }
     {
@@ -2311,8 +2315,8 @@ moveprop:
  * Amiga and right Amiga + right Alt as the mouse buttons) and the
  * keyboard (BlitzKey): moves the selection, edits string boxes, moves
  * list entries, prop knobs and drag boxes, presses and releases buttons.
- * BUG(orig) (#90): with cursor up/down it reads btype of `selected` also
- * when nothing is selected.
+ * Fixed (#90): cursor up/down with nothing selected moves no list (the
+ * original read btype of `selected` = 0, at address 8).
  * BUG(orig) (#91): Backspace at position 0 leaves the cursor off.
  * Not a bug (#92): the character cycle of the cursor keys uses BMI after
  * CMP.b.
