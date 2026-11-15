@@ -8,7 +8,9 @@
 ; Correct: the palette counts as set up, FadeIn passes the check, the
 ; program goes on.  The original reports "Not enough colours in Slice"
 ; (the wrong message, #330) and ends; the poked pointer then gives
-; "Unable to Free Memory" at the end.
+; "Unable to Free Memory" at the end.  (The word test of the slice is
+; right: +0 of a slice is the word y; only the palette half is a bug.)
+; @fixed #135
 ; @configs clib
 ; @pass runtime_errors=on
 DEFTYPE .l

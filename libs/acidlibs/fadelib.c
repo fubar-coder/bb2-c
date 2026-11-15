@@ -23,10 +23,12 @@
  *   the upper nibble of the red fraction, bits 12-15 in that of the green
  *   fraction of the first colour (palettes 2 and up).  Here the
  *   components are shifted as bytes.
+ * Fixed (intended deviation, #135): the error check tested only the high
+ *   word of the palette's data pointer (TST (a0)): a palette whose data
+ *   lie in the lower 64 KB counted as not there.  Here the long.  (Its
+ *   word test of the slice is right: +0 of a slice is the word y.)
  *
  * Kept from the original (BUG(orig)):
- *   - The checks test the high word of the slice and palette pointers
- *     (TST.w (a1)/(a0)). (#135)
  *   - Without high/low colours the range is 0..min(colours of the
  *     palette, colours of the slice)-1; with them nothing is clipped. (#136)
  *   - Not a bug (both are meant to start at 0): the init clears fadenum and
@@ -269,8 +271,7 @@ static void dosyncfade(void)
  * Errors (debugger, fadechk): "Uninitialized Slice", "Not enough colours
  * in Slice" also for an uninitialized palette (BUG(orig) #330), a colour
  * beyond the slice's colours gives "Uninitialized Slice" (BUG(orig)
- * #331); the checks test only the high word of the pointers (BUG(orig)
- * #135).
+ * #331); fixed (#135): the palette's data pointer is tested as a long.
  *
  * @param rate  d1: the frames to wait between the steps (VWait)
  * @param lo  d2: the low colour
@@ -389,21 +390,23 @@ BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Slice");
 BLITZ_ERRCHK_MESSAGE(mess2, "Not enough colours in Slice");
 BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig) (#330): unused */
 
-/* fadechk0 - slice and palette set up (word tests), slice with colours */
-static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const struct bb_slice *slice)
+/* fadechk0 - slice (the word y) and palette (its data pointer, a long:
+   fixed #135, the original tested its high word) set up, slice with
+   colours */
+static int BLITZ_ERRCHK fadechk0_x(const struct bb_palette *pal, const struct bb_slice *slice)
 {
     if (!slice->y) {
         BLITZ_RUNERR(mess1);
         return 0;
     }
-    if (!pal[0] || !slice->colours) {
+    if (!pal->pdata || !slice->colours) {
         BLITZ_RUNERR(mess2);            /* BUG(orig) (#330): also for the palette */
         return 0;
     }
     return 1;
 }
 
-static void BLITZ_ERRCHK fadechk0_c(const UWORD *pal BL_REG(a0),
+static void BLITZ_ERRCHK fadechk0_c(const struct bb_palette *pal BL_REG(a0),
                                     const struct bb_slice *slice BL_REG(a1))
 {
     fadechk0_x(pal, slice);
@@ -411,7 +414,7 @@ static void BLITZ_ERRCHK fadechk0_c(const UWORD *pal BL_REG(a0),
 
 /* fadechk - and the colour range within the slice */
 static void BLITZ_ERRCHK fadechk_c(UWORD lo BL_REG(d2), UWORD hi BL_REG(d3),
-                                   const UWORD *pal BL_REG(a0),
+                                   const struct bb_palette *pal BL_REG(a0),
                                    const struct bb_slice *slice BL_REG(a1))
 {
     if (!fadechk0_x(pal, slice))
