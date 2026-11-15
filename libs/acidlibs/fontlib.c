@@ -34,7 +34,9 @@
  * BUG(orig), kept:
  *   - Not a bug (pixel cursor by design): Locate: Y is Quick, X a word;
  *     CursX/CursY return the cursor / 8 as Quick (fractions of a character).
- *   - a bitmap of depth 0 runs the plane loops 65536 times. (#149)
+ *   - By design (#149): a bitmap of depth 0 runs the plane loops 65536
+ *     times; such a bitmap is refused at its creation by the error check
+ *     (BitMap: _bitmapchk, CludgeBitMap: cludgechk).
  *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
  *     return without end: at end of file (-1 from the previous handler)
  *     it loops forever. (#151)
@@ -456,8 +458,9 @@ static void bitout2_(const UBYTE *s, ULONG len)
  *
  * Characters below tf_LoChar or above tf_HiChar are ignored (fixed,
  * #148: the original compared signed bytes), 10 = new line; at the right
- * edge a new line, below the bitmap nothing is drawn.  BUG(orig) (#149):
- * a bitmap of depth 0 runs the plane loop 65536 times.  Errors:
+ * edge a new line, below the bitmap nothing is drawn.  By design (#149):
+ * a bitmap of depth 0 runs the plane loop 65536 times (the error check
+ * of BitMap/CludgeBitMap refuses such a bitmap).  Errors:
  * "Uninitialized BitMap",
  * "Uninitialized Font" (DIFF: nothing drawn if the trap returns).
  *
