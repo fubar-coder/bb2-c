@@ -7,6 +7,7 @@
 ; checking on (the debugger).
 ; Correct: "Sprite too Wide" at GetaSprite.  The original accepts it
 ; ("accepted" is printed) and ShowSprite fails.
+; @fixed #988
 ; @pass runtime_errors=on
 BitMap 0,128,16,4
 Use BitMap 0

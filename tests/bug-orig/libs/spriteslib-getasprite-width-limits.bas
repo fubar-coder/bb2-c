@@ -11,6 +11,7 @@
 ; spriteslib-getasprite-width-16col.
 ; Correct: GetaSprite accepts it (8 channels do).  The original shows
 ; "Sprite too Wide" (a requester of the debugger).
+; @fixed #988
 ; @pass runtime_errors=on
 BitMap 0,128,16,2
 Use BitMap 0
