@@ -2193,12 +2193,21 @@ static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
     }
 }
 
-/* a * b > c * d for |a|, |b|, |c|, |d| below 65536 (differences of two
-   words): the magnitudes with MULU, then the signs */
-static int prodgt(LONG a, LONG b, LONG c, LONG d)
+/* MULU.w of the low words of a and b: MULU reads only the low word of
+   its destination, so a and b need no zero extension */
+BL_ALWAYS_INLINE ULONG mulu_lo(ULONG a, ULONG b)
 {
-    ULONG p = bl_mulu_w(a < 0 ? -a : a, b < 0 ? -b : b);
-    ULONG q = bl_mulu_w(c < 0 ? -c : c, d < 0 ? -d : d);
+    __asm__("mulu.w %1,%0" : "+d"(a) : "d"(b) : "cc");
+    return a;
+}
+
+/* a * b > c * d for |a|, |b|, |c|, |d| below 65536 (differences of two
+   words): the magnitudes with MULU (each fits in the low word), then the
+   signs */
+BL_ALWAYS_INLINE int prodgt(LONG a, LONG b, LONG c, LONG d)
+{
+    ULONG p = mulu_lo(a < 0 ? -a : a, b < 0 ? -b : b);
+    ULONG q = mulu_lo(c < 0 ? -c : c, d < 0 ? -d : d);
     int np = p && (a < 0) != (b < 0), nq = q && (c < 0) != (d < 0);
 
     if (np != nq)
