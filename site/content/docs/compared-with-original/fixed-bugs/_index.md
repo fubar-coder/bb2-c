@@ -27,9 +27,11 @@ way.
 
 ## Changes for existing programs
 
-Two fixes change what a program draws if it was written to make up for
-the bug. No known example program, demo or game uses the commands this
-way, but check your own programs:
+Four fixes change what an existing program shows. The first two concern
+programs that were written to make up for the bug; no known example
+program, demo or game uses the commands this way. The other two change
+every program that uses the commands with the values named. Check your
+own programs:
 
 * [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
@@ -39,6 +41,14 @@ way, but check your own programs:
   after `BitMapOrigin`. It adds it once, as `Line` and `Boxf` do; a program
   that gave `Box` reduced coordinates has to give the same ones as for
   `Line`.
+* [`CustomSprites` took its offset 16 times too large]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customsprites-ccoffset" >}}):
+  a `CCOffset` of 1 meant 16 custom copper instructions. It counts single
+  instructions, as for `CustomColors`; a program that gives an offset
+  other than 0 has to give it in instructions, 16 times the old value for
+  the old place.
+* [`CustomColors` with a `thru256flag` of 0 acted as 1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customcolors-thru256flag" >}}).
+  A flag of 0 is the same as leaving it out; a program that gives 0 and
+  needs the flag set has to give 1.
 
 ## Bugs an ordinary program can meet
 
