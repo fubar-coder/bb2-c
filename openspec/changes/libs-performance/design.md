@@ -410,6 +410,30 @@ build.
     commands of the benchmark stay within their budgets; `bmath.frac`
     is tightened (5025 -> 4030).
 
+19. **Sort (task 7.3, 2026-11-15).** C, no assembler: one recursive
+    function per element type (`SORT_FN` in `sortlib.c`: byte, word,
+    long for long, quick and the unknown types; float and string), each
+    with its comparison in the scan loops, as the original has
+    sortbyte ... sortfloat. Three things make GCC (`-O2`, sortlib is in
+    `ACIDLIBS_SPEED`) compile it like the original: the scan loops as
+    `v = *i++` and `--j; v = *j` with an empty `asm` that keeps the
+    pointer in its address register (`MOVE.l (a0)+,d1 : CMP.l d0,d1 :
+    BLT` and `SUBQ.l #4,a1 : CMP.l (a1),d0 : BLT`, without it a copy of
+    the pointer in a data register per step); the recursive function
+    takes lo, hi and the mathffp base in a0, a1 and a6 (`BL_REG`: no
+    stack arguments per level); the float comparison is `JSR -42(a6)`
+    with an Scc right after it, inline in the loop. The string
+    comparison stays a `noinline` call of strcomplib $CE02 (the token
+    may change every register but a4/a5/a7). Measured (201 sorted
+    longs, `bstr.sort201`): 653454 -> 95454 (generic loops, stack
+    arguments) -> 88774 (the scan loops) -> 83274 cycles (register
+    arguments), the original 77694 (1.07): below the 10 % of decision
+    15, so no assembler block. The algorithm and its order are the
+    original's (Hoare's quicksort is not stable: the order of equal
+    strings is fixed by library cases of 201 elements of every type,
+    `systest_cmdlibs`, recorded from the original); the fixes #275 and
+    #276 stay. sortlib.obj grows from 980 to 1244 bytes.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

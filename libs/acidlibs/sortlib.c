@@ -12,7 +12,9 @@
  * MOVE.l -(a2),a1 / MOVE -(a2),d1 (a2 = stack pointer before the pushes).
  * Types: 1 byte, 2 word, 5 float (mathffp SPCmp, a6 = ffplib base),
  * 7 string (strcomplib $CE02 on the string pointers), everything else
- * (3 long, 4 quick) is sorted as signed longs.
+ * (3 long, 4 quick) is sorted as signed longs.  As in the original, each
+ * element type has its own sort with the comparison in its scan loops
+ * (SORT_FN; floats and strings through a call).
  *
  * Not a bug (a property of the quicksort algorithm): recursion depth is
  * O(n) in the worst case (the C version needs more stack per level than
@@ -89,115 +91,117 @@ void BLITZ_ROUTINE dosortdown(void)
     sdir = 0xffff;                                      /* MOVE #-1,sdir */
 }
 
+/* The comparisons of the original's scan loops: CMP.x (a0)+,d0 with the
+   pivot in d0 (BGT 'loop1: the pivot is greater, BLT 'loop2: less; CMP
+   compares signed); floats and strings through a call that sets the CCR. */
+
 /* compflts - JSR -42(a6) (mathffp SPCmp, d0 = pivot, d1 = element); the
-   original branches on the CCR it returns (BGT/BLT).  Assembler only to
-   turn exactly that CCR into 1 (GT) / -1 (LT) / 0; mathffp keeps
-   d2-d7/a2-a6 like every system library. */
-LONG ffpcmp(ULONG pivot BL_REG(d0), ULONG elem BL_REG(d1), const void *ffp BL_REG(a6));
-BLITZ_ASM_BLOCK(ffpcmp, "_ffpcmp:\n"
-    "   jsr     -42(a6)\n"
-    "   bgt.s   1f\n"
-    "   blt.s   2f\n"
-    "   moveq   #0,d0\n"
-    "   rts\n"
-    "1: moveq   #1,d0\n"
-    "   rts\n"
-    "2: moveq   #-1,d0\n"
-    "   rts\n");
+   original branches on the CCR it returns (BGT/BLT), here an Scc right
+   after the call.  mathffp may change d0-d1/a0-a1 and keeps d2-d7/a2-a6
+   like every system library. */
+#define FFP_CC_(cc, pivot, elem, ffp) ({                                    \
+    register ULONG _d0 __asm("d0") = (pivot);                               \
+    register ULONG _d1 __asm("d1") = (elem);                                \
+    register const void *_a6 __asm("a6") = (ffp);                           \
+    UBYTE _cc;                                                              \
+    __asm volatile("jsr -42(a6)\n\ts" cc " %0"                              \
+        : "=d"(_cc), "+d"(_d0), "+d"(_d1) : "a"(_a6)                        \
+        : "a0", "a1", "cc", "memory");                                      \
+    _cc; })
 
-/* the element type's sort parameters */
-struct sorter {
-    UWORD type;                 /* 1 byte, 2 word, 5 float, 7 string, else long */
-    UWORD size;                 /* element size (pointer step) */
-    const void *ffp;            /* a6: mathffp base */
-};
-
-/* pivot vs. element as the original's branches see it: > 0 = BGT taken
-   (pivot greater), < 0 = BLT taken.  CMP.b/CMP.w/CMP.l compare signed. */
-static LONG compare(const struct sorter *s, ULONG pivot, const UBYTE *p)
+/* compstrs - strcomplib $CE02 on the string pointers: d0/a0 = left (the
+   pivot), d1/a1 = right, the lengths at -4; -1/0/1 in d0.  Fixed (#276):
+   a pointer 0 (never assigned) is the empty string, its length is not
+   read from -4(0).  Out of line: the call may change every register but
+   a4/a5/a7, so the scan loop keeps its state in the registers this
+   function saves. */
+static __attribute__((noinline)) LONG strcmpptr(ULONG pivot, ULONG elem)
 {
-    switch (s->type) {
-    case 1:
-        return (LONG)(BYTE)pivot - (LONG)*(const BYTE *)p;
-    case 2:
-        return (LONG)(WORD)pivot - (LONG)*(const WORD *)p;
-    case 5:                                             /* compflts */
-        return ffpcmp(pivot, *(const ULONG *)p, s->ffp);
-    case 7: {                                           /* compstrs */
-        /* d0/a0 = left (pivot), d1/a1 = right: pointers to the
-           characters, lengths at -4.  strcomp2 returns -1/0/1 in d0 and
-           the same in the CCR (MOVEQ / TST.l d0).  Fixed (#276): a
-           pointer 0 (never assigned) is the empty string, its length is
-           not read from -4(0). */
-        const ULONG *l = (const ULONG *)pivot, *r = *(const ULONG *const *)p;
-        struct bl_regs rg = { .d0 = l ? l[-1] : 0, .d1 = r ? r[-1] : 0,
-                              .a0 = (ULONG)l, .a1 = (ULONG)r };
-        return (LONG)BLITZ_ALIBJSR(TOK_strcomp2, rg);
-    }
-    default: {
-        LONG a = (LONG)pivot, b = *(const LONG *)p;
-        return a > b ? 1 : a < b ? -1 : 0;
-    }
-    }
+    const ULONG *l = (const ULONG *)pivot, *r = (const ULONG *)elem;
+    struct bl_regs rg = { .d0 = l ? l[-1] : 0, .d1 = r ? r[-1] : 0,
+                          .a0 = (ULONG)l, .a1 = (ULONG)r };
+
+    return (LONG)BLITZ_ALIBJSR(TOK_strcomp2, rg);
 }
 
-static void swap(const struct sorter *s, UBYTE *a, UBYTE *b)
-{
-    if (s->size == 1) {
-        UBYTE t = *a; *a = *b; *b = t;
-    } else if (s->size == 2) {
-        UWORD t = *(UWORD *)a; *(UWORD *)a = *(UWORD *)b; *(UWORD *)b = t;
-    } else {
-        ULONG t = *(ULONG *)a; *(ULONG *)a = *(ULONG *)b; *(ULONG *)b = t;
-    }
+#define GT_I(p, v, f) ((p) > (v))
+#define LT_I(p, v, f) ((p) < (v))
+#define GT_F(p, v, f) FFP_CC_("gt", p, v, f)
+#define LT_F(p, v, f) FFP_CC_("lt", p, v, f)
+#define GT_S(p, v, f) (strcmpptr(p, v) > 0)
+#define LT_S(p, v, f) (strcmpptr(p, v) < 0)
+
+/* the scan loops: on while the pivot is COND than the element, the
+   forward one with *i++ (CMP.x (a0)+,d0), the backward one with --j
+   first (SUBQ #size,a1:CMP.x (a1),d0).  The empty asm keeps the pointer
+   in its address register, so that GCC loads with (a0)+ and (a1)
+   instead of through a copy of the pointer. */
+#define SCAN_UP(T, COND, p) do {                                            \
+    T v_;                                                                   \
+    do {                                                                    \
+        v_ = *p++;                                                          \
+        __asm__("" : "+a"(p));                                              \
+    } while (COND(pivot, v_, ffp));                                         \
+} while (0)
+#define SCAN_DOWN(T, COND, p) do {                                          \
+    T v_;                                                                   \
+    do {                                                                    \
+        p--;                                                                \
+        __asm__("" : "+a"(p));                                              \
+        v_ = *p;                                                            \
+    } while (COND(pivot, v_, ffp));                                         \
+} while (0)
+
+/* .'recurs - one function per element type T, each with the comparison
+   of its type in its scan loops (the original's sortbyte ... sortfloat):
+   lo = L, hi = R, both inclusive element addresses; pointer comparisons
+   are unsigned (BHI/BLS/BCC).  The pivot is the middle element,
+   lo[(R - L) / 2] (LSR.l #1 of the byte distance, AND.l #-size; fixed
+   (#275): for words read as a word, not with MOVE.l). */
+#define SORT_FN(name, T, GT, LT)                                            \
+static void name(T *lo BL_REG(a0), T *hi BL_REG(a1), const void *ffp BL_REG(a6)) \
+{                                                                           \
+    (void)ffp;                                                              \
+    for (;;) {                                                              \
+        T *first = lo, *last = hi;                      /* copies of */     \
+        T pivot = lo[(ULONG)(hi - lo) >> 1];                                \
+        T *i = lo, *j = hi;                                                 \
+                                                                            \
+        do {                                            /* 'loop0 */        \
+            j++;                                                            \
+            if (sdir == 0) {                                                \
+                SCAN_UP(T, GT, i);                      /* 'loop1: BGT */   \
+                SCAN_DOWN(T, LT, j);                    /* 'loop2: BLT */   \
+            } else {                                                        \
+                SCAN_UP(T, LT, i);                      /* 'loop3: BLT */   \
+                SCAN_DOWN(T, GT, j);                    /* 'loop4: BGT */   \
+            }                                                               \
+            i--;                                                            \
+            if (i > j)                                  /* 'lskip: BHI */   \
+                break;                                                      \
+            {                                                               \
+                T t = *i;                                                   \
+                                                                            \
+                *i++ = *j;                                                  \
+                *j-- = t;                                                   \
+            }                                                               \
+        } while (i <= j);                               /* BLS 'loop0 */    \
+                                                                            \
+        if (first < j)                                  /* BCC 'skip2 */    \
+            name(first, j, ffp);                                            \
+        if (!(i < last))                                /* BCC 'skip3 */    \
+            return;                                                         \
+        lo = i;                                         /* BRA 'recurs */   \
+        hi = last;                                                          \
+    }                                                                       \
 }
 
-/* .'recurs - a0 = L (lo), a1 = R (hi), both inclusive element addresses;
-   pointer comparisons are unsigned (BHI/BLS/BCC) */
-static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
-{
-    ULONG step = s->size;
+SORT_FN(sortbyte, BYTE, GT_I, LT_I)
+SORT_FN(sortword, WORD, GT_I, LT_I)
+SORT_FN(sortlong, LONG, GT_I, LT_I)
+SORT_FN(sortfloat, ULONG, GT_F, LT_F)
+SORT_FN(sortstring, ULONG, GT_S, LT_S)
 
-    for (;;) {
-        UBYTE *first = lo, *last = hi;                  /* copies of */
-        ULONG off = (ULONG)(hi - lo) >> 1;              /* LSR.l #1,d0 */
-        ULONG pivot;
-        UBYTE *scan_lo = lo, *scan_hi = hi;
-
-        if (step == 1)
-            pivot = lo[off];                            /* MOVE.b 0(a0,d0.l),d0 */
-        else if (step == 2)                             /* AND.l #$fffffffe: */
-            pivot = *(const UWORD *)(lo + (off & ~1UL));   /* fixed (#275): a word */
-        else
-            pivot = *(const ULONG *)(lo + (off & ~3UL));
-
-        do {                                            /* 'loop0 */
-            if (sdir == 0) {
-                while (compare(s, pivot, scan_lo) > 0)  /* 'loop1: BGT */
-                    scan_lo += step;
-                while (compare(s, pivot, scan_hi) < 0)  /* 'loop2: BLT */
-                    scan_hi -= step;
-            } else {
-                while (compare(s, pivot, scan_lo) < 0)  /* 'loop3: BLT */
-                    scan_lo += step;
-                while (compare(s, pivot, scan_hi) > 0)  /* 'loop4: BGT */
-                    scan_hi -= step;
-            }
-            if (scan_lo > scan_hi)                      /* 'lskip: BHI 'skip */
-                break;
-            swap(s, scan_lo, scan_hi);
-            scan_lo += step;
-            scan_hi -= step;
-        } while (scan_lo <= scan_hi);                   /* BLS 'loop0 */
-
-        if (first < scan_hi)                            /* CMP.l a1,d6:BCC 'skip2 */
-            recurs(s, first, scan_hi);
-        if (!(scan_lo < last))                          /* CMP.l d7,a0:BCC 'skip3 */
-            return;
-        lo = scan_lo;                                   /* MOVE.l d7,a1:BRA 'recurs */
-        hi = last;
-    }
-}
 
 /**
  * @brief Sort Arrayname() - sort the whole array in place.
@@ -228,26 +232,23 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
 void BLITZ_ROUTINE dosort(ULONG base BL_REG(d0), const UBYTE *args BL_REG(a2),
                           const void *ffp BL_REG(a6))
 {
-    struct sorter s;
     UBYTE *hi = (UBYTE *)*(const ULONG *)(args - 4);    /* MOVE.l -(a2),a1 */
 
-    s.type = *(const UWORD *)(args - 6);                /* MOVE -(a2),d1 */
-    s.ffp = ffp;
-    switch (s.type) {
-    case 1:
-        s.size = 1;                                     /* sortbyte */
+    switch (*(const UWORD *)(args - 6)) {               /* MOVE -(a2),d1 */
+    case 1:                                             /* SUBQ #size,a1 */
+        sortbyte((BYTE *)base, (BYTE *)(hi - 1), ffp);
         break;
     case 2:
-        s.size = 2;                                     /* sortword */
+        sortword((WORD *)base, (WORD *)(hi - 2), ffp);
         break;
-    case 5:                                             /* sortfloat */
-    case 7:                                             /* sortstring */
-        s.size = 4;
+    case 5:
+        sortfloat((ULONG *)base, (ULONG *)(hi - 4), ffp);
         break;
-    default:
-        s.type = 3;                                     /* sortlong (also 4) */
-        s.size = 4;
+    case 7:
+        sortstring((ULONG *)base, (ULONG *)(hi - 4), ffp);
+        break;
+    default:                                            /* also 3 and 4 */
+        sortlong((LONG *)base, (LONG *)(hi - 4), ffp);
         break;
     }
-    recurs(&s, (UBYTE *)base, hi - s.size);             /* SUBQ #size,a1 */
 }
