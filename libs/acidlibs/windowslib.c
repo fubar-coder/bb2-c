@@ -1204,36 +1204,55 @@ static void BLITZ_ROUTINE docursor_c(WORD u BL_REG(d0))
 }
 BLITZ_ALIAS(docursor, docursor_c);
 
-/* the event data (word functions, see above) */
-
-/** @brief GadgetHit - the gadget id of the last gadget event (-1 at init).
-    @return d0: the id (low word) */
-static UWORD BLITZ_ROUTINE dogadgethit_c(void)      { return V.eventgnum; }
-/** @brief MenuHit - the menu number of the last menu event, -1 for none.
-    @return d0: the number (low word) */
-static UWORD BLITZ_ROUTINE domenuhit_c(void)        { return V.menunum; }
-/** @brief ItemHit - the item number of the last menu event, -1 for none.
-    @return d0: the number (low word) */
-static UWORD BLITZ_ROUTINE doitemhit_c(void)        { return V.itemnum; }
-/** @brief SubHit - the subitem number of the last menu event, -1 for none.
-    @return d0: the number (low word) */
-static UWORD BLITZ_ROUTINE dosubhit_c(void)         { return V.subnum; }
-/** @brief EventQualifier - the qualifier of the last event.
-    @return d0: the qualifier (low word) */
-static UWORD BLITZ_ROUTINE doeventqualifier_c(void) { return V.evqualifier; }
-WORD_FN(dogadgethit, dogadgethit_c);
-WORD_FN(domenuhit, domenuhit_c);
-WORD_FN(doitemhit, doitemhit_c);
-WORD_FN(dosubhit, dosubhit_c);
-WORD_FN(doeventqualifier, doeventqualifier_c);
-
 /* the offsets of the event fields in V, for the assembler entries below */
 #define V_EVCODE 8
+#define V_EVQUALIFIER 10
+#define V_EVENTGNUM 12
+#define V_MENUNUM 18
+#define V_ITEMNUM 20
+#define V_SUBNUM 22
 #define V_EVMOUSEX 98
 #define V_EVMOUSEY 100
 static_assert(offsetof(__typeof__(V), evcode) == V_EVCODE);
+static_assert(offsetof(__typeof__(V), evqualifier) == V_EVQUALIFIER);
+static_assert(offsetof(__typeof__(V), eventgnum) == V_EVENTGNUM);
+static_assert(offsetof(__typeof__(V), menunum) == V_MENUNUM);
+static_assert(offsetof(__typeof__(V), itemnum) == V_ITEMNUM);
+static_assert(offsetof(__typeof__(V), subnum) == V_SUBNUM);
 static_assert(offsetof(__typeof__(V), evmousex) == V_EVMOUSEX);
 static_assert(offsetof(__typeof__(V), evmousey) == V_EVMOUSEY);
+
+/* The event data (word functions, see above): MOVE.w x(pc),d0:RTS as in
+   the original.  GadgetHit, MenuHit, ItemHit, SubHit and EventQualifier
+   have the form of EMouseX below: a program reads them after every
+   event, and the assembler entry writes only the low word of d0 (keeps
+   every other register) whatever GCC makes of the rest of the library. */
+
+/** @brief GadgetHit - the gadget id of the last gadget event (-1 at init).
+    @return d0.w: the id; every other register kept */
+BLITZ_ASM_ROUTINE(dogadgethit,
+"   move.w  _V+" BL_STR(V_EVENTGNUM) "(pc),d0\n"
+"   rts");
+/** @brief MenuHit - the menu number of the last menu event, -1 for none.
+    @return d0.w: the number; every other register kept */
+BLITZ_ASM_ROUTINE(domenuhit,
+"   move.w  _V+" BL_STR(V_MENUNUM) "(pc),d0\n"
+"   rts");
+/** @brief ItemHit - the item number of the last menu event, -1 for none.
+    @return d0.w: the number; every other register kept */
+BLITZ_ASM_ROUTINE(doitemhit,
+"   move.w  _V+" BL_STR(V_ITEMNUM) "(pc),d0\n"
+"   rts");
+/** @brief SubHit - the subitem number of the last menu event, -1 for none.
+    @return d0.w: the number; every other register kept */
+BLITZ_ASM_ROUTINE(dosubhit,
+"   move.w  _V+" BL_STR(V_SUBNUM) "(pc),d0\n"
+"   rts");
+/** @brief EventQualifier - the qualifier of the last event.
+    @return d0.w: the qualifier; every other register kept */
+BLITZ_ASM_ROUTINE(doeventqualifier,
+"   move.w  _V+" BL_STR(V_EVQUALIFIER) "(pc),d0\n"
+"   rts");
 
 /* EMouseX, EMouseY and EventCode are MOVE.w x,d0:RTS as in the original,
    assembler entries (not C functions) because a caller relies on what
