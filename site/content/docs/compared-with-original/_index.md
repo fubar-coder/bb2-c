@@ -38,9 +38,17 @@ against the original yourself.
   original, but only where the original refused the source. A source that
   the original compiled is never given a new meaning.
 * **Inside the port.** The C code differs from the original assembler code
-  in many details that no program can see, such as which registers a
-  library routine leaves changed. These are listed for developers and are
-  not part of this chapter.
+  in many details that no program can see. These are listed for developers
+  and are not part of this chapter.
+* **Registers for assembler code.** A library command keeps the registers
+  Mark Sibly's library documentation promises: a4, a5, a6 and a7, and a
+  function also a3. Other registers, such as d0, d1, a0 and a1, may be
+  changed even where the original happened to keep them. A Basic program
+  cannot see this; inline assembler around a command and assembler
+  libraries that call a command can. The commands that known libraries
+  and programs rely on keep their registers as before (EventWindow,
+  EMouseX, EMouseY, EventCode, RawStatus, InitSound, Rnd, WBWidth,
+  WBHeight, WBDepth).
 
 ## The editor
 

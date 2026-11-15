@@ -32,12 +32,20 @@ carried over (for the comparison with AmiBlitz3).
   is an a3 that is *behind* the 0: the next part of a string expression
   is then written one byte too far (GetRexxCommand/GetResultString,
   fixed #52; FileRequest$, fixed #161).
-* **Register preservation:** according to the AmiBlitz3 spec a lib routine may change everything
-  except a4/a5/a7; the LIBSDEV documentation (EXTRAS/LIBSDEV/DOCUMENTATION:796-805)
-  also requires a6, which the compiler keeps across calls within a statement,
-  and a3 in functions. As with the system libs, the C versions
-  nevertheless preserve at least the registers that the original preserves (thunks,
-  checked in `[cmd]`).
+* **Register preservation:** a user-level statement or function keeps a4, a5,
+  a6 and a7, a function also a3 (the LIBSDEV documentation,
+  EXTRAS/LIBSDEV/DOCUMENTATION:794-805: the compiler keeps a6 across the
+  calls of one statement, a3 is the string build pointer); nothing else is
+  guaranteed, not d0, d1, a0, a1 nor the upper word of d0 after a word
+  function. The entries are the C functions themselves (`BLITZ_ALIAS`), no
+  thunk. Exceptions keep what a known caller needs: RawStatus and
+  EventWindow a1, EMouseX a0, EMouseY and EventCode a0 and the upper word
+  of d0, InitSound a0, Rnd and WBWidth/WBHeight/WBDepth a0/a1, ExecVersion
+  a zero-extended long (the callers: `deviations.md`, "Register
+  preservation"). Internal tokens, init/finit, nullsubs and error checks
+  keep their thunks and preserve at least what the original preserves.
+  Checked by the `KEEPS` cases of the library tests (`tests/README.md`,
+  "Kept registers").
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
   `AddAppIconA`: DiskObject in a3, tag list in a4; intuition
   `EasyRequestArgs`, `AutoRequest`, graphics `TextFit`,
