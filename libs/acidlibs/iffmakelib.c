@@ -17,7 +17,7 @@
  *   masking 0, compression 1 (ByteRun1), pad 0, transparent colour 0,
  *   aspect 10:11, page = width/height;
  *   CMAP (palette given): 3 bytes per colour = the top bytes of the
- *   palette's 32 bit values, no pad byte for an odd count;
+ *   palette's 32 bit values, a pad byte 0 for an odd count (fixed, #184);
  *   BODY: every row of every plane packed separately (savearow), one $80
  *   (no-op) byte if the body length is odd.  The FORM and BODY lengths are
  *   written at the end with Seek.
@@ -35,7 +35,6 @@
  *    write 65536 colours (#182); a screen always has colours.
  *  - Not a bug: savearow's indexes are signed words (a2 + d4.w; matters
  *    only for rows of 32 KB or more, which are not usable).
- *  - CMAP chunks of an odd size are not padded. (#184)
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
  *
@@ -43,6 +42,12 @@
  * with the byte Depth at BitMap+5, as nPlanes of the BMHD; the original
  * compared with the WORD at +4 (Flags<<8 | Depth), so a bitmap whose
  * Flags byte is not 0 got Flags*256 + Depth planes per row.
+ *
+ * Fixed (intended deviation, #184): a CMAP of odd length (an odd number
+ * of colours) gets the IFF pad byte (0), counted in the FORM length (the
+ * chunk length stays 3 x colours); the original wrote none, so the BODY
+ * of SaveBitmap/SaveShape/SaveScreen started at an odd offset (not a
+ * valid IFF file), and the file of SavePalette ended without it.
  *
  * Fixed (intended deviation, #183): savearow's literal run no longer
  * reads the byte behind the row: at the row's last byte no run of three
@@ -242,6 +247,10 @@ static void makecolor(const struct palette *pal)
         *out++ = (UBYTE)(*rgb++ >> 24);
         *out++ = (UBYTE)(*rgb++ >> 24);
     } while (count-- != 0);
+    if (size & 1) {                             /* fixed (#184): pad byte */
+        *out++ = 0;
+        ifflen++;
+    }
     ifflen += 8;
     Write(fh, iffbuff, out - iffbuff);
 }
@@ -413,7 +422,7 @@ BLITZ_THUNK(dosavebitmap2, dosavebitmap2_c, "d0-d1/a0-a1");
  * Errors (debugger only): also "Uninitialized Palette" (bitchk2; also for
  * a palette of 0 colours, fixed #182: the original wrote 65536 colours over
  * the end of the buffer).
- * BUG(orig): CMAP chunks of an odd size are not padded (#184).
+ * Fixed (#184): a CMAP of an odd size gets the pad byte.
  *
  * @param bm    a0: the BitMap (!libs {#bitmaplib,$1080})
  * @param name  d1: the file name
@@ -501,8 +510,8 @@ BLITZ_THUNK(dosaveshape2, dosaveshape2_c, "d0-d1/a0-a1");
  * only the CMAP chunk (no FORM).
  *
  * Nothing for a palette without colours.  Amiga mode only.
- * Errors: "Can't open File" as SaveBitmap; BUG(orig): the CMAP is not
- * padded (#184).
+ * Errors: "Can't open File" as SaveBitmap.  Fixed (#184): a CMAP of an
+ * odd size gets the pad byte (the original's file ended without it).
  *
  * @param pal   a2: the palette (!libs {#palettelib,$1280})
  * @param name  d1: the file name
