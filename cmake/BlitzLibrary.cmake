@@ -34,7 +34,11 @@
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
 #                 The same build step checks the sources first (no
 #                 section directive in their assembler,
-#                 check-asm-sections.cmake), then the library (blitzlib
+#                 check-asm-sections.cmake), then the __entrypoint
+#                 routines of the objects (blitzlib entrypoints: a6 kept,
+#                 no call or jump into them, not folded with another
+#                 function; BLITZ_ENTRYPOINT in blitzlib.h), then the
+#                 library (blitzlib
 #                 check: one hunk, header, token table, no reference from the normal
 #                 code into the error check area, no check thunk calling a
 #                 check function in the normal code): if the check fails, NAME.obj does
@@ -187,6 +191,7 @@ function(blitz_library name)
 	add_custom_command(OUTPUT ${obj}
 		BYPRODUCTS ${cmdref_files}
 		COMMAND ${CMAKE_COMMAND} -DSOURCES=${sources} -P ${BLITZLIB_ASM_SECTIONS_CHECK}
+		COMMAND ${BLITZLIB} entrypoints --objdump ${CMAKE_OBJDUMP} $<TARGET_FILE:${name}>
 		COMMAND ${CMAKE_C_COMPILER} -m${AMIGA_CPU} -noixemul -nostartfiles -nostdlib
 			-Wl,-T,${BLITZLIB_LD}
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc

@@ -99,6 +99,34 @@ add_test(NAME blitzlib_asm_sections_good COMMAND ${CMAKE_COMMAND}
 	-DSOURCES=${PROJECT_SOURCE_DIR}/cmake/asm-sections/good.c
 	-P ${BLITZLIB_ASM_SECTIONS_CHECK})
 
+# the check of the library build step of the __entrypoint routines
+# (blitzlib entrypoints, BLITZ_ENTRYPOINT in include/blitzlib.h) with
+# deliberately broken input: objects compiled like a library's
+# (cmake/entrypoint/broken.c: a routine that loads a6, a C call into a
+# routine, a routine without no_icf folded with a plain function) and one
+# that must pass (good.c: the same pair with no_icf)
+foreach(t broken good)
+	add_library(entrypoint_${t} STATIC ${PROJECT_SOURCE_DIR}/cmake/entrypoint/${t}.c)
+	target_include_directories(entrypoint_${t} BEFORE PRIVATE ${BLITZ_DEFAULT_VARIANT_DIR}
+		${BLITZLIB_NDK_SHADOW})
+	target_include_directories(entrypoint_${t} PRIVATE ${BLITZLIB_INCLUDE})
+	target_compile_options(entrypoint_${t} PRIVATE ${BLITZLIB_OPTIONS_BEFORE}
+		${BLITZLIB_OPTIMIZE_size} ${BLITZLIB_OPTIONS_AFTER})
+endforeach()
+add_test(NAME blitzlib_entrypoints_good COMMAND ${BLITZLIB} entrypoints
+	--objdump ${CMAKE_OBJDUMP} $<TARGET_FILE:entrypoint_good>)
+foreach(c "a6|availmem: the __entrypoint routine writes a6 without saving it"
+		"call|a call or jump into the __entrypoint routine sum,"
+		"folded|a call or jump into the __entrypoint routine folded,")
+	string(REPLACE "|" ";" c "${c}")
+	list(GET c 0 name)
+	list(GET c 1 re)
+	add_test(NAME blitzlib_entrypoints_broken_${name} COMMAND ${BLITZLIB} entrypoints
+		--objdump ${CMAKE_OBJDUMP} $<TARGET_FILE:entrypoint_broken>)
+	set_tests_properties(blitzlib_entrypoints_broken_${name} PROPERTIES
+		PASS_REGULAR_EXPRESSION "${re}")
+endforeach()
+
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
 # in the same order (the compiler's token list order), as committed data

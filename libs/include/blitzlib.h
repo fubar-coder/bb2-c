@@ -766,6 +766,33 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    statement in the library tests states the registers. */
 #define BLITZ_ALIAS(entry, cfunc) \
     __asm__("   .globl  _" #entry "\n   .set    _" #entry ",_" #cfunc)
+
+/* BLITZ_ENTRYPOINT - in front of the C function of a user-level entry
+   (static BLITZ_ENTRYPOINT BLITZ_ROUTINE ULONG f_c(...)) that GCC is to
+   compile without saving the callee-saved registers d2-d7/a2/a6 (GCC's
+   __entrypoint): the register rule does not need d2-d7/a2 kept, and the
+   saves are the cost of a short routine.  BLITZ_ALIAS_EP(entry, cfunc)
+   behind it makes it the entry and marks it for the build check
+   (blitzlib entrypoints, tools/lib/epcheck), which refuses:
+     - a6 written without a save at the routine's start (the rule keeps
+       a6; __entrypoint gives it free, so a routine that loads a library
+       base must not be one);
+     - a call or jump into the routine from other code: GCC does not know
+       at a call site that the routine keeps nothing, so it must never be
+       called from C;
+     - folding with a function of the same body: GCC's identical code
+       folding merges them (the plain one loses its saves); no_icf keeps
+       the routine apart.
+   Only for entries; never for internal tokens (they keep d2-d7). */
+#ifndef BL_CODE_MODEL
+#define BLITZ_ENTRYPOINT __entrypoint __attribute__((no_icf))
+#else
+#define BLITZ_ENTRYPOINT
+#endif
+#define BLITZ_ALIAS_EP(entry, cfunc)                                        \
+    __asm__("   .globl  _" #entry "\n   .set    _" #entry ",_" #cfunc       \
+            "\n   .globl  ___blitz_entrypoint_" #entry                       \
+            "\n   .set    ___blitz_entrypoint_" #entry ",_" #cfunc)
 #define BLITZ_THUNK_Z(entry, cfunc, save) \
     BL_THUNK_(entry, cfunc, save, "", "   tst.l   d0\n")
 #define BLITZ_THUNK_PRE(entry, cfunc, save, pre) \

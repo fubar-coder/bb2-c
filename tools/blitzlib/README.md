@@ -4,12 +4,14 @@ Works on Blitz Basic 2 library files and BigLib files (`blitz2:acidlibs`,
 `blitz2:deflibs`, a series of library files): joins library files into a
 BigLib file (`join`), takes one out of it (`extract`), checks that no
 library number occurs twice (`numbers`), checks a library file built from
-C (`check`), compares the declarations with the original (`compare`) and
-writes the command table as JSON for the website (`cmdref`). The logic is
-in `tools/lib/biglib` (BigLib files), `tools/lib/blitzlib` (header, token
-table, checks, the comparison) and `tools/lib/cmdref`, tested by
-`tools/tests/test_biglib.c`, `test_blitzlib.c`, `test_blitzlib_compare.c`
-and `test_cmdref.c`.
+C (`check`), compares the declarations with the original (`compare`),
+writes the command table as JSON for the website (`cmdref`) and checks
+the `__entrypoint` routines of a library's objects (`entrypoints`). The
+logic is in `tools/lib/biglib` (BigLib files), `tools/lib/blitzlib`
+(header, token table, checks, the comparison), `tools/lib/cmdref` and
+`tools/lib/epcheck`, tested by `tools/tests/test_biglib.c`,
+`test_blitzlib.c`, `test_blitzlib_compare.c`, `test_cmdref.c` and
+`test_epcheck.c`.
 
 ## Usage
 
@@ -32,6 +34,7 @@ SUBCOMMANDS:
   decls                       the declarations of every library of a BigLib file (or of a
                               library file) as text
   cmdref                      the command table of a Blitz Basic 2 library file as JSON
+  entrypoints                 check the __entrypoint routines of a library's objects
 ```
 
 ### join
@@ -251,6 +254,37 @@ The command table of the library file as JSON
 (`tools/lib/cmdref/cmdref.h`), to `OUT` or stdout; `OUT` is removed
 first, so a failed run leaves none.
 
+### entrypoints
+
+```
+Usage: blitzlib entrypoints [OPTIONS] FILE...
+
+check the __entrypoint routines of a library's objects
+
+POSITIONALS:
+  FILE TEXT ... REQUIRED      the static library or the objects of the library
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --objdump OBJDUMP REQUIRED 
+                              the toolchain's objdump
+
+A routine compiled with BLITZ_ENTRYPOINT (GCC's __entrypoint: no callee-saved
+register saved) and marked by BLITZ_ALIAS_EP must not write a6 without saving it
+at its start (the register rule keeps a6), must not be called or jumped into
+from other code (GCC does not know that it keeps no d2-d7/a2; identical code
+folding makes a function with the same body a jump to it), and must not begin
+with a jump into another routine. Silent if all is right. Exit status 0, 1 a
+finding (on stderr), 2 usage error.
+```
+
+The routines are the C functions with `BLITZ_ENTRYPOINT` that
+`BLITZ_ALIAS_EP` makes token table entries (`libs/include/blitzlib.h`):
+each is marked by the global symbol `___blitz_entrypoint_NAME` and ends at
+the next symbol of `.text`. The check reads `objdump -t` and
+`objdump -d` of each `FILE` (`tools/lib/epcheck/epcheck.h`); a finding is
+`OBJECT: NAME: ...` or `OBJECT: OFFSET: INSTRUCTION: ...`.
+
 ## Inputs and outputs
 
 Library files are AmigaDOS load files with one code hunk (layout:
@@ -262,7 +296,7 @@ writes the JSON of `site/data/libraries/GROUP/NAME.json`.
 
 * 0 success;
 * 1 a check fails (`numbers`: a number twice; `check`: an invalid
-  library file; `compare`: a difference or a stale intended entry) or an
+  library file; `entrypoints`: a finding; `compare`: a difference or a stale intended entry) or an
   input cannot be read, is no library or BigLib file, or the output
   cannot be written;
 * 2 usage error;
@@ -297,6 +331,10 @@ Messages go to stderr as `blitzlib SUB: [FILE: ]message`; the findings of
   `rwe_refbuild_selftest` (`libs/userlibs/rwe/refbuild.cmake`).
 * `extract`: `libs/tests/emulator.cmake` (the originals of the library
   tests).
+* `entrypoints`: `blitz_library()` in `cmake/BlitzLibrary.cmake`, the
+  step that links every library file (on its static library); the tests
+  `blitzlib_entrypoints_good`, `blitzlib_entrypoints_broken_a6`, `_call`,
+  `_folded` (`libs/CMakeLists.txt`, `cmake/entrypoint/`).
 * Tests: `help_blitzlib`, `readme_blitzlib` (`tools/blitzlib/CMakeLists.txt`).
 
 ## Example

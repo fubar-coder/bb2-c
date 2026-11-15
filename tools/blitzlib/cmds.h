@@ -15,6 +15,7 @@ void cmd_check(CLI::App &app, int &status);
 void cmd_compare(CLI::App &app, int &status);
 void cmd_decls(CLI::App &app, int &status);
 void cmd_cmdref(CLI::App &app, int &status);
+void cmd_entrypoints(CLI::App &app, int &status);
 
 /* the reservation of libraries 32 and 33 (#1018, blitzlib_reserved) for
    the library file in data/size (a hunk file); what names it in the

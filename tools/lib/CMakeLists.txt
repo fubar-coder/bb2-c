@@ -68,6 +68,8 @@
 #              and TED 1.1's font files (tools/tedfont)
 #   perfbudget the benchmark of the libraries (tests/perf): the cycles per
 #              call from the programs' output
+#   epcheck    the __entrypoint routines of a library (BLITZ_ENTRYPOINT):
+#              a6 kept, no call or jump into them, not folded (objdump text)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -103,3 +105,4 @@ add_subdirectory(bugorigcmp)
 add_subdirectory(cli)
 add_subdirectory(tedfont)
 add_subdirectory(perfbudget)
+add_subdirectory(epcheck)

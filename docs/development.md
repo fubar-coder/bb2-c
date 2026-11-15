@@ -293,6 +293,17 @@ again):
   `.section .blitzlib.head` (dhandlerlib's code in the header section).
   ctest `blitzlib_asm_sections_broken`, `blitzlib_asm_sections_good`:
   the check with broken and with good input.
+* the `__entrypoint` routines of every library file (`blitzlib
+  entrypoints` on its static library, in the same step, before the
+  link): a C function with `BLITZ_ENTRYPOINT` (GCC saves no callee-saved
+  register in it), marked by `BLITZ_ALIAS_EP`, must not write a6 without
+  saving it at its start (the register rule keeps a6, and GCC then uses
+  a6 as a free register), must not be called or jumped into from other
+  code (GCC does not know at a call site that it keeps nothing), and must
+  not be folded with a function of the same body (identical code folding;
+  `BLITZ_ENTRYPOINT` carries `no_icf`). ctest
+  `blitzlib_entrypoints_broken_a6`, `_call`, `_folded` and
+  `blitzlib_entrypoints_good` (`cmake/entrypoint/`).
 * the command reference of the website (`blitzlib cmdref`, in the same
   step as link and strip of every library file of acidlibs and deflibs of
   the default variant and of every RWE userlib): the command table the
