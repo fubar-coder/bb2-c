@@ -98,6 +98,13 @@
  *                          the reused memory happened to hold.  Nothing is
  *                          reported (how many allocations a program makes
  *                          differs between the original and the port)
+ *   freefill=XX            the allocations are recorded (as track, without
+ *                          its report), and every FreeMem of one of them
+ *                          first sets the bytes freed (the size given to
+ *                          FreeMem) to the byte XX, as a memory checker
+ *                          does: a read of a block after its FreeMem
+ *                          finds XX at once, not the old contents
+ *                          (only blocks of the record are filled)
  * What COMMAND leaves behind:
  *   opencount=NAME         how often the process opened a library whose
  *                          name ends in NAME (OpenLibrary, OldOpenLibrary)
@@ -231,8 +238,8 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
 static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
-static int o_guardseg;
-static UBYTE fill_byte;
+static int o_guardseg, o_freefill;
+static UBYTE fill_byte, freefill_byte;
 static ULONG ds_days, ds_done;
 static ULONG nn_num;
 static char nn_name[40];
@@ -614,7 +621,7 @@ void alloc_post(ULONG mem, ULONG size, ULONG flags)
 
     if (o_fill && mem && !(flags & MEMF_CLEAR) && ours())
         memset((UBYTE *)mem, fill_byte, size);
-    if ((!o_track && !o_pad) || !mem || !ours())
+    if ((!o_track && !o_pad && !o_freefill) || !mem || !ours())
         return;
     if (o_guard) {
         ULONG a;
@@ -640,7 +647,7 @@ ULONG free_pre(ULONG mem, ULONG size)
 {
     ULONG h, i;
 
-    if ((!o_track && !o_pad) || !mem || !ours())
+    if ((!o_track && !o_pad && !o_freefill) || !mem || !ours())
         return size;
     for (h = hash(mem), i = 0; i < SLOTS && slot[h].addr; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == mem) {
@@ -658,6 +665,8 @@ ULONG free_pre(ULONG mem, ULONG size)
             }
             if (o_guard)
                 guard_check(mem, slot[h].size, slot[h].pad);
+            if (o_freefill)
+                memset((UBYTE *)mem, freefill_byte, size);
             slot[h].addr = TOMB;
             nalloc--;
             return o_pad ? size + slot[h].pad : size;
@@ -1304,17 +1313,25 @@ static int option(const char *a)
         return o_pad = o_guard = o_guardseg = 1;
     if (!strcmp(a, "createprocfail"))
         return o_createprocfail = 1;
-    if (!strncmp(a, "fill=", 5)) {
-        int n, d;
+    if (!strncmp(a, "fill=", 5) || !strncmp(a, "freefill=", 9)) {
+        int n, d, isfree = a[0] == 'f' && a[1] == 'r';
+        UBYTE b = 0;
 
-        for (n = 0, s = a + 5, fill_byte = 0; n < 2; n++, s++) {
+        for (n = 0, s = a + (isfree ? 9 : 5); n < 2; n++, s++) {
             d = *s >= '0' && *s <= '9' ? *s - '0'
                 : lower(*s) >= 'a' && lower(*s) <= 'f' ? lower(*s) - 'a' + 10 : -1;
             if (d < 0)
                 return -1;
-            fill_byte = (UBYTE)(fill_byte * 16 + d);
+            b = (UBYTE)(b * 16 + d);
         }
-        return *s ? -1 : (o_fill = 1);
+        if (*s)
+            return -1;
+        if (isfree) {
+            freefill_byte = b;
+            return o_freefill = 1;
+        }
+        fill_byte = b;
+        return o_fill = 1;
     }
     if (!strncmp(a, "allocfail=", 10)) {
         s = a + 10;
@@ -1617,7 +1634,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
     "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
-    "    track pad guard guardseg fill=XX datestamp=YYYY-MM-DD\n"
+    "    track pad guard guardseg fill=XX freefill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
@@ -1653,6 +1670,7 @@ int main(int argc, char **argv)
             "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard] [guardseg] [fill=XX]\n"
+            "              [freefill=XX]\n"
             "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"

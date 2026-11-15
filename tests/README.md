@@ -1021,6 +1021,9 @@ e.g. the AN_SemCorrupt that exec raises for one ReleaseSemaphore too
 many and would otherwise show later, at a random moment; a dead-end
 alert stops the process, the session ends by its time limit),
 recorded allocations and FreeMem of another size than allocated;
+with `freefill=XX` every block of the process is set to XX at its
+FreeMem, as a memory checker does (a read after the FreeMem finds XX,
+`animlib-freeanim-after-free`);
 with `pad` 64 zeroed bytes behind every allocation, also a hunk of
 LoadSeg, a FreeMem inside an allocation is reported and not done, and
 one whose 64 bytes are no longer zero is reported (written behind); with
