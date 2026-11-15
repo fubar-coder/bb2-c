@@ -519,6 +519,11 @@ build.
       C path calls the copy routine and tests the length before it sees
       0, about 50 cycles more than the original's `BEQ 'endass`), not
       changed here.
+    - Frac (task 10.5, vallib): the C function saved d2-d7/a2/a6 around
+      its mathffp calls; it is the original's assembler entry, as Abs,
+      Int and Sgn (decision 16), with the original's tail jump into
+      SPSub. `q3=Frac(q1)` (with both Quick/Float conversions) 3986.1 ->
+      3710.2 (3718.0).
 
 ## Risks / Trade-offs
 

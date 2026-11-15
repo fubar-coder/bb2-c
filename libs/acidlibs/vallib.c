@@ -398,23 +398,24 @@ BLITZ_ALIAS(dontsc, dontsc_c);
  * @brief Frac(Expression) - the fractional part of a float.
  *
  * f - Floor(f) for positive, f - Ceil(f) for negative f (FFP sign = bit
- * 7): SPSub with d0 = f, d1 = Floor/Ceil.
+ * 7): SPSub with d0 = f, d1 = Floor/Ceil.  The original's code, an
+ * assembler entry (as Abs, Int and Sgn below): the C function saved
+ * d2-d7/a2/a6 around the mathffp calls, about 270 cycles per call.  It
+ * changes what mathffp changes (d0, d1, a0, a1) and keeps a6.
  *
- * @param f d0: the float (FFP)
- * @param ffp a6: the mathffp base
- * @return d0: the fraction (FFP)
+ * In:  d0 the float (FFP), a6 the mathffp base
+ * Out: d0 the fraction (FFP)
  */
-static ULONG BLITZ_ROUTINE doffrac_c(ULONG f BL_REG(d0), const void *ffp BL_REG(a6))
-{
-    ULONG i;
-
-    if (f & 0x80)                               /* BTST #7,d0 */
-        i = BLITZ_BASEJSR1(ffp, LVO_SPCeil, f);
-    else
-        i = BLITZ_BASEJSR1(ffp, LVO_SPFloor, f);
-    return BLITZ_BASEJSR2(ffp, LVO_SPSub, f, i);
-}
-BLITZ_ALIAS(doffrac, doffrac_c);
+BLITZ_ASM_ROUTINE(doffrac,
+"   move.l  d0,-(sp)\n"
+"   btst    #7,d0\n"
+"   beq.s   0f\n"
+"   jsr     -96(a6)\n"                      /* SPCeil */
+"   bra.s   1f\n"
+"0: jsr     -90(a6)\n"                      /* SPFloor */
+"1: move.l  d0,d1\n"
+"   move.l  (sp)+,d0\n"
+"   jmp     -72(a6)");                      /* SPSub: d0 - d1 */
 
 /* Abs, Int and Sgn are assembler entries in the original's form: their
    integer and Quick cases are a few instructions, and the C functions,
