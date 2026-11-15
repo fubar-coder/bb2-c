@@ -1686,6 +1686,76 @@ graphics. Two more fixes of them change what an existing program draws:
   [#74](https://github.com/fubar-coder/bb2-c/issues/74),
   [#243](https://github.com/fubar-coder/bb2-c/issues/243)).
 
+### IFF files
+
+These are the commands that load and save IFF files, the Amiga's standard
+format for pictures (ILBM), colours, sounds and animations. The first two
+fixes change the files that `SaveBitmap`, `SaveScreen`, `SaveShape` and
+`SavePalette` write, so such a file is not always the same byte for byte
+as the one the original writes. Loaded again, it gives the same picture
+and the same colours.
+
+* With a palette of an odd number of colours, the colour chunk (CMAP)
+  has an odd length and got no pad byte, which IFF requires after such a
+  chunk. The picture data behind it then started at an odd place in the
+  file, and strict IFF readers, such as programs that use
+  `iffparse.library`, could not read the file. The chunk gets its pad
+  byte, so these files are one byte longer; the port's load commands
+  still read the files without it
+  ([#184](https://github.com/fubar-coder/bb2-c/issues/184)).
+* The packer of `SaveBitmap`, `SaveScreen` and `SaveShape` looked at the
+  byte behind the end of each row, and when that byte equalled the row's
+  last two bytes, it packed them differently. Both packings give the same
+  picture, but one depended on the next row or on the memory behind the
+  bitmap. Every row is packed from its own bytes, so a saved row can
+  differ from the original's
+  ([#183](https://github.com/fubar-coder/bb2-c/issues/183)).
+* `SaveBitmap` and `SaveShape` with a palette of 0 colours wrote 65536
+  colours into a buffer of 4096 bytes and over the memory behind it; with
+  runtime error checking, a palette without colours is the error
+  "Uninitialized Palette"
+  ([#182](https://github.com/fubar-coder/bb2-c/issues/182);
+  [A palette of 0 colours for `SaveBitmap` and `SaveShape`]({{< relref "/docs/compared-with-original/new-errors#save-palette-no-colours" >}})).
+* `SaveShape` of a shape of depth 0 or of more than 14 planes, such as
+  one that `LoadShape` made from a 24-bit picture, wrote the addresses of
+  its planes over the memory of the library; it is the runtime error
+  "Illegal Shape Depth", also without runtime error checking
+  ([#326](https://github.com/fubar-coder/bb2-c/issues/326);
+  [`SaveShape` of a shape of depth 0 or more than 14]({{< relref "/docs/compared-with-original/new-errors#saveshape-depth" >}})).
+* `LoadBitMap` and `LoadScreen` of a file that could not be opened, or of
+  one without a picture header (BMHD), went on with what an earlier load
+  had left in the read buffer: they showed the old picture again or
+  garbage, or stopped with a message that did not fit. They stop with
+  "Can't Open File" or "Can't Find IFF 'BMHD'"
+  ([#187](https://github.com/fubar-coder/bb2-c/issues/187);
+  [`LoadBitMap` and `LoadScreen` of a missing file]({{< relref "/docs/compared-with-original/new-errors#loadbitmap-missing-file" >}})).
+* A read error of the disk or device during an IFF load counted as 65535
+  bytes read, and the old contents of the read buffer were taken as the
+  file's data: `LoadShape` of a device that cannot be read loaded the
+  previous picture again, and the search for a chunk could hang. A read
+  error is the end of the file, and the load command stops with its
+  runtime error
+  ([#177](https://github.com/fubar-coder/bb2-c/issues/177)).
+* A chunk of length 0 was read or skipped as one of 4 GB: `LoadSound` of
+  a sound file with an empty BODY copied the rest of the file over the
+  memory behind the sound. A chunk of length 0 reads nothing
+  ([#179](https://github.com/fubar-coder/bb2-c/issues/179)).
+* `ILBMInfo` of a file that could not be opened closed it all the same,
+  which crashes older versions of AmigaOS; only an open file is closed
+  ([#186](https://github.com/fubar-coder/bb2-c/issues/186)).
+* `DecodeILBM` did not skip the pad byte behind a chunk of odd length,
+  such as a short text (ANNO) that paint programs write into the file, so
+  it read the next chunk one byte too early and stopped with "Can't Find
+  IFF 'BODY'" or took wrong data; the pad byte is skipped
+  ([#189](https://github.com/fubar-coder/bb2-c/issues/189)).
+* `DecodeILBM` wrote all planes, rows and bytes of the picture into the
+  bitmap, also into a smaller one: through plane addresses behind the
+  bitmap's depth and past the end of its planes. A packed run across the
+  end of a row went on in the next row. Only the part of the picture that
+  fits the bitmap is stored, and every run ends with its row
+  ([#190](https://github.com/fubar-coder/bb2-c/issues/190),
+  [#191](https://github.com/fubar-coder/bb2-c/issues/191)).
+
 ### Sounds
 
 * `DecodeSound` uses sound data that lies in chip memory where it is, and

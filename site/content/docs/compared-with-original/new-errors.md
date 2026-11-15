@@ -1023,6 +1023,58 @@ rounded up to whole 16 pixel words, times the height.
 
 Issue: [Large shapes had their line and plane steps and sizes only as a word (#263)](https://github.com/fubar-coder/bb2-c/issues/263).
 
+### A palette of 0 colours for `SaveBitmap` and `SaveShape` {#save-palette-no-colours}
+
+**What happened.** `InitPalette p,0` makes a palette without colours.
+`SaveBitmap` and `SaveShape` with such a palette wrote 65536 colours,
+192 KB, into a buffer of 4 KB and over the memory behind it, also with
+runtime error checking.
+
+**With the port.** With runtime error checking, a palette without
+colours is the error "Uninitialized Palette", as a palette that was never
+made. Without runtime error checking, the commands are as before.
+
+**What to change.** Give the palette at least one colour, or save the
+picture without a palette.
+
+Issue: [A palette with 0 colours wrote 65536 colours (#182)](https://github.com/fubar-coder/bb2-c/issues/182).
+
+### `SaveShape` of a shape of depth 0 or more than 14 {#saveshape-depth}
+
+**What happened.** `SaveShape` has room for the addresses of 14 planes.
+A shape of more planes, or of depth 0, made it write plane addresses over
+the memory of the library, and with depth 0 over 256 KB of it, so the
+program crashed or saved a broken file. `LoadShape` takes the depth of a
+picture as it is, so a shape loaded from a 24-bit picture has 24 planes.
+
+**With the port.** `SaveShape` of a shape of depth 0 or of more than 14
+planes is the runtime error "Illegal Shape Depth", also without runtime
+error checking. Shapes of 1 to 14 planes are saved as before.
+
+**What to change.** Save such a picture another way, or reduce it to at
+most 14 planes before it is loaded as a shape.
+
+Issue: [SaveShape with depth 0 or 15 and more overwrote its buffer (#326)](https://github.com/fubar-coder/bb2-c/issues/326).
+
+### `LoadBitMap` and `LoadScreen` of a missing file {#loadbitmap-missing-file}
+
+**What happened.** `LoadBitMap` and `LoadScreen` without a palette did
+not notice that the file could not be opened, or that it had no picture
+header (BMHD). They looked for the picture data in what an earlier IFF
+load had left in the read buffer, and showed the old picture again,
+garbage, or stopped with "Can't Find IFF 'BODY'".
+
+**With the port.** A file that cannot be opened is the runtime error
+"Can't Open File", a file without a picture header the error "Can't Find
+IFF 'BMHD'", also without runtime error checking. With a palette, the
+colours are read first, and a file that cannot be opened is the error
+"Can't Open IFF", as before.
+
+**What to change.** Where the file may be missing, test with `Exists`
+that it is there before it is loaded.
+
+Issue: [LoadBitMap ignored a file it could not open (#187)](https://github.com/fubar-coder/bb2-c/issues/187).
+
 ### `GetaSprite` with a shape too wide for the sprite channels {#getasprite-width}
 
 **What happened.** With runtime error checking, `GetaSprite` refuses a
