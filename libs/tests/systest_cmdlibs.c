@@ -190,6 +190,10 @@ static UBYTE arr[NSORT * 4 + 16];
 static ULONG sortframe[4];
 static ULONG ffpbase;
 static UBYTE strpool[NSORT][16];
+/* the long arrays (201 elements, the length of the benchmark's Sort) */
+#define NBIG 201
+static UBYTE bigarr[NBIG * 4 + 16];
+static UBYTE bigpool[NBIG][16];
 
 static ULONG int2ffp(LONG v)
 {
@@ -209,16 +213,20 @@ static ULONG int2ffp(LONG v)
     return (m & 0xffffff00UL) | sign | (0x40 + e);
 }
 
-static void sort_one(UWORD type, int n, int down, int pattern)
+/* sort n elements of `type` in arr (asize bytes, the strings in pool);
+   pattern 0 random, 1 ascending, 2 descending, 3 four values, 4 all
+   equal (the order of equal strings shows which slots the sort swaps) */
+static void sort_in(UWORD type, int n, int down, int pattern, UBYTE *arr, size_t asize,
+                    UBYTE (*strpool)[16], size_t poolsize)
 {
     int size = type == 1 ? 1 : type == 2 ? 2 : 4;
     int i;
 
-    for (i = 0; i < (int)sizeof arr; i++)
+    for (i = 0; i < (int)asize; i++)
         arr[i] = (UBYTE)(0xA5 ^ i);             /* a guard behind the array */
     for (i = 0; i < n; i++) {
         ULONG v = pattern == 0 ? rnd() : pattern == 1 ? (ULONG)i : pattern == 2 ? (ULONG)(n - i)
-                  : (rnd() & 3);
+                  : pattern == 3 ? (rnd() & 3) : 0x00ab2305UL;
         UBYTE *p = arr + i * size;
         switch (type) {
         case 1: *p = (UBYTE)v; break;
@@ -247,14 +255,19 @@ static void sort_one(UWORD type, int n, int down, int pattern)
     if (type == 7) {
         /* the order: for every slot of the sorted array the number of the
            string it points to ($FF: no string of the pool) */
-        UBYTE ord[NSORT];
+        UBYTE ord[NBIG];
         for (i = 0; i < n; i++) {
             ULONG off = *(ULONG *)(arr + i * 4) - (ULONG)strpool;
-            ord[i] = off < sizeof strpool && off % 16 == 4 ? (UBYTE)(off / 16) : 0xff;
+            ord[i] = off < poolsize && off % 16 == 4 ? (UBYTE)(off / 16) : 0xff;
         }
         OBSBYTES("order", ord, n);
     } else
-        OBSBYTES("array", arr, sizeof arr);
+        OBSBYTES("array", arr, asize);
+}
+
+static void sort_one(UWORD type, int n, int down, int pattern)
+{
+    sort_in(type, n, down, pattern, arr, sizeof arr, strpool, sizeof strpool);
 }
 
 static void test_sortlib(void)
@@ -276,6 +289,19 @@ static void test_sortlib(void)
                         continue;               /* pivot behind the array, see sortlib.c */
                     sort_one(types[t], ns[k], d, pat);
                 }
+    /* every element type on 201 elements (OpenSpec change
+       libs-performance, task 7.3: one scan loop per type), also all equal;
+       the seed is kept, so the cases after these see the same numbers */
+    {
+        ULONG keep = seed;
+
+        for (t = 0; t < sizeof types / sizeof types[0]; t++)
+            for (d = 0; d < 2; d++)
+                for (pat = 0; pat < 5; pat++)
+                    sort_in(types[t], NBIG, d, pat, bigarr, sizeof bigarr, bigpool,
+                            sizeof bigpool);
+        seed = keep;
+    }
     DO1(E("sortlib", 1), (void)0);
 }
 

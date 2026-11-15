@@ -1920,8 +1920,358 @@ Sort|popped|type 0 n 48 down pattern 3|1	$00000000
 Sort|kept|type 0 n 48 down pattern 3|2	kept
 Sort|popped|type 0 n 48 down pattern 3|2	$00000000
 Sort|array|type 0 n 48 down pattern 3|1	bytes 208 fnv AFDA576F
-Sort|kept|type 0 n 48 down pattern 3|3	kept
-Sort|popped|type 0 n 48 down pattern 3|3	$00000000
+Sort|kept|type 1 n 201 up pattern 0|1	kept
+Sort|popped|type 1 n 201 up pattern 0|1	$00000000
+Sort|kept|type 1 n 201 up pattern 0|2	kept
+Sort|popped|type 1 n 201 up pattern 0|2	$00000000
+Sort|array|type 1 n 201 up pattern 0|1	bytes 820 fnv 5D050552
+Sort|kept|type 1 n 201 up pattern 1|1	kept
+Sort|popped|type 1 n 201 up pattern 1|1	$00000000
+Sort|kept|type 1 n 201 up pattern 1|2	kept
+Sort|popped|type 1 n 201 up pattern 1|2	$00000000
+Sort|array|type 1 n 201 up pattern 1|1	bytes 820 fnv 821DC004
+Sort|kept|type 1 n 201 up pattern 2|1	kept
+Sort|popped|type 1 n 201 up pattern 2|1	$00000000
+Sort|kept|type 1 n 201 up pattern 2|2	kept
+Sort|popped|type 1 n 201 up pattern 2|2	$00000000
+Sort|array|type 1 n 201 up pattern 2|1	bytes 820 fnv 0970C27F
+Sort|kept|type 1 n 201 up pattern 3|1	kept
+Sort|popped|type 1 n 201 up pattern 3|1	$00000000
+Sort|kept|type 1 n 201 up pattern 3|2	kept
+Sort|popped|type 1 n 201 up pattern 3|2	$00000000
+Sort|array|type 1 n 201 up pattern 3|1	bytes 820 fnv 4942F1FC
+Sort|kept|type 1 n 201 up pattern 4|1	kept
+Sort|popped|type 1 n 201 up pattern 4|1	$00000000
+Sort|kept|type 1 n 201 up pattern 4|2	kept
+Sort|popped|type 1 n 201 up pattern 4|2	$00000000
+Sort|array|type 1 n 201 up pattern 4|1	bytes 820 fnv AD5ECF05
+Sort|kept|type 1 n 201 down pattern 0|1	kept
+Sort|popped|type 1 n 201 down pattern 0|1	$00000000
+Sort|kept|type 1 n 201 down pattern 0|2	kept
+Sort|popped|type 1 n 201 down pattern 0|2	$00000000
+Sort|array|type 1 n 201 down pattern 0|1	bytes 820 fnv E7D2E12A
+Sort|kept|type 1 n 201 down pattern 1|1	kept
+Sort|popped|type 1 n 201 down pattern 1|1	$00000000
+Sort|kept|type 1 n 201 down pattern 1|2	kept
+Sort|popped|type 1 n 201 down pattern 1|2	$00000000
+Sort|array|type 1 n 201 down pattern 1|1	bytes 820 fnv 1E7435A4
+Sort|kept|type 1 n 201 down pattern 2|1	kept
+Sort|popped|type 1 n 201 down pattern 2|1	$00000000
+Sort|kept|type 1 n 201 down pattern 2|2	kept
+Sort|popped|type 1 n 201 down pattern 2|2	$00000000
+Sort|array|type 1 n 201 down pattern 2|1	bytes 820 fnv 791481B7
+Sort|kept|type 1 n 201 down pattern 3|1	kept
+Sort|popped|type 1 n 201 down pattern 3|1	$00000000
+Sort|kept|type 1 n 201 down pattern 3|2	kept
+Sort|popped|type 1 n 201 down pattern 3|2	$00000000
+Sort|array|type 1 n 201 down pattern 3|1	bytes 820 fnv 30A38B49
+Sort|kept|type 1 n 201 down pattern 4|1	kept
+Sort|popped|type 1 n 201 down pattern 4|1	$00000000
+Sort|kept|type 1 n 201 down pattern 4|2	kept
+Sort|popped|type 1 n 201 down pattern 4|2	$00000000
+Sort|array|type 1 n 201 down pattern 4|1	bytes 820 fnv AD5ECF05
+Sort|kept|type 2 n 201 up pattern 0|1	kept
+Sort|popped|type 2 n 201 up pattern 0|1	$00000000
+Sort|kept|type 2 n 201 up pattern 0|2	kept
+Sort|popped|type 2 n 201 up pattern 0|2	$00000000
+Sort|array|type 2 n 201 up pattern 0|1	bytes 820 fnv 88864EAD
+Sort|kept|type 2 n 201 up pattern 1|1	kept
+Sort|popped|type 2 n 201 up pattern 1|1	$00000000
+Sort|kept|type 2 n 201 up pattern 1|2	kept
+Sort|popped|type 2 n 201 up pattern 1|2	$00000000
+Sort|array|type 2 n 201 up pattern 1|1	bytes 820 fnv E8B965B0
+Sort|kept|type 2 n 201 up pattern 2|1	kept
+Sort|popped|type 2 n 201 up pattern 2|1	$00000000
+Sort|kept|type 2 n 201 up pattern 2|2	kept
+Sort|popped|type 2 n 201 up pattern 2|2	$00000000
+Sort|array|type 2 n 201 up pattern 2|1	bytes 820 fnv 8772C803
+Sort|kept|type 2 n 201 up pattern 3|1	kept
+Sort|popped|type 2 n 201 up pattern 3|1	$00000000
+Sort|kept|type 2 n 201 up pattern 3|2	kept
+Sort|popped|type 2 n 201 up pattern 3|2	$00000000
+Sort|array|type 2 n 201 up pattern 3|1	bytes 820 fnv 0AD750C2
+Sort|kept|type 2 n 201 up pattern 4|1	kept
+Sort|popped|type 2 n 201 up pattern 4|1	$00000000
+Sort|kept|type 2 n 201 up pattern 4|2	kept
+Sort|popped|type 2 n 201 up pattern 4|2	$00000000
+Sort|array|type 2 n 201 up pattern 4|1	bytes 820 fnv 185B1630
+Sort|kept|type 2 n 201 down pattern 0|1	kept
+Sort|popped|type 2 n 201 down pattern 0|1	$00000000
+Sort|kept|type 2 n 201 down pattern 0|2	kept
+Sort|popped|type 2 n 201 down pattern 0|2	$00000000
+Sort|array|type 2 n 201 down pattern 0|1	bytes 820 fnv D46FFF85
+Sort|kept|type 2 n 201 down pattern 1|1	kept
+Sort|popped|type 2 n 201 down pattern 1|1	$00000000
+Sort|kept|type 2 n 201 down pattern 1|2	kept
+Sort|popped|type 2 n 201 down pattern 1|2	$00000000
+Sort|array|type 2 n 201 down pattern 1|1	bytes 820 fnv ABD6B3B0
+Sort|kept|type 2 n 201 down pattern 2|1	kept
+Sort|popped|type 2 n 201 down pattern 2|1	$00000000
+Sort|kept|type 2 n 201 down pattern 2|2	kept
+Sort|popped|type 2 n 201 down pattern 2|2	$00000000
+Sort|array|type 2 n 201 down pattern 2|1	bytes 820 fnv 048D3193
+Sort|kept|type 2 n 201 down pattern 3|1	kept
+Sort|popped|type 2 n 201 down pattern 3|1	$00000000
+Sort|kept|type 2 n 201 down pattern 3|2	kept
+Sort|popped|type 2 n 201 down pattern 3|2	$00000000
+Sort|array|type 2 n 201 down pattern 3|1	bytes 820 fnv C94DE023
+Sort|kept|type 2 n 201 down pattern 4|1	kept
+Sort|popped|type 2 n 201 down pattern 4|1	$00000000
+Sort|kept|type 2 n 201 down pattern 4|2	kept
+Sort|popped|type 2 n 201 down pattern 4|2	$00000000
+Sort|array|type 2 n 201 down pattern 4|1	bytes 820 fnv 185B1630
+Sort|kept|type 3 n 201 up pattern 0|1	kept
+Sort|popped|type 3 n 201 up pattern 0|1	$00000000
+Sort|kept|type 3 n 201 up pattern 0|2	kept
+Sort|popped|type 3 n 201 up pattern 0|2	$00000000
+Sort|array|type 3 n 201 up pattern 0|1	bytes 820 fnv 29EFF599
+Sort|kept|type 3 n 201 up pattern 1|1	kept
+Sort|popped|type 3 n 201 up pattern 1|1	$00000000
+Sort|kept|type 3 n 201 up pattern 1|2	kept
+Sort|popped|type 3 n 201 up pattern 1|2	$00000000
+Sort|array|type 3 n 201 up pattern 1|1	bytes 820 fnv FAF4C92D
+Sort|kept|type 3 n 201 up pattern 2|1	kept
+Sort|popped|type 3 n 201 up pattern 2|1	$00000000
+Sort|kept|type 3 n 201 up pattern 2|2	kept
+Sort|popped|type 3 n 201 up pattern 2|2	$00000000
+Sort|array|type 3 n 201 up pattern 2|1	bytes 820 fnv A6D4D372
+Sort|kept|type 3 n 201 up pattern 3|1	kept
+Sort|popped|type 3 n 201 up pattern 3|1	$00000000
+Sort|kept|type 3 n 201 up pattern 3|2	kept
+Sort|popped|type 3 n 201 up pattern 3|2	$00000000
+Sort|array|type 3 n 201 up pattern 3|1	bytes 820 fnv 036A409C
+Sort|kept|type 3 n 201 up pattern 4|1	kept
+Sort|popped|type 3 n 201 up pattern 4|1	$00000000
+Sort|kept|type 3 n 201 up pattern 4|2	kept
+Sort|popped|type 3 n 201 up pattern 4|2	$00000000
+Sort|array|type 3 n 201 up pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 3 n 201 down pattern 0|1	kept
+Sort|popped|type 3 n 201 down pattern 0|1	$00000000
+Sort|kept|type 3 n 201 down pattern 0|2	kept
+Sort|popped|type 3 n 201 down pattern 0|2	$00000000
+Sort|array|type 3 n 201 down pattern 0|1	bytes 820 fnv 70EBE712
+Sort|kept|type 3 n 201 down pattern 1|1	kept
+Sort|popped|type 3 n 201 down pattern 1|1	$00000000
+Sort|kept|type 3 n 201 down pattern 1|2	kept
+Sort|popped|type 3 n 201 down pattern 1|2	$00000000
+Sort|array|type 3 n 201 down pattern 1|1	bytes 820 fnv 2BC1E02D
+Sort|kept|type 3 n 201 down pattern 2|1	kept
+Sort|popped|type 3 n 201 down pattern 2|1	$00000000
+Sort|kept|type 3 n 201 down pattern 2|2	kept
+Sort|popped|type 3 n 201 down pattern 2|2	$00000000
+Sort|array|type 3 n 201 down pattern 2|1	bytes 820 fnv 131968F2
+Sort|kept|type 3 n 201 down pattern 3|1	kept
+Sort|popped|type 3 n 201 down pattern 3|1	$00000000
+Sort|kept|type 3 n 201 down pattern 3|2	kept
+Sort|popped|type 3 n 201 down pattern 3|2	$00000000
+Sort|array|type 3 n 201 down pattern 3|1	bytes 820 fnv 19C9ACE5
+Sort|kept|type 3 n 201 down pattern 4|1	kept
+Sort|popped|type 3 n 201 down pattern 4|1	$00000000
+Sort|kept|type 3 n 201 down pattern 4|2	kept
+Sort|popped|type 3 n 201 down pattern 4|2	$00000000
+Sort|array|type 3 n 201 down pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 4 n 201 up pattern 0|1	kept
+Sort|popped|type 4 n 201 up pattern 0|1	$00000000
+Sort|kept|type 4 n 201 up pattern 0|2	kept
+Sort|popped|type 4 n 201 up pattern 0|2	$00000000
+Sort|array|type 4 n 201 up pattern 0|1	bytes 820 fnv BB008539
+Sort|kept|type 4 n 201 up pattern 1|1	kept
+Sort|popped|type 4 n 201 up pattern 1|1	$00000000
+Sort|kept|type 4 n 201 up pattern 1|2	kept
+Sort|popped|type 4 n 201 up pattern 1|2	$00000000
+Sort|array|type 4 n 201 up pattern 1|1	bytes 820 fnv FAF4C92D
+Sort|kept|type 4 n 201 up pattern 2|1	kept
+Sort|popped|type 4 n 201 up pattern 2|1	$00000000
+Sort|kept|type 4 n 201 up pattern 2|2	kept
+Sort|popped|type 4 n 201 up pattern 2|2	$00000000
+Sort|array|type 4 n 201 up pattern 2|1	bytes 820 fnv A6D4D372
+Sort|kept|type 4 n 201 up pattern 3|1	kept
+Sort|popped|type 4 n 201 up pattern 3|1	$00000000
+Sort|kept|type 4 n 201 up pattern 3|2	kept
+Sort|popped|type 4 n 201 up pattern 3|2	$00000000
+Sort|array|type 4 n 201 up pattern 3|1	bytes 820 fnv 8C994855
+Sort|kept|type 4 n 201 up pattern 4|1	kept
+Sort|popped|type 4 n 201 up pattern 4|1	$00000000
+Sort|kept|type 4 n 201 up pattern 4|2	kept
+Sort|popped|type 4 n 201 up pattern 4|2	$00000000
+Sort|array|type 4 n 201 up pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 4 n 201 down pattern 0|1	kept
+Sort|popped|type 4 n 201 down pattern 0|1	$00000000
+Sort|kept|type 4 n 201 down pattern 0|2	kept
+Sort|popped|type 4 n 201 down pattern 0|2	$00000000
+Sort|array|type 4 n 201 down pattern 0|1	bytes 820 fnv D16AFFEC
+Sort|kept|type 4 n 201 down pattern 1|1	kept
+Sort|popped|type 4 n 201 down pattern 1|1	$00000000
+Sort|kept|type 4 n 201 down pattern 1|2	kept
+Sort|popped|type 4 n 201 down pattern 1|2	$00000000
+Sort|array|type 4 n 201 down pattern 1|1	bytes 820 fnv 2BC1E02D
+Sort|kept|type 4 n 201 down pattern 2|1	kept
+Sort|popped|type 4 n 201 down pattern 2|1	$00000000
+Sort|kept|type 4 n 201 down pattern 2|2	kept
+Sort|popped|type 4 n 201 down pattern 2|2	$00000000
+Sort|array|type 4 n 201 down pattern 2|1	bytes 820 fnv 131968F2
+Sort|kept|type 4 n 201 down pattern 3|1	kept
+Sort|popped|type 4 n 201 down pattern 3|1	$00000000
+Sort|kept|type 4 n 201 down pattern 3|2	kept
+Sort|popped|type 4 n 201 down pattern 3|2	$00000000
+Sort|array|type 4 n 201 down pattern 3|1	bytes 820 fnv 39E29D45
+Sort|kept|type 4 n 201 down pattern 4|1	kept
+Sort|popped|type 4 n 201 down pattern 4|1	$00000000
+Sort|kept|type 4 n 201 down pattern 4|2	kept
+Sort|popped|type 4 n 201 down pattern 4|2	$00000000
+Sort|array|type 4 n 201 down pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 5 n 201 up pattern 0|1	kept
+Sort|popped|type 5 n 201 up pattern 0|1	$00000000
+Sort|kept|type 5 n 201 up pattern 0|2	kept
+Sort|popped|type 5 n 201 up pattern 0|2	$00000000
+Sort|array|type 5 n 201 up pattern 0|1	bytes 820 fnv 967F2DD7
+Sort|kept|type 5 n 201 up pattern 1|1	kept
+Sort|popped|type 5 n 201 up pattern 1|1	$00000000
+Sort|kept|type 5 n 201 up pattern 1|2	kept
+Sort|popped|type 5 n 201 up pattern 1|2	$00000000
+Sort|array|type 5 n 201 up pattern 1|1	bytes 820 fnv A45227CE
+Sort|kept|type 5 n 201 up pattern 2|1	kept
+Sort|popped|type 5 n 201 up pattern 2|1	$00000000
+Sort|kept|type 5 n 201 up pattern 2|2	kept
+Sort|popped|type 5 n 201 up pattern 2|2	$00000000
+Sort|array|type 5 n 201 up pattern 2|1	bytes 820 fnv 32BEA25A
+Sort|kept|type 5 n 201 up pattern 3|1	kept
+Sort|popped|type 5 n 201 up pattern 3|1	$00000000
+Sort|kept|type 5 n 201 up pattern 3|2	kept
+Sort|popped|type 5 n 201 up pattern 3|2	$00000000
+Sort|array|type 5 n 201 up pattern 3|1	bytes 820 fnv 4DAC5136
+Sort|kept|type 5 n 201 up pattern 4|1	kept
+Sort|popped|type 5 n 201 up pattern 4|1	$00000000
+Sort|kept|type 5 n 201 up pattern 4|2	kept
+Sort|popped|type 5 n 201 up pattern 4|2	$00000000
+Sort|array|type 5 n 201 up pattern 4|1	bytes 820 fnv DEB9BD96
+Sort|kept|type 5 n 201 down pattern 0|1	kept
+Sort|popped|type 5 n 201 down pattern 0|1	$00000000
+Sort|kept|type 5 n 201 down pattern 0|2	kept
+Sort|popped|type 5 n 201 down pattern 0|2	$00000000
+Sort|array|type 5 n 201 down pattern 0|1	bytes 820 fnv 090A9C5A
+Sort|kept|type 5 n 201 down pattern 1|1	kept
+Sort|popped|type 5 n 201 down pattern 1|1	$00000000
+Sort|kept|type 5 n 201 down pattern 1|2	kept
+Sort|popped|type 5 n 201 down pattern 1|2	$00000000
+Sort|array|type 5 n 201 down pattern 1|1	bytes 820 fnv A9E1CD2E
+Sort|kept|type 5 n 201 down pattern 2|1	kept
+Sort|popped|type 5 n 201 down pattern 2|1	$00000000
+Sort|kept|type 5 n 201 down pattern 2|2	kept
+Sort|popped|type 5 n 201 down pattern 2|2	$00000000
+Sort|array|type 5 n 201 down pattern 2|1	bytes 820 fnv 835E001A
+Sort|kept|type 5 n 201 down pattern 3|1	kept
+Sort|popped|type 5 n 201 down pattern 3|1	$00000000
+Sort|kept|type 5 n 201 down pattern 3|2	kept
+Sort|popped|type 5 n 201 down pattern 3|2	$00000000
+Sort|array|type 5 n 201 down pattern 3|1	bytes 820 fnv 9C30977A
+Sort|kept|type 5 n 201 down pattern 4|1	kept
+Sort|popped|type 5 n 201 down pattern 4|1	$00000000
+Sort|kept|type 5 n 201 down pattern 4|2	kept
+Sort|popped|type 5 n 201 down pattern 4|2	$00000000
+Sort|array|type 5 n 201 down pattern 4|1	bytes 820 fnv DEB9BD96
+Sort|kept|type 7 n 201 up pattern 0|1	kept
+Sort|popped|type 7 n 201 up pattern 0|1	$00000000
+Sort|kept|type 7 n 201 up pattern 0|2	kept
+Sort|popped|type 7 n 201 up pattern 0|2	$00000000
+Sort|order|type 7 n 201 up pattern 0|1	bytes 201 fnv 6F3658A1
+Sort|kept|type 7 n 201 up pattern 1|1	kept
+Sort|popped|type 7 n 201 up pattern 1|1	$00000000
+Sort|kept|type 7 n 201 up pattern 1|2	kept
+Sort|popped|type 7 n 201 up pattern 1|2	$00000000
+Sort|order|type 7 n 201 up pattern 1|1	bytes 201 fnv 7527A947
+Sort|kept|type 7 n 201 up pattern 2|1	kept
+Sort|popped|type 7 n 201 up pattern 2|1	$00000000
+Sort|kept|type 7 n 201 up pattern 2|2	kept
+Sort|popped|type 7 n 201 up pattern 2|2	$00000000
+Sort|order|type 7 n 201 up pattern 2|1	bytes 201 fnv 847EE815
+Sort|kept|type 7 n 201 up pattern 3|1	kept
+Sort|popped|type 7 n 201 up pattern 3|1	$00000000
+Sort|kept|type 7 n 201 up pattern 3|2	kept
+Sort|popped|type 7 n 201 up pattern 3|2	$00000000
+Sort|order|type 7 n 201 up pattern 3|1	bytes 201 fnv 21193EDF
+Sort|kept|type 7 n 201 up pattern 4|1	kept
+Sort|popped|type 7 n 201 up pattern 4|1	$00000000
+Sort|kept|type 7 n 201 up pattern 4|2	kept
+Sort|popped|type 7 n 201 up pattern 4|2	$00000000
+Sort|order|type 7 n 201 up pattern 4|1	bytes 201 fnv 8EC55B9F
+Sort|kept|type 7 n 201 down pattern 0|1	kept
+Sort|popped|type 7 n 201 down pattern 0|1	$00000000
+Sort|kept|type 7 n 201 down pattern 0|2	kept
+Sort|popped|type 7 n 201 down pattern 0|2	$00000000
+Sort|order|type 7 n 201 down pattern 0|1	bytes 201 fnv FDF79955
+Sort|kept|type 7 n 201 down pattern 1|1	kept
+Sort|popped|type 7 n 201 down pattern 1|1	$00000000
+Sort|kept|type 7 n 201 down pattern 1|2	kept
+Sort|popped|type 7 n 201 down pattern 1|2	$00000000
+Sort|order|type 7 n 201 down pattern 1|1	bytes 201 fnv 3910BAA7
+Sort|kept|type 7 n 201 down pattern 2|1	kept
+Sort|popped|type 7 n 201 down pattern 2|1	$00000000
+Sort|kept|type 7 n 201 down pattern 2|2	kept
+Sort|popped|type 7 n 201 down pattern 2|2	$00000000
+Sort|order|type 7 n 201 down pattern 2|1	bytes 201 fnv C443C0F9
+Sort|kept|type 7 n 201 down pattern 3|1	kept
+Sort|popped|type 7 n 201 down pattern 3|1	$00000000
+Sort|kept|type 7 n 201 down pattern 3|2	kept
+Sort|popped|type 7 n 201 down pattern 3|2	$00000000
+Sort|order|type 7 n 201 down pattern 3|1	bytes 201 fnv 5DA021C3
+Sort|kept|type 7 n 201 down pattern 4|1	kept
+Sort|popped|type 7 n 201 down pattern 4|1	$00000000
+Sort|kept|type 7 n 201 down pattern 4|2	kept
+Sort|popped|type 7 n 201 down pattern 4|2	$00000000
+Sort|order|type 7 n 201 down pattern 4|1	bytes 201 fnv 8EC55B9F
+Sort|kept|type 0 n 201 up pattern 0|1	kept
+Sort|popped|type 0 n 201 up pattern 0|1	$00000000
+Sort|kept|type 0 n 201 up pattern 0|2	kept
+Sort|popped|type 0 n 201 up pattern 0|2	$00000000
+Sort|array|type 0 n 201 up pattern 0|1	bytes 820 fnv 1C492DFD
+Sort|kept|type 0 n 201 up pattern 1|1	kept
+Sort|popped|type 0 n 201 up pattern 1|1	$00000000
+Sort|kept|type 0 n 201 up pattern 1|2	kept
+Sort|popped|type 0 n 201 up pattern 1|2	$00000000
+Sort|array|type 0 n 201 up pattern 1|1	bytes 820 fnv FAF4C92D
+Sort|kept|type 0 n 201 up pattern 2|1	kept
+Sort|popped|type 0 n 201 up pattern 2|1	$00000000
+Sort|kept|type 0 n 201 up pattern 2|2	kept
+Sort|popped|type 0 n 201 up pattern 2|2	$00000000
+Sort|array|type 0 n 201 up pattern 2|1	bytes 820 fnv A6D4D372
+Sort|kept|type 0 n 201 up pattern 3|1	kept
+Sort|popped|type 0 n 201 up pattern 3|1	$00000000
+Sort|kept|type 0 n 201 up pattern 3|2	kept
+Sort|popped|type 0 n 201 up pattern 3|2	$00000000
+Sort|array|type 0 n 201 up pattern 3|1	bytes 820 fnv D591C21F
+Sort|kept|type 0 n 201 up pattern 4|1	kept
+Sort|popped|type 0 n 201 up pattern 4|1	$00000000
+Sort|kept|type 0 n 201 up pattern 4|2	kept
+Sort|popped|type 0 n 201 up pattern 4|2	$00000000
+Sort|array|type 0 n 201 up pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 0 n 201 down pattern 0|1	kept
+Sort|popped|type 0 n 201 down pattern 0|1	$00000000
+Sort|kept|type 0 n 201 down pattern 0|2	kept
+Sort|popped|type 0 n 201 down pattern 0|2	$00000000
+Sort|array|type 0 n 201 down pattern 0|1	bytes 820 fnv B5601511
+Sort|kept|type 0 n 201 down pattern 1|1	kept
+Sort|popped|type 0 n 201 down pattern 1|1	$00000000
+Sort|kept|type 0 n 201 down pattern 1|2	kept
+Sort|popped|type 0 n 201 down pattern 1|2	$00000000
+Sort|array|type 0 n 201 down pattern 1|1	bytes 820 fnv 2BC1E02D
+Sort|kept|type 0 n 201 down pattern 2|1	kept
+Sort|popped|type 0 n 201 down pattern 2|1	$00000000
+Sort|kept|type 0 n 201 down pattern 2|2	kept
+Sort|popped|type 0 n 201 down pattern 2|2	$00000000
+Sort|array|type 0 n 201 down pattern 2|1	bytes 820 fnv 131968F2
+Sort|kept|type 0 n 201 down pattern 3|1	kept
+Sort|popped|type 0 n 201 down pattern 3|1	$00000000
+Sort|kept|type 0 n 201 down pattern 3|2	kept
+Sort|popped|type 0 n 201 down pattern 3|2	$00000000
+Sort|array|type 0 n 201 down pattern 3|1	bytes 820 fnv C5F96635
+Sort|kept|type 0 n 201 down pattern 4|1	kept
+Sort|popped|type 0 n 201 down pattern 4|1	$00000000
+Sort|kept|type 0 n 201 down pattern 4|2	kept
+Sort|popped|type 0 n 201 down pattern 4|2	$00000000
+Sort|array|type 0 n 201 down pattern 4|1	bytes 820 fnv 88790EC8
+Sort|kept|type 0 n 201 down pattern 4|3	kept
+Sort|popped|type 0 n 201 down pattern 4|3	$00000000
 mathtranslib init|kept||1	kept
 mathtranslib init|popped||1	$00000000
 mathtranslib init|base - mathtrans.library||1	$00000000
