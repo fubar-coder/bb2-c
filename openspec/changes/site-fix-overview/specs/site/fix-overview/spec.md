@@ -23,8 +23,9 @@ Every row SHALL have exactly one of four severities: 1, changes the
 behaviour of correctly running programs; 2, new compile-time error; 3,
 new runtime error, only with runtime error checking; 4, fixes a crash or
 wrong result without side effects for correct programs. The page SHALL
-explain the four levels above the table. The initial order SHALL be by
-severity ascending, within a severity by topic, with #421 at the very top.
+explain the four levels above the table, and the severity-1 rows SHALL
+also stand in a warning box above it. The initial order SHALL be by
+severity ascending, within a severity by issue number.
 
 #### Scenario: Order without JavaScript
 - **WHEN** the page is shown with JavaScript off
@@ -43,7 +44,7 @@ have labels. A filter SHALL show how many rows are visible.
 - **THEN** only the severity 1 rows stay visible and the count says so
 
 #### Scenario: Sort by library
-- **WHEN** the reader activates the "Library" header button twice
+- **WHEN** the reader activates the "Library or command" header button twice
 - **THEN** the rows are sorted by library descending and the header has `aria-sort="descending"`
 
 ### Requirement: Links keep the base path
@@ -80,5 +81,5 @@ list of the data file with a reason.
 - **THEN** the build fails and names issue 999
 
 #### Scenario: Deliberately broken input
-- **WHEN** the check's test builds a site with a broken data file (missing anchor, unknown severity, duplicate issue, entry without row)
+- **WHEN** the check's test builds a site with a broken data file (missing anchor, unknown severity, unknown topic, duplicate issue, entry without row)
 - **THEN** each case fails with its own message and the unbroken data build passes

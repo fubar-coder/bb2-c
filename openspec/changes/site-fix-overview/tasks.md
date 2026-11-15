@@ -25,7 +25,7 @@
 
 ## 5. Specs and docs
 
-- [ ] 5.1 Check `site/fix-overview` and the `testing/bug-fix-workflow` delta against the implementation; adjust the text where the decisions of 1.1 changed it
+- [x] 5.1 Check `site/fix-overview` and the `testing/bug-fix-workflow` delta against the implementation; adjust the text where the decisions of 1.1 changed it - done: initial order by severity and issue number with the severity-1 warning box (decision 2), the header "Library or command", the unknown-topic case of the test
 - [x] 5.2 State the new website step in `docs/development.md` or `tests/README.md` where the fix workflow is described, and in `.claude/agents/implementer.md` (report proposes severity and topic) - done: `docs/development.md` (fix step 3), `.claude/agents/implementer.md`
 
 ## 6. CLAUDE.md
@@ -34,4 +34,4 @@
 
 ## 7. Closing
 
-- [ ] 7.1 Run `openspec validate site-fix-overview`, the site build and the new test; commit one topic per commit
+- [x] 7.1 Run `openspec validate site-fix-overview`, the site build and the new test; commit one topic per commit - done (2026-11-15): valid; site build clean; `ctest -L site` 6/6
