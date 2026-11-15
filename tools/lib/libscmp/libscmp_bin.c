@@ -280,9 +280,6 @@ static int value(struct rd *r, uint32_t t)
     case 0x15:
         if (get_u(r, 2, &v))
             return -2;
-        if (v & 0x8000)
-            return bad(r->err, r->errlen, o->path, r->at, "register set $%04lX (bits 0-14)",
-                       (unsigned long)v);
         o->lost = v;
         if (!v)
             return val_put(o, "kept", 4);
@@ -295,6 +292,8 @@ static int value(struct rd *r, uint32_t t)
                 if (val_put(o, reg, 3))
                     return -1;
             }
+        if ((v & 0x8000) && val_put(o, " d0u", 4))
+            return -1;
         return 0;
     }
     return bad(r->err, r->errlen, o->path, r->at, "unknown record type $%02lX",

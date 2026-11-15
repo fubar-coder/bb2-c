@@ -53,8 +53,9 @@ static ULONG rnd(void)
     return (seed >> 16) | ((seed * 69069UL + 1) & 0xffff0000UL);
 }
 
-/* code of entry idx (form 0 of a command, or a nullsub) */
-static UBYTE *cmd_entry(struct lib *l, int idx)
+/* code of form `form` of entry idx (a command, or a nullsub: form 0),
+   even (bit 0 marks an Amiga mode only routine) */
+static UBYTE *cmd_form(struct lib *l, int idx, int form)
 {
     UBYTE *b = l->code, *p = b + 0x30;
     int i = 0;
@@ -75,7 +76,7 @@ static UBYTE *cmd_entry(struct lib *l, int idx)
                     p = b + ((p - b + 1) & ~1);
                     while (W(p)) p += 4;
                     p += 2;
-                    if (f++ == 0)
+                    if (f++ == form)
                         code = (UBYTE *)L(p + 4);
                     p += 12;
                 }
@@ -87,10 +88,16 @@ static UBYTE *cmd_entry(struct lib *l, int idx)
             p = b + ((p - b + 1) & ~1);
         }
         if (i == idx)
-            return code;
+            return (UBYTE *)((ULONG)code & ~1UL);
         i++;
     }
     return NULL;
+}
+
+/* code of entry idx (form 0 of a command, or a nullsub) */
+static UBYTE *cmd_entry(struct lib *l, int idx)
+{
+    return cmd_form(l, idx, 0);
 }
 
 #define E(lib, i) cmd_entry(getlib(&loaded, lib), i)
@@ -126,8 +133,11 @@ static void test_memacclib(void)
         for (j = 0; j < 3; j++) {
             ULONG at = j == 0 ? 100 : j == 1 ? 2 : 120;
             sprintf(VEC, "type $%lX at %lu", types[i], at);
+            /* Peek.s: a3 is the end of the string result (observed) */
+            DONTCARE = (types[i] & 0xffff) == 7 ? 1UL << 11 : 0;
             DO1(E("memacclib", 1), R.d[0] = types[i]; R.d[1] = (ULONG)&mem[at];
                 R.a[3] = (ULONG)out);
+            DONTCARE = 0;
             OBS("d0", R.d[0]);
             OBS("a3", R.a[3] - (ULONG)out);
             OBSBYTES("out", out, 256);
@@ -333,8 +343,10 @@ static void test_utillib(void)
     ROUT = "CreateMsgPort";
     for (i = 0; i < 4; i++) {
         sprintf(VEC, "\"%s\"", pnames[i]);
+        DONTCARE = 1UL << 11;           /* a3 = the name: observed below */
         DO1(E("utillib", 0), R.d[0] = (ULONG)pnames[i];
             lenframe[0] = strlen(pnames[i]); R.a[2] = (ULONG)&lenframe[1]);
+        DONTCARE = 0;
         port[i] = R.d[0];
         OBS("port != 0", R.d[0] != 0);
         OBS("a3 = name", R.a[3] == (ULONG)pnames[i]);
@@ -379,6 +391,12 @@ static void test_utillib(void)
 
 static void test_environlib(void)
 {
+    /* the functions in the order of the token table: their result is a
+       long, or a word (the upper word of d0 is undefined: only d0.w is
+       compared) */
+    static const struct { const char *name; char word; } fn[] = {
+        { "WBWidth", 0 }, { "WBHeight", 0 }, { "WBDepth", 1 }, { "WBViewMode", 1 },
+        { "Processor", 1 }, { "cr_vbr", 0 }, { "ExecVersion", 1 }, { "WBExtViewMode", 1 } };
     struct Library *ib = OpenLibrary((STRPTR)"intuition.library", 0);
     int i;
 
@@ -386,19 +404,61 @@ static void test_environlib(void)
     strcpy(VEC, "");
     DO1(E("environlib", 8), R.a[6] = (ULONG)ib);
     for (i = 0; i < 8; i++) {
-        ROUT = "environlib function";
-        sprintf(VEC, "entry %d", i);
-        DO1(E("environlib", i), (void)0);
-        OBS("d0", R.d[0]);
+        ROUT = fn[i].name;
+        /* ExecVersion: called with the upper word of d0 0, as ElmoreSysLib
+           compares the result as a long (CMP.l #36,d0); the C build returns
+           a zero-extended long */
+        DO1(E("environlib", i), if (i == 6) R.d[0] = 0);
+        if (fn[i].word && i != 6)
+            OBS("d0.w", R.d[0] & 0xffff);
+        else
+            OBS("d0", R.d[0]);
     }
     CloseLibrary(ib);
+}
+
+/* --------------------------------------- exceptions of the register rule */
+
+/* The entries that keep registers beyond the rule because a known caller
+   needs them (docs/libs/deviations.md, "Register preservation"): their
+   KEEPS state exactly those registers.  The library variables are in the
+   libraries themselves; without an event or a key matrix the entries read
+   their initial values (EventWindow: no window, -1). */
+static void test_exceptions(void)
+{
+    static const struct { const char *name; int idx; } getter[] = {
+        { "EMouseX", 50 }, { "EMouseY", 51 }, { "EventCode", 63 } };
+    unsigned i;
+
+    for (i = 0; i < sizeof getter / sizeof getter[0]; i++) {
+        ROUT = getter[i].name;
+        strcpy(VEC, "");
+        DO1(E("windowslib", getter[i].idx), (void)0);
+        OBS("d0.w", R.d[0] & 0xffff);
+    }
+    ROUT = "EventWindow";
+    DO1(E("windowslib", 4), (void)0);
+    OBS("d0.w", R.d[0] & 0xffff);
+    ROUT = "RawStatus";
+    for (i = 0; i < 2; i++) {
+        sprintf(VEC, "rawkey %u", i * 69);
+        DO1(E("blitzkeyslib", 1), R.d[0] = i * 69);
+    }
+    /* Rnd: hardware noise, the result is not compared */
+    ROUT = "Rnd";
+    strcpy(VEC, "");
+    DO1(cmd_form(getlib(&loaded, "vallib"), 6, 0), (void)0);
+    ROUT = "Rnd(Range)";
+    strcpy(VEC, "range 100");
+    DO1(cmd_form(getlib(&loaded, "vallib"), 6, 1), R.d[0] = 100);
 }
 
 /* ------------------------------------------------------------------ main */
 
 static const char *names[] = {
     "memlib", "strcomplib", "memacclib", "sortlib", "mathtranslib", "utillib",
-    "environlib", NULL
+    "environlib", "maxslib", "inputoutputlib", "rawkeylib", "windowslib", "blitzkeyslib",
+    "floatquicklib", "vallib", NULL
 };
 
 int main(int argc, char **argv)
@@ -411,24 +471,47 @@ int main(int argc, char **argv)
     }
     if (!load_set(argv[1], names))
         return 20;
-    KEEPS("Peek", d1-d7|a1|a2|a6);
-    KEEPS("Peeks$", d2-d7|a1|a2|a6);
-    KEEPS("Poke", d1-d7|a3|a6);
-    KEEPS("Call", d0-d2|d5-d7|a1-a3|a6);
+    KEEPS_FUNCTION("Peek", none);
+    KEEPS_STRFUNCTION("Peeks$", none);
+    KEEPS_STATEMENT("Poke", none);
+    KEEPS_STATEMENT("Call", none);
     KEEPS("sortlib init", d0-d7|a0-a3|a6);
-    KEEPS("Sort", d2-d5|a3|a6);
+    KEEPS_STATEMENT("Sort", none);
     KEEPS("mathtranslib init", d2-d7|a2|a3);
     KEEPS("mathtranslib finit", d2-d7|a1-a3);
     KEEPS("environlib init", d3-d7|a2|a3);
-    KEEPS("environlib function", d1-d7|a0-a3|a6);
+    /* exceptions: the CD program WBDEMO.BB2 holds a0/a1 across WBWidth,
+       WBHeight and WBDepth */
+    KEEPS_FUNCTION("WBWidth", a0|a1);
+    KEEPS_FUNCTION("WBHeight", a0|a1);
+    KEEPS_FUNCTION("WBDepth", a0|a1);
+    KEEPS_FUNCTION("WBViewMode", none);
+    KEEPS_FUNCTION("Processor", none);
+    KEEPS_FUNCTION("cr_vbr", none);
+    KEEPS_FUNCTION("ExecVersion", none);
+    KEEPS_FUNCTION("WBExtViewMode", none);
     KEEPS("memlib init", d1-d7|a0-a3|a6);
     KEEPS("utillib init", d1-d7|a0-a3|a6);
-    KEEPS("TaskName$", d2-d7|a2);
-    KEEPS("CreateMsgPort", d1-d7|a1|a2|a6);
-    KEEPS("DeleteMsgPort", d0-d7|a0-a3|a6);
-    KEEPS("Wait", d1-d7|a2|a3);
+    /* the original loses a6 in TaskName$ and Wait: the rule's a6 is not
+       stated for them (an original bug to decide, see the report of
+       libs-performance group 2) */
+    KEEPS("TaskName$", none);
+    KEEPS_FUNCTION("CreateMsgPort", none);
+    KEEPS_STATEMENT("DeleteMsgPort", none);
+    KEEPS("Wait", none);
     KEEPS("utillib finit", d1-d7|a1-a3|a6);
     KEEPS("memlib finit", d0-d7|a0-a3|a6);
+    /* exceptions (test_exceptions): wzlib holds a0 across EMouseX, EMouseY
+       and EventCode and combines EMouseX<<16|EMouseY, and a1 across
+       EventWindow; RILesDebugLib a1 across RawStatus; the CD programs
+       SQUIRT2_TO and SQUIRT3_TO a0/a1 across Rnd */
+    KEEPS_FUNCTION("EMouseX", a0|d0u);
+    KEEPS_FUNCTION("EMouseY", a0|d0u);
+    KEEPS_FUNCTION("EventCode", a0|d0u);
+    KEEPS_FUNCTION("EventWindow", a1);
+    KEEPS_FUNCTION("RawStatus", a1);
+    KEEPS_FUNCTION("Rnd", a0|a1);
+    KEEPS_FUNCTION("Rnd(Range)", a0|a1);
     ffp = OpenLibrary((STRPTR)"mathffp.library", 0);
     ffpbase = (ULONG)ffp;
 
@@ -436,6 +519,7 @@ int main(int argc, char **argv)
     test_sortlib();
     test_mathtranslib();
     test_environlib();
+    test_exceptions();
 
     /* The memory balance is the task's own (rwemem.h: exec's AllocMem/FreeMem
        are counted for this task only): AvailMem() counts the whole system,

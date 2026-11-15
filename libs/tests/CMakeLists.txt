@@ -261,8 +261,10 @@ endforeach()
 
 # the checks of KEEPS (sysload.h, selftest_keeps.c) with broken input, no
 # library and no CD: a set that is no register set, a routine stated
-# twice, a call of a routine without a stated set; each fails with its
-# message (the snitch case [.selftest] fails on purpose)
+# twice, a call of a routine without a stated set, a function that loses
+# a6, a word function that changes the upper word of d0 it states (d0u);
+# each fails with its message, and a statement that changes d1 and a0
+# passes (the register rule; the snitch case [.selftest] fails on purpose)
 add_test(NAME libs_keeps_wrong COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON "-DFILTER=keeps wrong"
@@ -270,7 +272,7 @@ add_test(NAME libs_keeps_wrong COMMAND ${CMAKE_COMMAND}
 	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake -DWANT_FAIL=ON -P ${WITH_WORKDIR})
 set_tests_properties(libs_keeps_wrong PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${selflimit} PASS_REGULAR_EXPRESSION
-	"FAIL KEEPS\\(\"bad\", d2\\|x9\\): not a register set\n.*FAIL KEEPS\\(\"twice\", d3\\): stated twice\n.*FAIL KEEPS: no kept set stated for \"unstated\"\n.*keeps wrong: 3 checks, 3 failures\n")
+	"FAIL KEEPS\\(\"bad\", d2\\|x9\\): not a register set\n.*FAIL KEEPS\\(\"twice\", d3\\): stated twice\n.*FAIL KEEPS: no kept set stated for \"unstated\"\n.*FAIL function: lost a6\n.*FAIL word function: lost d0u\n.*keeps wrong: 9 checks, 5 failures\n")
 
 # the check "all memory back" of the library tests (rwemem.h rwe_mem_back(),
 # selftest_mem.c) with broken input, no library and no CD: a block not

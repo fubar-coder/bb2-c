@@ -23,7 +23,7 @@
  *                                   0: $00000000; into the test program: prog;
  *                                   else NAME+$OFF / NAME-$OFF (hex, no zero
  *                                   padding); name NULL: $XXXXXXXX
- *   cap_regs(check, vec, lost)      kept, or lost d3 a1 (bit 0-7 d0-d7, 8-14 a0-a6)
+ *   cap_regs(check, vec, lost)      kept, or lost d3 a1 (bit 0-7 d0-d7, 8-14 a0-a6, 15 d0u)
  *   cap_not_captured(check, vec, reason)
  *                                   not captured: REASON (a part that cannot be
  *                                   reproduced; the judge skips it)

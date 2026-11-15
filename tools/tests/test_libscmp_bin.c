@@ -129,7 +129,7 @@ static void test_formats(void)
     obs(&b, 0x15, "regs", "");
     put16(&b, 0);
     obs(&b, 0x15, "regs", "");
-    put16(&b, (1u << 3) | (1u << 9) | (1u << 14));
+    put16(&b, (1u << 3) | (1u << 9) | (1u << 14) | (1u << 15));
     put8(&b, 0x01);
     bstr(&b, "x\\|y");
     num(&b, "finit d0", "x=1", 5);
@@ -153,7 +153,7 @@ static void test_formats(void)
                  "rtn|p|above|10\tbase+$10\n"
                  "rtn|p|below|11\tbase-$10\n"
                  "rtn|regs||12\tkept\n"
-                 "rtn|regs||13\tlost d3 a1 a6\n"
+                 "rtn|regs||13\tlost d3 a1 a6 d0u\n"
                  "x\\|y|finit d0|x=1|14\t$00000005\n",
                  hex64, hex8(fnv(0x811c9dc5u, (const char *)b65, 65)));
     }
@@ -277,7 +277,7 @@ static void test_broken(void)
     put32(&b, 1000);
     putbytes(&b, "abc", 3);
     CHECK(strstr(broken(text, &b), "offset 21: bytes of length 1000, beyond the end of the file"));
-    /* a bad kind, flag, register set */
+    /* a bad kind, flag */
     b.n = at;
     obs(&b, 0x14, "c", "");
     put8(&b, 4);
@@ -286,10 +286,6 @@ static void test_broken(void)
     obs(&b, 0x13, "c", "");
     put8(&b, 2);
     CHECK(strstr(broken(text, &b), "offset 21: text flag 2 (0 or 1)"));
-    b.n = at;
-    obs(&b, 0x15, "c", "");
-    put16(&b, 0x8000);
-    CHECK(strstr(broken(text, &b), "offset 21: register set $8000 (bits 0-14)"));
     /* a key longer than the writer's */
     b.n = at;
     memset(key, 'k', 1020);

@@ -613,7 +613,7 @@ void cap_regs(const char *check, const char *vec, uint32_t lost)
 
     if (!begun)
         return;
-    lost &= 0x7fff;
+    lost &= 0xffff;
     if (blocks) {
         char c[2] = { (char)(lost >> 8), (char)lost };
 
@@ -633,6 +633,10 @@ void cap_regs(const char *check, const char *vec, uint32_t lost)
                 s[n++] = r < 8 ? 'd' : 'a';
                 s[n++] = (char)('0' + (r & 7));
             }
+        if (lost & 0x8000) {
+            memcpy(s + n, " d0u", 4);
+            n += 4;
+        }
         s[n] = 0;
     }
     line_begin(check, vec);

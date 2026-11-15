@@ -329,8 +329,12 @@ A library test program lives in `libs/tests/` (`rwe/NAME.c` for an RWE
 library). Write an observation with `OBS(what, value)`; use `OBSBYTES`
 for a buffer and `OBSPTR` for an address (never write an address as a
 plain number: it changes with the memory layout). Keep the input in the
-key and the result in the value. Use `KEEPS(routine, regs)` to state which
-registers the routine keeps.
+key and the result in the value. State the registers each routine must
+keep: `KEEPS_STATEMENT(routine, none)` or `KEEPS_FUNCTION(routine, none)`
+for a user-level command (the register rule: a6, and a3 for a function;
+an exception names its extra registers instead of `none`), and
+`KEEPS(routine, regs)` with the whole contract for an internal token,
+init or finit (`tests/README.md`, "Kept registers").
 
 Then record from the original (needs the CD and the RWE reference
 build, `ctest --preset originals -R rwe_refbuild`):
@@ -442,9 +446,10 @@ pair (the `[fixed #N]` file stays), and `NAME.orig.exe` beside a
 ### The record says "lost"
 
 A stated kept register (`KEEPS`) shows `lost d3` in the original's run:
-the set you stated is too strict. The summary at the end of
-`test/libs_tests.txt` lists, per routine, the registers kept in all calls
-and the `KEEPS(...)` line to paste.
+the set you stated is too strict, or the original breaks the register
+rule (then the case is an original bug to report). The summary at the
+end of `test/libs_tests.txt` lists, per routine, the registers kept in
+all calls as a `KEEPS(...)` line.
 
 ## Glossary
 

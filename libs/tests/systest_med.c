@@ -524,16 +524,20 @@ int main(int argc, char **argv)
     if (!load_set(argv[1], names))
         return 20;
     KEEPS("medlib init", d2-d7|a0-a3|a6);
-    KEEPS("StartMedModule", d2-d7|a3|a6);
-    KEEPS("PlayMed", d2-d7|a2|a3|a6);
-    KEEPS("StopMed", d2-d7|a2|a3|a6);
-    KEEPS("JumpMed", d1-d7|a1-a3|a6);
-    KEEPS("SetMedVolume", d0|d3-d7|a6);
-    KEEPS("GetMedVolume", d1-d7|a0|a1|a6);
-    KEEPS("GetMedNote", d1-d7|a0|a1|a6);
-    KEEPS("GetMedInstr", d1-d7|a0|a1|a6);
-    KEEPS("SetMedMask", d0-d7|a0-a3|a6);
-    KEEPS("DecodeMedModule", d2-d7|a2|a3|a6);
+    KEEPS_STATEMENT("StartMedModule", none);
+    KEEPS_STATEMENT("PlayMed", none);
+    KEEPS_STATEMENT("StopMed", none);
+    KEEPS_STATEMENT("JumpMed", none);
+    KEEPS_STATEMENT("SetMedVolume", none);
+    /* the original's GetMedVolume, GetMedNote and GetMedInstr change a3
+       (MOVEA.l (a2),a3): the rule's a3 of a function is not stated for
+       them (an original bug to decide, see the report of
+       libs-performance group 2) */
+    KEEPS("GetMedVolume", a6);
+    KEEPS("GetMedNote", a6);
+    KEEPS("GetMedInstr", a6);
+    KEEPS_STATEMENT("SetMedMask", none);
+    KEEPS_STATEMENT("DecodeMedModule", none);
     KEEPS("medlib finit", d2-d7|a2|a3|a6);
     what = "init";
     for (e = E_START; e <= E_FINIT; e++)

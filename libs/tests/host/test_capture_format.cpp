@@ -139,7 +139,7 @@ TEST_CASE("every value format and the key", "[capture]")
     cap_ptr("p", "below", 0x7ff0, "base", 0x8000);
     cap_ptr("p", "no base", 0x40001234, nullptr, 0);
     cap_regs("regs", nullptr, 0);
-    cap_regs("regs", nullptr, (1u << 3) | (1u << 9) | (1u << 14) | 0x8000);
+    cap_regs("regs", nullptr, (1u << 3) | (1u << 9) | (1u << 14) | 0x8000 | 0x10000);
     cap_not_captured("wheel", "Encrypt", "Rnd\\hw\ttiming");
     cap_routine("x|y");
     cap_num("finit d0", "x=1", 5);
@@ -165,7 +165,7 @@ TEST_CASE("every value format and the key", "[capture]")
         + "rtn|p|below|1\tbase-$10\n"
         + "rtn|p|no base|1\t$40001234\n"
         + "rtn|regs||1\tkept\n"
-        + "rtn|regs||2\tlost d3 a1 a6\n"
+        + "rtn|regs||2\tlost d3 a1 a6 d0u\n"
         + "rtn|wheel|Encrypt|1\tnot captured: Rnd\\\\hw\\x09timing\n"
         + "x\\|y|finit d0|x=1|1\t$00000005\n";
     CHECK(files["TEST:captures/unit.txt"] == want);
@@ -243,7 +243,7 @@ void every_format()
     cap_ptr("p", "no base", 0x40001234, nullptr, 0);
     cap_ptr("p", "long name", 0x8010, std::string(150, 'n').c_str(), 0x8000);
     cap_regs("regs", nullptr, 0);
-    cap_regs("regs", nullptr, (1u << 3) | (1u << 9) | (1u << 14) | 0x8000);
+    cap_regs("regs", nullptr, (1u << 3) | (1u << 9) | (1u << 14) | 0x8000 | 0x10000);
     cap_routine("x|y");
     cap_num("finit d0", "x=1", 5);
 }

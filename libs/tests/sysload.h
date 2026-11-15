@@ -22,11 +22,18 @@
  *   OBSSTR(what, s)             a string ("TEXT", NULL: null)
  *   NOT_CAPTURED(what, reason)  a part that cannot be reproduced
  *   OBS_BLOCKS(on)              block mode (only the block programs, D6)
- *   KEEPS(routine, d2|d3|a2)    the registers the routine keeps in every
- *                               call of the original (a4 and a5 always;
- *                               ranges like d2-d7; none); obs_kept(in, out)
- *                               after a call writes ROUT|kept|VEC: "kept"
- *                               or "lost d3 a1" for the stated set
+ *   KEEPS_STATEMENT(routine, x) the registers a user-level statement,
+ *   KEEPS_FUNCTION(routine, x)  function or string function must keep
+ *   KEEPS_STRFUNCTION(rout, x)  (the register rule: a6, a3 for a function,
+ *                               a4/a5 always) plus x, the registers of its
+ *                               exception (none, a0|a1, d0u)
+ *   KEEPS(routine, d2|d3|a2)    the registers any other routine keeps (an
+ *                               internal token, init, finit, error check:
+ *                               its contract; a4 and a5 always; ranges like
+ *                               d2-d7; d0u = the upper word of d0; none);
+ *                               obs_kept(in, out) after a call writes
+ *                               ROUT|kept|VEC: "kept" or "lost d3 a1" for
+ *                               the stated set
  *   DONTCARE                    registers of results, exempt in the next
  *                               obs_kept (cleared by the program)
  *   kept_summary()              the kept registers of every routine in all
@@ -276,13 +283,15 @@ static void markregs(struct regs *r)
     for (i = 0; i < 7; i++) r->a[i] = MARK(8 + i);
 }
 
-/* bit n set = register n (d0..d7 = 0..7, a0..a6 = 8..14) unchanged */
+/* bit n set = register n (d0..d7 = 0..7, a0..a6 = 8..14) unchanged; bit
+   15 (d0u) = the upper word of d0 unchanged */
 static ULONG kept(const struct regs *before, const struct regs *after)
 {
     ULONG m = 0;
     int i;
     for (i = 0; i < 8; i++) if (before->d[i] == after->d[i]) m |= 1UL << i;
     for (i = 0; i < 7; i++) if (before->a[i] == after->a[i]) m |= 1UL << (8 + i);
+    if (!((before->d[0] ^ after->d[0]) & 0xffff0000UL)) m |= 1UL << 15;
     return m;
 }
 
@@ -348,18 +357,39 @@ static char VEC[100];
 
 /* ------------------------------------------------------------- kept registers */
 
-/* KEEPS(routine, regs): the registers `routine` (a ROUT) keeps in every
-   call of the scenario with the original (design D7: the intersection
-   over the calls, from kept_summary's listing; never less than the
-   convention's a4 and a5, which are always added).  regs is written as
-   C text, registers d0-d7/a0-a6 joined by |, ranges like d2-d7, or none:
+/* The registers a routine must keep, stated once per routine (ROUT)
+   before its first call.  The register rule (docs/libs/deviations.md,
+   "Register preservation"; Mark Sibly's LIBSDEV documentation): a
+   user-level statement keeps a4, a5, a6 and a7, a function also a3 (a
+   string function leaves a3 at the end of its result, which its result
+   case checks); nothing else, unless a known caller needs more (the
+   exceptions of the register rule, e.g. EventWindow a1).  A register the
+   original keeps and the rule does not require is not checked.
+     KEEPS_STATEMENT("Poke", none);
+     KEEPS_FUNCTION("Peek", none);
+     KEEPS_STRFUNCTION("Peeks$", none);
+     KEEPS_FUNCTION("EMouseY", a0|d0u);        an exception
+   Every other routine (an internal token the compiler calls, init and
+   finit, a nullsub, an error check) keeps its contract, stated as the
+   whole set (today the intersection of what the original keeps in all
+   calls of the scenario, from kept_summary's listing):
      KEEPS("FillArray", d2-d7|a2|a3|a6);
-   obs_kept() writes for every call of a routine one case ROUT|kept|VEC:
-   "kept", or "lost" with the stated registers the call changed. */
-#define KEEPS(routine, regs) keeps_state((routine), #regs)
+   Registers d0-d7/a0-a6 joined by |, ranges like d2-d7, d0u for the
+   upper word of d0, or none; a4 and a5 are always added (a7 is the
+   caller's, callregs).  obs_kept() writes for every call of a routine
+   one case ROUT|kept|VEC: "kept", or "lost" with the stated registers
+   the call changed. */
+#define KEEPS(routine, regs) keeps_state((routine), 0, #regs)
+#define KEEPS_STATEMENT(routine, extra) keeps_state((routine), KEEPS_A6, #extra)
+#define KEEPS_FUNCTION(routine, extra) \
+    keeps_state((routine), KEEPS_A3 | KEEPS_A6, #extra)
+#define KEEPS_STRFUNCTION(routine, extra) keeps_state((routine), KEEPS_A6, #extra)
 
 #define KEEPS_MAX 64
 #define KEEPS_CONV ((1UL << 12) | (1UL << 13))  /* a4, a5 */
+#define KEEPS_A3 (1UL << 11)
+#define KEEPS_A6 (1UL << 14)
+#define KEEPS_D0U (1UL << 15)                   /* the upper word of d0 */
 #define KEEPS_BAD 0x80000000UL
 
 static struct keeps {
@@ -388,12 +418,12 @@ static struct keeps *keeps_find(const char *rout)
     keeps[nkeeps].rout = rout;
     keeps[nkeeps].has = 0;
     keeps[nkeeps].stated = 0;
-    keeps[nkeeps].all = 0x7fff;
+    keeps[nkeeps].all = 0xffff;
     keeps[nkeeps].n = 0;
     return &keeps[nkeeps++];
 }
 
-/* "d2|d3-d5|a2" -> mask; KEEPS_BAD for anything else */
+/* "d2|d3-d5|a2|d0u" -> mask; KEEPS_BAD for anything else */
 static ULONG keeps_parse(const char *s)
 {
     ULONG m = 0;
@@ -405,6 +435,11 @@ static ULONG keeps_parse(const char *s)
         }
         if (!strncmp(s, "none", 4)) {
             s += 4;
+            continue;
+        }
+        if (!strncmp(s, "d0u", 3)) {
+            m |= KEEPS_D0U;
+            s += 3;
             continue;
         }
         if ((*s != 'd' && *s != 'a') || s[1] < '0' || s[1] > '7')
@@ -431,7 +466,9 @@ static ULONG keeps_parse(const char *s)
     return m;
 }
 
-static __attribute__((unused)) void keeps_state(const char *rout, const char *regs)
+/* the stated set of rout: `rule` (the register rule of its kind, 0 for a
+   contract) and the registers `regs` */
+static __attribute__((unused)) void keeps_state(const char *rout, ULONG rule, const char *regs)
 {
     struct keeps *k = keeps_find(rout);
     ULONG m = keeps_parse(regs);
@@ -445,7 +482,7 @@ static __attribute__((unused)) void keeps_state(const char *rout, const char *re
         return;
     }
     k->has = 1;
-    k->stated = m | KEEPS_CONV;
+    k->stated = m | rule | KEEPS_CONV;
 }
 
 /* the registers of a mask as KEEPS text (d2-d7|a2) */
@@ -464,19 +501,22 @@ static void keeps_text(char *s, ULONG m)
             n += sprintf(s + n, "%s%c%d", e > r + 1 ? "-" : "|", r < 8 ? 'd' : 'a', e & 7);
         r = e;
     }
+    if (m & KEEPS_D0U)
+        n += sprintf(s + n, "%sd0u", n ? "|" : "");
     if (!n)
         strcpy(s, "none");
 }
 
 /* after a call of ROUT with the registers `in`: the case ROUT|kept|VEC
-   for its stated set; a routine without KEEPS fails once */
-static __attribute__((unused)) void obs_kept(const struct regs *in, const struct regs *out)
+   for its stated set; a routine without KEEPS fails once.  Returns the
+   stated registers the call lost (0: kept) */
+static __attribute__((unused)) ULONG obs_kept(const struct regs *in, const struct regs *out)
 {
     struct keeps *k = keeps_find(ROUT);
-    ULONG m = kept(in, out);
+    ULONG m = kept(in, out), lost;
     char buf[120];
     if (!k)
-        return;
+        return 0;
     k->all &= m;
     k->n++;
     if (!k->has) {
@@ -484,16 +524,18 @@ static __attribute__((unused)) void obs_kept(const struct regs *in, const struct
             snprintf(buf, sizeof buf, "KEEPS: no kept set stated for \"%.60s\"", ROUT);
             check(buf, FALSE);
         }
-        return;
+        return 0;
     }
+    lost = k->stated & ~(m | DONTCARE);
     cap_routine(ROUT);
-    cap_regs("kept", VEC, k->stated & ~(m | DONTCARE));
+    cap_regs("kept", VEC, lost);
     checks++;
+    return lost;
 }
 
-/* the kept registers of every routine in all its calls with this set,
-   the KEEPS line to state them (the set of the original's run is the one
-   to state), and the stated set */
+/* the kept registers of every routine in all its calls with this set
+   (information: what the original keeps in the scenario; a contract is
+   stated from the original's run) and the stated set */
 static __attribute__((unused)) void kept_summary(void)
 {
     char t[64], st[64];

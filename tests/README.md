@@ -422,22 +422,34 @@ agent of a fix runs the check and names its result in the report; the
 coordinator runs it again before the merge (`tools/results/README.md`,
 "fix-scope").
 
-**Kept registers.** A library routine may change every register except
-a4, a5, a6 and a7, and a function also keeps a3
-(`docs/libs/deviations.md`, "Register preservation"); the
-port's thunks keep at least what the original keeps. The program loads
-marker values before each call and writes one case per call, `kept` or
-`lost d3 a1`, for the registers that `KEEPS(routine, regs)` states (a4
-and a5 are always added); a stated register that shows `lost` fails the
-run with the key, and a recording refuses it. The stated set is the
-intersection of what the original keeps in all calls of the scenario
-(`none`, `d2-d7|a0|a6`, ...); the summary at the end of
-`test/libs_tests.txt` lists the calls, the mask kept in all of them and
-the `KEEPS(...)` line to paste, and marks a routine that returns a
-result in a4 or a5 (`DONTCARE`). A routine called without a stated set
-fails once. **Accepted limit:** a register the original keeps in some
-calls only is not in the set and not compared, so a C build that loses
-it in those calls is not caught.
+**Kept registers.** The register rule (`docs/libs/deviations.md`,
+"Register preservation"; Mark Sibly's LIBSDEV documentation): a
+user-level statement keeps a4, a5, a6 and a7, a function also a3 (a
+string function leaves a3 at the end of its result); nothing else,
+except the registers of an exception, an entry whose known callers need
+more (EventWindow a1, EMouseY a0 and the upper word of d0, ...). Internal
+tokens the compiler calls, init and finit, nullsubs and error checks keep
+their contracts. The program loads marker values before each call and
+writes one case per call, `kept` or `lost d3 a1`, for the registers the
+routine must keep (a4 and a5 are always added; `d0u` is the upper word of
+d0): `KEEPS_STATEMENT(routine, extra)`, `KEEPS_FUNCTION(routine, extra)`
+and `KEEPS_STRFUNCTION(routine, extra)` state the rule of the kind plus
+`extra`, the registers of the exception (`none`, `a0|a1`, `a0|d0u`), and
+`KEEPS(routine, regs)` the whole contract of any other routine
+(`d2-d7|a0|a6`, today the intersection of what the original keeps in all
+calls of the scenario). A register the original keeps and the rule does
+not require is not checked. A stated register that shows `lost` fails
+the run with the key, and a recording refuses it; a result in a stated
+register (the a3 of `Peek.s`) is exempted for the call with `DONTCARE`.
+The summary at the end of `test/libs_tests.txt` lists, as information,
+the calls, the mask kept in all of them as a `KEEPS(...)` line, and the
+stated set, and marks a routine that returns a result in a4 or a5
+(`DONTCARE`). A routine called without a stated set fails once. The
+checks of the rule have their test with broken input in
+`libs_keeps_wrong` (a function that loses a6 and a word function that
+changes the upper word of d0 it states fail, a statement that changes d1
+and a0 passes). **Accepted limit:** a register of a contract that the
+original keeps in some calls only is not in the set and not compared.
 
 **`not captured`.** A part that cannot be reproduced has a case
 `NOT_CAPTURED(what, "REASON")`; the judge skips it on both sides, so the
@@ -498,7 +510,7 @@ record and update targets with a fake emulator run), `fix_scope_*` (the
 fix-scope check), `libs_emulator_wrong` (an emulator run whose output has
 a changed case fails with that key), `libs_emulator_lost` (a datalib
 whose thunks change d2: `lost d2`, the run fails), `libs_keeps_wrong`
-(a wrong `KEEPS` statement) and `libs_mem_wrong` (the check "all memory
+(a wrong `KEEPS` statement, a lost register of the rule) and `libs_mem_wrong` (the check "all memory
 back", the task's own AllocMem/FreeMem balance of `rwe/rwemem.h`: a
 block not freed, a foreign block freed, no allocation seen; and the marks of
 `rwe_mem_mark()` that the "old one freed" checks of `systest_runtime` use). The test programs of the original's bugs

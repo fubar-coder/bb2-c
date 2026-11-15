@@ -1957,30 +1957,50 @@ mathtranslib finit|kept||1	kept
 mathtranslib finit|popped||1	$00000000
 environlib init|kept||1	kept
 environlib init|popped||1	$00000000
-environlib function|kept|entry 0|1	kept
-environlib function|popped|entry 0|1	$00000000
-environlib function|d0|entry 0|1	$00000280
-environlib function|kept|entry 1|1	kept
-environlib function|popped|entry 1|1	$00000000
-environlib function|d0|entry 1|1	$00000100
-environlib function|kept|entry 2|1	kept
-environlib function|popped|entry 2|1	$00000000
-environlib function|d0|entry 2|1	$5A000002
-environlib function|kept|entry 3|1	kept
-environlib function|popped|entry 3|1	$00000000
-environlib function|d0|entry 3|1	$5A00C000
-environlib function|kept|entry 4|1	kept
-environlib function|popped|entry 4|1	$00000000
-environlib function|d0|entry 4|1	$5A000002
-environlib function|kept|entry 5|1	kept
-environlib function|popped|entry 5|1	$00000000
-environlib function|d0|entry 5|1	$00000000
-environlib function|kept|entry 6|1	kept
-environlib function|popped|entry 6|1	$00000000
-environlib function|d0|entry 6|1	$5A000028
-environlib function|kept|entry 7|1	kept
-environlib function|popped|entry 7|1	$00000000
-environlib function|d0|entry 7|1	$5A002400
+WBWidth|kept||1	kept
+WBWidth|popped||1	$00000000
+WBWidth|d0||1	$00000280
+WBHeight|kept||1	kept
+WBHeight|popped||1	$00000000
+WBHeight|d0||1	$00000100
+WBDepth|kept||1	kept
+WBDepth|popped||1	$00000000
+WBDepth|d0.w||1	$00000002
+WBViewMode|kept||1	kept
+WBViewMode|popped||1	$00000000
+WBViewMode|d0.w||1	$0000C000
+Processor|kept||1	kept
+Processor|popped||1	$00000000
+Processor|d0.w||1	$00000002
+cr_vbr|kept||1	kept
+cr_vbr|popped||1	$00000000
+cr_vbr|d0||1	$00000000
+ExecVersion|kept||1	kept
+ExecVersion|popped||1	$00000000
+ExecVersion|d0||1	$00000028
+WBExtViewMode|kept||1	kept
+WBExtViewMode|popped||1	$00000000
+WBExtViewMode|d0.w||1	$00002400
+EMouseX|kept||1	kept
+EMouseX|popped||1	$00000000
+EMouseX|d0.w||1	$00000000
+EMouseY|kept||1	kept
+EMouseY|popped||1	$00000000
+EMouseY|d0.w||1	$00000000
+EventCode|kept||1	kept
+EventCode|popped||1	$00000000
+EventCode|d0.w||1	$00000000
+EventWindow|kept||1	kept
+EventWindow|popped||1	$00000000
+EventWindow|d0.w||1	$0000FFFF
+RawStatus|kept|rawkey 0|1	kept
+RawStatus|popped|rawkey 0|1	$00000000
+RawStatus|kept|rawkey 69|1	kept
+RawStatus|popped|rawkey 69|1	$00000000
+Rnd|kept||1	kept
+Rnd|popped||1	$00000000
+Rnd(Range)|kept|range 100|1	kept
+Rnd(Range)|popped|range 100|1	$00000000
 memlib init|kept||1	kept
 memlib init|popped||1	$00000000
 utillib init|kept||1	kept

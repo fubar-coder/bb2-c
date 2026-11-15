@@ -238,7 +238,8 @@ int libscmp_update_dirs(const char *run_dir, const char *exp_dir, const char *co
  *   $14 CHECK\0 VEC\0 u8 0      an address in the test program: prog
  *   $14 CHECK\0 VEC\0 u8 1 u32  an address            $XXXXXXXX
  *   $14 CHECK\0 VEC\0 u8 2|3 u32 OFF NAME\0           NAME+$OFF / NAME-$OFF
- *   $15 CHECK\0 VEC\0 u16 SET   kept registers        kept / lost d3 a1
+ *   $15 CHECK\0 VEC\0 u16 SET   lost registers (bit 0-7 d0-d7, 8-14 a0-a6,
+ *                               15 the upper word of d0) kept / lost d3 a1 d0u
  *
  * Each observation is the line KEY<TAB>VALUE as capture.h describes it,
  * with ROUTINE|CHECK|VEC|N as key (N: the observation's number in the
