@@ -820,6 +820,12 @@ source the original accepted are shown with examples on
 * On a 68010 processor, runtime errors and the debugger took the trap
   vectors from the wrong table when the system had moved it; the moved
   table is used ([#42](https://github.com/fubar-coder/bb2-c/issues/42)).
+* Without runtime error checking, a `TokeJsr` in a source, or an
+  `ALibJsr` in a library, to a command routine that has an error check
+  went through an extra stub, a `jsr` to the routine and an `rts`: 8 bytes
+  more and one more call each time, for a check that is not part of the
+  program. The call goes straight to the routine
+  ([#1048](https://github.com/fubar-coder/bb2-c/issues/1048)).
 
 ### Inline assembler
 

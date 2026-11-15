@@ -678,6 +678,35 @@ come only in a program compiled with runtime error checking, like the
 other checks of Blitz Basic 2; without it, the program runs as with the
 original.
 
+### A Long or Quick division by 0 {#long-division-by-zero}
+
+**What happened.** A Word division by 0 stopped a program compiled with
+runtime error checking with "GURU! - Division by Zero". A Long or Quick
+division by a variable that holds 0 went on without a message and gave
+the largest number:
+
+```
+a.l=7 : b.l=0
+NPrint "before"
+c.l=a/b
+NPrint "after ",c
+End
+```
+
+Compiled with runtime error checking, the original printed `before` and
+`after 2147483647`.
+
+**With the port.** With runtime error checking, a Long or Quick division
+by 0 stops with "GURU! - Division by Zero", as a Word division does; the
+program above stops at line 3. Without runtime error checking, the result
+is the largest number with the sign of the dividend, here 2147483647, and
+the program goes on.
+
+**What to change.** Test the divisor before the division where it can
+be 0.
+
+Issue: [Division by 0 returned $7FFFFFFF regardless of the sign (#200)](https://github.com/fubar-coder/bb2-c/issues/200).
+
 ### `WindowTags` with too many tag pairs {#windowtags-too-many-tags}
 
 **What happened.** `WindowTags` copies the tag and data pairs given as
