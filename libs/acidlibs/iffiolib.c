@@ -34,9 +34,6 @@
  * original; the C version keeps it).
  *
  * BUG(orig), kept:
- *  - charsleft is the low word of the Read result: a read error (-1) gives
- *    65535, so the buffer contents are taken as data (up to 2048 bytes per
- *    refill). (#177)
  *  - ifffind gives up at a "BODY" id (unless it is looking for BODY) and
  *    otherwise reads ahead byte by byte (the ids need not be aligned). (#178)
  *  - Not a bug (all callers ignore d0/a0 after iffread): iffread: when the
@@ -44,6 +41,11 @@
  *    directly to a0 (d0 = its result, a0 not advanced); the buffer is
  *    refilled by the next iffbyte.  When the data ends inside
  *    the buffer, d0 = the bytes still wanted and a0 = the end.
+ *
+ * Fixed (intended deviation, #177): a read error (Read gives -1) is the
+ * end of the data (charsleft = 0); the original kept the low word of the
+ * Read result, 65535, so the old buffer contents were taken as data (and
+ * ifffind could loop for ever).
  *
  * Fixed (intended deviation, #179): iffskip and iffread with d0 = 0 do
  * nothing; the original tested the count only after the first byte
@@ -84,7 +86,7 @@ BLITZ_LIBFIN();
 
 static UBYTE *iffbuff;
 static UWORD charat;            /* position in the buffer */
-static UWORD charsleft;         /* bytes in the buffer (low word of Read) */
+static UWORD charsleft;         /* bytes in the buffer (0 after a read error) */
 static BPTR filehand;
 static struct DosLibrary *dosbase;
 #define DOSBase dosbase         /* for proto/dos.h */
@@ -119,7 +121,9 @@ static ULONG BLITZ_ROUTINE codeinit(struct DosLibrary *dos BL_REG(a0))
 
 static void readbuff(void)
 {
-    charsleft = (UWORD)Read(filehand, iffbuff, BUFSIZE);
+    LONG n = Read(filehand, iffbuff, BUFSIZE);
+
+    charsleft = n < 0 ? 0 : (UWORD)n;   /* fixed (#177): an error = the end */
     charat = 0;
 }
 
@@ -217,8 +221,8 @@ static ULONG long_(ULONG value)
  * @brief iffbyte (+3): the next byte of the file.
  *
  * Refills the buffer when it is used up.  CCR: Z = ok.
- * BUG(orig) (#177): after a read error (-1) the buffer counts as 65535
- * bytes long.
+ * Fixed (#177): a read error is the end of the data (the original took
+ * the buffer as 65535 bytes long).
  *
  * @param value  d0: the caller's d0, only its low byte is replaced
  * @return d0: value with the byte in the low byte, -1 (N, not Z) at the

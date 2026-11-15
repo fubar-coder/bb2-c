@@ -8,6 +8,7 @@
 ; the old ILBM from the buffer as shape 1 and the program goes on.
 ; Correct: the read error is an error (or the end of the file): there is
 ; no ILBM, LoadShape stops with a runtime error.
+; @fixed #177
 ; @configs clib
 ; @pass runtime_errors=on
 DEFTYPE .l
