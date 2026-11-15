@@ -188,7 +188,7 @@ bmisc.vpos                     79       72.9  c=VPos
 bmisc.ntsc                 111~17      100.4  c=NTSC
 bmisc.infront                129~4      134.9  InFront 4
 bmod.vblmod                 2615~220   2409.5  PlayModule playing: its interrupt, cycles per frame
-bmod.playmed               10650~7     9950.0  PlayMed
+bmod.playmed               10515~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
 bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)

@@ -1447,7 +1447,10 @@ BL_ALWAYS_INLINE void ticks(UBYTE counter)
                 PT->fadespd = 0;
             }
         }
-        switch (cmd) {                          /* plr_nofade */
+        /* plr_nofade: trk_cmd is 0-31 (newline masks it with $0F or $1F);
+           the AND tells GCC so, then its jump table needs no range check
+           and no extension (the original: ADD.b d6,d6 and its table) */
+        switch (cmd & 0x1f) {
         case 0x01:
             if (!counter && (PS->flags & 0x20))
                 break;
