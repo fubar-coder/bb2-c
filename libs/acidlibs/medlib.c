@@ -926,6 +926,25 @@ arpeggio:
 
 /* ------------------------------------------------------------ PlayNote */
 
+/* The player state in the fixed registers of the libraries (user decision
+   2026-11-15, libs-performance task 10.10): during a pulse a3 holds the
+   module, a4 its song and a5 the track at hand, as the original's
+   _IntHandler keeps them in a2/a4/a5 (its _PlayMed saves a4-a6).  GCC has
+   only a0-a2/a6 for addresses, so as locals they were spilled and
+   reloaded; as the global register variables blitz_string, blitz_locals
+   and blitz_globals GCC addresses them directly (d16(a5)).  _PlayMed's
+   thunk saves and restores a3-a5.  Nothing a pulse runs relies on their
+   Blitz meaning: the player makes no ALibJsr, no OS call and no string
+   work, its functions (playnote, synth, playfxnote, cmd_F, ChannelOff,
+   SoundOff) take nothing from a3-a5 but this state; an interrupt during
+   PlayMed finds the program's registers as it would in the original
+   (an interrupt server gets a5 from exec, a Blitz handler takes the
+   program's a5 from intlib's newint and loads a3 at each string
+   expression). */
+#define PM ((struct mmd *)blitz_string)         /* a3: the module */
+#define PS ((struct song *)blitz_locals)        /* a4: its song */
+#define PT ((struct track *)blitz_globals)      /* a5: the track */
+
 /* what _PlayNote leaves in d1 and d4: d4 (soffset, 64 after a synth note)
    is the upper byte of a Bxx/1Dxx qualifier word of a later track (#203),
    d1 the retrigger count of 1Fxx after the note delay (#205) */
@@ -934,12 +953,10 @@ struct left {
 };
 
 /* _PlayNote: note (0-based instrument instr, its song entry ins) on the
-   track ch: sample, IFF octave sample, synth or hybrid */
-static struct left playnote(struct track *t, UWORD ch, ULONG note, UWORD instr,
-                            struct instr *ins)
+   track ch (its structure at a5, PT): sample, IFF octave sample, synth or
+   hybrid */
+BL_ALWAYS_INLINE struct left playnote_in(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
 {
-    struct mmd *m = db.module;
-    struct song *song = m->song;
     struct left r = { note, 0 };
     ULONG mask, sp, start, end, rep, repend, len;
     UBYTE n;
@@ -950,22 +967,22 @@ static struct left playnote(struct track *t, UWORD ch, ULONG note, UWORD instr,
     if (!((ULONG)ChanMask & (1UL << (ch & 31))))
         return r;
     mask = 1UL << (ch & 31);
-    sp = *(ULONG *)((UBYTE *)m->smplarr + (WORD)(instr << 2));
-    n = note + song->playtransp + ins->strans;
+    sp = *(ULONG *)((UBYTE *)PM->smplarr + (WORD)(instr << 2));
+    n = note + PS->playtransp + ins->strans;
     if ((BYTE)ch < 4) {
-        if (!sp || (BYTE)t->synthtype <= 0 || SAMPLE(sp)->type != -1)
+        if (!sp || (BYTE)PT->synthtype <= 0 || SAMPLE(sp)->type != -1)
             DMACON = (UWORD)mask;               /* stpdma */
-        t->synthptr = 0;
+        PT->synthptr = 0;
     }
     n--;
-    t->fadespd = 0;
-    t->decay = t->initdecay;
-    t->vibroffs = 0;
-    t->tremoffs = 0;
+    PT->fadespd = 0;
+    PT->decay = PT->initdecay;
+    PT->vibroffs = 0;
+    PT->tremoffs = 0;
     db.dmaonmsk |= (UWORD)mask;
     if (SAMPLE(sp)->type < 0)
         goto synthnote;
-    t->synthtype = 0;
+    PT->synthtype = 0;
 sample:
     while ((BYTE)n < 0)
         n += 12;
@@ -985,11 +1002,11 @@ sample:
         repend = (UWORD)(ins->replen << sh);
         start = sp + 6 + bl_mulu_w(len, mullencnt[idx]);
         end = (UWORD)(len << sh) + start;
-        t->periodtbl = periods_of(t->finetune);
-        per = PERIOD(t->periodtbl, (UBYTE)((UBYTE)((q >> 16) + octstart[idx]) * 2));
+        PT->periodtbl = periods_of(PT->finetune);
+        per = PERIOD(PT->periodtbl, (UBYTE)((UBYTE)((q >> 16) + octstart[idx]) * 2));
     } else {
-        t->periodtbl = periods_of(t->finetune);
-        per = PERIOD(t->periodtbl, (UBYTE)(n + n));
+        PT->periodtbl = periods_of(PT->finetune);
+        per = PERIOD(PT->periodtbl, (UBYTE)(n + n));
         start = sp + 6;
         end = SAMPLE(sp)->length + start;
         rep = ins->repeat;
@@ -1002,58 +1019,65 @@ sample:
         repend += rep;
     } else
         repend = 0;
-    r.d4 = t->soffset;                          /* gid_cont */
+    r.d4 = PT->soffset;                          /* gid_cont */
     start += r.d4;
     if (!(end > start))
         start -= r.d4;
-    AC_PTR(t->audioaddr) = start;
+    AC_PTR(PT->audioaddr) = start;
     if (repend > start) {                       /* rRepeat */
-        t->sampleptr = rep;
+        PT->sampleptr = rep;
         r.d1 = len = (repend - start) >> 1;
-        AC_LEN(t->audioaddr) = len;
-        t->samplelen = (repend - rep) >> 1;
+        AC_LEN(PT->audioaddr) = len;
+        PT->samplelen = (repend - rep) >> 1;
     } else {
-        t->sampleptr = (ULONG)db.chipzero;
-        t->samplelen = 1;
+        PT->sampleptr = (ULONG)db.chipzero;
+        PT->samplelen = 1;
         r.d1 = len = (end - start) >> 1;
-        AC_LEN(t->audioaddr) = len;
+        AC_LEN(PT->audioaddr) = len;
     }
-    t->prevper = per;
-    if (t->synthtype)
+    PT->prevper = per;
+    if (PT->synthtype)
         goto hsn2;
     return r;
 
 synthnote:
-    t->prevnote2 = n;
-    t->synthptr = (struct synth *)sp;
+    PT->prevnote2 = n;
+    PT->synthptr = (struct synth *)sp;
     if (SAMPLE(sp)->type == -2) {               /* HYBRID: the sample */
-        t->synthtype = 0xff;
-        sp = (ULONG)t->synthptr->wf[0];
+        PT->synthtype = 0xff;
+        sp = (ULONG)PT->synthptr->wf[0];
         goto sample;
     }
-    t->synthtype = 1;
-    t->periodtbl = periods_of(t->finetune) - 24;
-    per = PERIOD(t->periodtbl, (UWORD)(n + n));
+    PT->synthtype = 1;
+    PT->periodtbl = periods_of(PT->finetune) - 24;
+    per = PERIOD(PT->periodtbl, (UWORD)(n + n));
     r.d1 = (r.d1 & 0xffff0000UL) | per;
-    t->prevper = per;
-    t->sampleptr = 0;
+    PT->prevper = per;
+    PT->sampleptr = 0;
 hsn2:
     {
-        ULONG *z = (ULONG *)&t->arpgoffs;       /* arpgoffs .. synvibdep */
+        ULONG *z = (ULONG *)&PT->arpgoffs;       /* arpgoffs .. synvibdep */
         int i;
 
         for (i = 0; i < 6; i++)
             *z++ = 0;
     }
-    t->synvibwf = sinetable;
-    t->synviboffs = 0;
-    t->initvolxspd = t->synthptr->volspeed;
-    t->initwfxspd = t->synthptr->wfspeed;
-    t->volchgspd = 0;
-    if (t->cmd == 0xe)
-        LO(t->wfcmd) = t->cmdqual;
+    PT->synvibwf = sinetable;
+    PT->synviboffs = 0;
+    PT->initvolxspd = PT->synthptr->volspeed;
+    PT->initwfxspd = PT->synthptr->wfspeed;
+    PT->volchgspd = 0;
+    if (PT->cmd == 0xe)
+        LO(PT->wfcmd) = PT->cmdqual;
     r.d4 = 64;
     return r;
+}
+
+/* playnote: the same out of line, for the replays of the ticks (playnote_in
+   is inline in newline); the track is a5 there too */
+static struct left playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
+{
+    return playnote_in(ch, note, instr, ins);
 }
 
 /* playfxnote: the previous note again (the hold counter continued by the
@@ -1073,7 +1097,7 @@ static ULONG playfxnote(struct track *t, UWORD ch, UBYTE counter)
             c = -1;
     }
     t->noteoffcnt = c;
-    return playnote(t, ch, t->prevnote, t->previnstr, t->previnstra).d1;
+    return playnote(ch, t->prevnote, t->previnstr, t->previnstra).d1;
 }
 
 /* Fxx in the ticks: F1/F2 replay on tick 3, F3 on ticks 2, 4 and 6, F8/F9
@@ -1137,18 +1161,18 @@ BL_ALWAYS_INLINE struct instr *instrument(struct song *song, UBYTE i)
 }
 
 /* plr_loop0: the notes and the commands of a new line */
-BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE int newline(void)
 {
     struct track **tdp = db.trackdataptrs;
-    UBYTE *block = curblock(m), *noteptr;
-    UWORD line = m->pline;
+    UBYTE *block = curblock(PM), *noteptr;
+    UWORD line = PM->pline;
     /* d4 of the original: the qualifier in the low byte, the upper byte
        left over from a track before (PlayNote, 19xx) - Bxx and 1Dxx take
        the whole word (#203) */
     UWORD qual = 0;
     UBYTE ch = 0;
 
-    if (!mmd1(m)) {
+    if (!mmd1(PM)) {
         db.numtracks = block[0];
         db.numlines = block[1];
         noteptr = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), db.numtracks);
@@ -1158,19 +1182,19 @@ BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
         db.numlines = *(UWORD *)(block + 2);
     }
     do {
-        struct track *t = *tdp++;
         UBYTE note, instr, cmd, q, *p;
 
         /* BUG(orig) (#334): a masked track is skipped before its note is
            read, so noteptr stays: the next track reads this track's note */
+        blitz_globals = (UBYTE *)*tdp++;
         if (!(ChanMask & (1 << (ch & 7))))
             continue;
         p = noteptr;
-        if (!mmd1(m)) {
+        if (!mmd1(PM)) {
             note = *p++;
             instr = *p >> 4;
             cmd = *p++ & 0x0f;
-            t->cmdqual = *p++;
+            PT->cmdqual = *p++;
             if (note & 0x80) {
                 note &= ~0x80;
                 instr |= 0x10;
@@ -1185,27 +1209,27 @@ BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
                 note = 0;
             instr = *p++;
             cmd = *p++ & 0x1f;
-            t->cmdqual = *p++;
+            PT->cmdqual = *p++;
         }
         noteptr = p;
         instr &= 0x3f;
         if (instr) {
             UBYTE *h = db.holdvals + --instr;
-            struct instr *ins = instrument(song, instr);
+            struct instr *ins = instrument(PS, instr);
 
-            t->previnstr = instr;
-            t->inithold = h[0];
-            t->initdecay = h[63];
-            t->finetune = h[126];
-            t->previnstra = ins;
-            t->prevvol = (UWORD)bl_mulu_w(ins->svol, t->trackvol) >> 8;
-            t->stransp = ins->strans;
-            t->soffset = 0;
+            PT->previnstr = instr;
+            PT->inithold = h[0];
+            PT->initdecay = h[63];
+            PT->finetune = h[126];
+            PT->previnstra = ins;
+            PT->prevvol = (UWORD)bl_mulu_w(ins->svol, PT->trackvol) >> 8;
+            PT->stransp = ins->strans;
+            PT->soffset = 0;
         }
-        t->cmd = cmd;
+        PT->cmd = cmd;
         if (!cmd)
             goto fx;
-        q = t->cmdqual;
+        q = PT->cmdqual;
         qual = (qual & 0xff00) | q;
         switch (cmd) {
         case 0x0f:                              /* tempo */
@@ -1218,14 +1242,14 @@ BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
             if (q == 0xf2)
                 goto f_1f;
             if (q == 0xfe) {                    /* FFE: stop */
-                m->pstate = 0;
+                PM->pstate = 0;
                 SoundOff();
                 return 0;
             }
             if (q == 0xfd) {                    /* FFD: period only */
                 if ((BYTE)--note < 0)
                     continue;
-                t->prevper = PERIOD(t->periodtbl, (UBYTE)(note + note));
+                PT->prevper = PERIOD(PT->periodtbl, (UBYTE)(note + note));
                 note = 0;
                 break;
             }
@@ -1234,35 +1258,35 @@ BL_ALWAYS_INLINE int newline(struct mmd *m, struct song *song)
             break;
         case 0x1f:                              /* note delay */
 f_1f:
-            t->prevnote = note;
-            t->noteoffcnt = t->inithold;
-            if (!t->noteoffcnt)
-                t->noteoffcnt = -1;
+            PT->prevnote = note;
+            PT->noteoffcnt = PT->inithold;
+            if (!PT->noteoffcnt)
+                PT->noteoffcnt = -1;
             continue;
         case 0x0e:
             if ((BYTE)ch <= 3)
-                LO(t->wfcmd) = q;
+                LO(PT->wfcmd) = q;
             break;
         case 0x0c: {                            /* volume */
             UWORD v = q;
 
             if ((BYTE)q < 0) {
                 v = q & 0x7f;
-                instrument(song, t->previnstr)->svol = v;
-            } else if (!(song->flags & 0x10))
+                instrument(PS, PT->previnstr)->svol = v;
+            } else if (!(PS->flags & 0x10))
                 v = (UBYTE)((q >> 4) * 10 + (q & 0x0f));      /* decimal */
-            t->prevvol = (UWORD)bl_mulu_w(v, t->trackvol) >> 8;
+            PT->prevvol = (UWORD)bl_mulu_w(v, PT->trackvol) >> 8;
             break;
         }
         case 0x09:
-            song->tempo2 = q;
+            PS->tempo2 = q;
             break;
         case 0x15:
-            t->finetune = q;
+            PT->finetune = q;
             break;
         case 0x16:                              /* repeat loop */
             if (!q) {
-                db.rptline = m->pline;
+                db.rptline = PM->pline;
                 break;
             }
             if (db.rptcounter) {
@@ -1273,19 +1297,19 @@ f_1f:
             db.nextblockline = db.rptline + 1;
             break;
         case 0x1c:
-            instrument(song, t->previnstr)->midipreset = q;
+            instrument(PS, PT->previnstr)->midipreset = q;
             break;
         case 0x08:                              /* hold / decay */
-            t->initdecay = q >> 4;
-            t->inithold = q & 0x0f;
+            PT->initdecay = q >> 4;
+            PT->inithold = q & 0x0f;
             qual = (qual & 0xff00) | q >> 4;
             break;
         case 0x19:                              /* sample offset */
             qual <<= 8;
-            t->soffset = qual;
+            PT->soffset = qual;
             break;
         case 0x0b:                              /* BUG(orig) (#203): the word */
-            m->pseqnum = qual;
+            PM->pseqnum = qual;
             db.nextblock = 0xff;
             break;
         case 0x1d:
@@ -1295,31 +1319,31 @@ f_1f:
             break;
         case 0x03:                              /* portamento */
             if ((BYTE)--note >= 0) {
-                UBYTE n = note + song->playtransp + t->stransp;
+                UBYTE n = note + PS->playtransp + PT->stransp;
 
                 if ((BYTE)n < 0)
                     continue;
-                t->porttrgper = PERIOD(t->periodtbl, (UWORD)(n + n));
+                PT->porttrgper = PERIOD(PT->periodtbl, (UWORD)(n + n));
             }
             if (q)
-                t->prevportspd = q;
+                PT->prevportspd = q;
             continue;
         }
 fx:
         if (!note)
             continue;
-        t->prevnote = note;
-        t->noteoffcnt = t->inithold;
-        if (!t->noteoffcnt)
-            t->noteoffcnt = -1;
-        qual = playnote(t, ch, note, t->previnstr, t->previnstra).d4;
+        PT->prevnote = note;
+        PT->noteoffcnt = PT->inithold;
+        if (!PT->noteoffcnt)
+            PT->noteoffcnt = -1;
+        qual = playnote_in(ch, note, PT->previnstr, PT->previnstra).d4;
     } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
     return 1;
 }
 
 /* advance the song pointer: the next line, a pattern break, the next
    position (only the low bytes of pseqnum and pblock) */
-BL_ALWAYS_INLINE void nextline(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE void nextline(void)
 {
     UWORD line;
 
@@ -1327,45 +1351,44 @@ BL_ALWAYS_INLINE void nextline(struct mmd *m, struct song *song)
         line = db.nextblockline - 1;
         db.nextblockline = 0;
     } else
-        line = m->pline + 1;
+        line = PM->pline + 1;
     if (line > db.numlines || db.nextblock) {   /* plr_chgblock */
         if (!db.nxtnoclrln)
             line = 0;
-        if (m->pstate < 0) {
-            UWORD pos = m->pseqnum;
+        if (PM->pstate < 0) {
+            UWORD pos = PM->pseqnum;
 
             if ((BYTE)db.nextblock >= 0)
                 pos++;
-            if (!((WORD)pos < (WORD)song->songlen))
+            if (!((WORD)pos < (WORD)PS->songlen))
                 pos = 0;
-            LO(m->pseqnum) = pos;
-            LO(m->pblock) = song->playseq[(WORD)pos];
+            LO(PM->pseqnum) = pos;
+            LO(PM->pblock) = PS->playseq[(WORD)pos];
         }
         db.nextblock = 0;
         db.nxtnoclrln = 0;
     }
-    m->pline = line;
+    PM->pline = line;
 }
 
 /* hold: the notes held on into the new line (no new note, or a note with
    command 3) get the ticks of the line added */
-BL_ALWAYS_INLINE void hold(struct mmd *m, struct song *song)
+BL_ALWAYS_INLINE void hold(void)
 {
     struct track **tdp = db.trackdataptrs;
-    UBYTE *block = curblock(m), *p, tempo = song->tempo2;
-    UWORD line = m->pline, k;
+    UBYTE *block = curblock(PM), *p, tempo = PS->tempo2;
+    UWORD line = PM->pline, k;
 
-    if (!mmd1(m)) {
+    if (!mmd1(PM)) {
         UBYTE tracks = block[0];
 
         p = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), tracks);
         k = (UBYTE)(tracks - 1);
         do {
-            struct track *t = *tdp++;
-
-            if (t->noteoffcnt >= 0
+            blitz_globals = (UBYTE *)*tdp++;
+            if (PT->noteoffcnt >= 0
                 && (p[0] ? !(p[0] & 0x3f) || (UBYTE)((p[1] & 0x0f) - 3) == 0 : (p[1] & 0xf0)))
-                t->noteoffcnt += tempo;
+                PT->noteoffcnt += tempo;
             p += 3;
         } while (k-- != 0);
     } else {
@@ -1374,11 +1397,10 @@ BL_ALWAYS_INLINE void hold(struct mmd *m, struct song *song)
         p = block + 8 + bl_mulu_w((UWORD)(line * 4), tracks);
         k = (tracks & 0xff00) | (UBYTE)(tracks - 1);
         do {
-            struct track *t = *tdp++;
-
-            if (t->noteoffcnt >= 0
+            blitz_globals = (UBYTE *)*tdp++;
+            if (PT->noteoffcnt >= 0
                 && (p[0] ? !(p[0] & 0x7f) || (UBYTE)(p[2] - 3) == 0 : (p[1] & 0x3f)))
-                t->noteoffcnt += tempo;
+                PT->noteoffcnt += tempo;
             p += 4;
         } while (k-- != 0);
     }
@@ -1386,69 +1408,69 @@ BL_ALWAYS_INLINE void hold(struct mmd *m, struct song *song)
 
 /* plr_loop1: the commands in every tick, the synth tables, the period
    and the volume to Paula (tracks 0-3) */
-BL_ALWAYS_INLINE void ticks(struct song *song, UBYTE counter)
+BL_ALWAYS_INLINE void ticks(UBYTE counter)
 {
     struct track **tdp = db.trackdataptrs;
     UBYTE ch = 0;
 
     do {
-        struct track *t = *tdp++;
         UBYTE cmd, q;
         UWORD per = 0;
         ULONG d1;
         BYTE v;
 
+        blitz_globals = (UBYTE *)*tdp++;
         if (!(ChanMask & (1 << (ch & 7))))
             continue;
-        cmd = t->cmd;
-        q = t->cmdqual;
+        cmd = PT->cmd;
+        q = PT->cmdqual;
         if ((WORD)ch >= 4)
             continue;
-        if (t->noteoffcnt >= 0 && --t->noteoffcnt < 0) {   /* hold ends */
-            if (t->synthtype) {
-                LO(t->volcmd) = t->decay;
-                t->volwait = 0;
+        if (PT->noteoffcnt >= 0 && --PT->noteoffcnt < 0) {   /* hold ends */
+            if (PT->synthtype) {
+                LO(PT->volcmd) = PT->decay;
+                PT->volwait = 0;
             } else {
-                t->fadespd = t->decay;
-                if (!t->fadespd)
+                PT->fadespd = PT->decay;
+                if (!PT->fadespd)
                     DMACON = 1 << (ch & 31);
             }
         }
-        if (t->fadespd) {                       /* plr_nowaitoff */
-            t->prevvol -= t->fadespd;
-            if ((BYTE)t->prevvol < 0) {
-                t->prevvol = 0;
-                t->fadespd = 0;
+        if (PT->fadespd) {                       /* plr_nowaitoff */
+            PT->prevvol -= PT->fadespd;
+            if ((BYTE)PT->prevvol < 0) {
+                PT->prevvol = 0;
+                PT->fadespd = 0;
             }
         }
         switch (cmd) {                          /* plr_nofade */
         case 0x01:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
-            t->prevper -= q;
-            per = t->prevper;
+            PT->prevper -= q;
+            per = PT->prevper;
             if ((WORD)per < 113) {
                 per = 113;
-                t->prevper = per;
+                PT->prevper = per;
             }
             break;
         case 0x11:
             if (counter)
                 break;
-            t->prevper -= q;
-            per = t->prevper;
+            PT->prevper -= q;
+            per = PT->prevper;
             break;
         case 0x02:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
-            t->prevper += q;
-            per = t->prevper;
+            PT->prevper += q;
+            per = PT->prevper;
             break;
         case 0x12:
             if (counter)
                 break;
-            t->prevper += q;
-            per = t->prevper;
+            PT->prevper += q;
+            per = PT->prevper;
             break;
         case 0x00: {                            /* arpeggio */
             UBYTE n;
@@ -1457,98 +1479,98 @@ BL_ALWAYS_INLINE void ticks(struct song *song, UBYTE counter)
                 break;
             switch (bl_divu_w(counter, 3) >> 16) {
             case 0:
-                n = (q & 0x0f) + t->prevnote;
+                n = (q & 0x0f) + PT->prevnote;
                 break;
             case 1:
-                n = (q >> 4) + t->prevnote;
+                n = (q >> 4) + PT->prevnote;
                 break;
             default:
-                n = t->prevnote;
+                n = PT->prevnote;
                 break;
             }
-            n = n - 1 + song->playtransp + t->stransp;
-            per = PERIOD(t->periodtbl, (UBYTE)(n + n));
+            n = n - 1 + PS->playtransp + PT->stransp;
+            per = PERIOD(PT->periodtbl, (UBYTE)(n + n));
             goto newtmp;
         }
         case 0x14:
-            t->vibshift = 6;
+            PT->vibshift = 6;
             goto vibrato;
         case 0x04:
-            t->vibshift = 5;
+            PT->vibshift = 5;
 vibrato:
             if (counter || !q)
                 goto nonvib;
             if (q & 0x0f)
-                t->vibrsz = q & 0x0f;
+                PT->vibrsz = q & 0x0f;
             if (!(q & 0xf0))
                 goto nonvib;
-            t->vibrspd = ((q & 0xf0) >> 3) & 0x3e;
+            PT->vibrspd = ((q & 0xf0) >> 3) & 0x3e;
 nonvib: {
-            WORD prod = bl_muls_w(sinetable[(t->vibroffs >> 2) & 0x1f], t->vibrsz);
-            UWORD sh = t->vibshift & 63;
+            WORD prod = bl_muls_w(sinetable[(PT->vibroffs >> 2) & 0x1f], PT->vibrsz);
+            UWORD sh = PT->vibshift & 63;
 
             per = sh >= 16 ? (prod < 0 ? 0xffff : 0) : (UWORD)(prod >> sh);
-            per += t->prevper;
-            t->vibroffs += t->vibrspd;
+            per += PT->prevper;
+            PT->vibroffs += PT->vibrspd;
             goto newtmp;
         }
         case 0x06:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
-            volslide(t, q);
+            volslide(PT, q);
             goto nonvib;
         case 0x07:                              /* tremolo */
             if (counter || !q)
                 goto nontre;
             if (q & 0x0f)
-                t->tremsz = q & 0x0f;
+                PT->tremsz = q & 0x0f;
             if (!(q & 0xf0))
                 goto nonvib;                    /* BUG(orig) (#204) */
-            t->tremspd = ((q & 0xf0) >> 2) & 0x3e;
+            PT->tremspd = ((q & 0xf0) >> 2) & 0x3e;
 nontre: {
-            WORD prod = bl_muls_w(sinetable[(t->tremoffs >> 3) & 0x1f], t->tremsz);
+            WORD prod = bl_muls_w(sinetable[(PT->tremoffs >> 3) & 0x1f], PT->tremsz);
 
-            t->tremoffs += t->tremspd;
-            v = t->prevvol + (UBYTE)(prod >> 7);
+            PT->tremoffs += PT->tremspd;
+            v = PT->prevvol + (UBYTE)(prod >> 7);
             if (v < 0)
                 v = 0;
             if (v > 64)
                 v = 64;
-            t->tempvol = v;
+            PT->tempvol = v;
             break;
         }
         case 0x0a:
         case 0x0d:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
-            volslide(t, q);
+            volslide(PT, q);
             break;
         case 0x1a:
             if (counter)
                 break;
-            v = t->prevvol + q;
+            v = PT->prevvol + q;
             if (v > 64)                         /* voltest */
                 v = 64;
-            t->prevvol = v;
+            PT->prevvol = v;
             break;
         case 0x1b:
             if (counter)
                 break;
-            v = t->prevvol - q;
+            v = PT->prevvol - q;
             if (v < 0)                          /* voltest0 */
                 v = 0;
-            t->prevvol = v;
+            PT->prevvol = v;
             break;
         case 0x05:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
-            volslide(t, q);
+            volslide(PT, q);
             goto portamento;
         case 0x03:
-            if (!counter && (song->flags & 0x20))
+            if (!counter && (PS->flags & 0x20))
                 break;
 portamento: {
-            UWORD target = t->porttrgper, p = t->prevper, spd = t->prevportspd;
+            UWORD target = PT->porttrgper, p = PT->prevper, spd = PT->prevportspd;
 
             if (!target)
                 break;
@@ -1562,14 +1584,14 @@ portamento: {
                     goto notreached;
             }
             p = target;                         /* targreached */
-            t->porttrgper = 0;
+            PT->porttrgper = 0;
 notreached:
-            t->prevper = p;
+            PT->prevper = p;
             per = p;
             break;
         }
         case 0x13:
-            per = t->prevper;
+            per = PT->prevper;
             if ((BYTE)counter >= 3)
                 break;
             per -= q;
@@ -1582,7 +1604,7 @@ notreached:
         case 0x18:                              /* note cut */
             if (counter != q)
                 break;
-            t->prevvol = 0;
+            PT->prevvol = 0;
             break;
         case 0x1f:                              /* note delay / retrigger */
             d1 = q;
@@ -1590,34 +1612,34 @@ notreached:
                 if ((BYTE)counter < (BYTE)(q >> 4))
                     break;
                 if (counter == q >> 4)
-                    d1 = playfxnote(t, ch, counter);    /* BUG(orig) (#205) */
+                    d1 = playfxnote(PT, ch, counter);    /* BUG(orig) (#205) */
             }
             if (!(d1 & 0x0f))                   /* nonotedelay */
                 break;
             if (!(bl_divu_w(counter, d1 & 0x0f) >> 16))
-                playfxnote(t, ch, counter);
+                playfxnote(PT, ch, counter);
             break;
         case 0x0f:
-            cmd_F(t, ch, q, counter);
+            cmd_F(PT, ch, q, counter);
             break;
         default:                                /* 08 09 0b 0c 0e 10 15-17 19 1c 1d */
             break;
         }
         /* fx_xx */
-        per = t->synthptr ? synth(t, t->prevper) : t->prevper;
+        per = PT->synthptr ? synth(PT, PT->prevper) : PT->prevper;
         goto tmpper;
 newtmp:
-        if (t->synthptr)
-            per = synth(t, per);
+        if (PT->synthptr)
+            per = synth(PT, per);
 tmpper:
-        AC_PER(t->audioaddr) = per;
+        AC_PER(PT->audioaddr) = per;
         if (!per)
             continue;
-        if (t->tempvol >= 0) {
-            AC_VOL(t->audioaddr) = t->tempvol;
-            t->tempvol = -1;
+        if (PT->tempvol >= 0) {
+            AC_VOL(PT->audioaddr) = PT->tempvol;
+            PT->tempvol = -1;
         } else
-            AC_VOL(t->audioaddr) = t->prevvol;
+            AC_VOL(PT->audioaddr) = PT->prevvol;
     } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
 }
 
@@ -1628,8 +1650,6 @@ tmpper:
    and synth stay functions. */
 BL_ALWAYS_INLINE void IntHandler(void)
 {
-    struct mmd *m;
-    struct song *song;
     UBYTE counter;
     UWORD dma;
     int k, bit;
@@ -1639,27 +1659,27 @@ BL_ALWAYS_INLINE void IntHandler(void)
             return;
         db.bpmcounter[0] = 4;
     }
-    m = db.module;
-    if (!m || !m->pstate)
+    blitz_string = (UBYTE *)db.module;
+    if (!PM || !PM->pstate)
         return;
     db.dmaonmsk = 0;
-    song = m->song;
-    counter = m->counter + 1;
-    if ((BYTE)counter < (BYTE)song->tempo2) {
-        m->counter = counter;
+    blitz_locals = (UBYTE *)PM->song;
+    counter = PM->counter + 1;
+    if ((BYTE)counter < (BYTE)PS->tempo2) {
+        PM->counter = counter;
         if (counter)
             goto fxtime;
     }
-    m->counter = 0;                             /* plr_pnewnote */
+    PM->counter = 0;                             /* plr_pnewnote */
     if (!db.blkdelay || !--db.blkdelay) {
-        if (!newline(m, song))
+        if (!newline())
             return;
-        nextline(m, song);
-        hold(m, song);
+        nextline();
+        hold();
     }
-    counter = m->counter;                       /* nonewnote */
+    counter = PM->counter;                       /* nonewnote */
 fxtime:
-    ticks(song, counter);
+    ticks(counter);
     dma = db.dmaonmsk;                          /* plr_endfx */
     if (!dma)
         return;
@@ -1891,7 +1911,7 @@ static void BLITZ_ROUTINE _PlayMed_c(void)
     if (Music)
         IntHandler();
 }
-BLITZ_ALIAS(_PlayMed, _PlayMed_c);
+BLITZ_THUNK(_PlayMed, _PlayMed_c, "a3-a5");     /* the player state, see PM */
 
 /* JumpMed n - position n-1 of the song, line 0 (BUG(orig) #210: without a
    playing module at address 44-47) */
