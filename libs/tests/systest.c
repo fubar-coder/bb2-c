@@ -218,7 +218,12 @@ int main(int argc, char **argv)
     KEEPS("memlib init", d1-d7|a0-a3|a6);
     KEEPS("memlib localloc", d2-d7|a0-a3|a6);
     KEEPS("memlib localloc (table)", d2-d7|a0-a3|a6);
-    KEEPS("memlib newmem", d0-d7|a0-a3|a6);
+    /* compiler: newmem in the procedure prologue, with the parameters in
+       d0-d5 (perf-analysis thunks.md 1.4) */
+    KEEPS("memlib newmem", d0-d7|a2|a3|a6);
+    /* third party: a0 and a1 across globalloc (RIGTMenuLib, QuickLib,
+       EFMUILib, ElmoreIncLib, chunkylib and others), d2-d7/a2-a6
+       (analyse-internal-token-callers.md) */
     KEEPS("memlib globalloc", d2-d7|a0-a3|a6);
     /* third party: a0 and a1 across globalloc (RIGTMenuLib, QuickLib,
        EFMUILib and others), the contract the port keeps for those callers */
@@ -226,14 +231,21 @@ int main(int argc, char **argv)
     KEEPS("memlib localloc (d2 = 0)", a0-a1);
     /* banklib AllocMem keeps a0/a1 like globalloc */
     KEEPS("banklib AllocMem (d2 = 0)", a0-a1);
-    KEEPS("memlib freelast", d0-d7|a0-a3|a6);
+    /* compiler: freelast at the end of a procedure, d0 = the result of
+       a Function; its Z flag is observed below */
+    KEEPS("memlib freelast", d0|d2-d7|a2|a3|a6);
     KEEPS("memlib locfree", d1-d7|a0|a2|a3|a6);
+    /* third party: d1 (GKDBaseLib, DBaseLib, Mildred) and a0 (Mildred,
+       ElmoreIncLib, RIARexxLib, QuickLib) across globfree */
     KEEPS("memlib globfree", d1-d7|a0|a2|a3|a6);
     KEEPS("memlib finit", d0-d7|a0-a3|a6);
     KEEPS("strings1lib init", d2-d7|a0-a3|a6);
     KEEPS("strings1lib copy", d0-d7|a2|a6);
     KEEPS("staticslib globals", d3|d5-d7|a0|a1|a3|a6);
-    KEEPS("staticslib locals", d0|d1|d3|d5-d7|a0|a1|a3|a6);
+    /* compiler: localstat in the procedure prologue, with the parameters
+       in d0-d5 (d4 pushed around it by the compiler); the original
+       changes d2 and d4, so they are not stated */
+    KEEPS("staticslib locals", d0|d1|d3|d5-d7|a3|a6);
     KEEPS("varslib init", d2-d7|a0|a2|a3);
     KEEPS("varslib finit", d0|d2-d7|a2|a3);
     run(&loaded);

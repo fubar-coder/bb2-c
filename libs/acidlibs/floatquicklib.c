@@ -11,13 +11,15 @@
  *   quicktofloat: d0.q -> d0.f = float(int part) + float(frac)/65536.0
  *   floattoquick: d0.f -> d0.q = SPFix(x)<<16 | SPFix((x-int)*65536.0)
  *
- * Registers: the original keeps d2-d7/a2-a6 itself and whatever mathffp
- * keeps; the thunks keep d1/a0/a1 in addition.  The CCR is not a result
- * (the original leaves the flags of the last mathffp call / BSET).
+ * Registers: the contract of a conversion the compiler calls (qtof2,
+ * perf-analysis thunks.md 1.4) is d2-d7/a2-a6; floattoquick also keeps
+ * a0-a1 for RIMiscLib, which calls it with both live
+ * (analyse-internal-token-callers.md).  d1 is free.  The CCR is not a
+ * result (the original leaves the flags of the last mathffp call / BSET).
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, defined below) */
+/* entry points (the C function, a thunk; defined below) */
 void quicktofloat(void), floattoquick(void);
 
 /* !syslibheader{#floatquicklib,$d300,$d302,0,0,0,0,$4000} */
@@ -59,7 +61,8 @@ static ULONG q2f(const void *ffp, ULONG v)
  *
  * @param q  d0: the Quick
  * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Float; d1/a0/a1 kept
+ * @return d0: the Float; d2-d7/a2-a6 kept (the compiler's contract; no
+ *         third-party caller)
  */
 static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
@@ -67,7 +70,7 @@ static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbas
         return q2f(ffpbase, q);
     return q2f(ffpbase, -q) | 0x80;             /* NEG.l d0 ... BSET #7,d0 */
 }
-BLITZ_THUNK(quicktofloat, quicktofloat_c, "d1/a0-a1");
+BLITZ_ALIAS(quicktofloat, quicktofloat_c);
 
 /* 'doit2 of floattoquick: d0 = FFP number with the sign bit clear */
 static ULONG f2q(const void *ffp, ULONG x)
@@ -92,7 +95,8 @@ static ULONG f2q(const void *ffp, ULONG x)
  *
  * @param f  d0: the Float
  * @param ffpbase  a6: mathffp.library (ffplib)
- * @return d0: the Quick; d1/a0/a1 kept
+ * @return d0: the Quick; a0/a1 kept (third party: RIMiscLib) and
+ *         d2-d7/a2-a6
  */
 static ULONG BLITZ_ROUTINE floattoquick_c(ULONG f BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
@@ -100,4 +104,4 @@ static ULONG BLITZ_ROUTINE floattoquick_c(ULONG f BL_REG(d0), const void *ffpbas
         return f2q(ffpbase, f);
     return -f2q(ffpbase, f & ~0x80UL);          /* NEG.l d0 */
 }
-BLITZ_THUNK(floattoquick, floattoquick_c, "d1/a0-a1");
+BLITZ_THUNK(floattoquick, floattoquick_c, "a0-a1");

@@ -339,6 +339,30 @@ static void test_ldivlib(void)
     }
 }
 
+/* ------------------------------------------------------------- lmullib */
+
+/* longmult and quickmult with the kept registers: one call per sign
+   combination, no overflow (#199); their results are libtest's */
+static void test_lmullib(void)
+{
+    static const ULONG pairs[][2] = {
+        { 123456, 789 }, { 0xfffe1dc0, 789 }, { 123456, 0xfffffceb },
+        { 0x00020000, 0x00000003 },
+    };
+    static const char *names[] = { "quickmult", "longmult" };
+    unsigned i;
+    int e;
+
+    for (e = 0; e < 2; e++) {
+        ROUT = names[e];
+        for (i = 0; i < sizeof pairs / sizeof pairs[0]; i++) {
+            sprintf(VEC, "$%08lX,$%08lX", pairs[i][0], pairs[i][1]);
+            DO1(E("lmullib", e), R.d[0] = pairs[i][0]; R.d[1] = pairs[i][1]);
+            OBS("d0", R.d[0]);
+        }
+    }
+}
+
 /* ------------------------------------------------------- floatquicklib */
 
 static void test_floatquick(void)
@@ -599,16 +623,25 @@ int main(int argc, char **argv)
     if (!load_set(argv[1], names))
         return 20;
     KEEPS("ffplib init", d2-d7|a2|a3);
-    KEEPS("domodbyte", d1-d7|a0-a3|a6);
-    KEEPS("domodword", d1-d7|a0-a3|a6);
-    KEEPS("domodquick", d2-d7|a0-a3|a6);
-    KEEPS("domodlong", d2-d7|a0-a3|a6);
-    KEEPS("domodfloat", d2-d7|a0-a3|a6);
+    /* compiler: an operator; the compiler saves only d0/d1 around it and
+       keeps intermediates in d2-d7 (perf-analysis thunks.md 1.4) */
+    KEEPS("domodbyte", d2-d7|a2|a3|a6);
+    KEEPS("domodword", d2-d7|a2|a3|a6);
+    KEEPS("domodquick", d2-d7|a2|a3|a6);
+    KEEPS("domodlong", d2-d7|a2|a3|a6);
+    KEEPS("domodfloat", d2-d7|a2|a3|a6);
     /* third party: RWEMathLib calls quickdiv with d7 live; the compiler
        keeps intermediates in d2-d7 across an operator */
     KEEPS("quickdiv", d2-d7|a0-a3|a6);
     KEEPS("longdiv", d2-d7|a0-a3|a6);
-    KEEPS("quicktofloat", d2-d7|a0-a3|a6);
+    /* compiler: an operator (d2-d7); third party: LotanConvert holds a0
+       across longmult (analyse-internal-token-callers.md), and a1 by
+       symmetry: the original touches neither */
+    KEEPS("quickmult", d2-d7|a0-a3|a6);
+    KEEPS("longmult", d2-d7|a0-a3|a6);
+    /* compiler: a conversion, like an operator */
+    KEEPS("quicktofloat", d2-d7|a2|a3|a6);
+    /* compiler, and third party: RIMiscLib holds a0 and a1 across it */
     KEEPS("floattoquick", d2-d7|a0-a3|a6);
     KEEPS("strcomp2", d2-d7|a2|a3|a6);
     KEEPS("strcomp", d0-d7|a2|a6);
@@ -616,8 +649,10 @@ int main(int argc, char **argv)
     KEEPS("memlib init", d1-d7|a0-a3|a6);
     KEEPS("stringass", d1-d7|a2|a6);
     KEEPS("gstringass", d1-d7|a2);
-    KEEPS("domaxlen", d3-d7|a3);
-    KEEPS("domaxlenl", d3-d7|a3|a6);
+    /* compiler: a statement, nothing is live across it (domaxlen leaves
+       a6 + 8 like the original) */
+    KEEPS("domaxlen", a3);
+    KEEPS("domaxlenl", a3|a6);
     KEEPS("maxlen echk1", d0-d7|a0-a3|a6);
     KEEPS("memlib finit", d0-d7|a0-a3|a6);
     KEEPS("ffplib finit", d2-d7|a1-a3);
@@ -625,6 +660,7 @@ int main(int argc, char **argv)
     test_ffplib_init();
     test_modlib();
     test_ldivlib();
+    test_lmullib();
     test_floatquick();
     test_strcomp();
 

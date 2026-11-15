@@ -33,8 +33,12 @@ BLITZ_LIBFIN();
  * @brief allocst ($CF01) - copy a string into global memory.
  *
  * The copy is length.l, the bytes, 0 (memlib globalloc, MEMF_PUBLIC).
- * Keeps a0-a1 (MOVEM).  DIFF: the original returns d1 = -1 after copying
- * (d1 = 0 if nothing was copied); the thunk keeps d1.
+ * Keeps a0-a1 (MOVEM) and d2-d7/a2-a6: third-party libraries hold
+ * pointers in a0 (nGadTools, EFMUILib, LotanIntuition) and a1
+ * (RIGTMenuLib, RomulusRequestLib, EFMUILib) across the call
+ * (analyse-internal-token-callers.md).  d1 is free: the original returns
+ * d1 = -1 after copying (d1 = 0 if nothing was copied), no caller reads
+ * it.
  *
  * @param src d0: the characters.
  * @param len d1: the length; 0 allocates nothing.
@@ -57,13 +61,18 @@ static ULONG BLITZ_ROUTINE doallocst_c(const UBYTE *src BL_REG(d0), ULONG len BL
     *dst = 0;
     return (ULONG)ret;
 }
-BLITZ_THUNK(doallocst, doallocst_c, "d1/a0-a1");
+BLITZ_THUNK(doallocst, doallocst_c, "a0-a1");
 
 /**
  * @brief freest ($CF02) - free a string copied by allocst.
  *
- * Frees length + 5 bytes (memlib globfree).  Keeps d1/a0-a1 (MOVEM).
- * DIFF: the thunk keeps d0 too (the original returns memlib's d0).
+ * Frees length + 5 bytes (memlib globfree).  Keeps d0, a0-a1 and
+ * d2-d7/a2-a6: third-party libraries hold pointers in a0
+ * (NeilsReqToolsLib) and a1 (LotanArray, RomulusRequestLib) across the
+ * call; LotanArray ArSet passes the d0 it leaves on to allocst as the
+ * source of a copy it overwrites, so d0 stays the string (the original
+ * returns memlib's d0 there; analyse-internal-token-callers.md).  d1 is
+ * free: the original keeps it, no caller reads it.
  *
  * @param str d0: the string (as allocst returned it); 0: nothing to do.
  */
@@ -77,7 +86,7 @@ static void BLITZ_ROUTINE dofreest_c(ULONG str BL_REG(d0))
     r.d0 = *(ULONG *)r.a1 + 5;                  /* MOVE.l -(a1),d0:ADDQ.l #5,d0 */
     BLITZ_ALIBJSR(TOK_globfree, r);             /* global free */
 }
-BLITZ_THUNK(dofreest, dofreest_c, "d0-d1/a0-a1");
+BLITZ_THUNK(dofreest, dofreest_c, "d0/a0-a1");
 
 /* an entry of setmaxs' table */
 struct maxs {

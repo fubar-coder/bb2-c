@@ -17,9 +17,12 @@
  *   adds one, freelast at the exit frees it with all its blocks); the last
  *   list is the global one.
  *
- * Every routine keeps the registers the original keeps: the compiler calls
- * them in the middle of generated code (e.g. newmem at procedure entry,
- * with the parameters in d0-d5).  The thunks save what GCC may change.
+ * Every routine keeps the registers of its contract: the compiler calls
+ * them in the middle of generated code (newmem at procedure entry, with
+ * the parameters in d0-d5; perf-analysis thunks.md 1.4), and third-party
+ * libraries call globalloc and globfree with registers live
+ * (analyse-internal-token-callers.md).  The thunks save what GCC may
+ * change of those.
  *
  * Fixed (intended deviation, #956): "Out of Memory!" (err1) and "Unable
  * to Free Memory" (err2) trap in the normal code, but the original has
@@ -100,8 +103,9 @@ static void err1(void)
  * @brief newmem ($C004, at procedure entry) - create a new node (for
  * local stuff): a new current local list.
  *
- * Keeps all registers (the compiler calls it with the parameters in
- * d0-d5).
+ * Keeps d0-d7/a2-a6: the compiler calls it in the procedure prologue
+ * with the parameters in d0-d5 (perf-analysis thunks.md 1.4); a0 and a1
+ * are free (the original keeps them), no third-party library calls it.
  *
  * Errors: no memory for the list header - err1: all memory is freed and
  * the runtime error "Out of Memory!" raised.
@@ -118,7 +122,7 @@ static void BLITZ_ROUTINE newmem_c(void)
     firstdata = l;
     l->first = NULL;
 }
-BLITZ_THUNK(newmem, newmem_c, "d0-d1/a0-a1");
+BLITZ_THUNK(newmem, newmem_c, "d0-d1");
 
 /**
  * @brief Library init - start with one list (the global one).

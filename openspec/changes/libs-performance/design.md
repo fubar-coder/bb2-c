@@ -305,6 +305,46 @@ build.
     assembler give the same cases; two cases of Sgn of a float are the
     pair `[orig]` / `[fixed #301]`.
 
+17. **Internal tokens (group 8, 2026-11-15).** Each token keeps its
+    contract, stated in a `KEEPS` case with its reason (the compiler, or
+    the third-party callers of `analyse-internal-token-callers.md`), not
+    what the original happens to keep. The contracts: the operators and
+    conversions (Mod, `qutofl`/`fltoqu`, the multiplication and division)
+    d2-d7/a2-a6, because the compiler saves only d0/d1 around them;
+    `strcomp` d0-d7; the procedure prologue routines (`clrloc`, `newmem`,
+    `localstat`) d0-d5; `freelast` d0 and its Z flag; `arrmult`, `newarr`
+    and `maxlen` nothing (Dim and MaxLen use only d0 after them). The
+    third-party contracts: `globalloc` a0/a1 and Z clear (#1059),
+    `globfree` d1/a0, `allocst` ($CF01) a0/a1, `freest` d0/a0/a1 (d0 for
+    LotanArray `ArSet`; the original does not keep it, so only the case
+    with d0 = 0 states it), `fltoqu` a0/a1, `longmult` a0/a1 (by its
+    code: the C function uses d0-d4 only, checked in the disassembly; a
+    new `KEEPS` case for it and `quickmult`, without an overflow, #199).
+    Task 8.2 (cycles per call, before -> after, original):
+    - Mod Word/Byte/Quick are the C functions (`BLITZ_ALIAS`); with
+      `mod_w` `always_inline` GCC writes the original's six
+      instructions (without it, a call with stack arguments). `w3=w1 MOD
+      w2` 440.6 -> 246.7 (247.0), Quick 472.6 -> 278.6 (278.0).
+    - Mod Float is the original's assembler (two SPFix, then into
+      `domodlong`): in C the two mathffp calls made GCC save d2-d7/a2/a6
+      (`BLITZ_BASEJSR` treats the call as changing them). 1310.5 ->
+      966.1 (3701.0).
+    - `qutofl` an alias (2394.7 -> 2287.7, original 1905.5), `fltoqu` a
+      thunk of a0-a1 (2253.7 -> 2237.7, 1764.0); both become the
+      original's assembler in task 8.3.
+    - `newmem` and `localstat` save d0-d1 only, `allocst` a0-a1, `freest`
+      d0/a0-a1; `arrmult`, `newarr`, `newlocarr` and `domaxlenl` are
+      aliases, `domaxlen` an assembler entry (`addq.w #8,a6`, then into
+      `domaxlenl`). A Statement with a string parameter and a local
+      string (newmem, lastring, freelast) 12393.2 -> 12359.8 (11614.0).
+    - Unchanged: `clrloc` (already d0-d1), `globalloc`, `globfree`,
+      `longmult`, `quickmult`, `quickdiv`, `longdiv`; the power routine
+      is an inline `jsr -90(a6)` (no thunk).
+    The new loops of the benchmark: `bmath.wmod`, `qmod`, `fmod`, `q2f`,
+    `f2q`, `plocal` (a Statement with Long locals) and `bstr.pstr`,
+    `fstr` (a Statement and a Function with a string parameter and a
+    local string).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

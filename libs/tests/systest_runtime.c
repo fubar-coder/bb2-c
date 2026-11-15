@@ -343,19 +343,27 @@ int main(int argc, char **argv)
     if (!load_set(argv[1], names))
         return 20;
     KEEPS("memlib init", d1-d7|a0-a3|a6);
-    KEEPS("arrmult", d3-d7|a0-a3|a6);
-    KEEPS("newarr", d2-d7|a0-a3|a6);
-    KEEPS("newarr again", d2-d7|a0|a2|a3|a6);
-    KEEPS("newlocarr", d2-d7|a0-a3|a6);
-    KEEPS("newlocarr again", d2-d7|a0|a2|a3|a6);
+    /* compiler: Dim uses only d0 after these (perf-analysis thunks.md
+       1.4); no third-party caller */
+    KEEPS("arrmult", a3|a6);
+    KEEPS("newarr", a3|a6);
+    KEEPS("newarr again", a3|a6);
+    KEEPS("newlocarr", a3|a6);
+    KEEPS("newlocarr again", a3|a6);
     KEEPS("newlist", d2-d7|a6);
     KEEPS("newlist again", d2-d7|a6);
     KEEPS("newloclist", d2-d7|a6);
     KEEPS("setmaxs", d2|d5-d7|a0|a1|a3|a6);
+    /* third party: a0 and a1 across allocst (nGadTools, EFMUILib,
+       RIGTMenuLib, RomulusRequestLib ...) and freest (NeilsReqToolsLib,
+       LotanArray, RomulusRequestLib), d2-d7/a2-a6 everywhere
+       (analyse-internal-token-callers.md).  freest also keeps d0 for
+       LotanArray ArSet; the original does not (it returns memlib's d0),
+       so only the case with d0 = 0 can state it */
     KEEPS("allocst", d2-d7|a0-a3|a6);
-    KEEPS("freest", d1-d7|a0-a3|a6);
-    KEEPS("allocst 0", d1-d7|a0-a3|a6);
-    KEEPS("freest 0", d0-d7|a0-a3|a6);
+    KEEPS("freest", d2-d7|a0-a3|a6);
+    KEEPS("allocst 0", d2-d7|a0-a3|a6);
+    KEEPS("freest 0", d0|d2-d7|a0-a3|a6);
     KEEPS("errtrap init", d3-d7|a1-a3);
     KEEPS("dofail (no error)", d1-d7|a0-a3|a6);
     KEEPS("doreadern", d1-d7|a0-a3|a6);

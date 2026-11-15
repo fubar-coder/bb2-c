@@ -42,8 +42,12 @@ carried over (for the comparison with AmiBlitz3).
   EventWindow a1, EMouseX a0, EMouseY and EventCode a0 and the upper word
   of d0, InitSound a0, Rnd and WBWidth/WBHeight/WBDepth a0/a1, ExecVersion
   a zero-extended long (the callers: `deviations.md`, "Register
-  preservation"). Internal tokens, init/finit, nullsubs and error checks
-  keep their thunks and preserve at least what the original preserves.
+  preservation"). Internal tokens keep their contract: what the
+  compiler's code holds across them and, for the tokens third-party
+  libraries call (globalloc, globfree, allocst, freest, fltoqu,
+  longmult), what those callers hold (the list: `deviations.md`). Init and
+  finit, nullsubs and error checks keep their thunks and preserve at
+  least what the original preserves.
   Checked by the `KEEPS` cases of the library tests (`tests/README.md`,
   "Kept registers").
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench

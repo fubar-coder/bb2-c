@@ -61,7 +61,10 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
  * statics.
  *
  * As alstat, with the offsets from a4 (the original swaps a4/a5 around a
- * call of allocst); d0/d1 (procedure parameters) and a0/a1 are preserved.
+ * call of allocst).  Keeps d0-d7/a2-a6: the compiler calls it in the
+ * procedure prologue with the parameters in d0-d5 (perf-analysis
+ * thunks.md 1.4); a0 and a1 are free (the original keeps them), no
+ * third-party library calls it.
  *
  * @param tab a2: the compiler's table (calcstatic, blitz2.s 6740)
  * @param n   d4: the number of entries - 1
@@ -70,4 +73,4 @@ static void BLITZ_ROUTINE locallocst_c(const struct staticent *tab BL_REG(a2), U
 {
     alloc_statics(tab, n, blitz_locals);
 }
-BLITZ_THUNK(locallocst, locallocst_c, "d0-d1/a0-a1");
+BLITZ_THUNK(locallocst, locallocst_c, "d0-d1");

@@ -102,11 +102,11 @@ bmath.ldiv32                 1256     2515.5  c=a2/b2 (a2=123456789, b2=70000: t
 bmath.lmod32                 1854     2973.5  c=a2 MOD b2 (same values: the slow path)
 bmath.qdivw                 2053~4     3876.5  q3=q4/q5 (q4=1000.5, q5=$00010001: the loop with most steps)
 bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: the smallest divisor of the loop)
-bmath.wmod                    449      247.0  w3=w1 MOD w2
-bmath.qmod                    481      278.0  q3=q1 MOD q2
-bmath.fmod                   1327     3701.0  c=f1 MOD f2
-bmath.q2f                    2422     1905.5  f3=q1
-bmath.f2q                    2280     1764.0  q3=f1
+bmath.wmod                    253      247.0  w3=w1 MOD w2
+bmath.qmod                    285      278.0  q3=q1 MOD q2
+bmath.fmod                    979     3701.0  c=f1 MOD f2
+bmath.q2f                    2314     1905.5  f3=q1
+bmath.f2q                    2264     1764.0  q3=f1
 bmath.plocal                  453      389.5  plocal{a} (a Statement with two Long locals: link, clrloc)
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2
@@ -168,5 +168,5 @@ bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201               660012    77694.0  Sort sa()
-bstr.pstr                   12521    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
-bstr.fstr                   13217    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
+bstr.pstr                   12487    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
+bstr.fstr                   13183    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))

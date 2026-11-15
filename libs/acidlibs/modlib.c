@@ -24,14 +24,17 @@
  *              types it as a Long (blitz2.s:9463 domodf "now a long"), so
  *              this is correct (only the fractions are lost, #222).
  *
- * Registers: byte/word keep d1/a0/a1 (and everything else); long/float
- * keep a0/a1 (ldivlib/lmullib/mathffp do), d1 is changed (the original
- * leaves (a/b)*b in d1).
- * DIFF: domodquick keeps d1 (the original leaves it swapped).
+ * Registers: the contract of an operator (perf-analysis thunks.md 1.4:
+ * the compiler saves only d0/d1 around it and keeps intermediates in
+ * d2-d7) is d2-d7 and a2-a6; no third-party library calls these tokens.
+ * The entries are the C functions (no thunk) and domodlong's assembler;
+ * d1, a0 and a1 are not kept (the original keeps d1/a0/a1 for byte and
+ * word, a0/a1 for long and float, and leaves d1 swapped for Quick).
  */
 #include "blitzlib.h"
 
-/* entry points (thunks, domodlong assembler; defined below) */
+/* entry points (the C functions, domodlong and domodfloat assembler;
+   defined below) */
 void domodbyte(void), domodword(void), domodlong(void);
 void domodquick(void), domodfloat(void);
 
@@ -49,7 +52,7 @@ BLITZ_LIBFIN();
    behaviour - on overflow (quotient outside -32768..32767) d0 stays
    UNCHANGED, and a divisor of 0 raises the 68000 divide-by-zero exception
    (vector 5) like the original. */
-static ULONG mod_w(ULONG acc, ULONG divisor)
+static inline __attribute__((always_inline)) ULONG mod_w(ULONG acc, ULONG divisor)
 {
     acc = BL_EXTL(acc);                             /* EXT.l d0 */
     acc = bl_divs_w(acc, divisor);
@@ -64,8 +67,8 @@ static ULONG mod_w(ULONG acc, ULONG divisor)
  *
  * EXT.l d0:DIVS d1,d0:SWAP d0, a negative remainder gets the divisor
  * added (once).  domodbyte is the same code (the byte is sign extended by
- * the compiler; only EXT.l on the word).  Keeps d1/a0/a1 (and everything
- * else).
+ * the compiler; only EXT.l on the word).  Keeps d2-d7/a2-a6 (the
+ * contract of an operator); d1, a0 and a1 are free.
  *
  * Errors: b = 0 raises the 68000 divide-by-zero exception (vector 5) like
  * the original; on a DIVS overflow d0 stays unchanged.
@@ -79,11 +82,11 @@ static ULONG BLITZ_ROUTINE domodword_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 {
     return mod_w(a, b);
 }
-BLITZ_THUNK(domodword, domodword_c, "d1/a0-a1");
+BLITZ_ALIAS(domodword, domodword_c);
 
 /* domodbyte - same code as domodword (the byte is sign extended by the
    compiler; only EXT.l on the word) */
-BLITZ_THUNK(domodbyte, domodword_c, "d1/a0-a1");
+BLITZ_ALIAS(domodbyte, domodword_c);
 
 /**
  * @brief a MOD b for Quick (token modquick $D403).
@@ -92,7 +95,7 @@ BLITZ_THUNK(domodbyte, domodword_c, "d1/a0-a1");
  * of the inputs are ignored).  The result is quotient<<16 | remainder,
  * but the compiler types it as a Word (blitz2.s:9459 domodq "now a
  * word"), so only the remainder is used - not a visible bug (#221).
- * DIFF: keeps d1 (the original leaves it swapped).
+ * Keeps d2-d7/a2-a6 like the word code (the original leaves d1 swapped).
  *
  * Errors as for Word.
  *
@@ -105,7 +108,7 @@ static ULONG BLITZ_ROUTINE domodquick_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 {
     return mod_w(BL_SWAP(a), BL_SWAP(b));
 }
-BLITZ_THUNK(domodquick, domodquick_c, "d1/a0-a1");
+BLITZ_ALIAS(domodquick, domodquick_c);
 
 /**
  * @brief a MOD b for Long (token modlong $D402).
@@ -177,30 +180,25 @@ BLITZ_ASM_ROUTINE(domodlong,
  * operand in d1, mathffp ignores it), then the long code.  The result is
  * a Long, not an FFP number - the compiler types it as a Long
  * (blitz2.s:9463 domodf "now a long"), so this is correct (only the
- * fractions are lost, #222).  Keeps a0/a1; d1 is changed.
+ * fractions are lost, #222).  Keeps d2-d7/a2-a6 (mathffp keeps them);
+ * d1, a0 and a1 are free.
+ *
+ * In assembler, the original's code: in C the two mathffp calls made GCC
+ * save d2-d7/a2/a6 (BLITZ_BASEJSR assumes the call may change them), 150
+ * cycles of a routine of about 1300.
  *
  * @param a d0: the left operand (FFP).
  * @param b d1: the right operand (FFP).
  * @param ffp a6: the mathffp base (!libs #ffplib,#la6).
  * @return d0: the remainder (Long).
  */
-static ULONG BLITZ_ROUTINE domodfloat_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1),
-                                        const void *ffp BL_REG(a6))
-{
-    struct bl_regs r = { .d0 = a, .d1 = b };
-    ULONG ia;
-
-    ia = BLITZ_BASEJSR(ffp, LVO_SPFix, r);
-    r.d0 = b;
-    r.d1 = b;                                       /* MOVE.l (a7)+,d1 */
-    {
-        register ULONG d1 __asm("d1") = BLITZ_BASEJSR(ffp, LVO_SPFix, r);
-        register ULONG d0 __asm("d0") = ia;
-
-        /* the Long code: domodlong, which keeps all but d0/d1 */
-        __asm volatile("jsr     _domodlong(pc)"
-                       : "+d"(d0), "+d"(d1) : : "cc", "memory");
-        return d0;
-    }
-}
-BLITZ_THUNK(domodfloat, domodfloat_c, "a0-a1");
+BLITZ_ASM_ROUTINE(domodfloat,
+        "   move.l  d1,-(sp)\n"
+        "   jsr     " BL_STR(LVO_SPFix) "(a6)\n"
+        "   move.l  (sp)+,d1\n"
+        "   move.l  d0,-(sp)\n"
+        "   move.l  d1,d0\n"
+        "   jsr     " BL_STR(LVO_SPFix) "(a6)\n"
+        "   move.l  d0,d1\n"
+        "   move.l  (sp)+,d0\n"
+        "   bra.w   _domodlong");

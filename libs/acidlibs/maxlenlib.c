@@ -26,7 +26,7 @@
 #include "blitzlib.h"
 #include "blitzobj.h"
 
-/* entry points (defined below) */
+/* entry points (the C function, assembler, defined below) */
 void domaxlen(void), domaxlenl(void), echk1(void);
 
 /* !syslibheader{64135,$d000,$d002,0,0,0,0} */
@@ -71,12 +71,16 @@ static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
  * a local string) - give a string variable a buffer of n characters.
  *
  * domaxlenl - local string; domaxlen: global string, ADDQ #8,a6 first
- * (in the thunk, as in the original: a6 stays +8).  The old memory is
+ * (an assembler entry in front of the C function, as in the original:
+ * a6 stays +8).  The old memory is
  * freed (len = alloc'd+9) and the variable cleared; for n <> 0, n+9 bytes
- * are allocated: alloc'd len = n, string len 0, empty string.  a0/a1 are
- * kept: the original leaves them unchanged on some paths (no old memory /
- * n = 0).  DIFF: d2/a2 are kept (the original leaves n and the variable
- * address there).
+ * are allocated: alloc'd len = n, string len 0, empty string.  A
+ * statement of the compiler (perf-analysis thunks.md 1.4): nothing is live
+ * across it, no third-party library calls it; the C function keeps
+ * d2-d7/a2-a5 (and a6 for domaxlenl), a0 and a1 are free (the original
+ * leaves them unchanged on some paths only: no old memory / n = 0).
+ * DIFF: d2/a2 are kept (the original leaves n and the variable address
+ * there).
  *
  * Errors: n < 0 is runtime error 1, but only with the debugger (echk1).
  *
@@ -91,8 +95,11 @@ static ULONG BLITZ_ROUTINE domaxlenl_c(UBYTE **var BL_REG(d0), ULONG n BL_REG(d1
 {
     return maxlen(var, n, mem);
 }
-BLITZ_THUNK(domaxlenl, domaxlenl_c, "a0-a1");
-BLITZ_THUNK_PRE(domaxlen, domaxlenl_c, "a0-a1", "addq.w #8,a6");
+BLITZ_ALIAS(domaxlenl, domaxlenl_c);
+/* the global version: the table's global routines are at +8 */
+BLITZ_ASM_ROUTINE(domaxlen,
+        "   addq.w  #8,a6\n"
+        "   bra.w   _domaxlenl_c");
 
 /**
  * @brief The error check of MaxLen (debugger only): the length must not be

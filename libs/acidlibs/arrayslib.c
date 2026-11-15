@@ -47,7 +47,7 @@
 #include "blitzobj.h"
 #include <exec/lists.h>
 
-/* entry points (thunks / C, defined below) */
+/* entry points (the C functions, defined below) */
 void newarr(void), newlocarr(void), arrmult(void), arrmultchk(void);
 void BLITZ_ROUTINE newlist(WORD ptr BL_REG(d2), WORD size BL_REG(d3),
                            WORD itemsize BL_REG(d4));
@@ -99,8 +99,10 @@ static ULONG new_array(UBYTE *base, WORD ptr, WORD size)
  *
  * Frees the old array (memlib locfree) if the pointer at 0(a5,d2) is set,
  * allocates 0(a5,d3) bytes (memlib localloc, MEMF_PUBLIC|MEMF_CLEAR) and
- * stores the address at 0(a5,d2).  a0 (and a1 if nothing was freed) are
- * kept by the original (memlib keeps them) - the thunk keeps both.
+ * stores the address at 0(a5,d2).  Keeps d2-d7/a2-a6: the compiler
+ * calls it at the end of `Dim` and uses only d0 after it (perf-analysis
+ * thunks.md 1.4), and no third-party library calls it; a0 and a1 (kept
+ * by the original, as memlib keeps them) are free.
  *
  * @param ptr   d2.w: offset of the array pointer from a5
  * @param size  d3.w: offset of the long with the size in bytes from a5
@@ -110,14 +112,15 @@ static ULONG BLITZ_ROUTINE newarr_c(WORD ptr BL_REG(d2), WORD size BL_REG(d3))
 {
     return new_array(blitz_globals, ptr, size);
 }
-BLITZ_THUNK(newarr, newarr_c, "a0-a1");
+BLITZ_ALIAS(newarr, newarr_c);
 
 /**
  * @brief newlocarr ($C401): newarr for a local array (`Dim` in a
  *        procedure): the offsets are from a4.
  *
  * DIFF: the original swaps a4/a5 around the call of newarr; here the base
- * (a4) is passed to the common code (memlib does not use a5).
+ * (a4) is passed to the common code (memlib does not use a5).  Registers
+ * as newarr.
  *
  * @param ptr   d2.w: offset of the array pointer from a4
  * @param size  d3.w: offset of the long with the size in bytes from a4
@@ -127,7 +130,7 @@ static ULONG BLITZ_ROUTINE newlocarr_c(WORD ptr BL_REG(d2), WORD size BL_REG(d3)
 {
     return new_array(blitz_locals, ptr, size);
 }
-BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
+BLITZ_ALIAS(newlocarr, newlocarr_c);
 
 /**
  * @brief arrmult ($C402): multiply the array size by one dimension
@@ -149,7 +152,8 @@ BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
  * checking runerrlib's aarraychk refuses it, fixed #1037).
  * DIFF: the original returns d1.w+1 and changes d2; the compiler does not
  * use them (the next dimension is evaluated again), the C build keeps d2
- * and leaves d1 undefined.
+ * and leaves d1 undefined.  Keeps d2-d7/a2-a6 (only d0 is used after
+ * it); a0 and a1 are free.
  *
  * @param size  d0: the size so far (element size times the dimensions)
  * @param dim   d1.w: the dimension (its highest index)
@@ -169,7 +173,7 @@ static ULONG BLITZ_ROUTINE arrmult_c(ULONG size BL_REG(d0), ULONG dim BL_REG(d1)
         return ARR_TOOBIG;
     return total;
 }
-BLITZ_THUNK(arrmult, arrmult_c, "a0-a1");
+BLITZ_ALIAS(arrmult, arrmult_c);
 
 /* newlist - (re)allocate a list: 32 bytes header + 0(base,size) bytes,
    items of itemsize bytes; see newlist below */
