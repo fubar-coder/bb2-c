@@ -13,7 +13,9 @@
  *   libtest LIB DIR NAME [ROUNDS]     the cases to DIR/NAME.txt
  *
  * Inputs: all pairs of a list of edge values in d0/d1, plus ROUNDS
- * (default 20000) pseudo random pairs (fixed seed, reproducible).
+ * (default 20000) pseudo random pairs (fixed seed, reproducible), as
+ * block cases; for ldivlib then the limits of its paths as plain cases
+ * (check "limit d0").
  * Output: one line per routine; exit 0 if the library loads and its
  * cases are written.
  */
@@ -113,6 +115,23 @@ static const ULONG edges[] = {
 };
 #define NEDGES (sizeof edges / sizeof edges[0])
 
+/* ldivlib (plain cases after the blocks, every sign): the divisors at
+   the limits of its paths - DIVU for a divisor below $10000 (Long; Quick
+   below 1.0, $4000 = 0.25, $C000 = 0.75), DIVU by the high word for a
+   Quick divisor without a fraction (3.0, 10.0, $7FFF0000), the loop for
+   the others (3.25, $10001, $1FFFF, $7FFFFFFF, $80000000) - and Quick
+   fractions in the dividends (12.5 = $C8000, $7FFF8000) */
+static const ULONG dividends[] = {
+    0, 1, 0xffff, 0x12345678, 0x7fffffff, 0x80000000, 0x000c8000,
+    0x7fff8000,
+};
+#define NDIVIDENDS (sizeof dividends / sizeof dividends[0])
+static const ULONG divisors[] = {
+    1, 3, 0x7fff, 0x8000, 0xffff, 0x10000, 0x10001, 0x1ffff, 0x4000,
+    0xc000, 0x30000, 0x34000, 0xa0000, 0x7fff0000, 0x7fffffff, 0x80000000,
+};
+#define NDIVISORS (sizeof divisors / sizeof divisors[0])
+
 static ULONG seed;
 static ULONG rnd(void)
 {
@@ -174,6 +193,21 @@ int main(int argc, char **argv)
             tests++;
         }
         printf("%-12s %ld tests\n", a.what[i], tests);
+    }
+    cap_blocks(0);
+    if (W(a.base + 0x0e) == 0xcb00) {   /* ldivlib: its paths' limits */
+        for (i = 0; i < a.n; i++) {
+            unsigned x, y, sg;
+            cap_routine(a.what[i]);
+            for (x = 0; x < NDIVIDENDS; x++)
+                for (y = 0; y < NDIVISORS; y++)
+                    for (sg = 0; sg < 4; sg++) {
+                        ULONG d0 = sg & 1 ? -dividends[x] : dividends[x];
+                        ULONG d1 = sg & 2 ? -divisors[y] : divisors[y];
+                        sprintf(vec, "$%08lX $%08lX", d0, d1);
+                        cap_num("limit d0", vec, call(a.code[i], d0, d1));
+                    }
+        }
     }
     UnLoadSeg(a.seg);
     return cap_end() ? 5 : 0;

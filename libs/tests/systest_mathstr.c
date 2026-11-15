@@ -191,6 +191,18 @@ static const LONG lvals[] = {
 };
 #define NL (sizeof lvals / sizeof lvals[0])
 
+/* Long Mod at the limit of its DIVU path (a divisor below $10000) */
+static const ULONG mod_a[] = {
+    0, 1, 0xfffe, 0xffff, 0x10000, 0x1fffe, 0x12345678, 0x7fffffff,
+    0x80000000,
+};
+#define NMA (sizeof mod_a / sizeof mod_a[0])
+static const ULONG mod_b[] = {
+    1, 2, 0x7fff, 0x8000, 0xfffe, 0xffff, 0x10000, 0x10001, 0x7fffffff,
+    0x80000000,
+};
+#define NMB (sizeof mod_b / sizeof mod_b[0])
+
 static void test_modlib(void)
 {
     unsigned i, j;
@@ -263,6 +275,19 @@ static void test_modlib(void)
         DO1(E("modlib", 2), R.d[0] = a; R.d[1] = b);
         OBS("d0", R.d[0]);
     }
+    /* the limit of the DIVU path ($FFFF) and the divisors around it,
+       every sign */
+    for (i = 0; i < NMA; i++)
+        for (j = 0; j < NMB; j++) {
+            unsigned sg;
+            for (sg = 0; sg < 4; sg++) {
+                ULONG a = sg & 1 ? -mod_a[i] : mod_a[i];
+                ULONG b = sg & 2 ? -mod_b[j] : mod_b[j];
+                sprintf(VEC, "limit $%08lX,$%08lX", a, b);
+                DO1(E("modlib", 2), R.d[0] = a; R.d[1] = b);
+                OBS("d0", R.d[0]);
+            }
+        }
 
     /* float: SPFix of both, then long */
     ROUT = "domodfloat";
