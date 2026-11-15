@@ -39,8 +39,6 @@
  *    (#82); SpotBox has no page check, with 0 boxes it scans 65536 (#83).
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
  *    line's LF in the bank by 0. (#87)
- *  - oneline: a box with tlen 0 but an old text pointer prints from
- *    address 0 with the pointer as length (fresh boxes have text 0). (#89)
  *  - BlitzEvent: with cursor up/down it reads btype of `selected` also
  *    when nothing is selected (#90); Backspace at position 0 leaves the
  *    cursor off (#91).
@@ -57,6 +55,12 @@
  *    limit: an all-space answer ran into the prompt or the memory before
  *    the text (a negative length: a copy of up to 65535 bytes).  Here it
  *    stops at the start of the answer.
+ *  - #89: AddBox freed a box's old text but kept its pointer (only tlen
+ *    cleared), and oneline passed a box with tlen 0 to the output with
+ *    pointer and length swapped: a box added again without a text
+ *    printed from address 0 with the old pointer as the length.  Here
+ *    AddBox clears the pointer too, and a box without a text prints
+ *    nothing.
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
@@ -702,8 +706,10 @@ static void drawbox(struct page *p, struct box *box)
         ULONG tlen = box->tlen, tptr = *(ULONG *)&box->text;
         ULONG ptr, len;                         /* d0 d1 after the EXG */
 
-        ptr = tlen;                             /* no text: d0 = 0, d1 = text (#89) */
-        len = tptr;
+        /* no text: nothing.  Fixed (#89): the original passed d0 = 0 as
+           the pointer and the text pointer as the length */
+        ptr = 0;
+        len = 0;
         if (tlen) {
             ptr = tptr;                         /* EXG d0,d1 */
             len = tlen;
@@ -959,6 +965,7 @@ static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, UL
     if (b->tlen) {
         globfree(b->text, b->tlen);
         b->tlen = 0;
+        b->text = 0;                            /* fixed (#89) */
     }
     b->x = (WORD)x;
     b->y = (WORD)y;
@@ -1461,8 +1468,8 @@ BLITZ_THUNK(_redrawpage, redrawpage_c, "d0-d1/a0-a1");
  *
  * Errors (always checked): "UnInitialised Page", "Illegal Box# For
  * Page".
- * BUG(orig) (#89): a box with tlen 0 but an old text pointer prints from
- * address 0 with the pointer as length (in drawbox).
+ * Fixed (#89): a box without a text prints nothing (the original printed
+ * from address 0 with an old text pointer as the length, in drawbox).
  *
  * Reads a3: the used page.
  * @param n  d0.w: Box#
