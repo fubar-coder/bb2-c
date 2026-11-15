@@ -30,7 +30,12 @@
  *
  * Kept from the original (BUG(orig)):
  *   - the BODY is decoded as ByteRun1 whatever BMHD's compression says
- *     (#397); DBF counters: height/depth/width 0 run 65536 times (#402).
+ *     (#397).
+ *   - Fixed (intended deviation, #402): the DBF counters of InitAnim, its
+ *     second form and NextFrame ran 65536 times for a BMHD with height,
+ *     depth or width 0.  Here LoadAnim keeps no BODY and no deltas of
+ *     such a picture: InitAnim decodes nothing, its second form copies
+ *     nothing, NextFrame has no delta.
  *   - freeanim reads the next pointer of a delta node after freeing it. (#399)
  *   - Fixed (intended deviation, #400): LoadAnim took the "not found"
  *     result -1 of a missing BODY as its length (memlib adds its 8 byte
@@ -334,6 +339,19 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     anim->depth = info->planes;
     anim->ebwidth = (UWORD)(info->words << 1);
     anim->frames = 1;
+    if (!anim->height || !anim->depth || !anim->ebwidth) {
+        /* fixed (#402): a picture with a dimension 0 keeps no BODY and no
+           deltas, so InitAnim and NextFrame have nothing to do */
+        anim->bodylen = 0;
+        anim->body = 0;
+        anim->current = 0;
+        anim->eor = 0;
+        node = HEADNODE(anim);
+        blitz_string = (UBYTE *)node;
+        node->next = 0;
+        iffclose();
+        return;
+    }
     bodylen = ifffind(0x424f4459, &found); /* "BODY" */
     if (!found)                         /* fixed (#400): no BODY, no data */
         bodylen = 0;
@@ -448,9 +466,10 @@ static void initanim(struct anim *anim, struct bb_bitmap *bm)
  * @brief InitAnim Anim#: decode BODY into the used bitmap.
  *
  * BODY is decoded as ByteRun1 whatever BMHD's compression says (BUG(orig),
- * #397; DBF counters: height/depth/width 0 run 65536 times, #402); the
- * current delta becomes the first one.  a3 is left behind the BODY data
- * (not a bug).  Errors (debugger, animchk): "Uninitialized Anim",
+ * #397); the current delta becomes the first one; an anim without BODY
+ * data decodes nothing (fixed, #400, #402: a missing BODY or a dimension
+ * 0, the original ran its counters 65536 times).  a3 is left behind the
+ * BODY data (not a bug).  Errors (debugger, animchk): "Uninitialized Anim",
  * "Uninitialized BitMap", "BitMap not large enough for ANIM".
  *
  * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
@@ -484,6 +503,8 @@ static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
     ULONG *p1, *p2;
 
     initanim(anim, bm);
+    if (!anim->height || !anim->depth || !anim->ebwidth)
+        return;                         /* fixed (#402): nothing to copy */
     bpr = bm->bpr;
     p1 = (ULONG *)bm->planes;
     bpr2 = bm2->bpr;

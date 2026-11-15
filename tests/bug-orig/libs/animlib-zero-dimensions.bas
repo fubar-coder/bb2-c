@@ -5,8 +5,10 @@
 ; bytes (row 1 repeats $11, the others $FF).  To keep the writes inside
 ; the bitmap the program sets the bytes per row of BitMap 0 to 0 during
 ; InitAnim (every row lands on row 0 of the plane) and restores it.
-; Correct: a picture of height 0 decodes no row, the plane stays 0.  The
+; Correct: a picture of height 0 has no row to decode: LoadAnim keeps no
+; BODY (length 0), InitAnim leaves the plane 0.  The
 ; original decodes all 65536 rows (the last one leaves $FFFF).
+; @fixed #402
 ; @configs clib
 ; @pass file=height0.anim|@TESTDATA@/animlib-zero-dimensions.anim
 DEFTYPE .l
