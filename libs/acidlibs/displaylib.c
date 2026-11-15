@@ -1211,7 +1211,7 @@ BLITZ_THUNK(_displaydbmap2, _displaydbmap2_c, "a2");
 /* ------------------------------------------------------ sprite routines */
 
 /* spriteoff - the blank sprite into the channels of a sprite above or
-   below the display.  BUG(orig): always in the normal sprite moves at
+   below the display.  BUG(orig) (#1051): always in the normal sprite moves at
    chan x 16: a channel of the CustomSprites bank writes behind them, over
    the BPLCON moves, and the custom channel keeps the sprite (bug-orig
    test displaylib-spriteoff-custom-bank) */

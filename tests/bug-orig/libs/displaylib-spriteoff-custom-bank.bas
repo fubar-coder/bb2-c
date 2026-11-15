@@ -1,4 +1,4 @@
-; displaylib-spriteoff-custom-bank (no issue yet) - DisplaySprite of a
+; displaylib-spriteoff-custom-bank (#1051) - DisplaySprite of a
 ; sprite completely above or below the display gives its channels the
 ; blank sprite (spriteoff), but spriteoff always writes into the normal
 ; sprite moves at channel x 16: for a channel of the CustomSprites bank
