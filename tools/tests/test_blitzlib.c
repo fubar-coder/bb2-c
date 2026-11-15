@@ -94,6 +94,93 @@ static void test_reserved(void)
     CHECK(blitzlib_reserved(&lib, 0) == BLITZLIB_RESERVE_OK);
 }
 
+/* one statement whose !subs has the error checks err1, err2 (code $5C),
+   then the end of the table; the code starts at $5C */
+static void statement_chk(struct buf *b, uint32_t err1, uint32_t err2)
+{
+    put16(b, 1);
+    put32(b, 0);
+    put16(b, 0x0000);                   /* form: 0 arguments */
+    put16(b, 0);                        /* no libs */
+    put32(b, err1); put32(b, 0x5C); put32(b, err2);     /* subs */
+    put16(b, 0xFFFF);
+    put32(b, 0);                        /* next */
+    put16(b, 0);                        /* nummer */
+    putbytes(b, "Test\0X\0", 8);
+    put16(b, 0xFFFF);                   /* end of the entries */
+    put32(b, 0);                        /* no !libfin */
+}
+
+/* the error checks of the !subs and their C check functions (#1056): a
+   library with the normal code $5C-$60 (a check function at $5C, where
+   BLITZ_ERRCHK_THUNK could leave one) and the error check area from $60:
+     $60  thunk  MOVEM.l d0-d1/a0-a1,-(a7):JSR jsr:MOVEM.l (a7)+,...:RTS
+     $70  a check routine in the area (RTS)
+     $72  Blitz/Amiga pair  $A001, Dc.l $70, JMP amiga */
+static int errchk_lib(uint32_t err1, uint32_t err2, uint16_t jsr_op, uint32_t jsr,
+                      uint32_t amiga, char *msg, size_t len)
+{
+    struct buf b = { 0 };
+    int r;
+
+    header(&b, 0x60);
+    statement_chk(&b, err1, err2);
+    if (b.n != 0x5C)
+        abort();
+    put16(&b, 0x4E75);                  /* $5C: the check function */
+    put16(&b, 0);
+    put32(&b, 0x48E7C0C0);              /* $60: the thunk */
+    put16(&b, jsr_op);
+    if (jsr_op == 0x4EBA) {             /* (d16,pc), NOP */
+        put16(&b, (uint16_t)(jsr - 0x66));
+        put16(&b, 0x4E71);
+    } else {
+        put32(&b, jsr);
+    }
+    put32(&b, 0x4CDF0303);
+    put16(&b, 0x4E75);
+    put16(&b, 0x4E75);                  /* $70 */
+    put16(&b, 0xA001);                  /* $72: the pair */
+    put32(&b, 0x70);
+    put16(&b, 0x4EF9);
+    put32(&b, amiga);
+    r = check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, len);
+    free(b.p);
+    return r;
+}
+
+static void test_errchk(void)
+{
+    char msg[1000];
+
+    /* the thunk calls into the area: no message (error1, error1 + 1 of a
+       Blitz mode only routine, error2, the pair; a check in the normal
+       code itself is not reported) */
+    CHECK(errchk_lib(0x60, 0, 0x4EB9, 0x70, 0x60, msg, sizeof msg) == 0 && !*msg);
+    CHECK(errchk_lib(0x61, 0x60, 0x4EB9, 0x70, 0x60, msg, sizeof msg) == 0 && !*msg);
+    CHECK(errchk_lib(0x72, 0, 0x4EBA, 0x70, 0x60, msg, sizeof msg) == 0 && !*msg);
+    CHECK(errchk_lib(0x5C, 0x5D, 0x4EB9, 0x5C, 0x60, msg, sizeof msg) == 0 && !*msg);
+    CHECK(errchk_lib(1, 0, 0x4EB9, 0x5C, 0x60, msg, sizeof msg) == 0 && !*msg);
+    /* the thunk's C function is in the normal code: JSR abs.l and the
+       JSR (d16,pc) the linker makes of it, as error1, error1 + 1, error2 */
+    CHECK(errchk_lib(0x60, 0, 0x4EB9, 0x5C, 0x60, msg, sizeof msg) == 1
+          && strstr(msg, "lib: the error check $60 of the !subs at $3A calls $5C, which is "
+                         "not in the error check area (from $60): a check function in the "
+                         "normal code (BLITZ_ERRCHK_THUNK)\n"));
+    CHECK(errchk_lib(0x61, 0, 0x4EBA, 0x5C, 0x60, msg, sizeof msg) == 1
+          && strstr(msg, "$60 of the !subs at $3A calls $5C"));
+    CHECK(errchk_lib(0, 0x60, 0x4EBA, 0x5C, 0x60, msg, sizeof msg) == 1
+          && strstr(msg, "$60 of the !subs at $3A calls $5C"));
+    /* behind the Blitz/Amiga pair: its Amiga mode check is the thunk */
+    CHECK(errchk_lib(0x72, 0, 0x4EB9, 0x5C, 0x60, msg, sizeof msg) == 1
+          && strstr(msg, "$60 of the !subs at $3A calls $5C"));
+    /* a pair whose Amiga mode check is in the normal code is not reported */
+    CHECK(errchk_lib(0x72, 0, 0x4EB9, 0x5C, 0x5C, msg, sizeof msg) == 0 && !*msg);
+    /* a JSR target behind the end of the code */
+    CHECK(errchk_lib(0x60, 0, 0x4EB9, 0x100, 0x60, msg, sizeof msg) == 1
+          && strstr(msg, "calls $100"));
+}
+
 int main(void)
 {
     struct buf ok = { 0 }, b;
@@ -297,6 +384,7 @@ int main(void)
 
     free(ok.p);
     test_reserved();
+    test_errchk();
     if (failures)
         fprintf(stderr, "test_blitzlib: %d failures\n", failures);
     return failures != 0;

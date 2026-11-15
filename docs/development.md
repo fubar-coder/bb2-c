@@ -269,7 +269,13 @@ again):
   number is free (AmiBlitz3's libraries 15 and 217 rely on that; the
   libraries of this build keep within their block). Nullsubs behind it
   (init, finit, the object handlers of `!libfin`) are allowed, doslib
-  has two.
+  has two. An error check of the token table (`!subs` error1/error2) in
+  the error check area that is the thunk of a C check function
+  (`BLITZ_ERRCHK_THUNK`, also behind a Blitz/Amiga pair of
+  `BLITZ_ERRCHK_AB`) must call into the area: a check function in the
+  normal code stays in every program, also without the debugger (#1056).
+  Checks in the normal code are not reported (maxlenlib and 2dlib keep
+  theirs there, as the originals do).
   `acidlibs`/`deflibs`
   are made only from checked libraries.
 * the command reference of the website (`blitzlib cmdref`, in the same

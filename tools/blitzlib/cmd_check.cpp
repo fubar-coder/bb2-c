@@ -55,10 +55,11 @@ void cmd_check(CLI::App &app, int &status)
                   "a library 33 other than literallib is allowed (RIDosLib in the RWE variants)");
     sub->footer("One code hunk, relocations only into it, the library header, the token table "
                 "readable up to its end, no reference from the normal code into the error check "
-                "area, not the reserved library numbers 32 and 33 (33 only for literallib, the "
-                "literal characters, or with --allow-33). Silent if all is right. Exit status 0, "
-                "1 a file is no valid library file "
-                "(the findings on stderr), 2 usage error.");
+                "area, no error check thunk in the error check area that calls a check function "
+                "in the normal code, not the reserved library numbers 32 and 33 (33 only for "
+                "literallib, the literal characters, or with --allow-33). Silent if all is "
+                "right. Exit status 0, 1 a file is no valid library file (the findings on "
+                "stderr), 2 usage error.");
     sub->callback([sub, files, allow, &status] {
         const std::string name = cli::name(*sub);
         int bad = 0;

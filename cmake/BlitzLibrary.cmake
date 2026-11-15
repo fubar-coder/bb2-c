@@ -34,7 +34,8 @@
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
 #                 The same build step checks it (blitzlib check: one
 #                 hunk, header, token table, no reference from the normal
-#                 code into the error check area): if the check fails, NAME.obj does
+#                 code into the error check area, no check thunk calling a
+#                 check function in the normal code): if the check fails, NAME.obj does
 #                 not count as built and nothing that uses it is built.
 # The compiler options are the Blitz library conventions (include/blitzlib.h):
 # a3 string pointer, a4 locals, a5 globals of the Blitz program.

@@ -55,6 +55,9 @@ struct blitzlib {
     uint16_t defmax;            /* !libfin: the default maximum of the objects */
     unsigned nforms;
     struct blitzlib_form *forms;    /* the forms of all entries */
+    unsigned nsubs;
+    uint32_t *subs;             /* the !subs of all forms and nullsubs: the
+                                   offsets of their Dc.l error1,code,error2 */
     uint32_t codestart;         /* first byte behind the token table */
     uint8_t *mask;              /* per byte of [0, codestart): BLITZLIB_* */
 };
@@ -99,6 +102,15 @@ void blitzlib_free(struct blitzlib *lib);
  *   - no relocation from the normal code into the error check area (that
  *     area is cut away when the debugger is off; the originals do it, e.g.
  *     memlib err1 -> mess1, the port has them fixed since 2026-10-31)
+ *   - an error check of the !subs (error1, error2; error1 + 1 of a
+ *     Blitz mode only routine) in the error check area that is the thunk
+ *     of a C check function (MOVEM.l regs,-(a7):JSR f, BLITZ_ERRCHK_THUNK)
+ *     calls into the error check area, also through the Blitz/Amiga pair
+ *     of BLITZ_ERRCHK_AB ($A001, Dc.l blitz, JMP amiga): a check function
+ *     in the normal code is kept in every program, also without the
+ *     debugger (#1056).  Checks in the normal code are not reported (some
+ *     originals keep them there, e.g. maxlenlib, whose header has no error
+ *     check area)
  *
  * @param lf    the library file
  * @param name  the prefix of the messages

@@ -113,6 +113,21 @@ static void add_form(struct cursor *c, uint32_t p, uint16_t head)
     lib->nforms++;
 }
 
+/* a !subs block (Dc.l error1,code,error2) at p */
+static void add_subs(struct cursor *c, uint32_t p)
+{
+    struct blitzlib *lib = c->lib;
+
+    if (lib->nsubs % 32 == 0) {
+        uint32_t *n = realloc(lib->subs, (lib->nsubs + 32) * sizeof *n);
+
+        if (!n)
+            stop(c, p, "out of memory");
+        lib->subs = n;
+    }
+    lib->subs[lib->nsubs++] = p;
+}
+
 static void add(struct cursor *c, const struct blitzlib_entry *e)
 {
     struct blitzlib *lib = c->lib;
@@ -152,6 +167,7 @@ static void parse(struct cursor *c)
             p = libs(c, p);
             L(c, p + 8);
             mark(c, p, 12, BLITZLIB_CODE);
+            add_subs(c, p);
             p += 12;
         } else {                                /* statement/function/command */
             while (W(c, p) != 0xFFFF) {
@@ -163,6 +179,7 @@ static void parse(struct cursor *c)
                 p = libs(c, p);
                 L(c, p + 8);
                 mark(c, p, 12, BLITZLIB_CODE);          /* subs */
+                add_subs(c, p);
                 p += 12;
             }
             p = namblock(c, p, 1, &e);
@@ -238,11 +255,65 @@ void blitzlib_free(struct blitzlib *lib)
 {
     free(lib->entries);
     free(lib->forms);
+    free(lib->subs);
     free(lib->mask);
     memset(lib, 0, sizeof *lib);
 }
 
 /* ------------------------------------------------------------- checks */
+
+/* the target of the JSR/JMP at p (opcode op: abs.l op|1, (d16,pc) op|2),
+   or -1 for any other instruction */
+static int64_t call_target(const struct blitzlib *lib, uint32_t p, uint16_t op)
+{
+    uint16_t w;
+
+    if (p > lib->size || lib->size - p < 6)
+        return -1;
+    w = be16(lib->code + p);
+    if (w == (op | 1))
+        return be32(lib->code + p + 2);
+    if (w == (op | 2))
+        return (int64_t)p + 2 + (int16_t)be16(lib->code + p + 2);
+    return -1;
+}
+
+/* the error check `chk` of the !subs at `subs` (the address, bit 0 the
+   Blitz mode only flag): if it is in the error check area, so is the C
+   check function of its thunk, or the two checks of a Blitz/Amiga pair;
+   depth counts the pairs (a pair of pairs is not followed further).  A
+   check in the normal code is not reported: some originals keep checks
+   there (maxlenlib echk1, 2dlib _cbchk), and the port keeps them there */
+static int check_errchk(const struct blitzlib *lib, uint32_t subs, uint32_t chk, int depth,
+                        const char *name, FILE *out)
+{
+    int64_t t;
+
+    chk &= ~1u;
+    if (!lib->error || chk < lib->error || chk >= lib->size)
+        return 0;
+    if (chk + 6 <= lib->size && be16(lib->code + chk) == 0xA001) {     /* BLITZ_ERRCHK_AB */
+        int bad = 0;
+
+        if (depth)
+            return 0;
+        bad |= check_errchk(lib, subs, be32(lib->code + chk + 2), depth + 1, name, out);
+        t = call_target(lib, chk + 6, 0x4EF8);                         /* JMP amiga */
+        if (t >= 0)
+            bad |= check_errchk(lib, subs, (uint32_t)t, depth + 1, name, out);
+        return bad;
+    }
+    if (chk + 4 <= lib->size && be16(lib->code + chk) == 0x48E7 &&    /* MOVEM.l regs,-(a7) */
+        (t = call_target(lib, chk + 4, 0x4EB8)) >= 0 &&                /* JSR f */
+        (t < lib->error || t >= lib->size)) {
+        fprintf(out, "%s: the error check $%X of the !subs at $%X calls $%X, which is not in "
+                "the error check area (from $%X): a check function in the normal code "
+                "(BLITZ_ERRCHK_THUNK)\n",
+                name, (unsigned)chk, (unsigned)subs, (unsigned)t, (unsigned)lib->error);
+        return 1;
+    }
+    return 0;
+}
 
 int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
 {
@@ -306,6 +377,12 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
                     ((first + i) | 0x8000) & 0xFFFF, first | 0x8000, (first + 126) | 0x8000);
             bad = 1;
         }
+    for (i = 0; i < lib.nsubs; i++) {
+        uint32_t p = lib.subs[i];
+
+        bad |= check_errchk(&lib, p, be32(h->data + p), 0, name, out);
+        bad |= check_errchk(&lib, p, be32(h->data + p + 8), 0, name, out);
+    }
     if (lib.error) {
         for (i = 0; i < h->nrelocs; i++) {
             uint32_t r = h->reloc_offset[i];

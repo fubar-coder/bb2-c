@@ -127,15 +127,21 @@ OPTIONS:
 
 One code hunk, relocations only into it, the library header, the token table
 readable up to its end, no reference from the normal code into the error check
-area, not the reserved library numbers 32 and 33 (33 only for literallib, the
-literal characters, or with --allow-33). Silent if all is right. Exit status 0,
-1 a file is no valid library file (the findings on stderr), 2 usage error.
+area, no error check thunk in the error check area that calls a check function
+in the normal code, not the reserved library numbers 32 and 33 (33 only for
+literallib, the literal characters, or with --allow-33). Silent if all is right.
+Exit status 0, 1 a file is no valid library file (the findings on stderr), 2
+usage error.
 ```
 
 Each file is a valid library file: one code hunk, relocations
 only into it, the library header, the token table readable up to its
 end, no reference from the normal code into the error check area
-(`docs/development.md`, "Checks in the build"), not the number 32 or 33
+(`docs/development.md`, "Checks in the build"), no error check of the
+token table in the error check area that is the thunk of a C check
+function (`MOVEM.l regs,-(a7):JSR f`, `BLITZ_ERRCHK_THUNK`, also behind
+the Blitz/Amiga pair of `BLITZ_ERRCHK_AB`) and calls a function in the
+normal code (#1056), not the number 32 or 33
 (33 only for `literallib`, identified by its 127 dummy tokens named
 `$81`-`$FF`, or with `--allow-33`; #1018). Silent if all is right.
 
