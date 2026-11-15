@@ -34,6 +34,9 @@
 # bmath.frac (two Quick/Float conversions) then from two runs after each
 # step of the internal tokens of libs-performance group 8, the bmath ones
 # from three runs after the rebase onto main d0fcc44d (2026-11-15).
+# The 13 lines of the blit commands and Sort (group 7: bgfx.blit16 to
+# bgfx.qblit8f, bstr.sort201) from twelve runs of the group 7 branch on
+# main ecef902a (2026-11-15), three of them with the snapshots made anew.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -42,18 +45,18 @@ bdisp.dispbitmapxy           1058      710.0  DisplayBitMap 0,0,8,8
 bdisp.dispsprite            1506~4      965.5  DisplaySprite 0,0,100,100,0
 bdisp.disppalette          2373~16     1292.0  DisplayPalette 0,0
 bgfx.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bgfx.blit16                 2988~4     2108.3  Blit 0,100,100
-bgfx.blit16s                 3021     2108.3  Blit 0,105,100
-bgfx.blit32                 5423~4     4723.4  Blit 1,100,100
-bgfx.block16                 1262     1009.9  Block 0,96,96
-bgfx.clipblit16              3323     2516.3  ClipBlit 0,100,100
-bgfx.blitcoll               1400~5      881.9  c=BlitColl(0,100,100)
-bgfx.bblit4u              22792~44    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
-bgfx.bblit8u              45142~84    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
-bgfx.qblit4u              16400~13    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
-bgfx.qblit8u              32496~16    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
-bgfx.qblit4f              12508~20     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
-bgfx.qblit8f              24976~13    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
+bgfx.blit16                 2118~2     2108.3  Blit 0,100,100
+bgfx.blit16s                 2142     2108.3  Blit 0,105,100
+bgfx.blit32                 4730~3     4723.4  Blit 1,100,100
+bgfx.block16                 1021     1009.9  Block 0,96,96
+bgfx.clipblit16              2607     2516.3  ClipBlit 0,100,100
+bgfx.blitcoll                902~1      881.9  c=BlitColl(0,100,100)
+bgfx.bblit4u               19172~4    18173.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : UnBuffer 0
+bgfx.bblit8u              38010~33    36041.8  BBlit 0,0,20,20 : BBlit 0,0,60,20 : BBlit 0,0,100,20 : BBlit 0,0,140,20 : BBlit 0,0,20,60 : BBlit 0,0,60,60 : BBlit 0,0,100,60 : BBlit 0,0,140,60 : UnBuffer 0
+bgfx.qblit4u               12912~8    12785.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : UnQueue 0
+bgfx.qblit8u              25722~28    25417.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : UnQueue 0
+bgfx.qblit4f               9200~5     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : FlushQueue 0
+bgfx.qblit8f               18308~4    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
 bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
@@ -170,6 +173,6 @@ bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
 bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
-bstr.sort201               660012    77694.0  Sort sa()
+bstr.sort201                84110    77694.0  Sort sa()
 bstr.pstr                   12115    11614.0  pstr{a$} (a Statement with a string parameter and a local string)
 bstr.fstr                   12817    12353.5  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
