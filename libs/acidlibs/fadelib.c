@@ -17,12 +17,14 @@
  * Synchronous (default): 16 steps with VWait rate (intlib $C104) between;
  * ASyncFade On: the program calls DoFade, FadeStatus = steps left.
  *
+ * Fixed (intended deviation, #134): calcfade shifted a word (MOVE.b:LSR
+ *   #4) and kept d0 across the loop: d0.w at the call is palette# * 128
+ *   (the compiler's object address, lsl.w #7), its bits 8-11 ended up in
+ *   the upper nibble of the red fraction, bits 12-15 in that of the green
+ *   fraction of the first colour (palettes 2 and up).  Here the
+ *   components are shifted as bytes.
+ *
  * Kept from the original (BUG(orig)):
- *   - calcfade shifts a word (MOVE.b:LSR #4) and keeps d0 across the
- *     loop: d0.w at the call is palette# * 128 (the compiler's object
- *     address, lsl.w #7), its bits 8-11 end up in the upper nibble of the
- *     red fraction, bits 12-15 in that of the green fraction of the FIRST
- *     colour only (the shifts empty the upper byte); palette 0/1 unaffected. (#134)
  *   - The checks test the high word of the slice and palette pointers
  *     (TST.w (a1)/(a0)). (#135)
  *   - Without high/low colours the range is 0..min(colours of the
@@ -42,20 +44,20 @@
 /* entry points (thunks / C, defined below) */
 void fadechk0(void), fadechk(void), dosetfade(void), dofadestatus(void);
 void fadelib_codeinit(void);
-void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadein2(const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadein3(UWORD rate BL_REG(d1),
                              const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadein(UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                             UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
                             struct bb_slice *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadeout2(const struct bb_palette *pal BL_REG(a0),
                               struct bb_slice *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadeout3(UWORD rate BL_REG(d1),
                               const struct bb_palette *pal BL_REG(a0),
                               struct bb_slice *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadeout(UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                              UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE doasyncfade(void);
@@ -203,16 +205,17 @@ static void calcrange(const struct bb_palette *pal, const struct bb_slice *slice
     *hi = h;
 }
 
-/* calcfade - the fractions; palofs = d0 (.w = palette# * 128 from the
-   caller), its upper byte comes in (BUG(orig), #134) */
-static void calcfade(ULONG palofs, const struct bb_palette *pal, struct bb_slice *slice,
+/* calcfade - the fractions: the high nibble of every component.  Fixed
+   (#134): the original shifted d0 as a word (MOVE.b x,d0:LSR #4,d0), and
+   d0.w came in as palette# * 128 (the compiler's object offset): its
+   bits 8-15 got into the red and green fractions of the first colour */
+static void calcfade(const struct bb_palette *pal, struct bb_slice *slice,
                      UWORD rate, UWORD lo,
                      UWORD hi)
 {
     const UBYTE *rgbs = pal->pdata + 4;
     UBYTE *frac;
     UWORD ofs, endofs;
-    UWORD shifted = (UWORD)palofs;              /* d0.w, upper byte kept */
 
     if (lo > hi) {
         UWORD oldlo = lo;
@@ -228,15 +231,9 @@ static void calcfade(ULONG palofs, const struct bb_palette *pal, struct bb_slice
     ofs = (UWORD)(lo * 12);
     endofs = (UWORD)(hi * 12);
     do {
-        /* MOVE.b x,d0:LSR #4,d0:MOVE.b d0,f - the word shift moves d0's
-         * upper byte on: bits 8-11 reach red, bits 12-15 green of the first
-         * colour, after that the upper byte is 0 (BUG(orig), #134) */
-        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs]) >> 4);
-        frac[0] = (UBYTE)shifted;
-        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs + 4]) >> 4);
-        frac[32] = (UBYTE)shifted;
-        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs + 8]) >> 4);
-        frac[64] = (UBYTE)shifted;
+        frac[0] = rgbs[(WORD)ofs] >> 4;         /* fixed #134: byte shifts */
+        frac[32] = rgbs[(WORD)ofs + 4] >> 4;
+        frac[64] = rgbs[(WORD)ofs + 8] >> 4;
         frac++;
         ofs += 12;
     } while (ofs <= endofs);
@@ -264,8 +261,9 @@ static void dosyncfade(void)
  * = high byte of the component >> 4; low and high are swapped if low >
  * high), starts at 0 and, with ASyncFade Off, does them all with VWait
  * rate between them.
- * BUG(orig) (#134): the upper byte of d0.w (palette# * 128) gets into the
- * red and green fractions of the first colour (palettes 0/1 unaffected).
+ * Fixed (#134): the fractions are those of the palette alone (the
+ * original added bits of d0.w = palette# * 128 to the red and green
+ * fractions of the first colour for palettes 2 and up).
  * By design (#136): the range is not clipped to the colours of palette
  * and slice.
  * Errors (debugger, fadechk): "Uninitialized Slice", "Not enough colours
@@ -274,20 +272,19 @@ static void dosyncfade(void)
  * #331); the checks test only the high word of the pointers (BUG(orig)
  * #135).
  *
- * @param palofs  d0: palette# * 128 (the compiler's object offset)
  * @param rate  d1: the frames to wait between the steps (VWait)
  * @param lo  d2: the low colour
  * @param hi  d3: the high colour
  * @param pal  a0: the palette (!libs #palettelib,$1080)
  * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
  */
-void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadein(UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                             UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
                             struct bb_slice *slice BL_REG(a1))
 {
     int i;
 
-    calcfade(palofs, pal, slice, rate, lo, hi); /* setfadein */
+    calcfade(pal, slice, rate, lo, hi); /* setfadein */
     for (i = 0; i < 96; i++)
         fade[i] = 0;
     dosyncfade();
@@ -300,32 +297,30 @@ void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWOR
  * the slice) - 1.  Errors (debugger, fadechk0): as FadeIn without the
  * range check.
  *
- * @param palofs  d0: palette# * 128
  * @param rate  d1: the frames to wait between the steps
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadein3(UWORD rate BL_REG(d1),
                              const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
     calcrange(pal, slice, &lo, &hi);
-    dofadein(palofs, rate, lo, hi, pal, slice);
+    dofadein(rate, lo, hi, pal, slice);
 }
 
 /**
  * @brief FadeIn Palette#: fade all colours in, rate 0.
  *
- * @param palofs  d0: palette# * 128
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadein2(const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1))
 {
-    dofadein3(palofs, 0, pal, slice);
+    dofadein3(0, pal, slice);
 }
 
 /**
@@ -333,23 +328,22 @@ void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *p
  * of the used slice from the palette to black.
  *
  * As FadeIn, but starts at the full colours (fraction << 4) and
- * subtracts the fractions.  BUG(orig) (#134), by design (#136) and errors
+ * subtracts the fractions.  Fixed (#134), by design (#136) and errors
  * as FadeIn.
  *
- * @param palofs  d0: palette# * 128 (the compiler's object offset)
  * @param rate  d1: the frames to wait between the steps (VWait)
  * @param lo  d2: the low colour
  * @param hi  d3: the high colour
  * @param pal  a0: the palette (!libs #palettelib,$1080)
  * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
  */
-void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadeout(UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                              UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1))
 {
     int i;
 
-    calcfade(palofs, pal, slice, rate, lo, hi); /* setfadeout */
+    calcfade(pal, slice, rate, lo, hi); /* setfadeout */
     for (i = 0; i < 96; i++) {
         fade[i] = fadef[i] << 4;
         fadef[i] = -fadef[i];
@@ -363,32 +357,30 @@ void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWO
  * As FadeOut with the range 0 .. min(colours of the palette, colours of
  * the slice) - 1.
  *
- * @param palofs  d0: palette# * 128
  * @param rate  d1: the frames to wait between the steps
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadeout3(UWORD rate BL_REG(d1),
                               const struct bb_palette *pal BL_REG(a0),
                               struct bb_slice *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
     calcrange(pal, slice, &lo, &hi);
-    dofadeout(palofs, rate, lo, hi, pal, slice);
+    dofadeout(rate, lo, hi, pal, slice);
 }
 
 /**
  * @brief FadeOut Palette#: fade all colours out, rate 0.
  *
- * @param palofs  d0: palette# * 128
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadeout2(const struct bb_palette *pal BL_REG(a0),
                               struct bb_slice *slice BL_REG(a1))
 {
-    dofadeout3(palofs, 0, pal, slice);
+    dofadeout3(0, pal, slice);
 }
 
 /* ------------------------------------------- error checks (debugger only) */
