@@ -63,8 +63,13 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
  * The loop of alstat in assembler, with a0 = the table, a1 = the offset
  * from a4, d4 = the count, around memlib localloc (which keeps a0-a1).
  * Saves d0-d1/d4 and changes a0/a1 only: C cannot keep d0/d1 without a
- * thunk.  DIFF: the original changes d2 (the offset) and d4 (the DBF
- * count) and leaves a2 behind the table; here only a0/a1 change.
+ * thunk.  Fixed (#1063): the original changes d2 (the offset) and d4
+ * (the DBF count) although the compiler calls it in the procedure
+ * prologue with the parameters still in d0-d5, so the third parameter of
+ * a procedure with a local NEWTYPE variable was wrong (a fifth one too, if
+ * the compiler did not save d4); it also leaves a2 behind the table.  Here
+ * only a0/a1 change (test: library cases "d2 kept" and "d4 kept", bug-orig
+ * test staticslib-localstat-d2).
  *
  * As alstat, with the offsets from a4 (the original swaps a4/a5 around a
  * call of allocst).  Keeps d0-d7/a2-a6: the compiler calls it in the

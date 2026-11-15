@@ -96,6 +96,10 @@ staticslib globals|three statics||1	$00000001
 staticslib globals|cleared||1	$00000001
 staticslib locals|kept||1	kept
 staticslib locals|three statics||1	$00000001
+staticslib locals|d2 kept||1 [orig]	$00000000
+staticslib locals|d2 kept||1 [fixed #1063]	$00000001
+staticslib locals|d4 kept||1 [orig]	$00000000
+staticslib locals|d4 kept||1 [fixed #1063]	$00000001
 varslib init|kept||1	kept
 varslib init|a5 = d0||1	$00000001
 varslib init|cleared||1	$00000001

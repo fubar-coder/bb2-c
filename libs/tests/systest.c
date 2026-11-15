@@ -213,6 +213,10 @@ static void run(struct set *s)
         CALL("staticslib locals", entry_code(l, 1), r.a[2] = (ULONG)tab; r.d[4] = 2;
              r.a[4] = (ULONG)g, 0, 0);
         OBS("three statics", *(ULONG *)(g + 0) && *(ULONG *)(g + 4) && *(ULONG *)(g - 8));
+        /* the parameters of the procedure are in d0-d5: the original
+           changes d2 and d4 (#1063) */
+        OBS("d2 kept", r.d[2] == in.d[2]);
+        OBS("d4 kept", r.d[4] == in.d[4]);
     }
 
     /* varslib: allocate globals, a5 = block+$8000, free */
@@ -307,7 +311,8 @@ int main(int argc, char **argv)
     KEEPS("staticslib globals", d3|d5-d7|a0|a1|a3|a6);
     /* compiler: localstat in the procedure prologue, with the parameters
        in d0-d5 (d4 pushed around it by the compiler); the original
-       changes d2 and d4, so they are not stated */
+       changes d2 and d4 (#1063), so they are not stated: the cases
+       "d2 kept" and "d4 kept" carry them */
     KEEPS("staticslib locals", d0|d1|d3|d5-d7|a3|a6);
     KEEPS("varslib init", d2-d7|a0|a2|a3);
     KEEPS("varslib finit", d0|d2-d7|a2|a3);
