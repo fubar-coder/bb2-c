@@ -1,0 +1,4 @@
+[run]
+error
+diamond 8 accessors 0
+rc=0

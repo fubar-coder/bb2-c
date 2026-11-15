@@ -35,10 +35,13 @@
  *   - Not a bug (pixel cursor by design): Locate: Y is Quick, X a word;
  *     CursX/CursY return the cursor / 8 as Quick (fractions of a character).
  *   - a bitmap of depth 0 runs the plane loops 65536 times. (#149)
- *   - LoadBlitzFont of a wrong font: the font is not closed again. (#150)
  *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
  *     return without end: at end of file (-1 from the previous handler)
  *     it loops forever. (#151)
+ * Fixed (intended deviation, #150): LoadBlitzFont refused a font that is
+ *   not 8x8 or proportional (e.g. one diskfont scaled to 8 points) without
+ *   closing it: it stayed open after the program.  Here it is closed
+ *   before the runtime error.
  * Fixed (intended deviation, #148): characters below tf_LoChar are
  *   dropped with an unsigned compare (the original: SUB.b/BMI, so
  *   characters 128 or more above tf_LoChar were dropped as well, e.g. the
@@ -210,7 +213,8 @@ BLITZ_THUNK(dousefont, dousefont_c, "d0-d1/a0-a1");
  * a3 = the object.  The object becomes the used and the output font, its
  * old font is closed, then OpenDiskFont with the TextAttr {name, 8, 0,
  * 0}.  Only non-proportional 8x8 fonts are accepted.  Amiga mode only.
- * BUG(orig) (#150): a wrong font is not closed again.
+ * Fixed (#150): a refused font is closed before the error (the original
+ * left it open).
  * Errors (also without the debugger, err1 in the normal code): "Can't
  * Open Font".
  *
@@ -234,6 +238,10 @@ void BLITZ_ROUTINE doloadfont(const UBYTE *name BL_REG(d1), WORD used BL_REG(d5)
     r.a0 = (ULONG)&textattr;
     f = (struct TextFont *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
     if (!f || f->tf_XSize != 8 || f->tf_YSize != 8 || (f->tf_Flags & 0x20)) {
+        if (f) {                                /* fixed #150: close it */
+            r.a1 = (ULONG)f;
+            BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
+        }
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
