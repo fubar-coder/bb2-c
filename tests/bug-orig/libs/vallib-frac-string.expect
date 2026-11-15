@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+float .25
+REQUESTER: AutoRequest body "Illegal Type" *
+rc=0
