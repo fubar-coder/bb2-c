@@ -4,8 +4,8 @@ done
 [compile]
 ok
 [run]
+no error
 moves behind the bank kept 4 of 8
-custom channel 0 in the sprite data 0
 rc=0
 [blitz2]
 rc=0

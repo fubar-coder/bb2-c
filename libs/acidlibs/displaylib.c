@@ -60,6 +60,12 @@
  *   routine's ASL #2 made the offset CCOffset * 64 bytes instead of * 4.
  *   Here it is declared with the CopList only (programs that passed a
  *   CCOffset other than 0 change).
+ * Fixed (intended deviation, #414): DisplaySprite checked the channels of
+ *   a sprite against both sprite banks together when the CopList has
+ *   CustomSprites, but wrote into the bank of the first channel: a sprite
+ *   on the last normal channels wrote its other channels over the BPLCON
+ *   moves.  Here the channels must fit into the bank of the first one
+ *   ("Not Enough Sprite Channels" otherwise, as without CustomSprites).
  *
  * Kept from the original (BUG(orig)):
  *   - Not a bug (only with out-of-range arguments that do not occur):
@@ -1234,11 +1240,14 @@ static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
  * or below the display gets the blank sprite (spriteoff).  Every register is
  * reused; the word loads into d2/d3 keep the upper word of the caller's
  * register (BL_SETW below).
- * BUG(orig) (#414): a sprite spanning the last normal channel and the
- * CustomSprites bank overwrites the BPLCON moves.  Fixed (#949): spri
- * stays after CustomChunky's split form (the original: 0).
+ * Fixed (#414): the channels of the sprite must fit into the bank of its
+ * first channel (the original checked them against both banks together,
+ * so a sprite spanning the last normal channel and the CustomSprites bank
+ * overwrote the BPLCON moves).  Fixed (#949): spri stays after
+ * CustomChunky's split form (the original: 0).
  * Errors: an uninitialised sprite ("Uninitialised Sprite"), not enough
- * channels ("Not Enough Sprite Channels"); fixed: in the normal code (#412).
+ * channels in the bank ("Not Enough Sprite Channels"); fixed: in the
+ * normal code (#412).
  *
  * @param spr      a1: the sprite (!libs {#spriteslib,$1181})
  * @param x        d2: the x position (quick)
@@ -1270,7 +1279,9 @@ static void BLITZ_ROUTINE _displaysprite_c(const struct bb_sprite *spr BL_REG(a1
         GOTO(nosprierr);
     chanend = (UWORD)channel;
     nspr = CM(cop, numsprites);
-    if (CM(cop, csprites))
+    /* fixed #414: the custom bank only for a first channel in it (the
+       original doubled nspr for every channel with CustomSprites) */
+    if ((UWORD)channel >= (UWORD)nspr && CM(cop, csprites))
         nspr = (UWORD)(nspr + nspr);
     chanend = (UWORD)(chanend + spr->count);
     if ((WORD)((UWORD)nspr - (UWORD)chanend) < 0) /* CMP d5,d6:BMI */
