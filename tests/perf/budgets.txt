@@ -50,7 +50,7 @@ bgfx.qblit8f              24976~13    18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20
 bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
-bgfx.pcoll                  111~1      130.8  c=PColl(0)
+bgfx.pcoll                  111~4      130.8  c=PColl(0)
 bgfx.shapeshit               732~4      383.4  c=ShapesHit(0,10,10,1,20,20)
 bgfx.spriteshit              772~4      418.9  c=SpritesHit(0,10,10,0,20,20)
 bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
@@ -79,11 +79,11 @@ bgfx.useslice                  74       69.3  Use Slice 0
 binput.emptylong                3          -  the empty loop again, 150000 iterations (the subtraction)
 binput.joyx                   154      173.7  c=Joyx(1)
 binput.joyy                   167      186.7  c=Joyy(1)
-binput.joyb                 181~1      179.2  c=Joyb(1)
+binput.joyb                 181~4      179.2  c=Joyb(1)
 binput.joyr                   169      376.7  c=Joyr(1)
 binput.rawstatus            149~5      145.7  c=RawStatus($45)
 binput.inkey                 1090      601.7  r$=Inkey$
-binput.mousex                88~1       87.2  c=MouseX
+binput.mousex                88~4       87.2  c=MouseX
 binput.mousey                  92       86.7  c=MouseY
 binput.mousexspeed             94       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
@@ -117,9 +117,9 @@ bmath.frac                   5025     3718.0  q3=Frac(q1)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)
-bmath.peekw                 118~1      121.0  c=Peek.w(p)
+bmath.peekw                 118~4      121.0  c=Peek.w(p)
 bmath.peekl                   131      130.5  c=Peek.l(p)
-bmath.pokeb                  94~1      111.0  Poke.b p,1
+bmath.pokeb                  94~4      111.0  Poke.b p,1
 bmath.pokew                   106      109.0  Poke.w p,1
 bmath.pokel                   126      126.5  Poke.l p,1
 bmisc.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
