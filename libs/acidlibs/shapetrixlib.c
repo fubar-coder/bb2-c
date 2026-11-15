@@ -27,18 +27,19 @@
  * with a palette r+g+b+3 of the top bytes).
  *
  * BUG(orig), kept:
- *  - XFlip: no wait after the last blit before the CPU flips the bytes
- *    (BTST twice without a loop in the Amiga part); the shift uses the
- *    shape's bltsize-1 words per plane.  The result depends on timing:
- *    the C loop is faster and may reach the last plane while the blit
- *    still runs (seen with 13 and 21 pixel shapes, the latter only with
- *    runtime error checking on); t141 tests XFlip only without the
- *    shift blit (width = byte width * 8). (#271)
  *  - Word arithmetic: row/plane steps ADDA.w, sizes are MULU low words. (#274)
  * Kept from the original, not a bug: the brightness table keeps the values
  * of an earlier Scale with a palette for colours beyond the current
  * palette (never used: the colour choice only compares
  * usevals[0..numcols]). (#272)
+ * Fixed (intended deviation, #271): XFlip did not wait after the last
+ *   shift blit before the CPU mirrors the bytes (and in Amiga mode the
+ *   wait before DisownBlitter was BTST twice without a loop): the CPU
+ *   mirrored rows the blitter had not shifted yet, the result depended
+ *   on the timing (a tall shape of one plane shows it).  Here xflip waits
+ *   for the blitter after the last blit, and the Amiga mode waits with a
+ *   loop before DisownBlitter.  The shift still uses the shape's
+ *   bltsize-1 words per plane, as the original.
  * Fixed (intended deviation, #273): Scale with a target size below 1
  *   (raised to 1) collected for the one destination pixel 1/Ratio source
  *   pixels from pixel 0 on, more than the shape has (the rest of the row,
@@ -242,6 +243,7 @@ static void xflip(struct bb_shape *s, volatile UBYTE *chip)
             blitwait(chip);
             *(volatile UWORD *)(chip + 0x058) = bltsize;
         } while (planes-- != 0);
+        blitwait(chip);         /* fixed #271: the last blit before the CPU */
     }
     /* now, to do the flipping! */
     rows = (UWORD)((ULONG)s->depth * s->height) - 1;
@@ -273,9 +275,9 @@ static void xflip(struct bb_shape *s, volatile UBYTE *chip)
  * then every row's bytes are mirrored and bit-reversed by the CPU; a
  * cookie is made again if the shape had one (shapeslib +11).
  *
- * BUG(orig) (#271): no wait after the last blit before the CPU flips the
- * bytes; the shift uses the shape's bltsize-1 words per plane.  The
- * result depends on timing.  BUG(orig) (#274): row steps ADDA.w, the
+ * The shift uses the shape's bltsize-1 words per plane.  Fixed (#271):
+ * the CPU waits for the last blit before it flips the bytes (the
+ * original did not; the result depended on timing).  BUG(orig) (#274): row steps ADDA.w, the
  * row count a MULU low word.  Errors: "Uninitialized Shape" (fchk,
  * debugger only).
  *
@@ -289,8 +291,9 @@ void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 BLITZ_THUNK(b_doxflip, b_doxflip_c, "d0-d1/a0-a1");
 
 /**
- * @brief XFlip Shape# in Amiga mode: OwnBlitter, flip, (no real wait:
- * BTST twice without a loop, #271), DisownBlitter.
+ * @brief XFlip Shape# in Amiga mode: OwnBlitter, flip, wait for the
+ * blitter, DisownBlitter (fixed #271: the original's wait is BTST twice
+ * without a loop).
  *
  * @param chip a1: the chip base ($DFF000)
  * @param gfx  a6: graphics.library
@@ -303,8 +306,7 @@ void BLITZ_ROUTINE a_doxflip_c(volatile UBYTE *chip BL_REG(a1), struct GfxBase *
 
     OwnBlitter();
     xflip((struct bb_shape *)blitz_string, chip);
-    (void)*dmaconr;                             /* BTST twice, no loop */
-    (void)*dmaconr;
+    blitwait(dmaconr - 2);  /* fixed #271: the original BTSTs twice, no loop */
     DisownBlitter();
 }
 BLITZ_AB_ROUTINE(doxflip, b_doxflip,
