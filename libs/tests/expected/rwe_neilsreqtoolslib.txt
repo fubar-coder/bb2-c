@@ -831,9 +831,9 @@ RTNextPathEntry|out|list 0 entry 3|1	bytes 300 fnv 1BC9DCB5
 RTNextPathEntry|reqtools calls|list 0 entry 3|1	$00000000
 RTEZMultiLoadFile|kept|list at $xx00|1	kept
 RTEZMultiLoadFile|popped|list at $xx00|1	$00000000
-RTEZMultiLoadFile|d0|list at $xx00|1	prog
+RTEZMultiLoadFile|d0|list at $xx00|1	$4E000000
 RTEZMultiLoadFile|reqtools calls|list at $xx00|1	$00000002
-RTEZMultiLoadFile|call 0|list at $xx00|1	bytes 256 fnv 492089F4
+RTEZMultiLoadFile|call 0|list at $xx00|1	bytes 256 fnv 41E85DDD
 RTEZMultiLoadFile|call 1|list at $xx00|1	bytes 256 fnv EB8A4017
 RTReturnValue|kept|list at $xx00|1	kept
 RTReturnValue|popped|list at $xx00|1	$00000000
@@ -867,7 +867,7 @@ RTEZMultiLoadFile|kept|cancel|1	kept
 RTEZMultiLoadFile|popped|cancel|1	$00000000
 RTEZMultiLoadFile|d0|cancel|1	$00000000
 RTEZMultiLoadFile|reqtools calls|cancel|1	$00000002
-RTEZMultiLoadFile|call 0|cancel|1	bytes 256 fnv 492089F4
+RTEZMultiLoadFile|call 0|cancel|1	bytes 256 fnv 3DF266BE
 RTEZMultiLoadFile|call 1|cancel|1	bytes 256 fnv EB8A4017
 RTReturnValue|kept|cancel|1	kept
 RTReturnValue|popped|cancel|1	$00000000

@@ -82,6 +82,11 @@ static UBYTE out[300];
    the same in every build of the test program (a constant array has the
    address the linker gives it, which moves with the other test programs) */
 static ULONG tagbuf[8];
+/* the path lists of RTEZMultiLoadFile (multiload): here, so that norm
+   makes their addresses comparable (they move with the program's layout;
+   the list at $xx00 is at the first 256 byte boundary of mspace) */
+static ULONG mlist[3][3];
+static UBYTE mspace[600];
 
 /* a pointer made comparable: into the library, a requester of the set,
    its string area, its handler info */
@@ -98,6 +103,10 @@ static ULONG norm(ULONG p)
         return 0x4f000000 | (p - (ULONG)out);
     if (p >= (ULONG)tagbuf && p < (ULONG)tagbuf + sizeof tagbuf)
         return 0x54000000 | (p - (ULONG)tagbuf);
+    if (p >= (ULONG)mlist && p < (ULONG)mlist + sizeof mlist)
+        return 0x4d000000 | (p - (ULONG)mlist);
+    if (p >= (ULONG)mspace && p < (ULONG)mspace + sizeof mspace)
+        return 0x4e000000 | (p & 255);
     if (p == (ULONG)hinfo)
         return 0x48000000;
     return p;
@@ -563,9 +572,9 @@ static void filereqs(void)
 
 static void multiload(void)
 {
-    static ULONG list[3][3];
+    ULONG (*list)[3] = mlist;
     static ULONG *aligned;
-    static UBYTE space[600];
+    UBYTE *space = mspace;
     int k, n;
 
     list[0][0] = (ULONG)list[1];
