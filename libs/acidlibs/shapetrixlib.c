@@ -34,13 +34,17 @@
  *    still runs (seen with 13 and 21 pixel shapes, the latter only with
  *    runtime error checking on); t141 tests XFlip only without the
  *    shift blit (width = byte width * 8). (#271)
- *  - Scale reads source pixels to the right/bottom of the shape when a
- *    target size below 1 is raised to 1 (reads only). (#273)
  *  - Word arithmetic: row/plane steps ADDA.w, sizes are MULU low words. (#274)
  * Kept from the original, not a bug: the brightness table keeps the values
  * of an earlier Scale with a palette for colours beyond the current
  * palette (never used: the colour choice only compares
  * usevals[0..numcols]). (#272)
+ * Fixed (intended deviation, #273): Scale with a target size below 1
+ *   (raised to 1) collected for the one destination pixel 1/Ratio source
+ *   pixels from pixel 0 on, more than the shape has (the rest of the row,
+ *   the next rows, behind the shape): a wrong colour.  Here the step of
+ *   such a raised size is the shape's size, so the pixel collects exactly
+ *   the shape's row (column).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -506,19 +510,30 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
     UBYTE *drow;
     ULONG sxq, syq, w;
     UWORD dx, dy;
+    UBYTE xone = 0, yone = 0;                   /* size raised to 1 */
 
     w = qcall(TOK_qmultiply, (ULONG)shape->width << 16, xr);
-    if ((WORD)(w >> 16) < 1)
+    if ((WORD)(w >> 16) < 1) {
         w = 1UL << 16;
+        xone = 1;
+    }
     ns->width = (UWORD)(w >> 16);
     w = qcall(TOK_qmultiply, (ULONG)shape->height << 16, yr);
-    if ((WORD)(w >> 16) < 1)
+    if ((WORD)(w >> 16) < 1) {
         w = 1UL << 16;
+        yone = 1;
+    }
     ns->height = (UWORD)(w >> 16);
     ns->depth = shape->depth;
     allocshape(ns);
     xadd = qcall(TOK_qdivide, 1UL << 16, xr);   /* 1/ratio */
     yadd = qcall(TOK_qdivide, 1UL << 16, yr);
+    /* fixed #273: a size raised to 1 takes the whole shape as its step
+       (1/ratio collected more source pixels than the shape has) */
+    if (xone)
+        xadd = (ULONG)shape->width << 16;
+    if (yone)
+        yadd = (ULONG)shape->height << 16;
     syq = 0;
     dy = 0;
     drow = ns->data;
@@ -619,9 +634,9 @@ static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
  * covers - without a palette every colour counts 1, so the most frequent
  * colour.  The new shape replaces the old one as in Rotate.
  *
- * BUG(orig) (#273): reads source pixels to the right/bottom of the shape
- * when a target size below 1 is raised to 1 (reads only); (#274) word
- * arithmetic.  Errors: "Uninitialized Shape" (scalechk2, debugger only).
+ * Fixed (#273): a target size below 1 raised to 1 collects exactly the
+ * shape's row/column (the original read 1/Ratio pixels, past the shape).
+ * BUG(orig) (#274): word arithmetic.  Errors: "Uninitialized Shape" (scalechk2, debugger only).
  *
  * @param xr d1: the x ratio (Quick)
  * @param yr d2: the y ratio (Quick)
