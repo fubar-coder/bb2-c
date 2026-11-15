@@ -678,6 +678,27 @@ build.
       which the benchmark does not run, is unchanged; the library cases
       of `systest_blit` (BBlit, UnBuffer and QBlit in both modes, every
       plane count, the excess planes) give the same values.
+    - Frac (task 10.9, #1064): `!args` #unknown with intchk, as Int and
+      Sgn (user decision 2026-11-16: `Frac(a$)` is no longer a compile
+      error but the runtime error "Illegal Type" with the debugger). The
+      type word at -2(a2) selects: Float the original's code (SPFloor or
+      SPCeil, the tail jump into SPSub); Quick the FFP built from the
+      fraction word of |q| (swap, `CLR.w`, shifted left until the top bit
+      is set, exponent 64 minus the shifts, the sign of q), no mathffp
+      call, at most 15 shifts; Byte, Word and Long 0 (the original's
+      SPFlt gave an integral float). The library cases record the
+      original as the compiler called it (qutofl or SPFlt, then Frac) and
+      call the C entry with the value and its type: for integer parts
+      below 256 the values are the same; from 256 on qutofl's 24-bit
+      mantissa rounds the low fraction bits (15 of the 54 Quick cases,
+      e.g. 30000 + 10/65536 gives 0, 387.796 one bit more), the pairs
+      [orig] / [fixed #1064]; the Quick 0 gave the FFP "-0" $00000080
+      (qutofl's #146, fixed in the port's qutofl since), now 0, the pair
+      [orig] / [fixed #146]. The Float path keeps SPFloor/SPCeil/SPSub: a
+      bit-mask variant was not tried, it would need a proof over every
+      exponent and mantissa that it gives mathffp's bits.
+      `q3=Frac(q1)` (with the compiler's fltoqu after it) 3710 -> 1314
+      (3718.0).
 
 ## Risks / Trade-offs
 

@@ -61,6 +61,7 @@
 # bgfx.bblit4u, bgfx.bblit8u and the four bgfx.qblit lines from five runs
 # of task 10.8 (2026-11-16; they spread by at most 2.2 cycles), each with
 # the tolerance of its earlier measurement.
+# bmath.frac from two runs of the Frac of task 10.9 (2026-11-16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -155,7 +156,7 @@ bmath.sgn                     218      226.5  c=Sgn(a)
 bmath.abs                     747      764.0  c=Abs(a)
 bmath.qabs                     59       56.5  q3=QAbs(q1)
 bmath.int                     196      192.5  q3=Int(q1)
-bmath.frac                   3751     3718.0  q3=Frac(q1)
+bmath.frac                   1331     3718.0  q3=Frac(q1)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
 bmath.qwrap                   112      109.0  q3=QWrap(q1,0,10)
 bmath.peekb                   126      129.0  c=Peek.b(p)

@@ -6907,6 +6907,217 @@ Frac|d0|ffp $B2546B4C|1	$8D60003F
 Frac|kept|ffp $CC72E5CD|1	kept
 Frac|popped|ffp $CC72E5CD|1	$00000000
 Frac|d0|ffp $CC72E5CD|1	$B94000BF
+Frac|kept|type 4 value $00000000|1	kept
+Frac|popped|type 4 value $00000000|1	$00000000
+Frac|d0|type 4 value $00000000|1 [orig]	$00000080
+Frac|d0|type 4 value $00000000|1 [fixed #146]	$00000000
+Frac|kept|type 4 value $00010000|1	kept
+Frac|popped|type 4 value $00010000|1	$00000000
+Frac|d0|type 4 value $00010000|1	$00000000
+Frac|kept|type 4 value $FFFF0000|1	kept
+Frac|popped|type 4 value $FFFF0000|1	$00000000
+Frac|d0|type 4 value $FFFF0000|1	$00000000
+Frac|kept|type 4 value $00008000|1	kept
+Frac|popped|type 4 value $00008000|1	$00000000
+Frac|d0|type 4 value $00008000|1	$80000040
+Frac|kept|type 4 value $FFFF8000|1	kept
+Frac|popped|type 4 value $FFFF8000|1	$00000000
+Frac|d0|type 4 value $FFFF8000|1	$800000C0
+Frac|kept|type 4 value $00000001|1	kept
+Frac|popped|type 4 value $00000001|1	$00000000
+Frac|d0|type 4 value $00000001|1	$80000031
+Frac|kept|type 4 value $FFFFFFFF|1	kept
+Frac|popped|type 4 value $FFFFFFFF|1	$00000000
+Frac|d0|type 4 value $FFFFFFFF|1	$800000B1
+Frac|kept|type 4 value $0000FFFF|1	kept
+Frac|popped|type 4 value $0000FFFF|1	$00000000
+Frac|d0|type 4 value $0000FFFF|1	$FFFF0040
+Frac|kept|type 4 value $FFFF0001|1	kept
+Frac|popped|type 4 value $FFFF0001|1	$00000000
+Frac|d0|type 4 value $FFFF0001|1	$FFFF00C0
+Frac|kept|type 4 value $000C8000|1	kept
+Frac|popped|type 4 value $000C8000|1	$00000000
+Frac|d0|type 4 value $000C8000|1	$80000040
+Frac|kept|type 4 value $FFF38000|1	kept
+Frac|popped|type 4 value $FFF38000|1	$00000000
+Frac|d0|type 4 value $FFF38000|1	$800000C0
+Frac|kept|type 4 value $00FF0001|1	kept
+Frac|popped|type 4 value $00FF0001|1	$00000000
+Frac|d0|type 4 value $00FF0001|1	$80000031
+Frac|kept|type 4 value $FF00FFFF|1	kept
+Frac|popped|type 4 value $FF00FFFF|1	$00000000
+Frac|d0|type 4 value $FF00FFFF|1	$800000B1
+Frac|kept|type 4 value $0100C000|1	kept
+Frac|popped|type 4 value $0100C000|1	$00000000
+Frac|d0|type 4 value $0100C000|1	$C0000040
+Frac|kept|type 4 value $01000001|1	kept
+Frac|popped|type 4 value $01000001|1	$00000000
+Frac|d0|type 4 value $01000001|1 [orig]	$00000000
+Frac|d0|type 4 value $01000001|1 [fixed #1064]	$80000031
+Frac|kept|type 4 value $FEFFFFFF|1	kept
+Frac|popped|type 4 value $FEFFFFFF|1	$00000000
+Frac|d0|type 4 value $FEFFFFFF|1 [orig]	$00000000
+Frac|d0|type 4 value $FEFFFFFF|1 [fixed #1064]	$800000B1
+Frac|kept|type 4 value $7FFFFFFF|1	kept
+Frac|popped|type 4 value $7FFFFFFF|1	$00000000
+Frac|d0|type 4 value $7FFFFFFF|1 [orig]	$00000000
+Frac|d0|type 4 value $7FFFFFFF|1 [fixed #1064]	$FFFF0040
+Frac|kept|type 4 value $80000000|1	kept
+Frac|popped|type 4 value $80000000|1	$00000000
+Frac|d0|type 4 value $80000000|1	$00000000
+Frac|kept|type 4 value $80000001|1	kept
+Frac|popped|type 4 value $80000001|1	$00000000
+Frac|d0|type 4 value $80000001|1 [orig]	$00000000
+Frac|d0|type 4 value $80000001|1 [fixed #1064]	$FFFF00C0
+Frac|kept|type 4 value $7530000A|1	kept
+Frac|popped|type 4 value $7530000A|1	$00000000
+Frac|d0|type 4 value $7530000A|1 [orig]	$00000000
+Frac|d0|type 4 value $7530000A|1 [fixed #1064]	$A0000034
+Frac|kept|type 4 value $12345678|1	kept
+Frac|popped|type 4 value $12345678|1	$00000000
+Frac|d0|type 4 value $12345678|1 [orig]	$AD00003F
+Frac|d0|type 4 value $12345678|1 [fixed #1064]	$ACF0003F
+Frac|kept|type 4 value $EDCBA988|1	kept
+Frac|popped|type 4 value $EDCBA988|1	$00000000
+Frac|d0|type 4 value $EDCBA988|1 [orig]	$AD0000BF
+Frac|d0|type 4 value $EDCBA988|1 [fixed #1064]	$ACF000BF
+Frac|kept|type 4 value $2AB37F06|1	kept
+Frac|popped|type 4 value $2AB37F06|1	$00000000
+Frac|d0|type 4 value $2AB37F06|1 [orig]	$FE00003F
+Frac|d0|type 4 value $2AB37F06|1 [fixed #1064]	$FE0C003F
+Frac|kept|type 4 value $C45B36A0|1	kept
+Frac|popped|type 4 value $C45B36A0|1	$00000000
+Frac|d0|type 4 value $C45B36A0|1 [orig]	$C98000C0
+Frac|d0|type 4 value $C45B36A0|1 [fixed #1064]	$C96000C0
+Frac|kept|type 4 value $0B943B1B|1	kept
+Frac|popped|type 4 value $0B943B1B|1	$00000000
+Frac|d0|type 4 value $0B943B1B|1 [orig]	$EC80003E
+Frac|d0|type 4 value $0B943B1B|1 [fixed #1064]	$EC6C003E
+Frac|kept|type 4 value $F64BD38A|1	kept
+Frac|popped|type 4 value $F64BD38A|1	$00000000
+Frac|d0|type 4 value $F64BD38A|1 [orig]	$B1C000BE
+Frac|d0|type 4 value $F64BD38A|1 [fixed #1064]	$B1D800BE
+Frac|kept|type 4 value $0149B010|1	kept
+Frac|popped|type 4 value $0149B010|1	$00000000
+Frac|d0|type 4 value $0149B010|1	$B0100040
+Frac|kept|type 4 value $FC644904|1	kept
+Frac|popped|type 4 value $FC644904|1	$00000000
+Frac|d0|type 4 value $FC644904|1	$B6FC00C0
+Frac|kept|type 4 value $00B8FF94|1	kept
+Frac|popped|type 4 value $00B8FF94|1	$00000000
+Frac|d0|type 4 value $00B8FF94|1	$FF940040
+Frac|kept|type 4 value $FF19F7D5|1	kept
+Frac|popped|type 4 value $FF19F7D5|1	$00000000
+Frac|d0|type 4 value $FF19F7D5|1	$82B000BC
+Frac|kept|type 4 value $006DC584|1	kept
+Frac|popped|type 4 value $006DC584|1	$00000000
+Frac|d0|type 4 value $006DC584|1	$C5840040
+Frac|kept|type 4 value $FFE655CF|1	kept
+Frac|popped|type 4 value $FFE655CF|1	$00000000
+Frac|d0|type 4 value $FFE655CF|1	$AA3100C0
+Frac|kept|type 4 value $000B60EF|1	kept
+Frac|popped|type 4 value $000B60EF|1	$00000000
+Frac|d0|type 4 value $000B60EF|1	$C1DE003F
+Frac|kept|type 4 value $FFFD3702|1	kept
+Frac|popped|type 4 value $FFFD3702|1	$00000000
+Frac|d0|type 4 value $FFFD3702|1	$C8FE00C0
+Frac|kept|type 4 value $00040101|1	kept
+Frac|popped|type 4 value $00040101|1	$00000000
+Frac|d0|type 4 value $00040101|1	$80800039
+Frac|kept|type 4 value $FFFC8E84|1	kept
+Frac|popped|type 4 value $FFFC8E84|1	$00000000
+Frac|d0|type 4 value $FFFC8E84|1	$E2F800BF
+Frac|kept|type 4 value $0001616A|1	kept
+Frac|popped|type 4 value $0001616A|1	$00000000
+Frac|d0|type 4 value $0001616A|1	$C2D4003F
+Frac|kept|type 4 value $FFFF628A|1	kept
+Frac|popped|type 4 value $FFFF628A|1	$00000000
+Frac|d0|type 4 value $FFFF628A|1	$9D7600C0
+Frac|kept|type 4 value $2876FE23|1	kept
+Frac|popped|type 4 value $2876FE23|1	$00000000
+Frac|d0|type 4 value $2876FE23|1 [orig]	$FE400040
+Frac|d0|type 4 value $2876FE23|1 [fixed #1064]	$FE230040
+Frac|kept|type 4 value $D35836C4|1	kept
+Frac|popped|type 4 value $D35836C4|1	$00000000
+Frac|d0|type 4 value $D35836C4|1 [orig]	$C94000C0
+Frac|d0|type 4 value $D35836C4|1 [fixed #1064]	$C93C00C0
+Frac|kept|type 4 value $1AC17530|1	kept
+Frac|popped|type 4 value $1AC17530|1	$00000000
+Frac|d0|type 4 value $1AC17530|1 [orig]	$EA80003F
+Frac|d0|type 4 value $1AC17530|1 [fixed #1064]	$EA60003F
+Frac|kept|type 4 value $FEF649F6|1	kept
+Frac|popped|type 4 value $FEF649F6|1	$00000000
+Frac|d0|type 4 value $FEF649F6|1	$B60A00C0
+Frac|kept|type 4 value $01B10F8C|1	kept
+Frac|popped|type 4 value $01B10F8C|1	$00000000
+Frac|d0|type 4 value $01B10F8C|1	$F8C0003C
+Frac|kept|type 4 value $FC073960|1	kept
+Frac|popped|type 4 value $FC073960|1	$00000000
+Frac|d0|type 4 value $FC073960|1	$C6A000C0
+Frac|kept|type 4 value $0183CBC5|1	kept
+Frac|popped|type 4 value $0183CBC5|1	$00000000
+Frac|d0|type 4 value $0183CBC5|1 [orig]	$CBC60040
+Frac|d0|type 4 value $0183CBC5|1 [fixed #1064]	$CBC50040
+Frac|kept|type 4 value $FFC3BA75|1	kept
+Frac|popped|type 4 value $FFC3BA75|1	$00000000
+Frac|d0|type 4 value $FFC3BA75|1	$8B1600BF
+Frac|kept|type 4 value $0068EF73|1	kept
+Frac|popped|type 4 value $0068EF73|1	$00000000
+Frac|d0|type 4 value $0068EF73|1	$EF730040
+Frac|kept|type 4 value $FFCEB677|1	kept
+Frac|popped|type 4 value $FFCEB677|1	$00000000
+Frac|d0|type 4 value $FFCEB677|1	$931200BF
+Frac|kept|type 4 value $001A3361|1	kept
+Frac|popped|type 4 value $001A3361|1	$00000000
+Frac|d0|type 4 value $001A3361|1	$CD84003E
+Frac|kept|type 4 value $FFFEEEC8|1	kept
+Frac|popped|type 4 value $FFFEEEC8|1	$00000000
+Frac|d0|type 4 value $FFFEEEC8|1	$89C000BD
+Frac|kept|type 4 value $00045DB7|1	kept
+Frac|popped|type 4 value $00045DB7|1	$00000000
+Frac|d0|type 4 value $00045DB7|1	$BB6E003F
+Frac|kept|type 4 value $FFFD5564|1	kept
+Frac|popped|type 4 value $FFFD5564|1	$00000000
+Frac|d0|type 4 value $FFFD5564|1	$AA9C00C0
+Frac|kept|type 4 value $00002DB2|1	kept
+Frac|popped|type 4 value $00002DB2|1	$00000000
+Frac|d0|type 4 value $00002DB2|1	$B6C8003E
+Frac|kept|type 4 value $FFFF1758|1	kept
+Frac|popped|type 4 value $FFFF1758|1	$00000000
+Frac|d0|type 4 value $FFFF1758|1	$E8A800C0
+Frac|kept|type 1 value $123456F0|1	kept
+Frac|popped|type 1 value $123456F0|1	$00000000
+Frac|d0|type 1 value $123456F0|1	$00000000
+Frac|kept|type 1 value $12345670|1	kept
+Frac|popped|type 1 value $12345670|1	$00000000
+Frac|d0|type 1 value $12345670|1	$00000000
+Frac|kept|type 1 value $00000000|1	kept
+Frac|popped|type 1 value $00000000|1	$00000000
+Frac|d0|type 1 value $00000000|1	$00000000
+Frac|kept|type 2 value $1234FFF0|1	kept
+Frac|popped|type 2 value $1234FFF0|1	$00000000
+Frac|d0|type 2 value $1234FFF0|1	$00000000
+Frac|kept|type 2 value $12340010|1	kept
+Frac|popped|type 2 value $12340010|1	$00000000
+Frac|d0|type 2 value $12340010|1	$00000000
+Frac|kept|type 2 value $00000000|1	kept
+Frac|popped|type 2 value $00000000|1	$00000000
+Frac|d0|type 2 value $00000000|1	$00000000
+Frac|kept|type 3 value $FFFFFFF0|1	kept
+Frac|popped|type 3 value $FFFFFFF0|1	$00000000
+Frac|d0|type 3 value $FFFFFFF0|1	$00000000
+Frac|kept|type 3 value $00012345|1	kept
+Frac|popped|type 3 value $00012345|1	$00000000
+Frac|d0|type 3 value $00012345|1	$00000000
+Frac|kept|type 3 value $00000000|1	kept
+Frac|popped|type 3 value $00000000|1	$00000000
+Frac|d0|type 3 value $00000000|1	$00000000
+Frac|kept|type 3 value $7FFFFFFF|1	kept
+Frac|popped|type 3 value $7FFFFFFF|1	$00000000
+Frac|d0|type 3 value $7FFFFFFF|1	$00000000
+Frac|kept|type 3 value $80000000|1	kept
+Frac|popped|type 3 value $80000000|1	$00000000
+Frac|d0|type 3 value $80000000|1	$00000000
 rawkeylib init|kept||1	kept
 rawkeylib init|popped||1	$00000000
 blitzkeyslib init|kept|keyboard data|1	kept

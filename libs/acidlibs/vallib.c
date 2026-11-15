@@ -10,7 +10,7 @@
  * ffplib base, !libs #ffplib,#la6) with the same calls and the same
  * operands as the original.
  *
- * Int/Sgn/Abs take any numeric type (!args{8}, #unknown): the compiler
+ * Int/Sgn/Abs/Frac take any numeric type (!args{8}, #unknown): the compiler
  * passes the value in d0 and pushes the type as a word on the a2 stack
  * (1 byte, 2 word, 3 long, 4 quick, 5 float); the routine pops it
  * (MOVE -(a2),d1).  Val pops the string length (MOVE.l -(a2),d2) and
@@ -35,8 +35,8 @@
  * $BFE601) in the original order; the sequence depends on the timing and
  * can only be compared bit for bit in theory (the tests check ranges).
  *
- * Error checks (debugger only, after `errors`): intchk for Int and Sgn -
- * type >= 6 (a string) -> runtime error "Illegal Type".
+ * Error checks (debugger only, after `errors`): intchk for Int, Sgn and
+ * Frac - type >= 6 (a string) -> runtime error "Illegal Type".
  */
 #include "blitzlib.h"
 #include <graphics/gfxbase.h>
@@ -74,9 +74,9 @@ BLITZ_SUBS(dosgn, intchk, 0);
 BLITZ_NAME("Sgn", "(Expression)");
 
 BLITZ_AFUNCTION(BL_FLOAT);
-BLITZ_ARGS(BL_FLOAT);
+BLITZ_ARGS(BL_UNKNOWN);
 BLITZ_LIBS(LIB_ffplib, BL_LA6);
-BLITZ_SUBS(doffrac, 0, 0);
+BLITZ_SUBS(doffrac, intchk, 0);
 BLITZ_NAME("Frac", "(Expression)");
 
 BLITZ_AFUNCTION(BL_QUICK);
@@ -395,28 +395,68 @@ BLITZ_ALIAS(dontsc, dontsc_c);
 /* ---------------------------------------------------------- Frac, Abs */
 
 /**
- * @brief Frac(Expression) - the fractional part of a float.
+ * @brief Frac(Expression) - the fractional part, as a float.
  *
- * f - Floor(f) for positive, f - Ceil(f) for negative f (FFP sign = bit
- * 7): SPSub with d0 = f, d1 = Floor/Ceil.  The original's code, an
- * assembler entry (as Abs, Int and Sgn below): the C function saved
- * d2-d7/a2/a6 around the mathffp calls, about 270 cycles per call.  It
- * changes what mathffp changes (d0, d1, a0, a1) and keeps a6.
+ * Any numeric type (!args{8}, #unknown, as Int, Sgn and Abs; the type
+ * word at -2(a2)):
+ * - Float: f - Floor(f) for positive, f - Ceil(f) for negative f (FFP
+ *   sign = bit 7): SPSub with d0 = f, d1 = Floor/Ceil, the original's
+ *   code with the original's tail jump into SPSub.
+ * - Quick: the FFP built from the fraction word of |q| directly: shifted
+ *   left until its top bit is set (the mantissa), exponent 64 minus the
+ *   shifts, the sign of q; 0 for no fraction.  No mathffp call.
+ *   Fixed (#1064): the original takes a Float argument, so the
+ *   compiler converted a Quick with qutofl first, whose 24-bit mantissa
+ *   rounds away the low fraction bits of an integer part of 256 or
+ *   more (Frac of the Quick 300.75 was right, of 30000 + 10/65536 it
+ *   was 0); here the result is the exact fraction of the Quick (16 bits,
+ *   which an FFP mantissa always holds).
+ * - Byte, Word, Long: 0 (the original's SPFlt gave an integral float,
+ *   whose fraction is 0).
+ * The original's argument was #float: a string was a compile error; now
+ * it is refused by intchk in the error check area (runtime error
+ * "Illegal Type", as for Int and Sgn).
  *
- * In:  d0 the float (FFP), a6 the mathffp base
+ * Changes d0, d1 and what mathffp changes (a0, a1); keeps a2 and a6.
+ *
+ * Errors (debugger only, intchk): a string -> "Illegal Type".
+ *
+ * In:  d0 the value, a6 the mathffp base, a2 the argument stack (-2 =
+ *      the type word: 1 byte, 2 word, 3 long, 4 quick, 5 float)
  * Out: d0 the fraction (FFP)
  */
 BLITZ_ASM_ROUTINE(doffrac,
-"   move.l  d0,-(sp)\n"
+"   move.w  -2(a2),d1\n"
+"   cmp.w   #4,d1\n"
+"   beq.s   3f\n"                       /* 'quick */
+"   cmp.w   #5,d1\n"
+"   beq.s   0f\n"                       /* 'float */
+"   moveq   #0,d0\n"                    /* byte, word, long: no fraction */
+"   rts\n"
+"0: move.l  d0,-(sp)\n"                 /* 'float */
 "   btst    #7,d0\n"
-"   beq.s   0f\n"
-"   jsr     -96(a6)\n"                      /* SPCeil */
-"   bra.s   1f\n"
-"0: jsr     -90(a6)\n"                      /* SPFloor */
-"1: move.l  d0,d1\n"
+"   beq.s   1f\n"
+"   jsr     -96(a6)\n"                  /* SPCeil */
+"   bra.s   2f\n"
+"1: jsr     -90(a6)\n"                  /* SPFloor */
+"2: move.l  d0,d1\n"
 "   move.l  (sp)+,d0\n"
-"   jmp     -72(a6)");                      /* SPSub: d0 - d1 */
-
+"   jmp     -72(a6)\n"                  /* SPSub: d0 - d1 */
+"3: moveq   #0x40,d1\n"                 /* 'quick: exponent 64, + */
+"   tst.l   d0\n"
+"   bpl.s   4f\n"
+"   neg.l   d0\n"                       /* |q| ($80000000: no fraction) */
+"   moveq   #-0x40,d1\n"                /* $C0: exponent 64, - */
+"4: swap    d0\n"
+"   clr.w   d0\n"                       /* the fraction in the upper word */
+"   tst.l   d0\n"
+"   beq.s   6f\n"                       /* none: FFP 0 */
+"   bmi.s   5f\n"
+"7: subq.b  #1,d1\n"                    /* normalise */
+"   add.l   d0,d0\n"
+"   bpl.s   7b\n"
+"5: move.b  d1,d0\n"                    /* sign and exponent */
+"6: rts");
 /* Abs, Int and Sgn are assembler entries in the original's form: their
    integer and Quick cases are a few instructions, and the C functions,
    which call mathffp or floatquicklib on one path, saved d2-d7/a2/a6 on
@@ -541,7 +581,7 @@ BLITZ_ASM_ROUTINE(dosgn,
 "   bra.s   1b");
 
 /**
- * @brief intchk - error check of Int and Sgn (debugger only).
+ * @brief intchk - error check of Int, Sgn and Frac (debugger only).
  *
  * CMP #6,-2(a2):BCC err1:RTS - the type word on the a2 stack (not popped)
  * must be numeric; keeps all registers.

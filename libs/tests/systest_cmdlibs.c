@@ -888,31 +888,85 @@ static void test_hits(void)
 
 /* ------------------------------------------------------------ Frac */
 
-/* Frac on FFP values: specials and pseudo-random values of both signs
-   with exponents from 2^-9 to 2^31 (mathffp of the ROM computes, the same
-   in both sets) */
+/* Frac takes any numeric type (the type word at -2(a2)); the original
+   took a Float, the compiler converted the argument first: a Quick with
+   floatquicklib's qutofl ($D300), a byte, word or long with SPFlt (sign
+   extended).  For the original set the case makes that conversion, then
+   calls Frac; for the C build it calls Frac with the value and its type.
+   Floats: specials and pseudo-random values of both signs with exponents
+   from 2^-9 to 2^31 (mathffp of the ROM computes, the same in both sets).
+   Quick: integer parts below 256 (exact in both), and from 256 on, where
+   qutofl's 24-bit mantissa rounds low fraction bits away: the pairs
+   [orig] / [fixed #1064] (the port gives the exact fraction).  The
+   original's qutofl made the Quick 0 the FFP "-0" $00000080 (#146, fixed
+   in the port's qutofl): the pair [orig] / [fixed #146]. */
+static UWORD fracframe[2];
+
+static void frac_case(UWORD type, ULONG v)
+{
+    ULONG d0 = v;
+
+    if (strcmp(loaded.what, "C") != 0 && type != 5) {
+        struct regs c;
+        ULONG popped;
+
+        markregs(&c);
+        if (type == 4) {
+            c.d[0] = v;
+            c.a[6] = ffpbase;
+            callstk(find_token(&loaded, 0xd300, 0), &c, NULL, 0, &popped);
+        } else {
+            c.d[0] = type == 1 ? (ULONG)(LONG)(BYTE)v : type == 2 ? (ULONG)(LONG)(WORD)v : v;
+            c.a[6] = ffpbase;
+            callstk((APTR)(ffpbase - 36), &c, NULL, 0, &popped);        /* SPFlt */
+        }
+        d0 = c.d[0];
+    }
+    if (type == 5)
+        sprintf(VEC, "ffp $%08lX", v);
+    else
+        sprintf(VEC, "type %u value $%08lX", type, v);
+    fracframe[0] = type;
+    DO1(N("vallib", "Frac", 0), R.d[0] = d0; R.a[2] = (ULONG)&fracframe[1];
+        R.a[6] = ffpbase);
+    OBS("d0", R.d[0]);
+}
+
 static void test_frac(void)
 {
     static const ULONG specials[] = {
         0, 0x80000041UL, 0x800000c1UL, 0xc0000041UL, 0xc00000c1UL, 0x8000003fUL,
         0x800000bfUL, 0xb0000042UL, 0xb00000c2UL, 0xffffff60UL, 0xffffffe0UL,
         0xffffff7fUL, 0x80000001UL, 0xaaaaaa58UL, 0xaaaaaad8UL };
+    static const ULONG quicks[] = {
+        0, 0x00010000UL, 0xffff0000UL, 0x00008000UL, 0xffff8000UL, 0x00000001UL,
+        0xffffffffUL, 0x0000ffffUL, 0xffff0001UL, 0x000c8000UL, 0xfff38000UL,
+        0x00ff0001UL, 0xff00ffffUL, 0x0100c000UL, 0x01000001UL, 0xfeffffffUL,
+        0x7fffffffUL, 0x80000000UL, 0x80000001UL, 0x7530000aUL, 0x12345678UL,
+        0xedcba988UL };
+    static const struct { UWORD type; ULONG v; } ints[] = {
+        { 1, 0x123456f0 }, { 1, 0x12345670 }, { 1, 0 }, { 2, 0x1234fff0 },
+        { 2, 0x12340010 }, { 2, 0 }, { 3, 0xfffffff0 }, { 3, 0x00012345 },
+        { 3, 0 }, { 3, 0x7fffffff }, { 3, 0x80000000 } };
     unsigned i;
 
     ROUT = "Frac";
-    for (i = 0; i < sizeof specials / sizeof specials[0]; i++) {
-        sprintf(VEC, "ffp $%08lX", specials[i]);
-        DO1(N("vallib", "Frac", 0), R.d[0] = specials[i]; R.a[6] = ffpbase);
-        OBS("d0", R.d[0]);
-    }
+    for (i = 0; i < sizeof specials / sizeof specials[0]; i++)
+        frac_case(5, specials[i]);
     seed = 0x13579bdf;
     for (i = 0; i < 64; i++) {
         ULONG m = rnd() | 0x80000000UL;
         ULONG f = (m & 0xffffff00UL) | (0x37 + i % 0x29) | (i & 1 ? 0x80 : 0);
-        sprintf(VEC, "ffp $%08lX", f);
-        DO1(N("vallib", "Frac", 0), R.d[0] = f; R.a[6] = ffpbase);
-        OBS("d0", R.d[0]);
+        frac_case(5, f);
     }
+    for (i = 0; i < sizeof quicks / sizeof quicks[0]; i++)
+        frac_case(4, quicks[i]);
+    for (i = 0; i < 32; i++) {          /* integer parts of 0 .. 2^15 */
+        ULONG q = rnd() >> (i % 16 + 1);
+        frac_case(4, i & 1 ? (ULONG)-(LONG)q : q);
+    }
+    for (i = 0; i < sizeof ints / sizeof ints[0]; i++)
+        frac_case(ints[i].type, ints[i].v);
 }
 
 /* ------------------------------------------- BlitzKey, Inkey$ */

@@ -9,7 +9,7 @@
 "Int":
   text: The integer part of the value, as a long; the fraction is cut off towards 0. Takes a value of any numeric type.
 "Frac":
-  text: The fractional part of the float value, with the sign of the value.
+  text: The fractional part of the value, as a float, with the sign of the value. Takes a value of any numeric type; the fraction of a Quick is exact.
 "Sgn":
   text: The sign of the value, -1, 0 or 1. Takes a value of any numeric type.
 "Abs":

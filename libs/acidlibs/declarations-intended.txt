@@ -150,3 +150,7 @@ lib 143: entry 23 (nullsub) +$0: $00 != $00
 lib 143: entry 24 (nullsub) +$0: $00 != $00
 lib 143: end of the table +$926: $01 != $00
 lib 143: declaration part $930 != $92C bytes
+# #1064: Frac takes any numeric type (#unknown instead of #float, the type
+# pushed for it) and gets intchk in the error check area, as Int and Sgn
+lib 120: entry 3 Frac +$8: $05 != $08
+lib 120: relocations in the declaration part 20 != 21

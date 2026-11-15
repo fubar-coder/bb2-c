@@ -36,7 +36,7 @@
       "help": "(Expression)",
       "result": "float",
       "forms": [
-        {"args": [{"type": "float", "code": 5}]}
+        {"args": [{"type": "any", "code": 8}]}
       ]
     },
     {
