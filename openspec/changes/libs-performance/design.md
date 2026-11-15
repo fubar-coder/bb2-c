@@ -141,6 +141,26 @@ build.
     from the SColl rework; DisplaySprite 1578.5). Of 119 commands 101 are
     slower than the original by more than 2 %, 15 equal, 3 faster (Float
     assignment, QAbs, String$).
+12. **Division (task 4.1, findings).** Quick division is not an exact
+    16.16 division: its 16 fraction steps shift the divisor right past
+    bit 0, so a divisor with fraction bits gives other bits than
+    `(a << 16) / b` (1/3.25: `$4EC5`, exact `$4EC4`). A DIVU path is
+    therefore exact only where the original's steps are known: Long with
+    a divisor below `$10000`; Quick with a divisor without a fraction
+    (two DIVU by its high word) or below 1.0 (two DIVU for the integer
+    part, then the 16 fraction steps on words). Every other divisor runs
+    the original's loop, among them the benchmark's 3.25: Quick there
+    goes from 8277 to 3648 cycles, only 4 % under the original's 3820.
+    The rest of that gap is the loop's first steps, which only move the
+    divisor bit by bit into d3 (17 of 48 for 3.25); normalising the
+    divisor first (and a compare step without the original's d1 test)
+    would give the same bits faster, an estimated 1000 to 1500 cycles
+    for 3.25, but leaves the original's loop (not done: task 4.1 keeps
+    it; an open point). Long Mod uses the same DIVU remainder for a divisor below
+    `$10000` (a - (a/b)*b is the remainder of the magnitudes with the
+    dividend's sign, as lmultiply is exact modulo 2^32) and the
+    original's two calls otherwise. Measured: Long 5673 -> 519 (the
+    original 2661), Long Mod 6479 -> 523 (3113).
 
 ## Risks / Trade-offs
 
