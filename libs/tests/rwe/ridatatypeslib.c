@@ -268,14 +268,16 @@ static void same_bmh(void)
     OBSBYTES("BitMapHeader", (UBYTE *)R.d[0], sizeof(struct BitMapHeader));
 }
 
-/* wait for the layout (DataTypeReady) */
+/* wait for the layout (DataTypeReady).  The emulator runs at maximum CPU
+ * speed, so the work done per Delay depends on the host load: the bound is
+ * a safety net (60 s) against a layout that never ends, not a timing. */
 static void ready(void)
 {
     int i;
     ULONG ok = 0;
 
     ROUT = "DataTypeReady";
-    for (i = 0; i < 100 && !ok; i++) {
+    for (i = 0; i < 1500 && !ok; i++) {
         struct regs r;
         ULONG popped;
 
