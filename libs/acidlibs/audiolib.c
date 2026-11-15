@@ -66,7 +66,7 @@
 #define CIAAPRA       (*(volatile UBYTE *)0xbfe001)
 #define VHPOSR_B      (*(volatile UBYTE *)0xdff006)
 
-/* entry points (thunks / C routines / inline code, defined below) */
+/* entry points (aliases / thunks / C routines / inline code, defined below) */
 void dodplay2(void), dodplay(void), dodiskbuff(void), dofilter(void);
 void dovolume(void), dosdata(void), dopsound(void), audiolib_codeinit(void);
 void audiolib_codefinit(void), dofreesound(void), sndchk(void), dpchk(void);
@@ -244,7 +244,7 @@ static void BLITZ_ROUTINE dofilter_c(UWORD on BL_REG(d0))
     else
         CIAAPRA &= ~2;
 }
-BLITZ_THUNK(dofilter, dofilter_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dofilter, dofilter_c);
 
 /**
  * @brief DiskBuffer Bufferlen: the length of each half of DiskPlay's chip
@@ -256,7 +256,7 @@ static void BLITZ_ROUTINE dodiskbuff_c(ULONG len BL_REG(d0))
 {
     dbufflen = len;
 }
-BLITZ_THUNK(dodiskbuff, dodiskbuff_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(dodiskbuff, dodiskbuff_c);
 
 /**
  * @brief Volume Channelmask,Vol1[,Vol2...]: set the volume of the
@@ -277,7 +277,7 @@ static void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL
         if (mask & 1)
             *(volatile UWORD *)AUD(ch, 8) = BL_POPW(sp);
 }
-BLITZ_THUNK(dovolume, dovolume_c, "d0-d1/a1");
+BLITZ_ALIAS(dovolume, dovolume_c);
 
 /* ------------------------------------------------------------- sounds */
 
@@ -826,7 +826,7 @@ static void BLITZ_ROUTINE dodplay2_c(const UBYTE *name BL_REG(d0), UWORD mask BL
 {
     diskplay(name, mask, 0, args);
 }
-BLITZ_THUNK(dodplay2, dodplay2_c, "d1/a0-a1");
+BLITZ_ALIAS(dodplay2, dodplay2_c);
 
 /**
  * @brief DiskPlay Filename$,Channelmask,Vol1[,Vol2...]: DiskPlay with
@@ -845,7 +845,7 @@ static void BLITZ_ROUTINE dodplay_c(const UBYTE *name BL_REG(d0), UWORD mask BL_
 {
     diskplay(name, mask, nvol, args);
 }
-BLITZ_THUNK(dodplay, dodplay_c, "d1/a0-a1");
+BLITZ_ALIAS(dodplay, dodplay_c);
 
 /* --------------------------------------------------------- init / finit */
 

@@ -61,7 +61,7 @@
 
 #define CIAAPRA       (*(volatile UBYTE *)0xbfe001)
 
-/* entry points (C routines / thunks / prefixes, defined below) */
+/* entry points (C routines / aliases / thunks / prefixes, defined below) */
 void doplaymod(void), b_doplaymod(void), dostopmod(void), b_dostopmod(void);
 void trackerlib_codefinit(void), freemod(void), freemod_b(void), myint(void);
 void playchk(void);
@@ -708,14 +708,14 @@ static void BLITZ_ROUTINE dostopmod_b(void) { stopmod2(1); }
 static void BLITZ_ROUTINE freemod_a(void) { freemod2((struct module *)blitz_string, 0); }
 static void BLITZ_ROUTINE freemod_b_c(void) { freemod2((struct module *)blitz_string, 1); }
 
-BLITZ_THUNK(b_doplaymod, doplaymod_b, "d1/a0-a1");
+BLITZ_ALIAS(b_doplaymod, doplaymod_b);
 BLITZ_AB_ROUTINE(doplaymod, b_doplaymod,
 "   movem.l d1/a0-a1,-(sp)\n"
 "   jsr     _doplaymod_a\n"
 "   movem.l (sp)+,d1/a0-a1\n"
 "   rts");
 
-BLITZ_THUNK(b_dostopmod, dostopmod_b, "d1/a0-a1");
+BLITZ_ALIAS(b_dostopmod, dostopmod_b);
 BLITZ_AB_ROUTINE(dostopmod, b_dostopmod,
 "   movem.l d1/a0-a1,-(sp)\n"
 "   jsr     _dostopmod_a\n"

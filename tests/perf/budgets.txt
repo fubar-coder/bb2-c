@@ -80,7 +80,7 @@ binput.mousex                 101       87.2  c=MouseX
 binput.mousey                 100       86.7  c=MouseY
 binput.mousexspeed            101       87.2  c=MouseXSpeed
 binput.sound                12656    11552.2  Sound 0,1
-binput.volume                 566      278.7  Volume 1,32
+binput.volume                 461      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a

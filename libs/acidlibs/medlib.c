@@ -66,7 +66,7 @@
 #include <proto/dos.h>
 #undef __NOLIBBASE__
 
-/* entry points (C routines / thunks, defined below) */
+/* entry points (C routines / aliases / thunks, defined below) */
 void _initmedlib(void), _finitmedlib(void), _freemedmodule(void);
 void _PlayMed(void), _StopMed(void), _JumpMed(void), _SetMedVolume(void);
 void _GetMedVolume(void), _GetMedNote(void), _GetMedInstr(void), _SetMedMask(void);
@@ -1809,7 +1809,7 @@ static void BLITZ_ROUTINE _cludgemedmodule_c(ULONG addr BL_REG(d1))
     if (obj[1] & 1)                             /* LSR #1,d1:BCC */
         *(UBYTE *)dst = *(UBYTE *)src;
 }
-BLITZ_THUNK(_cludgemedmodule, _cludgemedmodule_c, "d1/a0-a1");
+BLITZ_ALIAS(_cludgemedmodule, _cludgemedmodule_c);
 
 /* LoadMedModule n,name$ - a3 = object, d1 = name, a6 = dos: the first 8
    bytes into the object, then the module into chip memory */
@@ -1854,7 +1854,7 @@ static void BLITZ_ROUTINE _StopMed_c(void)
     Music = 0;
     StopPlayer();                               /* _endmusic: _RemPlayer */
 }
-BLITZ_THUNK(_StopMed, _StopMed_c, "d1/a0-a1");
+BLITZ_ALIAS(_StopMed, _StopMed_c);
 BLITZ_THUNK(_finitmedlib, _StopMed_c, "d1/a0-a1");
 
 /* StartMedModule n - relocate, init and start (twice, see head) */
@@ -1875,14 +1875,14 @@ static void BLITZ_ROUTINE _StartMedModule_c(void)
     PlayModule(UseMod, 1);
     Music = 1;
 }
-BLITZ_THUNK(_StartMedModule, _StartMedModule_c, "d1/a0-a1");
+BLITZ_ALIAS(_StartMedModule, _StartMedModule_c);
 
 static void BLITZ_ROUTINE _PlayMed_c(void)
 {
     if (Music)
         IntHandler();
 }
-BLITZ_THUNK(_PlayMed, _PlayMed_c, "d1/a0-a1");
+BLITZ_ALIAS(_PlayMed, _PlayMed_c);
 
 /* JumpMed n - position n-1 of the song, line 0 (BUG(orig) #210: without a
    playing module at address 44-47) */
@@ -1894,7 +1894,7 @@ static void BLITZ_ROUTINE _JumpMed_c(UWORD n BL_REG(d0))
     m->pline = 0;
     db.nextblock = 0xff;
 }
-BLITZ_THUNK(_JumpMed, _JumpMed_c, "d1/a0-a1");
+BLITZ_ALIAS(_JumpMed, _JumpMed_c);
 
 /* SetMedVolume v - track volumes = v * track volume / 16 */
 static void BLITZ_ROUTINE _SetMedVolume_c(UWORD v BL_REG(d0))
@@ -1908,7 +1908,7 @@ static void BLITZ_ROUTINE _SetMedVolume_c(UWORD v BL_REG(d0))
         db.trackdataptrs[i]->trackvol = (UWORD)bl_mulu_w(tv, v) >> 4;
     }
 }
-BLITZ_THUNK(_SetMedVolume, _SetMedVolume_c, "d1/a0-a1");
+BLITZ_ALIAS(_SetMedVolume, _SetMedVolume_c);
 
 /* GetMedVolume/Note/Instr(channel) - read and clear */
 static UBYTE *trackfield(UWORD ch, UBYTE *field)
@@ -1930,22 +1930,22 @@ static ULONG BLITZ_ROUTINE _GetMedVolume_c(UWORD ch BL_REG(d0))
 {
     return getclear(trackfield(ch, &db.t03d[0].prevvol));      /* #212 */
 }
-BLITZ_THUNK(_GetMedVolume, _GetMedVolume_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetMedVolume, _GetMedVolume_c);
 
 static ULONG BLITZ_ROUTINE _GetMedNote_c(UWORD ch BL_REG(d0))
 {
     return getclear(trackfield(ch, &db.t03d[0].prevnote));
 }
-BLITZ_THUNK(_GetMedNote, _GetMedNote_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetMedNote, _GetMedNote_c);
 
 static ULONG BLITZ_ROUTINE _GetMedInstr_c(UWORD ch BL_REG(d0))
 {
     return getclear(trackfield(ch, &db.t03d[0].previnstr));
 }
-BLITZ_THUNK(_GetMedInstr, _GetMedInstr_c, "d1/a0-a1");
+BLITZ_ALIAS(_GetMedInstr, _GetMedInstr_c);
 
 static void BLITZ_ROUTINE _SetMedMask_c(UWORD m BL_REG(d0))
 {
     ChanMask = m;
 }
-BLITZ_THUNK(_SetMedMask, _SetMedMask_c, "d0-d1/a0-a1");
+BLITZ_ALIAS(_SetMedMask, _SetMedMask_c);
