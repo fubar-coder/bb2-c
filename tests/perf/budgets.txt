@@ -43,6 +43,9 @@
 # anew; qblit4f went up by 2 to 6 cycles with it although qblitlib is
 # unchanged (bblitlib padded to its old size gives the same values, so
 # it is not the code layout but the faster BBlit loops run before it).
+# The lines of group 10 part A (bgfx.shapeshit, bgfx.spriteshit,
+# bgfx.rectshit) from five runs of the group 10 part A branch on main
+# e5eb09d0 (2026-11-15); a CPU loop keeps a tolerance of at least 4.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -67,9 +70,9 @@ bgfx.showsprite               725      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
 bgfx.scoll                    141      126.3  c=SColl(0,2)
 bgfx.pcoll                  111~4      130.8  c=PColl(0)
-bgfx.shapeshit               732~4      383.4  c=ShapesHit(0,10,10,1,20,20)
-bgfx.spriteshit              772~4      418.9  c=SpritesHit(0,10,10,0,20,20)
-bgfx.rectshit                 564      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
+bgfx.shapeshit               362~4      383.4  c=ShapesHit(0,10,10,1,20,20)
+bgfx.spriteshit              392~4      418.9  c=SpritesHit(0,10,10,0,20,20)
+bgfx.rectshit                 269      286.9  c=RectsHit(10,10,16,16,20,20,16,16)
 bgfx.plot                     477      486.9  Plot 10,10,1
 bgfx.point                    471      478.4  c=Point(10,10)
 bgfx.line                    5047     3967.8  Line 10,10,110,60,1

@@ -65,7 +65,7 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 - [ ] 10.1 Text output and input: Print (string and number), Locate, Inkey$ (printlib, fontlib, the input libraries)
 - [ ] 10.2 Graphics primitives of 2dlib: Circle, Circlef, Box, Boxf, Line, Poly, Polyf, Green, RGB
-- [ ] 10.3 Collisions: RectsHit, ShapesHit, SpritesHit
+- [x] 10.3 Collisions: RectsHit, ShapesHit, SpritesHit
 - [ ] 10.4 Display and palettes: Show, Show x,y, DisplayPalette, ShowPalette, Use Palette, PalRGB, FadePalette, DisplayBitMap, DisplaySprite, ShowSprite, Scroll
 - [ ] 10.5 Frac (vallib) and the per-frame interrupts of medlib and trackerlib (PlayMed, PlayModule)
 - [ ] 10.6 Measure the whole benchmark again and list every command still 10 % or more slower than the original, with the reason

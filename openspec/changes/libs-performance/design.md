@@ -480,6 +480,21 @@ build.
     edge and outside; recorded from the original, the C build of main
     and of the change give the same cases.
 
+21. **Remaining slow commands, part A (group 10, 2026-11-15).** Measured
+    first in `tests/perf` and in the disassembly; cycles per call,
+    before (main `e5eb09d0`) -> after (the original). The library test
+    `systest_cmdlibs` gets cases for every routine of the group that
+    had none (the rectangle tests, Frac, BlitzKey, Inkey$, Print on a
+    bitmap); recorded from the original, the C build of main and of the
+    change give the same cases.
+    - Collisions (task 10.3): `chkifhit` was a function with eight stack
+      arguments, and each entry saved the registers of its arguments.
+      It is `BL_ALWAYS_INLINE` and the four entries (ShapesHit,
+      ShapeSpriteHit, SpritesHit, RectsHit) are `BLITZ_ENTRYPOINT`: they
+      save nothing and change d0-d5 (the original changes d0-d7). C, no
+      assembler: ShapesHit 731.4 -> 361.4 (383.4), SpritesHit 771.4 ->
+      391.9 (418.9), RectsHit 553.4 -> 262.9 (286.9).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

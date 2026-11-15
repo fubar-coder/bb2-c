@@ -231,9 +231,12 @@ BLITZ_ASM_ROUTINE(dopcoll,
 
 /* ----------------------------------------------------- rectangle tests */
 
-/* x1,y1,w1,h1 against x2,y2,w2,h2 (signed words) */
-static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
-                        WORD x2, WORD y2, WORD w2, WORD h2)
+/* x1,y1,w1,h1 against x2,y2,w2,h2 (signed words); inline in the four
+   entries, which are BLITZ_ENTRYPOINT: they save nothing and change
+   d0-d5 (the original changes d0-d7); as a function with stack arguments
+   behind saved registers the tests took 1.9 times the original's cycles */
+BL_ALWAYS_INLINE BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
+                                  WORD x2, WORD y2, WORD w2, WORD h2)
 {
     if ((WORD)(x1 + w1) <= x2)
         return BB_FALSE;
@@ -264,7 +267,7 @@ static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
  * @param b  a1: the second shape object (from Shape# in d3)
  * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
  */
-static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                            ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                            const struct bb_shape *a BL_REG(a0),
                                            const struct bb_shape *b BL_REG(a1))
@@ -273,7 +276,7 @@ static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(
                     (WORD)x2 - (UWORD)b->handlex, (WORD)y2 - (UWORD)b->handley,
                     b->width, b->height);
 }
-BLITZ_ALIAS(doshapeshit, doshapeshit_c);
+BLITZ_ALIAS_EP(doshapeshit, doshapeshit_c);
 
 /**
  * @brief ShapeSpriteHit(Shape#,X,Y,Sprite#,X,Y): whether a shape and a
@@ -291,7 +294,7 @@ BLITZ_ALIAS(doshapeshit, doshapeshit_c);
  * @param b  a1: the sprite object (from Sprite# in d3)
  * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
  */
-static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                          ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                          const struct bb_shape *a BL_REG(a0),
                                          const struct bb_sprite *b BL_REG(a1))
@@ -300,7 +303,7 @@ static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2
                     (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
                     b->width, b->height - 1);
 }
-BLITZ_ALIAS(doshsphit, doshsphit_c);
+BLITZ_ALIAS_EP(doshsphit, doshsphit_c);
 
 /**
  * @brief SpritesHit(Sprite#,X,Y,Sprite#,X,Y): whether two sprites overlap.
@@ -316,7 +319,7 @@ BLITZ_ALIAS(doshsphit, doshsphit_c);
  * @param b  a1: the second sprite object (from Sprite# in d3)
  * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
  */
-static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                        ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                        const struct bb_sprite *a BL_REG(a0),
                                        const struct bb_sprite *b BL_REG(a1))
@@ -326,7 +329,7 @@ static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                     (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
                     b->width, b->height - 1);
 }
-BLITZ_ALIAS(dosphit, dosphit_c);
+BLITZ_ALIAS_EP(dosphit, dosphit_c);
 
 /**
  * @brief RectsHit(X1,Y1,Width1,Height1,X2,Y2,Width2,Height2): whether two
@@ -343,7 +346,7 @@ BLITZ_ALIAS(dosphit, dosphit_c);
  * @param args  a2: the argument stack with Width2 and Height2 (words)
  * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
  */
-static BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d1),
+static BLITZ_ENTRYPOINT BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d1),
                                           ULONG w1 BL_REG(d2), ULONG h1 BL_REG(d3),
                                           ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                           const UWORD *args BL_REG(a2))
@@ -354,7 +357,7 @@ static BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d
 
     return chkifhit(x1, y1, w1, h1, x2, y2, w2, h2);
 }
-BLITZ_ALIAS(dorectshit, dorectshit_c);
+BLITZ_ALIAS_EP(dorectshit, dorectshit_c);
 
 /* ------------------------------------------------------- SetColl ... */
 
