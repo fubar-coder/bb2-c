@@ -78,6 +78,10 @@ struct rec {
 static struct rec log_[NLOG];
 static int nlog;
 static UBYTE out[300];
+/* the tag lists the test passes: copied here, so that their address is
+   the same in every build of the test program (a constant array has the
+   address the linker gives it, which moves with the other test programs) */
+static ULONG tagbuf[8];
 
 /* a pointer made comparable: into the library, a requester of the set,
    its string area, its handler info */
@@ -92,6 +96,8 @@ static ULONG norm(ULONG p)
             return 0x52000000 | k << 16 | (p - (ULONG)pool[k]);
     if (p >= (ULONG)out && p < (ULONG)out + sizeof out)
         return 0x4f000000 | (p - (ULONG)out);
+    if (p >= (ULONG)tagbuf && p < (ULONG)tagbuf + sizeof tagbuf)
+        return 0x54000000 | (p - (ULONG)tagbuf);
     if (p == (ULONG)hinfo)
         return 0x48000000;
     return p;
@@ -314,6 +320,14 @@ static void retval(void)
     ROUT = rout;
 }
 
+/* a tag list (up to 8 longs) as the test passes it: at tagbuf */
+static ULONG tagsat(const ULONG *t, size_t n)
+{
+    memset(tagbuf, 0, sizeof tagbuf);
+    memcpy(tagbuf, t, n);
+    return (ULONG)tagbuf;
+}
+
 /* the string arguments at out+20 one after another, a3 behind the last,
    their lengths below a2 (the first at -4) */
 static ULONG frame[4];
@@ -480,7 +494,7 @@ static void ezrequests(void)
         static const ULONG tags[] = { 0x80000003UL, 0, 0x80000014UL, (ULONG)"t", 0, 0 };
         strcpy(VEC, "tag list");
         fk_ret = 0;
-        DOREQ(E_REQ, 0, strargs("Body", "Gad", NULL); R.d[2] = (ULONG)tags);
+        DOREQ(E_REQ, 0, strargs("Body", "Gad", NULL); R.d[2] = tagsat(tags, sizeof tags));
     }
 }
 
@@ -494,7 +508,7 @@ static void filereq(int e, int form, const char *what, ULONG tags)
         fk_ret = 1;
         fk_dir = dirs[i];
         fk_name = i == 2 ? "" : "chosen.file";
-        DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags);
+        DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags ? tagsat((const ULONG *)tags, 16) : 0);
         STRRES();
         /* a3 = out + 41: the original's a3, behind the 0 (BUG(orig) #461);
            the fixed library leaves it on the 0, so its case is 0 */
@@ -505,7 +519,7 @@ static void filereq(int e, int form, const char *what, ULONG tags)
     }
     sprintf(VEC, "%s cancel", what);
     fk_ret = 0;
-    DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags);
+    DOREQ(e, form, strargs("A title", "default.name", NULL); R.d[2] = tags ? tagsat((const ULONG *)tags, 16) : 0);
     STRRES();
 }
 

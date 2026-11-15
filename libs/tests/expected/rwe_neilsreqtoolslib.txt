@@ -258,7 +258,7 @@ RTRequest|kept|tag list|1	kept
 RTRequest|popped|tag list|1	$00000000
 RTRequest|d0|tag list|1	$00000000
 RTRequest|reqtools calls|tag list|1	$00000001
-RTRequest|call 0|tag list|1	bytes 256 fnv 81DC9C74
+RTRequest|call 0|tag list|1	bytes 256 fnv DC972398
 RTReturnValue|kept|tag list|1	kept
 RTReturnValue|popped|tag list|1	$00000000
 RTReturnValue|d0|tag list|1	$00000000
@@ -377,7 +377,7 @@ RTFileRequest|kept| dir ""|1	kept
 RTFileRequest|popped| dir ""|1	$00000000
 RTFileRequest|d0| dir ""|1	$0000000B
 RTFileRequest|reqtools calls| dir ""|1	$00000001
-RTFileRequest|call 0| dir ""|1	bytes 256 fnv 391B55CA
+RTFileRequest|call 0| dir ""|1	bytes 256 fnv 260483EE
 RTReturnValue|kept| dir ""|3	kept
 RTReturnValue|popped| dir ""|3	$00000000
 RTReturnValue|d0| dir ""|3	$00000001
@@ -388,7 +388,7 @@ RTFileRequest|kept| dir "RAM:"|1	kept
 RTFileRequest|popped| dir "RAM:"|1	$00000000
 RTFileRequest|d0| dir "RAM:"|1	$0000000F
 RTFileRequest|reqtools calls| dir "RAM:"|1	$00000001
-RTFileRequest|call 0| dir "RAM:"|1	bytes 256 fnv 391B55CA
+RTFileRequest|call 0| dir "RAM:"|1	bytes 256 fnv 260483EE
 RTReturnValue|kept| dir "RAM:"|3	kept
 RTReturnValue|popped| dir "RAM:"|3	$00000000
 RTReturnValue|d0| dir "RAM:"|3	$00000001
@@ -399,7 +399,7 @@ RTFileRequest|kept| dir "RAM:t"|1	kept
 RTFileRequest|popped| dir "RAM:t"|1	$00000000
 RTFileRequest|d0| dir "RAM:t"|1	$00000006
 RTFileRequest|reqtools calls| dir "RAM:t"|1	$00000001
-RTFileRequest|call 0| dir "RAM:t"|1	bytes 256 fnv 391B55CA
+RTFileRequest|call 0| dir "RAM:t"|1	bytes 256 fnv 260483EE
 RTReturnValue|kept| dir "RAM:t"|3	kept
 RTReturnValue|popped| dir "RAM:t"|3	$00000000
 RTReturnValue|d0| dir "RAM:t"|3	$00000001
@@ -410,7 +410,7 @@ RTFileRequest|kept| dir "Work:a/b"|1	kept
 RTFileRequest|popped| dir "Work:a/b"|1	$00000000
 RTFileRequest|d0| dir "Work:a/b"|1	$00000014
 RTFileRequest|reqtools calls| dir "Work:a/b"|1	$00000001
-RTFileRequest|call 0| dir "Work:a/b"|1	bytes 256 fnv 391B55CA
+RTFileRequest|call 0| dir "Work:a/b"|1	bytes 256 fnv 260483EE
 RTReturnValue|kept| dir "Work:a/b"|3	kept
 RTReturnValue|popped| dir "Work:a/b"|3	$00000000
 RTReturnValue|d0| dir "Work:a/b"|3	$00000001
@@ -421,7 +421,7 @@ RTFileRequest|kept| cancel|1	kept
 RTFileRequest|popped| cancel|1	$00000000
 RTFileRequest|d0| cancel|1	$00000000
 RTFileRequest|reqtools calls| cancel|1	$00000001
-RTFileRequest|call 0| cancel|1	bytes 256 fnv 391B55CA
+RTFileRequest|call 0| cancel|1	bytes 256 fnv 260483EE
 RTReturnValue|kept| cancel|3	kept
 RTReturnValue|popped| cancel|3	$00000000
 RTReturnValue|d0| cancel|3	$00000000
