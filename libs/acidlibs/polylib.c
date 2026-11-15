@@ -11,8 +11,8 @@
  * overflow), CMP/BMI (sign of the 16 bit difference) where the original
  * tests that, and the edge positions as its swapped fixed point numbers
  * (edge_step).  Where the original leaves a3 (bitmap, edge list, plane
- * line ...), the routines leave it too: RenderPoly reads it (#420), and
- * so did AllocFill of 2dlib (fixed, #390).
+ * line ...), the routines leave it too: RenderPoly before any RenderTo...
+ * and AllocFill of 2dlib read it (both fixed, #420, #390).
  *
  * Chunky commands work on the copper chunky area of the used CopList
  * (displaylib CustomChunky): cchunky (96) = first MOVE of the area,
@@ -29,8 +29,10 @@
  * BUG(orig), kept:
  *   - no origin, no orientation test: the points must run clockwise. (#419)
  *   - RenderPoly after RenderToBitmap b,d draws on d with b as dither
- *     bitmap (the two are swapped, #421); RenderPoly before any RenderTo...
- *     draws on a3 = the string pointer (no !libs) (#420).
+ *     bitmap (the two are swapped, #421).
+ *   - Fixed (#420): RenderPoly before any RenderTo... drew on a3 = the
+ *     string pointer (no !libs; polyvector started at _bitmappoly); it
+ *     draws nothing now (polyvector starts at render_none).
  *   - RenderToChunky colours > 14 read behind the 15 entry colour table. (#422)
  *   - Fixed (#395): more than 10 edges on one side overflowed the edge
  *     lists l0/l1 (here ledges/redges, Dcb.w 32 in the original); they
@@ -207,8 +209,8 @@ static const UWORD cols[15] = {
 /* what RenderPoly draws (polyvector): the routine gets the a3 of the call
    and returns the a3 it leaves */
 typedef UBYTE *(*renderfn)(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
-static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
-static renderfn polyvector = render_a3;
+static UBYTE *render_none(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
+static renderfn polyvector = render_none;
 static struct bb_bitmap *bmap0, *bmap1;
 static struct bb_coplist *chunk0;
 static struct point polypts[2 * POINTMAX];  /* the n points twice in a row */
@@ -842,10 +844,15 @@ BLITZ_THUNK(_bitmappoly2, _bitmappoly2_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------- Render */
 
-/* before any RenderTo...: _bitmappoly on a3 = the string pointer (#420) */
-static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
+/* before any RenderTo...: nothing is drawn.  Fixed (#420): the original's
+   polyvector starts at _bitmappoly, which took a3 (RenderPoly has no
+   !libs: the string pointer) as the bitmap */
+static UBYTE *render_none(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
-    return bitmappoly(n, pts, colour, (struct bb_bitmap *)a3);
+    (void)n;
+    (void)pts;
+    (void)colour;
+    return a3;
 }
 
 static UBYTE *render_bitmap(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)

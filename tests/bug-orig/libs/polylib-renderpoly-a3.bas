@@ -8,6 +8,7 @@
 ; RenderPoly with a triangle in a short BLITZ ... AMIGA section (as
 ; t156_bmpoly).  Counted: bytes set in the block's plane.
 ; Correct: without a RenderTo... RenderPoly draws nowhere through a3.
+; @fixed #420
 ; @configs clib
 DEFTYPE .l
 Dim p.w(20)
