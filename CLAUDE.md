@@ -39,9 +39,10 @@ ctest --preset originals                               # label originals: compar
                                                        # the corpus configuration orig-clib; needs the CD
 ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
                                                        # run it before merging changes of tests/ab3
-ctest --preset perf                                    # benchmark of the libraries on the cycle-exact A500
-                                                       # (cycles per command against tests/perf/budgets.txt;
-                                                       # runs alone, not in all; the originals' values as target)
+ctest --preset perf                                    # benchmark of the libraries on the cycle-exact A500 in
+                                                       # warp mode, one session per bench program (about 13 s;
+                                                       # cycles per command against tests/perf/budgets.txt, the
+                                                       # originals' values as target; not in all)
 ```
 
 * Toolchain via `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 because of
