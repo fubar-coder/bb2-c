@@ -76,6 +76,7 @@ ctest --preset all        # both
 ctest --preset bug-orig   # original bugs not fixed yet, known port bugs: fail on purpose
 ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
 ctest --preset originals  # compare with the originals (writes no file)
+ctest --preset perf       # the benchmark of the libraries: cycles per command against budgets
 ```
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
@@ -88,6 +89,12 @@ The compiler never changes, so the result changes only with the cases and
 expectations: run `ctest --preset oracle` before merging a change of
 `tests/ab3` (cases, `cli/`, expect files, `cli.cmake`); `testinfo select`
 selects the tests then. `host`, `emulator` and `all` leave them out.
+
+The preset `perf` (label `perf`) holds the benchmark of the libraries
+(`perf`, "The benchmark" below): it measures, it does not compare
+results, and it takes about four minutes in one emulator session, so
+`host`, `emulator`, `all` and the others leave it out. Run it for a change
+that can make a library command slower or faster.
 
 ## host tests
 
@@ -816,6 +823,67 @@ tests of other presets that need the reference build (the declarations
 of a `refbuild` entry, `libs_emulator_originals`, the bug-orig tests of
 such a library) require the fixture, and ctest starts a fixture's setup even
 for a test outside the label filter.
+
+### The benchmark
+
+`perf` (labels `perf` and `emulator`, `ctest --preset perf`;
+`tests/perf/`, spec `testing/performance-budgets`) measures what each
+command of the C libraries costs in 68000 cycles and fails when one is
+slower than its budget. Only the preset `perf` runs it; it runs alone
+(`RUN_SERIAL`, one emulator session, about four minutes).
+
+* **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`), tokenised by
+  `tedsrc tok` like the corpus. In Blitz mode each runs one
+  `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
+  it with a CIA-B cascade: timer A divides the E clock by 100, timer B
+  counts its underflows, so one unit is 1000 CPU cycles (0.5 cycles per
+  call at `N` = 2000). Back in Amiga mode it prints one line per loop,
+  `TEST T N PER` (`T` units, `PER` calls per iteration or `frame`). Its
+  first loop, `empty`, costs 126 to 130 cycles per iteration; that is
+  subtracted, so a value includes the call and argument code the compiler
+  generates, and for blits the wait for the blitter. `emptylong` (the
+  empty loop again, 150000 iterations) must come out at 0. `bmod.vblmod`
+  is the empty loop while PlayModule plays: its value is the cycles per
+  PAL frame (142102 cycles) the interrupt takes.
+* **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
+  runs the configuration `clib`, this build's `blitz2` with its C
+  libraries, of the pass `build/<preset>/tests/perf/perf.pass` with
+  `corpusrun pass --observe`: the machine `a500` (68000, Kickstart 1.3,
+  ECS) with cycle-exact CPU, memory and blitter at real speed
+  (`cpu_cycle_exact`, `cpu_memory_cycle_exact`, `blitter_cycle_exact`,
+  `cycle_exact`, `cpu_speed=real`), runtime error checking off. Then
+  `results perf --budgets` (`tools/lib/perfbudget`) computes the cycles
+  per call, prints the table and judges it. A repeated run differs by at
+  most 1 cycle per call for the commands the CPU alone does; loops that
+  wait for the blitter or follow the frame vary more (Cls by 0.4 %, the
+  PlayModule frame value by up to 7 %). Without Amiberry or the emulation
+  data the test is skipped (77).
+* **The budgets:** `tests/perf/budgets.txt`, one line per command,
+  `PROGRAM.TEST BUDGET TARGET LOOP`. `BUDGET` is the highest allowed
+  value: the measurement of the build that set it (the larger value of
+  two runs) plus 1 %, rounded up, plus 3 cycles. `TARGET` is the original's value (the same programs with
+  the CD's `ACIDLIBS` and `DEFLIBS`), the goal: shown with the factor to
+  it, never judged. A command over its budget fails the test with its
+  name and both values (`bmath.peekb: measured 217.0 cycles per call,
+  budget 130`); so do a measured command without a budget and a budget
+  without a measurement.
+* **Changing a budget:** a step that makes a command faster sets its
+  budget anew in the same commit (the new measurement plus the
+  tolerance) and names the cycles before and after; a budget that goes up
+  is a decision named in the commit. A new loop needs its line in
+  `budgets.txt`.
+* **The original's values:** the target `perf-original` (not a test;
+  needs the CD and Amiberry) runs the same pass with the CD's libraries
+  (configuration `orig`) and prints its table without budgets: the
+  `TARGET` column.
+* **The checks:** `perf_budget_broken` judges the committed observation
+  `tests/perf/selftest/obs` (Peek.b at 217.0 cycles per call) against a
+  budget of 130 and must fail with the command and both values;
+  `perf_budget_ok` judges it against the right budget and must pass (no
+  emulator, both in `host` and `all`). The host test `perfbudget`
+  (`tools/tests/test_perfbudget.c`) covers the arithmetic, the judge and
+  the malformed observations and budget files.
 
 ## The prev build
 

@@ -177,11 +177,30 @@ forms.
 | `originals` | everything that compares with the original, and recordings | Amiberry and the CD (some also the reference build of the RWE sources) |
 | `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry |
 | `oracle` | the compiler checks of the AmiBlitz3 tests | Amiberry and the fetched AmiBlitz3 files |
+| `perf` | the benchmark of the libraries: the cycles each command costs, against a budget per command; about four minutes, alone | Amiberry |
 
 So: **`all` is what you run for every change and needs no CD.** The CD
 (`cmake -P cmake/fetch-originals.cmake`) is needed to check the expected
 data against the originals and to record. Details and the full list:
 `tests/README.md`, "Original material and presets".
+
+`perf` is the odd one: it checks speed, not results. Each command of the
+libraries runs in a loop on an emulated A500 whose CPU, memory and
+blitter are cycle-exact; a CIA timer measures the loop, and the empty loop
+is subtracted, so the value is the command's cycles per call. The file
+`tests/perf/budgets.txt` gives each command a budget (what it cost when
+the budget was set, plus a little) and, for information, what the
+original libraries need. A library change that makes a command slower
+than its budget fails the test:
+
+```
+results perf: bmath.peekb: measured 217.0 cycles per call, budget 130
+```
+
+A change that makes a command faster lowers its budget in the same
+commit. Run `ctest --preset perf` for every change that can touch the
+speed of a library; `all` leaves it out. Details: `tests/README.md`,
+"The benchmark".
 
 ## Walkthroughs
 
