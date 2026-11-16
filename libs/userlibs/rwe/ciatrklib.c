@@ -29,7 +29,7 @@
  * and the play routine's (mt_FunkTable ... nor_LstEvt) - are structs with
  * the original's layout.  The play routine depends on it: it reads behind
  * mt_PeriodTable into mt_chan1temp and behind mt_SampleStarts (BUG(orig)
- * below, #474 #480 #481), and the test finds the blocks in both builds.
+ * below, #474 #480), and the test finds the blocks in both builds.
  *
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
@@ -50,7 +50,7 @@
  *   - Play routine (Protracker 2.3A): the sample
  *     offset (9xx with a note) is applied twice to n_start/n_length
  *     (mt_SetRegs calls mt_CheckMoreEfx before mt_SetPeriod, which runs it
- *     again) (#473); mt_SetPeriod without a matching period (#481), the arpeggio
+ *     again) (#473); the arpeggio
  *     (#474) and a sample number > 31 (#480) read behind the tables
  *     (mt_chan1temp, mt_SongDataPtr ...); the repeat offset is
  *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
@@ -73,6 +73,10 @@
  *   - The tremolo's ramp-down waveform takes its half from the sign of
  *     the tremolo position; the original tested the VIBRATO position
  *     (#482).
+ *   - mt_SetPeriod: a note period below the table (1-112) takes the last
+ *     entry of the finetune's row; the original compared 37 entries and
+ *     took entry 37, the second of the next row (for finetune -1 the
+ *     effect word of voice 1) (#481).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -1307,16 +1311,19 @@ static void checkmoreefx(struct chan *ch, aud_t *aud)
     pernop(ch, aud);
 }
 
-/* mt_SetPeriod: BUG(orig) a note below 113 takes entry 37 (#481) */
+/* mt_SetPeriod: a note below 113 (no entry of finetune 0's row fits) takes
+   entry 35 (Fixed (#481): the original took entry 37, behind the row) */
 static void setperiod(struct chan *ch, aud_t *aud)
 {
     const UWORD *table = playdata.PeriodTable;
     UWORD note = ch->n.f.note & 0x0fff, idx;
 
     LAUNDER(table);
-    for (idx = 0; idx < 37; idx++)
+    for (idx = 0; idx < 36; idx++)
         if (note >= table[idx])
-            break;
+            goto found;
+    idx = 35;
+found:
     ch->period = periods(ch->finetune)[idx];
     if ((CMDW(ch) & 0x0ff0) == 0x0ed0) {        /* note delay */
         checkmoreefx(ch, aud);

@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+voices found -1
+voice 0 period 113 voice 1 period 114
+rc=0

@@ -30,7 +30,7 @@
  *
  * State: the original's data block from mt_FunkTable to mt_olddata
  * (struct ptdata, the same layout: the routine reads behind the period
- * table into the voices, see BUG(orig), #481 #474) and the variables of the glue
+ * table into the voices, see BUG(orig), #474) and the variables of the glue
  * code (struct ptglue, the same layout).  Paula's registers and the CIAs
  * are written as the original writes them (volatile, same width).
  * The routines are C; register contents the original carries from one
@@ -68,11 +68,11 @@
  *     on through the pattern data) (#477); the CLR.L of the first
  *     longword of every sample also clears 4 bytes behind the module for
  *     empty samples at its end (#570).
- *   - The period lookups (mt_SetPeriod, mt_Arpeggio, mt_SetTonePorta,
- *     glissando) read behind the row of the finetune, and for finetune
- *     -1 behind the table into the voice data, when no entry fits (#481,
- *     #474); a finetune byte above 15 from the sample header reads far
- *     behind (#476).
+ *   - The arpeggio reads behind the row of the finetune, and for
+ *     finetune -1 behind the table into the voice data, when the note
+ *     plus its half-tones lies behind the row or no entry fits (#474); a
+ *     finetune byte above 15 from the sample header makes the period
+ *     lookups read far behind (#476).
  *   - 9xx: compared signed with the length (samples of 64 KB and more
  *     get length 1) (#472); with a note it is applied twice
  *     (mt_CheckMoreEfx before and after mt_SetPeriod) (#473); loop
@@ -86,6 +86,10 @@
  *   - The tremolo's ramp-down waveform takes its half from the sign of
  *     the tremolo position; the original tested the vibrato position
  *     (#482).
+ *   - mt_SetPeriod: a note period below the table (1-112) takes the last
+ *     entry of the finetune's row; the original compared 37 entries and
+ *     took entry 37, the second of the next row (for finetune -1 the
+ *     effect word of voice 1) (#481).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -332,7 +336,7 @@ static struct ptglue {
 _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
 
 /* a word / longword of the period table at byte offset `off`, also behind
-   the row or the table (BUG(orig): the lookups do not stop there, #481
+   the row or the table (BUG(orig): the arpeggio does not stop there,
    #474) */
 #define PERIOD(off) (*(UWORD *)((UBYTE *)&pt + offsetof(struct ptdata, periods) + (off)))
 #define SAMPLESTART(off) (*(UBYTE **)((UBYTE *)&pt + offsetof(struct ptdata, samplestarts) + (off)))
@@ -1038,11 +1042,13 @@ static void mt_setperiod(aud_t *hw, struct chan *c)
     UWORD note = c->note & 0x0fff, off = 0;
     int left;
 
-    for (left = 36; left >= 0; left--) {  /* not found: d0 = 74, BUG(orig) (#481) */
+    for (left = 35; left >= 0; left--) {
         if (note >= PERIOD(off))
-            break;
+            goto found;
         off += 2;
     }
+    off = 35 * 2;                       /* Fixed (#481): the original took entry 37 */
+found:
     c->period = PERIOD((ULONG)c->finetune * 36 * 2 + off);
     if ((cmdword(c) & 0x0ff0) == 0x0ed0) {
         checkmoreefx(hw, c);

@@ -161,6 +161,11 @@ kind F):
   from the sign of the tremolo position; the original tested the
   **vibrato** position (#482; library test `rwe_ciatrklib`, the ticks of
   the random 7xy after an E7x).
+* Play routine: `mt_SetPeriod` gives a note period below the table
+  (1–112) the last entry of the finetune's row; the original compared 37
+  entries and took entry 37, the second of the next row (for finetune −1
+  the effect word of voice 1) (#481; bug-orig test
+  `pt23a-setperiod-entry37-ciatrklib`).
 
 ## BUG(orig), kept
 
@@ -189,8 +194,8 @@ kind F):
 * Play routine (Protracker 2.3A): 9xx with a note
   applies the offset twice to `n_start`/`n_length` (`mt_SetRegs` calls
   `mt_CheckMoreEfx`, then `mt_SetPeriod` runs it again; the hardware got
-  the first one) (#473); `mt_SetPeriod` without a matching period takes entry
-  37 (#481), the arpeggio reads up to 15 words behind the finetune's
+  the first one) (#473); the arpeggio reads up to 15 words behind the
+  finetune's
   table (for finetune 15 into `mt_chan1temp`) (#474); a sample number
   above 31 reads behind `mt_SampleStarts` (#480); the repeat offset is
   repeat × 2 as a word (#479); `mt_SampleOffset` compares the offset

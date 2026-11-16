@@ -88,8 +88,8 @@ four 44-byte voice blocks `n_note` … `n_reallength`, `mt_SampleStarts`,
 `playing`, `status`, `mask`) and the glue variables `ciatime` …
 `mt_data`. The C build has both as structs with the same layout
 (`struct ptdata`, 1538 bytes, `struct ptglue`, 28 bytes,
-`_Static_assert`s): the period lookups read behind a row and, for
-finetune −1, behind the table into the first voice (BUG(orig), #481,
+`_Static_assert`s): the arpeggio reads behind a row and, for
+finetune −1, behind the table into the first voice (BUG(orig),
 #474), which
 gives the same values only with the same layout; and the test compares
 both blocks with the reference build's.
@@ -152,9 +152,9 @@ pt23f changelog served as the checklist, no code was taken from it):
   pattern data (65536 more bytes) (#477). The `CLR.L` of every sample's
   first longword also clears 4 bytes behind the module for empty
   samples at its end (#570).
-* The period lookups (`mt_SetPeriod`, `mt_Arpeggio`, `mt_SetTonePorta`,
-  glissando) go on behind the finetune's row when no entry fits (37
-  entries; for finetune −1 into the first voice block) (#481, #474); a
+* The arpeggio (`mt_Arpeggio`) goes on behind the finetune's row when
+  the note plus its half-tones lies behind it or no entry fits (37
+  entries; for finetune −1 into the first voice block) (#474); a
   finetune byte above 15 in a sample header reads far behind the table
   (#476).
 * 9xx: the offset is compared signed with the length (samples of 64 KB
@@ -178,6 +178,10 @@ kind F), in the play routine:
   the tremolo position; the original tested the vibrato position (#482;
   library test `rwe_ritrackerlib`, the rows with a negative vibrato
   position and a tremolo with the ramp-down waveform).
+* `mt_SetPeriod` gives a note period below the table (1–112) the last
+  entry of the finetune's row; the original compared 37 entries and took
+  entry 37, the second of the next row (for finetune −1 the effect word
+  of voice 1) (#481; bug-orig test `pt23a-setperiod-entry37`).
 
 ## Test
 
