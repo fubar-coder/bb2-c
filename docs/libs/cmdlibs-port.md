@@ -486,19 +486,24 @@ is RUN from the editor (not for executables: rundebuglib).
   of that section, and the other placeholders are absolute operands with
   explicit `.reloc` directives against `_blitz_tok`, in descending order.
   The trailing `MOVEQ #0,d0:RTS` is the end code Blitz 2 appends to every
-  program. `asmcmp_dhandlerlib` compares all code with the CD.
-* **BUG(orig):** the copied process code is started without a cache
-  flush (CacheClearU; 68020+ instruction cache, 68040/060 copyback)
-  (#409); finit frees the segment as soon as `taskdone` is set, while the
+  program. `asmcmp_dhandlerlib` compares all code with the CD but the
+  cache flush of #409.
+* **Fixed (#409):** init flushes the caches (exec CacheClearU, V37 or
+  newer) between the copy of the process code and CreateProc; the
+  original started it without a flush (68020+ instruction cache,
+  68040/060 copyback). Test `dhandlerlib-no-cache-flush` (inject
+  `cacheflush=`).
+* **BUG(orig):** finit frees the segment as soon as `taskdone` is set, while the
   process still has to execute the RTS behind it (small window, finit
   looks only after a WaitTOF) (#410). Not bugs: the unchecked globalloc result (memlib ends
   the program with "Out of Memory!"), and check_c's return without
   `MOVEQ #0,d0` when the keys stay pressed (Z is set by `TST laststop`,
   the server chain goes on).
 * **Tests:** none in `libs/tests`: original against C build compares
-  identical bytes, and a functional test needs a debugger program as
-  seglist, debuglib with its trap vectors, intlib's VBlank server and a
-  running process - out of proportion for a byte-identical binary.
+  identical bytes (but the cache flush), and a functional test needs a
+  debugger program as seglist, debuglib with its trap vectors, intlib's
+  VBlank server and a running process - out of proportion for a binary
+  that is the original's but one fix.
 
 ## Incidentally
 

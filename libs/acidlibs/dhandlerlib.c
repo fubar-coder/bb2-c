@@ -50,7 +50,9 @@
  *     offset 0 of the hunk, like _blitz_tok) and the other placeholders
  *     are absolute operands with an explicit .reloc against _blitz_tok,
  *     written in descending order at the end.
- * The result is byte-identical to the CD's dhandlerlib.obj.
+ * The result is the CD's dhandlerlib.obj with one intended difference:
+ * the cache flush in codeinit (#409), 26 bytes in front of CreateProc;
+ * everything else, the relocation table included, is the CD's.
  */
 #include "blitzlib.h"
 
@@ -64,7 +66,9 @@
  * (dosethandler), then installs the Ctrl-LAlt-C check as vertical blank
  * server (intlib SetInt, level 5).  Nothing happens without a debugger
  * program (d0 = 0); waits for ever if it never calls l2.
- * BUG(orig) (#409): the copied code is started without a cache flush.
+ * Fixed (#409): the caches are flushed (exec CacheClearU, V37 or newer)
+ * between the copy and CreateProc; the original started the copied code
+ * without a flush.
  *
  * In: d0 = BPTR of the debugger program loaded by the editor (0: none),
  * a6 = dos, d6 = graphics.
@@ -119,6 +123,9 @@ BLITZ_LIBFIN();
 /* dos.library / graphics.library LVOs */
 #define LVO_CreateProc  (-138)
 #define LVO_WaitTOF     (-270)
+/* exec.library: CacheClearU (V37), lib_Version */
+#define LVO_CacheClearU (-636)
+#define LIB_VERSION_OFF 20
 
 __asm__(
 "   .section .blitzlib.head\n"
@@ -180,10 +187,11 @@ __asm__(
    d6 = graphics.  The result of globalloc is not checked: memlib ends
    the program with "Out of Memory!" itself.  Waits for ever if the
    debugger program never calls l2.
-   BUG(orig) (#409): the copied code is started without a cache flush
-   (CacheClearU): with instruction cache (68020+), and above all with
-   the copyback data cache of the 68040/060, the process may execute what
-   was in that memory before. */
+   Fixed (#409): the caches are flushed (CacheClearU, exec V37 or newer)
+   before CreateProc.  The original started the copied code without a
+   flush: with instruction cache (68020+), and above all with the copyback
+   data cache of the 68040/060, the process could execute what was in
+   that memory before. */
 "   .globl  _dhandlerlib_codeinit\n"
 "_dhandlerlib_codeinit:\n"
 "   clr.w   taskdone\n"
@@ -205,6 +213,14 @@ __asm__(
 "   move.l  d0,a1\n"
 "   move.l  #ltable,off_1-mystart+2(a1)\n"
 "   move.l  #progadd,off_2-mystart+2(a1)\n"
+/* fixed (#409): flush the caches (a6 = dos kept, d0 = the copy again) */
+"   move.l  a6,-(a7)\n"
+"   move.l  (4).w,a6\n"
+"   cmp.w   #37," BL_STR(LIB_VERSION_OFF) "(a6)\n"
+"   bcs.w   4f\n"
+"   jsr     " BL_STR(LVO_CacheClearU) "(a6)\n"
+"4: move.l  (a7)+,a6\n"
+"   move.l  mysegadd(pc),d0\n"
 "   move.l  #mysegname,d1\n"
 "   moveq   #0,d2\n"                    /* priority */
 "   move.l  d0,d3\n"

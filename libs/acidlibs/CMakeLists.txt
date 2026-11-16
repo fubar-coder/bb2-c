@@ -177,13 +177,18 @@ asm_check(debuglib 64060
 # mystart with off_1/off_2, the ltable stubs, init/finit, the VBlank
 # server check_c).  Only _dhandlerlib_codeinit/_dhandlerlib_codefinit
 # are global:
-#   mystart code = codeinit-$94, l0 = codeinit-$4e, check_c = codeinit+$90
+#   mystart code = codeinit-$94, l0 = codeinit-$4e, check_c = codeinit+$aa
 #   codefinit includes the trailing MOVEQ #0,d0:RTS (program end)
+#   codeinit: the fix of #409 puts the cache flush (7 instructions, $1A
+#   bytes) between the patch of the copy and CreateProc: the part in
+#   front of it (19 instructions) and the part behind it (16, from the
+#   original's $184 = codeinit+$54) are compared, the flush is not
 asm_check(dhandlerlib 1
 	mystart:9c:dhandlerlib_codeinit+-94:7
 	ltable_stubs:e2:dhandlerlib_codeinit+-4e:19
-	codeinit:130:dhandlerlib_codeinit:35
-	check_c:1c0:dhandlerlib_codeinit+90:18
+	codeinit:130:dhandlerlib_codeinit:19
+	codeinit_proc:184:dhandlerlib_codeinit+6e:16
+	check_c:1c0:dhandlerlib_codeinit+aa:18
 	codefinit:20a:dhandlerlib_codefinit:21)
 
 # memacclib: Call (JMP with every register passed through).  The inline
