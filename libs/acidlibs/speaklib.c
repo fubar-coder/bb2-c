@@ -19,13 +19,17 @@
  * VoiceLoc = address of the V37 part of the request (19 bytes after
  * numchan, at an odd address).
  *
+ * Translate$ writes the phonemes over its argument (a3 = the argument's
+ * address) and leaves a3 on their 0.
+ *
+ * Not a bug (a statement, a3 has no meaning after it): PhoneticSpeak
+ * leaves a3 = its argument.
+ *
  * BUG(orig), kept:
- *   - Translate$ writes the phonemes over its argument (a3 = the
- *     argument's address), returns the length INCLUDING the terminating 0
- *     and leaves a3 behind the 0. (#277)
- *   - Not a bug (a statement, a3 has no meaning after it): PhoneticSpeak
- *     leaves a3 = its argument.
  *   - finit closes the device and frees the signal even when init failed. (#278)
+ * Fixed (#277): Translate$ returns the length without the terminating 0
+ *   and leaves a3 on the 0; the original counted the 0 and left a3 behind
+ *   it.
  * Fixed (#279): SetVoice clips with signed compares (BGE/BLT); the
  *   original's word CMP and BPL/BMI (N flag only, no V) put large negative
  *   values whose difference overflows on the maximum.
@@ -265,15 +269,16 @@ void BLITZ_ROUTINE _speak(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2
  * @brief Translate$(string) - the phoneme translation of a text.
  *
  * Translates into the library's buffer and copies the phonemes over the
- * argument (a3 = the argument's address).
+ * argument (a3 = the argument's address); a3 ends on the 0.
  * DIFF: a2 stays unchanged (the original pops the string length).
  *
- * BUG(orig) (#277): writes the phonemes over its argument, returns the
- * length INCLUDING the terminating 0 and leaves a3 behind the 0.
+ * Fixed (#277): returns the length without the terminating 0 and leaves
+ * a3 on the 0; the original counted the 0 and left a3 behind it (the
+ * result one character too long, ending in the 0).
  *
  * @param s    d0: the text (also the result buffer)
  * @param lens a2: the string length on the stack (long)
- * @return d0: the length of the phonemes including the 0; a3 behind it
+ * @return d0: the length of the phonemes; a3 on their 0
  */
 ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
@@ -283,10 +288,11 @@ ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2)
 
     blitz_string = s;                           /* MOVE.l d0,a3 */
     translate(s, BL_POPL(sp));
-    do
+    while ((*blitz_string = *p++)) {            /* fixed (#277): a3 on the 0 */
+        blitz_string++;
         n++;
-    while ((*blitz_string++ = *p++));
-    return n;                                   /* MOVEQ #0,d0:ADDQ #1,d0 */
+    }
+    return n;
 }
 
 /**

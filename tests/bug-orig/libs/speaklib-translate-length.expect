@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+len 9 last 32
+len 10 9th 32 10th 120 last 120
+rc=0
