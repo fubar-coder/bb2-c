@@ -68,6 +68,22 @@ carried over (for the comparison with AmiBlitz3).
   9601 (original 10038), `bproc.fstr` 10290 (10784), `bproc.pgrow` 12915
   (13323). Decision 15 of libs-performance ("C first") stays for the copy
   loop.
+* **memlib's list headers come from buckets** (OpenSpec change
+  `memlib-header-buckets`; its design.md has the state machine): the
+  8-byte header that newmem puts in front of the chain at every procedure
+  entry is an entry of a bucket of 8 (one AllocMem of 68 bytes), not an
+  AllocMem of its own, and freelast gives it back without FreeMem.
+  Headers are taken and given back in stack order, so a bucket needs no
+  count. A new bucket is allocated only when every bucket is full. When a
+  bucket becomes empty, the spare above it is freed, and the last list
+  takes its bucket with it, so finit, `$C006` and err1 free everything as
+  before. At most one empty bucket stays allocated while the program runs
+  (deviations.md, kind B). newmem's fast path is 122 cycles without saves
+  or exec (before 214 plus AllocMem), and freelast's header part 142 (146
+  plus FreeMem). `bproc.pstr` 8037 cycles per call (original 10038),
+  `bproc.fstr` 8731 (10784), `bproc.pgrow` 11089 (13323), the recursion
+  `brec.rec20` 5328 (6535). The blocks of the lists (strings, arrays)
+  still have one AllocMem/FreeMem each.
 * **OS calls with a parameter in a3, a4 or a5** (e.g. workbench
   `AddAppIconA`: DiskObject in a3, tag list in a4; intuition
   `EasyRequestArgs`, `AutoRequest`, graphics `TextFit`,
