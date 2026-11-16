@@ -27,6 +27,11 @@
 #                                           and its ab3pft.library,
 #                                           test sources of the AB3 mode,
 #                                           includes used by them
+#   archive/amiblitz3/github-ff6de060/      single files of AmiBlitz3's
+#                                           develop branch on GitHub
+#                                           (commit ff6de060ee26), paths as
+#                                           there: test sources newer than
+#                                           v3.14.0
 #   archive/aminet/ab2.42-distri/           AmiBlitz 2.42, full distribution
 #                                           (Aminet), unpacked
 #   archive/bernd/                          Bernd Rösch's AmiBlitz 2 archive
@@ -114,6 +119,18 @@ foreach(f IN LISTS ab3v314_files)
 	list(GET f 1 sha)
 	get_filename_component(name ${path} NAME)
 	list(APPEND downloads "ab3v314-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3v314_commit}/${path}|${sha}")
+endforeach()
+# AmiBlitz3's develop branch (newer than v3.14.0): test programs, GitHub at
+# a fixed commit: download name ab3dev-NAME -> archive/amiblitz3/github-ff6de060/PATH
+set(ab3dev_commit ff6de060ee2634dd5388fc7d3cf49dc475a6f7d8)
+set(ab3dev_files
+	"Sourcecodes/Amiblitz3/Tests/optimizer_regression.ab3|2fce57bebd2f445c20606b935caa0c066fa47191e586f6a3c8813402c3e7e9fd")
+foreach(f IN LISTS ab3dev_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	list(APPEND downloads "ab3dev-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3dev_commit}/${path}|${sha}")
 endforeach()
 # AmiBlitz 2.42, the full distribution on Aminet, and its readme (in git
 # as archive/sources/ab2.42-distri.readme)
@@ -385,6 +402,25 @@ foreach(f IN LISTS ab3v314_files)
 	get_filename_component(dir ${dest} DIRECTORY)
 	file(MAKE_DIRECTORY ${dir})
 	file(COPY_FILE ${DOWNLOAD_DIR}/ab3v314-${name} ${dest})
+	message(STATUS "${dest}: copied")
+endforeach()
+
+# AmiBlitz3 develop from GitHub: ab3dev-NAME -> archive/amiblitz3/github-ff6de060/PATH
+foreach(f IN LISTS ab3dev_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	set(dest ${root}/archive/amiblitz3/github-ff6de060/${path})
+	if(EXISTS ${dest})
+		file(SHA256 ${dest} have)
+		if(have STREQUAL sha)
+			continue()
+		endif()
+	endif()
+	get_filename_component(dir ${dest} DIRECTORY)
+	file(MAKE_DIRECTORY ${dir})
+	file(COPY_FILE ${DOWNLOAD_DIR}/ab3dev-${name} ${dest})
 	message(STATUS "${dest}: copied")
 endforeach()
 

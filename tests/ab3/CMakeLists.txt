@@ -61,6 +61,9 @@ equivalence_pass(ab3_bb2_equivalence_runerr on)
 # (AmiBlitz3's process_libraries numbers as blitz2's fixlibs).  Skipped
 # (77) without the fetched files.
 set(AB3_V314 ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-58a11658)
+# AmiBlitz3's develop branch (test programs newer than v3.14.0, fetched at
+# a fixed commit: cmake/fetch-originals.cmake)
+set(AB3_DEV ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-ff6de060)
 set(ab3_biglibs baseLibs utilLibs OsLibs csLibs)
 list(TRANSFORM ab3_biglibs PREPEND ${AB3_V314}/BlitzLibs/)
 # ab3_tokens(NAME LAST): the test with blitz2-ab3's list ending with $LAST
@@ -584,6 +587,15 @@ ab3_cli_case(inc_error inc_error.ab3 REF)
 # next loaded library's begins): Mildred's MProcessor
 ab3_cli_case(libtoken_past_block libtoken_past_block.ab3 REF)
 
+# optimizer_regression.ab3 of AmiBlitz3's develop branch (not in v3.14.0): OPTIMIZE 5
+# (4: new syntax), four functions with a constant on one side of
+# "(x/4) AND 3" checked against a step-by-step reference.  blitz2-ab3 has no
+# integer peephole optimizer, so its OPTIMIZE bits only select the syntax
+# and the result is "OPTIMIZE test: 0 errors".  Without REF: AmiBlitz3
+# v3.14.0 has the bug of AB3 issue #126 (the same functions return wrong
+# values there), the compiler of develop fixed it, so no oracle is available.
+ab3_cli_case(optimizer_regression optimizer_regression.ab3)
+
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
 	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})
@@ -591,7 +603,8 @@ function(ab3_cli name config cases)
 	list(JOIN a_SAME "," same)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	file(WRITE ${work}.cases "${cases}")
-	set(sources ${cli_sources} ${cli_made})
+	set(sources ${cli_sources} ${cli_made}
+		${AB3_DEV}/Sourcecodes/Amiblitz3/Tests/optimizer_regression.ab3)
 	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
 		-DRESULTS=${RESULTS} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
