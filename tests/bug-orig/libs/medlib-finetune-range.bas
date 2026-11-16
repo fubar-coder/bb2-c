@@ -12,6 +12,7 @@
 ; (+6) and VOL.  PlayMed plays one tick.
 ; Correct: a finetune outside -8..7 is limited (or ignored) - the period
 ; of the note comes from one of the tables (113..3424).
+; @fixed #211
 ; @configs clib
 ; @pass file=fine.med|@TESTDATA@/medlib-finetune-range.med
 DEFTYPE .l

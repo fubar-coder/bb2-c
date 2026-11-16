@@ -49,7 +49,6 @@
  *     higher channels of the mask get no follow-up values. (#208)
  *   - JumpMed without a playing module writes to addresses 44-47
  *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11). (#210)
- *   - finetune values outside -8..7 read pointers outside _periodtable. (#211)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
  *     next note. (#212)
  * Fixed (#207): after a MIDI dump in the expansion data the relocation read
@@ -62,6 +61,12 @@
  * structure.  SetMedMask keeps bits 0-3 only (once per call), so
  * _PlayNote's own mask test returns for tracks 4-15; nothing is added to
  * the player.
+ * Fixed (#211): a finetune outside -8..7 (InstrExt or 15xx; the checks
+ * were assembled only with #CHECK = 1) read pointers outside _periodtable
+ * as period tables.  The value is limited where it enters: 15xx ignores
+ * one outside the range (as the original's #CHECK code), and InitModule
+ * takes 0 for an InstrExt value outside it (once per start); the period
+ * lookups per note are unchanged.
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -554,8 +559,8 @@ static UWORD addb(UWORD w, int n)
 }
 
 /* the period table of a finetune: _periodtable+32 + (BYTE)(finetune * 4)
-   as a byte offset (the original's MOVE.l 0(a0,d0.w)); finetunes outside
-   -8..7 read pointers outside the table (#211) */
+   as a byte offset (the original's MOVE.l 0(a0,d0.w)); the finetune is
+   -8..7 (limited where it enters, #211) */
 BL_ALWAYS_INLINE UWORD *periods_of(UBYTE finetune)
 {
     return *(UWORD **)((UBYTE *)&db.periodtable[8] + (BYTE)(finetune << 2));
@@ -1431,7 +1436,11 @@ MED_OFFSETS(MED_SET)
 "f_09:\n"
 "   move.b  d4,msng_tempo2(a4)\n"
 "   bra     fx\n"
-"f_15:\n"
+"f_15:\n"                               /* Fixed (#211): -8..7, else ignored */
+"   cmp.b   #7,d4\n"
+"   bgt     fx\n"
+"   cmp.b   #-8,d4\n"
+"   blt     fx\n"
 "   move.b  d4,trk_finetune(a5)\n"
 "   bra     fx\n"
 "f_16:\n"                               /* repeat loop */
@@ -1565,7 +1574,7 @@ MED_OFFSETS(MED_SET)
 "   add.b   d0,d0\n"
 "   ext.w   d0\n"
 "   lea     periodtable8(a6),a1\n"
-"   movea.l 0(a1,d0.w),a1\n"            /* period table (#211) */
+"   movea.l 0(a1,d0.w),a1\n"            /* period table */
 "   move.l  a1,trk_periodtbl(a5)\n"
 "   add.b   d1,d1\n"
 "   move.w  0(a1,d1.w),d5\n"            /* the period */
@@ -2134,8 +2143,8 @@ static void InitModule(struct mmd *m)
         UWORD n = e->s_ext_entries - 1;
 
         do {
-            if ((WORD)e->s_ext_entrsz > 3)
-                h[126] = x[3];                  /* finetune */
+            if ((WORD)e->s_ext_entrsz > 3)      /* finetune, Fixed (#211): */
+                h[126] = (UBYTE)(x[3] + 8) <= 15 ? x[3] : 0;   /* -8..7, else 0 */
             h[63] = x[1];                       /* decay */
             *h++ = x[0];                        /* hold */
             x += (WORD)e->s_ext_entrsz;
