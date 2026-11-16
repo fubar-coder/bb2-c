@@ -26,21 +26,16 @@
  * instructions, the word products the original takes.  The data base "DB"
  * (track structures, block and repeat state, hold/decay/finetune tables,
  * the 16 period tables taken from the binary) has the layout of the
- * original.  Where a result depends on a register left over from other
- * code, that value is kept explicitly: the qualifier word of a line
- * (1Dxx takes the upper byte of d4 from a track before; Bxx did, #203;
- * 1Fxx took the d1 _PlayNote left, #205).
+ * original.  The results of the original that depended on a register
+ * left over from other code are fixed: Bxx and 1Dxx took the upper byte
+ * of the qualifier word d4 from a track before (#203, #1066), 1Fxx the d1
+ * _PlayNote left (#205).
  * Assembler: the line routine (plr_loop0 with _PlayNote inline,
  * medlib_newline) is an assembler block in the original's form, for speed
  * (libs-performance task 10.12); otherwise the hardware (Paula registers,
  * DMACON, filter LED, VHPOSR waits) is accessed through volatile pointers.
  *
  * BUG(orig), kept (selection):
- *   - 1Dxx (pattern break) adds 1 to the word of d4 (as Bxx stored it,
- *     #203): with an upper byte left from a track before, the next line is
- *     far behind the block and kept at the change of the block
- *     (nxtnoclrln), so the notes are read from the memory behind it (test
- *     medlib-1dxx-word; #1066).
  *   - the line routine tests a track against ChanMask with BTST on its
  *     low byte (the track number mod 8): tracks 8-11 pass like tracks 0-3,
  *     and 03 (portamento) and FFD (period), whose track check exists only
@@ -101,6 +96,11 @@
  * _PlayNote leaves): the jump went to position 0, or with a negative word
  * read the block number before the play sequence.  It stores the byte xx
  * (only on a Bxx line).
+ * Fixed (#1066): 1Dxx (pattern break) added 1 to the word of d4 (as Bxx
+ * stored it, #203): with an upper byte left from a track before, the next
+ * line was far behind the block and kept at the change of the block
+ * (nxtnoclrln), so the notes were read from the memory behind it.  It
+ * takes the byte xx (only on a 1Dxx line).
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -1004,9 +1004,10 @@ arpeggio:
    track ch (its structure at a5, PT): sample, IFF octave sample, synth or
    hybrid.  For the replays of the ticks (playfxnote); the line routine
    has its own copy inline (medlib_newline).  What it leaves in d4 (the
-   soffset, 64 after a synth note) is the upper byte of a 1Dxx qualifier
-   word of a later track there (#203); the d1 it left was the retrigger
-   count of 1Fxx after the note delay (fixed, #205) */
+   soffset, 64 after a synth note) was the upper byte of a Bxx or 1Dxx
+   qualifier word of a later track there (fixed, #203, #1066); the d1 it
+   left was the retrigger count of 1Fxx after the note delay (fixed,
+   #205) */
 static void playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
 {
     ULONG mask, sp, start, end, rep, repend, len, off;
@@ -1521,11 +1522,14 @@ MED_OFFSETS(MED_SET)
 "   move.w  d0,mmd_pseqnum(a3)\n"
 "   st      nextblock(a6)\n"
 "   bra     fx\n"
-/* BUG(orig) (#1066): 1Dxx takes the word of d4 as Bxx does */
+/* Fixed (#1066): 1Dxx takes the byte of d4 + 1 as the next line (the
+   original the word, whose upper byte is left from a track before) */
 "f_1d:\n"
 "   move.w  #0x1ff,nextblock(a6)\n"     /* nextblock 1, nxtnoclrln -1 */
-"   addq.w  #1,d4\n"
-"   move.w  d4,nextblockline(a6)\n"
+"   moveq   #0,d0\n"
+"   move.b  d4,d0\n"
+"   addq.w  #1,d0\n"
+"   move.w  d0,nextblockline(a6)\n"
 "   bra     fx\n"
 "f_03:\n"                               /* portamento */
 "   subq.b  #1,d5\n"

@@ -10,6 +10,7 @@
 ; memory behind it.  PlayMed plays one line (the first PlayMed after
 ; StartMedModule starts a line).
 ; Correct: the break goes to line 1 of the next position (1).
+; @fixed #1066
 ; @configs clib
 ; @pass file=1dxx.med|@TESTDATA@/medlib-1dxx-word.med
 DEFTYPE .l
