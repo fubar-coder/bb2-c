@@ -8,10 +8,11 @@ next: /docs/compared-with-original/important-fixes
 
 The BB2 C port is Blitz Basic 2.10, not a new version of it, and its goal
 is Blitz Basic 2.10 without the bugs of the original. The translation is
-complete: the compiler produces the same executables as the original
-compiler (except for four functions it compiles as faster inline code),
-the libraries do what the original libraries do, and the editor
-behaves like the original editor. On that base the bugs of the original
+complete: a program compiled with the port gives the same results as
+with the original compiler, the libraries do what the original libraries
+do, and the editor behaves like the original editor. The executables
+themselves may differ, where the compiler makes faster code, such as
+four functions it compiles inline. On that base the bugs of the original
 are fixed one at a time, area by area. A program that never ran into one
 of them behaves as it did with the original.
 
