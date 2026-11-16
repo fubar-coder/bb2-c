@@ -8,6 +8,7 @@
 ; word of the module (+46, mmd_pseqnum) stays $0800.  PlayMed plays one
 ; line (the first PlayMed after StartMedModule starts a line).
 ; Correct: the jump goes to position 5.
+; @fixed #203
 ; @configs clib
 ; @pass file=bxx.med|@TESTDATA@/medlib-bxx-word.med
 DEFTYPE .l

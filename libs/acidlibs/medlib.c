@@ -28,22 +28,19 @@
  * the 16 period tables taken from the binary) has the layout of the
  * original.  Where a result depends on a register left over from other
  * code, that value is kept explicitly: the qualifier word of a line
- * (Bxx/1Dxx take the upper byte of d4 from a track before, #203) and the
- * d1 that _PlayNote leaves (1Fxx, #205) - struct left.
+ * (1Dxx takes the upper byte of d4 from a track before; Bxx did, #203)
+ * and the d1 that _PlayNote leaves (1Fxx, #205) - struct left.
  * Assembler: the line routine (plr_loop0 with _PlayNote inline,
  * medlib_newline) is an assembler block in the original's form, for speed
  * (libs-performance task 10.12); otherwise the hardware (Paula registers,
  * DMACON, filter LED, VHPOSR waits) is accessed through volatile pointers.
  *
  * BUG(orig), kept (selection):
- *   - Bxx (position jump) stores the word of d4: upper byte = rest of the
- *     previous track's d4 (0 after a plain note, the soffset or 64 after
- *     _PlayNote) - the jump target may be wrong. (#203)
- *   - 1Dxx (pattern break) adds 1 to the word of d4 as Bxx stores it: with
- *     an upper byte left from a track before, the next line is far behind
- *     the block and kept at the change of the block (nxtnoclrln), so the
- *     notes are read from the memory behind it (test medlib-1dxx-word;
- *     issue to be filed).
+ *   - 1Dxx (pattern break) adds 1 to the word of d4 (as Bxx stored it,
+ *     #203): with an upper byte left from a track before, the next line is
+ *     far behind the block and kept at the change of the block
+ *     (nxtnoclrln), so the notes are read from the memory behind it (test
+ *     medlib-1dxx-word; issue to be filed).
  *   - 7xy with x = 0 jumps into the vibrato code (BEQ nonvib). (#204)
  *   - Fxx 1Fxx: the retrigger nibble is taken from d1 after the delayed
  *     note was played (playfxnote/_PlayNote change d1; only the delay
@@ -83,6 +80,11 @@
  * with runtime error checking JumpMed without a playing module is the
  * runtime error "No Module Playing" (jumpmedchk); release code unchanged
  * (an invalid argument).
+ * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
+ * is left from a track before in the same line (19xx, the soffset or 64
+ * _PlayNote leaves): the jump went to position 0, or with a negative word
+ * read the block number before the play sequence.  It stores the byte xx
+ * (only on a Bxx line).
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -976,7 +978,7 @@ arpeggio:
 #define PT ((struct track *)blitz_globals)      /* a5: the track */
 
 /* what _PlayNote leaves in d1 and d4: d4 (soffset, 64 after a synth note)
-   is the upper byte of a Bxx/1Dxx qualifier word of a later track (#203),
+   is the upper byte of a 1Dxx qualifier word of a later track (#203),
    d1 the retrigger count of 1Fxx after the note delay (#205) */
 struct left {
     ULONG d1, d4;
@@ -1498,9 +1500,12 @@ MED_OFFSETS(MED_SET)
 "   lsl.w   #8,d4\n"
 "   move.w  d4,trk_soffset(a5)\n"
 "   bra     fx\n"
-/* BUG(orig) (#203): Bxx stores the word of d4 */
+/* Fixed (#203): Bxx stores the byte of d4 (the original the word, whose
+   upper byte is left from a track before) */
 "f_0b:\n"
-"   move.w  d4,mmd_pseqnum(a3)\n"
+"   moveq   #0,d0\n"
+"   move.b  d4,d0\n"
+"   move.w  d0,mmd_pseqnum(a3)\n"
 "   st      nextblock(a6)\n"
 "   bra     fx\n"
 /* BUG(orig) (issue to be filed): 1Dxx takes the word of d4 as Bxx does */
