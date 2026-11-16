@@ -1,4 +1,4 @@
-; ciatrklib-pause-state-kept - PauseModule toggles its own state
+; ciatrklib-pause-state-kept - PauseModule toggles its own state (#1076)
 ; (pause_status): the first call stops the module (mt_end), the next
 ; enables playing again.  StartTracker and StopTracker leave that state as
 ; it is: after a PauseModule, a StartTracker plays the module, but the
