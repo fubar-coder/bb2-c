@@ -41,7 +41,6 @@
  *     far behind the block and kept at the change of the block
  *     (nxtnoclrln), so the notes are read from the memory behind it (test
  *     medlib-1dxx-word; issue to be filed).
- *   - the synth period clamp sets d1 instead of d5 (no clamp at 113). (#206)
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
  *     higher channels of the mask get no follow-up values. (#208)
@@ -84,6 +83,9 @@
  * note was played (playfxnote and _PlayNote change d1): in the delay tick
  * a register remainder decided whether the note was struck twice.  It
  * takes y from the qualifier (the replays no longer return d1).
+ * Fixed (#206): the synth period limit at 113 (synth_rts) set d1 instead
+ * of the period d5, so synth and hybrid periods below 113 went to Paula;
+ * the period is limited (on the synth path only).
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -956,7 +958,14 @@ arpeggio:
         t->synviboffs += t->synthvibspd;
     }
     per += t->perchg;
-    /* BUG(orig) (#206): the limit at 113 sets d1, not the period */
+    /* Fixed (#206): the limit at 113 (the original set d1, not the period).
+       As an asm statement on the period's register: as C the compare
+       changed GCC's code of the ticks around the call of synth (about 100
+       cycles per PlayMed of a module without synth notes) */
+    __asm("cmp.w   #113,%0\n\t"
+          "bge.s   1f\n\t"
+          "moveq   #113,%0\n"
+          "1:" : "+d"(per) : : "cc");
     return per;
 }
 

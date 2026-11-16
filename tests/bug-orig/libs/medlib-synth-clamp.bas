@@ -10,6 +10,7 @@
 ; writes LC, LEN, PER (+6) and VOL.  PlayMed plays one tick; the program
 ; reads the period of the first three ticks.
 ; Correct: 202, 202, then 102 limited to 113.
+; @fixed #206
 ; @configs clib
 ; @pass file=synth.med|@TESTDATA@/medlib-synth-clamp.med
 DEFTYPE .l
