@@ -69,11 +69,15 @@
  * front of the list: a tape event due between two incoming events of one
  * call came behind them.  Here each incoming event gets the tape events
  * due by its time in front of it (bug-orig test brexxlib-playback-time).
+ * Fixed (#101): LoadTape read the start time unchecked, so a file shorter
+ * than 8 bytes gave a tape with a start time from its bytes; here such a
+ * file leaves the tape empty with the start time 0 (bug-orig test
+ * brexxlib-loadtape-unchecked).  The format has no identifier, so any
+ * file of 8 bytes or more still loads, and a short event record ends the
+ * load without an error, as before.
  * BUG(orig), kept:
  *  - PlayWait restarts the given tape (with signal) when the low byte of
  *    mode is 2 and waits; otherwise it returns at once. (#99)
- *  - LoadTape reads the start time unchecked and stops at the first
- *    short read (no error for a damaged file). (#101)
  *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
@@ -832,9 +836,10 @@ BLITZ_ALIAS(dosavetape, dosavetape_c);
  * @brief LoadTape Tape#,filename$: load a tape from a file.
  *
  * Frees the tape's events, then reads the format of SaveTape.  Errors:
- * "Can't Open File" (in the normal code; DIFF as SaveTape).
- * BUG(orig) (#101): reads the start time unchecked and stops at the
- * first short read (no error for a damaged file).
+ * "Can't Open File" (in the normal code; DIFF as SaveTape).  A file whose
+ * start time cannot be read whole (shorter than 8 bytes) leaves the tape
+ * empty, with the start time 0 (Fixed (#101): the original took the
+ * read unchecked); the load ends at the first short event record.
  *
  * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
  * @param name  d1: the file name
@@ -851,7 +856,12 @@ static void BLITZ_ROUTINE doloadtape_c(const char *name BL_REG(d1), struct DosLi
     fh = Open((CONST_STRPTR)name, MODE_OLDFILE);
     if (!fh)
         BLITZ_RUNERR(mess1);
-    Read(fh, &tape->start, 8);
+    if (Read(fh, dumtape, 8) != 8) {            /* Fixed (#101) */
+        tape->start.tv_secs = tape->start.tv_micro = 0;
+        Close(fh);
+        return;
+    }
+    copyw((UWORD *)&tape->start, dumtape, 4);
     while (Read(fh, dumtape, 18) == 18) {
         struct InputEvent *n = globalloc(IESIZE);
 
