@@ -7,6 +7,7 @@
 ; do it (a second free of the lock would corrupt memory).  The module is
 ; the one of the test of #436.
 ; Correct: after the failed Read the lock is not unlocked again.
+; @fixed #444
 ; @rwe ciatrklib
 ; @pass file=e.mod|@TESTDATA@/ciatrklib-free-while-playing.mod
 ; @pass runwrap=@INJECT@|readfail=e.mod/1 ownedunlock

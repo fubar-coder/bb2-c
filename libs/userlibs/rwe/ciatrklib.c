@@ -43,8 +43,7 @@
  *     (#448).
  *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
  *     holds (#443); the chip memory is not
- *     checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); a Read error unlocks the lock OpenFromLock took over
- *     (#444); the runtime errors after Lock (no FileInfoBlock, Examine
+ *     checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
  *   - DecodeModule into chip memory (an address < $200000, signed) keeps
  *     the address (#432); from other memory it copies the module to chip
@@ -107,6 +106,9 @@
  * file size + 3; the original added the 3 as a byte (ADD.b), so a size
  * with a low byte of $FD-$FF lost the carry and the module was loaded
  * 253 bytes short.
+ * Fixed (intended deviation, #444): after a Read error LoadTrackerModule
+ * does not unlock the lock that OpenFromLock took over (Close has freed
+ * it); the original unlocked it a second time.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1464,8 +1466,9 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
  * the dos calls go through whatever a6 holds (BUG(orig) (#443)).  A
  * failing Lock, FileInfoBlock or Examine is a runtime error ("Tracker:
  * File error! (Not found?)", "Tracker Library Error"), the last two
- * leave the lock allocated (#441).  A Read error unlocks the lock that
- * OpenFromLock took over (#444) and frees the slot.  Error check
+ * leave the lock allocated (#441).  A Read error frees the slot (fixed,
+ * #444: the original also unlocked the lock that OpenFromLock had taken
+ * over, a second time after Close).  Error check
  * (_loadcheck): slots 0-8, the slot must be empty.
  * @param num   d0: the slot
  * @param name  d1: the file name
@@ -1505,7 +1508,7 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_R
     result = readerr;
     readerr = (ULONG)-1;
     if (result == (ULONG)-1) {
-        UnLock(lock);                   /* BUG(orig): OpenFromLock's lock (#444) */
+        /* Fixed (#444): no UnLock(lock), Close freed OpenFromLock's lock */
         readerr = 0;
         freetrackermodule_c(thismod);
     }

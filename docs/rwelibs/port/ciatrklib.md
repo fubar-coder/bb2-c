@@ -82,6 +82,10 @@ kind F):
   $FD-$FF lost the carry ($10FE gave $1001, and only that much was read)
   (#442; library test `rwe_ciatrklib`, the cases
   `LoadTrackerModule|...|slot 5, 4350 bytes`).
+* After a Read error `LoadTrackerModule` does not unlock the lock that
+  `OpenFromLock` took over (the `Close` has freed it); the original
+  unlocked it a second time (#444; test
+  `ciatrklib-load-readerror-unlock`).
 
 ## BUG(orig), kept
 
@@ -97,8 +101,7 @@ kind F):
   first version of the test that called the real resources made the
   later tests in the same session hang) (#450, #448).
 * `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
-  a6 holds (#443). The chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); after a
-  Read error it unlocks the lock that `OpenFromLock` took over (#444).
+  a6 holds (#443). The chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).
 * `DecodeModule` of a module in chip memory (address < $200000, signed)
