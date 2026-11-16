@@ -35,7 +35,11 @@
  * Kept from the original (BUG(orig)):
  *   - Implode: the match search reads up to 254 bytes past the end of
  *     the data (im30: up to 15, the length measurement im32/im33: up to
- *     254 - the two do not add up; results do not depend on them). (#112)
+ *     254 - the two do not add up). (#112), won't fix: with a match
+ *     candidate at the second-to-last byte of the data, the length
+ *     measurement compares the byte behind the data, and the output
+ *     depends on it; a search that does not read it would change
+ *     Implode's output in that case.
  *   - CrMDecrunch with one argument (destination = source) and with
  *     overlapping buffers: the crunched data are moved to MinSecDist
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
@@ -646,10 +650,11 @@ im22:
  * length and the crunched length.  The info routine (own) runs before
  * every step: it writes the low word of (source - destination) to COLOR00
  * (the background flickers) and breaks on the left mouse button.
- * BUG(orig) (#112): the match search reads up to 254 bytes behind the
- * data.  BUG(orig) (#114), won't fix (see the head comment): a result of
- * 0 after at least 64 bytes, or -1, leaves the buffer partly crunched.  Not a bug (#113): after $4012 literal bytes
- * in a row the rest is stored uncrunched.
+ * BUG(orig) (#112), won't fix (see the head comment): the match search
+ * reads up to 254 bytes behind the data.  BUG(orig) (#114), won't fix
+ * (see the head comment): a result of 0 after at least 64 bytes, or -1,
+ * leaves the buffer partly crunched.  Not a bug (#113): after $4012
+ * literal bytes in a row the rest is stored uncrunched.
  *
  * @param buf  d0: the buffer with the data
  * @param len  d1: the data length
