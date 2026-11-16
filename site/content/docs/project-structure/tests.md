@@ -50,8 +50,9 @@ correctly.
   run compiles the same programs with the original compiler and the
   original libraries, with the port's compiler and the original
   libraries, and with the original compiler and the port's libraries:
-  the executables of the first two must be identical, and every output
-  must be the expected one. Where a fixed bug changes a program's output,
+  every output must be the expected one. The executables of the first
+  two are compared for information only: a difference is reported, but
+  does not fail the run. Where a fixed bug changes a program's output,
   its expected data holds both outputs, the original's and the port's
   ([Comparing with the original yourself]({{< relref "/docs/compared-with-original/comparing" >}})).
 * **The CD's sources** are all compiled by the port and compared with a

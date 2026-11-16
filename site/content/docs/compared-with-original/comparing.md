@@ -42,11 +42,15 @@ times:
 | Run | Compiler | Libraries | Must give |
 |---|---|---|---|
 | ref | the original blitz2 2.10 | the original libraries | the expected output |
-| port | the port's blitz2 | the original libraries | the same executable as ref, and the expected output |
+| port | the port's blitz2 | the original libraries | the expected output |
 | orig-clib | the original blitz2 2.10 | the port's libraries | the expected output |
 
-So it checks the compiler (the executable must be identical) and the
-libraries (the program must do the same) separately.
+So it checks the compiler and the libraries separately, each by what the
+program does. Against the original only outputs and compile errors count:
+the port's executable is compared with the one of ref for information
+only. A different executable is reported but does not fail the run,
+since the port may compile the same program to different code; a source
+that the original compiles and the port does not fails.
 
 {{% steps %}}
 
@@ -101,8 +105,11 @@ t03_str          ref: output as expected; port: exe identical, output as expecte
 
 {{% /steps %}}
 
-If a run differs from the expected output, the report says `OUTPUT
-DIFFERS` for it (or `EXE DIFFERS` for the port's executable). Since the
+A different executable of the port shows as `exe differs
+(informational: …)`, with the start of the two checksums, and is no
+failure. If a run differs from the expected output, the report says
+`OUTPUT DIFFERS` for it (or `NO EXE` if the port compiled no
+executable). Since the
 expected output came from the port, a difference of `ref` means that the
 original behaves differently. If it is not on the list of fixed bugs,
 you have found a difference: please open an issue with the program and
