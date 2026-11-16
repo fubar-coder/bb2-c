@@ -50,9 +50,7 @@
  *   - Play routine (Protracker 2.3A): the arpeggio (#474) and a sample number > 31 (#480) read behind the tables
  *     (mt_chan1temp, mt_SongDataPtr ...); E8x (Karplus-Strong) with a
  *     loop length of 0 rewrites 64 KB (#439); the repeat offset is
- *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
- *     signed with n_length (CMP.w, BGE): 9xx on a length of $8000 words
- *     or more sets the length to 1 (#472); F00 stops the module (as in
+ *     repeat * 2 as a word (ASL.w) (#479); F00 stops the module (as in
  *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
  *     on voice 1-3 the voices behind read their notes from the custom
  *     chip registers ($DFF000 + the pattern offset) instead of the
@@ -79,6 +77,10 @@
  *     mt_SetPeriod, which ran it again: Paula got the offset once, the
  *     voice (retrig, note delay, a following note without a sample
  *     number) twice (#473).
+ *   - mt_SampleOffset compares the offset with n_length unsigned: 9xx on
+ *     a sample of $8000 words (64 KB) or more moves the start; the
+ *     original compared signed (CMP.w, BGE) and set the length to 1
+ *     (#472).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -1041,7 +1043,7 @@ static void sampleoffset(struct chan *ch)
     if (ch->n.f.cmdlo)
         ch->sampleoffset = ch->n.f.cmdlo;
     offset = (UWORD)(ch->sampleoffset << 7);
-    if ((WORD)offset >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) (#472) */
+    if (offset >= ch->length) {         /* Fixed (#472): the original compared signed */
         ch->length = 1;
         return;
     }

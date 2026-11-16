@@ -73,8 +73,8 @@
  *     plus its half-tones lies behind the row or no entry fits (#474); a
  *     finetune byte above 15 from the sample header makes the period
  *     lookups read far behind (#476).
- *   - 9xx: compared signed with the length (samples of 64 KB and more
- *     get length 1) (#472); loop offsets are shifted as words (repeat >= 32768 words wraps) (#479).
+ *   - Loop offsets are shifted as words (repeat >= 32768 words wraps)
+ *     (#479).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
  *     headers (#480).
  * Fixed in the play routine (intended deviations):
@@ -93,6 +93,10 @@
  *     mt_SetPeriod, which ran it again: Paula got the offset once, the
  *     voice (retrig, note delay, a following note without a sample
  *     number) twice (#473).
+ *   - mt_SampleOffset compares the offset with n_length unsigned: 9xx on
+ *     a sample of $8000 words (64 KB) or more moves the start; the
+ *     original compared signed (CMP.W, BGE) and set the length to 1
+ *     (#472).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -761,7 +765,7 @@ static void mt_sampleoffset(struct chan *c)
     if (c->cmdlo)
         c->sampleoffset = c->cmdlo;
     offset = (UWORD)(c->sampleoffset << 7);
-    if ((WORD)offset >= (WORD)c->length) {  /* BUG(orig): signed (#472) */
+    if (offset >= c->length) {          /* Fixed (#472): the original compared signed */
         c->length = 1;
         return;
     }

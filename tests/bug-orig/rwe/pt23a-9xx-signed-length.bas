@@ -11,6 +11,8 @@
 ; The rows are played by hand (TrackPlay: one tick; speed 6, row 1 at
 ; the 7th tick; the CIA interrupt does not play in the emulator).
 ; Correct: the start moves (by the offset), the length is not 1.
+; The same test for ciatrklib: pt23a-9xx-signed-length-ciatrklib.
+; @fixed #472
 ; @rwe ritrackerlib
 ; @pass file=pt.mod|@TESTDATA@/pt23a-9xx-signed-length.mod
 DEFTYPE .l
