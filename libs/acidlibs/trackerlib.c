@@ -15,8 +15,9 @@
  * Blitz/Amiga variants ($A001: BLibJsr / ALibJsr to intlib).  Freeing a
  * module that is playing stops it first.
  *
- * mt_init: highest pattern number from the 128 song positions, the 31
- * sample starts behind the patterns; it CLEARS the first long of each
+ * mt_init: highest pattern number from the 128 song positions, sample
+ * numbers above 31 cleared in the patterns (#295), the 31 sample starts
+ * behind the patterns; it CLEARS the first long of each
  * sample in the module (the player's "no sound" loop), filter off, speed
  * 6.  mt_music: every `speed` frames a new row (4 voices: sample, period,
  * DMA, commands B C D E F), otherwise the effects 0-4 and A.  Paula
@@ -42,9 +43,12 @@
  *   - set volume (C) writes the volume as a BYTE to AUDxVOL (both halves
  *     of the register) (#293); C and F only clamp positive values (signed
  *     compares) (#294).
- *   - a sample number above 31 reads the start from behind the table
- *     (the voice data; the C library has them in the same order, beyond
- *     that the original reads its own code). (#295)
+ * Fixed (intended deviation, #295): mt_init clears the sample number of
+ * every note in the patterns whose number is above 31 (the module is
+ * changed in memory, as the first long of each sample is); the original
+ * read the start of such a sample from behind the table of 31 starts
+ * (the voice data, beyond that its own code) and Paula played from there.
+ * No test per note in mt_music.
  * Fixed (intended deviation, #296): LoadModule of a missing file or a
  * drawer frees the FileInfoBlock and releases the lock before the runtime
  * error; the original kept both (a missing file: Examine with lock 0).
@@ -156,8 +160,9 @@ struct voice {
 };
 static_assert(sizeof(struct voice) == 28);
 
-/* mt_samplestarts and the voices in one block as in the original: a
-   sample number > 31 (bad module) reads the voices behind the table */
+/* mt_samplestarts and the voices in one block as in the original (the
+   bug-orig tests find the voices behind the table); a sample number > 31
+   is cleared by mt_init (Fixed (#295)) */
 static struct {
     UBYTE *samplestarts[31];
     struct voice voices[4];
@@ -226,7 +231,7 @@ static inline void mt_delay(void)
 
 /* ------------------------------------------------------------- mt_init */
 
-static void mt_init(void)
+static void mt_init(ULONG len)
 {
     /* info: the module, moved by one sample per mt_lop3 step, so that
        info->samples[0] is the current sample (as 42(a0) in the original) */
@@ -246,6 +251,24 @@ static void mt_init(void)
     } while (--n != -1);
     sdata = (UBYTE *)info + offsetof(struct modhead, patterns)
             + ((maxpat + 1) << 10);
+    /* Fixed (#295): a sample number above 31 (byte 0 of a note $20 and
+       up) becomes 0, once here instead of a test per note in mt_music;
+       only the notes inside the module are touched (about 52 cycles per
+       note: 120 ms on a 68000 for 64 patterns) */
+    if (len > offsetof(struct modhead, patterns)) {
+        UBYTE *note = (UBYTE *)info + offsetof(struct modhead, patterns);
+        ULONG n = (len - offsetof(struct modhead, patterns)) >> 2;
+
+        if (n > (maxpat + 1) << 8)
+            n = (maxpat + 1) << 8;
+        do {
+            if (*note >= 0x20) {
+                note[0] &= 0x0f;
+                note[2] &= 0x0f;
+            }
+            note += 4;
+        } while (--n);
+    }
     for (i = 0; i < 31; i++) {                  /* mt_lop3 */
         *(ULONG *)sdata = 0;
         mt_samplestarts[i] = sdata;
@@ -657,7 +680,7 @@ static void playmod2(int blitz)
     struct bl_regs r = { .d0 = INTLEVEL, .d1 = (ULONG)myint };
 
     mt_data = m->data;
-    mt_init();
+    mt_init(m->len);
     if (blitz)
         BLITZ_BLIBJSR(TOK_setint, r);
     else
@@ -683,15 +706,16 @@ static void freemod2(struct module *m, int blitz)
  * @brief PlayModule Module# - start playing a module (Amiga / Blitz mode
  * variant).
  *
- * mt_init on the module (highest pattern, sample starts, clears the first
- * long of each sample, filter off, speed 6), then the vertical blank
+ * mt_init on the module (highest pattern, sample numbers above 31 cleared
+ * in the patterns, sample starts, clears the first long of each sample,
+ * filter off, speed 6), then the vertical blank
  * interrupt (intlib SetInt $C100, level $8025; ALibJsr / BLibJsr) calls
  * mt_music every frame.  a3: the module object.
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
  * BUG(orig): the NoiseTracker player's bugs, see the file header (#290 -
- * #295).
+ * #294).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }
 /** @brief PlayModule Module# - the Blitz mode variant (BLibJsr). */

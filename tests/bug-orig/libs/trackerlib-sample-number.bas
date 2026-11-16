@@ -9,7 +9,9 @@
 ; ($4.l) after row 0 was played (PlayModule: speed 6, one row per 6
 ; frames).
 ; Correct: a sample number above 31 sets no start outside the module (the
-; start stays 0, or is one of the module's samples).
+; start stays 0, or is one of the module's samples); the port clears the
+; number when the module is started, so the note reads $01AC0000.
+; @fixed #295
 ; @configs clib
 ; @pass file=smp.mod|@TESTDATA@/trackerlib-sample-number.mod
 DEFTYPE .l
