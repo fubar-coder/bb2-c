@@ -51,8 +51,6 @@
  *     (below).
  *   - ModuleToChip does nothing and returns its argument (#446).
  *     ModulePatterns returns the song length (byte 950) (#445).
- *   - WaitTrackerEvent calls WaitTOF through whatever a6 holds (no
- *     !libs) (#453).
  *   - ModulePositionJump n: the song position becomes n + 1 at the next
  *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
@@ -111,6 +109,10 @@
  * !libs {#doslib,#la6}, so the compiler loads DOSBase into a6; the
  * original's !libs was commented out and the dos calls went through
  * whatever a6 held at the call.
+ * Fixed (intended deviation, #453): WaitTrackerEvent is declared with
+ * !libs {#graphicslib,#la6}, so the compiler loads GfxBase into a6; the
+ * original's !libs was commented out and WaitTOF went through whatever
+ * a6 held at the call.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -205,7 +207,7 @@ BLITZ_NAME("CheckTrackerEvent", "");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
-BLITZ_LIBS0();
+BLITZ_LIBS(LIB_graphicslib, BL_LA6);    /* Fixed (#453): the original's !libs is empty */
 BLITZ_SUBS(_waittrackerevent, 0, 0);
 BLITZ_NAME("WaitTrackerEvent", "");
 
@@ -1767,9 +1769,9 @@ static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
  * @brief WaitTrackerEvent: wait for the next tracker event.
  *
  * Marks the current event seen, then WaitTOF (-270) until the event
- * changes - through whatever a6 holds: no !libs (BUG(orig) (#453)).
- * @param caller_a6  a6: the caller's a6 (graphics.library, if it
- *                   happens to be)
+ * changes.  The compiler loads GfxBase into a6 (fixed, #453: the
+ * original's !libs was empty, WaitTOF went through whatever a6 held).
+ * @param caller_a6  a6: graphics.library (!libs {#graphicslib,#la6})
  */
 static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 {

@@ -90,6 +90,10 @@ kind F):
   compiler loads DOSBase into a6; the original's `!libs` was commented
   out and the dos calls went through whatever a6 held (#443; test
   `ciatrklib-load-no-libs`).
+* `WaitTrackerEvent` is declared with `!libs {#graphicslib,#la6}`: the
+  compiler loads GfxBase into a6; the original's `!libs` was commented
+  out and WaitTOF went through whatever a6 held (#453; test
+  `ciatrklib-waitevent-no-libs`).
 
 ## BUG(orig), kept
 
@@ -117,9 +121,8 @@ kind F):
 * `ModuleToChip` is an RTS: it returns
   its argument (#446). `ModulePatterns` returns the song length (byte
   950) (#445).
-* `WaitTrackerEvent` calls WaitTOF (−270) through whatever a6 holds (no
-  `!libs`) (#453). (`GetTrackerEvent` changes only d0's low byte; it
-  is declared `#byte`, so that is no defect.)
+* `GetTrackerEvent` changes only d0's low byte; it is declared `#byte`,
+  so that is no defect.
 * `ModulePositionJump n` jumps to position n + 1 (the next tick's
   `mt_NextPosition` increments it) (#447).
 * `TrackerVolume 0` and `64` do not change the volume of the notes that
