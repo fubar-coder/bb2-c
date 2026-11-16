@@ -128,16 +128,10 @@ RI's glue:
 
 Not a defect: `_ciaplayerinit` returns at once (an `RTS` before its
 code), so no interrupt plays the module; the program plays it with
-`TrackPlay`, and a tempo command cannot change the speed. Effect 8xx (RI's track event, `nor_TrackEvent`) stores its
-value in `nor_TrkEvt` on the ticks after the first, which no command
-reads – an unused variable.
-
-The play routine (the known bugs of the PT2.3A replayer; 8bitbubsy's
-pt23f changelog served as the checklist, no code was taken from it):
-
-* `mt_init`: the `CLR.L` of every sample's
-  first longword also clears 4 bytes behind the module for empty
-  samples at its end (#570).
+`TrackPlay`, and a tempo command cannot change the speed. Effect 8xx
+(RI's track event, `nor_TrackEvent`) stores its value in `nor_TrkEvt`
+on the ticks after the first, which no command reads – an unused
+variable.
 
 ## Fixed
 
@@ -212,6 +206,17 @@ In the play routine:
   such a sample from behind `mt_SampleStarts` (32: 0, 33:
   `mt_SongDataPtr`, …) and its header from the position table and the
   patterns (#480; bug-orig test `pt23a-samplenum-over-31`).
+* `mt_init` clears the first longword of a sample only if it lies
+  before the end of the samples (the sum of the 31 lengths; ciatrklib's
+  rule for a module of unknown length); the original's `CLR.L` of every
+  sample also cleared up to 4 bytes behind the module for empty samples
+  (or one of one word) at its end (#570; library test
+  `rwe_ritrackerlib`, the 16 guard bytes behind the first module).
+  `TrackInit` has no module length, so this and the note scan of #480
+  stay inside the module as its header describes it (patterns, sample
+  lengths): a module shorter than that is defective input, and both can
+  then write behind it (the test's second module, whose pattern 1 lies
+  behind its 2208 bytes).
 * `mt_init` masks the finetune byte of the 31 sample headers to 0–15
   (the module is changed in memory); the original took it unmasked, and
   every period lookup (`n_finetune` × 72) of a byte above 15 read far

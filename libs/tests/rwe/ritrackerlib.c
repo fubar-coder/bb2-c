@@ -21,8 +21,8 @@
  * both in the original's layout, the test finds them in the library (by
  * the tables, by RealTempo and the module address); pointers into the
  * module as offsets; the module bytes and 16 bytes behind it (mt_init
- * clears the first longword of every sample, also behind the module, EFx
- * inverts sample bytes); the filter bit of CIA-A PRA; the counter of
+ * clears the first longword of the samples, in the original also behind
+ * the module, Fixed (#570); EFx inverts sample bytes); the filter bit of CIA-A PRA; the counter of
  * CIA-B timer A (the original's tempo command writes the timer's latch,
  * Fixed (#571); the test
  * allocates the timer through ciab.resource and keeps it stopped, so

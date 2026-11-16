@@ -55,11 +55,6 @@
  * TrackPlay, so a tempo command cannot change the speed.  Effect 8xx
  * (RI's track event) stores its value in nor_TrkEvt on the ticks after
  * the first, which no command reads (an unused variable).
- * BUG(orig) of the play routine (the known PT2.3A bugs, cf. the changelog
- * of 8bitbubsy's pt23f replayer):
- *   - mt_init: the CLR.L of the first longword of every sample also
- *     clears 4 bytes behind the module for empty samples at its end
- *     (#570).
  * Fixed in RI's code (intended deviations):
  *   - A tempo command (F20-FFF) only stores RealTempo; the original also
  *     wrote deftime / tempo, 0 (deftime is set only by the dead
@@ -109,6 +104,10 @@
  *     mt_PlayVoice took the start of such a sample from behind
  *     mt_SampleStarts (32: 0, 33: mt_SongDataPtr, ...) and its header
  *     from the position table and the patterns (#480).
+ *   - mt_init clears the first longword of a sample only if it lies
+ *     before the end of the samples; the original's CLR.L of every
+ *     sample also cleared up to 4 bytes behind the module for empty
+ *     samples (or one of one word) at its end (#570).
  *   - mt_init masks the finetune byte of the 31 sample headers to 0-15
  *     (the module is changed in memory); the original took it unmasked,
  *     and every period lookup (n_finetune * 72) of a byte above 15 read
@@ -448,7 +447,7 @@ static void mt_init(void)
 {
     UBYTE *mod, *order, *sample;
     WORD count;
-    ULONG highest;
+    ULONG highest, end;
     int i;
 
     if (!pt.status)
@@ -469,8 +468,11 @@ static void mt_init(void)
     } while (--count != -1);
     /* Fixed (#480): the sample number of every note above 31 (byte 0 $20
        and up: both high nibbles) becomes 0, once here instead of a test
-       per note in mt_PlayVoice; the notes of the counted patterns (TrackInit
-       has no module length) */
+       per note in mt_PlayVoice; the notes of the counted patterns.
+       TrackInit has no module length: this scan and the sample clearing
+       below stay inside the module as its header describes it (patterns,
+       sample lengths); a module shorter than that is defective input,
+       whose missing part the play routine reads as notes and samples */
     {
         UBYTE *note = mod + 1084;
         ULONG n = (highest + 1) << 8;
@@ -484,8 +486,17 @@ static void mt_init(void)
         } while (--n);
     }
     sample =(UBYTE *)(((highest + 1) << 10) + 1084 + (ULONG)mod);
+    /* Fixed (#570): the first long of a sample is cleared only if it lies
+       before the end of the samples (as ciatrklib's mt_init for a module
+       of unknown length); the original cleared it for every sample, and
+       empty samples at the end (or one of one word) cleared up to 4 bytes
+       behind the module */
+    end = (ULONG)sample;
+    for (i = 0; i < 31; i++)
+        end += (ULONG)W(mod + 42 + 30 * i) << 1;
     for (i = 0; i < 31; i++) {
-        *(ULONG *)sample = 0;           /* BUG(orig): also behind the module (#570) */
+        if ((ULONG)sample + 4 <= end)
+            *(ULONG *)sample = 0;
         pt.samplestarts[i] = sample;
         mod[44] &= 0x0f;                /* Fixed (#476): the finetune 0-15 */
         sample += (ULONG)W(mod + 42) << 1;
@@ -1291,7 +1302,7 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
  * @brief TrackInit address: initialise a module and enable playing.
  *
  * mt_init: the sample starts behind the highest pattern, song position
- * 0 (its sample clearing: BUG(orig) (#570); its pattern scan: Fixed (#477)).
+ * 0 (its sample clearing: Fixed (#570); its pattern scan: Fixed (#477)).
  * Playing is enabled even while Tracker Off, where mt_init does nothing:
  * Tracker On then plays with the old song pointer (BUG(orig) (#573)).
  * The program calls TrackPlay itself (the CIA interrupt setup is dead).
