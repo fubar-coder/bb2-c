@@ -15,7 +15,7 @@ reply -1 type 7 res 0 0 arg0 0
 reply to reply 0 0
 func result [the result] 10 res1 0
 func error 5 9
-comm result 0 7
+comm result 0 []
 preset [preset]
 preset cleared 0
 done

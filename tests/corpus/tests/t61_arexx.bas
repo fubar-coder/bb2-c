@@ -63,12 +63,12 @@ q=RexxEvent(rx)
 ReplyRexxMsg q,5,9,"x"
 q=RexxEvent(rp)
 NPrint "func error ",GetRexxResult(q,1)," ",GetRexxResult(q,2)
-; RXCOMM with RXFF_RESULT: BTST #17 on memory tests RXFUNC, so no string
+; RXCOMM with RXFF_RESULT: a result string (the original: none, #48)
 SendRexxCommand r,"cmd",$01020000
 q=RexxEvent(rx)
-ReplyRexxMsg q,0,7,"not sent"
+ReplyRexxMsg q,0,7,"sent"
 q=RexxEvent(rp)
-NPrint "comm result ",GetRexxResult(q,1)," ",GetRexxResult(q,2)
+NPrint "comm result ",GetRexxResult(q,1)," [",GetResultString(q),"]"
 ; Args[0] already set: SendRexxCommand keeps it
 Poke.l r+40,CreateArgString("preset")
 SendRexxCommand r,"ignored",$01000000
