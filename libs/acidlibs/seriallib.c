@@ -18,11 +18,6 @@
  * bytes to the write half, which then gets its own port and signal.
  *
  * Kept from the original (BUG(orig)):
- *   - WriteSerialString: flags bit 1 (value 2) selects both TrueString
- *     (length from the string instead of -1 = null terminated) and DoIO;
- *     without it the write is started with SendIO and not waited for.
- *     Bit 0 ("1=DoIO" in the help text) is never tested.  The two
- *     argument form takes a #long (an address), flags 0. (#254)
  *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
  *     number of bytes, 0 if nothing is waiting. (#256)
  *   - A unit that is not open: runtime error "Serial Device Not Open"
@@ -48,6 +43,15 @@
  *     says ("flags 1=wait on"); flag 1 did not wait.  Bit 0 and bit 1 both
  *     wait now (#255): the help's flag works, programs that passed 2 for
  *     the original's flag keep working.
+ *   - WriteSerialString: flags bit 1 (value 2) selected both TrueString
+ *     (length from the string instead of -1 = null terminated) and DoIO,
+ *     bit 0 was never tested.  The flags are now those of the help: bit 0
+ *     (1) = DoIO, bit 1 (2) = TrueString; without bit 0 the write is
+ *     started with SendIO and not waited for (#254).  A program that
+ *     passed 2 for TrueString with DoIO now writes asynchronously; 3 is
+ *     TrueString with DoIO.  As in the original, a program waits for an
+ *     asynchronous write (SerialEvent) before the next command on the
+ *     write request; CloseSerial waits for it (#258).
  *   - CloseSerial aborted the read request without WaitIO and left the
  *     write half's request alone (a pending SendIO write stayed pending);
  *     it now aborts and waits for both before CloseDevice, and so does
@@ -59,6 +63,9 @@
  *     when OpenDevice failed (exclusive access), cleared it: the open
  *     device was never closed.  An open unit is now left alone, OpenSerial
  *     returns 0 (#260).
+ * Kept from the original: the two argument form of WriteSerialString
+ * takes a #long (an address of a null terminated string, flags 0), not a
+ * string as the help suggests (programs pass addresses).
  * Kept from the original, not a bug: ReadSerialString writes no
  * terminating 0 (the compiler appends clr.b (a3)+ itself where it passes
  * a string on, blitz2.s:8767 sbtolong). (#257)
@@ -418,18 +425,18 @@ void BLITZ_ROUTINE writebyte(UWORD unit BL_REG(d0), UBYTE byte BL_REG(d1))
 /**
  * @brief WriteSerialString unit#,string,flags - write a string (_writestring3).
  *
- * CMD_WRITE through the write half.
+ * CMD_WRITE through the write half.  Flags as in the help: bit 0 (1) =
+ * DoIO, else SendIO, not waited for; bit 1 (2) = TrueString, the length
+ * of the string, else -1 (null terminated).
  *
- * BUG(orig) (#254): flags bit 1 (value 2) selects both TrueString (length
- * from the string instead of -1 = null terminated) and DoIO; without it
- * the write is started with SendIO and not waited for.  Bit 0 ("1=DoIO"
- * in the help text) is never tested.
+ * Fixed (#254): the original selected TrueString and DoIO both with bit
+ * 1 and never tested bit 0.
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *
  * @param unit  d0.w: the unit
  * @param data  d1: the string
- * @param flags d2.w: the flags (bit 1, see above)
+ * @param flags d2.w: the flags (1 = DoIO, 2 = TrueString)
  * @param lens  a2: the argument stack, -4(a2) = the string's length
  */
 void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
@@ -449,7 +456,7 @@ void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
     if (flags & 2)                      /* trueString */
         s->io.IOSer.io_Length = len;
     s->io.IOSer.io_Data = (APTR)data;
-    if (flags & 2)                      /* BUG(orig) (#254): DoIO on bit 1 too */
+    if (flags & 1)                      /* Fixed (#254): DoIO on bit 0 */
         DoIO((struct IORequest *)s->request);
     else
         SendIO((struct IORequest *)s->request);
@@ -461,8 +468,8 @@ void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
  *
  * MOVEQ #0,d2 then _writestring3 (the length popped there is not used
  * with flags 0, so it is not read here): SendIO with length -1, not
- * waited for.  BUG(orig) (#254): the two argument form takes a #long (an
- * address).
+ * waited for.  The two argument form takes a #long (an address), as in
+ * the original.
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *

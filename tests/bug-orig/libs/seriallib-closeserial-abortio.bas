@@ -1,6 +1,6 @@
 ; seriallib-closeserial-abortio (#258) - CloseSerial aborts the read
 ; request without WaitIO and leaves the write half's request alone: an
-; asynchronous write (WriteSerialString without flag 2 = SendIO) still
+; asynchronous write (WriteSerialString with flag 0 = SendIO) still
 ; in progress stays pending after CloseSerial.  The write is held: the
 ; remote end on the serial port (serial=on, tests/corpus/runner/serial.h)
 ; answers the request S with an XOFF, and serial.device (opened with
@@ -27,7 +27,7 @@ Poke.w io+18,82 : Poke.b io+79,$20 : Poke.s io+100,"serial.device"
 GetReg d0,io+100 : MOVE.l d0,a0 : GetReg d0,io : MOVE.l d0,a1
 MOVEQ #0,d0 : MOVEQ #0,d1 : MOVE.l 4,a6 : JSR -444(a6) : PutReg d0,oerr
 If oerr Then NPrint "second open failed ",oerr : End
-WriteSerialString 0,Chr$(1)+"seriallib-closeserial-abortio"+Chr$(2),2
+WriteSerialString 0,Chr$(1)+"seriallib-closeserial-abortio"+Chr$(2),3
 WriteSerial 0,5 : WriteSerial 0,83
 For i=1 To 50 : VWait : Next
 Poke.b wq+8,5

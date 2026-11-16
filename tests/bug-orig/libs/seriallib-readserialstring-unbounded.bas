@@ -37,8 +37,8 @@ u=OpenSerial("serial.device",0,19200,$80)
 If u=0 Then NPrint "open failed" : End
 rq=u+38
 SetSerialBuffer 0,4096
-WriteSerialString 0,Chr$(1)+"seriallib-readserialstring-unbounded"+Chr$(2),2
-WriteSerialString 0,Chr$(5)+"N1000",2
+WriteSerialString 0,Chr$(1)+"seriallib-readserialstring-unbounded"+Chr$(2),3
+WriteSerialString 0,Chr$(5)+"N1000",3
 ; wait (at most 5 s) until the 1000 bytes are there
 Gosub qry : tk=0
 While qn<1000 AND tk<250 : VWait : tk=tk+1 : Gosub qry : Wend
