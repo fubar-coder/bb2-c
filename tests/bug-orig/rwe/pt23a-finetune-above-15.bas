@@ -10,6 +10,8 @@
 ; played by hand (TrackPlay: one tick; speed 6, row 1 at the 7th tick;
 ; the CIA interrupt does not play in the emulator).
 ; Correct: the finetune is masked to 0..15 (16 -> 0): period 428.
+; The same test for ciatrklib: pt23a-finetune-above-15-ciatrklib.
+; @fixed #476
 ; @rwe ritrackerlib
 ; @pass file=pt.mod|@TESTDATA@/pt23a-finetune-above-15.mod
 DEFTYPE .l

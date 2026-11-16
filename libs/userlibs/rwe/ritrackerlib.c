@@ -29,8 +29,9 @@
  *   init: playing = 0; finit: mt_end if TrackInit was called
  *
  * State: the original's data block from mt_FunkTable to mt_olddata
- * (struct ptdata, the same layout: the routine reads behind the period
- * table into the voices, see BUG(orig), #476) and the variables of the glue
+ * (struct ptdata, the same layout: the original's routine read behind the
+ * period table into the voices, fixed below; the test compares the
+ * blocks) and the variables of the glue
  * code (struct ptglue, the same layout).  Paula's registers and the CIAs
  * are written as the original writes them (volatile, same width).
  * The routines are C; register contents the original carries from one
@@ -60,10 +61,9 @@
  * unused variable).
  * BUG(orig) of the play routine (the known PT2.3A bugs, cf. the changelog
  * of 8bitbubsy's pt23f replayer):
- *   - mt_init: the CLR.L of the first longword of every sample also clears 4 bytes behind the module for
- *     empty samples at its end (#570).
- *   - A finetune byte above 15 from the sample header makes the period
- *     lookups read far behind the period table (#476).
+ *   - mt_init: the CLR.L of the first longword of every sample also
+ *     clears 4 bytes behind the module for empty samples at its end
+ *     (#570).
  * Fixed in the play routine (intended deviations):
  *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
  *     parameter; the original started it as 0, and the first 1xx/2xx
@@ -106,6 +106,10 @@
  *     mt_PlayVoice took the start of such a sample from behind
  *     mt_SampleStarts (32: 0, 33: mt_SongDataPtr, ...) and its header
  *     from the position table and the patterns (#480).
+ *   - mt_init masks the finetune byte of the 31 sample headers to 0-15
+ *     (the module is changed in memory); the original took it unmasked,
+ *     and every period lookup (n_finetune * 72) of a byte above 15 read
+ *     far behind the period table (#476).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -351,9 +355,8 @@ static struct ptglue {
 
 _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
 
-/* a word / longword of the period table at byte offset `off`, also behind
-   the row or the table (BUG(orig): a finetune above 15 reads there,
-   #476) */
+/* a word of the period table at byte offset `off`, a longword of the
+   sample start table */
 #define PERIOD(off) (*(UWORD *)((UBYTE *)&pt + offsetof(struct ptdata, periods) + (off)))
 #define SAMPLESTART(off) (*(UBYTE **)((UBYTE *)&pt + offsetof(struct ptdata, samplestarts) + (off)))
 #define W(p) (*(UWORD *)(p))
@@ -484,6 +487,7 @@ static void mt_init(void)
     for (i = 0; i < 31; i++) {
         *(ULONG *)sample = 0;           /* BUG(orig): also behind the module (#570) */
         pt.samplestarts[i] = sample;
+        mod[44] &= 0x0f;                /* Fixed (#476): the finetune 0-15 */
         sample += (ULONG)W(mod + 42) << 1;
         mod += 30;
     }

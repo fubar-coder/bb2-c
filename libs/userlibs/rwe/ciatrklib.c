@@ -27,8 +27,9 @@
  * Data: the three blocks of the original - the library's variables
  * (pause_status ... modtable), the CIA part (RealTempo ... musintname)
  * and the play routine's (mt_FunkTable ... nor_LstEvt) - are structs with
- * the original's layout.  The play routine depends on it: it reads behind
- * mt_PeriodTable into mt_chan1temp (BUG(orig) below, #476), and the test finds the blocks in both builds.
+ * the original's layout: the original's play routine read behind
+ * mt_PeriodTable into mt_chan1temp and behind mt_SampleStarts (fixed
+ * below), and the test finds the blocks in both builds.
  *
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
@@ -90,6 +91,10 @@
  *     mt_PlayVoice took the start of such a sample from behind
  *     mt_SampleStarts (32: 0, 33: mt_SongDataPtr, ...) and its header
  *     from the position table and the patterns (#480).
+ *   - mt_init masks the finetune byte of the 31 sample headers to 0-15
+ *     (the module is changed in memory); the original took it unmasked,
+ *     and every period lookup (n_finetune * 72) of a byte above 15 read
+ *     behind the period table - into its own code (#476).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -166,12 +171,8 @@
  * and practically never cleared them (every such sample ended in a loop
  * of its first two bytes, a buzz or a DC level).
  *
- * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
- * sample header (n_finetune * 72) reads behind the play routine's data,
- * where the original has its own code and the C build other memory
- * (#476).
- * The C build keeps a3 in FreeTrackerModule (the original's LEA
- * modtable,a3 changes the string pointer).
+ * DIFF: none in the results.  The C build keeps a3 in FreeTrackerModule
+ * (the original's LEA modtable,a3 changes the string pointer).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -753,6 +754,16 @@ static void clearsamplenums(UBYTE *mod, ULONG modlen)
         }
 }
 
+/* Fixed (#476): the finetune byte of the 31 sample headers masked to
+   0-15, once at mt_init instead of an AND per note in mt_PlayVoice */
+static void maskfinetunes(UBYTE *mod)
+{
+    int i;
+
+    for (i = 0; i < 31; i++)
+        mod[20 + 30 * i + 24] &= 0x0f;
+}
+
 /* mt_init: a4 = the module length (4(a3) of the slot).  The first long
    of a sample is cleared if it lies inside the module (fixed, #438: the
    original compared the length with the sample's address); the end is
@@ -766,6 +777,7 @@ static void mt_init(ULONG modlen)
 
     playdata.SongDataPtr = hdr;
     clearsamplenums(hdr, modlen);
+    maskfinetunes(hdr);
     sampdata = hdr + patternsize(hdr);
     end = (ULONG)hdr + modlen;
     if (modlen == 1)

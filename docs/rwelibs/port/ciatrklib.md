@@ -208,6 +208,11 @@ kind F):
   behind `mt_SampleStarts` (32: 0, 33: `mt_SongDataPtr`, …) and its
   header from the position table and the patterns (#480; bug-orig test
   `pt23a-samplenum-over-31-ciatrklib`).
+* `mt_init` masks the finetune byte of the 31 sample headers to 0–15
+  (the module is changed in memory); the original took it unmasked, and
+  every period lookup (`n_finetune` × 72) of a byte above 15 read behind
+  the play routine's data – its own code (#476; bug-orig test
+  `pt23a-finetune-above-15-ciatrklib`).
 
 ## BUG(orig), kept
 
@@ -232,9 +237,7 @@ kind F):
 
 ## DIFF and not reproducible
 
-No DIFF in the results. A finetune byte above 15 in a sample header
-(`n_finetune` × 72) reads behind the play routine's data – the
-original's own code there, other memory in the C build (#476). The C build
+No DIFF in the results. The C build
 keeps a3 in `FreeTrackerModule` (the original's `LEA modtable,a3`
 changes the string pointer) and generally more registers.
 

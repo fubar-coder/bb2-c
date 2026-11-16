@@ -88,10 +88,9 @@ four 44-byte voice blocks `n_note` … `n_reallength`, `mt_SampleStarts`,
 `playing`, `status`, `mask`) and the glue variables `ciatime` …
 `mt_data`. The C build has both as structs with the same layout
 (`struct ptdata`, 1538 bytes, `struct ptglue`, 28 bytes,
-`_Static_assert`s): the period lookups of a finetune byte above 15 read
-behind the table into the voices (BUG(orig), #476), which gives the
-same values only with the same layout; and the test compares
-both blocks with the reference build's.
+`_Static_assert`s): the original's period lookups read behind the table
+into the voices (fixed, #474, #476, #481), and the test compares both
+blocks with the reference build's.
 
 ## C and assembler
 
@@ -144,8 +143,6 @@ pt23f changelog served as the checklist, no code was taken from it):
 * `mt_init`: the `CLR.L` of every sample's
   first longword also clears 4 bytes behind the module for empty
   samples at its end (#570).
-* A finetune byte above 15 in a sample header makes the period lookups
-  read far behind the table (#476).
 
 ## Fixed
 
@@ -204,6 +201,10 @@ kind F), in the play routine:
   such a sample from behind `mt_SampleStarts` (32: 0, 33:
   `mt_SongDataPtr`, …) and its header from the position table and the
   patterns (#480; bug-orig test `pt23a-samplenum-over-31`).
+* `mt_init` masks the finetune byte of the 31 sample headers to 0–15
+  (the module is changed in memory); the original took it unmasked, and
+  every period lookup (`n_finetune` × 72) of a byte above 15 read far
+  behind the table (#476; bug-orig test `pt23a-finetune-above-15`).
 
 ## Test
 
