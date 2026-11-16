@@ -18,7 +18,6 @@
  * bytes to the write half, which then gets its own port and signal.
  *
  * Kept from the original (BUG(orig)):
- *   - ReadSerialMem reads through the WRITE request (+128). (#253)
  *   - WriteSerialString: flags bit 1 (value 2) selects both TrueString
  *     (length from the string instead of -1 = null terminated) and DoIO;
  *     without it the write is started with SendIO and not waited for.
@@ -43,6 +42,10 @@
  *     through unit 0's write request).  All use unit*256 now (#252).
  *     Index arithmetic is word sized (ADDA.w: sign extended), as in the
  *     original.
+ *   - ReadSerialMem read through the WRITE request (+128), so the read
+ *     parameters (SetSerialParams: EOF mode, ...) did not apply and a
+ *     pending asynchronous write shared the request; it reads through
+ *     the read request now (#253).
  *   - CloseSerial aborted the read request without WaitIO and left the
  *     write half's request alone (a pending SendIO write stayed pending);
  *     it now aborts and waits for both before CloseDevice, and so does
@@ -478,10 +481,10 @@ void BLITZ_ROUTINE writestring2(UWORD unit BL_REG(d0), ULONG data BL_REG(d1))
     SendIO((struct IORequest *)s->request);
 }
 
-/* command `cmd` with length/data through the write half, DoIO */
-static void memio(UWORD unit, UWORD cmd, ULONG addr, ULONG len)
+/* command `cmd` with length/data through the half at +add, DoIO */
+static void memio(UWORD unit, UWORD add, UWORD cmd, ULONG addr, ULONG len)
 {
-    struct serio *s = slot(unit, 8, 128);
+    struct serio *s = slot(unit, 8, add);
 
     if (!s->request) {
         noser();
@@ -507,13 +510,15 @@ static void memio(UWORD unit, UWORD cmd, ULONG addr, ULONG len)
 void BLITZ_ROUTINE writemem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
                             ULONG len BL_REG(d2))
 {
-    memio(unit, CMD_WRITE, addr, len);
+    memio(unit, 128, CMD_WRITE, addr, len);
 }
 
 /**
  * @brief ReadSerialMem unit#,Address,Length - read into memory (_readmem).
  *
- * CMD_READ, DoIO.  BUG(orig) (#253): through the WRITE request (+128).
+ * CMD_READ through the read half, DoIO.  Fixed (#253): the original read
+ * through the WRITE request (+128), whose parameters SetSerialParams
+ * does not set (EOF mode had no effect).
  *
  * Errors: "Serial Device Not Open" (TRAP #0, #262).
  *
@@ -524,7 +529,7 @@ void BLITZ_ROUTINE writemem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
 void BLITZ_ROUTINE readmem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
                            ULONG len BL_REG(d2))
 {
-    memio(unit, CMD_READ, addr, len);
+    memio(unit, 0, CMD_READ, addr, len);   /* Fixed (#253): read half */
 }
 
 /**
