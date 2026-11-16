@@ -45,8 +45,6 @@
  *     like the original.  deftime stays 0, so a tempo command (Fxx >=
  *     $20) writes 0 to CIA-B timer A's latch ($BFD400/$BFD500) and to
  *     ciatime (#571).
- *   - Fxx compares signed (CMP.B #32: BGE): F80-FFF set the speed to
- *     $80-$FF instead of the tempo (#569).
  *   - TrackerChannels: a masked voice does not advance the pattern
  *     offset, so the following voices play the notes of the voice
  *     before (#568); effects (mt_CheckEfx) and the loop pointers of
@@ -64,6 +62,9 @@
  *   - mt_init: the CLR.L of the first longword of every sample also
  *     clears 4 bytes behind the module for empty samples at its end
  *     (#570).
+ * Fixed in RI's code (intended deviations):
+ *   - Fxx compares unsigned: F80-FFF are tempos; the original compared
+ *     signed (CMP.B #32: BGE) and set the speed to $80-$FF (#569).
  * Fixed in the play routine (intended deviations):
  *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
  *     parameter; the original started it as 0, and the first 1xx/2xx
@@ -868,8 +869,8 @@ static void mt_volumechange(aud_t *hw, struct chan *c)
     hw->ac_vol = vol;
 }
 
-/* mt_SetSpeed (Fxx): 0 stops (mt_end), >= 32 signed the tempo
-   (BUG(orig): F80-FFF are speeds, #569) */
+/* mt_SetSpeed (Fxx): 0 stops (mt_end), 32-255 the tempo; Fixed (#569):
+   the original compared signed (CMP.B #32: BGE), F80-FFF were speeds */
 static void mt_setspeed(struct chan *c)
 {
     UBYTE speed = c->cmdlo;
@@ -878,7 +879,7 @@ static void mt_setspeed(struct chan *c)
         mt_end();
         return;
     }
-    if ((BYTE)speed >= 32) {
+    if (speed >= 32) {
         settempo(speed);
         return;
     }

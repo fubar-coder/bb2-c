@@ -31,8 +31,9 @@
  * loops, finetunes, volumes; empty ones at the end), four patterns with
  * random notes and every effect (speeds 1-8, tempos, position jumps,
  * pattern breaks, loops, delays, retrigs, invert loop ...), and a
- * second, small module for the speed/tempo corner cases (F80: a speed,
- * BUG(orig) #569; F00 on voice 1 stops, and voices 2-4 then read their notes
+ * second, small module for the speed/tempo corner cases (F81: a speed
+ * in the original, a tempo in the C build, Fixed (#569); F00 on voice 1
+ * stops, and voices 2-4 then read their notes
  * from the custom chip registers in the original, Fixed (#475)).  Rows by hand: the first
  * 1xx (mt_LowMask 0 in the original, Fixed (#478)), volume above 64, tremolo's ramp-down
  * with a negative vibrato position (Fixed (#482)), 9xx with a note
@@ -350,7 +351,7 @@ static void build_main(void)
     modsz = (ULONG)(h - ref) + smp;
 }
 
-/* the second module: one pattern for Fxx: F80 (a speed), F20, then F00 */
+/* the second module: one pattern for Fxx: F81 (a tempo, #569), F20, then F00 */
 static void build_speed(void)
 {
     UBYTE *pat;

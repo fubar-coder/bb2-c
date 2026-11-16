@@ -120,8 +120,6 @@ RI's glue:
   (`Fxx` with xx ≥ $20) writes 0 to CIA-B timer A's latch
   (`$BFD400`/`$BFD500`) – a timer the library never allocated – and to
   `ciatime` (#571).
-* `Fxx` compares signed (`CMP.B #32: BGE`): F80–FFF set the speed to
-  128–255 instead of the tempo (#569).
 * `TrackerChannels`: a masked voice does not advance the pattern
   offset, so the following voices play the notes of the voice before
   (#568); the effects (`mt_CheckEfx`) and the loop registers of
@@ -147,7 +145,14 @@ pt23f changelog served as the checklist, no code was taken from it):
 ## Fixed
 
 Intended deviations from the original (`docs/libs/deviations.md`,
-kind F), in the play routine:
+kind F), in RI's code:
+
+* `Fxx` compares unsigned, so F80–FFF are tempos as in Protracker 2.3A;
+  the original compared signed (`CMP.B #32: BGE`) and set the speed to
+  128–255 (#569; library test `rwe_ritrackerlib`, the second module's
+  F81).
+
+In the play routine:
 
 * `mt_LowMask` starts as `$FF`, so the first 1xx/2xx slides by its whole
   parameter; the original started it as 0, and the first 1xx/2xx before
@@ -230,7 +235,7 @@ samples (loops, finetunes, a volume above 64, empty samples at the end),
 four random patterns with all effects and some rows by hand (the first
 1xx, tremolo ramp-down with a negative vibrato position, 9xx with a
 note, invert loop, retrig, arpeggios whose note plus the half-tones lies
-behind the row); a small one for F81 (a speed), tempos, E01
+behind the row); a small one for F81 (a tempo; a speed in the original, #569), tempos, E01
 and an F00 on voice 1 (the voices behind read the redirected registers).
 About 1700 calls: 1300 ticks of playing, `TrackDMA`, `TrackerChannels`
 (two masks), `Tracker` off/on, `TrackerPause`, `TrackInit` while
