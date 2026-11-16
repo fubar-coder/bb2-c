@@ -3,10 +3,12 @@
   fixed-bugs pages and fails the build (errorf) for every problem:
 
   * a levels list that is not the five levels 1 to 5 in this order, each
-    with a name and a text (the shortcode's warning box shows levels 1
-    and 2);
+    with a name and a text (the shortcode counts the rows of levels 1
+    and 2 in its warning box);
   * a row without a required field, with a severity that is not one of
-    the levels or a topic that is not in the file's topics list;
+    the levels, a topic that is not in the file's topics list, or a
+    highlight (optional, the rows of the warning box) that is not a
+    boolean;
   * an issue that is a row twice, or a row and a notRows entry;
   * a row whose anchor is no heading id of its page;
   * an issue linked on a fixed-bugs page that is neither a row nor on the
@@ -49,6 +51,9 @@
   {{- end -}}
   {{- if not (in $topics .topic) -}}
     {{- errorf "fixoverview (%s): row #%s has the topic %q, which is not in the topics list" $name $id .topic -}}
+  {{- end -}}
+  {{- if and (isset $row "highlight") (ne (printf "%T" $row.highlight) "bool") -}}
+    {{- errorf "fixoverview (%s): row #%s has the highlight %q, not true or false" $name $id (printf "%v" $row.highlight) -}}
   {{- end -}}
   {{- if index $seen $id -}}
     {{- errorf "fixoverview (%s): issue #%s has more than one row" $name $id -}}

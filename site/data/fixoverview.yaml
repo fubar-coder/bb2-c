@@ -88,6 +88,7 @@ rows:
     text: "`=<` is less-or-equal, the same as `<=`; the original compiled it as \"not equal\" without a message."
     page: compiler
     anchor: less-or-equal
+    highlight: true
   - issue: 10
     severity: 5
     topic: "Compiler"
@@ -2032,6 +2033,7 @@ rows:
     text: "`CustomSprites` counts its `CCOffset` in copper instructions, as documented; the original took it 16 times too large."
     page: libraries
     anchor: customsprites-ccoffset
+    highlight: true
   - issue: 325
     severity: 4
     topic: "Compiler"
@@ -2488,6 +2490,7 @@ rows:
     text: "`Box` adds the `BitMapOrigin` origin once, like `Line` and `Boxf`; the original added it twice."
     page: libraries
     anchor: box-origin
+    highlight: true
   - issue: 392
     severity: 5
     topic: "Graphics"
@@ -2688,6 +2691,7 @@ rows:
     text: "`RenderPoly` after `RenderToBitmap b,d` draws on bitmap `b` with `d` as the dither pattern, as documented; the original swapped the two."
     page: libraries
     anchor: rendertobitmap-dither
+    highlight: true
   - issue: 422
     severity: 3
     topic: "Graphics"
@@ -2944,6 +2948,7 @@ rows:
     text: "`CustomColors` with a `thru256flag` of 0 acts as if the flag were left out; the original treated 0 as 1."
     page: libraries
     anchor: customcolors-thru256flag
+    highlight: true
   - issue: 952
     severity: 5
     topic: "Gadgets & menus"
@@ -3496,6 +3501,7 @@ rows:
     text: "`LoadShape` refuses a picture taller than 1023 rows or wider than 992 pixels (\"Can't Read/Write Shapes File\"), also without runtime error checking; the original loaded it with a wrapped blit size."
     page: libraries
     anchor: loadshape-blit-size
+    highlight: true
   - issue: 1047
     severity: 3
     topic: "Graphics"

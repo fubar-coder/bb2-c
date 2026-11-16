@@ -34,11 +34,7 @@ programs that were written to make up for the bug; no known example
 program, demo or game uses the commands this way. The two after them
 change every program that uses the commands with the values named, and
 the last one stops a program that loads a very large picture as a shape.
-Check your own programs. All fixes that can change a program that ran
-correctly, with the ones that only change something you may notice, such
-as its sound, are in the warning box of
-[Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}}),
-and the table there sorts every fix by what it can change in a program:
+Check your own programs for them:
 
 * [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
   `If a=<b` was true whenever `a` and `b` differed. It is less-or-equal,
@@ -64,6 +60,13 @@ and the table there sorts every fix by what it can change in a program:
   error "Can't Read/Write Shapes File", also without runtime error
   checking. A program that loaded such a picture as a shape now stops
   there; load it as a bitmap instead.
+
+The same fixes are in the warning box of
+[Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}}).
+The table on that page sorts every fix by what it can change in a
+program. Its levels 1 and 2 hold all fixes that can change a program that
+ran correctly, also the ones that only change something you may notice,
+such as its sound.
 
 ## Bugs an ordinary program can meet
 

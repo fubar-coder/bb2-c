@@ -4,7 +4,8 @@
   under data/: the test of the check uses it).
 
     {{< fix-overview part="levels" >}}    the five severity levels, as a list
-    {{< fix-overview part="breaking" >}}  the rows of levels 1 and 2 in a warning box
+    {{< fix-overview part="breaking" >}}  the rows marked highlight in a warning box,
+                                          with the count of the rows of levels 1 and 2
     {{< fix-overview part="table" >}}     the table; also runs the check
                                           (layouts/_partials/fix-overview/check.html)
 
@@ -31,17 +32,13 @@
 </ul>
 
 {{- else if eq $part "breaking" -}}
-{{- $lists := dict -}}
-{{- range slice 1 2 -}}
-  {{- $level := . -}}
-  {{- $items := slice -}}
-  {{- range where $rows "severity" $level -}}
-    {{- $href := relref $.Page (printf "%s/%s#%s" $base .page .anchor) -}}
-    {{- $items = $items | append (printf `<li><a href="%s">%s</a> (<a href="https://github.com/fubar-coder/bb2-c/issues/%v">#%v</a>)</li>` $href (.text | markdownify) .issue .issue) -}}
-  {{- end -}}
-  {{- $lists = merge $lists (dict (string $level) (delimit $items "")) -}}
+{{- $items := slice -}}
+{{- range where $rows "highlight" true -}}
+  {{- $href := relref $.Page (printf "%s/%s#%s" $base .page .anchor) -}}
+  {{- $items = $items | append (printf `<li><a href="%s">%s</a> (<a href="https://github.com/fubar-coder/bb2-c/issues/%v">#%v</a>)</li>` $href (.text | markdownify) .issue .issue) -}}
 {{- end -}}
-{{- $content := printf `<p><strong>These fixes can change the results of a program that ran correctly with Blitz Basic 2</strong> (level 1). Check your sources for the commands they name.</p><ul>%s</ul><p><strong>With these fixes, such a program still does its job, but you may notice a difference</strong> (level 2).</p><ul>%s</ul>` (index $lists "1") (index $lists "2") -}}
+{{- $changes := len (where $rows "severity" "le" 2) -}}
+{{- $content := printf `<p><strong>These fixes can change a program that ran correctly with Blitz Basic 2, and they are the ones an ordinary program meets most easily.</strong> Check your sources for the commands they name.</p>%s<p>These are only the highlights. All %d fixes that can change such a program are at the top of <a href="#all-fixes">the table below</a>, at levels 1 and 2; its level filter can show one of the two levels alone.</p>` (cond (gt (len $items) 0) (printf `<ul>%s</ul>` (delimit $items "")) "") $changes -}}
 {{- partial "shortcodes/callout.html" (dict
   "content" ($content | safeHTML)
   "icon" "exclamation"

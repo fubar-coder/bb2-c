@@ -127,6 +127,7 @@ add sorting and filters. The file has four parts:
     page: libraries      # the fixed-bugs page: compiler, running-blitz2,
                          # libraries or editor
     anchor: rendertobitmap-dither   # a heading id on that page
+    highlight: true      # optional: the row is in the warning box
   ```
 
   The level answers one question: can a program that ran correctly with
@@ -136,9 +137,15 @@ add sorting and filters. The file has four parts:
   prints, or a stop); level 2 a difference a user may notice while the
   program still does its job (sound, timing, display details, the order
   or form of output). A new runtime error (3) ranks above a new compile
-  error (4) because it is harder to foresee. The page's warning box shows
-  the rows of levels 1 and 2. A level-3 sentence names the runtime error
-  in at most five words. Quote every text value.
+  error (4) because it is harder to foresee. A level-3 sentence names the
+  runtime error in at most five words. Quote every text value.
+
+  The page's warning box shows only the rows with `highlight: true` (a
+  boolean; any level), the few fixes an ordinary program meets most
+  easily, and points to the table for the count of all rows of levels 1
+  and 2. Keep it to about three to six rows, the same set as the list
+  "Changes for existing programs" on the fixed-bugs index page, which is
+  written by hand.
 
 Every fix that gets an entry on a fixed-bugs page also gets its row here.
 The build checks the file (`layouts/_partials/fix-overview/check.html`)

@@ -11,6 +11,7 @@ set(_cases
 	"bad-levels|the levels are 1,2,3,4, not the five levels 1 to 5"
 	"bad-severity|row #421 has the severity 6, not one of the levels"
 	"unknown-topic|row #421 has the topic \"Cooking\", which is not in the topics list"
+	"bad-highlight|row #421 has the highlight \"yes\", not true or false"
 	"duplicate|issue #421 has more than one row"
 	"no-row|issue #999 is linked on [^ ]+ but has no row")
 foreach(c IN LISTS _cases)
