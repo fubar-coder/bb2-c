@@ -14,14 +14,22 @@
 #   ID.inc      (optional) an include as text, tokenised the same way and
 #               staged as CORPUS:src/ID.inc
 # ctest blitz2_ID (- as _), label emulator, skipped (77) without Amiberry.
+# The intrinsics (intrinsic-*.bas) check the compiled code themselves: the
+# program counts the JSR instructions (opcode $4EB9, every library call)
+# between two labels around the statement and prints the count, so the
+# expectation names the cases that call the library and those that do not.
+# The self test selftest/ID.bas (an expectation the port does not meet on
+# purpose, ctest blitz2_selftest_ID) must come out REGRESSED, with the
+# mismatching case in the report.
 set(BLITZ2_TEST_TIMEOUT 90 CACHE STRING "tests/blitz2: time limit of one emulator session (seconds)")
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(blitz2_test_sources)
 
-file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.bas)
-foreach(bas IN LISTS tests)
+# one expect test: ID.bas and ID.expect in dir; name the ctest name;
+# selftest: the expectation is wrong on purpose (exit status 1 wanted)
+function(blitz2_test bas dir name selftest)
 	get_filename_component(id ${bas} NAME_WE)
-	set(expect ${CMAKE_CURRENT_SOURCE_DIR}/${id}.expect)
+	set(expect ${dir}/${id}.expect)
 	if(NOT EXISTS ${expect})
 		message(FATAL_ERROR "tests/blitz2: ${bas} has no ${id}.expect")
 	endif()
@@ -42,20 +50,20 @@ foreach(bas IN LISTS tests)
 		DEPENDS ${bas} ${ted_tokens} ${TEDSRC} host_tools
 		COMMENT "Tokenising tests/blitz2/${id}.bas"
 		VERBATIM)
-	list(APPEND blitz2_test_sources ${src})
+	set(srcs ${src})
 	# ID.inc (text, optional): an include, tokenised like ID.bas, which
 	# the program reads as CORPUS:src/ID.inc
 	set(incfile)
-	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc)
-		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc)
+	if(EXISTS ${dir}/${id}.inc)
+		set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${dir}/${id}.inc)
 		set(inc ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.inc)
 		add_custom_command(OUTPUT ${inc}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
-			COMMAND ${TEDSRC} tok ${ted_tokens} ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc ${inc}
-			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${id}.inc ${ted_tokens} ${TEDSRC} host_tools
+			COMMAND ${TEDSRC} tok ${ted_tokens} ${dir}/${id}.inc ${inc}
+			DEPENDS ${dir}/${id}.inc ${ted_tokens} ${TEDSRC} host_tools
 			COMMENT "Tokenising tests/blitz2/${id}.inc"
 			VERBATIM)
-		list(APPEND blitz2_test_sources ${inc})
+		list(APPEND srcs ${inc})
 		set(incfile "file=src/${id}.inc|${inc}\n")
 	endif()
 
@@ -74,11 +82,37 @@ source=${src}
 expect=${expect}
 regression=on
 ${incfile}")
-	string(REPLACE "-" "_" name "blitz2_${id}")
-	add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
+	if(selftest)
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DRUNNER=${CORPUSRUN} -DSUB=pass
+			-DPASS=${work}.pass -DWANT=1 -P ${PROJECT_SOURCE_DIR}/tests/bug-orig/want.cmake)
+	else()
+		add_test(NAME ${name} COMMAND ${CORPUSRUN} pass ${work}.pass)
+	endif()
 	# one session, maybe waiting for a free emulator slot
 	math(EXPR limit "${BLITZ2_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
+	set(blitz2_test_sources ${blitz2_test_sources} ${srcs} PARENT_SCOPE)
+endfunction()
+
+file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.bas)
+foreach(bas IN LISTS tests)
+	get_filename_component(id ${bas} NAME_WE)
+	string(REPLACE "-" "_" name "blitz2_${id}")
+	blitz2_test(${bas} ${CMAKE_CURRENT_SOURCE_DIR} ${name} OFF)
+endforeach()
+file(GLOB selftests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/selftest/*.bas)
+foreach(bas IN LISTS selftests)
+	get_filename_component(id ${bas} NAME_WE)
+	string(REPLACE "-" "_" name "blitz2_selftest_${id}")
+	blitz2_test(${bas} ${CMAKE_CURRENT_SOURCE_DIR}/selftest ${name} ON)
+	# the mismatching case is named in the report: the line the program
+	# printed and the line the expectation wanted
+	file(STRINGS ${bas} want REGEX "^; @want ")
+	if(want MATCHES "@want (.+)$")
+		set_tests_properties(${name} PROPERTIES PASS_REGULAR_EXPRESSION "${CMAKE_MATCH_1}")
+	else()
+		message(FATAL_ERROR "tests/blitz2: ${bas} has no line \"; @want REGEX\"")
+	endif()
 endforeach()
 add_custom_target(blitz2_test_sources ALL DEPENDS ${blitz2_test_sources})

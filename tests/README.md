@@ -552,6 +552,18 @@ changes its `ID.expect` in the same commit and names the issue
 (`#N` in the commit message), like a [fixed test](#fixed-tests); the
 program is not edited to avoid the difference.
 
+The tests of the intrinsics (`intrinsic-*.bas`, the library functions
+blitz2 compiles inline, `openspec/specs/compiler/intrinsics`) check the
+compiled code as well as the value: the program counts the JSR
+instructions (`$4EB9`, the form of every library call) between two labels
+around the statement (`jsrs{?a,?b}`, the routine in each test) and prints
+the count, so its expectation says which cases call the library and
+which do not. The self test `blitz2_selftest_intrinsic_selftest_wrong`
+(`tests/blitz2/selftest/`, an expectation of no call for `Int` of a
+Float) must come out REGRESSED with the case in the report (its line
+`; @want REGEX`, the ctest `PASS_REGULAR_EXPRESSION`: the observed
+`int f: calls 1`).
+
 ### Corpus
 
 The corpus (`tests/corpus/`): `corpus` (71 test programs
