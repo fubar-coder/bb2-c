@@ -81,6 +81,17 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 - [x] 10.12 medlib: newline and playnote as an assembler line routine in the original's form (PlayMed stays 1.05 times the original after the C tuning of 10.10, design decision 24), keeping the player state in a3-a5 under the saving thunk
 
+## 11. The last slow commands (after the final measurement of 10.6)
+
+The four commands still 10 % or more slower than the original in `perf-analysis/final-table.md`, and SColl again with what groups 2-10 showed (user decision 2026-11-16). Same method: find the cost in the disassembly against the original, C first, assembler only where C stays more than 1-2 % behind; results bit for bit.
+
+- [ ] 11.1 Val (vallib `getdec`: its state in memory, the loop in C; 1.63 times)
+- [ ] 11.2 Str$ (printlib; 1.20 times)
+- [ ] 11.3 Instr (stringfunclib, the search loop; 1.17 times)
+- [ ] 11.4 Volume (audiolib, the mask loop of four passes; 1.37 times)
+- [ ] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays
+- [ ] 11.6 Measure, tighten the budgets, update final-table.md
+
 ## 9. Closing
 
 - [x] 9.1 Check `libs/register-contract`, `libs/performance`, `testing/performance-budgets` and the `testing/library-capture` delta against the implementation; adjust the text where decisions changed it - done (2026-11-16): the speed profile is six libraries (strings1lib/strings2lib are not in it); "C first, assembler where C stays behind" and "Slow commands are listed" in `libs/performance`; internal tokens keep contracts without thunks, `__entrypoint` with `no_icf` and its build check in `libs/register-contract`; the budgets in the `B~T` form, warp mode and parallel sessions in `testing/performance-budgets`; the `library-capture` delta covers the acidlibs only (the RWE userlib programs keep their sets); proposal and design decisions 2 and 6 name the later state; `openspec validate libs-performance --strict` passes
