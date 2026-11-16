@@ -717,6 +717,81 @@ build.
       12744 (12785.9), 8 QBlit + UnQueue 25704 -> 25356 (25417.8); qblitlib
       3200 -> 3052 bytes. UnQueue with a BitMap (unqueue2), which the
       benchmark does not run, is unchanged.
+23. **The players (task 10.10, 2026-11-16).** Tuned in C after the
+    analysis `analyse-players.md` (per-pattern cycle counts of the
+    original's replay code against GCC's), one step per commit, each
+    measured. trackerlib: `mt_checkcom`, `mt_checkcom2` and
+    `mt_playvoice` are `BL_ALWAYS_INLINE` in `mt_music` (the per-voice
+    call, the argument moves and the save of a2 for the audio address
+    went), `mt_playvoice` takes the note's address instead of a pointer
+    to the position, the sample number is a `UWORD` and the loop
+    counter a `WORD` (DBF without GCC's `clr.w/subq.l/bcc` tail). The
+    effect routines keep the audio address as a `ULONG`: as a pointer
+    GCC writes the period of the no-effect path as `d16(a6)`, 4 cycles
+    more per voice and frame. medlib:
+    - M1: `_IntHandler` and the routines of a pulse (`newline`,
+      `nextline`, `hold`, `ticks`) with their helpers are inline in
+      `_PlayMed`: one function per pulse as in the original.
+    - M3: the player state in the fixed registers of the libraries
+      (user decision 2026-11-15): during a pulse a3 holds the module, a4
+      its song, a5 the track at hand, as the global register variables
+      `blitz_string`, `blitz_locals`, `blitz_globals` (macros `PM`,
+      `PS`, `PT` in `medlib.c`); GCC has only a0-a2/a6 for addresses
+      and spilled them as locals. `_PlayMed` is a thunk that saves and
+      restores a3-a5, as the original's `_PlayMed` saves a4-a6 (which
+      keeps the module in a2, the song in a4, the track in a5). Nothing
+      a pulse runs relies on their Blitz meaning: the player makes no
+      ALibJsr, no OS call and no string work, its functions take
+      nothing from a3-a5 but this state, and an interrupt during
+      PlayMed finds the program's registers as with the original (an
+      interrupt server gets a5 from exec, a Blitz handler takes the
+      program's a5 from intlib's `newint` and loads a3 at the start of
+      each string expression). `playnote` is inline in `newline`; an
+      out-of-line copy serves the replays of the ticks.
+    - Pattern 4: `periods_of` adds `(BYTE)(finetune << 2)` as a byte
+      offset to `&periodtable[8]` (the same pointer as the division by
+      4 and the long index), the note of a sample is a `UWORD` after its
+      clamp, the track loops compare with a local copy of `numtracks`.
+      Making the instrument number a `UWORD` changes nothing: GCC proves
+      `(WORD)(i << 3)` non-negative and indexes with a long anyway.
+    - Pattern 5: `playnote` makes the channel mask once; the loops
+      already test ChanMask with BTST in a register.
+    - Pattern 6: `switch (cmd & 0x1f)` in the ticks: the command is 0-31
+      (masked where it is stored), the AND tells GCC so and the jump
+      table loses its range check and the AND.l #255. GCC ignores
+      `__builtin_unreachable` for the range (and splits the table when
+      every value has a case), and a `goto *` would stop the inlining of
+      `ticks` (GCC does not inline a function with a computed goto).
+    - Pattern 7: `pushnewvals` is a DBF loop that shifts the mask and the
+      DMA bits as it uses them and walks the track pointers.
+    - `while ((BYTE)n < 0) n += 12;` in `playnote`: GCC computed the
+      number of passes with a DIVU; an empty `asm` on n in the loop body
+      keeps the plain loop (22 cycles per pass, as the original). Not
+      in the benchmark's path; the library test `systest_med` got a
+      third module with notes below 0 for it.
+    Measured (cycles per call; PlayModule: per frame), before -> after
+    each step, the original in brackets: PlayModule 2843.8 -> 2115.5
+    (2409.5); PlayMed 11583.1 -> M1 11129.5 -> M3 10837.2 -> 4: 10647.1
+    -> 5: 10649.2 -> 6: 10514.2 -> 7: 10415.2 (9950.0). The PlayMed
+    value is quantised by the raster waits of a line tick (it ends on a
+    raster line), so each step was also measured in a scratch build
+    without the waits (`wait1lin` empty): M3 6714.6 -> 6580.8 -> 6533.5
+    -> 6433.1 -> 6319.2. The PlayModule frame value moves with the
+    layout of the libraries in the program (the empty loop it subtracts
+    runs 150000 times: 0.3 cycles per iteration are 340 per frame): with
+    trackerlib unchanged the medlib steps give 2224.9 to 2614.1, so its
+    budget's B is the highest of the runs of all layouts. trackerlib is
+    below the original; PlayMed stays 1.05 times the original (about
+    6 % in the code without the waits). The remaining gap is spread:
+    GCC keeps the pointer into `trackdataptrs`, `numtracks` and the
+    period table pointer of a note on the stack in `newline` (register
+    pressure: a0-a2/a6 for addresses besides a3-a5), reads the data base
+    with `abs.l` instead of the original's `d16(a6)` and zero-extends
+    bytes before indexed accesses. The library test `systest_tracker`
+    (new, tag `[tracker]`) covers trackerlib's player (every effect,
+    the audio registers and voices after every frame), recorded from
+    the original; the C build of main and of each step give the same
+    cases.
 
 ## Risks / Trade-offs
 
