@@ -972,6 +972,26 @@ build.
     per function, none in a benchmark. sortlib `FFP_CC_`, runerrlib
     `spfix` (a flag from the CCR in the same asm) and gtlib `addglist`
     (a2 argument) keep their private forms.
+29. **The list commands and Sound (tasks 13.20 to 13.22, 2026-11-16).**
+    C, no assembler, by the analysis `analyse-g13-sound-lists.md`
+    (cycles counted from the disassemblies, then measured in
+    `tests/perf`, two runs; the original in brackets).
+    - NextItem/PrevItem (task 13.20): `firstitem2`/`lastitem2` were
+      functions with a stack argument (`move.l d0,-(sp) : jsr : addq.l
+      #4,sp`) and computed `link ? item : 0` branchless (SNE/EXT/EXT/AND);
+      the current item was tested in an address register (`cmpa.w #0`,
+      10 cycles) and every exit went to one shared RTS by BRA.s. Now
+      both helpers are `BL_ALWAYS_INLINE` with an exit per result, the
+      current item is read into a data register (`__asm__("" :
+      "+d"(cur))`; GCC still adds a TST.l, 4 cycles, where MOVE set the
+      flags; `register ... __asm("d0")` did not help), and the middle item
+      is the likely path. GCC put the RTS of that path behind the rare
+      exits as long as the function itself stood in the `!subs` table
+      before its body (its address taken): the entries are `BLITZ_ALIAS`
+      of a static C function, which gives the middle item its own RTS.
+      Middle item 160 -> 144 cycles (148), first call 244 -> 140 (160),
+      the end 142 -> 140 (126). `bstr.nextitem51` 231.8 -> 213.9 (217.8),
+      0.98 times the original.
 
 29. **The remaining slower string commands (group 13, tasks 13.1 to
     13.5, 2026-11-16).** Analysis `analyse-g13-strings.md`; C, measured in

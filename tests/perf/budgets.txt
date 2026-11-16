@@ -129,6 +129,9 @@
 # ClipBlit as an assembler block (task 13.11, 2026-11-16).
 # The four bgfx.qblit lines from five runs of QBlit with the original's
 # modulo pair (task 13.12, 2026-11-16), with their tolerances.
+# bstr.nextitem51 from two runs of NextItem in the asm-barrier form
+# (libs-performance task 13.20, on main 60e0fb53, 2026-11-16): 213.9 and
+# 213.8.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -268,7 +271,7 @@ bstr.concat                  2179     2318.5  r$=a$+b$
 bstr.strcmp                  2184     2943.5  If a$=b$ Then c=1
 bstr.string                  3440     4376.0  r$=String$("a",20)
 bstr.read4                    261      254.0  Restore dd : Read c,c,c,c
-bstr.nextitem51               238      217.8  ResetList ll() : While NextItem(ll()) : Wend
+bstr.nextitem51               220      217.8  ResetList ll() : While NextItem(ll()) : Wend
 bstr.addkill                 1039      961.0  ResetList ll() : If AddItem(ll()) Then KillItem ll()
 bstr.resetlist                 87       83.0  ResetList ll()
 bstr.sort201                78576    77694.0  Sort sa()

@@ -48,7 +48,7 @@
 /* entry points (defined below) */
 BB_BOOL BLITZ_ROUTINE dofirstitem(UBYTE *base BL_REG(d0));
 BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0));
-BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0));
+void donextitem(void);                  /* BLITZ_ALIAS of donextitem_c */
 void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0));
 BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0));
@@ -56,7 +56,7 @@ void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0));
 BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0));
-BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0));
+void doprevitem(void);                  /* BLITZ_ALIAS of doprevitem_c */
 BB_BOOL BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0));
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1));
@@ -309,30 +309,36 @@ void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0))
 }
 
 /* dofirstitem2 - make current = first (0 if the list is empty); -1 if
-   there is one, else 0.  Called with interrupts disabled. */
-static BB_BOOL firstitem2(UBYTE *base)
+   there is one, else 0.  Called with interrupts disabled.  Inline with an
+   exit of its own for each result (the form `link ? item : 0` became
+   SNE/EXT/EXT/AND, and a call with a stack argument) */
+BL_ALWAYS_INLINE BB_BOOL firstitem2(UBYTE *base)
 {
     struct bb_listitem *item = USED(base)->next;       /* next of head node */
-    ULONG link = (ULONG)item->next;             /* d0 */
 
-    if (!link)
-        item = 0;
-    CURRENT(base) = item;
+    if (item->next) {
+        CURRENT(base) = item;
+        BL_INTS_ON();
+        return BB_TRUE;
+    }
+    CURRENT(base) = 0;
     BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    return BB_FALSE;
 }
 
 /* dolastitem2 - make current = last, the same backwards */
-static BB_BOOL lastitem2(UBYTE *base)
+BL_ALWAYS_INLINE BB_BOOL lastitem2(UBYTE *base)
 {
     struct bb_listitem *item = TAILPRED(base);         /* prev of tail node */
-    ULONG link = (ULONG)item->prev;             /* d0 */
 
-    if (!link)
-        item = 0;
-    CURRENT(base) = item;
+    if (item->prev) {
+        CURRENT(base) = item;
+        BL_INTS_ON();
+        return BB_TRUE;
+    }
+    CURRENT(base) = 0;
     BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    return BB_FALSE;
 }
 
 /**
@@ -470,24 +476,38 @@ BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
  * Without a current item it does FirstItem.  At the end the current item
  * stays.  Errors (debugger only): "Array is not a List" (lchk).
  *
+ * The current item is read into a data register (the empty asm with a
+ * "+d" operand): MOVE sets the flags there, where GCC tested an address
+ * register with CMPA.w #0 (10 cycles); the middle item, the common case,
+ * goes straight through to its own RTS.  The entry is an alias of the
+ * static C function: with the function itself in the !subs table above
+ * (its address taken before its body) GCC put the RTS behind the rare
+ * exits and branched to it (BRA.s, 10 cycles).
+ *
  * @param base  d0: the list array
  * @return d0: BB_TRUE if there is a next item, BB_FALSE at the end
  */
-BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE donextitem_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item;
-    struct bb_listitem *link;                          /* d0, then -1 */
+    ULONG cur;
 
     BL_INTS_OFF();
-    if (!CURRENT(base))
-        return firstitem2(base);
-    item = CURRENT(base)->next;                 /* next of current */
-    link = item->next;
-    if (link)
-        CURRENT(base) = item;
-    BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    cur = (ULONG)CURRENT(base);
+    __asm__("" : "+d"(cur));
+    if (__builtin_expect(cur != 0, 1)) {
+        item = ((struct bb_listitem *)cur)->next;      /* next of current */
+        if (__builtin_expect(item->next != 0, 1)) {
+            CURRENT(base) = item;
+            BL_INTS_ON();
+            return BB_TRUE;
+        }
+        BL_INTS_ON();                           /* at the end: stays */
+        return BB_FALSE;
+    }
+    return firstitem2(base);
 }
+BLITZ_ALIAS(donextitem, donextitem_c);
 
 /**
  * @brief PrevItem Arrayname(): make the previous item the current one, as
@@ -497,21 +517,27 @@ BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
  * @return d0: BB_TRUE if there is a previous item, BB_FALSE at the
  *         beginning
  */
-BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE doprevitem_c(UBYTE *base BL_REG(d0))
 {
     struct bb_listitem *item;
-    struct bb_listitem *link;                          /* d0, then -1 */
+    ULONG cur;
 
     BL_INTS_OFF();
-    if (!CURRENT(base))
-        return lastitem2(base);
-    item = CURRENT(base)->prev;                 /* previous of current */
-    link = item->prev;
-    if (link)
-        CURRENT(base) = item;
-    BL_INTS_ON();
-    return link ? BB_TRUE : BB_FALSE;
+    cur = (ULONG)CURRENT(base);
+    __asm__("" : "+d"(cur));                    /* as NextItem */
+    if (__builtin_expect(cur != 0, 1)) {
+        item = ((struct bb_listitem *)cur)->prev;      /* previous of current */
+        if (__builtin_expect(item->prev != 0, 1)) {
+            CURRENT(base) = item;
+            BL_INTS_ON();
+            return BB_TRUE;
+        }
+        BL_INTS_ON();
+        return BB_FALSE;
+    }
+    return lastitem2(base);
 }
+BLITZ_ALIAS(doprevitem, doprevitem_c);
 
 #define KEY(i) (*(ULONG *)((UBYTE *)((i) + 1) + offset))  /* the element: behind the node */
 
