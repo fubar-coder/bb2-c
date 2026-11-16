@@ -38,9 +38,7 @@
  *   - SetCIAInt loads the ICR bit for AddICRVector from the ADDRESSES 1
  *     (timer A of ciaa) and 2 (timer B of ciab): MOVE.l %00000001,D0
  *     without `#` - the long at address 1 / 2 (an address error on a
- *     68000) (#450).  ResetCIAInt removes the vector with bit 0 (MOVEQ #1
- *     is overwritten; in Amiberry the system's timer A vector of ciaa)
- *     (#448).
+ *     68000) (#450).
  *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
@@ -122,6 +120,10 @@
  * Fixed (intended deviation, #452): TrackerVolume 0 and 64 change the
  * volumes of the notes that play, as every other volume does; the
  * original called Change_Volume_Levels only for 0 < volume < 64.
+ * Fixed (intended deviation, #448): ResetCIAInt removes the interrupt
+ * with the bit of its timer (1 for timer B, 0 for timer A); the original
+ * overwrote the MOVEQ #1 for timer B with a MOVEQ #0 and always removed
+ * the vector of bit 0.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -613,8 +615,9 @@ static void resetciaint(void)
     else
         cia->ciacra &= ~1;
     {
-        /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) (#448) */
-        struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&ciapart.MusicIntServer };
+        /* Fixed (#448): the timer's bit, MOVEQ #1 (B) or #0 (A); the
+           original overwrote it with MOVEQ #0,d0 at RemInt */
+        struct bl_regs r = { .d0 = ciapart.TimerFlag ? 1 : 0, .a1 = (ULONG)&ciapart.MusicIntServer };
         BLITZ_BASEJSR(res, -12, r);     /* RemICRVector */
     }
     /* Fixed (#449): the original toggles the filter here (BCHG
@@ -1845,8 +1848,8 @@ static void BLITZ_ROUTINE pausemodule_c(void)
 /**
  * @brief ChangeTrackerVBlank: play without the CIA interrupt.
  *
- * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt,
- * with its bug #448); from then on the program calls PlayTracker
+ * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt);
+ * from then on the program calls PlayTracker
  * itself and StartTracker installs no interrupt.
  */
 static void BLITZ_ROUTINE change_playtype_c(void)
@@ -1924,7 +1927,8 @@ static void BLITZ_ROUTINE inittrackerlib_c(void)
  * @brief finit: stop playing and remove the CIA interrupt.
  *
  * ResetCIAInt (unless ChangeTrackerVBlank removed it) removes the vector
- * with bit 0 (#448); it leaves the filter as it is (fixed, #449).  The
+ * with its timer's bit (fixed, #448: the original always used bit 0); it
+ * leaves the filter as it is (fixed, #449).  The
  * module slots are not freed here.
  */
 static void BLITZ_ROUTINE finittrackerlib_c(void)

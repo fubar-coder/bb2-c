@@ -113,6 +113,11 @@ kind F):
   as every other volume does; the original called `Change_Volume_Levels`
   only for 0 < volume < 64 (#452; library test `rwe_ciatrklib`, the
   library's variables after `TrackerVolume $0`/`$40`).
+* `ResetCIAInt` removes the interrupt with the bit of its timer (1 for
+  timer B of ciab, 0 for timer A); the original overwrote the
+  `MOVEQ #1,D0` with a `MOVEQ #0,d0` at `RemInt` and always removed bit 0
+  (#448; library test `rwe_ciatrklib`, the cases
+  `ChangeTrackerVBlank|RemICRVector bit||...`).
 
 ## BUG(orig), kept
 
@@ -123,10 +128,10 @@ kind F):
   and at 2 $4000: `AddICRVector` accepts ciaa with "bit" $40, timer A of
   ciaa is programmed and started, but no interrupt ever calls
   `mt_music` – in CIA mode the library is silent there (orig and C
-  alike). `ResetCIAInt` removes the vector with bit 0 (its `MOVEQ #1,D0`
-  is overwritten) – in Amiberry the system's timer A vector of ciaa (a
-  first version of the test that called the real resources made the
-  later tests in the same session hang) (#450, #448).
+  alike). With bit 0 for that interrupt, the removal in `ResetCIAInt`
+  then removes the system's timer A vector of ciaa (a first version of
+  the test that called the real resources made the later tests in the
+  same session hang) (#450).
 * `LoadTrackerModule` does not check the chip memory (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).

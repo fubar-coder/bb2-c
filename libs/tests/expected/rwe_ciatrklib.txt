@@ -31,10 +31,12 @@ ChangeTrackerVBlank|filter toggled||1 [fixed #449]	$00000000
 ChangeTrackerVBlank|timer stopped||1	$00000001
 ChangeTrackerVBlank|RemICRVector calls||1	$00000002
 ChangeTrackerVBlank|RemICRVector resource||1	$00000001
-ChangeTrackerVBlank|RemICRVector bit||1	$00000000
+ChangeTrackerVBlank|RemICRVector bit||1 [orig]	$00000000
+ChangeTrackerVBlank|RemICRVector bit||1 [fixed #448]	$00000001
 ChangeTrackerVBlank|RemICRVector interrupt||1	$00000044
 ChangeTrackerVBlank|RemICRVector resource||2	$00000001
-ChangeTrackerVBlank|RemICRVector bit||2	$00000000
+ChangeTrackerVBlank|RemICRVector bit||2 [orig]	$00000000
+ChangeTrackerVBlank|RemICRVector bit||2 [fixed #448]	$00000001
 ChangeTrackerVBlank|RemICRVector interrupt||2	$00000044
 after the CIA phase|modtable||1	bytes 110 fnv B323D3FD
 after the CIA phase|CIA part||1	bytes 110 fnv B6319231

@@ -24,8 +24,8 @@
  *     resources are stand-ins that record their calls (the real ones
  *     with the original's ICR bits would remove the system's ciaa timer
  *     A vector); ciaa's fails, so init takes ciab's timer B.  Observed:
- *     the calls (BUG(orig) #450 #448: the bits are the longs at the addresses 1 and
- *     2; RemICRVector with bit 0), the CIA part, the timer started and
+ *     the calls (BUG(orig) #450: the bits are the longs at the addresses 1 and
+ *     2; RemICRVector with the timer's bit, fixed #448), the CIA part, the timer started and
  *     stopped, the interrupt server called by hand (the tempo command,
  *     the event), StartTracker (reinstalls), WaitTrackerEvent with a
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
