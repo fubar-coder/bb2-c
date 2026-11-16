@@ -31,9 +31,9 @@
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
  *   B (VBlank, call by call): DecodeModule (chip: linked; fast
  *     memory: copied, size + 3), the information functions also on an
- *     empty slot (fixed #451 #437: StartTracker returns 0, GetModuleName$
- *     the empty string; BUG(orig) #430: CheckTrackerID the long at address
- *     0),
+ *     empty slot (fixed #451 #437 #430: StartTracker returns 0,
+ *     GetModuleName$ the empty string, CheckTrackerID 0 - the original's
+ *     long at address 0 is 0 here too, test ciatrklib-checkid-address0),
  *     the error checks (no error), StartTracker (mt_init; a slot length
  *     above the sample addresses clears their first longs, BUG(orig), #438),
  *     then PlayTracker tick by tick with all channels on Paula, with the

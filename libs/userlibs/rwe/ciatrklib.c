@@ -55,8 +55,6 @@
  *     (below).
  *   - ModuleToChip does nothing and returns its argument (#446).
  *     ModulePatterns returns the song length (byte 950) (#445).
- *   - CheckTrackerID returns the long at ADDRESS 0 (MOVE.l 0,d0) for
- *     "not a module" and an empty slot (#430).
  *   - WaitTrackerEvent calls WaitTOF through whatever a6 holds (no
  *     !libs) (#453); CheckTrackerEvent changes only the low byte of d0
  *     (#431).
@@ -101,6 +99,9 @@
  * Fixed (intended deviation, #437): GetModuleName$ of an empty slot is
  * the empty string; the original left through 'namefalse with d0 = the
  * slot's table offset (slot*10) and wrote nothing, not even the 0.
+ * Fixed (intended deviation, #430): CheckTrackerID of "not a module" and
+ * of an empty slot is False (0); the original returned the long at
+ * ADDRESS 0 (MOVE.l 0,d0).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1605,11 +1606,11 @@ static void BLITZ_ROUTINE freetrk_c(ULONG num BL_REG(d0))
  * Protracker module?
  *
  * Tests the id at $438 for "M.K." or "M!K!".  "Not a module" and an
- * empty slot (length 0) return the long at ADDRESS 0 (MOVE.l 0,d0,
- * BUG(orig) (#430)).  Error check (_checkused): slots 0-8, a module in
- * the slot.
+ * empty slot (length 0) are False (fixed, #430: the original returned
+ * the long at ADDRESS 0, MOVE.l 0,d0).  Error check (_checkused): slots
+ * 0-8, a module in the slot.
  * @param num  d0: the slot
- * @return d0: -1 for a module, else the long at address 0 (not BB_BOOL)
+ * @return d0: -1 for a module, else 0
  */
 static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
 {
@@ -1617,11 +1618,11 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
     ULONG id;
 
     if (!e->len)
-        return peekl(0);                /* BUG(orig): MOVE.l 0,d0 (#430) */
+        return BB_FALSE;                /* Fixed (#430): not MOVE.l 0,d0 */
     id = LONGAT(e->addr + 0x438);
     if (id == ID('M', '.', 'K', '.') || id == ID('M', '!', 'K', '!'))
-        return BB_TRUE;            /* not BB_BOOL: else the long at 0 (#430) */
-    return peekl(0);
+        return BB_TRUE;
+    return BB_FALSE;                    /* Fixed (#430) */
 }
 
 /**

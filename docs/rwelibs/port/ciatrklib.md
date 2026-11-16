@@ -71,6 +71,9 @@ kind F):
   left with d0 = the slot's table offset (slot × 10) and wrote nothing,
   not even the 0: a string of slot × 10 undefined characters (#437;
   library test `rwe_ciatrklib`, the cases `GetModuleName$|...|slot 3`).
+* `CheckTrackerID` of "no M.K./M!K!" and of an empty slot is False (0);
+  the original returned the long at **address 0** (`MOVE.l 0,d0`)
+  (#430; test `ciatrklib-checkid-address0`).
 
 ## BUG(orig), kept
 
@@ -101,8 +104,7 @@ kind F):
   plays from the slot (#436).
 * `ModuleToChip` is an RTS: it returns
   its argument (#446). `ModulePatterns` returns the song length (byte
-  950) (#445). `CheckTrackerID` returns the long at **address 0**
-  (`MOVE.l 0,d0`) for "no M.K./M!K!" and an empty slot (#430).
+  950) (#445).
 * `WaitTrackerEvent` calls WaitTOF (−270) through whatever a6 holds (no
   `!libs`) (#453); `CheckTrackerEvent` changes d0's low byte (no event)
   or word (−1) (#431). (`GetTrackerEvent` also changes only d0's low
