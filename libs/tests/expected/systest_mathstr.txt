@@ -28311,6 +28311,67 @@ longmult|d0|$0001E240,$FFFFFCEB|1	$FA31B0C0
 longmult|kept|$00020000,$00000003|1	kept
 longmult|popped|$00020000,$00000003|1	$00000000
 longmult|d0|$00020000,$00000003|1	$00060000
+longmult|kept|$00000064,$00000014|1	kept
+longmult|popped|$00000064,$00000014|1	$00000000
+longmult|d0|$00000064,$00000014|1	$000007D0
+longmult|kept|$00000000,$0001E240|1	kept
+longmult|popped|$00000000,$0001E240|1	$00000000
+longmult|d0|$00000000,$0001E240|1	$00000000
+longmult|kept|$0001E240,$00000000|1	kept
+longmult|popped|$0001E240,$00000000|1	$00000000
+longmult|d0|$0001E240,$00000000|1	$00000000
+longmult|kept|$0000E240,$00030005|1	kept
+longmult|popped|$0000E240,$00030005|1	$00000000
+longmult|d0|$0000E240,$00030005|1 [orig]	$A6C46B42
+longmult|d0|$0000E240,$00030005|1 [fixed #199]	$A6C46B40
+longmult|kept|$0001E240,$00030000|1	kept
+longmult|popped|$0001E240,$00030000|1	$00000000
+longmult|d0|$0001E240,$00030000|1 [orig]	$A6C00002
+longmult|d0|$0001E240,$00030000|1 [fixed #199]	$A6C00000
+longmult|kept|$00030000,$00050000|1	kept
+longmult|popped|$00030000,$00050000|1	$00000000
+longmult|d0|$00030000,$00050000|1	$00000000
+longmult|kept|$80000000,$00000003|1	kept
+longmult|popped|$80000000,$00000003|1	$00000000
+longmult|d0|$80000000,$00000003|1 [orig]	$7FFFFFFF
+longmult|d0|$80000000,$00000003|1 [fixed #199]	$80000000
+longmult|kept|$00000003,$80000000|1	kept
+longmult|popped|$00000003,$80000000|1	$00000000
+longmult|d0|$00000003,$80000000|1 [orig]	$7FFFFFFF
+longmult|d0|$00000003,$80000000|1 [fixed #199]	$80000000
+longmult|kept|$80000000,$FFFFFFFF|1	kept
+longmult|popped|$80000000,$FFFFFFFF|1	$00000000
+longmult|d0|$80000000,$FFFFFFFF|1	$80000000
+longmult|kept|$FFFFFFFF,$80000000|1	kept
+longmult|popped|$FFFFFFFF,$80000000|1	$00000000
+longmult|d0|$FFFFFFFF,$80000000|1	$80000000
+longmult|kept|$80000000,$80000000|1	kept
+longmult|popped|$80000000,$80000000|1	$00000000
+longmult|d0|$80000000,$80000000|1	$00000000
+longmult|kept|$FFFFFF9C,$00000014|1	kept
+longmult|popped|$FFFFFF9C,$00000014|1	$00000000
+longmult|d0|$FFFFFF9C,$00000014|1	$FFFFF830
+longmult|kept|$00000064,$FFFFFFEC|1	kept
+longmult|popped|$00000064,$FFFFFFEC|1	$00000000
+longmult|d0|$00000064,$FFFFFFEC|1	$FFFFF830
+longmult|kept|$FFFFFF9C,$FFFFFFEC|1	kept
+longmult|popped|$FFFFFF9C,$FFFFFFEC|1	$00000000
+longmult|d0|$FFFFFF9C,$FFFFFFEC|1	$000007D0
+longmult|kept|$FFFE1DC0,$FFFFFCEB|1	kept
+longmult|popped|$FFFE1DC0,$FFFFFCEB|1	$00000000
+longmult|d0|$FFFE1DC0,$FFFFFCEB|1	$05CE4F40
+longmult|kept|$00030000,$00007530|1	kept
+longmult|popped|$00030000,$00007530|1	$00000000
+longmult|d0|$00030000,$00007530|1 [orig]	$5F900001
+longmult|d0|$00030000,$00007530|1 [fixed #199]	$5F900000
+longmult|kept|$7FFFFFFF,$7FFFFFFF|1	kept
+longmult|popped|$7FFFFFFF,$7FFFFFFF|1	$00000000
+longmult|d0|$7FFFFFFF,$7FFFFFFF|1 [orig]	$0000FFFD
+longmult|d0|$7FFFFFFF,$7FFFFFFF|1 [fixed #199]	$00000001
+longmult|kept|$12345678,$9ABCDEF0|1	kept
+longmult|popped|$12345678,$9ABCDEF0|1	$00000000
+longmult|d0|$12345678,$9ABCDEF0|1 [orig]	$242CFBF4
+longmult|d0|$12345678,$9ABCDEF0|1 [fixed #199]	$242D2080
 domodfloat|kept|0,0|1	kept
 domodfloat|popped|0,0|1	$00000000
 domodfloat|d0|0,0|1	$00000000

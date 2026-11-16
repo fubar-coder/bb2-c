@@ -108,6 +108,8 @@ Commands that are below the 10 % limit of group 11 but still slower than the ori
 - [x] 13.3 Bin$: the same treatment, at the original's 36 cycles per digit (`addx` if needed); a new benchmark line `bstr.bin` with the original's value from `perf-original`
 - [x] 13.4 Long results of Mid$ and Right$: not slower than the original's 8-byte copy (movestring); one shared out-of-line copy if the short case stays at or below the original; a benchmark line with a long Mid$
 - [x] 13.5 Cvi, Cvl and Cvq: `cvbytes` inline in the entries (the nested-function pattern)
+- [x] 13.30 lmullib `longmult` as an assembler entry (analysis `~/.local/share/bb2-c-work/analyse-g13-mul.md`, listing L2): only the sign of b tested (a negative b negates both factors), MULU by the words of |b| as in the original, paths for zero high words; results bit for bit (#199 fixed), d2-d7/a0-a6 kept; library cases for every path; measure `bmath.lmul` and a new `bmath.lmuls` (100*20) and tighten the budgets - done (2026-11-16): `bmath.lmul` 408.6 -> 284.6 (original 383.0), `bmath.lmuls` 184.6 (original 370.0)
+- [ ] 13.31 lmullib `quickmult` as an assembler entry (listing Q1): the sign in the code path (four entries, two copies of the core), no flag register, MULU by the words of |b| as in the original; results bit for bit (#199 fixed), d2-d7/a0-a6 kept; library cases for every path; measure `bmath.qmul` and tighten its budget
 
 ## 9. Closing
 

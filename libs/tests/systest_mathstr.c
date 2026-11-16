@@ -361,6 +361,31 @@ static void test_lmullib(void)
             OBS("d0", R.d[0]);
         }
     }
+
+    /* every path of longmult (assembler, the sign of b and the zero words
+       select it): hi(a) = hi(b) = 0 (one MULU), hi(b) = 0 (two), hi(b)
+       <> 0 (three), zero factors and words, $80000000 as a and as b, the
+       four sign combinations, and products that overflow (#199) */
+    {
+        static const ULONG edges[][2] = {
+            { 100, 20 }, { 0, 123456 }, { 123456, 0 },
+            { 0x0000e240, 0x00030005 }, { 123456, 0x00030000 },
+            { 0x00030000, 0x00050000 },
+            { 0x80000000, 3 }, { 3, 0x80000000 }, { 0x80000000, 0xffffffff },
+            { 0xffffffff, 0x80000000 }, { 0x80000000, 0x80000000 },
+            { 0xffffff9c, 20 }, { 100, 0xffffffec }, { 0xffffff9c, 0xffffffec },
+            { 0xfffe1dc0, 0xfffffceb },
+            { 196608, 30000 }, { 0x7fffffff, 0x7fffffff },
+            { 0x12345678, 0x9abcdef0 },
+        };
+
+        ROUT = "longmult";
+        for (i = 0; i < sizeof edges / sizeof edges[0]; i++) {
+            sprintf(VEC, "$%08lX,$%08lX", edges[i][0], edges[i][1]);
+            DO1(E("lmullib", 1), R.d[0] = edges[i][0]; R.d[1] = edges[i][1]);
+            OBS("d0", R.d[0]);
+        }
+    }
 }
 
 /* ------------------------------------------------------- floatquicklib */

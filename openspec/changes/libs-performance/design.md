@@ -1050,6 +1050,32 @@ build.
       62; the length test of #288 is 36 of them), Cvl and Cvq about 600
       -> 144 (the original about 200). No benchmark loop; the library
       cases cover 0 to 6 bytes at even and odd addresses.
+30. **lmullib (tasks 13.30 and 13.31, 2026-11-16; analysis
+    `~/.local/share/bb2-c-work/analyse-g13-mul.md`).** The extra cost of
+    the C routines was not the fix of #199 (its arithmetic is 4 and 8
+    cycles cheaper than the original's) but GCC's code around it: a
+    detour on the positive path, one more saved register and MULU source
+    words taken from a instead of b (MULU takes 2 cycles per 1 bit of
+    its source word), so the port was between 38 cycles faster and 46
+    slower than the original for Long and between 62 faster and 82
+    slower for Quick, depending on the operands; the comments that said
+    "the same MULU on the same words, 8 cycles fewer" were wrong about
+    the built code. Both routines are `BLITZ_ASM_ROUTINE` and use the
+    original's MULU source words (the words of |b|), so the MULU time is
+    the original's for every input; they keep d2-d7 and a0-a6 and change
+    d1, as the original; the CCR is no result.
+    - `longmult` (listing L2, 84 bytes): the product modulo 2^32 needs no
+      signs, so only the sign of b is tested and a negative b negates
+      both factors; hi(b) = 0 skips lo(a) * hi(b), hi(a) = 0 as well
+      hi(a) * lo(b) and the register save (one MULU and an RTS). 50 to
+      222 cycles below the original for every input (counted with a
+      68000 model over 30 million pairs and all pairs of scaled words).
+      `c=a*b` (123456 * 789) 408.6 -> 284.6 (383.0); the new loop
+      `bmath.lmuls`, `c=a4*b4` with 100 * 20, 184.6 (370.0). New library
+      cases (`systest_mathstr`, longmult): every path, zero factors and
+      words, $80000000 as a and as b, the four sign combinations and
+      products that overflow, recorded from the original; the seven
+      cases where #199 shows are pairs `[orig]` / `[fixed #199]`.
 
 ## Risks / Trade-offs
 

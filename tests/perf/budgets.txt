@@ -113,6 +113,8 @@
 # change of the libraries: both loops depend on the program's layout (a
 # new string variable instead of n$ moved them the other way, the port
 # by +282 and the original by -460); their budgets stay.
+# bmath.lmul and the new bmath.lmuls from two runs of longmult in assembler
+# (libs-performance task 13.30, 2026-11-16): 284.6 and 184.6 to 184.7.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -177,7 +179,8 @@ binput.volume                 210      278.7  Volume 1,32
 binput.loopsound            12653    11552.2  LoopSound 0,1
 bmath.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
 bmath.asg_l                    36       32.0  c=a
-bmath.lmul                    416      383.0  c=a*b
+bmath.lmul                    291      383.0  c=a*b
+bmath.lmuls                   190      370.0  c=a4*b4 (a4=100, b4=20: both high words 0)
 bmath.ldiv                    528     2661.0  c=a/b
 bmath.lmod                    532     3113.0  c=a MOD b
 bmath.ldiv32                 1256     2515.5  c=a2/b2 (a2=123456789, b2=70000: the divisor loop)
