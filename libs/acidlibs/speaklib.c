@@ -25,8 +25,10 @@
  * Not a bug (a statement, a3 has no meaning after it): PhoneticSpeak
  * leaves a3 = its argument.
  *
- * BUG(orig), kept:
- *   - finit closes the device and frees the signal even when init failed. (#278)
+ * Fixed (#278): finit closes the device, frees the signal and closes the
+ *   library only when init opened or allocated them; the original did all
+ *   three also after a failed init (CloseDevice without a device,
+ *   FreeSignal(0)).
  * Fixed (#277): Translate$ returns the length without the terminating 0
  *   and leaves a3 on the 0; the original counted the 0 and left a3 behind
  *   it.
@@ -123,12 +125,15 @@ static void BLITZ_ROUTINE libinit_c(void)
     port.mp_Node.ln_Type = NT_MSGPORT;
     port.mp_MsgList.lh_Head = (struct Node *)&port.mp_MsgList.lh_Tail;
     port.mp_MsgList.lh_TailPred = (struct Node *)&port.mp_MsgList.lh_Head;
+    port.mp_SigBit = (UBYTE)-1;                 /* fixed (#278): no signal yet */
 
     TransBase = OpenLibrary("translator.library", 33);
     if (!TransBase)
         goto failed;
-    if (OpenDevice("narrator.device", 0, (struct IORequest *)&ioreq, 0))
+    if (OpenDevice("narrator.device", 0, (struct IORequest *)&ioreq, 0)) {
+        ioreq.io.io_Device = NULL;              /* fixed (#278): not open */
         goto failed;
+    }
     sig = AllocSignal(-1);
     port.mp_SigBit = sig;
     if (sig < 0)
@@ -143,13 +148,19 @@ failed:
 }
 BLITZ_THUNK(speaklib_libinit, libinit_c, "d1/a0-a1");
 
+/* Fixed (#278): each step only when its init step succeeded (the original
+   closed the device, freed the signal - 0 before AllocSignal - and closed
+   the library whatever the init got to) */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (initial)
         WaitIO((struct IORequest *)&ioreq);
-    CloseDevice((struct IORequest *)&ioreq);
-    FreeSignal((UBYTE)port.mp_SigBit);
-    CloseLibrary(TransBase);
+    if (ioreq.io.io_Device)
+        CloseDevice((struct IORequest *)&ioreq);
+    if ((BYTE)port.mp_SigBit >= 0)
+        FreeSignal((UBYTE)port.mp_SigBit);
+    if (TransBase)
+        CloseLibrary(TransBase);
 }
 BLITZ_THUNK(speaklib_libfinit, libfinit_c, "d1/a0-a1");
 

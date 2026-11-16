@@ -1,0 +1,10 @@
+[compile]
+ok
+[run]
+REQUESTER: AutoRequest body "Failed To Open Speech Library" pos "OKAY!" neg "OKAY!" -> answered FALSE
+inject: opendevfail: 1 opens failed
+inject: rc=0
+inject: opencount: translator.library +0
+inject: freesignal: 0 calls on a signal not allocated
+inject: closedevice: 0 calls on a request without a device
+rc=0
