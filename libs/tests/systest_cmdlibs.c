@@ -896,7 +896,7 @@ static void test_volume(void)
    refused by the error check), each form with volumes with 0, 1, 2 and
    4 of them.  Not observed: a2 (as for Volume). */
 static UBYTE sndfake[0x50];
-static UBYTE *sndat[24];
+static UBYTE *sndat[64];
 static unsigned nsndat;
 
 static void sndpatch(UBYTE *p, struct lib *l, int depth)
@@ -908,7 +908,11 @@ static void sndpatch(UBYTE *p, struct lib *l, int depth)
         UWORD w = W(p + i);
         UBYTE *t = NULL;
 
-        if (a >= 0xdff090 && a < 0xdff0e0 && nsndat < 24) {
+        if (a >= 0xdff090 && a < 0xdff0e0) {
+            if (nsndat == sizeof sndat / sizeof sndat[0]) {
+                check("Sound: room for every patched register address", FALSE);
+                return;
+            }
             sndat[nsndat++] = p + i;
             a = (ULONG)sndfake + a - 0xdff090;
             p[i] = (UBYTE)(a >> 24);
