@@ -2,7 +2,7 @@
 [session]
 timeout
 [compile]
-error 19 Macro not Found
+error 20 Macro not Found
 [run]
 [blitz2]
 [log]
@@ -21,5 +21,5 @@ XTRA	j000	defaults
 XTRAERR	j000	Can't Load Resident
 ezfreq "Name of Executable to create" -> CORPUS:out/compiler-resmacs-textlen-sign
 openreq "***** COMPILING *****"
-RESULT	j000	error	19	Macro not Found	!big
+RESULT	j000	error	20	Macro not Found	!big
 BATCH	end

@@ -2,7 +2,7 @@
 [session]
 timeout
 [compile]
-error 120 Macro too Big
+error 121 Macro too Big
 [run]
 [blitz2]
 [log]
@@ -13,5 +13,5 @@ JOB	j000	CORPUS:src/compiler-macrobuff-size.bb2
 XTRA	j000	defaults
 ezfreq "Name of Executable to create" -> CORPUS:out/compiler-macrobuff-size
 openreq "***** COMPILING *****"
-RESULT	j000	error	120	Macro too Big	a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+RESULT	j000	error	121	Macro too Big	a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 BATCH	end
