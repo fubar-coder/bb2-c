@@ -193,6 +193,12 @@
 # targets from two runs of the pass perf_bstr.pass with the tag orig (the
 # compiler of main 7d833bbc): 547.1/547.1, 1884.2/1884.1, 15071.1/15071.1,
 # 611.1/611.1, 1951.2/1949.1, 15135.1/15136.6.
+# bstr.len, len10, len100, len1000, asc, asc10, asc100 and asc1000 from two
+# runs of Len and Asc of a plain string variable compiled inline
+# (compiler-intrinsics task 4.4): 62.8/62.5, 62.8/62.5, 62.8/60.5,
+# 61.2/62.5, 99.2/97.0, 97.8/97.0, 97.8/97.0, 99.2/97.0 (the copy and the
+# call: 679.1, 607.1, 1273.0, 8261.1, 745.1, 675.6, 1336.0, 8327.1); the
+# cost no longer grows with the length.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -330,9 +336,9 @@ bstr.left                    1255     1299.0  r$=Left$(a$,5)
 bstr.right                   1425     1495.5  r$=Right$(a$,5)
 bstr.str                     4205     4131.5  r$=Str$(a)
 bstr.val                     1690     1927.0  c=Val(n$)
-bstr.len                      687      731.0  c=Len(a$)
+bstr.len                       67      731.0  c=Len(a$)
 bstr.chr                      401      411.0  r$=Chr$(65)
-bstr.asc                      756      797.0  c=Asc(a$)
+bstr.asc                      104      797.0  c=Asc(a$)
 bstr.instr                   2308     3513.0  c=Instr(a$,"Blitz")
 bstr.ucase                   2769     3124.0  r$=UCase$(a$)
 bstr.hex                     1074     1570.0  r$=Hex$(a)
@@ -347,9 +353,9 @@ bstr.sort201                78576    77694.0  Sort sa()
 bstr.bin                     1711     2119.0  r$=Bin$(a)
 bstr.midlong                 2409     3136.0  r$=Mid$(n$,3,40) (n$ 60 characters)
 bstr.rightlong               2371     3077.0  r$=Right$(n$,40)
-bstr.len10                    617      547.1  c=Len(s1$) (s1$ 10 characters)
-bstr.len100                  1289     1884.2  c=Len(s2$) (s2$ 100 characters)
-bstr.len1000                 8347    15071.1  c=Len(s3$) (s3$ 1000 characters)
-bstr.asc10                    686      611.1  c=Asc(s1$)
-bstr.asc100                  1353     1951.2  c=Asc(s2$)
-bstr.asc1000                 8414    15135.1  c=Asc(s3$)
+bstr.len10                     67      547.1  c=Len(s1$) (s1$ 10 characters)
+bstr.len100                    67     1884.2  c=Len(s2$) (s2$ 100 characters)
+bstr.len1000                   67    15071.1  c=Len(s3$) (s3$ 1000 characters)
+bstr.asc10                    102      611.1  c=Asc(s1$)
+bstr.asc100                   102     1951.2  c=Asc(s2$)
+bstr.asc1000                  104    15135.1  c=Asc(s3$)
