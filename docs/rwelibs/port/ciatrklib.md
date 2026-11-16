@@ -98,6 +98,9 @@ kind F):
   module at $80000000 or above is copied to chip memory; the original's
   `BLT` took such an address for chip memory (#432; test
   `ciatrklib-decode-chip-signed`).
+* `DecodeModule`'s copy to chip memory has the size + 3; the original
+  added the 3 as a word, so a size with a low word of $FFFD-$FFFF was
+  copied 64 KB short (#434; test `ciatrklib-decode-size-word-add`).
 
 ## BUG(orig), kept
 
@@ -116,8 +119,7 @@ kind F):
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).
 * `DecodeModule` of a module in chip memory keeps the address (length
-  1, flag 0); from other memory it copies to chip memory with the size
-  + 3 as a **word** add (#434);
+  1, flag 0); from other memory it copies to chip memory;
   without memory the slot keeps the old address with flag 2 and the new
   length (a later `FreeTrackerModule` frees memory that was never
   allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that

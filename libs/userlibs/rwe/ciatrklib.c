@@ -43,9 +43,7 @@
  *     (#448).
  *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
- *   - DecodeModule copies a module outside chip memory to chip
- *     memory with the size + 3 as a word add (ADD.w) (#434); when the
- *     memory is missing the slot keeps the old address with flag 2 and
+ *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
  *   - ModuleToChip does nothing and returns its argument (#446).
@@ -115,6 +113,9 @@
  * Fixed (intended deviation, #432): DecodeModule compares the module's
  * address with $200000 unsigned; the original's BLT took every address
  * from $80000000 up for chip memory and did not copy such a module.
+ * Fixed (intended deviation, #434): DecodeModule's copy to chip memory
+ * has the size + 3; the original added the 3 as a word (ADD #3,d0), so a
+ * size with a low word of $FFFD-$FFFF was copied 64 KB short.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -1539,7 +1540,7 @@ static BB_BOOL modtochip(ULONG num)
     for (i = 0, hdr = src; i < 31; i++, hdr += 30)
         size += (ULONG)WORDAT(hdr + 42) << 1;
     e->flag = 2;
-    e->len = BL_SETW(size, size + 3);   /* ADD.w (BUG(orig), #434) */
+    e->len = size + 3;                  /* Fixed (#434): not ADD.w */
     dst = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     if (!dst)
         return BB_FALSE;
@@ -1559,8 +1560,8 @@ static BB_BOOL modtochip(ULONG num)
  * flag 0.  A module in chip memory (an address below $200000, compared
  * unsigned: fixed, #432, the original's BLT took every address from
  * $80000000 up for chip memory) stays where it is; one from other
- * memory is copied
- * to chip memory, with the size + 3 as a word add (#434), flag 2; when
+ * memory is copied to chip memory, with the size + 3 (fixed, #434: the
+ * original added the 3 as a word), flag 2; when
  * that memory is missing the slot keeps the old address with flag 2 and
  * the new length (#433; memlib's globalloc ends the program instead).
  * The size comes from mt_init's scan of the song positions (#477).
