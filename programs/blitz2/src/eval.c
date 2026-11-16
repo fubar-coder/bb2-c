@@ -2337,14 +2337,31 @@ static void lenvar(void)
     pokewd(0xfffc);
 }                                   /* 1: */
 
+/* Asc(a$) of a plain string variable (stringfunclib ascii): the first
+   character zero-extended, -1 for the length 0 and for a variable without
+   memory - the library's long; a3 and a0 as Len's */
+static void ascvar(void)
+{
+    pokewd(0x670e);                 /* beq.s 2f (no memory) */
+    pokewd(0x2040);                 /* move.l d0,a0 */
+    pokewd(0x4aa8);                 /* tst.l -4(a0) */
+    pokewd(0xfffc);
+    pokewd(0x6706);                 /* beq.s 2f (the length 0) */
+    pokewd(0x7000);                 /* moveq #0,d0 */
+    pokewd(0x1010);                 /* move.b (a0),d0 */
+    pokewd(0x6002);                 /* bra.s 3f */
+    pokewd(0x70ff);                 /* 2: moveq #-1,d0 */
+}                                   /* 3: */
+
 /* the library tokens: vallib (libs/variants/bb2-2.10/libnums.h LIB_vallib
    120; the same in AB3 mode's list), stringfunclib (LIB_stringfunclib
-   185; in AB3 mode Len is in AmiBlitz3's library 6, which has no
-   entry: it stays a call there) */
+   185; in AB3 mode Len and Asc are in AmiBlitz3's library 6, which has no
+   entry: they stay calls there) */
 static const struct intrinsic intrinsics[] = {
     { (120 << 7) + 2, 8, T_LONG, NULL, NULL, intquick },       /* Int */
     { (120 << 7) + 4, 8, T_QUICK, frachere, fracend, fracquick }, /* Frac */
     { (185 << 7) + 15, T_STRING, T_LONG, NULL, NULL, lenvar },  /* Len */
+    { (185 << 7) + 7, T_STRING, T_WORD, NULL, NULL, ascvar },   /* Asc */
     { 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -2379,7 +2396,7 @@ static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
     return NULL;
 }
 
-/* the argument of a string intrinsic (Len): a plain string variable,
+/* the argument of a string intrinsic (Len, Asc): a plain string variable,
    a name with '$' and nothing behind it but the closing parenthesis
    (spaces aside).  Read from srcptr, behind the '(' (countpees), without
    getchar_ as fracend.  If it is one, the variable is fetched as variable

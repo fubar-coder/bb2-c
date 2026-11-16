@@ -154,7 +154,7 @@ extern UWORD evaldepth;
    no type word for a Quick the intrinsic accepts), else 1 (evalu2).
    intrinsic_code (dolibtoke, in place of userjsr): emits the inline code
    if the argument was accepted; FALSE = make the call.  (A string
-   intrinsic, Len of a plain string variable, is compiled by
+   intrinsic, Len or Asc of a plain string variable, is compiled by
    libfunction itself, without these points.) */
 void intrinsic_let(void);
 WORD intrinsic_argpush(void);
