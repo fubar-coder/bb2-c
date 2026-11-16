@@ -793,6 +793,45 @@ build.
     the original; the C build of main and of each step give the same
     cases.
 
+25. **medlib's line routine in assembler (task 10.12, 2026-11-16).**
+    `plr_loop0` with `_PlayNote` inline is the assembler block
+    `medlib_newline` (`BLITZ_ASM_BLOCK`) in the original's form: its
+    labels, its jump table of the commands, the data base through a6
+    (`d16(a6)` instead of GCC's `abs.l`), the track number in d7 and the
+    qualifier word in d4 (#203). Differences from the original: the
+    module is in a3 (the player state of decision 24), so the instrument
+    of `_PlayNote` (the original's a3) is a1 until its repeat and length
+    are loaded into d2/d3; the note pointer is in d6 and the pointer into
+    `trackdataptrs` in a2 instead of two stack slots; the IFF octave path
+    saves d6 and d7. The field offsets are `.set` symbols from one list
+    that `_Static_assert` checks against `offsetof`. `newline()` calls it
+    with an asm statement that clobbers every register but a3-a5 (the
+    prologue of `_PlayMed_c` saves d2-d7/a2/a6 anyway) and has a3/a4 as
+    `"+a"` operands: without them GCC kept copies of the module and the
+    song in stack slots across the call. FFF and FFE call the C
+    functions `ChannelOff` and `SoundOff` (`noinline, used`). The C
+    `playnote` stays for the replays of the ticks. The results are those
+    of the C version: `systest_med` gives the same cases, and a fourth
+    module (an FFE stop, recorded from the original) covers the path
+    that no other module meets.
+    Then the accesses to `db` in the C parts (coordinator's hint): per
+    pulse `IntHandler` reads bpmcounter, module, blkdelay, dmaonmsk,
+    numtracks once each, `nextline` nextblockline, numlines, nextblock
+    and nxtnoclrln once each, `hold` none in its loop, and the end of the
+    pulse dmaonmsk and ChanMask once; no field of `db` is read per track.
+    Per track only `ChanMask` (a static next to `db`) was read again in
+    the loop of the ticks (`moveq #0` + `move.w abs.l`); read once per
+    pulse into a local it is a register (`btst d0,d5`), 47 cycles per
+    call less without the waits; GCC then keeps `vibrspd` of the vibrato
+    paths in a stack slot (about 16 cycles more per vibrato tick and
+    track, not in the benchmark).
+    Measured (cycles per call; without the waits: the scratch build with
+    `wait1lin` empty), the original 9950.0: C of task 10.10 10415.2
+    (6319.2) -> line routine 9906.8 (5791.7-5791.8) -> ChanMask once
+    9794.8-9795.8 (5744.8-5745.2), 0.98 times the original (on main
+    8fcb651f, with the layout-independent `bmod.bas`; the line routine on
+    the old main gave 9906.1 and 5793.8).
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

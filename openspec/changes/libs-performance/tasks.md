@@ -79,7 +79,7 @@ The commands still 10 % or more slower than the original after groups 2 to 8 and
 
 - [x] 10.11 Polyf (2dlib): `prodgt` as `BL_ALWAYS_INLINE` without the zero extensions the value range makes unnecessary; then measure and tune the C clipping of Polyf (the fixes #1000 and #1033 stay) as the players in 10.10: extensions, reloads, spilled registers; C as long as it comes within 1-2 % of the original (user decision 2026-11-16)
 
-- [ ] 10.12 medlib: newline and playnote as an assembler line routine in the original's form (PlayMed stays 1.05 times the original after the C tuning of 10.10, design decision 24), keeping the player state in a3-a5 under the saving thunk
+- [x] 10.12 medlib: newline and playnote as an assembler line routine in the original's form (PlayMed stays 1.05 times the original after the C tuning of 10.10, design decision 24), keeping the player state in a3-a5 under the saving thunk
 
 ## 9. Closing
 
