@@ -1,4 +1,4 @@
-; shapeslib-loadshape-anim-fileopen - LoadShape opens the file with
+; shapeslib-loadshape-anim-fileopen (#1072) - LoadShape opens the file with
 ; ilbmifflib's ilbminit, decodes the first frame and then looks for an
 ; "ANHD" (an ANIM); when the ANHD's operation is not 5 ("ANIM format not
 ; supported") or its interleave not 1 ("Illegal ANIM interleave value")
