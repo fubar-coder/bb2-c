@@ -98,10 +98,14 @@ ctest --preset perf                                    # benchmark of the librar
   `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
   `archive/bernd/`, ignored); tests that need it are skipped without it.
 * **Original bugs are fixed deliberately** (bug-fix phase: the port is
-  complete; user decisions of 2026-10-30 and 2026-11-07). The goal is BB2
-  compatibility with the bugs fixed, in the default variant; there is no
-  bug-preserving variant (whoever needs the original behaviour uses the
-  original compiler and libraries). Tests check the expected behaviour,
+  complete; user decisions of 2026-10-30, 2026-11-07 and 2026-11-16). The
+  goal is functional BB2 compatibility with the bugs fixed, in the default
+  variant: a program behaves as with the original, without visible side
+  effects except the fixes; identical executables are not a goal, so
+  optimizations of the compiler and the libraries that no program can
+  observe are on by default in both modes. There is no bug-preserving
+  variant (whoever needs the original behaviour uses the original
+  compiler and libraries). Tests check the expected behaviour,
   not equality with the original; the comparison with the previous commit
   of this repository stays (Acceptance). A bug not fixed yet is
   documented: `BUG(orig) (#N)` in the code, a bug-orig test that comes out
