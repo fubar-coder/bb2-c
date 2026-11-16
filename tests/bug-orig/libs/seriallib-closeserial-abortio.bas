@@ -15,6 +15,7 @@
 ; +31; io_SerFlags +79).
 ; Correct: CloseSerial aborts the write and waits for it (replied, error
 ; -2 = IOERR_ABORTED).  The original returns with the write pending.
+; @fixed #258
 ; @configs clib
 ; @pass serial=on
 DEFTYPE .l

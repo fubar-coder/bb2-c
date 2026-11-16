@@ -37,8 +37,6 @@
  *     says; with it the query is skipped and the read waits for a byte. (#255)
  *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
  *     number of bytes, 0 if nothing is waiting. (#256)
- *   - CloseSerial: AbortIO without WaitIO, the write half's request is
- *     neither aborted nor closed (a pending SendIO write stays pending). (#258)
  *   - OpenSerial: if the write half's AllocSignal fails, the device stays
  *     open and the write half keeps its request pointer (#259); a second
  *     OpenSerial of an open unit that fails (exclusive access) clears the
@@ -47,6 +45,11 @@
  *     (TRAP #0, also without the debugger; the original then runs into
  *     the message text, the C version returns) (#262).  SerialEvent checks
  *     nothing (not a bug: it tests bit 0 of a cleared slot and returns 0).
+ * Fixed (intended deviations, kind F):
+ *   - CloseSerial aborted the read request without WaitIO and left the
+ *     write half's request alone (a pending SendIO write stayed pending);
+ *     it now aborts and waits for both before CloseDevice, and so does
+ *     the finit for the write half (#258).
  * Kept from the original, not a bug: ReadSerialString writes no
  * terminating 0 (the compiler appends clr.b (a3)+ itself where it passes
  * a string on, blitz2.s:8767 sbtolong). (#257)
@@ -302,15 +305,15 @@ fail:
 /**
  * @brief CloseSerial unit# - close a unit (_closeserial).
  *
- * AbortIO and CloseDevice through the read half's request, the signal is
- * freed; the write half's signal is freed too.  Nothing happens for a
- * unit that is not open.
+ * AbortIO and WaitIO of both halves' requests, CloseDevice through the
+ * read half's request, both signals freed.  Nothing happens for a unit
+ * that is not open.
  *
  * BUG(orig) (#252): the slot is unit*128, see the head comment (CloseSerial
  * 1 closes the device through unit 0's write request and frees unit 1's
- * read signal).  BUG(orig) (#258): AbortIO without WaitIO, the write
- * half's request is neither aborted nor closed (a pending SendIO write
- * stays pending).
+ * read signal).  Fixed (#258): the original called AbortIO without WaitIO
+ * for the read request and left the write request alone (a pending
+ * SendIO write stayed pending after the close).
  *
  * @param unit d0.w: the unit
  */
@@ -321,6 +324,11 @@ void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
     if (!s->request)
         return;
     AbortIO((struct IORequest *)s->request);
+    WaitIO((struct IORequest *)s->request);
+    if (s[1].request) {                 /* Fixed (#258): the write half too */
+        AbortIO((struct IORequest *)s[1].request);
+        WaitIO((struct IORequest *)s[1].request);
+    }
     CloseDevice((struct IORequest *)s->request);
     freesig(s);
     s->request = NULL;
@@ -334,6 +342,10 @@ void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
 /**
  * @brief Library finit (_closeallio): AbortIO, WaitIO, CloseDevice and
  * FreeSignal for every unit still open (both halves' signals).
+ *
+ * Fixed (#258): the write half's request is aborted and waited for too
+ * (the original freed only its signal: a pending SendIO write was replied
+ * after the end of the program).
  */
 void BLITZ_ROUTINE closeallio(void)
 {
@@ -344,6 +356,10 @@ void BLITZ_ROUTINE closeallio(void)
         if (s->request) {
             AbortIO((struct IORequest *)s->request);
             WaitIO((struct IORequest *)s->request);
+            if (s[1].request) {         /* Fixed (#258) */
+                AbortIO((struct IORequest *)s[1].request);
+                WaitIO((struct IORequest *)s[1].request);
+            }
             CloseDevice((struct IORequest *)s->request);
             freesig(s);
             s->request = NULL;
