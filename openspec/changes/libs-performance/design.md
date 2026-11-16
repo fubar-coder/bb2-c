@@ -717,7 +717,7 @@ build.
       12744 (12785.9), 8 QBlit + UnQueue 25704 -> 25356 (25417.8); qblitlib
       3200 -> 3052 bytes. UnQueue with a BitMap (unqueue2), which the
       benchmark does not run, is unchanged.
-23. **The players (task 10.10, 2026-11-16).** Tuned in C after the
+24. **The players (task 10.10, 2026-11-16).** Tuned in C after the
     analysis `analyse-players.md` (per-pattern cycle counts of the
     original's replay code against GCC's), one step per commit, each
     measured. trackerlib: `mt_checkcom`, `mt_checkcom2` and
