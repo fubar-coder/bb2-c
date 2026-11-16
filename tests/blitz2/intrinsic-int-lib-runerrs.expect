@@ -1,0 +1,13 @@
+[compile]
+ok
+[run]
+Int(f) -2 calls 2
+Int(f) 2
+Int(l) -70000 calls 2
+Int(w) -300 calls 2
+Int(b) -5 calls 2
+Int(q-q1) -4 calls 0
+c=c+Int(q) 9 calls 0
+c=c+Int(f) 11 calls 2
+REQUESTER: AutoRequest body "Illegal Type" *
+rc=0
