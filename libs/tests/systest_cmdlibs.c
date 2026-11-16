@@ -1346,10 +1346,10 @@ static void test_frac(void)
    Every path of doval2: leading spaces, decimal with and without a
    fraction, "$" hex, "%" binary, "-", the end of the count in each loop,
    characters that end a number, integer overflow (mod 2^32).  The byte
-   behind the string is set (`trail`): hex, binary and negative numbers
-   read it (#302, open), the others must not.  Two fixed bugs are pairs
-   [orig] / [fixed #N]: more than 9 fraction digits (#304) and a length
-   above 32768 (#303). */
+   behind the string is set (`trail`): no path may read it.  Three fixed
+   bugs are pairs [orig] / [fixed #N]: hex, binary and negative numbers
+   read that byte in the original (#302), more than 9 fraction digits
+   (#304) and a length above 32768 (#303). */
 static ULONG valframe[1];
 static UBYTE valbuf[40002];
 

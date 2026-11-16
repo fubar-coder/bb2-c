@@ -3,8 +3,9 @@
   notes: |
     Of the decimal places, the first 9 count; the others are skipped.
 
-    Kept from the original: hexadecimal, binary and negative numbers read
-    one character behind the string
+    Fixed in the port: for hexadecimal, binary and negative numbers the
+    original read one character behind the string, and took a digit there
+    as part of the number
     ([#302](https://github.com/fubar-coder/bb2-c/issues/302)).
 "Int":
   text: The integer part of the value, as a long; the fraction is cut off towards 0. Takes a value of any numeric type.

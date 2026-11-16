@@ -812,17 +812,17 @@ BL_ALWAYS_INLINE ULONG notneg(const void *ffp, const UBYTE *p, LONG n)
     return BLITZ_SYSJSR2(ffp, LVO_SPAdd, x, ipart);
 }
 
-/* gethex - "$" and hex digits (0-9, A-F, a-f), byte arithmetic as in the
-   original; the count still includes the "$" (DBRA starts with it), so
-   one byte behind the string is read: BUG(orig) (#302).  In compiled programs
-   that byte is the terminating 0 of the string argument (tested:
-   Val(Left$("$123",2)) = 1), so it has no visible effect there. */
+/* gethex - the hex digits (0-9, A-F, a-f) behind the "$", byte
+   arithmetic as in the original; p and n start behind the "$".
+   Fixed (#302): the original's count still included the "$" (DBRA
+   starts with it), so it read one byte behind the string as a further
+   digit (normally the terminating 0 of the string argument,
+   Val(Left$("$123",2)) = 1; a digit there was added). */
 BL_ALWAYS_INLINE ULONG gethex(const void *ffp, const UBYTE *p, LONG n)
 {
     ULONG v = 0;
     UBYTE c;
 
-    p++;
     while (--n != -1) {                         /* inhx: DBRA d2,nxhx */
         c = *p++ - 48;                          /* SUB.b #48,d1:BMI dunhx */
         if ((BYTE)c < 0)
@@ -843,15 +843,15 @@ BL_ALWAYS_INLINE ULONG gethex(const void *ffp, const UBYTE *p, LONG n)
     return BLITZ_SYSJSR1(ffp, LVO_SPFlt, v);        /* dunhx */
 }
 
-/* getbin - "%" and binary digits; count as gethex (BUG(orig) (#302): one byte
-   behind the string is read, normally the terminating 0).  ADD.b #255,d1 sets X for "1" and ends the
-   number (BGT) for characters above "1". */
+/* getbin - the binary digits behind the "%"; p and n as gethex (Fixed
+   (#302): the original read one byte behind the string).
+   ADD.b #255,d1 sets X for "1" and ends the number (BGT) for characters
+   above "1". */
 BL_ALWAYS_INLINE ULONG getbin(const void *ffp, const UBYTE *p, LONG n)
 {
     ULONG v = 0;
     UBYTE c;
 
-    p++;
     while (--n != -1) {                         /* inbin: DBRA d2,nxbin */
         c = *p++ - '0';                         /* SUB.b d3,d1:BMI dunbin */
         if ((BYTE)c < 0 || c >= 2)              /* ADD.b #255,d1:BGT dunbin */
@@ -868,9 +868,11 @@ BL_ALWAYS_INLINE ULONG getbin(const void *ffp, const UBYTE *p, LONG n)
  * (SPNeg), else decimal with an optional fraction.  MOVE.l d0,a3: a3 =
  * the string afterwards (frees the work area).
  *
- * BUG(orig) (#302): hex, binary and negative numbers read one byte behind
- * the string (normally its terminating 0; after "-" the count is not
- * decremented: Val(Left$("-12",2)) = -1 in the tests).  Fixed (#303):
+ * Fixed (#302): after "$", "%" and "-" the count is decremented with the
+ * character skipped.  The original did not, so hex, binary and negative
+ * numbers read one byte behind the string as a further digit (normally
+ * its terminating 0: Val(Left$("-12",2)) = -1; a digit there was taken
+ * too).  Fixed (#303):
  * the length is used as a long (the original counted its low word
  * (SUBQ #1,d2:BMI): lengths 32769..65536 gave 0, longer ones counted mod
  * 65536).  Fixed (#304): only the first 9 fraction digits count (the
@@ -890,6 +892,7 @@ static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0),
     const UBYTE *p = str;
     LONG n = (LONG)BL_POPL(sp);                 /* MOVE.l -(a2),d2: a long (#303) */
     ULONG v;
+    UBYTE c;
     int neg;
 
     blitz_string = str;
@@ -899,14 +902,22 @@ static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0),
         if (*p++ != ' ')
             break;
     }
-    n++;
-    p--;
-    if (*p == '$')
+    c = p[-1];             /* the first non-space; p and n are behind it */
+    if (c == '$')
         return gethex(ffp, p, n);
-    if (*p == '%')
+    if (c == '%')
         return getbin(ffp, p, n);
-    neg = *p == '-';                            /* (one copy of notneg) */
-    v = notneg(ffp, p + neg, n);
+    /* fixed #302: behind a "-" p and n stay as they are (the original
+       counted the "-" too); a number starts at its first character.  The
+       empty asm keeps p itself in a register, so the loop of getdec does
+       not index from p - 1 (4 cycles per digit more). */
+    neg = c == '-';                             /* (one copy of notneg) */
+    if (!neg) {
+        n++;
+        p--;
+    }
+    __asm("" : "+r"(p));
+    v = notneg(ffp, p, n);
     if (neg)
         v = BLITZ_SYSJSR1(ffp, LVO_SPNeg, v);
     return v;
