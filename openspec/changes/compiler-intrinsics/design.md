@@ -223,6 +223,59 @@ commit):
   the first byte zero-extended, and a3 set to the string; `Len` is the
   inline `move.l d0,a3 : move.l -(a2),d0`, `stringfunclib.c:1262-1272`).
 
+Implemented (tasks 4.1, 4.2). The entries are stringfunclib's Len
+`(185 << 7) + 15` and Asc `(185 << 7) + 7` (a token is the library number
+<< 7 plus the function's number plus 1: Int, vallib's function 1, is `+ 2`),
+with the form check "one parameter, of type string" (`argtype` of the
+entry). They do not take the way of Int and Frac through getap and
+maineval2: libfunction asks `intrstrvar` before `dolibtoke`, which looks
+at the source behind the `(` without `getchar_` (as `fracend`): a name
+(`_` or a letter, then letters, digits, `_`), `$`, spaces, `)`. Only then
+it fetches the variable as `variable` does (`getvname`, `fetchvar`,
+`calcvar`); `fvarback` matches a name with `$` (flagmask 8) only with a
+plain string variable, never an array (flagmask 10: `Len(a$)` with a
+`Dim List a$()` creates a plain `a$`, as the call does) or a pointer, so
+`calcvar` emits nothing and gives the offset; `varmode` (set by
+`fetchvar`) chooses a4 for a local, a5 for a global and a Shared global
+(`pokewda5s`). The code (d0 and a0, the registers the copy changes too;
+a3 and a2 unchanged):
+
+- Len: `move.l off(a5),d0 : beq.s 1f : move.l d0,a0 : move.l -4(a0),d0
+  : 1:` (12 bytes).
+- Asc: `move.l off(a5),d0 : beq.s 2f : move.l d0,a0 : tst.l -4(a0) :
+  beq.s 2f : moveq #0,d0 : move.b (a0),d0 : bra.s 3f : 2: moveq #-1,d0 :
+  3:` (22 bytes).
+
+Findings:
+
+- The bookkeeping: the call path runs `makesbase` (`stvar`), which, when
+  no string expression is under way, emits `workstart` (a3 = the work
+  area) and sets `sbasegot` for the rest of the statement; a second
+  string in the same statement then pushes a3 (`move.l a3,-(a7)`, `sbgot`
+  2) and removes it after (`ststfix`). With the intrinsic none of that
+  happens; a later string in the statement starts the work area itself.
+  Inside a string expression (`b$=a$+Chr$(64+Len(a$))`) a3 is the end of
+  the string being built: the call copies `a$` there and its `Len` sets
+  a3 back to the start of the copy, the intrinsic leaves a3 alone, the
+  same address (`intrinsic-len`, `intrinsic-asc`).
+- A program whose only string work is `Len`/`Asc` of variables no longer
+  uses strings1lib's `workstart` in those statements; the executable is
+  smaller, the output the same.
+- AB3 mode: AmiBlitz3's baseLibs have Len and Asc in library 6 (entries
+  14 and 6, `blitzlib decls`), not in stringfunclib 185; no entry has
+  that token, so they stay calls (keyed by library identity, Decision 1).
+  The spec's "wherever the loaded library function has the intrinsic's
+  form" holds: the AB3 functions are other library functions.
+- The values equal the call's for every case of the tests, also for
+  strings with 0 bytes (the length is the header's, as for the copy) and
+  a header of 70000 (a long). A string longer than the work area cannot
+  be built by a program (every assignment goes through it); the test
+  pokes the header. The call copies such a string past the end of the
+  work area, the intrinsic reads only the header.
+- Measured (perf_bstr, A500, two runs): Len 679.1 -> 62.8 cycles per
+  call, Asc 745.1 -> 99.2, the same at 10, 100 and 1000 characters
+  (before: 607.1 to 8261.1 and 675.6 to 8327.1).
+
 Alternatives: also an array element or a field (the issue: "unless easy").
 Rejected for now: the address calculation differs, and with checking on the
 index check must still run; list it under the candidates.
