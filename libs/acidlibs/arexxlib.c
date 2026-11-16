@@ -37,8 +37,6 @@
  *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
  *   - GetRexxResult/GetRexxCommand: index (n-1)*4 as word (MULU, d1.w),
  *     n = 0 reads rm_Action / rm_Result2. (#51)
- *   - GetResultString deletes the ArgString but leaves rm_Result2
- *     pointing to it (#53).
  *   - Not a bug (by design): RexxEvent removes the first message like exec
  *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
  *     (after ClearRexxMsg).
@@ -61,6 +59,10 @@
  * slots used ClearRexxMsg went on into rm_PassPort, rm_CommAddr,
  * rm_FileExt ... (deleted and cleared), FillRexxMsg wrote a 17th value to
  * rm_PassPort; both now stop after 16 slots.
+ * Fixed (intended deviation, #53): GetResultString deleted the ArgString
+ * of rm_Result2 but left the field pointing to it (a second call, or a
+ * DeleteArgString of the field, worked with freed memory); it clears the
+ * field now.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -737,7 +739,8 @@ BLITZ_ALIAS(_GetRexxCommand, getrexxcommand_c);
  *        ArgString is deleted.
  *
  * Copied to a3 as GetRexxCommand (fixed, #52: a3 ends on the 0).
- * BUG(orig) (#53): rm_Result2 still points to the deleted ArgString.
+ * rm_Result2 is cleared then (fixed, #53: the original left it pointing
+ * to the deleted ArgString, a second call worked with freed memory).
  *
  * @param msg  d0: the RexxMsg
  * @return d0: the string length; 0 if msg is no RexxMsg or rm_Result2 is
@@ -754,6 +757,7 @@ static ULONG BLITZ_ROUTINE getresultstring_c(ULONG msg BL_REG(d0))
         return 0;
     len = copyarg((const UBYTE *)arg);
     deleteargstring(arg);
+    ((struct RexxMsg *)msg)->rm_Result2 = 0;    /* fixed (#53) */
     return len;
 }
 BLITZ_ALIAS(_GetResultString, getresultstring_c);
