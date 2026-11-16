@@ -460,7 +460,7 @@ quick:
     goto done;
 
 qint:
-    /* BUG(orig): Data reads the '-' of a value itself (fetchdata), so
+    /* BUG(orig) (#1074): Data reads the '-' of a value itself (fetchdata), so
        "Data.q -32768" sizes the integer 32768 here: it does not fit, the
        value becomes a long, and Data.q refuses it as bad data (test
        compiler-data-quick-min) */

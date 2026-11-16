@@ -1,4 +1,4 @@
-; compiler-data-quick-min - the smallest Quick as a Data.q value: Data
+; compiler-data-quick-min (#1074) - the smallest Quick as a Data.q value: Data
 ; reads the '-' itself and fetches the integer 32768, which does not fit
 ; a Quick; its type becomes a long, and Data.q refuses it as bad data
 ; (consttype2 .qint).  In an expression, q=-32768, the value is right.

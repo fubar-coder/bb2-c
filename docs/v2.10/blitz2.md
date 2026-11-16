@@ -244,6 +244,7 @@ fixes some of them; those rows say "fixed in the port". [B]
 | #1048 | closed | [compiler/Libraries] A token jsr (`TokeJsr`, `ALibJsr`) to a library routine with an error check goes through a stub `jsr routine / rts` also without runtime error checking (`asmlibs.c` tokecode, test `bug_orig_compiler_tokecode_stub_release`) | **fixed in the port** |
 | #1049 | closed | [compiler/Expressions] The cleanup of a constant fold frees every relocation added since the fold began, also those of a library linked in meanwhile: a constant `Mod` as the first use of modlib leaves modlib's calls of ldivlib and lmullib at their compile-time addresses (`eval.c` eval5, test `bug_orig_compiler_fold_mod_relocs`) | **fixed in the port** |
 | #1070 | closed | [compiler/Expressions] A Quick literal close to 32768 (`q=32767.9999`) is rounded to the FFP value 32768.0, stays a Float and wraps to -32768 when assigned; `Data.q 32767.9999` is "Bad Data" (`libcall.c` consttype2, tests `bug_orig_compiler_quick_literal_wrap`, `bug_orig_compiler_quick_literal_data`) | **fixed in the port** (the nearest Quick, 32767.99998 or -32768) |
+| #1074 | open | [compiler/Data] `Data.q -32768` is "Bad Data": Data reads the `-` itself and converts 32768, which does not fit a Quick (`libcall.c` consttype2, test `compiler-data-quick-min`) | unchanged |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well, except the bugs the port has
