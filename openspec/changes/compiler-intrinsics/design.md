@@ -86,6 +86,20 @@ Alternative: leave Int to the library. The gain of Int is smaller than the
 gain of Frac (196 cycles of which about 70 are call, push and set-up), but
 the code is the same kind and it shares the test, so it is done together.
 
+Implemented (task 2.1): `tst.l d0 : bpl.s 1f : addi.l #$FFFF,d0 : 1: swap
+d0 : ext.l d0` (14 bytes; 22 cycles for a positive value, 36 for a
+negative one). Adding $FFFF to a negative value before the shift rounds
+the integer part towards zero unless the fraction is 0 (q + 65535 cannot
+overflow for q < 0; -32768.0 = $80000000 gives $8000FFFF, -32768); the
+library's negate-shift-negate gives the same value for every Quick (the
+sweep of `intrinsic-int`: all 65536 integer parts at four fractions).
+The way through the compiler (Decision 1): libfunction arms the entry,
+getap passes push flag 2 for the argument, maineval2 pushes no type word
+for a Quick (so `stackuse` stays 0 and dolibtoke sets up no a2), and
+dolibtoke emits the entry's code in place of the JSR (`userjsr`, which
+also makes the `intchk` JSR in the checking mode). Every other type
+compiles exactly as before.
+
 ### 3. Frac of a Quick, used as a Quick
 
 `Frac` returns a Float, so the type of `Frac(q1)` in an expression is Float,
@@ -235,3 +249,9 @@ change is the default; rollback is reverting the commit. Land after #1064
    condition, not the behaviour in the spec.
 2. Does `Int` with an argument that holds a partial result in a register (the
    `regat` mechanism) need the value moved to d0 first? Same task group.
+   Answer (task 2.1): no. libfunction saves the registers below `regat`
+   (movem) and sets `regat` to 0 before the argument, so the argument is
+   in d0; after the call (and after the inline code) it moves d0 to
+   D(regat) and restores the registers. The intrinsic keeps that frame
+   and replaces only the push, the a2 set-up and the JSR (`intrinsic-int`:
+   `c=Int(q)*3+Int(q1)`, `c=c+Int(q)`).

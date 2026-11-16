@@ -1,0 +1,25 @@
+[compile]
+ok
+[run]
+3.5 3
+-3.5 -3
+2.5 2
+-2.5 -2
+1.5 1
+1.75 1
+-1.75 -1
+-0.5 0
+0 0
+32767.99998 32767
+-32768 -32768
+c=Int(q) -1 extra calls 0
+q2=Int(q) -1 extra calls 0
+0
+-1
+NPrint Int(q) extra calls 0
+c=Int(q*q1) -3 extra calls 0
+c=Int(qa(2)) -7 extra calls 0
+c=Int(q1+Int(q)) 1 extra calls 0
+c=Int(q)*3+Int(q1) -1 extra calls 0
+sweep 262144 values, 0 wrong
+rc=0

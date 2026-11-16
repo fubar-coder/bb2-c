@@ -1,0 +1,13 @@
+[compile]
+rc=0
+[run]
+3
+-3
+2
+-2
+1
+-1
+0
+-32768
+-1 extra calls 1
+rc=0

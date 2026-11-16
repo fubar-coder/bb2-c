@@ -2213,8 +2213,8 @@ static BOOL liba3(const UBYTE *sub)
    library of another form (the original vallib's Frac takes a Float)
    is called as before.
 
-   The way through the shared code: libfunction arms the entry
-   (intrarm) before dolibtoke; dolibtoke compiles the argument as for
+   The way through the shared code: libfunction arms the entry before
+   dolibtoke; dolibtoke compiles the argument as for
    the call, getap asks intrinsic_argpush for the push flag of the
    argument (2 instead of evalu2's 1), and maineval2, when the argument's
    type is known, asks intrinsic_quick: for a Quick the entry accepts it
@@ -2234,14 +2234,35 @@ struct intrinsic {
     BOOL (*here)(UWORD oldtype);    /* used here? (before the argument;
                                        NULL = always) */
     BOOL (*accept)(void);           /* the argument is a Quick: inline?
-                                       (after it, the char after it read;
-                                       NULL = always) */
+                                       (after the argument, srcptr behind
+                                       its closing parenthesis; NULL =
+                                       always) */
     void (*emit)(void);             /* the code: d0 the Quick argument, the
                                        result in d0; changes nothing else
                                        but the flags */
 };
 
+/* Int(Quick) (vallib doint): the integer part truncated towards zero, as
+   the library's Quick case (Int(-1.75) = -1), as a Long.  A negative value
+   gets $FFFF added before the shift, which rounds the integer part up
+   (towards zero) unless the fraction is 0: q + 65535 has no overflow for
+   q < 0, and its upper word is then the integer part of q truncated
+   (-32768.0 = $80000000 gives $8000FFFF, -32768).  The library's intchk
+   (runtime error checking) only refuses a string: no check for a Quick. */
+static void intquick(void)
+{
+    pokewd(0x4a80);                 /* tst.l d0 */
+    pokewd(0x6a06);                 /* bpl.s 1f */
+    pokewd(0x0680);                 /* addi.l #$FFFF,d0 */
+    pokel(0x0000ffffUL);
+    pokewd(0x4840);                 /* 1: swap d0 */
+    pokewd(0x48c0);                 /* ext.l d0 */
+}
+
+/* the library tokens: vallib (libs/variants/bb2-2.10/libnums.h LIB_vallib
+   120; the same in AB3 mode's list) */
 static const struct intrinsic intrinsics[] = {
+    { (120 << 7) + 2, T_LONG, NULL, NULL, intquick },       /* Int */
     { 0, 0, NULL, NULL, NULL }
 };
 
