@@ -528,6 +528,9 @@ static void song(const char *name, int pulses, int mincmds)
 static void lowtrans_song(void)
 {
     ULONG nonzero = 0;
+    /* the filter bit (CIA-A PRA bit 1): StartMedModule sets it for this
+       module; restored for the programs after this one, which observe it */
+    UBYTE pra = *(volatile UBYTE *)0xbfe001 & 2;
     UBYTE *mem;
     int ch, k;
 
@@ -567,6 +570,7 @@ static void lowtrans_song(void)
     callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
     FreeMem(mem, modlen + 256);
     check("medlib low transpose: the module plays", nonzero > 400);
+    *(volatile UBYTE *)0xbfe001 = (*(volatile UBYTE *)0xbfe001 & ~2) | pra;
 }
 
 static const char *names[] = { "memlib", "medlib", NULL };
