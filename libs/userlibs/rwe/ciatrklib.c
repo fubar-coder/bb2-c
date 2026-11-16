@@ -35,10 +35,6 @@
  * volatile accesses of the original's width.
  *
  * BUG(orig), kept:
- *   - SetCIAInt loads the ICR bit for AddICRVector from the ADDRESSES 1
- *     (timer A of ciaa) and 2 (timer B of ciab): MOVE.l %00000001,D0
- *     without `#` - the long at address 1 / 2 (an address error on a
- *     68000) (#450).
  *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
@@ -124,6 +120,11 @@
  * with the bit of its timer (1 for timer B, 0 for timer A); the original
  * overwrote the MOVEQ #1 for timer B with a MOVEQ #0 and always removed
  * the vector of bit 0.
+ * Fixed (intended deviation, #450): SetCIAInt passes the ICR bit 0
+ * (timer A of ciaa) or 1 (timer B of ciab) to AddICRVector; the original
+ * loaded the long at the ADDRESS 1 or 2 (MOVE.l %00000001,D0 without
+ * `#`): an address error on a 68000, an invalid bit with ExecBase above
+ * 16 MB (in Amiberry the interrupt never played).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -481,16 +482,8 @@ static const char mess[] = "Tracker: File error! (Not found?)";
 static const char mess2[] = "Tracker Library Error";
 
 /* a pointer GCC knows nothing about: the play routine reads behind its
-   tables (into the following data, like the original), and some reads
-   are from fixed low addresses (0, 1, 2) */
+   tables (into the following data, like the original) */
 #define LAUNDER(ptr) __asm__("" : "+a"(ptr))
-
-static ULONG peekl(ULONG addr)
-{
-    const ULONG *q = (const ULONG *)addr;
-    LAUNDER(q);
-    return *(volatile const ULONG *)q;
-}
 
 /* LEA modtable,a3: MULU #10,d0: ADDA d0,a3 (word, sign extended) */
 static struct modent *slot(ULONG num)
@@ -568,8 +561,9 @@ static void setciaint(void)
         CloseLibrary(gfx);
         if (tries != 2) {               /* 'TryTimerB */
             volatile struct CIA *cia = (volatile struct CIA *)0xbfd000;
-            /* BUG(orig): the bit is the long at address 2 (#450) */
-            struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&ciapart.MusicIntServer };
+            /* Fixed (#450): bit 1, CIAICRB_TB (the original read the long
+               at address 2: MOVE.l %00000010,D0 without #) */
+            struct bl_regs r = { .d0 = 1, .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             ciapart.TimerFlag = 1;
             if (!err) {
@@ -581,8 +575,9 @@ static void setciaint(void)
             }
         } else {                        /* 'TryTimerA */
             volatile struct CIA *cia = (volatile struct CIA *)0xbfe001;
-            /* BUG(orig): the bit is the long at address 1 (#450) */
-            struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&ciapart.MusicIntServer };
+            /* Fixed (#450): bit 0, CIAICRB_TA (the original read the long
+               at address 1) */
+            struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             ciapart.TimerFlag = 0;
             if (!err) {
@@ -1904,7 +1899,8 @@ static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
  * @brief init: install the CIA interrupt and clear the module slots.
  *
  * SetCIAInt (mt_music every 1/50 s on timer A of ciaa, else timer B of
- * ciab; its ICR bit comes from the addresses 1 and 2, BUG(orig) (#450)),
+ * ciab; the ICR bits 0 and 1, fixed, #450: the original read them from
+ * the addresses 1 and 2),
  * slots 0-7 cleared (DBNE from 7), master volume 64, all four voices on.
  */
 static void BLITZ_ROUTINE inittrackerlib_c(void)

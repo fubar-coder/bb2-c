@@ -1,19 +1,25 @@
 # capture rwe_ciatrklib 1
 init (CIA)|AddICRVector calls||1	$00000004
 init (CIA)|AddICRVector resource||1	$00000000
-init (CIA)|AddICRVector bit||1	$00000040
+init (CIA)|AddICRVector bit||1 [orig]	$00000040
+init (CIA)|AddICRVector bit||1 [fixed #450]	$00000000
 init (CIA)|AddICRVector interrupt||1	$00000044
 init (CIA)|AddICRVector resource||2	$00000001
-init (CIA)|AddICRVector bit||2	$00004000
+init (CIA)|AddICRVector bit||2 [orig]	$00004000
+init (CIA)|AddICRVector bit||2 [fixed #450]	$00000001
 init (CIA)|AddICRVector interrupt||2	$00000044
 init (CIA)|AddICRVector resource||3	$00000000
-init (CIA)|AddICRVector bit||3	$00000040
+init (CIA)|AddICRVector bit||3 [orig]	$00000040
+init (CIA)|AddICRVector bit||3 [fixed #450]	$00000000
 init (CIA)|AddICRVector interrupt||3	$00000044
 init (CIA)|AddICRVector resource||4	$00000001
-init (CIA)|AddICRVector bit||4	$00004000
+init (CIA)|AddICRVector bit||4 [orig]	$00004000
+init (CIA)|AddICRVector bit||4 [fixed #450]	$00000001
 init (CIA)|AddICRVector interrupt||4	$00000044
-init (CIA)|AddICRVector ciaa: the long at 1||1	$00000001
-init (CIA)|AddICRVector ciab: the long at 2||1	$00000001
+init (CIA)|AddICRVector ciaa: the long at 1||1 [orig]	$00000001
+init (CIA)|AddICRVector ciaa: the long at 1||1 [fixed #450]	$00000000
+init (CIA)|AddICRVector ciab: the long at 2||1 [orig]	$00000001
+init (CIA)|AddICRVector ciab: the long at 2||1 [fixed #450]	$00000000
 init (CIA)|CIAAbase set||1	$00000001
 init (CIA)|TimerFlag||1	$00000001
 init (CIA)|CIAAaddr||1	$00BFD000

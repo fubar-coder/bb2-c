@@ -118,20 +118,17 @@ kind F):
   `MOVEQ #1,D0` with a `MOVEQ #0,d0` at `RemInt` and always removed bit 0
   (#448; library test `rwe_ciatrklib`, the cases
   `ChangeTrackerVBlank|RemICRVector bit||...`).
+* `SetCIAInt` passes the interrupt bits 0 (timer A of ciaa) and 1 (timer
+  B of ciab) to `AddICRVector`; the original loaded the longs at the
+  **addresses** 1 and 2 (`MOVE.l %00000001,D0` without `#`): an address
+  error on a 68000; in Amiberry (A1200, ExecBase in Zorro III memory) the
+  long at 1 is $40, `AddICRVector` accepted it, but no interrupt ever
+  called `mt_music`, so in CIA mode nothing played (#450; test
+  `ciatrklib-setciaint-icr-bit`, library test `rwe_ciatrklib`, the cases
+  `init (CIA)|AddICRVector ...`).
 
 ## BUG(orig), kept
 
-* `SetCIAInt` loads the ICR bit for `AddICRVector` from the addresses 1
-  (ciaa timer A) and 2 (ciab timer B): `MOVE.l %00000001,D0` without
-  `#`, a long read from an odd address (an address error on a 68000). In
-  Amiberry (A1200, ExecBase in Zorro III memory) the long at 1 is $40
-  and at 2 $4000: `AddICRVector` accepts ciaa with "bit" $40, timer A of
-  ciaa is programmed and started, but no interrupt ever calls
-  `mt_music` – in CIA mode the library is silent there (orig and C
-  alike). With bit 0 for that interrupt, the removal in `ResetCIAInt`
-  then removes the system's timer A vector of ciaa (a first version of
-  the test that called the real resources made the later tests in the
-  same session hang) (#450).
 * `LoadTrackerModule` does not check the chip memory (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).

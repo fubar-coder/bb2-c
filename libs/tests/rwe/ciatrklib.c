@@ -24,8 +24,9 @@
  *     resources are stand-ins that record their calls (the real ones
  *     with the original's ICR bits would remove the system's ciaa timer
  *     A vector); ciaa's fails, so init takes ciab's timer B.  Observed:
- *     the calls (BUG(orig) #450: the bits are the longs at the addresses 1 and
- *     2; RemICRVector with the timer's bit, fixed #448), the CIA part, the timer started and
+ *     the calls (the bits 0 and 1, fixed #450: the original's are the longs
+ *     at the addresses 1 and 2; RemICRVector with the timer's bit, fixed
+ *     #448), the CIA part, the timer started and
  *     stopped, the interrupt server called by hand (the tempo command,
  *     the event), StartTracker (reinstalls), WaitTrackerEvent with a
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
@@ -467,7 +468,7 @@ static void fakewaittof(void)
 /* ------------------------------------------------------ phase A */
 
 /* AddICRVector/RemICRVector of both CIA resources replaced: the real
-   calls would take the ICR bit from the addresses 1/2 (BUG(orig), #450) - in
+   calls of the original take the ICR bit from the addresses 1/2 (#450) - in
    Amiberry $40 on ciaa, accepted - and RemICRVector with bit 0 removes
    the system's timer A vector of ciaa (later tests hang).  The stand-ins
    record the calls; ciaa's AddICRVector fails, so the library takes the
