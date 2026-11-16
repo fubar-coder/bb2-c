@@ -14,6 +14,7 @@
 ; plays one tick.
 ; Correct: tracks 4-15 have no audio channel - the note writes nothing to
 ; the buffer and leaves track 8 alone.
+; @fixed #209
 ; @configs clib
 ; @pass file=tracks.med|@TESTDATA@/medlib-tracks-4-15.med
 DEFTYPE .l

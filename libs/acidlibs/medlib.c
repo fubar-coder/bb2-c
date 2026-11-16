@@ -47,9 +47,6 @@
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
  *     higher channels of the mask get no follow-up values. (#208)
- *   - tracks 4-15 (20 byte structures) are handled by _PlayNote like
- *     tracks 0-3 (writes behind their structures, hardware pointer read
- *     from the next structure); only modules with more than 4 tracks. (#209)
  *   - JumpMed without a playing module writes to addresses 44-47
  *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11). (#210)
  *   - finetune values outside -8..7 read pointers outside _periodtable. (#211)
@@ -59,6 +56,12 @@
  * the next module pointer from (expansion address AND $FFFF0000) - relocmdd
  * overwrote the low word of d0 - and relocated whatever long was there as a
  * further module; it reads the pointer of the expansion data now.
+ * Fixed (#209): with SetMedMask bits 4-15 set, _PlayNote handled a note of
+ * tracks 4-15 (20 byte structures) like one of tracks 0-3: it wrote behind
+ * their structures and to the "audio registers" at the address in the next
+ * structure.  SetMedMask keeps bits 0-3 only (once per call), so
+ * _PlayNote's own mask test returns for tracks 4-15; nothing is added to
+ * the player.
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -250,7 +253,8 @@ struct synth {
 #define SAMPLE(p) ((struct sample *)(p))
 
 /* the track structure of the player: tracks 0-3 have all of it, tracks
-   4-15 only the first 20 bytes (the rest belongs to the next one, #209) */
+   4-15 only the first 20 bytes (the rest belongs to the next one; their
+   notes are not played, ChanMask has bits 0-3 only, #209) */
 struct track {
     UBYTE prevnote, previnstr, prevvol, pad3;
     UBYTE cmd, cmdqual, pad6;
@@ -2376,8 +2380,11 @@ static ULONG BLITZ_ROUTINE _GetMedInstr_c(UWORD ch BL_REG(d0))
 }
 BLITZ_ALIAS(_GetMedInstr, _GetMedInstr_c);
 
+/* SetMedMask m - the channels 0-3 to play.  Fixed (#209): only bits 0-3
+   are kept; the original kept the word, and a note of tracks 4-15 then
+   passed _PlayNote's mask test and was played like one of tracks 0-3 */
 static void BLITZ_ROUTINE _SetMedMask_c(UWORD m BL_REG(d0))
 {
-    ChanMask = m;
+    ChanMask = m & 15;
 }
 BLITZ_ALIAS(_SetMedMask, _SetMedMask_c);
