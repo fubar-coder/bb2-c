@@ -32,6 +32,141 @@ memlib globalloc (d2 = 0)|not Z||1	$00000001
 memlib localloc (d2 = 0)|kept||1	kept
 memlib localloc (d2 = 0)|memory||1	$00000001
 memlib localloc (d2 = 0)|not Z||1	$00000001
+memlib freelast|kept||4	kept
+memlib freelast|kept||5	kept
+memlib init|kept||3	kept
+memlib newmem|kept||2	kept
+memlib localloc|kept||3	kept
+memlib localloc|memory||1	$00000001
+memlib newmem|kept||3	kept
+memlib localloc|kept||4	kept
+memlib localloc|memory||2	$00000001
+memlib newmem|kept||4	kept
+memlib localloc|kept||5	kept
+memlib localloc|memory||3	$00000001
+memlib newmem|kept||5	kept
+memlib localloc|kept||6	kept
+memlib localloc|memory||4	$00000001
+memlib newmem|kept||6	kept
+memlib localloc|kept||7	kept
+memlib localloc|memory||5	$00000001
+memlib newmem|kept||7	kept
+memlib localloc|kept||8	kept
+memlib localloc|memory||6	$00000001
+memlib newmem|kept||8	kept
+memlib localloc|kept||9	kept
+memlib localloc|memory||7	$00000001
+memlib newmem|kept||9	kept
+memlib localloc|kept||10	kept
+memlib localloc|memory||8	$00000001
+memlib newmem|kept||10	kept
+memlib localloc|kept||11	kept
+memlib localloc|memory||9	$00000001
+memlib newmem|kept||11	kept
+memlib localloc|kept||12	kept
+memlib localloc|memory||10	$00000001
+memlib newmem|kept||12	kept
+memlib localloc|kept||13	kept
+memlib localloc|memory||11	$00000001
+memlib newmem|kept||13	kept
+memlib localloc|kept||14	kept
+memlib localloc|memory||12	$00000001
+memlib newmem|kept||14	kept
+memlib localloc|kept||15	kept
+memlib localloc|memory||13	$00000001
+memlib newmem|kept||15	kept
+memlib localloc|kept||16	kept
+memlib localloc|memory||14	$00000001
+memlib newmem|kept||16	kept
+memlib localloc|kept||17	kept
+memlib localloc|memory||15	$00000001
+memlib newmem|kept||17	kept
+memlib localloc|kept||18	kept
+memlib localloc|memory||16	$00000001
+memlib globalloc|kept||2	kept
+memlib globalloc|memory||1	$00000001
+memlib localloc|kept||19	kept
+memlib localloc|memory||17	$00000001
+memlib locfree|kept||3	kept
+memlib globfree|kept||2	kept
+memlib freelast|block kept||1	$00000001
+memlib freelast|kept||6	kept
+memlib freelast|a list (not Z)||3	$00000001
+memlib newmem|kept||18	kept
+memlib localloc|kept||20	kept
+memlib localloc|memory||18	$00000001
+memlib freelast|block kept||2	$00000001
+memlib freelast|kept||7	kept
+memlib freelast|a list (not Z)||4	$00000001
+memlib newmem|kept||19	kept
+memlib localloc|kept||21	kept
+memlib localloc|memory||19	$00000001
+memlib freelast|block kept||3	$00000001
+memlib freelast|kept||8	kept
+memlib freelast|a list (not Z)||5	$00000001
+memlib newmem|kept||20	kept
+memlib localloc|kept||22	kept
+memlib localloc|memory||20	$00000001
+memlib freelast|block kept||4	$00000001
+memlib freelast|kept||9	kept
+memlib freelast|a list (not Z)||6	$00000001
+memlib freelast|block kept||5	$00000001
+memlib freelast|kept||10	kept
+memlib freelast|a list (not Z)||7	$00000001
+memlib freelast|block kept||6	$00000001
+memlib freelast|kept||11	kept
+memlib freelast|a list (not Z)||8	$00000001
+memlib freelast|block kept||7	$00000001
+memlib freelast|kept||12	kept
+memlib freelast|a list (not Z)||9	$00000001
+memlib freelast|block kept||8	$00000001
+memlib freelast|kept||13	kept
+memlib freelast|a list (not Z)||10	$00000001
+memlib freelast|block kept||9	$00000001
+memlib freelast|kept||14	kept
+memlib freelast|a list (not Z)||11	$00000001
+memlib freelast|block kept||10	$00000001
+memlib freelast|kept||15	kept
+memlib freelast|a list (not Z)||12	$00000001
+memlib freelast|block kept||11	$00000001
+memlib freelast|kept||16	kept
+memlib freelast|a list (not Z)||13	$00000001
+memlib freelast|block kept||12	$00000001
+memlib freelast|kept||17	kept
+memlib freelast|a list (not Z)||14	$00000001
+memlib freelast|block kept||13	$00000001
+memlib freelast|kept||18	kept
+memlib freelast|a list (not Z)||15	$00000001
+memlib freelast|block kept||14	$00000001
+memlib freelast|kept||19	kept
+memlib freelast|a list (not Z)||16	$00000001
+memlib freelast|block kept||15	$00000001
+memlib freelast|kept||20	kept
+memlib freelast|a list (not Z)||17	$00000001
+memlib freelast|block kept||16	$00000001
+memlib freelast|kept||21	kept
+memlib freelast|a list (not Z)||18	$00000001
+memlib freelast|block kept||17	$00000001
+memlib freelast|kept||22	kept
+memlib freelast|a list (not Z)||19	$00000001
+memlib freelast|block kept||18	$00000001
+memlib freelast|kept||23	kept
+memlib freelast|a list (not Z)||20	$00000001
+memlib newmem|kept||21	kept
+memlib localloc|kept||23	kept
+memlib localloc|memory||21	$00000001
+memlib freelast|block kept||19	$00000001
+memlib freelast|kept||24	kept
+memlib freelast|a list (not Z)||21	$00000001
+memlib freelast|block kept||20	$00000001
+memlib freelast|kept||25	kept
+memlib freelast|a list (not Z)||22	$00000001
+memlib freelast|kept||26	kept
+memlib freelast|a list (not Z)||23	$00000001
+memlib freelast|kept||27	kept
+memlib freelast|no list (Z)||2	$00000001
+memlib freelast|all memory back||2	$00000001
+memlib init|kept||4	kept
 banklib AllocMem (d2 = 0)|kept||1	kept
 banklib AllocMem (d2 = 0)|memory||1	$00000001
 banklib AllocMem (d2 = 0)|not Z||1	$00000001
@@ -110,5 +245,5 @@ clrlib clrloc|cleared 1||1	$00000001
 clrlib clrloc|kept||2	kept
 clrlib clrloc|cleared 8||1	$00000001
 memlib finit|kept||1	kept
-|number of calls||1	$00000029
+|number of calls||1	$0000006F
 exitslib quit|instructions||1	bytes 8 2E7A504F207A4ED0

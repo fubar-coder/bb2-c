@@ -151,6 +151,72 @@ static void run(struct set *s)
         OBS("memory", r.d[0] != 0);
         OBS("not Z", !(ccr & CCR_Z));
     }
+    /* newmem and freelast at the transitions of the port's buckets of
+       list headers (8 entries; the global list is the first entry of the
+       first bucket): the first bucket full (depth 7), a new one (8), the
+       second full (15), a third (16), back to 15 (the third kept as spare),
+       across that boundary three times (the spare used again), back to 7
+       (the second bucket empty: the spare freed, the second kept), back to
+       1, then every list freed.  The original allocates every header
+       itself, so the cases observe results and registers, not buckets:
+       every list keeps its block (a mark of its depth, checked before its
+       freelast), globalloc/globfree at depth 16 find the global list
+       across the buckets, a locfree at depth 16 finds its block, and in
+       the end all memory is back */
+    {
+        ULONG blk[17], g, m;
+        int d = 0, i;
+#define BK_NEW() do {                                                       \
+            CALL("memlib newmem", entry_code(l, 4), (void)0, 0, 0);         \
+            d++;                                                            \
+            CALL("memlib localloc", entry_code(l, 0), r.d[0] = 4 + d;       \
+                 r.d[1] = MEMF_PUBLIC, 0, 0);                               \
+            blk[d] = r.d[0];                                                \
+            OBS("memory", blk[d] != 0);                                     \
+            if (blk[d])                                                     \
+                ((ULONG *)blk[d])[0] = 0x4d000000 | d; } while (0)
+#define BK_FREE() do {                                                      \
+            ROUT = "memlib freelast";                                       \
+            OBS("block kept", ((ULONG *)blk[d])[0] == (0x4d000000 | d));    \
+            CALL("memlib freelast", entry_code(l, 5), (void)0, 0, 0);       \
+            OBS("a list (not Z)", !(ccr & CCR_Z));                          \
+            d--; } while (0)
+        /* every list freed first (the global one with the blocks of the
+           cases above), so that the balance starts at 0 */
+        do
+            CALL("memlib freelast", entry_code(l, 5), (void)0, 0, 0);
+        while (!(ccr & CCR_Z));
+        rwe_mem_start();
+        CALL("memlib init", entry_code(l, 7), (void)0, 0, 0);
+        while (d < 16)
+            BK_NEW();
+        CALL("memlib globalloc", entry_code(l, 2), r.d[0] = 64; r.d[1] = MEMF_PUBLIC, 0, 0);
+        g = r.d[0];
+        OBS("memory", g != 0);
+        CALL("memlib localloc", entry_code(l, 0), r.d[0] = 30; r.d[1] = MEMF_PUBLIC, 0, 0);
+        m = r.d[0];
+        OBS("memory", m != 0);
+        CALL("memlib locfree", entry_code(l, 1), r.a[1] = m; r.d[0] = 30, 0, 0);
+        CALL("memlib globfree", entry_code(l, 3), r.a[1] = g, 0, 0);
+        BK_FREE();                              /* 15 */
+        for (i = 0; i < 3; i++) {
+            BK_NEW();                           /* 16 */
+            BK_FREE();                          /* 15 */
+        }
+        while (d > 1)
+            BK_FREE();
+        BK_NEW();                               /* 2 */
+        BK_FREE();                              /* 1 */
+        BK_FREE();                              /* 0 */
+        CALL("memlib freelast", entry_code(l, 5), (void)0, 0, 0);     /* global list */
+        OBS("a list (not Z)", !(ccr & CCR_Z));
+        CALL("memlib freelast", entry_code(l, 5), (void)0, 0, 0);     /* none left */
+        OBS("no list (Z)", !!(ccr & CCR_Z));
+        OBS("all memory back", rwe_mem_back());
+        CALL("memlib init", entry_code(l, 7), (void)0, 0, 0);         /* again for the others */
+#undef BK_NEW
+#undef BK_FREE
+    }
 
     /* banklib AllocMem: memlib globalloc, its flags too (#1059) */
     l = getlib(s, "banklib");
