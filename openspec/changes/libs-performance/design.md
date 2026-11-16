@@ -837,6 +837,35 @@ build.
     8fcb651f, with the layout-independent `bmod.bas`; the line routine on
     the old main gave 9906.1 and 5793.8).
 
+26. **SColl (task 11.5, 2026-11-16).** Cycles of the
+    68000 counted statically without the call, then measured
+    (`tests/perf`, cycles per call, two runs).
+    - *SColl:* the original (bytes of the CD's ACIDLIBS) is `LSR #1,d1 :
+      LSR #1,d0 : BEQ.w : ADDQ #1,d0 : ADD d0,d1 : BTST d1,colval.l :
+      SNE : EXT : RTS`. Its bit is p1 for p0 = 0 and p0 + 1 + p1
+      otherwise (p = channel / 2); the right bit of two different pairs
+      is p0 + p1 + 1 when neither is pair 0, else p0 + p1, so the
+      original is wrong only for p0 != 0 and p1 = 0. The two-path form
+      of R1 (CMP and Bcc in front, 12 cycles, then the original's code
+      with PC-relative BTST, -4) cost 8 cycles. The new form keeps one
+      path and replaces ADDQ/ADD with `NEG d1 : NEG d1 : ADDX d0,d1`: the
+      second NEG sets X for p1 != 0 and leaves p1, ADDX adds p0 and X.
+      p0 = 0: 62/64 cycles (no collision/collision) against the
+      original's 66/68; p0 != 0: 72/74 against 76/78 (the 4 extra cycles
+      of NEG/NEG/ADDX are paid by BEQ.s against the original's BEQ.w,
+      the PC-relative BTST saves 4 on both paths). Every input gives the
+      original's bit except p0 != 0 with p1 = 0 (the #110 fix), and the
+      same as the R1 form for every input. Alternatives counted: a table
+      of 64 bytes indexed by c0 * 8 + c1 (42 cycles to the BTST like the
+      original's short path, but an unchecked channel indexes memory
+      outside the table), per-pair masks ANDed with colval (2 cycles
+      more), BTST with a byte offset (the bit of a pair is not a sum of
+      per-channel values: no table of one channel works). Measured 136.0
+      -> 124.0 (the original 126.3, 0.98). `systest_cmdlibs` gets SColl
+      for all 64 channel pairs (the bits it reports and d0 with junk in
+      the upper words, the 12 pairs of #110 as `[orig]`/`[fixed #110]`),
+      recorded from the original.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:

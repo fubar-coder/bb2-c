@@ -89,7 +89,7 @@ The four commands still 10 % or more slower than the original in `perf-analysis/
 - [ ] 11.2 Str$ (printlib; 1.20 times)
 - [ ] 11.3 Instr (stringfunclib, the search loop; 1.17 times)
 - [ ] 11.4 Volume (audiolib, the mask loop of four passes; 1.37 times)
-- [ ] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays
+- [x] 11.5 SColl (collslib): look again for extensions, absolute addressing, spills and the #110 fix's cost; the fix of #110 stays - done (2026-11-16): one path, the #110 fix as NEG/NEG/ADDX instead of ADDQ/ADD, 136.0 -> 124.0 cycles (the original 126.3; design decision 26)
 - [ ] 11.6 Measure, tighten the budgets, update final-table.md
 
 ## 9. Closing

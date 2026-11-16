@@ -82,6 +82,7 @@
 # ChanMask read once of libs-performance task 10.12 on main 8fcb651f
 # (2026-11-16): 9794.8 to 9795.8; it keeps its tolerance.
 # bgfx.qblit8f: B~T from nine runs on main 1084e416 (18080.0 to 18085.8), 2026-11-16.
+# bgfx.scoll from two runs of task 11.5 on main 65066af5 (2026-11-16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -104,7 +105,7 @@ bgfx.qblit4f               9078~9     9087.9  QBlit 0,0,20,20 : QBlit 0,0,60,20 
 bgfx.qblit8f               18086~12   18063.8  QBlit 0,0,20,20 : QBlit 0,0,60,20 : QBlit 0,0,100,20 : QBlit 0,0,140,20 : QBlit 0,0,20,60 : QBlit 0,0,60,60 : QBlit 0,0,100,60 : QBlit 0,0,140,60 : FlushQueue 0
 bgfx.showsprite               635      629.4  ShowSprite 0,100,100,0
 bgfx.docoll                    71       66.8  DoColl
-bgfx.scoll                    141      126.3  c=SColl(0,2)
+bgfx.scoll                    129      126.3  c=SColl(0,2)
 bgfx.pcoll                  111~4      130.8  c=PColl(0)
 bgfx.shapeshit               362~4      383.4  c=ShapesHit(0,10,10,1,20,20)
 bgfx.spriteshit              392~4      418.9  c=SpritesHit(0,10,10,0,20,20)

@@ -721,6 +721,34 @@ static void test_smallentries(void)
                 DO1(N("collslib", "PColl", 0), R.d[0] = ch);
                 OBS("d0", R.d[0]);
             }
+        /* SColl for every two channels (also of one pair, and equal,
+           which the error check refuses): the bits of colval it reports,
+           one call per bit, then the call with every bit set; junk in
+           the upper words.  #110: the original tests the wrong bit for
+           a pair other than 0 first and pair 0 second. */
+        ROUT = "SColl";
+        for (i = 0; i < 8; i++)
+            for (j = 0; j < 8; j++) {
+                ULONG hits = 0, k;
+
+                sprintf(VEC, "channels $5A5A000%u $A5A5000%u", i, j);
+                for (k = 0; k < 16; k++) {
+                    *colval = (UWORD)(1u << k);
+                    markregs(&R);
+                    R.d[0] = 0x5a5a0000UL | i;
+                    R.d[1] = 0xa5a50000UL | j;
+                    callstk(N("collslib", "SColl", 0), &R, NULL, 0, &POP);
+                    if ((UWORD)R.d[0] == 0xffff)
+                        hits |= 1UL << k;
+                    else if ((UWORD)R.d[0] != 0)
+                        hits |= 0x10000UL;      /* neither 0 nor -1 */
+                }
+                OBS("hit bits", hits);
+                *colval = 0xffff;
+                DO1(N("collslib", "SColl", 0), R.d[0] = 0x5a5a0000UL | i;
+                    R.d[1] = 0xa5a50000UL | j);
+                OBS("d0", R.d[0]);
+            }
     } else
         NOT_CAPTURED("DoColl instruction", "not MOVE.w $DFF00E,abs.l");
 
@@ -1267,6 +1295,7 @@ int main(int argc, char **argv)
     KEEPS_FUNCTION("Abs", none);
     KEEPS_STATEMENT("DoColl", none);
     KEEPS_FUNCTION("PColl", none);
+    KEEPS_FUNCTION("SColl", none);
     KEEPS_FUNCTION("ShapeWidth", none);
     KEEPS_FUNCTION("ShapeHeight", none);
     KEEPS_STATEMENT("Handle", none);

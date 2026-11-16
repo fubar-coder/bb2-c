@@ -32,7 +32,7 @@
  *   lower channel first; with channel 0/1 as the SECOND argument
  *   (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead of 10,
  *   SColl(6,0): 12 instead of 11) the wrong bit was tested.  Here the
- *   channels are put in order first.  Two channels of the same pair
+ *   bit number does not depend on the order (doscoll).  Two channels of the same pair
  *   (SColl(0,1): the original tests bit 8) are an invalid argument (the
  *   hardware has no collision within a pair): the error check scollchk
  *   (debugger only) stops them with "Sprite channels must be of
@@ -163,37 +163,34 @@ BLITZ_ASM_ROUTINE(dodocoll,
  * pairs" (the last fixed #110, the original has no such check).
  * Fixed (#110): the original's bit number was right only with the lower
  * channel first (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead
- * of 10, SColl(6,0): 12 instead of 11).  The routine compares the
- * channels and runs the original's computation (LSR, LSR, BEQ, ADDQ, ADD,
- * BTST, SNE, EXT) with the lower channel as the pair base: as the
- * original for d0 <= d1, the same code with d0 and d1 exchanged for
- * d1 < d0.
+ * of 10, SColl(6,0): 12 instead of 11).  With the pairs p0 = d0/2 and
+ * p1 = d1/2 the original tests bit p1 of the high byte (CLXDAT bit 8 +
+ * p1) for p0 = 0 and p0 + 1 + p1 otherwise; the bit of two different pairs is p0 + p1 + 1 when neither
+ * is pair 0, else p0 + p1, so the original is wrong only for p0 != 0 and
+ * p1 = 0.  The routine is the original's code with ADDQ #1,d0 : ADD
+ * d0,d1 replaced by NEG d1 : NEG d1 : ADDX d0,d1, which adds p0 and the X
+ * flag of the second NEG (set for p1 != 0) to p1: the same cycles (12
+ * against 8, but BEQ.s instead of the original's BEQ.w saves 4 when it
+ * falls through), and BTST reads colval PC-relative instead of absolute
+ * (4 cycles less on both paths).  Every other input, also the invalid
+ * ones (same pair, channel >= 8, the upper word of d1), tests the
+ * original's bit.
  * Assembler in the argument registers: as a C function SColl cost a
- * thunk, a register save and copies (about 250 cycles more per call); the
- * two paths cost the fix only the CMP and the Bcc (12/14 cycles), no swap
- * (EXG would also exchange the upper word of d0).
+ * thunk, a register save and copies (about 250 cycles more per call).
+ * Cycles (68000, without the call): p0 = 0 62/64 (the original 66/68),
+ * p0 != 0 72/74 (76/78), no collision/collision.
  *
  * In:  d0.w the first sprite channel (0..7), d1.w the second
  * Out: d0.w -1 = collision, 0 = none
  */
 BLITZ_ASM_ROUTINE(doscoll,
-"   cmp.w   d0,d1\n"                /* fixed #110: lower channel first */
-"   bcs.s   1f\n"
-"   lsr.w   #1,d1\n"                /* d0 <= d1: the original's code */
-"   lsr.w   #1,d0\n"
+"   lsr.w   #1,d1\n"                /* p1 */
+"   lsr.w   #1,d0\n"                /* p0 */
 "   beq.s   0f\n"
-"   addq.w  #1,d0\n"
-"   add.w   d0,d1\n"
-"0: btst    d1,_colval(pc)\n"
-"   sne     d0\n"
-"   ext.w   d0\n"
-"   rts\n"
-"1: lsr.w   #1,d0\n"                /* d1 < d0: the same, d0/d1 exchanged */
-"   lsr.w   #1,d1\n"
-"   beq.s   2f\n"
-"   addq.w  #1,d1\n"
-"   add.w   d1,d0\n"
-"2: btst    d0,_colval(pc)\n"
+"   neg.w   d1\n"                   /* fixed #110: X = (p1 != 0) */
+"   neg.w   d1\n"
+"   addx.w  d0,d1\n"                /* p0 + p1 + (p1 != 0) */
+"0: btst    d1,_colval(pc)\n"       /* the high byte: bit mod 8 */
 "   sne     d0\n"
 "   ext.w   d0\n"
 "   rts");

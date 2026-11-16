@@ -3017,6 +3017,274 @@ PColl|d0|colval $7FFE channel $5A5A0007|1	$5A5AFFFF
 PColl|kept|colval $7FFE channel $FFFE|1	kept
 PColl|popped|colval $7FFE channel $FFFE|1	$00000000
 PColl|d0|colval $7FFE channel $FFFE|1	$00000000
+SColl|hit bits|channels $5A5A0000 $A5A50000|1	$00000100
+SColl|kept|channels $5A5A0000 $A5A50000|1	kept
+SColl|popped|channels $5A5A0000 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50001|1	$00000100
+SColl|kept|channels $5A5A0000 $A5A50001|1	kept
+SColl|popped|channels $5A5A0000 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50002|1	$00000200
+SColl|kept|channels $5A5A0000 $A5A50002|1	kept
+SColl|popped|channels $5A5A0000 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50003|1	$00000200
+SColl|kept|channels $5A5A0000 $A5A50003|1	kept
+SColl|popped|channels $5A5A0000 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50004|1	$00000400
+SColl|kept|channels $5A5A0000 $A5A50004|1	kept
+SColl|popped|channels $5A5A0000 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50005|1	$00000400
+SColl|kept|channels $5A5A0000 $A5A50005|1	kept
+SColl|popped|channels $5A5A0000 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50006|1	$00000800
+SColl|kept|channels $5A5A0000 $A5A50006|1	kept
+SColl|popped|channels $5A5A0000 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0000 $A5A50007|1	$00000800
+SColl|kept|channels $5A5A0000 $A5A50007|1	kept
+SColl|popped|channels $5A5A0000 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0000 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50000|1	$00000100
+SColl|kept|channels $5A5A0001 $A5A50000|1	kept
+SColl|popped|channels $5A5A0001 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50001|1	$00000100
+SColl|kept|channels $5A5A0001 $A5A50001|1	kept
+SColl|popped|channels $5A5A0001 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50002|1	$00000200
+SColl|kept|channels $5A5A0001 $A5A50002|1	kept
+SColl|popped|channels $5A5A0001 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50003|1	$00000200
+SColl|kept|channels $5A5A0001 $A5A50003|1	kept
+SColl|popped|channels $5A5A0001 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50004|1	$00000400
+SColl|kept|channels $5A5A0001 $A5A50004|1	kept
+SColl|popped|channels $5A5A0001 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50005|1	$00000400
+SColl|kept|channels $5A5A0001 $A5A50005|1	kept
+SColl|popped|channels $5A5A0001 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50006|1	$00000800
+SColl|kept|channels $5A5A0001 $A5A50006|1	kept
+SColl|popped|channels $5A5A0001 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0001 $A5A50007|1	$00000800
+SColl|kept|channels $5A5A0001 $A5A50007|1	kept
+SColl|popped|channels $5A5A0001 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0001 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50000|1 [orig]	$00000400
+SColl|hit bits|channels $5A5A0002 $A5A50000|1 [fixed #110]	$00000200
+SColl|kept|channels $5A5A0002 $A5A50000|1	kept
+SColl|popped|channels $5A5A0002 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50001|1 [orig]	$00000400
+SColl|hit bits|channels $5A5A0002 $A5A50001|1 [fixed #110]	$00000200
+SColl|kept|channels $5A5A0002 $A5A50001|1	kept
+SColl|popped|channels $5A5A0002 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50002|1	$00000800
+SColl|kept|channels $5A5A0002 $A5A50002|1	kept
+SColl|popped|channels $5A5A0002 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50003|1	$00000800
+SColl|kept|channels $5A5A0002 $A5A50003|1	kept
+SColl|popped|channels $5A5A0002 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50004|1	$00001000
+SColl|kept|channels $5A5A0002 $A5A50004|1	kept
+SColl|popped|channels $5A5A0002 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50005|1	$00001000
+SColl|kept|channels $5A5A0002 $A5A50005|1	kept
+SColl|popped|channels $5A5A0002 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50006|1	$00002000
+SColl|kept|channels $5A5A0002 $A5A50006|1	kept
+SColl|popped|channels $5A5A0002 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0002 $A5A50007|1	$00002000
+SColl|kept|channels $5A5A0002 $A5A50007|1	kept
+SColl|popped|channels $5A5A0002 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0002 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50000|1 [orig]	$00000400
+SColl|hit bits|channels $5A5A0003 $A5A50000|1 [fixed #110]	$00000200
+SColl|kept|channels $5A5A0003 $A5A50000|1	kept
+SColl|popped|channels $5A5A0003 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50001|1 [orig]	$00000400
+SColl|hit bits|channels $5A5A0003 $A5A50001|1 [fixed #110]	$00000200
+SColl|kept|channels $5A5A0003 $A5A50001|1	kept
+SColl|popped|channels $5A5A0003 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50002|1	$00000800
+SColl|kept|channels $5A5A0003 $A5A50002|1	kept
+SColl|popped|channels $5A5A0003 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50003|1	$00000800
+SColl|kept|channels $5A5A0003 $A5A50003|1	kept
+SColl|popped|channels $5A5A0003 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50004|1	$00001000
+SColl|kept|channels $5A5A0003 $A5A50004|1	kept
+SColl|popped|channels $5A5A0003 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50005|1	$00001000
+SColl|kept|channels $5A5A0003 $A5A50005|1	kept
+SColl|popped|channels $5A5A0003 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50006|1	$00002000
+SColl|kept|channels $5A5A0003 $A5A50006|1	kept
+SColl|popped|channels $5A5A0003 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0003 $A5A50007|1	$00002000
+SColl|kept|channels $5A5A0003 $A5A50007|1	kept
+SColl|popped|channels $5A5A0003 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0003 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50000|1 [orig]	$00000800
+SColl|hit bits|channels $5A5A0004 $A5A50000|1 [fixed #110]	$00000400
+SColl|kept|channels $5A5A0004 $A5A50000|1	kept
+SColl|popped|channels $5A5A0004 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50001|1 [orig]	$00000800
+SColl|hit bits|channels $5A5A0004 $A5A50001|1 [fixed #110]	$00000400
+SColl|kept|channels $5A5A0004 $A5A50001|1	kept
+SColl|popped|channels $5A5A0004 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50002|1	$00001000
+SColl|kept|channels $5A5A0004 $A5A50002|1	kept
+SColl|popped|channels $5A5A0004 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50003|1	$00001000
+SColl|kept|channels $5A5A0004 $A5A50003|1	kept
+SColl|popped|channels $5A5A0004 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50004|1	$00002000
+SColl|kept|channels $5A5A0004 $A5A50004|1	kept
+SColl|popped|channels $5A5A0004 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50005|1	$00002000
+SColl|kept|channels $5A5A0004 $A5A50005|1	kept
+SColl|popped|channels $5A5A0004 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50006|1	$00004000
+SColl|kept|channels $5A5A0004 $A5A50006|1	kept
+SColl|popped|channels $5A5A0004 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0004 $A5A50007|1	$00004000
+SColl|kept|channels $5A5A0004 $A5A50007|1	kept
+SColl|popped|channels $5A5A0004 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0004 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50000|1 [orig]	$00000800
+SColl|hit bits|channels $5A5A0005 $A5A50000|1 [fixed #110]	$00000400
+SColl|kept|channels $5A5A0005 $A5A50000|1	kept
+SColl|popped|channels $5A5A0005 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50001|1 [orig]	$00000800
+SColl|hit bits|channels $5A5A0005 $A5A50001|1 [fixed #110]	$00000400
+SColl|kept|channels $5A5A0005 $A5A50001|1	kept
+SColl|popped|channels $5A5A0005 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50002|1	$00001000
+SColl|kept|channels $5A5A0005 $A5A50002|1	kept
+SColl|popped|channels $5A5A0005 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50003|1	$00001000
+SColl|kept|channels $5A5A0005 $A5A50003|1	kept
+SColl|popped|channels $5A5A0005 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50004|1	$00002000
+SColl|kept|channels $5A5A0005 $A5A50004|1	kept
+SColl|popped|channels $5A5A0005 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50005|1	$00002000
+SColl|kept|channels $5A5A0005 $A5A50005|1	kept
+SColl|popped|channels $5A5A0005 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50006|1	$00004000
+SColl|kept|channels $5A5A0005 $A5A50006|1	kept
+SColl|popped|channels $5A5A0005 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0005 $A5A50007|1	$00004000
+SColl|kept|channels $5A5A0005 $A5A50007|1	kept
+SColl|popped|channels $5A5A0005 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0005 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50000|1 [orig]	$00001000
+SColl|hit bits|channels $5A5A0006 $A5A50000|1 [fixed #110]	$00000800
+SColl|kept|channels $5A5A0006 $A5A50000|1	kept
+SColl|popped|channels $5A5A0006 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50001|1 [orig]	$00001000
+SColl|hit bits|channels $5A5A0006 $A5A50001|1 [fixed #110]	$00000800
+SColl|kept|channels $5A5A0006 $A5A50001|1	kept
+SColl|popped|channels $5A5A0006 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50002|1	$00002000
+SColl|kept|channels $5A5A0006 $A5A50002|1	kept
+SColl|popped|channels $5A5A0006 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50003|1	$00002000
+SColl|kept|channels $5A5A0006 $A5A50003|1	kept
+SColl|popped|channels $5A5A0006 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50004|1	$00004000
+SColl|kept|channels $5A5A0006 $A5A50004|1	kept
+SColl|popped|channels $5A5A0006 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50005|1	$00004000
+SColl|kept|channels $5A5A0006 $A5A50005|1	kept
+SColl|popped|channels $5A5A0006 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50006|1	$00008000
+SColl|kept|channels $5A5A0006 $A5A50006|1	kept
+SColl|popped|channels $5A5A0006 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0006 $A5A50007|1	$00008000
+SColl|kept|channels $5A5A0006 $A5A50007|1	kept
+SColl|popped|channels $5A5A0006 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0006 $A5A50007|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50000|1 [orig]	$00001000
+SColl|hit bits|channels $5A5A0007 $A5A50000|1 [fixed #110]	$00000800
+SColl|kept|channels $5A5A0007 $A5A50000|1	kept
+SColl|popped|channels $5A5A0007 $A5A50000|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50000|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50001|1 [orig]	$00001000
+SColl|hit bits|channels $5A5A0007 $A5A50001|1 [fixed #110]	$00000800
+SColl|kept|channels $5A5A0007 $A5A50001|1	kept
+SColl|popped|channels $5A5A0007 $A5A50001|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50001|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50002|1	$00002000
+SColl|kept|channels $5A5A0007 $A5A50002|1	kept
+SColl|popped|channels $5A5A0007 $A5A50002|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50002|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50003|1	$00002000
+SColl|kept|channels $5A5A0007 $A5A50003|1	kept
+SColl|popped|channels $5A5A0007 $A5A50003|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50003|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50004|1	$00004000
+SColl|kept|channels $5A5A0007 $A5A50004|1	kept
+SColl|popped|channels $5A5A0007 $A5A50004|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50004|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50005|1	$00004000
+SColl|kept|channels $5A5A0007 $A5A50005|1	kept
+SColl|popped|channels $5A5A0007 $A5A50005|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50005|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50006|1	$00008000
+SColl|kept|channels $5A5A0007 $A5A50006|1	kept
+SColl|popped|channels $5A5A0007 $A5A50006|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50006|1	$5A5AFFFF
+SColl|hit bits|channels $5A5A0007 $A5A50007|1	$00008000
+SColl|kept|channels $5A5A0007 $A5A50007|1	kept
+SColl|popped|channels $5A5A0007 $A5A50007|1	$00000000
+SColl|d0|channels $5A5A0007 $A5A50007|1	$5A5AFFFF
 ShapeWidth|kept|width $8123|1	kept
 ShapeWidth|popped|width $8123|1	$00000000
 ShapeWidth|d0.w|width $8123|1	$00008123
