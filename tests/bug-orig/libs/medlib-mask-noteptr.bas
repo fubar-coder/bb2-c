@@ -7,6 +7,7 @@
 ; GetMedNote reads the note each track played.
 ; Correct: track 0 plays nothing, tracks 1 and 2 their own notes, track 3
 ; nothing.
+; @fixed #334
 ; @configs clib
 ; @pass file=mask.med|@TESTDATA@/medlib-mask-noteptr.med
 LoadMedModule 0,"CORPUS:mask.med"

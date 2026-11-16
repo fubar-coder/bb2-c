@@ -88,6 +88,10 @@
  * took the next track and bit: with a mask with gaps (SetMedMask %0101)
  * the higher channels got no repeat values.  It runs for the channels
  * 0-3 and their DMA bits (masked with ChanMask already).
+ * Fixed (#334): the line routine skipped a track masked out by SetMedMask
+ * before its note was read, so the note pointer stayed: every track after
+ * it played the note of the track before.  The masked branch skips the
+ * note (an unmasked track costs the same).
  * Fixed (#203): Bxx (position jump) stored the word of d4, whose upper byte
  * is left from a track before in the same line (19xx, the soffset or 64
  * _PlayNote leaves): the jump went to position 0, or with a negative word
@@ -1328,10 +1332,8 @@ MED_OFFSETS(MED_SET)
 "plr_loop0:\n"
 "   moveq   #0,d5\n"
 "   movea.l (a2)+,a5\n"                 /* this track's structure */
-/* BUG(orig) (#334): a masked track is skipped before its note is read, so
-   the note pointer stays: the next track reads this track's note */
 "   btst    d7,_ChanMask+1\n"
-"   beq     plr_endloop0\n"
+"   beq     plr_masked\n"                /* Fixed (#334), see there */
 "   moveq   #0,d3\n"
 "   movea.l d6,a1\n"
 "   cmp.b   #0x31,3(a3)\n"
@@ -1662,6 +1664,16 @@ MED_OFFSETS(MED_SET)
 "   blt     plr_loop0\n"
 "   moveq   #1,d0\n"
 "   rts\n"
+/* Fixed (#334): a track masked out by ChanMask skips its note (3 bytes,
+   MMD1: 4); the original skipped the track before the note was read, so
+   the note pointer stayed and the next track read this track's note.  An
+   unmasked track does not get here (the BEQ.w costs the same) */
+"plr_masked:\n"
+"   addq.l  #3,d6\n"
+"   cmp.b   #0x31,3(a3)\n"              /* "1": MMD1 */
+"   bne.s   plr_endloop0\n"
+"   addq.l  #1,d6\n"
+"   bra.s   plr_endloop0\n"
 "handleSynthnote:\n"
 "   move.b  d1,trk_prevnote2(a5)\n"
 "   move.l  a0,trk_synthptr(a5)\n"
