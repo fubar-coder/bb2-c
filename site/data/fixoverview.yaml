@@ -3629,6 +3629,14 @@ rows:
     text: "Two programs with runtime error checking or `SetErr` run side by side, each with its own error handling; in the original the one that ended first took away the other's."
     page: libraries
     anchor: debugger-fixes
+  - issue: 1070
+    severity: 4
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Data"
+    text: "A Quick literal just below 32768, such as `q=32767.9999`, is the largest Quick number; the original wrapped it to -32768 and `Data.q` refused it."
+    page: compiler
+    anchor: expressions-and-statements
   - issue: 1071
     severity: 4
     topic: "System"

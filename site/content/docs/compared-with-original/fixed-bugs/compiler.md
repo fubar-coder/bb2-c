@@ -726,6 +726,10 @@ source the original accepted are shown with examples on
   Error": the compiler looked it up in the dos library, whose token
   numbers ran into exec's; it compiles
   ([#960](https://github.com/fubar-coder/bb2-c/issues/960)).
+* A Quick number just below 32768, such as `q=32767.9999`, was rounded to
+  32768 and became -32768, and `Data.q` refused such a value with "Bad
+  Data"; it is the largest Quick number, 32767.99998, also in `Data.q`
+  ([#1070](https://github.com/fubar-coder/bb2-c/issues/1070)).
 
 ### Names, labels and constants
 
