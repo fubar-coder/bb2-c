@@ -37,9 +37,6 @@
  *     says; with it the query is skipped and the read waits for a byte. (#255)
  *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
  *     number of bytes, 0 if nothing is waiting. (#256)
- *   - OpenSerial: a second OpenSerial of an open unit that fails
- *     (exclusive access) clears the read half, so the open device is never
- *     closed (#260).
  *   - A unit that is not open: runtime error "Serial Device Not Open"
  *     (TRAP #0, also without the debugger; the original then runs into
  *     the message text, the C version returns) (#262).  SerialEvent checks
@@ -52,6 +49,10 @@
  *   - OpenSerial: if the write half's AllocSignal failed, the device stayed
  *     open and the write half kept its request pointer; the device is now
  *     closed and both halves cleared (#259).
+ *   - OpenSerial of a unit that is open set up the read half again and,
+ *     when OpenDevice failed (exclusive access), cleared it: the open
+ *     device was never closed.  An open unit is now left alone, OpenSerial
+ *     returns 0 (#260).
  * Kept from the original, not a bug: ReadSerialString writes no
  * terminating 0 (the compiler appends clr.b (a3)+ itself where it passes
  * a string on, blitz2.s:8767 sbtolong). (#257)
@@ -243,17 +244,20 @@ static void initport(struct serio *s)
  * the serflags, sets the baud rate and flags (SDCMD_SETPARAMS), copies the
  * 128 bytes to the write half and gives that its own port and signal.
  *
- * BUG(orig) (#260): a second OpenSerial of an open unit that fails
- * (exclusive access) clears the read half, so the open device is never
- * closed.  Fixed (#259): if the write half's AllocSignal failed, the
- * original left the device open and the write half with its request
- * pointer; the device is closed and both halves are cleared now.
+ * Fixed (#260): a unit that is open is left alone, the result is 0 (the
+ * original set up the read half again and, when OpenDevice failed with
+ * exclusive access, cleared it: the open device was never closed, also
+ * not at the end of the program).  Fixed (#259): if the write half's
+ * AllocSignal failed, the original left the device open and the write
+ * half with its request pointer; the device is closed and both halves
+ * are cleared now.
  *
  * @param name d0: the device name
  * @param unit d1: the unit (the slot is unit*256, word arithmetic, #252)
  * @param baud d2: the baud rate
  * @param flag d3: io_SerFlags
- * @return d0: the address of the unit's read half, 0 on failure
+ * @return d0: the address of the unit's read half, 0 on failure or if the
+ *         unit is open
  */
 ULONG BLITZ_ROUTINE openserial(UBYTE *name BL_REG(d0), ULONG unit BL_REG(d1),
                                ULONG baud BL_REG(d2), ULONG flag BL_REG(d3))
@@ -268,6 +272,8 @@ ULONG BLITZ_ROUTINE openserial(UBYTE *name BL_REG(d0), ULONG unit BL_REG(d1),
     obaud = baud;
     oflag = flag;
     r = slot((UWORD)unit, 8, 0);
+    if (r->request)                     /* Fixed (#260): the unit is open */
+        return 0;
 
     /* setup read port and open device */
     initport(r);
