@@ -83,16 +83,20 @@ struct memlist {
    bklast is the address of the last entry of firstdata's bucket (0: no
    list); newmem compares firstdata with it.  At most one empty bucket
    stays allocated: when a bucket becomes empty, a spare above it is
-   freed; when the last list is freed, its bucket is too.  The strings
-   are for the assembler of newmem and freelast; the static assertions
-   tie them to BUCKET_K. */
+   freed; when the last list is freed, its bucket is too.  BUCKET_LAST
+   is the offset of the last entry in the bucket.  The assembler of
+   newmem and freelast gets both as text (BL_STR: the expressions, which
+   GNU as evaluates) and has the entry layout written in: 8 bytes, next at 0, first at 4,
+   the entries from 4.  The static assertions check what the assembler
+   relies on and the C cannot see. */
 #define BUCKET_K                8
-#define BUCKET_SIZE             (4 + 8 * BUCKET_K)
-#define BUCKET_SIZE_S           "68"    /* BUCKET_SIZE */
-#define BUCKET_LAST_S           "60"    /* the last entry, from the bucket */
-#define BUCKET_UP_OF_LAST       "-60"   /* the bucket's up, from its last entry */
-_Static_assert(BUCKET_SIZE == 68 && BUCKET_SIZE <= 127, "BUCKET_SIZE_S, moveq");
-_Static_assert(4 + 8 * (BUCKET_K - 1) == 60, "BUCKET_LAST_S, BUCKET_UP_OF_LAST");
+#define BUCKET_SIZE             (4+8*BUCKET_K)
+#define BUCKET_LAST             (4+8*(BUCKET_K-1))
+_Static_assert(BUCKET_SIZE <= 127, "moveq #BUCKET_SIZE");
+_Static_assert(sizeof(struct memlist) == 8
+               && __builtin_offsetof(struct memlist, next) == 0
+               && __builtin_offsetof(struct memlist, first) == 4,
+               "the entry layout of newmem and freelast");
 
 /* firstdata, bklast, memerr and mess2 are also read by the assembler
    entries (used: GCC does not see those references) */
@@ -197,9 +201,9 @@ BLITZ_ASM_ROUTINE(newmem,
         "2: movem.l d0-d1/a6,-(sp)\n"
         "   move.l  a1,d0\n"
         "   beq.s   3f\n"                   /* no list: a first bucket */
-        "   move.l  " BUCKET_UP_OF_LAST "(a1),d0\n"   /* the full bucket's spare */
+        "   move.l  -" BL_STR(BUCKET_LAST) "(a1),d0\n"   /* the full bucket's spare */
         "   bne.s   4f\n"
-        "3: moveq   #" BUCKET_SIZE_S ",d0\n"
+        "3: moveq   #" BL_STR(BUCKET_SIZE) ",d0\n"
         "   moveq   #1,d1\n"                /* MEMF_PUBLIC */
         "   move.l  4.w,a6\n"
         "   jsr     -198(a6)\n"             /* AllocMem */
@@ -210,9 +214,9 @@ BLITZ_ASM_ROUTINE(newmem,
         "   move.l  _firstdata(pc),d1\n"
         "   beq.s   4f\n"
         "   move.l  d1,a1\n"
-        "   move.l  d0," BUCKET_UP_OF_LAST "(a1)\n"   /* above the full one */
+        "   move.l  d0,-" BL_STR(BUCKET_LAST) "(a1)\n"   /* above the full one */
         "4: move.l  d0,a0\n"                /* the bucket (empty) */
-        "   lea     " BUCKET_LAST_S "(a0),a1\n"
+        "   lea     " BL_STR(BUCKET_LAST) "(a0),a1\n"
         "   move.l  a1,_bklast\n"
         "   move.l  _firstdata(pc),4(a0)\n" /* its first entry: next */
         "   clr.l   8(a0)\n"                /* first: no blocks */
@@ -435,11 +439,11 @@ BLITZ_ASM_ROUTINE(freelast,
         "   clr.l   (a1)\n"
         "   move.l  a1,-(sp)\n"
         "   move.l  d1,a1\n"
-        "   moveq   #" BUCKET_SIZE_S ",d0\n"
+        "   moveq   #" BL_STR(BUCKET_SIZE) ",d0\n"
         "   jsr     -210(a6)\n"             /* FreeMem the spare */
         "   move.l  (sp)+,a1\n"
         "5: move.l  _firstdata(pc),d0\n"
         "   bne.s   1b\n"                   /* this one is the spare now */
-        "   moveq   #" BUCKET_SIZE_S ",d0\n"
+        "   moveq   #" BL_STR(BUCKET_SIZE) ",d0\n"
         "   jsr     -210(a6)\n"             /* the last list: FreeMem it */
         "   bra.s   1b");
