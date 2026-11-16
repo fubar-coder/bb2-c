@@ -40,14 +40,14 @@
  *     #203): with an upper byte left from a track before, the next line is
  *     far behind the block and kept at the change of the block
  *     (nxtnoclrln), so the notes are read from the memory behind it (test
- *     medlib-1dxx-word; issue to be filed).
+ *     medlib-1dxx-word; #1066).
  *   - the line routine tests a track against ChanMask with BTST on its
  *     low byte (the track number mod 8): tracks 8-11 pass like tracks 0-3,
  *     and 03 (portamento) and FFD (period), whose track check exists only
  *     with #CHECK = 1, write trk_porttrgper (+32), trk_prevportspd (+82)
  *     and trk_prevper (+20) of such a track into the 20-byte structures
  *     behind it, also with the default mask (test medlib-tracks-8-11-cmd3;
- *     issue to be filed).
+ *     #1067).
  * Fixed (#207): after a MIDI dump in the expansion data the relocation read
  * the next module pointer from (expansion address AND $FFFF0000) - relocmdd
  * overwrote the low word of d0 - and relocated whatever long was there as a
@@ -1419,7 +1419,7 @@ MED_OFFSETS(MED_SET)
 "   bsr     _SoundOff\n"
 "   moveq   #0,d0\n"
 "   rts\n"
-/* BUG(orig) (issue to be filed): FFD and 03 of tracks 8-11 (they pass the
+/* BUG(orig) (#1067): FFD and 03 of tracks 8-11 (they pass the
    mask test of plr_loop0) write behind their 20-byte structures */
 "notcmdfe:\n"
 "   cmp.b   #0xfd,d4\n"
@@ -1521,7 +1521,7 @@ MED_OFFSETS(MED_SET)
 "   move.w  d0,mmd_pseqnum(a3)\n"
 "   st      nextblock(a6)\n"
 "   bra     fx\n"
-/* BUG(orig) (issue to be filed): 1Dxx takes the word of d4 as Bxx does */
+/* BUG(orig) (#1066): 1Dxx takes the word of d4 as Bxx does */
 "f_1d:\n"
 "   move.w  #0x1ff,nextblock(a6)\n"     /* nextblock 1, nxtnoclrln -1 */
 "   addq.w  #1,d4\n"

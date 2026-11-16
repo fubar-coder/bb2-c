@@ -1,4 +1,4 @@
-; medlib-tracks-8-11-cmd3 - the line routine tests a track against the
+; medlib-tracks-8-11-cmd3 (#1067) - the line routine tests a track against the
 ; channel mask with BTST d7,ChanMask+1, a bit of the low byte (the track
 ; number mod 8): with the default mask 15 the tracks 8-11 pass like tracks
 ; 0-3.  Their structures have 20 bytes (tracks 0-3: 98), and the commands

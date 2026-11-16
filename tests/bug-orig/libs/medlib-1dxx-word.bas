@@ -1,4 +1,4 @@
-; medlib-1dxx-word - the pattern break 1Dxx (to line xx of the next block)
+; medlib-1dxx-word (#1066) - the pattern break 1Dxx (to line xx of the next block)
 ; adds 1 to the whole word of d4 and stores it as the next line, as Bxx
 ; does with the position (#203): d4 is cleared once per line and then
 ; loaded bytewise per track, its upper byte is left over from a track
