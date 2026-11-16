@@ -40,10 +40,8 @@
  *   - Not a bug (by design): RexxEvent removes the first message like exec
  *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
  *     (after ClearRexxMsg).
- *   - SendRexxCommand: if there is no REXX port, the alert comes with
- *     interrupts still disabled (Disable without Enable) (#55).  Only
- *     creates the command ArgString if rm_Args[0] is 0 (not a bug: keeps
- *     an ArgString the user put into slot 0).
+ *   - Not a bug: SendRexxCommand only creates the command ArgString if
+ *     rm_Args[0] is 0 (keeps an ArgString the user put into slot 0).
  *   - Not a bug (intended): CreateArgString, CreateRexxMsg, SendRexxCommand,
  *     ReplyRexxMsg set a3 to the (first) string argument ("preserve the BB2
  *     string work area"); SendRexxCommand only for a valid RexxMsg.
@@ -63,6 +61,9 @@
  * of rm_Result2 but left the field pointing to it (a second call, or a
  * DeleteArgString of the field, worked with freed memory); it clears the
  * field now.
+ * Fixed (intended deviation, #55): SendRexxCommand without a public port
+ * "REXX" showed its alert and returned with interrupts disabled (exec
+ * Disable without the Enable); it enables them before the alert now.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -572,8 +573,8 @@ BLITZ_ALIAS(_DeleteArgString, deleteargstring_c);
  * the message (FindPort under Disable).  a3 = the command afterwards
  * (valid RexxMsg only; not a bug, intended).  Errors: no memory -
  * recoverable alert; no REXX port - recoverable alert ("SORRY CAN NOT
- * FIND THE REXXPORT"), BUG(orig) (#55): with interrupts still disabled
- * (Disable without Enable).
+ * FIND THE REXXPORT"), after the Enable (fixed, #55: the original showed
+ * it and returned with interrupts still disabled).
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
  * rexxsyslib: its alert, then the message is taken as valid with address
  * 0 (BUG(orig), #56).
@@ -608,7 +609,8 @@ static void BLITZ_ROUTINE sendrexxcommand_c(ULONG msg BL_REG(d0),
     Disable();
     port = FindPort(REXXName);
     if (!port) {
-        error_routine(ERR_NOPORT);              /* BUG(orig) (#55): no Enable */
+        Enable();                               /* fixed (#55) */
+        error_routine(ERR_NOPORT);
         return;
     }
     m->rm_Node.mn_Node.ln_Type = NT_MESSAGE;
