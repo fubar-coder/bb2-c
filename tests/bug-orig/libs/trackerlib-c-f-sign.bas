@@ -10,6 +10,7 @@
 ; PlayModule: row 0 comes after 6 frames.  (Effect C with $80-$FF only
 ; writes the write-only AUDxVOL.)
 ; Correct: F80 is limited to speed 31 - row 0 is still playing.
+; @fixed #294
 ; @configs clib
 ; @pass file=speed.mod|@TESTDATA@/trackerlib-c-f-sign.mod
 DEFTYPE .l

@@ -38,7 +38,6 @@
  *   - after a pattern break / position jump (D, B) the end of the song is
  *     compared with the first byte of the pattern data instead of the
  *     song length, unless the row was the last of the pattern. (#292)
- *   - C and F only clamp positive values (signed compares) (#294).
  * Fixed (intended deviation, #290): a note's sample sets the volume of
  * the voice to the volume byte of the sample; the original took the word
  * with the finetune byte (MOVE.w), so a volume slide (A) of a sample with
@@ -52,6 +51,11 @@
  * a word in the voice and in AUDxVOL; the original wrote it only to
  * AUDxVOL, as a byte (both halves of the register), so a following
  * volume slide (A) started from the sample's volume again.
+ * Fixed (intended deviation, #294): set volume (C) and set speed (F)
+ * limit their parameter with unsigned compares (to $40 and $1F), and
+ * mt_music compares the frame counter with the speed unsigned; the
+ * original compared signed, so $80-$FF were not limited (F80: speed
+ * -128, a new row in every frame; C80: full volume).
  * Fixed (intended deviation, #295): mt_init clears the sample number of
  * every note in the patterns whose number is above 31 (the module is
  * changed in memory, as the first long of each sample is); the original
@@ -129,10 +133,10 @@ struct module {
 };
 
 static UBYTE *mt_data;
-static BYTE mt_speed = 6;
+static UBYTE mt_speed = 6;           /* 1-$1F */
 static UBYTE mt_songpos;
 static UWORD mt_pattpos;
-static BYTE mt_counter;
+static UBYTE mt_counter;
 static UBYTE mt_break;
 static UWORD mt_dmacon;
 
@@ -486,17 +490,17 @@ BL_ALWAYS_INLINE void mt_checkcom2(struct voice *v, ULONG aud)
         mt_break = ~mt_break;
         return;
     case 0xc:                                   /* mt_setvol */
-        if (v->sparam > 0x40)
-            v->sparam = 0x40;
+        if (v->param > 0x40)                    /* Fixed (#294): unsigned */
+            v->param = 0x40;
         /* Fixed (#293): the volume as a word to the voice and AUDxVOL */
         v->volume = v->param;
         RW(aud, 8) = v->volume;
         return;
     case 0xf:                                   /* mt_setspeed */
-        if (v->sparam > 0x1f)
-            v->sparam = 0x1f;
-        if (v->sparam) {
-            mt_speed = v->sparam;
+        if (v->param > 0x1f)                    /* Fixed (#294): unsigned */
+            v->param = 0x1f;
+        if (v->param) {
+            mt_speed = v->param;
             mt_counter = 0;
         }
         return;
@@ -569,7 +573,7 @@ static void mt_music(void)
     WORD i;
 
     mt_counter++;
-    if (mt_counter < mt_speed) {                /* CMP.b mt_speed,d0:BLT */
+    if (mt_counter < mt_speed) {                /* CMP.b mt_speed,d0:BCS (#294) */
         for (i = 0; i < 4; i++)                 /* mt_nonew */
             mt_checkcom(&mt_voices[i], 0xdff0a0 + 16 * i);
     } else {
@@ -736,8 +740,7 @@ static void freemod2(struct module *m, int blitz)
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
- * BUG(orig): the NoiseTracker player's bugs, see the file header (#292,
- * #294).
+ * BUG(orig): the NoiseTracker player's bug, see the file header (#292).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }
 /** @brief PlayModule Module# - the Blitz mode variant (BLibJsr). */
