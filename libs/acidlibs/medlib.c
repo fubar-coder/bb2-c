@@ -59,8 +59,6 @@
  *     and trk_prevper (+20) of such a track into the 20-byte structures
  *     behind it, also with the default mask (test medlib-tracks-8-11-cmd3;
  *     issue to be filed).
- *   - JumpMed without a playing module writes to addresses 44-47
- *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11). (#210)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
  *     next note. (#212)
  * Fixed (#207): after a MIDI dump in the expansion data the relocation read
@@ -79,6 +77,12 @@
  * one outside the range (as the original's #CHECK code), and InitModule
  * takes 0 for an InstrExt value outside it (once per start); the period
  * lookups per note are unchanged.
+ * Fixed (intended deviation, #210): JumpMed without a playing module wrote
+ * to addresses 44-47 (mmd_pline/mmd_pseqnum of module 0 = exception vector
+ * 11).  The original has no error check area; here the library has one:
+ * with runtime error checking JumpMed without a playing module is the
+ * runtime error "No Module Playing" (jumpmedchk); release code unchanged
+ * (an invalid argument).
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -99,6 +103,7 @@ void _initmedlib(void), _finitmedlib(void), _freemedmodule(void);
 void _PlayMed(void), _StopMed(void), _JumpMed(void), _SetMedVolume(void);
 void _GetMedVolume(void), _GetMedNote(void), _GetMedInstr(void), _SetMedMask(void);
 void _StartMedModule(void), _cludgemedmodule(void);
+void jumpmedchk(void);
 void BLITZ_ROUTINE _loadmedmodule(const UBYTE *name BL_REG(d1),
                                   struct DosLibrary *DOSBase BL_REG(a6));
 
@@ -109,8 +114,9 @@ BLITZ_ENTRY_DECL(_save);
 BLITZ_ENTRY_DECL(_use);
 BLITZ_ENTRY_DECL(_free);
 
-/* !libheader {#medlib,init,0,finit,0} */
-BLITZ_LIBHEADER(LIB_medlib, init, BL_NORET, finit, 0);
+/* !libheader {#medlib,init,0,finit,0}; error field: the error check area
+   of jumpmedchk (fixed, #210) */
+BLITZ_LIBHEADER(LIB_medlib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_STRING);
@@ -139,7 +145,7 @@ BLITZ_NAME("StopMed", "");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(_JumpMed, 0, 0);
+BLITZ_SUBS(_JumpMed, jumpmedchk, 0);        /* check: fixed #210 */
 BLITZ_NAME("JumpMed", "Pattern#");
 
 BLITZ_ASTATEMENT();
@@ -2344,8 +2350,9 @@ static void BLITZ_ROUTINE _PlayMed_c(void)
 }
 BLITZ_THUNK(_PlayMed, _PlayMed_c, "a3-a5");     /* the player state, see PM */
 
-/* JumpMed n - position n-1 of the song, line 0 (BUG(orig) #210: without a
-   playing module at address 44-47) */
+/* JumpMed n - position n-1 of the song, line 0 (without a playing module
+   the module pointer is 0 and it writes to address 44-47, an invalid
+   argument: checked by jumpmedchk with runtime error checking, #210) */
 static void BLITZ_ROUTINE _JumpMed_c(UWORD n BL_REG(d0))
 {
     struct mmd *m = db.module;
@@ -2412,3 +2419,27 @@ static void BLITZ_ROUTINE _SetMedMask_c(UWORD m BL_REG(d0))
     ChanMask = m & 15;
 }
 BLITZ_ALIAS(_SetMedMask, _SetMedMask_c);
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(nomodule, "No Module Playing");        /* fixed, #210 */
+
+/**
+ * @brief The error check of JumpMed (debugger only).
+ *
+ * Fixed (#210), not in the original (JumpMed did not check that a module
+ * plays; medlib had no error check area): without a playing module - none
+ * started, or stopped by StopMed or an FFE command - the module pointer is
+ * 0 and JumpMed would write mmd_pline/mmd_pseqnum at address 44-47
+ * (exception vector 11).
+ *
+ * Errors: "No Module Playing".
+ */
+static void BLITZ_ERRCHK jumpmedchk_c(void)
+{
+    if (!db.module)
+        BLITZ_RUNERR(nomodule);
+}
+
+/* the thunk of the check function */
+BLITZ_ERRCHK_THUNK(jumpmedchk, jumpmedchk_c, "d0-d1/a0-a1");

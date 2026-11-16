@@ -191,3 +191,8 @@ lib 90: entry 11 WriteSerialMem +$0: $00 != $74
 lib 90: entry 12 (nullsub) +$0: $00 != $67
 lib 90: end of the table +$3C8: $FF != $00
 lib 90: declaration part $3CE != $3D2 bytes
+# #210: JumpMed gets an error check (jumpmedchk, "No Module Playing");
+# medlib gets an error check area for it (the original has none)
+lib 82: header +$2C: code offset set in only one of them
+lib 82: entry 4 JumpMed +$C: code offset set in only one of them
+lib 82: relocations in the declaration part 21 != 23
