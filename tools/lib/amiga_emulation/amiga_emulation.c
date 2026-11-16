@@ -100,12 +100,22 @@ const struct amiga_emulation_option amiga_emulation_rtg[] = {
 const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof amiga_emulation_rtg[0];
 
 #define DONE_FILE   "run.done"
-/* After TEST:run.done the results are on the host already (the TEST:
-   directory is the host's): Amiberry gets QUIT and a short grace, then the
-   signals.  Amiberry 8.4 acknowledges QUIT ("IPC: Received QUIT") but often
-   does not end within 10 s, which cost every session about 15 s. */
+/* TEST:run.done is written after the script's other commands, but it does
+   not say that Amiberry has handed all of their writes to the host: the
+   TEST: directory is the host's, and a file the script wrote and closed can
+   still be cut (a capture of 131072 bytes of 173621 was seen under heavy
+   load) if Amiberry is killed right after run.done.  So a session that is
+   done ends like this: Amiberry gets QUIT (not in snapshot mode) and a
+   short grace, then SIGTERM, which it answers by closing down (0.2 to 0.7 s
+   on a loaded machine, more under heavier load); SIGKILL only if it has
+   not ended after DONE_GRACE.  What holds once the session has ended
+   (amiga_emulation_join) is that Amiberry has ended by itself, not by
+   SIGKILL, unless it hung; at run.done alone nothing is guaranteed.  Amiberry 8.4
+   acknowledges QUIT ("IPC: Received QUIT") but often does not end within
+   10 s, hence the SIGTERM after a short time. */
 #define QUIT_GRACE  1           /* seconds between QUIT and SIGTERM */
-#define KILL_GRACE  1           /* seconds between SIGTERM and SIGKILL */
+#define KILL_GRACE  1           /* seconds between SIGTERM and SIGKILL (failed sessions) */
+#define DONE_GRACE  10          /* the same for a session that is done: bounded, rarely used up */
 #define SUP_STOP_GRACE 5        /* seconds amiga_emulation_free gives a supervisor */
 #define CPU_POLL    1           /* seconds between the supervisor's GET_CPU_REGS */
 #define CPU_REPLY   2           /* seconds it waits for the answer */
@@ -2044,9 +2054,9 @@ int amiga_emulation_command(struct amiga_emulation *e, const char *const *args, 
 }
 
 /* SIGTERM to the group, SIGKILL after the grace time */
-static void stop_group(struct amiga_emulation *e)
+static void stop_group_for(struct amiga_emulation *e, double grace)
 {
-    double until = now() + KILL_GRACE;
+    double until = now() + grace;
 
     if (e->pid <= 0 || e->exited)
         return;
@@ -2058,6 +2068,11 @@ static void stop_group(struct amiga_emulation *e)
         waitpid(e->pid, NULL, 0);
         e->exited = 1;
     }
+}
+
+static void stop_group(struct amiga_emulation *e)
+{
+    stop_group_for(e, KILL_GRACE);
 }
 
 #ifdef __linux__
@@ -2337,7 +2352,7 @@ static void supervise(struct amiga_emulation *e)
         if (e->snap != SNAP_OFF && file_exists(done)) {
             /* the results are on the host, the state is not needed */
             snap_log(e, "done");
-            stop_group(e);
+            stop_group_for(e, DONE_GRACE);
             e->status = AMIGA_EMULATION_DONE;
             break;
         }
@@ -2349,7 +2364,7 @@ static void supervise(struct amiga_emulation *e)
             quit_until = now() + QUIT_GRACE;
         }
         if (quit_until && now() > quit_until) {
-            stop_group(e);
+            stop_group_for(e, DONE_GRACE);
             e->status = AMIGA_EMULATION_DONE;
             break;
         }

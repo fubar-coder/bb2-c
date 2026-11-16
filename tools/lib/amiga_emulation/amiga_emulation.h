@@ -194,7 +194,7 @@ struct amiga_emulation_params {
  * restore can be that slow on a busy host, the next session tries the
  * file again.  A file that does not begin as a savestate ("ASF ") is
  * removed before the restore, the session saves anew.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
- * used snapshots.  Sessions end with SIGTERM right after run.done; at the
+ * used snapshots.  Sessions end with SIGTERM right after run.done (SIGKILL only after 10 s); at the
  * end TEST:run.script is the test's script again and the links are
  * removed.  The work directory's snapshot.log tells what the session did.
  * Without slots (AMIGA_EMULATION_MAX=0, no limit): cold boot.

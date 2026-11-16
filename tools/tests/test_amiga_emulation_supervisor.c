@@ -11,7 +11,9 @@
  * snapshot prologue writes SNAP:ready and waits for SNAP:job.script, a
  * restore (--statefile) waits for it at once (a state that is not a fake
  * one ends it, as a failed restore); a job writes SNAP:started, a script
- * writes TEST:run.done unless it contains HANG.
+ * writes TEST:run.done unless it contains HANG.  A script with SLOWTERM
+ * writes run.done, and on SIGTERM takes 2.5 s to end, writing TEST:late as
+ * its last act (Amiberry closing down: the session must wait for it).
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp, setenv */
 #define _DEFAULT_SOURCE         /* readlink */
@@ -81,6 +83,16 @@ static int exists(const char *path)
 }
 
 /* ---------------------------------------------------------- fake Amiberry */
+
+static char late_path[4300];
+
+static void fake_term(int sig)
+{
+    (void)sig;
+    nap(2.5);
+    write_text(late_path, "late\n");
+    _exit(0);
+}
 
 /* the host directory of volume vol in the configuration ("...:VOL:DIR,0") */
 static int volume_dir(const char *cfg, const char *vol, char *dir, size_t len)
@@ -192,8 +204,11 @@ static int fake_amiberry(int argc, char **argv)
         if (poll(&pfd, 1, 20) > 0) {
             int c = accept(srv, NULL, NULL);
 
-            if (c >= 0 && fake_command(c))
+            if (c >= 0 && fake_command(c)) {
+                if (late_path[0])
+                    fake_term(0);   /* QUIT: closes down as slowly */
                 return 0;
+            }
         }
         if (ran || now() < boot)
             continue;
@@ -233,6 +248,10 @@ static int fake_amiberry(int argc, char **argv)
             else if (job && strstr(job, "MASK7"))
                 fake_cpu = FAKE_CPU_MASK7;
             else if (job && !strstr(job, "HANG")) {
+                if (strstr(job, "SLOWTERM")) {
+                    snprintf(late_path, sizeof late_path, "%s/late", test);
+                    signal(SIGTERM, fake_term);
+                }
                 snprintf(path, sizeof path, "%s/run.done", test);
                 write_text(path, "done\n");
             }
@@ -304,6 +323,33 @@ static int slot_clean(int k)
         }
     closedir(d);
     return clean;
+}
+
+/* a session that is done is not killed while Amiberry is still closing
+   down (TEST:late is its last write): in snapshot mode and cold */
+static void slow_close(void)
+{
+    int cold;
+
+    for (cold = 0; cold < 2; cold++) {
+        struct amiga_emulation *a;
+        char path[4300];
+        double t0;
+
+        if (cold)
+            setenv("AMIGA_EMULATION_SNAPSHOT", "0", 1);
+        a = start("SLOWTERM", 30);
+        CHECK(a != NULL);
+        if (!a)
+            continue;
+        t0 = now();
+        CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_DONE);
+        snprintf(path, sizeof path, "%s/late", amiga_emulation_test_dir(a));
+        CHECK(exists(path));
+        CHECK(now() - t0 < 12);
+        amiga_emulation_free(a);
+    }
+    unsetenv("AMIGA_EMULATION_SNAPSHOT");
 }
 
 /* the first session hangs until its limit while the caller joins it; the
@@ -762,6 +808,7 @@ int main(int argc, char **argv)
     retry_two_runners();
     cold();
     halt();
+    slow_close();
 
     if (!failures)
         nftw(base, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
