@@ -27,8 +27,8 @@
  * Deplode(buffer): -1 = ok, 0 = not "IMP!" / error.
  * CrMDecrunch buffer[,dest]: one argument = in place; then the data are
  * first copied to buffer-MinSecDist (memory BEFORE the buffer is
- * overwritten, as the Crunch-Mania listing requires - BUG(orig) (#116), see
- * below).
+ * overwritten, as the Crunch-Mania listing requires - BUG(orig) (#116),
+ * won't fix, see below).
  * PPDecrunch start,end,dest: end = end of the packed file (the last long
  * holds the original length and the number of empty bits).
  *
@@ -40,11 +40,28 @@
  *     overlapping buffers: the crunched data are moved to MinSecDist
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
  *     memory in front of the buffer are overwritten (the BB2 docs only
- *     say "works like the Deplode command"). (#116)
+ *     say "works like the Deplode command"). (#116), won't fix: the
+ *     Crunch-Mania format decrunches in place that way (its listing:
+ *     "You need some Memory directly in front of the Destination Area
+ *     which has to be as large as the MinSecDist"); moving the data
+ *     behind the buffer instead would need a buffer larger than the
+ *     original length, which programs do not allocate either.  A program
+ *     keeps MinSecDist bytes (header offset 4) free in front of the buffer
+ *     or uses the two argument form with buffers that do not overlap.
  *   - Implode crunches in place while it searches: a result of 0 (not
- *     crunchable) after at least 64 bytes leaves the buffer partly
- *     overwritten. (#114)
- *   - No checks of the data at all: corrupt data write anywhere. (#119)
+ *     crunchable) after at least 64 bytes, or -1 (break), leaves the
+ *     buffer partly overwritten. (#114), won't fix: the Imploder packs
+ *     in place, and knows only at the end that the result is not shorter;
+ *     keeping the data would need a second buffer of the data length on
+ *     every call.  A program that still needs its data after a result of
+ *     0 or -1 implodes a copy.
+ *   - No checks of the data: corrupt data write outside the destination.
+ *     (#119), won't fix: the header and table values that made a decrunch
+ *     run away are checked now (#115, #117, #118); what is left would be a
+ *     bounds test per unpacked byte in the decrunch loops (a cost on
+ *     every byte of valid data), and the commands get no buffer sizes to
+ *     test against.  Only data from a cruncher of the format are
+ *     decrunched safely.
  * Fixed (intended deviations, kind F):
  *   - CrMDecrunch: the overlap copy of (CrLen>>2) longs counted with
  *     SUBQ/BNE: a crunched length below 4 copied 4 GB; such a length now
@@ -630,8 +647,8 @@ im22:
  * every step: it writes the low word of (source - destination) to COLOR00
  * (the background flickers) and breaks on the left mouse button.
  * BUG(orig) (#112): the match search reads up to 254 bytes behind the
- * data.  BUG(orig) (#114): a result of 0 after at least 64 bytes leaves
- * the buffer partly crunched.  Not a bug (#113): after $4012 literal bytes
+ * data.  BUG(orig) (#114), won't fix (see the head comment): a result of
+ * 0 after at least 64 bytes, or -1, leaves the buffer partly crunched.  Not a bug (#113): after $4012 literal bytes
  * in a row the rest is stored uncrunched.
  *
  * @param buf  d0: the buffer with the data
@@ -784,8 +801,8 @@ static BB_BOOL deplode(UBYTE *buf)
 /**
  * @brief Deplode(Startadr): decrunches Imploder data in place.
  *
- * BUG(orig) (#119): the data are not checked: corrupt data write
- * anywhere.
+ * BUG(orig) (#119), won't fix (see the head comment): the data are not
+ * checked: corrupt data write outside the buffer.
  *
  * @param buf  d0: the crunched data ("IMP!" header)
  * @return d0: BB_TRUE = ok, BB_FALSE = no "IMP!" header or the data did
@@ -1084,8 +1101,8 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
     srclen = RL(src + 6);               /* SrcLen */
     src += 10;
     limit = src + mindist;
-    /* BUG(orig) (#116): a1 - MinSecDist lies in front of the destination buffer
-       (always for _crm, destination = source) */
+    /* BUG(orig) (#116), won't fix: a1 - MinSecDist lies in front of the
+       destination buffer (always for _crm, destination = source) */
     if ((LONG)limit > (LONG)dst) {      /* copy below the destination */
         ULONG *from = (ULONG *)src, *to, n = srclen >> 2;
         src = dst - mindist;
@@ -1106,12 +1123,11 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
  * _crm: OverlapDecrunch with destination = source: the crunched data are
  * first copied to MinSecDist bytes before the buffer.  Other data than
  * "CrM!"/"CrM2" are left alone.  All registers kept.
- * BUG(orig) (#116): up to MinSecDist bytes of memory in front of the
- * buffer are overwritten.  Fixed (#115): the copy of (CrLen>>2) longs
+ * BUG(orig) (#116), won't fix (see the head comment): up to MinSecDist
+ * bytes of memory in front of the buffer are overwritten.  Fixed (#115): the copy of (CrLen>>2) longs
  * ran 4 GB for a crunched length below 4.  Fixed (#117): CrM2 tables
  * with a count of 0 read 65536 entries (now the decrunch ends).
- * BUG(orig) (#119): no checks of
- * the data.
+ * BUG(orig) (#119), won't fix: no checks of the data.
  *
  * @param src  d0: the crunched data (with header), also the destination
  */
@@ -1129,9 +1145,9 @@ BLITZ_ALIAS(_crm, crm_c);
  * behind the start of the destination (signed comparison) they are first
  * copied to MinSecDist bytes before the destination.  All registers
  * kept.
- * BUG(orig) (#116): that copy overwrites memory in front of the
- * destination.  Fixed (#115), (#117), BUG(orig) (#119): see the one
- * argument form.
+ * BUG(orig) (#116), won't fix: that copy overwrites memory in front of
+ * the destination.  Fixed (#115), (#117); BUG(orig) (#119), won't fix:
+ * see the one argument form.
  *
  * @param src  d0: the crunched data (with header)
  * @param dst  d1: the destination
@@ -1255,7 +1271,7 @@ static void ppdecrunch(const UBYTE *file, const UBYTE *end, UBYTE *dest)
  * All registers kept.
  * Fixed (#118): an efficiency value outside 1-15 unpacks nothing (the
  * original read 65536 bits for a value of 0 and unpacked garbage).
- * BUG(orig) (#119): no checks of the data.
+ * BUG(orig) (#119), won't fix: no other checks of the data.
  *
  * @param start  d0: the packed file
  * @param end    d1: the end of the packed file
