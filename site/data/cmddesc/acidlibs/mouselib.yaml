@@ -1,8 +1,5 @@
 "Mouse":
   text: With `On`, the mouse is read at every vertical blank, for `MouseX`, `MouseY`, the speeds and the pointer; `Off` stops it. Blitz mode only.
-  notes: |
-    Kept from the original: right after `Mouse On`, the position can jump
-    once ([#223](https://github.com/fubar-coder/bb2-c/issues/223)).
 "Pointer":
   text: Makes a sprite the mouse pointer, shown on the sprite channel given in the slice used at this moment; it then follows the mouse. Blitz mode only.
   notes: |

@@ -29,11 +29,9 @@
     the two banks, the list's own channels or those of `CustomSprites`,
     since the banks show their sprites in different parts of the
     display; a sprite that runs from one into the other is the error
-    "Not Enough Sprite Channels" too.
-    Kept from the original: a sprite on a channel of `CustomSprites`
-    moved completely above or below the display stays visible, and other
-    instructions of the list are overwritten
-    ([#1051](https://github.com/fubar-coder/bb2-c/issues/1051)).
+    "Not Enough Sprite Channels" too. A sprite moved completely above or
+    below the display is switched off, on the list's own channels and on
+    those of `CustomSprites` alike.
 "DisplayPalette":
   text: Copies the colours of a palette into a copper list, from colour `coloroffset` of the palette on and, with the AGA chip set, into colour bank `bankoffset`.
   notes: |

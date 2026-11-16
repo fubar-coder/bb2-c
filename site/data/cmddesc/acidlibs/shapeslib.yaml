@@ -6,17 +6,13 @@
     numbers up to the highest one; the rest of the animation is not
     loaded. A picture that does not fit a shape is the error "Can't
     Read/Write Shapes File", also without runtime error checking: one
-    with a plane of 64 KB or more, such as 1024 by 520 pixels, or one
-    taller than 1023 rows or wider than 992 pixels. A picture whose
-    header gives 0 bitplanes is the error "Illegal Shape Depth", also
-    without runtime error checking.
-    Kept from the original: a picture whose header gives a width or a
-    height of 0 makes `LoadShape` run its loops 65536 times
-    ([#1054](https://github.com/fubar-coder/bb2-c/issues/1054)). Open:
-    the 64 KB limit counts a plane without the extra word per row that
-    the checks of `InitShape` count, so a picture just under it loads,
-    though `InitShape` refuses a shape of its size
-    ([#1055](https://github.com/fubar-coder/bb2-c/issues/1055)).
+    with a plane of 64 KB or more, with the limit of `InitShape` (the
+    width in bytes, rounded up to whole 16 pixel words and plus 2, times
+    the height), such as 992 by 528 pixels, or one taller than 1023 rows
+    or wider than 992 pixels. A picture whose header gives 0 bitplanes
+    is the error "Illegal Shape Depth", one whose header gives a width or
+    a height of 0 the error "Illegal Shape Size", both also without
+    runtime error checking.
 "InitShape":
   text: Makes an empty shape of the given width, height and depth. With runtime error checking, a depth of 0 is the error "Illegal Shape Depth".
   notes: |

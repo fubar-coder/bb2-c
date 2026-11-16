@@ -10,6 +10,5 @@
   text: The buttons held down on a CD32 game pad in the port, the sum of 1 play/pause, 2 reverse, 4 forward, 8 green, 16 yellow, 32 red and 64 blue.
   notes: |
     Test a single button with `And`, for example `If Gameb(1) And 32`
-    for the red button. Kept from the original: reading port 0 leaves
-    the port's control lines set as for port 1
-    ([#415](https://github.com/fubar-coder/bb2-c/issues/415)).
+    for the red button. Reading a pad sets back the control lines of its
+    port only and leaves the other port as it is.
