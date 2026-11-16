@@ -11,6 +11,7 @@
 ; events drop the key-ups).
 ; Correct: the tape's "b" comes between "a" and "c" (20 35 33).  The
 ; original plays it behind "c" (20 33 35).
+; @fixed #100
 ; @configs clib
 ; @pass file=tape|@TESTDATA@/brexxlib-playback-time.tape
 ; @pass runwrap=@INJECT@|keys=BREXX/20@1,A0@1,33@3,B3@3

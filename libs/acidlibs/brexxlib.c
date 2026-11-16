@@ -22,12 +22,12 @@
  * first real event (firstval).  The handler
  *   - records RAWKEY, RAWMOUSE and POINTERPOS events (copies, the list is
  *     passed on unchanged),
- *   - plays back: all tape events whose time (minus the tape's start
- *     time) is not later than the first incoming event's time (minus
- *     firstval) - or all, with QuickPlay - are linked IN FRONT of the
- *     incoming list (the tape's own nodes; the hijacked link is restored
- *     on the next call); at the end of the tape mode = 0 and, for
- *     PlayWait, Signal(mytask, mysig),
+ *   - plays back: the tape events whose time (minus the tape's start
+ *     time) is not later than an incoming event's time (minus firstval) -
+ *     or all, with QuickPlay - are linked in front of that incoming event
+ *     (the tape's own nodes; the hijacked links, up to 9 per call, are
+ *     restored on the next call); at the end of the tape mode = 0 and,
+ *     for PlayWait, Signal(mytask, mysig),
  *   - with mode 0 checks RAWKEY events for a MacroKey and starts its tape.
  * Simple events (Type, AbsMouse, RelMouse, MouseButton, ClickButton) are
  * built in dumevent and either executed (bit 15 of mode) or, after TapeTrap
@@ -64,11 +64,14 @@
  * Fixed (#98): AbsMouse and RelMouse both made POINTERPOS events (RelMouse
  * with the qualifier RELATIVEMOUSE); RelMouse makes a RAWMOUSE event (bug-
  * orig test brexxlib-relmouse-class, corpus t101).
+ * Fixed (#100): the playback compared the time of every tape event with
+ * the FIRST event of the incoming list only and linked the due ones in
+ * front of the list: a tape event due between two incoming events of one
+ * call came behind them.  Here each incoming event gets the tape events
+ * due by its time in front of it (bug-orig test brexxlib-playback-time).
  * BUG(orig), kept:
  *  - PlayWait restarts the given tape (with signal) when the low byte of
  *    mode is 2 and waits; otherwise it returns at once. (#99)
- *  - The playback time comparison takes the time of the FIRST event of
- *    the incoming list only. (#100)
  *  - LoadTape reads the start time unchecked and stops at the first
  *    short read (no error for a damaged file). (#101)
  *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
@@ -251,6 +254,9 @@ static volatile UWORD newstart;         /* bit 15 starts a Record/PlayBack */
 static struct InputEvent *lastrec;      /* last node of the tape (record),
                                            node whose link is hijacked (play) */
 static struct InputEvent *lastlink;     /* its real link */
+#define NHIJACK 8                       /* more links of one handler call */
+static struct InputEvent *hjnode[NHIJACK], *hjlink[NHIJACK];
+static UWORD nhijack;
 static struct timeval firstval;          /* time of the first event */
 static struct tape *firsta3;            /* tape being recorded */
 static struct timeval playval;           /* start time of the tape played */
@@ -626,13 +632,26 @@ static void recordoff(void)
     Permit();
 }
 
-/* PlayBack: turn off playback; restores the hijacked link */
+/* the links of the tape's nodes the handler pointed at incoming events:
+   the last one played (lastrec, its real link lastlink) and the ones
+   before it (hjnode, hjlink) */
+static void restorelinks(void)
+{
+    UWORD i;
+
+    for (i = 0; i < nhijack; i++)
+        hjnode[i]->ie_NextEvent = hjlink[i];
+    nhijack = 0;
+    lastrec->ie_NextEvent = lastlink;
+}
+
+/* PlayBack: turn off playback; restores the hijacked links */
 static void playbackoff(void)
 {
     waitlast();
     Forbid();
     if (mode == 2) {
-        lastrec->ie_NextEvent = lastlink;
+        restorelinks();
         mode = 0;
     }
     Permit();
@@ -643,6 +662,7 @@ static void playback3(struct tape *tape)
 {
     lastrec = (struct InputEvent *)tape;        /* the tape's link = node 0 */
     lastlink = tape->first;
+    nhijack = 0;
     playval.tv_secs = tape->start.tv_secs;
     playval.tv_micro = tape->start.tv_micro;
     dumevent.ie_Class = IECLASS_NULL;
@@ -740,9 +760,7 @@ static void dopb(struct tape *tape, UWORD sig)
  *
  * Nothing for an empty tape; otherwise stops a playback and starts this
  * one (no signal at the end).  The handler links the tape's events in
- * front of the incoming list when they are due.
- * BUG(orig) (#100): the time comparison takes the time of the FIRST
- * event of the incoming list only.
+ * front of the first incoming event later than them (Fixed (#100)).
  *
  * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
  */
@@ -933,6 +951,24 @@ static int timebefore(ULONG s1, ULONG m1, ULONG s0, ULONG m0)
     return s1 < s0 || (s1 == s0 && m1 < m0);
 }
 
+/* is it time to play the tape event ev back before the incoming event in?
+   (always with QuickPlay and for a tape event of time 0) */
+static int due(const struct InputEvent *ev, const struct InputEvent *in)
+{
+    ULONG s = ev->ie_TimeStamp.tv_secs, m = ev->ie_TimeStamp.tv_micro;
+    ULONG ps, pm, is, im, ds, dm;
+
+    if (qplay || !(s | m))
+        return 1;
+    ps = s - playval.tv_secs - (m < playval.tv_micro);         /* SUB/SUBX */
+    pm = m - playval.tv_micro;
+    is = in->ie_TimeStamp.tv_secs;
+    im = in->ie_TimeStamp.tv_micro;
+    ds = is - firstval.tv_secs - (im < firstval.tv_micro);
+    dm = im - firstval.tv_micro;
+    return !timebefore(ds, dm, ps, pm);
+}
+
 static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
 {
     UWORD curmode;
@@ -973,45 +1009,50 @@ static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
         return events;
     }
     if (curmode == 2) {
-        /* playback */
-        struct InputEvent *ev, *lastplayed, *first;
+        /* playback: the due tape events of each incoming event go in front
+           of it (Fixed (#100): the original compared all with the first
+           incoming event and put them in front of the list) */
+        struct InputEvent *ev, *seg, *segend, *in, *prev, *first;
+        UWORD played = 0;
 
-        lastrec->ie_NextEvent = lastlink;
+        restorelinks();
         if (!lastlink) {
             mode = 0;
             if (sigit)
                 Signal(mytask, mysig);
             return events;
         }
-        ev = lastlink;
-        lastplayed = events;
+        ev = lastlink;                                          /* next to play */
+        first = events;
+        prev = 0;
+        in = events;
         do {
-            /* is it time to play this one back yet? */
-            if (!qplay) {
-                ULONG s = ev->ie_TimeStamp.tv_secs,
-                      m = ev->ie_TimeStamp.tv_micro;
-
-                if (s | m) {
-                    ULONG ps = s - playval.tv_secs - (m < playval.tv_micro);   /* SUB/SUBX */
-                    ULONG pm = m - playval.tv_micro;
-                    ULONG is = events->ie_TimeStamp.tv_secs,
-                          im = events->ie_TimeStamp.tv_micro;
-                    ULONG ds = is - firstval.tv_secs - (im < firstval.tv_micro);
-                    ULONG dm = im - firstval.tv_micro;
-
-                    if (timebefore(ds, dm, ps, pm))
-                        break;                                  /* not yet */
-                }
+            seg = segend = 0;
+            while (ev && due(ev, in)) {                         /* yes now */
+                if (!seg)
+                    seg = ev;
+                segend = ev;
+                ev = ev->ie_NextEvent;
             }
-            lastplayed = ev;                                    /* yes now */
-            ev = ev->ie_NextEvent;
-        } while (ev);
-        if (lastplayed == events)
-            return events;
-        first = lastrec->ie_NextEvent;                          /* where we start from */
-        lastrec = lastplayed;
-        lastlink = lastplayed->ie_NextEvent;
-        lastplayed->ie_NextEvent = events;
+            if (seg) {
+                if (played) {                                   /* keep the last hijack */
+                    hjnode[nhijack] = lastrec;
+                    hjlink[nhijack++] = lastlink;
+                }
+                played = 1;
+                if (prev)
+                    prev->ie_NextEvent = seg;
+                else
+                    first = seg;
+                lastrec = segend;
+                lastlink = ev;
+                segend->ie_NextEvent = in;
+                if (nhijack == NHIJACK)                         /* the rest next time */
+                    break;
+            }
+            prev = in;
+            in = in->ie_NextEvent;
+        } while (in && ev);
         return first;
     }
     return events;                                              /* notplay */
