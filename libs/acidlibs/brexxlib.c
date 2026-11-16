@@ -78,9 +78,12 @@
  * Fixed (#102): Type made a character rawkeylib cannot convert a RAWKEY
  * event with code $FFFF and qualifier 1 (left shift); here it is skipped
  * (bug-orig test brexxlib-type-ffff).
- * BUG(orig), kept:
- *  - PlayWait restarts the given tape (with signal) when the low byte of
- *    mode is 2 and waits; otherwise it returns at once. (#99)
+ * Fixed (#99): PlayWait needed a Tape# (the help reads "PlayWait"); it
+ * restarted the playback with the given tape and waited only while one
+ * ran, and with an empty tape it waited for ever.  PlayWait without an
+ * argument (a new form) waits until the running playback has finished;
+ * PlayWait Tape# does what the original does, but returns at once for an
+ * empty tape (bug-orig tests brexxlib-playwait-noarg, brexxlib-playwait).
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
  * the library); here trap and message are in the normal code.
@@ -103,7 +106,8 @@ void dorecord(void), dorecord2(void), doplayback(void), doplayback2(void);
 void dosavetape(void), doloadtape(void), doabsmouse(void), dorelmouse(void);
 void domousebutton(void), doclickbutton(void), domacrokey(void);
 void dotapeadd(void), dotapeadd2(void), dotapemode(void), dotype(void);
-void doqplay(void), doxstatus(void), doplaywait(void), dofreemacrokey(void);
+void doqplay(void), doxstatus(void), doplaywait(void), doplaywait2(void);
+void dofreemacrokey(void);
 void brexxlib_codeinit(void), brexxlib_codefinit(void), freetape(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -212,10 +216,13 @@ BLITZ_SUBS(doxstatus, 0, 0);
 BLITZ_NAME("XStatus", "");
 
 BLITZ_ASTATEMENT();
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(doplaywait, 0, 0);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(TAPEOBJ);
-BLITZ_SUBS(doplaywait, 0, 0);
-BLITZ_NAME("PlayWait", "");
+BLITZ_SUBS(doplaywait2, 0, 0);
+BLITZ_NAME("PlayWait", "[Tape#]");
 
 BLITZ_NULLSUB_AT(init, brexxlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, brexxlib_codefinit, 0, 0);
@@ -779,23 +786,51 @@ static void BLITZ_ROUTINE doplayback2_c(void)
 BLITZ_ALIAS(doplayback2, doplayback2_c);
 
 /**
- * @brief PlayWait: wait for the end of a playback.
+ * @brief PlayWait: wait until the running playback has finished.
  *
- * BUG(orig) (#99): only while playing (low byte of mode = 2), and then
- * it plays the given tape again (with the end signal) and waits for it
- * (Wait(mysig)); otherwise it returns at once.
+ * Returns at once if no tape plays (or without a signal, Fixed (#104));
+ * otherwise the playback gets the end signal and PlayWait waits for it.
+ * Under Forbid, so that the handler cannot end the playback between the
+ * test and the wait; an old signal (a playback of a macro key after an
+ * earlier PlayWait) is cleared first.
+ * Fixed (#99): a form of its own; the original's PlayWait needed a Tape#
+ * (its help reads "PlayWait").
+ */
+static void BLITZ_ROUTINE doplaywait_c(void)
+{
+    Forbid();
+    if ((UBYTE)mode == 2 && mysig) {            /* also $8002: started */
+        SetSignal(0, mysig);
+        sigit = 0xffff;
+        Wait(mysig);
+    }
+    Permit();
+}
+BLITZ_ALIAS(doplaywait, doplaywait_c);
+
+/**
+ * @brief PlayWait Tape#: play a tape again and wait for its end.
+ *
+ * Only while a playback runs (low byte of mode = 2): it stops it, plays
+ * the given tape (with the end signal) and waits for it (Wait(mysig));
+ * otherwise it returns at once, as the original.  Fixed (#99): with an
+ * empty tape it returns at once (the original started nothing and waited
+ * for ever); an old signal is cleared before the start.
  *
  * Reads a3: the tape object (!libs{#brexxlib,$1380} from the word
  * argument in d0).
  */
-static void BLITZ_ROUTINE doplaywait_c(void)
+static void BLITZ_ROUTINE doplaywait2_c(void)
 {
-    if ((UBYTE)mode != 2 || !mysig)             /* no signal: Fixed (#104) */
+    struct tape *tape = (struct tape *)blitz_string;
+
+    if ((UBYTE)mode != 2 || !mysig || !tape->first)   /* Fixed (#104, #99) */
         return;
-    dopb((struct tape *)blitz_string, 0xffff);
+    SetSignal(0, mysig);
+    dopb(tape, 0xffff);
     Wait(mysig);
 }
-BLITZ_ALIAS(doplaywait, doplaywait_c);
+BLITZ_ALIAS(doplaywait2, doplaywait2_c);
 
 /* ------------------------------------------------------- files */
 

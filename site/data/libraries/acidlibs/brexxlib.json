@@ -123,8 +123,9 @@
     {
       "name": "PlayWait",
       "kind": "statement",
-      "help": "",
+      "help": "[Tape#]",
       "forms": [
+        {"args": []},
         {"args": [{"type": "word", "code": 2}]}
       ]
     },

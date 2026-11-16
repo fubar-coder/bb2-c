@@ -161,3 +161,19 @@ lib 92: header +$2C: code offset set in only one of them
 lib 92: entry 8 GetRexxResult +$C: code offset set in only one of them
 lib 92: entry 9 GetRexxCommand +$C: code offset set in only one of them
 lib 92: relocations in the declaration part 18 != 21
+# brexxlib (#99): PlayWait gets a form without an argument (doplaywait,
+# wait until the running playback has finished) before the original's
+# PlayWait Tape# (doplaywait2), and the help "[Tape#]": its entry is $18
+# bytes longer, and the entries behind it move
+lib 132: entry 14 PlayWait +$7: $01 != $00
+lib 132: entry 15 (nullsub) +$0: $00 != $00
+lib 132: entry 16 (nullsub) +$0: $00 != $23
+lib 132: entry 17 Tape +$0: $00 != $00
+lib 132: entry 18 FreeMacroKey +$0: $00 != $00
+lib 132: entry 19 (nullsub) +$0: $00 != $63
+lib 132: entry 20 (nullsub) +$0: $00 != $69
+lib 132: entry 21 (nullsub) +$0: $00 != $00
+lib 132: entry 22 (nullsub) +$0: $00 != $00
+lib 132: end of the table +$472: $FF != $00
+lib 132: declaration part $48E != $4A6 bytes
+lib 132: relocations in the declaration part 30 != 31
