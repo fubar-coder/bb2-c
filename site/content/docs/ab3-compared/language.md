@@ -151,7 +151,9 @@ Hello Blitz
   AmiBlitz3).
 * **Sizes in inline assembler.** In inline assembler AB3 mode takes `.s`
   as a size like `.b`, and `BRA`/`BSR` with any size suffix, as AmiBlitz3
-  does; the branch stays a word branch.
+  does; the branch stays a word branch. In BB2 mode a branch with `.s` or
+  `.b` is a short branch
+  ([Extensions]({{< relref "/docs/compared-with-original/extensions#short-branches-in-inline-assembler" >}})).
 
 ## Macros
 

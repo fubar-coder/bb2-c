@@ -10,9 +10,11 @@ Before this page you should know how the compiler options work
 The compiler of the BB2 C port follows one rule for everything it adds:
 an extension may only give a meaning to a source that the original
 refuses. A source that compiles with Blitz Basic 2 compiles to a program
-that does the same with the port, extensions or not. The one place where
-the port's executable differs on purpose is speed: a few functions are
-compiled as inline code ([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)).
+that does the same with the port, extensions or not. The places where
+the port's executable differs on purpose are speed: a few functions are
+compiled as inline code ([Faster Int, Frac, Len and Asc](#faster-int-frac-len-and-asc)),
+and a branch with the size `.b` in inline assembler is a short branch
+([Short branches in inline assembler](#short-branches-in-inline-assembler)).
 
 ## #__debug: is runtime error checking on?
 
@@ -76,6 +78,51 @@ target; `Len` and `Asc` of an expression (`Len(a$+b$)`), of a function
 a NewType. In AB3 mode `Frac`, `Len` and `Asc` stay library calls too,
 because AmiBlitz3's libraries are different; `Int` is inline there as
 well.
+
+## Short branches in inline assembler
+
+The inline assembler of Blitz Basic 2 makes every branch (`BRA`, `BSR`,
+`BEQ`, `BNE` and the other `Bcc`) a word branch of 4 bytes. It does not
+know the size `.s`, which most other assemblers use for a short branch:
+`BEQ.s` is a "Syntax Error". The port's compiler takes the sizes on a
+branch as other assemblers do:
+
+| Size | `BRA`, `BSR`, `Bcc` | Other instructions |
+|---|---|---|
+| none | word branch, as before | as before |
+| `.s` or `.b` | short branch: 2 bytes | `.s` is the same as `.b` |
+| `.w` | word branch | as before |
+| `.l` | `Bcc`: word branch, as before; `BRA`, `BSR`: "Illegal Assembler Instruction Size" | as before |
+
+A short branch reaches from 128 bytes back to 126 bytes ahead of the
+instruction after it, and its target may come before or after it. A
+target further away is the error "Illegal Displacement" at the line of
+the branch, and so is the next instruction as target: the 68000 cannot
+encode a short branch there.
+
+```
+MOVEQ #1,d0
+l1:
+BNE.s l2
+MOVEQ #0,d0
+l2:
+PutReg d0,a.l
+NPrint a," ",?l2-?l1
+End
+```
+
+prints `1 4`: the branch is taken, and the branch and the `MOVEQ` take 4
+bytes, where the word branch took 6.
+
+The original accepted `.b` on a `Bcc` and made a word branch of it. With
+the port, such a source compiles to a short branch, which does the same
+and is 2 bytes shorter; if its target is too far away for a short branch,
+the port reports "Illegal Displacement". Use `.w`, or no size, for a
+word branch. Of the sources on the Blitz Basic 2 CD, one library source
+uses `Bcc.b`; all its branches are in range.
+
+In [AB3 mode]({{< relref "/docs/ab3-mode" >}}) the branches stay word
+branches whatever their size, as in AmiBlitz3.
 
 ## Warnings
 
