@@ -362,7 +362,7 @@ static void build_speed(void)
     ref[951] = 127;
     ref[952] = 0;
     ref[953] = 0;
-    ref[952 + 127] = 1;                 /* position 127: not scanned */
+    ref[952 + 127] = 1;                 /* position 127: not scanned by the original (#477) */
     memcpy(ref + 1080, "M.K.", 4);
     pat = ref + 1084;
     note(pat + 16 * 0, 428, 1, 0xf, 0x81);

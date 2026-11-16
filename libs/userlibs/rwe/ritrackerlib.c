@@ -60,10 +60,7 @@
  * unused variable).
  * BUG(orig) of the play routine (the known PT2.3A bugs, cf. the changelog
  * of 8bitbubsy's pt23f replayer):
- *   - mt_init: the pattern count scan (signed compare; the scan ends
- *     only through DBRA, a new maximum at order position 126 lets it run
- *     on through the pattern data) (#477); the CLR.L of the first
- *     longword of every sample also clears 4 bytes behind the module for
+ *   - mt_init: the CLR.L of the first longword of every sample also clears 4 bytes behind the module for
  *     empty samples at its end (#570).
  *   - A finetune byte above 15 from the sample header makes the period
  *     lookups read far behind the period table (#476).
@@ -100,6 +97,12 @@
  *     behind read their notes from the pattern; the original's mt_end
  *     loaded a0, the pattern pointer of mt_GetNewNote, with $DFF000, and
  *     they read the custom chip registers (#475).
+ *   - mt_init's scan of the song positions reads all 128 positions with
+ *     one DBRA per byte and compares unsigned; the original read
+ *     positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a new
+ *     maximum at 126 read 65535 bytes more and the sample starts lay far
+ *     behind the module, where it cleared their first longs), and
+ *     patterns >= $80 never counted (BGT) (#477).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -438,8 +441,8 @@ static void ciaplayerfinit(void)
 static void mt_init(void)
 {
     UBYTE *mod, *order, *sample;
-    UWORD count;
-    ULONG pattern, highest;
+    WORD count;
+    ULONG highest;
     int i;
 
     if (!pt.status)
@@ -447,19 +450,18 @@ static void mt_init(void)
     mod = glue.mt_data;
     pt.songdataptr = mod;
     order = mod + 952;
+    /* the highest pattern: all 128 positions, one DBRA per byte, compared
+       unsigned (Fixed (#477): the original read positions 0-126, and on
+       through ~64 KB behind a new maximum at 126; signed) */
     count = 127;
-    pattern = 0;
-newhighest:                             /* mtloop */
-    highest = pattern;
-    count--;
-nextentry:                              /* mtloop2 */
-    pattern = (pattern & ~0xffUL) | *order++;
-    if ((BYTE)pattern > (BYTE)highest)  /* BUG(orig): signed, see above (#477) */
-        goto newhighest;
-    if (count-- != 0)
-        goto nextentry;
-    highest = (highest & ~0xffUL) | (UBYTE)(highest + 1);
-    sample = (UBYTE *)((highest << 10) + 1084 + (ULONG)mod);
+    highest = 0;
+    do {
+        UBYTE pattern = *order++;
+
+        if (pattern > highest)
+            highest = pattern;
+    } while (--count != -1);
+    sample = (UBYTE *)(((highest + 1) << 10) + 1084 + (ULONG)mod);
     for (i = 0; i < 31; i++) {
         *(ULONG *)sample = 0;           /* BUG(orig): also behind the module (#570) */
         pt.samplestarts[i] = sample;
@@ -1266,7 +1268,7 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
  * @brief TrackInit address: initialise a module and enable playing.
  *
  * mt_init: the sample starts behind the highest pattern, song position
- * 0 (its pattern scan and sample clearing: BUG(orig) (#477, #570)).
+ * 0 (its sample clearing: BUG(orig) (#570); its pattern scan: Fixed (#477)).
  * Playing is enabled even while Tracker Off, where mt_init does nothing:
  * Tracker On then plays with the old song pointer (BUG(orig) (#573)).
  * The program calls TrackPlay itself (the CIA interrupt setup is dead,

@@ -195,6 +195,12 @@ kind F):
   them. The C build keeps that pointer in `patdata`, which `mt_end` no
   longer changes (#475; library test `rwe_ciatrklib`, the F00 phase:
   the cases `voice behind F00: note from $DFF000 + offset`).
+* `mt_init`'s scan of the song positions (also `_modtochip`'s, the size
+  of `DecodeModule`'s copy) reads all 128 positions with one DBRA per
+  byte and compares unsigned; the original read positions 0–126 (SUBQ
+  for a new maximum, DBRA otherwise; a new maximum at 126 read ~64 KB
+  more), and pattern numbers ≥ $80 never counted (BGT) (#477; bug-orig
+  test `pt23a-init-pattern-scan-ciatrklib`).
 
 ## BUG(orig), kept
 
@@ -211,10 +217,6 @@ kind F):
   returns its argument; the library's documentation says "the command
   has no function" (since 1.02a `DecodeModule` copies a module to chip
   memory, and the command only still tokenises for old programs).
-* `mt_init`'s scan of the song positions (also `_modtochip`'s)
-  reads positions 0–126 (SUBQ for a new maximum, DBRA otherwise; a new
-  maximum at 126 reads ~64 KB more); pattern numbers ≥ $80 never count
-  (BGT) (#477).
 * `PauseModule` toggles its own state (`pause_status`), which
   `StartTracker` and `StopTracker` leave as it is: after a pause, the
   next `PauseModule` only enables playing, so a module started again is

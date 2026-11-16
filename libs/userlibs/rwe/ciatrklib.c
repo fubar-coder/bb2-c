@@ -40,10 +40,6 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - mt_init's scan of the song positions
- *     reads positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a
- *     new maximum at 126 reads ~64 KB more), patterns >= $80 never count
- *     (BGT, signed) (#477).
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
@@ -87,6 +83,11 @@
  *     original's mt_end loaded a0, the pattern pointer of mt_GetNewNote,
  *     with $DFF000, and they read the custom chip registers ($DFF000 +
  *     the pattern offset) (#475).
+ *   - mt_init's scan of the song positions (also _modtochip's, the size
+ *     of DecodeModule's copy) reads all 128 positions with one DBRA per
+ *     byte and compares unsigned; the original read positions 0-126
+ *     (SUBQ for a new maximum, DBRA otherwise; a new maximum at 126 read
+ *     ~64 KB more), and patterns >= $80 never counted (BGT) (#477).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -694,30 +695,28 @@ static UWORD set_real_mask(UWORD bits)
 }
 
 /* the highest pattern number of the song positions (mt_init, _modtochip):
-   positions 0-126 (BUG(orig), see the head, #477); signed compare */
-static UBYTE maxpattern(const UBYTE *mod)
+   all 128 positions, one DBRA per byte, compared unsigned (Fixed (#477):
+   the original read positions 0-126, and on through ~64 KB behind a new
+   maximum at 126; signed) */
+static ULONG maxpattern(const UBYTE *mod)
 {
-    const BYTE *pos = (const BYTE *)mod + 952;
-    UWORD left = 126;                   /* MOVEQ #127: SUBQ.W #1 */
-    BYTE max = 0, pat;
+    const UBYTE *pos = mod + 952;
+    WORD left = 127;
+    ULONG max = 0;
 
-    for (;;) {
-        pat = *pos++;
-        if (pat > max) {                /* BGT mtloop */
+    do {
+        UBYTE pat = *pos++;
+
+        if (pat > max)
             max = pat;
-            left--;
-            continue;
-        }
-        if (left-- == 0)                /* DBRA */
-            break;
-    }
-    return (UBYTE)max;
+    } while (--left != -1);
+    return max;
 }
 
 /* the size of the pattern data and samples: 1084 + (max+1)*1024 */
 static ULONG patternsize(const UBYTE *mod)
 {
-    return ((ULONG)(UBYTE)(maxpattern(mod) + 1) << 10) + 1084;
+    return ((maxpattern(mod) + 1) << 10) + 1084;
 }
 
 /* mt_end */
@@ -1641,7 +1640,8 @@ static BB_BOOL modtochip(ULONG num)
  * original added the 3 as a word), flag 2; when
  * that memory is missing the slot keeps the old address with flag 2 and
  * the new length (#433; memlib's globalloc ends the program instead).
- * The size comes from mt_init's scan of the song positions (#477).
+ * The size comes from mt_init's scan of the song positions (all 128,
+ * Fixed (#477)).
  * Error check (_decodecheck): slots 0-8, no loaded or copied module in
  * the slot.
  * @param num   d0: the slot
@@ -1770,7 +1770,7 @@ static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
  * @brief StartTracker(TrackerModule#): play a slot's module.
  *
  * Resets the CIA tempo (removes the interrupt), installs it again
- * unless ChangeTrackerVBlank was used, mt_init (its scan: BUG(orig)
+ * unless ChangeTrackerVBlank was used, mt_init (its scan: Fixed
  * (#477); the first long of every sample inside the module cleared,
  * fixed, #438) and enables playing.  Error check
  * (_checkused): slots 0-8, a module in the slot.

@@ -141,10 +141,7 @@ reads – an unused variable.
 The play routine (the known bugs of the PT2.3A replayer; 8bitbubsy's
 pt23f changelog served as the checklist, no code was taken from it):
 
-* `mt_init`'s pattern count: signed compare (pattern numbers ≥ 128);
-  the scan ends only through `DBRA`, so order position 127 is scanned
-  only if 126 is a new maximum, and then the scan runs on through the
-  pattern data (65536 more bytes) (#477). The `CLR.L` of every sample's
+* `mt_init`: the `CLR.L` of every sample's
   first longword also clears 4 bytes behind the module for empty
   samples at its end (#570).
 * A finetune byte above 15 in a sample header makes the period lookups
@@ -195,6 +192,14 @@ kind F), in the play routine:
   they read the custom chip registers (`$DFF000` + pattern offset)
   (#475; library test `rwe_ritrackerlib`, the second module's F00 on
   voice 1).
+* `mt_init`'s scan of the song positions reads all 128 positions with
+  one DBRA per byte and compares unsigned; the original's scan ended
+  only through `DBRA`, so position 127 was read only behind a new
+  maximum at 126 – and then the scan ran on through the pattern data
+  (65535 more bytes), the sample starts lay far behind the module, and
+  `mt_init` cleared their first longs there; pattern numbers ≥ 128 never
+  counted (#477; bug-orig test `pt23a-init-pattern-scan`, library test
+  `rwe_ritrackerlib`, the second module's pattern at position 127).
 
 ## Test
 
