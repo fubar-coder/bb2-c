@@ -11,6 +11,8 @@
 ; (TrackPlay: one tick; speed 6, row 1 at the 7th tick; the CIA
 ; interrupt does not play in the emulator).
 ; Correct: the loop starts $10000 bytes behind the start.
+; The same test for ciatrklib: pt23a-repeat-word-ciatrklib.
+; @fixed #479
 ; @rwe ritrackerlib
 ; @pass file=pt.mod|@TESTDATA@/pt23a-repeat-word.mod
 DEFTYPE .l

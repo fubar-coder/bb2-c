@@ -176,6 +176,10 @@ kind F):
   unsigned, so 9xx on a sample of $8000 words (64 KB) or more moves the
   start; the original compared signed (`CMP.W`, `BGE`) and set the
   length to 1 (#472; bug-orig test `pt23a-9xx-signed-length-ciatrklib`).
+* Play routine: the loop start of a sample is start + repeat × 2 doubled
+  as a long; the original doubled the repeat as a word (`ASL.W`), so
+  loops from 32768 words (64 KB) on started 64 KB too early (#479;
+  bug-orig test `pt23a-repeat-word-ciatrklib`).
 
 ## BUG(orig), kept
 
@@ -203,8 +207,7 @@ kind F):
   `ciatrklib-pause-state-kept`, REPRODUCED; #1076).
 * Play routine (Protracker 2.3A): the arpeggio reads up to 15 words
   behind the finetune's table (for finetune 15 into `mt_chan1temp`) (#474); a sample number
-  above 31 reads behind `mt_SampleStarts` (#480); the repeat offset is
-  repeat × 2 as a word (#479).
+  above 31 reads behind `mt_SampleStarts` (#480).
 * F00: that it stops the module (`mt_SetSpeed`: `BEQ mt_end`) is normal
   Protracker behaviour. The defect is that `mt_end` loads a0 with
   `$DFF000` (for its `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is

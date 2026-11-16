@@ -47,10 +47,9 @@
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
- *   - Play routine (Protracker 2.3A): the arpeggio (#474) and a sample number > 31 (#480) read behind the tables
- *     (mt_chan1temp, mt_SongDataPtr ...); E8x (Karplus-Strong) with a
- *     loop length of 0 rewrites 64 KB (#439); the repeat offset is
- *     repeat * 2 as a word (ASL.w) (#479); F00 stops the module (as in
+ *   - Play routine (Protracker 2.3A): the arpeggio (#474) and a sample
+ *     number > 31 (#480) read behind the tables (mt_chan1temp,
+ *     mt_SongDataPtr ...); F00 stops the module (as in
  *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
  *     on voice 1-3 the voices behind read their notes from the custom
  *     chip registers ($DFF000 + the pattern offset) instead of the
@@ -81,6 +80,9 @@
  *     a sample of $8000 words (64 KB) or more moves the start; the
  *     original compared signed (CMP.w, BGE) and set the length to 1
  *     (#472).
+ *   - The loop start of a sample is start + repeat * 2 doubled as a long;
+ *     the original doubled the repeat as a word (ASL.w), so loops from
+ *     32768 words (64 KB) on started 64 KB too early (#479).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -1371,7 +1373,7 @@ static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const U
         ch->volume = h[3];
         repeat = WORDAT(h + 4);         /* repeat */
         if (repeat) {
-            ch->loopstart = ch->start + (UWORD)(repeat << 1);   /* ASL.W */
+            ch->loopstart = ch->start + ((ULONG)repeat << 1);   /* Fixed (#479): was ASL.W */
             ch->wavestart = ch->loopstart;
             ch->length = WORDAT(h + 4) + WORDAT(h + 6);
             ch->replen = WORDAT(h + 6);

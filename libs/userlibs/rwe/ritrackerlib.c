@@ -73,8 +73,6 @@
  *     plus its half-tones lies behind the row or no entry fits (#474); a
  *     finetune byte above 15 from the sample header makes the period
  *     lookups read far behind (#476).
- *   - Loop offsets are shifted as words (repeat >= 32768 words wraps)
- *     (#479).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
  *     headers (#480).
  * Fixed in the play routine (intended deviations):
@@ -97,6 +95,9 @@
  *     a sample of $8000 words (64 KB) or more moves the start; the
  *     original compared signed (CMP.W, BGE) and set the length to 1
  *     (#472).
+ *   - The loop start of a sample is start + repeat * 2 doubled as a long;
+ *     the original doubled the repeat as a word (ASL.W), so loops from
+ *     32768 words (64 KB) on started 64 KB too early (#479).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -1105,7 +1106,7 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sample
         c->volume = sampleinfo[infooff + 3];
         repeat = W(sampleinfo + infooff + 4);    /* repeat */
         if (repeat) {
-            loop = (ULONG)c->start + (UWORD)(repeat << 1);  /* BUG(orig): word (#479) */
+            loop = (ULONG)c->start + ((ULONG)repeat << 1);  /* Fixed (#479): was a word */
             c->loopstart = (UBYTE *)loop;
             c->wavestart = (UBYTE *)loop;
             c->length = (UWORD)(W(sampleinfo + infooff + 4) + W(sampleinfo + infooff + 6));

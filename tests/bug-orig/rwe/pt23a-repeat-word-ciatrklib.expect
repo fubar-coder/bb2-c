@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+voices found -1
+voice 0 start 0 loop 00010000
+rc=0

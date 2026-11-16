@@ -157,8 +157,6 @@ pt23f changelog served as the checklist, no code was taken from it):
   entries; for finetune −1 into the first voice block) (#474); a
   finetune byte above 15 in a sample header reads far behind the table
   (#476).
-* The loop start is start + repeat shifted as a word (repeats ≥ 32768
-  words wrap) (#479).
 * Sample numbers above 31 read behind `mt_SampleStarts` and the sample
   headers (#480).
 
@@ -189,6 +187,10 @@ kind F), in the play routine:
   on a sample of $8000 words (64 KB) or more moves the start; the
   original compared signed (`CMP.W`, `BGE`) and set the length to 1
   (#472; bug-orig test `pt23a-9xx-signed-length`).
+* The loop start of a sample is start + repeat × 2 doubled as a long;
+  the original doubled the repeat as a word (`ASL.W`), so loops from
+  32768 words (64 KB) on started 64 KB too early (#479; bug-orig test
+  `pt23a-repeat-word`).
 
 ## Test
 
