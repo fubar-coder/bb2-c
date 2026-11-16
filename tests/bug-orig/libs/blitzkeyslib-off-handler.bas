@@ -8,6 +8,7 @@
 ; does not come back (endless loop: the session times out).
 ; Correct: Off puts the old input back, the second On keeps the file as
 ; the old handler, Edit$ reads the line of the file.
+; @fixed #408
 ; @configs clib
 ; @pass timeout=30
 DEFTYPE .l

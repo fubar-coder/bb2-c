@@ -432,7 +432,7 @@ C, declarations identical, binary = source. Joyx/Joyy/Joyr/Joyb/Gameb read JOY0D
 
 ## 98 blitzkeyslib
 
-C, declarations identical (binary has 6 more unused bytes). Init value = keyboard.device base; matrix from $136 (V36+) or $106, key buffer +$70/+$72/+$74. RawStatus is the original's assembler (it keeps a1, the exception of the register rule). BUG(orig) (#408): BlitzKeys Off only resets the flag (handler remains). Not bugs (no observable effect): ison via NOT; entry -8 of the handler is not a BRA; word results keep the upper word of d0. Test: t161 (BlitzQualifier, RawStatus 0–127, BlitzRepeat, HandleRawKey). Not tested: BlitzKeys (Blitz mode), BlitzKey (writes the read index of keyboard.device).
+C, declarations identical (binary has 6 more unused bytes). Init value = keyboard.device base; matrix from $136 (V36+) or $106, key buffer +$70/+$72/+$74. RawStatus is the original's assembler (it keeps a1, the exception of the register rule). Fixed (intended deviation, #408): BlitzKeys Off only reset the flag (the handler remained, and a second On made oldin BlitzKey itself: reading a line looped for ever); Off now puts the old input handler back if BlitzKey is still the current one (bug-orig test `blitzkeyslib-off-handler`). Not bugs (no observable effect): ison via NOT; entry -8 of the handler is not a BRA; word results keep the upper word of d0. Test: t161 (BlitzQualifier, RawStatus 0–127, BlitzRepeat, HandleRawKey). Not tested: BlitzKeys (Blitz mode), BlitzKey (writes the read index of keyboard.device).
 
 ## 94 animlib
 

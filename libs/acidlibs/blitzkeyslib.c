@@ -22,8 +22,12 @@
  *   RawStatus(code): bit code&7 of byte code>>3 of the matrix: -1/0.
  *   BlitzRepeat: does nothing (RTS); HandleRawKey has no code.
  *
- * Kept from the original (BUG(orig)):
- *   - BlitzKeys Off only clears the flag; the input handler stays. (#408)
+ *   BlitzKeys Off puts the old handler back (if BlitzKey is still the
+ *         current one).
+ *
+ * Fixed (#408): BlitzKeys Off only cleared the flag; the input handler
+ * stayed, and a second BlitzKeys On made oldin BlitzKey itself, so reading
+ * a line jumped to itself for ever (bug-orig test blitzkeyslib-off-handler).
  * Not a bug (no observable effect): ison is toggled with NOT (On: $FFFF;
  * only tested for 0); the -8 entry of the input handler (string output) is
  * no BRA (an input handler is never called there); RawStatus,
@@ -150,21 +154,31 @@ void BLITZ_ROUTINE doblitzrepeat(void)
  * to the -4 entry of the old handler.  ison is toggled with NOT (On:
  * $FFFF, only tested for 0; not a bug).  Errors: Blitz mode only (err1 =
  * 1).
- * BUG(orig) (#408): Off only clears the flag; the input handler stays.
+ * Off puts oldin back as the input handler (inputoutputlib +3) if BlitzKey
+ * is still the current one; an input the program chose after On (e.g.
+ * FileInput) stays.  Fixed (#408): the original's Off only cleared the
+ * flag, the handler stayed, and a second On made oldin BlitzKey itself (a
+ * line read through the -4 entry then jumped to itself for ever).
  *
  * @param on  d0.w: 0 = Off, otherwise On
  */
 void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
 {
+    struct bl_regs r = { 0 };
+
     if (on) {
         if (!ison) {
-            struct bl_regs r = { .a0 = (ULONG)binkey };
-
+            r.a0 = (ULONG)binkey;
             ison = ~ison;
             oldin = (UBYTE *)BLITZ_ALIBJSR(TOK_setin, r);
         }
-    } else if (ison)
-        ison = ~ison;                   /* BUG(orig) (#408): handler stays */
+    } else if (ison) {
+        ison = ~ison;
+        r.a0 = (ULONG)oldin;                    /* Fixed (#408) */
+        r.a0 = BLITZ_ALIBJSR(TOK_setin, r);     /* the handler it replaced */
+        if (r.a0 != (ULONG)binkey)              /* not BlitzKey: put it back */
+            BLITZ_ALIBJSR(TOK_setin, r);
+    }
 }
 
 /**
