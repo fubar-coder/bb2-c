@@ -61,3 +61,90 @@
 
 - This change needs the separate memlib rework (proposal A: localloc/locfree/globalloc/globfree as assembler entries) merged first, because both change memlib.
 - Rollback is the revert of the change's commits; no data format outside the running program changes.
+
+## The bucket state machine (task 2.1)
+
+This section fixes the details of Decisions 1 and 2. Where it differs from
+the layout sketched there (a `prev` pointer and a used count), this is the
+one implemented: the stack order makes both unnecessary.
+
+**Fields.**
+- A bucket is `BUCKET_SIZE` = 4 + 8·k bytes (one AllocMem, MEMF_PUBLIC):
+  - 00.l `up`: the empty spare bucket above this one, or 0;
+  - 04... k entries of 8 bytes, each a list header `{next, first}` as
+    before.
+- `firstdata` (as before): the newest header, an entry of a bucket.
+- `bklast` (new): the address of the last entry of firstdata's bucket; 0
+  when there is no list.
+
+**Invariants** (from the LIFO order, `analyse-memlib-buckets.md`):
+- The used entries of a bucket are its first ones.
+- Every bucket below firstdata's bucket is full.
+- The `next` of an entry that is not the first of its bucket is the entry
+  right below it (entry - 8). The `next` of a bucket's first entry is the
+  last entry of the bucket below, or 0 for the global list. That is never
+  entry - 8, because the 4 bytes at entry - 4 are the bucket's `up`.
+- At most one empty bucket exists after any newmem or freelast: the `up`
+  of the bucket just below it.
+
+**newmem** (keeps d0-d7/a2-a6):
+- Fast path: `firstdata != bklast`, so the bucket has a free entry. The
+  new header is firstdata + 8: `next` = firstdata, `first` = 0, and
+  firstdata points to it. Only a0/a1 are used, with no saves and no exec.
+- Otherwise the bucket is full, or there is no list. d0-d1/a6 are saved.
+  - The bucket to use is the full bucket's `up` (the spare), if there is
+    one.
+  - Otherwise a new bucket is allocated: its `up` = 0, and the full
+    bucket's `up` = the new one (the full bucket is at bklast - (8k - 4)).
+  - Its first entry becomes the header, and bklast = bucket + 8k - 4.
+  - If AllocMem fails: err1, as today.
+
+**freelast** (keeps d0/d2-d7/a2-a6, Z = 1 when there is no list):
+- The header is unlinked as before (firstdata = its `next`). Then
+  `next == entry - 8` is tested.
+- Fast path (equal): the entry stays in its bucket as the next free one.
+  Nothing else changes: no exec call for the header.
+- Otherwise the entry was the first of its bucket, and that bucket is now
+  empty:
+  - bklast = the new firstdata (the last entry of the full bucket below,
+    or 0);
+  - the bucket's spare `up`, if any, is freed and `up` cleared. The last
+    two buckets were empty: the user's hysteresis;
+  - if the new firstdata is 0, the last list is gone and the bucket itself
+    is freed too. "No list" therefore always means "no bucket", and the
+    existing case "freelast ... all memory back" of
+    `libs/tests/systest.c` stays true;
+  - otherwise the bucket stays as the spare of the one below, whose `up`
+    already points to it.
+- Then the blocks are freed as before.
+
+**finit, $C006, err1:** unchanged code. codefinit calls freelast until
+firstdata = 0, and the last of those calls frees the last bucket. err1
+calls codefinit. A failed bucket allocation in newmem happens before
+anything is linked, so err1 finds a consistent chain. codeinit sets bklast
+= 0 with firstdata = 0, and its newmem allocates the first bucket.
+
+**Transitions at a boundary:**
+- depth d → d+1, where d+1 is the first entry of a new bucket: the first
+  time an AllocMem;
+- back to d: that bucket becomes the spare;
+- across the boundary again: the spare is used and kept, with no exec
+  call;
+- deeper back down: the spare of a bucket that becomes empty is freed. So
+  a recursion of depth n allocates at most ceil((n+1)/k) buckets, the
+  global list included.
+
+**Static 68000 cycles** (without exec; the caller's JSR not counted, as in
+the analysis; PC-relative reads of firstdata and bklast):
+
+| Path | Today | Buckets |
+|---|---:|---:|
+| newmem, fast path | 214 (+ AllocMem) | **122** |
+| newmem, a full bucket with a spare | 214 (+ AllocMem) | 282 |
+| newmem, a new bucket | 214 (+ AllocMem) | 406 (+ AllocMem, once per k levels) |
+| freelast, the header part (up to the block loop), fast path | 146 (+ FreeMem 8) | **142** |
+| freelast, header + 2 blocks (bproc's path) | 360 | **356** |
+| freelast, a bucket became empty, no spare above | 146 (+ FreeMem) | 220 |
+
+Both fast paths are no slower than today without exec, and each of them
+also saves the exec call (about 1890 measured cycles per pair).

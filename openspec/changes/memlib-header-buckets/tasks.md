@@ -2,12 +2,12 @@
 
 ## 1. Analysis (before any code)
 
-- [ ] 1.1 Find every user of memlib's list chain and table outside memlib: acidlibs, RWE userlibs, the CD's third-party libraries, AB3 libraries with inline assembler, and programs of the corpus with inline assembler. Check that none frees, allocates or keeps the address of a list header itself, and that memlib is not documented or used as interrupt-safe (SetInt). Confirm that AB3 mode does not use this repository's memlib. Write the result to `~/.local/share/bb2-c-work/analyse-memlib-buckets.md`; stop and report if a caller would break.
-- [ ] 1.2 Confirm the LIFO claim: no path other than freelast (and the finit/$C006 loop over it) removes a header, including err1/err2, SetErr/ErrFail, the debugger's continue and `End` inside a procedure. Record it in the same report.
+- [x] 1.1 Find every user of memlib's list chain and table outside memlib: acidlibs, RWE userlibs, the CD's third-party libraries, AB3 libraries with inline assembler, and programs of the corpus with inline assembler. Check that none frees, allocates or keeps the address of a list header itself, and that memlib is not documented or used as interrupt-safe (SetInt). Confirm that AB3 mode does not use this repository's memlib. Write the result to `~/.local/share/bb2-c-work/analyse-memlib-buckets.md`; stop and report if a caller would break.
+- [x] 1.2 Confirm the LIFO claim: no path other than freelast (and the finit/$C006 loop over it) removes a header, including err1/err2, SetErr/ErrFail, the debugger's continue and `End` inside a procedure. Record it in the same report.
 
 ## 2. Design details
 
-- [ ] 2.1 Write the bucket state machine into design.md: the fields, the fast paths of newmem/freelast, when a bucket is allocated, when the spare is kept or freed, finit, and err1. Count its static cycles on the fast paths against today's newmem (214) and freelast (360). It must not be slower without exec.
+- [x] 2.1 Write the bucket state machine into design.md: the fields, the fast paths of newmem/freelast, when a bucket is allocated, when the spare is kept or freed, finit, and err1. Count its static cycles on the fast paths against today's newmem (214) and freelast (360). It must not be slower without exec.
 
 ## 3. Tests first
 
