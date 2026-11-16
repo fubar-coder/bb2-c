@@ -240,11 +240,13 @@ void ext_cnifend(void)
 }
 
 /* Fixed (#1068): the size suffix .s of an assembler instruction is .b
-   (AmiBlitz3.ab3:7015, "CMP.w #"s",d0 : BEQ.w 'bsize ;s equals b"); a
-   branch with .s stays a word branch, as in AmiBlitz3 v3.14.0 */
-UWORD ext_asmsize(UWORD c)
+   (AmiBlitz3.ab3:7015, "CMP.w #"s",d0 : BEQ.w 'bsize ;s equals b", asmit
+   reads it so in both modes); in AB3 mode a branch with .s or .b stays a
+   word branch, as in AmiBlitz3 v3.14.0; BB2 mode makes it a short branch
+   as blitz2 does (#1075) */
+BOOL ext_asmshortbra(void)
 {
-    return progmode == XTRA_MODE_AB3 && c == 's' ? 'b' : c;
+    return progmode != XTRA_MODE_AB3;
 }
 
 /* AmiBlitz3's constants of the include mechanism (AmiBlitz3.ab3:3405-3440,

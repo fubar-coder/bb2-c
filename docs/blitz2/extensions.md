@@ -2,9 +2,12 @@
 
 `blitz2` compiles a Blitz Basic 2 source to a program that behaves as the
 one of the CD's compiler. Its extensions give a meaning to sources the
-original refuses (`#__debug`), or compile a few library calls as inline
-code (the intrinsics): the program prints and writes the same, only its
-executable differs from the original's.
+original refuses (`#__debug`, the size `.s` of the inline assembler), or
+compile a few library calls as inline code (the intrinsics): the program
+prints and writes the same, only its executable differs from the
+original's. The one exception is a branch of the inline assembler with
+the size `.b`, which the original accepts and compiles as a word branch
+(below).
 
 ## `#__debug`
 
@@ -77,6 +80,39 @@ the build before this change (`tests/README.md`, "The prev build": named
 with `-DPREV_INTENDED`) and from the original's (only information since
 the originals are compared by output).
 
+## Short branches in the inline assembler
+
+Blitz Basic 2's inline assembler knows the sizes `.b`, `.w` and `.l`;
+`.s` is a Syntax Error, and every `Bcc`, `BRA` and `BSR` is a word branch
+(4 bytes): a `Bcc` takes any size and ignores it, `BRA` and `BSR` take
+none ("Illegal Assembler Instruction Size"). Sources written for other
+assemblers or for AmiBlitz3 use `.s` (#1075, user decision of
+2026-11-16). blitz2, and blitz2-ab3 in BB2 mode, take:
+
+| Size | On `Bcc`, `BRA`, `BSR` | On any other instruction |
+|---|---|---|
+| none | word branch, as in BB2 2.10 | as in BB2 2.10 |
+| `.s` | short branch: 2 bytes, the displacement in the low byte of the opcode | the same as `.b` |
+| `.b` | short branch, as `.s` | as in BB2 2.10 |
+| `.w` | word branch | as in BB2 2.10 |
+| `.l` | `Bcc`: word branch, as in BB2 2.10; `BRA`, `BSR`: "Illegal Assembler Instruction Size" (a 32-bit displacement is 68020 only) | as in BB2 2.10 |
+
+A short branch reaches -128 to +126 bytes from the instruction after it.
+Its target is resolved at the end of the pass as every operand of the
+assembler, so it may lie before or after it. A target out of range, and
+the next instruction as target (the displacement 0 marks a word branch on
+the 68000), is "Illegal Displacement" at the line of the branch. `DBcc`
+is unchanged.
+
+In AB3 mode the branches stay word branches whatever their size, as in
+AmiBlitz3 v3.14.0 (`.s` is `.b` there too; #1068,
+`docs/libs/deviations.md`).
+
+`Bcc.b` changes the executable of a source that the original compiles:
+the branch is 2 bytes shorter. Of the CD's sources only
+`EXTRAS/LIBSDEV/USERLIBSRC/ROMULUSCRUNCHLIB.BB` has one (32 of them; all
+in range, the executable is 64 bytes shorter).
+
 ## Tests
 
 * `blitz2_debug_on`, `blitz2_debug_off`, `blitz2_stop_off`
@@ -95,4 +131,11 @@ the originals are compared by output).
   must come out REGRESSED); in AB3 mode `intrinsic_int` and
   `intrinsic_frac` of `ab3_cli`, confirmed by `ab3_cli_ref`; the cycles
   in `tests/perf/budgets.txt` (`bmath.int`, `.intn`, `.frac`, `.fracn`,
-  `bstr.len`, `.asc` and their lines at 10, 100 and 1000 characters).
+  `bstr.len`, `.asc` and their lines at 10, 100 and 1000 characters);
+* the short branches: `blitz2_asm_short_branch` (short branches forward
+  and backward, taken and run, their opcode words and sizes, the limits
+  +126 and -128, `.w`, no suffix, `Bcc.l`, `MOVE.s`),
+  `blitz2_asm_short_range_fwd`, `_range_back` and `_zero` (the errors); in
+  BB2 mode `asm_short_s_bb2`, `asm_short_range_bb2`, `asm_short_zero_bb2`
+  and `asm_bra_l_bb2` of `ab3_cli`; AB3 mode's word branches:
+  `asm_short_s` of `ab3_cli`, confirmed by `ab3_cli_ref`.

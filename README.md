@@ -82,7 +82,8 @@ coverage: `tests/README.md`.
 
 `blitz2` compiles a Blitz Basic 2 source to the same executable as the
 CD's compiler, apart from the documented bug fixes. Its extensions only
-give a meaning to sources the original refuses: `docs/blitz2/extensions.md`.
+give a meaning to sources the original refuses, except the short branch
+of `Bcc.b` in the inline assembler: `docs/blitz2/extensions.md`.
 
 ## blitz2-ab3: AmiBlitz3 sources
 

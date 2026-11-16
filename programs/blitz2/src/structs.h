@@ -281,7 +281,7 @@ SIZE(tokejsrnode, 12);
 struct asmnode {
     struct asmnode *next;   /* 0 */
     ULONG addr;             /* 4  patch address (host) */
-    UWORD mode;             /* 8  patch mode 5-11,16,17 (see asmfixer) */
+    UWORD mode;             /* 8  patch mode 5-11,16,17,18 (see asmfixer) */
     UWORD flag;             /* 10 asm entry flag (0 if negative) */
     UWORD line;             /* 12 linenumat */
     UWORD size;             /* 14 allocation size (Fixed (#1): a word; the

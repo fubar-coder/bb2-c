@@ -26,7 +26,8 @@
  * differs only for BRA/BSR (dest shift 0, size 0: every size suffix is
  * taken, and the branch stays a word branch), and AB3 mode has it: so
  * BRA.s, the size suffix .s of AB3 mode (#1068), assembles as in
- * AmiBlitz3 v3.14.0.
+ * AmiBlitz3 v3.14.0.  blitz2's BRA/BSR take .b and .w (asmmac: no size;
+ * extension #1075: .b/.s is a short branch, .w a word branch).
  */
 
 TK(tok1, tok2, 1, "NEWTYPE", ".Typename")
@@ -145,9 +146,9 @@ TA(opbset, opbtst, fnum+26, "BSET",
 TA(opbtst, opbra, fnum+27, "BTST",
    0x100, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0)
 TA(opbra, opbsr, fnum+28, "BRA",
-   0x6000, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+nosz_, 0), NULL, (WORD)2)
+   0x6000, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+byteword_, 0), NULL, (WORD)2)
 TA(opbsr, opchk, fnum+29, "BSR",
-   0x6100, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+nosz_, 0), NULL, (WORD)2)
+   0x6100, dpc_, 0, (15<<4)+15, M((15<<4)+15, 0), (UWORD)M((15<<12)+byteword_, 0), NULL, (WORD)2)
 TA(opchk, opclr, fnum+30, "CHK",
    0x4180, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0)
 TA(opclr, opcmp, fnum+31, "CLR",

@@ -225,10 +225,10 @@ UWORD ext_cnifstart(UWORD c);
 /** @brief docnif: the condition of the CNIF is evaluated. */
 void ext_cnifend(void);
 
-/** @brief asmit (asmlibs.c): the size letter c (lower case) of an
- *         assembler instruction; returns the one to read it as (blitz2:
- *         'b', 'w', 'l', any other is a syntax error). */
-UWORD ext_asmsize(UWORD c);
+/** @brief asmit (asmlibs.c): is a branch (Bcc, BRA, BSR) with the size
+ *         .b or .s a short branch (blitz2: TRUE, #1075), or a word branch
+ *         as without a size? */
+BOOL ext_asmshortbra(void);
 
 /**
  * @brief fetchconst (eval.c): the constant named namebuff (len bytes)

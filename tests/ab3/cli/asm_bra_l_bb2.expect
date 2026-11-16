@@ -1,0 +1,5 @@
+[compile]
+asm_bra_l_bb2.bb:3: Illegal Assembler Instruction Size
+rc=10
+[run]
+no executable

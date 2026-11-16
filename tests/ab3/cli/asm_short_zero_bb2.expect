@@ -1,0 +1,5 @@
+[compile]
+asm_short_zero_bb2.bb:3: Illegal Displacement
+rc=10
+[run]
+no executable

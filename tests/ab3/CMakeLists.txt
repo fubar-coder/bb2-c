@@ -601,9 +601,14 @@ ab3_cli_case(inc_error inc_error.ab3 REF)
 ab3_cli_case(libtoken_past_block libtoken_past_block.ab3 REF)
 # the size suffix .s of an assembler instruction is .b in AB3 mode (#1068;
 # BRA and BSR take a size suffix and stay word branches, as in AmiBlitz3
-# v3.14.0); BB2 mode refuses it, as BB2 2.10 does
+# v3.14.0); in BB2 mode .s is .b too, and a branch with .s/.b is a short
+# branch as in blitz2 (extension #1075): out of range or to the next
+# instruction it is "Illegal Displacement", BRA.l stays refused
 ab3_cli_case(asm_short_s asm_short_s.ab3 REF)
 ab3_cli_case(asm_short_s_bb2 asm_short_s_bb2.bb)
+ab3_cli_case(asm_short_range_bb2 asm_short_range_bb2.bb)
+ab3_cli_case(asm_short_zero_bb2 asm_short_zero_bb2.bb)
+ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)
 
 # optimizer_regression.ab3 of AmiBlitz3's develop branch (not in v3.14.0): OPTIMIZE 5
 # (4: new syntax), four functions with a constant on one side of

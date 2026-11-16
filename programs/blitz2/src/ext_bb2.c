@@ -147,9 +147,9 @@ void ext_cnifend(void)
 {
 }
 
-UWORD ext_asmsize(UWORD c)
+BOOL ext_asmshortbra(void)
 {
-    return c;
+    return TRUE;
 }
 
 BOOL ext_constant(UWORD len, ULONG *value)

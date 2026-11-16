@@ -151,6 +151,7 @@ void asmit(UWORD c)
     ULONG at, opat;
     WORD f;
     WORD asmsize;                       /* 14917: 0/4/8 = .b/.w/.l */
+    BOOL shortbra = FALSE;              /* Bcc/BRA/BSR .b/.s (#1075) */
     UBYTE *buff1, *buff2;               /* 14911/14912: src/dest text */
 
     alignpc();
@@ -163,13 +164,17 @@ void asmit(UWORD c)
     if (c != '.') {
         sz = 4;                         /* .dsize: no size check */
     } else {
-        c = ext_asmsize(getchar3() | 32);
+        /* .s is .b on every instruction (#1068, #1075) */
+        c = getchar3() | 32;
+        if (c == 's')
+            c = 'b';
         if (c == 'w') {
             sz = 4;
             nib = e->size >> 4;
         } else if (c == 'b') {
             sz = 0;
             nib = e->size;
+            shortbra = e->flag == 2 && ext_asmshortbra();
         } else if (c == 'l') {
             sz = 8;
             nib = e->size >> 8;
@@ -267,6 +272,12 @@ void asmit(UWORD c)
     if (f == 2) {                       /* Bcc: label -> d(pc) */
         if (srcmode != 8)
             illeaerr();
+        if (shortbra) {
+            /* extension (#1075): Bcc.s/.b, BRA.s/.b, BSR.s/.b are short
+               branches, the displacement in the opcode's low byte */
+            insasm(e, opat, 18);
+            goto skipsrc2;
+        }
         srcmode = 9;
         goto nothing;
     }
@@ -379,6 +390,13 @@ void asmfixer(void)
         case 10:
             val -= at;
             chkbyte(val);
+            B_(at + 1) = (UBYTE)val;
+            break;
+        case 18:                        /* short branch (#1075): at = opcode */
+            val -= at + 2;
+            chkbyte(val);
+            if (val == 0)               /* 0 is the word branch's mark */
+                illdiserr();
             B_(at + 1) = (UBYTE)val;
             break;
         default:                        /* .imm */
