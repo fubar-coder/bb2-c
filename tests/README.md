@@ -1096,7 +1096,7 @@ PPDecrunch with corrupt data write outside the destination; guard
 bytes), `bug_orig_crunchlib_crm_minsecdist`,
 `bug_orig_crunchlib_crm_overlap_4gb`, `bug_orig_crunchlib_crm2_readtab`,
 `bug_orig_crunchlib_pp_readd1` (one bug of the decrunchers each, #115
-to #118), `bug_orig_debuglib_findoff_flags` (#127),
+to #118), `bug_orig_debuglib_findoff_flags` (#127, fixed: it passes),
 `bug_orig_sortlib_word_pivot` (Sort of a one element word array reads
 behind it, the array at the end of the highest memory region as for
 Implode; #275, fixed: it passes).

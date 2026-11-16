@@ -147,27 +147,35 @@ dofindoff|kept|0|1	kept
 dofindoff|kept|1|1	kept
 |findoff|1|1	"findoff 1 -> 77770001"
 dofindoff|kept|2|1	kept
-|findoff|2|1	"findoff 2 -> 77770015"
+|findoff|2|1 [orig]	"findoff 2 -> 77770015"
+|findoff|2|1 [fixed #127]	"findoff 2 -> 77770006"
 dofindoff|kept|3|1	kept
-|findoff|3|1	"findoff 3 -> 77770015"
+|findoff|3|1 [orig]	"findoff 3 -> 77770015"
+|findoff|3|1 [fixed #127]	"findoff 3 -> 77770006"
 dofindoff|kept|4|1	kept
 |findoff|4|1	"findoff 4 -> 77770007"
 dofindoff|kept|5|1	kept
-|findoff|5|1	"findoff 5 -> 77770015"
+|findoff|5|1 [orig]	"findoff 5 -> 77770015"
+|findoff|5|1 [fixed #127]	"findoff 5 -> 7777000d"
 dofindoff|kept|6|1	kept
-|findoff|6|1	"findoff 6 -> 77770015"
+|findoff|6|1 [orig]	"findoff 6 -> 77770015"
+|findoff|6|1 [fixed #127]	"findoff 6 -> 7777000d"
 dofindoff|kept|7|1	kept
 |findoff|7|1	"findoff 7 -> 7777000e"
 dofindoff|kept|8|1	kept
-|findoff|8|1	"findoff 8 -> 77770015"
+|findoff|8|1 [orig]	"findoff 8 -> 77770015"
+|findoff|8|1 [fixed #127]	"findoff 8 -> 77770013"
 dofindoff|kept|9|1	kept
-|findoff|9|1	"findoff 9 -> 77770015"
+|findoff|9|1 [orig]	"findoff 9 -> 77770015"
+|findoff|9|1 [fixed #127]	"findoff 9 -> 77770013"
 dofindoff|kept|10|1	kept
 |findoff|10|1	"findoff 10 -> 77770014"
 dofindoff|kept|11|1	kept
-|findoff|11|1	"findoff 11 -> 77770015"
+|findoff|11|1 [orig]	"findoff 11 -> 77770015"
+|findoff|11|1 [fixed #127]	"findoff 11 -> 77770014"
 dofindoff|kept|12|1	kept
-|findoff|12|1	"findoff 12 -> 77770015"
+|findoff|12|1 [orig]	"findoff 12 -> 77770015"
+|findoff|12|1 [fixed #127]	"findoff 12 -> 77770014"
 dofindoff|kept|13|1	kept
 |findoff|13|1	"findoff 13 -> 77770015"
 dofindoff|kept|14|1	kept

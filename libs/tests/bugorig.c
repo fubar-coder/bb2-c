@@ -723,9 +723,9 @@ static const struct stub dbgstubs[] = {
    "A" token "BC".  Without a token list every token reads as "?????"
    (5 characters), the plain text is "A?????BC".  Correct: the position
    right after the token (3) is 6, the position after "B" (4) is 7.
-   BUG(orig) (#127): after a token the loop end test sees the flags of the
-   length count, not of the position; position 3 becomes 0 there and the
-   conversion runs to the end of the line (8). */
+   Fixed (#127): the original's loop end test after a token saw the flags
+   of the length count, not of the position; position 3 became 0 there
+   and the conversion ran to the end of the line (8). */
 int bugorig_debuglib_findoff_flags(const char *dir)
 {
     static const char *names[] = { "memlib", "exitslib", "intlib", "switchlib", "runerrlib",
@@ -751,7 +751,7 @@ int bugorig_debuglib_findoff_flags(const char *dir)
         callregs(entry_code(l, 7), &r, 0, 0);                       /* dofindoff */
         got = (UWORD)r.d[0];
         snprintf(msg, sizeof msg, "dofindoff of position %u in \"A\" token \"BC\" is %u "
-                 "(BUG(orig) (#127) after a token: got %u)", want[i][0], want[i][1], got);
+                 "(the original (#127) after a token: 8; got %u)", want[i][0], want[i][1], got);
         check(msg, got == want[i][1]);
     }
     return failures ? 5 : 0;

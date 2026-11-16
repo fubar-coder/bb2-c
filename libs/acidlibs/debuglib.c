@@ -837,11 +837,13 @@ BLITZ_ASM_ROUTINE(dodetoke,
  * @brief $D507 dofindoff: converts a position in a tokenised line into
  *        the position in the detokenised text.
  *
- * BUG(orig) (#127): the loop end test (BEQ at 'loop) sees the flags of
- * the last instruction: after a normal character `SUBQ #1,d0`, after a
- * token `SUBQ #1,d1` (the result, not the position); the position is
- * lowered by 2 for a token without a test, so a position inside a token
- * runs on to the end of the string.
+ * Fixed (#127): the conversion ends when the position reaches 0 or
+ * less, also after a token.  The original's loop end test (BEQ at
+ * 'loop) saw the flags of the last instruction: after a normal character
+ * `SUBQ #1,d0`, after a token `SUBQ #1,d1` (the result, not the
+ * position); the position was lowered by 2 for a token without a test,
+ * so a position right after or inside a token ran on to the end of the
+ * string.
  *
  * @param s    a0: the tokenised line
  * @param pos  d0: the position in it (word)
@@ -851,24 +853,23 @@ BLITZ_ASM_ROUTINE(dodetoke,
 static UWORD BLITZ_ROUTINE dofindoff_c(const UBYTE *s BL_REG(a0), UWORD pos BL_REG(d0))
 {
     UWORD off = 0;
-    int zflag = (pos == 0);             /* TST d0 */
+    WORD left = (WORD)pos;
     UBYTE c;
     const char *name;
 
-    while (!zflag) {
+    while (left > 0) {                  /* fixed (#127): the position itself */
         c = *s++;
         if (!c)
             break;
         if (!(c & 0x80)) {
             off++;
-            zflag = (--pos == 0);
+            left--;
             continue;
         }
-        pos -= 2;
+        left -= 2;
         name = tokename((UWORD)(((c << 8) | *s++) & 0x7fff));
         while (*name++)
             off++;
-        zflag = (off == 0);                 /* ADDQ ... SUBQ #1,d1 */
     }
     return off;
 }
