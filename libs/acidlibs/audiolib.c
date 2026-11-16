@@ -30,11 +30,10 @@
  *   - the error check of SetPeriod (sndchk) goes on into dpchk and tests
  *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
  *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
- *   - DiskPlay allocates its chip buffer before it opens the file and does
- *     not free it when the open or a read fails (err1-err3): a program
- *     that catches the runtime error (SetErr) and goes on has lost
- *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
- *     them then). (#950)
+ * Fixed (#950): DiskPlay frees its chip buffer when the open or a read
+ * fails (err1-err3); the original kept it, and a program that caught the
+ * runtime error (SetErr) and went on lost 2 * DiskBuffer bytes of chip
+ * memory until its end.
  * Fixed (#67): LoadSound and DiskPlay close the file before "Can't Find
  * VHDR" and "Error Reading File", LoadSound also before "Sound too long";
  * the original left it open (iffiolib has no finit: open until reboot).
@@ -314,16 +313,17 @@ struct opened {
 
 /* doopensound - a0 = name: VHDR, then positioned at BODY.  0 on error
    (after the runtime error trap).  Fixed (#67): the file is closed before
-   "Can't Find VHDR" and "Error Reading File" (the original left it open) */
-static int opensound(const UBYTE *name, struct opened *o)
+   "Can't Find VHDR" and "Error Reading File" (the original left it open).
+   Fixed (#950): buf (DiskPlay's chip buffer, 0 for LoadSound) is freed
+   before each of the errors (the original kept it) */
+static int opensound(const UBYTE *name, struct opened *o, UBYTE *buf)
 {
     struct bl_regs r = { .a0 = (ULONG)name };
-    const char *msg = mess2;
+    const char *msg = mess1;                    /* err1 */
 
-    if (IFFCALL(TOK_iffopen, r)) {
-        BLITZ_RUNERR(mess1);                    /* err1 */
-        return 0;
-    }
+    if (IFFCALL(TOK_iffopen, r))
+        goto err;
+    msg = mess2;
     r.d0 = 0x56484452;                          /* VHDR */
     if (IFFCALL(TOK_iffchunk, r))
         goto fail;
@@ -348,6 +348,9 @@ err3:
     msg = mess3;
 fail:
     IFFCALL(TOK_iffclose, r);                   /* Fixed (#67) */
+err:
+    if (buf)
+        dealloc(buf, dbufflen << 1);            /* Fixed (#950) */
     BLITZ_RUNERR(msg);
     return 0;
 }
@@ -372,7 +375,7 @@ void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
     struct bl_regs r = { 0 };
 
     freesound(s);
-    if (!opensound(name, &o))
+    if (!opensound(name, &o, 0))
         return;
     s->period = o.period;
     if (o.len >= 65536 * 2) {
@@ -778,12 +781,10 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
     UWORD dma, ints, m;
     int ch;
 
-    /* BUG(orig) (#950): allocated before the open, not freed when opensound
-       goes into its runtime error */
     dbuffat = alloc(dbufflen << 1, MEMF_CHIP);
     p = dbuffat;
     dbuffend = dbuffat + dbufflen + dbufflen;
-    if (!opensound(name, &o))
+    if (!opensound(name, &o, dbuffat))         /* Fixed (#950): frees it */
         return;
     dlen = o.len;
     ints = chansoff(mask);
@@ -824,10 +825,11 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
  *
  * Through two halves of a chip buffer (DiskBuffer, default 1024 bytes
  * each), waiting for the audio interrupt bits in INTREQR (busy wait, as
- * in the original).  Fixed (#69): a BODY whose length is a multiple of the
- * buffer length (or 0) ends; the original never returned.  Errors: as LoadSound (no file, no
- * VHDR, read error); (debugger, dpchk) "Illegal Chanel Mask".
- * BUG(orig) (#950): on those errors the chip buffer stays allocated.
+ * in the original).  Fixed (#69): a BODY whose length is a multiple of
+ * the buffer length (or 0) ends; the original never returned.  Errors: as
+ * LoadSound (no file, no VHDR, read error); (debugger, dpchk) "Illegal
+ * Chanel Mask".  Fixed (#950): on those errors the chip buffer is freed
+ * (the original kept it).
  *
  * @param name  d0: the file name
  * @param mask  d1.w: the channel mask

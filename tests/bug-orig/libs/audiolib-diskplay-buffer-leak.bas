@@ -6,6 +6,7 @@
 ; end, but a program that catches the error (SetErr) and goes on has lost
 ; them.  DiskBuffer 20000 (40000 bytes); the file does not exist.
 ; Correct: after the error the chip memory is as before DiskPlay.
+; @fixed #950
 ; @configs clib
 DEFTYPE .l
 DiskBuffer 20000
