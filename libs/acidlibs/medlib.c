@@ -30,8 +30,10 @@
  * code, that value is kept explicitly: the qualifier word of a line
  * (Bxx/1Dxx take the upper byte of d4 from a track before, #203) and the
  * d1 that _PlayNote leaves (1Fxx, #205) - struct left.
- * Assembler: only the hardware (Paula registers, DMACON, filter LED,
- * VHPOSR waits) is accessed through volatile pointers - no inline asm.
+ * Assembler: the line routine (plr_loop0 with _PlayNote inline,
+ * medlib_newline) is an assembler block in the original's form, for speed
+ * (libs-performance task 10.12); otherwise the hardware (Paula registers,
+ * DMACON, filter LED, VHPOSR waits) is accessed through volatile pointers.
  *
  * BUG(orig), kept (selection):
  *   - Bxx (position jump) stores the word of d4: upper byte = rest of the
@@ -699,7 +701,7 @@ static void RelocModule(struct mmd *m)
 
 /* ChannelOff: the channel's synth off and its DMA (channels 0-3); the
    number counts as a byte (ASL.b #2) */
-static void ChannelOff(UWORD ch)
+static __attribute__((noinline, used)) void ChannelOff(UWORD ch)
 {
     UBYTE off = ch << 2;
     struct track *t = *(struct track **)((UBYTE *)db.trackdataptrs
@@ -713,7 +715,7 @@ static void ChannelOff(UWORD ch)
     }
 }
 
-static void SoundOff(void)
+static __attribute__((noinline, used)) void SoundOff(void)
 {
     UWORD ch = 15;
 
@@ -955,8 +957,9 @@ struct left {
 
 /* _PlayNote: note (0-based instrument instr, its song entry ins) on the
    track ch (its structure at a5, PT): sample, IFF octave sample, synth or
-   hybrid */
-BL_ALWAYS_INLINE struct left playnote_in(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
+   hybrid.  For the replays of the ticks (playfxnote); the line routine
+   has its own copy inline (medlib_newline) */
+static struct left playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
 {
     struct left r = { note, 0 };
     ULONG mask, sp, start, end, rep, repend, len;
@@ -1081,13 +1084,6 @@ hsn2:
     return r;
 }
 
-/* playnote: the same out of line, for the replays of the ticks (playnote_in
-   is inline in newline); the track is a5 there too */
-static struct left playnote(UWORD ch, ULONG note, UWORD instr, struct instr *ins)
-{
-    return playnote_in(ch, note, instr, ins);
-}
-
 /* playfxnote: the previous note again (the hold counter continued by the
    tick counter); returns d1 (#205) */
 static ULONG playfxnote(struct track *t, UWORD ch, UBYTE counter)
@@ -1168,185 +1164,565 @@ BL_ALWAYS_INLINE struct instr *instrument(struct song *song, UBYTE i)
     return (struct instr *)((UBYTE *)song + (WORD)(i << 3));
 }
 
-/* plr_loop0: the notes and the commands of a new line */
+/* plr_loop0 with _PlayNote inline: the notes and the commands of a new
+   line, as an assembler line routine in the original's form
+   (libs-performance task 10.12, design decision 25).  In C, GCC kept the
+   pointer into trackdataptrs, numtracks and the period table pointer on
+   the stack, addressed the data base with abs.l and zero-extended bytes
+   before indexed accesses; PlayMed stayed 1.05 times the original.
+
+   Registers as the original's _IntHandler, with the module in a3 instead
+   of a2 (PM): a3 module, a4 song, a5 track (set here), a6 the data base
+   db; d7 the track number, d4 the qualifier word (#203), d6 the note
+   pointer and a2 the pointer into trackdataptrs (the original keeps both
+   on the stack), d5 the note.  _PlayNote's instrument (the original's a3)
+   is a1 until its repeat and length are in d2/d3.  newline() calls it
+   with every register but a3-a5 clobbered (they are saved by _PlayMed_c's
+   prologue anyway); d0 = 0 after FFE (stop), else 1.  ChannelOff and
+   SoundOff are the C functions (they keep d2-d7/a2-a6, ch in d0).  The
+   results are those of the C version it replaces: the same Paula writes
+   and the same player state (library test systest_med). */
+#define MED_OFFSETS(X)                                                      \
+    X(mmd_songinfo,   struct mmd, song,        8)                           \
+    X(mmd_blockarr,   struct mmd, blockarr,    16)                          \
+    X(mmd_smplarr,    struct mmd, smplarr,     24)                          \
+    X(mmd_pstate,     struct mmd, pstate,      40)                          \
+    X(mmd_pblock,     struct mmd, pblock,      42)                          \
+    X(mmd_pline,      struct mmd, pline,       44)                          \
+    X(mmd_pseqnum,    struct mmd, pseqnum,     46)                          \
+    X(inst_repeat,    struct instr, repeat,    0)                           \
+    X(inst_replen,    struct instr, replen,    2)                           \
+    X(inst_midipreset, struct instr, midipreset, 5)                         \
+    X(inst_svol,      struct instr, svol,      6)                           \
+    X(inst_strans,    struct instr, strans,    7)                           \
+    X(msng_playtransp, struct song, playtransp, 766)                        \
+    X(msng_flags,     struct song, flags,      767)                         \
+    X(msng_tempo2,    struct song, tempo2,     769)                         \
+    X(synth_speeds,   struct synth, volspeed,  18)                          \
+    X(synth_wf,       struct synth, wf,        278)                         \
+    X(trk_prevnote,   struct track, prevnote,  0)                           \
+    X(trk_previnstr,  struct track, previnstr, 1)                           \
+    X(trk_prevvol,    struct track, prevvol,   2)                           \
+    X(trk_cmd,        struct track, cmd,       4)                           \
+    X(trk_cmdqual,    struct track, cmdqual,   5)                           \
+    X(trk_noteoffcnt, struct track, noteoffcnt, 7)                          \
+    X(trk_inithold,   struct track, inithold,  8)                           \
+    X(trk_initdecay,  struct track, initdecay, 9)                           \
+    X(trk_stransp,    struct track, stransp,   10)                          \
+    X(trk_finetune,   struct track, finetune,  11)                          \
+    X(trk_soffset,    struct track, soffset,   12)                          \
+    X(trk_previnstra, struct track, previnstra, 14)                         \
+    X(trk_trackvol,   struct track, trackvol,  18)                          \
+    X(trk_prevper,    struct track, prevper,   20)                          \
+    X(trk_audioaddr,  struct track, audioaddr, 22)                          \
+    X(trk_sampleptr,  struct track, sampleptr, 26)                          \
+    X(trk_samplelen,  struct track, samplelen, 30)                          \
+    X(trk_porttrgper, struct track, porttrgper, 32)                         \
+    X(trk_synthptr,   struct track, synthptr,  38)                          \
+    X(trk_arpgoffs,   struct track, arpgoffs,  42)                          \
+    X(trk_wfcmd,      struct track, wfcmd,     50)                          \
+    X(trk_synvibwf,   struct track, synvibwf,  66)                          \
+    X(trk_initvolxspd, struct track, initvolxspd, 72)                       \
+    X(trk_prevnote2,  struct track, prevnote2, 75)                          \
+    X(trk_synthtype,  struct track, synthtype, 77)                          \
+    X(trk_periodtbl,  struct track, periodtbl, 78)                          \
+    X(trk_prevportspd, struct track, prevportspd, 82)                       \
+    X(trk_decay,      struct track, decay,     84)                          \
+    X(trk_fadespd,    struct track, fadespd,   85)                          \
+    X(trk_vibroffs,   struct track, vibroffs,  92)                          \
+    X(trk_tremoffs,   struct track, tremoffs,  93)                          \
+    X(dmaonmsk,       __typeof__(db), dmaonmsk, 8)                          \
+    X(trackdataptrs,  __typeof__(db), trackdataptrs, 642)                   \
+    X(nextblock,      __typeof__(db), nextblock, 706)                       \
+    X(nxtnoclrln,     __typeof__(db), nxtnoclrln, 707)                      \
+    X(numtracks,      __typeof__(db), numtracks, 708)                       \
+    X(numlines,       __typeof__(db), numlines, 710)                        \
+    X(nextblockline,  __typeof__(db), nextblockline, 712)                   \
+    X(rptline,        __typeof__(db), rptline, 714)                         \
+    X(rptcounter,     __typeof__(db), rptcounter, 716)                      \
+    X(holdvals,       __typeof__(db), holdvals, 726)                        \
+    X(decays,         __typeof__(db), decays,  789)                         \
+    X(finetunes,      __typeof__(db), finetunes, 852)                       \
+    X(periodtable8,   __typeof__(db), periodtable[8], 4020)                 \
+    X(chipzero,       __typeof__(db), chipzero, 4052)
+#define MED_ASSERT(name, type, field, off)                                  \
+    _Static_assert(offsetof(type, field) == off, #name);
+#define MED_SET(name, type, field, off) "   .set " #name "," #off "\n"
+MED_OFFSETS(MED_ASSERT)
+_Static_assert(offsetof(struct track, initvolxspd) + 2
+               == offsetof(struct track, volchgspd), "hSn2");
+_Static_assert(offsetof(struct track, tremoffs)
+               == offsetof(struct track, vibroffs) + 1, "vibroffs");
+
+BLITZ_ASM_BLOCK(newline,
+"   .globl  _medlib_newline\n"
+MED_OFFSETS(MED_SET)
+"_medlib_newline:\n"
+"   lea     _db,a6\n"
+"   move.w  mmd_pblock(a3),d0\n"
+"   movea.l mmd_blockarr(a3),a0\n"
+"   add.w   d0,d0\n"
+"   add.w   d0,d0\n"
+"   movea.l 0(a0,d0.w),a1\n"            /* block.. */
+"   move.w  mmd_pline(a3),d0\n"
+"   cmp.b   #0x31,3(a3)\n"              /* "1": MMD1 */
+"   beq.s   plr_mmd1_0\n"
+"   move.w  d0,d1\n"
+"   add.w   d0,d0\n"
+"   add.w   d1,d0\n"                    /* d0 = d0 * 3 */
+"   clr.l   numtracks(a6)\n"
+"   move.b  (a1)+,numtracks+1(a6)\n"
+"   move.b  (a1),numlines+1(a6)\n"
+"   mulu    numtracks(a6),d0\n"
+"   lea     1(a1,d0.w),a1\n"
+"   move.l  a1,d6\n"
+"   bra.s   plr_begloop\n"
+"plr_mmd1_0:\n"
+"   add.w   d0,d0\n"
+"   add.w   d0,d0\n"                    /* d0 = d0 * 4 */
+"   mulu    (a1),d0\n"                  /* numtracks * d0 */
+"   lea     8(a1,d0.l),a0\n"            /* address of the current note */
+"   move.l  a0,d6\n"
+"   move.w  (a1)+,numtracks(a6)\n"
+"   move.w  (a1),numlines(a6)\n"
+"plr_begloop:\n"
+"   moveq   #0,d7\n"                    /* number of track */
+"   moveq   #0,d4\n"
+"   lea     trackdataptrs(a6),a2\n"
+"plr_loop0:\n"
+"   moveq   #0,d5\n"
+"   movea.l (a2)+,a5\n"                 /* this track's structure */
+/* BUG(orig) (#334): a masked track is skipped before its note is read, so
+   the note pointer stays: the next track reads this track's note */
+"   btst    d7,_ChanMask+1\n"
+"   beq     plr_endloop0\n"
+"   moveq   #0,d3\n"
+"   movea.l d6,a1\n"
+"   cmp.b   #0x31,3(a3)\n"
+"   beq.s   plr_mmd1_1\n"
+"   move.b  (a1)+,d5\n"
+"   move.b  (a1)+,d1\n"
+"   move.b  (a1)+,trk_cmdqual(a5)\n"
+"   move.b  d1,d3\n"
+"   and.w   #0x0f,d1\n"                 /* the command */
+"   lsr.b   #4,d3\n"                    /* the instrument */
+"   bclr    #7,d5\n"
+"   beq.s   plr_bseti4\n"
+"   bset    #4,d3\n"
+"plr_bseti4:\n"
+"   bclr    #6,d5\n"
+"   beq.s   plr_nngok\n"
+"   bset    #5,d3\n"
+"   bra.s   plr_nngok\n"
+"plr_mmd1_1:\n"
+"   move.b  (a1)+,d5\n"                 /* the number of this note */
+"   bpl.s   plr_nothinote\n"
+"   moveq   #0,d5\n"
+"plr_nothinote:\n"
+"   move.b  (a1)+,d3\n"                 /* instrument number */
+"   move.b  (a1)+,d1\n"                 /* command number */
+"   and.w   #0x1f,d1\n"
+"   move.b  (a1)+,trk_cmdqual(a5)\n"    /* qualifier */
+"plr_nngok:\n"
+"   move.l  a1,d6\n"
+"   and.w   #0x3f,d3\n"
+"   beq.s   noinstnum\n"
+"   subq.b  #1,d3\n"
+"   move.b  d3,trk_previnstr(a5)\n"
+"   lea     holdvals(a6),a0\n"
+"   adda.w  d3,a0\n"
+"   move.b  (a0),trk_inithold(a5)\n"
+"   move.b  decays-holdvals(a0),trk_initdecay(a5)\n"
+"   move.b  finetunes-holdvals(a0),trk_finetune(a5)\n"
+"   lsl.w   #3,d3\n"
+"   lea     0(a4,d3.w),a0\n"            /* the instrument */
+"   move.l  a0,trk_previnstra(a5)\n"
+"   moveq   #0,d0\n"
+"   move.b  inst_svol(a0),d0\n"         /* relative volume */
+"   mulu    trk_trackvol(a5),d0\n"
+"   lsr.w   #8,d0\n"
+"   move.b  d0,trk_prevvol(a5)\n"
+"   move.b  inst_strans(a0),trk_stransp(a5)\n"
+"   clr.w   trk_soffset(a5)\n"
+"noinstnum:\n"
+"   move.b  d1,trk_cmd(a5)\n"
+"   beq     fx\n"
+"   move.b  trk_cmdqual(a5),d4\n"
+"   add.b   d1,d1\n"
+"   move.w  f_table(pc,d1.w),d0\n"
+"   jmp     fst(pc,d0.w)\n"
+"f_table:\n"
+"   .word   fx-fst,fx-fst,fx-fst,f_03-fst,fx-fst,fx-fst,fx-fst,fx-fst\n"
+"   .word   f_08-fst,f_09-fst,fx-fst,f_0b-fst,f_0c-fst,fx-fst,f_0e-fst,f_0f-fst\n"
+"   .word   fx-fst,fx-fst,fx-fst,fx-fst,fx-fst,f_15-fst,f_16-fst,fx-fst\n"
+"   .word   fx-fst,f_19-fst,fx-fst,fx-fst,f_1c-fst,f_1d-fst,fx-fst,f_1f-fst\n"
+"fst:\n"
+"f_0f:\n"                               /* tempo */
+"   tst.b   d4\n"
+"   beq.s   fx0fchgblck\n"
+"   cmp.b   #0xf0,d4\n"
+"   bls     fx\n"                       /* an ordinary tempo */
+"   cmp.b   #0xf2,d4\n"
+"   bne.s   isfxfe\n"
+"f_1f:\n"                               /* FF2, 1Fxx: note delay */
+"   move.b  d5,(a5)\n"                  /* trk_prevnote */
+"   move.b  trk_inithold(a5),trk_noteoffcnt(a5)\n"
+"   bne     plr_endloop0\n"
+"   st      trk_noteoffcnt(a5)\n"
+"   bra     plr_endloop0\n"
+"isfxfe:\n"
+"   cmp.b   #0xfe,d4\n"
+"   bne.s   notcmdfe\n"
+"   clr.w   mmd_pstate(a3)\n"           /* FFE: stop */
+"   bsr     _SoundOff\n"
+"   moveq   #0,d0\n"
+"   rts\n"
+"notcmdfe:\n"
+"   cmp.b   #0xfd,d4\n"
+"   bne.s   isfxff\n"
+"   movea.l trk_periodtbl(a5),a0\n"     /* FFD: the period only */
+"   subq.b  #1,d5\n"
+"   bmi     plr_endloop0\n"
+"   add.b   d5,d5\n"
+"   move.w  0(a0,d5.w),trk_prevper(a5)\n"
+"   bra     plr_endloop0\n"
+"isfxff:\n"
+"   cmp.b   #0xff,d4\n"
+"   bne     fx\n"
+"   moveq   #0,d0\n"
+"   move.w  d7,d0\n"
+"   bsr     _ChannelOff\n"
+"   bra     fx\n"
+"fx0fchgblck:\n"                        /* F00: pattern break */
+"   move.b  #1,nextblock(a6)\n"
+"   bra     fx\n"
+"f_0e:\n"
+"   cmp.b   #3,d7\n"
+"   bgt     fx\n"
+"   move.b  d4,trk_wfcmd+1(a5)\n"
+"   bra     fx\n"
+"f_0c:\n"                               /* volume */
+"   moveq   #0,d0\n"
+"   move.b  d4,d0\n"
+"   bpl.s   plr_nosetdefvol\n"
+"   and.b   #0x7f,d0\n"
+"   moveq   #0,d1\n"
+"   move.b  trk_previnstr(a5),d1\n"
+"   lsl.w   #3,d1\n"
+"   move.b  d0,inst_svol(a4,d1.w)\n"
+"   bra.s   plr_setvol\n"
+"plr_nosetdefvol:\n"
+"   btst    #4,msng_flags(a4)\n"
+"   bne.s   plr_setvol\n"
+"   lsr.b   #4,d0\n"                    /* decimal */
+"   mulu    #10,d0\n"
+"   move.b  d4,d1\n"
+"   and.b   #0x0f,d1\n"
+"   add.b   d1,d0\n"
+"plr_setvol:\n"
+"   mulu    trk_trackvol(a5),d0\n"
+"   lsr.w   #8,d0\n"
+"   move.b  d0,trk_prevvol(a5)\n"
+"   bra     fx\n"
+"f_09:\n"
+"   move.b  d4,msng_tempo2(a4)\n"
+"   bra     fx\n"
+"f_15:\n"
+"   move.b  d4,trk_finetune(a5)\n"
+"   bra     fx\n"
+"f_16:\n"                               /* repeat loop */
+"   tst.b   d4\n"
+"   bne.s   plr_dorpt\n"
+"   move.w  mmd_pline(a3),rptline(a6)\n"
+"   bra     fx\n"
+"plr_dorpt:\n"
+"   tst.w   rptcounter(a6)\n"
+"   beq.s   plr_newrpt\n"
+"   subq.w  #1,rptcounter(a6)\n"
+"   beq     fx\n"
+"   bra.s   plr_setrptline\n"
+"plr_newrpt:\n"
+"   move.b  d4,rptcounter+1(a6)\n"
+"plr_setrptline:\n"
+"   move.w  rptline(a6),d0\n"
+"   addq.w  #1,d0\n"
+"   move.w  d0,nextblockline(a6)\n"
+"   bra     fx\n"
+"f_1c:\n"                               /* MIDI preset */
+"   moveq   #0,d1\n"
+"   move.b  trk_previnstr(a5),d1\n"
+"   lsl.w   #3,d1\n"
+"   move.b  d4,inst_midipreset(a4,d1.w)\n"
+"   bra     fx\n"
+"f_08:\n"                               /* hold / decay */
+"   move.b  d4,d0\n"
+"   lsr.b   #4,d4\n"
+"   and.b   #0x0f,d0\n"
+"   move.b  d4,trk_initdecay(a5)\n"
+"   move.b  d0,trk_inithold(a5)\n"
+"   bra     fx\n"
+"f_19:\n"                               /* sample offset */
+"   lsl.w   #8,d4\n"
+"   move.w  d4,trk_soffset(a5)\n"
+"   bra     fx\n"
+/* BUG(orig) (#203): Bxx stores the word of d4 */
+"f_0b:\n"
+"   move.w  d4,mmd_pseqnum(a3)\n"
+"   st      nextblock(a6)\n"
+"   bra     fx\n"
+"f_1d:\n"
+"   move.w  #0x1ff,nextblock(a6)\n"     /* nextblock 1, nxtnoclrln -1 */
+"   addq.w  #1,d4\n"
+"   move.w  d4,nextblockline(a6)\n"
+"   bra     fx\n"
+"f_03:\n"                               /* portamento */
+"   subq.b  #1,d5\n"
+"   bmi.s   plr_setfx3spd\n"
+"   movea.l trk_periodtbl(a5),a0\n"
+"   add.b   msng_playtransp(a4),d5\n"
+"   add.b   trk_stransp(a5),d5\n"
+"   bmi     plr_endloop0\n"
+"   add.w   d5,d5\n"
+"   move.w  0(a0,d5.w),trk_porttrgper(a5)\n"
+"plr_setfx3spd:\n"
+"   tst.b   d4\n"
+"   beq     plr_endloop0\n"
+"   move.b  d4,trk_prevportspd(a5)\n"
+"   bra     plr_endloop0\n"
+"fx:\n"                                 /* play a note? */
+"   tst.b   d5\n"
+"   beq     plr_endloop0\n"
+"   move.b  d5,(a5)\n"
+"   move.b  trk_inithold(a5),trk_noteoffcnt(a5)\n"
+"   bne.s   _PlayNote\n"
+"   st      trk_noteoffcnt(a5)\n"
+/* _PlayNote: d7 track, d5 note, the instrument trk_previnstr and its song
+   entry trk_previnstra; leaves d4 (soffset, 64 after a synth note) */
+"_PlayNote:\n"
+"   move.l  trk_previnstra(a5),d4\n"
+"   beq     plr_endloop0\n"
+"   movea.l d4,a1\n"
+"   moveq   #0,d4\n"
+"   moveq   #0,d0\n"
+"   move.w  _ChanMask,d0\n"
+"   btst    d7,d0\n"
+"   beq     plr_endloop0\n"
+"   bset    d7,d4\n"                    /* d4 is the mask of this channel */
+"   move.w  d5,d1\n"                    /* the note */
+"   moveq   #0,d3\n"
+"   move.b  trk_previnstr(a5),d3\n"
+"   add.w   d3,d3\n"
+"   add.w   d3,d3\n"
+"   movea.l mmd_smplarr(a3),a0\n"
+"   move.l  0(a0,d3.w),d5\n"            /* the instrument's sample */
+"   add.b   msng_playtransp(a4),d1\n"
+"   add.b   inst_strans(a1),d1\n"
+"   moveq   #0,d2\n"
+"   move.w  inst_repeat(a1),d2\n"
+"   moveq   #0,d3\n"
+"   move.w  inst_replen(a1),d3\n"
+"   cmp.b   #4,d7\n"
+"   bge.s   nodmaoff\n"                 /* track >= 4: not an Amiga channel */
+"   tst.l   d5\n"
+"   beq.s   stpdma\n"
+"   tst.b   trk_synthtype(a5)\n"
+"   ble.s   stpdma\n"                   /* the previous one a sample/hybrid */
+"   movea.l d5,a0\n"
+"   cmp.w   #-1,4(a0)\n"                /* SYNTHETIC? */
+"   beq.s   nostpdma\n"
+"stpdma:\n"
+"   move.w  d4,0xdff096\n"              /* this channel off */
+"nostpdma:\n"
+"   clr.l   trk_synthptr(a5)\n"
+"nodmaoff:\n"
+"   subq.b  #1,d1\n"
+"   clr.b   trk_fadespd(a5)\n"
+"   move.b  trk_initdecay(a5),trk_decay(a5)\n"
+"   clr.w   trk_vibroffs(a5)\n"         /* and trk_tremoffs */
+"   or.w    d4,dmaonmsk(a6)\n"
+"   movea.l d5,a0\n"
+"   tst.w   4(a0)\n"
+"   bmi     handleSynthnote\n"
+"   clr.b   trk_synthtype(a5)\n"
+"tlwtst0:\n"
+"   tst.b   d1\n"
+"   bpl.s   notenot2low\n"
+"   add.b   #12,d1\n"                   /* too low, an octave up */
+"   bra.s   tlwtst0\n"
+"notenot2low:\n"
+"   cmp.b   #62,d1\n"
+"   ble.s   endpttest\n"
+"   sub.b   #12,d1\n"                   /* too high, an octave down */
+"endpttest:\n"
+"   move.w  4(a0),d0\n"
+"   bne     iff5R3oct\n"
+"   move.b  trk_finetune(a5),d0\n"
+"   add.b   d0,d0\n"
+"   add.b   d0,d0\n"
+"   ext.w   d0\n"
+"   lea     periodtable8(a6),a1\n"
+"   movea.l 0(a1,d0.w),a1\n"            /* period table (#211) */
+"   move.l  a1,trk_periodtbl(a5)\n"
+"   add.b   d1,d1\n"
+"   move.w  0(a1,d1.w),d5\n"            /* the period */
+"   move.l  a0,d0\n"
+"   addq.l  #6,d0\n"                    /* the start */
+"   move.l  (a0),d1\n"
+"   add.l   d0,d1\n"                    /* the end */
+"gid_setrept:\n"
+"   add.l   d2,d2\n"
+"   add.l   d0,d2\n"                    /* the repeat start */
+"   cmp.w   #1,d3\n"
+"   bhi.s   gid_noreplen2\n"
+"   moveq   #0,d3\n"                    /* no repeat */
+"   bra.s   gid_cont\n"
+"gid_noreplen2:\n"
+"   add.l   d3,d3\n"
+"   add.l   d2,d3\n"                    /* the repeat end */
+"gid_cont:\n"
+"   moveq   #0,d4\n"
+"   move.w  trk_soffset(a5),d4\n"
+"   add.l   d4,d0\n"
+"   cmp.l   d0,d1\n"
+"   bhi.s   pn_nooffsovf\n"
+"   sub.l   d4,d0\n"
+"pn_nooffsovf:\n"
+"   movea.l trk_audioaddr(a5),a1\n"
+"   move.l  d0,(a1)+\n"                 /* ac_ptr */
+"   cmp.l   d0,d3\n"
+"   bhi.s   rRepeat\n"
+"   move.l  chipzero(a6),trk_sampleptr(a5)\n"
+"   move.w  #1,trk_samplelen(a5)\n"
+"   sub.l   d0,d1\n"
+"   lsr.l   #1,d1\n"
+"   move.w  d1,(a1)\n"                  /* ac_len */
+"   bra.s   retsn1\n"
+"rRepeat:\n"
+"   move.l  d2,trk_sampleptr(a5)\n"
+"   move.l  d3,d1\n"
+"   sub.l   d0,d1\n"
+"   lsr.l   #1,d1\n"
+"   move.w  d1,(a1)\n"                  /* ac_len */
+"   sub.l   d2,d3\n"
+"   lsr.l   #1,d3\n"
+"   move.w  d3,trk_samplelen(a5)\n"
+"retsn1:\n"
+"   move.w  d5,trk_prevper(a5)\n"
+"   tst.b   trk_synthtype(a5)\n"
+"   bne.s   hSn2\n"
+"plr_endloop0:\n"                       /* the next track, or done */
+"   addq.b  #1,d7\n"
+"   cmp.w   numtracks(a6),d7\n"
+"   blt     plr_loop0\n"
+"   moveq   #1,d0\n"
+"   rts\n"
+"handleSynthnote:\n"
+"   move.b  d1,trk_prevnote2(a5)\n"
+"   move.l  a0,trk_synthptr(a5)\n"
+"   cmp.w   #-2,4(a0)\n"                /* HYBRID? */
+"   bne.s   hSn_nossn\n"
+"   st      trk_synthtype(a5)\n"
+"   movea.l synth_wf(a0),a0\n"          /* its waveform: the sample */
+"   bra     tlwtst0\n"
+"hSn_nossn:\n"
+"   move.b  #1,trk_synthtype(a5)\n"
+"   move.b  trk_finetune(a5),d0\n"
+"   add.b   d0,d0\n"
+"   add.b   d0,d0\n"
+"   ext.w   d0\n"
+"   lea     periodtable8(a6),a1\n"
+"   movea.l 0(a1,d0.w),a1\n"
+"   suba.w  #48,a1\n"
+"   move.l  a1,trk_periodtbl(a5)\n"     /* for the synth periods */
+"   add.w   d1,d1\n"
+"   move.w  0(a1,d1.w),trk_prevper(a5)\n"
+"   clr.l   trk_sampleptr(a5)\n"
+"hSn2:\n"
+"   lea     trk_arpgoffs(a5),a1\n"      /* arpgoffs .. synvibdep */
+"   clr.l   (a1)+\n"
+"   clr.l   (a1)+\n"
+"   clr.l   (a1)+\n"
+"   clr.l   (a1)+\n"
+"   clr.l   (a1)+\n"
+"   clr.l   (a1)+\n"
+"   lea     _sinetable(pc),a0\n"
+"   move.l  a0,(a1)+\n"                 /* synvibwf */
+"   clr.w   (a1)+\n"                    /* synviboffs */
+"   movea.l trk_synthptr(a5),a0\n"
+"   move.w  synth_speeds(a0),(a1)+\n"   /* initvolxspd, initwfxspd */
+"   clr.b   (a1)\n"                     /* volchgspd */
+"   cmp.b   #0x0e,trk_cmd(a5)\n"
+"   bne.s   hSn_nocmdE\n"
+"   move.b  trk_cmdqual(a5),trk_wfcmd+1(a5)\n"
+"hSn_nocmdE:\n"
+"   moveq   #64,d4\n"
+"   bra     plr_endloop0\n"
+"iff5R3oct:\n"                          /* IFF octaves, note in d1 */
+"   movem.l d6-d7,-(sp)\n"
+"   moveq   #0,d7\n"
+"   move.w  d1,d7\n"
+"   divu    #12,d7\n"                   /* the octave */
+"   move.l  d7,d5\n"
+"   cmp.w   #6,d7\n"
+"   blt.s   nohioct\n"
+"   moveq   #5,d7\n"
+"nohioct:\n"
+"   swap    d5\n"                       /* the note in this octave */
+"   move.l  (a0),d1\n"
+"   cmp.w   #6,d0\n"
+"   ble.s   nounrecit\n"
+"   moveq   #6,d0\n"
+"nounrecit:\n"
+"   lea     _gid_addtable-1(pc),a1\n"
+"   add.b   0(a1,d0.w),d7\n"
+"   lea     _gid_divtable-1(pc),a1\n"
+"   move.b  0(a1,d0.w),d0\n"
+"   divu    d0,d1\n"                    /* the length of the highest octave */
+"   swap    d1\n"
+"   clr.w   d1\n"
+"   swap    d1\n"
+"   move.l  d1,d0\n"
+"   moveq   #0,d6\n"
+"   lea     _shiftcnt(pc),a1\n"
+"   move.b  0(a1,d7.w),d6\n"
+"   lsl.w   d6,d2\n"
+"   lsl.w   d6,d3\n"
+"   lsl.w   d6,d1\n"
+"   lea     _mullencnt(pc),a1\n"
+"   move.b  0(a1,d7.w),d6\n"
+"   mulu    d6,d0\n"                    /* the offset of this octave */
+"   add.l   a0,d0\n"
+"   addq.l  #6,d0\n"
+"   add.l   d0,d1\n"
+"   move.b  trk_finetune(a5),d6\n"
+"   add.b   d6,d6\n"
+"   add.b   d6,d6\n"
+"   ext.w   d6\n"
+"   lea     periodtable8(a6),a1\n"
+"   movea.l 0(a1,d6.w),a1\n"
+"   move.l  a1,trk_periodtbl(a5)\n"
+"   lea     _octstart(pc),a0\n"
+"   add.b   0(a0,d7.w),d5\n"
+"   add.b   d5,d5\n"
+"   move.w  0(a1,d5.w),d5\n"
+"   movem.l (sp)+,d6-d7\n"
+"   bra     gid_setrept\n");
+
+/* the line routine above; a3 and a4 hold the module and the song, a5 is
+   left at a track (nothing reads it before the next assignment).  a3 and
+   a4 are operands so that GCC reads them again after the call: as plain
+   global register variables GCC kept a copy of the module and the song
+   in a stack slot across the call and addressed them through it */
 BL_ALWAYS_INLINE int newline(void)
 {
-    struct track **tdp = db.trackdataptrs;
-    UBYTE *block = curblock(PM), *noteptr;
-    UWORD line = PM->pline;
-    /* d4 of the original: the qualifier in the low byte, the upper byte
-       left over from a track before (PlayNote, 19xx) - Bxx and 1Dxx take
-       the whole word (#203) */
-    UWORD qual = 0, ntracks;                /* ntracks: db.numtracks */
-    UBYTE ch = 0;
+    register int r __asm("d0");
 
-    if (!mmd1(PM)) {
-        db.numtracks = ntracks = block[0];
-        db.numlines = block[1];
-        noteptr = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), ntracks);
-    } else {
-        noteptr = block + 8 + bl_mulu_w((UWORD)(line * 4), *(UWORD *)block);
-        db.numtracks = ntracks = *(UWORD *)block;
-        db.numlines = *(UWORD *)(block + 2);
-    }
-    do {
-        UBYTE note, instr, cmd, q, *p;
-
-        /* BUG(orig) (#334): a masked track is skipped before its note is
-           read, so noteptr stays: the next track reads this track's note */
-        blitz_globals = (UBYTE *)*tdp++;
-        if (!(ChanMask & (1 << (ch & 7))))
-            continue;
-        p = noteptr;
-        if (!mmd1(PM)) {
-            note = *p++;
-            instr = *p >> 4;
-            cmd = *p++ & 0x0f;
-            PT->cmdqual = *p++;
-            if (note & 0x80) {
-                note &= ~0x80;
-                instr |= 0x10;
-            }
-            if (note & 0x40) {
-                note &= ~0x40;
-                instr |= 0x20;
-            }
-        } else {
-            note = *p++;
-            if ((BYTE)note < 0)
-                note = 0;
-            instr = *p++;
-            cmd = *p++ & 0x1f;
-            PT->cmdqual = *p++;
-        }
-        noteptr = p;
-        instr &= 0x3f;
-        if (instr) {
-            UBYTE *h = db.holdvals + --instr;
-            struct instr *ins = instrument(PS, instr);
-
-            PT->previnstr = instr;
-            PT->inithold = h[0];
-            PT->initdecay = h[63];
-            PT->finetune = h[126];
-            PT->previnstra = ins;
-            PT->prevvol = (UWORD)bl_mulu_w(ins->svol, PT->trackvol) >> 8;
-            PT->stransp = ins->strans;
-            PT->soffset = 0;
-        }
-        PT->cmd = cmd;
-        if (!cmd)
-            goto fx;
-        q = PT->cmdqual;
-        qual = (qual & 0xff00) | q;
-        switch (cmd) {
-        case 0x0f:                              /* tempo */
-            if (!q) {
-                db.nextblock = 1;               /* F00: pattern break */
-                break;
-            }
-            if (q <= 0xf0)
-                break;
-            if (q == 0xf2)
-                goto f_1f;
-            if (q == 0xfe) {                    /* FFE: stop */
-                PM->pstate = 0;
-                SoundOff();
-                return 0;
-            }
-            if (q == 0xfd) {                    /* FFD: period only */
-                if ((BYTE)--note < 0)
-                    continue;
-                PT->prevper = PERIOD(PT->periodtbl, (UBYTE)(note + note));
-                note = 0;
-                break;
-            }
-            if (q == 0xff)
-                ChannelOff(ch);
-            break;
-        case 0x1f:                              /* note delay */
-f_1f:
-            PT->prevnote = note;
-            PT->noteoffcnt = PT->inithold;
-            if (!PT->noteoffcnt)
-                PT->noteoffcnt = -1;
-            continue;
-        case 0x0e:
-            if ((BYTE)ch <= 3)
-                LO(PT->wfcmd) = q;
-            break;
-        case 0x0c: {                            /* volume */
-            UWORD v = q;
-
-            if ((BYTE)q < 0) {
-                v = q & 0x7f;
-                instrument(PS, PT->previnstr)->svol = v;
-            } else if (!(PS->flags & 0x10))
-                v = (UBYTE)((q >> 4) * 10 + (q & 0x0f));      /* decimal */
-            PT->prevvol = (UWORD)bl_mulu_w(v, PT->trackvol) >> 8;
-            break;
-        }
-        case 0x09:
-            PS->tempo2 = q;
-            break;
-        case 0x15:
-            PT->finetune = q;
-            break;
-        case 0x16:                              /* repeat loop */
-            if (!q) {
-                db.rptline = PM->pline;
-                break;
-            }
-            if (db.rptcounter) {
-                if (!--db.rptcounter)
-                    break;
-            } else
-                LO(db.rptcounter) = q;
-            db.nextblockline = db.rptline + 1;
-            break;
-        case 0x1c:
-            instrument(PS, PT->previnstr)->midipreset = q;
-            break;
-        case 0x08:                              /* hold / decay */
-            PT->initdecay = q >> 4;
-            PT->inithold = q & 0x0f;
-            qual = (qual & 0xff00) | q >> 4;
-            break;
-        case 0x19:                              /* sample offset */
-            qual <<= 8;
-            PT->soffset = qual;
-            break;
-        case 0x0b:                              /* BUG(orig) (#203): the word */
-            PM->pseqnum = qual;
-            db.nextblock = 0xff;
-            break;
-        case 0x1d:
-            db.nextblock = 1;
-            db.nxtnoclrln = 0xff;
-            db.nextblockline = ++qual;
-            break;
-        case 0x03:                              /* portamento */
-            if ((BYTE)--note >= 0) {
-                UBYTE n = note + PS->playtransp + PT->stransp;
-
-                if ((BYTE)n < 0)
-                    continue;
-                PT->porttrgper = PERIOD(PT->periodtbl, (UWORD)(n + n));
-            }
-            if (q)
-                PT->prevportspd = q;
-            continue;
-        }
-fx:
-        if (!note)
-            continue;
-        PT->prevnote = note;
-        PT->noteoffcnt = PT->inithold;
-        if (!PT->noteoffcnt)
-            PT->noteoffcnt = -1;
-        qual = playnote_in(ch, note, PT->previnstr, PT->previnstra).d4;
-    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)ntracks);
-    return 1;
+    __asm volatile("bsr     _medlib_newline"
+                   : "=d"(r), "+a"(blitz_string), "+a"(blitz_locals)
+                   :
+                   : "d1", "d2", "d3", "d4", "d5", "d6", "d7",
+                     "a0", "a1", "a2", "a6", "cc", "memory");
+    return r;
 }
 
 /* advance the song pointer: the next line, a pattern break, the next
@@ -1656,10 +2032,11 @@ tmpper:
 }
 
 /* _IntHandler: one timing pulse.  It and the routines of a pulse
-   (newline, nextline, hold, ticks and their helpers) are inline in
-   _PlayMed, one function as in the original: as functions each saved its
-   registers and got its arguments (libs-performance task 10.10); playnote
-   and synth stay functions. */
+   (nextline, hold, ticks and their helpers) are inline in _PlayMed, one
+   function as in the original: as functions each saved its registers and
+   got its arguments (libs-performance task 10.10); the line routine is
+   the assembler block medlib_newline (task 10.12), playnote (for the
+   replays of the ticks) and synth stay functions. */
 BL_ALWAYS_INLINE void IntHandler(void)
 {
     UBYTE counter;
