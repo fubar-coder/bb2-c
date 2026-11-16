@@ -43,7 +43,7 @@
  * original reads the next row or, for finetune 15, the voices; Fixed
  * (#474)).  Covered besides playing: TrackDMA, Tracker Off
  * (mt_end) / On (stays stopped in the original, Fixed (#572)), TrackInit while Tracker Off
- * (no mt_init, BUG(orig), #573), TrackerChannels (the voices shift,
+ * (no mt_init in the original, Fixed (#573)), TrackerChannels (the voices shift,
  * BUG(orig), #568), TrackerPause, TrackStop, init, finit with and without
  * TrackInit.  Not covered: sample numbers above 31, finetune bytes above
  * 15 (both read outside the library's tables, different memory in the

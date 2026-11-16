@@ -7,8 +7,8 @@ around it. Not the acidlibs `trackerlib` (96, NoiseTracker, Module
 objects): no command names in common (checked by `rwe_numbers`/`blitzlib numbers`).
 
 * `TrackInit address` – the module in memory (31 samples, `M.K.`):
-  `mt_init` (pattern count, sample starts, speed 6, position 0, filter
-  off, `mt_end`) unless `Tracker Off`, then playing enabled.
+  `mt_init` (pattern count, sample starts, speed 6, position 0; filter
+  off and `mt_end` unless `Tracker Off`), then playing enabled.
 * `TrackPlay` – one tick of the play routine (`mt_music`). The program
   calls it itself, e.g. from a `SetInt 5` vertical blank handler: the
   library installs no interrupt (below).
@@ -120,9 +120,6 @@ RI's glue:
   offset, so the following voices play the notes of the voice before
   (#568); the effects (`mt_CheckEfx`) and the loop registers of
   `mt_SetDMA` still go to all four voices (#567).
-* `TrackInit` while `Tracker Off`: `mt_init` returns at once, but playing
-  is enabled; `Tracker On` then plays with the old song pointer and
-  sample starts (#573).
 
 Not a defect: `_ciaplayerinit` returns at once (an `RTS` before its
 code), so no interrupt plays the module; the program plays it with
@@ -146,6 +143,14 @@ kind F), in RI's code:
   `mt_Enable` and `Tracker On` only ANDed it with its value: the song
   stayed stopped until `TrackInit` or `TrackerPause 0` (#572; library
   test `rwe_ritrackerlib`, the ticks "Tracker On after Off").
+* `TrackInit` while `Tracker Off` initialises the song (pattern count,
+  sample starts, speed, position); only the filter and `mt_end`, which
+  write to the hardware, are left out while off. The original's
+  `mt_init` returned at once, but playing was enabled: `Tracker On` then
+  played the old song pointer and sample starts, or from address 0
+  without an earlier `TrackInit` (#573; library test `rwe_ritrackerlib`,
+  `TrackInit` of the second module while off and the ticks "Tracker 1:
+  old song").
 * A tempo command (F20–FFF, `SetTempo`) only stores `RealTempo`; the
   original also wrote `deftime` / tempo to `ciatime` and to the latch of
   CIA-B timer A (`$BFD400`/`$BFD500`), a timer the library never

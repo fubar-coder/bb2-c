@@ -43,9 +43,6 @@
  *     offset, so the following voices play the notes of the voice
  *     before (#568); effects (mt_CheckEfx) and the loop pointers of
  *     mt_SetDMA still go to all four voices (#567).
- *   - TrackInit while Tracker Off does not initialise the song (mt_init
- *     returns) but enables playing; Tracker On then plays with the old
- *     song pointer (#573).
  * Not a defect: _ciaplayerinit is dead (RTS first), so no interrupt
  * plays the module - SetInt (intlib $C100) and the CIA-B timer setup
  * behind it never run; the code is kept (ciaplayerinit_unreached) and
@@ -62,6 +59,10 @@
  *     Tracker On continues the module; the original's mt_end cleared it
  *     and On only ANDed it: the song stayed stopped until TrackInit or
  *     TrackerPause 0 (#572).
+ *   - TrackInit while Tracker Off initialises the song (mt_init without
+ *     its filter and mt_end, which touch the hardware); the original's
+ *     mt_init returned at once, and Tracker On then played the old song
+ *     (or from address 0 without an earlier TrackInit) (#573).
  *   - Fxx compares unsigned: F80-FFF are tempos; the original compared
  *     signed (CMP.B #32: BGE) and set the speed to $80-$FF (#569).
  * Fixed in the play routine (intended deviations):
@@ -444,7 +445,12 @@ static void ciaplayerfinit(void)
 
 /* ------------------------------------------------------- the play routine */
 
-/* mt_init: the sample starts behind the highest pattern, song position 0 */
+/* mt_init: the sample starts behind the highest pattern, song position 0;
+   with Tracker On also the filter off and mt_end.  Fixed (#573): the
+   original returned at once while Tracker Off (TST.b status: BNE 'ok:
+   RTS), and TrackInit enabled playing of the old song; the song is now
+   initialised in any case, and only the hardware is left alone while
+   Tracker Off, as before */
 static void mt_init(void)
 {
     UBYTE *mod, *order, *sample;
@@ -452,8 +458,6 @@ static void mt_init(void)
     ULONG highest, end;
     int i;
 
-    if (!pt.status)
-        return;
     mod = glue.mt_data;
     pt.songdataptr = mod;
     order = mod + 952;
@@ -504,11 +508,13 @@ static void mt_init(void)
         sample += (ULONG)W(mod + 42) << 1;
         mod += 30;
     }
-    CIAAPRA |= 2;                       /* filter off */
     pt.speed = 6;
     pt.counter = 0;
     pt.songpos = 0;
     pt.patternpos = 0;
+    if (!pt.status)
+        return;
+    CIAAPRA |= 2;                       /* filter off */
     mt_end();
 }
 
@@ -1286,8 +1292,8 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * mt_Enable, so On continues a module that was playing (Fixed (#572):
  * the original cleared it with mt_end and On only ANDed it, so the song
  * stayed stopped until TrackInit or TrackerPause 0); a module stopped
- * or paused before Off stays stopped.  While off, TrackInit does not
- * initialise the song (#573).
+ * or paused before Off stays stopped.  While off, TrackInit initialises
+ * the song but leaves the hardware alone (Fixed (#573)).
  * @param on  d0.b: 0 off, else on (any nonzero byte)
  */
 static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
@@ -1311,8 +1317,9 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
  *
  * mt_init: the sample starts behind the highest pattern, song position
  * 0 (its sample clearing: Fixed (#570); its pattern scan: Fixed (#477)).
- * Playing is enabled even while Tracker Off, where mt_init does nothing:
- * Tracker On then plays with the old song pointer (BUG(orig) (#573)).
+ * Also while Tracker Off, where mt_init leaves the filter and the voices
+ * alone; Tracker On then plays this module (Fixed (#573): the original's
+ * mt_init did nothing, and Tracker On played the old song).
  * The program calls TrackPlay itself (the CIA interrupt setup is dead).
  * @param module  d0: the module (a Protracker file in memory, 31
  *                samples, "M.K."; not checked)
@@ -1322,7 +1329,7 @@ static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
     glue.mt_data = module;
     ciaplayerinit();
     pt.playing = 1;
-    mt_init();                          /* BUG(orig): nothing if Tracker Off (#573) */
+    mt_init();
     pt.enable = 0xff;
 }
 
