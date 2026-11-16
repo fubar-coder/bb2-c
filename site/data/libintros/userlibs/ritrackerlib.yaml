@@ -29,9 +29,7 @@ intro: |
 
   `TrackerChannels` keeps voices free for sound effects, `TrackerPause`
   pauses and continues the module, and `Tracker` switches the player off
-  and on. The play routine's known faults are kept, for example with
-  some effect commands
-  ([#472](https://github.com/fubar-coder/bb2-c/issues/472),
-  [#473](https://github.com/fubar-coder/bb2-c/issues/473),
-  [#478](https://github.com/fubar-coder/bb2-c/issues/478),
-  [#482](https://github.com/fubar-coder/bb2-c/issues/482)).
+  and on. The known faults of the play routine, for example with some
+  effect commands, are fixed
+  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#protracker-play-routine" >}}));
+  one that is kept is described at `TrackInit`.

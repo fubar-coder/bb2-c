@@ -11,6 +11,10 @@
     Unless `ChangeTrackerVBlank` was used, the CIA interrupt is set up
     again. With the debugger's checks, an empty slot is a runtime error;
     without them, an empty slot plays nothing and returns 0.
+
+    Before it plays, `StartTracker` corrects two kinds of invalid data in
+    the module in memory: sample numbers above 31 in the patterns become 0,
+    and a sample's finetune above 15 keeps only its low four bits.
 "StopTracker":
   text: Stops the module and silences the four voices.
 "DecodeModule":
@@ -70,11 +74,6 @@
   notes: |
     Nothing happens unless a module was started and is not stopped or
     paused.
-
-    Kept from the original: after an `F00` on voices 1 to 3, the voices
-    after it in the same row play notes read from the hardware registers
-    instead of the pattern
-    ([#475](https://github.com/fubar-coder/bb2-c/issues/475)).
 "TrackerVolume":
   text: Sets the master volume of the module, 0 to 64; the default is 64. Values above 64 are ignored. The volume also changes the notes that are playing.
 "ChangeTrackerMask":
@@ -83,8 +82,4 @@
     `ChangeTrackerMask %1001` plays voices 1 and 4 and leaves voices 2
     and 3 to the program.
 "ModulePatterns":
-  text: The number of patterns of a slot's module, the highest pattern number in its song positions plus 1.
-  notes: |
-    Kept from the original: only the song positions 0 to 126 are read,
-    and pattern numbers of 128 and more are not counted
-    ([#477](https://github.com/fubar-coder/bb2-c/issues/477)).
+  text: The number of patterns of a slot's module, the highest pattern number in its 128 song positions plus 1.

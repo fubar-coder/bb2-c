@@ -2950,6 +2950,63 @@ memory finds its first four bytes cleared.
 
 Issue: [mt_init compares the module length with the sample addresses: the first longword of the samples is practically never cleared (#438)](https://github.com/fubar-coder/bb2-c/issues/438).
 
+### Fixes in the Protracker play routine {#protracker-play-routine}
+
+The [CIA Protracker library]({{< relref "/docs/libraries/userlibs/ciatrklib" >}})
+and [ritrackerlib]({{< relref "/docs/libraries/userlibs/ritrackerlib" >}})
+play modules with the same Protracker 2.3A play routine, which had the
+same faults in both libraries. Each of the following fixes applies to
+both.
+
+* The first portamento up or down (`1xx`, `2xx`) that a program played
+  before any fine portamento (`E1x`, `E2x`) did not slide on its first
+  tick; it slides by its whole value from the start
+  ([#478](https://github.com/fubar-coder/bb2-c/issues/478)).
+* A tremolo (`7xy`) with the ramp-down waveform (`E71`) took its shape
+  from the position of the voice's vibrato; it follows the position of
+  the tremolo itself
+  ([#482](https://github.com/fubar-coder/bb2-c/issues/482)).
+* A note with a sample offset (`9xx`) gave the sound hardware the offset
+  once, but moved the voice's own start twice, so a retrigger (`E9x`), a
+  note delay (`EDx`) or a following note without a sample number started
+  at double the offset; the offset counts once
+  ([#473](https://github.com/fubar-coder/bb2-c/issues/473)).
+* A sample offset (`9xx`) on a sample of 64 KB or more played only 2
+  bytes of the sample; it plays the sample from the offset
+  ([#472](https://github.com/fubar-coder/bb2-c/issues/472)).
+* A sample whose loop starts at 64 KB or later looped from a place 64 KB
+  too early; it loops from its loop start
+  ([#479](https://github.com/fubar-coder/bb2-c/issues/479)).
+* An arpeggio (`0xy`) on one of the highest notes could play a much
+  lower note, or a value from the player's own data; it plays at most
+  the highest note of the period table
+  ([#474](https://github.com/fubar-coder/bb2-c/issues/474)).
+* After a stop (`F00`) on voice 1, 2 or 3, the voices after it in the
+  same row read their notes from the Amiga's custom chip registers and
+  went on playing random samples; they read the notes of the row
+  ([#475](https://github.com/fubar-coder/bb2-c/issues/475)).
+* A note period below the lowest note of the table (1 to 112, which
+  Protracker does not write) played a low note or a value from the
+  player's own data; it plays the highest note
+  ([#481](https://github.com/fubar-coder/bb2-c/issues/481)).
+* `StartTracker`, `DecodeModule` and `TrackInit` look for the module's
+  highest pattern in its song positions. The original never read the
+  last of the 128 positions, so a pattern used only there was not
+  counted and the samples were taken from the wrong place; and a new
+  highest pattern at the position before it made the search read on
+  through 64 KB behind the module, so that the samples were looked for
+  far behind it and memory there was cleared or copied. All 128
+  positions are read
+  ([#477](https://github.com/fubar-coder/bb2-c/issues/477)).
+* A module with sample numbers above 31 in its patterns made the sound
+  hardware play memory behind the sample table; `StartTracker` and
+  `TrackInit` set such numbers to 0 in the module, once
+  ([#480](https://github.com/fubar-coder/bb2-c/issues/480)).
+* A sample with a finetune value above 15 played periods read from far
+  behind the period table; `StartTracker` and `TrackInit` keep only the
+  low four bits of the value, once
+  ([#476](https://github.com/fubar-coder/bb2-c/issues/476)).
+
 ### Other fixes {#rwe-other-fixes}
 
 * `AddAppIcon` set the base of the local variables to 0: inside a

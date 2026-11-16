@@ -2,7 +2,9 @@
   text: Prepares the Protracker module at `address` in chip memory, from the first song position, and enables playing. The module plays as the program calls `TrackPlay`.
   notes: |
     The module is not checked; it must be a module with 31 samples in the
-    "M.K." format.
+    "M.K." format. `TrackInit` corrects two kinds of invalid data in the
+    module in memory: sample numbers above 31 in the patterns become 0,
+    and a sample's finetune above 15 keeps only its low four bits.
 
     Kept from the original: while the player is switched off with
     `Tracker Off`, `TrackInit` does not prepare the module but still
@@ -19,12 +21,9 @@
 
     Kept from the original: a tempo command (`F20` to `F7F`) does not
     change the speed and writes to a CIA timer that the library never
-    reserved ([#571](https://github.com/fubar-coder/bb2-c/issues/571));
-    `F80` to `FFF` set the speed to 128 to 255
-    ([#569](https://github.com/fubar-coder/bb2-c/issues/569)); and after an
-    `F00` on voices 1 to 3, the voices after it in the same row play
-    notes read from the hardware registers instead of the pattern
-    ([#475](https://github.com/fubar-coder/bb2-c/issues/475)).
+    reserved ([#571](https://github.com/fubar-coder/bb2-c/issues/571)),
+    and `F80` to `FFF` set the speed to 128 to 255
+    ([#569](https://github.com/fubar-coder/bb2-c/issues/569)).
 "TrackStop":
   text: Stops the module and silences the four voices.
   notes: |

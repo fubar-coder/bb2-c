@@ -2868,6 +2868,94 @@ rows:
     text: "`WaitTrackerEvent` calls the graphics library with its library base set up; the original called it through whatever the program happened to hold, which crashed."
     page: libraries
     anchor: rwe-other-fixes
+  - issue: 472
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "A sample offset (`9xx`) on a sample of 64 KB or more plays the sample from the offset; the original played only 2 bytes of it."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 473
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "A note with a sample offset (`9xx`) applies the offset once; the original moved the voice's start twice, so a retrigger, a note delay or a following note without a sample started at double the offset."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 474
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "An arpeggio (`0xy`) on one of the highest notes plays at most the highest note of the period table; the original could play a much lower note or a value from the player's data."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 475
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "After a stop (`F00`) on voice 1, 2 or 3 the voices after it read the notes of the row; the original read them from the custom chip registers and went on playing random samples."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 476
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: "StartTracker, TrackInit"
+    text: "A sample with a finetune value above 15 plays at its pitch, since the player keeps the value's low four bits; the original read periods from far behind its period table."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 477
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: "StartTracker, DecodeModule, TrackInit"
+    text: "The highest pattern of a module is found from all 128 song positions; the original never read the last one and could search 64 KB too far, take the samples from the wrong place and clear or copy memory behind the module."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 478
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "The first portamento up or down (`1xx`, `2xx`) slides from the start; with the original, the first one before any fine portamento did not slide on its first tick."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 479
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "A sample whose loop starts at 64 KB or later loops from its loop start; the original looped from a place 64 KB too early."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 480
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: "StartTracker, TrackInit"
+    text: "A module with sample numbers above 31 no longer makes the sound hardware play memory behind the sample table; the player sets such numbers to 0 once."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 481
+    severity: 5
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "A note period below the lowest note of the table (1 to 112, which Protracker does not write) plays the highest note; the original played a low note or a value from the player's data."
+    page: libraries
+    anchor: protracker-play-routine
+  - issue: 482
+    severity: 2
+    topic: "Sound"
+    library: "ciatrklib, ritrackerlib"
+    command: ""
+    text: "A tremolo with the ramp-down waveform follows the position of the tremolo itself; the original took its shape from the position of the voice's vibrato."
+    page: libraries
+    anchor: protracker-play-routine
   - issue: 461
     severity: 5
     topic: "Strings"
