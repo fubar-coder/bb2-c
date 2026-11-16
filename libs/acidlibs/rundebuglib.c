@@ -12,7 +12,10 @@
  *            code): in user mode continue (RTE) at printerr, which shows
  *            the message in an AutoRequest and ends the program (exitslib
  *            endjmp $C800).  In supervisor mode
- *            restore the vectors and give the trap to the old vector.
+ *            restore the vectors and give the trap with the message to
+ *            the old vector (fixed (#246): the original called codefinit
+ *            there, which changed d0 and closed intuition in the
+ *            supervisor context; intuition is now closed by finit only).
  *   TRAP #1  skip the 8 bytes after the TRAP (unless ctrlc is set - it
  *            never is: BUG(orig) (#43), ctrlc is only cleared)
  *   TRAP #2  skip 6 bytes
@@ -36,6 +39,7 @@
 static void BLITZ_ROUTINE codeinit(void);
 static void BLITZ_ROUTINE codefinit(void);
 void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0));
+void BLITZ_ROUTINE fixtraps(void);
 void mytrap0(void), mytrap1(void), mytrap2(void);
 void mytrap3(void), mytrap4(void), mytrap5(void);
 
@@ -96,9 +100,14 @@ BLITZ_ASM_BLOCK(traps,
 "super_trap:\n"                         /* can't do nothing about this! */
 "   move.l  #more2,2(sp)\n"
 "   rte\n"
+/* fixed (#246): the old vectors back, d0 (the message) kept for the old
+   TRAP #0 handler; intuition stays open until finit (no CloseLibrary in
+   the supervisor context).  The original called codefinit here, which
+   changed d0 */
 "more2:\n"
-/* BUG(orig) (#246): codefinit changes d0 (the message) before the trap */
-"   jsr     _codefinit\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _fixtraps\n"
+"   move.l  (sp)+,d0\n"
 "   trap    #0\n"
 );
 
@@ -174,7 +183,11 @@ static void BLITZ_ROUTINE codeinit(void)
     v[5] = (ULONG)mytrap5;
 }
 
-static void fixtraps(void)
+/**
+ * @brief Put the old TRAP #0..#5 vectors back (codefinit, and more2 for a
+ * runtime error in supervisor mode).
+ */
+void BLITZ_ROUTINE fixtraps(void)
 {
     struct bl_regs r = { 0, 0, 0, 0 };
     ULONG *v;

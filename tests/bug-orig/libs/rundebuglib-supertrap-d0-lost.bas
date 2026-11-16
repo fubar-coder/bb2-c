@@ -12,6 +12,7 @@
 ; address of the parent's 2 longs comes as a decimal argument, parsed
 ; digit by digit: Val is a float).  The original gives d0 = 0.
 ; Correct: the old vector gets the message ("Uninitialized Shape").
+; @fixed #246
 ; @configs clib
 ; @pass runtime_errors=on
 DEFTYPE .l
