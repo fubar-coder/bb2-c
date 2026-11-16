@@ -30,10 +30,9 @@
  *     ARexx) when Result1 = 0 and `BTST #17,28(a0)` - a memory BTST tests
  *     bit 17 mod 8 = bit 1 of the HIGH byte of rm_Action, i.e. RXFUNC
  *     ($02000000), not RXFF_RESULT ($00020000). (#48)
- *   - ClearRexxMsg (also RexxEvent on a reply) deletes rm_Args[] up to the
- *     first 0 without a limit of 16 (then rm_PassPort, rm_CommAddr ...);
- *     FillRexxMsg has no limit either.  An integer in a slot is "deleted"
- *     if the memory before it looks like an ArgString. (#49)
+ *   - Not a bug (the library's ArgString test): an integer in a slot of
+ *     rm_Args[] is "deleted" by ClearRexxMsg if the memory before it
+ *     looks like an ArgString.
  *   - FillRexxMsg: a value of 0 ends the list (also an integer 0); flag
  *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
  *   - GetRexxResult/GetRexxCommand: index (n-1)*4 as word (MULU, d1.w),
@@ -57,6 +56,11 @@
  * Fixed (intended deviation, #52): GetRexxCommand/GetResultString copied
  * ra_Length+1 bytes (the 0 too) and left a3 BEHIND the 0, so a string
  * expression went on one byte too far; a3 now ends on the 0.
+ * Fixed (intended deviation, #49): ClearRexxMsg (also RexxEvent on a
+ * reply) and FillRexxMsg had no limit of the 16 slots rm_Args[]: with all
+ * slots used ClearRexxMsg went on into rm_PassPort, rm_CommAddr,
+ * rm_FileExt ... (deleted and cleared), FillRexxMsg wrote a 17th value to
+ * rm_PassPort; both now stop after 16 slots.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -210,6 +214,9 @@ static const char *const Error_Table[] = {      /* indexed by code = 0,4,8.. */
 #define ERR_NOMEM   4
 #define ERR_NOPORT  8
 
+/* the argument slots of a RexxMsg, rm_Args[0..MAXRMARG] */
+#define ARGSLOTS (MAXRMARG + 1)
+
 /* the RexxArg in front of an ArgString's characters (ra_Buff) */
 #define ARGHEAD(s) ((struct RexxArg *)((UBYTE *)(s) - 8))
 
@@ -319,15 +326,17 @@ static void deleteargstring(ULONG arg)
         deleteargstring_rexx(arg);
 }
 
-/* _ClearRexxMsg - delete rm_Args[] up to the first 0 (no limit) */
+/* _ClearRexxMsg - delete rm_Args[] up to the first 0, at most the 16
+   slots (fixed, #49: the original had no limit) */
 static void clearrexxmsg(ULONG msg)
 {
     ULONG *slot;
+    int n;
 
     if (!tstrexxmsg(&msg))
         return;
     slot = (ULONG *)((struct RexxMsg *)msg)->rm_Args;
-    while (*slot) {
+    for (n = ARGSLOTS; n != 0 && *slot; n--) {
         deleteargstring(*slot);
         *slot++ = 0;
     }
@@ -443,9 +452,11 @@ BLITZ_ALIAS(_DeleteRexxMsg, deleterexxmsg_c);
 /**
  * @brief ClearRexxMsg rexxmsg: delete the ArgStrings of rm_Args[].
  *
- * Up to the first 0 slot, each slot cleared.  BUG(orig) (#49): no limit
- * of 16 (then rm_PassPort, rm_CommAddr ...); an integer in a slot is
- * "deleted" if the memory before it looks like an ArgString.
+ * Up to the first 0 slot, each slot cleared, at most the 16 slots.
+ * Fixed (#49): the original had no limit of 16 and with all slots used
+ * went on into rm_PassPort, rm_CommAddr, rm_FileExt ... (deleted and
+ * cleared).  An integer in a slot is "deleted" if the memory before it
+ * looks like an ArgString.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
  * rexxsyslib: its alert, then the message is taken as valid with address
  * 0 (BUG(orig), #56).
@@ -464,9 +475,10 @@ BLITZ_ALIAS(_ClearRexxMsg, clearrexxmsg_c);
  *
  * FillStruct = {flags.w, value.l, ..., 0}: flag bit 15-n set = value n is
  * an integer, else a C string that becomes a BB2 ArgString.  BUG(orig)
- * (#50): a value of 0 ends the list (also an integer 0); no limit of 16
- * slots (#49).  Errors: no memory - recoverable alert, the rest is not
- * filled.
+ * (#50): a value of 0 ends the list (also an integer 0).  At most the 16
+ * slots are filled (fixed, #49: the original had no limit, a 17th value
+ * went to rm_PassPort, the next ones to rm_CommAddr ...).  Errors: no
+ * memory - recoverable alert, the rest is not filled.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
  * rexxsyslib: its alert, then the message is taken as valid with address
  * 0 (BUG(orig), #56).
@@ -479,12 +491,13 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
 {
     const ULONG *p;
     ULONG flags, off = 0, v;
+    int n;
 
     if (!tstrexxmsg(&msg))
         return;
     flags = *(const UWORD *)fill;
     p = (const ULONG *)(fill + 2);
-    for (;;) {
+    for (n = ARGSLOTS; n != 0; n--) {           /* fixed (#49): 16 slots */
         off += 4;
         flags <<= 1;
         v = *p++;
@@ -503,7 +516,7 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
                 return;
             }
         }
-        /* off = 4, 8, ...: rm_Args[0], [1], ... (no limit, #49) */
+        /* off = 4, 8, ... 64: rm_Args[0], [1], ... [15] */
         *(ULONG *)((UBYTE *)&((struct RexxMsg *)msg)->rm_Result2 + (WORD)off) = v;
     }
 }
