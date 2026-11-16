@@ -20,7 +20,7 @@ runtime error checking unless the text says otherwise.
 
 ## Changes for existing programs
 
-Fifteen of the fixes change what an existing program does. Two of them
+Eighteen of the fixes change what an existing program does. Two of them
 concern programs that were written to make up for the bug, drawing on
 bitmaps; no known example program, demo or game uses these commands this
 way, but a program of your own might. Two concern the custom copper
@@ -29,7 +29,11 @@ the commands with the values named. Two make `LoadShape` stop with a
 runtime error on pictures it loaded before, and one changes which ARexx
 replies carry a result string. Two give the flags of two serial port
 commands the meaning their help text names, and one turns round what
-`Filter On` and `Filter Off` do with the audio filter. The last five
+`Filter On` and `Filter Off` do with the audio filter. Three concern
+music and speech: `GetMedVolume` no longer silences the channel it
+reads, a tracker module with a pattern break in its last song position
+starts again at its restart position, and `Translate$` returns its
+phonemes without an extra 0 byte. The last five
 concern tapes of mouse and keyboard events and the keyboard in Blitz
 mode: the one a program meets most easily has a section of its own, the
 other four are listed after it.
@@ -320,6 +324,115 @@ the two. A program that followed the manual needs no change: it now gets
 the filter it asked for.
 
 Issue: [Filter On switches the audio low-pass filter off (and dims the power LED), Filter Off switches it on (#985)](https://github.com/fubar-coder/bb2-c/issues/985).
+
+### `GetMedVolume` silenced the channel it read {#getmedvolume-clears}
+
+`GetMedNote`, `GetMedInstr` and `GetMedVolume` tell what a channel of a
+MED module plays, for example for graphics that follow the music.
+`GetMedNote` and `GetMedInstr` give 0 once they have been read, until the
+channel plays its next note, so that a program can see when a new note
+starts.
+
+**What happened.** The original's `GetMedVolume` also set its value to 0
+after reading it. But that value is the volume the player gives the
+channel in every step of the music: after the first `GetMedVolume` the
+channel was silent until a note with an instrument number or a volume
+command set the volume again. A program that shows the volume in every
+frame silenced its own music:
+
+```
+LoadMedModule 0,"song.med"
+StartMedModule 0
+Repeat
+  VWait
+  PlayMed
+  NPrint GetMedVolume(0)
+Until Joyb(0)
+StopMed
+End
+```
+
+With the original, every note on channel 0 sounded only until the next
+call of `PlayMed`, and the program printed its volume
+once and then 0. With the port, the channel plays as it does without
+`GetMedVolume`, and the program prints the volume of the note in every
+frame.
+
+**What to change.** A program that used the 0 after the first read to see
+that a new note has started reads `GetMedNote` instead, which still gives
+0 once it has been read. A program that reads the volume only to show it
+needs no change.
+
+Issue: [GetMedVolume clears the volume, the channel goes silent (#212)](https://github.com/fubar-coder/bb2-c/issues/212).
+
+### A pattern break in the last song position played on behind the end {#tracker-break-song-end}
+
+A tracker module plays its patterns in the order of its song positions.
+The song length says how many positions the song uses, and after the last
+one the song starts again at its restart position. A pattern break
+(effect D) or a position jump (effect B) ends a pattern early and goes on
+at the next position.
+
+**What happened.** After a D or B in the last song position, the
+original's `PlayModule` compared the next position with a byte of the
+pattern data instead of the song length, and took the restart position
+from the byte after it. So it could miss the end of the song and play
+on into the unused positions behind it, with whatever patterns they
+name. A module with two song
+positions, patterns 0 and 1, a break `D00` in row 16 of pattern 1 and
+pattern 2 in the unused position 2 behind them, plays like this:
+
+| | Positions played |
+|---|---|
+| With the original | 0, 1 (to row 16), 2, and on behind the end |
+| With the port | 0, 1 (to row 16), 0, 1, … |
+
+**What to change.** Nothing for a module that is to loop as it does in
+the tracker: it now loops at its song length, as at the end of a pattern
+without a break. A module that relied on playing on behind its end needs
+a song length that covers all the positions it is to play.
+
+Issue: [After a pattern break or position jump the song end is compared with the wrong byte (#292)](https://github.com/fubar-coder/bb2-c/issues/292).
+
+### `Translate$` added a 0 byte to its result {#translate-length}
+
+`Translate$` turns a text into phonemes, the form `PhoneticSpeak` speaks.
+
+**What happened.** The original's result was one character too long: it
+ended in the 0 byte that ends the phonemes in memory, and text added
+after it came after that 0. This program prints the length and the last
+character of the result, and of the result with an `x` added:
+
+```
+t$=Translate$("hello")
+NPrint "len ",Len(t$)," last ",Asc(Right$(t$,1))
+u$=Translate$("hello")+"x"
+NPrint "len ",Len(u$)," 9th ",Asc(Mid$(u$,9,1))," 10th ",Asc(Mid$(u$,10,1))
+End
+```
+
+**With the original**
+
+```
+len 10 last 0
+len 11 9th 32 10th 0
+```
+
+**With the port**
+
+```
+len 9 last 32
+len 10 9th 32 10th 120
+```
+
+The phonemes are `/HEH4LOW ` with a blank at the end, and the `x`
+follows them.
+
+**What to change.** A program that removed the last character of the
+result itself, for example with `Left$(t$,Len(t$)-1)`, now removes a
+real one: drop that step.
+
+Issue: [Translate$ returns the length including the terminating 0 (#277)](https://github.com/fubar-coder/bb2-c/issues/277).
 
 ### A simulated event ended a running `Record` or `PlayBack` {#simulated-event-ends-tape}
 
@@ -664,7 +777,9 @@ Issue: [FileRequest$ followed by more text lost its last character (#161)](https
 
 The same fault was in `GetRexxCommand` and `GetResultString`
 ([#52](https://github.com/fubar-coder/bb2-c/issues/52)), and in several
-functions of the [RWE userlibs](#rwe-text-after-string-function). Two
+functions of the [RWE userlibs](#rwe-text-after-string-function).
+`Translate$` also counted the 0 byte as part of its result
+([`Translate$` added a 0 byte to its result](#translate-length)). Two
 more functions left the place of the next part wrong in other ways:
 
 * `Replace$` with an empty search string left it behind its arguments,
@@ -2195,8 +2310,9 @@ and the same colours.
 
 ### Sounds
 
-One more fix of them changes what an existing program does:
-[`Filter On` switched the audio filter off](#filter-on-off).
+Two more fixes of them change what an existing program does:
+[`Filter On` switched the audio filter off](#filter-on-off) and
+[`Translate$` added a 0 byte to its result](#translate-length).
 
 * `DecodeSound` uses sound data that lies in chip memory where it is, and
   marks the sound so that this memory is not freed. The mark stayed when
@@ -2204,11 +2320,6 @@ One more fix of them changes what an existing program does:
   other memory, `LoadSound` or `InitSound`, so that sample was never freed
   before the program ended; it is freed when the object is reused or
   freed ([#68](https://github.com/fubar-coder/bb2-c/issues/68)).
-* `GetMedVolume`, `GetMedNote` and `GetMedInstr` changed the pointer at
-  which a string expression builds its parts, so a line such as
-  `a$="V"+Str$(GetMedVolume(0))` gave a cut string or crashed the
-  program; they leave the pointer alone
-  ([#1061](https://github.com/fubar-coder/bb2-c/issues/1061)).
 * `DiskPlay` of a file whose sample length is a multiple of the
   `DiskBuffer` length, or 0, never returned and played its last buffer
   again and again; it returns after the sample, as for any other length
@@ -2226,6 +2337,91 @@ One more fix of them changes what an existing program does:
   error "Illegal Chanel Mask"; it tests only that the sound is set up
   ([#66](https://github.com/fubar-coder/bb2-c/issues/66);
   [The check of `SetPeriod`]({{< relref "/docs/compared-with-original/new-errors#setperiod-check" >}})).
+* `SetVoice` limited its values with a compare that overflowed, so a
+  large negative rate, pitch or sample frequency became the highest
+  value, for example a rate of -32768 the rate 400; such a value now
+  becomes the lowest one
+  ([#279](https://github.com/fubar-coder/bb2-c/issues/279)).
+* When translator.library or narrator.device could not be opened, the
+  end of the program still closed the device that was never opened and
+  freed signal 0, which belongs to the system; it closes and frees only
+  what was opened ([#278](https://github.com/fubar-coder/bb2-c/issues/278)).
+
+### Music players (MED and tracker modules) {#music-players}
+
+Two more fixes of them change what an existing program does:
+[`GetMedVolume` silenced the channel it read](#getmedvolume-clears) and
+[A pattern break in the last song position played on behind the end](#tracker-break-song-end).
+
+* `StartMedModule` of a module with MIDI dumps read the address of a
+  further module from a wrong place and could change foreign memory as
+  if it were one; it reads the right address
+  ([#207](https://github.com/fubar-coder/bb2-c/issues/207)).
+* `SetMedMask` with bits above 3 set let the notes of tracks 4 to 15
+  through to the player, which wrote them behind its data and to
+  addresses read from that data as audio registers; it keeps only the channels 0 to 3
+  ([#209](https://github.com/fubar-coder/bb2-c/issues/209)).
+* A channel switched off with `SetMedMask` did not skip its notes, so
+  every later channel played the notes of the channel before it; the
+  notes of a switched-off channel are skipped
+  ([#334](https://github.com/fubar-coder/bb2-c/issues/334)).
+* With a channel mask with gaps, such as `SetMedMask %0101`, the higher
+  channels did not get the repeat part of their samples; every playing
+  channel gets it ([#208](https://github.com/fubar-coder/bb2-c/issues/208)).
+* With runtime error checking, `JumpMed` without a playing module is the
+  error "No Module Playing"; the original wrote the position into an
+  exception vector of the processor
+  ([#210](https://github.com/fubar-coder/bb2-c/issues/210);
+  [`JumpMed` without a playing module]({{< relref "/docs/compared-with-original/new-errors#jumpmed-no-module" >}})).
+* A finetune outside -8 to 7, from the instrument or the command 15xx,
+  made the MED player read a period table from outside its table; 15xx
+  ignores such a value, and the instrument's is taken as 0
+  ([#211](https://github.com/fubar-coder/bb2-c/issues/211)).
+* The MED position jump Bxx could take a byte of another track of the
+  same line as part of the position, and jumped to position 0 or read
+  before the play sequence; it jumps to position xx
+  ([#203](https://github.com/fubar-coder/bb2-c/issues/203)).
+* The MED tremolo 7xy with a speed of 0 ran the vibrato code in the first
+  step of its line; it stays a tremolo
+  ([#204](https://github.com/fubar-coder/bb2-c/issues/204)).
+* The MED note delay and retrigger 1Fxy took the retrigger interval from
+  a value the delayed note had left, so the note could sound twice; it
+  uses its own y
+  ([#205](https://github.com/fubar-coder/bb2-c/issues/205)).
+* MED synth and hybrid sounds with a period below 113 went to the audio
+  hardware unlimited, because the limit was set in the wrong place; the
+  period is limited to 113
+  ([#206](https://github.com/fubar-coder/bb2-c/issues/206)).
+* `GetMedVolume`, `GetMedNote` and `GetMedInstr` changed the pointer at
+  which a string expression builds its parts, so a line such as
+  `a$="V"+Str$(GetMedVolume(0))` gave a cut string or crashed the
+  program; they leave the pointer alone
+  ([#1061](https://github.com/fubar-coder/bb2-c/issues/1061)).
+* `LoadModule` of a drawer or a missing file kept a block of memory, and
+  for a drawer a lock on it, after its runtime error, which mattered to
+  programs that catch the error with `SetErr`; both are freed before the
+  error ([#296](https://github.com/fubar-coder/bb2-c/issues/296)).
+* `PlayModule` never read the last song position, and a new highest
+  pattern number at position 126 made it search 64 KB further and clear
+  memory behind the module; it finds the highest pattern from all 128
+  positions ([#289](https://github.com/fubar-coder/bb2-c/issues/289)).
+* A module with sample numbers above 31 made the tracker player play
+  memory behind its table of samples; `PlayModule` clears such numbers in
+  the patterns once ([#295](https://github.com/fubar-coder/bb2-c/issues/295)).
+* The tracker player took the finetune of a sample as part of its volume,
+  so a volume slide on it jumped to full volume; the sample keeps its
+  real volume ([#290](https://github.com/fubar-coder/bb2-c/issues/290)).
+* A sample whose repeat starts at 64 KB or later looped from the wrong
+  place, because the offset wrapped at 64 KB; it loops from the right
+  one ([#291](https://github.com/fubar-coder/bb2-c/issues/291)).
+* The tracker effect C (set volume) set only the audio hardware, so a
+  following volume slide started from the sample's volume again; it also
+  sets the volume the player keeps for the channel
+  ([#293](https://github.com/fubar-coder/bb2-c/issues/293)).
+* The tracker effects C and F did not limit parameters of $80 and above,
+  so `F80` made the song play a new row in every frame and `C80` gave full
+  volume; they limit them as all others
+  ([#294](https://github.com/fubar-coder/bb2-c/issues/294)).
 
 ### Tasks and message ports
 

@@ -1197,6 +1197,86 @@ rows:
     text: "A program using transcendental float functions starts when `mathtrans.library` cannot be opened; the original hung at its start."
     page: libraries
     anchor: amigaos-other-fixes
+  - issue: 203
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "The MED position jump Bxx goes to position xx; the original could take a byte of another track as part of the position and jump to position 0 or read before the play sequence."
+    page: libraries
+    anchor: music-players
+  - issue: 204
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "The MED tremolo 7xy with speed 0 stays a tremolo; the original ran the vibrato code in the first step of the line."
+    page: libraries
+    anchor: music-players
+  - issue: 205
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "The MED retrigger 1Fxy uses its own interval y after the delayed note; the original took it from a value the note had left and could strike the note twice."
+    page: libraries
+    anchor: music-players
+  - issue: 206
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "MED synth and hybrid periods are limited to 113; the original set the limit in the wrong place and sent smaller periods to the audio hardware."
+    page: libraries
+    anchor: music-players
+  - issue: 207
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "StartMedModule"
+    text: "A MED module with MIDI dumps is relocated correctly; the original read the next module's address from a wrong place and could change foreign memory."
+    page: libraries
+    anchor: music-players
+  - issue: 208
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "SetMedMask, PlayMed"
+    text: "With a channel mask with gaps, every playing channel gets the repeat part of its sample; the original gave it only to the first channels."
+    page: libraries
+    anchor: music-players
+  - issue: 209
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "SetMedMask"
+    text: "`SetMedMask` keeps only the channels 0-3; the original let notes of tracks 4-15 through, which wrote behind the player's data."
+    page: libraries
+    anchor: music-players
+  - issue: 210
+    severity: 3
+    topic: "Sound"
+    library: "medlib"
+    command: "JumpMed"
+    text: "With runtime error checking, `JumpMed` without a playing module is \"No Module Playing\"; the original wrote into an exception vector."
+    page: libraries
+    anchor: music-players
+  - issue: 211
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "PlayMed"
+    text: "A MED finetune outside -8..7 is ignored (15xx) or taken as 0 (instrument); the original read a period table from outside its table."
+    page: libraries
+    anchor: music-players
+  - issue: 212
+    severity: 1
+    topic: "Sound"
+    library: "medlib"
+    command: "GetMedVolume"
+    text: "`GetMedVolume` only reads the volume; the original cleared it and silenced the channel, so a program that used the 0 to see a new note must use `GetMedNote`."
+    page: libraries
+    anchor: getmedvolume-clears
   - issue: 214
     severity: 3
     topic: "Strings"
@@ -1589,6 +1669,30 @@ rows:
     text: "`Sort` on a string array treats never-assigned elements as empty strings; the original read their length and characters from low memory and sorted them anywhere."
     page: libraries
     anchor: arrays-and-sorting
+  - issue: 277
+    severity: 1
+    topic: "Strings"
+    library: "speaklib"
+    command: "Translate$"
+    text: "`Translate$` returns the phonemes without a 0 byte at the end; the original's result was one character too long, so a program that cut off that character now loses a real one."
+    page: libraries
+    anchor: translate-length
+  - issue: 278
+    severity: 4
+    topic: "Sound"
+    library: "speaklib"
+    command: ""
+    text: "When translator.library or narrator.device cannot be opened, the program's end closes only what was opened; the original also closed the unopened device and freed the system's signal 0."
+    page: libraries
+    anchor: sounds
+  - issue: 279
+    severity: 4
+    topic: "Sound"
+    library: "speaklib"
+    command: "SetVoice"
+    text: "`SetVoice` with a large negative rate, pitch or sample frequency sets the lowest value; the original set the highest, for example rate 400 for -32768."
+    page: libraries
+    anchor: sounds
   - issue: 280
     severity: 4
     topic: "Graphics"
@@ -1661,6 +1765,70 @@ rows:
     text: "`Cvi`, `Cvl` and `Cvq` of a short string count missing bytes as 0 and with checking stop (\"Cvi needs a String\"); the original read bytes behind the string."
     page: libraries
     anchor: other-strings
+  - issue: 289
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "`PlayModule` finds the highest pattern from all 128 song positions; the original never read position 127 and could search 64 KB too far and clear memory behind the module."
+    page: libraries
+    anchor: music-players
+  - issue: 290
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "A tracker sample with a finetune keeps its real volume, so volume slides on it work; the original took the finetune as part of the volume."
+    page: libraries
+    anchor: music-players
+  - issue: 291
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "A tracker sample whose repeat starts at 64 KB or later loops from the right place; the original wrapped the offset at 64 KB."
+    page: libraries
+    anchor: music-players
+  - issue: 292
+    severity: 1
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "After a pattern break or position jump in the last song position, the song starts again at its restart position; the original played on into the unused positions behind the end."
+    page: libraries
+    anchor: tracker-break-song-end
+  - issue: 293
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "The tracker effect C also sets the channel's volume in the player, so a following volume slide starts from it; the original slid from the sample's volume."
+    page: libraries
+    anchor: music-players
+  - issue: 294
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "The tracker effects C and F also limit parameters of $80 and above; with the original, F80 played a new row in every frame."
+    page: libraries
+    anchor: music-players
+  - issue: 295
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "PlayModule"
+    text: "A tracker module with sample numbers above 31 no longer plays memory behind the sample table; `PlayModule` clears such numbers once."
+    page: libraries
+    anchor: music-players
+  - issue: 296
+    severity: 4
+    topic: "Sound"
+    library: "trackerlib"
+    command: "LoadModule"
+    text: "`LoadModule` of a drawer or a missing file frees its memory and the drawer's lock before the runtime error; the original kept both."
+    page: libraries
+    anchor: music-players
   - issue: 297
     severity: 4
     topic: "System"
@@ -1901,6 +2069,14 @@ rows:
     text: "With runtime error checking, `FadeIn` and `FadeOut` with a colour beyond the slice's colours report \"Not enough colours in Slice\"; the original reported \"Uninitialized Slice\"."
     page: libraries
     anchor: blitz-mode-displays
+  - issue: 334
+    severity: 4
+    topic: "Sound"
+    library: "medlib"
+    command: "SetMedMask, PlayMed"
+    text: "A MED channel switched off with `SetMedMask` skips its notes; in the original every later channel played the notes of the channel before it."
+    page: libraries
+    anchor: music-players
   - issue: 335
     severity: 4
     topic: "Compiler"
@@ -3388,7 +3564,7 @@ rows:
     command: "GetMedVolume, GetMedNote, GetMedInstr"
     text: "The three functions no longer cut or crash a string expression such as `a$=\"V\"+Str$(GetMedVolume(0))`; the original changed the pointer the string is built at."
     page: libraries
-    anchor: sounds
+    anchor: music-players
   - issue: 1063
     severity: 4
     topic: "Compiler"

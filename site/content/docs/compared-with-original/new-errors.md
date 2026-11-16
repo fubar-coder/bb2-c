@@ -1321,6 +1321,33 @@ changes.
 
 Issue: [SetPeriod: error check tests the period as a channel mask (#66)](https://github.com/fubar-coder/bb2-c/issues/66).
 
+### `JumpMed` without a playing module {#jumpmed-no-module}
+
+**What happened.** `JumpMed` makes the MED module that plays go on at
+another position of its song. Without a playing module, before the first
+`StartMedModule`, after `StopMed` or after the module stopped itself,
+the original wrote the position into low memory, into an exception
+vector of the processor:
+
+```
+NPrint "before"
+JumpMed 3
+NPrint "after"
+End
+```
+
+The original printed `before` and `after`, and the exception vector
+held the position from then on.
+
+**With the port.** With runtime error checking, the program prints
+`before` and stops with the error "No Module Playing". Without runtime
+error checking nothing changes.
+
+**What to change.** Call `JumpMed` only while a module plays, after
+`StartMedModule`.
+
+Issue: [JumpMed without a playing module writes to address 44-47 (#210)](https://github.com/fubar-coder/bb2-c/issues/210).
+
 ### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
 
 **What happened.** With runtime error checking, the first `PopInput` or
