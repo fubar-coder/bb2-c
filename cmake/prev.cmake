@@ -26,7 +26,9 @@
 # The entries are checked by the tools (tools/lib/previntended).
 #
 # Sets PREV_DIR: the directory of the prev build, whether it exists or not
-# (the tests that need it are skipped without it), and PREV_BLITZ2_DIR.
+# (the tests that need it are skipped without it), PREV_BLITZ2_DIR and
+# PREV_RESULTS_DIR (PREV_DIR if a prev build was requested, else a directory
+# that does not exist: a leftover PREV_DIR is ignored).
 
 set(BLITZ2_PREV "" CACHE STRING
 	"build of the previous commit: ON (HEAD~1), a revision, or the path of a build directory")
@@ -95,6 +97,13 @@ if(BLITZ2_PREV)
 	endif()
 endif()
 set(PREV_BLITZ2_DIR ${PREV_DIR}/blitz2)
+# what prev_results compares: the prev build only if one was requested, so a
+# leftover PREV_DIR from an earlier BLITZ2_PREV build is not compared
+if(PREV_REQUESTED)
+	set(PREV_RESULTS_DIR ${PREV_DIR})
+else()
+	set(PREV_RESULTS_DIR ${CMAKE_BINARY_DIR}/prev-not-requested)
+endif()
 
 set(PREV_INTENDED OFF CACHE STRING
 	"differences from the prev build that are intended: ON (all) or a ;-list of library paths, corpus:NAME, corpus_runerr:NAME, ted_ab:CASE[:PAIR] ...")

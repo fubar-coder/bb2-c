@@ -214,8 +214,19 @@ set_tests_properties(ndk_list_pending PROPERTIES
 # the library files; results prev also checks the others, which are the corpus's
 # and ted_ab's
 set(prev_results_args ${PREV_INTENDED_PREV_ARGS})
-add_test(NAME prev_results COMMAND ${RESULTS} prev ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_DIR})
+add_test(NAME prev_results COMMAND ${RESULTS} prev ${prev_results_args} ${CMAKE_BINARY_DIR} ${PREV_RESULTS_DIR})
 set_tests_properties(prev_results PROPERTIES SKIP_RETURN_CODE 77)
+# a leftover prev directory with BLITZ2_PREV unset is skipped (77), not
+# compared; the broken variant hands it to results prev and must fail
+foreach(b "" "_broken")
+	set(args -DRESULTS=${RESULTS} -DWORK=${CMAKE_BINARY_DIR}/prev-stale-test${b})
+	if(b)
+		list(APPEND args -DBROKEN=ON)
+	endif()
+	add_test(NAME prev_stale${b} COMMAND ${CMAKE_COMMAND} ${args}
+		-P ${PROJECT_SOURCE_DIR}/cmake/prev-stale-test.cmake)
+endforeach()
+set_tests_properties(prev_stale_broken PROPERTIES WILL_FAIL ON)
 
 # the reference builds of blitz2.s and ted.s and the oracle program are not
 # ALL (only the comparisons with the originals use them): the tests of the

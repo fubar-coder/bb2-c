@@ -990,7 +990,9 @@ another snitch downloads its own; the build says so
 from the checkout.
 
 What is compared (without a prev build `prev_results` is skipped, not
-passed, and the corpus and `ted_ab` run without their prev parts):
+passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
+`build/<preset>/prev/` from an earlier prev build is ignored, tests
+`prev_stale` and `prev_stale_broken`, `cmake/prev-stale-test.cmake`; and the corpus and `ted_ab` run without their prev parts):
 
 * `prev_results` (host test, `results prev`,
   [`tools/results`](../tools/results/README.md)): `blitz2/acidlibs`,
