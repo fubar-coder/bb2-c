@@ -22,6 +22,10 @@
  * The file stays open (ILBMInfo closes it).
  *
  * BUG(orig), kept:
+ *  - ilbmbitmap (LoadBitMap, LoadScreen): "Can't Read File" of the byte
+ *    reader (getme: the file ends inside the BODY) is raised without
+ *    iffclose: the file stays open, also after the program's end (bug-orig
+ *    test ilbmifflib-loadbitmap-shortbody-fileopen; issue to be filed).
  *  - Not a bug: ilbmbitmap reads width-in-words*2 bytes per row and
  *    plane and stores only what fits into BytesPerRow/Depth/Rows.
  *  - Not a bug: DecodeILBM (memory): the end test is `end <= pointer`
@@ -234,7 +238,9 @@ BLITZ_THUNK_POST(ilbminit, ilbminit_c, "d1/a1", "move.l _ilbm_a0,a0\n   tst.l d0
 
 /* ----------------------------------------------------------- ilbmgetbyte */
 
-/* iffbyte, runtime error "Can't Read File" at the end of the data */
+/* iffbyte, runtime error "Can't Read File" at the end of the data.
+   BUG(orig): without iffclose, the file of ilbmbitmap stays open (the
+   callers of ilbmgetbyte, LoadShape, own their file) */
 static ULONG getme(ULONG byte, struct iffstuff *st)
 {
     if (!IFFJSR(TOK_iffbyte, &byte, st))
