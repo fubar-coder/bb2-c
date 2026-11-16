@@ -39,6 +39,9 @@
  * note, an arpeggio or a hybrid would read period table entries outside
  * the tables with such notes); its cases are the audio registers after
  * every pulse.
+ *
+ * A fourth module, the MMD0 of the blocks with an FFE (stop) in its third
+ * line: the player state after every pulse until it has stopped.
  */
 #include "sysload.h"
 
@@ -573,6 +576,46 @@ static void lowtrans_song(void)
     *(volatile UBYTE *)0xbfe001 = (*(volatile UBYTE *)0xbfe001 & ~2) | pra;
 }
 
+/* the fourth module: the MMD0 of the blocks with an FFE (stop) in line 2
+   of block 0, track 1; the player state after every pulse */
+static void stop_song(void)
+{
+    UBYTE pra = *(volatile UBYTE *)0xbfe001 & 2;        /* see lowtrans_song */
+    UBYTE *mem;
+    ULONG o;
+    int k;
+
+    what = "FFE StartMedModule";
+    markregs(&R);
+    callregs(entry_code(getlib(&loaded, "memlib"), 7), &R, 0, 0);
+    CALL1(E_INIT, (void)0);
+    lowtrans = 0;
+    build(0);
+    o = L(mod + L(mod + 16)) + 2 + (2 * 4 + 1) * 3;
+    p8(o + 1, (mod[o + 1] & 0xf0) | 0x0f);
+    p8(o + 2, 0xfe);
+    mem = module = AllocMem(modlen + 256, MEMF_CHIP | MEMF_CLEAR);
+    memcpy(module, mod, modlen);
+    obj[0] = L(mod);
+    obj[1] = modlen;
+    obj[2] = (ULONG)module;
+    CALL1(E_START, R.a[3] = (ULONG)obj);
+    state();
+    what = "FFE";
+    for (k = 0, ticks = 0; k < 12; k++) {
+        ticks++;
+        CALL1(E_PLAY, (void)0);
+        state();
+    }
+    check("medlib FFE: the song stops", !W(module + 40));
+    what = "FFE finit";
+    CALL1(E_FINIT, (void)0);
+    markregs(&R);
+    callregs(entry_code(getlib(&loaded, "memlib"), 8), &R, 0, 0);
+    FreeMem(mem, modlen + 256);
+    *(volatile UBYTE *)0xbfe001 = (*(volatile UBYTE *)0xbfe001 & ~2) | pra;
+}
+
 static const char *names[] = { "memlib", "medlib", NULL };
 
 int main(int argc, char **argv)
@@ -676,6 +719,7 @@ int main(int argc, char **argv)
     FreeMem(mmd0, len0 + 256);
     FreeMem(copy, modlen + 256);
     lowtrans_song();
+    stop_song();
     printf("%d checks, %d failures\n", checks, failures);
     kept_summary();
     return failures ? 5 : 0;
