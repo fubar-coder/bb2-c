@@ -408,7 +408,14 @@ quick:
         goto numdofloat;
     if (numfloat == 0)
         goto qint;
-    /* .quick2: val = int part (from makeint).  (a6 = maths assumed, as
+    /* BUG(orig) (#1070): a decimal literal is read as an FFP value
+       (fetchpoint2: 24 bits of mantissa), so a Quick literal close to
+       32768 is rounded to 32768.0 first: its integer part 32768 fails
+       the range check below, the literal stays the Float 32768.0, and
+       the conversion to the Quick of the assignment wraps it to -32768
+       ("q=32767.9999" gives -32768, not 32767.9999; test
+       compiler-quick-literal-wrap).
+       .quick2: val = int part (from makeint).  (a6 = maths assumed, as
        the asm) */
     t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
     frac = ffpcall(SPSub, numval, t, NULL);             /* d0=fraction! */

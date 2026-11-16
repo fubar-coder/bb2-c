@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+32767.9999: int 32767 positive -1
+32767.99998: int 32767 positive -1
+rc=0
