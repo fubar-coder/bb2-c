@@ -356,6 +356,9 @@ int main(int argc, char **argv)
     struct lib *l;
     UBYTE *play, *stop, *finit;
     int npatch;
+    /* the filter bit the player changes: restored at the end for the
+       programs after this one (rwe_richunkylib reads it) */
+    UBYTE pra = *(volatile UBYTE *)0xbfe001 & 2;
 
     if (argc < 2) {
         printf("usage: systest_tracker DIR\n");
@@ -420,6 +423,7 @@ int main(int argc, char **argv)
     OBS("ClrInt calls", tr_clrints);
     OBSBYTES("module", mod, modsz + GUARD);
 
+    *(volatile UBYTE *)0xbfe001 = (*(volatile UBYTE *)0xbfe001 & ~2) | pra;
     FreeMem(mod, MODMAX + GUARD);
     FreeMem(fake, FAKESZ);
     printf("%d checks, %d failures\n", checks, failures);
