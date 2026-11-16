@@ -44,8 +44,8 @@
  * (#474)).  Covered besides playing: TrackDMA, Tracker Off (mt_end) /
  * On (stays stopped in the original, Fixed (#572)), TrackInit while
  * Tracker Off (no mt_init in the original, Fixed (#573)),
- * TrackerChannels (the voices shift, BUG(orig), #568; effects and loops
- * reach the masked voices in the original, Fixed (#567)), TrackerPause, TrackStop, init, finit with and without
+ * TrackerChannels (in the original the voices shift, Fixed (#568), and
+ * effects and loops reach the masked voices, Fixed (#567)), TrackerPause, TrackStop, init, finit with and without
  * TrackInit.  Not covered: sample numbers above 31, finetune bytes above
  * 15 (both read outside the library's tables, different memory in the
  * two builds), and the dead CIA/SetInt code.

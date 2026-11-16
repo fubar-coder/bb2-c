@@ -114,11 +114,7 @@ original.
 
 ## BUG(orig), kept
 
-RI's glue:
-
-* `TrackerChannels`: a masked voice does not advance the pattern
-  offset, so the following voices play the notes of the voice before
-  (#568).
+None: the original bugs found in the port are fixed (below).
 
 Not a defect: `_ciaplayerinit` returns at once (an `RTS` before its
 code), so no interrupt plays the module; the program plays it with
@@ -153,6 +149,16 @@ kind F), in RI's code:
   become audible again with its last sample's loop (#567; library test
   `rwe_ritrackerlib`, the redirected registers with the masks $0B and
   $06).
+* `TrackerChannels`: a masked voice plays its notes silently (its
+  `n_dmabit` is 0, so it switches no DMA; its registers go to the block
+  nobody reads), so the other voices play their own notes and the
+  masked voice's speed, jump and break effects still apply. The
+  original skipped `mt_PlayVoice` for it, whose `ADDQ.L #4,D1` steps to
+  the next voice's note: the voices after a masked one played the notes
+  of the voice before, the notes of the last voice(s) were not played
+  (#568; library test `rwe_ritrackerlib`, the voices' state with the
+  masks $0B and $06). The mask test per voice is gone from
+  `mt_GetNewNote` (cheaper per row).
 * `TrackInit` while `Tracker Off` initialises the song (pattern count,
   sample starts, speed, position); only the filter and `mt_end`, which
   write to the hardware, are left out while off. The original's

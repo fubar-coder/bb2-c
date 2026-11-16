@@ -39,10 +39,7 @@
  * routine to the next (the pattern offset d1, ...) are parameters and
  * locals.  No assembler besides the thunks (and DIVU through bl_divu_w).
  *
- * BUG(orig) of RI's code:
- *   - TrackerChannels: a masked voice does not advance the pattern
- *     offset, so the following voices play the notes of the voice
- *     before (#568).
+ * No BUG(orig) is kept (the original bugs are fixed, below).
  * Not a defect: _ciaplayerinit is dead (RTS first), so no interrupt
  * plays the module - SetInt (intlib $C100) and the CIA-B timer setup
  * behind it never run; the code is kept (ciaplayerinit_unreached) and
@@ -65,6 +62,13 @@
  *     the effects of the ticks between the rows (mt_CheckEfx: period,
  *     volume) and mt_SetDMA's loop pointer and length to Paula, so the
  *     voice could play its last sample's loop again (#567).
+ *   - TrackerChannels: a masked voice plays its notes silently (its
+ *     n_dmabit is 0, its registers go to the block nobody reads), so
+ *     the other voices play their own notes and the masked voice's
+ *     effects (speed, jumps, breaks) still apply; the original skipped
+ *     mt_PlayVoice for it, whose ADDQ.L #4,D1 steps to the next voice's
+ *     note: the voices after a masked one played the notes of the voice
+ *     before, the last voice's notes not at all (#568).
  *   - TrackInit while Tracker Off initialises the song (mt_init without
  *     its filter and mt_end, which touch the hardware); the original's
  *     mt_init returned at once, and Tracker On then played the old song
@@ -1238,10 +1242,12 @@ static void mt_music_c(void)
         patpos = (ULONG)order[pt.songpos] << 10;
         patpos = (patpos & 0xffff0000UL) | (UWORD)((UWORD)patpos + pt.patternpos);
         pt.dmacontemp = 0;
-        /* BUG(orig): a masked voice does not advance d1 (#568) */
+        /* Fixed (#568): a masked voice also reads its note (into the
+           block nobody reads, its n_dmabit 0); the original skipped
+           mt_PlayVoice, whose ADDQ.L #4,D1 steps to the next voice's
+           note, and the voices after it played the note before */
         for (i = 0; i < 4; i++)
-            if (pt.mask & (8 >> i))
-                mt_playvoice(voicehw[i], &pt.chan[i], &patpos, sampleinfo);
+            mt_playvoice(voicehw[i], &pt.chan[i], &patpos, sampleinfo);
         /* mt_SetDMA */
         dmawait();
         CUSTOM.dmacon = pt.dmacontemp | 0x8000;
@@ -1406,8 +1412,10 @@ static void cut(aud_t *hw)
  * nobody reads, so no effect and no loop pointer reaches it (Fixed
  * (#567): the original left the DMA on and still wrote the effects of
  * the ticks between the rows and mt_SetDMA's loop pointers to Paula).
- * A masked voice does not advance the pattern offset, so the following
- * voices play the notes of the voice before (BUG(orig) (#568)).
+ * A masked voice still plays its notes, silently: its n_dmabit is 0, so
+ * it switches no DMA, and its effects (speed, jumps, breaks) apply
+ * (Fixed (#568): the original skipped its notes, and the following
+ * voices played the notes of the voice before).
  * @param mask  d0.b: the voice bits
  */
 static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
@@ -1419,10 +1427,12 @@ static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
     for (i = 0; i < 4; i++) {
         if (mask & (8 >> i)) {
             voicehw[i] = &CUSTOM.aud[i];
+            pt.chan[i].dmabit = (UWORD)(1 << i);
             continue;
         }
         cut(&CUSTOM.aud[i]);
         voicehw[i] = &muted;
+        pt.chan[i].dmabit = 0;          /* Fixed (#568): its notes switch no DMA */
         off |= (UWORD)(1 << i);
     }
     if (off)
