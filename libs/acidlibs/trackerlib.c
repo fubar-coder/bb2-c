@@ -45,8 +45,9 @@
  *   - a sample number above 31 reads the start from behind the table
  *     (the voice data; the C library has them in the same order, beyond
  *     that the original reads its own code). (#295)
- *   - LoadModule of a missing file / a directory: runtime error without
- *     FreeMem of the FileInfoBlock (a directory also stays locked). (#296)
+ * Fixed (intended deviation, #296): LoadModule of a missing file or a
+ * drawer frees the FileInfoBlock and releases the lock before the runtime
+ * error; the original kept both (a missing file: Examine with lock 0).
  * Fixed (intended deviation, #957): "Error Accessing Module File" (err1)
  * traps in the normal code, but the original has its message in the error
  * check area (without the debugger d0 points behind the library); here
@@ -593,8 +594,9 @@ static void freemod2(struct module *m, int blitz);
  * debugger, its message in the normal code: fixed, #957) for a missing
  * file or a directory, or when the file cannot be opened.
  *
- * BUG(orig) (#296): on that error the FileInfoBlock is not freed (a
- * directory also stays locked).
+ * Fixed (#296): on that error the FileInfoBlock is freed and the lock
+ * released (the original kept both; a missing file was Examined with
+ * lock 0).
  *
  * @param name    d1: the file name; a3: the module object
  * @param DOSBase a6: dos.library
@@ -611,7 +613,12 @@ void BLITZ_ROUTINE doloadmod(const UBYTE *name BL_REG(d1), struct DosLibrary *DO
     r.d1 = MEMF_PUBLIC;
     fib = (struct FileInfoBlock *)BLITZ_ALIBJSR(TOK_globalloc, r);
     lock = Lock((STRPTR)name, -2);
-    if (!Examine(lock, fib) || fib->fib_DirEntryType > 0) {
+    if (!lock || !Examine(lock, fib) || fib->fib_DirEntryType > 0) {
+        if (lock)                               /* Fixed (#296) */
+            UnLock(lock);
+        r.a1 = (ULONG)fib;
+        r.d0 = 260;
+        BLITZ_ALIBJSR(TOK_globfree, r);
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
