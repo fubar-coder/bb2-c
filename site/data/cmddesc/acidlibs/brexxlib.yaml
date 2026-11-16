@@ -7,27 +7,25 @@
 "QuickPlay":
   text: With `On`, tapes are played back without the pauses between the events; with `Off`, the start value, with them, which is needed when a program on the tape must wait, for example for the disk.
 "PlayWait":
-  text: Meant to wait until a playback has finished.
+  text: Waits until the running playback has finished; it returns at once if no playback runs.
   notes: |
-    Kept from the original: while a tape is playing it starts the tape
-    again before it waits, and otherwise it returns at once
-    ([#99](https://github.com/fubar-coder/bb2-c/issues/99)). Waiting until
-    `XStatus` is 0 does the same reliably.
+    With `Tape#`, it plays `Tape#` in place of a running playback and
+    waits until that has finished; it also returns at once if the tape is
+    empty. The form without `Tape#` is the port's: the original refused
+    it with "Syntax Error". A source that must also compile with the
+    original waits with `Repeat : VWait : Until XStatus=0`.
 "XStatus":
   text: What the library is doing, 0 nothing, 1 recording and 2 playing back.
-  notes: |
-    Kept from the original: while an event is waiting to be sent, $8000
-    is added to the value
-    ([#103](https://github.com/fubar-coder/bb2-c/issues/103)); test it with
-    `And 255`.
 "SaveTape":
   text: Saves a tape into a file, for `LoadTape`.
 "LoadTape":
   text: Loads a tape saved with `SaveTape`.
   notes: |
-    A file that cannot be opened is the error "Can't Open File". Kept from
-    the original: a damaged file is not noticed
-    ([#101](https://github.com/fubar-coder/bb2-c/issues/101)).
+    A file that cannot be opened is the error "Can't Open File". A file
+    shorter than the 8 bytes of the start time gives an empty tape. A tape
+    file has no mark of its kind, so any other file of 8 bytes or more
+    loads as a tape; an incomplete event at its end ends the load without
+    an error.
 "MacroKey":
   text: Makes the key with the raw key code `Rawkey`, pressed with the qualifier keys `Qualifier`, play back the tape.
 "FreeMacroKey":
@@ -40,17 +38,9 @@
   text: Presses (`On`) or releases (`Off`) a mouse button, 0 the left and 1 the right one.
 "ClickButton":
   text: Presses and releases a mouse button, 0 the left and 1 the right one, as two `MouseButton` commands do; for example to select a gadget.
-  notes: |
-    Kept from the original: under `TapeTrap` with `QuietTrap On`,
-    `ClickButton 0` records the release of the right button
-    ([#97](https://github.com/fubar-coder/bb2-c/issues/97)).
 "Type":
-  text: Types the characters of `String$`, as if they came from the keyboard; they normally go to the active window.
+  text: Types the characters of `String$`, as if they came from the keyboard; they normally go to the active window. A character that has no key is skipped.
 "TapeTrap":
-  text: Makes the following `AbsMouse`, `RelMouse`, `MouseButton`, `ClickButton` and `Type` commands go onto the tape; without a tape, it is meant to end that.
-  notes: |
-    Kept from the original: the form without a tape does not end the
-    trapping but adds the events to a wrong place in memory
-    ([#95](https://github.com/fubar-coder/bb2-c/issues/95)).
+  text: Makes the following `AbsMouse`, `RelMouse`, `MouseButton`, `ClickButton` and `Type` commands go onto the tape; without a tape, it ends that.
 "QuietTrap":
   text: With `On`, the start value, the commands caught by `TapeTrap` only go onto the tape; with `Off`, they also take effect.

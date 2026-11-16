@@ -21,8 +21,7 @@ intro: |
   Repeat : VWait : Until XStatus=0
   ```
 
-  Kept from the original: adding an event to a tape stops a recording or
-  a playback that is running
-  ([#96](https://github.com/fubar-coder/bb2-c/issues/96)).
+  The commands that make events can also be used while a tape records or
+  plays back; the recording or playback goes on.
 
   *Based on the brexxlib guide by Acid Software.*

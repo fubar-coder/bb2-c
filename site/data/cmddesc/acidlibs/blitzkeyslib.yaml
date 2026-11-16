@@ -1,9 +1,8 @@
 "BlitzKeys":
-  text: With `On`, `Inkey$` reads the keyboard in Blitz mode. Blitz mode only.
+  text: With `On`, `Inkey$` reads the keyboard in Blitz mode; with `Off`, the input goes back to what it was before `On`. Blitz mode only.
   notes: |
-    Kept from the original: `BlitzKeys Off` does not give the input back
-    to what it was before
-    ([#408](https://github.com/fubar-coder/bb2-c/issues/408)).
+    If the program chose another input after `On`, for example with
+    `FileInput`, `Off` keeps that input.
 "RawStatus":
   text: True (-1) if the key with the raw key code given is held down, else false (0).
 "BlitzKey":
