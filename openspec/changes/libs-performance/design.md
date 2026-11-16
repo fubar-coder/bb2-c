@@ -943,6 +943,35 @@ build.
       (the characters around "a".."z"), matches at the start, middle and
       end, cut off by the end, empty strings, Startpos 1 to behind the
       string.
+28. **A light call form for system libraries and memlib (group 12,
+    2026-11-16).** `BLITZ_BASEJSR` declares every register but a3-a5/a7
+    changed, so each C function with such a call saved d2-d7/a2/a6. The
+    family `BLITZ_SYSJSR` (d0/d1/a0/a1 in and out through `struct
+    bl_regs`), `BLITZ_SYSJSR1` (d0 in) and `BLITZ_SYSJSR2` (d0/d1 in),
+    result d0, declares only d0/d1/a0/a1 changed, with a6 an input and
+    `cc` and `memory` clobbered. Its contract (`blitzlib.h`): a library
+    by the AmigaOS convention, or memlib's membase table by the `KEEPS`
+    cases of `libs/tests/systest.c` (localloc/globalloc change d0/d1,
+    locfree/globfree d0/a1; recorded from the original, so a memlib
+    rework that breaks them fails `libs_emulator`). `BLITZ_BASEJSR`
+    stays for open contracts (fontlib's previous input handler; the RWE
+    userlibs are unchanged); `BLITZ_BASEJSR1/2` had no compiled use left
+    and are gone. No d0/a1 form: locfree takes the general form, which
+    costs `moveq #0,d1`/`move.l d1,a0` (8 cycles) on the rare free path.
+    vallib's `FFPJSR1/2` are `BLITZ_SYSJSR1/2`; the `memory` clobber
+    costs nothing there (vallib.obj byte-identical, `bstr.val` 1670.2).
+    strings2lib's `stringass_new` (reached twice per call of a procedure
+    with a string parameter and a local string) saves d2/d3/a6 instead of
+    eight registers and keeps no stack frame (326 -> about 120 cycles of
+    frame code by the count of `analyse-sysjsr.md`): `bstr.pstr`
+    11989.6 -> 11560.6 (11614.0), `bstr.fstr` 12688.1 -> 12252.6
+    (12353.5), two runs, both now faster than the original. The system
+    calls of fontlib, intuifontlib, environlib, arexxlib (ErrorMsg, with
+    the general form for its a0), speaklib and `BL_FREESIGNAL` (seriallib,
+    utillib, brexxlib) save a6 instead of eight registers, -124 cycles
+    per function, none in a benchmark. sortlib `FFP_CC_`, runerrlib
+    `spfix` (a flag from the CCR in the same asm) and gtlib `addglist`
+    (a2 argument) keep their private forms.
 
 ## Risks / Trade-offs
 
