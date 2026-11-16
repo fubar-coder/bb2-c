@@ -1795,7 +1795,10 @@ BL_ALWAYS_INLINE void hold(void)
 BL_ALWAYS_INLINE void ticks(UBYTE counter)
 {
     struct track **tdp = db.trackdataptrs;
-    UWORD ntracks = db.numtracks;
+    /* ChanMask read once: in the loop GCC read it again for every track
+       (the calls of synth and playfxnote may change memory); nothing a
+       tick runs changes it */
+    UWORD ntracks = db.numtracks, chanmask = ChanMask;
     UBYTE ch = 0;
 
     do {
@@ -1805,7 +1808,7 @@ BL_ALWAYS_INLINE void ticks(UBYTE counter)
         BYTE v;
 
         blitz_globals = (UBYTE *)*tdp++;
-        if (!(ChanMask & (1 << (ch & 7))))
+        if (!(chanmask & (1 << (ch & 7))))
             continue;
         cmd = PT->cmd;
         q = PT->cmdqual;
