@@ -1173,7 +1173,7 @@ build.
       stays as it is. The library cases of `systest_blit` (QBlit, QBlit
       excess, UnQueue in both modes) give the same values.
 
-31. **The list commands and Sound (tasks 13.20 to 13.22, 2026-11-16).**
+32. **The list commands and Sound (tasks 13.20 to 13.22, 2026-11-16).**
     C, no assembler, by the analysis `analyse-g13-sound-lists.md`
     (cycles counted from the disassemblies, then measured in
     `tests/perf`, two runs; the original in brackets).
