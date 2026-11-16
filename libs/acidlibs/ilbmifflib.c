@@ -58,6 +58,10 @@
  * in what was left in iffiolib's buffer, with a0 from dos.library as
  * iffstuff (C: iffstuff as after the last ilbminit).
  *
+ * Fixed (intended deviation, #1053): ilbmbitmap closes the file before
+ * "Can't Find IFF 'BODY'"; the original left it open (iffiolib has no
+ * finit: open until reboot).
+ *
  * Fixed (intended deviation, #188): ilbmbitmap stores a plane while its
  * number is below the byte Depth (BitMap+5); the original compared with
  * the WORD at BitMap+4 (Flags<<8 | Depth), so into a bitmap whose Flags
@@ -289,7 +293,8 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
  * Errors: "Can't Open File", "Can't Find IFF 'BMHD'" (fixed, #187: the
  * original ignored a failed ilbminit and searched "BODY" in what was left
  * in iffiolib's buffer), "Can't Find IFF 'BODY'" (the messages in the
- * normal code, fixed: #192); "Can't Read File" from ilbmgetbyte.
+ * normal code, fixed: #192; the file closed first, fixed: #1053, the
+ * original left it open); "Can't Read File" from ilbmgetbyte.
  * Fixed (#188): the depth test is on the byte Depth (the original: the
  * word over Flags and Depth).
  *
@@ -314,8 +319,12 @@ static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name 
         BLITZ_RUNERR(mess4);
     }
     value = ID_BODY;
-    if (!IFFJSR(TOK_ifffind, &value, st))
+    if (!IFFJSR(TOK_ifffind, &value, st)) {
+        ULONG zero = 0;
+
+        IFFJSR(TOK_iffclose, &zero, st);                /* Fixed (#1053) */
         BLITZ_RUNERR(mess3);
+    }
     for (;;) {
         PLANEPTR *planes = bm->Planes;
         UWORD plane = 0;                                /* bitplanes */
