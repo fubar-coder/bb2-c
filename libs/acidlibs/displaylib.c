@@ -67,11 +67,13 @@
  *   moves.  Here the channels must fit into the bank of the first one
  *   ("Not Enough Sprite Channels" otherwise, as without CustomSprites).
  *
- * Kept from the original (BUG(orig)):
- *   - DisplaySprite of a sprite above or below the display on a channel
- *     of the CustomSprites bank: spriteoff writes the blank sprite into
- *     the normal sprite moves at channel x 16, behind them (over the
- *     BPLCON moves); the custom channel keeps the sprite.
+ * Fixed (intended deviation, #1051): DisplaySprite of a sprite above or
+ *   below the display on a channel of the CustomSprites bank wrote the
+ *   blank sprite (spriteoff) into the normal sprite moves at channel x 16,
+ *   behind them (over the BPLCON moves), and the custom channel kept the
+ *   sprite.  Here spriteoff chooses the bank as a visible sprite does.
+ *
+ * Kept from the original:
  *   - Not a bug (only with out-of-range arguments that do not occur):
  *     word arithmetic, DBF counters (a 0/negative count runs 65536 times,
  *     e.g. cpline 4 per line), ADDA.w of colour offsets (palette entries
@@ -1248,10 +1250,12 @@ BLITZ_ALIAS(_displaydbmap2, _displaydbmap2_c);
    sprites 12, numsprites 54, csprites 92, spri 126, resshift 74, height
    50, spif 84, ypos 48, sspwid 88; of d: mysprite 22, agamac 26 */
 /* spriteoff (label 20) - the blank sprite into the channels of a sprite above or
-   below the display.  BUG(orig) (#1051): always in the normal sprite moves at
-   chan x 16: a channel of the CustomSprites bank writes behind them, over
-   the BPLCON moves, and the custom channel keeps the sprite (bug-orig
-   test displaylib-spriteoff-custom-bank) */
+   below the display.  Fixed (#1051): it chooses the bank as the visible
+   path does (label 14); the original always wrote into the normal sprite
+   moves at chan x 16, so a channel of the CustomSprites bank wrote behind
+   them, over the BPLCON moves, and the custom channel kept the sprite
+   (bug-orig test displaylib-spriteoff-custom-bank).  A visible sprite
+   does not run this code */
 static_assert(offsetof(__typeof__(d), mysprite) == 22);
 static_assert(offsetof(__typeof__(d), agamac) == 26);
 BLITZ_ASM_ROUTINE(_displaysprite,
@@ -1371,8 +1375,12 @@ BLITZ_ASM_ROUTINE(_displaysprite,
 "   rts\n"
 "20:move.w  6(a1),d2\n"                 /* spriteoff, see above */
 "   subq.w  #1,d2\n"
-"   lsl.w   #4,d3\n"
-"   move.l  12(a3),a0\n"
+"   move.l  12(a3),a0\n"                /* sprites */
+"   cmp.w   54(a3),d3\n"                /* fixed (#1051): the bank as */
+"   bcs.s   23f\n"                      /* for a visible sprite */
+"   sub.w   54(a3),d3\n"
+"   move.l  92(a3),a0\n"                /* the CustomSprites bank */
+"23:lsl.w   #4,d3\n"
 "   add.w   d3,a0\n"
 "21:clr.w   2(a0)\n"
 "   clr.w   6(a0)\n"

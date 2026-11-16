@@ -13,6 +13,7 @@
 ; channel 1 (+92).
 ; Correct: the moves behind the normal bank are not changed; custom
 ; channel 1 gets POS/CTL 0 (the blank sprite).
+; @fixed #1051
 ; @configs clib
 DEFTYPE .l
 Dim sd.l(63) : For i=0 To 63 : sd(i)=i*$01010101 : Next
