@@ -1131,6 +1131,31 @@ build.
       bytes (the second copy of the Excessonoff code). The library cases
       of `systest_blit` (Blit, Blit excess, Block, BlitColl in both
       modes) give the same values.
+    - ClipBlit (2dlib, task 13.11): an assembler block (`BLITZ_ASM_BLOCK`
+      with `BLITZ_AB_ROUTINE`, as 2dlib's other blocks), from the
+      analysis's draft: the original's `b_docblit` and `b_docblitx` with
+      short branches, `TST.b 2(a1)` as the first read of DMACONR, `ADDQ`
+      for `ADD #2`, the shift as `MOVEQ #15:AND:ROR #4`, 2 * (x ASR 4) kept
+      in a0 from the right-edge test and added once (the original shifts x
+      again and adds twice), and the next plane's B pointer and
+      destination computed before the wait. Every value written to the
+      blitter is the original's, and the original's leftover `MOVEM.l
+      d6-d7,$060(a1)` stays (the caller's d6/d7 in BLTCMOD/BLTBMOD and
+      BLTAMOD/BLTDMOD, overwritten before the blit; no new deviation). The
+      Amiga mode code is the original's again (`MOVEM.l d1/a1` around
+      OwnBlitter, the Blitz mode code, the wait, `JMP` DisownBlitter), and
+      `bcon0` is read PC-relative from the variable ClipBlitMode writes.
+      The C (decision 20) stayed 2.4 % behind; two C attempts of the
+      analysis stayed behind too (GCC kept the dummy read in a stack slot,
+      d6/d7 being the caller's junk, and spilled y). ClipBlit 0,100,100
+      2577.3 -> 2378.3 (2516.9), ClipBlit clipped at the four edges (four
+      calls) 8979.9 -> 8042.8 (8643.9), ClipBlit of a 1-plane shape with
+      Excessonoff 2513.4 -> 2232.3 (2310.4); 2dlib 13308 -> 11608 bytes
+      (the four inlined C copies of the clip code are one block).
+      `systest_blit` gets a 1-plane shape (Blit, Blit excess, ClipBlit
+      clipped at each edge and outside, ClipBlit excess), recorded from
+      the original and confirmed with `libs_emulator_originals`; the
+      block gives every case in both modes.
 
 ## Risks / Trade-offs
 

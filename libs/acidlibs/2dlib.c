@@ -22,7 +22,8 @@
  * Line, Box, Boxf, Poly, Circle, Ellipse, Circlef, Ellipsef and the line
  * loop of Polyf are the original's code in assembler (OpenSpec change
  * libs-performance, task 10.2: the C stayed 1.2 to 2.1 times slower),
- * with the fixes of the C (#391, #392); the rest is C.
+ * with the fixes of the C (#391, #392), and so is ClipBlit (task 13.11:
+ * the C stayed 2.4 % behind); the rest is C.
  *
  * Blitz bitmap object: 0 bytes per row, 2 rows, 4 depth, 8 planes[8],
  * 48/50 origin x/y, 52 flags, 54 bytes per row of the window, 56/58
@@ -295,7 +296,7 @@ UWORD fcol;                             /* FloodFill: colour */
 UWORD widbytes;
 UBYTE flags[2];
 static UWORD bigsize[2] __attribute__((used)); /* Circlef: BLTSIZV, BLTSIZH */
-static UWORD bcon0 = 0xfca;             /* ClipBlitMode */
+static UWORD bcon0 __attribute__((used)) = 0xfca; /* ClipBlitMode (also the ClipBlit block) */
 
 static const UWORD lup1[16] __attribute__((used)) = {
     0xffff, 0x7fff, 0x3fff, 0x1fff, 0x0fff, 0x07ff, 0x03ff, 0x01ff,
@@ -2272,147 +2273,188 @@ static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWOR
 
 /* ------------------------------------------------------------- ClipBlit */
 
-/* Speed: the clip and blit code is inline (BL_ALWAYS_INLINE), and the
-   Blitz mode code of ClipBlit saves no register (BLITZ_ENTRYPOINT, a6
-   kept by BLITZ_EP_KEEP_A6; the register rule keeps a3-a7). */
-
 static void BLITZ_ROUTINE _doclipblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
 BLITZ_ALIAS(_doclipblitmode, _doclipblitmode_c);
 
-/* what b_docblit leaves for the excess planes (b_docblitx) */
-struct cblit {
-    ULONG mask;                 /* A: the cookie */
-    ULONG dest;                 /* the offset in the planes */
-    UBYTE **plane;              /* the next plane */
-    UWORD shift;                /* BLTCON1 (and the shift of BLTCON0) */
-    UWORD size;
-};
+/* b_docblit: the shape a3 at d1, d2 (minus its handle) through its cookie
+   onto the planes of the bitmap a2 (a1 = the chip base; cookie cut,
+   BLTCON0 = shift | ClipBlitMode), clipped at all edges.  The original's
+   code (bblibsrc/2dlib b_docblit) with short branches, TST.b as the first
+   read of DMACONR, the word offset 2 * (x ASR 4) kept in a0 (the original
+   shifts x again and adds twice) and the next plane's B pointer and
+   destination computed while the blitter runs; every value written to
+   the blitter is the original's.  The original's leftover MOVEM.l
+   d6-d7,$060(a1) stays: the caller's d6/d7 go to BLTCMOD/BLTBMOD and
+   BLTAMOD/BLTDMOD, and are overwritten before the blit.  Changes d0-d7
+   and a0 (the original's set); leaves for b_docblitx d0 = the cookie
+   pointer, d2 = the plane offset, d4 = the shift, d6 = BLTSIZE, a0 = the
+   next plane and d7 = 0 if nothing was blitted.
+   b_docblitx: and the bitmap planes beyond the shape's depth through the
+   cookie, minterm $FA where bit n of d3 is set, else $0A. */
+BLITZ_ASM_BLOCK(clipblit,
+"   .globl  _b_docblit, _b_docblitx\n"
+"cb_flop:\n"
+"   moveq   #0,d7\n"
+"   rts\n"
+"_b_docblit:\n"
+"   sub.w   10(a3),d1\n"
+"   sub.w   12(a3),d2\n"
+"   cmp.w   56(a2),d1\n"
+"   bpl.s   cb_flop\n"
+"   cmp.w   58(a2),d2\n"
+"   bpl.s   cb_flop\n"
+"   tst.b   2(a1)\n"
+"0: btst    #6,2(a1)\n"
+"   bne.s   0b\n"
+"   movem.l d6-d7,0x60(a1)\n"           /* the original's leftover write */
+"   move.w  8(a3),d6\n"
+"   moveq   #0,d3\n"
+"   move.w  d2,d4\n"
+"   bpl.s   1f\n"
+"   neg.w   d2\n"                      /* clip top */
+"   cmp.w   2(a3),d2\n"
+"   bpl.s   cb_flop\n"
+"   move.w  d2,d3\n"
+"   mulu.w  6(a3),d3\n"
+"   asl.w   #6,d2\n"
+"   sub.w   d2,d6\n"
+"   bcs.s   cb_flop\n"
+"   clr.w   d2\n"
+"1: add.w   2(a3),d4\n"                /* bolo */
+"   bmi.s   cb_flop\n"
+"   sub.w   58(a2),d4\n"
+"   bmi.s   2f\n"
+"   asl.w   #6,d4\n"                   /* clip bottom */
+"   sub.w   d4,d6\n"
+"   bcs.s   cb_flop\n"
+"2: move.l  #0xffff0000,0x44(a1)\n"    /* abuv */
+"   moveq   #-2,d5\n"
+"   move.w  (a2),d7\n"
+"   sub.w   6(a3),d7\n"
+"   add.w   d5,d7\n"
+"   tst.w   d1\n"
+"   bpl.s   5f\n"
+"   neg.w   d1\n"                      /* clip left */
+"   cmp.w   (a3),d1\n"
+"   bpl.s   cb_flop\n"
+"   neg.w   d1\n"
+"3: add.w   #16,d1\n"                  /* g1 */
+"   bpl.s   4f\n"
+"   addq.w  #2,d5\n"
+"   addq.w  #2,d7\n"
+"   subq.w  #1,d6\n"
+"   addq.w  #2,d3\n"
+"   bra.s   3b\n"
+"4: moveq   #-1,d0\n"                  /* g2 */
+"   asl.w   d1,d0\n"
+"   not.w   d0\n"
+"   move.w  d0,0x44(a1)\n"
+"   sub.w   #16,d1\n"
+"5: move.w  d1,d0\n"                   /* nolo */
+"   asr.w   #4,d0\n"
+"   add.w   d0,d0\n"
+"   move.w  d0,a0\n"                   /* 2 * (x ASR 4), sign extended */
+"   add.w   6(a3),d0\n"
+"   addq.w  #2,d0\n"
+"   move.w  56(a2),d4\n"
+"   lsr.w   #3,d4\n"
+"   sub.w   d4,d0\n"
+"   ble.s   6f\n"
+"   add.w   d0,d5\n"                   /* clip right */
+"   add.w   d0,d7\n"
+"   lsr.w   #1,d0\n"
+"   sub.w   d0,d6\n"
+"   moveq   #15,d4\n"
+"   and.w   d1,d4\n"
+"   moveq   #-1,d0\n"
+"   asl.w   d4,d0\n"
+"   move.w  d0,0x46(a1)\n"
+"6: move.w  d5,0x62(a1)\n"             /* noro */
+"   move.w  d5,0x64(a1)\n"
+"   move.w  d7,0x60(a1)\n"
+"   move.w  d7,0x66(a1)\n"
+"   moveq   #15,d4\n"
+"   and.w   d1,d4\n"
+"   ror.w   #4,d4\n"
+"   move.w  d4,0x42(a1)\n"
+"   move.w  d4,d0\n"
+"   or.w    _bcon0(pc),d0\n"
+"   move.w  d0,0x40(a1)\n"
+"   move.l  d3,d0\n"
+"   add.l   18(a3),d0\n"
+"   add.l   14(a3),d3\n"
+"   muls.w  (a2),d2\n"
+"   add.l   a0,d2\n"
+"   lea     8(a2),a0\n"
+"   move.w  2(a3),d5\n"
+"   mulu.w  6(a3),d5\n"
+"   move.w  4(a3),d7\n"
+"   beq.s   9f\n"
+"   subq.w  #1,d7\n"
+"   move.l  (a0)+,d1\n"
+"   add.l   d2,d1\n"
+"   bra.s   8f\n"
+"7: add.l   d5,d3\n"                   /* the next plane, while the blitter runs */
+"   move.l  (a0)+,d1\n"
+"   add.l   d2,d1\n"
+"   tst.b   2(a1)\n"
+"0: btst    #6,2(a1)\n"
+"   bne.s   0b\n"
+"8: move.l  d0,0x50(a1)\n"
+"   move.l  d3,0x4c(a1)\n"
+"   move.l  d1,0x48(a1)\n"
+"   move.l  d1,0x54(a1)\n"
+"   move.w  d6,0x58(a1)\n"
+"   dbf     d7,7b\n"
+"   rts\n"
+"9: moveq   #0,d7\n"
+"   rts\n"
+"_b_docblitx:\n"
+"   move.w  d3,-(sp)\n"
+"   bsr     _b_docblit\n"
+"   move.w  (sp)+,d3\n"
+"   tst.w   d7\n"
+"   beq.s   3f\n"
+"   move.w  4(a3),d7\n"
+"1: cmp.w   4(a2),d7\n"
+"   bcc.s   3f\n"
+"   move.w  #0xb0a,d5\n"
+"   lsr.w   #1,d3\n"
+"   bcc.s   2f\n"
+"   move.w  #0xbfa,d5\n"
+"2: or.w    d4,d5\n"
+"   move.l  (a0)+,d1\n"
+"   add.l   d2,d1\n"
+"   tst.b   2(a1)\n"
+"0: btst    #6,2(a1)\n"
+"   bne.s   0b\n"
+"   move.w  d5,0x40(a1)\n"
+"   move.l  d0,0x50(a1)\n"
+"   move.l  d1,0x48(a1)\n"
+"   move.l  d1,0x54(a1)\n"
+"   move.w  d6,0x58(a1)\n"
+"   addq.w  #1,d7\n"
+"   bra.s   1b\n"
+"3: rts");
 
-/* b_docblit: the shape at x, y (minus its handle) through its cookie
-   onto the planes of bm (cookie cut, BLTCON0 = shift | ClipBlitMode),
-   clipped at all edges.  r6/r7: the caller's d6/d7 (MOVEM.l d6-d7,$60
-   (a1), overwritten before the blit).  Returns 0 if nothing was blitted. */
-BL_ALWAYS_INLINE int docblit(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm,
-                             WORD x, WORD y, ULONG r6, ULONG r7, struct cblit *cb)
-{
-    ULONG src = 0, planesize, p;
-    WORD bottom, amod, dmod, over, rowbytes;
-    UWORD size, k;
-
-    x -= sh->handlex;
-    y -= sh->handley;
-    if (!BMI_W(x, bm->width) || !BMI_W(y, bm->height))
-        return 0;
-    BLITWAIT(chip);
-    CL(chip, BLTCMOD) = r6;
-    CL(chip, BLTAMOD) = r7;
-    size = sh->bltsize;
-    bottom = y;
-    if (y < 0) {                                /* clip top */
-        y = -y;
-        if (!BMI_W(y, sh->height))
-            return 0;
-        src = bl_mulu_w(y, sh->ebwidth);
-        y <<= 6;
-        if (size < (UWORD)y)                    /* SUB.w d2,d6:BCS */
-            return 0;
-        size -= y;
-        y = 0;
-    }
-    bottom += sh->height;                       /* bolo */
-    if (bottom < 0)
-        return 0;
-    bottom -= bm->height;
-    if (bottom >= 0) {                          /* clip bottom */
-        bottom <<= 6;
-        if (size < (UWORD)bottom)
-            return 0;
-        size -= bottom;
-    }
-    CL(chip, BLTAFWM) = 0xffff0000;             /* abuv */
-    amod = -2;
-    dmod = bm->bpr - sh->ebwidth - 2;
-    if (x < 0) {                                /* clip left: whole words */
-        if (!BMI_W(-x, sh->width))
-            return 0;
-        for (;;) {                              /* g1 */
-            x += 16;
-            if (x >= 0)
-                break;
-            amod += 2;
-            dmod += 2;
-            size -= 1;
-            BL_SETW(src, src + 2);
-        }
-        CW(chip, BLTAFWM) = ~(UWORD)((x & 63) >= 16 ? 0 : 0xffff << (x & 63));      /* g2 */
-        x -= 16;
-    }
-    over = (WORD)(((WORD)x >> 4) * 2 + sh->ebwidth + 2);    /* nolo */
-    rowbytes = bm->width >> 3;
-    if (!(over <= rowbytes)) {                  /* clip right */
-        over -= rowbytes;
-        amod += over;
-        dmod += over;
-        size -= (UWORD)over >> 1;
-        CW(chip, BLTALWM) = (UWORD)(0xffff << (x & 15));
-    }
-    CW(chip, BLTBMOD) = amod;                   /* noro */
-    CW(chip, BLTAMOD) = amod;
-    CW(chip, BLTCMOD) = dmod;
-    CW(chip, BLTDMOD) = dmod;
-    cb->shift = (UWORD)((x & 15) << 12);        /* ROR #4 */
-    CW(chip, BLTCON1) = cb->shift;
-    CW(chip, BLTCON0) = cb->shift | bcon0;
-    cb->mask = src + (ULONG)sh->cookie;
-    src += (ULONG)sh->data;
-    cb->dest = (ULONG)bl_muls_w(y, bm->bpr) + 2 * (LONG)((WORD)x >> 4);
-    cb->plane = bm->planes;
-    cb->size = size;
-    planesize = bl_mulu_w(sh->height, sh->ebwidth);
-    k = sh->depth;
-    if (!k)
-        return 0;
-    k--;
-    for (;;) {                                  /* doblit */
-        CL(chip, BLTAPT) = cb->mask;
-        CL(chip, BLTBPT) = src;
-        src += planesize;
-        p = (ULONG)*cb->plane++ + cb->dest;
-        CL(chip, BLTCPT) = p;
-        CL(chip, BLTDPT) = p;
-        CW(chip, BLTSIZE) = size;
-        if (k-- == 0)
-            return 1;
-        BLITWAIT(chip);
-    }
-}
-
-/* b_docblitx: and the planes of bm beyond the shape's depth through the
-   cookie: bit set in excess = set, else cleared */
-BL_ALWAYS_INLINE void docblitx(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm,
-                               WORD x, WORD y, UWORD excess, ULONG r6, ULONG r7)
-{
-    struct cblit cb;
-    UWORD i;
-
-    if (!docblit(chip, sh, bm, x, y, r6, r7, &cb))
-        return;
-    for (i = sh->depth; i < bm->flagsdepth; i++) {
-        UWORD con = (excess & 1) ? 0xbfa : 0xb0a;
-        ULONG p = (ULONG)*cb.plane++ + cb.dest;
-
-        excess >>= 1;
-        BLITWAIT(chip);
-        CW(chip, BLTCON0) = con | cb.shift;
-        CL(chip, BLTAPT) = cb.mask;
-        CL(chip, BLTCPT) = p;
-        CL(chip, BLTDPT) = p;
-        CW(chip, BLTSIZE) = cb.size;
-    }
-}
+/* the Amiga mode code of ClipBlit (the original's): the Blitz mode code
+   between graphics OwnBlitter and DisownBlitter, the blitter finished;
+   d1/a1 kept around OwnBlitter */
+#define AMIGACLIP(code)                                                     \
+    "   movem.l d1/a1,-(sp)\n"                                              \
+    "   jsr     -456(a6)\n"                 /* OwnBlitter */                \
+    "   movem.l (sp)+,d1/a1\n"                                              \
+    "   bsr     _" #code "\n"                                               \
+    "   btst    #6,2(a1)\n"                                                 \
+    "0: btst    #6,2(a1)\n"                                                 \
+    "   bne.s   0b\n"                                                       \
+    "   jmp     -462(a6)"                   /* DisownBlitter */
+void b_docblit(void), b_docblitx(void);
+BLITZ_AB_ROUTINE(_doclipblit, b_docblit, AMIGACLIP(b_docblit));
+BLITZ_AB_ROUTINE(_doclipblitx, b_docblitx, AMIGACLIP(b_docblitx));
 
 /* -------------------------------------------- entries (Blitz / Amiga) */
 
@@ -2468,54 +2510,7 @@ ABENTRY(_remap2, remap2);
 ABENTRY(_polyf, polyf);
 ABENTRY(_polyf2, polyf2);
 
-/* ClipBlit: a3 = shape, a2 = bitmap, a1 = chip, d1/d2 = x/y, d3 = planes */
-#define CBREGS WORD x BL_REG(d1), WORD y BL_REG(d2), UWORD excess BL_REG(d3), \
-               ULONG r6 BL_REG(d6), ULONG r7 BL_REG(d7), UBYTE *chip BL_REG(a1), \
-               struct bb_bitmap *bm BL_REG(a2)
 #define SHAPE ((struct bb_shape *)blitz_string)
-
-static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_docblit_c(CBREGS)
-{
-    BLITZ_EP_KEEP_A6();
-    struct cblit cb;
-
-    (void)excess;
-    docblit(chip, SHAPE, bm, x, y, r6, r7, &cb);
-    BLITZ_EP_KEEP_A6_END();
-}
-
-static void BLITZ_ROUTINE a_docblit_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
-{
-    struct cblit cb;
-
-    (void)excess;
-    OwnBlitter();
-    docblit(chip, SHAPE, bm, x, y, r6, r7, &cb);
-    BLITWAIT(chip);
-    DisownBlitter();
-}
-
-static BLITZ_ENTRYPOINT void BLITZ_ROUTINE b_docblitx_c(CBREGS)
-{
-    BLITZ_EP_KEEP_A6();
-
-    docblitx(chip, SHAPE, bm, x, y, excess, r6, r7);
-    BLITZ_EP_KEEP_A6_END();
-}
-
-static void BLITZ_ROUTINE a_docblitx_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
-{
-    OwnBlitter();
-    docblitx(chip, SHAPE, bm, x, y, excess, r6, r7);
-    BLITWAIT(chip);
-    DisownBlitter();
-}
-
-void b_docblit(void), b_docblitx(void);
-BLITZ_ALIAS_EP(b_docblit, b_docblit_c);
-BLITZ_AB_ROUTINE(_doclipblit, b_docblit, "   jmp     _a_docblit_c");
-BLITZ_ALIAS_EP(b_docblitx, b_docblitx_c);
-BLITZ_AB_ROUTINE(_doclipblitx, b_docblitx, "   jmp     _a_docblitx_c");
 
 /* _cbchk - TST.w (a3):BEQ err2 (shape not initialised); in the normal
    code (the library has no error area) */
