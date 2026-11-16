@@ -73,7 +73,6 @@
  *     -1 behind the table into the voice data, when no entry fits (#481,
  *     #474); a finetune byte above 15 from the sample header reads far
  *     behind (#476).
- *   - Tremolo's ramp-down waveform tests the vibrato position (#482).
  *   - 9xx: compared signed with the length (samples of 64 KB and more
  *     get length 1) (#472); with a note it is applied twice
  *     (mt_CheckMoreEfx before and after mt_SetPeriod) (#473); loop
@@ -84,6 +83,9 @@
  *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
  *     parameter; the original started it as 0, and the first 1xx/2xx
  *     before any E1x/E2x did not slide (#478).
+ *   - The tremolo's ramp-down waveform takes its half from the sign of
+ *     the tremolo position; the original tested the vibrato position
+ *     (#482).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -721,7 +723,7 @@ static void mt_tremolo(aud_t *hw, struct chan *c)
         break;
     case 1:                             /* ramp down */
         pos = (UBYTE)(pos << 3);
-        if ((BYTE)c->vibratopos < 0)    /* BUG(orig): the vibrato position (#482) */
+        if ((BYTE)c->tremolopos < 0)    /* Fixed (#482): was the vibrato position */
             delta = (UBYTE)(255 - pos);
         else
             delta = pos;

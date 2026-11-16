@@ -50,8 +50,7 @@
  *   - Play routine (Protracker 2.3A): the sample
  *     offset (9xx with a note) is applied twice to n_start/n_length
  *     (mt_SetRegs calls mt_CheckMoreEfx before mt_SetPeriod, which runs it
- *     again) (#473); tremolo's ramp-down tests the VIBRATO position
- *     (#482); mt_SetPeriod without a matching period (#481), the arpeggio
+ *     again) (#473); mt_SetPeriod without a matching period (#481), the arpeggio
  *     (#474) and a sample number > 31 (#480) read behind the tables
  *     (mt_chan1temp, mt_SongDataPtr ...); the repeat offset is
  *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
@@ -71,6 +70,9 @@
  *   - mt_LowMask starts as $FF, so the first 1xx/2xx slides by its whole
  *     parameter; the original started it as 0, and the first 1xx/2xx
  *     before any E1x/E2x did not slide (#478).
+ *   - The tremolo's ramp-down waveform takes its half from the sign of
+ *     the tremolo position; the original tested the VIBRATO position
+ *     (#482).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -940,8 +942,8 @@ static void toneportamento(struct chan *ch, aud_t *aud)
 }
 
 /* the wave value of position `pos` (vibrato and tremolo): sine, ramp
-   down (tested on `rpos`), square */
-static UBYTE wave(UBYTE pos, UBYTE form, UBYTE rpos)
+   down (its half from the sign of `pos`), square */
+static UBYTE wave(UBYTE pos, UBYTE form)
 {
     UBYTE val = (pos >> 2) & 0x1f;
 
@@ -950,7 +952,7 @@ static UBYTE wave(UBYTE pos, UBYTE form, UBYTE rpos)
     val <<= 3;
     if (form != 1)
         return 255;
-    if ((BYTE)rpos < 0)
+    if ((BYTE)pos < 0)
         return (UBYTE)(255 - val);
     return val;
 }
@@ -958,7 +960,7 @@ static UBYTE wave(UBYTE pos, UBYTE form, UBYTE rpos)
 /* mt_Vibrato2 */
 static void vibrato2(struct chan *ch, aud_t *aud)
 {
-    UWORD delta = wave(ch->vibratopos, ch->wavecontrol & 3, ch->vibratopos);
+    UWORD delta = wave(ch->vibratopos, ch->wavecontrol & 3);
     UWORD per = ch->period;
 
     delta = (UWORD)(bl_mulu_w(delta, ch->vibratocmd & 15) >> 7);
@@ -1001,7 +1003,8 @@ static void vibratoplusvolslide(struct chan *ch, aud_t *aud)
     volumeslide(ch, aud);
 }
 
-/* mt_Tremolo: BUG(orig) the ramp down tests n_vibratopos (#482) */
+/* mt_Tremolo: the ramp down tests n_tremolopos (Fixed (#482): the original
+   tested n_vibratopos) */
 static void tremolo(struct chan *ch, aud_t *aud)
 {
     UWORD delta;
@@ -1009,7 +1012,7 @@ static void tremolo(struct chan *ch, aud_t *aud)
 
     if (ch->n.f.cmdlo)
         ch->tremolocmd = newcmd(ch->tremolocmd, ch->n.f.cmdlo);
-    delta = wave(ch->tremolopos, (ch->wavecontrol >> 4) & 3, ch->vibratopos);
+    delta = wave(ch->tremolopos, (ch->wavecontrol >> 4) & 3);
     delta = (UWORD)(bl_mulu_w(delta, ch->tremolocmd & 15) >> 6);
     vol = ch->volume;
     if ((BYTE)ch->tremolopos < 0)

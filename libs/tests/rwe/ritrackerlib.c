@@ -35,7 +35,7 @@
  * BUG(orig) #569; F00 on voice 1 stops, and voices 2-4 then read their notes
  * from the custom chip registers, BUG(orig) #475).  Rows by hand: the first
  * 1xx (mt_LowMask 0 in the original, Fixed (#478)), volume above 64, tremolo's ramp-down
- * with a negative vibrato position (BUG(orig), #482), 9xx with a note
+ * with a negative vibrato position (Fixed (#482)), 9xx with a note
  * (twice, BUG(orig), #473), invert loop, retrig.  Covered besides playing: TrackDMA, Tracker Off
  * (mt_end) / On (stays stopped, BUG(orig), #572), TrackInit while Tracker Off
  * (no mt_init, BUG(orig), #573), TrackerChannels (the voices shift,

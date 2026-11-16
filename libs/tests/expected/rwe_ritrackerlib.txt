@@ -203,7 +203,8 @@ TrackPlay|popped|main tick 6|1	$00000000
 TrackPlay|state|main tick 6|1	bytes 1538 fnv 536F0665
 TrackPlay|glue|main tick 6|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|main tick 6|1	bytes 8858 fnv ED8704A5
-TrackPlay|custom|main tick 6|1	bytes 512 fnv 10039FF3
+TrackPlay|custom|main tick 6|1 [orig]	bytes 512 fnv 10039FF3
+TrackPlay|custom|main tick 6|1 [fixed #482]	bytes 512 fnv 4C37E272
 TrackPlay|CIA-A PRA filter|main tick 6|1	$00000002
 TrackPlay|CIA-B timer A|main tick 6|1	$00005AA5
 TrackPlay|kept|main tick 7|1	kept
@@ -211,7 +212,8 @@ TrackPlay|popped|main tick 7|1	$00000000
 TrackPlay|state|main tick 7|1	bytes 1538 fnv DE5FE75C
 TrackPlay|glue|main tick 7|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|main tick 7|1	bytes 8858 fnv ED8704A5
-TrackPlay|custom|main tick 7|1	bytes 512 fnv C102B992
+TrackPlay|custom|main tick 7|1 [orig]	bytes 512 fnv C102B992
+TrackPlay|custom|main tick 7|1 [fixed #482]	bytes 512 fnv 3F38EDD3
 TrackPlay|CIA-A PRA filter|main tick 7|1	$00000002
 TrackPlay|CIA-B timer A|main tick 7|1	$00005AA5
 TrackPlay|kept|main tick 8|1	kept
@@ -227,7 +229,8 @@ TrackPlay|popped|main tick 9|1	$00000000
 TrackPlay|state|main tick 9|1	bytes 1538 fnv 90E965E7
 TrackPlay|glue|main tick 9|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|main tick 9|1	bytes 8858 fnv ED8704A5
-TrackPlay|custom|main tick 9|1	bytes 512 fnv A83DF1DE
+TrackPlay|custom|main tick 9|1 [orig]	bytes 512 fnv A83DF1DE
+TrackPlay|custom|main tick 9|1 [fixed #482]	bytes 512 fnv F4919F5F
 TrackPlay|CIA-A PRA filter|main tick 9|1	$00000002
 TrackPlay|CIA-B timer A|main tick 9|1	$00005AA5
 TrackPlay|kept|main tick 10|1	kept
@@ -235,7 +238,8 @@ TrackPlay|popped|main tick 10|1	$00000000
 TrackPlay|state|main tick 10|1	bytes 1538 fnv 0FD8310D
 TrackPlay|glue|main tick 10|1	bytes 28 00000000000000000000000000000000000000000000007D40000000
 TrackPlay|module|main tick 10|1	bytes 8858 fnv ED8704A5
-TrackPlay|custom|main tick 10|1	bytes 512 fnv 122E3336
+TrackPlay|custom|main tick 10|1 [orig]	bytes 512 fnv 122E3336
+TrackPlay|custom|main tick 10|1 [fixed #482]	bytes 512 fnv F7F29D6F
 TrackPlay|CIA-A PRA filter|main tick 10|1	$00000002
 TrackPlay|CIA-B timer A|main tick 10|1	$00005AA5
 TrackPlay|kept|main tick 11|1	kept

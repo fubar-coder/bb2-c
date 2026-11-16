@@ -157,7 +157,6 @@ pt23f changelog served as the checklist, no code was taken from it):
   entries; for finetune −1 into the first voice block) (#481, #474); a
   finetune byte above 15 in a sample header reads far behind the table
   (#476).
-* Tremolo's ramp-down waveform tests the vibrato position (#482).
 * 9xx: the offset is compared signed with the length (samples of 64 KB
   and more get length 1) (#472); with a note it is applied twice
   (`mt_CheckMoreEfx` before and after `mt_SetPeriod`) (#473). The loop
@@ -175,6 +174,10 @@ kind F), in the play routine:
   parameter; the original started it as 0, and the first 1xx/2xx before
   any E1x/E2x did not slide (#478; library test `rwe_ritrackerlib`, the
   ticks of the row with the first 1xx).
+* The tremolo's ramp-down waveform (E71) takes its half from the sign of
+  the tremolo position; the original tested the vibrato position (#482;
+  library test `rwe_ritrackerlib`, the rows with a negative vibrato
+  position and a tremolo with the ramp-down waveform).
 
 ## Test
 
