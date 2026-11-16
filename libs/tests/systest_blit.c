@@ -9,16 +9,17 @@
  *   systest_blit DIR
  *
  * The objects (a bitmap of 64 x 24 pixels and 3 planes, a second one as
- * the source of UnQueue, three shapes, a queue, a buffer and a stencil)
- * are made here in chip memory; every case starts from the same bitmap
- * contents and writes the planes after the call (the blitter finished),
- * so a case holds the pixels the command drew, never an address.  The
- * edge cases: every shift (x & 15), x and y with junk in their upper
- * words, the handle, a shape with fewer planes than the bitmap (the
- * excess planes, Excessonoff), the modes, a collision and none, the
- * clipping of ClipBlit at each edge and outside.  Each command runs in
- * Blitz mode (the test owns the blitter around the call) and in Amiga
- * mode (the routine owns it, a6 = graphics.library).  The command
+ * the source of UnQueue, four shapes (one of 1 plane), a queue, a buffer
+ * and a stencil) are made here in chip memory; every case starts from the
+ * same bitmap contents and writes the planes after the call (the blitter
+ * finished), so a case holds the pixels the command drew, never an
+ * address.  The edge cases: every shift (x & 15), x and y with junk in
+ * their upper words, the handle, a shape with fewer planes than the
+ * bitmap (the excess planes, Excessonoff), the modes, a collision and
+ * none, the clipping of ClipBlit at each edge and outside (also of the
+ * 1-plane shape).  Each command runs in Blitz mode (the test owns the
+ * blitter around the call) and in Amiga mode (the routine owns it, a6 =
+ * graphics.library).  The command
  * entries are found by their names (cmd_named).
  */
 #include "sysload.h"
@@ -135,7 +136,7 @@ struct bitmap {
 static struct bitmap bm, src;
 
 /* a struct bb_shape (32 bytes) with its data and cookie in chip memory */
-static UBYTE shape[3][32];
+static UBYTE shape[4][32];
 static UBYTE *chipmem;
 static ULONG chipused;
 
@@ -243,7 +244,7 @@ static void test_blitlib(void)
         UBYTE *bc = a ? amigacode(coll) : blitzcode(coll);
 
         ROUT = a ? "Blit (Amiga mode)" : "Blit";
-        for (s = 0; s < 3; s++)
+        for (s = 0; s < 4; s++)
             for (i = 0; i < sizeof xs / sizeof xs[0]; i++)
                 for (j = 0; j < sizeof ys / sizeof ys[0]; j++) {
                     VECF("shape %u at %d,%d", s, xs[i], ys[j]);
@@ -265,10 +266,10 @@ static void test_blitlib(void)
                  R.a[2] = (ULONG)bm.obj; R.a[3] = (ULONG)shape[0]);
             PLANES();
         }
-        /* Excessonoff: shape 0 has 2 planes, the bitmap 3 */
+        /* Excessonoff: shape 0 has 2 planes, shape 3 1, the bitmap 3 */
         ROUT = a ? "Blit excess (Amiga mode)" : "Blit excess";
         for (k = 0; k < 4; k++)
-            for (i = 0; i < 3; i++) {
+            for (i = 0; i < 4; i++) {
                 VECF("bits %u shape %u at %d,4", k, i, xs[i + 2]);
                 fill(&bm, 3);
                 CALL(blx, a, R.d[1] = JX(xs[i + 2]); R.d[2] = JY(4); R.d[3] = 0xfff00000UL | k;
@@ -459,7 +460,7 @@ static void test_clipblit(void)
         UBYTE *cx1 = a ? amigacode(cbx) : blitzcode(cbx);
 
         ROUT = a ? "ClipBlit (Amiga mode)" : "ClipBlit";
-        for (s = 0; s < 3; s++)
+        for (s = 0; s < 4; s++)
             for (i = 0; i < sizeof cx / sizeof cx[0]; i++)
                 for (j = 0; j < sizeof cy / sizeof cy[0]; j++) {
                     VECF("shape %u at %d,%d", s, cx[i], cy[j]);
@@ -468,15 +469,18 @@ static void test_clipblit(void)
                          R.a[2] = (ULONG)bm.obj; R.a[3] = (ULONG)shape[s]);
                     PLANES();
                 }
+        /* shape 0: one excess plane, shape 3: two */
         ROUT = a ? "ClipBlit excess (Amiga mode)" : "ClipBlit excess";
-        for (k = 0; k < 2; k++)
-            for (i = 0; i < sizeof cx / sizeof cx[0]; i += 3) {
-                VECF("bits %u shape 0 at %d,%d", k, cx[i], cy[k + 1]);
-                fill(&bm, 11);
-                CALL(cx1, a, R.d[1] = JX(cx[i]); R.d[2] = JY(cy[k + 1]); R.d[3] = 0xfff00000UL | k;
-                     R.a[1] = CHIP; R.a[2] = (ULONG)bm.obj; R.a[3] = (ULONG)shape[0]);
-                PLANES();
-            }
+        for (s = 0; s < 4; s += 3)
+            for (k = 0; k < (s ? 4u : 2u); k++)
+                for (i = 0; i < sizeof cx / sizeof cx[0]; i += 3) {
+                    VECF("bits %u shape %u at %d,%d", k, s, cx[i], cy[k + 1]);
+                    fill(&bm, 11);
+                    CALL(cx1, a, R.d[1] = JX(cx[i]); R.d[2] = JY(cy[k + 1]);
+                         R.d[3] = 0xfff00000UL | k; R.a[1] = CHIP; R.a[2] = (ULONG)bm.obj;
+                         R.a[3] = (ULONG)shape[s]);
+                    PLANES();
+                }
     }
 }
 
@@ -528,6 +532,7 @@ int main(int argc, char **argv)
     stencil.bpr = BPR;
     stencil.rows = ROWS;
     stencil.mem = smem;
+    mkshape(3, 24, 7, 1, 0, 0);                 /* behind the others: their addresses stay */
     check("the chip memory suffices", chipused <= 8192);
 
     test_blitlib();

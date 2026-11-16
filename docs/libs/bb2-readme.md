@@ -145,7 +145,7 @@ the test logic itself is C:
 | `[runtime]` | `systest_runtime.c` | arrayslib, maxslib, errtraplib, rundebuglib | 113 |
 | `[system]` | `systest_system.c` | wbstartuplib, intlib, switchlib, runerrlib, debuglib | 178 |
 | `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below); the exceptions of the register rule; the small assembler entries of vallib, scrolllib, gameiolib, mouselib, collslib, shapeslib, fontlib, windowslib and blitzkeyslib | 3 187 |
-| `[blit]` | `systest_blit.c` | blitlib, qblitlib, bblitlib, stencillib, 2dlib ClipBlit (the blitter commands in Blitz and Amiga mode on bitmaps and shapes in chip memory: shifts, handles, excess planes, modes, collisions, clipping) | 2 670 |
+| `[blit]` | `systest_blit.c` | blitlib, qblitlib, bblitlib, stencillib, 2dlib ClipBlit (the blitter commands in Blitz and Amiga mode on bitmaps and shapes in chip memory: shifts, handles, excess planes, modes, collisions, clipping) | 3 432 |
 | `[gfx]` | `systest_gfx.c` | 2dlib (Line, Box, Boxf, Circle, Ellipse, Circlef, Ellipsef, Poly, Polyf in Blitz and Amiga mode: clipping, origin, colours), palettelib (PalRGB, AGAPalRGB, FadePalette, ShowPalette, Use Palette, RGB, Red, Green, Blue), blitzcoplib (Show, ShowF, ShowB), spriteslib (ShowSprite), displaylib (DisplayBitMap, DisplaySprite, DisplayPalette), scrolllib (Scroll) | 4 692 |
 | `[tracker]` | `systest_tracker.c` | trackerlib (PlayModule, the player's interrupt routine once per frame on a generated module with every effect, StopModule, finit; Paula's registers redirected to RAM) | 21 532 |
 
