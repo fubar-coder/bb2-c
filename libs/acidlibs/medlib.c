@@ -44,9 +44,6 @@
  *     note was played (playfxnote/_PlayNote change d1; only the delay
  *     tick is affected). (#205)
  *   - the synth period clamp sets d1 instead of d5 (no clamp at 113). (#206)
- *   - after a MIDI dump in the expansion data the relocation reads the
- *     next module pointer from (expansion address AND $FFFF0000): relocmdd
- *     overwrites the low word of d0. (#207)
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
  *     higher channels of the mask get no follow-up values. (#208)
@@ -58,6 +55,10 @@
  *   - finetune values outside -8..7 read pointers outside _periodtable. (#211)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
  *     next note. (#212)
+ * Fixed (#207): after a MIDI dump in the expansion data the relocation read
+ * the next module pointer from (expansion address AND $FFFF0000) - relocmdd
+ * overwrote the low word of d0 - and relocated whatever long was there as a
+ * further module; it reads the pointer of the expansion data now.
  * Fixed (#1061): GetMedVolume, GetMedNote and GetMedInstr loaded a3 from the
  * player's structure (MOVEA.l (a2),a3) and did not restore it; a function
  * keeps a3, the build pointer of a string expression ("V"+Str$(
@@ -670,7 +671,6 @@ static void RelocModule(struct mmd *m)
         reloc(&e->n_info, base);
         reloc(&e->songname, base);
         reloc(&e->dumps, base);
-        next = (ULONG)e;
         if (e->dumps) {                         /* relocmdd */
             UBYTE *p = e->dumps + 8;
             UWORD n = *(UWORD *)e->dumps;
@@ -685,11 +685,11 @@ static void RelocModule(struct mmd *m)
                     reloc(dump + 4, base);
                 n--;
             }
-            /* BUG(orig) (#207): the dump count was loaded into the low
-               word of the register with the expansion address */
-            next &= 0xffff0000UL;
+            /* Fixed (#207): the original counted the dumps in the low
+               word of the register with the expansion address and read
+               the next module pointer from (address AND $FFFF0000) */
         }
-        next = *(volatile ULONG *)next;         /* next module (0 -> end) */
+        next = (ULONG)e->nextmod;               /* next module (0 -> end) */
         if (!next)
             break;
         m = (struct mmd *)next;

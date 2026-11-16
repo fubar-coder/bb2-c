@@ -11,6 +11,7 @@
 ; StartMedModule relocates.
 ; Correct: the next module pointer is read from the expansion data (0) -
 ; the long at boundary+8 stays 4.
+; @fixed #207
 ; @configs clib
 ; @pass file=midi.med|@TESTDATA@/medlib-midi-reloc.med
 DEFTYPE .l
