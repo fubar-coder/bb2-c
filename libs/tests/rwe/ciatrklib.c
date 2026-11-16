@@ -36,7 +36,8 @@
  *     GetModuleName$ the empty string, CheckTrackerID 0 - the original's
  *     long at address 0 is 0 here too, test ciatrklib-checkid-address0),
  *     the error checks (no error), StartTracker (mt_init; a slot length
- *     above the sample addresses clears their first longs, BUG(orig), #438),
+ *     above the sample addresses clears their first longs as every slot
+ *     does now, fixed #438; the original cleared them only there),
  *     then PlayTracker tick by tick with all channels on Paula, with the
  *     masks 5 and 0 (fake_channel), TrackerVolume (0, 1, 32, 63, 64,
  *     65), ModulePositionJump (n, fixed #447: n + 1 in the original),
@@ -920,7 +921,8 @@ int main(int argc, char **argv)
     func("ModuleToChip", TOCHIP, 5);
 
     /* a slot length above the sample addresses: mt_init clears the first
-       long of every sample (BUG(orig), #438) */
+       long of every sample (the original only there; the port clears
+       them inside the module for every slot, fixed #438) */
     k = region(mod2, MODMAX);
     ROUT = "DecodeModule";
     strcpy(VEC, "slot 2, chip");

@@ -40,9 +40,7 @@
  *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
  *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
- *   - mt_init compares the module LENGTH with the sample addresses (CMP.l
- *     a2,a4): the first long of a sample is cleared only when the length
- *     is greater than its address (#438).  Its scan of the song positions
+ *   - mt_init's scan of the song positions
  *     reads positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a
  *     new maximum at 126 reads ~64 KB more), patterns >= $80 never count
  *     (BGT, signed) (#477).
@@ -135,6 +133,12 @@
  * seen on the row's own tick too (mt_CheckMoreEfx); the original saw it
  * only in mt_CheckEfx, on the ticks between the rows: never at speed 1
  * (WaitTrackerEvent waited forever), one tick late at other speeds.
+ * Fixed (intended deviation, #438): mt_init clears the first long of
+ * every sample that lies inside the module, as Protracker does (a
+ * sample without a loop then repeats two zero bytes); the original
+ * compared the module's LENGTH with the sample addresses (CMP.l a2,a4)
+ * and practically never cleared them (every such sample ended in a loop
+ * of its first two bytes, a buzz or a DC level).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
@@ -706,16 +710,25 @@ static void mt_end(void)
     cu->dmacon = 0xf;
 }
 
-/* mt_init: a4 = the module length (4(a3) of the slot) */
+/* mt_init: a4 = the module length (4(a3) of the slot).  The first long
+   of a sample is cleared if it lies inside the module (fixed, #438: the
+   original compared the length with the sample's address); the end is
+   the slot's address + length, for a module DecodeModule left in place
+   (length 1) the end of its samples */
 static void mt_init(ULONG modlen)
 {
     UBYTE *hdr = ciapart.mt_data, *sampdata;
+    ULONG end;
     int i;
 
     playdata.SongDataPtr = hdr;
     sampdata = hdr + patternsize(hdr);
+    end = (ULONG)hdr + modlen;
+    if (modlen == 1)
+        for (i = 0, end = (ULONG)sampdata; i < 31; i++)
+            end += (ULONG)WORDAT(hdr + 42 + 30 * i) << 1;
     for (i = 0; i < 31; i++) {
-        if ((LONG)modlen > (LONG)sampdata) /* BUG(orig): the length (#438) */
+        if ((ULONG)sampdata + 4 <= end)    /* Fixed (#438): not CMP.l a2,a4 */
             LONGAT(sampdata) = 0;
         playdata.SampleStarts[i] = sampdata;
         sampdata += (ULONG)WORDAT(hdr + 42) << 1;
@@ -1715,8 +1728,9 @@ static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
  * @brief StartTracker(TrackerModule#): play a slot's module.
  *
  * Resets the CIA tempo (removes the interrupt), installs it again
- * unless ChangeTrackerVBlank was used, mt_init (its scan and sample
- * clearing: BUG(orig) (#438, #477)) and enables playing.  Error check
+ * unless ChangeTrackerVBlank was used, mt_init (its scan: BUG(orig)
+ * (#477); the first long of every sample inside the module cleared,
+ * fixed, #438) and enables playing.  Error check
  * (_checkused): slots 0-8, a module in the slot.
  * @param num  d0: the slot
  * @return d0: -1 when it plays; 0 for an empty slot (fixed, #451: the

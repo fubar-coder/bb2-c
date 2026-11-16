@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+loaded -1
+first long 00000000
+second long 55667788
+rc=0

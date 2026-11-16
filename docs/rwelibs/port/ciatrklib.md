@@ -143,6 +143,15 @@ kind F):
   its row; the original saw it only in `mt_CheckEfx`, on the ticks
   between the rows (#435; library test `rwe_ciatrklib`, the play
   routine's state of the ticks with an event).
+* `mt_init` clears the first long of every sample that lies inside the
+  module, as Protracker does (a sample without a loop then repeats two
+  zero bytes); the end is the slot's address + length, for a module
+  `DecodeModule` left in place (length 1) the end of its samples. The
+  original compared the module's **length** with the sample addresses
+  (`CMP.l a2,a4`) and practically never cleared them: every sample
+  without a loop ended in a loop of its first two bytes (#438; test
+  `ciatrklib-init-length-vs-address`, library test `rwe_ciatrklib`, the cases `...|module bytes|...` after
+  `StartTracker` of slot 0).
 
 ## BUG(orig), kept
 
@@ -159,10 +168,7 @@ kind F):
   returns its argument; the library's documentation says "the command
   has no function" (since 1.02a `DecodeModule` copies a module to chip
   memory, and the command only still tokenises for old programs).
-* `mt_init` compares the module **length** with the sample addresses
-  (`CMP.l a2,a4`): it clears the first long of a sample only when the
-  length is greater than its address (for a loaded module practically
-  never) (#438). Its scan of the song positions (also `_modtochip`'s)
+* `mt_init`'s scan of the song positions (also `_modtochip`'s)
   reads positions 0–126 (SUBQ for a new maximum, DBRA otherwise; a new
   maximum at 126 reads ~64 KB more); pattern numbers ≥ $80 never count
   (BGT) (#477).
