@@ -75,10 +75,12 @@
  * brexxlib-loadtape-unchecked).  The format has no identifier, so any
  * file of 8 bytes or more still loads, and a short event record ends the
  * load without an error, as before.
+ * Fixed (#102): Type made a character rawkeylib cannot convert a RAWKEY
+ * event with code $FFFF and qualifier 1 (left shift); here it is skipped
+ * (bug-orig test brexxlib-type-ffff).
  * BUG(orig), kept:
  *  - PlayWait restarts the given tape (with signal) when the low byte of
  *    mode is 2 and waits; otherwise it returns at once. (#99)
- *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
  * the library); here trap and message are in the normal code.
@@ -595,9 +597,9 @@ BLITZ_ALIAS(doclickbutton, doclickbutton_c);
  * @brief Type String$: the characters of a string as key events.
  *
  * Every character as RAWKEY event (rawkeylib unconvert: d0 = raw key,
- * d1 = qualifier), executed or appended to the TapeTrap tape.
- * BUG(orig) (#102): a character rawkeylib cannot convert gives code
- * $FFFF.
+ * d1 = qualifier), executed or appended to the TapeTrap tape.  A character
+ * without a raw key (unconvert's d0 -1) is skipped (Fixed (#102): the
+ * original made it the event code $FFFF with qualifier 1).
  *
  * @param s  d0: the string
  * @param lens  a2: the argument stack, -4(a2) = the string's length
@@ -610,12 +612,14 @@ static void BLITZ_ROUTINE dotype_c(const UBYTE *s BL_REG(d0), const ULONG *lens 
     while (n) {
         struct bl_regs r = { .d0 = *s++ };
 
-        clearie();
-        dumevent.ie_Class = IECLASS_RAWKEY;
         BLITZ_ALIBJSR(TOK_unconvert, r);                 /* unconvert! */
-        dumevent.ie_Code = (UWORD)r.d0;
-        dumevent.ie_Qualifier = (UWORD)r.d1;
-        addtape();                                      /* doit! */
+        if ((WORD)r.d0 >= 0) {                          /* Fixed (#102) */
+            clearie();
+            dumevent.ie_Class = IECLASS_RAWKEY;
+            dumevent.ie_Code = (UWORD)r.d0;
+            dumevent.ie_Qualifier = (UWORD)r.d1;
+            addtape();                                  /* doit! */
+        }
         n--;
     }
 }
