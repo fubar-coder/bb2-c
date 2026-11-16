@@ -52,8 +52,10 @@
  *
  * Registers: the original changes d0-d7, a0, a1, a3 depending on the
  * routine; the entries are the C functions (BLITZ_ALIAS) and keep what
- * the register rule needs; UCase$, Hex$ and Instr are BLITZ_ENTRYPOINT
- * (they save nothing; Instr changes a2 as well, no library calls it).
+ * the register rule needs; UCase$, Hex$, Instr, Right$, UnRight$ and
+ * Mid$(String$,Startchar) are BLITZ_ENTRYPOINT (they save nothing;
+ * they may change a2 as well, as the original does, and no library
+ * calls them).
  * CaseSense keeps all registers.  The CCR is no
  * result.
  *
@@ -353,7 +355,7 @@ BLITZ_ALIAS(striptrail, striptrail_c);
 
 /* Left$(d0$,d1) - perform left$(d0,d1).  A negative length counts as 0
    ("simon was here"). */
-static ULONG left(UBYTE *s, LONG n, const ULONG *sp)
+BL_ALWAYS_INLINE ULONG left(UBYTE *s, LONG n, const ULONG *sp)
 {
     LONG len;
 
@@ -639,7 +641,7 @@ BLITZ_ALIAS(striplead, striplead_c);
    Fixed (#285): the offset Len-d1 is a long; the original's LEA
    0(a3,d0.w),a0 used it as a sign extended WORD, so for Len-d1 >= 32768
    the characters were taken from before the string. */
-static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
+BL_ALWAYS_INLINE ULONG right(UBYTE *s, LONG n, const ULONG *sp)
 {
     LONG len;
     const UBYTE *src;
@@ -670,12 +672,12 @@ static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
  * @param lens a2: the length stack (the string's length)
  * @return d0: the length of the result; a3 = its end
  */
-static ULONG BLITZ_ROUTINE rightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE rightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
     return right(s, n, lens);
 }
-BLITZ_ALIAS(rightstring, rightstring_c);
+BLITZ_ALIAS_EP(rightstring, rightstring_c);
 
 /**
  * @brief UnRight$(String$,Length) - the string without its first Length
@@ -690,12 +692,12 @@ BLITZ_ALIAS(rightstring, rightstring_c);
  * @param lens a2: the length stack (the string's length)
  * @return d0: the length of the result; a3 = its end
  */
-static ULONG BLITZ_ROUTINE unrightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE unrightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                            const ULONG *lens BL_REG(a2))
 {
     return right(s, lens[-1] - n, lens);
 }
-BLITZ_ALIAS(unrightstring, unrightstring_c);
+BLITZ_ALIAS_EP(unrightstring, unrightstring_c);
 
 /* Mid$(d0$,d1,d2) - perform mid$(d0,d1,d2); first position = 0 after
    SUBQ.l #1,d1, then negative start/length count as 0.  Start beyond the
@@ -703,7 +705,7 @@ BLITZ_ALIAS(unrightstring, unrightstring_c);
    string (len - start, no overflow); the original compared start+length
    signed after the addition, so a huge length (start-1+length >
    $7FFFFFFF) copied `length` bytes. */
-static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
+BL_ALWAYS_INLINE ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
 {
     LONG len;
     const UBYTE *src;
@@ -759,12 +761,12 @@ BLITZ_ALIAS(midstring, midstring_c);
  * @param lens  a2: the length stack (the string's length)
  * @return d0: the length of the result; a3 = its end
  */
-static ULONG BLITZ_ROUTINE midstring2_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
+static BLITZ_ENTRYPOINT ULONG BLITZ_ROUTINE midstring2_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
     return mid(s, start, lens[-1] - start + 1, lens);
 }
-BLITZ_ALIAS(midstring2, midstring2_c);
+BLITZ_ALIAS_EP(midstring2, midstring2_c);
 
 /**
  * @brief Chr$(Expression) - a string of one character.

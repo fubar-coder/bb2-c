@@ -94,6 +94,9 @@
 # bstr.pstr and bstr.fstr from two runs of memlib's table called with
 # BLITZ_SYSJSR in strings2lib (libs-performance task 12.2, on main 1a7cdf79,
 # 2026-11-16): 11560.6 and 12252.6 in both.
+# bstr.mid, bstr.left and bstr.right from two runs of the inline Left$,
+# Mid$ and Right$ of libs-performance task 13.1 (2026-11-16): 1454.2 to
+# 1454.6, 1243.6 to 1243.7, 1424.1 to 1424.2.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 bdisp.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -212,9 +215,9 @@ bmod.vblmod                 2418~120   2409.5  PlayModule playing: its interrupt
 bmod.playmed                9796~7     9950.0  PlayMed
 bstr.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bstr.asg_s                   1236     1367.5  r$=a$
-bstr.mid                     1662     1553.5  r$=Mid$(a$,3,5)
-bstr.left                    1383     1299.0  r$=Left$(a$,5)
-bstr.right                   1572     1495.5  r$=Right$(a$,5)
+bstr.mid                     1473     1553.5  r$=Mid$(a$,3,5)
+bstr.left                    1260     1299.0  r$=Left$(a$,5)
+bstr.right                   1442     1495.5  r$=Right$(a$,5)
 bstr.str                     4211     4131.5  r$=Str$(a)
 bstr.val                     1690     1927.0  c=Val(n$)
 bstr.len                      687      731.0  c=Len(a$)

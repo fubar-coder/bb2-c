@@ -973,6 +973,29 @@ build.
     `spfix` (a flag from the CCR in the same asm) and gtlib `addglist`
     (a2 argument) keep their private forms.
 
+29. **The remaining slower string commands (group 13, tasks 13.1 to
+    13.5, 2026-11-16).** Analysis `analyse-g13-strings.md`; C, measured in
+    `tests/perf` (cycles per call, two runs, the original in brackets).
+    The library cases of `systest_cmdlibs` for Left$, UnLeft$, Right$,
+    UnRight$, Mid$ (both forms), Hex$, Bin$, Cvi, Cvl and Cvq (lengths
+    0, 1, 5, 8, 21 and 70 at even and odd addresses, the boundary counts,
+    starts and lengths) were recorded from the original before the
+    changes; the C build of main gives the same cases.
+    - Left$, Mid$, Right$ (task 13.1): `left`, `right` and `mid` were
+      functions with stack arguments, because the speed profile has
+      `-fno-inline-functions -fno-inline-small-functions` (the pattern of
+      Instr). They are `BL_ALWAYS_INLINE`. `BLITZ_ENTRYPOINT` only where
+      GCC saved a register: Right$ and Mid$(String$,Startchar) took a2 as
+      a temporary, UnRight$ d2; Left$, UnLeft$ and the three-argument
+      Mid$ save nothing either way. The three entries may change a2 and
+      d2, as the original does (it pops the lengths) and as Instr does; no
+      library calls them. `r$=Mid$(a$,3,5)` 1642.7 -> 1454.6 (1553.5),
+      `r$=Left$(a$,5)` 1365.5 -> 1243.7 (1299.0), `r$=Right$(a$,5)` 1553.2
+      -> 1424.2 (1495.5). Left$ alone is 80 cycles against the
+      original's 72 (GCC loads the length into a register before the
+      compare, the original compares with `-(a2)`); the statement is
+      faster through the port's string fetch and assignment.
+
 ## Risks / Trade-offs
 
 - A caller outside the analysed set (`analyse-thirdparty-regs.md` section 7:
