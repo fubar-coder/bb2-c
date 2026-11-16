@@ -35,7 +35,6 @@
  * the module.
  *
  * BUG(orig), kept (as in the NoiseTracker player):
- *   - the sample's volume word includes the finetune byte (MOVE.w). (#290)
  *   - repeat start * 2 as a word (ASL.w): repeats beyond 64K wrap. (#291)
  *   - after a pattern break / position jump (D, B) the end of the song is
  *     compared with the first byte of the pattern data instead of the
@@ -43,6 +42,11 @@
  *   - set volume (C) writes the volume as a BYTE to AUDxVOL (both halves
  *     of the register) (#293); C and F only clamp positive values (signed
  *     compares) (#294).
+ * Fixed (intended deviation, #290): a note's sample sets the volume of
+ * the voice to the volume byte of the sample; the original took the word
+ * with the finetune byte (MOVE.w), so a volume slide (A) of a sample with
+ * finetune jumped to $40 or computed on the whole word.  AUDxVOL still
+ * gets the word (Paula reads bits 0-6 only).
  * Fixed (intended deviation, #295): mt_init clears the sample number of
  * every note in the patterns whose number is above 31 (the module is
  * changed in memory, as the first long of each sample is); the original
@@ -150,7 +154,13 @@ struct voice {
     ULONG loopstart;            /* $a.l */
     UWORD looplen;              /* $e.w */
     UWORD period;               /* $10.w */
-    UWORD volume;               /* $12.w */
+    union {
+        UWORD volume;           /* $12.w: 0-$40 */
+        struct {
+            UBYTE volhi;        /* $12.b: always 0 */
+            UBYTE vol;          /* $13.b: set by a note (Fixed (#290)) */
+        };
+    };
     UWORD dmabit;               /* $14.w */
     BYTE portdir;               /* $16.b: portamento direction */
     UBYTE portspeed;            /* $17.b: portamento speed */
@@ -176,7 +186,7 @@ static_assert(sizeof mt == 31 * 4 + 4 * 28);
 struct modsampinfo {
     UWORD length;               /* in words */
     UWORD finevol;              /* finetune byte, volume byte: read as one
-                                   word, BUG(orig) (#290) */
+                                   word, the volume byte taken (#290) */
     UWORD repeat;               /* repeat start in words */
     UWORD replen;               /* repeat length in words */
 };
@@ -497,7 +507,7 @@ BL_ALWAYS_INLINE void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *note
                                    const UBYTE *sinfo)
 {
     UWORD sample;
-    UWORD repeat, len;
+    UWORD repeat, len, finevol;
 
     v->note = *(const ULONG *)note;
     sample = (UBYTE)((v->cmd & 0xf0) >> 4) | (v->notehi & 0xf0);
@@ -506,18 +516,23 @@ BL_ALWAYS_INLINE void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *note
 
         v->start = *(ULONG *)((UBYTE *)mt_samplestarts + ((sample - 1) << 2));
         v->length = SINFO(off, length);
-        v->volume = SINFO(off, finevol);     /* BUG(orig) (#290) */
+        /* Fixed (#290): the voice takes the volume byte only (its high
+           byte stays 0); AUDxVOL gets the word as in the original, Paula
+           reads only its bits 0-6 (one register for the word, no extra
+           cycle) */
+        finevol = SINFO(off, finevol);
+        v->vol = (UBYTE)finevol;
         repeat = SINFO(off, repeat);
         if (repeat) {
             v->loopstart = v->start + (UWORD)(repeat << 1);
             len = repeat + SINFO(off, replen);
             v->length = len;
             v->looplen = SINFO(off, replen);
-            RW(aud, 8) = v->volume;
+            RW(aud, 8) = finevol;
         } else {                                /* mt_noloop */
             v->loopstart = v->start;
             v->looplen = SINFO(off, replen);
-            RW(aud, 8) = v->volume;
+            RW(aud, 8) = finevol;
         }
     }
     if (v->noteword & 0xfff) {                     /* mt_setregs */
@@ -714,7 +729,7 @@ static void freemod2(struct module *m, int blitz)
  *
  * Errors (debugger, playchk): "Uninitialized Module".
  *
- * BUG(orig): the NoiseTracker player's bugs, see the file header (#290 -
+ * BUG(orig): the NoiseTracker player's bugs, see the file header (#291 -
  * #294).
  */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }

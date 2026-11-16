@@ -8,6 +8,7 @@
 ; (28 bytes each) behind it, and reads the volume of voice 0 ($12.w)
 ; after row 0 was played (PlayModule: speed 6, one row per 6 frames).
 ; Correct: the volume of the voice is $0030.
+; @fixed #290
 ; @configs clib
 ; @pass file=vol.mod|@TESTDATA@/trackerlib-volume-finetune.mod
 DEFTYPE .l
