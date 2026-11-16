@@ -41,9 +41,6 @@
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
  *     memory in front of the buffer are overwritten (the BB2 docs only
  *     say "works like the Deplode command"). (#116)
- *   - CrMDecrunch: overlap copy of (CrLen>>2) longs with SUBQ/BNE: a
- *     crunched length below 4 copies 4 GB; the address comparisons are
- *     signed (BLE). (#115)
  *   - CrM2: ReadTab with a count of 0 reads 65536 table entries (DBF);
  *     the tables are static data inside the library, as in the original. (#117)
  *   - PPDecrunch: ReadD1_SUB with an efficiency value 0 reads 65536 bits. (#118)
@@ -51,6 +48,11 @@
  *     crunchable) after at least 64 bytes leaves the buffer partly
  *     overwritten. (#114)
  *   - No checks of the data at all: corrupt data write anywhere. (#119)
+ * Fixed (intended deviations, kind F):
+ *   - CrMDecrunch: the overlap copy of (CrLen>>2) longs counted with
+ *     SUBQ/BNE: a crunched length below 4 copied 4 GB; such a length now
+ *     copies the one long behind the loop only (#115).  The address
+ *     comparison stays signed (BLE), as in the original.
  * Kept from the original, not a bug: after $4012 literal bytes in a row
  * Implode stores the rest of the data uncrunched - a limit of the
  * Imploder format (imtab4); the result decrunches correctly (#113).
@@ -1070,9 +1072,10 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
         ULONG *from = (ULONG *)src, *to, n = srclen >> 2;
         src = dst - mindist;
         to = (ULONG *)src;
-        do
-            *to++ = *from++;
-        while (--n != 0);
+        if (n != 0)                     /* Fixed (#115): 0 copied 4 GB */
+            do
+                *to++ = *from++;
+            while (--n != 0);
         *to = *from;                    /* in case of ... */
     }
     dec(dst, src, dstlen, srclen);
@@ -1086,8 +1089,8 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
  * first copied to MinSecDist bytes before the buffer.  Other data than
  * "CrM!"/"CrM2" are left alone.  All registers kept.
  * BUG(orig) (#116): up to MinSecDist bytes of memory in front of the
- * buffer are overwritten.  BUG(orig) (#115): the copy of (CrLen>>2) longs
- * runs 4 GB for a crunched length below 4.  BUG(orig) (#117): CrM2 tables
+ * buffer are overwritten.  Fixed (#115): the copy of (CrLen>>2) longs
+ * ran 4 GB for a crunched length below 4.  BUG(orig) (#117): CrM2 tables
  * with a count of 0 read 65536 entries.  BUG(orig) (#119): no checks of
  * the data.
  *
@@ -1108,8 +1111,8 @@ BLITZ_ALIAS(_crm, crm_c);
  * copied to MinSecDist bytes before the destination.  All registers
  * kept.
  * BUG(orig) (#116): that copy overwrites memory in front of the
- * destination.  BUG(orig) (#115), (#117), (#119): see the one argument
- * form.
+ * destination.  Fixed (#115), BUG(orig) (#117), (#119): see the one
+ * argument form.
  *
  * @param src  d0: the crunched data (with header)
  * @param dst  d1: the destination
