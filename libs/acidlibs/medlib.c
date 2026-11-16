@@ -52,6 +52,13 @@
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
  *     higher channels of the mask get no follow-up values. (#208)
+ *   - the line routine tests a track against ChanMask with BTST on its
+ *     low byte (the track number mod 8): tracks 8-11 pass like tracks 0-3,
+ *     and 03 (portamento) and FFD (period), whose track check exists only
+ *     with #CHECK = 1, write trk_porttrgper (+32), trk_prevportspd (+82)
+ *     and trk_prevper (+20) of such a track into the 20-byte structures
+ *     behind it, also with the default mask (test medlib-tracks-8-11-cmd3;
+ *     issue to be filed).
  *   - JumpMed without a playing module writes to addresses 44-47
  *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11). (#210)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
@@ -1391,6 +1398,8 @@ MED_OFFSETS(MED_SET)
 "   bsr     _SoundOff\n"
 "   moveq   #0,d0\n"
 "   rts\n"
+/* BUG(orig) (issue to be filed): FFD and 03 of tracks 8-11 (they pass the
+   mask test of plr_loop0) write behind their 20-byte structures */
 "notcmdfe:\n"
 "   cmp.b   #0xfd,d4\n"
 "   bne.s   isfxff\n"
