@@ -20,7 +20,7 @@ memlib SHALL keep the list headers of procedure-local memory in buckets of a fix
 When a procedure exit leaves the last two buckets empty, memlib SHALL free the last one, so that at most two empty buckets stay allocated while the program runs.
 
 #### Scenario: The recursion goes back
-- **WHEN** a recursion of depth 40 with buckets of 4 returns to depth 1
+- **WHEN** a recursion of depth 40 with buckets of 8 entries returns to depth 1
 - **THEN** at most two empty buckets are still allocated
 
 #### Scenario: Calls at a bucket boundary
