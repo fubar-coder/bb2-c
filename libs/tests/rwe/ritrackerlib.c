@@ -36,7 +36,10 @@
  * from the custom chip registers, BUG(orig) #475).  Rows by hand: the first
  * 1xx (mt_LowMask 0 in the original, Fixed (#478)), volume above 64, tremolo's ramp-down
  * with a negative vibrato position (Fixed (#482)), 9xx with a note
- * (applied twice by the original, Fixed (#473)), invert loop, retrig.  Covered besides playing: TrackDMA, Tracker Off
+ * (applied twice by the original, Fixed (#473)), invert loop, retrig,
+ * arpeggios whose note plus the half-tones lies behind the row (the
+ * original reads the next row or, for finetune 15, the voices; Fixed
+ * (#474)).  Covered besides playing: TrackDMA, Tracker Off
  * (mt_end) / On (stays stopped, BUG(orig), #572), TrackInit while Tracker Off
  * (no mt_init, BUG(orig), #573), TrackerChannels (the voices shift,
  * BUG(orig), #568), TrackerPause, TrackStop, init, finit with and without
@@ -334,6 +337,12 @@ static void build_main(void)
     note(pat + 16 * 5 + 4, 0, 0, 0x7, 0x00);            /* the vibrato position */
     note(pat + 16 * r + 8, 0, 0, 0x6, 0x03);
     note(pat + 16 * r + 12, 0, 0, 0xe, 0x93);           /* retrig */
+    /* arpeggios whose note plus the half-tones lies behind the row (index
+       33 + 4, #474): sample 1's finetune, then finetune 15 (E5F), the last
+       row of the table */
+    note(pat + 16 * 6 + 0, 127, 1, 0x0, 0x47);
+    note(pat + 16 * 7 + 0, 127, 1, 0xe, 0x5f);
+    note(pat + 16 * 8 + 0, 0, 0, 0x0, 0x47);
     /* sample data */
     h = pat + 4 * 1024;
     for (i = 0; i < (int)smp; i++)

@@ -88,10 +88,9 @@ four 44-byte voice blocks `n_note` … `n_reallength`, `mt_SampleStarts`,
 `playing`, `status`, `mask`) and the glue variables `ciatime` …
 `mt_data`. The C build has both as structs with the same layout
 (`struct ptdata`, 1538 bytes, `struct ptglue`, 28 bytes,
-`_Static_assert`s): the arpeggio reads behind a row and, for
-finetune −1, behind the table into the first voice (BUG(orig),
-#474), which
-gives the same values only with the same layout; and the test compares
+`_Static_assert`s): the period lookups of a finetune byte above 15 read
+behind the table into the voices (BUG(orig), #476), which gives the
+same values only with the same layout; and the test compares
 both blocks with the reference build's.
 
 ## C and assembler
@@ -152,11 +151,8 @@ pt23f changelog served as the checklist, no code was taken from it):
   pattern data (65536 more bytes) (#477). The `CLR.L` of every sample's
   first longword also clears 4 bytes behind the module for empty
   samples at its end (#570).
-* The arpeggio (`mt_Arpeggio`) goes on behind the finetune's row when
-  the note plus its half-tones lies behind it or no entry fits (37
-  entries; for finetune −1 into the first voice block) (#474); a
-  finetune byte above 15 in a sample header reads far behind the table
-  (#476).
+* A finetune byte above 15 in a sample header makes the period lookups
+  read far behind the table (#476).
 * Sample numbers above 31 read behind `mt_SampleStarts` and the sample
   headers (#480).
 
@@ -191,6 +187,12 @@ kind F), in the play routine:
   the original doubled the repeat as a word (`ASL.W`), so loops from
   32768 words (64 KB) on started 64 KB too early (#479; bug-orig test
   `pt23a-repeat-word`).
+* The arpeggio compares the 36 entries of the finetune's row and plays
+  at most the row's last entry; the original compared 37 and read up to
+  15 words behind the row – the next finetune's row (a low note), for
+  finetune −1 the first voice block (#474; library test
+  `rwe_ritrackerlib`, the rows by hand with an arpeggio on index 33 of
+  sample 1's finetune and of finetune 15).
 
 ## Test
 
@@ -215,7 +217,8 @@ original keeps. The modules are built in memory: one with 31 random
 samples (loops, finetunes, a volume above 64, empty samples at the end),
 four random patterns with all effects and some rows by hand (the first
 1xx, tremolo ramp-down with a negative vibrato position, 9xx with a
-note, invert loop, retrig); a small one for F81 (a speed), tempos, E01
+note, invert loop, retrig, arpeggios whose note plus the half-tones lies
+behind the row); a small one for F81 (a speed), tempos, E01
 and an F00 on voice 1 (the voices behind read the redirected registers).
 About 1700 calls: 1300 ticks of playing, `TrackDMA`, `TrackerChannels`
 (two masks), `Tracker` off/on, `TrackerPause`, `TrackInit` while

@@ -30,7 +30,7 @@
  *
  * State: the original's data block from mt_FunkTable to mt_olddata
  * (struct ptdata, the same layout: the routine reads behind the period
- * table into the voices, see BUG(orig), #474) and the variables of the glue
+ * table into the voices, see BUG(orig), #476) and the variables of the glue
  * code (struct ptglue, the same layout).  Paula's registers and the CIAs
  * are written as the original writes them (volatile, same width).
  * The routines are C; register contents the original carries from one
@@ -68,11 +68,8 @@
  *     on through the pattern data) (#477); the CLR.L of the first
  *     longword of every sample also clears 4 bytes behind the module for
  *     empty samples at its end (#570).
- *   - The arpeggio reads behind the row of the finetune, and for
- *     finetune -1 behind the table into the voice data, when the note
- *     plus its half-tones lies behind the row or no entry fits (#474); a
- *     finetune byte above 15 from the sample header makes the period
- *     lookups read far behind (#476).
+ *   - A finetune byte above 15 from the sample header makes the period
+ *     lookups read far behind the period table (#476).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
  *     headers (#480).
  * Fixed in the play routine (intended deviations):
@@ -98,6 +95,10 @@
  *   - The loop start of a sample is start + repeat * 2 doubled as a long;
  *     the original doubled the repeat as a word (ASL.W), so loops from
  *     32768 words (64 KB) on started 64 KB too early (#479).
+ *   - The arpeggio compares the 36 entries of the finetune's row and
+ *     plays at most the row's last entry; the original compared 37 and
+ *     read up to 15 words behind the row: the next finetune's row (a low
+ *     note), for finetune -1 the voice data (#474).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -344,8 +345,8 @@ static struct ptglue {
 _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
 
 /* a word / longword of the period table at byte offset `off`, also behind
-   the row or the table (BUG(orig): the arpeggio does not stop there,
-   #474) */
+   the row or the table (BUG(orig): a finetune above 15 reads there,
+   #476) */
 #define PERIOD(off) (*(UWORD *)((UBYTE *)&pt + offsetof(struct ptdata, periods) + (off)))
 #define SAMPLESTART(off) (*(UBYTE **)((UBYTE *)&pt + offsetof(struct ptdata, samplestarts) + (off)))
 #define W(p) (*(UWORD *)(p))
@@ -512,7 +513,8 @@ static void mt_updatefunk(struct chan *c)
 /* mt_Arpeggio (effect 0xy) */
 static void mt_arpeggio(aud_t *hw, struct chan *c)
 {
-    UWORD tick, step, arpperiod;        /* d0: counter % 3; d0: the note step; d2 */
+    UWORD tick, step;                   /* d0: counter % 3; d0: the half-tones */
+    const UWORD *t, *p;                 /* the row; its entry */
     ULONG row;
     UWORD period;
     int left;
@@ -526,17 +528,20 @@ static void mt_arpeggio(aud_t *hw, struct chan *c)
         step = c->cmdlo & 15;
     else
         step = c->cmdlo >> 4;
-    step <<= 1;
     row = (ULONG)c->finetune * 36 * 2;
     period = c->period;
-    for (left = 36; left >= 0; left--) {  /* BUG(orig): 37 entries (#474) */
-        arpperiod = PERIOD(row + step);
-        if (period >= PERIOD(row)) {
-            hw->ac_per = arpperiod;
+    /* Fixed (#474): the 36 entries of the row, and the entry `step`
+       half-tones higher at most the row's last; the original compared 37
+       entries and read behind the row */
+    t = &PERIOD(row);
+    for (left = 35, p = t; left >= 0; left--, p++)
+        if (period >= *p) {
+            p += step;
+            if (p > t + 35)
+                p = t + 35;
+            hw->ac_per = *p;
             return;
         }
-        row += 2;
-    }
 }
 
 /* nor_TrackEvent (effect 8xx, RI's): nothing reads nor_TrkEvt (an unused

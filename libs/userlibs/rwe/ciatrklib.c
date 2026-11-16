@@ -29,7 +29,7 @@
  * and the play routine's (mt_FunkTable ... nor_LstEvt) - are structs with
  * the original's layout.  The play routine depends on it: it reads behind
  * mt_PeriodTable into mt_chan1temp and behind mt_SampleStarts (BUG(orig)
- * below, #474 #480), and the test finds the blocks in both builds.
+ * below, #476 #480), and the test finds the blocks in both builds.
  *
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
@@ -47,9 +47,8 @@
  *   - PauseModule toggles its own state, which StartTracker and
  *     StopTracker leave as it is: after a pause the next PauseModule
  *     only enables playing (test ciatrklib-pause-state-kept; #1076).
- *   - Play routine (Protracker 2.3A): the arpeggio (#474) and a sample
- *     number > 31 (#480) read behind the tables (mt_chan1temp,
- *     mt_SongDataPtr ...); F00 stops the module (as in
+ *   - Play routine (Protracker 2.3A): a sample number > 31 (#480) reads
+ *     behind the tables (mt_SongDataPtr ...); F00 stops the module (as in
  *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
  *     on voice 1-3 the voices behind read their notes from the custom
  *     chip registers ($DFF000 + the pattern offset) instead of the
@@ -83,6 +82,10 @@
  *   - The loop start of a sample is start + repeat * 2 doubled as a long;
  *     the original doubled the repeat as a word (ASL.w), so loops from
  *     32768 words (64 KB) on started 64 KB too early (#479).
+ *   - The arpeggio compares the 36 entries of the finetune's row and
+ *     plays at most the row's last entry; the original compared 37 and
+ *     read up to 15 words behind the row: the next finetune's row (a low
+ *     note), for finetune -1 mt_chan1temp (#474).
  *
  * Fixed (intended deviation, #449): ResetCIAInt leaves the audio filter
  * (bit 1 of CIA-A PRA) as it is; the original toggled it (BCHG
@@ -829,7 +832,7 @@ static void updatefunk(struct chan *ch)
 static void arpeggio(struct chan *ch, aud_t *aud)
 {
     UWORD step = (UWORD)(bl_divs_w(playdata.counter, 3) >> 16), halftones; /* DIVS: SWAP */
-    const UWORD *table;
+    const UWORD *table, *p;
     int i;
 
     if (step == 0) {
@@ -838,13 +841,17 @@ static void arpeggio(struct chan *ch, aud_t *aud)
     }
     halftones = step == 2 ? ch->n.f.cmdlo & 15 : ch->n.f.cmdlo >> 4;
     table = periods(ch->finetune);
-    for (i = 0; i <= 36; i++) {         /* reads up to 15 words behind */
-        UWORD per = table[i + halftones];
-        if (ch->period >= table[i]) {
-            aud->ac_per = per;
+    /* Fixed (#474): the 36 entries of the row, and the entry `halftones`
+       higher at most the row's last; the original compared 37 entries and
+       read up to 15 words behind the row */
+    for (i = 0, p = table; i < 36; i++, p++)
+        if (ch->period >= *p) {
+            p += halftones;
+            if (p > table + 35)
+                p = table + 35;
+            aud->ac_per = *p;
             return;
         }
-    }
 }
 
 /* mt_PortaUp (mt_LowMask: $0F for E1x, else $FF after the first use) */
