@@ -29,8 +29,6 @@
  *   - Not a bug (the library's ArgString test): an integer in a slot of
  *     rm_Args[] is "deleted" by ClearRexxMsg if the memory before it
  *     looks like an ArgString.
- *   - FillRexxMsg: a value of 0 ends the list (also an integer 0); flag
- *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
  *   - Not a bug (by design): RexxEvent removes the first message like exec
  *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
  *     (after ClearRexxMsg).
@@ -75,6 +73,11 @@
  * ($02000000), not RXFF_RESULT ($00020000): a command with RXFF_RESULT
  * got no result string, a function call without it got one.  It tests
  * RXFF_RESULT now.
+ * Fixed (intended deviation, #50): FillRexxMsg (flag bit 15 = slot 0 is
+ * an integer, bit 14 slot 1, ...) tested every value for 0 before the
+ * flag: an integer 0 ended the list, the arguments behind it were lost.
+ * Only a string value of 0 ends it now; ClearRexxMsg, which stopped at
+ * the first 0 slot, clears all 16 slots.
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -342,8 +345,10 @@ static void deleteargstring(ULONG arg)
         deleteargstring_rexx(arg);
 }
 
-/* _ClearRexxMsg - delete rm_Args[] up to the first 0, at most the 16
-   slots (fixed, #49: the original had no limit) */
+/* _ClearRexxMsg - delete the ArgStrings of the 16 slots rm_Args[] and
+   clear them (fixed, #49: the original had no limit and stopped at the
+   first 0 slot; #50: an integer 0 of FillRexxMsg may stand before more
+   arguments) */
 static void clearrexxmsg(ULONG msg)
 {
     ULONG *slot;
@@ -352,8 +357,8 @@ static void clearrexxmsg(ULONG msg)
     if (!tstrexxmsg(msg))
         return;
     slot = (ULONG *)((struct RexxMsg *)msg)->rm_Args;
-    for (n = ARGSLOTS; n != 0 && *slot; n--) {
-        deleteargstring(*slot);
+    for (n = ARGSLOTS; n != 0; n--) {
+        deleteargstring(*slot);                 /* 0: not an ArgString */
         *slot++ = 0;
     }
 }
@@ -468,10 +473,12 @@ BLITZ_ALIAS(_DeleteRexxMsg, deleterexxmsg_c);
 /**
  * @brief ClearRexxMsg rexxmsg: delete the ArgStrings of rm_Args[].
  *
- * Up to the first 0 slot, each slot cleared, at most the 16 slots.
- * Fixed (#49): the original had no limit of 16 and with all slots used
- * went on into rm_PassPort, rm_CommAddr, rm_FileExt ... (deleted and
- * cleared).  An integer in a slot is "deleted" if the memory before it
+ * All 16 slots, each slot cleared (the guide: "from slot number 1
+ * forward to 16").  Fixed (#49): the original had no limit of 16 and
+ * with all slots used went on into rm_PassPort, rm_CommAddr, rm_FileExt
+ * ... (deleted and cleared).  Fixed (#50): the original stopped at the
+ * first 0 slot; FillRexxMsg now stores an integer 0, with more arguments
+ * behind it.  An integer in a slot is "deleted" if the memory before it
  * looks like an ArgString.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
  * rexxsyslib: its alert, then nothing happens (fixed, #56: the original
@@ -490,9 +497,10 @@ BLITZ_ALIAS(_ClearRexxMsg, clearrexxmsg_c);
  *        FillStruct.
  *
  * FillStruct = {flags.w, value.l, ..., 0}: flag bit 15-n set = value n is
- * an integer, else a C string that becomes a BB2 ArgString.  BUG(orig)
- * (#50): a value of 0 ends the list (also an integer 0).  At most the 16
- * slots are filled (fixed, #49: the original had no limit, a 17th value
+ * an integer, else a C string that becomes a BB2 ArgString.  A string
+ * value of 0 ends the list; an integer slot takes its value, 0 too
+ * (fixed, #50: the original tested every value for 0 before the flag, an
+ * integer 0 ended the list).  At most the 16 slots are filled (fixed, #49: the original had no limit, a 17th value
  * went to rm_PassPort, the next ones to rm_CommAddr ...).  Errors: no
  * memory - recoverable alert, the rest is not filled.
  * Not a RexxMsg (rexxsyslib IsRexxMsg): nothing happens.  Without
@@ -517,15 +525,18 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
         off += 4;
         flags <<= 1;
         v = *p++;
-        if (!v)
-            return;                             /* FRMFinished */
         if (!(flags & 0x10000)) {
-            /* FRMCallArgString: length up to the 0 */
+            /* a string slot; 0 ends the list (fixed, #50: the original
+               tested every value for 0 before the flag, an integer 0
+               ended it too) */
             const UBYTE *s = (const UBYTE *)v;
-            ULONG n = 0;
+            ULONG len = 0;
+            if (!v)
+                return;                         /* FRMFinished */
+            /* FRMCallArgString: length up to the 0 */
             while (*s++)
-                n++;
-            frmcstorage = n;
+                len++;
+            frmcstorage = len;
             v = createargstring((const UBYTE *)v, frmcstorage);
             if (!v) {
                 error_routine(ERR_NOMEM);       /* FRMError */
