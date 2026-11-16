@@ -17,8 +17,9 @@
  * A tape is a list of InputEvents (22 bytes, memlib globalloc; the time
  * stamps are relative to the start of the recording).  `mode`: 0 nothing,
  * 1 record, 2 playback; bit 15 = "inject dumevent first": the handler then
- * clears bit 15, remembers the time stamp of the first real event
- * (firstval) and puts dumevent in front of the list.  The handler
+ * clears bit 15 and puts dumevent in front of the list; at the start of a
+ * Record or PlayBack (`newstart`) it also remembers the time stamp of the
+ * first real event (firstval).  The handler
  *   - records RAWKEY, RAWMOUSE and POINTERPOS events (copies, the list is
  *     passed on unchanged),
  *   - plays back: all tape events whose time (minus the tape's start
@@ -29,7 +30,7 @@
  *     PlayWait, Signal(mytask, mysig),
  *   - with mode 0 checks RAWKEY events for a MacroKey and starts its tape.
  * Simple events (Type, AbsMouse, RelMouse, MouseButton, ClickButton) are
- * built in dumevent and either executed (mode = $8000) or, after TapeTrap
+ * built in dumevent and either executed (bit 15 of mode) or, after TapeTrap
  * Tape#, appended to that tape (with QuietTrap On only appended).
  *
  * File format (SaveTape/LoadTape): the 8 byte start time, then 18 bytes
@@ -45,9 +46,14 @@
  * the finit called FreeSignal(255) and FreeSignal(65535).  Here a failed
  * signal stays unused: PlayWait returns at once without one, and the
  * finit frees only the signals it got (bug-orig test brexxlib-allocsignal).
+ * Fixed (#96): appending an event to a tape cleared `mode`, and an
+ * executed event set it to $8000: every simple event ended a running
+ * Record or PlayBack (without the start time, without restoring the
+ * hijacked link).  Here addtape only sets bit 15 for an executed event,
+ * and the handler takes firstval only at a start (newstart), so that the
+ * time base of the running Record or PlayBack stays (bug-orig test
+ * brexxlib-addtape-mode).
  * BUG(orig), kept:
- *  - Appending an event to a tape clears `mode` (a running Record or
- *    PlayBack stops working, without restoring the hijacked link). (#96)
  *  - ClickButton: the second (button up) call gets d0 as left by the
  *    first one's addtape: 0 normally, but the QuietTrap value when the
  *    event went to a tape - ClickButton 0 under TapeTrap with QuietTrap
@@ -237,6 +243,7 @@ static_assert(sizeof(struct mkey) == 10);
 #define IESIZE 22                       /* ief-ie */
 
 static volatile UWORD mode;             /* 0, 1 record, 2 playback; bit 15 */
+static volatile UWORD newstart;         /* bit 15 starts a Record/PlayBack */
 static struct InputEvent *lastrec;      /* last node of the tape (record),
                                            node whose link is hijacked (play) */
 static struct InputEvent *lastlink;     /* its real link */
@@ -314,14 +321,26 @@ static void clearie(void)
     dumevent.ie_TimeStamp.tv_micro = 0;
 }
 
+/* inject: let the handler put dumevent in front of the next events; bit
+   15 is set on the mode, under Forbid (the handler may end a playback and
+   clear the mode meanwhile).  Fixed (#96): the original set the mode to
+   $8000, which ended a running Record or PlayBack. */
+static void inject(void)
+{
+    Forbid();
+    mode |= 0x8000;
+    Permit();
+}
+
 /* addtape: append dumevent to tapeadd, or let the handler inject it.
-   Returns the d0 the original leaves (see ClickButton). */
+   Returns the d0 the original leaves (see ClickButton).  Fixed (#96): the
+   mode of a running Record or PlayBack stays (the original cleared it). */
 static ULONG addtape(void)
 {
     struct InputEvent *n, **link;
 
     if (!tapeadd) {
-        mode = 0x8000;
+        inject();
         return 0;
     }
     n = globalloc(IESIZE);
@@ -331,10 +350,9 @@ static ULONG addtape(void)
         link = &(*link)->ie_NextEvent;
     *link = n;
     n->ie_NextEvent = 0;
-    mode = 0;
     if (trap_mode)
         return trap_mode;
-    mode = 0x8000;
+    inject();
     return 0;
 }
 
@@ -385,7 +403,7 @@ BLITZ_ALIAS(dotapeadd, dotapeadd_c);
  * Type, AbsMouse, RelMouse, MouseButton and ClickButton then append their
  * events to this tape (with QuietTrap On only appended, otherwise also
  * executed).
- * BUG(orig) (#96): appending an event to a tape clears `mode`.
+ * Fixed (#96): appending an event no longer clears `mode`.
  *
  * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
  */
@@ -622,6 +640,7 @@ static void playback3(struct tape *tape)
     playval.tv_secs = tape->start.tv_secs;
     playval.tv_micro = tape->start.tv_micro;
     dumevent.ie_Class = IECLASS_NULL;
+    newstart = 1;
     mode = 0x8002;
 }
 
@@ -684,6 +703,7 @@ static void BLITZ_ROUTINE dorecord2_c(void)
     firsta3 = tape;
     lastrec = (struct InputEvent *)tape;
     dumevent.ie_Class = IECLASS_NULL;
+    newstart = 1;
     mode = 0x8001;
 }
 BLITZ_ALIAS(dorecord2, dorecord2_c);
@@ -917,10 +937,13 @@ static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
     if (curmode == 0)
         goto isitmacro;
     if ((WORD)curmode < 0) {
-        /* execute dumevent - get timeval */
+        /* execute dumevent - get timeval (at a start only: Fixed (#96)) */
         mode = curmode & 0x7fff;
-        firstval.tv_secs = events->ie_TimeStamp.tv_secs;
-        firstval.tv_micro = events->ie_TimeStamp.tv_micro;
+        if (newstart) {
+            newstart = 0;
+            firstval.tv_secs = events->ie_TimeStamp.tv_secs;
+            firstval.tv_micro = events->ie_TimeStamp.tv_micro;
+        }
         dumevent.ie_NextEvent = events;
         return &dumevent;
     }
