@@ -143,6 +143,18 @@ UWORD maineval2(WORD push, UWORD *type, WORD unknown);  /* 8879, no regat>=6 che
    extension points of ext.h (ext_evalvalue) */
 extern UWORD evaldepth;
 
+/* Intrinsics (no asm counterpart; openspec/specs/compiler/intrinsics,
+   docs/blitz2/extensions.md): a library function compiled as inline code
+   instead of a call, in eval.c's table intrinsics[].  libfunction arms
+   one for its argument; these are its points in the shared code.
+   intrinsic_argpush (getap): the push flag for an argument of unknown
+   type, 2 for the argument of an armed intrinsic (maineval2 then pushes
+   no type word for a Quick the intrinsic accepts), else 1 (evalu2).
+   intrinsic_code (dolibtoke, in place of userjsr): emits the inline code
+   if the argument was accepted; FALSE = make the call. */
+WORD intrinsic_argpush(void);
+BOOL intrinsic_code(void);
+
 /* entry variants (asm: which d1/d3 they load) */
 UWORD eval(UWORD *type);        /* 8857  push 0, convert            */
 UWORD bakeval(UWORD *type);     /* 8855  bakup; eval                */

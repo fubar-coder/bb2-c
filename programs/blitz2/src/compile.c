@@ -1491,7 +1491,8 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
         if (numreps)
             pokel(L_(movenumrep));
     }
-    userjsr(blib, form);        /* make the JSR */
+    if (!intrinsic_code())      /* not compiled inline (eval.h) */
+        userjsr(blib, form);    /* make the JSR */
     if (stackuse) {
         UWORD s = (UWORD)stackuse;
         if (s <= 8) {

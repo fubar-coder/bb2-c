@@ -831,12 +831,14 @@ void highadd(struct var *v, UWORD pmode)
     putalp(pmode);
 }
 
-/* blitz2.s:5822 getap */
+/* blitz2.s:5822 getap.  An argument of unknown type is evalu2's
+   maineval(1, type, -1); the push flag is 2 for the argument of an
+   intrinsic (eval.h intrinsic_argpush, no asm counterpart). */
 UWORD getap(UWORD *type)
 {
     *type &= 7;                         /* 0-7 (unknown to string) */
     if (*type == 0)
-        return evalu2(type);
+        return maineval(intrinsic_argpush(), type, -1);
     return eval(type);
 }
 

@@ -140,6 +140,7 @@ static void quicktob2(void);
 static UWORD eval3(UWORD *type);
 static UWORD eval4(UWORD *type);
 static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
+static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD doop(struct opentry *op, UWORD type);
 static void divzerochk(const struct opentry *op, UWORD type);
@@ -736,6 +737,8 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
         t = asked;
     }
     unknown = s_unknown;            /* .noconv */
+    if (pushflag == 2)              /* the argument of an intrinsic */
+        pushflag = intrinsic_quick(t) ? 0 : 1;
     if (pushflag > 0) {
         /* push the type got. */
         UWORD regfield = regat << 9;
@@ -2196,6 +2199,111 @@ static BOOL liba3(const UBYTE *sub)
     }
 }
 
+/* ================================================================ intrinsics
+   No asm counterpart (change compiler-intrinsics; the requirements:
+   openspec/specs/compiler/intrinsics, the list: docs/blitz2/extensions.md).
+   A library function whose argument is a Quick is compiled as inline
+   code instead of the call when its entry in intrinsics[] says so; the
+   value, the registers the compiler relies on and the error behaviour
+   equal the call, only the executable differs.  An entry is keyed by
+   its library token (library number << 7 + the function's number, the
+   identity findtoke resolves), and used only if the library's form is
+   the one the entry was written for (one parameter of unknown type: the
+   compiler pushes the type word, the routine reads it at -2(a2)), so a
+   library of another form (the original vallib's Frac takes a Float)
+   is called as before.
+
+   The way through the shared code: libfunction arms the entry
+   (intrarm) before dolibtoke; dolibtoke compiles the argument as for
+   the call, getap asks intrinsic_argpush for the push flag of the
+   argument (2 instead of evalu2's 1), and maineval2, when the argument's
+   type is known, asks intrinsic_quick: for a Quick the entry accepts it
+   pushes no type word, so stackuse stays 0 and dolibtoke sets up no a2;
+   dolibtoke then asks intrinsic_code instead of making the JSR (userjsr,
+   with the error check routine of the runtime error checking mode), and
+   the entry's code works on d0, the argument (libfunction's regat = 0).
+   Everything before (libfunction's movem of the registers below regat)
+   and after (move.l d0,D(regat), the movem back, varcont) is the
+   call's.  For every other type the argument and the call are compiled
+   exactly as before.  Not in constant evaluation (cfetchmode: the code
+   runs in the compiler, with the library's constant rules) and not in
+   direct mode (dirmode). */
+struct intrinsic {
+    UWORD token;                    /* the library token, 0 = end */
+    UWORD restype;                  /* the type of the inline result */
+    BOOL (*here)(UWORD oldtype);    /* used here? (before the argument;
+                                       NULL = always) */
+    BOOL (*accept)(void);           /* the argument is a Quick: inline?
+                                       (after it, the char after it read;
+                                       NULL = always) */
+    void (*emit)(void);             /* the code: d0 the Quick argument, the
+                                       result in d0; changes nothing else
+                                       but the flags */
+};
+
+static const struct intrinsic intrinsics[] = {
+    { 0, 0, NULL, NULL, NULL }
+};
+
+/* the state of the armed intrinsic (intrcur): INTR_ARMED until getap
+   takes its argument, INTR_ARG while maineval2 compiles it, INTR_QUICK
+   when maineval2 accepted it (no type word), INTR_DONE when
+   intrinsic_code emitted the code.  Nested calls in the argument save and
+   restore it (libfunction). */
+enum { INTR_IDLE, INTR_ARMED, INTR_ARG, INTR_QUICK, INTR_DONE };
+static const struct intrinsic *intrcur = NULL;
+static UWORD intrstate = INTR_IDLE;
+
+/* the entry of intrinsics[] for the library function token tok (its sub
+   from findtoke, called with np parameters), if it may be used here */
+static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
+                                        UWORD oldtype)
+{
+    const struct intrinsic *in;
+    const UBYTE *form = sub + 6;
+
+    if (cfetchmode || dirmode || np != 1)
+        return NULL;
+    /* the first form: no repeats, one parameter, of unknown type (8,
+       blitzlib.h BL_UNKNOWN: handlep takes it to getap's evalu2) */
+    if (W_(form) != 1 || form[2] != 8)
+        return NULL;
+    for (in = intrinsics; in->token; in++)
+        if (in->token == tok)
+            return !in->here || in->here(oldtype) ? in : NULL;
+    return NULL;
+}
+
+/* see eval.h */
+WORD intrinsic_argpush(void)
+{
+    if (intrstate != INTR_ARMED)
+        return 1;
+    intrstate = INTR_ARG;
+    return 2;
+}
+
+/* maineval2, the argument of the armed intrinsic compiled (type got):
+   compile it inline (TRUE: push no type word)? */
+static BOOL intrinsic_quick(UWORD type)
+{
+    if (intrstate != INTR_ARG || type != T_QUICK
+            || (intrcur->accept && !intrcur->accept()))
+        return FALSE;
+    intrstate = INTR_QUICK;
+    return TRUE;
+}
+
+/* see eval.h */
+BOOL intrinsic_code(void)
+{
+    if (intrstate != INTR_QUICK)
+        return FALSE;
+    intrcur->emit();
+    intrstate = INTR_DONE;
+    return TRUE;
+}
+
 /* blitz2.s:10112 libfunction - do a user library function, eg
    a=pixel{x,y}.
    Fixed (intended deviation, #46): a function whose !libs list loads a3
@@ -2207,11 +2315,14 @@ static BOOL liba3(const UBYTE *sub)
    the expression wrote its characters from the object on (BlitColl's
    Shape, PeekSound's Sound).  A function returning a string leaves its
    result at a3 and is compiled as before, as is every call outside a
-   string expression. */
+   string expression.
+   tok: the library token (function), for the intrinsics: an entry of
+   intrinsics[] is armed for the argument (no asm counterpart). */
 static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
-                         UBYTE *sub, UWORD *type)
+                         UBYTE *sub, UWORD tok, UWORD *type)
 {
-    UWORD rettype, mask, c, np, sregat;
+    UWORD rettype, mask, c, np, sregat, sstate;
+    const struct intrinsic *in, *scur;
 
     rettype = flags >> 8;
     if (B_(sub + 1) & 8)
@@ -2242,7 +2353,16 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
         pokewd(rettype | 0x7000);   /* moveq #type,d0 */
         regat++;
     }
+    in = intrfind(tok, sub, np, oldtype);
+    scur = intrcur;                 /* an intrinsic around this call */
+    sstate = intrstate;
+    intrcur = in;
+    intrstate = in ? INTR_ARMED : INTR_IDLE;
     c = dolibtoke(np, lib, sub);    /* .no2 */
+    if (intrstate == INTR_DONE)
+        rettype = in->restype;      /* compiled inline */
+    intrcur = scur;
+    intrstate = sstate;
     if (np) {
         if (c != ')')
             syntaxerr();
@@ -2287,7 +2407,7 @@ static UWORD function(UWORD c, UWORD *type)
         syntaxerr();
     if (fl & 4)
         return amigalib(old, sub, type);
-    return libfunction(old, fl, lib, sub, type);
+    return libfunction(old, fl, lib, sub, c & 0x7fff, type);
 }
 
 /* blitz2.s:10279 pokemovem */
